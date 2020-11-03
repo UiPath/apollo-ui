@@ -1,0 +1,143 @@
+@import "./icons/apollo/apollo.css";
+
+@font-face {
+font-family:"poppins";
+src:url("./fonts/poppins/poppins.woff2") format("woff2"),url("./fonts/poppins/poppins.woff") format("woff"),url("./fonts//poppins/poppins.ttf") format("opentype");
+font-display:auto;font-style:normal;font-weight:600;
+}
+
+@font-face {
+font-family:"noto-sans";
+src:url("./fonts/noto-sans/noto-sans-100-normal.woff2") format("woff2"),url("./fonts/noto-sans/noto-sans-100-normal.woff") format("woff"),url("./fonts/noto-sans/noto-sans-100-normal.ttf") format("opentype");
+font-display:auto;font-style:normal;font-weight:100;
+}
+
+@font-face {
+font-family:"noto-sans";
+src:url("./fonts/noto-sans/noto-sans-200-normal.woff2") format("woff2"),url("./fonts/noto-sans/noto-sans-200-normal.woff") format("woff"),url("./fonts/noto-sans/noto-sans-200-normal.ttf") format("opentype");
+font-display:auto;font-style:normal;font-weight:200;
+}
+
+@font-face {
+font-family:"noto-sans";
+src:url("./fonts/noto-sans/noto-sans-300-normal.woff2") format("woff2"),url("./fonts/noto-sans/noto-sans-300-normal.woff") format("woff"),url("./fonts/noto-sans/noto-sans-300-normal.ttf") format("opentype");
+font-display:auto;font-style:normal;font-weight:300;
+}
+
+@font-face {
+font-family:"noto-sans";
+src:url("./fonts/noto-sans/noto-sans-400-normal.woff2") format("woff2"),url("./fonts/noto-sans/noto-sans-400-normal.woff") format("woff"),url("./fonts/noto-sans/noto-sans-400-normal.ttf") format("opentype");
+font-display:auto;font-style:normal;font-weight:400;
+}
+
+@font-face {
+font-family:"noto-sans";
+src:url("./fonts/noto-sans/noto-sans-500-normal.woff2") format("woff2"),url("./fonts/noto-sans/noto-sans-500-normal.woff") format("woff"),url("./fonts/noto-sans/noto-sans-500-normal.ttf") format("opentype");
+font-display:auto;font-style:normal;font-weight:500;
+}
+
+@font-face {
+font-family:"noto-sans";
+src:url("./fonts/noto-sans/noto-sans-600-normal.woff2") format("woff2"),url("./fonts/noto-sans/noto-sans-600-normal.woff") format("woff"),url("./fonts/noto-sans/noto-sans-600-normal.ttf") format("opentype");
+font-display:auto;font-style:normal;font-weight:600;
+}
+
+@font-face {
+font-family:"noto-sans";
+src:url("./fonts/noto-sans/noto-sans-700-normal.woff2") format("woff2"),url("./fonts/noto-sans/noto-sans-700-normal.woff") format("woff"),url("./fonts/noto-sans/noto-sans-700-normal.ttf") format("opentype");
+font-display:auto;font-style:normal;font-weight:700;
+}
+
+@font-face {
+font-family:"noto-sans";
+src:url("./fonts/noto-sans/noto-sans-800-normal.woff2") format("woff2"),url("./fonts/noto-sans/noto-sans-800-normal.woff") format("woff"),url("./fonts/noto-sans/noto-sans-800-normal.ttf") format("opentype");
+font-display:auto;font-style:normal;font-weight:800;
+}
+
+@font-face {
+font-family:"noto-sans";
+src:url("./fonts/noto-sans/noto-sans-900-normal.woff2") format("woff2"),url("./fonts/noto-sans/noto-sans-900-normal.woff") format("woff"),url("./fonts/noto-sans/noto-sans-900-normal.ttf") format("opentype");
+font-display:auto;font-style:normal;font-weight:900;
+}
+
+.tk-poppins { font-family: "poppins",sans-serif; }
+.tk-noto-sans { font-family: "noto-sans",sans-serif; }
+
+@font-face {
+    font-family: 'Material Icons';
+    font-style: normal;
+    font-weight: 400;
+    src: url("./icons/material/MaterialIcons-Regular.eot"); /* For IE6-8 */
+    src: local('Material Icons'),
+            local('MaterialIcons-Regular'),
+            url("./icons/material/MaterialIcons-Regular.woff2") format('woff2'),
+            url("./icons/material/MaterialIcons-Regular.woff") format('woff'),
+            url("./icons/material/MaterialIcons-Regular.ttf") format('truetype');
+}
+
+
+.material-icons {
+    font-family: 'Material Icons';
+    font-weight: normal;
+    font-style: normal;
+    font-size: 24px;  /* Preferred icon size */
+    display: inline-block;
+    line-height: 1;
+    text-transform: none;
+    letter-spacing: normal;
+    word-wrap: normal;
+    white-space: nowrap;
+    direction: ltr;
+
+    /* Support for all WebKit browsers. */
+    -webkit-font-smoothing: antialiased;
+    /* Support for Safari and Chrome. */
+    text-rendering: optimizeLegibility;
+
+    /* Support for Firefox. */
+    -moz-osx-font-smoothing: grayscale;
+
+    /* Support for IE. */
+    font-feature-settings: 'liga';
+}
+
+@font-face {
+    font-family: 'Apollo Icons';
+    font-style: normal;
+    font-weight: 400;
+    src: url("./icons/apollo/apollo.eot"); /* For IE6-8 */
+    src: local('Apollo Icons'),
+            local('ApolloIcons-Regular'),
+            url("./icons/apollo/apollo.woff2") format('woff2'),
+            url("./icons/apollo/apollo.woff") format('woff'),
+            url("./icons/apollo/apollo.ttf") format('truetype');
+}
+
+.apollo-icons {
+    font-family: 'apollo';
+    font-weight: normal;
+    font-style: normal;
+    font-size: 24px;  /* Preferred icon size */
+    display: inline-block;
+    line-height: 1;
+    text-transform: none;
+    letter-spacing: normal;
+    word-wrap: normal;
+    white-space: nowrap;
+    direction: ltr;
+
+    /* Support for all WebKit browsers. */
+    -webkit-font-smoothing: antialiased;
+    /* Support for Safari and Chrome. */
+    text-rendering: optimizeLegibility;
+
+    /* Support for Firefox. */
+    -moz-osx-font-smoothing: grayscale;
+
+    /* Support for IE. */
+    font-feature-settings: 'liga';
+}
+  
+
+.tk-poppins { font-family: "poppins",sans-serif; }
+.tk-noto-sans { font-family: "noto-sans",sans-serif; }
