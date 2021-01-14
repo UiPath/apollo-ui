@@ -70,6 +70,13 @@ font-display:auto;font-style:normal;font-weight:900;
     src: url("./icons/material/MaterialIcons-Regular.woff");
 }
 
+@font-face {
+    font-family: 'Material Icons Outlined';
+    font-style: normal;
+    font-weight: 400;
+    src: url("./icons/material/MaterialIcons-Outlined.woff2") format('woff2');
+}
+
 
 .material-icons {
     font-family: 'Material Icons';
@@ -95,6 +102,31 @@ font-display:auto;font-style:normal;font-weight:900;
     /* Support for IE. */
     font-feature-settings: 'liga';
 }
+
+.material-icons-outlined {
+    font-family: 'Material Icons Outlined';
+    font-weight: normal;
+    font-style: normal;
+    font-size: 24px;  /* Preferred icon size */
+    display: inline-block;
+    line-height: 1;
+    text-transform: none;
+    letter-spacing: normal;
+    word-wrap: normal;
+    white-space: nowrap;
+    direction: ltr;
+
+    /* Support for all WebKit browsers. */
+    -webkit-font-smoothing: antialiased;
+    /* Support for Safari and Chrome. */
+    text-rendering: optimizeLegibility;
+
+    /* Support for Firefox. */
+    -moz-osx-font-smoothing: grayscale;
+
+    /* Support for IE. */
+    font-feature-settings: 'liga';
+  }
 
 @font-face {
     font-family: 'Apollo Icons';
@@ -132,7 +164,6 @@ font-display:auto;font-style:normal;font-weight:900;
     /* Support for IE. */
     font-feature-settings: 'liga';
 }
-  
 
 .tk-poppins { font-family: "poppins",sans-serif; }
 .tk-noto-sans { font-family: "noto-sans",sans-serif; }
