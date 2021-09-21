@@ -217,6 +217,15 @@
         url("./icons/apollo/apollo.woff") format("woff"), url("./icons/apollo/apollo.ttf") format("truetype");
 }
 
+@font-face {
+    font-family: "apollo";
+    font-style: normal;
+    font-weight: 400;
+    src: url("./icons/apollo/apollo.eot"); /* For IE6-8 */
+    src: local("Apollo Icons"), local("ApolloIcons-Regular"), url("./icons/apollo/apollo.woff2") format("woff2"),
+        url("./icons/apollo/apollo.woff") format("woff"), url("./icons/apollo/apollo.ttf") format("truetype");
+}
+
 .apollo-icons {
     font-family: "apollo";
     font-weight: normal;
