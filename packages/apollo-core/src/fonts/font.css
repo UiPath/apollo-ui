@@ -1,8 +1,7 @@
 @import "./icons/apollo/apollo.css";
-@import "./fonts/noto-sans/glyphs/cjk-jp/medium/noto-sans-cjk-jp-medium.css";
-@import "./fonts/noto-sans/glyphs/cjk-jp/regular/noto-sans-cjk-jp-regular.css";
-@import "./fonts/noto-sans/glyphs/cjk-kr/bold/noto-sans-cjk-kr-bold.css";
-@import "./fonts/noto-sans/glyphs/cjk-kr/regular/noto-sans-cjk-kr-bold.css";
+@import './JP/jp.css';
+@import './KR/kr.css';
+@import './SC/sc.css';
 
 @font-face {
     font-family: "poppins";
@@ -53,6 +52,7 @@
     font-weight: 400;
 }
 
+
 @font-face {
     font-family: "noto-sans";
     src: url("./fonts/noto-sans/noto-sans-500-normal.woff2") format("woff2"),
@@ -101,47 +101,6 @@
     font-display: auto;
     font-style: normal;
     font-weight: 900;
-}
-
-/* Noto Sans Japanese Glyphs */
-@font-face {
-    font-family: "noto-sans-cjk-jp";
-    src: url("./fonts/noto-sans/glyphs/cjk-jp/NotoSansCJKjp-Regular.otf") format("opentype");
-    font-display: auto;
-    font-style: normal;
-    font-weight: 400;
-}
-
-@font-face {
-    font-family: "noto-sans-cjk-jp";
-    src: url("./fonts/noto-sans/glyphs/cjk-jp/NotoSansCJKjp-Bold.otf") format("opentype");
-    font-display: auto;
-    font-style: normal;
-    font-weight: 600;
-}
-
-/* Noto Sans Korean Glyphs */
-@font-face {
-    font-family: "noto-sans-cjk-kr";
-    src: url("./fonts/noto-sans/glyphs/cjk-kr/NotoSansCJKkr-Regular.otf") format("opentype");
-    font-display: auto;
-    font-style: normal;
-    font-weight: 400;
-}
-
-@font-face {
-    font-family: "noto-sans-cjk-kr";
-    src: url("./fonts/noto-sans/glyphs/cjk-kr/NotoSansCJKkr-Bold.otf") format("opentype");
-    font-display: auto;
-    font-style: normal;
-    font-weight: 600;
-}
-
-.tk-poppins {
-    font-family: "poppins", sans-serif;
-}
-.tk-noto-sans {
-    font-family: "noto-sans", sans-serif;
 }
 
 @font-face {
@@ -210,15 +169,6 @@
 
 @font-face {
     font-family: "Apollo Icons";
-    font-style: normal;
-    font-weight: 400;
-    src: url("./icons/apollo/apollo.eot"); /* For IE6-8 */
-    src: local("Apollo Icons"), local("ApolloIcons-Regular"), url("./icons/apollo/apollo.woff2") format("woff2"),
-        url("./icons/apollo/apollo.woff") format("woff"), url("./icons/apollo/apollo.ttf") format("truetype");
-}
-
-@font-face {
-    font-family: "apollo";
     font-style: normal;
     font-weight: 400;
     src: url("./icons/apollo/apollo.eot"); /* For IE6-8 */
