@@ -1,9 +1,9 @@
 import { alpha } from '@mui/material';
-import { PaletteOptions } from '@mui/material/styles/createPalette';
 import { ComponentsOverrides } from '@mui/material/styles/overrides';
 import token from '@uipath/apollo-core/lib';
+import { Palette } from '@uipath/apollo-core/lib/jss/palette';
 
-export const MuiButton = (palette: PaletteOptions): ComponentsOverrides['MuiButton'] => {
+export const MuiButton = (palette: Palette): ComponentsOverrides['MuiButton'] => {
     return {
         root: {
             height: '40px',
