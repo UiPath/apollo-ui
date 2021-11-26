@@ -1,7 +1,7 @@
-import { PaletteOptions } from '@mui/material/styles/createPalette';
 import token from '@uipath/apollo-core/lib';
+import { Palette } from '@uipath/apollo-core/lib/jss/palette';
 
-export const MuiAlert = (palette: PaletteOptions) => {
+export const MuiAlert = (palette: Palette) => {
     return {
         root: {
             color: palette.semantic.colorForegroundInverse,
