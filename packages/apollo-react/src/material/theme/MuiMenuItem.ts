@@ -27,12 +27,12 @@ export const MuiMenuItem = (palette: Palette): ComponentsOverrides['MuiMenuItem'
                 backgroundColor: alpha(palette.semantic.colorPrimary, 0.1),
                 color: palette.semantic.colorForegroundDeEmp,
             },
-            '&$selected': {
+            '&.Mui-selected': {
                 boxShadow: `inset 4px 0px 0px ${palette.semantic.colorForegroundHigh}`,
                 backgroundColor: alpha(palette.semantic.colorForegroundHigh, 0.1),
                 color: palette.semantic.colorForegroundDeEmp,
             },
-            '&$selected:hover': {
+            '&.Mui-selected:hover': {
                 boxShadow: `inset 4px 0px 0px ${palette.semantic.colorForegroundHigh}`,
                 backgroundColor: alpha(palette.semantic.colorForegroundHigh, 0.15),
                 color: palette.semantic.colorForegroundDeEmp,

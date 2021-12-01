@@ -6,16 +6,13 @@ export const MuiFab = (palette: Palette): ComponentsOverrides['MuiFab'] => {
     return {
         root: {
             backgroundColor: palette.semantic.colorBackground,
-            '& .MuiFab-label': {
-                fontSize: token.FontFamily.FontMSize,
-                lineHeight: token.FontFamily.FontMLineHeight,
-                fontWeight: token.FontFamily.FontWeightSemibold,
-                textTransform: 'none',
-                color: palette.semantic.colorForegroundDeEmp,
-                '& .MuiSvgIcon-root': {
-                    width: '14px',
-                    height: '14px',
-                },
+            fontSize: token.FontFamily.FontMSize,
+            lineHeight: token.FontFamily.FontMLineHeight,
+            fontWeight: token.FontFamily.FontWeightSemibold,
+            textTransform: 'none',
+            '& .MuiSvgIcon-root': {
+                width: '14px',
+                height: '14px',
             },
             '&.MuiFab-extended.MuiFab-sizeSmall': {
                 height: '40px',

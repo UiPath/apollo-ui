@@ -5,7 +5,7 @@ export const MuiFormLabel = (palette: Palette): ComponentsOverrides['MuiFormLabe
     return {
         root: {
             color: palette.semantic.colorForeground,
-            '&$disabled': { color: palette.semantic.colorForegroundDisable },
+            '&.Mui-disabled': { color: palette.semantic.colorForegroundDisable },
         },
     };
 };
