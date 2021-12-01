@@ -7,7 +7,7 @@ export const MuiAutocomplete = (palette: Palette): ComponentsOverrides['MuiAutoc
     return {
         root: {
             color: palette.semantic.colorForeground,
-            '&$disabled': { color: palette.semantic.colorForegroundDisable },
+            '&.Mui-disabled': { color: palette.semantic.colorForegroundDisable },
             '& .MuiAutocomplete-inputRoot[class*="MuiOutlinedInput-root"]': {
                 paddingTop: '2.38px',
                 paddingBottom: '2px',

@@ -25,6 +25,7 @@ import { MuiLinearProgress } from './MuiLinearProgress';
 import { MuiLink } from './MuiLink';
 import { MuiList } from './MuiList';
 import { MuiListItem } from './MuiListItem';
+import { MuiListItemButton } from './MuiListItemButton';
 import { MuiListItemIcon } from './MuiListItemIcon';
 import { MuiListItemText } from './MuiListItemText';
 import { MuiMenuItem } from './MuiMenuItem';
@@ -59,6 +60,7 @@ const muiComponents = {
     MuiLink,
     MuiList,
     MuiListItem,
+    MuiListItemButton,
     MuiListItemIcon,
     MuiListItemText,
     MuiMenuItem,

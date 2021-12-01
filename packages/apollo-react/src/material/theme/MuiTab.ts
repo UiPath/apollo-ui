@@ -8,14 +8,14 @@ export const MuiTab = (palette: Palette): ComponentsOverrides['MuiTab'] => {
             '&:hover': { backgroundColor: palette.semantic.colorHover },
             '&:focus': { backgroundColor: palette.semantic.colorSecondaryFocused },
             '&.default': { minHeight: '40px' },
-            '&$disabled': { color: palette.semantic.colorForegroundDisable },
+            '&.Mui-disabled': { color: palette.semantic.colorForegroundDisable },
             '&.tiny': {
                 minHeight: '22px',
                 minWidth: '50px',
                 fontWeight: token.FontFamily.FontWeightSemibold,
                 color: palette.semantic.colorForeground,
                 padding: `0px ${token.Padding.PadM}`,
-                '&$selected': {
+                '&.Mui-selected': {
                     fontWeight: token.FontFamily.FontWeightSemibold,
                     fontSize: token.FontFamily.FontMSize,
                     lineHeight: token.FontFamily.FontMLineHeight,
@@ -27,13 +27,13 @@ export const MuiTab = (palette: Palette): ComponentsOverrides['MuiTab'] => {
             color: palette.semantic.colorForegroundDeEmp,
             fontWeight: token.FontFamily.FontWeightSemibold,
             textTransform: 'none',
-            '&$selected': {
+            '&.Mui-selected': {
                 color: palette.semantic.colorPrimary,
                 fontSize: token.FontFamily.FontMSize,
                 lineHeight: token.FontFamily.FontMLineHeight,
                 fontStyle: 'normal',
             },
-            '&$disabled': { color: palette.semantic.colorForegroundDisable },
+            '&.Mui-disabled': { color: palette.semantic.colorForegroundDisable },
         },
     };
 };

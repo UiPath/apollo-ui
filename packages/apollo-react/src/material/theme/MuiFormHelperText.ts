@@ -12,13 +12,13 @@ export const MuiFormHelperText = (palette: Palette): ComponentsOverrides['MuiFor
             fontSize: token.FontFamily.FontSSize,
             lineHeight: token.FontFamily.FontSLineHeight,
             color: palette.semantic.colorForegroundDeEmp,
+            marginLeft: 0,
             marginTop: '4px',
             '&.Mui-error': { color: palette.semantic.colorErrorText },
             '&.Mui-disabled': {
                 display: 'none',
                 color: palette.semantic.colorForegroundDisable,
             },
-            '&$disabled': { color: palette.semantic.colorForegroundDisable },
         },
     };
 };

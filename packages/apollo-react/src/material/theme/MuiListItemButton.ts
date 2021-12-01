@@ -3,7 +3,7 @@ import { ComponentsOverrides } from '@mui/material/styles/overrides';
 import token from '@uipath/apollo-core/lib';
 import { Palette } from '@uipath/apollo-core/lib/jss/palette';
 
-export const MuiListItem = (palette: Palette): ComponentsOverrides['MuiListItem'] => {
+export const MuiListItemButton = (palette: Palette): ComponentsOverrides['MuiListItemButton'] => {
     return {
         root: {
             fontStyle: 'normal',
@@ -81,8 +81,6 @@ export const MuiListItem = (palette: Palette): ComponentsOverrides['MuiListItem'
                     lineHeight: token.FontFamily.FontMLineHeight,
                 },
             },
-        },
-        button: {
             '&:hover': {
                 backgroundColor: palette.semantic.colorHover,
                 color: palette.semantic.colorForegroundDeEmp,
@@ -101,7 +99,7 @@ export const MuiListItem = (palette: Palette): ComponentsOverrides['MuiListItem'
                 backgroundColor: alpha(palette.semantic.colorForegroundHigh, 0.15),
                 color: palette.semantic.colorForegroundDeEmp,
             },
-            '&.MuiListItem-divider': { borderColor: palette.semantic.colorBorderDeEmp },
+            '&.MuiListItemButton-divider': { borderColor: palette.semantic.colorBorderDeEmp },
         },
     };
 };
