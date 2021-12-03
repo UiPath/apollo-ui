@@ -14,6 +14,7 @@ export const MuiFab = (palette: Palette): ComponentsOverrides['MuiFab'] => {
                 width: '14px',
                 height: '14px',
             },
+            '&:not(.MuiFab-primary):not(.MuiFab-secondary) .MuiSvgIcon-root': { color: palette.semantic.colorForegroundDeEmp },
             '&.MuiFab-extended.MuiFab-sizeSmall': {
                 height: '40px',
                 padding: '0 15px',

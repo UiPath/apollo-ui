@@ -9,6 +9,7 @@ export const MuiList = (palette: Palette): ComponentsOverrides['MuiList'] => {
             borderRadius: '3px',
             background: palette.semantic.colorBackgroundRaised,
             paddingTop: '0',
+            '&.MuiList-padding': { paddingTop: '8px' },
             '& .header': {
                 color: palette.semantic.colorForeground,
                 fontStyle: 'normal',
