@@ -23,6 +23,7 @@ export const MuiOutlinedInput = (palette: Palette): ComponentsOverrides['MuiOutl
         input: {
             paddingTop: '11.38px',
             paddingBottom: '12px',
+            height: '16.625px',
             color: palette.semantic.colorForeground,
             fontSize: token.FontFamily.FontMSize,
             lineHeight: token.FontFamily.FontMLineHeight,
@@ -33,6 +34,17 @@ export const MuiOutlinedInput = (palette: Palette): ComponentsOverrides['MuiOutl
             '&.disabled': {
                 paddingTop: '11.38px',
                 paddingBottom: '12px',
+            },
+            '&&.MuiAutocomplete-input': {
+                paddingTop: '9.5px',
+                paddingBottom: '9.5px',
+                height: '16.625px',
+            },
+            '&&.MuiSelect-select': {
+                paddingTop: '10px',
+                paddingBottom: '10px',
+                paddingLeft: '8px',
+                minHeight: '20px',
             },
         },
         multiline: {
