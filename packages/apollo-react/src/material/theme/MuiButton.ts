@@ -12,25 +12,25 @@ export const MuiButton = (palette: Palette): ComponentsOverrides['MuiButton'] =>
             fontStyle: 'normal',
             fontWeight: token.FontFamily.FontWeightSemibold,
             fontSize: token.FontFamily.FontMSize,
-            padding: '6px 20px',
+            padding: '6px 16px',
             lineHeight: token.FontFamily.FontMLineHeight,
             textTransform: 'none',
 
             '&.warning': {
-                border: `1px solid ${palette.semantic.colorErrorIcon}`,
-                backgroundColor: `${palette.semantic.colorErrorIcon}`,
+                border: `1px solid ${palette.semantic.colorWarn}`,
+                backgroundColor: `${palette.semantic.colorWarn}`,
                 color: `${palette.semantic.colorForegroundInverse}`,
                 '&.MuiButton-containedSecondary': { color: `${palette.semantic.colorForegroundInverse}` },
                 '&&:hover': {
-                    backgroundColor: `${palette.semantic.colorErrorIcon}`,
-                    border: `1px solid ${palette.semantic.colorErrorIcon}`,
+                    backgroundColor: `${palette.semantic.colorWarnDarker}`,
+                    border: `1px solid ${palette.semantic.colorWarnDarker}`,
                     color: `${palette.semantic.colorForegroundInverse}`,
                     boxShadow: 'none',
                 },
                 '&&:focus': {
                     boxShadow: 'none',
-                    border: `1px solid ${palette.semantic.colorErrorIcon}`,
-                    backgroundColor: `${palette.semantic.colorErrorIcon}`,
+                    border: `1px solid ${palette.semantic.colorWarnDarker}`,
+                    backgroundColor: `${palette.semantic.colorWarnDarker}`,
                     color: `${palette.semantic.colorForegroundInverse}`,
                 },
                 '&&:disabled': {
@@ -61,33 +61,39 @@ export const MuiButton = (palette: Palette): ComponentsOverrides['MuiButton'] =>
                 color: `${palette.semantic.colorForegroundDisable}`,
                 border: `1px solid ${palette.semantic.colorBackgroundDisabled}`,
             },
+            '&&:focus-visible': { backgroundColor: palette.semantic.colorPrimaryFocused },
+            '&&:active': { backgroundColor: palette.semantic.colorPrimaryPressed },
         },
         outlined: {
             border: `1px solid ${palette.semantic.colorBorderDeEmp}`,
             background: `${palette.semantic.colorBackground}`,
             color: `${palette.semantic.colorPrimary}`,
+            '&&': { borderColor: palette.semantic.colorBorder },
             '&&:hover': { backgroundColor: alpha(palette.semantic.colorPrimary, 0.12) },
-            '&&:focus': {
-                backgroundColor: alpha(palette.semantic.colorPrimary.toString(), 0.15),
-                color: palette.semantic.colorPrimaryDarker,
-            },
+            '&&:focus': { backgroundColor: alpha(palette.semantic.colorPrimary.toString(), 0.15) },
             '&&:disabled': {
                 backgroundColor: `${palette.semantic.colorBackgroundDisabled}`,
                 color: `${palette.semantic.colorForegroundDisable}`,
-                border: `1px solid ${palette.semantic.colorBackgroundDisabled}`,
             },
+            '&&:focus-visible': { backgroundColor: palette.semantic.colorSecondaryFocused },
+            '&&:active': { backgroundColor: palette.semantic.colorSecondaryPressed },
         },
         text: {
             '& .MuiButton-label': {
                 paddingLeft: token.Padding.PadL,
                 paddingRight: token.Padding.PadL,
             },
-            '&&:hover': { backgroundColor: alpha(palette.semantic.colorPrimary, 0.12) },
+            '&&:hover': {
+                backgroundColor: alpha(palette.semantic.colorPrimary, 0.12),
+                borderColor: palette.semantic.colorBorder,
+            },
             '&&:focus': {
                 backgroundColor: alpha(palette.semantic.colorPrimary, 0.15),
                 color: palette.semantic.colorPrimaryDarker,
             },
             '&&:disabled': { color: `${palette.semantic.colorForegroundDisable}` },
+            '&&:focus-visible': { backgroundColor: palette.semantic.colorSecondaryFocused },
+            '&&:active': { backgroundColor: palette.semantic.colorSecondaryPressed },
         },
         sizeSmall: {
             height: '32px',
