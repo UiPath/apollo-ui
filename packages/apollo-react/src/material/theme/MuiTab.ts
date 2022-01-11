@@ -9,6 +9,7 @@ export const MuiTab = (palette: Palette): ComponentsOverrides['MuiTab'] => {
             '&:focus': { backgroundColor: palette.semantic.colorSecondaryFocused },
             '&.default': { minHeight: '40px' },
             '&.Mui-disabled': { color: palette.semantic.colorForegroundDisable },
+            '&:not(.tiny).Mui-selected': { paddingBottom: '13px' },
             '&.tiny': {
                 minHeight: '22px',
                 minWidth: '50px',
@@ -24,7 +25,7 @@ export const MuiTab = (palette: Palette): ComponentsOverrides['MuiTab'] => {
             },
         },
         textColorPrimary: {
-            color: palette.semantic.colorForegroundDeEmp,
+            color: palette.semantic.colorForeground,
             fontWeight: token.FontFamily.FontWeightSemibold,
             textTransform: 'none',
             '&.Mui-selected': {

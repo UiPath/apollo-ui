@@ -118,7 +118,7 @@ export const MuiChip = (palette: Palette): ComponentsOverrides['MuiChip'] => {
 
             '& .MuiChip-icon, .MuiChip-deleteIcon': {
                 color: palette.semantic.colorForeground,
-                width: '14px',
+                width: '16px',
                 height: 'auto',
             },
             '& .MuiChip-deleteIcon:hover': { color: palette.semantic.colorForeground },

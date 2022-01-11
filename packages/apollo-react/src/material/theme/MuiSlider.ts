@@ -21,6 +21,10 @@ export const MuiSlider = (palette: Palette): ComponentsOverrides['MuiSlider'] =>
                 '&.MuiSlider-valueLabelOpen': { transform: 'translate(50%, -100%) rotate(-45deg) scale(1)' },
                 '& > *': { transform: 'rotate(45deg)' },
             },
+            '& .MuiSlider-thumb': {
+                width: '14px',
+                height: '14px',
+            },
         },
     };
 };
