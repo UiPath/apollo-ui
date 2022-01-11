@@ -84,6 +84,7 @@ export const MuiDialog = (palette: Palette): ComponentsOverrides['MuiDialog'] =>
                     fontSize: token.FontFamily.FontMSize,
                     lineHeight: token.FontFamily.FontMLineHeight,
                     color: palette.semantic.colorForeground,
+                    marginBottom: '12px',
                 },
                 padding: `0px 0px ${token.Padding.PadXxxl} 0px`,
             },
