@@ -19,6 +19,9 @@ export const MuiOutlinedInput = (palette: Palette): ComponentsOverrides['MuiOutl
                 borderColor: palette.semantic.colorBorder,
                 '& legend': { '& span': { display: 'none' } },
             },
+            '&.Mui-disabled .MuiOutlinedInput-notchedOutline': { borderColor: palette.semantic.colorBorderDisabled },
+            '&.Mui-disabled:hover .MuiOutlinedInput-notchedOutline': { borderColor: palette.semantic.colorBorderDisabled },
+            '& svg': { display: 'block' },
         },
         input: {
             paddingTop: '11.38px',

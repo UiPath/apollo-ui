@@ -89,7 +89,7 @@ export const MuiListItemButton = (palette: Palette): ComponentsOverrides['MuiLis
                 backgroundColor: alpha(palette.semantic.colorPrimary, 0.1),
                 color: palette.semantic.colorForegroundDeEmp,
             },
-            '&.Mui-selected': {
+            '&.Mui-selected.Mui-selected.Mui-selected': {
                 boxShadow: `inset 4px 0px 0px ${palette.semantic.colorForegroundHigh}`,
                 backgroundColor: alpha(palette.semantic.colorForegroundHigh, 0.1),
                 color: palette.semantic.colorForegroundDeEmp,
