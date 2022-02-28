@@ -14,6 +14,7 @@ export const MuiInputLabel = (palette: Palette): ComponentsOverrides['MuiInput']
             '&.select-label': { '& + .MuiInputBase-root > .MuiOutlinedInput-notchedOutline': { top: '0px !important' } },
             '&.Mui-error': { color: palette.semantic.colorErrorText },
             '& + .MuiInputBase-root > .MuiOutlinedInput-notchedOutline': { top: '-5px !important' },
+            '&.Mui-focused': { color: palette.semantic.colorForegroundDeEmp },
         },
     };
 };
