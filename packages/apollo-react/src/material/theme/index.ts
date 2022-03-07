@@ -33,6 +33,7 @@ import { MuiOutlinedInput } from './MuiOutlinedInput';
 import { MuiSelect } from './MuiSelect';
 import { MuiSlider } from './MuiSlider';
 import { MuiSnackbar } from './MuiSnackbar';
+import { MuiSwitch } from './MuiSwitch';
 import { MuiTab } from './MuiTab';
 import { MuiTabs } from './MuiTabs';
 import { MuiTextField } from './MuiTextField';
@@ -68,6 +69,7 @@ const muiComponents = {
     MuiSelect,
     MuiSlider,
     MuiSnackbar,
+    MuiSwitch,
     MuiTab,
     MuiTabs,
     MuiTextField,
