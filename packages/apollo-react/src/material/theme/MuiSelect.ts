@@ -1,4 +1,4 @@
-import { createStyles } from '@mui/material';
+import { createStyles } from '@mui/styles';
 import { ComponentsOverrides } from '@mui/material/styles/overrides';
 import token from '@uipath/apollo-core/lib';
 import { Palette } from '@uipath/apollo-core/lib/jss/palette';
