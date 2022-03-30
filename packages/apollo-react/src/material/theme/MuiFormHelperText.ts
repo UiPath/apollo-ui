@@ -6,11 +6,10 @@ export const MuiFormHelperText = (palette: Palette): ComponentsOverrides['MuiFor
     return {
         sizeSmall: {
             fontSize: token.FontFamily.FontXsSize,
-            lineHeight: token.FontFamily.FontXsLineHeight,
         },
         root: {
             fontSize: token.FontFamily.FontSSize,
-            lineHeight: token.FontFamily.FontSLineHeight,
+            lineHeight: 1.5,
             color: palette.semantic.colorForegroundDeEmp,
             marginLeft: 0,
             marginTop: '4px',
