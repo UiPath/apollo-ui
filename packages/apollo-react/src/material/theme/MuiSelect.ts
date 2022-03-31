@@ -10,7 +10,7 @@ export const MuiSelect = (palette: Palette): ComponentsOverrides['MuiSelect'] =>
             fontWeight: 'normal',
             paddingTop: token.Padding.PadXl,
             paddingBottom: token.Padding.PadXl,
-            paddingLeft: token.Padding.PadL,
+            paddingLeft: token.Padding.PadXxxl,
             fontSize: token.FontFamily.FontMSize,
             lineHeight: token.FontFamily.FontMLineHeight,
             color: palette.semantic.colorForeground,
