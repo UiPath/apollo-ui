@@ -4,9 +4,7 @@ import { Palette } from '@uipath/apollo-core/lib/jss/palette';
 
 export const MuiFormHelperText = (palette: Palette): ComponentsOverrides['MuiFormHelperText'] => {
     return {
-        sizeSmall: {
-            fontSize: token.FontFamily.FontXsSize,
-        },
+        sizeSmall: { fontSize: token.FontFamily.FontXsSize },
         root: {
             fontSize: token.FontFamily.FontSSize,
             lineHeight: 1.5,
