@@ -68,15 +68,11 @@ export const MuiOutlinedInput = (palette: Palette): ComponentsOverrides['MuiOutl
             paddingLeft: token.Padding.PadL,
             color: palette.semantic.colorIconDefault,
         },
-        inputAdornedStart: {
-            paddingLeft: token.Padding.PadL,
-        },
-        adornedEnd: { 
+        inputAdornedStart: { paddingLeft: token.Padding.PadL },
+        adornedEnd: {
             color: palette.semantic.colorIconDefault,
             paddingRight: token.Padding.PadL,
         },
-        inputAdornedEnd: {
-            paddingRight: token.Padding.PadL,
-        }
+        inputAdornedEnd: { paddingRight: token.Padding.PadL },
     };
 };
