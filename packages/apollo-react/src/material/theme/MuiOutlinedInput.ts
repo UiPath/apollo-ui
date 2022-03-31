@@ -5,9 +5,13 @@ import { Palette } from '@uipath/apollo-core/lib/jss/palette';
 export const MuiOutlinedInput = (palette: Palette): ComponentsOverrides['MuiOutlinedInput'] => {
     return {
         inputSizeSmall: {
+            paddingLeft: token.Padding.PadXxxl,
+            paddingRight: token.Padding.PadXxxl,
             paddingTop: '7.38px',
             paddingBottom: '8px',
             '&.disabled': {
+                paddingLeft: token.Padding.PadXxxl,
+                paddingRight: token.Padding.PadXxxl,
                 paddingTop: '7.38px',
                 paddingBottom: '8px',
             },
@@ -24,6 +28,8 @@ export const MuiOutlinedInput = (palette: Palette): ComponentsOverrides['MuiOutl
             '& svg': { display: 'block' },
         },
         input: {
+            paddingLeft: token.Padding.PadXxxl,
+            paddingRight: token.Padding.PadXxxl,
             paddingTop: '11.38px',
             paddingBottom: '12px',
             height: '16.625px',
@@ -37,6 +43,8 @@ export const MuiOutlinedInput = (palette: Palette): ComponentsOverrides['MuiOutl
             '&.disabled': {
                 paddingTop: '11.38px',
                 paddingBottom: '12px',
+                paddingLeft: token.Padding.PadXxxl,
+                paddingRight: token.Padding.PadXxxl,
             },
             '&&.MuiAutocomplete-input': {
                 paddingTop: '9.5px',
@@ -46,7 +54,7 @@ export const MuiOutlinedInput = (palette: Palette): ComponentsOverrides['MuiOutl
             '&&.MuiSelect-select': {
                 paddingTop: '10px',
                 paddingBottom: '10px',
-                paddingLeft: '8px',
+                paddingLeft: token.Padding.PadXxxl,
                 minHeight: '20px',
             },
         },
