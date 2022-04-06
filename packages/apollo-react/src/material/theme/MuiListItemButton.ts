@@ -99,6 +99,7 @@ export const MuiListItemButton = (palette: Palette): ComponentsOverrides['MuiLis
                 backgroundColor: alpha(palette.semantic.colorForegroundHigh, 0.15),
                 color: palette.semantic.colorForegroundDeEmp,
             },
+            '&.Mui-selected:focus': { outline: `${token.Stroke.StrokeM} solid ${palette.semantic.colorPrimaryFocused}` },
             '&.MuiListItemButton-divider': { borderColor: palette.semantic.colorBorderDeEmp },
         },
     };
