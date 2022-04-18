@@ -1,4 +1,3 @@
-import { alpha } from '@mui/material';
 import { ComponentsOverrides } from '@mui/material/styles/overrides';
 import token from '@uipath/apollo-core/lib';
 import { Palette } from '@uipath/apollo-core/lib/jss/palette';
@@ -79,18 +78,13 @@ export const MuiButton = (palette: Palette): ComponentsOverrides['MuiButton'] =>
             '&&:active': { backgroundColor: palette.semantic.colorSecondaryPressed },
         },
         text: {
+            color: palette.semantic.colorPrimary,
             '& .MuiButton-label': {
                 paddingLeft: token.Padding.PadL,
                 paddingRight: token.Padding.PadL,
             },
-            '&&:hover': {
-                backgroundColor: alpha(palette.semantic.colorPrimary, 0.12),
-                borderColor: palette.semantic.colorBorder,
-            },
-            '&&:focus': {
-                backgroundColor: alpha(palette.semantic.colorPrimary, 0.15),
-                color: palette.semantic.colorPrimaryDarker,
-            },
+            '&&:hover': { backgroundColor: palette.semantic.colorSecondaryFocused },
+            '&&:focus': { backgroundColor: palette.semantic.colorSecondaryFocused },
             '&&:disabled': { color: `${palette.semantic.colorForegroundDisable}` },
             '&&:focus-visible': { backgroundColor: palette.semantic.colorSecondaryFocused },
             '&&:active': { backgroundColor: palette.semantic.colorSecondaryPressed },
