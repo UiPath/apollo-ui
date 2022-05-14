@@ -5,7 +5,7 @@ import { Palette } from '@uipath/apollo-core/lib/jss/palette';
 export const MuiList = (palette: Palette): ComponentsOverrides['MuiList'] => {
     return {
         root: {
-            boxShadow: token.Shadow.ShadowDp8,
+            '&[role="menu"]': { boxShadow: token.Shadow.ShadowDp8 },
             borderRadius: '3px',
             background: palette.semantic.colorBackgroundRaised,
             paddingTop: '0',
