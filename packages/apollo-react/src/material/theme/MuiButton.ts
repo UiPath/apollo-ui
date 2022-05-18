@@ -78,7 +78,6 @@ export const MuiButton = (palette: Palette): ComponentsOverrides['MuiButton'] =>
             '&&:active': { backgroundColor: palette.semantic.colorSecondaryPressed },
         },
         text: {
-            color: palette.semantic.colorPrimary,
             '& .MuiButton-label': {
                 paddingLeft: token.Padding.PadL,
                 paddingRight: token.Padding.PadL,
