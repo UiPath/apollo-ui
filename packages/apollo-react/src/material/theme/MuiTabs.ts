@@ -12,6 +12,7 @@ export const MuiTabs = (palette: Palette): ComponentsOverrides['MuiTabs'] => {
                 minHeight: '40px',
                 '& .MuiTabs-indicator': { height: '4px' },
             },
+            '&.secondary': { '& .MuiTabs-indicator': { display: 'none' } },
         },
         indicator: {
             backgroundColor: palette.semantic.colorPrimary,
