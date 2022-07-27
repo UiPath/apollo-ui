@@ -20,6 +20,7 @@ export const MuiFormControl = (palette: Palette): ComponentsOverrides['MuiFormCo
                 borderRadius: '3px',
                 padding: `${token.Padding.PadM} ${token.Padding.PadL}`,
                 fontSize: token.FontFamily.FontMSize,
+                fontFamily: token.FontFamily.FontNormal,
                 lineHeight: token.FontFamily.FontMLineHeight,
                 color: palette.semantic.colorForeground,
                 backgroundColor: palette.semantic.colorBackground,
