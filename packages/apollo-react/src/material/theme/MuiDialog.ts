@@ -64,6 +64,7 @@ export const MuiDialog = (palette: Palette): ComponentsOverrides['MuiDialog'] =>
                 background: palette.semantic.colorBackgroundRaised,
                 borderRadius: '3px',
                 padding: '24px',
+                minHeight: '224px',
             },
             '& .MuiDialogTitle-root': {
                 '& .MuiTypography-h6': {
