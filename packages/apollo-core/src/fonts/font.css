@@ -7,7 +7,7 @@
     font-family: "poppins";
     src: url("./fonts/poppins/poppins.woff2") format("woff2"), url("./fonts/poppins/poppins.woff") format("woff"),
         url("./fonts//poppins/poppins.ttf") format("opentype");
-    font-display: auto;
+    font-display: swap;
     font-style: normal;
     font-weight: 600;
 }
@@ -17,7 +17,7 @@
     src: url("./fonts/noto-sans/noto-sans-100-normal.woff2") format("woff2"),
         url("./fonts/noto-sans/noto-sans-100-normal.woff") format("woff"),
         url("./fonts/noto-sans/noto-sans-100-normal.ttf") format("opentype");
-    font-display: auto;
+    font-display: swap;
     font-style: normal;
     font-weight: 100;
 }
@@ -27,7 +27,7 @@
     src: url("./fonts/noto-sans/noto-sans-200-normal.woff2") format("woff2"),
         url("./fonts/noto-sans/noto-sans-200-normal.woff") format("woff"),
         url("./fonts/noto-sans/noto-sans-200-normal.ttf") format("opentype");
-    font-display: auto;
+    font-display: swap;
     font-style: normal;
     font-weight: 200;
 }
@@ -37,7 +37,7 @@
     src: url("./fonts/noto-sans/noto-sans-300-normal.woff2") format("woff2"),
         url("./fonts/noto-sans/noto-sans-300-normal.woff") format("woff"),
         url("./fonts/noto-sans/noto-sans-300-normal.ttf") format("opentype");
-    font-display: auto;
+    font-display: swap;
     font-style: normal;
     font-weight: 300;
 }
@@ -47,7 +47,7 @@
     src: url("./fonts/noto-sans/noto-sans-400-normal.woff2") format("woff2"),
         url("./fonts/noto-sans/noto-sans-400-normal.woff") format("woff"),
         url("./fonts/noto-sans/noto-sans-400-normal.ttf") format("opentype");
-    font-display: auto;
+    font-display: swap;
     font-style: normal;
     font-weight: 400;
 }
@@ -58,7 +58,7 @@
     src: url("./fonts/noto-sans/noto-sans-500-normal.woff2") format("woff2"),
         url("./fonts/noto-sans/noto-sans-500-normal.woff") format("woff"),
         url("./fonts/noto-sans/noto-sans-500-normal.ttf") format("opentype");
-    font-display: auto;
+    font-display: swap;
     font-style: normal;
     font-weight: 500;
 }
@@ -68,7 +68,7 @@
     src: url("./fonts/noto-sans/noto-sans-600-normal.woff2") format("woff2"),
         url("./fonts/noto-sans/noto-sans-600-normal.woff") format("woff"),
         url("./fonts/noto-sans/noto-sans-600-normal.ttf") format("opentype");
-    font-display: auto;
+    font-display: swap;
     font-style: normal;
     font-weight: 600;
 }
@@ -78,7 +78,7 @@
     src: url("./fonts/noto-sans/noto-sans-700-normal.woff2") format("woff2"),
         url("./fonts/noto-sans/noto-sans-700-normal.woff") format("woff"),
         url("./fonts/noto-sans/noto-sans-700-normal.ttf") format("opentype");
-    font-display: auto;
+    font-display: swap;
     font-style: normal;
     font-weight: 700;
 }
@@ -88,7 +88,7 @@
     src: url("./fonts/noto-sans/noto-sans-800-normal.woff2") format("woff2"),
         url("./fonts/noto-sans/noto-sans-800-normal.woff") format("woff"),
         url("./fonts/noto-sans/noto-sans-800-normal.ttf") format("opentype");
-    font-display: auto;
+    font-display: swap;
     font-style: normal;
     font-weight: 800;
 }
@@ -98,7 +98,7 @@
     src: url("./fonts/noto-sans/noto-sans-900-normal.woff2") format("woff2"),
         url("./fonts/noto-sans/noto-sans-900-normal.woff") format("woff"),
         url("./fonts/noto-sans/noto-sans-900-normal.ttf") format("opentype");
-    font-display: auto;
+    font-display: swap;
     font-style: normal;
     font-weight: 900;
 }
