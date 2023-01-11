@@ -11,6 +11,14 @@ export const MuiTextField = (palette: Palette): ComponentsOverrides['MuiTextFiel
                 transform: 'none',
                 position: 'relative',
             },
+            '& .MuiInputBase-root:has(input[readonly])': {
+                '& .MuiInputBase-input': {
+                    paddingLeft: 0,
+                    paddingRight: 0,
+                    cursor: 'default',
+                },
+                '& fieldset': { border: 0 },
+            },
         },
     };
 };
