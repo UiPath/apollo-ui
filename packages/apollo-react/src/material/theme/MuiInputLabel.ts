@@ -10,7 +10,6 @@ export const MuiInputLabel = (palette: Palette): ComponentsOverrides['MuiInput']
             fontSize: token.FontFamily.FontMSize,
             lineHeight: token.FontFamily.FontMLineHeight,
             color: palette.semantic.colorForegroundDeEmp,
-            background: palette.semantic.colorBackgroundEdit,
             '&.select-label': { '& + .MuiInputBase-root > .MuiOutlinedInput-notchedOutline': { top: '0px !important' } },
             '&.Mui-error': { color: palette.semantic.colorErrorText },
             '& + .MuiInputBase-root > .MuiOutlinedInput-notchedOutline': { top: '-5px !important' },
