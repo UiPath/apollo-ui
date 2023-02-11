@@ -19,6 +19,10 @@ export const MuiTextField = (palette: Palette): ComponentsOverrides['MuiTextFiel
                 },
                 '& fieldset': { border: 0 },
             },
+            '&.ap-omit-start-adornment-spacing': {
+                '& .MuiInputAdornment-positionStart': { marginRight: 'unset' },
+                '& .MuiInputBase-inputAdornedStart': { paddingLeft: '2px' },
+            },
         },
     };
 };
