@@ -34,6 +34,12 @@ export const MuiAutocomplete = (palette: Palette): ComponentsOverrides['MuiAutoc
                 backgroundColor: alpha(palette.semantic.colorForegroundHigh, 0.1),
                 color: palette.semantic.colorForegroundDeEmp,
             },
+            '&.MuiAutocomplete-option.MuiAutocomplete-option[aria-selected="true"]:hover': {
+                boxShadow: `inset 4px 0px 0px ${palette.semantic.colorForegroundHigh}`,
+                backgroundColor: alpha(palette.semantic.colorForegroundHigh, 0.15),
+                color: palette.semantic.colorForegroundDeEmp,
+            },
+            '&.MuiAutocomplete-option.MuiAutocomplete-option[aria-selected="true"]:focus': { outline: `${token.Stroke.StrokeM} solid ${palette.semantic.colorPrimaryFocused}` },
         },
         groupUl: {
             background: palette.semantic.colorBackgroundRaised,
