@@ -38,6 +38,7 @@ export const MuiMenuItem = (palette: Palette): ComponentsOverrides['MuiMenuItem'
                 backgroundColor: alpha(palette.semantic.colorForegroundHigh, 0.15),
                 color: palette.semantic.colorForegroundDeEmp,
             },
+            '&.Mui-selected:focus': { outline: `${token.Stroke.StrokeM} solid ${palette.semantic.colorPrimaryFocused}` },
         },
     };
 };
