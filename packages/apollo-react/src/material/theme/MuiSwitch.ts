@@ -10,7 +10,10 @@ export const MuiSwitch = (palette: Palette): ComponentsOverrides['MuiSwitch'] =>
             },
             '& .MuiSwitch-thumb': { backgroundColor: palette.semantic.colorToggleThumbOff },
 
-            '& .MuiSwitch-switchBase.Mui-disabled + .MuiSwitch-track': { backgroundColor: palette.semantic.colorToggleTrackOffDisabled },
+            '& .MuiSwitch-switchBase.Mui-disabled + .MuiSwitch-track': {
+                backgroundColor: palette.semantic.colorToggleTrackOffDisabled,
+                opacity: 1,
+            },
             '& .MuiSwitch-switchBase.Mui-disabled .MuiSwitch-thumb': { backgroundColor: palette.semantic.colorToggleThumbOffDisabled },
 
             '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { backgroundColor: palette.semantic.colorToggleTrackOn },
