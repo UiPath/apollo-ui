@@ -8,6 +8,8 @@ import { Palette } from '@uipath/apollo-core/lib/jss/palette';
 import { MuiAlert } from './MuiAlert';
 import { MuiAutocomplete } from './MuiAutocomplete';
 import { MuiButton } from './MuiButton';
+import { MuiButtonBase } from './MuiButtonBase';
+import { MuiCheckbox } from './MuiCheckbox';
 import { MuiChip } from './MuiChip';
 import { MuiCircularProgress } from './MuiCircularProgress';
 import { MuiDialog } from './MuiDialog';
@@ -30,6 +32,7 @@ import { MuiListItemIcon } from './MuiListItemIcon';
 import { MuiListItemText } from './MuiListItemText';
 import { MuiMenuItem } from './MuiMenuItem';
 import { MuiOutlinedInput } from './MuiOutlinedInput';
+import { MuiRadio } from './MuiRadio';
 import { MuiSelect } from './MuiSelect';
 import { MuiSlider } from './MuiSlider';
 import { MuiSnackbar } from './MuiSnackbar';
@@ -43,7 +46,9 @@ import { MuiTypography } from './MuiTypography';
 const muiComponents = {
     MuiAlert,
     MuiButton,
+    MuiButtonBase,
     MuiAutocomplete,
+    MuiCheckbox,
     MuiChip,
     MuiCircularProgress,
     MuiDialog,
@@ -66,6 +71,7 @@ const muiComponents = {
     MuiListItemText,
     MuiMenuItem,
     MuiOutlinedInput,
+    MuiRadio,
     MuiSelect,
     MuiSlider,
     MuiSnackbar,
