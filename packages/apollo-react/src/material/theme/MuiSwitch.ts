@@ -4,6 +4,22 @@ import { Palette } from '@uipath/apollo-core/lib/jss/palette';
 export const MuiSwitch = (palette: Palette): ComponentsOverrides['MuiSwitch'] => {
     return {
         root: {
+            '& .MuiSwitch-switchBase': {
+                '&.Mui-focusVisible': {
+                    outline: `${palette.semantic.colorToggleThumbOff} solid 2px`,
+                    backgroundColor: palette.semantic.colorToggleOffFocus,
+                },
+                '&:hover': { backgroundColor: palette.semantic.colorToggleOffHover },
+                '&:active': { backgroundColor: palette.semantic.colorToggleOffPressed },
+                '&.Mui-checked': {
+                    '&:hover': { backgroundColor: palette.semantic.colorToggleOnHover },
+                    '&:active': { backgroundColor: palette.semantic.colorToggleOnPressed },
+                    '&.Mui-focusVisible': {
+                        outline: `${palette.semantic.colorToggleThumbOn} solid 2px`,
+                        backgroundColor: palette.semantic.colorToggleOnFocus,
+                    },
+                },
+            },
             '& .MuiSwitch-track': {
                 backgroundColor: palette.semantic.colorToggleTrackOff,
                 opacity: 1,
