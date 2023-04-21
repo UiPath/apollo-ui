@@ -9,6 +9,7 @@ export const MuiButtonBase = (palette: Palette): ComponentsOverrides['MuiButtonB
                 backgroundColor: palette.semantic.colorIconButtonFocus,
             },
             '&:active': { backgroundColor: palette.semantic.colorIconButtonPressed },
+            '&:hover': { backgroundColor: palette.semantic.colorIconButtonHover },
         },
     };
 };
