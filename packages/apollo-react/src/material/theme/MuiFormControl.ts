@@ -16,7 +16,7 @@ export const MuiFormControl = (palette: Palette): ComponentsOverrides['MuiFormCo
                 transform: 'none',
             },
             '& textarea': {
-                borderColor: palette.semantic.colorBorder,
+                borderColor: palette.semantic.colorForegroundDeEmp,
                 borderRadius: '3px',
                 padding: `${token.Padding.PadM} ${token.Padding.PadL}`,
                 fontSize: token.FontFamily.FontMSize,
@@ -25,6 +25,7 @@ export const MuiFormControl = (palette: Palette): ComponentsOverrides['MuiFormCo
                 color: palette.semantic.colorForeground,
                 backgroundColor: palette.semantic.colorBackground,
             },
+            '& textarea:hover': { borderColor: palette.semantic.colorForeground },
             '& textarea:focus': { outline: 'none' },
             '& textarea:placeholder': placeholderOverride,
             '& textarea::-webkit-input-placeholder': placeholderOverride,
