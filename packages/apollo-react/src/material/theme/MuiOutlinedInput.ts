@@ -17,10 +17,10 @@ export const MuiOutlinedInput = (palette: Palette): ComponentsOverrides['MuiOutl
             },
         },
         root: {
-            '&:hover:not(.Mui-focused)': { '& .MuiOutlinedInput-notchedOutline': { borderColor: palette.semantic.colorForegroundDeEmp } },
+            '&:hover:not(.Mui-focused)': { '& .MuiOutlinedInput-notchedOutline': { borderColor: palette.semantic.colorForeground } },
             '& .MuiOutlinedInput-notchedOutline': {
                 top: 0,
-                borderColor: palette.semantic.colorBorder,
+                borderColor: palette.semantic.colorForegroundDeEmp,
                 '& legend': { '& span': { display: 'none' } },
             },
             '&.Mui-disabled .MuiOutlinedInput-notchedOutline': { borderColor: palette.semantic.colorBorderDisabled },
