@@ -5,7 +5,7 @@ export const MuiButtonBase = (palette: Palette): ComponentsOverrides['MuiButtonB
     return {
         root: {
             '&:focus-visible': {
-                outline: 'revert',
+                outline: `solid 2px ${palette.semantic.colorForegroundEmp}`,
                 backgroundColor: palette.semantic.colorIconButtonFocus,
             },
             '&:active': { backgroundColor: palette.semantic.colorIconButtonPressed },
