@@ -8,9 +8,12 @@ export const MuiChip = (palette: Palette): ComponentsOverrides['MuiChip'] => {
         root: {
             paddingLeft: token.Padding.PadL,
             paddingRight: token.Padding.PadL,
+            paddingTop: token.Padding.PadXs,
+            paddingBottom: token.Padding.PadXs,
             minWidth: '32px',
             fontSize: token.FontFamily.FontMSize,
             lineHeight: token.FontFamily.FontMLineHeight,
+            fontWeight: token.FontFamily.FontWeightSemibold,
             color: palette.semantic.colorForeground,
             backgroundColor: palette.semantic.colorBackgroundGray,
             '&:hover': { backgroundColor: palette.semantic.colorBackgroundGrayEmp },
@@ -29,15 +32,8 @@ export const MuiChip = (palette: Palette): ComponentsOverrides['MuiChip'] => {
                 lineHeight: token.FontFamily.FontXsLineHeight,
                 fontStyle: 'normal',
                 fontWeight: token.FontFamily.FontWeightSemibold,
-                borderWidth: token.Border.BorderThickS,
-                borderColor: palette.semantic.colorWarningIcon,
                 color: palette.semantic.colorWarningText,
                 background: palette.semantic.colorWarningBackground,
-                '&:hover': {
-                    borderColor: palette.semantic.colorWarningIcon,
-                    color: palette.semantic.colorWarningText,
-                    background: palette.semantic.colorWarningBackground,
-                },
             },
 
             '&.mini': {
@@ -48,15 +44,8 @@ export const MuiChip = (palette: Palette): ComponentsOverrides['MuiChip'] => {
                 lineHeight: token.FontFamily.FontXsLineHeight,
                 fontStyle: 'normal',
                 fontWeight: token.FontFamily.FontWeightSemibold,
-                borderWidth: token.Border.BorderThickS,
-                borderColor: palette.semantic.colorForeground,
                 color: palette.semantic.colorForeground,
-                background: palette.semantic.colorBackgroundGray,
-                '&:hover': {
-                    borderColor: palette.semantic.colorForeground,
-                    color: palette.semantic.colorForeground,
-                    background: palette.semantic.colorBackgroundGray,
-                },
+                background: palette.semantic.colorBackgroundSecondary,
             },
 
             '&.info-mini': {
@@ -67,15 +56,8 @@ export const MuiChip = (palette: Palette): ComponentsOverrides['MuiChip'] => {
                 lineHeight: token.FontFamily.FontXsLineHeight,
                 fontStyle: 'normal',
                 fontWeight: token.FontFamily.FontWeightSemibold,
-                borderWidth: token.Border.BorderThickS,
-                borderColor: palette.semantic.colorInfoForeground,
                 color: palette.semantic.colorInfoForeground,
                 background: palette.semantic.colorInfoBackground,
-                '&:hover': {
-                    borderColor: palette.semantic.colorInfoForeground,
-                    color: palette.semantic.colorInfoForeground,
-                    background: palette.semantic.colorInfoBackground,
-                },
             },
 
             '&.success-mini': {
@@ -86,15 +68,8 @@ export const MuiChip = (palette: Palette): ComponentsOverrides['MuiChip'] => {
                 lineHeight: token.FontFamily.FontXsLineHeight,
                 fontStyle: 'normal',
                 fontWeight: token.FontFamily.FontWeightSemibold,
-                borderWidth: token.Border.BorderThickS,
-                borderColor: palette.semantic.colorSuccessText,
                 color: palette.semantic.colorSuccessText,
                 background: palette.semantic.colorSuccessBackground,
-                '&:hover': {
-                    borderColor: palette.semantic.colorSuccessText,
-                    color: palette.semantic.colorSuccessText,
-                    background: palette.semantic.colorSuccessBackground,
-                },
             },
 
             '&.error-mini': {
@@ -105,15 +80,8 @@ export const MuiChip = (palette: Palette): ComponentsOverrides['MuiChip'] => {
                 lineHeight: token.FontFamily.FontXsLineHeight,
                 fontStyle: 'normal',
                 fontWeight: token.FontFamily.FontWeightSemibold,
-                borderWidth: token.Border.BorderThickS,
-                borderColor: palette.semantic.colorErrorText,
                 color: palette.semantic.colorErrorText,
                 background: palette.semantic.colorErrorBackground,
-                '&:hover': {
-                    borderColor: palette.semantic.colorErrorText,
-                    color: palette.semantic.colorErrorText,
-                    background: palette.semantic.colorErrorBackground,
-                },
             },
 
             '& .MuiChip-icon, .MuiChip-deleteIcon': {
@@ -123,48 +91,32 @@ export const MuiChip = (palette: Palette): ComponentsOverrides['MuiChip'] => {
             },
             '& .MuiChip-deleteIcon:hover': { color: palette.semantic.colorForeground },
             '&.warning': {
-                paddingLeft: token.Padding.PadL,
-                paddingRight: token.Padding.PadL,
                 color: palette.semantic.colorWarningText,
                 background: palette.semantic.colorWarningBackground,
-                fontSize: token.FontFamily.FontSSize,
-                lineHeight: token.FontFamily.FontSLineHeight,
                 '&:hover': {
                     color: palette.semantic.colorWarningText,
                     background: palette.semantic.colorWarningBackground,
                 },
             },
             '&.success': {
-                paddingLeft: token.Padding.PadL,
-                paddingRight: token.Padding.PadL,
                 color: palette.semantic.colorSuccessText,
                 background: palette.semantic.colorSuccessBackground,
-                fontSize: token.FontFamily.FontSSize,
-                lineHeight: token.FontFamily.FontSLineHeight,
                 '&:hover': {
                     color: palette.semantic.colorSuccessText,
                     background: palette.semantic.colorSuccessBackground,
                 },
             },
             '&.info': {
-                paddingLeft: token.Padding.PadL,
-                paddingRight: token.Padding.PadL,
                 color: palette.semantic.colorInfoForeground,
                 background: palette.semantic.colorInfoBackground,
-                fontSize: token.FontFamily.FontSSize,
-                lineHeight: token.FontFamily.FontSLineHeight,
                 '&:hover': {
                     color: palette.semantic.colorInfoForeground,
                     background: palette.semantic.colorInfoBackground,
                 },
             },
             '&.error': {
-                paddingLeft: token.Padding.PadL,
-                paddingRight: token.Padding.PadL,
                 color: palette.semantic.colorErrorText,
                 background: palette.semantic.colorErrorBackground,
-                fontSize: token.FontFamily.FontSSize,
-                lineHeight: token.FontFamily.FontSLineHeight,
                 '&:hover': {
                     color: palette.semantic.colorErrorText,
                     background: palette.semantic.colorErrorBackground,
