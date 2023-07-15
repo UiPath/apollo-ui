@@ -1,6 +1,5 @@
-import { ComponentsOverrides } from '@mui/material/styles/overrides';
-import { Palette } from '@uipath/apollo-core/lib/jss/palette';
+import type { ComponentsOverrides } from '@mui/material/styles/overrides';
+import type { Palette } from '@uipath/apollo-core/lib/jss/palette';
 
-export const MuiLinearProgress = (palette: Palette): ComponentsOverrides['MuiLinearProgress'] => {
-    return { root: { color: palette.semantic.colorPrimary } };
-};
+// eslint-disable-next-line max-len
+export const MuiLinearProgress = (palette: Palette): ComponentsOverrides['MuiLinearProgress'] => ({ root: { color: palette.semantic.colorPrimary } });

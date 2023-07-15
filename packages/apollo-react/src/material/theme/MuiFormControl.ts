@@ -1,6 +1,6 @@
-import { ComponentsOverrides } from '@mui/material/styles/overrides';
+import type { ComponentsOverrides } from '@mui/material/styles/overrides';
 import token from '@uipath/apollo-core/lib';
-import { Palette } from '@uipath/apollo-core/lib/jss/palette';
+import type { Palette } from '@uipath/apollo-core/lib/jss/palette';
 
 export const MuiFormControl = (palette: Palette): ComponentsOverrides['MuiFormControl'] => {
     const placeholderOverride = {

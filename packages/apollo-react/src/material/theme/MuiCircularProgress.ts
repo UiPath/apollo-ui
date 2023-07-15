@@ -1,6 +1,5 @@
-import { ComponentsOverrides } from '@mui/material/styles/overrides';
-import { Palette } from '@uipath/apollo-core/lib/jss/palette';
+import type { ComponentsOverrides } from '@mui/material/styles/overrides';
+import type { Palette } from '@uipath/apollo-core/lib/jss/palette';
 
-export const MuiCircularProgress = (palette: Palette): ComponentsOverrides['MuiCircularProgress'] => {
-    return { root: { svg: { stroke: palette.semantic.colorPrimary } } };
-};
+// eslint-disable-next-line max-len
+export const MuiCircularProgress = (palette: Palette): ComponentsOverrides['MuiCircularProgress'] => ({ root: { svg: { stroke: palette.semantic.colorPrimary } } });
