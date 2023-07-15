@@ -1,11 +1,9 @@
-import { ComponentsOverrides } from '@mui/material/styles/overrides';
-import { Palette } from '@uipath/apollo-core/lib/jss/palette';
+import type { ComponentsOverrides } from '@mui/material/styles/overrides';
+import type { Palette } from '@uipath/apollo-core/lib/jss/palette';
 
-export const MuiFormLabel = (palette: Palette): ComponentsOverrides['MuiFormLabel'] => {
-    return {
-        root: {
-            color: palette.semantic.colorForeground,
-            '&.Mui-disabled': { color: palette.semantic.colorForegroundDisable },
-        },
-    };
-};
+export const MuiFormLabel = (palette: Palette): ComponentsOverrides['MuiFormLabel'] => ({
+    root: {
+        color: palette.semantic.colorForeground,
+        '&.Mui-disabled': { color: palette.semantic.colorForegroundDisable },
+    },
+});

@@ -1,9 +1,9 @@
-import { Components } from '@mui/material';
+import type { Components } from '@mui/material';
 import {
     darkPalette,
     lightPalette,
 } from '@uipath/apollo-core';
-import { Palette } from '@uipath/apollo-core/lib/jss/palette';
+import type { Palette } from '@uipath/apollo-core/lib/jss/palette';
 
 import { MuiAlert } from './MuiAlert';
 import { MuiAutocomplete } from './MuiAutocomplete';
