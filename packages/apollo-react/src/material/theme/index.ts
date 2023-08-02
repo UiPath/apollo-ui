@@ -3,7 +3,10 @@ import {
     darkPalette,
     lightPalette,
 } from '@uipath/apollo-core';
-import type { Palette } from '@uipath/apollo-core/lib/jss/palette';
+import {
+    lightHighContrastPalette,
+    type Palette,
+} from '@uipath/apollo-core/lib/jss/palette';
 
 import { MuiAlert } from './MuiAlert';
 import { MuiAutocomplete } from './MuiAutocomplete';
@@ -89,4 +92,5 @@ const getOverrides = (palette: Palette) => Object.entries(muiComponents).reduce(
 }), {});
 
 export const lightOverrides: Components = getOverrides(lightPalette);
+export const lightHighContrastOverrides: Components = getOverrides(lightHighContrastPalette);
 export const darkOverrides: Components = getOverrides(darkPalette);
