@@ -34,7 +34,7 @@ export const MuiListItem = (palette: Palette): ComponentsOverrides['MuiListItem'
         '& .notification-bubble': {
             width: '8px',
             height: '8px',
-            background: palette.semantic.colorForegroundHigh,
+            background: palette.semantic.colorNotificationIndicator,
             borderRadius: '100%',
             marginLeft: '24px',
             marginBottom: '16px',
@@ -83,7 +83,7 @@ export const MuiListItem = (palette: Palette): ComponentsOverrides['MuiListItem'
     },
     button: {
         '&:hover': {
-            backgroundColor: palette.semantic.colorHover,
+            backgroundColor: palette.semantic.colorBackgroundHover,
             color: palette.semantic.colorForegroundDeEmp,
         },
         '&:focus': {
@@ -91,13 +91,13 @@ export const MuiListItem = (palette: Palette): ComponentsOverrides['MuiListItem'
             color: palette.semantic.colorForegroundDeEmp,
         },
         '&.Mui-selected': {
-            boxShadow: `inset 4px 0px 0px ${palette.semantic.colorForegroundHigh}`,
-            backgroundColor: alpha(palette.semantic.colorForegroundHigh, 0.1),
+            boxShadow: `inset 4px 0px 0px ${palette.semantic.colorSelectionIndicator}`,
+            backgroundColor: palette.semantic.colorBackgroundSelected,
             color: palette.semantic.colorForegroundDeEmp,
         },
         '&.Mui-selected:hover': {
-            boxShadow: `inset 4px 0px 0px ${palette.semantic.colorForegroundHigh}`,
-            backgroundColor: alpha(palette.semantic.colorForegroundHigh, 0.15),
+            boxShadow: `inset 4px 0px 0px ${palette.semantic.colorSelectionIndicator}`,
+            backgroundColor: palette.semantic.colorBackgroundSelected,
             color: palette.semantic.colorForegroundDeEmp,
         },
         '&.Mui-selected:focus': { outline: `${token.Stroke.StrokeM} solid ${palette.semantic.colorPrimaryFocused}` },

@@ -1,4 +1,3 @@
-import { alpha } from '@mui/material';
 import type { ComponentsOverrides } from '@mui/material/styles/overrides';
 import token from '@uipath/apollo-core/lib';
 import type { Palette } from '@uipath/apollo-core/lib/jss/palette';
@@ -20,21 +19,25 @@ export const MuiMenuItem = (palette: Palette): ComponentsOverrides['MuiMenuItem'
             fontWeight: token.FontFamily.FontWeightSemibold,
         },
         '&:hover': {
-            backgroundColor: alpha(palette.semantic.colorPrimary, 0.1),
+            backgroundColor: palette.semantic.colorBackgroundHover,
             color: palette.semantic.colorForegroundDeEmp,
         },
         '&:focus': {
-            backgroundColor: alpha(palette.semantic.colorPrimary, 0.1),
+            backgroundColor: palette.semantic.colorBackgroundHover,
+            color: palette.semantic.colorForegroundDeEmp,
+        },
+        '&:active': {
+            backgroundColor: palette.semantic.colorBackgroundPressed,
             color: palette.semantic.colorForegroundDeEmp,
         },
         '&.Mui-selected.Mui-selected.Mui-selected': {
-            boxShadow: `inset 4px 0px 0px ${palette.semantic.colorForegroundHigh}`,
-            backgroundColor: alpha(palette.semantic.colorForegroundHigh, 0.1),
+            boxShadow: `inset 4px 0px 0px ${palette.semantic.colorSelectionIndicator}`,
+            backgroundColor: palette.semantic.colorBackgroundSelected,
             color: palette.semantic.colorForegroundDeEmp,
         },
         '&.Mui-selected.Mui-selected.Mui-selected:hover': {
-            boxShadow: `inset 4px 0px 0px ${palette.semantic.colorForegroundHigh}`,
-            backgroundColor: alpha(palette.semantic.colorForegroundHigh, 0.15),
+            boxShadow: `inset 4px 0px 0px ${palette.semantic.colorSelectionIndicator}`,
+            backgroundColor: palette.semantic.colorBackgroundSelected,
             color: palette.semantic.colorForegroundDeEmp,
         },
         '&.Mui-selected:focus': { outline: `${token.Stroke.StrokeM} solid ${palette.semantic.colorPrimaryFocused}` },
