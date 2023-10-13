@@ -12,7 +12,7 @@ export const MuiChip = (palette: Palette): ComponentsOverrides['MuiChip'] => ({
         minWidth: '32px',
         fontSize: token.FontFamily.FontMSize,
         lineHeight: token.FontFamily.FontMLineHeight,
-        fontWeight: token.FontFamily.FontWeightSemibold,
+        fontWeight: token.FontFamily.FontWeightDefault,
         color: palette.semantic.colorForeground,
         backgroundColor: palette.semantic.colorBackgroundGray,
         '&:hover': { backgroundColor: palette.semantic.colorBackgroundGrayEmp },
@@ -92,6 +92,7 @@ export const MuiChip = (palette: Palette): ComponentsOverrides['MuiChip'] => ({
         '&.warning': {
             color: palette.semantic.colorWarningText,
             background: palette.semantic.colorWarningBackground,
+            fontWeight: token.FontFamily.FontWeightSemibold,
             '&:hover': {
                 color: palette.semantic.colorWarningText,
                 background: palette.semantic.colorWarningBackground,
@@ -100,6 +101,7 @@ export const MuiChip = (palette: Palette): ComponentsOverrides['MuiChip'] => ({
         '&.success': {
             color: palette.semantic.colorSuccessText,
             background: palette.semantic.colorSuccessBackground,
+            fontWeight: token.FontFamily.FontWeightSemibold,
             '&:hover': {
                 color: palette.semantic.colorSuccessText,
                 background: palette.semantic.colorSuccessBackground,
@@ -108,6 +110,7 @@ export const MuiChip = (palette: Palette): ComponentsOverrides['MuiChip'] => ({
         '&.info': {
             color: palette.semantic.colorInfoForeground,
             background: palette.semantic.colorInfoBackground,
+            fontWeight: token.FontFamily.FontWeightSemibold,
             '&:hover': {
                 color: palette.semantic.colorInfoForeground,
                 background: palette.semantic.colorInfoBackground,
@@ -116,6 +119,7 @@ export const MuiChip = (palette: Palette): ComponentsOverrides['MuiChip'] => ({
         '&.error': {
             color: palette.semantic.colorErrorText,
             background: palette.semantic.colorErrorBackground,
+            fontWeight: token.FontFamily.FontWeightSemibold,
             '&:hover': {
                 color: palette.semantic.colorErrorText,
                 background: palette.semantic.colorErrorBackground,
