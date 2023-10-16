@@ -31,7 +31,7 @@ export const MuiTab = (palette: Palette): ComponentsOverrides['MuiTab'] => ({
             color: palette.semantic.colorForegroundDeEmp,
             '&:hover:not(.Mui-selected)': { color: palette.semantic.colorForeground },
             '&.Mui-selected': {
-                backgroundColor: palette.semantic.colorBackgroundSecondary,
+                backgroundColor: palette.semantic.colorHover,
                 '&:focus': { backgroundColor: palette.semantic.colorSecondaryFocused },
             },
         },
