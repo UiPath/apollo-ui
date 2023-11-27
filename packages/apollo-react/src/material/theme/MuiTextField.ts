@@ -10,14 +10,7 @@ export const MuiTextField = (palette: Palette): ComponentsOverrides['MuiTextFiel
             transform: 'none',
             position: 'relative',
         },
-        '& .MuiInputBase-root:has(input[readonly])': {
-            '& .MuiInputBase-input': {
-                paddingLeft: 0,
-                paddingRight: 0,
-                cursor: 'default',
-            },
-            '& fieldset': { border: 0 },
-        },
+        '& .MuiInputBase-root:has(input[readonly])': { '& .MuiInputBase-input': { cursor: 'default' } },
         '&.ap-omit-start-adornment-spacing': {
             '& .MuiInputAdornment-positionStart': { marginRight: 'unset' },
             '& .MuiInputBase-inputAdornedStart': { paddingLeft: '2px' },
