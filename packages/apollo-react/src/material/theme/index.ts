@@ -15,6 +15,7 @@ import { MuiButtonBase } from './MuiButtonBase';
 import { MuiCheckbox } from './MuiCheckbox';
 import { MuiChip } from './MuiChip';
 import { MuiCircularProgress } from './MuiCircularProgress';
+import { MuiDatepicker } from './MuiDatepicker';
 import { MuiDialog } from './MuiDialog';
 import { MuiDivider } from './MuiDivider';
 import { MuiFab } from './MuiFab';
@@ -84,6 +85,7 @@ const muiComponents = {
     MuiTextField,
     MuiTooltip,
     MuiTypography,
+    MuiPopper: MuiDatepicker,
 };
 
 const getOverrides = (palette: Palette) => Object.entries(muiComponents).reduce((overrides, [ name, muiComponent ]) => ({
