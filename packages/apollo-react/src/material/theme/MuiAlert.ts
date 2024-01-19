@@ -6,8 +6,8 @@ export const MuiAlert = (palette: Palette) => ({
         color: palette.semantic.colorForegroundInverse,
         backgroundColor: palette.semantic.colorBackgroundInverse,
         padding: '8px 8px 8px 20px',
-        alignItems: 'center',
         minWidth: '320px',
+        alignItems: 'center',
         boxShadow: token.Shadow.ShadowDp8,
         '&.MuiAlert-standardWarning, &.MuiAlert-standardError, &.MuiAlert-standardInfo, &.MuiAlert-standardSuccess': {
             color: palette.semantic.colorForegroundInverse,
