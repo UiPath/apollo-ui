@@ -1,7 +1,7 @@
 import { alpha } from '@mui/material';
 import type { ComponentsOverrides } from '@mui/material/styles/overrides';
+import { FontFamily } from '@uipath/apollo-core';
 import token from '@uipath/apollo-core/lib';
-import { FontNormal } from '@uipath/apollo-core/lib/_generated/FontFamily';
 import type { Palette } from '@uipath/apollo-core/lib/jss/palette';
 
 export const MuiDialog = (palette: Palette): ComponentsOverrides['MuiDialog'] => ({
@@ -34,7 +34,7 @@ export const MuiDialog = (palette: Palette): ComponentsOverrides['MuiDialog'] =>
 
             '& .MuiDialogTitle-root': {
                 '& .MuiTypography-h6': {
-                    fontFamily: FontNormal,
+                    fontFamily: FontFamily.FontNormal,
                     fontStyle: 'normal',
                     fontWeight: token.FontFamily.FontWeightSemibold,
                     fontSize: token.FontFamily.FontHeader4Size,
@@ -46,7 +46,7 @@ export const MuiDialog = (palette: Palette): ComponentsOverrides['MuiDialog'] =>
 
             '& .MuiDialogContent-root': {
                 '& .MuiDialogContentText-root': {
-                    fontFamily: FontNormal,
+                    fontFamily: FontFamily.FontNormal,
                     fontStyle: 'normal',
                     fontWeight: 'normal',
                     fontSize: token.FontFamily.FontMSize,
@@ -67,7 +67,7 @@ export const MuiDialog = (palette: Palette): ComponentsOverrides['MuiDialog'] =>
         },
         '& .MuiDialogTitle-root': {
             '& .MuiTypography-h6': {
-                fontFamily: FontNormal,
+                fontFamily: FontFamily.FontNormal,
                 fontStyle: 'normal',
                 fontWeight: token.FontFamily.FontWeightSemibold,
                 fontSize: token.FontFamily.FontHeader4Size,
@@ -78,7 +78,7 @@ export const MuiDialog = (palette: Palette): ComponentsOverrides['MuiDialog'] =>
         },
         '& .MuiDialogContent-root': {
             '& .MuiDialogContentText-root': {
-                fontFamily: FontNormal,
+                fontFamily: FontFamily.FontNormal,
                 fontStyle: 'normal',
                 fontWeight: 'normal',
                 fontSize: token.FontFamily.FontMSize,
