@@ -89,6 +89,13 @@ export const MuiListItem = (palette: Palette): ComponentsOverrides['MuiListItem'
         '&:focus': {
             backgroundColor: alpha(palette.semantic.colorPrimary, 0.1),
             color: palette.semantic.colorForegroundDeEmp,
+            outline: `none`,
+        },
+        '&:focus-visible:after': {
+            content: `''`,
+            border: `${token.Stroke.StrokeM} solid ${palette.semantic.colorPrimaryFocused}`,
+            position: 'absolute',
+            inset: '0px',
         },
         '&.Mui-selected': {
             boxShadow: `inset 4px 0px 0px ${palette.semantic.colorSelectionIndicator}`,
@@ -100,7 +107,6 @@ export const MuiListItem = (palette: Palette): ComponentsOverrides['MuiListItem'
             backgroundColor: palette.semantic.colorBackgroundSelected,
             color: palette.semantic.colorForegroundDeEmp,
         },
-        '&.Mui-selected:focus': { outline: `${token.Stroke.StrokeM} solid ${palette.semantic.colorPrimaryFocused}` },
         '&.MuiListItem-divider': { borderColor: palette.semantic.colorBorderDeEmp },
     },
 });

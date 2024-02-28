@@ -3,7 +3,17 @@ import token from '@uipath/apollo-core/lib';
 import type { Palette } from '@uipath/apollo-core/lib/jss/palette';
 
 export const MuiSelect = (palette: Palette): ComponentsOverrides['MuiSelect'] => ({
-    icon: { color: palette.semantic.colorForeground },
+    root: {
+        // Remove the focus border if the dropdown menu is open
+        '&.ap-dropdown-open.Mui-focused .MuiOutlinedInput-notchedOutline': {
+            borderColor: palette.semantic.colorForegroundDeEmp,
+            borderWidth: token.Stroke.StrokeS,
+        },
+    },
+    icon: {
+        color: palette.semantic.colorIconDefault,
+        right: token.Spacing.SpacingXs,
+    },
     select: {
         fontStyle: 'normal',
         fontWeight: 'normal',

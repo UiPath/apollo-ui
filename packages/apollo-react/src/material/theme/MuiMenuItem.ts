@@ -25,6 +25,14 @@ export const MuiMenuItem = (palette: Palette): ComponentsOverrides['MuiMenuItem'
         '&:focus': {
             backgroundColor: palette.semantic.colorBackgroundHover,
             color: palette.semantic.colorForegroundDeEmp,
+            outline: `none`,
+        },
+        '&:focus-visible:after': {
+            content: `''`,
+            border: `${token.Stroke.StrokeM} solid ${palette.semantic.colorFocusIndicator}`,
+            borderRadius: 'inherit',
+            position: 'absolute',
+            inset: '0px',
         },
         '&:active': {
             backgroundColor: palette.semantic.colorBackgroundPressed,
@@ -40,6 +48,5 @@ export const MuiMenuItem = (palette: Palette): ComponentsOverrides['MuiMenuItem'
             backgroundColor: palette.semantic.colorBackgroundSelected,
             color: palette.semantic.colorForegroundDeEmp,
         },
-        '&.Mui-selected:focus': { outline: `${token.Stroke.StrokeM} solid ${palette.semantic.colorPrimaryFocused}` },
     },
 });
