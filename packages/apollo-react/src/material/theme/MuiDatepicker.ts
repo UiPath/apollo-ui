@@ -45,14 +45,22 @@ export const MuiDatepicker = (palette: Palette): ComponentsOverrides['MuiPopper'
                     '&:has(div[aria-rowindex="6"])': { '--date-picker-day-rows-count': '6' },
                 },
 
+                // Setting the container height explicitly when the year picker is visible
+                // to avoid flickering
+                '& .MuiPickersFadeTransitionGroup-root:has(.MuiYearCalendar-root)': { height: '280px' },
+
                 // Header container - Month Name + Arrows
                 '& .MuiPickersCalendarHeader-root': { paddingRight: '14px' },
 
                 // Month Name Dropdown Icon
-                '& .MuiPickersCalendarHeader-switchViewButton': {
-                    width: token.Spacing.SpacingL,
-                    height: token.Spacing.SpacingL,
+                '& .MuiPickersCalendarHeader-switchViewButton, & .MuiPickersArrowSwitcher-button': {
+                    width: token.Spacing.SpacingXl,
+                    height: token.Spacing.SpacingXl,
                     padding: 0,
+
+                    '&:focus-visible': { outlineColor: `${palette.semantic.colorFocusIndicator} !important` },
+
+                    '&:hover': { backgroundColor: palette.semantic.colorBackgroundHover },
                 },
 
                 // Day Names Header
@@ -68,6 +76,7 @@ export const MuiDatepicker = (palette: Palette): ComponentsOverrides['MuiPopper'
                     width: 'var(--date-picker-day-size)',
                     height: 'var(--date-picker-day-size)',
                     margin: 0,
+                    color: palette.semantic.colorForegroundDeEmp,
                 },
 
                 // Month - Week Rows Container
@@ -88,12 +97,22 @@ export const MuiDatepicker = (palette: Palette): ComponentsOverrides['MuiPopper'
                     width: 'var(--date-picker-day-size)',
                     height: 'var(--date-picker-day-size)',
                     fontWeight: token.FontFamily.FontWeightSemibold,
+                    backgroundColor: 'transparent',
                     color: palette.semantic.colorForeground,
                     fontSize: token.FontFamily.FontMSize,
                     margin: 0,
 
+                    '&:focus-visible': { outlineColor: `${palette.semantic.colorFocusIndicator} !important` },
+
+                    '&:hover': { backgroundColor: palette.semantic.colorBackgroundHover },
+
                     // Today
-                    '&.MuiPickersDay-today': { borderColor: palette.semantic.colorBorder },
+                    '&.MuiPickersDay-today': {
+                        borderColor: palette.semantic.colorBorder,
+                        backgroundColor: 'transparent',
+
+                        '&:hover': { backgroundColor: palette.semantic.colorBackgroundHover },
+                    },
 
                     // Disabled / Unselectable day
                     '&.Mui-disabled': { color: palette.semantic.colorForegroundDisable },
@@ -102,6 +121,34 @@ export const MuiDatepicker = (palette: Palette): ComponentsOverrides['MuiPopper'
                     '&.Mui-selected': {
                         backgroundColor: palette.semantic.colorPrimary,
                         color: palette.semantic.colorForegroundInverse,
+
+                        '&:hover': { backgroundColor: palette.semantic.colorPrimary },
+                    },
+                },
+
+                // Year Button Container
+                '& .MuiPickersYear-root': { height: '48px' },
+
+                // Year Button
+                '& .MuiPickersYear-yearButton': {
+                    width: '56px',
+                    height: '32px',
+                    borderRadius: token.Border.BorderRadiusS,
+                    backgroundColor: 'transparent',
+                    color: palette.semantic.colorForegroundDeEmp,
+                    fontSize: token.FontFamily.FontMSize,
+                    fontWeight: token.FontFamily.FontWeightSemibold,
+                    lineHeight: token.FontFamily.FontMLineHeight,
+
+                    '&:focus-visible': { outline: `2px ${palette.semantic.colorFocusIndicator} solid !important` },
+
+                    '&:hover': { backgroundColor: palette.semantic.colorBackgroundHover },
+
+                    '&.Mui-selected': {
+                        backgroundColor: palette.semantic.colorPrimary,
+                        color: palette.semantic.colorForegroundInverse,
+
+                        '&:hover': { backgroundColor: palette.semantic.colorPrimary },
                     },
                 },
             },
