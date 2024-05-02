@@ -9,6 +9,7 @@ export const MuiFab = (palette: Palette): ComponentsOverrides['MuiFab'] => ({
         lineHeight: token.FontFamily.FontMLineHeight,
         fontWeight: token.FontFamily.FontWeightSemibold,
         textTransform: 'none',
+        '&:focus-visible': { outlineOffset: '1px' },
         '& .MuiSvgIcon-root': {
             width: '14px',
             height: '14px',

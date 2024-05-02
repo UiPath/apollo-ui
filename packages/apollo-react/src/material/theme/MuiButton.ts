@@ -14,6 +14,8 @@ export const MuiButton = (palette: Palette): ComponentsOverrides['MuiButton'] =>
         lineHeight: token.FontFamily.FontMLineHeight,
         textTransform: 'none',
 
+        '&:focus-visible': { outlineOffset: '1px' },
+
         '&.warning': {
             border: `1px solid ${palette.semantic.colorWarn}`,
             backgroundColor: `${palette.semantic.colorWarn}`,
@@ -73,7 +75,10 @@ export const MuiButton = (palette: Palette): ComponentsOverrides['MuiButton'] =>
             backgroundColor: `${palette.semantic.colorBackgroundDisabled}`,
             color: `${palette.semantic.colorForegroundDisable}`,
         },
-        '&&:focus-visible': { backgroundColor: palette.semantic.colorSecondaryFocused },
+        '&&:focus-visible': {
+            backgroundColor: palette.semantic.colorSecondaryFocused,
+            outlineOffset: 0,
+        },
         '&&:active': { backgroundColor: palette.semantic.colorSecondaryPressed },
     },
     text: {
