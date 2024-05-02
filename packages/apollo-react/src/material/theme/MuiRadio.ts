@@ -5,6 +5,7 @@ export const MuiRadio = (palette: Palette): ComponentsOverrides['MuiRadio'] => (
     root: {
         '&.Mui-focusVisible': {
             outline: 'auto',
+            outlineColor: palette.semantic.colorFocusIndicator,
             backgroundColor: palette.semantic.colorToggleOffFocus,
         },
         '&:hover': { backgroundColor: palette.semantic.colorToggleOffHover },
