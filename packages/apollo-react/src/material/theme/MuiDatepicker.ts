@@ -98,7 +98,7 @@ export const MuiDatepicker = (palette: Palette): ComponentsOverrides['MuiPopper'
                     height: 'var(--date-picker-day-size)',
                     fontWeight: token.FontFamily.FontWeightSemibold,
                     backgroundColor: 'transparent',
-                    color: palette.semantic.colorForeground,
+                    color: palette.semantic.colorForegroundDeEmp,
                     fontSize: token.FontFamily.FontMSize,
                     margin: 0,
 
