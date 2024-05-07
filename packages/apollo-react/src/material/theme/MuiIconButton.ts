@@ -6,6 +6,12 @@ export const MuiIconButton = (palette: Palette): ComponentsOverrides['MuiIconBut
     root: {
         padding: token.Padding.PadL,
 
-        '&&:hover': { backgroundColor: palette.semantic.colorHover },
+        '&&:hover': { backgroundColor: palette.semantic.colorIconButtonHover },
+
+        '&.MuiIconButton-colorPrimary, &.MuiIconButton-colorSecondary': {
+            '&&:hover': { backgroundColor: palette.semantic.colorHover },
+            '&&:focus-visible': { backgroundColor: palette.semantic.colorHover },
+            '&&:active': { backgroundColor: palette.semantic.colorSecondaryPressed },
+        },
     },
 });
