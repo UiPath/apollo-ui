@@ -4,8 +4,9 @@ import type { Palette } from '@uipath/apollo-core/lib/jss/palette';
 
 export const MuiTab = (palette: Palette): ComponentsOverrides['MuiTab'] => ({
     root: {
+        '&:focus': { backgroundColor: 'transparent' },
+        '&:focus-visible': { backgroundColor: palette.semantic.colorSecondaryFocused },
         '&:hover': { backgroundColor: palette.semantic.colorHover },
-        '&:focus': { backgroundColor: palette.semantic.colorSecondaryFocused },
         '&.default': { minHeight: '40px' },
         '&.Mui-disabled': { color: palette.semantic.colorForegroundDisable },
         '&:not(.tiny):not(.secondary).Mui-selected': { paddingBottom: '13px' },
