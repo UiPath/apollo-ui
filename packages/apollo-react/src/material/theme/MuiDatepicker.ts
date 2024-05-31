@@ -108,7 +108,7 @@ export const MuiDatepicker = (palette: Palette): ComponentsOverrides['MuiPopper'
 
                     // Today
                     '&.MuiPickersDay-today': {
-                        borderColor: palette.semantic.colorBorder,
+                        borderColor: palette.semantic.colorForegroundDeEmp,
                         backgroundColor: 'transparent',
 
                         '&:hover': { backgroundColor: palette.semantic.colorBackgroundHover },
