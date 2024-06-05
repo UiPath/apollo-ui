@@ -2,6 +2,8 @@ import type { ComponentsOverrides } from '@mui/material/styles/overrides';
 import token from '@uipath/apollo-core/lib';
 import type { Palette } from '@uipath/apollo-core/lib/jss/palette';
 
+const dayFocusIndicatorSize = 3;
+
 export const MuiDatepicker = (palette: Palette): ComponentsOverrides['MuiPopper'] => ({
     root: {
         '&.MuiPickersPopper-root': {
@@ -25,6 +27,9 @@ export const MuiDatepicker = (palette: Palette): ComponentsOverrides['MuiPopper'
                 '& .MuiPickersSlideTransition-root': {
                     '--date-picker-day-rows-count': '4',
 
+                    // Move the container up to show the day item focus indicator without clipping
+                    marginTop: `-${dayFocusIndicatorSize}px`,
+
                     minHeight: 0,
                     overflow: 'hidden',
                     marginBottom: token.Spacing.SpacingBase,
@@ -34,10 +39,12 @@ export const MuiDatepicker = (palette: Palette): ComponentsOverrides['MuiPopper'
                     // Height change transition/animation
                     transition: '0.2s all',
 
-                    // Calculate the height based on the number of rows visible
+                    // Calculate the height based on the number of rows visible, their gaps,
+                    // and the focus indicator size
                     height: `calc(
                         (var(--date-picker-day-rows-count) * var(--date-picker-day-size)) +
-                        ((var(--date-picker-day-rows-count) - 1) * var(--date-picker-weeks-rows-gap))
+                        ((var(--date-picker-day-rows-count) - 1) * var(--date-picker-weeks-rows-gap)) +
+                        ${dayFocusIndicatorSize * 2}px
                     )`,
 
                     // Updating the number of rows to dynamically update the height
@@ -84,6 +91,8 @@ export const MuiDatepicker = (palette: Palette): ComponentsOverrides['MuiPopper'
                     display: 'flex',
                     flexDirection: 'column',
                     gap: 'var(--date-picker-weeks-rows-gap)',
+                    overflow: 'visible',
+                    marginTop: `${dayFocusIndicatorSize}px`,
                 },
 
                 // Week Row
@@ -102,7 +111,10 @@ export const MuiDatepicker = (palette: Palette): ComponentsOverrides['MuiPopper'
                     fontSize: token.FontFamily.FontMSize,
                     margin: 0,
 
-                    '&:focus-visible': { outlineColor: `${palette.semantic.colorFocusIndicator} !important` },
+                    '&:focus-visible': {
+                        outline: `2px ${palette.semantic.colorFocusIndicator} solid !important`,
+                        outlineOffset: '1px',
+                    },
 
                     '&:hover': { backgroundColor: palette.semantic.colorBackgroundHover },
 
