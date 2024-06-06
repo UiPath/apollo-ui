@@ -24,4 +24,5 @@ export const MuiSelect = (palette: Palette): ComponentsOverrides['MuiSelect'] =>
         lineHeight: token.FontFamily.FontMLineHeight,
         color: palette.semantic.colorForeground,
     },
+    standard: { paddingRight: `${token.Spacing.SpacingXl} !important` },
 });
