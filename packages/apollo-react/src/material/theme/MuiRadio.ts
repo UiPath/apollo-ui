@@ -15,5 +15,6 @@ export const MuiRadio = (palette: Palette): ComponentsOverrides['MuiRadio'] => (
             '&:active': { backgroundColor: palette.semantic.colorToggleOnPressed },
             '&.Mui-focusVisible': { backgroundColor: palette.semantic.colorToggleOnFocus },
         },
+        '&.Mui-disabled': { color: palette.semantic.colorBackgroundGray },
     },
 });

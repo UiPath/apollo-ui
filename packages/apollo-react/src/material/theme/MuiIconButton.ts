@@ -13,5 +13,7 @@ export const MuiIconButton = (palette: Palette): ComponentsOverrides['MuiIconBut
             '&&:focus-visible': { backgroundColor: palette.semantic.colorHover },
             '&&:active': { backgroundColor: palette.semantic.colorSecondaryPressed },
         },
+
+        '&.Mui-disabled': { color: palette.semantic.colorForegroundDisable },
     },
 });
