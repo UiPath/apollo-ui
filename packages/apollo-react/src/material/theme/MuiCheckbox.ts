@@ -9,6 +9,7 @@ export const MuiCheckbox = (palette: Palette): ComponentsOverrides['MuiCheckbox'
         },
         '&:hover': { backgroundColor: palette.semantic.colorToggleOffHover },
         '&:active': { backgroundColor: palette.semantic.colorToggleOffPressed },
+        '&.Mui-disabled': { color: palette.semantic.colorBackgroundGray },
         '&.Mui-checked': {
             '&:hover': { backgroundColor: palette.semantic.colorToggleOnHover },
             '&:active': { backgroundColor: palette.semantic.colorToggleOnPressed },

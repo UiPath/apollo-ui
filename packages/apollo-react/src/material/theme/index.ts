@@ -4,6 +4,7 @@ import {
     lightPalette,
 } from '@uipath/apollo-core';
 import {
+    darkHighContrastPalette,
     lightHighContrastPalette,
     type Palette,
 } from '@uipath/apollo-core/lib/jss/palette';
@@ -96,3 +97,4 @@ const getOverrides = (palette: Palette) => Object.entries(muiComponents).reduce(
 export const lightOverrides: Components = getOverrides(lightPalette);
 export const lightHighContrastOverrides: Components = getOverrides(lightHighContrastPalette);
 export const darkOverrides: Components = getOverrides(darkPalette);
+export const darkHighContrastOverrides: Components = getOverrides(darkHighContrastPalette);

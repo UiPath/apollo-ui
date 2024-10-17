@@ -13,6 +13,7 @@ export const MuiSelect = (palette: Palette): ComponentsOverrides['MuiSelect'] =>
     icon: {
         color: palette.semantic.colorIconDefault,
         right: token.Spacing.SpacingXs,
+        '&.Mui-disabled': { color: `${palette.semantic.colorForegroundDisable} !important` },
     },
     select: {
         fontStyle: 'normal',
