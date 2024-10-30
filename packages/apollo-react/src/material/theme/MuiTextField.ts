@@ -10,13 +10,10 @@ export const MuiTextField = (palette: Palette): ComponentsOverrides['MuiTextFiel
             transform: 'none',
             position: 'relative',
         },
+        '& .MuiInputBase-root': { '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: palette.semantic.colorFocusIndicator } },
         '& .MuiInputBase-root:has(input[readonly])': {
             '& .MuiInputBase-input': { cursor: 'default' },
-
-            '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                borderColor: palette.semantic.colorForegroundDeEmp,
-                borderWidth: '1px',
-            },
+            '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderWidth: '1px' },
         },
         '&.ap-omit-start-adornment-spacing': {
             '& .MuiInputAdornment-positionStart': { marginRight: 'unset' },
