@@ -24,6 +24,10 @@ export const MuiSelect = (palette: Palette): ComponentsOverrides['MuiSelect'] =>
         fontSize: token.FontFamily.FontMSize,
         lineHeight: token.FontFamily.FontMLineHeight,
         color: palette.semantic.colorForeground,
+        '&:focus-visible': {
+            outline: `2px solid ${palette.semantic.colorFocusIndicator}`,
+            outlineOffset: '-2px',
+        },
     },
     standard: { paddingRight: `${token.Spacing.SpacingXl} !important` },
 });
