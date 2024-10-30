@@ -8,6 +8,7 @@ export const MuiLink = (palette: Palette): ComponentsOverrides['MuiLink'] => ({
         fontWeight: token.FontFamily.FontWeightSemibold,
         '&:visited': { color: palette.semantic.colorForegroundLink },
         '&:focus': { color: palette.semantic.colorForegroundLink },
+        '&.Mui-focusVisible:focus-visible': { boxShadow: `0px 0px 0px 2px ${palette.semantic.colorFocusIndicator}` },
         '&:active': { color: palette.semantic.colorForegroundLinkPressed },
     },
 });
