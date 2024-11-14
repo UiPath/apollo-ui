@@ -9,6 +9,7 @@ export const MuiInputBase = (palette: Palette): ComponentsOverrides['MuiInputBas
             backgroundColor: palette.semantic.colorBackgroundDisabled,
             background: palette.semantic.colorBackgroundDisabled,
         },
+        '&.Mui-error': { '.MuiOutlinedInput-notchedOutline': { borderColor: `${palette.semantic.colorErrorText} !important` } },
     },
     input: {
         fontSize: token.FontFamily.FontMSize,

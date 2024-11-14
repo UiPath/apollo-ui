@@ -5,5 +5,6 @@ export const MuiFormLabel = (palette: Palette): ComponentsOverrides['MuiFormLabe
     root: {
         color: palette.semantic.colorForeground,
         '&.Mui-disabled': { color: palette.semantic.colorForegroundDisable },
+        '.MuiFormLabel-asterisk.Mui-error': { color: palette.semantic.colorErrorText },
     },
 });
