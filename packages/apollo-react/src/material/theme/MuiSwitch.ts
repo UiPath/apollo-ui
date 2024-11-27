@@ -9,8 +9,8 @@ export const MuiSwitch = (palette: Palette): ComponentsOverrides['MuiSwitch'] =>
         borderRadius: '10px',
         marginRight: '8px',
         '&:has(.Mui-focusVisible)': {
-            outline: `1px solid ${palette.semantic.colorFocusIndicator}`,
-            outlineOffset: '1px',
+            outline: `2px solid ${palette.semantic.colorFocusIndicator}`,
+            outlineOffset: '2px',
         },
         '& .MuiSwitch-switchBase': {
             padding: '0',
