@@ -152,7 +152,10 @@ export const MuiDatepicker = (palette: Palette): ComponentsOverrides['MuiPopper'
                     fontWeight: token.FontFamily.FontWeightSemibold,
                     lineHeight: token.FontFamily.FontMLineHeight,
 
-                    '&:focus-visible': { outline: `2px ${palette.semantic.colorFocusIndicator} solid !important` },
+                    '&:focus-visible': {
+                        outline: `2px ${palette.semantic.colorFocusIndicator} solid !important`,
+                        outlineOffset: '2px',
+                    },
 
                     '&:hover': { backgroundColor: palette.semantic.colorBackgroundHover },
 
