@@ -3,7 +3,7 @@ import token from '@uipath/apollo-core/lib';
 import type { Palette } from '@uipath/apollo-core/lib/jss/palette';
 
 export const MuiChip = (palette: Palette): ComponentsOverrides['MuiChip'] => ({
-    deletable: { '&:focus:not(.Mui-disabled)': { backgroundColor: palette.semantic.colorBackgroundGrayEmp } },
+    deletable: { '&:focus:not(.Mui-disabled)': { backgroundColor: palette.semantic.colorHover } },
     root: {
         paddingLeft: token.Padding.PadL,
         paddingRight: token.Padding.PadL,
@@ -15,7 +15,7 @@ export const MuiChip = (palette: Palette): ComponentsOverrides['MuiChip'] => ({
         fontWeight: token.FontFamily.FontWeightDefault,
         color: palette.semantic.colorForeground,
         backgroundColor: palette.semantic.colorBackgroundGray,
-        '&:hover': { backgroundColor: palette.semantic.colorBackgroundGrayEmp },
+        '&:hover': { backgroundColor: palette.semantic.colorHover },
         '&.icon': {
             color: palette.semantic.colorForeground,
             paddingLeft: '0px',
