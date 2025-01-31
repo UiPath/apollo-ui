@@ -11,7 +11,7 @@ import React from 'react';
 
 import { t } from '../../../../utils/localization/loc';
 
-export const AutopilotChatInputFooter = () => {
+function AutopilotChatInputFooterComponent() {
     const theme = useTheme();
 
     return (
@@ -24,4 +24,6 @@ export const AutopilotChatInputFooter = () => {
             </ap-typography>
         </Box>
     );
-};
+}
+
+export const AutopilotChatInputFooter = React.memo(AutopilotChatInputFooterComponent);

@@ -1,3 +1,6 @@
+import { AutopilotChatMarkdownRenderer } from '../components/message/markdown/markdown.react';
+
+export const DEFAULT_MESSAGE_RENDERER = 'apollo-markdown-renderer';
 export const ACCEPTED_FILES = {
     'text/csv': [ '.csv' ],
     'application/json': [ '.json' ],
@@ -18,3 +21,13 @@ export const ACCEPTED_FILES = {
 export const ACCEPTED_FILE_EXTENSIONS = Object.values(ACCEPTED_FILES)
     .flat()
     .join(',');
+
+export const CHAT_WIDTH_FULL_SCREEN = '100vw';
+export const CHAT_WIDTH_SIDE_BY_SIDE = '440px';
+export const CHAT_WIDTH_FULL_SCREEN_MAX_WIDTH = '960px';
+export const CHAT_INPUT_MAX_ROWS = 12;
+
+export const APOLLO_MESSAGE_RENDERERS = [ {
+    name: DEFAULT_MESSAGE_RENDERER,
+    component: AutopilotChatMarkdownRenderer,
+} ];

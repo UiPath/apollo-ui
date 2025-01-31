@@ -1,0 +1,62 @@
+/** @jsx React.createElement */
+/** @jsxFrag React.Fragment */
+
+import {
+    Table as MuiTable,
+    TableCell,
+    TableHead,
+    TableRow,
+    useTheme,
+} from '@mui/material';
+import { FontVariantToken } from '@uipath/apollo-core';
+import type { ReactNode } from 'react';
+// eslint-disable-next-line unused-imports/no-unused-imports
+import React from 'react';
+
+interface TableProps {
+    children: ReactNode;
+}
+
+export const Table = (({ children }: TableProps) => (
+    <MuiTable>{children}</MuiTable>
+));
+
+export const TableHeader = (({ children }: TableProps) => {
+    const theme = useTheme();
+    return (
+        <TableHead
+            sx={{ backgroundColor: theme.palette.semantic.colorBackgroundSecondary }}
+        >
+            {children}
+        </TableHead>
+    );
+});
+
+export const Row = (({ children }: TableProps) => (
+    <TableRow>{children}</TableRow>
+));
+
+export const Cell = (({ children }: TableProps) => {
+    const theme = useTheme();
+
+    return (
+        <TableCell sx={{ border: `1px solid ${theme.palette.semantic.colorBorder}` }}>
+            <ap-typography color={theme.palette.semantic.colorForeground}>{children}</ap-typography>
+        </TableCell>
+    );
+});
+
+export const HeaderCell = (({ children }: TableProps) => {
+    const theme = useTheme();
+
+    return (
+        <TableCell sx={{ border: `1px solid ${theme.palette.semantic.colorBorder}` }}>
+            <ap-typography
+                variant={FontVariantToken.fontSizeMBold}
+                color={theme.palette.semantic.colorForeground}
+            >
+                {children}
+            </ap-typography>
+        </TableCell>
+    );
+});

@@ -5,7 +5,4 @@
     // We're setting the display to 'inline-grid' to make the host web component tag
     // use the correct measured width and height of its shadowDOM contents.
     display: inline-grid;
-
-    // TODO: remove
-    width: 440px;
 }

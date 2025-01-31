@@ -2,6 +2,9 @@
 /** @jsxFrag React.Fragment */
 import React from 'react';
 
+import { AutopilotChatEvent } from '../models/chat.model';
+import { AutopilotChatService } from '../services/chat-service';
+
 interface AutopilotErrorContextType {
     error: string | undefined;
     setError: (error: string | undefined) => void;
@@ -16,20 +19,23 @@ export const AutopilotErrorContext = React.createContext<AutopilotErrorContextTy
 
 export function AutopilotErrorProvider({ children }: { children: React.ReactNode }) {
     const [ error, setErrorState ] = React.useState<string | undefined>(undefined);
+    const chatService = React.useMemo(() => AutopilotChatService.Instance, []);
 
-    const setError = React.useCallback((newError: string | undefined) => {
-        setErrorState(newError);
-    }, []);
+    React.useEffect(() => {
+        const unsubscribe = chatService.on(AutopilotChatEvent.Error, (err: string) => {
+            setErrorState(err);
+        });
 
-    const clearError = React.useCallback(() => {
-        setErrorState(undefined);
-    }, []);
+        return () => {
+            unsubscribe();
+        };
+    }, [ chatService ]);
 
     return (
         <AutopilotErrorContext.Provider value={{
             error,
-            setError,
-            clearError,
+            setError: chatService.setError,
+            clearError: chatService.clearError,
         }}>
             {children}
         </AutopilotErrorContext.Provider>

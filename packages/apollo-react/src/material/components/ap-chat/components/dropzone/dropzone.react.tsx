@@ -1,7 +1,10 @@
 /** @jsx React.createElement */
 /** @jsxFrag React.Fragment */
 
-import { styled } from '@mui/material/styles';
+import {
+    styled,
+    useTheme,
+} from '@mui/material/styles';
 import { FontVariantToken } from '@uipath/apollo-core';
 import token from '@uipath/apollo-core/lib';
 import React from 'react';
@@ -38,7 +41,7 @@ const DropzoneOverlay = styled('div')(({ theme }) => ({
     justifyContent: 'center',
     textAlign: 'center',
     pointerEvents: 'none',
-    border: `2px dashed ${theme.palette.semantic.colorBorder}`,
+    border: `${token.Border.BorderThickM} dashed ${theme.palette.semantic.colorBorder}`,
     borderRadius: token.Border.BorderRadiusL,
     margin: 0,
     padding: token.Spacing.SpacingXxl,
@@ -48,10 +51,11 @@ const DropzoneOverlay = styled('div')(({ theme }) => ({
     boxSizing: 'border-box',
 }));
 
-export function AutopilotDropzone({
+function AutopilotChatDropzoneComponent({
     children,
     ...dropzoneOptions
 }) {
+    const theme = useTheme();
     const { addAttachments } = useAttachments();
     const { setError } = useError();
 
@@ -89,11 +93,11 @@ export function AutopilotDropzone({
 
             {isDragActive && (
                 <DropzoneOverlay>
-                    <ap-typography variant={FontVariantToken.fontSizeMBold}>
+                    <ap-typography variant={FontVariantToken.fontSizeMBold} color={theme.palette.semantic.colorForeground}>
                         {t('autopilot-chat-dropzone-overlay-title')}
                     </ap-typography>
 
-                    <ap-typography variant={FontVariantToken.fontSizeS}>
+                    <ap-typography variant={FontVariantToken.fontSizeS} color={theme.palette.semantic.colorForeground}>
                         {t('autopilot-chat-dropzone-overlay-description', { fileTypes: ACCEPTED_FILE_EXTENSIONS.split(',').join(', ') })}
                     </ap-typography>
                 </DropzoneOverlay>
@@ -101,3 +105,5 @@ export function AutopilotDropzone({
         </DropzoneRoot>
     );
 }
+
+export const AutopilotChatDropzone = React.memo(AutopilotChatDropzoneComponent);

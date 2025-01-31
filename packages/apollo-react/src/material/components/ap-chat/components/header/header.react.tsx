@@ -26,7 +26,7 @@ const StyledLogo = styled('div')(() => ({
     gap: token.Spacing.SpacingXs,
 }));
 
-export function AutopilotChatHeader() {
+function AutopilotChatHeaderComponent() {
     const theme = useTheme();
 
     return (
@@ -44,3 +44,5 @@ export function AutopilotChatHeader() {
         </StyledHeader>
     );
 }
+
+export const AutopilotChatHeader = React.memo(AutopilotChatHeaderComponent);

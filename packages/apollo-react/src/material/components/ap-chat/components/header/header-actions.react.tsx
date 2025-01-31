@@ -6,22 +6,40 @@ import token from '@uipath/apollo-core/lib';
 import React from 'react';
 
 import { t } from '../../../../utils/localization/loc';
+import { AutopilotChatMode } from '../../models/chat.model';
+import { AutopilotChatService } from '../../services/chat-service';
 import { AutopilotChatActionButton } from '../common/action-button.react';
 
 const StyledActions = styled('div')(() => ({
     display: 'flex',
     alignItems: 'center',
-    gap: token.Spacing.SpacingBase,
+    gap: token.Spacing.SpacingS,
 }));
 
-export function AutopilotChatHeaderActions() {
+function AutopilotChatHeaderActionsComponent() {
+    const [ isFullScreen, setIsFullScreen ] = React.useState(false);
+
     const handleClose = React.useCallback(() => {
-        // eslint-disable-next-line no-console
-        console.log('close');
+        AutopilotChatService.Instance.close();
     }, []);
+
+    const handleToggle = React.useCallback(() => {
+        AutopilotChatService.Instance.setChatMode(
+            isFullScreen ? AutopilotChatMode.SideBySide : AutopilotChatMode.FullScreen,
+        );
+
+        setIsFullScreen(!isFullScreen);
+    }, [ isFullScreen ]);
 
     return (
         <StyledActions>
+            <AutopilotChatActionButton
+                iconName={!isFullScreen ? 'right_panel_open' : 'right_panel_close'}
+                tooltip={!isFullScreen ? t('autopilot-chat-expand') : t('autopilot-chat-collapse')}
+                onClick={handleToggle}
+                variant="custom"
+            />
+
             <AutopilotChatActionButton
                 iconName="close"
                 onClick={handleClose}
@@ -30,3 +48,5 @@ export function AutopilotChatHeaderActions() {
         </StyledActions>
     );
 }
+
+export const AutopilotChatHeaderActions = React.memo(AutopilotChatHeaderActionsComponent);

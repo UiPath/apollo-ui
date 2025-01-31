@@ -1,22 +1,127 @@
 /** @jsx React.createElement */
 /** @jsxFrag React.Fragment */
 
+import { styled } from '@mui/material/styles';
+import token from '@uipath/apollo-core/lib';
 import React from 'react';
 
-import { AutopilotDropzone } from './components/dropzone/dropzone.react';
+import { AutopilotChatDropzone } from './components/dropzone/dropzone.react';
 import { AutopilotChatHeader } from './components/header/header.react';
 import { AutopilotChatInput } from './components/input/chat-input.react';
+import { AutopilotChatMessages } from './components/message/chat-message.react';
+import {
+    AutopilotChatEvent,
+    AutopilotChatMode,
+} from './models/chat.model';
 import { AutopilotAttachmentsProvider } from './providers/attachements-provider.react';
 import { AutopilotErrorProvider } from './providers/error-provider.react';
+import { AutopilotChatService } from './services/chat-service';
+import {
+    CHAT_WIDTH_FULL_SCREEN,
+    CHAT_WIDTH_FULL_SCREEN_MAX_WIDTH,
+    CHAT_WIDTH_SIDE_BY_SIDE,
+} from './utils/constants';
+
+const ChatContainer = styled('div')(({ theme }) => ({
+    display: 'flex',
+    flexDirection: 'column',
+    height: 'calc(100vh - 48px)',
+    position: 'relative',
+    boxSizing: 'border-box',
+    border: `${token.Border.BorderThickS} solid ${theme.palette.semantic.colorBorderDeEmp}`,
+    borderTop: 'none',
+}));
+
+const HeaderContainer = styled('div')(() => ({
+    flexShrink: 0,
+    paddingBottom: token.Spacing.SpacingBase,
+    padding: `${token.Spacing.SpacingBase} ${token.Spacing.SpacingL}`,
+}));
+
+const OverflowContainer = styled('div')(() => ({
+    flex: '1 1 100%',
+    minHeight: 0,
+    display: 'flex',
+    flexDirection: 'column',
+    overflowY: 'auto',
+}));
+
+const MessagesContainer = styled('div')(({ isFullScreen }: { isFullScreen: boolean }) => ({
+    ...(isFullScreen && {
+        maxWidth: CHAT_WIDTH_FULL_SCREEN_MAX_WIDTH,
+        margin: '0 auto',
+        width: '100%',
+    }),
+}));
+
+const InputBackground = styled('div')(({ theme }) => ({
+    flexShrink: 0,
+    marginTop: token.Spacing.SpacingBase,
+    borderTop: `${token.Border.BorderThickS} solid ${theme.palette.semantic.colorBorderDeEmp}`,
+    padding: `${token.Spacing.SpacingXs} ${token.Spacing.SpacingL}`,
+    backgroundColor: theme.palette.semantic.colorBackgroundSecondary,
+}));
+
+const InputContainer = styled('div')<{ isFullScreen: boolean }>(({ isFullScreen }: { isFullScreen: boolean }) => ({
+    ...(isFullScreen && {
+        maxWidth: CHAT_WIDTH_FULL_SCREEN_MAX_WIDTH,
+        margin: '0 auto',
+        width: '100%',
+    }),
+}));
 
 export function ApAutopilotChatReact() {
+    const overflowContainerRef = React.useRef<HTMLDivElement>(null);
+    const [ isFullScreen, setIsFullScreen ] = React.useState(false);
+
+    React.useEffect(() => {
+        AutopilotChatService.Instance.on(AutopilotChatEvent.ModeChange, (mode) => {
+            setIsFullScreen(mode === AutopilotChatMode.FullScreen);
+        });
+    }, []);
+
+    const scrollToBottom = React.useCallback(() => {
+        if (overflowContainerRef.current) {
+            // need a delay for the content to be rendered
+            setTimeout(() => {
+                requestAnimationFrame(() => {
+                    const container = overflowContainerRef.current;
+
+                    if (container) {
+                        if (container) {
+                            container.scrollTo({
+                                top: container.scrollHeight,
+                                behavior: 'smooth',
+                            });
+                        }
+                    }
+                });
+            }, 200);
+        }
+    }, [ overflowContainerRef ]);
+
     return (
         <AutopilotErrorProvider>
             <AutopilotAttachmentsProvider>
-                <AutopilotDropzone>
-                    <AutopilotChatHeader />
-                    <AutopilotChatInput />
-                </AutopilotDropzone>
+                <AutopilotChatDropzone>
+                    <ChatContainer style={{ width: isFullScreen ? CHAT_WIDTH_FULL_SCREEN : CHAT_WIDTH_SIDE_BY_SIDE }}>
+                        <HeaderContainer>
+                            <AutopilotChatHeader />
+                        </HeaderContainer>
+
+                        <OverflowContainer ref={overflowContainerRef}>
+                            <MessagesContainer isFullScreen={isFullScreen}>
+                                <AutopilotChatMessages overflowContainerRef={overflowContainerRef} scrollToBottom={scrollToBottom} />
+                            </MessagesContainer>
+                        </OverflowContainer>
+
+                        <InputBackground>
+                            <InputContainer isFullScreen={isFullScreen}>
+                                <AutopilotChatInput />
+                            </InputContainer>
+                        </InputBackground>
+                    </ChatContainer>
+                </AutopilotChatDropzone>
             </AutopilotAttachmentsProvider>
         </AutopilotErrorProvider>
     );

@@ -7,12 +7,14 @@ import React from 'react';
 
 import { StatusTypes } from '../../../../models/statusTypes';
 import { t } from '../../../../utils/localization/loc';
+import { useAttachments } from '../../providers/attachements-provider.react';
 import { useError } from '../../providers/error-provider.react';
+import { AutopilotChatService } from '../../services/chat-service';
 import { AutopilotChatActionButton } from '../common/action-button.react';
 
 interface AutopilotChatInputHeaderProps {
-    onNewChat: (event: React.MouseEvent) => void;
     onPromptLibrary: (event: React.MouseEvent) => void;
+    clearInput: () => void;
 }
 
 const InputHeaderActions = styled('div')(() => ({
@@ -22,12 +24,14 @@ const InputHeaderActions = styled('div')(() => ({
     gap: token.Spacing.SpacingXs,
 }));
 
-export const AutopilotChatInputHeader = ({
-    onNewChat, onPromptLibrary,
-}: AutopilotChatInputHeaderProps) => {
+function AutopilotChatInputHeaderComponent({
+    onPromptLibrary, clearInput,
+}: AutopilotChatInputHeaderProps) {
     const {
         error, clearError,
     } = useError();
+
+    const { clearAttachments } = useAttachments();
 
     // FIXME: ApAlertBarReact doesn't have the styles.. they are in the ap-alert-bar component
     React.useEffect(() => {
@@ -39,6 +43,12 @@ export const AutopilotChatInputHeader = ({
             document.removeEventListener('cancelAlert', listener);
         };
     }, [ clearError ]);
+
+    const handleNewChat = React.useCallback(() => {
+        AutopilotChatService.Instance.newChat();
+        clearAttachments();
+        clearInput();
+    }, [ clearAttachments, clearInput ]);
 
     if (error) {
         return <ap-alert-bar style={{ width: '100%' }} status={StatusTypes.ERROR}>{error}</ap-alert-bar>;
@@ -55,8 +65,10 @@ export const AutopilotChatInputHeader = ({
             <AutopilotChatActionButton
                 iconName="add"
                 text={t('autopilot-chat-new-chat')}
-                onClick={onNewChat}
+                onClick={handleNewChat}
             />
         </InputHeaderActions>
     );
-};
+}
+
+export const AutopilotChatInputHeader = React.memo(AutopilotChatInputHeaderComponent);
