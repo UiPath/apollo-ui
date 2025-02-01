@@ -7,6 +7,7 @@ import React from 'react';
 
 import {
     AutopilotChatEvent,
+    AutopilotChatInterceptableEvent,
     AutopilotChatMessage,
     AutopilotChatRole,
 } from '../../models/chat.model';
@@ -97,24 +98,32 @@ interface AutopilotChatMessagesProps {
 function AutopilotChatMessagesComponent({
     scrollToBottom, overflowContainerRef,
 }: AutopilotChatMessagesProps) {
-    const chatService = AutopilotChatService.Instance;
     const messageContainerRef = React.useRef<HTMLDivElement>(null);
-    const [ messages, setMessages ] = React.useState<AutopilotChatMessage[]>(chatService.getMessages());
+    const chatService = AutopilotChatService.Instance;
+    const [ messages, setMessages ] = React.useState<AutopilotChatMessage[]>([]);
+
+    // Update by patching if the message already exists or adding to the end of the array
+    const updateMessages = React.useCallback((message: AutopilotChatMessage) => {
+        setMessages(prev => {
+            if (prev.some(m => m.id === message.id)) {
+                return prev.map(m => m.id === message.id ? message : m);
+            }
+            return [ ...prev, message ];
+        });
+    }, []);
 
     React.useEffect(() => {
-        const unsubscribe = chatService.on(AutopilotChatEvent.Message, () => {
-            setMessages(chatService.getMessages());
-        });
-
-        const unsubscribeNewChat = chatService.on(AutopilotChatEvent.NewChat, () => {
-            setMessages([]);
-        });
+        // use an interceptor to add the message to the messages array so the chat doesn't have to wait for the consumer confirmation
+        const unsubscribeRequest = chatService.intercept(AutopilotChatInterceptableEvent.Request, updateMessages);
+        const unsubscribeResponse = chatService.on(AutopilotChatEvent.Response, updateMessages);
+        const unsubscribeNewChat = chatService.on(AutopilotChatEvent.NewChat, () => setMessages([]));
 
         return () => {
-            unsubscribe();
+            unsubscribeRequest();
+            unsubscribeResponse();
             unsubscribeNewChat();
         };
-    }, [ chatService ]);
+    }, [ chatService, updateMessages ]);
 
     const onAttachmentsToggleExpanded = React.useCallback((index: number) => {
         const container = overflowContainerRef.current;

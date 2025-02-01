@@ -8,6 +8,7 @@ import React from 'react';
 import { t } from '../../../../../utils/localization/loc';
 import { ApTooltipReact } from '../../../../ap-tooltip/ap-tooltip.react';
 import {
+    AutopilotChatAccordionPosition,
     AutopilotChatEvent,
     FileInfo,
 } from '../../../models/chat.model';
@@ -131,6 +132,7 @@ function AutopilotChatAttachmentsComponent({
 
     return (
         <AutopilotChatAccordion
+            position={AutopilotChatAccordionPosition.Right}
             ref={displayFileContainerRef}
             summaryTitle={t('autopilot-chat-selected-files', { count: attachments.length })}
             summaryDescription={getFilePreview()}

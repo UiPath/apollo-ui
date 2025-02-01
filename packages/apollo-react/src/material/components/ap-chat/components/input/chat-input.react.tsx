@@ -10,7 +10,10 @@ import React from 'react';
 
 import { t } from '../../../../utils/localization/loc';
 import { ApTextAreaReact } from '../../../ap-text-area/ap-text-area.react';
-import { AutopilotChatRole } from '../../models/chat.model';
+import {
+    AutopilotChatEvent,
+    AutopilotChatPrompt,
+} from '../../models/chat.model';
 import { useAttachments } from '../../providers/attachements-provider.react';
 import { useError } from '../../providers/error-provider.react';
 import { AutopilotChatService } from '../../services/chat-service';
@@ -53,10 +56,19 @@ export const InputContainer = styled('div')(({ theme }) => ({
 function AutopilotChatInputComponent() {
     const [ message, setMessage ] = React.useState('');
     const inputRef = React.useRef<HTMLTextAreaElement>(null);
+    const chatService = AutopilotChatService.Instance;
     const { setError } = useError();
     const {
         attachments, clearAttachments,
     } = useAttachments();
+
+    React.useEffect(() => {
+        const unsubscribe = chatService.on(AutopilotChatEvent.SetPrompt, (prompt: AutopilotChatPrompt | string) => {
+            setMessage(typeof prompt === 'string' ? prompt : prompt.content);
+        });
+
+        return () => unsubscribe();
+    }, [ chatService ]);
 
     const handleChange = React.useCallback((value: string) => {
         // if value is empty, clear input and return (handle empty new lines)
@@ -69,20 +81,17 @@ function AutopilotChatInputComponent() {
     }, []);
 
     const handleSubmit = React.useCallback(() => {
-        const chatService = AutopilotChatService.Instance;
 
-        chatService.sendMessage({
-            id: crypto.randomUUID(),
+        chatService.sendRequest({
             content: message,
-            created_at: new Date().toISOString(),
-            role: AutopilotChatRole.User,
             widget: DEFAULT_MESSAGE_RENDERER,
             attachments,
         });
+
         // clear input
         setMessage('');
         clearAttachments();
-    }, [ message, attachments, clearAttachments ]);
+    }, [ message, attachments, clearAttachments, chatService ]);
 
     const handleKeyDown = React.useCallback((event: KeyboardEvent) => {
         if (event.key === 'Enter' && !event.shiftKey && message.trim().length > 0) {

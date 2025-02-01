@@ -33,6 +33,7 @@ import {
     Emphazised,
     getTextForVariant,
     Hr,
+    Pre,
     Strong,
 } from './markdown-components/text.react';
 
@@ -76,6 +77,7 @@ function AutopilotChatMarkdownRendererComponent({ message }: { message: Autopilo
                 del: Del,
                 strong: Strong,
                 hr: Hr,
+                pre: Pre,
             }}
         >
             {message.content}

@@ -19,7 +19,7 @@ export const AutopilotErrorContext = React.createContext<AutopilotErrorContextTy
 
 export function AutopilotErrorProvider({ children }: { children: React.ReactNode }) {
     const [ error, setErrorState ] = React.useState<string | undefined>(undefined);
-    const chatService = React.useMemo(() => AutopilotChatService.Instance, []);
+    const chatService = AutopilotChatService.Instance;
 
     React.useEffect(() => {
         const unsubscribe = chatService.on(AutopilotChatEvent.Error, (err: string) => {

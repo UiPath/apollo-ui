@@ -1,12 +1,18 @@
 import { isDebuggingEnabled } from '../../../react/stencil-react-adapter/Utils/DebugUtils';
 import type {
     AutopilotChatConfiguration,
+    AutopilotChatEventHandler,
+    AutopilotChatEventInterceptor,
     AutopilotChatMessage,
     AutopilotChatMessageRenderer,
     AutopilotChatMode,
+    AutopilotChatPrompt,
 } from '../models/chat.model';
-import { AutopilotChatEvent } from '../models/chat.model';
-import type { EventHandler } from './event-bus';
+import {
+    AutopilotChatEvent,
+    AutopilotChatInterceptableEvent,
+    AutopilotChatRole,
+} from '../models/chat.model';
 import { EventBus } from './event-bus';
 
 export class AutopilotChatService {
@@ -15,7 +21,6 @@ export class AutopilotChatService {
     private messageRenderers: AutopilotChatMessageRenderer[] = [];
     private eventBus: EventBus;
     private eventUnsubscribers: Array<() => void> = [];
-    private messages: AutopilotChatMessage[] = [];
 
     private constructor() {
         this.eventBus = new EventBus();
@@ -27,12 +32,14 @@ export class AutopilotChatService {
         this.injectMessageRenderer = this.injectMessageRenderer.bind(this);
         this.renderMessage = this.renderMessage.bind(this);
         this.close = this.close.bind(this);
-        this.sendMessage = this.sendMessage.bind(this);
         this.setError = this.setError.bind(this);
         this.clearError = this.clearError.bind(this);
         this.newChat = this.newChat.bind(this);
-        this.getMessages = this.getMessages.bind(this);
         this.setChatMode = this.setChatMode.bind(this);
+        this.sendRequest = this.sendRequest.bind(this);
+        this.sendResponse = this.sendResponse.bind(this);
+        this.setPrompt = this.setPrompt.bind(this);
+        this.intercept = this.intercept.bind(this);
     }
 
     static Instantiate(config?: AutopilotChatConfiguration, messageRenderers: AutopilotChatMessageRenderer[] = []) {
@@ -74,11 +81,21 @@ export class AutopilotChatService {
 
         // Register handlers from config if they exist
         if (config.eventHandlers) {
-            Object.entries(config.eventHandlers).forEach(([ event, handler ]) => {
+            config.eventHandlers.forEach(({
+                event, handler,
+            }) => {
                 if (typeof handler === 'function') {
                     this.eventUnsubscribers.push(
                         this.on(event as AutopilotChatEvent, handler),
                     );
+                }
+            });
+        }
+
+        if (config.interceptors) {
+            config.interceptors.forEach(interceptor => {
+                if (Object.values(AutopilotChatInterceptableEvent).includes(interceptor.event)) {
+                    this.intercept(interceptor.event, interceptor.interceptor);
                 }
             });
         }
@@ -88,33 +105,6 @@ export class AutopilotChatService {
         }
 
         messageRenderers.forEach(renderer => this.injectMessageRenderer(renderer));
-    }
-
-    /**
-     * Subscribes to an event
-     *
-     * @param event - The event to subscribe to
-     * @param handler - The handler to subscribe to the event
-     * @returns A function to unsubscribe from the event
-     */
-    on(event: AutopilotChatEvent, handler: EventHandler) {
-        return this.eventBus.subscribe(event, handler);
-    }
-
-    /**
-     * Opens the chat service
-     *
-     * @param config - The configuration to use
-     * @param messageRenderers - The custom message renderers to inject
-     */
-    open(config?: AutopilotChatConfiguration, messageRenderers: AutopilotChatMessageRenderer[] = []) {
-        if (config) {
-            this.initialize(config);
-        }
-
-        messageRenderers.forEach(renderer => this.injectMessageRenderer(renderer));
-
-        this.eventBus.publish(AutopilotChatEvent.Open, this.config);
     }
 
     /**
@@ -174,6 +164,22 @@ export class AutopilotChatService {
     }
 
     /**
+     * Opens the chat service
+     *
+     * @param config - The configuration to use
+     * @param messageRenderers - The custom message renderers to inject
+     */
+    open(config?: AutopilotChatConfiguration, messageRenderers: AutopilotChatMessageRenderer[] = []) {
+        if (config) {
+            this.initialize(config);
+        }
+
+        messageRenderers.forEach(renderer => this.injectMessageRenderer(renderer));
+
+        this.eventBus.publish(AutopilotChatEvent.Open, this.config);
+    }
+
+    /**
      * Closes the chat service
      */
     close() {
@@ -192,34 +198,53 @@ export class AutopilotChatService {
     }
 
     /**
-     * Sends a message to the chat service
+     * Sets a prompt in the chat service
      *
-     * @param message - The message to send
+     * @param prompt - The prompt to set
      */
-    sendMessage(message: AutopilotChatMessage) {
-        this._checkForConfig();
-
-        this.messages.push(message);
-        this.eventBus.publish(AutopilotChatEvent.Message, message);
+    setPrompt(prompt: AutopilotChatPrompt | string) {
+        this.eventBus.publish(AutopilotChatEvent.SetPrompt, prompt);
     }
 
     /**
-     * Gets the messages from the chat service
+     * Sends a request as an user request to the chat service
      *
-     * @returns The messages
+     * @param request - The request to send
      */
-    getMessages() {
-        return [ ...this.messages ];
+    sendRequest(request: Omit<AutopilotChatMessage, 'role' | 'id' | 'created_at' > & { id?: string; created_at?: string }) {
+        this._checkForConfig();
+
+        const userMessage = {
+            id: crypto.randomUUID(), // Generate a new ID in case it's not provided
+            created_at: new Date().toISOString(),
+            ...request,
+            role: AutopilotChatRole.User,
+        };
+
+        this.eventBus.publish(AutopilotChatEvent.Request, userMessage);
+    }
+
+    /**
+     * Sends a response as an AI assistant response to the chat service
+     *
+     * @param response - The response to send
+     */
+    sendResponse(response: Omit<AutopilotChatMessage, 'role' | 'id'> & { id?: string }) {
+        this._checkForConfig();
+
+        this.eventBus.publish(AutopilotChatEvent.Response, {
+            id: crypto.randomUUID(),
+            ...response,
+            role: AutopilotChatRole.Assistant,
+        });
     }
 
     /**
      * TODO: Implement new chat functionality
      */
     newChat() {
-        this.messages = [];
         this.eventBus.publish(AutopilotChatEvent.NewChat);
     }
-
     /**
      * Sets an error in the chat service
      *
@@ -236,6 +261,32 @@ export class AutopilotChatService {
      */
     clearError() {
         this.eventBus.publish(AutopilotChatEvent.Error, undefined);
+    }
+
+    /**
+     * Subscribes to an event
+     *
+     * @param event - The event to subscribe to
+     * @param handler - The handler to subscribe to the event
+     * @returns A function to unsubscribe from the event
+     */
+    on(event: AutopilotChatEvent, handler: AutopilotChatEventHandler, hijack?: boolean) {
+        return this.eventBus.subscribe(event, handler, hijack);
+    }
+
+    /**
+     * Adds an interceptor to the event bus
+     *
+     * @param event - The event to intercept
+     * @param interceptor - The interceptor to add
+     * @returns A function to remove the interceptor
+     */
+    intercept(event: AutopilotChatInterceptableEvent, interceptor: AutopilotChatEventInterceptor) {
+        if (Object.values(AutopilotChatInterceptableEvent).includes(event)) {
+            return this.eventBus.intercept(event, interceptor);
+        }
+
+        return () => {};
     }
 
     private _checkForConfig() {

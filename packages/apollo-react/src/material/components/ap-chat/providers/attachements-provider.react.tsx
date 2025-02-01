@@ -2,7 +2,12 @@
 /** @jsxFrag React.Fragment */
 import React from 'react';
 
-import { FileInfo } from '../models/chat.model';
+import {
+    AutopilotChatEvent,
+    AutopilotChatPrompt,
+    FileInfo,
+} from '../models/chat.model';
+import { AutopilotChatService } from '../services/chat-service';
 
 interface AutopilotAttachmentsContextType {
     attachments: FileInfo[];
@@ -19,6 +24,7 @@ export const AutopilotAttachmentsContext = React.createContext<AutopilotAttachme
 });
 
 export function AutopilotAttachmentsProvider({ children }: { children: React.ReactNode }) {
+    const chatService = AutopilotChatService.Instance;
     const [ attachments, setAttachments ] = React.useState<FileInfo[]>([]);
 
     const addAttachments = React.useCallback((newFiles: FileInfo[]) => {
@@ -37,6 +43,15 @@ export function AutopilotAttachmentsProvider({ children }: { children: React.Rea
     const clearAttachments = React.useCallback(() => {
         setAttachments([]);
     }, []);
+
+    React.useEffect(() => {
+        const unsubscribe = chatService.on(AutopilotChatEvent.SetPrompt, (prompt: AutopilotChatPrompt | string) => {
+            const newAttachments = typeof prompt === 'string' ? [] : prompt.attachments ?? [];
+            addAttachments(newAttachments);
+        });
+
+        return () => unsubscribe();
+    }, [ chatService, addAttachments ]);
 
     return (
         <AutopilotAttachmentsContext.Provider value={{

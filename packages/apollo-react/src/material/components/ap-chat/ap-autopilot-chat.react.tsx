@@ -44,6 +44,7 @@ const OverflowContainer = styled('div')(() => ({
     display: 'flex',
     flexDirection: 'column',
     overflowY: 'auto',
+    paddingBottom: token.Spacing.SpacingBase,
 }));
 
 const MessagesContainer = styled('div')(({ isFullScreen }: { isFullScreen: boolean }) => ({
@@ -56,7 +57,6 @@ const MessagesContainer = styled('div')(({ isFullScreen }: { isFullScreen: boole
 
 const InputBackground = styled('div')(({ theme }) => ({
     flexShrink: 0,
-    marginTop: token.Spacing.SpacingBase,
     borderTop: `${token.Border.BorderThickS} solid ${theme.palette.semantic.colorBorderDeEmp}`,
     padding: `${token.Spacing.SpacingXs} ${token.Spacing.SpacingL}`,
     backgroundColor: theme.palette.semantic.colorBackgroundSecondary,

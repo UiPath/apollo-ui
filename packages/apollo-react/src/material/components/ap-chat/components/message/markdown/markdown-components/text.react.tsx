@@ -58,15 +58,28 @@ export const Blockquote = ({ children }: { children: React.ReactNode }) => {
 };
 
 export const Emphazised = ({ children }: { children: React.ReactNode }) => {
-    return Text({ children: <em>{children}</em> });
+    return Text({
+        children: <em>{children}</em>,
+        customStyle: { display: 'inline' },
+    });
 };
 
 export const Strong = ({ children }: { children: React.ReactNode }) => {
-    return Text({ children: <strong>{children}</strong> });
+    return Text({
+        children: <strong>{children}</strong>,
+        customStyle: { display: 'inline' },
+    });
 };
 
 export const Del = ({ children }: { children: React.ReactNode }) => {
-    return Text({ children: <del>{children}</del> });
+    return Text({
+        children: <del>{children}</del>,
+        customStyle: { display: 'inline' },
+    });
+};
+
+export const Pre = ({ children }: { children: React.ReactNode }) => {
+    return <Box component="pre" sx={{ margin: 0 }}>{children}</Box>;
 };
 
 export const Hr = () => {

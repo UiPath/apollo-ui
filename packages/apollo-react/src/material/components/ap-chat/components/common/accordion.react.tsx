@@ -10,15 +10,19 @@ import {
 import token, { FontVariantToken } from '@uipath/apollo-core/lib';
 import React from 'react';
 
-const AccordionContainer = styled('div')(({ theme }) => ({
+import { AutopilotChatAccordionPosition } from '../../models/chat.model';
+
+const AccordionContainer = styled('div')<{ isLeft: boolean }>(({
+    theme, isLeft,
+}) => ({
     display: 'flex',
     flexDirection: 'column',
     justifyContent: 'center',
-    alignSelf: 'flex-start',
+    alignSelf: isLeft ? 'flex-start' : 'flex-end',
     gap: token.Spacing.SpacingMicro,
     padding: `${token.Spacing.SpacingS} ${token.Spacing.SpacingBase} ${token.Spacing.SpacingMicro}`,
-    marginLeft: '0',
-    marginRight: token.Spacing.SpacingL,
+    marginLeft: isLeft ? '0' : token.Spacing.SpacingL,
+    marginRight: isLeft ? token.Spacing.SpacingL : '0',
     maxWidth: 'calc(100% - 112px)',
     borderRadius: '12px',
     border: `${token.Border.BorderThickS} solid ${theme.palette.semantic.colorBorderDeEmp}`,
@@ -51,6 +55,7 @@ interface AccordionProps {
     summaryDescription: string;
     children: React.ReactNode;
     onToggleExpanded?: (expanded: boolean) => void;
+    position?: AutopilotChatAccordionPosition;
 }
 
 const AutopilotChatAccordionComponent = React.forwardRef<HTMLDivElement, AccordionProps>(({
@@ -58,9 +63,10 @@ const AutopilotChatAccordionComponent = React.forwardRef<HTMLDivElement, Accordi
     summaryDescription,
     children,
     onToggleExpanded,
+    position = AutopilotChatAccordionPosition.Left,
 }, ref) => {
     return (
-        <AccordionContainer ref={ref}>
+        <AccordionContainer ref={ref} isLeft={position === AutopilotChatAccordionPosition.Left}>
             <Accordion onChange={(_, expanded) => onToggleExpanded?.(expanded)}>
                 <StyledAccordionSummary expandIcon={<portal-custom-icon name="chevron" size="20px" />}>
                     <SummaryDetails>
