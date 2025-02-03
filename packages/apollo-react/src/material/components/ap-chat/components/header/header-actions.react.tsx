@@ -6,7 +6,10 @@ import token from '@uipath/apollo-core/lib';
 import React from 'react';
 
 import { t } from '../../../../utils/localization/loc';
-import { AutopilotChatMode } from '../../models/chat.model';
+import {
+    AutopilotChatEvent,
+    AutopilotChatMode,
+} from '../../models/chat.model';
 import { AutopilotChatService } from '../../services/chat-service';
 import { AutopilotChatActionButton } from '../common/action-button.react';
 
@@ -30,6 +33,12 @@ function AutopilotChatHeaderActionsComponent() {
 
         setIsFullScreen(!isFullScreen);
     }, [ isFullScreen ]);
+
+    React.useEffect(() => {
+        AutopilotChatService.Instance.on(AutopilotChatEvent.ModeChange, (mode) => {
+            setIsFullScreen(mode === AutopilotChatMode.FullScreen);
+        });
+    }, []);
 
     return (
         <StyledActions>
