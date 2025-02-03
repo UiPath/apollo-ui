@@ -5,19 +5,19 @@ import type {
     AutopilotChatEventInterceptor,
     AutopilotChatMessage,
     AutopilotChatMessageRenderer,
-    AutopilotChatMode,
     AutopilotChatPrompt,
 } from '../models/chat.model';
 import {
     AutopilotChatEvent,
     AutopilotChatInterceptableEvent,
+    AutopilotChatMode,
     AutopilotChatRole,
 } from '../models/chat.model';
 import { EventBus } from './event-bus';
 
 export class AutopilotChatService {
     private static instance: AutopilotChatService;
-    private config: AutopilotChatConfiguration;
+    private config: AutopilotChatConfiguration = { mode: AutopilotChatMode.Closed };
     private messageRenderers: AutopilotChatMessageRenderer[] = [];
     private eventBus: EventBus;
     private eventUnsubscribers: Array<() => void> = [];
@@ -64,8 +64,6 @@ export class AutopilotChatService {
      * @returns The current configuration
      */
     getConfig() {
-        this._checkForConfig();
-
         return this.config;
     }
 
@@ -115,8 +113,6 @@ export class AutopilotChatService {
      * @param renderer - The message renderer to inject
      */
     injectMessageRenderer(renderer: AutopilotChatMessageRenderer) {
-        this._checkForConfig();
-
         const existingRenderer = this.messageRenderers.find(r => r.name === renderer.name);
 
         if (existingRenderer) {
@@ -134,8 +130,6 @@ export class AutopilotChatService {
      * @returns The message renderer
      */
     getMessageRenderer(name: string) {
-        this._checkForConfig();
-
         return this.messageRenderers.find(r => r.name === name);
     }
 
@@ -149,8 +143,6 @@ export class AutopilotChatService {
      * @internal
      */
     renderMessage(container: HTMLElement, message: AutopilotChatMessage) {
-        this._checkForConfig();
-
         const renderer = this.messageRenderers.find(r => r.name === message.widget);
 
         if (!renderer) {
@@ -174,30 +166,26 @@ export class AutopilotChatService {
      * @param messageRenderers - The custom message renderers to inject
      */
     open(config?: AutopilotChatConfiguration, messageRenderers: AutopilotChatMessageRenderer[] = []) {
-        if (config) {
-            this.initialize(config);
-        }
+        this.initialize(config ?? { mode: AutopilotChatMode.SideBySide }, messageRenderers);
+        this.config.mode = AutopilotChatMode.SideBySide;
 
         messageRenderers.forEach(renderer => this.injectMessageRenderer(renderer));
 
-        this.eventBus.publish(AutopilotChatEvent.Open, this.config);
+        this.eventBus.publish(AutopilotChatEvent.ModeChange, config?.mode ?? AutopilotChatMode.SideBySide);
     }
 
     /**
      * Closes the chat service
      */
     close() {
-        this._checkForConfig();
-
-        this.eventBus.publish(AutopilotChatEvent.Close);
+        this.config.mode = AutopilotChatMode.Closed;
+        this.eventBus.publish(AutopilotChatEvent.ModeChange, AutopilotChatMode.Closed);
     }
 
     /**
      * Expands the chat window
      */
     setChatMode(mode: AutopilotChatMode) {
-        this._checkForConfig();
-
         this.config.mode = mode;
         this.eventBus.publish(AutopilotChatEvent.ModeChange, mode);
     }
@@ -208,8 +196,6 @@ export class AutopilotChatService {
      * @param prompt - The prompt to set
      */
     setPrompt(prompt: AutopilotChatPrompt | string) {
-        this._checkForConfig();
-
         this.eventBus.publish(AutopilotChatEvent.SetPrompt, prompt);
     }
 
@@ -219,8 +205,6 @@ export class AutopilotChatService {
      * @param request - The request to send
      */
     sendRequest(request: Omit<AutopilotChatMessage, 'role' | 'id' | 'created_at' > & { id?: string; created_at?: string }) {
-        this._checkForConfig();
-
         const userMessage = {
             id: crypto.randomUUID(), // Generate a new ID in case it's not provided
             created_at: new Date().toISOString(),
@@ -235,8 +219,6 @@ export class AutopilotChatService {
      * Stops the response in the chat service
      */
     stopResponse() {
-        this._checkForConfig();
-
         this.eventBus.publish(AutopilotChatEvent.StopResponse);
     }
 
@@ -246,8 +228,6 @@ export class AutopilotChatService {
      * @param response - The response to send
      */
     sendResponse(response: Omit<AutopilotChatMessage, 'role' | 'id'> & { id?: string }) {
-        this._checkForConfig();
-
         this.eventBus.publish(AutopilotChatEvent.Response, {
             id: crypto.randomUUID(),
             ...response,
@@ -259,8 +239,6 @@ export class AutopilotChatService {
      * TODO: Implement new chat functionality
      */
     newChat() {
-        this._checkForConfig();
-
         this.eventBus.publish(AutopilotChatEvent.NewChat);
     }
     /**
@@ -269,8 +247,6 @@ export class AutopilotChatService {
      * @param error - The error to set
      */
     setError(error: string) {
-        this._checkForConfig();
-
         this.eventBus.publish(AutopilotChatEvent.Error, error);
     }
 
@@ -278,8 +254,6 @@ export class AutopilotChatService {
      * Clears the error in the chat service
      */
     clearError() {
-        this._checkForConfig();
-
         this.eventBus.publish(AutopilotChatEvent.Error, undefined);
     }
 
@@ -288,6 +262,7 @@ export class AutopilotChatService {
      *
      * @param event - The event to subscribe to
      * @param handler - The handler to subscribe to the event
+     * @param hijack - Whether to hijack the event
      * @returns A function to unsubscribe from the event
      */
     on(event: AutopilotChatEvent, handler: AutopilotChatEventHandler, hijack?: boolean) {
@@ -307,11 +282,5 @@ export class AutopilotChatService {
         }
 
         return () => {};
-    }
-
-    private _checkForConfig() {
-        if (!this.config) {
-            throw new Error('AutopilotChatService: No configuration found, please call the initialize method first');
-        }
     }
 }

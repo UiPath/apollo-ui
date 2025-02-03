@@ -8,6 +8,11 @@ import React from 'react';
 import { ApButtonReact } from '../../../ap-button/ap-button.react';
 import { ApIconButtonReact } from '../../../ap-icon-button/ap-icon-button.react';
 import { ApTooltipReact } from '../../../ap-tooltip/ap-tooltip.react';
+import {
+    AutopilotChatEvent,
+    AutopilotChatMode,
+} from '../../models/chat.model';
+import { AutopilotChatService } from '../../services/chat-service';
 
 const StyledButtonContainer = styled('div')(() => ({
     '& .MuiButton-root': {
@@ -58,6 +63,15 @@ const AutopilotChatActionButtonComponent = React.forwardRef<HTMLButtonElement, A
     ariaLabel,
 }, ref) => {
     const [ iconColor, setIconColor ] = React.useState('var(--color-icon-default)');
+    const [ isClosed, setIsClosed ] = React.useState(false);
+
+    React.useEffect(() => {
+        const unsubscribeModeChange = AutopilotChatService.Instance.on(AutopilotChatEvent.ModeChange, (mode) => {
+            setIsClosed(mode === AutopilotChatMode.Closed);
+        });
+
+        return () => unsubscribeModeChange();
+    }, []);
 
     const button = text ? (
         <StyledButtonContainer>
@@ -107,7 +121,8 @@ const AutopilotChatActionButtonComponent = React.forwardRef<HTMLButtonElement, A
         </ApIconButtonReact>
     );
 
-    return tooltip ? (
+    // Issue with tooltip when the display of the ref is set to none
+    return tooltip && !isClosed ? (
         <ApTooltipReact disabled={disabled} content={tooltip}>
             {button}
         </ApTooltipReact>

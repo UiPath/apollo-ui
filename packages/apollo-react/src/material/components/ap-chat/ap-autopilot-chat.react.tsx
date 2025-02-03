@@ -30,9 +30,10 @@ import {
     CHAT_WIDTH_SIDE_BY_SIDE_MIN,
 } from './utils/constants';
 
-const ChatContainer = styled('div')<{ shouldAnimate: boolean }>(({
-    shouldAnimate, theme,
-}: { shouldAnimate: boolean; theme: Theme }) => ({
+const ChatContainer = styled('div')<{ shouldAnimate: boolean; mode: AutopilotChatMode; width: number }>(({
+    shouldAnimate, mode, width, theme,
+}: { shouldAnimate: boolean; mode: AutopilotChatMode; width: number; theme: Theme }) => ({
+    width: mode === AutopilotChatMode.FullScreen ? CHAT_WIDTH_FULL_SCREEN : width,
     display: 'flex',
     flexDirection: 'column',
     height: 'calc(100vh - 48px)',
@@ -42,6 +43,7 @@ const ChatContainer = styled('div')<{ shouldAnimate: boolean }>(({
     borderTop: 'none',
     borderLeft: 'none',
     ...(shouldAnimate && { transition: 'width 0.2s ease' }),
+    ...(mode === AutopilotChatMode.Closed && { display: 'none' }),
 }));
 
 const HeaderContainer = styled('div')(() => ({
@@ -85,7 +87,7 @@ const InputContainer = styled('div')<{ isFullScreen: boolean }>(({ isFullScreen 
 export function ApAutopilotChatReact() {
     const storage = StorageService.Instance;
     const overflowContainerRef = React.useRef<HTMLDivElement>(null);
-    const [ isFullScreen, setIsFullScreen ] = React.useState(false);
+    const [ mode, setMode ] = React.useState<AutopilotChatMode>(AutopilotChatService.Instance.getConfig().mode);
     const [ width, setWidth ] = React.useState(() => {
         const savedWidth = storage.get(CHAT_WIDTH_KEY);
 
@@ -94,8 +96,8 @@ export function ApAutopilotChatReact() {
     const [ shouldAnimate, setShouldAnimate ] = React.useState(false);
 
     React.useEffect(() => {
-        AutopilotChatService.Instance.on(AutopilotChatEvent.ModeChange, (mode) => {
-            setIsFullScreen(mode === AutopilotChatMode.FullScreen);
+        AutopilotChatService.Instance.on(AutopilotChatEvent.ModeChange, (chatMode) => {
+            setMode(chatMode);
         });
 
         AutopilotChatInternalService.Instantiate();
@@ -126,21 +128,29 @@ export function ApAutopilotChatReact() {
             <AutopilotLoadingProvider>
                 <AutopilotAttachmentsProvider>
                     <AutopilotChatDropzone>
-                        <ChatContainer shouldAnimate={shouldAnimate} style={{ width: isFullScreen ? CHAT_WIDTH_FULL_SCREEN : width }}>
-                            <DragHandle width={width} onWidthChange={setWidth} setShouldAnimate={setShouldAnimate} />
+                        <ChatContainer
+                            shouldAnimate={shouldAnimate}
+                            mode={mode}
+                            width={width}
+                        >
+                            <DragHandle
+                                width={width}
+                                onWidthChange={setWidth}
+                                setShouldAnimate={setShouldAnimate}
+                            />
 
                             <HeaderContainer>
                                 <AutopilotChatHeader />
                             </HeaderContainer>
 
                             <OverflowContainer ref={overflowContainerRef}>
-                                <MessagesContainer isFullScreen={isFullScreen}>
+                                <MessagesContainer isFullScreen={mode === AutopilotChatMode.FullScreen}>
                                     <AutopilotChatMessages overflowContainerRef={overflowContainerRef} scrollToBottom={scrollToBottom} />
                                 </MessagesContainer>
                             </OverflowContainer>
 
                             <InputBackground>
-                                <InputContainer isFullScreen={isFullScreen}>
+                                <InputContainer isFullScreen={mode === AutopilotChatMode.FullScreen}>
                                     <AutopilotChatInput />
                                 </InputContainer>
                             </InputBackground>

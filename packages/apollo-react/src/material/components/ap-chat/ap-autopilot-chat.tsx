@@ -11,8 +11,6 @@ import React from 'react';
 import { toReactComponentAdapter } from '../../react/PortalShellStencilReactAdapter';
 import type { IReactComponentAdapter } from '../../react/stencil-react-adapter';
 import { ApAutopilotChatReact } from './ap-autopilot-chat.react';
-import { AutopilotChatMode } from './models/chat.model';
-import { AutopilotChatService } from './services/chat-service';
 
 @Component({
     tag: 'ap-autopilot-chat',
@@ -21,10 +19,6 @@ import { AutopilotChatService } from './services/chat-service';
 })
 export class ApAutopilotChat implements IReactComponentAdapter {
     @Element() hostElement: HTMLApAutopilotChatElement;
-
-    connectedCallback() {
-        AutopilotChatService.Instantiate({ mode: AutopilotChatMode.Closed }, []);
-    }
 
     renderReact() {
         return (

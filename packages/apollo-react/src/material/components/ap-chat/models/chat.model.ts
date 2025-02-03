@@ -48,8 +48,6 @@ export interface AutopilotChatMessageRenderer {
 }
 
 export enum AutopilotChatEvent {
-    Open = 'open',
-    Close = 'close',
     Error = 'error',
     NewChat = 'newChat',
     ModeChange = 'modeChange',
@@ -68,8 +66,6 @@ export enum AutopilotChatInternalEvent {
 }
 
 export interface AutopilotChatEventHandlers {
-    [AutopilotChatEvent.Open]?: (config: AutopilotChatConfiguration) => void;
-    [AutopilotChatEvent.Close]?: () => void;
     [AutopilotChatEvent.Error]?: (error: string) => void;
     [AutopilotChatEvent.NewChat]?: () => void;
     [AutopilotChatEvent.ModeChange]?: (mode: AutopilotChatMode) => void;
@@ -77,10 +73,6 @@ export interface AutopilotChatEventHandlers {
     [AutopilotChatEvent.Request]?: (request: string) => void;
     [AutopilotChatEvent.Response]?: (response: string) => void;
     [AutopilotChatEvent.StopResponse]?: () => void;
-}
-
-export interface AutopilotChatInternalEventHandlers {
-    [AutopilotChatInternalEvent.ChatResize]?: (width: number) => void;
 }
 
 export type AutopilotChatEventHandler<T = any> = (data?: T) => void;

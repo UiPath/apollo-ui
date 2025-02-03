@@ -54,7 +54,7 @@ export class EventBus {
 
         if (handlers) {
             handlers.forEach(handler => {
-                handler.handler(hijacked ? {
+                handler.handler(hijacked ?? handler.hijack ? {
                     ...data,
                     hijacked: true,
                 } : data);
@@ -93,8 +93,10 @@ export class EventBus {
     clear(event?: string) {
         if (event) {
             this.handlers.delete(event);
+            this.interceptors.delete(event);
         } else {
             this.handlers.clear();
+            this.interceptors.clear();
         }
     }
 }
