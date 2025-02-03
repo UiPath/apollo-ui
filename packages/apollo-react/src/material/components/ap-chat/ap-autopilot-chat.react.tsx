@@ -1,10 +1,14 @@
 /** @jsx React.createElement */
 /** @jsxFrag React.Fragment */
 
-import { styled } from '@mui/material/styles';
+import {
+    styled,
+    Theme,
+} from '@mui/material/styles';
 import token from '@uipath/apollo-core/lib';
 import React from 'react';
 
+import { DragHandle } from './components/common/drag-handle.react';
 import { AutopilotChatDropzone } from './components/dropzone/dropzone.react';
 import { AutopilotChatHeader } from './components/header/header.react';
 import { AutopilotChatInput } from './components/input/chat-input.react';
@@ -16,13 +20,17 @@ import {
 import { AutopilotAttachmentsProvider } from './providers/attachements-provider.react';
 import { AutopilotErrorProvider } from './providers/error-provider.react';
 import { AutopilotChatService } from './services/chat-service';
+import { StorageService } from './services/storage';
 import {
     CHAT_WIDTH_FULL_SCREEN,
     CHAT_WIDTH_FULL_SCREEN_MAX_WIDTH,
-    CHAT_WIDTH_SIDE_BY_SIDE,
+    CHAT_WIDTH_KEY,
+    CHAT_WIDTH_SIDE_BY_SIDE_MIN,
 } from './utils/constants';
 
-const ChatContainer = styled('div')(({ theme }) => ({
+const ChatContainer = styled('div')<{ shouldAnimate: boolean }>(({
+    shouldAnimate, theme,
+}: { shouldAnimate: boolean; theme: Theme }) => ({
     display: 'flex',
     flexDirection: 'column',
     height: 'calc(100vh - 48px)',
@@ -30,6 +38,8 @@ const ChatContainer = styled('div')(({ theme }) => ({
     boxSizing: 'border-box',
     border: `${token.Border.BorderThickS} solid ${theme.palette.semantic.colorBorderDeEmp}`,
     borderTop: 'none',
+    borderLeft: 'none',
+    ...(shouldAnimate && { transition: 'width 0.2s ease' }),
 }));
 
 const HeaderContainer = styled('div')(() => ({
@@ -71,8 +81,15 @@ const InputContainer = styled('div')<{ isFullScreen: boolean }>(({ isFullScreen 
 }));
 
 export function ApAutopilotChatReact() {
+    const storage = StorageService.Instance;
     const overflowContainerRef = React.useRef<HTMLDivElement>(null);
     const [ isFullScreen, setIsFullScreen ] = React.useState(false);
+    const [ width, setWidth ] = React.useState(() => {
+        const savedWidth = storage.get(CHAT_WIDTH_KEY);
+
+        return savedWidth ? parseInt(savedWidth, 10) : CHAT_WIDTH_SIDE_BY_SIDE_MIN;
+    });
+    const [ shouldAnimate, setShouldAnimate ] = React.useState(false);
 
     React.useEffect(() => {
         AutopilotChatService.Instance.on(AutopilotChatEvent.ModeChange, (mode) => {
@@ -104,7 +121,9 @@ export function ApAutopilotChatReact() {
         <AutopilotErrorProvider>
             <AutopilotAttachmentsProvider>
                 <AutopilotChatDropzone>
-                    <ChatContainer style={{ width: isFullScreen ? CHAT_WIDTH_FULL_SCREEN : CHAT_WIDTH_SIDE_BY_SIDE }}>
+                    <ChatContainer shouldAnimate={shouldAnimate} style={{ width: isFullScreen ? CHAT_WIDTH_FULL_SCREEN : width }}>
+                        <DragHandle width={width} onWidthChange={setWidth} setShouldAnimate={setShouldAnimate} />
+
                         <HeaderContainer>
                             <AutopilotChatHeader />
                         </HeaderContainer>
