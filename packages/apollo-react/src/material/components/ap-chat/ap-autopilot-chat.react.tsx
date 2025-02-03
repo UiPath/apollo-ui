@@ -36,7 +36,7 @@ const ChatContainer = styled('div')<{ shouldAnimate: boolean; mode: AutopilotCha
     width: mode === AutopilotChatMode.FullScreen ? CHAT_WIDTH_FULL_SCREEN : width,
     display: 'flex',
     flexDirection: 'column',
-    height: 'calc(100vh - 48px)',
+    height: 'calc(100vh - 48px)', // account for global header hight
     position: 'relative',
     boxSizing: 'border-box',
     border: `${token.Border.BorderThickS} solid ${theme.palette.semantic.colorBorderDeEmp}`,
@@ -111,12 +111,10 @@ export function ApAutopilotChatReact() {
                     const container = overflowContainerRef.current;
 
                     if (container) {
-                        if (container) {
-                            container.scrollTo({
-                                top: container.scrollHeight,
-                                behavior: 'smooth',
-                            });
-                        }
+                        container.scrollTo({
+                            top: container.scrollHeight,
+                            behavior: 'smooth',
+                        });
                     }
                 });
             }, 200);
