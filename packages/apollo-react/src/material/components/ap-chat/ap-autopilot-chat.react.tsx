@@ -19,6 +19,7 @@ import {
 } from './models/chat.model';
 import { AutopilotAttachmentsProvider } from './providers/attachements-provider.react';
 import { AutopilotErrorProvider } from './providers/error-provider.react';
+import { AutopilotChatInternalService } from './services/chat-internal-service';
 import { AutopilotChatService } from './services/chat-service';
 import { StorageService } from './services/storage';
 import {
@@ -95,6 +96,8 @@ export function ApAutopilotChatReact() {
         AutopilotChatService.Instance.on(AutopilotChatEvent.ModeChange, (mode) => {
             setIsFullScreen(mode === AutopilotChatMode.FullScreen);
         });
+
+        AutopilotChatInternalService.Instantiate();
     }, []);
 
     const scrollToBottom = React.useCallback(() => {

@@ -64,6 +64,8 @@ export class AutopilotChatService {
      * @returns The current configuration
      */
     getConfig() {
+        this._checkForConfig();
+
         return this.config;
     }
 
@@ -132,6 +134,8 @@ export class AutopilotChatService {
      * @returns The message renderer
      */
     getMessageRenderer(name: string) {
+        this._checkForConfig();
+
         return this.messageRenderers.find(r => r.name === name);
     }
 
@@ -192,8 +196,9 @@ export class AutopilotChatService {
      * Expands the chat window
      */
     setChatMode(mode: AutopilotChatMode) {
-        this.config.mode = mode;
+        this._checkForConfig();
 
+        this.config.mode = mode;
         this.eventBus.publish(AutopilotChatEvent.ModeChange, mode);
     }
 
@@ -203,6 +208,8 @@ export class AutopilotChatService {
      * @param prompt - The prompt to set
      */
     setPrompt(prompt: AutopilotChatPrompt | string) {
+        this._checkForConfig();
+
         this.eventBus.publish(AutopilotChatEvent.SetPrompt, prompt);
     }
 
@@ -243,6 +250,8 @@ export class AutopilotChatService {
      * TODO: Implement new chat functionality
      */
     newChat() {
+        this._checkForConfig();
+
         this.eventBus.publish(AutopilotChatEvent.NewChat);
     }
     /**
@@ -260,6 +269,8 @@ export class AutopilotChatService {
      * Clears the error in the chat service
      */
     clearError() {
+        this._checkForConfig();
+
         this.eventBus.publish(AutopilotChatEvent.Error, undefined);
     }
 

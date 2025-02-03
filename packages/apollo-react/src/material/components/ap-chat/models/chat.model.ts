@@ -62,6 +62,10 @@ export enum AutopilotChatInterceptableEvent {
     Request = AutopilotChatEvent.Request,
 }
 
+export enum AutopilotChatInternalEvent {
+    ChatResize = 'chatResize',
+}
+
 export interface AutopilotChatEventHandlers {
     [AutopilotChatEvent.Open]?: (config: AutopilotChatConfiguration) => void;
     [AutopilotChatEvent.Close]?: () => void;
@@ -71,6 +75,10 @@ export interface AutopilotChatEventHandlers {
     [AutopilotChatEvent.SetPrompt]?: (prompt: AutopilotChatPrompt | string) => void;
     [AutopilotChatEvent.Request]?: (request: string) => void;
     [AutopilotChatEvent.Response]?: (response: string) => void;
+}
+
+export interface AutopilotChatInternalEventHandlers {
+    [AutopilotChatInternalEvent.ChatResize]?: (width: number) => void;
 }
 
 export type AutopilotChatEventHandler<T = any> = (data?: T) => void;

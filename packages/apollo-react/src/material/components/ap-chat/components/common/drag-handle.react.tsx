@@ -5,6 +5,8 @@ import { styled } from '@mui/material/styles';
 import token from '@uipath/apollo-core/lib';
 import React from 'react';
 
+import { AutopilotChatInternalEvent } from '../../models/chat.model';
+import { AutopilotChatInternalService } from '../../services/chat-internal-service';
 import { StorageService } from '../../services/storage';
 import {
     CHAT_WIDTH_KEY,
@@ -67,7 +69,7 @@ function DragHandleComponent({
         );
 
         widthRef.current = newWidth;
-
+        AutopilotChatInternalService.Instance.publish(AutopilotChatInternalEvent.ChatResize, newWidth);
         onWidthChange(newWidth);
     }, [ onWidthChange ]);
 
@@ -104,6 +106,7 @@ function DragHandleComponent({
             widthRef.current = newWidth;
 
             onWidthChange(newWidth);
+            AutopilotChatInternalService.Instance.publish(AutopilotChatInternalEvent.ChatResize, newWidth);
             setShouldAnimate(true);
 
         } else if (e.key === 'ArrowRight') {
@@ -113,6 +116,7 @@ function DragHandleComponent({
             widthRef.current = newWidth;
 
             onWidthChange(newWidth);
+            AutopilotChatInternalService.Instance.publish(AutopilotChatInternalEvent.ChatResize, newWidth);
             setShouldAnimate(true);
         }
     }, [ onWidthChange, setShouldAnimate ]);

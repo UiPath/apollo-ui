@@ -1,57 +1,19 @@
 /** @jsx React.createElement */
 /** @jsxFrag React.Fragment */
 
-import { styled } from '@mui/material';
-import token from '@uipath/apollo-core/lib';
 import React from 'react';
 
 import { t } from '../../../../../utils/localization/loc';
-import { ApTooltipReact } from '../../../../ap-tooltip/ap-tooltip.react';
 import {
     AutopilotChatAccordionPosition,
     AutopilotChatEvent,
+    AutopilotChatInternalEvent,
     FileInfo,
 } from '../../../models/chat.model';
+import { AutopilotChatInternalService } from '../../../services/chat-internal-service';
 import { AutopilotChatService } from '../../../services/chat-service';
 import { AutopilotChatAccordion } from '../../common/accordion.react';
-import { AttachmentIcon } from '../../input/chat-input-attachments.react';
-
-interface AttachmentItemProps {
-    attachment: FileInfo;
-}
-
-const AttachmentContainer = styled('div')(({ theme }) => ({
-    display: 'flex',
-    alignItems: 'center',
-    gap: token.Spacing.SpacingS,
-    margin: `${token.Spacing.SpacingS} 0`,
-
-    '& .attachment-name': {
-        color: theme.palette.semantic.colorForeground,
-        textOverflow: 'ellipsis',
-        overflow: 'hidden',
-        whiteSpace: 'nowrap',
-    },
-}));
-
-function AttachmentItemComponent({ attachment }: AttachmentItemProps) {
-    return (
-        <AttachmentContainer>
-            <AttachmentIcon
-                fileType={attachment.friendlyType}
-                width={token.Spacing.SpacingXl}
-                height={token.Spacing.SpacingXl}
-                className={`attachment-icon attachment-icon-${attachment.friendlyType}`}
-                dangerouslySetInnerHTML={{ __html: attachment.icon }}
-            />
-            <ApTooltipReact content={attachment.name}>
-                <ap-typography class="attachment-name">{attachment.name}</ap-typography>
-            </ApTooltipReact>
-        </AttachmentContainer>
-    );
-}
-
-const AttachmentItem = React.memo(AttachmentItemComponent);
+import { AttachmentItem } from './attachment-item.react';
 
 interface AutopilotChatAttachmentsProps {
     attachments: FileInfo[];
@@ -107,13 +69,21 @@ function AutopilotChatAttachmentsComponent({
         calculateVisibleFiles();
         window.addEventListener('resize', calculateVisibleFiles);
 
-        const unsubscribe = AutopilotChatService.Instance.on(AutopilotChatEvent.ModeChange, () => {
-            requestAnimationFrame(calculateVisibleFiles);
-        });
+        const unsubscribeModeChange = AutopilotChatService.Instance.on(
+            AutopilotChatEvent.ModeChange,
+            () => {
+                requestAnimationFrame(calculateVisibleFiles);
+            },
+        );
+        const unsubscribeResize = AutopilotChatInternalService.Instance.on(
+            AutopilotChatInternalEvent.ChatResize,
+            calculateVisibleFiles,
+        );
 
         return () => {
             window.removeEventListener('resize', calculateVisibleFiles);
-            unsubscribe();
+            unsubscribeModeChange();
+            unsubscribeResize();
         };
     }, [ attachments ]);
 
