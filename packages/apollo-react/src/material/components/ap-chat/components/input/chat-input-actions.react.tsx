@@ -44,10 +44,11 @@ const SubmitButtonContainer = styled('div')(({ theme }) => ({
 interface AutopilotChatInputActionsProps {
     handleSubmit: (event: React.MouseEvent) => void;
     disableSubmit: boolean;
+    waitingResponse: boolean;
 }
 
 function AutopilotChatInputActionsComponent({
-    handleSubmit, disableSubmit,
+    handleSubmit, disableSubmit, waitingResponse,
 }: AutopilotChatInputActionsProps) {
     const theme = useTheme();
     const { addAttachments } = useAttachments();
@@ -94,8 +95,8 @@ function AutopilotChatInputActionsComponent({
             <InputActionsGroup>
                 <SubmitButtonContainer>
                     <AutopilotChatActionButton
-                        iconName="arrow_upward"
-                        tooltip={t('autopilot-chat-send')}
+                        iconName={waitingResponse ? 'stop' : 'arrow_upward'}
+                        tooltip={waitingResponse ? t('autopilot-chat-stop') : t('autopilot-chat-send')}
                         overrideColor={disableSubmit
                             ? theme.palette.semantic.colorForegroundDisable
                             : theme.palette.semantic.colorBackground

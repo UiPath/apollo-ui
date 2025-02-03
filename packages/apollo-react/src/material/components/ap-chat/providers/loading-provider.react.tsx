@@ -1,0 +1,54 @@
+/** @jsx React.createElement */
+/** @jsxFrag React.Fragment */
+import React from 'react';
+
+import { AutopilotChatEvent } from '../models/chat.model';
+import { AutopilotChatService } from '../services/chat-service';
+
+interface AutopilotLoadingContextType {
+    waitingResponse: boolean;
+    setWaitingResponse: (waitingResponse: boolean) => void;
+}
+
+export const AutopilotLoadingContext = React.createContext<AutopilotLoadingContextType>({
+    waitingResponse: false,
+    setWaitingResponse: () => {},
+});
+
+export function AutopilotLoadingProvider({ children }: { children: React.ReactNode }) {
+    const [ waitingResponse, setWaitingResponse ] = React.useState<boolean>(false);
+    const chatService = AutopilotChatService.Instance;
+
+    React.useEffect(() => {
+        const unsubscribeRequest = chatService.on(AutopilotChatEvent.Request, () => {
+            setWaitingResponse(true);
+        });
+
+        const unsubscribeResponse = chatService.on(AutopilotChatEvent.Response, () => {
+            setWaitingResponse(false);
+        });
+
+        const unsubscribeStopResponse = chatService.on(AutopilotChatEvent.StopResponse, () => {
+            setWaitingResponse(false);
+        });
+
+        return () => {
+            unsubscribeRequest();
+            unsubscribeResponse();
+            unsubscribeStopResponse();
+        };
+    }, [ chatService ]);
+
+    return (
+        <AutopilotLoadingContext.Provider value={{
+            waitingResponse,
+            setWaitingResponse,
+        }}>
+            {children}
+        </AutopilotLoadingContext.Provider>
+    );
+}
+
+export function useLoading() {
+    return React.useContext(AutopilotLoadingContext);
+}

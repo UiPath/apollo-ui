@@ -13,19 +13,19 @@ import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 
 import { AutopilotChatMessage } from '../../../models/chat.model';
-import { Code } from './markdown-components/code.react';
+import { Code } from './code.react';
 import {
     Li,
     Ol,
     Ul,
-} from './markdown-components/lists.react';
+} from './lists.react';
 import {
     Cell,
     HeaderCell,
     Row,
     Table,
     TableHeader,
-} from './markdown-components/table.react';
+} from './table.react';
 import {
     Blockquote,
     Break,
@@ -35,7 +35,7 @@ import {
     Hr,
     Pre,
     Strong,
-} from './markdown-components/text.react';
+} from './text.react';
 
 const StyledMarkdown = styled(ReactMarkdown)(({ theme }) => ({ '&, & .katex': { color: theme.palette.semantic.colorForeground } }));
 

@@ -56,6 +56,7 @@ export enum AutopilotChatEvent {
     SetPrompt = 'setPrompt',
     Request = 'request',
     Response = 'response',
+    StopResponse = 'stopResponse',
 }
 
 export enum AutopilotChatInterceptableEvent {
@@ -75,6 +76,7 @@ export interface AutopilotChatEventHandlers {
     [AutopilotChatEvent.SetPrompt]?: (prompt: AutopilotChatPrompt | string) => void;
     [AutopilotChatEvent.Request]?: (request: string) => void;
     [AutopilotChatEvent.Response]?: (response: string) => void;
+    [AutopilotChatEvent.StopResponse]?: () => void;
 }
 
 export interface AutopilotChatInternalEventHandlers {

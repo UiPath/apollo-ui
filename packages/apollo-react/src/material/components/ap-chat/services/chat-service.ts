@@ -232,6 +232,15 @@ export class AutopilotChatService {
     }
 
     /**
+     * Stops the response in the chat service
+     */
+    stopResponse() {
+        this._checkForConfig();
+
+        this.eventBus.publish(AutopilotChatEvent.StopResponse);
+    }
+
+    /**
      * Sends a response as an AI assistant response to the chat service
      *
      * @param response - The response to send

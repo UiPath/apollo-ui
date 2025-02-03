@@ -24,9 +24,7 @@ const InputHeaderActions = styled('div')(() => ({
     gap: token.Spacing.SpacingXs,
 }));
 
-function AutopilotChatInputHeaderComponent({
-    onPromptLibrary, clearInput,
-}: AutopilotChatInputHeaderProps) {
+function AutopilotChatInputHeaderComponent({ clearInput }: AutopilotChatInputHeaderProps) {
     const {
         error, clearError,
     } = useError();
@@ -46,6 +44,8 @@ function AutopilotChatInputHeaderComponent({
 
     const handleNewChat = React.useCallback(() => {
         AutopilotChatService.Instance.newChat();
+        AutopilotChatService.Instance.stopResponse();
+
         clearAttachments();
         clearInput();
     }, [ clearAttachments, clearInput ]);
@@ -56,12 +56,13 @@ function AutopilotChatInputHeaderComponent({
 
     return (
         <InputHeaderActions>
-            <AutopilotChatActionButton
+            {/* TODO: Implement prompt library */}
+            {/* <AutopilotChatActionButton
                 iconName="book_2"
                 tooltip={t('autopilot-chat-prompt-library')}
                 onClick={onPromptLibrary}
                 variant="custom"
-            />
+            /> */}
             <AutopilotChatActionButton
                 iconName="add"
                 text={t('autopilot-chat-new-chat')}

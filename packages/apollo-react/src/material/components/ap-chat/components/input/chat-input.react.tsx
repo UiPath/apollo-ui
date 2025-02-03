@@ -16,6 +16,7 @@ import {
 } from '../../models/chat.model';
 import { useAttachments } from '../../providers/attachements-provider.react';
 import { useError } from '../../providers/error-provider.react';
+import { useLoading } from '../../providers/loading-provider.react';
 import { AutopilotChatService } from '../../services/chat-service';
 import {
     CHAT_INPUT_MAX_ROWS,
@@ -58,16 +59,19 @@ function AutopilotChatInputComponent() {
     const inputRef = React.useRef<HTMLTextAreaElement>(null);
     const chatService = AutopilotChatService.Instance;
     const { setError } = useError();
+    const { waitingResponse } = useLoading();
     const {
         attachments, clearAttachments,
     } = useAttachments();
 
     React.useEffect(() => {
-        const unsubscribe = chatService.on(AutopilotChatEvent.SetPrompt, (prompt: AutopilotChatPrompt | string) => {
+        const unsubscribeSetPrompt = chatService.on(AutopilotChatEvent.SetPrompt, (prompt: AutopilotChatPrompt | string) => {
             setMessage(typeof prompt === 'string' ? prompt : prompt.content);
         });
 
-        return () => unsubscribe();
+        return () => {
+            unsubscribeSetPrompt();
+        };
     }, [ chatService ]);
 
     const handleChange = React.useCallback((value: string) => {
@@ -81,6 +85,10 @@ function AutopilotChatInputComponent() {
     }, []);
 
     const handleSubmit = React.useCallback(() => {
+        if (waitingResponse) {
+            chatService.stopResponse();
+            return;
+        }
 
         chatService.sendRequest({
             content: message,
@@ -91,13 +99,21 @@ function AutopilotChatInputComponent() {
         // clear input
         setMessage('');
         clearAttachments();
-    }, [ message, attachments, clearAttachments, chatService ]);
+    }, [ message, attachments, clearAttachments, chatService, waitingResponse ]);
 
     const handleKeyDown = React.useCallback((event: KeyboardEvent) => {
+        if (waitingResponse) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+            }
+
+            return;
+        }
+
         if (event.key === 'Enter' && !event.shiftKey && message.trim().length > 0) {
             handleSubmit();
         }
-    }, [ message, handleSubmit ]);
+    }, [ message, handleSubmit, waitingResponse ]);
 
     // TODO: Implement prompt library
     const handlePromptLibrary = React.useCallback(() => {
@@ -128,7 +144,8 @@ function AutopilotChatInputComponent() {
                 </Box>
 
                 <AutopilotChatInputActions
-                    disableSubmit={message.trim().length === 0 && attachments.length === 0}
+                    disableSubmit={message.trim().length === 0 && attachments.length === 0 && !waitingResponse}
+                    waitingResponse={waitingResponse}
                     handleSubmit={handleSubmit}
                 />
             </InputContainer>

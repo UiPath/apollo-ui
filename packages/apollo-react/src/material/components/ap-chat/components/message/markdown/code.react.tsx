@@ -14,11 +14,11 @@ import {
     oneLight,
 } from 'react-syntax-highlighter/dist/cjs/styles/prism';
 
-import { isDebuggingEnabled } from '../../../../../../react/stencil-react-adapter/Utils/DebugUtils';
-import { t } from '../../../../../../utils/localization/loc';
-import { ThemeInstanceResolver } from '../../../../../../utils/theme/themeInstanceResolver';
-import { ApChipReact } from '../../../../../ap-chip/ap-chip.react';
-import { AutopilotChatActionButton } from '../../../common/action-button.react';
+import { isDebuggingEnabled } from '../../../../../react/stencil-react-adapter/Utils/DebugUtils';
+import { t } from '../../../../../utils/localization/loc';
+import { ThemeInstanceResolver } from '../../../../../utils/theme/themeInstanceResolver';
+import { ApChipReact } from '../../../../ap-chip/ap-chip.react';
+import { AutopilotChatActionButton } from '../../common/action-button.react';
 
 const CodeBlockHeader = styled('div')(({ theme }) => ({
     display: 'flex',

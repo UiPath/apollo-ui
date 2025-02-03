@@ -19,6 +19,7 @@ import {
 } from './models/chat.model';
 import { AutopilotAttachmentsProvider } from './providers/attachements-provider.react';
 import { AutopilotErrorProvider } from './providers/error-provider.react';
+import { AutopilotLoadingProvider } from './providers/loading-provider.react';
 import { AutopilotChatInternalService } from './services/chat-internal-service';
 import { AutopilotChatService } from './services/chat-service';
 import { StorageService } from './services/storage';
@@ -122,29 +123,31 @@ export function ApAutopilotChatReact() {
 
     return (
         <AutopilotErrorProvider>
-            <AutopilotAttachmentsProvider>
-                <AutopilotChatDropzone>
-                    <ChatContainer shouldAnimate={shouldAnimate} style={{ width: isFullScreen ? CHAT_WIDTH_FULL_SCREEN : width }}>
-                        <DragHandle width={width} onWidthChange={setWidth} setShouldAnimate={setShouldAnimate} />
+            <AutopilotLoadingProvider>
+                <AutopilotAttachmentsProvider>
+                    <AutopilotChatDropzone>
+                        <ChatContainer shouldAnimate={shouldAnimate} style={{ width: isFullScreen ? CHAT_WIDTH_FULL_SCREEN : width }}>
+                            <DragHandle width={width} onWidthChange={setWidth} setShouldAnimate={setShouldAnimate} />
 
-                        <HeaderContainer>
-                            <AutopilotChatHeader />
-                        </HeaderContainer>
+                            <HeaderContainer>
+                                <AutopilotChatHeader />
+                            </HeaderContainer>
 
-                        <OverflowContainer ref={overflowContainerRef}>
-                            <MessagesContainer isFullScreen={isFullScreen}>
-                                <AutopilotChatMessages overflowContainerRef={overflowContainerRef} scrollToBottom={scrollToBottom} />
-                            </MessagesContainer>
-                        </OverflowContainer>
+                            <OverflowContainer ref={overflowContainerRef}>
+                                <MessagesContainer isFullScreen={isFullScreen}>
+                                    <AutopilotChatMessages overflowContainerRef={overflowContainerRef} scrollToBottom={scrollToBottom} />
+                                </MessagesContainer>
+                            </OverflowContainer>
 
-                        <InputBackground>
-                            <InputContainer isFullScreen={isFullScreen}>
-                                <AutopilotChatInput />
-                            </InputContainer>
-                        </InputBackground>
-                    </ChatContainer>
-                </AutopilotChatDropzone>
-            </AutopilotAttachmentsProvider>
+                            <InputBackground>
+                                <InputContainer isFullScreen={isFullScreen}>
+                                    <AutopilotChatInput />
+                                </InputContainer>
+                            </InputBackground>
+                        </ChatContainer>
+                    </AutopilotChatDropzone>
+                </AutopilotAttachmentsProvider>
+            </AutopilotLoadingProvider>
         </AutopilotErrorProvider>
     );
 }
