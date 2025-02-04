@@ -82,7 +82,7 @@ const StyledAccordionSummary = styled(AccordionSummary)(({ theme }) => ({
 
     '& .MuiAccordionSummary-expandIconWrapper': {
         alignSelf: 'flex-start',
-        marginTop: '2px',
+        marginTop: token.Padding.PadXs,
         color: theme.palette.semantic.colorIconDefault,
     },
 }));

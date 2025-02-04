@@ -59,17 +59,16 @@ const MessageBox = styled('div')<{
 
     return {
         display: 'flex',
-        padding: token.Spacing.SpacingBase,
-        paddingRight: `calc(${token.Spacing.SpacingBase} + ${token.Spacing.SpacingXl})`,
+        padding: isAssistant ? 0 : token.Spacing.SpacingBase,
+        paddingRight: isAssistant ? token.Spacing.SpacingXs : `calc(${token.Spacing.SpacingBase} + ${token.Spacing.SpacingXl})`,
         flexDirection: 'column',
         justifyContent: 'center',
         alignSelf: isAssistant ? 'flex-start' : 'flex-end',
         gap: token.Spacing.SpacingMicro,
         borderRadius: token.Border.BorderRadiusL,
         backgroundColor: isAssistant ? 'unset' : theme.palette.semantic.colorBackgroundSecondary,
-        marginLeft: isAssistant ? '0' : token.Spacing.SpacingL,
-        marginRight: isAssistant ? token.Spacing.SpacingL : '0',
-        maxWidth: `calc(100% - ${token.Spacing.SpacingL} * 2 - ${padding}px)`, // margin of parent + dynamic padding based on side by side width
+        marginLeft: isAssistant ? '0' : `${padding}px`,
+        marginRight: isAssistant ? token.Spacing.SpacingXl : '0',
         whiteSpace: 'pre-wrap',
         overflowWrap: 'anywhere',
     };

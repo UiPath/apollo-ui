@@ -1,6 +1,7 @@
 /** @jsx React.createElement */
 /** @jsxFrag React.Fragment */
 
+import token from '@uipath/apollo-core/lib';
 import React from 'react';
 
 import { t } from '../../../../../utils/localization/loc';
@@ -29,8 +30,7 @@ function AutopilotChatAttachmentsComponent({
     React.useEffect(() => {
         // Method to calculate the number of files to display in the summary
         const calculateVisibleFiles = () => {
-            // aproximate size of the "& more" text
-            const SUFFIX_SIZE = 50;
+            const SUFFIX_SIZE = 70;
 
             if (!displayFileContainerRef.current) {
                 return;
@@ -46,7 +46,11 @@ function AutopilotChatAttachmentsComponent({
             const temp = document.createElement('span');
             temp.style.visibility = 'hidden';
             temp.style.position = 'absolute';
-            document.body.appendChild(temp);
+            temp.style.fontSize = token.FontFamily.FontMSize;
+            temp.style.fontWeight = token.FontFamily.FontMWeight.toString();
+            temp.style.fontFamily = token.FontFamily.FontMFamily;
+            temp.style.lineHeight = token.FontFamily.FontMLineHeight;
+            displayFileContainerRef.current.appendChild(temp);
 
             for (let i = 0; i < attachments.length; i++) {
                 // fill the temp node with the file name
@@ -62,12 +66,11 @@ function AutopilotChatAttachmentsComponent({
                 count = i + 1;
             }
 
-            document.body.removeChild(temp);
+            displayFileContainerRef.current.removeChild(temp);
             setVisibleFiles(Math.max(1, count)); // Ensure at least 1 file is shown
         };
 
-        calculateVisibleFiles();
-        window.addEventListener('resize', calculateVisibleFiles);
+        requestAnimationFrame(calculateVisibleFiles);
 
         const unsubscribeModeChange = AutopilotChatService.Instance.on(
             AutopilotChatEvent.ModeChange,
@@ -81,7 +84,6 @@ function AutopilotChatAttachmentsComponent({
         );
 
         return () => {
-            window.removeEventListener('resize', calculateVisibleFiles);
             unsubscribeModeChange();
             unsubscribeResize();
         };
