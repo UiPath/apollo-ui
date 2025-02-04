@@ -11,6 +11,8 @@ import {
     AutopilotChatMode,
 } from '../../models/chat.model';
 import { AutopilotChatService } from '../../services/chat-service';
+import { StorageService } from '../../services/storage';
+import { CHAT_MODE_KEY } from '../../utils/constants';
 import { AutopilotChatActionButton } from '../common/action-button.react';
 
 const StyledActions = styled('div')(() => ({
@@ -20,7 +22,7 @@ const StyledActions = styled('div')(() => ({
 }));
 
 function AutopilotChatHeaderActionsComponent() {
-    const [ isFullScreen, setIsFullScreen ] = React.useState(false);
+    const [ isFullScreen, setIsFullScreen ] = React.useState(StorageService.Instance.get(CHAT_MODE_KEY) === AutopilotChatMode.FullScreen);
 
     const handleClose = React.useCallback(() => {
         AutopilotChatService.Instance.close();

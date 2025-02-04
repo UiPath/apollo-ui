@@ -31,6 +31,7 @@ export const CHAT_WIDTH_FULL_SCREEN_MAX_WIDTH = '960px';
 export const CHAT_INPUT_MAX_ROWS = 12;
 export const CHAT_STORAGE_PREFIX = 'autopilot-chat-';
 export const CHAT_WIDTH_KEY = 'width';
+export const CHAT_MODE_KEY = 'mode';
 
 export const APOLLO_MESSAGE_RENDERERS = [ {
     name: DEFAULT_MESSAGE_RENDERER,

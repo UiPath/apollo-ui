@@ -13,17 +13,24 @@ import {
     AutopilotChatMode,
     AutopilotChatRole,
 } from '../models/chat.model';
+import { CHAT_MODE_KEY } from '../utils/constants';
+import { AutopilotChatInternalService } from './chat-internal-service';
 import { EventBus } from './event-bus';
+import { StorageService } from './storage';
 
 export class AutopilotChatService {
     private static instance: AutopilotChatService;
-    private config: AutopilotChatConfiguration = { mode: AutopilotChatMode.Closed };
+    private config: AutopilotChatConfiguration = {
+        mode: StorageService.Instance.get(CHAT_MODE_KEY) as AutopilotChatMode
+            ?? AutopilotChatMode.Closed,
+    };
     private messageRenderers: AutopilotChatMessageRenderer[] = [];
     private eventBus: EventBus;
     private eventUnsubscribers: Array<() => void> = [];
 
     private constructor() {
         this.eventBus = new EventBus();
+        AutopilotChatInternalService.Instantiate();
 
         this.getConfig = this.getConfig.bind(this);
         this.initialize = this.initialize.bind(this);
@@ -167,26 +174,24 @@ export class AutopilotChatService {
      */
     open(config?: AutopilotChatConfiguration, messageRenderers: AutopilotChatMessageRenderer[] = []) {
         this.initialize(config ?? { mode: AutopilotChatMode.SideBySide }, messageRenderers);
-        this.config.mode = AutopilotChatMode.SideBySide;
 
         messageRenderers.forEach(renderer => this.injectMessageRenderer(renderer));
-
-        this.eventBus.publish(AutopilotChatEvent.ModeChange, config?.mode ?? AutopilotChatMode.SideBySide);
     }
 
     /**
      * Closes the chat service
      */
     close() {
-        this.config.mode = AutopilotChatMode.Closed;
-        this.eventBus.publish(AutopilotChatEvent.ModeChange, AutopilotChatMode.Closed);
+        this.setChatMode(AutopilotChatMode.Closed);
     }
 
     /**
      * Expands the chat window
      */
     setChatMode(mode: AutopilotChatMode) {
+        StorageService.Instance.set(CHAT_MODE_KEY, mode);
         this.config.mode = mode;
+
         this.eventBus.publish(AutopilotChatEvent.ModeChange, mode);
     }
 
