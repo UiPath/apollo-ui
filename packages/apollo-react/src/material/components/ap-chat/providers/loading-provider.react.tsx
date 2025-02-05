@@ -32,10 +32,15 @@ export function AutopilotLoadingProvider({ children }: { children: React.ReactNo
             setWaitingResponse(false);
         });
 
+        const unsubscribeNewChat = chatService.on(AutopilotChatEvent.NewChat, () => {
+            setWaitingResponse(false);
+        });
+
         return () => {
             unsubscribeRequest();
             unsubscribeResponse();
             unsubscribeStopResponse();
+            unsubscribeNewChat();
         };
     }, [ chatService ]);
 

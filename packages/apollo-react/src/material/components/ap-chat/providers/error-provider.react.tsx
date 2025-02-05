@@ -26,8 +26,13 @@ export function AutopilotErrorProvider({ children }: { children: React.ReactNode
             setErrorState(err);
         });
 
+        const unsubscribeNewChat = chatService.on(AutopilotChatEvent.NewChat, () => {
+            setErrorState(undefined);
+        });
+
         return () => {
             unsubscribe();
+            unsubscribeNewChat();
         };
     }, [ chatService ]);
 
