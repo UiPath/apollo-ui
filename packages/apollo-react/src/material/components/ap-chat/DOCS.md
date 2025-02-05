@@ -26,7 +26,7 @@ The chat service exposes the following methods:
 - `open(config?: AutopilotChatConfiguration, messageRenderers?: AutopilotChatMessageRenderer[])`: Opens the chat interface
 - `close()`: Closes the chat interface
 - `setChatMode(mode: AutopilotChatMode)`: Sets the chat window mode (SideBySide, FullScreen, or Closed)
-- `newChat()`: Starts a new chat session
+- `newChat(config?: AutopilotChatConfiguration, messageRenderers?: AutopilotChatMessageRenderer[])`: Starts a new chat session
 
 ### Message Handling
 

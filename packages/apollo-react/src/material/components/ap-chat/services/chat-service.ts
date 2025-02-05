@@ -174,8 +174,6 @@ export class AutopilotChatService {
      */
     open(config?: AutopilotChatConfiguration, messageRenderers: AutopilotChatMessageRenderer[] = []) {
         this.initialize(config ?? { mode: AutopilotChatMode.SideBySide }, messageRenderers);
-
-        messageRenderers.forEach(renderer => this.injectMessageRenderer(renderer));
     }
 
     /**
@@ -241,11 +239,21 @@ export class AutopilotChatService {
     }
 
     /**
-     * TODO: Implement new chat functionality
+     * Creates a new chat
+     *
+     * @param config - The configuration to use
+     * @param messageRenderers - The custom message renderers to inject
      */
-    newChat() {
+    newChat(config?: AutopilotChatConfiguration, messageRenderers: AutopilotChatMessageRenderer[] = []) {
+        if (config) {
+            this.initialize(config, messageRenderers);
+        } else {
+            messageRenderers.forEach(renderer => this.injectMessageRenderer(renderer));
+        }
+
         this.eventBus.publish(AutopilotChatEvent.NewChat);
     }
+
     /**
      * Sets an error in the chat service
      *
