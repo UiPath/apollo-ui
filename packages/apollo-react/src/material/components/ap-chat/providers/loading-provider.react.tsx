@@ -2,7 +2,10 @@
 /** @jsxFrag React.Fragment */
 import React from 'react';
 
-import { AutopilotChatEvent } from '../models/chat.model';
+import {
+    AutopilotChatEvent,
+    AutopilotChatInterceptableEvent,
+} from '../models/chat.model';
 import { AutopilotChatService } from '../services/chat-service';
 
 interface AutopilotLoadingContextType {
@@ -20,7 +23,7 @@ export function AutopilotLoadingProvider({ children }: { children: React.ReactNo
     const chatService = AutopilotChatService.Instance;
 
     React.useEffect(() => {
-        const unsubscribeRequest = chatService.on(AutopilotChatEvent.Request, () => {
+        const unsubscribeRequest = chatService.intercept(AutopilotChatInterceptableEvent.Request, () => {
             setWaitingResponse(true);
         });
 
