@@ -3,15 +3,15 @@
 
 import { styled } from '@mui/material';
 import token from '@uipath/apollo-core/lib';
-import React from 'react';
-
 import {
     AutopilotChatEvent,
     AutopilotChatInternalEvent,
     AutopilotChatMessage,
     AutopilotChatMode,
     AutopilotChatRole,
-} from '../../models/chat.model';
+} from '@uipath/portal-shell-util';
+import React from 'react';
+
 import { AutopilotChatInternalService } from '../../services/chat-internal-service';
 import { AutopilotChatService } from '../../services/chat-service';
 import { StorageService } from '../../services/storage';

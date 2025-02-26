@@ -3,15 +3,15 @@
 
 import { styled } from '@mui/material';
 import token from '@uipath/apollo-core/lib';
+import {
+    AutopilotChatEvent,
+    AutopilotChatMode,
+} from '@uipath/portal-shell-util';
 import React from 'react';
 
 import { ApButtonReact } from '../../../ap-button/ap-button.react';
 import { ApIconButtonReact } from '../../../ap-icon-button/ap-icon-button.react';
 import { ApTooltipReact } from '../../../ap-tooltip/ap-tooltip.react';
-import {
-    AutopilotChatEvent,
-    AutopilotChatMode,
-} from '../../models/chat.model';
 import { AutopilotChatService } from '../../services/chat-service';
 
 const StyledButtonContainer = styled('div')(() => ({

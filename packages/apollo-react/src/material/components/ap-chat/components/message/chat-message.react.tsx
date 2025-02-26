@@ -3,17 +3,17 @@
 
 import { styled } from '@mui/material';
 import token from '@uipath/apollo-core/lib';
-import React from 'react';
-
 import {
     AutopilotChatEvent,
     AutopilotChatInterceptableEvent,
     AutopilotChatMessage,
-} from '../../models/chat.model';
+} from '@uipath/portal-shell-util';
+import React from 'react';
+
 import { AutopilotChatService } from '../../services/chat-service';
 import { AutopilotChatAttachments } from './attachments/attachments.react';
-import { AutopilotChatLoading } from './chat-loading.react';
 import { AutopilotChatMessageContent } from './chat-message-content.react';
+import { AutopilotChatLoading } from './loader/chat-loading.react';
 
 const MessageContainer = styled('div')(() => ({
     display: 'flex',

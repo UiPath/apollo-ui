@@ -1,7 +1,8 @@
 import type {
     AutopilotChatEventHandler,
     AutopilotChatInternalEvent,
-} from '../models/chat.model';
+} from '@uipath/portal-shell-util';
+
 import { EventBus } from './event-bus';
 
 export class AutopilotChatInternalService {

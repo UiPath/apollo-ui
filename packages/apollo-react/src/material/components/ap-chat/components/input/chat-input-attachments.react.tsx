@@ -3,15 +3,15 @@
 
 import { styled } from '@mui/material';
 import token from '@uipath/apollo-core/lib';
+import {
+    AutopilotChatFileInfo,
+    AutopilotChatFileType,
+} from '@uipath/portal-shell-util';
 // eslint-disable-next-line unused-imports/no-unused-imports
 import React from 'react';
 
 import { t } from '../../../../utils/localization/loc';
 import { ApTooltipReact } from '../../../ap-tooltip/ap-tooltip.react';
-import {
-    AutopilotChatFileInfo,
-    AutopilotChatFileType,
-} from '../../models/chat.model';
 import { useAttachments } from '../../providers/attachements-provider.react';
 import { AutopilotChatActionButton } from '../common/action-button.react';
 

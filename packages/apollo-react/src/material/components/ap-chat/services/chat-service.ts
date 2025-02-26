@@ -1,4 +1,3 @@
-import { isDebuggingEnabled } from '../../../react/stencil-react-adapter/Utils/DebugUtils';
 import type {
     AutopilotChatConfiguration,
     AutopilotChatEventHandler,
@@ -6,13 +5,15 @@ import type {
     AutopilotChatMessage,
     AutopilotChatMessageRenderer,
     AutopilotChatPrompt,
-} from '../models/chat.model';
+} from '@uipath/portal-shell-util';
 import {
     AutopilotChatEvent,
     AutopilotChatInterceptableEvent,
     AutopilotChatMode,
     AutopilotChatRole,
-} from '../models/chat.model';
+} from '@uipath/portal-shell-util';
+
+import { isDebuggingEnabled } from '../../../react/stencil-react-adapter/Utils/DebugUtils';
 import { CHAT_MODE_KEY } from '../utils/constants';
 import { AutopilotChatInternalService } from './chat-internal-service';
 import { EventBus } from './event-bus';
@@ -24,8 +25,8 @@ export class AutopilotChatService {
         mode: StorageService.Instance.get(CHAT_MODE_KEY) as AutopilotChatMode
             ?? AutopilotChatMode.Closed,
     };
-    private messageRenderers: AutopilotChatMessageRenderer[] = [];
     private eventBus: EventBus;
+    private messageRenderers: AutopilotChatMessageRenderer[] = [];
     private eventUnsubscribers: Array<() => void> = [];
 
     private constructor() {

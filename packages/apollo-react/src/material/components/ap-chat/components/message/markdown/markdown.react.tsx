@@ -6,13 +6,13 @@ import 'katex/dist/katex.min.css';
 
 import { styled } from '@mui/material';
 import { FontVariantToken } from '@uipath/apollo-core/lib';
+import { AutopilotChatMessage } from '@uipath/portal-shell-util';
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
 import rehypeKatex from 'rehype-katex';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 
-import { AutopilotChatMessage } from '../../../models/chat.model';
 import { Code } from './code.react';
 import {
     Li,

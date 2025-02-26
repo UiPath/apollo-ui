@@ -3,10 +3,10 @@
 
 import { styled } from '@mui/material';
 import token from '@uipath/apollo-core/lib';
+import { AutopilotChatFileInfo } from '@uipath/portal-shell-util';
 import React from 'react';
 
 import { ApTooltipReact } from '../../../../ap-tooltip/ap-tooltip.react';
-import { AutopilotChatFileInfo } from '../../../models/chat.model';
 import { AttachmentIcon } from '../../input/chat-input-attachments.react';
 
 const AttachmentItemContainer = styled('div')(({ theme }) => ({

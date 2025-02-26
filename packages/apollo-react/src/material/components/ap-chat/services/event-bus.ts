@@ -1,4 +1,4 @@
-import type { AutopilotChatEventInterceptor } from '../models/chat.model';
+import type { AutopilotChatEventInterceptor } from '@uipath/portal-shell-util';
 
 export type EventHandler<T = any> = (data?: T) => void;
 

@@ -1,4 +1,5 @@
-import { AutopilotChatFileInfo } from '../models/chat.model';
+import { AutopilotChatFileInfo } from '@uipath/portal-shell-util';
+
 import { fileToIcon } from './file-to-icon.react';
 /**
  * Parses files and returns an array of file information.

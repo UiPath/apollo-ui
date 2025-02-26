@@ -3,9 +3,9 @@
 
 import { styled } from '@mui/material/styles';
 import token from '@uipath/apollo-core/lib';
+import { AutopilotChatInternalEvent } from '@uipath/portal-shell-util';
 import React from 'react';
 
-import { AutopilotChatInternalEvent } from '../../models/chat.model';
 import { AutopilotChatInternalService } from '../../services/chat-internal-service';
 import { StorageService } from '../../services/storage';
 import {

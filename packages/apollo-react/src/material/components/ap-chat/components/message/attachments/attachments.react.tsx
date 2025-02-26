@@ -2,15 +2,15 @@
 /** @jsxFrag React.Fragment */
 
 import token from '@uipath/apollo-core/lib';
-import React from 'react';
-
-import { t } from '../../../../../utils/localization/loc';
 import {
     AutopilotChatAccordionPosition,
     AutopilotChatEvent,
     AutopilotChatFileInfo,
     AutopilotChatInternalEvent,
-} from '../../../models/chat.model';
+} from '@uipath/portal-shell-util';
+import React from 'react';
+
+import { t } from '../../../../../utils/localization/loc';
 import { AutopilotChatInternalService } from '../../../services/chat-internal-service';
 import { AutopilotChatService } from '../../../services/chat-service';
 import { AutopilotChatAccordion } from '../../common/accordion.react';

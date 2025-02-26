@@ -6,6 +6,10 @@ import {
     Theme,
 } from '@mui/material/styles';
 import token from '@uipath/apollo-core/lib';
+import {
+    AutopilotChatEvent,
+    AutopilotChatMode,
+} from '@uipath/portal-shell-util';
 import React from 'react';
 
 import { DragHandle } from './components/common/drag-handle.react';
@@ -13,10 +17,6 @@ import { AutopilotChatDropzone } from './components/dropzone/dropzone.react';
 import { AutopilotChatHeader } from './components/header/header.react';
 import { AutopilotChatInput } from './components/input/chat-input.react';
 import { AutopilotChatMessages } from './components/message/chat-message.react';
-import {
-    AutopilotChatEvent,
-    AutopilotChatMode,
-} from './models/chat.model';
 import { AutopilotAttachmentsProvider } from './providers/attachements-provider.react';
 import { AutopilotErrorProvider } from './providers/error-provider.react';
 import { AutopilotLoadingProvider } from './providers/loading-provider.react';

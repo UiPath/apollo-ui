@@ -5,9 +5,9 @@ import { styled } from '@mui/material';
 import token from '@uipath/apollo-core/lib';
 import React from 'react';
 
-import { useLoading } from '../../providers/loading-provider.react';
-import { LoadingIcon } from './loader/chat-loading-icon.react';
-import { LoadingMessage } from './loader/chat-loading-text.react';
+import { useLoading } from '../../../providers/loading-provider.react';
+import { LoadingIcon } from './chat-loading-icon.react';
+import { LoadingMessage } from './chat-loading-text.react';
 
 const LoadingContainer = styled('div')(({ theme }) => {
     return {

@@ -3,13 +3,13 @@
 
 import { styled } from '@mui/material/styles';
 import token from '@uipath/apollo-core/lib';
-import React from 'react';
-
-import { t } from '../../../../utils/localization/loc';
 import {
     AutopilotChatEvent,
     AutopilotChatMode,
-} from '../../models/chat.model';
+} from '@uipath/portal-shell-util';
+import React from 'react';
+
+import { t } from '../../../../utils/localization/loc';
 import { AutopilotChatService } from '../../services/chat-service';
 import { StorageService } from '../../services/storage';
 import { CHAT_MODE_KEY } from '../../utils/constants';

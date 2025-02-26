@@ -6,14 +6,14 @@ import {
     styled,
 } from '@mui/material';
 import token from '@uipath/apollo-core/lib';
+import {
+    AutopilotChatEvent,
+    AutopilotChatPrompt,
+} from '@uipath/portal-shell-util';
 import React from 'react';
 
 import { t } from '../../../../utils/localization/loc';
 import { ApTextAreaReact } from '../../../ap-text-area/ap-text-area.react';
-import {
-    AutopilotChatEvent,
-    AutopilotChatPrompt,
-} from '../../models/chat.model';
 import { useAttachments } from '../../providers/attachements-provider.react';
 import { useError } from '../../providers/error-provider.react';
 import { useLoading } from '../../providers/loading-provider.react';
