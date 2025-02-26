@@ -4,14 +4,14 @@ import React from 'react';
 
 import {
     AutopilotChatEvent,
+    AutopilotChatFileInfo,
     AutopilotChatPrompt,
-    FileInfo,
 } from '../models/chat.model';
 import { AutopilotChatService } from '../services/chat-service';
 
 interface AutopilotAttachmentsContextType {
-    attachments: FileInfo[];
-    addAttachments: (files: FileInfo[]) => void;
+    attachments: AutopilotChatFileInfo[];
+    addAttachments: (files: AutopilotChatFileInfo[]) => void;
     removeAttachment: (name: string) => void;
     clearAttachments: () => void;
 }
@@ -25,9 +25,9 @@ export const AutopilotAttachmentsContext = React.createContext<AutopilotAttachme
 
 export function AutopilotAttachmentsProvider({ children }: { children: React.ReactNode }) {
     const chatService = AutopilotChatService.Instance;
-    const [ attachments, setAttachments ] = React.useState<FileInfo[]>([]);
+    const [ attachments, setAttachments ] = React.useState<AutopilotChatFileInfo[]>([]);
 
-    const addAttachments = React.useCallback((newFiles: FileInfo[]) => {
+    const addAttachments = React.useCallback((newFiles: AutopilotChatFileInfo[]) => {
         setAttachments(current => [
             ...current,
             ...newFiles.filter(file => !current.some(existing =>

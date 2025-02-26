@@ -9,20 +9,20 @@ export enum AutopilotChatAccordionPosition {
     Right = 'right',
 }
 
-export enum FileType {
+export enum AutopilotChatFileType {
     Word = 'Word',
     PowerPoint = 'PowerPoint',
     File = 'File',
 }
 
-export interface FileInfo {
+export interface AutopilotChatFileInfo {
     name: string;
     type: string;
     size: number;
     lastModified: number;
     content: string | Uint8Array;
     icon: string;
-    friendlyType: FileType;
+    friendlyType: AutopilotChatFileType;
 }
 
 export enum AutopilotChatRole {
@@ -36,7 +36,7 @@ export interface AutopilotChatMessage {
     created_at: string;
     role: AutopilotChatRole;
     widget: string;
-    attachments?: FileInfo[];
+    attachments?: AutopilotChatFileInfo[];
     hijacked?: boolean;
 }
 

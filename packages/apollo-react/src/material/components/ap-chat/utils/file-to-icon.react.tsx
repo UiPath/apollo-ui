@@ -1,7 +1,7 @@
 import FileIcon from '../assets/default-file.svg';
 import PowerPointFileIcon from '../assets/ppt-file.svg';
 import WordFileIcon from '../assets/word-file.svg';
-import { FileType } from '../models/chat.model';
+import { AutopilotChatFileType } from '../models/chat.model';
 
 export const fileToIcon = (file: File) => {
     const extension = file.name.split('.').pop();
@@ -10,27 +10,27 @@ export const fileToIcon = (file: File) => {
         case 'doc':
             return {
                 icon: WordFileIcon,
-                friendlyType: FileType.Word,
+                friendlyType: AutopilotChatFileType.Word,
             };
         case 'docx':
             return {
                 icon: WordFileIcon,
-                friendlyType: FileType.Word,
+                friendlyType: AutopilotChatFileType.Word,
             };
         case 'ppt':
             return {
                 icon: PowerPointFileIcon,
-                friendlyType: FileType.PowerPoint,
+                friendlyType: AutopilotChatFileType.PowerPoint,
             };
         case 'pptx':
             return {
                 icon: PowerPointFileIcon,
-                friendlyType: FileType.PowerPoint,
+                friendlyType: AutopilotChatFileType.PowerPoint,
             };
         default:
             return {
                 icon: FileIcon,
-                friendlyType: FileType.File,
+                friendlyType: AutopilotChatFileType.File,
             };
     }
 };

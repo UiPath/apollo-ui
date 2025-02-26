@@ -8,8 +8,8 @@ import { t } from '../../../../../utils/localization/loc';
 import {
     AutopilotChatAccordionPosition,
     AutopilotChatEvent,
+    AutopilotChatFileInfo,
     AutopilotChatInternalEvent,
-    FileInfo,
 } from '../../../models/chat.model';
 import { AutopilotChatInternalService } from '../../../services/chat-internal-service';
 import { AutopilotChatService } from '../../../services/chat-service';
@@ -17,7 +17,7 @@ import { AutopilotChatAccordion } from '../../common/accordion.react';
 import { AttachmentItem } from './attachment-item.react';
 
 interface AutopilotChatAttachmentsProps {
-    attachments: FileInfo[];
+    attachments: AutopilotChatFileInfo[];
     onToggleExpanded?: (expanded: boolean) => void;
 }
 

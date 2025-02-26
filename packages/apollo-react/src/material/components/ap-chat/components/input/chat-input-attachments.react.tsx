@@ -9,8 +9,8 @@ import React from 'react';
 import { t } from '../../../../utils/localization/loc';
 import { ApTooltipReact } from '../../../ap-tooltip/ap-tooltip.react';
 import {
-    FileInfo,
-    FileType,
+    AutopilotChatFileInfo,
+    AutopilotChatFileType,
 } from '../../models/chat.model';
 import { useAttachments } from '../../providers/attachements-provider.react';
 import { AutopilotChatActionButton } from '../common/action-button.react';
@@ -25,7 +25,7 @@ const AttachementsContainer = styled('div')(() => ({
     overflowY: 'auto',
 }));
 
-export const AttachmentIcon = styled('span')<{ fileType?: FileType; width?: string; height?: string }>(({
+export const AttachmentIcon = styled('span')<{ fileType?: AutopilotChatFileType; width?: string; height?: string }>(({
     theme, fileType, width, height,
 }) => ({
     maxWidth: width ?? token.Spacing.SpacingM,
@@ -37,7 +37,7 @@ export const AttachmentIcon = styled('span')<{ fileType?: FileType; width?: stri
     gap: token.Spacing.SpacingXs,
     borderRadius: token.Border.BorderRadiusM,
 
-    ...(fileType === FileType.File ? {
+    ...(fileType === AutopilotChatFileType.File ? {
         padding: token.Spacing.SpacingMicro,
         backgroundColor: '#078E9E',
     } : {
@@ -88,7 +88,7 @@ const StyledAttachment = styled('div')<{ showRemoveIcon: boolean }>(({
 }));
 
 interface AttachmentProps {
-    attachment: FileInfo;
+    attachment: AutopilotChatFileInfo;
     onRemove: (name: string) => void;
     setFocusedAttachmentIndex: () => void;
     shouldFocus: boolean;

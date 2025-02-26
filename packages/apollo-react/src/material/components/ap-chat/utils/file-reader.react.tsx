@@ -1,4 +1,4 @@
-import { FileInfo } from '../models/chat.model';
+import { AutopilotChatFileInfo } from '../models/chat.model';
 import { fileToIcon } from './file-to-icon.react';
 /**
  * Parses files and returns an array of file information.
@@ -13,7 +13,7 @@ export const parseFiles = async (files: File[] | null, expectedFormat: 'text' | 
     }
 
     const fileResults = await Promise.all(Array.from(files).map(async (file) => {
-        const result = await new Promise<FileInfo>((resolve, reject) => {
+        const result = await new Promise<AutopilotChatFileInfo>((resolve, reject) => {
             const reader = new FileReader();
 
             reader.onload = async (e) => {
@@ -23,7 +23,7 @@ export const parseFiles = async (files: File[] | null, expectedFormat: 'text' | 
 
                 try {
                     const content = e.target?.result;
-                    const fileInfo: FileInfo = {
+                    const fileInfo: AutopilotChatFileInfo = {
                         name: file.name,
                         type: file.type,
                         size: file.size,
