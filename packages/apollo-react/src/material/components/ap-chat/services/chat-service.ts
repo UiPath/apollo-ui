@@ -203,6 +203,21 @@ export class AutopilotChatService {
     }
 
     /**
+     * Sets a conversation in the chat service
+     *
+     * @param messages - The messages to set
+     */
+    setConversation(messages: AutopilotChatMessage[]) {
+        messages.forEach(message => {
+            if (message.role === AutopilotChatRole.User) {
+                this.sendRequest(message);
+            } else {
+                this.sendResponse(message);
+            }
+        });
+    }
+
+    /**
      * Sends a request as an user request to the chat service
      *
      * @param request - The request to send

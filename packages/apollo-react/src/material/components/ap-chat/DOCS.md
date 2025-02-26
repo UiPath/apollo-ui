@@ -30,6 +30,7 @@ The chat service exposes the following methods:
 
 ### Message Handling
 
+- `setConversation(messages: AutopilotChatMessage[])`: Sets a conversation in the chat interface
 - `setPrompt(prompt: AutopilotChatPrompt | string)`: Sets a prompt in the chat interface
 - `sendRequest(request: AutopilotChatMessage)`: Sends a user request to the chat
 - `sendResponse(response: AutopilotChatMessage)`: Sends an AI assistant response to the chat
