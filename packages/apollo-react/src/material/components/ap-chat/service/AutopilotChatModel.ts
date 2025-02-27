@@ -55,6 +55,7 @@ export enum AutopilotChatEvent {
     Request = 'request',
     Response = 'response',
     StopResponse = 'stopResponse',
+    SetFirstRunExperience = 'setFirstRunExperience',
 }
 
 export enum AutopilotChatInterceptableEvent {
@@ -73,6 +74,7 @@ export interface AutopilotChatEventHandlers {
     [AutopilotChatEvent.Request]?: (request: string) => void;
     [AutopilotChatEvent.Response]?: (response: string) => void;
     [AutopilotChatEvent.StopResponse]?: () => void;
+    [AutopilotChatEvent.SetFirstRunExperience]?: (config: AutopilotChatConfiguration['firstRunExperience']) => void;
 }
 
 export type AutopilotChatEventHandler<T = any> = (data?: T) => void;
@@ -81,12 +83,9 @@ export type AutopilotChatEventInterceptor<T = any> = (data?: T) => boolean | Pro
 
 export interface AutopilotChatConfiguration {
     mode: AutopilotChatMode;
-    eventHandlers?: Array<{
-        event: AutopilotChatEvent;
-        handler: AutopilotChatEventHandlers;
-    }>;
-    interceptors?: Array<{
-        event: AutopilotChatInterceptableEvent;
-        interceptor: AutopilotChatEventInterceptor;
-    }>;
+    firstRunExperience?: {
+        title: string;
+        description: string;
+        suggestions?: string[];
+    };
 }
