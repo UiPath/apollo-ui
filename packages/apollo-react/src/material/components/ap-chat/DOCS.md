@@ -20,6 +20,7 @@ The chat service exposes the following methods:
 - `initialize(config: AutopilotChatConfiguration, messageRenderers?: AutopilotChatMessageRenderer[])`: Initializes the chat service with the provided configuration and optional message renderers
 - `injectMessageRenderer(renderer: AutopilotChatMessageRenderer)`: Injects a custom message renderer into the chat service
 - `getMessageRenderer(name: string)`: Gets a message renderer by name
+- `setFirstRunExperience(config: AutopilotChatConfiguration['firstRunExperience'])`: Sets the first run experience configuration. This configuration is displayed when the chat is opened for the first time or when there are no messages. It includes a title, description, and optional suggestions that users can click on to start a conversation.
 
 ### Chat Control
 

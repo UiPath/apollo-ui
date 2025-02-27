@@ -14,7 +14,10 @@ import {
 } from '@uipath/portal-shell-util';
 
 import { isDebuggingEnabled } from '../../../react/stencil-react-adapter/Utils/DebugUtils';
-import { CHAT_MODE_KEY } from '../utils/constants';
+import {
+    CHAT_MODE_KEY,
+    DEFAULT_MESSAGE_RENDERER,
+} from '../utils/constants';
 import { AutopilotChatInternalService } from './chat-internal-service';
 import { EventBus } from './event-bus';
 import { StorageService } from './storage';
@@ -48,6 +51,7 @@ export class AutopilotChatService {
         this.sendResponse = this.sendResponse.bind(this);
         this.setPrompt = this.setPrompt.bind(this);
         this.intercept = this.intercept.bind(this);
+        this.setFirstRunExperience = this.setFirstRunExperience.bind(this);
     }
 
     static Instantiate(config?: AutopilotChatConfiguration, messageRenderers: AutopilotChatMessageRenderer[] = []) {
@@ -87,29 +91,12 @@ export class AutopilotChatService {
 
         this.config = config;
 
-        // Register handlers from config if they exist
-        if (config.eventHandlers) {
-            config.eventHandlers.forEach(({
-                event, handler,
-            }) => {
-                if (typeof handler === 'function') {
-                    this.eventUnsubscribers.push(
-                        this.on(event as AutopilotChatEvent, handler),
-                    );
-                }
-            });
-        }
-
-        if (config.interceptors) {
-            config.interceptors.forEach(interceptor => {
-                if (Object.values(AutopilotChatInterceptableEvent).includes(interceptor.event)) {
-                    this.intercept(interceptor.event, interceptor.interceptor);
-                }
-            });
-        }
-
         if (config.mode) {
             this.setChatMode(config.mode);
+        }
+
+        if (config.firstRunExperience) {
+            this.setFirstRunExperience(config.firstRunExperience);
         }
 
         messageRenderers.forEach(renderer => this.injectMessageRenderer(renderer));
@@ -195,6 +182,15 @@ export class AutopilotChatService {
     }
 
     /**
+     * Sets the first run configuration in the chat service
+     *
+     * @param config - The configuration to set
+     */
+    setFirstRunExperience(config: AutopilotChatConfiguration['firstRunExperience']) {
+        this.eventBus.publish(AutopilotChatEvent.SetFirstRunExperience, config);
+    }
+
+    /**
      * Sets a prompt in the chat service
      *
      * @param prompt - The prompt to set
@@ -223,12 +219,13 @@ export class AutopilotChatService {
      *
      * @param request - The request to send
      */
-    sendRequest(request: Omit<AutopilotChatMessage, 'role' | 'id' | 'created_at' > & { id?: string; created_at?: string }) {
+    sendRequest(request: Omit<AutopilotChatMessage, 'role' | 'id' | 'created_at' | 'widget'> & { id?: string; created_at?: string }) {
         const userMessage = {
             id: crypto.randomUUID(), // Generate a new ID in case it's not provided
             created_at: new Date().toISOString(),
             ...request,
             role: AutopilotChatRole.User,
+            widget: DEFAULT_MESSAGE_RENDERER,
         };
 
         this.eventBus.publish(AutopilotChatEvent.Request, userMessage);

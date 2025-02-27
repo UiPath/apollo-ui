@@ -13,6 +13,7 @@ import React from 'react';
 import { AutopilotChatService } from '../../services/chat-service';
 import { AutopilotChatAttachments } from './attachments/attachments.react';
 import { AutopilotChatMessageContent } from './chat-message-content.react';
+import { AutopilotChatFRE } from './first-run-experience/chat-fre.react';
 import { AutopilotChatLoading } from './loader/chat-loading.react';
 
 const MessageContainer = styled('div')(() => ({
@@ -20,6 +21,7 @@ const MessageContainer = styled('div')(() => ({
     flexDirection: 'column',
     gap: token.Spacing.SpacingXl,
     margin: `0 ${token.Spacing.SpacingL}`,
+    height: '100%',
 }));
 
 interface AutopilotChatMessagesProps {
@@ -78,6 +80,9 @@ function AutopilotChatMessagesComponent({
 
     return (
         <MessageContainer ref={messageContainerRef}>
+            { messages.length === 0 && (
+                <AutopilotChatFRE />
+            )}
             {messages.map((message, index) => {
                 return (
                     <React.Fragment key={message.id}>

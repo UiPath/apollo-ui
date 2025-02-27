@@ -18,10 +18,7 @@ import { useAttachments } from '../../providers/attachements-provider.react';
 import { useError } from '../../providers/error-provider.react';
 import { useLoading } from '../../providers/loading-provider.react';
 import { AutopilotChatService } from '../../services/chat-service';
-import {
-    CHAT_INPUT_MAX_ROWS,
-    DEFAULT_MESSAGE_RENDERER,
-} from '../../utils/constants';
+import { CHAT_INPUT_MAX_ROWS } from '../../utils/constants';
 import { AutopilotChatInputActions } from './chat-input-actions.react';
 import { AutopilotChatInputAttachments } from './chat-input-attachments.react';
 import { AutopilotChatInputFooter } from './chat-input-footer.react';
@@ -92,7 +89,6 @@ function AutopilotChatInputComponent() {
 
         chatService.sendRequest({
             content: message,
-            widget: DEFAULT_MESSAGE_RENDERER,
             attachments,
         });
 

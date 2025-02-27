@@ -66,6 +66,7 @@ const MessagesContainer = styled('div')(({ isFullScreen }: { isFullScreen: boole
         margin: '0 auto',
         width: '100%',
     }),
+    height: '100%',
 }));
 
 const InputBackground = styled('div')(({ theme }) => ({
