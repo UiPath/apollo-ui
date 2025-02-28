@@ -6,7 +6,11 @@ import {
     useTheme,
 } from '@mui/material';
 import token, { FontVariantToken } from '@uipath/apollo-core/lib';
-import { AutopilotChatEvent } from '@uipath/portal-shell-util';
+import {
+    AutopilotChatConfiguration,
+    AutopilotChatEvent,
+    AutopilotChatSuggestion,
+} from '@uipath/portal-shell-util';
 import React, {
     useEffect,
     useState,
@@ -48,16 +52,12 @@ const Suggestion = styled('div')(({ theme }) => ({
     cursor: 'pointer',
 }));
 
-interface FirstRunConfig {
-    title: string;
-    description: string;
-    suggestions?: string[];
-}
-
 function AutopilotChatFREComponent() {
     const theme = useTheme();
     const chatService = AutopilotChatService.Instance;
-    const [ firstRunConfig, setFirstRunConfig ] = useState<FirstRunConfig | undefined>(chatService.getConfig().firstRunExperience);
+    const [ firstRunConfig, setFirstRunConfig ] = useState<
+    AutopilotChatConfiguration['firstRunExperience'] | undefined
+    >(chatService.getConfig().firstRunExperience);
 
     useEffect(() => {
         const unsubscribe = chatService.on(AutopilotChatEvent.SetFirstRunExperience, (config) => {
@@ -71,15 +71,21 @@ function AutopilotChatFREComponent() {
         };
     }, [ chatService ]);
 
-    const handleSuggestionClick = React.useCallback((event: React.MouseEvent<HTMLDivElement> | React.KeyboardEvent<HTMLDivElement>) => {
-        chatService.sendRequest({ content: event.currentTarget.textContent ?? '' });
-    }, [ chatService ]);
+    const handleSuggestionClick = React.useCallback(
+        (
+            _event: React.MouseEvent<HTMLDivElement> | React.KeyboardEvent<HTMLDivElement>,
+            suggestion: AutopilotChatSuggestion,
+        ) => {
+            chatService.sendRequest({ content: suggestion.prompt });
+        },
+        [ chatService ],
+    );
 
-    const handleSuggestionKeyDown = React.useCallback((event: React.KeyboardEvent<HTMLDivElement>) => {
+    const handleSuggestionKeyDown = React.useCallback((event: React.KeyboardEvent<HTMLDivElement>, suggestion: AutopilotChatSuggestion) => {
         if (event.key === 'Enter' || event.key === ' ') {
             event.preventDefault();
 
-            handleSuggestionClick(event);
+            handleSuggestionClick(event, suggestion);
         }
     }, [ handleSuggestionClick ]);
 
@@ -107,9 +113,14 @@ function AutopilotChatFREComponent() {
             {firstRunConfig.suggestions && firstRunConfig.suggestions.length > 0 && (
                 <SuggestionList>
                     {firstRunConfig.suggestions.map((suggestion) => (
-                        <Suggestion onKeyDown={handleSuggestionKeyDown} onClick={handleSuggestionClick} tabIndex={0} key={suggestion}>
+                        <Suggestion
+                            onKeyDown={(event) => handleSuggestionKeyDown(event, suggestion)}
+                            onClick={(event) => handleSuggestionClick(event, suggestion)}
+                            tabIndex={0}
+                            key={suggestion.label}
+                        >
                             <ap-typography variant={FontVariantToken.fontSizeM}>
-                                {suggestion}
+                                {suggestion.label}
                             </ap-typography>
                         </Suggestion>
                     ))}
