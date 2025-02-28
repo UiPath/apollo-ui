@@ -26,7 +26,7 @@ const FREContainer = styled('div')(() => ({
 const FREHeader = styled('div')(() => ({
     display: 'flex',
     flexDirection: 'column',
-    gap: token.Spacing.SpacingM,
+    gap: token.Spacing.SpacingXs,
 }));
 
 const SuggestionList = styled('div')(() => ({

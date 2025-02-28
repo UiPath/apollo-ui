@@ -161,7 +161,10 @@ export class AutopilotChatService {
      * @param messageRenderers - The custom message renderers to inject
      */
     open(config?: AutopilotChatConfiguration, messageRenderers: AutopilotChatMessageRenderer[] = []) {
-        this.initialize(config ?? { mode: AutopilotChatMode.SideBySide }, messageRenderers);
+        this.initialize(config ?? {
+            ...this.config,
+            mode: AutopilotChatMode.SideBySide,
+        }, messageRenderers);
     }
 
     /**
@@ -187,6 +190,8 @@ export class AutopilotChatService {
      * @param config - The configuration to set
      */
     setFirstRunExperience(config: AutopilotChatConfiguration['firstRunExperience']) {
+        this.config.firstRunExperience = config;
+
         this.eventBus.publish(AutopilotChatEvent.SetFirstRunExperience, config);
     }
 
