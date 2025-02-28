@@ -81,11 +81,16 @@ export type AutopilotChatEventHandler<T = any> = (data?: T) => void;
 /** @returns true if the event is hijacked and should not be processed by apollo */
 export type AutopilotChatEventInterceptor<T = any> = (data?: T) => boolean | Promise<boolean> | void;
 
+export interface AutopilotChatSuggestion {
+    label: string;
+    prompt: string;
+}
+
 export interface AutopilotChatConfiguration {
     mode: AutopilotChatMode;
     firstRunExperience?: {
         title: string;
         description: string;
-        suggestions?: string[];
+        suggestions?: AutopilotChatSuggestion[];
     };
 }
