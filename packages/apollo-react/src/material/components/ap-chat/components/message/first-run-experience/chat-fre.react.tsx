@@ -16,6 +16,7 @@ import React, {
     useState,
 } from 'react';
 
+import { t } from '../../../../../utils/localization/loc';
 import { AutopilotChatService } from '../../../services/chat-service';
 
 const FREContainer = styled('div')(() => ({
@@ -33,11 +34,16 @@ const FREHeader = styled('div')(() => ({
     gap: token.Spacing.SpacingXs,
 }));
 
+const SuggestionsHeader = styled('div')(({ theme }) => ({
+    color: theme.palette.semantic.colorForegroundDeEmp,
+    marginTop: token.Spacing.SpacingXxl,
+    marginBottom: token.Spacing.SpacingBase,
+}));
+
 const SuggestionList = styled('div')(() => ({
     display: 'flex',
     flexDirection: 'column',
     gap: token.Spacing.SpacingXs,
-    marginTop: token.Spacing.SpacingXxl,
 }));
 
 const Suggestion = styled('div')(({ theme }) => ({
@@ -50,6 +56,11 @@ const Suggestion = styled('div')(({ theme }) => ({
     borderRadius: token.Border.BorderRadiusM,
     border: `1px solid ${theme.palette.semantic.colorSkeleton}`,
     cursor: 'pointer',
+
+    '&:hover': {
+        backgroundColor: theme.palette.semantic.colorHover,
+        borderColor: theme.palette.semantic.colorBorder,
+    },
 }));
 
 function AutopilotChatFREComponent() {
@@ -111,20 +122,27 @@ function AutopilotChatFREComponent() {
             </FREHeader>
 
             {firstRunConfig.suggestions && firstRunConfig.suggestions.length > 0 && (
-                <SuggestionList>
-                    {firstRunConfig.suggestions.map((suggestion) => (
-                        <Suggestion
-                            onKeyDown={(event) => handleSuggestionKeyDown(event, suggestion)}
-                            onClick={(event) => handleSuggestionClick(event, suggestion)}
-                            tabIndex={0}
-                            key={suggestion.label}
-                        >
-                            <ap-typography variant={FontVariantToken.fontSizeM}>
-                                {suggestion.label}
-                            </ap-typography>
-                        </Suggestion>
-                    ))}
-                </SuggestionList>
+                <>
+                    <SuggestionsHeader>
+                        <ap-typography variant={FontVariantToken.fontSizeMBold}>
+                            {t('autopilot-chat-suggestions')}
+                        </ap-typography>
+                    </SuggestionsHeader>
+                    <SuggestionList>
+                        {firstRunConfig.suggestions.map((suggestion) => (
+                            <Suggestion
+                                onKeyDown={(event) => handleSuggestionKeyDown(event, suggestion)}
+                                onClick={(event) => handleSuggestionClick(event, suggestion)}
+                                tabIndex={0}
+                                key={suggestion.label}
+                            >
+                                <ap-typography color={theme.palette.semantic.colorForeground} variant={FontVariantToken.fontSizeM}>
+                                    {suggestion.label}
+                                </ap-typography>
+                            </Suggestion>
+                        ))}
+                    </SuggestionList>
+                </>
             )}
         </FREContainer>
     );
