@@ -1,5 +1,6 @@
 import type {
     AutopilotChatConfiguration,
+    AutopilotChatDisabledFeatures,
     AutopilotChatEventHandler,
     AutopilotChatEventInterceptor,
     AutopilotChatMessage,
@@ -95,6 +96,10 @@ export class AutopilotChatService {
             this.setChatMode(config.mode);
         }
 
+        if (config.disabledFeatures) {
+            this.setDisabledFeatures(config.disabledFeatures);
+        }
+
         if (config.firstRunExperience) {
             this.setFirstRunExperience(config.firstRunExperience);
         }
@@ -186,6 +191,20 @@ export class AutopilotChatService {
         this.config.mode = mode;
 
         this.eventBus.publish(AutopilotChatEvent.ModeChange, mode);
+    }
+
+    /**
+     * Sets the enabled features in the chat service
+     *
+     * @param features - The features to set
+     */
+    setDisabledFeatures(features: AutopilotChatDisabledFeatures) {
+        this.config.disabledFeatures = {
+            ...this.config.disabledFeatures,
+            ...features,
+        };
+
+        this.eventBus.publish(AutopilotChatEvent.SetDisabledFeatures, this.config.disabledFeatures);
     }
 
     /**

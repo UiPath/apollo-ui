@@ -6,11 +6,16 @@ import {
     useTheme,
 } from '@mui/material';
 import token from '@uipath/apollo-core/lib';
+import {
+    AutopilotChatDisabledFeatures,
+    AutopilotChatEvent,
+} from '@uipath/portal-shell-util';
 import React from 'react';
 
 import { t } from '../../../../utils/localization/loc';
 import { useAttachments } from '../../providers/attachements-provider.react';
 import { useError } from '../../providers/error-provider.react';
+import { AutopilotChatService } from '../../services/chat-service';
 import { ACCEPTED_FILE_EXTENSIONS } from '../../utils/constants';
 import { parseFiles } from '../../utils/file-reader.react';
 import { AutopilotChatActionButton } from '../common/action-button.react';
@@ -53,6 +58,7 @@ function AutopilotChatInputActionsComponent({
     const theme = useTheme();
     const { addAttachments } = useAttachments();
     const { setError } = useError();
+    const [ disabledAttachments, setDisabledAttachments ] = React.useState(false);
 
     const fileInputRef = React.useRef<HTMLInputElement>(null);
 
@@ -74,22 +80,37 @@ function AutopilotChatInputActionsComponent({
         }
     }, [ addAttachments, setError ]);
 
+    React.useEffect(() => {
+        const unsubscribe = AutopilotChatService.Instance.on(AutopilotChatEvent.SetDisabledFeatures,
+            (features: AutopilotChatDisabledFeatures) => {
+                setDisabledAttachments(features?.attachments ?? false);
+            });
+
+        return () => {
+            unsubscribe();
+        };
+    }, []);
+
     return (
         <InputActionsContainer>
             <InputActionsGroup>
-                <input
-                    type="file"
-                    ref={fileInputRef}
-                    style={{ display: 'none' }}
-                    accept={ACCEPTED_FILE_EXTENSIONS}
-                    multiple={true}
-                    onChange={handleAttachment}
-                />
-                <AutopilotChatActionButton
-                    iconName="attach_file"
-                    onClick={handleFileButtonClick}
-                    tooltip={t('autopilot-chat-attach-file')}
-                />
+                {!disabledAttachments && (
+                    <>
+                        <input
+                            type="file"
+                            ref={fileInputRef}
+                            style={{ display: 'none' }}
+                            accept={ACCEPTED_FILE_EXTENSIONS}
+                            multiple={true}
+                            onChange={handleAttachment}
+                        />
+                        <AutopilotChatActionButton
+                            iconName="attach_file"
+                            onClick={handleFileButtonClick}
+                            tooltip={t('autopilot-chat-attach-file')}
+                        />
+                    </>
+                )}
             </InputActionsGroup>
 
             <InputActionsGroup>

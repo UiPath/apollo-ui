@@ -3,10 +3,15 @@
 
 import { styled } from '@mui/material/styles';
 import token from '@uipath/apollo-core/lib';
-import { AutopilotChatInternalEvent } from '@uipath/portal-shell-util';
+import {
+    AutopilotChatDisabledFeatures,
+    AutopilotChatEvent,
+    AutopilotChatInternalEvent,
+} from '@uipath/portal-shell-util';
 import React from 'react';
 
 import { AutopilotChatInternalService } from '../../services/chat-internal-service';
+import { AutopilotChatService } from '../../services/chat-service';
 import { StorageService } from '../../services/storage';
 import {
     CHAT_WIDTH_KEY,
@@ -43,6 +48,15 @@ const DragHandleContainer = styled('div')(({ theme }) => ({
     },
 }));
 
+const Border = styled('div')(({ theme }) => ({
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    width: token.Border.BorderThickS,
+    height: '100%',
+    background: theme.palette.semantic.colorBorderDeEmp,
+}));
+
 interface DragHandleProps {
     width: number;
     onWidthChange: (newWidth: number) => void;
@@ -56,6 +70,18 @@ function DragHandleComponent({
     const startXRef = React.useRef(0);
     const startWidthRef = React.useRef(0);
     const widthRef = React.useRef(width);
+    const [ resizeDisabled, setResizeDisabled ] = React.useState(false);
+
+    React.useEffect(() => {
+        const unsubscribe = AutopilotChatService.Instance.on(AutopilotChatEvent.SetDisabledFeatures,
+            (features: AutopilotChatDisabledFeatures) => {
+                setResizeDisabled(features?.resize ?? false);
+            });
+
+        return () => {
+            unsubscribe();
+        };
+    }, []);
 
     const handleMouseMove = React.useCallback((e: MouseEvent) => {
         if (!isDraggingRef.current) {
@@ -133,6 +159,10 @@ function DragHandleComponent({
             document.removeEventListener('mouseup', handleMouseUp);
         };
     }, [ handleMouseMove, handleMouseUp ]);
+
+    if (resizeDisabled) {
+        return <Border />;
+    }
 
     return (
         <DragHandleContainer

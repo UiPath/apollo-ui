@@ -96,9 +96,13 @@ export function ApAutopilotChatReact() {
     const [ shouldAnimate, setShouldAnimate ] = React.useState(false);
 
     React.useEffect(() => {
-        AutopilotChatService.Instance.on(AutopilotChatEvent.ModeChange, (chatMode) => {
+        const unsubscribe = AutopilotChatService.Instance.on(AutopilotChatEvent.ModeChange, (chatMode) => {
             setMode(chatMode);
         });
+
+        return () => {
+            unsubscribe();
+        };
     }, []);
 
     const scrollToBottom = React.useCallback(() => {
