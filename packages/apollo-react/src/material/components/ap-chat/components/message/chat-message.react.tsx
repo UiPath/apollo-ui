@@ -47,6 +47,16 @@ function AutopilotChatMessagesComponent({
     }, []);
 
     React.useEffect(() => {
+        const unsubscribeScrollToBottom = chatService.on(AutopilotChatEvent.ScrollToBottom, () => {
+            scrollToBottom();
+        });
+
+        return () => {
+            unsubscribeScrollToBottom();
+        };
+    }, [ scrollToBottom, chatService ]);
+
+    React.useEffect(() => {
         // use an interceptor to add the message to the messages array so the chat doesn't have to wait for the consumer confirmation
         const unsubscribeRequest = chatService.intercept(AutopilotChatInterceptableEvent.Request, updateMessages);
         const unsubscribeResponse = chatService.on(AutopilotChatEvent.Response, updateMessages);

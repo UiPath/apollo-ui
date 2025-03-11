@@ -293,6 +293,13 @@ export class AutopilotChatService {
     }
 
     /**
+     * Scrolls to the bottom of the chat
+     */
+    scrollToBottom() {
+        this.eventBus.publish(AutopilotChatEvent.ScrollToBottom);
+    }
+
+    /**
      * Subscribes to an event
      *
      * @param event - The event to subscribe to

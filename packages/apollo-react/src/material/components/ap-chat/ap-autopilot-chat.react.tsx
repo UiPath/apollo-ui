@@ -57,7 +57,7 @@ const OverflowContainer = styled('div')(() => ({
     display: 'flex',
     flexDirection: 'column',
     overflowY: 'auto',
-    paddingBottom: token.Spacing.SpacingBase,
+    marginBottom: token.Spacing.SpacingBase,
 }));
 
 const MessagesContainer = styled('div')(({ isFullScreen }: { isFullScreen: boolean }) => ({
