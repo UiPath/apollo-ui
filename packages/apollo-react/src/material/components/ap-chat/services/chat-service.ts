@@ -165,6 +165,8 @@ export class AutopilotChatService {
             ...this.config,
             mode: AutopilotChatMode.SideBySide,
         }, messageRenderers);
+
+        this.eventBus.publish(AutopilotChatEvent.Open);
     }
 
     /**
@@ -172,6 +174,8 @@ export class AutopilotChatService {
      */
     close() {
         this.setChatMode(AutopilotChatMode.Closed);
+
+        this.eventBus.publish(AutopilotChatEvent.Close);
     }
 
     /**
