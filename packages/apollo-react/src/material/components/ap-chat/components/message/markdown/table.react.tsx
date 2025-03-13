@@ -17,11 +17,11 @@ interface TableProps {
     children: ReactNode;
 }
 
-export const Table = (({ children }: TableProps) => (
+export const Table = React.memo(({ children }: TableProps) => (
     <MuiTable>{children}</MuiTable>
 ));
 
-export const TableHeader = (({ children }: TableProps) => {
+export const TableHeader = React.memo(({ children }: TableProps) => {
     const theme = useTheme();
     return (
         <TableHead
@@ -32,11 +32,11 @@ export const TableHeader = (({ children }: TableProps) => {
     );
 });
 
-export const Row = (({ children }: TableProps) => (
+export const Row = React.memo(({ children }: TableProps) => (
     <TableRow>{children}</TableRow>
 ));
 
-export const Cell = (({ children }: TableProps) => {
+export const Cell = React.memo(({ children }: TableProps) => {
     const theme = useTheme();
 
     return (
@@ -46,7 +46,7 @@ export const Cell = (({ children }: TableProps) => {
     );
 });
 
-export const HeaderCell = (({ children }: TableProps) => {
+export const HeaderCell = React.memo(({ children }: TableProps) => {
     const theme = useTheme();
 
     return (

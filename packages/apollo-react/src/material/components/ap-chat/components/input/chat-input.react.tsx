@@ -17,6 +17,7 @@ import { ApTextAreaReact } from '../../../ap-text-area/ap-text-area.react';
 import { useAttachments } from '../../providers/attachements-provider.react';
 import { useError } from '../../providers/error-provider.react';
 import { useLoading } from '../../providers/loading-provider.react';
+import { useStreaming } from '../../providers/streaming-provider.react';
 import { AutopilotChatService } from '../../services/chat-service';
 import { CHAT_INPUT_MAX_ROWS } from '../../utils/constants';
 import { AutopilotChatInputActions } from './chat-input-actions.react';
@@ -62,6 +63,7 @@ function AutopilotChatInputComponent() {
     const chatService = AutopilotChatService.Instance;
     const { setError } = useError();
     const { waitingResponse } = useLoading();
+    const { streaming } = useStreaming();
     const {
         attachments, clearAttachments,
     } = useAttachments();
@@ -87,7 +89,7 @@ function AutopilotChatInputComponent() {
     }, []);
 
     const handleSubmit = React.useCallback(() => {
-        if (waitingResponse) {
+        if (waitingResponse || streaming) {
             chatService.stopResponse();
             return;
         }
@@ -100,10 +102,10 @@ function AutopilotChatInputComponent() {
         // clear input
         setMessage('');
         clearAttachments();
-    }, [ message, attachments, clearAttachments, chatService, waitingResponse ]);
+    }, [ message, attachments, clearAttachments, chatService, waitingResponse, streaming ]);
 
     const handleKeyDown = React.useCallback((event: KeyboardEvent) => {
-        if (waitingResponse) {
+        if (waitingResponse || streaming) {
             if (event.key === 'Enter' && !event.shiftKey) {
                 event.preventDefault();
             }
@@ -114,7 +116,7 @@ function AutopilotChatInputComponent() {
         if (event.key === 'Enter' && !event.shiftKey && message.trim().length > 0) {
             handleSubmit();
         }
-    }, [ message, handleSubmit, waitingResponse ]);
+    }, [ message, handleSubmit, waitingResponse, streaming ]);
 
     // TODO: Implement prompt library
     const handlePromptLibrary = React.useCallback(() => {
@@ -145,8 +147,8 @@ function AutopilotChatInputComponent() {
                 </Box>
 
                 <AutopilotChatInputActions
-                    disableSubmit={message.trim().length === 0 && attachments.length === 0 && !waitingResponse}
-                    waitingResponse={waitingResponse}
+                    disableSubmit={message.trim().length === 0 && attachments.length === 0 && !waitingResponse && !streaming}
+                    waitingResponse={waitingResponse || streaming}
                     handleSubmit={handleSubmit}
                 />
             </InputContainer>

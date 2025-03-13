@@ -10,6 +10,7 @@ import type {
 import {
     AutopilotChatEvent,
     AutopilotChatInterceptableEvent,
+    AutopilotChatInternalEvent,
     AutopilotChatMode,
     AutopilotChatRole,
 } from '@uipath/portal-shell-util';
@@ -281,7 +282,10 @@ export class AutopilotChatService {
      *
      * @param request - The request to send
      */
-    sendRequest(request: Omit<AutopilotChatMessage, 'role' | 'id' | 'created_at' | 'widget'> & { id?: string; created_at?: string }) {
+    sendRequest(request: Omit<AutopilotChatMessage, 'role' | 'id' | 'created_at' | 'widget' | 'fakeStream'> & {
+        id?: string;
+        created_at?: string;
+    }) {
         const userMessage = {
             id: crypto.randomUUID(), // Generate a new ID in case it's not provided
             created_at: new Date().toISOString(),
@@ -313,8 +317,16 @@ export class AutopilotChatService {
             role: AutopilotChatRole.Assistant,
         };
 
-        this.conversation.push(assistantMessage);
-        this.eventBus.publish(AutopilotChatEvent.Response, assistantMessage);
+        // Check if message with the same ID already exists and emit chunk, otherwise emit response
+        const existingIndex = this.conversation.findIndex(message => message.id === assistantMessage.id);
+
+        if (existingIndex !== -1) {
+            this.conversation[existingIndex].content += assistantMessage.content;
+            this.eventBus.publish(AutopilotChatEvent.SendChunk, assistantMessage);
+        } else {
+            this.conversation.push(assistantMessage);
+            this.eventBus.publish(AutopilotChatEvent.Response, assistantMessage);
+        }
     }
 
     /**
@@ -367,7 +379,7 @@ export class AutopilotChatService {
      * Scrolls to the bottom of the chat
      */
     scrollToBottom() {
-        this.eventBus.publish(AutopilotChatEvent.ScrollToBottom);
+        AutopilotChatInternalService.Instance.publish(AutopilotChatInternalEvent.ScrollToBottom);
     }
 
     /**

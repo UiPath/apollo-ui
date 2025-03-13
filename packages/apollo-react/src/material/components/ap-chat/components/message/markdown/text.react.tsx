@@ -26,18 +26,16 @@ export const Text = ({
 };
 
 export const getTextForVariant = (variant: FontVariantToken, customStyle?: React.CSSProperties) => {
-    return ({ children }: { children: React.ReactNode }) => Text({
+    return React.memo(({ children }: { children: React.ReactNode }) => Text({
         children,
         variant,
         customStyle,
-    });
+    }));
 };
 
-export const Break = () => {
-    return <br />;
-};
+export const Break = React.memo(() => <br />);
 
-export const Blockquote = ({ children }: { children: React.ReactNode }) => {
+export const Blockquote = React.memo(({ children }: { children: React.ReactNode }) => {
     const theme = useTheme();
 
     return (
@@ -55,34 +53,34 @@ export const Blockquote = ({ children }: { children: React.ReactNode }) => {
             {children}
         </Box>
     );
-};
+});
 
-export const Emphazised = ({ children }: { children: React.ReactNode }) => {
+export const Emphazised = React.memo(({ children }: { children: React.ReactNode }) => {
     return Text({
         children: <em>{children}</em>,
         customStyle: { display: 'inline' },
     });
-};
+});
 
-export const Strong = ({ children }: { children: React.ReactNode }) => {
+export const Strong = React.memo(({ children }: { children: React.ReactNode }) => {
     return Text({
         children: <strong>{children}</strong>,
         customStyle: { display: 'inline' },
     });
-};
+});
 
-export const Del = ({ children }: { children: React.ReactNode }) => {
+export const Del = React.memo(({ children }: { children: React.ReactNode }) => {
     return Text({
         children: <del>{children}</del>,
         customStyle: { display: 'inline' },
     });
-};
+});
 
-export const Pre = ({ children }: { children: React.ReactNode }) => {
+export const Pre = React.memo(({ children }: { children: React.ReactNode }) => {
     return <Box component="pre" sx={{ margin: 0 }}>{children}</Box>;
-};
+});
 
-export const Hr = () => {
+export const Hr = React.memo(() => {
     const theme = useTheme();
 
     return (
@@ -96,4 +94,4 @@ export const Hr = () => {
             }}
         />
     );
-};
+});

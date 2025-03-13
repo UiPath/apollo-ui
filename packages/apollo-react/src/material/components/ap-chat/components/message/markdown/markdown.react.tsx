@@ -6,13 +6,18 @@ import 'katex/dist/katex.min.css';
 
 import { styled } from '@mui/material';
 import { FontVariantToken } from '@uipath/apollo-core/lib';
-import { AutopilotChatMessage } from '@uipath/portal-shell-util';
+import {
+    AutopilotChatEvent,
+    AutopilotChatMessage,
+} from '@uipath/portal-shell-util';
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
 import rehypeKatex from 'rehype-katex';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 
+import { useStreaming } from '../../../providers/streaming-provider.react';
+import { AutopilotChatService } from '../../../services/chat-service';
 import { Code } from './code.react';
 import {
     Li,
@@ -37,15 +42,111 @@ import {
     Strong,
 } from './text.react';
 
-const StyledMarkdown = styled(ReactMarkdown)(({ theme }) => ({ '&, & .katex': { color: theme.palette.semantic.colorForeground } }));
+const StyledMarkdown = React.memo(
+    styled(ReactMarkdown)(({ theme }) => ({ '&, & .katex': { color: theme.palette.semantic.colorForeground } })),
+);
+
+const FAKE_STREAM_CHARS_COUNT = 5;
+const FAKE_STREAM_INTERVAL = 25;
 
 function AutopilotChatMarkdownRendererComponent({ message }: { message: AutopilotChatMessage }) {
-    return (
+    // Only store message ID and content separately to minimize re-renders
+    const messageId = React.useRef(message.id);
+    const [ content, setContent ] = React.useState(message.fakeStream ? '' : (message.content || ''));
+    const chatService = AutopilotChatService.Instance;
+    const { setStreaming } = useStreaming();
+
+    // Update the message ID ref if a new message is passed
+    React.useEffect(() => {
+        let unsubscribeStopResponse: (() => void) | undefined;
+
+        if (message.id !== messageId.current) {
+            messageId.current = message.id;
+
+            if (!message.fakeStream) {
+                setContent(message.content || '');
+            } else {
+                setContent('');
+            }
+        }
+
+        if (message.fakeStream) {
+            unsubscribeStopResponse = chatService.on(AutopilotChatEvent.StopResponse, () => {
+                clearInterval(fakeStreamInterval);
+                setStreaming(false);
+                setContent(message.content || '');
+            });
+
+            const characters = message.content.split('');
+            let charIndex = 0;
+
+            setStreaming(true);
+
+            const fakeStreamInterval = setInterval(() => {
+                if (charIndex < characters.length) {
+                    const chunkSize = FAKE_STREAM_CHARS_COUNT;
+                    const endIndex = Math.min(charIndex + chunkSize, characters.length);
+                    const chunk = characters.slice(charIndex, endIndex).join('');
+
+                    setContent(prevContent => `${prevContent}${chunk}`);
+                    chatService.scrollToBottom();
+                    charIndex = endIndex;
+                } else {
+                    clearInterval(fakeStreamInterval);
+                    setStreaming(false);
+                }
+            }, FAKE_STREAM_INTERVAL);
+        }
+
+        return () => {
+            unsubscribeStopResponse?.();
+        };
+    }, [ message.id, message.content, message.fakeStream, chatService, setStreaming ]);
+
+    React.useEffect(() => {
+        const unsubscribe = chatService.on(AutopilotChatEvent.SendChunk, (msg: AutopilotChatMessage) => {
+            if (msg.id === messageId.current) {
+                requestAnimationFrame(() => {
+                    setContent(prevContent => `${prevContent} ${msg.content}`);
+
+                    chatService.scrollToBottom();
+                });
+            }
+        });
+
+        return () => unsubscribe();
+    }, [ chatService ]);
+
+    const components = React.useMemo(() => ({
+        ul: Ul,
+        ol: Ol,
+        li: Li,
+        p: React.memo(getTextForVariant(FontVariantToken.fontSizeM)),
+        h1: React.memo(getTextForVariant(FontVariantToken.fontSizeH1)),
+        h2: React.memo(getTextForVariant(FontVariantToken.fontSizeH2)),
+        h3: React.memo(getTextForVariant(FontVariantToken.fontSizeH3)),
+        h4: React.memo(getTextForVariant(FontVariantToken.fontSizeH4)),
+        h5: React.memo(getTextForVariant(FontVariantToken.fontSizeL)),
+        h6: React.memo(getTextForVariant(FontVariantToken.fontSizeM)),
+        br: Break,
+        table: Table,
+        thead: TableHeader,
+        tr: Row,
+        th: HeaderCell,
+        td: Cell,
+        img: ({ src }: { src?: string }) => src || '',
+        code: Code,
+        blockquote: Blockquote,
+        em: Emphazised,
+        del: Del,
+        strong: Strong,
+        hr: Hr,
+        pre: Pre,
+    }), []);
+
+    return React.useMemo(() => (
         <StyledMarkdown
-            remarkPlugins={[
-                remarkGfm,
-                [ remarkMath, { singleDollarTextMath: false } ],
-            ]}
+            remarkPlugins={[ remarkGfm, [ remarkMath, { singleDollarTextMath: false } ] ]}
             rehypePlugins={[ [ rehypeKatex, {
                 output: 'mathml',
                 trust: false,
@@ -53,36 +154,11 @@ function AutopilotChatMarkdownRendererComponent({ message }: { message: Autopilo
                 throwOnError: false,
             } ] ]}
             remarkRehypeOptions={{ footnoteLabel: 'Sources' }}
-            components={{
-                ul: Ul,
-                ol: Ol,
-                li: Li,
-                p: getTextForVariant(FontVariantToken.fontSizeM),
-                h1: getTextForVariant(FontVariantToken.fontSizeH1),
-                h2: getTextForVariant(FontVariantToken.fontSizeH2),
-                h3: getTextForVariant(FontVariantToken.fontSizeH3),
-                h4: getTextForVariant(FontVariantToken.fontSizeH4),
-                h5: getTextForVariant(FontVariantToken.fontSizeL),
-                h6: getTextForVariant(FontVariantToken.fontSizeM),
-                br: Break,
-                table: Table,
-                thead: TableHeader,
-                tr: Row,
-                th: HeaderCell,
-                td: Cell,
-                img: ({ src }) => src,
-                code: Code,
-                blockquote: Blockquote,
-                em: Emphazised,
-                del: Del,
-                strong: Strong,
-                hr: Hr,
-                pre: Pre,
-            }}
+            components={components}
         >
-            {message.content}
+            {content}
         </StyledMarkdown>
-    );
+    ), [ content, components ]);
 }
 
 export const AutopilotChatMarkdownRenderer = React.memo(AutopilotChatMarkdownRendererComponent);

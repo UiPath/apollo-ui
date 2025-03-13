@@ -6,10 +6,12 @@ import token from '@uipath/apollo-core/lib';
 import {
     AutopilotChatEvent,
     AutopilotChatInterceptableEvent,
+    AutopilotChatInternalEvent,
     AutopilotChatMessage,
 } from '@uipath/portal-shell-util';
 import React from 'react';
 
+import { AutopilotChatInternalService } from '../../services/chat-internal-service';
 import { AutopilotChatService } from '../../services/chat-service';
 import { AutopilotChatAttachments } from './attachments/attachments.react';
 import { AutopilotChatMessageContent } from './chat-message-content.react';
@@ -51,7 +53,7 @@ function AutopilotChatMessagesComponent({
     React.useEffect(() => {
         scrollToBottom();
 
-        const unsubscribeScrollToBottom = chatService.on(AutopilotChatEvent.ScrollToBottom, () => {
+        const unsubscribeScrollToBottom = AutopilotChatInternalService.Instance.on(AutopilotChatInternalEvent.ScrollToBottom, () => {
             scrollToBottom();
         });
 

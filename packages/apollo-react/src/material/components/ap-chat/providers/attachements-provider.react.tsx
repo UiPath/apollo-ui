@@ -49,8 +49,9 @@ export function AutopilotAttachmentsProvider({ children }: { children: React.Rea
     }, []);
 
     React.useEffect(() => {
-        const unsubscribe = chatService.on(AutopilotChatEvent.SetPrompt, (prompt: AutopilotChatPrompt | string) => {
-            const newAttachments = typeof prompt === 'string' ? [] : prompt.attachments ?? [];
+        const unsubscribe = chatService.on(AutopilotChatEvent.SetPrompt, (p: AutopilotChatPrompt | string) => {
+            const newAttachments = typeof p === 'string' ? [] : p.attachments ?? [];
+
             addAttachments(newAttachments);
         });
 

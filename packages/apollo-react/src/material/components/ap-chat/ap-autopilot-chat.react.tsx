@@ -20,6 +20,7 @@ import { AutopilotChatMessages } from './components/message/chat-message.react';
 import { AutopilotAttachmentsProvider } from './providers/attachements-provider.react';
 import { AutopilotErrorProvider } from './providers/error-provider.react';
 import { AutopilotLoadingProvider } from './providers/loading-provider.react';
+import { AutopilotStreamingProvider } from './providers/streaming-provider.react';
 import { AutopilotChatService } from './services/chat-service';
 import { StorageService } from './services/storage';
 import {
@@ -128,37 +129,42 @@ export function ApAutopilotChatReact() {
     return (
         <AutopilotErrorProvider>
             <AutopilotLoadingProvider>
-                <AutopilotAttachmentsProvider>
-                    <AutopilotChatDropzone>
-                        <ChatContainer
-                            shouldAnimate={shouldAnimate}
-                            mode={mode}
-                            width={width}
-                        >
-                            <DragHandle
+                <AutopilotStreamingProvider>
+                    <AutopilotAttachmentsProvider>
+                        <AutopilotChatDropzone>
+                            <ChatContainer
+                                shouldAnimate={shouldAnimate}
+                                mode={mode}
                                 width={width}
-                                onWidthChange={setWidth}
-                                setShouldAnimate={setShouldAnimate}
-                            />
+                            >
+                                <DragHandle
+                                    width={width}
+                                    onWidthChange={setWidth}
+                                    setShouldAnimate={setShouldAnimate}
+                                />
 
-                            <HeaderContainer>
-                                <AutopilotChatHeader />
-                            </HeaderContainer>
+                                <HeaderContainer>
+                                    <AutopilotChatHeader />
+                                </HeaderContainer>
 
-                            <OverflowContainer ref={overflowContainerRef}>
-                                <MessagesContainer isFullScreen={mode === AutopilotChatMode.FullScreen}>
-                                    <AutopilotChatMessages overflowContainerRef={overflowContainerRef} scrollToBottom={scrollToBottom} />
-                                </MessagesContainer>
-                            </OverflowContainer>
+                                <OverflowContainer ref={overflowContainerRef}>
+                                    <MessagesContainer isFullScreen={mode === AutopilotChatMode.FullScreen}>
+                                        <AutopilotChatMessages
+                                            overflowContainerRef={overflowContainerRef}
+                                            scrollToBottom={scrollToBottom}
+                                        />
+                                    </MessagesContainer>
+                                </OverflowContainer>
 
-                            <InputBackground>
-                                <InputContainer isFullScreen={mode === AutopilotChatMode.FullScreen}>
-                                    <AutopilotChatInput />
-                                </InputContainer>
-                            </InputBackground>
-                        </ChatContainer>
-                    </AutopilotChatDropzone>
-                </AutopilotAttachmentsProvider>
+                                <InputBackground>
+                                    <InputContainer isFullScreen={mode === AutopilotChatMode.FullScreen}>
+                                        <AutopilotChatInput />
+                                    </InputContainer>
+                                </InputBackground>
+                            </ChatContainer>
+                        </AutopilotChatDropzone>
+                    </AutopilotAttachmentsProvider>
+                </AutopilotStreamingProvider>
             </AutopilotLoadingProvider>
         </AutopilotErrorProvider>
     );
