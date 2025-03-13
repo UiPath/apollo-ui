@@ -34,7 +34,9 @@ function AutopilotChatMessagesComponent({
 }: AutopilotChatMessagesProps) {
     const messageContainerRef = React.useRef<HTMLDivElement>(null);
     const chatService = AutopilotChatService.Instance;
-    const [ messages, setMessages ] = React.useState<AutopilotChatMessage[]>([]);
+    const [ messages, setMessages ] = React.useState<AutopilotChatMessage[]>(
+        chatService?.getConversation() ?? [],
+    );
 
     // Update by patching if the message already exists or adding to the end of the array
     const updateMessages = React.useCallback((message: AutopilotChatMessage) => {
@@ -47,6 +49,8 @@ function AutopilotChatMessagesComponent({
     }, []);
 
     React.useEffect(() => {
+        scrollToBottom();
+
         const unsubscribeScrollToBottom = chatService.on(AutopilotChatEvent.ScrollToBottom, () => {
             scrollToBottom();
         });

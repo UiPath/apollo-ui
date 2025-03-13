@@ -32,9 +32,13 @@ export class AutopilotChatService {
     private eventBus: EventBus;
     private messageRenderers: AutopilotChatMessageRenderer[] = [];
     private eventUnsubscribers: Array<() => void> = [];
+    private conversation: AutopilotChatMessage[] = [];
+    private error: string | undefined;
+    private prompt: AutopilotChatPrompt | string | undefined;
 
     private constructor() {
         this.eventBus = new EventBus();
+
         AutopilotChatInternalService.Instantiate();
 
         this.getConfig = this.getConfig.bind(this);
@@ -53,6 +57,11 @@ export class AutopilotChatService {
         this.setPrompt = this.setPrompt.bind(this);
         this.intercept = this.intercept.bind(this);
         this.setFirstRunExperience = this.setFirstRunExperience.bind(this);
+        this.setConversation = this.setConversation.bind(this);
+        this.scrollToBottom = this.scrollToBottom.bind(this);
+        this.getConversation = this.getConversation.bind(this);
+        this.getPrompt = this.getPrompt.bind(this);
+        this.getError = this.getError.bind(this);
     }
 
     static Instantiate(config?: AutopilotChatConfiguration, messageRenderers: AutopilotChatMessageRenderer[] = []) {
@@ -224,7 +233,18 @@ export class AutopilotChatService {
      * @param prompt - The prompt to set
      */
     setPrompt(prompt: AutopilotChatPrompt | string) {
+        this.prompt = prompt;
+
         this.eventBus.publish(AutopilotChatEvent.SetPrompt, prompt);
+    }
+
+    /**
+     * Gets the current prompt from the chat service
+     *
+     * @returns The prompt
+     */
+    getPrompt() {
+        return this.prompt;
     }
 
     /**
@@ -233,6 +253,11 @@ export class AutopilotChatService {
      * @param messages - The messages to set
      */
     setConversation(messages: AutopilotChatMessage[]) {
+        this.conversation = messages;
+
+        // This is to ensure the chat is reset and only the messages from the new conversation are shown
+        this.newChat();
+
         messages.forEach(message => {
             if (message.role === AutopilotChatRole.User) {
                 this.sendRequest(message);
@@ -240,6 +265,15 @@ export class AutopilotChatService {
                 this.sendResponse(message);
             }
         });
+    }
+
+    /**
+     * Gets the current conversation from the chat service
+     *
+     * @returns The conversation
+     */
+    getConversation() {
+        return this.conversation;
     }
 
     /**
@@ -256,6 +290,7 @@ export class AutopilotChatService {
             widget: DEFAULT_MESSAGE_RENDERER,
         };
 
+        this.conversation.push(userMessage);
         this.eventBus.publish(AutopilotChatEvent.Request, userMessage);
     }
 
@@ -272,11 +307,14 @@ export class AutopilotChatService {
      * @param response - The response to send
      */
     sendResponse(response: Omit<AutopilotChatMessage, 'role' | 'id'> & { id?: string }) {
-        this.eventBus.publish(AutopilotChatEvent.Response, {
+        const assistantMessage = {
             id: crypto.randomUUID(),
             ...response,
             role: AutopilotChatRole.Assistant,
-        });
+        };
+
+        this.conversation.push(assistantMessage);
+        this.eventBus.publish(AutopilotChatEvent.Response, assistantMessage);
     }
 
     /**
@@ -292,6 +330,7 @@ export class AutopilotChatService {
             messageRenderers.forEach(renderer => this.injectMessageRenderer(renderer));
         }
 
+        this.conversation = [];
         this.eventBus.publish(AutopilotChatEvent.NewChat);
     }
 
@@ -301,6 +340,8 @@ export class AutopilotChatService {
      * @param error - The error to set
      */
     setError(error: string) {
+        this.error = error;
+
         this.eventBus.publish(AutopilotChatEvent.Error, error);
     }
 
@@ -308,7 +349,18 @@ export class AutopilotChatService {
      * Clears the error in the chat service
      */
     clearError() {
+        this.error = undefined;
+
         this.eventBus.publish(AutopilotChatEvent.Error, undefined);
+    }
+
+    /**
+     * Gets the current error from the chat service
+     *
+     * @returns The error
+     */
+    getError() {
+        return this.error;
     }
 
     /**

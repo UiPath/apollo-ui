@@ -24,7 +24,9 @@ const StyledActions = styled('div')(() => ({
 
 function AutopilotChatHeaderActionsComponent() {
     const [ isFullScreen, setIsFullScreen ] = React.useState(StorageService.Instance.get(CHAT_MODE_KEY) === AutopilotChatMode.FullScreen);
-    const [ disabledFullScreen, setDisabledFullScreen ] = React.useState(false);
+    const [ disabledFullScreen, setDisabledFullScreen ] = React.useState(
+        AutopilotChatService.Instance.getConfig?.()?.disabledFeatures?.fullScreen ?? false,
+    );
 
     const handleClose = React.useCallback(() => {
         AutopilotChatService.Instance.close();

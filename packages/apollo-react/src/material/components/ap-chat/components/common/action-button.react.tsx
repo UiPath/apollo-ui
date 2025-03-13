@@ -63,7 +63,7 @@ const AutopilotChatActionButtonComponent = React.forwardRef<HTMLButtonElement, A
     ariaLabel,
 }, ref) => {
     const [ iconColor, setIconColor ] = React.useState('var(--color-icon-default)');
-    const [ isClosed, setIsClosed ] = React.useState(false);
+    const [ isClosed, setIsClosed ] = React.useState(AutopilotChatService.Instance.getConfig?.()?.mode === AutopilotChatMode.Closed);
 
     React.useEffect(() => {
         const unsubscribeModeChange = AutopilotChatService.Instance.on(AutopilotChatEvent.ModeChange, (mode) => {

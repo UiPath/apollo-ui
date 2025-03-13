@@ -52,7 +52,12 @@ export const InputContainer = styled('div')(({ theme }) => ({
 }));
 
 function AutopilotChatInputComponent() {
-    const [ message, setMessage ] = React.useState('');
+    const initialPrompt = AutopilotChatService.Instance.getPrompt();
+
+    const [ message, setMessage ] = React.useState(
+        typeof initialPrompt === 'string' ? initialPrompt : initialPrompt?.content ?? '',
+    );
+
     const inputRef = React.useRef<HTMLTextAreaElement>(null);
     const chatService = AutopilotChatService.Instance;
     const { setError } = useError();

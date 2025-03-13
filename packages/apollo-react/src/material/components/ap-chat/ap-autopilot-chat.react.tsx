@@ -87,7 +87,9 @@ const InputContainer = styled('div')<{ isFullScreen: boolean }>(({ isFullScreen 
 export function ApAutopilotChatReact() {
     const storage = StorageService.Instance;
     const overflowContainerRef = React.useRef<HTMLDivElement>(null);
-    const [ mode, setMode ] = React.useState<AutopilotChatMode>(AutopilotChatService.Instance.getConfig().mode);
+    const [ mode, setMode ] = React.useState<AutopilotChatMode>(
+        AutopilotChatService.Instance?.getConfig?.()?.mode ?? AutopilotChatMode.SideBySide,
+    );
     const [ width, setWidth ] = React.useState(() => {
         const savedWidth = storage.get(CHAT_WIDTH_KEY);
 

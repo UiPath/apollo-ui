@@ -18,8 +18,10 @@ export const AutopilotErrorContext = React.createContext<AutopilotErrorContextTy
 });
 
 export function AutopilotErrorProvider({ children }: { children: React.ReactNode }) {
-    const [ error, setErrorState ] = React.useState<string | undefined>(undefined);
     const chatService = AutopilotChatService.Instance;
+    const [ error, setErrorState ] = React.useState<string | undefined>(
+        chatService?.getError() ?? undefined,
+    );
 
     React.useEffect(() => {
         const unsubscribe = chatService.on(AutopilotChatEvent.Error, (err: string) => {
@@ -39,8 +41,8 @@ export function AutopilotErrorProvider({ children }: { children: React.ReactNode
     return (
         <AutopilotErrorContext.Provider value={{
             error,
-            setError: chatService.setError,
-            clearError: chatService.clearError,
+            setError: chatService?.setError,
+            clearError: chatService?.clearError,
         }}>
             {children}
         </AutopilotErrorContext.Provider>

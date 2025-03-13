@@ -25,7 +25,6 @@ const FREContainer = styled('div')(() => ({
     borderRadius: token.Border.BorderRadiusL,
     justifyContent: 'flex-end',
     height: '100%',
-    marginBottom: token.Spacing.SpacingBase,
 }));
 
 const FREHeader = styled('div')(() => ({
@@ -68,7 +67,7 @@ function AutopilotChatFREComponent() {
     const chatService = AutopilotChatService.Instance;
     const [ firstRunConfig, setFirstRunConfig ] = useState<
     AutopilotChatConfiguration['firstRunExperience'] | undefined
-    >(chatService.getConfig().firstRunExperience);
+    >(chatService?.getConfig()?.firstRunExperience);
 
     useEffect(() => {
         const unsubscribe = chatService.on(AutopilotChatEvent.SetFirstRunExperience, (config) => {

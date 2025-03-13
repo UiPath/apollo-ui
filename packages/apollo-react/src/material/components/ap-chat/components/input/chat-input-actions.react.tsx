@@ -58,7 +58,9 @@ function AutopilotChatInputActionsComponent({
     const theme = useTheme();
     const { addAttachments } = useAttachments();
     const { setError } = useError();
-    const [ disabledAttachments, setDisabledAttachments ] = React.useState(false);
+    const [ disabledAttachments, setDisabledAttachments ] = React.useState(
+        AutopilotChatService.Instance.getConfig?.()?.disabledFeatures?.attachments ?? false,
+    );
 
     const fileInputRef = React.useRef<HTMLInputElement>(null);
 

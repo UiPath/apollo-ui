@@ -25,7 +25,11 @@ export const AutopilotAttachmentsContext = React.createContext<AutopilotAttachme
 
 export function AutopilotAttachmentsProvider({ children }: { children: React.ReactNode }) {
     const chatService = AutopilotChatService.Instance;
-    const [ attachments, setAttachments ] = React.useState<AutopilotChatFileInfo[]>([]);
+    const prompt = chatService?.getPrompt() as AutopilotChatPrompt | undefined;
+
+    const [ attachments, setAttachments ] = React.useState<AutopilotChatFileInfo[]>(
+        prompt?.attachments ?? [],
+    );
 
     const addAttachments = React.useCallback((newFiles: AutopilotChatFileInfo[]) => {
         setAttachments(current => [
