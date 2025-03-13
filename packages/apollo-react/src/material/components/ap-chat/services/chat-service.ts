@@ -387,11 +387,10 @@ export class AutopilotChatService {
      *
      * @param event - The event to subscribe to
      * @param handler - The handler to subscribe to the event
-     * @param hijack - Whether to hijack the event
      * @returns A function to unsubscribe from the event
      */
-    on(event: AutopilotChatEvent, handler: AutopilotChatEventHandler, hijack?: boolean) {
-        return this.eventBus.subscribe(event, handler, hijack);
+    on(event: AutopilotChatEvent, handler: AutopilotChatEventHandler) {
+        return this.eventBus.subscribe(event, handler);
     }
 
     /**

@@ -6,7 +6,7 @@ export type EventHandler<T = any> = (data?: T) => void;
  * Event bus for the chat service
  */
 export class EventBus {
-    private handlers: Map<string, Array<{ handler: EventHandler; hijack?: boolean }>> = new Map();
+    private handlers: Map<string, Array<{ handler: EventHandler }>> = new Map();
     private interceptors: Map<string, Array<{ interceptor: AutopilotChatEventInterceptor }>> = new Map();
     /**
      * Subscribes to an event
@@ -15,15 +15,12 @@ export class EventBus {
      * @param handler - The handler to subscribe to the event
      * @returns A function to unsubscribe from the event
      */
-    subscribe(event: string, handler: EventHandler, hijack?: boolean): () => void {
+    subscribe(event: string, handler: EventHandler): () => void {
         if (!this.handlers.has(event)) {
             this.handlers.set(event, []);
         }
 
-        this.handlers.get(event)!.push({
-            handler,
-            hijack,
-        });
+        this.handlers.get(event)!.push({ handler });
 
         return () => {
             const handlers = this.handlers.get(event)!;
@@ -54,7 +51,7 @@ export class EventBus {
 
         if (handlers) {
             handlers.forEach(handler => {
-                handler.handler(hijacked ?? handler.hijack ? {
+                handler.handler(hijacked ? {
                     ...data,
                     hijacked: true,
                 } : data);
