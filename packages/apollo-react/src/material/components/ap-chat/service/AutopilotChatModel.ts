@@ -42,6 +42,7 @@ export enum AutopilotChatRole {
  * @property attachments - Optional files attached to the message.
  * @property hijacked - Flag set by the chat service when an event is intercepted and the interceptor returns true
  * @property fakeStream - Temporary flag used to simulate streaming for a complete message (will be ignored for requests)
+ * @property stream - Flag used to stream a chunk (will be ignored for requests)
  * @property done - Flag to determine if the message is the last chunk of a streaming response
  */
 export interface AutopilotChatMessage {
@@ -53,6 +54,7 @@ export interface AutopilotChatMessage {
     attachments?: AutopilotChatFileInfo[];
     hijacked?: boolean;
     fakeStream?: boolean;
+    stream?: boolean;
     done?: boolean;
 }
 
