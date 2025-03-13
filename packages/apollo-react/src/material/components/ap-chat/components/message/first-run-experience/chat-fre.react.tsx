@@ -11,10 +11,7 @@ import {
     AutopilotChatEvent,
     AutopilotChatSuggestion,
 } from '@uipath/portal-shell-util';
-import React, {
-    useEffect,
-    useState,
-} from 'react';
+import React, { useState } from 'react';
 
 import { t } from '../../../../../utils/localization/loc';
 import { AutopilotChatService } from '../../../services/chat-service';
@@ -67,9 +64,13 @@ function AutopilotChatFREComponent() {
     const chatService = AutopilotChatService.Instance;
     const [ firstRunConfig, setFirstRunConfig ] = useState<
     AutopilotChatConfiguration['firstRunExperience'] | undefined
-    >(chatService?.getConfig()?.firstRunExperience);
+    >(chatService?.getConfig?.()?.firstRunExperience);
 
-    useEffect(() => {
+    React.useEffect(() => {
+        if (!chatService) {
+            return;
+        }
+
         const unsubscribe = chatService.on(AutopilotChatEvent.SetFirstRunExperience, (config) => {
             if (config) {
                 setFirstRunConfig(config);

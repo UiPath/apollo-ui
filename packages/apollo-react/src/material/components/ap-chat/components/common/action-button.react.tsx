@@ -62,16 +62,21 @@ const AutopilotChatActionButtonComponent = React.forwardRef<HTMLButtonElement, A
     tooltip,
     ariaLabel,
 }, ref) => {
+    const chatService = AutopilotChatService.Instance;
     const [ iconColor, setIconColor ] = React.useState('var(--color-icon-default)');
-    const [ isClosed, setIsClosed ] = React.useState(AutopilotChatService.Instance.getConfig?.()?.mode === AutopilotChatMode.Closed);
+    const [ isClosed, setIsClosed ] = React.useState(chatService?.getConfig?.()?.mode === AutopilotChatMode.Closed);
 
     React.useEffect(() => {
-        const unsubscribeModeChange = AutopilotChatService.Instance.on(AutopilotChatEvent.ModeChange, (mode) => {
+        if (!chatService) {
+            return;
+        }
+
+        const unsubscribeModeChange = chatService.on(AutopilotChatEvent.ModeChange, (mode) => {
             setIsClosed(mode === AutopilotChatMode.Closed);
         });
 
         return () => unsubscribeModeChange();
-    }, []);
+    }, [ chatService ]);
 
     const button = text ? (
         <StyledButtonContainer>

@@ -25,7 +25,7 @@ export const AutopilotAttachmentsContext = React.createContext<AutopilotAttachme
 
 export function AutopilotAttachmentsProvider({ children }: { children: React.ReactNode }) {
     const chatService = AutopilotChatService.Instance;
-    const prompt = chatService?.getPrompt() as AutopilotChatPrompt | undefined;
+    const prompt = chatService?.getPrompt?.() as AutopilotChatPrompt | undefined;
 
     const [ attachments, setAttachments ] = React.useState<AutopilotChatFileInfo[]>(
         prompt?.attachments ?? [],
@@ -49,6 +49,10 @@ export function AutopilotAttachmentsProvider({ children }: { children: React.Rea
     }, []);
 
     React.useEffect(() => {
+        if (!chatService) {
+            return;
+        }
+
         const unsubscribe = chatService.on(AutopilotChatEvent.SetPrompt, (p: AutopilotChatPrompt | string) => {
             const newAttachments = typeof p === 'string' ? [] : p.attachments ?? [];
 

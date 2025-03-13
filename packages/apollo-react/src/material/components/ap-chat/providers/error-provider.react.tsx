@@ -24,6 +24,10 @@ export function AutopilotErrorProvider({ children }: { children: React.ReactNode
     );
 
     React.useEffect(() => {
+        if (!chatService) {
+            return;
+        }
+
         const unsubscribe = chatService.on(AutopilotChatEvent.Error, (err: string) => {
             setErrorState(err);
         });

@@ -321,8 +321,15 @@ export class AutopilotChatService {
         const existingIndex = this.conversation.findIndex(message => message.id === assistantMessage.id);
 
         if (existingIndex !== -1) {
-            this.conversation[existingIndex].content += assistantMessage.content;
-            this.eventBus.publish(AutopilotChatEvent.SendChunk, assistantMessage);
+            if (response.stream) {
+                // send chunk if the response is streaming
+                this.conversation[existingIndex].content += assistantMessage.content;
+                this.eventBus.publish(AutopilotChatEvent.SendChunk, assistantMessage);
+            } else {
+                // send response if the response is not streaming
+                this.conversation[existingIndex].content = assistantMessage.content;
+                this.eventBus.publish(AutopilotChatEvent.Response, assistantMessage);
+            }
         } else {
             this.conversation.push(assistantMessage);
             this.eventBus.publish(AutopilotChatEvent.Response, assistantMessage);

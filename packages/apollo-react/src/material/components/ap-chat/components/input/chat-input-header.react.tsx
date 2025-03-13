@@ -28,6 +28,7 @@ function AutopilotChatInputHeaderComponent({ clearInput }: AutopilotChatInputHea
     const {
         error, clearError,
     } = useError();
+    const chatService = AutopilotChatService.Instance;
 
     const { clearAttachments } = useAttachments();
 
@@ -43,12 +44,16 @@ function AutopilotChatInputHeaderComponent({ clearInput }: AutopilotChatInputHea
     }, [ clearError ]);
 
     const handleNewChat = React.useCallback(() => {
-        AutopilotChatService.Instance.newChat();
-        AutopilotChatService.Instance.stopResponse();
+        if (!chatService) {
+            return;
+        }
+
+        chatService.newChat();
+        chatService.stopResponse();
 
         clearAttachments();
         clearInput();
-    }, [ clearAttachments, clearInput ]);
+    }, [ clearAttachments, clearInput, chatService ]);
 
     if (error) {
         return <ap-alert-bar style={{ width: '100%' }} status={StatusTypes.ERROR}>{error}</ap-alert-bar>;

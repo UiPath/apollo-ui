@@ -32,13 +32,19 @@ const AccordionContainer = styled('div')<{ isLeft: boolean }>(({
     const [ padding, setPadding ] = React.useState(
         calculateDynamicPadding(parseInt(StorageService.Instance.get(CHAT_WIDTH_KEY) ?? CHAT_WIDTH_SIDE_BY_SIDE_MIN.toString(), 10)),
     );
+    const chatService = AutopilotChatService.Instance;
+    const chatInternalService = AutopilotChatInternalService.Instance;
 
     React.useEffect(() => {
-        const unsubscribe = AutopilotChatInternalService.Instance.on(AutopilotChatInternalEvent.ChatResize, (width: number) => {
+        if (!chatInternalService || !chatService) {
+            return;
+        }
+
+        const unsubscribe = chatInternalService.on(AutopilotChatInternalEvent.ChatResize, (width: number) => {
             setPadding(calculateDynamicPadding(width));
         });
 
-        const unsubscribeMode = AutopilotChatService.Instance.on(
+        const unsubscribeMode = chatService.on(
             AutopilotChatEvent.ModeChange, (mode: AutopilotChatMode) => {
                 if (mode === AutopilotChatMode.FullScreen) {
                     setPadding(CHAT_MESSAGE_MAX_PADDING);
@@ -55,7 +61,7 @@ const AccordionContainer = styled('div')<{ isLeft: boolean }>(({
             unsubscribe();
             unsubscribeMode();
         };
-    }, []);
+    }, [ chatInternalService, chatService ]);
 
     return {
         display: 'flex',

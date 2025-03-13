@@ -97,16 +97,21 @@ export function ApAutopilotChatReact() {
         return savedWidth ? parseInt(savedWidth, 10) : CHAT_WIDTH_SIDE_BY_SIDE_MIN;
     });
     const [ shouldAnimate, setShouldAnimate ] = React.useState(false);
+    const chatService = AutopilotChatService.Instance;
 
     React.useEffect(() => {
-        const unsubscribe = AutopilotChatService.Instance.on(AutopilotChatEvent.ModeChange, (chatMode) => {
+        if (!chatService) {
+            return;
+        }
+
+        const unsubscribe = chatService.on(AutopilotChatEvent.ModeChange, (chatMode) => {
             setMode(chatMode);
         });
 
         return () => {
             unsubscribe();
         };
-    }, []);
+    }, [ chatService ]);
 
     const scrollToBottom = React.useCallback(() => {
         if (overflowContainerRef.current) {

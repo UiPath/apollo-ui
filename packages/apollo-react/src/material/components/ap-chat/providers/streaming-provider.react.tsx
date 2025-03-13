@@ -23,6 +23,10 @@ export function AutopilotStreamingProvider({ children }: { children: React.React
     const chatService = AutopilotChatService.Instance;
 
     React.useEffect(() => {
+        if (!chatService) {
+            return;
+        }
+
         const unsubscribeStopResponse = chatService.on(AutopilotChatEvent.StopResponse, () => {
             setStreaming(false);
         });

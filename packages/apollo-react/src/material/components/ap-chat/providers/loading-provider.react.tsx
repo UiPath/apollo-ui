@@ -23,6 +23,10 @@ export function AutopilotLoadingProvider({ children }: { children: React.ReactNo
     const chatService = AutopilotChatService.Instance;
 
     React.useEffect(() => {
+        if (!chatService) {
+            return;
+        }
+
         const unsubscribeRequest = chatService.intercept(AutopilotChatInterceptableEvent.Request, () => {
             setWaitingResponse(true);
         });

@@ -60,14 +60,10 @@ function AutopilotChatMarkdownRendererComponent({ message }: { message: Autopilo
     React.useEffect(() => {
         let unsubscribeStopResponse: (() => void) | undefined;
 
-        if (message.id !== messageId.current) {
+        if (message.id !== messageId.current || !message.stream) {
             messageId.current = message.id;
 
-            if (!message.fakeStream) {
-                setContent(message.content || '');
-            } else {
-                setContent('');
-            }
+            setContent(message.fakeStream ? '' : (message.content || ''));
         }
 
         if (message.fakeStream) {
@@ -101,9 +97,13 @@ function AutopilotChatMarkdownRendererComponent({ message }: { message: Autopilo
         return () => {
             unsubscribeStopResponse?.();
         };
-    }, [ message.id, message.content, message.fakeStream, chatService, setStreaming ]);
+    }, [ message, chatService, setStreaming ]);
 
     React.useEffect(() => {
+        if (!chatService) {
+            return;
+        }
+
         const unsubscribe = chatService.on(AutopilotChatEvent.SendChunk, (msg: AutopilotChatMessage) => {
             if (msg.id === messageId.current) {
                 requestAnimationFrame(() => {

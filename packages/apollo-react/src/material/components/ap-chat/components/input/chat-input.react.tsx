@@ -53,14 +53,14 @@ export const InputContainer = styled('div')(({ theme }) => ({
 }));
 
 function AutopilotChatInputComponent() {
-    const initialPrompt = AutopilotChatService.Instance.getPrompt();
+    const chatService = AutopilotChatService.Instance;
+    const initialPrompt = chatService?.getPrompt?.();
 
     const [ message, setMessage ] = React.useState(
         typeof initialPrompt === 'string' ? initialPrompt : initialPrompt?.content ?? '',
     );
 
     const inputRef = React.useRef<HTMLTextAreaElement>(null);
-    const chatService = AutopilotChatService.Instance;
     const { setError } = useError();
     const { waitingResponse } = useLoading();
     const { streaming } = useStreaming();
@@ -69,6 +69,10 @@ function AutopilotChatInputComponent() {
     } = useAttachments();
 
     React.useEffect(() => {
+        if (!chatService) {
+            return;
+        }
+
         const unsubscribeSetPrompt = chatService.on(AutopilotChatEvent.SetPrompt, (prompt: AutopilotChatPrompt | string) => {
             setMessage(typeof prompt === 'string' ? prompt : prompt.content);
         });

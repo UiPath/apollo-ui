@@ -24,28 +24,33 @@ const StyledActions = styled('div')(() => ({
 
 function AutopilotChatHeaderActionsComponent() {
     const [ isFullScreen, setIsFullScreen ] = React.useState(StorageService.Instance.get(CHAT_MODE_KEY) === AutopilotChatMode.FullScreen);
+    const chatService = AutopilotChatService.Instance;
     const [ disabledFullScreen, setDisabledFullScreen ] = React.useState(
-        AutopilotChatService.Instance.getConfig?.()?.disabledFeatures?.fullScreen ?? false,
+        chatService?.getConfig?.()?.disabledFeatures?.fullScreen ?? false,
     );
 
     const handleClose = React.useCallback(() => {
-        AutopilotChatService.Instance.close();
-    }, []);
+        chatService?.close();
+    }, [ chatService ]);
 
     const handleToggle = React.useCallback(() => {
-        AutopilotChatService.Instance.setChatMode(
+        chatService?.setChatMode(
             isFullScreen ? AutopilotChatMode.SideBySide : AutopilotChatMode.FullScreen,
         );
 
         setIsFullScreen(!isFullScreen);
-    }, [ isFullScreen ]);
+    }, [ isFullScreen, chatService ]);
 
     React.useEffect(() => {
-        const unsubscribeModeChange = AutopilotChatService.Instance.on(AutopilotChatEvent.ModeChange, (mode) => {
+        if (!chatService) {
+            return;
+        }
+
+        const unsubscribeModeChange = chatService.on(AutopilotChatEvent.ModeChange, (mode) => {
             setIsFullScreen(mode === AutopilotChatMode.FullScreen);
         });
 
-        const unsubscribeSetDisabledFeatures = AutopilotChatService.Instance.on(AutopilotChatEvent.SetDisabledFeatures,
+        const unsubscribeSetDisabledFeatures = chatService.on(AutopilotChatEvent.SetDisabledFeatures,
             (features: AutopilotChatDisabledFeatures) => {
                 setDisabledFullScreen(features?.fullScreen ?? false);
             });
@@ -54,7 +59,7 @@ function AutopilotChatHeaderActionsComponent() {
             unsubscribeModeChange();
             unsubscribeSetDisabledFeatures();
         };
-    }, []);
+    }, [ chatService ]);
 
     return (
         <StyledActions>

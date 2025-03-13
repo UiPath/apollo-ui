@@ -70,12 +70,17 @@ function DragHandleComponent({
     const startXRef = React.useRef(0);
     const startWidthRef = React.useRef(0);
     const widthRef = React.useRef(width);
+    const chatService = AutopilotChatService.Instance;
     const [ resizeDisabled, setResizeDisabled ] = React.useState(
-        AutopilotChatService.Instance.getConfig?.()?.disabledFeatures?.resize ?? false,
+        chatService?.getConfig?.()?.disabledFeatures?.resize ?? false,
     );
 
     React.useEffect(() => {
-        const unsubscribe = AutopilotChatService.Instance.on(
+        if (!chatService) {
+            return;
+        }
+
+        const unsubscribe = chatService.on(
             AutopilotChatEvent.SetDisabledFeatures,
             (features: AutopilotChatDisabledFeatures) => {
                 setResizeDisabled(features?.resize ?? false);
@@ -84,7 +89,7 @@ function DragHandleComponent({
         return () => {
             unsubscribe();
         };
-    }, []);
+    }, [ chatService ]);
 
     const handleMouseMove = React.useCallback((e: MouseEvent) => {
         if (!isDraggingRef.current) {

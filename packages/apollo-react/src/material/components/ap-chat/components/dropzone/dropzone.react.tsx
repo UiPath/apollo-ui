@@ -20,7 +20,7 @@ import {
     ACCEPTED_FILE_EXTENSIONS,
     ACCEPTED_FILES,
 } from '../../utils/constants';
-import { parseFiles } from '../../utils/file-reader.react';
+import { parseFiles } from '../../utils/file-reader';
 
 const DropzoneRoot = styled('div')({
     height: '100%',

@@ -123,21 +123,15 @@ Real-time streaming allows for incremental display of response content as it's r
 
 To implement real-time streaming:
 
-1. First, send an initial response that establishes the message:
+1. When the API returns a message, send the response with `stream: true` on the message
 
 ```typescript
-// Send initial empty or partial response to establish the message container
-chatService.sendResponse({
-  id: "unique-message-id",
-  content: "",  // Or initial content
-  role: AutopilotChatRole.Assistant
-});
-
 // Then send chunks as they arrive from your API
 function onChunkReceived(chunkContent) {
-  chatService.sendChunk({
-    id: "unique-message-id",  // Same ID as the initial message
+  chatService.sendResponse({
+    id: "unique-message-id",  // Same ID everytime
     content: chunkContent
+    stream: true,
   });
 }
 
@@ -158,7 +152,8 @@ Alternatively, you can mark a streaming response as complete by sending a messag
 // Using the same ID as in your streaming response
 chatService.sendResponse({ 
   id: "unique-message-id",  
-  content: "", 
+  content: "",
+  stream: true,
   done: true 
 });
 ```
@@ -183,16 +178,19 @@ const interval = setInterval(() => {
   if (index < words.length) {
     chatService.sendResponse({ 
       id: randomId, 
-      content: words[index] 
+      content: words[index],
+      stream: true,
     });
     index++;
   } else {
     // Mark as complete when done
     clearInterval(interval);
+
     chatService.sendResponse({ 
       id: randomId, 
       content: '', 
-      done: true 
+      stream: true,
+      done: true
     });
   }
 }, 200);
@@ -277,8 +275,6 @@ chatService.setFirstRunExperience({
   ]
 });
 ```
-
-
 
 ## Managing Conversation History
 
@@ -420,9 +416,10 @@ interface AutopilotChatDisabledFeatures {
  * @property attachments - Optional files attached to the message.
  * @property hijacked - Flag set by the chat service when an event is intercepted and the interceptor returns true
  * @property fakeStream - Temporary flag used to simulate streaming for a complete message (will be ignored for requests)
+ * @property stream - Flag used to stream a chunk to the same id (will be ignored for requests)
  * @property done - Flag to determine if the message is the last chunk of a streaming response
  */
-interface AutopilotChatMessage {
+export interface AutopilotChatMessage {
     id: string;
     content: string;
     created_at: string;
@@ -431,6 +428,7 @@ interface AutopilotChatMessage {
     attachments?: AutopilotChatFileInfo[];
     hijacked?: boolean;
     fakeStream?: boolean;
+    stream?: boolean;
     done?: boolean;
 }
 ```

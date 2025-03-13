@@ -36,8 +36,9 @@ function AutopilotChatMessagesComponent({
 }: AutopilotChatMessagesProps) {
     const messageContainerRef = React.useRef<HTMLDivElement>(null);
     const chatService = AutopilotChatService.Instance;
+    const chatInternalService = AutopilotChatInternalService.Instance;
     const [ messages, setMessages ] = React.useState<AutopilotChatMessage[]>(
-        chatService?.getConversation() ?? [],
+        chatService?.getConversation?.() ?? [],
     );
 
     // Update by patching if the message already exists or adding to the end of the array
@@ -53,16 +54,24 @@ function AutopilotChatMessagesComponent({
     React.useEffect(() => {
         scrollToBottom();
 
-        const unsubscribeScrollToBottom = AutopilotChatInternalService.Instance.on(AutopilotChatInternalEvent.ScrollToBottom, () => {
+        if (!chatInternalService) {
+            return;
+        }
+
+        const unsubscribeScrollToBottom = chatInternalService.on(AutopilotChatInternalEvent.ScrollToBottom, () => {
             scrollToBottom();
         });
 
         return () => {
             unsubscribeScrollToBottom();
         };
-    }, [ scrollToBottom, chatService ]);
+    }, [ scrollToBottom, chatInternalService ]);
 
     React.useEffect(() => {
+        if (!chatService) {
+            return;
+        }
+
         // use an interceptor to add the message to the messages array so the chat doesn't have to wait for the consumer confirmation
         const unsubscribeRequest = chatService.intercept(AutopilotChatInterceptableEvent.Request, updateMessages);
         const unsubscribeResponse = chatService.on(AutopilotChatEvent.Response, updateMessages);
