@@ -324,6 +324,7 @@ export class AutopilotChatService {
             if (response.stream) {
                 // send chunk if the response is streaming
                 this.conversation[existingIndex].content += assistantMessage.content;
+                this.conversation[existingIndex].done = !!response.done;
                 this.eventBus.publish(AutopilotChatEvent.SendChunk, assistantMessage);
             } else {
                 // send response if the response is not streaming

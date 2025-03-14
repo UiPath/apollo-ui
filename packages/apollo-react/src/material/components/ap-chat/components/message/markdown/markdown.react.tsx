@@ -107,7 +107,7 @@ function AutopilotChatMarkdownRendererComponent({ message }: { message: Autopilo
         const unsubscribe = chatService.on(AutopilotChatEvent.SendChunk, (msg: AutopilotChatMessage) => {
             if (msg.id === messageId.current) {
                 requestAnimationFrame(() => {
-                    setContent(prevContent => `${prevContent} ${msg.content}`);
+                    setContent(prevContent => `${prevContent}${msg.content}`);
 
                     chatService.scrollToBottom();
                 });
