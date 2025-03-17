@@ -10,8 +10,8 @@ import token from '@uipath/apollo-core/lib';
 import React from 'react';
 
 export const Text = ({
-    children, variant = FontVariantToken.fontSizeM, customStyle,
-}: { children: React.ReactNode; variant?: FontVariantToken; customStyle?: React.CSSProperties }) => {
+    children, variant = FontVariantToken.fontSizeM, customStyle, headingLevel,
+}: { children: React.ReactNode; variant?: FontVariantToken; customStyle?: React.CSSProperties; headingLevel?: number }) => {
     const theme = useTheme();
 
     return (
@@ -19,17 +19,21 @@ export const Text = ({
             variant={variant}
             color={theme.palette.semantic.colorForeground}
             style={{ ...customStyle }}
+            {...(headingLevel ? {
+                'role': 'heading',
+                'aria-level': headingLevel,
+            } : {})}
         >
             {children}
         </ap-typography>
     );
 };
 
-export const getTextForVariant = (variant: FontVariantToken, customStyle?: React.CSSProperties) => {
+export const getTextForVariant = (variant: FontVariantToken, headingLevel?: number) => {
     return React.memo(({ children }: { children: React.ReactNode }) => Text({
         children,
         variant,
-        customStyle,
+        headingLevel,
     }));
 };
 
