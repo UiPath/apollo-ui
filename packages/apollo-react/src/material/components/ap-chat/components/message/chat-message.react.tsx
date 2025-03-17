@@ -76,10 +76,13 @@ function AutopilotChatMessagesComponent({
         const unsubscribeRequest = chatService.intercept(AutopilotChatInterceptableEvent.Request, updateMessages);
         const unsubscribeResponse = chatService.on(AutopilotChatEvent.Response, updateMessages);
         const unsubscribeNewChat = chatService.on(AutopilotChatEvent.NewChat, () => setMessages([]));
+        // set messages to the new conversation
+        const unsubscribeConversation = chatService.on(AutopilotChatEvent.SetConversation, setMessages);
 
         return () => {
             unsubscribeRequest();
             unsubscribeResponse();
+            unsubscribeConversation();
             unsubscribeNewChat();
         };
     }, [ chatService, updateMessages ]);

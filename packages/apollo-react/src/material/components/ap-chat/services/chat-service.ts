@@ -256,16 +256,7 @@ export class AutopilotChatService {
     setConversation(messages: AutopilotChatMessage[]) {
         this.conversation = messages;
 
-        // This is to ensure the chat is reset and only the messages from the new conversation are shown
-        this.newChat();
-
-        messages.forEach(message => {
-            if (message.role === AutopilotChatRole.User) {
-                this.sendRequest(message);
-            } else {
-                this.sendResponse(message);
-            }
-        });
+        this.eventBus.publish(AutopilotChatEvent.SetConversation, messages);
     }
 
     /**
