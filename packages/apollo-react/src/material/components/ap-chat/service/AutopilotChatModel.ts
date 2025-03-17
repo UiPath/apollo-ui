@@ -82,6 +82,7 @@ export interface AutopilotChatMessageRenderer {
  * @property {string} Open - Emitted when the chat is opened
  * @property {string} Close - Emitted when the chat is closed
  * @property {string} SendChunk - Emitted when a chunk of a streaming response is sent
+ * @property {string} SetConversation - Emitted when the conversation is set
  */
 export enum AutopilotChatEvent {
     Error = 'error',
@@ -96,6 +97,7 @@ export enum AutopilotChatEvent {
     Open = 'open',
     Close = 'close',
     SendChunk = 'sendChunk',
+    SetConversation = 'setConversation',
 }
 
 /**
