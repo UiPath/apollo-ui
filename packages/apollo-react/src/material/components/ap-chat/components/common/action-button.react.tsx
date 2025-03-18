@@ -43,6 +43,7 @@ interface AutopilotChatActionButtonProps {
     text?: string;
     tooltip?: string;
     ariaLabel?: string;
+    tabIndex?: number;
     onClick: (event: React.MouseEvent<HTMLButtonElement>) => void;
     onFocus?: (event: React.FocusEvent<HTMLButtonElement>) => void;
     onBlur?: (event: React.FocusEvent<HTMLButtonElement>) => void;
@@ -61,6 +62,7 @@ const AutopilotChatActionButtonComponent = React.forwardRef<HTMLButtonElement, A
     text,
     tooltip,
     ariaLabel,
+    tabIndex,
 }, ref) => {
     const chatService = AutopilotChatService.Instance;
     const [ iconColor, setIconColor ] = React.useState('var(--color-icon-default)');
@@ -101,6 +103,7 @@ const AutopilotChatActionButtonComponent = React.forwardRef<HTMLButtonElement, A
                 onClick={onClick}
                 onFocus={onFocus}
                 onBlur={onBlur}
+                tabIndex={tabIndex}
             />
         </StyledButtonContainer>
     ) : (
@@ -111,6 +114,7 @@ const AutopilotChatActionButtonComponent = React.forwardRef<HTMLButtonElement, A
             onClick={onClick}
             onFocus={onFocus}
             onBlur={onBlur}
+            tabIndex={tabIndex}
             aria-label={ariaLabel}
             {...(!preventHover && {
                 onMouseEnter: () => setIconColor('var(--color-foreground-emp)'),

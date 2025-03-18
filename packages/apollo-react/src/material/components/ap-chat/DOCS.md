@@ -28,32 +28,32 @@ const chatService = window.PortalShell.AutopilotChat;
 
 | Method | Description |
 |--------|-------------|
-| `getConfig()` | Returns the current chat configuration object |
-| `initialize(config: AutopilotChatConfiguration, messageRenderers?: AutopilotChatMessageRenderer[])` | Initializes the chat service with the provided configuration and optional message renderers |
-| `injectMessageRenderer(renderer: AutopilotChatMessageRenderer)` | Adds or replaces a custom message renderer in the chat service |
+| `getConfig()` | Returns the current chat configuration object (see [AutopilotChatConfiguration](#autopilotchatconfiguration)) |
+| `initialize(config: AutopilotChatConfiguration, messageRenderers?: AutopilotChatMessageRenderer[])` | Initializes the chat service with the provided configuration (see [AutopilotChatConfiguration](#autopilotchatconfiguration)) and optional message renderers (see [AutopilotChatMessageRenderer](#autopilotchatmessagerenderer)) |
+| `injectMessageRenderer(renderer: AutopilotChatMessageRenderer)` | Adds or replaces a custom message renderer in the chat service (see [AutopilotChatMessageRenderer](#autopilotchatmessagerenderer)) |
 | `getMessageRenderer(name: string)` | Retrieves a message renderer by name |
-| `setFirstRunExperience(config: AutopilotChatConfiguration['firstRunExperience'])` | Configures the first run experience displayed when the chat is opened for the first time or when there are no messages |
+| `setFirstRunExperience(config: AutopilotChatConfiguration['firstRunExperience'])` | Configures the first run experience (see [First Run Experience](#first-run-experience)) displayed when the chat is opened for the first time or when there are no messages |
 
 ### Chat Window Control
 
 | Method | Description |
 |--------|-------------|
-| `open(config?: AutopilotChatConfiguration, messageRenderers?: AutopilotChatMessageRenderer[])` | Opens the chat interface with optional configuration and message renderers |
+| `open(config?: AutopilotChatConfiguration, messageRenderers?: AutopilotChatMessageRenderer[])` | Opens the chat interface with optional configuration (see [AutopilotChatConfiguration](#autopilotchatconfiguration)) and message renderers (see [AutopilotChatMessageRenderer](#autopilotchatmessagerenderer)) |
 | `close()` | Closes the chat interface |
-| `setChatMode(mode: AutopilotChatMode)` | Sets the chat window mode (SideBySide, FullScreen, or Closed) |
-| `newChat(config?: AutopilotChatConfiguration, messageRenderers?: AutopilotChatMessageRenderer[])` | Starts a new chat session with optional configuration and message renderers |
-| `scrollToBottom()` | Scrolls the message container to the bottom |
+| `setChatMode(mode: AutopilotChatMode)` | Sets the chat window mode (see [AutopilotChatMode](#autopilotchatmode)) |
+| `newChat(config?: AutopilotChatConfiguration, messageRenderers?: AutopilotChatMessageRenderer[])` | Starts a new chat session with optional configuration (see [AutopilotChatConfiguration](#autopilotchatconfiguration)) and message renderers (see [AutopilotChatMessageRenderer](#autopilotchatmessagerenderer)) |
+| `scrollToBottom(options?: { force?: boolean; behavior?: ScrollBehavior })` | Scrolls the message container to the bottom. Options include: `force` - whether to force scroll regardless of current position (default: false), `behavior` - scroll behavior ('smooth' or 'auto', default: 'smooth') |
 
 ### Message Handling
 
 | Method | Description |
 |--------|-------------|
-| `setConversation(messages: AutopilotChatMessage[])` | Sets the entire conversation history in the chat interface |
+| `setConversation(messages: AutopilotChatMessage[])` | Sets the entire conversation history in the chat interface (see [AutopilotChatMessage](#autopilotchatmessage)) |
 | `getConversation()` | Returns the current conversation history |
-| `setPrompt(prompt: AutopilotChatPrompt \| string)` | Sets a prompt in the input field of the chat interface |
+| `setPrompt(prompt: AutopilotChatMessage \| string)` | Sets a prompt in the input field of the chat interface (accepts either a string or see [AutopilotChatMessage](#autopilotchatmessage)) |
 | `getPrompt()` | Returns the current prompt |
-| `sendRequest(request: AutopilotChatMessage)` | Sends a user request to the chat and triggers the request event |
-| `sendResponse(response: AutopilotChatMessage)` | Sends an AI assistant response to display in the chat |
+| `sendRequest(request: AutopilotChatMessage)` | Sends a user request to the chat and triggers the request event (see [AutopilotChatMessage](#autopilotchatmessage)) |
+| `sendResponse(response: AutopilotChatMessage)` | Sends an AI assistant response to display in the chat (see [AutopilotChatMessage](#autopilotchatmessage)) |
 | `stopResponse()` | Stops the current streaming response, if applicable |
 
 ### Error Handling
@@ -68,7 +68,7 @@ const chatService = window.PortalShell.AutopilotChat;
 
 | Method | Description |
 |--------|-------------|
-| `setDisabledFeatures(features: AutopilotChatDisabledFeatures)` | Configures which features should be disabled in the chat interface |
+| `setDisabledFeatures(features: AutopilotChatDisabledFeatures)` | Configures which features should be disabled in the chat interface (see [AutopilotChatDisabledFeatures](#autopilotchatdisabledfeatures)) |
 
 ### Event Handling
 
@@ -256,8 +256,8 @@ function example() {
 
 The fake streaming feature uses two constants that can be customized by modifying the component code:
 
-- `FAKE_STREAM_CHARS_COUNT`: The number of characters to display in each chunk (default: 5)
-- `FAKE_STREAM_INTERVAL`: The time interval between chunks in milliseconds (default: 25)
+- `FAKE_STREAM_CHARS_COUNT`: The number of characters to display in each chunk (default: 10)
+- `FAKE_STREAM_INTERVAL`: The time interval between chunks in milliseconds (default: 50)
 
 ## First Run Experience
 
@@ -441,6 +441,19 @@ enum AutopilotChatRole {
     Assistant = 'assistant',
 }
 ```
+
+### AutopilotChatMessageRenderer
+
+```typescript
+interface AutopilotChatMessageRenderer {
+    name: string;
+    render: (container: HTMLElement, message: AutopilotChatMessage) => void | (() => void);
+}
+```
+
+The message renderer interface defines a custom renderer for chat messages:
+- `name`: Unique identifier for the renderer
+- `render`: Function that renders the message content into the provided container element. Can optionally return a cleanup function.
 
 ## Usage Examples
 

@@ -10,6 +10,7 @@ import {
 } from '@uipath/portal-shell-util';
 import React from 'react';
 
+import { useChatWidth } from '../../providers/chat-width-provider.react';
 import { AutopilotChatInternalService } from '../../services/chat-internal-service';
 import { AutopilotChatService } from '../../services/chat-service';
 import { StorageService } from '../../services/storage';
@@ -57,23 +58,22 @@ const Border = styled('div')(({ theme }) => ({
     background: theme.palette.semantic.colorBorderDeEmp,
 }));
 
-interface DragHandleProps {
-    width: number;
-    onWidthChange: (newWidth: number) => void;
-    setShouldAnimate: (shouldAnimate: boolean) => void;
-}
-
-function DragHandleComponent({
-    width, onWidthChange, setShouldAnimate,
-}: DragHandleProps) {
+function DragHandleComponent() {
     const isDraggingRef = React.useRef(false);
     const startXRef = React.useRef(0);
     const startWidthRef = React.useRef(0);
+    const {
+        width, setWidth, setShouldAnimate,
+    } = useChatWidth();
     const widthRef = React.useRef(width);
     const chatService = AutopilotChatService.Instance;
     const [ resizeDisabled, setResizeDisabled ] = React.useState(
         chatService?.getConfig?.()?.disabledFeatures?.resize ?? false,
     );
+
+    React.useEffect(() => {
+        widthRef.current = width;
+    }, [ width ]);
 
     React.useEffect(() => {
         if (!chatService) {
@@ -104,8 +104,8 @@ function DragHandleComponent({
 
         widthRef.current = newWidth;
         AutopilotChatInternalService.Instance.publish(AutopilotChatInternalEvent.ChatResize, newWidth);
-        onWidthChange(newWidth);
-    }, [ onWidthChange ]);
+        setWidth(newWidth);
+    }, [ setWidth ]);
 
     const handleMouseUp = React.useCallback(() => {
         isDraggingRef.current = false;
@@ -139,7 +139,7 @@ function DragHandleComponent({
             const newWidth = Math.min(widthRef.current + step, CHAT_WIDTH_SIDE_BY_SIDE_MAX);
             widthRef.current = newWidth;
 
-            onWidthChange(newWidth);
+            setWidth(newWidth);
             AutopilotChatInternalService.Instance.publish(AutopilotChatInternalEvent.ChatResize, newWidth);
             setShouldAnimate(true);
 
@@ -149,11 +149,11 @@ function DragHandleComponent({
             const newWidth = Math.max(widthRef.current - step, CHAT_WIDTH_SIDE_BY_SIDE_MIN);
             widthRef.current = newWidth;
 
-            onWidthChange(newWidth);
+            setWidth(newWidth);
             AutopilotChatInternalService.Instance.publish(AutopilotChatInternalEvent.ChatResize, newWidth);
             setShouldAnimate(true);
         }
-    }, [ onWidthChange, setShouldAnimate ]);
+    }, [ setWidth, setShouldAnimate ]);
 
     const handleKeyUp = React.useCallback(() => {
         setShouldAnimate(false);

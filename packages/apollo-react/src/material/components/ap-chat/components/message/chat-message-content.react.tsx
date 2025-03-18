@@ -80,16 +80,8 @@ const MessageBox = styled('div')<{
     };
 });
 
-function AutopilotChatMessageContentComponent({
-    message, scrollToBottom,
-}: { message: AutopilotChatMessage; scrollToBottom: () => void }) {
+function AutopilotChatMessageContentComponent({ message }: { message: AutopilotChatMessage }) {
     const chatService = AutopilotChatService.Instance;
-
-    React.useLayoutEffect(() => {
-        if (scrollToBottom) {
-            scrollToBottom();
-        }
-    }, [ scrollToBottom, message ]);
 
     if (!message.content) {
         return null;

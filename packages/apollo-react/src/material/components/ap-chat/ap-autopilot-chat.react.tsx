@@ -17,17 +17,19 @@ import { AutopilotChatDropzone } from './components/dropzone/dropzone.react';
 import { AutopilotChatHeader } from './components/header/header.react';
 import { AutopilotChatInput } from './components/input/chat-input.react';
 import { AutopilotChatMessages } from './components/message/chat-message.react';
+import { AutopilotChatScrollToBottomButton } from './components/message/chat-scroll-to-bottom.react';
 import { AutopilotAttachmentsProvider } from './providers/attachements-provider.react';
+import {
+    ChatWidthProvider,
+    useChatWidth,
+} from './providers/chat-width-provider.react';
 import { AutopilotErrorProvider } from './providers/error-provider.react';
 import { AutopilotLoadingProvider } from './providers/loading-provider.react';
 import { AutopilotStreamingProvider } from './providers/streaming-provider.react';
 import { AutopilotChatService } from './services/chat-service';
-import { StorageService } from './services/storage';
 import {
     CHAT_WIDTH_FULL_SCREEN,
     CHAT_WIDTH_FULL_SCREEN_MAX_WIDTH,
-    CHAT_WIDTH_KEY,
-    CHAT_WIDTH_SIDE_BY_SIDE_MIN,
 } from './utils/constants';
 
 const ChatContainer = styled('div')<{ shouldAnimate: boolean; mode: AutopilotChatMode; width: number }>(({
@@ -59,6 +61,7 @@ const OverflowContainer = styled('div')(() => ({
     flexDirection: 'column',
     overflowY: 'auto',
     marginBottom: token.Spacing.SpacingBase,
+    position: 'relative',
 }));
 
 const MessagesContainer = styled('div')(({ isFullScreen }: { isFullScreen: boolean }) => ({
@@ -85,19 +88,22 @@ const InputContainer = styled('div')<{ isFullScreen: boolean }>(({ isFullScreen 
     }),
 }));
 
-export function ApAutopilotChatReact() {
-    const storage = StorageService.Instance;
+function AutopilotChatContent() {
     const overflowContainerRef = React.useRef<HTMLDivElement>(null);
     const [ mode, setMode ] = React.useState<AutopilotChatMode>(
         AutopilotChatService.Instance?.getConfig?.()?.mode ?? AutopilotChatMode.SideBySide,
     );
-    const [ width, setWidth ] = React.useState(() => {
-        const savedWidth = storage.get(CHAT_WIDTH_KEY);
-
-        return savedWidth ? parseInt(savedWidth, 10) : CHAT_WIDTH_SIDE_BY_SIDE_MIN;
-    });
-    const [ shouldAnimate, setShouldAnimate ] = React.useState(false);
+    const [ autoScroll, setAutoScroll ] = React.useState(true);
     const chatService = AutopilotChatService.Instance;
+    const {
+        width, shouldAnimate,
+    } = useChatWidth();
+    const widthRef = React.useRef(width);
+    // keep track of the distance to the bottom of the container while scrolling to decide between instant and smooth scroll
+    const distanceToBottomRef = React.useRef(0);
+    // Check if the user is scrolling up to cancel the auto scroll
+    const lastScrollTop = React.useRef(0);
+    const isScrollingUpRef = React.useRef(false);
 
     React.useEffect(() => {
         if (!chatService) {
@@ -113,61 +119,157 @@ export function ApAutopilotChatReact() {
         };
     }, [ chatService ]);
 
-    const scrollToBottom = React.useCallback(() => {
-        if (overflowContainerRef.current) {
-            // need a delay for the content to be rendered
-            setTimeout(() => {
-                requestAnimationFrame(() => {
-                    const container = overflowContainerRef.current;
+    const setDistanceToBottom = React.useCallback(() => {
+        const container = overflowContainerRef.current;
 
-                    if (container) {
-                        container.scrollTo({
-                            top: container.scrollHeight,
-                            behavior: 'smooth',
-                        });
-                    }
-                });
-            }, 200);
+        if (!container) {
+            return;
         }
-    }, [ overflowContainerRef ]);
 
+        distanceToBottomRef.current = container.scrollHeight - container.scrollTop - container.clientHeight;
+    }, []);
+
+    const handleScroll = React.useCallback(() => {
+        requestAnimationFrame(() => {
+            const container = overflowContainerRef.current;
+
+            if (!container) {
+                return;
+            }
+
+            const isScrollingUp = container.scrollTop < lastScrollTop.current;
+            setDistanceToBottom();
+
+            if (isScrollingUp !== isScrollingUpRef.current) {
+                if (isScrollingUp) {
+                    setAutoScroll(false);
+                }
+            }
+
+            if (!isScrollingUp && distanceToBottomRef.current < parseInt(token.Spacing.SpacingL, 10)) {
+                setAutoScroll(true);
+            }
+
+            isScrollingUpRef.current = isScrollingUp;
+            lastScrollTop.current = container.scrollTop;
+        });
+    }, [ setDistanceToBottom ]);
+
+    const scrollToBottom = React.useCallback(({
+        force = false, behavior = 'smooth',
+    }: { force?: boolean; behavior?: ScrollBehavior } = {}) => {
+        // need a delay for the content to be rendered
+        const timeout = setTimeout(() => {
+            requestAnimationFrame(() => {
+                if (!force && (!autoScroll || isScrollingUpRef.current)) {
+                    return;
+                }
+
+                const container = overflowContainerRef.current;
+
+                if (container) {
+                    container.scrollTo({
+                        top: container.scrollHeight,
+                        behavior,
+                    });
+                }
+            });
+        }, 200);
+
+        return () => {
+            clearTimeout(timeout);
+        };
+    }, [ autoScroll ]);
+
+    React.useEffect(() => {
+        const container = overflowContainerRef.current;
+
+        if (!container) {
+            return;
+        }
+
+        container.addEventListener('scroll', handleScroll);
+
+        return () => {
+            container.removeEventListener('scroll', handleScroll);
+        };
+    }, [ handleScroll ]);
+
+    // if the width changes, we need to check if we need to scroll to the bottom
+    React.useEffect(() => {
+        if (widthRef.current === width) {
+            return;
+        }
+
+        widthRef.current = width;
+
+        const frame = requestAnimationFrame(() => {
+            setDistanceToBottom();
+
+            if (distanceToBottomRef.current < parseInt(token.Spacing.SpacingL, 10)) {
+                scrollToBottom({
+                    force: true,
+                    behavior: 'instant',
+                });
+                setAutoScroll(true);
+            }
+        });
+
+        return () => {
+            cancelAnimationFrame(frame);
+        };
+    }, [ width, scrollToBottom, setDistanceToBottom ]);
+
+    return (
+        <ChatContainer
+            shouldAnimate={shouldAnimate}
+            mode={mode}
+            width={width}
+        >
+            <DragHandle />
+
+            <HeaderContainer>
+                <AutopilotChatHeader />
+            </HeaderContainer>
+
+            <OverflowContainer id="overflow-container" ref={overflowContainerRef}>
+                <MessagesContainer isFullScreen={mode === AutopilotChatMode.FullScreen}>
+                    <AutopilotChatMessages
+                        overflowContainerRef={overflowContainerRef}
+                        scrollToBottom={scrollToBottom}
+                    />
+                </MessagesContainer>
+            </OverflowContainer>
+
+            <AutopilotChatScrollToBottomButton
+                visible={!autoScroll}
+                onClick={() => {
+                    scrollToBottom({ force: true });
+                    setAutoScroll(true);
+                }}
+                containerRef={overflowContainerRef}
+            />
+
+            <InputBackground>
+                <InputContainer isFullScreen={mode === AutopilotChatMode.FullScreen}>
+                    <AutopilotChatInput />
+                </InputContainer>
+            </InputBackground>
+        </ChatContainer>
+    );
+}
+
+export function ApAutopilotChatReact() {
     return (
         <AutopilotErrorProvider>
             <AutopilotLoadingProvider>
                 <AutopilotStreamingProvider>
                     <AutopilotAttachmentsProvider>
-                        <AutopilotChatDropzone>
-                            <ChatContainer
-                                shouldAnimate={shouldAnimate}
-                                mode={mode}
-                                width={width}
-                            >
-                                <DragHandle
-                                    width={width}
-                                    onWidthChange={setWidth}
-                                    setShouldAnimate={setShouldAnimate}
-                                />
-
-                                <HeaderContainer>
-                                    <AutopilotChatHeader />
-                                </HeaderContainer>
-
-                                <OverflowContainer ref={overflowContainerRef}>
-                                    <MessagesContainer isFullScreen={mode === AutopilotChatMode.FullScreen}>
-                                        <AutopilotChatMessages
-                                            overflowContainerRef={overflowContainerRef}
-                                            scrollToBottom={scrollToBottom}
-                                        />
-                                    </MessagesContainer>
-                                </OverflowContainer>
-
-                                <InputBackground>
-                                    <InputContainer isFullScreen={mode === AutopilotChatMode.FullScreen}>
-                                        <AutopilotChatInput />
-                                    </InputContainer>
-                                </InputBackground>
-                            </ChatContainer>
-                        </AutopilotChatDropzone>
+                        <ChatWidthProvider>
+                            <AutopilotChatDropzone>
+                                <AutopilotChatContent />
+                            </AutopilotChatDropzone>
+                        </ChatWidthProvider>
                     </AutopilotAttachmentsProvider>
                 </AutopilotStreamingProvider>
             </AutopilotLoadingProvider>

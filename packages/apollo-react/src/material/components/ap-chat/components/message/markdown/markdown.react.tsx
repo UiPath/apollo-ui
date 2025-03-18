@@ -9,6 +9,7 @@ import { FontVariantToken } from '@uipath/apollo-core/lib';
 import {
     AutopilotChatEvent,
     AutopilotChatMessage,
+    AutopilotChatMode,
 } from '@uipath/portal-shell-util';
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
@@ -16,6 +17,8 @@ import rehypeKatex from 'rehype-katex';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 
+import { t } from '../../../../../utils/localization/loc';
+import { useChatWidth } from '../../../providers/chat-width-provider.react';
 import { useStreaming } from '../../../providers/streaming-provider.react';
 import { AutopilotChatService } from '../../../services/chat-service';
 import { Code } from './code.react';
@@ -46,8 +49,8 @@ const StyledMarkdown = React.memo(
     styled(ReactMarkdown)(({ theme }) => ({ '&, & .katex': { color: theme.palette.semantic.colorForeground } })),
 );
 
-const FAKE_STREAM_CHARS_COUNT = 5;
-const FAKE_STREAM_INTERVAL = 25;
+const FAKE_STREAM_CHARS_COUNT = 10;
+const FAKE_STREAM_INTERVAL = 50;
 
 function AutopilotChatMarkdownRendererComponent({ message }: { message: AutopilotChatMessage }) {
     // Only store message ID and content separately to minimize re-renders
@@ -55,14 +58,38 @@ function AutopilotChatMarkdownRendererComponent({ message }: { message: Autopilo
     const [ content, setContent ] = React.useState(message.fakeStream ? '' : (message.content || ''));
     const chatService = AutopilotChatService.Instance;
     const { setStreaming } = useStreaming();
+    const contentRef = React.useRef<HTMLDivElement>(null);
+    const previousHeightRef = React.useRef(0);
+    const { width } = useChatWidth();
+
+    React.useEffect(() => {
+        if (!chatService) {
+            return;
+        }
+
+        const unsubscribeModeChange = chatService.on(AutopilotChatEvent.ModeChange, (mode) => {
+            if (mode === AutopilotChatMode.FullScreen) {
+                requestAnimationFrame(() => {
+                    previousHeightRef.current = contentRef.current?.scrollHeight || 0;
+                });
+            }
+        });
+
+        return () => unsubscribeModeChange?.();
+    }, [ chatService ]);
+
+    React.useEffect(() => {
+        requestAnimationFrame(() => {
+            previousHeightRef.current = contentRef.current?.scrollHeight || 0;
+        });
+    }, [ width ]);
 
     // Update the message ID ref if a new message is passed
     React.useEffect(() => {
         let unsubscribeStopResponse: (() => void) | undefined;
-
+        let fakeStreamInterval: NodeJS.Timeout | undefined;
         if (message.id !== messageId.current || !message.stream) {
             messageId.current = message.id;
-
             setContent(message.fakeStream ? '' : (message.content || ''));
         }
 
@@ -78,14 +105,20 @@ function AutopilotChatMarkdownRendererComponent({ message }: { message: Autopilo
 
             setStreaming(true);
 
-            const fakeStreamInterval = setInterval(() => {
+            fakeStreamInterval = setInterval(() => {
                 if (charIndex < characters.length) {
                     const chunkSize = FAKE_STREAM_CHARS_COUNT;
                     const endIndex = Math.min(charIndex + chunkSize, characters.length);
                     const chunk = characters.slice(charIndex, endIndex).join('');
 
                     setContent(prevContent => `${prevContent}${chunk}`);
-                    chatService.scrollToBottom();
+
+                    if (contentRef.current && contentRef.current.scrollHeight > previousHeightRef.current) {
+                        chatService.scrollToBottom();
+
+                        previousHeightRef.current = contentRef.current.scrollHeight;
+                    }
+
                     charIndex = endIndex;
                 } else {
                     clearInterval(fakeStreamInterval);
@@ -96,6 +129,7 @@ function AutopilotChatMarkdownRendererComponent({ message }: { message: Autopilo
 
         return () => {
             unsubscribeStopResponse?.();
+            fakeStreamInterval && clearInterval(fakeStreamInterval);
         };
     }, [ message, chatService, setStreaming ]);
 
@@ -109,7 +143,10 @@ function AutopilotChatMarkdownRendererComponent({ message }: { message: Autopilo
                 requestAnimationFrame(() => {
                     setContent(prevContent => `${prevContent}${msg.content}`);
 
-                    chatService.scrollToBottom();
+                    if (contentRef.current && contentRef.current.scrollHeight > previousHeightRef.current) {
+                        chatService.scrollToBottom();
+                        previousHeightRef.current = contentRef.current.scrollHeight;
+                    }
                 });
             }
         });
@@ -145,19 +182,21 @@ function AutopilotChatMarkdownRendererComponent({ message }: { message: Autopilo
     }), []);
 
     return React.useMemo(() => (
-        <StyledMarkdown
-            remarkPlugins={[ remarkGfm, [ remarkMath, { singleDollarTextMath: false } ] ]}
-            rehypePlugins={[ [ rehypeKatex, {
-                output: 'mathml',
-                trust: false,
-                strict: true,
-                throwOnError: false,
-            } ] ]}
-            remarkRehypeOptions={{ footnoteLabel: 'Sources' }}
-            components={components}
-        >
-            {content}
-        </StyledMarkdown>
+        <div ref={contentRef}>
+            <StyledMarkdown
+                remarkPlugins={[ remarkGfm, [ remarkMath, { singleDollarTextMath: false } ] ]}
+                rehypePlugins={[ [ rehypeKatex, {
+                    output: 'mathml',
+                    trust: false,
+                    strict: true,
+                    throwOnError: false,
+                } ] ]}
+                remarkRehypeOptions={{ footnoteLabel: t('autopilot-chat-footnote-label') }}
+                components={components}
+            >
+                {content}
+            </StyledMarkdown>
+        </div>
     ), [ content, components ]);
 }
 

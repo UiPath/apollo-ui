@@ -27,7 +27,10 @@ const MessageContainer = styled('div')(() => ({
 }));
 
 interface AutopilotChatMessagesProps {
-    scrollToBottom: () => void;
+    scrollToBottom: (options?: {
+        force?: boolean;
+        behavior?: ScrollBehavior;
+    }) => void;
     overflowContainerRef: React.RefObject<HTMLDivElement>;
 }
 
@@ -47,19 +50,23 @@ function AutopilotChatMessagesComponent({
             if (prev.some(m => m.id === message.id)) {
                 return prev.map(m => m.id === message.id ? message : m);
             }
+
+            scrollToBottom();
+
             return [ ...prev, message ];
         });
-    }, []);
+    }, [ scrollToBottom ]);
 
     React.useEffect(() => {
-        scrollToBottom();
-
         if (!chatInternalService) {
             return;
         }
 
-        const unsubscribeScrollToBottom = chatInternalService.on(AutopilotChatInternalEvent.ScrollToBottom, () => {
-            scrollToBottom();
+        const unsubscribeScrollToBottom = chatInternalService.on(AutopilotChatInternalEvent.ScrollToBottom, (options?: {
+            force?: boolean;
+            behavior?: ScrollBehavior;
+        }) => {
+            scrollToBottom(options);
         });
 
         return () => {
@@ -77,7 +84,10 @@ function AutopilotChatMessagesComponent({
         const unsubscribeResponse = chatService.on(AutopilotChatEvent.Response, updateMessages);
         const unsubscribeNewChat = chatService.on(AutopilotChatEvent.NewChat, () => setMessages([]));
         // set messages to the new conversation
-        const unsubscribeConversation = chatService.on(AutopilotChatEvent.SetConversation, setMessages);
+        const unsubscribeConversation = chatService.on(AutopilotChatEvent.SetConversation, (msg) => {
+            setMessages(msg);
+            scrollToBottom({ force: true });
+        });
 
         return () => {
             unsubscribeRequest();
@@ -85,7 +95,7 @@ function AutopilotChatMessagesComponent({
             unsubscribeConversation();
             unsubscribeNewChat();
         };
-    }, [ chatService, updateMessages ]);
+    }, [ chatService, updateMessages, scrollToBottom ]);
 
     const onAttachmentsToggleExpanded = React.useCallback((index: number) => {
         const container = overflowContainerRef.current;
@@ -120,10 +130,7 @@ function AutopilotChatMessagesComponent({
                                 onToggleExpanded={() => onAttachmentsToggleExpanded(index)}
                             />
                         )}
-                        <AutopilotChatMessageContent
-                            message={message}
-                            scrollToBottom={scrollToBottom}
-                        />
+                        <AutopilotChatMessageContent message={message}/>
                     </React.Fragment>
                 );
             })}

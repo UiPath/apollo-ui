@@ -376,9 +376,16 @@ export class AutopilotChatService {
 
     /**
      * Scrolls to the bottom of the chat
+     *
+     * @param options - The options to scroll to the bottom
+     * @param options.force - Whether to force the scroll to the bottom (ignoring the current scroll position), defaults to false
+     * @param options.behavior - The behavior of the scroll, defaults to 'smooth'
      */
-    scrollToBottom() {
-        AutopilotChatInternalService.Instance.publish(AutopilotChatInternalEvent.ScrollToBottom);
+    scrollToBottom(options?: { force?: boolean; behavior?: ScrollBehavior }) {
+        AutopilotChatInternalService.Instance.publish(AutopilotChatInternalEvent.ScrollToBottom, {
+            force: options?.force ?? false,
+            behavior: options?.behavior ?? 'smooth',
+        });
     }
 
     /**
