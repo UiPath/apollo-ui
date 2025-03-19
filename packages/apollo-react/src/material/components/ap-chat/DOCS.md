@@ -97,6 +97,7 @@ Subscribes to chat events and returns an unsubscribe function. The handler will 
 - `Open`: When the chat is opened
 - `Close`: When the chat is closed
 - `SendChunk`: When a chunk of streaming content is sent
+- `SetConversation`: Emitted when the conversation is set
 
 #### Intercepting Events
 
@@ -111,7 +112,7 @@ Adds an event interceptor for interceptable events. Returns a function to remove
 - `interceptor`: The function that will intercept the event
 
 **Usage:**
-The interceptor can return `true` to indicate it has handled the event and prevent further processing. Multiple interceptors can be added and will be called in parallel. If any interceptor returns `true`, the event is considered hijacked and the default handling will not occur.
+The interceptor can return `true` to indicate it has handled the event and prevent further processing. Multiple interceptors can be added and will be called in parallel. If any interceptor returns `true`, the event is considered hijacked and the default handling will not occur (it will still emit, but with `hijacked: true` on the message).
 
 ## Streaming Capabilities
 
@@ -126,7 +127,7 @@ To implement real-time streaming:
 1. When the API returns a message, send the response with `stream: true` on the message
 
 ```typescript
-// Then send chunks as they arrive from your API
+// Send chunks as they arrive from your API
 function onChunkReceived(chunkContent) {
   chatService.sendResponse({
     id: "unique-message-id",  // Same ID everytime
@@ -138,7 +139,7 @@ function onChunkReceived(chunkContent) {
 // Connect to your streaming API and call onChunkReceived for each chunk
 ```
 
-2. The component will automatically append new chunks to the existing message and scroll to keep the latest content visible.
+2. The component will automatically append new chunks to the existing message and scroll to keep the latest content visible (in case the user did not scroll up)
 
 3. When streaming is complete or needs to be interrupted, call:
 
@@ -217,13 +218,13 @@ chatService.sendResponse({
 
 With fake streaming:
 - The message content is split into characters and displayed incrementally
-- Characters are shown in small chunks (default 5 characters) at timed intervals (default 25ms)
+- Characters are shown in small chunks at timed intervals
 - The component handles the display animation automatically
 - Call `stopResponse()` to immediately display the full content and stop the animation
 
 #### Rich Content Fake Streaming Example
 
-Fake streaming works with rich Markdown content, including headings, code blocks, tables and other formatting:
+Streaming & fake streaming work with rich Markdown content, including headings, code blocks, tables and other formatting:
 
 ```typescript
 chatService.sendResponse({ 
@@ -289,28 +290,28 @@ chatService.setConversation([
     role: AutopilotChatRole.User, 
     content: "How do I extract data from invoices?",
     created_at: new Date().toISOString(),
-    widget: "default"
+    widget: "apollo-markdown-renderer" // default renderer defined in apollo for markdown
   },
   { 
     id: "2",
     role: AutopilotChatRole.Assistant, 
     content: "To extract data from invoices, you can use Document Understanding. Here's a step-by-step approach:\n\n1. Install the Document Understanding package\n2. Create a new workflow\n3. Add the Digitize Document activity\n4. Configure it to use Invoice Extraction ML skills\n5. Use Data Extraction to get specific fields",
     created_at: new Date().toISOString(),
-    widget: "default"
+    widget: "apollo-markdown-renderer"
   },
   { 
     id: "3",
     role: AutopilotChatRole.User, 
     content: "Can I handle multilingual invoices?",
     created_at: new Date().toISOString(),
-    widget: "default"
+    widget: "apollo-markdown-renderer"
   },
   { 
     id: "4",
     role: AutopilotChatRole.Assistant, 
     content: "Yes, Document Understanding supports multiple languages. You can:\n\n- Specify OCR language settings\n- Use pre-built ML skills that support various languages\n- Train custom ML models for specific languages\n- Add language detection pre-processing\n- Use translation activities for standardization",
     created_at: new Date().toISOString(),
-    widget: "default"
+    widget: "apollo-markdown-renderer"
   }
 ]);
 ```
@@ -553,33 +554,45 @@ graph TD
     D -->|Handles Errors| F[ErrorProvider]
     D -->|Wait for response state| G[LoadingProvider]
     D -->|Streaming responses| H[StreamingProvider]
+    D -->|Chat width management| I[ChatWidthProvider]
+    D -->|Scroll management| J[ChatScrollProvider]
 
     %% Chat Container
-    E --> I["ChatContainer [Resizable & Dropzone]"]
-    F --> I
-    G --> I
-    H --> I
+    E --> K["ChatContainer [Resizable & Dropzone]"]
+    F --> K
+    G --> K
+    H --> K
+    I --> K
+    J --> K
 
     %% Header
-    I -->J[Header]
-    J --> K[Actions]
+    K --> L[Header]
+    L --> M[Actions]
 
     %% Input Section
-    I -->|User Input| L[Input]
-    L --> M[InputHeader]
-    L --> N[InputAttachments]
-    L --> O[InputActions]
-    L --> P[InputFooter]
+    K -->|User Input| N[Input]
+    N --> O[InputHeader]
+    N --> P[InputAttachments]
+    N --> Q[InputActions]
+    N --> R[InputFooter]
 
     %% Message Section
-    I -->|Displays Messages| Q["Message [Overflow Container]"]
-    Q --> R[MarkdownRenderer]
-    R -->|Formats| S[Code]
-    R -->|Formats| T[Lists]
-    R -->|Formats| U[Text]
-    R -->|Formats| V[Table]
+    K -->|Displays Messages| S["Message [Overflow Container]"]
+    S --> T[MessageContent]
+    T --> U[MarkdownRenderer]
+    U -->|Formats| V[Code]
+    U -->|Formats| W[Lists]
+    U -->|Formats| X[Text]
+    U -->|Formats| Y[Table]
     
-    Q -->|Displays| W[Attachments]
-    Q -->|Wait for response| X[Loading]
-    Q -->|Custom Rendering| Y[InjectableRenderer]
+    S -->|Displays| Z[Attachments]
+    S -->|Wait for response| AA[Loading]
+    S -->|First Run Experience| AB[FRE]
+    S -->|Custom Rendering| AC[InjectableRenderer]
+
+    %% Services
+    AD[ChatService] -->|Manages| C
+    AE[ChatInternalService] -->|Internal State| AD
+    AF[EventBus] -->|Events| AD
+    AG[StorageService] -->|Persistence| AD
 ```
