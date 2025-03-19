@@ -54,5 +54,11 @@ export function AutopilotErrorProvider({ children }: { children: React.ReactNode
 }
 
 export function useError() {
-    return React.useContext(AutopilotErrorContext);
+    const context = React.useContext(AutopilotErrorContext);
+
+    if (!context) {
+        throw new Error('useError must be used within a AutopilotErrorProvider');
+    }
+
+    return context;
 }

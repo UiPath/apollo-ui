@@ -6,12 +6,11 @@ import token from '@uipath/apollo-core/lib';
 import {
     AutopilotChatEvent,
     AutopilotChatInterceptableEvent,
-    AutopilotChatInternalEvent,
     AutopilotChatMessage,
 } from '@uipath/portal-shell-util';
 import React from 'react';
 
-import { AutopilotChatInternalService } from '../../services/chat-internal-service';
+import { useChatScroll } from '../../providers/chat-scroll-provider.react';
 import { AutopilotChatService } from '../../services/chat-service';
 import { AutopilotChatAttachments } from './attachments/attachments.react';
 import { AutopilotChatMessageContent } from './chat-message-content.react';
@@ -26,20 +25,12 @@ const MessageContainer = styled('div')(() => ({
     height: '100%',
 }));
 
-interface AutopilotChatMessagesProps {
-    scrollToBottom: (options?: {
-        force?: boolean;
-        behavior?: ScrollBehavior;
-    }) => void;
-    overflowContainerRef: React.RefObject<HTMLDivElement>;
-}
-
-function AutopilotChatMessagesComponent({
-    scrollToBottom, overflowContainerRef,
-}: AutopilotChatMessagesProps) {
+function AutopilotChatMessagesComponent() {
+    const {
+        scrollToBottom, overflowContainerRef,
+    } = useChatScroll();
     const messageContainerRef = React.useRef<HTMLDivElement>(null);
     const chatService = AutopilotChatService.Instance;
-    const chatInternalService = AutopilotChatInternalService.Instance;
     const [ messages, setMessages ] = React.useState<AutopilotChatMessage[]>(
         chatService?.getConversation?.() ?? [],
     );
@@ -56,23 +47,6 @@ function AutopilotChatMessagesComponent({
             return [ ...prev, message ];
         });
     }, [ scrollToBottom ]);
-
-    React.useEffect(() => {
-        if (!chatInternalService) {
-            return;
-        }
-
-        const unsubscribeScrollToBottom = chatInternalService.on(AutopilotChatInternalEvent.ScrollToBottom, (options?: {
-            force?: boolean;
-            behavior?: ScrollBehavior;
-        }) => {
-            scrollToBottom(options);
-        });
-
-        return () => {
-            unsubscribeScrollToBottom();
-        };
-    }, [ scrollToBottom, chatInternalService ]);
 
     React.useEffect(() => {
         if (!chatService) {
@@ -112,7 +86,7 @@ function AutopilotChatMessagesComponent({
         // Only scroll if we're near the bottom (within BOTTOM_THRESHOLD)
         // AND the message is the last 3 messages
         if (distanceFromBottom <= BOTTOM_THRESHOLD && index > messages.length - MESSAGE_THRESHOLD) {
-            scrollToBottom();
+            scrollToBottom({ force: true });
         }
     }, [ scrollToBottom, overflowContainerRef, messages ]);
 

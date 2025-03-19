@@ -75,5 +75,11 @@ export function AutopilotAttachmentsProvider({ children }: { children: React.Rea
 }
 
 export function useAttachments() {
-    return React.useContext(AutopilotAttachmentsContext);
+    const context = React.useContext(AutopilotAttachmentsContext);
+
+    if (!context) {
+        throw new Error('useAttachments must be used within a AutopilotAttachmentsProvider');
+    }
+
+    return context;
 }

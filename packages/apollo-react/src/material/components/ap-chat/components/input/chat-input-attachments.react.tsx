@@ -196,7 +196,7 @@ function AutopilotChatInputAttachmentsComponent() {
     const [ focusedAttachmentIndex, setFocusedAttachmentIndex ] = React.useState<number | null>(null);
 
     const handleSetFocusedAttachmentIndex = React.useCallback((index: number) => {
-        requestAnimationFrame(() => {
+        const animationFrameRef = requestAnimationFrame(() => {
             if (attachments.length <= 1) {
                 setFocusedAttachmentIndex(null);
             } else if (index === attachments.length - 1) {
@@ -205,6 +205,12 @@ function AutopilotChatInputAttachmentsComponent() {
                 setFocusedAttachmentIndex(index);
             }
         });
+
+        return () => {
+            if (animationFrameRef) {
+                cancelAnimationFrame(animationFrameRef);
+            }
+        };
     }, [ attachments.length ]);
 
     const handleRemoveAttachment = React.useCallback((name: string, index: number) => {

@@ -70,12 +70,18 @@ function AutopilotChatAttachmentsComponent({
             setVisibleFiles(Math.max(1, count)); // Ensure at least 1 file is shown
         };
 
-        requestAnimationFrame(calculateVisibleFiles);
+        let animationFrameRef: number | null = null;
+
+        animationFrameRef = requestAnimationFrame(calculateVisibleFiles);
 
         const unsubscribeModeChange = AutopilotChatService.Instance.on(
             AutopilotChatEvent.ModeChange,
             () => {
-                requestAnimationFrame(calculateVisibleFiles);
+                if (animationFrameRef) {
+                    cancelAnimationFrame(animationFrameRef);
+                }
+
+                animationFrameRef = requestAnimationFrame(calculateVisibleFiles);
             },
         );
         const unsubscribeResize = AutopilotChatInternalService.Instance.on(
@@ -84,6 +90,10 @@ function AutopilotChatAttachmentsComponent({
         );
 
         return () => {
+            if (animationFrameRef) {
+                cancelAnimationFrame(animationFrameRef);
+            }
+
             unsubscribeModeChange();
             unsubscribeResize();
         };

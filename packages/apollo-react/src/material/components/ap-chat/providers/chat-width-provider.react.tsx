@@ -18,14 +18,6 @@ interface ChatWidthContextType {
 
 export const ChatWidthContext = React.createContext<ChatWidthContextType | null>(null);
 
-export function useChatWidth() {
-    const context = React.useContext(ChatWidthContext);
-    if (!context) {
-        throw new Error('useChatWidth must be used within a ChatWidthProvider');
-    }
-    return context;
-}
-
 interface ChatWidthProviderProps {
     children: React.ReactNode;
 }
@@ -51,4 +43,14 @@ export function ChatWidthProvider({ children }: ChatWidthProviderProps) {
             {children}
         </ChatWidthContext.Provider>
     );
+}
+
+export function useChatWidth() {
+    const context = React.useContext(ChatWidthContext);
+
+    if (!context) {
+        throw new Error('useChatWidth must be used within a ChatWidthProvider');
+    }
+
+    return context;
 }

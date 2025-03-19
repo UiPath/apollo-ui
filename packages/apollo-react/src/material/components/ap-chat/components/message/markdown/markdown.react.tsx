@@ -18,6 +18,7 @@ import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 
 import { t } from '../../../../../utils/localization/loc';
+import { useChatScroll } from '../../../providers/chat-scroll-provider.react';
 import { useChatWidth } from '../../../providers/chat-width-provider.react';
 import { useStreaming } from '../../../providers/streaming-provider.react';
 import { AutopilotChatService } from '../../../services/chat-service';
@@ -61,33 +62,49 @@ function AutopilotChatMarkdownRendererComponent({ message }: { message: Autopilo
     const contentRef = React.useRef<HTMLDivElement>(null);
     const previousHeightRef = React.useRef(0);
     const { width } = useChatWidth();
+    const { scrollToBottom } = useChatScroll();
 
     React.useEffect(() => {
         if (!chatService) {
             return;
         }
 
+        let animationFrameRef: number | null = null;
+
         const unsubscribeModeChange = chatService.on(AutopilotChatEvent.ModeChange, (mode) => {
             if (mode === AutopilotChatMode.FullScreen) {
-                requestAnimationFrame(() => {
+                animationFrameRef = requestAnimationFrame(() => {
                     previousHeightRef.current = contentRef.current?.scrollHeight || 0;
                 });
             }
         });
 
-        return () => unsubscribeModeChange?.();
+        return () => {
+            if (animationFrameRef) {
+                cancelAnimationFrame(animationFrameRef);
+            }
+
+            unsubscribeModeChange?.();
+        };
     }, [ chatService ]);
 
     React.useEffect(() => {
-        requestAnimationFrame(() => {
+        const animationFrameRef = requestAnimationFrame(() => {
             previousHeightRef.current = contentRef.current?.scrollHeight || 0;
         });
+
+        return () => {
+            if (animationFrameRef) {
+                cancelAnimationFrame(animationFrameRef);
+            }
+        };
     }, [ width ]);
 
     // Update the message ID ref if a new message is passed
     React.useEffect(() => {
         let unsubscribeStopResponse: (() => void) | undefined;
         let fakeStreamInterval: NodeJS.Timeout | undefined;
+
         if (message.id !== messageId.current || !message.stream) {
             messageId.current = message.id;
             setContent(message.fakeStream ? '' : (message.content || ''));
@@ -114,7 +131,7 @@ function AutopilotChatMarkdownRendererComponent({ message }: { message: Autopilo
                     setContent(prevContent => `${prevContent}${chunk}`);
 
                     if (contentRef.current && contentRef.current.scrollHeight > previousHeightRef.current) {
-                        chatService.scrollToBottom();
+                        scrollToBottom();
 
                         previousHeightRef.current = contentRef.current.scrollHeight;
                     }
@@ -131,28 +148,37 @@ function AutopilotChatMarkdownRendererComponent({ message }: { message: Autopilo
             unsubscribeStopResponse?.();
             fakeStreamInterval && clearInterval(fakeStreamInterval);
         };
-    }, [ message, chatService, setStreaming ]);
+    }, [ message, chatService, setStreaming, scrollToBottom ]);
 
     React.useEffect(() => {
         if (!chatService) {
             return;
         }
 
+        let animationFrameRef: number | null = null;
+
         const unsubscribe = chatService.on(AutopilotChatEvent.SendChunk, (msg: AutopilotChatMessage) => {
             if (msg.id === messageId.current) {
-                requestAnimationFrame(() => {
+                animationFrameRef = requestAnimationFrame(() => {
                     setContent(prevContent => `${prevContent}${msg.content}`);
 
                     if (contentRef.current && contentRef.current.scrollHeight > previousHeightRef.current) {
-                        chatService.scrollToBottom();
+                        scrollToBottom();
+
                         previousHeightRef.current = contentRef.current.scrollHeight;
                     }
                 });
             }
         });
 
-        return () => unsubscribe();
-    }, [ chatService ]);
+        return () => {
+            if (animationFrameRef) {
+                cancelAnimationFrame(animationFrameRef);
+            }
+
+            unsubscribe();
+        };
+    }, [ chatService, scrollToBottom ]);
 
     const components = React.useMemo(() => ({
         ul: Ul,

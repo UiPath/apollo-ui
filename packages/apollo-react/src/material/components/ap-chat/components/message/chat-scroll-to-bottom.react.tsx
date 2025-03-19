@@ -68,8 +68,10 @@ function AutopilotChatScrollToBottomButtonComponent({
             return;
         }
 
+        let animationFrameRef: number | null = null;
+
         const updatePosition = () => {
-            requestAnimationFrame(() => {
+            animationFrameRef = requestAnimationFrame(() => {
                 if (containerRef.current) {
                     const rect = containerRef.current.getBoundingClientRect();
 
@@ -93,6 +95,10 @@ function AutopilotChatScrollToBottomButtonComponent({
             window.removeEventListener('resize', updatePosition);
             unsubscribeResize();
             unsubscribeModeChange();
+
+            if (animationFrameRef) {
+                cancelAnimationFrame(animationFrameRef);
+            }
         };
     }, [ containerRef, chatInternalService, chatService, bottom ]);
 

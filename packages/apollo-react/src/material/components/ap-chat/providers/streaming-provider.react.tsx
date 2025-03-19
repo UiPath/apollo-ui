@@ -52,5 +52,11 @@ export function AutopilotStreamingProvider({ children }: { children: React.React
 }
 
 export function useStreaming() {
-    return React.useContext(AutopilotStreamingContext);
+    const context = React.useContext(AutopilotStreamingContext);
+
+    if (!context) {
+        throw new Error('useStreaming must be used within a AutopilotStreamingProvider');
+    }
+
+    return context;
 }

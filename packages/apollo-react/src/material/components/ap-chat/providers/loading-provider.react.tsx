@@ -62,5 +62,11 @@ export function AutopilotLoadingProvider({ children }: { children: React.ReactNo
 }
 
 export function useLoading() {
-    return React.useContext(AutopilotLoadingContext);
+    const context = React.useContext(AutopilotLoadingContext);
+
+    if (!context) {
+        throw new Error('useLoading must be used within a AutopilotLoadingProvider');
+    }
+
+    return context;
 }
