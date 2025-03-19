@@ -60,6 +60,14 @@ export interface AutopilotChatMessage {
 
 export interface AutopilotChatPrompt extends Pick<AutopilotChatMessage, 'content' | 'attachments'> {}
 
+/**
+ * Represents a message renderer for the Autopilot Chat system.
+ *
+ * @property name - The name of the renderer
+ * @property render - The function to render the message
+ *
+ * @returns void or a function to clean up the message renderer
+ */
 export interface AutopilotChatMessageRenderer {
     name: string;
     render: (container: HTMLElement, message: AutopilotChatMessage) => void | (() => void);
