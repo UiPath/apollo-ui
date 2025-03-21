@@ -42,7 +42,6 @@ const chatService = window.PortalShell.AutopilotChat;
 | `close()` | Closes the chat interface |
 | `setChatMode(mode: AutopilotChatMode)` | Sets the chat window mode (see [AutopilotChatMode](#autopilotchatmode)) |
 | `newChat(config?: AutopilotChatConfiguration, messageRenderers?: AutopilotChatMessageRenderer[])` | Starts a new chat session with optional configuration (see [AutopilotChatConfiguration](#autopilotchatconfiguration)) and message renderers (see [AutopilotChatMessageRenderer](#autopilotchatmessagerenderer)) |
-| `scrollToBottom(options?: { force?: boolean; behavior?: ScrollBehavior })` | Scrolls the message container to the bottom. Options include: `force` - whether to force scroll regardless of current position (default: false), `behavior` - scroll behavior ('smooth' or 'auto', default: 'smooth') |
 
 ### Message Handling
 

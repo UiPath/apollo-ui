@@ -14,11 +14,10 @@ import { AutopilotChatScrollToBottomButton } from './chat-scroll-to-bottom.react
 const OverflowContainer = styled('div')(() => ({
     flex: '1 1 100%',
     minHeight: 0,
-    display: 'flex',
-    flexDirection: 'column',
     overflowY: 'auto',
     marginBottom: token.Spacing.SpacingBase,
     position: 'relative',
+    outline: 'none',
 }));
 
 const MessagesContainer = styled('div')(({ isFullScreen }: { isFullScreen: boolean }) => ({
@@ -27,7 +26,6 @@ const MessagesContainer = styled('div')(({ isFullScreen }: { isFullScreen: boole
         margin: '0 auto',
         width: '100%',
     }),
-    height: '100%',
 }));
 
 interface ChatScrollContainerProps {
@@ -37,15 +35,15 @@ interface ChatScrollContainerProps {
 function ChatScrollContainerComponent({ mode }: ChatScrollContainerProps) {
     const {
         autoScroll,
-        setAutoScroll,
         scrollToBottom,
         overflowContainerRef,
+        contentRef,
     } = useChatScroll();
 
     return (
         <>
-            <OverflowContainer id="overflow-container" ref={overflowContainerRef}>
-                <MessagesContainer isFullScreen={mode === AutopilotChatMode.FullScreen}>
+            <OverflowContainer tabIndex={0} id="overflow-container" ref={overflowContainerRef}>
+                <MessagesContainer id="content-ref" ref={contentRef} isFullScreen={mode === AutopilotChatMode.FullScreen}>
                     <AutopilotChatMessages/>
                 </MessagesContainer>
             </OverflowContainer>
@@ -54,7 +52,6 @@ function ChatScrollContainerComponent({ mode }: ChatScrollContainerProps) {
                 visible={!autoScroll}
                 onClick={() => {
                     scrollToBottom({ force: true });
-                    setAutoScroll(true);
                 }}
                 containerRef={overflowContainerRef}
             />

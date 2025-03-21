@@ -1,18 +1,21 @@
 /** @jsx React.createElement */
 /** @jsxFrag React.Fragment */
 
-import token from '@uipath/apollo-core/lib';
-import { AutopilotChatInternalEvent } from '@uipath/portal-shell-util';
+import {
+    AutopilotChatEvent,
+    AutopilotChatInterceptableEvent,
+} from '@uipath/portal-shell-util';
 import React from 'react';
 
-import { AutopilotChatInternalService } from '../services/chat-internal-service';
-import { CHAT_SCROLL_DELAY } from '../utils/constants';
+import { AutopilotChatService } from '../services/chat-service';
+import { CHAT_SCROLL_BOTTOM_BUFFER } from '../utils/constants';
+import { useStreaming } from './streaming-provider.react';
 
 interface ChatScrollContextType {
     autoScroll: boolean;
-    setAutoScroll: (autoScroll: boolean) => void;
-    scrollToBottom: (options?: { force?: boolean; behavior?: ScrollBehavior }) => () => void;
+    scrollToBottom: (options?: { force?: boolean; behavior?: ScrollBehavior }) => void;
     overflowContainerRef: React.RefObject<HTMLDivElement>;
+    contentRef: React.RefObject<HTMLDivElement>;
 }
 
 const ChatScrollContext = React.createContext<ChatScrollContextType | null>(null);
@@ -22,118 +25,175 @@ interface ChatScrollProviderProps {
 }
 
 export const ChatScrollProvider: React.FC<ChatScrollProviderProps> = ({ children }) => {
-    const overflowContainerRef = React.useRef<HTMLDivElement>(null);
-    const [ autoScroll, setAutoScroll ] = React.useState(true);
-    const autoScrollRef = React.useRef(autoScroll);
-    const distanceToBottomRef = React.useRef(0);
-    const lastScrollTop = React.useRef(0);
-    const isScrollingUpRef = React.useRef(false);
-    const chatInternalService = AutopilotChatInternalService.Instance;
-    const scrollToBottomDelayRef = React.useRef<NodeJS.Timeout | null>(null);
-    const animationFrameRef = React.useRef<number | null>(null);
+    const chatService = AutopilotChatService.Instance;
 
-    React.useEffect(() => {
-        autoScrollRef.current = autoScroll;
-    }, [ autoScroll ]);
+    const overflowContainerRef = React.useRef<HTMLDivElement>(null);
+    const contentRef = React.useRef<HTMLDivElement>(null);
+    const previousHeightRef = React.useRef<number>(0);
+    const isDraggingScrollBarRef = React.useRef(false);
+    const { streaming } = useStreaming();
+
+    const [ autoScroll, setAutoScroll ] = React.useState(true);
 
     const scrollToBottom = React.useCallback(({
         force = false,
         behavior = 'smooth',
     }: { force?: boolean; behavior?: ScrollBehavior } = {}) => {
-        scrollToBottomDelayRef.current = setTimeout(() => {
-            animationFrameRef.current = requestAnimationFrame(() => {
-                if (!force && (!autoScrollRef.current || isScrollingUpRef.current)) {
-                    return;
-                }
+        if (!force && !autoScroll) {
+            return;
+        }
 
-                const container = overflowContainerRef.current;
+        if (!autoScroll && force) {
+            setAutoScroll(true);
+        }
 
-                if (container) {
-                    container.scrollTo({
-                        top: container.scrollHeight,
-                        behavior,
-                    });
-                }
-            });
-        }, CHAT_SCROLL_DELAY);
-
-        return () => {
-            if (scrollToBottomDelayRef.current) {
-                clearTimeout(scrollToBottomDelayRef.current);
-            }
-
-            if (animationFrameRef.current) {
-                cancelAnimationFrame(animationFrameRef.current);
-            }
-        };
-    }, []);
-
-    const handleScroll = React.useCallback(() => {
         const container = overflowContainerRef.current;
 
+        if (container) {
+            container.scrollTo({
+                top: container.scrollHeight,
+                behavior,
+            });
+        }
+    }, [ autoScroll ]);
+
+    const handleResize = React.useCallback(() => {
+        if (!autoScroll || !contentRef.current || !overflowContainerRef.current) {
+            return;
+        }
+
+        const newHeight = contentRef.current.scrollHeight;
+
+        // if the chat is in auto-scroll mode, scroll to the bottom if the content is taller than the previous height
+        if (newHeight > previousHeightRef.current && autoScroll) {
+            const container = overflowContainerRef.current;
+            const distance = container.scrollHeight - container.scrollTop - container.clientHeight;
+            const isNearBottom = distance < CHAT_SCROLL_BOTTOM_BUFFER;
+
+            scrollToBottom({
+                force: true,
+                behavior: isNearBottom || streaming ? 'instant' : 'smooth',
+            });
+        }
+
+        previousHeightRef.current = newHeight;
+    }, [ contentRef, autoScroll, scrollToBottom, streaming ]);
+
+    // When scrolling up, we want to disable auto-scroll
+    const handleWheel = React.useCallback((event: WheelEvent) => {
+        const container = overflowContainerRef.current;
         if (!container) {
             return;
         }
 
-        if (scrollToBottomDelayRef.current) {
-            clearTimeout(scrollToBottomDelayRef.current);
+        if (event.deltaY < 0) {
+            setAutoScroll(false);
+        } else if (event.deltaY > 0) {
+            const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < CHAT_SCROLL_BOTTOM_BUFFER;
+
+            if (isNearBottom) {
+                setAutoScroll(true);
+            }
+        }
+    }, [ setAutoScroll ]);
+
+    const handleKeyDown = React.useCallback((event: KeyboardEvent) => {
+        const container = overflowContainerRef.current;
+        if (!container) {
+            return;
         }
 
-        if (animationFrameRef.current) {
-            cancelAnimationFrame(animationFrameRef.current);
-        }
-
-        const isScrollingUp = container.scrollTop < lastScrollTop.current;
-        distanceToBottomRef.current = container.scrollHeight - container.scrollTop - container.clientHeight;
-
-        if (isScrollingUp && isScrollingUp !== isScrollingUpRef.current) {
+        if (event.key === 'ArrowUp') {
             setAutoScroll(false);
         }
 
-        if (!isScrollingUp && distanceToBottomRef.current < parseInt(token.Spacing.SpacingL, 10)) {
-            setAutoScroll(true);
-            scrollToBottom({ force: true });
+        if (event.key === 'ArrowDown') {
+            const distance = container.scrollHeight - container.scrollTop - container.clientHeight;
+
+            // if we're near the bottom, enable auto-scroll
+            if (distance < CHAT_SCROLL_BOTTOM_BUFFER) {
+                setAutoScroll(true);
+            }
         }
+    }, []);
 
-        isScrollingUpRef.current = isScrollingUp;
-        lastScrollTop.current = container.scrollTop;
-    }, [ setAutoScroll, scrollToBottom ]);
-
-    React.useEffect(() => {
+    const handleMouseDown = React.useCallback((event: MouseEvent) => {
         const container = overflowContainerRef.current;
-
         if (!container) {
             return;
         }
 
-        container.addEventListener('scroll', handleScroll);
+        // Focus when clicking on it so that the keyboard events are captured for the container
+        container.focus();
 
-        return () => {
-            container.removeEventListener('scroll', handleScroll);
-        };
-    }, [ handleScroll ]);
+        const scrollbarWidth = container.offsetWidth - container.clientWidth;
+        const scrollbarXStart = container.getBoundingClientRect().right - scrollbarWidth;
+
+        // Check if mouse is within the vertical scrollbar zone and prevent auto-scroll
+        if (event.clientX >= scrollbarXStart) {
+            isDraggingScrollBarRef.current = true;
+            setAutoScroll(false);
+        }
+    }, []);
+
+    const handleMouseUp = React.useCallback(() => {
+        if (isDraggingScrollBarRef.current) {
+            isDraggingScrollBarRef.current = false;
+
+            const container = overflowContainerRef.current;
+
+            if (container) {
+                const distance = container.scrollHeight - container.scrollTop - container.clientHeight;
+
+                // if we're near the bottom after releasing the scrollbar, enable auto-scroll
+                if (distance < CHAT_SCROLL_BOTTOM_BUFFER) {
+                    setAutoScroll(true);
+                }
+            }
+        }
+    }, []);
 
     React.useEffect(() => {
-        if (!chatInternalService) {
+        const content = contentRef.current;
+        const overflowContainer = overflowContainerRef.current;
+
+        if (!content || !overflowContainer || !chatService) {
             return;
         }
 
-        const unsubscribe = chatInternalService.on(AutopilotChatInternalEvent.ScrollToBottom, (options?: {
-            force?: boolean;
-            behavior?: ScrollBehavior;
-        }) => {
-            scrollToBottom(options);
+        const resizeObserver = new ResizeObserver(handleResize);
+        resizeObserver.observe(content);
+
+        overflowContainer.addEventListener('wheel', handleWheel);
+        overflowContainer.addEventListener('mousedown', handleMouseDown);
+        overflowContainer.addEventListener('mouseup', handleMouseUp);
+        overflowContainer.addEventListener('keydown', handleKeyDown);
+
+        const unsubscribeRequestIntercept = chatService.intercept(AutopilotChatInterceptableEvent.Request, () => {
+            setAutoScroll(true);
         });
 
-        return () => unsubscribe();
-    }, [ scrollToBottom, chatInternalService ]);
+        const unsubscribeNewChat = chatService.on(AutopilotChatEvent.NewChat, () => {
+            setAutoScroll(true);
+        });
+
+        return () => {
+            resizeObserver.disconnect();
+            overflowContainer.removeEventListener('wheel', handleWheel);
+            overflowContainer.removeEventListener('mousedown', handleMouseDown);
+            overflowContainer.removeEventListener('mouseup', handleMouseUp);
+            overflowContainer.removeEventListener('keydown', handleKeyDown);
+            unsubscribeRequestIntercept();
+            unsubscribeNewChat();
+        };
+    }, [ handleResize, handleWheel, handleKeyDown, handleMouseUp, handleMouseDown, chatService ]);
 
     const value = React.useMemo(() => ({
         autoScroll,
-        setAutoScroll,
         scrollToBottom,
         overflowContainerRef,
-    }), [ autoScroll, setAutoScroll, scrollToBottom ]);
+        contentRef,
+    }), [ autoScroll, scrollToBottom, overflowContainerRef, contentRef ]);
 
     return (
         <ChatScrollContext.Provider value={value}>

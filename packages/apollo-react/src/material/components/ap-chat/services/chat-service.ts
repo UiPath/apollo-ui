@@ -10,7 +10,6 @@ import type {
 import {
     AutopilotChatEvent,
     AutopilotChatInterceptableEvent,
-    AutopilotChatInternalEvent,
     AutopilotChatMode,
     AutopilotChatRole,
 } from '@uipath/portal-shell-util';
@@ -59,7 +58,6 @@ export class AutopilotChatService {
         this.intercept = this.intercept.bind(this);
         this.setFirstRunExperience = this.setFirstRunExperience.bind(this);
         this.setConversation = this.setConversation.bind(this);
-        this.scrollToBottom = this.scrollToBottom.bind(this);
         this.getConversation = this.getConversation.bind(this);
         this.getPrompt = this.getPrompt.bind(this);
         this.getError = this.getError.bind(this);
@@ -372,20 +370,6 @@ export class AutopilotChatService {
      */
     getError() {
         return this.error;
-    }
-
-    /**
-     * Scrolls to the bottom of the chat
-     *
-     * @param options - The options to scroll to the bottom
-     * @param options.force - Whether to force the scroll to the bottom (ignoring the current scroll position), defaults to false
-     * @param options.behavior - The behavior of the scroll, defaults to 'smooth'
-     */
-    scrollToBottom(options?: { force?: boolean; behavior?: ScrollBehavior }) {
-        AutopilotChatInternalService.Instance.publish(AutopilotChatInternalEvent.ScrollToBottom, {
-            force: options?.force ?? false,
-            behavior: options?.behavior ?? 'smooth',
-        });
     }
 
     /**

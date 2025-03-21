@@ -18,7 +18,6 @@ import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 
 import { t } from '../../../../../utils/localization/loc';
-import { useChatScroll } from '../../../providers/chat-scroll-provider.react';
 import { useChatWidth } from '../../../providers/chat-width-provider.react';
 import { useStreaming } from '../../../providers/streaming-provider.react';
 import { AutopilotChatService } from '../../../services/chat-service';
@@ -62,7 +61,6 @@ function AutopilotChatMarkdownRendererComponent({ message }: { message: Autopilo
     const contentRef = React.useRef<HTMLDivElement>(null);
     const previousHeightRef = React.useRef(0);
     const { width } = useChatWidth();
-    const { scrollToBottom } = useChatScroll();
 
     React.useEffect(() => {
         if (!chatService) {
@@ -130,12 +128,6 @@ function AutopilotChatMarkdownRendererComponent({ message }: { message: Autopilo
 
                     setContent(prevContent => `${prevContent}${chunk}`);
 
-                    if (contentRef.current && contentRef.current.scrollHeight > previousHeightRef.current) {
-                        scrollToBottom();
-
-                        previousHeightRef.current = contentRef.current.scrollHeight;
-                    }
-
                     charIndex = endIndex;
                 } else {
                     clearInterval(fakeStreamInterval);
@@ -148,7 +140,7 @@ function AutopilotChatMarkdownRendererComponent({ message }: { message: Autopilo
             unsubscribeStopResponse?.();
             fakeStreamInterval && clearInterval(fakeStreamInterval);
         };
-    }, [ message, chatService, setStreaming, scrollToBottom ]);
+    }, [ message, chatService, setStreaming ]);
 
     React.useEffect(() => {
         if (!chatService) {
@@ -161,12 +153,6 @@ function AutopilotChatMarkdownRendererComponent({ message }: { message: Autopilo
             if (msg.id === messageId.current) {
                 animationFrameRef = requestAnimationFrame(() => {
                     setContent(prevContent => `${prevContent}${msg.content}`);
-
-                    if (contentRef.current && contentRef.current.scrollHeight > previousHeightRef.current) {
-                        scrollToBottom();
-
-                        previousHeightRef.current = contentRef.current.scrollHeight;
-                    }
                 });
             }
         });
@@ -178,7 +164,7 @@ function AutopilotChatMarkdownRendererComponent({ message }: { message: Autopilo
 
             unsubscribe();
         };
-    }, [ chatService, scrollToBottom ]);
+    }, [ chatService ]);
 
     const components = React.useMemo(() => ({
         ul: Ul,

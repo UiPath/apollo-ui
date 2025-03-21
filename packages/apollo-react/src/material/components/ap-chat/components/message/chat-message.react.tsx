@@ -10,7 +10,6 @@ import {
 } from '@uipath/portal-shell-util';
 import React from 'react';
 
-import { useChatScroll } from '../../providers/chat-scroll-provider.react';
 import { AutopilotChatService } from '../../services/chat-service';
 import { AutopilotChatAttachments } from './attachments/attachments.react';
 import { AutopilotChatMessageContent } from './chat-message-content.react';
@@ -26,9 +25,6 @@ const MessageContainer = styled('div')(() => ({
 }));
 
 function AutopilotChatMessagesComponent() {
-    const {
-        scrollToBottom, overflowContainerRef,
-    } = useChatScroll();
     const messageContainerRef = React.useRef<HTMLDivElement>(null);
     const chatService = AutopilotChatService.Instance;
     const [ messages, setMessages ] = React.useState<AutopilotChatMessage[]>(
@@ -41,12 +37,9 @@ function AutopilotChatMessagesComponent() {
             if (prev.some(m => m.id === message.id)) {
                 return prev.map(m => m.id === message.id ? message : m);
             }
-
-            scrollToBottom();
-
             return [ ...prev, message ];
         });
-    }, [ scrollToBottom ]);
+    }, []);
 
     React.useEffect(() => {
         if (!chatService) {
@@ -60,7 +53,6 @@ function AutopilotChatMessagesComponent() {
         // set messages to the new conversation
         const unsubscribeConversation = chatService.on(AutopilotChatEvent.SetConversation, (msg) => {
             setMessages(msg);
-            scrollToBottom({ force: true });
         });
 
         return () => {
@@ -69,40 +61,18 @@ function AutopilotChatMessagesComponent() {
             unsubscribeConversation();
             unsubscribeNewChat();
         };
-    }, [ chatService, updateMessages, scrollToBottom ]);
-
-    const onAttachmentsToggleExpanded = React.useCallback((index: number) => {
-        const container = overflowContainerRef.current;
-        const BOTTOM_THRESHOLD = 300;
-        const MESSAGE_THRESHOLD = 3;
-
-        if (!container) {
-            return;
-        }
-
-        const containerVisibleHeight = container.clientHeight;
-        const distanceFromBottom = container.scrollHeight - (container.scrollTop + containerVisibleHeight);
-
-        // Only scroll if we're near the bottom (within BOTTOM_THRESHOLD)
-        // AND the message is the last 3 messages
-        if (distanceFromBottom <= BOTTOM_THRESHOLD && index > messages.length - MESSAGE_THRESHOLD) {
-            scrollToBottom({ force: true });
-        }
-    }, [ scrollToBottom, overflowContainerRef, messages ]);
+    }, [ chatService, updateMessages ]);
 
     return (
         <MessageContainer ref={messageContainerRef}>
             { messages.length === 0 && (
                 <AutopilotChatFRE />
             )}
-            {messages.map((message, index) => {
+            {messages.map((message) => {
                 return (
                     <React.Fragment key={message.id}>
                         {message.attachments && message.attachments.length > 0 && (
-                            <AutopilotChatAttachments
-                                attachments={message.attachments}
-                                onToggleExpanded={() => onAttachmentsToggleExpanded(index)}
-                            />
+                            <AutopilotChatAttachments attachments={message.attachments}/>
                         )}
                         <AutopilotChatMessageContent message={message}/>
                     </React.Fragment>
