@@ -20,8 +20,8 @@ const FREContainer = styled('div')(() => ({
     display: 'flex',
     flexDirection: 'column',
     borderRadius: token.Border.BorderRadiusL,
-    justifyContent: 'flex-end',
-    height: '100%',
+    position: 'absolute',
+    bottom: 0,
 }));
 
 const FREHeader = styled('div')(() => ({

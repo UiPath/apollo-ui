@@ -11,25 +11,32 @@ import React from 'react';
 import { Text } from './text.react';
 
 export const Ul = React.memo(({ children }: { children: React.ReactNode }) => {
-    return <Box component="ul" sx={{
-        listStyleType: 'disc',
-        marginBlock: 'unset',
-        marginInline: 'unset',
-        paddingInlineStart: token.Spacing.SpacingBase,
-        display: 'block',
-        lineHeight: token.FontFamily.FontMicroLineHeight,
-    }}>
+    return <Box
+        component="ul"
+        sx={{
+            listStyleType: 'disc',
+            marginBlock: 'unset',
+            marginInline: 'unset',
+            paddingInlineStart: token.Spacing.SpacingBase,
+            display: 'block',
+            lineHeight: token.FontFamily.FontMicroLineHeight,
+        }}>
         {children}
     </Box>;
 });
 
-export const Ol = React.memo(({ children }: { children: React.ReactNode }) => {
-    return <Box component="ol" sx={{
-        marginBlock: 'unset',
-        marginInline: 'unset',
-        paddingInlineStart: token.Spacing.SpacingBase,
-        lineHeight: token.FontFamily.FontMicroLineHeight,
-    }}>
+export const Ol = React.memo(({
+    children, start,
+}: { children: React.ReactNode; start?: number }) => {
+    return <Box
+        component="ol"
+        start={start}
+        sx={{
+            marginBlock: 'unset',
+            marginInline: 'unset',
+            paddingInlineStart: token.Spacing.SpacingBase,
+            lineHeight: token.FontFamily.FontMicroLineHeight,
+        }}>
         {children}
     </Box>;
 });
@@ -37,7 +44,8 @@ export const Ol = React.memo(({ children }: { children: React.ReactNode }) => {
 export const Li = React.memo(({ children }: { children: React.ReactNode }) => {
     const theme = useTheme();
 
-    return <Box component="li"
+    return <Box
+        component="li"
         sx={{
             '&::marker': {
                 color: theme.palette.semantic.colorForeground,

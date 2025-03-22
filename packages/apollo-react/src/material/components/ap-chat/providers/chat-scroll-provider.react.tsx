@@ -86,14 +86,10 @@ export const ChatScrollProvider: React.FC<ChatScrollProviderProps> = ({ children
             return;
         }
 
-        if (event.deltaY < 0) {
+        if (event.deltaY < 0 && container.scrollHeight > container.clientHeight) {
             setAutoScroll(false);
-        } else if (event.deltaY > 0) {
-            const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < CHAT_SCROLL_BOTTOM_BUFFER;
-
-            if (isNearBottom) {
-                setAutoScroll(true);
-            }
+        } else if (event.deltaY > 0 && container.scrollHeight - container.scrollTop - container.clientHeight < CHAT_SCROLL_BOTTOM_BUFFER) {
+            setAutoScroll(true);
         }
     }, [ setAutoScroll ]);
 

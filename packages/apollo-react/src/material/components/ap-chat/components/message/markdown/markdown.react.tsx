@@ -9,7 +9,6 @@ import { FontVariantToken } from '@uipath/apollo-core/lib';
 import {
     AutopilotChatEvent,
     AutopilotChatMessage,
-    AutopilotChatMode,
 } from '@uipath/portal-shell-util';
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
@@ -18,7 +17,6 @@ import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 
 import { t } from '../../../../../utils/localization/loc';
-import { useChatWidth } from '../../../providers/chat-width-provider.react';
 import { useStreaming } from '../../../providers/streaming-provider.react';
 import { AutopilotChatService } from '../../../services/chat-service';
 import { Code } from './code.react';
@@ -58,45 +56,6 @@ function AutopilotChatMarkdownRendererComponent({ message }: { message: Autopilo
     const [ content, setContent ] = React.useState(message.fakeStream ? '' : (message.content || ''));
     const chatService = AutopilotChatService.Instance;
     const { setStreaming } = useStreaming();
-    const contentRef = React.useRef<HTMLDivElement>(null);
-    const previousHeightRef = React.useRef(0);
-    const { width } = useChatWidth();
-
-    React.useEffect(() => {
-        if (!chatService) {
-            return;
-        }
-
-        let animationFrameRef: number | null = null;
-
-        const unsubscribeModeChange = chatService.on(AutopilotChatEvent.ModeChange, (mode) => {
-            if (mode === AutopilotChatMode.FullScreen) {
-                animationFrameRef = requestAnimationFrame(() => {
-                    previousHeightRef.current = contentRef.current?.scrollHeight || 0;
-                });
-            }
-        });
-
-        return () => {
-            if (animationFrameRef) {
-                cancelAnimationFrame(animationFrameRef);
-            }
-
-            unsubscribeModeChange?.();
-        };
-    }, [ chatService ]);
-
-    React.useEffect(() => {
-        const animationFrameRef = requestAnimationFrame(() => {
-            previousHeightRef.current = contentRef.current?.scrollHeight || 0;
-        });
-
-        return () => {
-            if (animationFrameRef) {
-                cancelAnimationFrame(animationFrameRef);
-            }
-        };
-    }, [ width ]);
 
     // Update the message ID ref if a new message is passed
     React.useEffect(() => {
@@ -194,21 +153,19 @@ function AutopilotChatMarkdownRendererComponent({ message }: { message: Autopilo
     }), []);
 
     return React.useMemo(() => (
-        <div ref={contentRef}>
-            <StyledMarkdown
-                remarkPlugins={[ remarkGfm, [ remarkMath, { singleDollarTextMath: false } ] ]}
-                rehypePlugins={[ [ rehypeKatex, {
-                    output: 'mathml',
-                    trust: false,
-                    strict: true,
-                    throwOnError: false,
-                } ] ]}
-                remarkRehypeOptions={{ footnoteLabel: t('autopilot-chat-footnote-label') }}
-                components={components}
-            >
-                {content}
-            </StyledMarkdown>
-        </div>
+        <StyledMarkdown
+            remarkPlugins={[ remarkGfm, [ remarkMath, { singleDollarTextMath: false } ] ]}
+            rehypePlugins={[ [ rehypeKatex, {
+                output: 'mathml',
+                trust: false,
+                strict: true,
+                throwOnError: false,
+            } ] ]}
+            remarkRehypeOptions={{ footnoteLabel: t('autopilot-chat-footnote-label') }}
+            components={components}
+        >
+            {content}
+        </StyledMarkdown>
     ), [ content, components ]);
 }
 
