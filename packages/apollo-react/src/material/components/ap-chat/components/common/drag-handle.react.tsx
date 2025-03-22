@@ -41,6 +41,7 @@ const DragHandleContainer = styled('div')(({ theme }) => ({
         height: '100%',
         cursor: 'ew-resize',
         userSelect: 'none',
+        zIndex: 1,
     },
 
     '&:hover, &:focus, &:active': {
