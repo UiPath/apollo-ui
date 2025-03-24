@@ -7,6 +7,7 @@ import {
 } from '@mui/material/styles';
 import { FontVariantToken } from '@uipath/apollo-core';
 import token from '@uipath/apollo-core/lib';
+import { AutopilotChatEvent } from '@uipath/portal-shell-util';
 import React from 'react';
 import {
     FileRejection,
@@ -16,6 +17,7 @@ import {
 import { t } from '../../../../utils/localization/loc';
 import { useAttachments } from '../../providers/attachements-provider.react';
 import { useError } from '../../providers/error-provider.react';
+import { AutopilotChatService } from '../../services/chat-service';
 import {
     ACCEPTED_FILE_EXTENSIONS,
     ACCEPTED_FILES,
@@ -58,6 +60,16 @@ function AutopilotChatDropzoneComponent({
     const theme = useTheme();
     const { addAttachments } = useAttachments();
     const { setError } = useError();
+    const chatService = AutopilotChatService.Instance;
+    const [ isDisabled, setIsDisabled ] = React.useState(chatService?.getConfig()?.disabledFeatures?.attachments);
+
+    React.useEffect(() => {
+        const unsubscribeDisabledFeatures = chatService.on(AutopilotChatEvent.SetDisabledFeatures, (disabledFeatures) => {
+            setIsDisabled(disabledFeatures.attachments);
+        });
+
+        return unsubscribeDisabledFeatures;
+    }, [ chatService ]);
 
     const handleDrop = React.useCallback(async (files: File[], fileRejections: FileRejection[]) => {
         try {
@@ -82,6 +94,10 @@ function AutopilotChatDropzoneComponent({
         accept: ACCEPTED_FILES,
         ...dropzoneOptions,
     });
+
+    if (isDisabled) {
+        return children;
+    }
 
     return (
         <DropzoneRoot {...getRootProps()}>
