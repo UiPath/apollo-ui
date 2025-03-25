@@ -86,12 +86,12 @@ function AutopilotChatInputComponent() {
     const handleChange = React.useCallback((value: string) => {
         // if value is empty, clear input and return (handle empty new lines)
         if (value.trim().length === 0) {
-            setMessage('');
+            chatService.setPrompt('');
             return;
         }
 
-        setMessage(value);
-    }, []);
+        chatService.setPrompt(value);
+    }, [ chatService ]);
 
     const handleSubmit = React.useCallback(() => {
         if (waitingResponse || streaming) {

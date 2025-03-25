@@ -87,7 +87,7 @@ function AutopilotChatFREComponent() {
             _event: React.MouseEvent<HTMLDivElement> | React.KeyboardEvent<HTMLDivElement>,
             suggestion: AutopilotChatSuggestion,
         ) => {
-            chatService.sendRequest({ content: suggestion.prompt });
+            chatService.setPrompt(suggestion.prompt);
         },
         [ chatService ],
     );
