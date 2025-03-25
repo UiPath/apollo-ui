@@ -54,11 +54,9 @@ const HeaderContainer = styled('div')(() => ({
     padding: `${token.Spacing.SpacingBase} ${token.Spacing.SpacingL}`,
 }));
 
-const InputBackground = styled('div')(({ theme }) => ({
+const InputBackground = styled('div')(() => ({
     flexShrink: 0,
-    borderTop: `${token.Border.BorderThickS} solid ${theme.palette.semantic.colorBorderDeEmp}`,
     padding: `${token.Spacing.SpacingXs} ${token.Spacing.SpacingL}`,
-    backgroundColor: theme.palette.semantic.colorBackgroundSecondary,
 }));
 
 const InputContainer = styled('div')<{ isFullScreen: boolean }>(({ isFullScreen }: { isFullScreen: boolean }) => ({

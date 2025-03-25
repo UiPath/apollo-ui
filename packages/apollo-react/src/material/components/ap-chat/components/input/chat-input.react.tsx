@@ -15,15 +15,17 @@ import React from 'react';
 import { t } from '../../../../utils/localization/loc';
 import { ApTextAreaReact } from '../../../ap-text-area/ap-text-area.react';
 import { useAttachments } from '../../providers/attachements-provider.react';
-import { useError } from '../../providers/error-provider.react';
 import { useLoading } from '../../providers/loading-provider.react';
 import { useStreaming } from '../../providers/streaming-provider.react';
 import { AutopilotChatService } from '../../services/chat-service';
-import { CHAT_INPUT_MAX_ROWS } from '../../utils/constants';
+import {
+    CHAT_INPUT_MAX_ROWS,
+    CHAT_INPUT_MIN_ROWS,
+} from '../../utils/constants';
 import { AutopilotChatInputActions } from './chat-input-actions.react';
 import { AutopilotChatInputAttachments } from './chat-input-attachments.react';
+import { AutopilotChatInputError } from './chat-input-error.react';
 import { AutopilotChatInputFooter } from './chat-input-footer.react';
-import { AutopilotChatInputHeader } from './chat-input-header.react';
 
 export const InputContainer = styled('div')(({ theme }) => ({
     border: `${token.Border.BorderThickS} solid ${theme.palette.semantic.colorBorder}`,
@@ -61,7 +63,6 @@ function AutopilotChatInputComponent() {
     );
 
     const inputRef = React.useRef<HTMLTextAreaElement>(null);
-    const { setError } = useError();
     const { waitingResponse } = useLoading();
     const { streaming } = useStreaming();
     const {
@@ -122,17 +123,9 @@ function AutopilotChatInputComponent() {
         }
     }, [ message, handleSubmit, waitingResponse, streaming ]);
 
-    // TODO: Implement prompt library
-    const handlePromptLibrary = React.useCallback(() => {
-        setError('Prompt library not implemented');
-    }, [ setError ]);
-
     return (
         <>
-            <AutopilotChatInputHeader
-                clearInput={() => setMessage('')}
-                onPromptLibrary={handlePromptLibrary}
-            />
+            <AutopilotChatInputError />
 
             <InputContainer onClick={() => inputRef?.current?.focus()}>
                 <AutopilotChatInputAttachments/>
@@ -145,7 +138,7 @@ function AutopilotChatInputComponent() {
                         placeholder={t('autopilot-chat-input-placeholder')}
                         onChange={handleChange}
                         onKeyDown={handleKeyDown}
-                        minRows={1}
+                        minRows={CHAT_INPUT_MIN_ROWS}
                         maxRows={CHAT_INPUT_MAX_ROWS}
                     />
                 </Box>

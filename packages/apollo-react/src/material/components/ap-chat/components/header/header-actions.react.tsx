@@ -11,6 +11,7 @@ import {
 import React from 'react';
 
 import { t } from '../../../../utils/localization/loc';
+import { useAttachments } from '../../providers/attachements-provider.react';
 import { AutopilotChatService } from '../../services/chat-service';
 import { StorageService } from '../../services/storage';
 import { CHAT_MODE_KEY } from '../../utils/constants';
@@ -28,6 +29,7 @@ function AutopilotChatHeaderActionsComponent() {
     const [ disabledFullScreen, setDisabledFullScreen ] = React.useState(
         chatService?.getConfig?.()?.disabledFeatures?.fullScreen ?? false,
     );
+    const { clearAttachments } = useAttachments();
 
     const handleClose = React.useCallback(() => {
         chatService?.close();
@@ -61,8 +63,27 @@ function AutopilotChatHeaderActionsComponent() {
         };
     }, [ chatService ]);
 
+    const handleNewChat = React.useCallback(() => {
+        if (!chatService) {
+            return;
+        }
+
+        chatService.newChat();
+        chatService.stopResponse();
+        chatService.setPrompt('');
+
+        clearAttachments();
+    }, [ clearAttachments, chatService ]);
+
     return (
         <StyledActions>
+            <AutopilotChatActionButton
+                iconName="new_chat"
+                variant="custom"
+                tooltip={t('autopilot-chat-new-chat')}
+                onClick={handleNewChat}
+            />
+
             {!disabledFullScreen && (
                 <AutopilotChatActionButton
                     iconName={!isFullScreen ? 'right_panel_open' : 'right_panel_close'}

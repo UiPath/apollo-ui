@@ -572,7 +572,7 @@ graph TD
 
     %% Input Section
     K -->|User Input| N[Input]
-    N --> O[InputHeader]
+    N --> O[InputError]
     N --> P[InputAttachments]
     N --> Q[InputActions]
     N --> R[InputFooter]

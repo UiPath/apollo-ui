@@ -28,6 +28,7 @@ export const CHAT_WIDTH_SIDE_BY_SIDE_MAX = 800;
 export const CHAT_MESSAGE_MIN_PADDING = 32; // min margin left --> 24 (parent) + 32 = 56
 export const CHAT_MESSAGE_MAX_PADDING = 96; // max margin left --> 24 (parent) + 96 = 120
 export const CHAT_WIDTH_FULL_SCREEN_MAX_WIDTH = '960px';
+export const CHAT_INPUT_MIN_ROWS = 2;
 export const CHAT_INPUT_MAX_ROWS = 12;
 export const CHAT_STORAGE_PREFIX = 'autopilot-chat-';
 export const CHAT_WIDTH_KEY = 'width';
