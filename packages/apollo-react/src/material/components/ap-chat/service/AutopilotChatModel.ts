@@ -93,6 +93,9 @@ export interface AutopilotChatMessageRenderer {
  * @property {string} Close - Emitted when the chat is closed
  * @property {string} SendChunk - Emitted when a chunk of a streaming response is sent
  * @property {string} SetConversation - Emitted when the conversation is set
+ * @property {string} SetHistory - Emitted when the history is set
+ * @property {string} DeleteConversation - Emitted when a conversation is deleted from the history list
+ * @property {string} OpenConversation - Emitted when a conversation is opened (clicked on in the history list)
  */
 export enum AutopilotChatEvent {
     Error = 'error',
@@ -108,6 +111,9 @@ export enum AutopilotChatEvent {
     Close = 'close',
     SendChunk = 'sendChunk',
     SetConversation = 'setConversation',
+    SetHistory = 'setHistory',
+    DeleteConversation = 'deleteConversation',
+    OpenConversation = 'openConversation',
 }
 
 /**
@@ -121,9 +127,22 @@ export enum AutopilotChatInterceptableEvent {
     Request = AutopilotChatEvent.Request,
 }
 
+/**
+ * Enum representing the various internal events that can occur in the Autopilot Chat system.
+ * These events are used for communication between components and for event handling.
+ *
+ * @enum {string}
+ * @property {string} ChatResize - Emitted when the chat is resized
+ * @property {string} ScrollToBottom - Emitted when the chat is scrolled to the bottom
+ * @property {string} OpenHistory - Emitted when the history is opened
+ * @property {string} CloseHistory - Emitted when the history is closed
+ * @property {string} UseLocalHistory - Emitted when the chat uses local history
+ */
 export enum AutopilotChatInternalEvent {
     ChatResize = 'chatResize',
     ScrollToBottom = 'scrollToBottom',
+    ToggleHistory = 'toggleHistory',
+    UseLocalHistory = 'useLocalHistory',
 }
 
 export type AutopilotChatEventHandler<T = any> = (data?: T) => void;
@@ -148,11 +167,13 @@ export interface AutopilotChatSuggestion {
  * @property resize - Whether the chat can be resized (has the resize handle)
  * @property fullScreen - Whether the chat has the full screen button
  * @property attachments - Whether the chat has the attachments button
+ * @property history - Whether the chat has the history button
  */
 export interface AutopilotChatDisabledFeatures {
     resize?: boolean;
     fullScreen?: boolean;
     attachments?: boolean;
+    history?: boolean;
 }
 
 /**
@@ -161,6 +182,7 @@ export interface AutopilotChatDisabledFeatures {
  * @property mode - The mode of the chat
  * @property disabledFeatures - The disabled features of the chat
  * @property firstRunExperience - The first run experience of the chat
+ * @property useLocalHistory - Whether the chat uses indexdb to store history
  */
 export interface AutopilotChatConfiguration {
     mode: AutopilotChatMode;
@@ -170,4 +192,19 @@ export interface AutopilotChatConfiguration {
         description: string;
         suggestions?: AutopilotChatSuggestion[];
     };
+    useLocalHistory?: boolean;
 }
+
+/**
+ * Represents a history item for the Autopilot Chat system.
+ *
+ * @property id - The id of the history item
+ * @property name - The name of the history item
+ * @property timestamp - The timestamp of the history item
+ */
+export interface AutopilotChatHistory {
+    id: string;
+    name: string;
+    timestamp: string;
+}
+
