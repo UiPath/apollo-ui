@@ -64,6 +64,10 @@ function AutopilotChatDropzoneComponent({
     const [ isDisabled, setIsDisabled ] = React.useState(chatService?.getConfig()?.disabledFeatures?.attachments);
 
     React.useEffect(() => {
+        if (!chatService) {
+            return;
+        }
+
         const unsubscribeDisabledFeatures = chatService.on(AutopilotChatEvent.SetDisabledFeatures, (disabledFeatures) => {
             setIsDisabled(disabledFeatures.attachments);
         });

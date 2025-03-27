@@ -24,11 +24,17 @@ const MessageContainer = styled('div')(() => ({
     height: '100%',
 }));
 
+const removeFakeStream = (messages: AutopilotChatMessage[]) => {
+    return messages.map(({
+        fakeStream, ...rest
+    }) => rest);
+};
+
 function AutopilotChatMessagesComponent() {
     const messageContainerRef = React.useRef<HTMLDivElement>(null);
     const chatService = AutopilotChatService.Instance;
     const [ messages, setMessages ] = React.useState<AutopilotChatMessage[]>(
-        chatService?.getConversation?.() ?? [],
+        removeFakeStream(chatService?.getConversation?.() ?? []),
     );
 
     // Update by patching if the message already exists or adding to the end of the array
@@ -52,7 +58,7 @@ function AutopilotChatMessagesComponent() {
         const unsubscribeNewChat = chatService.on(AutopilotChatEvent.NewChat, () => setMessages([]));
         // set messages to the new conversation
         const unsubscribeConversation = chatService.on(AutopilotChatEvent.SetConversation, (msg) => {
-            setMessages(msg);
+            setMessages(removeFakeStream(msg));
         });
 
         return () => {

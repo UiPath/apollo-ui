@@ -32,7 +32,6 @@ export const InputContainer = styled('div')(({ theme }) => ({
     borderRadius: token.Border.BorderRadiusL,
     gap: token.Spacing.SpacingBase,
     margin: `${token.Spacing.SpacingXs} 0`,
-    backgroundColor: theme.palette.semantic.colorBackground,
 
     '&:hover,&:has(textarea:focus)': { borderColor: theme.palette.semantic.colorNotificationBadge },
 

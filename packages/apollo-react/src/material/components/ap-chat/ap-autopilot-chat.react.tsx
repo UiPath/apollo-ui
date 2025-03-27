@@ -7,7 +7,9 @@ import {
 } from '@mui/material/styles';
 import token from '@uipath/apollo-core/lib';
 import {
+    AutopilotChatDisabledFeatures,
     AutopilotChatEvent,
+    AutopilotChatInternalEvent,
     AutopilotChatMode,
 } from '@uipath/portal-shell-util';
 import React from 'react';
@@ -15,6 +17,7 @@ import React from 'react';
 import { DragHandle } from './components/common/drag-handle.react';
 import { AutopilotChatDropzone } from './components/dropzone/dropzone.react';
 import { AutopilotChatHeader } from './components/header/header.react';
+import { AutopilotChatHistory } from './components/history/chat-history.react';
 import { AutopilotChatInput } from './components/input/chat-input.react';
 import { ChatScrollContainer } from './components/message/chat-scroll-container.react';
 import { AutopilotAttachmentsProvider } from './providers/attachements-provider.react';
@@ -26,8 +29,10 @@ import {
 import { AutopilotErrorProvider } from './providers/error-provider.react';
 import { AutopilotLoadingProvider } from './providers/loading-provider.react';
 import { AutopilotStreamingProvider } from './providers/streaming-provider.react';
+import { AutopilotChatInternalService } from './services/chat-internal-service';
 import { AutopilotChatService } from './services/chat-service';
 import {
+    CHAT_HISTORY_WIDTH_FULL_SCREEN,
     CHAT_WIDTH_FULL_SCREEN,
     CHAT_WIDTH_FULL_SCREEN_MAX_WIDTH,
 } from './utils/constants';
@@ -37,7 +42,6 @@ const ChatContainer = styled('div')<{ shouldAnimate: boolean; mode: AutopilotCha
 }: { shouldAnimate: boolean; mode: AutopilotChatMode; width: number; theme: Theme }) => ({
     width: mode === AutopilotChatMode.FullScreen ? CHAT_WIDTH_FULL_SCREEN : width,
     display: 'flex',
-    flexDirection: 'column',
     height: 'calc(100vh - 48px)', // account for global header hight
     position: 'relative',
     boxSizing: 'border-box',
@@ -46,6 +50,15 @@ const ChatContainer = styled('div')<{ shouldAnimate: boolean; mode: AutopilotCha
     borderLeft: 'none',
     ...(shouldAnimate && { transition: 'width 0.2s ease' }),
     ...(mode === AutopilotChatMode.Closed && { display: 'none' }),
+}));
+
+const MainContainer = styled('div')<{ historyOpen: boolean }>(({ historyOpen }: { historyOpen: boolean }) => ({
+    flex: 1,
+    display: 'flex',
+    flexDirection: 'column',
+    height: '100%',
+    maxHeight: '100%',
+    ...(historyOpen && { width: `calc(100% - ${CHAT_HISTORY_WIDTH_FULL_SCREEN})` }),
 }));
 
 const HeaderContainer = styled('div')(() => ({
@@ -72,23 +85,39 @@ function AutopilotChatContent() {
         AutopilotChatService.Instance?.getConfig?.()?.mode ?? AutopilotChatMode.SideBySide,
     );
     const chatService = AutopilotChatService.Instance;
+    const internalService = AutopilotChatInternalService.Instance;
+    const [ historyDisabled, setHistoryDisabled ] = React.useState(chatService?.getConfig?.()?.disabledFeatures?.history ?? false);
+    const [ historyOpen, setHistoryOpen ] = React.useState(false);
     const {
         width, shouldAnimate,
     } = useChatWidth();
 
     React.useEffect(() => {
-        if (!chatService) {
+        if (!chatService || !internalService) {
             return;
         }
 
-        const unsubscribe = chatService.on(AutopilotChatEvent.ModeChange, (chatMode) => {
+        const unsubscribeSetDisabledFeatures = chatService.on(
+            AutopilotChatEvent.SetDisabledFeatures,
+            (features: AutopilotChatDisabledFeatures) => {
+                setHistoryDisabled(features?.history ?? false);
+            },
+        );
+
+        const unsubscribeToggleHistory = internalService.on(AutopilotChatInternalEvent.ToggleHistory, (open) => {
+            setHistoryOpen(open);
+        });
+
+        const unsubscribeModeChange = chatService.on(AutopilotChatEvent.ModeChange, (chatMode) => {
             setMode(chatMode);
         });
 
         return () => {
-            unsubscribe();
+            unsubscribeModeChange();
+            unsubscribeSetDisabledFeatures();
+            unsubscribeToggleHistory();
         };
-    }, [ chatService ]);
+    }, [ chatService, internalService ]);
 
     return (
         <ChatContainer
@@ -96,21 +125,29 @@ function AutopilotChatContent() {
             mode={mode}
             width={width}
         >
-            <DragHandle />
+            { mode === AutopilotChatMode.SideBySide && (
+                <DragHandle/>
+            )}
 
-            <HeaderContainer>
-                <AutopilotChatHeader />
-            </HeaderContainer>
+            {!historyDisabled && (
+                <AutopilotChatHistory open={historyOpen} isFullScreen={mode === AutopilotChatMode.FullScreen} />
+            )}
 
-            <ChatScrollProvider>
-                <ChatScrollContainer mode={mode} />
-            </ChatScrollProvider>
+            <MainContainer historyOpen={historyOpen}>
+                <HeaderContainer>
+                    <AutopilotChatHeader />
+                </HeaderContainer>
 
-            <InputBackground>
-                <InputContainer isFullScreen={mode === AutopilotChatMode.FullScreen}>
-                    <AutopilotChatInput />
-                </InputContainer>
-            </InputBackground>
+                <ChatScrollProvider>
+                    <ChatScrollContainer mode={mode} />
+                </ChatScrollProvider>
+
+                <InputBackground>
+                    <InputContainer isFullScreen={mode === AutopilotChatMode.FullScreen}>
+                        <AutopilotChatInput />
+                    </InputContainer>
+                </InputBackground>
+            </MainContainer>
         </ChatContainer>
     );
 }

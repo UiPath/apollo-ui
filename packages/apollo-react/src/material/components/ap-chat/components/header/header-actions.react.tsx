@@ -12,6 +12,7 @@ import React from 'react';
 
 import { t } from '../../../../utils/localization/loc';
 import { useAttachments } from '../../providers/attachements-provider.react';
+import { AutopilotChatInternalService } from '../../services/chat-internal-service';
 import { AutopilotChatService } from '../../services/chat-service';
 import { StorageService } from '../../services/storage';
 import { CHAT_MODE_KEY } from '../../utils/constants';
@@ -24,24 +25,16 @@ const StyledActions = styled('div')(() => ({
 }));
 
 function AutopilotChatHeaderActionsComponent() {
-    const [ isFullScreen, setIsFullScreen ] = React.useState(StorageService.Instance.get(CHAT_MODE_KEY) === AutopilotChatMode.FullScreen);
     const chatService = AutopilotChatService.Instance;
+    const internalService = AutopilotChatInternalService.Instance;
+    const [ isFullScreen, setIsFullScreen ] = React.useState(StorageService.Instance.get(CHAT_MODE_KEY) === AutopilotChatMode.FullScreen);
     const [ disabledFullScreen, setDisabledFullScreen ] = React.useState(
         chatService?.getConfig?.()?.disabledFeatures?.fullScreen ?? false,
     );
+    const [ disabledHistory, setDisabledHistory ] = React.useState(
+        chatService?.getConfig?.()?.disabledFeatures?.history ?? false,
+    );
     const { clearAttachments } = useAttachments();
-
-    const handleClose = React.useCallback(() => {
-        chatService?.close();
-    }, [ chatService ]);
-
-    const handleToggle = React.useCallback(() => {
-        chatService?.setChatMode(
-            isFullScreen ? AutopilotChatMode.SideBySide : AutopilotChatMode.FullScreen,
-        );
-
-        setIsFullScreen(!isFullScreen);
-    }, [ isFullScreen, chatService ]);
 
     React.useEffect(() => {
         if (!chatService) {
@@ -55,13 +48,26 @@ function AutopilotChatHeaderActionsComponent() {
         const unsubscribeSetDisabledFeatures = chatService.on(AutopilotChatEvent.SetDisabledFeatures,
             (features: AutopilotChatDisabledFeatures) => {
                 setDisabledFullScreen(features?.fullScreen ?? false);
+                setDisabledHistory(features?.history ?? false);
             });
 
         return () => {
             unsubscribeModeChange();
             unsubscribeSetDisabledFeatures();
         };
+    }, [ chatService, internalService ]);
+
+    const handleClose = React.useCallback(() => {
+        chatService?.close();
     }, [ chatService ]);
+
+    const handleToggleChat = React.useCallback(() => {
+        chatService?.setChatMode(
+            isFullScreen ? AutopilotChatMode.SideBySide : AutopilotChatMode.FullScreen,
+        );
+
+        setIsFullScreen(!isFullScreen);
+    }, [ isFullScreen, chatService ]);
 
     const handleNewChat = React.useCallback(() => {
         if (!chatService) {
@@ -75,6 +81,10 @@ function AutopilotChatHeaderActionsComponent() {
         clearAttachments();
     }, [ clearAttachments, chatService ]);
 
+    const toggleHistory = React.useCallback(() => {
+        chatService?.toggleHistory();
+    }, [ chatService ]);
+
     return (
         <StyledActions>
             <AutopilotChatActionButton
@@ -84,11 +94,20 @@ function AutopilotChatHeaderActionsComponent() {
                 onClick={handleNewChat}
             />
 
+            {!disabledHistory && (
+                <AutopilotChatActionButton
+                    iconName="history"
+                    variant="custom"
+                    tooltip={t('autopilot-chat-history')}
+                    onClick={toggleHistory}
+                />
+            )}
+
             {!disabledFullScreen && (
                 <AutopilotChatActionButton
                     iconName={!isFullScreen ? 'right_panel_open' : 'right_panel_close'}
                     tooltip={!isFullScreen ? t('autopilot-chat-expand') : t('autopilot-chat-collapse')}
-                    onClick={handleToggle}
+                    onClick={handleToggleChat}
                     variant="custom"
                 />
             )}

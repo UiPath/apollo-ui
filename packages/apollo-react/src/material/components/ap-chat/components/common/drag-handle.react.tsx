@@ -30,6 +30,7 @@ const DragHandleContainer = styled('div')(({ theme }) => ({
     cursor: 'ew-resize',
     transition: 'background 0.2s ease',
     userSelect: 'none',
+    zIndex: 2,
 
     // Expand the drag handle to 15px to make it easier to click
     '&::before': {
@@ -41,7 +42,7 @@ const DragHandleContainer = styled('div')(({ theme }) => ({
         height: '100%',
         cursor: 'ew-resize',
         userSelect: 'none',
-        zIndex: 1,
+        zIndex: 2,
     },
 
     '&:hover, &:focus, &:active': {

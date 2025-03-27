@@ -55,6 +55,22 @@ const chatService = window.PortalShell.AutopilotChat;
 | `sendResponse(response: AutopilotChatMessage)` | Sends an AI assistant response to display in the chat (see [AutopilotChatMessage](#autopilotchatmessage)) |
 | `stopResponse()` | Stops the current streaming response, if applicable |
 
+### History Management
+
+| Method | Description |
+|--------|-------------|
+| `setHistory(history: AutopilotChatHistory[])` | Sets the chat history list (see [AutopilotChatHistory](#autopilotchathistory) |
+| `getHistory()` | Returns the current chat history |
+| `toggleHistory(open?: boolean)` | Toggles the history panel visibility |
+| `deleteConversation(conversationId: string)` | Deletes a conversation from the history |
+| `openConversation(conversationId: string \| null)` | Opens a specific conversation from the history |
+
+### Properties
+
+| Property | Description |
+|----------|-------------|
+| `activeConversationId` | Returns the current active conversation ID that was set with `openConversation` method|
+
 ### Error Handling
 
 | Method | Description |
@@ -97,6 +113,9 @@ Subscribes to chat events and returns an unsubscribe function. The handler will 
 - `Close`: When the chat is closed
 - `SendChunk`: When a chunk of streaming content is sent
 - `SetConversation`: Emitted when the conversation is set
+- `SetHistory`: Emitted when the history is set
+- `DeleteConversation`: Emitted when a conversation is deleted from the history list
+- `OpenConversation`: Emitted when a conversation is opened (clicked on in the history list)
 
 #### Intercepting Events
 
@@ -367,17 +386,23 @@ chatService.setDisabledFeatures({
 ### AutopilotChatConfiguration
 
 ```typescript
+/**
+ * Represents the configuration for the Autopilot Chat system.
+ *
+ * @property mode - The mode of the chat
+ * @property disabledFeatures - The disabled features of the chat
+ * @property firstRunExperience - The first run experience of the chat
+ * @property useLocalHistory - Whether the chat uses indexdb to store history
+ */
 interface AutopilotChatConfiguration {
-  mode?: AutopilotChatMode;
+  mode: AutopilotChatMode;
   disabledFeatures?: AutopilotChatDisabledFeatures;
   firstRunExperience?: {
-    title?: string;
-    description?: string;
-    suggestions?: Array<{
-      label: string;
-      prompt: string;
-    }>;
+    title: string;
+    description: string;
+    suggestions?: AutopilotChatSuggestion[];
   };
+  useLocalHistory?: boolean;
 }
 ```
 
@@ -394,10 +419,19 @@ enum AutopilotChatMode {
 ### AutopilotChatDisabledFeatures
 
 ```typescript
+/**
+ * Represents the disabled features of the Autopilot Chat system.
+ *
+ * @property resize - Whether the chat can be resized (has the resize handle)
+ * @property fullScreen - Whether the chat has the full screen button
+ * @property attachments - Whether the chat has the attachments button
+ * @property history - Whether the chat has the history button
+ */
 interface AutopilotChatDisabledFeatures {
   attachments?: boolean;
   resize?: boolean;
   fullScreen?: boolean;
+  history?: boolean;
 }
 ```
 
@@ -432,6 +466,23 @@ export interface AutopilotChatMessage {
     stream?: boolean;
     done?: boolean;
     meta?: any;
+}
+```
+
+### AutopilotChatHistory
+
+```typescript
+/**
+ * Represents a history item for the Autopilot Chat system.
+ *
+ * @property id - The id of the history item
+ * @property name - The name of the history item
+ * @property timestamp - The timestamp of the history item
+ */
+export interface AutopilotChatHistory {
+    id: string;
+    name: string;
+    timestamp: string;
 }
 ```
 
@@ -566,19 +617,31 @@ graph TD
     I --> K
     J --> K
 
+    %% History Component
+    K -->|Conditional| AH[AutopilotChatHistory]
+    AH -->|Toggles| AI[HistoryPanel]
+    AH -->|Controls| AJ[HistoryList]
+    AH -->|Manages| AK[HistoryItem]
+
+    %% Main Content Container
+    K -->|Contains| AL[MainContainer]
+    AL -->|Contains| AM[HeaderContainer]
+    AL -->|Contains| AN[ChatScrollContainer]
+    AL -->|Contains| AO[InputBackground]
+
     %% Header
-    K --> L[Header]
+    AM --> L[Header]
     L --> M[Actions]
 
     %% Input Section
-    K -->|User Input| N[Input]
+    AO -->|User Input| N[Input]
     N --> O[InputError]
     N --> P[InputAttachments]
     N --> Q[InputActions]
     N --> R[InputFooter]
 
     %% Message Section
-    K -->|Displays Messages| S["Message [Overflow Container]"]
+    AN -->|Displays Messages| S["Message [Overflow Container]"]
     S --> T[MessageContent]
     T --> U[MarkdownRenderer]
     U -->|Formats| V[Code]
@@ -596,4 +659,8 @@ graph TD
     AE[ChatInternalService] -->|Internal State| AD
     AF[EventBus] -->|Events| AD
     AG[StorageService] -->|Persistence| AD
+
+    %% History State Management
+    AD -->|Controls| AH
+    AE -->|Toggles| AH
 ```

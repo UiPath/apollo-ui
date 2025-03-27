@@ -23,6 +23,7 @@ export const ACCEPTED_FILE_EXTENSIONS = Object.values(ACCEPTED_FILES)
     .join(',');
 
 export const CHAT_WIDTH_FULL_SCREEN = '100vw';
+export const CHAT_HISTORY_WIDTH_FULL_SCREEN = '360px';
 export const CHAT_WIDTH_SIDE_BY_SIDE_MIN = 440;
 export const CHAT_WIDTH_SIDE_BY_SIDE_MAX = 800;
 export const CHAT_MESSAGE_MIN_PADDING = 32; // min margin left --> 24 (parent) + 32 = 56
@@ -33,6 +34,7 @@ export const CHAT_INPUT_MAX_ROWS = 12;
 export const CHAT_STORAGE_PREFIX = 'autopilot-chat-';
 export const CHAT_WIDTH_KEY = 'width';
 export const CHAT_MODE_KEY = 'mode';
+export const CHAT_ACTIVE_CONVERSATION_ID_KEY = 'activeConversationId';
 export const CHAT_SCROLL_BOTTOM_BUFFER = 200;
 
 export const APOLLO_MESSAGE_RENDERERS = [ {

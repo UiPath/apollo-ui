@@ -47,6 +47,7 @@ interface AutopilotChatActionButtonProps {
     onClick: (event: React.MouseEvent<HTMLButtonElement>) => void;
     onFocus?: (event: React.FocusEvent<HTMLButtonElement>) => void;
     onBlur?: (event: React.FocusEvent<HTMLButtonElement>) => void;
+    onMouseDown?: (event: React.MouseEvent<HTMLButtonElement>) => void;
 }
 
 const AutopilotChatActionButtonComponent = React.forwardRef<HTMLButtonElement, AutopilotChatActionButtonProps>(({
@@ -56,6 +57,7 @@ const AutopilotChatActionButtonComponent = React.forwardRef<HTMLButtonElement, A
     onClick,
     onFocus,
     onBlur,
+    onMouseDown,
     preventHover,
     overrideColor,
     variant = 'outlined',
@@ -103,6 +105,7 @@ const AutopilotChatActionButtonComponent = React.forwardRef<HTMLButtonElement, A
                 onClick={onClick}
                 onFocus={onFocus}
                 onBlur={onBlur}
+                onMouseDown={onMouseDown}
                 tabIndex={tabIndex}
             />
         </StyledButtonContainer>
@@ -114,6 +117,7 @@ const AutopilotChatActionButtonComponent = React.forwardRef<HTMLButtonElement, A
             onClick={onClick}
             onFocus={onFocus}
             onBlur={onBlur}
+            onMouseDown={onMouseDown}
             tabIndex={tabIndex}
             aria-label={ariaLabel}
             {...(!preventHover && {

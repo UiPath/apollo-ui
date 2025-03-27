@@ -3,6 +3,7 @@ import type {
     AutopilotChatDisabledFeatures,
     AutopilotChatEventHandler,
     AutopilotChatEventInterceptor,
+    AutopilotChatHistory,
     AutopilotChatMessage,
     AutopilotChatMessageRenderer,
     AutopilotChatPrompt,
@@ -10,6 +11,7 @@ import type {
 import {
     AutopilotChatEvent,
     AutopilotChatInterceptableEvent,
+    AutopilotChatInternalEvent,
     AutopilotChatMode,
     AutopilotChatRole,
 } from '@uipath/portal-shell-util';
@@ -21,6 +23,7 @@ import {
 } from '../utils/constants';
 import { AutopilotChatInternalService } from './chat-internal-service';
 import { EventBus } from './event-bus';
+import { LocalHistoryService } from './local-history';
 import { StorageService } from './storage';
 
 export class AutopilotChatService {
@@ -35,11 +38,15 @@ export class AutopilotChatService {
     private conversation: AutopilotChatMessage[] = [];
     private error: string | undefined;
     private prompt: AutopilotChatPrompt | string | undefined;
+    private history: AutopilotChatHistory[] = [];
+    private historyOpen: boolean = false;
+    private _activeConversationId: string | null = null;
 
     private constructor() {
         this.eventBus = new EventBus();
 
         AutopilotChatInternalService.Instantiate();
+        LocalHistoryService.Initialize(this);
 
         this.getConfig = this.getConfig.bind(this);
         this.initialize = this.initialize.bind(this);
@@ -61,6 +68,11 @@ export class AutopilotChatService {
         this.getConversation = this.getConversation.bind(this);
         this.getPrompt = this.getPrompt.bind(this);
         this.getError = this.getError.bind(this);
+        this.setHistory = this.setHistory.bind(this);
+        this.getHistory = this.getHistory.bind(this);
+        this.toggleHistory = this.toggleHistory.bind(this);
+        this.deleteConversation = this.deleteConversation.bind(this);
+        this.openConversation = this.openConversation.bind(this);
     }
 
     static Instantiate(config?: AutopilotChatConfiguration, messageRenderers: AutopilotChatMessageRenderer[] = []) {
@@ -79,6 +91,13 @@ export class AutopilotChatService {
 
     static get Instance() {
         return AutopilotChatService.instance;
+    }
+
+    /**
+     * @returns The current active conversation ID
+     */
+    public get activeConversationId() {
+        return this._activeConversationId;
     }
 
     /**
@@ -110,6 +129,10 @@ export class AutopilotChatService {
 
         if (config.firstRunExperience) {
             this.setFirstRunExperience(config.firstRunExperience);
+        }
+
+        if (config.useLocalHistory !== undefined) {
+            AutopilotChatInternalService.Instance.publish(AutopilotChatInternalEvent.UseLocalHistory, config.useLocalHistory);
         }
 
         messageRenderers.forEach(renderer => this.injectMessageRenderer(renderer));
@@ -303,6 +326,7 @@ export class AutopilotChatService {
         const assistantMessage = {
             id: crypto.randomUUID(),
             ...response,
+            created_at: response.created_at ?? new Date().toISOString(),
             role: AutopilotChatRole.Assistant,
         };
 
@@ -396,5 +420,55 @@ export class AutopilotChatService {
         }
 
         return () => {};
+    }
+
+    /**
+     * Sets the history in the chat service
+     *
+     * @param history - The history to set
+     */
+    setHistory(history: AutopilotChatHistory[]) {
+        this.history = history;
+
+        this.eventBus.publish(AutopilotChatEvent.SetHistory, history);
+    }
+
+    /**
+     * Gets the history from the chat service
+     *
+     * @returns The history
+     */
+    getHistory() {
+        return this.history;
+    }
+
+    /**
+     * Toggles the history in the chat service
+     *
+     * @param open - The open state to set (optional, defaults to toggle)
+     */
+    toggleHistory(open?: boolean) {
+        this.historyOpen = open ?? !this.historyOpen;
+
+        AutopilotChatInternalService.Instance.publish(AutopilotChatInternalEvent.ToggleHistory, this.historyOpen);
+    }
+
+    /**
+     * Deletes a conversation from the chat service
+     *
+     * @param conversationId - The conversation ID to delete
+     */
+    deleteConversation(conversationId: string) {
+        this.eventBus.publish(AutopilotChatEvent.DeleteConversation, conversationId);
+    }
+
+    /**
+     * Opens a conversation from the chat service
+     *
+     * @param conversationId - The conversation ID to open
+     */
+    openConversation(conversationId: string | null) {
+        this._activeConversationId = conversationId;
+        this.eventBus.publish(AutopilotChatEvent.OpenConversation, conversationId);
     }
 }
