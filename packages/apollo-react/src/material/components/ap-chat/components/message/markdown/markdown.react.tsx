@@ -39,6 +39,7 @@ import {
     Emphazised,
     getTextForVariant,
     Hr,
+    Link,
     Pre,
     Strong,
 } from './text.react';
@@ -150,6 +151,7 @@ function AutopilotChatMarkdownRendererComponent({ message }: { message: Autopilo
         strong: Strong,
         hr: Hr,
         pre: Pre,
+        a: Link,
     }), []);
 
     return React.useMemo(() => (

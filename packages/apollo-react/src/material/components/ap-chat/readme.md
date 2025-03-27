@@ -16,6 +16,7 @@
 - [portal-icon](../portal-icon)
 - [ap-icon](../ap-icon)
 - [ap-typography](../ap-typography)
+- [ap-link](../ap-link)
 - [ap-alert-bar](../ap-alert-bar)
 - [portal-custom-icon](../portal-custom-icon)
 
@@ -25,9 +26,11 @@ graph TD;
   ap-autopilot-chat --> portal-icon
   ap-autopilot-chat --> ap-icon
   ap-autopilot-chat --> ap-typography
+  ap-autopilot-chat --> ap-link
   ap-autopilot-chat --> ap-alert-bar
   ap-autopilot-chat --> portal-custom-icon
   ap-icon --> portal-custom-icon
+  ap-link --> ap-typography
   ap-alert-bar --> portal-custom-icon
   ap-alert-bar --> ap-typography
   ap-alert-bar --> ap-icon-button

@@ -99,3 +99,9 @@ export const Hr = React.memo(() => {
         />
     );
 });
+
+export const Link = React.memo(({
+    href, children,
+}: { href?: string; children: React.ReactNode }) => {
+    return <ap-link href={href} target="_blank">{children}</ap-link>;
+});
