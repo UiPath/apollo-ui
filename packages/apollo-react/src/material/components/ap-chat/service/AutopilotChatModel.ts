@@ -44,6 +44,7 @@ export enum AutopilotChatRole {
  * @property fakeStream - Temporary flag used to simulate streaming for a complete message (will be ignored for requests)
  * @property stream - Flag used to stream a chunk (will be ignored for requests)
  * @property done - Flag to determine if the message is the last chunk of a streaming response
+ * @property meta - Optional metadata for the message (additional information about the message)
  */
 export interface AutopilotChatMessage {
     id: string;
@@ -56,6 +57,7 @@ export interface AutopilotChatMessage {
     fakeStream?: boolean;
     stream?: boolean;
     done?: boolean;
+    meta?: any;
 }
 
 export interface AutopilotChatPrompt extends Pick<AutopilotChatMessage, 'content' | 'attachments'> {}
