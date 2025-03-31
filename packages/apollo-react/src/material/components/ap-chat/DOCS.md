@@ -70,6 +70,7 @@ const chatService = window.PortalShell.AutopilotChat;
 | Property | Description |
 |----------|-------------|
 | `activeConversationId` | Returns the current active conversation ID that was set with `openConversation` method|
+| `historyOpen` | Returns the current history panel visibility state |
 
 ### Error Handling
 

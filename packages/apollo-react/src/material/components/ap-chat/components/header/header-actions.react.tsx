@@ -105,10 +105,9 @@ function AutopilotChatHeaderActionsComponent() {
 
             {!disabledFullScreen && (
                 <AutopilotChatActionButton
-                    iconName={!isFullScreen ? 'right_panel_open' : 'right_panel_close'}
+                    iconName={!isFullScreen ? 'open_in_full' : 'close_fullscreen'}
                     tooltip={!isFullScreen ? t('autopilot-chat-expand') : t('autopilot-chat-collapse')}
                     onClick={handleToggleChat}
-                    variant="custom"
                 />
             )}
 

@@ -52,11 +52,11 @@ const ChatHistoryContainer = styled('div')<{ isOpen: boolean; isFullScreen: bool
     }),
 
     ...(isFullScreen ? {
-        width: isOpen ? CHAT_HISTORY_WIDTH_FULL_SCREEN : 0,
-        borderRight: `1px solid ${theme.palette.semantic.colorBorderDeEmp}`,
+        width: isOpen ? `calc(${CHAT_HISTORY_WIDTH_FULL_SCREEN}px + 2 * ${token.Spacing.SpacingBase})` : 0, // account for padding
+        borderTopLeftRadius: token.Spacing.SpacingXs,
     } : {
         position: 'absolute',
-        left: 0,
+        right: 0,
     }),
 
     '& .chat-history-search': {
@@ -167,7 +167,7 @@ const AutopilotChatHistoryComponent: React.FC<AutopilotChatHistoryProps> = ({
     return (
         <FocusTrap active={open && !isFullScreen} focusTrapOptions={{ allowOutsideClick: true }}>
             <ChatHistoryContainer isOpen={open} isFullScreen={isFullScreen}>
-                <AutopilotChatHistoryHeader />
+                <AutopilotChatHistoryHeader isFullScreen={isFullScreen}/>
 
                 { history.length > 0 ? (
                     <>

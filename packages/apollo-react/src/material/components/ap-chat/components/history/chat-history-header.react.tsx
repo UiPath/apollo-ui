@@ -26,7 +26,7 @@ const ActionsContainer = styled('div')(() => ({
     gap: token.Spacing.SpacingXs,
 }));
 
-const AutopilotChatHistoryHeaderComponent: React.FC = () => {
+const AutopilotChatHistoryHeaderComponent: React.FC<{ isFullScreen: boolean }> = ({ isFullScreen }) => {
     const theme = useTheme();
     const chatService = AutopilotChatService.Instance;
 
@@ -36,16 +36,25 @@ const AutopilotChatHistoryHeaderComponent: React.FC = () => {
 
     return (
         <HeaderContainer>
+            {isFullScreen && (
+                <ap-typography variant={FontVariantToken.fontBrandL} color={theme.palette.semantic.colorForeground}>
+                    {t('autopilot-chat-history')}
+                </ap-typography>
+            )}
+
             <ActionsContainer>
                 <AutopilotChatActionButton
-                    iconName="chevron_left"
+                    iconName={isFullScreen ? 'right_panel_close' : 'chevron_left'}
                     onClick={handleCloseHistory}
                     tooltip={t('autopilot-chat-hide-history')}
+                    {...(isFullScreen && { variant: 'custom' })}
                 />
 
-                <ap-typography variant={FontVariantToken.fontBrandL} color={theme.palette.semantic.colorForeground}>
-                    {t('autopilot-chat-header')}
-                </ap-typography>
+                {!isFullScreen && (
+                    <ap-typography variant={FontVariantToken.fontBrandL} color={theme.palette.semantic.colorForeground}>
+                        {t('autopilot-chat-history')}
+                    </ap-typography>
+                )}
             </ActionsContainer>
         </HeaderContainer>
     );

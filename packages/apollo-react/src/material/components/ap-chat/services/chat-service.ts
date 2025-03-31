@@ -27,23 +27,23 @@ import { LocalHistoryService } from './local-history';
 import { StorageService } from './storage';
 
 export class AutopilotChatService {
-    private static instance: AutopilotChatService;
-    private config: AutopilotChatConfiguration = {
+    private static _instance: AutopilotChatService;
+    private _config: AutopilotChatConfiguration = {
         mode: StorageService.Instance.get(CHAT_MODE_KEY) as AutopilotChatMode
             ?? AutopilotChatMode.Closed,
     };
-    private eventBus: EventBus;
-    private messageRenderers: AutopilotChatMessageRenderer[] = [];
-    private eventUnsubscribers: Array<() => void> = [];
-    private conversation: AutopilotChatMessage[] = [];
-    private error: string | undefined;
-    private prompt: AutopilotChatPrompt | string | undefined;
-    private history: AutopilotChatHistory[] = [];
-    private historyOpen: boolean = false;
+    private _eventBus: EventBus;
+    private _messageRenderers: AutopilotChatMessageRenderer[] = [];
+    private _eventUnsubscribers: Array<() => void> = [];
+    private _conversation: AutopilotChatMessage[] = [];
+    private _error: string | undefined;
+    private _prompt: AutopilotChatPrompt | string | undefined;
+    private _history: AutopilotChatHistory[] = [];
+    private _historyOpen: boolean = false;
     private _activeConversationId: string | null = null;
 
     private constructor() {
-        this.eventBus = new EventBus();
+        this._eventBus = new EventBus();
 
         AutopilotChatInternalService.Instantiate();
         LocalHistoryService.Initialize(this);
@@ -76,21 +76,21 @@ export class AutopilotChatService {
     }
 
     static Instantiate(config?: AutopilotChatConfiguration, messageRenderers: AutopilotChatMessageRenderer[] = []) {
-        if (!AutopilotChatService.instance) {
-            AutopilotChatService.instance = new AutopilotChatService();
+        if (!AutopilotChatService._instance) {
+            AutopilotChatService._instance = new AutopilotChatService();
         }
 
         if (config) {
-            AutopilotChatService.instance.initialize(config);
+            AutopilotChatService._instance.initialize(config);
         }
 
-        messageRenderers.forEach(renderer => AutopilotChatService.instance.injectMessageRenderer(renderer));
+        messageRenderers.forEach(renderer => AutopilotChatService._instance.injectMessageRenderer(renderer));
 
-        return AutopilotChatService.instance;
+        return AutopilotChatService._instance;
     }
 
     static get Instance() {
-        return AutopilotChatService.instance;
+        return AutopilotChatService._instance;
     }
 
     /**
@@ -104,7 +104,7 @@ export class AutopilotChatService {
      * @returns The current configuration
      */
     getConfig() {
-        return this.config;
+        return this._config;
     }
 
     /**
@@ -114,10 +114,10 @@ export class AutopilotChatService {
      */
     initialize(config: AutopilotChatConfiguration, messageRenderers: AutopilotChatMessageRenderer[] = []) {
         // Cleanup existing handlers
-        this.eventUnsubscribers.forEach(unsubscribe => unsubscribe());
-        this.eventUnsubscribers = [];
+        this._eventUnsubscribers.forEach(unsubscribe => unsubscribe());
+        this._eventUnsubscribers = [];
 
-        this.config = config;
+        this._config = config;
 
         if (config.mode) {
             this.setChatMode(config.mode);
@@ -144,13 +144,13 @@ export class AutopilotChatService {
      * @param renderer - The message renderer to inject
      */
     injectMessageRenderer(renderer: AutopilotChatMessageRenderer) {
-        const existingRenderer = this.messageRenderers.find(r => r.name === renderer.name);
+        const existingRenderer = this._messageRenderers.find(r => r.name === renderer.name);
 
         if (existingRenderer) {
-            const index = this.messageRenderers.indexOf(existingRenderer);
-            this.messageRenderers[index] = renderer;
+            const index = this._messageRenderers.indexOf(existingRenderer);
+            this._messageRenderers[index] = renderer;
         } else {
-            this.messageRenderers.push(renderer);
+            this._messageRenderers.push(renderer);
         }
     }
 
@@ -161,7 +161,7 @@ export class AutopilotChatService {
      * @returns The message renderer
      */
     getMessageRenderer(name: string) {
-        return this.messageRenderers.find(r => r.name === name);
+        return this._messageRenderers.find(r => r.name === name);
     }
 
     /**
@@ -174,7 +174,7 @@ export class AutopilotChatService {
      * @internal
      */
     renderMessage(container: HTMLElement, message: AutopilotChatMessage) {
-        const renderer = this.messageRenderers.find(r => r.name === message.widget);
+        const renderer = this._messageRenderers.find(r => r.name === message.widget);
 
         if (!renderer) {
             if (isDebuggingEnabled()) {
@@ -198,11 +198,11 @@ export class AutopilotChatService {
      */
     open(config?: AutopilotChatConfiguration, messageRenderers: AutopilotChatMessageRenderer[] = []) {
         this.initialize(config ?? {
-            ...this.config,
+            ...this._config,
             mode: AutopilotChatMode.SideBySide,
         }, messageRenderers);
 
-        this.eventBus.publish(AutopilotChatEvent.Open);
+        this._eventBus.publish(AutopilotChatEvent.Open);
     }
 
     /**
@@ -211,7 +211,7 @@ export class AutopilotChatService {
     close() {
         this.setChatMode(AutopilotChatMode.Closed);
 
-        this.eventBus.publish(AutopilotChatEvent.Close);
+        this._eventBus.publish(AutopilotChatEvent.Close);
     }
 
     /**
@@ -219,9 +219,9 @@ export class AutopilotChatService {
      */
     setChatMode(mode: AutopilotChatMode) {
         StorageService.Instance.set(CHAT_MODE_KEY, mode);
-        this.config.mode = mode;
+        this._config.mode = mode;
 
-        this.eventBus.publish(AutopilotChatEvent.ModeChange, mode);
+        this._eventBus.publish(AutopilotChatEvent.ModeChange, mode);
     }
 
     /**
@@ -230,12 +230,12 @@ export class AutopilotChatService {
      * @param features - The features to set
      */
     setDisabledFeatures(features: AutopilotChatDisabledFeatures) {
-        this.config.disabledFeatures = {
-            ...this.config.disabledFeatures,
+        this._config.disabledFeatures = {
+            ...this._config.disabledFeatures,
             ...features,
         };
 
-        this.eventBus.publish(AutopilotChatEvent.SetDisabledFeatures, this.config.disabledFeatures);
+        this._eventBus.publish(AutopilotChatEvent.SetDisabledFeatures, this._config.disabledFeatures);
     }
 
     /**
@@ -244,9 +244,9 @@ export class AutopilotChatService {
      * @param config - The configuration to set
      */
     setFirstRunExperience(config: AutopilotChatConfiguration['firstRunExperience']) {
-        this.config.firstRunExperience = config;
+        this._config.firstRunExperience = config;
 
-        this.eventBus.publish(AutopilotChatEvent.SetFirstRunExperience, config);
+        this._eventBus.publish(AutopilotChatEvent.SetFirstRunExperience, config);
     }
 
     /**
@@ -255,9 +255,9 @@ export class AutopilotChatService {
      * @param prompt - The prompt to set
      */
     setPrompt(prompt: AutopilotChatPrompt | string) {
-        this.prompt = prompt;
+        this._prompt = prompt;
 
-        this.eventBus.publish(AutopilotChatEvent.SetPrompt, prompt);
+        this._eventBus.publish(AutopilotChatEvent.SetPrompt, prompt);
     }
 
     /**
@@ -266,7 +266,7 @@ export class AutopilotChatService {
      * @returns The prompt
      */
     getPrompt() {
-        return this.prompt;
+        return this._prompt;
     }
 
     /**
@@ -275,9 +275,9 @@ export class AutopilotChatService {
      * @param messages - The messages to set
      */
     setConversation(messages: AutopilotChatMessage[]) {
-        this.conversation = messages;
+        this._conversation = messages;
 
-        this.eventBus.publish(AutopilotChatEvent.SetConversation, messages);
+        this._eventBus.publish(AutopilotChatEvent.SetConversation, messages);
     }
 
     /**
@@ -286,7 +286,7 @@ export class AutopilotChatService {
      * @returns The conversation
      */
     getConversation() {
-        return this.conversation;
+        return this._conversation;
     }
 
     /**
@@ -306,15 +306,15 @@ export class AutopilotChatService {
             widget: DEFAULT_MESSAGE_RENDERER,
         };
 
-        this.conversation.push(userMessage);
-        this.eventBus.publish(AutopilotChatEvent.Request, userMessage);
+        this._conversation.push(userMessage);
+        this._eventBus.publish(AutopilotChatEvent.Request, userMessage);
     }
 
     /**
      * Stops the response in the chat service
      */
     stopResponse() {
-        this.eventBus.publish(AutopilotChatEvent.StopResponse);
+        this._eventBus.publish(AutopilotChatEvent.StopResponse);
     }
 
     /**
@@ -331,22 +331,22 @@ export class AutopilotChatService {
         };
 
         // Check if message with the same ID already exists and emit chunk, otherwise emit response
-        const existingIndex = this.conversation.findIndex(message => message.id === assistantMessage.id);
+        const existingIndex = this._conversation.findIndex(message => message.id === assistantMessage.id);
 
         if (existingIndex !== -1) {
             if (response.stream) {
                 // send chunk if the response is streaming
-                this.conversation[existingIndex].content += assistantMessage.content;
-                this.conversation[existingIndex].done = !!response.done;
-                this.eventBus.publish(AutopilotChatEvent.SendChunk, assistantMessage);
+                this._conversation[existingIndex].content += assistantMessage.content;
+                this._conversation[existingIndex].done = !!response.done;
+                this._eventBus.publish(AutopilotChatEvent.SendChunk, assistantMessage);
             } else {
                 // send response if the response is not streaming
-                this.conversation[existingIndex].content = assistantMessage.content;
-                this.eventBus.publish(AutopilotChatEvent.Response, assistantMessage);
+                this._conversation[existingIndex].content = assistantMessage.content;
+                this._eventBus.publish(AutopilotChatEvent.Response, assistantMessage);
             }
         } else {
-            this.conversation.push(assistantMessage);
-            this.eventBus.publish(AutopilotChatEvent.Response, assistantMessage);
+            this._conversation.push(assistantMessage);
+            this._eventBus.publish(AutopilotChatEvent.Response, assistantMessage);
         }
     }
 
@@ -363,8 +363,8 @@ export class AutopilotChatService {
             messageRenderers.forEach(renderer => this.injectMessageRenderer(renderer));
         }
 
-        this.conversation = [];
-        this.eventBus.publish(AutopilotChatEvent.NewChat);
+        this._conversation = [];
+        this._eventBus.publish(AutopilotChatEvent.NewChat);
     }
 
     /**
@@ -373,18 +373,18 @@ export class AutopilotChatService {
      * @param error - The error to set
      */
     setError(error: string) {
-        this.error = error;
+        this._error = error;
 
-        this.eventBus.publish(AutopilotChatEvent.Error, error);
+        this._eventBus.publish(AutopilotChatEvent.Error, error);
     }
 
     /**
      * Clears the error in the chat service
      */
     clearError() {
-        this.error = undefined;
+        this._error = undefined;
 
-        this.eventBus.publish(AutopilotChatEvent.Error, undefined);
+        this._eventBus.publish(AutopilotChatEvent.Error, undefined);
     }
 
     /**
@@ -393,7 +393,7 @@ export class AutopilotChatService {
      * @returns The error
      */
     getError() {
-        return this.error;
+        return this._error;
     }
 
     /**
@@ -404,7 +404,7 @@ export class AutopilotChatService {
      * @returns A function to unsubscribe from the event
      */
     on(event: AutopilotChatEvent, handler: AutopilotChatEventHandler) {
-        return this.eventBus.subscribe(event, handler);
+        return this._eventBus.subscribe(event, handler);
     }
 
     /**
@@ -416,7 +416,7 @@ export class AutopilotChatService {
      */
     intercept(event: AutopilotChatInterceptableEvent, interceptor: AutopilotChatEventInterceptor) {
         if (Object.values(AutopilotChatInterceptableEvent).includes(event)) {
-            return this.eventBus.intercept(event, interceptor);
+            return this._eventBus.intercept(event, interceptor);
         }
 
         return () => {};
@@ -428,9 +428,9 @@ export class AutopilotChatService {
      * @param history - The history to set
      */
     setHistory(history: AutopilotChatHistory[]) {
-        this.history = history;
+        this._history = history;
 
-        this.eventBus.publish(AutopilotChatEvent.SetHistory, history);
+        this._eventBus.publish(AutopilotChatEvent.SetHistory, history);
     }
 
     /**
@@ -439,7 +439,16 @@ export class AutopilotChatService {
      * @returns The history
      */
     getHistory() {
-        return this.history;
+        return this._history;
+    }
+
+    /**
+     * Gets the history open state from the chat service
+     *
+     * @returns The history open state
+     */
+    get historyOpen() {
+        return this._historyOpen;
     }
 
     /**
@@ -448,9 +457,9 @@ export class AutopilotChatService {
      * @param open - The open state to set (optional, defaults to toggle)
      */
     toggleHistory(open?: boolean) {
-        this.historyOpen = open ?? !this.historyOpen;
+        this._historyOpen = open ?? !this._historyOpen;
 
-        AutopilotChatInternalService.Instance.publish(AutopilotChatInternalEvent.ToggleHistory, this.historyOpen);
+        AutopilotChatInternalService.Instance.publish(AutopilotChatInternalEvent.ToggleHistory, this._historyOpen);
     }
 
     /**
@@ -459,7 +468,7 @@ export class AutopilotChatService {
      * @param conversationId - The conversation ID to delete
      */
     deleteConversation(conversationId: string) {
-        this.eventBus.publish(AutopilotChatEvent.DeleteConversation, conversationId);
+        this._eventBus.publish(AutopilotChatEvent.DeleteConversation, conversationId);
     }
 
     /**
@@ -469,6 +478,6 @@ export class AutopilotChatService {
      */
     openConversation(conversationId: string | null) {
         this._activeConversationId = conversationId;
-        this.eventBus.publish(AutopilotChatEvent.OpenConversation, conversationId);
+        this._eventBus.publish(AutopilotChatEvent.OpenConversation, conversationId);
     }
 }

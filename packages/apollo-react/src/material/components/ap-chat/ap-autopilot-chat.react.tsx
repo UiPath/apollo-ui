@@ -16,12 +16,11 @@ import React from 'react';
 
 import { DragHandle } from './components/common/drag-handle.react';
 import { AutopilotChatDropzone } from './components/dropzone/dropzone.react';
-import { AutopilotChatHeader } from './components/header/header.react';
-import { AutopilotChatHistory } from './components/history/chat-history.react';
-import { AutopilotChatInput } from './components/input/chat-input.react';
-import { ChatScrollContainer } from './components/message/chat-scroll-container.react';
+import {
+    FullScreenLayout,
+    StandardLayout,
+} from './components/layout';
 import { AutopilotAttachmentsProvider } from './providers/attachements-provider.react';
-import { ChatScrollProvider } from './providers/chat-scroll-provider.react';
 import {
     ChatWidthProvider,
     useChatWidth,
@@ -32,9 +31,8 @@ import { AutopilotStreamingProvider } from './providers/streaming-provider.react
 import { AutopilotChatInternalService } from './services/chat-internal-service';
 import { AutopilotChatService } from './services/chat-service';
 import {
-    CHAT_HISTORY_WIDTH_FULL_SCREEN,
+    CHAT_CONTAINER_ANIMATION_DURATION,
     CHAT_WIDTH_FULL_SCREEN,
-    CHAT_WIDTH_FULL_SCREEN_MAX_WIDTH,
 } from './utils/constants';
 
 const ChatContainer = styled('div')<{ shouldAnimate: boolean; mode: AutopilotChatMode; width: number }>(({
@@ -42,42 +40,15 @@ const ChatContainer = styled('div')<{ shouldAnimate: boolean; mode: AutopilotCha
 }: { shouldAnimate: boolean; mode: AutopilotChatMode; width: number; theme: Theme }) => ({
     width: mode === AutopilotChatMode.FullScreen ? CHAT_WIDTH_FULL_SCREEN : width,
     display: 'flex',
+    flexDirection: mode === AutopilotChatMode.FullScreen ? 'column' : 'row',
     height: 'calc(100vh - 48px)', // account for global header hight
     position: 'relative',
     boxSizing: 'border-box',
     border: `${token.Border.BorderThickS} solid ${theme.palette.semantic.colorBorderDeEmp}`,
     borderTop: 'none',
     borderLeft: 'none',
-    ...(shouldAnimate && { transition: 'width 0.2s ease' }),
+    ...(shouldAnimate && { transition: `width ${CHAT_CONTAINER_ANIMATION_DURATION}ms ease` }),
     ...(mode === AutopilotChatMode.Closed && { display: 'none' }),
-}));
-
-const MainContainer = styled('div')<{ historyOpen: boolean }>(({ historyOpen }: { historyOpen: boolean }) => ({
-    flex: 1,
-    display: 'flex',
-    flexDirection: 'column',
-    height: '100%',
-    maxHeight: '100%',
-    ...(historyOpen && { width: `calc(100% - ${CHAT_HISTORY_WIDTH_FULL_SCREEN})` }),
-}));
-
-const HeaderContainer = styled('div')(() => ({
-    flexShrink: 0,
-    paddingBottom: token.Spacing.SpacingBase,
-    padding: `${token.Spacing.SpacingBase} ${token.Spacing.SpacingL}`,
-}));
-
-const InputBackground = styled('div')(() => ({
-    flexShrink: 0,
-    padding: `${token.Spacing.SpacingXs} ${token.Spacing.SpacingL}`,
-}));
-
-const InputContainer = styled('div')<{ isFullScreen: boolean }>(({ isFullScreen }: { isFullScreen: boolean }) => ({
-    ...(isFullScreen && {
-        maxWidth: CHAT_WIDTH_FULL_SCREEN_MAX_WIDTH,
-        margin: '0 auto',
-        width: '100%',
-    }),
 }));
 
 function AutopilotChatContent() {
@@ -87,10 +58,11 @@ function AutopilotChatContent() {
     const chatService = AutopilotChatService.Instance;
     const internalService = AutopilotChatInternalService.Instance;
     const [ historyDisabled, setHistoryDisabled ] = React.useState(chatService?.getConfig?.()?.disabledFeatures?.history ?? false);
-    const [ historyOpen, setHistoryOpen ] = React.useState(false);
+    const [ historyOpen, setHistoryOpen ] = React.useState(chatService?.historyOpen ?? false);
     const {
         width, shouldAnimate,
     } = useChatWidth();
+    const isFullScreen = mode === AutopilotChatMode.FullScreen;
 
     React.useEffect(() => {
         if (!chatService || !internalService) {
@@ -129,25 +101,19 @@ function AutopilotChatContent() {
                 <DragHandle/>
             )}
 
-            {!historyDisabled && (
-                <AutopilotChatHistory open={historyOpen} isFullScreen={mode === AutopilotChatMode.FullScreen} />
+            {isFullScreen ? (
+                <FullScreenLayout
+                    historyOpen={historyOpen}
+                    historyDisabled={historyDisabled}
+                    mode={mode}
+                />
+            ) : (
+                <StandardLayout
+                    historyOpen={historyOpen}
+                    historyDisabled={historyDisabled}
+                    mode={mode}
+                />
             )}
-
-            <MainContainer historyOpen={historyOpen}>
-                <HeaderContainer>
-                    <AutopilotChatHeader />
-                </HeaderContainer>
-
-                <ChatScrollProvider>
-                    <ChatScrollContainer mode={mode} />
-                </ChatScrollProvider>
-
-                <InputBackground>
-                    <InputContainer isFullScreen={mode === AutopilotChatMode.FullScreen}>
-                        <AutopilotChatInput />
-                    </InputContainer>
-                </InputBackground>
-            </MainContainer>
         </ChatContainer>
     );
 }
