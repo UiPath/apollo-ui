@@ -594,74 +594,142 @@ chatService.sendResponse({
 The Autopilot Chat component is built with a modular architecture that allows for easy customization and extension.
 
 ```mermaid
-graph TD
-    %% Main Components
-    A[ap-autopilot-chat] --> B[ReactToStencilAdapter]
-    B -->|React Component| C[AutopilotChatReact]
-
-    %% Main Container Structure
-    C -->|Wraps components| D{Providers}
+%%{init: {'theme': 'dark', 'themeVariables': { 'lineColor': '#ffffff', 'primaryColor': '#2962ff', 'primaryTextColor': '#ffffff', 'primaryBorderColor': '#ffffff', 'edgeLabelBackground': '#444444', 'lineWidth': '2px' }}}%%
+graph LR
+    %% Node definitions with clear borders
+    A["ap-autopilot-chat"]:::node
+    B["ReactToStencilAdapter"]:::node
+    C["AutopilotChatReact"]:::node
+    D["Provider Layer"]:::node
+    K["ChatContainer"]:::node
+    Mode{"Chat Mode"}:::decision
+    FS["FullScreenLayout"]:::node
+    SS["StandardLayout"]:::node
     
-    %% Providers
-    D -->|User attachments| E[AttachmentsProvider]
-    D -->|Handles Errors| F[ErrorProvider]
-    D -->|Wait for response state| G[LoadingProvider]
-    D -->|Streaming responses| H[StreamingProvider]
-    D -->|Chat width management| I[ChatWidthProvider]
-    D -->|Scroll management| J[ChatScrollProvider]
-
-    %% Chat Container
-    E --> K["ChatContainer [Resizable & Dropzone]"]
-    F --> K
-    G --> K
-    H --> K
-    I --> K
-    J --> K
-
-    %% History Component
-    K -->|Conditional| AH[AutopilotChatHistory]
-    AH -->|Toggles| AI[HistoryPanel]
-    AH -->|Controls| AJ[HistoryList]
-    AH -->|Manages| AK[HistoryItem]
-
-    %% Main Content Container
-    K -->|Contains| AL[MainContainer]
-    AL -->|Contains| AM[HeaderContainer]
-    AL -->|Contains| AN[ChatScrollContainer]
-    AL -->|Contains| AO[InputBackground]
-
-    %% Header
-    AM --> L[Header]
-    L --> M[Actions]
-
-    %% Input Section
-    AO -->|User Input| N[Input]
-    N --> O[InputError]
-    N --> P[InputAttachments]
-    N --> Q[InputActions]
-    N --> R[InputFooter]
-
-    %% Message Section
-    AN -->|Displays Messages| S["Message [Overflow Container]"]
-    S --> T[MessageContent]
-    T --> U[MarkdownRenderer]
-    U -->|Formats| V[Code]
-    U -->|Formats| W[Lists]
-    U -->|Formats| X[Text]
-    U -->|Formats| Y[Table]
+    %% Provider nodes
+    E["AttachmentsProvider"]:::provider
+    F["ErrorProvider"]:::provider
+    G["LoadingProvider"]:::provider
+    H["StreamingProvider"]:::provider
+    I["ChatWidthProvider"]:::provider
+    J["ChatScrollProvider"]:::provider
+    AP["ChatStateProvider"]:::provider
     
-    S -->|Displays| Z[Attachments]
-    S -->|Wait for response| AA[Loading]
-    S -->|First Run Experience| AB[FRE]
-    S -->|Custom Rendering| AC[InjectableRenderer]
-
-    %% Services
-    AD[ChatService] -->|Manages| C
-    AE[ChatInternalService] -->|Internal State| AD
-    AF[EventBus] -->|Events| AD
-    AG[StorageService] -->|Persistence| AD
-
-    %% History State Management
-    AD -->|Controls| AH
-    AE -->|Toggles| AH
+    %% Service nodes
+    AD["ChatService"]:::service
+    AE["ChatInternalService"]:::service
+    AF["EventBus"]:::service
+    AG["StorageService"]:::service
+    AQ["LocalHistoryService<br>(IndexedDB, opt-in)"]:::service
+    
+    %% External consumer
+    Consumer["External Consumers<br>Applications"]:::consumer
+    
+    %% Common component nodes
+    Header["Header<br>Components"]:::component
+    Input["Input<br>Components"]:::component
+    
+    %% Detailed message components
+    subgraph Message["Message Components"]
+        direction TB
+        S["Message Container"]:::component
+        S --> T["MessageContent"]:::component
+        S --> Z["Attachments"]:::component
+        S --> AA["Loading"]:::component 
+        S --> AB["First Run Experience"]:::component
+        
+        %% Markdown rendering
+        subgraph MarkdownRenderer["Markdown Renderer"]
+            direction LR
+            U["MarkdownRenderer"]:::component
+            U --> V["Code"]:::component
+            U --> W["Lists"]:::component
+            U --> X["Text"]:::component
+            U --> Y["Table"]:::component
+        end
+        
+        %% Custom renderer
+        subgraph CustomRenderer["Custom Renderers"]
+            direction TB
+            IC["InjectableRenderer"]:::component
+            IC -.->|"Injected via"| RE["chatService.injectMessageRenderer()"]
+        end
+        
+        T --> U
+        S --> IC
+    end
+    
+    History["History<br>Components"]:::component
+    
+    %% Core Flow with thick edges
+    A ==> B
+    B ==> C
+    C ==> D
+    
+    %% Provider connections
+    D -.->|"provides"| E
+    D -.->|"provides"| F
+    D -.->|"provides"| G
+    D -.->|"provides"| H
+    D -.->|"provides"| I
+    D -.->|"provides"| J
+    D -.->|"provides"| AP
+    
+    %% Providers connect to ChatContainer
+    E ==> K
+    F ==> K
+    G ==> K
+    H ==> K
+    I ==> K
+    J ==> K
+    AP ==> K
+    
+    %% ChatContainer to layouts
+    K ==> Mode
+    Mode ==>|"FullScreen"| FS
+    Mode ==>|"SideBySide"| SS
+    
+    %% ChatService pushes to all providers
+    AD -.->|"events"| E
+    AD -.->|"events"| F
+    AD -.->|"events"| G
+    AD -.->|"events"| H
+    AD -.->|"events"| I
+    AD -.->|"events"| J
+    AD -.->|"events"| AP
+    
+    %% Service connections
+    AD ==>|"manages"| C
+    AD ==>|"uses"| AE
+    AD ==>|"uses"| AF
+    AD ==>|"uses"| AG
+    AD ==>|"uses"| AQ
+    AD -.->|"manages renderers"| CustomRenderer
+    
+    %% ChatService exposed to consumers
+    AD <-.->|"exposes methods<br>window.PortalShell.AutopilotChat"| Consumer
+    
+    %% Layout connections
+    FS ==>|"uses"| Header
+    FS ==>|"uses"| Message
+    FS ==>|"uses"| Input
+    FS ==>|"uses"| History
+    
+    SS ==>|"uses"| Header
+    SS ==>|"uses"| Message
+    SS ==>|"uses"| Input
+    SS ==>|"uses"| History
+    
+    %% Style definitions
+    classDef node fill:#2962ff,stroke:#ffffff,stroke-width:2px,color:#ffffff
+    classDef decision fill:#ff6d00,stroke:#ffffff,stroke-width:2px,color:#ffffff
+    classDef provider fill:#ec407a,stroke:#ffffff,stroke-width:2px,color:#ffffff
+    classDef service fill:#66bb6a,stroke:#ffffff,stroke-width:2px,color:#ffffff
+    classDef component fill:#ffca28,stroke:#ffffff,stroke-width:2px,color:#000000
+    classDef consumer fill:#e040fb,stroke:#ffffff,stroke-width:2px,color:#ffffff
+    
+    %% Apply styles to all links
+    linkStyle default stroke:#ffffff,stroke-width:2px;
+    linkStyle 7,8,9,10,11,12,13 stroke:#ec407a,stroke-width:2px,stroke-dasharray:5 5;
+    linkStyle 21,22,23,24,25,26,27 stroke:#66bb6a,stroke-width:2px,stroke-dasharray:5 5;
 ```
