@@ -13,6 +13,11 @@ The Autopilot Chat component is a full-featured chat interface that can be embed
 - Extensible architecture with custom message renderers
 - Event system for intercepting and handling chat interactions
 - Support for real-time streaming responses and simulated streaming
+- Comprehensive conversation history management with:
+  - Built-in history panel for viewing past conversations
+  - Optional local storage using IndexedDB
+  - API for custom history storage implementation
+  - Conversation export/import capabilities
 
 ## Global Chat Service
 
@@ -132,6 +137,86 @@ Adds an event interceptor for interceptable events. Returns a function to remove
 
 **Usage:**
 The interceptor can return `true` to indicate it has handled the event and prevent further processing. Multiple interceptors can be added and will be called in parallel. If any interceptor returns `true`, the event is considered hijacked and the default handling will not occur (it will still emit, but with `hijacked: true` on the message).
+
+## Usage Examples
+
+### Basic Chat Initialization
+
+```typescript
+// Access the global chat service
+const chatService = window.PortalShell.AutopilotChat;
+
+// Initialize with custom configuration
+chatService.initialize({
+  mode: AutopilotChatMode.SideBySide,
+  firstRunExperience: {
+    title: "Welcome to Autopilot Chat!",
+    description: "Ask me anything about your data or how to use this application.",
+    suggestions: [
+      { label: "How to get started", prompt: "How do I get started with this application?" },
+      { label: "Generate a report", prompt: "Help me generate a quarterly sales report" }
+    ]
+  }
+});
+
+// Open the chat interface
+chatService.open();
+```
+
+### Intercepting User Requests
+
+```typescript
+// Intercept user requests to handle them in your application
+const unsubscribe = chatService.intercept(AutopilotChatInterceptableEvent.Request, (event) => {
+  const userMessage = event.data;
+  
+  // Process the user message in your application
+  processUserMessage(userMessage).then(response => {
+    // Send the AI response back to the chat
+    chatService.sendResponse({
+      content: response,
+      role: AutopilotChatRole.Assistant
+    });
+  });
+  
+  // Return true to prevent the default handling
+  return true;
+});
+
+// Later, remove the interceptor when no longer needed
+unsubscribe();
+```
+
+### Custom Message Renderer
+
+```typescript
+// Create a custom message renderer for special message types
+chatService.injectMessageRenderer({
+  name: "custom-text-renderer",
+  render: (container, message) => {
+    // A simple text renderer that just displays the message content as-is
+    if (message.content) {
+      // Create a text element
+      const textElement = document.createElement("div");
+      
+      // Simply set the content as plain text
+      textElement.textContent = message.content;
+      
+      // Add to the container
+      container.appendChild(textElement);
+    }
+  }
+});
+
+// Send a message that uses the custom renderer
+chatService.sendResponse({
+  id: "msg-123", // Unique identifier for the message
+  content: "Here's your sales chart:",
+  created_at: new Date().toISOString(),
+  role: AutopilotChatRole.Assistant,
+  widget: "custom-text-renderer" // Reference to our custom renderer
+});
+```
 
 ## Streaming Capabilities
 
@@ -342,6 +427,122 @@ const currentConversation = chatService.getConversation();
 console.log(`The conversation has ${currentConversation.length} messages`);
 ```
 
+### Managing Conversation History List
+
+The chat service provides methods to manage multiple conversations in a history list.
+
+#### Setting the History List
+
+```typescript
+// Set the list of available conversations in the history panel
+chatService.setHistory([
+  {
+    id: "conversation-1",
+    name: "Invoice Data Extraction",
+    timestamp: new Date().toISOString()
+  },
+  {
+    id: "conversation-2",
+    name: "Multilingual Document Processing",
+    timestamp: new Date().toISOString()
+  }
+]);
+
+// Get the current history list
+const historyList = chatService.getHistory();
+```
+
+#### Creating and Opening Conversations
+
+```typescript
+// Start a new chat (clears the current conversation)
+chatService.newChat();
+
+// Open a specific conversation from history (still need to cal setConversation, this mainly sets the active conversation & emits event).
+chatService.openConversation("conversation-1");
+
+// Get the active conversation ID
+const activeId = chatService.activeConversationId;
+```
+
+#### Deleting Conversations
+
+```typescript
+// Delete a conversation from history
+chatService.deleteConversation("conversation-2");
+```
+
+#### Toggling the History Panel
+
+```typescript
+// Open the history panel
+chatService.toggleHistory(true);
+
+// Close the history panel
+chatService.toggleHistory(false);
+
+// Toggle the history panel (open if closed, close if open)
+chatService.toggleHistory();
+
+// Check if history panel is open
+const isHistoryOpen = chatService.historyOpen;
+```
+
+### Using Local Storage for History
+
+The chat service can optionally store conversation history locally using IndexedDB. This feature is opt-in and can be enabled in the configuration.
+
+```typescript
+// Enable local history storage during initialization
+chatService.initialize({
+  mode: AutopilotChatMode.SideBySide,
+  useLocalHistory: true
+});
+
+// With local history enabled:
+// 1. Conversations and messages are automatically saved to IndexedDB
+// 2. History is restored when the application is reloaded
+// 3. The history panel shows previously saved conversations
+```
+
+### Implementing Custom History Storage
+
+For applications that need custom history storage (e.g., server-based), you can intercept history-related events and implement your own storage solution:
+
+```typescript
+// Intercept new chat requests
+chatService.on(AutopilotChatEvent.NewChat, () => {
+  // Reset your custom storage for a new conversation
+  myCustomStorage.createNewChat();
+});
+
+// Handle new messages
+chatService.on(AutopilotChatEvent.Request, (message) => {
+  // Save user messages to your storage
+  myCustomStorage.saveMessage(currentConversationId, message);
+});
+
+chatService.on(AutopilotChatEvent.Response, (message) => {
+  // Save assistant messages to your storage
+  myCustomStorage.saveMessage(currentConversationId, message);
+});
+
+// Handle history operations
+chatService.on(AutopilotChatEvent.DeleteConversation, (conversationId) => {
+  // Delete conversation from your storage
+  myCustomStorage.deleteConversation(conversationId);
+  
+  // Update the history list from your storage
+  chatService.setHistory(myCustomStorage.getAllConversations());
+});
+
+chatService.on(AutopilotChatEvent.OpenConversation, (conversationId) => {
+  // Load messages for the selected conversation
+  const messages = myCustomStorage.getConversationMessages(conversationId);
+  chatService.setConversation(messages);
+});
+```
+
 ## Feature Controls
 
 The chat service allows you to disable specific features to customize the experience.
@@ -363,6 +564,11 @@ chatService.setDisabledFeatures({
 chatService.setDisabledFeatures({ 
   fullScreen: true 
 });
+
+// Disable conversation history panel
+chatService.setDisabledFeatures({ 
+  history: true 
+});
 ```
 
 ### Setting Multiple Disabled Features at Once
@@ -373,6 +579,7 @@ chatService.setDisabledFeatures({
   resize: true,
   fullScreen: true,
   attachments: true,
+  history: true
 });
 
 // Later, re-enable features
@@ -508,86 +715,6 @@ interface AutopilotChatMessageRenderer {
 The message renderer interface defines a custom renderer for chat messages:
 - `name`: Unique identifier for the renderer
 - `render`: Function that renders the message content into the provided container element. Can optionally return a cleanup function.
-
-## Usage Examples
-
-### Basic Chat Initialization
-
-```typescript
-// Access the global chat service
-const chatService = window.PortalShell.AutopilotChat;
-
-// Initialize with custom configuration
-chatService.initialize({
-  mode: AutopilotChatMode.SideBySide,
-  firstRunExperience: {
-    title: "Welcome to Autopilot Chat!",
-    description: "Ask me anything about your data or how to use this application.",
-    suggestions: [
-      { label: "How to get started", prompt: "How do I get started with this application?" },
-      { label: "Generate a report", prompt: "Help me generate a quarterly sales report" }
-    ]
-  }
-});
-
-// Open the chat interface
-chatService.open();
-```
-
-### Intercepting User Requests
-
-```typescript
-// Intercept user requests to handle them in your application
-const unsubscribe = chatService.intercept(AutopilotChatInterceptableEvent.Request, (event) => {
-  const userMessage = event.data;
-  
-  // Process the user message in your application
-  processUserMessage(userMessage).then(response => {
-    // Send the AI response back to the chat
-    chatService.sendResponse({
-      content: response,
-      role: AutopilotChatRole.Assistant
-    });
-  });
-  
-  // Return true to prevent the default handling
-  return true;
-});
-
-// Later, remove the interceptor when no longer needed
-unsubscribe();
-```
-
-### Custom Message Renderer
-
-```typescript
-// Create a custom message renderer for special message types
-chatService.injectMessageRenderer({
-  name: "custom-text-renderer",
-  render: (container, message) => {
-    // A simple text renderer that just displays the message content as-is
-    if (message.content) {
-      // Create a text element
-      const textElement = document.createElement("div");
-      
-      // Simply set the content as plain text
-      textElement.textContent = message.content;
-      
-      // Add to the container
-      container.appendChild(textElement);
-    }
-  }
-});
-
-// Send a message that uses the custom renderer
-chatService.sendResponse({
-  id: "msg-123", // Unique identifier for the message
-  content: "Here's your sales chart:",
-  created_at: new Date().toISOString(),
-  role: AutopilotChatRole.Assistant,
-  widget: "custom-text-renderer" // Reference to our custom renderer
-});
-```
 
 ## Component Architecture
 
