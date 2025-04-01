@@ -7,7 +7,6 @@ import {
 } from '@mui/material/styles';
 import { FontVariantToken } from '@uipath/apollo-core';
 import token from '@uipath/apollo-core/lib';
-import { AutopilotChatEvent } from '@uipath/portal-shell-util';
 import React from 'react';
 import {
     FileRejection,
@@ -18,7 +17,6 @@ import { t } from '../../../../utils/localization/loc';
 import { useAttachments } from '../../providers/attachements-provider.react';
 import { useChatState } from '../../providers/chat-state-provider.react';
 import { useError } from '../../providers/error-provider.react';
-import { AutopilotChatService } from '../../services/chat-service';
 import {
     ACCEPTED_FILE_EXTENSIONS,
     ACCEPTED_FILES,

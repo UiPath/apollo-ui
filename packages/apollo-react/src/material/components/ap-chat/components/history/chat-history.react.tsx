@@ -167,7 +167,14 @@ const AutopilotChatHistoryComponent: React.FC<AutopilotChatHistoryProps> = ({
     }, [ history, searchQuery ]);
 
     return (
-        <FocusTrap active={open && !isFullScreen} focusTrapOptions={{ allowOutsideClick: true }}>
+        <FocusTrap
+            active={open && !isFullScreen}
+            focusTrapOptions={{
+                allowOutsideClick: true,
+                initialFocus: historyOpen ? '.chat-history-content [tabindex="0"]:first-of-type' : false,
+                fallbackFocus: '.chat-history-search',
+            }}
+        >
             <ChatHistoryContainer isOpen={open} isFullScreen={isFullScreen}>
                 <AutopilotChatHistoryHeader isFullScreen={isFullScreen} isHistoryOpen={historyOpen}/>
 

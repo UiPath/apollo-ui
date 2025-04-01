@@ -6,12 +6,8 @@ import {
     useTheme,
 } from '@mui/material';
 import token, { FontVariantToken } from '@uipath/apollo-core/lib';
-import {
-    AutopilotChatConfiguration,
-    AutopilotChatEvent,
-    AutopilotChatSuggestion,
-} from '@uipath/portal-shell-util';
-import React, { useState } from 'react';
+import { AutopilotChatSuggestion } from '@uipath/portal-shell-util';
+import React from 'react';
 
 import { t } from '../../../../../utils/localization/loc';
 import { useChatState } from '../../../providers/chat-state-provider.react';

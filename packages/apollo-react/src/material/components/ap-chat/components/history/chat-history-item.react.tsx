@@ -165,7 +165,7 @@ const AutopilotChatHistoryItemComponent: React.FC<AutopilotChatHistoryItemProps>
         <GroupItem
             showRemoveIcon={isFocused || isRemoveIconVisible}
             ref={itemRef}
-            tabIndex={0}
+            tabIndex={isHistoryOpen ? 0 : -1}
             key={item.id}
             isActive={isActive}
             onClick={() => handleItemClick(item.id)}
@@ -174,6 +174,9 @@ const AutopilotChatHistoryItemComponent: React.FC<AutopilotChatHistoryItemProps>
                     handleItemClick(item.id);
                 }
             }}
+            aria-label={item.name}
+            role="button"
+            aria-pressed={isActive}
         >
             <GroupTitle>
                 <ap-typography color={theme.palette.semantic.colorForeground}>{item.name}</ap-typography>

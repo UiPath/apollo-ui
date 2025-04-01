@@ -6,17 +6,12 @@ import {
     useTheme,
 } from '@mui/material';
 import token from '@uipath/apollo-core/lib';
-import {
-    AutopilotChatDisabledFeatures,
-    AutopilotChatEvent,
-} from '@uipath/portal-shell-util';
 import React from 'react';
 
 import { t } from '../../../../utils/localization/loc';
 import { useAttachments } from '../../providers/attachements-provider.react';
 import { useChatState } from '../../providers/chat-state-provider.react';
 import { useError } from '../../providers/error-provider.react';
-import { AutopilotChatService } from '../../services/chat-service';
 import { ACCEPTED_FILE_EXTENSIONS } from '../../utils/constants';
 import { parseFiles } from '../../utils/file-reader';
 import { AutopilotChatActionButton } from '../common/action-button.react';
