@@ -25,6 +25,7 @@ const ContentContainer = styled('div')(() => ({
     display: 'flex',
     flex: 1,
     overflow: 'hidden',
+    minWidth: '0',
 }));
 
 const MainContainer = styled('div')<{ historyOpen: boolean }>(({ historyOpen }: {

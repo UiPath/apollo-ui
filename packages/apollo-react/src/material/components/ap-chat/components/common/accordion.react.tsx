@@ -71,14 +71,14 @@ const AccordionContainer = styled('div')<{ isLeft: boolean }>(({
         alignSelf: isLeft ? 'flex-start' : 'flex-end',
         gap: token.Spacing.SpacingMicro,
         borderRadius: '12px',
-        marginLeft: isLeft ? '0' : token.Spacing.SpacingL,
-        marginRight: isLeft ? token.Spacing.SpacingL : '0',
         minWidth: '320px',
         maxWidth: `calc(100% - ${token.Spacing.SpacingL} * 2 - ${padding}px)`, // margin of parent + dynamic padding based on side by side width
+        width: '100%',
         border: `${token.Border.BorderThickS} solid ${theme.palette.semantic.colorBorderDeEmp}`,
         boxShadow: 'none',
 
         '& .MuiAccordion-root': { backgroundImage: 'unset' },
+        '& .MuiAccordionSummary-content': { overflow: 'hidden' },
     };
 });
 
@@ -96,9 +96,22 @@ const StyledAccordionSummary = styled(AccordionSummary)(({ theme }) => ({
 const SummaryDetails = styled('div')(({ theme }) => ({
     display: 'flex',
     flexDirection: 'column',
+    width: '100%',
+    overflow: 'hidden',
 
-    '& .summary-details-description': { color: theme.palette.semantic.colorForegroundDeEmp },
+    '& .summary-details-description': {
+        color: theme.palette.semantic.colorForegroundDeEmp,
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        whiteSpace: 'nowrap',
+        width: '100%',
+    },
 }));
+
+const StyledAccordionDetails = styled(AccordionDetails)({
+    overflow: 'hidden',
+    width: '100%',
+});
 
 interface AccordionProps {
     summaryTitle: string;
@@ -130,9 +143,9 @@ const AutopilotChatAccordionComponent = React.forwardRef<HTMLDivElement, Accordi
                     </SummaryDetails>
                 </StyledAccordionSummary>
 
-                <AccordionDetails>
+                <StyledAccordionDetails>
                     {children}
-                </AccordionDetails>
+                </StyledAccordionDetails>
             </Accordion>
         </AccordionContainer>
     );

@@ -6,12 +6,7 @@ import {
     Theme,
 } from '@mui/material/styles';
 import token from '@uipath/apollo-core/lib';
-import {
-    AutopilotChatDisabledFeatures,
-    AutopilotChatEvent,
-    AutopilotChatInternalEvent,
-    AutopilotChatMode,
-} from '@uipath/portal-shell-util';
+import { AutopilotChatMode } from '@uipath/portal-shell-util';
 import React from 'react';
 
 import { DragHandle } from './components/common/drag-handle.react';
@@ -43,7 +38,7 @@ const ChatContainer = styled('div')<{ shouldAnimate: boolean; mode: AutopilotCha
     width: mode === AutopilotChatMode.FullScreen ? CHAT_WIDTH_FULL_SCREEN : width,
     display: 'flex',
     flexDirection: mode === AutopilotChatMode.FullScreen ? 'column' : 'row',
-    height: 'calc(100vh - 48px)', // account for global header hight
+    height: 'calc(100vh - 48px)', // account for global header height
     position: 'relative',
     boxSizing: 'border-box',
     border: `${token.Border.BorderThickS} solid ${theme.palette.semantic.colorBorderDeEmp}`,

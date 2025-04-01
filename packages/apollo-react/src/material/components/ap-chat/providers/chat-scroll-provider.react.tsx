@@ -173,6 +173,10 @@ export const AutopilotChatScrollProvider: React.FC<AutopilotChatScrollProviderPr
             setAutoScroll(true);
         });
 
+        const unsubscribeOpenConversation = chatService.on(AutopilotChatEvent.OpenConversation, () => {
+            setAutoScroll(true);
+        });
+
         return () => {
             resizeObserver.disconnect();
             overflowContainer.removeEventListener('wheel', handleWheel);
@@ -181,6 +185,7 @@ export const AutopilotChatScrollProvider: React.FC<AutopilotChatScrollProviderPr
             overflowContainer.removeEventListener('keydown', handleKeyDown);
             unsubscribeRequestIntercept();
             unsubscribeNewChat();
+            unsubscribeOpenConversation();
         };
     }, [ handleResize, handleWheel, handleKeyDown, handleMouseUp, handleMouseDown, chatService ]);
 

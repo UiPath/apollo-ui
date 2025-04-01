@@ -24,6 +24,7 @@ const MainContainer = styled('div')<{ historyOpen: boolean }>(({ historyOpen }: 
     flexDirection: 'column',
     height: '100%',
     maxHeight: '100%',
+    minWidth: '0',
     ...(historyOpen && { width: `calc(100% - ${CHAT_HISTORY_WIDTH_FULL_SCREEN}px)` }),
 }));
 
