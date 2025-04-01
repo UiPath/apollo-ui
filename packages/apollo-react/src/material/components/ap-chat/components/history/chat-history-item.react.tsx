@@ -104,12 +104,22 @@ const AutopilotChatHistoryItemComponent: React.FC<AutopilotChatHistoryItemProps>
     }, [ isFocused ]);
 
     React.useEffect(() => {
+        if (!chatService) {
+            return;
+        }
+
         const unsubscribeOpenConversation = chatService.on(AutopilotChatEvent.OpenConversation, (id) => {
-            if (!isActive && id === item.id) {
+            if (!isActive && item.id === id) {
                 setWaitingResponse(false);
             }
 
             setIsActive(id === item.id);
+        });
+
+        const unsubscribeDeleteConversation = chatService.on(AutopilotChatEvent.DeleteConversation, (id) => {
+            if (isActive && id === item.id) {
+                chatService.newChat();
+            }
         });
 
         const unsubscribeNewChat = chatService.on(AutopilotChatEvent.NewChat, () => {
@@ -118,13 +128,18 @@ const AutopilotChatHistoryItemComponent: React.FC<AutopilotChatHistoryItemProps>
 
         return () => {
             unsubscribeOpenConversation();
+            unsubscribeDeleteConversation();
             unsubscribeNewChat();
         };
     }, [ chatService, item.id, isActive, setWaitingResponse ]);
 
-    const handleDelete = React.useCallback((ev: React.MouseEvent<HTMLButtonElement>, itemId: string) => {
+    const handleDelete = React.useCallback((
+        ev: React.KeyboardEvent<HTMLButtonElement> | React.MouseEvent<HTMLButtonElement>,
+        itemId: string,
+    ) => {
         ev.stopPropagation();
         setIsFocused(false);
+
         chatService.deleteConversation(itemId);
     }, [ chatService ]);
 
@@ -169,14 +184,18 @@ const AutopilotChatHistoryItemComponent: React.FC<AutopilotChatHistoryItemProps>
                     disabled={!isHistoryOpen}
                     ref={focusButtonRef}
                     onClick={(ev) => handleDelete(ev, item.id)}
-                    onMouseDown={(ev) => {
-                        ev.preventDefault();
-                    }}
                     onFocus={() => {
                         setIsFocused(true);
                     }}
                     onBlur={() => {
                         setIsFocused(false);
+                    }}
+                    onKeyDown={(ev) => {
+                        ev.stopPropagation();
+
+                        if (ev.key === 'Enter' || ev.key === ' ') {
+                            handleDelete(ev, item.id);
+                        }
                     }}
                     iconName="delete"
                     iconSize="16px"

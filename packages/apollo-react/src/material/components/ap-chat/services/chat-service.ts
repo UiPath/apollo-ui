@@ -468,6 +468,10 @@ export class AutopilotChatService {
      * @param conversationId - The conversation ID to delete
      */
     deleteConversation(conversationId: string) {
+        if (conversationId === this._activeConversationId) {
+            this._activeConversationId = null;
+        }
+
         this._eventBus.publish(AutopilotChatEvent.DeleteConversation, conversationId);
     }
 

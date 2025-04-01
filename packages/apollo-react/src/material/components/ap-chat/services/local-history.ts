@@ -283,7 +283,6 @@ export class LocalHistoryService {
                 unsubscribeNewChat = chatService.on(AutopilotChatEvent.NewChat, async () => {
                     LocalHistoryService.ACTIVE_CONVERSATION_ID = null;
                     StorageService.Instance.remove(CHAT_ACTIVE_CONVERSATION_ID_KEY);
-                    chatService.setConversation([]);
                 });
 
                 unsubscribeDeleteConversation = chatService.on(AutopilotChatEvent.DeleteConversation, async (id) => {
@@ -292,7 +291,6 @@ export class LocalHistoryService {
                     if (LocalHistoryService.ACTIVE_CONVERSATION_ID === id) {
                         LocalHistoryService.ACTIVE_CONVERSATION_ID = null;
                         StorageService.Instance.remove(CHAT_ACTIVE_CONVERSATION_ID_KEY);
-                        chatService.setConversation([]);
                     }
 
                     chatService.setHistory(await LocalHistoryService.getAllConversations());

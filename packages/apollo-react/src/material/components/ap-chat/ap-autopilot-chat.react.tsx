@@ -48,7 +48,7 @@ const ChatContainer = styled('div')<{ shouldAnimate: boolean; mode: AutopilotCha
     ...(mode === AutopilotChatMode.Closed && { display: 'none' }),
 }));
 
-function AutopilotChatContent() {
+const AutopilotChatContent = React.memo(() => {
     const {
         width, shouldAnimate,
     } = useChatWidth();
@@ -83,7 +83,7 @@ function AutopilotChatContent() {
             )}
         </ChatContainer>
     );
-}
+});
 
 export function ApAutopilotChatReact() {
     return (

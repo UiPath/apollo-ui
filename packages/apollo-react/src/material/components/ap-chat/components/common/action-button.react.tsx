@@ -45,6 +45,7 @@ interface AutopilotChatActionButtonProps {
     onFocus?: (event: React.FocusEvent<HTMLButtonElement>) => void;
     onBlur?: (event: React.FocusEvent<HTMLButtonElement>) => void;
     onMouseDown?: (event: React.MouseEvent<HTMLButtonElement>) => void;
+    onKeyDown?: (event: React.KeyboardEvent<HTMLButtonElement>) => void;
 }
 
 const AutopilotChatActionButtonComponent = React.forwardRef<HTMLButtonElement, AutopilotChatActionButtonProps>(({
@@ -55,6 +56,7 @@ const AutopilotChatActionButtonComponent = React.forwardRef<HTMLButtonElement, A
     onFocus,
     onBlur,
     onMouseDown,
+    onKeyDown,
     preventHover,
     overrideColor,
     variant = 'outlined',
@@ -91,6 +93,7 @@ const AutopilotChatActionButtonComponent = React.forwardRef<HTMLButtonElement, A
                 onBlur={onBlur}
                 onMouseDown={onMouseDown}
                 tabIndex={tabIndex}
+                onKeyDown={onKeyDown}
             />
         </StyledButtonContainer>
     ) : (
@@ -103,6 +106,7 @@ const AutopilotChatActionButtonComponent = React.forwardRef<HTMLButtonElement, A
             onBlur={onBlur}
             onMouseDown={onMouseDown}
             tabIndex={tabIndex}
+            onKeyDown={onKeyDown}
             aria-label={ariaLabel}
             {...(!preventHover && {
                 onMouseEnter: () => setIconColor('var(--color-foreground-emp)'),
