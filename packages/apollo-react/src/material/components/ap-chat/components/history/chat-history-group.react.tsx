@@ -17,9 +17,12 @@ const GroupTitle = styled('div')(() => ({ padding: `${token.Padding.PadXl} ${tok
 
 interface AutopilotChatHistoryGroupProps {
     group: ChatHistoryGroup;
+    isHistoryOpen: boolean;
 }
 
-const AutopilotChatHistoryGroupComponent: React.FC<AutopilotChatHistoryGroupProps> = ({ group }) => {
+const AutopilotChatHistoryGroupComponent: React.FC<AutopilotChatHistoryGroupProps> = ({
+    group, isHistoryOpen,
+}) => {
     const theme = useTheme();
 
     return (
@@ -35,6 +38,7 @@ const AutopilotChatHistoryGroupComponent: React.FC<AutopilotChatHistoryGroupProp
                     <AutopilotChatHistoryItem
                         key={item.id}
                         item={item}
+                        isHistoryOpen={isHistoryOpen}
                     />
                 ))}
             </div>

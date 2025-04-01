@@ -76,8 +76,7 @@ function AutopilotChatScrollToBottomButtonComponent({
                     const rect = containerRef.current.getBoundingClientRect();
 
                     if (!bottom) {
-                        const spacing = parseInt(token.Spacing.SpacingXs, 10);
-                        setBottom(Math.round(window.innerHeight - rect.bottom + spacing));
+                        setBottom(Math.round(window.innerHeight - rect.bottom));
                     }
 
                     setLeft(Math.round(rect.left + rect.width / 2));

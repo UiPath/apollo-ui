@@ -9,20 +9,20 @@ import {
     CHAT_WIDTH_SIDE_BY_SIDE_MIN,
 } from '../utils/constants';
 
-interface ChatWidthContextType {
+interface AutopilotChatWidthContextType {
     width: number;
     setWidth: (width: number) => void;
     shouldAnimate: boolean;
     setShouldAnimate: (shouldAnimate: boolean) => void;
 }
 
-export const ChatWidthContext = React.createContext<ChatWidthContextType | null>(null);
+export const AutopilotChatWidthContext = React.createContext<AutopilotChatWidthContextType | null>(null);
 
-interface ChatWidthProviderProps {
+interface AutopilotChatWidthProviderProps {
     children: React.ReactNode;
 }
 
-export function ChatWidthProvider({ children }: ChatWidthProviderProps) {
+export function AutopilotChatWidthProvider({ children }: AutopilotChatWidthProviderProps) {
     const storage = StorageService.Instance;
     const [ width, setWidth ] = React.useState(() => {
         const savedWidth = storage.get(CHAT_WIDTH_KEY);
@@ -39,17 +39,17 @@ export function ChatWidthProvider({ children }: ChatWidthProviderProps) {
     }), [ width, shouldAnimate ]);
 
     return (
-        <ChatWidthContext.Provider value={value}>
+        <AutopilotChatWidthContext.Provider value={value}>
             {children}
-        </ChatWidthContext.Provider>
+        </AutopilotChatWidthContext.Provider>
     );
 }
 
 export function useChatWidth() {
-    const context = React.useContext(ChatWidthContext);
+    const context = React.useContext(AutopilotChatWidthContext);
 
     if (!context) {
-        throw new Error('useChatWidth must be used within a ChatWidthProvider');
+        throw new Error('useChatWidth must be used within a AutopilotChatWidthProvider');
     }
 
     return context;

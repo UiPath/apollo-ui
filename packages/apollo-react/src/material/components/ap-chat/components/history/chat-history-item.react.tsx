@@ -14,6 +14,7 @@ import {
 import React from 'react';
 
 import { t } from '../../../../utils/localization/loc';
+import { useChatState } from '../../providers/chat-state-provider.react';
 import { useLoading } from '../../providers/loading-provider.react';
 import { AutopilotChatService } from '../../services/chat-service';
 import { AutopilotChatActionButton } from '../common/action-button.react';
@@ -50,14 +51,17 @@ const GroupTitle = styled('div')(() => ({
 
 interface AutopilotChatHistoryItemProps {
     item: AutopilotChatHistory;
+    isHistoryOpen: boolean;
 }
 
-const AutopilotChatHistoryItemComponent: React.FC<AutopilotChatHistoryItemProps> = ({ item }) => {
+const AutopilotChatHistoryItemComponent: React.FC<AutopilotChatHistoryItemProps> = ({
+    item, isHistoryOpen,
+}) => {
     const theme = useTheme();
     const chatService = AutopilotChatService.Instance;
     const [ isActive, setIsActive ] = React.useState(chatService.activeConversationId === item.id);
-    const [ isFullScreen, setIsFullScreen ] = React.useState(chatService?.getConfig()?.mode === AutopilotChatMode.FullScreen);
     const { setWaitingResponse } = useLoading();
+    const { chatMode } = useChatState();
 
     const [ isRemoveIconVisible, setIsRemoveIconVisible ] = React.useState(false);
     const [ isFocused, setIsFocused ] = React.useState(false);
@@ -108,17 +112,12 @@ const AutopilotChatHistoryItemComponent: React.FC<AutopilotChatHistoryItemProps>
             setIsActive(id === item.id);
         });
 
-        const unsubscribeModeChange = chatService.on(AutopilotChatEvent.ModeChange, (mode) => {
-            setIsFullScreen(mode === AutopilotChatMode.FullScreen);
-        });
-
         const unsubscribeNewChat = chatService.on(AutopilotChatEvent.NewChat, () => {
             setIsActive(false);
         });
 
         return () => {
             unsubscribeOpenConversation();
-            unsubscribeModeChange();
             unsubscribeNewChat();
         };
     }, [ chatService, item.id, isActive, setWaitingResponse ]);
@@ -136,10 +135,10 @@ const AutopilotChatHistoryItemComponent: React.FC<AutopilotChatHistoryItemProps>
 
         chatService.openConversation(itemId);
 
-        if (!isFullScreen) {
+        if (chatMode !== AutopilotChatMode.FullScreen) {
             chatService.toggleHistory(false);
         }
-    }, [ chatService, isFullScreen, isActive ]);
+    }, [ chatService, chatMode, isActive ]);
 
     React.useEffect(() => {
         if (isFocused) {
@@ -167,6 +166,7 @@ const AutopilotChatHistoryItemComponent: React.FC<AutopilotChatHistoryItemProps>
 
             <div className="delete-button-wrapper">
                 <AutopilotChatActionButton
+                    disabled={!isHistoryOpen}
                     ref={focusButtonRef}
                     onClick={(ev) => handleDelete(ev, item.id)}
                     onMouseDown={(ev) => {
@@ -180,7 +180,7 @@ const AutopilotChatHistoryItemComponent: React.FC<AutopilotChatHistoryItemProps>
                     }}
                     iconName="delete"
                     iconSize="16px"
-                    tooltip={isRemoveIconVisible || isFocused ? t('autopilot-chat-delete-history') : ''}
+                    tooltip={(isRemoveIconVisible || isFocused) && isHistoryOpen ? t('autopilot-chat-delete-history') : ''}
                 />
             </div>
         </GroupItem>

@@ -14,6 +14,7 @@ import {
 import React, { useState } from 'react';
 
 import { t } from '../../../../../utils/localization/loc';
+import { useChatState } from '../../../providers/chat-state-provider.react';
 import { AutopilotChatService } from '../../../services/chat-service';
 
 const FREContainer = styled('div')(() => ({
@@ -61,26 +62,8 @@ const Suggestion = styled('div')(({ theme }) => ({
 
 function AutopilotChatFREComponent() {
     const theme = useTheme();
+    const { firstRunExperience } = useChatState();
     const chatService = AutopilotChatService.Instance;
-    const [ firstRunConfig, setFirstRunConfig ] = useState<
-    AutopilotChatConfiguration['firstRunExperience'] | undefined
-    >(chatService?.getConfig?.()?.firstRunExperience);
-
-    React.useEffect(() => {
-        if (!chatService) {
-            return;
-        }
-
-        const unsubscribe = chatService.on(AutopilotChatEvent.SetFirstRunExperience, (config) => {
-            if (config) {
-                setFirstRunConfig(config);
-            }
-        });
-
-        return () => {
-            unsubscribe();
-        };
-    }, [ chatService ]);
 
     const handleSuggestionClick = React.useCallback(
         (
@@ -100,7 +83,7 @@ function AutopilotChatFREComponent() {
         }
     }, [ handleSuggestionClick ]);
 
-    if (!firstRunConfig) {
+    if (!firstRunExperience) {
         return null;
     }
 
@@ -111,17 +94,17 @@ function AutopilotChatFREComponent() {
                     variant={FontVariantToken.fontSizeH4}
                     color={theme.palette.semantic.colorForeground}
                 >
-                    {firstRunConfig.title}
+                    {firstRunExperience.title}
                 </ap-typography>
                 <ap-typography
                     variant={FontVariantToken.fontSizeM}
                     color={theme.palette.semantic.colorForegroundDeEmp}
                 >
-                    {firstRunConfig.description}
+                    {firstRunExperience.description}
                 </ap-typography>
             </FREHeader>
 
-            {firstRunConfig.suggestions && firstRunConfig.suggestions.length > 0 && (
+            {firstRunExperience.suggestions && firstRunExperience.suggestions.length > 0 && (
                 <>
                     <SuggestionsHeader>
                         <ap-typography variant={FontVariantToken.fontSizeMBold}>
@@ -129,7 +112,7 @@ function AutopilotChatFREComponent() {
                         </ap-typography>
                     </SuggestionsHeader>
                     <SuggestionList>
-                        {firstRunConfig.suggestions.map((suggestion) => (
+                        {firstRunExperience.suggestions.map((suggestion) => (
                             <Suggestion
                                 onKeyDown={(event) => handleSuggestionKeyDown(event, suggestion)}
                                 onClick={(event) => handleSuggestionClick(event, suggestion)}

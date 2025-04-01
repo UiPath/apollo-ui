@@ -9,7 +9,7 @@ import {
 } from '@uipath/portal-shell-util';
 import React from 'react';
 
-import { ChatScrollProvider } from '../../providers/chat-scroll-provider.react';
+import { AutopilotChatScrollProvider } from '../../providers/chat-scroll-provider.react';
 import { AutopilotChatInternalService } from '../../services/chat-internal-service';
 import {
     CHAT_CONTAINER_ANIMATION_DURATION,
@@ -89,9 +89,9 @@ export const FullScreenLayout: React.FC<LayoutProps> = ({
 
             <ContentContainer>
                 <MainContainer ref={mainContainerRef} historyOpen={historyOpen}>
-                    <ChatScrollProvider>
+                    <AutopilotChatScrollProvider>
                         <ChatScrollContainer mode={mode} />
-                    </ChatScrollProvider>
+                    </AutopilotChatScrollProvider>
 
                     <InputBackground>
                         <InputContainer>

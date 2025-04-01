@@ -26,7 +26,9 @@ const ActionsContainer = styled('div')(() => ({
     gap: token.Spacing.SpacingXs,
 }));
 
-const AutopilotChatHistoryHeaderComponent: React.FC<{ isFullScreen: boolean }> = ({ isFullScreen }) => {
+const AutopilotChatHistoryHeaderComponent: React.FC<{ isFullScreen: boolean; isHistoryOpen: boolean }> = ({
+    isFullScreen, isHistoryOpen,
+}) => {
     const theme = useTheme();
     const chatService = AutopilotChatService.Instance;
 
@@ -44,9 +46,10 @@ const AutopilotChatHistoryHeaderComponent: React.FC<{ isFullScreen: boolean }> =
 
             <ActionsContainer>
                 <AutopilotChatActionButton
+                    disabled={!isHistoryOpen}
                     iconName={isFullScreen ? 'right_panel_close' : 'chevron_left'}
                     onClick={handleCloseHistory}
-                    tooltip={t('autopilot-chat-hide-history')}
+                    tooltip={isHistoryOpen ? t('autopilot-chat-hide-history') : ''}
                     {...(isFullScreen && { variant: 'custom' })}
                 />
 

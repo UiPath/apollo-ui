@@ -16,6 +16,7 @@ import {
 
 import { t } from '../../../../utils/localization/loc';
 import { useAttachments } from '../../providers/attachements-provider.react';
+import { useChatState } from '../../providers/chat-state-provider.react';
 import { useError } from '../../providers/error-provider.react';
 import { AutopilotChatService } from '../../services/chat-service';
 import {
@@ -60,20 +61,7 @@ function AutopilotChatDropzoneComponent({
     const theme = useTheme();
     const { addAttachments } = useAttachments();
     const { setError } = useError();
-    const chatService = AutopilotChatService.Instance;
-    const [ isDisabled, setIsDisabled ] = React.useState(chatService?.getConfig()?.disabledFeatures?.attachments);
-
-    React.useEffect(() => {
-        if (!chatService) {
-            return;
-        }
-
-        const unsubscribeDisabledFeatures = chatService.on(AutopilotChatEvent.SetDisabledFeatures, (disabledFeatures) => {
-            setIsDisabled(disabledFeatures.attachments);
-        });
-
-        return unsubscribeDisabledFeatures;
-    }, [ chatService ]);
+    const { disabledFeatures } = useChatState();
 
     const handleDrop = React.useCallback(async (files: File[], fileRejections: FileRejection[]) => {
         try {
@@ -99,7 +87,7 @@ function AutopilotChatDropzoneComponent({
         ...dropzoneOptions,
     });
 
-    if (isDisabled) {
+    if (disabledFeatures.attachments) {
         return children;
     }
 

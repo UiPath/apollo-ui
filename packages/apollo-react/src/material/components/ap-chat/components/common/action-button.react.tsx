@@ -3,16 +3,13 @@
 
 import { styled } from '@mui/material';
 import token from '@uipath/apollo-core/lib';
-import {
-    AutopilotChatEvent,
-    AutopilotChatMode,
-} from '@uipath/portal-shell-util';
+import { AutopilotChatMode } from '@uipath/portal-shell-util';
 import React from 'react';
 
 import { ApButtonReact } from '../../../ap-button/ap-button.react';
 import { ApIconButtonReact } from '../../../ap-icon-button/ap-icon-button.react';
 import { ApTooltipReact } from '../../../ap-tooltip/ap-tooltip.react';
-import { AutopilotChatService } from '../../services/chat-service';
+import { useChatState } from '../../providers/chat-state-provider.react';
 
 const StyledButtonContainer = styled('div')(() => ({
     '& .MuiButton-root': {
@@ -66,21 +63,8 @@ const AutopilotChatActionButtonComponent = React.forwardRef<HTMLButtonElement, A
     ariaLabel,
     tabIndex,
 }, ref) => {
-    const chatService = AutopilotChatService.Instance;
     const [ iconColor, setIconColor ] = React.useState('var(--color-icon-default)');
-    const [ isClosed, setIsClosed ] = React.useState(chatService?.getConfig?.()?.mode === AutopilotChatMode.Closed);
-
-    React.useEffect(() => {
-        if (!chatService) {
-            return;
-        }
-
-        const unsubscribeModeChange = chatService.on(AutopilotChatEvent.ModeChange, (mode) => {
-            setIsClosed(mode === AutopilotChatMode.Closed);
-        });
-
-        return () => unsubscribeModeChange();
-    }, [ chatService ]);
+    const { chatMode } = useChatState();
 
     const button = text ? (
         <StyledButtonContainer>
@@ -135,7 +119,7 @@ const AutopilotChatActionButtonComponent = React.forwardRef<HTMLButtonElement, A
     );
 
     // Issue with tooltip when the display of the ref is set to none
-    return tooltip && !isClosed ? (
+    return tooltip && chatMode !== AutopilotChatMode.Closed ? (
         <ApTooltipReact disabled={disabled} content={tooltip}>
             {button}
         </ApTooltipReact>

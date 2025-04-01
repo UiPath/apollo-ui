@@ -3,16 +3,12 @@
 
 import { styled } from '@mui/material/styles';
 import token from '@uipath/apollo-core/lib';
-import {
-    AutopilotChatDisabledFeatures,
-    AutopilotChatEvent,
-    AutopilotChatMode,
-} from '@uipath/portal-shell-util';
+import { AutopilotChatMode } from '@uipath/portal-shell-util';
 import React from 'react';
 
 import { t } from '../../../../utils/localization/loc';
 import { useAttachments } from '../../providers/attachements-provider.react';
-import { AutopilotChatInternalService } from '../../services/chat-internal-service';
+import { useChatState } from '../../providers/chat-state-provider.react';
 import { AutopilotChatService } from '../../services/chat-service';
 import { StorageService } from '../../services/storage';
 import { CHAT_MODE_KEY } from '../../utils/constants';
@@ -26,36 +22,9 @@ const StyledActions = styled('div')(() => ({
 
 function AutopilotChatHeaderActionsComponent() {
     const chatService = AutopilotChatService.Instance;
-    const internalService = AutopilotChatInternalService.Instance;
+    const { disabledFeatures } = useChatState();
     const [ isFullScreen, setIsFullScreen ] = React.useState(StorageService.Instance.get(CHAT_MODE_KEY) === AutopilotChatMode.FullScreen);
-    const [ disabledFullScreen, setDisabledFullScreen ] = React.useState(
-        chatService?.getConfig?.()?.disabledFeatures?.fullScreen ?? false,
-    );
-    const [ disabledHistory, setDisabledHistory ] = React.useState(
-        chatService?.getConfig?.()?.disabledFeatures?.history ?? false,
-    );
     const { clearAttachments } = useAttachments();
-
-    React.useEffect(() => {
-        if (!chatService) {
-            return;
-        }
-
-        const unsubscribeModeChange = chatService.on(AutopilotChatEvent.ModeChange, (mode) => {
-            setIsFullScreen(mode === AutopilotChatMode.FullScreen);
-        });
-
-        const unsubscribeSetDisabledFeatures = chatService.on(AutopilotChatEvent.SetDisabledFeatures,
-            (features: AutopilotChatDisabledFeatures) => {
-                setDisabledFullScreen(features?.fullScreen ?? false);
-                setDisabledHistory(features?.history ?? false);
-            });
-
-        return () => {
-            unsubscribeModeChange();
-            unsubscribeSetDisabledFeatures();
-        };
-    }, [ chatService, internalService ]);
 
     const handleClose = React.useCallback(() => {
         chatService?.close();
@@ -94,7 +63,7 @@ function AutopilotChatHeaderActionsComponent() {
                 onClick={handleNewChat}
             />
 
-            {!disabledHistory && (
+            {!disabledFeatures.history && (
                 <AutopilotChatActionButton
                     iconName="history"
                     variant="custom"
@@ -103,7 +72,7 @@ function AutopilotChatHeaderActionsComponent() {
                 />
             )}
 
-            {!disabledFullScreen && (
+            {!disabledFeatures.fullScreen && (
                 <AutopilotChatActionButton
                     iconName={!isFullScreen ? 'open_in_full' : 'close_fullscreen'}
                     tooltip={!isFullScreen ? t('autopilot-chat-expand') : t('autopilot-chat-collapse')}

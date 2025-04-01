@@ -14,6 +14,7 @@ import React from 'react';
 
 import { t } from '../../../../utils/localization/loc';
 import { useAttachments } from '../../providers/attachements-provider.react';
+import { useChatState } from '../../providers/chat-state-provider.react';
 import { useError } from '../../providers/error-provider.react';
 import { AutopilotChatService } from '../../services/chat-service';
 import { ACCEPTED_FILE_EXTENSIONS } from '../../utils/constants';
@@ -58,10 +59,7 @@ function AutopilotChatInputActionsComponent({
     const theme = useTheme();
     const { addAttachments } = useAttachments();
     const { setError } = useError();
-    const chatService = AutopilotChatService.Instance;
-    const [ disabledAttachments, setDisabledAttachments ] = React.useState(
-        chatService?.getConfig?.()?.disabledFeatures?.attachments ?? false,
-    );
+    const { disabledFeatures } = useChatState();
 
     const fileInputRef = React.useRef<HTMLInputElement>(null);
 
@@ -83,25 +81,10 @@ function AutopilotChatInputActionsComponent({
         }
     }, [ addAttachments, setError ]);
 
-    React.useEffect(() => {
-        if (!chatService) {
-            return;
-        }
-
-        const unsubscribe = chatService.on(AutopilotChatEvent.SetDisabledFeatures,
-            (features: AutopilotChatDisabledFeatures) => {
-                setDisabledAttachments(features?.attachments ?? false);
-            });
-
-        return () => {
-            unsubscribe();
-        };
-    }, [ chatService ]);
-
     return (
         <InputActionsContainer>
             <InputActionsGroup>
-                {!disabledAttachments && (
+                {!disabledFeatures.attachments && (
                     <>
                         <input
                             type="file"

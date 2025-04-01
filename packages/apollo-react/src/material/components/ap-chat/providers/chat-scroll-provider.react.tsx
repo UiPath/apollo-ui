@@ -11,20 +11,20 @@ import { AutopilotChatService } from '../services/chat-service';
 import { CHAT_SCROLL_BOTTOM_BUFFER } from '../utils/constants';
 import { useStreaming } from './streaming-provider.react';
 
-interface ChatScrollContextType {
+interface AutopilotChatScrollContextType {
     autoScroll: boolean;
     scrollToBottom: (options?: { force?: boolean; behavior?: ScrollBehavior }) => void;
     overflowContainerRef: React.RefObject<HTMLDivElement>;
     contentRef: React.RefObject<HTMLDivElement>;
 }
 
-const ChatScrollContext = React.createContext<ChatScrollContextType | null>(null);
+const AutopilotChatScrollContext = React.createContext<AutopilotChatScrollContextType | null>(null);
 
-interface ChatScrollProviderProps {
+interface AutopilotChatScrollProviderProps {
     children: React.ReactNode;
 }
 
-export const ChatScrollProvider: React.FC<ChatScrollProviderProps> = ({ children }) => {
+export const AutopilotChatScrollProvider: React.FC<AutopilotChatScrollProviderProps> = ({ children }) => {
     const chatService = AutopilotChatService.Instance;
 
     const overflowContainerRef = React.useRef<HTMLDivElement>(null);
@@ -192,17 +192,17 @@ export const ChatScrollProvider: React.FC<ChatScrollProviderProps> = ({ children
     }), [ autoScroll, scrollToBottom, overflowContainerRef, contentRef ]);
 
     return (
-        <ChatScrollContext.Provider value={value}>
+        <AutopilotChatScrollContext.Provider value={value}>
             {children}
-        </ChatScrollContext.Provider>
+        </AutopilotChatScrollContext.Provider>
     );
 };
 
 export const useChatScroll = () => {
-    const context = React.useContext(ChatScrollContext);
+    const context = React.useContext(AutopilotChatScrollContext);
 
     if (!context) {
-        throw new Error('useChatScroll must be used within a ChatScrollProvider');
+        throw new Error('useChatScroll must be used within a AutopilotChatScrollProvider');
     }
 
     return context;

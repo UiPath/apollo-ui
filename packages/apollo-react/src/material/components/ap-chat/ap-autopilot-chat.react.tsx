@@ -22,14 +22,16 @@ import {
 } from './components/layout';
 import { AutopilotAttachmentsProvider } from './providers/attachements-provider.react';
 import {
-    ChatWidthProvider,
+    AutopilotChatStateProvider,
+    useChatState,
+} from './providers/chat-state-provider.react';
+import {
+    AutopilotChatWidthProvider,
     useChatWidth,
 } from './providers/chat-width-provider.react';
 import { AutopilotErrorProvider } from './providers/error-provider.react';
 import { AutopilotLoadingProvider } from './providers/loading-provider.react';
 import { AutopilotStreamingProvider } from './providers/streaming-provider.react';
-import { AutopilotChatInternalService } from './services/chat-internal-service';
-import { AutopilotChatService } from './services/chat-service';
 import {
     CHAT_CONTAINER_ANIMATION_DURATION,
     CHAT_WIDTH_FULL_SCREEN,
@@ -52,66 +54,36 @@ const ChatContainer = styled('div')<{ shouldAnimate: boolean; mode: AutopilotCha
 }));
 
 function AutopilotChatContent() {
-    const [ mode, setMode ] = React.useState<AutopilotChatMode>(
-        AutopilotChatService.Instance?.getConfig?.()?.mode ?? AutopilotChatMode.SideBySide,
-    );
-    const chatService = AutopilotChatService.Instance;
-    const internalService = AutopilotChatInternalService.Instance;
-    const [ historyDisabled, setHistoryDisabled ] = React.useState(chatService?.getConfig?.()?.disabledFeatures?.history ?? false);
-    const [ historyOpen, setHistoryOpen ] = React.useState(chatService?.historyOpen ?? false);
     const {
         width, shouldAnimate,
     } = useChatWidth();
-    const isFullScreen = mode === AutopilotChatMode.FullScreen;
-
-    React.useEffect(() => {
-        if (!chatService || !internalService) {
-            return;
-        }
-
-        const unsubscribeSetDisabledFeatures = chatService.on(
-            AutopilotChatEvent.SetDisabledFeatures,
-            (features: AutopilotChatDisabledFeatures) => {
-                setHistoryDisabled(features?.history ?? false);
-            },
-        );
-
-        const unsubscribeToggleHistory = internalService.on(AutopilotChatInternalEvent.ToggleHistory, (open) => {
-            setHistoryOpen(open);
-        });
-
-        const unsubscribeModeChange = chatService.on(AutopilotChatEvent.ModeChange, (chatMode) => {
-            setMode(chatMode);
-        });
-
-        return () => {
-            unsubscribeModeChange();
-            unsubscribeSetDisabledFeatures();
-            unsubscribeToggleHistory();
-        };
-    }, [ chatService, internalService ]);
+    const {
+        historyOpen,
+        disabledFeatures,
+        chatMode,
+    } = useChatState();
 
     return (
         <ChatContainer
             shouldAnimate={shouldAnimate}
-            mode={mode}
+            mode={chatMode}
             width={width}
         >
-            { mode === AutopilotChatMode.SideBySide && (
+            { chatMode === AutopilotChatMode.SideBySide && (
                 <DragHandle/>
             )}
 
-            {isFullScreen ? (
+            {chatMode === AutopilotChatMode.FullScreen ? (
                 <FullScreenLayout
                     historyOpen={historyOpen}
-                    historyDisabled={historyDisabled}
-                    mode={mode}
+                    historyDisabled={disabledFeatures.history ?? false}
+                    mode={chatMode}
                 />
             ) : (
                 <StandardLayout
                     historyOpen={historyOpen}
-                    historyDisabled={historyDisabled}
-                    mode={mode}
+                    historyDisabled={disabledFeatures.history ?? false}
+                    mode={chatMode}
                 />
             )}
         </ChatContainer>
@@ -120,18 +92,20 @@ function AutopilotChatContent() {
 
 export function ApAutopilotChatReact() {
     return (
-        <AutopilotErrorProvider>
-            <AutopilotLoadingProvider>
-                <AutopilotStreamingProvider>
-                    <AutopilotAttachmentsProvider>
-                        <ChatWidthProvider>
-                            <AutopilotChatDropzone>
-                                <AutopilotChatContent />
-                            </AutopilotChatDropzone>
-                        </ChatWidthProvider>
-                    </AutopilotAttachmentsProvider>
-                </AutopilotStreamingProvider>
-            </AutopilotLoadingProvider>
-        </AutopilotErrorProvider>
+        <AutopilotChatStateProvider>
+            <AutopilotErrorProvider>
+                <AutopilotLoadingProvider>
+                    <AutopilotStreamingProvider>
+                        <AutopilotAttachmentsProvider>
+                            <AutopilotChatWidthProvider>
+                                <AutopilotChatDropzone>
+                                    <AutopilotChatContent />
+                                </AutopilotChatDropzone>
+                            </AutopilotChatWidthProvider>
+                        </AutopilotAttachmentsProvider>
+                    </AutopilotStreamingProvider>
+                </AutopilotLoadingProvider>
+            </AutopilotErrorProvider>
+        </AutopilotChatStateProvider>
     );
 }

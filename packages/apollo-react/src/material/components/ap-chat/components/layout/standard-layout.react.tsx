@@ -5,7 +5,7 @@ import { styled } from '@mui/material/styles';
 import token from '@uipath/apollo-core/lib';
 import React from 'react';
 
-import { ChatScrollProvider } from '../../providers/chat-scroll-provider.react';
+import { AutopilotChatScrollProvider } from '../../providers/chat-scroll-provider.react';
 import {
     CHAT_HISTORY_WIDTH_FULL_SCREEN,
     CHAT_WIDTH_FULL_SCREEN_MAX_WIDTH,
@@ -55,9 +55,9 @@ export const StandardLayout: React.FC<LayoutProps> = ({
                     <AutopilotChatHeader />
                 </HeaderContainer>
 
-                <ChatScrollProvider>
+                <AutopilotChatScrollProvider>
                     <ChatScrollContainer mode={mode} />
-                </ChatScrollProvider>
+                </AutopilotChatScrollProvider>
 
                 <InputBackground>
                     <InputContainer>

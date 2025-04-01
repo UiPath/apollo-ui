@@ -24,6 +24,7 @@ import React, {
 
 import { t } from '../../../../utils/localization/loc';
 import { ApTextFieldReact } from '../../../ap-text-field/ap-text-field.react';
+import { useChatState } from '../../providers/chat-state-provider.react';
 import { AutopilotChatInternalService } from '../../services/chat-internal-service';
 import { AutopilotChatService } from '../../services/chat-service';
 import { CHAT_HISTORY_WIDTH_FULL_SCREEN } from '../../utils/constants';
@@ -94,6 +95,7 @@ const AutopilotChatHistoryComponent: React.FC<AutopilotChatHistoryProps> = ({
     const [ history, setHistory ] = useState<AutopilotChatHistoryType[]>(chatService?.getHistory() ?? []);
     const [ searchQuery, setSearchQuery ] = useState('');
     const [ groupedHistory, setGroupedHistory ] = useState<ChatHistoryGroup[]>([]);
+    const { historyOpen } = useChatState();
 
     useEffect(() => {
         if (!chatService || !internalService) {
@@ -167,11 +169,12 @@ const AutopilotChatHistoryComponent: React.FC<AutopilotChatHistoryProps> = ({
     return (
         <FocusTrap active={open && !isFullScreen} focusTrapOptions={{ allowOutsideClick: true }}>
             <ChatHistoryContainer isOpen={open} isFullScreen={isFullScreen}>
-                <AutopilotChatHistoryHeader isFullScreen={isFullScreen}/>
+                <AutopilotChatHistoryHeader isFullScreen={isFullScreen} isHistoryOpen={historyOpen}/>
 
                 { history.length > 0 ? (
                     <>
                         <ApTextFieldReact
+                            disabled={!historyOpen}
                             className="chat-history-search"
                             size="small"
                             startAdornment={<SearchIcon />}
@@ -183,7 +186,7 @@ const AutopilotChatHistoryComponent: React.FC<AutopilotChatHistoryProps> = ({
                         />
                         <div className="chat-history-content">
                             {groupedHistory.map((group) => (
-                                <AutopilotChatHistoryGroup key={group.title} group={group} />
+                                <AutopilotChatHistoryGroup key={group.title} group={group} isHistoryOpen={historyOpen}/>
                             ))}
                         </div>
                     </>
