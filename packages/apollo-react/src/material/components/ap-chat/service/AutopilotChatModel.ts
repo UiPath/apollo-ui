@@ -44,6 +44,9 @@ export enum AutopilotChatRole {
  * @property fakeStream - Temporary flag used to simulate streaming for a complete message (will be ignored for requests)
  * @property stream - Flag used to stream a chunk (will be ignored for requests)
  * @property done - Flag to determine if the message is the last chunk of a streaming response
+ * @property actions - Additional actions on top of DefaultAutopilotChatResponseAction (for responses)
+ *           and DefaultAutopilotChatRequestAction (for requests)
+ * @property feedback - Feedback for the message (thumbs up or thumbs down)
  * @property meta - Optional metadata for the message (additional information about the message)
  */
 export interface AutopilotChatMessage {
@@ -57,6 +60,8 @@ export interface AutopilotChatMessage {
     fakeStream?: boolean;
     stream?: boolean;
     done?: boolean;
+    actions?: AutopilotChatMessageAction[];
+    feedback?: Omit<AutopilotChatFeedback, 'message'>;
     meta?: any;
 }
 
@@ -96,6 +101,8 @@ export interface AutopilotChatMessageRenderer {
  * @property {string} SetHistory - Emitted when the history is set
  * @property {string} DeleteConversation - Emitted when a conversation is deleted from the history list
  * @property {string} OpenConversation - Emitted when a conversation is opened (clicked on in the history list)
+ * @property {string} Feedback - Emitted when a feedback is sent (thumbs up or thumbs down)
+ * @property {string} Copy - Emitted when a message is copied
  */
 export enum AutopilotChatEvent {
     Error = 'error',
@@ -114,6 +121,8 @@ export enum AutopilotChatEvent {
     SetHistory = 'setHistory',
     DeleteConversation = 'deleteConversation',
     OpenConversation = 'openConversation',
+    Feedback = 'feedback',
+    Copy = 'copy',
 }
 
 /**
@@ -147,7 +156,11 @@ export enum AutopilotChatInternalEvent {
 
 export type AutopilotChatEventHandler<T = any> = (data?: T) => void;
 
-/** @returns true if the event is hijacked and should not be processed by apollo */
+/**
+ * @returns true if the event is hijacked by an interceptor
+ * @returns void if the event is not hijacked
+ * @returns a promise that resolves to true if the event is hijacked
+ */
 export type AutopilotChatEventInterceptor<T = any> = (data?: T) => boolean | Promise<boolean> | void;
 
 /**
@@ -208,3 +221,41 @@ export interface AutopilotChatHistory {
     timestamp: string;
 }
 
+/**
+ * Represents an action for a message in the Autopilot Chat.
+ *
+ * @property name - The name of the action
+ * @property label - The label of the action
+ * @property icon - The icon of the action
+ * @property showInOverflow - Whether the action should be shown in the overflow menu instead of the main toolbar
+ * @property disabled - Whether the action should be disabled (useful for feedback)
+ * @property onClick - The function to call when the action is clicked
+ */
+export interface AutopilotChatMessageAction {
+    name: string;
+    label: string;
+    icon?: string;
+    showInOverflow?: boolean;
+    disabled?: boolean;
+    onClick?: (message: AutopilotChatMessage, action: AutopilotChatMessageAction) => void;
+}
+
+/**
+ * Represents a feedback for the Autopilot Chat.
+ *
+ * @property message - The message that was sent
+ * @property isPositive - Whether the user gave positive (true) or negative (false) feedback
+ */
+export interface AutopilotChatFeedback {
+    message: AutopilotChatMessage;
+    isPositive: boolean;
+}
+
+/**
+ * Represents a copy event for the Autopilot Chat.
+ *
+ * @property message - The message that should be copied
+ */
+export interface AutopilotChatCopy {
+    message: AutopilotChatMessage;
+}
