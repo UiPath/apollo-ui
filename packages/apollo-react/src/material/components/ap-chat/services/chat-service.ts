@@ -306,6 +306,7 @@ export class AutopilotChatService {
             widget: DEFAULT_MESSAGE_RENDERER,
         };
 
+        this.setPrompt('');
         this._conversation.push(userMessage);
         this._eventBus.publish(AutopilotChatEvent.Request, userMessage);
     }
