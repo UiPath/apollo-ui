@@ -37,11 +37,13 @@ function AutopilotChatMessageActionsComponent({
         if (message.role === AutopilotChatRole.Assistant) {
             chatService.sendResponse({
                 ...message,
+                ...(message.fakeStream ? { fakeStream: false } : {}),
                 feedback: { isPositive },
             } satisfies AutopilotChatMessage);
         } else {
             chatService.sendRequest({
                 ...message,
+                ...(message.fakeStream ? { fakeStream: false } : {}),
                 feedback: { isPositive },
             } satisfies AutopilotChatMessage);
         }
@@ -131,6 +133,10 @@ function AutopilotChatMessageActionsComponent({
             messageContainer.removeEventListener('focusout', handleBlur);
         };
     }, [ containerElement ]);
+
+    if (message.stream && !message.done) {
+        return null;
+    }
 
     return (
         <AutopilotChatActionsList

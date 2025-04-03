@@ -315,6 +315,16 @@ export class AutopilotChatService {
      * Stops the response in the chat service
      */
     stopResponse() {
+        const lastMessage = this._conversation[this._conversation.length - 1];
+
+        if (lastMessage?.stream && !lastMessage.done) {
+            this.sendResponse({
+                ...lastMessage,
+                done: true,
+                content: '',
+            });
+        }
+
         this._eventBus.publish(AutopilotChatEvent.StopResponse);
     }
 

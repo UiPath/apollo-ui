@@ -13,6 +13,11 @@ The Autopilot Chat component is a full-featured chat interface that can be embed
 - Extensible architecture with custom message renderers
 - Event system for intercepting and handling chat interactions
 - Support for real-time streaming responses and simulated streaming
+- Interactive message actions system with:
+  - Default actions (copy, feedback with thumbs up/down)
+  - Different default actions for user messages (requests) vs. assistant messages (responses)
+  - Support for custom actions with configurable labels and icons
+  - Action visibility control (toolbar vs. overflow menu)
 - Comprehensive conversation history management with:
   - Built-in history panel for viewing past conversations
   - Optional local storage using IndexedDB
@@ -152,7 +157,7 @@ Multiple interceptors can be added and will be called in parallel. If any interc
 
 ### Message Actions
 
-The Autopilot Chat component supports adding custom actions to messages. These actions can be used to provide additional functionality for messages (on top of default actions: copy, thumbs-up, thumbs-down).
+The Autopilot Chat component supports adding custom actions to messages. These actions can be used to provide additional functionality for messages (on top of default actions).
 
 ```typescript
 // Example of sending a response with custom actions
@@ -175,6 +180,20 @@ chatService.sendResponse({
   ]
 });
 ```
+
+#### Default Message Actions
+
+The chat component provides different default actions depending on the message role:
+
+- **User Messages (Requests)**:
+  - Copy - Allows copying the message content to clipboard
+
+- **Assistant Messages (Responses)**:
+  - Copy - Allows copying the message content to clipboard
+  - Thumbs Up - Provides positive feedback for the response
+  - Thumbs Down - Provides negative feedback for the response
+
+When feedback has already been given on an assistant message, only the selected feedback action is shown and it becomes disabled.
 
 ### Feedback Handling
 
@@ -501,7 +520,7 @@ console.log(`The conversation has ${currentConversation.length} messages`);
 
 ### Managing Conversation History List
 
-The chat service provides methods to manage multiple conversations in a history list.
+The chat service provides methods to manage multiple conversations in a history list and emits events that you can listen to for integrating with your own history management systems.
 
 #### Setting the History List
 
@@ -522,19 +541,46 @@ chatService.setHistory([
 
 // Get the current history list
 const historyList = chatService.getHistory();
+
+// Listen for history updates
+chatService.on(AutopilotChatEvent.SetHistory, (history) => {
+  console.log('History was updated with', history.length, 'conversations');
+  // Update your UI or sync with your storage system
+});
 ```
 
 #### Creating and Opening Conversations
 
 ```typescript
 // Start a new chat (clears the current conversation)
+// The chat component automatically calls this method when a user clicks the "New Chat" button
 chatService.newChat();
 
-// Open a specific conversation from history (still need to cal setConversation, this mainly sets the active conversation & emits event).
+// Listen for new chat events
+chatService.on(AutopilotChatEvent.NewChat, () => {
+  console.log('User started a new chat');
+  // You want to reset the conversation in the chat once new chat is opened.
+  chatService.setConversation([]);
+});
+
+// Open a specific conversation from history by ID
+// The chat component automatically calls this method when a user selects a conversation from the history panel
 chatService.openConversation("conversation-1");
+
+// Listen for conversation opening events
+chatService.on(AutopilotChatEvent.OpenConversation, (conversationId) => {
+  console.log('User opened conversation:', conversationId);
+  // Here you would want to set the conversation from your storage service based on the id
+  chatService.setConversation(db.getConversation(conversationId)); 
+});
 
 // Get the active conversation ID
 const activeId = chatService.activeConversationId;
+
+// Listen for conversation content changes
+chatService.on(AutopilotChatEvent.SetConversation, (messages) => {
+  console.log('Conversation content was updated with', messages.length, 'messages');
+});
 ```
 
 #### Deleting Conversations
@@ -542,6 +588,13 @@ const activeId = chatService.activeConversationId;
 ```typescript
 // Delete a conversation from history
 chatService.deleteConversation("conversation-2");
+
+// Listen for conversation deletion events
+// The chat component will automatically call newChat method when a conversation is deleted
+chatService.on(AutopilotChatEvent.DeleteConversation, (conversationId) => {
+  console.log('User deleted conversation:', conversationId);
+  // You might want to sync this with your backend storage
+});
 ```
 
 #### Toggling the History Panel
@@ -575,44 +628,6 @@ chatService.initialize({
 // 1. Conversations and messages are automatically saved to IndexedDB
 // 2. History is restored when the application is reloaded
 // 3. The history panel shows previously saved conversations
-```
-
-### Implementing Custom History Storage
-
-For applications that need custom history storage (e.g., server-based), you can intercept history-related events and implement your own storage solution:
-
-```typescript
-// Intercept new chat requests
-chatService.on(AutopilotChatEvent.NewChat, () => {
-  // Reset your custom storage for a new conversation
-  myCustomStorage.createNewChat();
-});
-
-// Handle new messages
-chatService.on(AutopilotChatEvent.Request, (message) => {
-  // Save user messages to your storage
-  myCustomStorage.saveMessage(currentConversationId, message);
-});
-
-chatService.on(AutopilotChatEvent.Response, (message) => {
-  // Save assistant messages to your storage
-  myCustomStorage.saveMessage(currentConversationId, message);
-});
-
-// Handle history operations
-chatService.on(AutopilotChatEvent.DeleteConversation, (conversationId) => {
-  // Delete conversation from your storage
-  myCustomStorage.deleteConversation(conversationId);
-  
-  // Update the history list from your storage
-  chatService.setHistory(myCustomStorage.getAllConversations());
-});
-
-chatService.on(AutopilotChatEvent.OpenConversation, (conversationId) => {
-  // Load messages for the selected conversation
-  const messages = myCustomStorage.getConversationMessages(conversationId);
-  chatService.setConversation(messages);
-});
 ```
 
 ## Feature Controls

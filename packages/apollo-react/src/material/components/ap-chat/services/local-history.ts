@@ -158,6 +158,46 @@ export class LocalHistoryService {
     }
 
     /**
+     * Patches an existing message by appending new content to it.
+     * Used primarily for streaming messages where chunks are sent progressively.
+     */
+    public static async patchMessage(conversationId: string, message: AutopilotChatMessage): Promise<string | null> {
+        const db = await LocalHistoryService.getMessagesDb();
+        const messageKey = `${conversationId}_${message.id}`;
+
+        // First retrieve the existing message
+        const existingMessage = await new Promise<Message | undefined>((resolve, reject) => {
+            const transaction = db.transaction('messages', 'readonly');
+            const store = transaction.objectStore('messages');
+            const request = store.get(messageKey);
+
+            request.onerror = () => reject(request.error);
+            request.onsuccess = () => resolve(request.result);
+        });
+
+        // If message doesn't exist, return null
+        if (!existingMessage) {
+            return null;
+        }
+
+        // Append the new content to the existing content and merge all other properties
+        const data = {
+            ...existingMessage,
+            ...message,
+            content: `${existingMessage.content}${message.content}`,
+        };
+
+        return new Promise((resolve, reject) => {
+            const transaction = db.transaction('messages', 'readwrite');
+            const store = transaction.objectStore('messages');
+            const request = store.put(data, messageKey);
+
+            request.onerror = () => reject(request.error);
+            request.onsuccess = () => resolve(message.id);
+        });
+    }
+
+    /**
      * Gets all messages for a conversation.
      */
     public static async getConversationMessages(conversationId: string): Promise<AutopilotChatMessage[]> {
@@ -243,7 +283,7 @@ export class LocalHistoryService {
         let unsubscribeNewChat: () => void;
         let unsubscribeDeleteConversation: () => void;
         let unsubscribeOpenConversation: () => void;
-
+        let unsubscribeSendChunk: () => void;
         const handleLocalHistoryChange = async (useLocalHistory: boolean) => {
             if (useLocalHistory) {
                 LocalHistoryService.ACTIVE_CONVERSATION_ID = StorageService.Instance.get(CHAT_ACTIVE_CONVERSATION_ID_KEY);
@@ -278,8 +318,23 @@ export class LocalHistoryService {
                     }
                 };
 
+                const handleChunk = async (message: AutopilotChatMessage) => {
+                    LocalHistoryService.ACTIVE_CONVERSATION_ID = StorageService.Instance.get(CHAT_ACTIVE_CONVERSATION_ID_KEY);
+
+                    if (LocalHistoryService.ACTIVE_CONVERSATION_ID) {
+                        const result = await LocalHistoryService.patchMessage(LocalHistoryService.ACTIVE_CONVERSATION_ID, message);
+
+                        if (result === null) {
+                            LocalHistoryService.saveMessage(LocalHistoryService.ACTIVE_CONVERSATION_ID, message);
+                        }
+                    } else {
+                        handleNewMessage(message);
+                    }
+                };
+
                 unsubscribeRequest = chatService.on(AutopilotChatEvent.Request, handleNewMessage);
                 unsubscribeResponse = chatService.on(AutopilotChatEvent.Response, handleNewMessage);
+                unsubscribeSendChunk = chatService.on(AutopilotChatEvent.SendChunk, handleChunk);
                 unsubscribeNewChat = chatService.on(AutopilotChatEvent.NewChat, async () => {
                     LocalHistoryService.ACTIVE_CONVERSATION_ID = null;
                     StorageService.Instance.remove(CHAT_ACTIVE_CONVERSATION_ID_KEY);
@@ -308,6 +363,7 @@ export class LocalHistoryService {
                 unsubscribeNewChat?.();
                 unsubscribeDeleteConversation?.();
                 unsubscribeOpenConversation?.();
+                unsubscribeSendChunk?.();
             }
         };
 
