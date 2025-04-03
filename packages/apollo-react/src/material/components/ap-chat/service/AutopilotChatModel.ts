@@ -20,7 +20,11 @@ export interface AutopilotChatFileInfo {
     type: string;
     size: number;
     lastModified: number;
-    content: string | Uint8Array;
+    content: {
+        text: string | null;
+        binary: Uint8Array | null;
+        base64: string | null;
+    };
     icon: string;
     friendlyType: AutopilotChatFileType;
 }
