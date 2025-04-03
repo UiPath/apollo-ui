@@ -878,6 +878,33 @@ graph LR
         S --> AA["Loading"]:::component 
         S --> AB["First Run Experience"]:::component
         
+        %% Message Actions
+        subgraph MessageActions["Message Actions"]
+            direction TB
+            MA["MessageActions<br>Component"]:::component
+            MA --> MAL["Actions List"]:::component
+            
+            %% Default actions
+            subgraph DefaultActions["Default Actions"]
+                direction LR
+                CA["Copy Action"]:::component
+                TU["Thumbs Up"]:::component
+                TD["Thumbs Down"]:::component
+            end
+            
+            %% Custom actions
+            subgraph CustomActions["Custom Actions"]
+                direction TB
+                ICA["Injectable<br>Custom Actions"]:::component
+                ICA -.->|"Injected via"| CA_API["message.actions property"]
+            end
+            
+            MAL --> DefaultActions
+            MAL --> CustomActions
+        end
+        
+        S --> MA
+        
         %% Markdown rendering
         subgraph MarkdownRenderer["Markdown Renderer"]
             direction LR
@@ -945,6 +972,7 @@ graph LR
     AD ==>|"uses"| AG
     AD ==>|"uses"| AQ
     AD -.->|"manages renderers"| CustomRenderer
+    AD -.->|"handles events from"| MessageActions
     
     %% ChatService exposed to consumers
     AD <-.->|"exposes methods<br>window.PortalShell.AutopilotChat"| Consumer
