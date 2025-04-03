@@ -9,7 +9,6 @@ import token, { FontVariantToken } from '@uipath/apollo-core/lib';
 import { AutopilotChatSuggestion } from '@uipath/portal-shell-util';
 import React from 'react';
 
-import { t } from '../../../../../utils/localization/loc';
 import { useChatState } from '../../../providers/chat-state-provider.react';
 import { AutopilotChatService } from '../../../services/chat-service';
 
@@ -27,13 +26,8 @@ const FREHeader = styled('div')(() => ({
     gap: token.Spacing.SpacingXs,
 }));
 
-const SuggestionsHeader = styled('div')(({ theme }) => ({
-    color: theme.palette.semantic.colorForegroundDeEmp,
-    marginTop: token.Spacing.SpacingXxl,
-    marginBottom: token.Spacing.SpacingBase,
-}));
-
 const SuggestionList = styled('div')(() => ({
+    marginTop: token.Spacing.SpacingXl,
     display: 'flex',
     flexDirection: 'column',
     gap: token.Spacing.SpacingXs,
@@ -101,27 +95,20 @@ function AutopilotChatFREComponent() {
             </FREHeader>
 
             {firstRunExperience.suggestions && firstRunExperience.suggestions.length > 0 && (
-                <>
-                    <SuggestionsHeader>
-                        <ap-typography variant={FontVariantToken.fontSizeMBold}>
-                            {t('autopilot-chat-suggestions')}
-                        </ap-typography>
-                    </SuggestionsHeader>
-                    <SuggestionList>
-                        {firstRunExperience.suggestions.map((suggestion) => (
-                            <Suggestion
-                                onKeyDown={(event) => handleSuggestionKeyDown(event, suggestion)}
-                                onClick={(event) => handleSuggestionClick(event, suggestion)}
-                                tabIndex={0}
-                                key={suggestion.label}
-                            >
-                                <ap-typography color={theme.palette.semantic.colorForeground} variant={FontVariantToken.fontSizeM}>
-                                    {suggestion.label}
-                                </ap-typography>
-                            </Suggestion>
-                        ))}
-                    </SuggestionList>
-                </>
+                <SuggestionList>
+                    {firstRunExperience.suggestions.map((suggestion) => (
+                        <Suggestion
+                            onKeyDown={(event) => handleSuggestionKeyDown(event, suggestion)}
+                            onClick={(event) => handleSuggestionClick(event, suggestion)}
+                            tabIndex={0}
+                            key={suggestion.label}
+                        >
+                            <ap-typography color={theme.palette.semantic.colorForeground} variant={FontVariantToken.fontSizeM}>
+                                {suggestion.label}
+                            </ap-typography>
+                        </Suggestion>
+                    ))}
+                </SuggestionList>
             )}
         </FREContainer>
     );
