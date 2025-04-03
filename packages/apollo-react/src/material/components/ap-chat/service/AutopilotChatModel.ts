@@ -61,7 +61,9 @@ export interface AutopilotChatMessage {
     stream?: boolean;
     done?: boolean;
     actions?: AutopilotChatMessageAction[];
-    feedback?: Omit<AutopilotChatFeedback, 'message'>;
+    feedback?: {
+        isPositive: boolean;
+    };
     meta?: any;
 }
 
@@ -229,7 +231,8 @@ export interface AutopilotChatHistory {
  * @property icon - The icon of the action
  * @property showInOverflow - Whether the action should be shown in the overflow menu instead of the main toolbar
  * @property disabled - Whether the action should be disabled (useful for feedback)
- * @property onClick - The function to call when the action is clicked
+ * @property eventName - The event name to emit when the action is clicked
+ * @property details - Additional details for the action
  */
 export interface AutopilotChatMessageAction {
     name: string;
@@ -237,25 +240,17 @@ export interface AutopilotChatMessageAction {
     icon?: string;
     showInOverflow?: boolean;
     disabled?: boolean;
-    onClick?: (message: AutopilotChatMessage, action: AutopilotChatMessageAction) => void;
+    eventName?: string;
+    details?: Record<string, any>;
 }
 
 /**
- * Represents a feedback for the Autopilot Chat.
+ * Represents a payload for an action in the Autopilot Chat.
  *
- * @property message - The message that was sent
- * @property isPositive - Whether the user gave positive (true) or negative (false) feedback
+ * @property message - The message that the action is associated with
+ * @property action - The action that was triggered
  */
-export interface AutopilotChatFeedback {
+export interface AutopilotChatActionPayload {
     message: AutopilotChatMessage;
-    isPositive: boolean;
-}
-
-/**
- * Represents a copy event for the Autopilot Chat.
- *
- * @property message - The message that should be copied
- */
-export interface AutopilotChatCopy {
-    message: AutopilotChatMessage;
+    action: AutopilotChatMessageAction;
 }
