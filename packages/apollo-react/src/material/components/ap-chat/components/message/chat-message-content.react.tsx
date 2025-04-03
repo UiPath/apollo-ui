@@ -22,6 +22,7 @@ import {
     CHAT_WIDTH_SIDE_BY_SIDE_MIN,
 } from '../../utils/constants';
 import { calculateDynamicPadding } from '../../utils/dynamic-padding';
+import { AutopilotChatMessageActions } from './actions/chat-actions.react';
 import { AutopilotChatMarkdownRenderer } from './markdown/markdown.react';
 
 const MessageBox = styled('div')<{
@@ -77,11 +78,13 @@ const MessageBox = styled('div')<{
         marginRight: isAssistant ? token.Spacing.SpacingXl : '0',
         whiteSpace: 'pre-wrap',
         overflowWrap: 'anywhere',
+        position: 'relative',
     };
 });
 
 function AutopilotChatMessageContentComponent({ message }: { message: AutopilotChatMessage }) {
     const chatService = AutopilotChatService.Instance;
+    const [ messageElement, setMessageElement ] = React.useState<HTMLDivElement | null>(null);
 
     if (!message.content) {
         return null;
@@ -91,8 +94,13 @@ function AutopilotChatMessageContentComponent({ message }: { message: AutopilotC
         const ApolloMessageRenderer = APOLLO_MESSAGE_RENDERERS.find(renderer => renderer.name === message.widget)?.component;
 
         return (
-            <MessageBox isAssistant={message.role === AutopilotChatRole.Assistant} key={message.id}>
+            <MessageBox
+                ref={setMessageElement}
+                isAssistant={message.role === AutopilotChatRole.Assistant}
+                key={message.id}
+            >
                 {ApolloMessageRenderer ? <ApolloMessageRenderer message={message} /> : <AutopilotChatMarkdownRenderer message={message} />}
+                <AutopilotChatMessageActions message={message} containerElement={messageElement}/>
             </MessageBox>
         );
     }
@@ -103,10 +111,13 @@ function AutopilotChatMessageContentComponent({ message }: { message: AutopilotC
             key={message.id}
             ref={(el) => {
                 if (el) {
+                    setMessageElement(el);
                     chatService.renderMessage(el, message);
                 }
             }}
-        />
+        >
+            <AutopilotChatMessageActions message={message} containerElement={messageElement}/>
+        </MessageBox>
     );
 }
 

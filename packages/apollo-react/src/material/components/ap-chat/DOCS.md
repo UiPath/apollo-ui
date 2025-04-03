@@ -122,6 +122,8 @@ Subscribes to chat events and returns an unsubscribe function. The handler will 
 - `SetHistory`: Emitted when the history is set
 - `DeleteConversation`: Emitted when a conversation is deleted from the history list
 - `OpenConversation`: Emitted when a conversation is opened (clicked on in the history list)
+- `Feedback`: Emitted when a feedback is sent (thumbs up or thumbs down)
+- `Copy`: Emitted when a message is copied
 
 #### Intercepting Events
 
@@ -132,11 +134,81 @@ intercept(event: AutopilotChatInterceptableEvent, interceptor: AutopilotChatEven
 Adds an event interceptor for interceptable events. Returns a function to remove the interceptor.
 
 **Parameters:**
-- `event`: The event type to intercept (currently only `Request` events are interceptable)
+- `event`: The event type to intercept
 - `interceptor`: The function that will intercept the event
 
-**Usage:**
-The interceptor can return `true` to indicate it has handled the event and prevent further processing. Multiple interceptors can be added and will be called in parallel. If any interceptor returns `true`, the event is considered hijacked and the default handling will not occur (it will still emit, but with `hijacked: true` on the message).
+**Available Interceptable Events:**
+- `Request`: When a user sends a message (currently only Request events are interceptable)
+
+**Interceptor Function:**
+The interceptor function receives the event data and can:
+- Return `true` to indicate it has handled the event and prevent further processing
+- Return `void` if the event should proceed with normal handling
+- Return a Promise that resolves to true if the event is handled asynchronously
+
+Multiple interceptors can be added and will be called in parallel. If any interceptor returns `true`, the event is considered hijacked and the default handling will not occur (it will still emit, but with `hijacked: true` on the message).
+
+## Interactive Features
+
+### Message Actions
+
+The Autopilot Chat component supports adding custom actions to messages. These actions can be used to provide additional functionality for messages (on top of default actions: copy, thumbs-up, thumbs-down).
+
+```typescript
+// Example of sending a response with custom actions
+chatService.sendResponse({
+  id: "msg-123",
+  content: "Here's your sales chart:",
+  role: AutopilotChatRole.Assistant,
+  widget: "apollo-markdown-renderer",
+  actions: [
+    {
+      name: "export-data",
+      label: "Export Data",
+      icon: "export-icon", // Optional icon
+      showInOverflow: false, // Show directly in toolbar, not in overflow menu
+      onClick: (message, action) => {
+        // Handle the export action
+        console.log(`Export data from message: ${message.id}`);
+      }
+    }
+  ]
+});
+```
+
+### Feedback Handling
+
+The Autopilot Chat component provides a built-in feedback system that allows users to give thumbs up or thumbs down feedback for assistant messages.
+
+```typescript
+// Listen for feedback events
+chatService.on(AutopilotChatEvent.Feedback, (feedback: AutopilotChatFeedback) => {
+  const { message, isPositive } = feedback;
+  
+  // Handle the feedback
+  console.log(`Feedback for message ${message.id}: ${isPositive ? 'positive' : 'negative'}`);
+  
+  // Send to your analytics system or API
+  sendFeedbackToAPI(message.id, isPositive);
+});
+```
+
+### Copy Event Handling
+
+The Autopilot Chat component emits copy events when a user copies a message.
+
+```typescript
+// Listen for copy events
+chatService.on(AutopilotChatEvent.Copy, (message: AutopilotChatMessage) => {
+  const { message } = copyEvent;
+  
+  // Handle the copy event
+  console.log(`Message ${message.id} was copied`);
+  
+  // Send to your analytics system or API
+  trackCopyEvent(message.id);
+});
+```
 
 ## Usage Examples
 
@@ -660,6 +732,9 @@ interface AutopilotChatDisabledFeatures {
  * @property fakeStream - Temporary flag used to simulate streaming for a complete message (will be ignored for requests)
  * @property stream - Flag used to stream a chunk (will be ignored for requests)
  * @property done - Flag to determine if the message is the last chunk of a streaming response
+ * @property actions - Additional actions on top of DefaultAutopilotChatResponseAction (for responses)
+ *           and DefaultAutopilotChatRequestAction (for requests)
+ * @property feedback - Feedback for the message (thumbs up or thumbs down)
  * @property meta - Optional metadata for the message (additional information about the message)
  */
 export interface AutopilotChatMessage {
@@ -673,6 +748,8 @@ export interface AutopilotChatMessage {
     fakeStream?: boolean;
     stream?: boolean;
     done?: boolean;
+    actions?: AutopilotChatMessageAction[];
+    feedback?: Omit<AutopilotChatFeedback, 'message'>;
     meta?: any;
 }
 ```
@@ -715,6 +792,42 @@ interface AutopilotChatMessageRenderer {
 The message renderer interface defines a custom renderer for chat messages:
 - `name`: Unique identifier for the renderer
 - `render`: Function that renders the message content into the provided container element. Can optionally return a cleanup function.
+
+### AutopilotChatMessageAction
+
+```typescript
+/**
+ * Represents an action for a message in the Autopilot Chat.
+ *
+ * @property name - The name of the action
+ * @property label - The label of the action
+ * @property icon - The icon of the action
+ * @property showInOverflow - Whether the action should be shown in the overflow menu instead of the main toolbar
+ * @property onClick - The function to call when the action is clicked
+ */
+interface AutopilotChatMessageAction {
+    name: string;
+    label: string;
+    icon?: string;
+    showInOverflow?: boolean;
+    onClick?: (message: AutopilotChatMessage, action: AutopilotChatMessageAction) => void;
+}
+```
+
+### AutopilotChatFeedback
+
+```typescript
+/**
+ * Represents a feedback for the Autopilot Chat.
+ *
+ * @property message - The message that was sent
+ * @property isPositive - Whether the user gave positive (true) or negative (false) feedback
+ */
+interface AutopilotChatFeedback {
+    message: AutopilotChatMessage;
+    isPositive: boolean;
+}
+```
 
 ## Component Architecture
 
