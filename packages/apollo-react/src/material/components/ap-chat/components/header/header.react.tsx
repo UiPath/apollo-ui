@@ -10,6 +10,7 @@ import { FontVariantToken } from '@uipath/apollo-core';
 import token from '@uipath/apollo-core/lib';
 import React from 'react';
 
+import { StatusTypes } from '../../../../models/statusTypes';
 import { t } from '../../../../utils/localization/loc';
 import AutopilotLogo from '../../assets/autopilot-logo.svg';
 import { AutopilotChatHeaderActions } from './header-actions.react';
@@ -38,6 +39,8 @@ function AutopilotChatHeaderComponent() {
                 <ap-typography variant={FontVariantToken.fontBrandL} color={theme.palette.semantic.colorForeground}>
                     {t('autopilot-chat-header')}
                 </ap-typography>
+
+                <ap-badge label={t('autopilot-chat-header-preview')} status={StatusTypes.INFO}></ap-badge>
             </StyledLogo>
 
             <AutopilotChatHeaderActions />
