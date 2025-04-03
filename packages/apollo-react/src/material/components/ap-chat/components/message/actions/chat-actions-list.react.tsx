@@ -38,19 +38,26 @@ const ActionsListContainer = styled('div')<{ isRequest: boolean }>(({
 
 interface AutopilotChatActionsListProps {
     message: AutopilotChatMessage;
+    defaultActions: AutopilotChatMessageAction[];
     isVisible: boolean;
     setIsVisible: (isVisible: boolean) => void;
 }
 
 function AutopilotChatActionsListComponent({
-    message, isVisible, setIsVisible,
+    message, defaultActions, isVisible, setIsVisible,
 }: AutopilotChatActionsListProps) {
     const [ anchorEl, setAnchorEl ] = React.useState<null | HTMLElement>(null);
     const overflowMenuOpen = Boolean(anchorEl);
     const containerRef = React.useRef<HTMLDivElement>(null);
     const overflowButtonRef = React.useRef<HTMLButtonElement>(null);
-    const mainActions = message?.actions?.filter(action => !action.showInOverflow) || [];
-    const overflowActions = message?.actions?.filter(action => action.showInOverflow) || [];
+    const mainActions = [
+        ...defaultActions?.filter(action => !action.showInOverflow) || [],
+        ...(message?.actions?.filter(action => !action.showInOverflow) || []),
+    ];
+    const overflowActions = [
+        ...defaultActions?.filter(action => action.showInOverflow) || [],
+        ...(message?.actions?.filter(action => action.showInOverflow) || []),
+    ];
     const shouldBeVisible = isVisible || overflowMenuOpen;
     const chatService = AutopilotChatService.Instance as any;
 

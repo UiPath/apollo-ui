@@ -70,6 +70,7 @@ function AutopilotChatMessageActionsComponent({
                 details: { isPositive: false },
             },
         ];
+
     }, [ message ]);
 
     React.useEffect(() => {
@@ -104,13 +105,8 @@ function AutopilotChatMessageActionsComponent({
 
     return (
         <AutopilotChatActionsList
-            message={{
-                ...message,
-                actions: [
-                    ...defaultActions,
-                    ...(message.actions ?? []),
-                ],
-            }}
+            message={message}
+            defaultActions={defaultActions}
             isVisible={isVisible}
             setIsVisible={setIsVisible}
         />
