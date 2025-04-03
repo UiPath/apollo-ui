@@ -172,12 +172,16 @@ chatService.sendResponse({
       label: "Export Data",
       icon: "export-icon", // Optional icon
       showInOverflow: false, // Show directly in toolbar, not in overflow menu
-      onClick: (message, action) => {
-        // Handle the export action
-        console.log(`Export data from message: ${message.id}`);
-      }
+      eventName: "export-data", // Event name that the component will emit on click and you can subscribe to
+      details: { format: "csv" } // Additional data to pass with the event
     }
   ]
+});
+
+// Listen for the custom action event
+chatService.on("export-data", ({ message, action }: AutopilotChatActionPayload) => {
+  // Handle the export action
+  console.log(`Export data from message: ${message.id}, format: ${action.details.format}`);
 });
 ```
 
@@ -201,8 +205,8 @@ The Autopilot Chat component provides a built-in feedback system that allows use
 
 ```typescript
 // Listen for feedback events
-chatService.on(AutopilotChatEvent.Feedback, (feedback: AutopilotChatFeedback) => {
-  const { message, isPositive } = feedback;
+chatService.on(AutopilotChatEvent.Feedback, ({ message, action }) => {
+  const { isPositive } = action.details;
   
   // Handle the feedback
   console.log(`Feedback for message ${message.id}: ${isPositive ? 'positive' : 'negative'}`);
@@ -218,9 +222,7 @@ The Autopilot Chat component emits copy events when a user copies a message.
 
 ```typescript
 // Listen for copy events
-chatService.on(AutopilotChatEvent.Copy, (message: AutopilotChatMessage) => {
-  const { message } = copyEvent;
-  
+chatService.on(AutopilotChatEvent.Copy, ({ message }) => {
   // Handle the copy event
   console.log(`Message ${message.id} was copied`);
   
@@ -764,7 +766,9 @@ export interface AutopilotChatMessage {
     stream?: boolean;
     done?: boolean;
     actions?: AutopilotChatMessageAction[];
-    feedback?: Omit<AutopilotChatFeedback, 'message'>;
+    feedback?: {
+        isPositive: boolean;
+    };
     meta?: any;
 }
 ```
@@ -818,29 +822,33 @@ The message renderer interface defines a custom renderer for chat messages:
  * @property label - The label of the action
  * @property icon - The icon of the action
  * @property showInOverflow - Whether the action should be shown in the overflow menu instead of the main toolbar
- * @property onClick - The function to call when the action is clicked
+ * @property disabled - Whether the action should be disabled (useful for feedback)
+ * @property eventName - The event name to emit when the action is clicked
+ * @property details - Additional details for the action
  */
-interface AutopilotChatMessageAction {
+export interface AutopilotChatMessageAction {
     name: string;
     label: string;
     icon?: string;
     showInOverflow?: boolean;
-    onClick?: (message: AutopilotChatMessage, action: AutopilotChatMessageAction) => void;
+    disabled?: boolean;
+    eventName?: string;
+    details?: Record<string, any>;
 }
 ```
 
-### AutopilotChatFeedback
+### AutopilotChatActionPayload
 
 ```typescript
 /**
- * Represents a feedback for the Autopilot Chat.
+ * Represents a payload for an action in the Autopilot Chat.
  *
- * @property message - The message that was sent
- * @property isPositive - Whether the user gave positive (true) or negative (false) feedback
+ * @property message - The message that the action is associated with
+ * @property action - The action that was triggered
  */
-interface AutopilotChatFeedback {
+export interface AutopilotChatActionPayload {
     message: AutopilotChatMessage;
-    isPositive: boolean;
+    action: AutopilotChatMessageAction;
 }
 ```
 

@@ -8,6 +8,7 @@ import {
 } from '@mui/material';
 import token from '@uipath/apollo-core/lib';
 import {
+    AutopilotChatActionPayload,
     AutopilotChatMessage,
     AutopilotChatMessageAction,
     AutopilotChatRole,
@@ -15,6 +16,7 @@ import {
 import React from 'react';
 
 import { t } from '../../../../../utils/localization/loc';
+import { AutopilotChatService } from '../../../services/chat-service';
 import { AutopilotChatActionButton } from '../../common/action-button.react';
 
 const ActionsListContainer = styled('div')<{ isRequest: boolean }>(({
@@ -50,10 +52,16 @@ function AutopilotChatActionsListComponent({
     const mainActions = message?.actions?.filter(action => !action.showInOverflow) || [];
     const overflowActions = message?.actions?.filter(action => action.showInOverflow) || [];
     const shouldBeVisible = isVisible || overflowMenuOpen;
+    const chatService = AutopilotChatService.Instance as any;
 
     const handleAction = React.useCallback((action: AutopilotChatMessageAction) => {
-        action.onClick?.(message, action);
-    }, [ message ]);
+        if (action.eventName && chatService) {
+            chatService._eventBus.publish(action.eventName, {
+                message,
+                action,
+            } satisfies AutopilotChatActionPayload);
+        }
+    }, [ message, chatService ]);
 
     const handleOpenOverflowMenu = React.useCallback((event: React.MouseEvent<HTMLElement>) => {
         setAnchorEl(event.currentTarget);
@@ -123,12 +131,6 @@ function AutopilotChatActionsListComponent({
                             <MenuItem
                                 key={action.name}
                                 onClick={() => handleAction(action)}
-                                onKeyDown={(ev) => {
-                                    if (ev.key === 'Enter' || ev.key === ' ') {
-                                        handleAction(action);
-                                        handleCloseOverflowMenu();
-                                    }
-                                }}
                             >
                                 {action.label}
                             </MenuItem>

@@ -4,6 +4,7 @@
 import { styled } from '@mui/material';
 import token from '@uipath/apollo-core/lib';
 import {
+    AutopilotChatActionPayload,
     AutopilotChatEvent,
     AutopilotChatInterceptableEvent,
     AutopilotChatMessage,
@@ -51,6 +52,34 @@ function AutopilotChatMessagesComponent() {
         });
     }, []);
 
+    const sendFeedback = React.useCallback(({
+        message, action,
+    }: AutopilotChatActionPayload) => {
+        if (!chatService) {
+            return;
+        }
+
+        if (message.role === AutopilotChatRole.Assistant) {
+            chatService.sendResponse({
+                ...message,
+                ...(message.fakeStream ? { fakeStream: false } : {}),
+                feedback: { isPositive: action.details?.isPositive },
+            } satisfies AutopilotChatMessage);
+        } else {
+            chatService.sendRequest({
+                ...message,
+                ...(message.fakeStream ? { fakeStream: false } : {}),
+                feedback: { isPositive: action.details?.isPositive },
+            } satisfies AutopilotChatMessage);
+        }
+    }, [ chatService ]);
+
+    const onCopy = React.useCallback(({ message }: AutopilotChatActionPayload) => {
+        if (navigator.clipboard && message.content) {
+            navigator.clipboard.writeText(message.content).catch(() => {});
+        }
+    }, []);
+
     React.useEffect(() => {
         if (!chatService) {
             return;
@@ -60,6 +89,8 @@ function AutopilotChatMessagesComponent() {
         const unsubscribeRequest = chatService.intercept(AutopilotChatInterceptableEvent.Request, updateMessages);
         const unsubscribeResponse = chatService.on(AutopilotChatEvent.Response, updateMessages);
         const unsubscribeNewChat = chatService.on(AutopilotChatEvent.NewChat, () => setMessages([]));
+        const unsubscribeFeedback = chatService.on(AutopilotChatEvent.Feedback, sendFeedback);
+        const unsubscribeCopy = chatService.on(AutopilotChatEvent.Copy, onCopy);
         // set messages to the new conversation
         const unsubscribeConversation = chatService.on(AutopilotChatEvent.SetConversation, (msg) => {
             setMessages(removeFakeStream(msg));
@@ -81,8 +112,10 @@ function AutopilotChatMessagesComponent() {
             unsubscribeResponse();
             unsubscribeConversation();
             unsubscribeNewChat();
+            unsubscribeFeedback();
+            unsubscribeCopy();
         };
-    }, [ chatService, updateMessages, setWaitingResponse ]);
+    }, [ chatService, updateMessages, setWaitingResponse, sendFeedback, onCopy ]);
 
     return (
         <MessageContainer ref={messageContainerRef}>

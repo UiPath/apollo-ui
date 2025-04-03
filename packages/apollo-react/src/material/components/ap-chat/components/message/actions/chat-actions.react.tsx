@@ -3,14 +3,12 @@
 
 import {
     AutopilotChatEvent,
-    AutopilotChatFeedback,
     AutopilotChatMessage,
     AutopilotChatRole,
 } from '@uipath/portal-shell-util';
 import React from 'react';
 
 import { t } from '../../../../../utils/localization/loc';
-import { AutopilotChatService } from '../../../services/chat-service';
 import { AutopilotChatActionsList } from './chat-actions-list.react';
 
 interface AutopilotChatMessageActionsProps {
@@ -22,32 +20,6 @@ function AutopilotChatMessageActionsComponent({
     message, containerElement,
 }: AutopilotChatMessageActionsProps) {
     const [ isVisible, setIsVisible ] = React.useState(false);
-    const chatService = AutopilotChatService.Instance as any;
-
-    const sendFeedback = React.useCallback((isPositive: boolean) => {
-        if (!chatService) {
-            return;
-        }
-
-        chatService._eventBus.publish(AutopilotChatEvent.Feedback, {
-            message,
-            isPositive,
-        } satisfies AutopilotChatFeedback);
-
-        if (message.role === AutopilotChatRole.Assistant) {
-            chatService.sendResponse({
-                ...message,
-                ...(message.fakeStream ? { fakeStream: false } : {}),
-                feedback: { isPositive },
-            } satisfies AutopilotChatMessage);
-        } else {
-            chatService.sendRequest({
-                ...message,
-                ...(message.fakeStream ? { fakeStream: false } : {}),
-                feedback: { isPositive },
-            } satisfies AutopilotChatMessage);
-        }
-    }, [ message, chatService ]);
 
     // Determine actions based on message role and existing feedback
     const defaultActions = React.useMemo(() => {
@@ -56,13 +28,7 @@ function AutopilotChatMessageActionsComponent({
                 name: 'autopilot-chat-copy',
                 label: t('autopilot-chat-copy'),
                 icon: 'copy',
-                onClick: () => {
-                    if (navigator.clipboard && message.content) {
-                        navigator.clipboard.writeText(message.content).catch(() => {});
-                    }
-
-                    chatService._eventBus.publish(AutopilotChatEvent.Copy, message);
-                },
+                eventName: AutopilotChatEvent.Copy,
             },
         ];
 
@@ -93,20 +59,18 @@ function AutopilotChatMessageActionsComponent({
                 name: 'autopilot-chat-good',
                 label: t('autopilot-chat-good'),
                 icon: 'thumb_up',
-                onClick: () => {
-                    sendFeedback(true);
-                },
+                eventName: AutopilotChatEvent.Feedback,
+                details: { isPositive: true },
             },
             {
                 name: 'autopilot-chat-bad',
                 label: t('autopilot-chat-bad'),
                 icon: 'thumb_down',
-                onClick: () => {
-                    sendFeedback(false);
-                },
+                eventName: AutopilotChatEvent.Feedback,
+                details: { isPositive: false },
             },
         ];
-    }, [ message, chatService, sendFeedback ]);
+    }, [ message ]);
 
     React.useEffect(() => {
         const messageContainer = containerElement;
