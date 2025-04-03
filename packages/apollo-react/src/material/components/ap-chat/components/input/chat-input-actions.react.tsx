@@ -68,7 +68,7 @@ function AutopilotChatInputActionsComponent({
 
     const handleAttachment = React.useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
         try {
-            const parsedFiles = await parseFiles(Array.from(event.target.files ?? []), 'text');
+            const parsedFiles = await parseFiles(Array.from(event.target.files ?? []));
 
             addAttachments(parsedFiles);
         } catch (err: any) {

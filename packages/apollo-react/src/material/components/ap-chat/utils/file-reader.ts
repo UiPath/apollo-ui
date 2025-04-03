@@ -2,36 +2,61 @@ import type { AutopilotChatFileInfo } from '@uipath/portal-shell-util';
 
 import { fileToIcon } from './file-to-icon';
 /**
- * Parses files and returns an array of file information.
+ * Parses files and returns an array of file information with all content formats.
  *
  * @param files - The files to parse.
- * @param expectedFormat - The expected format of the files.
- * @returns An array of file information.
+ * @returns An array of file information containing all content formats.
  */
-export const parseFiles = async (files: File[] | null, expectedFormat: 'text' | 'binary' | 'base64') => {
+export const parseFiles = async (files: File[] | null) => {
     if (!files || files.length === 0) {
         return [];
     }
 
     const fileResults = await Promise.all(Array.from(files).map(async (file) => {
         const result = await new Promise<AutopilotChatFileInfo>((resolve, reject) => {
-            const reader = new FileReader();
+            // Create separate promises for each format
+            const readAsText = () => new Promise<string>((res, rej) => {
+                const reader = new FileReader();
+                reader.onload = (e) => res(e.target?.result as string);
+                reader.onerror = () => rej('Error reading file as text');
+                reader.readAsText(file);
+            });
 
-            reader.onload = async (e) => {
+            const readAsBinary = () => new Promise<Uint8Array>((res, rej) => {
+                const reader = new FileReader();
+                reader.onload = (e) => res(new Uint8Array(e.target?.result as ArrayBuffer));
+                reader.onerror = () => rej('Error reading file as binary');
+                reader.readAsArrayBuffer(file);
+            });
+
+            const readAsBase64 = () => new Promise<string>((res, rej) => {
+                const reader = new FileReader();
+                reader.onload = (e) => res(e.target?.result as string);
+                reader.onerror = () => rej('Error reading file as base64');
+                reader.readAsDataURL(file);
+            });
+
+            // Execute all three reading methods
+            Promise.all([
+                readAsText().catch(() => null),
+                readAsBinary().catch(() => null),
+                readAsBase64().catch(() => null),
+            ]).then(([ text, binary, base64 ]) => {
                 const {
                     friendlyType, icon,
                 } = fileToIcon(file);
 
                 try {
-                    const content = e.target?.result;
                     const fileInfo: AutopilotChatFileInfo = {
                         name: file.name,
                         type: file.type,
                         size: file.size,
                         lastModified: file.lastModified,
-                        content: typeof content === 'string'
-                            ? content
-                            : new Uint8Array(content as ArrayBuffer),
+                        content: {
+                            text,
+                            binary,
+                            base64,
+                        },
                         icon,
                         friendlyType,
                     };
@@ -39,19 +64,10 @@ export const parseFiles = async (files: File[] | null, expectedFormat: 'text' | 
                 } catch (err) {
                     reject('Error processing files');
                 }
-            };
-
-            reader.onerror = () => {
-                reject('Error reading files');
-            };
-
-            if (expectedFormat === 'text') {
-                reader.readAsText(file);
-            } else if (expectedFormat === 'binary') {
-                reader.readAsArrayBuffer(file);
-            } else {
-                reader.readAsDataURL(file);
-            }
+            })
+                .catch(() => {
+                    reject('Error reading files');
+                });
         });
 
         return result;

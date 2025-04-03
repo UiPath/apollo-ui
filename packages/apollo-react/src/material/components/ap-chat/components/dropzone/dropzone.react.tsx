@@ -63,7 +63,7 @@ function AutopilotChatDropzoneComponent({
 
     const handleDrop = React.useCallback(async (files: File[], fileRejections: FileRejection[]) => {
         try {
-            const parsedFiles = await parseFiles(files, 'text');
+            const parsedFiles = await parseFiles(files);
 
             addAttachments(parsedFiles);
         } catch (error) {
