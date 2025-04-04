@@ -187,7 +187,7 @@ export class AutopilotChatService {
             return;
         }
 
-        renderer.render(container, message);
+        return renderer.render(container, message);
     }
 
     /**

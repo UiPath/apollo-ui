@@ -25,7 +25,7 @@ import { calculateDynamicPadding } from '../../utils/dynamic-padding';
 import { AutopilotChatMessageActions } from './actions/chat-actions.react';
 import { AutopilotChatMarkdownRenderer } from './markdown/markdown.react';
 
-const MessageBox = styled('div')<{
+const MessageBoxComponent = styled('div')<{
     isAssistant: boolean;
 }>(({
     theme, isAssistant,
@@ -82,6 +82,44 @@ const MessageBox = styled('div')<{
     };
 });
 
+const MessageBox = React.memo(MessageBoxComponent);
+
+const WidgetContainer = React.memo(({
+    message, setMessageElement, messageElement,
+}: {
+    message: AutopilotChatMessage;
+    setMessageElement: (element: HTMLDivElement | null) => void;
+    messageElement: HTMLDivElement | null;
+}) => {
+    const chatService = AutopilotChatService.Instance;
+    const unsubscribeRef = React.useRef<() => void>(() => {});
+
+    React.useEffect(() => {
+        return () => {
+            unsubscribeRef?.current?.();
+        };
+    }, []);
+
+    return (
+        <MessageBox isAssistant={message.role === AutopilotChatRole.Assistant}>
+            <div ref={(el) => {
+                if (el) {
+                    if (messageElement !== el) {
+                        setMessageElement(el);
+                    }
+
+                    const unsubscribe = chatService.renderMessage(el, message);
+
+                    if (unsubscribe) {
+                        unsubscribeRef.current = unsubscribe;
+                    }
+                }
+            }}/>
+            <AutopilotChatMessageActions message={message} containerElement={messageElement}/>
+        </MessageBox>
+    );
+});
+
 function AutopilotChatMessageContentComponent({ message }: { message: AutopilotChatMessage }) {
     const chatService = AutopilotChatService.Instance;
     const [ messageElement, setMessageElement ] = React.useState<HTMLDivElement | null>(null);
@@ -106,18 +144,12 @@ function AutopilotChatMessageContentComponent({ message }: { message: AutopilotC
     }
 
     return (
-        <MessageBox
-            isAssistant={message.role === AutopilotChatRole.Assistant}
+        <WidgetContainer
             key={message.id}
-            ref={(el) => {
-                if (el) {
-                    setMessageElement(el);
-                    chatService.renderMessage(el, message);
-                }
-            }}
-        >
-            <AutopilotChatMessageActions message={message} containerElement={messageElement}/>
-        </MessageBox>
+            message={message}
+            setMessageElement={setMessageElement}
+            messageElement={messageElement}
+        />
     );
 }
 

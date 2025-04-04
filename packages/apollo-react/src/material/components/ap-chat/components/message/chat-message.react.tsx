@@ -34,6 +34,17 @@ const removeFakeStream = (messages: AutopilotChatMessage[]) => {
     }) => rest);
 };
 
+const Message = React.memo(({ message }: { message: AutopilotChatMessage }) => {
+    return (
+        <React.Fragment key={message.id}>
+            {message.attachments && message.attachments.length > 0 && (
+                <AutopilotChatAttachments attachments={message.attachments}/>
+            )}
+            <AutopilotChatMessageContent message={message}/>
+        </React.Fragment>
+    );
+});
+
 function AutopilotChatMessagesComponent() {
     const messageContainerRef = React.useRef<HTMLDivElement>(null);
     const chatService = AutopilotChatService.Instance;
@@ -124,12 +135,7 @@ function AutopilotChatMessagesComponent() {
             )}
             {messages.map((message) => {
                 return (
-                    <React.Fragment key={message.id}>
-                        {message.attachments && message.attachments.length > 0 && (
-                            <AutopilotChatAttachments attachments={message.attachments}/>
-                        )}
-                        <AutopilotChatMessageContent message={message}/>
-                    </React.Fragment>
+                    <Message key={message.id} message={message} />
                 );
             })}
 

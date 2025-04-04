@@ -31,6 +31,7 @@ export const AutopilotChatScrollProvider: React.FC<AutopilotChatScrollProviderPr
     const contentRef = React.useRef<HTMLDivElement>(null);
     const previousHeightRef = React.useRef<number>(0);
     const isDraggingScrollBarRef = React.useRef(false);
+    const useInstantScrollRef = React.useRef(false);
     const { streaming } = useStreaming();
 
     const [ autoScroll, setAutoScroll ] = React.useState(true);
@@ -72,7 +73,7 @@ export const AutopilotChatScrollProvider: React.FC<AutopilotChatScrollProviderPr
 
             scrollToBottom({
                 force: true,
-                behavior: isNearBottom || streaming ? 'instant' : 'smooth',
+                behavior: isNearBottom || streaming || useInstantScrollRef.current ? 'instant' : 'smooth',
             });
         }
 
@@ -167,14 +168,20 @@ export const AutopilotChatScrollProvider: React.FC<AutopilotChatScrollProviderPr
 
         const unsubscribeRequestIntercept = chatService.intercept(AutopilotChatInterceptableEvent.Request, () => {
             setAutoScroll(true);
+            useInstantScrollRef.current = false;
         });
 
         const unsubscribeNewChat = chatService.on(AutopilotChatEvent.NewChat, () => {
             setAutoScroll(true);
+            useInstantScrollRef.current = false;
         });
 
         const unsubscribeOpenConversation = chatService.on(AutopilotChatEvent.OpenConversation, () => {
             setAutoScroll(true);
+        });
+
+        const unsubscribeSetConversation = chatService.on(AutopilotChatEvent.SetConversation, () => {
+            useInstantScrollRef.current = true;
         });
 
         return () => {
@@ -183,9 +190,11 @@ export const AutopilotChatScrollProvider: React.FC<AutopilotChatScrollProviderPr
             overflowContainer.removeEventListener('mousedown', handleMouseDown);
             overflowContainer.removeEventListener('mouseup', handleMouseUp);
             overflowContainer.removeEventListener('keydown', handleKeyDown);
+
             unsubscribeRequestIntercept();
             unsubscribeNewChat();
             unsubscribeOpenConversation();
+            unsubscribeSetConversation();
         };
     }, [ handleResize, handleWheel, handleKeyDown, handleMouseUp, handleMouseDown, chatService ]);
 
