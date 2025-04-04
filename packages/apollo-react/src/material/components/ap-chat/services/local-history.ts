@@ -6,6 +6,7 @@
 import type { AutopilotChatMessage } from '@uipath/portal-shell-util';
 import {
     AutopilotChatEvent,
+    AutopilotChatInterceptableEvent,
     AutopilotChatInternalEvent,
 } from '@uipath/portal-shell-util';
 
@@ -319,6 +320,8 @@ export class LocalHistoryService {
 
                         chatService.setHistory(await LocalHistoryService.getAllConversations());
                     }
+
+                    return false;
                 };
 
                 const handleChunk = async (message: AutopilotChatMessage) => {
@@ -335,7 +338,7 @@ export class LocalHistoryService {
                     }
                 };
 
-                unsubscribeRequest = chatService.on(AutopilotChatEvent.Request, handleNewMessage);
+                unsubscribeRequest = chatService.intercept(AutopilotChatInterceptableEvent.Request, handleNewMessage);
                 unsubscribeResponse = chatService.on(AutopilotChatEvent.Response, handleNewMessage);
                 unsubscribeSendChunk = chatService.on(AutopilotChatEvent.SendChunk, handleChunk);
                 unsubscribeNewChat = chatService.on(AutopilotChatEvent.NewChat, async () => {
