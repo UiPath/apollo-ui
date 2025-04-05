@@ -31,7 +31,7 @@ export const AutopilotChatScrollProvider: React.FC<AutopilotChatScrollProviderPr
     const contentRef = React.useRef<HTMLDivElement>(null);
     const previousHeightRef = React.useRef<number>(0);
     const isDraggingScrollBarRef = React.useRef(false);
-    const useInstantScrollRef = React.useRef(false);
+    const useInstantScrollRef = React.useRef(true);
     const { streaming } = useStreaming();
 
     const [ autoScroll, setAutoScroll ] = React.useState(true);
@@ -184,6 +184,10 @@ export const AutopilotChatScrollProvider: React.FC<AutopilotChatScrollProviderPr
             useInstantScrollRef.current = true;
         });
 
+        const unsubscribeModeChange = chatService.on(AutopilotChatEvent.ModeChange, () => {
+            useInstantScrollRef.current = true;
+        });
+
         return () => {
             resizeObserver.disconnect();
             overflowContainer.removeEventListener('wheel', handleWheel);
@@ -195,6 +199,7 @@ export const AutopilotChatScrollProvider: React.FC<AutopilotChatScrollProviderPr
             unsubscribeNewChat();
             unsubscribeOpenConversation();
             unsubscribeSetConversation();
+            unsubscribeModeChange();
         };
     }, [ handleResize, handleWheel, handleKeyDown, handleMouseUp, handleMouseDown, chatService ]);
 

@@ -148,7 +148,7 @@ const AutopilotChatActionButtonComponent = React.forwardRef<HTMLButtonElement, A
         </ApIconButtonReact>
     );
 
-    return tooltip && chatMode !== AutopilotChatMode.Closed ? (
+    return tooltip && chatMode !== AutopilotChatMode.Closed && !disabled ? (
         <Tooltip
             title={tooltip}
             onClose={onTooltipClose}
