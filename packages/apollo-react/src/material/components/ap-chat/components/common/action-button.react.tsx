@@ -1,14 +1,16 @@
 /** @jsx React.createElement */
 /** @jsxFrag React.Fragment */
 
-import { styled } from '@mui/material';
+import {
+    styled,
+    Tooltip,
+} from '@mui/material';
 import token from '@uipath/apollo-core/lib';
 import { AutopilotChatMode } from '@uipath/portal-shell-util';
 import React from 'react';
 
 import { ApButtonReact } from '../../../ap-button/ap-button.react';
 import { ApIconButtonReact } from '../../../ap-icon-button/ap-icon-button.react';
-import { ApTooltipReact } from '../../../ap-tooltip/ap-tooltip.react';
 import { useChatState } from '../../providers/chat-state-provider.react';
 
 const StyledButtonContainer = styled('div')(() => ({
@@ -41,11 +43,15 @@ interface AutopilotChatActionButtonProps {
     tooltip?: string;
     ariaLabel?: string;
     tabIndex?: number;
+    disableInteractiveTooltip?: boolean;
     onClick: (event: React.MouseEvent<HTMLButtonElement>) => void;
     onFocus?: (event: React.FocusEvent<HTMLButtonElement>) => void;
     onBlur?: (event: React.FocusEvent<HTMLButtonElement>) => void;
     onMouseDown?: (event: React.MouseEvent<HTMLButtonElement>) => void;
     onKeyDown?: (event: React.KeyboardEvent<HTMLButtonElement>) => void;
+    onTooltipClose?: () => void;
+    onMouseEnter?: (event: React.MouseEvent<HTMLElement>) => void;
+    onMouseLeave?: (event: React.MouseEvent<HTMLElement>) => void;
 }
 
 const AutopilotChatActionButtonComponent = React.forwardRef<HTMLButtonElement, AutopilotChatActionButtonProps>(({
@@ -64,6 +70,10 @@ const AutopilotChatActionButtonComponent = React.forwardRef<HTMLButtonElement, A
     tooltip,
     ariaLabel,
     tabIndex,
+    onTooltipClose,
+    onMouseEnter,
+    onMouseLeave,
+    disableInteractiveTooltip = false,
 }, ref) => {
     const [ iconColor, setIconColor ] = React.useState('var(--color-icon-default)');
     const { chatMode } = useChatState();
@@ -72,10 +82,18 @@ const AutopilotChatActionButtonComponent = React.forwardRef<HTMLButtonElement, A
         <StyledButtonContainer>
             <ApButtonReact
                 ref={ref}
-                {...(!preventHover && {
-                    onMouseEnter: () => setIconColor('var(--color-foreground-emp)'),
-                    onMouseLeave: () => setIconColor('var(--color-icon-default)'),
-                })}
+                onMouseEnter={(event) => {
+                    onMouseEnter?.(event as React.MouseEvent<HTMLElement>);
+                    if (!preventHover) {
+                        setIconColor('var(--color-foreground-emp)');
+                    }
+                }}
+                onMouseLeave={(event) => {
+                    onMouseLeave?.(event as React.MouseEvent<HTMLElement>);
+                    if (!preventHover) {
+                        setIconColor('var(--color-icon-default)');
+                    }
+                }}
                 startIcon={
                     <ap-icon
                         variant={variant}
@@ -108,10 +126,18 @@ const AutopilotChatActionButtonComponent = React.forwardRef<HTMLButtonElement, A
             tabIndex={tabIndex}
             onKeyDown={onKeyDown}
             aria-label={ariaLabel}
-            {...(!preventHover && {
-                onMouseEnter: () => setIconColor('var(--color-foreground-emp)'),
-                onMouseLeave: () => setIconColor('var(--color-icon-default)'),
-            })}
+            onMouseEnter={(event) => {
+                onMouseEnter?.(event);
+                if (!preventHover) {
+                    setIconColor('var(--color-foreground-emp)');
+                }
+            }}
+            onMouseLeave={(event) => {
+                onMouseLeave?.(event);
+                if (!preventHover) {
+                    setIconColor('var(--color-icon-default)');
+                }
+            }}
         >
             <ap-icon
                 variant={variant}
@@ -122,11 +148,14 @@ const AutopilotChatActionButtonComponent = React.forwardRef<HTMLButtonElement, A
         </ApIconButtonReact>
     );
 
-    // Issue with tooltip when the display of the ref is set to none
     return tooltip && chatMode !== AutopilotChatMode.Closed ? (
-        <ApTooltipReact disabled={disabled} content={tooltip}>
+        <Tooltip
+            title={tooltip}
+            onClose={onTooltipClose}
+            disableInteractive={disableInteractiveTooltip}
+        >
             {button}
-        </ApTooltipReact>
+        </Tooltip>
     ) : button;
 });
 

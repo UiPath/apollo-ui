@@ -101,13 +101,16 @@ const WidgetContainer = React.memo(({
     }, []);
 
     return (
-        <MessageBox isAssistant={message.role === AutopilotChatRole.Assistant}>
+        <MessageBox
+            ref={(el) => {
+                if (el && messageElement !== el) {
+                    setMessageElement(el);
+                }
+            }}
+            isAssistant={message.role === AutopilotChatRole.Assistant}
+        >
             <div ref={(el) => {
                 if (el) {
-                    if (messageElement !== el) {
-                        setMessageElement(el);
-                    }
-
                     const unsubscribe = chatService.renderMessage(el, message);
 
                     if (unsubscribe) {
@@ -133,7 +136,11 @@ function AutopilotChatMessageContentComponent({ message }: { message: AutopilotC
 
         return (
             <MessageBox
-                ref={setMessageElement}
+                ref={(el) => {
+                    if (el && messageElement !== el) {
+                        setMessageElement(el);
+                    }
+                }}
                 isAssistant={message.role === AutopilotChatRole.Assistant}
                 key={message.id}
             >

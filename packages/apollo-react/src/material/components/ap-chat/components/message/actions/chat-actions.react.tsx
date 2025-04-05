@@ -20,6 +20,8 @@ function AutopilotChatMessageActionsComponent({
     message, containerElement,
 }: AutopilotChatMessageActionsProps) {
     const [ isVisible, setIsVisible ] = React.useState(false);
+    const isUserInteractingWithActions = React.useRef(false);
+    const actionsContainerRef = React.useRef<HTMLDivElement | null>(null);
 
     // Determine actions based on message role and existing feedback
     const defaultActions = React.useMemo(() => {
@@ -73,6 +75,27 @@ function AutopilotChatMessageActionsComponent({
 
     }, [ message ]);
 
+    const isRelatedTarget = React.useCallback((target: Node) => {
+        return actionsContainerRef.current && (
+            actionsContainerRef.current === target ||
+            actionsContainerRef.current.contains(target)
+        );
+    }, []);
+
+    // Store a reference to the actions container
+    const handleActionContainerRef = React.useCallback((node: HTMLDivElement | null) => {
+        actionsContainerRef.current = node;
+    }, []);
+
+    // Handler for actions list hover state
+    const handleActionsHoverChange = React.useCallback((isHovering: boolean) => {
+        isUserInteractingWithActions.current = isHovering;
+
+        if (isHovering) {
+            setIsVisible(true);
+        }
+    }, []);
+
     React.useEffect(() => {
         const messageContainer = containerElement;
 
@@ -81,9 +104,32 @@ function AutopilotChatMessageActionsComponent({
         }
 
         const handleMouseEnter = () => setIsVisible(true);
-        const handleMouseLeave = () => setIsVisible(false);
+
+        const handleMouseLeave = (event: MouseEvent) => {
+            // If actions list is open, don't hide it
+            if (isUserInteractingWithActions.current) {
+                return;
+            }
+
+            // Check if the mouse is moving to the actions container or its children
+            if (isRelatedTarget(event.relatedTarget as Node)) {
+                return;
+            }
+
+            setIsVisible(false);
+        };
+
         const handleFocus = () => setIsVisible(true);
-        const handleBlur = () => setIsVisible(false);
+        const handleBlur = (event: FocusEvent) => {
+            const relatedTarget = event.relatedTarget as Node;
+
+            // Check if the mouse is moving to the actions container or its children
+            if (isRelatedTarget(relatedTarget) || messageContainer.contains(relatedTarget)) {
+                return;
+            }
+
+            setIsVisible(false);
+        };
 
         // Add event listeners to the parent message container
         messageContainer.addEventListener('mouseenter', handleMouseEnter);
@@ -97,7 +143,7 @@ function AutopilotChatMessageActionsComponent({
             messageContainer.removeEventListener('focusin', handleFocus);
             messageContainer.removeEventListener('focusout', handleBlur);
         };
-    }, [ containerElement ]);
+    }, [ containerElement, isRelatedTarget ]);
 
     if (message.stream && !message.done) {
         return null;
@@ -109,6 +155,8 @@ function AutopilotChatMessageActionsComponent({
             defaultActions={defaultActions}
             isVisible={isVisible}
             setIsVisible={setIsVisible}
+            onHoverChange={handleActionsHoverChange}
+            actionsContainerRef={handleActionContainerRef}
         />
     );
 }

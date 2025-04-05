@@ -41,14 +41,15 @@ interface AutopilotChatActionsListProps {
     defaultActions: AutopilotChatMessageAction[];
     isVisible: boolean;
     setIsVisible: (isVisible: boolean) => void;
+    onHoverChange?: (isHovering: boolean, focusOut?: boolean) => void;
+    actionsContainerRef?: (node: HTMLDivElement | null) => void;
 }
 
 function AutopilotChatActionsListComponent({
-    message, defaultActions, isVisible, setIsVisible,
+    message, defaultActions, isVisible, setIsVisible, onHoverChange, actionsContainerRef,
 }: AutopilotChatActionsListProps) {
     const [ anchorEl, setAnchorEl ] = React.useState<null | HTMLElement>(null);
     const overflowMenuOpen = Boolean(anchorEl);
-    const containerRef = React.useRef<HTMLDivElement>(null);
     const overflowButtonRef = React.useRef<HTMLButtonElement>(null);
     const mainActions = [
         ...defaultActions?.filter(action => !action.showInOverflow) || [],
@@ -82,13 +83,21 @@ function AutopilotChatActionsListComponent({
 
     const handleMouseEnter = React.useCallback(() => {
         setIsVisible(true);
-    }, [ setIsVisible ]);
+        onHoverChange?.(true);
+    }, [ setIsVisible, onHoverChange ]);
 
     const handleMouseLeave = React.useCallback(() => {
         if (!overflowMenuOpen) {
-            setIsVisible(false);
+            onHoverChange?.(false);
         }
-    }, [ setIsVisible, overflowMenuOpen ]);
+    }, [ overflowMenuOpen, onHoverChange ]);
+
+    const containerRef = React.useCallback((node: HTMLDivElement | null) => {
+        // Call the parent's ref callback if provided
+        if (actionsContainerRef) {
+            actionsContainerRef(node);
+        }
+    }, [ actionsContainerRef ]);
 
     return (
         <ActionsListContainer
@@ -110,11 +119,14 @@ function AutopilotChatActionsListComponent({
                             handleAction(action);
                         }
                     }}
+                    onMouseEnter={handleMouseEnter}
+                    onMouseLeave={handleMouseLeave}
                     onFocus={handleMouseEnter}
                     iconName={action.icon ?? ''}
                     iconSize="16px"
                     tooltip={action.label}
                     variant={action.disabled ? 'normal' : 'outlined'}
+                    disableInteractiveTooltip={true}
                 />
             ))}
 
@@ -127,17 +139,22 @@ function AutopilotChatActionsListComponent({
                         tooltip={t('autopilot-chat-more-actions')}
                         onClick={handleOpenOverflowMenu}
                         onFocus={handleMouseEnter}
+                        onMouseEnter={handleMouseEnter}
+                        onMouseLeave={handleMouseLeave}
+                        disableInteractiveTooltip={true}
                     />
                     <Menu
                         anchorEl={anchorEl}
                         open={overflowMenuOpen}
                         onClose={handleCloseOverflowMenu}
-                        onClick={handleCloseOverflowMenu}
                     >
                         {overflowActions.map((action) => (
                             <MenuItem
                                 key={action.name}
-                                onClick={() => handleAction(action)}
+                                onClick={() => {
+                                    handleAction(action);
+                                    handleCloseOverflowMenu();
+                                }}
                             >
                                 {action.label}
                             </MenuItem>
