@@ -14,8 +14,6 @@ import React from 'react';
 
 import { useLoading } from '../../providers/loading-provider.react';
 import { AutopilotChatService } from '../../services/chat-service';
-import { CHAT_WAITING_RESPONSE_TIMEOUT } from '../../utils/constants';
-import { AutopilotChatAttachments } from './attachments/attachments.react';
 import { AutopilotChatMessageContent } from './chat-message-content.react';
 import { AutopilotChatFRE } from './first-run-experience/chat-fre.react';
 import { AutopilotChatLoading } from './loader/chat-loading.react';
@@ -37,9 +35,6 @@ const removeFakeStream = (messages: AutopilotChatMessage[]) => {
 const Message = React.memo(({ message }: { message: AutopilotChatMessage }) => {
     return (
         <React.Fragment key={message.id}>
-            {message.attachments && message.attachments.length > 0 && (
-                <AutopilotChatAttachments attachments={message.attachments}/>
-            )}
             <AutopilotChatMessageContent message={message}/>
         </React.Fragment>
     );
@@ -105,17 +100,6 @@ function AutopilotChatMessagesComponent() {
         // set messages to the new conversation
         const unsubscribeConversation = chatService.on(AutopilotChatEvent.SetConversation, (msg) => {
             setMessages(removeFakeStream(msg));
-
-            const lastMessage = msg[msg.length - 1];
-
-            // FIXME: Assumption - if last message is a user message and it's newer than 15 seconds, set waiting response to true
-            if (
-                lastMessage &&
-                lastMessage.role === AutopilotChatRole.User &&
-                new Date(lastMessage.created_at).getTime() > Date.now() - CHAT_WAITING_RESPONSE_TIMEOUT
-            ) {
-                setWaitingResponse(true);
-            }
         });
 
         return () => {

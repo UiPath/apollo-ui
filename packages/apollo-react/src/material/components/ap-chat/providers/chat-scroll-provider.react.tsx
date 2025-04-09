@@ -83,6 +83,7 @@ export const AutopilotChatScrollProvider: React.FC<AutopilotChatScrollProviderPr
     // When scrolling up, we want to disable auto-scroll
     const handleWheel = React.useCallback((event: WheelEvent) => {
         const container = overflowContainerRef.current;
+
         if (!container) {
             return;
         }

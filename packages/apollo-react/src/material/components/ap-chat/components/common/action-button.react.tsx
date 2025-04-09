@@ -1,10 +1,7 @@
 /** @jsx React.createElement */
 /** @jsxFrag React.Fragment */
 
-import {
-    styled,
-    Tooltip,
-} from '@mui/material';
+import { styled } from '@mui/material';
 import token from '@uipath/apollo-core/lib';
 import { AutopilotChatMode } from '@uipath/portal-shell-util';
 import React from 'react';
@@ -12,6 +9,7 @@ import React from 'react';
 import { ApButtonReact } from '../../../ap-button/ap-button.react';
 import { ApIconButtonReact } from '../../../ap-icon-button/ap-icon-button.react';
 import { useChatState } from '../../providers/chat-state-provider.react';
+import { AutopilotChatTooltip } from './tooltip.react';
 
 const StyledButtonContainer = styled('div')(() => ({
     '& .MuiButton-root': {
@@ -49,7 +47,6 @@ interface AutopilotChatActionButtonProps {
     onBlur?: (event: React.FocusEvent<HTMLButtonElement>) => void;
     onMouseDown?: (event: React.MouseEvent<HTMLButtonElement>) => void;
     onKeyDown?: (event: React.KeyboardEvent<HTMLButtonElement>) => void;
-    onTooltipClose?: () => void;
     onMouseEnter?: (event: React.MouseEvent<HTMLElement>) => void;
     onMouseLeave?: (event: React.MouseEvent<HTMLElement>) => void;
 }
@@ -70,7 +67,6 @@ const AutopilotChatActionButtonComponent = React.forwardRef<HTMLButtonElement, A
     tooltip,
     ariaLabel,
     tabIndex,
-    onTooltipClose,
     onMouseEnter,
     onMouseLeave,
     disableInteractiveTooltip = false,
@@ -149,13 +145,12 @@ const AutopilotChatActionButtonComponent = React.forwardRef<HTMLButtonElement, A
     );
 
     return tooltip && chatMode !== AutopilotChatMode.Closed && !disabled ? (
-        <Tooltip
+        <AutopilotChatTooltip
             title={tooltip}
-            onClose={onTooltipClose}
             disableInteractive={disableInteractiveTooltip}
         >
             {button}
-        </Tooltip>
+        </AutopilotChatTooltip>
     ) : button;
 });
 

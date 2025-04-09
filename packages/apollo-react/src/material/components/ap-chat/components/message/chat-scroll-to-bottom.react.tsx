@@ -10,6 +10,7 @@ import {
 import React from 'react';
 
 import { t } from '../../../../utils/localization/loc';
+import { useChatScroll } from '../../providers/chat-scroll-provider.react';
 import { AutopilotChatInternalService } from '../../services/chat-internal-service';
 import { AutopilotChatService } from '../../services/chat-service';
 import { AutopilotChatActionButton } from '../common/action-button.react';
@@ -49,16 +50,15 @@ const ScrollButtonWrapper = styled('div')(() => ({
 }));
 
 interface ScrollToBottomButtonProps {
-    visible: boolean;
-    onClick: () => void;
     containerRef: React.RefObject<HTMLDivElement>;
 }
 
-function AutopilotChatScrollToBottomButtonComponent({
-    visible, onClick, containerRef,
-}: ScrollToBottomButtonProps) {
+function AutopilotChatScrollToBottomButtonComponent({ containerRef }: ScrollToBottomButtonProps) {
     const [ bottom, setBottom ] = React.useState(0);
     const [ left, setLeft ] = React.useState(0);
+    const {
+        autoScroll, scrollToBottom,
+    } = useChatScroll();
 
     const chatService = AutopilotChatService.Instance;
     const chatInternalService = AutopilotChatInternalService.Instance;
@@ -101,15 +101,17 @@ function AutopilotChatScrollToBottomButtonComponent({
         };
     }, [ containerRef, chatInternalService, chatService, bottom ]);
 
+    const isVisible = !autoScroll;
+
     return (
-        <ScrollButtonContainer visible={visible} bottom={bottom} left={left}>
+        <ScrollButtonContainer visible={isVisible} bottom={bottom} left={left}>
             <ScrollButtonWrapper>
                 <AutopilotChatActionButton
                     iconName="arrow_downward"
-                    onClick={onClick}
+                    onClick={() => scrollToBottom({ force: true })}
                     ariaLabel={t('autopilot-chat-scroll-to-bottom')}
-                    tooltip={visible ? t('autopilot-chat-scroll-to-bottom') : undefined}
-                    tabIndex={visible ? 0 : -1}
+                    tooltip={isVisible ? t('autopilot-chat-scroll-to-bottom') : undefined}
+                    tabIndex={isVisible ? 0 : -1}
                 />
             </ScrollButtonWrapper>
         </ScrollButtonContainer>

@@ -22,6 +22,7 @@ import {
     CHAT_WIDTH_SIDE_BY_SIDE_MIN,
 } from '../../utils/constants';
 import { calculateDynamicPadding } from '../../utils/dynamic-padding';
+import { Attachments } from '../common/attachments.react';
 import { AutopilotChatMessageActions } from './actions/chat-actions.react';
 import { AutopilotChatMarkdownRenderer } from './markdown/markdown.react';
 
@@ -109,6 +110,9 @@ const WidgetContainer = React.memo(({
             }}
             isAssistant={message.role === AutopilotChatRole.Assistant}
         >
+            {message.attachments && message.attachments.length > 0 && (
+                <Attachments attachments={message.attachments} removeSpacing disableOverflow />
+            )}
             <div ref={(el) => {
                 if (el) {
                     const unsubscribe = chatService.renderMessage(el, message);
@@ -127,7 +131,7 @@ function AutopilotChatMessageContentComponent({ message }: { message: AutopilotC
     const chatService = AutopilotChatService.Instance;
     const [ messageElement, setMessageElement ] = React.useState<HTMLDivElement | null>(null);
 
-    if (!message.content) {
+    if (!message.content && !message.attachments) {
         return null;
     }
 
@@ -144,6 +148,9 @@ function AutopilotChatMessageContentComponent({ message }: { message: AutopilotC
                 isAssistant={message.role === AutopilotChatRole.Assistant}
                 key={message.id}
             >
+                {message.attachments && message.attachments.length > 0 && (
+                    <Attachments attachments={message.attachments} removeSpacing disableOverflow />
+                )}
                 {ApolloMessageRenderer ? <ApolloMessageRenderer message={message} /> : <AutopilotChatMarkdownRenderer message={message} />}
                 <AutopilotChatMessageActions message={message} containerElement={messageElement}/>
             </MessageBox>

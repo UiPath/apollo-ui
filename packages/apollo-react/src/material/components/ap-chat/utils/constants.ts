@@ -37,7 +37,6 @@ export const CHAT_WIDTH_KEY = 'width';
 export const CHAT_MODE_KEY = 'mode';
 export const CHAT_ACTIVE_CONVERSATION_ID_KEY = 'activeConversationId';
 export const CHAT_SCROLL_BOTTOM_BUFFER = 200;
-export const CHAT_WAITING_RESPONSE_TIMEOUT = 15000;
 
 export const APOLLO_MESSAGE_RENDERERS = [ {
     name: DEFAULT_MESSAGE_RENDERER,

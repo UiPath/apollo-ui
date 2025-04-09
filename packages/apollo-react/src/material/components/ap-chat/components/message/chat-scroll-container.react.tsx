@@ -34,8 +34,6 @@ interface ChatScrollContainerProps {
 
 function ChatScrollContainerComponent({ mode }: ChatScrollContainerProps) {
     const {
-        autoScroll,
-        scrollToBottom,
         overflowContainerRef,
         contentRef,
     } = useChatScroll();
@@ -48,13 +46,7 @@ function ChatScrollContainerComponent({ mode }: ChatScrollContainerProps) {
                 </MessagesContainer>
             </OverflowContainer>
 
-            <AutopilotChatScrollToBottomButton
-                visible={!autoScroll}
-                onClick={() => {
-                    scrollToBottom({ force: true });
-                }}
-                containerRef={overflowContainerRef}
-            />
+            <AutopilotChatScrollToBottomButton containerRef={overflowContainerRef}/>
         </>
     );
 }

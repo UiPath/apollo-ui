@@ -90,9 +90,7 @@ export const FullScreenLayout: React.FC<LayoutProps> = ({
 
             <ContentContainer>
                 <MainContainer ref={mainContainerRef} historyOpen={historyOpen}>
-                    <AutopilotChatScrollProvider>
-                        <ChatScrollContainer mode={mode} />
-                    </AutopilotChatScrollProvider>
+                    <ChatScrollContainer mode={mode} />
 
                     <InputBackground>
                         <InputContainer>

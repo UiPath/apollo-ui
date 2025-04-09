@@ -16,6 +16,7 @@ import {
     StandardLayout,
 } from './components/layout';
 import { AutopilotAttachmentsProvider } from './providers/attachements-provider.react';
+import { AutopilotChatScrollProvider } from './providers/chat-scroll-provider.react';
 import {
     AutopilotChatStateProvider,
     useChatState,
@@ -88,19 +89,21 @@ const AutopilotChatContent = React.memo(() => {
 export function ApAutopilotChatReact() {
     return (
         <AutopilotChatStateProvider>
-            <AutopilotErrorProvider>
-                <AutopilotLoadingProvider>
-                    <AutopilotStreamingProvider>
-                        <AutopilotAttachmentsProvider>
-                            <AutopilotChatWidthProvider>
-                                <AutopilotChatDropzone>
-                                    <AutopilotChatContent />
-                                </AutopilotChatDropzone>
-                            </AutopilotChatWidthProvider>
-                        </AutopilotAttachmentsProvider>
-                    </AutopilotStreamingProvider>
-                </AutopilotLoadingProvider>
-            </AutopilotErrorProvider>
+            <AutopilotChatScrollProvider>
+                <AutopilotErrorProvider>
+                    <AutopilotLoadingProvider>
+                        <AutopilotStreamingProvider>
+                            <AutopilotAttachmentsProvider>
+                                <AutopilotChatWidthProvider>
+                                    <AutopilotChatDropzone>
+                                        <AutopilotChatContent />
+                                    </AutopilotChatDropzone>
+                                </AutopilotChatWidthProvider>
+                            </AutopilotAttachmentsProvider>
+                        </AutopilotStreamingProvider>
+                    </AutopilotLoadingProvider>
+                </AutopilotErrorProvider>
+            </AutopilotChatScrollProvider>
         </AutopilotChatStateProvider>
     );
 }

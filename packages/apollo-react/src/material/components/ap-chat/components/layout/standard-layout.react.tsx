@@ -56,9 +56,7 @@ export const StandardLayout: React.FC<LayoutProps> = ({
                     <AutopilotChatHeader />
                 </HeaderContainer>
 
-                <AutopilotChatScrollProvider>
-                    <ChatScrollContainer mode={mode} />
-                </AutopilotChatScrollProvider>
+                <ChatScrollContainer mode={mode} />
 
                 <InputBackground>
                     <InputContainer>
