@@ -152,12 +152,14 @@ export enum AutopilotChatInterceptableEvent {
  * @property {string} OpenHistory - Emitted when the history is opened
  * @property {string} CloseHistory - Emitted when the history is closed
  * @property {string} UseLocalHistory - Emitted when the chat uses local history
+ * @property {string} SetAllowedAttachments - Emitted when the allowed attachments are set
  */
 export enum AutopilotChatInternalEvent {
     ChatResize = 'chatResize',
     ScrollToBottom = 'scrollToBottom',
     ToggleHistory = 'toggleHistory',
     UseLocalHistory = 'useLocalHistory',
+    SetAllowedAttachments = 'setAllowedAttachments',
 }
 
 export type AutopilotChatEventHandler<T = any> = (data?: T) => void;
@@ -202,6 +204,7 @@ export interface AutopilotChatDisabledFeatures {
  * @property disabledFeatures - The disabled features of the chat
  * @property firstRunExperience - The first run experience of the chat
  * @property useLocalHistory - Whether the chat uses indexdb to store history
+ * @property allowedAttachments - The allowed attachments of the chat
  */
 export interface AutopilotChatConfiguration {
     mode: AutopilotChatMode;
@@ -212,6 +215,7 @@ export interface AutopilotChatConfiguration {
         suggestions?: AutopilotChatSuggestion[];
     };
     useLocalHistory?: boolean;
+    allowedAttachments?: AutopilotChatAllowedAttachments;
 }
 
 /**
@@ -257,4 +261,22 @@ export interface AutopilotChatMessageAction {
 export interface AutopilotChatActionPayload {
     message: AutopilotChatMessage;
     action: AutopilotChatMessageAction;
+}
+
+/**
+ * Represents the allowed attachments for the Autopilot Chat system.
+ *
+ * @property types - An object mapping MIME types to arrays of file extensions
+ *   Example: { 'text/csv': ['.csv'], 'application/json': ['.json'] }
+ * @property maxSize - The maximum file size in bytes for attachments
+ * @property maxCount - The maximum number of attachments allowed per message
+ * @property multiple - Whether the chat allows multiple attachments per message
+ */
+export interface AutopilotChatAllowedAttachments {
+    multiple: boolean;
+    types: {
+        [key: string]: string[];
+    };
+    maxSize: number;
+    maxCount?: number;
 }
