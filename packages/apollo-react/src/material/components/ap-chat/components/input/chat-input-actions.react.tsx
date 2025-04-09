@@ -124,24 +124,36 @@ function AutopilotChatInputActionsComponent({
                             tooltipPlacement="top"
                             tooltip={
                                 <>
-                                    <ap-typography variant={FontVariantToken.fontSizeM}>
+                                    <ap-typography
+                                        color={theme.palette.semantic.colorForegroundInverse}
+                                        variant={FontVariantToken.fontSizeM}
+                                    >
                                         {t('autopilot-chat-attach-file')}
                                     </ap-typography>
 
                                     {allowedAttachments.maxCount && allowedAttachments.maxCount > 1 && allowedAttachments.multiple && (
-                                        <ap-typography variant={FontVariantToken.fontSizeXs}>
+                                        <ap-typography
+                                            color={theme.palette.semantic.colorForegroundInverse}
+                                            variant={FontVariantToken.fontSizeXs}
+                                        >
                                             {t('autopilot-chat-dropzone-overlay-max-count', { maxCount: allowedAttachments.maxCount })}
                                         </ap-typography>
                                     )}
 
-                                    <ap-typography variant={FontVariantToken.fontSizeXs}>
+                                    <ap-typography
+                                        color={theme.palette.semantic.colorForegroundInverse}
+                                        variant={FontVariantToken.fontSizeXs}
+                                    >
                                         {t(
                                             'autopilot-chat-dropzone-overlay-max-size',
                                             { maxSize: allowedAttachments.maxSize / 1024 / 1024 },
                                         )}
                                     </ap-typography>
 
-                                    <ap-typography variant={FontVariantToken.fontSizeXs}>
+                                    <ap-typography
+                                        color={theme.palette.semantic.colorForegroundInverse}
+                                        variant={FontVariantToken.fontSizeXs}
+                                    >
                                         {t(
                                             'autopilot-chat-allowed-file-types',
                                             { fileTypes: acceptedExtensions.split(',').join(', ') },
