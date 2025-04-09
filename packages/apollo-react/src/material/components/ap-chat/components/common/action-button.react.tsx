@@ -1,7 +1,10 @@
 /** @jsx React.createElement */
 /** @jsxFrag React.Fragment */
 
-import { styled } from '@mui/material';
+import {
+    styled,
+    TooltipProps,
+} from '@mui/material';
 import token from '@uipath/apollo-core/lib';
 import { AutopilotChatMode } from '@uipath/portal-shell-util';
 import React from 'react';
@@ -38,7 +41,8 @@ interface AutopilotChatActionButtonProps {
     overrideColor?: string;
     variant?: 'normal' | 'outlined' | 'custom';
     text?: string;
-    tooltip?: string;
+    tooltip?: React.ReactNode;
+    tooltipPlacement?: TooltipProps['placement'];
     ariaLabel?: string;
     tabIndex?: number;
     disableInteractiveTooltip?: boolean;
@@ -55,20 +59,21 @@ const AutopilotChatActionButtonComponent = React.forwardRef<HTMLButtonElement, A
     iconName,
     disabled,
     iconSize,
-    onClick,
-    onFocus,
-    onBlur,
-    onMouseDown,
-    onKeyDown,
     preventHover,
     overrideColor,
     variant = 'outlined',
     text,
     tooltip,
+    tooltipPlacement = 'bottom',
     ariaLabel,
     tabIndex,
     onMouseEnter,
     onMouseLeave,
+    onClick,
+    onFocus,
+    onBlur,
+    onMouseDown,
+    onKeyDown,
     disableInteractiveTooltip = false,
 }, ref) => {
     const [ iconColor, setIconColor ] = React.useState('var(--color-icon-default)');
@@ -147,6 +152,7 @@ const AutopilotChatActionButtonComponent = React.forwardRef<HTMLButtonElement, A
     return tooltip && chatMode !== AutopilotChatMode.Closed && !disabled ? (
         <AutopilotChatTooltip
             title={tooltip}
+            placement={tooltipPlacement}
             disableInteractive={disableInteractiveTooltip}
         >
             {button}

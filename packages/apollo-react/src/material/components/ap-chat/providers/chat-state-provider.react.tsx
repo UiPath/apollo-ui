@@ -2,6 +2,7 @@
 /** @jsxFrag React.Fragment */
 
 import {
+    AutopilotChatAllowedAttachments,
     AutopilotChatConfiguration,
     AutopilotChatDisabledFeatures,
     AutopilotChatEvent,
@@ -18,6 +19,7 @@ interface AutopilotChatStateContextType {
     chatMode: AutopilotChatMode;
     disabledFeatures: AutopilotChatDisabledFeatures;
     firstRunExperience: AutopilotChatConfiguration['firstRunExperience'];
+    allowedAttachments: AutopilotChatAllowedAttachments;
 }
 
 const AutopilotChatStateContext = React.createContext<AutopilotChatStateContextType | null>(null);
@@ -30,6 +32,14 @@ export const AutopilotChatStateProvider: React.FC<AutopilotChatStateProviderProp
     const chatService = AutopilotChatService.Instance;
     const chatInternalService = AutopilotChatInternalService.Instance;
 
+    const [ allowedAttachments, setAllowedAttachments ] = React.useState<AutopilotChatAllowedAttachments>(
+        chatService?.getConfig()?.allowedAttachments ?? {
+            multiple: false,
+            types: {},
+            maxSize: 0,
+            maxCount: 0,
+        },
+    );
     const [ historyOpen, setHistoryOpen ] = React.useState(chatService?.historyOpen ?? false);
     const [ chatMode, setChatMode ] = React.useState(chatService?.getConfig()?.mode ?? AutopilotChatMode.SideBySide);
     const [ disabledFeatures, setDisabledFeatures ] = React.useState(chatService?.getConfig()?.disabledFeatures ?? {});
@@ -72,11 +82,19 @@ export const AutopilotChatStateProvider: React.FC<AutopilotChatStateProviderProp
             },
         );
 
+        const unsubscribeAllowedAttachments = chatInternalService.on(
+            AutopilotChatInternalEvent.SetAllowedAttachments,
+            (allowed: AutopilotChatAllowedAttachments) => {
+                setAllowedAttachments(allowed);
+            },
+        );
+
         return () => {
             unsubscribeHistoryToggle();
             unsubscribeModeChange();
             unsubscribeDisabledFeatures();
             unsubscribeFirstRunExperience();
+            unsubscribeAllowedAttachments();
         };
     }, [ chatService, chatInternalService ]);
 
@@ -85,7 +103,8 @@ export const AutopilotChatStateProvider: React.FC<AutopilotChatStateProviderProp
         chatMode,
         disabledFeatures,
         firstRunExperience,
-    }), [ historyOpen, chatMode, disabledFeatures, firstRunExperience ]);
+        allowedAttachments,
+    }), [ historyOpen, chatMode, disabledFeatures, firstRunExperience, allowedAttachments ]);
 
     return (
         <AutopilotChatStateContext.Provider value={value}>

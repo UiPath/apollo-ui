@@ -7,7 +7,10 @@ import {
 } from '@uipath/portal-shell-util';
 import React from 'react';
 
+import { t } from '../../../utils/localization/loc';
 import { AutopilotChatService } from '../services/chat-service';
+import { useChatState } from './chat-state-provider.react';
+import { useError } from './error-provider.react';
 
 interface AutopilotAttachmentsContextType {
     attachments: AutopilotChatFileInfo[];
@@ -27,18 +30,42 @@ export function AutopilotAttachmentsProvider({ children }: { children: React.Rea
     const chatService = AutopilotChatService.Instance;
     const prompt = chatService?.getPrompt?.() as AutopilotChatPrompt | undefined;
 
+    const { allowedAttachments } = useChatState();
+    const { setError } = useError();
+
     const [ attachments, setAttachments ] = React.useState<AutopilotChatFileInfo[]>(
         prompt?.attachments ?? [],
     );
 
+    const attachmentsRef = React.useRef<AutopilotChatFileInfo[]>(attachments);
+
+    React.useEffect(() => {
+        attachmentsRef.current = attachments;
+    }, [ attachments ]);
+
     const addAttachments = React.useCallback((newFiles: AutopilotChatFileInfo[]) => {
-        setAttachments(current => [
-            ...current,
-            ...newFiles.filter(file => !current.some(existing =>
+        const filesToAdd = [
+            ...attachmentsRef.current,
+            ...newFiles.filter(file => !attachmentsRef.current.some(existing =>
                 existing.name === file.name && existing.size === file.size,
             )),
-        ]);
-    }, []);
+        ];
+        const totalCount = filesToAdd.length;
+
+        if (allowedAttachments.maxCount && totalCount > allowedAttachments.maxCount) {
+            setError(t('autopilot-chat-error-too-many-files', { maxCount: allowedAttachments.maxCount }));
+
+            return;
+        }
+
+        if (!allowedAttachments.multiple && totalCount > 1) {
+            setError(t('autopilot-chat-error-multiple-files'));
+
+            return;
+        }
+
+        setAttachments(filesToAdd);
+    }, [ allowedAttachments.maxCount, allowedAttachments.multiple, setError ]);
 
     const removeAttachment = React.useCallback((name: string) => {
         setAttachments(current => current.filter(file => file.name !== name));

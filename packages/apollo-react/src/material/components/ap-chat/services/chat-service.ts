@@ -1,4 +1,5 @@
 import type {
+    AutopilotChatAllowedAttachments,
     AutopilotChatConfiguration,
     AutopilotChatDisabledFeatures,
     AutopilotChatEventHandler,
@@ -18,6 +19,9 @@ import {
 
 import { isDebuggingEnabled } from '../../../react/stencil-react-adapter/Utils/DebugUtils';
 import {
+    ACCEPTED_FILE_MAX_COUNT,
+    ACCEPTED_FILE_MAX_SIZE,
+    ACCEPTED_FILES,
     CHAT_MODE_KEY,
     DEFAULT_MESSAGE_RENDERER,
 } from '../utils/constants';
@@ -28,10 +32,17 @@ import { StorageService } from './storage';
 
 export class AutopilotChatService {
     private static _instance: AutopilotChatService;
-    private _config: AutopilotChatConfiguration = {
+    private _initialConfig: AutopilotChatConfiguration = {
         mode: StorageService.Instance.get(CHAT_MODE_KEY) as AutopilotChatMode
             ?? AutopilotChatMode.Closed,
+        allowedAttachments: {
+            multiple: true,
+            types: ACCEPTED_FILES,
+            maxSize: ACCEPTED_FILE_MAX_SIZE,
+            maxCount: ACCEPTED_FILE_MAX_COUNT,
+        },
     };
+    private _config: AutopilotChatConfiguration = { ...this._initialConfig };
     private _eventBus: EventBus;
     private _messageRenderers: AutopilotChatMessageRenderer[] = [];
     private _eventUnsubscribers: Array<() => void> = [];
@@ -73,6 +84,7 @@ export class AutopilotChatService {
         this.toggleHistory = this.toggleHistory.bind(this);
         this.deleteConversation = this.deleteConversation.bind(this);
         this.openConversation = this.openConversation.bind(this);
+        this.setAllowedAttachments = this.setAllowedAttachments.bind(this);
     }
 
     static Instantiate(config?: AutopilotChatConfiguration, messageRenderers: AutopilotChatMessageRenderer[] = []) {
@@ -117,7 +129,10 @@ export class AutopilotChatService {
         this._eventUnsubscribers.forEach(unsubscribe => unsubscribe());
         this._eventUnsubscribers = [];
 
-        this._config = config;
+        this._config = {
+            ...this._initialConfig,
+            ...config,
+        };
 
         if (config.mode) {
             this.setChatMode(config.mode);
@@ -135,7 +150,28 @@ export class AutopilotChatService {
             AutopilotChatInternalService.Instance.publish(AutopilotChatInternalEvent.UseLocalHistory, config.useLocalHistory);
         }
 
+        if (config.allowedAttachments) {
+            this.setAllowedAttachments({
+                ...this._config.allowedAttachments,
+                ...config.allowedAttachments,
+            });
+        }
+
         messageRenderers.forEach(renderer => this.injectMessageRenderer(renderer));
+    }
+
+    /**
+     * Patches the configuration in the chat service
+     *
+     * @param config - The configuration to patch
+     */
+    patchConfig(config: Partial<AutopilotChatConfiguration>, messageRenderers: AutopilotChatMessageRenderer[] = []) {
+        this._config = {
+            ...this._config,
+            ...config,
+        };
+
+        this.initialize(this._config, messageRenderers);
     }
 
     /**
@@ -196,11 +232,14 @@ export class AutopilotChatService {
      * @param config - The configuration to use
      * @param messageRenderers - The custom message renderers to inject
      */
-    open(config?: AutopilotChatConfiguration, messageRenderers: AutopilotChatMessageRenderer[] = []) {
-        this.initialize(config ?? {
-            ...this._config,
-            mode: AutopilotChatMode.SideBySide,
-        }, messageRenderers);
+    open(config?: Partial<AutopilotChatConfiguration>, messageRenderers: AutopilotChatMessageRenderer[] = []) {
+        this.patchConfig(
+            {
+                mode: AutopilotChatMode.SideBySide,
+                ...(config ?? {}),
+            },
+            messageRenderers,
+        );
 
         this._eventBus.publish(AutopilotChatEvent.Open);
     }
@@ -367,11 +406,9 @@ export class AutopilotChatService {
      * @param config - The configuration to use
      * @param messageRenderers - The custom message renderers to inject
      */
-    newChat(config?: AutopilotChatConfiguration, messageRenderers: AutopilotChatMessageRenderer[] = []) {
+    newChat(config?: AutopilotChatConfiguration) {
         if (config) {
-            this.initialize(config, messageRenderers);
-        } else {
-            messageRenderers.forEach(renderer => this.injectMessageRenderer(renderer));
+            this.patchConfig(config);
         }
 
         this._conversation = [];
@@ -494,5 +531,16 @@ export class AutopilotChatService {
     openConversation(conversationId: string | null) {
         this._activeConversationId = conversationId;
         this._eventBus.publish(AutopilotChatEvent.OpenConversation, conversationId);
+    }
+
+    /**
+     * Sets the allowed attachments in the chat service
+     *
+     * @param allowedAttachments - The allowed attachments to set
+     */
+    setAllowedAttachments(allowedAttachments: AutopilotChatAllowedAttachments) {
+        this._config.allowedAttachments = allowedAttachments;
+
+        AutopilotChatInternalService.Instance.publish(AutopilotChatInternalEvent.SetAllowedAttachments, allowedAttachments);
     }
 }

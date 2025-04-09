@@ -27,10 +27,20 @@ function AutopilotChatInputErrorComponent() {
         return null;
     }
 
-    return <ap-alert-bar style={{
-        marginBottom: token.Spacing.SpacingBase,
-        width: '100%',
-    }} status={StatusTypes.ERROR}>{error}</ap-alert-bar>;
+    return (
+        <ap-alert-bar
+            style={{
+                marginBottom: token.Spacing.SpacingBase,
+                width: '100%',
+                wordBreak: 'break-word',
+                whiteSpace: 'pre-wrap',
+                maxHeight: '300px',
+                overflowY: 'auto',
+            }}
+            status={StatusTypes.ERROR}>
+            {error}
+        </ap-alert-bar>
+    );
 }
 
 export const AutopilotChatInputError = React.memo(AutopilotChatInputErrorComponent);

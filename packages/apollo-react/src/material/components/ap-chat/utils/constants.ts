@@ -16,12 +16,10 @@ export const ACCEPTED_FILES = {
     'application/vnd.ms-powerpoint': [ '.ppt' ],
     'application/vnd.openxmlformats-officedocument.presentationml.presentation': [ '.pptx' ],
     'application/x-bpmn': [ '.bpmn' ],
-} as const;
+};
 
-export const ACCEPTED_FILE_EXTENSIONS = Object.values(ACCEPTED_FILES)
-    .flat()
-    .join(',');
-
+export const ACCEPTED_FILE_MAX_COUNT = 10;
+export const ACCEPTED_FILE_MAX_SIZE = 512 * 1024 * 1024; // 512MB -- same as chat gpt (can be overriden by consumer)
 export const CHAT_WIDTH_FULL_SCREEN = '100vw';
 export const CHAT_CONTAINER_ANIMATION_DURATION = 200;
 export const CHAT_HISTORY_WIDTH_FULL_SCREEN = 372;

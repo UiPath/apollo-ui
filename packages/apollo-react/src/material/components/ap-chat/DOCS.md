@@ -38,11 +38,13 @@ const chatService = window.PortalShell.AutopilotChat;
 
 | Method | Description |
 |--------|-------------|
-| `getConfig()` | Returns the current chat configuration object (see [AutopilotChatConfiguration](#autopilotchatconfiguration)) |
 | `initialize(config: AutopilotChatConfiguration, messageRenderers?: AutopilotChatMessageRenderer[])` | Initializes the chat service with the provided configuration (see [AutopilotChatConfiguration](#autopilotchatconfiguration)) and optional message renderers (see [AutopilotChatMessageRenderer](#autopilotchatmessagerenderer)) |
+| `patchConfig(config: Partial<AutopilotChatConfiguration>, messageRenderers?: AutopilotChatMessageRenderer[] )` | Patches the configuration of the chat service using existing value. (see [AutopilotChatConfiguration](#autopilotchatconfiguration)) |
+| `getConfig()` | Returns the current chat configuration object (see [AutopilotChatConfiguration](#autopilotchatconfiguration)) |
 | `injectMessageRenderer(renderer: AutopilotChatMessageRenderer)` | Adds or replaces a custom message renderer in the chat service (see [AutopilotChatMessageRenderer](#autopilotchatmessagerenderer)) |
 | `getMessageRenderer(name: string)` | Retrieves a message renderer by name |
 | `setFirstRunExperience(config: AutopilotChatConfiguration['firstRunExperience'])` | Configures the first run experience (see [First Run Experience](#first-run-experience)) displayed when the chat is opened for the first time or when there are no messages |
+| `setAllowedAttachments(allowedAttachments: AutopilotChatAllowedAttachments)` | Configures the allowed file attachments (see [AutopilotChatAllowedAttachments](#autopilotchatallowedattachments)) |
 
 ### Chat Window Control
 
@@ -69,7 +71,7 @@ const chatService = window.PortalShell.AutopilotChat;
 
 | Method | Description |
 |--------|-------------|
-| `setHistory(history: AutopilotChatHistory[])` | Sets the chat history list (see [AutopilotChatHistory](#autopilotchathistory) |
+| `setHistory(history: AutopilotChatHistory[])` | Sets the chat history list (see [AutopilotChatHistory](#autopilotchathistory)) |
 | `getHistory()` | Returns the current chat history |
 | `toggleHistory(open?: boolean)` | Toggles the history panel visibility |
 | `deleteConversation(conversationId: string)` | Deletes a conversation from the history |
@@ -681,7 +683,6 @@ chatService.setDisabledFeatures({
 ## Configuration Types
 
 ### AutopilotChatConfiguration
-
 ```typescript
 /**
  * Represents the configuration for the Autopilot Chat system.
@@ -690,16 +691,18 @@ chatService.setDisabledFeatures({
  * @property disabledFeatures - The disabled features of the chat
  * @property firstRunExperience - The first run experience of the chat
  * @property useLocalHistory - Whether the chat uses indexdb to store history
+ * @property allowedAttachments - The allowed attachments of the chat
  */
-interface AutopilotChatConfiguration {
-  mode: AutopilotChatMode;
-  disabledFeatures?: AutopilotChatDisabledFeatures;
-  firstRunExperience?: {
-    title: string;
-    description: string;
-    suggestions?: AutopilotChatSuggestion[];
-  };
-  useLocalHistory?: boolean;
+export interface AutopilotChatConfiguration {
+    mode: AutopilotChatMode;
+    disabledFeatures?: AutopilotChatDisabledFeatures;
+    firstRunExperience?: {
+        title: string;
+        description: string;
+        suggestions?: AutopilotChatSuggestion[];
+    };
+    useLocalHistory?: boolean;
+    allowedAttachments?: AutopilotChatAllowedAttachments;
 }
 ```
 
@@ -729,6 +732,43 @@ interface AutopilotChatDisabledFeatures {
   resize?: boolean;
   fullScreen?: boolean;
   history?: boolean;
+}
+```
+
+### AutopilotChatSuggestion
+
+```typescript
+/**
+ * Represents a suggestion for the Autopilot Chat system.
+ *
+ * @property label - The label of the suggestion
+ * @property prompt - The prompt of the suggestion
+ */
+export interface AutopilotChatSuggestion {
+    label: string;
+    prompt: string;
+}
+```
+
+### AutopilotChatAllowedAttachments
+
+```typescript
+/**
+ * Represents the allowed attachments for the Autopilot Chat system.
+ *
+ * @property types - An object mapping MIME types to arrays of file extensions
+ *   Example: { 'text/csv': ['.csv'], 'application/json': ['.json'] }
+ * @property maxSize - The maximum file size in bytes for attachments
+ * @property maxCount - The maximum number of attachments allowed per message
+ * @property multiple - Whether the chat allows multiple attachments per message
+ */
+export interface AutopilotChatAllowedAttachments {
+    multiple: boolean;
+    types: {
+        [key: string]: string[];
+    };
+    maxSize: number;
+    maxCount?: number;
 }
 ```
 
@@ -773,23 +813,6 @@ export interface AutopilotChatMessage {
 }
 ```
 
-### AutopilotChatHistory
-
-```typescript
-/**
- * Represents a history item for the Autopilot Chat system.
- *
- * @property id - The id of the history item
- * @property name - The name of the history item
- * @property timestamp - The timestamp of the history item
- */
-export interface AutopilotChatHistory {
-    id: string;
-    name: string;
-    timestamp: string;
-}
-```
-
 ### AutopilotChatRole
 
 ```typescript
@@ -798,19 +821,6 @@ enum AutopilotChatRole {
     Assistant = 'assistant',
 }
 ```
-
-### AutopilotChatMessageRenderer
-
-```typescript
-interface AutopilotChatMessageRenderer {
-    name: string;
-    render: (container: HTMLElement, message: AutopilotChatMessage) => void | (() => void);
-}
-```
-
-The message renderer interface defines a custom renderer for chat messages:
-- `name`: Unique identifier for the renderer
-- `render`: Function that renders the message content into the provided container element. Can optionally return a cleanup function.
 
 ### AutopilotChatMessageAction
 
@@ -836,6 +846,37 @@ export interface AutopilotChatMessageAction {
     details?: Record<string, any>;
 }
 ```
+
+### AutopilotChatHistory
+
+```typescript
+/**
+ * Represents a history item for the Autopilot Chat system.
+ *
+ * @property id - The id of the history item
+ * @property name - The name of the history item
+ * @property timestamp - The timestamp of the history item
+ */
+export interface AutopilotChatHistory {
+    id: string;
+    name: string;
+    timestamp: string;
+}
+```
+
+### AutopilotChatMessageRenderer
+
+```typescript
+interface AutopilotChatMessageRenderer {
+    name: string;
+    render: (container: HTMLElement, message: AutopilotChatMessage) => void | (() => void);
+}
+```
+
+The message renderer interface defines a custom renderer for chat messages:
+- `name`: Unique identifier for the renderer
+- `render`: Function that renders the message content into the provided container element. Can optionally return a cleanup function.
+
 
 ### AutopilotChatActionPayload
 

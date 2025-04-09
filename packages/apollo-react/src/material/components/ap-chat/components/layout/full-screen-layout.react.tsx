@@ -9,7 +9,6 @@ import {
 } from '@uipath/portal-shell-util';
 import React from 'react';
 
-import { AutopilotChatScrollProvider } from '../../providers/chat-scroll-provider.react';
 import { AutopilotChatInternalService } from '../../services/chat-internal-service';
 import {
     CHAT_CONTAINER_ANIMATION_DURATION,

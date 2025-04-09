@@ -5,14 +5,13 @@ import {
     styled,
     useTheme,
 } from '@mui/material';
-import token from '@uipath/apollo-core/lib';
+import token, { FontVariantToken } from '@uipath/apollo-core/lib';
 import React from 'react';
 
 import { t } from '../../../../utils/localization/loc';
 import { useAttachments } from '../../providers/attachements-provider.react';
 import { useChatState } from '../../providers/chat-state-provider.react';
 import { useError } from '../../providers/error-provider.react';
-import { ACCEPTED_FILE_EXTENSIONS } from '../../utils/constants';
 import { parseFiles } from '../../utils/file-reader';
 import { AutopilotChatActionButton } from '../common/action-button.react';
 
@@ -52,9 +51,18 @@ function AutopilotChatInputActionsComponent({
     handleSubmit, disableSubmit, waitingResponse,
 }: AutopilotChatInputActionsProps) {
     const theme = useTheme();
-    const { addAttachments } = useAttachments();
+    const {
+        addAttachments, attachments,
+    } = useAttachments();
     const { setError } = useError();
-    const { disabledFeatures } = useChatState();
+    const {
+        disabledFeatures, allowedAttachments,
+    } = useChatState();
+    const attachmentsCountRef = React.useRef(attachments.length);
+
+    React.useEffect(() => {
+        attachmentsCountRef.current = attachments.length;
+    }, [ attachments ]);
 
     const fileInputRef = React.useRef<HTMLInputElement>(null);
 
@@ -69,12 +77,33 @@ function AutopilotChatInputActionsComponent({
     const handleAttachment = React.useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
         try {
             const parsedFiles = await parseFiles(Array.from(event.target.files ?? []));
+            const oversizedFiles = parsedFiles.filter(file => file.size > allowedAttachments.maxSize);
 
-            addAttachments(parsedFiles);
+            if (oversizedFiles.length > 0) {
+                const errorMessages = oversizedFiles.map(file => {
+                    const fileSizeMB = Math.round(file.size / 1024 / 1024);
+
+                    return t('autopilot-chat-error-file-too-large', {
+                        fileName: file.name,
+                        fileSize: fileSizeMB,
+                        maxSize: allowedAttachments.maxSize / 1024 / 1024,
+                    });
+                });
+
+                setError(errorMessages.join('\n'));
+            }
+
+            addAttachments(parsedFiles.filter(file => file.size <= allowedAttachments.maxSize));
         } catch (err: any) {
             setError(err);
         }
-    }, [ addAttachments, setError ]);
+    }, [ addAttachments, setError, allowedAttachments.maxSize ]);
+
+    const acceptedExtensions = React.useMemo(() => {
+        return Object.values(allowedAttachments.types)
+            .flat()
+            .join(',');
+    }, [ allowedAttachments ]);
 
     return (
         <InputActionsContainer>
@@ -85,14 +114,41 @@ function AutopilotChatInputActionsComponent({
                             type="file"
                             ref={fileInputRef}
                             style={{ display: 'none' }}
-                            accept={ACCEPTED_FILE_EXTENSIONS}
-                            multiple={true}
+                            accept={acceptedExtensions}
+                            multiple={allowedAttachments.multiple}
                             onChange={handleAttachment}
                         />
                         <AutopilotChatActionButton
                             iconName="attach_file"
                             onClick={handleFileButtonClick}
-                            tooltip={t('autopilot-chat-attach-file')}
+                            tooltipPlacement="top"
+                            tooltip={
+                                <>
+                                    <ap-typography variant={FontVariantToken.fontSizeM}>
+                                        {t('autopilot-chat-attach-file')}
+                                    </ap-typography>
+
+                                    {allowedAttachments.maxCount && allowedAttachments.maxCount > 1 && allowedAttachments.multiple && (
+                                        <ap-typography variant={FontVariantToken.fontSizeXs}>
+                                            {t('autopilot-chat-dropzone-overlay-max-count', { maxCount: allowedAttachments.maxCount })}
+                                        </ap-typography>
+                                    )}
+
+                                    <ap-typography variant={FontVariantToken.fontSizeXs}>
+                                        {t(
+                                            'autopilot-chat-dropzone-overlay-max-size',
+                                            { maxSize: allowedAttachments.maxSize / 1024 / 1024 },
+                                        )}
+                                    </ap-typography>
+
+                                    <ap-typography variant={FontVariantToken.fontSizeXs}>
+                                        {t(
+                                            'autopilot-chat-allowed-file-types',
+                                            { fileTypes: acceptedExtensions.split(',').join(', ') },
+                                        )}
+                                    </ap-typography>
+                                </>
+                            }
                         />
                     </>
                 )}
