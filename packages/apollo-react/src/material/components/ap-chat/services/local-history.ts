@@ -36,6 +36,8 @@ export class LocalHistoryService {
 
     private static ACTIVE_CONVERSATION_ID: string | null = null;
 
+    private static UNSUBSCRIBE_CALLBACKS: Map<string, () => void> = new Map();
+
     /**
      * Gets a connection to the conversations database.
      */
@@ -279,19 +281,16 @@ export class LocalHistoryService {
     public static async Initialize(chatService: AutopilotChatService) {
         const internalService = AutopilotChatInternalService.Instance;
 
-        let unsubscribeRequest: () => void;
-        let unsubscribeResponse: () => void;
-        let unsubscribeNewChat: () => void;
-        let unsubscribeDeleteConversation: () => void;
-        let unsubscribeOpenConversation: () => void;
-        let unsubscribeSendChunk: () => void;
-        let unsubscribeSetHistory: () => void;
+        const cleanup = () => {
+            LocalHistoryService.UNSUBSCRIBE_CALLBACKS.forEach((callback) => callback());
+            LocalHistoryService.UNSUBSCRIBE_CALLBACKS.clear();
+        };
 
         const handleLocalHistoryChange = async (useLocalHistory: boolean) => {
             if (useLocalHistory) {
                 LocalHistoryService.ACTIVE_CONVERSATION_ID = StorageService.Instance.get(CHAT_ACTIVE_CONVERSATION_ID_KEY);
 
-                unsubscribeSetHistory = chatService.on(AutopilotChatEvent.SetHistory, async () => {
+                const unsubscribeSetHistory = chatService.on(AutopilotChatEvent.SetHistory, async () => {
                     if (LocalHistoryService.ACTIVE_CONVERSATION_ID) {
                         chatService.openConversation(LocalHistoryService.ACTIVE_CONVERSATION_ID);
                         chatService.setConversation(
@@ -338,15 +337,15 @@ export class LocalHistoryService {
                     }
                 };
 
-                unsubscribeRequest = chatService.intercept(AutopilotChatInterceptableEvent.Request, handleNewMessage);
-                unsubscribeResponse = chatService.on(AutopilotChatEvent.Response, handleNewMessage);
-                unsubscribeSendChunk = chatService.on(AutopilotChatEvent.SendChunk, handleChunk);
-                unsubscribeNewChat = chatService.on(AutopilotChatEvent.NewChat, async () => {
+                const unsubscribeRequest = chatService.intercept(AutopilotChatInterceptableEvent.Request, handleNewMessage);
+                const unsubscribeResponse = chatService.on(AutopilotChatEvent.Response, handleNewMessage);
+                const unsubscribeSendChunk = chatService.on(AutopilotChatEvent.SendChunk, handleChunk);
+                const unsubscribeNewChat = chatService.on(AutopilotChatEvent.NewChat, async () => {
                     LocalHistoryService.ACTIVE_CONVERSATION_ID = null;
                     StorageService.Instance.remove(CHAT_ACTIVE_CONVERSATION_ID_KEY);
                 });
 
-                unsubscribeDeleteConversation = chatService.on(AutopilotChatEvent.DeleteConversation, async (id) => {
+                const unsubscribeDeleteConversation = chatService.on(AutopilotChatEvent.DeleteConversation, async (id) => {
                     await LocalHistoryService.deleteConversation(id);
 
                     if (LocalHistoryService.ACTIVE_CONVERSATION_ID === id) {
@@ -357,20 +356,22 @@ export class LocalHistoryService {
                     chatService.setHistory(await LocalHistoryService.getAllConversations());
                 });
 
-                unsubscribeOpenConversation = chatService.on(AutopilotChatEvent.OpenConversation, async (id) => {
+                const unsubscribeOpenConversation = chatService.on(AutopilotChatEvent.OpenConversation, async (id) => {
                     LocalHistoryService.ACTIVE_CONVERSATION_ID = id;
                     StorageService.Instance.set(CHAT_ACTIVE_CONVERSATION_ID_KEY, id);
                     chatService.setConversation(await LocalHistoryService.getConversationMessages(id));
                 });
+
+                cleanup();
+                LocalHistoryService.UNSUBSCRIBE_CALLBACKS.set('setHistory', unsubscribeSetHistory);
+                LocalHistoryService.UNSUBSCRIBE_CALLBACKS.set('openConversation', unsubscribeOpenConversation);
+                LocalHistoryService.UNSUBSCRIBE_CALLBACKS.set('deleteConversation', unsubscribeDeleteConversation);
+                LocalHistoryService.UNSUBSCRIBE_CALLBACKS.set('request', unsubscribeRequest);
+                LocalHistoryService.UNSUBSCRIBE_CALLBACKS.set('response', unsubscribeResponse);
+                LocalHistoryService.UNSUBSCRIBE_CALLBACKS.set('sendChunk', unsubscribeSendChunk);
+                LocalHistoryService.UNSUBSCRIBE_CALLBACKS.set('newChat', unsubscribeNewChat);
             } else {
                 chatService.setHistory([]);
-                unsubscribeRequest?.();
-                unsubscribeResponse?.();
-                unsubscribeNewChat?.();
-                unsubscribeDeleteConversation?.();
-                unsubscribeOpenConversation?.();
-                unsubscribeSendChunk?.();
-                unsubscribeSetHistory?.();
             }
         };
 

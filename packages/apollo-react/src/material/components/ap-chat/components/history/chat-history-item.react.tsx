@@ -108,6 +108,10 @@ const AutopilotChatHistoryItemComponent: React.FC<AutopilotChatHistoryItemProps>
             return;
         }
 
+        if (chatService.activeConversationId === item.id && !isActive) {
+            setIsActive(true);
+        }
+
         const unsubscribeOpenConversation = chatService.on(AutopilotChatEvent.OpenConversation, (id) => {
             if (!isActive && item.id === id) {
                 setWaitingResponse(false);
