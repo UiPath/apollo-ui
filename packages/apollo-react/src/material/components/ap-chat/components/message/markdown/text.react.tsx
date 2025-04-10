@@ -9,23 +9,34 @@ import { FontVariantToken } from '@uipath/apollo-core';
 import token from '@uipath/apollo-core/lib';
 import React from 'react';
 
+// Create a context for typography variant
+export const TypographyContext = React.createContext<FontVariantToken>(FontVariantToken.fontSizeM);
+
 export const Text = ({
     children, variant = FontVariantToken.fontSizeM, customStyle, headingLevel,
 }: { children: React.ReactNode; variant?: FontVariantToken; customStyle?: React.CSSProperties; headingLevel?: number }) => {
     const theme = useTheme();
 
     return (
-        <ap-typography
-            variant={variant}
-            color={theme.palette.semantic.colorForeground}
-            style={{ ...customStyle }}
-            {...(headingLevel ? {
-                'role': 'heading',
-                'aria-level': headingLevel,
-            } : {})}
-        >
-            {children}
-        </ap-typography>
+        <TypographyContext.Provider value={variant}>
+            <ap-typography
+                variant={variant}
+                color={theme.palette.semantic.colorForeground}
+                style={{ ...customStyle }}
+                {...(headingLevel ? {
+                    'role': 'heading',
+                    'aria-level': headingLevel,
+                } : {})}
+            >
+                { headingLevel ? (
+                    <div style={{ display: 'flex' }}>
+                        {children}
+                    </div>
+                ) : (
+                    children
+                )}
+            </ap-typography>
+        </TypographyContext.Provider>
     );
 };
 
@@ -60,23 +71,32 @@ export const Blockquote = React.memo(({ children }: { children: React.ReactNode 
 });
 
 export const Emphazised = React.memo(({ children }: { children: React.ReactNode }) => {
+    const parentVariant = React.useContext(TypographyContext);
+
     return Text({
         children: <em>{children}</em>,
         customStyle: { display: 'inline' },
+        variant: parentVariant,
     });
 });
 
 export const Strong = React.memo(({ children }: { children: React.ReactNode }) => {
+    const parentVariant = React.useContext(TypographyContext);
+
     return Text({
         children: <strong>{children}</strong>,
         customStyle: { display: 'inline' },
+        variant: parentVariant,
     });
 });
 
 export const Del = React.memo(({ children }: { children: React.ReactNode }) => {
+    const parentVariant = React.useContext(TypographyContext);
+
     return Text({
         children: <del>{children}</del>,
         customStyle: { display: 'inline' },
+        variant: parentVariant,
     });
 });
 
@@ -103,5 +123,14 @@ export const Hr = React.memo(() => {
 export const Link = React.memo(({
     href, children,
 }: { href?: string; children: React.ReactNode }) => {
-    return <ap-link href={href} target="_blank">{children}</ap-link>;
+    const parentVariant = React.useContext(TypographyContext);
+
+    return (
+        <Text
+            variant={parentVariant}
+            customStyle={{ display: 'inline' }}
+        >
+            <ap-link href={href} target="_blank">{children}</ap-link>
+        </Text>
+    );
 });
