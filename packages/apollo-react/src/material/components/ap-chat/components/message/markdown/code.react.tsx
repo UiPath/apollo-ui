@@ -131,7 +131,11 @@ export const Code = React.memo(({
 
     if (inline) {
         return (
-            <code style={{ color: theme.palette.semantic.colorForeground }} className={className} {...props}>
+            <code style={{
+                color: theme.palette.semantic.colorForeground,
+                fontSize: token.FontFamily.FontSSize,
+                lineHeight: token.FontFamily.FontSLineHeight,
+            }} className={className} {...props}>
                 {children}
             </code>
         );
