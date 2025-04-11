@@ -28,8 +28,9 @@ import { AutopilotChatMarkdownRenderer } from './markdown/markdown.react';
 
 const MessageBoxComponent = styled('div')<{
     isAssistant: boolean;
+    isCustomWidget?: boolean;
 }>(({
-    theme, isAssistant,
+    theme, isAssistant, isCustomWidget,
 }) => {
     const chatService = AutopilotChatService.Instance;
     const chatInternalService = AutopilotChatInternalService.Instance;
@@ -80,6 +81,7 @@ const MessageBoxComponent = styled('div')<{
         whiteSpace: 'pre-wrap',
         overflowWrap: 'anywhere',
         position: 'relative',
+        ...(isCustomWidget && { width: '100%' }),
     };
 });
 
@@ -109,11 +111,12 @@ const WidgetContainer = React.memo(({
                 }
             }}
             isAssistant={message.role === AutopilotChatRole.Assistant}
+            isCustomWidget
         >
             {message.attachments && message.attachments.length > 0 && (
                 <Attachments attachments={message.attachments} removeSpacing disableOverflow />
             )}
-            <div ref={(el) => {
+            <div className="chat-widget-container" ref={(el) => {
                 if (el) {
                     const unsubscribe = chatService.renderMessage(el, message);
 
