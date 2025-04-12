@@ -3,7 +3,7 @@
 import { AutopilotChatEvent } from '@uipath/portal-shell-util';
 import React from 'react';
 
-import { AutopilotChatService } from '../services/chat-service';
+import { useChatService } from './chat-service.provider.react';
 
 interface AutopilotErrorContextType {
     error: string | undefined;
@@ -18,7 +18,7 @@ export const AutopilotErrorContext = React.createContext<AutopilotErrorContextTy
 });
 
 export function AutopilotErrorProvider({ children }: { children: React.ReactNode }) {
-    const chatService = AutopilotChatService.Instance;
+    const chatService = useChatService();
     const [ error, setErrorState ] = React.useState<string | undefined>(
         chatService?.getError() ?? undefined,
     );

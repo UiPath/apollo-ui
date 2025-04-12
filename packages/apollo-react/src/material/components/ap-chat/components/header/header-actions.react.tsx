@@ -3,15 +3,17 @@
 
 import { styled } from '@mui/material/styles';
 import token from '@uipath/apollo-core/lib';
-import { AutopilotChatMode } from '@uipath/portal-shell-util';
+import {
+    AutopilotChatMode,
+    CHAT_MODE_KEY,
+    StorageService,
+} from '@uipath/portal-shell-util';
 import React from 'react';
 
 import { t } from '../../../../utils/localization/loc';
 import { useAttachments } from '../../providers/attachements-provider.react';
+import { useChatService } from '../../providers/chat-service.provider.react';
 import { useChatState } from '../../providers/chat-state-provider.react';
-import { AutopilotChatService } from '../../services/chat-service';
-import { StorageService } from '../../services/storage';
-import { CHAT_MODE_KEY } from '../../utils/constants';
 import { AutopilotChatActionButton } from '../common/action-button.react';
 
 const StyledActions = styled('div')(() => ({
@@ -21,7 +23,7 @@ const StyledActions = styled('div')(() => ({
 }));
 
 function AutopilotChatHeaderActionsComponent() {
-    const chatService = AutopilotChatService.Instance;
+    const chatService = useChatService();
     const { disabledFeatures } = useChatState();
     const [ isFullScreen, setIsFullScreen ] = React.useState(StorageService.Instance.get(CHAT_MODE_KEY) === AutopilotChatMode.FullScreen);
     const { clearAttachments } = useAttachments();

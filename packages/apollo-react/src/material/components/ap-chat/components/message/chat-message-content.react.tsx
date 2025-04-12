@@ -9,22 +9,24 @@ import {
     AutopilotChatMessage,
     AutopilotChatMode,
     AutopilotChatRole,
-} from '@uipath/portal-shell-util';
-import React from 'react';
-
-import { AutopilotChatInternalService } from '../../services/chat-internal-service';
-import { AutopilotChatService } from '../../services/chat-service';
-import { StorageService } from '../../services/storage';
-import {
-    APOLLO_MESSAGE_RENDERERS,
     CHAT_MESSAGE_MAX_PADDING,
     CHAT_WIDTH_KEY,
     CHAT_WIDTH_SIDE_BY_SIDE_MIN,
-} from '../../utils/constants';
+    DEFAULT_MESSAGE_RENDERER,
+    StorageService,
+} from '@uipath/portal-shell-util';
+import React from 'react';
+
+import { useChatService } from '../../providers/chat-service.provider.react';
 import { calculateDynamicPadding } from '../../utils/dynamic-padding';
 import { Attachments } from '../common/attachments.react';
 import { AutopilotChatMessageActions } from './actions/chat-actions.react';
 import { AutopilotChatMarkdownRenderer } from './markdown/markdown.react';
+
+const APOLLO_MESSAGE_RENDERERS = [ {
+    name: DEFAULT_MESSAGE_RENDERER,
+    component: AutopilotChatMarkdownRenderer,
+} ];
 
 const MessageBoxComponent = styled('div')<{
     isAssistant: boolean;
@@ -32,8 +34,8 @@ const MessageBoxComponent = styled('div')<{
 }>(({
     theme, isAssistant, isCustomWidget,
 }) => {
-    const chatService = AutopilotChatService.Instance;
-    const chatInternalService = AutopilotChatInternalService.Instance;
+    const chatService = useChatService();
+    const chatInternalService = chatService .__internalService__;
     const [ padding, setPadding ] = React.useState(
         calculateDynamicPadding(parseInt(StorageService.Instance.get(CHAT_WIDTH_KEY) ?? CHAT_WIDTH_SIDE_BY_SIDE_MIN.toString(), 10)),
     );
@@ -94,7 +96,7 @@ const WidgetContainer = React.memo(({
     setMessageElement: (element: HTMLDivElement | null) => void;
     messageElement: HTMLDivElement | null;
 }) => {
-    const chatService = AutopilotChatService.Instance;
+    const chatService = useChatService();
     const unsubscribeRef = React.useRef<() => void>(() => {});
 
     React.useEffect(() => {
@@ -131,7 +133,7 @@ const WidgetContainer = React.memo(({
 });
 
 function AutopilotChatMessageContentComponent({ message }: { message: AutopilotChatMessage }) {
-    const chatService = AutopilotChatService.Instance;
+    const chatService = useChatService();
     const [ messageElement, setMessageElement ] = React.useState<HTMLDivElement | null>(null);
 
     if (!message.content && !message.attachments) {

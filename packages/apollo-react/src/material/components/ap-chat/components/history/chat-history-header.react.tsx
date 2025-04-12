@@ -10,7 +10,7 @@ import token from '@uipath/apollo-core/lib';
 import React from 'react';
 
 import { t } from '../../../../utils/localization/loc';
-import { AutopilotChatService } from '../../services/chat-service';
+import { useChatService } from '../../providers/chat-service.provider.react';
 import { AutopilotChatActionButton } from '../common/action-button.react';
 
 const HeaderContainer = styled('div')(() => ({
@@ -30,7 +30,7 @@ const AutopilotChatHistoryHeaderComponent: React.FC<{ isFullScreen: boolean; isH
     isFullScreen, isHistoryOpen,
 }) => {
     const theme = useTheme();
-    const chatService = AutopilotChatService.Instance;
+    const chatService = useChatService();
 
     const handleCloseHistory = React.useCallback(() => {
         chatService?.toggleHistory(false);

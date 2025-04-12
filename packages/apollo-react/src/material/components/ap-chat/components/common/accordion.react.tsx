@@ -13,17 +13,16 @@ import {
     AutopilotChatEvent,
     AutopilotChatInternalEvent,
     AutopilotChatMode,
+    StorageService,
 } from '@uipath/portal-shell-util';
-import React from 'react';
-
-import { AutopilotChatInternalService } from '../../services/chat-internal-service';
-import { AutopilotChatService } from '../../services/chat-service';
-import { StorageService } from '../../services/storage';
 import {
     CHAT_MESSAGE_MAX_PADDING,
     CHAT_WIDTH_KEY,
     CHAT_WIDTH_SIDE_BY_SIDE_MIN,
-} from '../../utils/constants';
+} from '@uipath/portal-shell-util/src/autopilot/constants';
+import React from 'react';
+
+import { useChatService } from '../../providers/chat-service.provider.react';
 import { calculateDynamicPadding } from '../../utils/dynamic-padding';
 
 const AccordionContainer = styled('div')<{ isLeft: boolean }>(({
@@ -32,8 +31,8 @@ const AccordionContainer = styled('div')<{ isLeft: boolean }>(({
     const [ padding, setPadding ] = React.useState(
         calculateDynamicPadding(parseInt(StorageService.Instance.get(CHAT_WIDTH_KEY) ?? CHAT_WIDTH_SIDE_BY_SIDE_MIN.toString(), 10)),
     );
-    const chatService = AutopilotChatService.Instance;
-    const chatInternalService = AutopilotChatInternalService.Instance;
+    const chatService = useChatService();
+    const chatInternalService = chatService .__internalService__;
 
     React.useEffect(() => {
         if (!chatInternalService || !chatService) {

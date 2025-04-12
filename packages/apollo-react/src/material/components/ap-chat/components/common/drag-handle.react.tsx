@@ -3,18 +3,18 @@
 
 import { styled } from '@mui/material/styles';
 import token from '@uipath/apollo-core/lib';
-import { AutopilotChatInternalEvent } from '@uipath/portal-shell-util';
-import React from 'react';
-
-import { useChatState } from '../../providers/chat-state-provider.react';
-import { useChatWidth } from '../../providers/chat-width-provider.react';
-import { AutopilotChatInternalService } from '../../services/chat-internal-service';
-import { StorageService } from '../../services/storage';
 import {
+    AutopilotChatInternalEvent,
     CHAT_WIDTH_KEY,
     CHAT_WIDTH_SIDE_BY_SIDE_MAX,
     CHAT_WIDTH_SIDE_BY_SIDE_MIN,
-} from '../../utils/constants';
+    StorageService,
+} from '@uipath/portal-shell-util';
+import React from 'react';
+
+import { useChatService } from '../../providers/chat-service.provider.react';
+import { useChatState } from '../../providers/chat-state-provider.react';
+import { useChatWidth } from '../../providers/chat-width-provider.react';
 
 const DragHandleContainer = styled('div')(({ theme }) => ({
     position: 'absolute',
@@ -63,6 +63,7 @@ function DragHandleComponent() {
     const {
         width, setWidth, setShouldAnimate,
     } = useChatWidth();
+    const chatInternalService = useChatService() .__internalService__;
     const widthRef = React.useRef(width);
     const { disabledFeatures } = useChatState();
 
@@ -82,9 +83,9 @@ function DragHandleComponent() {
         );
 
         widthRef.current = newWidth;
-        AutopilotChatInternalService.Instance.publish(AutopilotChatInternalEvent.ChatResize, newWidth);
+        chatInternalService.publish(AutopilotChatInternalEvent.ChatResize, newWidth);
         setWidth(newWidth);
-    }, [ setWidth ]);
+    }, [ setWidth, chatInternalService ]);
 
     const handleMouseUp = React.useCallback(() => {
         isDraggingRef.current = false;
@@ -119,7 +120,7 @@ function DragHandleComponent() {
             widthRef.current = newWidth;
 
             setWidth(newWidth);
-            AutopilotChatInternalService.Instance.publish(AutopilotChatInternalEvent.ChatResize, newWidth);
+            chatInternalService.publish(AutopilotChatInternalEvent.ChatResize, newWidth);
             setShouldAnimate(true);
 
         } else if (e.key === 'ArrowRight') {
@@ -129,10 +130,10 @@ function DragHandleComponent() {
             widthRef.current = newWidth;
 
             setWidth(newWidth);
-            AutopilotChatInternalService.Instance.publish(AutopilotChatInternalEvent.ChatResize, newWidth);
+            chatInternalService.publish(AutopilotChatInternalEvent.ChatResize, newWidth);
             setShouldAnimate(true);
         }
-    }, [ setWidth, setShouldAnimate ]);
+    }, [ setWidth, setShouldAnimate, chatInternalService ]);
 
     const handleKeyUp = React.useCallback(() => {
         setShouldAnimate(false);

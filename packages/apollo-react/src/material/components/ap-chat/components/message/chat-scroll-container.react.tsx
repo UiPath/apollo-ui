@@ -3,11 +3,13 @@
 
 import styled from '@emotion/styled';
 import token from '@uipath/apollo-core/lib';
-import { AutopilotChatMode } from '@uipath/portal-shell-util';
+import {
+    AutopilotChatMode,
+    CHAT_WIDTH_FULL_SCREEN_MAX_WIDTH,
+} from '@uipath/portal-shell-util';
 import React from 'react';
 
 import { useChatScroll } from '../../providers/chat-scroll-provider.react';
-import { CHAT_WIDTH_FULL_SCREEN_MAX_WIDTH } from '../../utils/constants';
 import { AutopilotChatMessages } from './chat-message.react';
 import { AutopilotChatScrollToBottomButton } from './chat-scroll-to-bottom.react';
 

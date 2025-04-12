@@ -1,13 +1,12 @@
 /** @jsx React.createElement */
 /** @jsxFrag React.Fragment */
 
-import React from 'react';
-
-import { StorageService } from '../services/storage';
 import {
     CHAT_WIDTH_KEY,
     CHAT_WIDTH_SIDE_BY_SIDE_MIN,
-} from '../utils/constants';
+    StorageService,
+} from '@uipath/portal-shell-util';
+import React from 'react';
 
 interface AutopilotChatWidthContextType {
     width: number;

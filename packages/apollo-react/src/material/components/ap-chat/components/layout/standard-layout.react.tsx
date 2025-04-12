@@ -3,12 +3,12 @@
 
 import { styled } from '@mui/material/styles';
 import token from '@uipath/apollo-core/lib';
-import React from 'react';
-
 import {
     CHAT_HISTORY_WIDTH_FULL_SCREEN,
     CHAT_WIDTH_FULL_SCREEN_MAX_WIDTH,
-} from '../../utils/constants';
+} from '@uipath/portal-shell-util/src/autopilot/constants';
+import React from 'react';
+
 import { AutopilotChatHeader } from '../header/header.react';
 import { AutopilotChatHistory } from '../history/chat-history.react';
 import { AutopilotChatInput } from '../input/chat-input.react';

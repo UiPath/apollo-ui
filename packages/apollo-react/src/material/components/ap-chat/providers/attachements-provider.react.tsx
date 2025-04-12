@@ -8,7 +8,7 @@ import {
 import React from 'react';
 
 import { t } from '../../../utils/localization/loc';
-import { AutopilotChatService } from '../services/chat-service';
+import { useChatService } from './chat-service.provider.react';
 import { useChatState } from './chat-state-provider.react';
 import { useError } from './error-provider.react';
 
@@ -27,7 +27,7 @@ export const AutopilotAttachmentsContext = React.createContext<AutopilotAttachme
 });
 
 export function AutopilotAttachmentsProvider({ children }: { children: React.ReactNode }) {
-    const chatService = AutopilotChatService.Instance;
+    const chatService = useChatService();
     const prompt = chatService?.getPrompt?.() as AutopilotChatPrompt | undefined;
 
     const { allowedAttachments } = useChatState();

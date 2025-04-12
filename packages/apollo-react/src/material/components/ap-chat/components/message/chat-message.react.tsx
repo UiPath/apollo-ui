@@ -12,8 +12,8 @@ import {
 } from '@uipath/portal-shell-util';
 import React from 'react';
 
+import { useChatService } from '../../providers/chat-service.provider.react';
 import { useLoading } from '../../providers/loading-provider.react';
-import { AutopilotChatService } from '../../services/chat-service';
 import { AutopilotChatMessageContent } from './chat-message-content.react';
 import { AutopilotChatFRE } from './first-run-experience/chat-fre.react';
 import { AutopilotChatLoading } from './loader/chat-loading.react';
@@ -42,7 +42,7 @@ const Message = React.memo(({ message }: { message: AutopilotChatMessage }) => {
 
 function AutopilotChatMessagesComponent() {
     const messageContainerRef = React.useRef<HTMLDivElement>(null);
-    const chatService = AutopilotChatService.Instance;
+    const chatService = useChatService();
     const [ messages, setMessages ] = React.useState<AutopilotChatMessage[]>(
         removeFakeStream(chatService?.getConversation?.() ?? []),
     );

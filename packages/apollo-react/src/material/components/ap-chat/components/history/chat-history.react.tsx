@@ -10,6 +10,7 @@ import token from '@uipath/apollo-core/lib';
 import {
     AutopilotChatEvent,
     AutopilotChatHistory as AutopilotChatHistoryType,
+    CHAT_HISTORY_WIDTH_FULL_SCREEN,
 } from '@uipath/portal-shell-util';
 import {
     differenceInDays,
@@ -24,10 +25,8 @@ import React, {
 
 import { t } from '../../../../utils/localization/loc';
 import { ApTextFieldReact } from '../../../ap-text-field/ap-text-field.react';
+import { useChatService } from '../../providers/chat-service.provider.react';
 import { useChatState } from '../../providers/chat-state-provider.react';
-import { AutopilotChatInternalService } from '../../services/chat-internal-service';
-import { AutopilotChatService } from '../../services/chat-service';
-import { CHAT_HISTORY_WIDTH_FULL_SCREEN } from '../../utils/constants';
 import { AutopilotChatHistoryGroup } from './chat-history-group.react';
 import { AutopilotChatHistoryHeader } from './chat-history-header.react';
 
@@ -88,8 +87,8 @@ interface AutopilotChatHistoryProps {
 const AutopilotChatHistoryComponent: React.FC<AutopilotChatHistoryProps> = ({
     open, isFullScreen,
 }) => {
-    const chatService = AutopilotChatService.Instance;
-    const internalService = AutopilotChatInternalService.Instance;
+    const chatService = useChatService();
+    const internalService = chatService .__internalService__;
 
     const theme = useTheme();
     const [ history, setHistory ] = useState<AutopilotChatHistoryType[]>(chatService?.getHistory() ?? []);

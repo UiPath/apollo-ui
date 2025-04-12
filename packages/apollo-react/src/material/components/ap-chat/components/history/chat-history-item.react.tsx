@@ -14,9 +14,9 @@ import {
 import React from 'react';
 
 import { t } from '../../../../utils/localization/loc';
+import { useChatService } from '../../providers/chat-service.provider.react';
 import { useChatState } from '../../providers/chat-state-provider.react';
 import { useLoading } from '../../providers/loading-provider.react';
-import { AutopilotChatService } from '../../services/chat-service';
 import { AutopilotChatActionButton } from '../common/action-button.react';
 
 const GroupItem = styled('div')<{ isActive: boolean; showRemoveIcon: boolean }>(({
@@ -58,7 +58,7 @@ const AutopilotChatHistoryItemComponent: React.FC<AutopilotChatHistoryItemProps>
     item, isHistoryOpen,
 }) => {
     const theme = useTheme();
-    const chatService = AutopilotChatService.Instance;
+    const chatService = useChatService();
     const [ isActive, setIsActive ] = React.useState(chatService.activeConversationId === item.id);
     const { setWaitingResponse } = useLoading();
     const { chatMode } = useChatState();

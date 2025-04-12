@@ -6,7 +6,7 @@ import {
 } from '@uipath/portal-shell-util';
 import React from 'react';
 
-import { AutopilotChatService } from '../services/chat-service';
+import { useChatService } from './chat-service.provider.react';
 
 interface AutopilotLoadingContextType {
     waitingResponse: boolean;
@@ -20,7 +20,7 @@ export const AutopilotLoadingContext = React.createContext<AutopilotLoadingConte
 
 export function AutopilotLoadingProvider({ children }: { children: React.ReactNode }) {
     const [ waitingResponse, setWaitingResponse ] = React.useState<boolean>(false);
-    const chatService = AutopilotChatService.Instance;
+    const chatService = useChatService();
 
     React.useEffect(() => {
         if (!chatService) {

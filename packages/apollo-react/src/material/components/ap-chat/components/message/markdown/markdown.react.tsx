@@ -17,8 +17,8 @@ import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 
 import { t } from '../../../../../utils/localization/loc';
+import { useChatService } from '../../../providers/chat-service.provider.react';
 import { useStreaming } from '../../../providers/streaming-provider.react';
-import { AutopilotChatService } from '../../../services/chat-service';
 import { Code } from './code.react';
 import {
     Li,
@@ -55,7 +55,7 @@ function AutopilotChatMarkdownRendererComponent({ message }: { message: Autopilo
     // Only store message ID and content separately to minimize re-renders
     const messageId = React.useRef(message.id);
     const [ content, setContent ] = React.useState(message.fakeStream ? '' : (message.content || ''));
-    const chatService = AutopilotChatService.Instance;
+    const chatService = useChatService();
     const { setStreaming } = useStreaming();
 
     // Update the message ID ref if a new message is passed

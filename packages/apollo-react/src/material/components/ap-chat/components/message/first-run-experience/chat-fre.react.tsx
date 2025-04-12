@@ -9,8 +9,8 @@ import token, { FontVariantToken } from '@uipath/apollo-core/lib';
 import { AutopilotChatSuggestion } from '@uipath/portal-shell-util';
 import React from 'react';
 
+import { useChatService } from '../../../providers/chat-service.provider.react';
 import { useChatState } from '../../../providers/chat-state-provider.react';
-import { AutopilotChatService } from '../../../services/chat-service';
 
 const FREContainer = styled('div')(() => ({
     display: 'flex',
@@ -53,7 +53,7 @@ const Suggestion = styled('div')(({ theme }) => ({
 function AutopilotChatFREComponent() {
     const theme = useTheme();
     const { firstRunExperience } = useChatState();
-    const chatService = AutopilotChatService.Instance;
+    const chatService = useChatService();
 
     const handleSuggestionClick = React.useCallback(
         (

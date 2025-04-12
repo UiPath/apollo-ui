@@ -4,7 +4,9 @@
 import {
     Component,
     Element,
+    Prop,
 } from '@stencil/core';
+import type { AutopilotChatService } from '@uipath/portal-shell-util';
 // eslint-disable-next-line unused-imports/no-unused-imports
 import React from 'react';
 
@@ -20,9 +22,11 @@ import { ApAutopilotChatReact } from './ap-autopilot-chat.react';
 export class ApAutopilotChat implements IReactComponentAdapter {
     @Element() hostElement: HTMLApAutopilotChatElement;
 
+    @Prop() chatServiceInstance?: AutopilotChatService;
+
     renderReact() {
         return (
-            <ApAutopilotChatReact>
+            <ApAutopilotChatReact chatServiceInstance={this.chatServiceInstance ?? window.PortalShell.AutopilotChat}>
             </ApAutopilotChatReact>
         );
     }

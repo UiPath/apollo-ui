@@ -9,19 +9,17 @@ import token from '@uipath/apollo-core/lib';
 import {
     AutopilotChatEvent,
     AutopilotChatPrompt,
+    CHAT_INPUT_MAX_ROWS,
+    CHAT_INPUT_MIN_ROWS,
 } from '@uipath/portal-shell-util';
 import React from 'react';
 
 import { t } from '../../../../utils/localization/loc';
 import { ApTextAreaReact } from '../../../ap-text-area/ap-text-area.react';
 import { useAttachments } from '../../providers/attachements-provider.react';
+import { useChatService } from '../../providers/chat-service.provider.react';
 import { useLoading } from '../../providers/loading-provider.react';
 import { useStreaming } from '../../providers/streaming-provider.react';
-import { AutopilotChatService } from '../../services/chat-service';
-import {
-    CHAT_INPUT_MAX_ROWS,
-    CHAT_INPUT_MIN_ROWS,
-} from '../../utils/constants';
 import { AutopilotChatInputActions } from './chat-input-actions.react';
 import { AutopilotChatInputAttachments } from './chat-input-attachments.react';
 import { AutopilotChatInputError } from './chat-input-error.react';
@@ -54,7 +52,7 @@ export const InputContainer = styled('div')(({ theme }) => ({
 }));
 
 function AutopilotChatInputComponent() {
-    const chatService = AutopilotChatService.Instance;
+    const chatService = useChatService();
     const initialPrompt = chatService?.getPrompt?.();
 
     const [ message, setMessage ] = React.useState(

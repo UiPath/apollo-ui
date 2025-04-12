@@ -7,14 +7,14 @@ import {
     AutopilotChatInternalEvent,
     AutopilotChatMode,
 } from '@uipath/portal-shell-util';
-import React from 'react';
-
-import { AutopilotChatInternalService } from '../../services/chat-internal-service';
 import {
     CHAT_CONTAINER_ANIMATION_DURATION,
     CHAT_HISTORY_WIDTH_FULL_SCREEN,
     CHAT_WIDTH_FULL_SCREEN_MAX_WIDTH,
-} from '../../utils/constants';
+} from '@uipath/portal-shell-util/src/autopilot/constants';
+import React from 'react';
+
+import { useChatService } from '../../providers/chat-service.provider.react';
 import { AutopilotChatHeader } from '../header/header.react';
 import { AutopilotChatHistory } from '../history/chat-history.react';
 import { AutopilotChatInput } from '../input/chat-input.react';
@@ -65,7 +65,7 @@ export const FullScreenLayout: React.FC<LayoutProps> = ({
     historyDisabled,
     mode,
 }) => {
-    const chatInternalService = AutopilotChatInternalService.Instance;
+    const chatInternalService = useChatService() .__internalService__;
     const mainContainerRef = React.useRef<HTMLDivElement>(null);
 
     React.useEffect(() => {

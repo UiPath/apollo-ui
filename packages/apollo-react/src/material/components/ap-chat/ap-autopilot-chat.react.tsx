@@ -6,7 +6,12 @@ import {
     Theme,
 } from '@mui/material/styles';
 import token from '@uipath/apollo-core/lib';
-import { AutopilotChatMode } from '@uipath/portal-shell-util';
+import {
+    AutopilotChatMode,
+    AutopilotChatService,
+    CHAT_CONTAINER_ANIMATION_DURATION,
+    CHAT_WIDTH_FULL_SCREEN,
+} from '@uipath/portal-shell-util';
 import React from 'react';
 
 import { DragHandle } from './components/common/drag-handle.react';
@@ -17,6 +22,7 @@ import {
 } from './components/layout';
 import { AutopilotAttachmentsProvider } from './providers/attachements-provider.react';
 import { AutopilotChatScrollProvider } from './providers/chat-scroll-provider.react';
+import { AutopilotChatServiceProvider } from './providers/chat-service.provider.react';
 import {
     AutopilotChatStateProvider,
     useChatState,
@@ -28,10 +34,6 @@ import {
 import { AutopilotErrorProvider } from './providers/error-provider.react';
 import { AutopilotLoadingProvider } from './providers/loading-provider.react';
 import { AutopilotStreamingProvider } from './providers/streaming-provider.react';
-import {
-    CHAT_CONTAINER_ANIMATION_DURATION,
-    CHAT_WIDTH_FULL_SCREEN,
-} from './utils/constants';
 
 const ChatContainer = styled('div')<{ shouldAnimate: boolean; mode: AutopilotChatMode; width: number }>(({
     shouldAnimate, mode, width, theme,
@@ -86,24 +88,26 @@ const AutopilotChatContent = React.memo(() => {
     );
 });
 
-export function ApAutopilotChatReact() {
+export function ApAutopilotChatReact({ chatServiceInstance }: { chatServiceInstance: AutopilotChatService }) {
     return (
-        <AutopilotChatStateProvider>
-            <AutopilotChatScrollProvider>
-                <AutopilotErrorProvider>
-                    <AutopilotLoadingProvider>
-                        <AutopilotStreamingProvider>
-                            <AutopilotAttachmentsProvider>
-                                <AutopilotChatWidthProvider>
-                                    <AutopilotChatDropzone>
-                                        <AutopilotChatContent />
-                                    </AutopilotChatDropzone>
-                                </AutopilotChatWidthProvider>
-                            </AutopilotAttachmentsProvider>
-                        </AutopilotStreamingProvider>
-                    </AutopilotLoadingProvider>
-                </AutopilotErrorProvider>
-            </AutopilotChatScrollProvider>
-        </AutopilotChatStateProvider>
+        <AutopilotChatServiceProvider chatServiceInstance={chatServiceInstance}>
+            <AutopilotChatStateProvider>
+                <AutopilotChatScrollProvider>
+                    <AutopilotErrorProvider>
+                        <AutopilotLoadingProvider>
+                            <AutopilotStreamingProvider>
+                                <AutopilotAttachmentsProvider>
+                                    <AutopilotChatWidthProvider>
+                                        <AutopilotChatDropzone>
+                                            <AutopilotChatContent />
+                                        </AutopilotChatDropzone>
+                                    </AutopilotChatWidthProvider>
+                                </AutopilotAttachmentsProvider>
+                            </AutopilotStreamingProvider>
+                        </AutopilotLoadingProvider>
+                    </AutopilotErrorProvider>
+                </AutopilotChatScrollProvider>
+            </AutopilotChatStateProvider>
+        </AutopilotChatServiceProvider>
     );
 }

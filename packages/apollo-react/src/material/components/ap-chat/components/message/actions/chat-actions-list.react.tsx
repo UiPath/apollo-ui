@@ -16,7 +16,7 @@ import {
 import React from 'react';
 
 import { t } from '../../../../../utils/localization/loc';
-import { AutopilotChatService } from '../../../services/chat-service';
+import { useChatService } from '../../../providers/chat-service.provider.react';
 import { AutopilotChatActionButton } from '../../common/action-button.react';
 
 const ActionsListContainer = styled('div')<{ isRequest: boolean }>(({
@@ -60,11 +60,11 @@ function AutopilotChatActionsListComponent({
         ...(message?.actions?.filter(action => action.showInOverflow) || []),
     ];
     const shouldBeVisible = isVisible || overflowMenuOpen;
-    const chatService = AutopilotChatService.Instance as any;
+    const chatService = useChatService();
 
     const handleAction = React.useCallback((action: AutopilotChatMessageAction) => {
         if (action.eventName && chatService) {
-            chatService._eventBus.publish(action.eventName, {
+            (chatService as any)._eventBus.publish(action.eventName, {
                 message,
                 action,
             } satisfies AutopilotChatActionPayload);

@@ -4,11 +4,11 @@
 import {
     AutopilotChatEvent,
     AutopilotChatInterceptableEvent,
+    CHAT_SCROLL_BOTTOM_BUFFER,
 } from '@uipath/portal-shell-util';
 import React from 'react';
 
-import { AutopilotChatService } from '../services/chat-service';
-import { CHAT_SCROLL_BOTTOM_BUFFER } from '../utils/constants';
+import { useChatService } from './chat-service.provider.react';
 import { useStreaming } from './streaming-provider.react';
 
 interface AutopilotChatScrollContextType {
@@ -25,7 +25,7 @@ interface AutopilotChatScrollProviderProps {
 }
 
 export const AutopilotChatScrollProvider: React.FC<AutopilotChatScrollProviderProps> = ({ children }) => {
-    const chatService = AutopilotChatService.Instance;
+    const chatService = useChatService();
 
     const overflowContainerRef = React.useRef<HTMLDivElement>(null);
     const contentRef = React.useRef<HTMLDivElement>(null);

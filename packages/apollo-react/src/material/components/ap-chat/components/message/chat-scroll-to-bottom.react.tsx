@@ -11,8 +11,7 @@ import React from 'react';
 
 import { t } from '../../../../utils/localization/loc';
 import { useChatScroll } from '../../providers/chat-scroll-provider.react';
-import { AutopilotChatInternalService } from '../../services/chat-internal-service';
-import { AutopilotChatService } from '../../services/chat-service';
+import { useChatService } from '../../providers/chat-service.provider.react';
 import { AutopilotChatActionButton } from '../common/action-button.react';
 
 const ScrollButtonContainer = styled('div')<{ visible: boolean; bottom: number; left: number }>(({
@@ -60,8 +59,8 @@ function AutopilotChatScrollToBottomButtonComponent({ containerRef }: ScrollToBo
         autoScroll, scrollToBottom,
     } = useChatScroll();
 
-    const chatService = AutopilotChatService.Instance;
-    const chatInternalService = AutopilotChatInternalService.Instance;
+    const chatService = useChatService();
+    const chatInternalService = chatService .__internalService__;
 
     React.useEffect(() => {
         if (!chatService || !chatInternalService) {

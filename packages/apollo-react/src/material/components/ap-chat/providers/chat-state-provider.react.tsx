@@ -11,8 +11,7 @@ import {
 } from '@uipath/portal-shell-util';
 import React from 'react';
 
-import { AutopilotChatInternalService } from '../services/chat-internal-service';
-import { AutopilotChatService } from '../services/chat-service';
+import { useChatService } from './chat-service.provider.react';
 
 interface AutopilotChatStateContextType {
     historyOpen: boolean;
@@ -29,8 +28,8 @@ interface AutopilotChatStateProviderProps {
 }
 
 export const AutopilotChatStateProvider: React.FC<AutopilotChatStateProviderProps> = ({ children }) => {
-    const chatService = AutopilotChatService.Instance;
-    const chatInternalService = AutopilotChatInternalService.Instance;
+    const chatService = useChatService();
+    const chatInternalService = chatService .__internalService__;
 
     const [ allowedAttachments, setAllowedAttachments ] = React.useState<AutopilotChatAllowedAttachments>(
         chatService?.getConfig()?.allowedAttachments ?? {
