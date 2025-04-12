@@ -2,6 +2,7 @@ export enum AutopilotChatMode {
     Closed = 'closed',
     SideBySide = 'side-by-side',
     FullScreen = 'full-screen',
+    Embedded = 'embedded',
 }
 
 export enum AutopilotChatAccordionPosition {
