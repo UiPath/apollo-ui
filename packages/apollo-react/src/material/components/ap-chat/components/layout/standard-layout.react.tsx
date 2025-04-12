@@ -3,6 +3,7 @@
 
 import { styled } from '@mui/material/styles';
 import token from '@uipath/apollo-core/lib';
+import { AutopilotChatMode } from '@uipath/portal-shell-util';
 import {
     CHAT_HISTORY_WIDTH_FULL_SCREEN,
     CHAT_WIDTH_FULL_SCREEN_MAX_WIDTH,
@@ -13,11 +14,8 @@ import { AutopilotChatHeader } from '../header/header.react';
 import { AutopilotChatHistory } from '../history/chat-history.react';
 import { AutopilotChatInput } from '../input/chat-input.react';
 import { ChatScrollContainer } from '../message/chat-scroll-container.react';
-import { LayoutProps } from './full-screen-layout.react';
 
-const MainContainer = styled('div')<{ historyOpen: boolean }>(({ historyOpen }: {
-    historyOpen: boolean;
-}) => ({
+const MainContainer = styled('div')<{ historyOpen: boolean }>(({ historyOpen }: { historyOpen: boolean }) => ({
     flex: 1,
     display: 'flex',
     flexDirection: 'column',
@@ -43,17 +41,27 @@ const InputContainer = styled('div')(() => ({
     width: '100%',
 }));
 
-export const StandardLayout: React.FC<LayoutProps> = ({
+interface StandardLayoutProps {
+    historyOpen: boolean;
+    historyDisabled: boolean;
+    mode: AutopilotChatMode;
+    headerDisabled: boolean;
+}
+
+export const StandardLayout: React.FC<StandardLayoutProps> = ({
     historyOpen,
     historyDisabled,
     mode,
+    headerDisabled,
 }) => {
     return (
         <>
             <MainContainer historyOpen={historyOpen}>
-                <HeaderContainer>
-                    <AutopilotChatHeader />
-                </HeaderContainer>
+                {!headerDisabled && (
+                    <HeaderContainer>
+                        <AutopilotChatHeader />
+                    </HeaderContainer>
+                )}
 
                 <ChatScrollContainer mode={mode} />
 

@@ -3,11 +3,7 @@
 
 import { styled } from '@mui/material/styles';
 import token from '@uipath/apollo-core/lib';
-import {
-    AutopilotChatMode,
-    CHAT_MODE_KEY,
-    StorageService,
-} from '@uipath/portal-shell-util';
+import { AutopilotChatMode } from '@uipath/portal-shell-util';
 import React from 'react';
 
 import { t } from '../../../../utils/localization/loc';
@@ -24,8 +20,9 @@ const StyledActions = styled('div')(() => ({
 
 function AutopilotChatHeaderActionsComponent() {
     const chatService = useChatService();
-    const { disabledFeatures } = useChatState();
-    const [ isFullScreen, setIsFullScreen ] = React.useState(StorageService.Instance.get(CHAT_MODE_KEY) === AutopilotChatMode.FullScreen);
+    const {
+        disabledFeatures, chatMode,
+    } = useChatState();
     const { clearAttachments } = useAttachments();
 
     const handleClose = React.useCallback(() => {
@@ -34,11 +31,9 @@ function AutopilotChatHeaderActionsComponent() {
 
     const handleToggleChat = React.useCallback(() => {
         chatService?.setChatMode(
-            isFullScreen ? AutopilotChatMode.SideBySide : AutopilotChatMode.FullScreen,
+            chatMode === AutopilotChatMode.FullScreen ? AutopilotChatMode.SideBySide : AutopilotChatMode.FullScreen,
         );
-
-        setIsFullScreen(!isFullScreen);
-    }, [ isFullScreen, chatService ]);
+    }, [ chatService, chatMode ]);
 
     const handleNewChat = React.useCallback(() => {
         if (!chatService) {
@@ -74,19 +69,21 @@ function AutopilotChatHeaderActionsComponent() {
                 />
             )}
 
-            {!disabledFeatures.fullScreen && (
+            {!disabledFeatures.fullScreen && chatMode !== AutopilotChatMode.Embedded && (
                 <AutopilotChatActionButton
-                    iconName={!isFullScreen ? 'open_in_full' : 'close_fullscreen'}
-                    tooltip={!isFullScreen ? t('autopilot-chat-expand') : t('autopilot-chat-collapse')}
+                    iconName={chatMode !== AutopilotChatMode.FullScreen ? 'open_in_full' : 'close_fullscreen'}
+                    tooltip={chatMode !== AutopilotChatMode.FullScreen ? t('autopilot-chat-expand') : t('autopilot-chat-collapse')}
                     onClick={handleToggleChat}
                 />
             )}
 
-            <AutopilotChatActionButton
-                iconName="close"
-                onClick={handleClose}
-                tooltip={t('autopilot-chat-close')}
-            />
+            {chatMode !== AutopilotChatMode.Embedded && (
+                <AutopilotChatActionButton
+                    iconName="close"
+                    onClick={handleClose}
+                    tooltip={t('autopilot-chat-close')}
+                />
+            )}
         </StyledActions>
     );
 }

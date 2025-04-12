@@ -54,13 +54,13 @@ const InputContainer = styled('div')(() => ({
     width: '100%',
 }));
 
-export interface LayoutProps {
+interface FullScreenLayoutProps {
     historyOpen: boolean;
     historyDisabled: boolean;
     mode: AutopilotChatMode;
 }
 
-export const FullScreenLayout: React.FC<LayoutProps> = ({
+export const FullScreenLayout: React.FC<FullScreenLayoutProps> = ({
     historyOpen,
     historyDisabled,
     mode,

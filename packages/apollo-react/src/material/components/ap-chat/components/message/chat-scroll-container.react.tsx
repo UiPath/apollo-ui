@@ -43,7 +43,11 @@ function ChatScrollContainerComponent({ mode }: ChatScrollContainerProps) {
     return (
         <>
             <OverflowContainer tabIndex={0} id="overflow-container" ref={overflowContainerRef}>
-                <MessagesContainer id="content-ref" ref={contentRef} isFullScreen={mode === AutopilotChatMode.FullScreen}>
+                <MessagesContainer
+                    id="content-ref"
+                    ref={contentRef}
+                    isFullScreen={mode === AutopilotChatMode.FullScreen}
+                >
                     <AutopilotChatMessages/>
                 </MessagesContainer>
             </OverflowContainer>

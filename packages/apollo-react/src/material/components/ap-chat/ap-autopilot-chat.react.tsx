@@ -49,6 +49,12 @@ const ChatContainer = styled('div')<{ shouldAnimate: boolean; mode: AutopilotCha
     borderLeft: 'none',
     ...(shouldAnimate && { transition: `width ${CHAT_CONTAINER_ANIMATION_DURATION}ms ease` }),
     ...(mode === AutopilotChatMode.Closed && { display: 'none' }),
+    ...(mode === AutopilotChatMode.Embedded && {
+        width: '100%',
+        height: '100%',
+        position: 'absolute',
+        border: 'none',
+    }),
 }));
 
 const AutopilotChatContent = React.memo(() => {
@@ -79,6 +85,7 @@ const AutopilotChatContent = React.memo(() => {
                 />
             ) : (
                 <StandardLayout
+                    headerDisabled={disabledFeatures.header ?? false}
                     historyOpen={historyOpen}
                     historyDisabled={disabledFeatures.history ?? false}
                     mode={chatMode}
@@ -91,8 +98,8 @@ const AutopilotChatContent = React.memo(() => {
 export function ApAutopilotChatReact({ chatServiceInstance }: { chatServiceInstance: AutopilotChatService }) {
     return (
         <AutopilotChatServiceProvider chatServiceInstance={chatServiceInstance}>
-            <AutopilotChatStateProvider>
-                <AutopilotChatScrollProvider>
+            <AutopilotChatScrollProvider>
+                <AutopilotChatStateProvider>
                     <AutopilotErrorProvider>
                         <AutopilotLoadingProvider>
                             <AutopilotStreamingProvider>
@@ -106,8 +113,8 @@ export function ApAutopilotChatReact({ chatServiceInstance }: { chatServiceInsta
                             </AutopilotStreamingProvider>
                         </AutopilotLoadingProvider>
                     </AutopilotErrorProvider>
-                </AutopilotChatScrollProvider>
-            </AutopilotChatStateProvider>
+                </AutopilotChatStateProvider>
+            </AutopilotChatScrollProvider>
         </AutopilotChatServiceProvider>
     );
 }
