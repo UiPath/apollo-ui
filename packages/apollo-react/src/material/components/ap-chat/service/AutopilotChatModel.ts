@@ -190,18 +190,21 @@ export interface AutopilotChatSuggestion {
  * @property fullScreen - Whether the chat has the full screen button
  * @property attachments - Whether the chat has the attachments button
  * @property history - Whether the chat has the history button
+ * @property header - Whether the chat has the header
  */
 export interface AutopilotChatDisabledFeatures {
     resize?: boolean;
     fullScreen?: boolean;
     attachments?: boolean;
     history?: boolean;
+    header?: boolean;
 }
 
 /**
  * Represents the configuration for the Autopilot Chat system.
  *
  * @property mode - The mode of the chat
+ * @property embeddedContainer - The container to embed the chat in
  * @property disabledFeatures - The disabled features of the chat
  * @property firstRunExperience - The first run experience of the chat
  * @property useLocalHistory - Whether the chat uses indexdb to store history
@@ -209,6 +212,7 @@ export interface AutopilotChatDisabledFeatures {
  */
 export interface AutopilotChatConfiguration {
     mode: AutopilotChatMode;
+    embeddedContainer?: HTMLElement;
     disabledFeatures?: AutopilotChatDisabledFeatures;
     firstRunExperience?: {
         title: string;
