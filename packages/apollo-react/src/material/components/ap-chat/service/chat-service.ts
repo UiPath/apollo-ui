@@ -240,6 +240,19 @@ export class AutopilotChatService {
      * @param messageRenderers - The custom message renderers to inject
      */
     open(config?: Partial<AutopilotChatConfiguration>, messageRenderers: AutopilotChatMessageRenderer[] = []) {
+        if (this._config.embeddedContainer) {
+            this._config.embeddedContainer.innerHTML = '';
+            this._config.embeddedContainer = undefined;
+        }
+
+        if (config?.mode === AutopilotChatMode.Embedded && config?.embeddedContainer) {
+            const chatElement = document.createElement('ap-autopilot-chat');
+            (chatElement as any).chatServiceInstance = this;
+
+            config.embeddedContainer.innerHTML = '';
+            config.embeddedContainer.appendChild(chatElement);
+        }
+
         this.patchConfig(
             {
                 mode: AutopilotChatMode.SideBySide,
