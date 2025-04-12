@@ -29,7 +29,7 @@ import { LocalHistoryService } from './local-history';
 import { StorageService } from './storage';
 
 export class AutopilotChatService {
-    private static _instance: AutopilotChatService;
+    private static _instances: Record<string, AutopilotChatService> = {};
     private _initialConfig: AutopilotChatConfiguration = {
         mode: StorageService.Instance.get(CHAT_MODE_KEY) as AutopilotChatMode
             ?? AutopilotChatMode.Closed,
@@ -52,11 +52,11 @@ export class AutopilotChatService {
     private _activeConversationId: string | null = null;
     private _internalService: AutopilotChatInternalService;
 
-    private constructor() {
+    private constructor(instanceName: string) {
         this._eventBus = new EventBus();
 
         this._internalService = AutopilotChatInternalService.Instantiate();
-        LocalHistoryService.Initialize(this);
+        LocalHistoryService.Initialize(instanceName, this);
 
         this.getConfig = this.getConfig.bind(this);
         this.initialize = this.initialize.bind(this);
@@ -86,22 +86,30 @@ export class AutopilotChatService {
         this.setAllowedAttachments = this.setAllowedAttachments.bind(this);
     }
 
-    static Instantiate(config?: AutopilotChatConfiguration, messageRenderers: AutopilotChatMessageRenderer[] = []) {
-        if (!AutopilotChatService._instance) {
-            AutopilotChatService._instance = new AutopilotChatService();
+    static Instantiate({
+        instanceName = 'portal-shell',
+        config,
+        messageRenderers = [],
+    }: {
+        instanceName?: string;
+        config?: AutopilotChatConfiguration;
+        messageRenderers?: AutopilotChatMessageRenderer[];
+    }) {
+        if (!AutopilotChatService._instances[instanceName]) {
+            AutopilotChatService._instances[instanceName] = new AutopilotChatService(instanceName);
         }
 
         if (config) {
-            AutopilotChatService._instance.initialize(config);
+            AutopilotChatService._instances[instanceName].initialize(config);
         }
 
-        messageRenderers.forEach(renderer => AutopilotChatService._instance.injectMessageRenderer(renderer));
+        messageRenderers.forEach(renderer => AutopilotChatService._instances[instanceName].injectMessageRenderer(renderer));
 
-        return AutopilotChatService._instance;
+        return AutopilotChatService._instances[instanceName];
     }
 
-    static get Instance() {
-        return AutopilotChatService._instance;
+    static getInstance(instanceName: string = 'portal-shell') {
+        return AutopilotChatService._instances[instanceName];
     }
 
     /**
@@ -146,7 +154,7 @@ export class AutopilotChatService {
         }
 
         if (config.useLocalHistory !== undefined) {
-            AutopilotChatInternalService.Instance.publish(AutopilotChatInternalEvent.UseLocalHistory, config.useLocalHistory);
+            this._internalService.publish(AutopilotChatInternalEvent.UseLocalHistory, config.useLocalHistory);
         }
 
         if (config.allowedAttachments) {
@@ -506,7 +514,7 @@ export class AutopilotChatService {
     toggleHistory(open?: boolean) {
         this._historyOpen = open ?? !this._historyOpen;
 
-        AutopilotChatInternalService.Instance.publish(AutopilotChatInternalEvent.ToggleHistory, this._historyOpen);
+        this._internalService.publish(AutopilotChatInternalEvent.ToggleHistory, this._historyOpen);
     }
 
     /**

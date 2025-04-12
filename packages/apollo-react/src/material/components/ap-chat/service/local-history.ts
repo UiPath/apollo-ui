@@ -9,7 +9,6 @@ import {
     AutopilotChatInterceptableEvent,
     AutopilotChatInternalEvent,
 } from '../types/AutopilotChatModel';
-import { AutopilotChatInternalService } from './chat-internal-service';
 import type { AutopilotChatService } from './chat-service';
 import { CHAT_ACTIVE_CONVERSATION_ID_KEY } from './constants';
 import { StorageService } from './storage';
@@ -26,14 +25,18 @@ interface Message extends AutopilotChatMessage {
 }
 
 export class LocalHistoryService {
-    /** Name of the conversations database */
-    private static CONVERSATIONS_DB_NAME = 'autopilot_conversations_db';
-    /** Name of the messages database */
-    private static MESSAGES_DB_NAME = 'autopilot_messages_db';
+    /** Base name of the conversations database */
+    private static CONVERSATIONS_DB_BASE_NAME = 'autopilot_conversations_db';
+    /** Base name of the messages database */
+    private static MESSAGES_DB_BASE_NAME = 'autopilot_messages_db';
     /** Current version of the database schema */
     private static DB_VERSION = 1;
 
     private static ACTIVE_CONVERSATION_ID: string | null = null;
+    /** Name of the conversations database */
+    private static CONVERSATIONS_DB_NAME: string = '';
+    /** Name of the messages database */
+    private static MESSAGES_DB_NAME: string = '';
 
     private static UNSUBSCRIBE_CALLBACKS: Map<string, () => void> = new Map();
 
@@ -277,8 +280,12 @@ export class LocalHistoryService {
     /**
      * Initializes the local history service.
      */
-    public static async Initialize(chatService: AutopilotChatService) {
-        const internalService = AutopilotChatInternalService.Instance;
+    public static async Initialize(instanceName: string, chatService: AutopilotChatService) {
+        const internalService = chatService.__internalService__;
+
+        // Set instance name and database names
+        LocalHistoryService.CONVERSATIONS_DB_NAME = `${instanceName}_${LocalHistoryService.CONVERSATIONS_DB_BASE_NAME}`;
+        LocalHistoryService.MESSAGES_DB_NAME = `${instanceName}_${LocalHistoryService.MESSAGES_DB_BASE_NAME}`;
 
         const cleanup = () => {
             LocalHistoryService.UNSUBSCRIBE_CALLBACKS.forEach((callback) => callback());
