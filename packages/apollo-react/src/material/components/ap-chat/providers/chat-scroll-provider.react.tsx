@@ -14,7 +14,8 @@ import { useStreaming } from './streaming-provider.react';
 interface AutopilotChatScrollContextType {
     autoScroll: boolean;
     scrollToBottom: (options?: { force?: boolean; behavior?: ScrollBehavior }) => void;
-    overflowContainerRef: React.RefObject<HTMLDivElement>;
+    overflowContainer: HTMLDivElement | null;
+    setOverflowContainer: (overflowContainer: HTMLDivElement) => void;
     contentRef: React.RefObject<HTMLDivElement>;
 }
 
@@ -27,7 +28,7 @@ interface AutopilotChatScrollProviderProps {
 export const AutopilotChatScrollProvider: React.FC<AutopilotChatScrollProviderProps> = ({ children }) => {
     const chatService = useChatService();
 
-    const overflowContainerRef = React.useRef<HTMLDivElement>(null);
+    const [ overflowContainer, setOverflowContainer ] = React.useState<HTMLDivElement | null>(null);
     const contentRef = React.useRef<HTMLDivElement>(null);
     const previousHeightRef = React.useRef<number>(0);
     const isDraggingScrollBarRef = React.useRef(false);
@@ -48,18 +49,16 @@ export const AutopilotChatScrollProvider: React.FC<AutopilotChatScrollProviderPr
             setAutoScroll(true);
         }
 
-        const container = overflowContainerRef.current;
-
-        if (container) {
-            container.scrollTo({
-                top: container.scrollHeight,
+        if (overflowContainer) {
+            overflowContainer.scrollTo({
+                top: overflowContainer.scrollHeight,
                 behavior,
             });
         }
-    }, [ autoScroll ]);
+    }, [ autoScroll, overflowContainer ]);
 
     const handleResize = React.useCallback(() => {
-        if (!autoScroll || !contentRef.current || !overflowContainerRef.current) {
+        if (!autoScroll || !contentRef.current || !overflowContainer) {
             return;
         }
 
@@ -67,8 +66,7 @@ export const AutopilotChatScrollProvider: React.FC<AutopilotChatScrollProviderPr
 
         // if the chat is in auto-scroll mode, scroll to the bottom if the content is taller than the previous height
         if (newHeight > previousHeightRef.current && autoScroll) {
-            const container = overflowContainerRef.current;
-            const distance = container.scrollHeight - container.scrollTop - container.clientHeight;
+            const distance = overflowContainer.scrollHeight - overflowContainer.scrollTop - overflowContainer.clientHeight;
             const isNearBottom = distance < CHAT_SCROLL_BOTTOM_BUFFER;
 
             scrollToBottom({
@@ -78,26 +76,26 @@ export const AutopilotChatScrollProvider: React.FC<AutopilotChatScrollProviderPr
         }
 
         previousHeightRef.current = newHeight;
-    }, [ contentRef, autoScroll, scrollToBottom, streaming ]);
+    }, [ contentRef, autoScroll, scrollToBottom, streaming, overflowContainer ]);
 
     // When scrolling up, we want to disable auto-scroll
     const handleWheel = React.useCallback((event: WheelEvent) => {
-        const container = overflowContainerRef.current;
-
-        if (!container) {
+        if (!overflowContainer) {
             return;
         }
 
-        if (event.deltaY < 0 && container.scrollHeight > container.clientHeight) {
+        if (event.deltaY < 0 && overflowContainer.scrollHeight > overflowContainer.clientHeight) {
             setAutoScroll(false);
-        } else if (event.deltaY > 0 && container.scrollHeight - container.scrollTop - container.clientHeight < CHAT_SCROLL_BOTTOM_BUFFER) {
+        } else if (
+            event.deltaY > 0 &&
+            overflowContainer.scrollHeight - overflowContainer.scrollTop - overflowContainer.clientHeight < CHAT_SCROLL_BOTTOM_BUFFER
+        ) {
             setAutoScroll(true);
         }
-    }, [ setAutoScroll ]);
+    }, [ setAutoScroll, overflowContainer ]);
 
     const handleKeyDown = React.useCallback((event: KeyboardEvent) => {
-        const container = overflowContainerRef.current;
-        if (!container) {
+        if (!overflowContainer) {
             return;
         }
 
@@ -106,42 +104,39 @@ export const AutopilotChatScrollProvider: React.FC<AutopilotChatScrollProviderPr
         }
 
         if (event.key === 'ArrowDown') {
-            const distance = container.scrollHeight - container.scrollTop - container.clientHeight;
+            const distance = overflowContainer.scrollHeight - overflowContainer.scrollTop - overflowContainer.clientHeight;
 
             // if we're near the bottom, enable auto-scroll
             if (distance < CHAT_SCROLL_BOTTOM_BUFFER) {
                 setAutoScroll(true);
             }
         }
-    }, []);
+    }, [ overflowContainer ]);
 
     const handleMouseDown = React.useCallback((event: MouseEvent) => {
-        const container = overflowContainerRef.current;
-        if (!container) {
+        if (!overflowContainer) {
             return;
         }
 
         // Focus when clicking on it so that the keyboard events are captured for the container
-        container.focus();
+        overflowContainer.focus();
 
-        const scrollbarWidth = container.offsetWidth - container.clientWidth;
-        const scrollbarXStart = container.getBoundingClientRect().right - scrollbarWidth;
+        const scrollbarWidth = overflowContainer.offsetWidth - overflowContainer.clientWidth;
+        const scrollbarXStart = overflowContainer.getBoundingClientRect().right - scrollbarWidth;
 
         // Check if mouse is within the vertical scrollbar zone and prevent auto-scroll
         if (event.clientX >= scrollbarXStart) {
             isDraggingScrollBarRef.current = true;
             setAutoScroll(false);
         }
-    }, []);
+    }, [ overflowContainer ]);
 
     const handleMouseUp = React.useCallback(() => {
         if (isDraggingScrollBarRef.current) {
             isDraggingScrollBarRef.current = false;
 
-            const container = overflowContainerRef.current;
-
-            if (container) {
-                const distance = container.scrollHeight - container.scrollTop - container.clientHeight;
+            if (overflowContainer) {
+                const distance = overflowContainer.scrollHeight - overflowContainer.scrollTop - overflowContainer.clientHeight;
 
                 // if we're near the bottom after releasing the scrollbar, enable auto-scroll
                 if (distance < CHAT_SCROLL_BOTTOM_BUFFER) {
@@ -149,11 +144,10 @@ export const AutopilotChatScrollProvider: React.FC<AutopilotChatScrollProviderPr
                 }
             }
         }
-    }, []);
+    }, [ overflowContainer ]);
 
     React.useEffect(() => {
         const content = contentRef.current;
-        const overflowContainer = overflowContainerRef.current;
 
         if (!content || !overflowContainer || !chatService) {
             return;
@@ -202,14 +196,15 @@ export const AutopilotChatScrollProvider: React.FC<AutopilotChatScrollProviderPr
             unsubscribeSetConversation();
             unsubscribeModeChange();
         };
-    }, [ handleResize, handleWheel, handleKeyDown, handleMouseUp, handleMouseDown, chatService ]);
+    }, [ handleResize, handleWheel, handleKeyDown, handleMouseUp, handleMouseDown, chatService, overflowContainer ]);
 
     const value = React.useMemo(() => ({
         autoScroll,
         scrollToBottom,
-        overflowContainerRef,
+        overflowContainer,
+        setOverflowContainer,
         contentRef,
-    }), [ autoScroll, scrollToBottom, overflowContainerRef, contentRef ]);
+    }), [ autoScroll, scrollToBottom, overflowContainer, setOverflowContainer, contentRef ]);
 
     return (
         <AutopilotChatScrollContext.Provider value={value}>

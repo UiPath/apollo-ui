@@ -23,14 +23,12 @@ export const AutopilotChatTooltip: React.FC<AutopilotChatTooltipProps> = React.m
     children,
 }) => {
     const [ open, setOpen ] = React.useState(false);
-    const { overflowContainerRef } = useChatScroll();
+    const { overflowContainer } = useChatScroll();
     const tooltipRef = React.useRef<HTMLDivElement>(null);
 
     // Close the tooltip immediately at the first sign of scrolling
     React.useEffect(() => {
-        const container = overflowContainerRef.current;
-
-        if (!container || !open) {
+        if (!overflowContainer || !open) {
             return undefined;
         }
 
@@ -39,15 +37,15 @@ export const AutopilotChatTooltip: React.FC<AutopilotChatTooltipProps> = React.m
         };
 
         // Use capture and passive for better performance and immediate execution
-        container.addEventListener('scroll', handleScroll, {
+        overflowContainer.addEventListener('scroll', handleScroll, {
             passive: true,
             capture: true,
         });
 
         return () => {
-            container.removeEventListener('scroll', handleScroll, { capture: true });
+            overflowContainer.removeEventListener('scroll', handleScroll, { capture: true });
         };
-    }, [ overflowContainerRef, open ]);
+    }, [ overflowContainer, open ]);
 
     const handleTooltipClose = React.useCallback(() => {
         setOpen(false);

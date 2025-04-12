@@ -49,10 +49,10 @@ const ScrollButtonWrapper = styled('div')(() => ({
 }));
 
 interface ScrollToBottomButtonProps {
-    containerRef: React.RefObject<HTMLDivElement>;
+    overflowContainer: HTMLDivElement | null;
 }
 
-function AutopilotChatScrollToBottomButtonComponent({ containerRef }: ScrollToBottomButtonProps) {
+function AutopilotChatScrollToBottomButtonComponent({ overflowContainer }: ScrollToBottomButtonProps) {
     const [ bottom, setBottom ] = React.useState(0);
     const [ left, setLeft ] = React.useState(0);
     const {
@@ -71,19 +71,19 @@ function AutopilotChatScrollToBottomButtonComponent({ containerRef }: ScrollToBo
 
         const updatePosition = () => {
             animationFrameRef = requestAnimationFrame(() => {
-                if (containerRef.current) {
-                    const rect = containerRef.current.getBoundingClientRect();
+                if (overflowContainer) {
+                    const rect = overflowContainer.getBoundingClientRect();
 
-                    if (!bottom) {
-                        setBottom(Math.round(window.innerHeight - rect.bottom));
-                    }
-
+                    setBottom(Math.round(window.innerHeight - rect.bottom));
                     setLeft(Math.round(rect.left + rect.width / 2));
                 }
             });
         };
 
-        updatePosition();
+        // Delay to ensure the overflow container is rendered properly
+        const timeout = setTimeout(() => {
+            updatePosition();
+        }, 200);
 
         window.addEventListener('resize', updatePosition);
         const unsubscribeResize = chatInternalService.on(AutopilotChatInternalEvent.ChatResize, updatePosition);
@@ -97,8 +97,12 @@ function AutopilotChatScrollToBottomButtonComponent({ containerRef }: ScrollToBo
             if (animationFrameRef) {
                 cancelAnimationFrame(animationFrameRef);
             }
+
+            if (timeout) {
+                clearTimeout(timeout);
+            }
         };
-    }, [ containerRef, chatInternalService, chatService, bottom ]);
+    }, [ overflowContainer, chatInternalService, chatService, bottom ]);
 
     const isVisible = !autoScroll;
 

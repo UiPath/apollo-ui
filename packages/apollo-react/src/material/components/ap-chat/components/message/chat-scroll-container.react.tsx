@@ -17,7 +17,7 @@ const OverflowContainer = styled('div')(() => ({
     flex: '1 1 100%',
     minHeight: 0,
     overflowY: 'auto',
-    marginBottom: token.Spacing.SpacingBase,
+    paddingBottom: token.Spacing.SpacingBase,
     position: 'relative',
     outline: 'none',
 }));
@@ -36,13 +36,14 @@ interface ChatScrollContainerProps {
 
 function ChatScrollContainerComponent({ mode }: ChatScrollContainerProps) {
     const {
-        overflowContainerRef,
+        setOverflowContainer,
         contentRef,
+        overflowContainer,
     } = useChatScroll();
 
     return (
         <>
-            <OverflowContainer tabIndex={0} id="overflow-container" ref={overflowContainerRef}>
+            <OverflowContainer tabIndex={0} id="overflow-container" ref={setOverflowContainer}>
                 <MessagesContainer
                     id="content-ref"
                     ref={contentRef}
@@ -52,7 +53,7 @@ function ChatScrollContainerComponent({ mode }: ChatScrollContainerProps) {
                 </MessagesContainer>
             </OverflowContainer>
 
-            <AutopilotChatScrollToBottomButton containerRef={overflowContainerRef}/>
+            <AutopilotChatScrollToBottomButton overflowContainer={overflowContainer}/>
         </>
     );
 }

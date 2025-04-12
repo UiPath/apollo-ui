@@ -32,7 +32,7 @@ const HeaderContainer = styled('div')(() => ({
 
 const InputBackground = styled('div')(() => ({
     flexShrink: 0,
-    padding: `${token.Spacing.SpacingXs} ${token.Spacing.SpacingL}`,
+    padding: `0 ${token.Spacing.SpacingL} ${token.Spacing.SpacingXs}`,
 }));
 
 const InputContainer = styled('div')(() => ({
