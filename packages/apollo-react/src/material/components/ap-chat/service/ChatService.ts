@@ -71,6 +71,7 @@ export class AutopilotChatService {
         this.setChatMode = this.setChatMode.bind(this);
         this.sendRequest = this.sendRequest.bind(this);
         this.sendResponse = this.sendResponse.bind(this);
+        this.setLoadingMessage = this.setLoadingMessage.bind(this);
         this.setPrompt = this.setPrompt.bind(this);
         this.intercept = this.intercept.bind(this);
         this.setFirstRunExperience = this.setFirstRunExperience.bind(this);
@@ -418,6 +419,15 @@ export class AutopilotChatService {
             this._conversation.push(assistantMessage);
             this._eventBus.publish(AutopilotChatEvent.Response, assistantMessage);
         }
+    }
+
+    /**
+     * Sets the loading message in the chat service
+     *
+     * @param messages - The messages to show in the loading state
+     */
+    public setLoadingMessage(messages: string[]) {
+        this._eventBus.publish(AutopilotChatEvent.SetLoadingMessage, messages);
     }
 
     /**
