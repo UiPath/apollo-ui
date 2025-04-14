@@ -110,6 +110,7 @@ export interface AutopilotChatMessageRenderer {
  * @property {string} OpenConversation - Emitted when a conversation is opened (clicked on in the history list)
  * @property {string} Feedback - Emitted when a feedback is sent (thumbs up or thumbs down)
  * @property {string} Copy - Emitted when a message is copied
+ * @property {string} SetLoadingMessage - Emitted when a loading message is set
  */
 export enum AutopilotChatEvent {
     Error = 'error',
@@ -119,6 +120,7 @@ export enum AutopilotChatEvent {
     Request = 'request',
     Response = 'response',
     StopResponse = 'stopResponse',
+    SetLoadingMessage = 'setLoadingMessage',
     SetFirstRunExperience = 'setFirstRunExperience',
     SetDisabledFeatures = 'setDisabledFeatures',
     Open = 'open',
