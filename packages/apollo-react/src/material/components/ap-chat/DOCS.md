@@ -66,6 +66,7 @@ const chatService = window.PortalShell.AutopilotChat;
 | `sendRequest(request: AutopilotChatMessage)` | Sends a user request to the chat and triggers the request event (see [AutopilotChatMessage](#autopilotchatmessage)) |
 | `sendResponse(response: AutopilotChatMessage)` | Sends an AI assistant response to display in the chat (see [AutopilotChatMessage](#autopilotchatmessage)) |
 | `stopResponse()` | Stops the current streaming response, if applicable |
+| `setLoadingMessage(messages: string[])` | Sets the loading messages, replacing the default loading messages |
 
 ### History Management
 
@@ -120,6 +121,7 @@ Subscribes to chat events and returns an unsubscribe function. The handler will 
 - `Request`: When a user sends a message
 - `Response`: When an AI response is received
 - `StopResponse`: When a response is stopped
+- `SetLoadingMessage`: When a loading message is set
 - `SetFirstRunExperience`: When the first run experience is set
 - `SetDisabledFeatures`: When disabled features are set
 - `Open`: When the chat is opened
