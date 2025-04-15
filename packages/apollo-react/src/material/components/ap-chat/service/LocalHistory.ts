@@ -9,9 +9,9 @@ import {
     AutopilotChatInterceptableEvent,
     AutopilotChatInternalEvent,
 } from '../types/AutopilotChatModel';
+import { CHAT_ACTIVE_CONVERSATION_ID_KEY } from './ChatConstants';
 import type { AutopilotChatService } from './ChatService';
-import { CHAT_ACTIVE_CONVERSATION_ID_KEY } from './Constants';
-import { StorageService } from './Storage';
+import { StorageService } from './StorageService';
 
 interface Conversation {
     id: string;
