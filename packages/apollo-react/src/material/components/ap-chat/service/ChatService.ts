@@ -51,6 +51,9 @@ export class AutopilotChatService {
     private _historyOpen: boolean = false;
     private _activeConversationId: string | null = null;
     private _internalService: AutopilotChatInternalService;
+    private _defaultLoadingMessages: string[] = [];
+    private _loadingMessage: string | null = null;
+    private _loadingMessageDuration: number | null = null;
 
     private constructor(instanceName: string) {
         this._eventBus = new EventBus();
@@ -71,6 +74,7 @@ export class AutopilotChatService {
         this.setChatMode = this.setChatMode.bind(this);
         this.sendRequest = this.sendRequest.bind(this);
         this.sendResponse = this.sendResponse.bind(this);
+        this.setDefaultLoadingMessages = this.setDefaultLoadingMessages.bind(this);
         this.setLoadingMessage = this.setLoadingMessage.bind(this);
         this.setPrompt = this.setPrompt.bind(this);
         this.intercept = this.intercept.bind(this);
@@ -425,9 +429,56 @@ export class AutopilotChatService {
      * Sets the loading message in the chat service
      *
      * @param messages - The messages to show in the loading state
+     * @param duration - The duration in milliseconds to show each message (optional)
      */
-    public setLoadingMessage(messages: string[]) {
-        this._eventBus.publish(AutopilotChatEvent.SetLoadingMessage, messages);
+    public setDefaultLoadingMessages(messages: string[], duration?: number) {
+        this._defaultLoadingMessages = messages;
+        if (duration) {
+            this._loadingMessageDuration = duration;
+        }
+
+        this._eventBus.publish(AutopilotChatEvent.SetDefaultLoadingMessages, {
+            messages,
+            duration,
+        });
+    }
+
+    /**
+     * Gets the default loading messages in the chat service
+     *
+     * @returns The default loading messages
+     */
+    public getDefaultLoadingMessages() {
+        return this._defaultLoadingMessages;
+    }
+
+    /**
+     * Gets the current loading message duration
+     *
+     * @returns The loading message duration in milliseconds
+     */
+    public getLoadingMessageDuration() {
+        return this._loadingMessageDuration;
+    }
+
+    /**
+     * Sets a single loading message in the chat service
+     *
+     * @param message - The message to show in the loading state
+     */
+    public setLoadingMessage(message: string) {
+        this._loadingMessage = message;
+
+        this._eventBus.publish(AutopilotChatEvent.SetLoadingMessage, message);
+    }
+
+    /**
+     * Gets the current loading message
+     *
+     * @returns The loading message
+     */
+    public getLoadingMessage() {
+        return this._loadingMessage;
     }
 
     /**
