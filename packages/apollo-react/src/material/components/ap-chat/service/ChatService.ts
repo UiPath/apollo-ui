@@ -16,17 +16,17 @@ import {
     AutopilotChatMode,
     AutopilotChatRole,
 } from '../types/AutopilotChatModel';
-import { AutopilotChatInternalService } from './chat-internal-service';
+import { AutopilotChatInternalService } from './ChatInternalService';
 import {
     ACCEPTED_FILE_MAX_COUNT,
     ACCEPTED_FILE_MAX_SIZE,
     ACCEPTED_FILES,
     CHAT_MODE_KEY,
     DEFAULT_MESSAGE_RENDERER,
-} from './constants';
-import { EventBus } from './event-bus';
-import { LocalHistoryService } from './local-history';
-import { StorageService } from './storage';
+} from './Constants';
+import { EventBus } from './EventBus';
+import { LocalHistoryService } from './LocalHistory';
+import { StorageService } from './Storage';
 
 export class AutopilotChatService {
     private static _instances: Record<string, AutopilotChatService> = {};

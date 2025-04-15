@@ -2,7 +2,7 @@ import type {
     AutopilotChatEventHandler,
     AutopilotChatInternalEvent,
 } from '../types/AutopilotChatModel';
-import { EventBus } from './event-bus';
+import { EventBus } from './EventBus';
 
 export class AutopilotChatInternalService {
     private static instance: AutopilotChatInternalService;
