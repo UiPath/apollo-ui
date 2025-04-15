@@ -3,11 +3,11 @@
 
 import { styled } from '@mui/material/styles';
 import token from '@uipath/apollo-core/lib';
-import { AutopilotChatMode } from '@uipath/portal-shell-util';
 import {
+    AutopilotChatMode,
     CHAT_HISTORY_WIDTH_FULL_SCREEN,
     CHAT_WIDTH_FULL_SCREEN_MAX_WIDTH,
-} from '@uipath/portal-shell-util/src/autopilot/constants';
+} from '@uipath/portal-shell-util';
 import React from 'react';
 
 import { AutopilotChatHeader } from '../header/header.react';

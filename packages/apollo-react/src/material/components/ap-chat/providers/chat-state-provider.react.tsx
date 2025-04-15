@@ -29,7 +29,7 @@ interface AutopilotChatStateProviderProps {
 
 export const AutopilotChatStateProvider: React.FC<AutopilotChatStateProviderProps> = ({ children }) => {
     const chatService = useChatService();
-    const chatInternalService = chatService .__internalService__;
+    const chatInternalService = chatService.__internalService__;
 
     const [ allowedAttachments, setAllowedAttachments ] = React.useState<AutopilotChatAllowedAttachments>(
         chatService?.getConfig()?.allowedAttachments ?? {

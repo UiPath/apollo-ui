@@ -63,7 +63,7 @@ function DragHandleComponent() {
     const {
         width, setWidth, setShouldAnimate,
     } = useChatWidth();
-    const chatInternalService = useChatService() .__internalService__;
+    const chatInternalService = useChatService().__internalService__;
     const widthRef = React.useRef(width);
     const { disabledFeatures } = useChatState();
 

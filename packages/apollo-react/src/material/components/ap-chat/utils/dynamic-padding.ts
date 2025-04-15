@@ -3,7 +3,7 @@ import {
     CHAT_MESSAGE_MIN_PADDING,
     CHAT_WIDTH_SIDE_BY_SIDE_MAX,
     CHAT_WIDTH_SIDE_BY_SIDE_MIN,
-} from '@uipath/portal-shell-util/src/autopilot/constants';
+} from '@uipath/portal-shell-util';
 
 export function calculateDynamicPadding(currentWidth: number): number {
     // If width is less than minimum, return minimum padding

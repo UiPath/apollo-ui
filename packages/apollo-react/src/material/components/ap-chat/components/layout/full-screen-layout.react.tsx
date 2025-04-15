@@ -6,12 +6,10 @@ import token from '@uipath/apollo-core/lib';
 import {
     AutopilotChatInternalEvent,
     AutopilotChatMode,
-} from '@uipath/portal-shell-util';
-import {
     CHAT_CONTAINER_ANIMATION_DURATION,
     CHAT_HISTORY_WIDTH_FULL_SCREEN,
     CHAT_WIDTH_FULL_SCREEN_MAX_WIDTH,
-} from '@uipath/portal-shell-util/src/autopilot/constants';
+} from '@uipath/portal-shell-util';
 import React from 'react';
 
 import { useChatService } from '../../providers/chat-service.provider.react';
@@ -65,7 +63,7 @@ export const FullScreenLayout: React.FC<FullScreenLayoutProps> = ({
     historyDisabled,
     mode,
 }) => {
-    const chatInternalService = useChatService() .__internalService__;
+    const chatInternalService = useChatService().__internalService__;
     const mainContainerRef = React.useRef<HTMLDivElement>(null);
 
     React.useEffect(() => {

@@ -60,7 +60,7 @@ function AutopilotChatScrollToBottomButtonComponent({ overflowContainer }: Scrol
     } = useChatScroll();
 
     const chatService = useChatService();
-    const chatInternalService = chatService .__internalService__;
+    const chatInternalService = chatService.__internalService__;
 
     React.useEffect(() => {
         if (!chatService || !chatInternalService) {
