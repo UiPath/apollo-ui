@@ -13,7 +13,7 @@ import { AutopilotChatService } from '../../../services/chat-service';
 
 const SECONDS = 1000;
 const FADE_DURATION = 0.5 * SECONDS;
-const MESSAGE_DURATION = 5 * SECONDS;
+const DEFAULT_MESSAGE_DURATION = 5 * SECONDS;
 
 const defaultMessages = [ 'autopilot-chat-thinking', 'autopilot-chat-analyzing', 'autopilot-chat-thinking-more' ];
 
@@ -21,6 +21,7 @@ export const LoadingMessage = () => {
     const [ messageIdx, setMessageIdx ] = useState(0);
     const [ isVisible, setIsVisible ] = useState(true);
     const [ messages, setMessages ] = useState(defaultMessages);
+    const [ messageDuration, setMessageDuration ] = useState(DEFAULT_MESSAGE_DURATION);
     const chatService = AutopilotChatService.Instance;
 
     useEffect(() => {
@@ -28,22 +29,34 @@ export const LoadingMessage = () => {
             return;
         }
 
-        const unsubscribeSetLoadingMessage = chatService.on(AutopilotChatEvent.SetLoadingMessage, (newMessages: string[]) => {
+        const unsubscribeSetDefaultLoadingMessages = chatService.on(
+            AutopilotChatEvent.SetDefaultLoadingMessages, (data: { messages: string[]; duration?: number }) => {
+                setIsVisible(false);
+                setTimeout(() => {
+                    setMessageIdx(0);
+                    setMessages(data.messages);
+                    setMessageDuration(data.duration ?? DEFAULT_MESSAGE_DURATION);
+                    setIsVisible(true);
+                }, FADE_DURATION);
+            });
+
+        const unsubscribeSetLoadingMessage = chatService.on(AutopilotChatEvent.SetLoadingMessage, (message: string) => {
             setIsVisible(false);
             setTimeout(() => {
-                setMessages(newMessages);
                 setMessageIdx(0);
+                setMessages([ message ]);
                 setIsVisible(true);
             }, FADE_DURATION);
         });
 
         return () => {
+            unsubscribeSetDefaultLoadingMessages();
             unsubscribeSetLoadingMessage();
         };
     }, [ chatService ]);
 
     useEffect(() => {
-        if (messageIdx >= messages.length - 1) {
+        if (messages.length === 1) {
             return;
         }
 
@@ -52,16 +65,16 @@ export const LoadingMessage = () => {
         const parentTimeout = setTimeout(() => {
             setIsVisible(false);
             childTimeout = setTimeout(() => {
-                setMessageIdx(prev => prev + 1);
+                setMessageIdx(prev => prev === messages.length - 1 ? 0 : prev + 1);
                 setIsVisible(true);
             }, FADE_DURATION);
-        }, MESSAGE_DURATION);
+        }, messageDuration);
 
         return () => {
             clearTimeout(parentTimeout);
             clearTimeout(childTimeout);
         };
-    }, [ messageIdx, messages ]);
+    }, [ messageIdx, messageDuration, messages ]);
 
     return (
         <Fade in={isVisible} timeout={FADE_DURATION}>
