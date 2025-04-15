@@ -296,12 +296,17 @@ export class LocalHistoryService {
             if (useLocalHistory) {
                 LocalHistoryService.ACTIVE_CONVERSATION_ID = StorageService.Instance.get(CHAT_ACTIVE_CONVERSATION_ID_KEY);
 
+                const unsubscribeOpenConversation = chatService.on(AutopilotChatEvent.OpenConversation, async (id) => {
+                    LocalHistoryService.ACTIVE_CONVERSATION_ID = id;
+                    StorageService.Instance.set(CHAT_ACTIVE_CONVERSATION_ID_KEY, id);
+                    chatService.setConversation(await LocalHistoryService.getConversationMessages(id));
+                });
+
                 const unsubscribeSetHistory = chatService.on(AutopilotChatEvent.SetHistory, async () => {
                     if (LocalHistoryService.ACTIVE_CONVERSATION_ID) {
-                        chatService.openConversation(LocalHistoryService.ACTIVE_CONVERSATION_ID);
-                        chatService.setConversation(
-                            await LocalHistoryService.getConversationMessages(LocalHistoryService.ACTIVE_CONVERSATION_ID),
-                        );
+                        if (chatService.activeConversationId !== LocalHistoryService.ACTIVE_CONVERSATION_ID) {
+                            chatService.openConversation(LocalHistoryService.ACTIVE_CONVERSATION_ID);
+                        }
                     }
                 });
 
@@ -360,12 +365,6 @@ export class LocalHistoryService {
                     }
 
                     chatService.setHistory(await LocalHistoryService.getAllConversations());
-                });
-
-                const unsubscribeOpenConversation = chatService.on(AutopilotChatEvent.OpenConversation, async (id) => {
-                    LocalHistoryService.ACTIVE_CONVERSATION_ID = id;
-                    StorageService.Instance.set(CHAT_ACTIVE_CONVERSATION_ID_KEY, id);
-                    chatService.setConversation(await LocalHistoryService.getConversationMessages(id));
                 });
 
                 cleanup();
