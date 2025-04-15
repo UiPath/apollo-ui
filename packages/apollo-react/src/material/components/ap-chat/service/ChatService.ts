@@ -51,7 +51,7 @@ export class AutopilotChatService {
     private _historyOpen: boolean = false;
     private _activeConversationId: string | null = null;
     private _internalService: AutopilotChatInternalService;
-    private _defaultLoadingMessages: string[] = [];
+    private _defaultLoadingMessages: string[] | null = null;
     private _loadingMessage: string | null = null;
     private _loadingMessageDuration: number | null = null;
 
@@ -75,7 +75,10 @@ export class AutopilotChatService {
         this.sendRequest = this.sendRequest.bind(this);
         this.sendResponse = this.sendResponse.bind(this);
         this.setDefaultLoadingMessages = this.setDefaultLoadingMessages.bind(this);
+        this.getDefaultLoadingMessages = this.getDefaultLoadingMessages.bind(this);
+        this.getLoadingMessageDuration = this.getLoadingMessageDuration.bind(this);
         this.setLoadingMessage = this.setLoadingMessage.bind(this);
+        this.getLoadingMessage = this.getLoadingMessage.bind(this);
         this.setPrompt = this.setPrompt.bind(this);
         this.intercept = this.intercept.bind(this);
         this.setFirstRunExperience = this.setFirstRunExperience.bind(this);
