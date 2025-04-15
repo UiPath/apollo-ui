@@ -17,11 +17,11 @@ import {
     differenceInMonths,
     isToday,
 } from 'date-fns';
-import { FocusTrap } from 'focus-trap-react';
 import React, {
     useEffect,
     useState,
 } from 'react';
+import FocusLock from 'react-focus-lock';
 
 import { t } from '../../../../utils/localization/loc';
 import { ApTextFieldReact } from '../../../ap-text-field/ap-text-field.react';
@@ -166,13 +166,9 @@ const AutopilotChatHistoryComponent: React.FC<AutopilotChatHistoryProps> = ({
     }, [ history, searchQuery ]);
 
     return (
-        <FocusTrap
-            active={open && !isFullScreen}
-            focusTrapOptions={{
-                allowOutsideClick: true,
-                initialFocus: historyOpen ? '.chat-history-content [tabindex="0"]:first-of-type' : false,
-                fallbackFocus: '.chat-history-search',
-            }}
+        <FocusLock
+            disabled={!open || !historyOpen || isFullScreen}
+            returnFocus={true}
         >
             <ChatHistoryContainer isOpen={open} isFullScreen={isFullScreen}>
                 <AutopilotChatHistoryHeader isFullScreen={isFullScreen} isHistoryOpen={historyOpen}/>
@@ -202,7 +198,7 @@ const AutopilotChatHistoryComponent: React.FC<AutopilotChatHistoryProps> = ({
                     </ap-typography>
                 )}
             </ChatHistoryContainer>
-        </FocusTrap>
+        </FocusLock>
     );
 };
 
