@@ -9,7 +9,7 @@ import React, {
 } from 'react';
 
 import { t } from '../../../../../utils/localization/loc';
-import { AutopilotChatService } from '../../../services/chat-service';
+import { useChatService } from '../../../providers/chat-service.provider.react';
 
 const SECONDS = 1000;
 const FADE_DURATION = 0.5 * SECONDS;
@@ -18,21 +18,24 @@ const DEFAULT_MESSAGE_DURATION = 5 * SECONDS;
 const defaultMessages = [ 'autopilot-chat-thinking', 'autopilot-chat-analyzing', 'autopilot-chat-thinking-more' ];
 
 export const LoadingMessage = () => {
+    const chatService = useChatService();
     const [ messageIdx, setMessageIdx ] = useState(0);
     const [ isVisible, setIsVisible ] = useState(true);
-    const [ messages, setMessages ] = useState(defaultMessages);
-    const [ messageDuration, setMessageDuration ] = useState(DEFAULT_MESSAGE_DURATION);
-    const chatService = AutopilotChatService.Instance;
+    const [ messages, setMessages ] = useState(chatService.getDefaultLoadingMessages() ?? defaultMessages);
+    const [ messageDuration, setMessageDuration ] = useState(chatService.getLoadingMessageDuration() ?? DEFAULT_MESSAGE_DURATION);
 
     useEffect(() => {
         if (!chatService) {
             return;
         }
 
+        let setDefaultLoadingMessagesTimeout: NodeJS.Timeout | undefined = undefined;
+        let setLoadingMessageTimeout: NodeJS.Timeout | undefined = undefined;
+
         const unsubscribeSetDefaultLoadingMessages = chatService.on(
             AutopilotChatEvent.SetDefaultLoadingMessages, (data: { messages: string[]; duration?: number }) => {
                 setIsVisible(false);
-                setTimeout(() => {
+                setDefaultLoadingMessagesTimeout = setTimeout(() => {
                     setMessageIdx(0);
                     setMessages(data.messages);
                     setMessageDuration(data.duration ?? DEFAULT_MESSAGE_DURATION);
@@ -42,7 +45,7 @@ export const LoadingMessage = () => {
 
         const unsubscribeSetLoadingMessage = chatService.on(AutopilotChatEvent.SetLoadingMessage, (message: string) => {
             setIsVisible(false);
-            setTimeout(() => {
+            setLoadingMessageTimeout = setTimeout(() => {
                 setMessageIdx(0);
                 setMessages([ message ]);
                 setIsVisible(true);
@@ -52,6 +55,8 @@ export const LoadingMessage = () => {
         return () => {
             unsubscribeSetDefaultLoadingMessages();
             unsubscribeSetLoadingMessage();
+            clearTimeout(setDefaultLoadingMessagesTimeout);
+            clearTimeout(setLoadingMessageTimeout);
         };
     }, [ chatService ]);
 
