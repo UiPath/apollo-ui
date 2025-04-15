@@ -6,7 +6,7 @@ A flexible chat interface component that provides seamless integration with both
 
 The Autopilot Chat component is a full-featured chat interface that can be embedded in applications to provide AI assistant functionality. The component includes:
 
-- A resizable and collapsible UI that can operate in side-by-side or full-screen mode
+- A resizable and collapsible UI that can operate in side-by-side, full-screen, or embedded mode
 - Support for text messages with markdown formatting
 - File attachments with drag-and-drop support
 - Customizable first-run experience with suggested prompts
@@ -256,6 +256,115 @@ chatService.initialize({
 
 // Open the chat interface
 chatService.open();
+```
+
+### Creating a Standalone Instance 🚧 (Experimental)
+
+> **Note:** This feature is not properly tested yet and may not properly work
+
+```typescript
+// Create a standalone instance with a custom name
+const chatService = AutopilotChatService.Instantiate({
+  instanceName: 'my-custom-chat',
+  config: {
+    mode: AutopilotChatMode.SideBySide,
+    firstRunExperience: {
+      title: "Custom Chat Experience",
+      description: "This is a standalone chat instance"
+    }
+  }
+});
+
+// Later, retrieve the same instance
+const sameInstance = AutopilotChatService.getInstance('my-custom-chat');
+```
+
+### Using with Web Component 🚧 (Experimental)
+
+> **Note:** Using custom chat service instances with the web component is experimental and may change in future releases.
+
+The `ap-autopilot-chat` is a web component that accepts a chat service instance as a property. If no instance is provided, it will use the global instance by default.
+
+```html
+<script>
+  // Import the required modules (if using ES modules)
+  import { AutopilotChatService, AutopilotChatMode } from '@uipath/portal-shell-util';
+  
+  // Create a custom chat service instance
+  const customChatService = AutopilotChatService.Instantiate({
+    instanceName: 'custom-component-chat',
+    config: { 
+      mode: AutopilotChatMode.SideBySide
+    }
+  });
+  
+  // Wait for custom elements to be defined
+  customElements.whenDefined('ap-autopilot-chat').then(() => {
+    // Get the element and assign the chat service
+    const chatElement = document.querySelector('ap-autopilot-chat');
+    chatElement.chatServiceInstance = customChatService;
+  });
+</script>
+
+<!-- The web component without a chat service will use the global instance -->
+<ap-autopilot-chat></ap-autopilot-chat>
+```
+
+### Opening Chat in Embedded Mode
+
+```typescript
+// Access the global chat service
+const chatService = window.PortalShell.AutopilotChat;
+
+// Get a container element where the chat will be embedded
+const container = document.getElementById('chat-container');
+
+// Open the chat in embedded mode
+chatService.open({
+  mode: AutopilotChatMode.Embedded,
+  embeddedContainer: container,
+  // Optionally disable the header for a more minimal embedded appearance
+  disabledFeatures: {
+    header: true
+  }
+});
+
+// The chat component will be appended to the container
+// You can interact with it using the same API as other modes
+// Note: resize and fullscreen are disabled by default in embedded mode
+```
+
+### Embedded Mode HTML Example
+
+```html
+<!-- Example: Embedded mode with global chat service -->
+<div id="my-chat-container" style="width: 100%; height: 500px;"></div>
+
+<script>
+  // Get a container element where the chat will be embedded
+  const container = document.getElementById('my-chat-container');
+  
+  // Access the global chat service
+  const chatService = window.PortalShell.AutopilotChat;
+  
+  // Open the chat in embedded mode
+  chatService.open({
+    mode: AutopilotChatMode.Embedded,
+    embeddedContainer: container,
+    disabledFeatures: {
+      header: true  // Optional: create a headerless embedded chat
+    }
+  });
+  
+  // You can further customize the experience
+  chatService.setFirstRunExperience({
+    title: "Embedded Assistant",
+    description: "Ask questions about this specific section.",
+    suggestions: [
+      { label: "Help with this form", prompt: "How do I fill out this form correctly?" }
+    ]
+  });
+</script>
 ```
 
 ### Intercepting User Requests
@@ -660,6 +769,11 @@ chatService.setDisabledFeatures({
 chatService.setDisabledFeatures({ 
   history: true 
 });
+
+// Disable header
+chatService.setDisabledFeatures({ 
+  header: true 
+});
 ```
 
 ### Setting Multiple Disabled Features at Once
@@ -670,13 +784,15 @@ chatService.setDisabledFeatures({
   resize: true,
   fullScreen: true,
   attachments: true,
-  history: true
+  history: true,
+  header: true
 });
 
 // Later, re-enable features
 chatService.setDisabledFeatures({ 
   resize: false,
-  fullScreen: false
+  fullScreen: false,
+  header: false
 });
 ```
 
@@ -688,6 +804,7 @@ chatService.setDisabledFeatures({
  * Represents the configuration for the Autopilot Chat system.
  *
  * @property mode - The mode of the chat
+ * @property embeddedContainer - The container to embed the chat in (for Embedded mode)
  * @property disabledFeatures - The disabled features of the chat
  * @property firstRunExperience - The first run experience of the chat
  * @property useLocalHistory - Whether the chat uses indexdb to store history
@@ -695,6 +812,7 @@ chatService.setDisabledFeatures({
  */
 export interface AutopilotChatConfiguration {
     mode: AutopilotChatMode;
+    embeddedContainer?: HTMLElement;
     disabledFeatures?: AutopilotChatDisabledFeatures;
     firstRunExperience?: {
         title: string;
@@ -712,6 +830,7 @@ export interface AutopilotChatConfiguration {
 enum AutopilotChatMode {
   SideBySide = 'side-by-side',
   FullScreen = 'full-screen',
+  Embedded = 'embedded',
   Closed = 'closed'
 }
 ```
@@ -726,12 +845,14 @@ enum AutopilotChatMode {
  * @property fullScreen - Whether the chat has the full screen button
  * @property attachments - Whether the chat has the attachments button
  * @property history - Whether the chat has the history button
+ * @property header - Whether the chat has the header
  */
 interface AutopilotChatDisabledFeatures {
   attachments?: boolean;
   resize?: boolean;
   fullScreen?: boolean;
   history?: boolean;
+  header?: boolean;
 }
 ```
 
