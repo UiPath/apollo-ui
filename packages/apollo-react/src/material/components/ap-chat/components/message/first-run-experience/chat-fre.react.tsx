@@ -18,6 +18,7 @@ const FREContainer = styled('div')(() => ({
     borderRadius: token.Border.BorderRadiusL,
     position: 'absolute',
     bottom: 0,
+    marginBottom: token.Spacing.SpacingL,
 }));
 
 const FREHeader = styled('div')(() => ({
