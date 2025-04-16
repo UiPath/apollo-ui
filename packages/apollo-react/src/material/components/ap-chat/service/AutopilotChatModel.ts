@@ -158,6 +158,7 @@ export enum AutopilotChatInterceptableEvent {
  * @property {string} CloseHistory - Emitted when the history is closed
  * @property {string} UseLocalHistory - Emitted when the chat uses local history
  * @property {string} SetAllowedAttachments - Emitted when the allowed attachments are set
+ * @property {string} ToggleAutoScroll - Emitted when the auto scroll is toggled
  */
 export enum AutopilotChatInternalEvent {
     ChatResize = 'chatResize',
@@ -165,6 +166,7 @@ export enum AutopilotChatInternalEvent {
     ToggleHistory = 'toggleHistory',
     UseLocalHistory = 'useLocalHistory',
     SetAllowedAttachments = 'setAllowedAttachments',
+    ToggleAutoScroll = 'toggleAutoScroll',
 }
 
 export type AutopilotChatEventHandler<T = any> = (data?: T) => void;
