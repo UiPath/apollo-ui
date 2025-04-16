@@ -2,8 +2,8 @@
 /** @jsxFrag React.Fragment */
 
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import {
+    Popover,
     styled,
     useTheme,
 } from '@mui/material';
@@ -28,19 +28,18 @@ export const SelectedModelContainer = styled('div')(({ theme }) => ({
     color: theme.palette.semantic.colorForegroundLight,
     gap: token.Spacing.SpacingMicro,
     paddingLeft: token.Spacing.SpacingMicro,
+    '& .arrow-icon': {
+        transition: 'transform 0.2s ease-in-out',
+        transform: 'rotate(0deg)',
+    },
+    '& .arrow-icon.open': { transform: 'rotate(180deg)' },
 }));
 
 export const ModelSelectionContainer = styled('div')(({ theme }) => ({
-    position: 'absolute',
-    top: '0',
-    left: '0',
-    right: '0',
-    transform: 'translateY(-100%)',
     backgroundColor: theme.palette.semantic.colorBackground,
     border: `${token.Border.BorderThickS} solid ${theme.palette.semantic.colorBorderDeEmp}`,
     borderRadius: token.Border.BorderRadiusM,
     color: theme.palette.semantic.colorForeground,
-    zIndex: 1000,
 }));
 
 export const ModelOption = styled('div')({
@@ -63,20 +62,24 @@ export const ModelPicker = React.memo(({
     useIcon,
 }: ModelPickerProps) => {
     const theme = useTheme();
-    const [ isOpen, setIsOpen ] = React.useState(false);
+    const [ anchorEl, setAnchorEl ] = React.useState<HTMLDivElement | null>(null);
 
     const handleModelChange = (model: AutopilotChatModelInfo) => {
         onModelChange?.(model);
-        setIsOpen(false);
+        setAnchorEl(null);
     };
 
-    const toggleModelSelection = () => {
-        setIsOpen(!isOpen);
+    const handleClick = (event: React.MouseEvent<HTMLDivElement>) => {
+        setAnchorEl(event.currentTarget);
     };
+
+    const handleClose = () => {
+        setAnchorEl(null);
+    };
+
+    const open = Boolean(anchorEl);
 
     const renderSelectedModel = () => {
-        const ArrowIcon = isOpen ? KeyboardArrowUpIcon : KeyboardArrowDownIcon;
-
         if (useIcon) {
             return <portal-custom-icon name="model" size="24px" />;
         }
@@ -84,7 +87,10 @@ export const ModelPicker = React.memo(({
         return (
             <SelectedModelContainer>
                 <ap-typography>{selectedModel?.name}</ap-typography>
-                <ArrowIcon className="arrow-icon" fontSize="inherit" />
+                <KeyboardArrowDownIcon
+                    className={`arrow-icon ${open ? 'open' : ''}`}
+                    fontSize="inherit"
+                />
             </SelectedModelContainer>
         );
     };
@@ -114,11 +120,33 @@ export const ModelPicker = React.memo(({
     );
 
     return (
-        <ModelPickerContainer onClick={toggleModelSelection}>
-            {isOpen && models && (
+        <>
+            <ModelPickerContainer onClick={handleClick}>
+                {open ? renderSelectedModel() : renderModelTooltip()}
+            </ModelPickerContainer>
+            <Popover
+                open={open}
+                anchorEl={anchorEl}
+                onClose={handleClose}
+                anchorOrigin={{
+                    vertical: 'top',
+                    horizontal: 'left',
+                }}
+                transformOrigin={{
+                    vertical: 'bottom',
+                    horizontal: 'left',
+                }}
+                sx={{
+                    '& .MuiPopover-paper': {
+                        marginTop: `-${(models?.length ?? 0) * 20 + 4}px`,
+                        boxShadow: 'none',
+                    },
+                }}
+            >
                 <ModelSelectionContainer>
-                    {models.map((model) => (
+                    {models?.map((model) => (
                         <AutopilotChatTooltip
+                            key={model.id}
                             placement="right-start"
                             title={
                                 <ap-typography
@@ -129,17 +157,13 @@ export const ModelPicker = React.memo(({
                                 </ap-typography>
                             }
                         >
-                            <ModelOption
-                                key={model.id}
-                                onClick={() => handleModelChange(model)}
-                            >
+                            <ModelOption onClick={() => handleModelChange(model)}>
                                 <ap-typography>{model.name}</ap-typography>
                             </ModelOption>
                         </AutopilotChatTooltip>
                     ))}
                 </ModelSelectionContainer>
-            )}
-            {isOpen ? renderSelectedModel() : renderModelTooltip()}
-        </ModelPickerContainer>
+            </Popover>
+        </>
     );
 });
