@@ -165,7 +165,7 @@ function AutopilotChatInputActionsComponent({
                         />
                     </>
                 )}
-                { models.length > 0 && <AutopilotChatInputModelPicker /> }
+                { models.length > 0 && <AutopilotChatInputModelPicker useIcon={!disabledFeatures.attachments} /> }
             </InputActionsGroup>
 
             <InputActionsGroup>

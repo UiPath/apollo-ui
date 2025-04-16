@@ -53,21 +53,20 @@ export interface ModelPickerProps {
     models?: AutopilotChatModelInfo[];
     selectedModel?: AutopilotChatModelInfo;
     onModelChange?: (model: AutopilotChatModelInfo) => void;
+    useIcon?: boolean;
 }
 
 export const ModelPicker = React.memo(({
     models,
     selectedModel,
     onModelChange,
+    useIcon,
 }: ModelPickerProps) => {
     const theme = useTheme();
-
     const [ isOpen, setIsOpen ] = React.useState(false);
 
     const handleModelChange = (model: AutopilotChatModelInfo) => {
-        if (onModelChange) {
-            onModelChange(model);
-        }
+        onModelChange?.(model);
         setIsOpen(false);
     };
 
@@ -75,23 +74,61 @@ export const ModelPicker = React.memo(({
         setIsOpen(!isOpen);
     };
 
+    const renderSelectedModel = () => {
+        const ArrowIcon = isOpen ? KeyboardArrowUpIcon : KeyboardArrowDownIcon;
+
+        if (useIcon) {
+            return <ap-icon name="model" />;
+        }
+
+        return (
+            <>
+                <ap-typography>{selectedModel?.name}</ap-typography>
+                <ArrowIcon className="arrow-icon" fontSize="inherit" />
+            </>
+        );
+    };
+
+    const renderModelTooltip = () => (
+        <AutopilotChatTooltip
+            placement="top"
+            title={
+                <>
+                    <ap-typography
+                        color={theme.palette.semantic.colorForegroundInverse}
+                        variant={FontVariantToken.fontSizeM}
+                    >
+                        {selectedModel?.name}
+                    </ap-typography>
+                    <ap-typography
+                        color={theme.palette.semantic.colorForegroundInverse}
+                        variant={FontVariantToken.fontSizeXs}
+                    >
+                        {selectedModel?.description}
+                    </ap-typography>
+                </>
+            }
+        >
+            {renderSelectedModel()}
+        </AutopilotChatTooltip>
+    );
+
     return (
         <ModelPickerContainer onClick={toggleModelSelection}>
             {isOpen && models && (
                 <ModelSelectionContainer>
                     {models.map((model) => (
                         <AutopilotChatTooltip
+                            placement="right-start"
                             title={
-                                <>
-                                    <ap-typography
-                                        color={theme.palette.semantic.colorForegroundInverse}
-                                        variant={FontVariantToken.fontSizeS}
-                                    >
-                                        {model.description ?? model.name}
-                                    </ap-typography>
-                                </>
+                                <ap-typography
+                                    color={theme.palette.semantic.colorForegroundInverse}
+                                    variant={FontVariantToken.fontSizeS}
+                                >
+                                    {model.description ?? model.name}
+                                </ap-typography>
                             }
-                            placement="right">
+                        >
                             <ModelOption
                                 key={model.id}
                                 onClick={() => handleModelChange(model)}
@@ -103,9 +140,7 @@ export const ModelPicker = React.memo(({
                 </ModelSelectionContainer>
             )}
             <SelectedModelContainer>
-                <ap-typography>{selectedModel?.name}</ap-typography>
-                {isOpen ? <KeyboardArrowUpIcon className="arrow-icon" fontSize="inherit" />
-                    : <KeyboardArrowDownIcon className="arrow-icon" fontSize="inherit" />}
+                {isOpen ? renderSelectedModel() : renderModelTooltip()}
             </SelectedModelContainer>
         </ModelPickerContainer>
     );

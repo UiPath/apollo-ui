@@ -6,7 +6,7 @@ import React from 'react';
 import { useModelPicker } from '../../providers/model-picker-provider.react';
 import { ModelPicker } from '../common/model-picker';
 
-function AutopilotChatInputModelPickerComponent() {
+function AutopilotChatInputModelPickerComponent({ useIcon }: { useIcon: boolean }) {
     const {
         models, selectedModel, setSelectedModel,
     } = useModelPicker();
@@ -16,6 +16,7 @@ function AutopilotChatInputModelPickerComponent() {
             models={models}
             selectedModel={selectedModel}
             onModelChange={(model) => setSelectedModel(model)}
+            useIcon={useIcon}
         />
     );
 }
