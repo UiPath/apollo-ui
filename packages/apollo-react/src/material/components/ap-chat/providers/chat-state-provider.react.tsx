@@ -8,6 +8,7 @@ import {
     AutopilotChatEvent,
     AutopilotChatInternalEvent,
     AutopilotChatMode,
+    AutopilotChatModelInfo,
 } from '@uipath/portal-shell-util';
 import React from 'react';
 
@@ -19,6 +20,7 @@ interface AutopilotChatStateContextType {
     disabledFeatures: AutopilotChatDisabledFeatures;
     firstRunExperience: AutopilotChatConfiguration['firstRunExperience'];
     allowedAttachments: AutopilotChatAllowedAttachments;
+    models: AutopilotChatModelInfo[];
 }
 
 const AutopilotChatStateContext = React.createContext<AutopilotChatStateContextType | null>(null);
@@ -47,7 +49,7 @@ export const AutopilotChatStateProvider: React.FC<AutopilotChatStateProviderProp
         description: '',
         suggestions: [],
     });
-
+    const [ models, setModels ] = React.useState<AutopilotChatModelInfo[]>(chatService?.getModels() ?? []);
     React.useEffect(() => {
         if (!chatService) {
             return;
@@ -88,12 +90,20 @@ export const AutopilotChatStateProvider: React.FC<AutopilotChatStateProviderProp
             },
         );
 
+        const unsubscribeModels = chatService.on(
+            AutopilotChatEvent.SetModels,
+            (newModels: AutopilotChatModelInfo[]) => {
+                setModels(newModels);
+            },
+        );
+
         return () => {
             unsubscribeHistoryToggle();
             unsubscribeModeChange();
             unsubscribeDisabledFeatures();
             unsubscribeFirstRunExperience();
             unsubscribeAllowedAttachments();
+            unsubscribeModels();
         };
     }, [ chatService, chatInternalService ]);
 
@@ -103,7 +113,8 @@ export const AutopilotChatStateProvider: React.FC<AutopilotChatStateProviderProp
         disabledFeatures,
         firstRunExperience,
         allowedAttachments,
-    }), [ historyOpen, chatMode, disabledFeatures, firstRunExperience, allowedAttachments ]);
+        models,
+    }), [ historyOpen, chatMode, disabledFeatures, firstRunExperience, allowedAttachments, models ]);
 
     return (
         <AutopilotChatStateContext.Provider value={value}>

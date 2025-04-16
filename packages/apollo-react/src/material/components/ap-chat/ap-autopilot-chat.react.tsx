@@ -33,6 +33,7 @@ import {
 } from './providers/chat-width-provider.react';
 import { AutopilotErrorProvider } from './providers/error-provider.react';
 import { AutopilotLoadingProvider } from './providers/loading-provider.react';
+import { AutopilotModelPickerProvider } from './providers/model-picker-provider.react';
 import { AutopilotStreamingProvider } from './providers/streaming-provider.react';
 
 const ChatContainer = styled('div')<{ shouldAnimate: boolean; mode: AutopilotChatMode; width: number }>(({
@@ -104,11 +105,13 @@ export function ApAutopilotChatReact({ chatServiceInstance }: { chatServiceInsta
                         <AutopilotLoadingProvider>
                             <AutopilotStreamingProvider>
                                 <AutopilotAttachmentsProvider>
-                                    <AutopilotChatWidthProvider>
-                                        <AutopilotChatDropzone>
-                                            <AutopilotChatContent />
-                                        </AutopilotChatDropzone>
-                                    </AutopilotChatWidthProvider>
+                                    <AutopilotModelPickerProvider>
+                                        <AutopilotChatWidthProvider>
+                                            <AutopilotChatDropzone>
+                                                <AutopilotChatContent />
+                                            </AutopilotChatDropzone>
+                                        </AutopilotChatWidthProvider>
+                                    </AutopilotModelPickerProvider>
                                 </AutopilotAttachmentsProvider>
                             </AutopilotStreamingProvider>
                         </AutopilotLoadingProvider>

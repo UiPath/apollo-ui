@@ -14,6 +14,7 @@ import { useChatState } from '../../providers/chat-state-provider.react';
 import { useError } from '../../providers/error-provider.react';
 import { parseFiles } from '../../utils/file-reader';
 import { AutopilotChatActionButton } from '../common/action-button.react';
+import { AutopilotChatInputModelPicker } from './chat-input-model-picker.react';
 
 const InputActionsContainer = styled('div')(() => ({
     display: 'flex',
@@ -56,7 +57,7 @@ function AutopilotChatInputActionsComponent({
     } = useAttachments();
     const { setError } = useError();
     const {
-        disabledFeatures, allowedAttachments,
+        disabledFeatures, allowedAttachments, models,
     } = useChatState();
     const attachmentsCountRef = React.useRef(attachments.length);
 
@@ -164,6 +165,7 @@ function AutopilotChatInputActionsComponent({
                         />
                     </>
                 )}
+                { models.length > 0 && <AutopilotChatInputModelPicker /> }
             </InputActionsGroup>
 
             <InputActionsGroup>
