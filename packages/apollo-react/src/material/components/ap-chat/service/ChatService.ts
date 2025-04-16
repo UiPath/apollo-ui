@@ -7,6 +7,7 @@ import type {
     AutopilotChatHistory,
     AutopilotChatMessage,
     AutopilotChatMessageRenderer,
+    AutopilotChatModelInfo,
     AutopilotChatPrompt,
 } from '../types/AutopilotChatModel';
 import {
@@ -50,11 +51,12 @@ export class AutopilotChatService {
     private _history: AutopilotChatHistory[] = [];
     private _historyOpen: boolean = false;
     private _activeConversationId: string | null = null;
-    private _internalService: AutopilotChatInternalService;
     private _defaultLoadingMessages: string[] | null = null;
     private _loadingMessage: string | null = null;
     private _loadingMessageDuration: number | null = null;
-
+    private _internalService: AutopilotChatInternalService;
+    private _models: AutopilotChatModelInfo[] | undefined;
+    private _selectedModel: AutopilotChatModelInfo | undefined;
     private constructor(instanceName: string) {
         this._eventBus = new EventBus();
 
@@ -93,6 +95,9 @@ export class AutopilotChatService {
         this.openConversation = this.openConversation.bind(this);
         this.setAllowedAttachments = this.setAllowedAttachments.bind(this);
         this.toggleAutoScroll = this.toggleAutoScroll.bind(this);
+        this.setModels = this.setModels.bind(this);
+        this.setSelectedModel = this.setSelectedModel.bind(this);
+        this.getSelectedModel = this.getSelectedModel.bind(this);
     }
 
     static Instantiate({
@@ -646,6 +651,46 @@ export class AutopilotChatService {
      */
     toggleAutoScroll(autoScroll: boolean) {
         this._internalService.publish(AutopilotChatInternalEvent.ToggleAutoScroll, autoScroll);
+    }
+
+    /**
+     * Sets the models in the chat service
+     *
+     * @param models - The models to set
+     */
+    setModels(models: AutopilotChatModelInfo[]) {
+        this._models = models;
+
+        this._eventBus.publish(AutopilotChatEvent.SetModels, models);
+    }
+
+    /**
+     * Gets the models from the chat service
+     *
+     * @returns The models
+     */
+    getModels() {
+        return this._models;
+    }
+
+    /**
+     * Sets the selected model in the chat service
+     *
+     * @param model - The model to set
+     */
+    setSelectedModel(model: AutopilotChatModelInfo) {
+        this._selectedModel = model;
+
+        this._eventBus.publish(AutopilotChatEvent.SetSelectedModel, model);
+    }
+
+    /**
+     * Gets the selected model from the chat service
+     *
+     * @returns The selected model
+     */
+    getSelectedModel() {
+        return this._selectedModel;
     }
 
     /**
