@@ -20,8 +20,8 @@ import {
     ACCEPTED_FILE_MAX_COUNT,
     ACCEPTED_FILE_MAX_SIZE,
     ACCEPTED_FILES,
-    CHAT_MODE_KEY,
     DEFAULT_MESSAGE_RENDERER,
+    getChatModeKey,
 } from './ChatConstants';
 import { AutopilotChatInternalService } from './ChatInternalService';
 import { EventBus } from './EventBus';
@@ -31,7 +31,7 @@ import { StorageService } from './StorageService';
 export class AutopilotChatService {
     private static _instances: Record<string, AutopilotChatService> = {};
     private _initialConfig: AutopilotChatConfiguration = {
-        mode: StorageService.Instance.get(CHAT_MODE_KEY) as AutopilotChatMode
+        mode: StorageService.Instance.get(getChatModeKey()) as AutopilotChatMode
             ?? AutopilotChatMode.Closed,
         allowedAttachments: {
             multiple: true,
@@ -285,7 +285,17 @@ export class AutopilotChatService {
      * Expands the chat window
      */
     setChatMode(mode: AutopilotChatMode) {
-        StorageService.Instance.set(CHAT_MODE_KEY, mode);
+        const key = getChatModeKey();
+        const storedMode = StorageService.Instance.get(key);
+
+        if (storedMode && mode === AutopilotChatMode.Closed) {
+            StorageService.Instance.remove(key);
+        }
+
+        if (mode !== AutopilotChatMode.Closed) {
+            StorageService.Instance.set(key, mode);
+        }
+
         this._config.mode = mode;
 
         this._eventBus.publish(AutopilotChatEvent.ModeChange, mode);

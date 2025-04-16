@@ -1,3 +1,5 @@
+import { ServiceType } from '../constants/ServiceConstants';
+
 export const DEFAULT_MESSAGE_RENDERER = 'apollo-markdown-renderer';
 export const ACCEPTED_FILES = {
     'text/csv': [ '.csv' ],
@@ -29,6 +31,25 @@ export const CHAT_WIDTH_FULL_SCREEN_MAX_WIDTH = '960px';
 export const CHAT_INPUT_MIN_ROWS = 2;
 export const CHAT_INPUT_MAX_ROWS = 12;
 export const CHAT_WIDTH_KEY = 'width';
-export const CHAT_MODE_KEY = 'mode';
 export const CHAT_ACTIVE_CONVERSATION_ID_KEY = 'activeConversationId';
 export const CHAT_SCROLL_BOTTOM_BUFFER = 200;
+
+export const getChatModeKey = () => {
+    const CHAT_MODE_KEY = 'mode';
+    const pathParts = window.location.pathname.split('/');
+    const serviceIndex = pathParts.findIndex(path => {
+        if (!path.endsWith('_')) {
+            return false;
+        }
+
+        const pathWithoutUnderscore = path.slice(0, -1);
+
+        return Object.values(ServiceType).includes(pathWithoutUnderscore as ServiceType);
+    });
+
+    if (serviceIndex === -1) {
+        return CHAT_MODE_KEY;
+    }
+
+    return `${CHAT_MODE_KEY}-${pathParts.slice(serviceIndex).join('/')}`;
+};
