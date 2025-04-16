@@ -61,9 +61,13 @@ function AutopilotChatFREComponent() {
             _event: React.MouseEvent<HTMLDivElement> | React.KeyboardEvent<HTMLDivElement>,
             suggestion: AutopilotChatSuggestion,
         ) => {
-            chatService.setPrompt(suggestion.prompt);
+            if (firstRunExperience?.sendOnClick) {
+                chatService.sendRequest({ content: suggestion.prompt });
+            } else {
+                chatService.setPrompt(suggestion.prompt);
+            }
         },
-        [ chatService ],
+        [ chatService, firstRunExperience ],
     );
 
     const handleSuggestionKeyDown = React.useCallback((event: React.KeyboardEvent<HTMLDivElement>, suggestion: AutopilotChatSuggestion) => {

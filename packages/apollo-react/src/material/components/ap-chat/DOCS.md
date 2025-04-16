@@ -585,7 +585,8 @@ chatService.setFirstRunExperience({
   suggestions: [
     { label: "Get started", prompt: "How do I get started with this application?" },
     { label: "Show features", prompt: "What features are available?" }
-  ]
+  ],
+  sendOnClick: true // sends the message instead of setting the prompt
 });
 ```
 
@@ -822,6 +823,7 @@ export interface AutopilotChatConfiguration {
         title: string;
         description: string;
         suggestions?: AutopilotChatSuggestion[];
+        sendOnClick?: boolean;
     };
     useLocalHistory?: boolean;
     allowedAttachments?: AutopilotChatAllowedAttachments;
