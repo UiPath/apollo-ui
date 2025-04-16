@@ -222,6 +222,7 @@ export interface AutopilotChatConfiguration {
         title: string;
         description: string;
         suggestions?: AutopilotChatSuggestion[];
+        sendOnClick?: boolean;
     };
     useLocalHistory?: boolean;
     allowedAttachments?: AutopilotChatAllowedAttachments;
