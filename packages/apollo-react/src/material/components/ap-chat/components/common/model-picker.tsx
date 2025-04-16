@@ -20,7 +20,6 @@ export const ModelPickerContainer = styled('div')({
     alignItems: 'center',
     width: '200px',
     gap: token.Spacing.SpacingMicro,
-    paddingLeft: token.Spacing.SpacingMicro,
 });
 
 export const SelectedModelContainer = styled('div')(({ theme }) => ({
@@ -28,6 +27,7 @@ export const SelectedModelContainer = styled('div')(({ theme }) => ({
     alignItems: 'center',
     color: theme.palette.semantic.colorForegroundLight,
     gap: token.Spacing.SpacingMicro,
+    paddingLeft: token.Spacing.SpacingMicro,
 }));
 
 export const ModelSelectionContainer = styled('div')(({ theme }) => ({
@@ -78,20 +78,20 @@ export const ModelPicker = React.memo(({
         const ArrowIcon = isOpen ? KeyboardArrowUpIcon : KeyboardArrowDownIcon;
 
         if (useIcon) {
-            return <ap-icon name="model" />;
+            return <portal-custom-icon name="model" size="24px" />;
         }
 
         return (
-            <>
+            <SelectedModelContainer>
                 <ap-typography>{selectedModel?.name}</ap-typography>
                 <ArrowIcon className="arrow-icon" fontSize="inherit" />
-            </>
+            </SelectedModelContainer>
         );
     };
 
     const renderModelTooltip = () => (
         <AutopilotChatTooltip
-            placement="top"
+            placement="top-start"
             title={
                 <>
                     <ap-typography
@@ -139,9 +139,7 @@ export const ModelPicker = React.memo(({
                     ))}
                 </ModelSelectionContainer>
             )}
-            <SelectedModelContainer>
-                {isOpen ? renderSelectedModel() : renderModelTooltip()}
-            </SelectedModelContainer>
+            {isOpen ? renderSelectedModel() : renderModelTooltip()}
         </ModelPickerContainer>
     );
 });
