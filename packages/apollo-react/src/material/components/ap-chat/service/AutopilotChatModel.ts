@@ -30,6 +30,12 @@ export interface AutopilotChatFileInfo {
     friendlyType: AutopilotChatFileType;
 }
 
+export interface AutopilotChatModelInfo {
+    id: string;
+    name: string;
+    description: string | null;
+}
+
 export enum AutopilotChatRole {
     User = 'user',
     Assistant = 'assistant',
@@ -134,6 +140,8 @@ export enum AutopilotChatEvent {
     OpenConversation = 'openConversation',
     Feedback = 'feedback',
     Copy = 'copy',
+    SetModels = 'setModels',
+    SetSelectedModel = 'setSelectedModel',
 }
 
 /**
