@@ -92,6 +92,7 @@ export class AutopilotChatService {
         this.deleteConversation = this.deleteConversation.bind(this);
         this.openConversation = this.openConversation.bind(this);
         this.setAllowedAttachments = this.setAllowedAttachments.bind(this);
+        this.toggleAutoScroll = this.toggleAutoScroll.bind(this);
     }
 
     static Instantiate({
@@ -635,8 +636,18 @@ export class AutopilotChatService {
     setAllowedAttachments(allowedAttachments: AutopilotChatAllowedAttachments) {
         this._config.allowedAttachments = allowedAttachments;
 
-        AutopilotChatInternalService.Instance.publish(AutopilotChatInternalEvent.SetAllowedAttachments, allowedAttachments);
+        this._internalService.publish(AutopilotChatInternalEvent.SetAllowedAttachments, allowedAttachments);
     }
+
+    /**
+     * Toggles the auto scroll in the chat service
+     *
+     * @param autoScroll - The auto scroll state to set
+     */
+    toggleAutoScroll(autoScroll: boolean) {
+        this._internalService.publish(AutopilotChatInternalEvent.ToggleAutoScroll, autoScroll);
+    }
+
     /**
      * Should not be consumed by the public API
      * @internal
