@@ -4,6 +4,7 @@
 import {
     AutopilotChatEvent,
     AutopilotChatInterceptableEvent,
+    AutopilotChatInternalEvent,
     CHAT_SCROLL_BOTTOM_BUFFER,
 } from '@uipath/portal-shell-util';
 import React from 'react';
@@ -183,6 +184,11 @@ export const AutopilotChatScrollProvider: React.FC<AutopilotChatScrollProviderPr
             useInstantScrollRef.current = true;
         });
 
+        const unsubscribeToggleAutoScroll = chatService.__internalService__
+            .on(AutopilotChatInternalEvent.ToggleAutoScroll, (autoScroll: boolean) => {
+                setAutoScroll(autoScroll);
+            });
+
         return () => {
             resizeObserver.disconnect();
             overflowContainer.removeEventListener('wheel', handleWheel);
@@ -195,6 +201,7 @@ export const AutopilotChatScrollProvider: React.FC<AutopilotChatScrollProviderPr
             unsubscribeOpenConversation();
             unsubscribeSetConversation();
             unsubscribeModeChange();
+            unsubscribeToggleAutoScroll();
         };
     }, [ handleResize, handleWheel, handleKeyDown, handleMouseUp, handleMouseDown, chatService, overflowContainer ]);
 

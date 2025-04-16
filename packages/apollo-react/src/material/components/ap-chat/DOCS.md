@@ -54,6 +54,7 @@ const chatService = window.PortalShell.AutopilotChat;
 | `close()` | Closes the chat interface |
 | `setChatMode(mode: AutopilotChatMode)` | Sets the chat window mode (see [AutopilotChatMode](#autopilotchatmode)) |
 | `newChat(config?: AutopilotChatConfiguration, messageRenderers?: AutopilotChatMessageRenderer[])` | Starts a new chat session with optional configuration (see [AutopilotChatConfiguration](#autopilotchatconfiguration)) and message renderers (see [AutopilotChatMessageRenderer](#autopilotchatmessagerenderer)) |
+| `toggleAutoScroll(autoScroll: boolean)` | Start or stop the autoscroll behavior |
 
 ### Message Handling
 
