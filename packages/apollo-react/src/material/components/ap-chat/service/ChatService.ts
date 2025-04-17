@@ -40,6 +40,8 @@ export class AutopilotChatService {
             maxSize: ACCEPTED_FILE_MAX_SIZE,
             maxCount: ACCEPTED_FILE_MAX_COUNT,
         },
+        models: undefined,
+        selectedModel: undefined,
     };
     private _config: AutopilotChatConfiguration = { ...this._initialConfig };
     private _eventBus: EventBus;
@@ -55,8 +57,6 @@ export class AutopilotChatService {
     private _loadingMessage: string | null = null;
     private _loadingMessageDuration: number | null = null;
     private _internalService: AutopilotChatInternalService;
-    private _models: AutopilotChatModelInfo[] | undefined;
-    private _selectedModel: AutopilotChatModelInfo | undefined;
     private constructor(instanceName: string) {
         this._eventBus = new EventBus();
 
@@ -176,6 +176,14 @@ export class AutopilotChatService {
                 ...this._config.allowedAttachments,
                 ...config.allowedAttachments,
             });
+        }
+
+        if (config.models) {
+            this.setModels(config.models);
+        }
+
+        if (config.selectedModel) {
+            this.setSelectedModel(config.selectedModel);
         }
 
         messageRenderers.forEach(renderer => this.injectMessageRenderer(renderer));
@@ -659,7 +667,7 @@ export class AutopilotChatService {
      * @param models - The models to set
      */
     setModels(models: AutopilotChatModelInfo[]) {
-        this._models = models;
+        this._config.models = models;
 
         this._eventBus.publish(AutopilotChatEvent.SetModels, models);
     }
@@ -670,7 +678,7 @@ export class AutopilotChatService {
      * @returns The models
      */
     getModels() {
-        return this._models;
+        return this._config.models;
     }
 
     /**
@@ -679,7 +687,7 @@ export class AutopilotChatService {
      * @param model - The model to set
      */
     setSelectedModel(model: AutopilotChatModelInfo) {
-        this._selectedModel = model;
+        this._config.selectedModel = model;
 
         this._eventBus.publish(AutopilotChatEvent.SetSelectedModel, model);
     }
@@ -690,7 +698,7 @@ export class AutopilotChatService {
      * @returns The selected model
      */
     getSelectedModel() {
-        return this._selectedModel;
+        return this._config.selectedModel;
     }
 
     /**
