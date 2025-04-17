@@ -183,7 +183,7 @@ export class AutopilotChatService {
         }
 
         if (config.selectedModel) {
-            this.setSelectedModel(config.selectedModel);
+            this.setSelectedModel(config.selectedModel.id);
         }
 
         messageRenderers.forEach(renderer => this.injectMessageRenderer(renderer));
@@ -684,12 +684,22 @@ export class AutopilotChatService {
     /**
      * Sets the selected model in the chat service
      *
-     * @param model - The model to set
+     * @param modelId - The model ID to set
      */
-    setSelectedModel(model: AutopilotChatModelInfo) {
-        this._config.selectedModel = model;
+    setSelectedModel(modelId: string) {
+        if (!this._config.models) {
+            return;
+        }
 
-        this._eventBus.publish(AutopilotChatEvent.SetSelectedModel, model);
+        const newSelectedModel = this._config.models.find(model => model.id === modelId);
+
+        if (!newSelectedModel) {
+            return;
+        }
+
+        this._config.selectedModel = newSelectedModel;
+
+        this._eventBus.publish(AutopilotChatEvent.SetSelectedModel, newSelectedModel);
     }
 
     /**
