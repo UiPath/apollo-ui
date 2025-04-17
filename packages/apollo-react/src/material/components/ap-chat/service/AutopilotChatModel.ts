@@ -225,6 +225,8 @@ export interface AutopilotChatDisabledFeatures {
  * @property firstRunExperience - The first run experience of the chat
  * @property useLocalHistory - Whether the chat uses indexdb to store history
  * @property allowedAttachments - The allowed attachments of the chat
+ * @property models - The models of the chat
+ * @property selectedModelId - The selected model ID of the chat
  */
 export interface AutopilotChatConfiguration {
     mode: AutopilotChatMode;
