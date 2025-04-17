@@ -11,6 +11,7 @@ import token, { FontVariantToken } from '@uipath/apollo-core/lib';
 import type { AutopilotChatModelInfo } from '@uipath/portal-shell-util';
 import React from 'react';
 
+import { useChatService } from '../../providers/chat-service.provider.react';
 import { AutopilotChatTooltip } from './tooltip.react';
 
 export const ModelPickerContainer = styled('div')({
@@ -42,44 +43,43 @@ export const ModelSelectionContainer = styled('div')(({ theme }) => ({
     color: theme.palette.semantic.colorForeground,
 }));
 
-export const ModelOption = styled('div')({
+export const ModelOption = styled('div')(({ theme }) => ({
     padding: `${token.Spacing.SpacingXs} ${token.Spacing.SpacingS}`,
     cursor: 'pointer',
-    '&:hover': { backgroundColor: 'var(--color-icon-button-hover)' },
-});
+    '&:hover': { backgroundColor: theme.palette.semantic.colorBackgroundHover },
+}));
 
 export interface ModelPickerProps {
-    models?: AutopilotChatModelInfo[];
-    selectedModel?: AutopilotChatModelInfo;
-    onModelChange?: (model: AutopilotChatModelInfo) => void;
-    useIcon?: boolean;
+    models: AutopilotChatModelInfo[];
+    selectedModel: AutopilotChatModelInfo;
+    useIcon: boolean;
 }
 
 export const ModelPicker = React.memo(({
     models,
     selectedModel,
-    onModelChange,
     useIcon,
 }: ModelPickerProps) => {
     const theme = useTheme();
+    const chatService = useChatService();
     const [ anchorEl, setAnchorEl ] = React.useState<HTMLDivElement | null>(null);
 
-    const handleModelChange = (model: AutopilotChatModelInfo) => {
-        onModelChange?.(model);
+    const handleModelChange = React.useCallback((model: AutopilotChatModelInfo) => {
+        chatService?.setSelectedModel(model);
         setAnchorEl(null);
-    };
+    }, [ chatService ]);
 
-    const handleClick = (event: React.MouseEvent<HTMLDivElement>) => {
+    const handleClick = React.useCallback((event: React.MouseEvent<HTMLDivElement>) => {
         setAnchorEl(event.currentTarget);
-    };
+    }, []);
 
-    const handleClose = () => {
+    const handleClose = React.useCallback(() => {
         setAnchorEl(null);
-    };
+    }, []);
 
     const open = Boolean(anchorEl);
 
-    const renderSelectedModel = () => {
+    const renderSelectedModel = React.useCallback(() => {
         if (useIcon) {
             return <portal-custom-icon name="model" size="24px" />;
         }
@@ -93,9 +93,9 @@ export const ModelPicker = React.memo(({
                 />
             </SelectedModelContainer>
         );
-    };
+    }, [ selectedModel, useIcon, open ]);
 
-    const renderModelTooltip = () => (
+    const renderModelTooltip = React.useCallback(() => (
         <AutopilotChatTooltip
             placement="top-start"
             title={
@@ -104,20 +104,20 @@ export const ModelPicker = React.memo(({
                         color={theme.palette.semantic.colorForegroundInverse}
                         variant={FontVariantToken.fontSizeM}
                     >
-                        {selectedModel?.name}
+                        {selectedModel.name}
                     </ap-typography>
                     <ap-typography
                         color={theme.palette.semantic.colorForegroundInverse}
                         variant={FontVariantToken.fontSizeXs}
                     >
-                        {selectedModel?.description}
+                        {selectedModel.description}
                     </ap-typography>
                 </>
             }
         >
             {renderSelectedModel()}
         </AutopilotChatTooltip>
-    );
+    ), [ selectedModel, theme, renderSelectedModel ]);
 
     return (
         <>
@@ -138,13 +138,13 @@ export const ModelPicker = React.memo(({
                 }}
                 sx={{
                     '& .MuiPopover-paper': {
-                        marginTop: `-${(models?.length ?? 0) * 20 + 4}px`,
+                        marginTop: `-${(models.length) * 20 + 4}px`,
                         boxShadow: 'none',
                     },
                 }}
             >
                 <ModelSelectionContainer>
-                    {models?.map((model) => (
+                    {models.map((model) => (
                         <AutopilotChatTooltip
                             key={model.id}
                             placement="right-start"

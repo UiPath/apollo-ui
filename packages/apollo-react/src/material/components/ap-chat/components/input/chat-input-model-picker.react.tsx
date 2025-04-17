@@ -8,14 +8,17 @@ import { ModelPicker } from '../common/model-picker';
 
 function AutopilotChatInputModelPickerComponent({ useIcon }: { useIcon: boolean }) {
     const {
-        models, selectedModel, setSelectedModel,
+        models, selectedModel,
     } = useModelPicker();
+
+    if (!models || !selectedModel) {
+        return null;
+    }
 
     return (
         <ModelPicker
             models={models}
             selectedModel={selectedModel}
-            onModelChange={(model) => setSelectedModel(model)}
             useIcon={useIcon}
         />
     );
