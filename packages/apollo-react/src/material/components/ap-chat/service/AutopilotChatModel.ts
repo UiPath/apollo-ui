@@ -118,6 +118,8 @@ export interface AutopilotChatMessageRenderer {
  * @property {string} Copy - Emitted when a message is copied
  * @property {string} SetDefaultLoadingMessages - Emitted when default loading messages are set
  * @property {string} SetLoadingMessage - Emitted when a loading message is set
+ * @property {string} SetModels - Emitted when the models are set
+ * @property {string} SetSelectedModel - Emitted when the selected model is set
  */
 export enum AutopilotChatEvent {
     Error = 'error',
@@ -236,6 +238,8 @@ export interface AutopilotChatConfiguration {
     };
     useLocalHistory?: boolean;
     allowedAttachments?: AutopilotChatAllowedAttachments;
+    models?: AutopilotChatModelInfo[];
+    selectedModel?: AutopilotChatModelInfo;
 }
 
 /**
