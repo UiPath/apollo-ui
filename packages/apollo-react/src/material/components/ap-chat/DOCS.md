@@ -45,6 +45,8 @@ const chatService = window.PortalShell.AutopilotChat;
 | `getMessageRenderer(name: string)` | Retrieves a message renderer by name |
 | `setFirstRunExperience(config: AutopilotChatConfiguration['firstRunExperience'])` | Configures the first run experience (see [First Run Experience](#first-run-experience)) displayed when the chat is opened for the first time or when there are no messages |
 | `setAllowedAttachments(allowedAttachments: AutopilotChatAllowedAttachments)` | Configures the allowed file attachments (see [AutopilotChatAllowedAttachments](#autopilotchatallowedattachments)) |
+| `setModels(models: AutopilotChatModelInfo)` | Configures the models (see [AutopilotChatModelInfo](#autopilotchatmodelinfo)) |
+| `setSelectedModel(modelId: string)` | Configures the selected model |
 
 ### Chat Window Control
 
@@ -815,6 +817,8 @@ chatService.setDisabledFeatures({
  * @property firstRunExperience - The first run experience of the chat
  * @property useLocalHistory - Whether the chat uses indexdb to store history
  * @property allowedAttachments - The allowed attachments of the chat
+ * @property models - The models of the chat
+ * @property selectedModel - The selected model of the chat
  */
 export interface AutopilotChatConfiguration {
     mode: AutopilotChatMode;
@@ -828,6 +832,8 @@ export interface AutopilotChatConfiguration {
     };
     useLocalHistory?: boolean;
     allowedAttachments?: AutopilotChatAllowedAttachments;
+    models?: AutopilotChatModelInfo[];
+    selectedModel?: AutopilotChatModelInfo;
 }
 ```
 
@@ -897,6 +903,23 @@ export interface AutopilotChatAllowedAttachments {
     };
     maxSize: number;
     maxCount?: number;
+}
+```
+
+### AutopilotChatModelInfo
+
+```typescript
+/**
+ * Represents the model info for the Autopilot Chat system.
+ *
+ * @property id - Unique identifier for the model
+ * @property name - The name of the model
+ * @property description - The description of the model
+ */
+export interface AutopilotChatModelInfo {
+    id: string;
+    name: string;
+    description?: string;
 }
 ```
 

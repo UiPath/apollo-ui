@@ -65,7 +65,7 @@ export const ModelPicker = React.memo(({
     const [ anchorEl, setAnchorEl ] = React.useState<HTMLDivElement | null>(null);
 
     const handleModelChange = React.useCallback((model: AutopilotChatModelInfo) => {
-        chatService?.setSelectedModel(model);
+        chatService?.setSelectedModel(model.id);
         setAnchorEl(null);
     }, [ chatService ]);
 
