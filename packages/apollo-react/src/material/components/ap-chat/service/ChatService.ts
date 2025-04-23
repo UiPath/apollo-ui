@@ -440,10 +440,14 @@ export class AutopilotChatService {
                 // send chunk if the response is streaming
                 this._conversation[existingIndex].content += assistantMessage.content;
                 this._conversation[existingIndex].done = !!response.done;
+                this._conversation[existingIndex].meta = response.meta ?? this._conversation[existingIndex].meta;
                 this._eventBus.publish(AutopilotChatEvent.SendChunk, assistantMessage);
             } else {
                 // send response if the response is not streaming
-                this._conversation[existingIndex].content = assistantMessage.content;
+                this._conversation[existingIndex] = {
+                    ...this._conversation[existingIndex],
+                    ...assistantMessage,
+                };
                 this._eventBus.publish(AutopilotChatEvent.Response, assistantMessage);
             }
         } else {
