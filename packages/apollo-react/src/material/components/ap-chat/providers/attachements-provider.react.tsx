@@ -7,7 +7,7 @@ import {
 } from '@uipath/portal-shell-util';
 import React from 'react';
 
-import { t } from '../../../utils/localization/loc';
+import { useTranslate } from '../../../react/ApLocalizationProvider.react';
 import { useChatService } from './chat-service.provider.react';
 import { useChatState } from './chat-state-provider.react';
 import { useError } from './error-provider.react';
@@ -27,6 +27,7 @@ export const AutopilotAttachmentsContext = React.createContext<AutopilotAttachme
 });
 
 export function AutopilotAttachmentsProvider({ children }: { children: React.ReactNode }) {
+    const { t } = useTranslate();
     const chatService = useChatService();
     const prompt = chatService?.getPrompt?.() as AutopilotChatPrompt | undefined;
 
