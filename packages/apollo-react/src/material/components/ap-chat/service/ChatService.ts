@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import type {
     AutopilotChatAllowedAttachments,
     AutopilotChatConfiguration,
@@ -57,6 +58,8 @@ export class AutopilotChatService {
     private _loadingMessage: string | null = null;
     private _loadingMessageDuration: number | null = null;
     private _internalService: AutopilotChatInternalService;
+    private _groupId?: string;
+
     private constructor(instanceName: string) {
         this._eventBus = new EventBus();
 
@@ -389,6 +392,8 @@ export class AutopilotChatService {
         id?: string;
         created_at?: string;
     }) {
+        this._groupId = crypto.randomUUID();
+
         const userMessage = {
             id: crypto.randomUUID(), // Generate a new ID in case it's not provided
             created_at: new Date().toISOString(),
@@ -425,9 +430,17 @@ export class AutopilotChatService {
      * @param response - The response to send
      */
     sendResponse(response: Omit<AutopilotChatMessage, 'role' | 'id'> & { id?: string }) {
+        const lastMessage = this._conversation[this._conversation.length - 1];
+
+        // Set the last message groupId as the groupId for the response if it's an assistant message
+        if (lastMessage?.groupId && lastMessage.role === AutopilotChatRole.Assistant && this._groupId !== lastMessage.groupId) {
+            this._groupId = lastMessage.groupId;
+        }
+
         const assistantMessage = {
             id: crypto.randomUUID(),
             ...response,
+            groupId: response.groupId ?? this._groupId,
             created_at: response.created_at ?? new Date().toISOString(),
             role: AutopilotChatRole.Assistant,
         };
@@ -441,6 +454,7 @@ export class AutopilotChatService {
                 this._conversation[existingIndex].content += assistantMessage.content;
                 this._conversation[existingIndex].done = !!response.done;
                 this._conversation[existingIndex].meta = response.meta ?? this._conversation[existingIndex].meta;
+                this._conversation[existingIndex].groupId = assistantMessage.groupId ?? this._conversation[existingIndex].groupId;
                 this._eventBus.publish(AutopilotChatEvent.SendChunk, assistantMessage);
             } else {
                 // send response if the response is not streaming
@@ -523,6 +537,7 @@ export class AutopilotChatService {
             this.patchConfig(config);
         }
 
+        this._groupId = undefined;
         this._conversation = [];
         this._eventBus.publish(AutopilotChatEvent.NewChat);
     }
@@ -630,6 +645,7 @@ export class AutopilotChatService {
     deleteConversation(conversationId: string) {
         if (conversationId === this._activeConversationId) {
             this._activeConversationId = null;
+            this._groupId = undefined;
         }
 
         this._eventBus.publish(AutopilotChatEvent.DeleteConversation, conversationId);
