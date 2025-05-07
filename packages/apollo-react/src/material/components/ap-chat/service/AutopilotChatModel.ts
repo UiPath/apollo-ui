@@ -58,6 +58,7 @@ export enum AutopilotChatRole {
  * @property actions - Additional actions on top of DefaultAutopilotChatResponseAction (for responses)
  *           and DefaultAutopilotChatRequestAction (for requests)
  * @property feedback - Feedback for the message (thumbs up or thumbs down)
+ * @property groupId - Optional group ID for the message (used to group messages together)
  * @property meta - Optional metadata for the message (additional information about the message)
  */
 export interface AutopilotChatMessage {
@@ -75,6 +76,7 @@ export interface AutopilotChatMessage {
     feedback?: {
         isPositive: boolean;
     };
+    groupId?: string;
     meta?: any;
 }
 
