@@ -90,11 +90,11 @@ const MessageBoxComponent = styled('div')<{
 const MessageBox = React.memo(MessageBoxComponent);
 
 const WidgetContainer = React.memo(({
-    message, setMessageElement, messageElement,
+    message, isLastInGroup, containerRef,
 }: {
     message: AutopilotChatMessage;
-    setMessageElement: (element: HTMLDivElement | null) => void;
-    messageElement: HTMLDivElement | null;
+    isLastInGroup: boolean;
+    containerRef: HTMLDivElement | null;
 }) => {
     const chatService = useChatService();
     const unsubscribeRef = React.useRef<() => void>(() => {});
@@ -107,11 +107,6 @@ const WidgetContainer = React.memo(({
 
     return (
         <MessageBox
-            ref={(el) => {
-                if (el && messageElement !== el) {
-                    setMessageElement(el);
-                }
-            }}
             isAssistant={message.role === AutopilotChatRole.Assistant}
             isCustomWidget
         >
@@ -127,14 +122,17 @@ const WidgetContainer = React.memo(({
                     }
                 }
             }}/>
-            <AutopilotChatMessageActions message={message} containerElement={messageElement}/>
+            {isLastInGroup && (
+                <AutopilotChatMessageActions message={message} containerElement={containerRef}/>
+            )}
         </MessageBox>
     );
 });
 
-function AutopilotChatMessageContentComponent({ message }: { message: AutopilotChatMessage }) {
+function AutopilotChatMessageContentComponent({
+    message, isLastInGroup = true, containerRef,
+}: { message: AutopilotChatMessage; isLastInGroup?: boolean; containerRef: HTMLDivElement | null }) {
     const chatService = useChatService();
-    const [ messageElement, setMessageElement ] = React.useState<HTMLDivElement | null>(null);
 
     if (!message.content && !message.attachments) {
         return null;
@@ -145,11 +143,6 @@ function AutopilotChatMessageContentComponent({ message }: { message: AutopilotC
 
         return (
             <MessageBox
-                ref={(el) => {
-                    if (el && messageElement !== el) {
-                        setMessageElement(el);
-                    }
-                }}
                 isAssistant={message.role === AutopilotChatRole.Assistant}
                 key={message.id}
             >
@@ -157,7 +150,9 @@ function AutopilotChatMessageContentComponent({ message }: { message: AutopilotC
                     <Attachments attachments={message.attachments} removeSpacing disableOverflow />
                 )}
                 {ApolloMessageRenderer ? <ApolloMessageRenderer message={message} /> : <AutopilotChatMarkdownRenderer message={message} />}
-                <AutopilotChatMessageActions message={message} containerElement={messageElement}/>
+                {isLastInGroup && (
+                    <AutopilotChatMessageActions message={message} containerElement={containerRef}/>
+                )}
             </MessageBox>
         );
     }
@@ -166,8 +161,8 @@ function AutopilotChatMessageContentComponent({ message }: { message: AutopilotC
         <WidgetContainer
             key={message.id}
             message={message}
-            setMessageElement={setMessageElement}
-            messageElement={messageElement}
+            isLastInGroup={isLastInGroup}
+            containerRef={containerRef}
         />
     );
 }

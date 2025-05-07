@@ -97,9 +97,7 @@ function AutopilotChatMessageActionsComponent({
     }, []);
 
     React.useEffect(() => {
-        const messageContainer = containerElement;
-
-        if (!messageContainer) {
+        if (!containerElement) {
             return;
         }
 
@@ -124,7 +122,7 @@ function AutopilotChatMessageActionsComponent({
             const relatedTarget = event.relatedTarget as Node;
 
             // Check if the mouse is moving to the actions container or its children
-            if (isRelatedTarget(relatedTarget) || messageContainer.contains(relatedTarget)) {
+            if (isRelatedTarget(relatedTarget) || containerElement.contains(relatedTarget)) {
                 return;
             }
 
@@ -132,16 +130,16 @@ function AutopilotChatMessageActionsComponent({
         };
 
         // Add event listeners to the parent message container
-        messageContainer.addEventListener('mouseenter', handleMouseEnter);
-        messageContainer.addEventListener('mouseleave', handleMouseLeave);
-        messageContainer.addEventListener('focusin', handleFocus);
-        messageContainer.addEventListener('focusout', handleBlur);
+        containerElement.addEventListener('mouseenter', handleMouseEnter);
+        containerElement.addEventListener('mouseleave', handleMouseLeave);
+        containerElement.addEventListener('focusin', handleFocus);
+        containerElement.addEventListener('focusout', handleBlur);
 
         return () => {
-            messageContainer.removeEventListener('mouseenter', handleMouseEnter);
-            messageContainer.removeEventListener('mouseleave', handleMouseLeave);
-            messageContainer.removeEventListener('focusin', handleFocus);
-            messageContainer.removeEventListener('focusout', handleBlur);
+            containerElement.removeEventListener('mouseenter', handleMouseEnter);
+            containerElement.removeEventListener('mouseleave', handleMouseLeave);
+            containerElement.removeEventListener('focusin', handleFocus);
+            containerElement.removeEventListener('focusout', handleBlur);
         };
     }, [ containerElement, isRelatedTarget ]);
 

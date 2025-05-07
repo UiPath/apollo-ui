@@ -32,11 +32,20 @@ const removeFakeStream = (messages: AutopilotChatMessage[]) => {
     }) => rest);
 };
 
-const Message = React.memo(({ message }: { message: AutopilotChatMessage }) => {
+const MessageGroup = React.memo(({ messages }: { messages: AutopilotChatMessage[] }) => {
+    const [ groupRef, setGroupRef ] = React.useState<HTMLDivElement | null>(null);
+
     return (
-        <React.Fragment key={message.id}>
-            <AutopilotChatMessageContent message={message}/>
-        </React.Fragment>
+        <div ref={setGroupRef}>
+            {messages.map((message, index) => (
+                <AutopilotChatMessageContent
+                    key={message.id}
+                    message={message}
+                    isLastInGroup={index === messages.length - 1}
+                    containerRef={groupRef}
+                />
+            ))}
+        </div>
     );
 });
 
@@ -46,6 +55,7 @@ function AutopilotChatMessagesComponent() {
     const [ messages, setMessages ] = React.useState<AutopilotChatMessage[]>(
         removeFakeStream(chatService?.getConversation?.() ?? []),
     );
+    const [ messageGroups, setMessageGroups ] = React.useState<AutopilotChatMessage[][]>([]);
     const { setWaitingResponse } = useLoading();
 
     // Update by patching if the message already exists or adding to the end of the array
@@ -112,16 +122,32 @@ function AutopilotChatMessagesComponent() {
         };
     }, [ chatService, updateMessages, setWaitingResponse, sendFeedback, onCopy ]);
 
+    React.useEffect(() => {
+        const getMessageGroups = () => {
+            return messages.reduce((acc, message, index) => {
+                if (!message.groupId) {
+                    acc.push([ message ]);
+                } else if (index > 0 && messages[index - 1].groupId === message.groupId) {
+                    acc[acc.length - 1].push(message);
+                } else {
+                    acc.push([ message ]);
+                }
+
+                return acc;
+            }, [] as AutopilotChatMessage[][]);
+        };
+
+        setMessageGroups(getMessageGroups());
+    }, [ messages ]);
+
     return (
         <MessageContainer ref={messageContainerRef}>
             { messages.length === 0 && (
                 <AutopilotChatFRE />
             )}
-            {messages.map((message) => {
-                return (
-                    <Message key={message.id} message={message} />
-                );
-            })}
+            {messageGroups.map((group) => (
+                <MessageGroup key={group[0].id} messages={group} />
+            ))}
 
             <AutopilotChatLoading />
         </MessageContainer>
