@@ -65,6 +65,7 @@ function AutopilotChatActionsListComponent({
     const handleAction = React.useCallback((action: AutopilotChatMessageAction) => {
         if (action.eventName && chatService) {
             (chatService as any)._eventBus.publish(action.eventName, {
+                group: chatService.getMessagesInGroup(message.groupId ?? ''),
                 message,
                 action,
             } satisfies AutopilotChatActionPayload);

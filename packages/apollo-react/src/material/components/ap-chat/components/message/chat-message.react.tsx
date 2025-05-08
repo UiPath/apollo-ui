@@ -90,9 +90,15 @@ function AutopilotChatMessagesComponent() {
         }
     }, [ chatService ]);
 
-    const onCopy = React.useCallback(({ message }: AutopilotChatActionPayload) => {
-        if (navigator.clipboard && message.content) {
-            navigator.clipboard.writeText(message.content).catch(() => {});
+    const onCopy = React.useCallback(({ group }: AutopilotChatActionPayload) => {
+        let finalString = '';
+
+        for (const message of group) {
+            finalString += (message.toCopy ?? message.content) + '\n';
+        }
+
+        if (navigator.clipboard && finalString) {
+            navigator.clipboard.writeText(finalString).catch(() => {});
         }
     }, []);
 
