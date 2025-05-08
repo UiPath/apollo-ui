@@ -60,6 +60,7 @@ export enum AutopilotChatRole {
  * @property feedback - Feedback for the message (thumbs up or thumbs down)
  * @property groupId - Optional group ID for the message (used to group messages together)
  * @property meta - Optional metadata for the message (additional information about the message)
+ * @property toCopy - Optional string to copy when the message is copied
  */
 export interface AutopilotChatMessage {
     id: string;
@@ -78,6 +79,7 @@ export interface AutopilotChatMessage {
     };
     groupId?: string;
     meta?: any;
+    toCopy?: string;
 }
 
 export interface AutopilotChatPrompt extends Pick<AutopilotChatMessage, 'content' | 'attachments'> {}
@@ -283,12 +285,14 @@ export interface AutopilotChatMessageAction {
 /**
  * Represents a payload for an action in the Autopilot Chat.
  *
- * @property message - The message that the action is associated with
  * @property action - The action that was triggered
+ * @property group - The group of messages that the action is associated with
+ * @property message - The last message that the action is associated with.
  */
 export interface AutopilotChatActionPayload {
-    message: AutopilotChatMessage;
     action: AutopilotChatMessageAction;
+    message: AutopilotChatMessage;
+    group: AutopilotChatMessage[];
 }
 
 /**
