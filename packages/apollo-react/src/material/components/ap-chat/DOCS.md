@@ -96,6 +96,7 @@ const chatService = window.PortalShell.AutopilotChat;
 | `setError(error: string)` | Sets an error message to display in the chat interface |
 | `clearError()` | Clears the current error message |
 | `getError()` | Returns the current error message, if any |
+| `getMessagesInGroup(groupId: string)` | Returns all messages that belong to the specified group ID |
 
 ### Feature Configuration
 
@@ -231,13 +232,40 @@ The Autopilot Chat component emits copy events when a user copies a message.
 
 ```typescript
 // Listen for copy events
-chatService.on(AutopilotChatEvent.Copy, ({ message }) => {
+chatService.on(AutopilotChatEvent.Copy, ({ message, group, action }) => {
   // Handle the copy event
   console.log(`Message ${message.id} was copied`);
+  
+  // If this is an assistant message, it may be part of a response group
+  if (message.role === AutopilotChatRole.Assistant && group.length > 0) {
+    console.log(`This response is part of a group with ${group.length} messages`);
+    
+    // Process all related assistant messages in the same group
+    group.forEach(msg => {
+      console.log(`Related message in group: ${msg.id}`);
+    });
+  }
   
   // Send to your analytics system or API
   trackCopyEvent(message.id);
 });
+
+// You can specify custom content to be copied when a user copies a message
+// using the toCopy property, which overrides the default content
+chatService.sendResponse({
+  id: "msg-123",
+  content: "Here's your code snippet:\n```javascript\nconst result = calculate();\n```",
+  role: AutopilotChatRole.Assistant,
+  widget: "apollo-markdown-renderer",
+  // Specify content to be copied instead of the displayed content
+  toCopy: "const result = calculate();"
+});
+
+// This is useful for:
+// - Providing clean code snippets without comments or markdown syntax
+// - Including additional instructions or context when copying content
+// - Formatting data in a way that's ready to paste into another application
+// - Removing UI-specific formatting from copied content
 ```
 
 ## Usage Examples
@@ -396,6 +424,47 @@ const unsubscribe = chatService.intercept(AutopilotChatInterceptableEvent.Reques
 
 // Later, remove the interceptor when no longer needed
 unsubscribe();
+```
+
+### Message Groups
+
+The Autopilot Chat component supports message grouping, which allows you to treat multiple related assistant responses as a logical unit. This is useful for chaining responses and handling multi-step interactions.
+
+```typescript
+// Create a unique group ID for a sequence of related responses
+const groupId = crypto.randomUUID();
+
+// Send a user request (note: user requests don't use groupId)
+chatService.sendRequest({
+  content: "Can you explain quantum computing?"
+});
+
+// Send first assistant response in a group
+chatService.sendResponse({
+  content: "Quantum computing uses quantum bits or qubits...",
+  groupId: groupId // Associate this response with a group
+});
+
+// Send another related assistant response in the same group
+chatService.sendResponse({
+  content: "These qubits can exist in multiple states simultaneously...",
+  groupId: groupId // Associate this response with the same group
+});
+
+// Later, get all messages in this group
+const groupMessages = chatService.getMessagesInGroup(groupId);
+console.log(`Found ${groupMessages.length} messages in group ${groupId}`);
+
+// Working with message groups in action handlers
+chatService.on("custom-action", ({ message, action, group }) => {
+  // For assistant messages, 'group' contains all messages that share the same groupId
+  console.log(`Action triggered on message ${message.id} in a group with ${group.length} messages`);
+  
+  // Process all related messages in the group
+  group.forEach(msg => {
+    console.log(`Related message in group: ${msg.content}`);
+  });
+});
 ```
 
 ### Custom Message Renderer
@@ -751,7 +820,7 @@ chatService.initialize({
 // 3. The history panel shows previously saved conversations
 ```
 
-## Feature Controls
+### Feature Controls
 
 The chat service allows you to disable specific features to customize the experience.
 
@@ -943,7 +1012,9 @@ export interface AutopilotChatModelInfo {
  * @property actions - Additional actions on top of DefaultAutopilotChatResponseAction (for responses)
  *           and DefaultAutopilotChatRequestAction (for requests)
  * @property feedback - Feedback for the message (thumbs up or thumbs down)
+ * @property groupId - Optional group ID for grouping related messages together
  * @property meta - Optional metadata for the message (additional information about the message)
+ * @property toCopy - Optional string to override what content gets copied when using the copy action
  */
 export interface AutopilotChatMessage {
     id: string;
@@ -960,7 +1031,9 @@ export interface AutopilotChatMessage {
     feedback?: {
         isPositive: boolean;
     };
+    groupId?: string;
     meta?: any;
+    toCopy?: string;
 }
 ```
 
@@ -1035,12 +1108,14 @@ The message renderer interface defines a custom renderer for chat messages:
 /**
  * Represents a payload for an action in the Autopilot Chat.
  *
- * @property message - The message that the action is associated with
  * @property action - The action that was triggered
+ * @property group - The group of messages that the action is associated with
+ * @property message - The last message that the action is associated with.
  */
 export interface AutopilotChatActionPayload {
-    message: AutopilotChatMessage;
     action: AutopilotChatMessageAction;
+    message: AutopilotChatMessage;
+    group: AutopilotChatMessage[];
 }
 ```
 
