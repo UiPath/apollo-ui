@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import type {
     AutopilotChatAllowedAttachments,
     AutopilotChatConfiguration,
@@ -101,6 +100,7 @@ export class AutopilotChatService {
         this.setModels = this.setModels.bind(this);
         this.setSelectedModel = this.setSelectedModel.bind(this);
         this.getSelectedModel = this.getSelectedModel.bind(this);
+        this.getMessagesInGroup = this.getMessagesInGroup.bind(this);
     }
 
     static Instantiate({
@@ -738,5 +738,15 @@ export class AutopilotChatService {
      */
     get __internalService__() {
         return this._internalService;
+    }
+
+    /**
+     * Gets the messages in a group
+     *
+     * @param groupId - The group ID to get the messages for
+     * @returns The messages in the group
+     */
+    getMessagesInGroup(groupId: string) {
+        return this._conversation.filter(message => message.groupId === groupId);
     }
 }
