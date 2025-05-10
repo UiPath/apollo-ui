@@ -41,6 +41,10 @@ import { MuiRadio } from './MuiRadio';
 import { MuiSelect } from './MuiSelect';
 import { MuiSlider } from './MuiSlider';
 import { MuiSnackbar } from './MuiSnackbar';
+import {
+    MuiStep,
+    MuiStepper,
+} from './MuiStepper';
 import { MuiSwitch } from './MuiSwitch';
 import { MuiTab } from './MuiTab';
 import { MuiTabs } from './MuiTabs';
@@ -87,6 +91,8 @@ const muiComponents = {
     MuiTooltip,
     MuiTypography,
     MuiPopper: MuiDatepicker,
+    MuiStepper,
+    MuiStep,
 };
 
 const getOverrides = (palette: Palette) => Object.entries(muiComponents).reduce((overrides, [ name, muiComponent ]) => ({
