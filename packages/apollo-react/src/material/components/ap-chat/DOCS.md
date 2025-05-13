@@ -217,10 +217,10 @@ The Autopilot Chat component provides a built-in feedback system that allows use
 // Listen for feedback events
 chatService.on(AutopilotChatEvent.Feedback, ({ message, action }) => {
   const { isPositive } = action.details;
-  
+
   // Handle the feedback
   console.log(`Feedback for message ${message.id}: ${isPositive ? 'positive' : 'negative'}`);
-  
+
   // Send to your analytics system or API
   sendFeedbackToAPI(message.id, isPositive);
 });
@@ -235,17 +235,17 @@ The Autopilot Chat component emits copy events when a user copies a message.
 chatService.on(AutopilotChatEvent.Copy, ({ message, group, action }) => {
   // Handle the copy event
   console.log(`Message ${message.id} was copied`);
-  
+
   // If this is an assistant message, it may be part of a response group
   if (message.role === AutopilotChatRole.Assistant && group.length > 0) {
     console.log(`This response is part of a group with ${group.length} messages`);
-    
+
     // Process all related assistant messages in the same group
     group.forEach(msg => {
       console.log(`Related message in group: ${msg.id}`);
     });
   }
-  
+
   // Send to your analytics system or API
   trackCopyEvent(message.id);
 });
@@ -324,15 +324,15 @@ The `ap-autopilot-chat` is a web component that accepts a chat service instance 
 <script>
   // Import the required modules (if using ES modules)
   import { AutopilotChatService, AutopilotChatMode } from '@uipath/portal-shell-util';
-  
+
   // Create a custom chat service instance
   const customChatService = AutopilotChatService.Instantiate({
     instanceName: 'custom-component-chat',
-    config: { 
+    config: {
       mode: AutopilotChatMode.SideBySide
     }
   });
-  
+
   // Wait for custom elements to be defined
   customElements.whenDefined('ap-autopilot-chat').then(() => {
     // Get the element and assign the chat service
@@ -378,10 +378,10 @@ chatService.open({
 <script>
   // Get a container element where the chat will be embedded
   const container = document.getElementById('my-chat-container');
-  
+
   // Access the global chat service
   const chatService = window.PortalShell.AutopilotChat;
-  
+
   // Open the chat in embedded mode
   chatService.open({
     mode: AutopilotChatMode.Embedded,
@@ -390,7 +390,7 @@ chatService.open({
       header: true  // Optional: create a headerless embedded chat
     }
   });
-  
+
   // You can further customize the experience
   chatService.setFirstRunExperience({
     title: "Embedded Assistant",
@@ -408,7 +408,7 @@ chatService.open({
 // Intercept user requests to handle them in your application
 const unsubscribe = chatService.intercept(AutopilotChatInterceptableEvent.Request, (event) => {
   const userMessage = event.data;
-  
+
   // Process the user message in your application
   processUserMessage(userMessage).then(response => {
     // Send the AI response back to the chat
@@ -417,13 +417,33 @@ const unsubscribe = chatService.intercept(AutopilotChatInterceptableEvent.Reques
       role: AutopilotChatRole.Assistant
     });
   });
-  
+
   // Return true to prevent the default handling
   return true;
 });
 
 // Later, remove the interceptor when no longer needed
 unsubscribe();
+```
+
+### Working with Pre-hooks for user interactions
+
+```typescript
+// Set the pre-hook for the toggle history action
+chatService.setPreHook(AutopilotChatPreHookAction.ToggleHistory, async (data) => {
+    // Do any business to determine whether the user should be allowed to toggle the history or not
+    const shouldBeAbleToProceed: boolean = getShouldAllowToggleHistory();
+    return shouldBeAbleToProceed;
+});
+
+// Get the pre-hook for the toggle history action
+chatService.getPreHook(AutopilotChatPreHookAction.ToggleHistory)({ historyOpen: isHistoryOpen })
+    .then((proceed) => {
+        if (!proceed) {
+            return;
+        }
+        chatService?.toggleHistory();
+    });
 ```
 
 ### Message Groups
@@ -459,7 +479,7 @@ console.log(`Found ${groupMessages.length} messages in group ${groupId}`);
 chatService.on("custom-action", ({ message, action, group }) => {
   // For assistant messages, 'group' contains all messages that share the same groupId
   console.log(`Action triggered on message ${message.id} in a group with ${group.length} messages`);
-  
+
   // Process all related messages in the group
   group.forEach(msg => {
     console.log(`Related message in group: ${msg.content}`);
@@ -478,10 +498,10 @@ chatService.injectMessageRenderer({
     if (message.content) {
       // Create a text element
       const textElement = document.createElement("div");
-      
+
       // Simply set the content as plain text
       textElement.textContent = message.content;
-      
+
       // Add to the container
       container.appendChild(textElement);
     }
@@ -535,11 +555,11 @@ Alternatively, you can mark a streaming response as complete by sending a messag
 
 ```typescript
 // Using the same ID as in your streaming response
-chatService.sendResponse({ 
-  id: "unique-message-id",  
+chatService.sendResponse({
+  id: "unique-message-id",
   content: "",
   stream: true,
-  done: true 
+  done: true
 });
 ```
 
@@ -553,7 +573,7 @@ const randomId = Math.random().toString(36).substring(2, 15);
 
 // Array of words to stream
 const words = [
-  "Hello", "World", "This", "is", "a", "streaming", 
+  "Hello", "World", "This", "is", "a", "streaming",
   "response", "that", "appears", "word", "by", "word"
 ];
 
@@ -561,8 +581,8 @@ const words = [
 let index = 0;
 const interval = setInterval(() => {
   if (index < words.length) {
-    chatService.sendResponse({ 
-      id: randomId, 
+    chatService.sendResponse({
+      id: randomId,
       content: words[index],
       stream: true,
     });
@@ -571,9 +591,9 @@ const interval = setInterval(() => {
     // Mark as complete when done
     clearInterval(interval);
 
-    chatService.sendResponse({ 
-      id: randomId, 
-      content: '', 
+    chatService.sendResponse({
+      id: randomId,
+      content: '',
       stream: true,
       done: true
     });
@@ -611,8 +631,8 @@ With fake streaming:
 Streaming & fake streaming work with rich Markdown content, including headings, code blocks, tables and other formatting:
 
 ```typescript
-chatService.sendResponse({ 
-  id: 'fake-stream', 
+chatService.sendResponse({
+  id: 'fake-stream',
   content: `# Markdown Heading
 
 Here's some **bold text** and *italics*.
@@ -670,30 +690,30 @@ The chat service allows you to set and retrieve the entire conversation history.
 
 ```typescript
 chatService.setConversation([
-  { 
+  {
     id: "1",
-    role: AutopilotChatRole.User, 
+    role: AutopilotChatRole.User,
     content: "How do I extract data from invoices?",
     created_at: new Date().toISOString(),
     widget: "apollo-markdown-renderer" // default renderer defined in apollo for markdown
   },
-  { 
+  {
     id: "2",
-    role: AutopilotChatRole.Assistant, 
+    role: AutopilotChatRole.Assistant,
     content: "To extract data from invoices, you can use Document Understanding. Here's a step-by-step approach:\n\n1. Install the Document Understanding package\n2. Create a new workflow\n3. Add the Digitize Document activity\n4. Configure it to use Invoice Extraction ML skills\n5. Use Data Extraction to get specific fields",
     created_at: new Date().toISOString(),
     widget: "apollo-markdown-renderer"
   },
-  { 
+  {
     id: "3",
-    role: AutopilotChatRole.User, 
+    role: AutopilotChatRole.User,
     content: "Can I handle multilingual invoices?",
     created_at: new Date().toISOString(),
     widget: "apollo-markdown-renderer"
   },
-  { 
+  {
     id: "4",
-    role: AutopilotChatRole.Assistant, 
+    role: AutopilotChatRole.Assistant,
     content: "Yes, Document Understanding supports multiple languages. You can:\n\n- Specify OCR language settings\n- Use pre-built ML skills that support various languages\n- Train custom ML models for specific languages\n- Add language detection pre-processing\n- Use translation activities for standardization",
     created_at: new Date().toISOString(),
     widget: "apollo-markdown-renderer"
@@ -761,7 +781,7 @@ chatService.openConversation("conversation-1");
 chatService.on(AutopilotChatEvent.OpenConversation, (conversationId) => {
   console.log('User opened conversation:', conversationId);
   // Here you would want to set the conversation from your storage service based on the id
-  chatService.setConversation(db.getConversation(conversationId)); 
+  chatService.setConversation(db.getConversation(conversationId));
 });
 
 // Get the active conversation ID
@@ -828,28 +848,28 @@ The chat service allows you to disable specific features to customize the experi
 
 ```typescript
 // Disable the resize handle
-chatService.setDisabledFeatures({ 
-  resize: true 
+chatService.setDisabledFeatures({
+  resize: true
 });
 
 // Disable file attachments
-chatService.setDisabledFeatures({ 
-  attachments: true 
+chatService.setDisabledFeatures({
+  attachments: true
 });
 
 // Disable full screen mode
-chatService.setDisabledFeatures({ 
-  fullScreen: true 
+chatService.setDisabledFeatures({
+  fullScreen: true
 });
 
 // Disable conversation history panel
-chatService.setDisabledFeatures({ 
-  history: true 
+chatService.setDisabledFeatures({
+  history: true
 });
 
 // Disable header
-chatService.setDisabledFeatures({ 
-  header: true 
+chatService.setDisabledFeatures({
+  header: true
 });
 ```
 
@@ -857,7 +877,7 @@ chatService.setDisabledFeatures({
 
 ```typescript
 // Configure multiple settings at once
-chatService.setDisabledFeatures({ 
+chatService.setDisabledFeatures({
   resize: true,
   fullScreen: true,
   attachments: true,
@@ -866,7 +886,7 @@ chatService.setDisabledFeatures({
 });
 
 // Later, re-enable features
-chatService.setDisabledFeatures({ 
+chatService.setDisabledFeatures({
   resize: false,
   fullScreen: false,
   header: false
@@ -888,6 +908,8 @@ chatService.setDisabledFeatures({
  * @property allowedAttachments - The allowed attachments of the chat
  * @property models - The models of the chat
  * @property selectedModel - The selected model of the chat
+ * @property preHooks - The hooks that trigger before the user action (UI interaction) of the chat.
+ * Hooks expose current data for the action **before** the state change is attempted.
  */
 export interface AutopilotChatConfiguration {
     mode: AutopilotChatMode;
@@ -903,6 +925,7 @@ export interface AutopilotChatConfiguration {
     allowedAttachments?: AutopilotChatAllowedAttachments;
     models?: AutopilotChatModelInfo[];
     selectedModel?: AutopilotChatModelInfo;
+    preHooks?: Partial<Record<AutopilotChatPreHookAction, (data?: any) => Promise<boolean>>>;
 }
 ```
 
@@ -1119,6 +1142,27 @@ export interface AutopilotChatActionPayload {
 }
 ```
 
+### AutopilotChatPreHookAction
+
+```typescript
+/**
+ * Enum representing the various pre-hook actions that can occur in the Autopilot Chat system.
+ * These actions are used to trigger before the user action (UI interaction) of the chat.
+ *
+ * @enum {string}
+ * @property {string} NewChat - Emitted when the user attemps to start a new chat
+ * @property {string} ToggleHistory - Emitted when the user attemps to toggle the history
+ * @property {string} ToggleChat - Emitted when the user attemps to toggle the chat
+ * @property {string} CloseChat - Emitted when the user attemps to close the chat
+ */
+export enum AutopilotChatPreHookAction {
+    NewChat = 'new-chat',
+    ToggleHistory = 'toggle-history',
+    ToggleChat = 'toggle-chat',
+    CloseChat = 'close-chat',
+}
+```
+
 ## Component Architecture
 
 The Autopilot Chat component is built with a modular architecture that allows for easy customization and extension.
@@ -1135,7 +1179,7 @@ graph LR
     Mode{"Chat Mode"}:::decision
     FS["FullScreenLayout"]:::node
     SS["StandardLayout"]:::node
-    
+
     %% Provider nodes
     E["AttachmentsProvider"]:::provider
     F["ErrorProvider"]:::provider
@@ -1144,36 +1188,36 @@ graph LR
     I["ChatWidthProvider"]:::provider
     J["ChatScrollProvider"]:::provider
     AP["ChatStateProvider"]:::provider
-    
+
     %% Service nodes
     AD["ChatService"]:::service
     AE["ChatInternalService"]:::service
     AF["EventBus"]:::service
     AG["StorageService"]:::service
     AQ["LocalHistoryService<br>(IndexedDB, opt-in)"]:::service
-    
+
     %% External consumer
     Consumer["External Consumers<br>Applications"]:::consumer
-    
+
     %% Common component nodes
     Header["Header<br>Components"]:::component
     Input["Input<br>Components"]:::component
-    
+
     %% Detailed message components
     subgraph Message["Message Components"]
         direction TB
         S["Message Container"]:::component
         S --> T["MessageContent"]:::component
         S --> Z["Attachments"]:::component
-        S --> AA["Loading"]:::component 
+        S --> AA["Loading"]:::component
         S --> AB["First Run Experience"]:::component
-        
+
         %% Message Actions
         subgraph MessageActions["Message Actions"]
             direction TB
             MA["MessageActions<br>Component"]:::component
             MA --> MAL["Actions List"]:::component
-            
+
             %% Default actions
             subgraph DefaultActions["Default Actions"]
                 direction LR
@@ -1181,20 +1225,20 @@ graph LR
                 TU["Thumbs Up"]:::component
                 TD["Thumbs Down"]:::component
             end
-            
+
             %% Custom actions
             subgraph CustomActions["Custom Actions"]
                 direction TB
                 ICA["Injectable<br>Custom Actions"]:::component
                 ICA -.->|"Injected via"| CA_API["message.actions property"]
             end
-            
+
             MAL --> DefaultActions
             MAL --> CustomActions
         end
-        
+
         S --> MA
-        
+
         %% Markdown rendering
         subgraph MarkdownRenderer["Markdown Renderer"]
             direction LR
@@ -1204,25 +1248,25 @@ graph LR
             U --> X["Text"]:::component
             U --> Y["Table"]:::component
         end
-        
+
         %% Custom renderer
         subgraph CustomRenderer["Custom Renderers"]
             direction TB
             IC["InjectableRenderer"]:::component
             IC -.->|"Injected via"| RE["chatService.injectMessageRenderer()"]
         end
-        
+
         T --> U
         S --> IC
     end
-    
+
     History["History<br>Components"]:::component
-    
+
     %% Core Flow with thick edges
     A ==> B
     B ==> C
     C ==> D
-    
+
     %% Provider connections
     D -.->|"provides"| E
     D -.->|"provides"| F
@@ -1231,7 +1275,7 @@ graph LR
     D -.->|"provides"| I
     D -.->|"provides"| J
     D -.->|"provides"| AP
-    
+
     %% Providers connect to ChatContainer
     E ==> K
     F ==> K
@@ -1240,12 +1284,12 @@ graph LR
     I ==> K
     J ==> K
     AP ==> K
-    
+
     %% ChatContainer to layouts
     K ==> Mode
     Mode ==>|"FullScreen"| FS
     Mode ==>|"SideBySide"| SS
-    
+
     %% ChatService pushes to all providers
     AD -.->|"events"| E
     AD -.->|"events"| F
@@ -1254,7 +1298,7 @@ graph LR
     AD -.->|"events"| I
     AD -.->|"events"| J
     AD -.->|"events"| AP
-    
+
     %% Service connections
     AD ==>|"manages"| C
     AD ==>|"uses"| AE
@@ -1263,21 +1307,21 @@ graph LR
     AD ==>|"uses"| AQ
     AD -.->|"manages renderers"| CustomRenderer
     AD -.->|"handles events from"| MessageActions
-    
+
     %% ChatService exposed to consumers
     AD <-.->|"exposes methods<br>window.PortalShell.AutopilotChat"| Consumer
-    
+
     %% Layout connections
     FS ==>|"uses"| Header
     FS ==>|"uses"| Message
     FS ==>|"uses"| Input
     FS ==>|"uses"| History
-    
+
     SS ==>|"uses"| Header
     SS ==>|"uses"| Message
     SS ==>|"uses"| Input
     SS ==>|"uses"| History
-    
+
     %% Style definitions
     classDef node fill:#2962ff,stroke:#ffffff,stroke-width:2px,color:#ffffff
     classDef decision fill:#ff6d00,stroke:#ffffff,stroke-width:2px,color:#ffffff
@@ -1285,7 +1329,7 @@ graph LR
     classDef service fill:#66bb6a,stroke:#ffffff,stroke-width:2px,color:#ffffff
     classDef component fill:#ffca28,stroke:#ffffff,stroke-width:2px,color:#000000
     classDef consumer fill:#e040fb,stroke:#ffffff,stroke-width:2px,color:#ffffff
-    
+
     %% Apply styles to all links
     linkStyle default stroke:#ffffff,stroke-width:2px;
     linkStyle 7,8,9,10,11,12,13 stroke:#ec407a,stroke-width:2px,stroke-dasharray:5 5;

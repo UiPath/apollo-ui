@@ -7,6 +7,7 @@ import {
 } from '@mui/material';
 import { FontVariantToken } from '@uipath/apollo-core';
 import token from '@uipath/apollo-core/lib';
+import { AutopilotChatPreHookAction } from '@uipath/portal-shell-util';
 import React from 'react';
 
 import { t } from '../../../../utils/localization/loc';
@@ -33,8 +34,18 @@ const AutopilotChatHistoryHeaderComponent: React.FC<{ isFullScreen: boolean; isH
     const chatService = useChatService();
 
     const handleCloseHistory = React.useCallback(() => {
-        chatService?.toggleHistory(false);
-    }, [ chatService ]);
+        if (!chatService) {
+            return;
+        }
+
+        chatService.getPreHook(AutopilotChatPreHookAction.ToggleHistory)({ historyOpen: isHistoryOpen })
+            .then((proceed) => {
+                if (!proceed) {
+                    return;
+                }
+                chatService?.toggleHistory();
+            });
+    }, [ chatService, isHistoryOpen ]);
 
     return (
         <HeaderContainer>

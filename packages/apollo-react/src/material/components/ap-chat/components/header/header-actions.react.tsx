@@ -3,7 +3,10 @@
 
 import { styled } from '@mui/material/styles';
 import token from '@uipath/apollo-core/lib';
-import { AutopilotChatMode } from '@uipath/portal-shell-util';
+import {
+    AutopilotChatMode,
+    AutopilotChatPreHookAction,
+} from '@uipath/portal-shell-util';
 import React from 'react';
 
 import { t } from '../../../../utils/localization/loc';
@@ -21,18 +24,38 @@ const StyledActions = styled('div')(() => ({
 function AutopilotChatHeaderActionsComponent() {
     const chatService = useChatService();
     const {
-        disabledFeatures, chatMode,
+        disabledFeatures, chatMode, historyOpen,
     } = useChatState();
     const { clearAttachments } = useAttachments();
 
     const handleClose = React.useCallback(() => {
-        chatService?.close();
+        if (!chatService) {
+            return;
+        }
+
+        chatService.getPreHook(AutopilotChatPreHookAction.CloseChat)()
+            .then((proceed) => {
+                if (!proceed) {
+                    return;
+                }
+                chatService?.close();
+            });
     }, [ chatService ]);
 
     const handleToggleChat = React.useCallback(() => {
-        chatService?.setChatMode(
-            chatMode === AutopilotChatMode.FullScreen ? AutopilotChatMode.SideBySide : AutopilotChatMode.FullScreen,
-        );
+        if (!chatService) {
+            return;
+        }
+
+        chatService.getPreHook(AutopilotChatPreHookAction.ToggleChat)({ chatMode })
+            .then((proceed) => {
+                if (!proceed) {
+                    return;
+                }
+                chatService?.setChatMode(
+                    chatMode === AutopilotChatMode.FullScreen ? AutopilotChatMode.SideBySide : AutopilotChatMode.FullScreen,
+                );
+            });
     }, [ chatService, chatMode ]);
 
     const handleNewChat = React.useCallback(() => {
@@ -40,16 +63,31 @@ function AutopilotChatHeaderActionsComponent() {
             return;
         }
 
-        chatService.newChat();
-        chatService.stopResponse();
-        chatService.setPrompt('');
-
-        clearAttachments();
+        chatService.getPreHook(AutopilotChatPreHookAction.NewChat)()
+            .then((proceed) => {
+                if (!proceed) {
+                    return;
+                }
+                chatService.newChat();
+                chatService.stopResponse();
+                chatService.setPrompt('');
+                clearAttachments();
+            });
     }, [ clearAttachments, chatService ]);
 
     const toggleHistory = React.useCallback(() => {
-        chatService?.toggleHistory();
-    }, [ chatService ]);
+        if (!chatService) {
+            return;
+        }
+
+        chatService.getPreHook(AutopilotChatPreHookAction.ToggleHistory)({ historyOpen })
+            .then((proceed) => {
+                if (!proceed) {
+                    return;
+                }
+                chatService?.toggleHistory();
+            });
+    }, [ chatService, historyOpen ]);
 
     return (
         <StyledActions>
