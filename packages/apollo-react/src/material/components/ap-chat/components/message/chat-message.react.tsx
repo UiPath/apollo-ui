@@ -90,11 +90,17 @@ function AutopilotChatMessagesComponent() {
         }
     }, [ chatService ]);
 
-    const onCopy = React.useCallback(({ group }: AutopilotChatActionPayload) => {
+    const onCopy = React.useCallback(({
+        group, message,
+    }: AutopilotChatActionPayload) => {
         let finalString = '';
 
-        for (const message of group) {
-            finalString += (message.toCopy ?? message.content) + '\n';
+        if (group.length === 0) {
+            finalString = message.toCopy ?? message.content;
+        } else {
+            for (const msg of group) {
+                finalString += (msg.toCopy ?? msg.content) + '\n';
+            }
         }
 
         if (navigator.clipboard && finalString) {
