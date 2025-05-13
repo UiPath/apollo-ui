@@ -221,6 +221,23 @@ export interface AutopilotChatDisabledFeatures {
 }
 
 /**
+ * Represents the various pre-hook actions that can occur in the Autopilot Chat system.
+ * These actions are used to trigger before the user action (UI interaction) of the chat.
+ *
+ * @enum {string}
+ * @property {string} NewChat - Emitted when the user attemps to start a new chat
+ * @property {string} ToggleHistory - Emitted when the user attemps to toggle the history
+ * @property {string} ToggleChat - Emitted when the user attemps to toggle the chat
+ * @property {string} CloseChat - Emitted when the user attemps to close the chat
+ */
+export enum AutopilotChatPreHookAction {
+    NewChat = 'new-chat',
+    ToggleHistory = 'toggle-history',
+    ToggleChat = 'toggle-chat',
+    CloseChat = 'close-chat',
+}
+
+/**
  * Represents the configuration for the Autopilot Chat system.
  *
  * @property mode - The mode of the chat
@@ -231,6 +248,8 @@ export interface AutopilotChatDisabledFeatures {
  * @property allowedAttachments - The allowed attachments of the chat
  * @property models - The models of the chat
  * @property selectedModelId - The selected model ID of the chat
+ * @property preHooks - The hooks that trigger before the user action (UI interaction) of the chat.
+ * Hooks expose current data for the action **before** the state change is attempted.
  */
 export interface AutopilotChatConfiguration {
     mode: AutopilotChatMode;
@@ -246,6 +265,7 @@ export interface AutopilotChatConfiguration {
     allowedAttachments?: AutopilotChatAllowedAttachments;
     models?: AutopilotChatModelInfo[];
     selectedModel?: AutopilotChatModelInfo;
+    preHooks?: Partial<Record<AutopilotChatPreHookAction, (data?: any) => Promise<boolean>>>;
 }
 
 /**
