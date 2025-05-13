@@ -8,6 +8,7 @@ import type {
     AutopilotChatMessage,
     AutopilotChatMessageRenderer,
     AutopilotChatModelInfo,
+    AutopilotChatPreHookAction,
     AutopilotChatPrompt,
 } from '../types/AutopilotChatModel';
 import {
@@ -101,6 +102,8 @@ export class AutopilotChatService {
         this.setSelectedModel = this.setSelectedModel.bind(this);
         this.getSelectedModel = this.getSelectedModel.bind(this);
         this.getMessagesInGroup = this.getMessagesInGroup.bind(this);
+        this.setPreHook = this.setPreHook.bind(this);
+        this.getPreHook = this.getPreHook.bind(this);
     }
 
     static Instantiate({
@@ -748,5 +751,29 @@ export class AutopilotChatService {
      */
     getMessagesInGroup(groupId: string) {
         return this._conversation.filter(message => message.groupId === groupId);
+    }
+
+    /**
+     * Sets a pre hook in the chat service
+     *
+     * @param action - The action to set the pre hook for
+     * @param hook - The pre hook to set
+     */
+    setPreHook(action: AutopilotChatPreHookAction, hook: (data?: any) => Promise<boolean>) {
+        if (!this._config.preHooks) {
+            this._config.preHooks = {};
+        }
+
+        this._config.preHooks[action] = hook;
+    }
+
+    /**
+     * Gets the pre hook from the chat service
+     *
+     * @param action - The action to get the pre hook for
+     * @returns The pre hook
+     */
+    getPreHook(action: AutopilotChatPreHookAction) {
+        return this._config.preHooks?.[action] ?? (() => Promise.resolve(true));
     }
 }
