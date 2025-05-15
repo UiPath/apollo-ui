@@ -13,6 +13,7 @@ import React from 'react';
 import { StatusTypes } from '../../../../models/statusTypes';
 import { t } from '../../../../utils/localization/loc';
 import AutopilotLogo from '../../assets/autopilot-logo.svg';
+import { useChatState } from '../../providers/chat-state-provider.react';
 import { AutopilotChatHeaderActions } from './header-actions.react';
 
 const StyledHeader = styled('div')(() => ({
@@ -29,6 +30,10 @@ const StyledLogo = styled('div')(() => ({
 
 function AutopilotChatHeaderComponent() {
     const theme = useTheme();
+    const {
+        disabledFeatures,
+        overrideLabels,
+    } = useChatState();
 
     return (
         <StyledHeader>
@@ -37,10 +42,10 @@ function AutopilotChatHeaderComponent() {
                 <span dangerouslySetInnerHTML={{ __html: AutopilotLogo }} />
 
                 <ap-typography variant={FontVariantToken.fontBrandL} color={theme.palette.semantic.colorForeground}>
-                    {t('autopilot-chat-header')}
+                    {overrideLabels.title ?? t('autopilot-chat-header')}
                 </ap-typography>
 
-                <ap-badge label={t('autopilot-chat-header-preview')} status={StatusTypes.INFO}></ap-badge>
+                {!disabledFeatures.preview && <ap-badge label={t('autopilot-chat-header-preview')} status={StatusTypes.INFO}></ap-badge>}
             </StyledLogo>
 
             <AutopilotChatHeaderActions />

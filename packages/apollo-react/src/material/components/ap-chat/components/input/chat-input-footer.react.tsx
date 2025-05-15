@@ -10,9 +10,11 @@ import { FontVariantToken } from '@uipath/apollo-core';
 import React from 'react';
 
 import { t } from '../../../../utils/localization/loc';
+import { useChatState } from '../../providers/chat-state-provider.react';
 
 function AutopilotChatInputFooterComponent() {
     const theme = useTheme();
+    const { overrideLabels } = useChatState();
 
     return (
         <Box sx={{ textAlign: 'center' }}>
@@ -20,7 +22,7 @@ function AutopilotChatInputFooterComponent() {
                 color={theme.palette.semantic.colorForegroundDeEmp}
                 variant={FontVariantToken.fontSizeXs}
             >
-                {t('autopilot-chat-footer')}
+                {overrideLabels?.footerDisclaimer ?? t('autopilot-chat-footer')}
             </ap-typography>
         </Box>
     );

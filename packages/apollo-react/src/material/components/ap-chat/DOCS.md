@@ -104,6 +104,12 @@ const chatService = window.PortalShell.AutopilotChat;
 |--------|-------------|
 | `setDisabledFeatures(features: AutopilotChatDisabledFeatures)` | Configures which features should be disabled in the chat interface (see [AutopilotChatDisabledFeatures](#autopilotchatdisabledfeatures)) |
 
+### Labels Override
+
+| Method                                       | Description                                                                                                                |
+|----------------------------------------------|----------------------------------------------------------------------------------------------------------------------------|
+| `setOverrideLabels(labels: AutopilotChatOverrideLabels)` | Configures which labes to override in the chat interface (see [AutopilotChatOverrideLabels](#autopilotchatoverridelabels)) |
+
 ### Event Handling
 
 #### Subscribing to Events
@@ -130,6 +136,7 @@ Subscribes to chat events and returns an unsubscribe function. The handler will 
 - `SetLoadingMessage`: When a loading message is set
 - `SetFirstRunExperience`: When the first run experience is set
 - `SetDisabledFeatures`: When disabled features are set
+- `SetOverrideLabels` = When override labels are set,
 - `Open`: When the chat is opened
 - `Close`: When the chat is closed
 - `SendChunk`: When a chunk of streaming content is sent
@@ -517,6 +524,30 @@ chatService.sendResponse({
   widget: "custom-text-renderer" // Reference to our custom renderer
 });
 ```
+### Docs AI Message
+
+```typescript
+// Example of sending a response with docs AI content
+chatService.sendResponse({
+  id: "msg-123",
+  content: `The documents provided do not specifically list common issues encountered during the installation of Orchestrator.`,
+  suggestions: [
+    {
+      label: 'What are the troubleshooting steps for Orchestrator pod issues?',
+      prompt: 'What are the troubleshooting steps for Orchestrator pod issues?',
+    },
+  ],
+  sources: [
+    {
+      title: "Automation Suite - Orchestrator troubleshooting",
+      url: "https://docs.uipath.com/automation-suite/automation-suite/2024.10/installation-guide/orchestrator-troubleshooting"
+    },
+  ],
+  disclaimers: [
+    "Installation and administration instructions, if incorrectly implemented, can result in system disruptions or data loss.",
+  ],
+});
+```
 
 ## Streaming Capabilities
 
@@ -873,6 +904,28 @@ chatService.setDisabledFeatures({
 });
 ```
 
+// Disable footer
+chatService.setDisabledFeatures({
+  footer: true
+});
+```
+
+// Disable preview badge
+chatService.setDisabledFeatures({
+  preview: true
+});
+
+// Disable close button
+chatService.setDisabledFeatures({
+  close: true
+});
+
+// Disable new chat button
+chatService.setDisabledFeatures({
+  newChat: true
+});
+```
+
 ### Setting Multiple Disabled Features at Once
 
 ```typescript
@@ -890,6 +943,48 @@ chatService.setDisabledFeatures({
   resize: false,
   fullScreen: false,
   header: false
+});
+```
+
+
+### Label Overrides
+
+The chat service allows you to override labels to customize the experience.
+
+### Overriding Individual Labels
+
+```typescript
+// Override input placeholder
+chatService.setOverrideLabels({
+  inputPlaceholder: 'Looking for something?',
+});
+
+// Override footer disclaimer
+chatService.setOverrideLabels({
+  footerDisclaimer: 'Maybe is wrong, double check',
+});
+
+// Override title
+chatService.setOverrideLabels({
+  title: 'Smart Assitant',
+});
+```
+
+### Setting Multiple Label Overrides at Once
+
+```typescript
+// Override multiple labes at once
+chatService.setOverrideLabels({
+  inputPlaceholder: 'Looking for something?',
+  footerDisclaimer: 'Maybe is wrong, double check',
+  title: 'Smart Assitant',
+});
+
+// Later, reset overrides
+chatService.setDisabledFeatures({
+  inputPlaceholder: '',
+  footerDisclaimer: '',
+  title: ''
 });
 ```
 
@@ -915,6 +1010,7 @@ export interface AutopilotChatConfiguration {
     mode: AutopilotChatMode;
     embeddedContainer?: HTMLElement;
     disabledFeatures?: AutopilotChatDisabledFeatures;
+    overrideLabels?: AutopilotChatOverrideLabels;
     firstRunExperience?: {
         title: string;
         description: string;
@@ -951,6 +1047,10 @@ enum AutopilotChatMode {
  * @property attachments - Whether the chat has the attachments button
  * @property history - Whether the chat has the history button
  * @property header - Whether the chat has the header
+ * @property footer - Whether the chat has the footer
+ * @property preview - Whether the chat has the preview badge
+ * @property close - Whether the chat has the close button
+ * @property newChat - Whether the chat has the new chat button
  */
 interface AutopilotChatDisabledFeatures {
   attachments?: boolean;
@@ -958,6 +1058,26 @@ interface AutopilotChatDisabledFeatures {
   fullScreen?: boolean;
   history?: boolean;
   header?: boolean;
+  footer?: boolean;
+  preview?: boolean;
+  close?: boolean;
+  newChat?: boolean;
+}
+```
+### AutopilotChatOverrideLabels
+
+```typescript
+/**
+ * Represents a set of override labels for the Autopilot chat system.
+ *
+ * @property inputPlaceholder - The override label for input placeholder
+ * @property footerDisclaimer - The override label for footer disclaimer
+ * @property title - The override label for title
+ */
+export interface AutopilotChatOverrideLabels {
+  inputPlaceholder?: string;
+  footerDisclaimer?: string;
+  title?: string;
 }
 ```
 
@@ -973,6 +1093,21 @@ interface AutopilotChatDisabledFeatures {
 export interface AutopilotChatSuggestion {
     label: string;
     prompt: string;
+}
+```
+
+### AutopilotChatSource
+
+```typescript
+/**
+ * Represents a source for the Autopilot Chat system.
+ *
+ * @property title - The title of the source
+ * @property url - The url of the source
+ */
+export interface AutopilotChatSource {
+  title: string;
+  url: string;
 }
 ```
 
@@ -1028,6 +1163,9 @@ export interface AutopilotChatModelInfo {
  *                  AutopilotChatRole.User for sendRequest and AutopilotChatRole.Assistant for sendResponse.
  * @property widget - The renderer to use for displaying this message.
  * @property attachments - Optional files attached to the message.
+ * @property suggestions - Optional list of suggestions to the message.
+ * @property sources - Optional list of sources to the message.
+ * @property disclaimers - Optional list of disclaimers to the message.
  * @property hijacked - Flag set by the chat service when an event is intercepted and the interceptor returns true
  * @property fakeStream - Temporary flag used to simulate streaming for a complete message (will be ignored for requests)
  * @property stream - Flag used to stream a chunk (will be ignored for requests)
@@ -1046,6 +1184,9 @@ export interface AutopilotChatMessage {
     role: AutopilotChatRole;
     widget: string;
     attachments?: AutopilotChatFileInfo[];
+    suggestions?: AutopilotChatSuggestion[];
+    sources?: AutopilotChatSource[];
+    disclaimers?: string[];
     hijacked?: boolean;
     fakeStream?: boolean;
     stream?: boolean;

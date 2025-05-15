@@ -9,6 +9,7 @@ import {
     AutopilotChatInternalEvent,
     AutopilotChatMode,
     AutopilotChatModelInfo,
+    AutopilotChatOverrideLabels,
 } from '@uipath/portal-shell-util';
 import React from 'react';
 
@@ -18,6 +19,7 @@ interface AutopilotChatStateContextType {
     historyOpen: boolean;
     chatMode: AutopilotChatMode;
     disabledFeatures: AutopilotChatDisabledFeatures;
+    overrideLabels: AutopilotChatOverrideLabels;
     firstRunExperience: AutopilotChatConfiguration['firstRunExperience'];
     allowedAttachments: AutopilotChatAllowedAttachments;
     models: AutopilotChatModelInfo[];
@@ -44,6 +46,7 @@ export const AutopilotChatStateProvider: React.FC<AutopilotChatStateProviderProp
     const [ historyOpen, setHistoryOpen ] = React.useState(chatService?.historyOpen ?? false);
     const [ chatMode, setChatMode ] = React.useState(chatService?.getConfig()?.mode ?? AutopilotChatMode.SideBySide);
     const [ disabledFeatures, setDisabledFeatures ] = React.useState(chatService?.getConfig()?.disabledFeatures ?? {});
+    const [ overrideLabels, setOverrideLabels ] = React.useState(chatService?.getConfig()?.overrideLabels ?? {});
     const [ firstRunExperience, setFirstRunExperience ] = React.useState(chatService?.getConfig()?.firstRunExperience ?? {
         title: '',
         description: '',
@@ -76,6 +79,13 @@ export const AutopilotChatStateProvider: React.FC<AutopilotChatStateProviderProp
             },
         );
 
+        const unsubscribeOverrideLabels = chatService.on(
+            AutopilotChatEvent.SetOverrideLabels,
+            (labels) => {
+                setOverrideLabels(labels);
+            },
+        );
+
         const unsubscribeFirstRunExperience = chatService.on(
             AutopilotChatEvent.SetFirstRunExperience,
             (experience) => {
@@ -101,6 +111,7 @@ export const AutopilotChatStateProvider: React.FC<AutopilotChatStateProviderProp
             unsubscribeHistoryToggle();
             unsubscribeModeChange();
             unsubscribeDisabledFeatures();
+            unsubscribeOverrideLabels();
             unsubscribeFirstRunExperience();
             unsubscribeAllowedAttachments();
             unsubscribeModels();
@@ -111,10 +122,11 @@ export const AutopilotChatStateProvider: React.FC<AutopilotChatStateProviderProp
         historyOpen,
         chatMode,
         disabledFeatures,
+        overrideLabels,
         firstRunExperience,
         allowedAttachments,
         models,
-    }), [ historyOpen, chatMode, disabledFeatures, firstRunExperience, allowedAttachments, models ]);
+    }), [ historyOpen, chatMode, disabledFeatures, overrideLabels, firstRunExperience, allowedAttachments, models ]);
 
     return (
         <AutopilotChatStateContext.Provider value={value}>

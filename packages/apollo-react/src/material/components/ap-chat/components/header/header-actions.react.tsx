@@ -91,12 +91,14 @@ function AutopilotChatHeaderActionsComponent() {
 
     return (
         <StyledActions>
-            <AutopilotChatActionButton
-                iconName="new_chat"
-                variant="custom"
-                tooltip={t('autopilot-chat-new-chat')}
-                onClick={handleNewChat}
-            />
+            {!disabledFeatures.newChat && (
+                <AutopilotChatActionButton
+                    iconName="new_chat"
+                    variant="custom"
+                    tooltip={t('autopilot-chat-new-chat')}
+                    onClick={handleNewChat}
+                />
+            )}
 
             {!disabledFeatures.history && (
                 <AutopilotChatActionButton
@@ -115,7 +117,7 @@ function AutopilotChatHeaderActionsComponent() {
                 />
             )}
 
-            {chatMode !== AutopilotChatMode.Embedded && (
+            {(chatMode !== AutopilotChatMode.Embedded || disabledFeatures.close === false) && (
                 <AutopilotChatActionButton
                     iconName="close"
                     onClick={handleClose}

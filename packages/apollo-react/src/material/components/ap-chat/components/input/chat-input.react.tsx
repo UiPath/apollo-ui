@@ -18,6 +18,7 @@ import { t } from '../../../../utils/localization/loc';
 import { ApTextAreaReact } from '../../../ap-text-area/ap-text-area.react';
 import { useAttachments } from '../../providers/attachements-provider.react';
 import { useChatService } from '../../providers/chat-service.provider.react';
+import { useChatState } from '../../providers/chat-state-provider.react';
 import { useLoading } from '../../providers/loading-provider.react';
 import { useStreaming } from '../../providers/streaming-provider.react';
 import { AutopilotChatInputActions } from './chat-input-actions.react';
@@ -54,6 +55,10 @@ export const InputContainer = styled('div')(({ theme }) => ({
 function AutopilotChatInputComponent() {
     const chatService = useChatService();
     const initialPrompt = chatService?.getPrompt?.();
+    const {
+        disabledFeatures,
+        overrideLabels,
+    } = useChatState();
 
     const [ message, setMessage ] = React.useState(
         typeof initialPrompt === 'string' ? initialPrompt : initialPrompt?.content ?? '',
@@ -132,7 +137,7 @@ function AutopilotChatInputComponent() {
                         resize="none"
                         ref={inputRef}
                         value={message}
-                        placeholder={t('autopilot-chat-input-placeholder')}
+                        placeholder={overrideLabels?.inputPlaceholder ?? t('autopilot-chat-input-placeholder')}
                         onChange={handleChange}
                         onKeyDown={handleKeyDown}
                         minRows={CHAT_INPUT_MIN_ROWS}
@@ -147,7 +152,7 @@ function AutopilotChatInputComponent() {
                 />
             </InputContainer>
 
-            <AutopilotChatInputFooter />
+            {!disabledFeatures?.footer && <AutopilotChatInputFooter />}
         </>
     );
 }
