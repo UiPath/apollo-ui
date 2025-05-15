@@ -51,6 +51,9 @@ export enum AutopilotChatRole {
  *                  AutopilotChatRole.User for sendRequest and AutopilotChatRole.Assistant for sendResponse.
  * @property widget - The renderer to use for displaying this message.
  * @property attachments - Optional files attached to the message.
+ * @property suggestions - Optional list of suggestions to the message.
+ * @property sources - Optional list of sources to the message.
+ * @property disclaimers - Optional list of disclaimers to the message.
  * @property hijacked - Flag set by the chat service when an event is intercepted and the interceptor returns true
  * @property fakeStream - Temporary flag used to simulate streaming for a complete message (will be ignored for requests)
  * @property stream - Flag used to stream a chunk (will be ignored for requests)
@@ -69,6 +72,9 @@ export interface AutopilotChatMessage {
     role: AutopilotChatRole;
     widget: string;
     attachments?: AutopilotChatFileInfo[];
+    suggestions?: AutopilotChatSuggestion[];
+    sources?: AutopilotChatSource[];
+    disclaimers?: string[];
     hijacked?: boolean;
     fakeStream?: boolean;
     stream?: boolean;
@@ -111,6 +117,7 @@ export interface AutopilotChatMessageRenderer {
  * @property {string} StopResponse - Emitted when a response is manually stopped
  * @property {string} SetFirstRunExperience - Emitted when the first run experience is configured
  * @property {string} SetDisabledFeatures - Emitted when disabled features are configured
+ * @property {string} SetOverrideLabels - Emitted when override labels are configured
  * @property {string} Open - Emitted when the chat is opened
  * @property {string} Close - Emitted when the chat is closed
  * @property {string} SendChunk - Emitted when a chunk of a streaming response is sent
@@ -137,6 +144,7 @@ export enum AutopilotChatEvent {
     SetLoadingMessage = 'setLoadingMessage',
     SetFirstRunExperience = 'setFirstRunExperience',
     SetDisabledFeatures = 'setDisabledFeatures',
+    SetOverrideLabels = 'setOverrideLabels',
     Open = 'open',
     Close = 'close',
     SendChunk = 'sendChunk',
@@ -204,6 +212,17 @@ export interface AutopilotChatSuggestion {
 }
 
 /**
+ * Represents a source for the Autopilot Chat system.
+ *
+ * @property title - The title of the source
+ * @property url - The url of the source
+ */
+export interface AutopilotChatSource {
+    title: string;
+    url: string;
+}
+
+/**
  * Represents the disabled features of the Autopilot Chat system.
  *
  * @property resize - Whether the chat can be resized (has the resize handle)
@@ -211,6 +230,10 @@ export interface AutopilotChatSuggestion {
  * @property attachments - Whether the chat has the attachments button
  * @property history - Whether the chat has the history button
  * @property header - Whether the chat has the header
+ * @property footer - Whether the chat has the footer
+ * @property preview - Whether the chat has the preview badge
+ * @property close - Whether the chat has the close button
+ * @property newChat - Whether the chat has the new chat button
  */
 export interface AutopilotChatDisabledFeatures {
     resize?: boolean;
@@ -218,6 +241,23 @@ export interface AutopilotChatDisabledFeatures {
     attachments?: boolean;
     history?: boolean;
     header?: boolean;
+    footer?: boolean;
+    preview?: boolean;
+    close?: boolean;
+    newChat?: boolean;
+}
+
+/**
+ * Represents a set of override labels for the Autopilot chat system.
+ *
+ * @property inputPlaceholder - The override label for input placeholder
+ * @property footerDisclaimer - The override label for footer disclaimer
+ * @property title - The override label for title
+ */
+export interface AutopilotChatOverrideLabels {
+    inputPlaceholder?: string;
+    footerDisclaimer?: string;
+    title?: string;
 }
 
 /**
@@ -243,6 +283,7 @@ export enum AutopilotChatPreHookAction {
  * @property mode - The mode of the chat
  * @property embeddedContainer - The container to embed the chat in
  * @property disabledFeatures - The disabled features of the chat
+ * @property overrideLabels - The override labels of the chat
  * @property firstRunExperience - The first run experience of the chat
  * @property useLocalHistory - Whether the chat uses indexdb to store history
  * @property allowedAttachments - The allowed attachments of the chat
@@ -255,6 +296,7 @@ export interface AutopilotChatConfiguration {
     mode: AutopilotChatMode;
     embeddedContainer?: HTMLElement;
     disabledFeatures?: AutopilotChatDisabledFeatures;
+    overrideLabels?: AutopilotChatOverrideLabels;
     firstRunExperience?: {
         title: string;
         description: string;
