@@ -8,6 +8,7 @@ import type {
     AutopilotChatMessage,
     AutopilotChatMessageRenderer,
     AutopilotChatModelInfo,
+    AutopilotChatOverrideLabels,
     AutopilotChatPreHookAction,
     AutopilotChatPrompt,
 } from '../types/AutopilotChatModel';
@@ -167,6 +168,10 @@ export class AutopilotChatService {
 
         if (config.disabledFeatures) {
             this.setDisabledFeatures(config.disabledFeatures);
+        }
+
+        if (config.overrideLabels) {
+            this.setOverrideLabels(config.overrideLabels);
         }
 
         if (config.firstRunExperience) {
@@ -333,6 +338,20 @@ export class AutopilotChatService {
         };
 
         this._eventBus.publish(AutopilotChatEvent.SetDisabledFeatures, this._config.disabledFeatures);
+    }
+
+    /**
+     * Sets the override labels in the chat service
+     *
+     * @param labels - The override labels to set
+     */
+    setOverrideLabels(labels: AutopilotChatOverrideLabels) {
+        this._config.overrideLabels = {
+            ...this._config.overrideLabels,
+            ...labels,
+        };
+
+        this._eventBus.publish(AutopilotChatEvent.SetOverrideLabels, this._config.overrideLabels);
     }
 
     /**
