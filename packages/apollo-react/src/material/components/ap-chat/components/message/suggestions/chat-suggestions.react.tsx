@@ -80,12 +80,13 @@ function AutopilotChatSuggestionsComponent({
                     </ap-typography>
                 </Title>
             )}
-            {suggestions.map((suggestion) => (
+            {suggestions.map((suggestion, index) => (
                 <Suggestion
                     onKeyDown={(event) => handleSuggestionKeyDown(event, suggestion)}
                     onClick={(event) => handleSuggestionClick(event, suggestion)}
                     tabIndex={0}
                     key={suggestion.label}
+                    data-cy={`autopilot-chat-suggestion-nth-${index}`}
                 >
                     <ap-typography color={theme.palette.semantic.colorForeground} variant={FontVariantToken.fontSizeM}>
                         {suggestion.label}

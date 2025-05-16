@@ -66,6 +66,7 @@ function AutopilotChatSourcesComponent({ sources }: { sources: AutopilotChatSour
                     rel="noopener noreferrer"
                     key={source.title}
                     theme={theme}
+                    data-cy={`autopilot-chat-source-nth-${index}`}
                 >
                     <Count theme={theme}>
                         <ap-typography variant={FontVariantToken.fontSizeM}>

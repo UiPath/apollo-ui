@@ -29,8 +29,12 @@ function AutopilotChatDisclaimersComponent({ disclaimers }: { disclaimers: strin
 
     return (
         <DisclaimerList>
-            {disclaimers.map((disclaimer) => (
-                <Disclaimer theme={theme} key={disclaimer} >
+            {disclaimers.map((disclaimer, index) => (
+                <Disclaimer
+                    theme={theme}
+                    key={disclaimer}
+                    data-cy={`autopilot-chat-disclaimer-nth-${index}`}
+                >
                     <portal-custom-icon name="warning" color={theme.palette.semantic.colorWarningIcon}></portal-custom-icon>
                     <ap-typography color={theme.palette.semantic.colorWarningText} variant={FontVariantToken.fontSizeM}>
                         {disclaimer}
