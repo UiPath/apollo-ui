@@ -117,7 +117,8 @@ function AutopilotChatHeaderActionsComponent() {
                 />
             )}
 
-            {(chatMode !== AutopilotChatMode.Embedded || disabledFeatures.close === false) && (
+            {((chatMode !== AutopilotChatMode.Embedded && !disabledFeatures.close) ||
+                (chatMode === AutopilotChatMode.Embedded && disabledFeatures.close === false)) && (
                 <AutopilotChatActionButton
                     iconName="close"
                     onClick={handleClose}
