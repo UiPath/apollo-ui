@@ -16,6 +16,7 @@ export const MuiOutlinedInput = (palette: Palette): ComponentsOverrides['MuiOutl
         },
     },
     root: {
+        backgroundColor: palette.semantic.colorBackground,
         '&:hover:not(.Mui-focused)': { '& .MuiOutlinedInput-notchedOutline': { borderColor: palette.semantic.colorForeground } },
         '& .MuiOutlinedInput-notchedOutline': {
             top: 0,
@@ -62,6 +63,7 @@ export const MuiOutlinedInput = (palette: Palette): ComponentsOverrides['MuiOutl
         color: palette.semantic.colorForeground,
         fontSize: token.FontFamily.FontMSize,
         lineHeight: token.FontFamily.FontMLineHeight,
+        backgroundColor: palette.semantic.colorBackground,
     },
     adornedStart: {
         paddingLeft: token.Padding.PadL,
