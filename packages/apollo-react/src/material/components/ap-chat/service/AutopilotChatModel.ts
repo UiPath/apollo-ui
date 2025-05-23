@@ -131,6 +131,7 @@ export interface AutopilotChatMessageRenderer {
  * @property {string} SetLoadingMessage - Emitted when a loading message is set
  * @property {string} SetModels - Emitted when the models are set
  * @property {string} SetSelectedModel - Emitted when the selected model is set
+ * @property {string} ConversationLoadMore - Emitted when the conversation load more is triggered
  */
 export enum AutopilotChatEvent {
     Error = 'error',
@@ -156,6 +157,7 @@ export enum AutopilotChatEvent {
     Copy = 'copy',
     SetModels = 'setModels',
     SetSelectedModel = 'setSelectedModel',
+    ConversationLoadMore = 'conversationLoadMore',
 }
 
 /**
@@ -181,6 +183,9 @@ export enum AutopilotChatInterceptableEvent {
  * @property {string} UseLocalHistory - Emitted when the chat uses local history
  * @property {string} SetAllowedAttachments - Emitted when the allowed attachments are set
  * @property {string} ToggleAutoScroll - Emitted when the auto scroll is toggled
+ * @property {string} SetIsLoadingMoreMessages - Emitted when the is loading more messages is set
+ * @property {string} ShouldShowLoadingMoreMessages - Emitted when loading more messages should be shown
+ * @property {string} PrependOlderMessages - Emitted when older messages are prepended to the conversation
  */
 export enum AutopilotChatInternalEvent {
     ChatResize = 'chatResize',
@@ -189,6 +194,9 @@ export enum AutopilotChatInternalEvent {
     UseLocalHistory = 'useLocalHistory',
     SetAllowedAttachments = 'setAllowedAttachments',
     ToggleAutoScroll = 'toggleAutoScroll',
+    SetIsLoadingMoreMessages = 'setIsLoadingMoreMessages',
+    ShouldShowLoadingMoreMessages = 'shouldShowLoadingMoreMessages',
+    PrependOlderMessages = 'prependOlderMessages',
 }
 
 export type AutopilotChatEventHandler<T = any> = (data?: T) => void;
@@ -290,6 +298,7 @@ export enum AutopilotChatPreHookAction {
  * @property models - The models of the chat
  * @property selectedModelId - The selected model ID of the chat
  * @property preHooks - The hooks that trigger before the user action (UI interaction) of the chat.
+ * @property paginatedMessages - Flag to determine if the chat conversation is paginated
  * Hooks expose current data for the action **before** the state change is attempted.
  */
 export interface AutopilotChatConfiguration {
@@ -308,6 +317,7 @@ export interface AutopilotChatConfiguration {
     models?: AutopilotChatModelInfo[];
     selectedModel?: AutopilotChatModelInfo;
     preHooks?: Partial<Record<AutopilotChatPreHookAction, (data?: any) => Promise<boolean>>>;
+    paginatedMessages?: boolean;
 }
 
 /**
