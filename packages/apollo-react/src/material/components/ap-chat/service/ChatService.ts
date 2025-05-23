@@ -44,6 +44,7 @@ export class AutopilotChatService {
         },
         models: undefined,
         selectedModel: undefined,
+        paginatedMessages: false,
     };
     private _config: AutopilotChatConfiguration = { ...this._initialConfig };
     private _eventBus: EventBus;
@@ -105,6 +106,7 @@ export class AutopilotChatService {
         this.getMessagesInGroup = this.getMessagesInGroup.bind(this);
         this.setPreHook = this.setPreHook.bind(this);
         this.getPreHook = this.getPreHook.bind(this);
+        this.prependOlderMessages = this.prependOlderMessages.bind(this);
     }
 
     static Instantiate({
@@ -136,7 +138,7 @@ export class AutopilotChatService {
     /**
      * @returns The current active conversation ID
      */
-    public get activeConversationId() {
+    get activeConversationId() {
         return this._activeConversationId;
     }
 
@@ -393,7 +395,30 @@ export class AutopilotChatService {
     setConversation(messages: AutopilotChatMessage[]) {
         this._conversation = messages;
 
+        this._internalService.publish(AutopilotChatInternalEvent.SetIsLoadingMoreMessages, false);
         this._eventBus.publish(AutopilotChatEvent.SetConversation, messages);
+    }
+
+    /**
+     * Prepends older messages to the conversation when scrolling up and reaching the top
+     * This is called by the consumer in response to the ConversationLoadMore event
+     *
+     * @param messages - The older messages to prepend
+     * @param done - Whether the messages are the last set of messages
+     */
+    prependOlderMessages(messages: AutopilotChatMessage[] = [], done?: boolean) {
+        if (messages.length === 0) {
+            return;
+        }
+
+        // Emit internal event to signal that messages are being prepended in order to maintain scroll position
+        this.__internalService__.publish(AutopilotChatInternalEvent.PrependOlderMessages);
+
+        this.setConversation([ ...messages, ...this._conversation ]);
+
+        if (done) {
+            this.__internalService__.publish(AutopilotChatInternalEvent.ShouldShowLoadingMoreMessages, false);
+        }
     }
 
     /**
@@ -498,7 +523,7 @@ export class AutopilotChatService {
      * @param messages - The messages to show in the loading state
      * @param duration - The duration in milliseconds to show each message (optional)
      */
-    public setDefaultLoadingMessages(messages: string[], duration?: number) {
+    setDefaultLoadingMessages(messages: string[], duration?: number) {
         this._defaultLoadingMessages = messages;
         if (duration) {
             this._loadingMessageDuration = duration;
@@ -515,7 +540,7 @@ export class AutopilotChatService {
      *
      * @returns The default loading messages
      */
-    public getDefaultLoadingMessages() {
+    getDefaultLoadingMessages() {
         return this._defaultLoadingMessages;
     }
 
@@ -524,7 +549,7 @@ export class AutopilotChatService {
      *
      * @returns The loading message duration in milliseconds
      */
-    public getLoadingMessageDuration() {
+    getLoadingMessageDuration() {
         return this._loadingMessageDuration;
     }
 
@@ -533,7 +558,7 @@ export class AutopilotChatService {
      *
      * @param message - The message to show in the loading state
      */
-    public setLoadingMessage(message: string) {
+    setLoadingMessage(message: string) {
         this._loadingMessage = message;
 
         this._eventBus.publish(AutopilotChatEvent.SetLoadingMessage, message);
@@ -544,7 +569,7 @@ export class AutopilotChatService {
      *
      * @returns The loading message
      */
-    public getLoadingMessage() {
+    getLoadingMessage() {
         return this._loadingMessage;
     }
 
@@ -562,6 +587,8 @@ export class AutopilotChatService {
         this._groupId = undefined;
         this._conversation = [];
         this._eventBus.publish(AutopilotChatEvent.NewChat);
+        this._internalService.publish(AutopilotChatInternalEvent.ShouldShowLoadingMoreMessages, true);
+        this._internalService.publish(AutopilotChatInternalEvent.SetIsLoadingMoreMessages, false);
     }
 
     /**
@@ -681,6 +708,7 @@ export class AutopilotChatService {
     openConversation(conversationId: string | null) {
         this._activeConversationId = conversationId;
         this._eventBus.publish(AutopilotChatEvent.OpenConversation, conversationId);
+        this.__internalService__.publish(AutopilotChatInternalEvent.ShouldShowLoadingMoreMessages, true);
     }
 
     /**
