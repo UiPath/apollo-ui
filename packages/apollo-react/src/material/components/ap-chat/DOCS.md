@@ -64,6 +64,7 @@ const chatService = window.PortalShell.AutopilotChat;
 |--------|-------------|
 | `setConversation(messages: AutopilotChatMessage[])` | Sets the entire conversation history in the chat interface (see [AutopilotChatMessage](#autopilotchatmessage)) |
 | `getConversation()` | Returns the current conversation history |
+| `prependOlderMessages(messages: AutopilotChatMessage[], done?: boolean)` | Prepends older messages to the conversation when loading more history. Preserves scroll position. Set `done` to `true` when no more messages are available (see [Pagination and Loading More Messages](#pagination-and-loading-more-messages)) |
 | `setPrompt(prompt: AutopilotChatMessage \| string)` | Sets a prompt in the input field of the chat interface (accepts either a string or see [AutopilotChatMessage](#autopilotchatmessage)) |
 | `getPrompt()` | Returns the current prompt |
 | `sendRequest(request: AutopilotChatMessage)` | Sends a user request to the chat and triggers the request event (see [AutopilotChatMessage](#autopilotchatmessage)) |
@@ -146,6 +147,7 @@ Subscribes to chat events and returns an unsubscribe function. The handler will 
 - `OpenConversation`: Emitted when a conversation is opened (clicked on in the history list)
 - `Feedback`: Emitted when a feedback is sent (thumbs up or thumbs down)
 - `Copy`: Emitted when a message is copied
+- `ConversationLoadMore`: Emitted when the user scrolls to the top and more messages need to be loaded (see [Pagination and Loading More Messages](#pagination-and-loading-more-messages))
 
 #### Intercepting Events
 
@@ -871,7 +873,62 @@ chatService.initialize({
 // 3. The history panel shows previously saved conversations
 ```
 
-### Feature Controls
+## Pagination and Loading More Messages
+
+The chat service supports pagination for large conversations, allowing you to load older messages incrementally as the user scrolls to the top of the chat. This feature helps improve performance when dealing with long conversation histories.
+
+### Enabling Pagination
+
+To enable pagination, configure the chat service with the `paginatedMessages` option:
+
+```typescript
+chatService.initialize({
+  mode: AutopilotChatMode.SideBySide,
+  paginatedMessages: true // Enable pagination support
+});
+```
+
+### Implementing Load More Functionality
+
+When pagination is enabled, the chat service will emit a `ConversationLoadMore` event when the user scrolls to the top of the conversation:
+
+```typescript
+// Listen for load more events
+chatService.on(AutopilotChatEvent.ConversationLoadMore, () => {
+  console.log('User scrolled to top - load more messages');
+  
+  // Fetch older messages from your API or storage
+  fetchOlderMessages(currentConversationId, lastMessageId)
+    .then(olderMessages => {
+      // Prepend the older messages to the conversation
+      // Set done=true when no more messages are available
+      const isLastBatch = olderMessages.length < pageSize;
+      chatService.prependOlderMessages(olderMessages, isLastBatch);
+    })
+    .catch(error => {
+      console.error('Failed to load older messages:', error);
+      // Set done=true to stop further load attempts
+      chatService.prependOlderMessages([], true);
+    });
+});
+```
+
+### Scroll Position Preservation
+
+The chat service automatically preserves the user's scroll position when prepending older messages. This ensures that:
+
+- The user's current view remains stable
+- New messages appear above the current content
+- The scroll position adjusts automatically to account for the new content height
+- The user experience is smooth and doesn't jump around
+
+### Best Practices for Pagination
+
+1. **Use appropriate page sizes**: 20-50 messages per batch typically provides good performance
+2. **Handle errors gracefully**: Always call `prependOlderMessages([], true)` on error to stop loading
+3. **Consider caching**: Cache loaded messages to avoid redundant API calls
+
+## Feature Controls
 
 The chat service allows you to disable specific features to customize the experience.
 
@@ -902,13 +959,11 @@ chatService.setDisabledFeatures({
 chatService.setDisabledFeatures({
   header: true
 });
-```
 
 // Disable footer
 chatService.setDisabledFeatures({
   footer: true
 });
-```
 
 // Disable preview badge
 chatService.setDisabledFeatures({
@@ -946,7 +1001,6 @@ chatService.setDisabledFeatures({
 });
 ```
 
-
 ### Label Overrides
 
 The chat service allows you to override labels to customize the experience.
@@ -981,7 +1035,7 @@ chatService.setOverrideLabels({
 });
 
 // Later, reset overrides
-chatService.setDisabledFeatures({
+chatService.setOverrideLabels({
   inputPlaceholder: '',
   footerDisclaimer: '',
   title: ''
@@ -998,12 +1052,14 @@ chatService.setDisabledFeatures({
  * @property mode - The mode of the chat
  * @property embeddedContainer - The container to embed the chat in (for Embedded mode)
  * @property disabledFeatures - The disabled features of the chat
+ * @property overrideLabels - The override labels of the chat
  * @property firstRunExperience - The first run experience of the chat
  * @property useLocalHistory - Whether the chat uses indexdb to store history
  * @property allowedAttachments - The allowed attachments of the chat
  * @property models - The models of the chat
  * @property selectedModel - The selected model of the chat
  * @property preHooks - The hooks that trigger before the user action (UI interaction) of the chat.
+ * @property paginatedMessages - Flag to determine if the chat conversation is paginated
  * Hooks expose current data for the action **before** the state change is attempted.
  */
 export interface AutopilotChatConfiguration {
@@ -1022,6 +1078,7 @@ export interface AutopilotChatConfiguration {
     models?: AutopilotChatModelInfo[];
     selectedModel?: AutopilotChatModelInfo;
     preHooks?: Partial<Record<AutopilotChatPreHookAction, (data?: any) => Promise<boolean>>>;
+    paginatedMessages?: boolean;
 }
 ```
 

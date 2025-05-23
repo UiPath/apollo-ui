@@ -3,6 +3,7 @@
 import {
     AutopilotChatEvent,
     AutopilotChatInterceptableEvent,
+    AutopilotChatInternalEvent,
 } from '@uipath/portal-shell-util';
 import React from 'react';
 
@@ -10,22 +11,41 @@ import { useChatService } from './chat-service.provider.react';
 
 interface AutopilotLoadingContextType {
     waitingResponse: boolean;
+    isLoadingMoreMessages: boolean;
     setWaitingResponse: (waitingResponse: boolean) => void;
 }
 
 export const AutopilotLoadingContext = React.createContext<AutopilotLoadingContextType>({
     waitingResponse: false,
+    isLoadingMoreMessages: false,
     setWaitingResponse: () => {},
 });
 
 export function AutopilotLoadingProvider({ children }: { children: React.ReactNode }) {
     const [ waitingResponse, setWaitingResponse ] = React.useState<boolean>(false);
+    const [ isLoadingMoreMessages, setIsLoadingMoreMessages ] = React.useState<boolean>(false);
     const chatService = useChatService();
 
     React.useEffect(() => {
         if (!chatService) {
             return;
         }
+
+        const unsubscribeSetIsLoadingMoreMessages = chatService.__internalService__.on(
+            AutopilotChatInternalEvent.SetIsLoadingMoreMessages,
+            (value: boolean) => {
+                setIsLoadingMoreMessages(value);
+            },
+        );
+
+        const unsubscribeShouldShowLoadingMoreMessages = chatService.__internalService__.on(
+            AutopilotChatInternalEvent.ShouldShowLoadingMoreMessages,
+            (value: boolean) => {
+                if (!value) {
+                    setIsLoadingMoreMessages(false);
+                }
+            },
+        );
 
         const unsubscribeRequest = chatService.intercept(AutopilotChatInterceptableEvent.Request, () => {
             setWaitingResponse(true);
@@ -48,6 +68,8 @@ export function AutopilotLoadingProvider({ children }: { children: React.ReactNo
             unsubscribeResponse();
             unsubscribeStopResponse();
             unsubscribeNewChat();
+            unsubscribeSetIsLoadingMoreMessages();
+            unsubscribeShouldShowLoadingMoreMessages();
         };
     }, [ chatService ]);
 
@@ -55,6 +77,7 @@ export function AutopilotLoadingProvider({ children }: { children: React.ReactNo
         <AutopilotLoadingContext.Provider value={{
             waitingResponse,
             setWaitingResponse,
+            isLoadingMoreMessages,
         }}>
             {children}
         </AutopilotLoadingContext.Provider>

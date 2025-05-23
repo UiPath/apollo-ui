@@ -17,6 +17,7 @@ import { useLoading } from '../../providers/loading-provider.react';
 import { AutopilotChatMessageContent } from './chat-message-content.react';
 import { AutopilotChatFRE } from './first-run-experience/chat-fre.react';
 import { AutopilotChatLoading } from './loader/chat-loading.react';
+import { AutopilotChatLoadingMessages } from './loader/chat-loading-messages.react';
 
 const MessageContainer = styled('div')(() => ({
     display: 'flex',
@@ -50,13 +51,14 @@ const MessageGroup = React.memo(({ messages }: { messages: AutopilotChatMessage[
 });
 
 function AutopilotChatMessagesComponent() {
-    const messageContainerRef = React.useRef<HTMLDivElement>(null);
     const chatService = useChatService();
     const [ messages, setMessages ] = React.useState<AutopilotChatMessage[]>(
         removeFakeStream(chatService?.getConversation?.() ?? []),
     );
     const [ messageGroups, setMessageGroups ] = React.useState<AutopilotChatMessage[][]>([]);
-    const { setWaitingResponse } = useLoading();
+    const {
+        setWaitingResponse, isLoadingMoreMessages,
+    } = useLoading();
 
     // Update by patching if the message already exists or adding to the end of the array
     const updateMessages = React.useCallback((message: AutopilotChatMessage) => {
@@ -153,7 +155,10 @@ function AutopilotChatMessagesComponent() {
     }, [ messages ]);
 
     return (
-        <MessageContainer ref={messageContainerRef}>
+        <MessageContainer>
+            {isLoadingMoreMessages && (
+                <AutopilotChatLoadingMessages />
+            )}
             { messages.length === 0 && (
                 <AutopilotChatFRE />
             )}

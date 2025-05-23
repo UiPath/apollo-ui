@@ -28,14 +28,19 @@ interface AutopilotChatScrollProviderProps {
 
 export const AutopilotChatScrollProvider: React.FC<AutopilotChatScrollProviderProps> = ({ children }) => {
     const chatService = useChatService();
+    const { streaming } = useStreaming();
 
-    const [ overflowContainer, setOverflowContainer ] = React.useState<HTMLDivElement | null>(null);
     const contentRef = React.useRef<HTMLDivElement>(null);
     const previousHeightRef = React.useRef<number>(0);
     const isDraggingScrollBarRef = React.useRef(false);
     const useInstantScrollRef = React.useRef(true);
-    const { streaming } = useStreaming();
+    const isLoadingMoreMessagesRef = React.useRef(false);
+    const shouldShowLoadingMoreMessagesRef = React.useRef(true);
+    const prependingRef = React.useRef(false);
+    const scrollTopBeforePrependRef = React.useRef(0);
+    const scrollHeightBeforePrependRef = React.useRef(0);
 
+    const [ overflowContainer, setOverflowContainer ] = React.useState<HTMLDivElement | null>(null);
     const [ autoScroll, setAutoScroll ] = React.useState(true);
 
     const scrollToBottom = React.useCallback(({
@@ -59,11 +64,32 @@ export const AutopilotChatScrollProvider: React.FC<AutopilotChatScrollProviderPr
     }, [ autoScroll, overflowContainer ]);
 
     const handleResize = React.useCallback(() => {
-        if (!autoScroll || !contentRef.current || !overflowContainer) {
+        if (!contentRef.current || !overflowContainer) {
             return;
         }
 
         const newHeight = contentRef.current.scrollHeight;
+
+        // Handle prepending older messages: maintain scroll position
+        if (prependingRef.current) {
+            const heightDifference = newHeight - scrollHeightBeforePrependRef.current;
+            const newScrollTop = scrollTopBeforePrependRef.current + heightDifference;
+
+            overflowContainer.scrollTo({
+                top: newScrollTop,
+                behavior: 'instant',
+            });
+
+            prependingRef.current = false;
+            previousHeightRef.current = newHeight;
+            return;
+        }
+
+        // Handle normal case: auto-scroll to bottom if needed
+        if (!autoScroll) {
+            previousHeightRef.current = newHeight;
+            return;
+        }
 
         // if the chat is in auto-scroll mode, scroll to the bottom if the content is taller than the previous height
         if (newHeight > previousHeightRef.current && autoScroll) {
@@ -94,6 +120,22 @@ export const AutopilotChatScrollProvider: React.FC<AutopilotChatScrollProviderPr
             setAutoScroll(true);
         }
     }, [ setAutoScroll, overflowContainer ]);
+
+    const handleScroll = React.useCallback(() => {
+        if (!overflowContainer) {
+            return;
+        }
+
+        // Check if user is at the top of the container and is not already loading more messages
+        if (overflowContainer.scrollTop === 0 &&
+            !isLoadingMoreMessagesRef.current &&
+             shouldShowLoadingMoreMessagesRef.current &&
+             chatService?.getConfig()?.paginatedMessages
+        ) {
+            (chatService as any)._eventBus.publish(AutopilotChatEvent.ConversationLoadMore);
+            chatService.__internalService__.publish(AutopilotChatInternalEvent.SetIsLoadingMoreMessages, true);
+        }
+    }, [ overflowContainer, chatService, isLoadingMoreMessagesRef ]);
 
     const handleKeyDown = React.useCallback((event: KeyboardEvent) => {
         if (!overflowContainer) {
@@ -157,10 +199,11 @@ export const AutopilotChatScrollProvider: React.FC<AutopilotChatScrollProviderPr
         const resizeObserver = new ResizeObserver(handleResize);
         resizeObserver.observe(content);
 
-        overflowContainer.addEventListener('wheel', handleWheel);
         overflowContainer.addEventListener('mousedown', handleMouseDown);
         overflowContainer.addEventListener('mouseup', handleMouseUp);
         overflowContainer.addEventListener('keydown', handleKeyDown);
+        overflowContainer.addEventListener('wheel', handleWheel, { passive: true });
+        overflowContainer.addEventListener('scroll', handleScroll, { passive: true });
 
         const unsubscribeRequestIntercept = chatService.intercept(AutopilotChatInterceptableEvent.Request, () => {
             setAutoScroll(true);
@@ -184,10 +227,37 @@ export const AutopilotChatScrollProvider: React.FC<AutopilotChatScrollProviderPr
             useInstantScrollRef.current = true;
         });
 
-        const unsubscribeToggleAutoScroll = chatService.__internalService__
-            .on(AutopilotChatInternalEvent.ToggleAutoScroll, (autoScroll: boolean) => {
-                setAutoScroll(autoScroll);
-            });
+        const unsubscribeToggleAutoScroll = chatService.__internalService__.on(
+            AutopilotChatInternalEvent.ToggleAutoScroll,
+            (autoScrollValue: boolean) => {
+                setAutoScroll(autoScrollValue);
+            },
+        );
+
+        const unsubscribeSetIsLoadingMoreMessages = chatService.__internalService__.on(
+            AutopilotChatInternalEvent.SetIsLoadingMoreMessages,
+            (value: boolean) => {
+                isLoadingMoreMessagesRef.current = value;
+            },
+        );
+
+        const unsubscribeShouldShowLoadingMoreMessages = chatService.__internalService__.on(
+            AutopilotChatInternalEvent.ShouldShowLoadingMoreMessages,
+            (value: boolean) => {
+                shouldShowLoadingMoreMessagesRef.current = value;
+            },
+        );
+
+        const unsubscribePrependOlderMessages = chatService.__internalService__.on(
+            AutopilotChatInternalEvent.PrependOlderMessages,
+            () => {
+                if (overflowContainer && contentRef.current) {
+                    prependingRef.current = true;
+                    scrollTopBeforePrependRef.current = overflowContainer.scrollTop;
+                    scrollHeightBeforePrependRef.current = contentRef.current.scrollHeight;
+                }
+            },
+        );
 
         return () => {
             resizeObserver.disconnect();
@@ -195,6 +265,7 @@ export const AutopilotChatScrollProvider: React.FC<AutopilotChatScrollProviderPr
             overflowContainer.removeEventListener('mousedown', handleMouseDown);
             overflowContainer.removeEventListener('mouseup', handleMouseUp);
             overflowContainer.removeEventListener('keydown', handleKeyDown);
+            overflowContainer.removeEventListener('scroll', handleScroll);
 
             unsubscribeRequestIntercept();
             unsubscribeNewChat();
@@ -202,8 +273,11 @@ export const AutopilotChatScrollProvider: React.FC<AutopilotChatScrollProviderPr
             unsubscribeSetConversation();
             unsubscribeModeChange();
             unsubscribeToggleAutoScroll();
+            unsubscribeSetIsLoadingMoreMessages();
+            unsubscribeShouldShowLoadingMoreMessages();
+            unsubscribePrependOlderMessages();
         };
-    }, [ handleResize, handleWheel, handleKeyDown, handleMouseUp, handleMouseDown, chatService, overflowContainer ]);
+    }, [ handleResize, handleWheel, handleKeyDown, handleMouseUp, handleMouseDown, handleScroll, chatService, overflowContainer ]);
 
     const value = React.useMemo(() => ({
         autoScroll,
