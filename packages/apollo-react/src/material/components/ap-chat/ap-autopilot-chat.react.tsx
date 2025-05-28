@@ -64,6 +64,7 @@ const AutopilotChatContent = React.memo(() => {
     } = useChatWidth();
     const {
         historyOpen,
+        settingsOpen,
         disabledFeatures,
         chatMode,
     } = useChatState();
@@ -81,14 +82,18 @@ const AutopilotChatContent = React.memo(() => {
             {chatMode === AutopilotChatMode.FullScreen ? (
                 <FullScreenLayout
                     historyOpen={historyOpen}
+                    settingsOpen={settingsOpen}
                     historyDisabled={disabledFeatures.history ?? false}
+                    settingsDisabled={disabledFeatures.settings ?? false}
                     mode={chatMode}
                 />
             ) : (
                 <StandardLayout
-                    headerDisabled={disabledFeatures.header ?? false}
                     historyOpen={historyOpen}
+                    settingsOpen={settingsOpen}
                     historyDisabled={disabledFeatures.history ?? false}
+                    settingsDisabled={disabledFeatures.settings ?? false}
+                    headerDisabled={disabledFeatures.header ?? false}
                     mode={chatMode}
                 />
             )}

@@ -10,7 +10,7 @@ import token from '@uipath/apollo-core/lib';
 import {
     AutopilotChatEvent,
     AutopilotChatHistory as AutopilotChatHistoryType,
-    CHAT_HISTORY_WIDTH_FULL_SCREEN,
+    CHAT_DRAWER_WIDTH_FULL_SCREEN,
 } from '@uipath/portal-shell-util';
 import {
     differenceInDays,
@@ -52,7 +52,7 @@ const ChatHistoryContainer = styled('div')<{ isOpen: boolean; isFullScreen: bool
     }),
 
     ...(isFullScreen ? {
-        width: isOpen ? `calc(${CHAT_HISTORY_WIDTH_FULL_SCREEN}px + 2 * ${token.Spacing.SpacingBase})` : 0, // account for padding
+        width: isOpen ? `calc(${CHAT_DRAWER_WIDTH_FULL_SCREEN}px + 2 * ${token.Spacing.SpacingBase})` : 0, // account for padding
         borderTopLeftRadius: token.Spacing.SpacingXs,
     } : {
         position: 'absolute',

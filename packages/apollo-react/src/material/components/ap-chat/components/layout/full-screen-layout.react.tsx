@@ -7,7 +7,7 @@ import {
     AutopilotChatInternalEvent,
     AutopilotChatMode,
     CHAT_CONTAINER_ANIMATION_DURATION,
-    CHAT_HISTORY_WIDTH_FULL_SCREEN,
+    CHAT_DRAWER_WIDTH_FULL_SCREEN,
     CHAT_WIDTH_FULL_SCREEN_MAX_WIDTH,
 } from '@uipath/portal-shell-util';
 import React from 'react';
@@ -17,6 +17,7 @@ import { AutopilotChatHeader } from '../header/header.react';
 import { AutopilotChatHistory } from '../history/chat-history.react';
 import { AutopilotChatInput } from '../input/chat-input.react';
 import { ChatScrollContainer } from '../message/chat-scroll-container.react';
+import AutopilotChatSettings from '../settings/chat-settings.react';
 
 const ContentContainer = styled('div')(() => ({
     display: 'flex',
@@ -33,7 +34,7 @@ const MainContainer = styled('div')<{ historyOpen: boolean }>(({ historyOpen }: 
     flexDirection: 'column',
     height: '100%',
     maxHeight: '100%',
-    ...(historyOpen && { width: `calc(100% - ${CHAT_HISTORY_WIDTH_FULL_SCREEN}px - 2 * ${token.Spacing.SpacingBase})` }), // account for padding
+    ...(historyOpen && { width: `calc(100% - ${CHAT_DRAWER_WIDTH_FULL_SCREEN}px - 2 * ${token.Spacing.SpacingBase})` }), // account for padding
 }));
 
 const HeaderContainer = styled('div')(() => ({
@@ -54,13 +55,17 @@ const InputContainer = styled('div')(() => ({
 
 interface FullScreenLayoutProps {
     historyOpen: boolean;
+    settingsOpen: boolean;
     historyDisabled: boolean;
+    settingsDisabled: boolean;
     mode: AutopilotChatMode;
 }
 
 export const FullScreenLayout: React.FC<FullScreenLayoutProps> = ({
     historyOpen,
+    settingsOpen,
     historyDisabled,
+    settingsDisabled,
     mode,
 }) => {
     const chatInternalService = useChatService().__internalService__;
@@ -98,6 +103,10 @@ export const FullScreenLayout: React.FC<FullScreenLayoutProps> = ({
 
                 {!historyDisabled && (
                     <AutopilotChatHistory open={historyOpen} isFullScreen={true} />
+                )}
+
+                {!settingsDisabled && (
+                    <AutopilotChatSettings open={settingsOpen} isFullScreen={true}/>
                 )}
             </ContentContainer>
         </>

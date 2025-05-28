@@ -24,7 +24,7 @@ const StyledActions = styled('div')(() => ({
 function AutopilotChatHeaderActionsComponent() {
     const chatService = useChatService();
     const {
-        disabledFeatures, chatMode, historyOpen,
+        disabledFeatures, chatMode, historyOpen, settingsOpen,
     } = useChatState();
     const { clearAttachments } = useAttachments();
 
@@ -89,6 +89,20 @@ function AutopilotChatHeaderActionsComponent() {
             });
     }, [ chatService, historyOpen ]);
 
+    const toggleSettings = React.useCallback(() => {
+        if (!chatService) {
+            return;
+        }
+
+        chatService.getPreHook(AutopilotChatPreHookAction.ToggleSettings)({ settingsOpen })
+            .then((proceed) => {
+                if (!proceed) {
+                    return;
+                }
+                chatService?.toggleSettings();
+            });
+    }, [ chatService, settingsOpen ]);
+
     return (
         <StyledActions>
             {!disabledFeatures.newChat && (
@@ -97,6 +111,14 @@ function AutopilotChatHeaderActionsComponent() {
                     variant="custom"
                     tooltip={t('autopilot-chat-new-chat')}
                     onClick={handleNewChat}
+                />
+            )}
+
+            {!disabledFeatures.settings && (
+                <AutopilotChatActionButton
+                    iconName="settings"
+                    tooltip={t('autopilot-chat-settings')}
+                    onClick={toggleSettings}
                 />
             )}
 

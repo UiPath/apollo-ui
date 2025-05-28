@@ -17,6 +17,7 @@ import { useChatService } from './chat-service.provider.react';
 
 interface AutopilotChatStateContextType {
     historyOpen: boolean;
+    settingsOpen: boolean;
     chatMode: AutopilotChatMode;
     disabledFeatures: AutopilotChatDisabledFeatures;
     overrideLabels: AutopilotChatOverrideLabels;
@@ -44,6 +45,7 @@ export const AutopilotChatStateProvider: React.FC<AutopilotChatStateProviderProp
         },
     );
     const [ historyOpen, setHistoryOpen ] = React.useState(chatService?.historyOpen ?? false);
+    const [ settingsOpen, setSettingsOpen ] = React.useState(chatService?.settingsOpen ?? false);
     const [ chatMode, setChatMode ] = React.useState(chatService?.getConfig()?.mode ?? AutopilotChatMode.SideBySide);
     const [ disabledFeatures, setDisabledFeatures ] = React.useState(chatService?.getConfig()?.disabledFeatures ?? {});
     const [ overrideLabels, setOverrideLabels ] = React.useState(chatService?.getConfig()?.overrideLabels ?? {});
@@ -62,6 +64,13 @@ export const AutopilotChatStateProvider: React.FC<AutopilotChatStateProviderProp
             AutopilotChatInternalEvent.ToggleHistory,
             (isOpen) => {
                 setHistoryOpen(isOpen);
+            },
+        );
+
+        const unsubscribeSettingsToggle = chatInternalService.on(
+            AutopilotChatInternalEvent.ToggleSettings,
+            (isOpen) => {
+                setSettingsOpen(isOpen);
             },
         );
 
@@ -109,6 +118,7 @@ export const AutopilotChatStateProvider: React.FC<AutopilotChatStateProviderProp
 
         return () => {
             unsubscribeHistoryToggle();
+            unsubscribeSettingsToggle();
             unsubscribeModeChange();
             unsubscribeDisabledFeatures();
             unsubscribeOverrideLabels();
@@ -120,13 +130,14 @@ export const AutopilotChatStateProvider: React.FC<AutopilotChatStateProviderProp
 
     const value = React.useMemo(() => ({
         historyOpen,
+        settingsOpen,
         chatMode,
         disabledFeatures,
         overrideLabels,
         firstRunExperience,
         allowedAttachments,
         models,
-    }), [ historyOpen, chatMode, disabledFeatures, overrideLabels, firstRunExperience, allowedAttachments, models ]);
+    }), [ historyOpen, settingsOpen, chatMode, disabledFeatures, overrideLabels, firstRunExperience, allowedAttachments, models ]);
 
     return (
         <AutopilotChatStateContext.Provider value={value}>

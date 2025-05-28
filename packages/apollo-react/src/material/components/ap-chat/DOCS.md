@@ -23,6 +23,10 @@ The Autopilot Chat component is a full-featured chat interface that can be embed
   - Optional local storage using IndexedDB
   - API for custom history storage implementation
   - Conversation export/import capabilities
+- Settings panel with customizable content:
+  - Built-in settings drawer with the same UI pattern as history
+  - Custom settings renderer for injecting your own settings UI
+  - Settings feature disabled by default (must be explicitly enabled)
 
 ## Global Chat Service
 
@@ -83,12 +87,19 @@ const chatService = window.PortalShell.AutopilotChat;
 | `deleteConversation(conversationId: string)` | Deletes a conversation from the history |
 | `openConversation(conversationId: string \| null)` | Opens a specific conversation from the history |
 
+### Settings Management
+
+| Method | Description |
+|--------|-------------|
+| `toggleSettings(open?: boolean)` | Toggles the settings panel visibility. Note: Settings are disabled by default and must be enabled via `setDisabledFeatures({ settings: false })` |
+
 ### Properties
 
 | Property | Description |
 |----------|-------------|
 | `activeConversationId` | Returns the current active conversation ID that was set with `openConversation` method|
 | `historyOpen` | Returns the current history panel visibility state |
+| `settingsOpen` | Returns the current settings panel visibility state |
 
 ### Error Handling
 
@@ -103,7 +114,7 @@ const chatService = window.PortalShell.AutopilotChat;
 
 | Method | Description |
 |--------|-------------|
-| `setDisabledFeatures(features: AutopilotChatDisabledFeatures)` | Configures which features should be disabled in the chat interface (see [AutopilotChatDisabledFeatures](#autopilotchatdisabledfeatures)) |
+| `setDisabledFeatures(features: AutopilotChatDisabledFeatures)` | Configures which features should be disabled in the chat interface (see [AutopilotChatDisabledFeatures](#autopilotchatdisabledfeatures)). Note: Settings are disabled by default |
 
 ### Labels Override
 
@@ -171,6 +182,84 @@ The interceptor function receives the event data and can:
 - Return a Promise that resolves to true if the event is handled asynchronously
 
 Multiple interceptors can be added and will be called in parallel. If any interceptor returns `true`, the event is considered hijacked and the default handling will not occur (it will still emit, but with `hijacked: true` on the message).
+
+## Settings Panel
+
+The Autopilot Chat component includes a customizable settings panel that follows the same drawer-like UI pattern as the history panel. The settings feature is **disabled by default** and must be explicitly enabled.
+
+### Enabling Settings
+
+```typescript
+// Enable the settings feature
+chatService.setDisabledFeatures({
+  settings: false // Enable settings (disabled by default)
+});
+```
+
+### Configuring Custom Settings Content
+
+The settings panel uses a custom renderer function that you provide to display your settings UI:
+
+```typescript
+// Initialize with a custom settings renderer
+chatService.initialize({
+  mode: AutopilotChatMode.SideBySide,
+  settingsRenderer: (container) => {
+    // Create your custom settings UI
+    const settingsDiv = document.createElement('div');
+    settingsDiv.innerHTML = `
+      <div style="padding: 16px;">
+        <h3>Chat Settings</h3>
+        <label>
+          <input type="checkbox" id="darkMode"> Dark Mode
+        </label>
+        <br><br>
+        <label>
+          <input type="checkbox" id="notifications"> Enable Notifications
+        </label>
+        <br><br>
+        <button onclick="saveSettings()">Save Settings</button>
+      </div>
+    `;
+    
+    // Add event listeners for your settings
+    settingsDiv.querySelector('#darkMode').addEventListener('change', (e) => {
+      console.log('Dark mode:', e.target.checked);
+    });
+    
+    // Append to the container
+    container.appendChild(settingsDiv);
+  }
+});
+```
+
+### Toggling Settings Panel
+
+```typescript
+// Open the settings panel
+chatService.toggleSettings(true);
+
+// Close the settings panel
+chatService.toggleSettings(false);
+
+// Toggle the settings panel (open if closed, close if open)
+chatService.toggleSettings();
+
+// Check if settings panel is open
+const isSettingsOpen = chatService.settingsOpen;
+```
+
+### Settings and History Panel Interaction
+
+The settings and history panels are mutually exclusive - opening one will automatically close the other:
+
+```typescript
+// Opening settings will close history if it's open
+chatService.toggleSettings(true); // History panel closes automatically
+
+// Opening history will close settings if it's open
+chatService.toggleHistory(true); // Settings panel closes automatically
+```
 
 ## Interactive Features
 
@@ -445,6 +534,13 @@ chatService.setPreHook(AutopilotChatPreHookAction.ToggleHistory, async (data) =>
     return shouldBeAbleToProceed;
 });
 
+// Set the pre-hook for the toggle settings action
+chatService.setPreHook(AutopilotChatPreHookAction.ToggleSettings, async (data) => {
+    // Do any business logic to determine whether the user should be allowed to toggle the settings or not
+    const shouldBeAbleToProceed: boolean = getShouldAllowToggleSettings();
+    return shouldBeAbleToProceed;
+});
+
 // Get the pre-hook for the toggle history action
 chatService.getPreHook(AutopilotChatPreHookAction.ToggleHistory)({ historyOpen: isHistoryOpen })
     .then((proceed) => {
@@ -452,6 +548,15 @@ chatService.getPreHook(AutopilotChatPreHookAction.ToggleHistory)({ historyOpen: 
             return;
         }
         chatService?.toggleHistory();
+    });
+
+// Get the pre-hook for the toggle settings action
+chatService.getPreHook(AutopilotChatPreHookAction.ToggleSettings)({ settingsOpen: isSettingsOpen })
+    .then((proceed) => {
+        if (!proceed) {
+            return;
+        }
+        chatService?.toggleSettings();
     });
 ```
 
@@ -955,6 +1060,11 @@ chatService.setDisabledFeatures({
   history: true
 });
 
+// Disable settings panel (disabled by default)
+chatService.setDisabledFeatures({
+  settings: true
+});
+
 // Disable header
 chatService.setDisabledFeatures({
   header: true
@@ -990,6 +1100,7 @@ chatService.setDisabledFeatures({
   fullScreen: true,
   attachments: true,
   history: true,
+  settings: false, // Enable settings (disabled by default)
   header: true
 });
 
@@ -1060,6 +1171,7 @@ chatService.setOverrideLabels({
  * @property selectedModel - The selected model of the chat
  * @property preHooks - The hooks that trigger before the user action (UI interaction) of the chat.
  * @property paginatedMessages - Flag to determine if the chat conversation is paginated
+ * @property settingsRenderer - The renderer for the settings page. This will be used to render the settings page in the chat.
  * Hooks expose current data for the action **before** the state change is attempted.
  */
 export interface AutopilotChatConfiguration {
@@ -1079,6 +1191,7 @@ export interface AutopilotChatConfiguration {
     selectedModel?: AutopilotChatModelInfo;
     preHooks?: Partial<Record<AutopilotChatPreHookAction, (data?: any) => Promise<boolean>>>;
     paginatedMessages?: boolean;
+    settingsRenderer?: (container: HTMLElement) => void;
 }
 ```
 
@@ -1108,6 +1221,7 @@ enum AutopilotChatMode {
  * @property preview - Whether the chat has the preview badge
  * @property close - Whether the chat has the close button
  * @property newChat - Whether the chat has the new chat button
+ * @property settings - Whether the chat has the settings button (disabled by default)
  */
 interface AutopilotChatDisabledFeatures {
   attachments?: boolean;
@@ -1119,6 +1233,7 @@ interface AutopilotChatDisabledFeatures {
   preview?: boolean;
   close?: boolean;
   newChat?: boolean;
+  settings?: boolean;
 }
 ```
 ### AutopilotChatOverrideLabels
@@ -1350,12 +1465,14 @@ export interface AutopilotChatActionPayload {
  * @enum {string}
  * @property {string} NewChat - Emitted when the user attemps to start a new chat
  * @property {string} ToggleHistory - Emitted when the user attemps to toggle the history
+ * @property {string} ToggleSettings - Emitted when the user attemps to toggle the settings
  * @property {string} ToggleChat - Emitted when the user attemps to toggle the chat
  * @property {string} CloseChat - Emitted when the user attemps to close the chat
  */
 export enum AutopilotChatPreHookAction {
     NewChat = 'new-chat',
     ToggleHistory = 'toggle-history',
+    ToggleSettings = 'toggle-settings',
     ToggleChat = 'toggle-chat',
     CloseChat = 'close-chat',
 }
