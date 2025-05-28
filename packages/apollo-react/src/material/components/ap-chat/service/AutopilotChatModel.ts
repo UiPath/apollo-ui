@@ -178,8 +178,8 @@ export enum AutopilotChatInterceptableEvent {
  * @enum {string}
  * @property {string} ChatResize - Emitted when the chat is resized
  * @property {string} ScrollToBottom - Emitted when the chat is scrolled to the bottom
- * @property {string} OpenHistory - Emitted when the history is opened
- * @property {string} CloseHistory - Emitted when the history is closed
+ * @property {string} ToggleHistory - Emitted when the history is opened
+ * @property {string} ToggleSettings - Emitted when the settings is opened
  * @property {string} UseLocalHistory - Emitted when the chat uses local history
  * @property {string} SetAllowedAttachments - Emitted when the allowed attachments are set
  * @property {string} ToggleAutoScroll - Emitted when the auto scroll is toggled
@@ -191,6 +191,7 @@ export enum AutopilotChatInternalEvent {
     ChatResize = 'chatResize',
     ScrollToBottom = 'scrollToBottom',
     ToggleHistory = 'toggleHistory',
+    ToggleSettings = 'toggleSettings',
     UseLocalHistory = 'useLocalHistory',
     SetAllowedAttachments = 'setAllowedAttachments',
     ToggleAutoScroll = 'toggleAutoScroll',
@@ -242,6 +243,7 @@ export interface AutopilotChatSource {
  * @property preview - Whether the chat has the preview badge
  * @property close - Whether the chat has the close button
  * @property newChat - Whether the chat has the new chat button
+ * @property settings - Whether the chat has the settings button
  */
 export interface AutopilotChatDisabledFeatures {
     resize?: boolean;
@@ -253,6 +255,7 @@ export interface AutopilotChatDisabledFeatures {
     preview?: boolean;
     close?: boolean;
     newChat?: boolean;
+    settings?: boolean;
 }
 
 /**
@@ -275,12 +278,14 @@ export interface AutopilotChatOverrideLabels {
  * @enum {string}
  * @property {string} NewChat - Emitted when the user attemps to start a new chat
  * @property {string} ToggleHistory - Emitted when the user attemps to toggle the history
+ * @property {string} ToggleSettings - Emitted when the user attemps to toggle the settings
  * @property {string} ToggleChat - Emitted when the user attemps to toggle the chat
  * @property {string} CloseChat - Emitted when the user attemps to close the chat
  */
 export enum AutopilotChatPreHookAction {
     NewChat = 'new-chat',
     ToggleHistory = 'toggle-history',
+    ToggleSettings = 'toggle-settings',
     ToggleChat = 'toggle-chat',
     CloseChat = 'close-chat',
 }
@@ -298,8 +303,9 @@ export enum AutopilotChatPreHookAction {
  * @property models - The models of the chat
  * @property selectedModelId - The selected model ID of the chat
  * @property preHooks - The hooks that trigger before the user action (UI interaction) of the chat.
+ *                      Hooks expose current data for the action **before** the state change is attempted.
  * @property paginatedMessages - Flag to determine if the chat conversation is paginated
- * Hooks expose current data for the action **before** the state change is attempted.
+ * @property settingsRenderer - The renderer for the settings page. This will be used to render the settings page in the chat.
  */
 export interface AutopilotChatConfiguration {
     mode: AutopilotChatMode;
@@ -318,6 +324,7 @@ export interface AutopilotChatConfiguration {
     selectedModel?: AutopilotChatModelInfo;
     preHooks?: Partial<Record<AutopilotChatPreHookAction, (data?: any) => Promise<boolean>>>;
     paginatedMessages?: boolean;
+    settingsRenderer?: (container: HTMLElement) => void;
 }
 
 /**
