@@ -42,6 +42,10 @@ export class AutopilotChatService {
             maxSize: ACCEPTED_FILE_MAX_SIZE,
             maxCount: ACCEPTED_FILE_MAX_COUNT,
         },
+        // Settings will be disabled by default since each consumer needs to implement their own settings page
+        // Or the framework will provide a settings page that will be used by all framework consumers
+        disabledFeatures: { settings: true },
+        settingsRenderer: () => {},
         models: undefined,
         selectedModel: undefined,
         paginatedMessages: false,
@@ -55,6 +59,7 @@ export class AutopilotChatService {
     private _prompt: AutopilotChatPrompt | string | undefined;
     private _history: AutopilotChatHistory[] = [];
     private _historyOpen: boolean = false;
+    private _settingsOpen: boolean = false;
     private _activeConversationId: string | null = null;
     private _defaultLoadingMessages: string[] | null = null;
     private _loadingMessage: string | null = null;
@@ -96,6 +101,7 @@ export class AutopilotChatService {
         this.setHistory = this.setHistory.bind(this);
         this.getHistory = this.getHistory.bind(this);
         this.toggleHistory = this.toggleHistory.bind(this);
+        this.toggleSettings = this.toggleSettings.bind(this);
         this.deleteConversation = this.deleteConversation.bind(this);
         this.openConversation = this.openConversation.bind(this);
         this.setAllowedAttachments = this.setAllowedAttachments.bind(this);
@@ -676,6 +682,15 @@ export class AutopilotChatService {
     }
 
     /**
+     * Gets the settings open state from the chat service
+     *
+     * @returns The settings open state
+     */
+    get settingsOpen() {
+        return this._settingsOpen;
+    }
+
+    /**
      * Toggles the history in the chat service
      *
      * @param open - The open state to set (optional, defaults to toggle)
@@ -683,7 +698,30 @@ export class AutopilotChatService {
     toggleHistory(open?: boolean) {
         this._historyOpen = open ?? !this._historyOpen;
 
+        // close settings if history is open
+        if (this._historyOpen) {
+            this._settingsOpen = false;
+            this._internalService.publish(AutopilotChatInternalEvent.ToggleSettings, false);
+        }
+
         this._internalService.publish(AutopilotChatInternalEvent.ToggleHistory, this._historyOpen);
+    }
+
+    /**
+     * Toggles the settings in the chat service
+     *
+     * @param open - The open state to set (optional, defaults to toggle)
+     */
+    toggleSettings(open?: boolean) {
+        this._settingsOpen = open ?? !this._settingsOpen;
+
+        // close history if settings is open
+        if (this._settingsOpen) {
+            this._historyOpen = false;
+            this._internalService.publish(AutopilotChatInternalEvent.ToggleHistory, false);
+        }
+
+        this._internalService.publish(AutopilotChatInternalEvent.ToggleSettings, this._settingsOpen);
     }
 
     /**
