@@ -13,6 +13,8 @@ import type { ReactNode } from 'react';
 // eslint-disable-next-line unused-imports/no-unused-imports
 import React from 'react';
 
+import { Text } from './text.react';
+
 interface TableProps {
     children: ReactNode;
 }
@@ -41,7 +43,20 @@ export const Cell = React.memo(({ children }: TableProps) => {
 
     return (
         <TableCell sx={{ border: `1px solid ${theme.palette.semantic.colorBorder}` }}>
-            <ap-typography color={theme.palette.semantic.colorForeground}>{children}</ap-typography>
+            {/* Only return ap-typography on strings and not empty spaces */}
+            {React.Children.map(children, child => {
+                if (typeof child === 'string') {
+                    if (child.length > 1) {
+                        return Text({
+                            children: child?.trim()?.replace(/<br\s*\/?>/gi, '\n') ?? '',
+                            customStyle: { display: 'inline' },
+                        });
+                    }
+                    return null;
+                }
+
+                return child;
+            })}
         </TableCell>
     );
 });
