@@ -23,6 +23,7 @@ import {
     ACCEPTED_FILE_MAX_COUNT,
     ACCEPTED_FILE_MAX_SIZE,
     ACCEPTED_FILES,
+    CHAT_INSTANCE_DEFAULT_NAME,
     DEFAULT_MESSAGE_RENDERER,
     getChatModeKey,
 } from './ChatConstants';
@@ -66,8 +67,10 @@ export class AutopilotChatService {
     private _loadingMessageDuration: number | null = null;
     private _internalService: AutopilotChatInternalService;
     private _groupId?: string;
+    private _instanceName: string;
 
     private constructor(instanceName: string) {
+        this._instanceName = instanceName;
         this._eventBus = new EventBus();
 
         this._internalService = AutopilotChatInternalService.Instantiate();
@@ -116,7 +119,7 @@ export class AutopilotChatService {
     }
 
     static Instantiate({
-        instanceName = 'portal-shell',
+        instanceName = CHAT_INSTANCE_DEFAULT_NAME,
         config,
         messageRenderers = [],
     }: {
@@ -137,7 +140,7 @@ export class AutopilotChatService {
         return AutopilotChatService._instances[instanceName];
     }
 
-    static getInstance(instanceName: string = 'portal-shell') {
+    static getInstance(instanceName: string = CHAT_INSTANCE_DEFAULT_NAME) {
         return AutopilotChatService._instances[instanceName];
     }
 
@@ -318,7 +321,7 @@ export class AutopilotChatService {
      * Expands the chat window
      */
     setChatMode(mode: AutopilotChatMode) {
-        const key = getChatModeKey();
+        const key = getChatModeKey(this._instanceName);
         const storedMode = StorageService.Instance.get(key);
 
         if (storedMode && mode === AutopilotChatMode.Closed) {

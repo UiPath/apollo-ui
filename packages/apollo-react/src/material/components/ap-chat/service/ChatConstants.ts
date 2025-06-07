@@ -33,8 +33,10 @@ export const CHAT_INPUT_MAX_ROWS = 12;
 export const CHAT_WIDTH_KEY = 'width';
 export const CHAT_ACTIVE_CONVERSATION_ID_KEY = 'activeConversationId';
 export const CHAT_SCROLL_BOTTOM_BUFFER = 200;
+export const CHAT_INSTANCE_DEFAULT_NAME = 'portal-shell';
+export const CHAT_INSTANCE_DOCS_AI_NAME = 'portal-shell-docs-ai';
 
-export const getChatModeKey = () => {
+export const getChatModeKey = (instanceName = CHAT_INSTANCE_DEFAULT_NAME) => {
     const CHAT_MODE_KEY = 'mode';
     const pathParts = window.location.pathname.split('/');
     const serviceIndex = pathParts.findIndex(path => {
@@ -51,5 +53,5 @@ export const getChatModeKey = () => {
         return CHAT_MODE_KEY;
     }
 
-    return `${CHAT_MODE_KEY}-${pathParts.slice(serviceIndex).join('/')}`;
+    return `${CHAT_MODE_KEY}-${instanceName}-${pathParts.slice(serviceIndex).join('/')}`;
 };
