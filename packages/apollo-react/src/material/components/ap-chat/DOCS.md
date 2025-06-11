@@ -1316,12 +1316,14 @@ export interface AutopilotChatAllowedAttachments {
  *
  * @property id - Unique identifier for the model
  * @property name - The name of the model
+ * @property icon - The Mui icon of the model (optional)
  * @property description - The description of the model
  */
 export interface AutopilotChatModelInfo {
     id: string;
     name: string;
-    description?: string;
+    icon?: string;
+    description: string | null;
 }
 ```
 

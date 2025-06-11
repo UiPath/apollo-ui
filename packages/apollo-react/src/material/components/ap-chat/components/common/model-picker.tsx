@@ -46,6 +46,9 @@ export const ModelSelectionContainer = styled('div')(({ theme }) => ({
 export const ModelOption = styled('div')(({ theme }) => ({
     padding: `${token.Spacing.SpacingXs} ${token.Spacing.SpacingS}`,
     cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    gap: token.Spacing.SpacingMicro,
     '&:hover': { backgroundColor: theme.palette.semantic.colorBackgroundHover },
 }));
 
@@ -158,6 +161,7 @@ export const ModelPicker = React.memo(({
                             }
                         >
                             <ModelOption onClick={() => handleModelChange(model)}>
+                                {model.icon && <ap-icon name={model.icon} size="24px" />}
                                 <ap-typography>{model.name}</ap-typography>
                             </ModelOption>
                         </AutopilotChatTooltip>
