@@ -148,7 +148,7 @@ Subscribes to chat events and returns an unsubscribe function. The handler will 
 - `SetLoadingMessage`: When a loading message is set
 - `SetFirstRunExperience`: When the first run experience is set
 - `SetDisabledFeatures`: When disabled features are set
-- `SetOverrideLabels` = When override labels are set,
+- `SetOverrideLabels`: When override labels are set
 - `Open`: When the chat is opened
 - `Close`: When the chat is closed
 - `SendChunk`: When a chunk of streaming content is sent
@@ -158,7 +158,10 @@ Subscribes to chat events and returns an unsubscribe function. The handler will 
 - `OpenConversation`: Emitted when a conversation is opened (clicked on in the history list)
 - `Feedback`: Emitted when a feedback is sent (thumbs up or thumbs down)
 - `Copy`: Emitted when a message is copied
+- `SetModels`: Emitted when the models are set
+- `SetSelectedModel`: Emitted when the selected model is set
 - `ConversationLoadMore`: Emitted when the user scrolls to the top and more messages need to be loaded (see [Pagination and Loading More Messages](#pagination-and-loading-more-messages))
+- `Attachments`: Emitted when the attachments are set in the prompt
 
 #### Intercepting Events
 

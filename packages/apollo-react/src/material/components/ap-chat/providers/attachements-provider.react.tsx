@@ -42,7 +42,9 @@ export function AutopilotAttachmentsProvider({ children }: { children: React.Rea
 
     React.useEffect(() => {
         attachmentsRef.current = attachments;
-    }, [ attachments ]);
+
+        (chatService as any)._eventBus.publish(AutopilotChatEvent.Attachments, attachments);
+    }, [ attachments, chatService ]);
 
     const addAttachments = React.useCallback((newFiles: AutopilotChatFileInfo[]) => {
         const filesToAdd = [
@@ -66,7 +68,7 @@ export function AutopilotAttachmentsProvider({ children }: { children: React.Rea
         }
 
         setAttachments(filesToAdd);
-    }, [ allowedAttachments.maxCount, allowedAttachments.multiple, setError ]);
+    }, [ allowedAttachments.maxCount, allowedAttachments.multiple, setError, t ]);
 
     const removeAttachment = React.useCallback((name: string) => {
         setAttachments(current => current.filter(file => file.name !== name));
