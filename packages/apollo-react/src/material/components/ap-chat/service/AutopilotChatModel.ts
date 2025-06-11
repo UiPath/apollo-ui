@@ -26,8 +26,6 @@ export interface AutopilotChatFileInfo {
         binary: Uint8Array | null;
         base64: string | null;
     };
-    icon: string;
-    friendlyType: AutopilotChatFileType;
 }
 
 export interface AutopilotChatModelInfo {
