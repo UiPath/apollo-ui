@@ -10,6 +10,7 @@ import {
 import React from 'react';
 
 import { t } from '../../../../utils/localization/loc';
+import { fileToIcon } from '../../utils/file-to-icon';
 import { AutopilotChatActionButton } from './action-button.react';
 import { AutopilotChatTooltip } from './tooltip.react';
 
@@ -158,6 +159,13 @@ export const Attachment = React.memo(({
 
         return () => document.removeEventListener('mousemove', handleMouseMove);
     }, [ isFocused, onRemove ]);
+    const [ icon, friendlyType ] = React.useMemo(() => {
+        const {
+            icon: iconName, friendlyType: fileType,
+        } = fileToIcon(attachment.name);
+
+        return [ iconName, fileType ];
+    }, [ attachment ]);
 
     return (
         <StyledAttachment
@@ -170,8 +178,8 @@ export const Attachment = React.memo(({
             onBlur={() => setIsFocused(false)}
         >
             <AttachmentIcon
-                fileType={attachment.friendlyType}
-                dangerouslySetInnerHTML={{ __html: attachment.icon }}
+                fileType={friendlyType}
+                dangerouslySetInnerHTML={{ __html: icon }}
             />
 
             <AutopilotChatTooltip

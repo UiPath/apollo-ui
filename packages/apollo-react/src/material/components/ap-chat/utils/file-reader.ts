@@ -1,6 +1,5 @@
 import type { AutopilotChatFileInfo } from '@uipath/portal-shell-util';
 
-import { fileToIcon } from './file-to-icon';
 /**
  * Parses files and returns an array of file information with all content formats.
  *
@@ -42,10 +41,6 @@ export const parseFiles = async (files: File[] | null) => {
                 readAsBinary().catch(() => null),
                 readAsBase64().catch(() => null),
             ]).then(([ text, binary, base64 ]) => {
-                const {
-                    friendlyType, icon,
-                } = fileToIcon(file);
-
                 try {
                     const fileInfo: AutopilotChatFileInfo = {
                         name: file.name,
@@ -57,8 +52,6 @@ export const parseFiles = async (files: File[] | null) => {
                             binary,
                             base64,
                         },
-                        icon,
-                        friendlyType,
                     };
                     resolve(fileInfo);
                 } catch (err) {
