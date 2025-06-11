@@ -132,6 +132,7 @@ export interface AutopilotChatMessageRenderer {
  * @property {string} SetModels - Emitted when the models are set
  * @property {string} SetSelectedModel - Emitted when the selected model is set
  * @property {string} ConversationLoadMore - Emitted when the conversation load more is triggered
+ * @property {string} Attachments - Emitted when the attachments are set in the prompt
  */
 export enum AutopilotChatEvent {
     Error = 'error',
@@ -158,6 +159,7 @@ export enum AutopilotChatEvent {
     SetModels = 'setModels',
     SetSelectedModel = 'setSelectedModel',
     ConversationLoadMore = 'conversationLoadMore',
+    Attachments = 'attachments',
 }
 
 /**
