@@ -4,6 +4,7 @@ import {
     AutopilotChatEvent,
     AutopilotChatInterceptableEvent,
     AutopilotChatInternalEvent,
+    AutopilotChatMessage,
 } from '@uipath/portal-shell-util';
 import React from 'react';
 
@@ -51,8 +52,8 @@ export function AutopilotLoadingProvider({ children }: { children: React.ReactNo
             setWaitingResponse(true);
         });
 
-        const unsubscribeResponse = chatService.on(AutopilotChatEvent.Response, () => {
-            setWaitingResponse(false);
+        const unsubscribeResponse = chatService.on(AutopilotChatEvent.Response, (message: AutopilotChatMessage) => {
+            setWaitingResponse(!!message.shouldWaitForMoreMessages);
         });
 
         const unsubscribeStopResponse = chatService.on(AutopilotChatEvent.StopResponse, () => {

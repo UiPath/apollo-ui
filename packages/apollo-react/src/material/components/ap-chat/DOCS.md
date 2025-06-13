@@ -515,7 +515,8 @@ const unsubscribe = chatService.intercept(AutopilotChatInterceptableEvent.Reques
     // Send the AI response back to the chat
     chatService.sendResponse({
       content: response,
-      role: AutopilotChatRole.Assistant
+      role: AutopilotChatRole.Assistant,
+      shouldWaitForMoreMessages: true // Indicates that more messages are expected in this response group and prevents user input until explicitly stopped
     });
   });
 
@@ -1350,9 +1351,10 @@ export interface AutopilotChatModelInfo {
  * @property actions - Additional actions on top of DefaultAutopilotChatResponseAction (for responses)
  *           and DefaultAutopilotChatRequestAction (for requests)
  * @property feedback - Feedback for the message (thumbs up or thumbs down)
- * @property groupId - Optional group ID for grouping related messages together
+ * @property groupId - Optional group ID for the message (used to group messages together)
  * @property meta - Optional metadata for the message (additional information about the message)
- * @property toCopy - Optional string to override what content gets copied when using the copy action
+ * @property toCopy - Optional string to copy when the message is copied
+ * @property shouldWaitForMoreMessages - Optional flag to indicate if the chat service should wait for more messages
  */
 export interface AutopilotChatMessage {
     id: string;
@@ -1375,6 +1377,7 @@ export interface AutopilotChatMessage {
     groupId?: string;
     meta?: any;
     toCopy?: string;
+    shouldWaitForMoreMessages?: boolean;
 }
 ```
 
