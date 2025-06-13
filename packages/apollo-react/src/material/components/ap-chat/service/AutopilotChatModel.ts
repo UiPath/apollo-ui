@@ -71,6 +71,7 @@ export enum AutopilotChatRole {
  * @property groupId - Optional group ID for the message (used to group messages together)
  * @property meta - Optional metadata for the message (additional information about the message)
  * @property toCopy - Optional string to copy when the message is copied
+ * @property shouldWaitForMoreMessages - Optional flag to indicate if the chat service should wait for more messages
  */
 export interface AutopilotChatMessage {
     id: string;
@@ -93,6 +94,7 @@ export interface AutopilotChatMessage {
     groupId?: string;
     meta?: any;
     toCopy?: string;
+    shouldWaitForMoreMessages?: boolean;
 }
 
 export interface AutopilotChatPrompt extends Pick<AutopilotChatMessage, 'content' | 'attachments'> {}
