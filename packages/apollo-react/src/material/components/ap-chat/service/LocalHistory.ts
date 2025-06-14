@@ -376,6 +376,7 @@ export class LocalHistoryService {
                 LocalHistoryService.UNSUBSCRIBE_CALLBACKS.set('sendChunk', unsubscribeSendChunk);
                 LocalHistoryService.UNSUBSCRIBE_CALLBACKS.set('newChat', unsubscribeNewChat);
             } else {
+                cleanup();
                 chatService.setHistory([]);
             }
         };
