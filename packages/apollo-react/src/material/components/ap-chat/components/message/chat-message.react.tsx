@@ -14,6 +14,7 @@ import React from 'react';
 
 import { useChatService } from '../../providers/chat-service.provider.react';
 import { useLoading } from '../../providers/loading-provider.react';
+import { SkeletonLoader } from '../common/skeleton-loader.react';
 import { AutopilotChatMessageContent } from './chat-message-content.react';
 import { AutopilotChatFRE } from './first-run-experience/chat-fre.react';
 import { AutopilotChatLoading } from './loader/chat-loading.react';
@@ -52,6 +53,7 @@ const MessageGroup = React.memo(({ messages }: { messages: AutopilotChatMessage[
 
 function AutopilotChatMessagesComponent() {
     const chatService = useChatService();
+    const [ showSkeletonLoader, setShowSkeletonLoader ] = React.useState<boolean>(false);
     const [ messages, setMessages ] = React.useState<AutopilotChatMessage[]>(
         removeFakeStream(chatService?.getConversation?.() ?? []),
     );
@@ -121,9 +123,13 @@ function AutopilotChatMessagesComponent() {
         const unsubscribeNewChat = chatService.on(AutopilotChatEvent.NewChat, () => setMessages([]));
         const unsubscribeFeedback = chatService.on(AutopilotChatEvent.Feedback, sendFeedback);
         const unsubscribeCopy = chatService.on(AutopilotChatEvent.Copy, onCopy);
+        const unsubscribeOpenConversation = chatService.on(AutopilotChatEvent.OpenConversation, () => {
+            setShowSkeletonLoader(true);
+        });
         // set messages to the new conversation
         const unsubscribeConversation = chatService.on(AutopilotChatEvent.SetConversation, (msg) => {
             setMessages(removeFakeStream(msg));
+            setShowSkeletonLoader(false);
         });
 
         return () => {
@@ -133,6 +139,7 @@ function AutopilotChatMessagesComponent() {
             unsubscribeNewChat();
             unsubscribeFeedback();
             unsubscribeCopy();
+            unsubscribeOpenConversation();
         };
     }, [ chatService, updateMessages, setWaitingResponse, sendFeedback, onCopy ]);
 
@@ -156,17 +163,23 @@ function AutopilotChatMessagesComponent() {
 
     return (
         <MessageContainer>
-            {isLoadingMoreMessages && (
-                <AutopilotChatLoadingMessages />
-            )}
-            { messages.length === 0 && (
-                <AutopilotChatFRE />
-            )}
-            {messageGroups.map((group) => (
-                <MessageGroup key={group[0].id} messages={group} />
-            ))}
+            {showSkeletonLoader ? (
+                <SkeletonLoader />
+            ) :
+                <>
+                    {isLoadingMoreMessages && (
+                        <AutopilotChatLoadingMessages />
+                    )}
+                    { messages.length === 0 && (
+                        <AutopilotChatFRE />
+                    )}
+                    {messageGroups.map((group) => (
+                        <MessageGroup key={group[0].id} messages={group} />
+                    ))}
 
-            <AutopilotChatLoading />
+                    <AutopilotChatLoading />
+                </>
+            }
         </MessageContainer>
     );
 }
