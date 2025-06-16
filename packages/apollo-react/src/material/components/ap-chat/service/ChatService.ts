@@ -416,6 +416,13 @@ export class AutopilotChatService {
      * @param done - Whether the messages are the last set of messages
      */
     prependOlderMessages(messages: AutopilotChatMessage[] = [], done?: boolean) {
+        if (done) {
+            // wait for the next frame to ensure the conversation is updated
+            requestAnimationFrame(() => {
+                this.__internalService__.publish(AutopilotChatInternalEvent.ShouldShowLoadingMoreMessages, false);
+            });
+        }
+
         if (messages.length === 0) {
             return;
         }
@@ -424,10 +431,6 @@ export class AutopilotChatService {
         this.__internalService__.publish(AutopilotChatInternalEvent.PrependOlderMessages);
 
         this.setConversation([ ...messages, ...this._conversation ]);
-
-        if (done) {
-            this.__internalService__.publish(AutopilotChatInternalEvent.ShouldShowLoadingMoreMessages, false);
-        }
     }
 
     /**
