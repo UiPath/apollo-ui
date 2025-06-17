@@ -404,6 +404,7 @@ export class AutopilotChatService {
     setConversation(messages: AutopilotChatMessage[]) {
         this._conversation = messages;
 
+        this._internalService.publish(AutopilotChatInternalEvent.ShowLoadingState, false);
         this._internalService.publish(AutopilotChatInternalEvent.SetIsLoadingMoreMessages, false);
         this._eventBus.publish(AutopilotChatEvent.SetConversation, messages);
     }
@@ -419,7 +420,7 @@ export class AutopilotChatService {
         if (done) {
             // wait for the next frame to ensure the conversation is updated
             requestAnimationFrame(() => {
-                this.__internalService__.publish(AutopilotChatInternalEvent.ShouldShowLoadingMoreMessages, false);
+                this._internalService.publish(AutopilotChatInternalEvent.ShouldShowLoadingMoreMessages, false);
             });
         }
 
@@ -428,7 +429,7 @@ export class AutopilotChatService {
         }
 
         // Emit internal event to signal that messages are being prepended in order to maintain scroll position
-        this.__internalService__.publish(AutopilotChatInternalEvent.PrependOlderMessages);
+        this._internalService.publish(AutopilotChatInternalEvent.PrependOlderMessages);
 
         this.setConversation([ ...messages, ...this._conversation ]);
     }
@@ -749,10 +750,11 @@ export class AutopilotChatService {
      *
      * @param conversationId - The conversation ID to open
      */
-    openConversation(conversationId: string | null) {
+    openConversation(conversationId: string | null, showLoadingState = true) {
         this._activeConversationId = conversationId;
         this._eventBus.publish(AutopilotChatEvent.OpenConversation, conversationId);
-        this.__internalService__.publish(AutopilotChatInternalEvent.ShouldShowLoadingMoreMessages, true);
+        this._internalService.publish(AutopilotChatInternalEvent.ShowLoadingState, showLoadingState);
+        this._internalService.publish(AutopilotChatInternalEvent.ShouldShowLoadingMoreMessages, true);
     }
 
     /**
