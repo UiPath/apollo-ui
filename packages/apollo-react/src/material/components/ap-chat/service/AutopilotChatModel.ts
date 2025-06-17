@@ -197,6 +197,7 @@ export enum AutopilotChatInterceptableEvent {
  * @property {string} SetIsLoadingMoreMessages - Emitted when the is loading more messages is set
  * @property {string} ShouldShowLoadingMoreMessages - Emitted when loading more messages should be shown
  * @property {string} PrependOlderMessages - Emitted when older messages are prepended to the conversation
+ * @property {string} ShowLoadingState - Emitted when the loading state should be shown
  */
 export enum AutopilotChatInternalEvent {
     ChatResize = 'chatResize',
@@ -209,6 +210,7 @@ export enum AutopilotChatInternalEvent {
     SetIsLoadingMoreMessages = 'setIsLoadingMoreMessages',
     ShouldShowLoadingMoreMessages = 'shouldShowLoadingMoreMessages',
     PrependOlderMessages = 'prependOlderMessages',
+    ShowLoadingState = 'showLoadingState',
 }
 
 export type AutopilotChatEventHandler<T = any> = (data?: T) => void;
