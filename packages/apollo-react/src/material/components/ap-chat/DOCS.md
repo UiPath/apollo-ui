@@ -85,7 +85,7 @@ const chatService = window.PortalShell.AutopilotChat;
 | `getHistory()` | Returns the current chat history |
 | `toggleHistory(open?: boolean)` | Toggles the history panel visibility |
 | `deleteConversation(conversationId: string)` | Deletes a conversation from the history |
-| `openConversation(conversationId: string \| null)` | Opens a specific conversation from the history |
+| `openConversation(conversationId: string \| null, showLoadingState: boolean)` | Opens a specific conversation from the history, second parameter indicates if the chat should show loading spinner for conversation (defaults to true) |
 
 ### Settings Management
 
@@ -918,6 +918,7 @@ chatService.on(AutopilotChatEvent.NewChat, () => {
 // Open a specific conversation from history by ID
 // The chat component automatically calls this method when a user selects a conversation from the history panel
 chatService.openConversation("conversation-1");
+// To disable the loading spinner when opening a conversation, pass false as the second parameter: chatService.openConversation("conversation-1", false)
 
 // Listen for conversation opening events
 chatService.on(AutopilotChatEvent.OpenConversation, (conversationId) => {

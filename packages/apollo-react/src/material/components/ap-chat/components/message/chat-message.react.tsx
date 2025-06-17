@@ -7,6 +7,7 @@ import {
     AutopilotChatActionPayload,
     AutopilotChatEvent,
     AutopilotChatInterceptableEvent,
+    AutopilotChatInternalEvent,
     AutopilotChatMessage,
     AutopilotChatRole,
 } from '@uipath/portal-shell-util';
@@ -123,14 +124,14 @@ function AutopilotChatMessagesComponent() {
         const unsubscribeNewChat = chatService.on(AutopilotChatEvent.NewChat, () => setMessages([]));
         const unsubscribeFeedback = chatService.on(AutopilotChatEvent.Feedback, sendFeedback);
         const unsubscribeCopy = chatService.on(AutopilotChatEvent.Copy, onCopy);
-        const unsubscribeOpenConversation = chatService.on(AutopilotChatEvent.OpenConversation, () => {
-            setShowSkeletonLoader(true);
-        });
         // set messages to the new conversation
         const unsubscribeConversation = chatService.on(AutopilotChatEvent.SetConversation, (msg) => {
             setMessages(removeFakeStream(msg));
-            setShowSkeletonLoader(false);
         });
+        const unsubscribeShowLoadingState = chatService.__internalService__
+            .on(AutopilotChatInternalEvent.ShowLoadingState, (showLoadingState: boolean) => {
+                setShowSkeletonLoader(showLoadingState);
+            });
 
         return () => {
             unsubscribeRequest();
@@ -139,7 +140,7 @@ function AutopilotChatMessagesComponent() {
             unsubscribeNewChat();
             unsubscribeFeedback();
             unsubscribeCopy();
-            unsubscribeOpenConversation();
+            unsubscribeShowLoadingState();
         };
     }, [ chatService, updateMessages, setWaitingResponse, sendFeedback, onCopy ]);
 
