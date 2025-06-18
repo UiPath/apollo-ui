@@ -15,7 +15,7 @@ import { useError } from './error-provider.react';
 interface AutopilotAttachmentsContextType {
     attachments: AutopilotChatFileInfo[];
     addAttachments: (files: AutopilotChatFileInfo[]) => void;
-    removeAttachment: (name: string) => void;
+    removeAttachment: (name: string, index: number) => void;
     clearAttachments: () => void;
 }
 
@@ -70,8 +70,8 @@ export function AutopilotAttachmentsProvider({ children }: { children: React.Rea
         setAttachments(filesToAdd);
     }, [ allowedAttachments.maxCount, allowedAttachments.multiple, setError, t ]);
 
-    const removeAttachment = React.useCallback((name: string) => {
-        setAttachments(current => current.filter(file => file.name !== name));
+    const removeAttachment = React.useCallback((name: string, index: number) => {
+        setAttachments(current => current.filter((file, i) => i !== index || file.name !== name));
     }, []);
 
     const clearAttachments = React.useCallback(() => {

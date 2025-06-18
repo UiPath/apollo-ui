@@ -137,10 +137,9 @@ function AutopilotChatInputComponent() {
             return;
         }
 
-        event.preventDefault();
-
         const allowedAttachments = Object.keys(chatService?.getConfig()?.allowedAttachments?.types ?? {});
         const attachmentsToAdd: File[] = [];
+        let foundAllowedAttachment = false;
 
         for (let i = 0; i < items.length; i++) {
             if (allowedAttachments.includes(items[i].type)) {
@@ -148,8 +147,13 @@ function AutopilotChatInputComponent() {
 
                 if (blob) {
                     attachmentsToAdd.push(blob);
+                    foundAllowedAttachment = true;
                 }
             }
+        }
+
+        if (foundAllowedAttachment) {
+            event.preventDefault();
         }
 
         const parsedFiles = await parseFiles(attachmentsToAdd);

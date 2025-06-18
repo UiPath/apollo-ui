@@ -223,7 +223,7 @@ export const Attachment = React.memo(({
 
 interface AttachmentsProps {
     attachments: AutopilotChatFileInfo[];
-    onRemove?: (name: string) => void;
+    onRemove?: (name: string, index: number) => void;
     removeSpacing?: boolean;
     disableOverflow?: boolean;
 }
@@ -259,7 +259,7 @@ export const Attachments = React.memo(({
         if (onRemove) {
             // Set focus to the current index (will be adjusted in useEffect after array length changes)
             setFocusedAttachmentIndex(index);
-            onRemove(name);
+            onRemove(name, index);
         }
     }, [ onRemove ]);
 
