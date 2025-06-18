@@ -21,6 +21,7 @@ import { useChatService } from '../../providers/chat-service.provider.react';
 import { useChatState } from '../../providers/chat-state-provider.react';
 import { useLoading } from '../../providers/loading-provider.react';
 import { useStreaming } from '../../providers/streaming-provider.react';
+import { parseFiles } from '../../utils/file-reader';
 import { AutopilotChatInputActions } from './chat-input-actions.react';
 import { AutopilotChatInputAttachments } from './chat-input-attachments.react';
 import { AutopilotChatInputError } from './chat-input-error.react';
@@ -68,7 +69,7 @@ function AutopilotChatInputComponent() {
     const { waitingResponse } = useLoading();
     const { streaming } = useStreaming();
     const {
-        attachments, clearAttachments,
+        attachments, clearAttachments, addAttachments,
     } = useAttachments();
 
     React.useEffect(() => {
@@ -124,6 +125,50 @@ function AutopilotChatInputComponent() {
             handleSubmit();
         }
     }, [ message, handleSubmit, waitingResponse, streaming ]);
+
+    const handlePaste = React.useCallback(async (event: ClipboardEvent) => {
+        if (disabledFeatures?.attachments) {
+            return;
+        }
+
+        const items = event.clipboardData?.items;
+
+        if (!items) {
+            return;
+        }
+
+        event.preventDefault();
+
+        const allowedAttachments = Object.keys(chatService?.getConfig()?.allowedAttachments?.types ?? {});
+        const attachmentsToAdd: File[] = [];
+
+        for (let i = 0; i < items.length; i++) {
+            if (allowedAttachments.includes(items[i].type)) {
+                const blob = items[i].getAsFile();
+
+                if (blob) {
+                    attachmentsToAdd.push(blob);
+                }
+            }
+        }
+
+        const parsedFiles = await parseFiles(attachmentsToAdd);
+
+        addAttachments(parsedFiles);
+    }, [ chatService, addAttachments, disabledFeatures?.attachments ]);
+
+    React.useEffect(() => {
+        if (!inputRef.current) {
+            return;
+        }
+
+        const textareaElement = inputRef.current;
+        textareaElement.addEventListener('paste', handlePaste);
+
+        return () => {
+            textareaElement.removeEventListener('paste', handlePaste);
+        };
+    }, [ handlePaste ]);
 
     return (
         <>
