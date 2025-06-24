@@ -11,6 +11,7 @@ import type {
     AutopilotChatOverrideLabels,
     AutopilotChatPreHookAction,
     AutopilotChatPrompt,
+    AutopilotChatSuggestion,
 } from '../types/AutopilotChatModel';
 import {
     AutopilotChatEvent,
@@ -116,6 +117,7 @@ export class AutopilotChatService {
         this.setPreHook = this.setPreHook.bind(this);
         this.getPreHook = this.getPreHook.bind(this);
         this.prependOlderMessages = this.prependOlderMessages.bind(this);
+        this.setSuggestions = this.setSuggestions.bind(this);
     }
 
     static Instantiate({
@@ -397,6 +399,15 @@ export class AutopilotChatService {
     }
 
     /**
+     * Sets the suggestions in the chat service
+     *
+     * @param suggestions - The suggestions to set
+     */
+    setSuggestions(suggestions: AutopilotChatSuggestion[]) {
+        this._internalService.publish(AutopilotChatInternalEvent.SetSuggestions, suggestions);
+    }
+
+    /**
      * Sets a conversation in the chat service
      *
      * @param messages - The messages to set
@@ -463,6 +474,7 @@ export class AutopilotChatService {
         };
 
         this.setPrompt('');
+        this.setSuggestions([]);
         this._conversation.push(userMessage);
         this._eventBus.publish(AutopilotChatEvent.Request, userMessage);
     }
