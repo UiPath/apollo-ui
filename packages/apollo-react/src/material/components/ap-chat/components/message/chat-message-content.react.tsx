@@ -24,7 +24,6 @@ import { AutopilotChatMessageActions } from './actions/chat-actions.react';
 import { AutopilotChatDisclaimers } from './disclaimers/chat-disclaimers.react';
 import { AutopilotChatMarkdownRenderer } from './markdown/markdown.react';
 import { AutopilotChatSources } from './sources/chat-sources.react';
-import { AutopilotChatSuggestions } from './suggestions/chat-suggestions.react';
 
 const APOLLO_MESSAGE_RENDERERS = [ {
     name: DEFAULT_MESSAGE_RENDERER,
@@ -155,13 +154,6 @@ function AutopilotChatMessageContentComponent({
                 {ApolloMessageRenderer ? <ApolloMessageRenderer message={message} /> : <AutopilotChatMarkdownRenderer message={message} />}
                 {message.disclaimers && message.disclaimers.length > 0 && (
                     <AutopilotChatDisclaimers disclaimers={message.disclaimers} />
-                )}
-                {message.suggestions && message.suggestions.length > 0 && (
-                    <AutopilotChatSuggestions
-                        suggestions={message.suggestions}
-                        sendOnClick={true}
-                        includeTitle={true}
-                    />
                 )}
                 {message.sources && message.sources.length > 0 && (
                     <AutopilotChatSources sources={message.sources} />

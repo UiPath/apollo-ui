@@ -10,16 +10,19 @@ import {
     AutopilotChatInternalEvent,
     AutopilotChatMessage,
     AutopilotChatRole,
+    AutopilotChatSuggestion,
 } from '@uipath/portal-shell-util';
 import React from 'react';
 
 import { useChatService } from '../../providers/chat-service.provider.react';
+import { useChatState } from '../../providers/chat-state-provider.react';
 import { useLoading } from '../../providers/loading-provider.react';
 import { SkeletonLoader } from '../common/skeleton-loader.react';
 import { AutopilotChatMessageContent } from './chat-message-content.react';
 import { AutopilotChatFRE } from './first-run-experience/chat-fre.react';
 import { AutopilotChatLoading } from './loader/chat-loading.react';
 import { AutopilotChatLoadingMessages } from './loader/chat-loading-messages.react';
+import { AutopilotChatSuggestions } from './suggestions/chat-suggestions.react';
 
 const MessageContainer = styled('div')(() => ({
     display: 'flex',
@@ -62,6 +65,10 @@ function AutopilotChatMessagesComponent() {
     const {
         setWaitingResponse, isLoadingMoreMessages,
     } = useLoading();
+
+    const { firstRunExperience } = useChatState();
+
+    const [ suggestions, setSuggestions ] = React.useState<AutopilotChatSuggestion[]>([]);
 
     // Update by patching if the message already exists or adding to the end of the array
     const updateMessages = React.useCallback((message: AutopilotChatMessage) => {
@@ -132,6 +139,10 @@ function AutopilotChatMessagesComponent() {
             .on(AutopilotChatInternalEvent.ShowLoadingState, (showLoadingState: boolean) => {
                 setShowSkeletonLoader(showLoadingState);
             });
+        const unsubscribeSetSuggestions = chatService.__internalService__
+            .on(AutopilotChatInternalEvent.SetSuggestions, (suggestionsToSet: AutopilotChatSuggestion[]) => {
+                setSuggestions(suggestionsToSet);
+            });
 
         return () => {
             unsubscribeRequest();
@@ -141,6 +152,7 @@ function AutopilotChatMessagesComponent() {
             unsubscribeFeedback();
             unsubscribeCopy();
             unsubscribeShowLoadingState();
+            unsubscribeSetSuggestions();
         };
     }, [ chatService, updateMessages, setWaitingResponse, sendFeedback, onCopy ]);
 
@@ -177,6 +189,13 @@ function AutopilotChatMessagesComponent() {
                     {messageGroups.map((group) => (
                         <MessageGroup key={group[0].id} messages={group} />
                     ))}
+                    { messages.length > 0 && suggestions.length > 0 && (
+                        <AutopilotChatSuggestions
+                            suggestions={suggestions}
+                            sendOnClick={firstRunExperience?.sendOnClick ?? false}
+                            includeTitle={true}
+                        />
+                    )}
 
                     <AutopilotChatLoading />
                 </>

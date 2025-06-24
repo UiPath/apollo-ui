@@ -635,31 +635,6 @@ chatService.sendResponse({
   widget: "custom-text-renderer" // Reference to our custom renderer
 });
 ```
-### Docs AI Message
-
-```typescript
-// Example of sending a response with docs AI content
-chatService.sendResponse({
-  id: "msg-123",
-  content: `The documents provided do not specifically list common issues encountered during the installation of Orchestrator.`,
-  suggestions: [
-    {
-      label: 'What are the troubleshooting steps for Orchestrator pod issues?',
-      prompt: 'What are the troubleshooting steps for Orchestrator pod issues?',
-    },
-  ],
-  sources: [
-    {
-      title: "Automation Suite - Orchestrator troubleshooting",
-      url: "https://docs.uipath.com/automation-suite/automation-suite/2024.10/installation-guide/orchestrator-troubleshooting"
-    },
-  ],
-  disclaimers: [
-    "Installation and administration instructions, if incorrectly implemented, can result in system disruptions or data loss.",
-  ],
-});
-```
-
 ## Streaming Capabilities
 
 The Autopilot Chat component provides streaming capabilities for response display. When using the default markdown renderer, you can leverage two different streaming approaches:
