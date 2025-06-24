@@ -58,7 +58,6 @@ export enum AutopilotChatRole {
  *                  AutopilotChatRole.User for sendRequest and AutopilotChatRole.Assistant for sendResponse.
  * @property widget - The renderer to use for displaying this message.
  * @property attachments - Optional files attached to the message.
- * @property suggestions - Optional list of suggestions to the message.
  * @property sources - Optional list of sources to the message.
  * @property disclaimers - Optional list of disclaimers to the message.
  * @property hijacked - Flag set by the chat service when an event is intercepted and the interceptor returns true
@@ -80,7 +79,6 @@ export interface AutopilotChatMessage {
     role: AutopilotChatRole;
     widget: string;
     attachments?: AutopilotChatFileInfo[];
-    suggestions?: AutopilotChatSuggestion[];
     sources?: AutopilotChatSource[];
     disclaimers?: string[];
     hijacked?: boolean;
@@ -198,6 +196,7 @@ export enum AutopilotChatInterceptableEvent {
  * @property {string} ShouldShowLoadingMoreMessages - Emitted when loading more messages should be shown
  * @property {string} PrependOlderMessages - Emitted when older messages are prepended to the conversation
  * @property {string} ShowLoadingState - Emitted when the loading state should be shown
+ * @property {string} SetSuggestions - Emitted when the suggestions are set
  */
 export enum AutopilotChatInternalEvent {
     ChatResize = 'chatResize',
@@ -211,6 +210,7 @@ export enum AutopilotChatInternalEvent {
     ShouldShowLoadingMoreMessages = 'shouldShowLoadingMoreMessages',
     PrependOlderMessages = 'prependOlderMessages',
     ShowLoadingState = 'showLoadingState',
+    SetSuggestions = 'setSuggestions',
 }
 
 export type AutopilotChatEventHandler<T = any> = (data?: T) => void;
