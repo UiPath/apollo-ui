@@ -12,11 +12,23 @@ import React from 'react';
 import { t } from '../../../../../utils/localization/loc';
 import { useChatService } from '../../../providers/chat-service.provider.react';
 
-const SuggestionList = styled('div')(() => ({
+const SuggestionList = styled('div')(({ disableAnimation }: { disableAnimation?: boolean }) => ({
     marginTop: token.Spacing.SpacingXl,
     display: 'flex',
     flexDirection: 'column',
     gap: token.Spacing.SpacingXs,
+    animation: disableAnimation ? 'none' : 'popUpFromBottom 0.3s ease-out',
+
+    '@keyframes popUpFromBottom': {
+        '0%': {
+            opacity: 0,
+            transform: 'translateY(20px)',
+        },
+        '100%': {
+            opacity: 1,
+            transform: 'translateY(0)',
+        },
+    },
 }));
 
 const Suggestion = styled('div')(({ theme }) => ({
@@ -31,18 +43,26 @@ const Suggestion = styled('div')(({ theme }) => ({
     cursor: 'pointer',
 
     '&:hover': {
-        backgroundColor: theme.palette.semantic.colorHover,
+        backgroundColor: theme.palette.semantic.colorBackgroundSecondary,
         borderColor: theme.palette.semantic.colorBorder,
     },
 }));
 
 const Title = styled('div')(() => ({ marginBottom: token.Spacing.SpacingMicro }));
 
+interface AutopilotChatSuggestionsProps {
+    suggestions: AutopilotChatSuggestion[];
+    sendOnClick?: boolean;
+    includeTitle?: boolean;
+    disableAnimation?: boolean;
+}
+
 function AutopilotChatSuggestionsComponent({
     includeTitle,
     sendOnClick,
     suggestions,
-}: { suggestions: AutopilotChatSuggestion[]; sendOnClick?: boolean; includeTitle?: boolean }) {
+    disableAnimation,
+}: AutopilotChatSuggestionsProps) {
     const theme = useTheme();
     const chatService = useChatService();
 
@@ -69,7 +89,7 @@ function AutopilotChatSuggestionsComponent({
     }, [ handleSuggestionClick ]);
 
     return (
-        <SuggestionList>
+        <SuggestionList disableAnimation={disableAnimation}>
             {includeTitle && (
                 <Title>
                     <ap-typography

@@ -69,6 +69,7 @@ function AutopilotChatMessagesComponent() {
     const { firstRunExperience } = useChatState();
 
     const [ suggestions, setSuggestions ] = React.useState<AutopilotChatSuggestion[]>([]);
+    const [ sendOnClick, setSendOnClick ] = React.useState<boolean>(false);
 
     // Update by patching if the message already exists or adding to the end of the array
     const updateMessages = React.useCallback((message: AutopilotChatMessage) => {
@@ -140,8 +141,15 @@ function AutopilotChatMessagesComponent() {
                 setShowSkeletonLoader(showLoadingState);
             });
         const unsubscribeSetSuggestions = chatService.__internalService__
-            .on(AutopilotChatInternalEvent.SetSuggestions, (suggestionsToSet: AutopilotChatSuggestion[]) => {
+            .on(AutopilotChatInternalEvent.SetSuggestions, ({
+                suggestions: suggestionsToSet,
+                sendOnClick: sendOnClickToSet,
+            }: {
+                suggestions: AutopilotChatSuggestion[];
+                sendOnClick: boolean;
+            }) => {
                 setSuggestions(suggestionsToSet);
+                setSendOnClick(sendOnClickToSet);
             });
 
         return () => {
@@ -192,7 +200,7 @@ function AutopilotChatMessagesComponent() {
                     { messages.length > 0 && suggestions.length > 0 && (
                         <AutopilotChatSuggestions
                             suggestions={suggestions}
-                            sendOnClick={firstRunExperience?.sendOnClick ?? false}
+                            sendOnClick={sendOnClick ?? firstRunExperience?.sendOnClick ?? false}
                             includeTitle={true}
                         />
                     )}

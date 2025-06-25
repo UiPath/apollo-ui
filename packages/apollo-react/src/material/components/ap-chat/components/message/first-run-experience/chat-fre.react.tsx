@@ -18,6 +18,8 @@ const FREContainer = styled('div')(() => ({
     position: 'absolute',
     bottom: 0,
     marginBottom: token.Spacing.SpacingL,
+    maxHeight: `calc(100% - ${token.Spacing.SpacingL})`,
+    overflow: 'auto',
 }));
 
 const FREHeader = styled('div')(() => ({
@@ -53,6 +55,7 @@ function AutopilotChatFREComponent() {
 
             {firstRunExperience.suggestions && firstRunExperience.suggestions.length > 0 && (
                 <AutopilotChatSuggestions
+                    disableAnimation={true}
                     suggestions={firstRunExperience.suggestions}
                     sendOnClick={firstRunExperience.sendOnClick}
                 />

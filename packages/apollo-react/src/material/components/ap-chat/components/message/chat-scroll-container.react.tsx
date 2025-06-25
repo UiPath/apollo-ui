@@ -4,20 +4,14 @@
 import styled from '@emotion/styled';
 import token from '@uipath/apollo-core/lib';
 import {
-    AutopilotChatEvent,
-    AutopilotChatInternalEvent,
     AutopilotChatMode,
-    AutopilotChatSuggestion,
     CHAT_WIDTH_FULL_SCREEN_MAX_WIDTH,
 } from '@uipath/portal-shell-util';
 import React from 'react';
 
 import { useChatScroll } from '../../providers/chat-scroll-provider.react';
-import { useChatService } from '../../providers/chat-service.provider.react';
-import { useChatState } from '../../providers/chat-state-provider.react';
 import { AutopilotChatMessages } from './chat-message.react';
 import { AutopilotChatScrollToBottomButton } from './chat-scroll-to-bottom.react';
-import { AutopilotChatSuggestions } from './suggestions/chat-suggestions.react';
 
 const OverflowContainer = styled('div')(() => ({
     flex: '1 1 100%',
