@@ -402,9 +402,13 @@ export class AutopilotChatService {
      * Sets the suggestions in the chat service
      *
      * @param suggestions - The suggestions to set
+     * @param sendOnClick - Whether to send the suggestion on click
      */
-    setSuggestions(suggestions: AutopilotChatSuggestion[]) {
-        this._internalService.publish(AutopilotChatInternalEvent.SetSuggestions, suggestions);
+    setSuggestions(suggestions: AutopilotChatSuggestion[], sendOnClick?: boolean) {
+        this._internalService.publish(AutopilotChatInternalEvent.SetSuggestions, {
+            suggestions,
+            sendOnClick,
+        });
     }
 
     /**
