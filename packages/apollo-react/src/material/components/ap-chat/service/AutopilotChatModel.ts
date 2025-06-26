@@ -167,6 +167,8 @@ export enum AutopilotChatEvent {
     SetSelectedModel = 'setSelectedModel',
     ConversationLoadMore = 'conversationLoadMore',
     Attachments = 'attachments',
+    InputStream = 'inputStream',
+    OutputStream = 'outputStream',
 }
 
 /**
@@ -257,6 +259,7 @@ export interface AutopilotChatSource {
  * @property close - Whether the chat has the close button
  * @property newChat - Whether the chat has the new chat button
  * @property settings - Whether the chat has the settings button
+ * @property audio - Whether the chat has realtime audio enabled
  */
 export interface AutopilotChatDisabledFeatures {
     resize?: boolean;
@@ -269,6 +272,7 @@ export interface AutopilotChatDisabledFeatures {
     close?: boolean;
     newChat?: boolean;
     settings?: boolean;
+    audio?: boolean;
 }
 
 /**
@@ -403,4 +407,111 @@ export interface AutopilotChatAllowedAttachments {
     };
     maxSize: number;
     maxCount?: number;
+}
+
+/**
+ * Input stream event data.
+ */
+export interface AutopilotChatInputStreamEvent {
+    /**
+     * If set, indicates that an user input activity is starting.
+     */
+    activityStart?: AutopilotChatInputStreamActivityStart;
+
+    /**
+     * If set, indicates that an user input activity has ended.
+     */
+    activityEnd?: AutopilotChatInputStreamActivityEnd;
+
+    /**
+     * If set, contains input media stream chunks.
+     */
+    mediaChunks?: AutopilotChatInputStreamMediaChunk[];
+}
+
+/**
+ * Arguments for an input activity start event. An activity start event must be sent before sending media chunks. An
+ * activity end event should be sent after all media chunks have been sent.
+ */
+export interface AutopilotChatInputStreamActivityStart {
+    /**
+     * Indicates whether automatic activity detection is enabled for this input stream activity. If enabled,
+     * continuously send input media chunks and the LLM will decide when to respond and multiple turns will be taken
+     * within the single input activity. If not enabled, the LLM responds when the end activity signal is sent and
+     * another start activity needs to be sent to start a new turn.
+     */
+    automaticActivityDetectionEnabled?: boolean;
+}
+
+/**
+ * Arguments for an input activity end event.
+ */
+export interface AutopilotChatInputStreamActivityEnd {
+    /**
+     * The number following the sequenceNumber of the last media chunk sent in the activity that has ended. This value
+     * can be used to verify that all input data messages have been received. TODO: this property will be removed at
+     * some point, it is currently used to work around some threading issues in the Agent's service.
+     */
+    sequenceNumber: number;
+}
+
+/**
+ * Arguments for an input media chunk event.
+ */
+export interface AutopilotChatInputStreamMediaChunk extends AutopilotChatMediaChunk {
+}
+
+/**
+ * Arguments for output stream event.
+ */
+export interface AutopilotChatOutputStreamEvent {
+    /**
+     * If set, contains output media stream chunks.
+     */
+    mediaChunks?: AutopilotChatOutputStreamMediaChunk[];
+
+    /**
+     * If set (it will be true), indicates that the LLM output was interrupted by user input. This event will only be
+     * generated when automaticActivityDetectionEnabled is set to true in the activity start event.
+     */
+    interrupted?: boolean;
+
+    /**
+     * If set (it will be true), indicates that the LLM has finished generating output in response to an user input. When
+     * automaticActivityDetectionEnabled is set, this can occur multiple times during the input activity, otherwise it will
+     * occur once, after activity end is sent. If the model was interrupted, generation complete is not sent.
+     */
+    generationComplete?: boolean;
+
+    /**
+     * If set (it will be true), indicates that the turn as completed and the model will generate no more output until a
+     * new turn is started by user input. When model assumes realtime playback there will be delay between
+     * generation complete and turn complete that is caused by model waiting for playback to finish.
+     */
+    turnComplete?: boolean;
+}
+
+/**
+ * Arguments for an output media chunk event.
+ */
+export interface AutopilotChatOutputStreamMediaChunk extends AutopilotChatMediaChunk {
+}
+
+/**
+ * Media chunks used for input and output streams.
+ */
+export interface AutopilotChatMediaChunk {
+    /**
+     * Sequence of the chunk in the stream. TODO: this property will be removed at some point, it is currently used to
+     * work around some threading issues in the Agent's service.
+     */
+    sequenceNumber: number;
+    /**
+     * Mime type of the data.
+     */
+    mimeType: string;
+    /**
+     * Base64 encoded chunk of data.
+     */
+    data: string;
 }
