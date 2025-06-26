@@ -5,9 +5,11 @@ import type {
     AutopilotChatEventHandler,
     AutopilotChatEventInterceptor,
     AutopilotChatHistory,
+    AutopilotChatInputStreamEvent,
     AutopilotChatMessage,
     AutopilotChatMessageRenderer,
     AutopilotChatModelInfo,
+    AutopilotChatOutputStreamEvent,
     AutopilotChatOverrideLabels,
     AutopilotChatPreHookAction,
     AutopilotChatPrompt,
@@ -118,6 +120,8 @@ export class AutopilotChatService {
         this.getPreHook = this.getPreHook.bind(this);
         this.prependOlderMessages = this.prependOlderMessages.bind(this);
         this.setSuggestions = this.setSuggestions.bind(this);
+        this.sendInputStreamEvent = this.sendInputStreamEvent.bind(this);
+        this.sendOutputStreamEvent = this.sendOutputStreamEvent.bind(this);
     }
 
     static Instantiate({
@@ -885,4 +889,21 @@ export class AutopilotChatService {
     getPreHook(action: AutopilotChatPreHookAction) {
         return this._config.preHooks?.[action] ?? (() => Promise.resolve(true));
     }
+
+    /**
+     * Sends an input stream event.
+     * @param event The event data.
+     */
+    sendInputStreamEvent(event: AutopilotChatInputStreamEvent) {
+        this._eventBus.publish(AutopilotChatEvent.InputStream, event);
+    }
+
+    /**
+     * Sends an output stream event.
+     * @param event The event data.
+     */
+    sendOutputStreamEvent(event: AutopilotChatOutputStreamEvent) {
+        this._eventBus.publish(AutopilotChatEvent.OutputStream, event);
+    }
+
 }
