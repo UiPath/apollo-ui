@@ -8,11 +8,14 @@ import {
 import token, { FontVariantToken } from '@uipath/apollo-core/lib';
 import React from 'react';
 
+import { Features } from '../../../../utils/featureFlags/featureFlagConstants';
+import { getFeatureFlag } from '../../../../utils/featureFlags/featureFlags';
 import { t } from '../../../../utils/localization/loc';
 import { useAttachments } from '../../providers/attachements-provider.react';
 import { useChatState } from '../../providers/chat-state-provider.react';
 import { useError } from '../../providers/error-provider.react';
 import { parseFiles } from '../../utils/file-reader';
+import { AutopilotChatAudio } from '../audio/chat-audio.react';
 import { AutopilotChatActionButton } from '../common/action-button.react';
 import { AutopilotChatInputModelPicker } from './chat-input-model-picker.react';
 
@@ -106,6 +109,8 @@ function AutopilotChatInputActionsComponent({
             .join(',');
     }, [ allowedAttachments ]);
 
+    const enableVoiceChat = getFeatureFlag(Features.EnableVoiceChat.name);
+
     return (
         <InputActionsContainer>
             <InputActionsGroup>
@@ -169,6 +174,9 @@ function AutopilotChatInputActionsComponent({
             </InputActionsGroup>
 
             <InputActionsGroup>
+                {!disabledFeatures.audio && enableVoiceChat && (
+                    <AutopilotChatAudio/>
+                )}
                 <SubmitButtonContainer>
                     <AutopilotChatActionButton
                         iconName={waitingResponse ? 'stop' : 'arrow_upward'}
