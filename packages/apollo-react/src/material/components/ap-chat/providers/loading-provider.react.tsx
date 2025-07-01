@@ -14,17 +14,20 @@ interface AutopilotLoadingContextType {
     waitingResponse: boolean;
     isLoadingMoreMessages: boolean;
     setWaitingResponse: (waitingResponse: boolean) => void;
+    showLoading: boolean;
 }
 
 export const AutopilotLoadingContext = React.createContext<AutopilotLoadingContextType>({
     waitingResponse: false,
     isLoadingMoreMessages: false,
     setWaitingResponse: () => {},
+    showLoading: false,
 });
 
 export function AutopilotLoadingProvider({ children }: { children: React.ReactNode }) {
     const [ waitingResponse, setWaitingResponse ] = React.useState<boolean>(false);
     const [ isLoadingMoreMessages, setIsLoadingMoreMessages ] = React.useState<boolean>(false);
+    const [ showLoading, setShowLoading ] = React.useState<boolean>(false);
     const chatService = useChatService();
 
     React.useEffect(() => {
@@ -50,18 +53,22 @@ export function AutopilotLoadingProvider({ children }: { children: React.ReactNo
 
         const unsubscribeRequest = chatService.intercept(AutopilotChatInterceptableEvent.Request, () => {
             setWaitingResponse(true);
+            setShowLoading(true);
         });
 
         const unsubscribeResponse = chatService.on(AutopilotChatEvent.Response, (message: AutopilotChatMessage) => {
             setWaitingResponse(!!message.shouldWaitForMoreMessages);
+            setShowLoading(false);
         });
 
         const unsubscribeStopResponse = chatService.on(AutopilotChatEvent.StopResponse, () => {
             setWaitingResponse(false);
+            setShowLoading(false);
         });
 
         const unsubscribeNewChat = chatService.on(AutopilotChatEvent.NewChat, () => {
             setWaitingResponse(false);
+            setShowLoading(false);
         });
 
         return () => {
@@ -79,6 +86,7 @@ export function AutopilotLoadingProvider({ children }: { children: React.ReactNo
             waitingResponse,
             setWaitingResponse,
             isLoadingMoreMessages,
+            showLoading,
         }}>
             {children}
         </AutopilotLoadingContext.Provider>

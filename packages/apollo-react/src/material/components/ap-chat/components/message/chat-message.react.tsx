@@ -62,9 +62,7 @@ function AutopilotChatMessagesComponent() {
         removeFakeStream(chatService?.getConversation?.() ?? []),
     );
     const [ messageGroups, setMessageGroups ] = React.useState<AutopilotChatMessage[][]>([]);
-    const {
-        setWaitingResponse, isLoadingMoreMessages,
-    } = useLoading();
+    const { isLoadingMoreMessages } = useLoading();
 
     const { firstRunExperience } = useChatState();
 
@@ -162,7 +160,7 @@ function AutopilotChatMessagesComponent() {
             unsubscribeShowLoadingState();
             unsubscribeSetSuggestions();
         };
-    }, [ chatService, updateMessages, setWaitingResponse, sendFeedback, onCopy ]);
+    }, [ chatService, updateMessages, sendFeedback, onCopy ]);
 
     React.useEffect(() => {
         const getMessageGroups = () => {

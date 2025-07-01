@@ -28,9 +28,9 @@ const LoadingContainer = styled('div')(({ theme }) => {
 });
 
 export function AutopilotChatLoading() {
-    const { waitingResponse } = useLoading();
+    const { showLoading } = useLoading();
 
-    if (!waitingResponse) {
+    if (!showLoading) {
         return null;
     }
 
