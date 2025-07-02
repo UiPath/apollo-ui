@@ -94,13 +94,13 @@ export const useAudioInput = (
                 const {
                     id,
                     base64Data,
-                    error,
+                    error: eventError,
                 } = event.data;
                 const pending = pendingEncodesRef.current.get(id);
 
                 if (pending) {
-                    if (error) {
-                        pending.reject(new Error(error));
+                    if (eventError) {
+                        pending.reject(new Error(eventError));
                     } else {
                         pending.resolve(base64Data);
                     }
@@ -108,9 +108,9 @@ export const useAudioInput = (
                 }
             };
 
-            encoderWorkerRef.current.onerror = (error) => {
+            encoderWorkerRef.current.onerror = (eventError) => {
                 // eslint-disable-next-line no-console
-                console.error('[AudioInput] Encoder worker error:', error);
+                console.error('[AudioInput] Encoder worker error:', eventError);
             };
         }
         return encoderWorkerRef.current;
