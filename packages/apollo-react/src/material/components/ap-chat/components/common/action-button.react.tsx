@@ -33,6 +33,8 @@ const StyledButtonContainer = styled('div')(() => ({
     },
 }));
 
+const StyledIconButton = styled(ApIconButtonReact)(() => ({ '&.MuiIconButton-root': { borderRadius: token.Border.BorderRadiusM } }));
+
 /**
  * Either onClick or onPress and onRelease are required.
  */
@@ -155,7 +157,7 @@ const AutopilotChatActionButtonComponent = React.forwardRef<HTMLButtonElement, A
             />
         </StyledButtonContainer>
     ) : (
-        <ApIconButtonReact
+        <StyledIconButton
             ref={ref}
             disabled={disabled}
             color="secondary"
@@ -195,11 +197,12 @@ const AutopilotChatActionButtonComponent = React.forwardRef<HTMLButtonElement, A
         >
             <ap-icon
                 variant={variant}
-                size={iconSize ? iconSize : token.Icon.IconM}
+                size={iconSize ? iconSize : token.Icon.IconXs}
                 color={overrideColor ?? iconColor}
                 name={iconName}
+                customvariantdisplay="flex"
             />
-        </ApIconButtonReact>
+        </StyledIconButton>
     );
 
     return tooltip && chatMode !== AutopilotChatMode.Closed && !disabled ? (

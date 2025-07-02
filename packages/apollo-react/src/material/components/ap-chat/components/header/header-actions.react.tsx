@@ -18,7 +18,7 @@ import { AutopilotChatActionButton } from '../common/action-button.react';
 const StyledActions = styled('div')(() => ({
     display: 'flex',
     alignItems: 'center',
-    gap: token.Spacing.SpacingS,
+    gap: token.Spacing.SpacingXs,
 }));
 
 function AutopilotChatHeaderActionsComponent() {
@@ -142,7 +142,7 @@ function AutopilotChatHeaderActionsComponent() {
             {((chatMode !== AutopilotChatMode.Embedded && !disabledFeatures.close) ||
                 (chatMode === AutopilotChatMode.Embedded && disabledFeatures.close === false)) && (
                 <AutopilotChatActionButton
-                    iconName="close"
+                    iconName="remove"
                     onClick={handleClose}
                     tooltip={t('autopilot-chat-close')}
                 />

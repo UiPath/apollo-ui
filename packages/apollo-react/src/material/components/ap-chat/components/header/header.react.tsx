@@ -8,6 +8,7 @@ import {
 } from '@mui/material';
 import { FontVariantToken } from '@uipath/apollo-core';
 import token from '@uipath/apollo-core/lib';
+import { AutopilotChatMode } from '@uipath/portal-shell-util';
 import React from 'react';
 
 import { StatusTypes } from '../../../../models/statusTypes';
@@ -16,10 +17,11 @@ import AutopilotLogo from '../../assets/autopilot-logo.svg';
 import { useChatState } from '../../providers/chat-state-provider.react';
 import { AutopilotChatHeaderActions } from './header-actions.react';
 
-const StyledHeader = styled('div')(() => ({
+const StyledHeader = styled('div')<{ isFullScreen: boolean }>(({ isFullScreen }) => ({
     display: 'flex',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    justifyContent: isFullScreen ? 'flex-start' : 'space-between',
+    ...(isFullScreen ? { gap: token.Spacing.SpacingXs } : {}),
 }));
 
 const StyledLogo = styled('div')(() => ({
@@ -33,19 +35,24 @@ function AutopilotChatHeaderComponent() {
     const {
         disabledFeatures,
         overrideLabels,
+        chatMode,
     } = useChatState();
 
     return (
-        <StyledHeader>
+        <StyledHeader isFullScreen={chatMode === AutopilotChatMode.FullScreen}>
             <StyledLogo>
                 {/* cannot directly use the svg as a component, throws error that the svg is not a valid react component */}
-                <span dangerouslySetInnerHTML={{ __html: AutopilotLogo }} />
+                {chatMode === AutopilotChatMode.FullScreen ? (
+                    <span dangerouslySetInnerHTML={{ __html: AutopilotLogo }} />
+                ) : null}
 
                 <ap-typography variant={FontVariantToken.fontBrandL} color={theme.palette.semantic.colorForeground}>
                     {overrideLabels.title ?? t('autopilot-chat-header')}
                 </ap-typography>
 
-                {!disabledFeatures.preview && <ap-badge label={t('autopilot-chat-header-preview')} status={StatusTypes.INFO}></ap-badge>}
+                {!disabledFeatures.preview && (
+                    <ap-badge label={t('autopilot-chat-header-preview')} status={StatusTypes.INFO}></ap-badge>
+                )}
             </StyledLogo>
 
             <AutopilotChatHeaderActions />

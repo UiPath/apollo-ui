@@ -12,6 +12,7 @@ import type { AutopilotChatModelInfo } from '@uipath/portal-shell-util';
 import React from 'react';
 
 import { useChatService } from '../../providers/chat-service.provider.react';
+import { AutopilotChatActionButton } from './action-button.react';
 import { AutopilotChatTooltip } from './tooltip.react';
 
 export const ModelPickerContainer = styled('div')({
@@ -72,8 +73,8 @@ export const ModelPicker = React.memo(({
         setAnchorEl(null);
     }, [ chatService ]);
 
-    const handleClick = React.useCallback((event: React.MouseEvent<HTMLDivElement>) => {
-        setAnchorEl(event.currentTarget);
+    const handleClick = React.useCallback((event: React.MouseEvent<HTMLButtonElement | HTMLDivElement>) => {
+        setAnchorEl(event.currentTarget.parentElement as HTMLDivElement);
     }, []);
 
     const handleClose = React.useCallback(() => {
@@ -84,11 +85,34 @@ export const ModelPicker = React.memo(({
 
     const renderSelectedModel = React.useCallback(() => {
         if (useIcon) {
-            return <portal-custom-icon name="model" size="24px" />;
+            return (
+                <AutopilotChatActionButton
+                    iconName="model"
+                    variant="custom"
+                    onClick={handleClick}
+                    tooltipPlacement="top"
+                    tooltip={ !open ? (
+                        <>
+                            <ap-typography
+                                color={theme.palette.semantic.colorForegroundInverse}
+                                variant={FontVariantToken.fontSizeM}
+                            >
+                                {selectedModel.name}
+                            </ap-typography>
+                            <ap-typography
+                                color={theme.palette.semantic.colorForegroundInverse}
+                                variant={FontVariantToken.fontSizeXs}
+                            >
+                                {selectedModel.description}
+                            </ap-typography>
+                        </>
+                    ) : null}
+                />
+            );
         }
 
         return (
-            <SelectedModelContainer>
+            <SelectedModelContainer onClick={handleClick}>
                 <ap-typography>{selectedModel?.name}</ap-typography>
                 <KeyboardArrowDownIcon
                     className={`arrow-icon ${open ? 'open' : ''}`}
@@ -98,34 +122,10 @@ export const ModelPicker = React.memo(({
         );
     }, [ selectedModel, useIcon, open ]);
 
-    const renderModelTooltip = React.useCallback(() => (
-        <AutopilotChatTooltip
-            placement="top-start"
-            title={
-                <>
-                    <ap-typography
-                        color={theme.palette.semantic.colorForegroundInverse}
-                        variant={FontVariantToken.fontSizeM}
-                    >
-                        {selectedModel.name}
-                    </ap-typography>
-                    <ap-typography
-                        color={theme.palette.semantic.colorForegroundInverse}
-                        variant={FontVariantToken.fontSizeXs}
-                    >
-                        {selectedModel.description}
-                    </ap-typography>
-                </>
-            }
-        >
-            {renderSelectedModel()}
-        </AutopilotChatTooltip>
-    ), [ selectedModel, theme, renderSelectedModel ]);
-
     return (
         <>
-            <ModelPickerContainer onClick={handleClick}>
-                {open ? renderSelectedModel() : renderModelTooltip()}
+            <ModelPickerContainer>
+                {renderSelectedModel()}
             </ModelPickerContainer>
             <Popover
                 open={open}
