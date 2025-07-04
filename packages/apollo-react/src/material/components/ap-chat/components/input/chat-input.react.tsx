@@ -28,18 +28,24 @@ import { AutopilotChatInputError } from './chat-input-error.react';
 import { AutopilotChatInputFooter } from './chat-input-footer.react';
 
 export const InputContainer = styled('div')(({ theme }) => ({
-    border: `${token.Border.BorderThickS} solid ${theme.palette.semantic.colorBorder}`,
+    border: `${token.Border.BorderThickM} solid transparent`,
+    boxShadow: `inset 0 0 0 ${token.Border.BorderThickS} ${theme.palette.semantic.colorBorder}`,
     borderRadius: token.Border.BorderRadiusL,
     gap: token.Spacing.SpacingBase,
     marginBottom: token.Spacing.SpacingXs,
 
-    '&:hover,&:has(textarea:focus)': { borderColor: theme.palette.semantic.colorNotificationBadge },
+    '&:has(textarea:focus)': {
+        borderColor: theme.palette.semantic.colorFocusIndicator,
+        boxShadow: 'none',
+    },
 
     '& .MuiTextField-root': {
         width: '100%',
         height: token.Spacing.SpacingM,
         verticalAlign: 'middle',
     },
+
+    '& .autopilot-chat-input': { position: 'relative' },
 
     '& .autopilot-chat-input .ap-text-area-container textarea': {
         padding: `0 ${token.Spacing.SpacingBase} 0 !important`,
@@ -51,6 +57,21 @@ export const InputContainer = styled('div')(({ theme }) => ({
 
         '&::placeholder': { color: theme.palette.semantic.colorForegroundDeEmp },
     },
+}));
+
+const GradientContainer = styled('div')(({ theme }) => ({
+    position: 'absolute',
+    zIndex: 1,
+    bottom: 0,
+    left: token.Spacing.SpacingBase,
+    width: `calc(100% - 2 * ${token.Spacing.SpacingBase})`,
+    height: token.Spacing.SpacingBase,
+    background: `linear-gradient(
+        to bottom,
+        ${theme.palette.semantic.colorBackground}25 0%,
+        ${theme.palette.semantic.colorBackground}50 25%,
+        ${theme.palette.semantic.colorBackground} 50%
+    )`,
 }));
 
 function AutopilotChatInputComponent() {
@@ -181,7 +202,7 @@ function AutopilotChatInputComponent() {
             <InputContainer onClick={() => inputRef?.current?.focus()}>
                 <AutopilotChatInputAttachments/>
 
-                <Box className="autopilot-chat-input" sx={{ padding: `${token.Spacing.SpacingS} 0 !important` }}>
+                <Box className="autopilot-chat-input" sx={{ padding: `${token.Spacing.SpacingS} 0 0 !important` }}>
                     <ApTextAreaReact
                         resize="none"
                         ref={inputRef}
@@ -192,6 +213,8 @@ function AutopilotChatInputComponent() {
                         minRows={CHAT_INPUT_MIN_ROWS}
                         maxRows={CHAT_INPUT_MAX_ROWS}
                     />
+
+                    <GradientContainer/>
                 </Box>
 
                 <AutopilotChatInputActions

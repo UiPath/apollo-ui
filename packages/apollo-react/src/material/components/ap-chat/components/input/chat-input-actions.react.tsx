@@ -33,14 +33,12 @@ const InputActionsGroup = styled('div')(() => ({
 const SubmitButtonContainer = styled('div')(({ theme }) => ({
     '& .MuiIconButton-root': {
         borderRadius: token.Border.BorderRadiusM,
-        backgroundColor: theme.palette.semantic.colorBackground,
-
-        '&:hover': { backgroundColor: theme.palette.semantic.colorBackgroundSecondary },
+        backgroundColor: theme.palette.semantic.colorBackgroundDisabled,
 
         '&:not(.Mui-disabled)': {
-            backgroundColor: `${theme.palette.semantic.colorNotificationBadge} !important`,
+            backgroundColor: `${theme.palette.semantic.colorForeground} !important`,
 
-            '&:hover': { backgroundColor: `${theme.palette.semantic.colorForeground} !important` },
+            '&:hover, &:active, &:focus': { backgroundColor: `${theme.palette.semantic.colorForegroundDeEmp} !important` },
         },
     },
 }));
@@ -185,6 +183,7 @@ function AutopilotChatInputActionsComponent({
                             ? theme.palette.semantic.colorForegroundDisable
                             : theme.palette.semantic.colorBackground
                         }
+                        variant={waitingResponse ? 'normal' : 'outlined'}
                         preventHover={true}
                         disabled={disableSubmit}
                         onClick={handleSubmit}

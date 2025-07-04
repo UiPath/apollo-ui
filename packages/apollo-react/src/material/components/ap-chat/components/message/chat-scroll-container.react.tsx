@@ -1,7 +1,10 @@
 /** @jsx React.createElement */
 /** @jsxFrag React.Fragment */
 
-import styled from '@emotion/styled';
+import {
+    styled,
+    Theme,
+} from '@mui/material';
 import token from '@uipath/apollo-core/lib';
 import {
     AutopilotChatMode,
@@ -17,7 +20,6 @@ const OverflowContainer = styled('div')(() => ({
     flex: '1 1 100%',
     minHeight: 0,
     overflowY: 'auto',
-    paddingBottom: token.Spacing.SpacingBase,
     position: 'relative',
     outline: 'none',
 }));
@@ -28,6 +30,21 @@ const MessagesContainer = styled('div')(({ isFullScreen }: { isFullScreen: boole
         margin: '0 auto',
         width: '100%',
     }),
+}));
+
+const GradientContainer = styled('div')(({ theme }: { theme: Theme }) => ({
+    position: 'sticky',
+    zIndex: 1,
+    bottom: 0,
+    left: token.Spacing.SpacingBase,
+    width: `calc(100% - 2 * ${token.Spacing.SpacingBase})`,
+    height: token.Spacing.SpacingBase,
+    background: `linear-gradient(
+        to bottom,
+        ${theme.palette.semantic.colorBackground}25 0%,
+        ${theme.palette.semantic.colorBackground}50 25%,
+        ${theme.palette.semantic.colorBackground} 50%
+    )`,
 }));
 
 interface ChatScrollContainerProps {
@@ -51,6 +68,8 @@ function ChatScrollContainerComponent({ mode }: ChatScrollContainerProps) {
                 >
                     <AutopilotChatMessages/>
                 </MessagesContainer>
+
+                <GradientContainer/>
             </OverflowContainer>
 
             <AutopilotChatScrollToBottomButton overflowContainer={overflowContainer}/>
