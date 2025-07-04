@@ -133,8 +133,16 @@ export const Code = React.memo(({
         return (
             <code style={{
                 color: theme.palette.semantic.colorForeground,
-                fontSize: token.FontFamily.FontSSize,
-                lineHeight: token.FontFamily.FontSLineHeight,
+                fontSize: token.FontFamily.FontMonoMSize,
+                fontFamily: token.FontFamily.FontMonoMFamily,
+                lineHeight: token.FontFamily.FontMonoMLineHeight,
+                height: token.FontFamily.FontMonoMLineHeight,
+                fontWeight: token.FontFamily.FontMonoMWeight,
+                padding: `0 ${token.Padding.PadS}`,
+                background: theme.palette.semantic.colorBackgroundDisabled,
+                borderRadius: token.Border.BorderRadiusM,
+                display: 'inline-block',
+                width: 'fit-content',
             }} className={className} {...props}>
                 {children}
             </code>
