@@ -33,6 +33,7 @@ export const CHAT_MESSAGE_MAX_PADDING = 96; // max margin left --> 24 (parent) +
 export const CHAT_WIDTH_FULL_SCREEN_MAX_WIDTH = '960px';
 export const CHAT_INPUT_MIN_ROWS = 2;
 export const CHAT_INPUT_MAX_ROWS = 12;
+export const CHAT_LOADER_GRADIENT_WIDTH = 100;
 export const CHAT_WIDTH_KEY = 'width';
 export const CHAT_ACTIVE_CONVERSATION_ID_KEY = 'activeConversationId';
 export const CHAT_SCROLL_BOTTOM_BUFFER = 200;
