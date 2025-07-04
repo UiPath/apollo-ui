@@ -1,7 +1,10 @@
 /** @jsx React.createElement */
 /** @jsxFrag React.Fragment */
 
-import { Fade } from '@mui/material';
+import {
+    Fade,
+    useTheme,
+} from '@mui/material';
 import { AutopilotChatEvent } from '@uipath/portal-shell-util';
 import React, {
     useEffect,
@@ -15,7 +18,7 @@ const SECONDS = 1000;
 const FADE_DURATION = 0.5 * SECONDS;
 const DEFAULT_MESSAGE_DURATION = 5 * SECONDS;
 
-const defaultMessages = [ 'autopilot-chat-thinking', 'autopilot-chat-analyzing', 'autopilot-chat-thinking-more' ];
+const defaultMessages = [ 'autopilot-chat-generating-response' ];
 
 export const LoadingMessage = () => {
     const chatService = useChatService();
@@ -23,6 +26,7 @@ export const LoadingMessage = () => {
     const [ isVisible, setIsVisible ] = useState(true);
     const [ messages, setMessages ] = useState(chatService.getDefaultLoadingMessages() ?? defaultMessages);
     const [ messageDuration, setMessageDuration ] = useState(chatService.getLoadingMessageDuration() ?? DEFAULT_MESSAGE_DURATION);
+    const theme = useTheme();
 
     useEffect(() => {
         if (!chatService) {
@@ -83,7 +87,7 @@ export const LoadingMessage = () => {
 
     return (
         <Fade in={isVisible} timeout={FADE_DURATION}>
-            <ap-typography>{t(messages[messageIdx])}</ap-typography>
+            <ap-typography color={theme.palette.semantic.colorForeground}>{t(messages[messageIdx])}</ap-typography>
         </Fade>
     );
 };
