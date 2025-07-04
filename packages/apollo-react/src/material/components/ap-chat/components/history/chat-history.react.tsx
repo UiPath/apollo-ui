@@ -3,6 +3,7 @@
 
 import SearchIcon from '@mui/icons-material/Search';
 import {
+    Popover,
     styled,
     useTheme,
 } from '@mui/material';
@@ -10,7 +11,9 @@ import token from '@uipath/apollo-core/lib';
 import {
     AutopilotChatEvent,
     AutopilotChatHistory as AutopilotChatHistoryType,
-    CHAT_DRAWER_WIDTH_FULL_SCREEN,
+    CHAT_HISTORY_FULL_SCREEN_WIDTH,
+    CHAT_HISTORY_SIDE_BY_SIDE_MAX_HEIGHT,
+    CHAT_HISTORY_SIDE_BY_SIDE_MAX_WIDTH,
 } from '@uipath/portal-shell-util';
 import {
     differenceInDays,
@@ -27,40 +30,28 @@ import { t } from '../../../../utils/localization/loc';
 import { ApTextFieldReact } from '../../../ap-text-field/ap-text-field.react';
 import { useChatService } from '../../providers/chat-service.provider.react';
 import { useChatState } from '../../providers/chat-state-provider.react';
+import { useChatWidth } from '../../providers/chat-width-provider.react';
 import { AutopilotChatHistoryGroup } from './chat-history-group.react';
-import { AutopilotChatHistoryHeader } from './chat-history-header.react';
 
-const ChatHistoryContainer = styled('div')<{ isOpen: boolean; isFullScreen: boolean }>(({
-    theme, isOpen, isFullScreen,
+const ChatHistoryContainer = styled('div')<{ isFullScreen: boolean; width: number; fullScreenContainer: HTMLElement | null }>(({
+    theme, isFullScreen, width, fullScreenContainer,
 }) => ({
     display: 'flex',
     flexDirection: 'column',
-    gap: token.Spacing.SpacingL,
-    backgroundColor: theme.palette.semantic.colorBackgroundSecondary,
-    height: '100%',
-    zIndex: 1,
-    transition: 'width 0.3s ease, padding 0.3s ease',
-    padding: token.Spacing.SpacingBase,
+    backgroundColor: theme.palette.semantic.colorBackground,
+    padding: `${token.Spacing.SpacingXs} 0`,
     boxSizing: 'border-box',
-    overflow: 'hidden',
-    whiteSpace: 'nowrap',
-
-    ...(isOpen ? { width: '100%' } : {
-        width: 0,
-        paddingLeft: 0,
-        paddingRight: 0,
-    }),
-
-    ...(isFullScreen ? {
-        width: isOpen ? `calc(${CHAT_DRAWER_WIDTH_FULL_SCREEN}px + 2 * ${token.Spacing.SpacingBase})` : 0, // account for padding
-        borderTopLeftRadius: token.Spacing.SpacingXs,
-    } : {
-        position: 'absolute',
-        right: 0,
-    }),
+    height: isFullScreen ? `calc(${fullScreenContainer?.clientHeight}px - ${token.Spacing.SpacingBase})` : CHAT_HISTORY_SIDE_BY_SIDE_MAX_HEIGHT,
+    width: isFullScreen
+        ? CHAT_HISTORY_FULL_SCREEN_WIDTH
+        : Math.min(
+            width - 2 * parseInt(token.Spacing.SpacingBase, 10), // acount for padding
+            CHAT_HISTORY_SIDE_BY_SIDE_MAX_WIDTH - 2 * parseInt(token.Spacing.SpacingBase, 10),
+        ),
 
     '& .chat-history-search': {
-        width: '100%',
+        width: `calc(100% - 2 * ${token.Spacing.SpacingBase})`,
+        marginLeft: token.Spacing.SpacingBase,
 
         '& .MuiInputBase-root': { backgroundColor: theme.palette.semantic.colorBackground },
     },
@@ -94,7 +85,10 @@ const AutopilotChatHistoryComponent: React.FC<AutopilotChatHistoryProps> = ({
     const [ history, setHistory ] = useState<AutopilotChatHistoryType[]>(chatService?.getHistory() ?? []);
     const [ searchQuery, setSearchQuery ] = useState('');
     const [ groupedHistory, setGroupedHistory ] = useState<ChatHistoryGroup[]>([]);
-    const { historyOpen } = useChatState();
+    const {
+        historyOpen, historyAnchorElement, fullScreenContainer,
+    } = useChatState();
+    const { width } = useChatWidth();
 
     useEffect(() => {
         if (!chatService || !internalService) {
@@ -166,39 +160,63 @@ const AutopilotChatHistoryComponent: React.FC<AutopilotChatHistoryProps> = ({
     }, [ history, searchQuery ]);
 
     return (
-        <FocusLock
-            disabled={!open || !historyOpen || isFullScreen}
-            returnFocus={true}
+        <Popover
+            open={open && historyOpen}
+            anchorEl={historyAnchorElement}
+            onClose={() => {
+                chatService?.toggleHistory();
+            }}
+            anchorOrigin={{
+                vertical: 'bottom',
+                horizontal: isFullScreen ? 'right' : 'left',
+            }}
+            transformOrigin={{
+                vertical: 'top',
+                horizontal: isFullScreen ? 'right' : 'left',
+            }}
+            slotProps={{
+                paper: {
+                    elevation: 6,
+                    sx: {
+                        borderRadius: token.Spacing.SpacingMicro,
+                        margin: `0 ${token.Spacing.SpacingXs + token.Spacing.SpacingBase} 0 ${token.Spacing.SpacingXs}`,
+                        ...(isFullScreen ? { left: `${token.Spacing.SpacingXs} !important` } : {}),
+                    },
+                },
+            }}
         >
-            <ChatHistoryContainer isOpen={open} isFullScreen={isFullScreen}>
-                <AutopilotChatHistoryHeader isFullScreen={isFullScreen} isHistoryOpen={historyOpen}/>
-
-                { history.length > 0 ? (
-                    <>
-                        <ApTextFieldReact
-                            disabled={!historyOpen}
-                            className="chat-history-search"
-                            size="small"
-                            startAdornment={<SearchIcon />}
-                            placeholder={t('chat-history-search-placeholder')}
-                            value={searchQuery}
-                            onChange={(value) => {
-                                setSearchQuery(value || '');
-                            }}
-                        />
-                        <div className="chat-history-content">
-                            {groupedHistory.map((group) => (
-                                <AutopilotChatHistoryGroup key={group.title} group={group} isHistoryOpen={historyOpen}/>
-                            ))}
-                        </div>
-                    </>
-                ) : (
-                    <ap-typography color={theme.palette.semantic.colorForeground}>
-                        {t('chat-history-empty')}
-                    </ap-typography>
-                )}
-            </ChatHistoryContainer>
-        </FocusLock>
+            <FocusLock
+                disabled={!open || !historyOpen}
+                returnFocus={true}
+            >
+                <ChatHistoryContainer isFullScreen={isFullScreen} width={width} fullScreenContainer={fullScreenContainer}>
+                    { history.length > 0 ? (
+                        <>
+                            <ApTextFieldReact
+                                disabled={!historyOpen}
+                                className="chat-history-search"
+                                size="small"
+                                startAdornment={<SearchIcon />}
+                                placeholder={t('chat-history-search-placeholder')}
+                                value={searchQuery}
+                                onChange={(value) => {
+                                    setSearchQuery(value || '');
+                                }}
+                            />
+                            <div className="chat-history-content">
+                                {groupedHistory.map((group) => (
+                                    <AutopilotChatHistoryGroup key={group.title} group={group} isHistoryOpen={historyOpen}/>
+                                ))}
+                            </div>
+                        </>
+                    ) : (
+                        <ap-typography color={theme.palette.semantic.colorForeground}>
+                            {t('chat-history-empty')}
+                        </ap-typography>
+                    )}
+                </ChatHistoryContainer>
+            </FocusLock>
+        </Popover>
     );
 };
 

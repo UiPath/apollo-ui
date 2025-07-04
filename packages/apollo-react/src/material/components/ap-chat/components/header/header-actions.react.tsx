@@ -24,7 +24,7 @@ const StyledActions = styled('div')(() => ({
 function AutopilotChatHeaderActionsComponent() {
     const chatService = useChatService();
     const {
-        disabledFeatures, chatMode, historyOpen, settingsOpen,
+        disabledFeatures, chatMode, historyOpen, settingsOpen, setHistoryAnchorElement,
     } = useChatState();
     const { clearAttachments } = useAttachments();
 
@@ -124,6 +124,7 @@ function AutopilotChatHeaderActionsComponent() {
 
             {!disabledFeatures.history && (
                 <AutopilotChatActionButton
+                    ref={setHistoryAnchorElement}
                     iconName="history"
                     variant="custom"
                     tooltip={t('autopilot-chat-history')}

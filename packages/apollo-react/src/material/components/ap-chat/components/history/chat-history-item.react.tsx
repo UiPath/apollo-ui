@@ -22,7 +22,8 @@ import { AutopilotChatActionButton } from '../common/action-button.react';
 const GroupItem = styled('div')<{ isActive: boolean; showRemoveIcon: boolean }>(({
     theme, isActive, showRemoveIcon,
 }) => ({
-    padding: `0 ${token.Padding.PadL}`,
+    width: `calc(100% - 2 * ${token.Spacing.SpacingBase})`,
+    padding: `0 calc(${token.Padding.PadL} + ${token.Spacing.SpacingBase})`,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -32,11 +33,14 @@ const GroupItem = styled('div')<{ isActive: boolean; showRemoveIcon: boolean }>(
     outlineWidth: '1px',
     outlineOffset: '-1px',
 
-    '&:hover': { backgroundColor: theme.palette.semantic.colorBackgroundHover },
-    '&:active': { backgroundColor: theme.palette.semantic.colorBackgroundSelected },
-    ...(isActive && { backgroundColor: theme.palette.semantic.colorBackground }),
+    '&:hover, &:active': { backgroundColor: theme.palette.semantic.colorBackgroundHover },
+    ...(isActive && { backgroundColor: theme.palette.semantic.colorBackgroundSelected }),
 
-    '& .delete-button-wrapper': { opacity: showRemoveIcon ? 1 : 0 },
+    '& .delete-button-wrapper': {
+        opacity: showRemoveIcon ? 1 : 0,
+        position: 'relative',
+        left: token.Spacing.SpacingXs,
+    },
 }));
 
 const GroupTitle = styled('div')(() => ({
@@ -198,7 +202,10 @@ const AutopilotChatHistoryItemComponent: React.FC<AutopilotChatHistoryItemProps>
                         setIsFocused(false);
                     }}
                     onKeyDown={(ev) => {
-                        ev.stopPropagation();
+                        // Close modal if escape is pressed (propagate to Popover parent)
+                        if (ev.key !== 'Escape') {
+                            ev.stopPropagation();
+                        }
 
                         if (ev.key === 'Enter' || ev.key === ' ') {
                             handleDelete(ev, item.id);

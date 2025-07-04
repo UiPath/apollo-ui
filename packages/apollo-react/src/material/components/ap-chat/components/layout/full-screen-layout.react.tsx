@@ -13,6 +13,7 @@ import {
 import React from 'react';
 
 import { useChatService } from '../../providers/chat-service.provider.react';
+import { useChatState } from '../../providers/chat-state-provider.react';
 import { AutopilotChatHeader } from '../header/header.react';
 import { AutopilotChatHistory } from '../history/chat-history.react';
 import { AutopilotChatInput } from '../input/chat-input.react';
@@ -68,6 +69,7 @@ export const FullScreenLayout: React.FC<FullScreenLayoutProps> = ({
     settingsDisabled,
     mode,
 }) => {
+    const { setFullScreenContainer } = useChatState();
     const chatInternalService = useChatService().__internalService__;
     const mainContainerRef = React.useRef<HTMLDivElement>(null);
 
@@ -90,7 +92,7 @@ export const FullScreenLayout: React.FC<FullScreenLayoutProps> = ({
                 <AutopilotChatHeader />
             </HeaderContainer>
 
-            <ContentContainer>
+            <ContentContainer ref={setFullScreenContainer}>
                 <MainContainer ref={mainContainerRef} historyOpen={historyOpen}>
                     <ChatScrollContainer mode={mode} />
 

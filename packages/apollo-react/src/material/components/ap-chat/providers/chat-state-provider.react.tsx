@@ -16,6 +16,10 @@ import React from 'react';
 import { useChatService } from './chat-service.provider.react';
 
 interface AutopilotChatStateContextType {
+    historyAnchorElement: HTMLElement | null;
+    setHistoryAnchorElement: (element: HTMLElement | null) => void;
+    fullScreenContainer: HTMLElement | null;
+    setFullScreenContainer: (element: HTMLElement | null) => void;
     historyOpen: boolean;
     settingsOpen: boolean;
     chatMode: AutopilotChatMode;
@@ -44,6 +48,8 @@ export const AutopilotChatStateProvider: React.FC<AutopilotChatStateProviderProp
             maxCount: 0,
         },
     );
+    const [ historyAnchorElement, setHistoryAnchorElement ] = React.useState<HTMLElement | null>(null);
+    const [ fullScreenContainer, setFullScreenContainer ] = React.useState<HTMLElement | null>(null);
     const [ historyOpen, setHistoryOpen ] = React.useState(chatService?.historyOpen ?? false);
     const [ settingsOpen, setSettingsOpen ] = React.useState(chatService?.settingsOpen ?? false);
     const [ chatMode, setChatMode ] = React.useState(chatService?.getConfig()?.mode ?? AutopilotChatMode.SideBySide);
@@ -55,6 +61,7 @@ export const AutopilotChatStateProvider: React.FC<AutopilotChatStateProviderProp
         suggestions: [],
     });
     const [ models, setModels ] = React.useState<AutopilotChatModelInfo[]>(chatService?.getModels() ?? []);
+
     React.useEffect(() => {
         if (!chatService) {
             return;
@@ -137,7 +144,24 @@ export const AutopilotChatStateProvider: React.FC<AutopilotChatStateProviderProp
         firstRunExperience,
         allowedAttachments,
         models,
-    }), [ historyOpen, settingsOpen, chatMode, disabledFeatures, overrideLabels, firstRunExperience, allowedAttachments, models ]);
+        historyAnchorElement,
+        setHistoryAnchorElement,
+        fullScreenContainer,
+        setFullScreenContainer,
+    }), [
+        historyOpen,
+        settingsOpen,
+        chatMode,
+        disabledFeatures,
+        overrideLabels,
+        firstRunExperience,
+        allowedAttachments,
+        models,
+        historyAnchorElement,
+        setHistoryAnchorElement,
+        fullScreenContainer,
+        setFullScreenContainer,
+    ]);
 
     return (
         <AutopilotChatStateContext.Provider value={value}>
