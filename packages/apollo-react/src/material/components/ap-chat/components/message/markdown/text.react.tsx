@@ -57,12 +57,19 @@ export const Blockquote = React.memo(({ children }: { children: React.ReactNode 
         <Box
             component="blockquote"
             sx={{
-                borderLeft: `4px solid ${theme.palette.semantic.colorBackgroundGray}`,
-                margin: `${token.Spacing.SpacingXs} 0`,
-                paddingLeft: token.Spacing.SpacingBase,
-                color: theme.palette.semantic.colorForeground,
-                fontStyle: 'italic',
+                borderLeft: `6px solid ${theme.palette.semantic.colorBorder}`,
+                padding: `${token.Spacing.SpacingBase} 0 ${token.Spacing.SpacingBase} ${token.Spacing.SpacingL}`,
+                color: theme.palette.semantic.colorForegroundEmp,
                 lineHeight: token.FontFamily.FontMicroLineHeight,
+                display: 'flex',
+                margin: 0,
+
+                '& ap-typography': {
+                    fontFamily: token.FontFamily.FontMonoMFamily,
+                    fontSize: token.FontFamily.FontMonoMSize,
+                    fontWeight: token.FontFamily.FontMonoMWeight,
+                    lineHeight: token.FontFamily.FontMonoMLineHeight,
+                },
             }}
         >
             {children}
