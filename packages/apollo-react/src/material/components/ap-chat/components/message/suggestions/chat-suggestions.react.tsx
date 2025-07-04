@@ -18,6 +18,7 @@ const SuggestionList = styled('div')(({ disableAnimation }: { disableAnimation?:
     flexDirection: 'column',
     gap: token.Spacing.SpacingXs,
     animation: disableAnimation ? 'none' : 'popUpFromBottom 0.3s ease-out',
+    maxWidth: `calc(100% - ${token.Spacing.SpacingL})`,
 
     '@keyframes popUpFromBottom': {
         '0%': {
