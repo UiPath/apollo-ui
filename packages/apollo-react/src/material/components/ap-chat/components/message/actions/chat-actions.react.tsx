@@ -6,9 +6,10 @@ import {
     AutopilotChatMessage,
     AutopilotChatRole,
 } from '@uipath/portal-shell-util';
-import React from 'react';
+import React, { useEffect } from 'react';
 
 import { t } from '../../../../../utils/localization/loc';
+import { useChatService } from '../../../providers/chat-service.provider.react';
 import { AutopilotChatActionsList } from './chat-actions-list.react';
 
 interface AutopilotChatMessageActionsProps {
@@ -19,9 +20,32 @@ interface AutopilotChatMessageActionsProps {
 function AutopilotChatMessageActionsComponent({
     message, containerElement,
 }: AutopilotChatMessageActionsProps) {
+    const chatService = useChatService();
+    const [ isLastAssistantMessage, setIsLastAssistantMessage ] = React.useState(false);
     const [ isVisible, setIsVisible ] = React.useState(false);
     const isUserInteractingWithActions = React.useRef(false);
     const actionsContainerRef = React.useRef<HTMLDivElement | null>(null);
+
+    useEffect(() => {
+        if (!chatService) {
+            return;
+        }
+
+        const assistantMessages = chatService.getConversation?.()?.filter((m) => m.role === AutopilotChatRole.Assistant);
+        const lastAssistantMessage = assistantMessages?.[assistantMessages.length - 1];
+
+        if (lastAssistantMessage?.id === message.id || lastAssistantMessage?.groupId === message.groupId) {
+            setIsLastAssistantMessage(true);
+        }
+
+        const unsubscribeResponse = chatService.on(AutopilotChatEvent.Response, (response: AutopilotChatMessage) => {
+            setIsLastAssistantMessage(response.id === lastAssistantMessage?.id || response.groupId === lastAssistantMessage?.groupId);
+        });
+
+        return () => {
+            unsubscribeResponse();
+        };
+    }, [ chatService, message ]);
 
     // Determine actions based on message role and existing feedback
     const defaultActions = React.useMemo(() => {
@@ -151,7 +175,7 @@ function AutopilotChatMessageActionsComponent({
         <AutopilotChatActionsList
             message={message}
             defaultActions={defaultActions}
-            isVisible={isVisible}
+            isVisible={isVisible || isLastAssistantMessage}
             setIsVisible={setIsVisible}
             onHoverChange={handleActionsHoverChange}
             actionsContainerRef={handleActionContainerRef}

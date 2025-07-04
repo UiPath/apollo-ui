@@ -38,11 +38,17 @@ const removeFakeStream = (messages: AutopilotChatMessage[]) => {
     }) => rest);
 };
 
+// eslint-disable-next-line object-curly-newline
+const MessageGroupContainer = styled('div')(({ isAssistant }: { isAssistant: boolean }) => ({
+    marginBottom: isAssistant ? '30px' : '14px', // Assistant is 30px becaue user has actions with negative 16px
+// eslint-disable-next-line object-curly-newline
+}));
+
 const MessageGroup = React.memo(({ messages }: { messages: AutopilotChatMessage[] }) => {
     const [ groupRef, setGroupRef ] = React.useState<HTMLDivElement | null>(null);
 
     return (
-        <div ref={setGroupRef}>
+        <MessageGroupContainer isAssistant={messages[0].role === AutopilotChatRole.Assistant} ref={setGroupRef}>
             {messages.map((message, index) => (
                 <AutopilotChatMessageContent
                     key={message.id}
@@ -51,7 +57,7 @@ const MessageGroup = React.memo(({ messages }: { messages: AutopilotChatMessage[
                     containerRef={groupRef}
                 />
             ))}
-        </div>
+        </MessageGroupContainer>
     );
 });
 
