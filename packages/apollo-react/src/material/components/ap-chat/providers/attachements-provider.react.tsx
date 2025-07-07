@@ -5,6 +5,7 @@ import {
     AutopilotChatFileInfo,
     AutopilotChatPrompt,
 } from '@uipath/portal-shell-util';
+import { isEqual } from 'lodash/fp';
 import React from 'react';
 
 import { useTranslate } from '../../../react/ApLocalizationProvider.react';
@@ -41,9 +42,18 @@ export function AutopilotAttachmentsProvider({ children }: { children: React.Rea
     const attachmentsRef = React.useRef<AutopilotChatFileInfo[]>(attachments);
 
     React.useEffect(() => {
-        attachmentsRef.current = attachments;
+        const currentAttachmentsWithoutContent = attachmentsRef.current.map(({
+            content: _content, ...rest
+        }) => rest);
+        const newAttachmentsWithoutContent = attachments.map(({
+            content: _content, ...rest
+        }) => rest);
 
-        (chatService as any)._eventBus.publish(AutopilotChatEvent.Attachments, attachments);
+        if (!isEqual(currentAttachmentsWithoutContent, newAttachmentsWithoutContent)) {
+            attachmentsRef.current = attachments;
+
+            (chatService as any)._eventBus.publish(AutopilotChatEvent.Attachments, attachments);
+        }
     }, [ attachments, chatService ]);
 
     const addAttachments = React.useCallback((newFiles: AutopilotChatFileInfo[]) => {
