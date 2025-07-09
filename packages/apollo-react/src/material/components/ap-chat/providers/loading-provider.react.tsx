@@ -5,6 +5,7 @@ import {
     AutopilotChatInterceptableEvent,
     AutopilotChatInternalEvent,
     AutopilotChatMessage,
+    AutopilotChatRole,
 } from '@uipath/portal-shell-util';
 import React from 'react';
 
@@ -28,19 +29,13 @@ export function AutopilotLoadingProvider({ children }: { children: React.ReactNo
     const [ waitingResponse, setWaitingResponse ] = React.useState<boolean>(false);
     const [ isLoadingMoreMessages, setIsLoadingMoreMessages ] = React.useState<boolean>(false);
     const [ showLoading, setShowLoading ] = React.useState<boolean>(false);
+    const disableDefaultShowLoadingBehaviorRef = React.useRef<boolean>(false);
     const chatService = useChatService();
 
     React.useEffect(() => {
         if (!chatService) {
             return;
         }
-
-        const unsubscribeSetIsLoadingMoreMessages = chatService.__internalService__.on(
-            AutopilotChatInternalEvent.SetIsLoadingMoreMessages,
-            (value: boolean) => {
-                setIsLoadingMoreMessages(value);
-            },
-        );
 
         const unsubscribeShouldShowLoadingMoreMessages = chatService.__internalService__.on(
             AutopilotChatInternalEvent.ShouldShowLoadingMoreMessages,
@@ -51,6 +46,35 @@ export function AutopilotLoadingProvider({ children }: { children: React.ReactNo
             },
         );
 
+        const unsubscribeSetIsLoadingMoreMessages = chatService.__internalService__.on(
+            AutopilotChatInternalEvent.SetIsLoadingMoreMessages,
+            (value: boolean) => {
+                setIsLoadingMoreMessages(value);
+            },
+        );
+
+        const unsubscribeSetShowLoading = chatService.__internalService__.on(
+            AutopilotChatInternalEvent.SetShowLoading,
+            (value: boolean) => {
+                disableDefaultShowLoadingBehaviorRef.current = true;
+
+                setShowLoading(value);
+            },
+        );
+
+        // When conversation is set, check if last message is still pending more responses
+        const unsubscribeSetConversation = chatService.on(AutopilotChatEvent.SetConversation, (conversation: AutopilotChatMessage[]) => {
+            const lastMessage = conversation?.[conversation.length - 1];
+
+            if (lastMessage?.role === AutopilotChatRole.Assistant) {
+                setWaitingResponse(!!lastMessage.shouldWaitForMoreMessages);
+
+                if (!disableDefaultShowLoadingBehaviorRef.current) {
+                    setShowLoading(false);
+                }
+            }
+        });
+
         const unsubscribeRequest = chatService.intercept(AutopilotChatInterceptableEvent.Request, () => {
             setWaitingResponse(true);
             setShowLoading(true);
@@ -58,7 +82,10 @@ export function AutopilotLoadingProvider({ children }: { children: React.ReactNo
 
         const unsubscribeResponse = chatService.on(AutopilotChatEvent.Response, (message: AutopilotChatMessage) => {
             setWaitingResponse(!!message.shouldWaitForMoreMessages);
-            setShowLoading(false);
+
+            if (!disableDefaultShowLoadingBehaviorRef.current) {
+                setShowLoading(false);
+            }
         });
 
         const unsubscribeStopResponse = chatService.on(AutopilotChatEvent.StopResponse, () => {
@@ -78,6 +105,8 @@ export function AutopilotLoadingProvider({ children }: { children: React.ReactNo
             unsubscribeNewChat();
             unsubscribeSetIsLoadingMoreMessages();
             unsubscribeShouldShowLoadingMoreMessages();
+            unsubscribeSetShowLoading();
+            unsubscribeSetConversation();
         };
     }, [ chatService ]);
 

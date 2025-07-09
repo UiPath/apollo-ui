@@ -51,7 +51,9 @@ const chatService = window.PortalShell.AutopilotChat;
 | `setFirstRunExperience(config: AutopilotChatConfiguration['firstRunExperience'])` | Configures the first run experience (see [First Run Experience](#first-run-experience)) displayed when the chat is opened for the first time or when there are no messages |
 | `setAllowedAttachments(allowedAttachments: AutopilotChatAllowedAttachments)` | Configures the allowed file attachments (see [AutopilotChatAllowedAttachments](#autopilotchatallowedattachments)) |
 | `setModels(models: AutopilotChatModelInfo)` | Configures the models (see [AutopilotChatModelInfo](#autopilotchatmodelinfo)) |
+| `getModels()` | Returns the current list of available models |
 | `setSelectedModel(modelId: string)` | Configures the selected model |
+| `getSelectedModel()` | Returns the currently selected model |
 
 ### Chat Window Control
 
@@ -77,6 +79,7 @@ const chatService = window.PortalShell.AutopilotChat;
 | `stopResponse()` | Stops the current streaming response, if applicable |
 | `setDefaultLoadingMessages(messages: string[], duration?: number)` | Sets the default loading messages and duration between switching messages |
 | `setLoadingMessage(message: string)` | Sets the loading message, overriding the default loading messages |
+| `setShowLoading(showLoading: boolean)` | Shows the loading message in the chat service. If this method is used, it overrides the default behavior from apollo. |
 | `setSuggestions(suggestions: AutopilotChatSuggestion[], sendOnClick?: boolean)` | Sets suggestions that appear in the chat interface. When `sendOnClick` is true, clicking a suggestion sends it immediately (defaults to the first run experience setting); otherwise it sets the prompt (see [AutopilotChatSuggestion](#autopilotchatsuggestion)) |
 
 ### Input/Output Stream Handling
@@ -129,6 +132,13 @@ const chatService = window.PortalShell.AutopilotChat;
 | Method                                       | Description                                                                                                                |
 |----------------------------------------------|----------------------------------------------------------------------------------------------------------------------------|
 | `setOverrideLabels(labels: AutopilotChatOverrideLabels)` | Configures which labes to override in the chat interface (see [AutopilotChatOverrideLabels](#autopilotchatoverridelabels)) |
+
+### Pre-hooks
+
+| Method | Description |
+|--------|-------------|
+| `setPreHook(action: AutopilotChatPreHookAction, hook: (data?: any) => Promise<boolean>)` | Sets a pre-hook function that runs before a specific user action (see [AutopilotChatPreHookAction](#autopilotchatprehookaction)) |
+| `getPreHook(action: AutopilotChatPreHookAction)` | Returns the pre-hook function for a specific action, defaults to returning `Promise.resolve(true)` if no hook is set |
 
 ### Event Handling
 
