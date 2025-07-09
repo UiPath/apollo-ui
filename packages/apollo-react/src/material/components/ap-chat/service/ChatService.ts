@@ -122,6 +122,7 @@ export class AutopilotChatService {
         this.setSuggestions = this.setSuggestions.bind(this);
         this.sendInputStreamEvent = this.sendInputStreamEvent.bind(this);
         this.sendOutputStreamEvent = this.sendOutputStreamEvent.bind(this);
+        this.setShowLoading = this.setShowLoading.bind(this);
     }
 
     static Instantiate({
@@ -391,6 +392,16 @@ export class AutopilotChatService {
         this._prompt = prompt;
 
         this._eventBus.publish(AutopilotChatEvent.SetPrompt, prompt);
+    }
+
+    /**
+     * Sets the loading state in the chat service.
+     * If this method is used, it overrides the default behavior from apollo.
+     *
+     * @param showLoading - Whether to show the loading state
+     */
+    setShowLoading(showLoading: boolean) {
+        this._internalService.publish(AutopilotChatInternalEvent.SetShowLoading, showLoading);
     }
 
     /**
