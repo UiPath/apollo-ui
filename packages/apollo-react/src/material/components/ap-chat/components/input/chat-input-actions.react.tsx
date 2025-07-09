@@ -93,6 +93,8 @@ function AutopilotChatInputActionsComponent({
                 });
 
                 setError(errorMessages.join('\n'));
+            } else {
+                setError(undefined);
             }
 
             addAttachments(parsedFiles.filter(file => file.size <= allowedAttachments.maxSize));

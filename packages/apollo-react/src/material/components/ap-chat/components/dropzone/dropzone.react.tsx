@@ -124,6 +124,10 @@ function AutopilotChatDropzoneComponent({
                 return;
             }
 
+            if (fileRejections.length === 0) {
+                setError(undefined);
+            }
+
             if (allowedAttachments.multiple) {
                 addAttachments(parsedFiles);
             } else if (parsedFiles.length === 1) {
