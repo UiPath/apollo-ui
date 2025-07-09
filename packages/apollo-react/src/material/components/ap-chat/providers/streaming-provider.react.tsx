@@ -35,9 +35,18 @@ export function AutopilotStreamingProvider({ children }: { children: React.React
             setStreaming(!message.done);
         });
 
+        const unsubscribeResponse = chatService.on(AutopilotChatEvent.Response, (message: AutopilotChatMessage) => {
+            if (message.stream && !message.done) {
+                setStreaming(true);
+            } else {
+                setStreaming(false);
+            }
+        });
+
         return () => {
             unsubscribeStreaming();
             unsubscribeStopResponse();
+            unsubscribeResponse();
         };
     }, [ chatService ]);
 
