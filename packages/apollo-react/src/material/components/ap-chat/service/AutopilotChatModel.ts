@@ -195,6 +195,7 @@ export enum AutopilotChatInterceptableEvent {
  * @property {string} SetAllowedAttachments - Emitted when the allowed attachments are set
  * @property {string} ToggleAutoScroll - Emitted when the auto scroll is toggled
  * @property {string} SetIsLoadingMoreMessages - Emitted when the is loading more messages is set
+ * @property {string} SetShowLoading - Emitted when the show loading is set
  * @property {string} ShouldShowLoadingMoreMessages - Emitted when loading more messages should be shown
  * @property {string} PrependOlderMessages - Emitted when older messages are prepended to the conversation
  * @property {string} ShowLoadingState - Emitted when the loading state should be shown
@@ -209,6 +210,7 @@ export enum AutopilotChatInternalEvent {
     SetAllowedAttachments = 'setAllowedAttachments',
     ToggleAutoScroll = 'toggleAutoScroll',
     SetIsLoadingMoreMessages = 'setIsLoadingMoreMessages',
+    SetShowLoading = 'setShowLoading',
     ShouldShowLoadingMoreMessages = 'shouldShowLoadingMoreMessages',
     PrependOlderMessages = 'prependOlderMessages',
     ShowLoadingState = 'showLoadingState',
