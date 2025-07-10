@@ -62,14 +62,14 @@ export const InputContainer = styled('div')(({ theme }) => ({
 const GradientContainer = styled('div')(({ theme }) => ({
     position: 'absolute',
     zIndex: 1,
-    bottom: 0,
+    bottom: token.Spacing.SpacingMicro,
     left: token.Spacing.SpacingBase,
     width: `calc(100% - 2 * ${token.Spacing.SpacingBase})`,
-    height: token.Spacing.SpacingBase,
+    height: token.Spacing.SpacingXs,
     background: `linear-gradient(
         to bottom,
-        ${theme.palette.semantic.colorBackground}25 0%,
-        ${theme.palette.semantic.colorBackground}50 25%,
+        ${theme.palette.semantic.colorBackground}50 0%,
+        ${theme.palette.semantic.colorBackground}75 25%,
         ${theme.palette.semantic.colorBackground} 50%
     )`,
 }));
