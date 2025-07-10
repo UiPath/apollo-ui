@@ -53,6 +53,10 @@ export const getChatModeKey = (instanceName = CHAT_INSTANCE_DEFAULT_NAME) => {
         return Object.values(ServiceType).includes(pathWithoutUnderscore as ServiceType);
     });
 
+    if (window.location.hostname === 'localhost') {
+        return `${CHAT_MODE_KEY}-${instanceName}-${window.location.pathname}`;
+    }
+
     if (serviceIndex === -1) {
         return CHAT_MODE_KEY;
     }
