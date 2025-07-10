@@ -40,6 +40,7 @@ const GroupItem = styled('div')<{ isActive: boolean; showRemoveIcon: boolean }>(
         opacity: showRemoveIcon ? 1 : 0,
         position: 'relative',
         left: token.Spacing.SpacingXs,
+        marginRight: token.Spacing.SpacingBase,
     },
 }));
 

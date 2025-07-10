@@ -65,6 +65,13 @@ const ChatHistoryContainer = styled('div')<{ isFullScreen: boolean; width: numbe
     },
 }));
 
+const EmptyStateContainer = styled('div')(() => ({
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: '100%',
+}));
+
 export interface ChatHistoryGroup {
     title: string;
     items: AutopilotChatHistoryType[];
@@ -210,9 +217,11 @@ const AutopilotChatHistoryComponent: React.FC<AutopilotChatHistoryProps> = ({
                             </div>
                         </>
                     ) : (
-                        <ap-typography color={theme.palette.semantic.colorForeground}>
-                            {t('chat-history-empty')}
-                        </ap-typography>
+                        <EmptyStateContainer>
+                            <ap-typography color={theme.palette.semantic.colorForeground}>
+                                {t('chat-history-empty')}
+                            </ap-typography>
+                        </EmptyStateContainer>
                     )}
                 </ChatHistoryContainer>
             </FocusLock>
