@@ -62,7 +62,6 @@ const NonCodeContentContainer = styled('div')(({ theme }) => ({
     maxWidth: '100%',
     overflow: 'auto',
     fontFamily: token.FontFamily.FontNormal,
-    whiteSpace: 'pre-wrap',
 }));
 
 type CodeBlockProps = {
