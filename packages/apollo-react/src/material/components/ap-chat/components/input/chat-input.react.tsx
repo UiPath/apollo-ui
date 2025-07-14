@@ -62,7 +62,7 @@ export const InputContainer = styled('div')(({ theme }) => ({
 const GradientContainer = styled('div')(({ theme }) => ({
     position: 'absolute',
     zIndex: 1,
-    bottom: token.Spacing.SpacingMicro,
+    bottom: '2px',
     left: token.Spacing.SpacingBase,
     width: `calc(100% - 2 * ${token.Spacing.SpacingBase})`,
     height: token.Spacing.SpacingXs,
