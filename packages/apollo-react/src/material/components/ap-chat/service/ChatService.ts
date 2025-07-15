@@ -48,7 +48,11 @@ export class AutopilotChatService {
         },
         // Settings will be disabled by default since each consumer needs to implement their own settings page
         // Or the framework will provide a settings page that will be used by all framework consumers
-        disabledFeatures: { settings: true },
+        // Audio will be disabled by default since each consumer needs to implement their own audio support
+        disabledFeatures: {
+            settings: true,
+            audio: true,
+        },
         settingsRenderer: () => {},
         models: undefined,
         selectedModel: undefined,
