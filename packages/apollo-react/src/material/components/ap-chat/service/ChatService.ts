@@ -355,6 +355,7 @@ export class AutopilotChatService {
      */
     setDisabledFeatures(features: AutopilotChatDisabledFeatures) {
         this._config.disabledFeatures = {
+            ...this._initialConfig.disabledFeatures,
             ...this._config.disabledFeatures,
             ...features,
         };
