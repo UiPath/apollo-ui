@@ -8,8 +8,6 @@ import {
 import token, { FontVariantToken } from '@uipath/apollo-core/lib';
 import React from 'react';
 
-import { Features } from '../../../../utils/featureFlags/featureFlagConstants';
-import { getFeatureFlag } from '../../../../utils/featureFlags/featureFlags';
 import { t } from '../../../../utils/localization/loc';
 import { useAttachments } from '../../providers/attachements-provider.react';
 import { useChatState } from '../../providers/chat-state-provider.react';
@@ -109,8 +107,6 @@ function AutopilotChatInputActionsComponent({
             .join(',');
     }, [ allowedAttachments ]);
 
-    const enableVoiceChat = getFeatureFlag(Features.EnableVoiceChat.name);
-
     return (
         <InputActionsContainer>
             <InputActionsGroup>
@@ -174,7 +170,7 @@ function AutopilotChatInputActionsComponent({
             </InputActionsGroup>
 
             <InputActionsGroup>
-                {!disabledFeatures.audio && enableVoiceChat && (
+                {!disabledFeatures.audio && (
                     <AutopilotChatAudio/>
                 )}
                 <SubmitButtonContainer>
