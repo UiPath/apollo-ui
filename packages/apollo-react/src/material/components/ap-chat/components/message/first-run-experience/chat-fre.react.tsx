@@ -26,6 +26,7 @@ const FREHeader = styled('div')(() => ({
     display: 'flex',
     flexDirection: 'column',
     gap: token.Spacing.SpacingXs,
+    marginBottom: token.Spacing.SpacingL,
 }));
 
 function AutopilotChatFREComponent() {

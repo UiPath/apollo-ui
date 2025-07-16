@@ -13,7 +13,6 @@ import { t } from '../../../../../utils/localization/loc';
 import { useChatService } from '../../../providers/chat-service.provider.react';
 
 const SuggestionList = styled('div')(({ disableAnimation }: { disableAnimation?: boolean }) => ({
-    marginTop: token.Spacing.SpacingXl,
     display: 'flex',
     flexDirection: 'column',
     gap: token.Spacing.SpacingXs,
