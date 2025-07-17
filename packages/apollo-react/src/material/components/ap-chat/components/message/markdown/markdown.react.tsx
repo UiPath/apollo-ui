@@ -50,6 +50,7 @@ const StyledMarkdown = React.memo(
 
 const FAKE_STREAM_CHARS_COUNT = 10;
 const FAKE_STREAM_INTERVAL = 50;
+const CHUNK_QUEUE_PROCESS_INTERVAL = 50;
 
 function AutopilotChatMarkdownRendererComponent({ message }: { message: AutopilotChatMessage }) {
     // Only store message ID and content separately to minimize re-renders
@@ -57,6 +58,8 @@ function AutopilotChatMarkdownRendererComponent({ message }: { message: Autopilo
     const [ content, setContent ] = React.useState(message.fakeStream ? '' : (message.content || ''));
     const chatService = useChatService();
     const { setStreaming } = useStreaming();
+    const chunkQueue = React.useRef<string[]>([]);
+    const lastChunkQueueProcessedTime = React.useRef<number>(0);
 
     // Update the message ID ref if a new message is passed
     React.useEffect(() => {
@@ -73,6 +76,8 @@ function AutopilotChatMarkdownRendererComponent({ message }: { message: Autopilo
                 clearInterval(fakeStreamInterval);
                 setStreaming(false);
                 setContent(message.content || '');
+                chunkQueue.current = [];
+                lastChunkQueueProcessedTime.current = 0;
             });
 
             const characters = message.content.split('');
@@ -107,21 +112,27 @@ function AutopilotChatMarkdownRendererComponent({ message }: { message: Autopilo
             return;
         }
 
-        let animationFrameRef: number | null = null;
-
         const unsubscribe = chatService.on(AutopilotChatEvent.SendChunk, (msg: AutopilotChatMessage) => {
             if (msg.id === messageId.current) {
-                animationFrameRef = requestAnimationFrame(() => {
-                    setContent(prevContent => `${prevContent}${msg.content}`);
-                });
+                chunkQueue.current.push(msg.content);
+
+                if (Date.now() - lastChunkQueueProcessedTime.current > CHUNK_QUEUE_PROCESS_INTERVAL) {
+                    lastChunkQueueProcessedTime.current = Date.now();
+
+                    setContent(prevContent => `${prevContent}${chunkQueue.current.join('')}`);
+                    chunkQueue.current = [];
+                } else {
+                    if (msg.done) {
+                        lastChunkQueueProcessedTime.current = 0;
+
+                        setContent(prevContent => `${prevContent}${chunkQueue.current.join('')}`);
+                        chunkQueue.current = [];
+                    }
+                }
             }
         });
 
         return () => {
-            if (animationFrameRef) {
-                cancelAnimationFrame(animationFrameRef);
-            }
-
             unsubscribe();
         };
     }, [ chatService ]);

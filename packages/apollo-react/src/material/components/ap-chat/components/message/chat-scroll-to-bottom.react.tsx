@@ -75,7 +75,7 @@ function AutopilotChatScrollToBottomButtonComponent({ overflowContainer }: Scrol
                     const rect = overflowContainer.getBoundingClientRect();
 
                     setBottom(Math.round(window.innerHeight - rect.bottom));
-                    setLeft(Math.round(rect.left + rect.width / 2));
+                    setLeft(Math.round(rect.left + rect.width / 2 - parseInt(token.Spacing.SpacingM, 10)));
                 }
             });
         };

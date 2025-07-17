@@ -104,11 +104,11 @@ const AutopilotChatContent = React.memo(() => {
 export function ApAutopilotChatReact({ chatServiceInstance }: { chatServiceInstance: AutopilotChatService }) {
     return (
         <AutopilotChatServiceProvider chatServiceInstance={chatServiceInstance}>
-            <AutopilotChatScrollProvider>
-                <AutopilotChatStateProvider>
-                    <AutopilotErrorProvider>
-                        <AutopilotLoadingProvider>
-                            <AutopilotStreamingProvider>
+            <AutopilotStreamingProvider>
+                <AutopilotChatScrollProvider>
+                    <AutopilotChatStateProvider>
+                        <AutopilotErrorProvider>
+                            <AutopilotLoadingProvider>
                                 <AutopilotAttachmentsProvider>
                                     <AutopilotModelPickerProvider>
                                         <AutopilotChatWidthProvider>
@@ -118,11 +118,11 @@ export function ApAutopilotChatReact({ chatServiceInstance }: { chatServiceInsta
                                         </AutopilotChatWidthProvider>
                                     </AutopilotModelPickerProvider>
                                 </AutopilotAttachmentsProvider>
-                            </AutopilotStreamingProvider>
-                        </AutopilotLoadingProvider>
-                    </AutopilotErrorProvider>
-                </AutopilotChatStateProvider>
-            </AutopilotChatScrollProvider>
+                            </AutopilotLoadingProvider>
+                        </AutopilotErrorProvider>
+                    </AutopilotChatStateProvider>
+                </AutopilotChatScrollProvider>
+            </AutopilotStreamingProvider>
         </AutopilotChatServiceProvider>
     );
 }

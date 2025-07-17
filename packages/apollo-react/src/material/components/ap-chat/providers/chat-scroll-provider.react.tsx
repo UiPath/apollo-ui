@@ -58,10 +58,10 @@ export const AutopilotChatScrollProvider: React.FC<AutopilotChatScrollProviderPr
         if (overflowContainer) {
             overflowContainer.scrollTo({
                 top: overflowContainer.scrollHeight,
-                behavior,
+                behavior: streaming ? 'instant' : behavior,
             });
         }
-    }, [ autoScroll, overflowContainer ]);
+    }, [ autoScroll, overflowContainer, streaming ]);
 
     const handleResize = React.useCallback(() => {
         if (!contentRef.current || !overflowContainer) {
