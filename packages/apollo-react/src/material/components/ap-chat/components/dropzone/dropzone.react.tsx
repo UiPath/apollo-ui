@@ -148,12 +148,9 @@ function AutopilotChatDropzoneComponent({
         accept: allowedAttachments.types,
         maxSize: allowedAttachments.maxSize,
         maxFiles: allowedAttachments.maxCount,
+        disabled: disabledFeatures.attachments,
         ...dropzoneOptions,
     });
-
-    if (disabledFeatures.attachments) {
-        return children;
-    }
 
     return (
         <DropzoneRoot {...getRootProps()}>
