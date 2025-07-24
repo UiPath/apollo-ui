@@ -245,14 +245,14 @@ The Autopilot Chat component is a full-featured chat interface that can be embed
 
 ## Integration with ap-shell
 
-The autopilot chat is automatically available when using ap-shell (the standard container for UiPath applications).
+The autopilot chat is automatically available when using ap-shell (the standard container for UiPath applications). A default chat service is provided on \`window.PortalShell.AutopilotChat\` that is automatically bound to the chat component.
 
 ## Standalone Implementation
 
 For standalone usage outside of ap-shell:
 
 <div style="margin-top: 15px; padding: 20px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #17a2b8;">
-<h4 style="margin-top: 0; color: #2c3e50; font-size: 14px;">Direct Component Usage</h4>
+<h4 style="margin-top: 0; color: #2c3e50; font-size: 14px;">Basic Setup</h4>
 <pre style="margin: 0; padding: 10px; background: #2c3e50; color: #ecf0f1; border-radius: 4px; overflow-x: auto; font-size: 12px;">// Initialize autopilot chat service
 const chatService = window.PortalShell.AutopilotChat;
 
@@ -269,7 +269,7 @@ chatService.initialize({
 });
 
 // Bind to component and open
-const chatElement = document.getElementById('my-chat');
+const chatElement = document.querySelector('ap-autopilot-chat');
 chatElement.chatServiceInstance = chatService;
 chatService.open();</pre>
 </div>
@@ -277,51 +277,88 @@ chatService.open();</pre>
 ## Key Features
 
 The component includes:
-- Side-by-side layout (default in ap-shell)
-- Full-screen and embedded modes for flexible integration
-- Markdown support for rich text formatting
-- File attachments with drag-and-drop
-- Custom message renderers for specialized content
-- First-run experience with guided onboarding
-- Streaming responses and real-time updates
+- Clean, default chat interface
+- Side-by-side layout 
+- Basic chat functionality
+- Configurable feature toggles
 
-Features demonstrated:
-- ap-shell default integration
-- Standalone component usage
-- Side-by-side layout configuration
-- First run experience setup
+**Features demonstrated:**
+- Basic chat service initialization
+- Simple configuration setup  
+- Component binding
+- Default chat interface
+
+## Documentation
+
+For complete API reference and advanced usage examples, see the <a href="https://github.com/UiPath/apollo-design-system/blob/master/packages/apollo-react/src/material/components/ap-chat/DOCS.md" target="_blank">official Autopilot Chat documentation</a>.
         `,
         'basic-conversation': `
 # Basic Conversation Demo
 
-Demonstrates a pre-loaded conversation to show message history.
+Demonstrates a pre-loaded conversation to show message history and basic chat functionality.
 
-## Code Example
+## Implementation
 
 <div style="margin-top: 15px; padding: 20px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #17a2b8;">
-<h4 style="margin-top: 0; color: #2c3e50; font-size: 14px;">JavaScript Implementation</h4>
-<pre style="margin: 0; padding: 10px; background: #2c3e50; color: #ecf0f1; border-radius: 4px; overflow-x: auto; font-size: 12px;">// Set up a pre-populated conversation
-const conversation = [
+<h4 style="margin-top: 0; color: #2c3e50; font-size: 14px;">Basic Conversation Setup</h4>
+<pre style="margin: 0; padding: 10px; background: #2c3e50; color: #ecf0f1; border-radius: 4px; overflow-x: auto; font-size: 12px;">import { AutopilotChatService } from '@uipath/portal-shell-util';
+
+// Initialize chat service for this story
+const instanceName = 'chat-story-basic-conversation';
+const chatService = AutopilotChatService.Instantiate({ instanceName });
+
+// Configure with basic demo mode
+const args = {
+    demoMode: 'basic',
+    showFirstRun: false,
+    // ... other default args
+};
+
+// The helper automatically sets up the demo
+const config = {
+    mode: 'side-by-side',
+    disabledFeatures: {
+        settings: true,
+        // ... other features configured from args
+    },
+    useLocalHistory: false,
+    paginatedMessages: false,
+};
+
+chatService.initialize(config);
+
+// Demo mode 'basic' automatically loads this conversation after 500ms:
+const basicConversation = [
     {
         id: '1',
         role: 'user',
         content: 'How do I create a new automation project?'
     },
     {
-        id: '2', 
+        id: '2',
         role: 'assistant',
-        content: 'To create a new automation project:\n\n1. Open UiPath Studio\n2. Click "New Project"\n3. Choose your project type\n4. Give it a name and click "Create"\n\nWould you like more details on any step?'
+        content: 'To create a new automation project in UiPath Studio:\\n\\n1. Open UiPath Studio\\n2. Click on "New Project" from the home screen\\n3. Choose your project type (Process, Library, etc.)\\n4. Give your project a meaningful name\\n5. Select the appropriate dependencies\\n6. Click "Create" to initialize your project\\n\\nWould you like me to explain any of these steps in more detail?'
     }
 ];
 
-// Apply the conversation to the chat service
-chatService.setConversation(conversation);</pre>
+// This is automatically called by setupDemoMode:
+// setTimeout(() => {
+//     chatService.setConversation(basicConversation);
+// }, 500);
+
+chatService.open({ mode: 'side-by-side' });</pre>
 </div>
 
 **Features demonstrated:**
-- Pre-populated conversation
-- Message display with user and assistant roles
-- Basic markdown rendering
+- Pre-populated conversation with realistic UiPath content
+- User and assistant message roles
+- Multi-line assistant responses with step-by-step instructions
+- Delayed conversation loading (500ms) 
+- Automatic demo setup through demoMode configuration
+
+## Documentation
+
+For complete API reference and advanced usage examples, see the <a href="https://github.com/UiPath/apollo-design-system/blob/master/packages/apollo-react/src/material/components/ap-chat/DOCS.md" target="_blank">official Autopilot Chat documentation</a>.
         `,
         'streaming-response': `
 # Streaming Response Demo
@@ -368,6 +405,10 @@ streamMessage('This is a streaming response that appears word by word.');</pre>
 - Word-by-word streaming simulation
 - Real-time message updates
 - Streaming completion handling
+
+## Documentation
+
+For complete API reference and advanced usage examples, see the <a href="https://github.com/UiPath/apollo-design-system/blob/master/packages/apollo-react/src/material/components/ap-chat/DOCS.md" target="_blank">official Autopilot Chat documentation</a>.
         `,
         'with-attachments': `
 # File Attachments Demo
@@ -406,7 +447,7 @@ const handleFileMessage = (files) => {
 
 // Respond with file analysis
 chatService.sendResponse({
-    content: 'I\'ve analyzed your files. Here are my findings:\n\n**File Overview:**\n- Process Name: Invoice Processing\n- Activities Count: 47\n- Decision Points: 5'
+    content: 'I\\'ve analyzed your files. Here are my findings:\\n\\n**File Overview:**\\n- Process Name: Invoice Processing\\n- Activities Count: 47\\n- Decision Points: 5'
 });</pre>
 </div>
 
@@ -415,6 +456,10 @@ chatService.sendResponse({
 - Attachment type restrictions
 - File size limitations
 - Multiple attachment support
+
+## Documentation
+
+For complete API reference and advanced usage examples, see the <a href="https://github.com/UiPath/apollo-design-system/blob/master/packages/apollo-react/src/material/components/ap-chat/DOCS.md" target="_blank">official Autopilot Chat documentation</a>.
         `,
         'with-history': `
 # Conversation History Demo
@@ -466,6 +511,10 @@ chatService.on('history-selected', ({ historyId }) => {
 - Local storage using IndexedDB
 - Conversation switching
 - History management controls
+
+## Documentation
+
+For complete API reference and advanced usage examples, see the <a href="https://github.com/UiPath/apollo-design-system/blob/master/packages/apollo-react/src/material/components/ap-chat/DOCS.md" target="_blank">official Autopilot Chat documentation</a>.
         `,
         'embedded-mode': `
 # Embedded Mode Demo
@@ -534,6 +583,10 @@ Features demonstrated:
 - Custom container positioning
 - Embedded mode configuration
 - Integration with existing layouts
+
+## Documentation
+
+For complete API reference and advanced usage examples, see the <a href="https://github.com/UiPath/apollo-design-system/blob/master/packages/apollo-react/src/material/components/ap-chat/DOCS.md" target="_blank">official Autopilot Chat documentation</a>.
         `,
         'full-screen-mode': `
 # Full Screen Mode Demo
@@ -579,6 +632,10 @@ const exitFullScreen = () => {
 - Full-screen overlay interface
 - Modal-like behavior
 - Maximized chat experience
+
+## Documentation
+
+For complete API reference and advanced usage examples, see the <a href="https://github.com/UiPath/apollo-design-system/blob/master/packages/apollo-react/src/material/components/ap-chat/DOCS.md" target="_blank">official Autopilot Chat documentation</a>.
         `,
         'minimal-ui': `
 # Minimal UI Demo
@@ -621,6 +678,10 @@ chatService.open();
 - No attachments or history
 - Clean, minimal interface
 - Essential chat functionality only
+
+## Documentation
+
+For complete API reference and advanced usage examples, see the <a href="https://github.com/UiPath/apollo-design-system/blob/master/packages/apollo-react/src/material/components/ap-chat/DOCS.md" target="_blank">official Autopilot Chat documentation</a>.
         `,
         'with-custom-labels': `
 # Custom Labels Demo
@@ -637,7 +698,7 @@ chatService.initialize({
     overrideLabels: {
         inputPlaceholder: 'Ask me anything about automation...',
         footerDisclaimer: 'AI responses may contain errors. Always verify important information.',
-        title: 'Automation Assistant'
+        title: 'Custom Title'
     }
 });
 
@@ -649,6 +710,10 @@ chatService.open();</pre>
 - Custom footer disclaimer
 - Custom title
 - Label override system
+
+## Documentation
+
+For complete API reference and advanced usage examples, see the <a href="https://github.com/UiPath/apollo-design-system/blob/master/packages/apollo-react/src/material/components/ap-chat/DOCS.md" target="_blank">official Autopilot Chat documentation</a>.
         `,
         'custom-widgets': `
 # Custom Widgets Demo
@@ -722,6 +787,10 @@ chatService.on('export-chart', () => {
 - Widget registration with chat service
 - Custom action buttons on widget messages
 - Event handling for widget interactions
+
+## Documentation
+
+For complete API reference and advanced usage examples, see the <a href="https://github.com/UiPath/apollo-design-system/blob/master/packages/apollo-react/src/material/components/ap-chat/DOCS.md" target="_blank">official Autopilot Chat documentation</a>.
         `,
         'interactive-features': `
 # Interactive Features Demo
@@ -734,51 +803,86 @@ Shows interactive chat capabilities with suggestions, loading states, models, an
 <h4 style="margin-top: 0; color: #2c3e50; font-size: 14px;">Interactive Features Setup</h4>
 <pre style="margin: 0; padding: 10px; background: #2c3e50; color: #ecf0f1; border-radius: 4px; overflow-x: auto; font-size: 12px;">// Set up loading messages
 chatService.setDefaultLoadingMessages([
-    'Analyzing...', 
-    'Processing...', 
-    'Almost done...'
-], 2000);
+    'Analyzing your request...', 
+    'Processing data...', 
+    'Generating response...',
+    'Almost ready...'
+], 1500);
 
 // Set up suggestion buttons
 chatService.setSuggestions([
     {
-        label: 'Quick action',
-        prompt: 'Show me a quick example'
+        label: 'Create Workflow',
+        prompt: 'Help me create a new automation workflow'
     },
     {
-        label: 'Help', 
-        prompt: 'What can you help me with?'
+        label: 'Debug Process',
+        prompt: 'I need help debugging my automation process'
+    },
+    {
+        label: 'Best Practices',
+        prompt: 'Show me automation best practices'
+    },
+    {
+        label: 'API Integration',
+        prompt: 'How do I integrate with external APIs?'
     }
-]);
+], true);
 
 // Send message with custom actions
 chatService.sendResponse({
-    content: 'Here is an example with custom actions:',
+    content: 'Here are some interactive actions you can try:',
+    groupId: 'custom-actions-demo',
     actions: [
         {
-            name: 'download',
-            label: 'Download',
-            icon: 'download',
-            eventName: 'download-action',
-            details: { filename: 'example.xaml' }
+            name: 'create',
+            label: 'Create Project',
+            icon: 'add_circle',
+            eventName: 'create-project-action',
+            details: { type: 'automation' }
         },
         {
-            name: 'share',
-            label: 'Share',
-            icon: 'share',
+            name: 'analyze',
+            label: 'Analyze Code',
+            icon: 'analytics',
+            eventName: 'analyze-code-action'
+        },
+        {
+            name: 'deploy',
+            label: 'Deploy Process',
+            icon: 'rocket_launch',
             showInOverflow: true,
-            eventName: 'share-action'
+            eventName: 'deploy-process-action'
+        },
+        {
+            name: 'help',
+            label: 'Get Help',
+            icon: 'help',
+            showInOverflow: true,
+            eventName: 'help-action'
         }
     ]
 });
 
 // Handle action events
 chatService.on('download-action', ({ action }) => {
-    console.log('Download triggered:', action.details.filename);
+    console.log('Download action triggered:', action.details.filename);
 });
 
-chatService.on('share-action', ({ message }) => {
-    console.log('Share triggered for message:', message.id);
+chatService.on('create-project-action', ({ action }) => {
+    console.log('Create project action triggered:', action.details.type);
+});
+
+chatService.on('analyze-code-action', () => {
+    console.log('Analyze code action triggered');
+});
+
+chatService.on('deploy-process-action', () => {
+    console.log('Deploy process action triggered');
+});
+
+chatService.on('help-action', () => {
+    console.log('Help action triggered');
 });</pre>
 </div>
 
@@ -789,6 +893,10 @@ chatService.on('share-action', ({ message }) => {
 - Paginated message display
 - Custom action buttons (download and share)
 - Action event handling
+
+## Documentation
+
+For complete API reference and advanced usage examples, see the <a href="https://github.com/UiPath/apollo-design-system/blob/master/packages/apollo-react/src/material/components/ap-chat/DOCS.md" target="_blank">official Autopilot Chat documentation</a>.
         `,
         'feature-playground':
 '# Feature Playground\n\n' +
@@ -885,7 +993,272 @@ chatService.on('share-action', ({ message }) => {
 '- Live feature toggles\n' +
 '- Real-time configuration\n' +
 '- All chat capabilities\n' +
-'- Developer testing interface\n',
+'- Developer testing interface\n\n' +
+'## Documentation\n\n' +
+// eslint-disable-next-line max-len
+'For complete API reference and advanced usage examples, see the <a href="https://github.com/UiPath/apollo-design-system/blob/master/packages/apollo-react/src/material/components/ap-chat/DOCS.md" target="_blank">official Autopilot Chat documentation</a>.\n',
+        'error-handling': `
+# Error Handling Demo
+
+Demonstrates error handling capabilities including setting and clearing error states.
+
+## Implementation
+
+<div style="margin-top: 15px; padding: 20px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #dc3545;">
+<h4 style="margin-top: 0; color: #2c3e50; font-size: 14px;">Basic Error Management</h4>
+<pre style="margin: 0; padding: 10px; background: #2c3e50; color: #ecf0f1; border-radius: 4px; overflow-x: auto; font-size: 12px;">import { AutopilotChatService } from '@uipath/portal-shell-util';
+
+// Initialize chat service
+const instanceName = 'chat-story-error-handling';
+const chatService = AutopilotChatService.Instantiate({ instanceName });
+
+// Configure with error handling
+chatService.initialize({
+    mode: 'side-by-side',
+    disabledFeatures: {
+        settings: true,
+        // ... other features
+    },
+});
+
+// Setting an error message
+chatService.setError('❌ Something went wrong! Please try again.');
+
+// The error will be displayed in the chat interface
+// Usually shown as a banner or notification at the top
+
+// Clearing the error
+chatService.clearError();
+
+// Error display will be removed from the interface
+
+// Checking current error state
+const currentError = chatService.getError();
+if (currentError) {
+    console.log('Current error:', currentError);
+} else {
+    console.log('No error currently set');
+}
+
+// Open the chat
+chatService.open({ mode: 'side-by-side' });</pre>
+</div>
+
+## Demo Controls
+
+<div style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #6c757d;">
+<div style="display: flex; gap: 10px; flex-wrap: wrap;">
+<button id="set-error-demo" style="background: #dc3545; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px;">Set Error</button>
+<button id="clear-error-demo" style="background: #28a745; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px;">Clear Error</button>
+</div>
+</div>
+
+**Features demonstrated:**
+- Setting error messages with \`setError()\`
+- Clearing errors with \`clearError()\`
+- Checking error state with \`getError()\`
+- Error state display in chat interface
+- Interactive error state management
+
+## Documentation
+
+For complete API reference and advanced usage examples, see the <a href="https://github.com/UiPath/apollo-design-system/blob/master/packages/apollo-react/src/material/components/ap-chat/DOCS.md" target="_blank">official Autopilot Chat documentation</a>.
+        `,
+        'settings': `
+# Custom Settings Demo
+
+Demonstrates how to create a custom settings panel using the settingsRenderer function.
+
+## Implementation
+
+<div style="margin-top: 15px; padding: 20px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #17a2b8;">
+<h4 style="margin-top: 0; color: #2c3e50; font-size: 14px;">Settings Panel Implementation</h4>
+<pre style="margin: 0; padding: 10px; background: #2c3e50; color: #ecf0f1; border-radius: 4px; overflow-x: auto; font-size: 12px;">import { AutopilotChatService } from '@uipath/portal-shell-util';
+
+// Create custom settings renderer function
+const settingsRenderer = (element) => {
+    element.innerHTML = \`
+        &lt;div style="padding: 20px; font-family: system-ui;"&gt;
+            &lt;h3 style="margin-top: 0; margin-bottom: 20px; color: #2c3e50;"&gt;Chat Settings&lt;/h3&gt;
+            
+            &lt;div style="margin-bottom: 20px;"&gt;
+                &lt;h4 style="margin-bottom: 10px; color: #34495e;"&gt;Appearance&lt;/h4&gt;
+                &lt;label style="display: block; margin-bottom: 8px; cursor: pointer;"&gt;
+                    &lt;input type="checkbox" id="dark-mode" style="margin-right: 8px;" /&gt;
+                    Dark mode
+                &lt;/label&gt;
+                &lt;label style="display: block; margin-bottom: 8px; cursor: pointer;"&gt;
+                    &lt;input type="checkbox" id="compact-view" style="margin-right: 8px;" /&gt;
+                    Compact view
+                &lt;/label&gt;
+            &lt;/div&gt;
+
+            &lt;div style="margin-bottom: 20px;"&gt;
+                &lt;h4 style="margin-bottom: 10px; color: #34495e;"&gt;Notifications&lt;/h4&gt;
+                &lt;label style="display: block; margin-bottom: 8px; cursor: pointer;"&gt;
+                    &lt;input type="checkbox" id="sound-enabled" checked style="margin-right: 8px;" /&gt;
+                    Sound notifications
+                &lt;/label&gt;
+                &lt;label style="display: block; margin-bottom: 8px; cursor: pointer;"&gt;
+                    &lt;input type="checkbox" id="desktop-notifications" style="margin-right: 8px;" /&gt;
+                    Desktop notifications
+                &lt;/label&gt;
+            &lt;/div&gt;
+
+            &lt;div style="margin-bottom: 20px;"&gt;
+                &lt;h4 style="margin-bottom: 10px; color: #34495e;"&gt;Language&lt;/h4&gt;
+                &lt;select id="language-select" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;"&gt;
+                    &lt;option value="en"&gt;English&lt;/option&gt;
+                    &lt;option value="es"&gt;Español&lt;/option&gt;
+                    &lt;option value="fr"&gt;Français&lt;/option&gt;
+                    &lt;option value="de"&gt;Deutsch&lt;/option&gt;
+                    &lt;option value="ja"&gt;日本語&lt;/option&gt;
+                &lt;/select&gt;
+            &lt;/div&gt;
+
+            &lt;div style="margin-bottom: 20px;"&gt;
+                &lt;h4 style="margin-bottom: 10px; color: #34495e;"&gt;Advanced&lt;/h4&gt;
+                &lt;label style="display: block; margin-bottom: 8px; cursor: pointer;"&gt;
+                    &lt;input type="checkbox" id="auto-save" checked style="margin-right: 8px;" /&gt;
+                    Auto-save conversations
+                &lt;/label&gt;
+                &lt;label style="display: block; margin-bottom: 8px; cursor: pointer;"&gt;
+                    &lt;input type="checkbox" id="typing-indicator" checked style="margin-right: 8px;" /&gt;
+                    Show typing indicator
+                &lt;/label&gt;
+            &lt;/div&gt;
+
+            &lt;div style="border-top: 1px solid #eee; padding-top: 15px;"&gt;
+                &lt;button id="save-settings" style="background: #007acc; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; margin-right: 10px;"&gt;Save Settings&lt;/button&gt;
+                &lt;button id="reset-settings" style="background: #6c757d; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;"&gt;Reset&lt;/button&gt;
+            &lt;/div&gt;
+        &lt;/div&gt;
+    \`;
+
+    // Add event listeners
+    const saveButton = element.querySelector('#save-settings');
+    const resetButton = element.querySelector('#reset-settings');
+    
+    saveButton.addEventListener('click', () =&gt; {
+        const settings = {
+            darkMode: element.querySelector('#dark-mode').checked,
+            compactView: element.querySelector('#compact-view').checked,
+            soundEnabled: element.querySelector('#sound-enabled').checked,
+            desktopNotifications: element.querySelector('#desktop-notifications').checked,
+            language: element.querySelector('#language-select').value,
+            autoSave: element.querySelector('#auto-save').checked,
+            typingIndicator: element.querySelector('#typing-indicator').checked,
+        };
+        
+        // Apply settings and store them
+        chatService.patchConfig({
+            overrideLabels: { language: settings.language }
+        });
+        localStorage.setItem('chatSettings', JSON.stringify(settings));
+        
+        chatService.sendResponse({
+            content: \`✅ Settings saved successfully!
+
+            Current Configuration:
+            - Theme: \${settings.darkMode ? 'Dark' : 'Light'}
+            - Layout: \${settings.compactView ? 'Compact' : 'Standard'}
+            - Sound: \${settings.soundEnabled ? 'Enabled' : 'Disabled'}
+            - Desktop Notifications: \${settings.desktopNotifications ? 'Enabled' : 'Disabled'}
+            - Language: \${settings.language.toUpperCase()}
+            - Auto-save: \${settings.autoSave ? 'On' : 'Off'}
+            - Typing Indicator: \${settings.typingIndicator ? 'On' : 'Off'}
+
+            Your preferences have been updated.\`
+        });
+        
+        setTimeout(() =&gt; chatService.toggleSettings(false), 2000);
+    });
+    
+    resetButton.addEventListener('click', () =&gt; {
+        // Reset to defaults
+        element.querySelector('#dark-mode').checked = false;
+        element.querySelector('#compact-view').checked = false;
+        element.querySelector('#sound-enabled').checked = true;
+        element.querySelector('#desktop-notifications').checked = false;
+        element.querySelector('#language-select').value = 'en';
+        element.querySelector('#auto-save').checked = true;
+        element.querySelector('#typing-indicator').checked = true;
+        localStorage.removeItem('chatSettings');
+        
+        chatService.sendResponse({
+            content: '🔄 Settings reset to default values.'
+        });
+    });
+};
+
+// Configure with settings enabled
+chatService.initialize({
+    mode: 'side-by-side',
+    disabledFeatures: {
+        settings: false,  // Enable settings for this story
+        // ... other features
+    },
+    settingsRenderer: settingsRenderer,
+});
+
+chatService.open({ mode: 'side-by-side' });</pre>
+</div>
+
+**Features demonstrated:**
+- Custom settings panel with multiple sections
+- Form controls (checkboxes, select dropdowns)
+- Event handling for save and reset actions
+- Settings persistence with localStorage
+- Real-time configuration updates
+- Integration with chat service patchConfig
+- User feedback through chat responses
+
+## Documentation
+
+For complete API reference and advanced usage examples, see the <a href="https://github.com/UiPath/apollo-design-system/blob/master/packages/apollo-react/src/material/components/ap-chat/DOCS.md" target="_blank">official Autopilot Chat documentation</a>.
+        `,
+        'first-run-experience': `
+# First Run Experience Demo
+
+Demonstrates the first-run experience configuration with a welcome screen, title, description, and suggestion prompts.
+
+## Implementation
+
+<div style="margin-top: 15px; padding: 20px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #9b59b6;">
+<h4 style="margin-top: 0; color: #2c3e50; font-size: 14px;">Basic First Run Experience</h4>
+<pre style="margin: 0; padding: 10px; background: #2c3e50; color: #ecf0f1; border-radius: 4px; overflow-x: auto; font-size: 12px;">import { AutopilotChatService } from '@uipath/portal-shell-util';
+
+// Initialize chat service
+const chatService = AutopilotChatService.Instantiate();
+
+// Configure with first run experience
+chatService.initialize({
+    mode: 'side-by-side',
+    firstRunExperience: {
+        title: 'Welcome to Autopilot Chat!',
+        description: 'I\\'m here to help you with automation questions, process guidance, and UiPath best practices.',
+        suggestions: [
+            { label: 'Get Started', prompt: 'How do I begin with UiPath automation?' },
+            { label: 'Best Practices', prompt: 'What are UiPath automation best practices?' },
+            { label: 'Help & Support', prompt: 'Where can I find help and documentation?' }
+        ]
+    }
+});
+
+// Open the chat
+chatService.open({ mode: 'side-by-side' });</pre>
+</div>
+
+**Features demonstrated:**
+- Welcome screen with custom title and description
+- Suggestion buttons for quick start prompts
+- First-run experience configuration during initialization
+- Clean onboarding flow for new users
+
+## Documentation
+
+For complete API reference and advanced usage examples, see the <a href="https://github.com/UiPath/apollo-design-system/blob/master/packages/apollo-react/src/material/components/ap-chat/DOCS.md" target="_blank">official Autopilot Chat documentation</a>.
+        `,
     };
 
     return storySpecificDocs[storyId] || '';

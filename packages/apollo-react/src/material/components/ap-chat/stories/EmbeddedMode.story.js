@@ -27,19 +27,22 @@ export const EmbeddedMode = (args) => {
                     line-height: 1.6;
                     color: #333;
                 ">
-                    ${docs.split('\\n').map(line => {
+                    ${docs.split('\n').map(line => {
         if (line.startsWith('# ')) {
-            return `<h1 style="color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px;">${line.substring(2)}</h1>`;
+            return `<h1 style="color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; margin-bottom: 20px;">${line.substring(2)}</h1>`;
         } else if (line.startsWith('## ')) {
-            return `<h2 style="color: #34495e; margin-top: 30px; margin-bottom: 15px;">${line.substring(3)}</h2>`;
+            return `<h2 style="color: #34495e; margin-top: 20px; margin-bottom: 10px;">${line.substring(3)}</h2>`;
         } else if (line.startsWith('**') && line.endsWith(':**')) {
-            return `<h3 style="color: #7f8c8d; margin-top: 20px; margin-bottom: 10px;">${line.substring(2, line.length - 3)}</h3>`;
+            return `<h3 style="color: #7f8c8d; margin-top: 15px; margin-bottom: 8px;">${line.substring(2, line.length - 3)}</h3>`;
         } else if (line.startsWith('- ')) {
             return `<li style="margin-bottom: 5px;">${line.substring(2)}</li>`;
         } else if (line.trim() === '') {
-            return '<br>';
+            return '';
+        // eslint-disable-next-line max-len
+        } else if (line.includes('<div') || line.includes('</div>') || line.includes('<pre') || line.includes('</pre>') || line.includes('<h4')) {
+            return line; // Return HTML content as-is without wrapping in <p>
         }
-        return `<p style="margin-bottom: 15px;">${line}</p>`;
+        return `<p style="margin-bottom: 8px;">${line}</p>`;
     })
         .join('')}
                 </div>

@@ -8,7 +8,7 @@ WithCustomLabels.args = {
     ...defaultArgs,
     inputPlaceholder: 'Ask me anything about automation...',
     footerDisclaimer: 'AI responses may contain errors. Always verify important information.',
-    title: 'Automation Assistant',
+    title: 'Custom Title',
 };
 
 WithCustomLabels.play = createStandardPlay('with-custom-labels');
