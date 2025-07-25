@@ -435,7 +435,7 @@
   font-family: "Material Icons";
   font-style: normal;
   font-weight: 400;
-  src: url("./icons/material/MaterialIcons-Regular.woff");
+  src: url("./icons/material/MaterialIcons-Regular.woff2") format("woff2");
 }
 
 @font-face {
