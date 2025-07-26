@@ -87,8 +87,6 @@ export const EmbeddedMode = (args) => {
 EmbeddedMode.args = {
     ...defaultArgs,
     mode: 'embedded',
-    headerDisabled: false, // Keep header for minimize functionality
-    closeDisabled: false, // Allow closing in embedded mode
     resizeDisabled: true,
     fullScreenDisabled: true,
 };

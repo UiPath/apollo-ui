@@ -24,17 +24,24 @@ import { AutopilotChatLoading } from './loader/chat-loading.react';
 import { AutopilotChatLoadingMessages } from './loader/chat-loading-messages.react';
 import { AutopilotChatSuggestions } from './suggestions/chat-suggestions.react';
 
-const MessageContainer = styled('div')(() => ({
+const MessageContainer = styled('div')(({
+    isOverflow, isContainerWide,
+}: { isOverflow: boolean; isContainerWide: boolean }) => ({
     display: 'flex',
     flexDirection: 'column',
     gap: token.Spacing.SpacingXl,
-    margin: `0 ${token.Spacing.SpacingL}`,
     height: '100%',
+
+    ...(isOverflow && isContainerWide && {
+        position: 'relative',
+        // account for the scrollbar when the container is greater than max width
+        left: token.Spacing.SpacingXs,
+    }),
 }));
 
 const removeFakeStream = (messages: AutopilotChatMessage[]) => {
     return messages.map(({
-        fakeStream, ...rest
+        fakeStream: _fakeStream, ...rest
     }) => rest);
 };
 
@@ -61,7 +68,9 @@ const MessageGroup = React.memo(({ messages }: { messages: AutopilotChatMessage[
     );
 });
 
-function AutopilotChatMessagesComponent() {
+function AutopilotChatMessagesComponent({
+    isOverflow, isContainerWide,
+}: { isOverflow: boolean; isContainerWide: boolean }) {
     const chatService = useChatService();
     const [ showSkeletonLoader, setShowSkeletonLoader ] = React.useState<boolean>(false);
     const [ messages, setMessages ] = React.useState<AutopilotChatMessage[]>(
@@ -187,7 +196,7 @@ function AutopilotChatMessagesComponent() {
     }, [ messages ]);
 
     return (
-        <MessageContainer>
+        <MessageContainer isOverflow={isOverflow} isContainerWide={isContainerWide}>
             {showSkeletonLoader ? (
                 <SkeletonLoader />
             ) :

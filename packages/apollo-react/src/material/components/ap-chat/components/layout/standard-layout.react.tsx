@@ -23,17 +23,18 @@ const MainContainer = styled('div')<{ historyOpen: boolean }>(({ historyOpen }: 
     height: '100%',
     maxHeight: '100%',
     minWidth: '0',
+    margin: `0 ${token.Spacing.SpacingL}`,
     ...(historyOpen && { width: `calc(100% - ${CHAT_DRAWER_WIDTH_FULL_SCREEN}px)` }),
 }));
 
 const HeaderContainer = styled('div')(() => ({
     flexShrink: 0,
-    padding: `${token.Spacing.SpacingBase} ${token.Spacing.SpacingL}`,
+    padding: `${token.Spacing.SpacingBase} 0`,
 }));
 
 const InputBackground = styled('div')(() => ({
     flexShrink: 0,
-    padding: `0 ${token.Spacing.SpacingL} ${token.Spacing.SpacingXs}`,
+    paddingBottom: token.Spacing.SpacingXs,
 }));
 
 const InputContainer = styled('div')(() => ({

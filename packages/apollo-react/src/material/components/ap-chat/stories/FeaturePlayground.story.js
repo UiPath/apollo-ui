@@ -82,7 +82,7 @@ export const FeaturePlayground = (args) => {
                             <ap-checkbox id="disable-fullscreen" label="Disable Fullscreen"></ap-checkbox>
                             <ap-checkbox id="disable-attachments" label="Disable Attachments"></ap-checkbox>
                             <ap-checkbox id="disable-history" label="Disable History"></ap-checkbox>
-                            <ap-checkbox id="disable-settings" label="Disable Settings" checked></ap-checkbox>
+                            <ap-checkbox id="disable-settings" label="Disable Settings"></ap-checkbox>
                             <ap-checkbox id="disable-close" label="Disable Close"></ap-checkbox>
                             <ap-checkbox id="use-local-history" label="Use Local History" checked></ap-checkbox>
                             <ap-checkbox id="embed-mode" label="Embed Mode"></ap-checkbox>
@@ -103,8 +103,7 @@ export const FeaturePlayground = (args) => {
             
             <!-- Embedded mode container -->
             <div id="autopilot-chat-embedded-container" style="display: none; position: fixed; bottom: 20px; right: 20px; width: 400px; height: 600px; z-index: 9999;">
-                <h3 style="position: absolute; top: -30px; left: 0; color: #333;">Embedded mode container</h3>
-                <div id="autopilot-chat-embedded-content" style="width: 100%; height: 100%; border: 2px solid #f00; border-radius: 12px; overflow: hidden; box-shadow: 0 5px 30px rgba(0,0,0,0.3); background: white;"></div>
+                <div id="autopilot-chat-embedded-content" style="width: 100%; height: 100%; border-radius: 12px; overflow: hidden; box-shadow: 0 5px 30px rgba(0,0,0,0.3); background: white;"></div>
             </div>
         </div>
     `);

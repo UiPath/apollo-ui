@@ -22,6 +22,18 @@ FirstRunExperience.play = async ({
 
     const chatService = initializeChatService(args, container, storyId, canvasElement);
 
+    // Configure first run experience
+    chatService.setFirstRunExperience({
+        title: 'Welcome to Autopilot Chat!',
+        // eslint-disable-next-line max-len
+        description: 'I\'m here to help you with automation questions, process guidance, and UiPath best practices.',
+        suggestions: [
+            { label: 'Get Started', prompt: 'How do I begin with UiPath automation?' },
+            { label: 'Best Practices', prompt: 'What are UiPath automation best practices?' },
+            { label: 'Help & Support', prompt: 'Where can I find help and documentation?' },
+        ],
+    });
+
     // Set the chat service instance on the component
     const chatElement = canvasElement.querySelector(`#chat-${storyId}`);
     if (chatElement) {

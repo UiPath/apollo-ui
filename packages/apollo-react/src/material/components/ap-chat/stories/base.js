@@ -154,12 +154,13 @@ export const sampleConversations = {
         {
             id: '1',
             role: 'user',
-            content: 'Explain BPMN in detail',
+            content: 'How do I handle errors in RPA workflows?',
         },
         {
             id: '2',
             role: 'assistant',
-            content: 'BPMN (Business Process Model and Notation) is a standardized graphical notation...',
+            // eslint-disable-next-line max-len
+            content: 'For robust error handling in RPA workflows, implement these key strategies:\n\n**Try-Catch Blocks:** Use try-catch at process and activity levels to capture exceptions gracefully.\n\n**Retry Logic:** Configure intelligent retry mechanisms with delays for transient failures like network issues.\n\n**Logging:** Add comprehensive logging to track errors and workflow execution for debugging.\n\n**Recovery:** Implement checkpoint-restart capabilities to resume from failure points.\n\nThese practices will make your automations more reliable and easier to maintain in production.',
             streaming: true,
         },
     ],

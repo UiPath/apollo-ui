@@ -35,6 +35,7 @@ const MainContainer = styled('div')<{ historyOpen: boolean }>(({ historyOpen }: 
     flexDirection: 'column',
     height: '100%',
     maxHeight: '100%',
+    margin: `0 ${token.Spacing.SpacingL}`,
     ...(historyOpen && { width: `calc(100% - ${CHAT_DRAWER_WIDTH_FULL_SCREEN}px - 2 * ${token.Spacing.SpacingBase})` }), // account for padding
 }));
 
@@ -45,7 +46,7 @@ const HeaderContainer = styled('div')(() => ({
 
 const InputBackground = styled('div')(() => ({
     flexShrink: 0,
-    padding: `0 ${token.Spacing.SpacingL} ${token.Spacing.SpacingXs}`,
+    paddingBottom: token.Spacing.SpacingXs,
 }));
 
 const InputContainer = styled('div')(() => ({

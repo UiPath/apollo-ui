@@ -414,7 +414,7 @@ chatService.initialize({
 chatService.open();
 ```
 
-### Creating a Standalone Instance 🚧 (Experimental)
+### Creating a Standalone Instance
 
 > **Note:** This feature is not properly tested yet and may not properly work
 
@@ -435,9 +435,7 @@ const chatService = AutopilotChatService.Instantiate({
 const sameInstance = AutopilotChatService.getInstance('my-custom-chat');
 ```
 
-### Using with Web Component 🚧 (Experimental)
-
-> **Note:** Using custom chat service instances with the web component is experimental and may change in future releases.
+### Using with Web Component
 
 The `ap-autopilot-chat` is a web component that accepts a chat service instance as a property. If no instance is provided, it will use the global instance by default.
 

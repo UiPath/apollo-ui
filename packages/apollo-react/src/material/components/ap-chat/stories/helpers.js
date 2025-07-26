@@ -132,7 +132,7 @@ export const setupDemoMode = (demoMode, chatService) => {
                         if (index < words.length) {
                             chatService.sendResponse({
                                 id: streamId,
-                                content: words.slice(0, index + 1).join(' '),
+                                content: words[index] + (index < words.length - 1 ? ' ' : ''),
                                 stream: true,
                             });
                             index++;
@@ -161,6 +161,73 @@ export const setupDemoMode = (demoMode, chatService) => {
             setTimeout(() => {
                 chatService.setHistory(sampleConversations.history);
                 chatService.toggleHistory(true);
+
+                // Define conversation data
+                const conversations = {
+                    'conv1': [
+                        {
+                            id: '1',
+                            role: 'user',
+                            content: 'How do I extract data from PDF invoices using Document Understanding?',
+                            created_at: new Date(Date.now() - 86400000).toISOString(),
+                        },
+                        {
+                            id: '2',
+                            role: 'assistant',
+                            // eslint-disable-next-line max-len
+                            content: 'To extract data from PDF invoices using Document Understanding:\n\n**1. Set up the environment:**\n- Install UiPath.IntelligentOCR.Activities package\n- Configure your Document Understanding license\n\n**2. Create the workflow:**\n- Add "Digitize Document" activity for OCR\n- Use "Data Extraction Scope" for field extraction\n- Configure "Extract Document Text" for text processing\n\n**3. Train or use pre-built models:**\n- For invoices, use the pre-built Invoice model\n- Train custom models for specific invoice formats\n- Set confidence thresholds for validation\n\n**4. Handle the extracted data:**\n- Use "Get OCR Text" to retrieve text\n- Parse structured data with "Extract Document Data"\n- Validate results and handle exceptions\n\nWould you like me to explain any of these steps in more detail?',
+                            created_at: new Date(Date.now() - 86300000).toISOString(),
+                        },
+                    ],
+                    'conv2': [
+                        {
+                            id: '1',
+                            role: 'user',
+                            content: 'What are the best practices for setting up Document Understanding workflows?',
+                            created_at: new Date(Date.now() - 172800000).toISOString(),
+                        },
+                        {
+                            id: '2',
+                            role: 'assistant',
+                            // eslint-disable-next-line max-len
+                            content: 'Here are the key best practices for Document Understanding workflows:\n\n**Workflow Design:**\n- Use separate workflows for different document types\n- Implement proper error handling with Try-Catch blocks\n- Add logging for debugging and monitoring\n\n**Model Training:**\n- Provide diverse training samples (50-100 documents minimum)\n- Include edge cases and variations in your training set\n- Regularly retrain models with new document formats\n\n**Performance Optimization:**\n- Use appropriate OCR engines for your document quality\n- Set optimal confidence thresholds (typically 70-85%)\n- Implement parallel processing for batch operations\n\n**Data Validation:**\n- Add validation rules for extracted data\n- Implement human-in-the-loop for low-confidence results\n- Use data normalization for consistent output formats',
+                            created_at: new Date(Date.now() - 172700000).toISOString(),
+                        },
+                    ],
+                    'conv3': [
+                        {
+                            id: '1',
+                            role: 'user',
+                            content: 'How do I integrate Document Understanding with external APIs?',
+                            created_at: new Date(Date.now() - 259200000).toISOString(),
+                        },
+                        {
+                            id: '2',
+                            role: 'assistant',
+                            // eslint-disable-next-line max-len
+                            content: 'Integrating Document Understanding with external APIs involves several steps:\n\n**API Integration Approaches:**\n- Use HTTP Request activities to send extracted data\n- Implement webhook endpoints for real-time processing\n- Set up queue-based processing for high-volume scenarios\n\n**Data Format Considerations:**\n- Convert extracted data to JSON or XML formats\n- Map document fields to API parameters\n- Handle data type conversions and validation\n\n**Error Handling:**\n- Implement retry logic for API failures\n- Add circuit breaker patterns for unreliable APIs\n- Log API responses for troubleshooting\n\n**Security Best Practices:**\n- Use secure authentication (API keys, OAuth)\n- Encrypt sensitive data in transit\n- Implement proper access controls and rate limiting\n\nWould you like specific examples for any of these integration patterns?',
+                            created_at: new Date(Date.now() - 259100000).toISOString(),
+                        },
+                    ],
+                };
+
+                // Check if there's an active conversation and load it
+                const activeConversationId = chatService.activeConversationId;
+                if (activeConversationId && conversations[activeConversationId]) {
+                    setTimeout(() => {
+                        chatService.setConversation(conversations[activeConversationId]);
+                    }, 100);
+                }
+
+                // Set up conversation opening functionality
+                chatService.on('openConversation', (conversationId) => {
+                    // Use setTimeout to ensure loading state is set first
+                    setTimeout(() => {
+                        if (conversations[conversationId]) {
+                            chatService.setConversation(conversations[conversationId]);
+                        }
+                    }, 100);
+                });
             }, 500);
             break;
 
@@ -251,6 +318,10 @@ The autopilot chat is automatically available when using ap-shell (the standard 
 
 For standalone usage outside of ap-shell:
 
+<div style="margin: 15px 0; padding: 15px; background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 4px;">
+<strong>⚠️ Important:</strong> When using Autopilot Chat outside of ap-shell, use <strong>embedded mode</strong> for use cases where the chat height is not <code>100vh - 48px</code> (the standard app-bar height). In general, if not used within ap-shell, it should be used in embedded mode to ensure proper height management and integration with your application's layout.
+</div>
+
 <div style="margin-top: 15px; padding: 20px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #17a2b8;">
 <h4 style="margin-top: 0; color: #2c3e50; font-size: 14px;">Basic Setup</h4>
 <pre style="margin: 0; padding: 10px; background: #2c3e50; color: #ecf0f1; border-radius: 4px; overflow-x: auto; font-size: 12px;">// Initialize autopilot chat service
@@ -262,8 +333,9 @@ chatService.initialize({
         title: 'Welcome to Autopilot Chat',
         description: 'Ask me anything about automation!',
         suggestions: [
-            { label: 'Get started', prompt: 'How do I begin?' },
-            { label: 'Help', prompt: 'What can you help with?' }
+            { label: 'Get started', prompt: 'How do I get started with UiPath Studio?' },
+            { label: 'Best practices', prompt: 'What are the best practices for RPA development?' },
+            { label: 'Debug workflow', prompt: 'How can I debug my automation workflow?' }
         ]
     }
 });
@@ -272,6 +344,33 @@ chatService.initialize({
 const chatElement = document.querySelector('ap-autopilot-chat');
 chatElement.chatServiceInstance = chatService;
 chatService.open();</pre>
+</div>
+
+<div style="margin-top: 15px; padding: 20px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #28a745;">
+<h4 style="margin-top: 0; color: #2c3e50; font-size: 14px;">Embedded Mode Setup (Recommended for Standalone)</h4>
+<pre style="margin: 0; padding: 10px; background: #2c3e50; color: #ecf0f1; border-radius: 4px; overflow-x: auto; font-size: 12px;">// Initialize with embedded mode for custom container
+const container = document.querySelector('.chat-container');
+const chatService = window.PortalShell.AutopilotChat;
+
+chatService.initialize({
+    mode: 'embedded',
+    embeddedContainer: container,
+    firstRunExperience: {
+        title: 'Welcome to Autopilot Chat',
+        description: 'Ask me anything about automation!',
+        suggestions: [
+            { label: 'Get started', prompt: 'How do I get started with UiPath Studio?' },
+            { label: 'Best practices', prompt: 'What are the best practices for RPA development?' },
+            { label: 'Debug workflow', prompt: 'How can I debug my automation workflow?' }
+        ]
+    }
+});
+
+// Open in embedded mode
+chatService.open({
+    mode: 'embedded',
+    embeddedContainer: container
+});</pre>
 </div>
 
 ## Key Features
@@ -307,27 +406,15 @@ Demonstrates a pre-loaded conversation to show message history and basic chat fu
 const instanceName = 'chat-story-basic-conversation';
 const chatService = AutopilotChatService.Instantiate({ instanceName });
 
-// Configure with basic demo mode
-const args = {
-    demoMode: 'basic',
-    showFirstRun: false,
-    // ... other default args
-};
-
-// The helper automatically sets up the demo
+// Initialize with minimal configuration
+// Note: Settings and audio are disabled by default in ChatService
 const config = {
-    mode: 'side-by-side',
-    disabledFeatures: {
-        settings: true,
-        // ... other features configured from args
-    },
-    useLocalHistory: false,
-    paginatedMessages: false,
+    mode: 'side-by-side'
 };
 
 chatService.initialize(config);
 
-// Demo mode 'basic' automatically loads this conversation after 500ms:
+// Set up the basic conversation
 const basicConversation = [
     {
         id: '1',
@@ -341,11 +428,12 @@ const basicConversation = [
     }
 ];
 
-// This is automatically called by setupDemoMode:
-// setTimeout(() => {
-//     chatService.setConversation(basicConversation);
-// }, 500);
+// Load the conversation after a brief delay for demo effect
+setTimeout(() => {
+    chatService.setConversation(basicConversation);
+}, 500);
 
+// Open the chat
 chatService.open({ mode: 'side-by-side' });</pre>
 </div>
 
@@ -353,8 +441,8 @@ chatService.open({ mode: 'side-by-side' });</pre>
 - Pre-populated conversation with realistic UiPath content
 - User and assistant message roles
 - Multi-line assistant responses with step-by-step instructions
-- Delayed conversation loading (500ms) 
-- Automatic demo setup through demoMode configuration
+- Delayed conversation loading (500ms) for demo effect
+- Minimal configuration setup
 
 ## Documentation
 
@@ -363,24 +451,47 @@ For complete API reference and advanced usage examples, see the <a href="https:/
         'streaming-response': `
 # Streaming Response Demo
 
-Shows real-time streaming of responses, simulating typing effect.
+Shows real-time streaming of responses with comprehensive technical content, simulating AI assistant typing effect.
 
 ## Code Example
 
 <div style="margin-top: 15px; padding: 20px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #17a2b8;">
 <h4 style="margin-top: 0; color: #2c3e50; font-size: 14px;">Streaming Implementation</h4>
-<pre style="margin: 0; padding: 10px; background: #2c3e50; color: #ecf0f1; border-radius: 4px; overflow-x: auto; font-size: 12px;">// Start streaming a response
-const streamMessage = (text) => {
-    const words = text.split(' ');
-    const streamId = 'stream-response-' + Date.now();
-    let index = 0;
+<pre style="margin: 0; padding: 10px; background: #2c3e50; color: #ecf0f1; border-radius: 4px; overflow-x: auto; font-size: 12px;">import { AutopilotChatService } from '@uipath/portal-shell-util';
 
+// Initialize chat service
+const chatService = AutopilotChatService.Instantiate({ instanceName: 'streaming-demo' });
+chatService.initialize({ mode: 'side-by-side' });
+
+// Send initial user request
+chatService.sendRequest({
+    content: 'How do I handle errors in RPA workflows?'
+});
+
+// Stream a concise response about RPA error handling
+const streamResponse = () => {
+    const response = \`For robust error handling in RPA workflows, implement these key strategies:
+
+**Try-Catch Blocks:** Use try-catch at process and activity levels to capture exceptions gracefully.
+
+**Retry Logic:** Configure intelligent retry mechanisms with delays for transient failures like network issues.
+
+**Logging:** Add comprehensive logging to track errors and workflow execution for debugging.
+
+**Recovery:** Implement checkpoint-restart capabilities to resume from failure points.
+
+These practices will make your automations more reliable and easier to maintain in production.\`;
+
+    const words = response.split(' ');
+    const streamId = 'comprehensive-stream';
+    let index = 0;
+    
     const interval = setInterval(() => {
         if (index < words.length) {
-            // Send partial content
+            // Send one word at a time
             chatService.sendResponse({
                 id: streamId,
-                content: words.slice(0, index + 1).join(' '),
+                content: words[index] + (index < words.length - 1 ? ' ' : ''),
                 stream: true
             });
             index++;
@@ -394,17 +505,21 @@ const streamMessage = (text) => {
                 done: true
             });
         }
-    }, 100); // 100ms delay between words
+    }, 100); // 100ms delay between words for realistic typing effect
 };
 
-// Usage
-streamMessage('This is a streaming response that appears word by word.');</pre>
+// Start streaming after a brief delay
+setTimeout(streamResponse, 1000);
+
+chatService.open();</pre>
 </div>
 
 **Features demonstrated:**
-- Word-by-word streaming simulation
-- Real-time message updates
-- Streaming completion handling
+- Concise technical content streaming
+- Progressive text rendering simulating AI response generation
+- Structured content with headings and key points
+- Real-time message updates with completion handling
+- Realistic timing for practical demonstration
 
 ## Documentation
 
@@ -413,49 +528,64 @@ For complete API reference and advanced usage examples, see the <a href="https:/
         'with-attachments': `
 # File Attachments Demo
 
-Demonstrates file attachment capabilities and configuration.
+Demonstrates file attachment capabilities with workflow file analysis.
 
 ## Code Example
 
 <div style="margin-top: 15px; padding: 20px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #17a2b8;">
 <h4 style="margin-top: 0; color: #2c3e50; font-size: 14px;">Implementation Code</h4>
-<pre style="margin: 0; padding: 10px; background: #2c3e50; color: #ecf0f1; border-radius: 4px; overflow-x: auto; font-size: 12px;">// Configure allowed attachments
+<pre style="margin: 0; padding: 10px; background: #2c3e50; color: #ecf0f1; border-radius: 4px; overflow-x: auto; font-size: 12px;">import { AutopilotChatService } from '@uipath/portal-shell-util';
+
+// Initialize chat service
+const chatService = AutopilotChatService.Instantiate({ instanceName: 'attachments-demo' });
+chatService.initialize({ mode: 'side-by-side' });
+
+// Configure allowed attachments for workflow files
 chatService.setAllowedAttachments({
     types: {
-        'application/xml': ['.xaml'],        // Workflow files
-        'text/csv': ['.csv'],                // Data files
-        'application/json': ['.json'],       // Config files
-        'text/plain': ['.txt', '.log']       // Text and log files
+        'application/xml': ['.xaml'],       // Workflow files
+        'application/json': ['.json'],      // Config files
+        'text/plain': ['.txt', '.log']      // Text and log files
     },
-    maxSize: 5 * 1024 * 1024, // 5MB limit
-    multiple: true             // Allow multiple files
+    maxSize: 2 * 1024 * 1024, // 2MB limit
+    multiple: false           // Single file upload
 });
 
-// Handle file uploads in messages
-const handleFileMessage = (files) => {
-    const attachments = files.map(file => ({
-        name: file.name,
-        size: file.size,
-        type: file.type
-    }));
+// Set up demo conversation with file attachment
+const attachmentConversation = [
+    {
+        id: '1',
+        role: 'user',
+        content: 'Can you analyze this workflow file?',
+        attachments: [{
+            name: 'workflow.xaml',
+            size: 12450,
+            type: 'application/xml'
+        }]
+    },
+    {
+        id: '2',
+        role: 'assistant',
+        content: 'I\\'ve analyzed your workflow file. Here are my findings:\\n\\n**Workflow Overview:**\\n- Process Name: Invoice Processing\\n- Activities Count: 47\\n- Decision Points: 5\\n- Error Handlers: 3\\n\\n**Recommendations:**\\n1. Consider adding more error handling for the data extraction section\\n2. The retry mechanism could be optimized\\n3. Add logging for better debugging\\n\\nWould you like me to provide more specific suggestions?'
+    }
+];
 
-    chatService.sendRequest({
-        content: 'Please analyze these files.',
-        attachments: attachments
-    });
-};
+// Load the conversation
+chatService.setConversation(attachmentConversation);
 
-// Respond with file analysis
-chatService.sendResponse({
-    content: 'I\\'ve analyzed your files. Here are my findings:\\n\\n**File Overview:**\\n- Process Name: Invoice Processing\\n- Activities Count: 47\\n- Decision Points: 5'
-});</pre>
+chatService.open();</pre>
 </div>
 
 **Features demonstrated:**
-- File drag-and-drop interface
-- Attachment type restrictions
-- File size limitations
-- Multiple attachment support
+- Workflow-specific file attachment configuration
+- Single file upload with size restrictions  
+- Pre-loaded conversation showing file analysis
+- Detailed AI response with structured findings and recommendations
+
+**File Upload Methods:**
+- <strong>Attachment Button</strong>: Click the attachment button to open file browser
+- <strong>Copy & Paste</strong>: Use Ctrl+C and Ctrl+V to paste valid files directly into the chat
+- <strong>Drag & Drop</strong>: Drag files from your file explorer directly into the chat area
 
 ## Documentation
 
@@ -464,32 +594,54 @@ For complete API reference and advanced usage examples, see the <a href="https:/
         'with-history': `
 # Conversation History Demo
 
-Shows the history management features and local storage.
+Shows the history management features and local storage with interactive conversation opening.
 
-## Code Example
+## Code Examples
 
-<div style="margin-top: 15px; padding: 20px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #17a2b8;">
-<h4 style="margin-top: 0; color: #2c3e50; font-size: 14px;">Implementation Code</h4>
-<pre style="margin: 0; padding: 10px; background: #2c3e50; color: #ecf0f1; border-radius: 4px; overflow-x: auto; font-size: 12px;">// Enable local history storage
+<h3>With Local History (Demo/POC)</h3>
+
+<div style="margin: 15px 0; padding: 15px; background: #d1ecf1; border: 1px solid #bee5eb; border-radius: 4px;">
+<strong>ℹ️ Note:</strong> Local history using <code>useLocalHistory: true</code> is primarily intended for <strong>demos and proof-of-concepts</strong>. For production applications, implement custom history management by handling <code>openConversation</code>, <code>deleteConversation</code>, and other events to integrate with your backend storage system.
+</div>
+
+<div style="margin-top: 15px; padding: 20px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #ffc107;">
+<h4 style="margin-top: 0; color: #2c3e50; font-size: 14px;">Local Storage Implementation (Demo Only)</h4>
+<pre style="margin: 0; padding: 10px; background: #2c3e50; color: #ecf0f1; border-radius: 4px; overflow-x: auto; font-size: 12px;">// Enable local history storage - that's it!
 chatService.initialize({
-    useLocalHistory: true,
-    paginatedMessages: true
+    useLocalHistory: true
 });
 
-// Set up conversation history
+// Local history automatically handles:
+// - Conversation persistence to IndexedDB
+// - History panel population 
+// - Loading conversations when clicked
+// - Saving new messages
+// - Active conversation restoration</pre>
+</div>
+
+<h3>With Custom History (Mock Example)</h3>
+
+<div style="margin-top: 15px; padding: 20px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #28a745;">
+<h4 style="margin-top: 0; color: #2c3e50; font-size: 14px;">Custom History Implementation (Used in this Storybook)</h4>
+<pre style="margin: 0; padding: 10px; background: #2c3e50; color: #ecf0f1; border-radius: 4px; overflow-x: auto; font-size: 12px;">// Initialize without local history
+chatService.initialize({
+    useLocalHistory: false
+});
+
+// Set up mock conversation history
 const historyItems = [
     {
-        id: 'conv-1',
+        id: 'conv1',
         name: 'Invoice Processing Help',
         timestamp: new Date(Date.now() - 86400000).toISOString() // 1 day ago
     },
     {
-        id: 'conv-2', 
+        id: 'conv2', 
         name: 'Document Understanding Setup',
         timestamp: new Date(Date.now() - 172800000).toISOString() // 2 days ago
     },
     {
-        id: 'conv-3',
+        id: 'conv3',
         name: 'API Integration Questions', 
         timestamp: new Date(Date.now() - 259200000).toISOString() // 3 days ago
     }
@@ -499,18 +651,56 @@ const historyItems = [
 chatService.setHistory(historyItems);
 chatService.toggleHistory(true);
 
-// Handle history item selection
-chatService.on('history-selected', ({ historyId }) => {
-    console.log('Loading conversation:', historyId);
-    // Load the selected conversation
+// Define mock conversation data
+const conversations = {
+    'conv1': [
+        {
+            id: '1',
+            role: 'user', 
+            content: 'How do I extract data from PDF invoices using Document Understanding?',
+            created_at: new Date(Date.now() - 86400000).toISOString()
+        },
+        {
+            id: '2',
+            role: 'assistant',
+            content: 'To extract data from PDF invoices using Document Understanding...',
+            created_at: new Date(Date.now() - 86300000).toISOString()
+        }
+    ],
+    // ... more conversations
+};
+
+// Check if there's an active conversation and load it automatically
+const activeConversationId = chatService.activeConversationId;
+if (activeConversationId && conversations[activeConversationId]) {
+    setTimeout(() => {
+        chatService.setConversation(conversations[activeConversationId]);
+    }, 100);
+}
+
+// Handle history item selection with conversation loading
+chatService.on('openConversation', (conversationId) => {
+    // Use setTimeout to avoid race conditions with loading state
+    setTimeout(() => {
+        if (conversations[conversationId]) {
+            chatService.setConversation(conversations[conversationId]);
+        }
+    }, 100);
 });</pre>
 </div>
 
-**Features demonstrated:**
-- History panel with past conversations
-- Local storage using IndexedDB
-- Conversation switching
-- History management controls
+**Local History Features:**
+- Built-in IndexedDB storage for demos and POCs
+- Automatic conversation persistence and restoration
+- Interactive conversation loading when history items are clicked
+- Automatic loading of active conversation on initialization
+
+**Custom History Features (Production):**
+- Backend integration with your API endpoints
+- Secure conversation storage with authentication
+- Error handling and loading states
+- Event-driven architecture for conversation management
+- Proper separation of concerns between UI and data layer
 
 ## Documentation
 
@@ -551,9 +741,7 @@ chatService.initialize({
     embeddedContainer: container,
     disabledFeatures: {
         resize: true,      // Disable resize in embedded mode
-        fullScreen: true,  // Disable fullscreen
-        header: false,     // Keep header for minimize
-        close: false       // Allow closing
+        fullScreen: true   // Disable fullscreen
     }
 });
 
@@ -578,11 +766,12 @@ const showChat = () => {
 };</pre>
 </div>
 
-Features demonstrated:
-- Floating chat widget
-- Custom container positioning
-- Embedded mode configuration
-- Integration with existing layouts
+**Features demonstrated:**
+- Floating chat widget positioned in bottom-right corner
+- Custom container styling and positioning
+- Embedded mode configuration with disabled resize and fullscreen
+- Integration with existing application layouts
+- Interactive demo controls for testing embedded functionality
 
 ## Documentation
 
@@ -598,39 +787,13 @@ Shows the chat in full-screen overlay mode.
 <div style="margin-top: 15px; padding: 20px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #17a2b8;">
 <h4 style="margin-top: 0; color: #2c3e50; font-size: 14px;">Implementation Code</h4>
 <pre style="margin: 0; padding: 10px; background: #2c3e50; color: #ecf0f1; border-radius: 4px; overflow-x: auto; font-size: 12px;">// Initialize and open in full-screen mode
-chatService.initialize({
+chatService.open({
     mode: 'full-screen'
-});
-
-chatService.open({ mode: 'full-screen' });
-
-// Or switch to full-screen from another mode
-const openFullScreen = () => {
-    chatService.setChatMode('full-screen');
-};
-
-// Handle full-screen events
-chatService.on('mode-changed', ({ mode, previousMode }) => {
-    console.log('Chat mode changed from ' + previousMode + ' to ' + mode);
-    
-    if (mode === 'full-screen') {
-        // Full-screen mode activated
-        document.body.style.overflow = 'hidden';
-    } else {
-        // Exited full-screen
-        document.body.style.overflow = '';
-    }
-});
-
-// Exit full-screen programmatically
-const exitFullScreen = () => {
-    chatService.setChatMode('side-by-side');
-};</pre>
+});</pre>
 </div>
 
 **Features demonstrated:**
 - Full-screen overlay interface
-- Modal-like behavior
 - Maximized chat experience
 
 ## Documentation
@@ -864,25 +1027,45 @@ chatService.sendResponse({
     ]
 });
 
-// Handle action events
+// Handle action events with responses
 chatService.on('download-action', ({ action }) => {
     console.log('Download action triggered:', action.details.filename);
+    chatService.sendResponse({
+        content: 'Downloaded: ' + action.details.filename,
+        groupId: 'download-response'
+    });
 });
 
 chatService.on('create-project-action', ({ action }) => {
     console.log('Create project action triggered:', action.details.type);
+    chatService.sendResponse({
+        content: 'Created new ' + action.details.type + ' project! You can now start building your automation workflow.',
+        groupId: 'create-project-response'
+    });
 });
 
 chatService.on('analyze-code-action', () => {
     console.log('Analyze code action triggered');
+    chatService.sendResponse({
+        content: 'Code analysis completed:\\n\\nNo syntax errors found\\n2 optimization suggestions\\nCode complexity: Medium\\n\\nWould you like details on the optimization suggestions?',
+        groupId: 'analyze-code-response'
+    });
 });
 
 chatService.on('deploy-process-action', () => {
     console.log('Deploy process action triggered');
+    chatService.sendResponse({
+        content: 'Deployment initiated...\\n\\nBuilding process...\\nProcess deployed successfully!\\n\\n**Deployment Details:**\\n- Environment: Production\\n- Version: 1.2.3\\n- Status: Active',
+        groupId: 'deploy-process-response'
+    });
 });
 
 chatService.on('help-action', () => {
     console.log('Help action triggered');
+    chatService.sendResponse({
+        content: '**Available Commands:**\\n\\n• Type "create" to start a new project\\n• Type "debug" for troubleshooting help\\n• Type "examples" to see sample workflows\\n• Type "docs" for documentation links\\n\\nWhat would you like help with?',
+        groupId: 'help-response'
+    });
 });</pre>
 </div>
 
@@ -1024,13 +1207,10 @@ chatService.initialize({
 // Setting an error message
 chatService.setError('❌ Something went wrong! Please try again.');
 
-// The error will be displayed in the chat interface
-// Usually shown as a banner or notification at the top
+// The error will be displayed above the prompt box
 
-// Clearing the error
+// Clearing the error - removes error display from above the prompt box
 chatService.clearError();
-
-// Error display will be removed from the interface
 
 // Checking current error state
 const currentError = chatService.getError();
@@ -1150,11 +1330,6 @@ const settingsRenderer = (element) => {
             typingIndicator: element.querySelector('#typing-indicator').checked,
         };
         
-        // Apply settings and store them
-        chatService.patchConfig({
-            overrideLabels: { language: settings.language }
-        });
-        localStorage.setItem('chatSettings', JSON.stringify(settings));
         
         chatService.sendResponse({
             content: \`✅ Settings saved successfully!
@@ -1183,7 +1358,6 @@ const settingsRenderer = (element) => {
         element.querySelector('#language-select').value = 'en';
         element.querySelector('#auto-save').checked = true;
         element.querySelector('#typing-indicator').checked = true;
-        localStorage.removeItem('chatSettings');
         
         chatService.sendResponse({
             content: '🔄 Settings reset to default values.'
@@ -1208,9 +1382,7 @@ chatService.open({ mode: 'side-by-side' });</pre>
 - Custom settings panel with multiple sections
 - Form controls (checkboxes, select dropdowns)
 - Event handling for save and reset actions
-- Settings persistence with localStorage
 - Real-time configuration updates
-- Integration with chat service patchConfig
 - User feedback through chat responses
 
 ## Documentation

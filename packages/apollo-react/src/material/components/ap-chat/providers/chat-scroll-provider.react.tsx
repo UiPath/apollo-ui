@@ -6,6 +6,7 @@ import {
     AutopilotChatInterceptableEvent,
     AutopilotChatInternalEvent,
     CHAT_SCROLL_BOTTOM_BUFFER,
+    CHAT_WIDTH_FULL_SCREEN_MAX_WIDTH,
 } from '@uipath/portal-shell-util';
 import React from 'react';
 
@@ -18,6 +19,8 @@ interface AutopilotChatScrollContextType {
     overflowContainer: HTMLDivElement | null;
     setOverflowContainer: (overflowContainer: HTMLDivElement) => void;
     contentRef: React.RefObject<HTMLDivElement>;
+    isOverflow: boolean;
+    isContainerWide: boolean;
 }
 
 const AutopilotChatScrollContext = React.createContext<AutopilotChatScrollContextType | null>(null);
@@ -42,6 +45,27 @@ export const AutopilotChatScrollProvider: React.FC<AutopilotChatScrollProviderPr
 
     const [ overflowContainer, setOverflowContainer ] = React.useState<HTMLDivElement | null>(null);
     const [ autoScroll, setAutoScroll ] = React.useState(true);
+    const [ isOverflow, setIsOverflow ] = React.useState(false);
+    const [ isContainerWide, setIsContainerWide ] = React.useState(false);
+
+    // Function to check overflow status
+    const checkOverflow = React.useCallback(() => {
+        if (overflowContainer) {
+            const hasOverflow = overflowContainer.scrollHeight > overflowContainer.clientHeight;
+
+            setIsOverflow(hasOverflow);
+        }
+    }, [ overflowContainer ]);
+
+    // Function to check container width
+    const checkContainerWidth = React.useCallback(() => {
+        if (overflowContainer) {
+            const containerWidth = overflowContainer.clientWidth;
+            const isWide = containerWidth > parseInt(CHAT_WIDTH_FULL_SCREEN_MAX_WIDTH, 10);
+
+            setIsContainerWide(isWide);
+        }
+    }, [ overflowContainer ]);
 
     const scrollToBottom = React.useCallback(({
         force = false,
@@ -69,6 +93,9 @@ export const AutopilotChatScrollProvider: React.FC<AutopilotChatScrollProviderPr
         }
 
         const newHeight = contentRef.current.scrollHeight;
+
+        // Check overflow status whenever content changes
+        checkOverflow();
 
         // Handle prepending older messages: maintain scroll position
         if (prependingRef.current) {
@@ -103,7 +130,7 @@ export const AutopilotChatScrollProvider: React.FC<AutopilotChatScrollProviderPr
         }
 
         previousHeightRef.current = newHeight;
-    }, [ contentRef, autoScroll, scrollToBottom, streaming, overflowContainer ]);
+    }, [ contentRef, autoScroll, scrollToBottom, streaming, overflowContainer, checkOverflow ]);
 
     // When scrolling up, we want to disable auto-scroll
     const handleWheel = React.useCallback((event: WheelEvent) => {
@@ -196,8 +223,19 @@ export const AutopilotChatScrollProvider: React.FC<AutopilotChatScrollProviderPr
             return;
         }
 
+        // Initial checks
+        checkOverflow();
+        checkContainerWidth();
+
         const resizeObserver = new ResizeObserver(handleResize);
         resizeObserver.observe(content);
+
+        // Also observe the overflow container for size changes
+        const containerResizeObserver = new ResizeObserver(() => {
+            checkOverflow();
+            checkContainerWidth();
+        });
+        containerResizeObserver.observe(overflowContainer);
 
         overflowContainer.addEventListener('mousedown', handleMouseDown);
         overflowContainer.addEventListener('mouseup', handleMouseUp);
@@ -261,6 +299,7 @@ export const AutopilotChatScrollProvider: React.FC<AutopilotChatScrollProviderPr
 
         return () => {
             resizeObserver.disconnect();
+            containerResizeObserver.disconnect();
             overflowContainer.removeEventListener('wheel', handleWheel);
             overflowContainer.removeEventListener('mousedown', handleMouseDown);
             overflowContainer.removeEventListener('mouseup', handleMouseUp);
@@ -277,7 +316,18 @@ export const AutopilotChatScrollProvider: React.FC<AutopilotChatScrollProviderPr
             unsubscribeShouldShowLoadingMoreMessages();
             unsubscribePrependOlderMessages();
         };
-    }, [ handleResize, handleWheel, handleKeyDown, handleMouseUp, handleMouseDown, handleScroll, chatService, overflowContainer ]);
+    }, [
+        handleResize,
+        handleWheel,
+        handleKeyDown,
+        handleMouseUp,
+        handleMouseDown,
+        handleScroll,
+        chatService,
+        overflowContainer,
+        checkOverflow,
+        checkContainerWidth,
+    ]);
 
     const value = React.useMemo(() => ({
         autoScroll,
@@ -285,7 +335,9 @@ export const AutopilotChatScrollProvider: React.FC<AutopilotChatScrollProviderPr
         overflowContainer,
         setOverflowContainer,
         contentRef,
-    }), [ autoScroll, scrollToBottom, overflowContainer, setOverflowContainer, contentRef ]);
+        isOverflow,
+        isContainerWide,
+    }), [ autoScroll, scrollToBottom, overflowContainer, setOverflowContainer, contentRef, isOverflow, isContainerWide ]);
 
     return (
         <AutopilotChatScrollContext.Provider value={value}>

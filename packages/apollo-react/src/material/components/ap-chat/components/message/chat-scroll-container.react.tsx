@@ -16,21 +16,33 @@ import { useChatScroll } from '../../providers/chat-scroll-provider.react';
 import { AutopilotChatMessages } from './chat-message.react';
 import { AutopilotChatScrollToBottomButton } from './chat-scroll-to-bottom.react';
 
-const OverflowContainer = styled('div')(() => ({
+const OverflowContainer = styled('div')(({
+    isOverflow, isContainerWide,
+}: { isOverflow: boolean; isContainerWide: boolean }) => ({
     flex: '1 1 100%',
     minHeight: 0,
     overflowY: 'auto',
     position: 'relative',
     outline: 'none',
-}));
+    // move the scrollbar to the right
+    margin: `0 -${token.Spacing.SpacingL}`,
+    padding: `0 ${token.Spacing.SpacingL}`,
 
-const MessagesContainer = styled('div')(({ isFullScreen }: { isFullScreen: boolean }) => ({
-    ...(isFullScreen && {
-        maxWidth: CHAT_WIDTH_FULL_SCREEN_MAX_WIDTH,
-        margin: '0 auto',
-        width: '100%',
+    ...(isOverflow && !isContainerWide && {
+        // account for the scrollbar
+        paddingRight: token.Spacing.SpacingXs,
     }),
 }));
+
+const MessagesContainer = styled('div')(
+    ({ mode }: { mode: AutopilotChatMode }) => ({
+        ...((mode === AutopilotChatMode.FullScreen || mode === AutopilotChatMode.Embedded) && {
+            maxWidth: CHAT_WIDTH_FULL_SCREEN_MAX_WIDTH,
+            margin: '0 auto',
+            width: '100%',
+        }),
+    }),
+);
 
 const GradientContainer = styled('div')(({ theme }: { theme: Theme }) => ({
     position: 'sticky',
@@ -56,17 +68,25 @@ function ChatScrollContainerComponent({ mode }: ChatScrollContainerProps) {
         setOverflowContainer,
         contentRef,
         overflowContainer,
+        isOverflow,
+        isContainerWide,
     } = useChatScroll();
 
     return (
         <>
-            <OverflowContainer tabIndex={0} id="overflow-container" ref={setOverflowContainer}>
+            <OverflowContainer
+                tabIndex={0}
+                id="overflow-container"
+                isOverflow={isOverflow}
+                isContainerWide={isContainerWide}
+                ref={setOverflowContainer}
+            >
                 <MessagesContainer
                     id="content-ref"
                     ref={contentRef}
-                    isFullScreen={mode === AutopilotChatMode.FullScreen}
+                    mode={mode}
                 >
-                    <AutopilotChatMessages/>
+                    <AutopilotChatMessages isOverflow={isOverflow} isContainerWide={isContainerWide}/>
                 </MessagesContainer>
 
                 <GradientContainer/>

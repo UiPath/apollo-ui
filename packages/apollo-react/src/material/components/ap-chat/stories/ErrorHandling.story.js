@@ -39,7 +39,7 @@ ErrorHandling.play = async ({
             setErrorButton.addEventListener('click', () => {
                 chatService.setError('❌ Something went wrong! Please try again.');
                 chatService.sendResponse({
-                    content: '🔴 **Error Set!** Check the chat interface - an error banner should now appear at the top.',
+                    content: '🔴 **Error Set!** Check the chat interface - an error message should now appear above the prompt box.',
                     groupId: 'error-demo',
                 });
             });
@@ -51,7 +51,7 @@ ErrorHandling.play = async ({
             clearErrorButton.addEventListener('click', () => {
                 chatService.clearError();
                 chatService.sendResponse({
-                    content: '✅ **Error Cleared!** The error banner has been removed from the interface.',
+                    content: '✅ **Error Cleared!** The error message has been removed from above the prompt box.',
                     groupId: 'error-demo',
                 });
             });

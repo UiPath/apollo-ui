@@ -111,11 +111,6 @@ Settings.play = async ({
                     typingIndicator: element.querySelector('#typing-indicator').checked,
                 };
 
-                // Apply settings to chat service
-                chatService.patchConfig({ overrideLabels: { language: settings.language } });
-
-                // Store settings
-                localStorage.setItem('chatSettings', JSON.stringify(settings));
 
                 // Show confirmation message
                 chatService.sendResponse({
@@ -149,8 +144,6 @@ Your preferences have been updated.`,
                 element.querySelector('#auto-save').checked = true;
                 element.querySelector('#typing-indicator').checked = true;
 
-                // Clear stored settings
-                localStorage.removeItem('chatSettings');
 
                 chatService.sendResponse({ content: '🔄 Settings reset to default values.' });
             });
