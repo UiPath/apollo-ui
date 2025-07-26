@@ -81,6 +81,7 @@ const chatService = window.PortalShell.AutopilotChat;
 | `setLoadingMessage(message: string)` | Sets the loading message, overriding the default loading messages |
 | `setShowLoading(showLoading: boolean)` | Shows the loading message in the chat service. If this method is used, it overrides the default behavior from apollo. |
 | `setSuggestions(suggestions: AutopilotChatSuggestion[], sendOnClick?: boolean)` | Sets suggestions that appear in the chat interface. When `sendOnClick` is true, clicking a suggestion sends it immediately (defaults to the first run experience setting); otherwise it sets the prompt (see [AutopilotChatSuggestion](#autopilotchatsuggestion)) |
+| `getMessagesInGroup(groupId: string)` | Returns all messages that belong to the specified group ID |
 
 ### Input/Output Stream Handling
 | Method | Description |
@@ -119,13 +120,12 @@ const chatService = window.PortalShell.AutopilotChat;
 | `setError(error: string)` | Sets an error message to display in the chat interface |
 | `clearError()` | Clears the current error message |
 | `getError()` | Returns the current error message, if any |
-| `getMessagesInGroup(groupId: string)` | Returns all messages that belong to the specified group ID |
 
 ### Feature Configuration
 
 | Method | Description |
 |--------|-------------|
-| `setDisabledFeatures(features: AutopilotChatDisabledFeatures)` | Configures which features should be disabled in the chat interface (see [AutopilotChatDisabledFeatures](#autopilotchatdisabledfeatures)). Note: Settings are disabled by default |
+| `setDisabledFeatures(features: AutopilotChatDisabledFeatures)` | Configures which features should be disabled in the chat interface (see [AutopilotChatDisabledFeatures](#autopilotchatdisabledfeatures)). Note: Settings and audio are disabled by default |
 
 ### Labels Override
 
@@ -200,8 +200,8 @@ Adds an event interceptor for interceptable events. Returns a function to remove
 
 **Interceptor Function:**
 The interceptor function receives the event data and can:
-- Return `true` to indicate it has handled the event and prevent further processing
-- Return `void` if the event should proceed with normal handling
+- Return `true` to indicate it has handled the event and prevent further processing (by adding a `hijacked` property on the message that can be read by `on` subscribers)
+- Return `false | void` if the event should proceed with normal handling
 - Return a Promise that resolves to true if the event is handled asynchronously
 
 Multiple interceptors can be added and will be called in parallel. If any interceptor returns `true`, the event is considered hijacked and the default handling will not occur (it will still emit, but with `hijacked: true` on the message).
@@ -415,8 +415,6 @@ chatService.open();
 ```
 
 ### Creating a Standalone Instance
-
-> **Note:** This feature is not properly tested yet and may not properly work
 
 ```typescript
 // Create a standalone instance with a custom name
