@@ -10,6 +10,7 @@ import React, { useEffect } from 'react';
 
 import { t } from '../../../../../utils/localization/loc';
 import { useChatService } from '../../../providers/chat-service.provider.react';
+import { useChatState } from '../../../providers/chat-state-provider.react';
 import { AutopilotChatActionsList } from './chat-actions-list.react';
 
 interface AutopilotChatMessageActionsProps {
@@ -21,6 +22,7 @@ function AutopilotChatMessageActionsComponent({
     message, containerElement,
 }: AutopilotChatMessageActionsProps) {
     const chatService = useChatService();
+    const { disabledFeatures } = useChatState();
     const [ isLastAssistantMessage, setIsLastAssistantMessage ] = React.useState(false);
     const [ isVisible, setIsVisible ] = React.useState(false);
     const isUserInteractingWithActions = React.useRef(false);
@@ -59,7 +61,7 @@ function AutopilotChatMessageActionsComponent({
         ];
 
         // If not an assistant message, just return copy action
-        if (message.role !== AutopilotChatRole.Assistant) {
+        if (message.role !== AutopilotChatRole.Assistant || disabledFeatures.feedback) {
             return baseActions;
         }
 
@@ -97,7 +99,7 @@ function AutopilotChatMessageActionsComponent({
             },
         ];
 
-    }, [ message ]);
+    }, [ message, disabledFeatures.feedback ]);
 
     const isRelatedTarget = React.useCallback((target: Node) => {
         return actionsContainerRef.current && (

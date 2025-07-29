@@ -1308,21 +1308,23 @@ enum AutopilotChatMode {
  * @property preview - Whether the chat has the preview badge
  * @property close - Whether the chat has the close button
  * @property newChat - Whether the chat has the new chat button
- * @property settings - Whether the chat has the settings button (disabled by default)
+ * @property settings - Whether the chat has the settings button
  * @property audio - Whether the chat has realtime audio enabled
+ * @property feedback - Whether the chat has the feedback button
  */
-interface AutopilotChatDisabledFeatures {
-  attachments?: boolean;
-  resize?: boolean;
-  fullScreen?: boolean;
-  history?: boolean;
-  header?: boolean;
-  footer?: boolean;
-  preview?: boolean;
-  close?: boolean;
-  newChat?: boolean;
-  settings?: boolean;
-  audio?: boolean;
+export interface AutopilotChatDisabledFeatures {
+    resize?: boolean;
+    fullScreen?: boolean;
+    attachments?: boolean;
+    history?: boolean;
+    header?: boolean;
+    footer?: boolean;
+    preview?: boolean;
+    close?: boolean;
+    newChat?: boolean;
+    settings?: boolean;
+    audio?: boolean;
+    feedback?: boolean;
 }
 ```
 ### AutopilotChatOverrideLabels
