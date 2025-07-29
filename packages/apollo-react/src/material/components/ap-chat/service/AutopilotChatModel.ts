@@ -262,6 +262,7 @@ export interface AutopilotChatSource {
  * @property newChat - Whether the chat has the new chat button
  * @property settings - Whether the chat has the settings button
  * @property audio - Whether the chat has realtime audio enabled
+ * @property feedback - Whether the chat has the feedback button
  */
 export interface AutopilotChatDisabledFeatures {
     resize?: boolean;
@@ -275,6 +276,7 @@ export interface AutopilotChatDisabledFeatures {
     newChat?: boolean;
     settings?: boolean;
     audio?: boolean;
+    feedback?: boolean;
 }
 
 /**
