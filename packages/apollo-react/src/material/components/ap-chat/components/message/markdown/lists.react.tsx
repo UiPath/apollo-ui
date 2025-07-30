@@ -17,9 +17,10 @@ export const Ul = React.memo(({ children }: { children: React.ReactNode }) => {
             listStyleType: 'disc',
             marginBlock: 'unset',
             marginInline: 'unset',
-            paddingInlineStart: token.Spacing.SpacingBase,
+            paddingInlineStart: token.Spacing.SpacingM,
             display: 'block',
             lineHeight: token.FontFamily.FontMicroLineHeight,
+            marginBlockEnd: `-${token.Spacing.SpacingS}`,
         }}>
         {children}
     </Box>;
@@ -36,6 +37,7 @@ export const Ol = React.memo(({
             marginInline: 'unset',
             paddingInlineStart: token.Spacing.SpacingBase,
             lineHeight: token.FontFamily.FontMicroLineHeight,
+            marginBlockEnd: `-${token.Spacing.SpacingS}`,
         }}>
         {children}
     </Box>;
