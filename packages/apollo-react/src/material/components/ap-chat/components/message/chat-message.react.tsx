@@ -12,7 +12,7 @@ import {
     AutopilotChatRole,
     AutopilotChatSuggestion,
 } from '@uipath/portal-shell-util';
-import React from 'react';
+import React, { useMemo } from 'react';
 
 import { useChatService } from '../../providers/chat-service.provider.react';
 import { useChatState } from '../../providers/chat-state-provider.react';
@@ -76,7 +76,7 @@ function AutopilotChatMessagesComponent({
     const [ messages, setMessages ] = React.useState<AutopilotChatMessage[]>(
         removeFakeStream(chatService?.getConversation?.() ?? []),
     );
-    const [ messageGroups, setMessageGroups ] = React.useState<AutopilotChatMessage[][]>([]);
+
     const { isLoadingMoreMessages } = useLoading();
 
     const {
@@ -179,22 +179,21 @@ function AutopilotChatMessagesComponent({
         };
     }, [ chatService, updateMessages, sendFeedback, onCopy ]);
 
+    const messageGroups = useMemo(() => {
+        return messages.reduce((acc, message, index) => {
+            if (!message.groupId) {
+                acc.push([ message ]);
+            } else if (index > 0 && messages[index - 1].groupId === message.groupId) {
+                acc[acc.length - 1].push(message);
+            } else {
+                acc.push([ message ]);
+            }
+
+            return acc;
+        }, [] as AutopilotChatMessage[][]);
+    }, [ messages ]);
+
     React.useEffect(() => {
-        const getMessageGroups = () => {
-            return messages.reduce((acc, message, index) => {
-                if (!message.groupId) {
-                    acc.push([ message ]);
-                } else if (index > 0 && messages[index - 1].groupId === message.groupId) {
-                    acc[acc.length - 1].push(message);
-                } else {
-                    acc.push([ message ]);
-                }
-
-                return acc;
-            }, [] as AutopilotChatMessage[][]);
-        };
-
-        setMessageGroups(getMessageGroups());
         setHasMessages(messages.length > 0);
     }, [ messages, setHasMessages ]);
 

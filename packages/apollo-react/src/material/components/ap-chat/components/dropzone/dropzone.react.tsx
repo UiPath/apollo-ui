@@ -64,10 +64,7 @@ function AutopilotChatDropzoneComponent({
     } = useChatState();
 
     const attachmentsCountRef = React.useRef(attachments.length);
-
-    React.useEffect(() => {
-        attachmentsCountRef.current = attachments.length;
-    }, [ attachments ]);
+    attachmentsCountRef.current = attachments.length;
 
     const handleRejections = React.useCallback((parsedFiles: AutopilotChatFileInfo[], fileRejections: FileRejection[]) => {
         if (!allowedAttachments.multiple && (parsedFiles.length > 1 || attachmentsCountRef.current > 0 || fileRejections.length > 1)) {

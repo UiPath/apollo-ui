@@ -12,7 +12,7 @@ import React from 'react';
 import { ChatHistoryGroup } from './chat-history.react';
 import { AutopilotChatHistoryItem } from './chat-history-item.react';
 
-const GroupContainer = styled('div')(() => ({ marginBottom: token.Spacing.SpacingL }));
+const GroupContainer = styled('div')(() => ({ marginBottom: token.Spacing.SpacingBase }));
 const GroupTitle = styled('div')(() => ({
     padding: `${token.Padding.PadXl} ${token.Padding.PadL}`,
     margin: `0 ${token.Spacing.SpacingBase}`,

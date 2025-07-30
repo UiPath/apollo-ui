@@ -64,12 +64,9 @@ function DragHandleComponent() {
         width, setWidth, setShouldAnimate,
     } = useChatWidth();
     const chatInternalService = useChatService().__internalService__;
-    const widthRef = React.useRef(width);
     const { disabledFeatures } = useChatState();
-
-    React.useEffect(() => {
-        widthRef.current = width;
-    }, [ width ]);
+    const widthRef = React.useRef(width);
+    widthRef.current = width;
 
     const handleMouseMove = React.useCallback((e: MouseEvent) => {
         if (!isDraggingRef.current) {

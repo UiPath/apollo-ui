@@ -19,9 +19,11 @@ import {
     differenceInDays,
     differenceInMonths,
     isToday,
+    isYesterday,
 } from 'date-fns';
 import React, {
     useEffect,
+    useMemo,
     useState,
 } from 'react';
 import FocusLock from 'react-focus-lock';
@@ -91,7 +93,6 @@ const AutopilotChatHistoryComponent: React.FC<AutopilotChatHistoryProps> = ({
     const theme = useTheme();
     const [ history, setHistory ] = useState<AutopilotChatHistoryType[]>(chatService?.getHistory() ?? []);
     const [ searchQuery, setSearchQuery ] = useState('');
-    const [ groupedHistory, setGroupedHistory ] = useState<ChatHistoryGroup[]>([]);
     const {
         historyOpen, historyAnchorElement, fullScreenContainer,
     } = useChatState();
@@ -109,7 +110,7 @@ const AutopilotChatHistoryComponent: React.FC<AutopilotChatHistoryProps> = ({
         };
     }, [ chatService, internalService ]);
 
-    useEffect(() => {
+    const groupedHistory = useMemo(() => {
         const filteredHistory = history.filter(item =>
             item.name.toLowerCase().includes(searchQuery.toLowerCase()),
         );
@@ -122,6 +123,10 @@ const AutopilotChatHistoryComponent: React.FC<AutopilotChatHistoryProps> = ({
 
             if (isToday(date)) {
                 groupTitle = t('chat-history-group-title-today');
+            } else if (isYesterday(date)) {
+                groupTitle = t('chat-history-group-title-yesterday');
+            } else if (daysAgo <= 7) {
+                groupTitle = t('chat-history-group-title-last-week');
             } else if (daysAgo <= 30) {
                 groupTitle = t('chat-history-group-title-previous-30-days');
             } else {
@@ -163,7 +168,7 @@ const AutopilotChatHistoryComponent: React.FC<AutopilotChatHistoryProps> = ({
             );
         });
 
-        setGroupedHistory(grouped);
+        return grouped;
     }, [ history, searchQuery ]);
 
     return (

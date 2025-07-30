@@ -51,18 +51,11 @@ function AutopilotChatInputActionsComponent({
     handleSubmit, disableSubmit, waitingResponse,
 }: AutopilotChatInputActionsProps) {
     const theme = useTheme();
-    const {
-        addAttachments, attachments,
-    } = useAttachments();
+    const { addAttachments } = useAttachments();
     const { setError } = useError();
     const {
         disabledFeatures, allowedAttachments, models,
     } = useChatState();
-    const attachmentsCountRef = React.useRef(attachments.length);
-
-    React.useEffect(() => {
-        attachmentsCountRef.current = attachments.length;
-    }, [ attachments ]);
 
     const fileInputRef = React.useRef<HTMLInputElement>(null);
 
