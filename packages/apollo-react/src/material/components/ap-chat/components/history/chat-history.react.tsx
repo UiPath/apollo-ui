@@ -175,11 +175,11 @@ const AutopilotChatHistoryComponent: React.FC<AutopilotChatHistoryProps> = ({
             }}
             anchorOrigin={{
                 vertical: 'bottom',
-                horizontal: isFullScreen ? 'right' : 'left',
+                horizontal: 'left',
             }}
             transformOrigin={{
                 vertical: 'top',
-                horizontal: isFullScreen ? 'right' : 'left',
+                horizontal: 'left',
             }}
             slotProps={{
                 paper: {
@@ -187,14 +187,13 @@ const AutopilotChatHistoryComponent: React.FC<AutopilotChatHistoryProps> = ({
                     sx: {
                         borderRadius: token.Spacing.SpacingMicro,
                         margin: `0 ${token.Spacing.SpacingXs + token.Spacing.SpacingBase} 0 ${token.Spacing.SpacingXs}`,
-                        ...(isFullScreen ? { left: `${token.Spacing.SpacingXs} !important` } : {}),
                     },
                 },
             }}
         >
             <FocusLock
                 disabled={!open || !historyOpen}
-                returnFocus={true}
+                returnFocus={false}
             >
                 <ChatHistoryContainer isFullScreen={isFullScreen} width={width} fullScreenContainer={fullScreenContainer}>
                     { history.length > 0 ? (

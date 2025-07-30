@@ -91,7 +91,7 @@ export const AutopilotChatSettings: React.FC<AutopilotChatSettingsProps> = ({
     return (
         <FocusLock
             disabled={!open || !settingsOpen || isFullScreen}
-            returnFocus={true}
+            returnFocus={false}
         >
             <ChatSettingsContainer isOpen={open} isFullScreen={isFullScreen}>
                 <AutopilotChatSettingsHeader isFullScreen={isFullScreen} isSettingsOpen={settingsOpen}/>

@@ -17,11 +17,10 @@ import AutopilotLogo from '../../assets/autopilot-logo.svg';
 import { useChatState } from '../../providers/chat-state-provider.react';
 import { AutopilotChatHeaderActions } from './header-actions.react';
 
-const StyledHeader = styled('div')<{ isFullScreen: boolean }>(({ isFullScreen }) => ({
+const StyledHeader = styled('div')(() => ({
     display: 'flex',
     alignItems: 'center',
-    justifyContent: isFullScreen ? 'flex-start' : 'space-between',
-    ...(isFullScreen ? { gap: token.Spacing.SpacingXs } : {}),
+    justifyContent: 'space-between',
 }));
 
 const StyledLogo = styled('div')(() => ({
@@ -39,7 +38,7 @@ function AutopilotChatHeaderComponent() {
     } = useChatState();
 
     return (
-        <StyledHeader isFullScreen={chatMode === AutopilotChatMode.FullScreen}>
+        <StyledHeader>
             <StyledLogo>
                 {/* cannot directly use the svg as a component, throws error that the svg is not a valid react component */}
                 {chatMode === AutopilotChatMode.FullScreen ? (

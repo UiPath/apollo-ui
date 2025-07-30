@@ -9,13 +9,11 @@ import token from '@uipath/apollo-core/lib';
 import {
     AutopilotChatEvent,
     AutopilotChatHistory,
-    AutopilotChatMode,
 } from '@uipath/portal-shell-util';
 import React from 'react';
 
 import { t } from '../../../../utils/localization/loc';
 import { useChatService } from '../../providers/chat-service.provider.react';
-import { useChatState } from '../../providers/chat-state-provider.react';
 import { useLoading } from '../../providers/loading-provider.react';
 import { AutopilotChatActionButton } from '../common/action-button.react';
 
@@ -66,7 +64,6 @@ const AutopilotChatHistoryItemComponent: React.FC<AutopilotChatHistoryItemProps>
     const chatService = useChatService();
     const [ isActive, setIsActive ] = React.useState(chatService.activeConversationId === item.id);
     const { setWaitingResponse } = useLoading();
-    const { chatMode } = useChatState();
 
     const [ isRemoveIconVisible, setIsRemoveIconVisible ] = React.useState(false);
     const [ isFocused, setIsFocused ] = React.useState(false);
@@ -158,11 +155,8 @@ const AutopilotChatHistoryItemComponent: React.FC<AutopilotChatHistoryItemProps>
         }
 
         chatService.openConversation(itemId);
-
-        if (chatMode !== AutopilotChatMode.FullScreen) {
-            chatService.toggleHistory(false);
-        }
-    }, [ chatService, chatMode, isActive ]);
+        chatService.toggleHistory(false);
+    }, [ chatService, isActive ]);
 
     React.useEffect(() => {
         if (isFocused) {
