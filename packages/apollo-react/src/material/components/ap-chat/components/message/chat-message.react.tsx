@@ -79,7 +79,9 @@ function AutopilotChatMessagesComponent({
     const [ messageGroups, setMessageGroups ] = React.useState<AutopilotChatMessage[][]>([]);
     const { isLoadingMoreMessages } = useLoading();
 
-    const { firstRunExperience } = useChatState();
+    const {
+        firstRunExperience, setHasMessages,
+    } = useChatState();
 
     const [ suggestions, setSuggestions ] = React.useState<AutopilotChatSuggestion[]>([]);
     const [ sendOnClick, setSendOnClick ] = React.useState<boolean>(false);
@@ -193,7 +195,8 @@ function AutopilotChatMessagesComponent({
         };
 
         setMessageGroups(getMessageGroups());
-    }, [ messages ]);
+        setHasMessages(messages.length > 0);
+    }, [ messages, setHasMessages ]);
 
     return (
         <MessageContainer isOverflow={isOverflow} isContainerWide={isContainerWide}>

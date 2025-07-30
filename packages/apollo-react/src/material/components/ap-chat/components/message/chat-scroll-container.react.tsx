@@ -13,6 +13,7 @@ import {
 import React from 'react';
 
 import { useChatScroll } from '../../providers/chat-scroll-provider.react';
+import { useChatState } from '../../providers/chat-state-provider.react';
 import { AutopilotChatMessages } from './chat-message.react';
 import { AutopilotChatScrollToBottomButton } from './chat-scroll-to-bottom.react';
 
@@ -44,20 +45,32 @@ const MessagesContainer = styled('div')(
     }),
 );
 
-const GradientContainer = styled('div')(({ theme }: { theme: Theme }) => ({
+const StyledGradientContainer = styled('div')(({ theme }: { theme: Theme }) => ({
     position: 'sticky',
     zIndex: 1,
     bottom: 0,
     left: token.Spacing.SpacingBase,
-    width: `calc(100% - 2 * ${token.Spacing.SpacingBase})`,
+    width: '100%',
     height: token.Spacing.SpacingBase,
     background: `linear-gradient(
         to bottom,
-        ${theme.palette.semantic.colorBackground}25 0%,
-        ${theme.palette.semantic.colorBackground}50 25%,
-        ${theme.palette.semantic.colorBackground} 50%
-    )`,
+            ${theme.palette.semantic.colorBackground}25 0%,
+            ${theme.palette.semantic.colorBackground}50 25%,
+            ${theme.palette.semantic.colorBackground} 50%
+        )`,
 }));
+
+const GradientContainer = React.memo(() => {
+    const { hasMessages } = useChatState();
+
+    if (!hasMessages) {
+        return null;
+    }
+
+    return (
+        <StyledGradientContainer />
+    );
+});
 
 interface ChatScrollContainerProps {
     mode: AutopilotChatMode;

@@ -28,6 +28,8 @@ interface AutopilotChatStateContextType {
     firstRunExperience: AutopilotChatConfiguration['firstRunExperience'];
     allowedAttachments: AutopilotChatAllowedAttachments;
     models: AutopilotChatModelInfo[];
+    hasMessages: boolean;
+    setHasMessages: (hasMessages: boolean) => void;
 }
 
 const AutopilotChatStateContext = React.createContext<AutopilotChatStateContextType | null>(null);
@@ -61,6 +63,7 @@ export const AutopilotChatStateProvider: React.FC<AutopilotChatStateProviderProp
         suggestions: [],
     });
     const [ models, setModels ] = React.useState<AutopilotChatModelInfo[]>(chatService?.getModels() ?? []);
+    const [ hasMessages, setHasMessages ] = React.useState(false);
 
     React.useEffect(() => {
         if (!chatService) {
@@ -148,6 +151,8 @@ export const AutopilotChatStateProvider: React.FC<AutopilotChatStateProviderProp
         setHistoryAnchorElement,
         fullScreenContainer,
         setFullScreenContainer,
+        hasMessages,
+        setHasMessages,
     }), [
         historyOpen,
         settingsOpen,
@@ -161,6 +166,8 @@ export const AutopilotChatStateProvider: React.FC<AutopilotChatStateProviderProp
         setHistoryAnchorElement,
         fullScreenContainer,
         setFullScreenContainer,
+        hasMessages,
+        setHasMessages,
     ]);
 
     return (
