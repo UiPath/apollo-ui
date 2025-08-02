@@ -14,6 +14,8 @@ import type {
     AutopilotChatPreHookAction,
     AutopilotChatPrompt,
     AutopilotChatSuggestion,
+    ContentPart,
+    ContentPartChunk,
 } from '../types/AutopilotChatModel';
 import {
     AutopilotChatEvent,
@@ -31,6 +33,7 @@ import {
     getChatModeKey,
 } from './ChatConstants';
 import { AutopilotChatInternalService } from './ChatInternalService';
+import { ContentPartBuilder } from './ContentPartBuilder';
 import { EventBus } from './EventBus';
 import { LocalHistoryService } from './LocalHistory';
 import { StorageService } from './StorageService';
@@ -75,6 +78,7 @@ export class AutopilotChatService {
     private _internalService: AutopilotChatInternalService;
     private _groupId?: string;
     private _instanceName: string;
+    private _contentPartBuilders: Map<string, ContentPartBuilder> = new Map();
 
     private constructor(instanceName: string) {
         this._instanceName = instanceName;
@@ -523,19 +527,35 @@ export class AutopilotChatService {
     /**
      * Sends a response as an AI assistant response to the chat service
      *
-     * @param response - The response to send
+     * @param response - The response to send (supports legacy format or new ContentPart format)
      */
-    sendResponse(response: Omit<AutopilotChatMessage, 'role' | 'id'> & { id?: string }) {
+    sendResponse(response: Omit<AutopilotChatMessage, 'role' | 'id'> & {
+        id?: string;
+        contentPartChunk?: ContentPartChunk;
+    }) {
         const lastMessage = this._conversation[this._conversation.length - 1];
+        const messageId = response.id || crypto.randomUUID();
 
         // Set the last message groupId as the groupId for the response if it's an assistant message
         if (lastMessage?.groupId && lastMessage.role === AutopilotChatRole.Assistant && this._groupId !== lastMessage.groupId) {
             this._groupId = lastMessage.groupId;
         }
 
+        // Handle ContentPartChunk streaming
+        if (response.contentPartChunk) {
+            this._processContentPartChunk(messageId, response);
+
+            return;
+        }
+
+        const {
+            contentPartChunk: _contentPartChunk, ...rest
+        } = response;
+
         const assistantMessage = {
-            id: crypto.randomUUID(),
-            ...response,
+            id: messageId,
+            ...rest,
+            content: response.content ?? response.contentParts?.map(part => part.text).join(''),
             groupId: response.groupId ?? this._groupId,
             created_at: response.created_at ?? new Date().toISOString(),
             role: AutopilotChatRole.Assistant,
@@ -922,4 +942,83 @@ export class AutopilotChatService {
         this._eventBus.publish(AutopilotChatEvent.OutputStream, event);
     }
 
+    /**
+     * Accumulates a ContentPartChunk using ContentPartBuilder
+     * @internal
+     */
+    private _accumulateContentPart(messageId: string, chunk: ContentPartChunk) {
+        if (!this._contentPartBuilders.has(messageId)) {
+            this._contentPartBuilders.set(messageId, new ContentPartBuilder());
+        }
+
+        const builder = this._contentPartBuilders.get(messageId)!;
+        builder.addChunk(chunk);
+    }
+
+    /**
+     * Converts accumulated ContentParts to a message's content and contentParts
+     * @internal
+     */
+    private _getAccumulatedContent(messageId: string): ContentPart[] {
+        const builder = this._contentPartBuilders.get(messageId);
+
+        if (!builder) {
+            return [];
+        }
+
+        return builder.getContentParts();
+    }
+
+    /**
+     * Clears accumulated content parts for a message
+     * @internal
+     */
+    private _clearAccumulatedContent(messageId: string) {
+        this._contentPartBuilders.delete(messageId);
+    }
+
+    /**
+     * Processes a content part chunk
+     * @internal
+     */
+    private _processContentPartChunk(messageId: string, response: Omit<AutopilotChatMessage, 'role' | 'id'> & {
+        id?: string;
+        contentPartChunk?: ContentPartChunk;
+    }) {
+        const {
+            contentPartChunk, ...rest
+        } = response;
+
+        this._accumulateContentPart(messageId, contentPartChunk!);
+
+        const assistantMessage = {
+            id: messageId,
+            ...rest,
+            content: response.content ?? response.contentPartChunk?.text,
+            contentParts: this._getAccumulatedContent(messageId),
+            groupId: response.groupId ?? this._groupId,
+            created_at: response.created_at ?? new Date().toISOString(),
+            role: AutopilotChatRole.Assistant,
+            stream: true,
+            done: response.done ?? false,
+        };
+
+        const existingIndex = this._conversation.findIndex(message => message.id === messageId);
+
+        if (existingIndex !== -1) {
+            this._conversation[existingIndex] = {
+                ...this._conversation[existingIndex],
+                ...assistantMessage,
+            };
+            this._eventBus.publish(AutopilotChatEvent.SendChunk, assistantMessage);
+        } else {
+            this._conversation.push(assistantMessage);
+            this._eventBus.publish(AutopilotChatEvent.Response, assistantMessage);
+        }
+
+        // Clear accumulator if done
+        if (response.done) {
+            this._clearAccumulatedContent(messageId);
+        }
+    }
 }
