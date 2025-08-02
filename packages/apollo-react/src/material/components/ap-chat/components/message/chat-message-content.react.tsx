@@ -21,9 +21,7 @@ import { useChatService } from '../../providers/chat-service.provider.react';
 import { calculateDynamicPadding } from '../../utils/dynamic-padding';
 import { Attachments } from '../common/attachments.react';
 import { AutopilotChatMessageActions } from './actions/chat-actions.react';
-import { AutopilotChatDisclaimers } from './disclaimers/chat-disclaimers.react';
 import { AutopilotChatMarkdownRenderer } from './markdown/markdown.react';
-import { AutopilotChatSources } from './sources/chat-sources.react';
 
 const APOLLO_MESSAGE_RENDERERS = [ {
     name: DEFAULT_MESSAGE_RENDERER,
@@ -47,7 +45,7 @@ const MessageBoxComponent = styled('div')<{
             return;
         }
 
-        const unsubscribe = chatInternalService.on(AutopilotChatInternalEvent.ChatResize, (width: number) => {
+        const unsubscribeResize = chatInternalService.on(AutopilotChatInternalEvent.ChatResize, (width: number) => {
             setPadding(calculateDynamicPadding(width));
         });
 
@@ -65,7 +63,7 @@ const MessageBoxComponent = styled('div')<{
             });
 
         return () => {
-            unsubscribe();
+            unsubscribeResize();
             unsubscribeMode();
         };
     }, [ chatInternalService, chatService ]);
@@ -82,7 +80,7 @@ const MessageBoxComponent = styled('div')<{
         backgroundColor: isAssistant ? 'unset' : `var(--custom-autopilot-chat-user-message-bg-color, ${theme.palette.semantic.colorBackgroundSecondary})`,
         marginLeft: isAssistant ? '0' : `${padding}px`,
         marginRight: isAssistant ? token.Spacing.SpacingXl : '0',
-        whiteSpace: 'pre-wrap',
+        whiteSpace: 'normal',
         overflowWrap: 'anywhere',
         position: 'relative',
         ...(isCustomWidget && { width: '100%' }),
@@ -147,17 +145,12 @@ function AutopilotChatMessageContentComponent({
             <MessageBox
                 isAssistant={message.role === AutopilotChatRole.Assistant}
                 key={message.id}
+                id={message.id}
             >
                 {message.attachments && message.attachments.length > 0 && (
                     <Attachments attachments={message.attachments} removeSpacing disableOverflow />
                 )}
                 {ApolloMessageRenderer ? <ApolloMessageRenderer message={message} /> : <AutopilotChatMarkdownRenderer message={message} />}
-                {message.disclaimers && message.disclaimers.length > 0 && (
-                    <AutopilotChatDisclaimers disclaimers={message.disclaimers} />
-                )}
-                {message.sources && message.sources.length > 0 && (
-                    <AutopilotChatSources sources={message.sources} />
-                )}
                 {isLastInGroup && (
                     <AutopilotChatMessageActions message={message} containerElement={containerRef}/>
                 )}

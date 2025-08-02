@@ -5,8 +5,7 @@ import {
     Box,
     useTheme,
 } from '@mui/material';
-import { FontVariantToken } from '@uipath/apollo-core';
-import token from '@uipath/apollo-core/lib';
+import token, { FontVariantToken } from '@uipath/apollo-core';
 import React from 'react';
 
 // Create a context for typography variant
@@ -17,24 +16,27 @@ export const Text = ({
 }: { children: React.ReactNode; variant?: FontVariantToken; customStyle?: React.CSSProperties; headingLevel?: number }) => {
     const theme = useTheme();
 
+    if (Array.isArray(children) && children.length === 1 && children[0] === '') {
+        return null;
+    }
+
     return (
         <TypographyContext.Provider value={variant}>
             <ap-typography
                 variant={variant}
                 color={theme.palette.semantic.colorForeground}
-                style={{ ...customStyle }}
+                style={{
+                    maxWidth: 'fit-content',
+                    ...customStyle,
+                }}
                 {...(headingLevel ? {
                     'role': 'heading',
                     'aria-level': headingLevel,
                 } : {})}
             >
-                { headingLevel ? (
-                    <div style={{ display: 'flex' }}>
-                        {children}
-                    </div>
-                ) : (
-                    children
-                )}
+                <div style={{ display: headingLevel ? 'flex' : 'inline' }}>
+                    {children}
+                </div>
             </ap-typography>
         </TypographyContext.Provider>
     );

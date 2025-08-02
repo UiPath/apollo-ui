@@ -20,7 +20,6 @@ export const Ul = React.memo(({ children }: { children: React.ReactNode }) => {
             paddingInlineStart: token.Spacing.SpacingM,
             display: 'block',
             lineHeight: token.FontFamily.FontMicroLineHeight,
-            marginBlockEnd: `-${token.Spacing.SpacingS}`,
         }}>
         {children}
     </Box>;
@@ -37,7 +36,6 @@ export const Ol = React.memo(({
             marginInline: 'unset',
             paddingInlineStart: token.Spacing.SpacingBase,
             lineHeight: token.FontFamily.FontMicroLineHeight,
-            marginBlockEnd: `-${token.Spacing.SpacingS}`,
         }}>
         {children}
     </Box>;
@@ -53,7 +51,7 @@ export const Li = React.memo(({ children }: { children: React.ReactNode }) => {
                 color: theme.palette.semantic.colorForeground,
                 fontSize: token.FontFamily.FontMSize,
             },
-            lineHeight: 0,
+            maxWidth: 'fit-content',
         }}>
         {/* Only return ap-typography on strings and not empty spaces */}
         {React.Children.map(children, child => {

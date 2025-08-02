@@ -47,7 +47,7 @@ const removeFakeStream = (messages: AutopilotChatMessage[]) => {
 
 // eslint-disable-next-line object-curly-newline
 const MessageGroupContainer = styled('div')(({ isAssistant }: { isAssistant: boolean }) => ({
-    marginBottom: isAssistant ? '30px' : '14px', // Assistant is 30px becaue user has actions with negative 16px
+    marginBottom: isAssistant ? '30px' : '14px', // Assistant is 30px because user has actions with negative 16px
 // eslint-disable-next-line object-curly-newline
 }));
 

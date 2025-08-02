@@ -5,7 +5,7 @@
 import 'katex/dist/katex.min.css';
 
 import { styled } from '@mui/material';
-import { FontVariantToken } from '@uipath/apollo-core/lib';
+import token, { FontVariantToken } from '@uipath/apollo-core/lib';
 import {
     AutopilotChatEvent,
     AutopilotChatMessage,
@@ -19,12 +19,17 @@ import remarkMath from 'remark-math';
 import { t } from '../../../../../utils/localization/loc';
 import { useChatService } from '../../../providers/chat-service.provider.react';
 import { useStreaming } from '../../../providers/streaming-provider.react';
+import { Citation } from './citation.react';
 import { Code } from './code.react';
 import {
     Li,
     Ol,
     Ul,
 } from './lists.react';
+import {
+    citationPlugin,
+    contentPartsToMarkdown,
+} from './parsers/citation-parser';
 import {
     Cell,
     HeaderCell,
@@ -45,7 +50,12 @@ import {
 } from './text.react';
 
 const StyledMarkdown = React.memo(
-    styled(ReactMarkdown)(({ theme }) => ({ '&, & .katex': { color: theme.palette.semantic.colorForeground } })),
+    styled(ReactMarkdown)(({ theme }) => ({
+        '&, & .katex': { color: theme.palette.semantic.colorForeground },
+        display: 'flex',
+        flexDirection: 'column',
+        gap: token.Spacing.SpacingL,
+    })),
 );
 
 const FAKE_STREAM_CHARS_COUNT = 10;
@@ -55,7 +65,16 @@ const CHUNK_QUEUE_PROCESS_INTERVAL = 50;
 function AutopilotChatMarkdownRendererComponent({ message }: { message: AutopilotChatMessage }) {
     // Only store message ID and content separately to minimize re-renders
     const messageId = React.useRef(message.id);
-    const [ content, setContent ] = React.useState(message.fakeStream ? '' : (message.content || ''));
+
+    // Generate initial content from contentParts if available, otherwise use message.content
+    const getInitialContent = React.useCallback(() => {
+        if (message.contentParts && message.contentParts.length > 0) {
+            return contentPartsToMarkdown(messageId.current, message.contentParts);
+        }
+        return message.content || '';
+    }, [ message.contentParts, message.content ]);
+
+    const [ content, setContent ] = React.useState(message.fakeStream ? '' : getInitialContent());
     const chatService = useChatService();
     const { setStreaming } = useStreaming();
     const chunkQueue = React.useRef<string[]>([]);
@@ -68,19 +87,19 @@ function AutopilotChatMarkdownRendererComponent({ message }: { message: Autopilo
 
         if (message.id !== messageId.current || !message.stream) {
             messageId.current = message.id;
-            setContent(message.fakeStream ? '' : (message.content || ''));
+            setContent(message.fakeStream ? '' : getInitialContent());
         }
 
         if (message.fakeStream) {
             unsubscribeStopResponse = chatService.on(AutopilotChatEvent.StopResponse, () => {
                 clearInterval(fakeStreamInterval);
                 setStreaming(false);
-                setContent(message.content || '');
+                setContent(getInitialContent());
                 chunkQueue.current = [];
                 lastChunkQueueProcessedTime.current = 0;
             });
 
-            const characters = message.content.split('');
+            const characters = getInitialContent().split('');
             let charIndex = 0;
 
             setStreaming(true);
@@ -105,7 +124,7 @@ function AutopilotChatMarkdownRendererComponent({ message }: { message: Autopilo
             unsubscribeStopResponse?.();
             fakeStreamInterval && clearInterval(fakeStreamInterval);
         };
-    }, [ message, chatService, setStreaming ]);
+    }, [ message, chatService, setStreaming, getInitialContent ]);
 
     React.useEffect(() => {
         if (!chatService) {
@@ -119,11 +138,21 @@ function AutopilotChatMarkdownRendererComponent({ message }: { message: Autopilo
                 if (Date.now() - lastChunkQueueProcessedTime.current > CHUNK_QUEUE_PROCESS_INTERVAL) {
                     lastChunkQueueProcessedTime.current = Date.now();
 
+                    if (msg.contentParts) {
+                        setContent(contentPartsToMarkdown(messageId.current, msg.contentParts));
+                        return;
+                    }
+
                     setContent(prevContent => `${prevContent}${chunkQueue.current.join('')}`);
                     chunkQueue.current = [];
                 } else {
                     if (msg.done) {
                         lastChunkQueueProcessedTime.current = 0;
+
+                        if (msg.contentParts) {
+                            setContent(contentPartsToMarkdown(messageId.current, msg.contentParts));
+                            return;
+                        }
 
                         setContent(prevContent => `${prevContent}${chunkQueue.current.join('')}`);
                         chunkQueue.current = [];
@@ -163,11 +192,16 @@ function AutopilotChatMarkdownRendererComponent({ message }: { message: Autopilo
         hr: Hr,
         pre: Pre,
         a: Link,
+        citation: Citation,
     }), []);
 
     return React.useMemo(() => (
         <StyledMarkdown
-            remarkPlugins={[ remarkGfm, [ remarkMath, { singleDollarTextMath: false } ] ]}
+            remarkPlugins={[
+                citationPlugin,
+                remarkGfm,
+                [ remarkMath, { singleDollarTextMath: false } ],
+            ]}
             rehypePlugins={[ [ rehypeKatex, {
                 output: 'mathml',
                 trust: false,

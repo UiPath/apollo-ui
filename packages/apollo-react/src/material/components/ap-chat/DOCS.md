@@ -621,67 +621,6 @@ chatService.on("custom-action", ({ message, action, group }) => {
 });
 ```
 
-### Messages with Sources and Disclaimers
-
-```typescript
-// Send a response with sources and disclaimers
-chatService.sendResponse({
-  id: "msg-with-sources",
-  content: "Based on the latest market data, the quarterly revenue increased by 15%. This growth is attributed to improved customer acquisition and retention strategies.",
-  role: AutopilotChatRole.Assistant,
-  widget: "apollo-markdown-renderer",
-  sources: [
-    {
-      title: "Q3 Financial Report",
-      url: "https://company.com/reports/q3-financial"
-    },
-    {
-      title: "Market Analysis Dashboard",
-      url: "https://analytics.company.com/market-trends"
-    },
-    {
-      title: "Customer Metrics Database",
-      url: "https://internal.company.com/customer-data"
-    }
-  ],
-  disclaimers: [
-    "This analysis is based on preliminary data and may be subject to revision.",
-    "Market conditions can change rapidly and may impact future performance.",
-    "Please consult with your financial advisor before making investment decisions."
-  ]
-});
-
-// Send a response with just disclaimers
-chatService.sendResponse({
-  id: "msg-with-disclaimers",
-  content: "Here's a code snippet that should solve your problem:\n\n```python\ndef calculate_roi(investment, return_value):\n    return ((return_value - investment) / investment) * 100\n```",
-  role: AutopilotChatRole.Assistant,
-  widget: "apollo-markdown-renderer",
-  disclaimers: [
-    "This code is provided as-is and may require modifications for your specific use case.",
-    "Always test code thoroughly before using in production environments."
-  ]
-});
-
-// Send a response with just sources
-chatService.sendResponse({
-  id: "msg-with-sources-only",
-  content: "The latest documentation has been updated with new API endpoints and examples.",
-  role: AutopilotChatRole.Assistant,
-  widget: "apollo-markdown-renderer",
-  sources: [
-    {
-      title: "API Documentation v2.1",
-      url: "https://docs.company.com/api/v2.1"
-    },
-    {
-      title: "Code Examples Repository",
-      url: "https://github.com/company/api-examples"
-    }
-  ]
-});
-```
-
 ### Custom Message Renderer
 
 ```typescript
@@ -1359,21 +1298,6 @@ export interface AutopilotChatSuggestion {
 }
 ```
 
-### AutopilotChatSource
-
-```typescript
-/**
- * Represents a source for the Autopilot Chat system.
- *
- * @property title - The title of the source
- * @property url - The url of the source
- */
-export interface AutopilotChatSource {
-  title: string;
-  url: string;
-}
-```
-
 ### AutopilotChatAllowedAttachments
 
 ```typescript
@@ -1428,8 +1352,6 @@ export interface AutopilotChatModelInfo {
  *                  AutopilotChatRole.User for sendRequest and AutopilotChatRole.Assistant for sendResponse.
  * @property widget - The renderer to use for displaying this message.
  * @property attachments - Optional files attached to the message.
- * @property sources - Optional list of sources to the message.
- * @property disclaimers - Optional list of disclaimers to the message.
  * @property hijacked - Flag set by the chat service when an event is intercepted and the interceptor returns true
  * @property fakeStream - Temporary flag used to simulate streaming for a complete message (will be ignored for requests)
  * @property stream - Flag used to stream a chunk (will be ignored for requests)
@@ -1449,8 +1371,6 @@ export interface AutopilotChatMessage {
     role: AutopilotChatRole;
     widget: string;
     attachments?: AutopilotChatFileInfo[];
-    sources?: AutopilotChatSource[];
-    disclaimers?: string[];
     hijacked?: boolean;
     fakeStream?: boolean;
     stream?: boolean;

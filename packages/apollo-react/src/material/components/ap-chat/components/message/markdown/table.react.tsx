@@ -37,8 +37,8 @@ export const Table = React.memo(({ children }: TableProps) => {
 
             '& tr:last-child td': { borderBottom: 'unset' },
 
-            '& .MuiTableHead-root th:first-child': { borderTopLeftRadius: token.Border.BorderRadiusL },
-            '& .MuiTableHead-root th:last-child': { borderTopRightRadius: token.Border.BorderRadiusL },
+            '& .MuiTableHead-root th:first-of-type': { borderTopLeftRadius: token.Border.BorderRadiusL },
+            '& .MuiTableHead-root th:last-of-type': { borderTopRightRadius: token.Border.BorderRadiusL },
         }}>
             {children}
         </MuiTable>
