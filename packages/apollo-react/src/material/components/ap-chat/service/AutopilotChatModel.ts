@@ -59,7 +59,7 @@ export enum AutopilotChatRole {
  * @property widget - The renderer to use for displaying this message.
  * @property attachments - Optional files attached to the message.
  * @property sources - Optional list of sources to the message.
- * @property disclaimers - Optional list of disclaimers to the message.
+ * @property contentParts - Optional content parts for citation support (new format)
  * @property hijacked - Flag set by the chat service when an event is intercepted and the interceptor returns true
  * @property fakeStream - Temporary flag used to simulate streaming for a complete message (will be ignored for requests)
  * @property stream - Flag used to stream a chunk (will be ignored for requests)
@@ -79,8 +79,7 @@ export interface AutopilotChatMessage {
     role: AutopilotChatRole;
     widget: string;
     attachments?: AutopilotChatFileInfo[];
-    sources?: AutopilotChatSource[];
-    disclaimers?: string[];
+    contentParts?: ContentPart[];
     hijacked?: boolean;
     fakeStream?: boolean;
     stream?: boolean;
@@ -238,14 +237,58 @@ export interface AutopilotChatSuggestion {
 }
 
 /**
- * Represents a source for the Autopilot Chat system.
+ * Represents a content part in the Autopilot Chat system.
  *
- * @property title - The title of the source
- * @property url - The url of the source
+ * @property text - The text content of this part
+ * @property citations - The citations that apply to this text
  */
-export interface AutopilotChatSource {
+export interface ContentPart {
+    text?: string;
+    citations?: Array<UrlCitation | PdfCitation>;
+}
+
+/**
+ * Represents a content part chunk for streaming in the Autopilot Chat system.
+ *
+ * @property index - The index of the content part this chunk belongs to
+ * @property text - The text to append to the content part
+ * @property citation - A citation to add to the content part
+ */
+export interface ContentPartChunk {
+    index: number;
+    text?: string;
+    citation?: UrlCitation | PdfCitation;
+}
+
+/**
+ * Base citation interface for the Autopilot Chat system.
+ *
+ * @property id - Unique identifier for the citation
+ * @property title - The title of the citation
+ */
+export interface Citation {
+    id: number;
     title: string;
+}
+
+/**
+ * URL citation that extends the base Citation interface.
+ *
+ * @property url - The URL of the citation
+ */
+export interface UrlCitation extends Citation {
     url: string;
+}
+
+/**
+ * PDF citation that extends the base Citation interface.
+ *
+ * @property download_url - The URL to download the PDF
+ * @property page_number - The page number in the PDF
+ */
+export interface PdfCitation extends Citation {
+    download_url: string;
+    page_number: number;
 }
 
 /**
