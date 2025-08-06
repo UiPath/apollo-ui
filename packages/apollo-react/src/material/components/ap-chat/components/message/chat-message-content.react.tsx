@@ -22,6 +22,7 @@ import { calculateDynamicPadding } from '../../utils/dynamic-padding';
 import { Attachments } from '../common/attachments.react';
 import { AutopilotChatMessageActions } from './actions/chat-actions.react';
 import { AutopilotChatMarkdownRenderer } from './markdown/markdown.react';
+import { AutopilotChatSources } from './sources/chat-sources.react';
 
 const APOLLO_MESSAGE_RENDERERS = [ {
     name: DEFAULT_MESSAGE_RENDERER,
@@ -123,7 +124,12 @@ const WidgetContainer = React.memo(({
                 }
             }}/>
             {isLastInGroup && (
-                <AutopilotChatMessageActions message={message} containerElement={containerRef}/>
+                <>
+                    { message.role === AutopilotChatRole.Assistant && (
+                        <AutopilotChatSources groupId={message.groupId ?? ''} message={message} />
+                    )}
+                    <AutopilotChatMessageActions message={message} containerElement={containerRef}/>
+                </>
             )}
         </MessageBox>
     );
@@ -152,7 +158,12 @@ function AutopilotChatMessageContentComponent({
                 )}
                 {ApolloMessageRenderer ? <ApolloMessageRenderer message={message} /> : <AutopilotChatMarkdownRenderer message={message} />}
                 {isLastInGroup && (
-                    <AutopilotChatMessageActions message={message} containerElement={containerRef}/>
+                    <>
+                        { message.role === AutopilotChatRole.Assistant && (
+                            <AutopilotChatSources groupId={message.groupId ?? ''} message={message} />
+                        )}
+                        <AutopilotChatMessageActions message={message} containerElement={containerRef}/>
+                    </>
                 )}
             </MessageBox>
         );

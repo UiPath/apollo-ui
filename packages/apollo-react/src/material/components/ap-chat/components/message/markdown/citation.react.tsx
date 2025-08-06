@@ -50,6 +50,7 @@ export const Citation = React.memo(({
     const { overflowContainer } = useChatScroll();
     const ref = React.useRef<HTMLDivElement>(null);
     const [ open, setOpen ] = React.useState(false);
+    const finalUrl = url || download_url;
 
     const handleOpen = React.useCallback(() => {
         setOpen(true);
@@ -83,10 +84,10 @@ export const Citation = React.memo(({
     }, [ id, messageId ]);
 
     const handleClick = React.useCallback(() => {
-        if (url) {
-            window.open(url, '_blank', 'noopener,noreferrer');
+        if (finalUrl) {
+            window.open(finalUrl, '_blank', 'noopener,noreferrer');
         }
-    }, [ url ]);
+    }, [ finalUrl ]);
 
     // Close tooltip on scroll
     React.useEffect(() => {
@@ -131,7 +132,7 @@ export const Citation = React.memo(({
                         display: 'flex',
                         alignItems: 'center',
                         gap: token.Spacing.SpacingS,
-                        cursor: (url || download_url) ? 'pointer' : 'default',
+                        cursor: finalUrl ? 'pointer' : 'default',
                         padding: `${token.Spacing.SpacingXs} ${token.Spacing.SpacingS}`,
                     }}
                     onClick={handleClick}
@@ -196,6 +197,7 @@ export const Citation = React.memo(({
                     padding: `0 ${token.Spacing.SpacingMicro}`,
                     marginLeft: token.Spacing.SpacingMicro,
                     borderRadius: token.Border.BorderRadiusM,
+                    marginTop: `-${token.Spacing.SpacingMicro}`,
                 }}
                 onClick={handleClick}
             >

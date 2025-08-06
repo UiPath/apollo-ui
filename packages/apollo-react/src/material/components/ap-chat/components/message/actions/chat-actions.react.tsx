@@ -9,6 +9,7 @@ import {
 import React, { useEffect } from 'react';
 
 import { t } from '../../../../../utils/localization/loc';
+import { useIsStreamingMessage } from '../../../hooks/use-is-streaming-message';
 import { useChatService } from '../../../providers/chat-service.provider.react';
 import { useChatState } from '../../../providers/chat-state-provider.react';
 import { AutopilotChatActionsList } from './chat-actions-list.react';
@@ -27,6 +28,7 @@ function AutopilotChatMessageActionsComponent({
     const [ isVisible, setIsVisible ] = React.useState(false);
     const isUserInteractingWithActions = React.useRef(false);
     const actionsContainerRef = React.useRef<HTMLDivElement | null>(null);
+    const { isStreaming } = useIsStreamingMessage(message);
 
     useEffect(() => {
         if (!chatService) {
@@ -169,7 +171,7 @@ function AutopilotChatMessageActionsComponent({
         };
     }, [ containerElement, isRelatedTarget ]);
 
-    if (message.stream && !message.done) {
+    if (isStreaming) {
         return null;
     }
 
