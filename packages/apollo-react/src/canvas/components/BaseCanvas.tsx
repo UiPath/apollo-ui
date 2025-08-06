@@ -1,0 +1,164 @@
+import { forwardRef, memo, useCallback, useImperativeHandle, useState } from "react";
+import { Background, ConnectionMode, Edge, Node, ReactFlow, ReactFlowInstance } from "@xyflow/react";
+import { BASE_CANVAS_DEFAULTS } from "./BaseCanvas.constants";
+import { useAutoLayout, useEnsureNodesInView, useMaintainNodesInView } from "./BaseCanvas.hooks";
+import { BaseCanvasProps, BaseCanvasRef } from "./BaseCanvas.types";
+import { usePreventBackNavigation } from "./usePreventBackNavigation";
+
+const BaseCanvasInnerComponent = <NodeType extends Node = Node, EdgeType extends Edge = Edge>(
+  props: BaseCanvasProps<NodeType, EdgeType> & { innerRef?: React.Ref<BaseCanvasRef<NodeType, EdgeType>> }
+) => {
+  const { innerRef, ...canvasProps } = props;
+
+  const {
+    // Core props
+    nodes,
+    edges,
+    nodeTypes,
+    edgeTypes,
+    children,
+
+    // Behavior
+    mode = "view",
+
+    // Styling
+    backgroundColor = BASE_CANVAS_DEFAULTS.background.color,
+    backgroundSecondaryColor = BASE_CANVAS_DEFAULTS.background.bgColor,
+    backgroundVariant = BASE_CANVAS_DEFAULTS.background.variant,
+    backgroundGap = BASE_CANVAS_DEFAULTS.background.gap,
+    backgroundSize = BASE_CANVAS_DEFAULTS.background.size,
+
+    // Configuration
+    minZoom = BASE_CANVAS_DEFAULTS.zoom.min,
+    maxZoom = BASE_CANVAS_DEFAULTS.zoom.max,
+    defaultViewport = BASE_CANVAS_DEFAULTS.defaultViewport,
+    fitViewOptions = BASE_CANVAS_DEFAULTS.fitViewOptions,
+    defaultEdgeOptions = BASE_CANVAS_DEFAULTS.edge,
+
+    // Event handlers
+    onNodesChange,
+    onEdgesChange,
+    onConnect,
+    onNodeClick,
+    onNodeDragStart,
+    onNodeDrag,
+    onNodeDragStop,
+    onPaneClick,
+    onInit,
+
+    // Additional ReactFlow props
+    proOptions = BASE_CANVAS_DEFAULTS.pro,
+    connectionMode = ConnectionMode.Loose,
+    deleteKeyCode = null,
+    selectNodesOnDrag = true,
+    nodesDraggable = true,
+    nodesConnectable = true,
+    elementsSelectable = true,
+    onlyRenderVisibleElements = true,
+    snapToGrid = BASE_CANVAS_DEFAULTS.snapToGrid,
+    snapGrid = BASE_CANVAS_DEFAULTS.snapGrid,
+
+    // Layout
+    initialAutoLayout,
+    maintainNodesInView,
+  } = canvasProps;
+
+  // Derive interactivity from mode
+  const isInteractive = mode !== "readonly";
+  const isDesignMode = mode === "design";
+
+  const [reactFlowInstance, setReactFlowInstance] = useState<ReactFlowInstance<NodeType, EdgeType>>();
+
+  const { isReady } = useAutoLayout(nodes as Node[], initialAutoLayout);
+  const { ensureNodesInView, ensureAllNodesInView, centerNode } = useEnsureNodesInView();
+
+  // Prevent browser back navigation on touch gestures
+  usePreventBackNavigation();
+
+  // Maintain specified nodes in view when canvas resizes
+  // This ensures important nodes remain visible in responsive layouts
+  // The hook only pans the viewport without changing the zoom level
+  useMaintainNodesInView(maintainNodesInView);
+
+  const handleInit = useCallback(
+    (instance: ReactFlowInstance<NodeType, EdgeType>) => {
+      setReactFlowInstance(instance);
+      onInit?.(instance);
+    },
+    [onInit]
+  );
+
+  useImperativeHandle(
+    innerRef as React.Ref<BaseCanvasRef<NodeType, EdgeType>>,
+    () => ({
+      ensureNodesInView,
+      ensureAllNodesInView,
+      centerNode,
+      reactFlow: reactFlowInstance,
+    }),
+    [ensureNodesInView, ensureAllNodesInView, centerNode, reactFlowInstance]
+  );
+
+  return (
+    <ReactFlow
+      nodes={nodes}
+      edges={edges}
+      nodeTypes={nodeTypes}
+      edgeTypes={edgeTypes}
+      fitViewOptions={fitViewOptions}
+      defaultEdgeOptions={defaultEdgeOptions}
+      defaultViewport={defaultViewport}
+      proOptions={proOptions}
+      connectionMode={connectionMode}
+      deleteKeyCode={isDesignMode ? deleteKeyCode : null}
+      selectNodesOnDrag={isInteractive && selectNodesOnDrag}
+      nodesDraggable={isDesignMode && nodesDraggable}
+      nodesConnectable={isDesignMode && nodesConnectable}
+      elementsSelectable={isInteractive && elementsSelectable}
+      onlyRenderVisibleElements={onlyRenderVisibleElements}
+      snapToGrid={snapToGrid}
+      snapGrid={snapGrid}
+      minZoom={minZoom}
+      maxZoom={maxZoom}
+      panOnScroll={isInteractive}
+      zoomOnScroll={isInteractive}
+      zoomOnDoubleClick={isInteractive}
+      panOnDrag={isInteractive ? [1] : false}
+      onInit={handleInit}
+      onNodesChange={isDesignMode ? onNodesChange : undefined}
+      onEdgesChange={isDesignMode ? onEdgesChange : undefined}
+      onConnect={isDesignMode ? onConnect : undefined}
+      onNodeClick={isInteractive ? onNodeClick : undefined}
+      onNodeDragStart={isDesignMode ? onNodeDragStart : undefined}
+      onNodeDrag={isDesignMode ? onNodeDrag : undefined}
+      onNodeDragStop={isDesignMode ? onNodeDragStop : undefined}
+      onPaneClick={isInteractive ? onPaneClick : undefined}
+      style={{
+        opacity: isReady ? 1 : 0,
+        transition: BASE_CANVAS_DEFAULTS.transitions.opacity,
+      }}
+    >
+      <Background
+        color={backgroundColor}
+        bgColor={backgroundSecondaryColor}
+        variant={backgroundVariant}
+        gap={backgroundGap}
+        size={backgroundSize}
+      />
+
+      {children}
+    </ReactFlow>
+  );
+};
+
+const BaseCanvasInner = memo(BaseCanvasInnerComponent) as typeof BaseCanvasInnerComponent;
+
+// Create the final component with proper typing
+export const BaseCanvas = forwardRef(function BaseCanvas<
+  NodeType extends Node = Node,
+  EdgeType extends Edge = Edge,
+>(props: BaseCanvasProps<NodeType, EdgeType>, ref: React.Ref<BaseCanvasRef<NodeType, EdgeType>>) {
+  return <BaseCanvasInner {...props} innerRef={ref} />;
+}) as <NodeType extends Node = Node, EdgeType extends Edge = Edge>(
+  props: BaseCanvasProps<NodeType, EdgeType> & { ref?: React.Ref<BaseCanvasRef<NodeType, EdgeType>> }
+) => JSX.Element;
