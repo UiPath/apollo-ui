@@ -16,7 +16,7 @@ export const FeaturePlayground = (args) => {
                     
                         <div style="margin-bottom: 20px;">
                         <h4>Chat Actions</h4>
-                        <div style="display: flex; flex-direction: column; gap: 8px;">
+                        <div style="display: flex; flex-direction: column; gap: 8px; max-width: 300px;">
                             <ap-button id="toggle-chat" label="Toggle Chat" size="small" style="width: 100%;"></ap-button>
                             <ap-button id="open-fullscreen" label="Open Fullscreen" size="small" style="width: 100%;"></ap-button>
                             <ap-button id="new-chat" label="New Chat" size="small" style="width: 100%;"></ap-button>
@@ -26,13 +26,14 @@ export const FeaturePlayground = (args) => {
                     
                     <div style="margin-bottom: 20px;">
                         <h4>Message Controls</h4>
-                        <div style="display: flex; flex-direction: column; gap: 8px;">
+                        <div style="display: flex; flex-direction: column; gap: 8px; max-width: 300px;">
                             <ap-button id="set-prompt" label="Set Prompt" size="small" style="width: 100%;"></ap-button>
                             <ap-button id="reset-prompt" label="Reset Prompt" size="small" style="width: 100%;"></ap-button>
                             <ap-button id="send-request" label="Send Request" size="small" style="width: 100%;"></ap-button>
                             <ap-button id="send-response" label="Send Response" size="small" style="width: 100%;"></ap-button>
                             <ap-button id="stop-response" label="Stop Response" size="small" style="width: 100%;"></ap-button>
                             <ap-button id="send-response-custom-actions" label="Custom Actions" size="small" style="width: 100%;"></ap-button>
+                            <ap-button id="send-response-with-citations" label="Send With Citations" size="small" style="width: 100%;"></ap-button>
                             <ap-button id="set-conversation" label="Set Conversation" size="small" style="width: 100%;"></ap-button>
                             <ap-button id="set-suggestions" label="Set Suggestions" size="small" style="width: 100%;"></ap-button>
                         </div>
@@ -40,7 +41,7 @@ export const FeaturePlayground = (args) => {
                     
                     <div style="margin-bottom: 20px;">
                         <h4>Loading & Errors</h4>
-                        <div style="display: flex; flex-direction: column; gap: 8px;">
+                        <div style="display: flex; flex-direction: column; gap: 8px; max-width: 300px;">
                             <ap-button id="set-default-loading-messages" label="Default Loading" size="small" style="width: 100%;"></ap-button>
                             <ap-button id="set-loading-message" label="Loading Message" size="small" style="width: 100%;"></ap-button>
                             <ap-button id="set-error" label="Set Error" size="small" style="width: 100%;"></ap-button>
@@ -50,15 +51,16 @@ export const FeaturePlayground = (args) => {
                     
                     <div style="margin-bottom: 20px;">
                         <h4>Streaming</h4>
-                        <div style="display: flex; flex-direction: column; gap: 8px;">
+                        <div style="display: flex; flex-direction: column; gap: 8px; max-width: 300px;">
                             <ap-button id="toggle-streaming" label="Toggle Streaming" size="small" style="width: 100%;"></ap-button>
                             <ap-button id="fake-stream" label="Fake Stream" size="small" style="width: 100%;"></ap-button>
+                            <ap-button id="stream-with-citations" label="Stream With Citations" size="small" style="width: 100%;"></ap-button>
                         </div>
                     </div>
                     
                     <div style="margin-bottom: 20px;">
                         <h4>Custom Widgets</h4>
-                        <div style="display: flex; flex-direction: column; gap: 8px;">
+                        <div style="display: flex; flex-direction: column; gap: 8px; max-width: 300px;">
                             <ap-button id="send-trace-span" label="Send Trace Span" size="small" style="width: 100%;"></ap-button>
                             <ap-button id="send-trace-tree" label="Send Trace Tree" size="small" style="width: 100%;"></ap-button>
                         </div>
@@ -66,7 +68,7 @@ export const FeaturePlayground = (args) => {
                     
                     <div style="margin-bottom: 20px;">
                         <h4>Configuration</h4>
-                        <div style="display: flex; flex-direction: column; gap: 8px;">
+                        <div style="display: flex; flex-direction: column; gap: 8px; max-width: 300px;">
                             <ap-button id="set-models" label="Set Models" size="small" style="width: 100%;"></ap-button>
                             <ap-button id="set-selected-model" label="Set Selected Model" size="small" style="width: 100%;"></ap-button>
                             <ap-button id="set-allowed-attachments" label="Set Attachments" size="small" style="width: 100%;"></ap-button>
@@ -77,7 +79,7 @@ export const FeaturePlayground = (args) => {
                     
                     <div style="margin-bottom: 20px;">
                         <h4>Feature Toggles</h4>
-                        <div style="display: flex; flex-direction: column; gap: 8px;">
+                        <div style="display: flex; flex-direction: column; gap: 8px; max-width: 300px;">
                             <ap-checkbox id="disable-resize" label="Disable Resize"></ap-checkbox>
                             <ap-checkbox id="disable-fullscreen" label="Disable Fullscreen"></ap-checkbox>
                             <ap-checkbox id="disable-attachments" label="Disable Attachments"></ap-checkbox>
@@ -191,6 +193,7 @@ FeaturePlayground.play = async ({
         sendResponse: canvasElement.querySelector('#send-response'),
         stopResponse: canvasElement.querySelector('#stop-response'),
         sendResponseCustomActions: canvasElement.querySelector('#send-response-custom-actions'),
+        sendResponseWithCitations: canvasElement.querySelector('#send-response-with-citations'),
         setConversation: canvasElement.querySelector('#set-conversation'),
         setSuggestions: canvasElement.querySelector('#set-suggestions'),
         setDefaultLoadingMessages: canvasElement.querySelector('#set-default-loading-messages'),
@@ -199,6 +202,7 @@ FeaturePlayground.play = async ({
         clearError: canvasElement.querySelector('#clear-error'),
         toggleStreaming: canvasElement.querySelector('#toggle-streaming'),
         fakeStream: canvasElement.querySelector('#fake-stream'),
+        streamWithCitations: canvasElement.querySelector('#stream-with-citations'),
         sendTraceSpan: canvasElement.querySelector('#send-trace-span'),
         sendTraceTree: canvasElement.querySelector('#send-trace-tree'),
         setModels: canvasElement.querySelector('#set-models'),
@@ -345,6 +349,114 @@ FeaturePlayground.play = async ({
                     eventName: 'TestEvent2',
                     details: { someOtherDetail: 'someOtherValue' },
                     showInOverflow: true,
+                },
+            ],
+            shouldWaitForMoreMessages: controls.waitForMoreMessages?.checked || false,
+        });
+    });
+
+    // Send Response with Citations
+    controls.sendResponseWithCitations?.addEventListener('click', () => {
+        chatService.sendResponse({
+            contentParts: [
+                {
+                    text: '# NBA Championship Analysis',
+                    citations: [],
+                },
+                {
+                    text: 'The NBA Finals are the annual championship series of the National Basketball Association (NBA).',
+                    citations: [
+                        {
+                            id: 1,
+                            title: 'NBA Official Finals Overview',
+                            url: 'https://www.nba.com/history/finals',
+                        },
+                    ],
+                },
+                {
+                    text: 'The Boston Celtics have won the most championships in NBA history, followed closely by the Los Angeles Lakers.',
+                    citations: [
+                        {
+                            id: 2,
+                            title: 'NBA Team Championships - Basketball Reference',
+                            url: 'https://www.basketball-reference.com/leagues/NBA_2024.html#champions',
+                        },
+                        {
+                            id: 3,
+                            title: 'Celtics vs Lakers Rivalry - ESPN',
+                            url: 'https://www.espn.com/nba/story/_/id/29325513/celtics-vs-lakers-nba-most-storied-rivalry',
+                        },
+                    ],
+                },
+                {
+                    text: '## Table: Recent NBA Champions',
+                    citations: [],
+                },
+                {
+                    text: '| Year | Champion | Runner-up | Finals MVP |',
+                    citations: [],
+                },
+                {
+                    text: '|------|----------|-----------|------------|',
+                    citations: [],
+                },
+                {
+                    text: '| 2023-24 | Boston Celtics | Dallas Mavericks | Jaylen Brown |',
+                    citations: [
+                        {
+                            id: 4,
+                            title: '2024 NBA Finals Recap - NBA.com',
+                            url: 'https://www.nba.com/news/2024-nba-finals-recap',
+                        },
+                    ],
+                },
+                {
+                    text: '| 2022-23 | Denver Nuggets | Miami Heat | Nikola Jokić |',
+                    citations: [
+                        {
+                            id: 5,
+                            title: '2023 NBA Finals: Nuggets Win First Title - The Athletic',
+                            url: 'https://theathletic.com/2023-nba-finals-nuggets-heat/',
+                        },
+                    ],
+                },
+                {
+                    // eslint-disable-next-line max-len
+                    text: '## Table Test 2 - Complete Table Stream\n\nHere\'s a complete NBA statistics table with citations:\n\n| Season | Champion | Runner-up | Series Result | Finals MVP |\n|--------|----------|-----------|---------------|------------|\n| 2023-24 | Boston Celtics | Dallas Mavericks | 4-1 | Jaylen Brown |\n| 2022-23 | Denver Nuggets | Miami Heat | 4-1 | Nikola Jokić |\n| 2021-22 | Golden State Warriors | Boston Celtics | 4-2 | Stephen Curry |\n| 2020-21 | Milwaukee Bucks | Phoenix Suns | 4-2 | Giannis Antetokounmpo |\n| 2019-20 | Los Angeles Lakers | Miami Heat | 4-2 | LeBron James |',
+                    citations: [
+                        {
+                            id: 6,
+                            title: 'NBA Finals Results 2019-2024 (PDF)',
+                            download_url: 'https://nba.com/history/championships-2019-2024.pdf',
+                            page_number: 3,
+                        },
+                        {
+                            id: 7,
+                            title: 'Basketball Reference: NBA Finals History',
+                            url: 'https://www.basketball-reference.com/playoffs/',
+                            page_number: 1,
+                        },
+                    ],
+                },
+                {
+                    text: 'For more details on NBA statistics and player achievements, visit the official NBA stats portal.',
+                    citations: [
+                        {
+                            id: 8,
+                            title: 'NBA Advanced Stats Portal',
+                            url: 'https://www.nba.com/stats/',
+                        },
+                    ],
+                },
+                {
+                    text: 'NBA Finals MVPs are awarded based on their performance in the championship series.',
+                    citations: [
+                        {
+                            id: 9,
+                            title: 'NBA Finals MVP Award Winners',
+                            url: 'https://www.nba.com/history/finals-mvp',
+                        },
+                    ],
                 },
             ],
             shouldWaitForMoreMessages: controls.waitForMoreMessages?.checked || false,
@@ -546,6 +658,141 @@ const results = await Promise.all(tasks);
 *Remember: Small optimizations can lead to significant improvements in overall performance.*`,
             fakeStream: true,
         });
+    });
+
+    // Stream With Citations
+    controls.streamWithCitations?.addEventListener('click', () => {
+        const messageId = 'stream-citations-' + Date.now();
+        let unsubscribe;
+        let isStreamingChunk = true;
+        let streamIndex = 0;
+
+        const streamingParts = [
+            {
+                index: 0,
+                text: 'Based on our analysis of UiPath automation processes',
+                citation: null,
+            },
+            {
+                index: 0,
+                text: ', organizations typically see significant ROI improvements. ',
+                citation: {
+                    id: 1,
+                    title: 'UiPath ROI Study 2023.pdf',
+                    download_url: 'https://www.uipath.com/resources/automation-roi-study-2023.pdf',
+                    page_number: 12,
+                },
+            },
+            {
+                index: 1,
+                text: 'For implementation timeline',
+                citation: null,
+            },
+            {
+                index: 1,
+                text: ', most enterprises follow a structured approach:',
+                citation: null,
+            },
+            {
+                index: 1,
+                text: '\n\n1. **Assessment Phase** (2-4 weeks)\n2. **Design Phase** (3-6 weeks)\n3. **Development Phase** (4-12 weeks)',
+                citation: {
+                    id: 2,
+                    title: 'Implementation Guidelines v2.1.pdf',
+                    download_url: 'https://docs.uipath.com/implementation-guide',
+                    page_number: 5,
+                },
+            },
+            {
+                index: 2,
+                text: 'Security requirements',
+                citation: null,
+            },
+            {
+                index: 2,
+                text: ' must include **256-bit AES encryption** for data at rest and **TLS 1.3** for data in transit.',
+                citation: {
+                    id: 3,
+                    title: 'Enterprise Security Guidelines v4.1.pdf',
+                    download_url: 'https://docs.uipath.com/orchestrator/docs/security-guidelines',
+                    page_number: 23,
+                },
+            },
+            {
+                index: 3,
+                text: '\n\n## Table Test',
+                citation: null,
+            },
+            {
+                index: 4,
+                text: '| Column 1 | Column 2 |',
+                citation: null,
+            },
+            {
+                index: 5,
+                text: '|----------|----------|',
+                citation: null,
+            },
+            {
+                index: 6,
+                text: '| Row 1 | Data 1 |',
+                citation: {
+                    id: 4,
+                    title: 'Table Citation',
+                    url: 'https://tabletest.com',
+                },
+            },
+            {
+                index: 7,
+                text: '| Row 2 | Data 2 |',
+                citation: {
+                    id: 5,
+                    title: 'Table Citation 2',
+                    url: 'https://tabletest2.com',
+                },
+            },
+        ];
+
+        // Listen for stop response event
+        const stopHandler = () => {
+            isStreamingChunk = false;
+            unsubscribe();
+        };
+        unsubscribe = chatService.on('stopResponse', stopHandler);
+
+        const streamChunk = () => {
+            if (!isStreamingChunk || streamIndex >= streamingParts.length) {
+                // Send final chunk to mark completion
+                chatService.sendResponse({
+                    id: messageId,
+                    contentPartChunk: {
+                        index: 7,
+                        text: '',
+                    },
+                    stream: true,
+                    done: true,
+                });
+                return;
+            }
+
+            const chunk = streamingParts[streamIndex];
+
+            chatService.sendResponse({
+                id: messageId,
+                contentPartChunk: {
+                    index: chunk.index,
+                    text: chunk.text,
+                    ...(chunk.citation && { citation: chunk.citation }),
+                },
+                stream: true,
+                done: false,
+            });
+
+            streamIndex++;
+            setTimeout(streamChunk, 100); // Stream chunk every 100ms
+        };
+
+        streamChunk();
     });
 
     // Widget Controls - Trace Span

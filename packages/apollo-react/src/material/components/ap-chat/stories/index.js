@@ -2,6 +2,8 @@
 export { Default } from './Default.story';
 export { BasicConversation } from './BasicConversation.story';
 export { StreamingResponse } from './StreamingResponse.story';
+export { WithCitations } from './WithCitations.story';
+export { StreamingWithCitations } from './StreamingWithCitations.story';
 export { WithAttachments } from './WithAttachments.story';
 export { WithHistory } from './WithHistory.story';
 export { EmbeddedMode } from './EmbeddedMode.story';

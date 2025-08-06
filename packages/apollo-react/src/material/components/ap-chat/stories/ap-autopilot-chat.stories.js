@@ -13,7 +13,9 @@ import {
     MinimalUI as MinimalUIStory,
     Settings as SettingsStory,
     StreamingResponse as StreamingResponseStory,
+    StreamingWithCitations as StreamingWithCitationsStory,
     WithAttachments as WithAttachmentsStory,
+    WithCitations as WithCitationsStory,
     WithCustomLabels as WithCustomLabelsStory,
     WithHistory as WithHistoryStory,
 } from './index';
@@ -34,6 +36,8 @@ export const FeaturePlayground = FeaturePlaygroundStory;
 export const Settings = SettingsStory;
 export const ErrorHandling = ErrorHandlingStory;
 export const FirstRunExperience = FirstRunExperienceStory;
+export const WithCitations = WithCitationsStory;
+export const StreamingWithCitations = StreamingWithCitationsStory;
 
 // Set display names
 Default.storyName = 'Default';
@@ -51,6 +55,8 @@ FeaturePlayground.storyName = 'Feature Playground';
 Settings.storyName = 'Settings';
 ErrorHandling.storyName = 'Error Handling';
 FirstRunExperience.storyName = 'First Run Experience';
+WithCitations.storyName = 'With Citations';
+StreamingWithCitations.storyName = 'Streaming With Citations';
 
 export default {
     title: 'Components/Autopilot Chat',

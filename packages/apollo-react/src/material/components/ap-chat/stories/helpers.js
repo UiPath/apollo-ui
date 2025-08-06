@@ -245,6 +245,294 @@ export const setupDemoMode = (demoMode, chatService) => {
                 },
             ]);
             break;
+
+        case 'citations':
+            setTimeout(() => {
+                chatService.sendRequest({ content: 'Tell me about NBA championships' });
+                setTimeout(() => {
+                    chatService.sendResponse({
+                        contentParts: [
+                            {
+                                text: '# NBA Championship Analysis',
+                                citations: [],
+                            },
+                            {
+                                text: 'The NBA Finals are the annual championship series of the National Basketball Association (NBA).',
+                                citations: [
+                                    {
+                                        id: 1,
+                                        title: 'NBA Official Finals Overview',
+                                        url: 'https://www.nba.com/history/finals',
+                                    },
+                                ],
+                            },
+                            {
+                                // eslint-disable-next-line max-len
+                                text: 'The Boston Celtics have won the most championships in NBA history, followed closely by the Los Angeles Lakers.',
+                                citations: [
+                                    {
+                                        id: 2,
+                                        title: 'NBA Team Championships - Basketball Reference',
+                                        url: 'https://www.basketball-reference.com/leagues/NBA_2024.html#champions',
+                                    },
+                                    {
+                                        id: 3,
+                                        title: 'Celtics vs Lakers Rivalry - ESPN',
+                                        url: 'https://www.espn.com/nba/story/_/id/29325513/celtics-vs-lakers-nba-most-storied-rivalry',
+                                    },
+                                ],
+                            },
+                            {
+                                text: '## Recent Champions',
+                                citations: [],
+                            },
+                            {
+                                text: '| Year | Champion | Finals MVP |',
+                                citations: [],
+                            },
+                            {
+                                text: '|------|----------|------------|',
+                                citations: [],
+                            },
+                            {
+                                text: '| 2023-24 | Boston Celtics | Jaylen Brown |',
+                                citations: [
+                                    {
+                                        id: 4,
+                                        title: '2024 NBA Finals Recap',
+                                        url: 'https://www.nba.com/news/2024-finals-recap',
+                                    },
+                                ],
+                            },
+                            {
+                                text: '| 2022-23 | Denver Nuggets | Nikola Jokić |',
+                                citations: [
+                                    {
+                                        id: 5,
+                                        title: '2023 NBA Finals Summary',
+                                        url: 'https://www.nba.com/news/2023-finals-summary',
+                                    },
+                                ],
+                            },
+                        ],
+                    });
+                }, 1000);
+            }, 500);
+            break;
+
+        case 'streaming-citations':
+            setTimeout(() => {
+                chatService.sendRequest({ content: 'What are the best practices for RPA implementation?' });
+                setTimeout(() => {
+                    const messageId = 'stream-demo-citations';
+                    let streamIndex = 0;
+
+                    const streamingParts = [
+                        {
+                            index: 0,
+                            text: '# RPA Implementation Best Practices',
+                            citation: null,
+                        },
+                        {
+                            index: 1,
+                            text: '\n\nBased on industry research',
+                            citation: null,
+                        },
+                        {
+                            index: 1,
+                            text: ', successful RPA implementations follow these key principles:',
+                            citation: {
+                                id: 1,
+                                title: 'RPA Best Practices Guide 2024',
+                                url: 'https://www.uipath.com/resources/rpa-best-practices',
+                            },
+                        },
+                        {
+                            index: 2,
+                            text: '\n\n## Key Success Factors',
+                            citation: null,
+                        },
+                        {
+                            index: 3,
+                            text: '\n\n1. **Process Assessment**',
+                            citation: null,
+                        },
+                        {
+                            index: 3,
+                            text: ' - Identify automation opportunities through detailed analysis',
+                            citation: {
+                                id: 2,
+                                title: 'Process Mining Whitepaper',
+                                download_url: 'https://docs.uipath.com/process-mining.pdf',
+                                page_number: 5,
+                            },
+                        },
+                        {
+                            index: 4,
+                            text: '\n2. **Governance Framework**',
+                            citation: null,
+                        },
+                        {
+                            index: 4,
+                            text: ' - Establish clear policies and procedures',
+                            citation: {
+                                id: 3,
+                                title: 'CoE Setup Guide',
+                                url: 'https://www.uipath.com/coe-setup',
+                            },
+                        },
+                        {
+                            index: 5,
+                            text: '\n3. **Change Management**',
+                            citation: null,
+                        },
+                        {
+                            index: 5,
+                            text: ' - Ensure stakeholder buy-in and training',
+                            citation: {
+                                id: 4,
+                                title: 'Change Management Strategies',
+                                url: 'https://www.uipath.com/resources/change-management',
+                            },
+                        },
+                        {
+                            index: 6,
+                            text: '\n\n## Implementation Phases',
+                            citation: null,
+                        },
+                        {
+                            index: 7,
+                            text: '\n\n| Phase | Duration | Key Activities |',
+                            citation: null,
+                        },
+                        {
+                            index: 8,
+                            text: '\n|-------|----------|----------------|',
+                            citation: null,
+                        },
+                        {
+                            index: 9,
+                            text: '\n| Discovery | 2-4 weeks',
+                            citation: null,
+                        },
+                        {
+                            index: 9,
+                            text: ' | Process identification, ROI analysis |',
+                            citation: {
+                                id: 5,
+                                title: 'Discovery Phase Guide',
+                                download_url: 'https://docs.uipath.com/discovery-guide.pdf',
+                                page_number: 8,
+                            },
+                        },
+                        {
+                            index: 10,
+                            text: '\n| Design | 3-6 weeks',
+                            citation: null,
+                        },
+                        {
+                            index: 10,
+                            text: ' | Solution architecture, technical design |',
+                            citation: {
+                                id: 6,
+                                title: 'Solution Design Template',
+                                url: 'https://www.uipath.com/resources/solution-design',
+                            },
+                        },
+                        {
+                            index: 11,
+                            text: '\n| Development | 4-12 weeks',
+                            citation: null,
+                        },
+                        {
+                            index: 11,
+                            text: ' | Bot development, testing, validation |',
+                            citation: {
+                                id: 7,
+                                title: 'Development Best Practices',
+                                url: 'https://docs.uipath.com/studio/docs/best-practices',
+                            },
+                        },
+                        {
+                            index: 12,
+                            text: '\n| Deployment | 1-2 weeks',
+                            citation: null,
+                        },
+                        {
+                            index: 12,
+                            text: ' | Production rollout, monitoring setup |',
+                            citation: {
+                                id: 8,
+                                title: 'Deployment Checklist',
+                                download_url: 'https://docs.uipath.com/deployment-checklist.pdf',
+                                page_number: 3,
+                            },
+                        },
+                        {
+                            index: 13,
+                            text: '\n\n## Critical Success Metrics',
+                            citation: null,
+                        },
+                        {
+                            index: 14,
+                            text: '\n\n- **ROI**: Average 300% within first year',
+                            citation: {
+                                id: 9,
+                                title: 'RPA ROI Report 2024',
+                                url: 'https://www.uipath.com/resources/roi-report',
+                            },
+                        },
+                        {
+                            index: 15,
+                            text: '\n- **Accuracy**: 99.5% process accuracy',
+                            citation: {
+                                id: 10,
+                                title: 'Automation Metrics Study',
+                                download_url: 'https://research.uipath.com/metrics-2024.pdf',
+                                page_number: 15,
+                            },
+                        },
+                        {
+                            index: 16,
+                            text: '\n- **Time Savings**: 65% reduction in process time',
+                            citation: {
+                                id: 11,
+                                title: 'Efficiency Gains Analysis',
+                                url: 'https://www.uipath.com/resources/efficiency-report',
+                            },
+                        },
+                    ];
+
+                    const interval = setInterval(() => {
+                        if (streamIndex < streamingParts.length) {
+                            const chunk = streamingParts[streamIndex];
+                            chatService.sendResponse({
+                                id: messageId,
+                                contentPartChunk: {
+                                    index: chunk.index,
+                                    text: chunk.text,
+                                    ...(chunk.citation && { citation: chunk.citation }),
+                                },
+                                stream: true,
+                                done: false,
+                            });
+                            streamIndex++;
+                        } else {
+                            clearInterval(interval);
+                            chatService.sendResponse({
+                                id: messageId,
+                                contentPartChunk: {
+                                    index: 16,
+                                    text: '',
+                                },
+                                stream: true,
+                                done: true,
+                            });
+                        }
+                    }, 50);
+                }, 1000);
+            }, 500);
+            break;
     }
 };
 
@@ -1150,7 +1438,7 @@ For complete API reference and advanced usage examples, see the <a href="https:/
 '                stream: true,\n' +
 '                done: index === words.length - 1\n' +
 '            });\n' +
-'        }, index * 200);\n' +
+'        }, index * 50);\n' +
 '    });\n' +
 '};\n' +
 '\n' +
@@ -1384,6 +1672,357 @@ chatService.open({ mode: 'side-by-side' });</pre>
 - Event handling for save and reset actions
 - Real-time configuration updates
 - User feedback through chat responses
+
+## Documentation
+
+For complete API reference and advanced usage examples, see the <a href="https://github.com/UiPath/apollo-design-system/blob/master/packages/apollo-react/src/material/components/ap-chat/DOCS.md" target="_blank">official Autopilot Chat documentation</a>.
+        `,
+        'with-citations': `
+# Citations Demo
+
+Demonstrates how to send messages with citations attached to specific text segments, including support for tables and multiple citations per segment.
+
+## Implementation
+
+<div style="margin-top: 15px; padding: 20px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #17a2b8;">
+<h4 style="margin-top: 0; color: #2c3e50; font-size: 14px;">Sending Messages with Citations</h4>
+<pre style="margin: 0; padding: 10px; background: #2c3e50; color: #ecf0f1; border-radius: 4px; overflow-x: auto; font-size: 12px;">import { AutopilotChatService } from '@uipath/portal-shell-util';
+
+// Initialize chat service
+const chatService = AutopilotChatService.Instantiate({ instanceName: 'citations-demo' });
+chatService.initialize({ mode: 'side-by-side' });
+
+// Send message with citations using contentParts
+chatService.sendResponse({
+    contentParts: [
+        {
+            text: '# NBA Championship Analysis',
+            citations: []
+        },
+        {
+            text: 'The NBA Finals are the annual championship series of the National Basketball Association (NBA).',
+            citations: [
+                {
+                    id: 1,
+                    title: 'NBA Official Finals Overview',
+                    url: 'https://www.nba.com/history/finals'
+                }
+            ]
+        },
+        {
+            text: 'The Boston Celtics have won the most championships in NBA history.',
+            citations: [
+                {
+                    id: 2,
+                    title: 'NBA Team Championships - Basketball Reference',
+                    url: 'https://www.basketball-reference.com/leagues/NBA_2024.html'
+                },
+                {
+                    id: 3,
+                    title: 'Celtics vs Lakers Rivalry - ESPN',
+                    url: 'https://www.espn.com/nba/story/celtics-lakers-rivalry'
+                }
+            ]
+        },
+        {
+            text: '## Recent Champions',
+            citations: []
+        },
+        {
+            text: '| Year | Champion | Finals MVP |',
+            citations: []
+        },
+        {
+            text: '|------|----------|------------|',
+            citations: []
+        },
+        {
+            text: '| 2023-24 | Boston Celtics | Jaylen Brown |',
+            citations: [
+                {
+                    id: 4,
+                    title: '2024 NBA Finals Recap',
+                    url: 'https://www.nba.com/news/2024-finals-recap'
+                }
+            ]
+        },
+        {
+            text: '| 2022-23 | Denver Nuggets | Nikola Jokić |',
+            citations: [
+                {
+                    id: 5,
+                    title: '2023 NBA Finals Summary',
+                    url: 'https://www.nba.com/news/2023-finals-summary'
+                }
+            ]
+        }
+    ]
+});
+
+chatService.open();</pre>
+</div>
+
+**Features demonstrated:**
+- Message segmentation with contentParts array
+- Citations attached to specific text segments
+- Support for multiple citations per segment
+- Table content with row-specific citations
+- Mixed content (headers, paragraphs, tables) with selective citations
+- URL and download_url citation types
+
+**Citation Object Properties:**
+- **id**: Unique identifier for the citation
+- **title**: Display title for the citation
+- **url**: Web URL for online resources (optional)
+- **download_url**: Download URL for files (optional)
+- **page_number**: Page reference for documents (optional)
+
+## Documentation
+
+For complete API reference and advanced usage examples, see the <a href="https://github.com/UiPath/apollo-design-system/blob/master/packages/apollo-react/src/material/components/ap-chat/DOCS.md" target="_blank">official Autopilot Chat documentation</a>.
+        `,
+        'streaming-with-citations': `
+# Streaming With Citations Demo
+
+Shows real-time streaming of messages with citations attached to specific chunks as they appear.
+
+## Implementation
+
+<div style="margin-top: 15px; padding: 20px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #17a2b8;">
+<h4 style="margin-top: 0; color: #2c3e50; font-size: 14px;">Streaming Implementation with Citations</h4>
+<pre style="margin: 0; padding: 10px; background: #2c3e50; color: #ecf0f1; border-radius: 4px; overflow-x: auto; font-size: 12px;">import { AutopilotChatService } from '@uipath/portal-shell-util';
+
+// Initialize chat service
+const chatService = AutopilotChatService.Instantiate({ instanceName: 'streaming-citations-demo' });
+chatService.initialize({ mode: 'side-by-side' });
+
+// Stream response with citations
+const streamCitations = () => {
+    const messageId = 'stream-citations-' + Date.now();
+    let streamIndex = 0;
+    
+    const streamingParts = [
+        {
+            index: 0,
+            text: '# RPA Implementation Best Practices',
+            citation: null
+        },
+        {
+            index: 1,
+            text: '\\n\\nBased on industry research',
+            citation: null
+        },
+        {
+            index: 1,
+            text: ', successful RPA implementations follow these key principles:',
+            citation: {
+                id: 1,
+                title: 'RPA Best Practices Guide 2024',
+                url: 'https://www.uipath.com/resources/rpa-best-practices'
+            }
+        },
+        {
+            index: 2,
+            text: '\\n\\n## Key Success Factors',
+            citation: null
+        },
+        {
+            index: 3,
+            text: '\\n\\n1. <strong>Process Assessment</strong>',
+            citation: null
+        },
+        {
+            index: 3,
+            text: ' - Identify automation opportunities through detailed analysis',
+            citation: {
+                id: 2,
+                title: 'Process Mining Whitepaper',
+                download_url: 'https://docs.uipath.com/process-mining.pdf',
+                page_number: 5
+            }
+        },
+        {
+            index: 4,
+            text: '\\n2. <strong>Governance Framework</strong>',
+            citation: null
+        },
+        {
+            index: 4,
+            text: ' - Establish clear policies and procedures',
+            citation: {
+                id: 3,
+                title: 'CoE Setup Guide',
+                url: 'https://www.uipath.com/coe-setup'
+            }
+        },
+        {
+            index: 5,
+            text: '\\n3. <strong>Change Management</strong>',
+            citation: null
+        },
+        {
+            index: 5,
+            text: ' - Ensure stakeholder buy-in and training',
+            citation: {
+                id: 4,
+                title: 'Change Management Strategies',
+                url: 'https://www.uipath.com/resources/change-management'
+            }
+        },
+        {
+            index: 6,
+            text: '\\n\\n## Implementation Phases',
+            citation: null
+        },
+        {
+            index: 7,
+            text: '\\n\\n| Phase | Duration | Key Activities |',
+            citation: null
+        },
+        {
+            index: 8,
+            text: '\\n|-------|----------|----------------|',
+            citation: null
+        },
+        {
+            index: 9,
+            text: '\\n| Discovery | 2-4 weeks | Process identification, ROI analysis |',
+            citation: {
+                id: 5,
+                title: 'Discovery Phase Guide',
+                download_url: 'https://docs.uipath.com/discovery-guide.pdf',
+                page_number: 8
+            }
+        },
+        {
+            index: 10,
+            text: '\\n| Design | 3-6 weeks | Solution architecture, technical design |',
+            citation: {
+                id: 6,
+                title: 'Solution Design Template',
+                url: 'https://www.uipath.com/resources/solution-design'
+            }
+        },
+        {
+            index: 11,
+            text: '\\n| Development | 4-12 weeks | Bot development, testing, validation |',
+            citation: {
+                id: 7,
+                title: 'Development Best Practices',
+                url: 'https://docs.uipath.com/studio/docs/best-practices'
+            }
+        },
+        {
+            index: 12,
+            text: '\\n| Deployment | 1-2 weeks | Production rollout, monitoring setup |',
+            citation: {
+                id: 8,
+                title: 'Deployment Checklist',
+                download_url: 'https://docs.uipath.com/deployment-checklist.pdf',
+                page_number: 3
+            }
+        },
+        {
+            index: 13,
+            text: '\\n\\n## Critical Success Metrics',
+            citation: null
+        },
+        {
+            index: 14,
+            text: '\\n\\n- <strong>ROI</strong>: Average 300% within first year',
+            citation: {
+                id: 9,
+                title: 'RPA ROI Report 2024',
+                url: 'https://www.uipath.com/resources/roi-report'
+            }
+        },
+        {
+            index: 15,
+            text: '\\n- <strong>Accuracy</strong>: 99.5% process accuracy',
+            citation: {
+                id: 10,
+                title: 'Automation Metrics Study',
+                download_url: 'https://research.uipath.com/metrics-2024.pdf',
+                page_number: 15
+            }
+        },
+        {
+            index: 16,
+            text: '\\n- <strong>Time Savings</strong>: 65% reduction in process time',
+            citation: {
+                id: 11,
+                title: 'Efficiency Gains Analysis',
+                url: 'https://www.uipath.com/resources/efficiency-report'
+            }
+        }
+    ];
+    
+    // Handle stop response events
+    let isStreaming = true;
+    const unsubscribe = chatService.on('stopResponse', () => {
+        isStreaming = false;
+    });
+    
+    const streamChunk = () => {
+        if (!isStreaming || streamIndex >= streamingParts.length) {
+            // Send final chunk to mark completion
+            chatService.sendResponse({
+                id: messageId,
+                contentPartChunk: {
+                    index: streamingParts.length > 0 ? 
+                           streamingParts[streamingParts.length - 1].index : 0,
+                    text: ''
+                },
+                stream: true,
+                done: true
+            });
+            unsubscribe();
+            return;
+        }
+        
+        const chunk = streamingParts[streamIndex];
+        
+        chatService.sendResponse({
+            id: messageId,
+            contentPartChunk: {
+                index: chunk.index,
+                text: chunk.text,
+                ...(chunk.citation && { citation: chunk.citation })
+            },
+            stream: true,
+            done: false
+        });
+        
+        streamIndex++;
+        setTimeout(streamChunk, 50); // Stream chunk every 50ms
+    };
+    
+    streamChunk();
+};
+
+// Send initial request
+chatService.sendRequest({ content: 'What are the best practices for RPA implementation?' });
+
+// Start streaming response after a delay
+setTimeout(streamCitations, 1000);
+
+chatService.open();</pre>
+</div>
+
+**Features demonstrated:**
+- Real-time citation streaming with contentPartChunk
+- Progressive text rendering with attached citations
+- Index-based content segmentation for proper citation placement
+- Mixed content chunks (with and without citations)
+- Stop response handling to interrupt streaming
+- Realistic typing effect with 50ms delays
+
+<strong>Streaming Citation Structure:</strong>
+- <strong>index</strong>: Segment index for grouping related chunks
+- <strong>text</strong>: Text content to append to the segment
+- <strong>citation</strong>: Optional citation object to attach to this chunk
+- <strong>stream</strong>: Boolean indicating streaming mode
+- <strong>done</strong>: Boolean to mark stream completion
 
 ## Documentation
 
