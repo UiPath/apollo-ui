@@ -107,12 +107,10 @@ function AutopilotChatMessagesComponent({
             chatService.sendResponse({
                 ...message,
                 ...(message.fakeStream ? { fakeStream: false } : {}),
-                feedback: { isPositive: action.details?.isPositive },
-            } satisfies AutopilotChatMessage);
-        } else {
-            chatService.sendRequest({
-                ...message,
-                ...(message.fakeStream ? { fakeStream: false } : {}),
+                ...(message.stream ? {
+                    stream: false,
+                    done: true,
+                } : {}),
                 feedback: { isPositive: action.details?.isPositive },
             } satisfies AutopilotChatMessage);
         }

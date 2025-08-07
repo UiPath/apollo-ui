@@ -66,7 +66,7 @@ function AutopilotChatActionsListComponent({
         if (action.eventName && chatService) {
             (chatService as any)._eventBus.publish(action.eventName, {
                 group: chatService.getMessagesInGroup(message.groupId ?? ''),
-                message,
+                message: chatService.getConversation().find(m => m.id === message.id) as AutopilotChatMessage,
                 action,
             } satisfies AutopilotChatActionPayload);
         }

@@ -140,7 +140,7 @@ function AutopilotChatMessageContentComponent({
 }: { message: AutopilotChatMessage; isLastInGroup?: boolean; containerRef: HTMLDivElement | null }) {
     const chatService = useChatService();
 
-    if (!message.content && !message.attachments) {
+    if ((!message.content && !message.contentParts) && !message.attachments) {
         return null;
     }
 
