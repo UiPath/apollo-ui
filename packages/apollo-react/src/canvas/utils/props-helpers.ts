@@ -1,5 +1,5 @@
 import { IRawSpan } from "@uipath/portal-shell-react";
-import { NODE_DIMENSIONS } from "../components/BaseCanvas.constants";
+import { NODE_DIMENSIONS } from "../components/BaseCanvas";
 import {
   AgentFlowCustomEdge,
   AgentFlowCustomNode,
@@ -219,12 +219,7 @@ export const createResourceEdge = (
   const isViewMode = props.mode === "view";
   const isResourceActive = resourceNode.data.isActive ?? false;
 
-  const createEdge = (
-    source: string,
-    target: string,
-    sourceHandle: string,
-    targetHandle: string
-  ): AgentFlowCustomEdge => {
+  const createEdge = (source: string, target: string, sourceHandle: string, targetHandle: string): AgentFlowCustomEdge => {
     const id = `${source}${EDGE_ID_DELIMITER}${target}`;
     return {
       id,
@@ -268,9 +263,7 @@ export const computeNodesAndEdges = (
 ): { nodes: AgentFlowCustomNode[]; edges: AgentFlowCustomEdge[] } => {
   const agentNode = createAgentNode(props, parentNodeId);
   const modelNode = createModelNode(props, agentNode.id);
-  const resourceNodes = props.resources.map((resource, index) =>
-    createResourceNode(resource, index, props, agentNode.id)
-  );
+  const resourceNodes = props.resources.map((resource, index) => createResourceNode(resource, index, props, agentNode.id));
 
   if (modelNode) resourceNodes.unshift(modelNode);
 

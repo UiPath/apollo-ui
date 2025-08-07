@@ -39,15 +39,7 @@ export default {
   },
 } as Meta<typeof Column>;
 
-const Box = ({
-  children,
-  color = "#e3f2fd",
-  width,
-}: {
-  children: React.ReactNode;
-  color?: string;
-  width?: string;
-}) => (
+const Box = ({ children, color = "#e3f2fd", width }: { children: React.ReactNode; color?: string; width?: string }) => (
   <div
     style={{
       backgroundColor: color,
@@ -113,11 +105,7 @@ export const Justification: StoryFn = () => (
   <Row gap={32} wrap="wrap">
     <div>
       <h3>justify="start" (default)</h3>
-      <Column
-        gap={16}
-        justify="start"
-        style={{ height: "300px", backgroundColor: "#f5f5f5", padding: "8px" }}
-      >
+      <Column gap={16} justify="start" style={{ height: "300px", backgroundColor: "#f5f5f5", padding: "8px" }}>
         <Box>Item 1</Box>
         <Box>Item 2</Box>
         <Box>Item 3</Box>
@@ -125,11 +113,7 @@ export const Justification: StoryFn = () => (
     </div>
     <div>
       <h3>justify="center"</h3>
-      <Column
-        gap={16}
-        justify="center"
-        style={{ height: "300px", backgroundColor: "#f5f5f5", padding: "8px" }}
-      >
+      <Column gap={16} justify="center" style={{ height: "300px", backgroundColor: "#f5f5f5", padding: "8px" }}>
         <Box>Item 1</Box>
         <Box>Item 2</Box>
         <Box>Item 3</Box>
@@ -221,15 +205,7 @@ export const SizeConstraints: StoryFn = () => (
   <Row gap={32}>
     <div>
       <h3>Fixed dimensions</h3>
-      <Column
-        w={200}
-        h={200}
-        gap={16}
-        p={16}
-        align="center"
-        justify="center"
-        style={{ backgroundColor: "#f5f5f5" }}
-      >
+      <Column w={200} h={200} gap={16} p={16} align="center" justify="center" style={{ backgroundColor: "#f5f5f5" }}>
         <Box>200x200</Box>
       </Column>
     </div>
@@ -248,13 +224,7 @@ export const Overflow: StoryFn = () => (
   <Row gap={32}>
     <div>
       <h3>overflow="hidden"</h3>
-      <Column
-        h={150}
-        overflow="hidden"
-        gap={16}
-        p={16}
-        style={{ backgroundColor: "#f5f5f5", border: "1px solid #ddd" }}
-      >
+      <Column h={150} overflow="hidden" gap={16} p={16} style={{ backgroundColor: "#f5f5f5", border: "1px solid #ddd" }}>
         <Box>Item 1</Box>
         <Box>Item 2</Box>
         <Box>Item 3</Box>
@@ -264,13 +234,7 @@ export const Overflow: StoryFn = () => (
     </div>
     <div>
       <h3>overflow="auto"</h3>
-      <Column
-        h={150}
-        overflow="auto"
-        gap={16}
-        p={16}
-        style={{ backgroundColor: "#f5f5f5", border: "1px solid #ddd" }}
-      >
+      <Column h={150} overflow="auto" gap={16} p={16} style={{ backgroundColor: "#f5f5f5", border: "1px solid #ddd" }}>
         <Box>Item 1</Box>
         <Box>Item 2</Box>
         <Box>Item 3</Box>
@@ -280,13 +244,7 @@ export const Overflow: StoryFn = () => (
     </div>
     <div>
       <h3>overflowY="scroll"</h3>
-      <Column
-        h={150}
-        overflowY="scroll"
-        gap={16}
-        p={16}
-        style={{ backgroundColor: "#f5f5f5", border: "1px solid #ddd" }}
-      >
+      <Column h={150} overflowY="scroll" gap={16} p={16} style={{ backgroundColor: "#f5f5f5", border: "1px solid #ddd" }}>
         <Box>Item 1</Box>
         <Box>Item 2</Box>
         <Box>Item 3</Box>

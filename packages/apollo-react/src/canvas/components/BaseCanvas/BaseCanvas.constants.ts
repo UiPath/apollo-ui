@@ -1,4 +1,4 @@
-import { BackgroundVariant, FitViewOptions } from "@xyflow/react";
+import { BackgroundVariant } from "@xyflow/react";
 
 export const BASE_CANVAS_DEFAULTS = {
   zoom: {
@@ -14,7 +14,7 @@ export const BASE_CANVAS_DEFAULTS = {
   fitViewOptions: {
     padding: 0.1,
     duration: 300,
-  } as FitViewOptions,
+  },
   background: {
     gap: 12,
     size: 2,

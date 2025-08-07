@@ -154,10 +154,10 @@ const BaseCanvasInnerComponent = <NodeType extends Node = Node, EdgeType extends
 const BaseCanvasInner = memo(BaseCanvasInnerComponent) as typeof BaseCanvasInnerComponent;
 
 // Create the final component with proper typing
-export const BaseCanvas = forwardRef(function BaseCanvas<
-  NodeType extends Node = Node,
-  EdgeType extends Edge = Edge,
->(props: BaseCanvasProps<NodeType, EdgeType>, ref: React.Ref<BaseCanvasRef<NodeType, EdgeType>>) {
+export const BaseCanvas = forwardRef(function BaseCanvas<NodeType extends Node = Node, EdgeType extends Edge = Edge>(
+  props: BaseCanvasProps<NodeType, EdgeType>,
+  ref: React.Ref<BaseCanvasRef<NodeType, EdgeType>>
+) {
   return <BaseCanvasInner {...props} innerRef={ref} />;
 }) as <NodeType extends Node = Node, EdgeType extends Edge = Edge>(
   props: BaseCanvasProps<NodeType, EdgeType> & { ref?: React.Ref<BaseCanvasRef<NodeType, EdgeType>> }

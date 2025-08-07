@@ -8,8 +8,7 @@ import type { BackgroundVariant, Edge, Node, ReactFlowInstance, ReactFlowProps }
  * @template NodeType - The type of nodes used in the canvas, extends the base Node type
  * @template EdgeType - The type of edges used in the canvas, extends the base Edge type
  */
-export interface BaseCanvasProps<NodeType extends Node = Node, EdgeType extends Edge = Edge>
-  extends ReactFlowProps<NodeType, EdgeType> {
+export interface BaseCanvasProps<NodeType extends Node = Node, EdgeType extends Edge = Edge> extends ReactFlowProps<NodeType, EdgeType> {
   /**
    * Determines the interaction mode of the canvas.
    * - "design": Full editing capabilities - add, remove, and modify nodes/edges

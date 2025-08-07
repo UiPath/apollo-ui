@@ -57,9 +57,7 @@ vi.mock("@xyflow/react", async () => {
 
 // Mock CanvasPositionControls
 vi.mock("../CanvasPositionControls", () => ({
-  CanvasPositionControls: ({ orientation }: any) => (
-    <div data-testid="canvas-controls" data-orientation={orientation} />
-  ),
+  CanvasPositionControls: ({ orientation }: any) => <div data-testid="canvas-controls" data-orientation={orientation} />,
 }));
 
 const defaultProps: BaseCanvasProps = {

@@ -9,11 +9,7 @@ export type LayoutAlgorithmOptions = {
   spacing: [number, number];
 };
 
-export type LayoutAlgorithm = (
-  nodes: Node[],
-  edges: Edge[],
-  options: LayoutAlgorithmOptions
-) => Promise<{ nodes: Node[]; edges: Edge[] }>;
+export type LayoutAlgorithm = (nodes: Node[], edges: Edge[], options: LayoutAlgorithmOptions) => Promise<{ nodes: Node[]; edges: Edge[] }>;
 
 // D3 Hierarchy doesn't support layouting in different directions, but we can
 // swap the coordinates around in different ways to get the same effect.

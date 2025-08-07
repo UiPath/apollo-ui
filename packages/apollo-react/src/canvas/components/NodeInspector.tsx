@@ -74,12 +74,7 @@ function NodeInfo({ id, type, selected, position, absPosition, width, height, da
         transform: `translate(${infoPosition.x}px, ${infoPosition.y}px)`,
       }}
     >
-      <Row
-        justify="space-between"
-        align="center"
-        pb={8}
-        style={{ borderBottom: "1px solid var(--color-border)" }}
-      >
+      <Row justify="space-between" align="center" pb={8} style={{ borderBottom: "1px solid var(--color-border)" }}>
         <span style={styles.title}>Node Inspector</span>
       </Row>
 

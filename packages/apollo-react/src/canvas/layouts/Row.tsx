@@ -74,12 +74,7 @@ interface PositionProps {
   position?: "absolute" | "fixed" | "relative" | "sticky";
 }
 
-type Props = FlexProps &
-  OverflowProps &
-  PositionProps &
-  React.HTMLAttributes<HTMLDivElement> &
-  SizeProps &
-  SpacingProps;
+type Props = FlexProps & OverflowProps & PositionProps & React.HTMLAttributes<HTMLDivElement> & SizeProps & SpacingProps;
 
 /**
  * Flexible row layout component with comprehensive flexbox API

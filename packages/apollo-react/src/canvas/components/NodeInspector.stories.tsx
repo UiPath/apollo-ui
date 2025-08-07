@@ -1,16 +1,15 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useState } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { applyEdgeChanges, applyNodeChanges, Panel, ReactFlowProvider } from "@xyflow/react";
 import type { Edge, EdgeChange, Node, NodeChange } from "@xyflow/react";
 import { FontVariantToken } from "@uipath/apollo-core";
-import { ApButton, ApRadioButton, ApTypography } from "@uipath/portal-shell-react";
-import type { BaseCanvasRef } from "./BaseCanvas.types";
+import { ApTypography } from "@uipath/portal-shell-react";
 import { Column } from "../layouts";
-import { BaseCanvas } from "./BaseCanvas";
+import { BaseCanvas } from "./BaseCanvas/BaseCanvas";
 import { NodeInspector } from "./NodeInspector";
 
 const meta = {
-  title: "Components/NodeInspector",
+  title: "Canvas/NodeInspector",
   component: NodeInspector,
   decorators: [
     (Story: any) => (
@@ -125,24 +124,12 @@ const CanvasWithNodeInspector = () => {
   const [nodes, setNodes] = useState<Node[]>(createSampleNodes());
   const [edges, setEdges] = useState<Edge[]>(createSampleEdges());
 
-  const onNodesChange = useCallback(
-    (changes: NodeChange[]) => setNodes((nds) => applyNodeChanges(changes, nds)),
-    []
-  );
+  const onNodesChange = useCallback((changes: NodeChange[]) => setNodes((nds) => applyNodeChanges(changes, nds)), []);
 
-  const onEdgesChange = useCallback(
-    (changes: EdgeChange[]) => setEdges((eds) => applyEdgeChanges(changes, eds)),
-    []
-  );
+  const onEdgesChange = useCallback((changes: EdgeChange[]) => setEdges((eds) => applyEdgeChanges(changes, eds)), []);
 
   return (
-    <BaseCanvas
-      nodes={nodes}
-      edges={edges}
-      onNodesChange={onNodesChange}
-      onEdgesChange={onEdgesChange}
-      mode="design"
-    >
+    <BaseCanvas nodes={nodes} edges={edges} onNodesChange={onNodesChange} onEdgesChange={onEdgesChange} mode="design">
       <NodeInspector />
       <Panel position="top-left">
         <Column
@@ -154,9 +141,7 @@ const CanvasWithNodeInspector = () => {
           }}
         >
           <ApTypography variant={FontVariantToken.fontSizeH3Bold}>Node Inspector Demo</ApTypography>
-          <ApTypography variant={FontVariantToken.fontSizeS}>
-            Click on nodes to see their details
-          </ApTypography>
+          <ApTypography variant={FontVariantToken.fontSizeS}>Click on nodes to see their details</ApTypography>
         </Column>
       </Panel>
     </BaseCanvas>

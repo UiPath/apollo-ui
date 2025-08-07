@@ -1,17 +1,11 @@
 import { useCallback, useRef, useState } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import {
-  applyEdgeChanges,
-  applyNodeChanges,
-  BackgroundVariant,
-  Panel,
-  ReactFlowProvider,
-} from "@xyflow/react";
+import { applyEdgeChanges, applyNodeChanges, BackgroundVariant, Panel, ReactFlowProvider } from "@xyflow/react";
 import type { Edge, EdgeChange, Node, NodeChange } from "@xyflow/react";
 import { FontVariantToken } from "@uipath/apollo-core";
 import { ApButton, ApTypography } from "@uipath/portal-shell-react";
-import { Column, Row } from "../layouts";
-import { CanvasPositionControls } from "./CanvasPositionControls";
+import { Column, Row } from "../../layouts";
+import { CanvasPositionControls } from "../CanvasPositionControls";
 import { BaseCanvas } from "./BaseCanvas";
 import { BaseCanvasRef } from "./BaseCanvas.types";
 
@@ -25,7 +19,7 @@ const BaseCanvasWithProvider = (props: any) => {
 };
 
 const meta = {
-  title: "Components/BaseCanvas",
+  title: "Canvas/BaseCanvas",
   component: BaseCanvasWithProvider,
   decorators: [
     (Story: any) => (
@@ -169,14 +163,7 @@ const DesignModeCanvas = () => {
 
   return (
     <ReactFlowProvider>
-      <BaseCanvas
-        nodes={nodes}
-        edges={edges}
-        nodeTypes={{}}
-        mode="design"
-        onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange}
-      >
+      <BaseCanvas nodes={nodes} edges={edges} nodeTypes={{}} mode="design" onNodesChange={onNodesChange} onEdgesChange={onEdgesChange}>
         <Panel position="bottom-right">
           <CanvasPositionControls />
         </Panel>
@@ -236,10 +223,7 @@ export const WithChildren: Story = {
     mode: "view",
     children: (
       <Panel position="top-right">
-        <Column
-          p={20}
-          style={{ color: "var(--color-foreground)", backgroundColor: "var(--color-background-secondary)" }}
-        >
+        <Column p={20} style={{ color: "var(--color-foreground)", backgroundColor: "var(--color-background-secondary)" }}>
           <ApTypography variant={FontVariantToken.fontSizeH3Bold} style={{ marginBottom: 8 }}>
             Custom Overlay
           </ApTypography>
@@ -310,32 +294,11 @@ const BaseCanvasWithNodeFocus = () => {
               }}
             >
               <ApTypography variant={FontVariantToken.fontSizeH3Bold}>Focus Controls</ApTypography>
-              <ApButton
-                size="small"
-                label="Focus Node 1"
-                onClick={() => canvasRef.current?.ensureNodesInView(["1"])}
-              />
-              <ApButton
-                size="small"
-                label="Focus Node 2"
-                onClick={() => canvasRef.current?.ensureNodesInView(["2"])}
-              />
-              <ApButton
-                size="small"
-                label="Focus Nodes 3 & 4"
-                onClick={() => canvasRef.current?.ensureNodesInView(["3", "4"])}
-              />
-              <ApButton
-                size="small"
-                label="Center on Node 5"
-                onClick={() => canvasRef.current?.centerNode("5")}
-              />
-              <ApButton
-                size="small"
-                variant="secondary"
-                label="Show All Nodes"
-                onClick={() => canvasRef.current?.ensureAllNodesInView()}
-              />
+              <ApButton size="small" label="Focus Node 1" onClick={() => canvasRef.current?.ensureNodesInView(["1"])} />
+              <ApButton size="small" label="Focus Node 2" onClick={() => canvasRef.current?.ensureNodesInView(["2"])} />
+              <ApButton size="small" label="Focus Nodes 3 & 4" onClick={() => canvasRef.current?.ensureNodesInView(["3", "4"])} />
+              <ApButton size="small" label="Center on Node 5" onClick={() => canvasRef.current?.centerNode("5")} />
+              <ApButton size="small" variant="secondary" label="Show All Nodes" onClick={() => canvasRef.current?.ensureAllNodesInView()} />
               <ApButton
                 size="small"
                 variant="secondary"
@@ -359,15 +322,9 @@ const BaseCanvasWithReactFlowAccess = () => {
   const [nodes, setNodes] = useState<Node[]>(sampleNodes);
   const [edges, setEdges] = useState<Edge[]>(sampleEdges);
 
-  const onNodesChange = useCallback(
-    (changes: NodeChange[]) => setNodes((nds) => applyNodeChanges(changes, nds)),
-    []
-  );
+  const onNodesChange = useCallback((changes: NodeChange[]) => setNodes((nds) => applyNodeChanges(changes, nds)), []);
 
-  const onEdgesChange = useCallback(
-    (changes: EdgeChange[]) => setEdges((eds) => applyEdgeChanges(changes, eds)),
-    []
-  );
+  const onEdgesChange = useCallback((changes: EdgeChange[]) => setEdges((eds) => applyEdgeChanges(changes, eds)), []);
 
   const handleZoomIn = () => {
     canvasRef.current?.reactFlow?.zoomIn();
@@ -390,14 +347,7 @@ const BaseCanvasWithReactFlowAccess = () => {
 
   return (
     <ReactFlowProvider>
-      <BaseCanvas
-        ref={canvasRef}
-        nodes={nodes}
-        edges={edges}
-        onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange}
-        mode="view"
-      >
+      <BaseCanvas ref={canvasRef} nodes={nodes} edges={edges} onNodesChange={onNodesChange} onEdgesChange={onEdgesChange} mode="view">
         <Panel position="bottom-left">
           <Column
             gap={8}
@@ -407,9 +357,7 @@ const BaseCanvasWithReactFlowAccess = () => {
               backgroundColor: "var(--color-background-secondary)",
             }}
           >
-            <ApTypography variant={FontVariantToken.fontSizeH3Bold}>
-              ReactFlow Instance Access Demo
-            </ApTypography>
+            <ApTypography variant={FontVariantToken.fontSizeH3Bold}>ReactFlow Instance Access Demo</ApTypography>
             <ApButton label="Zoom In" onClick={handleZoomIn} />
             <ApButton label="Zoom Out" onClick={handleZoomOut} />
             <ApButton label="Reset View" onClick={handleResetView} />
@@ -464,15 +412,9 @@ const BaseCanvasWithMaintainNodesInView = () => {
   const [maintainNodes, setMaintainNodes] = useState<string[] | undefined>(["important-1", "important-2"]);
   const [containerSize, setContainerSize] = useState({ width: "100%", height: "100%" });
 
-  const onNodesChange = useCallback(
-    (changes: NodeChange[]) => setNodes((nds) => applyNodeChanges(changes, nds)),
-    []
-  );
+  const onNodesChange = useCallback((changes: NodeChange[]) => setNodes((nds) => applyNodeChanges(changes, nds)), []);
 
-  const onEdgesChange = useCallback(
-    (changes: EdgeChange[]) => setEdges((eds) => applyEdgeChanges(changes, eds)),
-    []
-  );
+  const onEdgesChange = useCallback((changes: EdgeChange[]) => setEdges((eds) => applyEdgeChanges(changes, eds)), []);
 
   const cycleMaintainMode = () => {
     setMaintainNodes((current) => {
@@ -516,9 +458,7 @@ const BaseCanvasWithMaintainNodesInView = () => {
         }}
       >
         <ApTypography variant={FontVariantToken.fontSizeH3Bold}>Maintain Nodes in View Demo</ApTypography>
-        <ApTypography variant={FontVariantToken.fontSizeM}>
-          Resize the container to see how important nodes stay in view
-        </ApTypography>
+        <ApTypography variant={FontVariantToken.fontSizeM}>Resize the container to see how important nodes stay in view</ApTypography>
         <ApTypography variant={FontVariantToken.fontSizeS} style={{ fontStyle: "italic" }}>
           Note: The zoom level is preserved while panning to keep nodes visible
         </ApTypography>
@@ -535,9 +475,7 @@ const BaseCanvasWithMaintainNodesInView = () => {
         </Row>
         {maintainNodes !== undefined && (
           <ApTypography variant={FontVariantToken.fontSizeS}>
-            {maintainNodes.length > 0
-              ? `Maintaining nodes: ${maintainNodes.join(", ")}`
-              : "Maintaining all nodes in view"}
+            {maintainNodes.length > 0 ? `Maintaining nodes: ${maintainNodes.join(", ")}` : "Maintaining all nodes in view"}
           </ApTypography>
         )}
       </Column>

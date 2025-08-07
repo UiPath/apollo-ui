@@ -214,10 +214,7 @@ describe("props-helpers", () => {
         } as any,
       ];
 
-      const result = hasModelError(
-        mockAgentFlowProps.model ?? { name: "", vendorName: "", iconUrl: "" },
-        spans
-      );
+      const result = hasModelError(mockAgentFlowProps.model ?? { name: "", vendorName: "", iconUrl: "" }, spans);
       expect(result).toBe(true);
     });
 
@@ -229,10 +226,7 @@ describe("props-helpers", () => {
         } as any,
       ];
 
-      const result = hasModelError(
-        mockAgentFlowProps.model ?? { name: "", vendorName: "", iconUrl: "" },
-        spans
-      );
+      const result = hasModelError(mockAgentFlowProps.model ?? { name: "", vendorName: "", iconUrl: "" }, spans);
       expect(result).toBe(false);
     });
 
@@ -248,10 +242,7 @@ describe("props-helpers", () => {
         } as any,
       ];
 
-      const result = hasModelError(
-        mockAgentFlowProps.model ?? { name: "", vendorName: "", iconUrl: "" },
-        spans
-      );
+      const result = hasModelError(mockAgentFlowProps.model ?? { name: "", vendorName: "", iconUrl: "" }, spans);
       expect(result).toBe(false);
     });
   });
@@ -265,10 +256,7 @@ describe("props-helpers", () => {
         } as any,
       ];
 
-      const result = hasModelSuccess(
-        mockAgentFlowProps.model ?? { name: "", vendorName: "", iconUrl: "" },
-        spans
-      );
+      const result = hasModelSuccess(mockAgentFlowProps.model ?? { name: "", vendorName: "", iconUrl: "" }, spans);
       expect(result).toBe(true);
     });
 
@@ -280,10 +268,7 @@ describe("props-helpers", () => {
         } as any,
       ];
 
-      const result = hasModelSuccess(
-        mockAgentFlowProps.model ?? { name: "", vendorName: "", iconUrl: "" },
-        spans
-      );
+      const result = hasModelSuccess(mockAgentFlowProps.model ?? { name: "", vendorName: "", iconUrl: "" }, spans);
       expect(result).toBe(false);
     });
 
@@ -295,10 +280,7 @@ describe("props-helpers", () => {
         } as any,
       ];
 
-      const result = hasModelSuccess(
-        mockAgentFlowProps.model ?? { name: "", vendorName: "", iconUrl: "" },
-        spans
-      );
+      const result = hasModelSuccess(mockAgentFlowProps.model ?? { name: "", vendorName: "", iconUrl: "" }, spans);
       expect(result).toBe(false);
     });
   });
@@ -312,10 +294,7 @@ describe("props-helpers", () => {
         } as any,
       ];
 
-      const result = hasModelRunning(
-        mockAgentFlowProps.model ?? { name: "", vendorName: "", iconUrl: "" },
-        spans
-      );
+      const result = hasModelRunning(mockAgentFlowProps.model ?? { name: "", vendorName: "", iconUrl: "" }, spans);
       expect(result).toBe(true);
     });
 
@@ -327,10 +306,7 @@ describe("props-helpers", () => {
         } as any,
       ];
 
-      const result = hasModelRunning(
-        mockAgentFlowProps.model ?? { name: "", vendorName: "", iconUrl: "" },
-        spans
-      );
+      const result = hasModelRunning(mockAgentFlowProps.model ?? { name: "", vendorName: "", iconUrl: "" }, spans);
       expect(result).toBe(false);
     });
   });
@@ -540,9 +516,7 @@ describe("props-helpers", () => {
       const propsWithSpans = { ...mockAgentFlowProps, spans };
       const { nodes } = computeNodesAndEdges(propsWithSpans);
 
-      const escalationNode = nodes.find(
-        (node) => node.type === "resource" && node.data.type === "escalation"
-      );
+      const escalationNode = nodes.find((node) => node.type === "resource" && node.data.type === "escalation");
 
       expect((escalationNode?.data as any).hasSuccess).toBe(true);
     });

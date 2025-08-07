@@ -1,9 +1,4 @@
-import {
-  AgentFlowCustomEdge,
-  AgentFlowCustomNode,
-  isAgentFlowAgentNode,
-  isAgentFlowResourceNode,
-} from "../types";
+import { AgentFlowCustomEdge, AgentFlowCustomNode, isAgentFlowAgentNode, isAgentFlowResourceNode } from "../types";
 
 const GROUP_DISTANCE_HORIZONTAL = 280;
 const GROUP_DISTANCE_VERTICAL = 200;
@@ -23,7 +18,7 @@ export const getAgentGroupBottomPosition = (
   const agentBottomY = agent.position.y + agentHeight;
 
   // Group connected nodes by direction
-  const groups: Record<string, AgentFlowCustomNode[]> = {
+  const groups: Record<"left" | "right" | "top" | "bottom", AgentFlowCustomNode[]> = {
     left: [],
     right: [],
     top: [],
@@ -33,10 +28,16 @@ export const getAgentGroupBottomPosition = (
   for (const edge of edges) {
     if (edge.source === agent.id && edge.sourceHandle) {
       const node = nodes.find((n) => n.id === edge.target);
-      if (node) groups[edge.sourceHandle].push(node);
+      if (node && edge.sourceHandle in groups) {
+        const group = groups[edge.sourceHandle as keyof typeof groups];
+        if (group) group.push(node);
+      }
     } else if (edge.target === agent.id && edge.targetHandle) {
       const node = nodes.find((n) => n.id === edge.source);
-      if (node) groups[edge.targetHandle].push(node);
+      if (node && edge.targetHandle in groups) {
+        const group = groups[edge.targetHandle as keyof typeof groups];
+        if (group) group.push(node);
+      }
     }
   }
 
@@ -90,7 +91,7 @@ const arrangeAgent = (
   const agentCenterY = agent.position.y + agentHeight / 2;
 
   // group nodes by which handle they're connected to
-  const groups: Record<string, AgentFlowCustomNode[]> = {
+  const groups: Record<"left" | "right" | "top" | "bottom", AgentFlowCustomNode[]> = {
     left: [],
     right: [],
     top: [],
@@ -99,16 +100,22 @@ const arrangeAgent = (
   for (const edge of edges) {
     if (edge.source === agent.id && edge.sourceHandle) {
       const node = clonedNodes.find((n) => n.id === edge.target);
-      if (node) groups[edge.sourceHandle].push(node);
+      if (node && edge.sourceHandle in groups) {
+        const group = groups[edge.sourceHandle as keyof typeof groups];
+        if (group) group.push(node);
+      }
     } else if (edge.target === agent.id && edge.targetHandle) {
       const node = clonedNodes.find((n) => n.id === edge.source);
-      if (node) groups[edge.targetHandle].push(node);
+      if (node && edge.targetHandle in groups) {
+        const group = groups[edge.targetHandle as keyof typeof groups];
+        if (group) group.push(node);
+      }
     }
   }
 
   // sort nodes by order
-  for (const key of Object.keys(groups)) {
-    groups[key].sort((a, b) => {
+  for (const key of Object.keys(groups) as Array<keyof typeof groups>) {
+    groups[key]?.sort((a, b) => {
       if (!isAgentFlowResourceNode(a) || !isAgentFlowResourceNode(b)) return 0;
       const orderA = a.data.order || 0;
       const orderB = b.data.order || 0;
@@ -134,11 +141,7 @@ const arrangeAgent = (
     // Add offset for single escalation node to avoid straight line
     const singleNodeOffset = groups.bottom.length === 1 ? -(GROUP_SPACING / 2) : 0;
     node.position = {
-      x:
-        agentCenterX -
-        nodeWidth / 2 +
-        (i - (groups.bottom.length - 1) / 2) * GROUP_SPACING +
-        singleNodeOffset,
+      x: agentCenterX - nodeWidth / 2 + (i - (groups.bottom.length - 1) / 2) * GROUP_SPACING + singleNodeOffset,
       y: agent.position.y + agentHeight + GROUP_DISTANCE_VERTICAL,
     };
   }
@@ -182,11 +185,7 @@ const arrangeAgent = (
     const singleNodeOffset = groups.right.length === 1 ? -(GROUP_SPACING / 2) : 0;
     node.position = {
       x: agent.position.x + agentWidth + GROUP_DISTANCE_HORIZONTAL,
-      y:
-        agentCenterY -
-        nodeHeight / 2 +
-        (i - (groups.right.length - 1) / 2) * GROUP_SPACING +
-        singleNodeOffset,
+      y: agentCenterY - nodeHeight / 2 + (i - (groups.right.length - 1) / 2) * GROUP_SPACING + singleNodeOffset,
     };
 
     if (isAgentFlowResourceNode(node) && node.data.projectType === "Agent") {
@@ -195,14 +194,10 @@ const arrangeAgent = (
       if (agentNode) {
         const agentNodeY = Math.max(node.position.y, heightOffsets[currentDepth] ?? 0);
 
-        const hasUpperEdge = edges.some(
-          (edge) => edge.source === agentNode.id && edge.targetHandle === "top"
-        );
+        const hasUpperEdge = edges.some((edge) => edge.source === agentNode.id && edge.targetHandle === "top");
 
         // count how many right nodes are connected to this agent node
-        const rightNodesConnectedToAgentNode = edges.filter(
-          (edge) => edge.source === agentNode.id && edge.targetHandle === "left"
-        );
+        const rightNodesConnectedToAgentNode = edges.filter((edge) => edge.source === agentNode.id && edge.targetHandle === "left");
 
         agentNode.position = {
           x: node.position.x + nodeWidth + GROUP_DISTANCE_HORIZONTAL + AGENT_NODE_OFFSET_HORIZONTAL,
@@ -225,15 +220,10 @@ const arrangeAgent = (
   return xY.y;
 };
 
-export const autoArrangeNodes = (
-  nodes: AgentFlowCustomNode[],
-  edges: AgentFlowCustomEdge[]
-): AgentFlowCustomNode[] => {
+export const autoArrangeNodes = (nodes: AgentFlowCustomNode[], edges: AgentFlowCustomEdge[]): AgentFlowCustomNode[] => {
   const clonedNodes = structuredClone(nodes);
 
-  const agentNodes = clonedNodes
-    .filter(isAgentFlowAgentNode)
-    .find((node) => node.data.parentNodeId === undefined);
+  const agentNodes = clonedNodes.filter(isAgentFlowAgentNode).find((node) => node.data.parentNodeId === undefined);
 
   if (agentNodes) {
     agentNodes.position = { x: 0, y: 0 };

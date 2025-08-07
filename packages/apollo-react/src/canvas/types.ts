@@ -1,7 +1,7 @@
 import type { Edge, Node, Viewport as ReactFlowViewport } from "@xyflow/react";
 import type { NodeProps } from "@xyflow/system";
 import { IRawSpan } from "@uipath/portal-shell-react";
-import { BaseCanvasRef } from "./components/BaseCanvas.types";
+import { BaseCanvasRef } from "./components/BaseCanvas/BaseCanvas.types";
 
 export enum ProjectType {
   Agent = "Agent",
@@ -42,10 +42,7 @@ export type AgentFlowEscalationResource = {
   description: string;
 };
 
-export type AgentFlowResource =
-  | AgentFlowContextResource
-  | AgentFlowEscalationResource
-  | AgentFlowToolResource;
+export type AgentFlowResource = AgentFlowContextResource | AgentFlowEscalationResource | AgentFlowToolResource;
 export type AgentFlowResourceType = AgentFlowResource["type"];
 
 export type SpanAttributes = Record<string, unknown>;
@@ -111,12 +108,7 @@ type ModelResourceData = {
   type: "model";
 };
 
-export type AgentFlowResourceNodeData = (
-  | ContextResourceData
-  | EscalationResourceData
-  | ModelResourceData
-  | ToolResourceData
-) & {
+export type AgentFlowResourceNodeData = (ContextResourceData | EscalationResourceData | ModelResourceData | ToolResourceData) & {
   name: string;
   description: string;
   parentNodeId?: string;
@@ -146,10 +138,8 @@ export type AgentFlowDefaultEdgeData = {
 export type AgentFlowDefaultEdge = Edge<AgentFlowDefaultEdgeData, "default">;
 export type AgentFlowCustomEdge = AgentFlowDefaultEdge;
 
-export const isAgentFlowAgentNode = (node: AgentFlowCustomNode): node is AgentFlowNode =>
-  node.type === "agent";
-export const isAgentFlowResourceNode = (node: AgentFlowCustomNode): node is AgentFlowResourceNode =>
-  node.type === "resource";
+export const isAgentFlowAgentNode = (node: AgentFlowCustomNode): node is AgentFlowNode => node.type === "agent";
+export const isAgentFlowResourceNode = (node: AgentFlowCustomNode): node is AgentFlowResourceNode => node.type === "resource";
 
 export interface AgentNodeTranslations {
   arguments: string;
