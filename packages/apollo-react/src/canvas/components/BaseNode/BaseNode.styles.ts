@@ -49,15 +49,17 @@ export const IconWrapper = styled.div`
   }
 `;
 
-export const TextContainer = styled.div`
+export const TextContainer = styled.div<{ hasBottomHandles?: boolean }>`
   position: absolute;
-  bottom: -8px;
+  bottom: ${(props) => (props.hasBottomHandles ? "-40px" : "-8px")};
   width: 100%;
   transform: translateY(100%);
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
+  z-index: 10;
+  transition: bottom 0.2s ease-in-out;
 `;
 
 export const Header = styled.div`

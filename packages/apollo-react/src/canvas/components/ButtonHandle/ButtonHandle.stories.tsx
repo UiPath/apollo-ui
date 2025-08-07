@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { Node, Position, ReactFlowProvider } from "@xyflow/react";
+import { Node, Position, ReactFlowProvider, useNodesState, useEdgesState } from "@xyflow/react";
 import { BaseCanvas } from "../BaseCanvas/BaseCanvas";
 import { type ButtonHandleConfig, ButtonHandles } from "./ButtonHandle";
 import { ApIcon, ApTypography } from "@uipath/portal-shell-react";
@@ -110,16 +110,26 @@ const nodeTypes = {
 };
 
 const Flow = () => {
-  const initialNodes: Node[] = [
+  const [nodes, setNodes, onNodesChange] = useNodesState([
     {
       id: "1",
       type: "simpleNode",
       position: { x: 250, y: 150 },
       data: { label: "Screener agent", subLabel: "Agent" },
     },
-  ];
+  ]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
 
-  return <BaseCanvas nodes={initialNodes} edges={[]} nodeTypes={nodeTypes} mode="view" />;
+  return (
+    <BaseCanvas
+      nodes={nodes}
+      edges={edges}
+      onNodesChange={onNodesChange}
+      onEdgesChange={onEdgesChange}
+      nodeTypes={nodeTypes}
+      mode="design"
+    />
+  );
 };
 
 const meta: Meta<typeof ButtonHandles> = {
@@ -254,16 +264,26 @@ export const MultipleHandles: Story = {
       multiHandleNode: MultiHandleNode,
     };
 
-    const initialNodes: Node[] = [
+    const [nodes, setNodes, onNodesChange] = useNodesState([
       {
         id: "1",
         type: "multiHandleNode",
         position: { x: 250, y: 150 },
         data: { label: "Multi-Handle Node" },
       },
-    ];
+    ]);
+    const [edges, setEdges, onEdgesChange] = useEdgesState([]);
 
-    return <BaseCanvas nodes={initialNodes} edges={[]} nodeTypes={multiHandleNodeTypes} mode="view" />;
+    return (
+      <BaseCanvas
+        nodes={nodes}
+        edges={edges}
+        onNodesChange={onNodesChange}
+        onEdgesChange={onEdgesChange}
+        nodeTypes={multiHandleNodeTypes}
+        mode="design"
+      />
+    );
   },
 };
 
@@ -365,15 +385,25 @@ export const ComplexExample: Story = {
       complexNode: ComplexNode,
     };
 
-    const initialNodes: Node[] = [
+    const [nodes, setNodes, onNodesChange] = useNodesState([
       {
         id: "1",
         type: "complexNode",
         position: { x: 250, y: 150 },
         data: { label: "Complex Node" },
       },
-    ];
+    ]);
+    const [edges, setEdges, onEdgesChange] = useEdgesState([]);
 
-    return <BaseCanvas nodes={initialNodes} edges={[]} nodeTypes={complexNodeTypes} mode="view" />;
+    return (
+      <BaseCanvas
+        nodes={nodes}
+        edges={edges}
+        onNodesChange={onNodesChange}
+        onEdgesChange={onEdgesChange}
+        nodeTypes={complexNodeTypes}
+        mode="design"
+      />
+    );
   },
 };
