@@ -10,16 +10,11 @@ const meta = {
   title: "Canvas/BaseNode",
   component: BaseNode,
   parameters: {
-    layout: "centered",
-    docs: {
-      description: {
-        component: "A reusable activity node component for workflow visualization with customizable badges and adornments.",
-      },
-    },
+    layout: "fullscreen",
   },
   decorators: [
     (Story, context) => (
-      <div style={{ width: "800px", height: "600px" }}>
+      <div style={{ width: "100vw", height: "100vh" }}>
         <ReactFlowProvider>
           <BaseCanvas
             nodes={[
@@ -85,11 +80,12 @@ export const Default: Story = {
     subLabel: "Secondary header",
     topLeftAdornment: (
       <svg viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="12" fill="var(--color-background)" />
         <circle cx="12" cy="12" r="10" fill="red" />
       </svg>
     ),
-    bottomRightAdornment: <ApIcon variant="outlined" name="shield" />,
-    bottomLeftAdornment: <ApIcon name="bolt" />,
-    icon: <ApIcon size="42px" variant="outlined" name="circle" />,
+    bottomRightAdornment: <ApIcon color="var(--color-foreground)" variant="outlined" name="shield" />,
+    bottomLeftAdornment: <ApIcon color="var(--color-foreground)" name="bolt" />,
+    icon: <ApIcon color="var(--color-foreground)" size="42px" variant="outlined" name="circle" />,
   },
 };

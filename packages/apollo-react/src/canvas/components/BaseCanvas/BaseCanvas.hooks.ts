@@ -187,14 +187,22 @@ export const useEnsureNodesInView = () => {
 
   const centerNode = useCallback(
     (nodeId: string, options?: EnsureNodesInViewOptions) => {
-      const node = reactFlow.getNode(nodeId);
+      const node = reactFlow.getInternalNode(nodeId);
 
-      if (!node || !node.width || !node.height) {
+      if (!node) {
         return;
       }
 
-      const x = node.position.x + node.width / 2;
-      const y = node.position.y + node.height / 2;
+      // Use node dimensions if available, otherwise use defaults
+      const nodeWidth = node.measured?.width ?? node.width;
+      const nodeHeight = node.measured?.height ?? node.height;
+
+      if (!nodeWidth || !nodeHeight) {
+        return;
+      }
+
+      const x = node.position.x + nodeWidth / 2;
+      const y = node.position.y + nodeHeight / 2;
       const zoom = options?.maintainZoom ? reactFlow.getViewport().zoom : 1;
 
       reactFlow.setCenter(x, y, {
