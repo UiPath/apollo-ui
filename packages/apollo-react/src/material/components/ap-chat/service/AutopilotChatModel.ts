@@ -58,7 +58,6 @@ export enum AutopilotChatRole {
  *                  AutopilotChatRole.User for sendRequest and AutopilotChatRole.Assistant for sendResponse.
  * @property widget - The renderer to use for displaying this message.
  * @property attachments - Optional files attached to the message.
- * @property sources - Optional list of sources to the message.
  * @property contentParts - Optional content parts for citation support (new format)
  * @property hijacked - Flag set by the chat service when an event is intercepted and the interceptor returns true
  * @property fakeStream - Temporary flag used to simulate streaming for a complete message (will be ignored for requests)
@@ -345,6 +344,7 @@ export interface AutopilotChatOverrideLabels {
  * @property {string} ToggleSettings - Emitted when the user attemps to toggle the settings
  * @property {string} ToggleChat - Emitted when the user attemps to toggle the chat
  * @property {string} CloseChat - Emitted when the user attemps to close the chat
+ * @property {string} CitationClick - Emitted when the user clicks on a citation
  */
 export enum AutopilotChatPreHookAction {
     NewChat = 'new-chat',
@@ -352,6 +352,7 @@ export enum AutopilotChatPreHookAction {
     ToggleSettings = 'toggle-settings',
     ToggleChat = 'toggle-chat',
     CloseChat = 'close-chat',
+    CitationClick = 'citation-click',
 }
 
 /**
