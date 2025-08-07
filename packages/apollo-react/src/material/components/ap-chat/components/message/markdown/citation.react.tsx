@@ -7,11 +7,15 @@ import {
     useTheme,
 } from '@mui/material';
 import token, { FontVariantToken } from '@uipath/apollo-core';
-import { CHAT_CITATION_MARKER } from '@uipath/portal-shell-util';
+import {
+    AutopilotChatPreHookAction,
+    CHAT_CITATION_MARKER,
+} from '@uipath/portal-shell-util';
 import React from 'react';
 
 import { t } from '../../../../../utils/localization/loc';
 import { useChatScroll } from '../../../providers/chat-scroll-provider.react';
+import { useChatService } from '../../../providers/chat-service.provider.react';
 
 // Helper function to find elements within a specific container
 const findElementsWithinContainer = (selector: string, container: Element): Set<HTMLElement> => {
@@ -47,10 +51,11 @@ export const Citation = React.memo(({
 }: any) => {
     const pageText = page_number ? ` (${t('autopilot-chat-page-number', { page_number })})` : '';
     const theme = useTheme();
+    const chatService = useChatService();
     const { overflowContainer } = useChatScroll();
     const ref = React.useRef<HTMLDivElement>(null);
     const [ open, setOpen ] = React.useState(false);
-    const finalUrl = url || download_url;
+    const finalUrl = url || `${download_url}${page_number ? `#page=${page_number}` : ''}`;
 
     const handleOpen = React.useCallback(() => {
         setOpen(true);
@@ -84,10 +89,18 @@ export const Citation = React.memo(({
     }, [ id, messageId ]);
 
     const handleClick = React.useCallback(() => {
-        if (finalUrl) {
-            window.open(finalUrl, '_blank', 'noopener,noreferrer');
+        if (!chatService) {
+            return;
         }
-    }, [ finalUrl ]);
+
+        chatService.getPreHook(AutopilotChatPreHookAction.CitationClick)({ citation: { url: finalUrl } })
+            .then((proceed) => {
+                if (!proceed || !finalUrl) {
+                    return;
+                }
+                window.open(finalUrl, '_blank', 'noopener,noreferrer');
+            });
+    }, [ chatService, finalUrl ]);
 
     // Close tooltip on scroll
     React.useEffect(() => {
@@ -161,7 +174,7 @@ export const Citation = React.memo(({
                             options: {
                                 boundary: 'clippingParents',
                                 rootBoundary: 'viewport',
-                                padding: 8,
+                                padding: token.Spacing.SpacingXs,
                                 altAxis: true,
                             },
                         },
@@ -170,7 +183,7 @@ export const Citation = React.memo(({
                             enabled: true,
                             options: {
                                 fallbackPlacements: [ 'bottom', 'left', 'right' ],
-                                padding: 8,
+                                padding: token.Spacing.SpacingS,
                             },
                         },
                     ],
@@ -179,8 +192,7 @@ export const Citation = React.memo(({
                     sx: {
                         backgroundColor: theme.palette.semantic.colorBackgroundRaised,
                         color: theme.palette.semantic.colorForeground,
-                        boxShadow: theme.shadows[2],
-                        fontSize: theme.typography.body2.fontSize,
+                        boxShadow: token.Shadow.ShadowDp6,
                     },
                 },
             }}

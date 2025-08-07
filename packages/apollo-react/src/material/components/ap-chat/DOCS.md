@@ -7,7 +7,7 @@ A flexible chat interface component that provides seamless integration with both
 The Autopilot Chat component is a full-featured chat interface that can be embedded in applications to provide AI assistant functionality. The component includes:
 
 - A resizable and collapsible UI that can operate in side-by-side, full-screen, or embedded mode
-- Support for text messages with markdown formatting
+- Support for text messages with markdown formatting and citations
 - File attachments with drag-and-drop support
 - Customizable first-run experience with suggested prompts
 - Extensible architecture with custom message renderers
@@ -651,6 +651,7 @@ chatService.sendResponse({
   widget: "custom-text-renderer" // Reference to our custom renderer
 });
 ```
+
 ## Streaming Capabilities
 
 The Autopilot Chat component provides streaming capabilities for response display. When using the default markdown renderer, you can leverage two different streaming approaches:
@@ -796,6 +797,186 @@ The fake streaming feature uses two constants that can be customized by modifyin
 
 - `FAKE_STREAM_CHARS_COUNT`: The number of characters to display in each chunk (default: 10)
 - `FAKE_STREAM_INTERVAL`: The time interval between chunks in milliseconds (default: 50)
+
+## Citations
+
+The Autopilot Chat component supports displaying citations alongside assistant responses, enabling users to see and interact with source references. Citations can be displayed both in static responses and streaming responses.
+
+### Static Citations
+
+For complete responses, use the `contentParts` array to send content with attached citations:
+
+```typescript
+// Send response with citations using contentParts
+chatService.sendResponse({
+  id: 'response-with-citations',
+  role: AutopilotChatRole.Assistant,
+  contentParts: [
+    {
+      text: '# NBA Championship Analysis',
+      citations: []
+    },
+    {
+      text: 'The NBA Finals are the annual championship series of the National Basketball Association (NBA).',
+      citations: [
+        {
+          id: 1,
+          title: 'NBA Official Finals Overview',
+          url: 'https://www.nba.com/history/finals'
+        } as UrlCitation
+      ]
+    },
+    {
+      text: 'The Boston Celtics have won the most championships in NBA history.',
+      citations: [
+        {
+          id: 2,
+          title: 'NBA Team Championships - Basketball Reference',
+          url: 'https://www.basketball-reference.com/leagues/NBA_2024.html#champions'
+        } as UrlCitation,
+        {
+          id: 3,
+          title: 'Celtics vs Lakers Rivalry - ESPN',
+          url: 'https://www.espn.com/nba/story/_/id/29325513/celtics-vs-lakers-nba-most-storied-rivalry'
+        } as UrlCitation
+      ]
+    }
+  ]
+});
+```
+
+### Streaming Citations
+
+For streaming responses with citations, send the message with a `contentPartChunk` property using index-based segmentation:
+
+```typescript
+// Stream response with citations using contentPartChunk
+function streamResponseWithCitations() {
+  const messageId = 'streaming-citations-' + Date.now();
+  let streamIndex = 0;
+  
+  const streamingParts = [
+    {
+      index: 0,
+      text: '# RPA Implementation Best Practices',
+      citation: null
+    },
+    {
+      index: 1,
+      text: '\n\nBased on industry research',
+      citation: null
+    },
+    {
+      index: 1,
+      text: ', successful RPA implementations follow these key principles:',
+      citation: {
+        id: 1,
+        title: 'RPA Best Practices Guide',
+        url: 'https://www.uipath.com/resources/automation-best-practices'
+      } as UrlCitation
+    },
+    {
+      index: 2,
+      text: '\n\n## Key Success Factors',
+      citation: null
+    },
+    {
+      index: 3,
+      text: '\n\n1. **Process Assessment**',
+      citation: null
+    },
+    {
+      index: 3,
+      text: ' - Identify automation opportunities through detailed analysis',
+      citation: {
+        id: 2,
+        title: 'Process Assessment Framework',
+        download_url: 'https://research.uipath.com/process-assessment-2024.pdf',
+        page_number: 12
+      } as PdfCitation
+    }
+  ];
+
+  const streamInterval = setInterval(() => {
+    if (streamIndex < streamingParts.length) {
+      const part = streamingParts[streamIndex];
+      
+      chatService.sendResponse({
+        id: messageId,
+        contentPartChunk: {
+          index: part.index,
+          text: part.text,
+          citation: part.citation
+        },
+        stream: true,
+        done: streamIndex === streamingParts.length - 1
+      });
+      
+      streamIndex++;
+    } else {
+      clearInterval(streamInterval);
+    }
+  }, 50);
+}
+```
+
+### Citation Object Properties
+
+Citations support two types: UrlCitation and PdfCitation:
+
+```typescript
+// Base citation interface
+interface Citation {
+  id: number;                    // Unique identifier for the citation
+  title: string;                 // Display title of the source
+}
+
+// URL citation for web resources
+interface UrlCitation extends Citation {
+  url: string;                   // Direct URL to the source
+}
+
+// PDF citation for downloadable documents
+interface PdfCitation extends Citation {
+  download_url: string;          // URL to download the PDF
+  page_number: number;           // Specific page number within the PDF
+}
+```
+
+### Citation Click Handling with Pre-hooks
+
+By default, clicking a citation opens the URL in a new tab. You can intercept this behavior using pre-hooks to implement custom citation handling:
+
+```typescript
+// Set a pre-hook for citation clicks
+chatService.setPreHook(AutopilotChatPreHookAction.CitationClick, async (citationData) => {
+  const { citation, message } = citationData;
+  
+  // Custom handling logic
+  console.log('Citation clicked:', citation.title);
+  
+  // Example: Show citation in a modal instead of opening in new tab
+  if (citation.download_url) {
+    showDownloadModal(citation);
+    return false; // Prevent default behavior (opening in new tab)
+  }
+  
+  // Example: Track citation clicks in analytics
+  trackCitationClick(citation.id, message.id);
+  
+  // Return true to proceed with default behavior (open in new tab)
+  return true;
+});
+```
+
+### Streaming Citation Structure
+
+When using `contentPartChunk` for streaming citations, the structure includes:
+
+- **index**: Segment index for grouping related chunks
+- **text**: Optional text content to append to the segment  
+- **citation**: Optional citation object (UrlCitation or PdfCitation) to attach to this chunk
+
 
 ## First Run Experience
 
@@ -1352,6 +1533,7 @@ export interface AutopilotChatModelInfo {
  *                  AutopilotChatRole.User for sendRequest and AutopilotChatRole.Assistant for sendResponse.
  * @property widget - The renderer to use for displaying this message.
  * @property attachments - Optional files attached to the message.
+ * @property contentParts - Optional content parts for citation support (new format)
  * @property hijacked - Flag set by the chat service when an event is intercepted and the interceptor returns true
  * @property fakeStream - Temporary flag used to simulate streaming for a complete message (will be ignored for requests)
  * @property stream - Flag used to stream a chunk (will be ignored for requests)
@@ -1371,6 +1553,7 @@ export interface AutopilotChatMessage {
     role: AutopilotChatRole;
     widget: string;
     attachments?: AutopilotChatFileInfo[];
+    contentParts?: ContentPart[];
     hijacked?: boolean;
     fakeStream?: boolean;
     stream?: boolean;
@@ -1481,6 +1664,7 @@ export interface AutopilotChatActionPayload {
  * @property {string} ToggleSettings - Emitted when the user attemps to toggle the settings
  * @property {string} ToggleChat - Emitted when the user attemps to toggle the chat
  * @property {string} CloseChat - Emitted when the user attemps to close the chat
+ * @property {string} CitationClick - Emitted when the user clicks on a citation
  */
 export enum AutopilotChatPreHookAction {
     NewChat = 'new-chat',
@@ -1488,6 +1672,7 @@ export enum AutopilotChatPreHookAction {
     ToggleSettings = 'toggle-settings',
     ToggleChat = 'toggle-chat',
     CloseChat = 'close-chat',
+    CitationClick = 'citation-click',
 }
 ```
 
@@ -1662,6 +1847,81 @@ export interface AutopilotChatMediaChunk {
      * Base64 encoded chunk of data.
      */
     data: string;
+}
+```
+
+### ContentPart
+
+```ts
+/**
+ * Represents a content part in the Autopilot Chat system.
+ *
+ * @property text - The text content of this part
+ * @property citations - The citations that apply to this text
+ */
+export interface ContentPart {
+    text?: string;
+    citations?: Array<UrlCitation | PdfCitation>;
+}
+```
+
+### ContentPartChunk
+
+```ts
+/**
+ * Represents a content part chunk for streaming in the Autopilot Chat system.
+ *
+ * @property index - The index of the content part this chunk belongs to
+ * @property text - The text to append to the content part
+ * @property citation - A citation to add to the content part
+ */
+export interface ContentPartChunk {
+    index: number;
+    text?: string;
+    citation?: UrlCitation | PdfCitation;
+}
+```
+
+### Citation
+
+```ts
+/**
+ * Base citation interface for the Autopilot Chat system.
+ *
+ * @property id - Unique identifier for the citation
+ * @property title - The title of the citation
+ */
+export interface Citation {
+    id: number;
+    title: string;
+}
+```
+
+### UrlCitation
+
+```ts
+/**
+ * URL citation that extends the base Citation interface.
+ *
+ * @property url - The URL of the citation
+ */
+export interface UrlCitation extends Citation {
+    url: string;
+}
+```
+
+### PdfCitation
+
+```ts
+/**
+ * PDF citation that extends the base Citation interface.
+ *
+ * @property download_url - The URL to download the PDF
+ * @property page_number - The page number in the PDF
+ */
+export interface PdfCitation extends Citation {
+    download_url: string;
+    page_number: number;
 }
 ```
 

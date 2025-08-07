@@ -12,6 +12,7 @@ import token, { FontVariantToken } from '@uipath/apollo-core';
 import {
     AutopilotChatEvent,
     AutopilotChatMessage,
+    AutopilotChatPreHookAction,
     PdfCitation,
     UrlCitation,
 } from '@uipath/portal-shell-util';
@@ -201,11 +202,22 @@ function AutopilotChatSourcesComponent({
     }, []);
 
     const handleSourceClick = useCallback((source: UrlCitation | PdfCitation) => {
-        const url = 'url' in source ? source.url : source.download_url;
-        if (url) {
-            window.open(url, '_blank', 'noopener,noreferrer');
+        if (!chatService) {
+            return;
         }
-    }, []);
+
+        chatService?.getPreHook(AutopilotChatPreHookAction.CitationClick)({ citation: source })
+            .then((proceed) => {
+                if (!proceed) {
+                    return;
+                }
+
+                const url = 'url' in source ? source.url : `${source.download_url}${source.page_number ? `#page=${source.page_number}` : ''}`;
+                if (url) {
+                    window.open(url, '_blank', 'noopener,noreferrer');
+                }
+            });
+    }, [ chatService ]);
 
     if (isWaitingForMoreMessages || isStreaming || sources.length === 0) {
         return null;
