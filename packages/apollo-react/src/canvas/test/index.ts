@@ -10,6 +10,6 @@ function render(ui: ReactElement, options?: Omit<RenderOptions, "wrapper">): Ren
   return rtlRender(ui, options);
 }
 
-export * from './test-setup'
+export * from "./test-setup";
 export * from "./vitest.config";
 export { render };
