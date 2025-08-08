@@ -131,6 +131,7 @@ export class AutopilotChatService {
         this.sendInputStreamEvent = this.sendInputStreamEvent.bind(this);
         this.sendOutputStreamEvent = this.sendOutputStreamEvent.bind(this);
         this.setShowLoading = this.setShowLoading.bind(this);
+        this.setWaiting = this.setWaiting.bind(this);
     }
 
     static Instantiate({
@@ -411,6 +412,16 @@ export class AutopilotChatService {
      */
     setShowLoading(showLoading: boolean) {
         this._internalService.publish(AutopilotChatInternalEvent.SetShowLoading, showLoading);
+    }
+
+    /**
+     * Sets the waiting state for the prompt in the chat service.
+     * If this method is used, it overrides the default behavior from apollo.
+     *
+     * @param waiting - Whether to show the waiting state
+     */
+    setWaiting(waiting: boolean) {
+        this._internalService.publish(AutopilotChatInternalEvent.SetWaiting, waiting);
     }
 
     /**
