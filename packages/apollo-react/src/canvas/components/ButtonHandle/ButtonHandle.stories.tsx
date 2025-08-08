@@ -1,10 +1,13 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { Node, Position, ReactFlowProvider, useNodesState, useEdgesState } from "@xyflow/react";
+import { Node, Position, ReactFlowProvider, useNodesState, useEdgesState, Edge, Panel } from "@xyflow/react";
 import { BaseCanvas } from "../BaseCanvas/BaseCanvas";
 import { type ButtonHandleConfig, ButtonHandles } from "./ButtonHandle";
 import { ApIcon, ApTypography } from "@uipath/portal-shell-react";
 import { Column, Row } from "../../layouts";
 import { FontVariantToken } from "@uipath/apollo-core";
+import { BaseNode } from "../BaseNode/BaseNode";
+import type { BaseNodeData } from "../BaseNode/BaseNode.types";
+import { CanvasPositionControls } from "../CanvasPositionControls";
 
 const SimpleNode = ({ data, selected }: { data: any; selected: boolean }) => {
   const topHandles: ButtonHandleConfig[] = [
@@ -404,6 +407,282 @@ export const ComplexExample: Story = {
         nodeTypes={complexNodeTypes}
         mode="design"
       />
+    );
+  },
+};
+
+// Logic Flow Example - demonstrating If/Switch nodes with ButtonHandles
+export const LogicFlow: Story = {
+  render: () => {
+    // Define the nodes for If and Switch logic
+    const logicNodes: Node<BaseNodeData>[] = [
+      // IF Node
+      {
+        id: "if-node",
+        type: "baseNode",
+        position: { x: 300, y: 200 },
+        data: {
+          icon: <ApIcon size="48px" name="alt_route" color="var(--color-foreground-de-emp)" />,
+          label: "If",
+          handleConfigurations: [
+            {
+              position: Position.Left,
+              handles: [{ id: "input", type: "target" }],
+            },
+            {
+              position: Position.Right,
+              handles: [
+                { id: "then", type: "source", label: "Then", showButton: true },
+                { id: "else", type: "source", label: "Else", showButton: true },
+              ],
+            },
+          ],
+        },
+      },
+
+      // SWITCH Node
+      {
+        id: "switch-node",
+        type: "baseNode",
+        position: { x: 300, y: 650 },
+        data: {
+          icon: <ApIcon size="48px" variant="outlined" name="account_tree" color="var(--color-foreground-de-emp)" />,
+          label: "Switch",
+          handleConfigurations: [
+            {
+              position: Position.Left,
+              handles: [{ id: "input", type: "target" }],
+            },
+            {
+              position: Position.Right,
+              handles: [
+                { id: "default", type: "source", label: "Default", showButton: true },
+                { id: "case-0", type: "source", label: "0", showButton: true },
+                { id: "case-1", type: "source", label: "1", showButton: true },
+              ],
+            },
+          ],
+        },
+      },
+
+      // Source nodes
+      {
+        id: "condition-input",
+        type: "baseNode",
+        position: { x: 50, y: 200 },
+        data: {
+          icon: <ApIcon size="48px" name="input" color="var(--color-foreground-de-emp)" />,
+          label: "Condition",
+          subLabel: "Boolean",
+          handleConfigurations: [
+            {
+              position: Position.Right,
+              handles: [{ id: "output", type: "source" }],
+            },
+          ],
+        },
+      },
+
+      {
+        id: "value-input",
+        type: "baseNode",
+        position: { x: 50, y: 650 },
+        data: {
+          icon: <ApIcon size="48px" name="input" color="var(--color-foreground-de-emp)" />,
+          label: "Value",
+          subLabel: "Integer",
+          handleConfigurations: [
+            {
+              position: Position.Right,
+              handles: [{ id: "output", type: "source" }],
+            },
+          ],
+        },
+      },
+
+      // Output nodes for IF
+      {
+        id: "then-action",
+        type: "baseNode",
+        position: { x: 600, y: 100 },
+        data: {
+          icon: <ApIcon size="48px" name="check_circle" color="green" />,
+          label: "Then Action",
+          subLabel: "Execute if true",
+          handleConfigurations: [
+            {
+              position: Position.Left,
+              handles: [{ id: "input", type: "target" }],
+            },
+          ],
+        },
+      },
+
+      {
+        id: "else-action",
+        type: "baseNode",
+        position: { x: 600, y: 300 },
+        data: {
+          icon: <ApIcon size="48px" name="cancel" color="orange" />,
+          label: "Else Action",
+          subLabel: "Execute if false",
+          handleConfigurations: [
+            {
+              position: Position.Left,
+              handles: [{ id: "input", type: "target" }],
+            },
+          ],
+        },
+      },
+
+      // Output nodes for SWITCH
+      {
+        id: "default-action",
+        type: "baseNode",
+        position: { x: 600, y: 500 },
+        data: {
+          icon: <ApIcon size="48px" name="help_outline" color="var(--color-foreground-de-emp)" />,
+          label: "Default Case",
+          subLabel: "No match",
+          handleConfigurations: [
+            {
+              position: Position.Left,
+              handles: [{ id: "input", type: "target" }],
+            },
+          ],
+        },
+      },
+
+      {
+        id: "case-0-action",
+        type: "baseNode",
+        position: { x: 600, y: 700 },
+        data: {
+          icon: <ApIcon size="48px" name="looks_one" color="blue" />,
+          label: "Case 0",
+          subLabel: "Value = 0",
+          handleConfigurations: [
+            {
+              position: Position.Left,
+              handles: [{ id: "input", type: "target" }],
+            },
+          ],
+        },
+      },
+
+      {
+        id: "case-1-action",
+        type: "baseNode",
+        position: { x: 600, y: 900 },
+        data: {
+          icon: <ApIcon size="48px" name="looks_two" color="purple" />,
+          label: "Case 1",
+          subLabel: "Value = 1",
+          handleConfigurations: [
+            {
+              position: Position.Left,
+              handles: [{ id: "input", type: "target" }],
+            },
+          ],
+        },
+      },
+    ];
+
+    // Define edges
+    const logicEdges: Edge[] = [
+      // IF connections
+      {
+        id: "condition-to-if",
+        source: "condition-input",
+        sourceHandle: "output",
+        target: "if-node",
+        targetHandle: "input",
+        animated: true,
+      },
+      {
+        id: "if-to-then",
+        source: "if-node",
+        sourceHandle: "then",
+        target: "then-action",
+        targetHandle: "input",
+        style: { stroke: "green" },
+      },
+      {
+        id: "if-to-else",
+        source: "if-node",
+        sourceHandle: "else",
+        target: "else-action",
+        targetHandle: "input",
+        style: { stroke: "orange" },
+      },
+
+      // SWITCH connections
+      {
+        id: "value-to-switch",
+        source: "value-input",
+        sourceHandle: "output",
+        target: "switch-node",
+        targetHandle: "input",
+        animated: true,
+      },
+      {
+        id: "switch-to-default",
+        source: "switch-node",
+        sourceHandle: "default",
+        target: "default-action",
+        targetHandle: "input",
+      },
+      {
+        id: "switch-to-0",
+        source: "switch-node",
+        sourceHandle: "case-0",
+        target: "case-0-action",
+        targetHandle: "input",
+        style: { stroke: "blue" },
+      },
+      {
+        id: "switch-to-1",
+        source: "switch-node",
+        sourceHandle: "case-1",
+        target: "case-1-action",
+        targetHandle: "input",
+        style: { stroke: "purple" },
+      },
+    ];
+
+    const [nodes, setNodes, onNodesChange] = useNodesState(logicNodes);
+    const [edges, setEdges, onEdgesChange] = useEdgesState(logicEdges);
+
+    const nodeTypes = {
+      baseNode: BaseNode,
+    };
+
+    return (
+      <BaseCanvas
+        nodes={nodes}
+        edges={edges}
+        onNodesChange={onNodesChange}
+        onEdgesChange={onEdgesChange}
+        nodeTypes={nodeTypes}
+        mode="design"
+      >
+        <Panel position="top-center">
+          <Column
+            p={12}
+            style={{
+              color: "var(--color-foreground)",
+              backgroundColor: "var(--color-background-secondary)",
+              borderRadius: 4,
+            }}
+          >
+            <ApTypography variant={FontVariantToken.fontSizeH4Bold}>Logic Flow Examples</ApTypography>
+            <ApTypography variant={FontVariantToken.fontSizeS}>IF and SWITCH nodes with ButtonHandles</ApTypography>
+          </Column>
+        </Panel>
+        <Panel position="bottom-right">
+          <CanvasPositionControls />
+        </Panel>
+      </BaseCanvas>
     );
   },
 };

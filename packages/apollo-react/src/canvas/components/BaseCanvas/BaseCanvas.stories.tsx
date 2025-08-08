@@ -1,13 +1,15 @@
 import { useCallback, useRef, useState } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { applyEdgeChanges, applyNodeChanges, BackgroundVariant, Panel, ReactFlowProvider } from "@xyflow/react";
+import { applyEdgeChanges, applyNodeChanges, BackgroundVariant, Panel, ReactFlowProvider, Position } from "@xyflow/react";
 import type { Edge, EdgeChange, Node, NodeChange } from "@xyflow/react";
 import { FontVariantToken } from "@uipath/apollo-core";
-import { ApButton, ApTypography } from "@uipath/portal-shell-react";
+import { ApButton, ApTypography, ApIcon } from "@uipath/portal-shell-react";
 import { Column, Row } from "../../layouts";
 import { CanvasPositionControls } from "../CanvasPositionControls";
 import { BaseCanvas } from "./BaseCanvas";
 import { BaseCanvasRef } from "./BaseCanvas.types";
+import { BaseNode } from "../BaseNode/BaseNode";
+import type { BaseNodeData } from "../BaseNode/BaseNode.types";
 
 // Wrapper component that provides ReactFlow context
 const BaseCanvasWithProvider = (props: any) => {
@@ -139,19 +141,184 @@ const sampleEdges: Edge[] = [
   { id: "e2-3", source: "2", target: "3" },
 ];
 
-export const Default: Story = {
-  args: {
-    nodes: sampleNodes,
-    edges: sampleEdges,
-    nodeTypes: {},
-    mode: "view",
+// Enhanced nodes for Default story with BaseNode
+const enhancedNodes: Node<BaseNodeData>[] = [
+  {
+    id: "source",
+    position: { x: 50, y: 200 },
+    type: "baseNode",
+    data: {
+      icon: <ApIcon size="48px" name="cloud_upload" color="var(--color-foreground-de-emp)" />,
+      label: "Data Source",
+      subLabel: "Input Stream",
+      topRightAdornment: <ApIcon name="check_circle" size="small" style={{ color: "green" }} />,
+      handleConfigurations: [
+        {
+          position: Position.Right,
+          handles: [{ id: "output", type: "source", label: "Output" }],
+        },
+      ],
+    },
   },
+  {
+    id: "processor1",
+    position: { x: 300, y: 100 },
+    type: "baseNode",
+    data: {
+      icon: <ApIcon size="48px" name="settings" color="var(--color-foreground-de-emp)" />,
+      label: "Transform",
+      subLabel: "Data Processing",
+      handleConfigurations: [
+        {
+          position: Position.Left,
+          handles: [{ id: "input", type: "target", label: "Input" }],
+        },
+        {
+          position: Position.Right,
+          handles: [{ id: "output", type: "source", label: "Output" }],
+        },
+      ],
+    },
+  },
+  {
+    id: "processor2",
+    position: { x: 300, y: 300 },
+    type: "baseNode",
+    data: {
+      icon: <ApIcon size="48px" name="filter_list" color="var(--color-foreground-de-emp)" />,
+      label: "Filter",
+      subLabel: "Validation Rules",
+      topRightAdornment: <ApIcon name="warning" size="16px" style={{ color: "orange" }} />,
+      handleConfigurations: [
+        {
+          position: Position.Left,
+          handles: [{ id: "input", type: "target", label: "Input" }],
+        },
+        {
+          position: Position.Right,
+          handles: [
+            { id: "valid", type: "source", label: "Valid" },
+            { id: "invalid", type: "source", label: "Invalid" },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    id: "merger",
+    position: { x: 550, y: 200 },
+    type: "baseNode",
+    data: {
+      icon: <ApIcon size="48px" name="merge_type" color="var(--color-foreground-de-emp)" />,
+      label: "Merge",
+      subLabel: "Combine Streams",
+      handleConfigurations: [
+        {
+          position: Position.Left,
+          handles: [
+            { id: "input1", type: "target", label: "Stream 1" },
+            { id: "input2", type: "target", label: "Stream 2" },
+          ],
+        },
+        {
+          position: Position.Right,
+          handles: [{ id: "output", type: "source", label: "Merged" }],
+        },
+      ],
+    },
+  },
+  {
+    id: "output",
+    position: { x: 800, y: 200 },
+    type: "baseNode",
+    data: {
+      icon: <ApIcon size="48px" name="storage" color="var(--color-foreground-de-emp)" />,
+      label: "Storage",
+      subLabel: "Database",
+      topRightAdornment: <ApIcon name="lock" size="small" color="var(--color-foreground-de-emp)" />,
+      bottomLeftAdornment: <ApIcon name="schedule" size="small" color="var(--color-foreground-de-emp)" />,
+      handleConfigurations: [
+        {
+          position: Position.Left,
+          handles: [{ id: "input", type: "target", label: "Data In" }],
+        },
+        {
+          position: Position.Right,
+          handles: [{ id: "log", type: "source", label: "Logs" }],
+        },
+      ],
+    },
+  },
+  {
+    id: "monitor",
+    position: { x: 1050, y: 200 },
+    type: "baseNode",
+    data: {
+      icon: <ApIcon size="48px" name="analytics" color="var(--color-foreground-de-emp)" />,
+      label: "Monitor",
+      subLabel: "Analytics",
+      handleConfigurations: [
+        {
+          position: Position.Left,
+          handles: [{ id: "input", type: "target", label: "Events" }],
+        },
+      ],
+    },
+  },
+];
+
+const enhancedEdges: Edge[] = [
+  {
+    id: "e-source-p1",
+    source: "source",
+    sourceHandle: "output",
+    target: "processor1",
+    targetHandle: "input",
+  },
+  {
+    id: "e-source-p2",
+    source: "source",
+    sourceHandle: "output",
+    target: "processor2",
+    targetHandle: "input",
+  },
+  {
+    id: "e-p1-merger",
+    source: "processor1",
+    sourceHandle: "output",
+    target: "merger",
+    targetHandle: "input1",
+  },
+  {
+    id: "e-p2-merger",
+    source: "processor2",
+    sourceHandle: "valid",
+    target: "merger",
+    targetHandle: "input2",
+  },
+  {
+    id: "e-merger-output",
+    source: "merger",
+    sourceHandle: "output",
+    target: "output",
+    targetHandle: "input",
+  },
+  {
+    id: "e-output-monitor",
+    source: "output",
+    sourceHandle: "log",
+    target: "monitor",
+    targetHandle: "input",
+  },
+];
+
+const nodeTypes = {
+  baseNode: BaseNode,
 };
 
-// Design Mode with state management
-const DesignModeCanvas = () => {
-  const [nodes, setNodes] = useState<Node[]>(sampleNodes);
-  const [edges, setEdges] = useState<Edge[]>(sampleEdges);
+const DefaultStory = () => {
+  const [nodes, setNodes] = useState<Node[]>(enhancedNodes);
+  const [edges, setEdges] = useState<Edge[]>(enhancedEdges);
 
   const onNodesChange = useCallback((changes: NodeChange[]) => {
     setNodes((nds) => applyNodeChanges(changes, nds));
@@ -163,7 +330,14 @@ const DesignModeCanvas = () => {
 
   return (
     <ReactFlowProvider>
-      <BaseCanvas nodes={nodes} edges={edges} nodeTypes={{}} mode="design" onNodesChange={onNodesChange} onEdgesChange={onEdgesChange}>
+      <BaseCanvas
+        nodes={nodes}
+        edges={edges}
+        nodeTypes={nodeTypes}
+        mode="design"
+        onNodesChange={onNodesChange}
+        onEdgesChange={onEdgesChange}
+      >
         <Panel position="bottom-right">
           <CanvasPositionControls />
         </Panel>
@@ -172,118 +346,359 @@ const DesignModeCanvas = () => {
   );
 };
 
+export const Default: Story = {
+  render: () => <DefaultStory />,
+};
+
+// Design Mode - demonstrates full editing capabilities
 export const DesignMode: Story = {
-  render: () => <DesignModeCanvas />,
+  render: () => <DefaultStory />,
+};
+
+// Different Background Styles
+const DifferentBackgroundsStory = () => {
+  const [backgroundType, setBackgroundType] = useState<BackgroundVariant>(BackgroundVariant.Lines);
+  const [nodes] = useState<Node[]>(enhancedNodes);
+  const [edges] = useState<Edge[]>(enhancedEdges);
+
+  const getBackgroundProps = () => {
+    switch (backgroundType) {
+      case BackgroundVariant.Dots:
+        return { gap: 20, size: 2 };
+      case BackgroundVariant.Cross:
+        return { gap: 20, size: 4 };
+      case BackgroundVariant.Lines:
+      default:
+        return { gap: 20, size: 1 };
+    }
+  };
+
+  const { gap, size } = getBackgroundProps();
+
+  return (
+    <ReactFlowProvider>
+      <BaseCanvas
+        nodes={nodes}
+        edges={edges}
+        nodeTypes={nodeTypes}
+        mode="view"
+        backgroundVariant={backgroundType}
+        backgroundGap={gap}
+        backgroundSize={size}
+      >
+        <Panel position="top-left">
+          <Column gap={8} p={16} style={{ color: "var(--color-foreground)", backgroundColor: "var(--color-background-secondary)" }}>
+            <ApTypography variant={FontVariantToken.fontSizeH4Bold}>Background Styles</ApTypography>
+            <Row gap={8}>
+              <ApButton
+                size="small"
+                variant={backgroundType === BackgroundVariant.Dots ? "primary" : "secondary"}
+                label="Dots"
+                onClick={() => setBackgroundType(BackgroundVariant.Dots)}
+              />
+              <ApButton
+                size="small"
+                variant={backgroundType === BackgroundVariant.Lines ? "primary" : "secondary"}
+                label="Lines"
+                onClick={() => setBackgroundType(BackgroundVariant.Lines)}
+              />
+              <ApButton
+                size="small"
+                variant={backgroundType === BackgroundVariant.Cross ? "primary" : "secondary"}
+                label="Cross"
+                onClick={() => setBackgroundType(BackgroundVariant.Cross)}
+              />
+            </Row>
+          </Column>
+        </Panel>
+        <Panel position="bottom-right">
+          <CanvasPositionControls />
+        </Panel>
+      </BaseCanvas>
+    </ReactFlowProvider>
+  );
 };
 
 export const DifferentBackgrounds: Story = {
-  args: {
-    nodes: sampleNodes,
-    edges: sampleEdges,
-    nodeTypes: {},
-    backgroundVariant: BackgroundVariant.Lines,
-    backgroundGap: 20,
-    backgroundSize: 1,
-  },
+  render: () => <DifferentBackgroundsStory />,
+};
+
+// Read-only Mode - no interactions allowed
+const ReadOnlyModeStory = () => {
+  return (
+    <ReactFlowProvider>
+      <BaseCanvas nodes={enhancedNodes} edges={enhancedEdges} nodeTypes={nodeTypes} mode="readonly">
+        <Panel position="top-center">
+          <Column
+            p={12}
+            style={{ color: "var(--color-foreground)", backgroundColor: "var(--color-background-secondary)", borderRadius: 4 }}
+          >
+            <ApTypography variant={FontVariantToken.fontSizeM}>
+              <ApIcon name="lock" size="small" /> Read-only Mode - Interactions Disabled
+            </ApTypography>
+          </Column>
+        </Panel>
+        <Panel position="bottom-right">
+          <CanvasPositionControls />
+        </Panel>
+      </BaseCanvas>
+    </ReactFlowProvider>
+  );
 };
 
 export const ReadOnlyMode: Story = {
-  args: {
-    nodes: sampleNodes,
-    edges: sampleEdges,
-    nodeTypes: {},
-    mode: "readonly",
-  },
+  render: () => <ReadOnlyModeStory />,
 };
 
-export const CustomZoomLimits: Story = {
-  args: {
-    nodes: sampleNodes,
-    edges: sampleEdges,
-    nodeTypes: {},
-    minZoom: 0.1,
-    maxZoom: 4,
-  },
+// Empty Canvas with add node capability
+const EmptyCanvasStory = () => {
+  const [nodes, setNodes] = useState<Node<BaseNodeData>>([]);
+  const [edges, setEdges] = useState<Edge[]>([]);
+  const [nodeCount, setNodeCount] = useState(0);
+
+  const onNodesChange = useCallback((changes: NodeChange[]) => {
+    setNodes((nds) => applyNodeChanges(changes, nds));
+  }, []);
+
+  const onEdgesChange = useCallback((changes: EdgeChange[]) => {
+    setEdges((eds) => applyEdgeChanges(changes, eds));
+  }, []);
+
+  const addNode = () => {
+    const newNode: Node<BaseNodeData> = {
+      id: `node-${nodeCount + 1}`,
+      position: { x: 100 + (nodeCount % 3) * 200, y: 100 + Math.floor(nodeCount / 3) * 150 },
+      type: "baseNode",
+      data: {
+        icon: <ApIcon size="48px" name="widgets" color="var(--color-foreground-de-emp)" />,
+        label: `Node ${nodeCount + 1}`,
+        subLabel: "Click to configure",
+        handleConfigurations: [
+          {
+            position: Position.Left,
+            handles: [{ id: "input", type: "target", label: "In" }],
+          },
+          {
+            position: Position.Right,
+            handles: [{ id: "output", type: "source", label: "Out" }],
+          },
+        ],
+      },
+    };
+    setNodes((nds) => [...nds, newNode]);
+    setNodeCount((c) => c + 1);
+  };
+
+  const clearCanvas = () => {
+    setNodes([]);
+    setEdges([]);
+    setNodeCount(0);
+  };
+
+  return (
+    <ReactFlowProvider>
+      <BaseCanvas
+        nodes={nodes}
+        edges={edges}
+        nodeTypes={nodeTypes}
+        mode="design"
+        onNodesChange={onNodesChange}
+        onEdgesChange={onEdgesChange}
+      >
+        <Panel position="top-left">
+          <Column gap={8} p={16} style={{ color: "var(--color-foreground)", backgroundColor: "var(--color-background-secondary)" }}>
+            <ApTypography variant={FontVariantToken.fontSizeH4Bold}>Canvas Actions</ApTypography>
+            <ApButton label="Add Node" onClick={addNode} size="small" />
+            <ApButton label="Clear Canvas" onClick={clearCanvas} size="small" variant="secondary" disabled={nodes.length === 0} />
+            <ApTypography variant={FontVariantToken.fontSizeS}>
+              Nodes: {nodes.length}, Edges: {edges.length}
+            </ApTypography>
+          </Column>
+        </Panel>
+        <Panel position="bottom-right">
+          <CanvasPositionControls />
+        </Panel>
+      </BaseCanvas>
+    </ReactFlowProvider>
+  );
 };
 
 export const EmptyCanvas: Story = {
-  args: {
-    nodes: [],
-    edges: [],
-    nodeTypes: {},
-    edgeTypes: {},
-  },
+  render: () => <EmptyCanvasStory />,
+};
+
+// With Custom Children/Overlays
+const WithChildrenStory = () => {
+  const [showOverlay, setShowOverlay] = useState(true);
+  const [selectedNode, setSelectedNode] = useState<string | null>(null);
+
+  const handleNodeClick = useCallback((_: any, node: Node) => {
+    setSelectedNode(node.id);
+  }, []);
+
+  return (
+    <ReactFlowProvider>
+      <BaseCanvas nodes={enhancedNodes} edges={enhancedEdges} nodeTypes={nodeTypes} mode="view" onNodeClick={handleNodeClick}>
+        {showOverlay && (
+          <Panel position="top-right">
+            <Column
+              p={20}
+              gap={12}
+              style={{
+                color: "var(--color-foreground)",
+                backgroundColor: "var(--color-background-secondary)",
+                minWidth: 200,
+              }}
+            >
+              <Row justify="space-between" align="center">
+                <ApTypography variant={FontVariantToken.fontSizeH4Bold}>Node Inspector</ApTypography>
+                <ApButton size="small" variant="text" onClick={() => setShowOverlay(false)}>
+                  <ApIcon name="close" size="small" />
+                </ApButton>
+              </Row>
+
+              {selectedNode ? (
+                <Column gap={8}>
+                  <ApTypography variant={FontVariantToken.fontSizeS}>Selected: {selectedNode}</ApTypography>
+                  <ApButton size="small" label="View Details" onClick={() => alert(`Details for ${selectedNode}`)} />
+                </Column>
+              ) : (
+                <ApTypography variant={FontVariantToken.fontSizeS}>Click a node to inspect</ApTypography>
+              )}
+            </Column>
+          </Panel>
+        )}
+
+        {!showOverlay && (
+          <Panel position="top-right">
+            <ApButton size="small" onClick={() => setShowOverlay(true)}>
+              <ApIcon name="info" />
+            </ApButton>
+          </Panel>
+        )}
+
+        <Panel position="bottom-right">
+          <CanvasPositionControls />
+        </Panel>
+      </BaseCanvas>
+    </ReactFlowProvider>
+  );
 };
 
 export const WithChildren: Story = {
-  args: {
-    nodes: sampleNodes,
-    edges: sampleEdges,
-    nodeTypes: {},
-    mode: "view",
-    children: (
-      <Panel position="top-right">
-        <Column p={20} style={{ color: "var(--color-foreground)", backgroundColor: "var(--color-background-secondary)" }}>
-          <ApTypography variant={FontVariantToken.fontSizeH3Bold} style={{ marginBottom: 8 }}>
-            Custom Overlay
-          </ApTypography>
-          <ApTypography>This is custom content rendered as children</ApTypography>
-          <ApButton label="Click Me" onClick={() => alert("Button clicked!")} style={{ marginTop: 10 }} />
-        </Column>
-      </Panel>
-    ),
-  },
+  render: () => <WithChildrenStory />,
 };
 
 // Component with ref control for demonstrating ensure nodes in view
 const BaseCanvasWithNodeFocus = () => {
   const canvasRef = useRef<BaseCanvasRef>(null);
 
-  // Nodes spread across a larger area
-  const spreadNodes: Node[] = [
+  // Nodes spread across a larger area using BaseNode
+  const spreadNodes: Node<BaseNodeData>[] = [
     {
       id: "1",
       position: { x: 100, y: 100 },
-      data: { label: "Node 1" },
-      type: "default",
+      type: "baseNode",
+      data: {
+        icon: <ApIcon size="48px" name="location_on" color="var(--color-foreground-de-emp)" />,
+        label: "Node 1",
+        subLabel: "Top Left",
+        handleConfigurations: [
+          {
+            position: Position.Right,
+            handles: [{ id: "out", type: "source" }],
+          },
+        ],
+      },
     },
     {
       id: "2",
       position: { x: 800, y: 100 },
-      data: { label: "Node 2" },
-      type: "default",
+      type: "baseNode",
+      data: {
+        icon: <ApIcon size="48px" name="location_on" color="var(--color-foreground-de-emp)" />,
+        label: "Node 2",
+        subLabel: "Top Right",
+        handleConfigurations: [
+          {
+            position: Position.Left,
+            handles: [{ id: "out", type: "source" }],
+          },
+        ],
+      },
     },
     {
       id: "3",
       position: { x: 100, y: 600 },
-      data: { label: "Node 3" },
-      type: "default",
+      type: "baseNode",
+      data: {
+        icon: <ApIcon size="48px" name="location_on" color="var(--color-foreground-de-emp)" />,
+        label: "Node 3",
+        subLabel: "Bottom Left",
+        handleConfigurations: [
+          {
+            position: Position.Right,
+            handles: [{ id: "out", type: "source" }],
+          },
+        ],
+      },
     },
     {
       id: "4",
       position: { x: 800, y: 600 },
-      data: { label: "Node 4" },
-      type: "default",
+      type: "baseNode",
+      data: {
+        icon: <ApIcon size="48px" name="location_on" color="var(--color-foreground-de-emp)" />,
+        label: "Node 4",
+        subLabel: "Bottom Right",
+        handleConfigurations: [
+          {
+            position: Position.Left,
+            handles: [{ id: "out", type: "source" }],
+          },
+        ],
+      },
     },
     {
       id: "5",
       position: { x: 450, y: 350 },
-      data: { label: "Center Node" },
-      type: "default",
+      type: "baseNode",
+      data: {
+        icon: <ApIcon size="48px" name="hub" color="var(--color-foreground-de-emp)" />,
+        label: "Center Node",
+        subLabel: "Hub",
+        topRightAdornment: <ApIcon name="star" size="small" style={{ color: "gold" }} />,
+        handleConfigurations: [
+          {
+            position: Position.Top,
+            handles: [
+              { id: "in1", type: "target" },
+              { id: "in2", type: "target" },
+            ],
+          },
+          {
+            position: Position.Bottom,
+            handles: [
+              { id: "in3", type: "target" },
+              { id: "in4", type: "target" },
+            ],
+          },
+        ],
+      },
     },
   ];
 
   const edges: Edge[] = [
-    { id: "e1-5", source: "1", target: "5" },
-    { id: "e2-5", source: "2", target: "5" },
-    { id: "e3-5", source: "3", target: "5" },
-    { id: "e4-5", source: "4", target: "5" },
+    { id: "e1-5", source: "1", sourceHandle: "out", target: "5", targetHandle: "in1" },
+    { id: "e2-5", source: "2", sourceHandle: "out", target: "5", targetHandle: "in2" },
+    { id: "e3-5", source: "3", sourceHandle: "out", target: "5", targetHandle: "in3" },
+    { id: "e4-5", source: "4", sourceHandle: "out", target: "5", targetHandle: "in4" },
   ];
 
   return (
     <ReactFlowProvider>
       <div style={{ height: "100%", width: "100%", position: "relative" }}>
-        <BaseCanvas ref={canvasRef} nodes={spreadNodes} edges={edges} nodeTypes={{}} mode="view">
+        <BaseCanvas ref={canvasRef} nodes={spreadNodes} edges={edges} nodeTypes={nodeTypes} mode="view">
           <Panel position="top-left">
             <Column
               gap={8}
@@ -293,7 +708,7 @@ const BaseCanvasWithNodeFocus = () => {
                 backgroundColor: "var(--color-background-secondary)",
               }}
             >
-              <ApTypography variant={FontVariantToken.fontSizeH3Bold}>Focus Controls</ApTypography>
+              <ApTypography variant={FontVariantToken.fontSizeH4Bold}>Focus Controls</ApTypography>
               <ApButton size="small" label="Focus Node 1" onClick={() => canvasRef.current?.ensureNodesInView(["1"])} />
               <ApButton size="small" label="Focus Node 2" onClick={() => canvasRef.current?.ensureNodesInView(["2"])} />
               <ApButton size="small" label="Focus Nodes 3 & 4" onClick={() => canvasRef.current?.ensureNodesInView(["3", "4"])} />
@@ -307,6 +722,9 @@ const BaseCanvasWithNodeFocus = () => {
               />
             </Column>
           </Panel>
+          <Panel position="bottom-right">
+            <CanvasPositionControls orientation="vertical" />
+          </Panel>
         </BaseCanvas>
       </div>
     </ReactFlowProvider>
@@ -317,96 +735,81 @@ export const WithNodeFocusControls: Story = {
   render: () => <BaseCanvasWithNodeFocus />,
 };
 
-const BaseCanvasWithReactFlowAccess = () => {
-  const canvasRef = useRef<BaseCanvasRef>(null);
-  const [nodes, setNodes] = useState<Node[]>(sampleNodes);
-  const [edges, setEdges] = useState<Edge[]>(sampleEdges);
-
-  const onNodesChange = useCallback((changes: NodeChange[]) => setNodes((nds) => applyNodeChanges(changes, nds)), []);
-
-  const onEdgesChange = useCallback((changes: EdgeChange[]) => setEdges((eds) => applyEdgeChanges(changes, eds)), []);
-
-  const handleZoomIn = () => {
-    canvasRef.current?.reactFlow?.zoomIn();
-  };
-
-  const handleZoomOut = () => {
-    canvasRef.current?.reactFlow?.zoomOut();
-  };
-
-  const handleResetView = () => {
-    canvasRef.current?.reactFlow?.fitView();
-  };
-
-  const handleGetStats = () => {
-    const nodeCount = canvasRef.current?.reactFlow?.getNodes().length || 0;
-    const edgeCount = canvasRef.current?.reactFlow?.getEdges().length || 0;
-    const viewport = canvasRef.current?.reactFlow?.getViewport();
-    alert(`Nodes: ${nodeCount}, Edges: ${edgeCount}, Zoom: ${viewport?.zoom.toFixed(2)}`);
-  };
-
-  return (
-    <ReactFlowProvider>
-      <BaseCanvas ref={canvasRef} nodes={nodes} edges={edges} onNodesChange={onNodesChange} onEdgesChange={onEdgesChange} mode="view">
-        <Panel position="bottom-left">
-          <Column
-            gap={8}
-            p={20}
-            style={{
-              color: "var(--color-foreground)",
-              backgroundColor: "var(--color-background-secondary)",
-            }}
-          >
-            <ApTypography variant={FontVariantToken.fontSizeH3Bold}>ReactFlow Instance Access Demo</ApTypography>
-            <ApButton label="Zoom In" onClick={handleZoomIn} />
-            <ApButton label="Zoom Out" onClick={handleZoomOut} />
-            <ApButton label="Reset View" onClick={handleResetView} />
-            <ApButton label="Get Canvas Stats" onClick={handleGetStats} />
-          </Column>
-        </Panel>
-        <CanvasPositionControls />
-      </BaseCanvas>
-    </ReactFlowProvider>
-  );
-};
-
-export const WithReactFlowAccess: Story = {
-  render: () => <BaseCanvasWithReactFlowAccess />,
-};
-
 // Example demonstrating maintain nodes in view on resize
 const BaseCanvasWithMaintainNodesInView = () => {
-  const [nodes, setNodes] = useState<Node[]>([
+  const [nodes, setNodes] = useState<Node<BaseNodeData>[]>([
     {
       id: "important-1",
-      data: { label: "Important Node 1" },
       position: { x: 100, y: 100 },
-      type: "default",
+      type: "baseNode",
+      data: {
+        icon: <ApIcon size="48px" name="star" color="gold" />,
+        label: "Important Node 1",
+        subLabel: "Keep in view",
+        handleConfigurations: [
+          {
+            position: Position.Right,
+            handles: [{ id: "out", type: "source" }],
+          },
+        ],
+      },
     },
     {
       id: "important-2",
-      data: { label: "Important Node 2" },
       position: { x: 300, y: 100 },
-      type: "default",
+      type: "baseNode",
+      data: {
+        icon: <ApIcon size="48px" name="star" color="gold" />,
+        label: "Important Node 2",
+        subLabel: "Keep in view",
+        handleConfigurations: [
+          {
+            position: Position.Left,
+            handles: [{ id: "in", type: "target" }],
+          },
+          {
+            position: Position.Right,
+            handles: [{ id: "out", type: "source" }],
+          },
+        ],
+      },
     },
     {
       id: "other-1",
-      data: { label: "Other Node 1" },
       position: { x: 500, y: 200 },
-      type: "default",
+      type: "baseNode",
+      data: {
+        icon: <ApIcon size="48px" name="widgets" color="var(--color-foreground-de-emp)" />,
+        label: "Other Node 1",
+        handleConfigurations: [
+          {
+            position: Position.Left,
+            handles: [{ id: "in", type: "target" }],
+          },
+        ],
+      },
     },
     {
       id: "other-2",
-      data: { label: "Other Node 2" },
       position: { x: 100, y: 300 },
-      type: "default",
+      type: "baseNode",
+      data: {
+        icon: <ApIcon size="48px" name="widgets" color="var(--color-foreground-de-emp)" />,
+        label: "Other Node 2",
+        handleConfigurations: [
+          {
+            position: Position.Top,
+            handles: [{ id: "in", type: "target" }],
+          },
+        ],
+      },
     },
   ]);
 
   const [edges, setEdges] = useState<Edge[]>([
-    { id: "e1-2", source: "important-1", target: "important-2" },
-    { id: "e2-3", source: "important-2", target: "other-1" },
-    { id: "e1-4", source: "important-1", target: "other-2" },
+    { id: "e1-2", source: "important-1", sourceHandle: "out", target: "important-2", targetHandle: "in" },
+    { id: "e2-3", source: "important-2", sourceHandle: "out", target: "other-1", targetHandle: "in" },
+    { id: "e1-4", source: "important-1", sourceHandle: "out", target: "other-2", targetHandle: "in" },
   ]);
 
   const [maintainNodes, setMaintainNodes] = useState<string[] | undefined>(["important-1", "important-2"]);
@@ -448,7 +851,7 @@ const BaseCanvasWithMaintainNodesInView = () => {
   };
 
   return (
-    <Column h="100%" gap={8}>
+    <Column h="100%">
       <Column
         gap={8}
         p={20}
@@ -457,7 +860,7 @@ const BaseCanvasWithMaintainNodesInView = () => {
           backgroundColor: "var(--color-background-secondary)",
         }}
       >
-        <ApTypography variant={FontVariantToken.fontSizeH3Bold}>Maintain Nodes in View Demo</ApTypography>
+        <ApTypography variant={FontVariantToken.fontSizeH4Bold}>Maintain Nodes in View Demo</ApTypography>
         <ApTypography variant={FontVariantToken.fontSizeM}>Resize the container to see how important nodes stay in view</ApTypography>
         <ApTypography variant={FontVariantToken.fontSizeS} style={{ fontStyle: "italic" }}>
           Note: The zoom level is preserved while panning to keep nodes visible
@@ -483,7 +886,7 @@ const BaseCanvasWithMaintainNodesInView = () => {
       <div
         style={{
           flex: 1,
-          border: "2px solid var(--color-border)",
+          border: "1px solid var(--color-border)",
           transition: "all 0.3s ease",
           ...containerSize,
         }}
@@ -492,12 +895,15 @@ const BaseCanvasWithMaintainNodesInView = () => {
           <BaseCanvas
             nodes={nodes}
             edges={edges}
+            nodeTypes={nodeTypes}
             onNodesChange={onNodesChange}
             onEdgesChange={onEdgesChange}
             mode="view"
             maintainNodesInView={maintainNodes}
           >
-            <CanvasPositionControls />
+            <Panel position="bottom-right">
+              <CanvasPositionControls orientation="vertical" />
+            </Panel>
           </BaseCanvas>
         </ReactFlowProvider>
       </div>
