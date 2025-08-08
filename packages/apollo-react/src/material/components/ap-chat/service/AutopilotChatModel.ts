@@ -197,6 +197,7 @@ export enum AutopilotChatInterceptableEvent {
  * @property {string} ShouldShowLoadingMoreMessages - Emitted when loading more messages should be shown
  * @property {string} PrependOlderMessages - Emitted when older messages are prepended to the conversation
  * @property {string} ShowLoadingState - Emitted when the loading state should be shown
+ * @property {string} SetWaiting - Emitted when the waiting state should be set for the prompt box
  * @property {string} SetSuggestions - Emitted when the suggestions are set
  */
 export enum AutopilotChatInternalEvent {
@@ -212,6 +213,7 @@ export enum AutopilotChatInternalEvent {
     ShouldShowLoadingMoreMessages = 'shouldShowLoadingMoreMessages',
     PrependOlderMessages = 'prependOlderMessages',
     ShowLoadingState = 'showLoadingState',
+    SetWaiting = 'setWaiting',
     SetSuggestions = 'setSuggestions',
 }
 
