@@ -155,7 +155,7 @@ const enhancedNodes: Node<BaseNodeData>[] = [
       handleConfigurations: [
         {
           position: Position.Right,
-          handles: [{ id: "output", type: "source", label: "Output" }],
+          handles: [{ id: "output", type: "source", handleType: "output", label: "Output" }],
         },
       ],
     },
@@ -171,11 +171,11 @@ const enhancedNodes: Node<BaseNodeData>[] = [
       handleConfigurations: [
         {
           position: Position.Left,
-          handles: [{ id: "input", type: "target", label: "Input" }],
+          handles: [{ id: "input", type: "target", handleType: "input", label: "Input" }],
         },
         {
           position: Position.Right,
-          handles: [{ id: "output", type: "source", label: "Output" }],
+          handles: [{ id: "output", type: "source", handleType: "output", label: "Output" }],
         },
       ],
     },
@@ -192,13 +192,13 @@ const enhancedNodes: Node<BaseNodeData>[] = [
       handleConfigurations: [
         {
           position: Position.Left,
-          handles: [{ id: "input", type: "target", label: "Input" }],
+          handles: [{ id: "input", type: "target", handleType: "input", label: "Input" }],
         },
         {
           position: Position.Right,
           handles: [
-            { id: "valid", type: "source", label: "Valid" },
-            { id: "invalid", type: "source", label: "Invalid" },
+            { id: "valid", type: "source", handleType: "output", label: "Valid" },
+            { id: "invalid", type: "source", handleType: "output", label: "Invalid" },
           ],
         },
       ],
@@ -216,13 +216,13 @@ const enhancedNodes: Node<BaseNodeData>[] = [
         {
           position: Position.Left,
           handles: [
-            { id: "input1", type: "target", label: "Stream 1" },
-            { id: "input2", type: "target", label: "Stream 2" },
+            { id: "input1", type: "target", handleType: "input", label: "Stream 1" },
+            { id: "input2", type: "target", handleType: "input", label: "Stream 2" },
           ],
         },
         {
           position: Position.Right,
-          handles: [{ id: "output", type: "source", label: "Merged" }],
+          handles: [{ id: "output", type: "source", handleType: "output", label: "Merged" }],
         },
       ],
     },
@@ -240,11 +240,11 @@ const enhancedNodes: Node<BaseNodeData>[] = [
       handleConfigurations: [
         {
           position: Position.Left,
-          handles: [{ id: "input", type: "target", label: "Data In" }],
+          handles: [{ id: "input", type: "target", handleType: "input", label: "Data In" }],
         },
         {
           position: Position.Right,
-          handles: [{ id: "log", type: "source", label: "Logs" }],
+          handles: [{ id: "log", type: "source", handleType: "output", label: "Logs" }],
         },
       ],
     },
@@ -260,7 +260,7 @@ const enhancedNodes: Node<BaseNodeData>[] = [
       handleConfigurations: [
         {
           position: Position.Left,
-          handles: [{ id: "input", type: "target", label: "Events" }],
+          handles: [{ id: "input", type: "target", handleType: "input", label: "Events" }],
         },
       ],
     },
@@ -476,11 +476,11 @@ const EmptyCanvasStory = () => {
         handleConfigurations: [
           {
             position: Position.Left,
-            handles: [{ id: "input", type: "target", label: "In" }],
+            handles: [{ id: "input", type: "target", handleType: "input", label: "In" }],
           },
           {
             position: Position.Right,
-            handles: [{ id: "output", type: "source", label: "Out" }],
+            handles: [{ id: "output", type: "source", handleType: "output", label: "Out" }],
           },
         ],
       },
@@ -606,7 +606,7 @@ const BaseCanvasWithNodeFocus = () => {
         handleConfigurations: [
           {
             position: Position.Right,
-            handles: [{ id: "out", type: "source" }],
+            handles: [{ id: "out", type: "source", handleType: "output" }],
           },
         ],
       },
@@ -622,7 +622,7 @@ const BaseCanvasWithNodeFocus = () => {
         handleConfigurations: [
           {
             position: Position.Left,
-            handles: [{ id: "out", type: "source" }],
+            handles: [{ id: "out", type: "source", handleType: "output" }],
           },
         ],
       },
@@ -638,7 +638,7 @@ const BaseCanvasWithNodeFocus = () => {
         handleConfigurations: [
           {
             position: Position.Right,
-            handles: [{ id: "out", type: "source" }],
+            handles: [{ id: "out", type: "source", handleType: "output" }],
           },
         ],
       },
@@ -654,7 +654,7 @@ const BaseCanvasWithNodeFocus = () => {
         handleConfigurations: [
           {
             position: Position.Left,
-            handles: [{ id: "out", type: "source" }],
+            handles: [{ id: "out", type: "source", handleType: "output" }],
           },
         ],
       },
@@ -672,15 +672,15 @@ const BaseCanvasWithNodeFocus = () => {
           {
             position: Position.Top,
             handles: [
-              { id: "in1", type: "target" },
-              { id: "in2", type: "target" },
+              { id: "in1", type: "target", handleType: "input" },
+              { id: "in2", type: "target", handleType: "input" },
             ],
           },
           {
             position: Position.Bottom,
             handles: [
-              { id: "in3", type: "target" },
-              { id: "in4", type: "target" },
+              { id: "in3", type: "target", handleType: "input" },
+              { id: "in4", type: "target", handleType: "input" },
             ],
           },
         ],
@@ -749,7 +749,7 @@ const BaseCanvasWithMaintainNodesInView = () => {
         handleConfigurations: [
           {
             position: Position.Right,
-            handles: [{ id: "out", type: "source" }],
+            handles: [{ id: "out", type: "source", handleType: "output" }],
           },
         ],
       },
@@ -765,11 +765,11 @@ const BaseCanvasWithMaintainNodesInView = () => {
         handleConfigurations: [
           {
             position: Position.Left,
-            handles: [{ id: "in", type: "target" }],
+            handles: [{ id: "in", type: "target", handleType: "input" }],
           },
           {
             position: Position.Right,
-            handles: [{ id: "out", type: "source" }],
+            handles: [{ id: "out", type: "source", handleType: "output" }],
           },
         ],
       },
@@ -784,7 +784,7 @@ const BaseCanvasWithMaintainNodesInView = () => {
         handleConfigurations: [
           {
             position: Position.Left,
-            handles: [{ id: "in", type: "target" }],
+            handles: [{ id: "in", type: "target", handleType: "input" }],
           },
         ],
       },
@@ -799,7 +799,7 @@ const BaseCanvasWithMaintainNodesInView = () => {
         handleConfigurations: [
           {
             position: Position.Top,
-            handles: [{ id: "in", type: "target" }],
+            handles: [{ id: "in", type: "target", handleType: "input" }],
           },
         ],
       },

@@ -2,11 +2,24 @@ import { memo, useMemo, useState, useCallback } from "react";
 import { NodeProps, Position, useStore } from "@xyflow/react";
 import { Container, IconWrapper, TextContainer, Header, SubHeader, BadgeSlot } from "./BaseNode.styles";
 import { ButtonHandles } from "../ButtonHandle/ButtonHandle";
-import type { BaseNodeData } from "./BaseNode.types";
+import type { BaseNodeData, SingleHandleConfiguration, HandleConfiguration } from "./BaseNode.types";
+
+// Helper function to normalize handle configurations
+const normalizeHandleConfig = (config: HandleConfiguration | SingleHandleConfiguration): HandleConfiguration => {
+  if ('handle' in config) {
+    // Single handle configuration - wrap in array
+    return {
+      position: config.position,
+      handles: [config.handle],
+      visible: config.visible
+    };
+  }
+  return config;
+};
 
 const BaseNodeComponent = (props: NodeProps & { data: BaseNodeData }) => {
   const { data, selected, id } = props;
-  const { icon, label, subLabel, topLeftAdornment, topRightAdornment, bottomRightAdornment, bottomLeftAdornment, handleConfigurations } =
+  const { icon, label, subLabel, topLeftAdornment, topRightAdornment, bottomRightAdornment, bottomLeftAdornment, handleConfigurations, shape = "rectangular" } =
     data;
 
   const [isHovered, setIsHovered] = useState(false);
@@ -28,7 +41,10 @@ const BaseNodeComponent = (props: NodeProps & { data: BaseNodeData }) => {
     if (!handleConfigurations || !shouldShowHandles) {
       return false;
     }
-    return handleConfigurations.some((config) => config.position === Position.Bottom && config.handles.some((handle) => !!handle.label));
+    return handleConfigurations.some((config) => {
+      const normalizedConfig = normalizeHandleConfig(config as any);
+      return normalizedConfig.position === Position.Bottom && normalizedConfig.handles.some((handle) => !!handle.label);
+    });
   }, [handleConfigurations, shouldShowHandles]);
 
   const handleMouseEnter = useCallback(() => setIsHovered(true), []);
@@ -49,15 +65,17 @@ const BaseNodeComponent = (props: NodeProps & { data: BaseNodeData }) => {
     if (!handleConfigurations) return null;
 
     const elements = handleConfigurations.map((config) => {
-      const hasConnectedHandle = config.handles.some((h) => connectedHandleIds.has(h.id));
+      // Normalize the configuration to always work with arrays
+      const normalizedConfig = normalizeHandleConfig(config as any);
+      const hasConnectedHandle = normalizedConfig.handles.some((h) => connectedHandleIds.has(h.id));
       const isVisible = shouldShowHandles || hasConnectedHandle;
-      const finalVisible = isVisible && (config.visible ?? true);
+      const finalVisible = isVisible && (normalizedConfig.visible ?? true);
 
       return (
         <ButtonHandles
-          key={`${config.position}:${config.handles.map((h) => h.id).join(",")}`}
-          handles={config.handles}
-          position={config.position}
+          key={`${normalizedConfig.position}:${normalizedConfig.handles.map((h) => h.id).join(",")}`}
+          handles={normalizedConfig.handles}
+          position={normalizedConfig.position}
           selected={selected}
           visible={finalVisible}
         />
@@ -69,13 +87,13 @@ const BaseNodeComponent = (props: NodeProps & { data: BaseNodeData }) => {
 
   return (
     <div style={{ position: "relative" }} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
-      <Container selected={selected}>
-        {icon && <IconWrapper>{icon}</IconWrapper>}
+      <Container selected={selected} shape={shape}>
+        {icon && <IconWrapper shape={shape}>{icon}</IconWrapper>}
 
-        {topLeftAdornment && <BadgeSlot position="top-left">{topLeftAdornment}</BadgeSlot>}
-        {topRightAdornment && <BadgeSlot position="top-right">{topRightAdornment}</BadgeSlot>}
-        {bottomRightAdornment && <BadgeSlot position="bottom-right">{bottomRightAdornment}</BadgeSlot>}
-        {bottomLeftAdornment && <BadgeSlot position="bottom-left">{bottomLeftAdornment}</BadgeSlot>}
+        {topLeftAdornment && <BadgeSlot position="top-left" shape={shape}>{topLeftAdornment}</BadgeSlot>}
+        {topRightAdornment && <BadgeSlot position="top-right" shape={shape}>{topRightAdornment}</BadgeSlot>}
+        {bottomRightAdornment && <BadgeSlot position="bottom-right" shape={shape}>{bottomRightAdornment}</BadgeSlot>}
+        {bottomLeftAdornment && <BadgeSlot position="bottom-left" shape={shape}>{bottomLeftAdornment}</BadgeSlot>}
 
         {label && (
           <TextContainer hasBottomHandles={hasVisibleBottomHandlesWithLabels}>

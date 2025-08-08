@@ -1,13 +1,14 @@
 import styled from "@emotion/styled";
 import { css } from "@emotion/react";
+import { NodeShape } from "./BaseNode.types";
 
-export const Container = styled.div<{ selected?: boolean }>`
+export const Container = styled.div<{ selected?: boolean; shape?: NodeShape }>`
   position: relative;
   width: 100px;
   height: 100px;
   background: var(--color-background);
   border: 1.5px solid var(--color-border-de-emp);
-  border-radius: 8px;
+  border-radius: ${({ shape }) => shape === "circular" ? "50%" : "8px"};
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
@@ -28,14 +29,14 @@ export const Container = styled.div<{ selected?: boolean }>`
   }
 `;
 
-export const IconWrapper = styled.div`
+export const IconWrapper = styled.div<{ shape?: NodeShape }>`
   width: 72px;
   height: 72px;
   display: flex;
   align-items: center;
   justify-content: center;
   background: var(--color-background-secondary);
-  border-radius: 8px;
+  border-radius: ${({ shape }) => shape === "circular" ? "50%" : "8px"};
 
   svg {
     width: 24px;
@@ -78,7 +79,10 @@ export const SubHeader = styled.div`
   word-break: break-word;
 `;
 
-export const BadgeSlot = styled.div<{ position: "top-left" | "top-right" | "bottom-left" | "bottom-right" }>`
+export const BadgeSlot = styled.div<{ 
+  position: "top-left" | "top-right" | "bottom-left" | "bottom-right";
+  shape?: NodeShape;
+}>`
   display: flex;
   align-items: center;
   justify-content: center;
@@ -86,16 +90,17 @@ export const BadgeSlot = styled.div<{ position: "top-left" | "top-right" | "bott
   height: 20px;
   background: transparent;
   position: absolute;
-  ${({ position }) => {
+  ${({ position, shape }) => {
+    const offset = shape === "circular" ? "12px" : "6px";
     switch (position) {
       case "top-left":
-        return "top: 6px; left: 6px;";
+        return `top: ${offset}; left: ${offset};`;
       case "top-right":
-        return "top: 6px; right: 6px;";
+        return `top: ${offset}; right: ${offset};`;
       case "bottom-left":
-        return "bottom: 6px; left: 6px;";
+        return `bottom: ${offset}; left: ${offset};`;
       case "bottom-right":
-        return "bottom: 6px; right: 6px;";
+        return `bottom: ${offset}; right: ${offset};`;
     }
   }}
 `;
