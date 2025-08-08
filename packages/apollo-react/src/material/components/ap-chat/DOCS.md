@@ -79,7 +79,8 @@ const chatService = window.PortalShell.AutopilotChat;
 | `stopResponse()` | Stops the current streaming response, if applicable |
 | `setDefaultLoadingMessages(messages: string[], duration?: number)` | Sets the default loading messages and duration between switching messages |
 | `setLoadingMessage(message: string)` | Sets the loading message, overriding the default loading messages |
-| `setShowLoading(showLoading: boolean)` | Shows the loading message in the chat service. If this method is used, it overrides the default behavior from apollo. |
+| `setShowLoading(showLoading: boolean)` | Shows or hides the loading indicator in the chat service. When used, this method overrides the default automatic loading behavior from apollo (except for request), giving you manual control over when the loading state is displayed. |
+| `setWaiting(waiting: boolean)` | Sets the waiting state for the input prompt box. When set to true, users can still type in the input field but cannot send messages. This overrides the default automatic waiting behavior (except for equest), giving you manual control over when users can send messages. |
 | `setSuggestions(suggestions: AutopilotChatSuggestion[], sendOnClick?: boolean)` | Sets suggestions that appear in the chat interface. When `sendOnClick` is true, clicking a suggestion sends it immediately (defaults to the first run experience setting); otherwise it sets the prompt (see [AutopilotChatSuggestion](#autopilotchatsuggestion)) |
 | `getMessagesInGroup(groupId: string)` | Returns all messages that belong to the specified group ID |
 
@@ -120,6 +121,25 @@ const chatService = window.PortalShell.AutopilotChat;
 | `setError(error: string)` | Sets an error message to display in the chat interface |
 | `clearError()` | Clears the current error message |
 | `getError()` | Returns the current error message, if any |
+
+### Loading and Waiting States
+
+The chat service provides methods to control loading indicators and input availability. By default, the chat automatically manages these states based on message flow - showing loading when awaiting responses and disabling input during processing. However, you can override this automatic behavior for custom control:
+
+#### Manual Loading Control
+When you call `setShowLoading(true)` or `setShowLoading(false)`, you take manual control of the loading indicator. This overrides the default automatic loading behavior, meaning:
+- The chat will no longer automatically show loading when processing responses (it will only show it on request)
+- You must explicitly call `setShowLoading(false)` to hide the loading state
+
+#### Manual Waiting Control  
+When you call `setWaiting(true)` or `setWaiting(false)`, you take manual control of the message sending capability. This overrides the default automatic waiting behavior (except for request), meaning:
+- The chat will no longer automatically manage the send functionality during message processing
+- The send state will remain as you set it until you explicitly change it (or the user clicks stop response)
+- When `setWaiting(true)`: Users can type in the input field but cannot send messages
+- When `setWaiting(false)`: Users can both type and send messages normally
+- Useful for controlling when users can submit messages based on external conditions while still allowing them to compose their message
+
+**Important**: Once you use either of these methods, you are responsible for managing that state throughout the session. The automatic behavior will not resume until the chat is reinitialized.
 
 ### Feature Configuration
 
@@ -164,6 +184,8 @@ Subscribes to chat events and returns an unsubscribe function. The handler will 
 - `StopResponse`: When a response is stopped
 - `SetDefaultLoadingMessages`: When default messages is set
 - `SetLoadingMessage`: When a loading message is set
+- `SetShowLoading`: When the loading state is manually set
+- `SetWaiting`: When the waiting state is manually set for the input prompt
 - `SetFirstRunExperience`: When the first run experience is set
 - `SetDisabledFeatures`: When disabled features are set
 - `SetOverrideLabels`: When override labels are set

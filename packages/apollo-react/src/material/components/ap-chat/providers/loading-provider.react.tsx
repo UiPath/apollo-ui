@@ -30,6 +30,7 @@ export function AutopilotLoadingProvider({ children }: { children: React.ReactNo
     const [ isLoadingMoreMessages, setIsLoadingMoreMessages ] = React.useState<boolean>(false);
     const [ showLoading, setShowLoading ] = React.useState<boolean>(false);
     const disableDefaultShowLoadingBehaviorRef = React.useRef<boolean>(false);
+    const disableDefaultSetWaitingBehaviorRef = React.useRef<boolean>(false);
     const chatService = useChatService();
 
     React.useEffect(() => {
@@ -62,12 +63,22 @@ export function AutopilotLoadingProvider({ children }: { children: React.ReactNo
             },
         );
 
+        const unsubscribeSetWaiting = chatService.__internalService__.on(
+            AutopilotChatInternalEvent.SetWaiting,
+            (value: boolean) => {
+                disableDefaultSetWaitingBehaviorRef.current = true;
+
+                setWaitingResponse(value);
+            },
+        );
         // When conversation is set, check if last message is still pending more responses
         const unsubscribeSetConversation = chatService.on(AutopilotChatEvent.SetConversation, (conversation: AutopilotChatMessage[]) => {
             const lastMessage = conversation?.[conversation.length - 1];
 
             if (lastMessage?.role === AutopilotChatRole.Assistant) {
-                setWaitingResponse(!!lastMessage.shouldWaitForMoreMessages);
+                if (!disableDefaultSetWaitingBehaviorRef.current) {
+                    setWaitingResponse(!!lastMessage.shouldWaitForMoreMessages);
+                }
 
                 if (!disableDefaultShowLoadingBehaviorRef.current) {
                     setShowLoading(false);
@@ -81,7 +92,9 @@ export function AutopilotLoadingProvider({ children }: { children: React.ReactNo
         });
 
         const unsubscribeResponse = chatService.on(AutopilotChatEvent.Response, (message: AutopilotChatMessage) => {
-            setWaitingResponse(!!message.shouldWaitForMoreMessages);
+            if (!disableDefaultSetWaitingBehaviorRef.current) {
+                setWaitingResponse(!!message.shouldWaitForMoreMessages);
+            }
 
             if (!disableDefaultShowLoadingBehaviorRef.current) {
                 setShowLoading(false);
@@ -106,6 +119,7 @@ export function AutopilotLoadingProvider({ children }: { children: React.ReactNo
             unsubscribeSetIsLoadingMoreMessages();
             unsubscribeShouldShowLoadingMoreMessages();
             unsubscribeSetShowLoading();
+            unsubscribeSetWaiting();
             unsubscribeSetConversation();
         };
     }, [ chatService ]);

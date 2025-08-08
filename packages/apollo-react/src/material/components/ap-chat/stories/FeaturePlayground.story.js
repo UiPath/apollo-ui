@@ -46,6 +46,8 @@ export const FeaturePlayground = (args) => {
                             <ap-button id="set-loading-message" label="Loading Message" size="small" style="width: 100%;"></ap-button>
                             <ap-button id="set-error" label="Set Error" size="small" style="width: 100%;"></ap-button>
                             <ap-button id="clear-error" label="Clear Error" size="small" style="width: 100%;"></ap-button>
+                            <ap-checkbox id="set-waiting" label="Set Waiting"></ap-checkbox>
+                            <ap-checkbox id="set-show-loading" label="Set Show Loading"></ap-checkbox>
                         </div>
                     </div>
                     
@@ -222,6 +224,8 @@ FeaturePlayground.play = async ({
         paginatedMessages: canvasElement.querySelector('#paginated-messages'),
         waitForMoreMessages: canvasElement.querySelector('#wait-for-more-messages'),
         showLoadingState: canvasElement.querySelector('#show-loading-state'),
+        setWaiting: canvasElement.querySelector('#set-waiting'),
+        setShowLoading: canvasElement.querySelector('#set-show-loading'),
     };
 
     let chatOpen = true;
@@ -1161,4 +1165,13 @@ const results = await Promise.all(tasks);
             timestamp: new Date(Date.now() - 7200000).toISOString(),
         },
     ]);
+
+    // Set Waiting and Show Loading controls
+    controls.setWaiting?.addEventListener('valueChanged', () => {
+        chatService.setWaiting(controls.setWaiting.checked);
+    });
+
+    controls.setShowLoading?.addEventListener('valueChanged', () => {
+        chatService.setShowLoading(controls.setShowLoading.checked);
+    });
 };
