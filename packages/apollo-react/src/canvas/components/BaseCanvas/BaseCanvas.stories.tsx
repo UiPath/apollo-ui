@@ -1,7 +1,7 @@
 import { useCallback, useRef, useState } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { applyEdgeChanges, applyNodeChanges, BackgroundVariant, Panel, ReactFlowProvider, Position } from "@xyflow/react";
-import type { Edge, EdgeChange, Node, NodeChange } from "@xyflow/react";
+import { applyEdgeChanges, applyNodeChanges, BackgroundVariant, Panel, ReactFlowProvider, Position, addEdge } from "@xyflow/react";
+import type { Edge, EdgeChange, Node, NodeChange, Connection } from "@xyflow/react";
 import { FontVariantToken } from "@uipath/apollo-core";
 import { ApButton, ApTypography, ApIcon } from "@uipath/portal-shell-react";
 import { Column, Row } from "../../layouts";
@@ -11,18 +11,8 @@ import { BaseCanvasRef } from "./BaseCanvas.types";
 import { BaseNode } from "../BaseNode/BaseNode";
 import type { BaseNodeData } from "../BaseNode/BaseNode.types";
 
-// Wrapper component that provides ReactFlow context
-const BaseCanvasWithProvider = (props: any) => {
-  return (
-    <ReactFlowProvider>
-      <BaseCanvas {...props} />
-    </ReactFlowProvider>
-  );
-};
-
 const meta = {
   title: "Canvas/BaseCanvas",
-  component: BaseCanvasWithProvider,
   decorators: [
     (Story: any) => (
       <div style={{ height: "100vh", width: "100%" }}>
@@ -108,40 +98,11 @@ const meta = {
     onNodeDragStop: { control: false },
     onPaneClick: { control: false },
   },
-} satisfies Meta<typeof BaseCanvasWithProvider>;
+} satisfies Meta<typeof BaseCanvas>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-// Sample nodes and edges
-const sampleNodes: Node[] = [
-  {
-    id: "1",
-    position: { x: 100, y: 100 },
-    data: { label: "Node 1" },
-    type: "default",
-  },
-  {
-    id: "2",
-    position: { x: 300, y: 100 },
-    data: { label: "Node 2" },
-    type: "default",
-  },
-  {
-    id: "3",
-    position: { x: 200, y: 250 },
-    data: { label: "Node 3" },
-    type: "default",
-  },
-];
-
-const sampleEdges: Edge[] = [
-  { id: "e1-2", source: "1", target: "2" },
-  { id: "e1-3", source: "1", target: "3" },
-  { id: "e2-3", source: "2", target: "3" },
-];
-
-// Enhanced nodes for Default story with BaseNode
 const enhancedNodes: Node<BaseNodeData>[] = [
   {
     id: "source",
@@ -328,6 +289,10 @@ const DefaultStory = () => {
     setEdges((eds) => applyEdgeChanges(changes, eds));
   }, []);
 
+  const onConnect = useCallback((connection: Connection) => {
+    setEdges((eds) => addEdge(connection, eds));
+  }, []);
+
   return (
     <ReactFlowProvider>
       <BaseCanvas
@@ -337,6 +302,7 @@ const DefaultStory = () => {
         mode="design"
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
+        onConnect={onConnect}
       >
         <Panel position="bottom-right">
           <CanvasPositionControls />
@@ -347,11 +313,6 @@ const DefaultStory = () => {
 };
 
 export const Default: Story = {
-  render: () => <DefaultStory />,
-};
-
-// Design Mode - demonstrates full editing capabilities
-export const DesignMode: Story = {
   render: () => <DefaultStory />,
 };
 
@@ -452,7 +413,7 @@ export const ReadOnlyMode: Story = {
 
 // Empty Canvas with add node capability
 const EmptyCanvasStory = () => {
-  const [nodes, setNodes] = useState<Node<BaseNodeData>>([]);
+  const [nodes, setNodes] = useState<Node<BaseNodeData>[]>([]);
   const [edges, setEdges] = useState<Edge[]>([]);
   const [nodeCount, setNodeCount] = useState(0);
 
@@ -462,6 +423,10 @@ const EmptyCanvasStory = () => {
 
   const onEdgesChange = useCallback((changes: EdgeChange[]) => {
     setEdges((eds) => applyEdgeChanges(changes, eds));
+  }, []);
+
+  const onConnect = useCallback((connection: Connection) => {
+    setEdges((eds) => addEdge(connection, eds));
   }, []);
 
   const addNode = () => {
@@ -504,6 +469,7 @@ const EmptyCanvasStory = () => {
         mode="design"
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
+        onConnect={onConnect}
       >
         <Panel position="top-left">
           <Column gap={8} p={16} style={{ color: "var(--color-foreground)", backgroundColor: "var(--color-background-secondary)" }}>

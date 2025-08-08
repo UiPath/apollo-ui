@@ -8,7 +8,7 @@ export const Container = styled.div<{ selected?: boolean; shape?: NodeShape }>`
   height: 100px;
   background: var(--color-background);
   border: 1.5px solid var(--color-border-de-emp);
-  border-radius: ${({ shape }) => shape === "circular" ? "50%" : "8px"};
+  border-radius: ${({ shape }) => (shape === "circular" ? "50%" : "8px")};
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
@@ -36,7 +36,7 @@ export const IconWrapper = styled.div<{ shape?: NodeShape }>`
   align-items: center;
   justify-content: center;
   background: var(--color-background-secondary);
-  border-radius: ${({ shape }) => shape === "circular" ? "50%" : "8px"};
+  border-radius: ${({ shape }) => (shape === "circular" ? "50%" : "8px")};
 
   svg {
     width: 24px;
@@ -53,7 +53,7 @@ export const IconWrapper = styled.div<{ shape?: NodeShape }>`
 export const TextContainer = styled.div<{ hasBottomHandles?: boolean }>`
   position: absolute;
   bottom: ${(props) => (props.hasBottomHandles ? "-40px" : "-8px")};
-  width: 100%;
+  width: 150%;
   transform: translateY(100%);
   display: flex;
   flex-direction: column;
@@ -79,7 +79,7 @@ export const SubHeader = styled.div`
   word-break: break-word;
 `;
 
-export const BadgeSlot = styled.div<{ 
+export const BadgeSlot = styled.div<{
   position: "top-left" | "top-right" | "bottom-left" | "bottom-right";
   shape?: NodeShape;
 }>`

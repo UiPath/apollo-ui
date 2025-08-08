@@ -13,7 +13,7 @@ const ArtifactNodeComponent = (props: NodeProps & { data: ArtifactNodeData }) =>
   // Simply pass through to BaseNode with shape forced to circular
   const enhancedData = {
     ...props.data,
-    shape: "circular" as const
+    shape: "circular" as const,
   };
 
   return <BaseNode {...props} data={enhancedData} />;

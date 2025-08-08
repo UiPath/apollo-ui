@@ -1,17 +1,18 @@
-import { memo, useMemo, useState, useCallback } from "react";
+import { memo, useMemo, useState, useCallback, useEffect } from "react";
 import { NodeProps, Position, useStore } from "@xyflow/react";
 import { Container, IconWrapper, TextContainer, Header, SubHeader, BadgeSlot } from "./BaseNode.styles";
 import { ButtonHandles } from "../ButtonHandle/ButtonHandle";
+import { NodeContextMenu } from "../NodeContextMenu";
 import type { BaseNodeData, SingleHandleConfiguration, HandleConfiguration } from "./BaseNode.types";
 
 // Helper function to normalize handle configurations
 const normalizeHandleConfig = (config: HandleConfiguration | SingleHandleConfiguration): HandleConfiguration => {
-  if ('handle' in config) {
+  if ("handle" in config) {
     // Single handle configuration - wrap in array
     return {
       position: config.position,
       handles: [config.handle],
-      visible: config.visible
+      visible: config.visible,
     };
   }
   return config;
@@ -19,8 +20,18 @@ const normalizeHandleConfig = (config: HandleConfiguration | SingleHandleConfigu
 
 const BaseNodeComponent = (props: NodeProps & { data: BaseNodeData }) => {
   const { data, selected, id } = props;
-  const { icon, label, subLabel, topLeftAdornment, topRightAdornment, bottomRightAdornment, bottomLeftAdornment, handleConfigurations, shape = "rectangular" } =
-    data;
+  const {
+    icon,
+    label,
+    subLabel,
+    topLeftAdornment,
+    topRightAdornment,
+    bottomRightAdornment,
+    bottomLeftAdornment,
+    handleConfigurations,
+    shape = "square",
+    menuItems,
+  } = data;
 
   const [isHovered, setIsHovered] = useState(false);
   const { edges, isConnecting } = useStore(
@@ -28,7 +39,6 @@ const BaseNodeComponent = (props: NodeProps & { data: BaseNodeData }) => {
     (a, b) => a.edges === b.edges && a.isConnecting === b.isConnecting
   );
 
-  // Check if node has any connections
   const hasConnections = useMemo(() => edges?.some((edge) => edge.source === id || edge.target === id) ?? false, [edges, id]);
 
   // Determine if handles should be visible
@@ -50,7 +60,6 @@ const BaseNodeComponent = (props: NodeProps & { data: BaseNodeData }) => {
   const handleMouseEnter = useCallback(() => setIsHovered(true), []);
   const handleMouseLeave = useCallback(() => setIsHovered(false), []);
 
-  // Precompute connected handle ids for this node for O(1) lookup
   const connectedHandleIds = useMemo(() => {
     const ids = new Set<string>();
     if (!edges) return ids;
@@ -65,7 +74,6 @@ const BaseNodeComponent = (props: NodeProps & { data: BaseNodeData }) => {
     if (!handleConfigurations) return null;
 
     const elements = handleConfigurations.map((config) => {
-      // Normalize the configuration to always work with arrays
       const normalizedConfig = normalizeHandleConfig(config as any);
       const hasConnectedHandle = normalizedConfig.handles.some((h) => connectedHandleIds.has(h.id));
       const isVisible = shouldShowHandles || hasConnectedHandle;
@@ -90,10 +98,26 @@ const BaseNodeComponent = (props: NodeProps & { data: BaseNodeData }) => {
       <Container selected={selected} shape={shape}>
         {icon && <IconWrapper shape={shape}>{icon}</IconWrapper>}
 
-        {topLeftAdornment && <BadgeSlot position="top-left" shape={shape}>{topLeftAdornment}</BadgeSlot>}
-        {topRightAdornment && <BadgeSlot position="top-right" shape={shape}>{topRightAdornment}</BadgeSlot>}
-        {bottomRightAdornment && <BadgeSlot position="bottom-right" shape={shape}>{bottomRightAdornment}</BadgeSlot>}
-        {bottomLeftAdornment && <BadgeSlot position="bottom-left" shape={shape}>{bottomLeftAdornment}</BadgeSlot>}
+        {topLeftAdornment && (
+          <BadgeSlot position="top-left" shape={shape}>
+            {topLeftAdornment}
+          </BadgeSlot>
+        )}
+        {topRightAdornment && (
+          <BadgeSlot position="top-right" shape={shape}>
+            {topRightAdornment}
+          </BadgeSlot>
+        )}
+        {bottomRightAdornment && (
+          <BadgeSlot position="bottom-right" shape={shape}>
+            {bottomRightAdornment}
+          </BadgeSlot>
+        )}
+        {bottomLeftAdornment && (
+          <BadgeSlot position="bottom-left" shape={shape}>
+            {bottomLeftAdornment}
+          </BadgeSlot>
+        )}
 
         {label && (
           <TextContainer hasBottomHandles={hasVisibleBottomHandlesWithLabels}>
@@ -101,6 +125,8 @@ const BaseNodeComponent = (props: NodeProps & { data: BaseNodeData }) => {
             {subLabel && <SubHeader>{subLabel}</SubHeader>}
           </TextContainer>
         )}
+
+        <NodeContextMenu menuItems={menuItems} isVisible={selected} />
       </Container>
       {handleElements}
     </div>

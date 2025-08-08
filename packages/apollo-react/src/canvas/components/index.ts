@@ -5,3 +5,4 @@ export * from "./ArtifactNode";
 export * from "./ButtonHandle/ButtonHandle";
 export * from "./CanvasPositionControls";
 export * from "./NodeInspector";
+export * from "./NodeContextMenu";
