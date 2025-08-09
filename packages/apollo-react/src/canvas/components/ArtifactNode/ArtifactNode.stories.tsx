@@ -1,13 +1,11 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState, useCallback } from "react";
 import { Node, Position, ReactFlowProvider, Edge, Panel, NodeChange, EdgeChange, applyNodeChanges, applyEdgeChanges } from "@xyflow/react";
-import { ApIcon, ApTypography } from "@uipath/portal-shell-react";
-import { FontVariantToken } from "@uipath/apollo-core";
+import { ApIcon } from "@uipath/portal-shell-react";
 import { BaseCanvas } from "../BaseCanvas/BaseCanvas";
 import { ArtifactNode } from "./ArtifactNode";
 import type { ArtifactNodeData } from "./ArtifactNode.types";
 import { CanvasPositionControls } from "../CanvasPositionControls";
-import { Column } from "../../layouts";
 
 const meta: Meta<typeof ArtifactNode> = {
   title: "Canvas/ArtifactNode",
@@ -36,75 +34,29 @@ export const Default: Story = {
       {
         id: "image-artifact",
         type: "artifactNode",
-        position: { x: 100, y: 100 },
+        position: { x: 200, y: 200 },
         data: {
-          icon: <ApIcon size="48px" name="image" color="var(--color-foreground-de-emp)" />,
+          icon: <ApIcon size="48px" name="image" variant="outlined" color="var(--color-foreground-de-emp)" />,
           label: "Header",
           subLabel: "Secondary header",
-          bottomRightAdornment: <ApIcon name="flash_on" size="small" color="var(--color-warning-icon)" />,
+          topLeftAdornment: (
+            <svg viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="12" fill="var(--color-background)" />
+              <circle cx="12" cy="12" r="10" fill="red" />
+            </svg>
+          ),
+          bottomRightAdornment: <ApIcon name="shield" variant="outlined" size="20px" color="var(--color-foreground-de-emp)" />,
           handleConfigurations: [
             {
               position: Position.Right,
               handle: { id: "output", type: "source", showButton: true },
-            },
-          ],
-        },
-      },
-      {
-        id: "document-artifact",
-        type: "artifactNode",
-        position: { x: 350, y: 100 },
-        data: {
-          icon: <ApIcon size="48px" name="description" color="var(--color-foreground-de-emp)" />,
-          label: "Document",
-          subLabel: "PDF File",
-          handleConfigurations: [
-            {
-              position: Position.Left,
-              handle: { id: "input", type: "target" },
-            },
-            {
-              position: Position.Right,
-              handle: { id: "output", type: "source", showButton: true },
-            },
-          ],
-        },
-      },
-      {
-        id: "data-artifact",
-        type: "artifactNode",
-        position: { x: 600, y: 100 },
-        data: {
-          icon: <ApIcon size="48px" name="dataset" color="var(--color-foreground-de-emp)" />,
-          label: "Dataset",
-          subLabel: "CSV Data",
-          topRightAdornment: <ApIcon name="check_circle" size="small" color="green" />,
-          handleConfigurations: [
-            {
-              position: Position.Left,
-              handle: { id: "input", type: "target" },
             },
           ],
         },
       },
     ];
 
-    const initialEdges: Edge[] = [
-      {
-        id: "e1-2",
-        source: "image-artifact",
-        sourceHandle: "output",
-        target: "document-artifact",
-        targetHandle: "input",
-      },
-      {
-        id: "e2-3",
-        source: "document-artifact",
-        sourceHandle: "output",
-        target: "data-artifact",
-        targetHandle: "input",
-      },
-    ];
+    const initialEdges: Edge[] = [];
 
     const [nodes, setNodes] = useState<Node[]>(initialNodes);
     const [edges, setEdges] = useState<Edge[]>(initialEdges);
@@ -130,19 +82,6 @@ export const Default: Story = {
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
       >
-        <Panel position="top-center">
-          <Column
-            p={12}
-            style={{
-              color: "var(--color-foreground)",
-              backgroundColor: "var(--color-background-secondary)",
-              borderRadius: 4,
-            }}
-          >
-            <ApTypography variant={FontVariantToken.fontSizeH4Bold}>Artifact Nodes</ApTypography>
-            <ApTypography variant={FontVariantToken.fontSizeS}>Circular nodes with single handles per position</ApTypography>
-          </Column>
-        </Panel>
         <Panel position="bottom-right">
           <CanvasPositionControls />
         </Panel>
@@ -254,19 +193,6 @@ export const ArtifactTypes: Story = {
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
       >
-        <Panel position="top-center">
-          <Column
-            p={12}
-            style={{
-              color: "var(--color-foreground)",
-              backgroundColor: "var(--color-background-secondary)",
-              borderRadius: 4,
-            }}
-          >
-            <ApTypography variant={FontVariantToken.fontSizeH4Bold}>Artifact Types</ApTypography>
-            <ApTypography variant={FontVariantToken.fontSizeS}>Different artifact node configurations</ApTypography>
-          </Column>
-        </Panel>
         <Panel position="bottom-right">
           <CanvasPositionControls />
         </Panel>
@@ -429,19 +355,6 @@ export const ConnectedFlow: Story = {
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
       >
-        <Panel position="top-center">
-          <Column
-            p={12}
-            style={{
-              color: "var(--color-foreground)",
-              backgroundColor: "var(--color-background-secondary)",
-              borderRadius: 4,
-            }}
-          >
-            <ApTypography variant={FontVariantToken.fontSizeH4Bold}>Artifact Processing Flow</ApTypography>
-            <ApTypography variant={FontVariantToken.fontSizeS}>Connected artifact nodes with validation</ApTypography>
-          </Column>
-        </Panel>
         <Panel position="bottom-right">
           <CanvasPositionControls />
         </Panel>

@@ -3,7 +3,7 @@ import { Position } from "@xyflow/react";
 import { ButtonHandleConfig } from "../ButtonHandle/ButtonHandle";
 import { NodeMenuItem } from "../NodeContextMenu/NodeContextMenu.types";
 
-export type NodeShape = "square" | "circular";
+export type NodeShape = "square" | "circular" | "rectangle";
 
 export interface HandleConfiguration {
   position: Position;

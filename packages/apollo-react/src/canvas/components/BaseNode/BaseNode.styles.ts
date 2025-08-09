@@ -2,18 +2,23 @@ import styled from "@emotion/styled";
 import { css } from "@emotion/react";
 import { NodeShape } from "./BaseNode.types";
 
-export const Container = styled.div<{ selected?: boolean; shape?: NodeShape }>`
+export const BaseContainer = styled.div<{ selected?: boolean; shape?: NodeShape }>`
   position: relative;
-  width: 100px;
+  width: ${({ shape }) => (shape === "rectangle" ? "320px" : "100px")};
   height: 100px;
   background: var(--color-background);
   border: 1.5px solid var(--color-border-de-emp);
-  border-radius: ${({ shape }) => (shape === "circular" ? "50%" : "8px")};
+  border-radius: ${({ shape }) => {
+    if (shape === "circular") return "50%";
+    return "8px";
+  }};
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   display: flex;
-  flex-direction: column;
+  flex-direction: ${({ shape }) => (shape === "rectangle" ? "row" : "column")};
   align-items: center;
-  justify-content: center;
+  justify-content: ${({ shape }) => (shape === "rectangle" ? "flex-start" : "center")};
+  gap: ${({ shape }) => (shape === "rectangle" ? "12px" : "0")};
+  padding: ${({ shape }) => (shape === "rectangle" ? "16px" : "0")};
   cursor: pointer;
   transition: all 0.2s ease;
 
@@ -29,14 +34,17 @@ export const Container = styled.div<{ selected?: boolean; shape?: NodeShape }>`
   }
 `;
 
-export const IconWrapper = styled.div<{ shape?: NodeShape }>`
+export const BaseIconWrapper = styled.div<{ shape?: NodeShape }>`
   width: 72px;
   height: 72px;
   display: flex;
   align-items: center;
   justify-content: center;
   background: var(--color-background-secondary);
-  border-radius: ${({ shape }) => (shape === "circular" ? "50%" : "8px")};
+  border-radius: ${({ shape }) => {
+    if (shape === "circular") return "50%";
+    return "8px";
+  }};
 
   svg {
     width: 24px;
@@ -50,36 +58,57 @@ export const IconWrapper = styled.div<{ shape?: NodeShape }>`
   }
 `;
 
-export const TextContainer = styled.div<{ hasBottomHandles?: boolean }>`
-  position: absolute;
-  bottom: ${(props) => (props.hasBottomHandles ? "-40px" : "-8px")};
-  width: 150%;
-  transform: translateY(100%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  z-index: 10;
-  transition: bottom 0.2s ease-in-out;
+export const BaseTextContainer = styled.div<{ hasBottomHandles?: boolean; shape?: NodeShape }>`
+  ${({ shape, hasBottomHandles }) =>
+    shape === "rectangle"
+      ? css`
+          flex: 1;
+          min-width: 0;
+          display: flex;
+          flex-direction: column;
+          align-items: flex-start;
+          text-align: left;
+        `
+      : css`
+          position: absolute;
+          bottom: ${hasBottomHandles ? "-40px" : "-8px"};
+          width: 150%;
+          transform: translateY(100%);
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          text-align: center;
+          z-index: 10;
+          transition: bottom 0.2s ease-in-out;
+        `}
 `;
 
-export const Header = styled.div`
+export const BaseHeader = styled.div<{ shape?: NodeShape }>`
   font-weight: 600;
   font-size: 13px;
   color: var(--color-foreground);
   line-height: 1.4;
   margin-bottom: 2px;
-  word-break: break-word;
+  ${({ shape }) =>
+    shape === "rectangle"
+      ? css`
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        `
+      : css`
+          word-break: break-word;
+        `}
 `;
 
-export const SubHeader = styled.div`
+export const BaseSubHeader = styled.div`
   font-size: 11px;
   color: var(--color-foreground-de-emp);
   line-height: 1.3;
   word-break: break-word;
 `;
 
-export const BadgeSlot = styled.div<{
+export const BaseBadgeSlot = styled.div<{
   position: "top-left" | "top-right" | "bottom-left" | "bottom-right";
   shape?: NodeShape;
 }>`

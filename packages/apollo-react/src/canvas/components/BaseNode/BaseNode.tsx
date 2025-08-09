@@ -1,6 +1,6 @@
 import { memo, useMemo, useState, useCallback, useEffect } from "react";
 import { NodeProps, Position, useStore } from "@xyflow/react";
-import { Container, IconWrapper, TextContainer, Header, SubHeader, BadgeSlot } from "./BaseNode.styles";
+import { BaseContainer, BaseIconWrapper, BaseTextContainer, BaseHeader, BaseSubHeader, BaseBadgeSlot } from "./BaseNode.styles";
 import { ButtonHandles } from "../ButtonHandle/ButtonHandle";
 import { NodeContextMenu } from "../NodeContextMenu";
 import type { BaseNodeData, SingleHandleConfiguration, HandleConfiguration } from "./BaseNode.types";
@@ -95,39 +95,39 @@ const BaseNodeComponent = (props: NodeProps & { data: BaseNodeData }) => {
 
   return (
     <div style={{ position: "relative" }} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
-      <Container selected={selected} shape={shape}>
-        {icon && <IconWrapper shape={shape}>{icon}</IconWrapper>}
+      <BaseContainer selected={selected} shape={shape}>
+        {icon && <BaseIconWrapper shape={shape}>{icon}</BaseIconWrapper>}
 
         {topLeftAdornment && (
-          <BadgeSlot position="top-left" shape={shape}>
+          <BaseBadgeSlot position="top-left" shape={shape}>
             {topLeftAdornment}
-          </BadgeSlot>
+          </BaseBadgeSlot>
         )}
         {topRightAdornment && (
-          <BadgeSlot position="top-right" shape={shape}>
+          <BaseBadgeSlot position="top-right" shape={shape}>
             {topRightAdornment}
-          </BadgeSlot>
+          </BaseBadgeSlot>
         )}
         {bottomRightAdornment && (
-          <BadgeSlot position="bottom-right" shape={shape}>
+          <BaseBadgeSlot position="bottom-right" shape={shape}>
             {bottomRightAdornment}
-          </BadgeSlot>
+          </BaseBadgeSlot>
         )}
         {bottomLeftAdornment && (
-          <BadgeSlot position="bottom-left" shape={shape}>
+          <BaseBadgeSlot position="bottom-left" shape={shape}>
             {bottomLeftAdornment}
-          </BadgeSlot>
+          </BaseBadgeSlot>
         )}
 
         {label && (
-          <TextContainer hasBottomHandles={hasVisibleBottomHandlesWithLabels}>
-            <Header>{label}</Header>
-            {subLabel && <SubHeader>{subLabel}</SubHeader>}
-          </TextContainer>
+          <BaseTextContainer hasBottomHandles={hasVisibleBottomHandlesWithLabels} shape={shape}>
+            <BaseHeader shape={shape}>{label}</BaseHeader>
+            {subLabel && <BaseSubHeader>{subLabel}</BaseSubHeader>}
+          </BaseTextContainer>
         )}
 
         <NodeContextMenu menuItems={menuItems} isVisible={selected} />
-      </Container>
+      </BaseContainer>
       {handleElements}
     </div>
   );
