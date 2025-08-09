@@ -4,7 +4,7 @@ import { applyEdgeChanges, applyNodeChanges, Panel, ReactFlowProvider } from "@x
 import type { Edge, EdgeChange, Node, NodeChange } from "@xyflow/react";
 import { FontVariantToken } from "@uipath/apollo-core";
 import { ApTypography } from "@uipath/portal-shell-react";
-import { Column } from "../layouts";
+import { Column } from "@uipath/uix-core";
 import { BaseCanvas } from "./BaseCanvas/BaseCanvas";
 import { NodeInspector } from "./NodeInspector";
 

@@ -47,8 +47,8 @@ export const BaseIconWrapper = styled.div<{ shape?: NodeShape }>`
   }};
 
   svg {
-    width: 24px;
-    height: 24px;
+    width: 32px;
+    height: 32px;
   }
 
   img {

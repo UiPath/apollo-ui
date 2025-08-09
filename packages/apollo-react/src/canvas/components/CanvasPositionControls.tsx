@@ -1,7 +1,7 @@
 import { memo, useCallback } from "react";
 import { useReactFlow } from "@xyflow/react";
 import { ApIcon, ApIconButton, ApTooltip } from "@uipath/portal-shell-react";
-import { Column, Row } from "../layouts";
+import { Column, Row } from "@uipath/uix-core";
 
 export interface CanvasPositionControlsProps {
   orientation?: "horizontal" | "vertical";

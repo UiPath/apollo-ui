@@ -7,6 +7,7 @@ import { BaseNode } from "../BaseNode/BaseNode";
 import { AgentNode } from "./AgentNode";
 import { ArtifactNode } from "../ArtifactNode/ArtifactNode";
 import { CanvasPositionControls } from "../CanvasPositionControls";
+import { Icons } from "@uipath/uix-core";
 
 const meta: Meta<typeof AgentNode> = {
   title: "Canvas/AgentNode",
@@ -61,7 +62,7 @@ export const Default: Story = {
         type: "artifactNode",
         position: { x: 200, y: 450 },
         data: {
-          icon: <ApIcon size="48px" name="model_training" color="var(--color-foreground-de-emp)" />,
+          icon: <Icons.OpenAIIcon w={48} h={48} />,
           label: "gpt-4o-2024-11-20 Community agents",
           handleConfigurations: [
             {

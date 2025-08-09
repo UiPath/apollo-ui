@@ -4,7 +4,7 @@ import { applyEdgeChanges, applyNodeChanges, BackgroundVariant, Panel, ReactFlow
 import type { Edge, EdgeChange, Node, NodeChange, Connection } from "@xyflow/react";
 import { FontVariantToken } from "@uipath/apollo-core";
 import { ApButton, ApTypography, ApIcon } from "@uipath/portal-shell-react";
-import { Column, Row } from "../../layouts";
+import { Column, Row } from "@uipath/uix-core";
 import { CanvasPositionControls } from "../CanvasPositionControls";
 import { BaseCanvas } from "./BaseCanvas";
 import { BaseCanvasRef } from "./BaseCanvas.types";

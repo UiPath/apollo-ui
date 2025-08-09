@@ -1,5 +1,5 @@
 import { type Node, useNodes, useReactFlow, ViewportPortal, type XYPosition } from "@xyflow/react";
-import { Column, Row } from "../layouts";
+import { Column, Row } from "@uipath/uix-core";
 
 type NodeInfoProps = {
   id: string;

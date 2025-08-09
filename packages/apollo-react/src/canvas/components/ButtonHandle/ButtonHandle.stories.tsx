@@ -3,7 +3,7 @@ import { Node, Position, ReactFlowProvider, useNodesState, useEdgesState, Edge, 
 import { BaseCanvas } from "../BaseCanvas/BaseCanvas";
 import { type ButtonHandleConfig, ButtonHandles } from "./ButtonHandle";
 import { ApIcon, ApTypography } from "@uipath/portal-shell-react";
-import { Column, Row } from "../../layouts";
+import { Column, Row } from "@uipath/uix-core";
 import { FontVariantToken } from "@uipath/apollo-core";
 import { BaseNode } from "../BaseNode/BaseNode";
 import type { BaseNodeData } from "../BaseNode/BaseNode.types";
