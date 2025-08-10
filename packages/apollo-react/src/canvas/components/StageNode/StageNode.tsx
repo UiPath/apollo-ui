@@ -1,5 +1,5 @@
 import { memo, useMemo, useState, useCallback } from "react";
-import { NodeProps, useStore } from "@xyflow/react";
+import { NodeProps, useStore, Position } from "@xyflow/react";
 import {
   StageContainer,
   StageHeader,
@@ -13,7 +13,7 @@ import {
   StageParallelLabel,
   StageParallelBracket,
 } from "./StageNode.styles";
-import { ButtonHandles } from "../ButtonHandle/ButtonHandle";
+import { StageHandle } from "./StageHandle";
 import { NodeContextMenu } from "../NodeContextMenu";
 import type { StageNodeData } from "./StageNode.types";
 import { ApLink } from "@uipath/portal-shell-react";
@@ -29,7 +29,7 @@ const ProcessNodeIcon = () => (
 
 const StageNodeComponent = (props: NodeProps & { data: StageNodeData }) => {
   const { data, selected, id } = props;
-  const { title, processes = [], onAddProcess, addProcessLabel = "Add process", handleConfigurations, menuItems } = data;
+  const { title, processes = [], onAddProcess, addProcessLabel = "Add process", menuItems } = data;
 
   const [isHovered, setIsHovered] = useState(false);
   const { edges, isConnecting } = useStore(
@@ -45,36 +45,6 @@ const StageNodeComponent = (props: NodeProps & { data: StageNodeData }) => {
 
   const handleMouseEnter = useCallback(() => setIsHovered(true), []);
   const handleMouseLeave = useCallback(() => setIsHovered(false), []);
-
-  const connectedHandleIds = useMemo(() => {
-    const ids = new Set<string>();
-    if (!edges) return ids;
-    for (const edge of edges) {
-      if (edge.source === id && edge.sourceHandle) ids.add(edge.sourceHandle);
-      if (edge.target === id && edge.targetHandle) ids.add(edge.targetHandle);
-    }
-    return ids;
-  }, [edges, id]);
-
-  const handleElements = useMemo(() => {
-    if (!handleConfigurations) return null;
-
-    return handleConfigurations.map((config) => {
-      const hasConnectedHandle = config.handles.some((h) => connectedHandleIds.has(h.id));
-      const isVisible = shouldShowHandles || hasConnectedHandle;
-      const finalVisible = isVisible && (config.visible ?? true);
-
-      return (
-        <ButtonHandles
-          key={`${config.position}:${config.handles.map((h) => h.id).join(",")}`}
-          handles={config.handles}
-          position={config.position}
-          selected={selected}
-          visible={finalVisible}
-        />
-      );
-    });
-  }, [handleConfigurations, selected, shouldShowHandles, connectedHandleIds]);
 
   const shouldShowMenu = useMemo(() => {
     return menuItems && menuItems.length > 0 && (selected || isHovered);
@@ -117,7 +87,8 @@ const StageNodeComponent = (props: NodeProps & { data: StageNodeData }) => {
 
         {menuItems && <NodeContextMenu menuItems={menuItems} isVisible={shouldShowMenu} />}
       </StageContainer>
-      {handleElements}
+      <StageHandle id="input" type="target" position={Position.Left} isVisible={shouldShowHandles} />
+      <StageHandle id="output" type="source" position={Position.Right} isVisible={shouldShowHandles} />
     </div>
   );
 };

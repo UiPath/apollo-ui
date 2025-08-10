@@ -49,6 +49,8 @@ const BaseCanvasInnerComponent = <NodeType extends Node = Node, EdgeType extends
     // Additional ReactFlow props
     proOptions = BASE_CANVAS_DEFAULTS.pro,
     connectionMode = ConnectionMode.Loose,
+    connectionLineComponent,
+    connectionLineStyle,
     deleteKeyCode = null,
     selectNodesOnDrag = true,
     nodesDraggable = true,
@@ -110,6 +112,8 @@ const BaseCanvasInnerComponent = <NodeType extends Node = Node, EdgeType extends
       defaultViewport={defaultViewport}
       proOptions={proOptions}
       connectionMode={connectionMode}
+      connectionLineComponent={connectionLineComponent}
+      connectionLineStyle={connectionLineStyle}
       deleteKeyCode={isDesignMode ? deleteKeyCode : null}
       selectNodesOnDrag={isInteractive && selectNodesOnDrag}
       nodesDraggable={isDesignMode && nodesDraggable}

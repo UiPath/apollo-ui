@@ -2,8 +2,8 @@ import { BackgroundVariant } from "@xyflow/react";
 
 export const BASE_CANVAS_DEFAULTS = {
   zoom: {
-    min: 0.5,
-    max: 2,
+    min: 0.2,
+    max: 3,
     default: 1,
   },
   defaultViewport: {

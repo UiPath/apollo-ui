@@ -1,10 +1,12 @@
 import type { Meta, StoryObj } from "@storybook/react";
-import React, { useCallback } from "react";
-import { Panel, ReactFlowProvider, Position, useNodesState, useEdgesState, addEdge, Connection, Edge, MarkerType } from "@xyflow/react";
+import { useCallback } from "react";
+import { Panel, ReactFlowProvider, useNodesState, useEdgesState, addEdge, Connection, Edge, ConnectionMode } from "@xyflow/react";
 import { StageNode } from "./StageNode";
 import { StageNodeData, ProcessItem } from "./StageNode.types";
 import { BaseCanvas } from "../BaseCanvas";
 import { CanvasPositionControls } from "../CanvasPositionControls";
+import { StageEdge } from "./StageEdge";
+import { StageConnectionEdge } from "./StageConnectionEdge";
 
 const meta = {
   title: "Canvas/StageNode",
@@ -42,7 +44,13 @@ const meta = {
               onEdgesChange={onEdgesChange}
               onConnect={onConnect}
               nodeTypes={{ stage: StageNode }}
+              edgeTypes={{ stage: StageEdge }}
               mode="design"
+              connectionMode={ConnectionMode.Strict}
+              defaultEdgeOptions={{
+                type: "stage",
+              }}
+              connectionLineComponent={StageConnectionEdge}
             >
               <Panel position="bottom-right">
                 <CanvasPositionControls />
@@ -94,32 +102,9 @@ export const Default: Story = {
     title: "Processing",
     processes: sampleProcesses,
     onAddProcess: () => console.log("Add process clicked"),
-    handleConfigurations: [
-      {
-        position: Position.Left,
-        handles: [
-          {
-            id: "input-1",
-            type: "target" as const,
-            handleType: "input" as const,
-          },
-        ],
-      },
-      {
-        position: Position.Right,
-        handles: [
-          {
-            id: "output-1",
-            type: "source" as const,
-            handleType: "output" as const,
-          },
-        ],
-      },
-    ],
   },
 };
 
-// Loan Processing Workflow Story
 export const LoanProcessingWorkflow: Story = {
   name: "Loan Processing Workflow",
   parameters: {
@@ -128,23 +113,11 @@ export const LoanProcessingWorkflow: Story = {
       {
         id: "application",
         type: "stage",
-        position: { x: 50, y: 200 },
+        position: { x: 50, y: 100 },
         data: {
           title: "Application",
           processes: [[{ id: "1", label: "KYC and AML Checks" }], [{ id: "2", label: "Document Verification" }]],
           onAddProcess: () => console.log("Add process to Application"),
-          handleConfigurations: [
-            {
-              position: Position.Right,
-              handles: [
-                {
-                  id: "output",
-                  type: "source" as const,
-                  handleType: "output" as const,
-                },
-              ],
-            },
-          ],
         } as StageNodeData,
       },
       // Processing Stage
@@ -164,38 +137,6 @@ export const LoanProcessingWorkflow: Story = {
             [{ id: "5", label: "Processing Review" }],
           ],
           onAddProcess: () => console.log("Add process to Processing"),
-          handleConfigurations: [
-            {
-              position: Position.Left,
-              handles: [
-                {
-                  id: "input",
-                  type: "target" as const,
-                  handleType: "input" as const,
-                },
-              ],
-            },
-            {
-              position: Position.Right,
-              handles: [
-                {
-                  id: "output",
-                  type: "source" as const,
-                  handleType: "output" as const,
-                },
-              ],
-            },
-            {
-              position: Position.Bottom,
-              handles: [
-                {
-                  id: "reject",
-                  type: "source" as const,
-                  handleType: "output" as const,
-                },
-              ],
-            },
-          ],
         } as StageNodeData,
       },
       // Underwriting Stage
@@ -207,28 +148,6 @@ export const LoanProcessingWorkflow: Story = {
           title: "Underwriting",
           processes: [[{ id: "1", label: "Report Ordering" }], [{ id: "2", label: "Underwriting Verification" }]],
           onAddProcess: () => console.log("Add process to Underwriting"),
-          handleConfigurations: [
-            {
-              position: Position.Left,
-              handles: [
-                {
-                  id: "input",
-                  type: "target" as const,
-                  handleType: "input" as const,
-                },
-              ],
-            },
-            {
-              position: Position.Right,
-              handles: [
-                {
-                  id: "output",
-                  type: "source" as const,
-                  handleType: "output" as const,
-                },
-              ],
-            },
-          ],
         } as StageNodeData,
       },
       // Closing Stage
@@ -244,28 +163,6 @@ export const LoanProcessingWorkflow: Story = {
             [{ id: "3", label: "Generate Audit Report" }],
           ],
           onAddProcess: () => console.log("Add process to Closing"),
-          handleConfigurations: [
-            {
-              position: Position.Left,
-              handles: [
-                {
-                  id: "input",
-                  type: "target" as const,
-                  handleType: "input" as const,
-                },
-              ],
-            },
-            {
-              position: Position.Right,
-              handles: [
-                {
-                  id: "output",
-                  type: "source" as const,
-                  handleType: "output" as const,
-                },
-              ],
-            },
-          ],
         } as StageNodeData,
       },
       // Funding Stage
@@ -277,18 +174,6 @@ export const LoanProcessingWorkflow: Story = {
           title: "Funding",
           processes: [[{ id: "1", label: "Disperse Loan" }], [{ id: "2", label: "Generate Audit Report" }]],
           onAddProcess: () => console.log("Add process to Funding"),
-          handleConfigurations: [
-            {
-              position: Position.Left,
-              handles: [
-                {
-                  id: "input",
-                  type: "target" as const,
-                  handleType: "input" as const,
-                },
-              ],
-            },
-          ],
         } as StageNodeData,
       },
       // Rejected Stage
@@ -300,18 +185,6 @@ export const LoanProcessingWorkflow: Story = {
           title: "Rejected",
           processes: [[{ id: "1", label: "Customer Notification" }], [{ id: "2", label: "Generate Audit Report" }]],
           onAddProcess: () => console.log("Add process to Rejected"),
-          handleConfigurations: [
-            {
-              position: Position.Left,
-              handles: [
-                {
-                  id: "input",
-                  type: "target" as const,
-                  handleType: "input" as const,
-                },
-              ],
-            },
-          ],
         } as StageNodeData,
       },
       // Withdrawn Stage
@@ -323,18 +196,6 @@ export const LoanProcessingWorkflow: Story = {
           title: "Withdrawn",
           processes: [[{ id: "1", label: "Customer Notification" }], [{ id: "2", label: "Generate Audit Report" }]],
           onAddProcess: () => console.log("Add process to Withdrawn"),
-          handleConfigurations: [
-            {
-              position: Position.Top,
-              handles: [
-                {
-                  id: "input",
-                  type: "target" as const,
-                  handleType: "input" as const,
-                },
-              ],
-            },
-          ],
         } as StageNodeData,
       },
     ],
@@ -342,6 +203,7 @@ export const LoanProcessingWorkflow: Story = {
       // Main flow
       {
         id: "e1",
+        type: "stage",
         source: "application",
         sourceHandle: "output",
         target: "processing",
@@ -349,6 +211,7 @@ export const LoanProcessingWorkflow: Story = {
       },
       {
         id: "e2",
+        type: "stage",
         source: "processing",
         sourceHandle: "output",
         target: "underwriting",
@@ -356,6 +219,7 @@ export const LoanProcessingWorkflow: Story = {
       },
       {
         id: "e3",
+        type: "stage",
         source: "underwriting",
         sourceHandle: "output",
         target: "closing",
@@ -363,6 +227,7 @@ export const LoanProcessingWorkflow: Story = {
       },
       {
         id: "e4",
+        type: "stage",
         source: "closing",
         sourceHandle: "output",
         target: "funding",
@@ -371,8 +236,9 @@ export const LoanProcessingWorkflow: Story = {
       // Rejection flow
       {
         id: "e5",
+        type: "stage",
         source: "processing",
-        sourceHandle: "reject",
+        sourceHandle: "output",
         target: "rejected",
         targetHandle: "input",
         animated: true,
@@ -381,6 +247,7 @@ export const LoanProcessingWorkflow: Story = {
       // Withdrawal flow
       {
         id: "e6",
+        type: "stage",
         source: "application",
         sourceHandle: "output",
         target: "withdrawn",
