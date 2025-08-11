@@ -4,6 +4,47 @@ import { FloatingCanvasPanel } from "./FloatingCanvasPanel";
 import { ApTypography } from "@uipath/portal-shell-react";
 import { FontVariantToken } from "@uipath/apollo-core";
 
+function safeStringify(obj: any, indent = 2): string {
+  const seen = new WeakSet();
+
+  return JSON.stringify(
+    obj,
+    (key, value) => {
+      // Handle circular references
+      if (typeof value === "object" && value !== null) {
+        if (seen.has(value)) {
+          return "[Circular Reference]";
+        }
+        seen.add(value);
+      }
+
+      // Handle React elements
+      if (value && typeof value === "object" && "$$typeof" in value) {
+        const componentName = value.type?.name || value.type?.displayName || "React.Component";
+        return `[React Element: ${componentName}]`;
+      }
+
+      // Handle functions
+      if (typeof value === "function") {
+        return `[Function: ${value.name || "anonymous"}]`;
+      }
+
+      // Handle undefined (JSON.stringify skips undefined values)
+      if (value === undefined) {
+        return "[undefined]";
+      }
+
+      // Handle DOM elements
+      if (value instanceof HTMLElement) {
+        return `[HTMLElement: ${value.tagName}]`;
+      }
+
+      return value;
+    },
+    indent
+  );
+}
+
 type NodeInfoContentProps = {
   node: Node;
   position: XYPosition;
@@ -66,7 +107,7 @@ function NodeInfoContent({ node, position, absPosition, width, height }: NodeInf
               userSelect: "text",
             }}
           >
-            {typeof data === "string" ? data : JSON.stringify(data, null, 2)}
+            {typeof data === "string" ? data : safeStringify(data)}
           </pre>
         </Column>
       )}

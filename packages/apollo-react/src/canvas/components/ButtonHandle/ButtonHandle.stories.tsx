@@ -675,7 +675,7 @@ export const LogicFlow: Story = {
               borderRadius: 4,
             }}
           >
-            <ApTypography variant={FontVariantToken.fontSizeH4Bold}>Logic Flow Examples</ApTypography>
+            <ApTypography variant={FontVariantToken.fontSizeH3Bold}>Logic Flow Examples</ApTypography>
             <ApTypography variant={FontVariantToken.fontSizeS}>IF and SWITCH nodes with ButtonHandles</ApTypography>
           </Column>
         </Panel>

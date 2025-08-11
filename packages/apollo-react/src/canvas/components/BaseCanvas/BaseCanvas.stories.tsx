@@ -31,6 +31,12 @@ const meta = {
       description: "Canvas interaction mode",
     },
 
+    // Default edge configuration
+    defaultEdgeOptions: {
+      control: { type: "object" },
+      description: "Default options for new edges including type",
+    },
+
     // Styling
     backgroundColor: {
       control: { type: "color" },
@@ -280,6 +286,9 @@ const nodeTypes = {
 const DefaultStory = () => {
   const [nodes, setNodes] = useState<Node[]>(enhancedNodes);
   const [edges, setEdges] = useState<Edge[]>(enhancedEdges);
+  const [defaultEdgeType, setDefaultEdgeType] = useState<string>("default");
+  const [animated, setAnimated] = useState(false);
+  const [strokeWidth, setStrokeWidth] = useState(2);
 
   const onNodesChange = useCallback((changes: NodeChange[]) => {
     setNodes((nds) => applyNodeChanges(changes, nds));
@@ -303,7 +312,76 @@ const DefaultStory = () => {
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
+        defaultEdgeOptions={{
+          type: defaultEdgeType === "default" ? undefined : defaultEdgeType,
+          animated: animated,
+          style: {
+            strokeWidth: strokeWidth,
+          },
+        }}
       >
+        <Panel position="top-left">
+          <Column
+            gap={12}
+            p={20}
+            style={{
+              color: "var(--color-foreground)",
+              backgroundColor: "var(--color-background-secondary)",
+              minWidth: 280,
+            }}
+          >
+            <ApTypography variant={FontVariantToken.fontSizeH3Bold}>Edge Configuration</ApTypography>
+
+            <Column gap={8}>
+              <ApTypography variant={FontVariantToken.fontSizeM}>Edge Type:</ApTypography>
+              <select
+                value={defaultEdgeType}
+                onChange={(e) => setDefaultEdgeType(e.target.value)}
+                style={{
+                  padding: "8px",
+                  borderRadius: "4px",
+                  border: "1px solid var(--color-border)",
+                  backgroundColor: "var(--color-background)",
+                  color: "var(--color-foreground)",
+                  fontSize: "14px",
+                }}
+              >
+                <option value="default">Default (Bezier)</option>
+                <option value="straight">Straight</option>
+                <option value="step">Step</option>
+                <option value="smoothstep">Smooth Step</option>
+                <option value="bezier">Bezier</option>
+              </select>
+            </Column>
+
+            <Column gap={8}>
+              <label style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "14px" }}>
+                <input type="checkbox" checked={animated} onChange={(e) => setAnimated(e.target.checked)} />
+                Animated Edges
+              </label>
+            </Column>
+
+            <Column gap={8}>
+              <ApTypography variant={FontVariantToken.fontSizeM}>Stroke Width: {strokeWidth}px</ApTypography>
+              <input
+                type="range"
+                min="1"
+                max="10"
+                value={strokeWidth}
+                onChange={(e) => setStrokeWidth(Number(e.target.value))}
+                style={{ width: "100%" }}
+              />
+            </Column>
+
+            <ApTypography variant={FontVariantToken.fontSizeS} style={{ fontStyle: "italic" }}>
+              Drag between handles to create new edges
+            </ApTypography>
+
+            <ApTypography variant={FontVariantToken.fontSizeXs}>
+              Nodes: {nodes.length} | Edges: {edges.length}
+            </ApTypography>
+          </Column>
+        </Panel>
         <Panel position="bottom-right">
           <CanvasPositionControls />
         </Panel>
@@ -349,7 +427,7 @@ const DifferentBackgroundsStory = () => {
       >
         <Panel position="top-left">
           <Column gap={8} p={16} style={{ color: "var(--color-foreground)", backgroundColor: "var(--color-background-secondary)" }}>
-            <ApTypography variant={FontVariantToken.fontSizeH4Bold}>Background Styles</ApTypography>
+            <ApTypography variant={FontVariantToken.fontSizeH3Bold}>Background Styles</ApTypography>
             <Row gap={8}>
               <ApButton
                 size="small"
@@ -473,7 +551,7 @@ const EmptyCanvasStory = () => {
       >
         <Panel position="top-left">
           <Column gap={8} p={16} style={{ color: "var(--color-foreground)", backgroundColor: "var(--color-background-secondary)" }}>
-            <ApTypography variant={FontVariantToken.fontSizeH4Bold}>Canvas Actions</ApTypography>
+            <ApTypography variant={FontVariantToken.fontSizeH3Bold}>Canvas Actions</ApTypography>
             <ApButton label="Add Node" onClick={addNode} size="small" />
             <ApButton label="Clear Canvas" onClick={clearCanvas} size="small" variant="secondary" disabled={nodes.length === 0} />
             <ApTypography variant={FontVariantToken.fontSizeS}>
@@ -517,7 +595,7 @@ const WithChildrenStory = () => {
               }}
             >
               <Row justify="space-between" align="center">
-                <ApTypography variant={FontVariantToken.fontSizeH4Bold}>Node Inspector</ApTypography>
+                <ApTypography variant={FontVariantToken.fontSizeH3Bold}>Node Inspector</ApTypography>
                 <ApButton size="small" variant="text" onClick={() => setShowOverlay(false)}>
                   <ApIcon name="close" size="small" />
                 </ApButton>
@@ -674,7 +752,7 @@ const BaseCanvasWithNodeFocus = () => {
                 backgroundColor: "var(--color-background-secondary)",
               }}
             >
-              <ApTypography variant={FontVariantToken.fontSizeH4Bold}>Focus Controls</ApTypography>
+              <ApTypography variant={FontVariantToken.fontSizeH3Bold}>Focus Controls</ApTypography>
               <ApButton size="small" label="Focus Node 1" onClick={() => canvasRef.current?.ensureNodesInView(["1"])} />
               <ApButton size="small" label="Focus Node 2" onClick={() => canvasRef.current?.ensureNodesInView(["2"])} />
               <ApButton size="small" label="Focus Nodes 3 & 4" onClick={() => canvasRef.current?.ensureNodesInView(["3", "4"])} />
@@ -826,7 +904,7 @@ const BaseCanvasWithMaintainNodesInView = () => {
           backgroundColor: "var(--color-background-secondary)",
         }}
       >
-        <ApTypography variant={FontVariantToken.fontSizeH4Bold}>Maintain Nodes in View Demo</ApTypography>
+        <ApTypography variant={FontVariantToken.fontSizeH3Bold}>Maintain Nodes in View Demo</ApTypography>
         <ApTypography variant={FontVariantToken.fontSizeM}>Resize the container to see how important nodes stay in view</ApTypography>
         <ApTypography variant={FontVariantToken.fontSizeS} style={{ fontStyle: "italic" }}>
           Note: The zoom level is preserved while panning to keep nodes visible
