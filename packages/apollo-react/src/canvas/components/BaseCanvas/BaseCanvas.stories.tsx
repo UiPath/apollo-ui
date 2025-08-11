@@ -320,7 +320,7 @@ const DefaultStory = () => {
           },
         }}
       >
-        <Panel position="top-left">
+        <Panel position="bottom-left">
           <Column
             gap={12}
             p={20}
