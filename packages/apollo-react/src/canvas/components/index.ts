@@ -4,6 +4,8 @@ export * from "./BaseCanvas";
 export * from "./BaseNode";
 export * from "./ButtonHandle";
 export * from "./CanvasPositionControls";
+export * from "./FloatingCanvasPanel";
 export * from "./NodeContextMenu";
 export * from "./NodeInspector";
+export * from "./NodePropertiesPanel";
 export * from "./StageNode";

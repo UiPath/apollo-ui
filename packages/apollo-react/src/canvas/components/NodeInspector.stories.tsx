@@ -39,7 +39,7 @@ const createSampleNodes = (): Node[] => [
   {
     id: "agent-1",
     type: "agent",
-    position: { x: 100, y: 100 },
+    position: { x: 200, y: 200 },
     data: {
       label: "AI Agent",
       provider: "anthropic",
@@ -81,7 +81,7 @@ const createSampleNodes = (): Node[] => [
   {
     id: "resource-1",
     type: "resource",
-    position: { x: 350, y: 100 },
+    position: { x: 450, y: 200 },
     data: {
       label: "Database",
       type: "tool",
@@ -99,7 +99,7 @@ const createSampleNodes = (): Node[] => [
   {
     id: "flow-1",
     type: "flow",
-    position: { x: 225, y: 250 },
+    position: { x: 325, y: 350 },
     data: {
       label: "Decision Node",
       condition: "response.success === true",
