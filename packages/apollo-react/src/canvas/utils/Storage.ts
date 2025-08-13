@@ -1,12 +1,29 @@
-export type StorageType = "localStorage" | "sessionStorage";
+export type StorageType = "localStorage" | "sessionStorage" | Storage;
+
+/**
+ * Resolves the storage object based on the type or instance provided.
+ */
+function resolveStorage(storageType: StorageType): Storage {
+  if (typeof storageType === "string") {
+    switch (storageType) {
+      case "localStorage":
+        return localStorage;
+      case "sessionStorage":
+        return sessionStorage;
+      default:
+        throw new Error(`Unsupported storage type: ${storageType}`);
+    }
+  }
+  return storageType; // already a Storage instance
+}
 
 export function getStoredValue<T>(key: string, storageType: StorageType = "localStorage", prefix = "ui"): T | undefined {
-  const storage = storageType === "localStorage" ? localStorage : sessionStorage;
+  const storage = resolveStorage(storageType);
   const prefixedKey = `${prefix}-${key}`;
 
   try {
     const storedValue = storage?.getItem(prefixedKey);
-    return storedValue ? JSON.parse(storedValue) : undefined;
+    return storedValue ? (JSON.parse(storedValue) as T) : undefined;
   } catch (error) {
     console.warn(`Failed to parse stored value for key "${prefixedKey}":`, error);
     return undefined;
@@ -14,7 +31,7 @@ export function getStoredValue<T>(key: string, storageType: StorageType = "local
 }
 
 export function setStoredValue<T>(key: string, value: T, storageType: StorageType = "localStorage", prefix = "ui"): void {
-  const storage = storageType === "localStorage" ? localStorage : sessionStorage;
+  const storage = resolveStorage(storageType);
   const prefixedKey = `${prefix}-${key}`;
 
   try {
