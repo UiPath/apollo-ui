@@ -8,4 +8,5 @@ export * from "./FloatingCanvasPanel";
 export * from "./NodeContextMenu";
 export * from "./NodeInspector";
 export * from "./NodePropertiesPanel";
+export * from "./AddNodePanel";
 export * from "./StageNode";

@@ -39,12 +39,10 @@ const BaseNodeComponent = (props: NodeProps & { data: BaseNodeData }) => {
     (a, b) => a.edges === b.edges && a.isConnecting === b.isConnecting
   );
 
-  const hasConnections = useMemo(() => edges?.some((edge) => edge.source === id || edge.target === id) ?? false, [edges, id]);
-
   // Determine if handles should be visible
   const shouldShowHandles = useMemo(() => {
-    return selected || isHovered || isConnecting || hasConnections;
-  }, [hasConnections, isConnecting, selected, isHovered]);
+    return selected || isHovered || isConnecting;
+  }, [isConnecting, selected, isHovered]);
 
   // Check if there are handles with labels on bottom position that would be visible
   const hasVisibleBottomHandlesWithLabels = useMemo(() => {
@@ -52,7 +50,7 @@ const BaseNodeComponent = (props: NodeProps & { data: BaseNodeData }) => {
       return false;
     }
     return handleConfigurations.some((config) => {
-      const normalizedConfig = normalizeHandleConfig(config as any);
+      const normalizedConfig = normalizeHandleConfig(config);
       return normalizedConfig.position === Position.Bottom && normalizedConfig.handles.some((handle) => !!handle.label);
     });
   }, [handleConfigurations, shouldShowHandles]);
@@ -74,10 +72,9 @@ const BaseNodeComponent = (props: NodeProps & { data: BaseNodeData }) => {
     if (!handleConfigurations) return null;
 
     const elements = handleConfigurations.map((config) => {
-      const normalizedConfig = normalizeHandleConfig(config as any);
+      const normalizedConfig = normalizeHandleConfig(config);
       const hasConnectedHandle = normalizedConfig.handles.some((h) => connectedHandleIds.has(h.id));
-      const isVisible = shouldShowHandles || hasConnectedHandle;
-      const finalVisible = isVisible && (normalizedConfig.visible ?? true);
+      const finalVisible = hasConnectedHandle || (shouldShowHandles && (normalizedConfig.visible ?? true));
 
       return (
         <ButtonHandles

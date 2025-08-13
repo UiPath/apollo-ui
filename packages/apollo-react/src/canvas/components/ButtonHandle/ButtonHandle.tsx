@@ -155,7 +155,7 @@ const ButtonHandlesBase = ({
           total={total}
           selected={selected}
           visible={visible}
-          showButton={handle.showButton}
+          showButton={selected && visible && handle.showButton}
           color={handle.color}
           onClick={handle.onClick}
         />

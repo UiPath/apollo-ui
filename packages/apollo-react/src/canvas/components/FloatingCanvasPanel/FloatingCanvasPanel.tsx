@@ -13,7 +13,7 @@ const PanelContainer = styled.div`
   border-radius: 8px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
   font-size: 14px;
-  width: 360px;
+  min-width: 280px;
   max-height: 600px;
   display: flex;
   flex-direction: column;
@@ -34,15 +34,7 @@ export type FloatingCanvasPanelProps = {
   headerActions?: ReactNode;
   children?: ReactNode;
   onClose?: () => void;
-  className?: string;
   scrollKey?: string;
-
-  // If true, the panel will stop propagation of pointer/click/wheel events to avoid interacting with the canvas beneath.
-  interceptEvents?: boolean;
-  // Optional overrides for event handling
-  onPointerDown?: (e: React.PointerEvent<HTMLDivElement>) => void;
-  onClick?: (e: React.MouseEvent<HTMLDivElement>) => void;
-  onWheel?: (e: React.WheelEvent<HTMLDivElement>) => void;
 };
 
 export function FloatingCanvasPanel({
@@ -51,7 +43,6 @@ export function FloatingCanvasPanel({
   anchorRect,
   placement = "right-start",
   offset = 20,
-  className,
   title,
   header,
   headerActions,
@@ -88,7 +79,7 @@ export function FloatingCanvasPanel({
       <CanvasPortal>
         <PanelContainer
           ref={refs.setFloating}
-          className={`nodrag nopan nowheel${className ? ` ${className}` : ""}`}
+          className="nodrag nopan nowheel"
           style={{
             ...floatingStyles,
             position: "absolute",

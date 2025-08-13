@@ -49,7 +49,7 @@ export const Default: Story = {
           handleConfigurations: [
             {
               position: Position.Right,
-              handle: { id: "output", type: "source", showButton: true },
+              handle: { id: "output", type: "source", handleType: "output", showButton: true },
             },
           ],
         },
@@ -105,11 +105,11 @@ export const ArtifactTypes: Story = {
           handleConfigurations: [
             {
               position: Position.Top,
-              handle: { id: "read", type: "source", label: "Read", showButton: true },
+              handle: { id: "read", type: "source", handleType: "output", label: "Read", showButton: true },
             },
             {
               position: Position.Bottom,
-              handle: { id: "write", type: "target", label: "Write" },
+              handle: { id: "write", type: "target", handleType: "input", label: "Write" },
             },
           ],
         },
@@ -125,7 +125,7 @@ export const ArtifactTypes: Story = {
           handleConfigurations: [
             {
               position: Position.Right,
-              handle: { id: "output", type: "source", label: "Export", showButton: true },
+              handle: { id: "output", type: "source", handleType: "output", label: "Export", showButton: true },
             },
           ],
         },
@@ -142,7 +142,7 @@ export const ArtifactTypes: Story = {
           handleConfigurations: [
             {
               position: Position.Left,
-              handle: { id: "trigger", type: "target", label: "Trigger" },
+              handle: { id: "trigger", type: "target", handleType: "input", label: "Trigger" },
             },
           ],
         },
@@ -158,11 +158,11 @@ export const ArtifactTypes: Story = {
           handleConfigurations: [
             {
               position: Position.Top,
-              handle: { id: "request", type: "target", label: "Request" },
+              handle: { id: "request", type: "target", handleType: "input", label: "Request" },
             },
             {
               position: Position.Bottom,
-              handle: { id: "response", type: "source", label: "Response", showButton: true },
+              handle: { id: "response", type: "source", handleType: "output", label: "Response", showButton: true },
             },
           ],
         },
@@ -216,7 +216,7 @@ export const ConnectedFlow: Story = {
           handleConfigurations: [
             {
               position: Position.Right,
-              handle: { id: "out", type: "source" },
+              handle: { id: "out", type: "source", handleType: "output" },
             },
           ],
         },
@@ -231,11 +231,11 @@ export const ConnectedFlow: Story = {
           handleConfigurations: [
             {
               position: Position.Left,
-              handle: { id: "in", type: "target" },
+              handle: { id: "in", type: "target", handleType: "input" },
             },
             {
               position: Position.Right,
-              handle: { id: "out", type: "source" },
+              handle: { id: "out", type: "source", handleType: "output" },
             },
           ],
         },
@@ -250,15 +250,15 @@ export const ConnectedFlow: Story = {
           handleConfigurations: [
             {
               position: Position.Left,
-              handle: { id: "in", type: "target" },
+              handle: { id: "in", type: "target", handleType: "input" },
             },
             {
               position: Position.Bottom,
-              handle: { id: "error", type: "source", label: "Error", showButton: true },
+              handle: { id: "error", type: "source", handleType: "output", label: "Error", showButton: true },
             },
             {
               position: Position.Right,
-              handle: { id: "success", type: "source", label: "Success", showButton: true },
+              handle: { id: "success", type: "source", handleType: "output", label: "Success", showButton: true },
             },
           ],
         },
@@ -274,7 +274,7 @@ export const ConnectedFlow: Story = {
           handleConfigurations: [
             {
               position: Position.Left,
-              handle: { id: "in", type: "target" },
+              handle: { id: "in", type: "target", handleType: "input" },
             },
           ],
         },
@@ -289,7 +289,7 @@ export const ConnectedFlow: Story = {
           handleConfigurations: [
             {
               position: Position.Top,
-              handle: { id: "in", type: "target" },
+              handle: { id: "in", type: "target", handleType: "input" },
             },
           ],
         },

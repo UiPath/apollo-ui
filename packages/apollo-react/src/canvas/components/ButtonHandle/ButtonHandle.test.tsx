@@ -71,7 +71,7 @@ describe("ButtonHandles", () => {
       },
     ];
 
-    render(<ButtonHandles handles={handles} position={Position.Right} />);
+    render(<ButtonHandles handles={handles} position={Position.Right} selected={true} />);
 
     const button = screen.getByTestId("ap-icon");
     const parentElement = button.parentElement;

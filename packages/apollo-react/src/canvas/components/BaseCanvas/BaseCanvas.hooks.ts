@@ -34,9 +34,11 @@ export const useAutoLayout = (nodes: Node[] | undefined, initialAutoLayout?: () 
   const prevNodeIds = useRef<string>("");
 
   // Check if this is a new set of nodes (different IDs)
-  const currentNodeIds = nodes?.map((n) => n.id)
-    .sort()
-    .join(",") ?? '';
+  const currentNodeIds =
+    nodes
+      ?.map((n) => n.id)
+      .sort()
+      .join(",") ?? "";
   const isNewNodeSet = currentNodeIds !== prevNodeIds.current && currentNodeIds?.length > 0;
 
   if (isNewNodeSet) {
