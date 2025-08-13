@@ -1,4 +1,6 @@
 import { Edge, Node } from "@xyflow/react";
+
+// @ts-expect-error mermaid isn't installed to avoid build errors for now
 import mermaid from "mermaid";
 import sanitizeHtml from "sanitize-html";
 

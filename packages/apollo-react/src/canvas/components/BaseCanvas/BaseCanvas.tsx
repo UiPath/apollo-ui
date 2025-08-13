@@ -71,7 +71,7 @@ const BaseCanvasInnerComponent = <NodeType extends Node = Node, EdgeType extends
 
   const [reactFlowInstance, setReactFlowInstance] = useState<ReactFlowInstance<NodeType, EdgeType>>();
 
-  const { isReady } = useAutoLayout(nodes as Node[], initialAutoLayout);
+  const { isReady } = useAutoLayout(nodes, initialAutoLayout);
   const { ensureNodesInView, ensureAllNodesInView, centerNode } = useEnsureNodesInView();
 
   // Prevent browser back navigation on touch gestures

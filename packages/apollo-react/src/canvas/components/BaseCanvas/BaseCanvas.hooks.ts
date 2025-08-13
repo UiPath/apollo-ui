@@ -23,22 +23,21 @@ const waitForNodeMeasurements = (getNodes: () => Node[]): Promise<void> => {
   });
 };
 
-export const useAutoLayout = (nodes: Node[], initialAutoLayout?: () => Promise<void> | void) => {
+export const useAutoLayout = (nodes: Node[] | undefined, initialAutoLayout?: () => Promise<void> | void) => {
   const [isReady, setIsReady] = useState(false);
   const hasRunLayout = useRef(false);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const reactFlow = useReactFlow();
 
   // Track the nodes array to detect when it's a completely new set of nodes
-  const nodesRef = useRef<Node[]>([]);
+  const nodesRef = useRef<Node[] | undefined>([]);
   const prevNodeIds = useRef<string>("");
 
   // Check if this is a new set of nodes (different IDs)
-  const currentNodeIds = nodes
-    .map((n) => n.id)
+  const currentNodeIds = nodes?.map((n) => n.id)
     .sort()
-    .join(",");
-  const isNewNodeSet = currentNodeIds !== prevNodeIds.current && currentNodeIds.length > 0;
+    .join(",") ?? '';
+  const isNewNodeSet = currentNodeIds !== prevNodeIds.current && currentNodeIds?.length > 0;
 
   if (isNewNodeSet) {
     hasRunLayout.current = false;
@@ -60,7 +59,7 @@ export const useAutoLayout = (nodes: Node[], initialAutoLayout?: () => Promise<v
     }
 
     // No nodes yet, wait for them
-    if (nodes.length === 0) {
+    if (nodes?.length === 0) {
       return;
     }
 
@@ -95,7 +94,7 @@ export const useAutoLayout = (nodes: Node[], initialAutoLayout?: () => Promise<v
         timeoutRef.current = null;
       }
     };
-  }, [nodes.length, reactFlow, initialAutoLayout, isNewNodeSet]);
+  }, [nodes?.length, reactFlow, initialAutoLayout, isNewNodeSet]);
 
   return { isReady };
 };
