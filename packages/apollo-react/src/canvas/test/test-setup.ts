@@ -216,11 +216,6 @@ vi.mock("@floating-ui/react", () => ({
     React.createElement("div", { "data-testid": "floating-focus-manager" }, children),
 }));
 
-// Mock zustand
-vi.mock("zustand/shallow", () => ({
-  shallow: () => ({}),
-}));
-
 // Mock Apollo UI components
 vi.mock("@uipath/portal-shell-react", () => ({
   ApIcon: ({ name, size, variant, color }: { name: string; size?: string; variant?: string; color?: string }) =>
