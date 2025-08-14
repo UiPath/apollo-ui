@@ -41,86 +41,86 @@ const chatService = window.PortalShell.AutopilotChat;
 
 ### Configuration & Initialization
 
-| Method | Description |
-|--------|-------------|
-| `initialize(config: AutopilotChatConfiguration, messageRenderers?: AutopilotChatMessageRenderer[])` | Initializes the chat service with the provided configuration (see [AutopilotChatConfiguration](#autopilotchatconfiguration)) and optional message renderers (see [AutopilotChatMessageRenderer](#autopilotchatmessagerenderer)) |
-| `patchConfig(config: Partial<AutopilotChatConfiguration>, messageRenderers?: AutopilotChatMessageRenderer[] )` | Patches the configuration of the chat service using existing value. (see [AutopilotChatConfiguration](#autopilotchatconfiguration)) |
-| `getConfig()` | Returns the current chat configuration object (see [AutopilotChatConfiguration](#autopilotchatconfiguration)) |
-| `injectMessageRenderer(renderer: AutopilotChatMessageRenderer)` | Adds or replaces a custom message renderer in the chat service (see [AutopilotChatMessageRenderer](#autopilotchatmessagerenderer)) |
-| `getMessageRenderer(name: string)` | Retrieves a message renderer by name |
-| `setFirstRunExperience(config: AutopilotChatConfiguration['firstRunExperience'])` | Configures the first run experience (see [First Run Experience](#first-run-experience)) displayed when the chat is opened for the first time or when there are no messages |
-| `setAllowedAttachments(allowedAttachments: AutopilotChatAllowedAttachments)` | Configures the allowed file attachments (see [AutopilotChatAllowedAttachments](#autopilotchatallowedattachments)) |
-| `setModels(models: AutopilotChatModelInfo)` | Configures the models (see [AutopilotChatModelInfo](#autopilotchatmodelinfo)) |
-| `getModels()` | Returns the current list of available models |
-| `setSelectedModel(modelId: string)` | Configures the selected model |
-| `getSelectedModel()` | Returns the currently selected model |
+| Method                                                                                                         | Description                                                                                                                                                                                                                     |
+| -------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `initialize(config: AutopilotChatConfiguration, messageRenderers?: AutopilotChatMessageRenderer[])`            | Initializes the chat service with the provided configuration (see [AutopilotChatConfiguration](#autopilotchatconfiguration)) and optional message renderers (see [AutopilotChatMessageRenderer](#autopilotchatmessagerenderer)) |
+| `patchConfig(config: Partial<AutopilotChatConfiguration>, messageRenderers?: AutopilotChatMessageRenderer[] )` | Patches the configuration of the chat service using existing value. (see [AutopilotChatConfiguration](#autopilotchatconfiguration))                                                                                             |
+| `getConfig()`                                                                                                  | Returns the current chat configuration object (see [AutopilotChatConfiguration](#autopilotchatconfiguration))                                                                                                                   |
+| `injectMessageRenderer(renderer: AutopilotChatMessageRenderer)`                                                | Adds or replaces a custom message renderer in the chat service (see [AutopilotChatMessageRenderer](#autopilotchatmessagerenderer))                                                                                              |
+| `getMessageRenderer(name: string)`                                                                             | Retrieves a message renderer by name                                                                                                                                                                                            |
+| `setFirstRunExperience(config: AutopilotChatConfiguration['firstRunExperience'])`                              | Configures the first run experience (see [First Run Experience](#first-run-experience)) displayed when the chat is opened for the first time or when there are no messages                                                      |
+| `setAllowedAttachments(allowedAttachments: AutopilotChatAllowedAttachments)`                                   | Configures the allowed file attachments (see [AutopilotChatAllowedAttachments](#autopilotchatallowedattachments))                                                                                                               |
+| `setModels(models: AutopilotChatModelInfo)`                                                                    | Configures the models (see [AutopilotChatModelInfo](#autopilotchatmodelinfo))                                                                                                                                                   |
+| `getModels()`                                                                                                  | Returns the current list of available models                                                                                                                                                                                    |
+| `setSelectedModel(modelId: string)`                                                                            | Configures the selected model                                                                                                                                                                                                   |
+| `getSelectedModel()`                                                                                           | Returns the currently selected model                                                                                                                                                                                            |
 
 ### Chat Window Control
 
-| Method | Description |
-|--------|-------------|
-| `open(config?: AutopilotChatConfiguration, messageRenderers?: AutopilotChatMessageRenderer[])` | Opens the chat interface with optional configuration (see [AutopilotChatConfiguration](#autopilotchatconfiguration)) and message renderers (see [AutopilotChatMessageRenderer](#autopilotchatmessagerenderer)) |
-| `close()` | Closes the chat interface |
-| `setChatMode(mode: AutopilotChatMode)` | Sets the chat window mode (see [AutopilotChatMode](#autopilotchatmode)) |
+| Method                                                                                            | Description                                                                                                                                                                                                     |
+| ------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `open(config?: AutopilotChatConfiguration, messageRenderers?: AutopilotChatMessageRenderer[])`    | Opens the chat interface with optional configuration (see [AutopilotChatConfiguration](#autopilotchatconfiguration)) and message renderers (see [AutopilotChatMessageRenderer](#autopilotchatmessagerenderer))  |
+| `close()`                                                                                         | Closes the chat interface                                                                                                                                                                                       |
+| `setChatMode(mode: AutopilotChatMode)`                                                            | Sets the chat window mode (see [AutopilotChatMode](#autopilotchatmode))                                                                                                                                         |
 | `newChat(config?: AutopilotChatConfiguration, messageRenderers?: AutopilotChatMessageRenderer[])` | Starts a new chat session with optional configuration (see [AutopilotChatConfiguration](#autopilotchatconfiguration)) and message renderers (see [AutopilotChatMessageRenderer](#autopilotchatmessagerenderer)) |
-| `toggleAutoScroll(autoScroll: boolean)` | Start or stop the autoscroll behavior |
+| `toggleAutoScroll(autoScroll: boolean)`                                                           | Start or stop the autoscroll behavior                                                                                                                                                                           |
 
 ### Message Handling
 
-| Method | Description |
-|--------|-------------|
-| `setConversation(messages: AutopilotChatMessage[])` | Sets the entire conversation history in the chat interface (see [AutopilotChatMessage](#autopilotchatmessage)) |
-| `getConversation()` | Returns the current conversation history |
-| `prependOlderMessages(messages: AutopilotChatMessage[], done?: boolean)` | Prepends older messages to the conversation when loading more history. Preserves scroll position. Set `done` to `true` when no more messages are available (see [Pagination and Loading More Messages](#pagination-and-loading-more-messages)) |
-| `setPrompt(prompt: AutopilotChatMessage \| string)` | Sets a prompt in the input field of the chat interface (accepts either a string or see [AutopilotChatMessage](#autopilotchatmessage)) |
-| `getPrompt()` | Returns the current prompt |
-| `sendRequest(request: AutopilotChatMessage)` | Sends a user request to the chat and triggers the request event (see [AutopilotChatMessage](#autopilotchatmessage)) |
-| `sendResponse(response: AutopilotChatMessage)` | Sends an AI assistant response to display in the chat (see [AutopilotChatMessage](#autopilotchatmessage)) |
-| `stopResponse()` | Stops the current streaming response, if applicable |
-| `setDefaultLoadingMessages(messages: string[], duration?: number)` | Sets the default loading messages and duration between switching messages |
-| `setLoadingMessage(message: string)` | Sets the loading message, overriding the default loading messages |
-| `setShowLoading(showLoading: boolean)` | Shows or hides the loading indicator in the chat service. When used, this method overrides the default automatic loading behavior from apollo (except for request), giving you manual control over when the loading state is displayed. |
-| `setWaiting(waiting: boolean)` | Sets the waiting state for the input prompt box. When set to true, users can still type in the input field but cannot send messages. This overrides the default automatic waiting behavior (except for equest), giving you manual control over when users can send messages. |
-| `setSuggestions(suggestions: AutopilotChatSuggestion[], sendOnClick?: boolean)` | Sets suggestions that appear in the chat interface. When `sendOnClick` is true, clicking a suggestion sends it immediately (defaults to the first run experience setting); otherwise it sets the prompt (see [AutopilotChatSuggestion](#autopilotchatsuggestion)) |
-| `getMessagesInGroup(groupId: string)` | Returns all messages that belong to the specified group ID |
+| Method                                                                          | Description                                                                                                                                                                                                                                                                  |
+| ------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `setConversation(messages: AutopilotChatMessage[])`                             | Sets the entire conversation history in the chat interface (see [AutopilotChatMessage](#autopilotchatmessage))                                                                                                                                                               |
+| `getConversation()`                                                             | Returns the current conversation history                                                                                                                                                                                                                                     |
+| `prependOlderMessages(messages: AutopilotChatMessage[], done?: boolean)`        | Prepends older messages to the conversation when loading more history. Preserves scroll position. Set `done` to `true` when no more messages are available (see [Pagination and Loading More Messages](#pagination-and-loading-more-messages))                               |
+| `setPrompt(prompt: AutopilotChatMessage \| string)`                             | Sets a prompt in the input field of the chat interface (accepts either a string or see [AutopilotChatMessage](#autopilotchatmessage))                                                                                                                                        |
+| `getPrompt()`                                                                   | Returns the current prompt                                                                                                                                                                                                                                                   |
+| `sendRequest(request: AutopilotChatMessage)`                                    | Sends a user request to the chat and triggers the request event (see [AutopilotChatMessage](#autopilotchatmessage))                                                                                                                                                          |
+| `sendResponse(response: AutopilotChatMessage)`                                  | Sends an AI assistant response to display in the chat (see [AutopilotChatMessage](#autopilotchatmessage))                                                                                                                                                                    |
+| `stopResponse()`                                                                | Stops the current streaming response, if applicable                                                                                                                                                                                                                          |
+| `setDefaultLoadingMessages(messages: string[], duration?: number)`              | Sets the default loading messages and duration between switching messages                                                                                                                                                                                                    |
+| `setLoadingMessage(message: string)`                                            | Sets the loading message, overriding the default loading messages                                                                                                                                                                                                            |
+| `setShowLoading(showLoading: boolean)`                                          | Shows or hides the loading indicator in the chat service. When used, this method overrides the default automatic loading behavior from apollo (except for request), giving you manual control over when the loading state is displayed.                                      |
+| `setWaiting(waiting: boolean)`                                                  | Sets the waiting state for the input prompt box. When set to true, users can still type in the input field but cannot send messages. This overrides the default automatic waiting behavior (except for equest), giving you manual control over when users can send messages. |
+| `setSuggestions(suggestions: AutopilotChatSuggestion[], sendOnClick?: boolean)` | Sets suggestions that appear in the chat interface. When `sendOnClick` is true, clicking a suggestion sends it immediately (defaults to the first run experience setting); otherwise it sets the prompt (see [AutopilotChatSuggestion](#autopilotchatsuggestion))            |
+| `getMessagesInGroup(groupId: string)`                                           | Returns all messages that belong to the specified group ID                                                                                                                                                                                                                   |
 
 ### Input/Output Stream Handling
-| Method | Description |
-|--------|-------------|
-| `sendInputStreamEvent(event: AutopilotChatInputStreamEvent)` | Sends an input stream event. (see [AutopilotChatInputStreamEvent](#autopilotchatinputstreamevent)) |
+| Method                                                         | Description                                                                                         |
+| -------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| `sendInputStreamEvent(event: AutopilotChatInputStreamEvent)`   | Sends an input stream event. (see [AutopilotChatInputStreamEvent](#autopilotchatinputstreamevent))  |
 | `sendOutputStreamEvent(event: AutopilotChatOutputStreamEvent)` | Sends an input stream event. (see [AutopilotChatOutputStreamEvent](#autopilotchatoutputtreamevent)) |
 
 ### History Management
 
-| Method | Description |
-|--------|-------------|
-| `setHistory(history: AutopilotChatHistory[])` | Sets the chat history list (see [AutopilotChatHistory](#autopilotchathistory)) |
-| `getHistory()` | Returns the current chat history |
-| `toggleHistory(open?: boolean)` | Toggles the history panel visibility |
-| `deleteConversation(conversationId: string)` | Deletes a conversation from the history |
+| Method                                                                        | Description                                                                                                                                            |
+| ----------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `setHistory(history: AutopilotChatHistory[])`                                 | Sets the chat history list (see [AutopilotChatHistory](#autopilotchathistory))                                                                         |
+| `getHistory()`                                                                | Returns the current chat history                                                                                                                       |
+| `toggleHistory(open?: boolean)`                                               | Toggles the history panel visibility                                                                                                                   |
+| `deleteConversation(conversationId: string)`                                  | Deletes a conversation from the history                                                                                                                |
 | `openConversation(conversationId: string \| null, showLoadingState: boolean)` | Opens a specific conversation from the history, second parameter indicates if the chat should show loading spinner for conversation (defaults to true) |
 
 ### Settings Management
 
-| Method | Description |
-|--------|-------------|
+| Method                           | Description                                                                                                                                      |
+| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `toggleSettings(open?: boolean)` | Toggles the settings panel visibility. Note: Settings are disabled by default and must be enabled via `setDisabledFeatures({ settings: false })` |
 
 ### Properties
 
-| Property | Description |
-|----------|-------------|
-| `activeConversationId` | Returns the current active conversation ID that was set with `openConversation` method|
-| `historyOpen` | Returns the current history panel visibility state |
-| `settingsOpen` | Returns the current settings panel visibility state |
+| Property               | Description                                                                            |
+| ---------------------- | -------------------------------------------------------------------------------------- |
+| `activeConversationId` | Returns the current active conversation ID that was set with `openConversation` method |
+| `historyOpen`          | Returns the current history panel visibility state                                     |
+| `settingsOpen`         | Returns the current settings panel visibility state                                    |
 
 ### Error Handling
 
-| Method | Description |
-|--------|-------------|
+| Method                    | Description                                            |
+| ------------------------- | ------------------------------------------------------ |
 | `setError(error: string)` | Sets an error message to display in the chat interface |
-| `clearError()` | Clears the current error message |
-| `getError()` | Returns the current error message, if any |
+| `clearError()`            | Clears the current error message                       |
+| `getError()`              | Returns the current error message, if any              |
 
 ### Loading and Waiting States
 
@@ -143,22 +143,22 @@ When you call `setWaiting(true)` or `setWaiting(false)`, you take manual control
 
 ### Feature Configuration
 
-| Method | Description |
-|--------|-------------|
+| Method                                                         | Description                                                                                                                                                                                |
+| -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `setDisabledFeatures(features: AutopilotChatDisabledFeatures)` | Configures which features should be disabled in the chat interface (see [AutopilotChatDisabledFeatures](#autopilotchatdisabledfeatures)). Note: Settings and audio are disabled by default |
 
 ### Labels Override
 
-| Method                                       | Description                                                                                                                |
-|----------------------------------------------|----------------------------------------------------------------------------------------------------------------------------|
+| Method                                                   | Description                                                                                                                |
+| -------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
 | `setOverrideLabels(labels: AutopilotChatOverrideLabels)` | Configures which labes to override in the chat interface (see [AutopilotChatOverrideLabels](#autopilotchatoverridelabels)) |
 
 ### Pre-hooks
 
-| Method | Description |
-|--------|-------------|
+| Method                                                                                   | Description                                                                                                                      |
+| ---------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
 | `setPreHook(action: AutopilotChatPreHookAction, hook: (data?: any) => Promise<boolean>)` | Sets a pre-hook function that runs before a specific user action (see [AutopilotChatPreHookAction](#autopilotchatprehookaction)) |
-| `getPreHook(action: AutopilotChatPreHookAction)` | Returns the pre-hook function for a specific action, defaults to returning `Promise.resolve(true)` if no hook is set |
+| `getPreHook(action: AutopilotChatPreHookAction)`                                         | Returns the pre-hook function for a specific action, defaults to returning `Promise.resolve(true)` if no hook is set             |
 
 ### Event Handling
 
@@ -804,7 +804,7 @@ function example() {
 ### Table Example
 
 | Column 1 | Column 2 |
-|----------|----------|
+| -------- | -------- |
 | Data 1   | Data 2   |
 | Data 3   | Data 4   |
 
@@ -834,36 +834,91 @@ chatService.sendResponse({
   id: 'response-with-citations',
   role: AutopilotChatRole.Assistant,
   contentParts: [
-    {
-      text: '# NBA Championship Analysis',
-      citations: []
-    },
-    {
-      text: 'The NBA Finals are the annual championship series of the National Basketball Association (NBA).',
-      citations: [
-        {
-          id: 1,
-          title: 'NBA Official Finals Overview',
-          url: 'https://www.nba.com/history/finals'
-        } as UrlCitation
-      ]
-    },
-    {
-      text: 'The Boston Celtics have won the most championships in NBA history.',
-      citations: [
-        {
-          id: 2,
-          title: 'NBA Team Championships - Basketball Reference',
-          url: 'https://www.basketball-reference.com/leagues/NBA_2024.html#champions'
-        } as UrlCitation,
-        {
-          id: 3,
-          title: 'Celtics vs Lakers Rivalry - ESPN',
-          url: 'https://www.espn.com/nba/story/_/id/29325513/celtics-vs-lakers-nba-most-storied-rivalry'
-        } as UrlCitation
-      ]
-    }
-  ]
+      {
+          text: '# NBA Championship Analysis\n',
+          citations: [],
+      },
+      {
+          text: 'The NBA Finals are the annual championship series of the _National Basketball Association (NBA)_.',
+          citations: [
+              {
+                  id: 1,
+                  title: 'NBA Official Finals Overview',
+                  url: 'https://www.nba.com/history/finals',
+              } as UrlCitation,
+          ],
+      },
+      {
+          text: ' Out of all the teams, the ',
+          citations: [],
+      },
+      {
+          text: '**Boston Celtics** have won the most championships in NBA history, followed closely by the Los Angeles Lakers.',
+          citations: [
+              {
+                  id: 2,
+                  title: 'Boston Celtics - History',
+                  download_url: 'https://ontheline.trincoll.edu/images/bookdown/sample-local-pdf.pdf',
+                  page_number: 2,
+              } as PdfCitation,
+              {
+                  id: 3,
+                  title: 'Celtics vs Lakers Rivalry - ESPN',
+                  url: 'https://www.espn.com/nba/story/_/id/29325513/celtics-vs-lakers-nba-most-storied-rivalry',
+              } as UrlCitation,
+          ],
+      },
+      { text: '\n\n' },
+      {
+          text: '## Recent Champions\n',
+          citations: [],
+      },
+      {
+          text: '| Year | Champion | Finals MVP |\n',
+          citations: [],
+      },
+      {
+          text: '|------|----------|------------|\n',
+          citations: [],
+      },
+      {
+          text: '| 2023-24 | ',
+          citations: [],
+      },
+      {
+          text: '**Boston Celtics**',
+          citations: [
+              {
+                  id: 5,
+                  title: '2024 NBA Finals Recap',
+                  url: 'https://www.nba.com/news/2024-finals-recap',
+              } as UrlCitation,
+          ],
+      },
+      {
+          text: ' | ',
+          citations: [],
+      },
+      {
+          text: 'Jaylen Brown',
+          citations: [
+              {
+                  id: 5,
+                  title: '2024 NBA Finals Recap',
+                  url: 'https://www.nba.com/news/2024-finals-recap',
+              } as UrlCitation,
+              {
+                  id: 6,
+                  title: 'Jaylen Brown - Wikipedia',
+                  url: 'https://en.wikipedia.org/wiki/Jaylen_Brown',
+              } as UrlCitation,
+          ],
+      },
+      {
+          text: ' |\n',
+          citations: [],
+      }
+  ],
 });
 ```
 
@@ -880,42 +935,99 @@ function streamResponseWithCitations() {
   const streamingParts = [
     {
       index: 0,
-      text: '# RPA Implementation Best Practices',
-      citation: null
+      text: '## Company Background',
+    },
+    {
+      index: 0,
+      text: '\n- ',
     },
     {
       index: 1,
-      text: '\n\nBased on industry research',
-      citation: null
+      text: '**UiPath Inc**',
     },
     {
       index: 1,
-      text: ', successful RPA implementations follow these key principles:',
+      text: '. is a global',
+    },
+    {
+      index: 1,
+      text: ' software company that was',
+    },
+    {
+      index: 1,
+      text: ' founded in ',
+    },
+    {
+      index: 1,
+      text: '_Bucharest, Romania_',
+    },
+    {
+      index: 1,
+      text: ', by',
+    },
+    {
+      index: 1,
+      text: ' **Daniel Dines**',
+    },
+    {
+      index: 1,
+      text: '',
       citation: {
-        id: 1,
-        title: 'RPA Best Practices Guide',
-        url: 'https://www.uipath.com/resources/automation-best-practices'
-      } as UrlCitation
+          id: 1,
+          title: 'UiPath - Wikipedia',
+          url: 'https://en.wikipedia.org/wiki/UiPath',
+      },
     },
     {
       index: 2,
-      text: '\n\n## Key Success Factors',
-      citation: null
+      text: '. \n\n- ',
     },
     {
       index: 3,
-      text: '\n\n1. **Process Assessment**',
-      citation: null
+      text: 'The',
     },
     {
       index: 3,
-      text: ' - Identify automation opportunities through detailed analysis',
+      text: ' company starte',
+    },
+    {
+      index: 3,
+      text: 'd its journey',
+    },
+    {
+      index: 3,
+      text: ' in 2005',
+    },
+    {
+      index: 3,
+      text: ' and has',
+    },
+    {
+      index: 3,
+      text: ' grown to become a leading',
+    },
+    {
+      index: 3,
+      text: ' enterprise automation software ven',
+    },
+    {
+      index: 3,
+      text: 'dor',
       citation: {
-        id: 2,
-        title: 'Process Assessment Framework',
-        download_url: 'https://research.uipath.com/process-assessment-2024.pdf',
-        page_number: 12
-      } as PdfCitation
+          id: 1,
+          title: 'UiPath - Wikipedia',
+          url: 'https://en.wikipedia.org/wiki/UiPath',
+      },
+    },
+    {
+      index: 3,
+      text: '',
+      citation: {
+          id: 2,
+          title: 'UiPath - Research Document',
+          download_url: 'https://ontheline.trincoll.edu/images/bookdown/sample-local-pdf.pdf',
+          page_number: 2,
+      },
     }
   ];
 

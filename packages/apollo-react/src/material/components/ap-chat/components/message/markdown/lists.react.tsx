@@ -51,18 +51,19 @@ export const Li = React.memo(({ children }: { children: React.ReactNode }) => {
                 color: theme.palette.semantic.colorForeground,
                 fontSize: token.FontFamily.FontMSize,
             },
-            maxWidth: 'fit-content',
         }}>
-        {/* Only return ap-typography on strings and not empty spaces */}
+        {/* Only return ap-typography on strings that are not just empty spaces */}
         {React.Children.map(children, child => {
             if (typeof child === 'string') {
-                if (child.length > 1) {
-                    return Text({
-                        children: child,
-                        customStyle: { display: 'inline' },
-                    });
+                const hasVisibleContent = child.trim().length > 0;
+                if (!hasVisibleContent) {
+                    return null;
                 }
-                return null;
+
+                return Text({
+                    children: child,
+                    customStyle: { display: 'inline' },
+                });
             }
 
             return child;

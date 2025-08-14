@@ -32,9 +32,19 @@ interface AutopilotChatSourcesProps {
 }
 
 const getSources = (group: AutopilotChatMessage[]) => {
-    return group.map((message) => message.contentParts?.map((part) => part.citations).flat() ?? [])
+    const allCitations = group.map((message) => message.contentParts?.map((part) => part.citations).flat() ?? [])
         .flat()
         .filter((citation): citation is UrlCitation | PdfCitation => citation !== undefined);
+
+    // Deduplicate citations by ID, keeping the first occurrence
+    const seenIds = new Set<number>();
+    return allCitations.filter((citation) => {
+        if (seenIds.has(citation.id)) {
+            return false;
+        }
+        seenIds.add(citation.id);
+        return true;
+    });
 };
 
 const COLLAPSED_ITEMS_COUNT = 2;

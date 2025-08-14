@@ -253,11 +253,11 @@ export const setupDemoMode = (demoMode, chatService) => {
                     chatService.sendResponse({
                         contentParts: [
                             {
-                                text: '# NBA Championship Analysis',
+                                text: '# NBA Championship Analysis\n',
                                 citations: [],
                             },
                             {
-                                text: 'The NBA Finals are the annual championship series of the National Basketball Association (NBA).',
+                                text: 'The NBA Finals are the annual championship series of the _National Basketball Association (NBA)_.',
                                 citations: [
                                     {
                                         id: 1,
@@ -267,13 +267,18 @@ export const setupDemoMode = (demoMode, chatService) => {
                                 ],
                             },
                             {
+                                text: ' Out of all the teams, the ',
+                                citations: [],
+                            },
+                            {
                                 // eslint-disable-next-line max-len
-                                text: 'The Boston Celtics have won the most championships in NBA history, followed closely by the Los Angeles Lakers.',
+                                text: '**Boston Celtics** have won the most championships in NBA history, followed closely by the Los Angeles Lakers.',
                                 citations: [
                                     {
                                         id: 2,
-                                        title: 'NBA Team Championships - Basketball Reference',
-                                        url: 'https://www.basketball-reference.com/leagues/NBA_2024.html#champions',
+                                        title: 'Boston Celtics - History',
+                                        download_url: 'https://ontheline.trincoll.edu/images/bookdown/sample-local-pdf.pdf',
+                                        page_number: 2,
                                     },
                                     {
                                         id: 3,
@@ -282,37 +287,114 @@ export const setupDemoMode = (demoMode, chatService) => {
                                     },
                                 ],
                             },
+                            { text: '\n- ' },
                             {
-                                text: '## Recent Champions',
-                                citations: [],
-                            },
-                            {
-                                text: '| Year | Champion | Finals MVP |',
-                                citations: [],
-                            },
-                            {
-                                text: '|------|----------|------------|',
-                                citations: [],
-                            },
-                            {
-                                text: '| 2023-24 | Boston Celtics | Jaylen Brown |',
+                                text: 'All NBA Finals have been played in a best-of-seven format.',
                                 citations: [
                                     {
                                         id: 4,
+                                        title: 'List of NBA champions - Wikipedia',
+                                        url: 'https://en.wikipedia.org/wiki/List_of_NBA_champions',
+                                    },
+                                ],
+                            },
+                            { text: '\n- The winning team of the series receives the ' },
+                            {
+                                text: 'Larry O\'Brien Championship Trophy, which has been awarded since 1977.',
+                                citations: [
+                                    {
+                                        id: 4,
+                                        title: 'List of NBA champions - Wikipedia',
+                                        url: 'https://en.wikipedia.org/wiki/List_of_NBA_champions',
+                                    },
+                                ],
+                            },
+                            { text: '\n\n' },
+                            {
+                                text: '## Recent Champions\n',
+                                citations: [],
+                            },
+                            {
+                                text: '| Year | Champion | Finals MVP |\n',
+                                citations: [],
+                            },
+                            {
+                                text: '|------|----------|------------|\n',
+                                citations: [],
+                            },
+                            {
+                                text: '| 2023-24 | ',
+                                citations: [],
+                            },
+                            {
+                                text: '**Boston Celtics**',
+                                citations: [
+                                    {
+                                        id: 5,
                                         title: '2024 NBA Finals Recap',
                                         url: 'https://www.nba.com/news/2024-finals-recap',
                                     },
                                 ],
                             },
                             {
-                                text: '| 2022-23 | Denver Nuggets | Nikola Jokić |',
+                                text: ' | ',
+                                citations: [],
+                            },
+                            {
+                                text: 'Jaylen Brown',
                                 citations: [
                                     {
                                         id: 5,
+                                        title: '2024 NBA Finals Recap',
+                                        url: 'https://www.nba.com/news/2024-finals-recap',
+                                    },
+                                    {
+                                        id: 6,
+                                        title: 'Jaylen Brown - Wikipedia',
+                                        url: 'https://en.wikipedia.org/wiki/Jaylen_Brown',
+                                    },
+                                ],
+                            },
+                            {
+                                text: ' |\n',
+                                citations: [],
+                            },
+                            {
+                                text: '| 2022-23 | ',
+                                citations: [],
+                            },
+                            {
+                                text: '**Denver Nuggets**',
+                                citations: [
+                                    {
+                                        id: 7,
                                         title: '2023 NBA Finals Summary',
                                         url: 'https://www.nba.com/news/2023-finals-summary',
                                     },
                                 ],
+                            },
+                            {
+                                text: ' | ',
+                                citations: [],
+                            },
+                            {
+                                text: 'Nikola Jokić',
+                                citations: [
+                                    {
+                                        id: 7,
+                                        title: '2023 NBA Finals Summary',
+                                        url: 'https://www.nba.com/news/2023-finals-summary',
+                                    },
+                                    {
+                                        id: 8,
+                                        title: 'Nikola Jokic - Wikipedia',
+                                        url: 'https://en.wikipedia.org/wiki/Nikola_Jokic',
+                                    },
+                                ],
+                            },
+                            {
+                                text: ' |\n',
+                                citations: [],
                             },
                         ],
                     });
@@ -322,7 +404,7 @@ export const setupDemoMode = (demoMode, chatService) => {
 
         case 'streaming-citations':
             setTimeout(() => {
-                chatService.sendRequest({ content: 'What are the best practices for RPA implementation?' });
+                chatService.sendRequest({ content: 'Tell me a summary about UiPath' });
                 setTimeout(() => {
                     const messageId = 'stream-demo-citations';
                     let streamIndex = 0;
@@ -330,176 +412,436 @@ export const setupDemoMode = (demoMode, chatService) => {
                     const streamingParts = [
                         {
                             index: 0,
-                            text: '# RPA Implementation Best Practices',
-                            citation: null,
+                            text: 'Based on the search results',
+                        },
+                        {
+                            index: 0,
+                            text: ', I\'ll',
+                        },
+                        {
+                            index: 0,
+                            text: ' create a comprehensive',
+                        },
+                        {
+                            index: 0,
+                            text: ' summary about UiPath with',
+                        },
+                        {
+                            index: 0,
+                            text: ' citations:\n\n##',
+                        },
+                        {
+                            index: 0,
+                            text: ' Company Background',
+                        },
+                        {
+                            index: 0,
+                            text: '\n- ',
                         },
                         {
                             index: 1,
-                            text: '\n\nBased on industry research',
-                            citation: null,
+                            text: '**UiPath Inc**',
                         },
                         {
                             index: 1,
-                            text: ', successful RPA implementations follow these key principles:',
+                            text: '. is a global',
+                        },
+                        {
+                            index: 1,
+                            text: ' software company that was',
+                        },
+                        {
+                            index: 1,
+                            text: ' founded in ',
+                        },
+                        {
+                            index: 1,
+                            text: '_Bucharest, Romania_',
+                        },
+                        {
+                            index: 1,
+                            text: ', by',
+                        },
+                        {
+                            index: 1,
+                            text: ' **Daniel Dines**',
+                        },
+                        {
+                            index: 1,
+                            text: '',
                             citation: {
                                 id: 1,
-                                title: 'RPA Best Practices Guide 2024',
-                                url: 'https://www.uipath.com/resources/rpa-best-practices',
+                                title: 'UiPath - Wikipedia',
+                                url: 'https://en.wikipedia.org/wiki/UiPath',
                             },
                         },
                         {
                             index: 2,
-                            text: '\n\n## Key Success Factors',
-                            citation: null,
+                            text: '. ',
                         },
                         {
                             index: 3,
-                            text: '\n\n1. **Process Assessment**',
-                            citation: null,
+                            text: 'The',
                         },
                         {
                             index: 3,
-                            text: ' - Identify automation opportunities through detailed analysis',
+                            text: ' company starte',
+                        },
+                        {
+                            index: 3,
+                            text: 'd its journey',
+                        },
+                        {
+                            index: 3,
+                            text: ' in 2005',
+                        },
+                        {
+                            index: 3,
+                            text: ' and has',
+                        },
+                        {
+                            index: 3,
+                            text: ' grown to become a leading',
+                        },
+                        {
+                            index: 3,
+                            text: ' enterprise automation software ven',
+                        },
+                        {
+                            index: 3,
+                            text: 'dor',
+                            citation: {
+                                id: 1,
+                                title: 'UiPath - Wikipedia',
+                                url: 'https://en.wikipedia.org/wiki/UiPath',
+                            },
+                        },
+                        {
+                            index: 3,
+                            text: '',
                             citation: {
                                 id: 2,
-                                title: 'Process Mining Whitepaper',
-                                download_url: 'https://docs.uipath.com/process-mining.pdf',
-                                page_number: 5,
+                                title: 'UiPath, Inc. (PATH)',
+                                url: 'https://ir.uipath.com/',
                             },
                         },
                         {
                             index: 4,
-                            text: '\n2. **Governance Framework**',
-                            citation: null,
+                            text: '. \n\n## Core',
                         },
                         {
                             index: 4,
-                            text: ' - Establish clear policies and procedures',
+                            text: ' Business',
+                        },
+                        {
+                            index: 4,
+                            text: '\nU',
+                        },
+                        {
+                            index: 4,
+                            text: 'iPath special',
+                        },
+                        {
+                            index: 4,
+                            text: 'izes in several',
+                        },
+                        {
+                            index: 4,
+                            text: ' key areas:\n\n1',
+                        },
+                        {
+                            index: 4,
+                            text: '. **Rob',
+                        },
+                        {
+                            index: 4,
+                            text: 'otic Process Automation',
+                        },
+                        {
+                            index: 4,
+                            text: ':**',
+                        },
+                        {
+                            index: 4,
+                            text: '\n',
+                        },
+                        {
+                            index: 5,
+                            text: 'R',
+                        },
+                        {
+                            index: 5,
+                            text: 'PA has',
+                        },
+                        {
+                            index: 5,
+                            text: ' revolutionized how work',
+                        },
+                        {
+                            index: 5,
+                            text: ' gets done globally',
+                        },
+                        {
+                            index: 5,
+                            text: ' by eliminating time',
+                        },
+                        {
+                            index: 5,
+                            text: '-consuming, repet',
+                        },
+                        {
+                            index: 5,
+                            text: 'itive tasks from employees',
+                        },
+                        {
+                            index: 5,
+                            text: '\u0027 worklo',
+                        },
+                        {
+                            index: 5,
+                            text: 'ads',
                             citation: {
                                 id: 3,
-                                title: 'CoE Setup Guide',
-                                url: 'https://www.uipath.com/coe-setup',
-                            },
-                        },
-                        {
-                            index: 5,
-                            text: '\n3. **Change Management**',
-                            citation: null,
-                        },
-                        {
-                            index: 5,
-                            text: ' - Ensure stakeholder buy-in and training',
-                            citation: {
-                                id: 4,
-                                title: 'Change Management Strategies',
-                                url: 'https://www.uipath.com/resources/change-management',
+                                title: 'Discovery Phase Guide',
+                                download_url: 'https://ontheline.trincoll.edu/images/bookdown/sample-local-pdf.pdf',
+                                page_number: 2,
                             },
                         },
                         {
                             index: 6,
-                            text: '\n\n## Implementation Phases',
-                            citation: null,
+                            text: '.',
+                        },
+                        {
+                            index: 6,
+                            text: '\n\n2. **',
+                        },
+                        {
+                            index: 6,
+                            text: 'Business Automation Platform**',
+                        },
+                        {
+                            index: 6,
+                            text: '\n',
                         },
                         {
                             index: 7,
-                            text: '\n\n| Phase | Duration | Key Activities |',
-                            citation: null,
+                            text: 'The platform',
+                        },
+                        {
+                            index: 7,
+                            text: ' offers en',
+                        },
+                        {
+                            index: 7,
+                            text: 'd-to-en',
+                        },
+                        {
+                            index: 7,
+                            text: 'd process transformation',
+                        },
+                        {
+                            index: 7,
+                            text: ' capabilities on',
+                        },
+                        {
+                            index: 7,
+                            text: ' a single platform,',
+                        },
+                        {
+                            index: 7,
+                            text: ' featuring fully',
+                        },
+                        {
+                            index: 7,
+                            text: ' governed agentic',
+                        },
+                        {
+                            index: 7,
+                            text: ' automation that integ',
+                        },
+                        {
+                            index: 7,
+                            text: 'rates with existing systems',
+                        },
+                        {
+                            index: 7,
+                            text: '',
+                            citation: {
+                                id: 4,
+                                title: 'UiPath Business Automation Platform | UiPath',
+                                url: 'https://www.uipath.com/product',
+                            },
                         },
                         {
                             index: 8,
-                            text: '\n|-------|----------|----------------|',
-                            citation: null,
+                            text: '.',
+                        },
+                        {
+                            index: 8,
+                            text: '\n\n3. **',
+                        },
+                        {
+                            index: 8,
+                            text: 'AI',
+                        },
+                        {
+                            index: 8,
+                            text: ' Integration**\n',
                         },
                         {
                             index: 9,
-                            text: '\n| Discovery | 2-4 weeks',
-                            citation: null,
+                            text: 'The',
                         },
                         {
                             index: 9,
-                            text: ' | Process identification, ROI analysis |',
+                            text: ' platform lever',
+                        },
+                        {
+                            index: 9,
+                            text: 'ages agentic',
+                        },
+                        {
+                            index: 9,
+                            text: ' automation to drive',
+                        },
+                        {
+                            index: 9,
+                            text: ' AI transformation, stream',
+                        },
+                        {
+                            index: 9,
+                            text: 'line',
+                        },
+                        {
+                            index: 9,
+                            text: ' workflows, and enhance',
+                        },
+                        {
+                            index: 9,
+                            text: ' productivity',
+                        },
+                        {
+                            index: 9,
+                            text: '',
                             citation: {
                                 id: 5,
-                                title: 'Discovery Phase Guide',
-                                download_url: 'https://docs.uipath.com/discovery-guide.pdf',
-                                page_number: 8,
+                                title: 'UiPath automation platform: drive AI transformation with...',
+                                url: 'https://www.uipath.com/',
                             },
                         },
                         {
                             index: 10,
-                            text: '\n| Design | 3-6 weeks',
-                            citation: null,
+                            text: '.\n\n##',
                         },
                         {
                             index: 10,
-                            text: ' | Solution architecture, technical design |',
+                            text: ' Key Features an',
+                        },
+                        {
+                            index: 10,
+                            text: 'd Benefits\n',
+                        },
+                        {
+                            index: 10,
+                            text: '\n| Feature | Description |\n',
+                        },
+                        {
+                            index: 10,
+                            text: '|----------|----',
+                        },
+                        {
+                            index: 10,
+                            text: '------|\n',
+                        },
+                        {
+                            index: 10,
+                            text: '| **Integration Capabilities** | ',
+                        },
+                        {
+                            index: 11,
+                            text: '**The platform is note',
+                        },
+                        {
+                            index: 11,
+                            text: 'd for its excellent integration system**, ',
+                        },
+                        {
+                            index: 11,
+                            text: 'which enables seamless',
+                        },
+                        {
+                            index: 11,
+                            text: ' connection with various tools and systems.',
                             citation: {
                                 id: 6,
-                                title: 'Solution Design Template',
-                                url: 'https://www.uipath.com/resources/solution-design',
-                            },
-                        },
-                        {
-                            index: 11,
-                            text: '\n| Development | 4-12 weeks',
-                            citation: null,
-                        },
-                        {
-                            index: 11,
-                            text: ' | Bot development, testing, validation |',
-                            citation: {
-                                id: 7,
-                                title: 'Development Best Practices',
-                                url: 'https://docs.uipath.com/studio/docs/best-practices',
+                                title: 'UiPath Business Automation Platform Customer Reviews...',
+                                url: 'https://www.softwarereviews.com/products/uipath-business-automation-platform?c_id=404',
                             },
                         },
                         {
                             index: 12,
-                            text: '\n| Deployment | 1-2 weeks',
-                            citation: null,
+                            text: ' |\n',
                         },
                         {
                             index: 12,
-                            text: ' | Production rollout, monitoring setup |',
-                            citation: {
-                                id: 8,
-                                title: 'Deployment Checklist',
-                                download_url: 'https://docs.uipath.com/deployment-checklist.pdf',
-                                page_number: 3,
-                            },
+                            text: '| **Educat',
+                        },
+                        {
+                            index: 12,
+                            text: 'ional Resources** | ',
                         },
                         {
                             index: 13,
-                            text: '\n\n## Critical Success Metrics',
-                            citation: null,
+                            text: 'U',
+                        },
+                        {
+                            index: 13,
+                            text: 'iPath offers',
+                        },
+                        {
+                            index: 13,
+                            text: ' free training',
+                        },
+                        {
+                            index: 13,
+                            text: ' through U',
+                        },
+                        {
+                            index: 13,
+                            text: 'iPath Academy,',
+                        },
+                        {
+                            index: 13,
+                            text: ' allowing users to enhance',
+                        },
+                        {
+                            index: 13,
+                            text: ' their automation skills an',
+                        },
+                        {
+                            index: 13,
+                            text: 'd stay current',
+                        },
+                        {
+                            index: 13,
+                            text: ' with industry',
+                        },
+                        {
+                            index: 13,
+                            text: ' developments.',
+                        },
+                        {
+                            index: 13,
+                            text: '',
+                            citation: {
+                                id: 7,
+                                title: 'UiPath Academy: Automation Training - Build Automatio...',
+                                url: 'https://academy.uipath.com/',
+                            },
                         },
                         {
                             index: 14,
-                            text: '\n\n- **ROI**: Average 300% within first year',
-                            citation: {
-                                id: 9,
-                                title: 'RPA ROI Report 2024',
-                                url: 'https://www.uipath.com/resources/roi-report',
-                            },
-                        },
-                        {
-                            index: 15,
-                            text: '\n- **Accuracy**: 99.5% process accuracy',
-                            citation: {
-                                id: 10,
-                                title: 'Automation Metrics Study',
-                                download_url: 'https://research.uipath.com/metrics-2024.pdf',
-                                page_number: 15,
-                            },
-                        },
-                        {
-                            index: 16,
-                            text: '\n- **Time Savings**: 65% reduction in process time',
-                            citation: {
-                                id: 11,
-                                title: 'Efficiency Gains Analysis',
-                                url: 'https://www.uipath.com/resources/efficiency-report',
-                            },
+                            text: ' |\n',
                         },
                     ];
 
@@ -522,7 +864,7 @@ export const setupDemoMode = (demoMode, chatService) => {
                             chatService.sendResponse({
                                 id: messageId,
                                 contentPartChunk: {
-                                    index: 16,
+                                    index: 21,
                                     text: '',
                                 },
                                 stream: true,
@@ -1696,67 +2038,149 @@ chatService.initialize({ mode: 'side-by-side' });
 chatService.sendResponse({
     contentParts: [
         {
-            text: '# NBA Championship Analysis',
-            citations: []
+            text: '# NBA Championship Analysis\\n',
+            citations: [],
         },
         {
-            text: 'The NBA Finals are the annual championship series of the National Basketball Association (NBA).',
+            text: 'The NBA Finals are the annual championship series of the _National Basketball Association (NBA)_.',
             citations: [
                 {
                     id: 1,
                     title: 'NBA Official Finals Overview',
-                    url: 'https://www.nba.com/history/finals'
-                }
-            ]
+                    url: 'https://www.nba.com/history/finals',
+                },
+            ],
         },
         {
-            text: 'The Boston Celtics have won the most championships in NBA history.',
+            text: ' Out of all the teams, the ',
+            citations: [],
+        },
+        {
+            text: '**Boston Celtics** have won the most championships in NBA history, followed closely by the Los Angeles Lakers.',
             citations: [
                 {
                     id: 2,
-                    title: 'NBA Team Championships - Basketball Reference',
-                    url: 'https://www.basketball-reference.com/leagues/NBA_2024.html'
+                    title: 'Boston Celtics - History',
+                    download_url: 'https://ontheline.trincoll.edu/images/bookdown/sample-local-pdf.pdf',
+                    page_number: 2,
                 },
                 {
                     id: 3,
                     title: 'Celtics vs Lakers Rivalry - ESPN',
-                    url: 'https://www.espn.com/nba/story/celtics-lakers-rivalry'
-                }
-            ]
+                    url: 'https://www.espn.com/nba/story/_/id/29325513/celtics-vs-lakers-nba-most-storied-rivalry',
+                },
+            ],
         },
+        { text: '\\n- ' },
         {
-            text: '## Recent Champions',
-            citations: []
-        },
-        {
-            text: '| Year | Champion | Finals MVP |',
-            citations: []
-        },
-        {
-            text: '|------|----------|------------|',
-            citations: []
-        },
-        {
-            text: '| 2023-24 | Boston Celtics | Jaylen Brown |',
+            text: 'All NBA Finals have been played in a best-of-seven format.',
             citations: [
                 {
                     id: 4,
-                    title: '2024 NBA Finals Recap',
-                    url: 'https://www.nba.com/news/2024-finals-recap'
-                }
-            ]
+                    title: 'List of NBA champions - Wikipedia',
+                    url: 'https://en.wikipedia.org/wiki/List_of_NBA_champions',
+                },
+            ],
+        },
+        { text: '\\n- The winning team of the series receives the ' },
+        {
+            text: 'Larry O\\'Brien Championship Trophy, which has been awarded since 1977.',
+            citations: [
+                {
+                    id: 4,
+                    title: 'List of NBA champions - Wikipedia',
+                    url: 'https://en.wikipedia.org/wiki/List_of_NBA_champions',
+                },
+            ],
+        },
+        { text: '\\n\\n' },
+        {
+            text: '## Recent Champions\\n',
+            citations: [],
         },
         {
-            text: '| 2022-23 | Denver Nuggets | Nikola Jokić |',
+            text: '| Year | Champion | Finals MVP |\\n',
+            citations: [],
+        },
+        {
+            text: '|------|----------|------------|\\n',
+            citations: [],
+        },
+        {
+            text: '| 2023-24 | ',
+            citations: [],
+        },
+        {
+            text: '**Boston Celtics**',
             citations: [
                 {
                     id: 5,
+                    title: '2024 NBA Finals Recap',
+                    url: 'https://www.nba.com/news/2024-finals-recap',
+                },
+            ],
+        },
+        {
+            text: ' | ',
+            citations: [],
+        },
+        {
+            text: 'Jaylen Brown',
+            citations: [
+                {
+                    id: 5,
+                    title: '2024 NBA Finals Recap',
+                    url: 'https://www.nba.com/news/2024-finals-recap',
+                },
+                {
+                    id: 6,
+                    title: 'Jaylen Brown - Wikipedia',
+                    url: 'https://en.wikipedia.org/wiki/Jaylen_Brown',
+                },
+            ],
+        },
+        {
+            text: ' |\\n',
+            citations: [],
+        },
+        {
+            text: '| 2022-23 | ',
+            citations: [],
+        },
+        {
+            text: '**Denver Nuggets**',
+            citations: [
+                {
+                    id: 7,
                     title: '2023 NBA Finals Summary',
-                    url: 'https://www.nba.com/news/2023-finals-summary'
-                }
-            ]
-        }
-    ]
+                    url: 'https://www.nba.com/news/2023-finals-summary',
+                },
+            ],
+        },
+        {
+            text: ' | ',
+            citations: [],
+        },
+        {
+            text: 'Nikola Jokić',
+            citations: [
+                {
+                    id: 7,
+                    title: '2023 NBA Finals Summary',
+                    url: 'https://www.nba.com/news/2023-finals-summary',
+                },
+                {
+                    id: 8,
+                    title: 'Nikola Jokic - Wikipedia',
+                    url: 'https://en.wikipedia.org/wiki/Nikola_Jokic',
+                },
+            ],
+        },
+        {
+            text: ' |\\n',
+            citations: [],
+        },
+    ],
 });
 
 chatService.open();</pre>
@@ -1765,10 +2189,11 @@ chatService.open();</pre>
 **Features demonstrated:**
 - Message segmentation with contentParts array
 - Citations attached to specific text segments
+- Highlighting of cited text on hover of the citation icon
 - Support for multiple citations per segment
 - Table content with row-specific citations
 - Mixed content (headers, paragraphs, tables) with selective citations
-- URL and download_url citation types
+- URL and PDF citation types
 
 **Citation Object Properties:**
 - **id**: Unique identifier for the citation
@@ -1800,163 +2225,443 @@ chatService.initialize({ mode: 'side-by-side' });
 const streamCitations = () => {
     const messageId = 'stream-citations-' + Date.now();
     let streamIndex = 0;
-    
+
     const streamingParts = [
         {
             index: 0,
-            text: '# RPA Implementation Best Practices',
-            citation: null
+            text: 'Based on the search results',
+        },
+        {
+            index: 0,
+            text: ', I\\'ll',
+        },
+        {
+            index: 0,
+            text: ' create a comprehensive',
+        },
+        {
+            index: 0,
+            text: ' summary about UiPath with',
+        },
+        {
+            index: 0,
+            text: ' citations:\\n\\n##',
+        },
+        {
+            index: 0,
+            text: ' Company Background',
+        },
+        {
+            index: 0,
+            text: '\\n- ',
         },
         {
             index: 1,
-            text: '\\n\\nBased on industry research',
-            citation: null
+            text: '**UiPath Inc**',
         },
         {
             index: 1,
-            text: ', successful RPA implementations follow these key principles:',
+            text: '. is a global',
+        },
+        {
+            index: 1,
+            text: ' software company that was',
+        },
+        {
+            index: 1,
+            text: ' founded in ',
+        },
+        {
+            index: 1,
+            text: '_Bucharest, Romania_',
+        },
+        {
+            index: 1,
+            text: ', by',
+        },
+        {
+            index: 1,
+            text: ' **Daniel Dines**',
+        },
+        {
+            index: 1,
+            text: '',
             citation: {
                 id: 1,
-                title: 'RPA Best Practices Guide 2024',
-                url: 'https://www.uipath.com/resources/rpa-best-practices'
-            }
+                title: 'UiPath - Wikipedia',
+                url: 'https://en.wikipedia.org/wiki/UiPath',
+            },
         },
         {
             index: 2,
-            text: '\\n\\n## Key Success Factors',
-            citation: null
+            text: '. ',
         },
         {
             index: 3,
-            text: '\\n\\n1. <strong>Process Assessment</strong>',
-            citation: null
+            text: 'The',
         },
         {
             index: 3,
-            text: ' - Identify automation opportunities through detailed analysis',
+            text: ' company starte',
+        },
+        {
+            index: 3,
+            text: 'd its journey',
+        },
+        {
+            index: 3,
+            text: ' in 2005',
+        },
+        {
+            index: 3,
+            text: ' and has',
+        },
+        {
+            index: 3,
+            text: ' grown to become a leading',
+        },
+        {
+            index: 3,
+            text: ' enterprise automation software ven',
+        },
+        {
+            index: 3,
+            text: 'dor',
+            citation: {
+                id: 1,
+                title: 'UiPath - Wikipedia',
+                url: 'https://en.wikipedia.org/wiki/UiPath',
+            },
+        },
+        {
+            index: 3,
+            text: '',
             citation: {
                 id: 2,
-                title: 'Process Mining Whitepaper',
-                download_url: 'https://docs.uipath.com/process-mining.pdf',
-                page_number: 5
-            }
+                title: 'UiPath, Inc. (PATH)',
+                url: 'https://ir.uipath.com/',
+            },
         },
         {
             index: 4,
-            text: '\\n2. <strong>Governance Framework</strong>',
-            citation: null
+            text: '. \\n\\n## Core',
         },
         {
             index: 4,
-            text: ' - Establish clear policies and procedures',
+            text: ' Business',
+        },
+        {
+            index: 4,
+            text: '\\nU',
+        },
+        {
+            index: 4,
+            text: 'iPath special',
+        },
+        {
+            index: 4,
+            text: 'izes in several',
+        },
+        {
+            index: 4,
+            text: ' key areas:\\n\\n1',
+        },
+        {
+            index: 4,
+            text: '. **Rob',
+        },
+        {
+            index: 4,
+            text: 'otic Process Automation',
+        },
+        {
+            index: 4,
+            text: ':**',
+        },
+        {
+            index: 4,
+            text: '\\n',
+        },
+        {
+            index: 5,
+            text: 'R',
+        },
+        {
+            index: 5,
+            text: 'PA has',
+        },
+        {
+            index: 5,
+            text: ' revolutionized how work',
+        },
+        {
+            index: 5,
+            text: ' gets done globally',
+        },
+        {
+            index: 5,
+            text: ' by eliminating time',
+        },
+        {
+            index: 5,
+            text: '-consuming, repet',
+        },
+        {
+            index: 5,
+            text: 'itive tasks from employees',
+        },
+        {
+            index: 5,
+            text: '\\u0027 worklo',
+        },
+        {
+            index: 5,
+            text: 'ads',
             citation: {
                 id: 3,
-                title: 'CoE Setup Guide',
-                url: 'https://www.uipath.com/coe-setup'
-            }
-        },
-        {
-            index: 5,
-            text: '\\n3. <strong>Change Management</strong>',
-            citation: null
-        },
-        {
-            index: 5,
-            text: ' - Ensure stakeholder buy-in and training',
-            citation: {
-                id: 4,
-                title: 'Change Management Strategies',
-                url: 'https://www.uipath.com/resources/change-management'
-            }
+                title: 'Discovery Phase Guide',
+                download_url: 'https://ontheline.trincoll.edu/images/bookdown/sample-local-pdf.pdf',
+                page_number: 2,
+            },
         },
         {
             index: 6,
-            text: '\\n\\n## Implementation Phases',
-            citation: null
+            text: '.',
+        },
+        {
+            index: 6,
+            text: '\\n\\n2. **',
+        },
+        {
+            index: 6,
+            text: 'Business Automation Platform**',
+        },
+        {
+            index: 6,
+            text: '\\n',
         },
         {
             index: 7,
-            text: '\\n\\n| Phase | Duration | Key Activities |',
-            citation: null
+            text: 'The platform',
+        },
+        {
+            index: 7,
+            text: ' offers en',
+        },
+        {
+            index: 7,
+            text: 'd-to-en',
+        },
+        {
+            index: 7,
+            text: 'd process transformation',
+        },
+        {
+            index: 7,
+            text: ' capabilities on',
+        },
+        {
+            index: 7,
+            text: ' a single platform,',
+        },
+        {
+            index: 7,
+            text: ' featuring fully',
+        },
+        {
+            index: 7,
+            text: ' governed agentic',
+        },
+        {
+            index: 7,
+            text: ' automation that integ',
+        },
+        {
+            index: 7,
+            text: 'rates with existing systems',
+        },
+        {
+            index: 7,
+            text: '',
+            citation: {
+                id: 4,
+                title: 'UiPath Business Automation Platform | UiPath',
+                url: 'https://www.uipath.com/product',
+            },
         },
         {
             index: 8,
-            text: '\\n|-------|----------|----------------|',
-            citation: null
+            text: '.',
+        },
+        {
+            index: 8,
+            text: '\\n\\n3. **',
+        },
+        {
+            index: 8,
+            text: 'AI',
+        },
+        {
+            index: 8,
+            text: ' Integration**\\n',
         },
         {
             index: 9,
-            text: '\\n| Discovery | 2-4 weeks | Process identification, ROI analysis |',
+            text: 'The',
+        },
+        {
+            index: 9,
+            text: ' platform lever',
+        },
+        {
+            index: 9,
+            text: 'ages agentic',
+        },
+        {
+            index: 9,
+            text: ' automation to drive',
+        },
+        {
+            index: 9,
+            text: ' AI transformation, stream',
+        },
+        {
+            index: 9,
+            text: 'line',
+        },
+        {
+            index: 9,
+            text: ' workflows, and enhance',
+        },
+        {
+            index: 9,
+            text: ' productivity',
+        },
+        {
+            index: 9,
+            text: '',
             citation: {
                 id: 5,
-                title: 'Discovery Phase Guide',
-                download_url: 'https://docs.uipath.com/discovery-guide.pdf',
-                page_number: 8
-            }
+                title: 'UiPath automation platform: drive AI transformation with...',
+                url: 'https://www.uipath.com/',
+            },
         },
         {
             index: 10,
-            text: '\\n| Design | 3-6 weeks | Solution architecture, technical design |',
-            citation: {
-                id: 6,
-                title: 'Solution Design Template',
-                url: 'https://www.uipath.com/resources/solution-design'
-            }
+            text: '.\\n\\n##',
+        },
+        {
+            index: 10,
+            text: ' Key Features an',
+        },
+        {
+            index: 10,
+            text: 'd Benefits]\n',
+        },
+        {
+            index: 10,
+            text: '\\n| Feature | Description |\\n',
+        },
+        {
+            index: 10,
+            text: '|----------|----',
+        },
+        {
+            index: 10,
+            text: '------|\\n',
+        },
+        {
+            index: 10,
+            text: '| **Integration Capabilities** | ',
         },
         {
             index: 11,
-            text: '\\n| Development | 4-12 weeks | Bot development, testing, validation |',
+            text: '**The platform is note',
+        },
+        {
+            index: 11,
+            text: 'd for its excellent integration system**, ',
+        },
+        {
+            index: 11,
+            text: 'which enables seamless',
+        },
+        {
+            index: 11,
+            text: ' connection with various tools and systems.',
             citation: {
-                id: 7,
-                title: 'Development Best Practices',
-                url: 'https://docs.uipath.com/studio/docs/best-practices'
-            }
+                id: 6,
+                title: 'UiPath Business Automation Platform Customer Reviews...',
+                url: 'https://www.softwarereviews.com/products/uipath-business-automation-platform?c_id=404',
+            },
         },
         {
             index: 12,
-            text: '\\n| Deployment | 1-2 weeks | Production rollout, monitoring setup |',
-            citation: {
-                id: 8,
-                title: 'Deployment Checklist',
-                download_url: 'https://docs.uipath.com/deployment-checklist.pdf',
-                page_number: 3
-            }
+            text: ' |\\n',
+        },
+        {
+            index: 12,
+            text: '| **Educat',
+        },
+        {
+            index: 12,
+            text: 'ional Resources** | ',
         },
         {
             index: 13,
-            text: '\\n\\n## Critical Success Metrics',
-            citation: null
+            text: 'U',
+        },
+        {
+            index: 13,
+            text: 'iPath offers',
+        },
+        {
+            index: 13,
+            text: ' free training',
+        },
+        {
+            index: 13,
+            text: ' through U',
+        },
+        {
+            index: 13,
+            text: 'iPath Academy,',
+        },
+        {
+            index: 13,
+            text: ' allowing users to enhance',
+        },
+        {
+            index: 13,
+            text: ' their automation skills an',
+        },
+        {
+            index: 13,
+            text: 'd stay current',
+        },
+        {
+            index: 13,
+            text: ' with industry',
+        },
+        {
+            index: 13,
+            text: ' developments.',
+        },
+        {
+            index: 13,
+            text: '',
+            citation: {
+                id: 7,
+                title: 'UiPath Academy: Automation Training - Build Automatio...',
+                url: 'https://academy.uipath.com/',
+            },
         },
         {
             index: 14,
-            text: '\\n\\n- <strong>ROI</strong>: Average 300% within first year',
-            citation: {
-                id: 9,
-                title: 'RPA ROI Report 2024',
-                url: 'https://www.uipath.com/resources/roi-report'
-            }
+            text: ' |\\n',
         },
-        {
-            index: 15,
-            text: '\\n- <strong>Accuracy</strong>: 99.5% process accuracy',
-            citation: {
-                id: 10,
-                title: 'Automation Metrics Study',
-                download_url: 'https://research.uipath.com/metrics-2024.pdf',
-                page_number: 15
-            }
-        },
-        {
-            index: 16,
-            text: '\\n- <strong>Time Savings</strong>: 65% reduction in process time',
-            citation: {
-                id: 11,
-                title: 'Efficiency Gains Analysis',
-                url: 'https://www.uipath.com/resources/efficiency-report'
-            }
-        }
     ];
-    
+
     // Handle stop response events
     let isStreaming = true;
     const unsubscribe = chatService.on('stopResponse', () => {
@@ -2011,7 +2716,8 @@ chatService.open();</pre>
 
 **Features demonstrated:**
 - Real-time citation streaming with contentPartChunk
-- Progressive text rendering with attached citations
+- Progressive text rendering (which can include stylings) with attached citations
+- Highlighting of cited text on hover of the citation icon
 - Index-based content segmentation for proper citation placement
 - Mixed content chunks (with and without citations)
 - Stop response handling to interrupt streaming
