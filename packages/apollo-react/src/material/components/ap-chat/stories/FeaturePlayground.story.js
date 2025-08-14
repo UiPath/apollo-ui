@@ -1409,7 +1409,7 @@ const results = await Promise.all(tasks);
     });
 
     // Pre-hook Configuration
-    const allPreHookActions = [ 'new-chat', 'toggle-history', 'toggle-chat', 'close-chat' ];
+    const allPreHookActions = [ 'new-chat', 'toggle-history', 'toggle-chat', 'close-chat', 'citation-click' ];
 
     controls.setPreHook?.addEventListener('click', () => {
         allPreHookActions.forEach((action) => {

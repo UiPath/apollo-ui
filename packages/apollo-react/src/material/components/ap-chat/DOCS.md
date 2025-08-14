@@ -1084,7 +1084,7 @@ By default, clicking a citation opens the URL in a new tab. You can intercept th
 ```typescript
 // Set a pre-hook for citation clicks
 chatService.setPreHook(AutopilotChatPreHookAction.CitationClick, async (citationData) => {
-  const { citation, message } = citationData;
+  const { citation } = citationData;
   
   // Custom handling logic
   console.log('Citation clicked:', citation.title);

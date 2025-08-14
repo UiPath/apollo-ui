@@ -10,6 +10,8 @@ import token, { FontVariantToken } from '@uipath/apollo-core';
 import {
     AutopilotChatPreHookAction,
     CHAT_CITATION_START,
+    PdfCitation,
+    UrlCitation,
 } from '@uipath/portal-shell-util';
 import React from 'react';
 
@@ -152,14 +154,25 @@ export const Citation = React.memo(({
             return;
         }
 
-        chatService.getPreHook(AutopilotChatPreHookAction.CitationClick)({ citation: { url: finalUrl } })
+        const source: UrlCitation | PdfCitation = url ? {
+            id,
+            title,
+            url,
+        } : {
+            id,
+            title,
+            download_url,
+            page_number,
+        };
+
+        chatService.getPreHook(AutopilotChatPreHookAction.CitationClick)({ citation: source })
             .then((proceed) => {
                 if (!proceed || !finalUrl) {
                     return;
                 }
                 window.open(finalUrl, '_blank', 'noopener,noreferrer');
             });
-    }, [ chatService, finalUrl ]);
+    }, [ chatService, id, title, url, download_url, page_number, finalUrl ]);
 
     // Close tooltip on scroll
     React.useEffect(() => {
