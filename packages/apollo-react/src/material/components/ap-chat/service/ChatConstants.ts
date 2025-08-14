@@ -40,6 +40,7 @@ export const CHAT_SCROLL_BOTTOM_BUFFER = 200;
 export const CHAT_INSTANCE_DEFAULT_NAME = 'portal-shell';
 export const CHAT_INSTANCE_DOCS_AI_NAME = 'portal-shell-docs-ai';
 export const CHAT_CITATION_MARKER = 'citation-marker';
+export const CHAT_CITATION_START = 'citation-start';
 
 export const getChatModeKey = (instanceName = CHAT_INSTANCE_DEFAULT_NAME) => {
     const CHAT_MODE_KEY = 'mode';
