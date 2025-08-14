@@ -9,7 +9,6 @@ import {
 import token, { FontVariantToken } from '@uipath/apollo-core';
 import {
     AutopilotChatPreHookAction,
-    CHAT_CITATION_MARKER,
     CHAT_CITATION_START,
 } from '@uipath/portal-shell-util';
 import React from 'react';
@@ -77,7 +76,6 @@ const highlightRange = (startMarker: HTMLElement, endEl: HTMLElement, container:
                 !text.parentElement.closest('[data-citation-sup="true"]')
             ) {
                 const span = document.createElement('span');
-                span.className = CHAT_CITATION_MARKER;
                 span.style.backgroundColor = color;
                 text.parentElement.insertBefore(span, text);
                 span.appendChild(text);
