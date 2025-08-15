@@ -64,16 +64,19 @@ export const Row = React.memo(({ children }: TableProps) => (
 export const Cell = React.memo(({ children }: TableProps) => {
     return (
         <TableCell>
-            {/* Only return ap-typography on strings and not empty spaces */}
+            {/* Only return ap-typography on strings that are not just empty spaces */}
             {React.Children.map(children, child => {
                 if (typeof child === 'string') {
-                    if (child.length > 1) {
-                        return Text({
-                            children: child?.trim()?.replace(/<br\s*\/?>/gi, '\n') ?? '',
-                            customStyle: { display: 'inline' },
-                        });
+                    const trimmedString = child.trim();
+                    const hasVisibleContent = trimmedString.length > 0;
+                    if (!hasVisibleContent) {
+                        return null;
                     }
-                    return null;
+
+                    return Text({
+                        children: trimmedString.replace(/<br\s*\/?>/gi, '\n'),
+                        customStyle: { display: 'inline' },
+                    });
                 }
 
                 return child;
