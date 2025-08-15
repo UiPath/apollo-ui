@@ -6,7 +6,6 @@ import { NodePropertiesPanel } from "./NodePropertiesPanel";
 import { BaseCanvas } from "../BaseCanvas";
 import { BaseNode } from "../BaseNode";
 import { StageNode } from "../StageNode";
-import { AgentNode } from "../AgentNode";
 import { CanvasPositionControls } from "../CanvasPositionControls";
 import { Icons } from "@uipath/uix-core";
 
@@ -32,7 +31,6 @@ type Story = StoryObj<typeof NodePropertiesPanel>;
 
 const nodeTypes: NodeTypes = {
   stage: StageNode,
-  agent: AgentNode,
   activity: BaseNode,
 };
 

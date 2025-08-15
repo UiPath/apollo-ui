@@ -3,7 +3,7 @@ import { Position } from "@xyflow/react";
 import { ButtonHandleConfig } from "../ButtonHandle/ButtonHandle";
 import { NodeMenuItem } from "../NodeContextMenu/NodeContextMenu.types";
 
-export type NodeShape = "square" | "circular" | "rectangle";
+export type NodeShape = "square" | "circle" | "rectangle";
 
 export interface HandleConfiguration {
   position: Position;
@@ -33,5 +33,5 @@ export interface BaseNodeData extends Record<string, any> {
 // ArtifactNode specific data type that enforces single handles
 export interface ArtifactNodeData extends Omit<BaseNodeData, "handleConfigurations" | "shape"> {
   handleConfigurations?: SingleHandleConfiguration[];
-  shape?: "circular"; // Always circular for artifacts
+  shape?: "circle"; // Always circle for artifacts
 }

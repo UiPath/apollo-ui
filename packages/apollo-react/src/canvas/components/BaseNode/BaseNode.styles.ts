@@ -1,15 +1,96 @@
 import styled from "@emotion/styled";
-import { css } from "@emotion/react";
-import { NodeShape } from "./BaseNode.types";
+import { css, keyframes } from "@emotion/react";
+import { NodeShape } from "./types";
 
-export const BaseContainer = styled.div<{ selected?: boolean; shape?: NodeShape }>`
+const pulseAnimation = keyframes`
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(255, 193, 7, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 193, 7, 0);
+  }
+`;
+
+const getExecutionStateBorder = (executionState?: string) => {
+  switch (executionState) {
+    case "NotExecuted":
+    case "INFO":
+      return css`
+        border-color: var(--color-border-de-emp);
+      `;
+    case "InProgress":
+      return css`
+        border-color: var(--color-info-icon);
+        animation: ${pulseAnimation} 2s infinite;
+      `;
+    case "Completed":
+      return css`
+        border-color: var(--color-success-icon);
+      `;
+    case "Paused":
+    case "WARNING":
+      return css`
+        border-color: var(--color-warning-icon);
+      `;
+    case "Cancelled":
+    case "Failed":
+    case "Terminated":
+    case "ERROR":
+    case "CRITICAL":
+      return css`
+        border-color: var(--color-error-icon);
+        animation: ${pulseAnimation} 2s infinite;
+      `;
+    default:
+      return css`
+        border-color: var(--color-border-de-emp);
+      `;
+  }
+};
+
+const getInteractionStateBorder = (interactionState?: string) => {
+  switch (interactionState) {
+    case "selected":
+      return css`
+        border-color: var(--color-selection-indicator);
+        outline: 3px solid var(--color-secondary-pressed);
+      `;
+    case "hover":
+      return css`
+        outline: 3px solid var(--color-secondary-focused);
+      `;
+    case "disabled":
+      return css`
+        opacity: 0.5;
+        cursor: not-allowed;
+      `;
+    case "drag":
+      return css`
+        cursor: grabbing;
+        opacity: 0.8;
+      `;
+    default:
+      return null;
+  }
+};
+
+export const BaseContainer = styled.div<{
+  selected?: boolean;
+  backgroundColor?: string;
+  shape?: NodeShape;
+  executionState?: string;
+  interactionState?: string;
+}>`
   position: relative;
   width: ${({ shape }) => (shape === "rectangle" ? "320px" : "100px")};
   height: 100px;
-  background: var(--color-background);
+  background: ${({ backgroundColor }) => backgroundColor || "var(--color-background)"};
   border: 1.5px solid var(--color-border-de-emp);
   border-radius: ${({ shape }) => {
-    if (shape === "circular") return "50%";
+    if (shape === "circle") return "50%";
     return "8px";
   }};
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
@@ -18,31 +99,29 @@ export const BaseContainer = styled.div<{ selected?: boolean; shape?: NodeShape 
   align-items: center;
   justify-content: ${({ shape }) => (shape === "rectangle" ? "flex-start" : "center")};
   gap: ${({ shape }) => (shape === "rectangle" ? "12px" : "0")};
-  padding: ${({ shape }) => (shape === "rectangle" ? "16px" : "0")};
+  padding: ${({ shape }) => (shape === "rectangle" ? "14px" : "0")};
   cursor: pointer;
-  transition: all 0.2s ease;
+
+  ${({ executionState }) => getExecutionStateBorder(executionState)}
+  ${({ interactionState }) => getInteractionStateBorder(interactionState)}
 
   ${({ selected }) =>
     selected &&
     css`
       border-color: var(--color-selection-indicator);
-      box-shadow: 0 0 0 2px rgba(0, 102, 204, 0.2);
+      outline: 3px solid var(--color-secondary-pressed);
     `}
-
-  &:hover {
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-  }
 `;
 
-export const BaseIconWrapper = styled.div<{ shape?: NodeShape }>`
+export const BaseIconWrapper = styled.div<{ backgroundColor?: string; shape?: NodeShape }>`
   width: 72px;
   height: 72px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--color-background-secondary);
+  background: ${({ backgroundColor }) => backgroundColor || "var(--color-background-secondary)"};
   border-radius: ${({ shape }) => {
-    if (shape === "circular") return "50%";
+    if (shape === "circle") return "50%";
     return "8px";
   }};
 
@@ -120,7 +199,7 @@ export const BaseBadgeSlot = styled.div<{
   background: transparent;
   position: absolute;
   ${({ position, shape }) => {
-    const offset = shape === "circular" ? "12px" : "6px";
+    const offset = shape === "circle" ? "12px" : "6px";
     switch (position) {
       case "top-left":
         return `top: ${offset}; left: ${offset};`;
