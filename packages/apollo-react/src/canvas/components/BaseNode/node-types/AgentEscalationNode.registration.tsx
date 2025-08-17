@@ -14,6 +14,12 @@ export const agentEscalationNodeRegistration: NodeRegistration = {
   definition: {
     getIcon: (data, context) => <ApIcon name="person" color="var(--color-foreground-de-emp)" size="40px" />,
 
+    getDisplay: (data, context) => ({
+      label: data.display?.label,
+      subLabel: data.display?.subLabel,
+      shape: "circle" as const,
+    }),
+
     getAdornments: (data, context) => ({}),
 
     getHandleConfigurations: (data, context) => [
@@ -32,10 +38,6 @@ export const agentEscalationNodeRegistration: NodeRegistration = {
     getMenuItems: (data, context) => [],
 
     getDefaultParameters: () => ({}),
-
-    getDefaultDisplay: () => ({
-      shape: "circle" as const,
-    }),
 
     validateParameters: (parameters) => true,
   },

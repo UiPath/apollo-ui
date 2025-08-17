@@ -87,12 +87,12 @@ const ButtonHandleBase = ({
       position={position}
       id={id}
       isConnectable={handleType !== "artifact"}
-      positionPercent={positionPercent}
-      total={total}
-      visible={visible}
+      $positionPercent={positionPercent}
+      $total={total}
+      $visible={visible}
     >
       {label && (
-        <StyledLabel position={position}>
+        <StyledLabel $position={position}>
           <LabelContent>
             {labelIcon}
             <ApTypography color="var(--color-foreground-de-emp)" variant={FontVariantToken.fontSizeSBold}>
@@ -102,14 +102,14 @@ const ButtonHandleBase = ({
         </StyledLabel>
       )}
       {showButton && onClick && (
-        <StyledWrapper position={position}>
-          <StyledLine isVertical={isVertical} selected={selected} />
+        <StyledWrapper $position={position}>
+          <StyledLine $isVertical={isVertical} $selected={selected} />
           <div className="nodrag nopan" style={{ pointerEvents: "auto" }}>
             <AddButton onClick={handleButtonClick} />
           </div>
         </StyledWrapper>
       )}
-      <StyledNotch notchColor={color} handleType={handleType} visible={visible} isVertical={isVertical} selected={selected} />
+      <StyledNotch $notchColor={color} $handleType={handleType} $visible={visible} $isVertical={isVertical} $selected={selected} />
     </StyledHandle>
   );
 };

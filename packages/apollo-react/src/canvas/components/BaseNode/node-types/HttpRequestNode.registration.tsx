@@ -15,6 +15,12 @@ export const httpRequestNodeRegistration: NodeRegistration = {
   definition: {
     getIcon: (data, context) => <ApIcon name="public" color="var(--color-foreground-de-emp)" size="40px" />,
 
+    getDisplay: (data, context) => ({
+      label: data.display?.label,
+      subLabel: data.display?.subLabel,
+      shape: "square" as const,
+    }),
+
     getAdornments: (data, context) => {
       const status = context.executionStatus;
       const method = data.parameters.method as string;
@@ -50,10 +56,6 @@ export const httpRequestNodeRegistration: NodeRegistration = {
       includeErrorOutput: false,
       lastStatusCode: undefined,
       lastResponseTime: undefined,
-    }),
-
-    getDefaultDisplay: () => ({
-      shape: "square" as const,
     }),
 
     validateParameters: (parameters) => {

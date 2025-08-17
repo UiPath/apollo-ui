@@ -14,6 +14,12 @@ export const rpaNodeRegistration: NodeRegistration = {
   definition: {
     getIcon: (data, context) => <ApIcon name="list_alt" color="var(--color-foreground-de-emp)" size="40px" />,
 
+    getDisplay: (data, context) => ({
+      label: data.display?.label,
+      subLabel: data.display?.subLabel,
+      shape: "square" as const,
+    }),
+
     getAdornments: (data, context) => {
       const status = context.executionStatus;
       const robotType = data.parameters.robotType as string;
@@ -71,10 +77,6 @@ export const rpaNodeRegistration: NodeRegistration = {
       isConnected: false,
       lastJobId: undefined,
       timeout: 300000, // 5 minutes
-    }),
-
-    getDefaultDisplay: () => ({
-      shape: "square" as const,
     }),
 
     validateParameters: (parameters) => {

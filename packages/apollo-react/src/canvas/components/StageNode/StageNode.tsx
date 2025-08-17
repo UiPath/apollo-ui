@@ -29,7 +29,14 @@ const ProcessNodeIcon = () => (
 
 const StageNodeComponent = (props: NodeProps & { data: StageNodeData }) => {
   const { data, selected, id } = props;
-  const { title, processes = [], onAddProcess, addProcessLabel = "Add process", menuItems } = data;
+  const { title, processes = [], addProcessLabel = "Add process" } = data;
+
+  // TODO: get execution status / state from store
+  // const executionStatus = useExecutionStatus();
+  const status = undefined;
+
+  // TODO: get the menuItems for the stage
+  const menuItems: any[] = [];
 
   const [isHovered, setIsHovered] = useState(false);
   const { edges, isConnecting } = useStore(
@@ -46,6 +53,11 @@ const StageNodeComponent = (props: NodeProps & { data: StageNodeData }) => {
   const handleMouseEnter = useCallback(() => setIsHovered(true), []);
   const handleMouseLeave = useCallback(() => setIsHovered(false), []);
 
+  // Handle add process click
+  const handleAddProcess = useCallback(() => {
+    // TODO: invoke action to add process to stage
+  }, [id]);
+
   const shouldShowMenu = useMemo(() => {
     return menuItems && menuItems.length > 0 && (selected || isHovered);
   }, [menuItems, selected, isHovered]);
@@ -58,7 +70,7 @@ const StageNodeComponent = (props: NodeProps & { data: StageNodeData }) => {
         </StageHeader>
 
         <StageContent>
-          {onAddProcess && <ApLink onClick={onAddProcess}>{addProcessLabel}</ApLink>}
+          <ApLink onClick={handleAddProcess}>{addProcessLabel}</ApLink>
 
           {processes.length > 0 && (
             <StageProcessList>
@@ -73,8 +85,10 @@ const StageNodeComponent = (props: NodeProps & { data: StageNodeData }) => {
                       </>
                     )}
                     {processGroup.map((process) => (
-                      <StageProcessItem key={process.id} status={process.status}>
-                        <StageProcessIcon>{process.icon || <ProcessNodeIcon />}</StageProcessIcon>
+                      <StageProcessItem key={process.id} status={status}>
+                        <StageProcessIcon>
+                          <ProcessNodeIcon />
+                        </StageProcessIcon>
                         <StageProcessLabel>{process.label}</StageProcessLabel>
                       </StageProcessItem>
                     ))}

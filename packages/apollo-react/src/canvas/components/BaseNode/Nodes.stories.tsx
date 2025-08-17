@@ -70,7 +70,7 @@ export const AgentNode: Story = {
       {
         id: "1",
         type: "agent",
-        position: { x: 200, y: 200 },
+        position: { x: 200, y: 250 },
         data: {
           ...nodeTypeRegistry.createDefaultData("agent"),
           display: {
@@ -89,19 +89,19 @@ export const AgentNode: Story = {
       {
         id: "3",
         type: "agent.model",
-        position: { x: 100, y: 350 },
+        position: { x: 100, y: 500 },
         data: nodeTypeRegistry.createDefaultData("agent.model"),
       },
       {
         id: "4",
         type: "agent.escalation",
-        position: { x: 300, y: 350 },
+        position: { x: 300, y: 500 },
         data: nodeTypeRegistry.createDefaultData("agent.escalation"),
       },
       {
         id: "5",
         type: "agent.tool",
-        position: { x: 500, y: 350 },
+        position: { x: 500, y: 500 },
         data: nodeTypeRegistry.createDefaultData("agent.tool"),
       },
     ]);
@@ -111,24 +111,28 @@ export const AgentNode: Story = {
         source: "1",
         sourceHandle: "context",
         target: "2",
+        targetHandle: "context",
       },
       {
         id: "e2",
         source: "1",
         sourceHandle: "model",
         target: "3",
+        targetHandle: "context",
       },
       {
         id: "e3",
         source: "1",
         sourceHandle: "escalations",
         target: "4",
+        targetHandle: "context",
       },
       {
         id: "e4",
         source: "1",
         sourceHandle: "tools",
         target: "5",
+        targetHandle: "context",
       },
     ]);
 

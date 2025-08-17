@@ -18,8 +18,13 @@ export interface BaseNodeData extends Record<string, unknown> {
   display?: {
     label?: string;
     subLabel?: string;
-    shape?: NodeShape;
   };
+}
+
+export interface NodeDisplay {
+  label?: string;
+  subLabel?: string;
+  shape?: NodeShape;
 }
 
 export interface NodeAdornments {
@@ -37,13 +42,13 @@ export interface HandleConfiguration {
 
 export interface NodeTypeDefinition {
   getIcon?: (data: BaseNodeData, context: NodeStatusContext) => React.ReactNode;
+  getDisplay?: (data: BaseNodeData, context: NodeStatusContext) => NodeDisplay;
   getAdornments?: (data: BaseNodeData, context: NodeStatusContext) => NodeAdornments;
   getHandleConfigurations?: (data: BaseNodeData, context: NodeStatusContext) => HandleConfiguration[];
   getMenuItems?: (data: BaseNodeData, context: NodeStatusContext) => NodeMenuItem[];
 
   validateParameters?: (parameters: Record<string, unknown>) => boolean;
   getDefaultParameters?: () => Record<string, unknown>;
-  getDefaultDisplay?: () => BaseNodeData["display"];
 }
 
 export interface NodeRegistration {

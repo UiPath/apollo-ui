@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react";
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { Panel, ReactFlowProvider, useNodesState, useEdgesState, addEdge, Connection, Edge, ConnectionMode } from "@xyflow/react";
 import { StageNode } from "./StageNode";
 import { StageNodeData, ProcessItem } from "./StageNode.types";
@@ -34,6 +34,10 @@ const meta = {
         setEdges((eds) => addEdge(connection, eds));
       }, []);
 
+      const nodeTypes = useMemo(() => ({ stage: StageNode }), []);
+      const edgeTypes = useMemo(() => ({ stage: StageEdge }), []);
+      const defaultEdgeOptions = useMemo(() => ({ type: "stage" }), []);
+
       return (
         <div style={{ width: "100vw", height: "100vh" }}>
           <ReactFlowProvider>
@@ -43,13 +47,11 @@ const meta = {
               onNodesChange={onNodesChange}
               onEdgesChange={onEdgesChange}
               onConnect={onConnect}
-              nodeTypes={{ stage: StageNode }}
-              edgeTypes={{ stage: StageEdge }}
+              nodeTypes={nodeTypes}
+              edgeTypes={edgeTypes}
               mode="design"
               connectionMode={ConnectionMode.Strict}
-              defaultEdgeOptions={{
-                type: "stage",
-              }}
+              defaultEdgeOptions={defaultEdgeOptions}
               connectionLineComponent={StageConnectionEdge}
             >
               <Panel position="bottom-right">
@@ -84,16 +86,13 @@ type Story = StoryObj<typeof meta>;
 
 // Example with both sequential and parallel processes
 const sampleProcesses: ProcessItem[][] = [
-  // Single process (sequential)
   [{ id: "1", label: "Liability Check" }],
-  // Single process (sequential)
   [{ id: "2", label: "Credit Review" }],
   // Parallel processes - these run at the same time
   [
     { id: "3", label: "Address Verification" },
     { id: "4", label: "Property Verification" },
   ],
-  // Back to sequential
   [{ id: "5", label: "Processing Review" }],
 ];
 
@@ -101,7 +100,7 @@ export const Default: Story = {
   args: {
     title: "Processing",
     processes: sampleProcesses,
-    onAddProcess: () => console.log("Add process clicked"),
+    addProcessLabel: "Add process",
   },
 };
 
@@ -117,7 +116,6 @@ export const LoanProcessingWorkflow: Story = {
         data: {
           title: "Application",
           processes: [[{ id: "1", label: "KYC and AML Checks" }], [{ id: "2", label: "Document Verification" }]],
-          onAddProcess: () => console.log("Add process to Application"),
         } as StageNodeData,
       },
       // Processing Stage
@@ -136,7 +134,6 @@ export const LoanProcessingWorkflow: Story = {
             ],
             [{ id: "5", label: "Processing Review" }],
           ],
-          onAddProcess: () => console.log("Add process to Processing"),
         } as StageNodeData,
       },
       // Underwriting Stage
@@ -147,7 +144,6 @@ export const LoanProcessingWorkflow: Story = {
         data: {
           title: "Underwriting",
           processes: [[{ id: "1", label: "Report Ordering" }], [{ id: "2", label: "Underwriting Verification" }]],
-          onAddProcess: () => console.log("Add process to Underwriting"),
         } as StageNodeData,
       },
       // Closing Stage
@@ -162,7 +158,6 @@ export const LoanProcessingWorkflow: Story = {
             [{ id: "2", label: "Customer Signing" }],
             [{ id: "3", label: "Generate Audit Report" }],
           ],
-          onAddProcess: () => console.log("Add process to Closing"),
         } as StageNodeData,
       },
       // Funding Stage
@@ -173,7 +168,6 @@ export const LoanProcessingWorkflow: Story = {
         data: {
           title: "Funding",
           processes: [[{ id: "1", label: "Disperse Loan" }], [{ id: "2", label: "Generate Audit Report" }]],
-          onAddProcess: () => console.log("Add process to Funding"),
         } as StageNodeData,
       },
       // Rejected Stage
@@ -184,7 +178,6 @@ export const LoanProcessingWorkflow: Story = {
         data: {
           title: "Rejected",
           processes: [[{ id: "1", label: "Customer Notification" }], [{ id: "2", label: "Generate Audit Report" }]],
-          onAddProcess: () => console.log("Add process to Rejected"),
         } as StageNodeData,
       },
       // Withdrawn Stage
@@ -195,7 +188,6 @@ export const LoanProcessingWorkflow: Story = {
         data: {
           title: "Withdrawn",
           processes: [[{ id: "1", label: "Customer Notification" }], [{ id: "2", label: "Generate Audit Report" }]],
-          onAddProcess: () => console.log("Add process to Withdrawn"),
         } as StageNodeData,
       },
     ],

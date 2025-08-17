@@ -14,6 +14,12 @@ export const connectorNodeRegistration: NodeRegistration = {
   definition: {
     getIcon: (data, context) => <ApIcon name="code" color="var(--color-foreground-de-emp)" size="40px" />,
 
+    getDisplay: (data, context) => ({
+      label: data.display?.label,
+      subLabel: data.display?.subLabel,
+      shape: "square" as const,
+    }),
+
     getAdornments: (data, context) => {
       const status = context.executionStatus;
       const language = data.parameters.language as string;
@@ -66,10 +72,6 @@ export const connectorNodeRegistration: NodeRegistration = {
       context: {
         connectorId: "slack",
       },
-    }),
-
-    getDefaultDisplay: () => ({
-      shape: "square" as const,
     }),
 
     validateParameters: (parameters) => {

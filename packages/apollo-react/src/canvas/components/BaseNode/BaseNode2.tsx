@@ -35,7 +35,8 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
 
   const { inProgress } = useConnection();
 
-  const icon = nodeDefinition?.getIcon?.(data, statusContext) ?? <></>;
+  const icon = useMemo(() => nodeDefinition?.getIcon?.(data, statusContext) ?? <></>, [nodeDefinition, data, statusContext]);
+  const display = useMemo(() => nodeDefinition?.getDisplay?.(data, statusContext) ?? {}, [nodeDefinition, data, statusContext]);
   const adornments = useMemo(() => nodeDefinition?.getAdornments?.(data, statusContext) ?? {}, [nodeDefinition, data, statusContext]);
   const handleConfigurations = useMemo(
     () => nodeDefinition?.getHandleConfigurations?.(data, statusContext) ?? [],
@@ -43,9 +44,9 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
   );
   const menuItems = useMemo(() => nodeDefinition?.getMenuItems?.(data, statusContext) ?? [], [nodeDefinition, data, statusContext]);
 
-  const displayLabel = data.display?.label;
-  const displaySubLabel = data.display?.subLabel;
-  const displayShape = data.display?.shape ?? "square";
+  const displayLabel = display.label;
+  const displaySubLabel = display.subLabel;
+  const displayShape = display.shape ?? "square";
 
   const { edges, isConnecting } = useStore(
     (state) => ({ edges: state.edges, isConnecting: !!state.connectionClickStartHandle }),

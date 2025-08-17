@@ -103,6 +103,7 @@ const BaseCanvasInnerComponent = <NodeType extends Node = Node, EdgeType extends
 
   return (
     <ReactFlow
+      {...canvasProps}
       nodes={nodes}
       edges={edges}
       nodeTypes={nodeTypes}

@@ -32,9 +32,7 @@ export const StyledAddButton = styled(motion.div)`
   }
 `;
 
-export const StyledWrapper = styled("div", {
-  shouldForwardProp: (prop) => prop !== "position",
-})<{ position: Position }>`
+export const StyledWrapper = styled.div<{ $position: Position }>`
   position: absolute;
   display: flex;
   align-items: center;
@@ -42,7 +40,7 @@ export const StyledWrapper = styled("div", {
   pointer-events: none;
 
   ${(p) =>
-    p.position === Position.Top &&
+    p.$position === Position.Top &&
     css`
       flex-direction: column-reverse;
       bottom: 100%;
@@ -50,7 +48,7 @@ export const StyledWrapper = styled("div", {
       transform: translateX(-50%);
     `}
   ${(p) =>
-    p.position === Position.Bottom &&
+    p.$position === Position.Bottom &&
     css`
       flex-direction: column;
       top: 100%;
@@ -58,7 +56,7 @@ export const StyledWrapper = styled("div", {
       transform: translateX(-50%);
     `}
   ${(p) =>
-    p.position === Position.Left &&
+    p.$position === Position.Left &&
     css`
       flex-direction: row-reverse;
       right: 100%;
@@ -66,7 +64,7 @@ export const StyledWrapper = styled("div", {
       transform: translateY(-50%);
     `}
   ${(p) =>
-    p.position === Position.Right &&
+    p.$position === Position.Right &&
     css`
       flex-direction: row;
       left: 100%;
@@ -75,21 +73,17 @@ export const StyledWrapper = styled("div", {
     `}
 `;
 
-export const StyledLine = styled("div", {
-  shouldForwardProp: (prop) => prop !== "isVertical" && prop !== "selected",
-})<{ isVertical: boolean; selected: boolean }>`
+export const StyledLine = styled.div<{ $isVertical: boolean; $selected: boolean }>`
   background-color: transparent;
   border-style: solid;
   border-width: 1px;
-  border-color: ${(p) => (p.selected ? "var(--color-selection-indicator)" : "var(--color-border-de-emp)")};
-  height: ${(p) => (p.isVertical ? "60px" : "1px")};
-  width: ${(p) => (p.isVertical ? "1px" : "80px")};
+  border-color: ${(p) => (p.$selected ? "var(--color-selection-indicator)" : "var(--color-border-de-emp)")};
+  height: ${(p) => (p.$isVertical ? "60px" : "1px")};
+  width: ${(p) => (p.$isVertical ? "1px" : "80px")};
   transition: border-color 0.2s ease-in-out;
 `;
 
-export const StyledLabel = styled("div", {
-  shouldForwardProp: (prop) => prop !== "position",
-})<{ position: Position }>`
+export const StyledLabel = styled.div<{ $position: Position }>`
   position: absolute;
   background-color: var(--color-background);
   padding: 2px 6px;
@@ -99,28 +93,28 @@ export const StyledLabel = styled("div", {
   user-select: none;
 
   ${(p) =>
-    p.position === Position.Top &&
+    p.$position === Position.Top &&
     css`
       bottom: calc(100% + 4px);
       left: 50%;
       transform: translateX(-50%);
     `}
   ${(p) =>
-    p.position === Position.Bottom &&
+    p.$position === Position.Bottom &&
     css`
       top: calc(100% + 4px);
       left: 50%;
       transform: translateX(-50%);
     `}
   ${(p) =>
-    p.position === Position.Left &&
+    p.$position === Position.Left &&
     css`
       right: calc(100% + 4px);
       top: 50%;
       transform: translateY(-50%);
     `}
   ${(p) =>
-    p.position === Position.Right &&
+    p.$position === Position.Right &&
     css`
       left: calc(100% + 4px);
       top: 50%;
@@ -128,73 +122,69 @@ export const StyledLabel = styled("div", {
     `}
 `;
 
-export const StyledNotch = styled("div", {
-  shouldForwardProp: (prop) =>
-    prop !== "notchColor" && prop !== "handleType" && prop !== "isVertical" && prop !== "visible" && prop !== "selected",
-})<{
-  notchColor: string;
-  handleType: "artifact" | "input" | "output";
-  isVertical?: boolean;
-  visible: boolean;
-  selected: boolean;
+export const StyledNotch = styled.div<{
+  $notchColor: string;
+  $handleType: "artifact" | "input" | "output";
+  $isVertical?: boolean;
+  $visible: boolean;
+  $selected: boolean;
 }>`
-  width: ${(p) => (p.handleType === "input" && !p.isVertical ? 5 : 8)}px;
-  height: ${(p) => (p.handleType === "input" && p.isVertical ? 5 : 8)}px;
+  width: ${(p) => (p.$handleType === "input" && !p.$isVertical ? 5 : 8)}px;
+  height: ${(p) => (p.$handleType === "input" && p.$isVertical ? 5 : 8)}px;
   border-width: 0;
-  border-radius: ${(p) => (p.handleType === "artifact" || p.handleType === "input" ? 0 : "50%")};
-  transform: ${(p) => (p.handleType === "artifact" ? "rotate(45deg)" : "none")};
-  background-color: ${(p) => (p.selected ? "var(--color-selection-indicator)" : p.notchColor)};
-  opacity: ${(p) => (p.visible ? 1 : 0)};
+  border-radius: ${(p) => (p.$handleType === "artifact" || p.$handleType === "input" ? 0 : "50%")};
+  transform: ${(p) => (p.$handleType === "artifact" ? "rotate(45deg)" : "none")};
+  background-color: ${(p) => (p.$selected ? "var(--color-selection-indicator)" : p.$notchColor)};
+  opacity: ${(p) => (p.$visible ? 1 : 0)};
+  pointer-events: none;
 `;
 
-export const StyledHandle = styled(Handle, {
-  shouldForwardProp: (prop) => prop !== "positionPercent" && prop !== "total" && prop !== "visible",
-})<{
-  position: Position;
-  positionPercent: number;
-  total: number;
-  visible: boolean;
+export const StyledHandle = styled(Handle)<{
+  $positionPercent: number;
+  $total: number;
+  $visible: boolean;
 }>`
-  width: 16px;
-  height: 16px;
+  width: ${(p) => (p.position === Position.Top || p.position === Position.Bottom ? `${50 / p.$total}%` : "24px")};
+  height: ${(p) => (p.position === Position.Top || p.position === Position.Bottom ? "24px" : `${50 / p.$total}%`)};
   display: flex;
   align-items: center;
   justify-content: center;
   border-width: 0;
   border-radius: 0;
   background-color: transparent;
-  opacity: ${(p) => (p.visible ? 1 : 0)};
+  opacity: ${(p) => (p.$visible ? 1 : 0)};
+  cursor: crosshair;
 
   ${(p) =>
-    p.total > 1 &&
+    p.$total > 1 &&
     p.position === Position.Top &&
     css`
       top: 0;
-      left: ${p.positionPercent}%;
+      left: ${p.$positionPercent}%;
       transform: translate(-50%, -50%);
     `}
   ${(p) =>
-    p.total > 1 &&
+    p.$total > 1 &&
     p.position === Position.Bottom &&
     css`
       bottom: 0;
-      left: ${p.positionPercent}%;
+      left: ${p.$positionPercent}%;
       transform: translate(-50%, 50%);
     `}
   ${(p) =>
-    p.total > 1 &&
+    p.$total > 1 &&
     p.position === Position.Left &&
     css`
       left: 0;
-      top: ${p.positionPercent}%;
+      top: ${p.$positionPercent}%;
       transform: translate(-50%, -50%);
     `}
   ${(p) =>
-    p.total > 1 &&
+    p.$total > 1 &&
     p.position === Position.Right &&
     css`
       right: 0;
-      top: ${p.positionPercent}%;
+      top: ${p.$positionPercent}%;
       transform: translate(50%, -50%);
     `}
 `;

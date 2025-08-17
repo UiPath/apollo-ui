@@ -142,27 +142,3 @@ export const StageProcessLabel = styled.span`
   overflow-wrap: break-word;
   white-space: normal;
 `;
-
-export const StageBadgeSlot = styled.div<{
-  position: "top-left" | "top-right" | "bottom-left" | "bottom-right";
-}>`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 20px;
-  height: 20px;
-  background: transparent;
-  position: absolute;
-  ${({ position }) => {
-    switch (position) {
-      case "top-left":
-        return "top: 8px; left: 8px;";
-      case "top-right":
-        return "top: 8px; right: 8px;";
-      case "bottom-left":
-        return "bottom: 8px; left: 8px;";
-      case "bottom-right":
-        return "bottom: 8px; right: 8px;";
-    }
-  }}
-`;

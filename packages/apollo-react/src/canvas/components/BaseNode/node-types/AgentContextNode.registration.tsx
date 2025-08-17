@@ -14,6 +14,12 @@ export const agentContextNodeRegistration: NodeRegistration = {
   definition: {
     getIcon: (data, context) => <ApIcon name="account_tree" color="var(--color-foreground-de-emp)" size="40px" />,
 
+    getDisplay: (data, context) => ({
+      label: data.display?.label,
+      subLabel: data.display?.subLabel,
+      shape: "circle" as const,
+    }),
+
     getAdornments: (data, context) => ({}),
 
     getHandleConfigurations: (data, context) => [
@@ -32,10 +38,6 @@ export const agentContextNodeRegistration: NodeRegistration = {
     getMenuItems: (data, context) => [],
 
     getDefaultParameters: () => ({}),
-
-    getDefaultDisplay: () => ({
-      shape: "circle" as const,
-    }),
 
     validateParameters: (parameters) => true,
   },

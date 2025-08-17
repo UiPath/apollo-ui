@@ -53,14 +53,9 @@ const getExecutionStateBorder = (executionState?: string) => {
 
 const getInteractionStateBorder = (interactionState?: string) => {
   switch (interactionState) {
-    case "selected":
-      return css`
-        border-color: var(--color-selection-indicator);
-        outline: 3px solid var(--color-secondary-pressed);
-      `;
     case "hover":
       return css`
-        outline: 3px solid var(--color-secondary-focused);
+        outline: 4px solid var(--color-secondary-focused);
       `;
     case "disabled":
       return css`
@@ -109,7 +104,7 @@ export const BaseContainer = styled.div<{
     selected &&
     css`
       border-color: var(--color-selection-indicator);
-      outline: 3px solid var(--color-secondary-pressed);
+      outline: 6px solid var(--color-secondary-pressed);
     `}
 `;
 

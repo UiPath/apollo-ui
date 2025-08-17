@@ -18,6 +18,12 @@ export const agentNodeRegistration: NodeRegistration = {
       </div>
     ),
 
+    getDisplay: (data, context) => ({
+      label: data.display?.label,
+      subLabel: data.display?.subLabel,
+      shape: "rectangle" as const,
+    }),
+
     getAdornments: (data, context) => {
       const status = context.executionStatus;
       const agentType = data.parameters.agentType as string;
@@ -108,10 +114,6 @@ export const agentNodeRegistration: NodeRegistration = {
       lastConfidence: undefined,
       customInstructions: "",
       outputFormat: "text", // text, json, structured
-    }),
-
-    getDefaultDisplay: () => ({
-      shape: "rectangle" as const,
     }),
 
     validateParameters: (parameters) => {

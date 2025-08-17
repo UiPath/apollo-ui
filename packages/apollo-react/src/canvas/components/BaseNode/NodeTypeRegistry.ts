@@ -50,7 +50,6 @@ export class NodeTypeRegistry {
       parameters: definition?.getDefaultParameters?.() ?? {},
       display: {
         label: metadata?.displayName || nodeType,
-        ...definition?.getDefaultDisplay?.(),
       },
     };
   }
