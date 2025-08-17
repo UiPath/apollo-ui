@@ -540,8 +540,9 @@ export class AutopilotChatService {
      *
      * @param response - The response to send (supports legacy format or new ContentPart format)
      */
-    sendResponse(response: Omit<AutopilotChatMessage, 'role' | 'id'> & {
+    sendResponse(response: Omit<AutopilotChatMessage, 'role' | 'id' | 'content'> & {
         id?: string;
+        content?: string;
         contentPartChunk?: ContentPartChunk;
     }) {
         const lastMessage = this._conversation[this._conversation.length - 1];
@@ -566,7 +567,7 @@ export class AutopilotChatService {
         const assistantMessage = {
             id: messageId,
             ...rest,
-            content: response.content ?? response.contentParts?.map(part => part.text).join(''),
+            content: response.content ?? response.contentParts?.map(part => part.text).join('') ?? '',
             groupId: response.groupId ?? this._groupId,
             created_at: response.created_at ?? new Date().toISOString(),
             role: AutopilotChatRole.Assistant,
@@ -992,7 +993,7 @@ export class AutopilotChatService {
      * Processes a content part chunk
      * @internal
      */
-    private _processContentPartChunk(messageId: string, response: Omit<AutopilotChatMessage, 'role' | 'id'> & {
+    private _processContentPartChunk(messageId: string, response: Omit<AutopilotChatMessage, 'role' | 'id' | 'content'> & {
         id?: string;
         contentPartChunk?: ContentPartChunk;
     }) {
@@ -1001,12 +1002,13 @@ export class AutopilotChatService {
         } = response;
 
         this._accumulateContentPart(messageId, contentPartChunk!);
+        const accumulatedContent = this._getAccumulatedContent(messageId);
 
         const assistantMessage = {
             id: messageId,
             ...rest,
-            content: response.content ?? response.contentPartChunk?.text,
-            contentParts: this._getAccumulatedContent(messageId),
+            content: accumulatedContent.map(part => part.text).join(''),
+            contentParts: accumulatedContent,
             groupId: response.groupId ?? this._groupId,
             created_at: response.created_at ?? new Date().toISOString(),
             role: AutopilotChatRole.Assistant,
