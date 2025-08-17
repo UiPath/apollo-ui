@@ -124,9 +124,7 @@ function AutopilotChatMessagesComponent({
         if (group.length === 0) {
             finalString = message.toCopy ?? message.content;
         } else {
-            for (const msg of group) {
-                finalString += (msg.toCopy ?? msg.content) + '\n';
-            }
+            finalString = group.map(msg => msg.toCopy ?? msg.content).join('\n');
         }
 
         if (navigator.clipboard && finalString) {
