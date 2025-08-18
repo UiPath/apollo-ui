@@ -6,6 +6,7 @@ import { ApIcon, ApTypography } from "@uipath/portal-shell-react";
 import { FontVariantToken } from "@uipath/apollo-core";
 import { BaseCanvas } from "../BaseCanvas";
 import { BaseNode } from "../BaseNode";
+import type { HandleActionEvent } from "../ButtonHandle";
 import { AddNodePreview } from "./AddNodePreview";
 import { AddNodeManager } from "./AddNodeManager";
 import { CanvasPositionControls } from "../CanvasPositionControls";
@@ -21,9 +22,14 @@ import {
   scriptNodeRegistration,
   rpaNodeRegistration,
   connectorNodeRegistration,
+  agentContextNodeRegistration,
+  agentEscalationNodeRegistration,
+  agentMemoryNodeRegistration,
+  agentModelNodeRegistration,
+  agentToolNodeRegistration,
 } from "../BaseNode/node-types";
 import type { NodeOption } from "./AddNodePanel.types";
-import { AddNodePanel } from "./AddNodePanel";
+import { AddNodePanel } from "./";
 import { Column } from "@uipath/uix-core";
 
 const meta = {
@@ -39,6 +45,11 @@ const meta = {
           baseNodeRegistration,
           genericNodeRegistration,
           agentNodeRegistration,
+          agentModelNodeRegistration,
+          agentContextNodeRegistration,
+          agentEscalationNodeRegistration,
+          agentMemoryNodeRegistration,
+          agentToolNodeRegistration,
           httpRequestNodeRegistration,
           scriptNodeRegistration,
           rpaNodeRegistration,
@@ -131,13 +142,10 @@ const NodeAdditionStory = () => {
 
   // Handle button click to create preview node
   const handleAddClick = useCallback(
-    (event: React.MouseEvent) => {
+    (event: HandleActionEvent) => {
       if (!reactFlowInstance) return;
 
-      const handleId = (event as unknown as { handleId?: string }).handleId;
-      const target = event.currentTarget as HTMLElement;
-      const nodeElement = target.closest(".react-flow__node");
-      const nodeId = nodeElement?.getAttribute("data-id");
+      const { handleId, nodeId } = event;
 
       if (handleId && nodeId) {
         createAddNodePreview(nodeId, handleId, reactFlowInstance);
@@ -161,7 +169,7 @@ const NodeAdditionStory = () => {
                 type: "source" as const,
                 handleType: "output" as const,
                 showButton: true,
-                onClick: handleAddClick,
+                onAction: handleAddClick,
               },
             ],
           },
@@ -253,7 +261,7 @@ const NodeAdditionStory = () => {
                           type: "source" as const,
                           handleType: "output" as const,
                           showButton: true,
-                          onClick: handleAddClick,
+                          onAction: handleAddClick,
                         },
                       ],
                     },
@@ -323,8 +331,6 @@ export const PreviewSelection: Story = {
 // Standalone selector story for testing the component in isolation
 export const StandaloneSelector: Story = {
   args: {
-    sourceNodeId: "node-1",
-    sourceHandleId: "output",
     onNodeSelect: (node: NodeOption) => {
       console.log("Selected node:", node);
     },
@@ -351,8 +357,6 @@ export const StandaloneSelector: Story = {
 // Isolated selector with custom fetch for testing
 export const WithCustomFetch: Story = {
   args: {
-    sourceNodeId: "node-1",
-    sourceHandleId: "output",
     onNodeSelect: (node: NodeOption) => {
       console.log("Selected node:", node);
       alert(`Selected: ${node.label}`);
@@ -389,6 +393,40 @@ export const WithCustomFetch: Story = {
         boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
       }}
     >
+      <AddNodePanel {...args} />
+    </div>
+  ),
+};
+
+// Story demonstrating registry integration
+export const WithRegistryIntegration: Story = {
+  args: {
+    onNodeSelect: (node: NodeOption) => {
+      console.log("Selected node from registry:", node);
+      alert(`Selected: ${node.label} (${node.type})\nCategory: ${node.category}\n${node.description || ""}`);
+    },
+    onClose: () => {
+      console.log("Closed selector");
+    },
+  },
+  render: (args) => (
+    <div
+      style={{
+        width: "320px",
+        margin: "40px auto",
+        backgroundColor: "var(--color-background)",
+        border: "1px solid var(--color-border-de-emp)",
+        borderRadius: "8px",
+        boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
+      }}
+    >
+      <Column p={20}>
+        <ApTypography variant={FontVariantToken.fontSizeMBold}>Registry-Based Node Selector</ApTypography>
+        <ApTypography variant={FontVariantToken.fontSizeXs} color="var(--color-foreground-de-emp)">
+          AddNodePanel automatically uses the NodeRegistryProvider when available. It dynamically discovers categories and only shows those
+          with registered nodes!
+        </ApTypography>
+      </Column>
       <AddNodePanel {...args} />
     </div>
   ),

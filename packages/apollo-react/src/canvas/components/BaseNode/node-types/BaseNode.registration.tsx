@@ -4,9 +4,12 @@ import { ApIcon } from "@uipath/portal-shell-react";
 
 export const baseNodeRegistration: NodeRegistration = {
   nodeType: "baseNode",
-  category: "generic",
+  category: "actions",
   displayName: "Base Node",
   description: "Generic base node for canvas operations",
+  icon: "settings",
+  tags: ["basic", "general", "action", "workflow"],
+  sortOrder: 100,
   version: "1.0.0",
 
   definition: {

@@ -6,9 +6,12 @@ import { ApIcon } from "@uipath/portal-shell-react";
 
 export const genericNodeRegistration: NodeRegistration = {
   nodeType: "generic",
-  category: "generic",
-  displayName: "Generic",
-  description: "",
+  category: "actions",
+  displayName: "Generic Node",
+  description: "General purpose node for custom operations",
+  icon: "widgets",
+  tags: ["generic", "custom", "general", "utility"],
+  sortOrder: 90,
   version: "1.0.0",
 
   definition: {

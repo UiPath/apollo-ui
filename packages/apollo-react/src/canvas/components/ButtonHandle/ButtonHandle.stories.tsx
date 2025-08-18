@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { Node, Position, ReactFlowProvider, useNodesState, useEdgesState, Edge, Panel } from "@xyflow/react";
 import { BaseCanvas } from "../BaseCanvas/BaseCanvas";
-import { type ButtonHandleConfig, ButtonHandles } from "./ButtonHandle";
+import { type ButtonHandleConfig, ButtonHandles, type HandleActionEvent } from "./ButtonHandle";
 import { ApIcon, ApTypography } from "@uipath/portal-shell-react";
 import { Column, Row } from "@uipath/uix-core";
 import { FontVariantToken } from "@uipath/apollo-core";
@@ -21,7 +21,7 @@ import {
 } from "../BaseNode/node-types";
 import { useMemo } from "react";
 
-const SimpleNode = ({ data, selected }: { data: any; selected: boolean }) => {
+const SimpleNode = ({ id, data, selected }: { id: string; data: any; selected: boolean }) => {
   const topHandles: ButtonHandleConfig[] = [
     {
       id: "top",
@@ -29,13 +29,12 @@ const SimpleNode = ({ data, selected }: { data: any; selected: boolean }) => {
       handleType: "artifact",
       label: "Escalations",
       showButton: true,
-      onClick: (event) => {
+      onAction: (event: HandleActionEvent) => {
         console.log("Escalations clicked", event);
         alert("Escalations clicked!");
       },
     },
   ];
-
   const bottomHandles: ButtonHandleConfig[] = [
     {
       id: "bottom-memory",
@@ -43,7 +42,7 @@ const SimpleNode = ({ data, selected }: { data: any; selected: boolean }) => {
       handleType: "artifact",
       label: "Memory",
       showButton: true,
-      onClick: (event) => {
+      onAction: (event: HandleActionEvent) => {
         console.log("Memory clicked", event);
         alert("Memory clicked!");
       },
@@ -54,13 +53,12 @@ const SimpleNode = ({ data, selected }: { data: any; selected: boolean }) => {
       handleType: "artifact",
       label: "Context",
       showButton: true,
-      onClick: (event) => {
+      onAction: (event: HandleActionEvent) => {
         console.log("Context clicked", event);
         alert("Context clicked!");
       },
     },
   ];
-
   const leftHandles: ButtonHandleConfig[] = [
     {
       id: "left",
@@ -68,20 +66,18 @@ const SimpleNode = ({ data, selected }: { data: any; selected: boolean }) => {
       handleType: "input",
     },
   ];
-
   const rightHandles: ButtonHandleConfig[] = [
     {
       id: "right",
       type: "source",
       handleType: "output",
       showButton: true,
-      onClick: (event) => {
+      onAction: (event: HandleActionEvent) => {
         console.log("Output clicked", event);
         alert("Output clicked!");
       },
     },
   ];
-
   return (
     <div
       style={{
@@ -109,13 +105,13 @@ const SimpleNode = ({ data, selected }: { data: any; selected: boolean }) => {
         </Column>
       </Row>
 
-      <ButtonHandles handles={topHandles} position={Position.Top} selected={selected} />
+      <ButtonHandles nodeId={id} handles={topHandles} position={Position.Top} selected={selected} />
 
-      <ButtonHandles handles={bottomHandles} position={Position.Bottom} selected={selected} />
+      <ButtonHandles nodeId={id} handles={bottomHandles} position={Position.Bottom} selected={selected} />
 
-      <ButtonHandles handles={leftHandles} position={Position.Left} selected={selected} />
+      <ButtonHandles nodeId={id} handles={leftHandles} position={Position.Left} selected={selected} />
 
-      <ButtonHandles handles={rightHandles} position={Position.Right} selected={selected} />
+      <ButtonHandles nodeId={id} handles={rightHandles} position={Position.Right} selected={selected} />
     </div>
   );
 };
@@ -130,7 +126,7 @@ const Flow = () => {
       id: "1",
       type: "simpleNode",
       position: { x: 250, y: 150 },
-      data: { label: "Screener agent", subLabel: "Agent" },
+      data: { label: "Screener agent", subLabel: "Agent", parameters: {} },
     },
   ]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
@@ -201,7 +197,7 @@ export const MultipleHandles: Story = {
     position: Position.Top,
   },
   render: () => {
-    const MultiHandleNode = ({ data, selected }: { data: any; selected: boolean }) => {
+    const MultiHandleNode = ({ id, data, selected }: { id: string; data: any; selected: boolean }) => {
       const topHandles: ButtonHandleConfig[] = [
         {
           id: "top-1",
@@ -209,7 +205,7 @@ export const MultipleHandles: Story = {
           handleType: "output",
           label: "Out 1",
           showButton: true,
-          onClick: (e) => console.log("Output 1 clicked", e),
+          onAction: (e: HandleActionEvent) => console.log("Output 1 clicked", e),
         },
         {
           id: "top-2",
@@ -217,7 +213,7 @@ export const MultipleHandles: Story = {
           handleType: "output",
           label: "Out 2",
           showButton: true,
-          onClick: (e) => console.log("Output 2 clicked", e),
+          onAction: (e: HandleActionEvent) => console.log("Output 2 clicked", e),
         },
         {
           id: "top-3",
@@ -225,7 +221,7 @@ export const MultipleHandles: Story = {
           handleType: "output",
           label: "Out 3",
           showButton: true,
-          onClick: (e) => console.log("Output 3 clicked", e),
+          onAction: (e: HandleActionEvent) => console.log("Output 3 clicked", e),
         },
       ];
 
@@ -264,7 +260,7 @@ export const MultipleHandles: Story = {
           handleType: "output",
           label: "Main Output",
           showButton: true,
-          onClick: (e) => console.log("Main output clicked", e),
+          onAction: (e: HandleActionEvent) => console.log("Main output clicked", e),
         },
       ];
 
@@ -284,13 +280,13 @@ export const MultipleHandles: Story = {
         >
           <div style={{ fontSize: 16, fontWeight: 500, color: "var(--color-foreground)" }}>{data.label}</div>
 
-          <ButtonHandles handles={topHandles} position={Position.Top} selected={selected} />
+          <ButtonHandles nodeId={id} handles={topHandles} position={Position.Top} selected={selected} />
 
-          <ButtonHandles handles={bottomHandles} position={Position.Bottom} selected={selected} />
+          <ButtonHandles nodeId={id} handles={bottomHandles} position={Position.Bottom} selected={selected} />
 
-          <ButtonHandles handles={leftHandles} position={Position.Left} selected={selected} />
+          <ButtonHandles nodeId={id} handles={leftHandles} position={Position.Left} selected={selected} />
 
-          <ButtonHandles handles={rightHandles} position={Position.Right} selected={selected} />
+          <ButtonHandles nodeId={id} handles={rightHandles} position={Position.Right} selected={selected} />
         </div>
       );
     };
@@ -304,7 +300,7 @@ export const MultipleHandles: Story = {
         id: "1",
         type: "multiHandleNode",
         position: { x: 250, y: 150 },
-        data: { label: "Multi-Handle Node" },
+        data: { label: "Multi-Handle Node", parameters: {} },
       },
     ]);
     const [edges, setEdges, onEdgesChange] = useEdgesState([]);
@@ -328,7 +324,7 @@ export const ComplexExample: Story = {
     position: Position.Top,
   },
   render: () => {
-    const ComplexNode = ({ data, selected }: { data: any; selected: boolean }) => {
+    const ComplexNode = ({ id, data, selected }: { id: string; data: any; selected: boolean }) => {
       const topHandles: ButtonHandleConfig[] = [
         {
           id: "out1",
@@ -336,7 +332,7 @@ export const ComplexExample: Story = {
           handleType: "output",
           label: "Output 1",
           showButton: true,
-          onClick: (event) => {
+          onAction: (event: HandleActionEvent) => {
             console.log("Output 1 clicked", event);
             alert("Output 1 clicked!");
           },
@@ -347,7 +343,7 @@ export const ComplexExample: Story = {
           handleType: "output",
           label: "Output 2",
           showButton: true,
-          onClick: (event) => {
+          onAction: (event: HandleActionEvent) => {
             console.log("Output 2 clicked", event);
             alert("Output 2 clicked!");
           },
@@ -358,7 +354,7 @@ export const ComplexExample: Story = {
           handleType: "output",
           label: "Output 3",
           showButton: true,
-          onClick: (event) => {
+          onAction: (event: HandleActionEvent) => {
             console.log("Output 3 clicked", event);
             alert("Output 3 clicked!");
           },
@@ -405,13 +401,13 @@ export const ComplexExample: Story = {
         >
           <div style={{ fontSize: 16, fontWeight: 500, color: "var(--color-foreground)" }}>{data.label}</div>
 
-          <ButtonHandles handles={topHandles} position={Position.Top} selected={selected} />
+          <ButtonHandles nodeId={id} handles={topHandles} position={Position.Top} selected={selected} />
 
-          <ButtonHandles handles={bottomHandles} position={Position.Bottom} selected={selected} />
+          <ButtonHandles nodeId={id} handles={bottomHandles} position={Position.Bottom} selected={selected} />
 
-          <ButtonHandles handles={leftHandles} position={Position.Left} selected={selected} />
+          <ButtonHandles nodeId={id} handles={leftHandles} position={Position.Left} selected={selected} />
 
-          <ButtonHandles handles={rightHandles} position={Position.Right} selected={selected} />
+          <ButtonHandles nodeId={id} handles={rightHandles} position={Position.Right} selected={selected} />
         </div>
       );
     };
@@ -425,7 +421,7 @@ export const ComplexExample: Story = {
         id: "1",
         type: "complexNode",
         position: { x: 250, y: 150 },
-        data: { label: "Complex Node" },
+        data: { label: "Complex Node", parameters: {} },
       },
     ]);
     const [edges, setEdges, onEdgesChange] = useEdgesState([]);
@@ -451,7 +447,7 @@ export const LogicFlow: Story = {
       // IF Node
       {
         id: "if-node",
-        type: "baseNode",
+        type: " ",
         position: { x: 300, y: 200 },
         data: {
           icon: <ApIcon size="48px" name="alt_route" color="var(--color-foreground-de-emp)" />,
@@ -470,6 +466,7 @@ export const LogicFlow: Story = {
             },
           ],
         },
+        parameters: {},
       },
 
       // SWITCH Node
@@ -495,6 +492,7 @@ export const LogicFlow: Story = {
             },
           ],
         },
+        parameters: {},
       },
 
       // Source nodes
@@ -513,6 +511,7 @@ export const LogicFlow: Story = {
             },
           ],
         },
+        parameters: {},
       },
 
       {
@@ -530,6 +529,7 @@ export const LogicFlow: Story = {
             },
           ],
         },
+        parameters: {},
       },
 
       // Output nodes for IF
@@ -548,6 +548,7 @@ export const LogicFlow: Story = {
             },
           ],
         },
+        parameters: {},
       },
 
       {
@@ -565,6 +566,7 @@ export const LogicFlow: Story = {
             },
           ],
         },
+        parameters: {},
       },
 
       // Output nodes for SWITCH
@@ -583,6 +585,7 @@ export const LogicFlow: Story = {
             },
           ],
         },
+        parameters: {},
       },
 
       {
@@ -600,6 +603,7 @@ export const LogicFlow: Story = {
             },
           ],
         },
+        parameters: {},
       },
 
       {
@@ -617,6 +621,7 @@ export const LogicFlow: Story = {
             },
           ],
         },
+        parameters: {},
       },
     ];
 

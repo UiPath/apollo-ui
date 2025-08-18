@@ -7,8 +7,11 @@ import { ApIcon } from "@uipath/portal-shell-react";
 export const agentContextNodeRegistration: NodeRegistration = {
   nodeType: "agent.context",
   category: "ai",
-  displayName: "Context",
-  description: "",
+  displayName: "Agent Context",
+  description: "Provide context and knowledge to AI agents",
+  icon: "account_tree",
+  tags: ["agent", "context", "knowledge", "ai", "memory", "rag", "retrieval"],
+  sortOrder: 2,
   version: "1.0.0",
 
   definition: {

@@ -1,7 +1,7 @@
 import { memo, useMemo, useState, useCallback, useRef } from "react";
 import { Node, NodeProps, Position, useConnection, useStore } from "@xyflow/react";
 import { NodeStatusContext, useExecutionStatus } from "./ExecutionStatusContext";
-import { ButtonHandles } from "../ButtonHandle";
+import { ButtonHandles, HandleActionEvent } from "../ButtonHandle";
 import { NodeContextMenu } from "../NodeContextMenu";
 import { BaseContainer, BaseIconWrapper, BaseBadgeSlot, BaseTextContainer, BaseHeader, BaseSubHeader } from "./BaseNode.styles";
 import { BaseNodeData } from "./BaseNode.types";
@@ -80,6 +80,24 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
   const handleFocus = useCallback(() => setIsFocused(true), []);
   const handleBlur = useCallback(() => setIsFocused(false), []);
 
+  // Handle action callback that uses node type's default handler
+  const handleAction = useCallback(
+    (event: HandleActionEvent) => {
+      // First, check if the node type has a default handler
+      if (nodeDefinition?.onHandleAction) {
+        nodeDefinition.onHandleAction(event);
+      }
+
+      // Then, check if there's an instance-specific handler in the handle configuration
+      const handleConfig = handleConfigurations?.flatMap((config) => config.handles)?.find((h) => h.id === event.handleId);
+
+      if (handleConfig?.onAction) {
+        handleConfig.onAction(event);
+      }
+    },
+    [nodeDefinition, handleConfigurations]
+  );
+
   const connectedHandleIds = useMemo(() => {
     const ids = new Set<string>();
     if (!edges) return ids;
@@ -97,10 +115,17 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
       const hasConnectedHandle = config.handles.some((h) => connectedHandleIds.has(h.id));
       const finalVisible = hasConnectedHandle || (shouldShowHandles && (config.visible ?? true));
 
+      // Enhance handles with the unified action handler
+      const enhancedHandles = config.handles.map((handle) => ({
+        ...handle,
+        onAction: handle.onAction || handleAction,
+      }));
+
       return (
         <ButtonHandles
           key={`${config.position}:${config.handles.map((h) => h.id).join(",")}`}
-          handles={config.handles}
+          nodeId={id}
+          handles={enhancedHandles}
           position={config.position}
           selected={selected}
           visible={finalVisible}
@@ -109,7 +134,7 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
     });
 
     return elements;
-  }, [handleConfigurations, selected, shouldShowHandles, connectedHandleIds]);
+  }, [handleConfigurations, selected, shouldShowHandles, connectedHandleIds, handleAction]);
 
   // TODO: refactor to standalone component
   if (!nodeDefinition) {

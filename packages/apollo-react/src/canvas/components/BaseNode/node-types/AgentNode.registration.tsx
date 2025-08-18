@@ -1,5 +1,6 @@
 import { Position } from "@xyflow/react";
 import type { NodeRegistration } from "../BaseNode.types";
+import type { HandleActionEvent } from "../../ButtonHandle";
 import { Icons } from "@uipath/uix-core";
 
 // TODO: convert this to a function, that takes a translate function to support localization
@@ -7,8 +8,11 @@ import { Icons } from "@uipath/uix-core";
 export const agentNodeRegistration: NodeRegistration = {
   nodeType: "agent",
   category: "ai",
-  displayName: "Agent",
-  description: "AI agent for intelligent task execution and decision making",
+  displayName: "AI Agent",
+  description: "Autonomous AI agent for intelligent task execution and decision making",
+  icon: "smart_toy",
+  tags: ["ai", "agent", "llm", "automation", "intelligent"],
+  sortOrder: 1,
   version: "1.0.0",
 
   definition: {
@@ -124,6 +128,47 @@ export const agentNodeRegistration: NodeRegistration = {
       const validAgentTypes = ["conversational", "decision", "classification", "extraction"];
 
       return validAgentTypes.includes(agentType) && !!modelName?.trim() && !!systemPrompt?.trim();
+    },
+
+    // Handle action handler - define default behavior for this node type
+    onHandleAction: (event: HandleActionEvent) => {
+      console.log(`[Agent Node] Handle action:`, {
+        nodeId: event.nodeId,
+        handleId: event.handleId,
+        handleType: event.handleType,
+        position: event.position,
+      });
+
+      // Single handler with all context to make decisions
+      switch (event.handleType) {
+        case "input":
+          // Configure input sources
+          console.log(`Configure input for ${event.nodeId}`);
+          break;
+
+        case "output":
+          // Add downstream processing
+          console.log(`Add downstream from ${event.nodeId}`);
+          break;
+
+        case "artifact":
+          // Different behavior based on which artifact handle
+          switch (event.handleId) {
+            case "model":
+              console.log("Select AI model");
+              break;
+            case "context":
+              console.log("Configure context sources");
+              break;
+            case "tools":
+              console.log("Add available tools");
+              break;
+            case "escalations":
+              console.log("Set up escalation paths");
+              break;
+          }
+          break;
+      }
     },
   },
 };

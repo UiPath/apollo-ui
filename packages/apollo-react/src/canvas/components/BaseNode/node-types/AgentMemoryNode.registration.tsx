@@ -8,8 +8,11 @@ import { ApIcon } from "@uipath/portal-shell-react";
 export const agentMemoryNodeRegistration: NodeRegistration = {
   nodeType: "agent.memory",
   category: "ai",
-  displayName: "Memory",
-  description: "",
+  displayName: "Agent Memory",
+  description: "Configure agent memory and conversation history",
+  icon: "memory",
+  tags: ["memory", "agent", "history", "conversation", "context", "storage"],
+  sortOrder: 4,
   version: "1.0.0",
 
   definition: {

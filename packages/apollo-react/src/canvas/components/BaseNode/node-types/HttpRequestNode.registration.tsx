@@ -1,15 +1,18 @@
 import { Position } from "@xyflow/react";
 import type { NodeRegistration } from "../BaseNode.types";
-import { ApBadge, ApIcon, ApTypography } from "@uipath/portal-shell-react";
+import { ApIcon, ApTypography } from "@uipath/portal-shell-react";
 import { FontVariantToken } from "@uipath/apollo-core";
 
 // TODO: convert this to a function, that takes a translate function to support localization
 
 export const httpRequestNodeRegistration: NodeRegistration = {
   nodeType: "http-request",
-  category: "integration",
+  category: "integrations",
   displayName: "HTTP Request",
-  description: "Make HTTP requests to external APIs",
+  description: "Make HTTP requests to external APIs and web services",
+  icon: "public",
+  tags: ["http", "api", "rest", "web", "request", "integration"],
+  sortOrder: 10,
   version: "1.0.0",
 
   definition: {

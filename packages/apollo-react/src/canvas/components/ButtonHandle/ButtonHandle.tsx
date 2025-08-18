@@ -5,17 +5,25 @@ import { FontVariantToken } from "@uipath/apollo-core";
 import { ApIcon, ApTypography } from "@uipath/portal-shell-react";
 import { LabelContent, StyledAddButton, StyledHandle, StyledLabel, StyledLine, StyledNotch, StyledWrapper } from "./ButtonHandle.styles";
 
-type Props = {
-  onClick: (event: React.MouseEvent) => void;
+export interface HandleActionEvent {
+  handleId: string;
+  nodeId: string;
+  handleType: "artifact" | "input" | "output";
+  position: Position;
+  originalEvent: React.MouseEvent;
+}
+
+type AddButtonProps = {
+  onAction: (event: React.MouseEvent) => void;
 };
 
-const AddButton = memo(({ onClick }: Props) => {
+const AddButton = memo(({ onAction }: AddButtonProps) => {
   const handleClick = useCallback(
     (e: React.MouseEvent) => {
       e.stopPropagation();
-      onClick(e);
+      onAction(e);
     },
-    [onClick]
+    [onAction]
   );
 
   return (
@@ -36,6 +44,7 @@ const AddButton = memo(({ onClick }: Props) => {
 
 type ButtonHandleProps = {
   id: string;
+  nodeId: string;
   type: "source" | "target";
   position: Position;
   handleType: "artifact" | "input" | "output";
@@ -47,11 +56,12 @@ type ButtonHandleProps = {
   color?: string;
   index?: number; // 0-based index of this handle on the edge
   total?: number; // Total number of handles on this edge
-  onClick?: (event: React.MouseEvent) => void;
+  onAction?: (event: HandleActionEvent) => void;
 };
 
 const ButtonHandleBase = ({
   id,
+  nodeId,
   type,
   position,
   handleType,
@@ -63,7 +73,7 @@ const ButtonHandleBase = ({
   selected = false,
   index = 0,
   total = 1,
-  onClick,
+  onAction,
 }: ButtonHandleProps) => {
   const isVertical = position === Position.Top || position === Position.Bottom;
 
@@ -72,13 +82,25 @@ const ButtonHandleBase = ({
 
   const handleButtonClick = useCallback(
     (event: React.MouseEvent) => {
-      if (onClick) {
-        // Attach handleId to the existing event to avoid cloning SyntheticEvent
-        (event as unknown as { handleId?: string }).handleId = id;
-        onClick(event);
+      if (onAction) {
+        const actionEvent: HandleActionEvent = {
+          handleId: id,
+          nodeId,
+          handleType,
+          position,
+          originalEvent: event,
+        };
+        onAction(actionEvent);
+
+        // Also emit custom DOM event for flexibility
+        const customEvent = new CustomEvent("canvas:button-handle.action", {
+          detail: actionEvent,
+          bubbles: true,
+        });
+        event.currentTarget.dispatchEvent(customEvent);
       }
     },
-    [id, onClick]
+    [id, nodeId, handleType, position, onAction]
   );
 
   return (
@@ -101,11 +123,11 @@ const ButtonHandleBase = ({
           </LabelContent>
         </StyledLabel>
       )}
-      {showButton && onClick && (
+      {showButton && onAction && type === "source" && (
         <StyledWrapper $position={position}>
           <StyledLine $isVertical={isVertical} $selected={selected} />
           <div className="nodrag nopan" style={{ pointerEvents: "auto" }}>
-            <AddButton onClick={handleButtonClick} />
+            <AddButton onAction={handleButtonClick} />
           </div>
         </StyledWrapper>
       )}
@@ -124,15 +146,17 @@ export interface ButtonHandleConfig {
   labelIcon?: React.ReactNode;
   showButton?: boolean;
   color?: string;
-  onClick?: (event: React.MouseEvent) => void;
+  onAction?: (event: HandleActionEvent) => void;
 }
 
 const ButtonHandlesBase = ({
+  nodeId,
   handles,
   position,
   selected = false,
   visible = true,
 }: {
+  nodeId: string;
   handles: ButtonHandleConfig[];
   position: Position;
   selected?: boolean;
@@ -146,6 +170,7 @@ const ButtonHandlesBase = ({
         <ButtonHandle
           key={handle.id}
           id={handle.id}
+          nodeId={nodeId}
           type={handle.type}
           position={position}
           handleType={handle.handleType}
@@ -157,7 +182,7 @@ const ButtonHandlesBase = ({
           visible={visible}
           showButton={selected && visible && handle.showButton}
           color={handle.color}
-          onClick={handle.onClick}
+          onAction={handle.onAction}
         />
       ))}
     </>

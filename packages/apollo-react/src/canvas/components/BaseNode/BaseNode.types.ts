@@ -1,7 +1,7 @@
 import { Position } from "@xyflow/react";
 import { NodeStatusContext } from "./ExecutionStatusContext";
 import { NodeMenuItem } from "../NodeContextMenu/NodeContextMenu.types";
-import { ButtonHandleConfig } from "../ButtonHandle/ButtonHandle";
+import { ButtonHandleConfig, HandleActionEvent } from "../ButtonHandle/ButtonHandle";
 
 export type NodeShape = "square" | "circle" | "rectangle";
 
@@ -49,13 +49,22 @@ export interface NodeTypeDefinition {
 
   validateParameters?: (parameters: Record<string, unknown>) => boolean;
   getDefaultParameters?: () => Record<string, unknown>;
+
+  // Handle action handler - optional per node type
+  onHandleAction?: (event: HandleActionEvent) => void;
 }
 
 export interface NodeRegistration {
   nodeType: string;
   definition: NodeTypeDefinition;
+
+  // Metadata for node palette/selector
   category?: string;
   displayName?: string;
   description?: string;
+  icon?: string | React.ReactNode; // Icon for AddNodePanel display
+  tags?: string[]; // Additional search keywords
   version?: string;
+  isVisible?: boolean; // Whether to show in AddNodePanel (default: true)
+  sortOrder?: number; // Display order in category (lower = higher)
 }

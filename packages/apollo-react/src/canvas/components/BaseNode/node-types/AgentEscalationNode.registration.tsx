@@ -7,8 +7,11 @@ import { ApIcon } from "@uipath/portal-shell-react";
 export const agentEscalationNodeRegistration: NodeRegistration = {
   nodeType: "agent.escalation",
   category: "ai",
-  displayName: "Escalation",
-  description: "",
+  displayName: "Agent Escalation",
+  description: "Define escalation paths and human-in-the-loop workflows",
+  icon: "support_agent",
+  tags: ["escalation", "human", "handoff", "agent", "support", "fallback"],
+  sortOrder: 5,
   version: "1.0.0",
 
   definition: {

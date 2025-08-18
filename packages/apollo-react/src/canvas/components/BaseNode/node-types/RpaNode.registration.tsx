@@ -6,9 +6,12 @@ import { ApIcon } from "@uipath/portal-shell-react";
 
 export const rpaNodeRegistration: NodeRegistration = {
   nodeType: "rpa",
-  category: "automation",
-  displayName: "Run RPA job",
-  description: "Execute RPA robots and workflows",
+  category: "actions",
+  displayName: "Run RPA Job",
+  description: "Execute RPA robots and automated workflows",
+  icon: "precision_manufacturing",
+  tags: ["rpa", "robot", "automation", "uipath", "workflow", "job", "orchestrator"],
+  sortOrder: 15,
   version: "1.0.0",
 
   definition: {

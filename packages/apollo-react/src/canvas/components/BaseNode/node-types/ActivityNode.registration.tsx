@@ -6,7 +6,10 @@ export const activityNodeRegistration: NodeRegistration = {
   nodeType: "activity",
   category: "actions",
   displayName: "Activity",
-  description: "Generic activity node",
+  description: "Generic activity for workflow actions",
+  icon: "task_alt",
+  tags: ["activity", "action", "task", "step", "workflow"],
+  sortOrder: 50,
   version: "1.0.0",
 
   definition: {

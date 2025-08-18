@@ -7,8 +7,11 @@ import { Row, Icons } from "@uipath/uix-core";
 export const agentModelNodeRegistration: NodeRegistration = {
   nodeType: "agent.model",
   category: "ai",
-  displayName: "Model",
-  description: "",
+  displayName: "AI Model",
+  description: "Configure AI model settings and parameters",
+  icon: "model_training",
+  tags: ["model", "ai", "llm", "gpt", "claude", "gemini", "configuration"],
+  sortOrder: 3,
   version: "1.0.0",
 
   definition: {

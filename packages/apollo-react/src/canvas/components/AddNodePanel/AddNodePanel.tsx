@@ -4,8 +4,8 @@ import { FontVariantToken } from "@uipath/apollo-core";
 import { Column, Row } from "@uipath/uix-core";
 import { ScrollableList, ListItemButton, IconContainer, AnimatedContainer, AnimatedContent } from "./AddNodePanel.styles";
 import type { AddNodePanelProps, NodeOption, NodeCategory } from "./AddNodePanel.types";
-import { DEFAULT_CATEGORIES } from "./AddNodePanel.constants";
 import { useNodeSearch } from "./AddNodePanel.hooks";
+import { useOptionalRegistryNodeOptions } from "./useRegistryNodeOptions";
 
 type ViewState = "categories" | "nodes";
 
@@ -123,7 +123,11 @@ const ListView = <T extends ListItem>(props: ListViewProps<T>) => {
   );
 };
 
-export const AddNodePanel: React.FC<AddNodePanelProps> = ({ sourceNodeId, sourceHandleId, onNodeSelect, onClose, fetchNodeOptions }) => {
+export const AddNodePanel: React.FC<AddNodePanelProps> = ({ onNodeSelect, onClose, fetchNodeOptions, categories }) => {
+  const registryOptions = useOptionalRegistryNodeOptions();
+
+  const finalFetchNodeOptions = fetchNodeOptions || registryOptions?.fetchNodeOptions;
+  const finalCategories = categories || registryOptions?.getCategories() || [];
   const [viewState, setViewState] = useState<ViewState>("categories");
   const [selectedCategory, setSelectedCategory] = useState<NodeCategory | null>(null);
   const [nodes, setNodes] = useState<NodeOption[]>([]);
@@ -175,25 +179,25 @@ export const AddNodePanel: React.FC<AddNodePanelProps> = ({ sourceNodeId, source
 
   // Fetch nodes when category is selected
   useEffect(() => {
-    if (fetchNodeOptions && selectedCategory) {
+    if (finalFetchNodeOptions && selectedCategory) {
       setIsLoading(true);
-      fetchNodeOptions(selectedCategory.id, searchQuery)
+      finalFetchNodeOptions(selectedCategory.id, searchQuery)
         .then(setNodes)
         .catch(console.error)
         .finally(() => setIsLoading(false));
     }
-  }, [selectedCategory, searchQuery, fetchNodeOptions]);
+  }, [selectedCategory, searchQuery, finalFetchNodeOptions]);
 
   // Filter categories based on search
   const filteredCategories = useMemo(() => {
-    if (!isSearching || !searchQuery) return DEFAULT_CATEGORIES;
+    if (!isSearching || !searchQuery) return finalCategories;
 
     const query = searchQuery.toLowerCase();
     const matchingNodes = searchedNodes;
     const categoriesWithNodes = new Set(matchingNodes.map((node) => node.category));
 
-    return DEFAULT_CATEGORIES.filter((cat) => categoriesWithNodes.has(cat.id) || cat.label.toLowerCase().includes(query));
-  }, [searchQuery, isSearching, searchedNodes]);
+    return finalCategories.filter((cat) => categoriesWithNodes.has(cat.id) || cat.label.toLowerCase().includes(query));
+  }, [searchQuery, isSearching, searchedNodes, finalCategories]);
 
   const handleCategorySelect = useCallback(
     (category: NodeCategory) => {

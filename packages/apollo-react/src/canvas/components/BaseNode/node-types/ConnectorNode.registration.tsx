@@ -6,9 +6,12 @@ import { ApIcon } from "@uipath/portal-shell-react";
 
 export const connectorNodeRegistration: NodeRegistration = {
   nodeType: "connector",
-  category: "integration",
+  category: "integrations",
   displayName: "Connector",
   description: "Connect to external systems and services",
+  icon: "cable",
+  tags: ["connector", "integration", "api", "service", "external", "database", "saas"],
+  sortOrder: 12,
   version: "1.0.0",
 
   definition: {

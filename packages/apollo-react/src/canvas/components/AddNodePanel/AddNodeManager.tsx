@@ -131,13 +131,7 @@ export const AddNodeManager: React.FC<AddNodeManagerProps> = ({ fetchNodeOptions
 
   return (
     <FloatingCanvasPanel open={isOpen} nodeId="preview-node" placement="right-start" offset={10}>
-      <AddNodePanel
-        sourceNodeId={sourceInfo.nodeId}
-        sourceHandleId={sourceInfo.handleId}
-        onNodeSelect={handleNodeSelect}
-        onClose={handleClose}
-        fetchNodeOptions={fetchNodeOptions}
-      />
+      <AddNodePanel onNodeSelect={handleNodeSelect} onClose={handleClose} fetchNodeOptions={fetchNodeOptions} />
     </FloatingCanvasPanel>
   );
 };

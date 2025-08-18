@@ -7,8 +7,11 @@ import { ApIcon } from "@uipath/portal-shell-react";
 export const agentToolNodeRegistration: NodeRegistration = {
   nodeType: "agent.tool",
   category: "ai",
-  displayName: "Tool",
-  description: "",
+  displayName: "Agent Tool",
+  description: "Add tools and functions for AI agents to use",
+  icon: "build",
+  tags: ["tool", "function", "agent", "capability", "action", "api"],
+  sortOrder: 6,
   version: "1.0.0",
 
   definition: {

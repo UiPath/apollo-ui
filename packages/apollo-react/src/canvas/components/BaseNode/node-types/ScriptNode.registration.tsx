@@ -6,9 +6,12 @@ import { ApIcon } from "@uipath/portal-shell-react";
 
 export const scriptNodeRegistration: NodeRegistration = {
   nodeType: "script-task",
-  category: "automation",
+  category: "actions",
   displayName: "Script Task",
   description: "Execute custom scripts and code snippets",
+  icon: "code",
+  tags: ["script", "code", "automation", "python", "javascript", "powershell", "bash"],
+  sortOrder: 20,
   version: "1.0.0",
 
   definition: {
