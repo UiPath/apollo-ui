@@ -11,6 +11,17 @@ import { AddNodeManager } from "./AddNodeManager";
 import { CanvasPositionControls } from "../CanvasPositionControls";
 import { createAddNodePreview } from "./createAddNodePreview";
 import type { BaseNodeData } from "../BaseNode";
+import { NodeRegistryProvider } from "../BaseNode/NodeRegistryProvider";
+import { ExecutionStatusContext } from "../BaseNode/ExecutionStatusContext";
+import {
+  baseNodeRegistration,
+  genericNodeRegistration,
+  agentNodeRegistration,
+  httpRequestNodeRegistration,
+  scriptNodeRegistration,
+  rpaNodeRegistration,
+  connectorNodeRegistration,
+} from "../BaseNode/node-types";
 import type { NodeOption } from "./AddNodePanel.types";
 import { AddNodePanel } from "./AddNodePanel";
 import { Column } from "@uipath/uix-core";
@@ -22,13 +33,33 @@ const meta = {
     layout: "fullscreen",
   },
   decorators: [
-    (Story: any) => (
-      <div style={{ height: "100vh", width: "100%" }}>
-        <ReactFlowProvider>
-          <Story />
-        </ReactFlowProvider>
-      </div>
-    ),
+    (Story: any) => {
+      const registrations = useMemo(
+        () => [
+          baseNodeRegistration,
+          genericNodeRegistration,
+          agentNodeRegistration,
+          httpRequestNodeRegistration,
+          scriptNodeRegistration,
+          rpaNodeRegistration,
+          connectorNodeRegistration,
+        ],
+        []
+      );
+      const executions = useMemo(() => ({ getExecutionStatus: () => "idle" }), []);
+
+      return (
+        <NodeRegistryProvider registrations={registrations}>
+          <ExecutionStatusContext.Provider value={executions}>
+            <div style={{ height: "100vh", width: "100%" }}>
+              <ReactFlowProvider>
+                <Story />
+              </ReactFlowProvider>
+            </div>
+          </ExecutionStatusContext.Provider>
+        </NodeRegistryProvider>
+      );
+    },
   ],
 } satisfies Meta<typeof AddNodePanel>;
 

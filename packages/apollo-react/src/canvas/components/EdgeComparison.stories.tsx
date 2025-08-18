@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from "react";
+import React, { useCallback, useEffect, useMemo } from "react";
 import type { Meta, StoryObj } from "@storybook/react";
 import {
   ReactFlowProvider,
@@ -18,6 +18,17 @@ import { BaseNode } from "./BaseNode";
 import { ApCheckbox, ApDropdown, ApDropdownItem, ApIcon, ApTypography } from "@uipath/portal-shell-react";
 import { FontVariantToken } from "@uipath/apollo-core";
 import { Column } from "@uipath/uix-core";
+import { NodeRegistryProvider, useNodeTypeRegistry } from "./BaseNode/NodeRegistryProvider";
+import { ExecutionStatusContext } from "./BaseNode/ExecutionStatusContext";
+import {
+  baseNodeRegistration,
+  genericNodeRegistration,
+  agentNodeRegistration,
+  httpRequestNodeRegistration,
+  scriptNodeRegistration,
+  rpaNodeRegistration,
+  connectorNodeRegistration,
+} from "./BaseNode/node-types";
 
 const meta = {
   title: "Canvas/Edges/XyFlowEdgeComparison",
@@ -25,13 +36,33 @@ const meta = {
     layout: "fullscreen",
   },
   decorators: [
-    (Story) => (
-      <div style={{ width: "100vw", height: "100vh" }}>
-        <ReactFlowProvider>
-          <Story />
-        </ReactFlowProvider>
-      </div>
-    ),
+    (Story) => {
+      const registrations = useMemo(
+        () => [
+          baseNodeRegistration,
+          genericNodeRegistration,
+          agentNodeRegistration,
+          httpRequestNodeRegistration,
+          scriptNodeRegistration,
+          rpaNodeRegistration,
+          connectorNodeRegistration,
+        ],
+        []
+      );
+      const executions = useMemo(() => ({ getExecutionStatus: () => "idle" }), []);
+
+      return (
+        <NodeRegistryProvider registrations={registrations}>
+          <ExecutionStatusContext.Provider value={executions}>
+            <div style={{ width: "100vw", height: "100vh" }}>
+              <ReactFlowProvider>
+                <Story />
+              </ReactFlowProvider>
+            </div>
+          </ExecutionStatusContext.Provider>
+        </NodeRegistryProvider>
+      );
+    },
   ],
 } satisfies Meta;
 
@@ -41,6 +72,16 @@ type Story = StoryObj<typeof meta>;
 export const AllEdgeTypes: Story = {
   name: "All Edge Types",
   render: () => {
+    const nodeTypeRegistry = useNodeTypeRegistry();
+    const nodeTypes = useMemo(() => {
+      return nodeTypeRegistry.getAllNodeTypes().reduce(
+        (acc, nodeType) => {
+          acc[nodeType] = BaseNode;
+          return acc;
+        },
+        {} as Record<string, typeof BaseNode>
+      );
+    }, [nodeTypeRegistry]);
     // Create a grid of nodes to demonstrate different edge types
     // Better spacing with consistent gaps
     const nodeWidth = 350; // Horizontal gap between source and target
@@ -56,7 +97,7 @@ export const AllEdgeTypes: Story = {
       // Default edge nodes
       {
         id: "default-1",
-        type: "base",
+        type: "baseNode",
         position: { x: startX, y: startY },
         data: {
           label: "Default",
@@ -76,7 +117,7 @@ export const AllEdgeTypes: Story = {
       },
       {
         id: "default-2",
-        type: "base",
+        type: "baseNode",
         position: { x: startX + nodeWidth, y: startY + yOffsets[0] },
         data: {
           label: "Default",
@@ -98,7 +139,7 @@ export const AllEdgeTypes: Story = {
       // Straight edge nodes
       {
         id: "straight-1",
-        type: "base",
+        type: "baseNode",
         position: { x: startX, y: startY + nodeHeight },
         data: {
           label: "Straight",
@@ -118,7 +159,7 @@ export const AllEdgeTypes: Story = {
       },
       {
         id: "straight-2",
-        type: "base",
+        type: "baseNode",
         position: { x: startX + nodeWidth, y: startY + nodeHeight + yOffsets[1] },
         data: {
           label: "Straight",
@@ -140,7 +181,7 @@ export const AllEdgeTypes: Story = {
       // Step edge nodes
       {
         id: "step-1",
-        type: "base",
+        type: "baseNode",
         position: { x: startX, y: startY + nodeHeight * 2 },
         data: {
           label: "Step",
@@ -160,7 +201,7 @@ export const AllEdgeTypes: Story = {
       },
       {
         id: "step-2",
-        type: "base",
+        type: "baseNode",
         position: { x: startX + nodeWidth, y: startY + nodeHeight * 2 + yOffsets[2] },
         data: {
           label: "Step",
@@ -182,7 +223,7 @@ export const AllEdgeTypes: Story = {
       // Smooth Step edge nodes
       {
         id: "smoothstep-1",
-        type: "base",
+        type: "baseNode",
         position: { x: startX, y: startY + nodeHeight * 3 },
         data: {
           label: "Smooth Step",
@@ -202,7 +243,7 @@ export const AllEdgeTypes: Story = {
       },
       {
         id: "smoothstep-2",
-        type: "base",
+        type: "baseNode",
         position: { x: startX + nodeWidth, y: startY + nodeHeight * 3 + yOffsets[3] },
         data: {
           label: "Smooth Step",
@@ -224,7 +265,7 @@ export const AllEdgeTypes: Story = {
       // Bezier edge nodes
       {
         id: "bezier-1",
-        type: "base",
+        type: "baseNode",
         position: { x: startX, y: startY + nodeHeight * 4 },
         data: {
           label: "Bezier",
@@ -244,7 +285,7 @@ export const AllEdgeTypes: Story = {
       },
       {
         id: "bezier-2",
-        type: "base",
+        type: "baseNode",
         position: { x: startX + nodeWidth, y: startY + nodeHeight * 4 + yOffsets[4] },
         data: {
           label: "Bezier",
@@ -266,7 +307,7 @@ export const AllEdgeTypes: Story = {
       // Second column - Animated edge nodes
       {
         id: "animated-1",
-        type: "base",
+        type: "baseNode",
         position: { x: startX + columnGap, y: startY },
         data: {
           label: "Animated",
@@ -286,7 +327,7 @@ export const AllEdgeTypes: Story = {
       },
       {
         id: "animated-2",
-        type: "base",
+        type: "baseNode",
         position: { x: startX + columnGap + nodeWidth, y: startY - yOffsets[0] },
         data: {
           label: "Animated",
@@ -308,7 +349,7 @@ export const AllEdgeTypes: Story = {
       // Styled edge nodes (demonstrating various styling options)
       {
         id: "styled-1",
-        type: "base",
+        type: "baseNode",
         position: { x: startX + columnGap, y: startY + nodeHeight },
         data: {
           label: "Styled",
@@ -328,7 +369,7 @@ export const AllEdgeTypes: Story = {
       },
       {
         id: "styled-2",
-        type: "base",
+        type: "baseNode",
         position: { x: startX + columnGap + nodeWidth, y: startY + nodeHeight - yOffsets[1] },
         data: {
           label: "Styled",
@@ -350,7 +391,7 @@ export const AllEdgeTypes: Story = {
       // Labeled edge nodes
       {
         id: "labeled-1",
-        type: "base",
+        type: "baseNode",
         position: { x: startX + columnGap, y: startY + nodeHeight * 2 },
         data: {
           label: "Labeled",
@@ -370,7 +411,7 @@ export const AllEdgeTypes: Story = {
       },
       {
         id: "labeled-2",
-        type: "base",
+        type: "baseNode",
         position: { x: startX + columnGap + nodeWidth, y: startY + nodeHeight * 2 - yOffsets[2] },
         data: {
           label: "Labeled",
@@ -392,7 +433,7 @@ export const AllEdgeTypes: Story = {
       // Marker demonstration nodes
       {
         id: "marker-1",
-        type: "base",
+        type: "baseNode",
         position: { x: startX + columnGap, y: startY + nodeHeight * 3 },
         data: {
           label: "Markers",
@@ -412,7 +453,7 @@ export const AllEdgeTypes: Story = {
       },
       {
         id: "marker-2",
-        type: "base",
+        type: "baseNode",
         position: { x: startX + columnGap + nodeWidth, y: startY + nodeHeight * 3 - yOffsets[3] },
         data: {
           label: "Markers",
@@ -434,7 +475,7 @@ export const AllEdgeTypes: Story = {
       // Complex path nodes (multiple edges between same nodes)
       {
         id: "complex-1",
-        type: "base",
+        type: "baseNode",
         position: { x: startX + columnGap, y: startY + nodeHeight * 4 },
         data: {
           label: "Complex",
@@ -469,7 +510,7 @@ export const AllEdgeTypes: Story = {
       },
       {
         id: "complex-2",
-        type: "base",
+        type: "baseNode",
         position: { x: startX + columnGap + nodeWidth, y: startY + nodeHeight * 4 },
         data: {
           label: "Complex",
@@ -699,7 +740,7 @@ export const AllEdgeTypes: Story = {
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
-        nodeTypes={{ base: BaseNode }}
+        nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
         mode="design"
         defaultEdgeOptions={{
@@ -761,6 +802,16 @@ export const AllEdgeTypes: Story = {
 export const InteractiveEdgeSelection: Story = {
   name: "Interactive Edge Type",
   render: () => {
+    const nodeTypeRegistry = useNodeTypeRegistry();
+    const nodeTypes = useMemo(() => {
+      return nodeTypeRegistry.getAllNodeTypes().reduce(
+        (acc, nodeType) => {
+          acc[nodeType] = BaseNode;
+          return acc;
+        },
+        {} as Record<string, typeof BaseNode>
+      );
+    }, [nodeTypeRegistry]);
     const [selectedEdgeType, setSelectedEdgeType] = React.useState<string>("default");
     const [isAnimated, setIsAnimated] = React.useState(false);
     const [strokeWidth, setStrokeWidth] = React.useState(2);
@@ -769,7 +820,7 @@ export const InteractiveEdgeSelection: Story = {
     const initialNodes: Node[] = [
       {
         id: "interactive-1",
-        type: "base",
+        type: "baseNode",
         position: { x: 200, y: 400 },
         data: {
           label: "Source Node",
@@ -790,7 +841,7 @@ export const InteractiveEdgeSelection: Story = {
       },
       {
         id: "interactive-2",
-        type: "base",
+        type: "baseNode",
         position: { x: 600, y: 400 },
         data: {
           label: "Target Node",
@@ -862,7 +913,7 @@ export const InteractiveEdgeSelection: Story = {
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
-        nodeTypes={{ base: BaseNode }}
+        nodeTypes={nodeTypes}
         mode="design"
       >
         <Panel position="top-left">

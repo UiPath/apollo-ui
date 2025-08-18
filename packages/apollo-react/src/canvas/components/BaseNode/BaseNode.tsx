@@ -1,62 +1,84 @@
-import { memo, useMemo, useState, useCallback, useEffect } from "react";
-import { NodeProps, Position, useStore } from "@xyflow/react";
-import { BaseContainer, BaseIconWrapper, BaseTextContainer, BaseHeader, BaseSubHeader, BaseBadgeSlot } from "./BaseNode.styles";
-import { ButtonHandles } from "../ButtonHandle/ButtonHandle";
+import { memo, useMemo, useState, useCallback, useRef } from "react";
+import { Node, NodeProps, Position, useConnection, useStore } from "@xyflow/react";
+import { NodeStatusContext, useExecutionStatus } from "./ExecutionStatusContext";
+import { ButtonHandles } from "../ButtonHandle";
 import { NodeContextMenu } from "../NodeContextMenu";
-import type { BaseNodeData, SingleHandleConfiguration, HandleConfiguration } from "./BaseNode.types";
+import { BaseContainer, BaseIconWrapper, BaseBadgeSlot, BaseTextContainer, BaseHeader, BaseSubHeader } from "./BaseNode.styles";
+import { BaseNodeData } from "./BaseNode.types";
+import { useNodeTypeRegistry } from "./NodeRegistryProvider";
+import { cx } from "@uipath/uix-core";
+import { ApIcon } from "@uipath/portal-shell-react";
 
-// Helper function to normalize handle configurations
-const normalizeHandleConfig = (config: HandleConfiguration | SingleHandleConfiguration): HandleConfiguration => {
-  if ("handle" in config) {
-    // Single handle configuration - wrap in array
-    return {
-      position: config.position,
-      handles: [config.handle],
-      visible: config.visible,
-    };
-  }
-  return config;
-};
+const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
+  const { type, data, selected, id, dragging } = props;
 
-const BaseNodeComponent = (props: NodeProps & { data: BaseNodeData }) => {
-  const { data, selected, id } = props;
-  const {
-    icon,
-    label,
-    subLabel,
-    topLeftAdornment,
-    topRightAdornment,
-    bottomRightAdornment,
-    bottomLeftAdornment,
-    handleConfigurations,
-    shape = "square",
-    menuItems,
-  } = data;
-
+  const containerRef = useRef<HTMLDivElement>(null);
   const [isHovered, setIsHovered] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
+
+  // Get execution status from external source
+  const executionStatus = useExecutionStatus(id);
+  const nodeTypeRegistry = useNodeTypeRegistry();
+
+  const nodeDefinition = useMemo(() => nodeTypeRegistry.get(type), [type]);
+
+  const statusContext: NodeStatusContext = useMemo(
+    () => ({
+      nodeId: id,
+      executionStatus,
+      isHovered,
+      isSelected: selected,
+      isDragging: dragging,
+    }),
+    [id, executionStatus, isHovered, selected, dragging]
+  );
+
+  const { inProgress } = useConnection();
+
+  const icon = useMemo(() => nodeDefinition?.getIcon?.(data, statusContext) ?? <></>, [nodeDefinition, data, statusContext]);
+  const display = useMemo(() => nodeDefinition?.getDisplay?.(data, statusContext) ?? {}, [nodeDefinition, data, statusContext]);
+  const adornments = useMemo(() => nodeDefinition?.getAdornments?.(data, statusContext) ?? {}, [nodeDefinition, data, statusContext]);
+  const handleConfigurations = useMemo(
+    () => nodeDefinition?.getHandleConfigurations?.(data, statusContext) ?? [],
+    [nodeDefinition, data, statusContext]
+  );
+  const menuItems = useMemo(() => nodeDefinition?.getMenuItems?.(data, statusContext) ?? [], [nodeDefinition, data, statusContext]);
+
+  const displayLabel = display.label;
+  const displaySubLabel = display.subLabel;
+  const displayShape = display.shape ?? "square";
+
   const { edges, isConnecting } = useStore(
     (state) => ({ edges: state.edges, isConnecting: !!state.connectionClickStartHandle }),
     (a, b) => a.edges === b.edges && a.isConnecting === b.isConnecting
   );
 
-  // Determine if handles should be visible
-  const shouldShowHandles = useMemo(() => {
-    return selected || isHovered || isConnecting;
-  }, [isConnecting, selected, isHovered]);
+  const interactionState = useMemo(() => {
+    if (dragging) return "drag";
+    if (selected) return "selected";
+    if (isFocused) return "focus";
+    if (isHovered) return "hover";
+    return "default";
+  }, [dragging, selected, isFocused, isHovered]);
 
-  // Check if there are handles with labels on bottom position that would be visible
+  const shouldShowHandles = useMemo(
+    () => inProgress || selected || isHovered || isConnecting,
+    [inProgress || isConnecting, selected, isHovered]
+  );
+
   const hasVisibleBottomHandlesWithLabels = useMemo(() => {
     if (!handleConfigurations || !shouldShowHandles) {
       return false;
     }
-    return handleConfigurations.some((config) => {
-      const normalizedConfig = normalizeHandleConfig(config);
-      return normalizedConfig.position === Position.Bottom && normalizedConfig.handles.some((handle) => !!handle.label);
-    });
+    return handleConfigurations
+      .filter((config) => config.position === Position.Bottom)
+      .some((config) => config.handles.some((handle) => !!handle.label));
   }, [handleConfigurations, shouldShowHandles]);
 
   const handleMouseEnter = useCallback(() => setIsHovered(true), []);
   const handleMouseLeave = useCallback(() => setIsHovered(false), []);
+  const handleFocus = useCallback(() => setIsFocused(true), []);
+  const handleBlur = useCallback(() => setIsFocused(false), []);
 
   const connectedHandleIds = useMemo(() => {
     const ids = new Set<string>();
@@ -69,18 +91,17 @@ const BaseNodeComponent = (props: NodeProps & { data: BaseNodeData }) => {
   }, [edges, id]);
 
   const handleElements = useMemo(() => {
-    if (!handleConfigurations) return null;
+    if (!handleConfigurations) return <></>;
 
     const elements = handleConfigurations.map((config) => {
-      const normalizedConfig = normalizeHandleConfig(config);
-      const hasConnectedHandle = normalizedConfig.handles.some((h) => connectedHandleIds.has(h.id));
-      const finalVisible = hasConnectedHandle || (shouldShowHandles && (normalizedConfig.visible ?? true));
+      const hasConnectedHandle = config.handles.some((h) => connectedHandleIds.has(h.id));
+      const finalVisible = hasConnectedHandle || (shouldShowHandles && (config.visible ?? true));
 
       return (
         <ButtonHandles
-          key={`${normalizedConfig.position}:${normalizedConfig.handles.map((h) => h.id).join(",")}`}
-          handles={normalizedConfig.handles}
-          position={normalizedConfig.position}
+          key={`${config.position}:${config.handles.map((h) => h.id).join(",")}`}
+          handles={config.handles}
+          position={config.position}
           selected={selected}
           visible={finalVisible}
         />
@@ -90,40 +111,79 @@ const BaseNodeComponent = (props: NodeProps & { data: BaseNodeData }) => {
     return elements;
   }, [handleConfigurations, selected, shouldShowHandles, connectedHandleIds]);
 
+  // TODO: refactor to standalone component
+  if (!nodeDefinition) {
+    return (
+      <div
+        ref={containerRef}
+        style={{ position: "relative" }}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        onFocus={handleFocus}
+        onBlur={handleBlur}
+      >
+        <BaseContainer selected={selected} shape="square" className={interactionState} interactionState={interactionState}>
+          <BaseIconWrapper backgroundColor="var(--color-error-background)" shape="square">
+            <ApIcon color="var(--color-error-icon)" name="error" size="32px" />
+          </BaseIconWrapper>
+
+          {/* TODO: localize */}
+          <BaseTextContainer shape="square">
+            <BaseHeader shape="square">Configuration issue</BaseHeader>
+            <BaseSubHeader>Select the node to correct or remove it</BaseSubHeader>
+          </BaseTextContainer>
+        </BaseContainer>
+      </div>
+    );
+  }
+
   return (
-    <div style={{ position: "relative" }} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
-      <BaseContainer selected={selected} shape={shape}>
-        {icon && <BaseIconWrapper shape={shape}>{icon}</BaseIconWrapper>}
+    <div
+      ref={containerRef}
+      style={{ position: "relative" }}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      onFocus={handleFocus}
+      onBlur={handleBlur}
+    >
+      <BaseContainer
+        selected={selected}
+        shape={displayShape}
+        className={cx(executionStatus, interactionState)}
+        interactionState={interactionState}
+        executionState={executionStatus as any} // TODO: fix
+      >
+        {icon && <BaseIconWrapper shape={displayShape}>{icon}</BaseIconWrapper>}
 
-        {topLeftAdornment && (
-          <BaseBadgeSlot position="top-left" shape={shape}>
-            {topLeftAdornment}
+        {adornments.topLeft && (
+          <BaseBadgeSlot position="top-left" shape={displayShape}>
+            {adornments.topLeft}
           </BaseBadgeSlot>
         )}
-        {topRightAdornment && (
-          <BaseBadgeSlot position="top-right" shape={shape}>
-            {topRightAdornment}
+        {adornments.topRight && (
+          <BaseBadgeSlot position="top-right" shape={displayShape}>
+            {adornments.topRight}
           </BaseBadgeSlot>
         )}
-        {bottomRightAdornment && (
-          <BaseBadgeSlot position="bottom-right" shape={shape}>
-            {bottomRightAdornment}
+        {adornments.bottomRight && (
+          <BaseBadgeSlot position="bottom-right" shape={displayShape}>
+            {adornments.bottomRight}
           </BaseBadgeSlot>
         )}
-        {bottomLeftAdornment && (
-          <BaseBadgeSlot position="bottom-left" shape={shape}>
-            {bottomLeftAdornment}
+        {adornments.bottomLeft && (
+          <BaseBadgeSlot position="bottom-left" shape={displayShape}>
+            {adornments.bottomLeft}
           </BaseBadgeSlot>
         )}
 
-        {label && (
-          <BaseTextContainer hasBottomHandles={hasVisibleBottomHandlesWithLabels} shape={shape}>
-            <BaseHeader shape={shape}>{label}</BaseHeader>
-            {subLabel && <BaseSubHeader>{subLabel}</BaseSubHeader>}
+        {displayLabel && (
+          <BaseTextContainer hasBottomHandles={hasVisibleBottomHandlesWithLabels} shape={displayShape}>
+            <BaseHeader shape={displayShape}>{displayLabel}</BaseHeader>
+            {displaySubLabel && <BaseSubHeader>{displaySubLabel}</BaseSubHeader>}
           </BaseTextContainer>
         )}
 
-        <NodeContextMenu menuItems={menuItems} isVisible={selected} />
+        <NodeContextMenu menuItems={menuItems} isVisible={selected && !dragging} />
       </BaseContainer>
       {handleElements}
     </div>

@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useRef, useState, useMemo } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { applyEdgeChanges, applyNodeChanges, BackgroundVariant, Panel, ReactFlowProvider, Position, addEdge } from "@xyflow/react";
 import type { Edge, EdgeChange, Node, NodeChange, Connection } from "@xyflow/react";
@@ -10,15 +10,48 @@ import { BaseCanvas } from "./BaseCanvas";
 import { BaseCanvasRef } from "./BaseCanvas.types";
 import { BaseNode } from "../BaseNode/BaseNode";
 import type { BaseNodeData } from "../BaseNode/BaseNode.types";
+import { NodeRegistryProvider, useNodeTypeRegistry } from "../BaseNode/NodeRegistryProvider";
+import { ExecutionStatusContext } from "../BaseNode/ExecutionStatusContext";
+import {
+  activityNodeRegistration,
+  baseNodeRegistration,
+  genericNodeRegistration,
+  agentNodeRegistration,
+  httpRequestNodeRegistration,
+  scriptNodeRegistration,
+  rpaNodeRegistration,
+  connectorNodeRegistration,
+} from "../BaseNode/node-types";
 
 const meta = {
   title: "Canvas/BaseCanvas",
   decorators: [
-    (Story: any) => (
-      <div style={{ height: "100vh", width: "100%" }}>
-        <Story />
-      </div>
-    ),
+    (Story: any) => {
+      const registrations = useMemo(
+        () => [
+          activityNodeRegistration,
+          baseNodeRegistration,
+          genericNodeRegistration,
+          agentNodeRegistration,
+          httpRequestNodeRegistration,
+          scriptNodeRegistration,
+          rpaNodeRegistration,
+          connectorNodeRegistration,
+        ],
+        []
+      );
+      const executions = useMemo(() => ({ getExecutionStatus: () => "idle" }), []);
+
+      return (
+        <NodeRegistryProvider registrations={registrations}>
+          <ExecutionStatusContext.Provider value={executions}>
+            <div style={{ height: "100vh", width: "100%" }}>
+              <Story />
+            </div>
+          </ExecutionStatusContext.Provider>
+        </NodeRegistryProvider>
+      );
+    },
   ],
   parameters: {
     layout: "fullscreen",
@@ -279,16 +312,23 @@ const enhancedEdges: Edge[] = [
   },
 ];
 
-const nodeTypes = {
-  baseNode: BaseNode,
-};
-
 const DefaultStory = () => {
+  const nodeTypeRegistry = useNodeTypeRegistry();
   const [nodes, setNodes] = useState<Node[]>(enhancedNodes);
   const [edges, setEdges] = useState<Edge[]>(enhancedEdges);
   const [defaultEdgeType, setDefaultEdgeType] = useState<string>("default");
   const [animated, setAnimated] = useState(false);
   const [strokeWidth, setStrokeWidth] = useState(2);
+
+  const nodeTypes = useMemo(() => {
+    return nodeTypeRegistry.getAllNodeTypes().reduce(
+      (acc, nodeType) => {
+        acc[nodeType] = BaseNode;
+        return acc;
+      },
+      { default: BaseNode } as any
+    );
+  }, [nodeTypeRegistry]);
 
   const onNodesChange = useCallback((changes: NodeChange[]) => {
     setNodes((nds) => applyNodeChanges(changes, nds));
@@ -396,9 +436,20 @@ export const Default: Story = {
 
 // Different Background Styles
 const DifferentBackgroundsStory = () => {
+  const nodeTypeRegistry = useNodeTypeRegistry();
   const [backgroundType, setBackgroundType] = useState<BackgroundVariant>(BackgroundVariant.Lines);
   const [nodes] = useState<Node[]>(enhancedNodes);
   const [edges] = useState<Edge[]>(enhancedEdges);
+
+  const nodeTypes = useMemo(() => {
+    return nodeTypeRegistry.getAllNodeTypes().reduce(
+      (acc, nodeType) => {
+        acc[nodeType] = BaseNode;
+        return acc;
+      },
+      { default: BaseNode } as any
+    );
+  }, [nodeTypeRegistry]);
 
   const getBackgroundProps = () => {
     switch (backgroundType) {
@@ -464,6 +515,18 @@ export const DifferentBackgrounds: Story = {
 
 // Read-only Mode - no interactions allowed
 const ReadOnlyModeStory = () => {
+  const nodeTypeRegistry = useNodeTypeRegistry();
+
+  const nodeTypes = useMemo(() => {
+    return nodeTypeRegistry.getAllNodeTypes().reduce(
+      (acc, nodeType) => {
+        acc[nodeType] = BaseNode;
+        return acc;
+      },
+      { default: BaseNode } as any
+    );
+  }, [nodeTypeRegistry]);
+
   return (
     <ReactFlowProvider>
       <BaseCanvas nodes={enhancedNodes} edges={enhancedEdges} nodeTypes={nodeTypes} mode="readonly">
@@ -491,8 +554,19 @@ export const ReadOnlyMode: Story = {
 
 // Empty Canvas with add node capability
 const EmptyCanvasStory = () => {
+  const nodeTypeRegistry = useNodeTypeRegistry();
   const [nodes, setNodes] = useState<Node<BaseNodeData>[]>([]);
   const [edges, setEdges] = useState<Edge[]>([]);
+
+  const nodeTypes = useMemo(() => {
+    return nodeTypeRegistry.getAllNodeTypes().reduce(
+      (acc, nodeType) => {
+        acc[nodeType] = BaseNode;
+        return acc;
+      },
+      { default: BaseNode } as any
+    );
+  }, [nodeTypeRegistry]);
   const [nodeCount, setNodeCount] = useState(0);
 
   const onNodesChange = useCallback((changes: NodeChange[]) => {
@@ -573,8 +647,19 @@ export const EmptyCanvas: Story = {
 
 // With Custom Children/Overlays
 const WithChildrenStory = () => {
+  const nodeTypeRegistry = useNodeTypeRegistry();
   const [showOverlay, setShowOverlay] = useState(true);
   const [selectedNode, setSelectedNode] = useState<string | null>(null);
+
+  const nodeTypes = useMemo(() => {
+    return nodeTypeRegistry.getAllNodeTypes().reduce(
+      (acc, nodeType) => {
+        acc[nodeType] = BaseNode;
+        return acc;
+      },
+      { default: BaseNode } as any
+    );
+  }, [nodeTypeRegistry]);
 
   const handleNodeClick = useCallback((_: any, node: Node) => {
     setSelectedNode(node.id);
@@ -635,7 +720,18 @@ export const WithChildren: Story = {
 
 // Component with ref control for demonstrating ensure nodes in view
 const BaseCanvasWithNodeFocus = () => {
+  const nodeTypeRegistry = useNodeTypeRegistry();
   const canvasRef = useRef<BaseCanvasRef>(null);
+
+  const nodeTypes = useMemo(() => {
+    return nodeTypeRegistry.getAllNodeTypes().reduce(
+      (acc, nodeType) => {
+        acc[nodeType] = BaseNode;
+        return acc;
+      },
+      {} as Record<string, typeof BaseNode>
+    );
+  }, [nodeTypeRegistry]);
 
   // Nodes spread across a larger area using BaseNode
   const spreadNodes: Node<BaseNodeData>[] = [
@@ -781,6 +877,18 @@ export const WithNodeFocusControls: Story = {
 
 // Example demonstrating maintain nodes in view on resize
 const BaseCanvasWithMaintainNodesInView = () => {
+  const nodeTypeRegistry = useNodeTypeRegistry();
+
+  const nodeTypes = useMemo(() => {
+    return nodeTypeRegistry.getAllNodeTypes().reduce(
+      (acc, nodeType) => {
+        acc[nodeType] = BaseNode;
+        return acc;
+      },
+      {} as Record<string, typeof BaseNode>
+    );
+  }, [nodeTypeRegistry]);
+
   const [nodes, setNodes] = useState<Node<BaseNodeData>[]>([
     {
       id: "important-1",

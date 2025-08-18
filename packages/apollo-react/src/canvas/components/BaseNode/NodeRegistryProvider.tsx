@@ -1,5 +1,5 @@
 import { ReactNode, useMemo, useContext, createContext } from "react";
-import { NodeRegistration } from "./types";
+import { NodeRegistration } from "./BaseNode.types";
 import { NodeTypeRegistry } from "./NodeTypeRegistry";
 
 interface NodeRegistryContextValue {

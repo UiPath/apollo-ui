@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { ReactFlowProvider, Node, Edge, NodeChange, EdgeChange, applyNodeChanges, applyEdgeChanges, Panel, NodeTypes } from "@xyflow/react";
 import { ApIcon } from "@uipath/portal-shell-react";
 import { NodePropertiesPanel } from "./NodePropertiesPanel";
@@ -8,6 +8,18 @@ import { BaseNode } from "../BaseNode";
 import { StageNode } from "../StageNode";
 import { CanvasPositionControls } from "../CanvasPositionControls";
 import { Icons } from "@uipath/uix-core";
+import { NodeRegistryProvider } from "../BaseNode/NodeRegistryProvider";
+import { ExecutionStatusContext } from "../BaseNode/ExecutionStatusContext";
+import {
+  activityNodeRegistration,
+  baseNodeRegistration,
+  genericNodeRegistration,
+  agentNodeRegistration,
+  httpRequestNodeRegistration,
+  scriptNodeRegistration,
+  rpaNodeRegistration,
+  connectorNodeRegistration,
+} from "../BaseNode/node-types";
 
 const meta: Meta<typeof NodePropertiesPanel> = {
   title: "Canvas/NodePropertiesPanel",
@@ -16,13 +28,34 @@ const meta: Meta<typeof NodePropertiesPanel> = {
     layout: "fullscreen",
   },
   decorators: [
-    (Story) => (
-      <ReactFlowProvider>
-        <div style={{ height: "100vh", width: "100vw" }}>
-          <Story />
-        </div>
-      </ReactFlowProvider>
-    ),
+    (Story) => {
+      const registrations = useMemo(
+        () => [
+          activityNodeRegistration,
+          baseNodeRegistration,
+          genericNodeRegistration,
+          agentNodeRegistration,
+          httpRequestNodeRegistration,
+          scriptNodeRegistration,
+          rpaNodeRegistration,
+          connectorNodeRegistration,
+        ],
+        []
+      );
+      const executions = useMemo(() => ({ getExecutionStatus: () => "idle" }), []);
+
+      return (
+        <NodeRegistryProvider registrations={registrations}>
+          <ExecutionStatusContext.Provider value={executions}>
+            <ReactFlowProvider>
+              <div style={{ height: "100vh", width: "100vw" }}>
+                <Story />
+              </div>
+            </ReactFlowProvider>
+          </ExecutionStatusContext.Provider>
+        </NodeRegistryProvider>
+      );
+    },
   ],
 };
 

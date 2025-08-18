@@ -1,5 +1,5 @@
 import { Position } from "@xyflow/react";
-import type { NodeRegistration } from "../types";
+import type { NodeRegistration } from "../BaseNode.types";
 import { Icons } from "@uipath/uix-core";
 
 // TODO: convert this to a function, that takes a translate function to support localization

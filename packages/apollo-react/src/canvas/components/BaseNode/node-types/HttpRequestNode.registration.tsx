@@ -1,5 +1,5 @@
 import { Position } from "@xyflow/react";
-import type { NodeRegistration } from "../types";
+import type { NodeRegistration } from "../BaseNode.types";
 import { ApBadge, ApIcon, ApTypography } from "@uipath/portal-shell-react";
 import { FontVariantToken } from "@uipath/apollo-core";
 

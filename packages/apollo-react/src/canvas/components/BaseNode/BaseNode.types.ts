@@ -1,9 +1,38 @@
-import { ReactNode } from "react";
 import { Position } from "@xyflow/react";
-import { ButtonHandleConfig } from "../ButtonHandle/ButtonHandle";
+import { NodeStatusContext } from "./ExecutionStatusContext";
 import { NodeMenuItem } from "../NodeContextMenu/NodeContextMenu.types";
+import { ButtonHandleConfig } from "../ButtonHandle/ButtonHandle";
 
 export type NodeShape = "square" | "circle" | "rectangle";
+
+export interface ConnectionPointConfig {
+  id: string;
+  label?: string;
+  required?: boolean;
+  position?: "top" | "right" | "bottom" | "left";
+}
+
+export interface BaseNodeData extends Record<string, unknown> {
+  parameters: Record<string, unknown>; // Property bag for node-specific config
+
+  display?: {
+    label?: string;
+    subLabel?: string;
+  };
+}
+
+export interface NodeDisplay {
+  label?: string;
+  subLabel?: string;
+  shape?: NodeShape;
+}
+
+export interface NodeAdornments {
+  topLeft?: React.ReactNode;
+  topRight?: React.ReactNode;
+  bottomLeft?: React.ReactNode;
+  bottomRight?: React.ReactNode;
+}
 
 export interface HandleConfiguration {
   position: Position;
@@ -11,27 +40,22 @@ export interface HandleConfiguration {
   visible?: boolean;
 }
 
-export interface SingleHandleConfiguration {
-  position: Position;
-  handle: ButtonHandleConfig;
-  visible?: boolean;
+export interface NodeTypeDefinition {
+  getIcon?: (data: BaseNodeData, context: NodeStatusContext) => React.ReactNode;
+  getDisplay?: (data: BaseNodeData, context: NodeStatusContext) => NodeDisplay;
+  getAdornments?: (data: BaseNodeData, context: NodeStatusContext) => NodeAdornments;
+  getHandleConfigurations?: (data: BaseNodeData, context: NodeStatusContext) => HandleConfiguration[];
+  getMenuItems?: (data: BaseNodeData, context: NodeStatusContext) => NodeMenuItem[];
+
+  validateParameters?: (parameters: Record<string, unknown>) => boolean;
+  getDefaultParameters?: () => Record<string, unknown>;
 }
 
-export interface BaseNodeData extends Record<string, any> {
-  icon?: ReactNode;
-  label?: string;
-  subLabel?: string;
-  topLeftAdornment?: ReactNode;
-  topRightAdornment?: ReactNode;
-  bottomRightAdornment?: ReactNode;
-  bottomLeftAdornment?: ReactNode;
-  handleConfigurations?: HandleConfiguration[] | SingleHandleConfiguration[];
-  shape?: NodeShape;
-  menuItems?: NodeMenuItem[];
-}
-
-// ArtifactNode specific data type that enforces single handles
-export interface ArtifactNodeData extends Omit<BaseNodeData, "handleConfigurations" | "shape"> {
-  handleConfigurations?: SingleHandleConfiguration[];
-  shape?: "circle"; // Always circle for artifacts
+export interface NodeRegistration {
+  nodeType: string;
+  definition: NodeTypeDefinition;
+  category?: string;
+  displayName?: string;
+  description?: string;
+  version?: string;
 }

@@ -1,4 +1,4 @@
-import { BaseNodeData, NodeRegistration, NodeTypeDefinition } from "./types";
+import { BaseNodeData, NodeRegistration, NodeTypeDefinition } from "./BaseNode.types";
 
 export class NodeTypeRegistry {
   private definitions = new Map<string, NodeTypeDefinition>();

@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import { useCallback, useMemo } from "react";
 import { Panel, ReactFlowProvider, useNodesState, useEdgesState, addEdge, Connection, NodeTypes } from "@xyflow/react";
-import { BaseNode2 as BaseNode } from "./BaseNode2";
+import { BaseNode } from "./BaseNode";
 import { BaseCanvas } from "../BaseCanvas";
 import { CanvasPositionControls } from "../CanvasPositionControls";
-import { BaseNodeData } from "./types";
+import { BaseNodeData } from "./BaseNode.types";
 import { ExecutionStatusContext } from "./ExecutionStatusContext";
 import { NodeRegistryProvider, useNodeTypeRegistry } from "./NodeRegistryProvider";
 import {

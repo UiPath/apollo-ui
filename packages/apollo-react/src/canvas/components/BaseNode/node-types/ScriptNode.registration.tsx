@@ -1,5 +1,5 @@
 import { Position } from "@xyflow/react";
-import type { NodeRegistration } from "../types";
+import type { NodeRegistration } from "../BaseNode.types";
 import { ApIcon } from "@uipath/portal-shell-react";
 
 // TODO: convert this to a function, that takes a translate function to support localization

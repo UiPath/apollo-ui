@@ -8,6 +8,18 @@ import { FontVariantToken } from "@uipath/apollo-core";
 import { BaseNode } from "../BaseNode/BaseNode";
 import type { BaseNodeData } from "../BaseNode/BaseNode.types";
 import { CanvasPositionControls } from "../CanvasPositionControls";
+import { NodeRegistryProvider, useNodeTypeRegistry } from "../BaseNode/NodeRegistryProvider";
+import { ExecutionStatusContext } from "../BaseNode/ExecutionStatusContext";
+import {
+  baseNodeRegistration,
+  genericNodeRegistration,
+  agentNodeRegistration,
+  httpRequestNodeRegistration,
+  scriptNodeRegistration,
+  rpaNodeRegistration,
+  connectorNodeRegistration,
+} from "../BaseNode/node-types";
+import { useMemo } from "react";
 
 const SimpleNode = ({ data, selected }: { data: any; selected: boolean }) => {
   const topHandles: ButtonHandleConfig[] = [
@@ -142,13 +154,33 @@ const meta: Meta<typeof ButtonHandles> = {
     layout: "fullscreen",
   },
   decorators: [
-    (Story) => (
-      <ReactFlowProvider>
-        <div style={{ height: "100vh", width: "100vw" }}>
-          <Story />
-        </div>
-      </ReactFlowProvider>
-    ),
+    (Story) => {
+      const registrations = useMemo(
+        () => [
+          baseNodeRegistration,
+          genericNodeRegistration,
+          agentNodeRegistration,
+          httpRequestNodeRegistration,
+          scriptNodeRegistration,
+          rpaNodeRegistration,
+          connectorNodeRegistration,
+        ],
+        []
+      );
+      const executions = useMemo(() => ({ getExecutionStatus: () => "idle" }), []);
+
+      return (
+        <NodeRegistryProvider registrations={registrations}>
+          <ExecutionStatusContext.Provider value={executions}>
+            <ReactFlowProvider>
+              <div style={{ height: "100vh", width: "100vw" }}>
+                <Story />
+              </div>
+            </ReactFlowProvider>
+          </ExecutionStatusContext.Provider>
+        </NodeRegistryProvider>
+      );
+    },
   ],
 };
 
