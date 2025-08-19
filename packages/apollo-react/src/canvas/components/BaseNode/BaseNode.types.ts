@@ -18,6 +18,10 @@ export interface BaseNodeData extends Record<string, unknown> {
   display?: {
     label?: string;
     subLabel?: string;
+    shape?: NodeShape;
+    background?: string;
+    iconBackground?: string;
+    iconColor?: string;
   };
 }
 
@@ -25,6 +29,9 @@ export interface NodeDisplay {
   label?: string;
   subLabel?: string;
   shape?: NodeShape;
+  background?: string;
+  iconBackground?: string;
+  iconColor?: string;
 }
 
 export interface NodeAdornments {

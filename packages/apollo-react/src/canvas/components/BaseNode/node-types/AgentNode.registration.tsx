@@ -17,7 +17,7 @@ export const agentNodeRegistration: NodeRegistration = {
 
   definition: {
     getIcon: (data, context) => (
-      <div style={{ color: "var(--color-foreground-de-emp)" }}>
+      <div style={{ color: data.display?.iconColor || "var(--color-foreground-de-emp)" }}>
         <Icons.AgentIcon />
       </div>
     ),
@@ -25,7 +25,10 @@ export const agentNodeRegistration: NodeRegistration = {
     getDisplay: (data, context) => ({
       label: data.display?.label,
       subLabel: data.display?.subLabel,
-      shape: "rectangle" as const,
+      shape: data.display?.shape ?? ("rectangle" as const),
+      background: data.display?.background,
+      iconBackground: data.display?.iconBackground,
+      iconColor: data.display?.iconColor,
     }),
 
     getAdornments: (data, context) => {

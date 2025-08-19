@@ -16,12 +16,15 @@ export const httpRequestNodeRegistration: NodeRegistration = {
   version: "1.0.0",
 
   definition: {
-    getIcon: (data, context) => <ApIcon name="public" color="var(--color-foreground-de-emp)" size="40px" />,
+    getIcon: (data, context) => <ApIcon name="public" color={data.display?.iconColor || "var(--color-foreground-de-emp)"} size="40px" />,
 
     getDisplay: (data, context) => ({
       label: data.display?.label,
       subLabel: data.display?.subLabel,
-      shape: "square" as const,
+      shape: data.display?.shape ?? ("square" as const),
+      background: data.display?.background,
+      iconBackground: data.display?.iconBackground,
+      iconColor: data.display?.iconColor,
     }),
 
     getAdornments: (data, context) => {

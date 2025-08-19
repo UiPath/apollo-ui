@@ -10,7 +10,7 @@ import { cx } from "@uipath/uix-core";
 import { ApIcon } from "@uipath/portal-shell-react";
 
 const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
-  const { type, data, selected, id, dragging } = props;
+  const { type, data, selected, id, dragging, width, height } = props;
 
   const containerRef = useRef<HTMLDivElement>(null);
   const [isHovered, setIsHovered] = useState(false);
@@ -47,6 +47,8 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
   const displayLabel = display.label;
   const displaySubLabel = display.subLabel;
   const displayShape = display.shape ?? "square";
+  const displayBackground = display.background;
+  const displayIconBackground = display.iconBackground;
 
   const { edges, isConnecting } = useStore(
     (state) => ({ edges: state.edges, isConnecting: !!state.connectionClickStartHandle }),
@@ -177,8 +179,15 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
         className={cx(executionStatus, interactionState)}
         interactionState={interactionState}
         executionState={executionStatus as any} // TODO: fix
+        width={width}
+        height={height}
+        backgroundColor={displayBackground}
       >
-        {icon && <BaseIconWrapper shape={displayShape}>{icon}</BaseIconWrapper>}
+        {icon && (
+          <BaseIconWrapper shape={displayShape} backgroundColor={displayIconBackground} nodeHeight={height}>
+            {icon}
+          </BaseIconWrapper>
+        )}
 
         {adornments.topLeft && (
           <BaseBadgeSlot position="top-left" shape={displayShape}>

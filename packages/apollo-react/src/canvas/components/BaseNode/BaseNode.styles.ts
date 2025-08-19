@@ -78,10 +78,15 @@ export const BaseContainer = styled.div<{
   shape?: NodeShape;
   executionState?: string;
   interactionState?: string;
+  width?: number;
+  height?: number;
 }>`
   position: relative;
-  width: ${({ shape }) => (shape === "rectangle" ? "320px" : "100px")};
-  height: 100px;
+  width: ${({ shape, width }) => {
+    if (width) return `${width}px`;
+    return shape === "rectangle" ? "320px" : "100px";
+  }};
+  height: ${({ height }) => (height ? `${height}px` : "100px")};
   background: ${({ backgroundColor }) => backgroundColor || "var(--color-background)"};
   border: 1.5px solid var(--color-border-de-emp);
   border-radius: ${({ shape }) => {
@@ -94,7 +99,13 @@ export const BaseContainer = styled.div<{
   align-items: center;
   justify-content: ${({ shape }) => (shape === "rectangle" ? "flex-start" : "center")};
   gap: ${({ shape }) => (shape === "rectangle" ? "12px" : "0")};
-  padding: ${({ shape }) => (shape === "rectangle" ? "14px" : "0")};
+  padding: ${({ shape, height }) => {
+    if (shape === "rectangle") {
+      const scaleFactor = height ? height / 100 : 1;
+      return `${14 * scaleFactor}px`;
+    }
+    return "0";
+  }};
   cursor: pointer;
 
   ${({ executionState }) => getExecutionStateBorder(executionState)}
@@ -108,9 +119,15 @@ export const BaseContainer = styled.div<{
     `}
 `;
 
-export const BaseIconWrapper = styled.div<{ backgroundColor?: string; shape?: NodeShape }>`
-  width: 72px;
-  height: 72px;
+export const BaseIconWrapper = styled.div<{ backgroundColor?: string; shape?: NodeShape; nodeHeight?: number }>`
+  width: ${({ nodeHeight }) => {
+    const scaleFactor = nodeHeight ? nodeHeight / 100 : 1;
+    return `${72 * scaleFactor}px`;
+  }};
+  height: ${({ nodeHeight }) => {
+    const scaleFactor = nodeHeight ? nodeHeight / 100 : 1;
+    return `${72 * scaleFactor}px`;
+  }};
   display: flex;
   align-items: center;
   justify-content: center;
@@ -121,13 +138,25 @@ export const BaseIconWrapper = styled.div<{ backgroundColor?: string; shape?: No
   }};
 
   svg {
-    width: 32px;
-    height: 32px;
+    width: ${({ nodeHeight }) => {
+      const scaleFactor = nodeHeight ? nodeHeight / 100 : 1;
+      return `${32 * scaleFactor}px`;
+    }};
+    height: ${({ nodeHeight }) => {
+      const scaleFactor = nodeHeight ? nodeHeight / 100 : 1;
+      return `${32 * scaleFactor}px`;
+    }};
   }
 
   img {
-    width: 32px;
-    height: 32px;
+    width: ${({ nodeHeight }) => {
+      const scaleFactor = nodeHeight ? nodeHeight / 100 : 1;
+      return `${32 * scaleFactor}px`;
+    }};
+    height: ${({ nodeHeight }) => {
+      const scaleFactor = nodeHeight ? nodeHeight / 100 : 1;
+      return `${32 * scaleFactor}px`;
+    }};
     object-fit: contain;
   }
 `;

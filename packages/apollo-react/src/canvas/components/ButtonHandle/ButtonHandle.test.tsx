@@ -9,12 +9,12 @@ vi.mock("@xyflow/react", () => ({
   Handle: ({ children, isConnectable, ...props }: any) => {
     // Filter out styled-component props that shouldn't be passed to DOM elements
     const domProps = Object.keys(props).reduce((acc: any, key) => {
-      if (!key.startsWith('$')) {
+      if (!key.startsWith("$")) {
         acc[key] = props[key];
       }
       return acc;
     }, {});
-    
+
     return (
       <div data-testid="handle" data-is-connectable={isConnectable} {...domProps}>
         {children}
@@ -85,21 +85,21 @@ describe("ButtonHandles", () => {
 
     // Find the handle element first
     const handle = screen.getByTestId("handle");
-    
+
     // The button is rendered within the handle, look for the clickable element
     // The AddButton component uses a motion div that contains the icon
-    const buttonContainer = handle.querySelector('.nodrag.nopan');
-    
+    const buttonContainer = handle.querySelector(".nodrag.nopan");
+
     if (!buttonContainer) {
       throw new Error("Button container not found");
     }
-    
+
     // Click on the button container's child (the animated button)
     const animatedButton = buttonContainer.firstElementChild;
     if (!animatedButton) {
       throw new Error("Animated button not found");
     }
-    
+
     await user.click(animatedButton);
 
     expect(handleClick).toHaveBeenCalledOnce();

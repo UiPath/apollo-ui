@@ -447,7 +447,7 @@ export const LogicFlow: Story = {
       // IF Node
       {
         id: "if-node",
-        type: " ",
+        type: "baseNode",
         position: { x: 300, y: 200 },
         data: {
           icon: <ApIcon size="48px" name="alt_route" color="var(--color-foreground-de-emp)" />,
