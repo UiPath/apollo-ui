@@ -3,6 +3,7 @@ import { Position } from "@xyflow/react";
 import { AnimatePresence } from "motion/react";
 import { FontVariantToken } from "@uipath/apollo-core";
 import { ApIcon, ApTypography } from "@uipath/portal-shell-react";
+import { canvasEventBus } from "../../utils/CanvasEventBus";
 import { LabelContent, StyledAddButton, StyledHandle, StyledLabel, StyledLine, StyledNotch, StyledWrapper } from "./ButtonHandle.styles";
 
 export interface HandleActionEvent {
@@ -82,23 +83,29 @@ const ButtonHandleBase = ({
 
   const handleButtonClick = useCallback(
     (event: React.MouseEvent) => {
-      if (onAction) {
-        const actionEvent: HandleActionEvent = {
-          handleId: id,
-          nodeId,
-          handleType,
-          position,
-          originalEvent: event,
-        };
-        onAction(actionEvent);
+      event.stopPropagation();
 
-        // Also emit custom DOM event for flexibility
-        const customEvent = new CustomEvent("canvas:button-handle.action", {
-          detail: actionEvent,
-          bubbles: true,
-        });
-        event.currentTarget.dispatchEvent(customEvent);
+      const actionEvent: HandleActionEvent = {
+        handleId: id,
+        nodeId,
+        handleType,
+        position,
+        originalEvent: event,
+      };
+
+      // Call direct callback first for immediate response
+      if (onAction) {
+        onAction(actionEvent);
       }
+
+      // Emit to event bus for global listeners
+      canvasEventBus.emit("handle:action", {
+        handleId: id,
+        nodeId,
+        handleType,
+        position,
+        // timestamp: Date.now(), // Optional - uncomment if you need timing info
+      });
     },
     [id, nodeId, handleType, position, onAction]
   );
