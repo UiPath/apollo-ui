@@ -1,6 +1,6 @@
 import { Position } from "@xyflow/react";
 import type { NodeRegistration } from "../BaseNode.types";
-import { Icons } from "@uipath/uix-core";
+// import { Icons } from "@uipath/uix-core";
 import { ApIcon } from "@uipath/portal-shell-react";
 
 // TODO: convert this to a function, that takes a translate function to support localization
@@ -16,17 +16,17 @@ export const agentMemoryNodeRegistration: NodeRegistration = {
   version: "1.0.0",
 
   definition: {
-    getIcon: (data, context) => <ApIcon name="memory" color="var(--color-foreground-de-emp)" size="40px" />,
+    getIcon: (_data, _context) => <ApIcon name="memory" color="var(--color-foreground-de-emp)" size="40px" />,
 
-    getDisplay: (data, context) => ({
+    getDisplay: (data, _context) => ({
       label: data.display?.label,
       subLabel: data.display?.subLabel,
       shape: "circle" as const,
     }),
 
-    getAdornments: (data, context) => ({}),
+    getAdornments: (_data, _context) => ({}),
 
-    getHandleConfigurations: (data, context) => [
+    getHandleConfigurations: (_data, _context) => [
       {
         position: Position.Top,
         handles: [
@@ -39,10 +39,10 @@ export const agentMemoryNodeRegistration: NodeRegistration = {
       },
     ],
 
-    getMenuItems: (data, context) => [],
+    getMenuItems: (_data, _context) => [],
 
     getDefaultParameters: () => ({}),
 
-    validateParameters: (parameters) => true,
+    validateParameters: (_parameters) => true,
   },
 };

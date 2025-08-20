@@ -15,9 +15,9 @@ export const rpaNodeRegistration: NodeRegistration = {
   version: "1.0.0",
 
   definition: {
-    getIcon: (data, context) => <ApIcon name="list_alt" color={data.display?.iconColor || "var(--color-foreground-de-emp)"} size="40px" />,
+    getIcon: (data, _context) => <ApIcon name="list_alt" color={data.display?.iconColor || "var(--color-foreground-de-emp)"} size="40px" />,
 
-    getDisplay: (data, context) => ({
+    getDisplay: (data, _context) => ({
       label: data.display?.label,
       subLabel: data.display?.subLabel,
       shape: data.display?.shape ?? ("square" as const),
@@ -55,7 +55,7 @@ export const rpaNodeRegistration: NodeRegistration = {
       };
     },
 
-    getHandleConfigurations: (data, context) => [
+    getHandleConfigurations: (_data, _context) => [
       {
         position: Position.Left,
         handles: [{ id: "trigger", label: "Trigger", type: "target", handleType: "input" }],
@@ -68,7 +68,7 @@ export const rpaNodeRegistration: NodeRegistration = {
       },
     ],
 
-    getMenuItems: (data, context) => [],
+    getMenuItems: (_data, _context) => [],
 
     getDefaultParameters: () => ({
       robotName: "",

@@ -1,4 +1,4 @@
-import { Node, XYPosition } from "@xyflow/react";
+import type { Node, XYPosition } from "@xyflow/react";
 
 /**
  * Calculates the absolute position of a node, taking into account its parent nodes.

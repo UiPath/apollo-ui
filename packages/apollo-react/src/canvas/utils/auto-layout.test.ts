@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { AgentFlowCustomEdge, AgentFlowCustomNode } from "../types";
+import type { AgentFlowCustomEdge, AgentFlowCustomNode } from "../types";
 import { autoArrangeNodes, getAgentGroupBottomPosition } from "./auto-layout";
 
 describe("auto-layout", () => {

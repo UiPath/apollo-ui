@@ -13,7 +13,7 @@ export const baseNodeRegistration: NodeRegistration = {
   version: "1.0.0",
 
   definition: {
-    getIcon: (data: any, context) => {
+    getIcon: (data: any, _context) => {
       // Use provided icon or default
       if (data.icon) {
         return data.icon;
@@ -21,15 +21,15 @@ export const baseNodeRegistration: NodeRegistration = {
       return <ApIcon variant="outlined" name="circle" color="var(--color-foreground-de-emp)" size="40px" />;
     },
 
-    getDisplay: (data: any, context) => ({
+    getDisplay: (data: any, _context) => ({
       label: data.label || data.display?.label || "Node",
       subLabel: data.subLabel || data.display?.subLabel,
       shape: (data.shape || "square") as any,
     }),
 
-    getAdornments: (data: any, context) => ({}),
+    getAdornments: (_data: any, _context) => ({}),
 
-    getHandleConfigurations: (data: any, context) => {
+    getHandleConfigurations: (data: any, _context) => {
       // DEPRECATED: Reading handleConfigurations from data is deprecated.
       // Each node type should define its own handle configurations.
       // This is only kept for backward compatibility during migration.
@@ -66,10 +66,10 @@ export const baseNodeRegistration: NodeRegistration = {
       ];
     },
 
-    getMenuItems: (data: any, context) => [],
+    getMenuItems: (_data: any, _context) => [],
 
     getDefaultParameters: () => ({}),
 
-    validateParameters: (parameters) => true,
+    validateParameters: (_parameters) => true,
   },
 };

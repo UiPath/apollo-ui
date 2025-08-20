@@ -7,10 +7,11 @@ import { ApButton, ApTypography, ApIcon } from "@uipath/portal-shell-react";
 import { Column, Row } from "@uipath/uix-core";
 import { CanvasPositionControls } from "../CanvasPositionControls";
 import { BaseCanvas } from "./BaseCanvas";
-import { BaseCanvasRef } from "./BaseCanvas.types";
+import type { BaseCanvasRef } from "./BaseCanvas.types";
 import { BaseNode } from "../BaseNode/BaseNode";
 import type { BaseNodeData } from "../BaseNode/BaseNode.types";
-import { NodeRegistryProvider, useNodeTypeRegistry } from "../BaseNode/NodeRegistryProvider";
+import { NodeRegistryProvider } from "../BaseNode/NodeRegistryProvider";
+import { useNodeTypeRegistry } from "../BaseNode/useNodeTypeRegistry";
 import { ExecutionStatusContext } from "../BaseNode/ExecutionStatusContext";
 import {
   activityNodeRegistration,
@@ -152,6 +153,7 @@ const enhancedNodes: Node<BaseNodeData>[] = [
       label: "Data Source",
       subLabel: "Input Stream",
       topRightAdornment: <ApIcon name="check_circle" size="small" style={{ color: "green" }} />,
+      parameters: {},
       handleConfigurations: [
         {
           position: Position.Right,
@@ -168,6 +170,7 @@ const enhancedNodes: Node<BaseNodeData>[] = [
       icon: <ApIcon size="48px" name="settings" color="var(--color-foreground-de-emp)" />,
       label: "Transform",
       subLabel: "Data Processing",
+      parameters: {},
       handleConfigurations: [
         {
           position: Position.Left,
@@ -189,6 +192,7 @@ const enhancedNodes: Node<BaseNodeData>[] = [
       label: "Filter",
       subLabel: "Validation Rules",
       topRightAdornment: <ApIcon name="warning" size="16px" style={{ color: "orange" }} />,
+      parameters: {},
       handleConfigurations: [
         {
           position: Position.Left,
@@ -212,6 +216,7 @@ const enhancedNodes: Node<BaseNodeData>[] = [
       icon: <ApIcon size="48px" name="merge_type" color="var(--color-foreground-de-emp)" />,
       label: "Merge",
       subLabel: "Combine Streams",
+      parameters: {},
       handleConfigurations: [
         {
           position: Position.Left,
@@ -237,6 +242,7 @@ const enhancedNodes: Node<BaseNodeData>[] = [
       subLabel: "Database",
       topRightAdornment: <ApIcon name="lock" size="small" color="var(--color-foreground-de-emp)" />,
       bottomLeftAdornment: <ApIcon name="schedule" size="small" color="var(--color-foreground-de-emp)" />,
+      parameters: {},
       handleConfigurations: [
         {
           position: Position.Left,
@@ -257,6 +263,7 @@ const enhancedNodes: Node<BaseNodeData>[] = [
       icon: <ApIcon size="48px" name="analytics" color="var(--color-foreground-de-emp)" />,
       label: "Monitor",
       subLabel: "Analytics",
+      parameters: {},
       handleConfigurations: [
         {
           position: Position.Left,
@@ -331,7 +338,7 @@ const DefaultStory = () => {
   }, [nodeTypeRegistry]);
 
   const onNodesChange = useCallback((changes: NodeChange[]) => {
-    setNodes((nds) => applyNodeChanges(changes, nds));
+    setNodes((nds) => applyNodeChanges(changes, nds) as Node<BaseNodeData>[]);
   }, []);
 
   const onEdgesChange = useCallback((changes: EdgeChange[]) => {
@@ -354,9 +361,9 @@ const DefaultStory = () => {
         onConnect={onConnect}
         defaultEdgeOptions={{
           type: defaultEdgeType === "default" ? undefined : defaultEdgeType,
-          animated: animated,
+          animated,
           style: {
-            strokeWidth: strokeWidth,
+            strokeWidth,
           },
         }}
       >
@@ -570,7 +577,7 @@ const EmptyCanvasStory = () => {
   const [nodeCount, setNodeCount] = useState(0);
 
   const onNodesChange = useCallback((changes: NodeChange[]) => {
-    setNodes((nds) => applyNodeChanges(changes, nds));
+    setNodes((nds) => applyNodeChanges(changes, nds) as Node<BaseNodeData>[]);
   }, []);
 
   const onEdgesChange = useCallback((changes: EdgeChange[]) => {
@@ -590,6 +597,7 @@ const EmptyCanvasStory = () => {
         icon: <ApIcon size="48px" name="widgets" color="var(--color-foreground-de-emp)" />,
         label: `Node ${nodeCount + 1}`,
         subLabel: "Click to configure",
+        parameters: {},
         handleConfigurations: [
           {
             position: Position.Left,
@@ -743,6 +751,7 @@ const BaseCanvasWithNodeFocus = () => {
         icon: <ApIcon size="48px" name="location_on" color="var(--color-foreground-de-emp)" />,
         label: "Node 1",
         subLabel: "Top Left",
+        parameters: {},
         handleConfigurations: [
           {
             position: Position.Right,
@@ -759,6 +768,7 @@ const BaseCanvasWithNodeFocus = () => {
         icon: <ApIcon size="48px" name="location_on" color="var(--color-foreground-de-emp)" />,
         label: "Node 2",
         subLabel: "Top Right",
+        parameters: {},
         handleConfigurations: [
           {
             position: Position.Left,
@@ -775,6 +785,7 @@ const BaseCanvasWithNodeFocus = () => {
         icon: <ApIcon size="48px" name="location_on" color="var(--color-foreground-de-emp)" />,
         label: "Node 3",
         subLabel: "Bottom Left",
+        parameters: {},
         handleConfigurations: [
           {
             position: Position.Right,
@@ -791,6 +802,7 @@ const BaseCanvasWithNodeFocus = () => {
         icon: <ApIcon size="48px" name="location_on" color="var(--color-foreground-de-emp)" />,
         label: "Node 4",
         subLabel: "Bottom Right",
+        parameters: {},
         handleConfigurations: [
           {
             position: Position.Left,
@@ -808,6 +820,7 @@ const BaseCanvasWithNodeFocus = () => {
         label: "Center Node",
         subLabel: "Hub",
         topRightAdornment: <ApIcon name="star" size="small" style={{ color: "gold" }} />,
+        parameters: {},
         handleConfigurations: [
           {
             position: Position.Top,
@@ -898,6 +911,7 @@ const BaseCanvasWithMaintainNodesInView = () => {
         icon: <ApIcon size="48px" name="star" color="gold" />,
         label: "Important Node 1",
         subLabel: "Keep in view",
+        parameters: {},
         handleConfigurations: [
           {
             position: Position.Right,
@@ -914,6 +928,7 @@ const BaseCanvasWithMaintainNodesInView = () => {
         icon: <ApIcon size="48px" name="star" color="gold" />,
         label: "Important Node 2",
         subLabel: "Keep in view",
+        parameters: {},
         handleConfigurations: [
           {
             position: Position.Left,
@@ -933,6 +948,7 @@ const BaseCanvasWithMaintainNodesInView = () => {
       data: {
         icon: <ApIcon size="48px" name="widgets" color="var(--color-foreground-de-emp)" />,
         label: "Other Node 1",
+        parameters: {},
         handleConfigurations: [
           {
             position: Position.Left,
@@ -948,6 +964,7 @@ const BaseCanvasWithMaintainNodesInView = () => {
       data: {
         icon: <ApIcon size="48px" name="widgets" color="var(--color-foreground-de-emp)" />,
         label: "Other Node 2",
+        parameters: {},
         handleConfigurations: [
           {
             position: Position.Top,
@@ -967,7 +984,10 @@ const BaseCanvasWithMaintainNodesInView = () => {
   const [maintainNodes, setMaintainNodes] = useState<string[] | undefined>(["important-1", "important-2"]);
   const [containerSize, setContainerSize] = useState({ width: "100%", height: "100%" });
 
-  const onNodesChange = useCallback((changes: NodeChange[]) => setNodes((nds) => applyNodeChanges(changes, nds)), []);
+  const onNodesChange = useCallback(
+    (changes: NodeChange[]) => setNodes((nds) => applyNodeChanges(changes, nds) as Node<BaseNodeData>[]),
+    []
+  );
 
   const onEdgesChange = useCallback((changes: EdgeChange[]) => setEdges((eds) => applyEdgeChanges(changes, eds)), []);
 

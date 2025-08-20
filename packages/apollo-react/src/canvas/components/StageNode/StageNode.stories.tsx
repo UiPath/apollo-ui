@@ -1,8 +1,9 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import { useCallback, useMemo } from "react";
-import { Panel, ReactFlowProvider, useNodesState, useEdgesState, addEdge, Connection, Edge, ConnectionMode } from "@xyflow/react";
+import type { Connection, Edge } from "@xyflow/react";
+import { Panel, ReactFlowProvider, useNodesState, useEdgesState, addEdge, ConnectionMode } from "@xyflow/react";
 import { StageNode } from "./StageNode";
-import { StageNodeData, ProcessItem } from "./StageNode.types";
+import type { StageNodeData, ProcessItem } from "./StageNode.types";
 import { BaseCanvas } from "../BaseCanvas";
 import { CanvasPositionControls } from "../CanvasPositionControls";
 import { StageEdge } from "./StageEdge";
@@ -10,7 +11,7 @@ import { StageConnectionEdge } from "./StageConnectionEdge";
 
 const meta = {
   title: "Canvas/StageNode",
-  component: StageNode,
+  component: StageNode as any,
   parameters: {
     layout: "fullscreen",
   },
@@ -27,12 +28,15 @@ const meta = {
 
       const initialEdges = context.parameters?.edges || [];
 
-      const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
+      const [nodes, _setNodes, onNodesChange] = useNodesState(initialNodes);
       const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
 
-      const onConnect = useCallback((connection: Connection) => {
-        setEdges((eds) => addEdge(connection, eds));
-      }, []);
+      const onConnect = useCallback(
+        (connection: Connection) => {
+          setEdges((eds) => addEdge(connection, eds));
+        },
+        [setEdges]
+      );
 
       const nodeTypes = useMemo(() => ({ stage: StageNode }), []);
       const edgeTypes = useMemo(() => ({ stage: StageEdge }), []);

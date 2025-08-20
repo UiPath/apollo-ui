@@ -1,11 +1,14 @@
 import { memo, useMemo, useState, useCallback, useRef } from "react";
-import { Node, NodeProps, Position, useConnection, useStore } from "@xyflow/react";
-import { NodeStatusContext, useExecutionStatus } from "./ExecutionStatusContext";
-import { ButtonHandles, HandleActionEvent } from "../ButtonHandle";
+import type { Node, NodeProps } from "@xyflow/react";
+import { Position, useConnection, useStore } from "@xyflow/react";
+import type { NodeStatusContext } from "./ExecutionStatusContext";
+import { useExecutionStatus } from "./ExecutionStatusContext";
+import type { HandleActionEvent } from "../ButtonHandle";
+import { ButtonHandles } from "../ButtonHandle";
 import { NodeContextMenu } from "../NodeContextMenu";
 import { BaseContainer, BaseIconWrapper, BaseBadgeSlot, BaseTextContainer, BaseHeader, BaseSubHeader } from "./BaseNode.styles";
-import { BaseNodeData } from "./BaseNode.types";
-import { useNodeTypeRegistry } from "./NodeRegistryProvider";
+import type { BaseNodeData } from "./BaseNode.types";
+import { useNodeTypeRegistry } from "./useNodeTypeRegistry";
 import { cx } from "@uipath/uix-core";
 import { ApIcon } from "@uipath/portal-shell-react";
 
@@ -20,7 +23,7 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
   const executionStatus = useExecutionStatus(id);
   const nodeTypeRegistry = useNodeTypeRegistry();
 
-  const nodeDefinition = useMemo(() => nodeTypeRegistry.get(type), [type]);
+  const nodeDefinition = useMemo(() => nodeTypeRegistry.get(type), [type, nodeTypeRegistry]);
 
   const statusContext: NodeStatusContext = useMemo(
     () => ({
@@ -65,7 +68,7 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
 
   const shouldShowHandles = useMemo(
     () => inProgress || selected || isHovered || isConnecting,
-    [inProgress || isConnecting, selected, isHovered]
+    [inProgress, isConnecting, selected, isHovered]
   );
 
   const hasVisibleBottomHandlesWithLabels = useMemo(() => {
@@ -136,7 +139,7 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
     });
 
     return elements;
-  }, [handleConfigurations, selected, shouldShowHandles, connectedHandleIds, handleAction]);
+  }, [handleConfigurations, selected, shouldShowHandles, connectedHandleIds, handleAction, id]);
 
   // TODO: refactor to standalone component
   if (!nodeDefinition) {
@@ -178,7 +181,7 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
         shape={displayShape}
         className={cx(executionStatus, interactionState)}
         interactionState={interactionState}
-        executionState={executionStatus as any} // TODO: fix
+        executionState={executionStatus}
         width={width}
         height={height}
         backgroundColor={displayBackground}

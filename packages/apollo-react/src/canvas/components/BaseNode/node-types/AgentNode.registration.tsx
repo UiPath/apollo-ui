@@ -16,13 +16,13 @@ export const agentNodeRegistration: NodeRegistration = {
   version: "1.0.0",
 
   definition: {
-    getIcon: (data, context) => (
+    getIcon: (data, _context) => (
       <div style={{ color: data.display?.iconColor || "var(--color-foreground-de-emp)" }}>
         <Icons.AgentIcon />
       </div>
     ),
 
-    getDisplay: (data, context) => ({
+    getDisplay: (data, _context) => ({
       label: data.display?.label,
       subLabel: data.display?.subLabel,
       shape: data.display?.shape ?? ("rectangle" as const),
@@ -33,7 +33,7 @@ export const agentNodeRegistration: NodeRegistration = {
 
     getAdornments: (data, context) => {
       const status = context.executionStatus;
-      const agentType = data.parameters.agentType as string;
+      const _agentType = data.parameters.agentType as string;
 
       return {
         topRight: status ? (
@@ -47,7 +47,7 @@ export const agentNodeRegistration: NodeRegistration = {
       };
     },
 
-    getHandleConfigurations: (data, context) => [
+    getHandleConfigurations: (_data, _context) => [
       {
         position: Position.Left,
         handles: [
@@ -104,7 +104,7 @@ export const agentNodeRegistration: NodeRegistration = {
       },
     ],
 
-    getMenuItems: (data, context) => {
+    getMenuItems: (_data, _context) => {
       return [];
     },
 

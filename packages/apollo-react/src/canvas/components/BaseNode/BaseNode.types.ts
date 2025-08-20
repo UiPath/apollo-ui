@@ -1,7 +1,7 @@
-import { Position } from "@xyflow/react";
-import { NodeStatusContext } from "./ExecutionStatusContext";
-import { NodeMenuItem } from "../NodeContextMenu/NodeContextMenu.types";
-import { ButtonHandleConfig, HandleActionEvent } from "../ButtonHandle/ButtonHandle";
+import type { Position } from "@xyflow/react";
+import type { NodeStatusContext } from "./ExecutionStatusContext";
+import type { NodeMenuItem } from "../NodeContextMenu/NodeContextMenu.types";
+import type { ButtonHandleConfig, HandleActionEvent } from "../ButtonHandle/ButtonHandle";
 
 export type NodeShape = "square" | "circle" | "rectangle";
 

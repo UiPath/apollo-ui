@@ -1,8 +1,9 @@
 import { forwardRef, memo, useCallback, useImperativeHandle, useState } from "react";
-import { Background, ConnectionMode, Edge, Node, ReactFlow, ReactFlowInstance } from "@xyflow/react";
+import type { Edge, Node, ReactFlowInstance } from "@xyflow/react";
+import { Background, ConnectionMode, ReactFlow } from "@xyflow/react";
 import { BASE_CANVAS_DEFAULTS } from "./BaseCanvas.constants";
 import { useAutoLayout, useEnsureNodesInView, useMaintainNodesInView } from "./BaseCanvas.hooks";
-import { BaseCanvasProps, BaseCanvasRef } from "./BaseCanvas.types";
+import type { BaseCanvasProps, BaseCanvasRef } from "./BaseCanvas.types";
 import { usePreventBackNavigation } from "./usePreventBackNavigation";
 
 const BaseCanvasInnerComponent = <NodeType extends Node = Node, EdgeType extends Edge = Edge>(

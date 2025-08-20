@@ -23,9 +23,9 @@ describe("d3-layout", () => {
 
       // All nodes should have been positioned
       expect(result.nodes).toHaveLength(3);
-      expect(result.nodes[0].position).toBeDefined();
-      expect(result.nodes[1].position).toBeDefined();
-      expect(result.nodes[2].position).toBeDefined();
+      expect(result.nodes[0]?.position).toBeDefined();
+      expect(result.nodes[1]?.position).toBeDefined();
+      expect(result.nodes[2]?.position).toBeDefined();
 
       // In TD layout, children should be below parent
       const parent = result.nodes.find((n) => n.id === "1");
@@ -58,8 +58,8 @@ describe("d3-layout", () => {
 
         // Should have positioned nodes
         expect(result.nodes).toHaveLength(2);
-        expect(result.nodes[0].position).toBeDefined();
-        expect(result.nodes[1].position).toBeDefined();
+        expect(result.nodes[0]?.position).toBeDefined();
+        expect(result.nodes[1]?.position).toBeDefined();
       }
     });
 
@@ -273,9 +273,9 @@ describe("d3-layout", () => {
       });
 
       expect(result.nodes).toHaveLength(1);
-      expect(result.nodes[0].position).toBeDefined();
-      expect(typeof result.nodes[0].position.x).toBe("number");
-      expect(typeof result.nodes[0].position.y).toBe("number");
+      expect(result.nodes[0]?.position).toBeDefined();
+      expect(typeof result.nodes[0]?.position.x).toBe("number");
+      expect(typeof result.nodes[0]?.position.y).toBe("number");
     });
 
     it("handles circular edges by throwing an error", async () => {

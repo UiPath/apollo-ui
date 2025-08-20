@@ -13,22 +13,22 @@ export const activityNodeRegistration: NodeRegistration = {
   version: "1.0.0",
 
   definition: {
-    getIcon: (data: any, context) => {
+    getIcon: (data: any, _context) => {
       if (data.icon) {
         return data.icon;
       }
       return <ApIcon name="settings" color="var(--color-foreground-de-emp)" size="40px" />;
     },
 
-    getDisplay: (data: any, context) => ({
+    getDisplay: (data: any, _context) => ({
       label: data.label || data.display?.label || "Activity",
       subLabel: data.subLabel || data.display?.subLabel,
       shape: (data.shape || "square") as any,
     }),
 
-    getAdornments: (data: any, context) => ({}),
+    getAdornments: (_data: any, _context) => ({}),
 
-    getHandleConfigurations: (data: any, context) => {
+    getHandleConfigurations: (data: any, _context) => {
       if (data.handleConfigurations) {
         return data.handleConfigurations;
       }
@@ -57,10 +57,10 @@ export const activityNodeRegistration: NodeRegistration = {
       ];
     },
 
-    getMenuItems: (data: any, context) => [],
+    getMenuItems: (_data: any, _context) => [],
 
     getDefaultParameters: () => ({}),
 
-    validateParameters: (parameters) => true,
+    validateParameters: (_parameters) => true,
   },
 };

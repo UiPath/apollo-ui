@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { useNodeTypeRegistry } from "../BaseNode/NodeRegistryProvider";
+import { useNodeTypeRegistry } from "../BaseNode/useNodeTypeRegistry";
 import type { NodeOption } from "./AddNodePanel.types";
 
 /**
@@ -49,36 +49,33 @@ export function useRegistryNodeOptions() {
 /**
  * Hook that safely gets registry options if available
  * Returns null if not in a NodeRegistryProvider
+ * Note: This implementation assumes the hook is used within a context provider
+ * If you need to use it outside a provider, consider using a different approach
  */
 export function useOptionalRegistryNodeOptions() {
-  try {
-    const registry = useNodeTypeRegistry();
+  const registry = useNodeTypeRegistry();
 
-    const fetchNodeOptions = useCallback(
-      async (category?: string, search?: string): Promise<NodeOption[]> => {
-        return registry.getNodeOptions(category, search);
-      },
-      [registry]
-    );
+  const fetchNodeOptions = useCallback(
+    async (category?: string, search?: string): Promise<NodeOption[]> => {
+      return registry.getNodeOptions(category, search);
+    },
+    [registry]
+  );
 
-    const getCategories = useCallback(() => {
-      return registry.getCategoryConfig();
-    }, [registry]);
+  const getCategories = useCallback(() => {
+    return registry.getCategoryConfig();
+  }, [registry]);
 
-    const createNodeData = useCallback(
-      (nodeType: string) => {
-        return registry.createDefaultData(nodeType);
-      },
-      [registry]
-    );
+  const createNodeData = useCallback(
+    (nodeType: string) => {
+      return registry.createDefaultData(nodeType);
+    },
+    [registry]
+  );
 
-    return {
-      fetchNodeOptions,
-      getCategories,
-      createNodeData,
-    };
-  } catch {
-    // Not in a registry provider
-    return null;
-  }
+  return {
+    fetchNodeOptions,
+    getCategories,
+    createNodeData,
+  };
 }

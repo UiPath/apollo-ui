@@ -127,7 +127,7 @@ export const AddNodePanel: React.FC<AddNodePanelProps> = ({ onNodeSelect, onClos
   const registryOptions = useOptionalRegistryNodeOptions();
 
   const finalFetchNodeOptions = fetchNodeOptions || registryOptions?.fetchNodeOptions;
-  const finalCategories = categories || registryOptions?.getCategories() || [];
+  const finalCategories = useMemo(() => categories || registryOptions?.getCategories() || [], [categories, registryOptions]);
   const [viewState, setViewState] = useState<ViewState>("categories");
   const [selectedCategory, setSelectedCategory] = useState<NodeCategory | null>(null);
   const [nodes, setNodes] = useState<NodeOption[]>([]);
@@ -145,6 +145,22 @@ export const AddNodePanel: React.FC<AddNodePanelProps> = ({ onNodeSelect, onClos
     };
   }, []);
 
+  const handleBack = useCallback(() => {
+    if (transitionTimeoutRef.current) {
+      clearTimeout(transitionTimeoutRef.current);
+    }
+
+    setIsTransitioning(true);
+    setViewState("categories");
+    setSelectedCategory(null);
+
+    if (isSearching) {
+      clearSearch();
+    }
+
+    transitionTimeoutRef.current = setTimeout(() => setIsTransitioning(false), 150);
+  }, [clearSearch, isSearching]);
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
@@ -160,7 +176,7 @@ export const AddNodePanel: React.FC<AddNodePanelProps> = ({ onNodeSelect, onClos
 
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [onClose, viewState, selectedCategory, isSearching, clearSearch]);
+  }, [onClose, viewState, selectedCategory, isSearching, clearSearch, handleBack]);
 
   // Filter nodes based on category and search
   const filteredNodes = useMemo(() => {
@@ -222,22 +238,6 @@ export const AddNodePanel: React.FC<AddNodePanelProps> = ({ onNodeSelect, onClos
     },
     [clearSearch, isSearching]
   );
-
-  const handleBack = useCallback(() => {
-    if (transitionTimeoutRef.current) {
-      clearTimeout(transitionTimeoutRef.current);
-    }
-
-    setIsTransitioning(true);
-    setViewState("categories");
-    setSelectedCategory(null);
-
-    if (isSearching) {
-      clearSearch();
-    }
-
-    transitionTimeoutRef.current = setTimeout(() => setIsTransitioning(false), 150);
-  }, [clearSearch, isSearching]);
 
   const handleNodeSelect = useCallback(
     (node: NodeOption) => {

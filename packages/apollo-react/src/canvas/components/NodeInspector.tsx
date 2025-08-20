@@ -4,7 +4,7 @@ import { FloatingCanvasPanel } from "./FloatingCanvasPanel";
 import { ApTypography } from "@uipath/portal-shell-react";
 import { FontVariantToken } from "@uipath/apollo-core";
 
-function safeStringify(obj: any, indent = 2): string {
+function safeStringify(obj: unknown, indent = 2): string {
   const seen = new WeakSet();
 
   return JSON.stringify(
@@ -53,7 +53,7 @@ type NodeInfoContentProps = {
   height?: number;
 };
 
-function NodeInfoContent({ node, position, absPosition, width, height }: NodeInfoContentProps) {
+function NodeInfoContent({ node, position, absPosition: _absPosition, width, height }: NodeInfoContentProps) {
   const { id, type, selected, data } = node;
 
   return (

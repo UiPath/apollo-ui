@@ -1,4 +1,4 @@
-import { BaseNodeData, NodeRegistration, NodeTypeDefinition } from "./BaseNode.types";
+import type { BaseNodeData, NodeRegistration, NodeTypeDefinition } from "./BaseNode.types";
 import type { NodeOption, NodeCategory } from "../AddNodePanel/AddNodePanel.types";
 import { isValidElement } from "react";
 
@@ -19,7 +19,6 @@ export class NodeTypeRegistry {
       this.categories.set(category, []);
     }
     this.categories.get(category)!.push(nodeType);
-    console.debug(`✅ Registered node type: ${nodeType}`);
   }
 
   get(nodeType: string): NodeTypeDefinition | undefined {

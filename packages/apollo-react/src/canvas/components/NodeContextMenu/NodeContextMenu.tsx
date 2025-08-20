@@ -1,11 +1,11 @@
 import { useRef, useState, useCallback, useMemo, memo, useEffect } from "react";
-import { NodeContextMenuProps, NodeMenuItem, NodeMenuAction } from "./NodeContextMenu.types";
+import type { NodeContextMenuProps, NodeMenuAction } from "./NodeContextMenu.types";
 import { MenuButton } from "./NodeContextMenu.styles";
 import { ApIcon, ApIconButton, ApMenu } from "@uipath/portal-shell-react";
 
 export const NodeContextMenu = memo(({ menuItems, isVisible = false }: NodeContextMenuProps) => {
   const [isOpen, setIsOpen] = useState(false);
-  const anchorRef = useRef<any>(null);
+  const anchorRef = useRef<HTMLApIconButtonElement>(null);
 
   const handleMenuOpen = useCallback((event: React.MouseEvent) => {
     event.stopPropagation();

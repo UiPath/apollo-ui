@@ -1,4 +1,5 @@
-import { AgentFlowCustomEdge, AgentFlowCustomNode, isAgentFlowAgentNode, isAgentFlowResourceNode } from "../types";
+import type { AgentFlowCustomEdge, AgentFlowCustomNode } from "../types";
+import { isAgentFlowAgentNode, isAgentFlowResourceNode } from "../types";
 
 const GROUP_DISTANCE_HORIZONTAL = 280;
 const GROUP_DISTANCE_VERTICAL = 200;

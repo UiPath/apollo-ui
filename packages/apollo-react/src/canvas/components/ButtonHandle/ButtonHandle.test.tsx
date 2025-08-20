@@ -2,7 +2,8 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { Position } from "@xyflow/react";
 import { describe, expect, it, vi } from "vitest";
-import { ButtonHandleConfig, ButtonHandles } from "./ButtonHandle";
+import type { ButtonHandleConfig } from "./ButtonHandle";
+import { ButtonHandles } from "./ButtonHandle";
 
 // Mock @xyflow/react Handle component
 vi.mock("@xyflow/react", () => ({

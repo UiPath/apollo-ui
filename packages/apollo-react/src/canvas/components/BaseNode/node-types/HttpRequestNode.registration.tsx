@@ -16,9 +16,9 @@ export const httpRequestNodeRegistration: NodeRegistration = {
   version: "1.0.0",
 
   definition: {
-    getIcon: (data, context) => <ApIcon name="public" color={data.display?.iconColor || "var(--color-foreground-de-emp)"} size="40px" />,
+    getIcon: (data, _context) => <ApIcon name="public" color={data.display?.iconColor || "var(--color-foreground-de-emp)"} size="40px" />,
 
-    getDisplay: (data, context) => ({
+    getDisplay: (data, _context) => ({
       label: data.display?.label,
       subLabel: data.display?.subLabel,
       shape: data.display?.shape ?? ("square" as const),
@@ -28,7 +28,7 @@ export const httpRequestNodeRegistration: NodeRegistration = {
     }),
 
     getAdornments: (data, context) => {
-      const status = context.executionStatus;
+      const _status = context.executionStatus;
       const method = data.parameters.method as string;
 
       return {
@@ -38,7 +38,7 @@ export const httpRequestNodeRegistration: NodeRegistration = {
       };
     },
 
-    getHandleConfigurations: (data, context) => [
+    getHandleConfigurations: (_data, _context) => [
       {
         position: Position.Left,
         handles: [{ id: "trigger", label: "Trigger", type: "target", handleType: "input" }],
@@ -51,7 +51,7 @@ export const httpRequestNodeRegistration: NodeRegistration = {
       },
     ],
 
-    getMenuItems: (data, context) => [],
+    getMenuItems: (_data, _context) => [],
 
     getDefaultParameters: () => ({
       url: "",

@@ -36,8 +36,8 @@ export function useFloatingPosition({
     }
     const position = internalNode.internals?.positionAbsolute || { x: 0, y: 0 };
     const node = nodes.find((n) => n.id === nodeId);
-    const width = (node as any)?.measured?.width ?? (node as any)?.width ?? 200;
-    const height = (node as any)?.measured?.height ?? (node as any)?.height ?? 100;
+    const width = node?.measured?.width ?? node?.width ?? 200;
+    const height = node?.measured?.height ?? node?.height ?? 100;
     return { x: position.x, y: position.y, width, height };
   }, [anchorRect, nodeId, getInternalNode, nodes]);
 

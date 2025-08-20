@@ -11,11 +11,11 @@ interface NumberFieldProps {
 }
 
 export const NumberField = memo(function NumberField({ field, value, onChange, error }: NumberFieldProps) {
-  const [localValue, setLocalValue] = useState<string | number>(value ?? field.defaultValue ?? "");
+  const [localValue, setLocalValue] = useState<string | number>(value ?? (field.defaultValue as number | undefined) ?? "");
   const debounceTimer = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    setLocalValue(value ?? field.defaultValue ?? "");
+    setLocalValue(value ?? (field.defaultValue as number | undefined) ?? "");
   }, [value, field.defaultValue]);
 
   // Cleanup debounce timer on unmount

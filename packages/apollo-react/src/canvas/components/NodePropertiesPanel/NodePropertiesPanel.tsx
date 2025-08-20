@@ -43,7 +43,7 @@ export const NodePropertiesPanel = memo(function NodePropertiesPanel({
   maintainSelection = true,
 }: NodePropertiesPanelProps) {
   const { getInternalNode } = useReactFlow();
-  const { selectedNodeId, setSelectedNodeId, selectedNode } = useNodeSelection(nodeId, maintainSelection);
+  const { setSelectedNodeId, selectedNode } = useNodeSelection(nodeId, maintainSelection);
   const { schema, errors, handleFieldChange } = useNodeConfiguration(selectedNode, customSchemas, enableValidation, onChange);
 
   const handleClose = useCallback(() => {
@@ -51,7 +51,7 @@ export const NodePropertiesPanel = memo(function NodePropertiesPanel({
     if (onClose) {
       onClose();
     }
-  }, [onClose]);
+  }, [onClose, setSelectedNodeId]);
 
   const internalNode = selectedNode ? getInternalNode(selectedNode.id) : null;
 

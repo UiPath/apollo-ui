@@ -107,7 +107,7 @@ describe("CanvasEventBus", () => {
       const afterEmit = Date.now();
 
       expect(callback).toHaveBeenCalledTimes(1);
-      const receivedPayload = callback.mock.calls[0][0];
+      const receivedPayload = callback.mock.calls[0]?.[0];
       expect(receivedPayload.timestamp).toBeDefined();
       expect(receivedPayload.timestamp).toBeGreaterThanOrEqual(beforeEmit);
       expect(receivedPayload.timestamp).toBeLessThanOrEqual(afterEmit);

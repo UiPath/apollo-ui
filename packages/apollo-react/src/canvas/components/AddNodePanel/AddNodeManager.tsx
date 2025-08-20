@@ -1,8 +1,10 @@
 import React, { useEffect, useState, useCallback, useRef } from "react";
-import { useReactFlow, useStore, Node } from "@xyflow/react";
+import type { Node } from "@xyflow/react";
+import { useReactFlow, useStore } from "@xyflow/react";
 import { FloatingCanvasPanel } from "../FloatingCanvasPanel";
 import { AddNodePanel } from "./AddNodePanel";
 import type { NodeOption } from "./AddNodePanel.types";
+import type { BaseNodeData } from "../BaseNode/BaseNode.types";
 
 export interface AddNodeManagerProps {
   /**
@@ -13,7 +15,7 @@ export interface AddNodeManagerProps {
   /**
    * Function to create node data from a node option
    */
-  createNodeData?: (nodeOption: NodeOption) => any;
+  createNodeData?: (nodeOption: NodeOption) => BaseNodeData;
 
   /**
    * Callback when a new node is added
@@ -65,6 +67,14 @@ export const AddNodeManager: React.FC<AddNodeManagerProps> = ({ fetchNodeOptions
     lastPreviewNodeRef.current = previewNode || null;
   }, [previewNode, reactFlowInstance]);
 
+  const handleClose = useCallback(() => {
+    // Deselect preview node (which will trigger cleanup in the effect above)
+    reactFlowInstance.setNodes((nodes) => nodes.map((n) => (n.id === "preview-node" ? { ...n, selected: false } : n)));
+
+    setIsOpen(false);
+    setSourceInfo(null);
+  }, [reactFlowInstance]);
+
   // Handle node selection from the selector panel
   const handleNodeSelect = useCallback(
     (nodeOption: NodeOption) => {
@@ -84,7 +94,7 @@ export const AddNodeManager: React.FC<AddNodeManagerProps> = ({ fetchNodeOptions
       // Create new node at preview position
       const newNode: Node = {
         id: newNodeId,
-        type: "baseNode",
+        type: nodeOption.type,
         position: previewNode.position,
         selected: true,
         data: nodeData,
@@ -114,16 +124,8 @@ export const AddNodeManager: React.FC<AddNodeManagerProps> = ({ fetchNodeOptions
 
       handleClose();
     },
-    [sourceInfo, previewNode, reactFlowInstance, createNodeData, onNodeAdded]
+    [sourceInfo, previewNode, reactFlowInstance, createNodeData, onNodeAdded, handleClose]
   );
-
-  const handleClose = useCallback(() => {
-    // Deselect preview node (which will trigger cleanup in the effect above)
-    reactFlowInstance.setNodes((nodes) => nodes.map((n) => (n.id === "preview-node" ? { ...n, selected: false } : n)));
-
-    setIsOpen(false);
-    setSourceInfo(null);
-  }, [reactFlowInstance]);
 
   if (!isOpen || !sourceInfo || !previewNode) {
     return null;

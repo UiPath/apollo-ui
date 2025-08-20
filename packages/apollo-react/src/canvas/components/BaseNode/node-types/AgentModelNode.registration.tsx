@@ -15,21 +15,21 @@ export const agentModelNodeRegistration: NodeRegistration = {
   version: "1.0.0",
 
   definition: {
-    getIcon: (data, context) => (
+    getIcon: (_data, _context) => (
       <Row style={{ color: "var(--color-foreground-de-emp)" }}>
         <Icons.OpenAIIcon />
       </Row>
     ),
 
-    getDisplay: (data, context) => ({
+    getDisplay: (data, _context) => ({
       label: data.display?.label,
       subLabel: data.display?.subLabel,
       shape: "circle" as const,
     }),
 
-    getAdornments: (data, context) => ({}),
+    getAdornments: (_data, _context) => ({}),
 
-    getHandleConfigurations: (data, context) => [
+    getHandleConfigurations: (_data, _context) => [
       {
         position: Position.Top,
         handles: [
@@ -42,10 +42,10 @@ export const agentModelNodeRegistration: NodeRegistration = {
       },
     ],
 
-    getMenuItems: (data, context) => [],
+    getMenuItems: (_data, _context) => [],
 
     getDefaultParameters: () => ({}),
 
-    validateParameters: (parameters) => true,
+    validateParameters: (_parameters) => true,
   },
 };

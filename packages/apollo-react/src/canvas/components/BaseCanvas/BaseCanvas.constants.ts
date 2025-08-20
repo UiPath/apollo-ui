@@ -38,7 +38,7 @@ export const BASE_CANVAS_DEFAULTS = {
     hideAttribution: true,
   },
   snapToGrid: true,
-  // eslint-disable-next-line @typescript-eslint/no-magic-numbers
+
   snapGrid: [20, 20] as [number, number],
   maintainNodesInView: {
     padding: 50,

@@ -23,7 +23,7 @@ export const SelectField = memo(function SelectField({ field, value, onChange, e
       <FieldLabel>{field.label}</FieldLabel>
       <SelectInput
         className="nodrag"
-        value={value || field.defaultValue || ""}
+        value={value || (field.defaultValue as string | undefined) || ""}
         onChange={handleChange}
         disabled={field.disabled}
         hasError={!!error}

@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState, useCallback, useMemo } from "react";
-import { ReactFlowProvider, Node, Edge, NodeChange, EdgeChange, applyNodeChanges, applyEdgeChanges, Panel, NodeTypes } from "@xyflow/react";
+import type { Node, Edge, NodeChange, EdgeChange, NodeTypes } from "@xyflow/react";
+import { ReactFlowProvider, applyNodeChanges, applyEdgeChanges, Panel } from "@xyflow/react";
 import { ApIcon } from "@uipath/portal-shell-react";
 import { NodePropertiesPanel } from "./NodePropertiesPanel";
 import { BaseCanvas } from "../BaseCanvas";

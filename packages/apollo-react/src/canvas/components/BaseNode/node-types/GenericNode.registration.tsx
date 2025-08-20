@@ -15,9 +15,9 @@ export const genericNodeRegistration: NodeRegistration = {
   version: "1.0.0",
 
   definition: {
-    getIcon: (data, context) => <ApIcon name="circle" color={data.display?.iconColor || "var(--color-foreground-de-emp)"} size="40px" />,
+    getIcon: (data, _context) => <ApIcon name="circle" color={data.display?.iconColor || "var(--color-foreground-de-emp)"} size="40px" />,
 
-    getDisplay: (data, context) => ({
+    getDisplay: (data, _context) => ({
       label: data.display?.label,
       subLabel: data.display?.subLabel,
       shape: data.display?.shape ?? ("square" as const),
@@ -26,9 +26,9 @@ export const genericNodeRegistration: NodeRegistration = {
       iconColor: data.display?.iconColor,
     }),
 
-    getAdornments: (data, context) => ({}),
+    getAdornments: (_data, _context) => ({}),
 
-    getHandleConfigurations: (data, context) => [
+    getHandleConfigurations: (_data, _context) => [
       {
         position: Position.Bottom,
         handles: [
@@ -41,10 +41,10 @@ export const genericNodeRegistration: NodeRegistration = {
       },
     ],
 
-    getMenuItems: (data, context) => [],
+    getMenuItems: (_data, _context) => [],
 
     getDefaultParameters: () => ({}),
 
-    validateParameters: (parameters) => true,
+    validateParameters: (_parameters) => true,
   },
 };

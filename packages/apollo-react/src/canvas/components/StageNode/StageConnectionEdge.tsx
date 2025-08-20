@@ -1,5 +1,6 @@
 import React from "react";
-import { ConnectionLineComponentProps, getBezierPath } from "@xyflow/react";
+import type { ConnectionLineComponentProps } from "@xyflow/react";
+import { getBezierPath } from "@xyflow/react";
 
 function getArrowFromBezier(path: string, arrowSize: number) {
   const pathEl = document.createElementNS("http://www.w3.org/2000/svg", "path");

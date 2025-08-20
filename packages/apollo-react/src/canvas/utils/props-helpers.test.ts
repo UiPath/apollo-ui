@@ -30,7 +30,7 @@ describe("props-helpers", () => {
         description: "A test tool",
         type: "tool" as const,
         iconUrl: "test-icon.png",
-        guardrail: "test-guardrail",
+        guardrail: { rule: "test-guardrail" },
       },
       {
         id: "context-1",

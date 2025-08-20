@@ -1,6 +1,6 @@
-import { IRawSpan } from "@uipath/portal-shell-react";
+import type { IRawSpan } from "@uipath/portal-shell-react";
 import { NODE_DIMENSIONS } from "../components/BaseCanvas";
-import {
+import type {
   AgentFlowCustomEdge,
   AgentFlowCustomNode,
   AgentFlowModel,
@@ -154,7 +154,7 @@ const createResourceNode = (
         type: "tool" as const,
         iconUrl: resource.iconUrl,
         projectType: resource.projectType,
-        parentNodeId: parentNodeId,
+        parentNodeId,
         isExpandable: resource.isExpandable,
         processName: resource.processName,
       },
@@ -168,7 +168,7 @@ const createResourceNode = (
       data: {
         ...baseData,
         type: "context" as const,
-        parentNodeId: parentNodeId,
+        parentNodeId,
       },
       draggable: props.mode === "design",
     };
@@ -180,7 +180,7 @@ const createResourceNode = (
     data: {
       ...baseData,
       type: "escalation" as const,
-      parentNodeId: parentNodeId,
+      parentNodeId,
     },
   };
 };
@@ -204,7 +204,7 @@ const createModelNode = (props: AgentFlowProps, parentNodeId: string): AgentFlow
       hasSuccess: hasModelSuccess(props.model, props.spans),
       hasRunning: hasModelRunning(props.model, props.spans),
       iconUrl: props.model.iconUrl,
-      parentNodeId: parentNodeId,
+      parentNodeId,
     },
     draggable: false, // Single model node, not draggable
   };

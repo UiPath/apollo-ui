@@ -26,6 +26,7 @@ export interface ICanvasEventBus {
 }
 
 class EventBus implements ICanvasEventBus {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private listeners = new Map<string, Set<(payload: any) => void>>();
 
   emit<T extends EventName>(eventName: T, payload: EventPayload<T>): void {

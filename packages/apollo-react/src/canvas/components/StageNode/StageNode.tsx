@@ -1,5 +1,6 @@
 import { memo, useMemo, useState, useCallback } from "react";
-import { NodeProps, useStore, Position } from "@xyflow/react";
+import type { NodeProps } from "@xyflow/react";
+import { useStore, Position } from "@xyflow/react";
 import {
   StageContainer,
   StageHeader,
@@ -14,7 +15,7 @@ import {
   StageParallelBracket,
 } from "./StageNode.styles";
 import { StageHandle } from "./StageHandle";
-import { NodeContextMenu } from "../NodeContextMenu";
+import { NodeContextMenu, type NodeMenuItem } from "../NodeContextMenu";
 import type { StageNodeData } from "./StageNode.types";
 import { ApLink } from "@uipath/portal-shell-react";
 
@@ -36,7 +37,7 @@ const StageNodeComponent = (props: NodeProps & { data: StageNodeData }) => {
   const status = undefined;
 
   // TODO: get the menuItems for the stage
-  const menuItems: any[] = [];
+  const menuItems: NodeMenuItem[] = useMemo(() => [], []);
 
   const [isHovered, setIsHovered] = useState(false);
   const { edges, isConnecting } = useStore(
@@ -56,7 +57,7 @@ const StageNodeComponent = (props: NodeProps & { data: StageNodeData }) => {
   // Handle add process click
   const handleAddProcess = useCallback(() => {
     // TODO: invoke action to add process to stage
-  }, [id]);
+  }, []);
 
   const shouldShowMenu = useMemo(() => {
     return menuItems && menuItems.length > 0 && (selected || isHovered);

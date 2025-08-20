@@ -1,7 +1,7 @@
 import type { Edge, Node, Viewport as ReactFlowViewport } from "@xyflow/react";
 import type { NodeProps } from "@xyflow/system";
-import { IRawSpan } from "@uipath/portal-shell-react";
-import { BaseCanvasRef } from "./components/BaseCanvas/BaseCanvas.types";
+import type { IRawSpan } from "@uipath/portal-shell-react";
+import type { BaseCanvasRef } from "./components/BaseCanvas/BaseCanvas.types";
 
 export enum ProjectType {
   Agent = "Agent",
@@ -22,7 +22,7 @@ export type AgentFlowToolResource = {
   name: string;
   description: string;
   iconUrl: string;
-  guardrail: {} | null;
+  guardrail: Record<string, unknown> | null;
   projectType?: string;
   isExpandable?: boolean;
   processName?: string;

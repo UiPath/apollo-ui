@@ -15,9 +15,9 @@ export const scriptNodeRegistration: NodeRegistration = {
   version: "1.0.0",
 
   definition: {
-    getIcon: (data, context) => <ApIcon name="code" color={data.display?.iconColor || "var(--color-foreground-de-emp)"} size="40px" />,
+    getIcon: (data, _context) => <ApIcon name="code" color={data.display?.iconColor || "var(--color-foreground-de-emp)"} size="40px" />,
 
-    getDisplay: (data, context) => ({
+    getDisplay: (data, _context) => ({
       label: data.display?.label,
       subLabel: data.display?.subLabel,
       shape: data.display?.shape ?? ("square" as const),
@@ -57,7 +57,7 @@ export const scriptNodeRegistration: NodeRegistration = {
       };
     },
 
-    getHandleConfigurations: (data, context) => [
+    getHandleConfigurations: (_data, _context) => [
       {
         position: Position.Left,
         handles: [{ id: "input", label: "Input", type: "target", handleType: "input" }],
@@ -70,7 +70,7 @@ export const scriptNodeRegistration: NodeRegistration = {
       },
     ],
 
-    getMenuItems: (data, context) => [],
+    getMenuItems: (_data, _context) => [],
 
     getDefaultParameters: () => ({
       language: "javascript",

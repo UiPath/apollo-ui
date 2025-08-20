@@ -1,5 +1,6 @@
 import React from "react";
-import { EdgeProps, EdgeLabelRenderer, useInternalNode, getSmoothStepPath } from "@xyflow/react";
+import type { EdgeProps } from "@xyflow/react";
+import { EdgeLabelRenderer, useInternalNode, getSmoothStepPath } from "@xyflow/react";
 import styled from "@emotion/styled";
 
 export const StageEdgeLabel = styled.div`
@@ -43,7 +44,6 @@ function getArrowFromBezier(path: string, arrowSize: number) {
 }
 
 export function StageEdge({
-  id,
   sourceX,
   sourceY,
   targetX,
@@ -64,7 +64,7 @@ export function StageEdge({
   const sourceNodeY = sourceNode?.position.y ? sourceNode.position.y + 25 : sourceY;
   const targetNodeX = targetNode?.position.x ?? targetX;
   const targetNodeY = targetNode?.position.y ? targetNode.position.y + 25 : targetY;
-  const [pathData, labelX, labelY, ex, ey] = getSmoothStepPath({
+  const [pathData, labelX, labelY, _ex, _ey] = getSmoothStepPath({
     sourceX: sourceNodeX,
     sourceY: sourceNodeY,
     sourcePosition,

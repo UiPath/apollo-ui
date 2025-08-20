@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { ReactFlowProvider, Position, Node, Edge, applyNodeChanges, applyEdgeChanges, addEdge, Panel, useReactFlow } from "@xyflow/react";
-import type { NodeChange, EdgeChange, Connection } from "@xyflow/react";
+import { ReactFlowProvider, Position, applyNodeChanges, applyEdgeChanges, addEdge, Panel, useReactFlow } from "@xyflow/react";
+import type { NodeChange, EdgeChange, Connection, Node, Edge } from "@xyflow/react";
 import { useState, useCallback, useMemo } from "react";
 import { ApIcon, ApTypography } from "@uipath/portal-shell-react";
 import { FontVariantToken } from "@uipath/apollo-core";
@@ -115,6 +115,7 @@ const NodeAdditionStory = () => {
         icon: <ApIcon size="48px" name="touch_app" color="var(--color-foreground-de-emp)" />,
         label: "Manual trigger",
         handleConfigurations: [],
+        parameters: {},
       },
     },
     {
@@ -126,6 +127,7 @@ const NodeAdditionStory = () => {
         label: "Action",
         subLabel: "Process data",
         handleConfigurations: [],
+        parameters: {},
       },
     },
   ]);
@@ -188,7 +190,10 @@ const NodeAdditionStory = () => {
     }));
   }, [nodes, handleAddClick]);
 
-  const onNodesChange = useCallback((changes: NodeChange[]) => setNodes((nds) => applyNodeChanges(changes, nds)), []);
+  const onNodesChange = useCallback(
+    (changes: NodeChange[]) => setNodes((nds) => applyNodeChanges(changes, nds) as Node<BaseNodeData>[]),
+    []
+  );
 
   const onEdgesChange = useCallback((changes: EdgeChange[]) => setEdges((eds) => applyEdgeChanges(changes, eds)), []);
 
@@ -222,11 +227,11 @@ const NodeAdditionStory = () => {
   // Create node data from node option
   const createNodeData = useCallback((nodeOption: NodeOption): BaseNodeData => {
     // Determine shape based on category
-    let shape: "circle" | "square" | "rectangle" = "square";
+    let _shape: "circle" | "square" | "rectangle" = "square";
     if (nodeOption.category === "triggers") {
-      shape = "circle";
+      _shape = "circle";
     } else if (nodeOption.category === "ai") {
-      shape = "rectangle";
+      _shape = "rectangle";
     }
 
     // Create icon
@@ -236,7 +241,7 @@ const NodeAdditionStory = () => {
       label: nodeOption.label,
       subLabel: nodeOption.description,
       icon,
-      handleConfigurations: [],
+      parameters: {},
     };
   }, []);
 

@@ -15,17 +15,17 @@ export const agentEscalationNodeRegistration: NodeRegistration = {
   version: "1.0.0",
 
   definition: {
-    getIcon: (data, context) => <ApIcon name="person" color="var(--color-foreground-de-emp)" size="40px" />,
+    getIcon: (_data, _context) => <ApIcon name="person" color="var(--color-foreground-de-emp)" size="40px" />,
 
-    getDisplay: (data, context) => ({
+    getDisplay: (data, _context) => ({
       label: data.display?.label,
       subLabel: data.display?.subLabel,
       shape: "circle" as const,
     }),
 
-    getAdornments: (data, context) => ({}),
+    getAdornments: (_data, _context) => ({}),
 
-    getHandleConfigurations: (data, context) => [
+    getHandleConfigurations: (_data, _context) => [
       {
         position: Position.Top,
         handles: [
@@ -38,10 +38,10 @@ export const agentEscalationNodeRegistration: NodeRegistration = {
       },
     ],
 
-    getMenuItems: (data, context) => [],
+    getMenuItems: (_data, _context) => [],
 
     getDefaultParameters: () => ({}),
 
-    validateParameters: (parameters) => true,
+    validateParameters: (_parameters) => true,
   },
 };
