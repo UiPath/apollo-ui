@@ -1,14 +1,6 @@
 import React, { useMemo } from "react";
-import {
-  alignMap,
-  calcSpacingPx,
-  GridProps as CoreGridProps,
-  justifyMap,
-  OverflowProps,
-  PositionProps,
-  SizeProps,
-  SpacingProps,
-} from "./core";
+import type { GridProps as CoreGridProps, OverflowProps, PositionProps, SizeProps, SpacingProps } from "./core";
+import { alignMap, calcSpacingPx, justifyMap } from "./core";
 
 type GridProps = CoreGridProps & OverflowProps & PositionProps & React.HTMLAttributes<HTMLDivElement> & SizeProps & SpacingProps;
 

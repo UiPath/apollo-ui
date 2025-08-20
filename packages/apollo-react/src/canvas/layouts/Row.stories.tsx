@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react";
 import { Row } from "./Stack";
 
 // Common box component for demonstrations
-const Box = ({ children, ...props }: any) => (
+const Box = ({ children, ...props }: React.PropsWithChildren<React.HTMLAttributes<HTMLDivElement>>) => (
   <div
     {...props}
     style={{

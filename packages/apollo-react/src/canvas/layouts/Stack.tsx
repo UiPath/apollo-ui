@@ -1,5 +1,6 @@
 import React, { useMemo } from "react";
-import { alignMap, calcSpacingPx, FlexProps, justifyMap, OverflowProps, PositionProps, SizeProps, SpacingProps } from "./core";
+import type { FlexProps, OverflowProps, PositionProps, SizeProps, SpacingProps } from "./core";
+import { alignMap, calcSpacingPx, justifyMap } from "./core";
 
 type StackProps = FlexProps & OverflowProps & PositionProps & React.HTMLAttributes<HTMLDivElement> & SizeProps & SpacingProps;
 
