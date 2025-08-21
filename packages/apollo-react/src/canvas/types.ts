@@ -1,4 +1,4 @@
-import type { Edge, Node, Viewport as ReactFlowViewport } from "@xyflow/react";
+import type { Edge, Node, Viewport as ReactFlowViewport, CoordinateExtent } from "@xyflow/react";
 import type { NodeProps } from "@xyflow/system";
 import type { IRawSpan } from "@uipath/portal-shell-react";
 import type { BaseCanvasRef } from "./components/BaseCanvas/BaseCanvas.types";
@@ -92,7 +92,9 @@ export type AgentFlowNodeData = {
   definition: Record<string, unknown>; // TODO: NEED schema/Agent type definition
   parentNodeId?: string;
 };
-export type AgentFlowNode = Node<AgentFlowNodeData, "agent">;
+export type AgentFlowNode = Node<AgentFlowNodeData, "agent"> & {
+  extent?: "parent" | CoordinateExtent | undefined;
+};
 export type AgentFlowNodeProps = NodeProps<AgentFlowNode>;
 
 type ToolResourceData = {
@@ -125,7 +127,9 @@ export type AgentFlowResourceNodeData = (ContextResourceData | EscalationResourc
   isExpandable?: boolean;
   processName?: string;
 };
-export type AgentFlowResourceNode = Node<AgentFlowResourceNodeData, "resource">;
+export type AgentFlowResourceNode = Node<AgentFlowResourceNodeData, "resource"> & {
+  extent?: "parent" | CoordinateExtent | undefined;
+};
 export type AgentFlowResourceNodeProps = NodeProps<AgentFlowResourceNode>;
 
 export type AgentFlowCustomNode = AgentFlowNode | AgentFlowResourceNode;
