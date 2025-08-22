@@ -6,19 +6,34 @@ import {
     useTheme,
 } from '@mui/material';
 import token from '@uipath/apollo-core/lib';
+import light from 'highlight.js/styles/github.css';
+import dark from 'highlight.js/styles/github-dark.css';
 import katex from 'katex';
 import React from 'react';
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import {
-    coldarkDark,
-    oneLight,
-} from 'react-syntax-highlighter/dist/cjs/styles/prism';
 
 import { isDebuggingEnabled } from '../../../../../react/stencil-react-adapter/Utils/DebugUtils';
 import { t } from '../../../../../utils/localization/loc';
 import { ThemeInstanceResolver } from '../../../../../utils/theme/themeInstanceResolver';
 import { ApChipReact } from '../../../../ap-chip/ap-chip.react';
 import { AutopilotChatActionButton } from '../../common/action-button.react';
+
+// Utility function to extract plain text from React elements
+const extractTextFromChildren = (children: any): string => {
+    if (typeof children === 'string') {
+        return children;
+    }
+    if (typeof children === 'number') {
+        return String(children);
+    }
+    if (React.isValidElement(children)) {
+        const element = children as React.ReactElement<{ children?: any }>;
+        return extractTextFromChildren(element.props.children);
+    }
+    if (Array.isArray(children)) {
+        return children.map(child => extractTextFromChildren(child)).join('');
+    }
+    return '';
+};
 
 const CodeBlockHeader = styled('div')(({ theme }) => ({
     display: 'flex',
@@ -64,71 +79,35 @@ const NonCodeContentContainer = styled('div')(({ theme }) => ({
     fontFamily: token.FontFamily.FontNormal,
 }));
 
-type CodeBlockProps = {
-    language: string;
-    value: string;
-};
-
-const CodeBlock: React.FC<CodeBlockProps> = React.memo(({
-    language, value,
-}) => {
-    useTheme(); // triggers re-render when theme changes
-
-    const apolloTheme = ThemeInstanceResolver.Instance?.getTheme();
-
-    return (
-        <CodeBlockContainer>
-            <CodeBlockHeader>
-                <ApChipReact
-                    label={language || t('autopilot-chat-code-block-language')}
-                />
-                <AutopilotChatActionButton
-                    iconName="content_copy"
-                    tooltip={t('autopilot-chat-code-block-copy')}
-                    onClick={() => {
-                        navigator.clipboard.writeText(value);
-                    }}
-                />
-            </CodeBlockHeader>
-
-            {language ? (
-                <SyntaxHighlighter
-                    style={apolloTheme?.includes('dark') ? coldarkDark : oneLight}
-                    language={language}
-                    PreTag="div"
-                    wrapLongLines
-                    customStyle={{
-                        margin: 0,
-                        width: '100%',
-                        padding: token.Spacing.SpacingBase,
-                        background: 'transparent',
-                        borderRadius: token.Border.BorderRadiusL,
-                        boxSizing: 'border-box',
-                    }}
-                    codeTagProps={{
-                        style: {
-                            fontSize: token.FontFamily.FontMSize,
-                            fontFamily: token.FontFamily.FontMono,
-                        },
-                    }}>
-                    {value}
-                </SyntaxHighlighter>
-            ) : (
-                <NonCodeContentContainer>
-                    {value}
-                </NonCodeContentContainer>
-            )}
-        </CodeBlockContainer>
-    );
-});
+const HighlightedCodeContainer = styled('div')<{ isDark: boolean }>(({
+    isDark, theme,
+}) => ({
+    margin: 0,
+    width: '100%',
+    padding: token.Spacing.SpacingBase,
+    background: 'transparent',
+    borderRadius: token.Border.BorderRadiusL,
+    boxSizing: 'border-box',
+    fontSize: token.FontFamily.FontMSize,
+    fontFamily: token.FontFamily.FontMono,
+    color: theme.palette.semantic.colorForeground,
+    textWrap: 'wrap',
+    // Apply GitHub theme colors from highlight.js conditionally
+    ...(isDark ? { dark } : { light }),
+}));
 
 export const Code = React.memo(({
     inline, className, children, ...props
 }: any) => {
     const theme = useTheme();
+    const apolloTheme = ThemeInstanceResolver.Instance?.getTheme();
+    const isDark = apolloTheme?.includes('dark') || false;
     const match = /language-(\w+)/.exec(className || '');
 
-    if (inline) {
+    // Additional check for inline code blocks
+    const isInline = inline || (!className && typeof children === 'string' && !children.includes('\n'));
+
+    if (isInline) {
         return (
             <code style={{
                 color: theme.palette.semantic.colorForeground,
@@ -176,10 +155,33 @@ export const Code = React.memo(({
         }
     }
 
+    const codeContent = extractTextFromChildren(children).replace(/\n$/, '');
+    const language = match?.[1] || '';
+
     return (
-        <CodeBlock
-            language={(match?.[1]) || ''}
-            value={String(children).replace(/\n$/, '')}
-            {...props} />
+        <CodeBlockContainer>
+            <CodeBlockHeader>
+                <ApChipReact
+                    label={language || t('autopilot-chat-code-block-language')}
+                />
+                <AutopilotChatActionButton
+                    iconName="content_copy"
+                    tooltip={t('autopilot-chat-code-block-copy')}
+                    onClick={() => {
+                        navigator.clipboard.writeText(codeContent);
+                    }}
+                />
+            </CodeBlockHeader>
+
+            {language ? (
+                <HighlightedCodeContainer isDark={isDark}>
+                    {children}
+                </HighlightedCodeContainer>
+            ) : (
+                <NonCodeContentContainer>
+                    {children}
+                </NonCodeContentContainer>
+            )}
+        </CodeBlockContainer>
     );
 });

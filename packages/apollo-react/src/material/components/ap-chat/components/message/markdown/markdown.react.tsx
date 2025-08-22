@@ -10,8 +10,10 @@ import {
     AutopilotChatEvent,
     AutopilotChatMessage,
 } from '@uipath/portal-shell-util';
+import { all } from 'lowlight';
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
+import rehypeHighlight from 'rehype-highlight';
 import rehypeKatex from 'rehype-katex';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
@@ -202,12 +204,20 @@ function AutopilotChatMarkdownRendererComponent({ message }: { message: Autopilo
                 remarkGfm,
                 [ remarkMath, { singleDollarTextMath: false } ],
             ]}
-            rehypePlugins={[ [ rehypeKatex, {
-                output: 'mathml',
-                trust: false,
-                strict: true,
-                throwOnError: false,
-            } ] ]}
+            rehypePlugins={[
+                [ rehypeHighlight, {
+                    detect: false,
+                    ignoreMissing: true,
+                    plainText: [],
+                    languages: all,
+                } ],
+                [ rehypeKatex, {
+                    output: 'mathml',
+                    trust: false,
+                    strict: true,
+                    throwOnError: false,
+                } ],
+            ]}
             remarkRehypeOptions={{ footnoteLabel: t('autopilot-chat-footnote-label') }}
             components={components}
         >

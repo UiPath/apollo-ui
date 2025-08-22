@@ -76,7 +76,7 @@ const MessageBoxComponent = styled('div')<{
         flexDirection: 'column',
         justifyContent: 'center',
         alignSelf: isAssistant ? 'flex-start' : 'flex-end',
-        gap: token.Spacing.SpacingMicro,
+        gap: token.Spacing.SpacingBase,
         borderRadius: token.Border.BorderRadiusL,
         backgroundColor: isAssistant ? 'unset' : `var(--custom-autopilot-chat-user-message-bg-color, ${theme.palette.semantic.colorBackgroundSecondary})`,
         marginLeft: isAssistant ? '0' : `${padding}px`,
