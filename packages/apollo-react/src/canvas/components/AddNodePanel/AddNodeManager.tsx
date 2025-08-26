@@ -8,6 +8,11 @@ import type { BaseNodeData } from "../BaseNode/BaseNode.types";
 
 export interface AddNodeManagerProps {
   /**
+   * Custom panel component to render inside the floating panel
+   * Should accept the same props as AddNodePanel
+   */
+  customPanel?: React.ComponentType<React.ComponentProps<typeof AddNodePanel>>;
+  /**
    * Function to fetch available node options
    */
   fetchNodeOptions?: (category?: string, search?: string) => Promise<NodeOption[]>;
@@ -30,7 +35,7 @@ export interface AddNodeManagerProps {
  * When a preview node is selected, it automatically shows a node selector panel.
  * When a node type is selected, it replaces the preview with the actual node.
  */
-export const AddNodeManager: React.FC<AddNodeManagerProps> = ({ fetchNodeOptions, createNodeData, onNodeAdded }) => {
+export const AddNodeManager: React.FC<AddNodeManagerProps> = ({ customPanel, fetchNodeOptions, createNodeData, onNodeAdded }) => {
   const reactFlowInstance = useReactFlow();
 
   // Watch for preview node selection
@@ -133,7 +138,13 @@ export const AddNodeManager: React.FC<AddNodeManagerProps> = ({ fetchNodeOptions
 
   return (
     <FloatingCanvasPanel open={isOpen} nodeId="preview-node" placement="right-start" offset={10}>
-      <AddNodePanel onNodeSelect={handleNodeSelect} onClose={handleClose} fetchNodeOptions={fetchNodeOptions} />
+      {customPanel
+        ? React.createElement(customPanel, {
+            onNodeSelect: handleNodeSelect,
+            onClose: handleClose,
+            fetchNodeOptions,
+          })
+        : <AddNodePanel onNodeSelect={handleNodeSelect} onClose={handleClose} fetchNodeOptions={fetchNodeOptions} />}
     </FloatingCanvasPanel>
   );
 };

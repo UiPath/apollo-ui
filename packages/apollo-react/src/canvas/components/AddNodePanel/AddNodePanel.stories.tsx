@@ -235,7 +235,7 @@ const NodeAdditionStory = () => {
     }
 
     // Create icon
-    const icon = nodeOption.icon ? <ApIcon size="32px" name={nodeOption.icon} color="var(--color-foreground-de-emp)" /> : undefined;
+    const icon = nodeOption.icon && typeof nodeOption.icon === "string" ? <ApIcon size="32px" name={nodeOption.icon} color="var(--color-foreground-de-emp)" /> : undefined;
 
     return {
       label: nodeOption.label,

@@ -4,6 +4,7 @@ import { motion } from "motion/react";
 export const ScrollableList = styled.div`
   flex: 1;
   overflow-y: auto;
+  overflow-x: hidden;
   display: flex;
   flex-direction: column;
   gap: 10px;

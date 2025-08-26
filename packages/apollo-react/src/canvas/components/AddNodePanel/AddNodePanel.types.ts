@@ -2,7 +2,7 @@ export interface NodeOption {
   id: string;
   type: string;
   label: string;
-  icon?: string;
+  icon?: React.FC | string;
   category: string;
   description?: string;
 }
@@ -10,7 +10,7 @@ export interface NodeOption {
 export interface NodeCategory {
   id: string;
   label: string;
-  icon?: string;
+  icon?: React.FC | string;
   color?: string;
 }
 
