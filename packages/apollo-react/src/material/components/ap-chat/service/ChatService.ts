@@ -224,6 +224,10 @@ export class AutopilotChatService {
             this.setSelectedModel(config.selectedModel.id);
         }
 
+        if (config.spacing) {
+            this._internalService.publish(AutopilotChatInternalEvent.SetSpacing, config.spacing);
+        }
+
         messageRenderers.forEach(renderer => this.injectMessageRenderer(renderer));
     }
 

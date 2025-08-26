@@ -33,6 +33,8 @@ export const CHAT_MESSAGE_MAX_PADDING = 96; // max margin left --> 24 (parent) +
 export const CHAT_WIDTH_FULL_SCREEN_MAX_WIDTH = '960px';
 export const CHAT_INPUT_MIN_ROWS = 2;
 export const CHAT_INPUT_MAX_ROWS = 12;
+export const CHAT_COMPACT_MODE_INPUT_MIN_ROWS = 2;
+export const CHAT_COMPACT_MODE_INPUT_MAX_ROWS = 4;
 export const CHAT_LOADER_GRADIENT_WIDTH = 100;
 export const CHAT_WIDTH_KEY = 'width';
 export const CHAT_ACTIVE_CONVERSATION_ID_KEY = 'activeConversationId';
@@ -40,6 +42,10 @@ export const CHAT_SCROLL_BOTTOM_BUFFER = 200;
 export const CHAT_INSTANCE_DEFAULT_NAME = 'portal-shell';
 export const CHAT_INSTANCE_DOCS_AI_NAME = 'portal-shell-docs-ai';
 export const CHAT_CITATION_START = 'citation-start';
+export const CHAT_MESSAGE_SPACING = 32;
+export const CHAT_COMPACT_MODE_MESSAGE_SPACING = 8;
+export const CHAT_MESSAGE_GROUP_GAP = 16;
+export const CHAT_COMPACT_MODE_MESSAGE_GROUP_GAP = 8;
 
 export const getChatModeKey = (instanceName = CHAT_INSTANCE_DEFAULT_NAME) => {
     const CHAT_MODE_KEY = 'mode';
