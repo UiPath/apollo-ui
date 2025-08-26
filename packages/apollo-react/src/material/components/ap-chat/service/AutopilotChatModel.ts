@@ -1,3 +1,5 @@
+import type { FontVariantToken } from '@uipath/apollo-core';
+
 export enum AutopilotChatMode {
     Closed = 'closed',
     SideBySide = 'side-by-side',
@@ -199,6 +201,7 @@ export enum AutopilotChatInterceptableEvent {
  * @property {string} ShowLoadingState - Emitted when the loading state should be shown
  * @property {string} SetWaiting - Emitted when the waiting state should be set for the prompt box
  * @property {string} SetSuggestions - Emitted when the suggestions are set
+ * @property {string} SetSpacing - Emitted when the spacing is set for the chat
  */
 export enum AutopilotChatInternalEvent {
     ChatResize = 'chatResize',
@@ -215,6 +218,7 @@ export enum AutopilotChatInternalEvent {
     ShowLoadingState = 'showLoadingState',
     SetWaiting = 'setWaiting',
     SetSuggestions = 'setSuggestions',
+    SetSpacing = 'setSpacing',
 }
 
 export type AutopilotChatEventHandler<T = any> = (data?: T) => void;
@@ -373,6 +377,7 @@ export enum AutopilotChatPreHookAction {
  *                      Hooks expose current data for the action **before** the state change is attempted.
  * @property paginatedMessages - Flag to determine if the chat conversation is paginated
  * @property settingsRenderer - The renderer for the settings page. This will be used to render the settings page in the chat.
+ * @property spacing - The spacing of the chat (prompt box, markdown tokens, etc)
  */
 export interface AutopilotChatConfiguration {
     mode: AutopilotChatMode;
@@ -392,6 +397,34 @@ export interface AutopilotChatConfiguration {
     preHooks?: Partial<Record<AutopilotChatPreHookAction, (data?: any) => Promise<boolean>>>;
     paginatedMessages?: boolean;
     settingsRenderer?: (container: HTMLElement) => void;
+    spacing?: {
+        compactMode?: boolean;
+        promptBox?: {
+            minRows?: number;
+            maxRows?: number;
+        };
+        messageSpacing?: number;
+        messageGroupGap?: number;
+        primaryFontToken?: FontVariantToken;
+        primaryBoldFontToken?: FontVariantToken;
+        markdownTokens?: {
+            li?: FontVariantToken;
+            p?: FontVariantToken;
+            h1?: FontVariantToken;
+            h2?: FontVariantToken;
+            h3?: FontVariantToken;
+            h4?: FontVariantToken;
+            h5?: FontVariantToken;
+            h6?: FontVariantToken;
+            th?: FontVariantToken;
+            td?: FontVariantToken;
+            em?: FontVariantToken;
+            del?: FontVariantToken;
+            strong?: FontVariantToken;
+            link?: FontVariantToken;
+            citation?: FontVariantToken;
+        };
+    };
 }
 
 /**
