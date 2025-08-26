@@ -1,6 +1,7 @@
 /** @jsx React.createElement */
 /** @jsxFrag React.Fragment */
 
+import { FontVariantToken } from '@uipath/apollo-core';
 import {
     AutopilotChatAllowedAttachments,
     AutopilotChatConfiguration,
@@ -10,10 +11,23 @@ import {
     AutopilotChatMode,
     AutopilotChatModelInfo,
     AutopilotChatOverrideLabels,
+    CHAT_COMPACT_MODE_INPUT_MAX_ROWS,
+    CHAT_COMPACT_MODE_INPUT_MIN_ROWS,
+    CHAT_COMPACT_MODE_MESSAGE_GROUP_GAP,
+    CHAT_COMPACT_MODE_MESSAGE_SPACING,
+    CHAT_INPUT_MAX_ROWS,
+    CHAT_INPUT_MIN_ROWS,
+    CHAT_MESSAGE_GROUP_GAP,
+    CHAT_MESSAGE_SPACING,
 } from '@uipath/portal-shell-util';
 import React from 'react';
 
 import { useChatService } from './chat-service.provider.react';
+
+// Converts all properties of the type to required since we have defaults for all properties
+type DeepRequired<T> = {
+    [P in keyof T]-?: DeepRequired<T[P]>;
+};
 
 interface AutopilotChatStateContextType {
     historyAnchorElement: HTMLElement | null;
@@ -30,6 +44,7 @@ interface AutopilotChatStateContextType {
     models: AutopilotChatModelInfo[];
     hasMessages: boolean;
     setHasMessages: (hasMessages: boolean) => void;
+    spacing: DeepRequired<NonNullable<AutopilotChatConfiguration['spacing']>>;
 }
 
 const AutopilotChatStateContext = React.createContext<AutopilotChatStateContextType | null>(null);
@@ -37,6 +52,67 @@ const AutopilotChatStateContext = React.createContext<AutopilotChatStateContextT
 interface AutopilotChatStateProviderProps {
     children: React.ReactNode;
 }
+
+const calculateSpacing = (chatSpacing: AutopilotChatConfiguration['spacing']) => {
+    const compactMode = chatSpacing?.compactMode ?? false;
+
+    const markdownTokens = {
+        li: compactMode ? FontVariantToken.fontSizeS : FontVariantToken.fontSizeM,
+        p: compactMode ? FontVariantToken.fontSizeS : FontVariantToken.fontSizeM,
+        h1: compactMode ? FontVariantToken.fontSizeH4Bold : FontVariantToken.fontSizeH3Bold,
+        h2: compactMode ? FontVariantToken.fontSizeH4Bold : FontVariantToken.fontSizeH3Bold,
+        h3: compactMode ? FontVariantToken.fontSizeH4Bold : FontVariantToken.fontSizeH3Bold,
+        h4: compactMode ? FontVariantToken.fontSizeMBold : FontVariantToken.fontSizeLBold,
+        h5: compactMode ? FontVariantToken.fontSizeMBold : FontVariantToken.fontSizeLBold,
+        h6: compactMode ? FontVariantToken.fontSizeMBold : FontVariantToken.fontSizeLBold,
+        th: compactMode ? FontVariantToken.fontSizeS : FontVariantToken.fontSizeM,
+        td: compactMode ? FontVariantToken.fontSizeS : FontVariantToken.fontSizeM,
+        em: compactMode ? FontVariantToken.fontSizeS : FontVariantToken.fontSizeM,
+        del: compactMode ? FontVariantToken.fontSizeS : FontVariantToken.fontSizeM,
+        strong: compactMode ? FontVariantToken.fontSizeS : FontVariantToken.fontSizeM,
+        link: compactMode ? FontVariantToken.fontSizeS : FontVariantToken.fontSizeM,
+        citation: compactMode ? FontVariantToken.fontSizeXs : FontVariantToken.fontSizeM,
+    };
+
+    const promptBox = {
+        minRows: compactMode ? CHAT_COMPACT_MODE_INPUT_MIN_ROWS : CHAT_INPUT_MIN_ROWS,
+        maxRows: compactMode ? CHAT_COMPACT_MODE_INPUT_MAX_ROWS : CHAT_INPUT_MAX_ROWS,
+    };
+
+    const messageSpacing = compactMode ? CHAT_COMPACT_MODE_MESSAGE_SPACING : CHAT_MESSAGE_SPACING;
+    const messageGroupGap = compactMode ? CHAT_COMPACT_MODE_MESSAGE_GROUP_GAP : CHAT_MESSAGE_GROUP_GAP;
+    const primaryFontToken = compactMode ? FontVariantToken.fontSizeS : FontVariantToken.fontSizeM;
+    const primaryBoldFontToken = compactMode ? FontVariantToken.fontSizeSBold : FontVariantToken.fontSizeMBold;
+
+    return {
+        compactMode,
+        promptBox: {
+            minRows: chatSpacing?.promptBox?.minRows ?? promptBox.minRows,
+            maxRows: chatSpacing?.promptBox?.maxRows ?? promptBox.maxRows,
+        },
+        primaryFontToken: chatSpacing?.primaryFontToken ?? primaryFontToken,
+        primaryBoldFontToken: chatSpacing?.primaryBoldFontToken ?? primaryBoldFontToken,
+        messageSpacing: chatSpacing?.messageSpacing ?? messageSpacing,
+        messageGroupGap: chatSpacing?.messageGroupGap ?? messageGroupGap,
+        markdownTokens: {
+            li: chatSpacing?.markdownTokens?.li ?? markdownTokens.li,
+            p: chatSpacing?.markdownTokens?.p ?? markdownTokens.p,
+            h1: chatSpacing?.markdownTokens?.h1 ?? markdownTokens.h1,
+            h2: chatSpacing?.markdownTokens?.h2 ?? markdownTokens.h2,
+            h3: chatSpacing?.markdownTokens?.h3 ?? markdownTokens.h3,
+            h4: chatSpacing?.markdownTokens?.h4 ?? markdownTokens.h4,
+            h5: chatSpacing?.markdownTokens?.h5 ?? markdownTokens.h5,
+            h6: chatSpacing?.markdownTokens?.h6 ?? markdownTokens.h6,
+            th: chatSpacing?.markdownTokens?.th ?? markdownTokens.th,
+            td: chatSpacing?.markdownTokens?.td ?? markdownTokens.td,
+            em: chatSpacing?.markdownTokens?.em ?? markdownTokens.em,
+            del: chatSpacing?.markdownTokens?.del ?? markdownTokens.del,
+            strong: chatSpacing?.markdownTokens?.strong ?? markdownTokens.strong,
+            link: chatSpacing?.markdownTokens?.link ?? markdownTokens.link,
+            citation: chatSpacing?.markdownTokens?.citation ?? markdownTokens.citation,
+        },
+    };
+};
 
 export const AutopilotChatStateProvider: React.FC<AutopilotChatStateProviderProps> = ({ children }) => {
     const chatService = useChatService();
@@ -64,6 +140,7 @@ export const AutopilotChatStateProvider: React.FC<AutopilotChatStateProviderProp
     });
     const [ models, setModels ] = React.useState<AutopilotChatModelInfo[]>(chatService?.getModels() ?? []);
     const [ hasMessages, setHasMessages ] = React.useState(false);
+    const [ spacing, setSpacing ] = React.useState(calculateSpacing(chatService?.getConfig()?.spacing));
 
     React.useEffect(() => {
         if (!chatService) {
@@ -126,6 +203,13 @@ export const AutopilotChatStateProvider: React.FC<AutopilotChatStateProviderProp
             },
         );
 
+        const unsubscribeSpacing = chatInternalService.on(
+            AutopilotChatInternalEvent.SetSpacing,
+            (spacingConfig: AutopilotChatConfiguration['spacing']) => {
+                setSpacing(calculateSpacing(spacingConfig));
+            },
+        );
+
         return () => {
             unsubscribeHistoryToggle();
             unsubscribeSettingsToggle();
@@ -135,6 +219,7 @@ export const AutopilotChatStateProvider: React.FC<AutopilotChatStateProviderProp
             unsubscribeFirstRunExperience();
             unsubscribeAllowedAttachments();
             unsubscribeModels();
+            unsubscribeSpacing();
         };
     }, [ chatService, chatInternalService ]);
 
@@ -153,6 +238,7 @@ export const AutopilotChatStateProvider: React.FC<AutopilotChatStateProviderProp
         setFullScreenContainer,
         hasMessages,
         setHasMessages,
+        spacing,
     }), [
         historyOpen,
         settingsOpen,
@@ -168,6 +254,7 @@ export const AutopilotChatStateProvider: React.FC<AutopilotChatStateProviderProp
         setFullScreenContainer,
         hasMessages,
         setHasMessages,
+        spacing,
     ]);
 
     return (

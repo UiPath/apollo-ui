@@ -10,6 +10,7 @@ import {
 import React from 'react';
 
 import { t } from '../../../../utils/localization/loc';
+import { useChatState } from '../../providers/chat-state-provider.react';
 import { fileToIcon } from '../../utils/file-to-icon';
 import { AutopilotChatActionButton } from './action-button.react';
 import { AutopilotChatTooltip } from './tooltip.react';
@@ -108,6 +109,7 @@ interface AttachmentProps {
 export const Attachment = React.memo(({
     attachment, onRemove, shouldFocus, isFullWidth,
 }: AttachmentProps) => {
+    const { spacing } = useChatState();
     const removeButtonRef = React.useRef<HTMLButtonElement>(null);
     const [ isRemoveIconVisible, setIsRemoveIconVisible ] = React.useState(false);
     const [ isFocused, setIsFocused ] = React.useState(false);
@@ -187,7 +189,7 @@ export const Attachment = React.memo(({
                 placement="top"
                 disableInteractive={true}
             >
-                <ap-typography class="attachment-name">{attachment.name}</ap-typography>
+                <ap-typography variant={spacing.primaryFontToken} class="attachment-name">{attachment.name}</ap-typography>
             </AutopilotChatTooltip>
 
             {onRemove && (

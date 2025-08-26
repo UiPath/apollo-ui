@@ -8,6 +8,7 @@ import {
 import token from '@uipath/apollo-core/lib';
 import React from 'react';
 
+import { useChatState } from '../../../providers/chat-state-provider.react';
 import { Text } from './text.react';
 
 export const Ul = React.memo(({ children }: { children: React.ReactNode }) => {
@@ -43,6 +44,7 @@ export const Ol = React.memo(({
 
 export const Li = React.memo(({ children }: { children: React.ReactNode }) => {
     const theme = useTheme();
+    const { spacing } = useChatState();
 
     return <Box
         component="li"
@@ -56,6 +58,7 @@ export const Li = React.memo(({ children }: { children: React.ReactNode }) => {
         {React.Children.map(children, child => {
             if (typeof child === 'string') {
                 const hasVisibleContent = child.trim().length > 0;
+
                 if (!hasVisibleContent) {
                     return null;
                 }
@@ -63,6 +66,7 @@ export const Li = React.memo(({ children }: { children: React.ReactNode }) => {
                 return Text({
                     children: child,
                     customStyle: { display: 'inline' },
+                    variant: spacing.markdownTokens.li,
                 });
             }
 

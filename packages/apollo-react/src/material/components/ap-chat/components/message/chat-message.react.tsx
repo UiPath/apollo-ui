@@ -25,11 +25,11 @@ import { AutopilotChatLoadingMessages } from './loader/chat-loading-messages.rea
 import { AutopilotChatSuggestions } from './suggestions/chat-suggestions.react';
 
 const MessageContainer = styled('div')(({
-    isOverflow, isContainerWide,
-}: { isOverflow: boolean; isContainerWide: boolean }) => ({
+    isOverflow, isContainerWide, gap,
+}: { isOverflow: boolean; isContainerWide: boolean; gap: number }) => ({
     display: 'flex',
     flexDirection: 'column',
-    gap: token.Spacing.SpacingXl,
+    gap: `${gap}px`,
     height: '100%',
 
     ...(isOverflow && isContainerWide && {
@@ -80,7 +80,7 @@ function AutopilotChatMessagesComponent({
     const { isLoadingMoreMessages } = useLoading();
 
     const {
-        firstRunExperience, setHasMessages,
+        firstRunExperience, setHasMessages, spacing,
     } = useChatState();
 
     const [ suggestions, setSuggestions ] = React.useState<AutopilotChatSuggestion[]>([]);
@@ -194,7 +194,7 @@ function AutopilotChatMessagesComponent({
     }, [ messages, setHasMessages ]);
 
     return (
-        <MessageContainer isOverflow={isOverflow} isContainerWide={isContainerWide}>
+        <MessageContainer gap={spacing.messageSpacing} isOverflow={isOverflow} isContainerWide={isContainerWide}>
             {showSkeletonLoader ? (
                 <SkeletonLoader />
             ) :

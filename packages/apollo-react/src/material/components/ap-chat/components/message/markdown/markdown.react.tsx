@@ -5,7 +5,7 @@
 import 'katex/dist/katex.min.css';
 
 import { styled } from '@mui/material';
-import token, { FontVariantToken } from '@uipath/apollo-core/lib';
+import token from '@uipath/apollo-core/lib';
 import {
     AutopilotChatEvent,
     AutopilotChatMessage,
@@ -20,6 +20,7 @@ import remarkMath from 'remark-math';
 
 import { t } from '../../../../../utils/localization/loc';
 import { useChatService } from '../../../providers/chat-service.provider.react';
+import { useChatState } from '../../../providers/chat-state-provider.react';
 import { useStreaming } from '../../../providers/streaming-provider.react';
 import { Citation } from './citation.react';
 import { Code } from './code.react';
@@ -78,6 +79,7 @@ function AutopilotChatMarkdownRendererComponent({ message }: { message: Autopilo
 
     const [ content, setContent ] = React.useState(message.fakeStream ? '' : getInitialContent());
     const chatService = useChatService();
+    const { spacing } = useChatState();
     const { setStreaming } = useStreaming();
     const chunkQueue = React.useRef<string[]>([]);
     const lastChunkQueueProcessedTime = React.useRef<number>(0);
@@ -172,13 +174,13 @@ function AutopilotChatMarkdownRendererComponent({ message }: { message: Autopilo
         ul: Ul,
         ol: Ol,
         li: Li,
-        p: React.memo(getTextForVariant(FontVariantToken.fontSizeM)),
-        h1: React.memo(getTextForVariant(FontVariantToken.fontSizeH3Bold, 1)),
-        h2: React.memo(getTextForVariant(FontVariantToken.fontSizeH3Bold, 2)),
-        h3: React.memo(getTextForVariant(FontVariantToken.fontSizeH3Bold, 3)),
-        h4: React.memo(getTextForVariant(FontVariantToken.fontSizeLBold, 4)),
-        h5: React.memo(getTextForVariant(FontVariantToken.fontSizeLBold, 5)),
-        h6: React.memo(getTextForVariant(FontVariantToken.fontSizeLBold, 6)),
+        p: React.memo(getTextForVariant(spacing.markdownTokens.p)),
+        h1: React.memo(getTextForVariant(spacing.markdownTokens.h1, 1)),
+        h2: React.memo(getTextForVariant(spacing.markdownTokens.h2, 2)),
+        h3: React.memo(getTextForVariant(spacing.markdownTokens.h3, 3)),
+        h4: React.memo(getTextForVariant(spacing.markdownTokens.h4, 4)),
+        h5: React.memo(getTextForVariant(spacing.markdownTokens.h5, 5)),
+        h6: React.memo(getTextForVariant(spacing.markdownTokens.h6, 6)),
         br: Break,
         table: Table,
         thead: TableHeader,
@@ -195,7 +197,7 @@ function AutopilotChatMarkdownRendererComponent({ message }: { message: Autopilo
         pre: Pre,
         a: Link,
         citation: Citation,
-    }), []);
+    }), [ spacing ]);
 
     return React.useMemo(() => (
         <StyledMarkdown

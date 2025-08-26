@@ -5,12 +5,10 @@ import {
     Box,
     styled,
 } from '@mui/material';
-import token from '@uipath/apollo-core/lib';
+import token, { FontVariantToken } from '@uipath/apollo-core/lib';
 import {
     AutopilotChatEvent,
     AutopilotChatPrompt,
-    CHAT_INPUT_MAX_ROWS,
-    CHAT_INPUT_MIN_ROWS,
 } from '@uipath/portal-shell-util';
 import React from 'react';
 
@@ -22,12 +20,15 @@ import { useChatState } from '../../providers/chat-state-provider.react';
 import { useLoading } from '../../providers/loading-provider.react';
 import { useStreaming } from '../../providers/streaming-provider.react';
 import { parseFiles } from '../../utils/file-reader';
+import { fontByVariant } from '../../utils/font-by-variant';
 import { AutopilotChatInputActions } from './chat-input-actions.react';
 import { AutopilotChatInputAttachments } from './chat-input-attachments.react';
 import { AutopilotChatInputError } from './chat-input-error.react';
 import { AutopilotChatInputFooter } from './chat-input-footer.react';
 
-export const InputContainer = styled('div')(({ theme }) => ({
+export const InputContainer = styled('div')<{ primaryFontToken: FontVariantToken }>(({
+    theme, primaryFontToken,
+}) => ({
     border: `${token.Border.BorderThickM} solid transparent`,
     boxShadow: `inset 0 0 0 ${token.Border.BorderThickS} ${theme.palette.semantic.colorBorder}`,
     borderRadius: token.Border.BorderRadiusL,
@@ -56,6 +57,15 @@ export const InputContainer = styled('div')(({ theme }) => ({
         color: theme.palette.semantic.colorForeground,
 
         '&::placeholder': { color: theme.palette.semantic.colorForegroundDeEmp },
+
+        ...(primaryFontToken && {
+            '&, &::placeholder': {
+                fontSize: fontByVariant(primaryFontToken).fontSize,
+                fontFamily: fontByVariant(primaryFontToken).fontFamily,
+                lineHeight: fontByVariant(primaryFontToken).lineHeight,
+                fontWeight: fontByVariant(primaryFontToken).fontWeight,
+            },
+        }),
     },
 }));
 
@@ -80,6 +90,7 @@ function AutopilotChatInputComponent() {
     const {
         disabledFeatures,
         overrideLabels,
+        spacing,
     } = useChatState();
 
     const [ message, setMessage ] = React.useState(
@@ -199,7 +210,7 @@ function AutopilotChatInputComponent() {
         <>
             <AutopilotChatInputError />
 
-            <InputContainer onClick={() => inputRef?.current?.focus()}>
+            <InputContainer primaryFontToken={spacing.primaryFontToken} onClick={() => inputRef?.current?.focus()}>
                 <AutopilotChatInputAttachments/>
 
                 <Box className="autopilot-chat-input" sx={{ padding: `${token.Spacing.SpacingS} 0 0 !important` }}>
@@ -210,8 +221,8 @@ function AutopilotChatInputComponent() {
                         placeholder={overrideLabels?.inputPlaceholder ?? t('autopilot-chat-input-placeholder')}
                         onChange={handleChange}
                         onKeyDown={handleKeyDown}
-                        minRows={CHAT_INPUT_MIN_ROWS}
-                        maxRows={CHAT_INPUT_MAX_ROWS}
+                        minRows={spacing.promptBox.minRows}
+                        maxRows={spacing.promptBox.maxRows}
                     />
 
                     <GradientContainer/>

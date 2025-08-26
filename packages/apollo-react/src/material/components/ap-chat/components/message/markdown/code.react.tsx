@@ -15,6 +15,7 @@ import { isDebuggingEnabled } from '../../../../../react/stencil-react-adapter/U
 import { t } from '../../../../../utils/localization/loc';
 import { ThemeInstanceResolver } from '../../../../../utils/theme/themeInstanceResolver';
 import { ApChipReact } from '../../../../ap-chip/ap-chip.react';
+import { useChatState } from '../../../providers/chat-state-provider.react';
 import { AutopilotChatActionButton } from '../../common/action-button.react';
 
 // Utility function to extract plain text from React elements
@@ -81,28 +82,46 @@ const NonCodeContentContainer = styled('div')(({ theme }) => ({
 
 const HighlightedCodeContainer = styled('div')<{ isDark: boolean }>(({
     isDark, theme,
-}) => ({
-    margin: 0,
-    width: '100%',
-    padding: token.Spacing.SpacingBase,
-    background: 'transparent',
-    borderRadius: token.Border.BorderRadiusL,
-    boxSizing: 'border-box',
-    fontSize: token.FontFamily.FontMSize,
-    fontFamily: token.FontFamily.FontMono,
-    color: theme.palette.semantic.colorForeground,
-    textWrap: 'wrap',
-    // Apply GitHub theme colors from highlight.js conditionally
-    ...(isDark ? { dark } : { light }),
-}));
+}) => {
+    const { spacing } = useChatState();
+
+    const codeFontStyles = {
+        fontSize: spacing.compactMode ? token.FontFamily.FontMonoSSize : token.FontFamily.FontMonoMSize,
+        fontFamily: spacing.compactMode ? token.FontFamily.FontMonoSFamily : token.FontFamily.FontMonoMFamily,
+        fontWeight: spacing.compactMode ? token.FontFamily.FontMonoSWeight : token.FontFamily.FontMonoMWeight,
+    };
+
+    return {
+        margin: 0,
+        width: '100%',
+        padding: token.Spacing.SpacingBase,
+        background: 'transparent',
+        borderRadius: token.Border.BorderRadiusL,
+        boxSizing: 'border-box',
+        color: theme.palette.semantic.colorForeground,
+        textWrap: 'wrap',
+        ...codeFontStyles,
+        // Apply GitHub theme colors from highlight.js conditionally
+        ...(isDark ? { dark } : { light }),
+    };
+});
 
 export const Code = React.memo(({
     inline, className, children, ...props
 }: any) => {
     const theme = useTheme();
+    const { spacing } = useChatState();
     const apolloTheme = ThemeInstanceResolver.Instance?.getTheme();
     const isDark = apolloTheme?.includes('dark') || false;
     const match = /language-(\w+)/.exec(className || '');
+
+    const codeFontStyles = {
+        fontSize: spacing.compactMode ? token.FontFamily.FontMonoSSize : token.FontFamily.FontMonoMSize,
+        fontFamily: spacing.compactMode ? token.FontFamily.FontMonoSFamily : token.FontFamily.FontMonoMFamily,
+        lineHeight: spacing.compactMode ? token.FontFamily.FontMonoSLineHeight : token.FontFamily.FontMonoMLineHeight,
+        height: spacing.compactMode ? token.FontFamily.FontMonoSLineHeight : token.FontFamily.FontMonoMLineHeight,
+        fontWeight: spacing.compactMode ? token.FontFamily.FontMonoSWeight : token.FontFamily.FontMonoMWeight,
+    };
 
     // Additional check for inline code blocks
     const isInline = inline || (!className && typeof children === 'string' && !children.includes('\n'));
@@ -111,16 +130,12 @@ export const Code = React.memo(({
         return (
             <code style={{
                 color: theme.palette.semantic.colorForeground,
-                fontSize: token.FontFamily.FontMonoMSize,
-                fontFamily: token.FontFamily.FontMonoMFamily,
-                lineHeight: token.FontFamily.FontMonoMLineHeight,
-                height: token.FontFamily.FontMonoMLineHeight,
-                fontWeight: token.FontFamily.FontMonoMWeight,
                 padding: `0 ${token.Padding.PadS}`,
                 background: theme.palette.semantic.colorBackgroundDisabled,
                 borderRadius: token.Border.BorderRadiusM,
                 display: 'inline-block',
                 width: 'fit-content',
+                ...codeFontStyles,
             }} className={className} {...props}>
                 {children}
             </code>

@@ -8,20 +8,24 @@ import {
 import token, { FontVariantToken } from '@uipath/apollo-core';
 import React from 'react';
 
+import { useChatState } from '../../../providers/chat-state-provider.react';
+import { fontByVariant } from '../../../utils/font-by-variant';
+
 // Create a context for typography variant
-export const TypographyContext = React.createContext<FontVariantToken>(FontVariantToken.fontSizeM);
+export const TypographyContext = React.createContext<FontVariantToken | undefined>(undefined);
 
 export const Text = ({
-    children, variant = FontVariantToken.fontSizeM, customStyle, headingLevel,
+    children, variant, customStyle, headingLevel,
 }: { children: React.ReactNode; variant?: FontVariantToken; customStyle?: React.CSSProperties; headingLevel?: number }) => {
     const theme = useTheme();
+    const { spacing } = useChatState();
 
     if (Array.isArray(children) && children.length === 1 && children[0] === '') {
         return null;
     }
 
     return (
-        <TypographyContext.Provider value={variant}>
+        <TypographyContext.Provider value={variant ?? spacing.primaryFontToken}>
             <ap-typography
                 variant={variant}
                 color={theme.palette.semantic.colorForeground}
@@ -54,6 +58,7 @@ export const Break = React.memo(() => <br />);
 
 export const Blockquote = React.memo(({ children }: { children: React.ReactNode }) => {
     const theme = useTheme();
+    const { spacing } = useChatState();
 
     return (
         <Box
@@ -67,10 +72,10 @@ export const Blockquote = React.memo(({ children }: { children: React.ReactNode 
                 margin: 0,
 
                 '& ap-typography': {
-                    fontFamily: token.FontFamily.FontMonoMFamily,
-                    fontSize: token.FontFamily.FontMonoMSize,
-                    fontWeight: token.FontFamily.FontMonoMWeight,
-                    lineHeight: token.FontFamily.FontMonoMLineHeight,
+                    fontFamily: fontByVariant(spacing.markdownTokens.citation).fontFamily,
+                    fontSize: fontByVariant(spacing.markdownTokens.citation).fontSize,
+                    fontWeight: fontByVariant(spacing.markdownTokens.citation).fontWeight,
+                    lineHeight: fontByVariant(spacing.markdownTokens.citation).lineHeight,
                 },
             }}
         >
@@ -81,31 +86,34 @@ export const Blockquote = React.memo(({ children }: { children: React.ReactNode 
 
 export const Emphazised = React.memo(({ children }: { children: React.ReactNode }) => {
     const parentVariant = React.useContext(TypographyContext);
+    const { spacing } = useChatState();
 
     return Text({
         children: <em>{children}</em>,
         customStyle: { display: 'inline' },
-        variant: parentVariant,
+        variant: parentVariant ?? spacing.primaryFontToken,
     });
 });
 
 export const Strong = React.memo(({ children }: { children: React.ReactNode }) => {
     const parentVariant = React.useContext(TypographyContext);
+    const { spacing } = useChatState();
 
     return Text({
         children: <strong>{children}</strong>,
         customStyle: { display: 'inline' },
-        variant: parentVariant,
+        variant: parentVariant ?? spacing.primaryFontToken,
     });
 });
 
 export const Del = React.memo(({ children }: { children: React.ReactNode }) => {
     const parentVariant = React.useContext(TypographyContext);
+    const { spacing } = useChatState();
 
     return Text({
         children: <del>{children}</del>,
         customStyle: { display: 'inline' },
-        variant: parentVariant,
+        variant: parentVariant ?? spacing.primaryFontToken,
     });
 });
 
@@ -133,10 +141,11 @@ export const Link = React.memo(({
     href, children,
 }: { href?: string; children: React.ReactNode }) => {
     const parentVariant = React.useContext(TypographyContext);
+    const { spacing } = useChatState();
 
     return (
         <Text
-            variant={parentVariant}
+            variant={parentVariant ?? spacing.primaryFontToken}
             customStyle={{ display: 'inline' }}
         >
             <ap-link href={href} target="_blank">{children}</ap-link>

@@ -2,11 +2,15 @@
 /** @jsxFrag React.Fragment */
 
 import {
+    AutopilotChatMode,
     CHAT_WIDTH_KEY,
     CHAT_WIDTH_SIDE_BY_SIDE_MIN,
     StorageService,
 } from '@uipath/portal-shell-util';
 import React from 'react';
+
+import { useChatService } from './chat-service.provider.react';
+import { useChatState } from './chat-state-provider.react';
 
 interface AutopilotChatWidthContextType {
     width: number;
@@ -23,12 +27,24 @@ interface AutopilotChatWidthProviderProps {
 
 export function AutopilotChatWidthProvider({ children }: AutopilotChatWidthProviderProps) {
     const storage = StorageService.Instance;
+    const chatService = useChatService();
+    const { chatMode } = useChatState();
     const [ width, setWidth ] = React.useState(() => {
         const savedWidth = storage.get(CHAT_WIDTH_KEY);
 
         return savedWidth ? parseInt(savedWidth, 10) : CHAT_WIDTH_SIDE_BY_SIDE_MIN;
     });
     const [ shouldAnimate, setShouldAnimate ] = React.useState(false);
+
+    React.useEffect(() => {
+        if (chatMode === AutopilotChatMode.Embedded) {
+            const config = chatService.getConfig();
+
+            if (config.embeddedContainer) {
+                setWidth(config.embeddedContainer.clientWidth);
+            }
+        }
+    }, [ chatService, chatMode ]);
 
     const value = React.useMemo(() => ({
         width,

@@ -18,6 +18,7 @@ import {
 import React from 'react';
 
 import { useChatService } from '../../providers/chat-service.provider.react';
+import { useChatState } from '../../providers/chat-state-provider.react';
 import { calculateDynamicPadding } from '../../utils/dynamic-padding';
 import { Attachments } from '../common/attachments.react';
 import { AutopilotChatMessageActions } from './actions/chat-actions.react';
@@ -36,6 +37,7 @@ const MessageBoxComponent = styled('div')<{
     theme, isAssistant, isCustomWidget,
 }) => {
     const chatService = useChatService();
+    const { spacing } = useChatState();
     const chatInternalService = chatService.__internalService__;
     const [ padding, setPadding ] = React.useState(
         calculateDynamicPadding(parseInt(StorageService.Instance.get(CHAT_WIDTH_KEY) ?? CHAT_WIDTH_SIDE_BY_SIDE_MIN.toString(), 10)),
@@ -76,7 +78,7 @@ const MessageBoxComponent = styled('div')<{
         flexDirection: 'column',
         justifyContent: 'center',
         alignSelf: isAssistant ? 'flex-start' : 'flex-end',
-        gap: token.Spacing.SpacingBase,
+        gap: spacing.messageGroupGap,
         borderRadius: token.Border.BorderRadiusL,
         backgroundColor: isAssistant ? 'unset' : `var(--custom-autopilot-chat-user-message-bg-color, ${theme.palette.semantic.colorBackgroundSecondary})`,
         marginLeft: isAssistant ? '0' : `${padding}px`,

@@ -8,12 +8,11 @@ import {
     TableRow,
     useTheme,
 } from '@mui/material';
-import { FontVariantToken } from '@uipath/apollo-core';
 import token from '@uipath/apollo-core/lib';
 import type { ReactNode } from 'react';
-// eslint-disable-next-line unused-imports/no-unused-imports
 import React from 'react';
 
+import { useChatState } from '../../../providers/chat-state-provider.react';
 import { Text } from './text.react';
 
 interface TableProps {
@@ -62,6 +61,8 @@ export const Row = React.memo(({ children }: TableProps) => (
 ));
 
 export const Cell = React.memo(({ children }: TableProps) => {
+    const { spacing } = useChatState();
+
     return (
         <TableCell>
             {/* Only return ap-typography on strings that are not just empty spaces */}
@@ -76,6 +77,7 @@ export const Cell = React.memo(({ children }: TableProps) => {
                     return Text({
                         children: trimmedString.replace(/<br\s*\/?>/gi, '\n'),
                         customStyle: { display: 'inline' },
+                        variant: spacing.markdownTokens.td,
                     });
                 }
 
@@ -87,11 +89,12 @@ export const Cell = React.memo(({ children }: TableProps) => {
 
 export const HeaderCell = React.memo(({ children }: TableProps) => {
     const theme = useTheme();
+    const { spacing } = useChatState();
 
     return (
         <TableCell>
             <ap-typography
-                variant={FontVariantToken.fontSizeMBold}
+                variant={spacing.markdownTokens.th}
                 color={theme.palette.semantic.colorForeground}
             >
                 {children}

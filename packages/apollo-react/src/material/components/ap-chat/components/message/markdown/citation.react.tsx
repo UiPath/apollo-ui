@@ -18,6 +18,7 @@ import React from 'react';
 import { t } from '../../../../../utils/localization/loc';
 import { useChatScroll } from '../../../providers/chat-scroll-provider.react';
 import { useChatService } from '../../../providers/chat-service.provider.react';
+import { useChatState } from '../../../providers/chat-state-provider.react';
 
 // Helpers for additive range highlighting
 const getNearestStartMarker = (id: string | number, container: Element, endEl: Element): HTMLElement | null => {
@@ -120,6 +121,7 @@ export const Citation = React.memo(({
     const pageText = page_number ? ` (${t('autopilot-chat-page-number', { page_number })})` : '';
     const theme = useTheme();
     const chatService = useChatService();
+    const { spacing } = useChatState();
     const { overflowContainer } = useChatScroll();
     const ref = React.useRef<HTMLDivElement>(null);
     const [ open, setOpen ] = React.useState(false);
@@ -277,7 +279,7 @@ export const Citation = React.memo(({
                 data-citation-sup="true"
                 onClick={handleClick}
             >
-                <ap-typography color={theme.palette.semantic.colorForeground}>
+                <ap-typography color={theme.palette.semantic.colorForeground} variant={spacing.markdownTokens.citation}>
                     {id}
                 </ap-typography>
             </Box>

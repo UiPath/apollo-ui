@@ -94,7 +94,10 @@ const AutopilotChatHistoryComponent: React.FC<AutopilotChatHistoryProps> = ({
     const [ history, setHistory ] = useState<AutopilotChatHistoryType[]>(chatService?.getHistory() ?? []);
     const [ searchQuery, setSearchQuery ] = useState('');
     const {
-        historyOpen, historyAnchorElement, fullScreenContainer,
+        historyOpen,
+        historyAnchorElement,
+        fullScreenContainer,
+        spacing,
     } = useChatState();
     const { width } = useChatWidth();
 
@@ -222,7 +225,7 @@ const AutopilotChatHistoryComponent: React.FC<AutopilotChatHistoryProps> = ({
                         </>
                     ) : (
                         <EmptyStateContainer>
-                            <ap-typography color={theme.palette.semantic.colorForeground}>
+                            <ap-typography color={theme.palette.semantic.colorForeground} variant={spacing.primaryFontToken}>
                                 {t('chat-history-empty')}
                             </ap-typography>
                         </EmptyStateContainer>

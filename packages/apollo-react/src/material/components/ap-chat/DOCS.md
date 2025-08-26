@@ -1494,10 +1494,108 @@ chatService.setOverrideLabels({
 });
 ```
 
+## Spacing Configuration
+
+The Autopilot Chat component provides comprehensive spacing customization capabilities through the `spacing` configuration property. This allows you to control the visual density and typography of the chat interface.
+
+### Compact Mode
+
+The chat supports a compact mode that reduces the overall visual density of the interface. When `compactMode` is set to `true`, it automatically adjusts multiple spacing and typography values to create a more condensed view.
+
+```typescript
+// Enable compact mode
+chatService.initialize({
+  mode: AutopilotChatMode.SideBySide,
+  spacing: {
+    compactMode: true // This will apply compact defaults to all spacing values
+  }
+});
+```
+
+#### Default Compact Mode Behavior
+
+When `compactMode` is enabled, the following defaults are applied:
+
+- **Input Box**: Min rows stays at 2, max rows reduced to 4 (from default 2 min, 12 max)
+- **Message Spacing**: Reduced to 8px (from default 32px)
+- **Message Group Gap**: Reduced to 8px (from default 16px)
+- **Font Sizes**: All typography scales down by one level
+  - Primary font: `FontVariantToken.fontSizeS` (from `fontSizeM`)
+  - Headers: Scale down proportionally (h1-h3 use `fontSizeH4Bold`, h4-h6 use `fontSizeMBold`)
+  - Markdown elements: All use smaller font variants
+
+### Custom Spacing Configuration
+
+**[ Not Recommended ]** You can override individual spacing values while keeping others at their defaults. The `FontVariantToken` enum comes from the `@uipath/apollo-core` package and provides standardized typography tokens.
+
+```typescript
+import { FontVariantToken } from '@uipath/apollo-core';
+
+chatService.initialize({
+  mode: AutopilotChatMode.SideBySide,
+  spacing: {
+    // Start with compact mode defaults
+    compactMode: true,
+    
+    // Override specific values
+    promptBox: {
+      minRows: 1,  // Override compact default of 2
+      maxRows: 3   // Override compact default of 4
+    },
+    
+    // Customize message spacing
+    messageSpacing: 12,        // Space between messages in a group
+    messageGroupGap: 24,        // Space between message groups
+    
+    // Primary typography tokens
+    primaryFontToken: FontVariantToken.fontSizeM,
+    primaryBoldFontToken: FontVariantToken.fontSizeMBold,
+    
+    // Fine-tune markdown typography
+    markdownTokens: {
+      li: FontVariantToken.fontSizeS,
+      p: FontVariantToken.fontSizeM,
+      h1: FontVariantToken.fontSizeH3Bold,
+      h2: FontVariantToken.fontSizeH3Bold,
+      h3: FontVariantToken.fontSizeH4Bold,
+      h4: FontVariantToken.fontSizeLBold,
+      h5: FontVariantToken.fontSizeLBold,
+      h6: FontVariantToken.fontSizeMBold,
+      th: FontVariantToken.fontSizeS,
+      td: FontVariantToken.fontSizeS,
+      em: FontVariantToken.fontSizeM,
+      del: FontVariantToken.fontSizeS,
+      strong: FontVariantToken.fontSizeMBold,
+      link: FontVariantToken.fontSizeM,
+      citation: FontVariantToken.fontSizeXs
+    }
+  }
+});
+```
+
+### Available FontVariantTokens
+
+The `@uipath/apollo-core` package provides the following font variant tokens that can be used for typography customization
+
+### Spacing Properties Reference
+
+| Property | Type | Description | Default (Normal) | Default (Compact) |
+|----------|------|-------------|------------------|-------------------|
+| `compactMode` | `boolean` | Enables compact spacing defaults | `false` | - |
+| `promptBox.minRows` | `number` | Minimum rows for input field | `2` | `2` |
+| `promptBox.maxRows` | `number` | Maximum rows for input field | `12` | `4` |
+| `messageSpacing` | `number` | Pixels between messages in a group | `32` | `8` |
+| `messageGroupGap` | `number` | Pixels between message groups | `16` | `8` |
+| `primaryFontToken` | `FontVariantToken` | Default font size for primary text | `fontSizeM` | `fontSizeS` |
+| `primaryBoldFontToken` | `FontVariantToken` | Default bold font size | `fontSizeMBold` | `fontSizeSBold` |
+| `markdownTokens.*` | `FontVariantToken` | Individual markdown element typography | Various | Scaled down |
+
 ## Configuration Types
 
 ### AutopilotChatConfiguration
 ```typescript
+import { FontVariantToken } from '@uipath/apollo-core';
+
 /**
  * Represents the configuration for the Autopilot Chat system.
  *
@@ -1513,6 +1611,7 @@ chatService.setOverrideLabels({
  * @property preHooks - The hooks that trigger before the user action (UI interaction) of the chat.
  * @property paginatedMessages - Flag to determine if the chat conversation is paginated
  * @property settingsRenderer - The renderer for the settings page. This will be used to render the settings page in the chat.
+ * @property spacing - The spacing configuration for the chat (prompt box, markdown tokens, etc)
  * Hooks expose current data for the action **before** the state change is attempted.
  */
 export interface AutopilotChatConfiguration {
@@ -1533,6 +1632,34 @@ export interface AutopilotChatConfiguration {
     preHooks?: Partial<Record<AutopilotChatPreHookAction, (data?: any) => Promise<boolean>>>;
     paginatedMessages?: boolean;
     settingsRenderer?: (container: HTMLElement) => void;
+    spacing?: {
+        compactMode?: boolean;
+        promptBox?: {
+            minRows?: number;
+            maxRows?: number;
+        };
+        messageSpacing?: number;
+        messageGroupGap?: number;
+        primaryFontToken?: FontVariantToken;
+        primaryBoldFontToken?: FontVariantToken;
+        markdownTokens?: {
+            li?: FontVariantToken;
+            p?: FontVariantToken;
+            h1?: FontVariantToken;
+            h2?: FontVariantToken;
+            h3?: FontVariantToken;
+            h4?: FontVariantToken;
+            h5?: FontVariantToken;
+            h6?: FontVariantToken;
+            th?: FontVariantToken;
+            td?: FontVariantToken;
+            em?: FontVariantToken;
+            del?: FontVariantToken;
+            strong?: FontVariantToken;
+            link?: FontVariantToken;
+            citation?: FontVariantToken;
+        };
+    };
 }
 ```
 

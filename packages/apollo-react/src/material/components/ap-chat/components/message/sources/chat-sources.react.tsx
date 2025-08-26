@@ -8,7 +8,7 @@ import {
     Tooltip,
     useTheme,
 } from '@mui/material';
-import token, { FontVariantToken } from '@uipath/apollo-core';
+import token from '@uipath/apollo-core';
 import {
     AutopilotChatEvent,
     AutopilotChatMessage,
@@ -25,6 +25,7 @@ import React, {
 import { t } from '../../../../../utils/localization/loc';
 import { useIsStreamingMessage } from '../../../hooks/use-is-streaming-message';
 import { useChatService } from '../../../providers/chat-service.provider.react';
+import { useChatState } from '../../../providers/chat-state-provider.react';
 
 interface AutopilotChatSourcesProps {
     groupId: string;
@@ -160,6 +161,7 @@ function AutopilotChatSourcesComponent({
     groupId, message,
 }: AutopilotChatSourcesProps) {
     const chatService = useChatService();
+    const { spacing } = useChatState();
     const theme = useTheme();
 
     const [ sources, setSources ] = useState<Array<UrlCitation | PdfCitation>>(
@@ -241,10 +243,13 @@ function AutopilotChatSourcesComponent({
                 <ap-icon
                     name="link"
                     variant="outlined"
-                    size={token.Icon.IconM}
+                    size={spacing.compactMode ? token.Icon.IconS : token.Icon.IconM}
                     color={theme.palette.semantic.colorForeground}
                 />
-                <ap-typography color={theme.palette.semantic.colorForeground}>
+                <ap-typography
+                    variant={spacing.primaryFontToken}
+                    color={theme.palette.semantic.colorForeground}
+                >
                     {t('autopilot-chat-sources')}
                 </ap-typography>
             </StyledToggleButton>
@@ -280,7 +285,7 @@ function AutopilotChatSourcesComponent({
                                             />
                                             <StyledSourceContent>
                                                 <ap-typography
-                                                    variant={FontVariantToken.fontSizeMBold}
+                                                    variant={spacing.primaryBoldFontToken}
                                                     color={theme.palette.semantic.colorForegroundDeEmp}
                                                 >
                                                     {text}
@@ -304,7 +309,7 @@ function AutopilotChatSourcesComponent({
                                 onClick={showFullList ? handleShowLess : handleShowMore}
                             >
                                 <ap-typography
-                                    variant={FontVariantToken.fontSizeMBold}
+                                    variant={spacing.primaryBoldFontToken}
                                     color={theme.palette.semantic.colorPrimary}
                                 >
                                     {showFullList ? t('autopilot-chat-show-less') : t('autopilot-chat-show-more')}

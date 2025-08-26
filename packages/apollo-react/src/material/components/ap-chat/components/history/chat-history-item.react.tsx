@@ -14,6 +14,7 @@ import React from 'react';
 
 import { t } from '../../../../utils/localization/loc';
 import { useChatService } from '../../providers/chat-service.provider.react';
+import { useChatState } from '../../providers/chat-state-provider.react';
 import { useLoading } from '../../providers/loading-provider.react';
 import { AutopilotChatActionButton } from '../common/action-button.react';
 
@@ -62,6 +63,7 @@ const AutopilotChatHistoryItemComponent: React.FC<AutopilotChatHistoryItemProps>
 }) => {
     const theme = useTheme();
     const chatService = useChatService();
+    const { spacing } = useChatState();
     const [ isActive, setIsActive ] = React.useState(chatService.activeConversationId === item.id);
     const { setWaitingResponse } = useLoading();
 
@@ -182,7 +184,7 @@ const AutopilotChatHistoryItemComponent: React.FC<AutopilotChatHistoryItemProps>
             aria-pressed={isActive}
         >
             <GroupTitle>
-                <ap-typography color={theme.palette.semantic.colorForeground}>{item.name}</ap-typography>
+                <ap-typography variant={spacing.primaryFontToken} color={theme.palette.semantic.colorForeground}>{item.name}</ap-typography>
             </GroupTitle>
 
             <div className="delete-button-wrapper">
