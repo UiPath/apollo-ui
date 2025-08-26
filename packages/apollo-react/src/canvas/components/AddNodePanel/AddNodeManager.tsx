@@ -138,13 +138,15 @@ export const AddNodeManager: React.FC<AddNodeManagerProps> = ({ customPanel, fet
 
   return (
     <FloatingCanvasPanel open={isOpen} nodeId="preview-node" placement="right-start" offset={10}>
-      {customPanel
-        ? React.createElement(customPanel, {
-            onNodeSelect: handleNodeSelect,
-            onClose: handleClose,
-            fetchNodeOptions,
-          })
-        : <AddNodePanel onNodeSelect={handleNodeSelect} onClose={handleClose} fetchNodeOptions={fetchNodeOptions} />}
+      {customPanel ? (
+        React.createElement(customPanel, {
+          onNodeSelect: handleNodeSelect,
+          onClose: handleClose,
+          fetchNodeOptions,
+        })
+      ) : (
+        <AddNodePanel onNodeSelect={handleNodeSelect} onClose={handleClose} fetchNodeOptions={fetchNodeOptions} />
+      )}
     </FloatingCanvasPanel>
   );
 };

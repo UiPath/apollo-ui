@@ -111,7 +111,12 @@ const ListView = <T extends ListItem>(props: ListViewProps<T>) => {
         return (
           <ListItemButton key={item.id} onClick={() => onItemClick(item)}>
             <IconContainer bgColor={bgColor}>
-              {item.icon && (typeof item.icon === "string" ? <ApIcon name={item.icon} size="18px" color="var(--color-foreground-de-emp)" /> : <item.icon />)}
+              {item.icon &&
+                (typeof item.icon === "string" ? (
+                  <ApIcon name={item.icon} size="18px" color="var(--color-foreground-de-emp)" />
+                ) : (
+                  <item.icon />
+                ))}
             </IconContainer>
             <Column flex={1}>
               <ApTypography variant={FontVariantToken.fontSizeS}>{item.label}</ApTypography>
