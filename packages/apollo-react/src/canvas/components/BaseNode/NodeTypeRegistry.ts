@@ -6,6 +6,7 @@ export class NodeTypeRegistry {
   private definitions = new Map<string, NodeTypeDefinition>();
   private metadata = new Map<string, Omit<NodeRegistration, "definition">>();
   private categories = new Map<string, string[]>();
+  private nodeOptions: NodeOption[] = [];
 
   register(registration: NodeRegistration) {
     const { definition, ...metadata } = registration;
@@ -13,6 +14,8 @@ export class NodeTypeRegistry {
 
     this.definitions.set(nodeType, definition);
     this.metadata.set(nodeType, metadata);
+
+    this._updateNodeOptions(registration);
 
     const category = metadata.category || "misc";
     if (!this.categories.has(category)) {
@@ -89,7 +92,7 @@ export class NodeTypeRegistry {
       } else if (isValidElement(metadata.icon)) {
         // Extract icon name from React element if possible
         // This is a simplified approach - you might need to adjust based on your icon components
-        iconName = metadata.icon.props?.name || undefined;
+        iconName = metadata.icon.name || undefined;
       }
 
       options.push({
@@ -139,6 +142,34 @@ export class NodeTypeRegistry {
     }
 
     return matches;
+  }
+
+  search(category?: string, query?: string): NodeOption[] {
+    if (!query && category) {
+      const categoryLower = category.toLowerCase();
+      return this.nodeOptions.filter((option) => option.category.toLowerCase() === categoryLower);
+    }
+
+    if (query) {
+      const searchLower = query?.toLowerCase();
+      const matches: NodeOption[] = [];
+
+      for (const option of this.nodeOptions) {
+        if (category && option.category !== category) continue;
+
+        const matchesName = option.label.toLowerCase().includes(searchLower);
+        const matchesType = option.type.toLowerCase().includes(searchLower);
+        const matchesDescription = option.description?.toLowerCase().includes(searchLower);
+
+        if (matchesName || matchesType || matchesDescription) {
+          matches.push(option);
+        }
+      }
+
+      return matches;
+    }
+
+    return this.nodeOptions;
   }
 
   /**
@@ -197,5 +228,16 @@ export class NodeTypeRegistry {
     });
 
     return categories;
+  }
+
+  private _updateNodeOptions(registration: NodeRegistration) {
+    this.nodeOptions.push({
+      id: registration.subType ?? registration.nodeType,
+      type: registration.nodeType,
+      label: registration.displayName || registration.nodeType,
+      icon: registration.icon,
+      category: registration.category || "misc",
+      description: registration.description,
+    });
   }
 }

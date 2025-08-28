@@ -372,23 +372,6 @@ export const WithCustomFetch: Story = {
     onClose: () => {
       console.log("Closed selector");
     },
-    fetchNodeOptions: async (category?: string, search?: string) => {
-      // Simulate API delay
-      await new Promise((resolve) => setTimeout(resolve, 300));
-
-      // Return custom nodes for the category
-      const customNodes: NodeOption[] = [
-        { id: `${category}-1`, type: "custom-1", label: `Custom ${category} 1`, icon: "build", category: category as string },
-        { id: `${category}-2`, type: "custom-2", label: `Custom ${category} 2`, icon: "extension", category: category as string },
-        { id: `${category}-3`, type: "custom-3", label: `Custom ${category} 3`, icon: "settings", category: category as string },
-      ];
-
-      if (search) {
-        return customNodes.filter((node) => node.label.toLowerCase().includes(search.toLowerCase()));
-      }
-
-      return customNodes;
-    },
   },
   render: (args) => (
     <div

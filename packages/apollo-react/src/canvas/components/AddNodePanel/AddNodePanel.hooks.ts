@@ -1,21 +1,8 @@
-import { useState, useCallback, useMemo } from "react";
-import type { NodeOption } from "./AddNodePanel.types";
+import { useState, useCallback } from "react";
 
-export const useNodeSearch = (nodes: NodeOption[]) => {
+export const useNodeSearch = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
-
-  const searchedNodes = useMemo(() => {
-    if (!searchQuery.trim()) return nodes;
-
-    const query = searchQuery.toLowerCase();
-    return nodes.filter(
-      (node) =>
-        node.label.toLowerCase().includes(query) ||
-        node.description?.toLowerCase().includes(query) ||
-        node.type.toLowerCase().includes(query)
-    );
-  }, [nodes, searchQuery]);
 
   const handleSearchToggle = useCallback(() => {
     setIsSearching((prev) => !prev);
@@ -36,7 +23,6 @@ export const useNodeSearch = (nodes: NodeOption[]) => {
   return {
     searchQuery,
     isSearching,
-    searchedNodes,
     handleSearchToggle,
     handleSearchChange,
     clearSearch,

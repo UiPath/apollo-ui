@@ -35,7 +35,7 @@ export interface AddNodeManagerProps {
  * When a preview node is selected, it automatically shows a node selector panel.
  * When a node type is selected, it replaces the preview with the actual node.
  */
-export const AddNodeManager: React.FC<AddNodeManagerProps> = ({ customPanel, fetchNodeOptions, createNodeData, onNodeAdded }) => {
+export const AddNodeManager: React.FC<AddNodeManagerProps> = ({ customPanel, createNodeData, onNodeAdded }) => {
   const reactFlowInstance = useReactFlow();
 
   // Watch for preview node selection
@@ -142,10 +142,9 @@ export const AddNodeManager: React.FC<AddNodeManagerProps> = ({ customPanel, fet
         React.createElement(customPanel, {
           onNodeSelect: handleNodeSelect,
           onClose: handleClose,
-          fetchNodeOptions,
         })
       ) : (
-        <AddNodePanel onNodeSelect={handleNodeSelect} onClose={handleClose} fetchNodeOptions={fetchNodeOptions} />
+        <AddNodePanel onNodeSelect={handleNodeSelect} onClose={handleClose} />
       )}
     </FloatingCanvasPanel>
   );

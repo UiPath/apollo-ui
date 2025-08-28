@@ -63,13 +63,14 @@ export interface NodeTypeDefinition {
 
 export interface NodeRegistration {
   nodeType: string;
+  subType?: string;
   definition: NodeTypeDefinition;
 
   // Metadata for node palette/selector
   category?: string;
   displayName?: string;
   description?: string;
-  icon?: string | React.ReactNode; // Icon for AddNodePanel display
+  icon?: string | React.FC; // Icon for AddNodePanel display
   tags?: string[]; // Additional search keywords
   version?: string;
   isVisible?: boolean; // Whether to show in AddNodePanel (default: true)

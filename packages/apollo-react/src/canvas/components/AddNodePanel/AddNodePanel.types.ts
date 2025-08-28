@@ -17,6 +17,5 @@ export interface NodeCategory {
 export interface AddNodePanelProps {
   onNodeSelect: (nodeType: NodeOption) => void;
   onClose: () => void;
-  fetchNodeOptions?: (category?: string, search?: string) => Promise<NodeOption[]>;
   categories?: NodeCategory[];
 }
