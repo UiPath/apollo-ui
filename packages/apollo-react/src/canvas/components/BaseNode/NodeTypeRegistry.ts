@@ -1,9 +1,18 @@
-import type { BaseNodeData, NodeRegistration, NodeTypeDefinition } from "./BaseNode.types";
-import type { NodeOption, NodeCategory } from "../AddNodePanel/AddNodePanel.types";
 import { isValidElement } from "react";
+
+import type {
+  NodeCategory,
+  NodeOption,
+} from "../AddNodePanel/AddNodePanel.types";
+import type {
+  BaseNodeData,
+  NodeRegistration,
+  NodeTypeDefinition,
+} from "./BaseNode.types";
 
 export class NodeTypeRegistry {
   private definitions = new Map<string, NodeTypeDefinition>();
+  private allDefinitions = new Map<string, NodeTypeDefinition>();
   private metadata = new Map<string, Omit<NodeRegistration, "definition">>();
   private categories = new Map<string, string[]>();
   private nodeOptions: NodeOption[] = [];
@@ -11,9 +20,11 @@ export class NodeTypeRegistry {
   register(registration: NodeRegistration) {
     const { definition, ...metadata } = registration;
     const nodeType = registration.nodeType;
+    const subType = registration.subType;
 
     this.definitions.set(nodeType, definition);
     this.metadata.set(nodeType, metadata);
+    this.allDefinitions.set(subType ?? nodeType, definition);
 
     this._updateNodeOptions(registration);
 
@@ -26,6 +37,10 @@ export class NodeTypeRegistry {
 
   get(nodeType: string): NodeTypeDefinition | undefined {
     return this.definitions.get(nodeType);
+  }
+
+  getBySubType(subType: string): NodeTypeDefinition | undefined {
+    return this.allDefinitions.get(subType);
   }
 
   getMetadata(nodeType: string) {
@@ -45,7 +60,7 @@ export class NodeTypeRegistry {
   }
 
   createDefaultData(nodeType: string, subType?: string): BaseNodeData {
-    const definition = this.get(nodeType);
+    const definition = this.getBySubType(subType ?? nodeType);
     const metadata = this.getMetadata(nodeType);
     const option = this.nodeOptions.find((option) => option.id === subType);
     const uiPathData = definition?.getUiPathData?.() ?? {};
@@ -61,8 +76,8 @@ export class NodeTypeRegistry {
       // FIXME: temp for PO integration
       ...(uiPathData
         ? {
-            uipath: uiPathData,
-          }
+          uipath: uiPathData,
+        }
         : {}),
     };
   }
