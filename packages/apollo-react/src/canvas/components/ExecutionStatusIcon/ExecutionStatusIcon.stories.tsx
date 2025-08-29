@@ -25,6 +25,10 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
+  args: {
+    status: "InProgress",
+    size: 24,
+  },
   render: () => (
     <div style={{ padding: "40px" }}>
       {/* Main grid of all statuses */}
