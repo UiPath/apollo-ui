@@ -5,6 +5,7 @@ export interface NodeOption {
   icon?: React.FC | string;
   category: string;
   description?: string;
+  version?: string;
 }
 
 export interface NodeCategory {

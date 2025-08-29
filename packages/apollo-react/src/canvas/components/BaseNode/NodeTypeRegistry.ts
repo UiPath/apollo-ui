@@ -44,16 +44,18 @@ export class NodeTypeRegistry {
     return Array.from(this.definitions.keys());
   }
 
-  createDefaultData(nodeType: string): BaseNodeData {
+  createDefaultData(nodeType: string, subType?: string): BaseNodeData {
     const definition = this.get(nodeType);
     const metadata = this.getMetadata(nodeType);
+    const option = this.nodeOptions.find((option) => option.id === subType);
 
     return {
       nodeType,
-      version: metadata?.version || "1.0.0",
+      subType,
+      version: option?.version || metadata?.version || "1.0.0",
       parameters: definition?.getDefaultParameters?.() ?? {},
       display: {
-        label: metadata?.displayName || nodeType,
+        label: option?.label || subType || nodeType,
       },
     };
   }
@@ -102,6 +104,7 @@ export class NodeTypeRegistry {
         icon: iconName,
         category: metadata.category || "misc",
         description: metadata.description,
+        version: metadata.version,
       });
     }
 
@@ -238,6 +241,7 @@ export class NodeTypeRegistry {
       icon: registration.icon,
       category: registration.category || "misc",
       description: registration.description,
+      version: registration.version,
     });
   }
 }
