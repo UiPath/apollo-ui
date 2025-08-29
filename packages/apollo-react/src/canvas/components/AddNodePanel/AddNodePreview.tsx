@@ -5,8 +5,8 @@ import styled from "@emotion/styled";
 import { ApIcon } from "@uipath/portal-shell-react";
 
 const PreviewContainer = styled.div<{ selected?: boolean }>`
-  width: 100px;
-  height: 100px;
+  width: 96px;
+  height: 96px;
   border-radius: 8px;
   background: var(--color-background-secondary);
   border: 2px dashed ${(props) => (props.selected ? "var(--color-selection-indicator)" : "var(--color-border-de-emp)")};

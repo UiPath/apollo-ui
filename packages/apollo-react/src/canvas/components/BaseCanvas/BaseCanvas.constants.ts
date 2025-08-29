@@ -39,7 +39,7 @@ export const BASE_CANVAS_DEFAULTS = {
   },
   snapToGrid: true,
 
-  snapGrid: [20, 20] as [number, number],
+  snapGrid: [24, 24] as [number, number],
   maintainNodesInView: {
     padding: 50,
     debounceMs: 50,

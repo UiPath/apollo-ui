@@ -1,9 +1,9 @@
 import { memo, useMemo, useState, useCallback } from "react";
-import type { NodeProps } from "@xyflow/react";
 import { useStore, Position } from "@xyflow/react";
 import {
   StageContainer,
   StageHeader,
+  StageHeaderContent,
   StageTitle,
   StageContent,
   StageProcessList,
@@ -15,9 +15,11 @@ import {
   StageParallelBracket,
 } from "./StageNode.styles";
 import { StageHandle } from "./StageHandle";
-import { NodeContextMenu, type NodeMenuItem } from "../NodeContextMenu";
-import type { StageNodeData } from "./StageNode.types";
-import { ApLink } from "@uipath/portal-shell-react";
+import { NodeContextMenu } from "../NodeContextMenu";
+import type { StageNodeProps } from "./StageNode.types";
+import { ApBadge, ApLink, ApTypography } from "@uipath/portal-shell-react";
+import { Column, FontVariantToken, Row, Spacing } from "@uipath/uix-core";
+import { ExecutionStatusIcon } from "../ExecutionStatusIcon";
 
 const ProcessNodeIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
@@ -28,16 +30,12 @@ const ProcessNodeIcon = () => (
   </svg>
 );
 
-const StageNodeComponent = (props: NodeProps & { data: StageNodeData }) => {
-  const { data, selected, id } = props;
-  const { title, processes = [], addProcessLabel = "Add process" } = data;
+const StageNodeComponent = (props: StageNodeProps) => {
+  const { data, selected, id, execution, addProcessLabel = "+ Add task", menuItems = [], onAddProcess } = props;
+  const { label, tasks = [] } = data;
 
-  // TODO: get execution status / state from store
-  // const executionStatus = useExecutionStatus();
-  const status = undefined;
-
-  // TODO: get the menuItems for the stage
-  const menuItems: NodeMenuItem[] = useMemo(() => [], []);
+  const status = execution?.stageStatus;
+  const statusLabel = execution?.stageStatusLabel;
 
   const [isHovered, setIsHovered] = useState(false);
   const { edges, isConnecting } = useStore(
@@ -53,11 +51,7 @@ const StageNodeComponent = (props: NodeProps & { data: StageNodeData }) => {
 
   const handleMouseEnter = useCallback(() => setIsHovered(true), []);
   const handleMouseLeave = useCallback(() => setIsHovered(false), []);
-
-  // Handle add process click
-  const handleAddProcess = useCallback(() => {
-    // TODO: invoke action to add process to stage
-  }, []);
+  const handleAddProcess = useCallback(() => onAddProcess?.(), [onAddProcess]);
 
   const shouldShowMenu = useMemo(() => {
     return menuItems && menuItems.length > 0 && (selected || isHovered);
@@ -65,18 +59,28 @@ const StageNodeComponent = (props: NodeProps & { data: StageNodeData }) => {
 
   return (
     <div style={{ position: "relative" }} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
-      <StageContainer selected={selected}>
+      <StageContainer selected={selected} status={status}>
         <StageHeader>
-          <StageTitle>{title}</StageTitle>
+          <StageHeaderContent>
+            <StageTitle>{label}</StageTitle>
+          </StageHeaderContent>
+          {status && (
+            <Row gap={Spacing.SpacingMicro} align="center">
+              <ExecutionStatusIcon status={status} />
+              <ApTypography variant={FontVariantToken.fontSizeS} color="var(--color-foreground-de-emp)">
+                {statusLabel}
+              </ApTypography>
+            </Row>
+          )}
         </StageHeader>
 
         <StageContent>
-          <ApLink onClick={handleAddProcess}>{addProcessLabel}</ApLink>
+          {!status && <ApLink onClick={handleAddProcess}>{addProcessLabel}</ApLink>}
 
-          {processes.length > 0 && (
+          {tasks && tasks.length > 0 && (
             <StageProcessList>
-              {processes.map((processGroup, groupIndex) => {
-                const isParallel = processGroup.length > 1;
+              {tasks.map((taskGroup, groupIndex) => {
+                const isParallel = taskGroup.length > 1;
                 return (
                   <StageProcessGroup key={`group-${groupIndex}`} isParallel={isParallel}>
                     {isParallel && (
@@ -85,14 +89,28 @@ const StageNodeComponent = (props: NodeProps & { data: StageNodeData }) => {
                         <StageParallelBracket />
                       </>
                     )}
-                    {processGroup.map((process) => (
-                      <StageProcessItem key={process.id} status={status}>
-                        <StageProcessIcon>
-                          <ProcessNodeIcon />
-                        </StageProcessIcon>
-                        <StageProcessLabel>{process.label}</StageProcessLabel>
-                      </StageProcessItem>
-                    ))}
+                    {taskGroup.map((task) => {
+                      const taskExecution = execution?.taskStatus?.[task.id];
+                      return (
+                        <StageProcessItem key={task.id} status={taskExecution?.status}>
+                          <StageProcessIcon>
+                            <ProcessNodeIcon />
+                          </StageProcessIcon>
+                          <Column flex={1} style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                            <StageProcessLabel>{task.label}</StageProcessLabel>
+                            <Row gap={Spacing.SpacingMicro}>
+                              {taskExecution?.duration && (
+                                <ApTypography variant={FontVariantToken.fontSizeS} color="var(--color-foreground-de-emp)">
+                                  {taskExecution.duration}
+                                </ApTypography>
+                              )}
+                              {taskExecution?.badge && <ApBadge size="small" status="warning" label={taskExecution.badge} />}
+                            </Row>
+                          </Column>
+                          {taskExecution?.status && <ExecutionStatusIcon status={taskExecution.status} />}
+                        </StageProcessItem>
+                      );
+                    })}
                   </StageProcessGroup>
                 );
               })}

@@ -84,9 +84,9 @@ export const BaseContainer = styled.div<{
   position: relative;
   width: ${({ shape, width }) => {
     if (width) return `${width}px`;
-    return shape === "rectangle" ? "320px" : "100px";
+    return shape === "rectangle" ? "288px" : "96px";
   }};
-  height: ${({ height }) => (height ? `${height}px` : "100px")};
+  height: ${({ height }) => (height ? `${height}px` : "96px")};
   background: ${({ backgroundColor }) => backgroundColor || "var(--color-background)"};
   border: 1.5px solid var(--color-border-de-emp);
   border-radius: ${({ shape }) => {

@@ -3,7 +3,7 @@ import { useCallback, useMemo } from "react";
 import type { Connection, Edge } from "@xyflow/react";
 import { Panel, ReactFlowProvider, useNodesState, useEdgesState, addEdge, ConnectionMode } from "@xyflow/react";
 import { StageNode } from "./StageNode";
-import type { StageNodeData, ProcessItem } from "./StageNode.types";
+import type { StageNodeData, StageTaskItem, StageNodeProps } from "./StageNode.types";
 import { BaseCanvas } from "../BaseCanvas";
 import { CanvasPositionControls } from "../CanvasPositionControls";
 import { StageEdge } from "./StageEdge";
@@ -17,6 +17,22 @@ const meta = {
   },
   decorators: [
     (Story, context) => {
+      // Create a wrapper component that passes props correctly
+      const StageNodeWrapper = (props: any) => {
+        // Extract execution and other props from data and pass them as direct props
+        const { execution, addProcessLabel, menuItems, onAddProcess, ...restData } = props.data;
+        return (
+          <StageNode
+            {...props}
+            data={restData}
+            execution={execution}
+            addProcessLabel={addProcessLabel}
+            menuItems={menuItems}
+            onAddProcess={onAddProcess}
+          />
+        );
+      };
+
       const initialNodes = context.parameters?.nodes || [
         {
           id: "1",
@@ -38,7 +54,7 @@ const meta = {
         [setEdges]
       );
 
-      const nodeTypes = useMemo(() => ({ stage: StageNode }), []);
+      const nodeTypes = useMemo(() => ({ stage: StageNodeWrapper }), []);
       const edgeTypes = useMemo(() => ({ stage: StageEdge }), []);
       const defaultEdgeOptions = useMemo(() => ({ type: "stage" }), []);
 
@@ -57,6 +73,7 @@ const meta = {
               connectionMode={ConnectionMode.Strict}
               defaultEdgeOptions={defaultEdgeOptions}
               connectionLineComponent={StageConnectionEdge}
+              elevateEdgesOnSelect
             >
               <Panel position="bottom-right">
                 <CanvasPositionControls />
@@ -68,14 +85,14 @@ const meta = {
     },
   ],
   argTypes: {
-    title: {
+    label: {
       control: "text",
-      description: "Title of the stage",
+      description: "Label of the stage",
       defaultValue: "Processing",
     },
-    processes: {
+    tasks: {
       control: false,
-      description: "Array of process items in the stage",
+      description: "Array of task items in the stage",
     },
     addProcessLabel: {
       control: "text",
@@ -83,29 +100,178 @@ const meta = {
       defaultValue: "Add process",
     },
   },
-} satisfies Meta<StageNodeData>;
+} satisfies Meta<StageNodeProps>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-// Example with both sequential and parallel processes
-const sampleProcesses: ProcessItem[][] = [
+// Example with both sequential and parallel tasks
+const sampleTasks: StageTaskItem[][] = [
   [{ id: "1", label: "Liability Check" }],
   [{ id: "2", label: "Credit Review" }],
-  // Parallel processes - these run at the same time
+  // Parallel tasks - these run at the same time
   [
-    { id: "3", label: "Address Verification" },
+    { id: "3", label: "Address Verification and a really long label that might wrap" },
     { id: "4", label: "Property Verification" },
   ],
   [{ id: "5", label: "Processing Review" }],
 ];
 
 export const Default: Story = {
-  args: {
-    title: "Processing",
-    processes: sampleProcesses,
-    addProcessLabel: "Add process",
+  name: "Default",
+  parameters: {
+    nodes: [
+      {
+        id: "0",
+        type: "stage",
+        position: { x: 50, y: 100 },
+        data: {
+          label: "Application",
+          tasks: [],
+        } as StageNodeData,
+      },
+      {
+        id: "1",
+        type: "stage",
+        position: { x: 400, y: 100 },
+        data: {
+          label: "Processing with a really really really long label that might wrap",
+          tasks: sampleTasks,
+        } as StageNodeData,
+      },
+    ],
   },
+  args: {},
+};
+
+export const ExecutionStatus: Story = {
+  name: "Execution Status",
+  parameters: {
+    nodes: [
+      {
+        id: "0",
+        type: "stage",
+        position: { x: 50, y: 100 },
+        data: {
+          label: "Application",
+          tasks: [
+            [{ id: "1", label: "KYC and AML Checks" }],
+            [{ id: "2", label: "Document Verification is going to be very very really long" }],
+          ],
+          execution: {
+            stageStatus: "Completed",
+            taskStatus: {
+              "1": { status: "Completed", label: "KYC and AML Checks", duration: "2h 15m" },
+              "2": { status: "Completed", label: "Document Verification", duration: "1h 45m" },
+            },
+          },
+        } as StageNodeData,
+      },
+      {
+        id: "1",
+        type: "stage",
+        position: { x: 400, y: 100 },
+        data: {
+          label: "Processing",
+          tasks: [
+            [{ id: "1", label: "Liability Check" }],
+            [{ id: "2", label: "Credit Review" }],
+            [
+              { id: "3", label: "Address Verification" },
+              { id: "4", label: "Property Verification" },
+            ],
+            [{ id: "5", label: "Processing Review" }],
+          ],
+          execution: {
+            stageStatus: "Completed",
+            taskStatus: {
+              "1": { status: "Completed", label: "Liability Check", duration: "1h 30m", badge: "Reworked" },
+              "2": { status: "Completed", label: "Credit Review", duration: "1h 30m", badge: "Reworked" },
+              "3": { status: "Completed", label: "Address Verification", duration: "30m" },
+              "4": { status: "Completed", label: "Property Verification", duration: "1h 30m", badge: "Reworked" },
+              "5": { status: "Completed", label: "Processing Review", duration: "1h 15m" },
+            },
+          },
+        } as StageNodeData,
+      },
+      {
+        id: "2",
+        type: "stage",
+        position: { x: 750, y: 100 },
+        data: {
+          label: "Underwriting",
+          tasks: [[{ id: "1", label: "Report Ordering" }], [{ id: "2", label: "Underwriting Verification" }]],
+          execution: {
+            stageStatus: "InProgress",
+            stageStatusLabel: "In progress",
+            taskStatus: {
+              "1": { status: "Completed", label: "Report Ordering", duration: "2h 15m" },
+              "2": { status: "InProgress", label: "Underwriting Verification" },
+            },
+          },
+        } as StageNodeData,
+      },
+      {
+        id: "3",
+        type: "stage",
+        position: { x: 1100, y: 100 },
+        data: {
+          label: "Closing",
+          tasks: [
+            [{ id: "1", label: "Loan Packet Creation" }],
+            [{ id: "2", label: "Customer Signing" }],
+            [{ id: "3", label: "Generate Audit Report" }],
+          ],
+          execution: {
+            stageStatus: "NotExecuted",
+            stageStatusLabel: "Not started",
+            taskStatus: {},
+          },
+        } as StageNodeData,
+      },
+      {
+        id: "4",
+        type: "stage",
+        position: { x: 1100, y: 400 },
+        data: {
+          label: "Rejected",
+          tasks: [[{ id: "1", label: "Customer Notification" }], [{ id: "2", label: "Generate Audit Report" }]],
+          execution: {
+            stageStatus: "NotExecuted",
+            stageStatusLabel: "Not started",
+            taskStatus: {},
+          },
+        } as StageNodeData,
+      },
+    ],
+    edges: [
+      {
+        id: "e1",
+        type: "stage",
+        source: "0",
+        sourceHandle: "output",
+        target: "1",
+        targetHandle: "input",
+      },
+      {
+        id: "e2",
+        type: "stage",
+        source: "1",
+        sourceHandle: "output",
+        target: "2",
+        targetHandle: "input",
+      },
+      {
+        id: "e3",
+        type: "stage",
+        source: "2",
+        sourceHandle: "output",
+        target: "3",
+        targetHandle: "input",
+      },
+    ] as Edge[],
+  },
+  args: {},
 };
 
 export const LoanProcessingWorkflow: Story = {
@@ -118,8 +284,8 @@ export const LoanProcessingWorkflow: Story = {
         type: "stage",
         position: { x: 50, y: 100 },
         data: {
-          title: "Application",
-          processes: [[{ id: "1", label: "KYC and AML Checks" }], [{ id: "2", label: "Document Verification" }]],
+          label: "Application",
+          tasks: [[{ id: "1", label: "KYC and AML Checks" }], [{ id: "2", label: "Document Verification" }]],
         } as StageNodeData,
       },
       // Processing Stage
@@ -128,8 +294,8 @@ export const LoanProcessingWorkflow: Story = {
         type: "stage",
         position: { x: 350, y: 100 },
         data: {
-          title: "Processing",
-          processes: [
+          label: "Processing",
+          tasks: [
             [{ id: "1", label: "Liability Check" }],
             [{ id: "2", label: "Credit Review" }],
             [
@@ -146,8 +312,8 @@ export const LoanProcessingWorkflow: Story = {
         type: "stage",
         position: { x: 650, y: 100 },
         data: {
-          title: "Underwriting",
-          processes: [[{ id: "1", label: "Report Ordering" }], [{ id: "2", label: "Underwriting Verification" }]],
+          label: "Underwriting",
+          tasks: [[{ id: "1", label: "Report Ordering" }], [{ id: "2", label: "Underwriting Verification" }]],
         } as StageNodeData,
       },
       // Closing Stage
@@ -156,8 +322,8 @@ export const LoanProcessingWorkflow: Story = {
         type: "stage",
         position: { x: 950, y: 100 },
         data: {
-          title: "Closing",
-          processes: [
+          label: "Closing",
+          tasks: [
             [{ id: "1", label: "Loan Packet Creation" }],
             [{ id: "2", label: "Customer Signing" }],
             [{ id: "3", label: "Generate Audit Report" }],
@@ -170,8 +336,8 @@ export const LoanProcessingWorkflow: Story = {
         type: "stage",
         position: { x: 1250, y: 100 },
         data: {
-          title: "Funding",
-          processes: [[{ id: "1", label: "Disperse Loan" }], [{ id: "2", label: "Generate Audit Report" }]],
+          label: "Funding",
+          tasks: [[{ id: "1", label: "Disperse Loan" }], [{ id: "2", label: "Generate Audit Report" }]],
         } as StageNodeData,
       },
       // Rejected Stage
@@ -180,8 +346,8 @@ export const LoanProcessingWorkflow: Story = {
         type: "stage",
         position: { x: 950, y: 550 },
         data: {
-          title: "Rejected",
-          processes: [[{ id: "1", label: "Customer Notification" }], [{ id: "2", label: "Generate Audit Report" }]],
+          label: "Rejected",
+          tasks: [[{ id: "1", label: "Customer Notification" }], [{ id: "2", label: "Generate Audit Report" }]],
         } as StageNodeData,
       },
       // Withdrawn Stage
@@ -190,8 +356,8 @@ export const LoanProcessingWorkflow: Story = {
         type: "stage",
         position: { x: 350, y: 650 },
         data: {
-          title: "Withdrawn",
-          processes: [[{ id: "1", label: "Customer Notification" }], [{ id: "2", label: "Generate Audit Report" }]],
+          label: "Withdrawn",
+          tasks: [[{ id: "1", label: "Customer Notification" }], [{ id: "2", label: "Generate Audit Report" }]],
         } as StageNodeData,
       },
     ],

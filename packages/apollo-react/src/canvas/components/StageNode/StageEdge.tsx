@@ -78,13 +78,16 @@ export function StageEdge({
 
   const arrowLineLength = arrowSize;
 
+  const strokeColor = selected ? "var(--color-selection-indicator)" : stroke;
+  const strokeWidthValue = selected ? strokeWidth + 1 : strokeWidth;
+
   return (
     <>
       <g className={`react-flow__edge stage-edge ${selected ? "selected" : ""}`}>
         <path
           d={pathData}
-          stroke={stroke}
-          strokeWidth={strokeWidth}
+          stroke={strokeColor}
+          strokeWidth={strokeWidthValue}
           strokeLinecap="round"
           strokeLinejoin="round"
           fill="none"
@@ -98,19 +101,19 @@ export function StageEdge({
           y1={endY}
           x2={endX - arrowLineLength * Math.cos(angle - Math.PI / 6)}
           y2={endY - arrowLineLength * Math.sin(angle - Math.PI / 6)}
-          stroke={stroke}
-          strokeWidth={strokeWidth}
+          stroke={strokeColor}
+          strokeWidth={strokeWidthValue}
         />
         <line
           x1={endX}
           y1={endY}
           x2={endX - arrowLineLength * Math.cos(angle + Math.PI / 6)}
           y2={endY - arrowLineLength * Math.sin(angle + Math.PI / 6)}
-          stroke={stroke}
-          strokeWidth={strokeWidth}
+          stroke={strokeColor}
+          strokeWidth={strokeWidthValue}
         />
 
-        <path d={pathData} stroke="transparent" strokeWidth={Math.max(18, strokeWidth + 10)} fill="none" pointerEvents="stroke" />
+        <path d={pathData} stroke="transparent" strokeWidth={20} fill="none" pointerEvents="stroke" />
       </g>
       {rest.label && (
         <EdgeLabelRenderer>
