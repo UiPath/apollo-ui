@@ -1,14 +1,7 @@
 import { isValidElement } from "react";
 
-import type {
-  NodeCategory,
-  NodeOption,
-} from "../AddNodePanel/AddNodePanel.types";
-import type {
-  BaseNodeData,
-  NodeRegistration,
-  NodeTypeDefinition,
-} from "./BaseNode.types";
+import type { NodeCategory, NodeOption } from "../AddNodePanel/AddNodePanel.types";
+import type { BaseNodeData, NodeRegistration, NodeTypeDefinition } from "./BaseNode.types";
 
 export class NodeTypeRegistry {
   private definitions = new Map<string, NodeTypeDefinition>();
@@ -76,8 +69,8 @@ export class NodeTypeRegistry {
       // FIXME: temp for PO integration
       ...(uiPathData
         ? {
-          uipath: uiPathData,
-        }
+            uipath: uiPathData,
+          }
         : {}),
     };
   }
