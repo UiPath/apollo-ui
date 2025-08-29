@@ -85,15 +85,6 @@ const meta = {
     },
   ],
   argTypes: {
-    label: {
-      control: "text",
-      description: "Label of the stage",
-      defaultValue: "Processing",
-    },
-    tasks: {
-      control: false,
-      description: "Array of task items in the stage",
-    },
     addProcessLabel: {
       control: "text",
       description: "Label for the add process button",

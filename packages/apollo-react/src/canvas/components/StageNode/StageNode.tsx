@@ -31,7 +31,7 @@ const ProcessNodeIcon = () => (
 );
 
 const StageNodeComponent = (props: StageNodeProps) => {
-  const { data, selected, id, execution, addProcessLabel = "+ Add task", menuItems = [], onAddProcess } = props;
+  const { data, selected, id, execution, addProcessLabel = "+ Add task", menuItems, onAddProcess } = props;
   const { label, tasks = [] } = data;
 
   const status = execution?.stageStatus;
