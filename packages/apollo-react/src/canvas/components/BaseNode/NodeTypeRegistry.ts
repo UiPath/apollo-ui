@@ -59,9 +59,11 @@ export class NodeTypeRegistry {
         label: option?.label || subType || nodeType,
       },
       // FIXME: temp for PO integration
-      ...(uiPathData ? {
-        uipath: uiPathData,
-      } : {}),
+      ...(uiPathData
+        ? {
+            uipath: uiPathData,
+          }
+        : {}),
     };
   }
 
