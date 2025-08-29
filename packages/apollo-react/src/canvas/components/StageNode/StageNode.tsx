@@ -4,7 +4,6 @@ import {
   StageContainer,
   StageHeader,
   StageHeaderContent,
-  StageTitle,
   StageContent,
   StageProcessList,
   StageProcessGroup,
@@ -62,7 +61,7 @@ const StageNodeComponent = (props: StageNodeProps) => {
       <StageContainer selected={selected} status={status}>
         <StageHeader>
           <StageHeaderContent>
-            <StageTitle>{label}</StageTitle>
+            <ApTypography variant={FontVariantToken.fontSizeMBold}>{label}</ApTypography>
           </StageHeaderContent>
           {status && (
             <Row gap={Spacing.SpacingMicro} align="center">

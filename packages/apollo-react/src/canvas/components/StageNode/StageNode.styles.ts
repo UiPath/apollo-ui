@@ -91,13 +91,6 @@ export const StageHeaderIcon = styled.div`
   }
 `;
 
-export const StageTitle = styled.h3`
-  margin: 0;
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--color-foreground);
-`;
-
 export const StageContent = styled.div`
   background: var(--color-background-secondary);
   padding: 12px 16px;
