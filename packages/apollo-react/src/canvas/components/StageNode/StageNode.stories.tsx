@@ -4,6 +4,7 @@ import type { Connection, Edge } from "@xyflow/react";
 import { Panel, ReactFlowProvider, useNodesState, useEdgesState, addEdge, ConnectionMode } from "@xyflow/react";
 import { StageNode } from "./StageNode";
 import type { StageNodeData, StageTaskItem, StageNodeProps } from "./StageNode.types";
+import type { NodeMenuItem } from "../NodeContextMenu";
 import { BaseCanvas } from "../BaseCanvas";
 import { CanvasPositionControls } from "../CanvasPositionControls";
 import { StageEdge } from "./StageEdge";
@@ -119,7 +120,25 @@ export const Default: Story = {
         data: {
           label: "Application",
           tasks: [],
-        } as StageNodeData,
+          menuItems: [
+            {
+              id: "edit",
+              label: "Edit Stage",
+              onClick: () => console.log("Edit Application stage"),
+            },
+            {
+              id: "duplicate",
+              label: "Duplicate",
+              onClick: () => console.log("Duplicate Application stage"),
+            },
+            { type: "divider" },
+            {
+              id: "delete",
+              label: "Delete",
+              onClick: () => console.log("Delete Application stage"),
+            },
+          ],
+        } as StageNodeData & { menuItems: NodeMenuItem[] },
       },
       {
         id: "1",
@@ -128,7 +147,36 @@ export const Default: Story = {
         data: {
           label: "Processing with a really really really long label that might wrap",
           tasks: sampleTasks,
-        } as StageNodeData,
+          menuItems: [
+            {
+              id: "edit",
+              label: "Edit Stage",
+              onClick: () => console.log("Edit Processing stage"),
+            },
+            {
+              id: "add-task",
+              label: "Add Task",
+              onClick: () => console.log("Add task to Processing stage"),
+            },
+            {
+              id: "configure",
+              label: "Configure",
+              onClick: () => console.log("Configure Processing stage"),
+            },
+            { type: "divider" },
+            {
+              id: "duplicate",
+              label: "Duplicate",
+              onClick: () => console.log("Duplicate Processing stage"),
+            },
+            {
+              id: "delete",
+              label: "Delete",
+              onClick: () => console.log("Delete Processing stage"),
+              disabled: true,
+            },
+          ],
+        } as StageNodeData & { menuItems: NodeMenuItem[] },
       },
     ],
   },

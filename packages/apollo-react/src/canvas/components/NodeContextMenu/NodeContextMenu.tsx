@@ -9,6 +9,7 @@ export const NodeContextMenu = memo(({ menuItems, isVisible = false }: NodeConte
 
   const handleMenuOpen = useCallback((event: React.MouseEvent) => {
     event.stopPropagation();
+    event.preventDefault();
     setIsOpen(true);
   }, []);
 
@@ -16,11 +17,8 @@ export const NodeContextMenu = memo(({ menuItems, isVisible = false }: NodeConte
     setIsOpen(false);
   }, []);
 
-  useEffect(() => {
-    if (!isVisible) {
-      setIsOpen(false);
-    }
-  }, [isVisible]);
+  // Don't auto-close the menu when hover is lost if the menu is already open
+  // This allows users to click the menu button without it immediately closing
 
   useEffect(() => {
     if (!isOpen) {
@@ -92,14 +90,28 @@ export const NodeContextMenu = memo(({ menuItems, isVisible = false }: NodeConte
     [menuItems, handleMenuItemClick]
   );
 
-  if ((!isVisible && !isOpen) || !menuItems || menuItems.length === 0) {
+  if (!menuItems || menuItems.length === 0) {
+    return null;
+  }
+
+  if (!isVisible && !isOpen) {
     return null;
   }
 
   return (
     <>
-      <MenuButton $isVisible={isVisible || isOpen}>
-        <ApIconButton ref={anchorRef} size="small" color="secondary" onClick={handleMenuOpen}>
+      <MenuButton
+        $isVisible={isVisible || isOpen}
+        onClick={(e: React.MouseEvent) => e.stopPropagation()}
+        onMouseDown={(e: React.MouseEvent) => e.stopPropagation()}
+      >
+        <ApIconButton
+          ref={anchorRef}
+          size="small"
+          color="secondary"
+          onClick={handleMenuOpen}
+          onMouseDown={(e: React.MouseEvent) => e.stopPropagation()}
+        >
           <ApIcon name="more_vert" size="16px" />
         </ApIconButton>
       </MenuButton>

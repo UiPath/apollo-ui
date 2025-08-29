@@ -31,7 +31,7 @@ const ProcessNodeIcon = () => (
 );
 
 const StageNodeComponent = (props: StageNodeProps) => {
-  const { data, selected, id, execution, addProcessLabel = "+ Add task", menuItems, onAddProcess } = props;
+  const { data, dragging, selected, id, execution, addProcessLabel = "+ Add task", menuItems, onAddProcess } = props;
   const { label, tasks = [] } = data;
 
   const status = execution?.stageStatus;
@@ -118,7 +118,7 @@ const StageNodeComponent = (props: StageNodeProps) => {
           )}
         </StageContent>
 
-        {menuItems && <NodeContextMenu menuItems={menuItems} isVisible={shouldShowMenu} />}
+        {menuItems && !dragging && <NodeContextMenu menuItems={menuItems} isVisible={shouldShowMenu} />}
       </StageContainer>
       <StageHandle id="input" type="target" position={Position.Left} isVisible={shouldShowHandles} />
       <StageHandle id="output" type="source" position={Position.Right} isVisible={shouldShowHandles} />

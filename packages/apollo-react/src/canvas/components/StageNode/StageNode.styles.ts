@@ -14,7 +14,6 @@ export const StageContainer = styled.div<{ selected?: boolean; status?: StageSta
   flex-direction: column;
   cursor: pointer;
   transition: all 0.2s ease;
-  overflow: hidden;
 
   ${({ selected }) =>
     selected &&
@@ -67,6 +66,8 @@ export const StageHeader = styled.div`
   padding: 12px 16px;
   border-bottom: 1px solid var(--color-border-de-emp);
   background: var(--color-background);
+  border-radius: 12px 12px 0 0;
+  overflow: hidden;
 `;
 
 export const StageHeaderContent = styled.div`
@@ -100,6 +101,8 @@ export const StageTitle = styled.h3`
 export const StageContent = styled.div`
   background: var(--color-background-secondary);
   padding: 12px 16px;
+  border-radius: 0 0 12px 12px;
+  overflow: hidden;
 `;
 
 export const StageProcessList = styled.div`
