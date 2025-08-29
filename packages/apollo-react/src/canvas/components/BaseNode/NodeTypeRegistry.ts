@@ -48,6 +48,7 @@ export class NodeTypeRegistry {
     const definition = this.get(nodeType);
     const metadata = this.getMetadata(nodeType);
     const option = this.nodeOptions.find((option) => option.id === subType);
+    const uiPathData = definition?.getUiPathData?.() ?? {};
 
     return {
       nodeType,
@@ -57,6 +58,10 @@ export class NodeTypeRegistry {
       display: {
         label: option?.label || subType || nodeType,
       },
+      // FIXME: temp for PO integration
+      ...(uiPathData ? {
+        uipath: uiPathData,
+      } : {}),
     };
   }
 

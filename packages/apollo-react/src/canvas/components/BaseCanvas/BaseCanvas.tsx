@@ -46,6 +46,7 @@ const BaseCanvasInnerComponent = <NodeType extends Node = Node, EdgeType extends
     onNodeDragStop,
     onPaneClick,
     onInit,
+    onSelectionChange,
 
     // Additional ReactFlow props
     proOptions = BASE_CANVAS_DEFAULTS.pro,
@@ -139,6 +140,7 @@ const BaseCanvasInnerComponent = <NodeType extends Node = Node, EdgeType extends
       onNodeDrag={isDesignMode ? onNodeDrag : undefined}
       onNodeDragStop={isDesignMode ? onNodeDragStop : undefined}
       onPaneClick={isInteractive ? onPaneClick : undefined}
+      onSelectionChange={onSelectionChange}
       style={{
         opacity: isReady ? 1 : 0,
         transition: BASE_CANVAS_DEFAULTS.transitions.opacity,

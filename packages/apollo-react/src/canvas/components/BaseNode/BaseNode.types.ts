@@ -57,6 +57,10 @@ export interface NodeTypeDefinition {
   validateParameters?: (parameters: Record<string, unknown>) => boolean;
   getDefaultParameters?: () => Record<string, unknown>;
 
+  // FIXME: temp for PO integration
+  validateUiPathData?: (data: Record<string, unknown>) => boolean;
+  getUiPathData?: () => Record<string, unknown>;
+
   // Handle action handler - optional per node type
   onHandleAction?: (event: HandleActionEvent) => void;
 }
