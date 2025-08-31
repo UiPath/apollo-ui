@@ -4,7 +4,7 @@ import type { StageStatus } from "./StageNode.types";
 
 export const StageContainer = styled.div<{ selected?: boolean; status?: StageStatus; isException?: boolean }>`
   position: relative;
-  width: 300px;
+  min-width: 200px;
   min-height: 120px;
   background: var(--color-background);
   border: 1.5px solid var(--color-border-de-emp);

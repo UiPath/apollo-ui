@@ -139,7 +139,7 @@ export const StyledNotch = styled.div<{
   pointer-events: none;
 `;
 
-export const StyledHandle = styled(Handle)<{
+export const StyledHandle = styled(Handle as any)<{
   $positionPercent: number;
   $total: number;
   $visible: boolean;
