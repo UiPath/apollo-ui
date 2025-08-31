@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState, useCallback, useMemo } from "react";
-import type { Node, Edge, NodeChange, EdgeChange, NodeTypes } from "@xyflow/react";
+import type { Node, Edge, NodeChange, EdgeChange, NodeTypes, NodeProps } from "@xyflow/react";
 import { ReactFlowProvider, applyNodeChanges, applyEdgeChanges, Panel } from "@xyflow/react";
 import { ApIcon } from "@uipath/portal-shell-react";
 import { NodePropertiesPanel } from "./NodePropertiesPanel";
@@ -63,8 +63,24 @@ const meta: Meta<typeof NodePropertiesPanel> = {
 export default meta;
 type Story = StoryObj<typeof NodePropertiesPanel>;
 
+// Wrapper component to adapt React Flow node props to StageNode props
+const StageNodeWrapper = (props: NodeProps) => {
+  const data = props.data as any;
+  return (
+    <StageNode
+      {...props}
+      stageDetails={{
+        label: data?.title || "Stage",
+        tasks: data?.processes || [],
+        isException: data?.markAsException || false,
+        sla: data?.slaLength && data?.slaUnit ? `${data.slaLength} ${data.slaUnit}` : undefined,
+      }}
+    />
+  );
+};
+
 const nodeTypes: NodeTypes = {
-  stage: StageNode,
+  stage: StageNodeWrapper,
   activity: BaseNode,
 };
 
