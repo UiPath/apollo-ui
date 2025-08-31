@@ -2,10 +2,10 @@ import styled from "@emotion/styled";
 import { css } from "@emotion/react";
 import type { StageStatus } from "./StageNode.types";
 
-export const StageContainer = styled.div<{ selected?: boolean; status?: StageStatus }>`
+export const StageContainer = styled.div<{ selected?: boolean; status?: StageStatus; isException?: boolean }>`
   position: relative;
-  width: 270px;
-  min-height: auto;
+  width: 300px;
+  min-height: 120px;
   background: var(--color-background);
   border: 1.5px solid var(--color-border-de-emp);
   border-radius: 12px;
@@ -15,10 +15,16 @@ export const StageContainer = styled.div<{ selected?: boolean; status?: StageSta
   cursor: pointer;
   transition: all 0.2s ease;
 
+  ${({ isException }) =>
+    isException &&
+    css`
+      border: 2px dashed var(--color-border-de-emp);
+    `}
+
   ${({ selected }) =>
     selected &&
     css`
-      outline: 6px solid var(--color-secondary-pressed);
+      outline: 4px solid var(--color-secondary-pressed);
       border-color: var(--color-selection-indicator);
       box-shadow: 0 0 0 2px rgba(0, 102, 204, 0.2);
     `}
@@ -58,37 +64,17 @@ export const StageContainer = styled.div<{ selected?: boolean; status?: StageSta
   }
 `;
 
-export const StageHeader = styled.div`
+export const StageHeader = styled.div<{ isException?: boolean }>`
   position: relative;
+  min-height: 60px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 12px 16px;
-  border-bottom: 1px solid var(--color-border-de-emp);
+  border-bottom: ${(props) => (props.isException ? "2px dashed var(--color-border-de-emp)" : "solid 1px var(--color-border-de-emp)")};
   background: var(--color-background);
   border-radius: 12px 12px 0 0;
   overflow: hidden;
-`;
-
-export const StageHeaderContent = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-`;
-
-export const StageHeaderIcon = styled.div`
-  width: 20px;
-  height: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  color: var(--color-foreground-de-emp);
-
-  svg {
-    width: 16px;
-    height: 16px;
-  }
 `;
 
 export const StageContent = styled.div`
@@ -96,9 +82,10 @@ export const StageContent = styled.div`
   padding: 12px 16px;
   border-radius: 0 0 12px 12px;
   overflow: hidden;
+  flex: 1;
 `;
 
-export const StageProcessList = styled.div`
+export const StageTaskList = styled.div`
   margin: 12px 0 0 0;
   padding: 0;
   display: flex;
@@ -106,7 +93,7 @@ export const StageProcessList = styled.div`
   gap: 8px;
 `;
 
-export const StageProcessGroup = styled.div<{ isParallel?: boolean }>`
+export const StageTaskGroup = styled.div<{ isParallel?: boolean }>`
   position: relative;
   display: flex;
   flex-direction: column;
@@ -139,7 +126,7 @@ export const StageParallelBracket = styled.div`
   border-radius: 3px 0 0 3px;
 `;
 
-export const StageProcessItem = styled.div<{ status?: StageStatus }>`
+export const StageTasItem = styled.div<{ status?: StageStatus }>`
   position: relative;
   display: flex;
   align-items: center;
@@ -178,7 +165,7 @@ export const StageProcessItem = styled.div<{ status?: StageStatus }>`
     `}
 `;
 
-export const StageProcessIcon = styled.div`
+export const StageTaskIcon = styled.div`
   width: 20px;
   height: 20px;
   display: flex;
@@ -193,7 +180,7 @@ export const StageProcessIcon = styled.div`
   }
 `;
 
-export const StageProcessLabel = styled.span`
+export const StageTaskLabel = styled.span`
   overflow: hidden;
   white-space: no-wrap;
   text-overflow: ellipsis;

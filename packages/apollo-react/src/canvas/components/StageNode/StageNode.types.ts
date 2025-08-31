@@ -1,8 +1,6 @@
 import type { NodeProps } from "@xyflow/react";
 import type { NodeMenuItem } from "../NodeContextMenu";
 
-export type ProcessIconType = "process" | "verification" | "check" | "document" | "custom";
-
 enum ElementStatusValues {
   Cancelled = "Cancelled",
   Completed = "Completed",
@@ -19,21 +17,27 @@ export type StageTaskStatus = `${ElementStatusValues}`;
 export interface StageTaskItem {
   id: string;
   label: string;
-}
-
-export interface StageNodeData extends Record<string, unknown> {
-  label: string;
-  tasks: StageTaskItem[][];
+  icon?: React.ReactElement;
 }
 
 export interface StageNodeProps extends NodeProps {
-  data: StageNodeData;
-  addProcessLabel?: string;
+  stageDetails: {
+    label: string;
+    icon?: React.ReactElement;
+    sla?: string;
+    escalation?: string;
+    isException?: boolean;
+    tasks: StageTaskItem[][];
+  };
+  addTaskLabel?: string;
   execution?: {
-    stageStatus: StageStatus;
-    stageStatusLabel?: string;
-    taskStatus: Record<string, { status: StageTaskStatus; label: string; duration?: string; badge?: string }>;
+    stageStatus: {
+      status?: StageStatus;
+      label?: string;
+      duration?: string;
+    };
+    taskStatus: Record<string, { status?: StageTaskStatus; label?: string; duration?: string; badge?: string; retryCount?: number }>;
   };
   menuItems?: NodeMenuItem[];
-  onAddProcess?: () => void;
+  onAddTask?: () => void;
 }

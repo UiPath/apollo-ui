@@ -81,7 +81,7 @@ export const NodeContextMenu = memo(({ menuItems, isVisible = false }: NodeConte
         return {
           key: actionItem.id,
           title: actionItem.label,
-          icon: actionItem.icon,
+          startIcon: actionItem.icon,
           disabled: actionItem.disabled,
           onClick: () => handleMenuItemClick(actionItem),
           variant: "item" as const,

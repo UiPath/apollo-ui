@@ -29,12 +29,18 @@ interface StageHandleProps {
   isVisible?: boolean;
 }
 
+const HANDLE_ID_SEPARATOR = "____";
+
+function generateHandleId(nodeId: string, sourceOrTarget: "source" | "target", handlePosition: Position) {
+  return [nodeId, sourceOrTarget, handlePosition].join(HANDLE_ID_SEPARATOR);
+}
+
 export const StageHandle: React.FC<StageHandleProps> = ({ id, type, position, isVisible = true }) => {
   const { inProgress, fromHandle } = useConnection();
   const sourceType = fromHandle?.type;
   return (
     <StyledHandle
-      id={id}
+      id={generateHandleId(id, type, position)}
       type={type}
       sourceType={sourceType}
       isConnecting={inProgress}
