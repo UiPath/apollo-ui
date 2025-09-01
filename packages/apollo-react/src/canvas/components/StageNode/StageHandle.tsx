@@ -10,11 +10,30 @@ const StyledHandle = styled(Handle)<{
   position: Position;
 }>`
   position: absolute;
-  top: 0;
-  left: ${(props) => (props.position === Position.Left ? "-15px" : "auto")};
+  top: ${(props) => {
+    if (props.position === Position.Top) return "-15px";
+    if (props.position === Position.Bottom) return "auto";
+    return "0";
+  }};
+  bottom: ${(props) => (props.position === Position.Bottom ? "-15px" : "auto")};
+  left: ${(props) => {
+    if (props.position === Position.Left) return "-15px";
+    if (props.position === Position.Right) return "auto";
+    return "0";
+  }};
   right: ${(props) => (props.position === Position.Right ? "-15px" : "auto")};
-  width: ${(props) => (props.$isConnecting && props.type !== props.$sourceType ? "calc(100% + 20px)" : "20px")};
-  height: 100%;
+  width: ${(props) => {
+    if (props.position === Position.Top || props.position === Position.Bottom) {
+      return props.$isConnecting && props.type !== props.$sourceType ? "calc(100% + 20px)" : "100%";
+    }
+    return props.$isConnecting && props.type !== props.$sourceType ? "calc(20px + 100%)" : "20px";
+  }};
+  height: ${(props) => {
+    if (props.position === Position.Left || props.position === Position.Right) {
+      return "100%";
+    }
+    return "20px";
+  }};
   background: transparent;
   border: 0px solid transparent;
   border-radius: 0;
