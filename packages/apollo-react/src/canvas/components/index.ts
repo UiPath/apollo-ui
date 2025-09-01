@@ -9,3 +9,4 @@ export * from "./NodeContextMenu";
 export * from "./NodeInspector";
 export * from "./NodePropertiesPanel";
 export * from "./StageNode";
+export * from "./TriggerNode";
