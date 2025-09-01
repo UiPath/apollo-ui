@@ -4,8 +4,8 @@ import type { TriggerStatus } from "./TriggerNode.types";
 
 export const TriggerContainer = styled.div<{ selected?: boolean; status?: TriggerStatus }>`
   position: relative;
-  width: 72px;
-  height: 72px;
+  width: 100%;
+  height: 100%;
   background: var(--color-background);
   border: 2px solid var(--color-border-de-emp);
   border-radius: 16px;

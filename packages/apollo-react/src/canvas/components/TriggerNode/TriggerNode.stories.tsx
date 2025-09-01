@@ -28,6 +28,8 @@ const TriggerNodeStory = () => {
       id: "1",
       type: "trigger",
       position: { x: 50, y: 100 },
+      width: 66,
+      height: 66,
       data: {
         details: {
           tooltip: "Start Trigger",
@@ -38,6 +40,8 @@ const TriggerNodeStory = () => {
       id: "2",
       type: "trigger",
       position: { x: 200, y: 100 },
+      width: 66,
+      height: 66,
       data: {
         details: {
           tooltip: "Schedule Trigger - Runs every day at 9:00 AM",
@@ -48,6 +52,8 @@ const TriggerNodeStory = () => {
       id: "3",
       type: "trigger",
       position: { x: 350, y: 100 },
+      width: 66,
+      height: 66,
       data: {
         details: {
           tooltip: "In Progress",
@@ -59,6 +65,8 @@ const TriggerNodeStory = () => {
       id: "4",
       type: "trigger",
       position: { x: 500, y: 100 },
+      width: 66,
+      height: 66,
       data: {
         details: {
           tooltip: "Completed",
@@ -70,6 +78,8 @@ const TriggerNodeStory = () => {
       id: "5",
       type: "trigger",
       position: { x: 650, y: 100 },
+      width: 66,
+      height: 66,
       data: {
         details: {
           tooltip: "Failed",
@@ -81,6 +91,8 @@ const TriggerNodeStory = () => {
       id: "6",
       type: "trigger",
       position: { x: 50, y: 250 },
+      width: 66,
+      height: 66,
       data: {
         details: {
           tooltip: "Paused",
@@ -92,6 +104,8 @@ const TriggerNodeStory = () => {
       id: "7",
       type: "trigger",
       position: { x: 200, y: 250 },
+      width: 66,
+      height: 66,
       data: {
         details: {
           tooltip: "Not Executed",
@@ -103,6 +117,8 @@ const TriggerNodeStory = () => {
       id: "8",
       type: "trigger",
       position: { x: 350, y: 250 },
+      width: 66,
+      height: 66,
       data: {
         details: {
           tooltip: "Time Trigger",
@@ -114,6 +130,8 @@ const TriggerNodeStory = () => {
       id: "9",
       type: "trigger",
       position: { x: 500, y: 250 },
+      width: 66,
+      height: 66,
       data: {
         details: {
           tooltip: "Email Trigger",
@@ -125,6 +143,8 @@ const TriggerNodeStory = () => {
       id: "10",
       type: "trigger",
       position: { x: 650, y: 250 },
+      width: 66,
+      height: 66,
       data: {
         details: {
           tooltip: "Webhook Trigger",
