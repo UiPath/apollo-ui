@@ -138,6 +138,7 @@ export const Default: Story = {
         id: "0",
         type: "stage",
         position: { x: 50, y: 100 },
+        width: 300,
         data: {
           stageDetails: {
             label: "Application",
@@ -167,6 +168,7 @@ export const Default: Story = {
         id: "1",
         type: "stage",
         position: { x: 400, y: 100 },
+        width: 300,
         data: {
           stageDetails: {
             label: "Processing with a really really really long label that might wrap",
@@ -216,6 +218,7 @@ export const ExecutionStatus: Story = {
         id: "0",
         type: "stage",
         position: { x: 50, y: 100 },
+        width: 300,
         data: {
           stageDetails: {
             label: "Application",
@@ -240,6 +243,7 @@ export const ExecutionStatus: Story = {
         id: "1",
         type: "stage",
         position: { x: 400, y: 100 },
+        width: 300,
         data: {
           stageDetails: {
             label: "Processing",
@@ -272,6 +276,7 @@ export const ExecutionStatus: Story = {
         id: "2",
         type: "stage",
         position: { x: 750, y: 100 },
+        width: 300,
         data: {
           stageDetails: {
             label: "Underwriting",
@@ -297,6 +302,7 @@ export const ExecutionStatus: Story = {
         id: "3",
         type: "stage",
         position: { x: 1100, y: 100 },
+        width: 300,
         data: {
           stageDetails: {
             label: "Closing",
@@ -319,6 +325,7 @@ export const ExecutionStatus: Story = {
         id: "4",
         type: "stage",
         position: { x: 1100, y: 400 },
+        width: 300,
         data: {
           stageDetails: {
             label: "Rejected",
@@ -377,6 +384,7 @@ export const LoanProcessingWorkflow: Story = {
         id: "application",
         type: "stage",
         position: { x: 50, y: 100 },
+        width: 300,
         data: {
           stageDetails: {
             label: "Application",
@@ -392,6 +400,7 @@ export const LoanProcessingWorkflow: Story = {
         id: "processing",
         type: "stage",
         position: { x: 450, y: 100 },
+        width: 300,
         data: {
           stageDetails: {
             label: "Processing",
@@ -412,6 +421,7 @@ export const LoanProcessingWorkflow: Story = {
         id: "underwriting",
         type: "stage",
         position: { x: 850, y: 100 },
+        width: 300,
         data: {
           stageDetails: {
             label: "Underwriting",
@@ -427,6 +437,7 @@ export const LoanProcessingWorkflow: Story = {
         id: "closing",
         type: "stage",
         position: { x: 1250, y: 100 },
+        width: 300,
         data: {
           stageDetails: {
             label: "Closing",
@@ -443,6 +454,7 @@ export const LoanProcessingWorkflow: Story = {
         id: "funding",
         type: "stage",
         position: { x: 1650, y: 100 },
+        width: 300,
         data: {
           stageDetails: {
             label: "Funding",
@@ -458,6 +470,7 @@ export const LoanProcessingWorkflow: Story = {
         id: "rejected",
         type: "stage",
         position: { x: 1250, y: 400 },
+        width: 300,
         data: {
           stageDetails: {
             label: "Rejected",
@@ -474,6 +487,7 @@ export const LoanProcessingWorkflow: Story = {
         id: "withdrawn",
         type: "stage",
         position: { x: 450, y: 600 },
+        width: 300,
         data: {
           stageDetails: {
             label: "Withdrawn",

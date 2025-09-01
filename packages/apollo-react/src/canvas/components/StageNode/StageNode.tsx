@@ -6,7 +6,7 @@ import {
   StageContent,
   StageTaskList,
   StageTaskGroup,
-  StageTasItem,
+  StageTaskItem,
   StageTaskIcon,
   StageTaskLabel,
   StageParallelLabel,
@@ -117,26 +117,29 @@ const StageNodeComponent = (props: StageNodeProps) => {
                     {taskGroup.map((task) => {
                       const taskExecution = execution?.taskStatus?.[task.id];
                       return (
-                        <StageTasItem key={task.id} status={taskExecution?.status}>
+                        <StageTaskItem key={task.id} status={taskExecution?.status}>
                           <StageTaskIcon>{task.icon ?? <ProcessNodeIcon />}</StageTaskIcon>
                           <Column flex={1} style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                             <StageTaskLabel>{task.label}</StageTaskLabel>
-                            <Row gap={Spacing.SpacingS}>
+                            <Row align="center" gap={Spacing.SpacingXs}>
                               {taskExecution?.duration && (
                                 <ApTypography variant={FontVariantToken.fontSizeS} color="var(--color-foreground-de-emp)">
                                   {taskExecution.duration}
                                 </ApTypography>
                               )}
                               {taskExecution?.retryCount && taskExecution.retryCount > 0 && (
-                                <ApTypography variant={FontVariantToken.fontSizeS} color="var(--color-foreground-de-emp)">
-                                  <ApIcon name="refresh" /> {taskExecution.retryCount}
-                                </ApTypography>
+                                <>
+                                  <ApIcon name="refresh" size="12px" />
+                                  <ApTypography variant={FontVariantToken.fontSizeS} color="var(--color-foreground-de-emp)">
+                                    {taskExecution.retryCount}
+                                  </ApTypography>
+                                </>
                               )}
                               {taskExecution?.badge && <ApBadge size="small" status="warning" label={taskExecution.badge} />}
                             </Row>
                           </Column>
                           {taskExecution?.status && <ExecutionStatusIcon status={taskExecution.status} />}
-                        </StageTasItem>
+                        </StageTaskItem>
                       );
                     })}
                   </StageTaskGroup>
@@ -146,6 +149,7 @@ const StageNodeComponent = (props: StageNodeProps) => {
           )}
         </StageContent>
       </StageContainer>
+
       {menuItems && !dragging && <NodeContextMenu menuItems={menuItems} isVisible={shouldShowMenu} />}
 
       {!isException && (

@@ -126,7 +126,7 @@ export const StageParallelBracket = styled.div`
   border-radius: 3px 0 0 3px;
 `;
 
-export const StageTasItem = styled.div<{ status?: StageStatus }>`
+export const StageTaskItem = styled.div<{ status?: StageStatus }>`
   position: relative;
   display: flex;
   align-items: center;
