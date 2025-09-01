@@ -2,7 +2,9 @@ import React from "react";
 import { Handle, Position, useConnection } from "@xyflow/react";
 import styled from "@emotion/styled";
 
-const StyledHandle = styled(Handle)<{
+const StyledHandle = styled(Handle, {
+  shouldForwardProp: (prop) => !["$sourceType", "$isConnecting", "$isVisible"].includes(prop as string),
+})<{
   type: "source" | "target";
   $sourceType?: string;
   $isConnecting: boolean;
