@@ -156,8 +156,8 @@ const StageNodeComponent = (props: StageNodeProps) => {
         <>
           <StageHandle id={id} type="target" position={Position.Left} isVisible={shouldShowHandles} />
           <StageHandle id={id} type="source" position={Position.Right} isVisible={shouldShowHandles} />
-          <StageHandle id={id} type="source" position={Position.Bottom} isVisible={shouldShowHandles} />
           <StageHandle id={id} type="target" position={Position.Bottom} isVisible={shouldShowHandles} />
+          <StageHandle id={id} type="source" position={Position.Bottom} isVisible={shouldShowHandles} />
         </>
       )}
     </div>

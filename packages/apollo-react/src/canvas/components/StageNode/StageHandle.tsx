@@ -61,6 +61,8 @@ export const StageHandle: React.FC<StageHandleProps> = ({ id, type, position, is
   const sourceType = fromHandle?.type;
   return (
     <StyledHandle
+      isConnectableStart={type === "source"}
+      isConnectableEnd={type === "target"}
       id={generateHandleId(id, type, position)}
       type={type}
       $sourceType={sourceType}
