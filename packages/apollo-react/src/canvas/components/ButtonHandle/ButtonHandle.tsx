@@ -1,10 +1,11 @@
-import { useMemo, useCallback, memo } from "react";
+import { useMemo, useCallback, memo, useState } from "react";
 import { Position } from "@xyflow/react";
 import { AnimatePresence } from "motion/react";
 import { FontVariantToken } from "@uipath/apollo-core";
+import { Row } from "@uipath/uix-core";
 import { ApIcon, ApTypography } from "@uipath/portal-shell-react";
 import { canvasEventBus } from "../../utils/CanvasEventBus";
-import { LabelContent, StyledAddButton, StyledHandle, StyledLabel, StyledLine, StyledNotch, StyledWrapper } from "./ButtonHandle.styles";
+import { StyledAddButton, StyledHandle, StyledLabel, StyledLine, StyledNotch, StyledWrapper } from "./ButtonHandle.styles";
 
 export interface HandleActionEvent {
   handleId: string;
@@ -76,6 +77,7 @@ const ButtonHandleBase = ({
   total = 1,
   onAction,
 }: ButtonHandleProps) => {
+  const [isHovered, setIsHovered] = useState(false);
   const isVertical = position === Position.Top || position === Position.Bottom;
 
   // Calculate position along the edge for multiple handles
@@ -119,15 +121,17 @@ const ButtonHandleBase = ({
       $positionPercent={positionPercent}
       $total={total}
       $visible={visible}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
     >
       {label && (
         <StyledLabel $position={position}>
-          <LabelContent>
+          <Row align="center" gap={4}>
             {labelIcon}
             <ApTypography color="var(--color-foreground-de-emp)" variant={FontVariantToken.fontSizeSBold}>
               {label}
             </ApTypography>
-          </LabelContent>
+          </Row>
         </StyledLabel>
       )}
       {showButton && onAction && type === "source" && (
@@ -138,7 +142,14 @@ const ButtonHandleBase = ({
           </div>
         </StyledWrapper>
       )}
-      <StyledNotch $notchColor={color} $handleType={handleType} $visible={visible} $isVertical={isVertical} $selected={selected} />
+      <StyledNotch
+        $notchColor={color}
+        $handleType={handleType}
+        $visible={visible}
+        $isVertical={isVertical}
+        $selected={selected}
+        $hovered={isHovered}
+      />
     </StyledHandle>
   );
 };

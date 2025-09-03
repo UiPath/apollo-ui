@@ -3,12 +3,6 @@ import { motion } from "motion/react";
 import styled from "@emotion/styled";
 import { css } from "@emotion/react";
 
-export const LabelContent = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 4px;
-`;
-
 export const StyledAddButton = styled(motion.div)`
   display: flex;
   align-items: center;
@@ -79,7 +73,7 @@ export const StyledLine = styled.div<{ $isVertical: boolean; $selected: boolean 
   border-width: 1px;
   border-color: ${(p) => (p.$selected ? "var(--color-selection-indicator)" : "var(--color-border-de-emp)")};
   height: ${(p) => (p.$isVertical ? "60px" : "1px")};
-  width: ${(p) => (p.$isVertical ? "1px" : "80px")};
+  width: ${(p) => (p.$isVertical ? "1px" : "60px")};
   transition: border-color 0.2s ease-in-out;
 `;
 
@@ -128,18 +122,36 @@ export const StyledNotch = styled.div<{
   $isVertical?: boolean;
   $visible: boolean;
   $selected: boolean;
+  $hovered?: boolean;
 }>`
-  width: ${(p) => (p.$handleType === "input" && !p.$isVertical ? 5 : 8)}px;
-  height: ${(p) => (p.$handleType === "input" && p.$isVertical ? 5 : 8)}px;
-  border-width: 0;
+  width: ${(p) => {
+    if (p.$handleType === "input" && !p.$isVertical) return "8px";
+    if (p.$handleType === "artifact") return "10px";
+    return "12px";
+  }};
+  height: ${(p) => {
+    if (p.$handleType === "input" && p.$isVertical) return "8px";
+    if (p.$handleType === "artifact") return "10px";
+    return "12px";
+  }};
+  border-width: 2px;
+  border-style: solid;
+  border-color: ${(p) => {
+    if (p.$selected || p.$hovered) return "var(--color-primary)";
+    return "var(--color-border)";
+  }};
   border-radius: ${(p) => (p.$handleType === "artifact" || p.$handleType === "input" ? 0 : "50%")};
   transform: ${(p) => (p.$handleType === "artifact" ? "rotate(45deg)" : "none")};
-  background-color: ${(p) => (p.$selected ? "var(--color-selection-indicator)" : p.$notchColor)};
+  background-color: ${(p) => {
+    if (p.$selected || p.$hovered) return "var(--color-primary)";
+    return "var(--color-background, white)";
+  }};
   opacity: ${(p) => (p.$visible ? 1 : 0)};
   pointer-events: none;
+  transition: all 0.2s ease-in-out;
 `;
 
-export const StyledHandle = styled(Handle as any)<{
+export const StyledHandle = styled(Handle as any) <{
   $positionPercent: number;
   $total: number;
   $visible: boolean;

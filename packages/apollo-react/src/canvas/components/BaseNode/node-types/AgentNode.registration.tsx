@@ -72,6 +72,12 @@ export const agentNodeRegistration: NodeRegistration = {
         position: Position.Top,
         handles: [
           {
+            id: "memory",
+            type: "source",
+            handleType: "artifact",
+            label: "Memory",
+          },
+          {
             id: "context",
             type: "source",
             handleType: "artifact",
