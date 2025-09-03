@@ -16,10 +16,10 @@ export const BASE_CANVAS_DEFAULTS = {
     duration: 300,
   },
   background: {
-    gap: 12,
+    gap: 24,
     size: 2,
-    color: "var(--color-background-secondary)",
-    bgColor: "var(--color-background)",
+    color: "var(--color-border-de-emp)",
+    bgColor: "var(--color-background-secondary)",
     variant: BackgroundVariant.Dots,
   },
   transitions: {

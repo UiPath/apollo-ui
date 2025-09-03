@@ -152,6 +152,7 @@ const BaseCanvasInnerComponent = <NodeType extends Node = Node, EdgeType extends
         variant={backgroundVariant}
         gap={backgroundGap}
         size={backgroundSize}
+        offset={25}
       />
 
       {children}
