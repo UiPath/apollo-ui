@@ -88,7 +88,7 @@ function getNonOverlappingPosition(
 ): XYPosition {
   const isOverlapping = nodes.some(
     (node) =>
-      node.id !== "preview-node" &&
+      node.id !== "preview-node-id" &&
       node.position.x < newNodePosition.x + newNodeStyle.width &&
       node.position.x + (node.measured?.width ?? 0) > newNodePosition.x &&
       node.position.y < newNodePosition.y + newNodeStyle.height &&

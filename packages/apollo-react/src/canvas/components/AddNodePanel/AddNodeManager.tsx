@@ -41,7 +41,7 @@ export const AddNodeManager: React.FC<AddNodeManagerProps> = ({ customPanel, cre
   // Watch for preview node selection
   const selectedNodes = useStore((state) => state.nodes.filter((node) => node.selected));
 
-  const previewNode = selectedNodes.find((node) => node.id === "preview-node");
+  const previewNode = selectedNodes.find((node) => node.id === "preview-node-id");
   const [isOpen, setIsOpen] = useState(false);
   const [sourceInfo, setSourceInfo] = useState<{ nodeId: string; handleId: string } | null>(null);
   const lastPreviewNodeRef = useRef<Node | null>(null);
@@ -50,7 +50,7 @@ export const AddNodeManager: React.FC<AddNodeManagerProps> = ({ customPanel, cre
   useEffect(() => {
     if (previewNode && !lastPreviewNodeRef.current) {
       // Preview node just got selected
-      const previewEdge = reactFlowInstance.getEdges().find((edge) => edge.id === "preview-edge");
+      const previewEdge = reactFlowInstance.getEdges().find((edge) => edge.id === "preview-edge-id");
 
       if (previewEdge) {
         setSourceInfo({
@@ -65,8 +65,8 @@ export const AddNodeManager: React.FC<AddNodeManagerProps> = ({ customPanel, cre
       setSourceInfo(null);
 
       // Clean up preview node and edge if they still exist
-      reactFlowInstance.setNodes((nodes) => nodes.filter((n) => n.id !== "preview-node"));
-      reactFlowInstance.setEdges((edges) => edges.filter((e) => e.id !== "preview-edge"));
+      reactFlowInstance.setNodes((nodes) => nodes.filter((n) => n.id !== "preview-node-id"));
+      reactFlowInstance.setEdges((edges) => edges.filter((e) => e.id !== "preview-edge-id"));
     }
 
     lastPreviewNodeRef.current = previewNode || null;
@@ -74,7 +74,7 @@ export const AddNodeManager: React.FC<AddNodeManagerProps> = ({ customPanel, cre
 
   const handleClose = useCallback(() => {
     // Deselect preview node (which will trigger cleanup in the effect above)
-    reactFlowInstance.setNodes((nodes) => nodes.map((n) => (n.id === "preview-node" ? { ...n, selected: false } : n)));
+    reactFlowInstance.setNodes((nodes) => nodes.map((n) => (n.id === "preview-node-id" ? { ...n, selected: false } : n)));
 
     setIsOpen(false);
     setSourceInfo(null);
@@ -107,12 +107,12 @@ export const AddNodeManager: React.FC<AddNodeManagerProps> = ({ customPanel, cre
 
       // Replace preview node and edge with actual ones
       reactFlowInstance.setNodes((nodes) => [
-        ...nodes.filter((n) => n.id !== "preview-node").map((n) => ({ ...n, selected: false })),
+        ...nodes.filter((n) => n.id !== "preview-node-id").map((n) => ({ ...n, selected: false })),
         newNode,
       ]);
 
       reactFlowInstance.setEdges((edges) => [
-        ...edges.filter((e) => e.id !== "preview-edge"),
+        ...edges.filter((e) => e.id !== "preview-edge-id"),
         {
           id: `${sourceInfo.nodeId}-${sourceInfo.handleId}-${newNodeId}`,
           source: sourceInfo.nodeId,
@@ -137,7 +137,7 @@ export const AddNodeManager: React.FC<AddNodeManagerProps> = ({ customPanel, cre
   }
 
   return (
-    <FloatingCanvasPanel open={isOpen} nodeId="preview-node" placement="right-start" offset={10}>
+    <FloatingCanvasPanel open={isOpen} nodeId="preview-node-id" placement="right-start" offset={10}>
       {customPanel ? (
         React.createElement(customPanel, {
           onNodeSelect: handleNodeSelect,

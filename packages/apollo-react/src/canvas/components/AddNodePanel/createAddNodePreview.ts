@@ -22,14 +22,14 @@ export function createAddNodePreview(sourceNodeId: string, sourceHandleId: strin
   // Find optimal position for preview node
   const previewPosition = getNewNodePosition(
     sourceNode,
-    { width: 100, height: 100 },
-    currentNodes.filter((n) => n.id !== "preview-node"), // Exclude existing preview
+    { width: 96, height: 96 },
+    currentNodes.filter((n) => n.id !== "preview-node-id"), // Exclude existing preview
     "right"
   );
 
   // Create preview node
   const previewNode: Node = {
-    id: "preview-node",
+    id: "preview-node-id",
     type: "preview",
     position: previewPosition,
     selected: true,
@@ -38,10 +38,10 @@ export function createAddNodePreview(sourceNodeId: string, sourceHandleId: strin
 
   // Create preview edge
   const previewEdge: Edge = {
-    id: "preview-edge",
+    id: "preview-edge-id",
     source: sourceNodeId,
     sourceHandle: sourceHandleId,
-    target: "preview-node",
+    target: "preview-node-id",
     targetHandle: "input",
     type: "default",
     style: {
@@ -54,16 +54,16 @@ export function createAddNodePreview(sourceNodeId: string, sourceHandleId: strin
 
   // Update nodes and edges (remove any existing preview first)
   reactFlowInstance.setNodes((nodes) => [
-    ...nodes.filter((n) => n.id !== "preview-node").map((n) => ({ ...n, selected: false })), // Deselect all other nodes
+    ...nodes.filter((n) => n.id !== "preview-node-id").map((n) => ({ ...n, selected: false })), // Deselect all other nodes
     previewNode,
   ]);
 
-  reactFlowInstance.setEdges((edges) => [...edges.filter((e) => e.id !== "preview-edge"), previewEdge]);
+  reactFlowInstance.setEdges((edges) => [...edges.filter((e) => e.id !== "preview-edge-id"), previewEdge]);
 
   // Force select the preview node after a short delay to ensure React Flow processes it
   setTimeout(() => {
     reactFlowInstance.setNodes((nodes) =>
-      nodes.map((n) => (n.id === "preview-node" ? { ...n, selected: true } : { ...n, selected: false }))
+      nodes.map((n) => (n.id === "preview-node-id" ? { ...n, selected: true } : { ...n, selected: false }))
     );
   }, 50);
 }
