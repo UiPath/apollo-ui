@@ -69,7 +69,9 @@ const StageNodeComponent = (props: StageNodeProps) => {
           <Row gap={Spacing.SpacingMicro} align="center">
             {icon}
             <Column>
-              <ApTypography variant={FontVariantToken.fontSizeMBold} color="var(--color-foreground)">{label}</ApTypography>
+              <ApTypography variant={FontVariantToken.fontSizeMBold} color="var(--color-foreground)">
+                {label}
+              </ApTypography>
               {stageDuration && (
                 <ApTypography variant={FontVariantToken.fontSizeS} color="var(--color-foreground-de-emp)">
                   {stageDuration}
