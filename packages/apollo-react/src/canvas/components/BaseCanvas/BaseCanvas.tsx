@@ -1,10 +1,11 @@
 import { forwardRef, memo, useCallback, useImperativeHandle, useState } from "react";
 import type { Edge, Node, ReactFlowInstance } from "@xyflow/react";
-import { Background, ConnectionMode, ReactFlow } from "@xyflow/react";
+import { ConnectionMode, ReactFlow } from "@xyflow/react";
 import { BASE_CANVAS_DEFAULTS } from "./BaseCanvas.constants";
 import { useAutoLayout, useEnsureNodesInView, useMaintainNodesInView } from "./BaseCanvas.hooks";
 import type { BaseCanvasProps, BaseCanvasRef } from "./BaseCanvas.types";
 import { usePreventBackNavigation } from "./usePreventBackNavigation";
+import { CanvasBackground } from "./CanvasBackground";
 
 const BaseCanvasInnerComponent = <NodeType extends Node = Node, EdgeType extends Edge = Edge>(
   props: BaseCanvasProps<NodeType, EdgeType> & { innerRef?: React.Ref<BaseCanvasRef<NodeType, EdgeType>> }
@@ -146,13 +147,12 @@ const BaseCanvasInnerComponent = <NodeType extends Node = Node, EdgeType extends
         transition: BASE_CANVAS_DEFAULTS.transitions.opacity,
       }}
     >
-      <Background
+      <CanvasBackground
         color={backgroundColor}
         bgColor={backgroundSecondaryColor}
         variant={backgroundVariant}
         gap={backgroundGap}
         size={backgroundSize}
-        offset={25}
       />
 
       {children}
