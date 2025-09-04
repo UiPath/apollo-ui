@@ -114,7 +114,7 @@ export const AddNodeManager: React.FC<AddNodeManagerProps> = ({ customPanel, cre
       reactFlowInstance.setEdges((edges) => [
         ...edges.filter((e) => e.id !== "preview-edge-id"),
         {
-          id: `${sourceInfo.nodeId}-${sourceInfo.handleId}-${newNodeId}`,
+          id: `edge_${sourceInfo.nodeId}-${sourceInfo.handleId}-${newNodeId}`,
           source: sourceInfo.nodeId,
           sourceHandle: sourceInfo.handleId,
           target: newNodeId,

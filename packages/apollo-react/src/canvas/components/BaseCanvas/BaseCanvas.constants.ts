@@ -2,7 +2,7 @@ import { BackgroundVariant } from "@xyflow/react";
 
 // This is the grid size used for snapping and layout
 // Nodes should be multiples of this size to allow for proper alignment
-const GRID_SIZE = 24;
+export const BASE_CANVAS_GRID_SPACING = 24;
 
 export const BASE_CANVAS_DEFAULTS = {
   zoom: {
@@ -20,7 +20,7 @@ export const BASE_CANVAS_DEFAULTS = {
     duration: 300,
   },
   background: {
-    gap: GRID_SIZE,
+    gap: BASE_CANVAS_GRID_SPACING,
     size: 2,
     color: "var(--color-border-de-emp)",
     bgColor: "var(--color-background-secondary)",
@@ -41,7 +41,7 @@ export const BASE_CANVAS_DEFAULTS = {
   },
   snapToGrid: true,
 
-  snapGrid: [GRID_SIZE, GRID_SIZE] as [number, number],
+  snapGrid: [BASE_CANVAS_GRID_SPACING, BASE_CANVAS_GRID_SPACING] as [number, number],
   maintainNodesInView: {
     padding: 50,
     debounceMs: 50,

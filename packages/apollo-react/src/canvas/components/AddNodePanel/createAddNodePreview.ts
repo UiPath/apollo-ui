@@ -16,14 +16,13 @@ export function createAddNodePreview(sourceNodeId: string, sourceHandleId: strin
     return;
   }
 
-  // Get all current nodes
   const currentNodes = reactFlowInstance.getNodes();
 
   // Find optimal position for preview node
   const previewPosition = getNewNodePosition(
     sourceNode,
     { width: 96, height: 96 },
-    currentNodes.filter((n) => n.id !== "preview-node-id"), // Exclude existing preview
+    currentNodes.filter((n) => n.id !== "preview-node-id"),
     "right"
   );
 
@@ -45,7 +44,7 @@ export function createAddNodePreview(sourceNodeId: string, sourceHandleId: strin
     targetHandle: "input",
     type: "default",
     style: {
-      strokeDasharray: "3 5",
+      strokeDasharray: "5,5",
       opacity: 0.8,
       stroke: "var(--color-selection-indicator)",
       strokeWidth: 2,

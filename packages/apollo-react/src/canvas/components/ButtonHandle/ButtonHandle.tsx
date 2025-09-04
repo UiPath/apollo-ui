@@ -123,6 +123,7 @@ const ButtonHandleBase = ({
       $visible={visible}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
+      onMouseDown={() => setIsHovered(false)}
     >
       {label && (
         <StyledLabel $position={position}>
