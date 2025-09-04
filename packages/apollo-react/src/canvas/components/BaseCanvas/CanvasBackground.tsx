@@ -2,11 +2,11 @@ import { Background, type BackgroundVariant } from "@xyflow/react";
 import { BASE_CANVAS_DEFAULTS } from "./BaseCanvas.constants";
 
 interface CanvasBackgroundProps {
-  color: string;
-  bgColor: string;
-  variant: BackgroundVariant;
-  gap: number;
-  size: number;
+  color?: string;
+  bgColor?: string;
+  variant?: BackgroundVariant;
+  gap?: number;
+  size?: number;
 }
 
 export const CanvasBackground: React.FC<CanvasBackgroundProps> = ({
