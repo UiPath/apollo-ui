@@ -1,8 +1,13 @@
 export { AgentIcon } from "./AgentIcon";
+export { AgenticProject } from "./AgenticProject";
 export { AnthropicIcon } from "./AnthropicIcon";
-export { ApiWorkflowIcon } from "./ApiWorkflowIcon";
+export { ApiProject } from "./ApiProject";
 export { AutonomousAgentIcon } from "./AutonomousAgentIcon";
+export { BusinessProcessProject } from "./BusinessProcessProject";
 export { CodedAgentIcon } from "./CodedAgentIcon";
+export { ConnectorBuilderProject } from "./ConnectorBuilderProject";
 export { ConversationalAgentIcon } from "./ConversationalAgentIcon";
 export { GoogleIcon } from "./GoogleIcon";
 export { OpenAIIcon } from "./OpenAIIcon";
+export { RpaProject } from "./RpaProject";
+export { WebAppProject } from "./WebAppProject";

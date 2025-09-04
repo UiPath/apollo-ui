@@ -10,7 +10,7 @@ export default {
   },
 } as Meta;
 
-type IconComponent = ComponentType<{ width?: number; height?: number; className?: string }>;
+type IconComponent = ComponentType<{ w?: number; h?: number; className?: string }>;
 
 const iconEntries = (
   Object.entries(Icons)
@@ -60,7 +60,7 @@ export const AllIcons: StoryFn = () => {
                 width: 64,
               }}
             >
-              <Icon />
+              <Icon w={48} h={48} />
             </div>
             <span style={{ fontFamily: "monospace", fontSize: "0.75rem" }}>{name}</span>
           </Column>
@@ -95,7 +95,7 @@ export const DifferentSizes: StoryFn = () => {
                       width: size,
                     }}
                   >
-                    <Icon width={size} height={size} />
+                    <Icon w={size} h={size} />
                   </div>
                   <span style={{ fontSize: "0.75rem" }}>{size}px</span>
                 </Column>
