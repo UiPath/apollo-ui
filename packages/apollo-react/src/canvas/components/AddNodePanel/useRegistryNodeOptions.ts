@@ -73,17 +73,9 @@ export function useOptionalRegistryNodeOptions() {
     [registry]
   );
 
-  const search = useCallback(
-    (category?: string, query?: string) => {
-      return registry.search(category, query);
-    },
-    [registry]
-  );
-
   return {
     fetchNodeOptions,
     getCategories,
     createNodeData,
-    search,
   };
 }

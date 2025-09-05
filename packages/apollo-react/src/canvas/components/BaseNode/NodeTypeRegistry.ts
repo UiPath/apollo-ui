@@ -8,7 +8,6 @@ export class NodeTypeRegistry {
   private allDefinitions = new Map<string, NodeTypeDefinition>();
   private metadata = new Map<string, Omit<NodeRegistration, "definition">>();
   private categories = new Map<string, string[]>();
-  private nodeOptions: NodeOption[] = [];
 
   register(registration: NodeRegistration) {
     const { definition, ...metadata } = registration;
@@ -18,8 +17,6 @@ export class NodeTypeRegistry {
     this.definitions.set(nodeType, definition);
     this.metadata.set(nodeType, metadata);
     this.allDefinitions.set(subType ?? nodeType, definition);
-
-    this._updateNodeOptions(registration);
 
     const category = metadata.category || "misc";
     if (!this.categories.has(category)) {
@@ -52,26 +49,17 @@ export class NodeTypeRegistry {
     return Array.from(this.definitions.keys());
   }
 
-  createDefaultData(nodeType: string, subType?: string): BaseNodeData {
-    const definition = this.getBySubType(subType ?? nodeType);
+  createDefaultData(nodeType: string, label?: string): BaseNodeData {
+    const definition = this.getBySubType(nodeType);
     const metadata = this.getMetadata(nodeType);
-    const option = this.nodeOptions.find((option) => option.id === subType);
-    const uiPathData = definition?.getUiPathData?.() ?? {};
 
     return {
       nodeType,
-      subType,
-      version: option?.version || metadata?.version || "1.0.0",
+      version: metadata?.version || "1.0.0",
       parameters: definition?.getDefaultParameters?.() ?? {},
       display: {
-        label: option?.label || subType || nodeType,
+        label: label || nodeType,
       },
-      // FIXME: temp for PO integration
-      ...(uiPathData
-        ? {
-            uipath: uiPathData,
-          }
-        : {}),
     };
   }
 
@@ -162,34 +150,6 @@ export class NodeTypeRegistry {
     return matches;
   }
 
-  search(category?: string, query?: string): NodeOption[] {
-    if (!query && category) {
-      const categoryLower = category.toLowerCase();
-      return this.nodeOptions.filter((option) => option.category.toLowerCase() === categoryLower);
-    }
-
-    if (query) {
-      const searchLower = query?.toLowerCase();
-      const matches: NodeOption[] = [];
-
-      for (const option of this.nodeOptions) {
-        if (category && option.category !== category) continue;
-
-        const matchesName = option.label.toLowerCase().includes(searchLower);
-        const matchesType = option.type.toLowerCase().includes(searchLower);
-        const matchesDescription = option.description?.toLowerCase().includes(searchLower);
-
-        if (matchesName || matchesType || matchesDescription) {
-          matches.push(option);
-        }
-      }
-
-      return matches;
-    }
-
-    return this.nodeOptions;
-  }
-
   /**
    * Get category configuration for AddNodePanel
    * @returns Array of NodeCategory objects with metadata
@@ -246,17 +206,5 @@ export class NodeTypeRegistry {
     });
 
     return categories;
-  }
-
-  private _updateNodeOptions(registration: NodeRegistration) {
-    this.nodeOptions.push({
-      id: registration.subType ?? registration.nodeType,
-      type: registration.nodeType,
-      label: registration.displayName || registration.nodeType,
-      icon: registration.icon,
-      category: registration.category || "misc",
-      description: registration.description,
-      version: registration.version,
-    });
   }
 }

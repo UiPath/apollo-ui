@@ -128,16 +128,27 @@ const ListView = <T extends ListItem>(props: ListViewProps<T>) => {
   );
 };
 
-export const AddNodePanel: React.FC<AddNodePanelProps> = ({ onNodeSelect, onClose, categories }) => {
+export const AddNodePanel: React.FC<AddNodePanelProps> = ({ onNodeSelect, onClose, fetchNodeOptions, categories }) => {
   const registryOptions = useOptionalRegistryNodeOptions();
 
+  const finalFetchNodeOptions = fetchNodeOptions || registryOptions?.fetchNodeOptions;
   const finalCategories = useMemo(() => categories || registryOptions?.getCategories() || [], [categories, registryOptions]);
   const [viewState, setViewState] = useState<ViewState>("categories");
   const [selectedCategory, setSelectedCategory] = useState<NodeCategory | null>(null);
+  const [nodes, setNodes] = useState<NodeOption[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const transitionTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
 
-  const { searchQuery, isSearching, handleSearchToggle, handleSearchChange, clearSearch } = useNodeSearch();
+  const { searchQuery, isSearching, searchedNodes, handleSearchToggle, handleSearchChange, clearSearch } = useNodeSearch(nodes);
+
+  useEffect(() => {
+    return () => {
+      if (transitionTimeoutRef.current) {
+        clearTimeout(transitionTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const handleBack = useCallback(() => {
     if (transitionTimeoutRef.current) {
@@ -154,6 +165,60 @@ export const AddNodePanel: React.FC<AddNodePanelProps> = ({ onNodeSelect, onClos
 
     transitionTimeoutRef.current = setTimeout(() => setIsTransitioning(false), 150);
   }, [clearSearch, isSearching]);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        if (isSearching) {
+          clearSearch();
+        } else if (viewState === "nodes" && selectedCategory) {
+          handleBack();
+        } else {
+          onClose();
+        }
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [onClose, viewState, selectedCategory, isSearching, clearSearch, handleBack]);
+
+  // Filter nodes based on category and search
+  const filteredNodes = useMemo(() => {
+    // In nodes view, filter by selected category
+    if (!selectedCategory) return [];
+
+    let filtered = nodes.filter((node) => node.category === selectedCategory.id);
+
+    if (isSearching && searchQuery) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter((node) => node.label.toLowerCase().includes(query) || node.description?.toLowerCase().includes(query));
+    }
+
+    return filtered;
+  }, [nodes, selectedCategory, searchQuery, isSearching]);
+
+  // Fetch nodes when category is selected
+  useEffect(() => {
+    if (finalFetchNodeOptions && selectedCategory) {
+      setIsLoading(true);
+      finalFetchNodeOptions(selectedCategory.id, searchQuery)
+        .then(setNodes)
+        .catch(console.error)
+        .finally(() => setIsLoading(false));
+    }
+  }, [selectedCategory, searchQuery, finalFetchNodeOptions]);
+
+  // Filter categories based on search
+  const filteredCategories = useMemo(() => {
+    if (!isSearching || !searchQuery) return finalCategories;
+
+    const query = searchQuery.toLowerCase();
+    const matchingNodes = searchedNodes;
+    const categoriesWithNodes = new Set(matchingNodes.map((node) => node.category));
+
+    return finalCategories.filter((cat) => categoriesWithNodes.has(cat.id) || cat.label.toLowerCase().includes(query));
+  }, [searchQuery, isSearching, searchedNodes, finalCategories]);
 
   const handleCategorySelect = useCallback(
     (category: NodeCategory) => {
@@ -187,61 +252,47 @@ export const AddNodePanel: React.FC<AddNodePanelProps> = ({ onNodeSelect, onClos
     [onNodeSelect, onClose]
   );
 
-  const onSearch = useCallback(
-    (query: string) => {
-      handleSearchChange(query);
-      setViewState(query.length > 0 ? "nodes" : "categories");
-    },
-    [handleSearchChange]
-  );
-
-  const filteredNodes = useMemo(() => {
-    return registryOptions.search(selectedCategory?.id, searchQuery.toLowerCase());
-  }, [registryOptions, selectedCategory, searchQuery]);
-
-  useEffect(() => {
-    return () => {
-      if (transitionTimeoutRef.current) {
-        clearTimeout(transitionTimeoutRef.current);
-      }
-    };
-  }, []);
-
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        if (isSearching) {
-          clearSearch();
-        } else if (viewState === "nodes" && selectedCategory) {
-          handleBack();
-        } else {
-          onClose();
-        }
-      }
-    };
-
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [onClose, viewState, selectedCategory, isSearching, clearSearch, handleBack]);
-
   const content = React.useMemo(() => {
     if (viewState === "categories") {
-      return <ListView items={finalCategories} onItemClick={handleCategorySelect} showEmptyState={false} />;
-    }
-
-    if (viewState === "nodes") {
+      if (isSearching && searchQuery) {
+        return (
+          <ListView
+            items={searchedNodes}
+            onItemClick={handleNodeSelect}
+            getItemColor={() => "var(--color-background-secondary)"}
+            showEmptyState={!isTransitioning && !isLoading}
+            emptyStateMessage="No nodes found"
+          />
+        );
+      } else {
+        return <ListView items={filteredCategories} onItemClick={handleCategorySelect} showEmptyState={false} />;
+      }
+    } else if (viewState === "nodes" && selectedCategory) {
       return (
         <ListView
           items={filteredNodes}
           onItemClick={handleNodeSelect}
-          showEmptyState={filteredNodes.length === 0}
+          getItemColor={() => selectedCategory.color}
+          showEmptyState={!isLoading && filteredNodes.length === 0}
           emptyStateMessage="No nodes found"
+          isLoading={isLoading}
         />
       );
     }
-
     return null;
-  }, [viewState, finalCategories, handleCategorySelect, filteredNodes, handleNodeSelect]);
+  }, [
+    viewState,
+    isSearching,
+    searchQuery,
+    searchedNodes,
+    handleNodeSelect,
+    isTransitioning,
+    isLoading,
+    filteredCategories,
+    handleCategorySelect,
+    selectedCategory,
+    filteredNodes,
+  ]);
 
   return (
     <Column p={10} w={320}>
@@ -255,7 +306,7 @@ export const AddNodePanel: React.FC<AddNodePanelProps> = ({ onNodeSelect, onClos
       {isSearching && (
         <SearchBox
           value={searchQuery}
-          onChange={onSearch}
+          onChange={handleSearchChange}
           placeholder={viewState === "categories" ? "Search all nodes..." : `Search ${selectedCategory?.label?.toLowerCase()}...`}
         />
       )}

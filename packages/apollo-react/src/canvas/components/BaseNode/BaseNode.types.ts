@@ -59,7 +59,7 @@ export interface NodeTypeDefinition {
 
   // FIXME: temp for PO integration
   validateUiPathData?: (data: Record<string, unknown>) => boolean;
-  getUiPathData?: () => Record<string, unknown>;
+  getUiPathData?: (data: Record<string, unknown>) => Record<string, unknown>;
 
   // Handle action handler - optional per node type
   onHandleAction?: (event: HandleActionEvent) => void;
