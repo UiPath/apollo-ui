@@ -187,7 +187,7 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
         backgroundColor={displayBackground}
       >
         {icon && (
-          <BaseIconWrapper shape={displayShape} backgroundColor={displayIconBackground} nodeHeight={height}>
+          <BaseIconWrapper shape={displayShape} backgroundColor={displayIconBackground}>
             {icon}
           </BaseIconWrapper>
         )}

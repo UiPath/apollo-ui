@@ -91,7 +91,8 @@ export const BaseContainer = styled.div<{
   border: 1.5px solid var(--color-border-de-emp);
   border-radius: ${({ shape }) => {
     if (shape === "circle") return "50%";
-    return "8px";
+    if (shape === "rectangle") return "16px";
+    return "calc(0.5 * 100% / (1.75))";
   }};
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   display: flex;
@@ -119,44 +120,26 @@ export const BaseContainer = styled.div<{
     `}
 `;
 
-export const BaseIconWrapper = styled.div<{ backgroundColor?: string; shape?: NodeShape; nodeHeight?: number }>`
-  width: ${({ nodeHeight }) => {
-    const scaleFactor = nodeHeight ? nodeHeight / 100 : 1;
-    return `${72 * scaleFactor}px`;
-  }};
-  height: ${({ nodeHeight }) => {
-    const scaleFactor = nodeHeight ? nodeHeight / 100 : 1;
-    return `${72 * scaleFactor}px`;
-  }};
+export const BaseIconWrapper = styled.div<{ backgroundColor?: string; shape?: NodeShape }>`
+  width: 72px;
+  height: 72px;
   display: flex;
   align-items: center;
   justify-content: center;
   background: ${({ backgroundColor }) => backgroundColor || "var(--color-background-secondary)"};
   border-radius: ${({ shape }) => {
     if (shape === "circle") return "50%";
-    return "8px";
+    return "calc(0.5 * 100% / (1.75))";
   }};
 
   svg {
-    width: ${({ nodeHeight }) => {
-      const scaleFactor = nodeHeight ? nodeHeight / 100 : 1;
-      return `${32 * scaleFactor}px`;
-    }};
-    height: ${({ nodeHeight }) => {
-      const scaleFactor = nodeHeight ? nodeHeight / 100 : 1;
-      return `${32 * scaleFactor}px`;
-    }};
+    width: 48px;
+    height: 48px;
   }
 
   img {
-    width: ${({ nodeHeight }) => {
-      const scaleFactor = nodeHeight ? nodeHeight / 100 : 1;
-      return `${32 * scaleFactor}px`;
-    }};
-    height: ${({ nodeHeight }) => {
-      const scaleFactor = nodeHeight ? nodeHeight / 100 : 1;
-      return `${32 * scaleFactor}px`;
-    }};
+    width: 48px;
+    height: 48px;
     object-fit: contain;
   }
 `;
