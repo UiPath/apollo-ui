@@ -94,6 +94,12 @@ export interface BaseCanvasProps<NodeType extends Node = Node, EdgeType extends 
    * @see useMaintainNodesInView hook for direct usage
    */
   maintainNodesInView?: string[];
+
+  /**
+   * Custom message to display in the pan shortcut teaching UI.
+   * @default "Hold Space and drag to pan around the canvas!"
+   */
+  panShortcutTeachingUIMessage?: string;
 }
 
 /**

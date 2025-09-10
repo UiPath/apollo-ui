@@ -10,6 +10,8 @@ import type {
   AgentFlowResourceNode,
 } from "../types";
 import { autoArrangeNodes } from "./auto-layout";
+import { ResourceNodeType } from "../components/AgentCanvas/AgentFlow.constants";
+import { Position } from "@xyflow/react";
 
 // Status constants
 const SPAN_STATUS = {
@@ -29,6 +31,9 @@ const normalizeToolName = (resource: AgentFlowResource): string => {
   if (resource.type === "escalation") {
     return `escalate_${resource.name.toLowerCase().replace(/\s/g, "_")}`;
   }
+  if (resource.type === "mcp") {
+    return `mcp_${resource.name.toLowerCase().replace(/\s/g, "_")}`;
+  }
   return resource.name.replace(/\s+/g, "_");
 };
 
@@ -38,31 +43,35 @@ const hasResourceStatus = (resource: AgentFlowResource, spans: IRawSpan[], targe
     const attributes = span.Attributes ? JSON.parse(span.Attributes) : null;
     if (!attributes) continue;
 
-    // Check for tool/context/escalation status
-    if (resource.type === "context" || resource.type === "escalation" || resource.type === "tool") {
+    // Check for tool/context/escalation/mcp status
+    if (resource.type === "context" || resource.type === "escalation" || resource.type === "tool" || resource.type === "mcp") {
       const normalizedToolName = normalizeToolName(resource);
 
-      if (attributes.toolName === normalizedToolName) {
-        return span.Status === targetStatus;
+      if (attributes.toolName === normalizedToolName && span.Status === targetStatus) {
+        return true;
       }
     }
   }
   return false;
 };
 
+// Helper function to check if a resource has a running status
+export const hasResourceRunning = (resource: AgentFlowResource, spans: IRawSpan[]): boolean => {
+  return hasResourceStatus(resource, spans, SPAN_STATUS.RUNNING);
+};
+
 // Helper function to check if a resource has an error status
-const hasResourceError = (resource: AgentFlowResource, spans: IRawSpan[]): boolean => {
-  return hasResourceStatus(resource, spans, SPAN_STATUS.ERROR);
+export const hasResourceError = (resource: AgentFlowResource, spans: IRawSpan[]): boolean => {
+  return hasResourceStatus(resource, spans, SPAN_STATUS.ERROR) || Boolean(resource.errors?.length);
 };
 
 // Helper function to check if a resource has a success status
-const hasResourceSuccess = (resource: AgentFlowResource, spans: IRawSpan[]): boolean => {
+export const hasResourceSuccess = (resource: AgentFlowResource, spans: IRawSpan[]): boolean => {
+  // Only show success if there are no running spans for this resource
+  if (hasResourceRunning(resource, spans)) {
+    return false;
+  }
   return hasResourceStatus(resource, spans, SPAN_STATUS.SUCCESS);
-};
-
-// Helper function to check if a resource has a running status
-const hasResourceRunning = (resource: AgentFlowResource, spans: IRawSpan[]): boolean => {
-  return hasResourceStatus(resource, spans, SPAN_STATUS.RUNNING);
 };
 
 // Helper function to check if a model has a specific status
@@ -72,8 +81,8 @@ const hasModelStatus = (_model: AgentFlowModel, spans: IRawSpan[], targetStatus:
     if (!attributes) continue;
 
     // Check for model status
-    if (attributes.type === "completion") {
-      return span.Status === targetStatus;
+    if (attributes.type === "completion" && span.Status === targetStatus) {
+      return true;
     }
   }
   return false;
@@ -84,14 +93,33 @@ export const hasModelError = (model: AgentFlowModel, spans: IRawSpan[]): boolean
   return hasModelStatus(model, spans, SPAN_STATUS.ERROR);
 };
 
-// Helper function to check if a model has a success status
-export const hasModelSuccess = (model: AgentFlowModel, spans: IRawSpan[]): boolean => {
-  return hasModelStatus(model, spans, SPAN_STATUS.SUCCESS);
-};
-
 // Helper function to check if a model has a running status
 export const hasModelRunning = (model: AgentFlowModel, spans: IRawSpan[]): boolean => {
   return hasModelStatus(model, spans, SPAN_STATUS.RUNNING);
+};
+
+// Helper function to check if a model has a success status
+export const hasModelSuccess = (model: AgentFlowModel, spans: IRawSpan[]): boolean => {
+  // Only show success if there are no running spans for this model
+  if (hasModelRunning(model, spans)) {
+    return false;
+  }
+  return hasModelStatus(model, spans, SPAN_STATUS.SUCCESS);
+};
+
+// Helper function to check if an agent has a running status
+export const hasAgentRunning = (spans: IRawSpan[]): boolean => {
+  for (const span of spans) {
+    const attributes = span.Attributes ? JSON.parse(span.Attributes) : null;
+    if (!attributes) continue;
+
+    // Check for agent run status
+    if (attributes.type === "agentRun") {
+      const isRunning = span.Status === SPAN_STATUS.RUNNING;
+      return isRunning;
+    }
+  }
+  return false;
 };
 
 const createAgentNode = (props: AgentFlowProps, parentNodeId?: string): AgentFlowNode => {
@@ -111,7 +139,7 @@ const createAgentNode = (props: AgentFlowProps, parentNodeId?: string): AgentFlo
       definition: props.definition,
       parentNodeId,
     },
-    draggable: false,
+    draggable: false, // Agent node is not draggable
   };
 };
 
@@ -125,12 +153,17 @@ const createResourceNode = (
 
   const baseData = {
     name: resource.name,
+    originalName: resource.originalName,
     description: resource.description,
     order: index,
     isActive: props.activeResourceIds?.includes(id) ?? false,
     hasError: hasResourceError(resource, props.spans),
     hasSuccess: hasResourceSuccess(resource, props.spans),
     hasRunning: hasResourceRunning(resource, props.spans),
+    hasBreakpoint: resource.hasBreakpoint ?? false,
+    isCurrentBreakpoint: resource.isCurrentBreakpoint ?? false,
+    hasGuardrails: resource.hasGuardrails ?? false,
+    errors: resource.errors,
   };
 
   const baseNode = {
@@ -139,50 +172,67 @@ const createResourceNode = (
     position: { x: 0, y: 0 },
     width: NODE_DIMENSIONS.resource.width,
     height: NODE_DIMENSIONS.resource.height,
-    draggable: props.mode === "design",
+    draggable: Boolean(props.allowDragging && props.mode === "design"),
   };
 
   const resourceId = `${resource.name}:${id}`;
   const finalId = parentNodeId ? `${parentNodeId}${NODE_ID_DELIMITER}${resourceId}` : resourceId;
 
-  if (resource.type === "tool") {
-    return {
-      ...baseNode,
-      id: finalId,
-      data: {
-        ...baseData,
-        type: "tool" as const,
-        iconUrl: resource.iconUrl,
-        projectType: resource.projectType,
-        parentNodeId,
-        isExpandable: resource.isExpandable,
-        processName: resource.processName,
-      },
-      draggable: props.mode === "design",
-    };
-  } else if (resource.type === "context") {
-    return {
-      id: finalId,
-      type: "resource",
-      position: { x: 0, y: 0 },
-      data: {
-        ...baseData,
-        type: "context" as const,
-        parentNodeId,
-      },
-      draggable: props.mode === "design",
-    };
+  switch (resource.type) {
+    case "tool":
+      return {
+        ...baseNode,
+        id: finalId,
+        data: {
+          ...baseData,
+          type: "tool",
+          iconUrl: resource.iconUrl,
+          projectType: resource.projectType,
+          projectId: resource.projectId,
+          parentNodeId,
+          isExpandable: resource.isExpandable,
+          processName: resource.processName,
+        },
+      };
+    case "context":
+      return {
+        ...baseNode,
+        id: finalId,
+        type: "resource",
+        position: { x: 0, y: 0 },
+        data: {
+          ...baseData,
+          type: "context",
+          projectId: resource.projectId,
+          parentNodeId,
+        },
+      };
+    case "mcp":
+      return {
+        ...baseNode,
+        id: finalId,
+        data: {
+          ...baseData,
+          type: "mcp",
+          slug: resource.slug,
+          folderPath: resource.folderPath,
+          availableTools: resource.availableTools,
+          parentNodeId,
+        },
+      };
+    case "escalation":
+    default:
+      return {
+        ...baseNode,
+        id: finalId,
+        data: {
+          ...baseData,
+          type: "escalation",
+          projectId: resource.projectId,
+          parentNodeId,
+        },
+      };
   }
-  // escalation
-  return {
-    ...baseNode,
-    id: finalId,
-    data: {
-      ...baseData,
-      type: "escalation" as const,
-      parentNodeId,
-    },
-  };
 };
 
 const createModelNode = (props: AgentFlowProps, parentNodeId: string): AgentFlowResourceNode | null => {
@@ -197,7 +247,7 @@ const createModelNode = (props: AgentFlowProps, parentNodeId: string): AgentFlow
     data: {
       name: props.model.name,
       description: props.model.vendorName,
-      type: "model" as const,
+      type: "model",
       order: -1,
       isActive: props.activeResourceIds?.includes("model") ?? false,
       hasError: hasModelError(props.model, props.spans),
@@ -236,20 +286,19 @@ export const createResourceEdge = (
     };
   };
 
-  let edge: AgentFlowCustomEdge;
-
-  if (resourceType === "tool") {
-    edge = createEdge(agentNode.id, resourceNode.id, "right", "left");
-  } else if (resourceType === "context") {
-    edge = createEdge(resourceNode.id, agentNode.id, "bottom", "top");
-  } else if (resourceType === "model") {
-    edge = createEdge(resourceNode.id, agentNode.id, "right", "left");
-  } else {
-    // escalation
-    edge = createEdge(agentNode.id, resourceNode.id, "bottom", "top");
+  switch (resourceType) {
+    case "tool":
+      return createEdge(agentNode.id, resourceNode.id, ResourceNodeType.Tool, Position.Left);
+    case "context":
+      return createEdge(resourceNode.id, agentNode.id, Position.Bottom, ResourceNodeType.Context);
+    case "model":
+      return createEdge(resourceNode.id, agentNode.id, Position.Right, ResourceNodeType.Model);
+    case "mcp":
+      return createEdge(agentNode.id, resourceNode.id, ResourceNodeType.MCP, Position.Bottom);
+    case "escalation":
+    default:
+      return createEdge(agentNode.id, resourceNode.id, ResourceNodeType.Escalation, Position.Top);
   }
-
-  return edge;
 };
 
 /**
@@ -263,7 +312,12 @@ export const computeNodesAndEdges = (
 ): { nodes: AgentFlowCustomNode[]; edges: AgentFlowCustomEdge[] } => {
   const agentNode = createAgentNode(props, parentNodeId);
   const modelNode = createModelNode(props, agentNode.id);
-  const resourceNodes = props.resources.map((resource, index) => createResourceNode(resource, index, props, agentNode.id));
+
+  // Filter out MCP resources if the feature flag is disabled
+  const filteredResources =
+    props.enableMcpTools === false ? props.resources.filter((resource) => resource.type !== "mcp") : props.resources;
+
+  const resourceNodes = filteredResources.map((resource, index) => createResourceNode(resource, index, props, agentNode.id));
 
   if (modelNode) resourceNodes.unshift(modelNode);
 

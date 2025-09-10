@@ -46,7 +46,7 @@ export const BASE_CANVAS_DEFAULTS = {
     padding: 50,
     debounceMs: 50,
   },
-};
+} as const;
 
 // Timing constants
 export const FIT_VIEW_DELAY_MS = 50;

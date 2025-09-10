@@ -96,9 +96,7 @@ const ButtonHandleBase = ({
       };
 
       // Call direct callback first for immediate response
-      if (onAction) {
-        onAction(actionEvent);
-      }
+      onAction?.(actionEvent);
 
       // Emit to event bus for global listeners
       canvasEventBus.emit("handle:action", {
@@ -158,6 +156,7 @@ const ButtonHandleBase = ({
 export const ButtonHandle = memo(ButtonHandleBase);
 
 export interface ButtonHandleConfig {
+  /** Is of type string but `ButtonHandleId` should be used for reserved ids */
   id: string;
   type: "source" | "target";
   handleType: "artifact" | "input" | "output";

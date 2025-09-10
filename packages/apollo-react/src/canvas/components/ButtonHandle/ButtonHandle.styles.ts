@@ -151,7 +151,7 @@ export const StyledNotch = styled.div<{
   transition: all 0.2s ease-in-out;
 `;
 
-export const StyledHandle = styled(Handle as any)<{
+export const StyledHandle = styled(Handle)<{
   $positionPercent: number;
   $total: number;
   $visible: boolean;

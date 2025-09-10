@@ -95,13 +95,13 @@ export const agentNodeRegistration: NodeRegistration = {
             label: "Model",
           },
           {
-            id: "escalations",
+            id: "escalation",
             type: "source",
             handleType: "artifact",
             label: "Escalations",
           },
           {
-            id: "tools",
+            id: "tool",
             type: "source",
             handleType: "artifact",
             label: "Tools",
@@ -169,10 +169,10 @@ export const agentNodeRegistration: NodeRegistration = {
             case "context":
               console.log("Configure context sources");
               break;
-            case "tools":
+            case "tool":
               console.log("Add available tools");
               break;
-            case "escalations":
+            case "escalation":
               console.log("Set up escalation paths");
               break;
           }

@@ -128,14 +128,14 @@ const AgentNodeComponent = () => {
     {
       id: "e3",
       source: "1",
-      sourceHandle: "escalations",
+      sourceHandle: "escalation",
       target: "4",
       targetHandle: "context",
     },
     {
       id: "e4",
       source: "1",
-      sourceHandle: "tools",
+      sourceHandle: "tool",
       target: "5",
       targetHandle: "context",
     },

@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import type { AgentFlowCustomEdge, AgentFlowCustomNode } from "../types";
 import { autoArrangeNodes, getAgentGroupBottomPosition } from "./auto-layout";
+import { ResourceNodeType } from "../components/AgentCanvas/AgentFlow.constants";
+import { Position } from "@xyflow/react";
 
 describe("auto-layout", () => {
   describe("getAgentGroupBottomPosition", () => {
@@ -72,15 +74,15 @@ describe("auto-layout", () => {
           id: "edge1",
           source: "agent1",
           target: "resource1",
-          sourceHandle: "bottom",
-          targetHandle: "top",
+          sourceHandle: ResourceNodeType.Escalation, // handle that's on the bottom of the agent node
+          targetHandle: Position.Top,
         },
         {
           id: "edge2",
           source: "agent1",
           target: "resource2",
-          sourceHandle: "bottom",
-          targetHandle: "top",
+          sourceHandle: ResourceNodeType.Escalation, // handle that's on the bottom of the agent node
+          targetHandle: Position.Top,
         },
       ];
 
@@ -151,22 +153,22 @@ describe("auto-layout", () => {
           id: "edge1",
           source: "agent1",
           target: "left1",
-          sourceHandle: "left",
-          targetHandle: "right",
+          sourceHandle: ResourceNodeType.Model, // handle that's on the left of the agent node
+          targetHandle: Position.Right,
         },
         {
           id: "edge2",
           source: "agent1",
           target: "right1",
-          sourceHandle: "right",
-          targetHandle: "left",
+          sourceHandle: ResourceNodeType.Tool, // handle that's on the right of the agent node
+          targetHandle: Position.Left,
         },
         {
           id: "edge3",
           source: "agent1",
           target: "bottom1",
-          sourceHandle: "bottom",
-          targetHandle: "top",
+          sourceHandle: ResourceNodeType.Escalation, // handle that's on the bottom of the agent node
+          targetHandle: Position.Top,
         },
       ];
 
@@ -298,22 +300,22 @@ describe("auto-layout", () => {
           id: "edge1",
           source: "agent1",
           target: "model1",
-          sourceHandle: "left",
-          targetHandle: "right",
+          sourceHandle: ResourceNodeType.Model, // handle that's on the left of the agent node
+          targetHandle: Position.Right,
         },
         {
           id: "edge2",
           source: "agent1",
           target: "skill1",
-          sourceHandle: "right",
-          targetHandle: "left",
+          sourceHandle: ResourceNodeType.Tool, // handle that's on the right of the agent node
+          targetHandle: Position.Left,
         },
         {
           id: "edge3",
           source: "agent1",
           target: "skill2",
-          sourceHandle: "right",
-          targetHandle: "left",
+          sourceHandle: ResourceNodeType.Tool, // handle that's on the right of the agent node
+          targetHandle: Position.Left,
         },
       ];
 
@@ -380,8 +382,8 @@ describe("auto-layout", () => {
           id: "edge1",
           source: "agent1",
           target: "agentResource",
-          sourceHandle: "right",
-          targetHandle: "left",
+          sourceHandle: ResourceNodeType.Tool, // handle that's on the right of the agent node
+          targetHandle: Position.Left,
         },
       ];
 
@@ -442,15 +444,15 @@ describe("auto-layout", () => {
           id: "edge1",
           source: "agent1",
           target: "skill1",
-          sourceHandle: "right",
-          targetHandle: "left",
+          sourceHandle: ResourceNodeType.Tool, // handle that's on the right of the agent node
+          targetHandle: Position.Left,
         },
         {
           id: "edge2",
           source: "agent1",
           target: "skill2",
-          sourceHandle: "right",
-          targetHandle: "left",
+          sourceHandle: ResourceNodeType.Tool, // handle that's on the right of the agent node
+          targetHandle: Position.Left,
         },
       ];
 

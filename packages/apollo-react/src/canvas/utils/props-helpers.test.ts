@@ -1,4 +1,5 @@
 import { vi } from "vitest";
+import { Position } from "@xyflow/react";
 import type { AgentFlowProps } from "../types";
 import {
   computeNodesAndEdges,
@@ -9,6 +10,7 @@ import {
   hasModelSuccess,
   NODE_ID_DELIMITER,
 } from "./props-helpers";
+import { ResourceNodeType } from "../components/AgentCanvas";
 
 describe("props-helpers", () => {
   const mockAgentFlowProps: AgentFlowProps = {
@@ -30,7 +32,6 @@ describe("props-helpers", () => {
         description: "A test tool",
         type: "tool" as const,
         iconUrl: "test-icon.png",
-        guardrail: { rule: "test-guardrail" },
       },
       {
         id: "context-1",
@@ -114,8 +115,8 @@ describe("props-helpers", () => {
       }
     });
 
-    it("sets draggable property based on mode", () => {
-      const designResult = computeNodesAndEdges(mockAgentFlowProps);
+    it("sets draggable property based on props", () => {
+      const designResult = computeNodesAndEdges({ ...mockAgentFlowProps, allowDragging: true });
       const viewResult = computeNodesAndEdges({
         ...mockAgentFlowProps,
         mode: "view" as const,
@@ -382,8 +383,8 @@ describe("props-helpers", () => {
       expect(edge.id).toBe(`${mockAgentNode.id}${EDGE_ID_DELIMITER}${mockToolNode.id}`);
       expect(edge.source).toBe(mockAgentNode.id);
       expect(edge.target).toBe(mockToolNode.id);
-      expect(edge.sourceHandle).toBe("right");
-      expect(edge.targetHandle).toBe("left");
+      expect(edge.sourceHandle).toBe(ResourceNodeType.Tool);
+      expect(edge.targetHandle).toBe(Position.Left);
       expect(edge.type).toBe("default");
       expect(edge.animated).toBe(false);
       expect(edge.selectable).toBe(false);
@@ -394,8 +395,8 @@ describe("props-helpers", () => {
 
       expect(edge.source).toBe(mockContextNode.id);
       expect(edge.target).toBe(mockAgentNode.id);
-      expect(edge.sourceHandle).toBe("bottom");
-      expect(edge.targetHandle).toBe("top");
+      expect(edge.sourceHandle).toBe(Position.Bottom);
+      expect(edge.targetHandle).toBe(ResourceNodeType.Context);
     });
 
     it("creates model edge correctly", () => {
@@ -403,8 +404,8 @@ describe("props-helpers", () => {
 
       expect(edge.source).toBe(mockModelNode.id);
       expect(edge.target).toBe(mockAgentNode.id);
-      expect(edge.sourceHandle).toBe("right");
-      expect(edge.targetHandle).toBe("left");
+      expect(edge.sourceHandle).toBe(Position.Right);
+      expect(edge.targetHandle).toBe(ResourceNodeType.Model);
     });
 
     it("creates escalation edge correctly", () => {
@@ -412,8 +413,8 @@ describe("props-helpers", () => {
 
       expect(edge.source).toBe(mockAgentNode.id);
       expect(edge.target).toBe(mockEscalationNode.id);
-      expect(edge.sourceHandle).toBe("bottom");
-      expect(edge.targetHandle).toBe("top");
+      expect(edge.sourceHandle).toBe(ResourceNodeType.Escalation);
+      expect(edge.targetHandle).toBe(Position.Top);
     });
 
     it("creates animated edge in view mode with active resource", () => {

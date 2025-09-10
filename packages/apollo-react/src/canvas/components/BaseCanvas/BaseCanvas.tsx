@@ -6,6 +6,7 @@ import { useAutoLayout, useEnsureNodesInView, useMaintainNodesInView } from "./B
 import type { BaseCanvasProps, BaseCanvasRef } from "./BaseCanvas.types";
 import { usePreventBackNavigation } from "./usePreventBackNavigation";
 import { CanvasBackground } from "./CanvasBackground";
+import { PanShortcutTeachingUI } from "./PanShortcutTeachingUI";
 
 const BaseCanvasInnerComponent = <NodeType extends Node = Node, EdgeType extends Edge = Edge>(
   props: BaseCanvasProps<NodeType, EdgeType> & { innerRef?: React.Ref<BaseCanvasRef<NodeType, EdgeType>> }
@@ -66,6 +67,9 @@ const BaseCanvasInnerComponent = <NodeType extends Node = Node, EdgeType extends
     // Layout
     initialAutoLayout,
     maintainNodesInView,
+
+    // Pan Shortcut Teaching UI
+    panShortcutTeachingUIMessage = "Hold Space and drag to pan around the canvas!",
   } = canvasProps;
 
   // Derive interactivity from mode
@@ -154,7 +158,7 @@ const BaseCanvasInnerComponent = <NodeType extends Node = Node, EdgeType extends
         gap={backgroundGap}
         size={backgroundSize}
       />
-
+      <PanShortcutTeachingUI message={panShortcutTeachingUIMessage} />
       {children}
     </ReactFlow>
   );

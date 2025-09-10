@@ -8,6 +8,11 @@ export enum ProjectType {
   Api = "Api",
 }
 
+export type ErrorInfo = {
+  value: string;
+  label: string;
+};
+
 export type Viewport = ReactFlowViewport;
 
 export type AgentFlowModel = {
@@ -20,29 +25,67 @@ export type AgentFlowToolResource = {
   id: string;
   type: "tool";
   name: string;
+  originalName?: string;
   description: string;
   iconUrl: string;
-  guardrail: Record<string, unknown> | null;
+  errors?: ErrorInfo[];
   projectType?: string;
   isExpandable?: boolean;
   processName?: string;
+  hasBreakpoint?: boolean;
+  isCurrentBreakpoint?: boolean;
+  hasGuardrails?: boolean;
+  projectId?: string;
 };
 
 export type AgentFlowContextResource = {
   id: string;
   type: "context";
   name: string;
+  originalName?: string;
   description: string;
+  errors?: ErrorInfo[];
+  hasBreakpoint?: boolean;
+  isCurrentBreakpoint?: boolean;
+  hasGuardrails?: boolean;
+  projectId?: string;
 };
 
 export type AgentFlowEscalationResource = {
   id: string;
   type: "escalation";
   name: string;
+  originalName?: string;
   description: string;
+  errors?: ErrorInfo[];
+  hasBreakpoint?: boolean;
+  isCurrentBreakpoint?: boolean;
+  hasGuardrails?: boolean;
+  projectId?: string;
 };
 
-export type AgentFlowResource = AgentFlowContextResource | AgentFlowEscalationResource | AgentFlowToolResource;
+export type AgentFlowMcpResource = {
+  id: string;
+  type: "mcp";
+  name: string;
+  originalName?: string;
+  description: string;
+  errors?: ErrorInfo[];
+  slug: string;
+  folderPath: string;
+  availableTools: {
+    name: string;
+    description: string;
+    inputSchema: Record<string, unknown>;
+    outputSchema?: Record<string, unknown>;
+  }[];
+  hasBreakpoint?: boolean;
+  isCurrentBreakpoint?: boolean;
+  hasGuardrails?: boolean;
+  projectId?: string;
+};
+
+export type AgentFlowResource = AgentFlowContextResource | AgentFlowEscalationResource | AgentFlowMcpResource | AgentFlowToolResource;
 export type AgentFlowResourceType = AgentFlowResource["type"];
 
 export type SpanAttributes = Record<string, unknown>;
@@ -57,6 +100,11 @@ export type AgentFlowProps = {
   description: string;
   model: AgentFlowModel | null;
   resources: AgentFlowResource[];
+  allowDragging?: boolean;
+  initialSelectedResource?: {
+    type: "context" | "escalation" | "mcp" | "pane" | "run" | "tool";
+    name: string;
+  } | null;
   onSelectResource?: (resourceId: string | null) => void;
   onExpandResource?: (resourceId: string, resource: AgentFlowResourceNodeData) => void;
   onCollapseResource?: (resourceId: string, resource: AgentFlowResourceNodeData) => void;
@@ -65,6 +113,10 @@ export type AgentFlowProps = {
   getNodeFromSelectedSpan?: (nodes: AgentFlowCustomNode[]) => AgentFlowCustomNode | null;
 
   // design mode
+  onAddBreakpoint?: (resourceId: string, resource: AgentFlowResourceNodeData) => void;
+  onRemoveBreakpoint?: (resourceId: string, resource: AgentFlowResourceNodeData) => void;
+  onAddGuardrail?: (resourceId: string, resource: AgentFlowResourceNodeData) => void;
+  onGoToDefinition?: (resourceId: string, resource: AgentFlowResourceNodeData) => void;
   onAddModel?: () => void;
   onRemoveModel?: () => void;
   onAddResource?: (type: AgentFlowResourceType) => void;
@@ -81,9 +133,13 @@ export type AgentFlowProps = {
   // translations
   agentNodeTranslations?: AgentNodeTranslations;
   resourceNodeTranslations?: ResourceNodeTranslations;
+  canvasTranslations?: CanvasTranslations;
 
   // canvas ref for imperative control
   canvasRef?: React.Ref<BaseCanvasRef<AgentFlowCustomNode, AgentFlowCustomEdge>>;
+
+  // feature flags
+  enableMcpTools?: boolean;
 };
 
 export type AgentFlowNodeData = {
@@ -109,23 +165,45 @@ type EscalationResourceData = {
 type ModelResourceData = {
   type: "model";
 };
+type McpResourceData = {
+  type: "mcp";
+};
 
-export type AgentFlowResourceNodeData = (ContextResourceData | EscalationResourceData | ModelResourceData | ToolResourceData) & {
+export type AgentFlowResourceNodeData = (
+  | ContextResourceData
+  | EscalationResourceData
+  | McpResourceData
+  | ModelResourceData
+  | ToolResourceData
+) & {
   name: string;
+  originalName?: string;
   description: string;
+  errors?: ErrorInfo[];
   parentNodeId?: string;
   isActive?: boolean;
   hasError?: boolean;
   hasSuccess?: boolean;
   hasRunning?: boolean;
   countBadgeValue?: number;
-
   order?: number;
   originalPosition?: { x: number; y: number };
   iconUrl?: string;
   projectType?: string;
   isExpandable?: boolean;
   processName?: string;
+  slug?: string;
+  folderPath?: string;
+  availableTools?: {
+    name: string;
+    description: string;
+    inputSchema: Record<string, unknown>;
+    outputSchema?: Record<string, unknown>;
+  }[];
+  isCurrentBreakpoint?: boolean;
+  hasBreakpoint?: boolean;
+  hasGuardrails?: boolean;
+  projectId?: string;
 };
 export type AgentFlowResourceNode = Node<AgentFlowResourceNodeData, "resource"> & {
   extent?: "parent" | CoordinateExtent | undefined;
@@ -170,11 +248,21 @@ export const DefaultAgentNodeTranslations: AgentNodeTranslations = {
 export interface ResourceNodeTranslations {
   expand: string;
   collapse: string;
+  remove: string;
+  addBreakpoint: string;
+  removeBreakpoint: string;
+  addGuardrail: string;
+  goToDefinition: string;
 }
 
 export const DefaultResourceNodeTranslations: ResourceNodeTranslations = {
   expand: "Expand",
   collapse: "Collapse",
+  remove: "Remove",
+  addBreakpoint: "Add breakpoint",
+  removeBreakpoint: "Remove breakpoint",
+  addGuardrail: "Add guardrail",
+  goToDefinition: "Go to definition",
 };
 
 export interface CodedAgentNodeTranslations {
@@ -185,4 +273,12 @@ export interface CodedAgentNodeTranslations {
 export const DefaultCodedAgentNodeTranslations: CodedAgentNodeTranslations = {
   codedAgentStep: "Coded Agent Step",
   noDataToDisplay: "No data to display",
+};
+
+export interface CanvasTranslations {
+  panShortcutTeaching: string;
+}
+
+export const DefaultCanvasTranslations: CanvasTranslations = {
+  panShortcutTeaching: "Hold Space and drag to pan around the canvas",
 };
