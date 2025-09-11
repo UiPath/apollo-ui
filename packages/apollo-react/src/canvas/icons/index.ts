@@ -13,3 +13,4 @@ export { RpaProject } from "./RpaProject";
 export { WebAppProject } from "./WebAppProject";
 export { DataTransformIcon } from "./DataTransformIcon";
 export { ScriptTaskIcon } from "./ScriptTaskIcon";
+export { DataAndTools } from "./DataAndTools";
