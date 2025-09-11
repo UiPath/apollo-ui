@@ -90,21 +90,22 @@ export class NodeTypeRegistry {
         if (!matchesName && !matchesType && !matchesDescription && !matchesTags) continue;
       }
 
-      // Convert icon to string if it's a React element
-      let iconName: string | undefined;
-      if (typeof metadata.icon === "string") {
-        iconName = metadata.icon;
-      } else if (isValidElement(metadata.icon)) {
-        // Extract icon name from React element if possible
-        // This is a simplified approach - you might need to adjust based on your icon components
-        iconName = metadata.icon.name || undefined;
-      }
+      // // Convert icon to string if it's a React element
+      // let iconName: string | undefined;
+      // if (typeof metadata.icon === "string") {
+      //   iconName = metadata.icon;
+      // } else if (isValidElement(metadata.icon)) {
+      //   // Extract icon name from React element if possible
+      //   // This is a simplified approach - you might need to adjust based on your icon components
+      //   iconName = metadata.icon.name || undefined;
+      // }
 
       options.push({
         id: nodeType,
         type: nodeType,
         label: metadata.displayName || nodeType,
-        icon: iconName,
+        // FIXME: we need this to be serializable so no React.FC
+        icon: metadata.icon,
         category: metadata.category || "misc",
         description: metadata.description,
         version: metadata.version,
