@@ -1,4 +1,4 @@
-import { isValidElement } from "react";
+// import { isValidElement } from "react";
 
 import type { NodeCategory, NodeOption } from "../AddNodePanel/AddNodePanel.types";
 import type { BaseNodeData, NodeRegistration, NodeTypeDefinition } from "./BaseNode.types";
