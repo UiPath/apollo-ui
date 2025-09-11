@@ -7,7 +7,7 @@ import { ApIcon } from "@uipath/portal-shell-react";
 const PreviewContainer = styled.div<{ selected?: boolean }>`
   width: 96px;
   height: 96px;
-  border-radius: 8px;
+  border-radius: calc(0.5 * 100% / (1.75));
   background: var(--color-background-secondary);
   border: 2px dashed ${(props) => (props.selected ? "var(--color-selection-indicator)" : "var(--color-border-de-emp)")};
   display: flex;
@@ -18,11 +18,15 @@ const PreviewContainer = styled.div<{ selected?: boolean }>`
   opacity: ${(props) => (props.selected ? 0.8 : 0.6)};
 `;
 
-export const AddNodePreview: React.FC<NodeProps> = ({ selected }) => {
+interface AddNodePreviewProps extends NodeProps {
+  icon?: React.ReactElement;
+}
+
+export const AddNodePreview: React.FC<AddNodePreviewProps> = ({ selected, icon }) => {
   return (
     <>
       <PreviewContainer selected={selected}>
-        <ApIcon color="var(--color-foreground-de-emp)" name="add" size="32px" />
+        {icon || <ApIcon color="var(--color-foreground-de-emp)" name="add" size="32px" />}
       </PreviewContainer>
 
       <Handle
