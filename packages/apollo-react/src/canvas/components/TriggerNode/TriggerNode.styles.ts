@@ -7,7 +7,7 @@ export const TriggerContainer = styled.div<{ selected?: boolean; status?: Trigge
   width: 100%;
   height: 100%;
   background: var(--color-background);
-  border: 2px solid var(--color-border-de-emp);
+  border: 1.5px solid var(--color-border-de-emp);
   border-radius: 16px;
   display: flex;
   align-items: center;
