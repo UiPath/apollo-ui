@@ -35,7 +35,7 @@ export const getNewNodePosition = (
   newNodeSize: { width: number; height: number },
   existingNodes: Node[],
   placementPreference: "right" | "top-right" | "align-top" = "right",
-  offset = BASE_CANVAS_GRID_SPACING * 10
+  offset = BASE_CANVAS_GRID_SPACING * 8
 ): { x: number; y: number } => {
   const getNodesToCompare = (targetNode: Node | undefined) => {
     if (targetNode?.parentId) {
