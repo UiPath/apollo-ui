@@ -8,13 +8,13 @@ import {
   StageTaskGroup,
   StageTaskItem,
   StageTaskIcon,
-  StageTaskLabel,
   StageParallelLabel,
   StageParallelBracket,
+  StageTaskRetryDuration,
 } from "./StageNode.styles";
 import { StageHandle } from "./StageHandle";
 import { NodeContextMenu } from "../NodeContextMenu";
-import type { StageNodeProps } from "./StageNode.types";
+import type { StageNodeProps, StageTaskExecution } from "./StageNode.types";
 import { ApBadge, ApIcon, ApLink, ApTooltip, ApTypography } from "@uipath/portal-shell-react";
 import { Column, FontVariantToken, Row } from "@uipath/uix-core";
 import { ExecutionStatusIcon } from "../ExecutionStatusIcon";
@@ -61,6 +61,16 @@ const StageNodeComponent = (props: StageNodeProps) => {
   const shouldShowMenu = useMemo(() => {
     return menuItems && menuItems.length > 0 && (selected || isHovered);
   }, [menuItems, selected, isHovered]);
+
+  const generateBadgeText = useCallback((taskExecution: StageTaskExecution) => {
+    if (!taskExecution.badge) {
+      return undefined;
+    }
+    if (taskExecution.retryDuration?.length) {
+      return `${taskExecution.badge} (x${taskExecution.retryCount})`;
+    }
+    return taskExecution.badge;
+  }, []);
 
   return (
     <div style={{ position: "relative" }} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
@@ -122,25 +132,38 @@ const StageNodeComponent = (props: StageNodeProps) => {
                         <StageTaskItem key={task.id} status={taskExecution?.status}>
                           <StageTaskIcon>{task.icon ?? <ProcessNodeIcon />}</StageTaskIcon>
                           <Column flex={1} style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                            <StageTaskLabel>{task.label}</StageTaskLabel>
-                            <Row align="center" gap={Spacing.SpacingXs}>
-                              {taskExecution?.duration && (
-                                <ApTypography variant={FontVariantToken.fontSizeS} color="var(--color-foreground-de-emp)">
-                                  {taskExecution.duration}
-                                </ApTypography>
-                              )}
-                              {taskExecution?.retryCount && taskExecution.retryCount > 0 && (
-                                <>
-                                  <ApIcon name="refresh" size="12px" />
+                            <Row align="center" justify="space-between">
+                              <ApTypography
+                                variant={FontVariantToken.fontSizeM}
+                                color="var(--color-foreground)"
+                                style={{ overflowX: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
+                              >
+                                {task.label}
+                              </ApTypography>
+                              {taskExecution?.status && <ExecutionStatusIcon status={taskExecution.status} />}
+                            </Row>
+                            <Row align="center" justify="space-between">
+                              <Row gap={"2px"}>
+                                {taskExecution?.duration && (
                                   <ApTypography variant={FontVariantToken.fontSizeS} color="var(--color-foreground-de-emp)">
-                                    {taskExecution.retryCount}
+                                    {taskExecution.duration}
                                   </ApTypography>
-                                </>
+                                )}
+                                {taskExecution?.retryDuration && (
+                                  <StageTaskRetryDuration status={taskExecution.badgeStatus ?? "warning"}>
+                                    <ApTypography variant={FontVariantToken.fontSizeS}>{`(+${taskExecution.retryDuration})`}</ApTypography>
+                                  </StageTaskRetryDuration>
+                                )}
+                              </Row>
+                              {taskExecution?.badge && (
+                                <ApBadge
+                                  size="small"
+                                  status={taskExecution.badgeStatus ?? "warning"}
+                                  label={generateBadgeText(taskExecution)}
+                                />
                               )}
-                              {taskExecution?.badge && <ApBadge size="small" status="warning" label={taskExecution.badge} />}
                             </Row>
                           </Column>
-                          {taskExecution?.status && <ExecutionStatusIcon status={taskExecution.status} />}
                         </StageTaskItem>
                       );
                     })}

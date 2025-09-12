@@ -36,8 +36,18 @@ export interface StageNodeProps extends NodeProps {
       label?: string;
       duration?: string;
     };
-    taskStatus: Record<string, { status?: StageTaskStatus; label?: string; duration?: string; badge?: string; retryCount?: number }>;
+    taskStatus: Record<string, StageTaskExecution>;
   };
   menuItems?: NodeMenuItem[];
   onAddTask?: () => void;
+}
+
+export interface StageTaskExecution {
+  status?: StageTaskStatus;
+  label?: string;
+  duration?: string;
+  retryDuration?: string;
+  badge?: string;
+  badgeStatus?: "warning" | "info" | "error";
+  retryCount?: number;
 }

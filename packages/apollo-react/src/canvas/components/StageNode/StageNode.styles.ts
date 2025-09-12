@@ -180,8 +180,22 @@ export const StageTaskIcon = styled.div`
   }
 `;
 
-export const StageTaskLabel = styled.span`
-  overflow: hidden;
-  white-space: no-wrap;
-  text-overflow: ellipsis;
+export const StageTaskRetryDuration = styled.div<{ status?: "warning" | "info" | "error" }>`
+  ${({ status }) =>
+    status === "info" &&
+    css`
+      color: var(--color-info-text);
+    `}
+
+  ${({ status }) =>
+    status === "warning" &&
+    css`
+      color: var(--color-warning-text);
+    `}
+
+  ${({ status }) =>
+    status === "error" &&
+    css`
+      color: var(--color-error-text);
+    `}
 `;
