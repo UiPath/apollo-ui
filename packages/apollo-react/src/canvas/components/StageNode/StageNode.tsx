@@ -140,7 +140,7 @@ const StageNodeComponent = (props: StageNodeProps) => {
                               <ApTypography
                                 variant={FontVariantToken.fontSizeM}
                                 color="var(--color-foreground)"
-                                style={{ overflowX: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
+                                style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
                               >
                                 {task.label}
                               </ApTypography>
