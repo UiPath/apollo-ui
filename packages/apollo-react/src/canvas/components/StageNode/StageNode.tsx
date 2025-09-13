@@ -66,8 +66,8 @@ const StageNodeComponent = (props: StageNodeProps) => {
     if (!taskExecution.badge) {
       return undefined;
     }
-    if (taskExecution.retryDuration?.length) {
-      return `${taskExecution.badge} (x${taskExecution.retryCount})`;
+    if (taskExecution.retryCount && taskExecution.retryCount > 1) {
+      return `${taskExecution.badge} x${taskExecution.retryCount}`;
     }
     return taskExecution.badge;
   }, []);
