@@ -30,7 +30,7 @@ const ProcessNodeIcon = () => (
 );
 
 const StageNodeComponent = (props: StageNodeProps) => {
-  const { dragging, selected, id, execution, stageDetails, addTaskLabel = "Add task", onAddTask, menuItems } = props;
+  const { dragging, selected, id, execution, stageDetails, addTaskLabel = "Add task", onAddTask, menuItems, onTaskClick } = props;
 
   const label = stageDetails?.label;
   const isException = stageDetails?.isException;
@@ -129,7 +129,11 @@ const StageNodeComponent = (props: StageNodeProps) => {
                     {taskGroup.map((task) => {
                       const taskExecution = execution?.taskStatus?.[task.id];
                       return (
-                        <StageTaskItem key={task.id} status={taskExecution?.status}>
+                        <StageTaskItem
+                          key={task.id}
+                          status={taskExecution?.status}
+                          onClick={onTaskClick ? () => onTaskClick(task.id) : undefined}
+                        >
                           <StageTaskIcon>{task.icon ?? <ProcessNodeIcon />}</StageTaskIcon>
                           <Column flex={1} style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                             <Row align="center" justify="space-between">

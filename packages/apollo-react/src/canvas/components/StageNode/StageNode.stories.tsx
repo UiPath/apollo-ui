@@ -34,6 +34,7 @@ const meta = {
             addTaskLabel: context.args.addTaskLabel,
             menuItems: context.args.menuItems,
             onAddTask: context.args.onAddTask,
+            onTaskClick: context.args.onTaskClick,
           },
         },
       ];
@@ -307,6 +308,7 @@ export const ExecutionStatus: Story = {
               [{ id: "2", label: "Underwriting Verification", icon: <VerificationIcon /> }],
             ],
           },
+          onTaskClick: (id: string) => window.alert(`Task clicked: ${id}`),
           execution: {
             stageStatus: {
               status: "InProgress",

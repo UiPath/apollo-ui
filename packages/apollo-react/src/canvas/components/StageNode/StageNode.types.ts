@@ -40,6 +40,7 @@ export interface StageNodeProps extends NodeProps {
   };
   menuItems?: NodeMenuItem[];
   onAddTask?: () => void;
+  onTaskClick?: (taskElementId: string) => void;
 }
 
 export interface StageTaskExecution {
