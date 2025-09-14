@@ -47,6 +47,13 @@ export interface HandleConfiguration {
   visible?: boolean;
 }
 
+export interface BaseItem {
+  id: string;
+  name: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  data: any;
+}
+
 export interface NodeTypeDefinition {
   getIcon?: (data: BaseNodeData, context: NodeStatusContext) => React.ReactNode;
   getDisplay?: (data: BaseNodeData, context: NodeStatusContext) => NodeDisplay;
@@ -58,8 +65,8 @@ export interface NodeTypeDefinition {
   getDefaultParameters?: () => Record<string, unknown>;
 
   // FIXME: temp for PO integration
-  validateUiPathData?: (data: Record<string, unknown>) => boolean;
-  getUiPathData?: (data: Record<string, unknown>) => Record<string, unknown>;
+  validateUiPathData?: (item: BaseItem) => boolean;
+  getUiPathData?: (item: BaseItem) => Record<string, unknown>;
 
   // Handle action handler - optional per node type
   onHandleAction?: (event: HandleActionEvent) => void;
