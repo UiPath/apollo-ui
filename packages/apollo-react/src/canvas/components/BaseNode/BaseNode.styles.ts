@@ -169,10 +169,17 @@ export const BaseTextContainer = styled.div<{ hasBottomHandles?: boolean; shape?
         `}
 `;
 
-export const BaseHeader = styled.div<{ shape?: NodeShape }>`
+export const BaseHeader = styled.div<{ shape?: NodeShape; backgroundColor?: string }>`
   font-weight: 600;
   font-size: 13px;
   color: var(--color-foreground);
+  ${({ backgroundColor }) =>
+    backgroundColor &&
+    css`
+      background-color: ${backgroundColor};
+      padding: 2px 6px;
+      border-radius: 4px;
+    `}
   line-height: 1.4;
   margin-bottom: 2px;
   ${({ shape }) =>

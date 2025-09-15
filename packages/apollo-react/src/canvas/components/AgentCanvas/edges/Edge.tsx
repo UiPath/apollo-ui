@@ -1,8 +1,8 @@
-import { AnimatedSVGEdge } from "./AnimatedEdge";
-import { DefaultEdgeElement } from "./DefaultEdge";
+import { AnimatedEdge } from "./AnimatedEdge";
+import { StaticEdge } from "./StaticEdge";
 import { useAgentFlowStore } from "../store/agent-flow-store";
 
-const ConditionalEdgeElement = (props: any) => {
+export const Edge = (props: any) => {
   const { nodes, props: storeProps } = useAgentFlowStore();
   const { source, target, data } = props;
   const mode = storeProps?.mode || "view"; // Default to "view" if storeProps is undefined
@@ -48,7 +48,7 @@ const ConditionalEdgeElement = (props: any) => {
   if (mode === "view") {
     if (isAgentToSelectedResource) {
       return (
-        <AnimatedSVGEdge
+        <AnimatedEdge
           {...props}
           hasError={hasError}
           hasSuccess={hasSuccess}
@@ -60,7 +60,7 @@ const ConditionalEdgeElement = (props: any) => {
 
     if (isSelectedResourceToAgent) {
       return (
-        <AnimatedSVGEdge
+        <AnimatedEdge
           {...props}
           reverseDirection={true}
           hasError={hasError}
@@ -72,21 +72,16 @@ const ConditionalEdgeElement = (props: any) => {
     }
   }
 
-  // For DefaultEdgeElement, we need to ensure the data has the required label property
+  // For StaticEdge, we need to ensure the data has the required label property
   const edgeData = data ?? {};
-  const defaultEdgeProps = {
+  const staticEdgeProps = {
     ...props,
-    data: {
-      label: null,
-      ...edgeData,
-    },
+    data: { ...edgeData },
     hasError,
     hasSuccess,
     hasRunning,
     isCurrentBreakpoint,
   };
 
-  return <DefaultEdgeElement {...defaultEdgeProps} />;
+  return <StaticEdge {...staticEdgeProps} />;
 };
-
-export default ConditionalEdgeElement;

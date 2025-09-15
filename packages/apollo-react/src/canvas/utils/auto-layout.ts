@@ -160,17 +160,27 @@ const arrangeAgent = (
         position === Position.Top ? agent.position.y - GROUP_DISTANCE_VERTICAL : agent.position.y + agentHeight + GROUP_DISTANCE_VERTICAL;
 
       if (handleGroups.length === 1) {
-        // Single handle type - center the nodes
         const handleGroup = handleGroups[0];
         if (!handleGroup) continue;
-        const { nodes } = handleGroup;
+        const { handleId, nodes } = handleGroup;
+
+        // Get handle X position based on handle type and agent node handle layout
+        let handleCenterX = agentCenterX;
+        if (handleId === ResourceNodeType.Model) {
+          handleCenterX = agentCenterX - GROUP_SPACING;
+        } else if (handleId === ResourceNodeType.Escalation) {
+          handleCenterX = agentCenterX;
+        } else if (handleId === ResourceNodeType.Tool) {
+          handleCenterX = agentCenterX + GROUP_SPACING;
+        }
+
         for (const [i, node] of nodes.entries()) {
           const nodeWidth = node.measured?.width ?? node.width ?? 0;
           const nodeHeight = node.measured?.height ?? node.height ?? 0;
           const singleNodeOffset = nodes.length === 1 ? -(GROUP_SPACING / 2) : 0;
 
           node.position = {
-            x: agentCenterX - nodeWidth / 2 + (i - (nodes.length - 1) / 2) * GROUP_SPACING + singleNodeOffset,
+            x: handleCenterX - nodeWidth / 2 + (i - (nodes.length - 1) / 2) * GROUP_SPACING + singleNodeOffset,
             y: position === Position.Top ? yPosition - nodeHeight : yPosition,
           };
         }
@@ -201,6 +211,75 @@ const arrangeAgent = (
                 y: position === Position.Top ? yPosition - nodeHeight : yPosition,
               };
             }
+          }
+        }
+      } else if (handleGroups.length === 3) {
+        // Three handle types - position them on left, center, and right sides
+        // Custom sort to ensure Model comes first, then Escalation, then Tool
+        const sortedGroups = handleGroups.sort((a, b) => {
+          const order: Record<string, number> = {
+            [ResourceNodeType.Model]: 0,
+            [ResourceNodeType.Escalation]: 1,
+            [ResourceNodeType.Tool]: 2,
+          };
+          return (order[a.handleId] ?? 999) - (order[b.handleId] ?? 999);
+        });
+
+        // First, calculate escalation positions (center group)
+        const escalationGroup = sortedGroups[1];
+        const escalationNodes = escalationGroup?.nodes || [];
+        const escalationCount = escalationNodes.length;
+
+        // Calculate first and last escalation positions
+        const firstEscalationOffset = escalationCount > 1 ? (-(escalationCount - 1) / 2) * GROUP_SPACING : 0;
+        const lastEscalationOffset = escalationCount > 1 ? ((escalationCount - 1) / 2) * GROUP_SPACING : 0;
+        const firstEscalationX = agentCenterX + firstEscalationOffset;
+        const lastEscalationX = agentCenterX + lastEscalationOffset;
+
+        for (const [groupIndex, { nodes }] of sortedGroups.entries()) {
+          for (const [i, node] of nodes.entries()) {
+            const nodeWidth = node.measured?.width ?? node.width ?? 0;
+            const nodeHeight = node.measured?.height ?? node.height ?? 0;
+
+            let targetX;
+            if (groupIndex === 0) {
+              // Model - position to the left of first escalation
+              targetX = firstEscalationX - GROUP_SPACING - nodeWidth / 2;
+            } else if (groupIndex === 1) {
+              // Escalation - position in the center of agent node
+              const nodeOffset = (i - (nodes.length - 1) / 2) * GROUP_SPACING;
+              targetX = agentCenterX - nodeWidth / 2 + nodeOffset;
+            } else {
+              // Tool - position to the right of last escalation
+              const nodeOffset = i * GROUP_SPACING;
+              targetX = lastEscalationX + GROUP_SPACING + nodeOffset - nodeWidth / 2;
+            }
+
+            node.position = {
+              x: targetX,
+              y: position === Position.Top ? yPosition - nodeHeight : yPosition,
+            };
+          }
+        }
+      } else {
+        // Four or more handle types - distribute them evenly across the bottom
+        // Sort by handleId to ensure consistent ordering
+        const sortedGroups = handleGroups.sort((a, b) => a.handleId.localeCompare(b.handleId));
+        const totalGroups = sortedGroups.length;
+
+        for (const [groupIndex, { nodes }] of sortedGroups.entries()) {
+          for (const [i, node] of nodes.entries()) {
+            const nodeWidth = node.measured?.width ?? node.width ?? 0;
+            const nodeHeight = node.measured?.height ?? node.height ?? 0;
+
+            // Calculate position based on group index and total groups
+            const groupOffset = (groupIndex - (totalGroups - 1) / 2) * GROUP_SPACING * 2;
+            const nodeOffset = (i - (nodes.length - 1) / 2) * GROUP_SPACING;
+
+            node.position = {
+              x: agentCenterX - nodeWidth / 2 + groupOffset + nodeOffset,
+              y: position === Position.Top ? yPosition - nodeHeight : yPosition,
+            };
           }
         }
       }

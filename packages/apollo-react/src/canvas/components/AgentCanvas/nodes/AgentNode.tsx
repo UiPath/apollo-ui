@@ -1,17 +1,26 @@
 import { memo, useMemo } from "react";
-import styled from "@emotion/styled";
 import { Position } from "@xyflow/react";
-import { FontVariantToken, Spacing } from "@uipath/apollo-core";
-import { ApCircularProgress, ApIcon, ApTypography } from "@uipath/portal-shell-react";
-import type { AgentFlowNodeData, AgentNodeTranslations } from "../../../types";
-import { type ButtonHandleConfig, ButtonHandles, type HandleActionEvent } from "../../ButtonHandle/ButtonHandle";
-import { Icons, Column, Row } from "@uipath/uix-core";
+import type { NodeProps, Node } from "@xyflow/react";
+import { ApIcon, ApCircularProgress } from "@uipath/portal-shell-react";
+import { Icons } from "@uipath/uix-core";
+import { NewBaseNode } from "../../BaseNode/NewBaseNode";
+import type { NewBaseNodeData, NewBaseNodeDisplayProps, HandleConfiguration } from "../../BaseNode/NewBaseNode.types";
+import type { ButtonHandleConfig, HandleActionEvent } from "../../ButtonHandle/ButtonHandle";
+import type { AgentNodeTranslations } from "../../../types";
 import { ResourceNodeType } from "../AgentFlow.constants";
 
 const { ConversationalAgentIcon, AutonomousAgentIcon } = Icons;
 
-interface AgentNodeElementProps {
-  data: AgentFlowNodeData;
+interface AgentNodeData extends NewBaseNodeData {
+  name: string;
+  description: string;
+  definition: Record<string, unknown>;
+  parentNodeId?: string;
+  isConversational?: boolean;
+}
+
+interface AgentNodeProps extends NewBaseNodeDisplayProps {
+  data: AgentNodeData;
   selected?: boolean;
   mode?: "design" | "view";
   hasModel?: boolean;
@@ -19,7 +28,6 @@ interface AgentNodeElementProps {
   hasEscalation?: boolean;
   hasTool?: boolean;
   hasMcp?: boolean;
-  // Whether the MCP feature is enabled. Used to show/hide the MCP handle in design mode
   mcpEnabled?: boolean;
   hasError?: boolean;
   hasSuccess?: boolean;
@@ -29,265 +37,256 @@ interface AgentNodeElementProps {
   translations: AgentNodeTranslations;
 }
 
-const NodeContainer = styled.div<{ $borderColor: string }>`
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-around;
-  padding: 12px;
-  background-color: var(--color-background);
-  border-radius: 8px;
-  border: 2px solid ${(props) => props.$borderColor};
-  width: 320px;
-  height: 140px;
-`;
-
-const StatusIconContainer = styled.div`
-  position: absolute;
-  top: 4px;
-  right: 4px;
-`;
-
-const SubduedButton = styled.button`
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: 4px 8px;
-  background-color: var(--color-background-secondary);
-  color: var(--color-foreground-de-emp);
-  border: none;
-  border-radius: 4px;
-  font-size: 12px;
-  font-family: inherit;
-  cursor: pointer;
-  transition: all 0.2s ease;
-
-  &:hover {
-    background-color: var(--color-selection-indicator);
-    color: var(--color-background);
-  }
-`;
-
-export const AgentNodeElement = memo(
-  ({
+const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNodeProps) => {
+  const {
     data,
-    selected,
-    hasContext,
-    hasEscalation,
-    hasTool,
-    hasModel,
-    hasMcp,
-    mcpEnabled,
+    selected = false,
+    mode = "design",
+    hasModel = false,
+    hasContext = false,
+    hasEscalation = false,
+    hasTool = false,
+    hasMcp = false,
+    mcpEnabled = true,
     hasError = false,
     hasSuccess = false,
     hasRunning = false,
-    mode,
     onAddResource,
     onArgumentsClick,
     translations,
-  }: AgentNodeElementProps) => {
-    const { name, definition } = data;
-    const nodeId = `${data.definition?.name ?? ""}`;
+    ...nodeProps
+  } = props;
 
-    const borderColor = useMemo(() => {
-      if (hasError) return "var(--color-error-icon)";
-      if (hasSuccess) return "var(--color-success-icon)";
-      if (hasRunning) return "var(--color-primary)";
-      return selected ? "var(--color-selection-indicator)" : "var(--color-foreground-de-emp)";
-    }, [selected, hasError, hasSuccess, hasRunning]);
+  const { name, definition } = data;
+  const isConversational = (definition?.metadata as Record<string, unknown>)?.isConversational === true;
 
-    const displayContext = mode === "design" || (mode === "view" && hasContext);
-    const displayModel = mode === "design" || (mode === "view" && hasModel);
-    const displayEscalation = mode === "design" || (mode === "view" && hasEscalation);
-    const displayTool = mode === "design" || (mode === "view" && hasTool);
-    // Only show MCP handle in design mode when the feature is enabled (default enabled when undefined).
-    // In view mode, only show when an MCP resource actually exists.
-    const isMcpEnabled = mcpEnabled !== false;
-    const displayMcp = (mode === "design" && isMcpEnabled) || (mode === "view" && !!hasMcp);
-    const isConversational = (definition?.metadata as Record<string, unknown>)?.isConversational === true;
+  const executionStatus = useMemo(() => {
+    if (hasError) return "error";
+    if (hasSuccess) return "success";
+    if (hasRunning) return "running";
+    return undefined;
+  }, [hasError, hasSuccess, hasRunning]);
 
-    const toolHandles: ButtonHandleConfig[] = useMemo(
-      () => [
-        {
-          id: ResourceNodeType.Tool,
-          type: "source",
-          handleType: "artifact",
-          label: "Tool",
-          labelIcon: <ApIcon variant="outlined" name="home_repair_service" size="12px" color="var(--color-foreground-de-emp)" />,
-          showButton: mode === "design",
-          color: "var(--color-foreground-de-emp)",
-          onAction: (_e: HandleActionEvent) => {
+  const displayContext = mode === "design" || (mode === "view" && hasContext);
+  const displayModel = mode === "design" || (mode === "view" && hasModel);
+  const displayEscalation = mode === "design" || (mode === "view" && hasEscalation);
+  const displayTool = mode === "design" || (mode === "view" && hasTool);
+  const isMcpEnabled = mcpEnabled !== false;
+  const displayMcp = (mode === "design" && isMcpEnabled) || (mode === "view" && !!hasMcp);
+
+  // Create handle configurations
+  const handleConfigurations: HandleConfiguration[] = useMemo(() => {
+    const configs: HandleConfiguration[] = [];
+
+    const topHandles: ButtonHandleConfig[] = [];
+
+    if (displayContext) {
+      topHandles.push({
+        id: ResourceNodeType.Context,
+        type: "source",
+        handleType: "artifact",
+        label: "Context",
+        showButton: mode === "design",
+        color: "var(--color-foreground-de-emp)",
+        labelBackgroundColor: "var(--color-background-secondary)",
+        onAction: (_e: HandleActionEvent) => {
+          onAddResource?.("context");
+        },
+      });
+    }
+
+    if (topHandles.length > 0) {
+      configs.push({
+        position: Position.Top,
+        handles: topHandles,
+        visible: true,
+      });
+    }
+
+    // Bottom handles (Model, Escalation, Tool)
+    const bottomHandles: ButtonHandleConfig[] = [];
+
+    if (displayModel) {
+      bottomHandles.push({
+        id: ResourceNodeType.Model,
+        type: "source",
+        handleType: "artifact",
+        label: "Model",
+        showButton: false,
+        color: "var(--color-foreground-de-emp)",
+        labelBackgroundColor: "var(--color-background-secondary)",
+      });
+    }
+
+    if (displayEscalation) {
+      bottomHandles.push({
+        id: ResourceNodeType.Escalation,
+        type: "source",
+        handleType: "artifact",
+        label: "Escalation",
+        showButton: mode === "design",
+        color: "var(--color-foreground-de-emp)",
+        labelBackgroundColor: "var(--color-background-secondary)",
+        onAction: (_e: HandleActionEvent) => {
+          onAddResource?.("escalation");
+        },
+      });
+    }
+
+    if (displayTool || displayMcp) {
+      bottomHandles.push({
+        id: ResourceNodeType.Tool,
+        type: "source",
+        handleType: "artifact",
+        label: "Tool",
+        showButton: mode === "design",
+        color: "var(--color-foreground-de-emp)",
+        labelBackgroundColor: "var(--color-background-secondary)",
+        onAction: (_e: HandleActionEvent) => {
+          // Default to tool when both are available, or show the available option
+          if (displayTool) {
             onAddResource?.("tool");
-          },
-        },
-      ],
-      [mode, onAddResource]
-    );
-
-    const modelHandles: ButtonHandleConfig[] = useMemo(
-      () => [
-        {
-          id: ResourceNodeType.Model,
-          type: "source",
-          handleType: "artifact",
-          label: "Model",
-          labelIcon: <ApIcon variant="outlined" name="chat" size="12px" color="var(--color-foreground-de-emp)" />,
-          showButton: false,
-          color: "var(--color-foreground-de-emp)",
-        },
-      ],
-      []
-    );
-
-    const topHandles: ButtonHandleConfig[] = useMemo(() => {
-      const handles: ButtonHandleConfig[] = [];
-
-      // Add context handle if it should be displayed
-      if (displayContext) {
-        handles.push({
-          id: ResourceNodeType.Context,
-          type: "source",
-          handleType: "artifact",
-          label: "Context",
-          labelIcon: <ApIcon variant="outlined" name="view_agenda" size="12px" color="var(--color-foreground-de-emp)" />,
-          showButton: mode === "design",
-          color: "var(--color-foreground-de-emp)",
-          onAction: (_e: HandleActionEvent) => {
-            onAddResource?.("context");
-          },
-        });
-      }
-
-      // Add MCP handle if it should be displayed
-      if (displayMcp) {
-        handles.push({
-          id: ResourceNodeType.MCP,
-          type: "source",
-          handleType: "artifact",
-          label: "MCP Server",
-          labelIcon: <ApIcon name="dns" size="12px" color="var(--color-foreground-de-emp)" />,
-          showButton: mode === "design",
-          color: "var(--color-foreground-de-emp)",
-          onAction: (_e: HandleActionEvent) => {
+          } else if (displayMcp) {
             onAddResource?.("mcp");
-          },
-        });
-      }
+          }
+        },
+      });
+    }
 
-      return handles;
-    }, [mode, onAddResource, displayContext, displayMcp]);
+    if (bottomHandles.length > 0) {
+      configs.push({
+        position: Position.Bottom,
+        handles: bottomHandles,
+        visible: true,
+      });
+    }
 
-    const bottomHandles: ButtonHandleConfig[] = useMemo(() => {
-      const handles: ButtonHandleConfig[] = [];
+    return configs;
+  }, [mode, displayContext, displayMcp, displayTool, displayModel, displayEscalation, onAddResource]);
 
-      // Add escalation handle if it should be displayed
-      if (displayEscalation) {
-        handles.push({
-          id: ResourceNodeType.Escalation,
-          type: "source",
-          handleType: "artifact",
-          label: "Escalation",
-          labelIcon: <ApIcon name="emoji_people" size="12px" color="var(--color-foreground-de-emp)" />,
-          showButton: mode === "design",
-          color: "var(--color-foreground-de-emp)",
-          onAction: (_e: HandleActionEvent) => {
-            onAddResource?.("escalation");
-          },
-        });
-      }
+  const statusAdornment = useMemo(() => {
+    if (hasError) {
+      return <ApIcon name="error" size="16px" color="var(--color-error-icon)" />;
+    }
+    if (hasSuccess && !hasError) {
+      return <ApIcon name="check_circle" size="16px" color="var(--color-success-icon)" />;
+    }
+    if (hasRunning && !hasError && !hasSuccess) {
+      return <ApCircularProgress size={20} />;
+    }
+    return undefined;
+  }, [hasError, hasSuccess, hasRunning]);
 
-      return handles;
-    }, [mode, onAddResource, displayEscalation]);
+  const agentIcon = useMemo(() => {
+    if (isConversational) {
+      return <ConversationalAgentIcon color="var(--color-foreground-de-emp)" w={32} h={32} />;
+    }
+    return <AutonomousAgentIcon color="var(--color-foreground-de-emp)" w={32} h={32} />;
+  }, [isConversational]);
 
-    return (
-      <div style={{ position: "relative" }}>
-        <NodeContainer $borderColor={borderColor}>
-          {/* Status icon in upper right */}
-          {(hasError || hasSuccess || hasRunning) && (
-            <StatusIconContainer>
-              {hasError && <ApIcon name="error" size="16px" color="var(--color-error-icon)" />}
-              {hasSuccess && !hasError && <ApIcon name="check_circle" size="16px" color="var(--color-success-icon)" />}
-              {hasRunning && !hasError && !hasSuccess && <ApCircularProgress size={20} />}
-            </StatusIconContainer>
-          )}
+  const argumentsButton = useMemo(() => {
+    if (mode === "design" && !isConversational && onArgumentsClick) {
+      return (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onArgumentsClick();
+          }}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "4px",
+            padding: "4px 8px",
+            backgroundColor: "var(--color-background-secondary)",
+            color: "var(--color-foreground-de-emp)",
+            border: "none",
+            borderRadius: "4px",
+            fontSize: "12px",
+            fontFamily: "inherit",
+            cursor: "pointer",
+            transition: "all 0.2s ease",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = "var(--color-selection-indicator)";
+            e.currentTarget.style.color = "var(--color-background)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = "var(--color-background-secondary)";
+            e.currentTarget.style.color = "var(--color-foreground-de-emp)";
+          }}
+        >
+          <ApIcon name="data_object" size="16px" />
+          {translations.arguments}
+        </button>
+      );
+    }
+    return undefined;
+  }, [mode, isConversational, onArgumentsClick, translations.arguments]);
 
-          {/* main */}
-          <Row align="center" gap={Spacing.SpacingBase}>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                width: 32,
-                height: 32,
-              }}
-            >
-              {/* TODO: Handle coded agents */}
-              {isConversational && <ConversationalAgentIcon w={32} h={32} />}
-              {!isConversational && <AutonomousAgentIcon w={32} h={32} />}
-            </div>
-            <Column overflow="hidden">
-              <Row>
-                <ApTypography
-                  variant={FontVariantToken.fontSizeL}
-                  color="var(--color-foreground)"
-                  style={{
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  {name}
-                </ApTypography>
-              </Row>
-              <Row>
-                <ApTypography
-                  variant={FontVariantToken.fontSizeM}
-                  color="var(--color-foreground-de-emp)"
-                  style={{
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  {/* TODO: Handle coded agents */}
-                  {isConversational ? translations.conversationalAgent : translations.autonomousAgent}
-                </ApTypography>
-              </Row>
-            </Column>
-          </Row>
+  // Convert to NewBaseNode props
+  const newBaseNodeProps: NewBaseNodeDisplayProps = {
+    executionStatus,
+    icon: agentIcon,
+    display: {
+      label: name,
+      subLabel: isConversational ? translations.conversationalAgent : translations.autonomousAgent,
+      shape: "rectangle",
+      background: "var(--color-background)",
+      iconBackground: "var(--color-background-secondary)",
+    },
+    adornments: {
+      topRight: statusAdornment,
+      bottomLeft: argumentsButton,
+    },
+    handleConfigurations,
+    showAddButton: mode === "design", // Show add buttons in design mode even when not selected
+  };
 
-          {/* buttons */}
-          <Row gap={Spacing.SpacingBase}>
-            {mode === "design" && !isConversational && (
-              <SubduedButton
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onArgumentsClick?.();
-                }}
-              >
-                <ApIcon name="data_object" size="16px" />
-                {translations.arguments}
-              </SubduedButton>
-            )}
-          </Row>
-        </NodeContainer>
+  return <NewBaseNode {...nodeProps} data={{ ...newBaseNodeProps }} selected={selected} />;
+});
 
-        <ButtonHandles nodeId={nodeId} handles={topHandles} position={Position.Top} selected={selected} visible={topHandles.length > 0} />
+AgentNodeComponent.displayName = "AgentNodeComponent";
 
-        <ButtonHandles nodeId={nodeId} handles={toolHandles} position={Position.Right} selected={selected} visible={displayTool} />
+const AgentNodeWrapper = (props: NodeProps<Node<AgentNodeData>> & AgentNodeProps) => {
+  const {
+    data,
+    mode,
+    hasModel,
+    hasContext,
+    hasEscalation,
+    hasTool,
+    hasMcp,
+    mcpEnabled,
+    hasError,
+    hasSuccess,
+    hasRunning,
+    onAddResource,
+    onArgumentsClick,
+    translations,
+    ...nodeProps
+  } = props;
 
-        <ButtonHandles nodeId={nodeId} handles={modelHandles} position={Position.Left} selected={selected} visible={displayModel} />
+  return (
+    <AgentNodeComponent
+      {...nodeProps}
+      data={data}
+      mode={mode}
+      hasModel={hasModel}
+      hasContext={hasContext}
+      hasEscalation={hasEscalation}
+      hasTool={hasTool}
+      hasMcp={hasMcp}
+      mcpEnabled={mcpEnabled}
+      hasError={hasError}
+      hasSuccess={hasSuccess}
+      hasRunning={hasRunning}
+      onAddResource={onAddResource}
+      onArgumentsClick={onArgumentsClick}
+      translations={translations}
+    />
+  );
+};
 
-        <ButtonHandles
-          nodeId={nodeId}
-          handles={bottomHandles}
-          position={Position.Bottom}
-          selected={selected}
-          visible={bottomHandles.length > 0}
-        />
-      </div>
-    );
-  }
-);
-AgentNodeElement.displayName = "AgentNodeElement";
+export const AgentNodeElement = memo(AgentNodeWrapper);
+
+export type { AgentNodeData, AgentNodeProps };

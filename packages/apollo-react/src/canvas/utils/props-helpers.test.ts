@@ -384,7 +384,7 @@ describe("props-helpers", () => {
       expect(edge.source).toBe(mockAgentNode.id);
       expect(edge.target).toBe(mockToolNode.id);
       expect(edge.sourceHandle).toBe(ResourceNodeType.Tool);
-      expect(edge.targetHandle).toBe(Position.Left);
+      expect(edge.targetHandle).toBe(Position.Top);
       expect(edge.type).toBe("default");
       expect(edge.animated).toBe(false);
       expect(edge.selectable).toBe(false);
@@ -402,10 +402,10 @@ describe("props-helpers", () => {
     it("creates model edge correctly", () => {
       const edge = createResourceEdge(mockAgentNode, mockModelNode, mockAgentFlowProps);
 
-      expect(edge.source).toBe(mockModelNode.id);
-      expect(edge.target).toBe(mockAgentNode.id);
-      expect(edge.sourceHandle).toBe(Position.Right);
-      expect(edge.targetHandle).toBe(ResourceNodeType.Model);
+      expect(edge.source).toBe(mockAgentNode.id);
+      expect(edge.target).toBe(mockModelNode.id);
+      expect(edge.sourceHandle).toBe(ResourceNodeType.Model);
+      expect(edge.targetHandle).toBe(Position.Top);
     });
 
     it("creates escalation edge correctly", () => {

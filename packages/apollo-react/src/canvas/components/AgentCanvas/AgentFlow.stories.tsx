@@ -178,16 +178,16 @@ const sampleResources: AgentFlowResource[] = [
     isCurrentBreakpoint: false,
   },
   {
-    id: "tool-inline-agent",
-    type: "tool",
-    name: "Inline Agent",
-    description: "Inline Agent",
-    iconUrl: "",
+    id: "mcp-file-parser",
+    type: "mcp",
+    name: "File Parser",
+    description: "File Parser",
     hasBreakpoint: false,
     isCurrentBreakpoint: false,
     hasGuardrails: false,
-    projectType: "inline-agent",
-    isExpandable: true,
+    slug: "file-parser",
+    folderPath: "file-parser",
+    availableTools: [],
   },
 ];
 
@@ -385,10 +385,9 @@ const AgentFlowWrapper = ({
           <p>Click the + buttons on the agent node to add:</p>
           <ul>
             <li>Context (top-left)</li>
-            <li>MCP Server (top-right)</li>
-            <li>Tools (right)</li>
-            <li>Escalations (bottom)</li>
-            <li>Model (left)</li>
+            <li>Model (bottom-left)</li>
+            <li>Escalations (bottom-center)</li>
+            <li>Tools (bottom-right)</li>
           </ul>
         </div>
       </Column>

@@ -12,8 +12,8 @@ export enum ResourceNodeType {
 export const ResourceNodeTypeToPosition: Record<ResourceNodeType, Position> = {
   [ResourceNodeType.Context]: Position.Top,
   [ResourceNodeType.Escalation]: Position.Bottom,
-  [ResourceNodeType.MCP]: Position.Top,
-  [ResourceNodeType.Model]: Position.Left,
-  [ResourceNodeType.Tool]: Position.Right,
+  [ResourceNodeType.MCP]: Position.Bottom,
+  [ResourceNodeType.Model]: Position.Bottom,
+  [ResourceNodeType.Tool]: Position.Bottom,
   [ResourceNodeType.Memory]: Position.Top,
 };

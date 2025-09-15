@@ -1,9 +1,9 @@
-import { BaseEdge, getSimpleBezierPath, type Position } from "@xyflow/react";
+import { BaseEdge, getSmoothStepPath, type Position } from "@xyflow/react";
 import type { EdgeBase } from "@xyflow/system";
 import { EDGE_STYLES } from "../../../components/BaseCanvas/BaseCanvas.constants";
 import { useAgentFlowStore } from "../store/agent-flow-store";
 
-export type AnimatedSVGEdgeProps = EdgeBase & {
+export type AnimatedEdgeProps = EdgeBase & {
   sourceX: number;
   sourceY: number;
   targetX: number;
@@ -17,7 +17,7 @@ export type AnimatedSVGEdgeProps = EdgeBase & {
   isCurrentBreakpoint?: boolean;
 };
 
-export function AnimatedSVGEdge({
+export const AnimatedEdge = ({
   id,
   sourceX,
   sourceY,
@@ -31,7 +31,7 @@ export function AnimatedSVGEdge({
   hasSuccess = false,
   hasRunning = false,
   isCurrentBreakpoint = false,
-}: AnimatedSVGEdgeProps) {
+}: AnimatedEdgeProps) => {
   const { nodes } = useAgentFlowStore();
 
   const sourceNode = nodes.find((node) => node.id === source);
@@ -45,24 +45,26 @@ export function AnimatedSVGEdge({
   // If source is agent, use normal direction; if target is agent, reverse the path
   const shouldReversePath = isTargetAgent && !isSourceAgent;
 
-  const [edgePath] = getSimpleBezierPath({
+  const [edgePath] = getSmoothStepPath({
     sourceX,
     sourceY,
     sourcePosition,
     targetX,
     targetY,
     targetPosition,
+    borderRadius: 20,
   });
 
   // Create the animation path - reverse if needed to always go from agent to resource
   const animationPath = shouldReversePath
-    ? getSimpleBezierPath({
+    ? getSmoothStepPath({
         sourceX: targetX,
         sourceY: targetY,
         sourcePosition: targetPosition,
         targetX: sourceX,
         targetY: sourceY,
         targetPosition: sourcePosition,
+        borderRadius: 20,
       })[0]
     : edgePath;
 
@@ -71,7 +73,7 @@ export function AnimatedSVGEdge({
     if (isCurrentBreakpoint) return "var(--color-warning-icon)";
     if (hasSuccess) return "var(--color-success-icon)";
     if (hasRunning) return "var(--color-primary)";
-    return isConnectedToSelectedNode ? "var(--color-primary)" : "var(--color-foreground-de-emp)";
+    return isConnectedToSelectedNode ? "var(--color-primary)" : "var(--color-border)";
   };
 
   const getCircleFill = () => {
@@ -83,7 +85,10 @@ export function AnimatedSVGEdge({
   };
 
   const strokeColor = getStrokeColor();
-  const strokeWidth = isConnectedToSelectedNode ? EDGE_STYLES.selectedStrokeWidth : EDGE_STYLES.strokeWidth;
+  const strokeWidth = isConnectedToSelectedNode
+    ? EDGE_STYLES.selectedStrokeWidth
+    : // : EDGE_STYLES.strokeWidth;
+      2;
 
   const circleFill = getCircleFill();
 
@@ -92,6 +97,7 @@ export function AnimatedSVGEdge({
       <BaseEdge
         id={id}
         path={edgePath}
+        type="smoothstep"
         style={{
           stroke: strokeColor,
           strokeWidth,
@@ -108,4 +114,4 @@ export function AnimatedSVGEdge({
       </circle>
     </>
   );
-}
+};

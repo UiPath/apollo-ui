@@ -52,6 +52,7 @@ type ButtonHandleProps = {
   handleType: "artifact" | "input" | "output";
   label?: string;
   labelIcon?: React.ReactNode;
+  labelBackgroundColor?: string;
   visible?: boolean;
   showButton?: boolean;
   selected?: boolean;
@@ -69,6 +70,7 @@ const ButtonHandleBase = ({
   handleType,
   label,
   labelIcon,
+  labelBackgroundColor = "var(--color-background)",
   visible = true,
   showButton = true,
   color = "var(--color-border)",
@@ -124,7 +126,7 @@ const ButtonHandleBase = ({
       onMouseDown={() => setIsHovered(false)}
     >
       {label && (
-        <StyledLabel $position={position}>
+        <StyledLabel $position={position} $backgroundColor={labelBackgroundColor}>
           <Row align="center" gap={4}>
             {labelIcon}
             <ApTypography color="var(--color-foreground-de-emp)" variant={FontVariantToken.fontSizeSBold}>
@@ -164,6 +166,7 @@ export interface ButtonHandleConfig {
   labelIcon?: React.ReactNode;
   showButton?: boolean;
   color?: string;
+  labelBackgroundColor?: string;
   onAction?: (event: HandleActionEvent) => void;
 }
 
@@ -173,14 +176,17 @@ const ButtonHandlesBase = ({
   position,
   selected = false,
   visible = true,
+  showAddButton = false,
 }: {
   nodeId: string;
   handles: ButtonHandleConfig[];
   position: Position;
   selected?: boolean;
   visible?: boolean;
+  showAddButton?: boolean;
 }) => {
   const total = handles.length;
+  const finalSelected = showAddButton || selected;
 
   return (
     <>
@@ -194,11 +200,12 @@ const ButtonHandlesBase = ({
           handleType={handle.handleType}
           label={handle.label}
           labelIcon={handle.labelIcon}
+          labelBackgroundColor={handle.labelBackgroundColor}
           index={index}
           total={total}
           selected={selected}
           visible={visible}
-          showButton={selected && visible && handle.showButton}
+          showButton={finalSelected && visible && handle.showButton}
           color={handle.color}
           onAction={handle.onAction}
         />

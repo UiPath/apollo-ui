@@ -6,10 +6,10 @@ import { BASE_CANVAS_DEFAULTS } from "../../components/BaseCanvas/BaseCanvas.con
 import { CanvasPositionControls } from "../../components/CanvasPositionControls";
 
 import { TimelinePlayer } from "./components/TimelinePlayer";
-import ConditionalEdgeElement from "./edges/ConditionalEdgeElement";
+import { Edge } from "./edges/Edge";
 import { Column } from "@uipath/uix-core";
 import { AgentNodeElement } from "./nodes/AgentNode";
-import { ResourceNodeElement } from "./nodes/ResourceNode";
+import { ResourceNode } from "./nodes/ResourceNode";
 import { AgentFlowProvider, useAgentFlowStore } from "./store/agent-flow-store";
 import {
   type AgentFlowCustomEdge,
@@ -28,7 +28,7 @@ import {
 import { hasAgentRunning } from "../../utils/props-helpers";
 
 const edgeTypes = {
-  default: ConditionalEdgeElement,
+  default: Edge,
 };
 
 // agent node wrapper
@@ -104,7 +104,7 @@ const createResourceNodeWrapper = (opts: {
     const { props: storeProps, deleteNode } = useAgentFlowStore();
 
     return (
-      <ResourceNodeElement
+      <ResourceNode
         {...props}
         mode={storeProps.mode}
         hasError={props.data.hasError}

@@ -1,10 +1,10 @@
-import { BaseEdge, getSimpleBezierPath, type Position } from "@xyflow/react";
+import { BaseEdge, getSmoothStepPath, type Position } from "@xyflow/react";
 
 import type { AgentFlowDefaultEdge } from "../../../types";
 import { EDGE_STYLES } from "../../../components/BaseCanvas/BaseCanvas.constants";
 import { useAgentFlowStore } from "../store/agent-flow-store";
 
-type DefaultEdgeProps = AgentFlowDefaultEdge & {
+type StaticEdgeProps = AgentFlowDefaultEdge & {
   sourceX: number;
   sourceY: number;
   targetX: number;
@@ -17,7 +17,7 @@ type DefaultEdgeProps = AgentFlowDefaultEdge & {
   isCurrentBreakpoint?: boolean;
 };
 
-export function DefaultEdgeElement({
+export const StaticEdge = ({
   id,
   sourceX,
   sourceY,
@@ -31,7 +31,7 @@ export function DefaultEdgeElement({
   hasSuccess = false,
   hasRunning = false,
   isCurrentBreakpoint = false,
-}: DefaultEdgeProps) {
+}: StaticEdgeProps) => {
   const { nodes } = useAgentFlowStore();
 
   const sourceNode = nodes.find((node) => node.id === source);
@@ -39,13 +39,14 @@ export function DefaultEdgeElement({
   const isConnectedToSelectedResource =
     (sourceNode?.type === "resource" && sourceNode?.selected) || (targetNode?.type === "resource" && targetNode?.selected);
 
-  const [edgePath] = getSimpleBezierPath({
+  const [edgePath] = getSmoothStepPath({
     sourceX,
     sourceY,
     sourcePosition,
     targetX,
     targetY,
     targetPosition,
+    borderRadius: 20,
   });
 
   const getStrokeColor = () => {
@@ -53,20 +54,25 @@ export function DefaultEdgeElement({
     if (isCurrentBreakpoint) return "var(--color-warning-icon)";
     if (hasSuccess) return "var(--color-success-icon)";
     if (hasRunning) return "var(--color-primary)";
-    return isConnectedToSelectedResource ? "var(--color-primary)" : "var(--color-foreground-de-emp)";
+    return isConnectedToSelectedResource ? "var(--color-primary)" : "var(--color-border)";
   };
 
   const strokeColor = getStrokeColor();
-  const strokeWidth = isConnectedToSelectedResource ? EDGE_STYLES.selectedStrokeWidth : EDGE_STYLES.strokeWidth;
+  const strokeWidth = isConnectedToSelectedResource
+    ? EDGE_STYLES.selectedStrokeWidth
+    : // : EDGE_STYLES.strokeWidth;
+      2;
 
   return (
     <BaseEdge
       id={id}
       path={edgePath}
+      type="smoothstep"
       style={{
         stroke: strokeColor,
         strokeWidth,
+        strokeDasharray: "5 5",
       }}
     />
   );
-}
+};

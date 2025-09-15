@@ -56,10 +56,6 @@ const clearNodeAnimations = (node: AgentFlowCustomNode): AgentFlowCustomNode => 
   return { ...node, style: cleanStyle };
 };
 
-const isVerticalArrangement = (resourceType: AgentFlowResourceNodeData["type"]): boolean => {
-  return resourceType === "tool" || resourceType === "model";
-};
-
 const shouldCreateSpacing = (insertIndex: number, siblingCount: number, originalIndex?: number): boolean => {
   const isInsertingBetween = insertIndex > 0 && insertIndex < siblingCount;
   const isMovingToEdge =
@@ -92,7 +88,7 @@ const calculateSpacingPositions = (
   agentNode: AgentFlowCustomNode
 ): Record<string, { x: number; y: number }> => {
   const positions: Record<string, { x: number; y: number }> = {};
-  const isVertical = isVerticalArrangement(draggedNode.data.type);
+  const isVertical = false;
   const isEdgeInsertion = insertIndex === 0 || insertIndex === siblingNodes.length;
 
   // edge insertions
@@ -132,6 +128,7 @@ const calculateSpacingPositions = (
             y: agentNode.position.y - nodeHeight - FLOW_LAYOUT.groupDistanceVertical,
           };
         } else {
+          // model, escalation, tool
           positions[node.id] = {
             x: baseX,
             y: agentNode.position.y + agentHeight + FLOW_LAYOUT.groupDistanceVertical,
@@ -187,7 +184,7 @@ const calculateSpacingPositions = (
           y: agentNode.position.y - nodeHeight - FLOW_LAYOUT.groupDistanceVertical,
         };
       } else {
-        // escalation
+        // escalation, tool
         positions[node.id] = {
           x: baseX,
           y: agentNode.position.y + agentHeight + FLOW_LAYOUT.groupDistanceVertical,

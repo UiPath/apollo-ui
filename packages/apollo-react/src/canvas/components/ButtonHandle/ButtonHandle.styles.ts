@@ -77,9 +77,9 @@ export const StyledLine = styled.div<{ $isVertical: boolean; $selected: boolean 
   transition: border-color 0.2s ease-in-out;
 `;
 
-export const StyledLabel = styled.div<{ $position: Position }>`
+export const StyledLabel = styled.div<{ $position: Position; $backgroundColor: string }>`
   position: absolute;
-  background-color: var(--color-background);
+  background-color: ${(p) => p.$backgroundColor};
   padding: 2px 6px;
   border-radius: 4px;
   z-index: 1;

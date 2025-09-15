@@ -1,5 +1,4 @@
 import type { IRawSpan } from "@uipath/portal-shell-react";
-import { NODE_DIMENSIONS } from "../components/BaseCanvas";
 import type {
   AgentFlowCustomEdge,
   AgentFlowCustomNode,
@@ -131,8 +130,6 @@ const createAgentNode = (props: AgentFlowProps, parentNodeId?: string): AgentFlo
     id: agentId,
     type: "agent",
     position: { x: 0, y: 0 },
-    width: NODE_DIMENSIONS.agent.width,
-    height: NODE_DIMENSIONS.agent.height,
     data: {
       name: props.name,
       description: props.description,
@@ -170,8 +167,6 @@ const createResourceNode = (
     id,
     type: "resource" as const,
     position: { x: 0, y: 0 },
-    width: NODE_DIMENSIONS.resource.width,
-    height: NODE_DIMENSIONS.resource.height,
     draggable: Boolean(props.allowDragging && props.mode === "design"),
   };
 
@@ -242,8 +237,6 @@ const createModelNode = (props: AgentFlowProps, parentNodeId: string): AgentFlow
     id: `${parentNodeId}${NODE_ID_DELIMITER}model`,
     type: "resource",
     position: { x: 0, y: 0 },
-    width: NODE_DIMENSIONS.resource.width,
-    height: NODE_DIMENSIONS.resource.height,
     data: {
       name: props.model.name,
       description: props.model.vendorName,
@@ -288,13 +281,13 @@ export const createResourceEdge = (
 
   switch (resourceType) {
     case "tool":
-      return createEdge(agentNode.id, resourceNode.id, ResourceNodeType.Tool, Position.Left);
+      return createEdge(agentNode.id, resourceNode.id, ResourceNodeType.Tool, Position.Top);
     case "context":
       return createEdge(resourceNode.id, agentNode.id, Position.Bottom, ResourceNodeType.Context);
     case "model":
-      return createEdge(resourceNode.id, agentNode.id, Position.Right, ResourceNodeType.Model);
+      return createEdge(agentNode.id, resourceNode.id, ResourceNodeType.Model, Position.Top);
     case "mcp":
-      return createEdge(agentNode.id, resourceNode.id, ResourceNodeType.MCP, Position.Bottom);
+      return createEdge(agentNode.id, resourceNode.id, ResourceNodeType.Tool, Position.Top);
     case "escalation":
     default:
       return createEdge(agentNode.id, resourceNode.id, ResourceNodeType.Escalation, Position.Top);
