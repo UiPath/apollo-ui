@@ -1,4 +1,5 @@
 export * from "./AddNodePanel";
+export * from "./AgentCanvas";
 export * from "./BaseCanvas";
 export * from "./BaseNode";
 export * from "./ButtonHandle";
