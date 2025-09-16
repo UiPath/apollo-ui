@@ -27,7 +27,8 @@ export const scriptNodeRegistration: NodeRegistration = {
     }),
 
     getAdornments: (data, context) => {
-      const status = context.executionStatus;
+      const state = context.executionState;
+      const status = typeof state === "string" ? state : state?.status;
       const language = data.parameters.language as string;
       const hasError = status === "error";
 

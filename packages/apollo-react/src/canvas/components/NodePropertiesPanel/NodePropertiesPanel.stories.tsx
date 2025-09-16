@@ -43,7 +43,7 @@ const meta: Meta<typeof NodePropertiesPanel> = {
         ],
         []
       );
-      const executions = useMemo(() => ({ getExecutionStatus: () => "idle" }), []);
+      const executions = useMemo(() => ({ getExecutionState: () => "idle" }), []);
 
       return (
         <NodeRegistryProvider registrations={registrations}>

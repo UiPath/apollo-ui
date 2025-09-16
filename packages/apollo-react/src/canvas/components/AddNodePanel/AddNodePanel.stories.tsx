@@ -57,7 +57,7 @@ const meta = {
         ],
         []
       );
-      const executions = useMemo(() => ({ getExecutionStatus: () => "idle" }), []);
+      const executions = useMemo(() => ({ getExecutionState: () => "idle" }), []);
 
       return (
         <NodeRegistryProvider registrations={registrations}>

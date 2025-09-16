@@ -2,7 +2,7 @@ import { memo, useMemo, useState, useCallback, useRef } from "react";
 import type { Node, NodeProps } from "@xyflow/react";
 import { Position, useConnection, useStore } from "@xyflow/react";
 import type { NodeStatusContext } from "./ExecutionStatusContext";
-import { useExecutionStatus } from "./ExecutionStatusContext";
+import { useExecutionState } from "./ExecutionStatusContext";
 import type { HandleActionEvent } from "../ButtonHandle";
 import { ButtonHandles } from "../ButtonHandle";
 import { NodeContextMenu } from "../NodeContextMenu";
@@ -20,7 +20,7 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
   const [isFocused, setIsFocused] = useState(false);
 
   // Get execution status from external source
-  const executionStatus = useExecutionStatus(id);
+  const executionState = useExecutionState(id);
   const nodeTypeRegistry = useNodeTypeRegistry();
 
   const nodeDefinition = useMemo(() => nodeTypeRegistry.get(type), [type, nodeTypeRegistry]);
@@ -28,13 +28,15 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
   const statusContext: NodeStatusContext = useMemo(
     () => ({
       nodeId: id,
-      executionStatus,
+      executionState,
       isHovered,
       isSelected: selected,
       isDragging: dragging,
     }),
-    [id, executionStatus, isHovered, selected, dragging]
+    [id, executionState, isHovered, selected, dragging]
   );
+
+  const executionStatus = typeof executionState === "string" ? executionState : executionState?.status;
 
   const { inProgress } = useConnection();
 
@@ -181,7 +183,7 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
         shape={displayShape}
         className={cx(executionStatus, interactionState)}
         interactionState={interactionState}
-        executionState={executionStatus}
+        executionStatus={executionStatus}
         width={width}
         height={height}
         backgroundColor={displayBackground}

@@ -3,39 +3,43 @@ import { useContext, useEffect, useState } from "react";
 
 export type NodeExecutionStatus = string;
 
+export type NodeExecutionStatusWithCount = { status: NodeExecutionStatus; count: number };
+
+export type NodeExecutionState = NodeExecutionStatusWithCount | NodeExecutionStatus;
+
 export interface NodeStatusContext {
   nodeId: string;
-  executionStatus?: NodeExecutionStatus;
+  executionState?: NodeExecutionState;
   isHovered?: boolean;
   isSelected?: boolean;
   isDragging?: boolean;
 }
 
-export interface ExecutionStatusContextValue {
-  getExecutionStatus: (nodeId: string) => NodeExecutionStatus | undefined;
+export interface ExecutionStateContextValue {
+  getExecutionState: (nodeId: string) => NodeExecutionState | undefined;
 }
 
-export const ExecutionStatusContext = React.createContext<ExecutionStatusContextValue>({
-  getExecutionStatus: () => undefined,
+export const ExecutionStatusContext = React.createContext<ExecutionStateContextValue>({
+  getExecutionState: () => undefined,
 });
 
-export const useExecutionStatus = (nodeId: string): NodeExecutionStatus | undefined => {
+export const useExecutionState = (nodeId: string): NodeExecutionState | undefined => {
   const context = useContext(ExecutionStatusContext);
-  const [status, setStatus] = useState<NodeExecutionStatus | undefined>();
+  const [state, setState] = useState<NodeExecutionState | undefined>();
 
   useEffect(() => {
-    // Get initial status
-    const initialStatus = context.getExecutionStatus(nodeId);
-    setStatus(initialStatus);
+    // Get initial state
+    const initialState = context.getExecutionState(nodeId);
+    setState(initialState);
 
     // You might want to set up polling or websocket subscription here
     const interval = setInterval(() => {
-      const currentStatus = context.getExecutionStatus(nodeId);
-      setStatus(currentStatus);
+      const currentState = context.getExecutionState(nodeId);
+      setState(currentState);
     }, 1000); // Poll every second
 
     return () => clearInterval(interval);
   }, [nodeId, context]);
 
-  return status;
+  return state;
 };

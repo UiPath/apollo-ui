@@ -14,8 +14,8 @@ const pulseAnimation = keyframes`
   }
 `;
 
-const getExecutionStateBorder = (executionState?: string) => {
-  switch (executionState) {
+const getExecutionStatusBorder = (executionStatus?: string) => {
+  switch (executionStatus) {
     case "NotExecuted":
     case "INFO":
       return css`
@@ -76,7 +76,7 @@ export const BaseContainer = styled.div<{
   selected?: boolean;
   backgroundColor?: string;
   shape?: NodeShape;
-  executionState?: string;
+  executionStatus?: string;
   interactionState?: string;
   width?: number;
   height?: number;
@@ -109,7 +109,7 @@ export const BaseContainer = styled.div<{
   }};
   cursor: pointer;
 
-  ${({ executionState }) => getExecutionStateBorder(executionState)}
+  ${({ executionStatus }) => getExecutionStatusBorder(executionStatus)}
   ${({ interactionState }) => getInteractionStateBorder(interactionState)}
 
   ${({ selected }) =>

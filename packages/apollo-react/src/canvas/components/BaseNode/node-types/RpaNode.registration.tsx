@@ -27,7 +27,8 @@ export const rpaNodeRegistration: NodeRegistration = {
     }),
 
     getAdornments: (data, context) => {
-      const status = context.executionStatus;
+      const state = context.executionState;
+      const status = typeof state === "string" ? state : state?.status;
       const robotType = data.parameters.robotType as string;
 
       return {

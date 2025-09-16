@@ -27,8 +27,7 @@ export const httpRequestNodeRegistration: NodeRegistration = {
       iconColor: data.display?.iconColor,
     }),
 
-    getAdornments: (data, context) => {
-      const _status = context.executionStatus;
+    getAdornments: (data, _context) => {
       const method = data.parameters.method as string;
 
       return {

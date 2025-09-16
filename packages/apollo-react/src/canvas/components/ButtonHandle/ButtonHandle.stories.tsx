@@ -164,7 +164,7 @@ const meta: Meta<typeof ButtonHandles> = {
         ],
         []
       );
-      const executions = useMemo(() => ({ getExecutionStatus: () => "idle" }), []);
+      const executions = useMemo(() => ({ getExecutionState: () => "idle" }), []);
 
       return (
         <NodeRegistryProvider registrations={registrations}>

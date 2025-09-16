@@ -32,7 +32,8 @@ export const agentNodeRegistration: NodeRegistration = {
     }),
 
     getAdornments: (data, context) => {
-      const status = context.executionStatus;
+      const executionState = context.executionState;
+      const status = typeof executionState === "string" ? executionState : executionState?.status;
       const _agentType = data.parameters.agentType as string;
 
       return {
