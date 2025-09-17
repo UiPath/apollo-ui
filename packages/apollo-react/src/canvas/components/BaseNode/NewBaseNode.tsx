@@ -95,7 +95,6 @@ const NewBaseNodeComponent = (props: NodeProps<Node<NewBaseNodeData>> & NewBaseN
 
   const connectedHandleIds = useMemo(() => {
     const ids = new Set<string>();
-    if (!edges) return ids;
     for (const edge of edges) {
       if (edge.source === id && edge.sourceHandle) ids.add(edge.sourceHandle);
       if (edge.target === id && edge.targetHandle) ids.add(edge.targetHandle);
@@ -104,9 +103,7 @@ const NewBaseNodeComponent = (props: NodeProps<Node<NewBaseNodeData>> & NewBaseN
   }, [edges, id]);
 
   const handleElements = useMemo(() => {
-    if (!handleConfigurations || !Array.isArray(handleConfigurations) || handleConfigurations.length === 0) return <></>;
-
-    const elements = handleConfigurations.map((config) => {
+    const elements = handleConfigurations.map((config, i) => {
       const hasConnectedHandle = config.handles.some((h) => connectedHandleIds.has(h.id));
       const finalVisible = hasConnectedHandle || (shouldShowHandles && (config.visible ?? true));
 
@@ -118,7 +115,7 @@ const NewBaseNodeComponent = (props: NodeProps<Node<NewBaseNodeData>> & NewBaseN
 
       return (
         <ButtonHandles
-          key={`${config.position}:${config.handles.map((h) => h.id).join(",")}`}
+          key={`${i}:${config.handles.map((h) => h.id).join(",")}`}
           nodeId={id}
           handles={enhancedHandles}
           position={config.position}
@@ -129,8 +126,8 @@ const NewBaseNodeComponent = (props: NodeProps<Node<NewBaseNodeData>> & NewBaseN
       );
     });
 
-    return elements;
-  }, [handleConfigurations, selected, shouldShowHandles, connectedHandleIds, handleAction, id]);
+    return <>{elements}</>;
+  }, [handleConfigurations, selected, shouldShowHandles, connectedHandleIds, handleAction, id, showAddButton]);
 
   // Fallback for missing configuration - show error state
   if (!icon && !displayLabel) {

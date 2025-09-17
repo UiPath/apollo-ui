@@ -3,7 +3,8 @@ import { Handle, Position, useConnection } from "@xyflow/react";
 import styled from "@emotion/styled";
 
 const StyledHandle = styled(Handle, {
-  shouldForwardProp: (prop) => !["$sourceType", "$isConnecting", "$isVisible"].includes(prop as string),
+  // Do not forward transient props to the DOM
+  shouldForwardProp: (prop: string) => !prop.startsWith("$"),
 })<{
   type: "source" | "target";
   $sourceType?: string;

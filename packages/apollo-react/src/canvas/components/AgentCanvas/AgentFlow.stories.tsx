@@ -6,7 +6,7 @@ import { Column, Row } from "@uipath/uix-core";
 import type { AgentFlowModel, AgentFlowProps, AgentFlowResource, AgentFlowResourceNodeData, AgentFlowResourceType } from "../../types";
 
 const meta: Meta<typeof AgentFlow> = {
-  title: "Components/AgentFlow",
+  title: "Canvas/AgentFlow",
   component: AgentFlow,
   decorators: [
     (Story) => (

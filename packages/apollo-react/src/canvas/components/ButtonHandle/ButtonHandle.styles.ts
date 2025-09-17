@@ -151,7 +151,10 @@ export const StyledNotch = styled.div<{
   transition: all 0.2s ease-in-out;
 `;
 
-export const StyledHandle = styled(Handle)<{
+export const StyledHandle = styled(Handle, {
+  // Do not forward transient props to the DOM
+  shouldForwardProp: (prop: string) => !prop.startsWith("$"),
+})<{
   $positionPercent: number;
   $total: number;
   $visible: boolean;

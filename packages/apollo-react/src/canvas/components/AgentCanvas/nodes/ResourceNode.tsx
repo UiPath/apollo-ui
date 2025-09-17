@@ -1,7 +1,7 @@
 import { memo, useCallback, useMemo } from "react";
 import { ApCircularProgress, ApIcon } from "@uipath/portal-shell-react";
 import { Icons, Row } from "@uipath/uix-core";
-import { Position, useReactFlow, type NodeProps } from "@xyflow/react";
+import { Position, type NodeProps } from "@xyflow/react";
 import { NewBaseNode } from "../../BaseNode/NewBaseNode";
 import { ProjectType, type AgentFlowResourceNode, type AgentFlowResourceNodeData, type ResourceNodeTranslations } from "../../../types";
 import { type NodeMenuAction, type NodeMenuDivider, type NodeMenuItem } from "../../NodeContextMenu";
@@ -47,8 +47,6 @@ export const ResourceNode = memo(
     const hasGuardrails = data.hasGuardrails ?? false;
     const isCurrentBreakpoint = data.isCurrentBreakpoint ?? false;
 
-    const { getEdges } = useReactFlow();
-
     const handleClickAddBreakpoint = useCallback(() => {
       onAddBreakpoint?.(id, data);
     }, [id, data, onAddBreakpoint]);
@@ -70,22 +68,6 @@ export const ResourceNode = memo(
         deleteNode(id);
       }
     }, [id, deleteNode, data.type]);
-
-    const connectedHandles = useMemo(() => {
-      const edges = getEdges();
-
-      const handles = new Set<string>();
-      for (const edge of edges) {
-        if (edge.source === id && edge.sourceHandle) {
-          handles.add(edge.sourceHandle);
-        }
-        if (edge.target === id && edge.targetHandle) {
-          handles.add(edge.targetHandle);
-        }
-      }
-
-      return handles;
-    }, [id, getEdges]);
 
     const getModelIcon = (modelName: string) => {
       const modelNameNormalized = modelName.toLowerCase();
@@ -241,20 +223,7 @@ export const ResourceNode = memo(
       []
     );
 
-    const contextTopHandles = useMemo(
-      () => [
-        {
-          id: Position.Top,
-          type: "target" as const,
-          handleType: "artifact" as const,
-          showButton: false,
-          color: "var(--color-foreground-de-emp)",
-        },
-      ],
-      []
-    );
-
-    const contextBottomHandles = useMemo(
+    const contextHandles = useMemo(
       () => [
         {
           id: Position.Bottom,
@@ -280,14 +249,14 @@ export const ResourceNode = memo(
       []
     );
 
-    const topLeftAdornment = useMemo(() => {
+    const breakpointAdornment = useMemo(() => {
       if (hasBreakpoint) {
         return <ApIcon variant="normal" name="circle" size="14px" color="#cc3d45" />;
       }
       return undefined;
     }, [hasBreakpoint]);
 
-    const topRightAdornment = useMemo(() => {
+    const statusAdornment = useMemo(() => {
       if (hasError || (data.errors && data.errors.length > 0)) {
         return <ApIcon name="error" size="14px" color="var(--color-error-icon)" />;
       }
@@ -303,9 +272,9 @@ export const ResourceNode = memo(
       return undefined;
     }, [data.errors, hasError, hasRunning, hasSuccess, isCurrentBreakpoint]);
 
-    const bottomRightAdornment = useMemo(() => {
+    const guardrailsAdornment = useMemo(() => {
       if (hasGuardrails) {
-        return <ApIcon variant="outlined" name="shield" size="18px" color="var(--color-icon-default)" />;
+        return <ApIcon variant="outlined" name="gpp_good" size="18px" color="var(--color-icon-default)" />;
       }
       return undefined;
     }, [hasGuardrails]);
@@ -330,22 +299,21 @@ export const ResourceNode = memo(
             {
               position: Position.Top,
               handles: toolTopHandles,
-              visible: (data.type === "tool" || data.type === "mcp") && (connectedHandles.has(Position.Top) || data.isExpandable),
+              visible: data.type === "tool" || data.type === "mcp",
             },
+            ...(data.isExpandable
+              ? [
+                  {
+                    position: Position.Bottom,
+                    handles: toolBottomHandles,
+                    visible: data.type === "tool" || data.type === "mcp",
+                  },
+                ]
+              : []),
             {
               position: Position.Bottom,
-              handles: toolBottomHandles,
-              visible: (data.type === "tool" || data.type === "mcp") && (connectedHandles.has(Position.Bottom) || data.isExpandable),
-            },
-            {
-              position: Position.Top,
-              handles: contextTopHandles,
-              visible: data.type === "context" && connectedHandles.has(Position.Top),
-            },
-            {
-              position: Position.Bottom,
-              handles: contextBottomHandles,
-              visible: data.type === "context" && connectedHandles.has(Position.Bottom),
+              handles: contextHandles,
+              visible: data.type === "context",
             },
             {
               position: Position.Top,
@@ -356,9 +324,9 @@ export const ResourceNode = memo(
           menuItems: nodeMenuItems,
         }}
         adornments={{
-          topLeft: topLeftAdornment,
-          topRight: topRightAdornment,
-          bottomRight: bottomRightAdornment,
+          topLeft: breakpointAdornment,
+          topRight: statusAdornment,
+          bottomRight: guardrailsAdornment,
         }}
         type={id}
         id={id}

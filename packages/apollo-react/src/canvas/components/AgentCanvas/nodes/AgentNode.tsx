@@ -8,6 +8,7 @@ import type { NewBaseNodeData, NewBaseNodeDisplayProps, HandleConfiguration } fr
 import type { ButtonHandleConfig, HandleActionEvent } from "../../ButtonHandle/ButtonHandle";
 import type { AgentNodeTranslations } from "../../../types";
 import { ResourceNodeType } from "../AgentFlow.constants";
+import { useAgentFlowStore } from "../store/agent-flow-store";
 
 const { ConversationalAgentIcon, AutonomousAgentIcon } = Icons;
 
@@ -33,11 +34,13 @@ interface AgentNodeProps extends NewBaseNodeDisplayProps {
   hasSuccess?: boolean;
   hasRunning?: boolean;
   onAddResource?: (type: "context" | "escalation" | "mcp" | "model" | "tool") => void;
+  /** Not currently used in the agent node */
   onArgumentsClick?: () => void;
   translations: AgentNodeTranslations;
 }
 
 const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNodeProps) => {
+  const { nodes } = useAgentFlowStore();
   const {
     data,
     selected = false,
@@ -52,7 +55,6 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
     hasSuccess = false,
     hasRunning = false,
     onAddResource,
-    onArgumentsClick,
     translations,
     ...nodeProps
   } = props;
@@ -184,47 +186,14 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
     return <AutonomousAgentIcon color="var(--color-foreground-de-emp)" w={32} h={32} />;
   }, [isConversational]);
 
-  const argumentsButton = useMemo(() => {
-    if (mode === "design" && !isConversational && onArgumentsClick) {
-      return (
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onArgumentsClick();
-          }}
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "4px",
-            padding: "4px 8px",
-            backgroundColor: "var(--color-background-secondary)",
-            color: "var(--color-foreground-de-emp)",
-            border: "none",
-            borderRadius: "4px",
-            fontSize: "12px",
-            fontFamily: "inherit",
-            cursor: "pointer",
-            transition: "all 0.2s ease",
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = "var(--color-selection-indicator)";
-            e.currentTarget.style.color = "var(--color-background)";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = "var(--color-background-secondary)";
-            e.currentTarget.style.color = "var(--color-foreground-de-emp)";
-          }}
-        >
-          <ApIcon name="data_object" size="16px" />
-          {translations.arguments}
-        </button>
-      );
-    }
-    return undefined;
-  }, [mode, isConversational, onArgumentsClick, translations.arguments]);
+  const guardrailsAdornment = useMemo(() => {
+    if (mode == "view") return undefined;
+    const hasGuardrails = nodes.some((node) => node.type === "resource" && node.data.hasGuardrails);
+    return <ApIcon variant="outlined" name={hasGuardrails ? "gpp_good" : "shield"} size="18px" color="var(--color-icon-default)" />;
+  }, [mode, nodes]);
 
   // Convert to NewBaseNode props
-  const newBaseNodeProps: NewBaseNodeDisplayProps = {
+  const newBaseNodeProps: NewBaseNodeData & NewBaseNodeDisplayProps = {
     executionStatus,
     icon: agentIcon,
     display: {
@@ -234,15 +203,18 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
       background: "var(--color-background)",
       iconBackground: "var(--color-background-secondary)",
     },
-    adornments: {
-      topRight: statusAdornment,
-      bottomLeft: argumentsButton,
-    },
     handleConfigurations,
     showAddButton: mode === "design", // Show add buttons in design mode even when not selected
   };
 
-  return <NewBaseNode {...nodeProps} data={{ ...newBaseNodeProps }} selected={selected} />;
+  return (
+    <NewBaseNode
+      {...nodeProps}
+      data={newBaseNodeProps}
+      adornments={{ topRight: statusAdornment, bottomRight: guardrailsAdornment }}
+      selected={selected}
+    />
+  );
 });
 
 AgentNodeComponent.displayName = "AgentNodeComponent";

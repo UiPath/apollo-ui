@@ -70,6 +70,9 @@ const BaseCanvasInnerComponent = <NodeType extends Node = Node, EdgeType extends
 
     // Pan Shortcut Teaching UI
     panShortcutTeachingUIMessage = "Hold Space and drag to pan around the canvas!",
+
+    // Remaining ReactFlow props
+    ...reactFlowProps
   } = canvasProps;
 
   // Derive interactivity from mode
@@ -110,7 +113,7 @@ const BaseCanvasInnerComponent = <NodeType extends Node = Node, EdgeType extends
 
   return (
     <ReactFlow
-      {...canvasProps}
+      {...reactFlowProps}
       nodes={nodes}
       edges={edges}
       nodeTypes={nodeTypes}
