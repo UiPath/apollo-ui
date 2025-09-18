@@ -250,7 +250,6 @@ const AgentFlowWrapper = ({
   const handleSelectResource = useCallback((resourceId: string | null) => {
     setSelectedResourceId(resourceId);
     setSidebarMode("properties");
-    console.log("Selected resource:", resourceId);
   }, []);
 
   const handleAddResourceRequest = useCallback((type: AgentFlowResourceType) => {
@@ -285,7 +284,6 @@ const AgentFlowWrapper = ({
 
   const handleRemoveResource = useCallback(
     (resource: AgentFlowResource) => {
-      console.log("Remove resource:", resource);
       setResources((prev) => prev.filter((r) => r.id !== resource.id));
       if (selectedResourceId === resource.id) {
         setSelectedResourceId(null);
@@ -307,7 +305,6 @@ const AgentFlowWrapper = ({
   }, [model]);
 
   const handleRemoveModel = useCallback(() => {
-    console.log("Remove model clicked");
     setModel(null);
   }, []);
 
@@ -345,9 +342,7 @@ const AgentFlowWrapper = ({
   }, []);
 
   // Real span/node mapping functions from frontend
-  const setSpanForSelectedNode = useCallback((node: any) => {
-    console.log("Set span for selected node:", node);
-  }, []);
+  const setSpanForSelectedNode = useCallback((_node: any) => {}, []);
 
   const getNodeFromSelectedSpan = useCallback((_nodes: any[]) => {
     return null;

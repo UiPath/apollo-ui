@@ -139,7 +139,7 @@ export const ResourceNode = memo(
     }, [selected, hasError, hasSuccess, hasRunning, isCurrentBreakpoint, isDesignMode]);
 
     const nodeMenuItems: NodeMenuItem[] = useMemo(() => {
-      if (data.type === "model") return [];
+      if (mode === "view" || data.type === "model") return [];
 
       const breakpointItem: NodeMenuAction = {
         id: "breakpoint",
@@ -173,6 +173,7 @@ export const ResourceNode = memo(
         removeItem,
       ];
     }, [
+      mode,
       translations,
       data.type,
       data.projectId,

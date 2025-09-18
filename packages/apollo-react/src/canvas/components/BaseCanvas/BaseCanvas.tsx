@@ -1,4 +1,4 @@
-import { forwardRef, memo, useCallback, useImperativeHandle, useState } from "react";
+import { forwardRef, memo, useCallback, useImperativeHandle, useMemo, useState } from "react";
 import type { Edge, Node, ReactFlowInstance } from "@xyflow/react";
 import { ConnectionMode, ReactFlow } from "@xyflow/react";
 import { BASE_CANVAS_DEFAULTS } from "./BaseCanvas.constants";
@@ -15,8 +15,8 @@ const BaseCanvasInnerComponent = <NodeType extends Node = Node, EdgeType extends
 
   const {
     // Core props
-    nodes,
-    edges,
+    nodes = [],
+    edges = [],
     nodeTypes,
     edgeTypes,
     children,
@@ -92,6 +92,19 @@ const BaseCanvasInnerComponent = <NodeType extends Node = Node, EdgeType extends
   // The hook only pans the viewport without changing the zoom level
   useMaintainNodesInView(maintainNodesInView);
 
+  // Give precedence to edges connected to selected nodes in cases of overlapping edges
+  const normalizedEdges = useMemo(
+    () =>
+      edges.map((edge) => {
+        const isConnectedToSelectedNode = nodes.some((node) => node.selected && (node.id === edge.source || node.id === edge.target));
+        return {
+          ...edge,
+          zIndex: isConnectedToSelectedNode ? 0 : -1,
+        };
+      }),
+    [edges, nodes]
+  );
+
   const handleInit = useCallback(
     (instance: ReactFlowInstance<NodeType, EdgeType>) => {
       setReactFlowInstance(instance);
@@ -115,7 +128,7 @@ const BaseCanvasInnerComponent = <NodeType extends Node = Node, EdgeType extends
     <ReactFlow
       {...reactFlowProps}
       nodes={nodes}
-      edges={edges}
+      edges={normalizedEdges}
       nodeTypes={nodeTypes}
       edgeTypes={edgeTypes}
       fitViewOptions={fitViewOptions}

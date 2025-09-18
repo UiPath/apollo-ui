@@ -1,3 +1,4 @@
+import "@xyflow/react/dist/base.css";
 import { createContext, type PropsWithChildren, useCallback, useContext, useEffect, useMemo } from "react";
 import createCache from "@emotion/cache";
 import { CacheProvider } from "@emotion/react";

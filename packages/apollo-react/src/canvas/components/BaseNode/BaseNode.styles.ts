@@ -170,7 +170,6 @@ export const BaseTextContainer = styled.div<{ hasBottomHandles?: boolean; shape?
 `;
 
 export const BaseHeader = styled.div<{ shape?: NodeShape; backgroundColor?: string }>`
-  width: 100%;
   font-weight: 600;
   font-size: 13px;
   color: var(--color-foreground);
@@ -186,6 +185,7 @@ export const BaseHeader = styled.div<{ shape?: NodeShape; backgroundColor?: stri
   ${({ shape }) =>
     shape === "rectangle"
       ? css`
+          width: 100%;
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
