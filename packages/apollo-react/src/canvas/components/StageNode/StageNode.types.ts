@@ -39,8 +39,9 @@ export interface StageNodeProps extends NodeProps {
     taskStatus: Record<string, StageTaskExecution>;
   };
   menuItems?: NodeMenuItem[];
-  onAddTask?: () => void;
+  onTaskAdd?: () => void;
   onTaskClick?: (taskElementId: string) => void;
+  onTaskRemove?: (groupIndex: number, taskIndex: number) => void;
 }
 
 export interface StageTaskExecution {

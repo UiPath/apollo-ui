@@ -33,7 +33,7 @@ const meta = {
             execution: context.args.execution,
             addTaskLabel: context.args.addTaskLabel,
             menuItems: context.args.menuItems,
-            onAddTask: context.args.onAddTask,
+            onTaskAdd: context.args.onTaskAdd,
             onTaskClick: context.args.onTaskClick,
           },
         },
@@ -395,6 +395,121 @@ export const ExecutionStatus: Story = {
         targetHandle: "3____target____left",
       },
     ] as Edge[],
+  },
+  args: {},
+};
+
+export const InteractiveTaskManagement: Story = {
+  name: "Interactive Task Management",
+  parameters: {
+    nodes: [
+      {
+        id: "design-stage",
+        type: "stage",
+        position: { x: 50, y: 100 },
+        width: 350,
+        data: {
+          stageDetails: {
+            label: "Design Mode - Editable",
+            tasks: [
+              [{ id: "1", label: "Initial Task", icon: <VerificationIcon /> }],
+              [{ id: "2", label: "Credit Review with a very long label that will be truncated and show tooltip", icon: <DocumentIcon /> }],
+              [
+                { id: "3", label: "Address Verification", icon: <VerificationIcon /> },
+                { id: "4", label: "Property Verification with Long Name", icon: <VerificationIcon /> },
+                { id: "5", label: "Background Check", icon: <ProcessIcon /> },
+              ],
+              [{ id: "6", label: "Final Review Task with Extended Description", icon: <ProcessIcon /> }],
+            ],
+          },
+          onTaskClick: (taskId: string) => {
+            window.alert(`Task clicked: ${taskId}`);
+          },
+          onTaskRemove: (groupIndex: number, taskIndex: number) => {
+            window.alert(
+              `Task removal requested!\nGroup: ${groupIndex}\nTask: ${taskIndex}\n\nIn a real app, this would remove the task from the data.`
+            );
+          },
+          onTaskAdd: () => {
+            window.alert("Add task functionality - this would open a dialog to add a new task");
+          },
+          menuItems: [
+            {
+              id: "edit",
+              label: "Edit Stage",
+              onClick: () => console.log("Edit stage"),
+            },
+            {
+              id: "add-task",
+              label: "Add Task",
+              onClick: () => console.log("Add task from menu"),
+            },
+            { type: "divider" },
+            {
+              id: "delete",
+              label: "Delete Stage",
+              onClick: () => console.log("Delete stage"),
+            },
+          ],
+        },
+      },
+      {
+        id: "execution-stage",
+        type: "stage",
+        position: { x: 450, y: 100 },
+        width: 350,
+        data: {
+          stageDetails: {
+            label: "Execution Mode - Read Only",
+            tasks: [
+              [{ id: "1", label: "Task with execution status and very long name that will be truncated", icon: <VerificationIcon /> }],
+              [{ id: "2", label: "Credit Review Processing", icon: <DocumentIcon /> }],
+              [
+                { id: "3", label: "Parallel Address Verification Task", icon: <VerificationIcon /> },
+                { id: "4", label: "Parallel Property Verification with Extended Name", icon: <VerificationIcon /> },
+              ],
+              [{ id: "5", label: "Final Review and Approval Process", icon: <ProcessIcon /> }],
+            ],
+          },
+          execution: {
+            stageStatus: {
+              status: "InProgress",
+              label: "In progress",
+              duration: "2h 15m",
+            },
+            taskStatus: {
+              "1": {
+                status: "Completed",
+                duration: "30m",
+                badge: "Completed",
+                badgeStatus: "info",
+              },
+              "2": {
+                status: "InProgress",
+                duration: "1h 15m",
+                retryDuration: "15m",
+                badge: "Retry",
+                badgeStatus: "warning",
+                retryCount: 2,
+              },
+              "3": { status: "Completed", duration: "45m" },
+              "4": {
+                status: "Failed",
+                duration: "20m",
+                retryDuration: "10m",
+                badge: "Error",
+                badgeStatus: "error",
+                retryCount: 1,
+              },
+              "5": { status: "NotExecuted" },
+            },
+          },
+          onTaskClick: (taskId: string) => {
+            window.alert(`Task clicked: ${taskId} (execution mode - read only)`);
+          },
+        },
+      },
+    ],
   },
   args: {},
 };

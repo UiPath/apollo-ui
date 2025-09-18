@@ -11,6 +11,7 @@ import {
   StageParallelLabel,
   StageParallelBracket,
   StageTaskRetryDuration,
+  StageTaskRemoveButton,
 } from "./StageNode.styles";
 import { StageHandle } from "./StageHandle";
 import { NodeContextMenu } from "../NodeContextMenu";
@@ -30,7 +31,18 @@ const ProcessNodeIcon = () => (
 );
 
 const StageNodeComponent = (props: StageNodeProps) => {
-  const { dragging, selected, id, execution, stageDetails, addTaskLabel = "Add task", onAddTask, menuItems, onTaskClick } = props;
+  const {
+    dragging,
+    selected,
+    id,
+    execution,
+    stageDetails,
+    addTaskLabel = "Add task",
+    menuItems,
+    onTaskAdd,
+    onTaskClick,
+    onTaskRemove,
+  } = props;
 
   const label = stageDetails?.label;
   const isException = stageDetails?.isException;
@@ -72,6 +84,14 @@ const StageNodeComponent = (props: StageNodeProps) => {
     return taskExecution.badge;
   }, []);
 
+  const handleTaskRemove = useCallback(
+    (event: React.MouseEvent, groupIndex: number, taskIndex: number) => {
+      event.stopPropagation();
+      onTaskRemove?.(groupIndex, taskIndex);
+    },
+    [onTaskRemove]
+  );
+
   return (
     <div style={{ position: "relative" }} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
       <StageContainer selected={selected} status={status} isException={isException}>
@@ -112,7 +132,7 @@ const StageNodeComponent = (props: StageNodeProps) => {
         </StageHeader>
 
         <StageContent>
-          {onAddTask && <ApLink onClick={onAddTask}>{addTaskLabel}</ApLink>}
+          {onTaskAdd && <ApLink onClick={onTaskAdd}>{addTaskLabel}</ApLink>}
 
           {tasks && tasks.length > 0 && (
             <StageTaskList>
@@ -126,7 +146,7 @@ const StageNodeComponent = (props: StageNodeProps) => {
                         <StageParallelBracket />
                       </>
                     )}
-                    {taskGroup.map((task) => {
+                    {taskGroup.map((task, taskIndex) => {
                       const taskExecution = execution?.taskStatus?.[task.id];
                       return (
                         <StageTaskItem
@@ -137,13 +157,15 @@ const StageNodeComponent = (props: StageNodeProps) => {
                           <StageTaskIcon>{task.icon ?? <ProcessNodeIcon />}</StageTaskIcon>
                           <Column flex={1} style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                             <Row align="center" justify="space-between">
-                              <ApTypography
-                                variant={FontVariantToken.fontSizeM}
-                                color="var(--color-foreground)"
-                                style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
-                              >
-                                {task.label}
-                              </ApTypography>
+                              <ApTooltip content={task.label} placement="top">
+                                <ApTypography
+                                  variant={FontVariantToken.fontSizeM}
+                                  color="var(--color-foreground)"
+                                  style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
+                                >
+                                  {task.label}
+                                </ApTypography>
+                              </ApTooltip>
                               {taskExecution?.status && <ExecutionStatusIcon status={taskExecution.status} />}
                             </Row>
                             <Row align="center" justify="space-between">
@@ -168,6 +190,14 @@ const StageNodeComponent = (props: StageNodeProps) => {
                               )}
                             </Row>
                           </Column>
+                          {onTaskRemove && (
+                            <StageTaskRemoveButton
+                              className="task-remove-button"
+                              onClick={(event) => handleTaskRemove(event, groupIndex, taskIndex)}
+                            >
+                              <ApIcon name="close" size="16px" />
+                            </StageTaskRemoveButton>
+                          )}
                         </StageTaskItem>
                       );
                     })}

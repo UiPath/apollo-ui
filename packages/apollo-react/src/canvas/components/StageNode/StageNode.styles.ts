@@ -140,6 +140,14 @@ export const StageTaskItem = styled.div<{ status?: StageStatus }>`
   transition: all 0.2s ease;
   min-height: 36px;
 
+  .task-remove-button {
+    display: none;
+  }
+
+  &:hover .task-remove-button {
+    display: flex;
+  }
+
   ${({ status }) =>
     status === "InProgress" &&
     css`
@@ -198,4 +206,21 @@ export const StageTaskRetryDuration = styled.div<{ status?: "warning" | "info" |
     css`
       color: var(--color-error-text);
     `}
+`;
+
+export const StageTaskRemoveButton = styled.div`
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  background: transparent;
+  color: var(--color-foreground-de-emp);
+  transition: color 0.2s ease;
+  flex-shrink: 0;
+
+  &:hover {
+    color: var(--color-foreground);
+  }
 `;
