@@ -192,27 +192,23 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
     return <ApIcon variant="outlined" name={hasGuardrails ? "gpp_good" : "shield"} size="18px" color="var(--color-icon-default)" />;
   }, [mode, nodes]);
 
-  // Convert to NewBaseNode props
-  const newBaseNodeProps: NewBaseNodeData & NewBaseNodeDisplayProps = {
-    executionStatus,
-    icon: agentIcon,
-    display: {
-      label: name,
-      subLabel: isConversational ? translations.conversationalAgent : translations.autonomousAgent,
-      shape: "rectangle",
-      background: "var(--color-background)",
-      iconBackground: "var(--color-background-secondary)",
-    },
-    handleConfigurations,
-    showAddButton: mode === "design", // Show add buttons in design mode even when not selected
-  };
-
   return (
     <NewBaseNode
       {...nodeProps}
-      data={newBaseNodeProps}
-      adornments={{ topRight: statusAdornment, bottomRight: guardrailsAdornment }}
+      executionStatus={executionStatus}
+      icon={agentIcon}
+      display={{
+        label: name,
+        subLabel: isConversational ? translations.conversationalAgent : translations.autonomousAgent,
+        shape: "rectangle",
+        background: "var(--color-background)",
+        iconBackground: "var(--color-background-secondary)",
+      }}
+      handleConfigurations={handleConfigurations}
+      showAddButton={mode === "design"} // Show add buttons in design mode even when not selected
       selected={selected}
+      adornments={{ topRight: statusAdornment, bottomRight: guardrailsAdornment }}
+      menuItems={[]}
     />
   );
 });

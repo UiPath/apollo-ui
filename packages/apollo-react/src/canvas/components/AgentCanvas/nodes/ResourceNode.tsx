@@ -279,50 +279,54 @@ export const ResourceNode = memo(
       return undefined;
     }, [hasGuardrails]);
 
+    const handleConfigurations = useMemo(
+      () => [
+        {
+          position: Position.Top,
+          handles: modelHandles,
+          visible: data.type === "model",
+        },
+        {
+          position: Position.Top,
+          handles: toolTopHandles,
+          visible: data.type === "tool" || data.type === "mcp",
+        },
+        ...(data.isExpandable
+          ? [
+              {
+                position: Position.Bottom,
+                handles: toolBottomHandles,
+                visible: data.type === "tool" || data.type === "mcp",
+              },
+            ]
+          : []),
+        {
+          position: Position.Bottom,
+          handles: contextHandles,
+          visible: data.type === "context",
+        },
+        {
+          position: Position.Top,
+          handles: escalationHandles,
+          visible: data.type === "escalation",
+        },
+      ],
+      [data.type, data.isExpandable, modelHandles, toolTopHandles, toolBottomHandles, contextHandles, escalationHandles]
+    );
+
     return (
       <NewBaseNode
-        data={{
-          icon: resourceIcon,
-          display: {
-            iconBackground: "var(--color-background-secondary)",
-            label: data.name,
-            subLabel: data.originalName,
-            labelBackgroundColor: "var(--color-background-secondary)",
-            shape: "circle",
-          },
-          handleConfigurations: [
-            {
-              position: Position.Top,
-              handles: modelHandles,
-              visible: data.type === "model",
-            },
-            {
-              position: Position.Top,
-              handles: toolTopHandles,
-              visible: data.type === "tool" || data.type === "mcp",
-            },
-            ...(data.isExpandable
-              ? [
-                  {
-                    position: Position.Bottom,
-                    handles: toolBottomHandles,
-                    visible: data.type === "tool" || data.type === "mcp",
-                  },
-                ]
-              : []),
-            {
-              position: Position.Bottom,
-              handles: contextHandles,
-              visible: data.type === "context",
-            },
-            {
-              position: Position.Top,
-              handles: escalationHandles,
-              visible: data.type === "escalation",
-            },
-          ],
-          menuItems: nodeMenuItems,
+        data={{}}
+        handleConfigurations={handleConfigurations}
+        icon={resourceIcon}
+        display={{
+          iconBackground: "var(--color-background-secondary)",
+          label: data.name,
+          subLabel: data.originalName,
+          labelBackgroundColor: "var(--color-background-secondary)",
+          shape: "circle",
         }}
+        menuItems={nodeMenuItems}
         adornments={{
           topLeft: breakpointAdornment,
           topRight: statusAdornment,

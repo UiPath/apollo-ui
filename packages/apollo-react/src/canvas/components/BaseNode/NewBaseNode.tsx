@@ -4,12 +4,14 @@ import { Position, useConnection, useStore } from "@xyflow/react";
 import { ButtonHandles } from "../ButtonHandle";
 import { NodeContextMenu } from "../NodeContextMenu";
 import { BaseContainer, BaseIconWrapper, BaseBadgeSlot, BaseTextContainer, BaseHeader, BaseSubHeader } from "./BaseNode.styles";
-import type { NewBaseNodeData, NewBaseNodeDisplayProps, NodeAdornments } from "./NewBaseNode.types";
+import type { NewBaseNodeData, NewBaseNodeDisplayProps } from "./NewBaseNode.types";
 import { cx } from "@uipath/uix-core";
 import { ApIcon } from "@uipath/portal-shell-react";
 
 // Internal component that expects display props as direct props
-const NewBaseNodeComponent = (props: NodeProps<Node<NewBaseNodeData>> & NewBaseNodeDisplayProps) => {
+const NewBaseNodeComponent = (
+  props: Omit<NodeProps<Node<NewBaseNodeData>>, "data"> & NewBaseNodeDisplayProps & { data?: NewBaseNodeData }
+) => {
   const {
     id,
     selected = false,
@@ -222,15 +224,26 @@ const NewBaseNodeComponent = (props: NodeProps<Node<NewBaseNodeData>> & NewBaseN
 
 // Wrapper component that extracts display props from data for React Flow compatibility
 // Also supports direct props for standalone usage (non-React Flow components)
-const NewBaseNodeWrapper = (props: NodeProps<Node<NewBaseNodeData & NewBaseNodeDisplayProps>> & { adornments?: NodeAdornments }) => {
-  const { data, adornments, ...nodeProps } = props;
-
-  const { executionStatus, icon, display, handleConfigurations, menuItems, onHandleAction, showAddButton = false, ...remainingData } = data;
+const NewBaseNodeWrapper = (
+  props: Omit<NodeProps<Node<NewBaseNodeData>>, "data"> & NewBaseNodeDisplayProps & { data?: NewBaseNodeData }
+) => {
+  const {
+    data,
+    adornments,
+    menuItems,
+    executionStatus,
+    icon,
+    display,
+    handleConfigurations,
+    onHandleAction,
+    showAddButton = false,
+    ...nodeProps
+  } = props;
 
   return (
     <NewBaseNodeComponent
+      data={data}
       {...nodeProps}
-      data={remainingData}
       executionStatus={executionStatus}
       icon={icon}
       display={display}

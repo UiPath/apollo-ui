@@ -30,8 +30,24 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+// Custom node component that extracts display props from data for stories
+const StoryBaseNode = (props: any) => {
+  const { data, ...nodeProps } = props;
+  return (
+    <NewBaseNode
+      {...nodeProps}
+      data={data}
+      icon={data?.icon}
+      display={data?.display}
+      adornments={data?.adornments}
+      handleConfigurations={data?.handleConfigurations}
+      onHandleAction={data?.onHandleAction}
+    />
+  );
+};
+
 const nodeTypes: NodeTypes = {
-  newBaseNode: NewBaseNode,
+  newBaseNode: StoryBaseNode,
 };
 
 export const Default: Story = {
@@ -42,33 +58,25 @@ export const Default: Story = {
           id: "1",
           type: "newBaseNode",
           position: { x: 200, y: 200 },
-          data: {
-            display: { label: "http-request", shape: "square" as const },
-          },
+          data: {},
         },
         {
           id: "2",
           type: "newBaseNode",
           position: { x: 400, y: 200 },
-          data: {
-            display: { label: "script-task", shape: "square" as const },
-          },
+          data: {},
         },
         {
           id: "3",
           type: "newBaseNode",
           position: { x: 600, y: 200 },
-          data: {
-            display: { label: "rpa", shape: "square" as const },
-          },
+          data: {},
         },
         {
           id: "5",
           type: "newBaseNode",
           position: { x: 200, y: 400 },
-          data: {
-            display: { label: "agent", shape: "rectangle" as const },
-          },
+          data: {},
         },
         {
           id: "6",
@@ -87,6 +95,19 @@ export const Default: Story = {
             ...node,
             data: {
               ...node.data,
+              // Move props into data for the StoryBaseNode to extract
+              display:
+                node.id === "1"
+                  ? { label: "http-request", shape: "square" as const }
+                  : node.id === "2"
+                    ? { label: "script-task", shape: "square" as const }
+                    : node.id === "3"
+                      ? { label: "rpa", shape: "square" as const }
+                      : node.id === "5"
+                        ? { label: "agent", shape: "rectangle" as const }
+                        : node.id === "6"
+                          ? { label: "generic-node", shape: "square" as const }
+                          : undefined,
               icon:
                 node.id === "1" ? (
                   <ApIcon name="public" color="var(--color-foreground-de-emp)" size="40px" />
@@ -98,6 +119,8 @@ export const Default: Story = {
                   <div style={{ color: "var(--color-foreground-de-emp)" }}>
                     <Icons.AgentIcon />
                   </div>
+                ) : node.id === "6" ? (
+                  <ApIcon name="settings" color="var(--color-foreground-de-emp)" size="40px" />
                 ) : undefined,
               // Add adornments
               adornments:
@@ -202,23 +225,21 @@ export const Default: Story = {
                         ],
                       },
                     ]
-                  : node.id !== "6"
-                    ? [
-                        // Other nodes: Simple handle configuration
-                        {
-                          position: Position.Left,
-                          handles: [{ id: "input", type: "target", handleType: "input" }],
-                        },
-                        {
-                          position: Position.Right,
-                          handles: [{ id: "output", type: "source", handleType: "output" }],
-                        },
-                      ]
-                    : undefined,
+                  : [
+                      // Other nodes: Simple handle configuration
+                      {
+                        position: Position.Left,
+                        handles: [{ id: "input", type: "target", handleType: "input" }],
+                      },
+                      {
+                        position: Position.Right,
+                        handles: [{ id: "output", type: "source", handleType: "output" }],
+                      },
+                    ],
               onHandleAction: (event: HandleActionEvent) => {
                 console.log("Handle action:", event);
               },
-            } as NewBaseNodeData & NewBaseNodeDisplayProps,
+            },
           })) as any[],
         [nodes]
       );
@@ -254,15 +275,7 @@ export const CustomizedSizes: Story = {
           width: 40,
           height: 40,
           position: { x: 100, y: 50 },
-          data: {
-            display: {
-              label: "40x40",
-              shape: "square" as const,
-              background: "#fff3e0",
-              iconBackground: "#f57c00",
-              iconColor: "#ffffff",
-            },
-          },
+          data: {},
         },
         {
           id: "sq3",
@@ -270,15 +283,7 @@ export const CustomizedSizes: Story = {
           width: 60,
           height: 60,
           position: { x: 170, y: 50 },
-          data: {
-            display: {
-              label: "60x60",
-              shape: "square" as const,
-              background: "#f3e5f5",
-              iconBackground: "#7b1fa2",
-              iconColor: "#ffeb3b",
-            },
-          },
+          data: {},
         },
         {
           id: "sq4",
@@ -286,15 +291,7 @@ export const CustomizedSizes: Story = {
           width: 80,
           height: 80,
           position: { x: 260, y: 50 },
-          data: {
-            display: {
-              label: "80x80",
-              shape: "square" as const,
-              background: "#e8f5e9",
-              iconBackground: "#388e3c",
-              iconColor: "#ffffff",
-            },
-          },
+          data: {},
         },
         {
           id: "sq5",
@@ -302,15 +299,7 @@ export const CustomizedSizes: Story = {
           width: 100,
           height: 100,
           position: { x: 370, y: 50 },
-          data: {
-            display: {
-              label: "100x100",
-              shape: "square" as const,
-              background: "#fce4ec",
-              iconBackground: "#c2185b",
-              iconColor: "#ffe0b2",
-            },
-          },
+          data: {},
         },
         {
           id: "sq6",
@@ -318,15 +307,7 @@ export const CustomizedSizes: Story = {
           width: 120,
           height: 120,
           position: { x: 500, y: 50 },
-          data: {
-            display: {
-              label: "120x120",
-              shape: "square" as const,
-              background: "#e0f2f1",
-              iconBackground: "#00695c",
-              iconColor: "#b2dfdb",
-            },
-          },
+          data: {},
         },
         {
           id: "sq7",
@@ -334,15 +315,7 @@ export const CustomizedSizes: Story = {
           width: 150,
           height: 150,
           position: { x: 650, y: 50 },
-          data: {
-            display: {
-              label: "150x150",
-              shape: "square" as const,
-              background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-              iconBackground: "rgba(255, 255, 255, 0.9)",
-              iconColor: "#764ba2",
-            },
-          },
+          data: {},
         },
 
         // Circle shapes - various sizes
@@ -352,15 +325,7 @@ export const CustomizedSizes: Story = {
           width: 40,
           height: 40,
           position: { x: 100, y: 250 },
-          data: {
-            display: {
-              label: "40x40",
-              shape: "circle" as const,
-              background: "#e8eaf6",
-              iconBackground: "#283593",
-              iconColor: "#e3f2fd",
-            },
-          },
+          data: {},
         },
         {
           id: "c3",
@@ -368,15 +333,7 @@ export const CustomizedSizes: Story = {
           width: 60,
           height: 60,
           position: { x: 170, y: 250 },
-          data: {
-            display: {
-              label: "60x60",
-              shape: "circle" as const,
-              background: "#fff8e1",
-              iconBackground: "#f57f17",
-              iconColor: "#311b92",
-            },
-          },
+          data: {},
         },
         {
           id: "c4",
@@ -384,15 +341,7 @@ export const CustomizedSizes: Story = {
           width: 80,
           height: 80,
           position: { x: 260, y: 250 },
-          data: {
-            display: {
-              label: "80x80",
-              shape: "circle" as const,
-              background: "#e1f5fe",
-              iconBackground: "#0277bd",
-              iconColor: "#ffecb3",
-            },
-          },
+          data: {},
         },
         {
           id: "c5",
@@ -400,15 +349,7 @@ export const CustomizedSizes: Story = {
           width: 100,
           height: 100,
           position: { x: 370, y: 250 },
-          data: {
-            display: {
-              label: "100x100",
-              shape: "circle" as const,
-              background: "#f3e5f5",
-              iconBackground: "#6a1b9a",
-              iconColor: "#e1bee7",
-            },
-          },
+          data: {},
         },
         {
           id: "c6",
@@ -416,15 +357,7 @@ export const CustomizedSizes: Story = {
           width: 120,
           height: 120,
           position: { x: 500, y: 250 },
-          data: {
-            display: {
-              label: "120x120",
-              shape: "circle" as const,
-              background: "#efebe9",
-              iconBackground: "#4e342e",
-              iconColor: "#d7ccc8",
-            },
-          },
+          data: {},
         },
         {
           id: "c7",
@@ -432,15 +365,7 @@ export const CustomizedSizes: Story = {
           width: 150,
           height: 150,
           position: { x: 650, y: 250 },
-          data: {
-            display: {
-              label: "150x150",
-              shape: "circle" as const,
-              background: "radial-gradient(circle at center, #ff6b6b 0%, #ff4757 100%)",
-              iconBackground: "rgba(255, 255, 255, 0.95)",
-              iconColor: "#ff4757",
-            },
-          },
+          data: {},
         },
 
         // Rectangle shapes - various sizes
@@ -450,15 +375,7 @@ export const CustomizedSizes: Story = {
           width: 100,
           height: 40,
           position: { x: 50, y: 450 },
-          data: {
-            display: {
-              label: "100x40",
-              shape: "rectangle" as const,
-              background: "#e8f5e9",
-              iconBackground: "#2e7d32",
-              iconColor: "#a5d6a7",
-            },
-          },
+          data: {},
         },
         {
           id: "r2",
@@ -466,15 +383,7 @@ export const CustomizedSizes: Story = {
           width: 150,
           height: 60,
           position: { x: 180, y: 450 },
-          data: {
-            display: {
-              label: "150x60",
-              shape: "rectangle" as const,
-              background: "#fff3e0",
-              iconBackground: "#e65100",
-              iconColor: "#fff176",
-            },
-          },
+          data: {},
         },
         {
           id: "r3",
@@ -482,15 +391,7 @@ export const CustomizedSizes: Story = {
           width: 200,
           height: 80,
           position: { x: 360, y: 450 },
-          data: {
-            display: {
-              label: "200x80",
-              shape: "rectangle" as const,
-              background: "#fce4ec",
-              iconBackground: "#ad1457",
-              iconColor: "#f8bbd0",
-            },
-          },
+          data: {},
         },
         {
           id: "r4",
@@ -498,15 +399,7 @@ export const CustomizedSizes: Story = {
           width: 250,
           height: 100,
           position: { x: 50, y: 550 },
-          data: {
-            display: {
-              label: "250x100",
-              shape: "rectangle" as const,
-              background: "#e0f7fa",
-              iconBackground: "#00838f",
-              iconColor: "#84ffff",
-            },
-          },
+          data: {},
         },
         {
           id: "r5",
@@ -514,15 +407,7 @@ export const CustomizedSizes: Story = {
           width: 320,
           height: 120,
           position: { x: 330, y: 550 },
-          data: {
-            display: {
-              label: "320x120",
-              shape: "rectangle" as const,
-              background: "#f3e5f5",
-              iconBackground: "#4a148c",
-              iconColor: "#ea80fc",
-            },
-          },
+          data: {},
         },
         {
           id: "r6",
@@ -530,15 +415,7 @@ export const CustomizedSizes: Story = {
           width: 400,
           height: 150,
           position: { x: 50, y: 700 },
-          data: {
-            display: {
-              label: "400x150",
-              shape: "rectangle" as const,
-              background: "linear-gradient(90deg, #4facfe 0%, #00f2fe 100%)",
-              iconBackground: "rgba(255, 255, 255, 0.9)",
-              iconColor: "#0091ea",
-            },
-          },
+          data: {},
         },
       ]);
       const [edges, setEdges, onEdgesChange] = useEdgesState([]);
@@ -551,29 +428,222 @@ export const CustomizedSizes: Story = {
             ...node,
             data: {
               ...node.data,
+              // Move props into data for the StoryBaseNode to extract
+              display:
+                node.id === "sq2"
+                  ? {
+                      label: "40x40",
+                      shape: "square" as const,
+                      background: "#fff3e0",
+                      iconBackground: "#f57c00",
+                      iconColor: "#ffffff",
+                    }
+                  : node.id === "sq3"
+                    ? {
+                        label: "60x60",
+                        shape: "square" as const,
+                        background: "#f3e5f5",
+                        iconBackground: "#7b1fa2",
+                        iconColor: "#ffeb3b",
+                      }
+                    : node.id === "sq4"
+                      ? {
+                          label: "80x80",
+                          shape: "square" as const,
+                          background: "#e8f5e9",
+                          iconBackground: "#388e3c",
+                          iconColor: "#ffffff",
+                        }
+                      : node.id === "sq5"
+                        ? {
+                            label: "100x100",
+                            shape: "square" as const,
+                            background: "#fce4ec",
+                            iconBackground: "#c2185b",
+                            iconColor: "#ffe0b2",
+                          }
+                        : node.id === "sq6"
+                          ? {
+                              label: "120x120",
+                              shape: "square" as const,
+                              background: "#e0f2f1",
+                              iconBackground: "#00695c",
+                              iconColor: "#b2dfdb",
+                            }
+                          : node.id === "sq7"
+                            ? {
+                                label: "150x150",
+                                shape: "square" as const,
+                                background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                                iconBackground: "rgba(255, 255, 255, 0.9)",
+                                iconColor: "#764ba2",
+                              }
+                            : node.id === "c2"
+                              ? {
+                                  label: "40x40",
+                                  shape: "circle" as const,
+                                  background: "#e8eaf6",
+                                  iconBackground: "#283593",
+                                  iconColor: "#e3f2fd",
+                                }
+                              : node.id === "c3"
+                                ? {
+                                    label: "60x60",
+                                    shape: "circle" as const,
+                                    background: "#fff8e1",
+                                    iconBackground: "#f57f17",
+                                    iconColor: "#311b92",
+                                  }
+                                : node.id === "c4"
+                                  ? {
+                                      label: "80x80",
+                                      shape: "circle" as const,
+                                      background: "#e1f5fe",
+                                      iconBackground: "#0277bd",
+                                      iconColor: "#ffecb3",
+                                    }
+                                  : node.id === "c5"
+                                    ? {
+                                        label: "100x100",
+                                        shape: "circle" as const,
+                                        background: "#f3e5f5",
+                                        iconBackground: "#6a1b9a",
+                                        iconColor: "#e1bee7",
+                                      }
+                                    : node.id === "c6"
+                                      ? {
+                                          label: "120x120",
+                                          shape: "circle" as const,
+                                          background: "#efebe9",
+                                          iconBackground: "#4e342e",
+                                          iconColor: "#d7ccc8",
+                                        }
+                                      : node.id === "c7"
+                                        ? {
+                                            label: "150x150",
+                                            shape: "circle" as const,
+                                            background: "radial-gradient(circle at center, #ff6b6b 0%, #ff4757 100%)",
+                                            iconBackground: "rgba(255, 255, 255, 0.95)",
+                                            iconColor: "#ff4757",
+                                          }
+                                        : node.id === "r1"
+                                          ? {
+                                              label: "100x40",
+                                              shape: "rectangle" as const,
+                                              background: "#e8f5e9",
+                                              iconBackground: "#2e7d32",
+                                              iconColor: "#a5d6a7",
+                                            }
+                                          : node.id === "r2"
+                                            ? {
+                                                label: "150x60",
+                                                shape: "rectangle" as const,
+                                                background: "#fff3e0",
+                                                iconBackground: "#e65100",
+                                                iconColor: "#fff176",
+                                              }
+                                            : node.id === "r3"
+                                              ? {
+                                                  label: "200x80",
+                                                  shape: "rectangle" as const,
+                                                  background: "#fce4ec",
+                                                  iconBackground: "#ad1457",
+                                                  iconColor: "#f8bbd0",
+                                                }
+                                              : node.id === "r4"
+                                                ? {
+                                                    label: "250x100",
+                                                    shape: "rectangle" as const,
+                                                    background: "#e0f7fa",
+                                                    iconBackground: "#00838f",
+                                                    iconColor: "#84ffff",
+                                                  }
+                                                : node.id === "r5"
+                                                  ? {
+                                                      label: "320x120",
+                                                      shape: "rectangle" as const,
+                                                      background: "#f3e5f5",
+                                                      iconBackground: "#4a148c",
+                                                      iconColor: "#ea80fc",
+                                                    }
+                                                  : node.id === "r6"
+                                                    ? {
+                                                        label: "400x150",
+                                                        shape: "rectangle" as const,
+                                                        background: "linear-gradient(90deg, #4facfe 0%, #00f2fe 100%)",
+                                                        iconBackground: "rgba(255, 255, 255, 0.9)",
+                                                        iconColor: "#0091ea",
+                                                      }
+                                                    : undefined,
               icon:
-                node.id === "sq2" || node.id === "sq7" || node.id === "c2" || node.id === "c7" ? (
+                node.id === "sq2" ? (
                   // script-task nodes
-                  <ApIcon name="code" color={node.data.display?.iconColor || "var(--color-foreground-de-emp)"} size="40px" />
-                ) : node.id === "sq3" || node.id === "c3" ? (
+                  <ApIcon name="code" color="#ffffff" size="40px" />
+                ) : node.id === "sq3" ? (
                   // rpa nodes
-                  <ApIcon name="list_alt" color={node.data.display?.iconColor || "var(--color-foreground-de-emp)"} size="40px" />
-                ) : node.id === "sq4" || node.id === "c4" ? (
+                  <ApIcon name="list_alt" color="#ffeb3b" size="40px" />
+                ) : node.id === "sq4" ? (
                   // connector nodes
-                  <ApIcon name="code" color={node.data.display?.iconColor || "var(--color-foreground-de-emp)"} size="40px" />
-                ) : node.id === "sq5" || node.id === "c5" ? (
+                  <ApIcon name="code" color="#ffffff" size="40px" />
+                ) : node.id === "sq5" ? (
                   // generic nodes
-                  <ApIcon name="circle" color={node.data.display?.iconColor || "var(--color-foreground-de-emp)"} size="40px" />
-                ) : node.id === "sq6" || node.id === "c6" ? (
+                  <ApIcon name="circle" color="#ffe0b2" size="40px" />
+                ) : node.id === "sq6" ? (
                   // http-request nodes
-                  <ApIcon name="public" color={node.data.display?.iconColor || "var(--color-foreground-de-emp)"} size="40px" />
-                ) : node.id.startsWith("r") ? (
+                  <ApIcon name="public" color="#b2dfdb" size="40px" />
+                ) : node.id === "sq7" ? (
+                  // script-task nodes
+                  <ApIcon name="code" color="#764ba2" size="40px" />
+                ) : node.id === "c2" ? (
+                  // script-task nodes
+                  <ApIcon name="code" color="#e3f2fd" size="40px" />
+                ) : node.id === "c3" ? (
+                  // rpa nodes
+                  <ApIcon name="list_alt" color="#311b92" size="40px" />
+                ) : node.id === "c4" ? (
+                  // connector nodes
+                  <ApIcon name="code" color="#ffecb3" size="40px" />
+                ) : node.id === "c5" ? (
+                  // generic nodes
+                  <ApIcon name="circle" color="#e1bee7" size="40px" />
+                ) : node.id === "c6" ? (
+                  // http-request nodes
+                  <ApIcon name="public" color="#d7ccc8" size="40px" />
+                ) : node.id === "c7" ? (
+                  // script-task nodes
+                  <ApIcon name="code" color="#ff4757" size="40px" />
+                ) : node.id === "r1" ? (
                   // agent nodes (rectangles)
-                  <div style={{ color: node.data.display?.iconColor || "var(--color-foreground-de-emp)" }}>
+                  <div style={{ color: "#a5d6a7" }}>
+                    <Icons.AgentIcon />
+                  </div>
+                ) : node.id === "r2" ? (
+                  // agent nodes (rectangles)
+                  <div style={{ color: "#fff176" }}>
+                    <Icons.AgentIcon />
+                  </div>
+                ) : node.id === "r3" ? (
+                  // agent nodes (rectangles)
+                  <div style={{ color: "#f8bbd0" }}>
+                    <Icons.AgentIcon />
+                  </div>
+                ) : node.id === "r4" ? (
+                  // agent nodes (rectangles)
+                  <div style={{ color: "#84ffff" }}>
+                    <Icons.AgentIcon />
+                  </div>
+                ) : node.id === "r5" ? (
+                  // agent nodes (rectangles)
+                  <div style={{ color: "#ea80fc" }}>
+                    <Icons.AgentIcon />
+                  </div>
+                ) : node.id === "r6" ? (
+                  // agent nodes (rectangles)
+                  <div style={{ color: "#0091ea" }}>
                     <Icons.AgentIcon />
                   </div>
                 ) : (
-                  <ApIcon name="public" color={node.data.display?.iconColor || "var(--color-foreground-de-emp)"} size="40px" />
+                  <ApIcon name="public" color="var(--color-foreground-de-emp)" size="40px" />
                 ),
               // Add adornments
               adornments:
@@ -614,7 +684,7 @@ export const CustomizedSizes: Story = {
                           bottomLeft: <ApTypography variant={FontVariantToken.fontMonoXS}>GET</ApTypography>,
                         }
                       : undefined,
-            } as NewBaseNodeData & NewBaseNodeDisplayProps,
+            },
           })) as any[],
         [nodes]
       );
