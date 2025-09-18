@@ -340,7 +340,7 @@ export class AutopilotChatService {
     /**
      * Expands the chat window
      */
-    setChatMode(mode: AutopilotChatMode) {
+    setChatMode(mode: AutopilotChatMode, persist: boolean = true) {
         const key = getChatModeKey(this._instanceName);
         const storedMode = StorageService.Instance.get(key);
 
@@ -348,7 +348,7 @@ export class AutopilotChatService {
             StorageService.Instance.remove(key);
         }
 
-        if (mode !== AutopilotChatMode.Closed) {
+        if (persist && mode !== AutopilotChatMode.Closed) {
             StorageService.Instance.set(key, mode);
         }
 
