@@ -37,7 +37,7 @@ const meta = {
         ],
         []
       );
-      const executions = useMemo(() => ({ getExecutionState: () => "idle" }), []);
+      const executions = useMemo(() => ({ getExecutionState: (nodeId: string) => nodeId.split("-")[1] }), []);
 
       return (
         <NodeRegistryProvider registrations={registrations}>
@@ -61,36 +61,210 @@ export const Default: Story = {
   render: (__args) => {
     const DefaultComponent = () => {
       const nodeTypeRegistry = useNodeTypeRegistry();
-      const [nodes, __setNodes, onNodesChange] = useNodesState([
+      const [nodes, _setNodes, onNodesChange] = useNodesState([
+        // Row 1: Default
         {
-          id: "1",
-          type: "http-request",
-          position: { x: 200, y: 200 },
-          data: nodeTypeRegistry.createDefaultData("http-request"),
+          id: "circle-NotExecuted",
+          type: "generic",
+          position: { x: 96, y: 96 },
+          data: {
+            ...nodeTypeRegistry.createDefaultData("generic"),
+            display: {
+              label: "Header",
+              subLabel: "Not executed",
+              shape: "circle",
+            },
+          },
         },
         {
-          id: "2",
-          type: "script-task",
-          position: { x: 400, y: 200 },
-          data: nodeTypeRegistry.createDefaultData("script-task"),
+          id: "square-NotExecuted",
+          type: "generic",
+          position: { x: 288, y: 96 },
+          data: {
+            ...nodeTypeRegistry.createDefaultData("generic"),
+            display: {
+              label: "Header",
+              subLabel: "Not executed",
+              shape: "square",
+            },
+          },
         },
         {
-          id: "3",
-          type: "rpa",
-          position: { x: 600, y: 200 },
-          data: nodeTypeRegistry.createDefaultData("rpa"),
+          id: "rect-NotExecuted",
+          type: "generic",
+          position: { x: 480, y: 96 },
+          data: {
+            ...nodeTypeRegistry.createDefaultData("generic"),
+            display: {
+              label: "Invoice approval agent",
+              subLabel: "Not executed",
+              shape: "rectangle",
+            },
+          },
+        },
+
+        // Row 2: InProgress
+        {
+          id: "circle-InProgress",
+          type: "generic",
+          position: { x: 96, y: 255 },
+          data: {
+            ...nodeTypeRegistry.createDefaultData("generic"),
+            display: {
+              label: "Header",
+              subLabel: "In progress",
+              shape: "circle",
+            },
+          },
         },
         {
-          id: "5",
-          type: "agent",
-          position: { x: 200, y: 400 },
-          data: nodeTypeRegistry.createDefaultData("agent"),
+          id: "square-InProgress",
+          type: "generic",
+          position: { x: 288, y: 255 },
+          data: {
+            ...nodeTypeRegistry.createDefaultData("generic"),
+            display: {
+              label: "Header",
+              subLabel: "In progress",
+              shape: "square",
+            },
+          },
         },
         {
-          id: "6",
-          type: "doesnotexist",
-          position: { x: 200, y: 600 },
-          data: nodeTypeRegistry.createDefaultData("doesnotexist"),
+          id: "rect-InProgress",
+          type: "generic",
+          position: { x: 480, y: 255 },
+          data: {
+            ...nodeTypeRegistry.createDefaultData("generic"),
+            display: {
+              label: "Invoice approval agent",
+              subLabel: "In progress",
+              shape: "rectangle",
+            },
+          },
+        },
+
+        // Row 3: Completed
+        {
+          id: "circle-Completed",
+          type: "generic",
+          position: { x: 96, y: 416 },
+          data: {
+            ...nodeTypeRegistry.createDefaultData("generic"),
+            display: {
+              label: "Header",
+              subLabel: "Completed",
+              shape: "circle",
+            },
+          },
+        },
+        {
+          id: "square-Completed",
+          type: "generic",
+          position: { x: 288, y: 416 },
+          data: {
+            ...nodeTypeRegistry.createDefaultData("generic"),
+            display: {
+              label: "Header",
+              subLabel: "Completed",
+              shape: "square",
+            },
+          },
+        },
+        {
+          id: "rect-Completed",
+          type: "generic",
+          position: { x: 480, y: 416 },
+          data: {
+            ...nodeTypeRegistry.createDefaultData("generic"),
+            display: {
+              label: "Invoice approval agent",
+              subLabel: "Completed",
+              shape: "rectangle",
+            },
+          },
+        },
+
+        // Row 4: Error
+        {
+          id: "circle-Failed",
+          type: "generic",
+          position: { x: 96, y: 576 },
+          data: {
+            ...nodeTypeRegistry.createDefaultData("generic"),
+            display: {
+              label: "Header",
+              subLabel: "Failed",
+              shape: "circle",
+            },
+          },
+        },
+        {
+          id: "square-Failed",
+          type: "generic",
+          position: { x: 288, y: 576 },
+          data: {
+            ...nodeTypeRegistry.createDefaultData("generic"),
+            display: {
+              label: "Header",
+              subLabel: "Failed",
+              shape: "square",
+            },
+          },
+        },
+        {
+          id: "rect-Failed",
+          type: "generic",
+          position: { x: 480, y: 576 },
+          data: {
+            ...nodeTypeRegistry.createDefaultData("generic"),
+            display: {
+              label: "Invoice approval agent",
+              subLabel: "Failed",
+              shape: "rectangle",
+            },
+          },
+        },
+
+        // Row 5: Paused
+        {
+          id: "circle-Paused",
+          type: "generic",
+          position: { x: 96, y: 736 },
+          data: {
+            ...nodeTypeRegistry.createDefaultData("generic"),
+            display: {
+              label: "Header",
+              subLabel: "Paused",
+              shape: "circle",
+            },
+          },
+        },
+        {
+          id: "square-Paused",
+          type: "generic",
+          position: { x: 288, y: 736 },
+          data: {
+            ...nodeTypeRegistry.createDefaultData("generic"),
+            display: {
+              label: "Header",
+              subLabel: "Paused",
+              shape: "square",
+            },
+          },
+        },
+        {
+          id: "rect-Paused",
+          type: "generic",
+          position: { x: 480, y: 736 },
+          data: {
+            ...nodeTypeRegistry.createDefaultData("generic"),
+            display: {
+              label: "Invoice approval agent",
+              subLabel: "Paused",
+              shape: "rectangle",
+            },
+          },
         },
       ]);
       const [edges, setEdges, onEdgesChange] = useEdgesState([]);
@@ -122,7 +296,6 @@ export const Default: Story = {
           nodeTypes={nodeTypes}
           mode="design"
         >
-          <NodeInspector />
           <Panel position="bottom-right">
             <CanvasPositionControls />
           </Panel>
@@ -139,314 +312,246 @@ export const CustomizedSizes: Story = {
     const CustomizedSizesComponent = () => {
       const nodeTypeRegistry = useNodeTypeRegistry();
       const [nodes, __setNodes, onNodesChange] = useNodesState([
-        // Square shapes - various sizes
+        // Square shapes - 16px grid sizes (48, 64, 80, 96, 112, 128)
         {
-          id: "sq2",
-          type: "script-task",
-          width: 40,
-          height: 40,
-          position: { x: 100, y: 50 },
-          data: {
-            ...nodeTypeRegistry.createDefaultData("script-task"),
-            display: {
-              label: "40x40",
-              shape: "square",
-              background: "#fff3e0",
-              iconBackground: "#f57c00",
-              iconColor: "#ffffff",
-            },
-          },
-        },
-        {
-          id: "sq3",
-          type: "rpa",
-          width: 60,
-          height: 60,
-          position: { x: 170, y: 50 },
-          data: {
-            ...nodeTypeRegistry.createDefaultData("rpa"),
-            display: {
-              label: "60x60",
-              shape: "square",
-              background: "#f3e5f5",
-              iconBackground: "#7b1fa2",
-              iconColor: "#ffeb3b",
-            },
-          },
-        },
-        {
-          id: "sq4",
-          type: "connector",
-          width: 80,
-          height: 80,
-          position: { x: 260, y: 50 },
-          data: {
-            ...nodeTypeRegistry.createDefaultData("connector"),
-            display: {
-              label: "80x80",
-              shape: "square",
-              background: "#e8f5e9",
-              iconBackground: "#388e3c",
-              iconColor: "#ffffff",
-            },
-          },
-        },
-        {
-          id: "sq5",
+          id: "sq-48",
           type: "generic",
-          width: 100,
-          height: 100,
-          position: { x: 370, y: 50 },
+          width: 48,
+          height: 48,
+          position: { x: 96, y: 96 },
           data: {
             ...nodeTypeRegistry.createDefaultData("generic"),
             display: {
-              label: "100x100",
+              label: "48",
               shape: "square",
-              background: "#fce4ec",
-              iconBackground: "#c2185b",
-              iconColor: "#ffe0b2",
             },
           },
         },
         {
-          id: "sq6",
-          type: "http-request",
-          width: 120,
-          height: 120,
-          position: { x: 500, y: 50 },
+          id: "sq-64",
+          type: "generic",
+          width: 64,
+          height: 64,
+          position: { x: 176, y: 96 },
           data: {
-            ...nodeTypeRegistry.createDefaultData("http-request"),
+            ...nodeTypeRegistry.createDefaultData("generic"),
             display: {
-              label: "120x120",
+              label: "64",
               shape: "square",
-              background: "#e0f2f1",
-              iconBackground: "#00695c",
-              iconColor: "#b2dfdb",
             },
           },
         },
         {
-          id: "sq7",
-          type: "script-task",
-          width: 150,
-          height: 150,
-          position: { x: 650, y: 50 },
+          id: "sq-80",
+          type: "generic",
+          width: 80,
+          height: 80,
+          position: { x: 272, y: 96 },
           data: {
-            ...nodeTypeRegistry.createDefaultData("script-task"),
+            ...nodeTypeRegistry.createDefaultData("generic"),
             display: {
-              label: "150x150",
+              label: "80",
               shape: "square",
-              background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-              iconBackground: "rgba(255, 255, 255, 0.9)",
-              iconColor: "#764ba2",
+            },
+          },
+        },
+        {
+          id: "sq-96",
+          type: "generic",
+          width: 96,
+          height: 96,
+          position: { x: 384, y: 96 },
+          data: {
+            ...nodeTypeRegistry.createDefaultData("generic"),
+            display: {
+              label: "96",
+              shape: "square",
+            },
+          },
+        },
+        {
+          id: "sq-112",
+          type: "generic",
+          width: 112,
+          height: 112,
+          position: { x: 512, y: 96 },
+          data: {
+            ...nodeTypeRegistry.createDefaultData("generic"),
+            display: {
+              label: "112",
+              shape: "square",
+            },
+          },
+        },
+        {
+          id: "sq-128",
+          type: "generic",
+          width: 128,
+          height: 128,
+          position: { x: 656, y: 96 },
+          data: {
+            ...nodeTypeRegistry.createDefaultData("generic"),
+            display: {
+              label: "128",
+              shape: "square",
             },
           },
         },
 
-        // Circle shapes - various sizes
+        // Circle shapes - same sizes
         {
-          id: "c2",
-          type: "script-task",
-          width: 40,
-          height: 40,
-          position: { x: 100, y: 250 },
-          data: {
-            ...nodeTypeRegistry.createDefaultData("script-task"),
-            display: {
-              label: "40x40",
-              shape: "circle",
-              background: "#e8eaf6",
-              iconBackground: "#283593",
-              iconColor: "#e3f2fd",
-            },
-          },
-        },
-        {
-          id: "c3",
-          type: "rpa",
-          width: 60,
-          height: 60,
-          position: { x: 170, y: 250 },
-          data: {
-            ...nodeTypeRegistry.createDefaultData("rpa"),
-            display: {
-              label: "60x60",
-              shape: "circle",
-              background: "#fff8e1",
-              iconBackground: "#f57f17",
-              iconColor: "#311b92",
-            },
-          },
-        },
-        {
-          id: "c4",
-          type: "connector",
-          width: 80,
-          height: 80,
-          position: { x: 260, y: 250 },
-          data: {
-            ...nodeTypeRegistry.createDefaultData("connector"),
-            display: {
-              label: "80x80",
-              shape: "circle",
-              background: "#e1f5fe",
-              iconBackground: "#0277bd",
-              iconColor: "#ffecb3",
-            },
-          },
-        },
-        {
-          id: "c5",
+          id: "c-48",
           type: "generic",
-          width: 100,
-          height: 100,
-          position: { x: 370, y: 250 },
+          width: 48,
+          height: 48,
+          position: { x: 96, y: 272 },
           data: {
             ...nodeTypeRegistry.createDefaultData("generic"),
             display: {
-              label: "100x100",
+              label: "48",
               shape: "circle",
-              background: "#f3e5f5",
-              iconBackground: "#6a1b9a",
-              iconColor: "#e1bee7",
             },
           },
         },
         {
-          id: "c6",
-          type: "http-request",
-          width: 120,
-          height: 120,
-          position: { x: 500, y: 250 },
+          id: "c-64",
+          type: "generic",
+          width: 64,
+          height: 64,
+          position: { x: 176, y: 272 },
           data: {
-            ...nodeTypeRegistry.createDefaultData("http-request"),
+            ...nodeTypeRegistry.createDefaultData("generic"),
             display: {
-              label: "120x120",
+              label: "64",
               shape: "circle",
-              background: "#efebe9",
-              iconBackground: "#4e342e",
-              iconColor: "#d7ccc8",
             },
           },
         },
         {
-          id: "c7",
-          type: "script-task",
-          width: 150,
-          height: 150,
-          position: { x: 650, y: 250 },
+          id: "c-80",
+          type: "generic",
+          width: 80,
+          height: 80,
+          position: { x: 272, y: 272 },
           data: {
-            ...nodeTypeRegistry.createDefaultData("script-task"),
+            ...nodeTypeRegistry.createDefaultData("generic"),
             display: {
-              label: "150x150",
+              label: "80",
               shape: "circle",
-              background: "radial-gradient(circle at center, #ff6b6b 0%, #ff4757 100%)",
-              iconBackground: "rgba(255, 255, 255, 0.95)",
-              iconColor: "#ff4757",
+            },
+          },
+        },
+        {
+          id: "c-96",
+          type: "generic",
+          width: 96,
+          height: 96,
+          position: { x: 384, y: 272 },
+          data: {
+            ...nodeTypeRegistry.createDefaultData("generic"),
+            display: {
+              label: "96",
+              shape: "circle",
+            },
+          },
+        },
+        {
+          id: "c-112",
+          type: "generic",
+          width: 112,
+          height: 112,
+          position: { x: 512, y: 272 },
+          data: {
+            ...nodeTypeRegistry.createDefaultData("generic"),
+            display: {
+              label: "112",
+              shape: "circle",
+            },
+          },
+        },
+        {
+          id: "c-128",
+          type: "generic",
+          width: 128,
+          height: 128,
+          position: { x: 656, y: 272 },
+          data: {
+            ...nodeTypeRegistry.createDefaultData("generic"),
+            display: {
+              label: "128",
+              shape: "circle",
             },
           },
         },
 
-        // Rectangle shapes - various sizes
+        // Rectangle shapes - various aspect ratios aligned to 16px grid
         {
-          id: "r1",
+          id: "r-small",
           type: "agent",
-          width: 100,
-          height: 40,
-          position: { x: 50, y: 450 },
+          width: 128,
+          height: 48,
+          position: { x: 96, y: 448 },
           data: {
             ...nodeTypeRegistry.createDefaultData("agent"),
             display: {
-              label: "100x40",
+              label: "128×48",
               shape: "rectangle",
-              background: "#e8f5e9",
-              iconBackground: "#2e7d32",
-              iconColor: "#a5d6a7",
             },
           },
         },
         {
-          id: "r2",
+          id: "r-medium",
           type: "agent",
-          width: 150,
-          height: 60,
-          position: { x: 180, y: 450 },
+          width: 160,
+          height: 64,
+          position: { x: 256, y: 448 },
           data: {
             ...nodeTypeRegistry.createDefaultData("agent"),
             display: {
-              label: "150x60",
+              label: "160×64",
               shape: "rectangle",
-              background: "#fff3e0",
-              iconBackground: "#e65100",
-              iconColor: "#fff176",
             },
           },
         },
         {
-          id: "r3",
+          id: "r-large",
           type: "agent",
-          width: 200,
+          width: 192,
           height: 80,
-          position: { x: 360, y: 450 },
+          position: { x: 448, y: 448 },
           data: {
             ...nodeTypeRegistry.createDefaultData("agent"),
             display: {
-              label: "200x80",
+              label: "192×80",
               shape: "rectangle",
-              background: "#fce4ec",
-              iconBackground: "#ad1457",
-              iconColor: "#f8bbd0",
             },
           },
         },
         {
-          id: "r4",
+          id: "r-wide",
           type: "agent",
-          width: 250,
-          height: 100,
-          position: { x: 50, y: 550 },
+          width: 256,
+          height: 96,
+          position: { x: 96, y: 560 },
           data: {
             ...nodeTypeRegistry.createDefaultData("agent"),
             display: {
-              label: "250x100",
+              label: "256×96",
               shape: "rectangle",
-              background: "#e0f7fa",
-              iconBackground: "#00838f",
-              iconColor: "#84ffff",
             },
           },
         },
         {
-          id: "r5",
+          id: "r-extra-wide",
           type: "agent",
           width: 320,
-          height: 120,
-          position: { x: 330, y: 550 },
+          height: 112,
+          position: { x: 384, y: 560 },
           data: {
             ...nodeTypeRegistry.createDefaultData("agent"),
             display: {
-              label: "320x120",
+              label: "320×112",
               shape: "rectangle",
-              background: "#f3e5f5",
-              iconBackground: "#4a148c",
-              iconColor: "#ea80fc",
-            },
-          },
-        },
-        {
-          id: "r6",
-          type: "agent",
-          width: 400,
-          height: 150,
-          position: { x: 50, y: 700 },
-          data: {
-            ...nodeTypeRegistry.createDefaultData("agent"),
-            display: {
-              label: "400x150",
-              shape: "rectangle",
-              background: "linear-gradient(90deg, #4facfe 0%, #00f2fe 100%)",
-              iconBackground: "rgba(255, 255, 255, 0.9)",
-              iconColor: "#0091ea",
             },
           },
         },

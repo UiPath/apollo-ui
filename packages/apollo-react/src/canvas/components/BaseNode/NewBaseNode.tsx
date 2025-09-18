@@ -42,7 +42,7 @@ const NewBaseNodeComponent = (
   const displayLabelBackgroundColor = finalDisplay.labelBackgroundColor;
   const displayShape = finalDisplay.shape ?? "square";
   const displayBackground = finalDisplay.background;
-  const displayIconBackground = finalDisplay.iconBackground;
+  const displayIconBackground = executionStatus === "Failed" ? "var(--color-background)" : finalDisplay.iconBackground;
 
   const { edges, isConnecting } = useStore(
     (state) => ({ edges: state.edges, isConnecting: !!state.connectionClickStartHandle }),
@@ -143,7 +143,7 @@ const NewBaseNodeComponent = (
         onBlur={handleBlur}
       >
         <BaseContainer selected={selected} shape="square" className={interactionState} interactionState={interactionState}>
-          <BaseIconWrapper backgroundColor="var(--color-error-background)" shape="square">
+          <BaseIconWrapper backgroundColor="var(--color-error-background)" shape="square" nodeHeight={height}>
             <ApIcon color="var(--color-error-icon)" name="error" size="32px" />
           </BaseIconWrapper>
 
@@ -179,7 +179,7 @@ const NewBaseNodeComponent = (
           <BaseIconWrapper
             shape={displayShape as "square" | "circle" | "rectangle"}
             backgroundColor={displayIconBackground}
-            {...(height !== undefined && { nodeHeight: height })}
+            nodeHeight={height}
           >
             {icon}
           </BaseIconWrapper>

@@ -53,7 +53,7 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
   const displaySubLabel = display.subLabel;
   const displayShape = display.shape ?? "square";
   const displayBackground = display.background;
-  const displayIconBackground = display.iconBackground;
+  const displayIconBackground = executionStatus === "Failed" ? "var(--color-background)" : display.iconBackground;
 
   const { edges, isConnecting } = useStore(
     (state) => ({ edges: state.edges, isConnecting: !!state.connectionClickStartHandle }),
@@ -155,7 +155,7 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
         onBlur={handleBlur}
       >
         <BaseContainer selected={selected} shape="square" className={interactionState} interactionState={interactionState}>
-          <BaseIconWrapper backgroundColor="var(--color-error-background)" shape="square">
+          <BaseIconWrapper backgroundColor="var(--color-error-background)" shape="square" nodeHeight={height}>
             <ApIcon color="var(--color-error-icon)" name="error" size="32px" />
           </BaseIconWrapper>
 
@@ -189,7 +189,7 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
         backgroundColor={displayBackground}
       >
         {icon && (
-          <BaseIconWrapper shape={displayShape} backgroundColor={displayIconBackground}>
+          <BaseIconWrapper shape={displayShape} backgroundColor={displayIconBackground} nodeHeight={height}>
             {icon}
           </BaseIconWrapper>
         )}

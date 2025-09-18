@@ -16,11 +16,7 @@ export const agentNodeRegistration: NodeRegistration = {
   version: "1.0.0",
 
   definition: {
-    getIcon: (data, _context) => (
-      <div style={{ color: data.display?.iconColor || "var(--color-foreground-de-emp)" }}>
-        <Icons.AgentIcon />
-      </div>
-    ),
+    getIcon: (_data, _context) => <Icons.AgentIcon />,
 
     getDisplay: (data, _context) => ({
       label: data.display?.label,

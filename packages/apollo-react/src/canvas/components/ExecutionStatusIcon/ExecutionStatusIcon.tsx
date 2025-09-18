@@ -5,7 +5,7 @@ export function ExecutionStatusIcon({
   status,
   size = 16,
 }: {
-  status: "InProgress" | "Cancelled" | "Completed" | "Paused" | "Failed" | "NotExecuted" | "Terminated";
+  status?: "InProgress" | "Cancelled" | "Completed" | "Paused" | "Failed" | "NotExecuted" | "Terminated" | string;
   size?: number;
 }) {
   return useMemo(() => {

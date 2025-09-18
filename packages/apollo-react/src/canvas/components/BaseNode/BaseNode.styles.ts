@@ -2,15 +2,15 @@ import styled from "@emotion/styled";
 import { css, keyframes } from "@emotion/react";
 import type { NodeShape } from "./BaseNode.types";
 
-const pulseAnimation = keyframes`
+const pulseAnimation = (cssVar: string) => keyframes`
   0% {
-    box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.4);
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(${cssVar}) 20%, transparent);
   }
   70% {
-    box-shadow: 0 0 0 10px rgba(255, 193, 7, 0);
+    box-shadow: 0 0 0 10px color-mix(in srgb, var(${cssVar}) 0%, transparent);
   }
   100% {
-    box-shadow: 0 0 0 0 rgba(255, 193, 7, 0);
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(${cssVar}) 0%, transparent);
   }
 `;
 
@@ -21,29 +21,34 @@ const getExecutionStatusBorder = (executionStatus?: string) => {
       return css`
         border-color: var(--color-border-de-emp);
       `;
-    case "InProgress":
+    case "InProgress": {
       return css`
         border-color: var(--color-info-icon);
-        animation: ${pulseAnimation} 2s infinite;
+        animation: ${pulseAnimation("--color-info-icon")} 2s infinite;
       `;
+    }
     case "Completed":
       return css`
         border-color: var(--color-success-icon);
       `;
     case "Paused":
-    case "WARNING":
+    case "WARNING": {
       return css`
         border-color: var(--color-warning-icon);
+        animation: ${pulseAnimation("--color-warning-icon")} 2s infinite;
       `;
+    }
     case "Cancelled":
     case "Failed":
     case "Terminated":
     case "ERROR":
-    case "CRITICAL":
+    case "CRITICAL": {
       return css`
         border-color: var(--color-error-icon);
-        animation: ${pulseAnimation} 2s infinite;
+        background: var(--color-error-background);
+        animation: ${pulseAnimation("--color-error-icon")} 2s infinite;
       `;
+    }
     default:
       return css`
         border-color: var(--color-border-de-emp);
@@ -91,8 +96,7 @@ export const BaseContainer = styled.div<{
   border: 1.5px solid var(--color-border-de-emp);
   border-radius: ${({ shape }) => {
     if (shape === "circle") return "50%";
-    if (shape === "rectangle") return "16px";
-    return "calc(0.5 * 100% / (1.75))";
+    return "16px";
   }};
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   display: flex;
@@ -115,31 +119,49 @@ export const BaseContainer = styled.div<{
   ${({ selected }) =>
     selected &&
     css`
-      border-color: var(--color-selection-indicator);
-      outline: 6px solid var(--color-secondary-pressed);
+      border-color: var(--color-primary);
+      outline: 4px solid var(--color-secondary-pressed);
     `}
 `;
 
-export const BaseIconWrapper = styled.div<{ backgroundColor?: string; shape?: NodeShape }>`
-  width: 72px;
-  height: 72px;
+export const BaseIconWrapper = styled.div<{ backgroundColor?: string; shape?: NodeShape; nodeHeight?: number }>`
+  width: ${({ nodeHeight }) => {
+    const scaleFactor = nodeHeight ? nodeHeight / 96 : 1;
+    return `${72 * scaleFactor}px`;
+  }};
+  height: ${({ nodeHeight }) => {
+    const scaleFactor = nodeHeight ? nodeHeight / 96 : 1;
+    return `${72 * scaleFactor}px`;
+  }};
   display: flex;
   align-items: center;
   justify-content: center;
   background: ${({ backgroundColor }) => backgroundColor || "var(--color-background-secondary)"};
   border-radius: ${({ shape }) => {
     if (shape === "circle") return "50%";
-    return "calc(0.5 * 100% / (1.75))";
+    return "8px";
   }};
 
   svg {
-    width: 48px;
-    height: 48px;
+    width: ${({ nodeHeight }) => {
+      const scaleFactor = nodeHeight ? nodeHeight / 96 : 1;
+      return `${40 * scaleFactor}px`;
+    }};
+    height: ${({ nodeHeight }) => {
+      const scaleFactor = nodeHeight ? nodeHeight / 96 : 1;
+      return `${40 * scaleFactor}px`;
+    }};
   }
 
   img {
-    width: 48px;
-    height: 48px;
+    width: ${({ nodeHeight }) => {
+      const scaleFactor = nodeHeight ? nodeHeight / 96 : 1;
+      return `${40 * scaleFactor}px`;
+    }};
+    height: ${({ nodeHeight }) => {
+      const scaleFactor = nodeHeight ? nodeHeight / 96 : 1;
+      return `${40 * scaleFactor}px`;
+    }};
     object-fit: contain;
   }
 `;

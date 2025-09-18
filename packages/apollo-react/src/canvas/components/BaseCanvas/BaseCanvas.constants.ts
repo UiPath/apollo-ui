@@ -22,7 +22,7 @@ export const BASE_CANVAS_DEFAULTS = {
   background: {
     gap: BASE_CANVAS_GRID_SPACING,
     size: 2,
-    color: "var(--color-border-de-emp)",
+    color: "color-mix(in srgb, var(--color-border-de-emp), transparent 50%)",
     bgColor: "var(--color-background-secondary)",
     variant: BackgroundVariant.Dots,
   },
