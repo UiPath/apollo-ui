@@ -12,7 +12,7 @@ import { vi } from "vitest";
 });
 
 // Mock ReactFlow components that require DOM
-vi.mock("@uipath/uix-xyflow/react", () => ({
+vi.mock("@uipath/uix/xyflow/react", () => ({
   ReactFlow: ({
     children,
     nodes,
