@@ -8,11 +8,11 @@ import {
   ReactFlowProvider,
   Position,
   addEdge,
-} from "@uipath/uix-xyflow/react";
-import type { Edge, EdgeChange, Node, NodeChange, Connection } from "@uipath/uix-xyflow/react";
+} from "@uipath/uix/xyflow/react";
+import type { Edge, EdgeChange, Node, NodeChange, Connection } from "@uipath/uix/xyflow/react";
 import { FontVariantToken } from "@uipath/apollo-core";
 import { ApButton, ApTypography, ApIcon } from "@uipath/portal-shell-react";
-import { Column, Row } from "@uipath/uix-core";
+import { Column, Row } from "@uipath/uix/core";
 import { CanvasPositionControls } from "../CanvasPositionControls";
 import { BaseCanvas } from "./BaseCanvas";
 import type { BaseCanvasRef } from "./BaseCanvas.types";

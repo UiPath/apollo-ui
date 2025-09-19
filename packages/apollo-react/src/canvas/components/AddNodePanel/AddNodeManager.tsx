@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback, useRef } from "react";
-import type { Node } from "@uipath/uix-xyflow/react";
-import { useReactFlow, useStore } from "@uipath/uix-xyflow/react";
+import type { Node } from "@uipath/uix/xyflow/react";
+import { useReactFlow, useStore } from "@uipath/uix/xyflow/react";
 import { FloatingCanvasPanel } from "../FloatingCanvasPanel";
 import { AddNodePanel } from "./AddNodePanel";
 import type { NodeOption } from "./AddNodePanel.types";

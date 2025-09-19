@@ -1,8 +1,8 @@
 import { useMemo, useCallback, memo, useState } from "react";
-import { Position } from "@uipath/uix-xyflow/react";
+import { Position } from "@uipath/uix/xyflow/react";
 import { AnimatePresence } from "motion/react";
 import { FontVariantToken } from "@uipath/apollo-core";
-import { Row } from "@uipath/uix-core";
+import { Row } from "@uipath/uix/core";
 import { ApIcon, ApTypography } from "@uipath/portal-shell-react";
 import { canvasEventBus } from "../../utils/CanvasEventBus";
 import { StyledAddButton, StyledHandle, StyledLabel, StyledLine, StyledNotch, StyledWrapper } from "./ButtonHandle.styles";

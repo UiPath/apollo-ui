@@ -1,4 +1,4 @@
-import type { Node, Edge, ReactFlowInstance } from "@uipath/uix-xyflow/react";
+import type { Node, Edge, ReactFlowInstance } from "@uipath/uix/xyflow/react";
 import { getNewNodePosition } from "../../utils/NodeUtils";
 
 /**

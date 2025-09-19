@@ -1,10 +1,10 @@
 import { useCallback, useState } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { applyEdgeChanges, applyNodeChanges, Panel, ReactFlowProvider } from "@uipath/uix-xyflow/react";
-import type { Edge, EdgeChange, Node, NodeChange } from "@uipath/uix-xyflow/react";
+import { applyEdgeChanges, applyNodeChanges, Panel, ReactFlowProvider } from "@uipath/uix/xyflow/react";
+import type { Edge, EdgeChange, Node, NodeChange } from "@uipath/uix/xyflow/react";
 import { FontVariantToken } from "@uipath/apollo-core";
 import { ApTypography } from "@uipath/portal-shell-react";
-import { Column } from "@uipath/uix-core";
+import { Column } from "@uipath/uix/core";
 import { BaseCanvas } from "./BaseCanvas/BaseCanvas";
 import { NodeInspector } from "./NodeInspector";
 

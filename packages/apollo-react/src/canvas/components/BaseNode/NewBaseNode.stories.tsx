@@ -1,13 +1,13 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import { useCallback, useMemo } from "react";
-import type { Connection, NodeTypes } from "@uipath/uix-xyflow/react";
-import { Panel, ReactFlowProvider, useNodesState, useEdgesState, addEdge, Position } from "@uipath/uix-xyflow/react";
+import type { Connection, NodeTypes } from "@uipath/uix/xyflow/react";
+import { Panel, ReactFlowProvider, useNodesState, useEdgesState, addEdge, Position } from "@uipath/uix/xyflow/react";
 import { NewBaseNode } from "./NewBaseNode";
 import { BaseCanvas } from "../BaseCanvas";
 import { CanvasPositionControls } from "../CanvasPositionControls";
 import type { NewBaseNodeData, NewBaseNodeDisplayProps } from "./NewBaseNode.types";
 import type { HandleActionEvent } from "../ButtonHandle";
-import { Icons } from "@uipath/uix-core";
+import { Icons } from "@uipath/uix/core";
 import { ApIcon, ApTypography } from "@uipath/portal-shell-react";
 import { FontVariantToken } from "@uipath/apollo-core";
 

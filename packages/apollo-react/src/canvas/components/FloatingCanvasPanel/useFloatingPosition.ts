@@ -1,5 +1,5 @@
 import { useMemo, useRef, useEffect } from "react";
-import { useNodes, useReactFlow } from "@uipath/uix-xyflow/react";
+import { useNodes, useReactFlow } from "@uipath/uix/xyflow/react";
 import { autoUpdate, flip, offset, useFloating, useMergeRefs, type Placement } from "@floating-ui/react";
 
 export type AnchorRect = { x: number; y: number; width: number; height: number };

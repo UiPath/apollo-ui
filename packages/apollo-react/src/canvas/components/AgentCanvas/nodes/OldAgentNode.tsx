@@ -1,11 +1,11 @@
 import { memo, useMemo } from "react";
 import styled from "@emotion/styled";
-import { Position } from "@uipath/uix-xyflow/react";
+import { Position } from "@uipath/uix/xyflow/react";
 import { FontVariantToken, Spacing } from "@uipath/apollo-core";
 import { ApCircularProgress, ApIcon, ApTypography } from "@uipath/portal-shell-react";
 import type { AgentFlowNodeData, AgentNodeTranslations } from "../../../types";
 import { type ButtonHandleConfig, ButtonHandles, type HandleActionEvent } from "../../ButtonHandle/ButtonHandle";
-import { Icons, Column, Row } from "@uipath/uix-core";
+import { Icons, Column, Row } from "@uipath/uix/core";
 import { ResourceNodeType } from "../AgentFlow.constants";
 
 const { ConversationalAgentIcon, AutonomousAgentIcon } = Icons;

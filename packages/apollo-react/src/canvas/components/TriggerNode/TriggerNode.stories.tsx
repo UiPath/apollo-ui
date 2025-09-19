@@ -1,7 +1,7 @@
 import { useState, useCallback } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { applyEdgeChanges, applyNodeChanges, addEdge, ReactFlowProvider } from "@uipath/uix-xyflow/react";
-import type { Edge, EdgeChange, Node, NodeChange, Connection } from "@uipath/uix-xyflow/react";
+import { applyEdgeChanges, applyNodeChanges, addEdge, ReactFlowProvider } from "@uipath/uix/xyflow/react";
+import type { Edge, EdgeChange, Node, NodeChange, Connection } from "@uipath/uix/xyflow/react";
 import { ApIcon } from "@uipath/portal-shell-react";
 import { BaseCanvas } from "../BaseCanvas";
 import { TriggerNode } from "./TriggerNode";

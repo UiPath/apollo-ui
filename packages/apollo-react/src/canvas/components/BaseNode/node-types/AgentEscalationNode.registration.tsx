@@ -1,4 +1,4 @@
-import { Position } from "@uipath/uix-xyflow/react";
+import { Position } from "@uipath/uix/xyflow/react";
 import type { NodeRegistration } from "../BaseNode.types";
 import { ApIcon } from "@uipath/portal-shell-react";
 

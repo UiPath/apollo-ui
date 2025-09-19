@@ -1,13 +1,13 @@
 import React, { memo, useCallback, useEffect, useMemo } from "react";
 import styled from "@emotion/styled";
-import { Position, useReactFlow } from "@uipath/uix-xyflow/react";
-import type { NodeProps } from "@uipath/uix-xyflow/system";
+import { Position, useReactFlow } from "@uipath/uix/xyflow/react";
+import type { NodeProps } from "@uipath/uix/xyflow/system";
 import { Spacing } from "@uipath/apollo-core";
 import { ApButton, ApCircularProgress, ApIcon, ApTooltip, ApTypography } from "@uipath/portal-shell-react";
 import type { ButtonHandleConfig } from "../../ButtonHandle/ButtonHandle";
 import { ButtonHandles } from "../../ButtonHandle/ButtonHandle";
 import { NodeBoundaryIconsContainer } from "../components/NodeBoundaryIconsContainer";
-import { Column, Icons } from "@uipath/uix-core";
+import { Column, Icons } from "@uipath/uix/core";
 import { useAgentFlowStore } from "../store/agent-flow-store";
 import { type AgentFlowResourceNode, type AgentFlowResourceNodeData, ProjectType, type ResourceNodeTranslations } from "../../../types";
 import { RESOURCE_NODE_ICON_WITH_SPACING_SIZE, RESOURCE_NODE_SIZE } from "../../../utils/auto-layout";

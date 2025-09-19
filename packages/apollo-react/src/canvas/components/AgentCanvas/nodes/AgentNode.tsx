@@ -1,8 +1,8 @@
 import { memo, useMemo } from "react";
-import { Position } from "@uipath/uix-xyflow/react";
-import type { NodeProps, Node } from "@uipath/uix-xyflow/react";
+import { Position } from "@uipath/uix/xyflow/react";
+import type { NodeProps, Node } from "@uipath/uix/xyflow/react";
 import { ApIcon, ApCircularProgress } from "@uipath/portal-shell-react";
-import { Icons } from "@uipath/uix-core";
+import { Icons } from "@uipath/uix/core";
 import { NewBaseNode } from "../../BaseNode/NewBaseNode";
 import type { NewBaseNodeData, NewBaseNodeDisplayProps, HandleConfiguration } from "../../BaseNode/NewBaseNode.types";
 import type { ButtonHandleConfig, HandleActionEvent } from "../../ButtonHandle/ButtonHandle";

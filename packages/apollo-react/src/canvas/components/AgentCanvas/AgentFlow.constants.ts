@@ -1,4 +1,4 @@
-import { Position } from "@uipath/uix-xyflow/react";
+import { Position } from "@uipath/uix/xyflow/react";
 
 export enum ResourceNodeType {
   Context = "context",

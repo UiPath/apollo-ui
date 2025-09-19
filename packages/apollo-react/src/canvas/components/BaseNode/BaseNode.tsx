@@ -1,6 +1,6 @@
 import { memo, useMemo, useState, useCallback, useRef } from "react";
-import type { Node, NodeProps } from "@uipath/uix-xyflow/react";
-import { Position, useConnection, useStore } from "@uipath/uix-xyflow/react";
+import type { Node, NodeProps } from "@uipath/uix/xyflow/react";
+import { Position, useConnection, useStore } from "@uipath/uix/xyflow/react";
 import type { NodeStatusContext } from "./ExecutionStatusContext";
 import { useExecutionState } from "./ExecutionStatusContext";
 import type { HandleActionEvent } from "../ButtonHandle";
@@ -9,7 +9,7 @@ import { NodeContextMenu } from "../NodeContextMenu";
 import { BaseContainer, BaseIconWrapper, BaseBadgeSlot, BaseTextContainer, BaseHeader, BaseSubHeader } from "./BaseNode.styles";
 import type { BaseNodeData } from "./BaseNode.types";
 import { useNodeTypeRegistry } from "./useNodeTypeRegistry";
-import { cx } from "@uipath/uix-core";
+import { cx } from "@uipath/uix/core";
 import { ApIcon } from "@uipath/portal-shell-react";
 
 const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {

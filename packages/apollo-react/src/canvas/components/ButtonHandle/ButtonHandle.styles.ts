@@ -1,4 +1,4 @@
-import { Handle, Position } from "@uipath/uix-xyflow/react";
+import { Handle, Position } from "@uipath/uix/xyflow/react";
 import { motion } from "motion/react";
 import styled from "@emotion/styled";
 import { css } from "@emotion/react";

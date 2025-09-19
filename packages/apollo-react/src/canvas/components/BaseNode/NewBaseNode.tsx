@@ -1,11 +1,11 @@
 import { memo, useMemo, useState, useCallback, useRef } from "react";
-import type { Node, NodeProps } from "@uipath/uix-xyflow/react";
-import { Position, useConnection, useStore } from "@uipath/uix-xyflow/react";
+import type { Node, NodeProps } from "@uipath/uix/xyflow/react";
+import { Position, useConnection, useStore } from "@uipath/uix/xyflow/react";
 import { ButtonHandles } from "../ButtonHandle";
 import { NodeContextMenu } from "../NodeContextMenu";
 import { BaseContainer, BaseIconWrapper, BaseBadgeSlot, BaseTextContainer, BaseHeader, BaseSubHeader } from "./BaseNode.styles";
 import type { NewBaseNodeData, NewBaseNodeDisplayProps } from "./NewBaseNode.types";
-import { cx } from "@uipath/uix-core";
+import { cx } from "@uipath/uix/core";
 import { ApIcon } from "@uipath/portal-shell-react";
 
 // Internal component that expects display props as direct props

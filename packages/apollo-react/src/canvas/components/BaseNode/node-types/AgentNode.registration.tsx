@@ -1,7 +1,7 @@
-import { Position } from "@uipath/uix-xyflow/react";
+import { Position } from "@uipath/uix/xyflow/react";
 import type { NodeRegistration } from "../BaseNode.types";
 import type { HandleActionEvent } from "../../ButtonHandle";
-import { Icons } from "@uipath/uix-core";
+import { Icons } from "@uipath/uix/core";
 
 // TODO: convert this to a function, that takes a translate function to support localization
 

@@ -1,5 +1,5 @@
 import { memo, useCallback, useState, useEffect, useRef } from "react";
-import { Column } from "@uipath/uix-core";
+import { Column } from "@uipath/uix/core";
 import { NumberInput, FieldLabel, FieldHelpText, FieldError, InputWrapper, InputSuffix } from "../NodePropertiesPanel.styles";
 import type { ConfigField } from "../NodePropertiesPanel.types";
 

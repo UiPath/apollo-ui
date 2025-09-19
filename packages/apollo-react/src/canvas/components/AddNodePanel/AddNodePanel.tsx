@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { ApIcon, ApIconButton, ApSkeleton, ApTextField, ApTypography } from "@uipath/portal-shell-react";
 import { FontVariantToken } from "@uipath/apollo-core";
-import { Column, Row } from "@uipath/uix-core";
+import { Column, Row } from "@uipath/uix/core";
 import { ScrollableList, ListItemButton, IconContainer, AnimatedContainer, AnimatedContent } from "./AddNodePanel.styles";
 import type { AddNodePanelProps, NodeOption, NodeCategory } from "./AddNodePanel.types";
 import { useNodeSearch } from "./AddNodePanel.hooks";

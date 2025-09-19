@@ -1,6 +1,6 @@
 import React from "react";
-import type { EdgeProps } from "@uipath/uix-xyflow/react";
-import { EdgeLabelRenderer, useInternalNode, getSmoothStepPath } from "@uipath/uix-xyflow/react";
+import type { EdgeProps } from "@uipath/uix/xyflow/react";
+import { EdgeLabelRenderer, useInternalNode, getSmoothStepPath } from "@uipath/uix/xyflow/react";
 import styled from "@emotion/styled";
 
 export const StageEdgeLabel = styled.div`

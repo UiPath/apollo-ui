@@ -1,8 +1,8 @@
 import { useCallback, useState } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { ReactFlowProvider } from "@uipath/uix-xyflow/react";
+import { ReactFlowProvider } from "@uipath/uix/xyflow/react";
 import { AgentFlow } from "./AgentFlow";
-import { Column, Row } from "@uipath/uix-core";
+import { Column, Row } from "@uipath/uix/core";
 import type { AgentFlowModel, AgentFlowProps, AgentFlowResource, AgentFlowResourceNodeData, AgentFlowResourceType } from "../../types";
 
 const meta: Meta<typeof AgentFlow> = {

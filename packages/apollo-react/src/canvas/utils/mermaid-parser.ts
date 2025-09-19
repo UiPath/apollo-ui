@@ -1,4 +1,4 @@
-import type { Edge, Node } from "@uipath/uix-xyflow/react";
+import type { Edge, Node } from "@uipath/uix/xyflow/react";
 
 // @ts-expect-error mermaid isn't installed to avoid build errors for now
 import mermaid from "mermaid";

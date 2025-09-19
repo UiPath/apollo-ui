@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { useRef, useEffect } from "react";
 import { ApIcon, ApIconButton, ApTypography } from "@uipath/portal-shell-react";
 import { FontVariantToken } from "@uipath/apollo-core";
-import { Row } from "@uipath/uix-core";
+import { Row } from "@uipath/uix/core";
 import styled from "@emotion/styled";
 
 const PanelHeader = styled.div`

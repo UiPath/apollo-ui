@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { AgentFlowCustomEdge, AgentFlowCustomNode } from "../types";
 import { autoArrangeNodes, getAgentGroupBottomPosition } from "./auto-layout";
 import { ResourceNodeType } from "../components/AgentCanvas/AgentFlow.constants";
-import { Position } from "@uipath/uix-xyflow/react";
+import { Position } from "@uipath/uix/xyflow/react";
 
 describe("auto-layout", () => {
   describe("getAgentGroupBottomPosition", () => {

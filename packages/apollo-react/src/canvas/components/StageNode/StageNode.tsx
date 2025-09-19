@@ -1,5 +1,5 @@
 import { memo, useMemo, useState, useCallback } from "react";
-import { useStore, Position } from "@uipath/uix-xyflow/react";
+import { useStore, Position } from "@uipath/uix/xyflow/react";
 import {
   StageContainer,
   StageHeader,
@@ -17,7 +17,7 @@ import { StageHandle } from "./StageHandle";
 import { NodeContextMenu } from "../NodeContextMenu";
 import type { StageNodeProps, StageTaskExecution } from "./StageNode.types";
 import { ApBadge, ApIcon, ApLink, ApTooltip, ApTypography } from "@uipath/portal-shell-react";
-import { Column, FontVariantToken, Row } from "@uipath/uix-core";
+import { Column, FontVariantToken, Row } from "@uipath/uix/core";
 import { ExecutionStatusIcon } from "../ExecutionStatusIcon";
 import { Spacing } from "@uipath/apollo-core";
 

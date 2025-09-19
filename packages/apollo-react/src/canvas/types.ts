@@ -1,5 +1,5 @@
-import type { Edge, Node, Viewport as ReactFlowViewport, CoordinateExtent } from "@uipath/uix-xyflow/react";
-import type { NodeProps } from "@uipath/uix-xyflow/system";
+import type { Edge, Node, Viewport as ReactFlowViewport, CoordinateExtent } from "@uipath/uix/xyflow/react";
+import type { NodeProps } from "@uipath/uix/xyflow/system";
 import type { IRawSpan } from "@uipath/portal-shell-react";
 import type { BaseCanvasRef } from "./components/BaseCanvas/BaseCanvas.types";
 

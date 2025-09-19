@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { addEdge, applyEdgeChanges, applyNodeChanges, type Connection, type EdgeChange, type NodeChange } from "@uipath/uix-xyflow/react";
+import { addEdge, applyEdgeChanges, applyNodeChanges, type Connection, type EdgeChange, type NodeChange } from "@uipath/uix/xyflow/react";
 import { createStore, useStore } from "zustand";
 import { BASE_CANVAS_DEFAULTS, FLOW_LAYOUT } from "../../BaseCanvas/BaseCanvas.constants";
 import {

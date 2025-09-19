@@ -1,5 +1,5 @@
 import { memo, useCallback } from "react";
-import { Column } from "@uipath/uix-core";
+import { Column } from "@uipath/uix/core";
 import { CheckboxContainer, CheckboxLabel, CheckboxInput, CheckboxHelpText, FieldError } from "../NodePropertiesPanel.styles";
 import type { ConfigField } from "../NodePropertiesPanel.types";
 

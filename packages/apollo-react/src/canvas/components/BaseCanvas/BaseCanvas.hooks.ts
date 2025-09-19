@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useReactFlow, useStoreApi } from "@uipath/uix-xyflow/react";
-import type { Node } from "@uipath/uix-xyflow/react";
+import { useReactFlow, useStoreApi } from "@uipath/uix/xyflow/react";
+import type { Node } from "@uipath/uix/xyflow/react";
 import type { EnsureNodesInViewOptions } from "./BaseCanvas.types";
 import { BASE_CANVAS_DEFAULTS, FIT_VIEW_DELAY_MS } from "./BaseCanvas.constants";
 

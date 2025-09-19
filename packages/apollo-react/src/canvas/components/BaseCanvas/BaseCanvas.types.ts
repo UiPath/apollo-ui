@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import type { BackgroundVariant, Edge, Node, ReactFlowInstance, ReactFlowProps } from "@uipath/uix-xyflow/react";
+import type { BackgroundVariant, Edge, Node, ReactFlowInstance, ReactFlowProps } from "@uipath/uix/xyflow/react";
 
 /**
  * Props for the BaseCanvas component that provides a foundation for flow-based visualizations.
