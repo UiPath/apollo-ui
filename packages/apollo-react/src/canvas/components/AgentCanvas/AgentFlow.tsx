@@ -1,4 +1,5 @@
 import React, { memo, useCallback, useEffect, useMemo } from "react";
+import type { PropsWithChildren } from "react";
 import { Panel, useReactFlow } from "@xyflow/react";
 import type { NodeProps } from "@xyflow/system";
 import { BaseCanvas } from "../../components/BaseCanvas";
@@ -125,6 +126,7 @@ const createResourceNodeWrapper = (opts: {
 
 const AgentFlowInner = memo(
   ({
+    children,
     mode,
     spans,
     onAddBreakpoint,
@@ -145,7 +147,7 @@ const AgentFlowInner = memo(
     onArgumentsClick,
     canvasRef,
     enableMcpTools,
-  }: AgentFlowProps) => {
+  }: PropsWithChildren<AgentFlowProps>) => {
     const {
       nodes,
       edges,
@@ -411,6 +413,7 @@ const AgentFlowInner = memo(
             <Panel position="bottom-center">
               <TimelinePlayer spans={spans ?? []} enableTimelinePlayer={enableTimelinePlayer ?? true} />
             </Panel>
+            {children}
           </BaseCanvas>
         </Column>
       </Column>
@@ -419,7 +422,7 @@ const AgentFlowInner = memo(
 );
 AgentFlowInner.displayName = "AgentFlowInner";
 
-export const AgentFlow = (props: AgentFlowProps) => {
+export const AgentFlow = (props: PropsWithChildren<AgentFlowProps>) => {
   return (
     <AgentFlowProvider {...props}>
       <AgentFlowInner {...props} />
