@@ -1,5 +1,5 @@
-import { BaseEdge, getSmoothStepPath, type Position } from "@xyflow/react";
-import type { EdgeBase } from "@xyflow/system";
+import { BaseEdge, getSmoothStepPath, type Position } from "@uipath/uix-xyflow/react";
+import type { EdgeBase } from "@uipath/uix-xyflow/system";
 import { EDGE_STYLES } from "../../../components/BaseCanvas/BaseCanvas.constants";
 import { useAgentFlowStore } from "../store/agent-flow-store";
 

@@ -1,5 +1,5 @@
 import { memo, useCallback } from "react";
-import { useReactFlow } from "@xyflow/react";
+import { useReactFlow } from "@uipath/uix-xyflow/react";
 import { ApIcon, ApIconButton, ApTooltip } from "@uipath/portal-shell-react";
 import { Column, Row } from "@uipath/uix-core";
 

@@ -1,4 +1,4 @@
-import type { NodeProps } from "@xyflow/react";
+import type { NodeProps } from "@uipath/uix-xyflow/react";
 import type { NodeMenuItem } from "../NodeContextMenu";
 
 enum ElementStatusValues {

@@ -1,5 +1,5 @@
 import { vi } from "vitest";
-import { Position } from "@xyflow/react";
+import { Position } from "@uipath/uix-xyflow/react";
 import type { AgentFlowProps } from "../types";
 import {
   computeNodesAndEdges,

@@ -1,4 +1,4 @@
-import { BackgroundVariant } from "@xyflow/react";
+import { BackgroundVariant } from "@uipath/uix-xyflow/react";
 
 // This is the grid size used for snapping and layout
 // Nodes should be multiples of this size to allow for proper alignment

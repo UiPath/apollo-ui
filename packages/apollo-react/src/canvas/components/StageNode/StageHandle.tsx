@@ -1,5 +1,5 @@
 import React from "react";
-import { Handle, Position, useConnection } from "@xyflow/react";
+import { Handle, Position, useConnection } from "@uipath/uix-xyflow/react";
 import styled from "@emotion/styled";
 
 const StyledHandle = styled(Handle, {

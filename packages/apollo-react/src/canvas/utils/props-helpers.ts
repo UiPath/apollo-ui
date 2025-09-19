@@ -10,7 +10,7 @@ import type {
 } from "../types";
 import { autoArrangeNodes } from "./auto-layout";
 import { ResourceNodeType } from "../components/AgentCanvas/AgentFlow.constants";
-import { Position } from "@xyflow/react";
+import { Position } from "@uipath/uix-xyflow/react";
 
 // Status constants
 const SPAN_STATUS = {

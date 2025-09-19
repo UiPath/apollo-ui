@@ -1,7 +1,7 @@
 import React, { memo, useCallback, useEffect, useMemo } from "react";
 import type { PropsWithChildren } from "react";
-import { Panel, useReactFlow } from "@xyflow/react";
-import type { NodeProps } from "@xyflow/system";
+import { Panel, useReactFlow } from "@uipath/uix-xyflow/react";
+import type { NodeProps } from "@uipath/uix-xyflow/system";
 import { BaseCanvas } from "../../components/BaseCanvas";
 import { BASE_CANVAS_DEFAULTS } from "../../components/BaseCanvas/BaseCanvas.constants";
 import { CanvasPositionControls } from "../../components/CanvasPositionControls";

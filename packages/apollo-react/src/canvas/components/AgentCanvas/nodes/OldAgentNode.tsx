@@ -1,6 +1,6 @@
 import { memo, useMemo } from "react";
 import styled from "@emotion/styled";
-import { Position } from "@xyflow/react";
+import { Position } from "@uipath/uix-xyflow/react";
 import { FontVariantToken, Spacing } from "@uipath/apollo-core";
 import { ApCircularProgress, ApIcon, ApTypography } from "@uipath/portal-shell-react";
 import type { AgentFlowNodeData, AgentNodeTranslations } from "../../../types";

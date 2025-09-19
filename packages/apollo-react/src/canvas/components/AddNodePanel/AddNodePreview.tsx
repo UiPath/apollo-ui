@@ -1,6 +1,6 @@
 import React from "react";
-import type { NodeProps } from "@xyflow/react";
-import { Handle, Position } from "@xyflow/react";
+import type { NodeProps } from "@uipath/uix-xyflow/react";
+import { Handle, Position } from "@uipath/uix-xyflow/react";
 import styled from "@emotion/styled";
 import { ApIcon } from "@uipath/portal-shell-react";
 

@@ -80,7 +80,7 @@ vi.mock("./store/agent-flow-store", () => ({
 }));
 
 // Mock ReactFlow components and hooks with more functionality
-vi.mock("@xyflow/react", () => ({
+vi.mock("@uipath/uix-xyflow/react", () => ({
   ReactFlow: ({
     children,
     nodes,
@@ -200,10 +200,6 @@ vi.mock("./components/TimelinePlayer", () => ({
     <div data-testid="timeline-player">{spans?.length ?? 0} spans</div>
   ),
 }));
-
-// Mock CSS imports
-vi.mock("@xyflow/react/dist/style.css", () => ({}));
-vi.mock("./styles.css", () => ({}));
 
 // Import the component after all mocks
 // Simple type definition for testing, we should avoid apollo anuglar elements as deprecated

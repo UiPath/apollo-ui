@@ -1,7 +1,7 @@
 import React, { memo, useCallback, useEffect, useMemo } from "react";
 import styled from "@emotion/styled";
-import { Position, useReactFlow } from "@xyflow/react";
-import type { NodeProps } from "@xyflow/system";
+import { Position, useReactFlow } from "@uipath/uix-xyflow/react";
+import type { NodeProps } from "@uipath/uix-xyflow/system";
 import { Spacing } from "@uipath/apollo-core";
 import { ApButton, ApCircularProgress, ApIcon, ApTooltip, ApTypography } from "@uipath/portal-shell-react";
 import type { ButtonHandleConfig } from "../../ButtonHandle/ButtonHandle";

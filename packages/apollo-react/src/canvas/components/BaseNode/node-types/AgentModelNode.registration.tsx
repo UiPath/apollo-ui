@@ -1,4 +1,4 @@
-import { Position } from "@xyflow/react";
+import { Position } from "@uipath/uix-xyflow/react";
 import type { NodeRegistration } from "../BaseNode.types";
 import { Row, Icons } from "@uipath/uix-core";
 

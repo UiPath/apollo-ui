@@ -1,6 +1,6 @@
 import { memo, useMemo, useState, useCallback, useRef } from "react";
-import type { Node, NodeProps } from "@xyflow/react";
-import { Position, useConnection, useStore } from "@xyflow/react";
+import type { Node, NodeProps } from "@uipath/uix-xyflow/react";
+import { Position, useConnection, useStore } from "@uipath/uix-xyflow/react";
 import type { NodeStatusContext } from "./ExecutionStatusContext";
 import { useExecutionState } from "./ExecutionStatusContext";
 import type { HandleActionEvent } from "../ButtonHandle";

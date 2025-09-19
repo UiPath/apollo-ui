@@ -1,7 +1,7 @@
 import { render } from "@testing-library/react";
-import { Position } from "@xyflow/react";
+import { Position } from "@uipath/uix-xyflow/react";
 import { describe, expect, it, vi } from "vitest";
-import type { EdgeProps } from "@xyflow/react";
+import type { EdgeProps } from "@uipath/uix-xyflow/react";
 import { Edge } from "./Edge";
 
 // Mock AnimatedEdge and StaticEdge

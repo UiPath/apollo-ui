@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from "react";
-import { useNodes, useOnSelectionChange, useReactFlow } from "@xyflow/react";
+import { useNodes, useOnSelectionChange, useReactFlow } from "@uipath/uix-xyflow/react";
 import type { ConfigurableNode } from "../NodePropertiesPanel.types";
 
 export function useNodeSelection(nodeId?: string, maintainSelection = true) {

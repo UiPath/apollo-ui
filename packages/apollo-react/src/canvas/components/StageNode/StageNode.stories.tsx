@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import { useCallback, useMemo } from "react";
-import type { Connection, Edge } from "@xyflow/react";
-import { Panel, ReactFlowProvider, useNodesState, useEdgesState, addEdge, ConnectionMode } from "@xyflow/react";
+import type { Connection, Edge } from "@uipath/uix-xyflow/react";
+import { Panel, ReactFlowProvider, useNodesState, useEdgesState, addEdge, ConnectionMode } from "@uipath/uix-xyflow/react";
 import { StageNode } from "./StageNode";
 import type { StageTaskItem, StageNodeProps } from "./StageNode.types";
 import { BaseCanvas } from "../BaseCanvas";

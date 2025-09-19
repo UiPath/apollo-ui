@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { ReactFlowProvider, Position, applyNodeChanges, applyEdgeChanges, addEdge, Panel, useReactFlow } from "@xyflow/react";
-import type { NodeChange, EdgeChange, Connection, Node, Edge } from "@xyflow/react";
+import { ReactFlowProvider, Position, applyNodeChanges, applyEdgeChanges, addEdge, Panel, useReactFlow } from "@uipath/uix-xyflow/react";
+import type { NodeChange, EdgeChange, Connection, Node, Edge } from "@uipath/uix-xyflow/react";
 import { useState, useCallback, useMemo } from "react";
 import { ApIcon, ApTypography } from "@uipath/portal-shell-react";
 import { FontVariantToken } from "@uipath/apollo-core";

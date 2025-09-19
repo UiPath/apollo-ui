@@ -1,8 +1,7 @@
-import "@xyflow/react/dist/style.css";
 import { createContext, type PropsWithChildren, useCallback, useContext, useEffect, useMemo } from "react";
 import createCache from "@emotion/cache";
 import { CacheProvider } from "@emotion/react";
-import { ReactFlowProvider, useReactFlow } from "@xyflow/react";
+import { ReactFlowProvider, useReactFlow } from "@uipath/uix-xyflow/react";
 import { BASE_CANVAS_DEFAULTS } from "../../BaseCanvas/BaseCanvas.constants";
 
 // Extract React Flow CSS from document stylesheets

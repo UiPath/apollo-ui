@@ -1,6 +1,6 @@
 import { memo, useMemo } from "react";
-import { Position } from "@xyflow/react";
-import type { NodeProps, Node } from "@xyflow/react";
+import { Position } from "@uipath/uix-xyflow/react";
+import type { NodeProps, Node } from "@uipath/uix-xyflow/react";
 import { ApIcon, ApCircularProgress } from "@uipath/portal-shell-react";
 import { Icons } from "@uipath/uix-core";
 import { NewBaseNode } from "../../BaseNode/NewBaseNode";

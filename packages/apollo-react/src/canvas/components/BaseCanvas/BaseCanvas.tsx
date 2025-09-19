@@ -1,6 +1,6 @@
 import { forwardRef, memo, useCallback, useImperativeHandle, useMemo, useState } from "react";
-import type { Edge, Node, ReactFlowInstance } from "@xyflow/react";
-import { ConnectionMode, ReactFlow } from "@xyflow/react";
+import type { Edge, Node, ReactFlowInstance } from "@uipath/uix-xyflow/react";
+import { ConnectionMode, ReactFlow } from "@uipath/uix-xyflow/react";
 import { BASE_CANVAS_DEFAULTS } from "./BaseCanvas.constants";
 import { useAutoLayout, useEnsureNodesInView, useMaintainNodesInView } from "./BaseCanvas.hooks";
 import type { BaseCanvasProps, BaseCanvasRef } from "./BaseCanvas.types";

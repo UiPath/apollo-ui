@@ -1,4 +1,4 @@
-import { type Edge, getIncomers, type Node } from "@xyflow/react";
+import { type Edge, getIncomers, type Node } from "@uipath/uix-xyflow/react";
 import { type HierarchyPointNode, stratify, tree } from "d3-hierarchy";
 
 // the layout direction (T = top, R = right, B = bottom, L = left, TB = top to bottom, ...)

@@ -1,5 +1,5 @@
 import { memo, useCallback } from "react";
-import { useReactFlow } from "@xyflow/react";
+import { useReactFlow } from "@uipath/uix-xyflow/react";
 import { Column } from "@uipath/uix-core";
 import { TextField, SelectField, NumberField, CheckboxField } from "./fields";
 import { ConfigSection as StyledConfigSection, SectionTitle, FieldContainer } from "./NodePropertiesPanel.styles";

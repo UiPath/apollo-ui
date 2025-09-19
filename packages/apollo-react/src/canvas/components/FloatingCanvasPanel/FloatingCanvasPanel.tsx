@@ -1,5 +1,5 @@
 import React, { type ReactNode } from "react";
-import { ViewportPortal } from "@xyflow/react";
+import { ViewportPortal } from "@uipath/uix-xyflow/react";
 import { type Placement } from "@floating-ui/react";
 import { CanvasPortal } from "./CanvasPortal";
 import { PanelChrome } from "./PanelChrome";

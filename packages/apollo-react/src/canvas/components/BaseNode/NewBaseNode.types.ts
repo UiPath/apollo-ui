@@ -1,4 +1,4 @@
-import type { Position } from "@xyflow/react";
+import type { Position } from "@uipath/uix-xyflow/react";
 import type { NodeMenuItem } from "../NodeContextMenu/NodeContextMenu.types";
 import type { ButtonHandleConfig, HandleActionEvent } from "../ButtonHandle/ButtonHandle";
 

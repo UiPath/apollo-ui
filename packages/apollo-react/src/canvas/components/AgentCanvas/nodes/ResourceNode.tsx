@@ -1,7 +1,7 @@
 import { memo, useCallback, useMemo } from "react";
 import { ApCircularProgress, ApIcon } from "@uipath/portal-shell-react";
 import { Icons, Row } from "@uipath/uix-core";
-import { Position, type NodeProps } from "@xyflow/react";
+import { Position, type NodeProps } from "@uipath/uix-xyflow/react";
 import { NewBaseNode } from "../../BaseNode/NewBaseNode";
 import { ProjectType, type AgentFlowResourceNode, type AgentFlowResourceNodeData, type ResourceNodeTranslations } from "../../../types";
 import { type NodeMenuAction, type NodeMenuDivider, type NodeMenuItem } from "../../NodeContextMenu";

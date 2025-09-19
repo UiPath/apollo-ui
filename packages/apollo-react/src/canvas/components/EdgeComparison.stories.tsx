@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo } from "react";
 import type { Meta, StoryObj } from "@storybook/react";
-import type { Node, Edge, Connection } from "@xyflow/react";
-import { ReactFlowProvider, useNodesState, useEdgesState, addEdge, Panel, Position, MarkerType } from "@xyflow/react";
+import type { Node, Edge, Connection } from "@uipath/uix-xyflow/react";
+import { ReactFlowProvider, useNodesState, useEdgesState, addEdge, Panel, Position, MarkerType } from "@uipath/uix-xyflow/react";
 import { BaseCanvas } from "./BaseCanvas";
 import { CanvasPositionControls } from "./CanvasPositionControls";
 import { BaseNode } from "./BaseNode";

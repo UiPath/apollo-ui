@@ -1,5 +1,5 @@
 import { memo, useMemo, useState, useCallback } from "react";
-import { useStore, Position } from "@xyflow/react";
+import { useStore, Position } from "@uipath/uix-xyflow/react";
 import {
   StageContainer,
   StageHeader,

@@ -1,12 +1,12 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { Position } from "@xyflow/react";
+import { Position } from "@uipath/uix-xyflow/react";
 import { describe, expect, it, vi } from "vitest";
 import type { ButtonHandleConfig } from "./ButtonHandle";
 import { ButtonHandles } from "./ButtonHandle";
 
 // Mock @xyflow/react Handle component
-vi.mock("@xyflow/react", () => ({
+vi.mock("@uipath/uix-xyflow/react", () => ({
   Handle: ({ children, isConnectable, ...props }: any) => {
     // Filter out styled-component props that shouldn't be passed to DOM elements
     const domProps = Object.keys(props).reduce((acc: any, key) => {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { Edge, Node } from "@xyflow/react";
+import type { Edge, Node } from "@uipath/uix-xyflow/react";
 import { d3HierarchyLayout, type LayoutDirection } from "./d3-layout";
 
 describe("d3-layout", () => {

@@ -1,4 +1,4 @@
-import { type Node, type Edge, useNodes, useEdges, useReactFlow, type XYPosition } from "@xyflow/react";
+import { type Node, type Edge, useNodes, useEdges, useReactFlow, type XYPosition } from "@uipath/uix-xyflow/react";
 import { Column, Row } from "@uipath/uix-core";
 import { FloatingCanvasPanel } from "./FloatingCanvasPanel";
 import { ApTypography } from "@uipath/portal-shell-react";

@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import type { Node, Edge } from "@xyflow/react";
-import { Position, ReactFlowProvider, useNodesState, useEdgesState, Panel } from "@xyflow/react";
+import type { Node, Edge } from "@uipath/uix-xyflow/react";
+import { Position, ReactFlowProvider, useNodesState, useEdgesState, Panel } from "@uipath/uix-xyflow/react";
 import { BaseCanvas } from "../BaseCanvas/BaseCanvas";
 import { type ButtonHandleConfig, ButtonHandles, type HandleActionEvent } from "./ButtonHandle";
 import { ApIcon, ApTypography } from "@uipath/portal-shell-react";

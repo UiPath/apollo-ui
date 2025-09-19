@@ -1,4 +1,4 @@
-import type { Node, XYPosition } from "@xyflow/react";
+import type { Node, XYPosition } from "@uipath/uix-xyflow/react";
 import { BASE_CANVAS_GRID_SPACING } from "../components/BaseCanvas";
 
 /**
