@@ -86,7 +86,6 @@ export const StageContent = styled.div`
 `;
 
 export const StageTaskList = styled.div`
-  margin: 12px 0 0 0;
   padding: 0;
   display: flex;
   flex-direction: column;
