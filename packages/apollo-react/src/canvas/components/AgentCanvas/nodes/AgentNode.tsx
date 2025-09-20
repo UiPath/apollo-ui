@@ -63,9 +63,9 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
   const isConversational = (definition?.metadata as Record<string, unknown>)?.isConversational === true;
 
   const executionStatus = useMemo(() => {
-    if (hasError) return "error";
-    if (hasSuccess) return "success";
-    if (hasRunning) return "running";
+    if (hasError) return "Failed";
+    if (hasSuccess) return "Completed";
+    if (hasRunning) return "InProgress";
     return undefined;
   }, [hasError, hasSuccess, hasRunning]);
 

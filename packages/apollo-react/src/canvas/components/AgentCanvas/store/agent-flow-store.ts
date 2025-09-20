@@ -434,6 +434,7 @@ export const createAgentFlowStore = (initialProps: AgentFlowProps) =>
                   ...node,
                   data: {
                     ...node.data,
+                    errors: newProps.resources.find((r) => hasResourceNode(node, r))?.errors,
                     name: newProps.model.name,
                     description: newProps.model.vendorName,
                     iconUrl: newProps.model.iconUrl,
@@ -461,6 +462,7 @@ export const createAgentFlowStore = (initialProps: AgentFlowProps) =>
                   ...node,
                   data: {
                     ...node.data,
+                    errors: newProps.resources.find((r) => hasResourceNode(node, r))?.errors,
                     name: updatedResource.name,
                     originalName: updatedResource.originalName,
                     description: updatedResource.description,

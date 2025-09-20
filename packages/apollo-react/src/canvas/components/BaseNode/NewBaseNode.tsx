@@ -59,7 +59,7 @@ const NewBaseNodeComponent = (
 
   const shouldShowHandles = useMemo(
     () => inProgress || selected || isHovered || isConnecting,
-    [inProgress, isConnecting, selected, isHovered]
+    [inProgress, selected, isHovered, isConnecting]
   );
 
   const hasVisibleBottomHandlesWithLabels = useMemo(() => {
@@ -107,7 +107,7 @@ const NewBaseNodeComponent = (
   const handleElements = useMemo(() => {
     const elements = handleConfigurations.map((config, i) => {
       const hasConnectedHandle = config.handles.some((h) => connectedHandleIds.has(h.id));
-      const finalVisible = hasConnectedHandle || (shouldShowHandles && (config.visible ?? true));
+      const finalVisible = hasConnectedHandle || (config.visible ?? true);
 
       // Enhance handles with the unified action handler
       const enhancedHandles = config.handles.map((handle) => ({
@@ -129,7 +129,7 @@ const NewBaseNodeComponent = (
     });
 
     return <>{elements}</>;
-  }, [handleConfigurations, selected, shouldShowHandles, connectedHandleIds, handleAction, id, showAddButton]);
+  }, [handleConfigurations, selected, connectedHandleIds, handleAction, id, showAddButton]);
 
   // Fallback for missing configuration - show error state
   if (!icon && !displayLabel) {

@@ -41,7 +41,7 @@ export const ResourceNode = memo(
     const { nodes: _nodes, deleteNode } = useAgentFlowStore();
 
     const _isViewMode = mode === "view";
-    const isDesignMode = mode === "design";
+    const _isDesignMode = mode === "design";
     const _isActive = data.isActive ?? false;
     const hasBreakpoint = data.hasBreakpoint ?? false;
     const hasGuardrails = data.hasGuardrails ?? false;
@@ -114,7 +114,7 @@ export const ResourceNode = memo(
           icon = <ApIcon name="person" size="40px" />;
           break;
         case "mcp":
-          icon = <ApIcon name="dns" size="40px" />;
+          icon = <Icons.McpIcon w={40} h={40} />;
           break;
         case "model":
           icon = getModelIcon(data.name);
@@ -129,14 +129,13 @@ export const ResourceNode = memo(
       return <Row style={{ color: "var(--color-foreground-de-emp)" }}>{icon}</Row>;
     }, [data.iconUrl, data.name, data.type, data.projectType]);
 
-    // TODO: Think about how to handle representing colored state in the NewBaseNode
-    const _borderColor = useMemo(() => {
-      if (isCurrentBreakpoint && !isDesignMode) return "var(--color-warning-icon)";
-      if (hasError) return "var(--color-error-icon)";
-      if (hasSuccess) return "var(--color-success-icon)";
-      if (hasRunning) return "var(--color-primary)";
-      return selected ? "var(--color-selection-indicator)" : "var(--color-foreground-de-emp)";
-    }, [selected, hasError, hasSuccess, hasRunning, isCurrentBreakpoint, isDesignMode]);
+    const executionStatus = useMemo(() => {
+      if (isCurrentBreakpoint) return "Paused";
+      if (hasError) return "Failed";
+      if (hasSuccess) return "Completed";
+      if (hasRunning) return "InProgress";
+      return undefined;
+    }, [hasError, hasSuccess, hasRunning, isCurrentBreakpoint]);
 
     const nodeMenuItems: NodeMenuItem[] = useMemo(() => {
       if (mode === "view" || data.type === "model") return [];
@@ -319,6 +318,7 @@ export const ResourceNode = memo(
       <NewBaseNode
         data={{}}
         handleConfigurations={handleConfigurations}
+        executionStatus={executionStatus}
         icon={resourceIcon}
         display={{
           iconBackground: "var(--color-background-secondary)",
