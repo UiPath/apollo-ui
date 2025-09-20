@@ -12,6 +12,7 @@ export { DataAndTools } from "./DataAndTools";
 export { DataTransformIcon } from "./DataTransformIcon";
 export { DecisionIcon } from "./DecisionIcon";
 export { GoogleIcon } from "./GoogleIcon";
+export { McpIcon } from "./McpIcon";
 export { OpenAIIcon } from "./OpenAIIcon";
 export { RpaProject } from "./RpaProject";
 export { ScriptTaskIcon } from "./ScriptTaskIcon";
