@@ -1,20 +1,13 @@
-import { AnimatedEdge } from "./AnimatedEdge";
+import type { EdgeProps } from "@uipath/uix/xyflow/react";
 import { StaticEdge } from "./StaticEdge";
 import { useAgentFlowStore } from "../store/agent-flow-store";
 
-export const Edge = (props: any) => {
-  const { nodes, props: storeProps } = useAgentFlowStore();
-  const { source, target, data } = props;
-  const mode = storeProps?.mode || "view"; // Default to "view" if storeProps is undefined
+export const Edge = (props: EdgeProps) => {
+  const { nodes } = useAgentFlowStore();
+  const { source, target } = props;
 
   const sourceNode = nodes.find((node) => node.id === source);
   const targetNode = nodes.find((node) => node.id === target);
-
-  // Check if this is an edge FROM agent node TO a selected resource node
-  const isAgentToSelectedResource = sourceNode?.type === "agent" && targetNode?.type === "resource" && Boolean(targetNode?.selected);
-
-  // Check if this is an edge FROM a selected resource node TO agent node (for model edges)
-  const isSelectedResourceToAgent = sourceNode?.type === "resource" && targetNode?.type === "agent" && Boolean(sourceNode?.selected);
 
   // Helper function to check if connected nodes have error or success status
   const getConnectedNodesStatus = () => {
@@ -43,40 +36,9 @@ export const Edge = (props: any) => {
   };
 
   const { hasError, hasSuccess, hasRunning, isCurrentBreakpoint } = getConnectedNodesStatus();
-
-  // Only use animated edges in view mode, not in design mode
-  if (mode === "view") {
-    if (isAgentToSelectedResource) {
-      return (
-        <AnimatedEdge
-          {...props}
-          hasError={hasError}
-          hasSuccess={hasSuccess}
-          hasRunning={hasRunning}
-          isCurrentBreakpoint={isCurrentBreakpoint}
-        />
-      );
-    }
-
-    if (isSelectedResourceToAgent) {
-      return (
-        <AnimatedEdge
-          {...props}
-          reverseDirection={true}
-          hasError={hasError}
-          hasSuccess={hasSuccess}
-          hasRunning={hasRunning}
-          isCurrentBreakpoint={isCurrentBreakpoint}
-        />
-      );
-    }
-  }
-
-  // For StaticEdge, we need to ensure the data has the required label property
-  const edgeData = data ?? {};
   const staticEdgeProps = {
     ...props,
-    data: { ...edgeData },
+    data: { label: null },
     hasError,
     hasSuccess,
     hasRunning,

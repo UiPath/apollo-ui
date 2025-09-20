@@ -4,54 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 import type { EdgeProps } from "@uipath/uix/xyflow/react";
 import { Edge } from "./Edge";
 
-// Mock AnimatedEdge and StaticEdge
-vi.mock("./AnimatedEdge", () => ({
-  AnimatedEdge: (props: Record<string, unknown>) => {
-    // Only pass through the props we want to test, filter out EdgeProps
-    const {
-      reverseDirection,
-      hasError,
-      hasSuccess,
-      hasRunning,
-      _isCurrentBreakpoint,
-      // Filter out EdgeProps that would cause React warnings
-      sourceX: _sourceX,
-      sourceY: _sourceY,
-      targetX: _targetX,
-      targetY: _targetY,
-      sourcePosition: _sourcePosition,
-      targetPosition: _targetPosition,
-      source: _source,
-      target: _target,
-      id: _id,
-      data: _data,
-      selected: _selected,
-      animated: _animated,
-      style: _style,
-      markerEnd: _markerEnd,
-      markerStart: _markerStart,
-      interactionWidth: _interactionWidth,
-      label: _label,
-      labelStyle: _labelStyle,
-      labelShowBg: _labelShowBg,
-      labelBgStyle: _labelBgStyle,
-      labelBgPadding: _labelBgPadding,
-      labelBgBorderRadius: _labelBgBorderRadius,
-      deletable: _deletable,
-      selectable: _selectable,
-      ..._rest
-    } = props;
-    return (
-      <div
-        data-testid="animated-edge"
-        data-reverse-direction={reverseDirection}
-        data-has-error={hasError}
-        data-has-success={hasSuccess}
-        data-has-running={hasRunning}
-      />
-    );
-  },
-}));
+// Mock StaticEdge
 vi.mock("./StaticEdge", () => ({
   StaticEdge: (props: Record<string, unknown>) => {
     // Filter out EdgeProps that would cause React warnings
@@ -128,32 +81,7 @@ const baseEdgeProps: Omit<EdgeProps, "id" | "source" | "target"> = {
 };
 
 describe("Edge", () => {
-  it("renders AnimatedEdge for agent to selected resource", () => {
-    const props: EdgeProps = {
-      ...baseEdgeProps,
-      id: "test-edge",
-      source: "agent",
-      target: "resource",
-    };
-    const { getByTestId } = render(<Edge {...props} />);
-    expect(getByTestId("animated-edge")).toBeInTheDocument();
-  });
-
-  it("renders AnimatedEdge with reverseDirection for selected resource to agent", () => {
-    // Make resource the source and agent the target
-    const props: EdgeProps = {
-      ...baseEdgeProps,
-      id: "test-edge",
-      source: "resource",
-      target: "agent",
-    };
-    const { getByTestId } = render(<Edge {...props} />);
-    expect(getByTestId("animated-edge")).toBeInTheDocument();
-    // Should have reverseDirection prop
-    expect(getByTestId("animated-edge")).toHaveAttribute("data-reverse-direction", "true");
-  });
-
-  it("renders StaticEdge for other cases", () => {
+  it("renders StaticEdge", () => {
     // Neither agent nor resource is selected
     const props: EdgeProps = {
       ...baseEdgeProps,
