@@ -1,5 +1,5 @@
 import { memo, useCallback, useMemo } from "react";
-import { ApCircularProgress, ApIcon } from "@uipath/portal-shell-react";
+import { ApIcon } from "@uipath/portal-shell-react";
 import { Icons, Row } from "@uipath/uix/core";
 import { Position, type NodeProps } from "@uipath/uix/xyflow/react";
 import { NewBaseNode } from "../../BaseNode/NewBaseNode";
@@ -7,6 +7,7 @@ import { ProjectType, type AgentFlowResourceNode, type AgentFlowResourceNodeData
 import { type NodeMenuAction, type NodeMenuDivider, type NodeMenuItem } from "../../NodeContextMenu";
 import { useAgentFlowStore } from "../store/agent-flow-store";
 import { type ButtonHandleConfig } from "../../ButtonHandle";
+import { ExecutionStatusIcon } from "../../ExecutionStatusIcon/ExecutionStatusIcon";
 
 interface ResourceNodeProps extends NodeProps<AgentFlowResourceNode> {
   mode?: "design" | "view";
@@ -256,21 +257,7 @@ export const ResourceNode = memo(
       return undefined;
     }, [hasBreakpoint]);
 
-    const statusAdornment = useMemo(() => {
-      if (hasError || (data.errors && data.errors.length > 0)) {
-        return <ApIcon name="error" size="14px" color="var(--color-error-icon)" />;
-      }
-      if (isCurrentBreakpoint && !hasError) {
-        return <ApIcon name="pause_circle" size="14px" color="var(--color-warning-icon)" />;
-      }
-      if (hasRunning && !hasError && !isCurrentBreakpoint) {
-        return <ApCircularProgress size={14} color="var(--color-primary)" />;
-      }
-      if (hasSuccess && !hasError && !hasRunning && !isCurrentBreakpoint) {
-        return <ApIcon variant="normal" name="check_circle" size="14px" color="var(--color-success-icon)" />;
-      }
-      return undefined;
-    }, [data.errors, hasError, hasRunning, hasSuccess, isCurrentBreakpoint]);
+    const statusAdornment = <ExecutionStatusIcon status={executionStatus} size={16} />;
 
     const guardrailsAdornment = useMemo(() => {
       if (hasGuardrails) {

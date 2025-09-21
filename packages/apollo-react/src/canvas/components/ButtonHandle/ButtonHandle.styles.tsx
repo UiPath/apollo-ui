@@ -1,4 +1,4 @@
-import { Handle, Position } from "@uipath/uix/xyflow/react";
+import { Handle, type HandleProps, Position } from "@uipath/uix/xyflow/react";
 import { motion } from "motion/react";
 import styled from "@emotion/styled";
 import { css } from "@emotion/react";
@@ -151,55 +151,54 @@ export const StyledNotch = styled.div<{
   transition: all 0.2s ease-in-out;
 `;
 
-export const StyledHandle = styled(Handle, {
-  // Do not forward transient props to the DOM
-  shouldForwardProp: (prop: string) => !prop.startsWith("$"),
-})<{
-  $positionPercent: number;
-  $total: number;
-  $visible: boolean;
-}>`
-  width: ${(p) => (p.position === Position.Top || p.position === Position.Bottom ? `${50 / p.$total}%` : "24px")};
-  height: ${(p) => (p.position === Position.Top || p.position === Position.Bottom ? "24px" : `${50 / p.$total}%`)};
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-width: 0;
-  border-radius: 0;
-  background-color: transparent;
-  opacity: ${(p) => (p.$visible ? 1 : 0)};
-  cursor: crosshair;
+export const StyledHandle = (
+  props: HandleProps & {
+    $positionPercent: number;
+    $total: number;
+    $visible: boolean;
+  }
+) => {
+  const { position, $total, $visible, $positionPercent } = props;
 
-  ${(p) =>
-    p.$total > 1 &&
-    p.position === Position.Top &&
-    css`
-      top: 0;
-      left: ${p.$positionPercent}%;
-      transform: translate(-50%, -50%);
-    `}
-  ${(p) =>
-    p.$total > 1 &&
-    p.position === Position.Bottom &&
-    css`
-      bottom: 0;
-      left: ${p.$positionPercent}%;
-      transform: translate(-50%, 50%);
-    `}
-  ${(p) =>
-    p.$total > 1 &&
-    p.position === Position.Left &&
-    css`
-      left: 0;
-      top: ${p.$positionPercent}%;
-      transform: translate(-50%, -50%);
-    `}
-  ${(p) =>
-    p.$total > 1 &&
-    p.position === Position.Right &&
-    css`
-      right: 0;
-      top: ${p.$positionPercent}%;
-      transform: translate(50%, -50%);
-    `}
-`;
+  return (
+    <Handle
+      {...props}
+      style={{
+        width: position === Position.Top || position === Position.Bottom ? `${50 / $total}%` : "24px",
+        height: position === Position.Top || position === Position.Bottom ? "24px" : `${50 / $total}%`,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        borderWidth: 0,
+        borderRadius: 0,
+        backgroundColor: "transparent",
+        opacity: $visible ? 1 : 0,
+        cursor: "crosshair",
+        ...($total > 1 &&
+          position === Position.Top && {
+            top: 0,
+            left: `${$positionPercent}%`,
+            transform: "translate(-50%, -50%)",
+          }),
+        ...($total > 1 &&
+          position === Position.Bottom && {
+            bottom: 0,
+            left: `${$positionPercent}%`,
+            transform: "translate(-50%, 50%)",
+          }),
+        ...($total > 1 &&
+          position === Position.Left && {
+            left: 0,
+            top: `${$positionPercent}%`,
+            transform: "translate(-50%, -50%)",
+          }),
+        ...($total > 1 &&
+          position === Position.Right && {
+            right: 0,
+            top: `${$positionPercent}%`,
+            transform: "translate(50%, -50%)",
+          }),
+      }}
+    />
+  );
+};

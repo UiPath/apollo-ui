@@ -1,7 +1,7 @@
 import { memo, useMemo } from "react";
 import { Position } from "@uipath/uix/xyflow/react";
 import type { NodeProps, Node } from "@uipath/uix/xyflow/react";
-import { ApIcon, ApCircularProgress } from "@uipath/portal-shell-react";
+import { ApIcon } from "@uipath/portal-shell-react";
 import { Icons } from "@uipath/uix/core";
 import { NewBaseNode } from "../../BaseNode/NewBaseNode";
 import type { NewBaseNodeData, NewBaseNodeDisplayProps, HandleConfiguration } from "../../BaseNode/NewBaseNode.types";
@@ -9,6 +9,7 @@ import type { ButtonHandleConfig, HandleActionEvent } from "../../ButtonHandle/B
 import type { AgentNodeTranslations } from "../../../types";
 import { ResourceNodeType } from "../AgentFlow.constants";
 import { useAgentFlowStore } from "../store/agent-flow-store";
+import { ExecutionStatusIcon } from "../../ExecutionStatusIcon/ExecutionStatusIcon";
 
 const { ConversationalAgentIcon, AutonomousAgentIcon } = Icons;
 
@@ -80,7 +81,10 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
   const handleConfigurations: HandleConfiguration[] = useMemo(() => {
     const configs: HandleConfiguration[] = [];
 
+    // Top handles (Context)
     const topHandles: ButtonHandleConfig[] = [];
+    // Bottom handles (Model, Escalation, Tool)
+    const bottomHandles: ButtonHandleConfig[] = [];
 
     if (displayContext) {
       topHandles.push({
@@ -91,13 +95,11 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
         showButton: mode === "design",
         color: "var(--color-foreground-de-emp)",
         labelBackgroundColor: "var(--color-background-secondary)",
+        visible: displayContext,
         onAction: (_e: HandleActionEvent) => {
           onAddResource?.("context");
         },
       });
-    }
-
-    if (topHandles.length > 0) {
       configs.push({
         position: Position.Top,
         handles: topHandles,
@@ -105,57 +107,50 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
       });
     }
 
-    // Bottom handles (Model, Escalation, Tool)
-    const bottomHandles: ButtonHandleConfig[] = [];
-
-    if (displayModel) {
-      bottomHandles.push({
-        id: ResourceNodeType.Model,
-        type: "source",
-        handleType: "artifact",
-        label: "Model",
-        showButton: false,
-        color: "var(--color-foreground-de-emp)",
-        labelBackgroundColor: "var(--color-background-secondary)",
-      });
-    }
-
-    if (displayEscalation) {
-      bottomHandles.push({
-        id: ResourceNodeType.Escalation,
-        type: "source",
-        handleType: "artifact",
-        label: "Escalation",
-        showButton: mode === "design",
-        color: "var(--color-foreground-de-emp)",
-        labelBackgroundColor: "var(--color-background-secondary)",
-        onAction: (_e: HandleActionEvent) => {
-          onAddResource?.("escalation");
+    if (displayModel || displayEscalation || displayTool || displayMcp) {
+      bottomHandles.push(
+        {
+          id: ResourceNodeType.Model,
+          type: "source",
+          handleType: "artifact",
+          label: "Model",
+          showButton: false,
+          color: "var(--color-foreground-de-emp)",
+          labelBackgroundColor: "var(--color-background-secondary)",
+          visible: displayModel,
         },
-      });
-    }
-
-    if (displayTool || displayMcp) {
-      bottomHandles.push({
-        id: ResourceNodeType.Tool,
-        type: "source",
-        handleType: "artifact",
-        label: "Tool",
-        showButton: mode === "design",
-        color: "var(--color-foreground-de-emp)",
-        labelBackgroundColor: "var(--color-background-secondary)",
-        onAction: (_e: HandleActionEvent) => {
-          // Default to tool when both are available, or show the available option
-          if (displayTool) {
-            onAddResource?.("tool");
-          } else if (displayMcp) {
-            onAddResource?.("mcp");
-          }
+        {
+          id: ResourceNodeType.Escalation,
+          type: "source",
+          handleType: "artifact",
+          label: "Escalation",
+          showButton: mode === "design",
+          color: "var(--color-foreground-de-emp)",
+          labelBackgroundColor: "var(--color-background-secondary)",
+          visible: displayEscalation,
+          onAction: (_e: HandleActionEvent) => {
+            onAddResource?.("escalation");
+          },
         },
-      });
-    }
-
-    if (bottomHandles.length > 0) {
+        {
+          id: ResourceNodeType.Tool,
+          type: "source",
+          handleType: "artifact",
+          label: "Tool",
+          showButton: mode === "design",
+          color: "var(--color-foreground-de-emp)",
+          labelBackgroundColor: "var(--color-background-secondary)",
+          visible: displayTool || displayMcp,
+          onAction: (_e: HandleActionEvent) => {
+            // Default to tool when both are available, or show the available option
+            if (displayTool) {
+              onAddResource?.("tool");
+            } else if (displayMcp) {
+              onAddResource?.("mcp");
+            }
+          },
+        }
+      );
       configs.push({
         position: Position.Bottom,
         handles: bottomHandles,
@@ -166,25 +161,14 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
     return configs;
   }, [mode, displayContext, displayMcp, displayTool, displayModel, displayEscalation, onAddResource]);
 
-  const statusAdornment = useMemo(() => {
-    if (hasError) {
-      return <ApIcon name="error" size="16px" color="var(--color-error-icon)" />;
-    }
-    if (hasSuccess && !hasError) {
-      return <ApIcon name="check_circle" size="16px" color="var(--color-success-icon)" />;
-    }
-    if (hasRunning && !hasError && !hasSuccess) {
-      return <ApCircularProgress size={20} />;
-    }
-    return undefined;
-  }, [hasError, hasSuccess, hasRunning]);
-
   const agentIcon = useMemo(() => {
     if (isConversational) {
       return <ConversationalAgentIcon color="var(--color-foreground-de-emp)" w={32} h={32} />;
     }
     return <AutonomousAgentIcon color="var(--color-foreground-de-emp)" w={32} h={32} />;
   }, [isConversational]);
+
+  const statusAdornment = <ExecutionStatusIcon status={executionStatus} size={16} />;
 
   const guardrailsAdornment = useMemo(() => {
     if (mode == "view") return undefined;

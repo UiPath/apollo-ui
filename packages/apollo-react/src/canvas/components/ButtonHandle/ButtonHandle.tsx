@@ -167,6 +167,7 @@ export interface ButtonHandleConfig {
   showButton?: boolean;
   color?: string;
   labelBackgroundColor?: string;
+  visible?: boolean;
   onAction?: (event: HandleActionEvent) => void;
 }
 
@@ -204,7 +205,8 @@ const ButtonHandlesBase = ({
           index={index}
           total={total}
           selected={selected}
-          visible={visible}
+          // Need top level visibility to be true and current handle visibility to be true to keep positioning of handles consistent
+          visible={visible && (handle.visible ?? true)}
           showButton={finalSelected && visible && handle.showButton}
           color={handle.color}
           onAction={handle.onAction}
