@@ -17,4 +17,7 @@ export { OpenAIIcon } from "./OpenAIIcon";
 export { RpaProject } from "./RpaProject";
 export { ScriptTaskIcon } from "./ScriptTaskIcon";
 export { SwitchIcon } from "./SwitchIcon";
+export { TimelinePauseIcon } from "./TimelinePauseIcon";
+export { TimelinePlayIcon } from "./TimelinePlayIcon";
+export { TimelineProgressIcon } from "./TimelineProgressIcon";
 export { WebAppProject } from "./WebAppProject";
