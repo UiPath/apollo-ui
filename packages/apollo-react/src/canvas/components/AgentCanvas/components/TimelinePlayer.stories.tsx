@@ -1,7 +1,7 @@
 import { useCallback, useState } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { ReactFlowProvider } from "@xyflow/react";
-import { Row } from "@uipath/uix-core";
+import { Row } from "@uipath/uix/core";
 import { TimelinePlayer } from "./TimelinePlayer";
 import { AgentFlow } from "../AgentFlow";
 import type { IRawSpan } from "@uipath/portal-shell-react";
