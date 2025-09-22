@@ -14,9 +14,11 @@ import {
     CHAT_WIDTH_SIDE_BY_SIDE_MIN,
     DEFAULT_MESSAGE_RENDERER,
     StorageService,
+    TOOL_CALL_RENDERER,
 } from '@uipath/portal-shell-util';
 import React from 'react';
 
+import { ApToolCallReact } from '../../../ap-tool-call/ap-tool-call.react';
 import { useChatService } from '../../providers/chat-service.provider.react';
 import { useChatState } from '../../providers/chat-state-provider.react';
 import { calculateDynamicPadding } from '../../utils/dynamic-padding';
@@ -25,10 +27,21 @@ import { AutopilotChatMessageActions } from './actions/chat-actions.react';
 import { AutopilotChatMarkdownRenderer } from './markdown/markdown.react';
 import { AutopilotChatSources } from './sources/chat-sources.react';
 
-const APOLLO_MESSAGE_RENDERERS = [ {
-    name: DEFAULT_MESSAGE_RENDERER,
-    component: AutopilotChatMarkdownRenderer,
-} ];
+const APOLLO_MESSAGE_RENDERERS = [
+    {
+        name: DEFAULT_MESSAGE_RENDERER,
+        component: AutopilotChatMarkdownRenderer,
+    },
+    {
+        name: TOOL_CALL_RENDERER,
+        component: ({ message }: { message: AutopilotChatMessage }) => {
+            if (!message.span) {
+                return null;
+            }
+            return <ApToolCallReact span={message.span} />;
+        },
+    },
+];
 
 const MessageBoxComponent = styled('div')<{
     isAssistant: boolean;
