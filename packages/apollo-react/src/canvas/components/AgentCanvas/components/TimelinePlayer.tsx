@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { DateTime } from "luxon";
 import { FontVariantToken, Spacing } from "@uipath/apollo-core";
-import { ApIcon, ApIconButton, ApTypography, type IRawSpan } from "@uipath/portal-shell-react";
-import { Column, Row } from "@uipath/uix/core";
+import { ApIconButton, ApTypography, type IRawSpan } from "@uipath/portal-shell-react";
+import { Column, Row, Icons } from "@uipath/uix-core";
 
 const PERCENTAGE_MULTIPLIER = 100;
 const SECONDS_PER_MINUTE = 60;
@@ -14,7 +14,7 @@ const MINIMUM_VISIBLE_DURATION = 0.01;
 const SPAN_Z_INDEX_INACTIVE = 2;
 const TIMELINE_BAR_HEIGHT = 30;
 const TIMELINE_TRACK_BAR_HEIGHT = 4;
-const TIMELINE_SPAN_HEIGHT = 20;
+const TIMELINE_SPAN_HEIGHT = 5;
 const SPEED_LEVEL_1 = 1;
 const SPEED_LEVEL_2 = 2;
 const SPEED_LEVEL_3 = 3;
@@ -43,10 +43,96 @@ const SpanBlock: React.FC<{
   left: number;
   width: number;
   isActive?: boolean;
+  isPlayed?: boolean;
   depth?: number;
   title?: string;
-}> = ({ left, width, isActive = false, depth = 0, title }) => {
+  status?: number;
+  progressPosition?: number; // Current progress position as percentage (0-100)
+}> = ({ left, width, isActive = false, isPlayed = false, depth = 0, title, status, progressPosition = 0 }) => {
   const [isHovered, setIsHovered] = useState(false);
+
+  const getStatusColor = () => {
+    if (status === 1) return "var(--color-success-icon, #038108)"; // Green for success
+    if (status === 2) return "var(--color-error-icon, #CC3D45)"; // Red for error
+    if (status === 3) return "var(--color-info-icon, #1976D2)"; // Blue for running
+    return "var(--color-border-de-emp, #CFD8DD)"; // Default gray
+  };
+
+  const getBackgroundStyle = () => {
+    // Only show status colors for spans that have been played
+    if (isPlayed) {
+      return { backgroundColor: getStatusColor() };
+    }
+
+    return { backgroundColor: "var(--color-border-de-emp, #CFD8DD)" };
+  };
+
+  const getBaseBackgroundStyle = () => {
+    const hasPartialElements = isActive && getPartialElements() !== null;
+
+    if (hasPartialElements) {
+      // Transparent background allows partial blue/gray elements to show
+      return { backgroundColor: "transparent" };
+    } else {
+      // Use standard background logic (status colors for played, gray for unplayed)
+      return getBackgroundStyle();
+    }
+  };
+
+  // For active spans, calculate partial coloring
+  const getPartialElements = () => {
+    if (!isActive || !status) {
+      return null;
+    }
+
+    // Calculate the progress within this span
+    const spanStart = left;
+    const spanEnd = left + width;
+
+    if (progressPosition <= spanStart) {
+      // Progress hasn't reached this span yet - show all gray
+      return null;
+    } else if (progressPosition >= spanEnd) {
+      // Proggress has passed this span completely - show all colored with actual status
+      return null;
+    } else {
+      // Progress is within this span - show partial blue (running)
+      const progressWithinSpan = ((progressPosition - spanStart) / width) * 100;
+
+      return (
+        <>
+          {/* Blue running portion */}
+          <div
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              width: `${progressWithinSpan}%`,
+              height: "100%",
+              backgroundColor: "var(--color-info-icon, #1976D2)",
+              borderRadius: "var(--Small, 2px)",
+              borderTopRightRadius: progressWithinSpan === 100 ? "var(--Small, 2px)" : 0,
+              borderBottomRightRadius: progressWithinSpan === 100 ? "var(--Small, 2px)" : 0,
+            }}
+          />
+          {/* Remaining gray portion */}
+          <div
+            style={{
+              position: "absolute",
+              top: 0,
+              left: `${progressWithinSpan}%`,
+              width: `${100 - progressWithinSpan}%`,
+              height: "100%",
+              backgroundColor: "var(--color-border-de-emp, #CFD8DD)",
+              borderRadius: "var(--Small, 2px)",
+              borderTopLeftRadius: progressWithinSpan === 0 ? "var(--Small, 2px)" : 0,
+              borderBottomLeftRadius: progressWithinSpan === 0 ? "var(--Small, 2px)" : 0,
+            }}
+          />
+        </>
+      );
+    }
+  };
 
   return (
     <div
@@ -56,20 +142,21 @@ const SpanBlock: React.FC<{
       style={{
         position: "absolute",
         top: `${(TIMELINE_BAR_HEIGHT - TIMELINE_SPAN_HEIGHT) / 2}px`,
-        backgroundColor: isActive ? "var(--color-selection-indicator)" : "var(--color-background)",
-        borderRadius: "3px",
+        ...getBaseBackgroundStyle(),
+        borderRadius: "var(--Small, 2px)",
         left: `${left}%`,
         width: `${width}%`,
         height: `${TIMELINE_SPAN_HEIGHT}px`,
-        boxShadow: isActive
-          ? "0 0 0 2px var(--color-selection-indicator), 0 2px 8px rgba(0, 0, 0, 0.2)"
-          : "inset 0 0 0 1px rgba(0, 0, 0, 0.1)",
+        boxShadow: "inset 0 0 0 0px rgba(0, 0, 0, 0.1)",
         zIndex: SPAN_Z_INDEX_INACTIVE + depth + (isActive ? 1 : 0) + (isHovered ? 2 : 0),
         transition: "all 0.2s ease-in-out",
         transform: isActive || isHovered ? "scaleY(1.1)" : "scaleY(1)",
         cursor: "pointer",
+        overflow: "hidden",
       }}
-    />
+    >
+      {getPartialElements()}
+    </div>
   );
 };
 
@@ -78,7 +165,7 @@ const TrackBar: React.FC = () => (
     style={{
       position: "absolute",
       top: `${TIMELINE_BAR_HEIGHT / 2 - TIMELINE_TRACK_BAR_HEIGHT / 2}px`,
-      backgroundColor: "var(--color-border)",
+      backgroundColor: "var(--color-background, #FFFFFF)",
       height: `${TIMELINE_TRACK_BAR_HEIGHT}px`,
       borderRadius: "2px",
       width: "100%",
@@ -91,29 +178,14 @@ const Scrubber: React.FC<{ left: number }> = ({ left }) => (
   <div
     style={{
       position: "absolute",
-      top: "-2px",
-      height: "34px",
-      width: "2px",
-      backgroundColor: "var(--color-selection-indicator)",
+      top: `${(TIMELINE_BAR_HEIGHT - 35) / 2}px`,
       left: `${left}%`,
+      transform: "translateX(-50%)",
       zIndex: 100,
       cursor: "ew-resize",
     }}
   >
-    <div
-      style={{
-        position: "absolute",
-        top: "50%",
-        left: "50%",
-        transform: "translate(-50%, -50%)",
-        width: "12px",
-        height: "12px",
-        backgroundColor: "var(--color-primary-indicator)",
-        borderRadius: "50%",
-        border: "2px solid var(--color-background-secondary)",
-        boxShadow: "0 1px 3px rgba(0,0,0,0.3)",
-      }}
-    />
+    <Icons.TimelineProgressIcon w={10} h={10} color="#0067DF" />
   </div>
 );
 
@@ -309,6 +381,16 @@ export const TimelinePlayer: React.FC<{
     return spanTimes.filter((span) => currentAbsoluteTime >= span.start && currentAbsoluteTime <= span.end).map((span) => span.id);
   }, [progress, spanTimes, timelineInfo]);
 
+  // Calculate which spans have been played (timeline progress has reached their start time)
+  const playedSpanIds = useMemo((): string[] => {
+    if (timelineInfo.duration === 0) return [];
+
+    // Calculate current absolute time using the same timeline as visual spans
+    const currentAbsoluteTime = timelineInfo.minStart + progress * timelineInfo.duration;
+
+    return spanTimes.filter((span) => currentAbsoluteTime > span.start).map((span) => span.id);
+  }, [progress, spanTimes, timelineInfo]);
+
   // Get the most active (deepest) span
   const mostActiveSpan = useMemo((): NormalizedSpan | null => {
     if (activeSpanIds.length === 0) {
@@ -468,24 +550,30 @@ export const TimelinePlayer: React.FC<{
       style={{
         backgroundColor: "var(--color-background-secondary)",
         color: "var(--color-foreground)",
-        borderRadius: "6px",
+        borderRadius: "8px",
+        border: "1px solid var(--color-background-gray-light, #cfd8dd)",
+        background: "var(--color-brand-neutral-white)",
       }}
     >
       <Row align="center" gap={Spacing.SpacingXs}>
-        <ApIconButton onClick={handlePlayPause}>{playing ? <ApIcon name="pause" /> : <ApIcon name="play_arrow" />}</ApIconButton>
-
-        <ApIconButton onClick={handleSpeedChange}>
-          <ApTypography variant={FontVariantToken.fontSizeSBold}>{speedLevel}x</ApTypography>
+        <ApIconButton size="large" onClick={handlePlayPause}>
+          {playing ? <Icons.TimelinePauseIcon w={24} h={24} /> : <Icons.TimelinePlayIcon w={24} h={24} />}
         </ApIconButton>
 
         <ApTypography>
-          {currentTimeFormatted}/{totalTimeFormatted}
+          {currentTimeFormatted} / {totalTimeFormatted}
         </ApTypography>
 
         <ApTypography>{mostActiveSpan?.Name}</ApTypography>
+
+        <div style={{ flex: 1 }} />
+
+        <ApIconButton size="large" onClick={handleSpeedChange}>
+          <ApTypography variant={FontVariantToken.fontSizeSBold}>{speedLevel}x</ApTypography>
+        </ApIconButton>
       </Row>
 
-      <Row>
+      <Row align="center" style={{ marginLeft: "15px" }}>
         <TimelineBar ref={timelineRef} onClick={handleTimelineClick} onMouseDown={handleMouseDown}>
           <TrackBar />
 
@@ -495,7 +583,10 @@ export const TimelinePlayer: React.FC<{
               left={span.normalizedStart * PERCENTAGE_MULTIPLIER}
               width={span.normalizedDuration * PERCENTAGE_MULTIPLIER}
               isActive={activeSpanIds.includes(span.Id)}
+              isPlayed={playedSpanIds.includes(span.Id)}
               depth={span.depth}
+              status={span.Status}
+              progressPosition={progress * PERCENTAGE_MULTIPLIER}
               title={`${span.Name} (${formatTime(DateTime.fromISO(span.EndTime).toMillis() - DateTime.fromISO(span.StartTime).toMillis())})`}
             />
           ))}
