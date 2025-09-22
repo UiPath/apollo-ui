@@ -1,3 +1,7 @@
+import type {
+    ITreeNode,
+    TSpan,
+} from '@uipath/apollo-angular-elements';
 import type { FontVariantToken } from '@uipath/apollo-core';
 
 export enum AutopilotChatMode {
@@ -72,6 +76,7 @@ export enum AutopilotChatRole {
  * @property meta - Optional metadata for the message (additional information about the message)
  * @property toCopy - Optional string to copy when the message is copied
  * @property shouldWaitForMoreMessages - Optional flag to indicate if the chat service should wait for more messages
+ * @property span - Optional span of the tool call
  */
 export interface AutopilotChatMessage {
     id: string;
@@ -93,6 +98,7 @@ export interface AutopilotChatMessage {
     meta?: any;
     toCopy?: string;
     shouldWaitForMoreMessages?: boolean;
+    span?: ITreeNode<TSpan>;
 }
 
 export interface AutopilotChatPrompt extends Pick<AutopilotChatMessage, 'content' | 'attachments'> {}
