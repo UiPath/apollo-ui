@@ -379,10 +379,10 @@ const AgentFlowWrapper = ({
         <div style={{ fontSize: "0.875rem", color: "#666" }}>
           <p>Click the + buttons on the agent node to add:</p>
           <ul>
-            <li>Context (top-left)</li>
+            <li>Escalations (top)</li>
             <li>Model (bottom-left)</li>
-            <li>Escalations (bottom-center)</li>
-            <li>Tools (bottom-right)</li>
+            <li>Contexts (bottom-center)</li>
+            <li>Tools & MCPs (bottom-right)</li>
           </ul>
         </div>
       </Column>

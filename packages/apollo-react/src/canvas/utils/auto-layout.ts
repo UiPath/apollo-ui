@@ -168,7 +168,7 @@ const arrangeAgent = (
         let handleCenterX = agentCenterX;
         if (handleId === ResourceNodeType.Model) {
           handleCenterX = agentCenterX - GROUP_SPACING;
-        } else if (handleId === ResourceNodeType.Escalation) {
+        } else if (handleId === ResourceNodeType.Context) {
           handleCenterX = agentCenterX;
         } else if (handleId === ResourceNodeType.Tool) {
           handleCenterX = agentCenterX + GROUP_SPACING;
@@ -219,7 +219,7 @@ const arrangeAgent = (
         const sortedGroups = handleGroups.sort((a, b) => {
           const order: Record<string, number> = {
             [ResourceNodeType.Model]: 0,
-            [ResourceNodeType.Escalation]: 1,
+            [ResourceNodeType.Context]: 1,
             [ResourceNodeType.Tool]: 2,
           };
           return (order[a.handleId] ?? 999) - (order[b.handleId] ?? 999);

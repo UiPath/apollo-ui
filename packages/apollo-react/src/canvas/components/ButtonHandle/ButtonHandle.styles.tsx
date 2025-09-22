@@ -158,11 +158,12 @@ export const StyledHandle = (
     $visible: boolean;
   }
 ) => {
-  const { position, $total, $visible, $positionPercent } = props;
+  const { $total, $visible, $positionPercent, ...handleProps } = props;
+  const { position } = handleProps;
 
   return (
     <Handle
-      {...props}
+      {...handleProps}
       style={{
         width: position === Position.Top || position === Position.Bottom ? `${50 / $total}%` : "24px",
         height: position === Position.Top || position === Position.Bottom ? "24px" : `${50 / $total}%`,

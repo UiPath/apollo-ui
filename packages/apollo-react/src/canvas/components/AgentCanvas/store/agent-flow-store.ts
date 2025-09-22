@@ -122,13 +122,14 @@ const calculateSpacingPositions = (
         const baseX =
           agentCenterX - nodeWidth / 2 + (index + (insertIndex === 0 ? 1 : 0) - siblingNodes.length / 2) * FLOW_LAYOUT.groupSpacing;
 
-        if (draggedNode.data.type === "context") {
+        // escalation
+        if (draggedNode.data.type === "escalation") {
           positions[node.id] = {
             x: baseX,
             y: agentNode.position.y - nodeHeight - FLOW_LAYOUT.groupDistanceVertical,
           };
         } else {
-          // model, escalation, tool
+          // model, context, tool
           positions[node.id] = {
             x: baseX,
             y: agentNode.position.y + agentHeight + FLOW_LAYOUT.groupDistanceVertical,
@@ -177,14 +178,14 @@ const calculateSpacingPositions = (
     } else {
       const baseX = agentCenterX - nodeWidth / 2 + (index - (previewOrder.length - 1) / 2) * FLOW_LAYOUT.groupSpacing;
 
-      // context
-      if (draggedNode.data.type === "context") {
+      // escalation
+      if (draggedNode.data.type === "escalation") {
         positions[node.id] = {
           x: baseX,
           y: agentNode.position.y - nodeHeight - FLOW_LAYOUT.groupDistanceVertical,
         };
       } else {
-        // escalation, tool
+        // context, tool
         positions[node.id] = {
           x: baseX,
           y: agentNode.position.y + agentHeight + FLOW_LAYOUT.groupDistanceVertical,

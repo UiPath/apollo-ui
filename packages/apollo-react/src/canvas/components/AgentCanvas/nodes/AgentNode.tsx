@@ -86,18 +86,18 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
     // Bottom handles (Model, Escalation, Tool)
     const bottomHandles: ButtonHandleConfig[] = [];
 
-    if (displayContext) {
+    if (displayEscalation) {
       topHandles.push({
-        id: ResourceNodeType.Context,
+        id: ResourceNodeType.Escalation,
         type: "source",
         handleType: "artifact",
-        label: "Context",
+        label: "Escalation",
         showButton: mode === "design",
         color: "var(--color-foreground-de-emp)",
         labelBackgroundColor: "var(--color-background-secondary)",
-        visible: displayContext,
+        visible: displayEscalation,
         onAction: (_e: HandleActionEvent) => {
-          onAddResource?.("context");
+          onAddResource?.("escalation");
         },
       });
       configs.push({
@@ -107,7 +107,7 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
       });
     }
 
-    if (displayModel || displayEscalation || displayTool || displayMcp) {
+    if (displayModel || displayContext || displayTool || displayMcp) {
       bottomHandles.push(
         {
           id: ResourceNodeType.Model,
@@ -120,16 +120,16 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
           visible: displayModel,
         },
         {
-          id: ResourceNodeType.Escalation,
+          id: ResourceNodeType.Context,
           type: "source",
           handleType: "artifact",
-          label: "Escalation",
+          label: "Context",
           showButton: mode === "design",
           color: "var(--color-foreground-de-emp)",
           labelBackgroundColor: "var(--color-background-secondary)",
-          visible: displayEscalation,
+          visible: displayContext,
           onAction: (_e: HandleActionEvent) => {
-            onAddResource?.("escalation");
+            onAddResource?.("context");
           },
         },
         {

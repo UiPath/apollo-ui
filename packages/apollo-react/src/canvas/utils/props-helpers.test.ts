@@ -393,10 +393,10 @@ describe("props-helpers", () => {
     it("creates context edge correctly", () => {
       const edge = createResourceEdge(mockAgentNode, mockContextNode, mockAgentFlowProps);
 
-      expect(edge.source).toBe(mockContextNode.id);
-      expect(edge.target).toBe(mockAgentNode.id);
-      expect(edge.sourceHandle).toBe(Position.Bottom);
-      expect(edge.targetHandle).toBe(ResourceNodeType.Context);
+      expect(edge.source).toBe(mockAgentNode.id);
+      expect(edge.target).toBe(mockContextNode.id);
+      expect(edge.sourceHandle).toBe(ResourceNodeType.Context);
+      expect(edge.targetHandle).toBe(Position.Top);
     });
 
     it("creates model edge correctly", () => {
@@ -414,7 +414,7 @@ describe("props-helpers", () => {
       expect(edge.source).toBe(mockAgentNode.id);
       expect(edge.target).toBe(mockEscalationNode.id);
       expect(edge.sourceHandle).toBe(ResourceNodeType.Escalation);
-      expect(edge.targetHandle).toBe(Position.Top);
+      expect(edge.targetHandle).toBe(Position.Bottom);
     });
 
     it("creates animated edge in view mode with active resource", () => {

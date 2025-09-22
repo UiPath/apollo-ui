@@ -227,7 +227,7 @@ export const ResourceNode = memo(
     const contextHandles = useMemo(
       () => [
         {
-          id: Position.Bottom,
+          id: Position.Top,
           type: "source" as const,
           handleType: "artifact" as const,
           showButton: false,
@@ -240,7 +240,7 @@ export const ResourceNode = memo(
     const escalationHandles = useMemo(
       () => [
         {
-          id: Position.Top,
+          id: Position.Bottom,
           type: "target" as const,
           handleType: "artifact" as const,
           showButton: false,
@@ -288,12 +288,12 @@ export const ResourceNode = memo(
             ]
           : []),
         {
-          position: Position.Bottom,
+          position: Position.Top,
           handles: contextHandles,
           visible: data.type === "context",
         },
         {
-          position: Position.Top,
+          position: Position.Bottom,
           handles: escalationHandles,
           visible: data.type === "escalation",
         },

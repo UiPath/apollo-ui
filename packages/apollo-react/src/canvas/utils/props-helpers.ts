@@ -283,14 +283,14 @@ export const createResourceEdge = (
     case "tool":
       return createEdge(agentNode.id, resourceNode.id, ResourceNodeType.Tool, Position.Top);
     case "context":
-      return createEdge(resourceNode.id, agentNode.id, Position.Bottom, ResourceNodeType.Context);
+      return createEdge(agentNode.id, resourceNode.id, ResourceNodeType.Context, Position.Top);
     case "model":
       return createEdge(agentNode.id, resourceNode.id, ResourceNodeType.Model, Position.Top);
     case "mcp":
       return createEdge(agentNode.id, resourceNode.id, ResourceNodeType.Tool, Position.Top);
     case "escalation":
     default:
-      return createEdge(agentNode.id, resourceNode.id, ResourceNodeType.Escalation, Position.Top);
+      return createEdge(agentNode.id, resourceNode.id, ResourceNodeType.Escalation, Position.Bottom);
   }
 };
 
