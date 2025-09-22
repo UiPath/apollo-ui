@@ -1,5 +1,6 @@
 import styled from "@emotion/styled";
 import { css } from "@emotion/react";
+import { Colors } from "@uipath/apollo-core";
 import type { StageStatus } from "./StageNode.types";
 
 export const StageContainer = styled.div<{ selected?: boolean; status?: StageStatus; isException?: boolean }>`
@@ -24,9 +25,7 @@ export const StageContainer = styled.div<{ selected?: boolean; status?: StageSta
   ${({ selected }) =>
     selected &&
     css`
-      outline: 4px solid var(--color-secondary-pressed);
       border-color: var(--color-selection-indicator);
-      box-shadow: 0 0 0 2px rgba(0, 102, 204, 0.2);
     `}
 
   ${({ status }) =>
@@ -60,6 +59,7 @@ export const StageContainer = styled.div<{ selected?: boolean; status?: StageSta
     `}
 
   &:hover {
+    outline: 4px solid ${Colors.ColorInk300};
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
   }
 `;
@@ -75,6 +75,35 @@ export const StageHeader = styled.div<{ isException?: boolean }>`
   background: var(--color-background);
   border-radius: 12px 12px 0 0;
   overflow: hidden;
+`;
+
+export const StageTitleContainer = styled.div<{ isEditing?: boolean }>`
+  display: inline-block;
+  border-radius: 4px;
+  width: 204x;
+  height: 100%;
+  border: ${(props) => (props.isEditing ? "1px solid var(--color-border-de-emp)" : "none")};
+`;
+
+export const StageTitleInput = styled.input<{ isEditing?: boolean }>`
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  cursor: text;
+  border: none;
+  background: transparent;
+  text-overflow: ellipsis;
+  border-radius: 2px;
+  width: 180px;
+  padding: 4px 8px;
+
+  &:focus {
+    outline: none;
+  }
+
+  &:hover {
+    background: ${(props) => (props.isEditing ? "transparent" : "var(--color-background-secondary)")};
+  }
 `;
 
 export const StageContent = styled.div`

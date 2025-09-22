@@ -1,4 +1,4 @@
-import { memo, useMemo, useState, useCallback } from "react";
+import { memo, useMemo, useState, useCallback, useEffect, useRef } from "react";
 import { useStore, Position } from "@uipath/uix/xyflow/react";
 import {
   StageContainer,
@@ -12,14 +12,18 @@ import {
   StageParallelBracket,
   StageTaskRetryDuration,
   StageTaskRemoveButton,
+  StageTitleContainer,
+  StageTitleInput,
 } from "./StageNode.styles";
 import { StageHandle } from "./StageHandle";
 import { NodeContextMenu } from "../NodeContextMenu";
-import type { StageNodeProps, StageTaskExecution } from "./StageNode.types";
+import { GroupModificationType, type StageNodeProps, type StageTaskExecution } from "./StageNode.types";
 import { ApBadge, ApIcon, ApLink, ApTooltip, ApTypography } from "@uipath/portal-shell-react";
 import { Column, FontVariantToken, Row } from "@uipath/uix/core";
 import { ExecutionStatusIcon } from "../ExecutionStatusIcon";
 import { Spacing } from "@uipath/apollo-core";
+import { TaskContextMenu } from "./TaskContextMenu";
+import { getContextMenuItems } from "./StageNodeTaskUtilities";
 
 const ProcessNodeIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
@@ -29,6 +33,13 @@ const ProcessNodeIcon = () => (
     <rect x="14" y="14" width="7" height="7" rx="1" />
   </svg>
 );
+
+interface TaskStateReference {
+  anchor: React.RefObject<HTMLDivElement>;
+  isParallel: boolean;
+  groupIndex: number;
+  taskIndex: number;
+}
 
 const StageNodeComponent = (props: StageNodeProps) => {
   const {
@@ -41,21 +52,33 @@ const StageNodeComponent = (props: StageNodeProps) => {
     menuItems,
     onTaskAdd,
     onTaskClick,
-    onTaskRemove,
+    onTaskGroupModification,
+    onStageTitleChange,
   } = props;
 
-  const label = stageDetails?.label;
+  const label = props.stageDetails.label;
+  const tasks = stageDetails?.tasks || [];
   const isException = stageDetails?.isException;
   const icon = stageDetails?.icon;
-  const tasks = stageDetails?.tasks;
   const sla = stageDetails?.sla;
   const escalation = stageDetails?.escalation;
 
   const status = execution?.stageStatus?.status;
   const statusLabel = execution?.stageStatus?.label;
   const stageDuration = execution?.stageStatus?.duration;
+  const reGroupTaskFunction = useMemo(() => onTaskGroupModification || (() => {}), [onTaskGroupModification]);
 
   const [isHovered, setIsHovered] = useState(false);
+  const [localLabel, setLocalLabel] = useState(label);
+  const [isStageTitleEditing, setIsStageTitleEditing] = useState(false);
+  const stageTitleRef = useRef<HTMLInputElement>(null);
+  const [taskStateReference, setTaskStateReference] = useState<TaskStateReference>({
+    anchor: useRef<HTMLDivElement>(null),
+    isParallel: false,
+    groupIndex: -1,
+    taskIndex: -1,
+  });
+  const [isTaskContextMenuVisible, setIsTaskContextMenuVisible] = useState<boolean>(false);
   const { edges, isConnecting } = useStore(
     (state) => ({ edges: state.edges, isConnecting: !!state.connectionClickStartHandle }),
     (a, b) => a.edges === b.edges && a.isConnecting === b.isConnecting
@@ -84,12 +107,93 @@ const StageNodeComponent = (props: StageNodeProps) => {
     return taskExecution.badge;
   }, []);
 
+  const handleStageTitleChange = useCallback(
+    (e: React.FormEvent<HTMLInputElement>) => {
+      if (onStageTitleChange) {
+        setIsStageTitleEditing(true);
+        setLocalLabel((e.target as HTMLInputElement).value);
+      }
+    },
+    [onStageTitleChange]
+  );
+
+  const handleStageTitleClickToSave = useCallback(
+    (e: React.FocusEvent | MouseEvent) => {
+      if (isStageTitleEditing && !stageTitleRef.current?.contains(e.target as Node)) {
+        setIsStageTitleEditing(false);
+        console.log(localLabel, label);
+        if (onStageTitleChange && localLabel !== label) {
+          if (localLabel.trim() === "") setLocalLabel("Untilted Stage");
+          onStageTitleChange(localLabel);
+        }
+      }
+    },
+    [isStageTitleEditing, onStageTitleChange, localLabel, label]
+  );
+
+  const handleStageTitleBlurToSave = useCallback(() => {
+    if (isStageTitleEditing) {
+      setIsStageTitleEditing(false);
+      if (onStageTitleChange && localLabel !== label) {
+        if (localLabel.trim() === "") setLocalLabel("Untilted Stage");
+        onStageTitleChange(localLabel);
+      }
+    }
+  }, [isStageTitleEditing, onStageTitleChange, localLabel, label]);
+
+  const handleStageTitleKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (e.key === "Enter") {
+        setIsStageTitleEditing(false);
+        if (onStageTitleChange && localLabel !== label) {
+          onStageTitleChange(localLabel);
+        }
+      }
+    },
+    [onStageTitleChange, localLabel, label]
+  );
+
+  const handleTaskContextMenuOpen = useCallback(
+    (isParallel: boolean, groupIndex: number, taskIndex: number, e: React.MouseEvent<HTMLDivElement>) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setIsTaskContextMenuVisible(true);
+      setTaskStateReference({ anchor: { current: e.currentTarget }, isParallel, groupIndex, taskIndex });
+    },
+    [setIsTaskContextMenuVisible, setTaskStateReference]
+  );
+
+  const handleTaskContextMenuClose = useCallback(() => {
+    setIsTaskContextMenuVisible(false);
+  }, [setIsTaskContextMenuVisible]);
+
+  useEffect(() => {
+    if (isTaskContextMenuVisible) {
+      document.addEventListener("click", handleTaskContextMenuClose);
+      document.addEventListener("keydown", handleTaskContextMenuClose);
+    }
+    if (isStageTitleEditing) {
+      document.addEventListener("click", handleStageTitleClickToSave);
+    }
+    return () => {
+      document.removeEventListener("click", handleStageTitleClickToSave);
+      document.removeEventListener("click", handleTaskContextMenuClose);
+      document.removeEventListener("keydown", handleTaskContextMenuClose);
+    };
+  }, [handleTaskContextMenuClose, isTaskContextMenuVisible, handleStageTitleClickToSave, isStageTitleEditing]);
+
+  const contextMenuItems = useMemo(
+    () =>
+      getContextMenuItems(taskStateReference.isParallel, taskStateReference.groupIndex, taskStateReference.taskIndex, reGroupTaskFunction),
+    [tasks, taskStateReference.isParallel, taskStateReference.groupIndex, taskStateReference.taskIndex]
+  );
+
   const handleTaskRemove = useCallback(
     (event: React.MouseEvent, groupIndex: number, taskIndex: number) => {
       event.stopPropagation();
-      onTaskRemove?.(groupIndex, taskIndex);
+      reGroupTaskFunction(GroupModificationType.REMOVE_TASK, groupIndex, taskIndex);
     },
-    [onTaskRemove]
+    [reGroupTaskFunction]
   );
 
   return (
@@ -99,8 +203,24 @@ const StageNodeComponent = (props: StageNodeProps) => {
           <Row gap={Spacing.SpacingMicro} align="center">
             {icon}
             <Column>
-              <ApTypography variant={FontVariantToken.fontSizeMBold} color="var(--color-foreground)">
-                {label}
+              <ApTypography
+                variant={isStageTitleEditing ? FontVariantToken.fontSizeM : FontVariantToken.fontSizeMBold}
+                color="var(--color-foreground)"
+              >
+                <ApTooltip content={label} placement="top">
+                  <StageTitleContainer isEditing={isStageTitleEditing}>
+                    <StageTitleInput
+                      name="Stage Title"
+                      value={localLabel}
+                      ref={stageTitleRef}
+                      isEditing={isStageTitleEditing}
+                      onFocus={() => setIsStageTitleEditing(true)}
+                      onInput={handleStageTitleChange}
+                      onKeyDown={handleStageTitleKeyDown}
+                      onBlur={handleStageTitleBlurToSave}
+                    />
+                  </StageTitleContainer>
+                </ApTooltip>
               </ApTypography>
               {stageDuration && (
                 <ApTypography variant={FontVariantToken.fontSizeS} color="var(--color-foreground-de-emp)">
@@ -153,6 +273,7 @@ const StageNodeComponent = (props: StageNodeProps) => {
                           key={task.id}
                           status={taskExecution?.status}
                           onClick={onTaskClick ? () => onTaskClick(task.id) : undefined}
+                          onContextMenu={(e) => handleTaskContextMenuOpen(isParallel, groupIndex, taskIndex, e)}
                         >
                           <StageTaskIcon>{task.icon ?? <ProcessNodeIcon />}</StageTaskIcon>
                           <Column flex={1} style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
@@ -190,7 +311,16 @@ const StageNodeComponent = (props: StageNodeProps) => {
                               )}
                             </Row>
                           </Column>
-                          {onTaskRemove && (
+                          <TaskContextMenu
+                            isVisible={
+                              isTaskContextMenuVisible &&
+                              taskStateReference.groupIndex === groupIndex &&
+                              taskStateReference.taskIndex === taskIndex
+                            }
+                            menuItems={contextMenuItems}
+                            refTask={taskStateReference.anchor}
+                          />
+                          {onTaskGroupModification && (
                             <StageTaskRemoveButton
                               className="task-remove-button"
                               onClick={(event) => handleTaskRemove(event, groupIndex, taskIndex)}

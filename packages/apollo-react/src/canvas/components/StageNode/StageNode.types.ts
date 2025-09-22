@@ -21,6 +21,9 @@ export interface StageTaskItem {
 }
 
 export interface StageNodeProps extends NodeProps {
+  dragging: boolean;
+  selected: boolean;
+  id: string;
   stageDetails: {
     label: string;
     icon?: React.ReactElement;
@@ -41,7 +44,8 @@ export interface StageNodeProps extends NodeProps {
   menuItems?: NodeMenuItem[];
   onTaskAdd?: () => void;
   onTaskClick?: (taskElementId: string) => void;
-  onTaskRemove?: (groupIndex: number, taskIndex: number) => void;
+  onTaskGroupModification?: (groupModificationType: GroupModificationType, groupIndex: number, taskIndex: number) => void;
+  onStageTitleChange?: (newTitle: string) => void;
 }
 
 export interface StageTaskExecution {
@@ -52,4 +56,15 @@ export interface StageTaskExecution {
   badge?: string;
   badgeStatus?: "warning" | "info" | "error";
   retryCount?: number;
+}
+
+export enum GroupModificationType {
+  TASK_GROUP_UP = "task_group_up",
+  TASK_GROUP_DOWN = "task_group_down",
+  UNGROUP_ALL_TASKS = "ungroup_all_tasks",
+  SPLIT_GROUP = "split_group",
+  MERGE_GROUP_UP = "merge_group_up",
+  MERGE_GROUP_DOWN = "merge_group_down",
+  REMOVE_TASK = "remove_task",
+  REMOVE_GROUP = "remove_group",
 }
