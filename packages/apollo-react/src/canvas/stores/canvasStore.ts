@@ -15,6 +15,7 @@ interface CanvasStore {
   addNodeToCanvas: (node: Node) => void; // Add a pre-built node to canvas
   createChildCanvas: (parentNodeId: string, childCanvasId: string, name: string) => void; // Create child canvas for drillable node
   removeNode: (nodeId: string) => void;
+  removeEdge: (edgeId: string) => void;
   updateNode: (node: Node) => void; // Update a single node
   updateNodes: (nodes: Node[]) => void;
   updateEdges: (edges: Edge[]) => void;
@@ -30,6 +31,13 @@ interface CanvasStore {
 export const selectCurrentCanvas = (state: CanvasStore): CanvasLevel | undefined => {
   const currentCanvasId = state.currentPath[state.currentPath.length - 1];
   return currentCanvasId ? state.canvasStack[currentCanvasId] : undefined;
+};
+
+export const selectPreviousCanvas = (state: CanvasStore): CanvasLevel | undefined => {
+  const previousIndex = state.currentPath.length - 2;
+  if (previousIndex < 0) return undefined;
+  const previousCanvasId = state.currentPath[previousIndex];
+  return previousCanvasId ? state.canvasStack[previousCanvasId] : undefined;
 };
 
 export const selectBreadcrumbs = (state: CanvasStore) => {
@@ -339,6 +347,26 @@ export const useCanvasStore = create<CanvasStore>()(
             [currentCanvasId]: {
               ...currentCanvas,
               nodes: updatedNodes,
+            },
+          },
+        });
+      },
+
+      removeEdge: (edgeId: string) => {
+        const state = get();
+        const currentCanvasId = state.currentPath[state.currentPath.length - 1];
+
+        if (!currentCanvasId || typeof currentCanvasId !== "string") return;
+        const currentCanvas = state.canvasStack[currentCanvasId];
+        if (!currentCanvas) return;
+
+        const updatedEdges = currentCanvas.edges.filter((e) => e.id !== edgeId);
+        set({
+          canvasStack: {
+            ...state.canvasStack,
+            [currentCanvasId]: {
+              ...currentCanvas,
+              edges: updatedEdges,
             },
           },
         });

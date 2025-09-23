@@ -126,6 +126,9 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
   const handleElements = useMemo(() => {
     if (!handleConfigurations) return <></>;
 
+    // Calculate if notches should be shown (when node is hovered or selected)
+    const showNotches = inProgress || isHovered || selected;
+
     const elements = handleConfigurations.map((config) => {
       const hasConnectedHandle = config.handles.some((h) => connectedHandleIds.has(h.id));
       const finalVisible = hasConnectedHandle || (shouldShowHandles && (config.visible ?? true));
@@ -144,12 +147,13 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
           position={config.position}
           selected={selected}
           visible={finalVisible}
+          showNotches={showNotches}
         />
       );
     });
 
     return elements;
-  }, [handleConfigurations, selected, shouldShowHandles, connectedHandleIds, handleAction, id]);
+  }, [handleConfigurations, selected, shouldShowHandles, connectedHandleIds, handleAction, id, isHovered, inProgress]);
 
   // TODO: refactor to standalone component
   if (!nodeDefinition) {

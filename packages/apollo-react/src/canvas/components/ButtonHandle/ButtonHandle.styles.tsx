@@ -67,13 +67,13 @@ export const StyledWrapper = styled.div<{ $position: Position }>`
     `}
 `;
 
-export const StyledLine = styled.div<{ $isVertical: boolean; $selected: boolean }>`
+export const StyledLine = styled.div<{ $isVertical: boolean; $selected: boolean; $size: string }>`
   background-color: transparent;
   border-style: solid;
   border-width: 1px;
   border-color: ${(p) => (p.$selected ? "var(--color-selection-indicator)" : "var(--color-border-de-emp)")};
-  height: ${(p) => (p.$isVertical ? "60px" : "1px")};
-  width: ${(p) => (p.$isVertical ? "1px" : "60px")};
+  height: ${(p) => (p.$isVertical ? p.$size : "1px")};
+  width: ${(p) => (p.$isVertical ? "1px" : p.$size)};
   transition: border-color 0.2s ease-in-out;
 `;
 
@@ -123,6 +123,7 @@ export const StyledNotch = styled.div<{
   $visible: boolean;
   $selected: boolean;
   $hovered?: boolean;
+  $showNotch?: boolean;
 }>`
   width: ${(p) => {
     if (p.$handleType === "input" && !p.$isVertical) return "8px";
@@ -146,7 +147,7 @@ export const StyledNotch = styled.div<{
     if (p.$selected || p.$hovered) return "var(--color-primary)";
     return "var(--color-background, white)";
   }};
-  opacity: ${(p) => (p.$visible ? 1 : 0)};
+  opacity: ${(p) => (p.$showNotch ? 1 : 0)};
   pointer-events: none;
   transition: all 0.2s ease-in-out;
 `;

@@ -1,5 +1,5 @@
 import React, { useEffect, useCallback, useMemo, useRef, useState } from "react";
-import { Panel, applyNodeChanges, applyEdgeChanges } from "@uipath/uix/xyflow/react";
+import { Panel, applyNodeChanges, applyEdgeChanges, ReactFlowProvider } from "@uipath/uix/xyflow/react";
 import type {
   Node,
   Edge,
@@ -15,9 +15,16 @@ import type {
   EdgeChange,
   ReactFlowInstance,
   NodeTypes,
+  OnConnectEnd,
 } from "@uipath/uix/xyflow/react";
 import { BaseCanvas, type BaseCanvasRef } from "../BaseCanvas";
-import { useCanvasStore, selectCurrentCanvas, selectBreadcrumbs, selectCanvasActions } from "../../stores/canvasStore";
+import {
+  useCanvasStore,
+  selectCurrentCanvas,
+  selectBreadcrumbs,
+  selectCanvasActions,
+  selectPreviousCanvas,
+} from "../../stores/canvasStore";
 import { viewportManager } from "../../stores/viewportManager";
 import { Breadcrumb } from "@uipath/uix/core";
 import { ApIcon, ApProgressSpinner } from "@uipath/portal-shell-react";
@@ -25,6 +32,9 @@ import { CanvasPositionControls } from "../CanvasPositionControls";
 import { useNodeRegistrations } from "../BaseNode/useNodeTypeRegistry";
 import { BaseNode } from "../BaseNode";
 import { BlankCanvasNode } from "../BlankCanvasNode";
+import { AddNodePreview } from "../AddNodePanel/AddNodePreview";
+import { AddNodeManager } from "../AddNodePanel/AddNodeManager";
+import { createPreviewNode } from "../../utils/createPreviewNode";
 import { shallow } from "zustand/shallow";
 
 interface HierarchicalCanvasProps {
@@ -35,6 +45,7 @@ interface HierarchicalCanvasProps {
 const DEFAULT_NODE_TYPES = {
   default: BaseNode,
   "blank-canvas-node": BlankCanvasNode,
+  preview: AddNodePreview,
 } as const;
 
 export const HierarchicalCanvas: React.FC<HierarchicalCanvasProps> = ({ mode = "design" }) => {
@@ -60,6 +71,7 @@ export const HierarchicalCanvas: React.FC<HierarchicalCanvasProps> = ({ mode = "
 
   // Optimized selectors to prevent unnecessary re-renders
   const currentCanvas = useCanvasStore(selectCurrentCanvas);
+  const previousCanvas = useCanvasStore(selectPreviousCanvas);
   const breadcrumbs = useCanvasStore(selectBreadcrumbs, shallow);
   const actions = useCanvasStore(selectCanvasActions, shallow);
   const store = useCanvasStore();
@@ -176,6 +188,11 @@ export const HierarchicalCanvas: React.FC<HierarchicalCanvasProps> = ({ mode = "
     (connection: Connection) => {
       if (!connection.source || !connection.target || !currentCanvas) return;
 
+      // Don't create a connection to the preview node
+      if (connection.target === "preview-node-id" || connection.source === "preview-node-id") {
+        return;
+      }
+
       const newEdge: Edge = {
         id: `${connection.source}-${connection.target}-${Date.now()}`,
         source: connection.source,
@@ -185,8 +202,108 @@ export const HierarchicalCanvas: React.FC<HierarchicalCanvasProps> = ({ mode = "
       };
 
       actions.updateEdges([...currentCanvas.edges, newEdge]);
+
+      // Remove any preview node/edge after successful connection
+      const hasPreview = currentCanvas.nodes.some((n) => n.id === "preview-node-id");
+      if (hasPreview) {
+        actions.updateNodes(currentCanvas.nodes.filter((n) => n.id !== "preview-node-id"));
+        actions.updateEdges(currentCanvas.edges.filter((e) => e.id !== "preview-edge-id"));
+      }
     },
     [currentCanvas, actions]
+  );
+
+  // Track connection start info for creating preview nodes
+  const connectionStartRef = useRef<{ source: string; sourceHandle: string | null } | null>(null);
+
+  const handleConnectStart = useCallback(
+    (_event: MouseEvent | TouchEvent | React.MouseEvent | React.TouchEvent, params: { nodeId: string | null; handleId: string | null }) => {
+      if (params.nodeId) {
+        // If starting a new drag and there's an existing preview, remove it first
+        if (currentCanvas) {
+          const hasPreview = currentCanvas.nodes.some((n) => n.id === "preview-node-id");
+          if (hasPreview) {
+            // Remove the preview node and edge
+            actions.updateNodes(currentCanvas.nodes.filter((n) => n.id !== "preview-node-id"));
+            actions.updateEdges(currentCanvas.edges.filter((e) => e.id !== "preview-edge-id"));
+          }
+        }
+
+        connectionStartRef.current = {
+          source: params.nodeId,
+          sourceHandle: params.handleId,
+        };
+      }
+    },
+    [currentCanvas, actions]
+  );
+
+  const handleConnectEnd = useCallback<OnConnectEnd>(
+    (event: MouseEvent | TouchEvent) => {
+      if (!connectionStartRef.current || !currentCanvas || !reactFlowInstance) return;
+
+      // Check if we ended on a handle (successful connection)
+      // If the connection was successful, onConnect would have been called
+      // We can check if the event target is not a handle
+      const target = event.target as HTMLElement;
+      const isHandle = target.closest(".react-flow__handle");
+
+      // Also check if we clicked on the preview node itself
+      const isPreviewNode = target.closest('[data-id="preview-node-id"]');
+
+      if (!isHandle && !isPreviewNode) {
+        // Get the position where the connection was dropped
+        const reactFlowBounds = (event.target as HTMLElement).closest(".react-flow")?.getBoundingClientRect();
+        if (!reactFlowBounds) return;
+
+        // Calculate the position in flow coordinates
+        let clientX: number;
+        let clientY: number;
+
+        if ("clientX" in event) {
+          clientX = event.clientX;
+          clientY = event.clientY;
+        } else {
+          const touchEvent = event as TouchEvent;
+          if (touchEvent.touches && touchEvent.touches.length > 0 && touchEvent.touches[0]) {
+            const touch = touchEvent.touches[0];
+            clientX = touch.clientX;
+            clientY = touch.clientY;
+          } else if (touchEvent.changedTouches && touchEvent.changedTouches.length > 0 && touchEvent.changedTouches[0]) {
+            const touch = touchEvent.changedTouches[0];
+            clientX = touch.clientX;
+            clientY = touch.clientY;
+          } else {
+            return;
+          }
+        }
+
+        const dropPosition = reactFlowInstance.screenToFlowPosition({
+          x: clientX,
+          y: clientY,
+        });
+
+        // Use the unified preview creation utility
+        const preview = createPreviewNode(
+          connectionStartRef.current.source,
+          connectionStartRef.current.sourceHandle || "output",
+          reactFlowInstance,
+          dropPosition
+        );
+
+        if (preview) {
+          // Add preview node and edge using setTimeout to avoid React Flow's internal reset
+          setTimeout(() => {
+            actions.updateNodes([...currentCanvas.nodes.map((n) => ({ ...n, selected: false })), preview.node]);
+            actions.updateEdges([...currentCanvas.edges, preview.edge]);
+          }, 0);
+        }
+      }
+
+      // Clear the connection start info
+      connectionStartRef.current = null;
+    },
+    [currentCanvas, actions, reactFlowInstance]
   );
 
   // Navigation functions
@@ -243,6 +360,8 @@ export const HierarchicalCanvas: React.FC<HierarchicalCanvasProps> = ({ mode = "
       onSelectionChange={handleSelectionChange}
       onMove={handleMove}
       onConnect={handleConnect}
+      onConnectStart={handleConnectStart}
+      onConnectEnd={handleConnectEnd}
       onInit={handleInit}
       mode={mode}
       defaultViewport={currentCanvas.viewport}
@@ -277,8 +396,35 @@ export const HierarchicalCanvas: React.FC<HierarchicalCanvasProps> = ({ mode = "
         <CanvasPositionControls />
       </Panel>
 
+      {previousCanvas && (
+        <Panel position="bottom-left">
+          <div
+            style={{
+              width: 300,
+              height: 200,
+              background: "var(--color-background)",
+              border: "1px solid var(--color-border-grid)",
+              borderRadius: 8,
+              boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
+            }}
+          >
+            <ReactFlowProvider>
+              <BaseCanvas
+                key={previousCanvas.id}
+                nodes={previousCanvas.nodes}
+                edges={previousCanvas.edges}
+                nodeTypes={nodeTypes}
+                fitView
+                mode="readonly"
+                showBackground={false}
+              />
+            </ReactFlowProvider>
+          </div>
+        </Panel>
+      )}
+
       {/* Debug Panel */}
-      <Panel position="bottom-left">
+      {/* <Panel position="bottom-left">
         <pre
           style={{
             fontSize: 10,
@@ -294,7 +440,10 @@ export const HierarchicalCanvas: React.FC<HierarchicalCanvasProps> = ({ mode = "
         >
           <code>{JSON.stringify(currentCanvas, null, 2)}</code>
         </pre>
-      </Panel>
+      </Panel> */}
+
+      {/* Add Node Manager to handle preview node selection */}
+      <AddNodeManager />
     </BaseCanvas>
   );
 };

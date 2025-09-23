@@ -60,6 +60,7 @@ type ButtonHandleProps = {
   index?: number; // 0-based index of this handle on the edge
   total?: number; // Total number of handles on this edge
   onAction?: (event: HandleActionEvent) => void;
+  showNotches?: boolean;
 };
 
 const ButtonHandleBase = ({
@@ -78,6 +79,7 @@ const ButtonHandleBase = ({
   index = 0,
   total = 1,
   onAction,
+  showNotches = true,
 }: ButtonHandleProps) => {
   const [isHovered, setIsHovered] = useState(false);
   const isVertical = position === Position.Top || position === Position.Bottom;
@@ -137,7 +139,7 @@ const ButtonHandleBase = ({
       )}
       {showButton && onAction && type === "source" && (
         <StyledWrapper $position={position}>
-          <StyledLine $isVertical={isVertical} $selected={selected} />
+          <StyledLine $isVertical={isVertical} $selected={selected} $size={label ? "60px" : "16px"} />
           <div className="nodrag nopan" style={{ pointerEvents: "auto" }}>
             <AddButton onAction={handleButtonClick} />
           </div>
@@ -150,6 +152,7 @@ const ButtonHandleBase = ({
         $isVertical={isVertical}
         $selected={selected}
         $hovered={isHovered}
+        $showNotch={showNotches}
       />
     </StyledHandle>
   );
@@ -178,6 +181,7 @@ const ButtonHandlesBase = ({
   selected = false,
   visible = true,
   showAddButton = false,
+  showNotches = true,
 }: {
   nodeId: string;
   handles: ButtonHandleConfig[];
@@ -185,6 +189,7 @@ const ButtonHandlesBase = ({
   selected?: boolean;
   visible?: boolean;
   showAddButton?: boolean;
+  showNotches?: boolean;
 }) => {
   const total = handles.length;
   const finalSelected = showAddButton || selected;
@@ -210,6 +215,7 @@ const ButtonHandlesBase = ({
           showButton={finalSelected && visible && handle.showButton}
           color={handle.color}
           onAction={handle.onAction}
+          showNotches={showNotches}
         />
       ))}
     </>

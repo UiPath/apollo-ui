@@ -1,17 +1,16 @@
-import React, { useCallback, useMemo } from "react";
+import React, { useCallback, useMemo, useEffect } from "react";
 import { ApButton, ApIcon, ApTypography } from "@uipath/portal-shell-react";
 import { HierarchicalCanvas } from "./HierarchicalCanvas";
 import { useCanvasStore } from "../../stores/canvasStore";
-import { Panel, ReactFlowProvider, type Node } from "@uipath/uix/xyflow/react";
+import { Panel, ReactFlowProvider, useReactFlow, type Node, Position } from "@uipath/uix/xyflow/react";
+import { createAddNodePreview } from "../AddNodePanel/createAddNodePreview";
 import { FontVariantToken } from "@uipath/apollo-core";
 import { type CanvasLevel } from "../../types/canvas.types";
 import { NodeRegistryProvider } from "../BaseNode/NodeRegistryProvider";
-import { viewportManager } from "../../stores/viewportManager";
 import type { BaseNodeData, NodeDisplay, NodeRegistration } from "../BaseNode";
+import { canvasEventBus } from "../../utils/CanvasEventBus";
 
-// Define our workflow node types
 const workflowNodeTypes = {
-  // Basic nodes
   start: {
     nodeType: "start",
     displayName: "Start",
@@ -23,7 +22,19 @@ const workflowNodeTypes = {
         label: (data.parameters?.label as string) || "Start",
       }),
       getIcon: () => <ApIcon name="play_circle" size="40px" />,
-      getHandleConfigurations: () => [],
+      getHandleConfigurations: () => [
+        {
+          position: Position.Right,
+          handles: [
+            {
+              id: "output",
+              type: "source" as const,
+              handleType: "output" as const,
+              showButton: true,
+            },
+          ],
+        },
+      ],
       getDefaultParameters: () => ({
         label: "Start",
       }),
@@ -42,7 +53,18 @@ const workflowNodeTypes = {
         label: (data.parameters?.label as string) || "End",
       }),
       getIcon: () => <ApIcon name="stop_circle" size="40px" />,
-      getHandleConfigurations: () => [],
+      getHandleConfigurations: () => [
+        {
+          position: Position.Left,
+          handles: [
+            {
+              id: "input",
+              type: "target" as const,
+              handleType: "input" as const,
+            },
+          ],
+        },
+      ],
       getDefaultParameters: () => ({
         label: "End",
       }),
@@ -50,7 +72,6 @@ const workflowNodeTypes = {
     sortOrder: 2,
   },
 
-  // Process nodes
   process: {
     nodeType: "process",
     displayName: "Process",
@@ -63,47 +84,34 @@ const workflowNodeTypes = {
         subLabel: data.isDrillable ? "↓ Drillable" : undefined,
       }),
       getIcon: () => <ApIcon name="settings" size="40px" />,
-      getHandleConfigurations: () => [],
+      getHandleConfigurations: () => [
+        {
+          position: Position.Left,
+          handles: [
+            {
+              id: "input",
+              type: "target" as const,
+              handleType: "input" as const,
+            },
+          ],
+        },
+        {
+          position: Position.Right,
+          handles: [
+            {
+              id: "output",
+              type: "source" as const,
+              handleType: "output" as const,
+              showButton: true,
+            },
+          ],
+        },
+      ],
       getDefaultParameters: () => ({
         label: "Process",
         isDrillable: true,
-        childCanvasId: null, // Will be set when creating child canvas
+        childCanvasId: null,
       }),
-      getToolbar: (data: BaseNodeData) => {
-        const actions = [];
-
-        // Add drill-in action if this node has a child canvas
-        if (data.isDrillable && data.childCanvasId) {
-          actions.push({
-            id: "drill-in",
-            icon: "open_in_new",
-            label: "Open Process",
-            onAction: (_nodeId: string) => {
-              // Get current viewport before navigation
-              const currentViewport = viewportManager.getCurrentViewport();
-              // Direct store access - no prop drilling needed!
-              const store = useCanvasStore.getState();
-              store.navigateToCanvas(data.childCanvasId as string, currentViewport);
-            },
-          });
-        }
-
-        return {
-          actions,
-          overflowActions: [
-            {
-              id: "delete",
-              icon: "delete",
-              label: "Delete",
-              onAction: (_nodeId: string) => {
-                /* Delete process */
-              },
-            },
-          ],
-          position: "top" as const,
-          align: "end" as const,
-        };
-      },
     },
     sortOrder: 10,
   },
@@ -119,7 +127,37 @@ const workflowNodeTypes = {
         label: (data.parameters?.label as string) || "Decision",
       }),
       getIcon: () => <ApIcon name="help" size="40px" />,
-      getHandleConfigurations: () => [],
+      getHandleConfigurations: () => [
+        {
+          position: Position.Left,
+          handles: [
+            {
+              id: "input",
+              type: "target" as const,
+              handleType: "input" as const,
+            },
+          ],
+        },
+        {
+          position: Position.Right,
+          handles: [
+            {
+              id: "output-true",
+              type: "source" as const,
+              handleType: "output" as const,
+              label: "True",
+              showButton: true,
+            },
+            {
+              id: "output-false",
+              type: "source" as const,
+              handleType: "output" as const,
+              label: "False",
+              showButton: true,
+            },
+          ],
+        },
+      ],
       getDefaultParameters: () => ({
         label: "Decision",
         condition: "",
@@ -128,70 +166,6 @@ const workflowNodeTypes = {
     sortOrder: 20,
   },
 
-  loop: {
-    nodeType: "loop",
-    displayName: "Loop",
-    category: "Logic",
-    icon: "refresh",
-    description: "Iterate over items",
-    definition: {
-      getDisplay: (data: BaseNodeData): NodeDisplay => ({
-        label: (data.parameters?.label as string) || "Loop",
-      }),
-      getIcon: () => <ApIcon name="refresh" size="40px" />,
-      getHandleConfigurations: () => [],
-      getDefaultParameters: () => ({
-        label: "Loop",
-        isDrillable: true,
-        childCanvasId: null,
-      }),
-    },
-    sortOrder: 21,
-  },
-
-  // Integration nodes
-  api: {
-    nodeType: "api",
-    displayName: "API Call",
-    category: "Integration",
-    icon: "api",
-    description: "Make an API request",
-    definition: {
-      getDisplay: (data: BaseNodeData): NodeDisplay => ({
-        label: (data.parameters?.label as string) || "API Call",
-      }),
-      getIcon: () => <ApIcon name="api" size="40px" />,
-      getHandleConfigurations: () => [],
-      getDefaultParameters: () => ({
-        label: "API Call",
-        url: "",
-        method: "GET",
-      }),
-    },
-    sortOrder: 30,
-  },
-
-  database: {
-    nodeType: "database",
-    displayName: "Database",
-    category: "Integration",
-    icon: "database",
-    description: "Database operation",
-    definition: {
-      getDisplay: (data: BaseNodeData): NodeDisplay => ({
-        label: (data.parameters?.label as string) || "Database",
-      }),
-      getIcon: () => <ApIcon name="database" size="40px" />,
-      getHandleConfigurations: () => [],
-      getDefaultParameters: () => ({
-        label: "Database",
-        query: "",
-      }),
-    },
-    sortOrder: 31,
-  },
-
-  // Subprocess node (drillable)
   subprocess: {
     nodeType: "subprocess",
     displayName: "Sub-Process",
@@ -205,7 +179,29 @@ const workflowNodeTypes = {
         shape: "square" as const,
       }),
       getIcon: () => <ApIcon name="folder" size="40px" />,
-      getHandleConfigurations: () => [],
+      getHandleConfigurations: () => [
+        {
+          position: Position.Left,
+          handles: [
+            {
+              id: "input",
+              type: "target" as const,
+              handleType: "input" as const,
+            },
+          ],
+        },
+        {
+          position: Position.Right,
+          handles: [
+            {
+              id: "output",
+              type: "source" as const,
+              handleType: "output" as const,
+              showButton: true,
+            },
+          ],
+        },
+      ],
       getDefaultParameters: () => ({
         label: "Sub-Process",
         isDrillable: true,
@@ -213,32 +209,20 @@ const workflowNodeTypes = {
       }),
       getToolbar: (data: BaseNodeData) => {
         const actions = [];
-
-        // Add drill-in action if this node has a child canvas
         if (data.isDrillable && data.childCanvasId) {
           actions.push({
             id: "drill-in",
             icon: "open_in_new",
             label: "Open Sub-Process",
             onAction: (_nodeId: string) => {
-              // Direct store access - no prop drilling needed!
               const store = useCanvasStore.getState();
               store.navigateToCanvas(data.childCanvasId as string);
             },
           });
         }
-
         return {
           actions,
           overflowActions: [
-            {
-              id: "rename",
-              icon: "edit",
-              label: "Rename",
-              onAction: (_nodeId: string) => {
-                /* Rename subprocess */
-              },
-            },
             {
               id: "delete",
               icon: "delete",
@@ -259,31 +243,42 @@ const workflowNodeTypes = {
 
 // Convert to NodeRegistration array
 const getNodeRegistrations = (): NodeRegistration[] => {
-  return Object.values(workflowNodeTypes).map((type) => {
-    const registration: NodeRegistration = {
-      nodeType: type.nodeType,
-      definition: type.definition,
-      category: type.category,
-      displayName: type.displayName,
-      description: type.description,
-      icon: type.icon,
-      sortOrder: type.sortOrder,
-      isVisible: true,
-    };
-
-    return registration;
-  });
+  return Object.values(workflowNodeTypes).map((type) => ({
+    nodeType: type.nodeType,
+    definition: type.definition,
+    category: type.category,
+    displayName: type.displayName,
+    description: type.description,
+    icon: type.icon,
+    sortOrder: type.sortOrder,
+    isVisible: true,
+  }));
 };
 
 /**
- * Inner component that uses the hooks inside the provider
+ * Inner component that uses the ReactFlow hooks
  */
 const CanvasWithControlsContent: React.FC = () => {
   const store = useCanvasStore();
+  const reactFlowInstance = useReactFlow();
   const currentCanvas: CanvasLevel | undefined = useCanvasStore((state) => {
     const lastIndex = state.currentPath[state.currentPath.length - 1];
     return lastIndex !== undefined ? state.canvasStack[lastIndex] : undefined;
   });
+
+  // Listen for handle action events and create preview
+  useEffect(() => {
+    const handleAction = (event: { nodeId: string; handleId: string }) => {
+      if (reactFlowInstance) {
+        createAddNodePreview(event.nodeId, event.handleId, reactFlowInstance);
+      }
+    };
+
+    canvasEventBus.on("handle:action", handleAction);
+    return () => {
+      canvasEventBus.off("handle:action", handleAction);
+    };
+  }, [reactFlowInstance]);
 
   const handleAddNode = useCallback(
     (nodeType: string) => {
@@ -305,19 +300,11 @@ const CanvasWithControlsContent: React.FC = () => {
   );
 
   const handleAddSampleWorkflow = useCallback(() => {
-    // Clear existing nodes except blank
+    // Clear existing nodes
     if (currentCanvas?.nodes) {
       currentCanvas.nodes.forEach((node: Node) => {
-        if (node.id !== "blank-canvas-node") {
-          store.removeNode(node.id);
-        }
+        store.removeNode(node.id);
       });
-    }
-
-    // Remove blank canvas node
-    const blankNode = currentCanvas?.nodes.find((n) => n.id === "blank-canvas-node");
-    if (blankNode) {
-      store.removeNode("blank-canvas-node");
     }
 
     // Add a sample workflow
@@ -325,7 +312,6 @@ const CanvasWithControlsContent: React.FC = () => {
       { type: "start", position: { x: 100, y: 100 } },
       { type: "subprocess", position: { x: 300, y: 100 } },
       { type: "decision", position: { x: 500, y: 100 } },
-      { type: "api", position: { x: 400, y: 250 } },
       { type: "subprocess", position: { x: 600, y: 250 } },
       { type: "end", position: { x: 700, y: 100 } },
     ];
@@ -344,6 +330,11 @@ const CanvasWithControlsContent: React.FC = () => {
         store.removeNode(node.id);
       });
     }
+    if (currentCanvas?.edges) {
+      currentCanvas.edges.forEach((edge) => {
+        store.removeEdge(edge.id);
+      });
+    }
 
     // Add back blank canvas node
     const blankNode: Node = {
@@ -360,7 +351,7 @@ const CanvasWithControlsContent: React.FC = () => {
     <div style={{ width: "100%", height: "100vh", position: "relative" }}>
       <HierarchicalCanvas mode="design" />
 
-      {/* Control Panel - Left Side */}
+      {/* Control Panel */}
       <Panel position="center-right">
         <div
           style={{
@@ -381,15 +372,6 @@ const CanvasWithControlsContent: React.FC = () => {
             startIcon={<ApIcon name="play_circle" />}
             onClick={() => handleAddNode("start")}
           />
-
-          <ApButton
-            variant="secondary"
-            size="small"
-            label="Sub-Process"
-            startIcon={<ApIcon name="folder" />}
-            onClick={() => handleAddNode("subprocess")}
-          />
-
           <ApButton
             variant="secondary"
             size="small"
@@ -397,7 +379,6 @@ const CanvasWithControlsContent: React.FC = () => {
             startIcon={<ApIcon name="settings" />}
             onClick={() => handleAddNode("process")}
           />
-
           <ApButton
             variant="secondary"
             size="small"
@@ -405,23 +386,13 @@ const CanvasWithControlsContent: React.FC = () => {
             startIcon={<ApIcon name="help" />}
             onClick={() => handleAddNode("decision")}
           />
-
           <ApButton
             variant="secondary"
             size="small"
-            label="Loop"
-            startIcon={<ApIcon name="refresh" />}
-            onClick={() => handleAddNode("loop")}
+            label="Sub-Process"
+            startIcon={<ApIcon name="folder" />}
+            onClick={() => handleAddNode("subprocess")}
           />
-
-          <ApButton
-            variant="secondary"
-            size="small"
-            label="API Call"
-            startIcon={<ApIcon name="api" />}
-            onClick={() => handleAddNode("api")}
-          />
-
           <ApButton
             variant="secondary"
             size="small"
@@ -429,7 +400,6 @@ const CanvasWithControlsContent: React.FC = () => {
             startIcon={<ApIcon name="stop_circle" />}
             onClick={() => handleAddNode("end")}
           />
-
           <ApButton
             variant="primary"
             size="small"
@@ -437,16 +407,16 @@ const CanvasWithControlsContent: React.FC = () => {
             startIcon={<ApIcon name="auto_awesome" />}
             onClick={handleAddSampleWorkflow}
           />
-
           <ApButton variant="secondary" size="small" label="Clear Canvas" startIcon={<ApIcon name="clear" />} onClick={handleClearCanvas} />
         </div>
       </Panel>
 
-      {/* Info Panel - Right Side */}
+      {/* Info Panel */}
       <Panel position="top-right">
         <div
           style={{
             padding: "12px",
+            color: "var(--color-foreground)",
             backgroundColor: "var(--color-background)",
             borderRadius: "8px",
             boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
@@ -459,15 +429,13 @@ const CanvasWithControlsContent: React.FC = () => {
           <div>Level: {store.currentPath.length}</div>
           <ApTypography variant={FontVariantToken.fontSizeMBold}>Instructions</ApTypography>
           <div style={{ fontSize: "11px", lineHeight: "1.4" }}>
-            1. Add nodes using buttons
+            1. Add nodes or drag to create
             <br />
-            2. Connect with edges
+            2. Click + button on handles
             <br />
-            3. Select a Sub-Process
+            3. Connect nodes
             <br />
-            4. Click "Open Sub-Process"
-            <br />
-            5. Use breadcrumbs to navigate
+            4. Double-click Sub-Process to drill in
           </div>
         </div>
       </Panel>
@@ -477,10 +445,8 @@ const CanvasWithControlsContent: React.FC = () => {
 
 /**
  * HierarchicalCanvas with test controls for Storybook
- * This wrapper adds UI controls to test adding nodes and drilling functionality
  */
 export const HierarchicalCanvasWithControls: React.FC = () => {
-  // Get node registrations from the store - this would be provided by the consumer in production
   const nodeRegistrations = useMemo(() => getNodeRegistrations(), []);
 
   return (

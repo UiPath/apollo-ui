@@ -33,6 +33,13 @@ export interface BaseCanvasProps<NodeType extends Node = Node, EdgeType extends 
   children?: ReactNode;
 
   /**
+   * Whether to display a background pattern on the canvas.
+   * Can be used to enhance visual structure and orientation.
+   * @default true
+   */
+  showBackground?: boolean;
+
+  /**
    * Primary background color of the canvas.
    */
   backgroundColor?: string;

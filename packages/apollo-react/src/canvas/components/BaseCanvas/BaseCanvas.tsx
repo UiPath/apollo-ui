@@ -25,6 +25,7 @@ const BaseCanvasInnerComponent = <NodeType extends Node = Node, EdgeType extends
     mode = "view",
 
     // Styling
+    showBackground = true,
     backgroundColor = BASE_CANVAS_DEFAULTS.background.color,
     backgroundSecondaryColor = BASE_CANVAS_DEFAULTS.background.bgColor,
     backgroundVariant = BASE_CANVAS_DEFAULTS.background.variant,
@@ -42,6 +43,8 @@ const BaseCanvasInnerComponent = <NodeType extends Node = Node, EdgeType extends
     onNodesChange,
     onEdgesChange,
     onConnect,
+    onConnectStart,
+    onConnectEnd,
     onNodeClick,
     onNodeDragStart,
     onNodeDrag,
@@ -156,6 +159,8 @@ const BaseCanvasInnerComponent = <NodeType extends Node = Node, EdgeType extends
       onNodesChange={isDesignMode ? onNodesChange : undefined}
       onEdgesChange={isDesignMode ? onEdgesChange : undefined}
       onConnect={isDesignMode ? onConnect : undefined}
+      onConnectStart={isDesignMode ? onConnectStart : undefined}
+      onConnectEnd={isDesignMode ? onConnectEnd : undefined}
       onNodeClick={isInteractive ? onNodeClick : undefined}
       onNodeDragStart={isDesignMode ? onNodeDragStart : undefined}
       onNodeDrag={isDesignMode ? onNodeDrag : undefined}
@@ -167,14 +172,17 @@ const BaseCanvasInnerComponent = <NodeType extends Node = Node, EdgeType extends
         transition: BASE_CANVAS_DEFAULTS.transitions.opacity,
       }}
     >
-      <CanvasBackground
-        color={backgroundColor}
-        bgColor={backgroundSecondaryColor}
-        variant={backgroundVariant}
-        gap={backgroundGap}
-        size={backgroundSize}
-      />
-      <PanShortcutTeachingUI message={panShortcutTeachingUIMessage} />
+      {showBackground && (
+        <CanvasBackground
+          color={backgroundColor}
+          bgColor={backgroundSecondaryColor}
+          variant={backgroundVariant}
+          gap={backgroundGap}
+          size={backgroundSize}
+        />
+      )}
+
+      {mode === "design" && <PanShortcutTeachingUI message={panShortcutTeachingUIMessage} />}
       {children}
     </ReactFlow>
   );

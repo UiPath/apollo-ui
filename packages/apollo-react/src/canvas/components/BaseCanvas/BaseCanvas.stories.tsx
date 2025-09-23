@@ -334,6 +334,7 @@ const DefaultStory = () => {
   const [defaultEdgeType, setDefaultEdgeType] = useState<string>("default");
   const [animated, setAnimated] = useState(false);
   const [strokeWidth, setStrokeWidth] = useState(2);
+  const [mode, setMode] = useState<"design" | "view" | "readonly">("design");
 
   const nodeTypes = useMemo(() => {
     return nodeTypeRegistry.getAllNodeTypes().reduce(
@@ -363,7 +364,7 @@ const DefaultStory = () => {
         nodes={nodes}
         edges={edges}
         nodeTypes={nodeTypes}
-        mode="design"
+        mode={mode}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
@@ -385,6 +386,32 @@ const DefaultStory = () => {
               minWidth: 280,
             }}
           >
+            <ApTypography variant={FontVariantToken.fontSizeH3Bold}>Canvas Configuration</ApTypography>
+
+            <Column gap={8}>
+              <ApTypography variant={FontVariantToken.fontSizeM}>Mode:</ApTypography>
+              <Row gap={8}>
+                <ApButton
+                  size="small"
+                  variant={mode === "design" ? "primary" : "secondary"}
+                  label="Design"
+                  onClick={() => setMode("design")}
+                />
+                <ApButton size="small" variant={mode === "view" ? "primary" : "secondary"} label="View" onClick={() => setMode("view")} />
+                <ApButton
+                  size="small"
+                  variant={mode === "readonly" ? "primary" : "secondary"}
+                  label="Readonly"
+                  onClick={() => setMode("readonly")}
+                />
+              </Row>
+              <ApTypography variant={FontVariantToken.fontSizeXs} style={{ fontStyle: "italic" }}>
+                {mode === "design" && "Full editing capabilities"}
+                {mode === "view" && "Interactive viewing (pan, zoom, select, click)"}
+                {mode === "readonly" && "No interactions allowed"}
+              </ApTypography>
+            </Column>
+
             <ApTypography variant={FontVariantToken.fontSizeH3Bold}>Edge Configuration</ApTypography>
 
             <Column gap={8}>
@@ -429,7 +456,11 @@ const DefaultStory = () => {
             </Column>
 
             <ApTypography variant={FontVariantToken.fontSizeS} style={{ fontStyle: "italic" }}>
-              Drag between handles to create new edges
+              {mode === "design"
+                ? "Drag between handles to create new edges"
+                : mode === "view"
+                  ? "Click nodes to select them"
+                  : "Interactions disabled"}
             </ApTypography>
 
             <ApTypography variant={FontVariantToken.fontSizeXs}>
