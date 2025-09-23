@@ -18,6 +18,7 @@ const TIMELINE_SPAN_HEIGHT = 5;
 const SPEED_LEVEL_1 = 1;
 const SPEED_LEVEL_2 = 2;
 const SPEED_LEVEL_3 = 3;
+const SPEED_LEVEL_4 = 5;
 
 interface NormalizedSpan extends IRawSpan {
   normalizedStart: number;
@@ -346,6 +347,22 @@ export const TimelinePlayer: React.FC<{
     return 0;
   }, [parentSpan]);
 
+  // Auto-set speed based on duration
+  useEffect(() => {
+    if (durationMs > 0) {
+      const durationMinutes = durationMs / (1000 * 60);
+      if (durationMinutes > 5) {
+        setSpeedLevel(SPEED_LEVEL_4); // 5x for over 5 minutes
+      } else if (durationMinutes > 3) {
+        setSpeedLevel(SPEED_LEVEL_3); // 3x for over 3 minutes
+      } else if (durationMinutes > 1) {
+        setSpeedLevel(SPEED_LEVEL_2); // 2x for over 1 minute
+      } else {
+        setSpeedLevel(SPEED_LEVEL_1); // 1x for under 1 minute
+      }
+    }
+  }, [durationMs]);
+
   const currentTimeMs = useMemo(() => progress * durationMs, [progress, durationMs]);
   const currentTimeFormatted = useMemo(() => formatTime(currentTimeMs), [currentTimeMs]);
   const totalTimeFormatted = useMemo(() => formatTime(durationMs), [durationMs]);
@@ -529,10 +546,11 @@ export const TimelinePlayer: React.FC<{
   }, [progress, playing]);
 
   const handleSpeedChange = useCallback(() => {
-    // Cycle through speeds: 1x -> 2x -> 3x -> 1x
+    // Cycle through speeds: 1x -> 2x -> 3x -> 5x -> 1x
     setSpeedLevel((prevLevel) => {
       if (prevLevel === SPEED_LEVEL_1) return SPEED_LEVEL_2;
       if (prevLevel === SPEED_LEVEL_2) return SPEED_LEVEL_3;
+      if (prevLevel === SPEED_LEVEL_3) return SPEED_LEVEL_4;
       return SPEED_LEVEL_1;
     });
   }, []);
@@ -552,7 +570,7 @@ export const TimelinePlayer: React.FC<{
         color: "var(--color-foreground)",
         borderRadius: "8px",
         border: "1px solid var(--color-background-gray-light, #cfd8dd)",
-        background: "var(--color-brand-neutral-white)",
+        zIndex: 1000,
       }}
     >
       <Row align="center" gap={Spacing.SpacingXs}>
