@@ -35,10 +35,10 @@ const APOLLO_MESSAGE_RENDERERS = [
     {
         name: TOOL_CALL_RENDERER,
         component: ({ message }: { message: AutopilotChatMessage }) => {
-            if (!message.span) {
+            if (!message.meta.span) {
                 return null;
             }
-            return <ApToolCallReact span={message.span} />;
+            return <ApToolCallReact span={message.meta.span} />;
         },
     },
 ];
