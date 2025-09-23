@@ -297,7 +297,9 @@ const StageNodeComponent = (props: StageNodeProps) => {
                                 )}
                                 {taskExecution?.retryDuration && (
                                   <StageTaskRetryDuration status={taskExecution.badgeStatus ?? "warning"}>
-                                    <ApTypography variant={FontVariantToken.fontSizeS}>{`(+${taskExecution.retryDuration})`}</ApTypography>
+                                    <ApTypography variant={FontVariantToken.fontSizeS} color="inherit">
+                                      {`(+${taskExecution.retryDuration})`}
+                                    </ApTypography>
                                   </StageTaskRetryDuration>
                                 )}
                               </Row>
