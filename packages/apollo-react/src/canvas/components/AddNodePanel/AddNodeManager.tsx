@@ -3,7 +3,7 @@ import type { Node } from "@uipath/uix/xyflow/react";
 import { useReactFlow, useStore } from "@uipath/uix/xyflow/react";
 import { FloatingCanvasPanel } from "../FloatingCanvasPanel";
 import { AddNodePanel } from "./AddNodePanel";
-import type { NodeOption } from "./AddNodePanel.types";
+import type { NodeOption, NodeCategory } from "./AddNodePanel.types";
 import type { BaseNodeData } from "../BaseNode/BaseNode.types";
 
 export interface AddNodeManagerProps {
@@ -44,6 +44,7 @@ export const AddNodeManager: React.FC<AddNodeManagerProps> = ({ customPanel, cre
   const previewNode = selectedNodes.find((node) => node.id === "preview-node-id");
   const [isOpen, setIsOpen] = useState(false);
   const [sourceInfo, setSourceInfo] = useState<{ nodeId: string; handleId: string } | null>(null);
+  const [_selectedCategory, setSelectedCategory] = useState<string | undefined>(undefined);
   const lastPreviewNodeRef = useRef<Node | null>(null);
 
   // Extract source info from preview edge when preview node is selected
@@ -78,7 +79,36 @@ export const AddNodeManager: React.FC<AddNodeManagerProps> = ({ customPanel, cre
 
     setIsOpen(false);
     setSourceInfo(null);
+    setSelectedCategory(undefined);
   }, [reactFlowInstance]);
+
+  // Handle category change to update preview node icon
+  const handleCategoryChange = useCallback((category: string) => {
+    setSelectedCategory(category);
+  }, []);
+
+  // Handle category hover to update preview node icon
+  const handleCategoryHover = useCallback(
+    (category: NodeCategory | null) => {
+      if (!previewNode) return;
+
+      // Update the preview node with serializable data only
+      reactFlowInstance.setNodes((nodes) =>
+        nodes.map((n) =>
+          n.id === "preview-node-id"
+            ? {
+                ...n,
+                data: {
+                  ...n.data,
+                  iconName: typeof category?.icon === "string" ? category.icon : undefined,
+                },
+              }
+            : n
+        )
+      );
+    },
+    [reactFlowInstance, previewNode]
+  );
 
   // Handle node selection from the selector panel
   const handleNodeSelect = useCallback(
@@ -142,9 +172,16 @@ export const AddNodeManager: React.FC<AddNodeManagerProps> = ({ customPanel, cre
         React.createElement(customPanel, {
           onNodeSelect: handleNodeSelect,
           onClose: handleClose,
+          onCategoryChange: handleCategoryChange,
+          onCategoryHover: handleCategoryHover,
         })
       ) : (
-        <AddNodePanel onNodeSelect={handleNodeSelect} onClose={handleClose} />
+        <AddNodePanel
+          onNodeSelect={handleNodeSelect}
+          onClose={handleClose}
+          onCategoryChange={handleCategoryChange}
+          onCategoryHover={handleCategoryHover}
+        />
       )}
     </FloatingCanvasPanel>
   );

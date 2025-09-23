@@ -7,7 +7,7 @@ import { ApIcon } from "@uipath/portal-shell-react";
 const PreviewContainer = styled.div<{ selected?: boolean }>`
   width: 96px;
   height: 96px;
-  border-radius: calc(0.5 * 100% / (1.75));
+  border-radius: 16px;
   background: var(--color-background-secondary);
   border: 2px dashed ${(props) => (props.selected ? "var(--color-selection-indicator)" : "var(--color-border-de-emp)")};
   display: flex;
@@ -18,16 +18,25 @@ const PreviewContainer = styled.div<{ selected?: boolean }>`
   opacity: ${(props) => (props.selected ? 0.8 : 0.6)};
 `;
 
-interface AddNodePreviewProps extends NodeProps {
-  icon?: React.ReactElement;
+export interface AddNodePreviewData {
+  iconName?: string;
 }
 
-export const AddNodePreview: React.FC<AddNodePreviewProps> = ({ selected, icon }) => {
+const getIcon = (iconName?: string): React.ReactElement => {
+  if (iconName) {
+    return <ApIcon color="var(--color-foreground-de-emp)" name={iconName} size="40px" />;
+  }
+
+  return <ApIcon color="var(--color-foreground-de-emp)" name="more_horiz" size="40px" />;
+};
+
+export const AddNodePreview: React.FC<NodeProps> = ({ selected, data }) => {
+  const nodeData = data as AddNodePreviewData;
+  const icon = getIcon(nodeData?.iconName);
+
   return (
     <>
-      <PreviewContainer selected={selected}>
-        {icon || <ApIcon color="var(--color-foreground-de-emp)" name="add" size="32px" />}
-      </PreviewContainer>
+      <PreviewContainer selected={selected}>{icon}</PreviewContainer>
 
       <Handle
         type="target"

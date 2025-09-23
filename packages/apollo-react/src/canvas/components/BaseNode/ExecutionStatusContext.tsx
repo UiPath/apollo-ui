@@ -11,6 +11,7 @@ export interface NodeStatusContext {
   nodeId: string;
   executionState?: NodeExecutionState;
   isHovered?: boolean;
+  isConnecting?: boolean;
   isSelected?: boolean;
   isDragging?: boolean;
 }

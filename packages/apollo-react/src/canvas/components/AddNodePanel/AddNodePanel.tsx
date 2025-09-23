@@ -62,6 +62,7 @@ type ListItem = NodeCategory | NodeOption;
 interface ListViewProps<T extends ListItem> {
   items: T[];
   onItemClick: (item: T) => void;
+  onItemHover?: (item: T | null) => void;
   getItemColor?: (item: T) => string | undefined;
   showEmptyState?: boolean;
   emptyStateMessage?: string;
@@ -73,6 +74,7 @@ const ListView = <T extends ListItem>(props: ListViewProps<T>) => {
   const {
     items,
     onItemClick,
+    onItemHover,
     getItemColor,
     showEmptyState = false,
     emptyStateMessage = "No items found",
@@ -109,7 +111,12 @@ const ListView = <T extends ListItem>(props: ListViewProps<T>) => {
         const bgColor = getItemColor ? getItemColor(item) : "color" in item ? item.color : undefined;
 
         return (
-          <ListItemButton key={item.id} onClick={() => onItemClick(item)}>
+          <ListItemButton
+            key={item.id}
+            onClick={() => onItemClick(item)}
+            onMouseEnter={() => onItemHover?.(item)}
+            onMouseLeave={() => onItemHover?.(null)}
+          >
             <IconContainer bgColor={bgColor}>
               {item.icon &&
                 (typeof item.icon === "string" ? (
@@ -128,7 +135,14 @@ const ListView = <T extends ListItem>(props: ListViewProps<T>) => {
   );
 };
 
-export const AddNodePanel: React.FC<AddNodePanelProps> = ({ onNodeSelect, onClose, fetchNodeOptions, categories }) => {
+export const AddNodePanel: React.FC<AddNodePanelProps> = ({
+  onNodeSelect,
+  onClose,
+  fetchNodeOptions,
+  categories,
+  onCategoryChange,
+  onCategoryHover,
+}) => {
   const registryOptions = useOptionalRegistryNodeOptions();
 
   const finalFetchNodeOptions = fetchNodeOptions || registryOptions?.fetchNodeOptions;
@@ -231,6 +245,11 @@ export const AddNodePanel: React.FC<AddNodePanelProps> = ({ onNodeSelect, onClos
       setSelectedCategory(category);
       setViewState("nodes");
 
+      // Notify parent about category change
+      if (onCategoryChange) {
+        onCategoryChange(category.id);
+      }
+
       // Only clear search if actively searching
       if (isSearching) {
         clearSearch();
@@ -241,7 +260,7 @@ export const AddNodePanel: React.FC<AddNodePanelProps> = ({ onNodeSelect, onClos
         setIsTransitioning(false);
       }, 150);
     },
-    [clearSearch, isSearching]
+    [clearSearch, isSearching, onCategoryChange]
   );
 
   const handleNodeSelect = useCallback(
@@ -265,7 +284,9 @@ export const AddNodePanel: React.FC<AddNodePanelProps> = ({ onNodeSelect, onClos
           />
         );
       } else {
-        return <ListView items={filteredCategories} onItemClick={handleCategorySelect} showEmptyState={false} />;
+        return (
+          <ListView items={filteredCategories} onItemClick={handleCategorySelect} onItemHover={onCategoryHover} showEmptyState={false} />
+        );
       }
     } else if (viewState === "nodes" && selectedCategory) {
       return (

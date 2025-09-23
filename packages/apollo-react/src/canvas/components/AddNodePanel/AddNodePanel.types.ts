@@ -20,4 +20,6 @@ export interface AddNodePanelProps {
   onClose: () => void;
   fetchNodeOptions?: (category?: string, search?: string) => Promise<NodeOption[]>;
   categories?: NodeCategory[];
+  onCategoryChange?: (categoryId: string) => void;
+  onCategoryHover?: (category: NodeCategory | null) => void;
 }

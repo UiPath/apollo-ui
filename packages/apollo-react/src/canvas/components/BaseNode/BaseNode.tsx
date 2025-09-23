@@ -5,7 +5,7 @@ import type { NodeStatusContext } from "./ExecutionStatusContext";
 import { useExecutionState } from "./ExecutionStatusContext";
 import type { HandleActionEvent } from "../ButtonHandle";
 import { ButtonHandles } from "../ButtonHandle";
-import { NodeContextMenu } from "../NodeContextMenu";
+import { NodeToolbar } from "../NodeToolbar";
 import { BaseContainer, BaseIconWrapper, BaseBadgeSlot, BaseTextContainer, BaseHeader, BaseSubHeader } from "./BaseNode.styles";
 import type { BaseNodeData } from "./BaseNode.types";
 import { useNodeTypeRegistry } from "./useNodeTypeRegistry";
@@ -25,20 +25,20 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
 
   const nodeDefinition = useMemo(() => nodeTypeRegistry.get(type), [type, nodeTypeRegistry]);
 
+  const { inProgress } = useConnection();
+
   const statusContext: NodeStatusContext = useMemo(
     () => ({
       nodeId: id,
       executionState,
-      isHovered,
+      isConnecting: inProgress,
       isSelected: selected,
       isDragging: dragging,
     }),
-    [id, executionState, isHovered, selected, dragging]
+    [id, executionState, inProgress, selected, dragging]
   );
 
   const executionStatus = typeof executionState === "string" ? executionState : executionState?.status;
-
-  const { inProgress } = useConnection();
 
   const icon = useMemo(() => nodeDefinition?.getIcon?.(data, statusContext) ?? <></>, [nodeDefinition, data, statusContext]);
   const display = useMemo(() => nodeDefinition?.getDisplay?.(data, statusContext) ?? {}, [nodeDefinition, data, statusContext]);
@@ -47,7 +47,7 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
     () => nodeDefinition?.getHandleConfigurations?.(data, statusContext) ?? [],
     [nodeDefinition, data, statusContext]
   );
-  const menuItems = useMemo(() => nodeDefinition?.getMenuItems?.(data, statusContext) ?? [], [nodeDefinition, data, statusContext]);
+  const toolbarConfig = useMemo(() => nodeDefinition?.getToolbar?.(data, statusContext), [nodeDefinition, data, statusContext]);
 
   const displayLabel = display.label;
   const displaySubLabel = display.subLabel;
@@ -55,9 +55,13 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
   const displayBackground = display.background;
   const displayIconBackground = executionStatus === "Failed" ? "var(--color-background)" : display.iconBackground;
 
-  const { edges, isConnecting } = useStore(
-    (state) => ({ edges: state.edges, isConnecting: !!state.connectionClickStartHandle }),
-    (a, b) => a.edges === b.edges && a.isConnecting === b.isConnecting
+  const { edges, isConnecting, selectedNodesCount } = useStore(
+    (state) => ({
+      edges: state.edges,
+      isConnecting: !!state.connectionClickStartHandle,
+      selectedNodesCount: state.nodes.filter((n) => n.selected).length,
+    }),
+    (a, b) => a.edges === b.edges && a.isConnecting === b.isConnecting && a.selectedNodesCount === b.selectedNodesCount
   );
 
   const interactionState = useMemo(() => {
@@ -90,6 +94,10 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
   // Handle action callback that uses node type's default handler
   const handleAction = useCallback(
     (event: HandleActionEvent) => {
+      // Reset hover state when handle is clicked
+      setIsHovered(false);
+      setIsFocused(false);
+
       // First, check if the node type has a default handler
       if (nodeDefinition?.onHandleAction) {
         nodeDefinition.onHandleAction(event);
@@ -221,10 +229,9 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
             {displaySubLabel && <BaseSubHeader>{displaySubLabel}</BaseSubHeader>}
           </BaseTextContainer>
         )}
-
-        <NodeContextMenu menuItems={menuItems} isVisible={selected && !dragging} />
       </BaseContainer>
       {handleElements}
+      {toolbarConfig && <NodeToolbar nodeId={id} config={toolbarConfig} visible={selected && !dragging && selectedNodesCount === 1} />}
     </div>
   );
 };

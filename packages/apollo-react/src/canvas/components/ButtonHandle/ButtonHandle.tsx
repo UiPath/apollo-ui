@@ -70,7 +70,7 @@ const ButtonHandleBase = ({
   handleType,
   label,
   labelIcon,
-  labelBackgroundColor = "var(--color-background)",
+  labelBackgroundColor = "var(--color-background-secondary)",
   visible = true,
   showButton = true,
   color = "var(--color-border)",

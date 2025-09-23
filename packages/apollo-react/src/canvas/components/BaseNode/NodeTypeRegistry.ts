@@ -156,56 +156,62 @@ export class NodeTypeRegistry {
    * @returns Array of NodeCategory objects with metadata
    */
   getCategoryConfig(): NodeCategory[] {
-    // Define category metadata with icons and colors
-    const categoryMetadata: Record<string, { label: string; icon: string; color: string }> = {
-      triggers: { label: "Triggers", icon: "electric_bolt", color: "#E3F2FD" },
-      actions: { label: "Actions", icon: "settings", color: "#F3E5F5" },
-      ai: { label: "AI Tools", icon: "smart_toy", color: "#E8F5E9" },
-      data: { label: "Data", icon: "filter_alt", color: "#FFF3E0" },
-      logic: { label: "Logic", icon: "account_tree", color: "#FCE4EC" },
-      integrations: { label: "Integrations", icon: "extension", color: "#E0F2F1" },
-    };
-
     // Get unique categories from registered nodes
-    const activeCategories = new Set<string>();
-    for (const metadata of this.metadata.values()) {
+    const categoriesMap = new Map<string, NodeCategory>();
+
+    for (const [_nodeType, metadata] of this.metadata.entries()) {
       if (metadata.isVisible !== false && metadata.category) {
-        activeCategories.add(metadata.category);
+        const categoryId = metadata.category;
+
+        // Only add category if not already in map
+        if (!categoriesMap.has(categoryId)) {
+          // Use metadata from the first node of this category for icon/color hints
+          const categoryMeta: NodeCategory = {
+            id: categoryId,
+            label: categoryId.charAt(0).toUpperCase() + categoryId.slice(1),
+          };
+
+          categoriesMap.set(categoryId, categoryMeta);
+        }
       }
     }
 
-    // Build category list with metadata
-    const categories: NodeCategory[] = [];
-    for (const categoryId of activeCategories) {
-      const meta = categoryMetadata[categoryId];
-      if (meta) {
-        categories.push({
-          id: categoryId,
-          label: meta.label,
-          icon: meta.icon,
-          color: meta.color,
-        });
-      } else {
-        // Fallback for unknown categories
-        categories.push({
-          id: categoryId,
-          label: categoryId.charAt(0).toUpperCase() + categoryId.slice(1),
-          icon: "folder",
+    // Convert to array and sort by registration order (maintains insertion order)
+    return Array.from(categoriesMap.values());
+  }
+
+  /**
+   * Register multiple node types at once
+   */
+  registerAll(registrations: NodeRegistration[]): void {
+    registrations.forEach((registration) => this.register(registration));
+  }
+
+  /**
+   * Clear all registrations (useful for testing or re-initialization)
+   */
+  clear(): void {
+    this.definitions.clear();
+    this.allDefinitions.clear();
+    this.metadata.clear();
+    this.categories.clear();
+  }
+
+  /**
+   * Get all registrations
+   */
+  getAllRegistrations(): NodeRegistration[] {
+    const registrations: NodeRegistration[] = [];
+    for (const [nodeType, metadata] of this.metadata.entries()) {
+      const definition = this.definitions.get(nodeType);
+      if (definition) {
+        registrations.push({
+          ...metadata,
+          nodeType,
+          definition,
         });
       }
     }
-
-    // Sort categories by a predefined order
-    const categoryOrder = ["triggers", "actions", "ai", "data", "logic", "integrations"];
-    categories.sort((a, b) => {
-      const aIndex = categoryOrder.indexOf(a.id);
-      const bIndex = categoryOrder.indexOf(b.id);
-      if (aIndex === -1 && bIndex === -1) return a.label.localeCompare(b.label);
-      if (aIndex === -1) return 1;
-      if (bIndex === -1) return -1;
-      return aIndex - bIndex;
-    });
-
-    return categories;
+    return registrations;
   }
 }

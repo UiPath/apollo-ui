@@ -35,15 +35,10 @@ export const getNewNodePosition = (
   newNodeSize: { width: number; height: number },
   existingNodes: Node[],
   placementPreference: "right" | "top-right" | "align-top" = "right",
-  offset = BASE_CANVAS_GRID_SPACING * 8
+  offset = BASE_CANVAS_GRID_SPACING * 5
 ): { x: number; y: number } => {
   const getNodesToCompare = (targetNode: Node | undefined) => {
     if (targetNode?.parentId) {
-      if (targetNode.type === "bpmn:BoundaryEvent") {
-        // get task the boundary event is attached to
-        const attachedToNode = existingNodes.find((node) => node.id === targetNode.data?.attachedToId);
-        return attachedToNode?.parentId ? existingNodes.filter((node) => node.parentId === attachedToNode.parentId) : existingNodes;
-      }
       return existingNodes.filter((node) => node.parentId === targetNode.parentId);
     }
     return existingNodes;

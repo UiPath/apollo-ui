@@ -2,6 +2,7 @@ import type { Position } from "@uipath/uix/xyflow/react";
 import type { NodeStatusContext } from "./ExecutionStatusContext";
 import type { NodeMenuItem } from "../NodeContextMenu/NodeContextMenu.types";
 import type { ButtonHandleConfig, HandleActionEvent } from "../ButtonHandle/ButtonHandle";
+import type { NodeToolbarConfig } from "../NodeToolbar";
 
 export type NodeShape = "square" | "circle" | "rectangle";
 
@@ -60,6 +61,7 @@ export interface NodeTypeDefinition {
   getAdornments?: (data: BaseNodeData, context: NodeStatusContext) => NodeAdornments;
   getHandleConfigurations?: (data: BaseNodeData, context: NodeStatusContext) => HandleConfiguration[];
   getMenuItems?: (data: BaseNodeData, context: NodeStatusContext) => NodeMenuItem[];
+  getToolbar?: (data: BaseNodeData, context: NodeStatusContext) => NodeToolbarConfig | undefined;
 
   validateParameters?: (parameters: Record<string, unknown>) => boolean;
   getDefaultParameters?: () => Record<string, unknown>;
