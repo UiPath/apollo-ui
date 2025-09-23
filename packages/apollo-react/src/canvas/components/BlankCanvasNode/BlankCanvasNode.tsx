@@ -1,5 +1,5 @@
 import { useCallback, useRef } from "react";
-import { useStoreApi, type NodeProps } from "@xyflow/react";
+import { useStoreApi, type NodeProps } from "@uipath/uix/xyflow/react";
 import { ApIcon } from "@uipath/portal-shell-react";
 import { FloatingCanvasPanel } from "../FloatingCanvasPanel";
 import { AddNodePanel } from "../AddNodePanel";
