@@ -13,8 +13,7 @@ import {
 } from "@xyflow/react";
 import { FontVariantToken, Spacing } from "@uipath/apollo-core";
 import { ApCircularProgress, ApIcon, ApTypography } from "@uipath/portal-shell-react";
-import { Icons } from "@uipath/uix-core";
-import { Column, Row } from "@uipath/uix-core";
+import { Icons, Column, Row } from "@uipath/uix/core";
 import type { BaseCanvasRef } from "../BaseCanvas";
 import { BaseCanvas, NODE_DIMENSIONS } from "../BaseCanvas";
 import { ButtonHandles } from "../ButtonHandle";
