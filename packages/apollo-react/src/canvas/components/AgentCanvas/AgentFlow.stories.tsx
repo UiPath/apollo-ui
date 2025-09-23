@@ -1,8 +1,9 @@
 import { useCallback, useState } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import type { IRawSpan } from "@uipath/portal-shell-react";
 import { ReactFlowProvider } from "@uipath/uix/xyflow/react";
-import { AgentFlow } from "./AgentFlow";
 import { Column, Row } from "@uipath/uix/core";
+import { AgentFlow } from "./AgentFlow";
 import type { AgentFlowModel, AgentFlowProps, AgentFlowResource, AgentFlowResourceNodeData, AgentFlowResourceType } from "../../types";
 
 const meta: Meta<typeof AgentFlow> = {
@@ -204,24 +205,54 @@ const sampleAgentDefinition = {
 };
 
 // Real trace data from frontend examples
-const sampleSpans = [
+const sampleSpans: IRawSpan[] = [
   {
     Id: "span1",
+    TraceId: "trace1",
     ParentId: "parent1",
+    Name: "agentRun",
+    StartTime: "2021-01-01T00:00:00Z",
+    EndTime: "2021-01-01T00:00:30Z",
+    Status: 1,
+    CreatedAt: "2021-01-01T00:00:00Z",
+    UpdatedAt: "2021-01-01T00:00:00Z",
     SpanType: "agentRun",
     Attributes: JSON.stringify({ type: "agentRun" }),
+    OrganizationId: "org1",
+    TenantId: "tenant1",
+    Source: 1,
   },
   {
     Id: "span2",
+    TraceId: "trace1",
     ParentId: "span1",
-    SpanType: "toolCall",
-    Attributes: JSON.stringify({ type: "toolCall", toolName: "test_tool" }),
+    Name: "contextLoad",
+    StartTime: "2021-01-01T00:00:31Z",
+    EndTime: "2021-01-01T00:01:00Z",
+    Status: 1,
+    CreatedAt: "2021-01-01T00:00:00Z",
+    UpdatedAt: "2021-01-01T00:00:00Z",
+    SpanType: "contextLoad",
+    Attributes: JSON.stringify({ type: "contextLoad", contextName: "test_context" }),
+    OrganizationId: "org1",
+    TenantId: "tenant1",
+    Source: 1,
   },
   {
     Id: "span3",
+    TraceId: "trace1",
     ParentId: "span2",
+    Name: "completion",
+    StartTime: "2021-01-01T00:01:01Z",
+    EndTime: "2021-01-01T00:03:00Z",
+    Status: 1,
+    CreatedAt: "2021-01-01T00:00:00Z",
+    UpdatedAt: "2021-01-01T00:00:00Z",
     SpanType: "completion",
     Attributes: JSON.stringify({ type: "completion" }),
+    OrganizationId: "org1",
+    TenantId: "tenant1",
+    Source: 1,
   },
 ];
 
@@ -240,7 +271,7 @@ const AgentFlowWrapper = ({
   activeResourceIds,
   spans = sampleSpans,
   definition = sampleAgentDefinition,
-  enableTimelinePlayer,
+  enableTimelinePlayer = true,
 }: AgentFlowWrapperProps) => {
   const [resources, setResources] = useState<AgentFlowResource[]>(initialResources);
   const [model, setModel] = useState<AgentFlowModel | null>(sampleModel);
@@ -396,7 +427,7 @@ const AgentFlowWrapper = ({
           <AgentFlow
             allowDragging={false}
             definition={definition}
-            spans={spans}
+            spans={mode === "view" ? spans : []}
             name="Test Agent"
             description="Test Description"
             mode={mode}
@@ -413,7 +444,7 @@ const AgentFlowWrapper = ({
             onAddResource={handleAddResourceRequest}
             onRemoveResource={handleRemoveResource}
             onSelectResource={handleSelectResource}
-            enableTimelinePlayer={enableTimelinePlayer}
+            enableTimelinePlayer={mode === "view" && enableTimelinePlayer}
           />
         </div>
         {renderSidebar()}
@@ -436,9 +467,9 @@ export const ViewMode: Story = {
     mode: "view",
     model: sampleModel,
     resources: sampleResources,
-    activeResourceIds: ["tool-slack", "context-user-profile"],
+    activeResourceIds: [],
   },
-  render: (args) => <AgentFlowWrapper {...args} />,
+  render: (args) => <AgentFlowWrapper {...args} spans={[]} />,
 };
 
 export const DesignModeEmpty: Story = {
@@ -454,9 +485,9 @@ export const ViewModeWithTraceData: Story = {
     mode: "view",
     model: sampleModel,
     resources: sampleResources,
-    activeResourceIds: ["tool-slack"],
+    activeResourceIds: [],
   },
-  render: (args) => <AgentFlowWrapper {...args} spans={sampleSpans} definition={sampleAgentDefinition} />,
+  render: (args) => <AgentFlowWrapper {...args} spans={sampleSpans} definition={sampleAgentDefinition} enableTimelinePlayer={false} />,
 };
 
 export const DesignModeWithRealData: Story = {
@@ -483,7 +514,17 @@ export const ViewModeWithoutTimelinePlayer: Story = {
     mode: "view",
     model: sampleModel,
     resources: sampleResources,
-    activeResourceIds: ["tool-slack"],
+    activeResourceIds: [],
   },
   render: (args) => <AgentFlowWrapper {...args} spans={sampleSpans} definition={sampleAgentDefinition} enableTimelinePlayer={false} />,
+};
+
+export const ViewModeWithTimelinePlayer: Story = {
+  args: {
+    mode: "view",
+    model: sampleModel,
+    resources: sampleResources,
+    activeResourceIds: [],
+  },
+  render: (args) => <AgentFlowWrapper {...args} spans={sampleSpans} definition={sampleAgentDefinition} />,
 };
