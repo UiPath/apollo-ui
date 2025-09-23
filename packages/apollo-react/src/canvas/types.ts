@@ -232,6 +232,10 @@ export interface AgentNodeTranslations {
   autonomousAgent: string;
   codedAgent: string;
   conversationalAgent: string;
+  escalations: string;
+  model: string;
+  context: string;
+  tools: string;
 }
 
 export const DefaultAgentNodeTranslations: AgentNodeTranslations = {
@@ -243,6 +247,10 @@ export const DefaultAgentNodeTranslations: AgentNodeTranslations = {
   autonomousAgent: "Autonomous Agent",
   codedAgent: "Coded Agent",
   conversationalAgent: "Conversational Agent",
+  escalations: "Escalations",
+  model: "Model",
+  context: "Context",
+  tools: "Tools",
 };
 
 export interface ResourceNodeTranslations {

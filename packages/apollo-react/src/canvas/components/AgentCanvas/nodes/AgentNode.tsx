@@ -91,7 +91,7 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
         id: ResourceNodeType.Escalation,
         type: "source",
         handleType: "artifact",
-        label: "Escalation",
+        label: translations.escalations,
         showButton: mode === "design",
         color: "var(--color-foreground-de-emp)",
         labelBackgroundColor: "var(--color-background-secondary)",
@@ -113,7 +113,7 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
           id: ResourceNodeType.Model,
           type: "source",
           handleType: "artifact",
-          label: "Model",
+          label: translations.model,
           showButton: false,
           color: "var(--color-foreground-de-emp)",
           labelBackgroundColor: "var(--color-background-secondary)",
@@ -123,7 +123,7 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
           id: ResourceNodeType.Context,
           type: "source",
           handleType: "artifact",
-          label: "Context",
+          label: translations.context,
           showButton: mode === "design",
           color: "var(--color-foreground-de-emp)",
           labelBackgroundColor: "var(--color-background-secondary)",
@@ -136,7 +136,7 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
           id: ResourceNodeType.Tool,
           type: "source",
           handleType: "artifact",
-          label: "Tool",
+          label: translations.tools,
           showButton: mode === "design",
           color: "var(--color-foreground-de-emp)",
           labelBackgroundColor: "var(--color-background-secondary)",
@@ -159,7 +159,7 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
     }
 
     return configs;
-  }, [mode, displayContext, displayMcp, displayTool, displayModel, displayEscalation, onAddResource]);
+  }, [mode, displayContext, displayMcp, displayTool, displayModel, displayEscalation, onAddResource, translations]);
 
   const agentIcon = useMemo(() => {
     if (isConversational) {
