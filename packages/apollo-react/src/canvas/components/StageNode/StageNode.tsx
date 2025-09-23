@@ -121,7 +121,6 @@ const StageNodeComponent = (props: StageNodeProps) => {
     (e: React.FocusEvent | MouseEvent) => {
       if (isStageTitleEditing && !stageTitleRef.current?.contains(e.target as Node)) {
         setIsStageTitleEditing(false);
-        console.log(localLabel, label);
         if (onStageTitleChange && localLabel !== label) {
           if (localLabel.trim() === "") setLocalLabel("Untilted Stage");
           onStageTitleChange(localLabel);
@@ -185,7 +184,7 @@ const StageNodeComponent = (props: StageNodeProps) => {
   const contextMenuItems = useMemo(
     () =>
       getContextMenuItems(taskStateReference.isParallel, taskStateReference.groupIndex, taskStateReference.taskIndex, reGroupTaskFunction),
-    [tasks, taskStateReference.isParallel, taskStateReference.groupIndex, taskStateReference.taskIndex]
+    [taskStateReference.isParallel, taskStateReference.groupIndex, taskStateReference.taskIndex, reGroupTaskFunction]
   );
 
   const handleTaskRemove = useCallback(
@@ -197,7 +196,7 @@ const StageNodeComponent = (props: StageNodeProps) => {
   );
 
   return (
-    <div style={{ position: "relative" }} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
+    <div data-testid={`stage-${id}`} style={{ position: "relative" }} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
       <StageContainer selected={selected} status={status} isException={isException}>
         <StageHeader isException={isException}>
           <Row gap={Spacing.SpacingMicro} align="center">

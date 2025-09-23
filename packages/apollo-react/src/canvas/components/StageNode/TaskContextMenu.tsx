@@ -57,5 +57,14 @@ export const TaskContextMenu = memo(({ isVisible, menuItems, refTask }: TaskCont
     return null;
   }
 
-  return <ApMenu isOpen={isMenuOpen} menuItems={transformedMenuItems} anchorEl={refTask.current ?? undefined} width={300} autoFocus />;
+  return (
+    <ApMenu
+      data-testid="context-menu"
+      isOpen={isMenuOpen}
+      menuItems={transformedMenuItems}
+      anchorEl={refTask.current ?? undefined}
+      width={300}
+      autoFocus
+    />
+  );
 });
