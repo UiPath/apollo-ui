@@ -1,5 +1,4 @@
-import type { Edge, Node } from "@uipath/uix/xyflow/react";
-
+import type { Edge, Node } from "@xyflow/react";
 import mermaid from "mermaid";
 import sanitizeHtml from "sanitize-html";
 
@@ -7,7 +6,7 @@ interface IMermaidNodeDefinition {
   id: string;
   text: string;
   type?: string;
-  [key: string]: unknown; // Allow additional properties from mermaid
+  [key: string]: any; // Allow additional properties from mermaid
 }
 
 interface IMermaidEdgeDefinition {
@@ -53,32 +52,14 @@ export async function mermaidToReactFlow(mermaidText: string): Promise<MermaidPa
     }
 
     // Get the diagram using the mermaidAPI
-    const diagram = await (
-      mermaid as unknown as {
-        mermaidAPI: { getDiagramFromText: (text: string) => Promise<{ db?: { getVertices: () => unknown; getEdges: () => unknown } }> };
-      }
-    ).mermaidAPI.getDiagramFromText(mermaidText);
+    const diagram = await (mermaid as any).mermaidAPI.getDiagramFromText(mermaidText);
 
     let rawNodes: IMermaidNodeDefinition[] = [];
     let rawEdges: IMermaidEdgeDefinition[] = [];
 
     if (diagram && diagram.db) {
-      rawNodes = ensureArray<IMermaidNodeDefinition>(
-        diagram.db.getVertices() as
-          | IMermaidNodeDefinition[]
-          | Map<string, IMermaidNodeDefinition>
-          | Record<string, IMermaidNodeDefinition>
-          | null
-          | undefined
-      );
-      rawEdges = ensureArray<IMermaidEdgeDefinition>(
-        diagram.db.getEdges() as
-          | IMermaidEdgeDefinition[]
-          | Map<string, IMermaidEdgeDefinition>
-          | Record<string, IMermaidEdgeDefinition>
-          | null
-          | undefined
-      );
+      rawNodes = ensureArray<IMermaidNodeDefinition>(diagram.db.getVertices());
+      rawEdges = ensureArray<IMermaidEdgeDefinition>(diagram.db.getEdges());
     }
 
     if (rawNodes.length === 0) {

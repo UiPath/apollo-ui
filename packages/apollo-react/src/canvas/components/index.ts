@@ -4,6 +4,7 @@ export * from "./BaseCanvas";
 export * from "./BaseNode";
 export * from "./ButtonHandle";
 export * from "./CanvasPositionControls";
+export * from "./CodedAgent";
 export * from "./ExecutionStatusIcon";
 export * from "./FloatingCanvasPanel";
 export * from "./HierarchicalCanvas";
