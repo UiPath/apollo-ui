@@ -51,9 +51,9 @@ export const IconContainer = styled.div<{ bgColor?: string }>`
   display: flex;
   align-items: center;
   justify-content: center;
-  background: ${(props) => props.bgColor || "var(--color-background-tertiary, #f0f0f0)"};
-  border-radius: 6px;
-  color: var(--color-foreground-de-emp);
+  background: ${(props) => props.bgColor || "var(--color-background)"};
+  border-radius: 8px;
+  color: var(--color-foreground-emp);
   opacity: 0.9;
   flex-shrink: 0;
 `;
