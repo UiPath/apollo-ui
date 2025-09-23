@@ -179,7 +179,7 @@ const Scrubber: React.FC<{ left: number }> = ({ left }) => (
   <div
     style={{
       position: "absolute",
-      top: `${(33 - TIMELINE_BAR_HEIGHT) / 2}px`,
+      top: `${TIMELINE_TRACK_BAR_HEIGHT / 2}px`,
       left: `${left}%`,
       transform: "translateX(-50%)",
       zIndex: 100,
