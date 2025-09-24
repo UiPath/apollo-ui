@@ -68,6 +68,8 @@ const StageNodeComponent = (props: StageNodeProps) => {
   const stageDuration = execution?.stageStatus?.duration;
   const reGroupTaskFunction = useMemo(() => onTaskGroupModification || (() => {}), [onTaskGroupModification]);
 
+  const isStageTitleEditable = !!onStageTitleChange;
+
   const [isHovered, setIsHovered] = useState(false);
   const [localLabel, setLocalLabel] = useState(label);
   const [isStageTitleEditing, setIsStageTitleEditing] = useState(false);
@@ -107,15 +109,10 @@ const StageNodeComponent = (props: StageNodeProps) => {
     return taskExecution.badge;
   }, []);
 
-  const handleStageTitleChange = useCallback(
-    (e: React.FormEvent<HTMLInputElement>) => {
-      if (onStageTitleChange) {
-        setIsStageTitleEditing(true);
-        setLocalLabel((e.target as HTMLInputElement).value);
-      }
-    },
-    [onStageTitleChange]
-  );
+  const handleStageTitleChange = useCallback((e: React.FormEvent<HTMLInputElement>) => {
+    setIsStageTitleEditing(true);
+    setLocalLabel((e.target as HTMLInputElement).value);
+  }, []);
 
   const handleStageTitleClickToSave = useCallback(
     (e: React.FocusEvent | MouseEvent) => {
@@ -210,13 +207,16 @@ const StageNodeComponent = (props: StageNodeProps) => {
                   <StageTitleContainer isEditing={isStageTitleEditing}>
                     <StageTitleInput
                       name="Stage Title"
+                      isStageTitleEditable={isStageTitleEditable}
                       value={localLabel}
                       ref={stageTitleRef}
                       isEditing={isStageTitleEditing}
-                      onFocus={() => setIsStageTitleEditing(true)}
-                      onInput={handleStageTitleChange}
-                      onKeyDown={handleStageTitleKeyDown}
-                      onBlur={handleStageTitleBlurToSave}
+                      {...(onStageTitleChange && {
+                        onFocus: () => setIsStageTitleEditing(true),
+                        onInput: handleStageTitleChange,
+                        onKeyDown: handleStageTitleKeyDown,
+                        onBlur: handleStageTitleBlurToSave,
+                      })}
                     />
                   </StageTitleContainer>
                 </ApTooltip>

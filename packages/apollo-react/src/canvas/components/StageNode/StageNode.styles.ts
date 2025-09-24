@@ -85,7 +85,7 @@ export const StageTitleContainer = styled.div<{ isEditing?: boolean }>`
   border: ${(props) => (props.isEditing ? "1px solid var(--color-border-de-emp)" : "none")};
 `;
 
-export const StageTitleInput = styled.input<{ isEditing?: boolean }>`
+export const StageTitleInput = styled.input<{ isEditing?: boolean; isStageTitleEditable?: boolean }>`
   font-family: inherit;
   font-size: inherit;
   font-weight: inherit;
@@ -95,14 +95,14 @@ export const StageTitleInput = styled.input<{ isEditing?: boolean }>`
   text-overflow: ellipsis;
   border-radius: 2px;
   width: 180px;
-  padding: 4px 8px;
+  padding: ${(props) => (props.isStageTitleEditable ? "none" : "4px 8px")};
 
   &:focus {
     outline: none;
   }
 
   &:hover {
-    background: ${(props) => (props.isEditing ? "transparent" : "var(--color-background-secondary)")};
+    background: ${(props) => (props.isEditing || props.isStageTitleEditable ? "transparent" : "var(--color-background-secondary)")};
   }
 `;
 
