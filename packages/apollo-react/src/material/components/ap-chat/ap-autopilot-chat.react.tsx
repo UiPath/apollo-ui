@@ -36,13 +36,13 @@ import { AutopilotLoadingProvider } from './providers/loading-provider.react';
 import { AutopilotModelPickerProvider } from './providers/model-picker-provider.react';
 import { AutopilotStreamingProvider } from './providers/streaming-provider.react';
 
-const ChatContainer = styled('div')<{ shouldAnimate: boolean; mode: AutopilotChatMode; width: number }>(({
-    shouldAnimate, mode, width, theme,
-}: { shouldAnimate: boolean; mode: AutopilotChatMode; width: number; theme: Theme }) => ({
+const ChatContainer = styled('div')<{ shouldAnimate: boolean; mode: AutopilotChatMode; width: number; fullHeight: boolean }>(({
+    shouldAnimate, mode, width, theme, fullHeight,
+}: { shouldAnimate: boolean; mode: AutopilotChatMode; width: number; theme: Theme; fullHeight: boolean }) => ({
     width: mode === AutopilotChatMode.FullScreen ? CHAT_WIDTH_FULL_SCREEN : width,
     display: 'flex',
     flexDirection: mode === AutopilotChatMode.FullScreen ? 'column' : 'row',
-    height: 'calc(100vh - 48px)', // account for global header height
+    height: fullHeight ? '100vh' : 'calc(100vh - 48px)', // account for global header height
     position: 'relative',
     boxSizing: 'border-box',
     border: `${token.Border.BorderThickS} solid ${theme.palette.semantic.colorBorderDeEmp}`,
@@ -74,6 +74,7 @@ const AutopilotChatContent = React.memo(() => {
             shouldAnimate={shouldAnimate}
             mode={chatMode}
             width={width}
+            fullHeight={disabledFeatures.fullHeight === false}
         >
             { chatMode === AutopilotChatMode.SideBySide && (
                 <DragHandle/>
