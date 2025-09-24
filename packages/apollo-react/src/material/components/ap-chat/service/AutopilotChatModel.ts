@@ -311,6 +311,7 @@ export interface PdfCitation extends Citation {
  * @property settings - Whether the chat has the settings button
  * @property audio - Whether the chat has realtime audio enabled
  * @property feedback - Whether the chat has the feedback button
+ * @property fullHeight - Whether the chat has viewport height
  */
 export interface AutopilotChatDisabledFeatures {
     resize?: boolean;
@@ -325,6 +326,7 @@ export interface AutopilotChatDisabledFeatures {
     settings?: boolean;
     audio?: boolean;
     feedback?: boolean;
+    fullHeight?: boolean;
 }
 
 /**
