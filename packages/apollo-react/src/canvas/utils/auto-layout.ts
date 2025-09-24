@@ -1,4 +1,4 @@
-import { ResourceNodeType, ResourceNodeTypeToPosition } from "../components/AgentCanvas/AgentFlow.constants";
+import { ResourceNodeType, ResourceNodeTypeOrder, ResourceNodeTypeToPosition } from "../components/AgentCanvas/AgentFlow.constants";
 import type { AgentFlowCustomEdge, AgentFlowCustomNode } from "../types";
 import { Position } from "@uipath/uix/xyflow/react";
 import { isAgentFlowAgentNode, isAgentFlowResourceNode } from "../types";
@@ -9,6 +9,8 @@ const GROUP_SPACING = 160;
 const AGENT_NODE_OFFSET_HORIZONTAL = 360;
 const AGENT_NODE_OFFSET_VERTICAL_SMALL = 50;
 const AGENT_NODE_OFFSET_VERTICAL_LARGE = 300;
+
+const getResourceNodeTypeOrder = (nodeType: ResourceNodeType): number => ResourceNodeTypeOrder[nodeType] ?? 999;
 
 // Size (diameter) of the resource node in the canvas
 export const RESOURCE_NODE_SIZE = 80;
@@ -186,11 +188,11 @@ const arrangeAgent = (
         }
       } else if (handleGroups.length === 2) {
         // Two handle types - position them on left and right sides
-        // Sort by handleId to ensure consistent ordering
-        const sortedGroups = handleGroups.sort((a, b) => a.handleId.localeCompare(b.handleId));
+        // Sort by resource node type order to ensure consistent Model -> Context -> Tool ordering
+        const sortedGroups = handleGroups.sort((a, b) => getResourceNodeTypeOrder(a.handleId) - getResourceNodeTypeOrder(b.handleId));
 
         for (const [groupIndex, { nodes }] of sortedGroups.entries()) {
-          const isFirstGroup = groupIndex === 0; // First alphabetically goes left, second goes right
+          const isFirstGroup = groupIndex === 0; // First in ordering (Model) goes left, second (Context/Tool) goes right
 
           for (const [i, node] of nodes.entries()) {
             const nodeWidth = node.measured?.width ?? node.width ?? 0;
@@ -216,14 +218,7 @@ const arrangeAgent = (
       } else if (handleGroups.length === 3) {
         // Three handle types - position them on left, center, and right sides
         // Custom sort to ensure Model comes first, then Escalation, then Tool
-        const sortedGroups = handleGroups.sort((a, b) => {
-          const order: Record<string, number> = {
-            [ResourceNodeType.Model]: 0,
-            [ResourceNodeType.Context]: 1,
-            [ResourceNodeType.Tool]: 2,
-          };
-          return (order[a.handleId] ?? 999) - (order[b.handleId] ?? 999);
-        });
+        const sortedGroups = handleGroups.sort((a, b) => getResourceNodeTypeOrder(a.handleId) - getResourceNodeTypeOrder(b.handleId));
 
         // First, calculate escalation positions (center group)
         const escalationGroup = sortedGroups[1];
@@ -263,8 +258,8 @@ const arrangeAgent = (
         }
       } else {
         // Four or more handle types - distribute them evenly across the bottom
-        // Sort by handleId to ensure consistent ordering
-        const sortedGroups = handleGroups.sort((a, b) => a.handleId.localeCompare(b.handleId));
+        // Sort by resource node type order to ensure consistent Model -> Context -> Tool ordering
+        const sortedGroups = handleGroups.sort((a, b) => getResourceNodeTypeOrder(a.handleId) - getResourceNodeTypeOrder(b.handleId));
         const totalGroups = sortedGroups.length;
 
         for (const [groupIndex, { nodes }] of sortedGroups.entries()) {

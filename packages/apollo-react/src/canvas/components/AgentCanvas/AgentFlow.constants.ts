@@ -17,3 +17,13 @@ export const ResourceNodeTypeToPosition: Record<ResourceNodeType, Position> = {
   [ResourceNodeType.Tool]: Position.Bottom,
   [ResourceNodeType.Memory]: Position.Top,
 };
+
+// Consistent ordering for resource node types: Model -> Context -> Tool -> Others
+export const ResourceNodeTypeOrder: Record<ResourceNodeType, number> = {
+  [ResourceNodeType.Model]: 0,
+  [ResourceNodeType.Context]: 1,
+  [ResourceNodeType.Tool]: 2,
+  [ResourceNodeType.MCP]: 3,
+  [ResourceNodeType.Memory]: 4,
+  [ResourceNodeType.Escalation]: 5,
+};

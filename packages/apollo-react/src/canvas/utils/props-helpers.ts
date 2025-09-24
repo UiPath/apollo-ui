@@ -194,7 +194,6 @@ const createResourceNode = (
         ...baseNode,
         id: finalId,
         type: "resource",
-        position: { x: 0, y: 0 },
         data: {
           ...baseData,
           type: "context",
