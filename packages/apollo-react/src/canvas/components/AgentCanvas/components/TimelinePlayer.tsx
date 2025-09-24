@@ -15,6 +15,7 @@ const SPAN_Z_INDEX_INACTIVE = 2;
 const TIMELINE_BAR_HEIGHT = 30;
 const TIMELINE_TRACK_BAR_HEIGHT = 4;
 const TIMELINE_SPAN_HEIGHT = 5;
+const SCRUBBER_SIZE = 10;
 const SPEED_LEVEL_1 = 1;
 const SPEED_LEVEL_2 = 2;
 const SPEED_LEVEL_3 = 3;
@@ -179,9 +180,9 @@ const Scrubber: React.FC<{ left: number }> = ({ left }) => (
   <div
     style={{
       position: "absolute",
-      top: `${TIMELINE_TRACK_BAR_HEIGHT / 2}px`,
-      left: `${left}%`,
-      transform: "translateX(-50%)",
+      top: `${TIMELINE_BAR_HEIGHT / 2 - SCRUBBER_SIZE / 2}px`,
+      left: `calc(${left}% - ${SCRUBBER_SIZE / 2}px)`,
+      display: "flex",
       zIndex: 100,
       cursor: "ew-resize",
     }}
