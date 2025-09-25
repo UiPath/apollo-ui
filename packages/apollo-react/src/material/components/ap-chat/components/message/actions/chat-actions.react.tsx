@@ -53,14 +53,16 @@ function AutopilotChatMessageActionsComponent({
 
     // Determine actions based on message role and existing feedback
     const defaultActions = React.useMemo(() => {
-        const baseActions = [
-            {
+        const baseActions: Array<{ name: string; label: string; icon: string; eventName: string }> = [];
+
+        if (!disabledFeatures.copy) {
+            baseActions.push({
                 name: 'autopilot-chat-copy',
                 label: t('autopilot-chat-copy'),
                 icon: 'copy',
                 eventName: AutopilotChatEvent.Copy,
-            },
-        ];
+            });
+        }
 
         // If not an assistant message, just return copy action
         if (message.role !== AutopilotChatRole.Assistant || disabledFeatures.feedback) {
@@ -101,7 +103,7 @@ function AutopilotChatMessageActionsComponent({
             },
         ];
 
-    }, [ message, disabledFeatures.feedback ]);
+    }, [ message, disabledFeatures.feedback, disabledFeatures.copy ]);
 
     const isRelatedTarget = React.useCallback((target: Node) => {
         return actionsContainerRef.current && (
