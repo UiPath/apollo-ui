@@ -29,17 +29,7 @@ export const useExecutionState = (nodeId: string): NodeExecutionState | undefine
   const [state, setState] = useState<NodeExecutionState | undefined>();
 
   useEffect(() => {
-    // Get initial state
-    const initialState = context.getExecutionState(nodeId);
-    setState(initialState);
-
-    // You might want to set up polling or websocket subscription here
-    const interval = setInterval(() => {
-      const currentState = context.getExecutionState(nodeId);
-      setState(currentState);
-    }, 1000); // Poll every second
-
-    return () => clearInterval(interval);
+    setState(context.getExecutionState(nodeId));
   }, [nodeId, context]);
 
   return state;

@@ -1,0 +1,21 @@
+import React, { createContext, useContext, useState } from "react";
+import { BaseCanvasProps } from "./BaseCanvas.types";
+
+type BaseCanvasMode = BaseCanvasProps["mode"];
+type BaseCanvasModeContextType = {
+  mode: BaseCanvasMode;
+};
+
+const BaseCanvasModeContext = createContext<BaseCanvasModeContextType | undefined>(undefined);
+
+export const BaseCanvasModeProvider: React.FC<React.PropsWithChildren<{ mode: BaseCanvasMode }>> = ({ children, mode }) => {
+  return <BaseCanvasModeContext.Provider value={{ mode }}>{children}</BaseCanvasModeContext.Provider>;
+};
+
+export function useBaseCanvasMode() {
+  const context = useContext(BaseCanvasModeContext);
+  if (!context) {
+    throw new Error("useBaseCanvasMode must be used within a BaseCanvasModeProvider");
+  }
+  return context;
+}

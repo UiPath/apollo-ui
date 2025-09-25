@@ -11,6 +11,7 @@ import type { BaseNodeData } from "./BaseNode.types";
 import { useNodeTypeRegistry } from "./useNodeTypeRegistry";
 import { cx } from "@uipath/uix/core";
 import { ApIcon } from "@uipath/portal-shell-react";
+import { useBaseCanvasMode } from "../BaseCanvas/BaseCanvasModeProvider";
 
 const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
   const { type, data, selected, id, dragging, width, height } = props;
@@ -22,6 +23,7 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
   // Get execution status from external source
   const executionState = useExecutionState(id);
   const nodeTypeRegistry = useNodeTypeRegistry();
+  const { mode } = useBaseCanvasMode();
 
   const nodeDefinition = useMemo(() => nodeTypeRegistry.get(type), [type, nodeTypeRegistry]);
 
@@ -148,6 +150,7 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
           selected={selected}
           visible={finalVisible}
           showNotches={showNotches}
+          showAddButton={mode === "design"}
         />
       );
     });

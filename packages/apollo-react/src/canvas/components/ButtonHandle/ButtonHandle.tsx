@@ -180,7 +180,7 @@ const ButtonHandlesBase = ({
   position,
   selected = false,
   visible = true,
-  showAddButton = false,
+  showAddButton = true,
   showNotches = true,
 }: {
   nodeId: string;
@@ -192,7 +192,7 @@ const ButtonHandlesBase = ({
   showNotches?: boolean;
 }) => {
   const total = handles.length;
-  const finalSelected = showAddButton || selected;
+  const finalSelected = showAddButton && selected;
 
   return (
     <>
