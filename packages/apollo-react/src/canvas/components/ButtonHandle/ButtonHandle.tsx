@@ -182,6 +182,7 @@ const ButtonHandlesBase = ({
   visible = true,
   showAddButton = true,
   showNotches = true,
+  shouldShowAddButtonFn = ({ showAddButton, selected }) => showAddButton && selected,
 }: {
   nodeId: string;
   handles: ButtonHandleConfig[];
@@ -190,9 +191,19 @@ const ButtonHandlesBase = ({
   visible?: boolean;
   showAddButton?: boolean;
   showNotches?: boolean;
+
+  /**
+   * Allows for consumers to control the predicate for showing the add button from the props that's passed in
+   *
+   * Defaults to:
+   * ```ts
+   * ({ showAddButton, selected }) => showAddButton && selected
+   * ```
+   */
+  shouldShowAddButtonFn?: ({ showAddButton, selected }: { showAddButton: boolean; selected: boolean }) => boolean;
 }) => {
   const total = handles.length;
-  const finalSelected = showAddButton && selected;
+  const finalSelected = shouldShowAddButtonFn({ showAddButton, selected });
 
   return (
     <>

@@ -1,5 +1,5 @@
-import React, { createContext, useContext, useState } from "react";
-import { BaseCanvasProps } from "./BaseCanvas.types";
+import React, { createContext, useContext } from "react";
+import type { BaseCanvasProps } from "./BaseCanvas.types";
 
 type BaseCanvasMode = BaseCanvasProps["mode"];
 type BaseCanvasModeContextType = {

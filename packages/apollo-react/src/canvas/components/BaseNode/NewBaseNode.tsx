@@ -26,6 +26,7 @@ const NewBaseNodeComponent = (
     menuItems = [],
     onHandleAction,
     showAddButton = false,
+    shouldShowAddButtonFn = ({ showAddButton, selected }) => showAddButton && selected,
   } = props;
 
   const containerRef = useRef<HTMLDivElement>(null);
@@ -124,12 +125,13 @@ const NewBaseNodeComponent = (
           selected={selected}
           visible={finalVisible}
           showAddButton={showAddButton}
+          shouldShowAddButtonFn={shouldShowAddButtonFn}
         />
       );
     });
 
     return <>{elements}</>;
-  }, [handleConfigurations, selected, connectedHandleIds, handleAction, id, showAddButton]);
+  }, [handleConfigurations, selected, connectedHandleIds, handleAction, id, showAddButton, shouldShowAddButtonFn]);
 
   // Fallback for missing configuration - show error state
   if (!icon && !displayLabel) {

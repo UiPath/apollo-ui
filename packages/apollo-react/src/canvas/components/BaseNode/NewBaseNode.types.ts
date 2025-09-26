@@ -17,6 +17,7 @@ export interface NewBaseNodeDisplayProps {
   menuItems?: NodeMenuItem[];
   onHandleAction?: (event: HandleActionEvent) => void;
   showAddButton?: boolean;
+  shouldShowAddButtonFn?: ({ showAddButton, selected }: { showAddButton: boolean; selected: boolean }) => boolean;
 }
 
 export interface NodeDisplay {

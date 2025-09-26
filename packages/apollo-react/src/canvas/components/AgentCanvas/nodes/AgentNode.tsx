@@ -176,6 +176,10 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
     return <ApIcon variant="outlined" name={hasGuardrails ? "gpp_good" : "shield"} size="18px" color="var(--color-icon-default)" />;
   }, [mode, nodes]);
 
+  const shouldShowAddButtonFn = (opts: { showAddButton: boolean; selected: boolean }) => {
+    return opts.showAddButton || opts.selected;
+  };
+
   return (
     <NewBaseNode
       {...nodeProps}
@@ -191,6 +195,7 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
       handleConfigurations={handleConfigurations}
       showAddButton={mode === "design"} // Show add buttons in design mode even when not selected
       selected={selected}
+      shouldShowAddButtonFn={shouldShowAddButtonFn}
       adornments={{ topRight: statusAdornment, bottomRight: guardrailsAdornment }}
       menuItems={[]}
     />

@@ -1,4 +1,4 @@
-import { forwardRef, memo, useCallback, useEffect, useImperativeHandle, useMemo, useState } from "react";
+import { forwardRef, memo, useCallback, useImperativeHandle, useMemo, useState } from "react";
 import type { Edge, Node, ReactFlowInstance } from "@uipath/uix/xyflow/react";
 import { ConnectionMode, ReactFlow } from "@uipath/uix/xyflow/react";
 import { BASE_CANVAS_DEFAULTS } from "./BaseCanvas.constants";
@@ -7,7 +7,7 @@ import type { BaseCanvasProps, BaseCanvasRef } from "./BaseCanvas.types";
 import { usePreventBackNavigation } from "./usePreventBackNavigation";
 import { CanvasBackground } from "./CanvasBackground";
 import { PanShortcutTeachingUI } from "./PanShortcutTeachingUI";
-import { BaseCanvasModeProvider, useBaseCanvasMode } from "./BaseCanvasModeProvider";
+import { BaseCanvasModeProvider } from "./BaseCanvasModeProvider";
 
 const BaseCanvasInnerComponent = <NodeType extends Node = Node, EdgeType extends Edge = Edge>(
   props: BaseCanvasProps<NodeType, EdgeType> & { innerRef?: React.Ref<BaseCanvasRef<NodeType, EdgeType>> }
