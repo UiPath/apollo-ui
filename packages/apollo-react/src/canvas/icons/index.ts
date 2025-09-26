@@ -21,3 +21,8 @@ export { TimelinePauseIcon } from "./TimelinePauseIcon";
 export { TimelinePlayIcon } from "./TimelinePlayIcon";
 export { TimelineProgressIcon } from "./TimelineProgressIcon";
 export { WebAppProject } from "./WebAppProject";
+export { DataTransformFilterIcon } from "./DataTransformFilterIcon";
+export { DataTransformMapIcon } from "./DataTransformMapIcon";
+export { DataTransformGroupIcon } from "./DataTransformGroupIcon";
+export { DataTransformFlattenIcon } from "./DataTransformFlattenIcon";
+export { DataTransformExtractIcon } from "./DataTransformExtractIcon";
