@@ -102,7 +102,8 @@ export const StageTitleInput = styled.input<{ isEditing?: boolean; isStageTitleE
   }
 
   &:hover {
-    background: ${(props) => (props.isEditing || props.isStageTitleEditable ? "transparent" : "var(--color-background-secondary)")};
+    cursor: ${(props) => (props.isStageTitleEditable ? "text" : "pointer")};
+    background: ${(props) => (props.isEditing || props.isStageTitleEditable ? "var(--color-background-secondary)" : "transparent")};
   }
 `;
 

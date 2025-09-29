@@ -217,6 +217,8 @@ const StageNodeComponent = (props: StageNodeProps) => {
                         onKeyDown: handleStageTitleKeyDown,
                         onBlur: handleStageTitleBlurToSave,
                       })}
+                      readOnly
+                      {...(isStageTitleEditable && { readOnly: false })}
                     />
                   </StageTitleContainer>
                 </ApTooltip>
@@ -272,7 +274,9 @@ const StageNodeComponent = (props: StageNodeProps) => {
                           key={task.id}
                           status={taskExecution?.status}
                           onClick={onTaskClick ? () => onTaskClick(task.id) : undefined}
-                          onContextMenu={(e) => handleTaskContextMenuOpen(isParallel, groupIndex, taskIndex, e)}
+                          {...(onTaskGroupModification && {
+                            onContextMenu: (e) => handleTaskContextMenuOpen(isParallel, groupIndex, taskIndex, e),
+                          })}
                         >
                           <StageTaskIcon>{task.icon ?? <ProcessNodeIcon />}</StageTaskIcon>
                           <Column flex={1} style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
