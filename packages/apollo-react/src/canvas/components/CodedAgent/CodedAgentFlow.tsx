@@ -13,10 +13,11 @@ import {
 } from "@uipath/uix/xyflow/react";
 import { FontVariantToken, Spacing } from "@uipath/apollo-core";
 import { ApCircularProgress, ApIcon, ApTypography } from "@uipath/portal-shell-react";
-import { Icons, Column, Row } from "@uipath/uix/core";
+import { Icons, Row } from "@uipath/uix/core";
 import type { BaseCanvasRef } from "../BaseCanvas";
-import { BaseCanvas, NODE_DIMENSIONS } from "../BaseCanvas";
-import { ButtonHandles } from "../ButtonHandle";
+import { BaseCanvas } from "../BaseCanvas";
+import { NewBaseNode } from "../BaseNode/NewBaseNode";
+import type { NewBaseNodeData } from "../BaseNode/NewBaseNode.types";
 import { CanvasPositionControls } from "../CanvasPositionControls";
 import type { CodedAgentNodeTranslations } from "../../types";
 import { DefaultCodedAgentNodeTranslations } from "../../types";
@@ -62,39 +63,6 @@ const CenteredDiv = styled.div`
   justify-content: center;
 `;
 
-const NodeContainer = memo(styled.div<{ $borderColor: string }>`
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-around;
-  padding: 12px;
-  background-color: var(--color-background);
-  border-radius: 8px;
-  border: 2px solid ${(props) => props.$borderColor};
-  width: ${NODE_DIMENSIONS.codedAgent.width}px;
-  min-height: ${NODE_DIMENSIONS.codedAgent.height}px;
-`);
-
-const ResourceAvatar = memo(styled.div<{ $borderColor: string; $isActive?: boolean }>`
-  width: ${NODE_DIMENSIONS.resource.width}px;
-  height: ${NODE_DIMENSIONS.resource.height}px;
-  background-color: var(--color-background);
-  border: ${(props) => `2px solid ${props.$borderColor}`};
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s;
-  cursor: pointer;
-  color: ${(props) => (props.$isActive ? "var(--color-selection-indicator)" : "var(--color-foreground-de-emp)")};
-`);
-
-const StatusIconContainer = memo(styled.div`
-  position: absolute;
-  top: 4px;
-  right: 4px;
-`);
-
 const TextContainer = memo(styled.div`
   position: absolute;
   bottom: 0;
@@ -103,23 +71,12 @@ const TextContainer = memo(styled.div`
   white-space: nowrap;
 `);
 
-const FlowNodeSquare = memo(styled.div<{ $borderColor: string }>`
-  width: ${NODE_DIMENSIONS.resource.width}px;
-  height: ${NODE_DIMENSIONS.resource.height}px;
-  border-radius: 8px;
-  background-color: var(--color-background);
-  border: 2px solid ${(props) => props.$borderColor};
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-`);
-
-interface CodedNodeData {
+interface CodedNodeData extends NewBaseNodeData {
   label: string;
   hasError?: boolean;
   hasSuccess?: boolean;
   hasRunning?: boolean;
+  type?: string;
 }
 
 const leftTargetHandle = [
@@ -159,76 +116,56 @@ const leftInputHandle = [
 ];
 
 const createCodedAgentNodeWrapper = (translations: CodedAgentNodeTranslations = DefaultCodedAgentNodeTranslations) => {
-  return memo(({ data, selected }: NodeProps) => {
+  return memo(({ data, selected, id }: NodeProps) => {
     const nodeData = data as unknown as CodedNodeData;
 
-    const borderColor = useMemo(() => {
-      if (nodeData.hasError) return "var(--color-error-icon)";
-      if (nodeData.hasSuccess) return "var(--color-success-icon)";
-      if (nodeData.hasRunning) return "var(--color-primary)";
-      return selected ? "var(--color-selection-indicator)" : "var(--color-foreground-de-emp)";
-    }, [selected, nodeData.hasError, nodeData.hasSuccess, nodeData.hasRunning]);
+    const executionStatus = useMemo(() => {
+      if (nodeData.hasError) return "Failed";
+      if (nodeData.hasSuccess) return "Success";
+      if (nodeData.hasRunning) return "Running";
+      return undefined;
+    }, [nodeData.hasError, nodeData.hasSuccess, nodeData.hasRunning]);
+
+    const statusAdornment = useMemo(() => {
+      if (nodeData.hasError) return <ApIcon name="error" size="16px" color="var(--color-error-icon)" />;
+      if (nodeData.hasSuccess && !nodeData.hasError) return <ApIcon name="check_circle" size="16px" color="var(--color-success-icon)" />;
+      if (nodeData.hasRunning && !nodeData.hasError && !nodeData.hasSuccess) return <ApCircularProgress size={20} />;
+      return undefined;
+    }, [nodeData.hasError, nodeData.hasSuccess, nodeData.hasRunning]);
 
     return (
-      <div style={{ position: "relative" }}>
-        <NodeContainer $borderColor={borderColor}>
-          {/* Status icon in upper right */}
-          {(nodeData.hasError || nodeData.hasSuccess || nodeData.hasRunning) && (
-            <StatusIconContainer>
-              {nodeData.hasError && <ApIcon name="error" size="16px" color="var(--color-error-icon)" />}
-              {nodeData.hasSuccess && !nodeData.hasError && <ApIcon name="check_circle" size="16px" color="var(--color-success-icon)" />}
-              {nodeData.hasRunning && !nodeData.hasError && !nodeData.hasSuccess && <ApCircularProgress size={20} />}
-            </StatusIconContainer>
-          )}
-
-          {/* main */}
-          <Row align="center" gap={Spacing.SpacingBase}>
-            <div
-              style={{
-                width: 40,
-                height: 40,
-                alignSelf: "start",
-              }}
-            >
-              <Icons.CodedAgentIcon w={40} h={40} />
-            </div>
-            <Column overflow="hidden">
-              <ApTypography
-                variant={FontVariantToken.fontSizeLBold}
-                color="var(--color-foreground)"
-                style={{
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                  whiteSpace: "nowrap",
-                }}
-              >
-                {nodeData.label}
-              </ApTypography>
-              <ApTypography variant={FontVariantToken.fontSizeS} color="var(--color-foreground-de-emp)">
-                {translations.codedAgentStep}
-              </ApTypography>
-            </Column>
-          </Row>
-        </NodeContainer>
-
-        {/* Connection handles */}
-        <ButtonHandles nodeId={"nodeId"} handles={leftTargetHandle} position={Position.Left} selected={selected} visible={true} />
-        <ButtonHandles nodeId={"nodeId"} handles={rightSourceHandle} position={Position.Right} selected={selected} visible={true} />
-      </div>
+      <NewBaseNode
+        {...({ id, selected } as any)}
+        data={nodeData}
+        executionStatus={executionStatus}
+        icon={<Icons.CodedAgentIcon w={40} h={40} />}
+        display={{
+          label: nodeData.label,
+          subLabel: translations.codedAgentStep,
+          shape: "rectangle",
+        }}
+        adornments={{
+          topRight: statusAdornment,
+        }}
+        handleConfigurations={[
+          { position: Position.Left, handles: leftTargetHandle, visible: true },
+          { position: Position.Right, handles: rightSourceHandle, visible: true },
+        ]}
+      />
     );
   });
 };
 
-const CodedResourceNodeElement = memo(({ data, selected }: NodeProps) => {
+const CodedResourceNodeElement = memo(({ data, selected, id }: NodeProps) => {
   const nodeData = data as unknown as CodedNodeData & { type?: string };
   const label = nodeData.label.toLowerCase();
 
-  const borderColor = useMemo(() => {
-    if (nodeData.hasError) return "var(--color-error-icon)";
-    if (nodeData.hasSuccess) return "var(--color-success-icon)";
-    if (nodeData.hasRunning) return "var(--color-primary)";
-    return selected ? "var(--color-selection-indicator)" : "var(--color-foreground-de-emp)";
-  }, [selected, nodeData.hasError, nodeData.hasSuccess, nodeData.hasRunning]);
+  const executionStatus = useMemo(() => {
+    if (nodeData.hasError) return "Failed";
+    if (nodeData.hasSuccess) return "Success";
+    if (nodeData.hasRunning) return "Running";
+    return undefined;
+  }, [nodeData.hasError, nodeData.hasSuccess, nodeData.hasRunning]);
 
   // Determine icon based on label content or type
   const resourceIcon = useMemo(() => {
@@ -246,77 +183,81 @@ const CodedResourceNodeElement = memo(({ data, selected }: NodeProps) => {
     return <ApIcon name="chat" size="40px" />;
   }, [label, nodeData.type]);
 
+  const statusAdornment = useMemo(() => {
+    if (nodeData.hasError) return <ApIcon name="error" size="16px" color="var(--color-error-icon)" />;
+    if (nodeData.hasSuccess && !nodeData.hasError) return <ApIcon name="check_circle" size="16px" color="var(--color-success-icon)" />;
+    if (nodeData.hasRunning && !nodeData.hasError && !nodeData.hasSuccess) return <ApCircularProgress size={13} />;
+    return undefined;
+  }, [nodeData.hasError, nodeData.hasSuccess, nodeData.hasRunning]);
+
   return (
-    <Column align="center" position="relative">
-      <div style={{ position: "relative" }}>
-        {/* Status icon absolutely positioned */}
-        {(nodeData.hasError || nodeData.hasSuccess || nodeData.hasRunning) && (
-          <StatusIconContainer style={{ top: "-20px", right: "-30px", zIndex: 2 }}>
-            {nodeData.hasError && <ApIcon name="error" size="16px" color="var(--color-error-icon)" />}
-            {nodeData.hasSuccess && !nodeData.hasError && <ApIcon name="check_circle" size="16px" color="var(--color-success-icon)" />}
-            {nodeData.hasRunning && !nodeData.hasError && !nodeData.hasSuccess && <ApCircularProgress size={13} />}
-          </StatusIconContainer>
-        )}
-
-        <ResourceAvatar $borderColor={borderColor} $isActive={selected}>
-          {resourceIcon}
-        </ResourceAvatar>
-      </div>
-
+    <div style={{ position: "relative" }}>
+      <NewBaseNode
+        {...({ id, selected } as any)}
+        data={nodeData}
+        executionStatus={executionStatus}
+        icon={resourceIcon}
+        display={{
+          shape: "circle",
+        }}
+        adornments={{
+          topRight: statusAdornment,
+        }}
+        handleConfigurations={[
+          { position: Position.Left, handles: leftTargetHandle, visible: true },
+          { position: Position.Right, handles: rightSourceHandle, visible: true },
+        ]}
+      />
       <TextContainer>
         <ApTypography color="var(--color-foreground-de-emp)">{nodeData.label}</ApTypography>
       </TextContainer>
-
-      {/* Connection handles */}
-      <ButtonHandles nodeId={"nodeId"} handles={leftTargetHandle} position={Position.Left} selected={selected} visible={true} />
-      <ButtonHandles nodeId={"nodeId"} handles={rightSourceHandle} position={Position.Right} selected={selected} visible={true} />
-    </Column>
+    </div>
   );
 });
 
-const CodedFlowNodeElement = memo(({ data, selected }: NodeProps) => {
+const CodedFlowNodeElement = memo(({ data, selected, id }: NodeProps) => {
   const nodeData = data as unknown as CodedNodeData;
   const isStart = nodeData.label.toLowerCase().includes("start");
   const isEnd = nodeData.label.toLowerCase().includes("end");
-  const borderColor = selected ? "var(--color-selection-indicator)" : "var(--color-foreground-de-emp)";
 
   if (isStart || isEnd) {
-    return (
-      <Column align="center" position="relative">
-        <FlowNodeSquare $borderColor={borderColor}>
-          <ApIcon variant="outlined" name={isStart ? "circle" : "trip_origin"} size="40px" color={borderColor} />
-        </FlowNodeSquare>
+    const handleConfigs = isStart
+      ? [{ position: Position.Right, handles: rightOutputHandle, visible: true }]
+      : [{ position: Position.Left, handles: leftInputHandle, visible: true }];
 
-        {/* Label below the square */}
+    return (
+      <div style={{ position: "relative" }}>
+        <NewBaseNode
+          {...({ id, selected } as any)}
+          data={nodeData}
+          icon={<ApIcon variant="outlined" name={isStart ? "circle" : "trip_origin"} size="40px" />}
+          display={{
+            shape: "square",
+          }}
+          handleConfigurations={handleConfigs}
+        />
         <TextContainer>
           <ApTypography variant={FontVariantToken.fontSizeS} color="var(--color-foreground-de-emp)">
             {nodeData.label}
           </ApTypography>
         </TextContainer>
-
-        {isStart && (
-          <ButtonHandles nodeId={"nodeId"} handles={rightOutputHandle} position={Position.Right} selected={selected} visible={true} />
-        )}
-        {isEnd && <ButtonHandles nodeId={"nodeId"} handles={leftInputHandle} position={Position.Left} selected={selected} visible={true} />}
-      </Column>
+      </div>
     );
   }
 
   return (
-    <NodeContainer
-      $borderColor={borderColor}
-      style={{ width: `${NODE_DIMENSIONS.flow.width}px`, height: `${NODE_DIMENSIONS.flow.height}px` }}
-    >
-      <Column align="center" justify="center" style={{ height: "100%" }}>
-        <ApTypography color="var(--color-foreground)" style={{ fontSize: "14px", textAlign: "center" }}>
-          {nodeData.label}
-        </ApTypography>
-      </Column>
-
-      {/* Connection handles */}
-      <ButtonHandles nodeId={"nodeId"} handles={leftTargetHandle} position={Position.Left} selected={selected} visible={true} />
-      <ButtonHandles nodeId={"nodeId"} handles={rightSourceHandle} position={Position.Right} selected={selected} visible={true} />
-    </NodeContainer>
+    <NewBaseNode
+      {...({ id, selected } as any)}
+      data={nodeData}
+      display={{
+        label: nodeData.label,
+        shape: "rectangle",
+      }}
+      handleConfigurations={[
+        { position: Position.Left, handles: leftTargetHandle, visible: true },
+        { position: Position.Right, handles: rightSourceHandle, visible: true },
+      ]}
+    />
   );
 });
 
