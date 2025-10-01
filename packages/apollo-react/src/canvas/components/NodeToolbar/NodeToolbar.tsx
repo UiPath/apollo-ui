@@ -48,7 +48,7 @@ const NodeToolbarComponent = ({ nodeId, config, visible }: NodeToolbarProps) => 
           ))}
           {overflowActionsWithState.length > 0 && (
             <>
-              {actionsWithState.length > 0 && <StyledToolbarSeparator />}
+              {actionsWithState.length > 0 && <StyledToolbarSeparator $orientation="vertical" />}
               <StyledOverflowContainer>
                 <StyledToolbarButton
                   ref={buttonRef}
@@ -74,9 +74,9 @@ const NodeToolbarComponent = ({ nodeId, config, visible }: NodeToolbarProps) => 
                       role="menu"
                       aria-labelledby={buttonRef.current?.id}
                     >
-                      {overflowActionsWithState.map((action) => (
+                      {overflowActionsWithState.map((action, i) => (
                         <StyledDropdownItem
-                          key={action.id}
+                          key={action.id === "separator" ? `separator-${i}` : action.id}
                           type="button"
                           className="nodrag nopan"
                           onClick={(e) => {
@@ -92,7 +92,8 @@ const NodeToolbarComponent = ({ nodeId, config, visible }: NodeToolbarProps) => 
                           role="menuitem"
                           $disabled={action.disabled}
                         >
-                          <ApIcon variant="outlined" name={action.icon} size="16px" />
+                          {action.icon && typeof action.icon === "string" && <ApIcon variant="outlined" name={action.icon} size="16px" />}
+                          {action.icon && typeof action.icon !== "string" && action.icon}
                           <span>{action.label}</span>
                         </StyledDropdownItem>
                       ))}

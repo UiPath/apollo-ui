@@ -125,9 +125,9 @@ export const StyledToolbarContainer = styled(motion.div)<{
   }}
 `;
 
-export const StyledToolbarSeparator = styled.div`
-  width: 1px;
-  height: 20px;
+export const StyledToolbarSeparator = styled.div<{ $orientation: "horizontal" | "vertical" }>`
+  width: ${({ $orientation }) => ($orientation === "vertical" ? "1px" : "20px")};
+  height: ${({ $orientation }) => ($orientation === "horizontal" ? "1px" : "20px")};
   background: var(--color-border-grid);
   align-self: center;
 `;

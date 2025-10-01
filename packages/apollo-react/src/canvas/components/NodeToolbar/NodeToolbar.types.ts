@@ -1,6 +1,8 @@
 export interface ToolbarAction {
-  id: string;
-  icon: string;
+  /** The action id. If it's a separator, use `"separator"` as id */
+  id: "separator" | string;
+  /** Can be passed as a string (ApIcon icon name) or a custom rendered React node */
+  icon: React.ReactNode;
   label?: string;
   disabled?: boolean;
   onAction: (nodeId: string) => void;

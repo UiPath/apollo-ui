@@ -116,7 +116,7 @@ export type AgentFlowProps = {
   onAddBreakpoint?: (resourceId: string, resource: AgentFlowResourceNodeData) => void;
   onRemoveBreakpoint?: (resourceId: string, resource: AgentFlowResourceNodeData) => void;
   onAddGuardrail?: (resourceId: string, resource: AgentFlowResourceNodeData) => void;
-  onGoToDefinition?: (resourceId: string, resource: AgentFlowResourceNodeData) => void;
+  onGoToSource?: (resourceId: string, resource: AgentFlowResourceNodeData) => void;
   onAddModel?: () => void;
   onRemoveModel?: () => void;
   onAddResource?: (type: AgentFlowResourceType) => void;
@@ -261,7 +261,7 @@ export interface ResourceNodeTranslations {
   addBreakpoint: string;
   removeBreakpoint: string;
   addGuardrail: string;
-  goToDefinition: string;
+  goToSource: string;
 }
 
 export const DefaultResourceNodeTranslations: ResourceNodeTranslations = {
@@ -271,7 +271,7 @@ export const DefaultResourceNodeTranslations: ResourceNodeTranslations = {
   addBreakpoint: "Add breakpoint",
   removeBreakpoint: "Remove breakpoint",
   addGuardrail: "Add guardrail",
-  goToDefinition: "Go to definition",
+  goToSource: "Go to source",
 };
 
 export interface CodedAgentNodeTranslations {

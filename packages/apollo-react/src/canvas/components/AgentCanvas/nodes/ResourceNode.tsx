@@ -4,10 +4,10 @@ import { Icons, Row } from "@uipath/uix/core";
 import { Position, type NodeProps } from "@uipath/uix/xyflow/react";
 import { NewBaseNode } from "../../BaseNode/NewBaseNode";
 import { ProjectType, type AgentFlowResourceNode, type AgentFlowResourceNodeData, type ResourceNodeTranslations } from "../../../types";
-import { type NodeMenuAction, type NodeMenuDivider, type NodeMenuItem } from "../../NodeContextMenu";
 import { useAgentFlowStore } from "../store/agent-flow-store";
 import { type ButtonHandleConfig } from "../../ButtonHandle";
 import { ExecutionStatusIcon } from "../../ExecutionStatusIcon/ExecutionStatusIcon";
+import type { NodeToolbarConfig, ToolbarAction } from "../../NodeToolbar/NodeToolbar.types";
 
 interface ResourceNodeProps extends NodeProps<AgentFlowResourceNode> {
   mode?: "design" | "view";
@@ -17,7 +17,7 @@ interface ResourceNodeProps extends NodeProps<AgentFlowResourceNode> {
   onAddBreakpoint?: (resourceId: string, resource: AgentFlowResourceNodeData) => void;
   onRemoveBreakpoint?: (resourceId: string, resource: AgentFlowResourceNodeData) => void;
   onAddGuardrail?: (resourceId: string, resource: AgentFlowResourceNodeData) => void;
-  onGoToDefinition?: (resourceId: string, resource: AgentFlowResourceNodeData) => void;
+  onGoToSource?: (resourceId: string, resource: AgentFlowResourceNodeData) => void;
   onExpandResource?: (resourceId: string, resource: AgentFlowResourceNodeData) => void;
   onCollapseResource?: (resourceId: string, resource: AgentFlowResourceNodeData) => void;
   onRemoveResource?: (resourceId: string) => void;
@@ -36,7 +36,7 @@ export const ResourceNode = memo(
     onAddBreakpoint,
     onRemoveBreakpoint,
     onAddGuardrail,
-    onGoToDefinition,
+    onGoToSource,
     translations,
   }: ResourceNodeProps) => {
     const { nodes: _nodes, deleteNode } = useAgentFlowStore();
@@ -60,9 +60,9 @@ export const ResourceNode = memo(
       onAddGuardrail?.(id, data);
     }, [id, data, onAddGuardrail]);
 
-    const handleClickGoToDefinition = useCallback(() => {
-      onGoToDefinition?.(id, data);
-    }, [id, data, onGoToDefinition]);
+    const handleClickGoToSource = useCallback(() => {
+      onGoToSource?.(id, data);
+    }, [id, data, onGoToSource]);
 
     const handleClickRemove = useCallback(() => {
       if (data.type !== "model") {
@@ -138,51 +138,65 @@ export const ResourceNode = memo(
       return undefined;
     }, [hasError, hasSuccess, hasRunning, isCurrentBreakpoint]);
 
-    const nodeMenuItems: NodeMenuItem[] = useMemo(() => {
-      if (mode === "view" || data.type === "model") return [];
+    const toolbarConfig: NodeToolbarConfig | undefined = useMemo(() => {
+      if (mode === "view" || data.type === "model") return undefined;
 
-      const breakpointItem: NodeMenuAction = {
+      const breakpointAction: ToolbarAction = {
         id: "breakpoint",
+        icon: undefined,
         label: (hasBreakpoint ? translations?.removeBreakpoint : translations?.addBreakpoint) ?? "",
-        onClick: hasBreakpoint ? handleClickRemoveBreakpoint : handleClickAddBreakpoint,
-      };
-      const guardrailItem: NodeMenuAction = {
-        id: "guardrail",
-        label: translations?.addGuardrail ?? "",
-        onClick: handleClickAddGuardrail,
-      };
-      const goToDefinitionItem: NodeMenuAction = {
-        id: "go-to-definition",
-        label: translations?.goToDefinition ?? "",
-        onClick: handleClickGoToDefinition,
-      };
-      const removeItem: NodeMenuAction = {
-        id: "remove",
-        label: translations?.remove ?? "",
-        onClick: handleClickRemove,
-      };
-      const dividerItem: NodeMenuDivider = {
-        type: "divider",
+        disabled: false,
+        onAction: hasBreakpoint ? handleClickRemoveBreakpoint : handleClickAddBreakpoint,
       };
 
-      return [
-        breakpointItem,
-        ...(data.type === "tool" ? [guardrailItem] : []),
-        dividerItem,
-        ...(data.projectId ? [goToDefinitionItem] : []),
-        removeItem,
+      const guardrailAction: ToolbarAction = {
+        id: "guardrail",
+        icon: undefined,
+        label: translations?.addGuardrail ?? "",
+        disabled: false,
+        onAction: handleClickAddGuardrail,
+      };
+
+      const goToSourceAction: ToolbarAction = {
+        id: "go-to-source",
+        icon: undefined,
+        label: translations?.goToSource ?? "",
+        disabled: false,
+        onAction: handleClickGoToSource,
+      };
+
+      const removeAction: ToolbarAction = {
+        id: "remove",
+        icon: "delete",
+        label: translations?.remove ?? "",
+        disabled: false,
+        onAction: handleClickRemove,
+      };
+
+      const actions: ToolbarAction[] = [removeAction];
+      const overflowActions: ToolbarAction[] = [
+        breakpointAction,
+        ...(data.type === "tool" ? [guardrailAction] : []),
+        ...(data.projectId ? [goToSourceAction] : []),
       ];
+
+      return {
+        actions,
+        overflowActions,
+        position: "top",
+        align: "center",
+      };
     }, [
       mode,
-      translations,
-      data.type,
       data.projectId,
+      data.type,
       hasBreakpoint,
-      handleClickAddBreakpoint,
-      handleClickAddGuardrail,
-      handleClickRemove,
-      handleClickGoToDefinition,
       handleClickRemoveBreakpoint,
+      handleClickAddBreakpoint,
+      translations,
+      handleClickAddGuardrail,
+      handleClickGoToSource,
+      handleClickRemove,
     ]);
 
     const modelHandles: ButtonHandleConfig[] = useMemo(
@@ -314,7 +328,7 @@ export const ResourceNode = memo(
           labelBackgroundColor: "var(--color-background-secondary)",
           shape: "circle",
         }}
-        menuItems={nodeMenuItems}
+        toolbarConfig={toolbarConfig}
         adornments={{
           topLeft: breakpointAdornment,
           topRight: statusAdornment,

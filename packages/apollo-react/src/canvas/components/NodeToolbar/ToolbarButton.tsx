@@ -32,7 +32,8 @@ export const ToolbarButton = memo(({ action }: ToolbarButtonProps) => {
       $disabled={!isEnabled}
     >
       <ApTooltip content={action.label} placement="top">
-        <ApIcon variant="outlined" name={action.icon} size="16px" />
+        {action.icon && typeof action.icon === "string" && <ApIcon variant="outlined" name={action.icon} size="16px" />}
+        {action.icon && typeof action.icon !== "string" && action.icon}
       </ApTooltip>
     </StyledToolbarButton>
   );

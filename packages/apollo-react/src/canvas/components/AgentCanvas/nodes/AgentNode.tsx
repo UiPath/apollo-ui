@@ -197,7 +197,6 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
       selected={selected}
       shouldShowAddButtonFn={shouldShowAddButtonFn}
       adornments={{ topRight: statusAdornment, bottomRight: guardrailsAdornment }}
-      menuItems={[]}
     />
   );
 });

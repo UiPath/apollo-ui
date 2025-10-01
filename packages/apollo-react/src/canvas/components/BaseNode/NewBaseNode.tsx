@@ -2,11 +2,11 @@ import { memo, useMemo, useState, useCallback, useRef } from "react";
 import type { Node, NodeProps } from "@uipath/uix/xyflow/react";
 import { Position, useConnection, useStore } from "@uipath/uix/xyflow/react";
 import { ButtonHandles } from "../ButtonHandle";
-import { NodeContextMenu } from "../NodeContextMenu";
 import { BaseContainer, BaseIconWrapper, BaseBadgeSlot, BaseTextContainer, BaseHeader, BaseSubHeader } from "./BaseNode.styles";
 import type { NewBaseNodeData, NewBaseNodeDisplayProps } from "./NewBaseNode.types";
 import { cx } from "@uipath/uix/core";
 import { ApIcon } from "@uipath/portal-shell-react";
+import { NodeToolbar } from "../NodeToolbar";
 
 // Internal component that expects display props as direct props
 const NewBaseNodeComponent = (
@@ -23,7 +23,7 @@ const NewBaseNodeComponent = (
     display,
     adornments = {},
     handleConfigurations = [],
-    menuItems = [],
+    toolbarConfig,
     onHandleAction,
     showAddButton = false,
     shouldShowAddButtonFn = ({ showAddButton, selected }) => showAddButton && selected,
@@ -217,7 +217,7 @@ const NewBaseNodeComponent = (
           </BaseTextContainer>
         )}
 
-        <NodeContextMenu menuItems={menuItems ?? []} isVisible={selected && !dragging} />
+        {toolbarConfig && <NodeToolbar nodeId={id} config={toolbarConfig} visible={selected && !dragging} />}
       </BaseContainer>
       {handleElements}
     </div>
@@ -232,7 +232,7 @@ const NewBaseNodeWrapper = (
   const {
     data,
     adornments,
-    menuItems,
+    toolbarConfig,
     executionStatus,
     icon,
     display,
@@ -251,7 +251,7 @@ const NewBaseNodeWrapper = (
       display={display}
       adornments={adornments}
       handleConfigurations={handleConfigurations}
-      menuItems={menuItems}
+      toolbarConfig={toolbarConfig}
       onHandleAction={onHandleAction}
       showAddButton={showAddButton}
     />

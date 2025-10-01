@@ -1,6 +1,6 @@
 import type { Position } from "@uipath/uix/xyflow/react";
-import type { NodeMenuItem } from "../NodeContextMenu/NodeContextMenu.types";
 import type { ButtonHandleConfig, HandleActionEvent } from "../ButtonHandle/ButtonHandle";
+import type { NodeToolbarConfig } from "../NodeToolbar/NodeToolbar.types";
 
 export type NodeShape = "square" | "circle" | "rectangle";
 
@@ -14,7 +14,7 @@ export interface NewBaseNodeDisplayProps {
   display?: NodeDisplay;
   adornments?: NodeAdornments;
   handleConfigurations?: HandleConfiguration[];
-  menuItems?: NodeMenuItem[];
+  toolbarConfig?: NodeToolbarConfig;
   onHandleAction?: (event: HandleActionEvent) => void;
   showAddButton?: boolean;
   shouldShowAddButtonFn?: ({ showAddButton, selected }: { showAddButton: boolean; selected: boolean }) => boolean;

@@ -186,7 +186,7 @@ const createResourceNodeWrapper = (opts: {
   onAddBreakpoint?: (resourceId: string, resource: AgentFlowResourceNodeData) => void;
   onRemoveBreakpoint?: (resourceId: string, resource: AgentFlowResourceNodeData) => void;
   onAddGuardrail?: (resourceId: string, resource: AgentFlowResourceNodeData) => void;
-  onGoToDefinition?: (resourceId: string, resource: AgentFlowResourceNodeData) => void;
+  onGoToSource?: (resourceId: string, resource: AgentFlowResourceNodeData) => void;
   onExpandResource?: (resourceId: string, resource: AgentFlowResourceNodeData) => void;
   onCollapseResource?: (resourceId: string, resource: AgentFlowResourceNodeData) => void;
   translations?: ResourceNodeTranslations;
@@ -204,7 +204,7 @@ const createResourceNodeWrapper = (opts: {
         onAddBreakpoint={opts.onAddBreakpoint}
         onRemoveBreakpoint={opts.onRemoveBreakpoint}
         onAddGuardrail={opts.onAddGuardrail}
-        onGoToDefinition={opts.onGoToDefinition}
+        onGoToSource={opts.onGoToSource}
         onRemoveResource={deleteNode}
         onExpandResource={opts.onExpandResource}
         onCollapseResource={opts.onCollapseResource}
@@ -222,7 +222,7 @@ const AgentFlowInner = memo(
     onAddBreakpoint,
     onRemoveBreakpoint,
     onAddGuardrail,
-    onGoToDefinition,
+    onGoToSource,
     onAddModel,
     onAddResource,
     onSelectResource,
@@ -279,7 +279,7 @@ const AgentFlowInner = memo(
           onAddBreakpoint,
           onRemoveBreakpoint,
           onAddGuardrail,
-          onGoToDefinition,
+          onGoToSource,
           onExpandResource,
           onCollapseResource,
           translations: resourceNodeTranslations,
@@ -289,7 +289,7 @@ const AgentFlowInner = memo(
       onAddBreakpoint,
       onRemoveBreakpoint,
       onAddGuardrail,
-      onGoToDefinition,
+      onGoToSource,
       onAddModel,
       onAddResource,
       agentNodeTranslations,
