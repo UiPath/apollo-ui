@@ -16,7 +16,7 @@ export const BASE_CANVAS_DEFAULTS = {
     zoom: 1,
   },
   fitViewOptions: {
-    padding: 0.3,
+    padding: 0.1,
     duration: 300,
   },
   background: {
