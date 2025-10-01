@@ -204,6 +204,7 @@ export type AgentFlowResourceNodeData = (
   hasBreakpoint?: boolean;
   hasGuardrails?: boolean;
   projectId?: string;
+  isVirtual?: boolean; // AgentFlow-specific: for virtual spacing nodes
 };
 export type AgentFlowResourceNode = Node<AgentFlowResourceNodeData, "resource"> & {
   extent?: "parent" | CoordinateExtent | undefined;

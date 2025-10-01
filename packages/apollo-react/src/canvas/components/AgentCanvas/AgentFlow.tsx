@@ -1,9 +1,8 @@
 import React, { memo, useCallback, useEffect, useMemo } from "react";
 import type { PropsWithChildren } from "react";
-import { Panel, useReactFlow } from "@uipath/uix/xyflow/react";
+import { Panel, Position, useReactFlow } from "@uipath/uix/xyflow/react";
 import type { NodeProps } from "@uipath/uix/xyflow/system";
-import { BaseCanvas } from "../../components/BaseCanvas";
-import { BASE_CANVAS_DEFAULTS } from "../../components/BaseCanvas/BaseCanvas.constants";
+import { BaseCanvas, FLOW_LAYOUT } from "../../components/BaseCanvas";
 import { CanvasPositionControls } from "../../components/CanvasPositionControls";
 
 import { TimelinePlayer } from "./components/TimelinePlayer";
@@ -22,14 +21,105 @@ import {
   DefaultAgentNodeTranslations,
   DefaultCanvasTranslations,
   isAgentFlowResourceNode,
+  isAgentFlowAgentNode,
   type AgentFlowResourceNodeData,
   DefaultResourceNodeTranslations,
   type ResourceNodeTranslations,
 } from "../../types";
 import { hasAgentRunning } from "../../utils/props-helpers";
+import { ResourceNodeType, ResourceNodeTypeToPosition } from "./AgentFlow.constants";
+import { RESOURCE_NODE_SIZE } from "../../utils/auto-layout";
 
 const edgeTypes = {
   default: Edge,
+};
+
+// AgentFlow-specific fit view options with reduced padding
+const AGENT_FLOW_FIT_VIEW_OPTIONS = {
+  padding: 0.3,
+  duration: 300,
+};
+
+/**
+ * Adds virtual spacing nodes to AgentFlow for balanced fit view.
+ * Only affects AgentFlow - does not impact other canvas components.
+ */
+const addVirtualSpacingNodes = (nodes: AgentFlowCustomNode[], agentNode: AgentFlowCustomNode): AgentFlowCustomNode[] => {
+  const agentWidth = agentNode.measured?.width ?? agentNode.width ?? 320;
+  const agentHeight = agentNode.measured?.height ?? agentNode.height ?? 140;
+
+  // Check which positions have actual nodes
+  const hasTopNodes = nodes.some(
+    (node) =>
+      isAgentFlowResourceNode(node) &&
+      node.data.parentNodeId === agentNode.id &&
+      ResourceNodeTypeToPosition[node.data.type] === Position.Top
+  );
+
+  const hasBottomNodes = nodes.some(
+    (node) =>
+      isAgentFlowResourceNode(node) &&
+      node.data.parentNodeId === agentNode.id &&
+      ResourceNodeTypeToPosition[node.data.type] === Position.Bottom
+  );
+
+  const virtualNodes: AgentFlowCustomNode[] = [];
+
+  // Add virtual top node if no escalations exist
+  if (!hasTopNodes) {
+    virtualNodes.push({
+      id: "__virtual_top__",
+      type: "resource",
+      position: {
+        x: agentNode.position.x + agentWidth / 2 - RESOURCE_NODE_SIZE / 2,
+        y: agentNode.position.y - FLOW_LAYOUT.groupDistanceVertical - RESOURCE_NODE_SIZE,
+      },
+      data: {
+        type: ResourceNodeType.Escalation,
+        name: "__virtual__",
+        description: "",
+        parentNodeId: agentNode.id,
+        isVirtual: true,
+      },
+      width: RESOURCE_NODE_SIZE,
+      height: RESOURCE_NODE_SIZE,
+      style: {
+        opacity: 0,
+        pointerEvents: "none",
+      },
+      draggable: false,
+      selectable: false,
+    } as AgentFlowCustomNode);
+  }
+
+  // Add virtual bottom node if no model/context/tools exist
+  if (!hasBottomNodes) {
+    virtualNodes.push({
+      id: "__virtual_bottom__",
+      type: "resource",
+      position: {
+        x: agentNode.position.x + agentWidth / 2 - RESOURCE_NODE_SIZE / 2,
+        y: agentNode.position.y + agentHeight + FLOW_LAYOUT.groupDistanceVertical,
+      },
+      data: {
+        type: ResourceNodeType.Model,
+        name: "__virtual__",
+        description: "",
+        parentNodeId: agentNode.id,
+        isVirtual: true,
+      },
+      width: RESOURCE_NODE_SIZE,
+      height: RESOURCE_NODE_SIZE,
+      style: {
+        opacity: 0,
+        pointerEvents: "none",
+      },
+      draggable: false,
+      selectable: false,
+    } as AgentFlowCustomNode);
+  }
+
+  return [...nodes, ...virtualNodes];
 };
 
 // agent node wrapper
@@ -363,7 +453,7 @@ const AgentFlowInner = memo(
       const handleResetSelectedNode = () => {
         setSelectedNodeId(null);
         onSelectResource?.(null);
-        fitView(BASE_CANVAS_DEFAULTS.fitViewOptions);
+        fitView(AGENT_FLOW_FIT_VIEW_OPTIONS);
       };
 
       window.addEventListener("resetSelectedNode", handleResetSelectedNode);
@@ -384,17 +474,25 @@ const AgentFlowInner = memo(
       }
     }, [nodes, setSelectedNodeId, onSelectResource, getNodeFromSelectedSpan, selectedNodeId, updateNode, spans]);
 
+    // Add virtual spacing nodes for balanced fit view (AgentFlow-specific)
+    const nodesWithVirtualSpacing = useMemo(() => {
+      const agentNode = nodes.find(isAgentFlowAgentNode);
+      if (!agentNode) return nodes;
+      return addVirtualSpacingNodes(nodes, agentNode);
+    }, [nodes]);
+
     return (
       <Column w="100%" h="100%" style={{ touchAction: "none" }}>
         <Column flex={1} position="relative" style={{ touchAction: "none" }}>
           <BaseCanvas<AgentFlowCustomNode, AgentFlowCustomEdge>
             ref={canvasRef}
-            nodes={nodes}
+            nodes={nodesWithVirtualSpacing}
             edges={edges}
             nodeTypes={nodeTypes}
             edgeTypes={edgeTypes}
             mode={mode}
             initialAutoLayout={autoArrange}
+            fitViewOptions={AGENT_FLOW_FIT_VIEW_OPTIONS}
             onNodesChange={onNodesChange}
             onEdgesChange={onEdgesChange}
             onConnect={onConnect}

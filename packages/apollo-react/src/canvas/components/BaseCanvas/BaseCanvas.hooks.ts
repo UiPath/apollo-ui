@@ -23,7 +23,11 @@ const waitForNodeMeasurements = (getNodes: () => Node[]): Promise<void> => {
   });
 };
 
-export const useAutoLayout = (nodes: Node[] | undefined, initialAutoLayout?: () => Promise<void> | void) => {
+export const useAutoLayout = (
+  nodes: Node[] | undefined,
+  initialAutoLayout?: () => Promise<void> | void,
+  fitViewOptions?: { padding?: number; duration?: number; minZoom?: number; maxZoom?: number }
+) => {
   const [isReady, setIsReady] = useState(false);
   const hasRunLayout = useRef(false);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -75,9 +79,10 @@ export const useAutoLayout = (nodes: Node[] | undefined, initialAutoLayout?: () 
         // Mark as complete
         hasRunLayout.current = true;
 
-        // Fit view
+        // Fit view with custom options if provided
         timeoutRef.current = setTimeout(() => {
-          reactFlow.fitView();
+          const options = fitViewOptions || BASE_CANVAS_DEFAULTS.fitViewOptions;
+          reactFlow.fitView(options);
           setIsReady(true);
           timeoutRef.current = null;
         }, FIT_VIEW_DELAY_MS);

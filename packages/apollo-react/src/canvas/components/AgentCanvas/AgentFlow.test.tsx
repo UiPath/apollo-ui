@@ -105,37 +105,41 @@ vi.mock("@uipath/uix/xyflow/react", () => ({
     onNodeDragStart?: () => void;
     onNodeDrag?: () => void;
     onNodeDragStop?: () => void;
-  }) => (
-    <div data-testid="react-flow">
-      <div data-testid="nodes-count">{nodes?.length ?? 0}</div>
-      <div data-testid="edges-count">{edges?.length ?? 0}</div>
-      <button data-testid="node-click" onClick={onNodeClick}>
-        Node Click
-      </button>
-      <button data-testid="pane-click" onClick={onPaneClick}>
-        Pane Click
-      </button>
-      <button data-testid="nodes-change" onClick={onNodesChange}>
-        Nodes Change
-      </button>
-      <button data-testid="edges-change" onClick={onEdgesChange}>
-        Edges Change
-      </button>
-      <button data-testid="connect" onClick={onConnect}>
-        Connect
-      </button>
-      <button data-testid="node-drag-start" onClick={onNodeDragStart}>
-        Node Drag Start
-      </button>
-      <button data-testid="node-drag" onClick={onNodeDrag}>
-        Node Drag
-      </button>
-      <button data-testid="node-drag-stop" onClick={onNodeDragStop}>
-        Node Drag Stop
-      </button>
-      {children}
-    </div>
-  ),
+  }) => {
+    // Filter out virtual spacing nodes for accurate test counts
+    const realNodes = nodes?.filter((node: any) => !node.data?.isVirtual) ?? [];
+    return (
+      <div data-testid="react-flow">
+        <div data-testid="nodes-count">{realNodes.length}</div>
+        <div data-testid="edges-count">{edges?.length ?? 0}</div>
+        <button data-testid="node-click" onClick={onNodeClick}>
+          Node Click
+        </button>
+        <button data-testid="pane-click" onClick={onPaneClick}>
+          Pane Click
+        </button>
+        <button data-testid="nodes-change" onClick={onNodesChange}>
+          Nodes Change
+        </button>
+        <button data-testid="edges-change" onClick={onEdgesChange}>
+          Edges Change
+        </button>
+        <button data-testid="connect" onClick={onConnect}>
+          Connect
+        </button>
+        <button data-testid="node-drag-start" onClick={onNodeDragStart}>
+          Node Drag Start
+        </button>
+        <button data-testid="node-drag" onClick={onNodeDrag}>
+          Node Drag
+        </button>
+        <button data-testid="node-drag-stop" onClick={onNodeDragStop}>
+          Node Drag Stop
+        </button>
+        {children}
+      </div>
+    );
+  },
   Background: ({ children }: { children?: React.ReactNode }) => <div data-testid="background">{children}</div>,
   Controls: ({ children }: { children?: React.ReactNode }) => <div data-testid="controls">{children}</div>,
   Panel: ({ children }: { children?: React.ReactNode }) => <div data-testid="panel">{children}</div>,

@@ -107,6 +107,21 @@ export interface BaseCanvasProps<NodeType extends Node = Node, EdgeType extends 
    * @default "Hold Space and drag to pan around the canvas!"
    */
   panShortcutTeachingUIMessage?: string;
+
+  /**
+   * Custom fit view options for initial auto layout.
+   * Overrides default padding and duration for the initial fit view animation.
+   * @example
+   * ```ts
+   * fitViewOptions: { padding: 0.2, duration: 300, minZoom: 0.5, maxZoom: 2 }
+   * ```
+   */
+  fitViewOptions?: {
+    padding?: number;
+    duration?: number;
+    minZoom?: number;
+    maxZoom?: number;
+  };
 }
 
 /**

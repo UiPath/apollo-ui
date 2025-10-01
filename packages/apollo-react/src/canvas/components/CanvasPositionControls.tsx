@@ -2,6 +2,7 @@ import { memo, useCallback } from "react";
 import { useReactFlow } from "@uipath/uix/xyflow/react";
 import { ApIcon, ApIconButton, ApTooltip } from "@uipath/portal-shell-react";
 import { Column, Row } from "@uipath/uix/core";
+import { BASE_CANVAS_DEFAULTS } from "./BaseCanvas/BaseCanvas.constants";
 
 export interface CanvasPositionControlsProps {
   orientation?: "horizontal" | "vertical";
@@ -12,7 +13,7 @@ export const CanvasPositionControls = memo(({ orientation = "horizontal" }: Canv
 
   const handleZoomIn = useCallback(() => zoomIn(), [zoomIn]);
   const handleZoomOut = useCallback(() => zoomOut(), [zoomOut]);
-  const handleFitToView = useCallback(() => fitView(), [fitView]);
+  const handleFitToView = useCallback(() => fitView(BASE_CANVAS_DEFAULTS.fitViewOptions), [fitView]);
 
   let RootComponent: React.ElementType = Column;
   let placement: "left" | "top" = "left";
