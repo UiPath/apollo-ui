@@ -98,7 +98,9 @@ function AutopilotChatInputComponent() {
     );
 
     const inputRef = React.useRef<HTMLTextAreaElement>(null);
-    const { waitingResponse } = useLoading();
+    const {
+        waitingResponse, skeletonLoader,
+    } = useLoading();
     const { streaming } = useStreaming();
     const {
         attachments, clearAttachments, addAttachments,
@@ -229,7 +231,12 @@ function AutopilotChatInputComponent() {
                 </Box>
 
                 <AutopilotChatInputActions
-                    disableSubmit={message.trim().length === 0 && attachments.length === 0 && !waitingResponse && !streaming}
+                    disableSubmit={(
+                        message.trim().length === 0 &&
+                        attachments.length === 0 &&
+                        !waitingResponse &&
+                        !streaming
+                    ) || (skeletonLoader && !waitingResponse && !streaming)}
                     waitingResponse={waitingResponse || streaming}
                     handleSubmit={handleSubmit}
                 />

@@ -16,6 +16,7 @@ interface AutopilotLoadingContextType {
     isLoadingMoreMessages: boolean;
     setWaitingResponse: (waitingResponse: boolean) => void;
     showLoading: boolean;
+    skeletonLoader: boolean;
 }
 
 export const AutopilotLoadingContext = React.createContext<AutopilotLoadingContextType>({
@@ -23,12 +24,14 @@ export const AutopilotLoadingContext = React.createContext<AutopilotLoadingConte
     isLoadingMoreMessages: false,
     setWaitingResponse: () => {},
     showLoading: false,
+    skeletonLoader: false,
 });
 
 export function AutopilotLoadingProvider({ children }: { children: React.ReactNode }) {
     const [ waitingResponse, setWaitingResponse ] = React.useState<boolean>(false);
     const [ isLoadingMoreMessages, setIsLoadingMoreMessages ] = React.useState<boolean>(false);
     const [ showLoading, setShowLoading ] = React.useState<boolean>(false);
+    const [ skeletonLoader, setSkeletonLoader ] = React.useState<boolean>(false);
     const disableDefaultShowLoadingBehaviorRef = React.useRef<boolean>(false);
     const disableDefaultSetWaitingBehaviorRef = React.useRef<boolean>(false);
     const chatService = useChatService();
@@ -37,6 +40,11 @@ export function AutopilotLoadingProvider({ children }: { children: React.ReactNo
         if (!chatService) {
             return;
         }
+
+        const unsubscribeShowLoadingState = chatService.__internalService__
+            .on(AutopilotChatInternalEvent.ShowLoadingState, (showLoadingState: boolean) => {
+                setSkeletonLoader(showLoadingState);
+            });
 
         const unsubscribeShouldShowLoadingMoreMessages = chatService.__internalService__.on(
             AutopilotChatInternalEvent.ShouldShowLoadingMoreMessages,
@@ -112,6 +120,7 @@ export function AutopilotLoadingProvider({ children }: { children: React.ReactNo
         });
 
         return () => {
+            unsubscribeShowLoadingState();
             unsubscribeRequest();
             unsubscribeResponse();
             unsubscribeStopResponse();
@@ -130,6 +139,7 @@ export function AutopilotLoadingProvider({ children }: { children: React.ReactNo
             setWaitingResponse,
             isLoadingMoreMessages,
             showLoading,
+            skeletonLoader,
         }}>
             {children}
         </AutopilotLoadingContext.Provider>

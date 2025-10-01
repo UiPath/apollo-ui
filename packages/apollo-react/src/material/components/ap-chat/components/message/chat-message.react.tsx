@@ -72,12 +72,13 @@ function AutopilotChatMessagesComponent({
     isOverflow, isContainerWide,
 }: { isOverflow: boolean; isContainerWide: boolean }) {
     const chatService = useChatService();
-    const [ showSkeletonLoader, setShowSkeletonLoader ] = React.useState<boolean>(false);
     const [ messages, setMessages ] = React.useState<AutopilotChatMessage[]>(
         removeFakeStream(chatService?.getConversation?.() ?? []),
     );
 
-    const { isLoadingMoreMessages } = useLoading();
+    const {
+        isLoadingMoreMessages, skeletonLoader,
+    } = useLoading();
 
     const {
         firstRunExperience, setHasMessages, spacing,
@@ -147,10 +148,6 @@ function AutopilotChatMessagesComponent({
         const unsubscribeConversation = chatService.on(AutopilotChatEvent.SetConversation, (msg) => {
             setMessages(removeFakeStream(msg));
         });
-        const unsubscribeShowLoadingState = chatService.__internalService__
-            .on(AutopilotChatInternalEvent.ShowLoadingState, (showLoadingState: boolean) => {
-                setShowSkeletonLoader(showLoadingState);
-            });
         const unsubscribeSetSuggestions = chatService.__internalService__
             .on(AutopilotChatInternalEvent.SetSuggestions, ({
                 suggestions: suggestionsToSet,
@@ -170,7 +167,6 @@ function AutopilotChatMessagesComponent({
             unsubscribeNewChat();
             unsubscribeFeedback();
             unsubscribeCopy();
-            unsubscribeShowLoadingState();
             unsubscribeSetSuggestions();
         };
     }, [ chatService, updateMessages, sendFeedback, onCopy ]);
@@ -195,7 +191,7 @@ function AutopilotChatMessagesComponent({
 
     return (
         <MessageContainer gap={spacing.messageSpacing} isOverflow={isOverflow} isContainerWide={isContainerWide}>
-            {showSkeletonLoader ? (
+            {skeletonLoader ? (
                 <SkeletonLoader />
             ) :
                 <>
