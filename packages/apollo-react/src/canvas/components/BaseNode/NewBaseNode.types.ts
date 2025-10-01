@@ -9,6 +9,7 @@ export interface NewBaseNodeData extends Record<string, unknown> {
 }
 
 export interface NewBaseNodeDisplayProps {
+  disabled?: boolean;
   executionStatus?: string;
   icon?: React.ReactNode;
   display?: NodeDisplay;

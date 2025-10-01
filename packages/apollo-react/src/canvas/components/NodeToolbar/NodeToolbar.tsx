@@ -74,29 +74,34 @@ const NodeToolbarComponent = ({ nodeId, config, visible }: NodeToolbarProps) => 
                       role="menu"
                       aria-labelledby={buttonRef.current?.id}
                     >
-                      {overflowActionsWithState.map((action, i) => (
-                        <StyledDropdownItem
-                          key={action.id === "separator" ? `separator-${i}` : action.id}
-                          type="button"
-                          className="nodrag nopan"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            e.preventDefault();
-                            if (!action.disabled) {
-                              action.onClick();
-                              setIsDropdownOpen(false);
-                            }
-                          }}
-                          aria-label={action.label}
-                          aria-disabled={action.disabled}
-                          role="menuitem"
-                          $disabled={action.disabled}
-                        >
-                          {action.icon && typeof action.icon === "string" && <ApIcon variant="outlined" name={action.icon} size="16px" />}
-                          {action.icon && typeof action.icon !== "string" && action.icon}
-                          <span>{action.label}</span>
-                        </StyledDropdownItem>
-                      ))}
+                      {overflowActionsWithState.map((action, i) => {
+                        if (action.id === "separator") {
+                          return <StyledToolbarSeparator key={`separator-${i}`} $orientation="horizontal" />;
+                        }
+                        return (
+                          <StyledDropdownItem
+                            key={action.id}
+                            type="button"
+                            className="nodrag nopan"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              e.preventDefault();
+                              if (!action.disabled) {
+                                action.onClick();
+                                setIsDropdownOpen(false);
+                              }
+                            }}
+                            aria-label={action.label}
+                            aria-disabled={action.disabled}
+                            role="menuitem"
+                            $disabled={action.disabled}
+                          >
+                            {action.icon && typeof action.icon === "string" && <ApIcon variant="outlined" name={action.icon} size="16px" />}
+                            {action.icon && typeof action.icon !== "string" && action.icon}
+                            <span>{action.label}</span>
+                          </StyledDropdownItem>
+                        );
+                      })}
                     </StyledDropdownMenu>
                   )}
                 </AnimatePresence>

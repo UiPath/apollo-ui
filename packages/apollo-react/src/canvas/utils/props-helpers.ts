@@ -160,6 +160,7 @@ const createResourceNode = (
     hasBreakpoint: resource.hasBreakpoint ?? false,
     isCurrentBreakpoint: resource.isCurrentBreakpoint ?? false,
     hasGuardrails: resource.hasGuardrails ?? false,
+    isDisabled: resource.isDisabled ?? false,
     errors: resource.errors,
   };
 

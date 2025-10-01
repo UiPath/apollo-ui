@@ -36,6 +36,7 @@ export type AgentFlowToolResource = {
   isCurrentBreakpoint?: boolean;
   hasGuardrails?: boolean;
   projectId?: string;
+  isDisabled?: boolean;
 };
 
 export type AgentFlowContextResource = {
@@ -49,6 +50,7 @@ export type AgentFlowContextResource = {
   isCurrentBreakpoint?: boolean;
   hasGuardrails?: boolean;
   projectId?: string;
+  isDisabled?: boolean;
 };
 
 export type AgentFlowEscalationResource = {
@@ -62,6 +64,7 @@ export type AgentFlowEscalationResource = {
   isCurrentBreakpoint?: boolean;
   hasGuardrails?: boolean;
   projectId?: string;
+  isDisabled?: boolean;
 };
 
 export type AgentFlowMcpResource = {
@@ -83,6 +86,7 @@ export type AgentFlowMcpResource = {
   isCurrentBreakpoint?: boolean;
   hasGuardrails?: boolean;
   projectId?: string;
+  isDisabled?: boolean;
 };
 
 export type AgentFlowResource = AgentFlowContextResource | AgentFlowEscalationResource | AgentFlowMcpResource | AgentFlowToolResource;
@@ -113,6 +117,8 @@ export type AgentFlowProps = {
   getNodeFromSelectedSpan?: (nodes: AgentFlowCustomNode[]) => AgentFlowCustomNode | null;
 
   // design mode
+  onEnable?: (resourceId: string, resource: AgentFlowResourceNodeData) => void;
+  onDisable?: (resourceId: string, resource: AgentFlowResourceNodeData) => void;
   onAddBreakpoint?: (resourceId: string, resource: AgentFlowResourceNodeData) => void;
   onRemoveBreakpoint?: (resourceId: string, resource: AgentFlowResourceNodeData) => void;
   onAddGuardrail?: (resourceId: string, resource: AgentFlowResourceNodeData) => void;
@@ -203,6 +209,7 @@ export type AgentFlowResourceNodeData = (
   isCurrentBreakpoint?: boolean;
   hasBreakpoint?: boolean;
   hasGuardrails?: boolean;
+  isDisabled?: boolean;
   projectId?: string;
   isVirtual?: boolean; // AgentFlow-specific: for virtual spacing nodes
 };
@@ -255,6 +262,8 @@ export const DefaultAgentNodeTranslations: AgentNodeTranslations = {
 };
 
 export interface ResourceNodeTranslations {
+  enable: string;
+  disable: string;
   expand: string;
   collapse: string;
   remove: string;
@@ -265,6 +274,8 @@ export interface ResourceNodeTranslations {
 }
 
 export const DefaultResourceNodeTranslations: ResourceNodeTranslations = {
+  enable: "Enable",
+  disable: "Disable",
   expand: "Expand",
   collapse: "Collapse",
   remove: "Remove",

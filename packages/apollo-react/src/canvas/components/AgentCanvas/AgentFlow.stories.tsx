@@ -139,6 +139,7 @@ const sampleResources: AgentFlowResource[] = [
     isCurrentBreakpoint: false,
     hasGuardrails: false,
     projectType: "slack",
+    isDisabled: false,
   },
   {
     id: "tool-ixp",
@@ -150,6 +151,7 @@ const sampleResources: AgentFlowResource[] = [
     isCurrentBreakpoint: false,
     hasGuardrails: false,
     projectType: "ixp",
+    isDisabled: false,
   },
   {
     id: "tool-claim",
@@ -161,6 +163,7 @@ const sampleResources: AgentFlowResource[] = [
     isCurrentBreakpoint: false,
     hasGuardrails: false,
     projectType: "claim",
+    isDisabled: false,
   },
   {
     id: "context-user-profile",
@@ -339,6 +342,24 @@ const AgentFlowWrapper = ({
     setModel(null);
   }, []);
 
+  const handleEnable = useCallback((resourceId: string, resource: AgentFlowResourceNodeData) => {
+    setResources((prev) =>
+      prev.map((r) => ({
+        ...r,
+        ...(`${resource.parentNodeId}=>${r.name}:${r.id}` === resourceId && { isDisabled: false }),
+      }))
+    );
+  }, []);
+
+  const handleDisable = useCallback((resourceId: string, resource: AgentFlowResourceNodeData) => {
+    setResources((prev) =>
+      prev.map((r) => ({
+        ...r,
+        ...(`${resource.parentNodeId}=>${r.name}:${r.id}` === resourceId && { isDisabled: true }),
+      }))
+    );
+  }, []);
+
   const handleAddBreakpoint = useCallback((resourceId: string, resource: AgentFlowResourceNodeData) => {
     setResources((prev) =>
       prev.map((r) => ({
@@ -438,6 +459,8 @@ const AgentFlowWrapper = ({
             getNodeFromSelectedSpan={getNodeFromSelectedSpan}
             onAddModel={handleAddModel}
             onRemoveModel={handleRemoveModel}
+            onEnable={handleEnable}
+            onDisable={handleDisable}
             onAddBreakpoint={handleAddBreakpoint}
             onRemoveBreakpoint={handleRemoveBreakpoint}
             onAddGuardrail={handleAddGuardrail}

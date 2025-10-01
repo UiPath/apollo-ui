@@ -19,6 +19,7 @@ const NewBaseNodeComponent = (
     width,
     height,
     executionStatus,
+    disabled = false,
     icon,
     display,
     adornments = {},
@@ -51,12 +52,13 @@ const NewBaseNodeComponent = (
   );
 
   const interactionState = useMemo(() => {
+    if (disabled) return "disabled";
     if (dragging) return "drag";
     if (selected) return "selected";
     if (isFocused) return "focus";
     if (isHovered) return "hover";
     return "default";
-  }, [dragging, selected, isFocused, isHovered]);
+  }, [disabled, dragging, selected, isFocused, isHovered]);
 
   const shouldShowHandles = useMemo(
     () => inProgress || selected || isHovered || isConnecting,
@@ -216,9 +218,8 @@ const NewBaseNodeComponent = (
             {displaySubLabel && <BaseSubHeader>{displaySubLabel}</BaseSubHeader>}
           </BaseTextContainer>
         )}
-
-        {toolbarConfig && <NodeToolbar nodeId={id} config={toolbarConfig} visible={selected && !dragging} />}
       </BaseContainer>
+      {toolbarConfig && <NodeToolbar nodeId={id} config={toolbarConfig} visible={selected && !dragging} />}
       {handleElements}
     </div>
   );
@@ -231,6 +232,7 @@ const NewBaseNodeWrapper = (
 ) => {
   const {
     data,
+    disabled = false,
     adornments,
     toolbarConfig,
     executionStatus,
@@ -246,6 +248,7 @@ const NewBaseNodeWrapper = (
     <NewBaseNodeComponent
       data={data}
       {...nodeProps}
+      disabled={disabled}
       executionStatus={executionStatus}
       icon={icon}
       display={display}

@@ -14,6 +14,8 @@ interface ResourceNodeProps extends NodeProps<AgentFlowResourceNode> {
   hasError?: boolean;
   hasSuccess?: boolean;
   hasRunning?: boolean;
+  onEnable?: (resourceId: string, resource: AgentFlowResourceNodeData) => void;
+  onDisable?: (resourceId: string, resource: AgentFlowResourceNodeData) => void;
   onAddBreakpoint?: (resourceId: string, resource: AgentFlowResourceNodeData) => void;
   onRemoveBreakpoint?: (resourceId: string, resource: AgentFlowResourceNodeData) => void;
   onAddGuardrail?: (resourceId: string, resource: AgentFlowResourceNodeData) => void;
@@ -33,6 +35,8 @@ export const ResourceNode = memo(
     hasError = false,
     hasSuccess = false,
     hasRunning = false,
+    onEnable,
+    onDisable,
     onAddBreakpoint,
     onRemoveBreakpoint,
     onAddGuardrail,
@@ -41,12 +45,18 @@ export const ResourceNode = memo(
   }: ResourceNodeProps) => {
     const { nodes: _nodes, deleteNode } = useAgentFlowStore();
 
-    const _isViewMode = mode === "view";
-    const _isDesignMode = mode === "design";
-    const _isActive = data.isActive ?? false;
     const hasBreakpoint = data.hasBreakpoint ?? false;
     const hasGuardrails = data.hasGuardrails ?? false;
     const isCurrentBreakpoint = data.isCurrentBreakpoint ?? false;
+    const isDisabled = data.isDisabled ?? false;
+
+    const handleClickEnable = useCallback(() => {
+      onEnable?.(id, data);
+    }, [id, data, onEnable]);
+
+    const handleClickDisable = useCallback(() => {
+      onDisable?.(id, data);
+    }, [id, data, onDisable]);
 
     const handleClickAddBreakpoint = useCallback(() => {
       onAddBreakpoint?.(id, data);
@@ -141,16 +151,16 @@ export const ResourceNode = memo(
     const toolbarConfig: NodeToolbarConfig | undefined = useMemo(() => {
       if (mode === "view" || data.type === "model") return undefined;
 
-      const breakpointAction: ToolbarAction = {
-        id: "breakpoint",
+      const toggleBreakpointAction: ToolbarAction = {
+        id: "toggle-breakpoint",
         icon: undefined,
         label: (hasBreakpoint ? translations?.removeBreakpoint : translations?.addBreakpoint) ?? "",
         disabled: false,
         onAction: hasBreakpoint ? handleClickRemoveBreakpoint : handleClickAddBreakpoint,
       };
 
-      const guardrailAction: ToolbarAction = {
-        id: "guardrail",
+      const addGuardrailAction: ToolbarAction = {
+        id: "add-guardrail",
         icon: undefined,
         label: translations?.addGuardrail ?? "",
         disabled: false,
@@ -173,11 +183,28 @@ export const ResourceNode = memo(
         onAction: handleClickRemove,
       };
 
+      const toggleEnabledAction: ToolbarAction = {
+        id: "toggle-enabled",
+        icon: undefined,
+        label: (isDisabled ? translations?.enable : translations?.disable) ?? "",
+        disabled: false,
+        onAction: isDisabled ? handleClickEnable : handleClickDisable,
+      };
+
+      const separator: ToolbarAction = {
+        id: "separator",
+        icon: undefined,
+        label: undefined,
+        disabled: false,
+        onAction: () => {},
+      };
+
       const actions: ToolbarAction[] = [removeAction];
       const overflowActions: ToolbarAction[] = [
-        breakpointAction,
-        ...(data.type === "tool" ? [guardrailAction] : []),
+        toggleBreakpointAction,
+        ...(data.type === "tool" ? [addGuardrailAction] : []),
         ...(data.projectId ? [goToSourceAction] : []),
+        ...(data.type === "tool" ? [separator, toggleEnabledAction] : []),
       ];
 
       return {
@@ -191,6 +218,9 @@ export const ResourceNode = memo(
       data.projectId,
       data.type,
       hasBreakpoint,
+      isDisabled,
+      handleClickEnable,
+      handleClickDisable,
       handleClickRemoveBreakpoint,
       handleClickAddBreakpoint,
       translations,
@@ -319,6 +349,7 @@ export const ResourceNode = memo(
       <NewBaseNode
         data={{}}
         handleConfigurations={handleConfigurations}
+        disabled={isDisabled}
         executionStatus={executionStatus}
         icon={resourceIcon}
         display={{

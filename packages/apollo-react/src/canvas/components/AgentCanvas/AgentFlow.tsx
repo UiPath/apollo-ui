@@ -183,6 +183,8 @@ const createAgentNodeWrapper = (handlers: {
 
 // resource node wrapper
 const createResourceNodeWrapper = (opts: {
+  onEnable?: (resourceId: string, resource: AgentFlowResourceNodeData) => void;
+  onDisable?: (resourceId: string, resource: AgentFlowResourceNodeData) => void;
   onAddBreakpoint?: (resourceId: string, resource: AgentFlowResourceNodeData) => void;
   onRemoveBreakpoint?: (resourceId: string, resource: AgentFlowResourceNodeData) => void;
   onAddGuardrail?: (resourceId: string, resource: AgentFlowResourceNodeData) => void;
@@ -201,6 +203,8 @@ const createResourceNodeWrapper = (opts: {
         hasError={props.data.hasError}
         hasSuccess={props.data.hasSuccess}
         hasRunning={props.data.hasRunning}
+        onEnable={opts.onEnable}
+        onDisable={opts.onDisable}
         onAddBreakpoint={opts.onAddBreakpoint}
         onRemoveBreakpoint={opts.onRemoveBreakpoint}
         onAddGuardrail={opts.onAddGuardrail}
@@ -219,6 +223,8 @@ const AgentFlowInner = memo(
     children,
     mode,
     spans,
+    onEnable,
+    onDisable,
     onAddBreakpoint,
     onRemoveBreakpoint,
     onAddGuardrail,
@@ -276,6 +282,8 @@ const AgentFlowInner = memo(
           enableMcpTools,
         }),
         resource: createResourceNodeWrapper({
+          onEnable,
+          onDisable,
           onAddBreakpoint,
           onRemoveBreakpoint,
           onAddGuardrail,
@@ -286,6 +294,8 @@ const AgentFlowInner = memo(
         }),
       };
     }, [
+      onEnable,
+      onDisable,
       onAddBreakpoint,
       onRemoveBreakpoint,
       onAddGuardrail,

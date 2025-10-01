@@ -1,4 +1,5 @@
 import styled from "@emotion/styled";
+import { css } from "@emotion/react";
 import { motion } from "motion/react";
 
 export const StyledToolbarContainer = styled(motion.div)<{
@@ -126,10 +127,16 @@ export const StyledToolbarContainer = styled(motion.div)<{
 `;
 
 export const StyledToolbarSeparator = styled.div<{ $orientation: "horizontal" | "vertical" }>`
-  width: ${({ $orientation }) => ($orientation === "vertical" ? "1px" : "20px")};
+  width: ${({ $orientation }) => ($orientation === "vertical" ? "1px" : "calc(100%)")};
   height: ${({ $orientation }) => ($orientation === "horizontal" ? "1px" : "20px")};
   background: var(--color-border-grid);
   align-self: center;
+  ${({ $orientation }) =>
+    $orientation === "horizontal" &&
+    css`
+      margin-top: 8px;
+      margin-bottom: 8px;
+    `}
 `;
 
 export const StyledDropdownMenu = styled(motion.div)`

@@ -458,6 +458,7 @@ export const createAgentFlowStore = (initialProps: AgentFlowProps) =>
                 const newHasBreakpoint = updatedResource.hasBreakpoint ?? false;
                 const newIsCurrentBreakpoint = updatedResource.isCurrentBreakpoint ?? false;
                 const newHasGuardrails = updatedResource.hasGuardrails ?? false;
+                const newIsDisabled = updatedResource.isDisabled ?? false;
 
                 return {
                   ...node,
@@ -477,6 +478,7 @@ export const createAgentFlowStore = (initialProps: AgentFlowProps) =>
                     hasError: hasResourceError(updatedResource, newProps.spans),
                     hasSuccess: hasResourceSuccess(updatedResource, newProps.spans),
                     hasRunning: hasResourceRunning(updatedResource, newProps.spans),
+                    isDisabled: newIsDisabled,
                   },
                   draggable: newDraggable,
                 };
