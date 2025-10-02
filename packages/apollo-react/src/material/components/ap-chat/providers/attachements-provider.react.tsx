@@ -3,6 +3,7 @@
 import {
     AutopilotChatEvent,
     AutopilotChatFileInfo,
+    AutopilotChatInternalEvent,
     AutopilotChatPrompt,
 } from '@uipath/portal-shell-util';
 import { isEqual } from 'lodash/fp';
@@ -15,6 +16,7 @@ import { useError } from './error-provider.react';
 
 interface AutopilotAttachmentsContextType {
     attachments: AutopilotChatFileInfo[];
+    attachmentsLoading: AutopilotChatFileInfo[];
     addAttachments: (files: AutopilotChatFileInfo[]) => void;
     removeAttachment: (name: string, index: number) => void;
     clearAttachments: () => void;
@@ -22,6 +24,7 @@ interface AutopilotAttachmentsContextType {
 
 export const AutopilotAttachmentsContext = React.createContext<AutopilotAttachmentsContextType>({
     attachments: [],
+    attachmentsLoading: [],
     addAttachments: () => {},
     removeAttachment: () => {},
     clearAttachments: () => {},
@@ -38,6 +41,7 @@ export function AutopilotAttachmentsProvider({ children }: { children: React.Rea
     const [ attachments, setAttachments ] = React.useState<AutopilotChatFileInfo[]>(
         prompt?.attachments ?? [],
     );
+    const [ attachmentsLoading, setAttachmentsLoading ] = React.useState<AutopilotChatFileInfo[]>([]);
 
     const attachmentsRef = React.useRef<AutopilotChatFileInfo[]>(attachments);
 
@@ -50,9 +54,30 @@ export function AutopilotAttachmentsProvider({ children }: { children: React.Rea
         }) => rest);
 
         if (!isEqual(currentAttachmentsWithoutContent, newAttachmentsWithoutContent)) {
+            // Calculate diff
+            const added = attachments.filter(newAtt =>
+                !attachmentsRef.current.some(currentAtt =>
+                    currentAtt.name === newAtt.name && currentAtt.size === newAtt.size,
+                ),
+            );
+
+            const removed = attachmentsRef.current.filter(currentAtt =>
+                !attachments.some(newAtt =>
+                    newAtt.name === currentAtt.name && newAtt.size === currentAtt.size,
+                ),
+            );
+
             attachmentsRef.current = attachments;
 
-            (chatService as any)._eventBus.publish(AutopilotChatEvent.Attachments, attachments);
+            const eventBus = (chatService as any)?._eventBus;
+
+            if (eventBus && (added.length > 0 || removed.length > 0)) {
+                eventBus.publish(AutopilotChatEvent.Attachments, attachments);
+                eventBus.publish(AutopilotChatEvent.AttachmentsV2, {
+                    added,
+                    removed,
+                });
+            }
         }
     }, [ attachments, chatService ]);
 
@@ -93,18 +118,29 @@ export function AutopilotAttachmentsProvider({ children }: { children: React.Rea
             return;
         }
 
+        const unsubscribeSetAttachmentsLoading = chatService.__internalService__.on(
+            AutopilotChatInternalEvent.SetAttachmentsLoading,
+            (state: AutopilotChatFileInfo[]) => {
+                setAttachmentsLoading(state);
+            },
+        );
+
         const unsubscribe = chatService.on(AutopilotChatEvent.SetPrompt, (p: AutopilotChatPrompt | string) => {
             const newAttachments = typeof p === 'string' ? [] : p.attachments ?? [];
 
             addAttachments(newAttachments);
         });
 
-        return () => unsubscribe();
+        return () => {
+            unsubscribeSetAttachmentsLoading();
+            unsubscribe();
+        };
     }, [ chatService, addAttachments ]);
 
     return (
         <AutopilotAttachmentsContext.Provider value={{
             attachments,
+            attachmentsLoading,
             addAttachments,
             removeAttachment,
             clearAttachments,

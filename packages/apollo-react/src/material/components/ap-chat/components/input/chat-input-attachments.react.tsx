@@ -8,12 +8,13 @@ import { Attachments } from '../common/attachments.react';
 
 function AutopilotChatInputAttachmentsComponent() {
     const {
-        attachments, removeAttachment,
+        attachments, removeAttachment, attachmentsLoading,
     } = useAttachments();
 
     return (
         <Attachments
             attachments={attachments}
+            attachmentsLoading={attachmentsLoading}
             onRemove={removeAttachment}
         />
     );

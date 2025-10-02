@@ -10,6 +10,7 @@ import {
 import React from 'react';
 
 import { t } from '../../../../utils/localization/loc';
+import { ApProgressSpinnerReact } from '../../../ap-progress-spinner/ap-progress-spinner.react';
 import { useChatState } from '../../providers/chat-state-provider.react';
 import { fileToIcon } from '../../utils/file-to-icon';
 import { AutopilotChatActionButton } from './action-button.react';
@@ -104,10 +105,11 @@ interface AttachmentProps {
     onRemove?: (name: string) => void;
     shouldFocus?: boolean;
     isFullWidth?: boolean;
+    loading?: boolean;
 }
 
 export const Attachment = React.memo(({
-    attachment, onRemove, shouldFocus, isFullWidth,
+    attachment, onRemove, shouldFocus, isFullWidth, loading,
 }: AttachmentProps) => {
     const { spacing } = useChatState();
     const removeButtonRef = React.useRef<HTMLButtonElement>(null);
@@ -192,7 +194,7 @@ export const Attachment = React.memo(({
                 <ap-typography variant={spacing.primaryFontToken} class="attachment-name">{attachment.name}</ap-typography>
             </AutopilotChatTooltip>
 
-            {onRemove && (
+            {onRemove && !loading && (
                 <div className="attachment-remove">
                     <AutopilotChatActionButton
                         ref={removeButtonRef}
@@ -219,19 +221,25 @@ export const Attachment = React.memo(({
                     />
                 </div>
             )}
+            {loading && (
+                <div className="attachment-loading">
+                    <ApProgressSpinnerReact size="s" color="primary"/>
+                </div>
+            )}
         </StyledAttachment>
     );
 });
 
 interface AttachmentsProps {
     attachments: AutopilotChatFileInfo[];
+    attachmentsLoading?: AutopilotChatFileInfo[];
     onRemove?: (name: string, index: number) => void;
     removeSpacing?: boolean;
     disableOverflow?: boolean;
 }
 
 export const Attachments = React.memo(({
-    attachments, onRemove, removeSpacing, disableOverflow,
+    attachments, attachmentsLoading, onRemove, removeSpacing, disableOverflow,
 }: AttachmentsProps) => {
     const [ focusedAttachmentIndex, setFocusedAttachmentIndex ] = React.useState<number | null>(null);
     const prevAttachmentsLength = React.useRef(attachments.length);
@@ -274,6 +282,10 @@ export const Attachments = React.memo(({
                 <Attachment
                     key={attachment.name + attachment.size}
                     attachment={attachment}
+                    loading={attachmentsLoading?.find(a =>
+                        a.name === attachment.name &&
+                        a.size === attachment.size,
+                    )?.loading}
                     onRemove={onRemove ? (name) => handleRemoveAttachment(name, index) : undefined}
                     shouldFocus={index === focusedAttachmentIndex}
                     isFullWidth={hasOddNumberOfAttachments && index === attachments.length - 1}
