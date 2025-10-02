@@ -160,7 +160,7 @@ export const setupDemoMode = (demoMode, chatService) => {
         case 'async-attachments':
             setTimeout(() => {
                 // Subscribe to attachment changes
-                chatService.on('attachmentsV2', ({ added }) => {
+                chatService.on('setAttachments', ({ added }) => {
                     if (added.length === 0) {
                         return;
                     }
@@ -1268,8 +1268,8 @@ Demonstrates how to handle file attachments asynchronously with loading states w
 const chatService = AutopilotChatService.Instantiate({ instanceName: 'async-attachments-demo' });
 chatService.initialize({ mode: 'side-by-side' });
 
-// Subscribe to attachment changes using AttachmentsV2 event
-chatService.on('attachmentsV2', ({ added, removed }) => {
+// Subscribe to attachment changes using SetAttachments event
+chatService.on('setAttachments', ({ added, removed }) => {
     // Process newly added attachments
     if (added.length > 0) {
         // Mark attachments as loading
@@ -1303,7 +1303,7 @@ chatService.open();</pre>
 </div>
 
 **Features demonstrated:**
-- AttachmentsV2 event for granular attachment tracking
+- SetAttachments event for granular attachment tracking
 - Loading state management with \`setAttachmentsLoading()\`
 - Asynchronous file processing simulation
 - File upload progress indication

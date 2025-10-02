@@ -73,7 +73,7 @@ export function AutopilotAttachmentsProvider({ children }: { children: React.Rea
 
             if (eventBus && (added.length > 0 || removed.length > 0)) {
                 eventBus.publish(AutopilotChatEvent.Attachments, attachments);
-                eventBus.publish(AutopilotChatEvent.AttachmentsV2, {
+                eventBus.publish(AutopilotChatEvent.SetAttachments, {
                     added,
                     removed,
                 });

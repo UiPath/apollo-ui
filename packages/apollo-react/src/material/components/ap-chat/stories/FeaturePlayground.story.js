@@ -1593,7 +1593,7 @@ const results = await Promise.all(tasks);
     let attachmentsAsyncUnsubscribe = null;
     controls.attachmentsAsync?.addEventListener('valueChanged', () => {
         if (controls.attachmentsAsync.checked) {
-            attachmentsAsyncUnsubscribe = chatService.on('attachmentsV2', (attachments) => {
+            attachmentsAsyncUnsubscribe = chatService.on('setAttachments', (attachments) => {
                 if (attachments.added.length === 0) {
                     return;
                 }

@@ -203,7 +203,7 @@ Subscribes to chat events and returns an unsubscribe function. The handler will 
 - `SetSelectedModel`: Emitted when the selected model is set
 - `ConversationLoadMore`: Emitted when the user scrolls to the top and more messages need to be loaded (see [Pagination and Loading More Messages](#pagination-and-loading-more-messages))
 - `Attachments`: <strong>DEPRECATED</strong> Emitted when the attachments are set in the prompt (the whole list of attachments)
-- `AttachmentsV2`: Emitted when the attachments change, providing details about which attachments were added and removed (see [Asynchronous Attachment Processing](#asynchronous-attachment-processing))
+- `SetAttachments`: Emitted when the attachments change, providing details about which attachments were added and removed (see [Asynchronous Attachment Processing](#asynchronous-attachment-processing))
 - `InputStream`: Emitted when sendInputStreamEvent is called (see [AutopilotChatInputStreamEvent](#autopilotchatinputstreamevent)).
 - `OutputStream`: Emitted when sendOutputStreamEvent is called (see [AutopilotChatOutputStreamEvent](#autopilotchatoutputtreamevent)).
 
@@ -1500,13 +1500,13 @@ chatService.setOverrideLabels({
 
 The Autopilot Chat component supports asynchronous processing of attachments, allowing you to show loading states while files are being uploaded, validated, or processed. This is useful when attachments need to be sent to a server or undergo transformation before being ready for use.
 
-### AttachmentsV2 Event
+### SetAttachments Event
 
-The `AttachmentsV2` event provides granular information about attachment changes, making it easy to track which files were added or removed:
+The `SetAttachments` event provides granular information about attachment changes, making it easy to track which files were added or removed:
 
 ```typescript
 // Listen for attachment changes
-chatService.on(AutopilotChatEvent.AttachmentsV2, ({ added, removed }) => {
+chatService.on(AutopilotChatEvent.SetAttachments, ({ added, removed }) => {
   console.log('Added attachments:', added);
   console.log('Removed attachments:', removed);
   
@@ -1524,7 +1524,7 @@ The `setAttachmentsLoading` method allows you to display loading indicators on s
 
 ```typescript
 // Basic example: Show loading state for all attachments
-chatService.on(AutopilotChatEvent.AttachmentsV2, ({ added, removed }) => {
+chatService.on(AutopilotChatEvent.SetAttachments, ({ added, removed }) => {
   if (added.length > 0) {
     // Set loading state for newly added attachments
     chatService.setAttachmentsLoading(
@@ -1554,7 +1554,7 @@ Here's a comprehensive example showing how to upload attachments to a server and
 
 ```typescript
 // Subscribe to attachment changes
-const unsubscribe = chatService.on(AutopilotChatEvent.AttachmentsV2, async ({ added, removed }) => {
+const unsubscribe = chatService.on(AutopilotChatEvent.SetAttachments, async ({ added, removed }) => {
   if (added.length === 0) {
     return;
   }
