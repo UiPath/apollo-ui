@@ -1,6 +1,7 @@
 import { argTypes } from './base.js';
 // Import all story components
 import {
+    AsyncAttachments as AsyncAttachmentsStory,
     BasicConversation as BasicConversationStory,
     CustomWidgets as CustomWidgetsStory,
     Default as DefaultStory,
@@ -25,6 +26,7 @@ export const Default = DefaultStory;
 export const BasicConversation = BasicConversationStory;
 export const StreamingResponse = StreamingResponseStory;
 export const WithAttachments = WithAttachmentsStory;
+export const AsyncAttachments = AsyncAttachmentsStory;
 export const WithHistory = WithHistoryStory;
 export const EmbeddedMode = EmbeddedModeStory;
 export const FullScreenMode = FullScreenModeStory;
@@ -44,6 +46,7 @@ Default.storyName = 'Default';
 BasicConversation.storyName = 'Basic Conversation';
 StreamingResponse.storyName = 'Streaming Response';
 WithAttachments.storyName = 'With Attachments';
+AsyncAttachments.storyName = 'Async Attachments';
 WithHistory.storyName = 'With History';
 EmbeddedMode.storyName = 'Embedded Mode';
 FullScreenMode.storyName = 'Full Screen Mode';

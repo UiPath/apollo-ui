@@ -88,12 +88,16 @@ export const FeaturePlayground = (args) => {
                             <ap-checkbox id="disable-history" label="Disable History"></ap-checkbox>
                             <ap-checkbox id="disable-settings" label="Disable Settings"></ap-checkbox>
                             <ap-checkbox id="disable-close" label="Disable Close"></ap-checkbox>
+                            <ap-checkbox id="disable-feedback" label="Disable Feedback"></ap-checkbox>
+                            <ap-checkbox id="disable-copy" label="Disable Copy"></ap-checkbox>
                             <ap-checkbox id="use-local-history" label="Use Local History" checked></ap-checkbox>
                             <ap-checkbox id="embed-mode" label="Embed Mode"></ap-checkbox>
                             <ap-checkbox id="send-on-click" label="Send On Click"></ap-checkbox>
                             <ap-checkbox id="paginated-messages" label="Paginated Messages"></ap-checkbox>
                             <ap-checkbox id="wait-for-more-messages" label="Wait For More"></ap-checkbox>
                             <ap-checkbox id="show-loading-state" label="Show Loading State"></ap-checkbox>
+                            <ap-checkbox id="compact-mode" label="Compact Mode"></ap-checkbox>
+                            <ap-checkbox id="attachments-async" label="Attachments Async"></ap-checkbox>
                         </div>
                     </div>
                     </div>
@@ -226,6 +230,10 @@ FeaturePlayground.play = async ({
         showLoadingState: canvasElement.querySelector('#show-loading-state'),
         setWaiting: canvasElement.querySelector('#set-waiting'),
         setShowLoading: canvasElement.querySelector('#set-show-loading'),
+        disableFeedback: canvasElement.querySelector('#disable-feedback'),
+        disableCopy: canvasElement.querySelector('#disable-copy'),
+        compactMode: canvasElement.querySelector('#compact-mode'),
+        attachmentsAsync: canvasElement.querySelector('#attachments-async'),
     };
 
     let chatOpen = true;
@@ -1567,5 +1575,55 @@ const results = await Promise.all(tasks);
 
     controls.setShowLoading?.addEventListener('valueChanged', () => {
         chatService.setShowLoading(controls.setShowLoading.checked);
+    });
+
+    controls.disableFeedback?.addEventListener('valueChanged', () => {
+        chatService.setDisabledFeatures({ feedback: controls.disableFeedback.checked });
+    });
+
+    controls.disableCopy?.addEventListener('valueChanged', () => {
+        chatService.setDisabledFeatures({ copy: controls.disableCopy.checked });
+    });
+
+    controls.compactMode?.addEventListener('valueChanged', () => {
+        chatService.patchConfig({ spacing: { compactMode: controls.compactMode.checked } });
+    });
+
+    // Attachments Async - handle loading states for attachments
+    let attachmentsAsyncUnsubscribe = null;
+    controls.attachmentsAsync?.addEventListener('valueChanged', () => {
+        if (controls.attachmentsAsync.checked) {
+            attachmentsAsyncUnsubscribe = chatService.on('attachmentsV2', (attachments) => {
+                if (attachments.added.length === 0) {
+                    return;
+                }
+
+                // Mark attachments as loading
+                chatService.setAttachmentsLoading(
+                    attachments.added.map(attachment => ({
+                        ...attachment,
+                        loading: true,
+                    })),
+                );
+
+                // Simulate async processing (e.g., upload to server)
+                setTimeout(() => {
+                    // Clear all loading states
+                    chatService.setAttachmentsLoading([]);
+                    // Or individual processing:
+                    // chatService.setAttachmentsLoading(
+                    //     attachments.added.map(attachment => ({
+                    //         ...attachment,
+                    //         loading: false,
+                    //     }))
+                    // );
+                }, 2000);
+            });
+        } else {
+            if (attachmentsAsyncUnsubscribe) {
+                attachmentsAsyncUnsubscribe();
+            }
+            chatService.setAttachmentsLoading([]);
+        }
     });
 };

@@ -103,7 +103,7 @@ function AutopilotChatInputComponent() {
     } = useLoading();
     const { streaming } = useStreaming();
     const {
-        attachments, clearAttachments, addAttachments,
+        attachments, clearAttachments, addAttachments, attachmentsLoading,
     } = useAttachments();
 
     React.useEffect(() => {
@@ -208,6 +208,8 @@ function AutopilotChatInputComponent() {
         };
     }, [ handlePaste ]);
 
+    const hasLoadingAttachments = attachmentsLoading.filter(attachment => attachment.loading).length > 0;
+
     return (
         <>
             <AutopilotChatInputError />
@@ -236,7 +238,8 @@ function AutopilotChatInputComponent() {
                         attachments.length === 0 &&
                         !waitingResponse &&
                         !streaming
-                    ) || (skeletonLoader && !waitingResponse && !streaming)}
+                    ) || (skeletonLoader && !waitingResponse && !streaming)
+                    || hasLoadingAttachments}
                     waitingResponse={waitingResponse || streaming}
                     handleSubmit={handleSubmit}
                 />

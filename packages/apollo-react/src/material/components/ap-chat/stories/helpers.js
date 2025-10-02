@@ -157,6 +157,38 @@ export const setupDemoMode = (demoMode, chatService) => {
             }, 500);
             break;
 
+        case 'async-attachments':
+            setTimeout(() => {
+                // Subscribe to attachment changes
+                chatService.on('attachmentsV2', ({ added }) => {
+                    if (added.length === 0) {
+                        return;
+                    }
+
+                    // Mark attachments as loading
+                    chatService.setAttachmentsLoading(
+                        added.map(attachment => ({
+                            ...attachment,
+                            loading: true,
+                        })),
+                    );
+
+                    // Simulate async processing (e.g., upload to server)
+                    setTimeout(() => {
+                        // Clear all loading states
+                        chatService.setAttachmentsLoading([]);
+                        // Or individual processing:
+                        // chatService.setAttachmentsLoading(
+                        //     added.map(attachment => ({
+                        //         ...attachment,
+                        //         loading: false,
+                        //     })),
+                        // );
+                    }, 2000);
+                });
+            }, 500);
+            break;
+
         case 'history':
             setTimeout(() => {
                 chatService.setHistory(sampleConversations.history);
@@ -1216,6 +1248,72 @@ chatService.open();</pre>
 - <strong>Attachment Button</strong>: Click the attachment button to open file browser
 - <strong>Copy & Paste</strong>: Use Ctrl+C and Ctrl+V to paste valid files directly into the chat
 - <strong>Drag & Drop</strong>: Drag files from your file explorer directly into the chat area
+
+## Documentation
+
+For complete API reference and advanced usage examples, see the <a href="https://github.com/UiPath/apollo-design-system/blob/master/packages/apollo-react/src/material/components/ap-chat/DOCS.md" target="_blank">official Autopilot Chat documentation</a>.
+        `,
+        'async-attachments': `
+# Asynchronous Attachment Processing Demo
+
+Demonstrates how to handle file attachments asynchronously with loading states while files are being uploaded or processed.
+
+## Implementation
+
+<div style="margin-top: 15px; padding: 20px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #17a2b8;">
+<h4 style="margin-top: 0; color: #2c3e50; font-size: 14px;">Async Attachment Processing</h4>
+<pre style="margin: 0; padding: 10px; background: #2c3e50; color: #ecf0f1; border-radius: 4px; overflow-x: auto; font-size: 12px;">import { AutopilotChatService } from '@uipath/portal-shell-util';
+
+// Initialize chat service
+const chatService = AutopilotChatService.Instantiate({ instanceName: 'async-attachments-demo' });
+chatService.initialize({ mode: 'side-by-side' });
+
+// Subscribe to attachment changes using AttachmentsV2 event
+chatService.on('attachmentsV2', ({ added, removed }) => {
+    // Process newly added attachments
+    if (added.length > 0) {
+        // Mark attachments as loading
+        chatService.setAttachmentsLoading(
+            added.map(attachment => ({
+                ...attachment,
+                loading: true,
+            }))
+        );
+        
+        // Simulate async processing (e.g., upload to server, validation, etc.)
+        setTimeout(() => {
+            // Clear all loading states
+            chatService.setAttachmentsLoading([]);
+            // Or individual processing:
+            // chatService.setAttachmentsLoading(
+            //     added.map(attachment => ({
+            //         ...attachment,
+            //         loading: false,
+            //     }))
+            // );
+        }, 2000);
+    }
+});
+
+chatService.open();</pre>
+</div>
+
+<div style="margin-top: 15px; padding: 20px; background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 4px;">
+<strong>💡 Try it:</strong> Add a file using the attachment button, drag & drop, or copy-paste. Watch the loading indicator appear on the attachment while it's being "processed" (simulated with a 2-second delay).
+</div>
+
+**Features demonstrated:**
+- AttachmentsV2 event for granular attachment tracking
+- Loading state management with \`setAttachmentsLoading()\`
+- Asynchronous file processing simulation
+- File upload progress indication
+
+**Use Cases:**
+- Upload files to cloud storage or backend API
+- Validate file contents before accepting
+- Process files (e.g., extract text, generate thumbnails)
+- Apply security scans or virus checking
+- Convert file formats
 
 ## Documentation
 

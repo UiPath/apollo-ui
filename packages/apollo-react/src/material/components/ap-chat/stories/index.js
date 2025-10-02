@@ -5,6 +5,7 @@ export { StreamingResponse } from './StreamingResponse.story';
 export { WithCitations } from './WithCitations.story';
 export { StreamingWithCitations } from './StreamingWithCitations.story';
 export { WithAttachments } from './WithAttachments.story';
+export { AsyncAttachments } from './AsyncAttachments.story';
 export { WithHistory } from './WithHistory.story';
 export { EmbeddedMode } from './EmbeddedMode.story';
 export { FullScreenMode } from './FullScreenMode.story';
