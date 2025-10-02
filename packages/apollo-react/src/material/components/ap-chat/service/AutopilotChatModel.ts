@@ -28,6 +28,7 @@ export interface AutopilotChatFileInfo {
         binary: Uint8Array | null;
         base64: string | null;
     };
+    loading?: boolean;
 }
 
 /**
@@ -139,7 +140,8 @@ export interface AutopilotChatMessageRenderer {
  * @property {string} SetModels - Emitted when the models are set
  * @property {string} SetSelectedModel - Emitted when the selected model is set
  * @property {string} ConversationLoadMore - Emitted when the conversation load more is triggered
- * @property {string} Attachments - Emitted when the attachments are set in the prompt
+ * @property {string} Attachments - Emitted when the attachments are set in the prompt (old version, should not be used, will be deprecated)
+ * @property {string} AttachmentsV2 - Emitted when the attachments are set in the prompt (added and removed array)
  */
 export enum AutopilotChatEvent {
     Error = 'error',
@@ -167,6 +169,7 @@ export enum AutopilotChatEvent {
     SetSelectedModel = 'setSelectedModel',
     ConversationLoadMore = 'conversationLoadMore',
     Attachments = 'attachments',
+    AttachmentsV2 = 'attachmentsV2',
     InputStream = 'inputStream',
     OutputStream = 'outputStream',
 }
@@ -202,6 +205,7 @@ export enum AutopilotChatInterceptableEvent {
  * @property {string} SetWaiting - Emitted when the waiting state should be set for the prompt box
  * @property {string} SetSuggestions - Emitted when the suggestions are set
  * @property {string} SetSpacing - Emitted when the spacing is set for the chat
+ * @property {string} SetAttachmentsLoading - Emitted when the attachments loading is set
  */
 export enum AutopilotChatInternalEvent {
     ChatResize = 'chatResize',
@@ -219,6 +223,7 @@ export enum AutopilotChatInternalEvent {
     SetWaiting = 'setWaiting',
     SetSuggestions = 'setSuggestions',
     SetSpacing = 'setSpacing',
+    SetAttachmentsLoading = 'setAttachmentsLoading',
 }
 
 export type AutopilotChatEventHandler<T = any> = (data?: T) => void;
