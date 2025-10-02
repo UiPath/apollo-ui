@@ -83,6 +83,7 @@ const chatService = window.PortalShell.AutopilotChat;
 | `setWaiting(waiting: boolean)`                                                  | Sets the waiting state for the input prompt box. When set to true, users can still type in the input field but cannot send messages. This overrides the default automatic waiting behavior (except for equest), giving you manual control over when users can send messages. |
 | `setSuggestions(suggestions: AutopilotChatSuggestion[], sendOnClick?: boolean)` | Sets suggestions that appear in the chat interface. When `sendOnClick` is true, clicking a suggestion sends it immediately (defaults to the first run experience setting); otherwise it sets the prompt (see [AutopilotChatSuggestion](#autopilotchatsuggestion))            |
 | `getMessagesInGroup(groupId: string)`                                           | Returns all messages that belong to the specified group ID                                                                                                                                                                                                                   |
+| `setAttachmentsLoading(attachments: AutopilotChatFileInfo[])`                   | Sets the loading state for attachments. Use this to show loading indicators while attachments are being processed asynchronously (see [Asynchronous Attachment Processing](#asynchronous-attachment-processing))                                                             |
 
 ### Input/Output Stream Handling
 | Method                                                         | Description                                                                                         |
@@ -201,7 +202,8 @@ Subscribes to chat events and returns an unsubscribe function. The handler will 
 - `SetModels`: Emitted when the models are set
 - `SetSelectedModel`: Emitted when the selected model is set
 - `ConversationLoadMore`: Emitted when the user scrolls to the top and more messages need to be loaded (see [Pagination and Loading More Messages](#pagination-and-loading-more-messages))
-- `Attachments`: Emitted when the attachments are set in the prompt
+- `Attachments`: <strong>DEPRECATED</strong> Emitted when the attachments are set in the prompt (the whole list of attachments)
+- `AttachmentsV2`: Emitted when the attachments change, providing details about which attachments were added and removed (see [Asynchronous Attachment Processing](#asynchronous-attachment-processing))
 - `InputStream`: Emitted when sendInputStreamEvent is called (see [AutopilotChatInputStreamEvent](#autopilotchatinputstreamevent)).
 - `OutputStream`: Emitted when sendOutputStreamEvent is called (see [AutopilotChatOutputStreamEvent](#autopilotchatoutputtreamevent)).
 
@@ -1493,6 +1495,159 @@ chatService.setOverrideLabels({
   title: ''
 });
 ```
+
+## Asynchronous Attachment Processing
+
+The Autopilot Chat component supports asynchronous processing of attachments, allowing you to show loading states while files are being uploaded, validated, or processed. This is useful when attachments need to be sent to a server or undergo transformation before being ready for use.
+
+### AttachmentsV2 Event
+
+The `AttachmentsV2` event provides granular information about attachment changes, making it easy to track which files were added or removed:
+
+```typescript
+// Listen for attachment changes
+chatService.on(AutopilotChatEvent.AttachmentsV2, ({ added, removed }) => {
+  console.log('Added attachments:', added);
+  console.log('Removed attachments:', removed);
+  
+  // Process newly added attachments
+  if (added.length > 0) {
+    // Your async processing logic here
+    processAttachments(added);
+  }
+});
+```
+
+### Using setAttachmentsLoading
+
+The `setAttachmentsLoading` method allows you to display loading indicators on specific attachments while they're being processed:
+
+```typescript
+// Basic example: Show loading state for all attachments
+chatService.on(AutopilotChatEvent.AttachmentsV2, ({ added, removed }) => {
+  if (added.length > 0) {
+    // Set loading state for newly added attachments
+    chatService.setAttachmentsLoading(
+      added.map(attachment => ({
+        ...attachment,
+        loading: true,
+      }))
+    );
+    
+    // Simulate async processing
+    setTimeout(() => {
+      // Clear loading state once processing is complete
+      chatService.setAttachmentsLoading(
+        added.map(attachment => ({
+          ...attachment,
+          loading: false,
+        }))
+      );
+    }, 2000);
+  }
+});
+```
+
+### Complete Example: Upload Attachments to Server
+
+Here's a comprehensive example showing how to upload attachments to a server and track their loading state:
+
+```typescript
+// Subscribe to attachment changes
+const unsubscribe = chatService.on(AutopilotChatEvent.AttachmentsV2, async ({ added, removed }) => {
+  if (added.length === 0) {
+    return;
+  }
+  
+  // Mark attachments as loading
+  chatService.setAttachmentsLoading(
+    added.map(attachment => ({
+      ...attachment,
+      loading: true,
+    }))
+  );
+  
+  try {
+    // Upload each attachment to your server
+    const uploadPromises = added.map(async (attachment) => {
+      const formData = new FormData();
+      
+      // Convert base64 or binary content to Blob
+      let blob;
+      if (attachment.content.base64) {
+        const binary = atob(attachment.content.base64);
+        const bytes = new Uint8Array(binary.length);
+        for (let i = 0; i < binary.length; i++) {
+          bytes[i] = binary.charCodeAt(i);
+        }
+        blob = new Blob([bytes], { type: attachment.type });
+      } else if (attachment.content.binary) {
+        blob = new Blob([attachment.content.binary], { type: attachment.type });
+      }
+      
+      formData.append('file', blob, attachment.name);
+      
+      // Upload to server
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+      
+      return {
+        attachment,
+        uploadedUrl: await response.json(),
+      };
+    });
+    
+    // Wait for all uploads to complete
+    const results = await Promise.all(uploadPromises);
+    
+    // Update attachments with uploaded URLs
+    const updatedAttachments = results.map(({ attachment, uploadedUrl }) => ({
+      ...attachment,
+      loading: false,
+      uploadedUrl, // Add custom metadata
+    }));
+    
+    chatService.setAttachmentsLoading(updatedAttachments);
+    
+    console.log('All attachments uploaded successfully');
+  } catch (error) {
+    console.error('Error uploading attachments:', error);
+    
+    // Clear loading state on error
+    chatService.setAttachmentsLoading(
+      added.map(attachment => ({
+        ...attachment,
+        loading: false,
+      }))
+    );
+    
+    // Optionally show an error message
+    chatService.setError('Failed to upload attachments. Please try again.');
+  }
+});
+
+// Later, clean up the subscription when no longer needed
+// unsubscribe();
+```
+
+### Clearing Loading States
+
+To clear all loading states (for example, when an attachment is removed or processing is cancelled):
+
+```typescript
+// Clear all loading states
+chatService.setAttachmentsLoading([]);
+```
+
+### Best Practices
+
+1. **Always clear loading states**: Ensure you set `loading: false` after processing completes or fails
+2. **Handle errors gracefully**: Clear loading states and inform users if something goes wrong
+3. **Track individual attachments**: Use the attachment's `name` and `size` properties to identify which files are being processed
+4. **Provide feedback**: Consider using the `setError()` or `setLoadingMessage()` methods to give users additional context
+5. **Clean up subscriptions**: Remember to call the unsubscribe function when your component unmounts or the feature is disabled
 
 ## Spacing Configuration
 
