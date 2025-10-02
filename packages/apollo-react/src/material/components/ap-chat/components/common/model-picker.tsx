@@ -150,7 +150,7 @@ export const ModelPicker = React.memo(({
                     {models.map((model) => (
                         <AutopilotChatTooltip
                             key={model.id}
-                            placement="right-start"
+                            placement="left-start"
                             title={
                                 <ap-typography
                                     color={theme.palette.semantic.colorForegroundInverse}
