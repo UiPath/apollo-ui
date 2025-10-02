@@ -4,6 +4,7 @@ import type {
     AutopilotChatDisabledFeatures,
     AutopilotChatEventHandler,
     AutopilotChatEventInterceptor,
+    AutopilotChatFileInfo,
     AutopilotChatHistory,
     AutopilotChatInputStreamEvent,
     AutopilotChatMessage,
@@ -134,6 +135,7 @@ export class AutopilotChatService {
         this.sendOutputStreamEvent = this.sendOutputStreamEvent.bind(this);
         this.setShowLoading = this.setShowLoading.bind(this);
         this.setWaiting = this.setWaiting.bind(this);
+        this.setAttachmentsLoading = this.setAttachmentsLoading.bind(this);
     }
 
     static Instantiate({
@@ -958,6 +960,15 @@ export class AutopilotChatService {
      */
     sendOutputStreamEvent(event: AutopilotChatOutputStreamEvent) {
         this._eventBus.publish(AutopilotChatEvent.OutputStream, event);
+    }
+
+    /**
+     * Sets the attachments loading in the chat service
+     *
+     * @param attachments - The attachments to set (with loading state on them)
+     */
+    setAttachmentsLoading(attachments: AutopilotChatFileInfo[]) {
+        this._internalService.publish(AutopilotChatInternalEvent.SetAttachmentsLoading, attachments);
     }
 
     /**
