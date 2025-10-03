@@ -206,6 +206,7 @@ export enum AutopilotChatInterceptableEvent {
  * @property {string} SetSuggestions - Emitted when the suggestions are set
  * @property {string} SetSpacing - Emitted when the spacing is set for the chat
  * @property {string} SetAttachmentsLoading - Emitted when the attachments loading is set
+ * @property {string} SetInputFocused - Emitted when the input should be focused
  */
 export enum AutopilotChatInternalEvent {
     ChatResize = 'chatResize',
@@ -224,6 +225,7 @@ export enum AutopilotChatInternalEvent {
     SetSuggestions = 'setSuggestions',
     SetSpacing = 'setSpacing',
     SetAttachmentsLoading = 'setAttachmentsLoading',
+    SetInputFocused = 'setInputFocused',
 }
 
 export type AutopilotChatEventHandler<T = any> = (data?: T) => void;
