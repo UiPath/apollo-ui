@@ -6,7 +6,10 @@ import {
     useTheme,
 } from '@mui/material';
 import token, { FontVariantToken } from '@uipath/apollo-core/lib';
-import { AutopilotChatSuggestion } from '@uipath/portal-shell-util';
+import {
+    AutopilotChatInternalEvent,
+    AutopilotChatSuggestion,
+} from '@uipath/portal-shell-util';
 import React from 'react';
 
 import { t } from '../../../../../utils/localization/loc';
@@ -76,6 +79,7 @@ function AutopilotChatSuggestionsComponent({
             } else {
                 chatService.setPrompt(suggestion.prompt);
             }
+            chatService.__internalService__.publish(AutopilotChatInternalEvent.SetInputFocused, true);
         },
         [ chatService, sendOnClick ],
     );

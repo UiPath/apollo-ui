@@ -8,6 +8,7 @@ import {
 import token, { FontVariantToken } from '@uipath/apollo-core/lib';
 import {
     AutopilotChatEvent,
+    AutopilotChatInternalEvent,
     AutopilotChatPrompt,
 } from '@uipath/portal-shell-util';
 import React from 'react';
@@ -111,11 +112,21 @@ function AutopilotChatInputComponent() {
             return;
         }
 
+        const unsubscribeSetInputFocused = chatService.__internalService__.on(
+            AutopilotChatInternalEvent.SetInputFocused,
+            (value: boolean) => {
+                if (value) {
+                    inputRef.current?.focus();
+                }
+            },
+        );
+
         const unsubscribeSetPrompt = chatService.on(AutopilotChatEvent.SetPrompt, (prompt: AutopilotChatPrompt | string) => {
             setMessage(typeof prompt === 'string' ? prompt : prompt.content);
         });
 
         return () => {
+            unsubscribeSetInputFocused();
             unsubscribeSetPrompt();
         };
     }, [ chatService ]);
