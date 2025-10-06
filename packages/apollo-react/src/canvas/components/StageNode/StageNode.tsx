@@ -56,7 +56,6 @@ const StageNodeComponent = (props: StageNodeProps) => {
     onStageTitleChange,
   } = props;
 
-  const label = props.stageDetails.label;
   const tasks = stageDetails?.tasks || [];
   const isException = stageDetails?.isException;
   const icon = stageDetails?.icon;
@@ -71,7 +70,12 @@ const StageNodeComponent = (props: StageNodeProps) => {
   const isStageTitleEditable = !!onStageTitleChange;
 
   const [isHovered, setIsHovered] = useState(false);
-  const [localLabel, setLocalLabel] = useState(label);
+  const [label, setLabel] = useState(props.stageDetails.label);
+
+  useEffect(() => {
+    setLabel(props.stageDetails.label);
+  }, [props.stageDetails.label]);
+
   const [isStageTitleEditing, setIsStageTitleEditing] = useState(false);
   const stageTitleRef = useRef<HTMLInputElement>(null);
   const [taskStateReference, setTaskStateReference] = useState<TaskStateReference>({
@@ -111,42 +115,42 @@ const StageNodeComponent = (props: StageNodeProps) => {
 
   const handleStageTitleChange = useCallback((e: React.FormEvent<HTMLInputElement>) => {
     setIsStageTitleEditing(true);
-    setLocalLabel((e.target as HTMLInputElement).value);
+    setLabel((e.target as HTMLInputElement).value);
   }, []);
 
   const handleStageTitleClickToSave = useCallback(
     (e: React.FocusEvent | MouseEvent) => {
       if (isStageTitleEditing && !stageTitleRef.current?.contains(e.target as Node)) {
         setIsStageTitleEditing(false);
-        if (onStageTitleChange && localLabel !== label) {
-          if (localLabel.trim() === "") setLocalLabel("Untitled Stage");
-          onStageTitleChange(localLabel);
+        if (onStageTitleChange) {
+          if (label.trim() === "") setLabel("Untitled Stage");
+          onStageTitleChange(label);
         }
       }
     },
-    [isStageTitleEditing, onStageTitleChange, localLabel, label]
+    [isStageTitleEditing, onStageTitleChange, label]
   );
 
   const handleStageTitleBlurToSave = useCallback(() => {
     if (isStageTitleEditing) {
       setIsStageTitleEditing(false);
-      if (onStageTitleChange && localLabel !== label) {
-        if (localLabel.trim() === "") setLocalLabel("Untitled Stage");
-        onStageTitleChange(localLabel);
+      if (onStageTitleChange) {
+        if (label.trim() === "") setLabel("Untitled Stage");
+        onStageTitleChange(label);
       }
     }
-  }, [isStageTitleEditing, onStageTitleChange, localLabel, label]);
+  }, [isStageTitleEditing, onStageTitleChange, label]);
 
   const handleStageTitleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLInputElement>) => {
       if (e.key === "Enter") {
         setIsStageTitleEditing(false);
-        if (onStageTitleChange && localLabel !== label) {
-          onStageTitleChange(localLabel);
+        if (onStageTitleChange) {
+          onStageTitleChange(label);
         }
       }
     },
-    [onStageTitleChange, localLabel, label]
+    [onStageTitleChange, label]
   );
 
   const handleTaskContextMenuOpen = useCallback(
@@ -217,7 +221,7 @@ const StageNodeComponent = (props: StageNodeProps) => {
                     <StageTitleInput
                       name="Stage Title"
                       isStageTitleEditable={isStageTitleEditable}
-                      value={localLabel}
+                      value={label}
                       ref={stageTitleRef}
                       isEditing={isStageTitleEditing}
                       {...(onStageTitleChange && {
@@ -226,8 +230,7 @@ const StageNodeComponent = (props: StageNodeProps) => {
                         onKeyDown: handleStageTitleKeyDown,
                         onBlur: handleStageTitleBlurToSave,
                       })}
-                      readOnly
-                      {...(isStageTitleEditable && { readOnly: false })}
+                      readOnly={!isStageTitleEditable}
                     />
                   </StageTitleContainer>
                 </ApTooltip>
