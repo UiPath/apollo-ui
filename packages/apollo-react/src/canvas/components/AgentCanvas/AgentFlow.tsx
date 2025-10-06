@@ -329,6 +329,19 @@ const AgentFlowInner = memo(
       [onSelectResource, setSelectedNodeId, setSpanForSelectedNode, nodes]
     );
 
+    const handleNodeContextMenu = useCallback(
+      (event: React.MouseEvent, node: AgentFlowCustomNode) => {
+        event.stopPropagation();
+        event.preventDefault();
+
+        setSelectedNodeId(node.id);
+        setSpanForSelectedNode?.(node, nodes);
+
+        onSelectResource?.(node.id);
+      },
+      [onSelectResource, setSelectedNodeId, setSpanForSelectedNode, nodes]
+    );
+
     const handleNodeDragStart = useCallback(
       (_event: React.MouseEvent, node: AgentFlowCustomNode) => {
         setSelectedNodeId(node.id);
@@ -507,6 +520,7 @@ const AgentFlowInner = memo(
             onEdgesChange={onEdgesChange}
             onConnect={onConnect}
             onNodeClick={handleNodeClick}
+            onNodeContextMenu={handleNodeContextMenu}
             onPaneClick={handlePaneClick}
             onNodeDragStart={handleNodeDragStart}
             onNodeDrag={handleNodeDrag}
