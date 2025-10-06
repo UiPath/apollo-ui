@@ -37,6 +37,7 @@ export interface StageNodeProps extends NodeProps {
     stageStatus: {
       status?: StageStatus;
       label?: string;
+      statusForIcon?: StageStatus;
       duration?: string;
     };
     taskStatus: Record<string, StageTaskExecution>;
