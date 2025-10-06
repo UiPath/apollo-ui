@@ -119,7 +119,7 @@ const StageNodeComponent = (props: StageNodeProps) => {
       if (isStageTitleEditing && !stageTitleRef.current?.contains(e.target as Node)) {
         setIsStageTitleEditing(false);
         if (onStageTitleChange && localLabel !== label) {
-          if (localLabel.trim() === "") setLocalLabel("Untilted Stage");
+          if (localLabel.trim() === "") setLocalLabel("Untitled Stage");
           onStageTitleChange(localLabel);
         }
       }
@@ -131,7 +131,7 @@ const StageNodeComponent = (props: StageNodeProps) => {
     if (isStageTitleEditing) {
       setIsStageTitleEditing(false);
       if (onStageTitleChange && localLabel !== label) {
-        if (localLabel.trim() === "") setLocalLabel("Untilted Stage");
+        if (localLabel.trim() === "") setLocalLabel("Untitled Stage");
         onStageTitleChange(localLabel);
       }
     }
@@ -178,9 +178,18 @@ const StageNodeComponent = (props: StageNodeProps) => {
     };
   }, [handleTaskContextMenuClose, isTaskContextMenuVisible, handleStageTitleClickToSave, isStageTitleEditing]);
 
-  const contextMenuItems = useMemo(
-    () =>
-      getContextMenuItems(taskStateReference.isParallel, taskStateReference.groupIndex, taskStateReference.taskIndex, reGroupTaskFunction),
+  const contextMenuItems = useCallback(
+    (tasksLength: number, taskGroupLength: number, isAboveParallel: boolean, isBelowParallel: boolean) =>
+      getContextMenuItems(
+        taskStateReference.isParallel,
+        taskStateReference.groupIndex,
+        tasksLength,
+        taskStateReference.taskIndex,
+        taskGroupLength,
+        isAboveParallel,
+        isBelowParallel,
+        reGroupTaskFunction
+      ),
     [taskStateReference.isParallel, taskStateReference.groupIndex, taskStateReference.taskIndex, reGroupTaskFunction]
   );
 
@@ -322,7 +331,12 @@ const StageNodeComponent = (props: StageNodeProps) => {
                               taskStateReference.groupIndex === groupIndex &&
                               taskStateReference.taskIndex === taskIndex
                             }
-                            menuItems={contextMenuItems}
+                            menuItems={contextMenuItems(
+                              tasks.length,
+                              taskGroup.length,
+                              (tasks[groupIndex - 1]?.length ?? 0) > 1,
+                              (tasks[groupIndex + 1]?.length ?? 0) > 1
+                            )}
                             refTask={taskStateReference.anchor}
                           />
                           {onTaskGroupModification && (
