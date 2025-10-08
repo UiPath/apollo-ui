@@ -190,7 +190,7 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
   const guardrailsAdornment = useMemo(() => {
     if (mode == "view") return undefined;
     const hasGuardrails = nodes.some((node) => node.type === "resource" && node.data.hasGuardrails);
-    return <ApIcon variant="outlined" name={hasGuardrails ? "gpp_good" : "shield"} size="18px" color="var(--color-icon-default)" />;
+    return hasGuardrails ? <ApIcon variant="outlined" name="gpp_good" size="18px" color="var(--color-icon-default)" /> : undefined;
   }, [mode, nodes]);
 
   const shouldShowAddButtonFn = (opts: { showAddButton: boolean; selected: boolean }) => {
