@@ -193,6 +193,12 @@ const sampleResources: AgentFlowResource[] = [
     folderPath: "file-parser",
     availableTools: [],
   },
+  {
+    id: "memory-4-datasets",
+    type: "memory",
+    name: "4 Datasets",
+    description: "4 Datasets",
+  },
 ];
 
 // Real agent definition from frontend examples

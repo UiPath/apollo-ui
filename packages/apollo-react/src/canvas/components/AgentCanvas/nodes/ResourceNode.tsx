@@ -124,6 +124,9 @@ export const ResourceNode = memo(
         case "escalation":
           icon = <ApIcon name="person" size="40px" />;
           break;
+        case "memory":
+          icon = <Icons.MemoryIcon w={40} h={40} />;
+          break;
         case "mcp":
           icon = <Icons.McpIcon w={40} h={40} />;
           break;
@@ -149,7 +152,9 @@ export const ResourceNode = memo(
     }, [hasError, hasSuccess, hasRunning, isCurrentBreakpoint]);
 
     const toolbarConfig: NodeToolbarConfig | undefined = useMemo(() => {
-      if (mode === "view" || data.type === "model") return undefined;
+      if (mode === "view" || data.type === "model" || data.type === "memory") {
+        return undefined;
+      }
 
       const toggleBreakpointAction: ToolbarAction = {
         id: "toggle-breakpoint",
@@ -294,6 +299,19 @@ export const ResourceNode = memo(
       []
     );
 
+    const memoryHandles = useMemo(
+      () => [
+        {
+          id: Position.Bottom,
+          type: "target" as const,
+          handleType: "artifact" as const,
+          showButton: false,
+          color: "var(--color-foreground-de-emp)",
+        },
+      ],
+      []
+    );
+
     const breakpointAdornment = useMemo(() => {
       if (hasBreakpoint) {
         return <ApIcon variant="normal" name="circle" size="14px" color="#cc3d45" />;
@@ -341,8 +359,13 @@ export const ResourceNode = memo(
           handles: escalationHandles,
           visible: data.type === "escalation",
         },
+        {
+          position: Position.Bottom,
+          handles: memoryHandles,
+          visible: data.type === "memory",
+        },
       ],
-      [data.type, data.isExpandable, modelHandles, toolTopHandles, toolBottomHandles, contextHandles, escalationHandles]
+      [data.type, data.isExpandable, modelHandles, toolTopHandles, toolBottomHandles, contextHandles, escalationHandles, memoryHandles]
     );
 
     return (

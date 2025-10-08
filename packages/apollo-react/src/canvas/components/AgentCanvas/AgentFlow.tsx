@@ -124,8 +124,7 @@ const addVirtualSpacingNodes = (nodes: AgentFlowCustomNode[], agentNode: AgentFl
 
 // agent node wrapper
 const createAgentNodeWrapper = (handlers: {
-  onAddResource?: (type: "context" | "escalation" | "mcp" | "model" | "tool") => void;
-  onArgumentsClick?: () => void;
+  onAddResource?: (type: "context" | "escalation" | "mcp" | "model" | "tool" | "memory") => void;
   translations?: AgentNodeTranslations;
   enableMcpTools?: boolean;
 }) => {
@@ -143,11 +142,17 @@ const createAgentNodeWrapper = (handlers: {
     const hasEscalation = nodes.some(
       (node) => isAgentFlowResourceNode(node) && node.data.type === "escalation" && node.data.parentNodeId === props.id
     );
+
     const hasTool = nodes.some((node) => isAgentFlowResourceNode(node) && node.data.type === "tool" && node.data.parentNodeId === props.id);
 
     const hasMcp =
       handlers.enableMcpTools !== false &&
       nodes.some((node) => isAgentFlowResourceNode(node) && node.data.type === "mcp" && node.data.parentNodeId === props.id);
+
+    const hasMemory = nodes.some(
+      (node) => isAgentFlowResourceNode(node) && node.data.type === "memory" && node.data.parentNodeId === props.id
+    );
+
     // Check if agent itself is running OR if any of its resources are running
     const agentRunning = hasAgentRunning(storeProps.spans);
     const resourceRunning = nodes.some(
@@ -167,6 +172,7 @@ const createAgentNodeWrapper = (handlers: {
         hasEscalation={hasEscalation}
         hasTool={hasTool}
         hasMcp={hasMcp}
+        hasMemory={hasMemory}
         mcpEnabled={handlers.enableMcpTools !== false}
         mode={storeProps.mode}
         hasModel={hasModel}
@@ -174,7 +180,6 @@ const createAgentNodeWrapper = (handlers: {
         hasSuccess={hasSuccess}
         hasRunning={hasRunning}
         onAddResource={handlers.onAddResource}
-        onArgumentsClick={handlers.onArgumentsClick}
         translations={handlers.translations ?? DefaultAgentNodeTranslations}
       />
     );
@@ -240,7 +245,6 @@ const AgentFlowInner = memo(
     resourceNodeTranslations,
     canvasTranslations,
     enableTimelinePlayer,
-    onArgumentsClick,
     canvasRef,
     enableMcpTools,
   }: PropsWithChildren<AgentFlowProps>) => {
@@ -266,7 +270,7 @@ const AgentFlowInner = memo(
     const { fitView } = useReactFlow();
 
     const nodeTypes = useMemo(() => {
-      const handleAddResource = (type: "context" | "escalation" | "mcp" | "model" | "tool") => {
+      const handleAddResource = (type: "context" | "escalation" | "mcp" | "model" | "tool" | "memory") => {
         if (type === "model") {
           onAddModel?.();
         } else {
@@ -278,7 +282,6 @@ const AgentFlowInner = memo(
         agent: createAgentNodeWrapper({
           onAddResource: handleAddResource,
           translations: agentNodeTranslations,
-          onArgumentsClick,
           enableMcpTools,
         }),
         resource: createResourceNodeWrapper({
@@ -304,7 +307,6 @@ const AgentFlowInner = memo(
       onAddResource,
       agentNodeTranslations,
       resourceNodeTranslations,
-      onArgumentsClick,
       onExpandResource,
       onCollapseResource,
       enableMcpTools,

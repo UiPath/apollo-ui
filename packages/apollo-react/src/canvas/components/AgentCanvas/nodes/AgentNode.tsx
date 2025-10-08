@@ -26,6 +26,7 @@ interface AgentNodeProps extends NewBaseNodeDisplayProps {
   selected?: boolean;
   mode?: "design" | "view";
   hasModel?: boolean;
+  hasMemory?: boolean;
   hasContext?: boolean;
   hasEscalation?: boolean;
   hasTool?: boolean;
@@ -34,9 +35,7 @@ interface AgentNodeProps extends NewBaseNodeDisplayProps {
   hasError?: boolean;
   hasSuccess?: boolean;
   hasRunning?: boolean;
-  onAddResource?: (type: "context" | "escalation" | "mcp" | "model" | "tool") => void;
-  /** Not currently used in the agent node */
-  onArgumentsClick?: () => void;
+  onAddResource?: (type: "context" | "escalation" | "mcp" | "model" | "tool" | "memory") => void;
   translations: AgentNodeTranslations;
 }
 
@@ -47,6 +46,7 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
     selected = false,
     mode = "design",
     hasModel = false,
+    hasMemory = false,
     hasContext = false,
     hasEscalation = false,
     hasTool = false,
@@ -70,8 +70,9 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
     return undefined;
   }, [hasError, hasSuccess, hasRunning]);
 
-  const displayContext = mode === "design" || (mode === "view" && hasContext);
   const displayModel = mode === "design" || (mode === "view" && hasModel);
+  const displayMemory = hasMemory; // Simply show memory if it exists, regardless of mode
+  const displayContext = mode === "design" || (mode === "view" && hasContext);
   const displayEscalation = mode === "design" || (mode === "view" && hasEscalation);
   const displayTool = mode === "design" || (mode === "view" && hasTool);
   const isMcpEnabled = mcpEnabled !== false;
@@ -85,6 +86,19 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
     const topHandles: ButtonHandleConfig[] = [];
     // Bottom handles (Model, Escalation, Tool)
     const bottomHandles: ButtonHandleConfig[] = [];
+
+    if (displayMemory) {
+      topHandles.push({
+        id: ResourceNodeType.Memory,
+        type: "source",
+        handleType: "artifact",
+        label: translations.memory,
+        showButton: false, // Memory handle shouldn't be actionable
+        color: "var(--color-foreground-de-emp)",
+        labelBackgroundColor: "var(--color-background-secondary)",
+        visible: displayMemory,
+      });
+    }
 
     if (displayEscalation) {
       topHandles.push({
@@ -100,6 +114,9 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
           onAddResource?.("escalation");
         },
       });
+    }
+
+    if (topHandles.length) {
       configs.push({
         position: Position.Top,
         handles: topHandles,
@@ -114,7 +131,7 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
           type: "source",
           handleType: "artifact",
           label: translations.model,
-          showButton: false,
+          showButton: false, // Model handle shouldn't be actionable
           color: "var(--color-foreground-de-emp)",
           labelBackgroundColor: "var(--color-background-secondary)",
           visible: displayModel,
@@ -159,7 +176,7 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
     }
 
     return configs;
-  }, [mode, displayContext, displayMcp, displayTool, displayModel, displayEscalation, onAddResource, translations]);
+  }, [mode, displayContext, displayMemory, displayMcp, displayTool, displayModel, displayEscalation, onAddResource, translations]);
 
   const agentIcon = useMemo(() => {
     if (isConversational) {
@@ -217,7 +234,6 @@ const AgentNodeWrapper = (props: NodeProps<Node<AgentNodeData>> & AgentNodeProps
     hasSuccess,
     hasRunning,
     onAddResource,
-    onArgumentsClick,
     translations,
     ...nodeProps
   } = props;
@@ -237,7 +253,6 @@ const AgentNodeWrapper = (props: NodeProps<Node<AgentNodeData>> & AgentNodeProps
       hasSuccess={hasSuccess}
       hasRunning={hasRunning}
       onAddResource={onAddResource}
-      onArgumentsClick={onArgumentsClick}
       translations={translations}
     />
   );

@@ -89,7 +89,26 @@ export type AgentFlowMcpResource = {
   isDisabled?: boolean;
 };
 
-export type AgentFlowResource = AgentFlowContextResource | AgentFlowEscalationResource | AgentFlowMcpResource | AgentFlowToolResource;
+export type AgentFlowMemoryResource = {
+  id: string;
+  type: "memory";
+  name: string;
+  originalName?: string;
+  description: string;
+  errors?: ErrorInfo[];
+  hasBreakpoint?: boolean;
+  isCurrentBreakpoint?: boolean;
+  hasGuardrails?: boolean;
+  projectId?: string;
+  isDisabled?: boolean;
+};
+
+export type AgentFlowResource =
+  | AgentFlowContextResource
+  | AgentFlowEscalationResource
+  | AgentFlowMcpResource
+  | AgentFlowToolResource
+  | AgentFlowMemoryResource;
 export type AgentFlowResourceType = AgentFlowResource["type"];
 
 export type SpanAttributes = Record<string, unknown>;
@@ -127,7 +146,6 @@ export type AgentFlowProps = {
   onRemoveModel?: () => void;
   onAddResource?: (type: AgentFlowResourceType) => void;
   onRemoveResource?: (resource: AgentFlowResource) => void;
-  onArgumentsClick?: () => void;
   onAgentNodeClick?: () => void;
 
   // view mode
@@ -174,6 +192,9 @@ type ModelResourceData = {
 type McpResourceData = {
   type: "mcp";
 };
+type MemoryResourceData = {
+  type: "memory";
+};
 
 export type AgentFlowResourceNodeData = (
   | ContextResourceData
@@ -181,6 +202,7 @@ export type AgentFlowResourceNodeData = (
   | McpResourceData
   | ModelResourceData
   | ToolResourceData
+  | MemoryResourceData
 ) & {
   name: string;
   originalName?: string;
@@ -244,6 +266,7 @@ export interface AgentNodeTranslations {
   model: string;
   context: string;
   tools: string;
+  memory: string;
 }
 
 export const DefaultAgentNodeTranslations: AgentNodeTranslations = {
@@ -259,6 +282,7 @@ export const DefaultAgentNodeTranslations: AgentNodeTranslations = {
   model: "Model",
   context: "Context",
   tools: "Tools",
+  memory: "Memory",
 };
 
 export interface ResourceNodeTranslations {
