@@ -4,6 +4,7 @@
 import {
     AutopilotChatEvent,
     AutopilotChatMessage,
+    AutopilotChatPreHookAction,
     AutopilotChatRole,
 } from '@uipath/portal-shell-util';
 import React, { useEffect } from 'react';
@@ -92,14 +93,20 @@ function AutopilotChatMessageActionsComponent({
                 label: t('autopilot-chat-good'),
                 icon: 'thumb_up',
                 eventName: AutopilotChatEvent.Feedback,
-                details: { isPositive: true },
+                details: {
+                    isPositive: true,
+                    preHookAction: AutopilotChatPreHookAction.Feedback,
+                },
             },
             {
                 name: 'autopilot-chat-bad',
                 label: t('autopilot-chat-bad'),
                 icon: 'thumb_down',
                 eventName: AutopilotChatEvent.Feedback,
-                details: { isPositive: false },
+                details: {
+                    isPositive: false,
+                    preHookAction: AutopilotChatPreHookAction.Feedback,
+                },
             },
         ];
 

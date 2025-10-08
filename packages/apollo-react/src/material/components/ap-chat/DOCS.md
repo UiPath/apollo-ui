@@ -2081,6 +2081,7 @@ export interface AutopilotChatActionPayload {
  * @property {string} ToggleChat - Emitted when the user attemps to toggle the chat
  * @property {string} CloseChat - Emitted when the user attemps to close the chat
  * @property {string} CitationClick - Emitted when the user clicks on a citation
+ * @property {string} Feedback - Emitted when the user clicks on the feedback buttons thumbs up/down
  */
 export enum AutopilotChatPreHookAction {
     NewChat = 'new-chat',
@@ -2089,6 +2090,7 @@ export enum AutopilotChatPreHookAction {
     ToggleChat = 'toggle-chat',
     CloseChat = 'close-chat',
     CitationClick = 'citation-click',
+    Feedback = 'feedback'
 }
 ```
 

@@ -11,6 +11,7 @@ import {
     AutopilotChatActionPayload,
     AutopilotChatMessage,
     AutopilotChatMessageAction,
+    AutopilotChatPreHookAction,
     AutopilotChatRole,
 } from '@uipath/portal-shell-util';
 import React from 'react';
@@ -62,14 +63,32 @@ function AutopilotChatActionsListComponent({
     const shouldBeVisible = isVisible || overflowMenuOpen;
     const chatService = useChatService();
 
-    const handleAction = React.useCallback((action: AutopilotChatMessageAction) => {
-        if (action.eventName && chatService) {
-            (chatService as any)._eventBus.publish(action.eventName, {
-                group: chatService.getMessagesInGroup(message.groupId ?? ''),
-                message: chatService.getConversation().find(m => m.id === message.id) as AutopilotChatMessage,
-                action,
-            } satisfies AutopilotChatActionPayload);
+    const handleAction = React.useCallback(async (action: AutopilotChatMessageAction) => {
+        if (!action.eventName || !chatService) {
+            return;
         }
+
+        // Get message and group info
+        const group = chatService.getMessagesInGroup(message.groupId ?? '');
+        const currentMessage = chatService.getConversation().find(m => m.id === message.id) as AutopilotChatMessage;
+
+        // Check if this action has a pre-hook
+        if (action.details?.preHookAction) {
+            const proceed = await chatService.getPreHook(action.details.preHookAction as AutopilotChatPreHookAction)({
+                isPositive: action.details.isPositive,
+                group,
+                message: currentMessage,
+            });
+            if (!proceed) {
+                return;
+            }
+        }
+
+        (chatService as any)._eventBus.publish(action.eventName, {
+            group,
+            message: currentMessage,
+            action,
+        } satisfies AutopilotChatActionPayload);
     }, [ message, chatService ]);
 
     const handleOpenOverflowMenu = React.useCallback((event: React.MouseEvent<HTMLElement>) => {
