@@ -13,6 +13,7 @@ export { DataTransformIcon } from "./DataTransformIcon";
 export { DecisionIcon } from "./DecisionIcon";
 export { GoogleIcon } from "./GoogleIcon";
 export { McpIcon } from "./McpIcon";
+export { MemoryIcon } from "./MemoryIcon";
 export { OpenAIIcon } from "./OpenAIIcon";
 export { RpaProject } from "./RpaProject";
 export { ScriptTaskIcon } from "./ScriptTaskIcon";
