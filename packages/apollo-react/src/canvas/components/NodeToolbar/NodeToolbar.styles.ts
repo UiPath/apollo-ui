@@ -2,7 +2,9 @@ import styled from "@emotion/styled";
 import { css } from "@emotion/react";
 import { motion } from "motion/react";
 
-export const StyledToolbarContainer = styled(motion.div)<{
+export const StyledToolbarContainer = styled(motion.div, {
+  shouldForwardProp: (prop: string) => !prop.startsWith("$"),
+})<{
   $position: "top" | "bottom" | "left" | "right";
   $align?: "start" | "center" | "end";
 }>`
@@ -193,7 +195,9 @@ export const StyledOverflowContainer = styled.div`
   position: relative;
 `;
 
-export const StyledToolbarButton = styled(motion.button)<{
+export const StyledToolbarButton = styled(motion.button, {
+  shouldForwardProp: (prop: string) => !prop.startsWith("$"),
+})<{
   $disabled?: boolean;
 }>`
   display: flex;
