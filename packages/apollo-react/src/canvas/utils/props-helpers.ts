@@ -256,6 +256,7 @@ const createModelNode = (props: AgentFlowProps, parentNodeId: string): AgentFlow
       hasError: hasModelError(props.model, props.spans),
       hasSuccess: hasModelSuccess(props.model, props.spans),
       hasRunning: hasModelRunning(props.model, props.spans),
+      hasGuardrails: props.model.hasGuardrails ?? false,
       iconUrl: props.model.iconUrl,
       parentNodeId,
     },

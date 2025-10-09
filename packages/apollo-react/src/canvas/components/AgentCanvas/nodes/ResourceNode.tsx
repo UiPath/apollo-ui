@@ -152,7 +152,7 @@ export const ResourceNode = memo(
     }, [hasError, hasSuccess, hasRunning, isCurrentBreakpoint]);
 
     const toolbarConfig: NodeToolbarConfig | undefined = useMemo(() => {
-      if (mode === "view" || data.type === "model" || data.type === "memory") {
+      if (mode === "view" || data.type === "memory") {
         return undefined;
       }
 
@@ -166,7 +166,7 @@ export const ResourceNode = memo(
 
       const addGuardrailAction: ToolbarAction = {
         id: "add-guardrail",
-        icon: undefined,
+        icon: data.type === "model" ? "add_moderator" : undefined,
         label: translations?.addGuardrail ?? "",
         disabled: false,
         onAction: handleClickAddGuardrail,
@@ -204,9 +204,9 @@ export const ResourceNode = memo(
         onAction: () => {},
       };
 
-      const actions: ToolbarAction[] = [removeAction];
+      const actions: ToolbarAction[] = data.type === "model" ? [addGuardrailAction] : [removeAction];
       const overflowActions: ToolbarAction[] = [
-        toggleBreakpointAction,
+        ...(data.type === "model" ? [] : [toggleBreakpointAction]),
         ...(data.type === "tool" ? [addGuardrailAction] : []),
         ...(data.projectId ? [goToSourceAction] : []),
         ...(data.type === "tool" ? [separator, toggleEnabledAction] : []),

@@ -126,6 +126,7 @@ const sampleModel: AgentFlowModel = {
   name: "gpt-4",
   vendorName: "test-engine",
   iconUrl: "",
+  hasGuardrails: false,
 };
 
 const sampleResources: AgentFlowResource[] = [
@@ -283,7 +284,7 @@ const AgentFlowWrapper = ({
   enableTimelinePlayer = true,
 }: AgentFlowWrapperProps) => {
   const [resources, setResources] = useState<AgentFlowResource[]>(initialResources);
-  const [model, setModel] = useState<AgentFlowModel | null>(sampleModel);
+  const [model, setModel] = useState<AgentFlowModel>(sampleModel);
   const [selectedResourceId, setSelectedResourceId] = useState<string | null>(null);
   const [_sidebarMode, setSidebarMode] = useState<"add-context" | "add-escalation" | "add-model" | "add-tool" | "properties">("properties");
 
@@ -332,22 +333,6 @@ const AgentFlowWrapper = ({
     [selectedResourceId]
   );
 
-  const handleAddModel = useCallback(() => {
-    // Create a sample model if none exists
-    if (!model) {
-      setModel({
-        name: "gpt-4-turbo",
-        vendorName: "OpenAI",
-        iconUrl: "",
-      });
-    }
-    setSidebarMode("properties");
-  }, [model]);
-
-  const handleRemoveModel = useCallback(() => {
-    setModel(null);
-  }, []);
-
   const handleEnable = useCallback((resourceId: string, resource: AgentFlowResourceNodeData) => {
     setResources((prev) =>
       prev.map((r) => ({
@@ -389,14 +374,21 @@ const AgentFlowWrapper = ({
   }, []);
 
   const handleAddGuardrail = useCallback((resourceId: string, resource: AgentFlowResourceNodeData) => {
-    setResources((prev) =>
-      prev.map((r) => ({
-        ...r,
-        ...(`${resource.parentNodeId}=>${r.name}:${r.id}` === resourceId && {
-          hasGuardrails: true,
-        }),
-      }))
-    );
+    if (resource.type === "model") {
+      setModel((prev) => ({
+        ...prev,
+        hasGuardrails: true,
+      }));
+    } else {
+      setResources((prev) =>
+        prev.map((r) => ({
+          ...r,
+          ...(`${resource.parentNodeId}=>${r.name}:${r.id}` === resourceId && {
+            hasGuardrails: true,
+          }),
+        }))
+      );
+    }
   }, []);
 
   // Real span/node mapping functions from frontend
@@ -463,8 +455,6 @@ const AgentFlowWrapper = ({
             activeResourceIds={activeResourceIds}
             setSpanForSelectedNode={setSpanForSelectedNode}
             getNodeFromSelectedSpan={getNodeFromSelectedSpan}
-            onAddModel={handleAddModel}
-            onRemoveModel={handleRemoveModel}
             onEnable={handleEnable}
             onDisable={handleDisable}
             onAddBreakpoint={handleAddBreakpoint}

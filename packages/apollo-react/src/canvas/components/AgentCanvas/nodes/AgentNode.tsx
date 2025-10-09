@@ -1,14 +1,12 @@
 import { memo, useMemo } from "react";
 import { Position } from "@uipath/uix/xyflow/react";
 import type { NodeProps, Node } from "@uipath/uix/xyflow/react";
-import { ApIcon } from "@uipath/portal-shell-react";
 import { Icons } from "@uipath/uix/core";
 import { NewBaseNode } from "../../BaseNode/NewBaseNode";
 import type { NewBaseNodeData, NewBaseNodeDisplayProps, HandleConfiguration } from "../../BaseNode/NewBaseNode.types";
 import type { ButtonHandleConfig, HandleActionEvent } from "../../ButtonHandle/ButtonHandle";
 import type { AgentNodeTranslations } from "../../../types";
 import { ResourceNodeType } from "../AgentFlow.constants";
-import { useAgentFlowStore } from "../store/agent-flow-store";
 import { ExecutionStatusIcon } from "../../ExecutionStatusIcon/ExecutionStatusIcon";
 
 const { ConversationalAgentIcon, AutonomousAgentIcon } = Icons;
@@ -40,7 +38,6 @@ interface AgentNodeProps extends NewBaseNodeDisplayProps {
 }
 
 const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNodeProps) => {
-  const { nodes } = useAgentFlowStore();
   const {
     data,
     selected = false,
@@ -187,12 +184,6 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
 
   const statusAdornment = <ExecutionStatusIcon status={executionStatus} size={16} />;
 
-  const guardrailsAdornment = useMemo(() => {
-    if (mode == "view") return undefined;
-    const hasGuardrails = nodes.some((node) => node.type === "resource" && node.data.hasGuardrails);
-    return hasGuardrails ? <ApIcon variant="outlined" name="gpp_good" size="18px" color="var(--color-icon-default)" /> : undefined;
-  }, [mode, nodes]);
-
   const shouldShowAddButtonFn = (opts: { showAddButton: boolean; selected: boolean }) => {
     return opts.showAddButton || opts.selected;
   };
@@ -213,7 +204,7 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
       showAddButton={mode === "design"} // Show add buttons in design mode even when not selected
       selected={selected}
       shouldShowAddButtonFn={shouldShowAddButtonFn}
-      adornments={{ topRight: statusAdornment, bottomRight: guardrailsAdornment }}
+      adornments={{ topRight: statusAdornment }}
     />
   );
 });

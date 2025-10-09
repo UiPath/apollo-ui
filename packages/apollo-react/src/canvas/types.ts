@@ -19,6 +19,7 @@ export type AgentFlowModel = {
   name: string;
   vendorName: string;
   iconUrl: string;
+  hasGuardrails?: boolean;
 };
 
 export type AgentFlowToolResource = {

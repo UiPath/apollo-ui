@@ -439,6 +439,7 @@ export const createAgentFlowStore = (initialProps: AgentFlowProps) =>
                     name: newProps.model.name,
                     description: newProps.model.vendorName,
                     iconUrl: newProps.model.iconUrl,
+                    hasGuardrails: newProps.model.hasGuardrails ?? false,
                     hasError: hasModelError(newProps.model, newProps.spans),
                     hasSuccess: hasModelSuccess(newProps.model, newProps.spans),
                     hasRunning: hasModelRunning(newProps.model, newProps.spans),
