@@ -528,7 +528,7 @@ const AgentFlowInner = memo(
             onNodeDrag={handleNodeDrag}
             onNodeDragStop={handleNodeDragStop}
             deleteKeyCode={mode === "design" ? ["Backspace", "Delete"] : null}
-            maintainNodesInView={selectedNodeId ? ["agent", selectedNodeId] : []}
+            maintainNodesInView={[]}
             panShortcutTeachingUIMessage={(canvasTranslations ?? DefaultCanvasTranslations).panShortcutTeaching}
           >
             <Panel position="bottom-right">
