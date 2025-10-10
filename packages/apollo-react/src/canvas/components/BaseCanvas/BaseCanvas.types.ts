@@ -2,6 +2,38 @@ import type { ReactNode } from "react";
 import type { BackgroundVariant, Edge, Node, ReactFlowInstance, ReactFlowProps } from "@uipath/uix/xyflow/react";
 
 /**
+ * Configuration options for viewport fit operations in BaseCanvas.
+ * Subset of ReactFlow's FitViewOptions focusing on common viewport adjustments.
+ */
+export interface BaseCanvasFitViewOptions {
+  /**
+   * Padding around nodes when fitting view.
+   * Value between 0-1 represents a ratio of the viewport size.
+   * @default 0.1
+   */
+  padding?: number;
+
+  /**
+   * Duration of the viewport animation in milliseconds.
+   * Set to 0 for instant transitions.
+   * @default 300
+   */
+  duration?: number;
+
+  /**
+   * Minimum allowed zoom level.
+   * @default 0.2
+   */
+  minZoom?: number;
+
+  /**
+   * Maximum allowed zoom level.
+   * @default 3
+   */
+  maxZoom?: number;
+}
+
+/**
  * Props for the BaseCanvas component that provides a foundation for flow-based visualizations.
  * Extends ReactFlow's props to provide additional canvas control and styling options.
  *
@@ -116,12 +148,7 @@ export interface BaseCanvasProps<NodeType extends Node = Node, EdgeType extends 
    * fitViewOptions: { padding: 0.2, duration: 300, minZoom: 0.5, maxZoom: 2 }
    * ```
    */
-  fitViewOptions?: {
-    padding?: number;
-    duration?: number;
-    minZoom?: number;
-    maxZoom?: number;
-  };
+  fitViewOptions?: BaseCanvasFitViewOptions;
 }
 
 /**

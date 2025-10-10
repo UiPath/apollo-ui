@@ -3,6 +3,7 @@ import createCache from "@emotion/cache";
 import { CacheProvider } from "@emotion/react";
 import { ReactFlowProvider, useReactFlow } from "@uipath/uix/xyflow/react";
 import { BASE_CANVAS_DEFAULTS } from "../../BaseCanvas/BaseCanvas.constants";
+import type { BaseCanvasFitViewOptions } from "../../BaseCanvas/BaseCanvas.types";
 
 // Extract React Flow CSS from document stylesheets
 const getReactFlowCSS = (): string => {
@@ -99,9 +100,10 @@ const AgentFlowProviderContext = createContext<AgentFlowProviderContextType | nu
 
 interface AgentVisualizationFlowProviderInnerProps extends PropsWithChildren {
   styleContainer?: HTMLElement | ShadowRoot;
+  fitViewOptions?: BaseCanvasFitViewOptions;
 }
 
-const AgentVisualizationFlowProviderInner = ({ children, styleContainer }: AgentVisualizationFlowProviderInnerProps) => {
+const AgentVisualizationFlowProviderInner = ({ children, styleContainer, fitViewOptions }: AgentVisualizationFlowProviderInnerProps) => {
   const reactFlow = useReactFlow();
 
   // Create Emotion cache for shadow DOM if styleContainer is provided
@@ -125,8 +127,8 @@ const AgentVisualizationFlowProviderInner = ({ children, styleContainer }: Agent
   }, [styleContainer]);
 
   const resetViewport = useCallback(() => {
-    reactFlow.fitView(BASE_CANVAS_DEFAULTS.fitViewOptions);
-  }, [reactFlow]);
+    reactFlow.fitView(fitViewOptions ?? BASE_CANVAS_DEFAULTS.fitViewOptions);
+  }, [reactFlow, fitViewOptions]);
 
   const value = useMemo(() => ({ resetViewport }), [resetViewport]);
 
@@ -144,11 +146,12 @@ interface AgentVisualizationFlowProviderProps extends PropsWithChildren {
    * This enables the component to work correctly within Shadow DOM boundaries.
    */
   styleContainer?: HTMLElement | ShadowRoot;
+  fitViewOptions?: BaseCanvasFitViewOptions;
 }
 
-export const AgentVisualizationFlowProvider = ({ styleContainer, ...props }: AgentVisualizationFlowProviderProps) => (
+export const AgentVisualizationFlowProvider = ({ styleContainer, fitViewOptions, ...props }: AgentVisualizationFlowProviderProps) => (
   <ReactFlowProvider>
-    <AgentVisualizationFlowProviderInner styleContainer={styleContainer} {...props} />
+    <AgentVisualizationFlowProviderInner styleContainer={styleContainer} fitViewOptions={fitViewOptions} {...props} />
   </ReactFlowProvider>
 );
 

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useReactFlow, useStoreApi } from "@uipath/uix/xyflow/react";
 import type { Node } from "@uipath/uix/xyflow/react";
-import type { EnsureNodesInViewOptions } from "./BaseCanvas.types";
+import type { BaseCanvasFitViewOptions, EnsureNodesInViewOptions } from "./BaseCanvas.types";
 import { BASE_CANVAS_DEFAULTS, FIT_VIEW_DELAY_MS } from "./BaseCanvas.constants";
 
 const waitForNodeMeasurements = (getNodes: () => Node[]): Promise<void> => {
@@ -26,7 +26,7 @@ const waitForNodeMeasurements = (getNodes: () => Node[]): Promise<void> => {
 export const useAutoLayout = (
   nodes: Node[] | undefined,
   initialAutoLayout?: () => Promise<void> | void,
-  fitViewOptions?: { padding?: number; duration?: number; minZoom?: number; maxZoom?: number }
+  fitViewOptions?: BaseCanvasFitViewOptions
 ) => {
   const [isReady, setIsReady] = useState(false);
   const hasRunLayout = useRef(false);
@@ -106,7 +106,7 @@ export const useAutoLayout = (
   return { isReady };
 };
 
-export const useFitView = (nodes?: Node[], delay?: number) => {
+export const useFitView = (nodes?: Node[], delay?: number, fitViewOptions?: BaseCanvasFitViewOptions) => {
   const reactFlow = useReactFlow();
   const currentViewport = reactFlow.getViewport();
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -127,14 +127,14 @@ export const useFitView = (nodes?: Node[], delay?: number) => {
 
     timeoutRef.current = setTimeout(() => {
       reactFlow.fitView({
-        ...BASE_CANVAS_DEFAULTS.fitViewOptions,
+        ...(fitViewOptions ?? BASE_CANVAS_DEFAULTS.fitViewOptions),
         minZoom: currentViewport.zoom, // Maintain current zoom level
         maxZoom: currentViewport.zoom, // Maintain current zoom level
         nodes: nodes && nodes.length > 0 ? nodes : undefined, // Fit view only if there are nodes
       });
       timeoutRef.current = null;
     }, delay ?? 0);
-  }, [reactFlow, currentViewport, nodes, delay]);
+  }, [reactFlow, currentViewport, nodes, delay, fitViewOptions]);
 
   return { fitView };
 };
@@ -261,7 +261,7 @@ export const useEnsureNodesInView = () => {
  *
  * @see {@link BaseCanvasProps.maintainNodesInView} for the component prop that uses this hook
  */
-export const useMaintainNodesInView = (nodeIds?: string[]) => {
+export const useMaintainNodesInView = (nodeIds?: string[], fitViewOptions?: BaseCanvasFitViewOptions) => {
   const flowStoreApi = useStoreApi();
   const reactFlowInstance = useReactFlow();
   const resizeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -313,8 +313,8 @@ export const useMaintainNodesInView = (nodeIds?: string[]) => {
         // This ensures only panning occurs to keep nodes in view
         reactFlowInstance.fitView({
           nodes: nodesToMaintain.map((id) => ({ id })),
-          padding: BASE_CANVAS_DEFAULTS.fitViewOptions.padding,
-          duration: BASE_CANVAS_DEFAULTS.fitViewOptions.duration,
+          padding: fitViewOptions?.padding ?? BASE_CANVAS_DEFAULTS.fitViewOptions.padding,
+          duration: fitViewOptions?.duration ?? BASE_CANVAS_DEFAULTS.fitViewOptions.duration,
           minZoom: currentZoom,
           maxZoom: currentZoom,
         });
@@ -330,5 +330,5 @@ export const useMaintainNodesInView = (nodeIds?: string[]) => {
         clearTimeout(resizeTimeoutRef.current);
       }
     };
-  }, [flowStoreApi, reactFlowInstance]); // Only depend on flowStoreApi and reactFlowInstance
+  }, [flowStoreApi, reactFlowInstance, fitViewOptions]); // Only depend on flowStoreApi and reactFlowInstance
 };

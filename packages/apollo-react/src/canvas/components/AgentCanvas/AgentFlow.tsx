@@ -532,7 +532,7 @@ const AgentFlowInner = memo(
             panShortcutTeachingUIMessage={(canvasTranslations ?? DefaultCanvasTranslations).panShortcutTeaching}
           >
             <Panel position="bottom-right">
-              <CanvasPositionControls />
+              <CanvasPositionControls fitViewOptions={AGENT_FLOW_FIT_VIEW_OPTIONS} />
             </Panel>
             <Panel position="bottom-center">
               <TimelinePlayer spans={spans ?? []} enableTimelinePlayer={enableTimelinePlayer ?? true} />

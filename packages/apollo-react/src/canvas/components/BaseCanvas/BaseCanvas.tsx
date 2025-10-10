@@ -12,7 +12,9 @@ import { BaseCanvasModeProvider } from "./BaseCanvasModeProvider";
 const BaseCanvasInnerComponent = <NodeType extends Node = Node, EdgeType extends Edge = Edge>(
   props: BaseCanvasProps<NodeType, EdgeType> & { innerRef?: React.Ref<BaseCanvasRef<NodeType, EdgeType>> }
 ) => {
-  const { innerRef, ...canvasProps } = props;
+  const { innerRef, fitViewOptions: fitViewOptionsProps, ...canvasProps } = props;
+
+  const fitViewOptions = fitViewOptionsProps ?? BASE_CANVAS_DEFAULTS.fitViewOptions;
 
   const {
     // Core props
@@ -37,7 +39,6 @@ const BaseCanvasInnerComponent = <NodeType extends Node = Node, EdgeType extends
     minZoom = BASE_CANVAS_DEFAULTS.zoom.min,
     maxZoom = BASE_CANVAS_DEFAULTS.zoom.max,
     defaultViewport = BASE_CANVAS_DEFAULTS.defaultViewport,
-    fitViewOptions = BASE_CANVAS_DEFAULTS.fitViewOptions,
     defaultEdgeOptions = BASE_CANVAS_DEFAULTS.edge,
 
     // Event handlers
@@ -94,7 +95,7 @@ const BaseCanvasInnerComponent = <NodeType extends Node = Node, EdgeType extends
   // Maintain specified nodes in view when canvas resizes
   // This ensures important nodes remain visible in responsive layouts
   // The hook only pans the viewport without changing the zoom level
-  useMaintainNodesInView(maintainNodesInView);
+  useMaintainNodesInView(maintainNodesInView, fitViewOptions);
 
   // Give precedence to edges connected to selected nodes in cases of overlapping edges
   const normalizedEdges = useMemo(
