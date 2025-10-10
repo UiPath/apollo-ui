@@ -21,7 +21,7 @@ const workflowNodeTypes = {
       getDisplay: (data: BaseNodeData): NodeDisplay => ({
         label: (data.parameters?.label as string) || "Start",
       }),
-      getIcon: () => <ApIcon name="play_circle" size="40px" />,
+      getIcon: () => <ApIcon variant="outlined" name="play_circle" size="40px" />,
       getHandleConfigurations: () => [
         {
           position: Position.Right,
@@ -52,7 +52,7 @@ const workflowNodeTypes = {
       getDisplay: (data: BaseNodeData): NodeDisplay => ({
         label: (data.parameters?.label as string) || "End",
       }),
-      getIcon: () => <ApIcon name="stop_circle" size="40px" />,
+      getIcon: () => <ApIcon variant="outlined" name="stop_circle" size="40px" />,
       getHandleConfigurations: () => [
         {
           position: Position.Left,
@@ -83,7 +83,7 @@ const workflowNodeTypes = {
         label: (data.parameters?.label as string) || "Process",
         subLabel: data.isDrillable ? "↓ Drillable" : undefined,
       }),
-      getIcon: () => <ApIcon name="settings" size="40px" />,
+      getIcon: () => <ApIcon variant="outlined" name="settings" size="40px" />,
       getHandleConfigurations: () => [
         {
           position: Position.Left,
@@ -126,7 +126,7 @@ const workflowNodeTypes = {
       getDisplay: (data: BaseNodeData): NodeDisplay => ({
         label: (data.parameters?.label as string) || "Decision",
       }),
-      getIcon: () => <ApIcon name="help" size="40px" />,
+      getIcon: () => <ApIcon variant="outlined" name="help" size="40px" />,
       getHandleConfigurations: () => [
         {
           position: Position.Left,
@@ -178,7 +178,7 @@ const workflowNodeTypes = {
         subLabel: "⤵ Click to open",
         shape: "square" as const,
       }),
-      getIcon: () => <ApIcon name="folder" size="40px" />,
+      getIcon: () => <ApIcon variant="outlined" name="folder" size="40px" />,
       getHandleConfigurations: () => [
         {
           position: Position.Left,
@@ -214,9 +214,10 @@ const workflowNodeTypes = {
             id: "drill-in",
             icon: "open_in_new",
             label: "Open Sub-Process",
-            onAction: (_nodeId: string) => {
+            onAction: async (nodeId: string) => {
               const store = useCanvasStore.getState();
-              store.navigateToCanvas(data.childCanvasId as string);
+              // Use the new drillIntoNode method for smooth animations
+              await store.drillIntoNode(nodeId, true);
             },
           });
         }
@@ -369,42 +370,42 @@ const CanvasWithControlsContent: React.FC = () => {
             variant="secondary"
             label="Start"
             size="small"
-            startIcon={<ApIcon name="play_circle" />}
+            startIcon={<ApIcon variant="outlined" name="play_circle" />}
             onClick={() => handleAddNode("start")}
           />
           <ApButton
             variant="secondary"
             size="small"
             label="Process"
-            startIcon={<ApIcon name="settings" />}
+            startIcon={<ApIcon variant="outlined" name="settings" />}
             onClick={() => handleAddNode("process")}
           />
           <ApButton
             variant="secondary"
             size="small"
             label="Decision"
-            startIcon={<ApIcon name="help" />}
+            startIcon={<ApIcon variant="outlined" name="help" />}
             onClick={() => handleAddNode("decision")}
           />
           <ApButton
             variant="secondary"
             size="small"
             label="Sub-Process"
-            startIcon={<ApIcon name="folder" />}
+            startIcon={<ApIcon variant="outlined" name="folder" />}
             onClick={() => handleAddNode("subprocess")}
           />
           <ApButton
             variant="secondary"
             size="small"
             label="End"
-            startIcon={<ApIcon name="stop_circle" />}
+            startIcon={<ApIcon variant="outlined" name="stop_circle" />}
             onClick={() => handleAddNode("end")}
           />
           <ApButton
             variant="primary"
             size="small"
             label="Sample Workflow"
-            startIcon={<ApIcon name="auto_awesome" />}
+            startIcon={<ApIcon variant="outlined" name="auto_awesome" />}
             onClick={handleAddSampleWorkflow}
           />
           <ApButton variant="secondary" size="small" label="Clear Canvas" startIcon={<ApIcon name="clear" />} onClick={handleClearCanvas} />

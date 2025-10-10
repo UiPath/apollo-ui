@@ -2,15 +2,19 @@ import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 import type { CanvasLevel } from "../types/canvas.types";
 import type { Node, Edge, Viewport } from "@uipath/uix/xyflow/react";
+import { animatedViewportManager, type TransitionState } from "./animatedViewportManager";
 
 interface CanvasStore {
   canvasStack: Record<string, CanvasLevel>;
   currentPath: string[]; // list of canvas IDs representing the current path
+  transitionState: TransitionState; // Current animation transition state
 
   // Actions
   initializeCanvas: () => void;
-  navigateToCanvas: (targetCanvasId: string, sourceViewport?: Viewport) => void; // Navigate to a specific canvas
-  navigateToDepth: (depth: number) => void; // Navigate to a specific depth in current path
+  navigateToCanvas: (targetCanvasId: string, sourceViewport?: Viewport, animated?: boolean) => Promise<void>; // Navigate to a specific canvas
+  navigateToDepth: (depth: number, animated?: boolean) => Promise<void>; // Navigate to a specific depth in current path
+  drillIntoNode: (nodeId: string, animated?: boolean) => Promise<void>; // Drill into a specific node with animation
+  navigateToSiblingCanvas: (targetCanvasId: string, animated?: boolean) => Promise<void>; // Navigate to a sibling canvas (replace last path item)
   addNode: (nodeType: string, position?: { x: number; y: number }) => string; // Add a new node, returns node ID
   addNodeToCanvas: (node: Node) => void; // Add a pre-built node to canvas
   createChildCanvas: (parentNodeId: string, childCanvasId: string, name: string) => void; // Create child canvas for drillable node
@@ -21,10 +25,12 @@ interface CanvasStore {
   updateEdges: (edges: Edge[]) => void;
   updateSelection: (nodeIds: string[], edgeIds: string[]) => void;
   updateViewport: (viewport: Viewport, canvasId?: string) => void;
+  updateTransitionState: (state: Partial<TransitionState>) => void; // Update animation state
 
   // Getters
   getCurrentCanvas: () => CanvasLevel | undefined;
   getBreadcrumbs: () => { id: string; name: string }[];
+  getNodeById: (nodeId: string, canvasId?: string) => Node | undefined; // Get node by ID
 }
 
 // Optimized selectors for preventing unnecessary re-renders
@@ -53,6 +59,8 @@ export const selectBreadcrumbs = (state: CanvasStore) => {
 export const selectCanvasActions = (state: CanvasStore) => ({
   navigateToCanvas: state.navigateToCanvas,
   navigateToDepth: state.navigateToDepth,
+  drillIntoNode: state.drillIntoNode,
+  navigateToSiblingCanvas: state.navigateToSiblingCanvas,
   addNode: state.addNode,
   addNodeToCanvas: state.addNodeToCanvas,
   createChildCanvas: state.createChildCanvas,
@@ -62,7 +70,11 @@ export const selectCanvasActions = (state: CanvasStore) => ({
   updateEdges: state.updateEdges,
   updateSelection: state.updateSelection,
   updateViewport: state.updateViewport,
+  updateTransitionState: state.updateTransitionState,
 });
+
+// Selector for transition state
+export const selectTransitionState = (state: CanvasStore): TransitionState => state.transitionState;
 
 const createDemoCanvases = (): Record<string, CanvasLevel> => {
   const rootCanvas: CanvasLevel = {
@@ -103,6 +115,12 @@ export const useCanvasStore = create<CanvasStore>()(
       // Initial state
       canvasStack: {},
       currentPath: [],
+      transitionState: {
+        isTransitioning: false,
+        type: "none",
+        startTime: 0,
+        progress: 0,
+      },
 
       // Actions
       initializeCanvas: () => {
@@ -110,9 +128,37 @@ export const useCanvasStore = create<CanvasStore>()(
           canvasStack: createDemoCanvases(),
           currentPath: ["root"],
         });
+
+        // Set up transition callbacks to sync with store
+        animatedViewportManager.setTransitionCallbacks({
+          onStart: (type) => {
+            set((state) => ({
+              transitionState: {
+                ...state.transitionState,
+                isTransitioning: true,
+                type,
+                startTime: performance.now(),
+                progress: 0,
+              },
+            }));
+          },
+          onUpdate: (transitionState) => {
+            set({ transitionState });
+          },
+          onComplete: (_type) => {
+            set((state) => ({
+              transitionState: {
+                ...state.transitionState,
+                isTransitioning: false,
+                type: "none",
+                progress: 1,
+              },
+            }));
+          },
+        });
       },
 
-      navigateToCanvas: (targetCanvasId: string, sourceViewport?: Viewport) => {
+      navigateToCanvas: async (targetCanvasId: string, sourceViewport?: Viewport, animated: boolean = true) => {
         const state = get();
         const targetCanvas = state.canvasStack[targetCanvasId];
 
@@ -131,11 +177,124 @@ export const useCanvasStore = create<CanvasStore>()(
           };
         }
 
-        // Add the target canvas to the current path
+        // Update state first
         set({
           canvasStack: updatedCanvasStack,
           currentPath: [...state.currentPath, targetCanvasId],
         });
+
+        // Handle animated transition if enabled
+        if (animated && targetCanvas.viewport) {
+          try {
+            await animatedViewportManager.animateToViewport(targetCanvas.viewport, undefined, "drill-in");
+          } catch (error) {
+            console.warn("Canvas navigation animation failed:", error);
+          }
+        }
+      },
+
+      navigateToDepth: async (depth: number, animated: boolean = true) => {
+        const state = get();
+
+        // Ensure depth is valid
+        if (depth < 0 || depth >= state.currentPath.length) return;
+
+        const newPath = state.currentPath.slice(0, depth + 1);
+        const targetCanvasId = newPath[newPath.length - 1];
+        const targetCanvas = targetCanvasId ? state.canvasStack[targetCanvasId] : undefined;
+
+        // Update path immediately
+        set({
+          currentPath: newPath,
+        });
+
+        // Handle animated transition if enabled
+        if (animated && targetCanvas?.viewport) {
+          try {
+            await animatedViewportManager.animateToViewport(targetCanvas.viewport, undefined, "drill-out");
+          } catch (error) {
+            console.warn("Canvas navigation animation failed:", error);
+          }
+        }
+      },
+
+      navigateToSiblingCanvas: async (targetCanvasId: string, animated: boolean = true) => {
+        const state = get();
+        const targetCanvas = state.canvasStack[targetCanvasId];
+
+        if (!targetCanvas || state.currentPath.length === 0) {
+          return;
+        }
+
+        // Replace the last item in the path with the target canvas ID (sibling navigation)
+        const newPath = [...state.currentPath.slice(0, -1), targetCanvasId];
+
+        // Update state in a single operation to avoid flicker
+        set({ currentPath: newPath });
+
+        // Handle animated transition if enabled
+        if (animated && targetCanvas.viewport) {
+          try {
+            await animatedViewportManager.animateToViewport(targetCanvas.viewport, undefined, "drill-in");
+          } catch (error) {
+            console.warn("Sibling canvas navigation animation failed:", error);
+          }
+        }
+      },
+
+      drillIntoNode: async (nodeId: string, animated: boolean = true) => {
+        const state = get();
+        const currentCanvasId = state.currentPath[state.currentPath.length - 1];
+
+        if (!currentCanvasId) return;
+
+        const currentCanvas = state.canvasStack[currentCanvasId];
+        if (!currentCanvas) return;
+
+        // Find the target node
+        const targetNode = currentCanvas.nodes.find((node) => node.id === nodeId);
+        if (!targetNode || !targetNode.data?.isDrillable || !targetNode.data?.childCanvasId) {
+          console.warn(`Node ${nodeId} is not drillable or child canvas not found`);
+          return;
+        }
+
+        const childCanvasId = targetNode.data.childCanvasId as string;
+        const childCanvas = state.canvasStack[childCanvasId];
+
+        if (!childCanvas) {
+          console.warn(`Child canvas ${childCanvasId} not found`);
+          return;
+        }
+
+        // Save current viewport before navigation
+        const currentViewport = animatedViewportManager.getCurrentViewport();
+        const updatedCanvasStack = {
+          ...state.canvasStack,
+          [currentCanvasId]: {
+            ...currentCanvas,
+            viewport: currentViewport,
+          },
+        };
+
+        // Update canvas state first
+        set({
+          canvasStack: updatedCanvasStack,
+          currentPath: [...state.currentPath, childCanvasId],
+        });
+
+        if (animated) {
+          try {
+            // Animate drill-in: zoom to node, then restore child's viewport
+            await animatedViewportManager.drillIntoNode(targetNode);
+          } catch (error) {
+            console.warn("Drill-in animation failed:", error);
+          }
+        } else {
+          // Instant navigation - viewport will be restored by HierarchicalCanvas effect
+          set({
+            currentPath: [...state.currentPath, childCanvasId],
+          });
+        }
       },
 
       addNode: (nodeType: string, position?: { x: number; y: number }) => {
@@ -372,18 +531,6 @@ export const useCanvasStore = create<CanvasStore>()(
         });
       },
 
-      navigateToDepth: (depth: number) => {
-        const state = get();
-
-        // Ensure depth is valid
-        if (depth < 0 || depth >= state.currentPath.length) return;
-
-        // Navigate to the specified depth by truncating the path
-        set({
-          currentPath: state.currentPath.slice(0, depth + 1),
-        });
-      },
-
       updateNodes: (nodes: Node[]) => {
         const state = get();
         const currentCanvasId = state.currentPath[state.currentPath.length - 1];
@@ -474,6 +621,27 @@ export const useCanvasStore = create<CanvasStore>()(
         const state = get();
         const currentCanvasId = state.currentPath[state.currentPath.length - 1];
         return currentCanvasId ? state.canvasStack[currentCanvasId] : undefined;
+      },
+
+      updateTransitionState: (transitionUpdate: Partial<TransitionState>) => {
+        set((state) => ({
+          transitionState: {
+            ...state.transitionState,
+            ...transitionUpdate,
+          },
+        }));
+      },
+
+      getNodeById: (nodeId: string, canvasId?: string) => {
+        const state = get();
+        const targetCanvasId = canvasId || state.currentPath[state.currentPath.length - 1];
+
+        if (!targetCanvasId) return undefined;
+
+        const canvas = state.canvasStack[targetCanvasId];
+        if (!canvas) return undefined;
+
+        return canvas.nodes.find((node) => node.id === nodeId);
       },
 
       getBreadcrumbs: () => {

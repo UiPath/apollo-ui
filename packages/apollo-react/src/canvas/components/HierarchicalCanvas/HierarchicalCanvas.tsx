@@ -1,5 +1,6 @@
 import React, { useEffect, useCallback, useMemo, useRef, useState } from "react";
-import { Panel, applyNodeChanges, applyEdgeChanges, ReactFlowProvider } from "@uipath/uix/xyflow/react";
+import { Panel, applyNodeChanges, applyEdgeChanges } from "@uipath/uix/xyflow/react";
+import { prefersReducedMotion } from "../../utils/transitions";
 import type {
   Node,
   Edge,
@@ -24,8 +25,10 @@ import {
   selectBreadcrumbs,
   selectCanvasActions,
   selectPreviousCanvas,
+  selectTransitionState,
 } from "../../stores/canvasStore";
 import { viewportManager } from "../../stores/viewportManager";
+import { animatedViewportManager } from "../../stores/animatedViewportManager";
 import { Breadcrumb } from "@uipath/uix/core";
 import { ApIcon, ApProgressSpinner } from "@uipath/portal-shell-react";
 import { CanvasPositionControls } from "../CanvasPositionControls";
@@ -34,6 +37,7 @@ import { BaseNode } from "../BaseNode";
 import { BlankCanvasNode } from "../BlankCanvasNode";
 import { AddNodePreview } from "../AddNodePanel/AddNodePreview";
 import { AddNodeManager } from "../AddNodePanel/AddNodeManager";
+import { MiniCanvasNavigator } from "../MiniCanvasNavigator";
 import { createPreviewNode } from "../../utils/createPreviewNode";
 import { shallow } from "zustand/shallow";
 
@@ -50,9 +54,11 @@ const DEFAULT_NODE_TYPES = {
 
 export const HierarchicalCanvas: React.FC<HierarchicalCanvasProps> = ({ mode = "design" }) => {
   const canvasRef = useRef<BaseCanvasRef>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const [reactFlowInstance, setReactFlowInstance] = useState<ReactFlowInstance | null>(null);
   const currentViewportRef = useRef<Viewport>({ x: 0, y: 0, zoom: 1 });
   const lastCanvasIdRef = useRef<string | null>(null);
+  const shouldAnimate = mode === "design" && !prefersReducedMotion();
 
   // Build node types mapping from registrations and defaults
   const nodeRegistrations = useNodeRegistrations();
@@ -74,6 +80,7 @@ export const HierarchicalCanvas: React.FC<HierarchicalCanvasProps> = ({ mode = "
   const previousCanvas = useCanvasStore(selectPreviousCanvas);
   const breadcrumbs = useCanvasStore(selectBreadcrumbs, shallow);
   const actions = useCanvasStore(selectCanvasActions, shallow);
+  const transitionState = useCanvasStore(selectTransitionState);
   const store = useCanvasStore();
 
   // Initialize canvas on mount
@@ -88,6 +95,7 @@ export const HierarchicalCanvas: React.FC<HierarchicalCanvasProps> = ({ mode = "
     (instance: ReactFlowInstance) => {
       setReactFlowInstance(instance);
       viewportManager.setReactFlowInstance(instance);
+      animatedViewportManager.setReactFlowInstance(instance);
 
       // Restore viewport if it's not at default values
       const viewport = currentCanvas?.viewport;
@@ -306,9 +314,12 @@ export const HierarchicalCanvas: React.FC<HierarchicalCanvasProps> = ({ mode = "
     [currentCanvas, actions, reactFlowInstance]
   );
 
-  // Navigation functions
-  const navigateToDepth = useCallback(
-    (depth: number) => {
+  // Navigation functions with animation support
+  const handleNavigateToDepth = useCallback(
+    async (depth: number) => {
+      // Don't navigate during transitions
+      if (transitionState.isTransitioning) return;
+
       // Save current viewport before navigation
       const currentCanvasId = store.currentPath[store.currentPath.length - 1];
       if (currentCanvasId && reactFlowInstance) {
@@ -316,14 +327,27 @@ export const HierarchicalCanvas: React.FC<HierarchicalCanvasProps> = ({ mode = "
         actions.updateViewport(viewport, currentCanvasId);
       }
 
-      actions.navigateToDepth(depth);
+      // Use animated navigation if design mode and user doesn't prefer reduced motion
+      await actions.navigateToDepth(depth, shouldAnimate);
     },
-    [actions, reactFlowInstance, store.currentPath]
+    [actions, reactFlowInstance, store.currentPath, transitionState.isTransitioning, shouldAnimate]
   );
 
   const maintainNodesInView = useMemo(
     () => (currentCanvas?.nodes?.length === 1 && currentCanvas?.nodes[0]?.id === "blank-canvas-node" ? ["blank-canvas-node"] : undefined),
     [currentCanvas]
+  );
+
+  // Handle click on nodes in the previous canvas view
+  const handlePreviousCanvasNodeClick = useCallback(
+    (_event: React.MouseEvent, node: Node) => {
+      // Check if the node is drillable (has childCanvasId)
+      if (node.data?.childCanvasId) {
+        // Navigate to the sibling canvas directly with a single state update
+        actions.navigateToSiblingCanvas(node.data.childCanvasId as string, shouldAnimate);
+      }
+    },
+    [actions, shouldAnimate]
   );
 
   // Only fit view if viewport is at default values (never been modified)
@@ -349,101 +373,78 @@ export const HierarchicalCanvas: React.FC<HierarchicalCanvasProps> = ({ mode = "
   }
 
   return (
-    <BaseCanvas
-      ref={canvasRef}
-      nodes={currentCanvas.nodes}
-      edges={currentCanvas.edges}
-      nodeTypes={nodeTypes}
-      maintainNodesInView={maintainNodesInView}
-      onNodesChange={handleNodesChange}
-      onEdgesChange={handleEdgesChange}
-      onSelectionChange={handleSelectionChange}
-      onMove={handleMove}
-      onConnect={handleConnect}
-      onConnectStart={handleConnectStart}
-      onConnectEnd={handleConnectEnd}
-      onInit={handleInit}
-      mode={mode}
-      defaultViewport={currentCanvas.viewport}
-      fitView={shouldFitView}
-      fitViewOptions={{ padding: 0.2, minZoom: 1, maxZoom: 1 }}
+    <div
+      ref={containerRef}
+      style={{ width: "100%", height: "100%", position: "relative", background: "var(--color-background-secondary)" }}
     >
-      {/* Breadcrumbs */}
-      <Panel position="top-left">
-        {breadcrumbs.length > 1 && (
-          <div
-            style={{
-              background: "var(--color-background)",
-              borderRadius: "8px",
-              padding: "8px 12px",
-              boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
-            }}
-          >
-            <Breadcrumb
-              items={breadcrumbs.map((crumb, index) => ({
-                label: crumb.name,
-                onClick: index < breadcrumbs.length - 1 ? () => navigateToDepth(index) : undefined,
-                startAdornment: index === 0 ? <ApIcon name="home" /> : undefined,
-              }))}
-              delimiter={<ApIcon name="chevron_right" />}
-            />
-          </div>
-        )}
-      </Panel>
-
-      {/* Canvas Controls */}
-      <Panel position="bottom-right">
-        <CanvasPositionControls />
-      </Panel>
-
-      {previousCanvas && (
-        <Panel position="bottom-left">
-          <div
-            style={{
-              width: 300,
-              height: 200,
-              background: "var(--color-background)",
-              border: "1px solid var(--color-border-grid)",
-              borderRadius: 8,
-              boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
-            }}
-          >
-            <ReactFlowProvider>
-              <BaseCanvas
-                key={previousCanvas.id}
-                nodes={previousCanvas.nodes}
-                edges={previousCanvas.edges}
-                nodeTypes={nodeTypes}
-                fitView
-                mode="readonly"
-                showBackground={false}
-              />
-            </ReactFlowProvider>
-          </div>
-        </Panel>
-      )}
-
-      {/* Debug Panel */}
-      {/* <Panel position="bottom-left">
-        <pre
+      {breadcrumbs.length > 1 && (
+        <div
           style={{
-            fontSize: 10,
-            height: "600px",
-            width: "300px",
-            overflow: "auto",
-            color: "var(--color-foreground)",
-            backgroundColor: "var(--color-background-secondary)",
-            border: "1px solid var(--color-border-de-emp)",
+            position: "absolute",
+            top: 16,
+            left: 16,
+            zIndex: 10,
+            background: "var(--color-background)",
             borderRadius: "8px",
-            padding: 10,
+            padding: "8px 12px",
+            boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
           }}
         >
-          <code>{JSON.stringify(currentCanvas, null, 2)}</code>
-        </pre>
-      </Panel> */}
+          <Breadcrumb
+            items={breadcrumbs.map((crumb, index) => ({
+              label: crumb.name,
+              onClick: index < breadcrumbs.length - 1 ? () => handleNavigateToDepth(index) : undefined,
+              startAdornment: index === 0 ? <ApIcon name="home" /> : undefined,
+            }))}
+            delimiter={<ApIcon name="chevron_right" />}
+          />
+        </div>
+      )}
 
-      {/* Add Node Manager to handle preview node selection */}
-      <AddNodeManager />
-    </BaseCanvas>
+      {previousCanvas && (
+        <div
+          style={{
+            position: "absolute",
+            bottom: 16,
+            left: 16,
+            zIndex: 10,
+          }}
+        >
+          <MiniCanvasNavigator
+            previousCanvas={previousCanvas}
+            currentCanvasId={currentCanvas?.id}
+            nodeTypes={nodeTypes}
+            onNodeClick={handlePreviousCanvasNodeClick}
+          />
+        </div>
+      )}
+
+      <BaseCanvas
+        key={currentCanvas.id}
+        ref={canvasRef}
+        nodes={currentCanvas.nodes}
+        edges={currentCanvas.edges}
+        nodeTypes={nodeTypes}
+        maintainNodesInView={maintainNodesInView}
+        onNodesChange={handleNodesChange}
+        onEdgesChange={handleEdgesChange}
+        onSelectionChange={handleSelectionChange}
+        onMove={handleMove}
+        onConnect={handleConnect}
+        onConnectStart={handleConnectStart}
+        onConnectEnd={handleConnectEnd}
+        onInit={handleInit}
+        mode={mode}
+        defaultViewport={currentCanvas.viewport}
+        fitView={shouldFitView}
+        fitViewOptions={{ padding: 0.2, minZoom: 1, maxZoom: 1 }}
+      >
+        <Panel position="bottom-right">
+          <CanvasPositionControls />
+        </Panel>
+
+        <AddNodeManager />
+      </BaseCanvas>
+    </div>
   );
 };
