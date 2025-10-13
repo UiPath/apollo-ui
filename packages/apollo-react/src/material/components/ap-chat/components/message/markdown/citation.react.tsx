@@ -176,6 +176,13 @@ export const Citation = React.memo(({
             });
     }, [ chatService, id, title, url, download_url, page_number, finalUrl ]);
 
+    const handleKeyDown = React.useCallback((event: React.KeyboardEvent) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            handleClick();
+        }
+    }, [ handleClick ]);
+
     // Close tooltip on scroll
     React.useEffect(() => {
         const handleScroll = () => {
@@ -275,9 +282,18 @@ export const Citation = React.memo(({
                     marginLeft: token.Spacing.SpacingMicro,
                     borderRadius: token.Border.BorderRadiusM,
                     marginTop: `-${token.Spacing.SpacingMicro}`,
+                    outline: 'none',
+                    '&:focus-visible': { outline: `1px solid ${theme.palette.semantic.colorFocusIndicator}` },
                 }}
                 data-citation-sup="true"
+                tabIndex={0}
+                role="button"
+                aria-label={t('autopilot-chat-citation-aria-label', {
+                    id,
+                    title: `${title}${pageText}`,
+                })}
                 onClick={handleClick}
+                onKeyDown={handleKeyDown}
             >
                 <ap-typography color={theme.palette.semantic.colorForeground} variant={spacing.markdownTokens.citation}>
                     {id}
