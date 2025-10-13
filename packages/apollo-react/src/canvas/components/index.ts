@@ -14,4 +14,5 @@ export * from "./NodePropertiesPanel";
 export * from "./NodeToolbar";
 export * from "./MiniCanvasNavigator";
 export * from "./StageNode";
+export * from "./StickyNoteNode";
 export * from "./TriggerNode";
