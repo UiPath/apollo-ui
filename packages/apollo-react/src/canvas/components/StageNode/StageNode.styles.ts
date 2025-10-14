@@ -80,12 +80,11 @@ export const StageHeader = styled.div<{ isException?: boolean }>`
 export const StageTitleContainer = styled.div<{ isEditing?: boolean }>`
   display: inline-block;
   border-radius: 4px;
-  width: 204x;
   height: 100%;
   border: ${(props) => (props.isEditing ? "1px solid var(--color-border-de-emp)" : "none")};
 `;
 
-export const StageTitleInput = styled.input<{ isEditing?: boolean; isStageTitleEditable?: boolean }>`
+export const StageTitleInput = styled.input<{ isEditing?: boolean; isStageTitleEditable?: boolean; value?: string }>`
   font-family: inherit;
   font-size: inherit;
   font-weight: inherit;
@@ -94,7 +93,8 @@ export const StageTitleInput = styled.input<{ isEditing?: boolean; isStageTitleE
   background: transparent;
   text-overflow: ellipsis;
   border-radius: 2px;
-  width: 180px;
+  width: ${(props) => `${Math.max((props.value?.toString().length ?? 0) + 1, 1)}ch`};
+  max-width: 180px;
   padding: ${(props) => (props.isStageTitleEditable ? "none" : "4px 0px")};
 
   &:focus {
