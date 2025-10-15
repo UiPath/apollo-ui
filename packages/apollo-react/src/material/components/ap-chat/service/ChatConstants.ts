@@ -47,6 +47,7 @@ export const CHAT_MESSAGE_SPACING = 32;
 export const CHAT_COMPACT_MODE_MESSAGE_SPACING = 8;
 export const CHAT_MESSAGE_GROUP_GAP = 16;
 export const CHAT_COMPACT_MODE_MESSAGE_GROUP_GAP = 8;
+export const CHAT_SUGGESTION_SPACING = 8;
 
 export const getChatModeKey = (instanceName = CHAT_INSTANCE_DEFAULT_NAME) => {
     const CHAT_MODE_KEY = 'mode';
