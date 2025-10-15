@@ -3,9 +3,10 @@
 
 import {
     styled,
+    Theme,
     useTheme,
 } from '@mui/material';
-import token, { FontVariantToken } from '@uipath/apollo-core/lib';
+import token from '@uipath/apollo-core/lib';
 import {
     AutopilotChatInternalEvent,
     AutopilotChatSuggestion,
@@ -14,11 +15,14 @@ import React from 'react';
 
 import { t } from '../../../../../utils/localization/loc';
 import { useChatService } from '../../../providers/chat-service.provider.react';
+import { useChatState } from '../../../providers/chat-state-provider.react';
 
-const SuggestionList = styled('div')(({ disableAnimation }: { disableAnimation?: boolean }) => ({
+const SuggestionList = styled('div')(({
+    disableAnimation, gap,
+}: { disableAnimation?: boolean; gap: number }) => ({
     display: 'flex',
     flexDirection: 'column',
-    gap: token.Spacing.SpacingXs,
+    gap,
     animation: disableAnimation ? 'none' : 'popUpFromBottom 0.3s ease-out',
     maxWidth: `calc(100% - ${token.Spacing.SpacingL})`,
 
@@ -34,13 +38,15 @@ const SuggestionList = styled('div')(({ disableAnimation }: { disableAnimation?:
     },
 }));
 
-const Suggestion = styled('div')(({ theme }) => ({
+const Suggestion = styled('div')(({
+    theme, padding,
+}: { theme: Theme; padding: string }) => ({
     outlineColor: theme.palette.semantic.colorFocusIndicator,
     display: 'flex',
     alignItems: 'center',
     width: 'fit-content',
     gap: token.Spacing.SpacingXs,
-    padding: `${token.Spacing.SpacingXs} ${token.Spacing.SpacingBase}`,
+    padding,
     borderRadius: token.Border.BorderRadiusL,
     border: `1px solid ${theme.palette.semantic.colorBorderDisabled}`,
     cursor: 'pointer',
@@ -68,6 +74,7 @@ function AutopilotChatSuggestionsComponent({
 }: AutopilotChatSuggestionsProps) {
     const theme = useTheme();
     const chatService = useChatService();
+    const { spacing } = useChatState();
 
     const handleSuggestionClick = React.useCallback(
         (
@@ -93,11 +100,11 @@ function AutopilotChatSuggestionsComponent({
     }, [ handleSuggestionClick ]);
 
     return (
-        <SuggestionList disableAnimation={disableAnimation}>
+        <SuggestionList disableAnimation={disableAnimation} gap={spacing.suggestionSpacing}>
             {includeTitle && (
                 <Title>
                     <ap-typography
-                        variant={FontVariantToken.fontSizeMBold}
+                        variant={spacing.primaryBoldFontToken}
                         color={theme.palette.semantic.colorForegroundEmp}
                     >
                         {t('autopilot-chat-suggestions-title')}
@@ -111,8 +118,9 @@ function AutopilotChatSuggestionsComponent({
                     tabIndex={0}
                     key={suggestion.label}
                     data-cy={`autopilot-chat-suggestion-nth-${index}`}
+                    style={{ padding: spacing.suggestionPadding }}
                 >
-                    <ap-typography color={theme.palette.semantic.colorForeground} variant={FontVariantToken.fontSizeM}>
+                    <ap-typography color={theme.palette.semantic.colorForeground} variant={spacing.suggestionFontToken}>
                         {suggestion.label}
                     </ap-typography>
                 </Suggestion>

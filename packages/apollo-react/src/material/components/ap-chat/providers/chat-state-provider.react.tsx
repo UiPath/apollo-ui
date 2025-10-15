@@ -2,6 +2,7 @@
 /** @jsxFrag React.Fragment */
 
 import { FontVariantToken } from '@uipath/apollo-core';
+import token from '@uipath/apollo-core/lib';
 import {
     AutopilotChatAllowedAttachments,
     AutopilotChatConfiguration,
@@ -19,6 +20,7 @@ import {
     CHAT_INPUT_MIN_ROWS,
     CHAT_MESSAGE_GROUP_GAP,
     CHAT_MESSAGE_SPACING,
+    CHAT_SUGGESTION_SPACING,
 } from '@uipath/portal-shell-util';
 import React from 'react';
 
@@ -83,7 +85,10 @@ const calculateSpacing = (chatSpacing: AutopilotChatConfiguration['spacing']) =>
     const messageGroupGap = compactMode ? CHAT_COMPACT_MODE_MESSAGE_GROUP_GAP : CHAT_MESSAGE_GROUP_GAP;
     const primaryFontToken = compactMode ? FontVariantToken.fontSizeS : FontVariantToken.fontSizeM;
     const primaryBoldFontToken = compactMode ? FontVariantToken.fontSizeSBold : FontVariantToken.fontSizeMBold;
-
+    const titleFontToken = FontVariantToken.fontSizeH4;
+    const suggestionSpacing = CHAT_SUGGESTION_SPACING;
+    const suggestionFontToken = compactMode ? FontVariantToken.fontSizeS : FontVariantToken.fontSizeM;
+    const suggestionPadding = compactMode ? `${token.Spacing.SpacingMicro} ${token.Spacing.SpacingXs}` : `${token.Spacing.SpacingXs} ${token.Spacing.SpacingBase}`;
     return {
         compactMode,
         promptBox: {
@@ -92,6 +97,10 @@ const calculateSpacing = (chatSpacing: AutopilotChatConfiguration['spacing']) =>
         },
         primaryFontToken: chatSpacing?.primaryFontToken ?? primaryFontToken,
         primaryBoldFontToken: chatSpacing?.primaryBoldFontToken ?? primaryBoldFontToken,
+        titleFontToken: chatSpacing?.titleFontToken ?? titleFontToken,
+        suggestionSpacing: chatSpacing?.suggestionSpacing ?? suggestionSpacing,
+        suggestionFontToken: chatSpacing?.suggestionFontToken ?? suggestionFontToken,
+        suggestionPadding: chatSpacing?.suggestionPadding ?? suggestionPadding,
         messageSpacing: chatSpacing?.messageSpacing ?? messageSpacing,
         messageGroupGap: chatSpacing?.messageGroupGap ?? messageGroupGap,
         markdownTokens: {
