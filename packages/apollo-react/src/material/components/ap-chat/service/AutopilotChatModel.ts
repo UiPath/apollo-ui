@@ -420,6 +420,10 @@ export interface AutopilotChatConfiguration {
         messageGroupGap?: number;
         primaryFontToken?: FontVariantToken;
         primaryBoldFontToken?: FontVariantToken;
+        titleFontToken?: FontVariantToken;
+        suggestionSpacing?: number;
+        suggestionFontToken?: FontVariantToken;
+        suggestionPadding?: string;
         markdownTokens?: {
             li?: FontVariantToken;
             p?: FontVariantToken;
