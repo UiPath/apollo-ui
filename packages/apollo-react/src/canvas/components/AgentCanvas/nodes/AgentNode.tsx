@@ -35,6 +35,7 @@ interface AgentNodeProps extends NewBaseNodeDisplayProps {
   hasRunning?: boolean;
   onAddResource?: (type: "context" | "escalation" | "mcp" | "model" | "tool" | "memory") => void;
   translations: AgentNodeTranslations;
+  enableMemory?: boolean;
 }
 
 const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNodeProps) => {
@@ -54,6 +55,7 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
     hasRunning = false,
     onAddResource,
     translations,
+    enableMemory,
     ...nodeProps
   } = props;
 
@@ -68,7 +70,7 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
   }, [hasError, hasSuccess, hasRunning]);
 
   const displayModel = mode === "design" || (mode === "view" && hasModel);
-  const displayMemory = hasMemory; // Simply show memory if it exists, regardless of mode
+  const displayMemory = enableMemory === true && (mode === "design" || (mode === "view" && hasMemory));
   const displayContext = mode === "design" || (mode === "view" && hasContext);
   const displayEscalation = mode === "design" || (mode === "view" && hasEscalation);
   const displayTool = mode === "design" || (mode === "view" && hasTool);
@@ -90,10 +92,13 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
         type: "source",
         handleType: "artifact",
         label: translations.memory,
-        showButton: false, // Memory handle shouldn't be actionable
+        showButton: mode === "design",
         color: "var(--color-foreground-de-emp)",
         labelBackgroundColor: "var(--color-background-secondary)",
         visible: displayMemory,
+        onAction: (_e: HandleActionEvent) => {
+          onAddResource?.("memory");
+        },
       });
     }
 
@@ -220,6 +225,7 @@ const AgentNodeWrapper = (props: NodeProps<Node<AgentNodeData>> & AgentNodeProps
     data,
     mode,
     hasModel,
+    hasMemory,
     hasContext,
     hasEscalation,
     hasTool,
@@ -230,6 +236,7 @@ const AgentNodeWrapper = (props: NodeProps<Node<AgentNodeData>> & AgentNodeProps
     hasRunning,
     onAddResource,
     translations,
+    enableMemory,
     ...nodeProps
   } = props;
 
@@ -239,6 +246,7 @@ const AgentNodeWrapper = (props: NodeProps<Node<AgentNodeData>> & AgentNodeProps
       data={data}
       mode={mode}
       hasModel={hasModel}
+      hasMemory={hasMemory}
       hasContext={hasContext}
       hasEscalation={hasEscalation}
       hasTool={hasTool}
@@ -249,6 +257,7 @@ const AgentNodeWrapper = (props: NodeProps<Node<AgentNodeData>> & AgentNodeProps
       hasRunning={hasRunning}
       onAddResource={onAddResource}
       translations={translations}
+      enableMemory={enableMemory}
     />
   );
 };

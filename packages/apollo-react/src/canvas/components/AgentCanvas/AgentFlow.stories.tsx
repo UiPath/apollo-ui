@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import type { IRawSpan } from "@uipath/portal-shell-react";
 import { ReactFlowProvider } from "@uipath/uix/xyflow/react";
@@ -121,6 +121,15 @@ const createSampleMcp = (): AgentFlowResource => {
   };
 };
 
+const createSampleMemory = (count: number): AgentFlowResource => {
+  return {
+    id: "total-agent-memory",
+    type: "memory",
+    name: `${count} Dataset${count > 1 ? "s" : ""}`,
+    description: `${count} Dataset${count > 1 ? "s" : ""}`,
+  };
+};
+
 // Real examples from frontend usage
 const sampleModel: AgentFlowModel = {
   name: "gpt-4",
@@ -193,12 +202,6 @@ const sampleResources: AgentFlowResource[] = [
     slug: "file-parser",
     folderPath: "file-parser",
     availableTools: [],
-  },
-  {
-    id: "memory-4-datasets",
-    type: "memory",
-    name: "4 Datasets",
-    description: "4 Datasets",
   },
 ];
 
@@ -273,6 +276,7 @@ interface AgentFlowWrapperProps {
   spans?: any[];
   definition?: any;
   enableTimelinePlayer?: boolean;
+  enableMemory?: boolean;
 }
 
 const AgentFlowWrapper = ({
@@ -282,11 +286,40 @@ const AgentFlowWrapper = ({
   spans = sampleSpans,
   definition = sampleAgentDefinition,
   enableTimelinePlayer = true,
+  enableMemory = true,
 }: AgentFlowWrapperProps) => {
   const [resources, setResources] = useState<AgentFlowResource[]>(initialResources);
   const [model, setModel] = useState<AgentFlowModel>(sampleModel);
   const [selectedResourceId, setSelectedResourceId] = useState<string | null>(null);
-  const [_sidebarMode, setSidebarMode] = useState<"add-context" | "add-escalation" | "add-model" | "add-tool" | "properties">("properties");
+  const [_sidebarMode, setSidebarMode] = useState<
+    "add-context" | "add-escalation" | "add-model" | "add-tool" | "add-memory" | "properties"
+  >("properties");
+  const [memoryCount, setMemoryCount] = useState(0);
+
+  const memoryResourceId = useMemo(() => resources.find((r) => r.type === "memory")?.id, [resources]);
+
+  useEffect(() => {
+    if (memoryCount) {
+      if (!memoryResourceId) {
+        const newResource = createSampleMemory(memoryCount);
+        setResources((prev) => [...prev, newResource]);
+        setSelectedResourceId(newResource.id);
+        setSidebarMode("properties");
+      } else {
+        setResources((prev) =>
+          prev.map((r) =>
+            r.id !== memoryResourceId
+              ? r
+              : {
+                  ...r,
+                  name: `${memoryCount} Dataset${memoryCount > 1 ? "s" : ""}`,
+                  description: `${memoryCount} Dataset${memoryCount > 1 ? "s" : ""}`,
+                }
+          )
+        );
+      }
+    }
+  }, [memoryResourceId, memoryCount]);
 
   const handleSelectResource = useCallback((resourceId: string | null) => {
     setSelectedResourceId(resourceId);
@@ -312,6 +345,10 @@ const AgentFlowWrapper = ({
       case "mcp": {
         newResource = createSampleMcp();
         break;
+      }
+      case "memory": {
+        setMemoryCount((prev) => prev + 1);
+        return;
       }
       default: {
         return;
@@ -429,7 +466,8 @@ const AgentFlowWrapper = ({
         <div style={{ fontSize: "0.875rem", color: "#666" }}>
           <p>Click the + buttons on the agent node to add:</p>
           <ul>
-            <li>Escalations (top)</li>
+            <li>Escalations (top-right)</li>
+            <li>Memory (top-left)</li>
             <li>Model (bottom-left)</li>
             <li>Contexts (bottom-center)</li>
             <li>Tools & MCPs (bottom-right)</li>
@@ -464,6 +502,7 @@ const AgentFlowWrapper = ({
             onRemoveResource={handleRemoveResource}
             onSelectResource={handleSelectResource}
             enableTimelinePlayer={mode === "view" && enableTimelinePlayer}
+            enableMemory={enableMemory}
           />
         </div>
         {renderSidebar()}

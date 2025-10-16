@@ -6,6 +6,12 @@ import type { BaseCanvasRef } from "./components/BaseCanvas/BaseCanvas.types";
 export enum ProjectType {
   Agent = "Agent",
   Api = "Api",
+  Rpa = "Rpa",
+  Process = "Process",
+  ProcessOrchestration = "ProcessOrchestration",
+  Integration = "Integration",
+  IXP = "IXP",
+  Internal = "Internal",
 }
 
 export type ErrorInfo = {
@@ -165,6 +171,8 @@ export type AgentFlowProps = {
 
   // feature flags
   enableMcpTools?: boolean;
+  /** TODO: Remove once memory feature is fully implemented */
+  enableMemory?: boolean;
 };
 
 export type AgentFlowNodeData = {

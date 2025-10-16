@@ -127,6 +127,7 @@ const createAgentNodeWrapper = (handlers: {
   onAddResource?: (type: "context" | "escalation" | "mcp" | "model" | "tool" | "memory") => void;
   translations?: AgentNodeTranslations;
   enableMcpTools?: boolean;
+  enableMemory?: boolean;
 }) => {
   return (props: NodeProps<AgentFlowNode>) => {
     const { props: storeProps, nodes } = useAgentFlowStore();
@@ -181,6 +182,7 @@ const createAgentNodeWrapper = (handlers: {
         hasRunning={hasRunning}
         onAddResource={handlers.onAddResource}
         translations={handlers.translations ?? DefaultAgentNodeTranslations}
+        enableMemory={handlers.enableMemory === true}
       />
     );
   };
@@ -247,6 +249,7 @@ const AgentFlowInner = memo(
     enableTimelinePlayer,
     canvasRef,
     enableMcpTools,
+    enableMemory,
   }: PropsWithChildren<AgentFlowProps>) => {
     const {
       nodes,
@@ -283,6 +286,7 @@ const AgentFlowInner = memo(
           onAddResource: handleAddResource,
           translations: agentNodeTranslations,
           enableMcpTools,
+          enableMemory,
         }),
         resource: createResourceNodeWrapper({
           onEnable,
@@ -310,6 +314,7 @@ const AgentFlowInner = memo(
       onExpandResource,
       onCollapseResource,
       enableMcpTools,
+      enableMemory,
     ]);
 
     const handlePaneClick = useCallback(() => {

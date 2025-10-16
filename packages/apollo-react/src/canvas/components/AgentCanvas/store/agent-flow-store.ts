@@ -15,16 +15,7 @@ import {
   isAgentFlowResourceNode,
 } from "../../../types";
 import { autoArrangeNodes } from "../../../utils/auto-layout";
-import {
-  computeNodesAndEdges,
-  hasModelError,
-  hasModelRunning,
-  hasModelSuccess,
-  hasResourceError,
-  hasResourceRunning,
-  hasResourceSuccess,
-  NODE_ID_DELIMITER,
-} from "../../../utils/props-helpers";
+import { computeNodesAndEdges, NODE_ID_DELIMITER } from "../../../utils/props-helpers";
 import { addAnimationClasses, removeAnimationClasses } from "../../../utils/resource-operations";
 
 const getSelectedNodeId = (props: AgentFlowProps, state: AgentFlowStore): string | null => {
@@ -333,165 +324,105 @@ export const createAgentFlowStore = (initialProps: AgentFlowProps) =>
       handlePropsUpdate: (newProps) => {
         const state = get();
 
-        // diff previous and new resources
+        // Check if resources were added or removed
         const currentResourceIds = new Set(state.props.resources.map((r) => r.id));
         const newResourceIds = new Set(newProps.resources.map((r) => r.id));
-        const resourcesAddedOrRemoved =
-          currentResourceIds.size !== newResourceIds.size ||
-          [...currentResourceIds].some((id) => !newResourceIds.has(id)) ||
-          [...newResourceIds].some((id) => !currentResourceIds.has(id));
+        const addedIds = new Set([...newResourceIds].filter((id) => !currentResourceIds.has(id)));
+        const removedIds = new Set([...currentResourceIds].filter((id) => !newResourceIds.has(id)));
+        const resourcesAddedOrRemoved = addedIds.size > 0 || removedIds.size > 0;
 
-        // check if model properties changed (but not added/removed)
+        // Check if model was added or removed
         const hadModelNode = state.nodes.some(hasModelNode);
         const willHaveModelNode = Boolean(newProps.model);
         const modelChanged = hadModelNode !== willHaveModelNode;
 
-        // resources added/removed
+        // Always recompute nodes and edges to handle any ID changes
+        const { nodes: allNewNodes, edges: newEdges } = computeNodesAndEdges(newProps);
+
+        // Map old nodes to new nodes while preserving visual state (position, selection, style)
+        const updatedNodes = allNewNodes.map((newNode) => {
+          // Find corresponding old node
+          const oldNode = state.nodes.find((oldNode) => {
+            // Match agent nodes
+            if (newNode.type === "agent" && oldNode.type === "agent") {
+              return newNode.data.parentNodeId === oldNode.data.parentNodeId;
+            }
+            // Match resource nodes by resource ID (extracted from node ID)
+            if (isAgentFlowResourceNode(newNode) && isAgentFlowResourceNode(oldNode)) {
+              if (newNode.data.type === "model" && oldNode.data.type === "model") {
+                return newNode.data.parentNodeId === oldNode.data.parentNodeId;
+              }
+              // Extract resource ID from node ID (part after the last ':')
+              const newResourceId = newNode.id.split(":").pop();
+              const oldResourceId = oldNode.id.split(":").pop();
+              return newResourceId === oldResourceId;
+            }
+            return false;
+          });
+
+          // If we found a matching old node, preserve its visual state
+          if (oldNode) {
+            return {
+              ...newNode,
+              position: oldNode.position,
+              selected: oldNode.selected,
+              style: oldNode.style,
+              measured: oldNode.measured,
+            };
+          }
+
+          // For new nodes, check if they should be selected
+          if (resourcesAddedOrRemoved || modelChanged) {
+            const isFirstAddedResource =
+              isAgentFlowResourceNode(newNode) &&
+              [...addedIds][0] &&
+              newProps.resources.find((r) => r.id === [...addedIds][0] && hasResourceNode(newNode, r));
+
+            const isFirstAddedModel = hasModelNode(newNode) && modelChanged && willHaveModelNode && !hadModelNode;
+
+            return {
+              ...newNode,
+              selected: Boolean(isFirstAddedResource || (isFirstAddedModel && addedIds.size === 0)),
+            };
+          }
+
+          return newNode;
+        });
+
+        // Determine selected node ID for newly added resources
+        let firstNewNodeId: string | null = null;
         if (resourcesAddedOrRemoved || modelChanged) {
-          const removedIds = new Set([...currentResourceIds].filter((id) => !newResourceIds.has(id)));
-          const addedIds = new Set([...newResourceIds].filter((id) => !currentResourceIds.has(id)));
-
-          // remove deleted nodes
-          const updatedNodes = state.nodes.filter((node) => {
-            if (hasModelNode(node)) return willHaveModelNode;
-            if (isAgentFlowResourceNode(node)) {
-              // check if this node corresponds to a removed resource
-              const removedResources = state.props.resources.filter((r) => removedIds.has(r.id));
-              return !removedResources.some((resource) => hasResourceNode(node, resource));
-            }
-            return true;
-          });
-
-          // add new resources
-          const addedResources = newProps.resources.filter((r) => addedIds.has(r.id));
-
-          const { nodes: allNewNodes, edges } = computeNodesAndEdges(newProps);
-          let firstNewNodeId: string | null = null;
-
-          if (addedResources.length > 0) {
-            const newNodes = allNewNodes
-              .filter((node) => isAgentFlowResourceNode(node) && addedResources.some((r) => hasResourceNode(node, r)))
-              .map((node, index) => {
-                if (index === 0) firstNewNodeId = node.id;
-                return {
-                  ...node,
-                  selected: index === 0, // select first new node
-                };
-              });
-            updatedNodes.push(...newNodes);
-          }
-
-          // add new model
-          const hasModel = updatedNodes.some(hasModelNode);
-          if (willHaveModelNode && newProps.model && !hasModel) {
-            const newModelNode = allNewNodes.find(hasModelNode);
-            if (newModelNode) {
-              firstNewNodeId ??= newModelNode.id;
-              updatedNodes.push({
-                ...newModelNode,
-                selected: addedResources.length === 0,
-              });
+          // Find first added resource node
+          const firstAddedResource = addedIds.size > 0 ? updatedNodes.find((node) => node.selected) : null;
+          if (firstAddedResource) {
+            firstNewNodeId = firstAddedResource.id;
+          } else if (modelChanged && willHaveModelNode) {
+            // Or select the newly added model
+            const modelNode = updatedNodes.find(hasModelNode);
+            if (modelNode) {
+              firstNewNodeId = modelNode.id;
             }
           }
+        }
 
-          // update state with selected node
-          set({
-            props: newProps,
-            nodes: updatedNodes,
-            edges,
-            selectedNodeId: firstNewNodeId || state.selectedNodeId,
-          });
+        // Update state
+        set({
+          props: newProps,
+          nodes: updatedNodes,
+          edges: newEdges,
+          selectedNodeId: firstNewNodeId || state.selectedNodeId,
+        });
 
-          // call onSelectResource if we just added a node
-          if (firstNewNodeId && newProps.onSelectResource) {
-            newProps.onSelectResource(firstNewNodeId);
-          }
+        // Notify parent component of selection change
+        if (firstNewNodeId && newProps.onSelectResource) {
+          newProps.onSelectResource(firstNewNodeId);
+        }
 
-          // auto-arrange
-          if (addedIds.size > 0 || removedIds.size > 0 || modelChanged) {
-            setTimeout(() => {
-              get().autoArrange();
-            }, 100);
-          }
-        } else {
-          // data changes (including spans) - preserve positions, order, style
-          const updatedNodes = state.nodes.map((node): AgentFlowCustomNode => {
-            // Update agent node
-            if (node.type === "agent") {
-              return {
-                ...node,
-                data: {
-                  ...node.data,
-                  name: newProps.name,
-                  description: newProps.description,
-                },
-              };
-            }
-
-            if (isAgentFlowResourceNode(node)) {
-              // Update model node
-              if (node.data.type === "model" && newProps.model) {
-                return {
-                  ...node,
-                  data: {
-                    ...node.data,
-                    errors: newProps.resources.find((r) => hasResourceNode(node, r))?.errors,
-                    name: newProps.model.name,
-                    description: newProps.model.vendorName,
-                    iconUrl: newProps.model.iconUrl,
-                    hasGuardrails: newProps.model.hasGuardrails ?? false,
-                    hasError: hasModelError(newProps.model, newProps.spans),
-                    hasSuccess: hasModelSuccess(newProps.model, newProps.spans),
-                    hasRunning: hasModelRunning(newProps.model, newProps.spans),
-                  },
-                };
-              }
-
-              // Update regular resource nodes
-              const updatedResource = newProps.resources.find((r) => hasResourceNode(node, r));
-
-              if (updatedResource) {
-                const resourceIndex = newProps.resources.findIndex((r) => hasResourceNode(node, r));
-                const newDraggable = Boolean(newProps.allowDragging);
-                const newIsActive = newProps.activeResourceIds?.some(() => hasResourceNode(node, updatedResource)) ?? false;
-                const newIconUrl = updatedResource.type === "tool" ? updatedResource.iconUrl : undefined;
-                const newOrder = node.data.order ?? resourceIndex;
-                const newHasBreakpoint = updatedResource.hasBreakpoint ?? false;
-                const newIsCurrentBreakpoint = updatedResource.isCurrentBreakpoint ?? false;
-                const newHasGuardrails = updatedResource.hasGuardrails ?? false;
-                const newIsDisabled = updatedResource.isDisabled ?? false;
-
-                return {
-                  ...node,
-                  data: {
-                    ...node.data,
-                    errors: newProps.resources.find((r) => hasResourceNode(node, r))?.errors,
-                    name: updatedResource.name,
-                    originalName: updatedResource.originalName,
-                    description: updatedResource.description,
-                    order: newOrder,
-                    isActive: newIsActive,
-                    iconUrl: newIconUrl,
-                    hasBreakpoint: newHasBreakpoint,
-                    isCurrentBreakpoint: newIsCurrentBreakpoint,
-                    hasGuardrails: newHasGuardrails,
-                    projectId: updatedResource.projectId,
-                    hasError: hasResourceError(updatedResource, newProps.spans),
-                    hasSuccess: hasResourceSuccess(updatedResource, newProps.spans),
-                    hasRunning: hasResourceRunning(updatedResource, newProps.spans),
-                    isDisabled: newIsDisabled,
-                  },
-                  draggable: newDraggable,
-                };
-              }
-            }
-            return node;
-          });
-
-          set({
-            props: newProps,
-            nodes: updatedNodes,
-          });
+        // Auto-arrange if resources were added/removed
+        if (resourcesAddedOrRemoved || modelChanged) {
+          setTimeout(() => {
+            get().autoArrange();
+          }, 100);
         }
       },
 
