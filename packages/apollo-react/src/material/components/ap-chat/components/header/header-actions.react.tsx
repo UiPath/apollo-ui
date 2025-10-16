@@ -18,7 +18,7 @@ import { AutopilotChatActionButton } from '../common/action-button.react';
 const StyledActions = styled('div')(() => ({
     display: 'flex',
     alignItems: 'center',
-    gap: token.Spacing.SpacingXs,
+    gap: token.Spacing.SpacingMicro,
 }));
 
 function AutopilotChatHeaderActionsComponent() {

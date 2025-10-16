@@ -1413,6 +1413,11 @@ chatService.setDisabledFeatures({
   header: true
 });
 
+// Disable header separator (border and padding)
+chatService.setDisabledFeatures({
+  headerSeparator: true
+});
+
 // Disable footer
 chatService.setDisabledFeatures({
   footer: true
@@ -1840,6 +1845,7 @@ enum AutopilotChatMode {
  * @property attachments - Whether the chat has the attachments button
  * @property history - Whether the chat has the history button
  * @property header - Whether the chat has the header
+ * @property headerSeparator - Whether the chat header has the separator (border and padding)
  * @property footer - Whether the chat has the footer
  * @property preview - Whether the chat has the preview badge
  * @property close - Whether the chat has the close button
@@ -1854,6 +1860,7 @@ export interface AutopilotChatDisabledFeatures {
     attachments?: boolean;
     history?: boolean;
     header?: boolean;
+    headerSeparator?: boolean;
     footer?: boolean;
     preview?: boolean;
     close?: boolean;

@@ -35,6 +35,10 @@ export const argTypes = {
         control: 'boolean',
         description: 'Disable the header',
     },
+    headerSeparatorDisabled: {
+        control: 'boolean',
+        description: 'Disable the header separator (border and padding)',
+    },
     footerDisabled: {
         control: 'boolean',
         description: 'Disable the footer',
@@ -118,6 +122,7 @@ export const defaultArgs = {
     historyDisabled: false,
     closeDisabled: false,
     headerDisabled: false,
+    headerSeparatorDisabled: false,
     footerDisabled: false,
     previewDisabled: false,
     newChatDisabled: false,

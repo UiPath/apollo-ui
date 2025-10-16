@@ -41,6 +41,7 @@ export const initializeChatService = (args, container, storyId = 'default', canv
         history: args.historyDisabled,
         close: args.closeDisabled,
         header: args.headerDisabled,
+        headerSeparator: args.headerSeparatorDisabled,
         footer: args.footerDisabled,
         preview: args.previewDisabled,
         newChat: args.newChatDisabled,
