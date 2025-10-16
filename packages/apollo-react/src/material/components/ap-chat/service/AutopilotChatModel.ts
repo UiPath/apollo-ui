@@ -311,6 +311,7 @@ export interface PdfCitation extends Citation {
  * @property attachments - Whether the chat has the attachments button
  * @property history - Whether the chat has the history button
  * @property header - Whether the chat has the header
+ * @property headerSeparator - Whether the chat header has the separator (border and padding)
  * @property footer - Whether the chat has the footer
  * @property preview - Whether the chat has the preview badge
  * @property close - Whether the chat has the close button
@@ -327,6 +328,7 @@ export interface AutopilotChatDisabledFeatures {
     attachments?: boolean;
     history?: boolean;
     header?: boolean;
+    headerSeparator?: boolean;
     footer?: boolean;
     preview?: boolean;
     close?: boolean;
