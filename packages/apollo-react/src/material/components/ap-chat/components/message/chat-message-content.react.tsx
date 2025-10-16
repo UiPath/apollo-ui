@@ -4,6 +4,7 @@
 import { styled } from '@mui/material';
 import token from '@uipath/apollo-core/lib';
 import {
+    AGENTS_TOOL_CALL_RENDERER,
     AutopilotChatEvent,
     AutopilotChatInternalEvent,
     AutopilotChatMessage,
@@ -14,7 +15,6 @@ import {
     CHAT_WIDTH_SIDE_BY_SIDE_MIN,
     DEFAULT_MESSAGE_RENDERER,
     StorageService,
-    TOOL_CALL_RENDERER,
 } from '@uipath/portal-shell-util';
 import React from 'react';
 
@@ -33,7 +33,7 @@ const APOLLO_MESSAGE_RENDERERS = [
         component: AutopilotChatMarkdownRenderer,
     },
     {
-        name: TOOL_CALL_RENDERER,
+        name: AGENTS_TOOL_CALL_RENDERER,
         component: ({ message }: { message: AutopilotChatMessage }) => {
             if (!message.meta.span) {
                 return null;
