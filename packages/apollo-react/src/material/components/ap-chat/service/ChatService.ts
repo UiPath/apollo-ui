@@ -51,11 +51,13 @@ export class AutopilotChatService {
             maxCount: ACCEPTED_FILE_MAX_COUNT,
         },
         // Settings will be disabled by default since each consumer needs to implement their own settings page
+        // Header Separator will be disabled by default, consumers can selectively enable it
         // Or the framework will provide a settings page that will be used by all framework consumers
         // Audio will be disabled by default since each consumer needs to implement their own audio support
         // FullHeight will be disabled by default since most of the consumers will have the portal-shell header
         disabledFeatures: {
             settings: true,
+            headerSeparator: true,
             audio: true,
             fullHeight: true,
         },
