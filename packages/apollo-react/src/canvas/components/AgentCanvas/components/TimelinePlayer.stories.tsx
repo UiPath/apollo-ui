@@ -5,7 +5,13 @@ import { Row } from "@uipath/uix/core";
 import { TimelinePlayer } from "./TimelinePlayer";
 import { AgentFlow } from "../AgentFlow";
 import type { IRawSpan } from "@uipath/portal-shell-react";
-import type { AgentFlowModel, AgentFlowResource, AgentFlowResourceNodeData, AgentFlowResourceType } from "../../../types";
+import {
+  ProjectType,
+  type AgentFlowModel,
+  type AgentFlowResource,
+  type AgentFlowResourceNodeData,
+  type AgentFlowResourceType,
+} from "../../../types";
 
 const meta: Meta<typeof TimelinePlayer> = {
   title: "Canvas/TimelinePlayer",
@@ -234,7 +240,7 @@ const sampleResources: AgentFlowResource[] = [
     hasBreakpoint: false,
     isCurrentBreakpoint: false,
     hasGuardrails: false,
-    projectType: "ai",
+    projectType: ProjectType.Internal,
   },
 ];
 

@@ -3,11 +3,12 @@ import { ApIcon } from "@uipath/portal-shell-react";
 import { Icons, Row } from "@uipath/uix/core";
 import { Position, type NodeProps } from "@uipath/uix/xyflow/react";
 import { NewBaseNode } from "../../BaseNode/NewBaseNode";
-import { ProjectType, type AgentFlowResourceNode, type AgentFlowResourceNodeData, type ResourceNodeTranslations } from "../../../types";
+import { type AgentFlowResourceNode, type AgentFlowResourceNodeData, type ResourceNodeTranslations } from "../../../types";
 import { useAgentFlowStore } from "../store/agent-flow-store";
 import { type ButtonHandleConfig } from "../../ButtonHandle";
 import { ExecutionStatusIcon } from "../../ExecutionStatusIcon/ExecutionStatusIcon";
 import type { NodeToolbarConfig, ToolbarAction } from "../../NodeToolbar/NodeToolbar.types";
+import { ToolResourceIcon } from "../components/ToolResourceIcon";
 import type { NodeAdornment } from "../../BaseNode/NewBaseNode.types";
 
 interface ResourceNodeProps extends NodeProps<AgentFlowResourceNode> {
@@ -104,19 +105,6 @@ export const ResourceNode = memo(
       return <ApIcon color="var(--color-icon)" name="chat" size="40px" />;
     };
 
-    const getToolIcon = (name: string, projectType?: string, iconUrl?: string) => {
-      if (projectType === ProjectType.Agent) {
-        return <Icons.AgentIcon w={48} h={48} />;
-      }
-      if (projectType === ProjectType.Api) {
-        return <Icons.ApiProject w={48} h={48} />;
-      }
-      if (!iconUrl) {
-        return <ApIcon name="build" size="40px" />;
-      }
-      return <img src={iconUrl} alt={name} />;
-    };
-
     const resourceIcon = useMemo(() => {
       let icon: React.ReactNode | undefined;
       switch (data.type) {
@@ -136,14 +124,14 @@ export const ResourceNode = memo(
           icon = getModelIcon(data.name);
           break;
         case "tool":
-          icon = getToolIcon(data.name, data.projectType, data.iconUrl);
+          icon = <ToolResourceIcon size={48} tool={data} />;
           break;
         default:
           icon = undefined;
           break;
       }
       return <Row style={{ color: "var(--color-foreground-de-emp)" }}>{icon}</Row>;
-    }, [data.iconUrl, data.name, data.type, data.projectType]);
+    }, [data]);
 
     const executionStatus = useMemo(() => {
       if (isCurrentBreakpoint) return "Paused";

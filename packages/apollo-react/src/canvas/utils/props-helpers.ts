@@ -184,6 +184,7 @@ const createResourceNode = (
           type: "tool",
           iconUrl: resource.iconUrl,
           projectType: resource.projectType,
+          toolType: resource.toolType,
           projectId: resource.projectId,
           parentNodeId,
           isExpandable: resource.isExpandable,

@@ -14,30 +14,6 @@ const getResourceNodeTypeOrder = (nodeType: ResourceNodeType): number => Resourc
 
 // Size (diameter) of the resource node in the canvas
 export const RESOURCE_NODE_SIZE = 80;
-export const RESOURCE_NODE_ICON_WITH_SPACING_SIZE = 24;
-
-const RESOURCE_NODE_BOUNDARY_ICON_POSITIONS = {
-  "bottom-left": {
-    top: (radius: number, offset: number) => Math.abs(-radius * (1 + Math.sqrt(2) / 2)) - offset,
-    left: (radius: number, offset: number) => Math.abs(radius * (1 - Math.sqrt(2) / 2)) - offset,
-  },
-  "bottom-right": {
-    top: (radius: number, offset: number) => Math.abs(-radius * (1 + Math.sqrt(2) / 2)) - offset,
-    left: (radius: number, offset: number) => Math.abs(radius * (1 + Math.sqrt(2) / 2)) - offset,
-  },
-  "top-left": {
-    top: (radius: number, offset: number) => Math.abs(radius * (Math.sqrt(2) / 2 - 1)) - offset,
-    left: (radius: number, offset: number) => Math.abs(radius * (1 - Math.sqrt(2) / 2)) - offset,
-  },
-  "top-right": {
-    top: (radius: number, offset: number) => Math.abs(radius * (Math.sqrt(2) / 2 - 1)) - offset,
-    left: (radius: number, offset: number) => Math.abs(radius * (1 + Math.sqrt(2) / 2)) - offset,
-  },
-};
-
-export const getResourceNodeBoundaryIconPosition = (position: "bottom-left" | "bottom-right" | "top-left" | "top-right") => {
-  return RESOURCE_NODE_BOUNDARY_ICON_POSITIONS[position];
-};
 
 /** Utility function to get the bottom-most position of an agent group */
 export const getAgentGroupBottomPosition = (

@@ -14,6 +14,10 @@ export enum ProjectType {
   Internal = "Internal",
 }
 
+export enum BuiltInToolType {
+  AnalyzeAttachments = "AnalyzeAttachments",
+}
+
 export type ErrorInfo = {
   value: string;
   label: string;
@@ -36,7 +40,8 @@ export type AgentFlowToolResource = {
   description: string;
   iconUrl: string;
   errors?: ErrorInfo[];
-  projectType?: string;
+  projectType?: ProjectType;
+  toolType?: BuiltInToolType;
   isExpandable?: boolean;
   processName?: string;
   hasBreakpoint?: boolean;
@@ -186,33 +191,27 @@ export type AgentFlowNode = Node<AgentFlowNodeData, "agent"> & {
 };
 export type AgentFlowNodeProps = NodeProps<AgentFlowNode>;
 
-type ToolResourceData = {
+export type ToolResourceData = {
   type: "tool";
+  toolType?: BuiltInToolType;
 };
-type ContextResourceData = {
+export type ContextResourceData = {
   type: "context";
 };
-type EscalationResourceData = {
+export type EscalationResourceData = {
   type: "escalation";
 };
-type ModelResourceData = {
+export type ModelResourceData = {
   type: "model";
 };
-type McpResourceData = {
+export type McpResourceData = {
   type: "mcp";
 };
-type MemoryResourceData = {
+export type MemoryResourceData = {
   type: "memory";
 };
 
-export type AgentFlowResourceNodeData = (
-  | ContextResourceData
-  | EscalationResourceData
-  | McpResourceData
-  | ModelResourceData
-  | ToolResourceData
-  | MemoryResourceData
-) & {
+export type SharedResourceData = {
   name: string;
   originalName?: string;
   description: string;
@@ -226,7 +225,7 @@ export type AgentFlowResourceNodeData = (
   order?: number;
   originalPosition?: { x: number; y: number };
   iconUrl?: string;
-  projectType?: string;
+  projectType?: ProjectType;
   isExpandable?: boolean;
   processName?: string;
   slug?: string;
@@ -244,6 +243,16 @@ export type AgentFlowResourceNodeData = (
   projectId?: string;
   isVirtual?: boolean; // AgentFlow-specific: for virtual spacing nodes
 };
+
+export type AgentFlowResourceNodeData = (
+  | ContextResourceData
+  | EscalationResourceData
+  | McpResourceData
+  | ModelResourceData
+  | ToolResourceData
+  | MemoryResourceData
+) &
+  SharedResourceData;
 export type AgentFlowResourceNode = Node<AgentFlowResourceNodeData, "resource"> & {
   extent?: "parent" | CoordinateExtent | undefined;
 };

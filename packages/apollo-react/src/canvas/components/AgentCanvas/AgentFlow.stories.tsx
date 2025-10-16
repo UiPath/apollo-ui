@@ -4,7 +4,14 @@ import type { IRawSpan } from "@uipath/portal-shell-react";
 import { ReactFlowProvider } from "@uipath/uix/xyflow/react";
 import { Column, Row } from "@uipath/uix/core";
 import { AgentFlow } from "./AgentFlow";
-import type { AgentFlowModel, AgentFlowProps, AgentFlowResource, AgentFlowResourceNodeData, AgentFlowResourceType } from "../../types";
+import {
+  ProjectType,
+  type AgentFlowModel,
+  type AgentFlowProps,
+  type AgentFlowResource,
+  type AgentFlowResourceNodeData,
+  type AgentFlowResourceType,
+} from "../../types";
 
 const meta: Meta<typeof AgentFlow> = {
   title: "Canvas/AgentFlow",
@@ -40,11 +47,11 @@ const sampleContexts = [
 ];
 
 const sampleTools = [
-  { name: "Send Email", description: "Email Service", projectType: "email" },
-  { name: "Query Database", description: "Database", projectType: "database" },
-  { name: "Call API", description: "REST API", projectType: "api" },
-  { name: "Process Document", description: "Document AI", projectType: "document" },
-  { name: "Run Automation", description: "Automation", projectType: "automation" },
+  { name: "Send Email", description: "Email Service", projectType: ProjectType.Internal },
+  { name: "Query Database", description: "Database", projectType: ProjectType.Internal },
+  { name: "Call API", description: "REST API", projectType: ProjectType.Api },
+  { name: "Process Document", description: "Document AI", projectType: ProjectType.Internal },
+  { name: "Run Automation", description: "Automation", projectType: ProjectType.Internal },
 ];
 
 const sampleEscalations = [
@@ -88,7 +95,7 @@ const createSampleTool = (): AgentFlowResource => {
     iconUrl: "",
     hasBreakpoint: false,
     hasGuardrails: false,
-    projectType: sample.projectType,
+    projectType: sample.projectType as ProjectType,
   };
 };
 
@@ -148,7 +155,7 @@ const sampleResources: AgentFlowResource[] = [
     hasBreakpoint: false,
     isCurrentBreakpoint: false,
     hasGuardrails: false,
-    projectType: "slack",
+    projectType: ProjectType.Internal,
     isDisabled: false,
   },
   {
@@ -160,7 +167,7 @@ const sampleResources: AgentFlowResource[] = [
     hasBreakpoint: false,
     isCurrentBreakpoint: false,
     hasGuardrails: false,
-    projectType: "ixp",
+    projectType: ProjectType.IXP,
     isDisabled: false,
   },
   {
@@ -172,7 +179,7 @@ const sampleResources: AgentFlowResource[] = [
     hasBreakpoint: false,
     isCurrentBreakpoint: false,
     hasGuardrails: false,
-    projectType: "claim",
+    projectType: ProjectType.Internal,
     isDisabled: false,
   },
   {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { AgentFlowCustomEdge, AgentFlowCustomNode } from "../types";
+import { ProjectType, type AgentFlowCustomEdge, type AgentFlowCustomNode } from "../types";
 import { autoArrangeNodes, getAgentGroupBottomPosition } from "./auto-layout";
 import { ResourceNodeType } from "../components/AgentCanvas/AgentFlow.constants";
 import { Position } from "@uipath/uix/xyflow/react";
@@ -51,7 +51,7 @@ describe("auto-layout", () => {
             type: "tool",
             name: "Resource 1",
             description: "Test resource 1",
-            projectType: "Skill",
+            projectType: ProjectType.Internal,
           },
         },
         {
@@ -64,7 +64,7 @@ describe("auto-layout", () => {
             type: "tool",
             name: "Resource 2",
             description: "Test resource 2",
-            projectType: "Skill",
+            projectType: ProjectType.Internal,
           },
         },
       ];
@@ -117,7 +117,7 @@ describe("auto-layout", () => {
             type: "tool",
             name: "Left Resource",
             description: "Test left resource",
-            projectType: "Skill",
+            projectType: ProjectType.Internal,
           },
         },
         {
@@ -130,7 +130,7 @@ describe("auto-layout", () => {
             type: "tool",
             name: "Right Resource",
             description: "Test right resource",
-            projectType: "Skill",
+            projectType: ProjectType.Internal,
           },
         },
         {
@@ -143,7 +143,7 @@ describe("auto-layout", () => {
             type: "tool",
             name: "Bottom Resource",
             description: "Test bottom resource",
-            projectType: "Skill",
+            projectType: ProjectType.Internal,
           },
         },
       ];
@@ -207,7 +207,7 @@ describe("auto-layout", () => {
             type: "tool",
             name: "Resource 1",
             description: "Test resource",
-            projectType: "Skill",
+            projectType: ProjectType.Internal,
           },
         },
       ];
@@ -262,7 +262,7 @@ describe("auto-layout", () => {
             type: "model",
             name: "Test Model",
             description: "Test model description",
-            projectType: "Model",
+            projectType: ProjectType.Internal,
           },
         },
         {
@@ -275,7 +275,7 @@ describe("auto-layout", () => {
             type: "tool",
             name: "Skill 1",
             description: "Test skill 1",
-            projectType: "Skill",
+            projectType: ProjectType.Internal,
             order: 1,
           },
         },
@@ -289,7 +289,7 @@ describe("auto-layout", () => {
             type: "tool",
             name: "Skill 2",
             description: "Test skill 2",
-            projectType: "Skill",
+            projectType: ProjectType.Internal,
             order: 2,
           },
         },
@@ -365,7 +365,7 @@ describe("auto-layout", () => {
             type: "tool",
             name: "Agent Resource",
             description: "Test agent resource",
-            projectType: "Agent",
+            projectType: ProjectType.Agent,
           },
         },
         {
@@ -432,7 +432,7 @@ describe("auto-layout", () => {
             type: "tool",
             name: "Skill 1",
             description: "Test skill 1",
-            projectType: "Skill",
+            projectType: ProjectType.Internal,
             order: 2,
           },
         },
@@ -446,7 +446,7 @@ describe("auto-layout", () => {
             type: "tool",
             name: "Skill 2",
             description: "Test skill 2",
-            projectType: "Skill",
+            projectType: ProjectType.Internal,
             order: 1,
           },
         },
@@ -502,7 +502,7 @@ describe("auto-layout", () => {
             type: "context",
             name: "Context Resource",
             description: "Test context resource",
-            projectType: "Skill",
+            projectType: ProjectType.Internal,
           },
         },
       ];
