@@ -4,7 +4,6 @@ import { Position, useConnection, useStore } from "@uipath/uix/xyflow/react";
 import type { NodeStatusContext } from "./ExecutionStatusContext";
 import { useExecutionState } from "./ExecutionStatusContext";
 import type { HandleActionEvent } from "../ButtonHandle";
-import { ButtonHandles } from "../ButtonHandle";
 import { NodeToolbar } from "../NodeToolbar";
 import { BaseContainer, BaseIconWrapper, BaseBadgeSlot, BaseTextContainer, BaseHeader, BaseSubHeader } from "./BaseNode.styles";
 import type { BaseNodeData } from "./BaseNode.types";
@@ -12,6 +11,7 @@ import { useNodeTypeRegistry } from "./useNodeTypeRegistry";
 import { cx } from "@uipath/uix/core";
 import { ApIcon } from "@uipath/portal-shell-react";
 import { useBaseCanvasMode } from "../BaseCanvas/BaseCanvasModeProvider";
+import { useButtonHandles } from "../ButtonHandle/useButtonHandles";
 
 const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
   const { type, data, selected, id, dragging, width, height } = props;
@@ -115,48 +115,18 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
     [nodeDefinition, handleConfigurations]
   );
 
-  const connectedHandleIds = useMemo(() => {
-    const ids = new Set<string>();
-    if (!edges) return ids;
-    for (const edge of edges) {
-      if (edge.source === id && edge.sourceHandle) ids.add(edge.sourceHandle);
-      if (edge.target === id && edge.targetHandle) ids.add(edge.targetHandle);
-    }
-    return ids;
-  }, [edges, id]);
-
-  const handleElements = useMemo(() => {
-    if (!handleConfigurations) return <></>;
-
-    // Calculate if notches should be shown (when node is hovered or selected)
-    const showNotches = inProgress || isHovered || selected;
-
-    const elements = handleConfigurations.map((config) => {
-      const hasConnectedHandle = config.handles.some((h) => connectedHandleIds.has(h.id));
-      const finalVisible = hasConnectedHandle || (shouldShowHandles && (config.visible ?? true));
-
-      // Enhance handles with the unified action handler
-      const enhancedHandles = config.handles.map((handle) => ({
-        ...handle,
-        onAction: handle.onAction || handleAction,
-      }));
-
-      return (
-        <ButtonHandles
-          key={`${config.position}:${config.handles.map((h) => h.id).join(",")}`}
-          nodeId={id}
-          handles={enhancedHandles}
-          position={config.position}
-          selected={selected}
-          visible={finalVisible}
-          showNotches={showNotches}
-          showAddButton={mode === "design"}
-        />
-      );
-    });
-
-    return elements;
-  }, [handleConfigurations, selected, shouldShowHandles, connectedHandleIds, handleAction, id, isHovered, inProgress]);
+  // Calculate if notches should be shown (when node is hovered or selected)
+  const showNotches = inProgress || isHovered || selected;
+  const handleElements = useButtonHandles({
+    handleConfigurations,
+    shouldShowHandles,
+    handleAction,
+    edges,
+    nodeId: id,
+    selected,
+    showNotches,
+    showAddButton: mode === "design",
+  });
 
   // TODO: refactor to standalone component
   if (!nodeDefinition) {

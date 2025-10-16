@@ -2,6 +2,8 @@ import { Handle, type HandleProps, Position } from "@uipath/uix/xyflow/react";
 import { motion } from "motion/react";
 import styled from "@emotion/styled";
 import { css } from "@emotion/react";
+import type { HandleConfigurationSpecificPosition } from "../BaseNode/BaseNode.types";
+import { useButtonHandleSizeAndPosition } from "./useButtonHandleSizeAndPosition";
 
 export const StyledAddButton = styled(motion.div)`
   display: flex;
@@ -157,17 +159,25 @@ export const StyledHandle = (
     $positionPercent: number;
     $total: number;
     $visible: boolean;
+    $customPositionAndOffsets?: HandleConfigurationSpecificPosition;
   }
 ) => {
-  const { $total, $visible, $positionPercent, ...handleProps } = props;
+  const { $total, $visible, $positionPercent, $customPositionAndOffsets, ...handleProps } = props;
   const { position } = handleProps;
+
+  const { width, height, top, bottom, left, right, transform } = useButtonHandleSizeAndPosition({
+    position,
+    positionPercent: $positionPercent,
+    numHandles: $total,
+    customPositionAndOffsets: $customPositionAndOffsets,
+  });
 
   return (
     <Handle
       {...handleProps}
       style={{
-        width: position === Position.Top || position === Position.Bottom ? `${50 / $total}%` : "24px",
-        height: position === Position.Top || position === Position.Bottom ? "24px" : `${50 / $total}%`,
+        width,
+        height,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -176,30 +186,11 @@ export const StyledHandle = (
         backgroundColor: "transparent",
         opacity: $visible ? 1 : 0,
         cursor: "crosshair",
-        ...($total > 1 &&
-          position === Position.Top && {
-            top: 0,
-            left: `${$positionPercent}%`,
-            transform: "translate(-50%, -50%)",
-          }),
-        ...($total > 1 &&
-          position === Position.Bottom && {
-            bottom: 0,
-            left: `${$positionPercent}%`,
-            transform: "translate(-50%, 50%)",
-          }),
-        ...($total > 1 &&
-          position === Position.Left && {
-            left: 0,
-            top: `${$positionPercent}%`,
-            transform: "translate(-50%, -50%)",
-          }),
-        ...($total > 1 &&
-          position === Position.Right && {
-            right: 0,
-            top: `${$positionPercent}%`,
-            transform: "translate(50%, -50%)",
-          }),
+        top,
+        bottom,
+        left,
+        right,
+        transform,
       }}
     />
   );

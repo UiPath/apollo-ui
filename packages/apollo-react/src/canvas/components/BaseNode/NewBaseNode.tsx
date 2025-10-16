@@ -1,11 +1,11 @@
 import { memo, useMemo, useState, useCallback, useRef } from "react";
 import type { Node, NodeProps } from "@uipath/uix/xyflow/react";
 import { Position, useConnection, useStore } from "@uipath/uix/xyflow/react";
-import { ButtonHandles } from "../ButtonHandle";
 import { BaseContainer, BaseIconWrapper, BaseBadgeSlot, BaseTextContainer, BaseHeader, BaseSubHeader } from "./BaseNode.styles";
 import type { NewBaseNodeData, NewBaseNodeDisplayProps } from "./NewBaseNode.types";
 import { cx } from "@uipath/uix/core";
 import { ApIcon } from "@uipath/portal-shell-react";
+import { useButtonHandles } from "../ButtonHandle/useButtonHandles";
 import { NodeToolbar } from "../NodeToolbar";
 
 // Internal component that expects display props as direct props
@@ -98,42 +98,16 @@ const NewBaseNodeComponent = (
     [onHandleAction, handleConfigurations]
   );
 
-  const connectedHandleIds = useMemo(() => {
-    const ids = new Set<string>();
-    for (const edge of edges) {
-      if (edge.source === id && edge.sourceHandle) ids.add(edge.sourceHandle);
-      if (edge.target === id && edge.targetHandle) ids.add(edge.targetHandle);
-    }
-    return ids;
-  }, [edges, id]);
-
-  const handleElements = useMemo(() => {
-    const elements = handleConfigurations.map((config, i) => {
-      const hasConnectedHandle = config.handles.some((h) => connectedHandleIds.has(h.id));
-      const finalVisible = hasConnectedHandle || (config.visible ?? true);
-
-      // Enhance handles with the unified action handler
-      const enhancedHandles = config.handles.map((handle) => ({
-        ...handle,
-        onAction: handle.onAction || handleAction,
-      }));
-
-      return (
-        <ButtonHandles
-          key={`${i}:${config.handles.map((h) => h.id).join(",")}`}
-          nodeId={id}
-          handles={enhancedHandles}
-          position={config.position}
-          selected={selected}
-          visible={finalVisible}
-          showAddButton={showAddButton}
-          shouldShowAddButtonFn={shouldShowAddButtonFn}
-        />
-      );
-    });
-
-    return <>{elements}</>;
-  }, [handleConfigurations, selected, connectedHandleIds, handleAction, id, showAddButton, shouldShowAddButtonFn]);
+  const handleElements = useButtonHandles({
+    handleConfigurations,
+    shouldShowHandles,
+    handleAction,
+    edges,
+    nodeId: id,
+    selected,
+    showAddButton,
+    shouldShowAddButtonFn,
+  });
 
   // Fallback for missing configuration - show error state
   if (!icon && !displayLabel) {

@@ -15,7 +15,6 @@ import {
   StageTitleContainer,
   StageTitleInput,
 } from "./StageNode.styles";
-import { StageHandle } from "./StageHandle";
 import { NodeContextMenu } from "../NodeContextMenu";
 import { GroupModificationType, type StageNodeProps, type StageTaskExecution } from "./StageNode.types";
 import { ApBadge, ApIcon, ApLink, ApTooltip, ApTypography } from "@uipath/portal-shell-react";
@@ -24,6 +23,8 @@ import { ExecutionStatusIcon } from "../ExecutionStatusIcon";
 import { Spacing } from "@uipath/apollo-core";
 import { TaskContextMenu } from "./TaskContextMenu";
 import { getContextMenuItems } from "./StageNodeTaskUtilities";
+import { useButtonHandles } from "../ButtonHandle/useButtonHandles";
+import type { HandleConfiguration } from "../BaseNode/BaseNode.types";
 
 const ProcessNodeIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
@@ -206,6 +207,64 @@ const StageNodeComponent = (props: StageNodeProps) => {
     [reGroupTaskFunction]
   );
 
+  const handleConfigurations: HandleConfiguration[] = isException
+    ? []
+    : [
+        {
+          position: Position.Left,
+          handles: [
+            {
+              id: "stage-target",
+              type: "target",
+              handleType: "input",
+            },
+          ],
+          visible: selected || isHovered || isConnecting,
+          customPositionAndOffsets: {
+            top: 0,
+            height: 64,
+          },
+        },
+        {
+          position: Position.Right,
+          handles: [
+            {
+              id: "stage-source",
+              type: "source",
+              handleType: "output",
+            },
+          ],
+          visible: selected || isHovered || isConnecting,
+          customPositionAndOffsets: {
+            top: 0,
+            height: 64,
+          },
+        },
+        {
+          position: Position.Bottom,
+          handles: [
+            {
+              id: "re-entry-target",
+              type: "target",
+              handleType: "input",
+            },
+          ],
+          visible: selected || isHovered || isConnecting,
+        },
+        {
+          position: Position.Bottom,
+          handles: [
+            {
+              id: "re-entry-source",
+              type: "source",
+              handleType: "output",
+            },
+          ],
+          visible: selected || isHovered || isConnecting,
+        },
+      ];
+  const handleElements = useButtonHandles({ handleConfigurations, shouldShowHandles, edges, nodeId: id, selected });
+
   return (
     <div data-testid={`stage-${id}`} style={{ position: "relative" }} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
       <StageContainer selected={selected} status={status} isException={isException}>
@@ -366,14 +425,7 @@ const StageNodeComponent = (props: StageNodeProps) => {
 
       {menuItems && !dragging && <NodeContextMenu menuItems={menuItems} isVisible={shouldShowMenu} />}
 
-      {!isException && (
-        <>
-          <StageHandle id={id} type="target" position={Position.Left} isVisible={shouldShowHandles} />
-          <StageHandle id={id} type="source" position={Position.Right} isVisible={shouldShowHandles} />
-          <StageHandle id={id} type="target" position={Position.Bottom} isVisible={shouldShowHandles} />
-          <StageHandle id={id} type="source" position={Position.Bottom} isVisible={shouldShowHandles} />
-        </>
-      )}
+      {handleElements}
     </div>
   );
 };

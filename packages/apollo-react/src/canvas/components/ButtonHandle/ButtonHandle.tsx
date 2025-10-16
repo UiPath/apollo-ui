@@ -6,7 +6,7 @@ import { Row } from "@uipath/uix/core";
 import { ApIcon, ApTypography } from "@uipath/portal-shell-react";
 import { canvasEventBus } from "../../utils/CanvasEventBus";
 import { StyledAddButton, StyledHandle, StyledLabel, StyledLine, StyledNotch, StyledWrapper } from "./ButtonHandle.styles";
-
+import type { HandleConfigurationSpecificPosition } from "../BaseNode/BaseNode.types";
 export interface HandleActionEvent {
   handleId: string;
   nodeId: string;
@@ -61,6 +61,7 @@ type ButtonHandleProps = {
   total?: number; // Total number of handles on this edge
   onAction?: (event: HandleActionEvent) => void;
   showNotches?: boolean;
+  customPositionAndOffsets?: HandleConfigurationSpecificPosition;
 };
 
 const ButtonHandleBase = ({
@@ -80,6 +81,7 @@ const ButtonHandleBase = ({
   total = 1,
   onAction,
   showNotches = true,
+  customPositionAndOffsets,
 }: ButtonHandleProps) => {
   const [isHovered, setIsHovered] = useState(false);
   const isVertical = position === Position.Top || position === Position.Bottom;
@@ -123,6 +125,7 @@ const ButtonHandleBase = ({
       $positionPercent={positionPercent}
       $total={total}
       $visible={visible}
+      $customPositionAndOffsets={customPositionAndOffsets}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onMouseDown={() => setIsHovered(false)}
@@ -172,6 +175,7 @@ export interface ButtonHandleConfig {
   labelBackgroundColor?: string;
   visible?: boolean;
   onAction?: (event: HandleActionEvent) => void;
+  customPositionAndOffsets?: HandleConfigurationSpecificPosition;
 }
 
 const ButtonHandlesBase = ({
@@ -182,6 +186,7 @@ const ButtonHandlesBase = ({
   visible = true,
   showAddButton = true,
   showNotches = true,
+  customPositionAndOffsets,
   shouldShowAddButtonFn = ({ showAddButton, selected }) => showAddButton && selected,
 }: {
   nodeId: string;
@@ -191,6 +196,7 @@ const ButtonHandlesBase = ({
   visible?: boolean;
   showAddButton?: boolean;
   showNotches?: boolean;
+  customPositionAndOffsets?: HandleConfigurationSpecificPosition;
 
   /**
    * Allows for consumers to control the predicate for showing the add button from the props that's passed in
@@ -227,6 +233,7 @@ const ButtonHandlesBase = ({
           color={handle.color}
           onAction={handle.onAction}
           showNotches={showNotches}
+          customPositionAndOffsets={customPositionAndOffsets}
         />
       ))}
     </>

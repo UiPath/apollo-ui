@@ -25,10 +25,10 @@ export function StageConnectionEdge({ fromX, fromY, toX, toY, fromPosition, toPo
   }
 
   const sourceX = fromNode ? fromNode.position.x + (fromNode.measured?.width ?? 0) : fromX;
-  const sourceY = fromNode?.position.y ? fromNode.position.y + 25 : fromY;
+  const sourceY = fromNode?.position.y ? fromNode.position.y + 32 : fromY;
 
   const targetX = toNode ? toNode.position.x : toX;
-  const targetY = toNode ? toNode.position.y + 25 : toY;
+  const targetY = toNode ? toNode.position.y + 32 : toY;
 
   const [pathData] = getBezierPath({
     sourceX,

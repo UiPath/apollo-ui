@@ -42,10 +42,43 @@ export interface NodeAdornments {
   bottomRight?: React.ReactNode;
 }
 
+export interface HandleConfigurationSpecificPosition {
+  /**
+   * The height of the area where the handles will be located in the node. Has no effect if no top or bottom is set.
+   */
+  height?: number;
+
+  /**
+   * The width of the area where the handles will be located in the node. Has no effect if no left or right is set.
+   */
+  width?: number;
+
+  /**
+   * The top offset of where the node handles should be placed
+   */
+  top?: number;
+
+  /**
+   * The bottom offset of where the node handles should be placed
+   */
+  bottom?: number;
+
+  /**
+   * The left offset of where the node handles should be placed
+   */
+  left?: number;
+
+  /**
+   * The right offset of where the node handles should be placed
+   */
+  right?: number;
+}
+
 export interface HandleConfiguration {
   position: Position;
   handles: ButtonHandleConfig[];
   visible?: boolean;
+  customPositionAndOffsets?: HandleConfigurationSpecificPosition;
 }
 
 export interface BaseItem {

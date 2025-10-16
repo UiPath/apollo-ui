@@ -61,9 +61,9 @@ export function StageEdge({
   const targetNode = useInternalNode(rest.target);
 
   const sourceNodeX = sourceNode ? sourceNode.position.x + (sourceNode.measured?.width ?? 0) : sourceX;
-  const sourceNodeY = sourceNode?.position.y ? sourceNode.position.y + 25 : sourceY;
+  const sourceNodeY = sourceNode?.position.y ? sourceNode.position.y + 32 : sourceY;
   const targetNodeX = targetNode?.position.x ?? targetX;
-  const targetNodeY = targetNode?.position.y ? targetNode.position.y + 25 : targetY;
+  const targetNodeY = targetNode?.position.y ? targetNode.position.y + 32 : targetY;
   const [pathData, labelX, labelY, _ex, _ey] = getSmoothStepPath({
     sourceX: sourceNodeX,
     sourceY: sourceNodeY,
