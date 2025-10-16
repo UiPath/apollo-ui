@@ -65,7 +65,6 @@ const StageNodeComponent = (props: StageNodeProps) => {
 
   const status = execution?.stageStatus?.status;
   const statusLabel = execution?.stageStatus?.label;
-  const statusIcon = execution?.stageStatus?.statusForIcon;
   const stageDuration = execution?.stageStatus?.duration;
   const reGroupTaskFunction = useMemo(() => onTaskGroupModification || (() => {}), [onTaskGroupModification]);
 
@@ -305,12 +304,10 @@ const StageNodeComponent = (props: StageNodeProps) => {
           <Row gap={Spacing.SpacingMicro} align="center">
             {status && (
               <Row gap={Spacing.SpacingMicro} align="center">
-                {statusIcon && <ExecutionStatusIcon status={statusIcon} />}
-                {statusLabel && (
-                  <ApTypography variant={FontVariantToken.fontSizeS} color="var(--color-foreground-de-emp)">
-                    {statusLabel || status}
-                  </ApTypography>
-                )}
+                <ExecutionStatusIcon status={status} />
+                <ApTypography variant={FontVariantToken.fontSizeS} color="var(--color-foreground-de-emp)">
+                  {statusLabel}
+                </ApTypography>
               </Row>
             )}
             {sla && (
