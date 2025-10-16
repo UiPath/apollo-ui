@@ -215,7 +215,7 @@ const StageNodeComponent = (props: StageNodeProps) => {
           position: Position.Left,
           handles: [
             {
-              id: "stage-target",
+              id: `${id}____target____left`,
               type: "target",
               handleType: "input",
             },
@@ -230,7 +230,7 @@ const StageNodeComponent = (props: StageNodeProps) => {
           position: Position.Right,
           handles: [
             {
-              id: "stage-source",
+              id: `${id}____source____right`,
               type: "source",
               handleType: "output",
             },
@@ -245,7 +245,7 @@ const StageNodeComponent = (props: StageNodeProps) => {
           position: Position.Bottom,
           handles: [
             {
-              id: "re-entry-target",
+              id: `${id}____target____bottom`,
               type: "target",
               handleType: "input",
             },
@@ -256,7 +256,7 @@ const StageNodeComponent = (props: StageNodeProps) => {
           position: Position.Bottom,
           handles: [
             {
-              id: "re-entry-source",
+              id: `${id}____source____bottom`,
               type: "source",
               handleType: "output",
             },
