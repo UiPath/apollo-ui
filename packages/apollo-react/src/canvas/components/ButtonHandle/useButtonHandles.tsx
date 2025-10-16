@@ -47,7 +47,7 @@ export const useButtonHandles = ({
   const handleElements = useMemo(() => {
     if (!handleConfigurations || !Array.isArray(handleConfigurations) || handleConfigurations.length === 0) return <></>;
 
-    const elements = handleConfigurations.map((config) => {
+    const elements = handleConfigurations.map((config, i) => {
       const hasConnectedHandle = config.handles.some((h) => connectedHandleIds.has(h.id));
       const finalVisible = hasConnectedHandle || (shouldShowHandles && (config.visible ?? true));
 
@@ -59,7 +59,7 @@ export const useButtonHandles = ({
 
       return (
         <ButtonHandles
-          key={`${config.position}:${config.handles.map((h) => h.id).join(",")}`}
+          key={`${i}:${config.position}:${config.handles.map((h) => h.id).join(",")}`}
           nodeId={nodeId}
           handles={enhancedHandles}
           position={config.position}

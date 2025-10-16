@@ -175,7 +175,7 @@ const NewBaseNodeComponent = (
           const adornment = adornments[position];
           if (!adornment?.icon) return undefined;
           return (
-            <BaseBadgeSlot position={map[position]} shape={displayShape}>
+            <BaseBadgeSlot position={map[position]} shape={displayShape} key={map[position]}>
               <ApTooltip
                 placement="top"
                 {...(adornment.tooltip && typeof adornment.tooltip === "string" && { content: adornment.tooltip })}
