@@ -61,7 +61,9 @@ const StageNodeComponent = (props: StageNodeProps) => {
   const isException = stageDetails?.isException;
   const icon = stageDetails?.icon;
   const sla = stageDetails?.sla;
+  const slaReached = stageDetails?.slaReached;
   const escalation = stageDetails?.escalation;
+  const escalationReached = stageDetails?.escalationReached;
 
   const status = execution?.stageStatus?.status;
   const statusLabel = execution?.stageStatus?.label;
@@ -312,12 +314,20 @@ const StageNodeComponent = (props: StageNodeProps) => {
             )}
             {sla && (
               <ApTooltip content={sla} placement="top">
-                <ApIcon variant="outlined" name="timer" color="var(--color-foreground-de-emp)" />
+                <ApIcon
+                  variant="outlined"
+                  name="timer"
+                  color={slaReached ? "var(--color-success-icon)" : "var(--color-foreground-de-emp)"}
+                />
               </ApTooltip>
             )}
             {escalation && (
               <ApTooltip content={escalation} placement="top">
-                <ApIcon variant="outlined" name="notifications" color="var(--color-foreground-de-emp)" />
+                <ApIcon
+                  variant="outlined"
+                  name="notifications"
+                  color={escalationReached ? "var(--color-success-icon)" : "var(--color-foreground-de-emp)"}
+                />
               </ApTooltip>
             )}
           </Row>

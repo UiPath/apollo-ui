@@ -222,6 +222,10 @@ export const ExecutionStatus: Story = {
         width: 300,
         data: {
           stageDetails: {
+            sla: "1h",
+            slaReached: false,
+            escalation: "1h",
+            escalationReached: false,
             label: "Application",
             tasks: [
               [{ id: "1", label: "KYC and AML Checks", icon: <VerificationIcon /> }],
@@ -247,6 +251,10 @@ export const ExecutionStatus: Story = {
         width: 300,
         data: {
           stageDetails: {
+            sla: "1h",
+            slaReached: true,
+            escalation: "1h",
+            escalationReached: true,
             label: "Processing",
             tasks: [
               [{ id: "1", label: "Liability Check", icon: <VerificationIcon /> }],
