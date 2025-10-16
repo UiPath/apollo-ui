@@ -1,4 +1,4 @@
-import { memo, useCallback, useMemo } from "react";
+import { Fragment, memo, useCallback, useMemo } from "react";
 import { ApIcon } from "@uipath/portal-shell-react";
 import { Icons, Row } from "@uipath/uix/core";
 import { Position, type NodeProps } from "@uipath/uix/xyflow/react";
@@ -8,6 +8,7 @@ import { useAgentFlowStore } from "../store/agent-flow-store";
 import { type ButtonHandleConfig } from "../../ButtonHandle";
 import { ExecutionStatusIcon } from "../../ExecutionStatusIcon/ExecutionStatusIcon";
 import type { NodeToolbarConfig, ToolbarAction } from "../../NodeToolbar/NodeToolbar.types";
+import type { NodeAdornment } from "../../BaseNode/NewBaseNode.types";
 
 interface ResourceNodeProps extends NodeProps<AgentFlowResourceNode> {
   mode?: "design" | "view";
@@ -45,6 +46,7 @@ export const ResourceNode = memo(
   }: ResourceNodeProps) => {
     const { nodes: _nodes, deleteNode } = useAgentFlowStore();
 
+    const displayTooltips = mode === "design";
     const hasBreakpoint = data.hasBreakpoint ?? false;
     const hasGuardrails = data.hasGuardrails ?? false;
     const isCurrentBreakpoint = data.isCurrentBreakpoint ?? false;
@@ -151,7 +153,7 @@ export const ResourceNode = memo(
       return undefined;
     }, [hasError, hasSuccess, hasRunning, isCurrentBreakpoint]);
 
-    const toolbarConfig: NodeToolbarConfig | undefined = useMemo(() => {
+    const toolbarConfig = useMemo((): NodeToolbarConfig | undefined => {
       if (mode === "view" || data.type === "memory") {
         return undefined;
       }
@@ -312,21 +314,32 @@ export const ResourceNode = memo(
       []
     );
 
-    const breakpointAdornment = useMemo(() => {
+    const breakpointAdornment = useMemo((): NodeAdornment => {
       if (hasBreakpoint) {
-        return <ApIcon variant="normal" name="circle" size="14px" color="#cc3d45" />;
+        return { icon: <ApIcon variant="normal" name="circle" size="14px" color="#cc3d45" /> };
       }
-      return undefined;
+      return { icon: undefined };
     }, [hasBreakpoint]);
 
-    const statusAdornment = <ExecutionStatusIcon status={executionStatus} size={16} />;
+    const statusAdornment = useMemo((): NodeAdornment => {
+      return {
+        icon: <ExecutionStatusIcon status={executionStatus} size={16} />,
+        tooltip:
+          displayTooltips && executionStatus === "Failed"
+            ? data.errors?.map((error) => <Fragment key={error.value}>- {error.label}</Fragment>)
+            : undefined,
+      };
+    }, [displayTooltips, executionStatus, data.errors]);
 
-    const guardrailsAdornment = useMemo(() => {
+    const guardrailsAdornment = useMemo((): NodeAdornment => {
       if (hasGuardrails) {
-        return <ApIcon variant="outlined" name="gpp_good" size="18px" color="var(--color-icon-default)" />;
+        return {
+          icon: <ApIcon variant="outlined" name="gpp_good" size="18px" color="var(--color-icon-default)" />,
+          tooltip: displayTooltips ? (translations?.guardrailsApplied ?? "") : undefined,
+        };
       }
-      return undefined;
-    }, [hasGuardrails]);
+      return { icon: undefined };
+    }, [displayTooltips, hasGuardrails, translations]);
 
     const handleConfigurations = useMemo(
       () => [
@@ -379,6 +392,7 @@ export const ResourceNode = memo(
           iconBackground: "var(--color-background-secondary)",
           label: data.name,
           subLabel: data.originalName,
+          labelTooltip: displayTooltips ? data.description : undefined,
           labelBackgroundColor: "var(--color-background-secondary)",
           shape: "circle",
         }}

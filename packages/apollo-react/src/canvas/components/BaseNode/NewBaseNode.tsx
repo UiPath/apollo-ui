@@ -2,9 +2,9 @@ import { memo, useMemo, useState, useCallback, useRef } from "react";
 import type { Node, NodeProps } from "@uipath/uix/xyflow/react";
 import { Position, useConnection, useStore } from "@uipath/uix/xyflow/react";
 import { BaseContainer, BaseIconWrapper, BaseBadgeSlot, BaseTextContainer, BaseHeader, BaseSubHeader } from "./BaseNode.styles";
-import type { NewBaseNodeData, NewBaseNodeDisplayProps } from "./NewBaseNode.types";
-import { cx } from "@uipath/uix/core";
-import { ApIcon } from "@uipath/portal-shell-react";
+import type { NewBaseNodeData, NewBaseNodeDisplayProps, NodeAdornments } from "./NewBaseNode.types";
+import { cx, FontVariantToken } from "@uipath/uix/core";
+import { ApIcon, ApTooltip, ApTypography } from "@uipath/portal-shell-react";
 import { useButtonHandles } from "../ButtonHandle/useButtonHandles";
 import { NodeToolbar } from "../NodeToolbar";
 
@@ -41,6 +41,7 @@ const NewBaseNodeComponent = (
 
   const displayLabel = finalDisplay.label;
   const displaySubLabel = finalDisplay.subLabel;
+  const displayLabelTooltip = finalDisplay.labelTooltip;
   const displayLabelBackgroundColor = finalDisplay.labelBackgroundColor;
   const displayShape = finalDisplay.shape ?? "square";
   const displayBackground = finalDisplay.background;
@@ -163,33 +164,44 @@ const NewBaseNodeComponent = (
           </BaseIconWrapper>
         )}
 
-        {adornments?.topLeft && (
-          <BaseBadgeSlot position="top-left" shape={displayShape}>
-            {adornments.topLeft}
-          </BaseBadgeSlot>
-        )}
-        {adornments?.topRight && (
-          <BaseBadgeSlot position="top-right" shape={displayShape}>
-            {adornments.topRight}
-          </BaseBadgeSlot>
-        )}
-        {adornments?.bottomRight && (
-          <BaseBadgeSlot position="bottom-right" shape={displayShape}>
-            {adornments.bottomRight}
-          </BaseBadgeSlot>
-        )}
-        {adornments?.bottomLeft && (
-          <BaseBadgeSlot position="bottom-left" shape={displayShape}>
-            {adornments.bottomLeft}
-          </BaseBadgeSlot>
-        )}
+        {Object.keys(adornments).map((key) => {
+          const position = key as keyof NodeAdornments;
+          const map = {
+            topLeft: "top-left",
+            topRight: "top-right",
+            bottomLeft: "bottom-left",
+            bottomRight: "bottom-right",
+          } as const;
+          const adornment = adornments[position];
+          if (!adornment?.icon) return undefined;
+          return (
+            <BaseBadgeSlot position={map[position]} shape={displayShape}>
+              <ApTooltip
+                placement="top"
+                {...(adornment.tooltip && typeof adornment.tooltip === "string" && { content: adornment.tooltip })}
+                {...(adornment.tooltip &&
+                  typeof adornment.tooltip !== "string" && {
+                    formattedContent: (
+                      <ApTypography variant={FontVariantToken.fontSizeSBold} style={{ fontSize: "13px", minWidth: "130px" }}>
+                        {adornment.tooltip}
+                      </ApTypography>
+                    ),
+                  })}
+              >
+                {adornment.icon}
+              </ApTooltip>
+            </BaseBadgeSlot>
+          );
+        })}
 
         {displayLabel && (
           <BaseTextContainer hasBottomHandles={hasVisibleBottomHandlesWithLabels} shape={displayShape}>
-            <BaseHeader shape={displayShape} backgroundColor={displayLabelBackgroundColor}>
-              {displayLabel}
-            </BaseHeader>
-            {displaySubLabel && <BaseSubHeader>{displaySubLabel}</BaseSubHeader>}
+            <ApTooltip placement="top" content={displayLabelTooltip}>
+              <BaseHeader shape={displayShape} backgroundColor={displayLabelBackgroundColor}>
+                {displayLabel}
+              </BaseHeader>
+              {displaySubLabel && <BaseSubHeader>{displaySubLabel}</BaseSubHeader>}
+            </ApTooltip>
           </BaseTextContainer>
         )}
       </BaseContainer>

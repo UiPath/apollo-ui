@@ -3,7 +3,7 @@ import { Position } from "@uipath/uix/xyflow/react";
 import type { NodeProps, Node } from "@uipath/uix/xyflow/react";
 import { Icons } from "@uipath/uix/core";
 import { NewBaseNode } from "../../BaseNode/NewBaseNode";
-import type { NewBaseNodeData, NewBaseNodeDisplayProps, HandleConfiguration } from "../../BaseNode/NewBaseNode.types";
+import type { NewBaseNodeData, NewBaseNodeDisplayProps, HandleConfiguration, NodeAdornment } from "../../BaseNode/NewBaseNode.types";
 import type { ButtonHandleConfig, HandleActionEvent } from "../../ButtonHandle/ButtonHandle";
 import type { AgentNodeTranslations } from "../../../types";
 import { ResourceNodeType } from "../AgentFlow.constants";
@@ -76,7 +76,7 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
   const displayMcp = (mode === "design" && isMcpEnabled) || (mode === "view" && !!hasMcp);
 
   // Create handle configurations
-  const handleConfigurations: HandleConfiguration[] = useMemo(() => {
+  const handleConfigurations = useMemo((): HandleConfiguration[] => {
     const configs: HandleConfiguration[] = [];
 
     // Top handles (Context)
@@ -182,7 +182,11 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
     return <AutonomousAgentIcon color="var(--color-foreground-de-emp)" w={32} h={32} />;
   }, [isConversational]);
 
-  const statusAdornment = <ExecutionStatusIcon status={executionStatus} size={16} />;
+  const statusAdornment = useMemo((): NodeAdornment => {
+    return {
+      icon: <ExecutionStatusIcon status={executionStatus} size={16} />,
+    };
+  }, [executionStatus]);
 
   const shouldShowAddButtonFn = (opts: { showAddButton: boolean; selected: boolean }) => {
     return opts.showAddButton || opts.selected;

@@ -24,6 +24,7 @@ export interface NewBaseNodeDisplayProps {
 export interface NodeDisplay {
   label?: string;
   subLabel?: string;
+  labelTooltip?: string;
   labelBackgroundColor?: string;
   shape?: NodeShape;
   background?: string;
@@ -31,11 +32,16 @@ export interface NodeDisplay {
   iconColor?: string;
 }
 
+export interface NodeAdornment {
+  icon?: React.ReactNode;
+  tooltip?: React.ReactNode;
+}
+
 export interface NodeAdornments {
-  topLeft?: React.ReactNode;
-  topRight?: React.ReactNode;
-  bottomLeft?: React.ReactNode;
-  bottomRight?: React.ReactNode;
+  topLeft?: NodeAdornment;
+  topRight?: NodeAdornment;
+  bottomLeft?: NodeAdornment;
+  bottomRight?: NodeAdornment;
 }
 
 export interface HandleConfiguration {

@@ -295,6 +295,7 @@ export interface ResourceNodeTranslations {
   addBreakpoint: string;
   removeBreakpoint: string;
   addGuardrail: string;
+  guardrailsApplied: string;
   goToSource: string;
 }
 
@@ -307,6 +308,7 @@ export const DefaultResourceNodeTranslations: ResourceNodeTranslations = {
   addBreakpoint: "Add breakpoint",
   removeBreakpoint: "Remove breakpoint",
   addGuardrail: "Add guardrail",
+  guardrailsApplied: "Guardrail(s) applied",
   goToSource: "Go to source",
 };
 
