@@ -27,9 +27,9 @@ const MainContainer = styled('div')<{ historyOpen: boolean }>(({ historyOpen }: 
     ...(historyOpen && { width: `calc(100% - ${CHAT_DRAWER_WIDTH_FULL_SCREEN}px)` }),
 }));
 
-const HeaderContainer = styled('div')(() => ({
+const HeaderContainer = styled('div')<{ padding: string }>(({ padding }: { padding: string }) => ({
     flexShrink: 0,
-    padding: `${token.Spacing.SpacingBase} 0`,
+    padding,
 }));
 
 const InputBackground = styled('div')(() => ({
@@ -50,6 +50,7 @@ interface StandardLayoutProps {
     settingsDisabled: boolean;
     mode: AutopilotChatMode;
     headerDisabled: boolean;
+    headerSeparatorDisabled: boolean;
 }
 
 export const StandardLayout: React.FC<StandardLayoutProps> = ({
@@ -59,12 +60,15 @@ export const StandardLayout: React.FC<StandardLayoutProps> = ({
     settingsDisabled,
     mode,
     headerDisabled,
+    headerSeparatorDisabled,
 }) => {
     return (
         <>
             <MainContainer historyOpen={historyOpen}>
                 {!headerDisabled && (
-                    <HeaderContainer>
+                    <HeaderContainer padding={headerSeparatorDisabled
+                        ? `${token.Spacing.SpacingBase} 0`
+                        : `${token.Spacing.SpacingXs} 0 ${token.Spacing.SpacingBase}`}>
                         <AutopilotChatHeader />
                     </HeaderContainer>
                 )}

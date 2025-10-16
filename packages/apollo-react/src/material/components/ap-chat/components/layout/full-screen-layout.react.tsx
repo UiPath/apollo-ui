@@ -39,9 +39,9 @@ const MainContainer = styled('div')<{ historyOpen: boolean }>(({ historyOpen }: 
     ...(historyOpen && { width: `calc(100% - ${CHAT_DRAWER_WIDTH_FULL_SCREEN}px - 2 * ${token.Spacing.SpacingBase})` }), // account for padding
 }));
 
-const HeaderContainer = styled('div')(() => ({
+const HeaderContainer = styled('div')<{ padding: string }>(({ padding }: { padding: string }) => ({
     flexShrink: 0,
-    padding: `${token.Spacing.SpacingBase} ${token.Spacing.SpacingL}`,
+    padding,
 }));
 
 const InputBackground = styled('div')(() => ({
@@ -61,6 +61,7 @@ interface FullScreenLayoutProps {
     historyDisabled: boolean;
     settingsDisabled: boolean;
     mode: AutopilotChatMode;
+    headerSeparatorDisabled: boolean;
 }
 
 export const FullScreenLayout: React.FC<FullScreenLayoutProps> = ({
@@ -69,6 +70,7 @@ export const FullScreenLayout: React.FC<FullScreenLayoutProps> = ({
     historyDisabled,
     settingsDisabled,
     mode,
+    headerSeparatorDisabled,
 }) => {
     const { setFullScreenContainer } = useChatState();
     const chatInternalService = useChatService().__internalService__;
@@ -89,7 +91,9 @@ export const FullScreenLayout: React.FC<FullScreenLayoutProps> = ({
 
     return (
         <>
-            <HeaderContainer>
+            <HeaderContainer padding={headerSeparatorDisabled
+                ? `${token.Spacing.SpacingBase} ${token.Spacing.SpacingL}`
+                : `${token.Spacing.SpacingXs} ${token.Spacing.SpacingL} ${token.Spacing.SpacingBase}`}>
                 <AutopilotChatHeader />
             </HeaderContainer>
 

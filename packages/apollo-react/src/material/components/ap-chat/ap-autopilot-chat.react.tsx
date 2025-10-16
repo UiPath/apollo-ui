@@ -86,6 +86,7 @@ const AutopilotChatContent = React.memo(() => {
                     settingsOpen={settingsOpen}
                     historyDisabled={disabledFeatures.history ?? false}
                     settingsDisabled={disabledFeatures.settings ?? false}
+                    headerSeparatorDisabled={disabledFeatures.headerSeparator ?? false}
                     mode={chatMode}
                 />
             ) : (
@@ -95,6 +96,7 @@ const AutopilotChatContent = React.memo(() => {
                     historyDisabled={disabledFeatures.history ?? false}
                     settingsDisabled={disabledFeatures.settings ?? false}
                     headerDisabled={disabledFeatures.header ?? false}
+                    headerSeparatorDisabled={disabledFeatures.headerSeparator ?? false}
                     mode={chatMode}
                 />
             )}

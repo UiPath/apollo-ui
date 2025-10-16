@@ -36,7 +36,10 @@ const OverflowContainer = styled('div')(({
 }));
 
 const MessagesContainer = styled('div')(
-    ({ mode }: { mode: AutopilotChatMode }) => ({
+    ({
+        mode, paddingTop,
+    }: { mode: AutopilotChatMode; paddingTop?: string }) => ({
+        ...(paddingTop && { paddingTop }),
         ...((mode === AutopilotChatMode.FullScreen || mode === AutopilotChatMode.Embedded) && {
             maxWidth: CHAT_WIDTH_FULL_SCREEN_MAX_WIDTH,
             margin: '0 auto',
@@ -84,6 +87,7 @@ function ChatScrollContainerComponent({ mode }: ChatScrollContainerProps) {
         isOverflow,
         isContainerWide,
     } = useChatScroll();
+    const { disabledFeatures } = useChatState();
 
     return (
         <>
@@ -98,6 +102,7 @@ function ChatScrollContainerComponent({ mode }: ChatScrollContainerProps) {
                     id="content-ref"
                     ref={contentRef}
                     mode={mode}
+                    paddingTop={disabledFeatures.headerSeparator ? undefined : token.Spacing.SpacingXs}
                 >
                     <AutopilotChatMessages isOverflow={isOverflow} isContainerWide={isContainerWide}/>
                 </MessagesContainer>

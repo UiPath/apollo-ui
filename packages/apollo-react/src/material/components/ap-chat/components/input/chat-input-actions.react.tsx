@@ -25,7 +25,7 @@ const InputActionsContainer = styled('div')(() => ({
 
 const InputActionsGroup = styled('div')(() => ({
     display: 'flex',
-    gap: token.Spacing.SpacingXs,
+    gap: token.Spacing.SpacingMicro,
 }));
 
 const SubmitButtonContainer = styled('div')(({ theme }) => ({

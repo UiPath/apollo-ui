@@ -17,15 +17,15 @@ import AutopilotLogo from '../../assets/autopilot-logo.svg';
 import { useChatState } from '../../providers/chat-state-provider.react';
 import { AutopilotChatHeaderActions } from './header-actions.react';
 
-const StyledHeader = styled('div')<{ showSeparator: boolean }>(({ showSeparator }) => ({
+const StyledHeader = styled('div')<{ hideSeparator?: boolean }>(({ hideSeparator }) => ({
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
-    ...(showSeparator && {
-        margin: '0 -20px -16px -20px',
-        paddingLeft: '20px',
+    ...(!hideSeparator && {
+        margin: `0 -${token.Spacing.SpacingBase} -${token.Spacing.SpacingBase}`,
+        paddingLeft: token.Spacing.SpacingBase,
         paddingBottom: token.Spacing.SpacingMicro,
-        paddingRight: '20px',
+        paddingRight: token.Spacing.SpacingBase,
         borderBottom: '1px solid var(--color-border-de-emp)',
     }),
 }));
@@ -44,10 +44,8 @@ function AutopilotChatHeaderComponent() {
         chatMode,
     } = useChatState();
 
-    const showSeparator = !(disabledFeatures as any).headerSeparator;
-
     return (
-        <StyledHeader showSeparator={showSeparator}>
+        <StyledHeader hideSeparator={disabledFeatures.headerSeparator}>
             <StyledLogo>
                 {/* cannot directly use the svg as a component, throws error that the svg is not a valid react component */}
                 {chatMode === AutopilotChatMode.FullScreen ? (
