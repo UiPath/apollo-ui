@@ -269,6 +269,7 @@ export const AutopilotChatAudio = (props: AutopilotChatAudioProps) => {
                             theme.palette.semantic.colorForegroundHighlight :
                             theme.palette.semantic.colorForegroundDisable
                     }
+                    data-testid="autopilot-chat-audio-output"
                 />
             </div>
             <div className={joinClasses('audio-input-button', audioInputState)}>
@@ -282,6 +283,7 @@ export const AutopilotChatAudio = (props: AutopilotChatAudioProps) => {
                         audioInputTooltipMap[audioInputState]}
                     preventHover={true}
                     overrideColor={audioInputColorMap[audioInputState](theme)}
+                    data-testid="autopilot-chat-audio-input"
                 />
             </div>
             {audioInputError && (

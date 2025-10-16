@@ -117,6 +117,7 @@ function AutopilotChatInputActionsComponent({
                             iconName="attach_file"
                             onClick={handleFileButtonClick}
                             tooltipPlacement="top"
+                            data-testid="autopilot-chat-attach-file-button"
                             tooltip={
                                 <>
                                     <ap-typography
@@ -178,6 +179,7 @@ function AutopilotChatInputActionsComponent({
                         preventHover={true}
                         disabled={disableSubmit}
                         onClick={handleSubmit}
+                        data-testid="autopilot-chat-submit-button"
                     />
                 </SubmitButtonContainer>
             </InputActionsGroup>

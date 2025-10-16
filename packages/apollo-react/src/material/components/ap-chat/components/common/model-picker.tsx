@@ -107,6 +107,7 @@ export const ModelPicker = React.memo(({
                             </ap-typography>
                         </>
                     ) : null}
+                    data-testid="autopilot-chat-model-picker"
                 />
             );
         }

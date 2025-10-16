@@ -211,6 +211,7 @@ const AutopilotChatHistoryItemComponent: React.FC<AutopilotChatHistoryItemProps>
                     iconName="delete"
                     iconSize="16px"
                     tooltip={(isRemoveIconVisible || isFocused) && isHistoryOpen ? t('autopilot-chat-delete-history') : ''}
+                    data-testid="autopilot-chat-history-delete"
                 />
             </div>
         </GroupItem>

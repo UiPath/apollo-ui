@@ -62,6 +62,7 @@ const AutopilotChatSettingsHeaderComponent: React.FC<{ isFullScreen: boolean; is
                     onClick={handleCloseSettings}
                     tooltip={isSettingsOpen ? t('autopilot-chat-hide-settings') : ''}
                     {...(isFullScreen && { variant: 'custom' })}
+                    data-testid="autopilot-chat-settings-close"
                 />
 
                 {!isFullScreen && (

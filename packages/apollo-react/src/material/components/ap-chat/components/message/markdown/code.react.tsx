@@ -185,6 +185,7 @@ export const Code = React.memo(({
                     onClick={() => {
                         navigator.clipboard.writeText(codeContent);
                     }}
+                    data-testid="autopilot-chat-code-copy"
                 />
             </CodeBlockHeader>
 

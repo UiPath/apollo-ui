@@ -115,6 +115,7 @@ function AutopilotChatScrollToBottomButtonComponent({ overflowContainer }: Scrol
                     ariaLabel={t('autopilot-chat-scroll-to-bottom')}
                     tooltip={isVisible ? t('autopilot-chat-scroll-to-bottom') : undefined}
                     tabIndex={isVisible ? 0 : -1}
+                    data-testid="autopilot-chat-scroll-to-bottom"
                 />
             </ScrollButtonWrapper>
         </ScrollButtonContainer>

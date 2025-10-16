@@ -218,6 +218,7 @@ export const Attachment = React.memo(({
                                 document.dispatchEvent(event);
                             });
                         }}
+                        data-testid="autopilot-chat-attachment-remove"
                     />
                 </div>
             )}

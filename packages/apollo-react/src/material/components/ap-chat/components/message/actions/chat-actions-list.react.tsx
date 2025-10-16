@@ -147,6 +147,7 @@ function AutopilotChatActionsListComponent({
                     tooltip={action.label}
                     variant={action.disabled ? 'normal' : 'outlined'}
                     disableInteractiveTooltip={true}
+                    data-testid={`autopilot-chat-message-action-${action.name}`}
                 />
             ))}
 
@@ -162,6 +163,7 @@ function AutopilotChatActionsListComponent({
                         onMouseEnter={handleMouseEnter}
                         onMouseLeave={handleMouseLeave}
                         disableInteractiveTooltip={true}
+                        data-testid="autopilot-chat-message-actions-overflow"
                     />
                     <Menu
                         anchorEl={anchorEl}

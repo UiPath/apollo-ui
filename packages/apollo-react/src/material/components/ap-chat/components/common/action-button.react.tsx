@@ -63,6 +63,7 @@ interface AutopilotChatActionButtonBaseProps {
     onKeyDown?: (event: React.KeyboardEvent<HTMLButtonElement>) => void;
     onMouseEnter?: (event: React.MouseEvent<HTMLElement>) => void;
     onMouseLeave?: (event: React.MouseEvent<HTMLElement>) => void;
+    'data-testid'?: string;
 }
 
 interface AutopilotChatActionButtonClickProps {
@@ -94,6 +95,7 @@ const AutopilotChatActionButtonComponent = React.forwardRef<HTMLButtonElement, A
     onMouseUp,
     onKeyDown,
     disableInteractiveTooltip = false,
+    'data-testid': dataTestId,
     ...props
 }, ref) => {
     const [ iconColor, setIconColor ] = React.useState('var(--color-icon-default)');
@@ -154,6 +156,7 @@ const AutopilotChatActionButtonComponent = React.forwardRef<HTMLButtonElement, A
                 }}
                 tabIndex={tabIndex}
                 onKeyDown={onKeyDown}
+                data-testid={dataTestId}
             />
         </StyledButtonContainer>
     ) : (
@@ -194,6 +197,7 @@ const AutopilotChatActionButtonComponent = React.forwardRef<HTMLButtonElement, A
                     setIconColor('var(--color-icon-default)');
                 }
             }}
+            data-testid={dataTestId}
         >
             <ap-icon
                 variant={variant}
