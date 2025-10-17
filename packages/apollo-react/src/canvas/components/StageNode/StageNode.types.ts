@@ -28,9 +28,9 @@ export interface StageNodeProps extends NodeProps {
     label: string;
     icon?: React.ReactElement;
     sla?: string;
-    slaReached?: boolean;
+    slaBreached?: boolean;
     escalation?: string;
-    escalationReached?: boolean;
+    escalationsTriggered?: boolean;
     isException?: boolean;
     tasks: StageTaskItem[][];
   };
