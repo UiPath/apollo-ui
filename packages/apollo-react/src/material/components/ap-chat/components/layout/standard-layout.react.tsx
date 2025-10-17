@@ -4,6 +4,7 @@
 import { styled } from '@mui/material/styles';
 import token from '@uipath/apollo-core/lib';
 import {
+    AutopilotChatConfiguration,
     AutopilotChatMode,
     CHAT_DRAWER_WIDTH_FULL_SCREEN,
     CHAT_WIDTH_FULL_SCREEN_MAX_WIDTH,
@@ -16,7 +17,15 @@ import { AutopilotChatInput } from '../input/chat-input.react';
 import { ChatScrollContainer } from '../message/chat-scroll-container.react';
 import AutopilotChatSettings from '../settings/chat-settings.react';
 
-const MainContainer = styled('div')<{ historyOpen: boolean }>(({ historyOpen }: { historyOpen: boolean }) => ({
+const MainContainer = styled('div')<{
+    historyOpen: boolean;
+    scrollThumbColor?: string;
+}>(({
+    historyOpen, scrollThumbColor,
+}: {
+    historyOpen: boolean;
+    scrollThumbColor?: string;
+}) => ({
     flex: 1,
     display: 'flex',
     flexDirection: 'column',
@@ -25,6 +34,7 @@ const MainContainer = styled('div')<{ historyOpen: boolean }>(({ historyOpen }: 
     minWidth: '0',
     margin: `0 ${token.Spacing.SpacingL}`,
     ...(historyOpen && { width: `calc(100% - ${CHAT_DRAWER_WIDTH_FULL_SCREEN}px)` }),
+    scrollbarColor: scrollThumbColor ? `${scrollThumbColor} ${'var(--color-background)'}` : 'auto',
 }));
 
 const HeaderContainer = styled('div')<{ padding: string }>(({ padding }: { padding: string }) => ({
@@ -51,6 +61,7 @@ interface StandardLayoutProps {
     mode: AutopilotChatMode;
     headerDisabled: boolean;
     headerSeparatorDisabled: boolean;
+    theming: AutopilotChatConfiguration['theming'];
 }
 
 export const StandardLayout: React.FC<StandardLayoutProps> = ({
@@ -61,10 +72,11 @@ export const StandardLayout: React.FC<StandardLayoutProps> = ({
     mode,
     headerDisabled,
     headerSeparatorDisabled,
+    theming,
 }) => {
     return (
         <>
-            <MainContainer historyOpen={historyOpen}>
+            <MainContainer historyOpen={historyOpen} scrollThumbColor={theming?.scrollBar?.scrollThumbColor}>
                 {!headerDisabled && (
                     <HeaderContainer padding={headerSeparatorDisabled
                         ? `${token.Spacing.SpacingBase} 0`

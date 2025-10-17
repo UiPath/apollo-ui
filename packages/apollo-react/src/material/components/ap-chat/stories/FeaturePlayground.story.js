@@ -99,6 +99,7 @@ export const FeaturePlayground = (args) => {
                             <ap-checkbox id="wait-for-more-messages" label="Wait For More"></ap-checkbox>
                             <ap-checkbox id="show-loading-state" label="Show Loading State"></ap-checkbox>
                             <ap-checkbox id="compact-mode" label="Compact Mode"></ap-checkbox>
+                            <ap-checkbox id="custom-scroll-theme" label="Custom Scroll Theme"></ap-checkbox>
                             <ap-checkbox id="attachments-async" label="Attachments Async"></ap-checkbox>
                         </div>
                     </div>
@@ -263,8 +264,12 @@ FeaturePlayground.play = async ({
         disableModel: canvasElement.querySelector('#disable-model'),
         disableAgentMode: canvasElement.querySelector('#disable-agent-mode'),
         compactMode: canvasElement.querySelector('#compact-mode'),
+        customScrollTheme: canvasElement.querySelector('#custom-scroll-theme'),
         attachmentsAsync: canvasElement.querySelector('#attachments-async'),
     };
+
+    const redColorCode = '#ff0000';
+    const lightGreyColorCode = '#888888';
 
     let chatOpen = true;
     let autoScroll = true;
@@ -1674,6 +1679,18 @@ const results = await Promise.all(tasks);
 
     controls.compactMode?.addEventListener('valueChanged', () => {
         chatService.patchConfig({ spacing: { compactMode: controls.compactMode.checked } });
+    });
+
+    controls.customScrollTheme?.addEventListener('valueChanged', () => {
+        chatService.patchConfig({
+            theming: {
+                scrollBar: {
+                    scrollThumbColor: controls.customScrollTheme.checked
+                        ? redColorCode
+                        : lightGreyColorCode,
+                },
+            },
+        });
     });
 
     // Attachments Async - handle loading states for attachments

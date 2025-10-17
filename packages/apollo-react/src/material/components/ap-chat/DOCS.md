@@ -1981,6 +1981,26 @@ The `@uipath/apollo-core` package provides the following font variant tokens tha
 | `primaryBoldFontToken` | `FontVariantToken` | Default bold font size | `fontSizeMBold` | `fontSizeSBold` |
 | `markdownTokens.*` | `FontVariantToken` | Individual markdown element typography | Various | Scaled down |
 
+## Theming Configuration
+
+The Autopilot Chat component provides theming customization capabilities through the `theming` configuration property. This allows you to control the visual appearance of various UI elements within the chat interface.
+
+### Scroll Bar Theming
+
+The chat supports customization of scrollbar appearance through the `scrollBar` configuration.
+
+```typescript
+// Basic scroll bar theming
+chatService.initialize({
+  mode: AutopilotChatMode.SideBySide,
+  theming: {
+    scrollBar: {
+      scrollThumbColor: '#ff0000' // Custom red color for scroll thumb
+    }
+  }
+});
+```
+
 ## Configuration Types
 
 ### AutopilotChatConfiguration
@@ -2006,6 +2026,7 @@ import { FontVariantToken } from '@uipath/apollo-core';
  * @property paginatedMessages - Flag to determine if the chat conversation is paginated
  * @property settingsRenderer - The renderer for the settings page. This will be used to render the settings page in the chat.
  * @property spacing - The spacing of the chat (prompt box, markdown tokens, etc)
+ * @property theming - The theming of the chat (scroll thumb color, etc)
  */
 export interface AutopilotChatConfiguration {
     mode: AutopilotChatMode;
@@ -2027,6 +2048,9 @@ export interface AutopilotChatConfiguration {
     preHooks?: Partial<Record<AutopilotChatPreHookAction, (data?: any) => Promise<boolean>>>;
     paginatedMessages?: boolean;
     settingsRenderer?: (container: HTMLElement) => void;
+    theming?: {
+        scrollThumbColor?: string;
+    };
     spacing?: {
         compactMode?: boolean;
         promptBox?: {

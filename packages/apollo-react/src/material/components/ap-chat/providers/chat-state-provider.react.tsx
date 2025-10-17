@@ -45,6 +45,7 @@ interface AutopilotChatStateContextType {
     hasMessages: boolean;
     setHasMessages: (hasMessages: boolean) => void;
     spacing: DeepRequired<NonNullable<AutopilotChatConfiguration['spacing']>>;
+    theming?: AutopilotChatConfiguration['theming'];
 }
 
 const AutopilotChatStateContext = React.createContext<AutopilotChatStateContextType | null>(null);
@@ -147,6 +148,9 @@ export const AutopilotChatStateProvider: React.FC<AutopilotChatStateProviderProp
     });
     const [ hasMessages, setHasMessages ] = React.useState(false);
     const [ spacing, setSpacing ] = React.useState(calculateSpacing(chatService?.getConfig()?.spacing));
+    const [ theming, setTheming ] = React.useState(
+        chatService?.getConfig()?.theming,
+    );
 
     React.useEffect(() => {
         if (!chatService) {
@@ -209,6 +213,13 @@ export const AutopilotChatStateProvider: React.FC<AutopilotChatStateProviderProp
             },
         );
 
+        const unsubscribeTheming = chatInternalService.on(
+            AutopilotChatInternalEvent.SetTheming,
+            (themingConfig: AutopilotChatConfiguration['theming']) => {
+                setTheming(themingConfig);
+            },
+        );
+
         return () => {
             unsubscribeHistoryToggle();
             unsubscribeSettingsToggle();
@@ -218,6 +229,7 @@ export const AutopilotChatStateProvider: React.FC<AutopilotChatStateProviderProp
             unsubscribeFirstRunExperience();
             unsubscribeAllowedAttachments();
             unsubscribeSpacing();
+            unsubscribeTheming();
         };
     }, [ chatService, chatInternalService ]);
 
@@ -236,6 +248,7 @@ export const AutopilotChatStateProvider: React.FC<AutopilotChatStateProviderProp
         hasMessages,
         setHasMessages,
         spacing,
+        theming,
     }), [
         historyOpen,
         settingsOpen,
@@ -251,6 +264,7 @@ export const AutopilotChatStateProvider: React.FC<AutopilotChatStateProviderProp
         hasMessages,
         setHasMessages,
         spacing,
+        theming,
     ]);
 
     return (
