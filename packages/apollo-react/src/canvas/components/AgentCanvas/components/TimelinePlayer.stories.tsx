@@ -5,13 +5,7 @@ import { Row } from "@uipath/uix/core";
 import { TimelinePlayer } from "./TimelinePlayer";
 import { AgentFlow } from "../AgentFlow";
 import type { IRawSpan } from "@uipath/portal-shell-react";
-import {
-  ProjectType,
-  type AgentFlowModel,
-  type AgentFlowResource,
-  type AgentFlowResourceNodeData,
-  type AgentFlowResourceType,
-} from "../../../types";
+import { ProjectType, type AgentFlowResource, type AgentFlowResourceNodeData, type AgentFlowResourceType } from "../../../types";
 
 const meta: Meta<typeof TimelinePlayer> = {
   title: "Canvas/TimelinePlayer",
@@ -214,13 +208,6 @@ const complexSpans: IRawSpan[] = [
   ),
 ];
 
-// Sample AgentFlow data for integrated stories
-const sampleModel: AgentFlowModel = {
-  name: "gpt-4",
-  vendorName: "OpenAI",
-  iconUrl: "",
-};
-
 const sampleResources: AgentFlowResource[] = [
   {
     id: "context-load-short",
@@ -264,7 +251,6 @@ interface AgentFlowWithTimelineProps {
 
 const AgentFlowWithTimeline = ({ spans, enableTimelinePlayer = true, activeResourceIds = [] }: AgentFlowWithTimelineProps) => {
   const [resources] = useState<AgentFlowResource[]>(sampleResources);
-  const [model] = useState<AgentFlowModel | null>(sampleModel);
   const [_selectedResourceId, setSelectedResourceId] = useState<string | null>(null);
 
   const handleSelectResource = useCallback((resourceId: string | null) => {
@@ -276,14 +262,6 @@ const AgentFlowWithTimeline = ({ spans, enableTimelinePlayer = true, activeResou
   }, []);
 
   const handleRemoveResource = useCallback((_resource: AgentFlowResource) => {
-    // Mock implementation for storybook
-  }, []);
-
-  const handleAddModel = useCallback(() => {
-    // Mock implementation for storybook
-  }, []);
-
-  const handleRemoveModel = useCallback(() => {
     // Mock implementation for storybook
   }, []);
 
@@ -318,13 +296,10 @@ const AgentFlowWithTimeline = ({ spans, enableTimelinePlayer = true, activeResou
             name="Quick Query Agent"
             description="Processes quick queries with context loading and response generation"
             mode="view"
-            model={model}
             resources={resources}
             activeResourceIds={activeResourceIds}
             setSpanForSelectedNode={setSpanForSelectedNode}
             getNodeFromSelectedSpan={getNodeFromSelectedSpan}
-            onAddModel={handleAddModel}
-            onRemoveModel={handleRemoveModel}
             onAddBreakpoint={handleAddBreakpoint}
             onRemoveBreakpoint={handleRemoveBreakpoint}
             onAddGuardrail={handleAddGuardrail}

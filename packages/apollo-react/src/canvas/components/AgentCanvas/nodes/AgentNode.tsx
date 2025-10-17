@@ -23,7 +23,6 @@ interface AgentNodeProps extends NewBaseNodeDisplayProps {
   data: AgentNodeData;
   selected?: boolean;
   mode?: "design" | "view";
-  hasModel?: boolean;
   hasMemory?: boolean;
   hasContext?: boolean;
   hasEscalation?: boolean;
@@ -33,9 +32,10 @@ interface AgentNodeProps extends NewBaseNodeDisplayProps {
   hasError?: boolean;
   hasSuccess?: boolean;
   hasRunning?: boolean;
-  onAddResource?: (type: "context" | "escalation" | "mcp" | "model" | "tool" | "memory") => void;
+  onAddResource?: (type: "context" | "escalation" | "mcp" | "tool" | "memory") => void;
   translations: AgentNodeTranslations;
   enableMemory?: boolean;
+  healthScore?: number;
 }
 
 const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNodeProps) => {
@@ -43,7 +43,6 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
     data,
     selected = false,
     mode = "design",
-    hasModel = false,
     hasMemory = false,
     hasContext = false,
     hasEscalation = false,
@@ -56,6 +55,7 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
     onAddResource,
     translations,
     enableMemory,
+    healthScore,
     ...nodeProps
   } = props;
 
@@ -69,7 +69,6 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
     return undefined;
   }, [hasError, hasSuccess, hasRunning]);
 
-  const displayModel = mode === "design" || (mode === "view" && hasModel);
   const displayMemory = enableMemory === true && (mode === "design" || (mode === "view" && hasMemory));
   const displayContext = mode === "design" || (mode === "view" && hasContext);
   const displayEscalation = mode === "design" || (mode === "view" && hasEscalation);
@@ -126,18 +125,8 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
       });
     }
 
-    if (displayModel || displayContext || displayTool || displayMcp) {
+    if (displayContext || displayTool || displayMcp) {
       bottomHandles.push(
-        {
-          id: ResourceNodeType.Model,
-          type: "source",
-          handleType: "artifact",
-          label: translations.model,
-          showButton: false, // Model handle shouldn't be actionable
-          color: "var(--color-foreground-de-emp)",
-          labelBackgroundColor: "var(--color-background-secondary)",
-          visible: displayModel,
-        },
         {
           id: ResourceNodeType.Context,
           type: "source",
@@ -178,7 +167,7 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
     }
 
     return configs;
-  }, [mode, displayContext, displayMemory, displayMcp, displayTool, displayModel, displayEscalation, onAddResource, translations]);
+  }, [mode, displayContext, displayMemory, displayMcp, displayTool, displayEscalation, onAddResource, translations]);
 
   const agentIcon = useMemo(() => {
     if (isConversational) {
@@ -192,6 +181,33 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
       icon: <ExecutionStatusIcon status={executionStatus} size={16} />,
     };
   }, [executionStatus]);
+
+  const healthScoreElement = useMemo(() => {
+    if (healthScore === undefined) {
+      return null;
+    }
+    return (
+      <div
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          gap: "4px",
+          padding: "4px 8px",
+          backgroundColor: "var(--color-background-secondary)",
+          borderRadius: "16px",
+          fontSize: "10px",
+          fontWeight: "700",
+          marginTop: "6px",
+          textAlign: "center",
+          lineHeight: "16px",
+          color: "var(--color-foreground-de-emp)",
+        }}
+      >
+        <Icons.HealthScoreIcon w={16} h={16} />
+        {healthScore.toString()}
+      </div>
+    );
+  }, [healthScore]);
 
   const shouldShowAddButtonFn = (opts: { showAddButton: boolean; selected: boolean }) => {
     return opts.showAddButton || opts.selected;
@@ -208,6 +224,7 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
         shape: "rectangle",
         background: "var(--color-background)",
         iconBackground: "var(--color-background-secondary)",
+        centerAdornmentComponent: healthScoreElement,
       }}
       handleConfigurations={handleConfigurations}
       // Show add buttons in design mode even when not selected
@@ -226,7 +243,6 @@ const AgentNodeWrapper = (props: NodeProps<Node<AgentNodeData>> & AgentNodeProps
   const {
     data,
     mode,
-    hasModel,
     hasMemory,
     hasContext,
     hasEscalation,
@@ -239,6 +255,7 @@ const AgentNodeWrapper = (props: NodeProps<Node<AgentNodeData>> & AgentNodeProps
     onAddResource,
     translations,
     enableMemory,
+    healthScore,
     ...nodeProps
   } = props;
 
@@ -247,7 +264,6 @@ const AgentNodeWrapper = (props: NodeProps<Node<AgentNodeData>> & AgentNodeProps
       {...nodeProps}
       data={data}
       mode={mode}
-      hasModel={hasModel}
       hasMemory={hasMemory}
       hasContext={hasContext}
       hasEscalation={hasEscalation}
@@ -260,6 +276,7 @@ const AgentNodeWrapper = (props: NodeProps<Node<AgentNodeData>> & AgentNodeProps
       onAddResource={onAddResource}
       translations={translations}
       enableMemory={enableMemory}
+      healthScore={healthScore}
     />
   );
 };

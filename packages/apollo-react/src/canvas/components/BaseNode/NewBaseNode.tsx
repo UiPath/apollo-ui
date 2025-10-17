@@ -47,6 +47,7 @@ const NewBaseNodeComponent = (
   const displayShape = finalDisplay.shape ?? "square";
   const displayBackground = finalDisplay.background;
   const displayIconBackground = executionStatus === "Failed" ? "var(--color-background)" : finalDisplay.iconBackground;
+  const displayCenterAdornment = finalDisplay.centerAdornmentComponent;
 
   const { edges, isConnecting } = useStore(
     (state) => ({ edges: state.edges, isConnecting: !!state.connectionClickStartHandle }),
@@ -203,6 +204,7 @@ const NewBaseNodeComponent = (
               </BaseHeader>
               {displaySubLabel && <BaseSubHeader>{displaySubLabel}</BaseSubHeader>}
             </ApTooltip>
+            {displayCenterAdornment}
           </BaseTextContainer>
         )}
       </BaseContainer>

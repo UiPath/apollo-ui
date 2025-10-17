@@ -6,7 +6,6 @@ import { Column, Row } from "@uipath/uix/core";
 import { AgentFlow } from "./AgentFlow";
 import {
   ProjectType,
-  type AgentFlowModel,
   type AgentFlowProps,
   type AgentFlowResource,
   type AgentFlowResourceNodeData,
@@ -135,14 +134,6 @@ const createSampleMemory = (count: number): AgentFlowResource => {
     name: `${count} Dataset${count > 1 ? "s" : ""}`,
     description: `${count} Dataset${count > 1 ? "s" : ""}`,
   };
-};
-
-// Real examples from frontend usage
-const sampleModel: AgentFlowModel = {
-  name: "gpt-4",
-  vendorName: "test-engine",
-  iconUrl: "",
-  hasGuardrails: false,
 };
 
 const sampleResources: AgentFlowResource[] = [
@@ -284,6 +275,7 @@ interface AgentFlowWrapperProps {
   definition?: any;
   enableTimelinePlayer?: boolean;
   enableMemory?: boolean;
+  healthScore?: number;
 }
 
 const AgentFlowWrapper = ({
@@ -294,9 +286,9 @@ const AgentFlowWrapper = ({
   definition = sampleAgentDefinition,
   enableTimelinePlayer = true,
   enableMemory = true,
+  healthScore,
 }: AgentFlowWrapperProps) => {
   const [resources, setResources] = useState<AgentFlowResource[]>(initialResources);
-  const [model, setModel] = useState<AgentFlowModel>(sampleModel);
   const [selectedResourceId, setSelectedResourceId] = useState<string | null>(null);
   const [_sidebarMode, setSidebarMode] = useState<
     "add-context" | "add-escalation" | "add-model" | "add-tool" | "add-memory" | "properties"
@@ -418,21 +410,14 @@ const AgentFlowWrapper = ({
   }, []);
 
   const handleAddGuardrail = useCallback((resourceId: string, resource: AgentFlowResourceNodeData) => {
-    if (resource.type === "model") {
-      setModel((prev) => ({
-        ...prev,
-        hasGuardrails: true,
-      }));
-    } else {
-      setResources((prev) =>
-        prev.map((r) => ({
-          ...r,
-          ...(`${resource.parentNodeId}=>${r.name}:${r.id}` === resourceId && {
-            hasGuardrails: true,
-          }),
-        }))
-      );
-    }
+    setResources((prev) =>
+      prev.map((r) => ({
+        ...r,
+        ...(`${resource.parentNodeId}=>${r.name}:${r.id}` === resourceId && {
+          hasGuardrails: true,
+        }),
+      }))
+    );
   }, []);
 
   // Real span/node mapping functions from frontend
@@ -467,9 +452,6 @@ const AgentFlowWrapper = ({
         <div>
           <strong>Resources:</strong> {resources.length}
         </div>
-        <div>
-          <strong>Model:</strong> {model ? model.name : "None"}
-        </div>
         <div style={{ fontSize: "0.875rem", color: "#666" }}>
           <p>Click the + buttons on the agent node to add:</p>
           <ul>
@@ -495,7 +477,6 @@ const AgentFlowWrapper = ({
             name="Test Agent"
             description="Test Description"
             mode={mode}
-            model={model}
             resources={resources}
             activeResourceIds={activeResourceIds}
             setSpanForSelectedNode={setSpanForSelectedNode}
@@ -510,6 +491,7 @@ const AgentFlowWrapper = ({
             onSelectResource={handleSelectResource}
             enableTimelinePlayer={mode === "view" && enableTimelinePlayer}
             enableMemory={enableMemory}
+            healthScore={healthScore}
           />
         </div>
         {renderSidebar()}
@@ -521,7 +503,6 @@ const AgentFlowWrapper = ({
 export const DesignMode: Story = {
   args: {
     mode: "design",
-    model: sampleModel,
     resources: sampleResources,
   },
   render: () => <AgentFlowWrapper mode="design" />,
@@ -530,7 +511,6 @@ export const DesignMode: Story = {
 export const ViewMode: Story = {
   args: {
     mode: "view",
-    model: sampleModel,
     resources: sampleResources,
     activeResourceIds: [],
   },
@@ -548,7 +528,6 @@ export const DesignModeEmpty: Story = {
 export const ViewModeWithTraceData: Story = {
   args: {
     mode: "view",
-    model: sampleModel,
     resources: sampleResources,
     activeResourceIds: [],
   },
@@ -558,7 +537,6 @@ export const ViewModeWithTraceData: Story = {
 export const DesignModeWithRealData: Story = {
   args: {
     mode: "design",
-    model: sampleModel,
     resources: sampleResources,
   },
   render: (args) => <AgentFlowWrapper {...args} spans={sampleSpans} definition={sampleAgentDefinition} />,
@@ -567,7 +545,6 @@ export const DesignModeWithRealData: Story = {
 export const ViewModeEmptyTrace: Story = {
   args: {
     mode: "view",
-    model: sampleModel,
     resources: sampleResources,
     activeResourceIds: [],
   },
@@ -577,7 +554,6 @@ export const ViewModeEmptyTrace: Story = {
 export const ViewModeWithoutTimelinePlayer: Story = {
   args: {
     mode: "view",
-    model: sampleModel,
     resources: sampleResources,
     activeResourceIds: [],
   },
@@ -587,9 +563,58 @@ export const ViewModeWithoutTimelinePlayer: Story = {
 export const ViewModeWithTimelinePlayer: Story = {
   args: {
     mode: "view",
-    model: sampleModel,
     resources: sampleResources,
     activeResourceIds: [],
   },
   render: (args) => <AgentFlowWrapper {...args} spans={sampleSpans} definition={sampleAgentDefinition} />,
+};
+
+/**
+ * Health Score Stories
+ * Demonstrates the health score badge feature on agent nodes
+ */
+
+export const HealthScore: Story = {
+  args: {
+    mode: "design",
+    resources: sampleResources,
+  },
+  render: (args) => <AgentFlowWrapper {...args} healthScore={95} />,
+  parameters: {
+    docs: {
+      description: {
+        story: "Agent with health score (95). The health score badge appears below the agent name.",
+      },
+    },
+  },
+};
+
+export const HealthScoreZero: Story = {
+  args: {
+    mode: "design",
+    resources: sampleResources,
+  },
+  render: (args) => <AgentFlowWrapper {...args} healthScore={0} />,
+  parameters: {
+    docs: {
+      description: {
+        story: "Agent with zero health score (0).",
+      },
+    },
+  },
+};
+
+export const NoHealthScore: Story = {
+  args: {
+    mode: "design",
+    resources: sampleResources,
+  },
+  render: (args) => <AgentFlowWrapper {...args} healthScore={undefined} />,
+  parameters: {
+    docs: {
+      description: {
+        story: "Agent without health score. The health score badge is not rendered when undefined.",
+      },
+    },
+  },
 };

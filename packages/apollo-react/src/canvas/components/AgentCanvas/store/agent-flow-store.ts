@@ -311,9 +311,6 @@ interface AgentFlowStore {
 
 export const hasResourceNode = (node: AgentFlowCustomNode, resource: AgentFlowResource) => node?.id?.endsWith(`:${resource.id}`);
 
-export const hasModelNode = (node: AgentFlowCustomNode): node is AgentFlowResourceNode =>
-  node?.id?.endsWith("model") && isAgentFlowResourceNode(node) && node.data.type === "model";
-
 export const createAgentFlowStore = (initialProps: AgentFlowProps) =>
   createStore<AgentFlowStore>()((set, get) => {
     const { nodes: initialNodes, edges: initialEdges } = computeNodesAndEdges(initialProps);
@@ -331,11 +328,6 @@ export const createAgentFlowStore = (initialProps: AgentFlowProps) =>
         const removedIds = new Set([...currentResourceIds].filter((id) => !newResourceIds.has(id)));
         const resourcesAddedOrRemoved = addedIds.size > 0 || removedIds.size > 0;
 
-        // Check if model was added or removed
-        const hadModelNode = state.nodes.some(hasModelNode);
-        const willHaveModelNode = Boolean(newProps.model);
-        const modelChanged = hadModelNode !== willHaveModelNode;
-
         // Always recompute nodes and edges to handle any ID changes
         const { nodes: allNewNodes, edges: newEdges } = computeNodesAndEdges(newProps);
 
@@ -349,9 +341,6 @@ export const createAgentFlowStore = (initialProps: AgentFlowProps) =>
             }
             // Match resource nodes by resource ID (extracted from node ID)
             if (isAgentFlowResourceNode(newNode) && isAgentFlowResourceNode(oldNode)) {
-              if (newNode.data.type === "model" && oldNode.data.type === "model") {
-                return newNode.data.parentNodeId === oldNode.data.parentNodeId;
-              }
               // Extract resource ID from node ID (part after the last ':')
               const newResourceId = newNode.id.split(":").pop();
               const oldResourceId = oldNode.id.split(":").pop();
@@ -372,17 +361,15 @@ export const createAgentFlowStore = (initialProps: AgentFlowProps) =>
           }
 
           // For new nodes, check if they should be selected
-          if (resourcesAddedOrRemoved || modelChanged) {
+          if (resourcesAddedOrRemoved) {
             const isFirstAddedResource =
               isAgentFlowResourceNode(newNode) &&
               [...addedIds][0] &&
               newProps.resources.find((r) => r.id === [...addedIds][0] && hasResourceNode(newNode, r));
 
-            const isFirstAddedModel = hasModelNode(newNode) && modelChanged && willHaveModelNode && !hadModelNode;
-
             return {
               ...newNode,
-              selected: Boolean(isFirstAddedResource || (isFirstAddedModel && addedIds.size === 0)),
+              selected: Boolean(isFirstAddedResource),
             };
           }
 
@@ -391,17 +378,11 @@ export const createAgentFlowStore = (initialProps: AgentFlowProps) =>
 
         // Determine selected node ID for newly added resources
         let firstNewNodeId: string | null = null;
-        if (resourcesAddedOrRemoved || modelChanged) {
+        if (resourcesAddedOrRemoved) {
           // Find first added resource node
           const firstAddedResource = addedIds.size > 0 ? updatedNodes.find((node) => node.selected) : null;
           if (firstAddedResource) {
             firstNewNodeId = firstAddedResource.id;
-          } else if (modelChanged && willHaveModelNode) {
-            // Or select the newly added model
-            const modelNode = updatedNodes.find(hasModelNode);
-            if (modelNode) {
-              firstNewNodeId = modelNode.id;
-            }
           }
         }
 
@@ -419,7 +400,7 @@ export const createAgentFlowStore = (initialProps: AgentFlowProps) =>
         }
 
         // Auto-arrange if resources were added/removed
-        if (resourcesAddedOrRemoved || modelChanged) {
+        if (resourcesAddedOrRemoved) {
           setTimeout(() => {
             get().autoArrange();
           }, 100);
@@ -464,12 +445,6 @@ export const createAgentFlowStore = (initialProps: AgentFlowProps) =>
         const { props } = get();
 
         if (props.mode === "design") {
-          // delete model
-          if (nodeId === "model" && props.onRemoveModel) {
-            props.onRemoveModel();
-            return;
-          }
-
           // delete other resources
           if (props.onRemoveResource) {
             const nodeToDelete = get().nodes.find((node) => node.id === nodeId);
@@ -574,11 +549,6 @@ export const createAgentFlowStore = (initialProps: AgentFlowProps) =>
                 continue; // Skip this removal
               }
 
-              // Prevent deletion of model nodes
-              if (hasModelNode(nodeToDelete)) {
-                continue; // Skip this removal
-              }
-
               // Trigger our deletion callbacks for allowed deletions
               if (isAgentFlowResourceNode(nodeToDelete) && props.onRemoveResource) {
                 const resourceToRemove = props.resources.find((r) => hasResourceNode(nodeToDelete, r));
@@ -596,9 +566,6 @@ export const createAgentFlowStore = (initialProps: AgentFlowProps) =>
 
             // Prevent deletion of agent nodes
             if (nodeToDelete.type === "agent") return false;
-
-            // Prevent deletion of model nodes
-            if (hasModelNode(nodeToDelete)) return false;
 
             return true; // Allow deletion of other nodes
           });
@@ -950,7 +917,6 @@ export const createAgentFlowStore = (initialProps: AgentFlowProps) =>
         }
 
         const nestedResources = agentDefinition.agentResources;
-        const nestedModel = agentDefinition.model;
 
         // Create new AgentFlowProps for the nested agent
         const nestedAgentProps: AgentFlowProps = {
@@ -959,7 +925,6 @@ export const createAgentFlowStore = (initialProps: AgentFlowProps) =>
           spans: [],
           name: resourceNode.data.name,
           description: resourceNode.data.description,
-          model: nestedModel,
           resources: nestedResources,
           activeResourceIds: [],
         };

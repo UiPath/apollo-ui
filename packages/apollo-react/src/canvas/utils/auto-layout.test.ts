@@ -153,7 +153,7 @@ describe("auto-layout", () => {
           id: "edge1",
           source: "agent1",
           target: "left1",
-          sourceHandle: ResourceNodeType.Model, // handle that's on the left of the agent node
+          sourceHandle: ResourceNodeType.Context, // handle that's on the left of the agent node
           targetHandle: Position.Right,
         },
         {
@@ -253,15 +253,15 @@ describe("auto-layout", () => {
           },
         },
         {
-          id: "model1",
+          id: "context1",
           type: "resource",
           position: { x: 0, y: 0 },
           width: 100,
           height: 80,
           data: {
-            type: "model",
-            name: "Test Model",
-            description: "Test model description",
+            type: "context",
+            name: "Test Context",
+            description: "Test context description",
             projectType: ProjectType.Internal,
           },
         },
@@ -299,9 +299,9 @@ describe("auto-layout", () => {
         {
           id: "edge1",
           source: "agent1",
-          target: "model1",
-          sourceHandle: ResourceNodeType.Model, // handle that's on the bottom of the agent node
-          targetHandle: Position.Top,
+          target: "context1",
+          sourceHandle: ResourceNodeType.Context, // handle that's on the bottom of the agent node
+          targetHandle: Position.Bottom,
         },
         {
           id: "edge2",
@@ -322,23 +322,23 @@ describe("auto-layout", () => {
       const result = autoArrangeNodes(nodes, edges);
 
       // Check model is positioned below the agent
-      const model = result.find((n) => n.id === "model1");
+      const context = result.find((n) => n.id === "context1");
       const skill1 = result.find((n) => n.id === "skill1");
       const skill2 = result.find((n) => n.id === "skill2");
 
       // All nodes should be positioned below the agent
-      expect(model?.position.y).toBeGreaterThan(140); // Below agent height
+      expect(context?.position.y).toBeGreaterThan(140); // Below agent height
       expect(skill1?.position.y).toBeGreaterThan(140);
       expect(skill2?.position.y).toBeGreaterThan(140);
 
       // All nodes should be at roughly the same Y position (all at bottom)
-      expect(Math.abs((model?.position.y || 0) - (skill1?.position.y || 0))).toBeLessThan(10);
+      expect(Math.abs((context?.position.y || 0) - (skill1?.position.y || 0))).toBeLessThan(10);
       expect(Math.abs((skill1?.position.y || 0) - (skill2?.position.y || 0))).toBeLessThan(10);
 
       // But should be spaced horizontally
       expect(skill1?.position.x).not.toEqual(skill2?.position.x);
-      expect(model?.position.x).not.toEqual(skill1?.position.x);
-      expect(model?.position.x).not.toEqual(skill2?.position.x);
+      expect(context?.position.x).not.toEqual(skill1?.position.x);
+      expect(context?.position.x).not.toEqual(skill2?.position.x);
     });
 
     it("handles nested agents", () => {

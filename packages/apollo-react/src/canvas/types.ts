@@ -133,7 +133,6 @@ export type AgentFlowProps = {
   spans: IRawSpan[];
   name: string;
   description: string;
-  model: AgentFlowModel | null;
   resources: AgentFlowResource[];
   allowDragging?: boolean;
   initialSelectedResource?: {
@@ -154,8 +153,6 @@ export type AgentFlowProps = {
   onRemoveBreakpoint?: (resourceId: string, resource: AgentFlowResourceNodeData) => void;
   onAddGuardrail?: (resourceId: string, resource: AgentFlowResourceNodeData) => void;
   onGoToSource?: (resourceId: string, resource: AgentFlowResourceNodeData) => void;
-  onAddModel?: () => void;
-  onRemoveModel?: () => void;
   onAddResource?: (type: AgentFlowResourceType) => void;
   onRemoveResource?: (resource: AgentFlowResource) => void;
   onAgentNodeClick?: () => void;
@@ -178,6 +175,9 @@ export type AgentFlowProps = {
   enableMcpTools?: boolean;
   /** TODO: Remove once memory feature is fully implemented */
   enableMemory?: boolean;
+
+  // health score
+  healthScore?: number;
 };
 
 export type AgentFlowNodeData = {
@@ -201,10 +201,7 @@ export type ContextResourceData = {
 export type EscalationResourceData = {
   type: "escalation";
 };
-export type ModelResourceData = {
-  type: "model";
-};
-export type McpResourceData = {
+type McpResourceData = {
   type: "mcp";
 };
 export type MemoryResourceData = {
@@ -248,7 +245,6 @@ export type AgentFlowResourceNodeData = (
   | ContextResourceData
   | EscalationResourceData
   | McpResourceData
-  | ModelResourceData
   | ToolResourceData
   | MemoryResourceData
 ) &

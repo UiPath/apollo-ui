@@ -32,7 +32,6 @@ export const getAgentGroupBottomPosition = (
     [ResourceNodeType.Context]: [],
     [ResourceNodeType.Escalation]: [],
     [ResourceNodeType.MCP]: [],
-    [ResourceNodeType.Model]: [],
     [ResourceNodeType.Tool]: [],
     [ResourceNodeType.Memory]: [],
   };
@@ -86,7 +85,6 @@ const arrangeAgent = (
     [ResourceNodeType.Context]: [],
     [ResourceNodeType.Escalation]: [],
     [ResourceNodeType.MCP]: [],
-    [ResourceNodeType.Model]: [],
     [ResourceNodeType.Tool]: [],
     [ResourceNodeType.Memory]: [],
   };
@@ -144,10 +142,8 @@ const arrangeAgent = (
 
         // Get handle X position based on handle type and agent node handle layout
         let handleCenterX = agentCenterX;
-        if (handleId === ResourceNodeType.Model) {
-          handleCenterX = agentCenterX - GROUP_SPACING;
-        } else if (handleId === ResourceNodeType.Context) {
-          handleCenterX = agentCenterX;
+        if (handleId === ResourceNodeType.Context) {
+          handleCenterX = agentCenterX - GROUP_SPACING / 2;
         } else if (handleId === ResourceNodeType.Tool) {
           handleCenterX = agentCenterX + GROUP_SPACING;
         }
@@ -268,25 +264,11 @@ const arrangeAgent = (
         const nodeWidth = node.measured?.width ?? node.width ?? 0;
         const nodeHeight = node.measured?.height ?? node.height ?? 0;
 
-        // Check if this is a model node for special positioning
-        const isModelNode = isAgentFlowResourceNode(node) && node.data.type === "model";
-
-        if (isModelNode) {
-          // Special positioning for model node alignment with agent handle
-          const agentHandleY = agent.position.y + agentHeight / 2;
-          const modelHandleOffset = 40; // Half of the 80px avatar height
-
-          node.position = {
-            x: agent.position.x - nodeWidth - GROUP_DISTANCE_HORIZONTAL,
-            y: agentHandleY - modelHandleOffset,
-          };
-        } else {
-          // Default left positioning
-          node.position = {
-            x: agent.position.x - nodeWidth - GROUP_DISTANCE_HORIZONTAL,
-            y: agentCenterY - nodeHeight / 2 + (i - (nodes.length - 1) / 2) * GROUP_SPACING,
-          };
-        }
+        // Default left positioning
+        node.position = {
+          x: agent.position.x - nodeWidth - GROUP_DISTANCE_HORIZONTAL,
+          y: agentCenterY - nodeHeight / 2 + (i - (nodes.length - 1) / 2) * GROUP_SPACING,
+        };
       }
     } else if (position === Position.Right) {
       // Handle right position

@@ -252,11 +252,6 @@ const mockProps: AgentFlowProps = {
       type: "context" as const,
     },
   ],
-  model: {
-    name: "Test Model",
-    vendorName: "Test Vendor",
-    iconUrl: "model-icon.png",
-  },
   spans: [
     {
       Id: "span-1",

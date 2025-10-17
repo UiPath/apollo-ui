@@ -1,15 +1,7 @@
 import { vi } from "vitest";
 import { Position } from "@uipath/uix/xyflow/react";
 import type { AgentFlowProps } from "../types";
-import {
-  computeNodesAndEdges,
-  createResourceEdge,
-  EDGE_ID_DELIMITER,
-  hasModelError,
-  hasModelRunning,
-  hasModelSuccess,
-  NODE_ID_DELIMITER,
-} from "./props-helpers";
+import { computeNodesAndEdges, createResourceEdge, EDGE_ID_DELIMITER, NODE_ID_DELIMITER } from "./props-helpers";
 import { ResourceNodeType } from "../components/AgentCanvas";
 
 describe("props-helpers", () => {
@@ -46,11 +38,6 @@ describe("props-helpers", () => {
         type: "escalation" as const,
       },
     ],
-    model: {
-      name: "Test Model",
-      vendorName: "Test Vendor",
-      iconUrl: "model-icon.png",
-    },
     spans: [],
     mode: "design" as const,
     activeResourceIds: [],
@@ -126,12 +113,7 @@ describe("props-helpers", () => {
       const viewResourceNodes = viewResult.nodes.filter((node) => node.type === "resource");
 
       for (const node of designResourceNodes) {
-        // Model nodes are not draggable even in design mode
-        if (node.data.type === "model") {
-          expect(node.draggable).toBe(false);
-        } else {
-          expect(node.draggable).toBe(true);
-        }
+        expect(node.draggable).toBe(true);
       }
 
       for (const node of viewResourceNodes) {
@@ -162,26 +144,6 @@ describe("props-helpers", () => {
       expect(result.edges.length).toBeGreaterThan(0);
     });
 
-    it("creates model node when model is present", () => {
-      const { nodes } = computeNodesAndEdges(mockAgentFlowProps);
-
-      const modelNode = nodes.find((node) => node.type === "resource" && node.data.type === "model");
-
-      expect(modelNode).toBeDefined();
-      expect(modelNode?.data.name).toBe("Test Model");
-      expect(modelNode?.data.description).toBe("Test Vendor");
-      expect((modelNode?.data as any).iconUrl).toBe("model-icon.png");
-    });
-
-    it("does not create model node when model is null", () => {
-      const propsWithoutModel = { ...mockAgentFlowProps, model: null };
-      const { nodes } = computeNodesAndEdges(propsWithoutModel);
-
-      const modelNode = nodes.find((node) => node.type === "resource" && node.data.type === "model");
-
-      expect(modelNode).toBeUndefined();
-    });
-
     it("handles parent node ID correctly", () => {
       const parentNodeId = "parent-node";
       const result = computeNodesAndEdges(mockAgentFlowProps, parentNodeId);
@@ -203,112 +165,6 @@ describe("props-helpers", () => {
 
       expect((toolNode?.data as any).isActive).toBe(true);
       expect((contextNode?.data as any).isActive).toBe(true);
-    });
-  });
-
-  describe("hasModelError", () => {
-    it("returns true when model has error status", () => {
-      const spans = [
-        {
-          Attributes: JSON.stringify({ type: "completion" }),
-          Status: 2, // ERROR status
-        } as any,
-      ];
-
-      const result = hasModelError(mockAgentFlowProps.model ?? { name: "", vendorName: "", iconUrl: "" }, spans);
-      expect(result).toBe(true);
-    });
-
-    it("returns false when model has success status", () => {
-      const spans = [
-        {
-          Attributes: JSON.stringify({ type: "completion" }),
-          Status: 1, // SUCCESS status
-        } as any,
-      ];
-
-      const result = hasModelError(mockAgentFlowProps.model ?? { name: "", vendorName: "", iconUrl: "" }, spans);
-      expect(result).toBe(false);
-    });
-
-    it("returns false when no spans exist", () => {
-      const result = hasModelError(mockAgentFlowProps.model ?? { name: "", vendorName: "", iconUrl: "" }, []);
-      expect(result).toBe(false);
-    });
-
-    it("returns false when span has no attributes", () => {
-      const spans = [
-        {
-          Status: 2,
-        } as any,
-      ];
-
-      const result = hasModelError(mockAgentFlowProps.model ?? { name: "", vendorName: "", iconUrl: "" }, spans);
-      expect(result).toBe(false);
-    });
-  });
-
-  describe("hasModelSuccess", () => {
-    it("returns true when model has success status", () => {
-      const spans = [
-        {
-          Attributes: JSON.stringify({ type: "completion" }),
-          Status: 1, // SUCCESS status
-        } as any,
-      ];
-
-      const result = hasModelSuccess(mockAgentFlowProps.model ?? { name: "", vendorName: "", iconUrl: "" }, spans);
-      expect(result).toBe(true);
-    });
-
-    it("returns false when model has error status", () => {
-      const spans = [
-        {
-          Attributes: JSON.stringify({ type: "completion" }),
-          Status: 2, // ERROR status
-        } as any,
-      ];
-
-      const result = hasModelSuccess(mockAgentFlowProps.model ?? { name: "", vendorName: "", iconUrl: "" }, spans);
-      expect(result).toBe(false);
-    });
-
-    it("returns false when span type is not completion", () => {
-      const spans = [
-        {
-          Attributes: JSON.stringify({ type: "other" }),
-          Status: 1,
-        } as any,
-      ];
-
-      const result = hasModelSuccess(mockAgentFlowProps.model ?? { name: "", vendorName: "", iconUrl: "" }, spans);
-      expect(result).toBe(false);
-    });
-  });
-
-  describe("hasModelRunning", () => {
-    it("returns true when model has running status", () => {
-      const spans = [
-        {
-          Attributes: JSON.stringify({ type: "completion" }),
-          Status: 0, // RUNNING status
-        } as any,
-      ];
-
-      const result = hasModelRunning(mockAgentFlowProps.model ?? { name: "", vendorName: "", iconUrl: "" }, spans);
-      expect(result).toBe(true);
-    });
-
-    it("returns false when model has success status", () => {
-      const spans = [
-        {
-          Attributes: JSON.stringify({ type: "completion" }),
-          Status: 1, // SUCCESS status
-        } as any,
-      ];
-
-      const result = hasModelRunning(mockAgentFlowProps.model ?? { name: "", vendorName: "", iconUrl: "" }, spans);
-      expect(result).toBe(false);
     });
   });
 
@@ -351,19 +207,6 @@ describe("props-helpers", () => {
       draggable: true,
     } as any;
 
-    const mockModelNode = {
-      id: "model-1",
-      type: "resource" as const,
-      position: { x: 0, y: 0 },
-      data: {
-        type: "model" as const,
-        name: "Test Model",
-        description: "Test Model Description",
-        isActive: false,
-      },
-      draggable: true,
-    } as any;
-
     const mockEscalationNode = {
       id: "escalation-1",
       type: "resource" as const,
@@ -396,15 +239,6 @@ describe("props-helpers", () => {
       expect(edge.source).toBe(mockAgentNode.id);
       expect(edge.target).toBe(mockContextNode.id);
       expect(edge.sourceHandle).toBe(ResourceNodeType.Context);
-      expect(edge.targetHandle).toBe(Position.Top);
-    });
-
-    it("creates model edge correctly", () => {
-      const edge = createResourceEdge(mockAgentNode, mockModelNode, mockAgentFlowProps);
-
-      expect(edge.source).toBe(mockAgentNode.id);
-      expect(edge.target).toBe(mockModelNode.id);
-      expect(edge.sourceHandle).toBe(ResourceNodeType.Model);
       expect(edge.targetHandle).toBe(Position.Top);
     });
 

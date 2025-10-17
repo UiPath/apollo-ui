@@ -5,7 +5,6 @@ import { Position, type NodeProps } from "@uipath/uix/xyflow/react";
 import { NewBaseNode } from "../../BaseNode/NewBaseNode";
 import { type AgentFlowResourceNode, type AgentFlowResourceNodeData, type ResourceNodeTranslations } from "../../../types";
 import { useAgentFlowStore } from "../store/agent-flow-store";
-import { type ButtonHandleConfig } from "../../ButtonHandle";
 import { ExecutionStatusIcon } from "../../ExecutionStatusIcon/ExecutionStatusIcon";
 import type { NodeToolbarConfig, ToolbarAction } from "../../NodeToolbar/NodeToolbar.types";
 import { ToolResourceIcon } from "../components/ToolResourceIcon";
@@ -78,32 +77,8 @@ export const ResourceNode = memo(
     }, [id, data, onGoToSource]);
 
     const handleClickRemove = useCallback(() => {
-      if (data.type !== "model") {
-        deleteNode(id);
-      }
-    }, [id, deleteNode, data.type]);
-
-    const getModelIcon = (modelName: string) => {
-      const modelNameNormalized = modelName.toLowerCase();
-
-      if (modelNameNormalized.includes("gpt") || modelNameNormalized.includes("text-embedding")) {
-        return <Icons.OpenAIIcon w={48} h={48} />;
-      }
-
-      if (
-        modelNameNormalized.includes("claude") ||
-        modelNameNormalized.includes("anthropic") ||
-        modelNameNormalized.includes("computer-use-preview")
-      ) {
-        return <Icons.AnthropicIcon w={48} h={48} />;
-      }
-
-      if (modelNameNormalized.includes("gemini") || modelNameNormalized.includes("chat-bison")) {
-        return <Icons.GoogleIcon w={48} h={48} />;
-      }
-
-      return <ApIcon color="var(--color-icon)" name="chat" size="40px" />;
-    };
+      deleteNode(id);
+    }, [id, deleteNode]);
 
     const resourceIcon = useMemo(() => {
       let icon: React.ReactNode | undefined;
@@ -119,9 +94,6 @@ export const ResourceNode = memo(
           break;
         case "mcp":
           icon = <Icons.McpIcon w={40} h={40} />;
-          break;
-        case "model":
-          icon = getModelIcon(data.name);
           break;
         case "tool":
           icon = <ToolResourceIcon size={48} tool={data} />;
@@ -156,7 +128,7 @@ export const ResourceNode = memo(
 
       const addGuardrailAction: ToolbarAction = {
         id: "add-guardrail",
-        icon: data.type === "model" ? "add_moderator" : undefined,
+        icon: undefined,
         label: translations?.addGuardrail ?? "",
         disabled: false,
         onAction: handleClickAddGuardrail,
@@ -194,9 +166,9 @@ export const ResourceNode = memo(
         onAction: () => {},
       };
 
-      const actions: ToolbarAction[] = data.type === "model" ? [addGuardrailAction] : [removeAction];
+      const actions: ToolbarAction[] = [removeAction];
       const overflowActions: ToolbarAction[] = [
-        ...(data.type === "model" ? [] : [toggleBreakpointAction]),
+        toggleBreakpointAction,
         ...(data.type === "tool" ? [addGuardrailAction] : []),
         ...(data.projectId ? [goToSourceAction] : []),
         ...(data.type === "tool" ? [separator, toggleEnabledAction] : []),
@@ -223,19 +195,6 @@ export const ResourceNode = memo(
       handleClickGoToSource,
       handleClickRemove,
     ]);
-
-    const modelHandles: ButtonHandleConfig[] = useMemo(
-      () => [
-        {
-          id: Position.Top,
-          type: "target" as const,
-          handleType: "artifact" as const,
-          showButton: false,
-          color: "var(--color-foreground-de-emp)",
-        },
-      ],
-      []
-    );
 
     const toolTopHandles = useMemo(
       () => [
@@ -333,11 +292,6 @@ export const ResourceNode = memo(
       () => [
         {
           position: Position.Top,
-          handles: modelHandles,
-          visible: data.type === "model",
-        },
-        {
-          position: Position.Top,
           handles: toolTopHandles,
           visible: data.type === "tool" || data.type === "mcp",
         },
@@ -366,7 +320,7 @@ export const ResourceNode = memo(
           visible: data.type === "memory",
         },
       ],
-      [data.type, data.isExpandable, modelHandles, toolTopHandles, toolBottomHandles, contextHandles, escalationHandles, memoryHandles]
+      [data.type, data.isExpandable, toolTopHandles, toolBottomHandles, contextHandles, escalationHandles, memoryHandles]
     );
 
     return (

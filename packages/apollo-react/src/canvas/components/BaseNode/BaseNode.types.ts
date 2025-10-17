@@ -29,10 +29,14 @@ export interface BaseNodeData extends Record<string, unknown> {
 export interface NodeDisplay {
   label?: string;
   subLabel?: string;
+  labelTooltip?: string;
+  labelBackgroundColor?: string;
   shape?: NodeShape;
   background?: string;
   iconBackground?: string;
   iconColor?: string;
+  /** Custom content to render in the center text container, below label and subLabel */
+  centerAdornmentComponent?: React.ReactNode;
 }
 
 export interface NodeAdornments {

@@ -102,7 +102,7 @@ const addVirtualSpacingNodes = (nodes: AgentFlowCustomNode[], agentNode: AgentFl
         y: agentNode.position.y + agentHeight + FLOW_LAYOUT.groupDistanceVertical,
       },
       data: {
-        type: ResourceNodeType.Model,
+        type: ResourceNodeType.Context,
         name: "__virtual__",
         description: "",
         parentNodeId: agentNode.id,
@@ -124,17 +124,14 @@ const addVirtualSpacingNodes = (nodes: AgentFlowCustomNode[], agentNode: AgentFl
 
 // agent node wrapper
 const createAgentNodeWrapper = (handlers: {
-  onAddResource?: (type: "context" | "escalation" | "mcp" | "model" | "tool" | "memory") => void;
+  onAddResource?: (type: "context" | "escalation" | "mcp" | "tool" | "memory") => void;
   translations?: AgentNodeTranslations;
   enableMcpTools?: boolean;
   enableMemory?: boolean;
+  healthScore?: number;
 }) => {
   return (props: NodeProps<AgentFlowNode>) => {
     const { props: storeProps, nodes } = useAgentFlowStore();
-
-    const hasModel = nodes.some(
-      (node) => isAgentFlowResourceNode(node) && node.data.type === "model" && node.data.parentNodeId === props.id
-    );
 
     const hasContext = nodes.some(
       (node) => isAgentFlowResourceNode(node) && node.data.type === "context" && node.data.parentNodeId === props.id
@@ -176,13 +173,13 @@ const createAgentNodeWrapper = (handlers: {
         hasMemory={hasMemory}
         mcpEnabled={handlers.enableMcpTools !== false}
         mode={storeProps.mode}
-        hasModel={hasModel}
         hasError={hasError}
         hasSuccess={hasSuccess}
         hasRunning={hasRunning}
         onAddResource={handlers.onAddResource}
         translations={handlers.translations ?? DefaultAgentNodeTranslations}
         enableMemory={handlers.enableMemory === true}
+        healthScore={handlers.healthScore}
       />
     );
   };
@@ -236,7 +233,6 @@ const AgentFlowInner = memo(
     onRemoveBreakpoint,
     onAddGuardrail,
     onGoToSource,
-    onAddModel,
     onAddResource,
     onSelectResource,
     setSpanForSelectedNode,
@@ -250,6 +246,7 @@ const AgentFlowInner = memo(
     canvasRef,
     enableMcpTools,
     enableMemory,
+    healthScore,
   }: PropsWithChildren<AgentFlowProps>) => {
     const {
       nodes,
@@ -273,12 +270,8 @@ const AgentFlowInner = memo(
     const { fitView } = useReactFlow();
 
     const nodeTypes = useMemo(() => {
-      const handleAddResource = (type: "context" | "escalation" | "mcp" | "model" | "tool" | "memory") => {
-        if (type === "model") {
-          onAddModel?.();
-        } else {
-          onAddResource?.(type);
-        }
+      const handleAddResource = (type: "context" | "escalation" | "mcp" | "tool" | "memory") => {
+        onAddResource?.(type);
       };
 
       return {
@@ -287,6 +280,7 @@ const AgentFlowInner = memo(
           translations: agentNodeTranslations,
           enableMcpTools,
           enableMemory,
+          healthScore,
         }),
         resource: createResourceNodeWrapper({
           onEnable,
@@ -307,7 +301,7 @@ const AgentFlowInner = memo(
       onRemoveBreakpoint,
       onAddGuardrail,
       onGoToSource,
-      onAddModel,
+      healthScore,
       onAddResource,
       agentNodeTranslations,
       resourceNodeTranslations,

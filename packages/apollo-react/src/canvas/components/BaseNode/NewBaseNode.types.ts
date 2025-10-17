@@ -31,6 +31,7 @@ export interface NodeDisplay {
   background?: string;
   iconBackground?: string;
   iconColor?: string;
+  centerAdornmentComponent?: React.ReactNode;
 }
 
 export interface NodeAdornment {

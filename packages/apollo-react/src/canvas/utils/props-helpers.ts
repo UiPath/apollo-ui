@@ -241,30 +241,6 @@ const createResourceNode = (
   }
 };
 
-const createModelNode = (props: AgentFlowProps, parentNodeId: string): AgentFlowResourceNode | null => {
-  if (!props.model) return null;
-
-  return {
-    id: `${parentNodeId}${NODE_ID_DELIMITER}model`,
-    type: "resource",
-    position: { x: 0, y: 0 },
-    data: {
-      name: props.model.name,
-      description: props.model.vendorName,
-      type: "model",
-      order: -1,
-      isActive: props.activeResourceIds?.includes("model") ?? false,
-      hasError: hasModelError(props.model, props.spans),
-      hasSuccess: hasModelSuccess(props.model, props.spans),
-      hasRunning: hasModelRunning(props.model, props.spans),
-      hasGuardrails: props.model.hasGuardrails ?? false,
-      iconUrl: props.model.iconUrl,
-      parentNodeId,
-    },
-    draggable: false, // Single model node, not draggable
-  };
-};
-
 export const createResourceEdge = (
   agentNode: AgentFlowNode,
   resourceNode: AgentFlowResourceNode,
@@ -296,8 +272,6 @@ export const createResourceEdge = (
       return createEdge(agentNode.id, resourceNode.id, ResourceNodeType.Tool, Position.Top);
     case "context":
       return createEdge(agentNode.id, resourceNode.id, ResourceNodeType.Context, Position.Top);
-    case "model":
-      return createEdge(agentNode.id, resourceNode.id, ResourceNodeType.Model, Position.Top);
     case "mcp":
       return createEdge(agentNode.id, resourceNode.id, ResourceNodeType.Tool, Position.Top);
     case "memory":
@@ -310,7 +284,7 @@ export const createResourceEdge = (
 
 /**
  * Computes nodes and edges for the agent flow visualization
- * @param props - The agent flow properties containing resources, model, and spans
+ * @param props - The agent flow properties containing resources and spans
  * @returns Object containing arrays of nodes and edges for the flow
  */
 export const computeNodesAndEdges = (
@@ -318,15 +292,12 @@ export const computeNodesAndEdges = (
   parentNodeId?: string
 ): { nodes: AgentFlowCustomNode[]; edges: AgentFlowCustomEdge[] } => {
   const agentNode = createAgentNode(props, parentNodeId);
-  const modelNode = createModelNode(props, agentNode.id);
 
   // Filter out MCP resources if the feature flag is disabled
   const filteredResources =
     props.enableMcpTools === false ? props.resources.filter((resource) => resource.type !== "mcp") : props.resources;
 
   const resourceNodes = filteredResources.map((resource, index) => createResourceNode(resource, index, props, agentNode.id));
-
-  if (modelNode) resourceNodes.unshift(modelNode);
 
   const edges = resourceNodes.map((resourceNode) => createResourceEdge(agentNode, resourceNode, props));
 

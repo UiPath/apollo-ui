@@ -5,7 +5,6 @@ import type { AgentFlowCustomNode, AgentFlowProps, AgentFlowResource } from "../
 import {
   AgentFlowProvider,
   createAgentFlowStore,
-  hasModelNode,
   hasResourceNode,
   useAgentFlowStore,
   useEdges,
@@ -76,7 +75,6 @@ const baseProps: AgentFlowProps = {
   spans: [],
   name: "Test Flow",
   description: "desc",
-  model: null,
   resources: mockResources,
   setSpanForSelectedNode: vi.fn(),
   getNodeFromSelectedSpan: vi.fn(() => null),
@@ -215,17 +213,6 @@ describe("agent-flow-store", () => {
 
     // Fast forward timers to handle the transition cleanup
     vi.runAllTimers();
-  });
-
-  it("can handle props update with model", () => {
-    const model = {
-      name: "Test Model",
-      vendorName: "Test Vendor",
-      iconUrl: "",
-    };
-    const newProps = { ...baseProps, model };
-    store.getState().handlePropsUpdate(newProps);
-    expect(store.getState().nodes.some(hasModelNode)).toBe(true);
   });
 
   it("can handle props update with active resources", () => {
@@ -413,13 +400,6 @@ describe("agent-flow-store", () => {
     expect(resourceNodes.length).toBe(0);
   });
 
-  it("can handle props update with empty model", () => {
-    const emptyModelProps = { ...baseProps, model: null };
-    store.getState().handlePropsUpdate(emptyModelProps);
-    const modelNode = store.getState().nodes.find(hasModelNode);
-    expect(modelNode).toBeUndefined();
-  });
-
   it("can handle props update with empty active resources", () => {
     const emptyActiveProps = { ...baseProps, activeResourceIds: [] };
     store.getState().handlePropsUpdate(emptyActiveProps);
@@ -442,33 +422,6 @@ describe("agent-flow-store", () => {
       const finalState = agentStore.getState();
       const agentNodeStillExists = finalState.nodes.find((node) => node.id === agentNode.id);
       expect(agentNodeStillExists).toBeDefined();
-    }
-  });
-
-  it("should not delete model nodes", () => {
-    const modelStore = createAgentFlowStore(baseProps);
-
-    // Add a model to the props to create a model node
-    const model = {
-      name: "GPT-4",
-      vendorName: "OpenAI",
-      iconUrl: "",
-    };
-    const propsWithModel = { ...baseProps, model };
-    modelStore.getState().handlePropsUpdate(propsWithModel);
-
-    // Find the model node
-    const state = modelStore.getState();
-    const modelNode = state.nodes.find((node) => node.type === "resource" && node.data.type === "model");
-
-    if (modelNode) {
-      // Try to delete the model node
-      modelStore.getState().deleteNode(modelNode.id);
-
-      // Verify the model node still exists
-      const finalState = modelStore.getState();
-      const modelNodeStillExists = finalState.nodes.find((node) => node.id === modelNode.id);
-      expect(modelNodeStillExists).toBeDefined();
     }
   });
 

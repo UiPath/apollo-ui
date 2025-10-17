@@ -9,7 +9,7 @@ import { BaseContainer, BaseIconWrapper, BaseBadgeSlot, BaseTextContainer, BaseH
 import type { BaseNodeData } from "./BaseNode.types";
 import { useNodeTypeRegistry } from "./useNodeTypeRegistry";
 import { cx } from "@uipath/uix/core";
-import { ApIcon } from "@uipath/portal-shell-react";
+import { ApIcon, ApTooltip } from "@uipath/portal-shell-react";
 import { useBaseCanvasMode } from "../BaseCanvas/BaseCanvasModeProvider";
 import { useButtonHandles } from "../ButtonHandle/useButtonHandles";
 
@@ -53,9 +53,12 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
 
   const displayLabel = display.label;
   const displaySubLabel = display.subLabel;
+  const displayLabelTooltip = display.labelTooltip;
+  const displayLabelBackgroundColor = display.labelBackgroundColor;
   const displayShape = display.shape ?? "square";
   const displayBackground = display.background;
   const displayIconBackground = executionStatus === "Failed" ? "var(--color-background)" : display.iconBackground;
+  const displayCenterAdornment = display.centerAdornmentComponent;
 
   const { edges, isConnecting, selectedNodesCount } = useStore(
     (state) => ({
@@ -202,8 +205,13 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
 
         {displayLabel && (
           <BaseTextContainer hasBottomHandles={hasVisibleBottomHandlesWithLabels} shape={displayShape}>
-            <BaseHeader shape={displayShape}>{displayLabel}</BaseHeader>
-            {displaySubLabel && <BaseSubHeader>{displaySubLabel}</BaseSubHeader>}
+            <ApTooltip placement="top" content={displayLabelTooltip}>
+              <BaseHeader shape={displayShape} backgroundColor={displayLabelBackgroundColor}>
+                {displayLabel}
+              </BaseHeader>
+              {displaySubLabel && <BaseSubHeader>{displaySubLabel}</BaseSubHeader>}
+            </ApTooltip>
+            {displayCenterAdornment}
           </BaseTextContainer>
         )}
       </BaseContainer>
