@@ -371,7 +371,14 @@ const StageNodeComponent = (props: StageNodeProps) => {
                                   {task.label}
                                 </ApTypography>
                               </ApTooltip>
-                              {taskExecution?.status && <ExecutionStatusIcon status={taskExecution.status} />}
+                              {taskExecution?.status &&
+                                (taskExecution.message ? (
+                                  <ApTooltip content={taskExecution.message} placement="top">
+                                    <ExecutionStatusIcon status={taskExecution.status} />
+                                  </ApTooltip>
+                                ) : (
+                                  <ExecutionStatusIcon status={taskExecution.status} />
+                                ))}
                             </Row>
                             <Row align="center" justify="space-between">
                               <Row gap={"2px"}>

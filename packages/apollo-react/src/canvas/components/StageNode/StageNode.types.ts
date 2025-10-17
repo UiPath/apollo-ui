@@ -52,6 +52,7 @@ export interface StageNodeProps extends NodeProps {
 
 export interface StageTaskExecution {
   status?: StageTaskStatus;
+  message?: string;
   label?: string;
   duration?: string;
   retryDuration?: string;
