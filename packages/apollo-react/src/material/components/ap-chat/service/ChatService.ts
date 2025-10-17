@@ -248,6 +248,10 @@ export class AutopilotChatService {
             this._internalService.publish(AutopilotChatInternalEvent.SetSpacing, config.spacing);
         }
 
+        if (config.theming) {
+            this._internalService.publish(AutopilotChatInternalEvent.SetTheming, config.theming);
+        }
+
         messageRenderers.forEach(renderer => this.injectMessageRenderer(renderer));
     }
 
