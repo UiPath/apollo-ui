@@ -210,7 +210,9 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
         iconBackground: "var(--color-background-secondary)",
       }}
       handleConfigurations={handleConfigurations}
-      showAddButton={mode === "design"} // Show add buttons in design mode even when not selected
+      // Show add buttons in design mode even when not selected
+      showHandles={mode === "design"}
+      showAddButton={mode === "design"}
       selected={selected}
       shouldShowAddButtonFn={shouldShowAddButtonFn}
       adornments={{ topRight: statusAdornment }}

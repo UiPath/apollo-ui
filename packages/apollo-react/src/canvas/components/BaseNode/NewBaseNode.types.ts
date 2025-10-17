@@ -17,6 +17,7 @@ export interface NewBaseNodeDisplayProps {
   handleConfigurations?: HandleConfiguration[];
   toolbarConfig?: NodeToolbarConfig;
   onHandleAction?: (event: HandleActionEvent) => void;
+  showHandles?: boolean;
   showAddButton?: boolean;
   shouldShowAddButtonFn?: ({ showAddButton, selected }: { showAddButton: boolean; selected: boolean }) => boolean;
 }

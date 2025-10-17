@@ -26,6 +26,7 @@ const NewBaseNodeComponent = (
     handleConfigurations = [],
     toolbarConfig,
     onHandleAction,
+    showHandles,
     showAddButton = false,
     shouldShowAddButtonFn = ({ showAddButton, selected }) => showAddButton && selected,
   } = props;
@@ -62,8 +63,8 @@ const NewBaseNodeComponent = (
   }, [disabled, dragging, selected, isFocused, isHovered]);
 
   const shouldShowHandles = useMemo(
-    () => inProgress || selected || isHovered || isConnecting,
-    [inProgress, selected, isHovered, isConnecting]
+    () => (showHandles !== undefined ? showHandles : inProgress || selected || isHovered || isConnecting),
+    [showHandles, inProgress, selected, isHovered, isConnecting]
   );
 
   const hasVisibleBottomHandlesWithLabels = useMemo(() => {
