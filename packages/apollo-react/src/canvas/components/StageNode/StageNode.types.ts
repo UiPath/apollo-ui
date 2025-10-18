@@ -4,6 +4,7 @@ import type { NodeMenuItem } from "../NodeContextMenu";
 enum ElementStatusValues {
   Cancelled = "Cancelled",
   Completed = "Completed",
+  UserCancelled = "UserCancelled",
   Failed = "Failed",
   InProgress = "InProgress",
   NotExecuted = "NotExecuted",
