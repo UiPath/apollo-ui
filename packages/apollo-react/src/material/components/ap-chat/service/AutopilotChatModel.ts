@@ -46,6 +46,21 @@ export interface AutopilotChatModelInfo {
     description: string | null;
 }
 
+/**
+ * Represents the agent mode info for the Autopilot Chat system.
+ *
+ * @property id - The agent mode identifier (can be any string value)
+ * @property name - The display name of the agent mode
+ * @property icon - The icon name for the agent mode (optional)
+ * @property description - The description of the agent mode (optional)
+ */
+export interface AutopilotChatAgentModeInfo {
+    id: string;
+    name: string;
+    icon?: string;
+    description?: string;
+}
+
 export enum AutopilotChatRole {
     User = 'user',
     Assistant = 'assistant',
@@ -142,6 +157,7 @@ export interface AutopilotChatMessageRenderer {
  * @property {string} ConversationLoadMore - Emitted when the conversation load more is triggered
  * @property {string} Attachments - Emitted when the attachments are set in the prompt (old version, should not be used, will be deprecated)
  * @property {string} SetAttachments - Emitted when the attachments are set in the prompt (added and removed array)
+ * @property {string} SetSelectedAgentMode - Emitted when the agent mode is selected (agent | plan | execute)
  */
 export enum AutopilotChatEvent {
     Error = 'error',
@@ -167,11 +183,13 @@ export enum AutopilotChatEvent {
     Copy = 'copy',
     SetModels = 'setModels',
     SetSelectedModel = 'setSelectedModel',
+    SetAgentModes = 'setAgentModes',
     ConversationLoadMore = 'conversationLoadMore',
     Attachments = 'attachments',
     SetAttachments = 'setAttachments',
     InputStream = 'inputStream',
     OutputStream = 'outputStream',
+    SetSelectedAgentMode = 'setSelectedAgentMode',
 }
 
 /**
@@ -386,8 +404,10 @@ export enum AutopilotChatPreHookAction {
  * @property firstRunExperience - The first run experience of the chat
  * @property useLocalHistory - Whether the chat uses indexdb to store history
  * @property allowedAttachments - The allowed attachments of the chat
- * @property models - The models of the chat
- * @property selectedModelId - The selected model ID of the chat
+ * @property models - The available models for the chat
+ * @property selectedModel - The currently selected model for the chat
+ * @property agentModes - The available agent modes for the chat
+ * @property selectedAgentMode - The currently selected agent mode for the chat
  * @property preHooks - The hooks that trigger before the user action (UI interaction) of the chat.
  *                      Hooks expose current data for the action **before** the state change is attempted.
  * @property paginatedMessages - Flag to determine if the chat conversation is paginated
@@ -409,6 +429,8 @@ export interface AutopilotChatConfiguration {
     allowedAttachments?: AutopilotChatAllowedAttachments;
     models?: AutopilotChatModelInfo[];
     selectedModel?: AutopilotChatModelInfo;
+    agentModes?: AutopilotChatAgentModeInfo[];
+    selectedAgentMode?: AutopilotChatAgentModeInfo;
     preHooks?: Partial<Record<AutopilotChatPreHookAction, (data?: any) => Promise<boolean>>>;
     paginatedMessages?: boolean;
     settingsRenderer?: (container: HTMLElement) => void;
