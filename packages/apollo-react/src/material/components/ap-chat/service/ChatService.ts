@@ -1,4 +1,5 @@
 import type {
+    AutopilotChatAgentModeInfo,
     AutopilotChatAllowedAttachments,
     AutopilotChatConfiguration,
     AutopilotChatDisabledFeatures,
@@ -63,6 +64,7 @@ export class AutopilotChatService {
         },
         settingsRenderer: () => {},
         models: undefined,
+        selectedAgentMode: undefined,
         selectedModel: undefined,
         paginatedMessages: false,
     };
@@ -128,6 +130,10 @@ export class AutopilotChatService {
         this.setModels = this.setModels.bind(this);
         this.setSelectedModel = this.setSelectedModel.bind(this);
         this.getSelectedModel = this.getSelectedModel.bind(this);
+        this.setAgentModes = this.setAgentModes.bind(this);
+        this.getAgentModes = this.getAgentModes.bind(this);
+        this.setAgentMode = this.setAgentMode.bind(this);
+        this.getAgentMode = this.getAgentMode.bind(this);
         this.getMessagesInGroup = this.getMessagesInGroup.bind(this);
         this.setPreHook = this.setPreHook.bind(this);
         this.getPreHook = this.getPreHook.bind(this);
@@ -228,6 +234,14 @@ export class AutopilotChatService {
 
         if (config.selectedModel) {
             this.setSelectedModel(config.selectedModel.id);
+        }
+
+        if (config.agentModes) {
+            this.setAgentModes(config.agentModes);
+        }
+
+        if (config.selectedAgentMode) {
+            this.setAgentMode(config.selectedAgentMode.id);
         }
 
         if (config.spacing) {
@@ -903,6 +917,61 @@ export class AutopilotChatService {
      */
     getSelectedModel() {
         return this._config.selectedModel;
+    }
+
+    /**
+     * Sets the agent modes in the chat service
+     *
+     * @param agentModes - The agent modes to set
+     */
+    setAgentModes(agentModes: AutopilotChatAgentModeInfo[]) {
+        this._config.agentModes = agentModes;
+
+        // if none is selected, select the first one
+        if (!this._config.selectedAgentMode) {
+            this.setAgentMode(agentModes[0].id);
+        }
+
+        this._eventBus.publish(AutopilotChatEvent.SetAgentModes, agentModes);
+    }
+
+    /**
+     * Gets the agent modes from the chat service
+     *
+     * @returns The agent modes
+     */
+    getAgentModes() {
+        return this._config.agentModes;
+    }
+
+    /**
+     * Sets the agent mode in the chat service
+     *
+     * @param modeId - The agent mode to set
+     */
+    setAgentMode(modeId: string) {
+        if (!this._config.agentModes) {
+            return;
+        }
+
+        const newSelectedMode = this._config.agentModes.find(mode => mode.id === modeId);
+
+        if (!newSelectedMode) {
+            return;
+        }
+
+        this._config.selectedAgentMode = newSelectedMode;
+
+        this._eventBus.publish(AutopilotChatEvent.SetSelectedAgentMode, newSelectedMode);
+    }
+
+    /**
+     * Gets the selected agent mode from the chat service
+     *
+     * @returns The selected agent mode
+     */
+    getAgentMode() {
+        return this._config.selectedAgentMode;
     }
 
     /**
