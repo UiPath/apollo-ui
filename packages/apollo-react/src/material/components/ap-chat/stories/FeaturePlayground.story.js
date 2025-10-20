@@ -90,6 +90,8 @@ export const FeaturePlayground = (args) => {
                             <ap-checkbox id="disable-close" label="Disable Close"></ap-checkbox>
                             <ap-checkbox id="disable-feedback" label="Disable Feedback"></ap-checkbox>
                             <ap-checkbox id="disable-copy" label="Disable Copy"></ap-checkbox>
+                            <ap-checkbox id="disable-model" label="Disable Model"></ap-checkbox>
+                            <ap-checkbox id="disable-agent-mode" label="Disable Agent Mode"></ap-checkbox>
                             <ap-checkbox id="use-local-history" label="Use Local History" checked></ap-checkbox>
                             <ap-checkbox id="embed-mode" label="Embed Mode"></ap-checkbox>
                             <ap-checkbox id="send-on-click" label="Send On Click"></ap-checkbox>
@@ -173,6 +175,32 @@ FeaturePlayground.play = async ({
             // eslint-disable-next-line max-len
             description: 'claude-3.5-sonnet is a general-purpose AI model developed by Anthropic. It can understand and generate text, images, and audio.',
         },
+        agentModes: [
+            {
+                id: 'agent',
+                name: 'Agent',
+                description: 'AI-powered autonomous agent mode',
+                icon: 'smart_toy',
+            },
+            {
+                id: 'plan',
+                name: 'Plan',
+                description: 'Create and review execution plans',
+                icon: 'edit_note',
+            },
+            {
+                id: 'execute',
+                name: 'Execute',
+                description: 'Execute planned actions',
+                icon: 'play_arrow',
+            },
+        ],
+        selectedAgentMode: {
+            id: 'agent',
+            name: 'Agent',
+            description: 'AI-powered autonomous agent mode',
+            icon: 'smart_toy',
+        },
         useLocalHistory: true,
         settingsRenderer: (container) => {
             const settings = document.createElement('div');
@@ -232,6 +260,8 @@ FeaturePlayground.play = async ({
         setShowLoading: canvasElement.querySelector('#set-show-loading'),
         disableFeedback: canvasElement.querySelector('#disable-feedback'),
         disableCopy: canvasElement.querySelector('#disable-copy'),
+        disableModel: canvasElement.querySelector('#disable-model'),
+        disableAgentMode: canvasElement.querySelector('#disable-agent-mode'),
         compactMode: canvasElement.querySelector('#compact-mode'),
         attachmentsAsync: canvasElement.querySelector('#attachments-async'),
     };
@@ -1583,6 +1613,63 @@ const results = await Promise.all(tasks);
 
     controls.disableCopy?.addEventListener('valueChanged', () => {
         chatService.setDisabledFeatures({ copy: controls.disableCopy.checked });
+    });
+
+    controls.disableModel?.addEventListener('valueChanged', () => {
+        if (controls.disableModel.checked) {
+            chatService.setModels([]);
+        } else {
+            chatService.setModels([
+                {
+                    id: '1',
+                    name: 'Gemini',
+                    icon: 'accessibility',
+                    // eslint-disable-next-line max-len
+                    description: 'Gemini is a general-purpose AI model developed by Google. It can understand and generate text, images, and audio.',
+                },
+                {
+                    id: '2',
+                    name: 'GPT-4o',
+                    icon: 'apps',
+                    // eslint-disable-next-line max-len
+                    description: 'GPT-4o is a general-purpose AI model developed by OpenAI. It can understand and generate text, images, and audio.',
+                },
+                {
+                    id: '3',
+                    name: 'claude-3.5-sonnet',
+                    icon: 'call',
+                    // eslint-disable-next-line max-len
+                    description: 'claude-3.5-sonnet is a general-purpose AI model developed by Anthropic. It can understand and generate text, images, and audio.',
+                },
+            ]);
+        }
+    });
+
+    controls.disableAgentMode?.addEventListener('valueChanged', () => {
+        if (controls.disableAgentMode.checked) {
+            chatService.setAgentModes([]);
+        } else {
+            chatService.setAgentModes([
+                {
+                    id: 'agent',
+                    name: 'Agent',
+                    description: 'AI-powered autonomous agent mode',
+                    icon: 'smart_toy',
+                },
+                {
+                    id: 'plan',
+                    name: 'Plan',
+                    description: 'Create and review execution plans',
+                    icon: 'edit_note',
+                },
+                {
+                    id: 'execute',
+                    name: 'Execute',
+                    description: 'Execute planned actions',
+                    icon: 'play_arrow',
+                },
+            ]);
+        }
     });
 
     controls.compactMode?.addEventListener('valueChanged', () => {

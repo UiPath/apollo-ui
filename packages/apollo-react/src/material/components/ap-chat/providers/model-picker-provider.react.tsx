@@ -27,7 +27,7 @@ export function AutopilotModelPickerProvider({ children }: { children: React.Rea
     const chatService = useChatService();
     const [ models, setModels ] = React.useState<AutopilotChatModelInfo[] | undefined>(chatService?.getModels() ?? undefined);
     const [ selectedModel, setSelectedModel ] = React.useState<AutopilotChatModelInfo | undefined>(
-        chatService?.getSelectedModel() ?? chatService?.getModels()?.[ 0 ] ?? undefined,
+        chatService?.getSelectedModel() ?? chatService?.getModels()?.[0] ?? undefined,
     );
 
     React.useEffect(() => {
@@ -37,7 +37,7 @@ export function AutopilotModelPickerProvider({ children }: { children: React.Rea
 
         const unsubscribe = chatService.on(AutopilotChatEvent.SetModels, (newModels: AutopilotChatModelInfo[]) => {
             setModels(newModels);
-            setSelectedModel(newModels?.[ 0 ] ?? undefined);
+            setSelectedModel(newModels?.[0] ?? undefined);
         });
 
         const unsubscribeSelectedModel = chatService.on(AutopilotChatEvent.SetSelectedModel, (newSelectedModel: AutopilotChatModelInfo) => {

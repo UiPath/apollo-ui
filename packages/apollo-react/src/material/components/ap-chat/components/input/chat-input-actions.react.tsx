@@ -9,12 +9,15 @@ import token, { FontVariantToken } from '@uipath/apollo-core/lib';
 import React from 'react';
 
 import { t } from '../../../../utils/localization/loc';
+import { useAgentModePicker } from '../../providers/agent-mode-picker-provider.react';
 import { useAttachments } from '../../providers/attachements-provider.react';
 import { useChatState } from '../../providers/chat-state-provider.react';
 import { useError } from '../../providers/error-provider.react';
+import { useModelPicker } from '../../providers/model-picker-provider.react';
 import { parseFiles } from '../../utils/file-reader';
 import { AutopilotChatAudio } from '../audio/chat-audio.react';
 import { AutopilotChatActionButton } from '../common/action-button.react';
+import { AutopilotChatAgentModeSelector } from './chat-input-agent-mode-selector.react';
 import { AutopilotChatInputModelPicker } from './chat-input-model-picker.react';
 
 const InputActionsContainer = styled('div')(() => ({
@@ -54,8 +57,10 @@ function AutopilotChatInputActionsComponent({
     const { addAttachments } = useAttachments();
     const { setError } = useError();
     const {
-        disabledFeatures, allowedAttachments, models,
+        disabledFeatures, allowedAttachments,
     } = useChatState();
+    const { models = [] } = useModelPicker();
+    const { agentModes = [] } = useAgentModePicker();
 
     const fileInputRef = React.useRef<HTMLInputElement>(null);
 
@@ -99,6 +104,13 @@ function AutopilotChatInputActionsComponent({
             .flat()
             .join(',');
     }, [ allowedAttachments ]);
+
+    // Calculate if we should use icons based on how many features are enabled
+    const hasMultipleFeatures = [
+        !disabledFeatures.attachments,
+        models.length > 0,
+        (agentModes?.length ?? 0) > 0,
+    ].filter(Boolean).length > 1;
 
     return (
         <InputActionsContainer>
@@ -160,7 +172,12 @@ function AutopilotChatInputActionsComponent({
                         />
                     </>
                 )}
-                { models.length > 0 && <AutopilotChatInputModelPicker useIcon={!disabledFeatures.attachments} /> }
+                {(models.length > 0) ? (
+                    <AutopilotChatInputModelPicker useIcon={hasMultipleFeatures} />
+                ) : null}
+                {(agentModes.length > 0) ? (
+                    <AutopilotChatAgentModeSelector useIcon={false} />
+                ) : null}
             </InputActionsGroup>
 
             <InputActionsGroup>

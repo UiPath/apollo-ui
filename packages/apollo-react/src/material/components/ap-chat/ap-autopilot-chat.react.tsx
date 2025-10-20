@@ -20,6 +20,7 @@ import {
     FullScreenLayout,
     StandardLayout,
 } from './components/layout';
+import { AutopilotAgentModePickerProvider } from './providers/agent-mode-picker-provider.react';
 import { AutopilotAttachmentsProvider } from './providers/attachements-provider.react';
 import { AutopilotChatScrollProvider } from './providers/chat-scroll-provider.react';
 import { AutopilotChatServiceProvider } from './providers/chat-service.provider.react';
@@ -114,11 +115,13 @@ export function ApAutopilotChatReact({ chatServiceInstance }: { chatServiceInsta
                             <AutopilotLoadingProvider>
                                 <AutopilotAttachmentsProvider>
                                     <AutopilotModelPickerProvider>
-                                        <AutopilotChatWidthProvider>
-                                            <AutopilotChatDropzone>
-                                                <AutopilotChatContent />
-                                            </AutopilotChatDropzone>
-                                        </AutopilotChatWidthProvider>
+                                        <AutopilotAgentModePickerProvider>
+                                            <AutopilotChatWidthProvider>
+                                                <AutopilotChatDropzone>
+                                                    <AutopilotChatContent />
+                                                </AutopilotChatDropzone>
+                                            </AutopilotChatWidthProvider>
+                                        </AutopilotAgentModePickerProvider>
                                     </AutopilotModelPickerProvider>
                                 </AutopilotAttachmentsProvider>
                             </AutopilotLoadingProvider>

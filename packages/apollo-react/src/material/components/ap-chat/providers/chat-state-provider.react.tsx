@@ -10,7 +10,6 @@ import {
     AutopilotChatEvent,
     AutopilotChatInternalEvent,
     AutopilotChatMode,
-    AutopilotChatModelInfo,
     AutopilotChatOverrideLabels,
     CHAT_COMPACT_MODE_INPUT_MAX_ROWS,
     CHAT_COMPACT_MODE_INPUT_MIN_ROWS,
@@ -43,7 +42,6 @@ interface AutopilotChatStateContextType {
     overrideLabels: AutopilotChatOverrideLabels;
     firstRunExperience: AutopilotChatConfiguration['firstRunExperience'];
     allowedAttachments: AutopilotChatAllowedAttachments;
-    models: AutopilotChatModelInfo[];
     hasMessages: boolean;
     setHasMessages: (hasMessages: boolean) => void;
     spacing: DeepRequired<NonNullable<AutopilotChatConfiguration['spacing']>>;
@@ -147,7 +145,6 @@ export const AutopilotChatStateProvider: React.FC<AutopilotChatStateProviderProp
         description: '',
         suggestions: [],
     });
-    const [ models, setModels ] = React.useState<AutopilotChatModelInfo[]>(chatService?.getModels() ?? []);
     const [ hasMessages, setHasMessages ] = React.useState(false);
     const [ spacing, setSpacing ] = React.useState(calculateSpacing(chatService?.getConfig()?.spacing));
 
@@ -205,13 +202,6 @@ export const AutopilotChatStateProvider: React.FC<AutopilotChatStateProviderProp
             },
         );
 
-        const unsubscribeModels = chatService.on(
-            AutopilotChatEvent.SetModels,
-            (newModels: AutopilotChatModelInfo[]) => {
-                setModels(newModels);
-            },
-        );
-
         const unsubscribeSpacing = chatInternalService.on(
             AutopilotChatInternalEvent.SetSpacing,
             (spacingConfig: AutopilotChatConfiguration['spacing']) => {
@@ -227,7 +217,6 @@ export const AutopilotChatStateProvider: React.FC<AutopilotChatStateProviderProp
             unsubscribeOverrideLabels();
             unsubscribeFirstRunExperience();
             unsubscribeAllowedAttachments();
-            unsubscribeModels();
             unsubscribeSpacing();
         };
     }, [ chatService, chatInternalService ]);
@@ -240,7 +229,6 @@ export const AutopilotChatStateProvider: React.FC<AutopilotChatStateProviderProp
         overrideLabels,
         firstRunExperience,
         allowedAttachments,
-        models,
         historyAnchorElement,
         setHistoryAnchorElement,
         fullScreenContainer,
@@ -256,7 +244,6 @@ export const AutopilotChatStateProvider: React.FC<AutopilotChatStateProviderProp
         overrideLabels,
         firstRunExperience,
         allowedAttachments,
-        models,
         historyAnchorElement,
         setHistoryAnchorElement,
         fullScreenContainer,

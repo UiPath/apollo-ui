@@ -50,10 +50,14 @@ const chatService = window.PortalShell.AutopilotChat;
 | `getMessageRenderer(name: string)`                                                                             | Retrieves a message renderer by name                                                                                                                                                                                            |
 | `setFirstRunExperience(config: AutopilotChatConfiguration['firstRunExperience'])`                              | Configures the first run experience (see [First Run Experience](#first-run-experience)) displayed when the chat is opened for the first time or when there are no messages                                                      |
 | `setAllowedAttachments(allowedAttachments: AutopilotChatAllowedAttachments)`                                   | Configures the allowed file attachments (see [AutopilotChatAllowedAttachments](#autopilotchatallowedattachments))                                                                                                               |
-| `setModels(models: AutopilotChatModelInfo)`                                                                    | Configures the models (see [AutopilotChatModelInfo](#autopilotchatmodelinfo))                                                                                                                                                   |
+| `setModels(models: AutopilotChatModelInfo[])`                                                                 | Configures the models (see [AutopilotChatModelInfo](#autopilotchatmodelinfo))                                                                                                                                                   |
 | `getModels()`                                                                                                  | Returns the current list of available models                                                                                                                                                                                    |
 | `setSelectedModel(modelId: string)`                                                                            | Configures the selected model                                                                                                                                                                                                   |
 | `getSelectedModel()`                                                                                           | Returns the currently selected model                                                                                                                                                                                            |
+| `setAgentModes(agentModes: AutopilotChatAgentModeInfo[])`                                                     | Configures the agent modes (see [AutopilotChatAgentModeInfo](#autopilotchatagentmodeinfo))                                                                                                                                      |
+| `getAgentModes()`                                                                                              | Returns the current list of available agent modes                                                                                                                                                                               |
+| `setAgentMode(mode: string)`                                                                                   | Sets the agent mode (any string value). This emits the `SetSelectedAgentMode` event that consumers can listen to                                                                                                                     |
+| `getAgentMode()`                                                                                               | Returns the currently selected agent mode                                                                                                                                                                                       |
 
 ### Chat Window Control
 
@@ -206,6 +210,7 @@ Subscribes to chat events and returns an unsubscribe function. The handler will 
 - `SetAttachments`: Emitted when the attachments change, providing details about which attachments were added and removed (see [Asynchronous Attachment Processing](#asynchronous-attachment-processing))
 - `InputStream`: Emitted when sendInputStreamEvent is called (see [AutopilotChatInputStreamEvent](#autopilotchatinputstreamevent)).
 - `OutputStream`: Emitted when sendOutputStreamEvent is called (see [AutopilotChatOutputStreamEvent](#autopilotchatoutputtreamevent)).
+- `SetSelectedAgentMode`: Emitted when the agent mode is selected
 
 #### Intercepting Events
 
@@ -1760,19 +1765,21 @@ import { FontVariantToken } from '@uipath/apollo-core';
  * Represents the configuration for the Autopilot Chat system.
  *
  * @property mode - The mode of the chat
- * @property embeddedContainer - The container to embed the chat in (for Embedded mode)
+ * @property embeddedContainer - The container to embed the chat in
  * @property disabledFeatures - The disabled features of the chat
  * @property overrideLabels - The override labels of the chat
  * @property firstRunExperience - The first run experience of the chat
  * @property useLocalHistory - Whether the chat uses indexdb to store history
  * @property allowedAttachments - The allowed attachments of the chat
- * @property models - The models of the chat
- * @property selectedModel - The selected model of the chat
+ * @property models - The available models for the chat
+ * @property selectedModel - The currently selected model for the chat
+ * @property agentModes - The available agent modes for the chat
+ * @property selectedAgentMode - The currently selected agent mode for the chat
  * @property preHooks - The hooks that trigger before the user action (UI interaction) of the chat.
+ *                      Hooks expose current data for the action **before** the state change is attempted.
  * @property paginatedMessages - Flag to determine if the chat conversation is paginated
  * @property settingsRenderer - The renderer for the settings page. This will be used to render the settings page in the chat.
- * @property spacing - The spacing configuration for the chat (prompt box, markdown tokens, etc)
- * Hooks expose current data for the action **before** the state change is attempted.
+ * @property spacing - The spacing of the chat (prompt box, markdown tokens, etc)
  */
 export interface AutopilotChatConfiguration {
     mode: AutopilotChatMode;
@@ -1789,6 +1796,8 @@ export interface AutopilotChatConfiguration {
     allowedAttachments?: AutopilotChatAllowedAttachments;
     models?: AutopilotChatModelInfo[];
     selectedModel?: AutopilotChatModelInfo;
+    agentModes?: AutopilotChatAgentModeInfo[];
+    selectedAgentMode?: AutopilotChatAgentModeInfo;
     preHooks?: Partial<Record<AutopilotChatPreHookAction, (data?: any) => Promise<boolean>>>;
     paginatedMessages?: boolean;
     settingsRenderer?: (container: HTMLElement) => void;
@@ -1802,6 +1811,10 @@ export interface AutopilotChatConfiguration {
         messageGroupGap?: number;
         primaryFontToken?: FontVariantToken;
         primaryBoldFontToken?: FontVariantToken;
+        titleFontToken?: FontVariantToken;
+        suggestionSpacing?: number;
+        suggestionFontToken?: FontVariantToken;
+        suggestionPadding?: string;
         markdownTokens?: {
             li?: FontVariantToken;
             p?: FontVariantToken;
@@ -1945,6 +1958,53 @@ export interface AutopilotChatModelInfo {
     icon?: string;
     description: string | null;
 }
+```
+
+### AutopilotChatAgentModeInfo
+
+```typescript
+/**
+ * Represents the agent mode info for the Autopilot Chat system.
+ * Consumers can define custom agent modes with any ID, name, icon, and description.
+ *
+ * @property id - The agent mode identifier (can be any string value)
+ * @property name - The display name of the agent mode
+ * @property icon - The icon name for the agent mode (optional)
+ * @property description - The description of the agent mode (optional)
+ */
+export interface AutopilotChatAgentModeInfo {
+    id: string;
+    name: string;
+    icon?: string;
+    description?: string;
+}
+```
+
+**Example usage:**
+
+```typescript
+window.PortalShell.AutopilotChat.setAgentModes([
+    {
+        id: 'agent',
+        name: 'Agent',
+        description: 'AI-powered autonomous agent mode',
+        icon: 'smart_toy'
+    },
+    {
+        id: 'plan',
+        name: 'Plan',
+        description: 'Create and review execution plans',
+        icon: 'edit_note'
+    },
+    {
+        id: 'attended',
+        name: 'Attended',
+        description: 'Human assisted execution',
+        icon: 'play_arrow'
+    }
+]);
+
+window.PortalShell.AutopilotChat.setAgentMode('agent');
 ```
 
 ### AutopilotChatMessage
