@@ -26,10 +26,10 @@ export const AutopilotAgentModePickerContext = React.createContext<AutopilotAgen
 export function AutopilotAgentModePickerProvider({ children }: { children: React.ReactNode }) {
     const chatService = useChatService();
     const [ agentModes, setAgentModes ] = React.useState<AutopilotChatAgentModeInfo[] | undefined>(
-        chatService?.getAgentModes() ?? undefined,
+        chatService?.getAgentModes?.() ?? undefined,
     );
     const [ selectedAgentMode, setSelectedAgentMode ] = React.useState<AutopilotChatAgentModeInfo | undefined>(
-        chatService?.getAgentMode() ?? chatService?.getAgentModes()?.[0] ?? undefined,
+        chatService?.getAgentMode?.() ?? chatService?.getAgentModes?.()?.[0] ?? undefined,
     );
 
     React.useEffect(() => {
