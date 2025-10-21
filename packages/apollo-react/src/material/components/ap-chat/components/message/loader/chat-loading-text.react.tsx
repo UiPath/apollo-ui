@@ -13,6 +13,7 @@ import React, {
 
 import { t } from '../../../../../utils/localization/loc';
 import { useChatService } from '../../../providers/chat-service.provider.react';
+import { useChatState } from '../../../providers/chat-state-provider.react';
 
 const SECONDS = 1000;
 const FADE_DURATION = 0.5 * SECONDS;
@@ -26,6 +27,7 @@ export const LoadingMessage = () => {
     const [ isVisible, setIsVisible ] = useState(true);
     const [ messages, setMessages ] = useState(chatService.getDefaultLoadingMessages() ?? defaultMessages);
     const [ messageDuration, setMessageDuration ] = useState(chatService.getLoadingMessageDuration() ?? DEFAULT_MESSAGE_DURATION);
+    const { spacing } = useChatState();
     const theme = useTheme();
 
     useEffect(() => {
@@ -87,7 +89,12 @@ export const LoadingMessage = () => {
 
     return (
         <Fade in={isVisible} timeout={FADE_DURATION}>
-            <ap-typography color={theme.palette.semantic.colorForeground}>{t(messages[messageIdx])}</ap-typography>
+            <ap-typography
+                variant={spacing.primaryFontToken}
+                color={theme.palette.semantic.colorForeground}
+            >
+                {t(messages[messageIdx])}
+            </ap-typography>
         </Fade>
     );
 };
