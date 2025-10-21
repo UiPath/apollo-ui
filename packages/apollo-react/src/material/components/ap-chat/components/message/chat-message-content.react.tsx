@@ -5,6 +5,7 @@ import { styled } from '@mui/material';
 import token from '@uipath/apollo-core/lib';
 import {
     AGENTS_TOOL_CALL_RENDERER,
+    APOLLO_CHAT_TREE_RENDERER,
     AutopilotChatEvent,
     AutopilotChatInternalEvent,
     AutopilotChatMessage,
@@ -26,6 +27,7 @@ import { Attachments } from '../common/attachments.react';
 import { AutopilotChatMessageActions } from './actions/chat-actions.react';
 import { AutopilotChatMarkdownRenderer } from './markdown/markdown.react';
 import { AutopilotChatSources } from './sources/chat-sources.react';
+import { ApolloChatTreeRenderer } from './tree/tree-renderer.react';
 
 const APOLLO_MESSAGE_RENDERERS = [
     {
@@ -39,6 +41,15 @@ const APOLLO_MESSAGE_RENDERERS = [
                 return null;
             }
             return <ApToolCallReact span={message.meta.span} />;
+        },
+    },
+    {
+        name: APOLLO_CHAT_TREE_RENDERER,
+        component: ({ message }: { message: AutopilotChatMessage }) => {
+            if (!message.meta?.span) {
+                return null;
+            }
+            return <ApolloChatTreeRenderer span={message.meta.span}/>;
         },
     },
 ];

@@ -19,6 +19,7 @@ import {
     WithCitations as WithCitationsStory,
     WithCustomLabels as WithCustomLabelsStory,
     WithHistory as WithHistoryStory,
+    TreeRenderer as TreeRendererStory,
 } from './index';
 
 // Export with proper display names
@@ -40,6 +41,7 @@ export const ErrorHandling = ErrorHandlingStory;
 export const FirstRunExperience = FirstRunExperienceStory;
 export const WithCitations = WithCitationsStory;
 export const StreamingWithCitations = StreamingWithCitationsStory;
+export const TreeRenderer = TreeRendererStory;
 
 // Set display names
 Default.storyName = 'Default';
@@ -60,6 +62,7 @@ ErrorHandling.storyName = 'Error Handling';
 FirstRunExperience.storyName = 'First Run Experience';
 WithCitations.storyName = 'With Citations';
 StreamingWithCitations.storyName = 'Streaming With Citations';
+TreeRenderer.storyName = 'Tree Renderer';
 
 export default {
     title: 'Components/Autopilot Chat',

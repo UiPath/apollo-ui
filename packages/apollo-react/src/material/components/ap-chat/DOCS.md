@@ -681,6 +681,232 @@ chatService.sendResponse({
 });
 ```
 
+### Tree Renderer Component
+
+The Autopilot Chat component includes a built-in tree renderer that can display hierarchical data structures using the Apollo Tree View component. This is particularly useful for displaying structured data like workflow steps, organizational charts, or nested information.
+
+#### Using the Tree Renderer
+
+```typescript
+// Send a message with tree data
+chatService.sendResponse({
+  content: 'Tree renderer response',
+  widget: 'apollo-chat-tree-renderer',
+  toCopy: 'Tree renderer response',
+  meta: {
+    span: {
+      key: 'root',
+      name: 'Agent Execution Flow',
+      data: {
+        id: 'agent-1',
+        titleColor: "#FFA500",
+        parentId: null,
+        name: 'Agent Execution Flow',
+        startTime: new Date('2024-04-04T12:00:00Z'),
+        endTime: new Date('2024-04-04T12:02:00Z'),
+        status: 'ok',
+        customIcon: 'robot',
+        additionalInfo: "5s",
+        attributes: {
+          type: 'agentRun',
+          description: 'Main agent execution workflow',
+          systemPrompt: 'Executing agent workflow',
+          userPrompt: 'Perform multiple operations with different tools',
+          inputSchema: {},
+          input: {}
+        },
+      },
+      children: [
+        {
+          key: 'process-1',
+          name: 'Tool Call 1',
+          data: {
+            id: 'process-1',
+            parentId: 'agent-1',
+            name: 'Tool Call 1',
+            icon: "code", // mui icon
+            startTime: new Date('2024-04-04T12:00:10Z'),
+            endTime: new Date('2024-04-04T12:00:30Z'),
+            status: 'ok',
+            additionalInfo: '20s',
+            attributes: {
+              type: 'toolCall',
+              description: 'First tool execution',
+              toolName: 'Web_Search',
+              arguments: {
+                provider: 'GoogleCustomSearch',
+                query: 'most interesting scientific fact discovered recently 2025',
+                num: 5
+              }
+            },
+          },
+          children: [
+            {
+              key: 'sub-tool-1',
+              name: 'Pre-Process Run',
+              data: {
+                id: 'sub-tool-1',
+                parentId: 'process-1',
+                name: 'Pre-Process Run',
+                startTime: new Date('2024-04-04T12:00:15Z'),
+                endTime: new Date('2024-04-04T12:00:25Z'),
+                status: 'ok',
+                customIcon: "waffle",
+                additionalInfo: '10s',
+                attributes: {
+                  type: 'ProcessRun',
+                  description: 'Data transformation step'
+                }
+              }
+            },
+          ]
+        },
+        {
+          key: 'completion-1',
+          name: 'LLM Call',
+          data: {
+            id: 'completion-1',
+            parentId: 'agent-1',
+            name: 'LLM Call',
+            startTime: new Date('2024-04-04T12:00:45Z'),
+            endTime: new Date('2024-04-04T12:00:50Z'),
+            status: 'ok',
+            icon: 'home', //mat-icon
+            additionalInfo: '5s',
+            attributes: {
+              type: 'completion',
+              description: 'AI text completion',
+              usage: {
+                completionTokens: 50,
+                promptTokens: 100,
+                totalTokens: 150
+              }
+            }
+          }
+        },
+        {
+          key: 'process-2',
+          name: 'Tool Call 2',
+          data: {
+            id: 'process-2',
+            parentId: 'agent-1',
+            name: 'Tool Call 2',
+            customIcon: 'model',
+            startTime: new Date('2024-04-04T12:01:00Z'),
+            endTime: new Date('2024-04-04T12:01:20Z'),
+            status: 'ok',
+            attributes: {
+              type: 'toolCall',
+              description: 'Second tool execution',
+              toolName: 'Data_Processor'
+            }
+          },
+          children: [
+            {
+              key: 'parser-1',
+              name: 'Parser Execution',
+              data: {
+                id: 'parser-1',
+                parentId: 'process-2',
+                name: 'Parser Execution',
+                customIcon: 'website',
+                startTime: new Date('2024-04-04T12:01:05Z'),
+                endTime: new Date('2024-04-04T12:01:10Z'),
+                status: 'ok',
+                attributes: {
+                  type: 'parser',
+                  description: 'Data parsing step'
+                }
+              }
+            },
+          ]
+        },
+      ]
+    }
+  }
+});
+```
+
+#### Tree Data Structure
+
+The tree renderer expects a `span` property with the following structure:
+
+```typescript
+interface TreeSpanNode {
+  name: string;                    // Display name for the node
+  data: {
+    id: string;                    // Unique identifier
+    attributes?: {
+      description?: string;         // Optional description
+      type?: string;               // Node type (folder, file, etc.)
+    };
+    icon?: string;                 // Icon name (uses Apollo icons)
+    titleColor?: string;           // Color for the title text
+    customIcon?: string;           // Custom icon identifier
+    additionalInfo?: string;       // Additional information to display
+  };
+  children?: TreeSpanNode[];       // Child nodes (optional)
+}
+```
+
+#### Tree Renderer Features
+
+- **Hierarchical Display**: Shows nested data structures in an expandable tree format
+- **Icon Support**: Uses Apollo icons for visual representation
+- **Color Coding**: Supports custom colors for different node types
+- **Expandable Nodes**: All nodes are expanded by default for better visibility
+- **Rich Metadata**: Displays descriptions, types, and additional information
+- **Apollo Integration**: Built on top of the Apollo Tree View component for consistent styling
+
+#### Customizing Tree Display
+
+You can customize the tree appearance by modifying the data structure:
+
+```typescript
+// Example with custom styling and additional info
+const customTreeData = {
+  name: "Workflow Steps",
+  data: {
+    id: "workflow",
+    attributes: {
+      description: "Automated workflow execution",
+      type: "process"
+    },
+    icon: "play_circle",
+    titleColor: "#2196f3",
+    additionalInfo: "Status: Running"
+  },
+  children: [
+    {
+      name: "Step 1: Data Collection",
+      data: {
+        id: "step1",
+        attributes: {
+          description: "Collect input data from various sources",
+          type: "step"
+        },
+        icon: "input",
+        titleColor: "#4caf50",
+        additionalInfo: "Duration: 2.3s"
+      }
+    },
+    {
+      name: "Step 2: Data Processing",
+      data: {
+        id: "step2",
+        attributes: {
+          description: "Process and validate the collected data",
+          type: "step"
+        },
+        icon: "settings",
+        titleColor: "#ff9800",
+        additionalInfo: "Duration: 1.8s"
+      }
+    }
+  ]
+};
+```
+
 ## Streaming Capabilities
 
 The Autopilot Chat component provides streaming capabilities for response display. When using the default markdown renderer, you can leverage two different streaming approaches:

@@ -266,7 +266,7 @@ export const setupDemoMode = (demoMode, chatService) => {
 
         case 'interactive':
             // Set up interactive features
-            chatService.setDefaultLoadingMessages([ 'Analyzing...', 'Processing...', 'Almost done...' ], 2000);
+            chatService.setDefaultLoadingMessages(['Analyzing...', 'Processing...', 'Almost done...'], 2000);
             chatService.setSuggestions([
                 {
                     label: 'Quick action',
@@ -1811,104 +1811,104 @@ chatService.on('help-action', () => {
 For complete API reference and advanced usage examples, see the <a href="https://github.com/UiPath/apollo-design-system/blob/master/packages/apollo-react/src/material/components/ap-chat/DOCS.md" target="_blank">official Autopilot Chat documentation</a>.
         `,
         'feature-playground':
-'# Feature Playground\n\n' +
-'Interactive demo with controls to test all chat features.\n\n' +
-'## Code Example\n\n' +
-'<pre style="background: #f8f8f8; padding: 15px; border-radius: 4px; overflow-x: auto;">' +
-'<code>// Initialize with all features enabled for testing\n' +
-'chatService.initialize({\n' +
-'    mode: \'side-by-side\',\n' +
-'    disabledFeatures: {\n' +
-'        settings: false  // Enable settings for playground\n' +
-'    },\n' +
-'    models: [\n' +
-'        { id: \'1\', name: \'GPT-4\', icon: \'smart_toy\', description: \'Advanced reasoning\' },\n' +
-'        { id: \'2\', name: \'Claude\', icon: \'psychology\', description: \'Analysis expert\' },\n' +
-'        { id: \'3\', name: \'Gemini\', icon: \'auto_awesome\', description: \'Multimodal AI\' }\n' +
-'    ],\n' +
-'    selectedModel: { id: \'2\', name: \'Claude\' },\n' +
-'    useLocalHistory: true,\n' +
-'    paginatedMessages: true,\n' +
-'    settingsRenderer: (container) => {\n' +
-'        // Custom settings panel\n' +
-'        const settings = document.createElement(\'div\');\n' +
-'        settings.innerHTML = \n' +
-'            \'<h3>Custom Settings</h3>\' +\n' +
-'            \'<label><input type="checkbox" id="dark-mode"> Dark Mode</label>\' +\n' +
-'            \'<label><input type="checkbox" id="notifications"> Notifications</label>\' +\n' +
-'            \'<label><input type="checkbox" id="auto-save"> Auto-save</label>\';\n' +
-'        container.appendChild(settings);\n' +
-'    }\n' +
-'});\n' +
-'\n' +
-'// Example: Dynamic feature toggling\n' +
-'const toggleFeature = (feature, enabled) => {\n' +
-'    chatService.setDisabledFeatures({\n' +
-'        [feature]: !enabled\n' +
-'    });\n' +
-'};\n' +
-'\n' +
-'// Example: Live configuration updates\n' +
-'const updateConfiguration = () => {\n' +
-'    chatService.patchConfig({\n' +
-'        useLocalHistory: document.getElementById(\'local-history\').checked,\n' +
-'        paginatedMessages: document.getElementById(\'pagination\').checked\n' +
-'    });\n' +
-'};\n' +
-'\n' +
-'// Example: Test all message types\n' +
-'const testMessages = () => {\n' +
-'    // Regular message\n' +
-'    chatService.sendResponse({\n' +
-'        content: \'This is a regular message with **markdown** support.\'\n' +
-'    });\n' +
-'    \n' +
-'    // Message with actions\n' +
-'    chatService.sendResponse({\n' +
-'        content: \'Message with custom actions:\',\n' +
-'        actions: [{ name: \'test\', label: \'Test Action\', eventName: \'test-action\' }]\n' +
-'    });\n' +
-'    \n' +
-'    // Streaming message\n' +
-'    const words = \'This is a streaming response.\'.split(\' \');\n' +
-'    words.forEach((word, index) => {\n' +
-'        setTimeout(() => {\n' +
-'            chatService.sendResponse({\n' +
-'                id: \'stream-test\',\n' +
-'                content: words.slice(0, index + 1).join(\' \'),\n' +
-'                stream: true,\n' +
-'                done: index === words.length - 1\n' +
-'            });\n' +
-'        }, index * 50);\n' +
-'    });\n' +
-'};\n' +
-'\n' +
-'// Example: Complete playground setup\n' +
-'const setupPlayground = () => {\n' +
-'    chatService.open();\n' +
-'    \n' +
-'    // Set sample history\n' +
-'    chatService.setHistory([\n' +
-'        { id: \'1\', name: \'Test Session 1\', timestamp: new Date().toISOString() },\n' +
-'        { id: \'2\', name: \'Test Session 2\', timestamp: new Date().toISOString() }\n' +
-'    ]);\n' +
-'    \n' +
-'    // Set suggestions\n' +
-'    chatService.setSuggestions([\n' +
-'        { label: \'Test Feature\', prompt: \'Test a specific feature\' },\n' +
-'        { label: \'Help\', prompt: \'Show available commands\' }\n' +
-'    ]);\n' +
-'};</pre>\n' +
-'</div>\n' +
-'\n' +
-'**Features demonstrated:**\n' +
-'- Live feature toggles\n' +
-'- Real-time configuration\n' +
-'- All chat capabilities\n' +
-'- Developer testing interface\n\n' +
-'## Documentation\n\n' +
-// eslint-disable-next-line max-len
-'For complete API reference and advanced usage examples, see the <a href="https://github.com/UiPath/apollo-design-system/blob/master/packages/apollo-react/src/material/components/ap-chat/DOCS.md" target="_blank">official Autopilot Chat documentation</a>.\n',
+            '# Feature Playground\n\n' +
+            'Interactive demo with controls to test all chat features.\n\n' +
+            '## Code Example\n\n' +
+            '<pre style="background: #f8f8f8; padding: 15px; border-radius: 4px; overflow-x: auto;">' +
+            '<code>// Initialize with all features enabled for testing\n' +
+            'chatService.initialize({\n' +
+            '    mode: \'side-by-side\',\n' +
+            '    disabledFeatures: {\n' +
+            '        settings: false  // Enable settings for playground\n' +
+            '    },\n' +
+            '    models: [\n' +
+            '        { id: \'1\', name: \'GPT-4\', icon: \'smart_toy\', description: \'Advanced reasoning\' },\n' +
+            '        { id: \'2\', name: \'Claude\', icon: \'psychology\', description: \'Analysis expert\' },\n' +
+            '        { id: \'3\', name: \'Gemini\', icon: \'auto_awesome\', description: \'Multimodal AI\' }\n' +
+            '    ],\n' +
+            '    selectedModel: { id: \'2\', name: \'Claude\' },\n' +
+            '    useLocalHistory: true,\n' +
+            '    paginatedMessages: true,\n' +
+            '    settingsRenderer: (container) => {\n' +
+            '        // Custom settings panel\n' +
+            '        const settings = document.createElement(\'div\');\n' +
+            '        settings.innerHTML = \n' +
+            '            \'<h3>Custom Settings</h3>\' +\n' +
+            '            \'<label><input type="checkbox" id="dark-mode"> Dark Mode</label>\' +\n' +
+            '            \'<label><input type="checkbox" id="notifications"> Notifications</label>\' +\n' +
+            '            \'<label><input type="checkbox" id="auto-save"> Auto-save</label>\';\n' +
+            '        container.appendChild(settings);\n' +
+            '    }\n' +
+            '});\n' +
+            '\n' +
+            '// Example: Dynamic feature toggling\n' +
+            'const toggleFeature = (feature, enabled) => {\n' +
+            '    chatService.setDisabledFeatures({\n' +
+            '        [feature]: !enabled\n' +
+            '    });\n' +
+            '};\n' +
+            '\n' +
+            '// Example: Live configuration updates\n' +
+            'const updateConfiguration = () => {\n' +
+            '    chatService.patchConfig({\n' +
+            '        useLocalHistory: document.getElementById(\'local-history\').checked,\n' +
+            '        paginatedMessages: document.getElementById(\'pagination\').checked\n' +
+            '    });\n' +
+            '};\n' +
+            '\n' +
+            '// Example: Test all message types\n' +
+            'const testMessages = () => {\n' +
+            '    // Regular message\n' +
+            '    chatService.sendResponse({\n' +
+            '        content: \'This is a regular message with **markdown** support.\'\n' +
+            '    });\n' +
+            '    \n' +
+            '    // Message with actions\n' +
+            '    chatService.sendResponse({\n' +
+            '        content: \'Message with custom actions:\',\n' +
+            '        actions: [{ name: \'test\', label: \'Test Action\', eventName: \'test-action\' }]\n' +
+            '    });\n' +
+            '    \n' +
+            '    // Streaming message\n' +
+            '    const words = \'This is a streaming response.\'.split(\' \');\n' +
+            '    words.forEach((word, index) => {\n' +
+            '        setTimeout(() => {\n' +
+            '            chatService.sendResponse({\n' +
+            '                id: \'stream-test\',\n' +
+            '                content: words.slice(0, index + 1).join(\' \'),\n' +
+            '                stream: true,\n' +
+            '                done: index === words.length - 1\n' +
+            '            });\n' +
+            '        }, index * 50);\n' +
+            '    });\n' +
+            '};\n' +
+            '\n' +
+            '// Example: Complete playground setup\n' +
+            'const setupPlayground = () => {\n' +
+            '    chatService.open();\n' +
+            '    \n' +
+            '    // Set sample history\n' +
+            '    chatService.setHistory([\n' +
+            '        { id: \'1\', name: \'Test Session 1\', timestamp: new Date().toISOString() },\n' +
+            '        { id: \'2\', name: \'Test Session 2\', timestamp: new Date().toISOString() }\n' +
+            '    ]);\n' +
+            '    \n' +
+            '    // Set suggestions\n' +
+            '    chatService.setSuggestions([\n' +
+            '        { label: \'Test Feature\', prompt: \'Test a specific feature\' },\n' +
+            '        { label: \'Help\', prompt: \'Show available commands\' }\n' +
+            '    ]);\n' +
+            '};</pre>\n' +
+            '</div>\n' +
+            '\n' +
+            '**Features demonstrated:**\n' +
+            '- Live feature toggles\n' +
+            '- Real-time configuration\n' +
+            '- All chat capabilities\n' +
+            '- Developer testing interface\n\n' +
+            '## Documentation\n\n' +
+            // eslint-disable-next-line max-len
+            'For complete API reference and advanced usage examples, see the <a href="https://github.com/UiPath/apollo-design-system/blob/master/packages/apollo-react/src/material/components/ap-chat/DOCS.md" target="_blank">official Autopilot Chat documentation</a>.\n',
         'error-handling': `
 # Error Handling Demo
 
@@ -2870,6 +2870,189 @@ chatService.open({ mode: 'side-by-side' });</pre>
 - Suggestion buttons for quick start prompts
 - First-run experience configuration during initialization
 - Clean onboarding flow for new users
+
+## Documentation
+
+For complete API reference and advanced usage examples, see the <a href="https://github.com/UiPath/apollo-design-system/blob/master/packages/apollo-react/src/material/components/ap-chat/DOCS.md" target="_blank">official Autopilot Chat documentation</a>.
+        `,
+        'tree-renderer': `
+# Tree Renderer Demo
+
+Demonstrates the tree renderer component for displaying hierarchical data structures like workflow execution, project structures, or organizational charts.
+
+## Implementation
+
+<div style="margin-top: 15px; padding: 20px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #17a2b8;">
+<h4 style="margin-top: 0; color: #2c3e50; font-size: 14px;">Tree Renderer Setup</h4>
+<pre style="margin: 0; padding: 10px; background: #2c3e50; color: #ecf0f1; border-radius: 4px; overflow-x: auto; font-size: 12px;">import { AutopilotChatService } from '@uipath/portal-shell-util';
+
+// Initialize chat service
+const chatService = AutopilotChatService.Instantiate({ instanceName: 'tree-renderer-demo' });
+chatService.initialize({ mode: 'side-by-side' });
+
+// Send message with tree data structure
+chatService.sendResponse({
+    content: 'Tree renderer response',
+    widget: 'apollo-chat-tree-renderer',
+    toCopy: 'Tree renderer response',
+    meta: {
+        span: {
+            key: 'root',
+            name: 'Agent Execution Flow',
+            data: {
+                id: 'agent-1',
+                titleColor: "#FFA500",
+                parentId: null,
+                name: 'Agent Execution Flow',
+                startTime: new Date('2024-04-04T12:00:00Z'),
+                endTime: new Date('2024-04-04T12:02:00Z'),
+                status: 'ok',
+                customIcon: 'robot',
+                additionalInfo: "5s",
+                attributes: {
+                    type: 'agentRun',
+                    description: 'Main agent execution workflow',
+                    systemPrompt: 'Executing agent workflow',
+                    userPrompt: 'Perform multiple operations with different tools',
+                    inputSchema: {},
+                    input: {}
+                },
+            },
+            children: [
+                {
+                    key: 'process-1',
+                    name: 'Tool Call 1',
+                    data: {
+                        id: 'process-1',
+                        parentId: 'agent-1',
+                        name: 'Tool Call 1',
+                        icon: "code",
+                        startTime: new Date('2024-04-04T12:00:10Z'),
+                        endTime: new Date('2024-04-04T12:00:30Z'),
+                        status: 'ok',
+                        additionalInfo: '20s',
+                        attributes: {
+                            type: 'toolCall',
+                            description: 'First tool execution',
+                            toolName: 'Web_Search',
+                            arguments: {
+                                provider: 'GoogleCustomSearch',
+                                query: 'most interesting scientific fact discovered recently 2025',
+                                num: 5
+                            }
+                        },
+                    },
+                    children: [
+                        {
+                            key: 'sub-tool-1',
+                            name: 'Pre-Process Run',
+                            data: {
+                                id: 'sub-tool-1',
+                                parentId: 'process-1',
+                                name: 'Pre-Process Run',
+                                startTime: new Date('2024-04-04T12:00:15Z'),
+                                endTime: new Date('2024-04-04T12:00:25Z'),
+                                status: 'ok',
+                                customIcon: "waffle",
+                                additionalInfo: '10s',
+                                attributes: {
+                                    type: 'ProcessRun',
+                                    description: 'Data transformation step'
+                                }
+                            }
+                        },
+                    ]
+                },
+                {
+                    key: 'completion-1',
+                    name: 'LLM Call',
+                    data: {
+                        id: 'completion-1',
+                        parentId: 'agent-1',
+                        name: 'LLM Call',
+                        startTime: new Date('2024-04-04T12:00:45Z'),
+                        endTime: new Date('2024-04-04T12:00:50Z'),
+                        status: 'ok',
+                        icon: 'home',
+                        additionalInfo: '5s',
+                        attributes: {
+                            type: 'completion',
+                            description: 'AI text completion',
+                            usage: {
+                                completionTokens: 50,
+                                promptTokens: 100,
+                                totalTokens: 150
+                            }
+                        }
+                    }
+                },
+                {
+                    key: 'process-2',
+                    name: 'Tool Call 2',
+                    data: {
+                        id: 'process-2',
+                        parentId: 'agent-1',
+                        name: 'Tool Call 2',
+                        customIcon: 'model',
+                        startTime: new Date('2024-04-04T12:01:00Z'),
+                        endTime: new Date('2024-04-04T12:01:20Z'),
+                        status: 'ok',
+                        attributes: {
+                            type: 'toolCall',
+                            description: 'Second tool execution',
+                            toolName: 'Data_Processor'
+                        }
+                    },
+                    children: [
+                        {
+                            key: 'parser-1',
+                            name: 'Parser Execution',
+                            data: {
+                                id: 'parser-1',
+                                parentId: 'process-2',
+                                name: 'Parser Execution',
+                                customIcon: 'website',
+                                startTime: new Date('2024-04-04T12:01:05Z'),
+                                endTime: new Date('2024-04-04T12:01:10Z'),
+                                status: 'ok',
+                                attributes: {
+                                    type: 'parser',
+                                    description: 'Data parsing step'
+                                }
+                            }
+                        },
+                    ]
+                },
+            ]
+        }
+    }
+});
+
+chatService.open();</pre>
+</div>
+
+**Features demonstrated:**
+- Hierarchical data structure display using Apollo Tree View
+- Agent execution flow visualization with nested tool calls
+- Status indicators and timing information
+- Custom icons and color coding for different node types
+- Expandable tree structure with all nodes expanded by default
+- Rich metadata display including descriptions and attributes
+
+**Tree Data Structure:**
+- **span**: Root object containing the tree structure
+- **key**: Unique identifier for each node
+- **name**: Display name for the node
+- **data**: Node data including id, status, timing, icons, and attributes
+- **children**: Array of child nodes (optional)
+- **attributes**: Additional metadata for each node
+
+**Use Cases:**
+- Workflow execution visualization
+- Project structure display
+- Organizational charts
+- Process flow diagrams
+- System architecture visualization
 
 ## Documentation
 
