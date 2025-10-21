@@ -16,6 +16,7 @@ import {
     CHAT_WIDTH_SIDE_BY_SIDE_MIN,
     DEFAULT_MESSAGE_RENDERER,
     StorageService,
+    TOOL_CALL_RENDERER,
 } from '@uipath/portal-shell-util';
 import React from 'react';
 
@@ -36,6 +37,15 @@ const APOLLO_MESSAGE_RENDERERS = [
     },
     {
         name: AGENTS_TOOL_CALL_RENDERER,
+        component: ({ message }: { message: AutopilotChatMessage }) => {
+            if (!message.meta.span) {
+                return null;
+            }
+            return <ApToolCallReact span={message.meta.span} />;
+        },
+    },
+    {
+        name: TOOL_CALL_RENDERER,
         component: ({ message }: { message: AutopilotChatMessage }) => {
             if (!message.meta.span) {
                 return null;
