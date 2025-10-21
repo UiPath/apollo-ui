@@ -2,6 +2,7 @@ import { ServiceType } from '../constants/ServiceConstants';
 
 export const DEFAULT_MESSAGE_RENDERER = 'apollo-markdown-renderer';
 export const AGENTS_TOOL_CALL_RENDERER = 'apollo-agents-tool-call';
+export const APOLLO_CHAT_TREE_RENDERER = 'apollo-chat-tree-renderer';
 export const ACCEPTED_FILES = {
     'text/csv': [ '.csv' ],
     'application/json': [ '.json' ],
