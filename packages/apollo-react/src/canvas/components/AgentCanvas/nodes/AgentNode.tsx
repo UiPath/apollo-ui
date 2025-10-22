@@ -91,7 +91,7 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
         type: "source",
         handleType: "artifact",
         label: translations.memory,
-        showButton: mode === "design",
+        showButton: mode === "design" && !hasMemory,
         color: "var(--color-foreground-de-emp)",
         labelBackgroundColor: "var(--color-background-secondary)",
         visible: displayMemory,
@@ -167,7 +167,7 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
     }
 
     return configs;
-  }, [mode, displayContext, displayMemory, displayMcp, displayTool, displayEscalation, onAddResource, translations]);
+  }, [mode, displayContext, displayMemory, displayMcp, displayTool, displayEscalation, hasMemory, onAddResource, translations]);
 
   const agentIcon = useMemo(() => {
     if (isConversational) {

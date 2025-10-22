@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useState } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import type { IRawSpan } from "@uipath/portal-shell-react";
 import { ReactFlowProvider } from "@uipath/uix/xyflow/react";
@@ -127,12 +127,12 @@ const createSampleMcp = (): AgentFlowResource => {
   };
 };
 
-const createSampleMemory = (count: number): AgentFlowResource => {
+const createSampleMemory = (): AgentFlowResource => {
   return {
-    id: "total-agent-memory",
+    id: generateResourceId(),
     type: "memory",
-    name: `${count} Dataset${count > 1 ? "s" : ""}`,
-    description: `${count} Dataset${count > 1 ? "s" : ""}`,
+    name: "Agent Memory Space",
+    description: "Memory space for the agent",
   };
 };
 
@@ -293,32 +293,6 @@ const AgentFlowWrapper = ({
   const [_sidebarMode, setSidebarMode] = useState<
     "add-context" | "add-escalation" | "add-model" | "add-tool" | "add-memory" | "properties"
   >("properties");
-  const [memoryCount, setMemoryCount] = useState(0);
-
-  const memoryResourceId = useMemo(() => resources.find((r) => r.type === "memory")?.id, [resources]);
-
-  useEffect(() => {
-    if (memoryCount) {
-      if (!memoryResourceId) {
-        const newResource = createSampleMemory(memoryCount);
-        setResources((prev) => [...prev, newResource]);
-        setSelectedResourceId(newResource.id);
-        setSidebarMode("properties");
-      } else {
-        setResources((prev) =>
-          prev.map((r) =>
-            r.id !== memoryResourceId
-              ? r
-              : {
-                  ...r,
-                  name: `${memoryCount} Dataset${memoryCount > 1 ? "s" : ""}`,
-                  description: `${memoryCount} Dataset${memoryCount > 1 ? "s" : ""}`,
-                }
-          )
-        );
-      }
-    }
-  }, [memoryResourceId, memoryCount]);
 
   const handleSelectResource = useCallback((resourceId: string | null) => {
     setSelectedResourceId(resourceId);
@@ -346,8 +320,8 @@ const AgentFlowWrapper = ({
         break;
       }
       case "memory": {
-        setMemoryCount((prev) => prev + 1);
-        return;
+        newResource = createSampleMemory();
+        break;
       }
       default: {
         return;

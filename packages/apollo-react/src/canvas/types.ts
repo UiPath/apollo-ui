@@ -136,7 +136,7 @@ export type AgentFlowProps = {
   resources: AgentFlowResource[];
   allowDragging?: boolean;
   initialSelectedResource?: {
-    type: "context" | "escalation" | "mcp" | "pane" | "run" | "tool";
+    type: "context" | "escalation" | "mcp" | "pane" | "run" | "tool" | "memory";
     name: string;
   } | null;
   onSelectResource?: (resourceId: string | null) => void;
