@@ -248,7 +248,7 @@ describe("props-helpers", () => {
       expect(edge.source).toBe(mockAgentNode.id);
       expect(edge.target).toBe(mockEscalationNode.id);
       expect(edge.sourceHandle).toBe(ResourceNodeType.Escalation);
-      expect(edge.targetHandle).toBe(Position.Bottom);
+      expect(edge.targetHandle).toBe(Position.Top);
     });
 
     it("creates animated edge in view mode with active resource", () => {

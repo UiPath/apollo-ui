@@ -278,7 +278,7 @@ export const createResourceEdge = (
       return createEdge(agentNode.id, resourceNode.id, ResourceNodeType.Memory, Position.Bottom);
     case "escalation":
     default:
-      return createEdge(agentNode.id, resourceNode.id, ResourceNodeType.Escalation, Position.Bottom);
+      return createEdge(agentNode.id, resourceNode.id, ResourceNodeType.Escalation, Position.Top);
   }
 };
 

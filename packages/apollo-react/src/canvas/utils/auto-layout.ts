@@ -189,19 +189,19 @@ const arrangeAgent = (
         }
       } else if (handleGroups.length === 3) {
         // Three handle types - position them on left, center, and right sides
-        // Custom sort to ensure Model comes first, then Escalation, then Tool
+        // Custom sort to ensure Context comes first, then Escalation, then Tool
         const sortedGroups = handleGroups.sort((a, b) => getResourceNodeTypeOrder(a.handleId) - getResourceNodeTypeOrder(b.handleId));
 
-        // First, calculate escalation positions (center group)
-        const escalationGroup = sortedGroups[1];
-        const escalationNodes = escalationGroup?.nodes || [];
-        const escalationCount = escalationNodes.length;
+        // First, calculate center group positions (escalation)
+        const centerGroup = sortedGroups[1];
+        const centerNodes = centerGroup?.nodes || [];
+        const centerCount = centerNodes.length;
 
-        // Calculate first and last escalation positions
-        const firstEscalationOffset = escalationCount > 1 ? (-(escalationCount - 1) / 2) * GROUP_SPACING : 0;
-        const lastEscalationOffset = escalationCount > 1 ? ((escalationCount - 1) / 2) * GROUP_SPACING : 0;
-        const firstEscalationX = agentCenterX + firstEscalationOffset;
-        const lastEscalationX = agentCenterX + lastEscalationOffset;
+        // Calculate first and last center positions
+        const firstCenterOffset = centerCount > 1 ? (-(centerCount - 1) / 2) * GROUP_SPACING : 0;
+        const lastCenterOffset = centerCount > 1 ? ((centerCount - 1) / 2) * GROUP_SPACING : 0;
+        const firstCenterX = agentCenterX + firstCenterOffset;
+        const lastCenterX = agentCenterX + lastCenterOffset;
 
         for (const [groupIndex, { nodes }] of sortedGroups.entries()) {
           for (const [i, node] of nodes.entries()) {
@@ -210,16 +210,17 @@ const arrangeAgent = (
 
             let targetX;
             if (groupIndex === 0) {
-              // Model - position to the left of first escalation
-              targetX = firstEscalationX - GROUP_SPACING - nodeWidth / 2;
+              // Context - position to the left of first center node
+              const nodeOffset = i * GROUP_SPACING;
+              targetX = firstCenterX - GROUP_SPACING - nodeOffset - nodeWidth / 2;
             } else if (groupIndex === 1) {
               // Escalation - position in the center of agent node
               const nodeOffset = (i - (nodes.length - 1) / 2) * GROUP_SPACING;
               targetX = agentCenterX - nodeWidth / 2 + nodeOffset;
             } else {
-              // Tool - position to the right of last escalation
+              // Tool - position to the right of last center node
               const nodeOffset = i * GROUP_SPACING;
-              targetX = lastEscalationX + GROUP_SPACING + nodeOffset - nodeWidth / 2;
+              targetX = lastCenterX + GROUP_SPACING + nodeOffset - nodeWidth / 2;
             }
 
             node.position = {
@@ -230,7 +231,7 @@ const arrangeAgent = (
         }
       } else {
         // Four or more handle types - distribute them evenly across the bottom
-        // Sort by resource node type order to ensure consistent Model -> Context -> Tool ordering
+        // Sort by resource node type order to ensure consistent Context -> Escalation -> Tool ordering
         const sortedGroups = handleGroups.sort((a, b) => getResourceNodeTypeOrder(a.handleId) - getResourceNodeTypeOrder(b.handleId));
         const totalGroups = sortedGroups.length;
 

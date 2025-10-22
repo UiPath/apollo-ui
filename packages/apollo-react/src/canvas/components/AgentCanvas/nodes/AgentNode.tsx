@@ -80,9 +80,9 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
   const handleConfigurations = useMemo((): HandleConfiguration[] => {
     const configs: HandleConfiguration[] = [];
 
-    // Top handles (Context)
+    // Top handles (Memory)
     const topHandles: ButtonHandleConfig[] = [];
-    // Bottom handles (Model, Escalation, Tool)
+    // Bottom handles (Context, Escalation, Tool)
     const bottomHandles: ButtonHandleConfig[] = [];
 
     if (displayMemory) {
@@ -101,22 +101,6 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
       });
     }
 
-    if (displayEscalation) {
-      topHandles.push({
-        id: ResourceNodeType.Escalation,
-        type: "source",
-        handleType: "artifact",
-        label: translations.escalations,
-        showButton: mode === "design",
-        color: "var(--color-foreground-de-emp)",
-        labelBackgroundColor: "var(--color-background-secondary)",
-        visible: displayEscalation,
-        onAction: (_e: HandleActionEvent) => {
-          onAddResource?.("escalation");
-        },
-      });
-    }
-
     if (topHandles.length) {
       configs.push({
         position: Position.Top,
@@ -125,7 +109,7 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
       });
     }
 
-    if (displayContext || displayTool || displayMcp) {
+    if (displayContext || displayEscalation || displayTool || displayMcp) {
       bottomHandles.push(
         {
           id: ResourceNodeType.Context,
@@ -138,6 +122,19 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
           visible: displayContext,
           onAction: (_e: HandleActionEvent) => {
             onAddResource?.("context");
+          },
+        },
+        {
+          id: ResourceNodeType.Escalation,
+          type: "source",
+          handleType: "artifact",
+          label: translations.escalations,
+          showButton: mode === "design",
+          color: "var(--color-foreground-de-emp)",
+          labelBackgroundColor: "var(--color-background-secondary)",
+          visible: displayEscalation,
+          onAction: (_e: HandleActionEvent) => {
+            onAddResource?.("escalation");
           },
         },
         {

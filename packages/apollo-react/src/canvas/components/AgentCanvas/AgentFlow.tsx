@@ -65,7 +65,7 @@ const addVirtualSpacingNodes = (nodes: AgentFlowCustomNode[], agentNode: AgentFl
 
   const virtualNodes: AgentFlowCustomNode[] = [];
 
-  // Add virtual top node if no escalations exist
+  // Add virtual top node if no memory exists
   if (!hasTopNodes) {
     virtualNodes.push({
       id: "__virtual_top__",
@@ -75,7 +75,7 @@ const addVirtualSpacingNodes = (nodes: AgentFlowCustomNode[], agentNode: AgentFl
         y: agentNode.position.y - FLOW_LAYOUT.groupDistanceVertical - RESOURCE_NODE_SIZE,
       },
       data: {
-        type: ResourceNodeType.Escalation,
+        type: ResourceNodeType.Memory,
         name: "__virtual__",
         description: "",
         parentNodeId: agentNode.id,
@@ -92,7 +92,7 @@ const addVirtualSpacingNodes = (nodes: AgentFlowCustomNode[], agentNode: AgentFl
     } as AgentFlowCustomNode);
   }
 
-  // Add virtual bottom node if no model/context/tools exist
+  // Add virtual bottom node if no context/escalation/tools exist
   if (!hasBottomNodes) {
     virtualNodes.push({
       id: "__virtual_bottom__",
