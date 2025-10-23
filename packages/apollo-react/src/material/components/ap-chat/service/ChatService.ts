@@ -2,6 +2,7 @@ import type {
     AutopilotChatAgentModeInfo,
     AutopilotChatAllowedAttachments,
     AutopilotChatConfiguration,
+    AutopilotChatCustomHeaderAction,
     AutopilotChatDisabledFeatures,
     AutopilotChatEventHandler,
     AutopilotChatEventInterceptor,
@@ -86,6 +87,7 @@ export class AutopilotChatService {
     private _groupId?: string;
     private _instanceName: string;
     private _contentPartBuilders: Map<string, ContentPartBuilder> = new Map();
+    private _customHeaderActions: AutopilotChatCustomHeaderAction[] = [];
 
     private constructor(instanceName: string) {
         this._instanceName = instanceName;
@@ -144,6 +146,8 @@ export class AutopilotChatService {
         this.setShowLoading = this.setShowLoading.bind(this);
         this.setWaiting = this.setWaiting.bind(this);
         this.setAttachmentsLoading = this.setAttachmentsLoading.bind(this);
+        this.setCustomHeaderActions = this.setCustomHeaderActions.bind(this);
+        this.getCustomHeaderActions = this.getCustomHeaderActions.bind(this);
     }
 
     static Instantiate({
@@ -976,6 +980,25 @@ export class AutopilotChatService {
      */
     getAgentMode() {
         return this._config.selectedAgentMode;
+    }
+
+    /**
+     * Sets the custom header actions in the chat header
+     *
+     * @param actions - The custom header actions to set
+     */
+    setCustomHeaderActions(actions: AutopilotChatCustomHeaderAction[]) {
+        this._customHeaderActions = actions;
+        this._eventBus.publish(AutopilotChatEvent.SetCustomHeaderActions, actions);
+    }
+
+    /**
+     * Gets the custom header actions from the chat service
+     *
+     * @returns The custom header actions
+     */
+    getCustomHeaderActions() {
+        return this._customHeaderActions;
     }
 
     /**
