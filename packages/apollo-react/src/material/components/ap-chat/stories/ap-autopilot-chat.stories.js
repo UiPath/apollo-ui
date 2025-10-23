@@ -3,6 +3,7 @@ import { argTypes } from './base.js';
 import {
     AsyncAttachments as AsyncAttachmentsStory,
     BasicConversation as BasicConversationStory,
+    CustomMenus as CustomMenusStory,
     CustomWidgets as CustomWidgetsStory,
     Default as DefaultStory,
     EmbeddedMode as EmbeddedModeStory,
@@ -15,11 +16,11 @@ import {
     Settings as SettingsStory,
     StreamingResponse as StreamingResponseStory,
     StreamingWithCitations as StreamingWithCitationsStory,
+    TreeRenderer as TreeRendererStory,
     WithAttachments as WithAttachmentsStory,
     WithCitations as WithCitationsStory,
     WithCustomLabels as WithCustomLabelsStory,
     WithHistory as WithHistoryStory,
-    TreeRenderer as TreeRendererStory,
 } from './index';
 
 // Export with proper display names
@@ -42,6 +43,7 @@ export const FirstRunExperience = FirstRunExperienceStory;
 export const WithCitations = WithCitationsStory;
 export const StreamingWithCitations = StreamingWithCitationsStory;
 export const TreeRenderer = TreeRendererStory;
+export const CustomMenus = CustomMenusStory;
 
 // Set display names
 Default.storyName = 'Default';
@@ -63,6 +65,7 @@ FirstRunExperience.storyName = 'First Run Experience';
 WithCitations.storyName = 'With Citations';
 StreamingWithCitations.storyName = 'Streaming With Citations';
 TreeRenderer.storyName = 'Tree Renderer';
+CustomMenus.storyName = 'Custom Menus';
 
 export default {
     title: 'Components/Autopilot Chat',

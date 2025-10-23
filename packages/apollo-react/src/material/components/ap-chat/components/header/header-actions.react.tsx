@@ -13,7 +13,9 @@ import { t } from '../../../../utils/localization/loc';
 import { useAttachments } from '../../providers/attachements-provider.react';
 import { useChatService } from '../../providers/chat-service.provider.react';
 import { useChatState } from '../../providers/chat-state-provider.react';
+import { usePicker } from '../../providers/picker-provider.react';
 import { AutopilotChatActionButton } from '../common/action-button.react';
+import { AutopilotChatHeaderActionMenu } from './header-action-menu.react';
 
 const StyledActions = styled('div')(() => ({
     display: 'flex',
@@ -27,6 +29,23 @@ function AutopilotChatHeaderActionsComponent() {
         disabledFeatures, chatMode, historyOpen, settingsOpen, setHistoryAnchorElement,
     } = useChatState();
     const { clearAttachments } = useAttachments();
+    const {
+        customHeaderActions, handleCustomHeaderAction,
+    } = usePicker();
+    const [ actionMenuAnchorEl, setActionMenuAnchorEl ] = React.useState<HTMLElement | null>(null);
+
+    const handleOpenActionMenu = React.useCallback((event: React.MouseEvent<HTMLElement>) => {
+        setActionMenuAnchorEl(event.currentTarget);
+    }, [ setActionMenuAnchorEl ]);
+
+    const handleCloseActionMenu = React.useCallback(() => {
+        setActionMenuAnchorEl(null);
+    }, [ setActionMenuAnchorEl ]);
+
+    const handleActionMenuItemClick = React.useCallback((action: any) => {
+        handleCustomHeaderAction(action);
+        setActionMenuAnchorEl(null);
+    }, [ handleCustomHeaderAction, setActionMenuAnchorEl ]);
 
     const handleClose = React.useCallback(() => {
         if (!chatService) {
@@ -142,6 +161,25 @@ function AutopilotChatHeaderActionsComponent() {
                     onClick={handleToggleChat}
                     data-testid="autopilot-chat-toggle-fullscreen"
                 />
+            )}
+
+            {customHeaderActions.length > 0 && (
+                <>
+                    <AutopilotChatActionButton
+                        iconName="more_vert"
+                        variant="outlined"
+                        tooltip={t('autopilot-chat-custom-actions')}
+                        onClick={handleOpenActionMenu}
+                        data-testid="autopilot-chat-action-menu"
+                    />
+                    <AutopilotChatHeaderActionMenu
+                        actions={customHeaderActions}
+                        onActionClick={handleActionMenuItemClick}
+                        anchorEl={actionMenuAnchorEl}
+                        open={!!actionMenuAnchorEl}
+                        onClose={handleCloseActionMenu}
+                    />
+                </>
             )}
 
             {((chatMode !== AutopilotChatMode.Embedded && !disabledFeatures.close) ||

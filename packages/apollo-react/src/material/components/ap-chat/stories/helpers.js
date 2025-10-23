@@ -266,7 +266,7 @@ export const setupDemoMode = (demoMode, chatService) => {
 
         case 'interactive':
             // Set up interactive features
-            chatService.setDefaultLoadingMessages(['Analyzing...', 'Processing...', 'Almost done...'], 2000);
+            chatService.setDefaultLoadingMessages([ 'Analyzing...', 'Processing...', 'Almost done...' ], 2000);
             chatService.setSuggestions([
                 {
                     label: 'Quick action',
@@ -975,7 +975,7 @@ The Autopilot Chat component is a full-featured chat interface that can be embed
 
 ## Integration with ap-shell
 
-The autopilot chat is automatically available when using ap-shell (the standard container for UiPath applications). A default chat service is provided on \`window.PortalShell.AutopilotChat\` that is automatically bound to the chat component.
+The autopilot chat is automatically available when using ap-shell (the standard container for UiPath applications). A default chat service is provided on window.PortalShell.AutopilotChat that is automatically bound to the chat component.
 
 ## Standalone Implementation
 
@@ -1305,7 +1305,7 @@ chatService.open();</pre>
 
 **Features demonstrated:**
 - SetAttachments event for granular attachment tracking
-- Loading state management with \`setAttachmentsLoading()\`
+- Loading state management with setAttachmentsLoading()
 - Asynchronous file processing simulation
 - File upload progress indication
 
@@ -1963,9 +1963,9 @@ chatService.open({ mode: 'side-by-side' });</pre>
 </div>
 
 **Features demonstrated:**
-- Setting error messages with \`setError()\`
-- Clearing errors with \`clearError()\`
-- Checking error state with \`getError()\`
+- Setting error messages with setError()
+- Clearing errors with clearError()
+- Checking error state with getError()
 - Error state display in chat interface
 - Interactive error state management
 
@@ -3053,6 +3053,258 @@ chatService.open();</pre>
 - Organizational charts
 - Process flow diagrams
 - System architecture visualization
+
+## Documentation
+
+For complete API reference and advanced usage examples, see the <a href="https://github.com/UiPath/apollo-design-system/blob/master/packages/apollo-react/src/material/components/ap-chat/DOCS.md" target="_blank">official Autopilot Chat documentation</a>.
+        `,
+        'custom-menus': `
+# Custom Menus Demo
+
+Comprehensive showcase of the customizable menus available in the chat interface. The chat provides two types of menus in different locations:
+
+## Overview
+
+### Input Section Menus (Bottom Left)
+Selection menus that allow users to pick from available options:
+1. **Model Picker** - Select AI models with different capabilities
+2. **Agent Mode Selector** - Choose how the AI operates (autonomous, planning, execution modes)
+
+### Header Section Menu (Top Right)
+Action menu that triggers commands:
+3. **Custom Header Actions** - "..." button that opens an action menu with nested options
+
+---
+
+## Input Section Menus
+
+These menus are located in the **input section at the bottom left** of the chat. They allow selection with persistent state.
+
+### Implementation
+
+<div style="margin-top: 15px; padding: 20px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #17a2b8;">
+<h4 style="margin-top: 0; color: #2c3e50; font-size: 14px;">Model Picker Setup</h4>
+<pre style="margin: 0; padding: 10px; background: #2c3e50; color: #ecf0f1; border-radius: 4px; overflow-x: auto; font-size: 12px;">import { AutopilotChatService } from '@uipath/portal-shell-util';
+
+const chatService = AutopilotChatService.Instantiate({ instanceName: 'header-menus-demo' });
+
+// Configure available models
+chatService.setModels([
+    {
+        id: 'gpt-4',
+        name: 'GPT-4',
+        description: 'Advanced reasoning and analysis',
+        icon: 'smart_toy'
+    },
+    {
+        id: 'claude',
+        name: 'Claude 3',
+        description: 'Long context and detailed analysis',
+        icon: 'psychology'
+    },
+    {
+        id: 'gemini',
+        name: 'Gemini Pro',
+        description: 'Multimodal AI capabilities',
+        icon: 'auto_awesome'
+    }
+]);
+
+// Set the selected model
+chatService.setSelectedModel('claude');
+
+// Listen for model changes
+chatService.on('setSelectedModel', ({ model }) => {
+    console.log('Model changed to:', model.name);
+});</pre>
+</div>
+
+<div style="margin-top: 15px; padding: 20px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #28a745;">
+<h4 style="margin-top: 0; color: #2c3e50; font-size: 14px;">Agent Mode Selector Setup</h4>
+<pre style="margin: 0; padding: 10px; background: #2c3e50; color: #ecf0f1; border-radius: 4px; overflow-x: auto; font-size: 12px;">// Configure agent modes
+chatService.setAgentModes([
+    {
+        id: 'agent',
+        name: 'Agent Mode',
+        description: 'Autonomous multi-step task execution',
+        icon: 'smart_toy'
+    },
+    {
+        id: 'plan',
+        name: 'Plan Mode',
+        description: 'Create plan and wait for approval',
+        icon: 'list_alt'
+    },
+    {
+        id: 'execute',
+        name: 'Execute Mode',
+        description: 'Immediate command execution',
+        icon: 'play_arrow'
+    }
+]);
+
+// Set the selected agent mode
+chatService.setAgentMode('agent');
+
+// Listen for agent mode changes
+chatService.on('setSelectedAgentMode', ({ agentMode }) => {
+    console.log('Agent mode changed to:', agentMode);
+});</pre>
+</div>
+
+---
+
+## Header Section Menu
+
+This menu is located in the **header section at the top right** of the chat (the "..." button). It uses the AutopilotChatHeaderActionMenu component for triggering actions without state.
+
+<div style="margin-top: 15px; padding: 20px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #6f42c1;">
+<h4 style="margin-top: 0; color: #2c3e50; font-size: 14px;">Custom Header Actions Setup</h4>
+<pre style="margin: 0; padding: 10px; background: #2c3e50; color: #ecf0f1; border-radius: 4px; overflow-x: auto; font-size: 12px;">// Configure custom header actions with nested menus
+chatService.setCustomHeaderActions([
+    {
+        id: 'export',
+        name: 'Export',
+        icon: 'download',
+        description: 'Export conversation in various formats',
+        children: [
+            {
+                id: 'export-pdf',
+                name: 'Export as PDF',
+                icon: 'picture_as_pdf',
+                description: 'Download as PDF file'
+            },
+            {
+                id: 'export-docx',
+                name: 'Export as DOCX',
+                icon: 'description',
+                description: 'Download as Word document'
+            },
+            {
+                id: 'export-json',
+                name: 'Export as JSON',
+                icon: 'data_object',
+                description: 'Download as JSON data'
+            }
+        ]
+    },
+    {
+        id: 'share',
+        name: 'Share Conversation',
+        icon: 'share',
+        description: 'Share this conversation with others'
+    },
+    {
+        id: 'translate',
+        name: 'Translate',
+        icon: 'translate',
+        description: 'Translate conversation',
+        children: [
+            {
+                id: 'translate-es',
+                name: 'Spanish',
+                icon: 'language',
+                description: 'Translate to Spanish'
+            },
+            {
+                id: 'translate-fr',
+                name: 'French',
+                icon: 'language',
+                description: 'Translate to French'
+            }
+        ]
+    },
+    {
+        id: 'advanced',
+        name: 'Advanced Settings',
+        icon: 'tune',
+        description: 'Advanced options',
+        disabled: true  // This will be grayed out
+    }
+]);
+
+// Listen for custom header action selection
+chatService.on('customHeaderActionClicked', (action) => {
+    console.log('Custom action selected:', action.id);
+
+    // Handle the action
+    switch (action.id) {
+        case 'export-pdf':
+            // Export conversation as PDF
+            exportAsPDF();
+            break;
+        case 'share':
+            // Generate shareable link
+            generateShareLink();
+            break;
+        // ... handle other actions
+    }
+});</pre>
+</div>
+
+## Key Features
+
+### Input Section Menus (Selection with State)
+
+**Model Picker:**
+- Select from multiple AI models
+- Display model capabilities and descriptions
+- Custom icons for each model
+- Event-driven model selection
+- Persistent selection state
+
+**Agent Mode Selector:**
+- Choose AI operation mode
+- Configure behavior patterns (agent, plan, execute, research)
+- Visual mode indicators
+- Real-time mode switching
+- Persistent selection state
+
+### Header Section Menu (Actions without State)
+
+**Custom Header Actions:**
+- Add custom action menu items (not selection)
+- Support for 2-level nested menus (parent → children only)
+- Icon support for all menu items (Material Icons)
+- Optional descriptions on hover
+- Disabled state for unavailable actions
+- Event-driven action handling (customHeaderActionClicked event)
+- Uses AutopilotChatHeaderActionMenu component
+- No persistent state (triggers actions)
+
+**Features demonstrated:**
+- Configuring input section selection menus (models, agent modes)
+- Configuring header section action menu (custom actions)
+- Nested menu structure with type-safe 2-level limit
+- Event listeners for both selection changes and action clicks
+- Icon customization with Material Icons
+- Disabled menu items
+- Dynamic response generation
+- Interactive demo with sample conversation
+
+## Type Safety
+
+All menu options support TypeScript types with proper nesting constraints:
+
+<pre style="background: #f8f8f8; padding: 15px; border-radius: 4px; overflow-x: auto; font-size: 12px;">interface AutopilotChatCustomHeaderAction {
+    id: string;
+    name: string;
+    description?: string;
+    icon?: string;
+    // Children can only be nested one level deep
+    children?: Array&lt;Omit&lt;AutopilotChatCustomHeaderAction, 'children'&gt;&gt;;
+    disabled?: boolean;
+}</pre>
+
+## Use Cases
+
+- **Model Selection**: Allow users to choose between different AI models based on task requirements
+- **Mode Switching**: Enable different AI behaviors (autonomous, planning, execution, research)
+- **Export Options**: Provide multiple export formats (PDF, DOCX, JSON, text)
+- **Sharing**: Generate shareable links with expiration
+- **Translation**: Multi-language support for conversations
+- **Print**: Prepare conversations for printing
+- **Advanced Configuration**: Access to additional settings
 
 ## Documentation
 

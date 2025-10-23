@@ -73,6 +73,9 @@ export const FeaturePlayground = (args) => {
                         <div style="display: flex; flex-direction: column; gap: 8px; max-width: 300px;">
                             <ap-button id="set-models" label="Set Models" size="small" style="width: 100%;"></ap-button>
                             <ap-button id="set-selected-model" label="Set Selected Model" size="small" style="width: 100%;"></ap-button>
+                            <ap-button id="set-agent-modes" label="Set Agent Modes" size="small" style="width: 100%;"></ap-button>
+                            <ap-button id="set-selected-agent-mode" label="Set Selected Agent Mode" size="small" style="width: 100%;"></ap-button>
+                            <ap-button id="set-custom-header-actions" label="Set Custom Header Actions" size="small" style="width: 100%;"></ap-button>
                             <ap-button id="set-allowed-attachments" label="Set Attachments" size="small" style="width: 100%;"></ap-button>
                             <ap-button id="set-first-run-experience" label="First Run Experience" size="small" style="width: 100%;"></ap-button>
                             <ap-button id="set-pre-hook" label="Set Pre Hook" size="small" style="width: 100%;"></ap-button>
@@ -242,6 +245,9 @@ FeaturePlayground.play = async ({
         sendTraceTree: canvasElement.querySelector('#send-trace-tree'),
         setModels: canvasElement.querySelector('#set-models'),
         setSelectedModel: canvasElement.querySelector('#set-selected-model'),
+        setAgentModes: canvasElement.querySelector('#set-agent-modes'),
+        setSelectedAgentMode: canvasElement.querySelector('#set-selected-agent-mode'),
+        setCustomHeaderActions: canvasElement.querySelector('#set-custom-header-actions'),
         setAllowedAttachments: canvasElement.querySelector('#set-allowed-attachments'),
         setFirstRunExperience: canvasElement.querySelector('#set-first-run-experience'),
         setPreHook: canvasElement.querySelector('#set-pre-hook'),
@@ -1414,6 +1420,119 @@ const results = await Promise.all(tasks);
 
     controls.setSelectedModel?.addEventListener('click', () => {
         chatService.setSelectedModel('3');
+    });
+
+    // Agent Modes Configuration
+    controls.setAgentModes?.addEventListener('click', () => {
+        chatService.setAgentModes([
+            {
+                id: 'agent',
+                name: 'Agent',
+                description: 'AI-powered autonomous agent mode',
+                icon: 'smart_toy',
+            },
+            {
+                id: 'plan',
+                name: 'Plan',
+                description: 'Create and review execution plans',
+                icon: 'edit_note',
+            },
+            {
+                id: 'execute',
+                name: 'Execute',
+                description: 'Execute planned actions',
+                icon: 'play_arrow',
+            },
+        ]);
+    });
+
+    controls.setSelectedAgentMode?.addEventListener('click', () => {
+        chatService.setAgentMode('plan');
+    });
+
+    // Custom Header Actions Configuration
+    controls.setCustomHeaderActions?.addEventListener('click', () => {
+        chatService.setCustomHeaderActions([
+            {
+                id: 'export',
+                name: 'Export',
+                icon: 'download',
+                description: 'Export conversation',
+                children: [
+                    {
+                        id: 'export-pdf',
+                        name: 'Export as PDF',
+                        icon: 'picture_as_pdf',
+                        description: 'Download conversation as PDF file',
+                    },
+                    {
+                        id: 'export-docx',
+                        name: 'Export as DOCX',
+                        icon: 'description',
+                        description: 'Download conversation as Word document',
+                    },
+                    {
+                        id: 'export-json',
+                        name: 'Export as JSON',
+                        icon: 'data_object',
+                        description: 'Download conversation as JSON file',
+                    },
+                ],
+            },
+            {
+                id: 'share',
+                name: 'Share Conversation',
+                icon: 'share',
+                description: 'Share this conversation with others',
+            },
+            {
+                id: 'translate',
+                name: 'Translate',
+                icon: 'translate',
+                description: 'Translate conversation',
+                children: [
+                    {
+                        id: 'translate-es',
+                        name: 'Spanish',
+                        icon: 'language',
+                        description: 'Translate to Spanish',
+                    },
+                    {
+                        id: 'translate-fr',
+                        name: 'French',
+                        icon: 'language',
+                        description: 'Translate to French',
+                    },
+                    {
+                        id: 'translate-de',
+                        name: 'German',
+                        icon: 'language',
+                        description: 'Translate to German',
+                    },
+                ],
+            },
+            {
+                id: 'print',
+                name: 'Print',
+                icon: 'print',
+                description: 'Print conversation',
+            },
+            {
+                id: 'advanced',
+                name: 'Advanced Settings',
+                icon: 'tune',
+                description: 'Advanced configuration options',
+                disabled: true,
+            },
+        ]);
+    });
+
+    // Handle custom header action selections
+    chatService.on('customHeaderActionClicked', (action) => {
+        // eslint-disable-next-line no-console
+        console.log('Custom header action selected:', action);
+        // eslint-disable-next-line no-alert
+        alert(`Action selected: ${action.name} (ID: ${action.id})`);
     });
 
     controls.setAllowedAttachments?.addEventListener('click', () => {

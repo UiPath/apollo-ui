@@ -5,7 +5,7 @@ import React from 'react';
 
 import { t } from '../../../../utils/localization/loc';
 import { useChatService } from '../../providers/chat-service.provider.react';
-import { useModelPicker } from '../../providers/model-picker-provider.react';
+import { usePicker } from '../../providers/picker-provider.react';
 import {
     DropdownOption,
     DropdownPicker,
@@ -15,7 +15,7 @@ function AutopilotChatInputModelPickerComponent({ useIcon }: { useIcon: boolean 
     const chatService = useChatService();
     const {
         models, selectedModel,
-    } = useModelPicker();
+    } = usePicker();
 
     const handleModelSelect = React.useCallback((option: DropdownOption) => {
         chatService?.setSelectedModel(option.id);

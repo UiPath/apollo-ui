@@ -9,11 +9,10 @@ import token, { FontVariantToken } from '@uipath/apollo-core/lib';
 import React from 'react';
 
 import { t } from '../../../../utils/localization/loc';
-import { useAgentModePicker } from '../../providers/agent-mode-picker-provider.react';
 import { useAttachments } from '../../providers/attachements-provider.react';
 import { useChatState } from '../../providers/chat-state-provider.react';
 import { useError } from '../../providers/error-provider.react';
-import { useModelPicker } from '../../providers/model-picker-provider.react';
+import { usePicker } from '../../providers/picker-provider.react';
 import { parseFiles } from '../../utils/file-reader';
 import { AutopilotChatAudio } from '../audio/chat-audio.react';
 import { AutopilotChatActionButton } from '../common/action-button.react';
@@ -59,8 +58,9 @@ function AutopilotChatInputActionsComponent({
     const {
         disabledFeatures, allowedAttachments,
     } = useChatState();
-    const { models = [] } = useModelPicker();
-    const { agentModes = [] } = useAgentModePicker();
+    const {
+        models, agentModes,
+    } = usePicker();
 
     const fileInputRef = React.useRef<HTMLInputElement>(null);
 

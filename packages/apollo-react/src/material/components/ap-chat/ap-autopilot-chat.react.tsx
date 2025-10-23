@@ -20,7 +20,6 @@ import {
     FullScreenLayout,
     StandardLayout,
 } from './components/layout';
-import { AutopilotAgentModePickerProvider } from './providers/agent-mode-picker-provider.react';
 import { AutopilotAttachmentsProvider } from './providers/attachements-provider.react';
 import { AutopilotChatScrollProvider } from './providers/chat-scroll-provider.react';
 import { AutopilotChatServiceProvider } from './providers/chat-service.provider.react';
@@ -34,7 +33,7 @@ import {
 } from './providers/chat-width-provider.react';
 import { AutopilotErrorProvider } from './providers/error-provider.react';
 import { AutopilotLoadingProvider } from './providers/loading-provider.react';
-import { AutopilotModelPickerProvider } from './providers/model-picker-provider.react';
+import { AutopilotPickerProvider } from './providers/picker-provider.react';
 import { AutopilotStreamingProvider } from './providers/streaming-provider.react';
 
 const ChatContainer = styled('div')<{ shouldAnimate: boolean; mode: AutopilotChatMode; width: number; fullHeight: boolean }>(({
@@ -117,15 +116,13 @@ export function ApAutopilotChatReact({ chatServiceInstance }: { chatServiceInsta
                         <AutopilotErrorProvider>
                             <AutopilotLoadingProvider>
                                 <AutopilotAttachmentsProvider>
-                                    <AutopilotModelPickerProvider>
-                                        <AutopilotAgentModePickerProvider>
-                                            <AutopilotChatWidthProvider>
-                                                <AutopilotChatDropzone>
-                                                    <AutopilotChatContent />
-                                                </AutopilotChatDropzone>
-                                            </AutopilotChatWidthProvider>
-                                        </AutopilotAgentModePickerProvider>
-                                    </AutopilotModelPickerProvider>
+                                    <AutopilotPickerProvider>
+                                        <AutopilotChatWidthProvider>
+                                            <AutopilotChatDropzone>
+                                                <AutopilotChatContent />
+                                            </AutopilotChatDropzone>
+                                        </AutopilotChatWidthProvider>
+                                    </AutopilotPickerProvider>
                                 </AutopilotAttachmentsProvider>
                             </AutopilotLoadingProvider>
                         </AutopilotErrorProvider>

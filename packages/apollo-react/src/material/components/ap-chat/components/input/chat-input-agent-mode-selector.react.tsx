@@ -4,8 +4,8 @@
 import React from 'react';
 
 import { t } from '../../../../utils/localization/loc';
-import { useAgentModePicker } from '../../providers/agent-mode-picker-provider.react';
 import { useChatService } from '../../providers/chat-service.provider.react';
+import { usePicker } from '../../providers/picker-provider.react';
 import {
     DropdownOption,
     DropdownPicker,
@@ -19,7 +19,7 @@ function AutopilotChatAgentModeSelectorComponent({ useIcon }: AutopilotChatAgent
     const chatService = useChatService();
     const {
         agentModes, selectedAgentMode,
-    } = useAgentModePicker();
+    } = usePicker();
 
     const handleAgentModeSelect = React.useCallback((option: DropdownOption) => {
         chatService?.setAgentMode(option.id);

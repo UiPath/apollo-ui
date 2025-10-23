@@ -27,18 +27,36 @@ export const template = (args, storyId = 'default') => {
                     color: #333;
                 ">
                     ${docs.split('\n').map(line => {
+        // Pass through HTML tags directly
+        if (line.trim().startsWith('<')) {
+            return line;
+        }
+
+        // Helper function to convert inline markdown
+        const convertInlineMarkdown = (text) => {
+            return text.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+                      .replace(/\*([^*]+)\*/g, '<em>$1</em>')
+                      .replace(/`([^`]+)`/g, '<code style="background: #f4f4f4; padding: 2px 4px; border-radius: 3px; font-family: monospace;">$1</code>');
+        };
+
         if (line.startsWith('# ')) {
-            return `<h1 style="color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px;">${line.substring(2)}</h1>`;
+            return `<h1 style="color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px;">${convertInlineMarkdown(line.substring(2))}</h1>`;
         } else if (line.startsWith('## ')) {
-            return `<h2 style="color: #34495e; margin-top: 20px; margin-bottom: 8px;">${line.substring(3)}</h2>`;
+            return `<h2 style="color: #34495e; margin-top: 20px; margin-bottom: 8px;">${convertInlineMarkdown(line.substring(3))}</h2>`;
+        } else if (line.startsWith('### ')) {
+            return `<h3 style="color: #7f8c8d; margin-top: 15px; margin-bottom: 5px;">${convertInlineMarkdown(line.substring(4))}</h3>`;
         } else if (line.startsWith('**') && line.endsWith(':**')) {
             return `<h3 style="color: #7f8c8d; margin-top: 15px; margin-bottom: 5px;">${line.substring(2, line.length - 3)}</h3>`;
+        } else if (line.match(/^\d+\.\s/)) {
+            return `<li style="margin-bottom: 3px; list-style-position: inside;">${convertInlineMarkdown(line.replace(/^\d+\.\s/, ''))}</li>`;
         } else if (line.startsWith('- ')) {
-            return `<li style="margin-bottom: 3px;">${line.substring(2)}</li>`;
+            return `<li style="margin-bottom: 3px;">${convertInlineMarkdown(line.substring(2))}</li>`;
+        } else if (line.trim() === '---') {
+            return '<hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;" />';
         } else if (line.trim() === '') {
             return '';
         }
-        return `<p style="margin-bottom: 8px;">${line}</p>`;
+        return `<p style="margin-bottom: 8px;">${convertInlineMarkdown(line)}</p>`;
 
     })
         .join('')}

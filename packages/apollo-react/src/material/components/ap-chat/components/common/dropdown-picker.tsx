@@ -119,7 +119,7 @@ export function DropdownPicker<T = string>({
                     iconName={selectedOption.icon ?? ''}
                     variant={iconVariant}
                     onClick={handleClick}
-                    tooltipPlacement="top"
+                    tooltipPlacement="top-start"
                     tooltip={ !open ? (
                         <>
                             <ap-typography
@@ -144,7 +144,7 @@ export function DropdownPicker<T = string>({
 
         return (
             <AutopilotChatTooltip
-                placement="top"
+                placement="top-start"
                 title={
                     !open && selectedOption.description ? (
                         <ap-typography
