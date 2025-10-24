@@ -51,11 +51,8 @@ const ChatHistoryContainer = styled('div')<{ isFullScreen: boolean; width: numbe
     boxSizing: 'border-box',
     height: isFullScreen ? `calc(${fullScreenContainer?.clientHeight}px - ${token.Spacing.SpacingBase})` : CHAT_HISTORY_SIDE_BY_SIDE_MAX_HEIGHT,
     width: isFullScreen
-        ? CHAT_HISTORY_FULL_SCREEN_WIDTH
-        : Math.min(
-            width - 2 * parseInt(token.Spacing.SpacingBase, 10), // acount for padding
-            CHAT_HISTORY_SIDE_BY_SIDE_MAX_WIDTH - 2 * parseInt(token.Spacing.SpacingBase, 10),
-        ),
+        ? Math.min(width, CHAT_HISTORY_FULL_SCREEN_WIDTH)
+        : Math.min(width, CHAT_HISTORY_SIDE_BY_SIDE_MAX_WIDTH - 2 * parseInt(token.Spacing.SpacingBase, 10)),
 
     '& .chat-history-search': {
         width: `calc(100% - 2 * ${token.Spacing.SpacingBase})`,
@@ -127,8 +124,9 @@ const AutopilotChatHistoryComponent: React.FC<AutopilotChatHistoryProps> = ({
     const [ searchQuery, setSearchQuery ] = useState('');
     const [ isLoadingMore, setIsLoadingMore ] = useState(false);
     const [ isSearching, setIsSearching ] = useState(false);
-
     const [ scrollContainer, setScrollContainer ] = useState<HTMLDivElement | null>(null);
+
+    const popperContainerRef = useRef<HTMLDivElement>(null);
     const isLoadingMoreRef = useRef(false);
     const shouldShowLoadingMoreRef = useRef(true);
     const appendingRef = useRef(false);
@@ -377,6 +375,7 @@ const AutopilotChatHistoryComponent: React.FC<AutopilotChatHistoryProps> = ({
             }}
             slotProps={{
                 paper: {
+                    ref: popperContainerRef,
                     elevation: 6,
                     sx: {
                         borderRadius: token.Spacing.SpacingMicro,
@@ -389,7 +388,14 @@ const AutopilotChatHistoryComponent: React.FC<AutopilotChatHistoryProps> = ({
                 disabled={!open || !historyOpen}
                 returnFocus={false}
             >
-                <ChatHistoryContainer isFullScreen={isFullScreen} width={width} fullScreenContainer={fullScreenContainer}>
+                <ChatHistoryContainer
+                    isFullScreen={isFullScreen}
+                    width={Math.min(
+                        width - 2 * parseInt(token.Spacing.SpacingBase, 10),
+                        popperContainerRef.current?.clientWidth ?? Number.POSITIVE_INFINITY,
+                    )}
+                    fullScreenContainer={fullScreenContainer}
+                >
                     {hasHistoryData ? (
                         <>
                             <ApTextFieldReact
