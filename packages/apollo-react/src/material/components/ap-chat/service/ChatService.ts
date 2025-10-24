@@ -68,6 +68,7 @@ export class AutopilotChatService {
         selectedAgentMode: undefined,
         selectedModel: undefined,
         paginatedMessages: false,
+        paginatedHistory: false,
     };
     private _config: AutopilotChatConfiguration = { ...this._initialConfig };
     private _eventBus: EventBus;
@@ -140,6 +141,7 @@ export class AutopilotChatService {
         this.setPreHook = this.setPreHook.bind(this);
         this.getPreHook = this.getPreHook.bind(this);
         this.prependOlderMessages = this.prependOlderMessages.bind(this);
+        this.appendOlderHistoryItems = this.appendOlderHistoryItems.bind(this);
         this.setSuggestions = this.setSuggestions.bind(this);
         this.sendInputStreamEvent = this.sendInputStreamEvent.bind(this);
         this.sendOutputStreamEvent = this.sendOutputStreamEvent.bind(this);
@@ -517,6 +519,28 @@ export class AutopilotChatService {
     }
 
     /**
+     * Appends older history items to the history when scrolling down and reaching the bottom
+     * This is called by the consumer in response to the HistoryLoadMore event
+     *
+     * @param items - The older history items to append
+     * @param done - Whether the items are the last set of items
+     */
+    appendOlderHistoryItems(items: AutopilotChatHistory[] = [], done?: boolean) {
+        if (done) {
+            this._internalService.publish(AutopilotChatInternalEvent.ShouldShowLoadingMoreHistory, false);
+        }
+
+        if (items.length === 0) {
+            return;
+        }
+
+        // Emit internal event to signal that items are being appended
+        this._internalService.publish(AutopilotChatInternalEvent.AppendOlderHistory);
+
+        this.setHistory([ ...this._history, ...items ]);
+    }
+
+    /**
      * Gets the current conversation from the chat service
      *
      * @returns The conversation
@@ -763,9 +787,15 @@ export class AutopilotChatService {
      * Sets the history in the chat service
      *
      * @param history - The history to set
+     * @param done - Whether this is the last set of history items (optional, used for pagination)
      */
-    setHistory(history: AutopilotChatHistory[]) {
+    setHistory(history: AutopilotChatHistory[], done?: boolean) {
         this._history = history;
+        this._internalService.publish(AutopilotChatInternalEvent.SetIsLoadingMoreHistory, false);
+
+        if (done !== undefined) {
+            this._internalService.publish(AutopilotChatInternalEvent.ShouldShowLoadingMoreHistory, !done);
+        }
 
         this._eventBus.publish(AutopilotChatEvent.SetHistory, history);
     }
