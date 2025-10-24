@@ -55,6 +55,10 @@ export const argTypes = {
         control: 'boolean',
         description: 'Disable audio features',
     },
+    htmlPreviewDisabled: {
+        control: 'boolean',
+        description: 'Disable HTML preview functionality',
+    },
 
     // First Run Experience
     showFirstRun: {
@@ -127,6 +131,7 @@ export const defaultArgs = {
     previewDisabled: false,
     newChatDisabled: false,
     audioDisabled: true,
+    htmlPreviewDisabled: false,
     showFirstRun: true,
     firstRunTitle: 'Welcome to Autopilot Chat',
     // eslint-disable-next-line max-len

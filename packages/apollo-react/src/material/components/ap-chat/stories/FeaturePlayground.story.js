@@ -34,6 +34,7 @@ export const FeaturePlayground = (args) => {
                             <ap-button id="stop-response" label="Stop Response" size="small" style="width: 100%;"></ap-button>
                             <ap-button id="send-response-custom-actions" label="Custom Actions" size="small" style="width: 100%;"></ap-button>
                             <ap-button id="send-response-with-citations" label="Send With Citations" size="small" style="width: 100%;"></ap-button>
+                            <ap-button id="send-response-with-html" label="Send With HTML" size="small" style="width: 100%;"></ap-button>
                             <ap-button id="set-conversation" label="Set Conversation" size="small" style="width: 100%;"></ap-button>
                             <ap-button id="set-suggestions" label="Set Suggestions" size="small" style="width: 100%;"></ap-button>
                         </div>
@@ -104,6 +105,7 @@ export const FeaturePlayground = (args) => {
                             <ap-checkbox id="compact-mode" label="Compact Mode"></ap-checkbox>
                             <ap-checkbox id="custom-scroll-theme" label="Custom Scroll Theme"></ap-checkbox>
                             <ap-checkbox id="attachments-async" label="Attachments Async"></ap-checkbox>
+                            <ap-checkbox id="enable-html-preview" label="Enable HTML Preview"></ap-checkbox>
                         </div>
                     </div>
                     </div>
@@ -158,7 +160,10 @@ FeaturePlayground.play = async ({
     // Initialize with extended settings for playground
     chatService.initialize({
         mode: 'side-by-side',
-        disabledFeatures: { settings: false },
+        disabledFeatures: {
+            settings: false,
+            htmlPreview: true,
+        },
         models: [
             {
                 id: '1',
@@ -232,6 +237,7 @@ FeaturePlayground.play = async ({
         stopResponse: canvasElement.querySelector('#stop-response'),
         sendResponseCustomActions: canvasElement.querySelector('#send-response-custom-actions'),
         sendResponseWithCitations: canvasElement.querySelector('#send-response-with-citations'),
+        sendResponseWithHtml: canvasElement.querySelector('#send-response-with-html'),
         setConversation: canvasElement.querySelector('#set-conversation'),
         setSuggestions: canvasElement.querySelector('#set-suggestions'),
         setDefaultLoadingMessages: canvasElement.querySelector('#set-default-loading-messages'),
@@ -272,6 +278,7 @@ FeaturePlayground.play = async ({
         compactMode: canvasElement.querySelector('#compact-mode'),
         customScrollTheme: canvasElement.querySelector('#custom-scroll-theme'),
         attachmentsAsync: canvasElement.querySelector('#attachments-async'),
+        enableHtmlPreview: canvasElement.querySelector('#enable-html-preview'),
     };
 
     const redColorCode = '#ff0000';
@@ -556,6 +563,94 @@ FeaturePlayground.play = async ({
                     citations: [],
                 },
             ],
+            shouldWaitForMoreMessages: controls.waitForMoreMessages?.checked || false,
+        });
+    });
+
+    // Send Response with HTML
+    controls.sendResponseWithHtml?.addEventListener('click', () => {
+        chatService.sendResponse({
+            content: `\`\`\`html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Interactive Demo</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 40px;
+            max-width: 600px;
+            margin: 0 auto;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+        }
+        h1 {
+            color: #333;
+            margin-top: 0;
+            font-size: 28px;
+        }
+        p {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 24px;
+        }
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+        button:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        button:active {
+            transform: translateY(0);
+        }
+        #hiddenMessage {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Interactive Demo</h1>
+        <p>Click the button below to toggle the hidden message!</p>
+        <button onclick="toggleMessage()">Toggle Message</button>
+        <div id="hiddenMessage" style="display: none;">
+            <p>✨ This is a hidden message that can be toggled!</p>
+        </div>
+    </div>
+
+    <script>
+        function toggleMessage() {
+            var msg = document.getElementById('hiddenMessage');
+            if (msg.style.display === 'none') {
+                msg.style.display = 'block';
+            } else {
+                msg.style.display = 'none';
+            }
+        }
+    <\/script>
+</body>
+</html>
+\`\`\``,
             shouldWaitForMoreMessages: controls.waitForMoreMessages?.checked || false,
         });
     });
@@ -1810,6 +1905,10 @@ const results = await Promise.all(tasks);
                 },
             },
         });
+    });
+
+    controls.enableHtmlPreview?.addEventListener('valueChanged', () => {
+        chatService.setDisabledFeatures({ htmlPreview: !controls.enableHtmlPreview.checked });
     });
 
     // Attachments Async - handle loading states for attachments

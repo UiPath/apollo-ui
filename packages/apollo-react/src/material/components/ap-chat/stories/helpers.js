@@ -46,6 +46,7 @@ export const initializeChatService = (args, container, storyId = 'default', canv
         preview: args.previewDisabled,
         newChat: args.newChatDisabled,
         audio: args.audioDisabled,
+        htmlPreview: args.htmlPreviewDisabled,
     };
 
     // Configure label overrides
@@ -278,6 +279,98 @@ export const setupDemoMode = (demoMode, chatService) => {
                     prompt: 'What can you help me with?',
                 },
             ]);
+            break;
+
+        case 'html':
+            setTimeout(() => {
+                chatService.sendRequest({ content: 'Show me a quick example of HTML' });
+                setTimeout(() => {
+                    chatService.sendResponse({
+                        content: `\`\`\`html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Interactive Demo</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 40px;
+            max-width: 600px;
+            margin: 0 auto;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+        }
+        h1 {
+            color: #333;
+            margin-top: 0;
+            font-size: 28px;
+        }
+        p {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 24px;
+        }
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+        button:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        button:active {
+            transform: translateY(0);
+        }
+        #hiddenMessage {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Interactive Demo</h1>
+        <p>Click the button below to toggle the hidden message!</p>
+        <button onclick="toggleMessage()">Toggle Message</button>
+        <div id="hiddenMessage" style="display: none;">
+            <p>✨ This is a hidden message that can be toggled!</p>
+        </div>
+    </div>
+
+    <script>
+        function toggleMessage() {
+            var msg = document.getElementById('hiddenMessage');
+            if (msg.style.display === 'none') {
+                msg.style.display = 'block';
+            } else {
+                msg.style.display = 'none';
+            }
+        }
+    <\/script>
+</body>
+</html>
+\`\`\`
+`,
+                    });
+                }, 1000);
+            }, 500);
             break;
 
         case 'citations':
@@ -3495,6 +3588,38 @@ chatService.on('historyLoadMore', (payload) => {
 - Skeleton loader during search operations
 - Lazy loading triggered by scroll events
 - Proper handling of last page indicator using \`done\` parameter
+
+## Documentation
+
+For complete API reference and advanced usage examples, see the <a href="https://github.com/UiPath/apollo-design-system/blob/master/packages/apollo-react/src/material/components/ap-chat/DOCS.md" target="_blank">official Autopilot Chat documentation</a>.
+        `,
+        'with-html': `
+# HTML Content Demo
+
+Demonstrates how to send messages with custom HTML content, including interactive elements and styled components.
+
+## Implementation
+
+<div style="margin-top: 15px; padding: 20px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #17a2b8;">
+<h4 style="margin-top: 0; color: #2c3e50; font-size: 14px;">HTML Message Implementation</h4>
+<pre style="margin: 0; padding: 10px; background: #2c3e50; color: #ecf0f1; border-radius: 4px; overflow-x: auto; font-size: 12px;">import { AutopilotChatService } from '@uipath/portal-shell-util';
+
+// Initialize chat service
+const chatService = AutopilotChatService.Instantiate({ instanceName: 'html-demo' });
+chatService.initialize({ mode: 'side-by-side' });
+
+// Send message with HTML content
+chatService.sendResponse({ 
+    content: \`\`\`html\n&lt;!DOCTYPE html&gt;\n&lt;html&gt;\n&lt;head&gt;\n    &lt;title&gt;Interactive Demo&lt;/title&gt;\n    &lt;style&gt;\n        body {\n            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;\n            padding: 40px;\n            max-width: 600px;\n            margin: 0 auto;\n            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);\n            min-height: 100vh;\n        }\n        .container {\n            background: white;\n            padding: 30px;\n            border-radius: 12px;\n            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);\n        }\n        h1 {\n            color: #333;\n            margin-top: 0;\n            font-size: 28px;\n        }\n        p {\n            color: #666;\n            line-height: 1.6;\n            margin-bottom: 24px;\n        }\n        button {\n            background: #667eea;\n            color: white;\n            border: none;\n            padding: 12px 24px;\n            font-size: 16px;\n            border-radius: 6px;\n            cursor: pointer;\n            transition: all 0.3s ease;\n            font-weight: 600;\n        }\n        button:hover {\n            background: #5568d3;\n            transform: translateY(-2px);\n            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);\n        }\n        button:active {\n            transform: translateY(0);\n        }\n        #hiddenMessage {\n            margin-top: 20px;\n            padding: 20px;\n            background: #f8f9fa;\n            border-radius: 8px;\n            border-left: 4px solid #667eea;\n        }\n    &lt;/style&gt;\n&lt;/head&gt;\n&lt;body&gt;\n    &lt;div class="container"&gt;\n        &lt;h1&gt;🚀 Interactive Demo&lt;/h1&gt;\n        &lt;p&gt;Click the button below to toggle the hidden message!&lt;/p&gt;\n        &lt;button onclick="toggleMessage()"&gt;Toggle Message&lt;/button&gt;\n        &lt;div id="hiddenMessage" style="display: none;"&gt;\n            &lt;p&gt;✨ This is a hidden message that can be toggled!&lt;/p&gt;\n        &lt;/div&gt;\n    &lt;/div&gt;\n\n    &lt;script&gt;\n        function toggleMessage() {\n            var msg = document.getElementById('hiddenMessage');\n            if (msg.style.display === 'none') {\n                msg.style.display = 'block';\n            } else {\n                msg.style.display = 'none';\n            }\n        }\n    &lt;/script&gt;\n&lt;/body&gt;\n&lt;/html&gt;\n\`\`\`,
+
+chatService.open();</pre>
+</div>
+
+**Features demonstrated:**
+- Toggle between code block mode and preview mode
+- Copy code functionality in both modes
+- HTML preview mode to see rendered output
+- Resizable content box and expand functionality for optimal viewing
 
 ## Documentation
 

@@ -22,6 +22,7 @@ import {
     WithCitations as WithCitationsStory,
     WithCustomLabels as WithCustomLabelsStory,
     WithHistory as WithHistoryStory,
+    WithHTML as WithHTMLStory,
 } from './index';
 
 // Export with proper display names
@@ -42,6 +43,7 @@ export const Settings = SettingsStory;
 export const ErrorHandling = ErrorHandlingStory;
 export const FirstRunExperience = FirstRunExperienceStory;
 export const WithCitations = WithCitationsStory;
+export const WithHTML = WithHTMLStory;
 export const StreamingWithCitations = StreamingWithCitationsStory;
 export const TreeRenderer = TreeRendererStory;
 export const CustomMenus = CustomMenusStory;
@@ -65,6 +67,7 @@ Settings.storyName = 'Settings';
 ErrorHandling.storyName = 'Error Handling';
 FirstRunExperience.storyName = 'First Run Experience';
 WithCitations.storyName = 'With Citations';
+WithHTML.storyName = 'With HTML';
 StreamingWithCitations.storyName = 'Streaming With Citations';
 TreeRenderer.storyName = 'Tree Renderer';
 CustomMenus.storyName = 'Custom Menus';

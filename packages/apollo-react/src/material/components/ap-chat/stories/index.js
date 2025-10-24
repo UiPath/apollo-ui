@@ -20,3 +20,4 @@ export { FirstRunExperience } from './FirstRunExperience.story';
 export { TreeRenderer } from './TreeRenderer.story';
 export { CustomMenus } from './CustomMenus.story';
 export { HistoryPagination } from './HistoryPagination.story';
+export { WithHTML } from './WithHTML.story';
