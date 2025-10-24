@@ -384,6 +384,7 @@ export interface PdfCitation extends Citation {
  * @property feedback - Whether the chat has the feedback button
  * @property fullHeight - Whether the chat has viewport height
  * @property copy - Whether the chat has copy button
+ * @property htmlPreview - Whether the chat has HTML preview for code blocks
  */
 export interface AutopilotChatDisabledFeatures {
     resize?: boolean;
@@ -401,6 +402,7 @@ export interface AutopilotChatDisabledFeatures {
     feedback?: boolean;
     fullHeight?: boolean;
     copy?: boolean;
+    htmlPreview?: boolean;
 }
 
 /**
