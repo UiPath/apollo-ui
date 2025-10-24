@@ -8,10 +8,18 @@ import type { BackgroundVariant, Edge, Node, ReactFlowInstance, ReactFlowProps }
 export interface BaseCanvasFitViewOptions {
   /**
    * Padding around nodes when fitting view.
+   * Can be a single number (applies to all sides) or an object with individual side values.
    * Value between 0-1 represents a ratio of the viewport size.
    * @default 0.1
    */
-  padding?: number;
+  padding?:
+    | number
+    | {
+        top: number;
+        right: number;
+        bottom: number;
+        left: number;
+      };
 
   /**
    * Duration of the viewport animation in milliseconds.

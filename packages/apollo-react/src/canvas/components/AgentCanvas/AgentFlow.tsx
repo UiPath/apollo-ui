@@ -1,15 +1,14 @@
-import React, { memo, useCallback, useEffect, useMemo } from "react";
+import React, { memo, useCallback, useEffect, useMemo, useRef } from "react";
 import type { PropsWithChildren } from "react";
 import { Panel, Position, useReactFlow } from "@uipath/uix/xyflow/react";
 import type { NodeProps } from "@uipath/uix/xyflow/system";
 import { BaseCanvas, FLOW_LAYOUT } from "../../components/BaseCanvas";
-import { CanvasPositionControls } from "../../components/CanvasPositionControls";
-
 import { TimelinePlayer } from "./components/TimelinePlayer";
 import { Edge } from "./edges/Edge";
 import { Column } from "@uipath/uix/core";
 import { AgentNodeElement } from "./nodes/AgentNode";
 import { ResourceNode } from "./nodes/ResourceNode";
+import { CanvasPositionControls } from "../CanvasPositionControls";
 import { AgentFlowProvider, useAgentFlowStore } from "./store/agent-flow-store";
 import {
   type AgentFlowCustomEdge,
@@ -36,7 +35,12 @@ const edgeTypes = {
 
 // AgentFlow-specific fit view options with reduced padding
 const AGENT_FLOW_FIT_VIEW_OPTIONS = {
-  padding: 0.3,
+  padding: {
+    top: 0.3,
+    right: 0.3,
+    bottom: 0.3,
+    left: 0.3,
+  },
   duration: 300,
 };
 
@@ -267,7 +271,29 @@ const AgentFlowInner = memo(
       collapseAgent,
     } = useAgentFlowStore();
 
-    const { fitView } = useReactFlow();
+    const { fitView: reactFlowFitView } = useReactFlow();
+    const timelinePlayerRef = useRef<HTMLDivElement>(null);
+
+    // Calculate adjusted fitView options that account for timeline player height
+    const adjustedFitViewOptions = useMemo(() => {
+      const timelineHeight = timelinePlayerRef.current?.offsetHeight || 0;
+
+      if (timelineHeight > 0) {
+        const viewportHeight = window.innerHeight;
+        const timelineRatio = timelineHeight / viewportHeight;
+        const bottomPadding = AGENT_FLOW_FIT_VIEW_OPTIONS.padding.bottom + 3 * timelineRatio;
+
+        return {
+          ...AGENT_FLOW_FIT_VIEW_OPTIONS,
+          padding: {
+            ...AGENT_FLOW_FIT_VIEW_OPTIONS.padding,
+            bottom: bottomPadding,
+          },
+        };
+      }
+
+      return AGENT_FLOW_FIT_VIEW_OPTIONS;
+    }, [timelinePlayerRef.current?.offsetHeight, AGENT_FLOW_FIT_VIEW_OPTIONS.padding.bottom]);
 
     const nodeTypes = useMemo(() => {
       const handleAddResource = (type: "context" | "escalation" | "mcp" | "tool" | "memory") => {
@@ -477,14 +503,14 @@ const AgentFlowInner = memo(
       const handleResetSelectedNode = () => {
         setSelectedNodeId(null);
         onSelectResource?.(null);
-        fitView(AGENT_FLOW_FIT_VIEW_OPTIONS);
+        reactFlowFitView(adjustedFitViewOptions);
       };
 
       window.addEventListener("resetSelectedNode", handleResetSelectedNode);
       return () => {
         window.removeEventListener("resetSelectedNode", handleResetSelectedNode);
       };
-    }, [setSelectedNodeId, onSelectResource, fitView]);
+    }, [setSelectedNodeId, onSelectResource, reactFlowFitView, adjustedFitViewOptions]);
 
     // Checks if there is a selected span to set a node as selected
     useEffect(() => {
@@ -516,7 +542,7 @@ const AgentFlowInner = memo(
             edgeTypes={edgeTypes}
             mode={mode}
             initialAutoLayout={autoArrange}
-            fitViewOptions={AGENT_FLOW_FIT_VIEW_OPTIONS}
+            fitViewOptions={adjustedFitViewOptions}
             onNodesChange={onNodesChange}
             onEdgesChange={onEdgesChange}
             onConnect={onConnect}
@@ -531,10 +557,12 @@ const AgentFlowInner = memo(
             panShortcutTeachingUIMessage={(canvasTranslations ?? DefaultCanvasTranslations).panShortcutTeaching}
           >
             <Panel position="bottom-right">
-              <CanvasPositionControls fitViewOptions={AGENT_FLOW_FIT_VIEW_OPTIONS} />
+              <CanvasPositionControls fitViewOptions={adjustedFitViewOptions} />
             </Panel>
             <Panel position="bottom-center">
-              <TimelinePlayer spans={spans ?? []} enableTimelinePlayer={enableTimelinePlayer ?? true} />
+              <div ref={timelinePlayerRef}>
+                <TimelinePlayer spans={spans ?? []} enableTimelinePlayer={enableTimelinePlayer ?? true} />
+              </div>
             </Panel>
             {children}
           </BaseCanvas>
