@@ -114,7 +114,7 @@ export const ResourceNode = memo(
     }, [hasError, hasSuccess, hasRunning, isCurrentBreakpoint]);
 
     const toolbarConfig = useMemo((): NodeToolbarConfig | undefined => {
-      if (mode === "view" || data.type === "memory") {
+      if (mode === "view") {
         return undefined;
       }
 
@@ -168,7 +168,7 @@ export const ResourceNode = memo(
 
       const actions: ToolbarAction[] = [removeAction];
       const overflowActions: ToolbarAction[] = [
-        toggleBreakpointAction,
+        ...(data.type !== "memory" ? [toggleBreakpointAction] : []),
         ...(data.type === "tool" ? [addGuardrailAction] : []),
         ...(data.projectId ? [goToSourceAction] : []),
         ...(data.type === "tool" ? [separator, toggleEnabledAction] : []),
