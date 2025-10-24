@@ -103,11 +103,21 @@ export const AutopilotPickerProvider = ({ children }: { children: React.ReactNod
         );
 
         // Initialize state from chatService
-        setModels(chatService.getModels() ?? []);
-        setSelectedModel(chatService.getSelectedModel());
-        setAgentModes(chatService.getAgentModes() ?? []);
-        setSelectedAgentMode(chatService.getAgentMode());
-        setCustomHeaderActions(chatService.getCustomHeaderActions());
+        if (chatService.getModels) {
+            setModels(chatService.getModels() ?? []);
+        }
+        if (chatService.getSelectedModel) {
+            setSelectedModel(chatService.getSelectedModel());
+        }
+        if (chatService.getAgentModes) {
+            setAgentModes(chatService.getAgentModes() ?? []);
+        }
+        if (chatService.getAgentMode) {
+            setSelectedAgentMode(chatService.getAgentMode());
+        }
+        if (chatService.getCustomHeaderActions) {
+            setCustomHeaderActions(chatService.getCustomHeaderActions() ?? []);
+        }
 
         return () => {
             unsubscribeModels();
