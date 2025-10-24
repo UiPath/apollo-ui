@@ -58,7 +58,7 @@ const chatService = window.PortalShell.AutopilotChat;
 | `getAgentModes()`                                                                                              | Returns the current list of available agent modes                                                                                                                                                                               |
 | `setAgentMode(mode: string)`                                                                                   | Sets the agent mode (any string value). This emits the `SetSelectedAgentMode` event that consumers can listen to                                                                                                                     |
 | `getAgentMode()`                                                                                               | Returns the currently selected agent mode                                                                                                                                                                                       |
-| `setCustomHeaderActions(actions: AutopilotChatCustomHeaderAction[])`                                         | Configures custom header actions with support for nested menus (see [AutopilotChatCustomHeaderAction](#autopilotchatcustomheaderaction))                                                                                           |
+| `setCustomHeaderActions(actions: AutopilotChatCustomHeaderAction[])`                                         | Configures custom header actions with support for nested menus (see [Custom Header Actions](#custom-header-actions))                                                                                           |
 | `getCustomHeaderActions()`                                                                                     | Returns the current list of custom header actions                                                                                                                                                                                  |
 
 ### Chat Window Control
@@ -419,6 +419,126 @@ chatService.sendResponse({
 // - Including additional instructions or context when copying content
 // - Formatting data in a way that's ready to paste into another application
 // - Removing UI-specific formatting from copied content
+```
+
+### Custom Header Actions
+
+The Autopilot Chat component supports adding custom actions to the chat header with support for 2-level nested menus. These actions provide additional functionality that can be accessed from the header toolbar.
+
+#### Setting Custom Header Actions
+
+```typescript
+// Configure custom header actions with nested menus
+chatService.setCustomHeaderActions([
+  {
+    id: 'export',
+    name: 'Export',
+    icon: 'download',
+    description: 'Export conversation in various formats',
+    children: [
+      {
+        id: 'export-pdf',
+        name: 'Export as PDF',
+        icon: 'picture_as_pdf',
+        description: 'Download conversation as PDF file'
+      },
+      {
+        id: 'export-docx',
+        name: 'Export as DOCX',
+        icon: 'description',
+        description: 'Download conversation as Word document'
+      },
+      {
+        id: 'export-json',
+        name: 'Export as JSON',
+        icon: 'data_object',
+        description: 'Download conversation as JSON file'
+      }
+    ]
+  },
+  {
+    id: 'share',
+    name: 'Share Conversation',
+    icon: 'share',
+    description: 'Share this conversation with others'
+  },
+  {
+    id: 'translate',
+    name: 'Translate',
+    icon: 'translate',
+    description: 'Translate conversation',
+    children: [
+      {
+        id: 'translate-es',
+        name: 'Spanish',
+        icon: 'language',
+        description: 'Translate to Spanish'
+      },
+      {
+        id: 'translate-fr',
+        name: 'French',
+        icon: 'language',
+        description: 'Translate to French'
+      }
+    ]
+  },
+  {
+    id: 'advanced',
+    name: 'Advanced Settings',
+    icon: 'tune',
+    description: 'Advanced configuration options',
+    disabled: true // This action will appear disabled
+  }
+]);
+```
+
+#### Handling Custom Header Action Clicks
+
+```typescript
+// Listen for custom header action clicks
+chatService.on(AutopilotChatEvent.CustomHeaderActionClicked, (action) => {
+  console.log('Custom header action clicked:', action);
+
+  // Handle the action based on its ID
+  switch (action.id) {
+    case 'export-pdf':
+      exportConversationAsPdf();
+      break;
+    case 'export-docx':
+      exportConversationAsDocx();
+      break;
+    case 'export-json':
+      exportConversationAsJson();
+      break;
+    case 'share':
+      shareConversation();
+      break;
+    case 'translate-es':
+      translateConversation('es');
+      break;
+    case 'translate-fr':
+      translateConversation('fr');
+      break;
+    default:
+      console.log('Unknown action:', action.id);
+  }
+});
+```
+
+#### Custom Header Actions Features
+
+- **2-Level Nested Menus**: Parent actions can have children, but children cannot have nested children (enforced by TypeScript)
+- **Material Icons**: Use any Material Icons name for the `icon` property
+- **Descriptions**: Optional tooltips that appear on hover to provide additional context
+- **Disabled State**: Actions can be disabled to prevent interaction while still being visible
+- **Type Safety**: TypeScript ensures correct nesting structure at compile time
+
+#### Getting Current Custom Header Actions
+
+```typescript
+// Retrieve the currently configured custom header actions
+const currentActions = chatService.getCustomHeaderActions();
+console.log('Current custom header actions:', currentActions);
 ```
 
 ## Usage Examples
@@ -2284,95 +2404,7 @@ export interface AutopilotChatCustomHeaderAction {
 }
 ```
 
-**Example usage:**
-
-```typescript
-window.PortalShell.AutopilotChat.setCustomHeaderActions([
-    {
-        id: 'export',
-        name: 'Export',
-        icon: 'download',
-        description: 'Export conversation in various formats',
-        children: [
-            {
-                id: 'export-pdf',
-                name: 'Export as PDF',
-                icon: 'picture_as_pdf',
-                description: 'Download conversation as PDF file'
-            },
-            {
-                id: 'export-docx',
-                name: 'Export as DOCX',
-                icon: 'description',
-                description: 'Download conversation as Word document'
-            },
-            {
-                id: 'export-json',
-                name: 'Export as JSON',
-                icon: 'data_object',
-                description: 'Download conversation as JSON file'
-            }
-        ]
-    },
-    {
-        id: 'share',
-        name: 'Share Conversation',
-        icon: 'share',
-        description: 'Share this conversation with others'
-    },
-    {
-        id: 'translate',
-        name: 'Translate',
-        icon: 'translate',
-        description: 'Translate conversation',
-        children: [
-            {
-                id: 'translate-es',
-                name: 'Spanish',
-                icon: 'language',
-                description: 'Translate to Spanish'
-            },
-            {
-                id: 'translate-fr',
-                name: 'French',
-                icon: 'language',
-                description: 'Translate to French'
-            }
-        ]
-    },
-    {
-        id: 'advanced',
-        name: 'Advanced Settings',
-        icon: 'tune',
-        description: 'Advanced configuration options',
-        disabled: true
-    }
-]);
-
-// Listen for custom header action selection
-window.PortalShell.AutopilotChat.on('customHeaderActionClicked', (action) => {
-    console.log('Custom header action selected:', action);
-
-    // Handle the action based on its ID
-    switch (action.id) {
-        case 'export-pdf':
-            // Export as PDF logic
-            break;
-        case 'share':
-            // Share conversation logic
-            break;
-        // ... handle other actions
-    }
-});
-```
-
-**Key Features:**
-- Supports 2-level nested menus (parent with children)
-- Type-safe nesting prevents deep nesting beyond 2 levels
-- Optional icons using Material Icons
-- Optional descriptions shown on hover
-- Disabled state for unavailable actions
-- Event-driven with `customHeaderActionClicked` event
+See [Custom Header Actions](#custom-header-actions) section for detailed usage examples.
 
 ### AutopilotChatMessage
 
