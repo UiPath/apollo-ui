@@ -68,6 +68,7 @@ export const initializeChatService = (args, container, storyId = 'default', canv
         overrideLabels: Object.keys(overrideLabels).length > 0 ? overrideLabels : undefined,
         useLocalHistory: args.useLocalHistory,
         paginatedMessages: args.paginatedMessages,
+        paginatedHistory: args.paginatedHistory,
     };
 
     // Add first run experience if enabled
@@ -906,6 +907,108 @@ export const setupDemoMode = (demoMode, chatService) => {
                         }
                     }, 50);
                 }, 1000);
+            }, 500);
+            break;
+        case 'history-pagination':
+            setTimeout(() => {
+                const generateHistoryItem = (index, daysAgo, prefix = 'Conversation') => ({
+                    id: `conv${index}`,
+                    name: `${prefix} ${index}`,
+                    timestamp: new Date(Date.now() - daysAgo * 24 * 60 * 60 * 1000).toISOString(),
+                });
+
+                const allHistory = [];
+                for (let i = 1; i <= 50; i++) {
+                    allHistory.push(generateHistoryItem(i, i, 'Conversation'));
+                }
+
+                const initialHistory = allHistory.slice(0, 10);
+                chatService.setHistory(initialHistory);
+                chatService.toggleHistory(true);
+
+                const itemsPerPage = 10;
+
+                chatService.on('historySearch', (event) => {
+                    const { searchText } = event;
+
+                    setTimeout(() => {
+                        const filteredHistory = searchText
+                            ? allHistory.filter(item =>
+                                item.name.toLowerCase().includes(searchText.toLowerCase()))
+                            : allHistory;
+
+                        const firstPage = filteredHistory.slice(0, itemsPerPage);
+                        const isLastPage = filteredHistory.length <= itemsPerPage;
+
+                        chatService.setHistory(firstPage, isLastPage);
+                    }, 600);
+                });
+
+                chatService.on('historyLoadMore', (event) => {
+                    const { searchText } = event || {};
+
+                    setTimeout(() => {
+                        const filteredHistory = searchText
+                            ? allHistory.filter(item =>
+                                item.name.toLowerCase().includes(searchText.toLowerCase()))
+                            : allHistory;
+
+                        const currentHistoryLength = chatService.getHistory().length;
+                        const startIndex = currentHistoryLength;
+                        const endIndex = startIndex + itemsPerPage;
+
+                        if (startIndex >= filteredHistory.length) {
+                            chatService.appendOlderHistoryItems([], true);
+                            return;
+                        }
+
+                        const newItems = filteredHistory.slice(startIndex, endIndex);
+                        const isLastPage = endIndex >= filteredHistory.length;
+
+                        chatService.appendOlderHistoryItems(newItems, isLastPage);
+                    }, 1000);
+                });
+
+                const generateConversation = (conversationId) => {
+                    const conversationNumber = conversationId.replace('conv', '');
+                    return [
+                        {
+                            id: `${conversationId}-msg1`,
+                            role: 'user',
+                            content: `Tell me about conversation ${conversationNumber}`,
+                            created_at: new Date(Date.now() - parseInt(conversationNumber) * 24 * 60 * 60 * 1000 - 3600000).toISOString(),
+                        },
+                        {
+                            id: `${conversationId}-msg2`,
+                            role: 'assistant',
+                            content: `Here's information about conversation ${conversationNumber}:\n\nConversation ${conversationNumber} is an interesting subject that covers various aspects:\n\n1. **Key Concepts**: This conversation introduces fundamental principles\n2. **Applications**: Real-world use cases and implementations\n3. **Best Practices**: Industry standards and recommendations\n\nWould you like to know more about any specific aspect of conversation ${conversationNumber}?`,
+                            created_at: new Date(Date.now() - parseInt(conversationNumber) * 24 * 60 * 60 * 1000 - 1800000).toISOString(),
+                        },
+                        {
+                            id: `${conversationId}-msg3`,
+                            role: 'user',
+                            content: 'Can you provide more details about the applications?',
+                            created_at: new Date(Date.now() - parseInt(conversationNumber) * 24 * 60 * 60 * 1000 - 900000).toISOString(),
+                        },
+                        {
+                            id: `${conversationId}-msg4`,
+                            role: 'assistant',
+                            content: `Certainly! Here are detailed applications for conversation ${conversationNumber}:\n\n**Industry Applications:**\n- Manufacturing: Process optimization and quality control\n- Healthcare: Data analysis and patient care improvement\n- Finance: Risk assessment and portfolio management\n- Technology: System architecture and performance tuning\n\n**Case Studies:**\n- Company A improved efficiency by 40% using these principles\n- Organization B reduced costs by 25% through implementation\n- Research institution C achieved breakthrough results\n\nEach application demonstrates the versatility and effectiveness of conversation ${conversationNumber} in solving real-world problems.`,
+                            created_at: new Date(Date.now() - parseInt(conversationNumber) * 24 * 60 * 60 * 1000).toISOString(),
+                        },
+                    ];
+                };
+
+                chatService.on('openConversation', (conversationId) => {
+                    if (!conversationId) {
+                        return;
+                    }
+
+                    setTimeout(() => {
+                        const conversation = generateConversation(conversationId);
+                        chatService.setConversation(conversation);
+                    }, 500);
+                });
             }, 500);
             break;
     }
@@ -3305,6 +3408,93 @@ All menu options support TypeScript types with proper nesting constraints:
 - **Translation**: Multi-language support for conversations
 - **Print**: Prepare conversations for printing
 - **Advanced Configuration**: Access to additional settings
+
+## Documentation
+
+For complete API reference and advanced usage examples, see the <a href="https://github.com/UiPath/apollo-design-system/blob/master/packages/apollo-react/src/material/components/ap-chat/DOCS.md" target="_blank">official Autopilot Chat documentation</a>.
+        `,
+        'history-pagination': `
+# History Pagination Demo
+
+Demonstrates paginated loading and searching of conversation history with lazy loading for improved performance when dealing with large conversation datasets.
+<div style="margin-top: 15px; padding: 20px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #17a2b8;">
+<h4 style="margin-top: 0; color: #2c3e50; font-size: 14px;">Paginated History Loading with Search</h4>
+<pre style="margin: 0; padding: 10px; background: #2c3e50; color: #ecf0f1; border-radius: 4px; overflow-x: auto; font-size: 12px;">import { AutopilotChatService } from '@uipath/portal-shell-util';
+
+// Initialize chat service with pagination enabled
+const chatService = AutopilotChatService.Instantiate({ instanceName: 'history-pagination-demo' });
+chatService.initialize({
+    mode: 'side-by-side',
+    paginatedHistory: true  // Enable history pagination
+});
+
+// Mock history data (50 conversations)
+const allHistory = [];
+for (let i = 1; i <= 50; i++) {
+    allHistory.push({
+        id: 'conv' + i,
+        name: 'Conversation ' + i,
+        timestamp: new Date(Date.now() - i * 24 * 60 * 60 * 1000).toISOString()
+    });
+}
+
+// Load initial batch of history
+const itemsPerPage = 10;
+const initialHistory = allHistory.slice(0, itemsPerPage);
+chatService.setHistory(initialHistory);
+chatService.toggleHistory(true);
+
+// Handle search event - consumer filters and returns first page
+chatService.on('historySearch', (payload) => {
+    const { searchText } = payload;
+
+    // Filter history based on search text
+    const filteredHistory = searchText
+        ? allHistory.filter(item =>
+            item.name.toLowerCase().includes(searchText.toLowerCase()))
+        : allHistory;
+
+    // Return first page of filtered results
+    const firstPage = filteredHistory.slice(0, itemsPerPage);
+    const isLastPage = filteredHistory.length <= itemsPerPage;
+
+    // Set filtered history with done flag
+    chatService.setHistory(firstPage, isLastPage);
+});
+
+// Handle load more event with search context
+chatService.on('historyLoadMore', (payload) => {
+    const { searchText } = payload;
+
+    // Get current offset based on existing history length
+    const currentHistoryLength = chatService.getHistory().length;
+
+    // Filter based on current search text
+    const filteredHistory = searchText
+        ? allHistory.filter(item =>
+            item.name.toLowerCase().includes(searchText.toLowerCase()))
+        : allHistory;
+
+    // Load next page
+    const startIndex = currentHistoryLength;
+    const endIndex = startIndex + itemsPerPage;
+    const nextPage = filteredHistory.slice(startIndex, endIndex);
+    const isLastPage = endIndex >= filteredHistory.length;
+
+    // Simulate async loading
+    setTimeout(() => {
+        chatService.appendOlderHistoryItems(nextPage, isLastPage);
+    }, 500);
+});</pre>
+</div>
+
+**Features demonstrated:**
+- Paginated history loading with 10 items per batch
+- Search functionality with debounced input (400ms)
+- Search context maintained during pagination
+- Skeleton loader during search operations
+- Lazy loading triggered by scroll events
+- Proper handling of last page indicator using \`done\` parameter
 
 ## Documentation
 

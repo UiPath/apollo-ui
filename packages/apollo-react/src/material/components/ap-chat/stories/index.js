@@ -19,3 +19,4 @@ export { ErrorHandling } from './ErrorHandling.story';
 export { FirstRunExperience } from './FirstRunExperience.story';
 export { TreeRenderer } from './TreeRenderer.story';
 export { CustomMenus } from './CustomMenus.story';
+export { HistoryPagination } from './HistoryPagination.story';

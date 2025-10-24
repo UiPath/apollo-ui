@@ -11,6 +11,7 @@ import {
     FeaturePlayground as FeaturePlaygroundStory,
     FirstRunExperience as FirstRunExperienceStory,
     FullScreenMode as FullScreenModeStory,
+    HistoryPagination as HistoryPaginationStory,
     InteractiveFeatures as InteractiveFeaturesStory,
     MinimalUI as MinimalUIStory,
     Settings as SettingsStory,
@@ -44,6 +45,7 @@ export const WithCitations = WithCitationsStory;
 export const StreamingWithCitations = StreamingWithCitationsStory;
 export const TreeRenderer = TreeRendererStory;
 export const CustomMenus = CustomMenusStory;
+export const HistoryPagination = HistoryPaginationStory;
 
 // Set display names
 Default.storyName = 'Default';
@@ -66,6 +68,7 @@ WithCitations.storyName = 'With Citations';
 StreamingWithCitations.storyName = 'Streaming With Citations';
 TreeRenderer.storyName = 'Tree Renderer';
 CustomMenus.storyName = 'Custom Menus';
+HistoryPagination.storyName = 'History Pagination';
 
 export default {
     title: 'Components/Autopilot Chat',

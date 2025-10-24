@@ -120,8 +120,9 @@ You can also access the `AutopilotChatService` class to create your own custom i
 
 | Method                                                                        | Description                                                                                                                                            |
 | ----------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `setHistory(history: AutopilotChatHistory[])`                                 | Sets the chat history list (see [AutopilotChatHistory](#autopilotchathistory))                                                                         |
+| `setHistory(history: AutopilotChatHistory[], done?: boolean)`                 | Sets the chat history list. Set `done` to `true` when no more items are available for pagination (see [AutopilotChatHistory](#autopilotchathistory)) |
 | `getHistory()`                                                                | Returns the current chat history                                                                                                                       |
+| `appendOlderHistoryItems(items: AutopilotChatHistory[], done?: boolean)`       | (Only when `paginatedHistory` is enabled) Appends older history items when loading more. Set `done` to `true` when no more items are available (see [Pagination and Loading More History](#pagination-and-loading-more-history))     |
 | `toggleHistory(open?: boolean)`                                               | Toggles the history panel visibility                                                                                                                   |
 | `deleteConversation(conversationId: string)`                                  | Deletes a conversation from the history                                                                                                                |
 | `openConversation(conversationId: string \| null, showLoadingState: boolean)` | Opens a specific conversation from the history, second parameter indicates if the chat should show loading spinner for conversation (defaults to true) |
@@ -208,6 +209,7 @@ Subscribes to chat events and returns an unsubscribe function. The handler will 
 - `SetModels`: Emitted when the models are set
 - `SetSelectedModel`: Emitted when the selected model is set
 - `ConversationLoadMore`: Emitted when the user scrolls to the top and more messages need to be loaded (see [Pagination and Loading More Messages](#pagination-and-loading-more-messages))
+- `HistoryLoadMore`: Emitted when the user scrolls to the bottom of the history list and more items need to be loaded (see [Pagination and Loading More History](#pagination-and-loading-more-history))
 - `Attachments`: <strong>DEPRECATED</strong> Emitted when the attachments are set in the prompt (the whole list of attachments)
 - `SetAttachments`: Emitted when the attachments change, providing details about which attachments were added and removed (see [Asynchronous Attachment Processing](#asynchronous-attachment-processing))
 - `InputStream`: Emitted when sendInputStreamEvent is called (see [AutopilotChatInputStreamEvent](#autopilotchatinputstreamevent)).
@@ -2094,6 +2096,79 @@ The chat service automatically preserves the user's scroll position when prepend
 2. **Handle errors gracefully**: Always call `prependOlderMessages([], true)` on error to stop loading
 3. **Consider caching**: Cache loaded messages to avoid redundant API calls
 
+## Pagination and Loading More History
+
+The chat service supports pagination for the history list, allowing you to load older conversation items incrementally as the user scrolls to the bottom of the history panel. This feature helps improve performance when dealing with large conversation histories.
+
+### Enabling History Pagination
+
+To enable history pagination, configure the chat service with the `paginatedHistory` option:
+
+```typescript
+chatService.initialize({
+  mode: AutopilotChatMode.SideBySide,
+  paginatedHistory: true // Enable history pagination with server-side search
+});
+```
+
+### Search Behavior
+
+The history search functionality works in two modes:
+
+1. **Non-paginated mode** (`paginatedHistory: false`, default): Search is performed locally on client-side data
+2. **Paginated mode** (`paginatedHistory: true`): Search events are emitted for server-side handling
+
+### Implementing Search with Pagination
+
+When pagination is enabled, the chat service emits events for both search and load more operations:
+
+```typescript
+// 1. Initial load
+const initialHistory = await fetchHistory({ offset: 0, limit: 20 });
+chatService.setHistory(initialHistory.items, initialHistory.isLastPage);
+
+// 2. Handle search events (new search or clear)
+chatService.on(AutopilotChatEvent.HistorySearch, async (event) => {
+  const { searchText } = event;
+  console.log('Search triggered:', searchText);
+
+  // Fetch filtered results from your API (always start from offset 0 for new search)
+  const response = await fetchHistory({
+    searchText,
+    offset: 0,
+    limit: 20
+  });
+
+  // Replace history with search results and indicate if more pages exist
+  chatService.setHistory(response.items, response.isLastPage);
+});
+
+// 3. Handle load more events (includes search context)
+chatService.on(AutopilotChatEvent.HistoryLoadMore, async (event) => {
+  const { searchText } = event;
+
+  // Use current history length as offset
+  const offset = chatService.getHistory().length;
+  console.log('Load more with search:', searchText, 'offset:', offset);
+
+  // Fetch next page with current search filter
+  const response = await fetchHistory({
+    searchText,
+    offset,
+    limit: 20
+  });
+
+  // Append to existing history
+  chatService.appendOlderHistoryItems(response.items, response.isLastPage);
+});
+```
+
+### Best Practices for History Pagination with Search
+
+1. **Use appropriate page sizes**: 10-20 history items per batch typically provides good performance
+2. **Handle errors gracefully**: Always call `appendOlderHistoryItems([], true)` on error to stop loading
+3. **Cache results**: Cache loaded history items and search results to avoid redundant API calls
+
 ## Feature Controls
 
 The chat service allows you to disable specific features to customize the experience.
@@ -2511,6 +2586,7 @@ import { FontVariantToken } from '@uipath/apollo-core';
  * @property preHooks - The hooks that trigger before the user action (UI interaction) of the chat.
  *                      Hooks expose current data for the action **before** the state change is attempted.
  * @property paginatedMessages - Flag to determine if the chat conversation is paginated
+ * @property paginatedHistory - Flag to determine if the history list is paginated
  * @property settingsRenderer - The renderer for the settings page. This will be used to render the settings page in the chat.
  * @property spacing - The spacing of the chat (prompt box, markdown tokens, etc)
  * @property theming - The theming of the chat (scroll thumb color, etc)
@@ -2534,6 +2610,7 @@ export interface AutopilotChatConfiguration {
     selectedAgentMode?: AutopilotChatAgentModeInfo;
     preHooks?: Partial<Record<AutopilotChatPreHookAction, (data?: any) => Promise<boolean>>>;
     paginatedMessages?: boolean;
+    paginatedHistory?: boolean;
     settingsRenderer?: (container: HTMLElement) => void;
     theming?: {
         scrollThumbColor?: string;
