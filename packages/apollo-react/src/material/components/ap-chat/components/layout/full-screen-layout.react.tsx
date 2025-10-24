@@ -4,7 +4,6 @@
 import { styled } from '@mui/material/styles';
 import token from '@uipath/apollo-core/lib';
 import {
-    AutopilotChatConfiguration,
     AutopilotChatInternalEvent,
     AutopilotChatMode,
     CHAT_CONTAINER_ANIMATION_DURATION,
@@ -28,13 +27,8 @@ const ContentContainer = styled('div')(() => ({
     minWidth: '0',
 }));
 
-const MainContainer = styled('div')<{
-    historyOpen: boolean; scrollThumbColor?: string;
-}>(({
-    historyOpen, scrollThumbColor,
-}: {
+const MainContainer = styled('div')<{ historyOpen: boolean }>(({ historyOpen }: {
     historyOpen: boolean;
-    scrollThumbColor?: string;
 }) => ({
     flex: 1,
     display: 'flex',
@@ -43,7 +37,6 @@ const MainContainer = styled('div')<{
     maxHeight: '100%',
     margin: `0 ${token.Spacing.SpacingL}`,
     ...(historyOpen && { width: `calc(100% - ${CHAT_DRAWER_WIDTH_FULL_SCREEN}px - 2 * ${token.Spacing.SpacingBase})` }), // account for padding
-    scrollbarColor: scrollThumbColor ? `${scrollThumbColor} ${'var(--color-background)'}` : 'auto',
 }));
 
 const HeaderContainer = styled('div')<{ padding: string }>(({ padding }: { padding: string }) => ({
@@ -69,7 +62,6 @@ interface FullScreenLayoutProps {
     settingsDisabled: boolean;
     mode: AutopilotChatMode;
     headerSeparatorDisabled: boolean;
-    theming: AutopilotChatConfiguration['theming'];
 }
 
 export const FullScreenLayout: React.FC<FullScreenLayoutProps> = ({
@@ -79,7 +71,6 @@ export const FullScreenLayout: React.FC<FullScreenLayoutProps> = ({
     settingsDisabled,
     mode,
     headerSeparatorDisabled,
-    theming,
 }) => {
     const { setFullScreenContainer } = useChatState();
     const chatInternalService = useChatService().__internalService__;
@@ -107,7 +98,7 @@ export const FullScreenLayout: React.FC<FullScreenLayoutProps> = ({
             </HeaderContainer>
 
             <ContentContainer ref={setFullScreenContainer}>
-                <MainContainer ref={mainContainerRef} historyOpen={historyOpen} scrollThumbColor={theming?.scrollBar?.scrollThumbColor}>
+                <MainContainer ref={mainContainerRef} historyOpen={historyOpen}>
                     <ChatScrollContainer mode={mode} />
 
                     <InputBackground>

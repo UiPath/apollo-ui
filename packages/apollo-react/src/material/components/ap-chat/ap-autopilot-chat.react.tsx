@@ -67,7 +67,6 @@ const AutopilotChatContent = React.memo(() => {
         settingsOpen,
         disabledFeatures,
         chatMode,
-        theming,
     } = useChatState();
 
     return (
@@ -89,7 +88,6 @@ const AutopilotChatContent = React.memo(() => {
                     settingsDisabled={disabledFeatures.settings ?? false}
                     headerSeparatorDisabled={disabledFeatures.headerSeparator ?? false}
                     mode={chatMode}
-                    theming={theming}
                 />
             ) : (
                 <StandardLayout
@@ -100,7 +98,6 @@ const AutopilotChatContent = React.memo(() => {
                     headerDisabled={disabledFeatures.header ?? false}
                     headerSeparatorDisabled={disabledFeatures.headerSeparator ?? false}
                     mode={chatMode}
-                    theming={theming}
                 />
             )}
         </ChatContainer>

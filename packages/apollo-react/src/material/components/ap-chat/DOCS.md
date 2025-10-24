@@ -2549,15 +2549,18 @@ The Autopilot Chat component provides theming customization capabilities through
 
 ### Scroll Bar Theming
 
-The chat supports customization of scrollbar appearance through the `scrollBar` configuration.
+The chat supports comprehensive customization of scrollbar appearance through the `scrollBar` configuration. This provides cross-browser compatible scrollbar styling for Webkit browsers (Chrome, Safari, Edge).
 
 ```typescript
-// Basic scroll bar theming
+// Scroll bar theming
 chatService.initialize({
   mode: AutopilotChatMode.SideBySide,
   theming: {
     scrollBar: {
-      scrollThumbColor: '#ff0000' // Custom red color for scroll thumb
+      scrollThumbColor: '#ff0000'  // Custom color for scroll thumb
+      scrollHoverColor: '#005a99',    // Custom thumb color on hover
+      scrollSize: '12px',             // Scrollbar width/thickness
+      scrollBorderRadius: '6px'       // Rounded corners for thumb
     }
   }
 });
@@ -2589,7 +2592,7 @@ import { FontVariantToken } from '@uipath/apollo-core';
  * @property paginatedHistory - Flag to determine if the history list is paginated
  * @property settingsRenderer - The renderer for the settings page. This will be used to render the settings page in the chat.
  * @property spacing - The spacing of the chat (prompt box, markdown tokens, etc)
- * @property theming - The theming of the chat (scroll thumb color, etc)
+ * @property theming - The theming of the chat (scrollbar appearance, etc)
  */
 export interface AutopilotChatConfiguration {
     mode: AutopilotChatMode;
@@ -2613,7 +2616,12 @@ export interface AutopilotChatConfiguration {
     paginatedHistory?: boolean;
     settingsRenderer?: (container: HTMLElement) => void;
     theming?: {
-        scrollThumbColor?: string;
+        scrollBar?: {
+            scrollThumbColor?: string;
+            scrollHoverColor?: string;
+            scrollSize?: string;
+            scrollBorderRadius?: string;
+        };
     };
     spacing?: {
         compactMode?: boolean;
