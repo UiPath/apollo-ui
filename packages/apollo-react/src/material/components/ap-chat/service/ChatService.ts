@@ -57,11 +57,13 @@ export class AutopilotChatService {
         // Or the framework will provide a settings page that will be used by all framework consumers
         // Audio will be disabled by default since each consumer needs to implement their own audio support
         // FullHeight will be disabled by default since most of the consumers will have the portal-shell header
+        // HtmlPreview will be disabled by default
         disabledFeatures: {
             settings: true,
             headerSeparator: true,
             audio: true,
             fullHeight: true,
+            htmlPreview: true,
         },
         settingsRenderer: () => {},
         models: undefined,
