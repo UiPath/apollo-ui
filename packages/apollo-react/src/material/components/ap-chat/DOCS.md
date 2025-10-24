@@ -28,14 +28,33 @@ The Autopilot Chat component is a full-featured chat interface that can be embed
   - Custom settings renderer for injecting your own settings UI
   - Settings feature disabled by default (must be explicitly enabled)
 - Real time voice input and output streaming
+- Model and agent mode selection:
+  - Configurable AI models with icons and descriptions
+  - Agent mode switching for different interaction patterns
+  - Event-driven model/mode change notifications
+- Custom header actions with nested menus:
+  - 2-level nested menu support
+  - Material Icons integration
+  - Custom action handlers
+- Loading and waiting state management:
+  - Automatic state management by default
+  - Manual control for custom workflows
+  - Event-driven state change notifications
+- Pagination support for large conversations
+- Pre-hooks for intercepting user interactions
+- Feature toggles for UI customization
+- Label overrides for internationalization
+- Spacing and theming configuration
 
 ## Global Chat Service
 
-The chat service is exposed globally and can be accessed as:
+The chat service is instantiated by default and available at:
 
 ```typescript
 const chatService = window.PortalShell.AutopilotChat;
 ```
+
+You can also access the `AutopilotChatService` class to create your own custom instances. See [Creating a Standalone Instance](#creating-a-standalone-instance) for details.
 
 ## API Reference
 
@@ -50,13 +69,13 @@ const chatService = window.PortalShell.AutopilotChat;
 | `getMessageRenderer(name: string)`                                                                             | Retrieves a message renderer by name                                                                                                                                                                                            |
 | `setFirstRunExperience(config: AutopilotChatConfiguration['firstRunExperience'])`                              | Configures the first run experience (see [First Run Experience](#first-run-experience)) displayed when the chat is opened for the first time or when there are no messages                                                      |
 | `setAllowedAttachments(allowedAttachments: AutopilotChatAllowedAttachments)`                                   | Configures the allowed file attachments (see [AutopilotChatAllowedAttachments](#autopilotchatallowedattachments))                                                                                                               |
-| `setModels(models: AutopilotChatModelInfo[])`                                                                 | Configures the models (see [AutopilotChatModelInfo](#autopilotchatmodelinfo))                                                                                                                                                   |
+| `setModels(models: AutopilotChatModelInfo[])`                                                                 | Configures the models (see [Model Selection](#model-selection))                                                                                                                                                   |
 | `getModels()`                                                                                                  | Returns the current list of available models                                                                                                                                                                                    |
-| `setSelectedModel(modelId: string)`                                                                            | Configures the selected model                                                                                                                                                                                                   |
+| `setSelectedModel(modelId: string)`                                                                            | Configures the selected model (see [Model Selection](#model-selection))                                                                                                                                                                                                   |
 | `getSelectedModel()`                                                                                           | Returns the currently selected model                                                                                                                                                                                            |
-| `setAgentModes(agentModes: AutopilotChatAgentModeInfo[])`                                                     | Configures the agent modes (see [AutopilotChatAgentModeInfo](#autopilotchatagentmodeinfo))                                                                                                                                      |
+| `setAgentModes(agentModes: AutopilotChatAgentModeInfo[])`                                                     | Configures the agent modes (see [Agent Mode Selection](#agent-mode-selection))                                                                                                                                      |
 | `getAgentModes()`                                                                                              | Returns the current list of available agent modes                                                                                                                                                                               |
-| `setAgentMode(mode: string)`                                                                                   | Sets the agent mode (any string value). This emits the `SetSelectedAgentMode` event that consumers can listen to                                                                                                                     |
+| `setAgentMode(mode: string)`                                                                                   | Sets the agent mode (any string value). This emits the `SetSelectedAgentMode` event that consumers can listen to (see [Agent Mode Selection](#agent-mode-selection))                                                                                                                     |
 | `getAgentMode()`                                                                                               | Returns the currently selected agent mode                                                                                                                                                                                       |
 | `setCustomHeaderActions(actions: AutopilotChatCustomHeaderAction[])`                                         | Configures custom header actions with support for nested menus (see [Custom Header Actions](#custom-header-actions))                                                                                           |
 | `getCustomHeaderActions()`                                                                                     | Returns the current list of custom header actions                                                                                                                                                                                  |
@@ -85,8 +104,8 @@ const chatService = window.PortalShell.AutopilotChat;
 | `stopResponse()`                                                                | Stops the current streaming response, if applicable                                                                                                                                                                                                                          |
 | `setDefaultLoadingMessages(messages: string[], duration?: number)`              | Sets the default loading messages and duration between switching messages                                                                                                                                                                                                    |
 | `setLoadingMessage(message: string)`                                            | Sets the loading message, overriding the default loading messages                                                                                                                                                                                                            |
-| `setShowLoading(showLoading: boolean)`                                          | Shows or hides the loading indicator in the chat service. When used, this method overrides the default automatic loading behavior from apollo (except for request), giving you manual control over when the loading state is displayed.                                      |
-| `setWaiting(waiting: boolean)`                                                  | Sets the waiting state for the input prompt box. When set to true, users can still type in the input field but cannot send messages. This overrides the default automatic waiting behavior (except for equest), giving you manual control over when users can send messages. |
+| `setShowLoading(showLoading: boolean)`                                          | Shows or hides the loading indicator in the chat service (see [Loading and Waiting States](#loading-and-waiting-states)). When used, this method overrides the default automatic loading behavior from apollo (except for request), giving you manual control over when the loading state is displayed.                                      |
+| `setWaiting(waiting: boolean)`                                                  | Sets the waiting state for the input prompt box (see [Loading and Waiting States](#loading-and-waiting-states)). When set to true, users can still type in the input field but cannot send messages. This overrides the default automatic waiting behavior (except for request), giving you manual control over when users can send messages. |
 | `setSuggestions(suggestions: AutopilotChatSuggestion[], sendOnClick?: boolean)` | Sets suggestions that appear in the chat interface. When `sendOnClick` is true, clicking a suggestion sends it immediately (defaults to the first run experience setting); otherwise it sets the prompt (see [AutopilotChatSuggestion](#autopilotchatsuggestion))            |
 | `getMessagesInGroup(groupId: string)`                                           | Returns all messages that belong to the specified group ID                                                                                                                                                                                                                   |
 | `setAttachmentsLoading(attachments: AutopilotChatFileInfo[])`                   | Sets the loading state for attachments. Use this to show loading indicators while attachments are being processed asynchronously (see [Asynchronous Attachment Processing](#asynchronous-attachment-processing))                                                             |
@@ -128,25 +147,6 @@ const chatService = window.PortalShell.AutopilotChat;
 | `setError(error: string)` | Sets an error message to display in the chat interface |
 | `clearError()`            | Clears the current error message                       |
 | `getError()`              | Returns the current error message, if any              |
-
-### Loading and Waiting States
-
-The chat service provides methods to control loading indicators and input availability. By default, the chat automatically manages these states based on message flow - showing loading when awaiting responses and disabling input during processing. However, you can override this automatic behavior for custom control:
-
-#### Manual Loading Control
-When you call `setShowLoading(true)` or `setShowLoading(false)`, you take manual control of the loading indicator. This overrides the default automatic loading behavior, meaning:
-- The chat will no longer automatically show loading when processing responses (it will only show it on request)
-- You must explicitly call `setShowLoading(false)` to hide the loading state
-
-#### Manual Waiting Control  
-When you call `setWaiting(true)` or `setWaiting(false)`, you take manual control of the message sending capability. This overrides the default automatic waiting behavior (except for request), meaning:
-- The chat will no longer automatically manage the send functionality during message processing
-- The send state will remain as you set it until you explicitly change it (or the user clicks stop response)
-- When `setWaiting(true)`: Users can type in the input field but cannot send messages
-- When `setWaiting(false)`: Users can both type and send messages normally
-- Useful for controlling when users can submit messages based on external conditions while still allowing them to compose their message
-
-**Important**: Once you use either of these methods, you are responsible for managing that state throughout the session. The automatic behavior will not resume until the chat is reinitialized.
 
 ### Feature Configuration
 
@@ -539,6 +539,370 @@ chatService.on(AutopilotChatEvent.CustomHeaderActionClicked, (action) => {
 // Retrieve the currently configured custom header actions
 const currentActions = chatService.getCustomHeaderActions();
 console.log('Current custom header actions:', currentActions);
+```
+
+### Model Selection
+
+The Autopilot Chat component supports configuring and selecting different AI models. This allows users to switch between various language models or AI assistants based on their needs.
+
+#### Setting Available Models
+
+```typescript
+// Configure the available models
+chatService.setModels([
+  {
+    id: 'gpt-4',
+    name: 'GPT-4',
+    icon: 'psychology',
+    description: 'Most capable model, best for complex tasks'
+  },
+  {
+    id: 'gpt-3.5-turbo',
+    name: 'GPT-3.5 Turbo',
+    icon: 'speed',
+    description: 'Fast and efficient, good for most tasks'
+  },
+  {
+    id: 'claude-3',
+    name: 'Claude 3',
+    icon: 'memory',
+    description: 'Excellent for analysis and reasoning'
+  },
+  {
+    id: 'custom-model',
+    name: 'Custom Model',
+    icon: 'smart_toy',
+    description: null // Description is optional
+  }
+]);
+```
+
+#### Setting the Selected Model
+
+```typescript
+// Set the currently selected model by ID (string)
+chatService.setSelectedModel('gpt-4');
+```
+
+#### Getting Model Information
+
+```typescript
+// Get all available models
+const models = chatService.getModels();
+console.log('Available models:', models);
+
+// Get the currently selected model
+const selectedModel = chatService.getSelectedModel();
+console.log('Current model:', selectedModel);
+```
+
+#### Listening for Model Changes
+
+```typescript
+// Listen for model selection changes
+chatService.on(AutopilotChatEvent.SetSelectedModel, (modelId) => {
+  console.log('User switched to model:', modelId);
+  
+  // You might want to adjust settings based on the model
+  if (modelId === 'gpt-4') {
+    // Configure for GPT-4 specific settings
+  }
+});
+```
+
+### Agent Mode Selection
+
+The Autopilot Chat component supports configuring different agent modes, allowing users to switch between various AI interaction patterns or capabilities.
+
+#### Setting Available Agent Modes
+
+```typescript
+// Configure the available agent modes
+chatService.setAgentModes([
+  {
+    id: 'agent',
+    name: 'Agent',
+    description: 'AI-powered autonomous agent mode',
+    icon: 'smart_toy'
+  },
+  {
+    id: 'plan',
+    name: 'Plan',
+    description: 'Create and review execution plans',
+    icon: 'edit_note'
+  },
+  {
+    id: 'attended',
+    name: 'Attended',
+    description: 'Human assisted execution',
+    icon: 'play_arrow'
+  },
+  {
+    id: 'copilot',
+    name: 'Copilot',
+    description: 'Collaborative assistance mode',
+    icon: 'group'
+  }
+]);
+```
+
+#### Setting the Selected Agent Mode
+
+```typescript
+// Set the currently selected agent mode by ID
+chatService.setAgentMode('agent');
+
+// Agent mode can be any string value
+chatService.setAgentMode('custom-mode');
+```
+
+#### Getting Agent Mode Information
+
+```typescript
+// Get all available agent modes
+const agentModes = chatService.getAgentModes();
+console.log('Available agent modes:', agentModes);
+
+// Get the currently selected agent mode
+const selectedMode = chatService.getAgentMode();
+console.log('Current agent mode:', selectedMode);
+```
+
+#### Listening for Agent Mode Changes
+
+```typescript
+// Listen for agent mode selection changes
+chatService.on(AutopilotChatEvent.SetSelectedAgentMode, (mode) => {
+  console.log('User switched to agent mode:', mode);
+  
+  // Handle mode-specific logic
+  switch (mode) {
+    case 'agent':
+      // Enable autonomous agent features
+      break;
+    case 'plan':
+      // Enable planning features
+      break;
+    case 'attended':
+      // Enable human-in-the-loop features
+      break;
+  }
+});
+```
+
+#### Combined Model and Agent Mode Configuration
+
+```typescript
+// Configure both models and agent modes during initialization
+chatService.initialize({
+  mode: AutopilotChatMode.SideBySide,
+  models: [
+    {
+      id: 'gpt-4',
+      name: 'GPT-4',
+      icon: 'psychology',
+      description: 'Most capable model'
+    },
+    {
+      id: 'gpt-3.5-turbo',
+      name: 'GPT-3.5 Turbo',
+      icon: 'speed',
+      description: 'Fast and efficient'
+    }
+  ],
+  selectedModel: { 
+    id: 'gpt-4', 
+    name: 'GPT-4', 
+    icon: 'psychology', 
+    description: 'Most capable model' 
+  },
+  agentModes: [
+    {
+      id: 'agent',
+      name: 'Agent',
+      description: 'Autonomous agent mode',
+      icon: 'smart_toy'
+    },
+    {
+      id: 'copilot',
+      name: 'Copilot',
+      description: 'Collaborative mode',
+      icon: 'group'
+    }
+  ],
+  selectedAgentMode: {
+    id: 'agent',
+    name: 'Agent',
+    description: 'Autonomous agent mode',
+    icon: 'smart_toy'
+  }
+});
+```
+
+### Loading and Waiting States
+
+The Autopilot Chat component provides methods to control loading indicators and input availability, allowing you to create custom user experiences around async operations and state management.
+
+#### Automatic vs Manual Control
+
+By default, the chat automatically manages loading and waiting states based on message flow:
+- Shows loading when awaiting responses
+- Disables input during processing
+- Enables input when ready for user interaction
+
+However, you can override this automatic behavior for custom control scenarios.
+
+#### Manual Loading Control
+
+When you call `setShowLoading()`, you take manual control of the loading indicator. This overrides the default automatic loading behavior.
+
+```typescript
+// Show loading indicator
+chatService.setShowLoading(true);
+
+// Perform your async operation
+await performLongRunningOperation();
+
+// Hide loading indicator when done
+chatService.setShowLoading(false);
+```
+
+**Important considerations:**
+- Once you use `setShowLoading()`, the chat will no longer automatically show loading when processing responses (except for request)
+- You must explicitly call `setShowLoading(false)` to hide the loading state
+- This gives you full control but also full responsibility for managing the loading state
+
+```typescript
+// Example: Custom data fetching with loading state
+chatService.on(AutopilotChatEvent.Request, async (message) => {
+  // Show loading
+  chatService.setShowLoading(true);
+  
+  try {
+    // Fetch data from your API
+    const response = await fetchFromAPI(message.content);
+    
+    // Send response
+    chatService.sendResponse({
+      content: response.data,
+      role: AutopilotChatRole.Assistant
+    });
+  } catch (error) {
+    chatService.setError('Failed to process request');
+  } finally {
+    // Always hide loading
+    chatService.setShowLoading(false);
+  }
+});
+```
+
+#### Manual Waiting Control
+
+When you call `setWaiting()`, you take manual control of the message sending capability. This allows users to type but controls when they can submit messages.
+
+```typescript
+// Prevent users from sending messages (but allow typing)
+chatService.setWaiting(true);
+
+// Perform some validation or setup
+await validateUserContext();
+
+// Allow users to send messages again
+chatService.setWaiting(false);
+```
+
+**Use cases for waiting control:**
+- **External Conditions**: Block sending until external conditions are met (e.g., authentication, initialization)
+- **Rate Limiting**: Prevent rapid message submission
+- **Sequential Operations**: Ensure messages are processed in order
+- **Form Validation**: Wait for required data before allowing submission
+
+```typescript
+// Example: Authentication-based message control
+async function initializeChat() {
+  // Block sending until authenticated
+  chatService.setWaiting(true);
+  
+  try {
+    await authenticateUser();
+    // User is authenticated, allow sending
+    chatService.setWaiting(false);
+  } catch (error) {
+    chatService.setError('Please log in to continue');
+    // Keep waiting state active
+  }
+}
+```
+
+**Important considerations:**
+- When `setWaiting(true)`: Users can type in the input field but cannot send messages
+- When `setWaiting(false)`: Users can both type and send messages normally  
+- The send state will remain as you set it until you explicitly change it (or the user clicks stop response)
+- Once you use `setWaiting()`, you are responsible for managing that state throughout the session (except for request handling)
+
+#### Combining Loading and Waiting States
+
+You can combine both controls for sophisticated UX patterns:
+
+```typescript
+// Example: Multi-step async workflow
+async function handleComplexRequest(message: AutopilotChatMessage) {
+  // Step 1: Block input and show loading
+  chatService.setWaiting(true);
+  chatService.setShowLoading(true);
+  chatService.setLoadingMessage('Processing your request...');
+  
+  try {
+    // Step 2: Perform async operation
+    const result = await processRequest(message);
+    
+    // Step 3: Update loading message
+    chatService.setLoadingMessage('Generating response...');
+    
+    // Step 4: Send response
+    chatService.sendResponse({
+      content: result,
+      role: AutopilotChatRole.Assistant
+    });
+    
+  } catch (error) {
+    chatService.setError('An error occurred');
+  } finally {
+    // Step 5: Re-enable input and hide loading
+    chatService.setShowLoading(false);
+    chatService.setWaiting(false);
+  }
+}
+```
+
+#### Listening to State Changes
+
+You can listen to state changes to update your UI or trigger other actions:
+
+```typescript
+// Listen for loading state changes
+chatService.on(AutopilotChatEvent.SetShowLoading, (isLoading) => {
+  console.log('Loading state changed:', isLoading);
+  // Update external UI elements
+});
+
+// Listen for waiting state changes
+chatService.on(AutopilotChatEvent.SetWaiting, (isWaiting) => {
+  console.log('Waiting state changed:', isWaiting);
+  // Update external UI elements
+});
+```
+
+#### Resetting to Automatic Behavior
+
+To return to automatic state management, reinitialize the chat or avoid calling these manual control methods.
+
+```typescript
+// Reinitialize to reset to automatic behavior
+chatService.initialize({
+  mode: AutopilotChatMode.SideBySide,
+  // ... other config
+});
 ```
 
 ## Usage Examples
@@ -2333,6 +2697,8 @@ export interface AutopilotChatModelInfo {
 }
 ```
 
+See [Model Selection](#model-selection) section for detailed usage examples.
+
 ### AutopilotChatAgentModeInfo
 
 ```typescript
@@ -2353,32 +2719,7 @@ export interface AutopilotChatAgentModeInfo {
 }
 ```
 
-**Example usage:**
-
-```typescript
-window.PortalShell.AutopilotChat.setAgentModes([
-    {
-        id: 'agent',
-        name: 'Agent',
-        description: 'AI-powered autonomous agent mode',
-        icon: 'smart_toy'
-    },
-    {
-        id: 'plan',
-        name: 'Plan',
-        description: 'Create and review execution plans',
-        icon: 'edit_note'
-    },
-    {
-        id: 'attended',
-        name: 'Attended',
-        description: 'Human assisted execution',
-        icon: 'play_arrow'
-    }
-]);
-
-window.PortalShell.AutopilotChat.setAgentMode('agent');
-```
+See [Agent Mode Selection](#agent-mode-selection) section for detailed usage examples.
 
 ### AutopilotChatCustomHeaderAction
 
