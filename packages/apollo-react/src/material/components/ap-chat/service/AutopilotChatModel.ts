@@ -186,6 +186,8 @@ export interface AutopilotChatMessageRenderer {
  *                                           (agent | plan | execute)
  * @property {string} SetCustomHeaderActions - Emitted when custom header actions are set
  * @property {string} CustomHeaderActionClicked - Emitted when a custom header action is clicked
+ * @property {string} HistoryLoadMore - Emitted when the history load more is triggered (scrolling to bottom)
+ * @property {string} HistorySearch - Emitted when the history search is triggered (search for a conversation in the history list)
  */
 export enum AutopilotChatEvent {
     Error = 'error',
@@ -213,6 +215,8 @@ export enum AutopilotChatEvent {
     SetSelectedModel = 'setSelectedModel',
     SetAgentModes = 'setAgentModes',
     ConversationLoadMore = 'conversationLoadMore',
+    HistoryLoadMore = 'historyLoadMore',
+    HistorySearch = 'historySearch',
     Attachments = 'attachments',
     SetAttachments = 'setAttachments',
     InputStream = 'inputStream',
@@ -259,6 +263,9 @@ export enum AutopilotChatInterceptableEvent {
  * @property {string} SetTheming - Emitted when the theming is set for the chat
  * @property {string} SetAttachmentsLoading - Emitted when the attachments loading is set
  * @property {string} SetInputFocused - Emitted when the input should be focused
+ * @property {string} SetIsLoadingMoreHistory - Emitted when the is loading more history is set
+ * @property {string} ShouldShowLoadingMoreHistory - Emitted when loading more history should be shown
+ * @property {string} AppendOlderHistory - Emitted when older history items are appended to the history
  */
 export enum AutopilotChatInternalEvent {
     ChatResize = 'chatResize',
@@ -279,6 +286,9 @@ export enum AutopilotChatInternalEvent {
     SetAttachmentsLoading = 'setAttachmentsLoading',
     SetInputFocused = 'setInputFocused',
     SetTheming = 'setTheming',
+    SetIsLoadingMoreHistory = 'setIsLoadingMoreHistory',
+    ShouldShowLoadingMoreHistory = 'shouldShowLoadingMoreHistory',
+    AppendOlderHistory = 'appendOlderHistory',
 }
 
 export type AutopilotChatEventHandler<T = any> = (data?: T) => void;
@@ -449,6 +459,7 @@ export enum AutopilotChatPreHookAction {
  * @property paginatedMessages - Flag to determine if the chat conversation is paginated
  * @property settingsRenderer - The renderer for the settings page. This will be used to
  *                               render the settings page in the chat.
+ * @property paginatedHistory - Flag to determine if the chat history is paginated
  * @property spacing - The spacing of the chat (prompt box, markdown tokens, etc)
  * @property theming - The theming of the chat (scroll thumb color, etc)
  */
@@ -471,6 +482,7 @@ export interface AutopilotChatConfiguration {
     selectedAgentMode?: AutopilotChatAgentModeInfo;
     preHooks?: Partial<Record<AutopilotChatPreHookAction, (data?: any) => Promise<boolean>>>;
     paginatedMessages?: boolean;
+    paginatedHistory?: boolean;
     settingsRenderer?: (container: HTMLElement) => void;
     theming?: {
         scrollBar?: {
@@ -689,4 +701,13 @@ export interface AutopilotChatMediaChunk {
      * Base64 encoded chunk of data.
      */
     data: string;
+}
+
+/**
+ * Represents the payload for the HistorySearch event.
+ *
+ * @property searchText - The search text to filter history items
+ */
+export interface AutopilotChatHistorySearchPayload {
+    searchText: string;
 }
