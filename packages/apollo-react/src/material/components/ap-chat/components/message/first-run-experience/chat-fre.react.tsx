@@ -19,6 +19,7 @@ const FREContainer = styled('div')(() => ({
     bottom: 0,
     marginBottom: token.Spacing.SpacingL,
     maxHeight: `calc(100% - ${token.Spacing.SpacingL})`,
+    width: `calc(100% - (2 * ${token.Spacing.SpacingL}))`,
     overflow: 'auto',
 }));
 
