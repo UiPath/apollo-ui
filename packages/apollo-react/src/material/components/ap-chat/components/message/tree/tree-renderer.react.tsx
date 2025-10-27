@@ -61,6 +61,7 @@ export const ApolloChatTreeRenderer: React.FC<ApolloChatTreeRendererProps> = ({
             title: spanNode.name ?? t('unknown'),
             description: spanData.attributes?.description ?? spanData.attributes?.type ?? t('no-description'),
             icon: spanData.icon,
+            expanded: spanData.expanded,
             titleColor: spanData.titleColor,
             customIcon: spanData.customIcon,
             additionalInfo: getAdditionalInfo(spanData),
@@ -74,10 +75,12 @@ export const ApolloChatTreeRenderer: React.FC<ApolloChatTreeRendererProps> = ({
     const transformSpanToTreeItem = customTransformSpanToTreeItem || defaultTransformSpanToTreeItem;
 
     const treeItems = transformToTreeItems(span);
-    const getAllItemIds = (items: ApTreeViewItem[]): string[] => {
+    const getExpandedItems = (items: ApTreeViewItem[]): string[] => {
         const ids: string[] = [];
         const traverse = (item: ApTreeViewItem) => {
-            ids.push(item.id);
+            if (item.expanded !== false) {
+                ids.push(item.id);
+            }
             if (item.children) {
                 item.children.forEach(traverse);
             }
@@ -86,7 +89,7 @@ export const ApolloChatTreeRenderer: React.FC<ApolloChatTreeRendererProps> = ({
         return ids;
     };
 
-    const allItemIds = getAllItemIds(treeItems);
+    const expandedItems = getExpandedItems(treeItems);
 
     // Callback handlers
     const handleItemSelect = React.useCallback((itemId: string | undefined) => {
@@ -121,7 +124,7 @@ export const ApolloChatTreeRenderer: React.FC<ApolloChatTreeRendererProps> = ({
         <div className="apollo-chat-tree-renderer">
             <ApTreeViewReact
                 items={treeItems}
-                expanded={allItemIds}
+                expanded={expandedItems}
                 disableExpandCollapse={false}
                 showSelectedChevron={true}
                 useApIcon={true}

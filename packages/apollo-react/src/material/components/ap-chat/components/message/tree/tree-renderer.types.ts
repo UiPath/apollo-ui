@@ -8,6 +8,7 @@ export type ToolData = TSpan & {
     icon?: string;
     titleColor?: string;
     customIcon?: string;
+    expanded?: boolean;
 };
 export type TreeSpanNode = ITreeNode<ToolData>;
 
