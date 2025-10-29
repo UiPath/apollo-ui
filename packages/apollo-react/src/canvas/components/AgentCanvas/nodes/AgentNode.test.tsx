@@ -11,6 +11,11 @@ vi.mock("@uipath/uix/xyflow/react", () => ({
     Left: "left",
     Right: "right",
   },
+  BackgroundVariant: {
+    Dots: "dots",
+    Lines: "lines",
+    Cross: "cross",
+  },
   useStore: () => ({ edges: [], isConnecting: false }),
   useConnection: () => ({ inProgress: false }),
 }));
@@ -21,6 +26,12 @@ vi.mock("../../ButtonHandle/useButtonHandles", () => ({
 
 vi.mock("../../ExecutionStatusIcon/ExecutionStatusIcon", () => ({
   ExecutionStatusIcon: ({ status }: { status?: string }) => <div data-testid="execution-status-icon">{status || "none"}</div>,
+}));
+
+vi.mock("../store/agent-flow-store", () => ({
+  useAgentFlowStore: () => ({
+    actOnSuggestion: vi.fn(),
+  }),
 }));
 
 // Mock Icons from @uipath/uix/core

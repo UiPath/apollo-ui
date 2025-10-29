@@ -3,7 +3,13 @@ import { ApIcon } from "@uipath/portal-shell-react";
 import { Icons, Row } from "@uipath/uix/core";
 import { Position, type NodeProps } from "@uipath/uix/xyflow/react";
 import { NewBaseNode } from "../../BaseNode/NewBaseNode";
-import { type AgentFlowResourceNode, type AgentFlowResourceNodeData, type ResourceNodeTranslations } from "../../../types";
+import {
+  type AgentFlowResourceNode,
+  type AgentFlowResourceNodeData,
+  type ResourceNodeTranslations,
+  type SuggestionTranslations,
+  DefaultSuggestionTranslations,
+} from "../../../types";
 import { useAgentFlowStore } from "../store/agent-flow-store";
 import { ExecutionStatusIcon } from "../../ExecutionStatusIcon/ExecutionStatusIcon";
 import type { NodeToolbarConfig, ToolbarAction } from "../../NodeToolbar/NodeToolbar.types";
@@ -25,6 +31,7 @@ interface ResourceNodeProps extends NodeProps<AgentFlowResourceNode> {
   onCollapseResource?: (resourceId: string, resource: AgentFlowResourceNodeData) => void;
   onRemoveResource?: (resourceId: string) => void;
   translations?: ResourceNodeTranslations;
+  suggestionTranslations?: SuggestionTranslations;
 }
 
 export const ResourceNode = memo(
@@ -43,14 +50,20 @@ export const ResourceNode = memo(
     onAddGuardrail,
     onGoToSource,
     translations,
+    suggestionTranslations,
   }: ResourceNodeProps) => {
-    const { nodes: _nodes, deleteNode } = useAgentFlowStore();
+    const { nodes: _nodes, deleteNode, actOnSuggestion } = useAgentFlowStore();
 
     const displayTooltips = mode === "design";
     const hasBreakpoint = data.hasBreakpoint ?? false;
     const hasGuardrails = data.hasGuardrails ?? false;
     const isCurrentBreakpoint = data.isCurrentBreakpoint ?? false;
     const isDisabled = data.isDisabled ?? false;
+    const isSuggestion = data.isSuggestion ?? false;
+    const suggestionId = data.suggestionId;
+    const suggestionType = data.suggestionType;
+    const _isPlaceholder = data.isPlaceholder ?? false; // Placeholder state is handled via node styling
+    const suggestTranslations = suggestionTranslations ?? DefaultSuggestionTranslations;
 
     const handleClickEnable = useCallback(() => {
       onEnable?.(id, data);
@@ -79,6 +92,13 @@ export const ResourceNode = memo(
     const handleClickRemove = useCallback(() => {
       deleteNode(id);
     }, [id, deleteNode]);
+
+    const handleActOnSuggestion = useCallback(
+      (suggestionId: string, action: "accept" | "reject") => {
+        actOnSuggestion(suggestionId, action);
+      },
+      [actOnSuggestion]
+    );
 
     const resourceIcon = useMemo(() => {
       let icon: React.ReactNode | undefined;
@@ -116,6 +136,32 @@ export const ResourceNode = memo(
     const toolbarConfig = useMemo((): NodeToolbarConfig | undefined => {
       if (mode === "view") {
         return undefined;
+      }
+
+      // If this is a suggestion, show accept/reject actions
+      if (isSuggestion && suggestionId) {
+        const rejectAction: ToolbarAction = {
+          id: "reject-suggestion",
+          icon: "close",
+          label: suggestTranslations.reject,
+          disabled: false,
+          onAction: () => handleActOnSuggestion(suggestionId, "reject"),
+        };
+
+        const acceptAction: ToolbarAction = {
+          id: "accept-suggestion",
+          icon: "check",
+          label: suggestTranslations.accept,
+          disabled: false,
+          onAction: () => handleActOnSuggestion(suggestionId, "accept"),
+        };
+
+        return {
+          actions: [rejectAction, acceptAction],
+          overflowActions: [],
+          position: "top",
+          align: "center",
+        };
       }
 
       const toggleBreakpointAction: ToolbarAction = {
@@ -186,6 +232,8 @@ export const ResourceNode = memo(
       data.type,
       hasBreakpoint,
       isDisabled,
+      isSuggestion,
+      suggestionId,
       handleClickEnable,
       handleClickDisable,
       handleClickRemoveBreakpoint,
@@ -194,6 +242,8 @@ export const ResourceNode = memo(
       handleClickAddGuardrail,
       handleClickGoToSource,
       handleClickRemove,
+      handleActOnSuggestion,
+      suggestTranslations,
     ]);
 
     const toolTopHandles = useMemo(
@@ -262,10 +312,8 @@ export const ResourceNode = memo(
     );
 
     const breakpointAdornment = useMemo((): NodeAdornment => {
-      if (hasBreakpoint) {
-        return { icon: <ApIcon variant="normal" name="circle" size="14px" color="#cc3d45" /> };
-      }
-      return { icon: undefined };
+      if (!hasBreakpoint) return { icon: undefined };
+      return { icon: <ApIcon variant="normal" name="circle" size="14px" color="#cc3d45" /> };
     }, [hasBreakpoint]);
 
     const statusAdornment = useMemo((): NodeAdornment => {
@@ -279,14 +327,31 @@ export const ResourceNode = memo(
     }, [displayTooltips, executionStatus, data.errors]);
 
     const guardrailsAdornment = useMemo((): NodeAdornment => {
-      if (hasGuardrails) {
-        return {
-          icon: <ApIcon variant="outlined" name="gpp_good" size="18px" color="var(--color-icon-default)" />,
-          tooltip: displayTooltips ? (translations?.guardrailsApplied ?? "") : undefined,
-        };
-      }
-      return { icon: undefined };
+      if (!hasGuardrails) return { icon: undefined };
+      return {
+        icon: <ApIcon variant="outlined" name="gpp_good" size="18px" color="var(--color-icon-default)" />,
+        tooltip: displayTooltips ? (translations?.guardrailsApplied ?? "") : undefined,
+      };
     }, [displayTooltips, hasGuardrails, translations]);
+
+    const suggestionAdornment = useMemo((): NodeAdornment => {
+      if (!isSuggestion) return { icon: undefined };
+      let iconName = "swap_horizontal_circle";
+      let color = "var(--color-warning-icon)";
+
+      if (suggestionType === "add") {
+        iconName = "add_circle";
+        color = "var(--color-success-icon)";
+      } else if (suggestionType === "delete") {
+        iconName = "remove_circle";
+        color = "var(--color-error-icon)";
+      }
+
+      return {
+        icon: <ApIcon variant="normal" name={iconName} size="18px" color={color} />,
+        tooltip: undefined,
+      };
+    }, [isSuggestion, suggestionType]);
 
     const handleConfigurations = useMemo(
       () => [
@@ -329,6 +394,7 @@ export const ResourceNode = memo(
         handleConfigurations={handleConfigurations}
         disabled={isDisabled}
         executionStatus={executionStatus}
+        suggestionType={suggestionType}
         icon={resourceIcon}
         display={{
           iconBackground: "var(--color-background-secondary)",
@@ -342,6 +408,7 @@ export const ResourceNode = memo(
         adornments={{
           topLeft: breakpointAdornment,
           topRight: statusAdornment,
+          bottomLeft: suggestionAdornment,
           bottomRight: guardrailsAdornment,
         }}
         type={id}
@@ -350,7 +417,7 @@ export const ResourceNode = memo(
         dragging={false}
         zIndex={0}
         selectable={true}
-        deletable={true}
+        deletable={!isSuggestion}
         selected={selected}
         isConnectable={true}
         positionAbsoluteX={0}

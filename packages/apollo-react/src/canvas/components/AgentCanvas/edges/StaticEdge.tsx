@@ -1,6 +1,6 @@
 import { BaseEdge, type EdgeProps, getSmoothStepPath, type Position } from "@uipath/uix/xyflow/react";
 
-import type { AgentFlowDefaultEdge } from "../../../types";
+import type { AgentFlowDefaultEdge, SuggestionType } from "../../../types";
 import { EDGE_STYLES } from "../../../components/BaseCanvas/BaseCanvas.constants";
 import { useAgentFlowStore } from "../store/agent-flow-store";
 import { useMemo } from "react";
@@ -17,6 +17,8 @@ type StaticEdgeProps = EdgeProps &
     hasSuccess?: boolean;
     hasRunning?: boolean;
     isCurrentBreakpoint?: boolean;
+    isSuggestion?: boolean;
+    suggestionType?: SuggestionType;
   };
 
 export const StaticEdge = ({
@@ -33,6 +35,8 @@ export const StaticEdge = ({
   hasSuccess = false,
   hasRunning = false,
   isCurrentBreakpoint = false,
+  isSuggestion = false,
+  suggestionType,
 }: StaticEdgeProps) => {
   const { nodes } = useAgentFlowStore();
 
@@ -43,12 +47,17 @@ export const StaticEdge = ({
   }, [sourceNode, targetNode]);
 
   const strokeColor = useMemo(() => {
+    if (isSuggestion) {
+      if (suggestionType === "add") return "var(--color-success-icon)";
+      if (suggestionType === "update") return "var(--color-warning-icon)";
+      if (suggestionType === "delete") return "var(--color-error-icon)";
+    }
     if (hasError) return "var(--color-error-icon)";
     if (isCurrentBreakpoint) return "var(--color-warning-icon)";
     if (hasSuccess) return "var(--color-success-icon)";
     if (hasRunning) return "var(--color-primary)";
     return isConnectedToSelectedResource ? "var(--color-primary)" : "var(--color-border)";
-  }, [hasError, isCurrentBreakpoint, hasSuccess, hasRunning, isConnectedToSelectedResource]);
+  }, [hasError, isCurrentBreakpoint, hasSuccess, hasRunning, isConnectedToSelectedResource, isSuggestion, suggestionType]);
 
   const strokeWidth = useMemo(() => {
     return isConnectedToSelectedResource ? EDGE_STYLES.selectedStrokeWidth : 2;

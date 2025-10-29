@@ -77,12 +77,52 @@ const getInteractionStateBorder = (interactionState?: string) => {
   }
 };
 
+const getSuggestionTypeBorder = (suggestionType?: string) => {
+  const borderColorVar = getSuggestionTypeBorderColorVar(suggestionType);
+  const backgroundColorVar = getSuggestionTypeBackgroundColorVar(suggestionType);
+
+  if (!borderColorVar || !backgroundColorVar) return null;
+
+  return css`
+    border-color: var(${borderColorVar});
+    background: var(${backgroundColorVar});
+    animation: ${pulseAnimation(borderColorVar)} 2s infinite;
+  `;
+};
+
+const getSuggestionTypeBorderColorVar = (suggestionType?: string) => {
+  switch (suggestionType) {
+    case "add":
+      return "--color-success-icon";
+    case "update":
+      return "--color-warning-icon";
+    case "delete":
+      return "--color-error-icon";
+    default:
+      return null;
+  }
+};
+
+const getSuggestionTypeBackgroundColorVar = (suggestionType?: string) => {
+  switch (suggestionType) {
+    case "add":
+      return "--color-success-background";
+    case "update":
+      return "--color-warning-background";
+    case "delete":
+      return "--color-error-background";
+    default:
+      return null;
+  }
+};
+
 export const BaseContainer = styled.div<{
   selected?: boolean;
   backgroundColor?: string;
   shape?: NodeShape;
   executionStatus?: string;
   interactionState?: string;
+  suggestionType?: string;
   width?: number;
   height?: number;
 }>`
@@ -115,13 +155,24 @@ export const BaseContainer = styled.div<{
 
   ${({ executionStatus }) => getExecutionStatusBorder(executionStatus)}
   ${({ interactionState }) => getInteractionStateBorder(interactionState)}
+  ${({ suggestionType }) => getSuggestionTypeBorder(suggestionType)}
 
-  ${({ selected }) =>
-    selected &&
-    css`
-      border-color: var(--color-primary);
-      outline: 4px solid var(--color-secondary-pressed);
-    `}
+  ${({ selected, suggestionType }) => {
+    if (selected && suggestionType) {
+      const borderColorVar = getSuggestionTypeBorderColorVar(suggestionType);
+      return css`
+        border-color: var(${borderColorVar});
+        outline: 4px solid color-mix(in srgb, var(${borderColorVar}) 40%, transparent);
+      `;
+    }
+
+    if (selected) {
+      return css`
+        border-color: var(--color-primary);
+        outline: 4px solid var(--color-secondary-pressed);
+      `;
+    }
+  }}
 `;
 
 export const BaseIconWrapper = styled.div<{ backgroundColor?: string; shape?: NodeShape; nodeHeight?: number }>`

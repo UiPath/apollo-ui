@@ -1,13 +1,21 @@
-import { memo, useMemo } from "react";
+import { memo, useCallback, useMemo } from "react";
 import { Position } from "@uipath/uix/xyflow/react";
 import type { NodeProps, Node } from "@uipath/uix/xyflow/react";
 import { Icons } from "@uipath/uix/core";
 import { NewBaseNode } from "../../BaseNode/NewBaseNode";
 import type { NewBaseNodeData, NewBaseNodeDisplayProps, HandleConfiguration, NodeAdornment } from "../../BaseNode/NewBaseNode.types";
 import type { ButtonHandleConfig, HandleActionEvent } from "../../ButtonHandle/ButtonHandle";
-import type { AgentNodeTranslations } from "../../../types";
+import {
+  DefaultSuggestionTranslations,
+  type AgentNodeTranslations,
+  type SuggestionTranslations,
+  type SuggestionType,
+} from "../../../types";
 import { ResourceNodeType } from "../AgentFlow.constants";
 import { ExecutionStatusIcon } from "../../ExecutionStatusIcon/ExecutionStatusIcon";
+import { ApIcon } from "@uipath/portal-shell-react";
+import type { NodeToolbarConfig, ToolbarAction } from "../../NodeToolbar/NodeToolbar.types";
+import { useAgentFlowStore } from "../store/agent-flow-store";
 
 const { ConversationalAgentIcon, AutonomousAgentIcon } = Icons;
 
@@ -17,6 +25,10 @@ interface AgentNodeData extends NewBaseNodeData {
   definition: Record<string, unknown>;
   parentNodeId?: string;
   isConversational?: boolean;
+  // suggestions
+  isSuggestion?: boolean;
+  suggestionId?: string;
+  suggestionType?: SuggestionType;
 }
 
 interface AgentNodeProps extends NewBaseNodeDisplayProps {
@@ -36,6 +48,7 @@ interface AgentNodeProps extends NewBaseNodeDisplayProps {
   translations: AgentNodeTranslations;
   enableMemory?: boolean;
   healthScore?: number;
+  suggestionTranslations?: SuggestionTranslations;
 }
 
 const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNodeProps) => {
@@ -56,11 +69,14 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
     translations,
     enableMemory,
     healthScore,
+    suggestionTranslations,
     ...nodeProps
   } = props;
+  const { actOnSuggestion } = useAgentFlowStore();
 
-  const { name, definition } = data;
+  const { name, definition, isSuggestion, suggestionId, suggestionType } = data;
   const isConversational = (definition?.metadata as Record<string, unknown>)?.isConversational === true;
+  const suggestTranslations = suggestionTranslations ?? DefaultSuggestionTranslations;
 
   const executionStatus = useMemo(() => {
     if (hasError) return "Failed";
@@ -210,10 +226,71 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
     return opts.showAddButton || opts.selected;
   };
 
+  const handleActOnSuggestion = useCallback(
+    (suggestionId: string, action: "accept" | "reject") => {
+      actOnSuggestion(suggestionId, action);
+    },
+    [actOnSuggestion]
+  );
+
+  const toolbarConfig = useMemo((): NodeToolbarConfig | undefined => {
+    if (mode === "view") {
+      return undefined;
+    }
+
+    // If this is a suggestion, show accept/reject actions
+    if (isSuggestion && suggestionId) {
+      const rejectAction: ToolbarAction = {
+        id: "reject-suggestion",
+        icon: "close",
+        label: suggestTranslations.reject,
+        disabled: false,
+        onAction: () => handleActOnSuggestion(suggestionId, "reject"),
+      };
+
+      const acceptAction: ToolbarAction = {
+        id: "accept-suggestion",
+        icon: "check",
+        label: suggestTranslations.accept,
+        disabled: false,
+        onAction: () => handleActOnSuggestion(suggestionId, "accept"),
+      };
+
+      return {
+        actions: [rejectAction, acceptAction],
+        overflowActions: [],
+        position: "top",
+        align: "center",
+      };
+    }
+
+    return undefined;
+  }, [mode, isSuggestion, suggestionId, suggestTranslations, handleActOnSuggestion]);
+
+  const suggestionAdornment = useMemo((): NodeAdornment => {
+    if (!isSuggestion) return { icon: undefined };
+    let iconName = "swap_horizontal_circle";
+    let color = "var(--color-warning-icon)";
+
+    if (suggestionType === "add") {
+      iconName = "add_circle";
+      color = "var(--color-success-icon)";
+    } else if (suggestionType === "delete") {
+      iconName = "remove_circle";
+      color = "var(--color-error-icon)";
+    }
+
+    return {
+      icon: <ApIcon variant="normal" name={iconName} size="18px" color={color} />,
+      tooltip: undefined,
+    };
+  }, [isSuggestion, suggestionType]);
+
   return (
     <NewBaseNode
       {...nodeProps}
       executionStatus={executionStatus}
+      suggestionType={suggestionType}
       icon={agentIcon}
       display={{
         label: name,
@@ -223,13 +300,17 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
         iconBackground: "var(--color-background-secondary)",
         centerAdornmentComponent: healthScoreElement,
       }}
+      toolbarConfig={toolbarConfig}
+      adornments={{
+        topRight: statusAdornment,
+        bottomLeft: suggestionAdornment,
+      }}
       handleConfigurations={handleConfigurations}
       // Show add buttons in design mode even when not selected
       showHandles={mode === "design"}
       showAddButton={mode === "design"}
       selected={selected}
       shouldShowAddButtonFn={shouldShowAddButtonFn}
-      adornments={{ topRight: statusAdornment }}
     />
   );
 });
@@ -253,6 +334,7 @@ const AgentNodeWrapper = (props: NodeProps<Node<AgentNodeData>> & AgentNodeProps
     translations,
     enableMemory,
     healthScore,
+    suggestionTranslations,
     ...nodeProps
   } = props;
 
@@ -274,6 +356,7 @@ const AgentNodeWrapper = (props: NodeProps<Node<AgentNodeData>> & AgentNodeProps
       translations={translations}
       enableMemory={enableMemory}
       healthScore={healthScore}
+      suggestionTranslations={suggestionTranslations}
     />
   );
 };

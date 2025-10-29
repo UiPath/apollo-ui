@@ -19,6 +19,7 @@ const NewBaseNodeComponent = (
     width,
     height,
     executionStatus,
+    suggestionType,
     disabled = false,
     icon,
     display,
@@ -46,7 +47,7 @@ const NewBaseNodeComponent = (
   const displayLabelBackgroundColor = finalDisplay.labelBackgroundColor;
   const displayShape = finalDisplay.shape ?? "square";
   const displayBackground = finalDisplay.background;
-  const displayIconBackground = executionStatus === "Failed" ? "var(--color-background)" : finalDisplay.iconBackground;
+  const displayIconBackground = suggestionType || executionStatus === "Failed" ? "var(--color-background)" : finalDisplay.iconBackground;
   const displayCenterAdornment = finalDisplay.centerAdornmentComponent;
 
   const { edges, isConnecting } = useStore(
@@ -149,9 +150,10 @@ const NewBaseNodeComponent = (
       <BaseContainer
         selected={selected}
         shape={displayShape}
-        className={cx(executionStatus ?? "", interactionState)}
+        className={cx(executionStatus ?? "", interactionState, "Failed")}
         interactionState={interactionState}
         executionStatus={executionStatus}
+        suggestionType={suggestionType}
         width={width}
         height={height}
         backgroundColor={displayBackground}
@@ -225,6 +227,7 @@ const NewBaseNodeWrapper = (
     adornments,
     toolbarConfig,
     executionStatus,
+    suggestionType,
     icon,
     display,
     handleConfigurations,
@@ -239,6 +242,7 @@ const NewBaseNodeWrapper = (
       {...nodeProps}
       disabled={disabled}
       executionStatus={executionStatus}
+      suggestionType={suggestionType}
       icon={icon}
       display={display}
       adornments={adornments}

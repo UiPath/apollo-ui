@@ -1,8 +1,8 @@
 import { useCallback, useState } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import type { IRawSpan } from "@uipath/portal-shell-react";
-import { ReactFlowProvider } from "@uipath/uix/xyflow/react";
-import { Column, Row } from "@uipath/uix/core";
+import { ApButton, ApTypography, type IRawSpan } from "@uipath/portal-shell-react";
+import { Panel, ReactFlowProvider } from "@uipath/uix/xyflow/react";
+import { Column, FontVariantToken, Row } from "@uipath/uix/core";
 import { AgentFlow } from "./AgentFlow";
 import {
   ProjectType,
@@ -10,7 +10,31 @@ import {
   type AgentFlowResource,
   type AgentFlowResourceNodeData,
   type AgentFlowResourceType,
+  type AgentFlowSuggestionGroup,
 } from "../../types";
+
+const SuggestionModeStoryDescription = `
+**Suggestion Mode** allows you to create temporary placeholder nodes when clicking "+" buttons,
+which can then be accepted (converted to real resources) or rejected (removed).
+
+**Per-Type Configuration** (demonstrated in this story):
+- **Memory, Context, Tools, MCP**: Create placeholders (require accept/reject)
+- **Escalations**: Bypass placeholders (created directly)
+- Controlled via \`onRequestResourcePlaceholder\` by returning \`null\` to bypass
+
+Features demonstrated:
+- Click "+" buttons - behavior varies by resource type
+- Placeholders appear with "edit_note" icon and 60% opacity
+- Accept ✓ button on each node converts placeholder to real resource
+- Reject ✗ button on each node removes placeholder
+- **Accept All / Reject All buttons** appear at top-center of canvas when placeholders exist
+- Clicking empty canvas auto-rejects all placeholders
+- Direct creation (escalations) adds resources immediately
+- Real-time feedback in the sidebar with console logging
+
+This mode is useful for workflows where some resources need configuration before finalization
+while others can be created immediately.
+`;
 
 const meta: Meta<typeof AgentFlow> = {
   title: "Canvas/AgentFlow",
@@ -478,7 +502,7 @@ export const DesignMode: Story = {
     mode: "design",
     resources: sampleResources,
   },
-  render: () => <AgentFlowWrapper mode="design" />,
+  render: (args) => <AgentFlowWrapper {...args} />,
 };
 
 export const ViewMode: Story = {
@@ -486,8 +510,9 @@ export const ViewMode: Story = {
     mode: "view",
     resources: sampleResources,
     activeResourceIds: [],
+    spans: [],
   },
-  render: (args) => <AgentFlowWrapper {...args} spans={[]} />,
+  render: (args) => <AgentFlowWrapper {...args} />,
 };
 
 export const DesignModeEmpty: Story = {
@@ -502,35 +527,45 @@ export const ViewModeWithTraceData: Story = {
   args: {
     mode: "view",
     resources: sampleResources,
+    definition: sampleAgentDefinition,
+    spans: sampleSpans,
     activeResourceIds: [],
+    enableTimelinePlayer: false,
   },
-  render: (args) => <AgentFlowWrapper {...args} spans={sampleSpans} definition={sampleAgentDefinition} enableTimelinePlayer={false} />,
+  render: (args) => <AgentFlowWrapper {...args} />,
 };
 
 export const DesignModeWithRealData: Story = {
   args: {
     mode: "design",
     resources: sampleResources,
+    definition: sampleAgentDefinition,
+    spans: sampleSpans,
   },
-  render: (args) => <AgentFlowWrapper {...args} spans={sampleSpans} definition={sampleAgentDefinition} />,
+  render: (args) => <AgentFlowWrapper {...args} />,
 };
 
 export const ViewModeEmptyTrace: Story = {
   args: {
     mode: "view",
     resources: sampleResources,
+    definition: sampleAgentDefinition,
+    spans: [],
     activeResourceIds: [],
   },
-  render: (args) => <AgentFlowWrapper {...args} spans={[]} definition={sampleAgentDefinition} />,
+  render: (args) => <AgentFlowWrapper {...args} />,
 };
 
 export const ViewModeWithoutTimelinePlayer: Story = {
   args: {
     mode: "view",
     resources: sampleResources,
+    definition: sampleAgentDefinition,
+    spans: sampleSpans,
     activeResourceIds: [],
+    enableTimelinePlayer: false,
   },
-  render: (args) => <AgentFlowWrapper {...args} spans={sampleSpans} definition={sampleAgentDefinition} enableTimelinePlayer={false} />,
+  render: (args) => <AgentFlowWrapper {...args} />,
 };
 
 export const ViewModeWithTimelinePlayer: Story = {
@@ -587,6 +622,551 @@ export const NoHealthScore: Story = {
     docs: {
       description: {
         story: "Agent without health score. The health score badge is not rendered when undefined.",
+      },
+    },
+  },
+};
+
+/**
+ * Suggestion Mode Story
+ * Demonstrates the placeholder creation feature when clicking "+" buttons
+ */
+
+const SuggestionModeWrapper = ({
+  mode,
+  initialResources = sampleResources,
+  spans = sampleSpans,
+  enableTimelinePlayer = true,
+}: AgentFlowWrapperProps) => {
+  const [resources, setResources] = useState<AgentFlowResource[]>(initialResources);
+  const [suggestionGroup, setSuggestionGroup] = useState<AgentFlowSuggestionGroup | null>(null);
+  const [selectedResourceId, setSelectedResourceId] = useState<string | null>(null);
+
+  const handleEnable = useCallback((resourceId: string, resource: AgentFlowResourceNodeData) => {
+    setResources((prev) =>
+      prev.map((r) => ({
+        ...r,
+        ...(`${resource.parentNodeId}=>${r.name}:${r.id}` === resourceId && { isDisabled: false }),
+      }))
+    );
+  }, []);
+
+  const handleDisable = useCallback((resourceId: string, resource: AgentFlowResourceNodeData) => {
+    setResources((prev) =>
+      prev.map((r) => ({
+        ...r,
+        ...(`${resource.parentNodeId}=>${r.name}:${r.id}` === resourceId && { isDisabled: true }),
+      }))
+    );
+  }, []);
+
+  const handleAddBreakpoint = useCallback((resourceId: string, resource: AgentFlowResourceNodeData) => {
+    setResources((prev) =>
+      prev.map((r) => ({
+        ...r,
+        ...(`${resource.parentNodeId}=>${r.name}:${r.id}` === resourceId && {
+          hasBreakpoint: true,
+        }),
+      }))
+    );
+  }, []);
+
+  const handleRemoveBreakpoint = useCallback((resourceId: string, resource: AgentFlowResourceNodeData) => {
+    setResources((prev) =>
+      prev.map((r) => ({
+        ...r,
+        ...(`${resource.parentNodeId}=>${r.name}:${r.id}` === resourceId && {
+          hasBreakpoint: false,
+        }),
+      }))
+    );
+  }, []);
+
+  const handleAddGuardrail = useCallback((resourceId: string, resource: AgentFlowResourceNodeData) => {
+    setResources((prev) =>
+      prev.map((r) => ({
+        ...r,
+        ...(`${resource.parentNodeId}=>${r.name}:${r.id}` === resourceId && {
+          hasGuardrails: true,
+        }),
+      }))
+    );
+  }, []);
+
+  const handleRequestPlaceholder = useCallback((_type: AgentFlowResourceType) => {
+    // Bypass placeholder mode for all resource types - create directly
+    // Returning null will trigger onAddResource instead
+    return null;
+  }, []);
+
+  const handleActOnSuggestion = useCallback(
+    (suggestionId: string, action: "accept" | "reject") => {
+      if (!suggestionGroup) return;
+
+      if (action === "reject") {
+        setSuggestionGroup({
+          ...suggestionGroup,
+          suggestions: suggestionGroup.suggestions.filter((s) => s.id !== suggestionId),
+        });
+        return;
+      }
+
+      const suggestion = suggestionGroup.suggestions.find((s) => s.id === suggestionId);
+      if (!suggestion) return;
+
+      // Handle different suggestion types
+      switch (suggestion.type) {
+        case "add": {
+          if (suggestion.resource) {
+            setResources((prev) => [...prev, suggestion.resource as AgentFlowResource]);
+            setSelectedResourceId(suggestion.resource.id);
+          }
+          break;
+        }
+        case "update": {
+          if (suggestion.resourceId && suggestion.updatedFields) {
+            setResources((prev) =>
+              prev.map((r) => (r.id === suggestion.resourceId ? ({ ...r, ...suggestion.updatedFields } as AgentFlowResource) : r))
+            );
+          }
+          break;
+        }
+        case "delete": {
+          if (suggestion.resourceIdToDelete) {
+            setResources((prev) => prev.filter((r) => r.id !== suggestion.resourceIdToDelete));
+          }
+          break;
+        }
+        default:
+          break;
+      }
+
+      // Remove from suggestions
+      setSuggestionGroup({
+        ...suggestionGroup,
+        suggestions: suggestionGroup.suggestions.filter((s) => s.id !== suggestionId),
+      });
+    },
+    [suggestionGroup]
+  );
+
+  const handleActOnSuggestionGroup = useCallback(
+    (suggestionGroupId: string, action: "accept" | "reject") => {
+      if (!suggestionGroup) return;
+
+      if (action === "reject") {
+        setSuggestionGroup(null);
+        return;
+      }
+
+      // Process all suggestions in order
+      setResources((prevResources) => {
+        let updatedResources = [...prevResources];
+
+        suggestionGroup.suggestions.forEach((suggestion) => {
+          switch (suggestion.type) {
+            case "add": {
+              if (suggestion.resource) {
+                updatedResources.push(suggestion.resource as AgentFlowResource);
+              }
+              break;
+            }
+            case "update": {
+              if (suggestion.resourceId && suggestion.updatedFields) {
+                updatedResources = updatedResources.map((r) =>
+                  r.id === suggestion.resourceId ? ({ ...r, ...suggestion.updatedFields } as AgentFlowResource) : r
+                );
+              }
+              break;
+            }
+            case "delete": {
+              if (suggestion.resourceIdToDelete) {
+                updatedResources = updatedResources.filter((r) => r.id !== suggestion.resourceIdToDelete);
+              }
+              break;
+            }
+            default:
+              break;
+          }
+        });
+
+        return updatedResources;
+      });
+
+      // Clear all suggestions
+      setSuggestionGroup(null);
+    },
+    [suggestionGroup]
+  );
+
+  const handleSelectResource = useCallback((resourceId: string | null) => {
+    setSelectedResourceId(resourceId);
+  }, []);
+
+  const handleAddResourceDirect = useCallback((type: AgentFlowResourceType) => {
+    let newResource: AgentFlowResource;
+
+    switch (type) {
+      case "escalation":
+        newResource = createSampleEscalation();
+        break;
+      case "context":
+        newResource = createSampleContext();
+        break;
+      case "tool":
+        newResource = createSampleTool();
+        break;
+      case "mcp":
+        newResource = createSampleMcp();
+        break;
+      case "memory":
+        newResource = createSampleMemory();
+        break;
+      default:
+        return;
+    }
+
+    setResources((prev) => [...prev, newResource]);
+    setSelectedResourceId(newResource.id);
+  }, []);
+
+  const handleRemoveResource = useCallback(
+    (resource: AgentFlowResource) => {
+      setResources((prev) => prev.filter((r) => r.id !== resource.id));
+      if (selectedResourceId === resource.id) {
+        setSelectedResourceId(null);
+      }
+    },
+    [selectedResourceId]
+  );
+
+  const renderSidebar = () => {
+    return (
+      <Column
+        w={300}
+        p={16}
+        gap={16}
+        style={{
+          backgroundColor: "#f5f5f5",
+          borderLeft: "1px solid #e0e0e0",
+          overflowY: "auto",
+        }}
+      >
+        <h3 style={{ margin: 0 }}>Suggestion Mode Demo</h3>
+
+        <div
+          style={{
+            padding: 12,
+            backgroundColor: "#e3f2fd",
+            borderRadius: 4,
+            fontSize: "0.875rem",
+          }}
+        >
+          <strong>🎯 How to test:</strong>
+          <ol style={{ margin: "8px 0 0 0", paddingLeft: 20 }}>
+            <li>
+              <strong>Creates placeholder</strong>
+            </li>
+            <li>For placeholders: Accept ✓ or Reject ✗ on each node</li>
+            <li>
+              OR use <strong>Accept/Reject All</strong> buttons at top of canvas
+            </li>
+            <li>OR click empty canvas to auto-reject all placeholders</li>
+          </ol>
+        </div>
+
+        <div
+          style={{
+            padding: 12,
+            backgroundColor: "#fff3e0",
+            borderRadius: 4,
+            fontSize: "0.875rem",
+          }}
+        >
+          <strong>⚙️ Per-type configuration:</strong>
+          <p style={{ margin: "4px 0 0 0", fontSize: "0.75rem" }}>
+            This demo shows how to control placeholder behavior per resource type in <code>onRequestResourcePlaceholder</code> by returning{" "}
+            <code>null</code> to bypass placeholders for specific types.
+          </p>
+        </div>
+
+        <div>
+          <strong>Real Resources:</strong> {resources.length}
+        </div>
+
+        <div>
+          <strong>Pending Placeholders:</strong> {suggestionGroup?.suggestions.length || 0}
+        </div>
+
+        {selectedResourceId && (
+          <div
+            style={{
+              padding: 12,
+              backgroundColor: "#fff3e0",
+              borderRadius: 4,
+              fontSize: "0.875rem",
+            }}
+          >
+            <strong>Selected:</strong>
+            <div style={{ marginTop: 4, wordBreak: "break-all" }}>{selectedResourceId}</div>
+          </div>
+        )}
+
+        {suggestionGroup?.suggestions && suggestionGroup.suggestions.length > 0 && (
+          <div
+            style={{
+              padding: 12,
+              backgroundColor: "#f3e5f5",
+              borderRadius: 4,
+            }}
+          >
+            <strong>Pending Suggestions:</strong>
+            <ul style={{ margin: "8px 0 0 0", paddingLeft: 20, fontSize: "0.875rem" }}>
+              {suggestionGroup.suggestions.map((s) => (
+                <li key={s.id}>
+                  {s.resource?.name || "Unknown"} ({s.resource?.type})
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </Column>
+    );
+  };
+
+  const handleCreateInsertSuggestions = useCallback(() => {
+    const newSuggestions: AgentFlowSuggestionGroup = {
+      id: `suggestion-group-${Date.now()}`,
+      suggestions: [
+        {
+          id: `suggestion-add-1-${Date.now()}`,
+          type: "add",
+          resource: {
+            id: `suggestion-tool-${Date.now()}`,
+            type: "tool",
+            name: "Email Service",
+            description: "Send emails to users",
+            iconUrl: "",
+            hasBreakpoint: false,
+            hasGuardrails: false,
+            projectType: ProjectType.Internal,
+          },
+        },
+        {
+          id: `suggestion-add-2-${Date.now()}`,
+          type: "add",
+          resource: {
+            id: `suggestion-context-${Date.now()}`,
+            type: "context",
+            name: "User Preferences",
+            description: "User preference data",
+            hasBreakpoint: false,
+          },
+        },
+      ],
+      metadata: {
+        title: "Add Suggestions",
+        description: "Suggested resources to add",
+      },
+    };
+    setSuggestionGroup(newSuggestions);
+  }, []);
+
+  const handleCreateDeleteSuggestions = useCallback(() => {
+    // Get some existing resource IDs to suggest for deletion
+    const resourcesToDelete = resources.slice(0, 2);
+
+    const newSuggestions: AgentFlowSuggestionGroup = {
+      id: `suggestion-group-${Date.now()}`,
+      suggestions: resourcesToDelete.map((resource, index) => ({
+        id: `suggestion-delete-${index}-${Date.now()}`,
+        type: "delete" as const,
+        resourceIdToDelete: resource.id,
+      })),
+      metadata: {
+        title: "Delete Suggestions",
+        description: "Suggested resources to delete",
+      },
+    };
+    setSuggestionGroup(newSuggestions);
+  }, [resources]);
+
+  const handleCreateUpdateSuggestions = useCallback(() => {
+    // Get some existing resource IDs to suggest for update
+    const resourcesToUpdate = resources.slice(0, 2);
+    const timestamp = Date.now();
+
+    const newSuggestions: AgentFlowSuggestionGroup = {
+      id: `suggestion-group-${timestamp}`,
+      suggestions: [
+        // Agent update suggestion
+        {
+          id: `suggestion-update-agent-${timestamp}`,
+          type: "update" as const,
+          resourceId: "agent",
+          updatedFields: {
+            name: "Test Agent (Updated)",
+            description: "Test Description - Updated via suggestions",
+          },
+        },
+        // Resource update suggestions
+        ...resourcesToUpdate.map((resource, index) => ({
+          id: `suggestion-update-${index}-${timestamp}`,
+          type: "update" as const,
+          resourceId: resource.id,
+          updatedFields: {
+            name: `${resource.name} (Updated)`,
+            description: `${resource.description} - Updated description`,
+          },
+        })),
+      ],
+      metadata: {
+        title: "Update Suggestions",
+        description: "Suggested resource updates",
+      },
+    };
+    setSuggestionGroup(newSuggestions);
+  }, [resources]);
+
+  const handleCreateMixedSuggestions = useCallback(() => {
+    const existingResources = resources.slice(0, 2);
+    const timestamp = Date.now();
+
+    const newSuggestions: AgentFlowSuggestionGroup = {
+      id: `suggestion-group-${timestamp}`,
+      suggestions: [
+        // Add suggestions
+        {
+          id: `suggestion-add-1-${timestamp}`,
+          type: "add",
+          resource: {
+            id: `suggestion-tool-${timestamp}`,
+            type: "tool",
+            name: "Database Query",
+            description: "Query database",
+            iconUrl: "",
+            hasBreakpoint: false,
+            hasGuardrails: false,
+            projectType: ProjectType.Internal,
+          },
+        },
+        // Agent update suggestion
+        {
+          id: `suggestion-update-agent-${timestamp}`,
+          type: "update" as const,
+          resourceId: "agent",
+          updatedFields: {
+            name: "Test Agent (Updated)",
+            description: "Updated via mixed suggestions",
+          },
+        },
+        // Update suggestion for resource
+        ...(existingResources.length > 0
+          ? [
+              {
+                id: `suggestion-update-1-${timestamp}`,
+                type: "update" as const,
+                resourceId: existingResources[0]!.id,
+                updatedFields: {
+                  name: `${existingResources[0]!.name} (Updated)`,
+                  description: "Updated via mixed suggestions",
+                },
+              },
+            ]
+          : []),
+        // Delete suggestion
+        ...(existingResources.length > 1
+          ? [
+              {
+                id: `suggestion-delete-1-${timestamp}`,
+                type: "delete" as const,
+                resourceIdToDelete: existingResources[1]!.id,
+              },
+            ]
+          : []),
+      ],
+      metadata: {
+        title: "Mixed Suggestions",
+        description: "Combination of add, update, and delete suggestions",
+      },
+    };
+    setSuggestionGroup(newSuggestions);
+  }, [resources]);
+
+  const renderControlPanel = () => {
+    return (
+      <Panel position="top-left">
+        <Column
+          gap={12}
+          p={20}
+          style={{
+            color: "var(--color-foreground)",
+            backgroundColor: "var(--color-background-secondary)",
+            minWidth: 280,
+          }}
+        >
+          <ApTypography variant={FontVariantToken.fontSizeH3Bold}>Suggestion Controls</ApTypography>
+
+          <Column gap={8}>
+            <ApTypography variant={FontVariantToken.fontSizeM}>Suggestion type:</ApTypography>
+            <Row gap={8}>
+              <ApButton size="small" variant="primary" label="Inserts" onClick={handleCreateInsertSuggestions} />
+              <ApButton size="small" variant="primary" label="Deletes" onClick={handleCreateDeleteSuggestions} />
+              <ApButton size="small" variant="primary" label="Updates" onClick={handleCreateUpdateSuggestions} />
+              <ApButton size="small" variant="primary" label="Mixed" onClick={handleCreateMixedSuggestions} />
+            </Row>
+          </Column>
+        </Column>
+      </Panel>
+    );
+  };
+
+  return (
+    <ReactFlowProvider>
+      <Row w="100%" h="100%" style={{ position: "relative" }}>
+        <div style={{ flex: 1, position: "relative" }}>
+          <AgentFlow
+            allowDragging={false}
+            definition={sampleAgentDefinition}
+            spans={mode === "view" ? spans : []}
+            name="Test Agent"
+            description="Test Description"
+            mode={mode}
+            resources={resources}
+            enablePlaceholderMode={true}
+            onEnable={handleEnable}
+            onDisable={handleDisable}
+            onAddBreakpoint={handleAddBreakpoint}
+            onRemoveBreakpoint={handleRemoveBreakpoint}
+            onAddGuardrail={handleAddGuardrail}
+            onAddResource={handleAddResourceDirect}
+            onRemoveResource={handleRemoveResource}
+            onSelectResource={handleSelectResource}
+            enableTimelinePlayer={enableTimelinePlayer}
+            enableMemory={true}
+            onRequestResourcePlaceholder={handleRequestPlaceholder}
+            suggestionGroup={suggestionGroup}
+            onActOnSuggestion={handleActOnSuggestion}
+            onActOnSuggestionGroup={handleActOnSuggestionGroup}
+          />
+        </div>
+        {renderControlPanel()}
+        {renderSidebar()}
+      </Row>
+    </ReactFlowProvider>
+  );
+};
+
+export const DesignModeWithSuggestions: Story = {
+  args: {
+    mode: "design",
+    enableTimelinePlayer: false,
+  },
+  render: (args) => <SuggestionModeWrapper {...args} initialResources={sampleResources.concat(createSampleMemory())} />,
+  parameters: {
+    docs: {
+      description: {
+        story: SuggestionModeStoryDescription,
       },
     },
   },

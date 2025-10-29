@@ -7,6 +7,7 @@ import type {
   AgentFlowProps,
   AgentFlowResource,
   AgentFlowResourceNode,
+  AgentFlowSuggestionGroup,
 } from "../types";
 import { autoArrangeNodes } from "./auto-layout";
 import { ResourceNodeType } from "../components/AgentCanvas/AgentFlow.constants";
@@ -307,5 +308,57 @@ export const computeNodesAndEdges = (
   return {
     nodes: arrangedNodes,
     edges,
+  };
+};
+
+/**
+ * Computes suggestion nodes and edges from a suggestion group
+ * @param suggestionGroup - The suggestion group containing suggestions
+ * @param props - The agent flow properties
+ * @param agentNode - The agent node to connect suggestions to
+ * @param existingResources - Existing resources to check for updates/deletes
+ * @returns Object containing arrays of suggestion nodes and edges
+ */
+export const computeSuggestionNodesAndEdges = (
+  suggestionGroup: AgentFlowSuggestionGroup,
+  props: AgentFlowProps,
+  agentNode: AgentFlowNode,
+  existingResources: AgentFlowResource[]
+): { nodes: AgentFlowResourceNode[]; edges: AgentFlowCustomEdge[] } => {
+  const suggestionNodes: AgentFlowResourceNode[] = [];
+  const suggestionEdges: AgentFlowCustomEdge[] = [];
+
+  for (const suggestion of suggestionGroup.suggestions) {
+    if (suggestion.type === "add" && suggestion.resource) {
+      // Create a placeholder node for the new resource
+      const resource = suggestion.resource;
+      const index = existingResources.length + suggestionNodes.length;
+      const node = createResourceNode(resource, index, props, agentNode.id);
+
+      // Mark it as a suggestion placeholder
+      node.data = {
+        ...node.data,
+        isSuggestion: true,
+        suggestionId: suggestion.id,
+        suggestionType: "add",
+        isPlaceholder: true,
+      };
+
+      // Make placeholder nodes semi-transparent
+      node.style = {
+        ...node.style,
+        // opacity: 0.6,
+      };
+
+      suggestionNodes.push(node);
+      suggestionEdges.push(createResourceEdge(agentNode, node, props));
+    }
+    // For 'update' and 'delete' types, we'll mark existing nodes in the store
+    // No new nodes are created for these types
+  }
+
+  return {
+    nodes: suggestionNodes,
+    edges: suggestionEdges,
   };
 };

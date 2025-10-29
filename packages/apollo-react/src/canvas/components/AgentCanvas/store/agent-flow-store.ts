@@ -11,11 +11,12 @@ import {
   type AgentFlowResource,
   type AgentFlowResourceNode,
   type AgentFlowResourceNodeData,
+  type AgentFlowResourceType,
   isAgentFlowAgentNode,
   isAgentFlowResourceNode,
 } from "../../../types";
 import { autoArrangeNodes } from "../../../utils/auto-layout";
-import { computeNodesAndEdges, NODE_ID_DELIMITER } from "../../../utils/props-helpers";
+import { computeNodesAndEdges, computeSuggestionNodesAndEdges, NODE_ID_DELIMITER } from "../../../utils/props-helpers";
 import { addAnimationClasses, removeAnimationClasses } from "../../../utils/resource-operations";
 
 const getSelectedNodeId = (props: AgentFlowProps, state: AgentFlowStore): string | null => {
@@ -307,13 +308,171 @@ interface AgentFlowStore {
     }
   ) => void;
   collapseAgent: (resourceId: string) => void;
+
+  // autopilot suggestions
+  actOnSuggestion: (suggestionId: string, action: "accept" | "reject") => void;
+  actOnSuggestionGroup: (suggestionGroupId: string, action: "accept" | "reject") => void;
+  currentSuggestionIndex: number;
+  setCurrentSuggestionIndex: (index: number) => void;
+  navigateToNextSuggestion: () => void;
+  navigateToPreviousSuggestion: () => void;
+
+  // placeholder creation
+  createResourcePlaceholder: (type: AgentFlowResourceType) => void;
 }
 
 export const hasResourceNode = (node: AgentFlowCustomNode, resource: AgentFlowResource) => node?.id?.endsWith(`:${resource.id}`);
 
+/**
+ * Helper function to find the node corresponding to a suggestion
+ */
+const findNodeForSuggestion = (
+  suggestion: NonNullable<AgentFlowProps["suggestionGroup"]>["suggestions"][number],
+  suggestionGroup: AgentFlowProps["suggestionGroup"],
+  nodes: AgentFlowCustomNode[]
+): AgentFlowCustomNode | null => {
+  if (!suggestion) return null;
+
+  // For 'add' type suggestions, find node by suggestionId
+  if (suggestion.type === "add") {
+    return nodes.find((node) => isAgentFlowResourceNode(node) && node.data.suggestionId === suggestion.id) ?? null;
+  }
+
+  // For 'update' type suggestions, find node by resourceId
+  if (suggestion.type === "update" && suggestion.resourceId) {
+    // Check if this is an agent node update
+    if (suggestion.resourceId === "agent") {
+      return nodes.find((node) => isAgentFlowAgentNode(node)) ?? null;
+    }
+
+    // Check for resource nodes
+    return (
+      nodes.find((node) => {
+        if (!isAgentFlowResourceNode(node)) return false;
+        const resourceId = node.id.split(":").pop();
+        return resourceId === suggestion.resourceId;
+      }) ?? null
+    );
+  }
+
+  // For 'delete' type suggestions, find node by resourceIdToDelete
+  if (suggestion.type === "delete" && suggestion.resourceIdToDelete) {
+    return (
+      nodes.find((node) => {
+        if (!isAgentFlowResourceNode(node)) return false;
+        const resourceId = node.id.split(":").pop();
+        return resourceId === suggestion.resourceIdToDelete;
+      }) ?? null
+    );
+  }
+
+  return null;
+};
+
+/**
+ * Computes nodes and edges with suggestions integrated
+ */
+const computeNodesAndEdgesWithSuggestions = (props: AgentFlowProps): { nodes: AgentFlowCustomNode[]; edges: AgentFlowCustomEdge[] } => {
+  // First compute the base nodes and edges
+  const { nodes: baseNodes, edges: baseEdges } = computeNodesAndEdges(props);
+
+  // If no suggestions, return base nodes and edges
+  if (!props.suggestionGroup || props.suggestionGroup.suggestions.length === 0) {
+    return { nodes: baseNodes, edges: baseEdges };
+  }
+
+  // Find the agent node
+  const agentNode = baseNodes.find(isAgentFlowAgentNode);
+  if (!agentNode) {
+    return { nodes: baseNodes, edges: baseEdges };
+  }
+
+  // Compute suggestion nodes for 'add' type suggestions
+  const { nodes: suggestionNodes, edges: suggestionEdges } = computeSuggestionNodesAndEdges(
+    props.suggestionGroup,
+    props,
+    agentNode,
+    props.resources
+  );
+
+  // Mark existing nodes with suggestion metadata for 'update' and 'delete' types
+  const markedNodes = baseNodes.map((node) => {
+    // Check if this node has an update or delete suggestion
+    for (const suggestion of props.suggestionGroup!.suggestions) {
+      if (suggestion.type === "update" && suggestion.resourceId) {
+        // Check if this is the agent node
+        if (isAgentFlowAgentNode(node) && suggestion.resourceId === "agent") {
+          return {
+            ...node,
+            data: {
+              ...node.data,
+              isSuggestion: true,
+              suggestionId: suggestion.id,
+              suggestionType: "update" as const,
+              isPlaceholder: false,
+            },
+          };
+        }
+
+        // Check if this node matches the resource ID
+        if (isAgentFlowResourceNode(node)) {
+          const resourceId = node.id.split(":").pop();
+          if (resourceId === suggestion.resourceId) {
+            return {
+              ...node,
+              data: {
+                ...node.data,
+                isSuggestion: true,
+                suggestionId: suggestion.id,
+                suggestionType: "update" as const,
+                isPlaceholder: false,
+              },
+            };
+          }
+        }
+      } else if (suggestion.type === "delete" && suggestion.resourceIdToDelete) {
+        // Check if this node matches the resource ID to delete
+        if (isAgentFlowResourceNode(node)) {
+          const resourceId = node.id.split(":").pop();
+          if (resourceId === suggestion.resourceIdToDelete) {
+            return {
+              ...node,
+              data: {
+                ...node.data,
+                isSuggestion: true,
+                suggestionId: suggestion.id,
+                suggestionType: "delete" as const,
+                isPlaceholder: false,
+              },
+              style: {
+                ...node.style,
+                opacity: 0.4,
+              },
+            };
+          }
+        }
+      }
+    }
+
+    return node;
+  });
+
+  // Combine base nodes with suggestion nodes
+  const allNodes = [...markedNodes, ...suggestionNodes];
+  const allEdges = [...baseEdges, ...suggestionEdges];
+
+  // Re-arrange nodes with suggestions
+  const arrangedNodes = autoArrangeNodes(allNodes, allEdges);
+
+  return {
+    nodes: arrangedNodes,
+    edges: allEdges,
+  };
+};
+
 export const createAgentFlowStore = (initialProps: AgentFlowProps) =>
   createStore<AgentFlowStore>()((set, get) => {
-    const { nodes: initialNodes, edges: initialEdges } = computeNodesAndEdges(initialProps);
+    const { nodes: initialNodes, edges: initialEdges } = computeNodesAndEdgesWithSuggestions(initialProps);
 
     return {
       // props state
@@ -329,7 +488,7 @@ export const createAgentFlowStore = (initialProps: AgentFlowProps) =>
         const resourcesAddedOrRemoved = addedIds.size > 0 || removedIds.size > 0;
 
         // Always recompute nodes and edges to handle any ID changes
-        const { nodes: allNewNodes, edges: newEdges } = computeNodesAndEdges(newProps);
+        const { nodes: allNewNodes, edges: newEdges } = computeNodesAndEdgesWithSuggestions(newProps);
 
         // Map old nodes to new nodes while preserving visual state (position, selection, style)
         const updatedNodes = allNewNodes.map((newNode) => {
@@ -386,12 +545,17 @@ export const createAgentFlowStore = (initialProps: AgentFlowProps) =>
           }
         }
 
+        // Check if suggestionGroup changed and reset index if so
+        const suggestionGroupChanged = state.props.suggestionGroup?.id !== newProps.suggestionGroup?.id;
+        const newSuggestionIndex = suggestionGroupChanged ? 0 : state.currentSuggestionIndex;
+
         // Update state
         set({
           props: newProps,
           nodes: updatedNodes,
           edges: newEdges,
           selectedNodeId: firstNewNodeId || state.selectedNodeId,
+          currentSuggestionIndex: newSuggestionIndex,
         });
 
         // Notify parent component of selection change
@@ -414,8 +578,26 @@ export const createAgentFlowStore = (initialProps: AgentFlowProps) =>
       // selection & UI
       selectedNodeId: null,
       setSelectedNodeId: (nodeId) => {
+        const state = get();
+
+        // Find the selected node
+        const selectedNode = state.nodes.find((node) => node.id === nodeId);
+
+        // Check if the selected node is a suggestion node and update the index
+        let newSuggestionIndex = state.currentSuggestionIndex;
+        if (selectedNode && isAgentFlowResourceNode(selectedNode) && selectedNode.data.suggestionId) {
+          const suggestionGroup = state.props.suggestionGroup;
+          if (suggestionGroup?.suggestions) {
+            const suggestionIndex = suggestionGroup.suggestions.findIndex((s) => s.id === selectedNode.data.suggestionId);
+            if (suggestionIndex !== -1) {
+              newSuggestionIndex = suggestionIndex;
+            }
+          }
+        }
+
         set((state) => ({
           selectedNodeId: nodeId,
+          currentSuggestionIndex: newSuggestionIndex,
           nodes: state.nodes.map((node) => {
             const shouldBeSelected = node.id === nodeId;
             if (node.selected === shouldBeSelected) return node;
@@ -1012,6 +1194,183 @@ export const createAgentFlowStore = (initialProps: AgentFlowProps) =>
 
           requestAnimationFrame(checkMeasurements);
         }
+      },
+
+      // suggestions
+      actOnSuggestion: (suggestionId, action) => {
+        const { props, currentSuggestionIndex } = get();
+
+        if (!props.suggestionGroup?.suggestions) {
+          props.onActOnSuggestion?.(suggestionId, action);
+          return;
+        }
+
+        const suggestions = props.suggestionGroup.suggestions;
+        const suggestionIndex = suggestions.findIndex((s) => s.id === suggestionId);
+
+        // Calculate the next index after this suggestion is removed
+        let nextIndex = currentSuggestionIndex;
+        if (suggestionIndex !== -1) {
+          // If we're removing a suggestion before the current one, decrement the index
+          if (suggestionIndex < currentSuggestionIndex) {
+            nextIndex = Math.max(0, currentSuggestionIndex - 1);
+          }
+          // If we're removing the current suggestion, keep the same index
+          // (the next suggestion will slide into this position)
+          // But if this is the last suggestion, we need to go to the previous one
+          else if (suggestionIndex === currentSuggestionIndex) {
+            if (currentSuggestionIndex >= suggestions.length - 1) {
+              nextIndex = Math.max(0, suggestions.length - 2);
+            }
+            // else keep the same index
+          }
+        }
+
+        // Set the new index
+        set({ currentSuggestionIndex: Math.max(0, nextIndex) });
+
+        // Call the appropriate parent callback with the action
+        props.onActOnSuggestion?.(suggestionId, action);
+
+        // After parent updates, select the next suggestion node
+        // We do this in a setTimeout to allow the parent to update first
+        // setTimeout(() => {
+
+        // }, 0);
+        Promise.resolve().then(() => {
+          const state = get();
+          const updatedSuggestions = state.props.suggestionGroup?.suggestions;
+          if (updatedSuggestions && updatedSuggestions.length > 0) {
+            const clampedIndex = Math.min(state.currentSuggestionIndex, updatedSuggestions.length - 1);
+            set({ currentSuggestionIndex: clampedIndex });
+
+            const nextSuggestion = updatedSuggestions[clampedIndex];
+            if (nextSuggestion) {
+              const node = findNodeForSuggestion(nextSuggestion, state.props.suggestionGroup, state.nodes);
+              if (node) {
+                state.setSelectedNodeId(node.id);
+                state.props.onSelectResource?.(node.id);
+              }
+            }
+          }
+        });
+      },
+
+      actOnSuggestionGroup: (suggestionGroupId, action) => {
+        const { props } = get();
+        props.onActOnSuggestionGroup?.(suggestionGroupId, action);
+      },
+
+      currentSuggestionIndex: 0,
+
+      setCurrentSuggestionIndex: (index) => {
+        set({ currentSuggestionIndex: index });
+      },
+
+      navigateToNextSuggestion: () => {
+        const { props, nodes, currentSuggestionIndex, setSelectedNodeId } = get();
+        if (!props.suggestionGroup?.suggestions || props.suggestionGroup.suggestions.length === 0) return;
+
+        const nextIndex = (currentSuggestionIndex + 1) % props.suggestionGroup.suggestions.length;
+        set({ currentSuggestionIndex: nextIndex });
+
+        const nextSuggestion = props.suggestionGroup.suggestions[nextIndex];
+        if (!nextSuggestion) return;
+
+        // Find the node corresponding to the suggestion
+        const node = findNodeForSuggestion(nextSuggestion, props.suggestionGroup, nodes);
+        if (node) {
+          setSelectedNodeId(node.id);
+          props.onSelectResource?.(node.id);
+        }
+      },
+
+      navigateToPreviousSuggestion: () => {
+        const { props, nodes, currentSuggestionIndex, setSelectedNodeId } = get();
+        if (!props.suggestionGroup?.suggestions || props.suggestionGroup.suggestions.length === 0) return;
+
+        const prevIndex =
+          (currentSuggestionIndex - 1 + props.suggestionGroup.suggestions.length) % props.suggestionGroup.suggestions.length;
+        set({ currentSuggestionIndex: prevIndex });
+
+        const prevSuggestion = props.suggestionGroup.suggestions[prevIndex];
+        if (!prevSuggestion) return;
+
+        // Find the node corresponding to the suggestion
+        const node = findNodeForSuggestion(prevSuggestion, props.suggestionGroup, nodes);
+        if (node) {
+          setSelectedNodeId(node.id);
+          props.onSelectResource?.(node.id);
+        }
+      },
+
+      createResourcePlaceholder: (type) => {
+        const { props } = get();
+
+        // Check if placeholder mode is enabled
+        if (props.enablePlaceholderMode) {
+          // Allow customization via callback
+          let partialResource: Partial<AgentFlowResource> | null = null;
+
+          if (props.onRequestResourcePlaceholder) {
+            partialResource = props.onRequestResourcePlaceholder(type);
+
+            // If callback returns null, bypass placeholder mode
+            if (partialResource === null) {
+              props.onAddResource?.(type);
+              return;
+            }
+          }
+
+          // If no callback or callback returned undefined, use defaults
+          if (!partialResource) {
+            partialResource = {
+              type,
+              id: `placeholder-${type}-${Date.now()}`,
+              name: `New ${type}`,
+              description: "Configure this resource...",
+            };
+          } else {
+            // Ensure required fields are present
+            if (!partialResource.id) {
+              partialResource.id = `placeholder-${type}-${Date.now()}`;
+            }
+            if (!partialResource.type) {
+              partialResource.type = type;
+            }
+          }
+
+          // The parent's onRequestResourcePlaceholder should handle creating the suggestion
+          // But if they didn't provide a callback, we should still trigger the creation
+          // by calling onAddResource with a special flag or handling it here
+
+          // For now, we expect the parent to handle suggestionGroup updates
+          // If they provided onRequestResourcePlaceholder, they should update suggestionGroup
+          // If they just set enablePlaceholderMode without the callback, we log a warning
+          if (!props.onRequestResourcePlaceholder) {
+            console.warn(
+              "enablePlaceholderMode is true but onRequestResourcePlaceholder is not provided. " +
+                "Please implement onRequestResourcePlaceholder to create placeholders, or set enablePlaceholderMode to false."
+            );
+            props.onAddResource?.(type);
+          }
+
+          return;
+        }
+
+        // Legacy behavior: check for onRequestResourcePlaceholder
+        if (props.onRequestResourcePlaceholder) {
+          const partialResource = props.onRequestResourcePlaceholder(type);
+
+          // If it returns null, fall back to direct creation
+          if (!partialResource) {
+            props.onAddResource?.(type);
+          }
+          return;
+        }
+
+        // Fall back to direct creation via onAddResource
+        props.onAddResource?.(type);
       },
     };
   });

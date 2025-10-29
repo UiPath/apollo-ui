@@ -24,10 +24,13 @@ import {
   type AgentFlowResourceNodeData,
   DefaultResourceNodeTranslations,
   type ResourceNodeTranslations,
+  type SuggestionTranslations,
+  DefaultSuggestionTranslations,
 } from "../../types";
 import { hasAgentRunning } from "../../utils/props-helpers";
 import { ResourceNodeType, ResourceNodeTypeToPosition } from "./AgentFlow.constants";
 import { RESOURCE_NODE_SIZE } from "../../utils/auto-layout";
+import { SuggestionGroupPanel } from "./components/SuggestionGroupPanel";
 
 const edgeTypes = {
   default: Edge,
@@ -130,6 +133,7 @@ const addVirtualSpacingNodes = (nodes: AgentFlowCustomNode[], agentNode: AgentFl
 const createAgentNodeWrapper = (handlers: {
   onAddResource?: (type: "context" | "escalation" | "mcp" | "tool" | "memory") => void;
   translations?: AgentNodeTranslations;
+  suggestionTranslations?: SuggestionTranslations;
   enableMcpTools?: boolean;
   enableMemory?: boolean;
   healthScore?: number;
@@ -182,6 +186,7 @@ const createAgentNodeWrapper = (handlers: {
         hasRunning={hasRunning}
         onAddResource={handlers.onAddResource}
         translations={handlers.translations ?? DefaultAgentNodeTranslations}
+        suggestionTranslations={handlers.suggestionTranslations ?? DefaultSuggestionTranslations}
         enableMemory={handlers.enableMemory === true}
         healthScore={handlers.healthScore}
       />
@@ -200,6 +205,7 @@ const createResourceNodeWrapper = (opts: {
   onExpandResource?: (resourceId: string, resource: AgentFlowResourceNodeData) => void;
   onCollapseResource?: (resourceId: string, resource: AgentFlowResourceNodeData) => void;
   translations?: ResourceNodeTranslations;
+  suggestionTranslations?: SuggestionTranslations;
 }) => {
   return (props: NodeProps<AgentFlowResourceNode>) => {
     const { props: storeProps, deleteNode } = useAgentFlowStore();
@@ -221,6 +227,7 @@ const createResourceNodeWrapper = (opts: {
         onExpandResource={opts.onExpandResource}
         onCollapseResource={opts.onCollapseResource}
         translations={opts.translations ?? DefaultResourceNodeTranslations}
+        suggestionTranslations={opts.suggestionTranslations ?? DefaultSuggestionTranslations}
       />
     );
   };
@@ -237,7 +244,7 @@ const AgentFlowInner = memo(
     onRemoveBreakpoint,
     onAddGuardrail,
     onGoToSource,
-    onAddResource,
+    onAddResource: _onAddResource, // Handled by createResourcePlaceholder in store
     onSelectResource,
     setSpanForSelectedNode,
     getNodeFromSelectedSpan,
@@ -251,6 +258,9 @@ const AgentFlowInner = memo(
     enableMcpTools,
     enableMemory,
     healthScore,
+    suggestionTranslations,
+    suggestionGroup,
+    onActOnSuggestionGroup,
   }: PropsWithChildren<AgentFlowProps>) => {
     const {
       nodes,
@@ -269,6 +279,10 @@ const AgentFlowInner = memo(
       setDragging,
       expandAgent,
       collapseAgent,
+      createResourcePlaceholder,
+      currentSuggestionIndex,
+      navigateToNextSuggestion,
+      navigateToPreviousSuggestion,
     } = useAgentFlowStore();
 
     const { fitView: reactFlowFitView } = useReactFlow();
@@ -297,13 +311,15 @@ const AgentFlowInner = memo(
 
     const nodeTypes = useMemo(() => {
       const handleAddResource = (type: "context" | "escalation" | "mcp" | "tool" | "memory") => {
-        onAddResource?.(type);
+        // Use createResourcePlaceholder which will either create a placeholder or call onAddResource
+        createResourcePlaceholder(type);
       };
 
       return {
         agent: createAgentNodeWrapper({
           onAddResource: handleAddResource,
           translations: agentNodeTranslations,
+          suggestionTranslations,
           enableMcpTools,
           enableMemory,
           healthScore,
@@ -318,6 +334,7 @@ const AgentFlowInner = memo(
           onExpandResource,
           onCollapseResource,
           translations: resourceNodeTranslations,
+          suggestionTranslations,
         }),
       };
     }, [
@@ -328,9 +345,10 @@ const AgentFlowInner = memo(
       onAddGuardrail,
       onGoToSource,
       healthScore,
-      onAddResource,
+      createResourcePlaceholder,
       agentNodeTranslations,
       resourceNodeTranslations,
+      suggestionTranslations,
       onExpandResource,
       onCollapseResource,
       enableMcpTools,
@@ -340,6 +358,18 @@ const AgentFlowInner = memo(
     const handlePaneClick = useCallback(() => {
       setSelectedNodeId(null);
       onSelectResource?.("pane");
+
+      // If there are placeholder suggestions, reject them when clicking outside
+      // if (storeProps.suggestionGroup?.suggestions) {
+      //   const placeholderSuggestions = storeProps.suggestionGroup.suggestions.filter(
+      //     (suggestion) => suggestion.type === "add" && suggestion.resource
+      //   );
+
+      //   // Reject all placeholder suggestions
+      //   placeholderSuggestions.forEach((suggestion) => {
+      //     rejectSuggestion(suggestion.id);
+      //   });
+      // }
     }, [onSelectResource, setSelectedNodeId]);
 
     const handleNodeClick = useCallback(
@@ -563,6 +593,16 @@ const AgentFlowInner = memo(
               <div ref={timelinePlayerRef}>
                 <TimelinePlayer spans={spans ?? []} enableTimelinePlayer={enableTimelinePlayer ?? true} />
               </div>
+            </Panel>
+            <Panel position="bottom-center">
+              <SuggestionGroupPanel
+                suggestionGroup={suggestionGroup}
+                onRejectAll={(suggestionGroupId: string) => onActOnSuggestionGroup?.(suggestionGroupId, "reject")}
+                onAcceptAll={(suggestionGroupId: string) => onActOnSuggestionGroup?.(suggestionGroupId, "accept")}
+                currentIndex={currentSuggestionIndex}
+                onNavigateNext={navigateToNextSuggestion}
+                onNavigatePrevious={navigateToPreviousSuggestion}
+              />
             </Panel>
             {children}
           </BaseCanvas>

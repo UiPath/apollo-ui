@@ -123,6 +123,94 @@ export type AgentFlowResource =
   | AgentFlowMemoryResource;
 export type AgentFlowResourceType = AgentFlowResource["type"];
 
+/**
+ * Suggestion Types
+ *
+ * These types enable autopilot-like functionality in the AgentFlow component.
+ * Suggestions can be displayed as placeholder nodes (for additions) or as
+ * styled overlays on existing nodes (for updates/deletions).
+ *
+ * @example
+ * ```tsx
+ * // Example: Add a new tool suggestion
+ * const suggestionGroup: AgentFlowSuggestionGroup = {
+ *   id: 'suggestion-group-1',
+ *   suggestions: [
+ *     {
+ *       id: 'suggestion-1',
+ *       type: 'add',
+ *       resource: {
+ *         id: 'new-tool-id',
+ *         type: 'tool',
+ *         name: 'Email Tool',
+ *         description: 'Send emails',
+ *         iconUrl: '...',
+ *       }
+ *     }
+ *   ]
+ * };
+ *
+ * // Example: Update an existing resource
+ * const updateSuggestion: AgentFlowSuggestion = {
+ *   id: 'suggestion-2',
+ *   type: 'update',
+ *   resourceId: 'existing-tool-id',
+ *   updatedFields: {
+ *     name: 'Updated Tool Name',
+ *     description: 'Updated description'
+ *   }
+ * };
+ *
+ * // Example: Delete a resource
+ * const deleteSuggestion: AgentFlowSuggestion = {
+ *   id: 'suggestion-3',
+ *   type: 'delete',
+ *   resourceIdToDelete: 'tool-to-remove-id'
+ * };
+ *
+ * // Usage in AgentFlow component
+ * <AgentFlow
+ *   suggestionGroup={suggestionGroup}
+ *   onAcceptSuggestion={(suggestionId) => {
+ *     // Handle individual suggestion acceptance
+ *     // Update your resources state accordingly
+ *   }}
+ *   onRejectSuggestion={(suggestionId) => {
+ *     // Handle individual suggestion rejection
+ *   }}
+ *   onAcceptSuggestionGroup={(groupId) => {
+ *     // Handle accepting all suggestions in the group
+ *   }}
+ *   onRejectSuggestionGroup={(groupId) => {
+ *     // Handle rejecting all suggestions in the group
+ *   }}
+ *   // ... other props
+ * />
+ * ```
+ */
+export type SuggestionType = "add" | "update" | "delete";
+
+export type AgentFlowSuggestion = {
+  id: string;
+  type: SuggestionType;
+  // For 'add' type: the new resource to add
+  resource?: AgentFlowResource;
+  // For 'update' type: the resource id and updated fields
+  resourceId?: string;
+  updatedFields?: Partial<AgentFlowResource>;
+  // For 'delete' type: the resource id to delete
+  resourceIdToDelete?: string;
+};
+
+export type AgentFlowSuggestionGroup = {
+  id: string;
+  suggestions: AgentFlowSuggestion[];
+  metadata?: {
+    title?: string;
+    description?: string;
+  };
+};
+
 export type SpanAttributes = Record<string, unknown>;
 
 export type AgentFlowProps = {
@@ -178,6 +266,28 @@ export type AgentFlowProps = {
 
   // health score
   healthScore?: number;
+
+  // suggestions
+  suggestionGroup?: AgentFlowSuggestionGroup | null;
+  onActOnSuggestion?: (suggestionId: string, action: "accept" | "reject") => void;
+  onActOnSuggestionGroup?: (suggestionGroupId: string, action: "accept" | "reject") => void;
+  suggestionTranslations?: SuggestionTranslations;
+
+  // placeholder creation (uses suggestion system internally)
+  /**
+   * When true, clicking "+" buttons creates placeholders instead of direct resources.
+   * Placeholders can be accepted (converted to real resources) or rejected (removed).
+   * @default false (direct creation via onAddResource)
+   */
+  enablePlaceholderMode?: boolean;
+
+  /**
+   * Called when user clicks "+" button on agent node handle in placeholder mode.
+   * Return a partial resource to customize the placeholder, or omit to use defaults.
+   * Return null to bypass placeholder mode and use direct creation via onAddResource.
+   * The placeholder will be shown as a suggestion that can be accepted or rejected.
+   */
+  onRequestResourcePlaceholder?: (type: AgentFlowResourceType) => Partial<AgentFlowResource> | null;
 };
 
 export type AgentFlowNodeData = {
@@ -239,6 +349,11 @@ export type SharedResourceData = {
   isDisabled?: boolean;
   projectId?: string;
   isVirtual?: boolean; // AgentFlow-specific: for virtual spacing nodes
+  // suggestions
+  isSuggestion?: boolean;
+  suggestionId?: string;
+  suggestionType?: SuggestionType;
+  isPlaceholder?: boolean; // for 'add' type suggestions
 };
 
 export type AgentFlowResourceNodeData = (
@@ -342,3 +457,85 @@ export interface CanvasTranslations {
 export const DefaultCanvasTranslations: CanvasTranslations = {
   panShortcutTeaching: "Hold Space and drag to pan around the canvas",
 };
+
+export interface SuggestionTranslations {
+  accept: string;
+  reject: string;
+  acceptAll: string;
+  rejectAll: string;
+}
+
+export const DefaultSuggestionTranslations: SuggestionTranslations = {
+  accept: "Accept",
+  reject: "Reject",
+  acceptAll: "Accept all",
+  rejectAll: "Reject all",
+};
+
+/**
+ * Helper function to create a placeholder suggestion for a new resource.
+ * This is useful when implementing onRequestResourcePlaceholder.
+ *
+ * @param partialResource - Partial resource data (at minimum, provide type and id)
+ * @param existingGroup - Optional existing suggestion group to merge into
+ * @returns Updated suggestion group with the new placeholder
+ *
+ * @example
+ * ```tsx
+ * const [suggestionGroup, setSuggestionGroup] = useState<AgentFlowSuggestionGroup | null>(null);
+ *
+ * <AgentFlow
+ *   onRequestResourcePlaceholder={(type) => {
+ *     const partialResource: Partial<AgentFlowResource> = {
+ *       id: `placeholder-${Date.now()}`,
+ *       type,
+ *       name: `New ${type}`,
+ *       description: 'Configure this resource...',
+ *     };
+ *
+ *     const updated = createPlaceholderSuggestion(partialResource, suggestionGroup);
+ *     setSuggestionGroup(updated);
+ *
+ *     return partialResource;
+ *   }}
+ * />
+ * ```
+ */
+export function createPlaceholderSuggestion(
+  partialResource: Partial<AgentFlowResource>,
+  existingGroup?: AgentFlowSuggestionGroup | null
+): AgentFlowSuggestionGroup {
+  if (!partialResource.type || !partialResource.id) {
+    throw new Error("partialResource must have at least type and id fields");
+  }
+
+  const fullResource: AgentFlowResource = {
+    type: partialResource.type,
+    id: partialResource.id,
+    name: partialResource.name || `New ${partialResource.type}`,
+    description: partialResource.description || "",
+    ...partialResource,
+  } as AgentFlowResource;
+
+  const newSuggestion: AgentFlowSuggestion = {
+    id: `suggestion-${partialResource.id}`,
+    type: "add",
+    resource: fullResource,
+  };
+
+  if (existingGroup) {
+    return {
+      ...existingGroup,
+      suggestions: [...existingGroup.suggestions, newSuggestion],
+    };
+  }
+
+  return {
+    id: `placeholder-group-${Date.now()}`,
+    suggestions: [newSuggestion],
+    metadata: {
+      title: "New Resource",
+      description: "Complete the resource details or remove",
+    },
+  };
+}
