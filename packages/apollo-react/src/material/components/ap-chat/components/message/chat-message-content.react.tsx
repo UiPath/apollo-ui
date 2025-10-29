@@ -172,8 +172,8 @@ const WidgetContainer = React.memo(({
 });
 
 function AutopilotChatMessageContentComponent({
-    message, isLastInGroup = true, containerRef,
-}: { message: AutopilotChatMessage; isLastInGroup?: boolean; containerRef: HTMLDivElement | null }) {
+    message, isLastInGroup = true, disableActions = false, containerRef,
+}: { message: AutopilotChatMessage; isLastInGroup?: boolean; disableActions?: boolean; containerRef: HTMLDivElement | null }) {
     const chatService = useChatService();
 
     if ((!message.content && !message.contentParts) && !message.attachments) {
@@ -198,7 +198,7 @@ function AutopilotChatMessageContentComponent({
                         { message.role === AutopilotChatRole.Assistant && (
                             <AutopilotChatSources groupId={message.groupId ?? ''} message={message} />
                         )}
-                        <AutopilotChatMessageActions message={message} containerElement={containerRef}/>
+                        { !disableActions && <AutopilotChatMessageActions message={message} containerElement={containerRef}/> }
                     </>
                 )}
             </MessageBox>

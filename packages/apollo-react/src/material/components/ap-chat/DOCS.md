@@ -1170,6 +1170,34 @@ chatService.sendResponse({
 });
 ```
 
+
+### Disabling Message Actions
+
+```typescript
+// Send a message that uses the custom renderer
+chatService.sendResponse({
+  id: "msg-121",
+  groupId: "group1"
+  content: "message 1",
+});
+
+chatService.sendResponse({
+  id: "msg-122",
+  groupId: "group1"
+  content: "Message without actions",
+  disableActions: true // Invalid. Will be ignored. Message must be the single one in his group
+});
+
+chatService.sendResponse({
+  id: "msg-123",
+  groupId: "group2"
+  content: "Message without actions",
+  disableActions: true // Valid. Will render the message without message actions
+});
+
+```
+
+
 ### Tree Renderer Component
 
 The Autopilot Chat component includes a built-in tree renderer that can display hierarchical data structures using the Apollo Tree View component. This is particularly useful for displaying structured data like workflow steps, organizational charts, or nested information.

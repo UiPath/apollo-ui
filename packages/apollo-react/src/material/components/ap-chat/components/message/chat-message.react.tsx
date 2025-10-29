@@ -45,21 +45,36 @@ const removeFakeStream = (messages: AutopilotChatMessage[]) => {
     }) => rest);
 };
 
-// eslint-disable-next-line object-curly-newline
-const MessageGroupContainer = styled('div')(({ isAssistant }: { isAssistant: boolean }) => ({
-    marginBottom: isAssistant ? '30px' : '14px', // Assistant is 30px because user has actions with negative 16px
-// eslint-disable-next-line object-curly-newline
-}));
+const MessageGroupContainer = styled('div')(({
+    isAssistant, disableActions, isLastGroup,
+}: { isAssistant: boolean; disableActions: boolean; isLastGroup: boolean }) => {
+    if (disableActions) {
+        return isLastGroup ? { marginBottom: '14px' } : { marginBottom: '-16px' };
+    }
+    if (isAssistant) {
+        return { marginBottom: '30px' };
+    }
+    return { marginBottom: '14px' };
+});
 
-const MessageGroup = React.memo(({ messages }: { messages: AutopilotChatMessage[] }) => {
+const MessageGroup = React.memo(({
+    messages, isLastGroup,
+}: { messages: AutopilotChatMessage[]; isLastGroup: boolean }) => {
     const [ groupRef, setGroupRef ] = React.useState<HTMLDivElement | null>(null);
+    const disableActions = messages.length === 1 && !!messages[0].disableActions;
 
     return (
-        <MessageGroupContainer isAssistant={messages[0].role === AutopilotChatRole.Assistant} ref={setGroupRef}>
+        <MessageGroupContainer
+            isAssistant={messages[0].role === AutopilotChatRole.Assistant}
+            disableActions={disableActions}
+            isLastGroup={isLastGroup}
+            ref={setGroupRef}
+        >
             {messages.map((message, index) => (
                 <AutopilotChatMessageContent
                     key={message.id}
                     message={message}
+                    disableActions={disableActions}
                     isLastInGroup={index === messages.length - 1}
                     containerRef={groupRef}
                 />
@@ -201,8 +216,8 @@ function AutopilotChatMessagesComponent({
                     { messages.length === 0 && (
                         <AutopilotChatFRE />
                     )}
-                    {messageGroups.map((group) => (
-                        <MessageGroup key={group[0].id} messages={group} />
+                    {messageGroups.map((group, idx) => (
+                        <MessageGroup key={group[0].id} messages={group} isLastGroup={idx === messageGroups.length - 1} />
                     ))}
                     { messages.length > 0 && suggestions.length > 0 && (
                         <AutopilotChatSuggestions
