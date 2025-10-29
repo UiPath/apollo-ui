@@ -260,7 +260,6 @@ const AgentFlowInner = memo(
     healthScore,
     suggestionTranslations,
     suggestionGroup,
-    onActOnSuggestionGroup,
   }: PropsWithChildren<AgentFlowProps>) => {
     const {
       nodes,
@@ -280,6 +279,7 @@ const AgentFlowInner = memo(
       expandAgent,
       collapseAgent,
       createResourcePlaceholder,
+      actOnSuggestionGroup,
       currentSuggestionIndex,
       navigateToNextSuggestion,
       navigateToPreviousSuggestion,
@@ -597,8 +597,8 @@ const AgentFlowInner = memo(
             <Panel position="bottom-center">
               <SuggestionGroupPanel
                 suggestionGroup={suggestionGroup}
-                onRejectAll={(suggestionGroupId: string) => onActOnSuggestionGroup?.(suggestionGroupId, "reject")}
-                onAcceptAll={(suggestionGroupId: string) => onActOnSuggestionGroup?.(suggestionGroupId, "accept")}
+                onRejectAll={(suggestionGroupId: string) => actOnSuggestionGroup?.(suggestionGroupId, "reject")}
+                onAcceptAll={(suggestionGroupId: string) => actOnSuggestionGroup?.(suggestionGroupId, "accept")}
                 currentIndex={currentSuggestionIndex}
                 onNavigateNext={navigateToNextSuggestion}
                 onNavigatePrevious={navigateToPreviousSuggestion}

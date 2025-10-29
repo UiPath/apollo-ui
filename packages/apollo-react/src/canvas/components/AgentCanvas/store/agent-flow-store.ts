@@ -1233,10 +1233,7 @@ export const createAgentFlowStore = (initialProps: AgentFlowProps) =>
         props.onActOnSuggestion?.(suggestionId, action);
 
         // After parent updates, select the next suggestion node
-        // We do this in a setTimeout to allow the parent to update first
-        // setTimeout(() => {
-
-        // }, 0);
+        // We do this in an empty promise to allow the parent to update first
         Promise.resolve().then(() => {
           const state = get();
           const updatedSuggestions = state.props.suggestionGroup?.suggestions;
