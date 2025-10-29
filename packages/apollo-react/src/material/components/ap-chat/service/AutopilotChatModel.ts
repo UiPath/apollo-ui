@@ -132,6 +132,7 @@ export interface AutopilotChatMessage {
     meta?: any;
     toCopy?: string;
     shouldWaitForMoreMessages?: boolean;
+    disableActions?: boolean;
 }
 
 export interface AutopilotChatPrompt extends Pick<AutopilotChatMessage, 'content' | 'attachments'> {}
