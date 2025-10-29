@@ -277,7 +277,7 @@ const StageNodeComponent = (props: StageNodeProps) => {
                 variant={isStageTitleEditing ? FontVariantToken.fontSizeM : FontVariantToken.fontSizeMBold}
                 color="var(--color-foreground)"
               >
-                <ApTooltip content={label} placement="top">
+                <ApTooltip content={label} placement="top" delay>
                   <StageTitleContainer isEditing={isStageTitleEditing}>
                     <StageTitleInput
                       name="Stage Title"
@@ -362,7 +362,7 @@ const StageNodeComponent = (props: StageNodeProps) => {
                           <StageTaskIcon>{task.icon ?? <ProcessNodeIcon />}</StageTaskIcon>
                           <Column flex={1} style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                             <Row align="center" justify="space-between">
-                              <ApTooltip content={task.label} placement="top">
+                              <ApTooltip content={task.label} placement="top" delay>
                                 <ApTypography
                                   variant={FontVariantToken.fontSizeM}
                                   color="var(--color-foreground)"

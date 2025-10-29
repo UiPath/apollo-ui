@@ -35,7 +35,7 @@ const TriggerNodeComponent = (props: TriggerNodeProps) => {
   return (
     <div style={{ width: "100%", height: "100%", position: "relative" }}>
       {tooltip ? (
-        <ApTooltip content={tooltip} placement="top" style={{ width: "100%", height: "100%" }}>
+        <ApTooltip delay content={tooltip} placement="top" style={{ width: "100%", height: "100%" }}>
           {triggerContent}
         </ApTooltip>
       ) : (

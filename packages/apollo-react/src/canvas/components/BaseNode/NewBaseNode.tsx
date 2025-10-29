@@ -181,6 +181,7 @@ const NewBaseNodeComponent = (
           return (
             <BaseBadgeSlot position={map[position]} shape={displayShape} key={map[position]}>
               <ApTooltip
+                delay
                 placement="top"
                 {...(adornment.tooltip && typeof adornment.tooltip === "string" && { content: adornment.tooltip })}
                 {...(adornment.tooltip &&
@@ -200,7 +201,7 @@ const NewBaseNodeComponent = (
 
         {displayLabel && (
           <BaseTextContainer hasBottomHandles={hasVisibleBottomHandlesWithLabels} shape={displayShape}>
-            <ApTooltip placement="top" content={displayLabelTooltip}>
+            <ApTooltip delay placement="top" content={displayLabelTooltip}>
               <BaseHeader shape={displayShape} backgroundColor={displayLabelBackgroundColor}>
                 {displayLabel}
               </BaseHeader>
