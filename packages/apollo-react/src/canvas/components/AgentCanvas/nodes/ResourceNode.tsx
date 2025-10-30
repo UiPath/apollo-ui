@@ -109,7 +109,7 @@ export const ResourceNode = memo(
         case "escalation":
           icon = <ApIcon name="person" size="40px" />;
           break;
-        case "memory":
+        case "memorySpace":
           icon = <Icons.MemoryIcon w={40} h={40} />;
           break;
         case "mcp":
@@ -214,7 +214,7 @@ export const ResourceNode = memo(
 
       const actions: ToolbarAction[] = [removeAction];
       const overflowActions: ToolbarAction[] = [
-        ...(data.type !== "memory" ? [toggleBreakpointAction] : []),
+        ...(data.type !== "memorySpace" ? [toggleBreakpointAction] : []),
         ...(data.type === "tool" ? [addGuardrailAction] : []),
         ...(data.projectId ? [goToSourceAction] : []),
         ...(data.type === "tool" ? [separator, toggleEnabledAction] : []),
@@ -382,7 +382,7 @@ export const ResourceNode = memo(
         {
           position: Position.Bottom,
           handles: memoryHandles,
-          visible: data.type === "memory",
+          visible: data.type === "memorySpace",
         },
       ],
       [data.type, data.isExpandable, toolTopHandles, toolBottomHandles, contextHandles, escalationHandles, memoryHandles]

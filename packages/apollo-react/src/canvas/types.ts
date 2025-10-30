@@ -101,9 +101,9 @@ export type AgentFlowMcpResource = {
   isDisabled?: boolean;
 };
 
-export type AgentFlowMemoryResource = {
+export type AgentFlowMemorySpaceResource = {
   id: string;
-  type: "memory";
+  type: "memorySpace";
   name: string;
   originalName?: string;
   description: string;
@@ -120,7 +120,7 @@ export type AgentFlowResource =
   | AgentFlowEscalationResource
   | AgentFlowMcpResource
   | AgentFlowToolResource
-  | AgentFlowMemoryResource;
+  | AgentFlowMemorySpaceResource;
 export type AgentFlowResourceType = AgentFlowResource["type"];
 
 /**
@@ -224,7 +224,7 @@ export type AgentFlowProps = {
   resources: AgentFlowResource[];
   allowDragging?: boolean;
   initialSelectedResource?: {
-    type: "context" | "escalation" | "mcp" | "pane" | "run" | "tool" | "memory";
+    type: "context" | "escalation" | "mcp" | "pane" | "run" | "tool" | "memorySpace";
     name: string;
   } | null;
   onSelectResource?: (resourceId: string | null) => void;
@@ -314,8 +314,8 @@ export type EscalationResourceData = {
 type McpResourceData = {
   type: "mcp";
 };
-export type MemoryResourceData = {
-  type: "memory";
+export type MemorySpaceResourceData = {
+  type: "memorySpace";
 };
 
 export type SharedResourceData = {
@@ -361,7 +361,7 @@ export type AgentFlowResourceNodeData = (
   | EscalationResourceData
   | McpResourceData
   | ToolResourceData
-  | MemoryResourceData
+  | MemorySpaceResourceData
 ) &
   SharedResourceData;
 export type AgentFlowResourceNode = Node<AgentFlowResourceNodeData, "resource"> & {

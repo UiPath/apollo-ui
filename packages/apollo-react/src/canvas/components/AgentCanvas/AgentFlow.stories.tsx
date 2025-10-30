@@ -151,10 +151,10 @@ const createSampleMcp = (): AgentFlowResource => {
   };
 };
 
-const createSampleMemory = (): AgentFlowResource => {
+const createSampleMemorySpace = (): AgentFlowResource => {
   return {
     id: generateResourceId(),
-    type: "memory",
+    type: "memorySpace",
     name: "Agent Memory Space",
     description: "Memory space for the agent",
   };
@@ -343,8 +343,8 @@ const AgentFlowWrapper = ({
         newResource = createSampleMcp();
         break;
       }
-      case "memory": {
-        newResource = createSampleMemory();
+      case "memorySpace": {
+        newResource = createSampleMemorySpace();
         break;
       }
       default: {
@@ -820,8 +820,8 @@ const SuggestionModeWrapper = ({
       case "mcp":
         newResource = createSampleMcp();
         break;
-      case "memory":
-        newResource = createSampleMemory();
+      case "memorySpace":
+        newResource = createSampleMemorySpace();
         break;
       default:
         return;
@@ -1163,7 +1163,7 @@ export const DesignModeWithSuggestions: Story = {
     mode: "design",
     enableTimelinePlayer: false,
   },
-  render: (args) => <SuggestionModeWrapper {...args} initialResources={sampleResources.concat(createSampleMemory())} />,
+  render: (args) => <SuggestionModeWrapper {...args} initialResources={sampleResources.concat(createSampleMemorySpace())} />,
   parameters: {
     docs: {
       description: {

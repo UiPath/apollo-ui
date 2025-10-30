@@ -44,7 +44,7 @@ interface AgentNodeProps extends NewBaseNodeDisplayProps {
   hasError?: boolean;
   hasSuccess?: boolean;
   hasRunning?: boolean;
-  onAddResource?: (type: "context" | "escalation" | "mcp" | "tool" | "memory") => void;
+  onAddResource?: (type: "context" | "escalation" | "mcp" | "tool" | "memorySpace") => void;
   translations: AgentNodeTranslations;
   enableMemory?: boolean;
   healthScore?: number;
@@ -103,7 +103,7 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
 
     if (displayMemory) {
       topHandles.push({
-        id: ResourceNodeType.Memory,
+        id: ResourceNodeType.MemorySpace,
         type: "source",
         handleType: "artifact",
         label: translations.memory,
@@ -112,7 +112,7 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
         labelBackgroundColor: "var(--color-background-secondary)",
         visible: displayMemory,
         onAction: (_e: HandleActionEvent) => {
-          onAddResource?.("memory");
+          onAddResource?.("memorySpace");
         },
       });
     }

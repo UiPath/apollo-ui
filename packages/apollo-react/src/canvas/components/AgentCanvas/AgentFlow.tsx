@@ -82,7 +82,7 @@ const addVirtualSpacingNodes = (nodes: AgentFlowCustomNode[], agentNode: AgentFl
         y: agentNode.position.y - FLOW_LAYOUT.groupDistanceVertical - RESOURCE_NODE_SIZE,
       },
       data: {
-        type: ResourceNodeType.Memory,
+        type: ResourceNodeType.MemorySpace,
         name: "__virtual__",
         description: "",
         parentNodeId: agentNode.id,
@@ -131,7 +131,7 @@ const addVirtualSpacingNodes = (nodes: AgentFlowCustomNode[], agentNode: AgentFl
 
 // agent node wrapper
 const createAgentNodeWrapper = (handlers: {
-  onAddResource?: (type: "context" | "escalation" | "mcp" | "tool" | "memory") => void;
+  onAddResource?: (type: "context" | "escalation" | "mcp" | "tool" | "memorySpace") => void;
   translations?: AgentNodeTranslations;
   suggestionTranslations?: SuggestionTranslations;
   enableMcpTools?: boolean;
@@ -156,7 +156,7 @@ const createAgentNodeWrapper = (handlers: {
       nodes.some((node) => isAgentFlowResourceNode(node) && node.data.type === "mcp" && node.data.parentNodeId === props.id);
 
     const hasMemory = nodes.some(
-      (node) => isAgentFlowResourceNode(node) && node.data.type === "memory" && node.data.parentNodeId === props.id
+      (node) => isAgentFlowResourceNode(node) && node.data.type === "memorySpace" && node.data.parentNodeId === props.id
     );
 
     // Check if agent itself is running OR if any of its resources are running
@@ -310,7 +310,7 @@ const AgentFlowInner = memo(
     }, [timelinePlayerRef.current?.offsetHeight, AGENT_FLOW_FIT_VIEW_OPTIONS.padding.bottom]);
 
     const nodeTypes = useMemo(() => {
-      const handleAddResource = (type: "context" | "escalation" | "mcp" | "tool" | "memory") => {
+      const handleAddResource = (type: "context" | "escalation" | "mcp" | "tool" | "memorySpace") => {
         // Use createResourcePlaceholder which will either create a placeholder or call onAddResource
         createResourcePlaceholder(type);
       };
@@ -560,7 +560,7 @@ const AgentFlowInner = memo(
       const agentNode = nodes.find(isAgentFlowAgentNode);
       const filteredNodes = nodes.filter((node) => {
         if (!isAgentFlowResourceNode(node)) return true;
-        if (node.data.type === "memory") return !!enableMemory;
+        if (node.data.type === "memorySpace") return !!enableMemory;
         return true;
       });
       if (!agentNode) return filteredNodes;

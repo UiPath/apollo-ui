@@ -33,7 +33,7 @@ export const getAgentGroupBottomPosition = (
     [ResourceNodeType.Escalation]: [],
     [ResourceNodeType.MCP]: [],
     [ResourceNodeType.Tool]: [],
-    [ResourceNodeType.Memory]: [],
+    [ResourceNodeType.MemorySpace]: [],
   };
 
   // Group nodes by which handle they're connected to
@@ -86,7 +86,7 @@ const arrangeAgent = (
     [ResourceNodeType.Escalation]: [],
     [ResourceNodeType.MCP]: [],
     [ResourceNodeType.Tool]: [],
-    [ResourceNodeType.Memory]: [],
+    [ResourceNodeType.MemorySpace]: [],
   };
 
   // Group nodes by which handle they're connected to

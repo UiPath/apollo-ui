@@ -217,13 +217,13 @@ const createResourceNode = (
           parentNodeId,
         },
       };
-    case "memory":
+    case "memorySpace":
       return {
         ...baseNode,
         id: finalId,
         data: {
           ...baseData,
-          type: "memory",
+          type: "memorySpace",
           parentNodeId,
         },
       };
@@ -275,8 +275,8 @@ export const createResourceEdge = (
       return createEdge(agentNode.id, resourceNode.id, ResourceNodeType.Context, Position.Top);
     case "mcp":
       return createEdge(agentNode.id, resourceNode.id, ResourceNodeType.Tool, Position.Top);
-    case "memory":
-      return createEdge(agentNode.id, resourceNode.id, ResourceNodeType.Memory, Position.Bottom);
+    case "memorySpace":
+      return createEdge(agentNode.id, resourceNode.id, ResourceNodeType.MemorySpace, Position.Bottom);
     case "escalation":
     default:
       return createEdge(agentNode.id, resourceNode.id, ResourceNodeType.Escalation, Position.Top);

@@ -5,7 +5,7 @@ export enum ResourceNodeType {
   Escalation = "escalation",
   MCP = "mcp",
   Tool = "tool",
-  Memory = "memory",
+  MemorySpace = "memorySpace",
 }
 
 export const ResourceNodeTypeToPosition: Record<ResourceNodeType, Position> = {
@@ -13,7 +13,7 @@ export const ResourceNodeTypeToPosition: Record<ResourceNodeType, Position> = {
   [ResourceNodeType.Escalation]: Position.Bottom,
   [ResourceNodeType.MCP]: Position.Bottom,
   [ResourceNodeType.Tool]: Position.Bottom,
-  [ResourceNodeType.Memory]: Position.Top,
+  [ResourceNodeType.MemorySpace]: Position.Top,
 };
 
 // Consistent ordering for resource node types: Context -> Escalation -> Tool -> Others
@@ -22,5 +22,5 @@ export const ResourceNodeTypeOrder: Record<ResourceNodeType, number> = {
   [ResourceNodeType.Escalation]: 1,
   [ResourceNodeType.Tool]: 2,
   [ResourceNodeType.MCP]: 3,
-  [ResourceNodeType.Memory]: 4,
+  [ResourceNodeType.MemorySpace]: 4,
 };

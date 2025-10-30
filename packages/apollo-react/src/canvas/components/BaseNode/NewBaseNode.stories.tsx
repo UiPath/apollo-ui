@@ -188,7 +188,7 @@ export const Default: Story = {
                         position: Position.Top,
                         handles: [
                           {
-                            id: "memory",
+                            id: "memorySpace",
                             type: "source",
                             handleType: "artifact",
                             label: "Memory",
