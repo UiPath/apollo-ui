@@ -558,8 +558,13 @@ const AgentFlowInner = memo(
     const nodesWithVirtualSpacing = useMemo(() => {
       const agentNode = nodes.find(isAgentFlowAgentNode);
       if (!agentNode) return nodes;
-      return addVirtualSpacingNodes(nodes, agentNode);
-    }, [nodes]);
+      return addVirtualSpacingNodes(nodes, agentNode).filter((node) => {
+        if (isAgentFlowResourceNode(node) && node.data.type === "memory") {
+          return !!enableMemory;
+        }
+        return true;
+      });
+    }, [nodes, enableMemory]);
 
     return (
       <Column w="100%" h="100%" style={{ touchAction: "none" }}>
