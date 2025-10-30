@@ -554,16 +554,17 @@ const AgentFlowInner = memo(
       }
     }, [nodes, setSelectedNodeId, onSelectResource, getNodeFromSelectedSpan, selectedNodeId, updateNode, spans]);
 
-    // Add virtual spacing nodes for balanced fit view (AgentFlow-specific)
+    // 1. Filter out memory based on feature flag
+    // 2. Add virtual spacing nodes for balanced fit view (AgentFlow-specific)
     const nodesWithVirtualSpacing = useMemo(() => {
       const agentNode = nodes.find(isAgentFlowAgentNode);
-      if (!agentNode) return nodes;
-      return addVirtualSpacingNodes(nodes, agentNode).filter((node) => {
-        if (isAgentFlowResourceNode(node) && node.data.type === "memory") {
-          return !!enableMemory;
-        }
+      const filteredNodes = nodes.filter((node) => {
+        if (!isAgentFlowResourceNode(node)) return true;
+        if (node.data.type === "memory") return !!enableMemory;
         return true;
       });
+      if (!agentNode) return filteredNodes;
+      return addVirtualSpacingNodes(filteredNodes, agentNode);
     }, [nodes, enableMemory]);
 
     return (
