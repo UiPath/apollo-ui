@@ -719,6 +719,9 @@ export const createAgentFlowStore = (initialProps: AgentFlowProps) =>
       onNodesChange: (changes) => {
         const { props, nodes } = get();
 
+        // Early exit if no changes
+        if (changes.length === 0) return;
+
         // Check for node removals (keyboard delete)
         const removeChanges = changes.filter((change) => change.type === "remove");
         if (removeChanges.length > 0 && props.mode === "design") {
@@ -763,9 +766,12 @@ export const createAgentFlowStore = (initialProps: AgentFlowProps) =>
 
           if (filteredChanges.length === 0) return;
 
-          set((state) => ({
-            nodes: applyNodeChanges(filteredChanges, state.nodes) as AgentFlowCustomNode[],
-          }));
+          const updatedNodes = applyNodeChanges(filteredChanges, nodes) as AgentFlowCustomNode[];
+
+          // Only update if nodes actually changed (reference check)
+          if (updatedNodes === nodes) return;
+
+          set({ nodes: updatedNodes });
           return;
         }
 
@@ -778,29 +784,76 @@ export const createAgentFlowStore = (initialProps: AgentFlowProps) =>
           const selectionChange = changes.find((change) => "selected" in change);
           if (selectionChange && "selected" in selectionChange) {
             const newSelectedId = selectionChange.selected ? selectionChange.id : null;
-            set((state) => ({
+            const updatedNodes = applyNodeChanges(changes, nodes) as AgentFlowCustomNode[];
+
+            // Only update if nodes actually changed
+            if (updatedNodes === nodes && newSelectedId === get().selectedNodeId) return;
+
+            set({
               selectedNodeId: newSelectedId,
-              nodes: applyNodeChanges(changes, state.nodes) as AgentFlowCustomNode[],
-            }));
+              nodes: updatedNodes,
+            });
             return;
           }
         }
 
-        // For non-selection changes, apply them normally
+        // For non-selection changes, check if they're only dimension changes
         const filteredChanges = changes.filter((change) => !("selected" in change));
         if (filteredChanges.length === 0) return;
 
-        const currentSelectedId = get().selectedNodeId;
-        set((state) => {
-          const updatedNodes = applyNodeChanges(filteredChanges, state.nodes) as AgentFlowCustomNode[];
+        // Check if changes are ONLY dimensions (which React Flow sends constantly)
+        const onlyDimensionChanges = filteredChanges.every((change) => change.type === "dimensions");
 
+        if (onlyDimensionChanges) {
+          // For dimension-only changes, update silently without triggering subscribers
+          // by checking if dimensions actually changed meaningfully
+          const updatedNodes = applyNodeChanges(filteredChanges, nodes) as AgentFlowCustomNode[];
+
+          // Check if any dimensions actually changed
+          let dimensionsChanged = false;
+          for (const updated of updatedNodes) {
+            const original = nodes.find((n) => n.id === updated.id);
+            if (!original) {
+              dimensionsChanged = true;
+              break;
+            }
+
+            // Check if measured dimensions changed
+            const oldWidth = original.measured?.width;
+            const oldHeight = original.measured?.height;
+            const newWidth = updated.measured?.width;
+            const newHeight = updated.measured?.height;
+
+            if (oldWidth !== newWidth || oldHeight !== newHeight) {
+              dimensionsChanged = true;
+              break;
+            }
+          }
+
+          // Only update if dimensions actually changed
+          if (dimensionsChanged) {
+            set({ nodes: updatedNodes });
+          }
+          return;
+        }
+
+        // For meaningful changes (position, add, remove, etc.), apply normally
+        const currentSelectedId = get().selectedNodeId;
+        const updatedNodes = applyNodeChanges(filteredChanges, nodes) as AgentFlowCustomNode[];
+
+        // Ensure selection state is correct
+        const finalNodes = updatedNodes.map((updatedNode) => {
+          const shouldBeSelected = updatedNode.id === currentSelectedId;
+          if (updatedNode.selected === shouldBeSelected) {
+            return updatedNode;
+          }
           return {
-            nodes: updatedNodes.map((node) => ({
-              ...node,
-              selected: node.id === currentSelectedId,
-            })),
+            ...updatedNode,
+            selected: shouldBeSelected,
           };
         });
+
+        set({ nodes: finalNodes });
       },
 
       // edges
