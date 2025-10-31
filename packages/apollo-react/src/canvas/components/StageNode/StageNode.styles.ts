@@ -155,7 +155,7 @@ export const StageParallelBracket = styled.div`
   border-radius: 3px 0 0 3px;
 `;
 
-export const StageTaskItem = styled.div<{ status?: StageStatus }>`
+export const StageTaskItem = styled.div<{ status?: StageStatus; selected?: boolean }>`
   position: relative;
   display: flex;
   align-items: center;
@@ -199,6 +199,12 @@ export const StageTaskItem = styled.div<{ status?: StageStatus }>`
     status === "Failed" &&
     css`
       border-color: var(--color-error-icon);
+    `}
+
+  ${({ selected }) =>
+    selected &&
+    css`
+      border: 2px solid var(--color-selection-indicator);
     `}
 `;
 

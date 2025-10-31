@@ -34,6 +34,7 @@ export interface StageNodeProps extends NodeProps {
     escalationsTriggered?: boolean;
     isException?: boolean;
     tasks: StageTaskItem[][];
+    selectedTasks?: string[];
   };
   addTaskLabel?: string;
   execution?: {

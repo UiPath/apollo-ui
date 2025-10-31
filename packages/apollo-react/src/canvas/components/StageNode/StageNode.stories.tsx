@@ -265,6 +265,7 @@ export const ExecutionStatus: Story = {
               ],
               [{ id: "5", label: "Processing Review", icon: <ProcessIcon /> }],
             ],
+            selectedTasks: ["2"],
           },
           execution: {
             stageStatus: {
@@ -539,6 +540,7 @@ export const LoanProcessingWorkflow: Story = {
               [{ id: "1", label: "KYC and AML Checks", icon: <VerificationIcon /> }],
               [{ id: "2", label: "Document Verification", icon: <DocumentIcon /> }],
             ],
+            selectedTasks: ["1"],
           },
         },
       },
@@ -560,6 +562,7 @@ export const LoanProcessingWorkflow: Story = {
               ],
               [{ id: "5", label: "Processing Review", icon: <ProcessIcon /> }],
             ],
+            selectedTasks: ["4"],
           },
         },
       },

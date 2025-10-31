@@ -64,6 +64,7 @@ const StageNodeComponent = (props: StageNodeProps) => {
   const slaBreached = stageDetails?.slaBreached;
   const escalation = stageDetails?.escalation;
   const escalationsTriggered = stageDetails?.escalationsTriggered;
+  const selectedTasks = stageDetails?.selectedTasks;
 
   const status = execution?.stageStatus?.status;
   const statusLabel = execution?.stageStatus?.label;
@@ -353,6 +354,7 @@ const StageNodeComponent = (props: StageNodeProps) => {
                       return (
                         <StageTaskItem
                           key={task.id}
+                          selected={!!selectedTasks?.includes(task.id)}
                           status={taskExecution?.status}
                           onClick={onTaskClick ? () => onTaskClick(task.id) : undefined}
                           {...(onTaskGroupModification && {
