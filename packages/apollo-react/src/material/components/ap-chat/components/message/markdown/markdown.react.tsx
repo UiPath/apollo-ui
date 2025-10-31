@@ -19,6 +19,7 @@ import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 
 import { t } from '../../../../../utils/localization/loc';
+import { useIsStreamingMessage } from '../../../hooks/use-is-streaming-message';
 import { useChatService } from '../../../providers/chat-service.provider.react';
 import { useChatState } from '../../../providers/chat-state-provider.react';
 import { useStreaming } from '../../../providers/streaming-provider.react';
@@ -81,6 +82,7 @@ function AutopilotChatMarkdownRendererComponent({ message }: { message: Autopilo
     const chatService = useChatService();
     const { spacing } = useChatState();
     const { setStreaming } = useStreaming();
+    const { isStreaming } = useIsStreamingMessage(message);
     const chunkQueue = React.useRef<string[]>([]);
     const lastChunkQueueProcessedTime = React.useRef<number>(0);
 
@@ -188,7 +190,7 @@ function AutopilotChatMarkdownRendererComponent({ message }: { message: Autopilo
         th: HeaderCell,
         td: Cell,
         img: ({ src }: { src?: string }) => src || '',
-        code: Code,
+        code: (props: any) => <Code {...props} isStreaming={isStreaming ?? false} />,
         blockquote: Blockquote,
         em: Emphazised,
         del: Del,
@@ -197,7 +199,7 @@ function AutopilotChatMarkdownRendererComponent({ message }: { message: Autopilo
         pre: Pre,
         a: Link,
         citation: Citation,
-    }), [ spacing ]);
+    }), [ spacing, isStreaming ]);
 
     return React.useMemo(() => (
         <StyledMarkdown

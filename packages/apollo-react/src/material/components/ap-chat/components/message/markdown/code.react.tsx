@@ -178,7 +178,7 @@ const CloseButton = styled(IconButton)(({ theme }) => ({
 }));
 
 export const Code = React.memo(({
-    inline, className, children, ...props
+    inline, className, children, isStreaming, ...props
 }: any) => {
     const theme = useTheme();
     const {
@@ -190,7 +190,7 @@ export const Code = React.memo(({
     const codeContent = extractTextFromChildren(children).replace(/\n$/, '');
     const language = match?.[1] || '';
     const isPreviewable = language === LANGUAGES.HTML && !disabledFeatures.htmlPreview;
-    const [ showPreview, setShowPreview ] = React.useState(isPreviewable);
+    const [ showPreview, setShowPreview ] = React.useState(isPreviewable && !isStreaming);
     const [ isModalOpen, setIsModalOpen ] = React.useState(false);
 
     const codeFontStyles = {
