@@ -74,7 +74,9 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
   } = props;
   const { actOnSuggestion } = useAgentFlowStore();
 
-  const { name, definition, isSuggestion, suggestionId, suggestionType } = data;
+  const { name, definition, suggestionId } = data;
+  const isSuggestion = data.isSuggestion ?? false;
+  const suggestionType = isSuggestion ? data.suggestionType : undefined;
   const isConversational = (definition?.metadata as Record<string, unknown>)?.isConversational === true;
   const suggestTranslations = suggestionTranslations ?? DefaultSuggestionTranslations;
 

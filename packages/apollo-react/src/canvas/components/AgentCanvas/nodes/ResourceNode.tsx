@@ -61,8 +61,7 @@ export const ResourceNode = memo(
     const isDisabled = data.isDisabled ?? false;
     const isSuggestion = data.isSuggestion ?? false;
     const suggestionId = data.suggestionId;
-    const suggestionType = data.suggestionType;
-    const _isPlaceholder = data.isPlaceholder ?? false; // Placeholder state is handled via node styling
+    const suggestionType = isSuggestion ? data.suggestionType : undefined;
     const suggestTranslations = suggestionTranslations ?? DefaultSuggestionTranslations;
 
     const handleClickEnable = useCallback(() => {

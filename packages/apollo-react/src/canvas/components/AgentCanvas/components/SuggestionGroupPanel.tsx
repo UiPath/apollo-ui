@@ -81,7 +81,9 @@ export const SuggestionGroupPanel = ({
   onNavigateNext,
   onNavigatePrevious,
 }: SuggestionGroupPanelProps) => {
-  const placeholderCount = suggestionGroup?.suggestions.length ?? 0;
+  // Filter out standalone suggestions - they are interactive placeholders that shouldn't appear in the panel
+  const nonStandaloneSuggestions = suggestionGroup?.suggestions.filter((s) => !s.isStandalone) ?? [];
+  const placeholderCount = nonStandaloneSuggestions.length;
 
   return (
     <>

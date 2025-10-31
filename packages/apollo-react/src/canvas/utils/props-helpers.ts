@@ -336,9 +336,10 @@ export const computeSuggestionNodesAndEdges = (
       const node = createResourceNode(resource, index, props, agentNode.id);
 
       // Mark it as a suggestion placeholder
+      // For standalone suggestions, don't set isSuggestion to true (they use click-to-accept/reject instead of toolbar)
       node.data = {
         ...node.data,
-        isSuggestion: true,
+        isSuggestion: !suggestion.isStandalone,
         suggestionId: suggestion.id,
         suggestionType: "add",
         isPlaceholder: true,

@@ -193,13 +193,15 @@ export type SuggestionType = "add" | "update" | "delete";
 export type AgentFlowSuggestion = {
   id: string;
   type: SuggestionType;
-  // For 'add' type: the new resource to add
+  /** For `"add"` type: the new resource to add */
   resource?: AgentFlowResource;
-  // For 'update' type: the resource id and updated fields
+  /** For `"update"` type: the resource id and updated fields */
   resourceId?: string;
   updatedFields?: Partial<AgentFlowResource>;
-  // For 'delete' type: the resource id to delete
+  /** For `"delete"` type: the resource id to delete */
   resourceIdToDelete?: string;
+  /** If true, this suggestion is a standalone/interactive placeholder and should not appear in the suggestion group panel */
+  isStandalone?: boolean;
 };
 
 export type AgentFlowSuggestionGroup = {
@@ -275,19 +277,43 @@ export type AgentFlowProps = {
 
   // placeholder creation (uses suggestion system internally)
   /**
-   * When true, clicking "+" buttons creates placeholders instead of direct resources.
-   * Placeholders can be accepted (converted to real resources) or rejected (removed).
-   * @default false (direct creation via onAddResource)
+   * Called when user clicks "+" button on agent node handle.
+   * If provided, enables placeholder mode where placeholders are created instead of direct resources.
+   *
+   * Return a partial resource to customize the placeholder.
+   * Return null to bypass placeholder mode for this specific type and use direct creation via onAddResource.
+   *
+   * The placeholder will be shown as a suggestion that can be accepted (converted to real resource) or rejected (removed).
+   *
+   * If not provided, clicking "+" will directly call onAddResource (legacy behavior).
+   *
+   * **Important:** The component automatically ensures only one standalone placeholder exists at a time.
+   * The second parameter provides a cleaned suggestion group with existing standalone placeholders removed.
+   * Use this cleaned group when creating the new placeholder to ensure proper state management.
+   *
+   * @example
+   * ```tsx
+   * onRequestResourcePlaceholder={(type, cleanedSuggestionGroup) => {
+   *   // Component provides cleanedSuggestionGroup with standalone placeholders already removed
+   *   const placeholder = {
+   *     id: `placeholder-${Date.now()}`,
+   *     type,
+   *     name: `New ${type}`,
+   *     description: 'Configure...'
+   *   };
+   *
+   *   // Use cleanedSuggestionGroup instead of your current suggestionGroup
+   *   const updated = createPlaceholderSuggestion(placeholder, cleanedSuggestionGroup, { isStandalone: true });
+   *   setSuggestionGroup(updated);
+   *
+   *   return placeholder;
+   * }}
+   * ```
    */
-  enablePlaceholderMode?: boolean;
-
-  /**
-   * Called when user clicks "+" button on agent node handle in placeholder mode.
-   * Return a partial resource to customize the placeholder, or omit to use defaults.
-   * Return null to bypass placeholder mode and use direct creation via onAddResource.
-   * The placeholder will be shown as a suggestion that can be accepted or rejected.
-   */
-  onRequestResourcePlaceholder?: (type: AgentFlowResourceType) => Partial<AgentFlowResource> | null;
+  onRequestResourcePlaceholder?: (
+    type: AgentFlowResourceType,
+    cleanedSuggestionGroup: AgentFlowSuggestionGroup | null
+  ) => Partial<AgentFlowResource> | null;
 };
 
 export type AgentFlowNodeData = {
@@ -478,6 +504,8 @@ export const DefaultSuggestionTranslations: SuggestionTranslations = {
  *
  * @param partialResource - Partial resource data (at minimum, provide type and id)
  * @param existingGroup - Optional existing suggestion group to merge into
+ * @param options - Optional configuration for the placeholder
+ * @param options.isStandalone - If true, the placeholder won't appear in the suggestion group panel UI (default: false)
  * @returns Updated suggestion group with the new placeholder
  *
  * @example
@@ -493,7 +521,8 @@ export const DefaultSuggestionTranslations: SuggestionTranslations = {
  *       description: 'Configure this resource...',
  *     };
  *
- *     const updated = createPlaceholderSuggestion(partialResource, suggestionGroup);
+ *     // Standalone placeholder - won't appear in suggestion group panel
+ *     const updated = createPlaceholderSuggestion(partialResource, suggestionGroup, { isStandalone: true });
  *     setSuggestionGroup(updated);
  *
  *     return partialResource;
@@ -503,7 +532,8 @@ export const DefaultSuggestionTranslations: SuggestionTranslations = {
  */
 export function createPlaceholderSuggestion(
   partialResource: Partial<AgentFlowResource>,
-  existingGroup?: AgentFlowSuggestionGroup | null
+  existingGroup?: AgentFlowSuggestionGroup | null,
+  options?: { isStandalone?: boolean }
 ): AgentFlowSuggestionGroup {
   if (!partialResource.type || !partialResource.id) {
     throw new Error("partialResource must have at least type and id fields");
@@ -521,6 +551,7 @@ export function createPlaceholderSuggestion(
     id: `suggestion-${partialResource.id}`,
     type: "add",
     resource: fullResource,
+    isStandalone: options?.isStandalone ?? false,
   };
 
   if (existingGroup) {

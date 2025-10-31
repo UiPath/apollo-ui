@@ -11,30 +11,8 @@ import {
   type AgentFlowResourceNodeData,
   type AgentFlowResourceType,
   type AgentFlowSuggestionGroup,
+  createPlaceholderSuggestion,
 } from "../../types";
-
-const SuggestionModeStoryDescription = `
-**Suggestion Mode** allows you to create temporary placeholder nodes when clicking "+" buttons,
-which can then be accepted (converted to real resources) or rejected (removed).
-
-**Per-Type Configuration** (demonstrated in this story):
-- **Memory, Context, Tools, MCP**: Create placeholders (require accept/reject)
-- **Escalations**: Bypass placeholders (created directly)
-- Controlled via \`onRequestResourcePlaceholder\` by returning \`null\` to bypass
-
-Features demonstrated:
-- Click "+" buttons - behavior varies by resource type
-- Placeholders appear with "edit_note" icon and 60% opacity
-- Accept ✓ button on each node converts placeholder to real resource
-- Reject ✗ button on each node removes placeholder
-- **Accept All / Reject All buttons** appear at top-center of canvas when placeholders exist
-- Clicking empty canvas auto-rejects all placeholders
-- Direct creation (escalations) adds resources immediately
-- Real-time feedback in the sidebar with console logging
-
-This mode is useful for workflows where some resources need configuration before finalization
-while others can be created immediately.
-`;
 
 const meta: Meta<typeof AgentFlow> = {
   title: "Canvas/AgentFlow",
@@ -642,6 +620,7 @@ const SuggestionModeWrapper = ({
   const [resources, setResources] = useState<AgentFlowResource[]>(initialResources);
   const [suggestionGroup, setSuggestionGroup] = useState<AgentFlowSuggestionGroup | null>(null);
   const [selectedResourceId, setSelectedResourceId] = useState<string | null>(null);
+  const [pendingStandalonePlaceholderId, setPendingStandalonePlaceholderId] = useState<string | null>(null);
 
   const handleEnable = useCallback((resourceId: string, resource: AgentFlowResourceNodeData) => {
     setResources((prev) =>
@@ -694,25 +673,67 @@ const SuggestionModeWrapper = ({
     );
   }, []);
 
-  const handleRequestPlaceholder = useCallback((_type: AgentFlowResourceType) => {
-    // Bypass placeholder mode for all resource types - create directly
-    // Returning null will trigger onAddResource instead
-    return null;
+  const handleRequestPlaceholder = useCallback((type: AgentFlowResourceType, cleanedSuggestionGroup: AgentFlowSuggestionGroup | null) => {
+    // Component automatically removes existing standalone placeholders
+    // Use cleanedSuggestionGroup (not suggestionGroup) to build on the cleaned state
+
+    // Create a placeholder resource
+    const placeholder: Partial<AgentFlowResource> = {
+      id: `placeholder-${type}-${Date.now()}`,
+      type,
+      name: `New ${type.charAt(0).toUpperCase() + type.slice(1)}`,
+      description: `Configure this ${type}...`,
+    };
+
+    // Add type-specific fields
+    if (type === "tool") {
+      (placeholder as any).iconUrl = "";
+      (placeholder as any).projectType = ProjectType.Internal;
+    } else if (type === "mcp") {
+      (placeholder as any).slug = "";
+      (placeholder as any).folderPath = "";
+      (placeholder as any).availableTools = [];
+    }
+
+    // Use the cleaned suggestion group provided by the component (with standalone placeholders removed)
+    // This ensures only one standalone placeholder exists at a time
+    const updatedSuggestionGroup = createPlaceholderSuggestion(placeholder, cleanedSuggestionGroup, { isStandalone: true });
+    setSuggestionGroup(updatedSuggestionGroup);
+
+    // Find the suggestion ID for this placeholder and track it
+    const newSuggestion = updatedSuggestionGroup.suggestions[updatedSuggestionGroup.suggestions.length - 1];
+    if (newSuggestion) {
+      setPendingStandalonePlaceholderId(newSuggestion.id);
+    }
+
+    return placeholder;
   }, []);
 
   const handleActOnSuggestion = useCallback(
     (suggestionId: string, action: "accept" | "reject") => {
       if (!suggestionGroup) return;
 
+      const suggestion = suggestionGroup.suggestions.find((s) => s.id === suggestionId);
+      const remainingSuggestions = suggestionGroup.suggestions.filter((s) => s.id !== suggestionId);
+
+      // If we're acting on the pending standalone placeholder, clear the tracking
+      if (suggestion?.isStandalone && suggestionId === pendingStandalonePlaceholderId) {
+        setPendingStandalonePlaceholderId(null);
+      }
+
       if (action === "reject") {
-        setSuggestionGroup({
-          ...suggestionGroup,
-          suggestions: suggestionGroup.suggestions.filter((s) => s.id !== suggestionId),
-        });
+        // Clear the suggestion group if no more suggestions
+        if (remainingSuggestions.length === 0) {
+          setSuggestionGroup(null);
+        } else {
+          setSuggestionGroup({
+            ...suggestionGroup,
+            suggestions: remainingSuggestions,
+          });
+        }
         return;
       }
 
-      const suggestion = suggestionGroup.suggestions.find((s) => s.id === suggestionId);
       if (!suggestion) return;
 
       // Handle different suggestion types
@@ -742,29 +763,45 @@ const SuggestionModeWrapper = ({
           break;
       }
 
-      // Remove from suggestions
-      setSuggestionGroup({
-        ...suggestionGroup,
-        suggestions: suggestionGroup.suggestions.filter((s) => s.id !== suggestionId),
-      });
+      // Clear the suggestion group if no more suggestions
+      if (remainingSuggestions.length === 0) {
+        setSuggestionGroup(null);
+      } else {
+        setSuggestionGroup({
+          ...suggestionGroup,
+          suggestions: remainingSuggestions,
+        });
+      }
     },
-    [suggestionGroup]
+    [suggestionGroup, pendingStandalonePlaceholderId]
   );
 
   const handleActOnSuggestionGroup = useCallback(
     (suggestionGroupId: string, action: "accept" | "reject") => {
       if (!suggestionGroup) return;
 
+      // Filter out standalone suggestions - they should not be affected by bulk operations
+      const nonStandaloneSuggestions = suggestionGroup.suggestions.filter((s) => !s.isStandalone);
+
       if (action === "reject") {
-        setSuggestionGroup(null);
+        // Keep standalone suggestions, remove non-standalone ones
+        const remainingSuggestions = suggestionGroup.suggestions.filter((s) => s.isStandalone);
+        if (remainingSuggestions.length > 0) {
+          setSuggestionGroup({
+            ...suggestionGroup,
+            suggestions: remainingSuggestions,
+          });
+        } else {
+          setSuggestionGroup(null);
+        }
         return;
       }
 
-      // Process all suggestions in order
+      // Process all non-standalone suggestions in order
       setResources((prevResources) => {
         let updatedResources = [...prevResources];
 
-        suggestionGroup.suggestions.forEach((suggestion) => {
+        nonStandaloneSuggestions.forEach((suggestion) => {
           switch (suggestion.type) {
             case "add": {
               if (suggestion.resource) {
@@ -794,15 +831,47 @@ const SuggestionModeWrapper = ({
         return updatedResources;
       });
 
-      // Clear all suggestions
-      setSuggestionGroup(null);
+      // Keep standalone suggestions, clear non-standalone ones
+      const remainingSuggestions = suggestionGroup.suggestions.filter((s) => s.isStandalone);
+      if (remainingSuggestions.length > 0) {
+        setSuggestionGroup({
+          ...suggestionGroup,
+          suggestions: remainingSuggestions,
+        });
+      } else {
+        setSuggestionGroup(null);
+      }
     },
     [suggestionGroup]
   );
 
-  const handleSelectResource = useCallback((resourceId: string | null) => {
-    setSelectedResourceId(resourceId);
-  }, []);
+  const handleSelectResource = useCallback(
+    (resourceId: string | null) => {
+      setSelectedResourceId(resourceId);
+
+      // If a standalone placeholder is pending and we selected it, auto-accept it
+      if (pendingStandalonePlaceholderId && resourceId && resourceId !== "pane") {
+        // Check if the selected resource is the pending placeholder and it still exists
+        const pendingSuggestion = suggestionGroup?.suggestions.find((s) => s.id === pendingStandalonePlaceholderId);
+        if (pendingSuggestion?.isStandalone && pendingSuggestion?.resource && resourceId.includes(pendingSuggestion.resource.id)) {
+          // Auto-accept the standalone placeholder
+          handleActOnSuggestion(pendingStandalonePlaceholderId, "accept");
+          setPendingStandalonePlaceholderId(null);
+        }
+      }
+
+      // If clicking on pane (empty space), reject the pending standalone placeholder
+      if (resourceId === "pane" && pendingStandalonePlaceholderId) {
+        // Verify the suggestion still exists and is standalone before rejecting
+        const pendingSuggestion = suggestionGroup?.suggestions.find((s) => s.id === pendingStandalonePlaceholderId);
+        if (pendingSuggestion?.isStandalone) {
+          handleActOnSuggestion(pendingStandalonePlaceholderId, "reject");
+        }
+        setPendingStandalonePlaceholderId(null);
+      }
+    },
+    [pendingStandalonePlaceholderId, suggestionGroup, handleActOnSuggestion]
+  );
 
   const handleAddResourceDirect = useCallback((type: AgentFlowResourceType) => {
     let newResource: AgentFlowResource;
@@ -848,89 +917,110 @@ const SuggestionModeWrapper = ({
         p={16}
         gap={16}
         style={{
-          backgroundColor: "#f5f5f5",
-          borderLeft: "1px solid #e0e0e0",
+          backgroundColor: "var(--color-background-raised)",
+          color: "var(--color-foreground)",
+          borderLeft: "1px solid var(--color-border-de-emp)",
           overflowY: "auto",
         }}
       >
-        <h3 style={{ margin: 0 }}>Suggestion Mode Demo</h3>
+        <h3>Placeholder Mode Demo</h3>
 
         <div
           style={{
             padding: 12,
-            backgroundColor: "#e3f2fd",
             borderRadius: 4,
             fontSize: "0.875rem",
           }}
         >
-          <strong>🎯 How to test:</strong>
-          <ol style={{ margin: "8px 0 0 0", paddingLeft: 20 }}>
-            <li>
-              <strong>Creates placeholder</strong>
-            </li>
-            <li>For placeholders: Accept ✓ or Reject ✗ on each node</li>
-            <li>
-              OR use <strong>Accept/Reject All</strong> buttons at top of canvas
-            </li>
-            <li>OR click empty canvas to auto-reject all placeholders</li>
-          </ol>
-        </div>
+          <div style={{ lineHeight: "1.5" }}>
+            <p style={{ margin: "0 0 12px 0" }}>
+              This story demonstrates two distinct suggestion workflows that can coexist on the canvas.
+            </p>
 
-        <div
-          style={{
-            padding: 12,
-            backgroundColor: "#fff3e0",
-            borderRadius: 4,
-            fontSize: "0.875rem",
-          }}
-        >
-          <strong>⚙️ Per-type configuration:</strong>
-          <p style={{ margin: "4px 0 0 0", fontSize: "0.75rem" }}>
-            This demo shows how to control placeholder behavior per resource type in <code>onRequestResourcePlaceholder</code> by returning{" "}
-            <code>null</code> to bypass placeholders for specific types.
-          </p>
-        </div>
+            <div style={{ borderTop: "1px solid var(--color-border)", margin: "12px 0", paddingTop: "12px" }}>
+              <h4 style={{ margin: "0 0 8px 0", fontSize: "0.875rem", fontWeight: 600 }}>1️⃣ Placeholder on Direct Resource Creation</h4>
+              <p style={{ margin: "0 0 8px 0", fontSize: "0.8125rem", fontStyle: "italic" }}>
+                User-initiated resource creation with confirmation workflow
+              </p>
 
-        <div>
-          <strong>Real Resources:</strong> {resources.length}
-        </div>
-
-        <div>
-          <strong>Pending Placeholders:</strong> {suggestionGroup?.suggestions.length || 0}
-        </div>
-
-        {selectedResourceId && (
-          <div
-            style={{
-              padding: 12,
-              backgroundColor: "#fff3e0",
-              borderRadius: 4,
-              fontSize: "0.875rem",
-            }}
-          >
-            <strong>Selected:</strong>
-            <div style={{ marginTop: 4, wordBreak: "break-all" }}>{selectedResourceId}</div>
-          </div>
-        )}
-
-        {suggestionGroup?.suggestions && suggestionGroup.suggestions.length > 0 && (
-          <div
-            style={{
-              padding: 12,
-              backgroundColor: "#f3e5f5",
-              borderRadius: 4,
-            }}
-          >
-            <strong>Pending Suggestions:</strong>
-            <ul style={{ margin: "8px 0 0 0", paddingLeft: 20, fontSize: "0.875rem" }}>
-              {suggestionGroup.suggestions.map((s) => (
-                <li key={s.id}>
-                  {s.resource?.name || "Unknown"} ({s.resource?.type})
+              <p style={{ margin: "8px 0 4px 0", fontSize: "0.8125rem", fontWeight: 600 }}>How it works:</p>
+              <ol style={{ margin: "4px 0 8px 0", paddingLeft: "20px", fontSize: "0.75rem" }}>
+                <li>
+                  Click any <strong>+</strong> button on the agent node
                 </li>
-              ))}
-            </ul>
+                <li>
+                  A <strong>placeholder node</strong> appears on canvas
+                </li>
+                <li>
+                  <strong>Click placeholder</strong> → Accepts & converts to real resource
+                </li>
+                <li>
+                  <strong>Click empty space</strong> → Rejects & removes placeholder
+                </li>
+              </ol>
+
+              <p style={{ margin: "8px 0 4px 0", fontSize: "0.8125rem", fontWeight: 600 }}>Key features:</p>
+              <ul style={{ margin: "4px 0 0 0", paddingLeft: "20px", fontSize: "0.75rem", lineHeight: "1.6" }}>
+                <li>Lightweight UX: no modal interruption</li>
+                <li>Only one placeholder at a time (new ones replace old)</li>
+                <li>Marked as "standalone" suggestions</li>
+                <li>Won't appear in suggestion group panel</li>
+                <li>Excluded from bulk operations</li>
+              </ul>
+            </div>
+
+            <div style={{ borderTop: "1px solid var(--color-border)", margin: "12px 0", paddingTop: "12px" }}>
+              <h4 style={{ margin: "0 0 8px 0", fontSize: "0.875rem", fontWeight: 600 }}>2️⃣ Autopilot Suggestions View</h4>
+              <p style={{ margin: "0 0 8px 0", fontSize: "0.8125rem", fontStyle: "italic" }}>Batch suggestions from AI/middleware</p>
+
+              <p style={{ margin: "8px 0 4px 0", fontSize: "0.8125rem", fontWeight: 600 }}>How it works:</p>
+              <ol style={{ margin: "4px 0 8px 0", paddingLeft: "20px", fontSize: "0.75rem" }}>
+                <li>
+                  Click <strong>Inserts/Deletes/Updates/Mixed</strong> buttons (top-left)
+                </li>
+                <li>Multiple suggestions appear with visual indicators</li>
+                <li>
+                  Use <strong style={{ color: "var(--color-primary)" }}>suggestion group panel</strong> (bottom-center)
+                </li>
+                <li>Accept/reject individually or use bulk operations</li>
+              </ol>
+
+              <p style={{ margin: "8px 0 4px 0", fontSize: "0.8125rem", fontWeight: 600 }}>Key features:</p>
+              <ul style={{ margin: "4px 0 8px 0", paddingLeft: "20px", fontSize: "0.75rem", lineHeight: "1.6" }}>
+                <li>Navigation controls with up/down arrows</li>
+                <li>
+                  <strong>Bulk operations:</strong> Accept all / Reject all
+                </li>
+                <li style={{ marginTop: "4px" }}>Visual indicators:</li>
+                <ul style={{ margin: "2px 0 0 0", paddingLeft: "16px", fontSize: "0.7rem" }}>
+                  <li>
+                    <span>●</span> <strong>Add:</strong> New resources
+                  </li>
+                  <li>
+                    <span>●</span> <strong>Update:</strong> Modified resources
+                  </li>
+                  <li>
+                    <span>●</span> <strong>Delete:</strong> Resources to remove
+                  </li>
+                </ul>
+              </ul>
+
+              <div
+                style={{
+                  margin: "8px 0 0 0",
+                  padding: "8px",
+                  backgroundColor: "var(--color-background-secondary)",
+                  borderRadius: "4px",
+                  fontSize: "0.7rem",
+                  lineHeight: "1.5",
+                }}
+              >
+                <strong>💡 Coexistence:</strong> Both workflows can be active simultaneously without conflicts. Interactive placeholders and
+                batch suggestions operate independently.
+              </div>
+            </div>
           </div>
-        )}
+        </div>
       </Column>
     );
   };
@@ -1134,7 +1224,6 @@ const SuggestionModeWrapper = ({
             description="Test Description"
             mode={mode}
             resources={resources}
-            enablePlaceholderMode={true}
             onEnable={handleEnable}
             onDisable={handleDisable}
             onAddBreakpoint={handleAddBreakpoint}
@@ -1158,17 +1247,10 @@ const SuggestionModeWrapper = ({
   );
 };
 
-export const DesignModeWithSuggestions: Story = {
+export const DesignModeWithPlaceholderAndAutopilotSuggestions: Story = {
   args: {
     mode: "design",
     enableTimelinePlayer: false,
   },
   render: (args) => <SuggestionModeWrapper {...args} initialResources={sampleResources.concat(createSampleMemorySpace())} />,
-  parameters: {
-    docs: {
-      description: {
-        story: SuggestionModeStoryDescription,
-      },
-    },
-  },
 };

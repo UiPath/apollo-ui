@@ -406,7 +406,7 @@ const computeNodesAndEdgesWithSuggestions = (props: AgentFlowProps): { nodes: Ag
             ...node,
             data: {
               ...node.data,
-              isSuggestion: true,
+              isSuggestion: !suggestion.isStandalone,
               suggestionId: suggestion.id,
               suggestionType: "update" as const,
               isPlaceholder: false,
@@ -422,7 +422,7 @@ const computeNodesAndEdgesWithSuggestions = (props: AgentFlowProps): { nodes: Ag
               ...node,
               data: {
                 ...node.data,
-                isSuggestion: true,
+                isSuggestion: !suggestion.isStandalone,
                 suggestionId: suggestion.id,
                 suggestionType: "update" as const,
                 isPlaceholder: false,
@@ -439,7 +439,7 @@ const computeNodesAndEdgesWithSuggestions = (props: AgentFlowProps): { nodes: Ag
               ...node,
               data: {
                 ...node.data,
-                isSuggestion: true,
+                isSuggestion: !suggestion.isStandalone,
                 suggestionId: suggestion.id,
                 suggestionType: "delete" as const,
                 isPlaceholder: false,
@@ -547,7 +547,17 @@ export const createAgentFlowStore = (initialProps: AgentFlowProps) =>
 
         // Check if suggestionGroup changed and reset index if so
         const suggestionGroupChanged = state.props.suggestionGroup?.id !== newProps.suggestionGroup?.id;
-        const newSuggestionIndex = suggestionGroupChanged ? 0 : state.currentSuggestionIndex;
+        let newSuggestionIndex = state.currentSuggestionIndex;
+
+        if (suggestionGroupChanged && newProps.suggestionGroup?.suggestions) {
+          // Find the first non-standalone suggestion
+          const firstNonStandalone = newProps.suggestionGroup.suggestions.find((s) => !s.isStandalone);
+          if (firstNonStandalone) {
+            newSuggestionIndex = newProps.suggestionGroup.suggestions.findIndex((s) => s.id === firstNonStandalone.id);
+          } else {
+            newSuggestionIndex = 0; // Fallback if all are standalone
+          }
+        }
 
         // Update state
         set({
@@ -583,14 +593,18 @@ export const createAgentFlowStore = (initialProps: AgentFlowProps) =>
         // Find the selected node
         const selectedNode = state.nodes.find((node) => node.id === nodeId);
 
-        // Check if the selected node is a suggestion node and update the index
+        // Check if the selected node is a non-standalone suggestion node and update the index
         let newSuggestionIndex = state.currentSuggestionIndex;
         if (selectedNode && isAgentFlowResourceNode(selectedNode) && selectedNode.data.suggestionId) {
           const suggestionGroup = state.props.suggestionGroup;
           if (suggestionGroup?.suggestions) {
-            const suggestionIndex = suggestionGroup.suggestions.findIndex((s) => s.id === selectedNode.data.suggestionId);
-            if (suggestionIndex !== -1) {
-              newSuggestionIndex = suggestionIndex;
+            const suggestion = suggestionGroup.suggestions.find((s) => s.id === selectedNode.data.suggestionId);
+            // Only update index for non-standalone suggestions
+            if (suggestion && !suggestion.isStandalone) {
+              const suggestionIndex = suggestionGroup.suggestions.findIndex((s) => s.id === selectedNode.data.suggestionId);
+              if (suggestionIndex !== -1) {
+                newSuggestionIndex = suggestionIndex;
+              }
             }
           }
         }
@@ -1259,47 +1273,80 @@ export const createAgentFlowStore = (initialProps: AgentFlowProps) =>
         }
 
         const suggestions = props.suggestionGroup.suggestions;
-        const suggestionIndex = suggestions.findIndex((s) => s.id === suggestionId);
+        const removedSuggestion = suggestions.find((s) => s.id === suggestionId);
 
-        // Calculate the next index after this suggestion is removed
+        // Filter out standalone suggestions for navigation purposes
+        const nonStandaloneSuggestions = suggestions.filter((s) => !s.isStandalone);
+        const currentSuggestion = suggestions[currentSuggestionIndex];
+
+        // Only calculate next index if we're dealing with non-standalone suggestions
         let nextIndex = currentSuggestionIndex;
-        if (suggestionIndex !== -1) {
-          // If we're removing a suggestion before the current one, decrement the index
-          if (suggestionIndex < currentSuggestionIndex) {
-            nextIndex = Math.max(0, currentSuggestionIndex - 1);
-          }
-          // If we're removing the current suggestion, keep the same index
-          // (the next suggestion will slide into this position)
-          // But if this is the last suggestion, we need to go to the previous one
-          else if (suggestionIndex === currentSuggestionIndex) {
-            if (currentSuggestionIndex >= suggestions.length - 1) {
-              nextIndex = Math.max(0, suggestions.length - 2);
+
+        // If the removed suggestion is standalone, don't change the index (it doesn't affect navigation)
+        if (removedSuggestion && !removedSuggestion.isStandalone) {
+          // Find indices in the non-standalone list
+          const currentNonStandaloneIndex = currentSuggestion?.isStandalone
+            ? -1
+            : nonStandaloneSuggestions.findIndex((s) => s.id === currentSuggestion?.id);
+          const removedNonStandaloneIndex = nonStandaloneSuggestions.findIndex((s) => s.id === suggestionId);
+
+          if (removedNonStandaloneIndex !== -1) {
+            // If we're removing a non-standalone suggestion before the current one, decrement
+            if (removedNonStandaloneIndex < currentNonStandaloneIndex) {
+              const newNonStandaloneIndex = Math.max(0, currentNonStandaloneIndex - 1);
+              const adjustedNonStandalone = nonStandaloneSuggestions.filter((s) => s.id !== suggestionId);
+              if (adjustedNonStandalone[newNonStandaloneIndex]) {
+                nextIndex = suggestions.findIndex((s) => s.id === adjustedNonStandalone[newNonStandaloneIndex]?.id);
+              }
             }
-            // else keep the same index
+            // If we're removing the current suggestion
+            else if (removedNonStandaloneIndex === currentNonStandaloneIndex) {
+              const adjustedNonStandalone = nonStandaloneSuggestions.filter((s) => s.id !== suggestionId);
+              if (adjustedNonStandalone.length > 0) {
+                // Try to keep the same index, or go to previous if it's the last one
+                const newNonStandaloneIndex = Math.min(currentNonStandaloneIndex, adjustedNonStandalone.length - 1);
+                nextIndex = suggestions.findIndex((s) => s.id === adjustedNonStandalone[newNonStandaloneIndex]?.id);
+              } else {
+                nextIndex = -1; // No more non-standalone suggestions
+              }
+            }
           }
         }
 
         // Set the new index
-        set({ currentSuggestionIndex: Math.max(0, nextIndex) });
+        set({ currentSuggestionIndex: nextIndex });
 
         // Call the appropriate parent callback with the action
         props.onActOnSuggestion?.(suggestionId, action);
 
-        // After parent updates, select the next suggestion node
+        // After parent updates, select the next non-standalone suggestion node
         // We do this in an empty promise to allow the parent to update first
         Promise.resolve().then(() => {
           const state = get();
           const updatedSuggestions = state.props.suggestionGroup?.suggestions;
           if (updatedSuggestions && updatedSuggestions.length > 0) {
-            const clampedIndex = Math.min(state.currentSuggestionIndex, updatedSuggestions.length - 1);
-            set({ currentSuggestionIndex: clampedIndex });
+            // Filter to non-standalone suggestions only
+            const updatedNonStandalone = updatedSuggestions.filter((s) => !s.isStandalone);
 
-            const nextSuggestion = updatedSuggestions[clampedIndex];
-            if (nextSuggestion) {
-              const node = findNodeForSuggestion(nextSuggestion, state.props.suggestionGroup, state.nodes);
-              if (node) {
-                state.setSelectedNodeId(node.id);
-                state.props.onSelectResource?.(node.id);
+            if (updatedNonStandalone.length > 0) {
+              // Find the next non-standalone suggestion to select
+              let nextSuggestion = updatedSuggestions[state.currentSuggestionIndex];
+
+              // If current selection is standalone or invalid, find the first non-standalone
+              if (!nextSuggestion || nextSuggestion.isStandalone) {
+                nextSuggestion = updatedNonStandalone[0];
+                if (nextSuggestion) {
+                  const newIndex = updatedSuggestions.findIndex((s) => s.id === nextSuggestion!.id);
+                  set({ currentSuggestionIndex: newIndex });
+                }
+              }
+
+              if (nextSuggestion && !nextSuggestion.isStandalone) {
+                const node = findNodeForSuggestion(nextSuggestion, state.props.suggestionGroup, state.nodes);
+                if (node) {
+                  state.setSelectedNodeId(node.id);
+                  state.props.onSelectResource?.(node.id);
+                }
               }
             }
           }
@@ -1308,6 +1355,18 @@ export const createAgentFlowStore = (initialProps: AgentFlowProps) =>
 
       actOnSuggestionGroup: (suggestionGroupId, action) => {
         const { props } = get();
+
+        // When acting on the group, only act on non-standalone suggestions
+        // Standalone suggestions are interactive placeholders that shouldn't be included in bulk operations
+        if (props.suggestionGroup && props.suggestionGroup.id === suggestionGroupId) {
+          const nonStandaloneSuggestions = props.suggestionGroup.suggestions.filter((s) => !s.isStandalone);
+
+          // If there are no non-standalone suggestions, don't do anything
+          if (nonStandaloneSuggestions.length === 0) {
+            return;
+          }
+        }
+
         props.onActOnSuggestionGroup?.(suggestionGroupId, action);
       },
 
@@ -1321,11 +1380,26 @@ export const createAgentFlowStore = (initialProps: AgentFlowProps) =>
         const { props, nodes, currentSuggestionIndex, setSelectedNodeId } = get();
         if (!props.suggestionGroup?.suggestions || props.suggestionGroup.suggestions.length === 0) return;
 
-        const nextIndex = (currentSuggestionIndex + 1) % props.suggestionGroup.suggestions.length;
-        set({ currentSuggestionIndex: nextIndex });
+        // Filter out standalone suggestions for navigation
+        const nonStandaloneSuggestions = props.suggestionGroup.suggestions.filter((s) => !s.isStandalone);
+        if (nonStandaloneSuggestions.length === 0) return;
 
-        const nextSuggestion = props.suggestionGroup.suggestions[nextIndex];
+        // Find current suggestion in non-standalone list
+        const currentSuggestion = props.suggestionGroup.suggestions[currentSuggestionIndex];
+        const currentNonStandaloneIndex = currentSuggestion?.isStandalone
+          ? -1
+          : nonStandaloneSuggestions.findIndex((s) => s.id === currentSuggestion?.id);
+
+        // Move to next non-standalone suggestion
+        const nextNonStandaloneIndex = (currentNonStandaloneIndex + 1) % nonStandaloneSuggestions.length;
+        const nextSuggestion = nonStandaloneSuggestions[nextNonStandaloneIndex];
         if (!nextSuggestion) return;
+
+        // Find the actual index in the full suggestions array
+        const nextIndex = props.suggestionGroup.suggestions.findIndex((s) => s.id === nextSuggestion.id);
+        if (nextIndex === -1) return;
+
+        set({ currentSuggestionIndex: nextIndex });
 
         // Find the node corresponding to the suggestion
         const node = findNodeForSuggestion(nextSuggestion, props.suggestionGroup, nodes);
@@ -1339,12 +1413,26 @@ export const createAgentFlowStore = (initialProps: AgentFlowProps) =>
         const { props, nodes, currentSuggestionIndex, setSelectedNodeId } = get();
         if (!props.suggestionGroup?.suggestions || props.suggestionGroup.suggestions.length === 0) return;
 
-        const prevIndex =
-          (currentSuggestionIndex - 1 + props.suggestionGroup.suggestions.length) % props.suggestionGroup.suggestions.length;
-        set({ currentSuggestionIndex: prevIndex });
+        // Filter out standalone suggestions for navigation
+        const nonStandaloneSuggestions = props.suggestionGroup.suggestions.filter((s) => !s.isStandalone);
+        if (nonStandaloneSuggestions.length === 0) return;
 
-        const prevSuggestion = props.suggestionGroup.suggestions[prevIndex];
+        // Find current suggestion in non-standalone list
+        const currentSuggestion = props.suggestionGroup.suggestions[currentSuggestionIndex];
+        const currentNonStandaloneIndex = currentSuggestion?.isStandalone
+          ? 0
+          : nonStandaloneSuggestions.findIndex((s) => s.id === currentSuggestion?.id);
+
+        // Move to previous non-standalone suggestion
+        const prevNonStandaloneIndex = (currentNonStandaloneIndex - 1 + nonStandaloneSuggestions.length) % nonStandaloneSuggestions.length;
+        const prevSuggestion = nonStandaloneSuggestions[prevNonStandaloneIndex];
         if (!prevSuggestion) return;
+
+        // Find the actual index in the full suggestions array
+        const prevIndex = props.suggestionGroup.suggestions.findIndex((s) => s.id === prevSuggestion.id);
+        if (prevIndex === -1) return;
+
+        set({ currentSuggestionIndex: prevIndex });
 
         // Find the node corresponding to the suggestion
         const node = findNodeForSuggestion(prevSuggestion, props.suggestionGroup, nodes);
@@ -1357,69 +1445,30 @@ export const createAgentFlowStore = (initialProps: AgentFlowProps) =>
       createResourcePlaceholder: (type) => {
         const { props } = get();
 
-        // Check if placeholder mode is enabled
-        if (props.enablePlaceholderMode) {
-          // Allow customization via callback
-          let partialResource: Partial<AgentFlowResource> | null = null;
-
-          if (props.onRequestResourcePlaceholder) {
-            partialResource = props.onRequestResourcePlaceholder(type);
-
-            // If callback returns null, bypass placeholder mode
-            if (partialResource === null) {
-              props.onAddResource?.(type);
-              return;
-            }
-          }
-
-          // If no callback or callback returned undefined, use defaults
-          if (!partialResource) {
-            partialResource = {
-              type,
-              id: `placeholder-${type}-${Date.now()}`,
-              name: `New ${type}`,
-              description: "Configure this resource...",
-            };
-          } else {
-            // Ensure required fields are present
-            if (!partialResource.id) {
-              partialResource.id = `placeholder-${type}-${Date.now()}`;
-            }
-            if (!partialResource.type) {
-              partialResource.type = type;
-            }
-          }
-
-          // The parent's onRequestResourcePlaceholder should handle creating the suggestion
-          // But if they didn't provide a callback, we should still trigger the creation
-          // by calling onAddResource with a special flag or handling it here
-
-          // For now, we expect the parent to handle suggestionGroup updates
-          // If they provided onRequestResourcePlaceholder, they should update suggestionGroup
-          // If they just set enablePlaceholderMode without the callback, we log a warning
-          if (!props.onRequestResourcePlaceholder) {
-            console.warn(
-              "enablePlaceholderMode is true but onRequestResourcePlaceholder is not provided. " +
-                "Please implement onRequestResourcePlaceholder to create placeholders, or set enablePlaceholderMode to false."
-            );
-            props.onAddResource?.(type);
-          }
-
-          return;
-        }
-
-        // Legacy behavior: check for onRequestResourcePlaceholder
+        // If onRequestResourcePlaceholder is provided, use placeholder mode
         if (props.onRequestResourcePlaceholder) {
-          const partialResource = props.onRequestResourcePlaceholder(type);
+          // Automatically filter out existing standalone placeholders to ensure only one at a time
+          // Pass the cleaned suggestion group to the callback so it can build on clean state
+          const cleanedSuggestionGroup = props.suggestionGroup
+            ? {
+                ...props.suggestionGroup,
+                suggestions: props.suggestionGroup.suggestions.filter((s) => !s.isStandalone),
+              }
+            : null;
 
-          // If it returns null, fall back to direct creation
-          if (!partialResource) {
+          const partialResource = props.onRequestResourcePlaceholder(type, cleanedSuggestionGroup);
+
+          // If callback returns null, bypass placeholder mode and use direct creation
+          if (partialResource === null) {
             props.onAddResource?.(type);
+            return;
           }
+
+          // Callback returned a partial resource, placeholder will be created via suggestion system
           return;
         }
 
-        // Fall back to direct creation via onAddResource
+        // No placeholder callback provided, fall back to direct creation via onAddResource
         props.onAddResource?.(type);
       },
     };
