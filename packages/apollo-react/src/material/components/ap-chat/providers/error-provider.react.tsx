@@ -1,13 +1,17 @@
 /** @jsx React.createElement */
 /** @jsxFrag React.Fragment */
-import { AutopilotChatEvent } from '@uipath/portal-shell-util';
+import {
+    AutopilotChatError,
+    AutopilotChatErrorLevel,
+    AutopilotChatEvent,
+} from '@uipath/portal-shell-util';
 import React from 'react';
 
 import { useChatService } from './chat-service.provider.react';
 
 interface AutopilotErrorContextType {
-    error: string | undefined;
-    setError: (error: string | undefined) => void;
+    error: AutopilotChatError | undefined;
+    setError: (message: string | undefined, level?: AutopilotChatErrorLevel) => void;
     clearError: () => void;
 }
 
@@ -19,7 +23,7 @@ export const AutopilotErrorContext = React.createContext<AutopilotErrorContextTy
 
 export function AutopilotErrorProvider({ children }: { children: React.ReactNode }) {
     const chatService = useChatService();
-    const [ error, setErrorState ] = React.useState<string | undefined>(
+    const [ error, setErrorState ] = React.useState<AutopilotChatError | undefined>(
         chatService?.getError() ?? undefined,
     );
 
@@ -28,8 +32,8 @@ export function AutopilotErrorProvider({ children }: { children: React.ReactNode
             return;
         }
 
-        const unsubscribe = chatService.on(AutopilotChatEvent.Error, (err: string) => {
-            setErrorState(err);
+        const unsubscribe = chatService.on(AutopilotChatEvent.Error, (errorData: AutopilotChatError) => {
+            setErrorState(errorData);
         });
 
         const unsubscribeNewChat = chatService.on(AutopilotChatEvent.NewChat, () => {

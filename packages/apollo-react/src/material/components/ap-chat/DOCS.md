@@ -145,7 +145,7 @@ You can also access the `AutopilotChatService` class to create your own custom i
 
 | Method                    | Description                                            |
 | ------------------------- | ------------------------------------------------------ |
-| `setError(error: string)` | Sets an error message to display in the chat interface |
+| `setError(message: string, level?: AutopilotChatErrorLevel)` | Sets an error or warning message to display in the chat interface. Supports markdown formatting. Defaults to `'error'` level if not specified. |
 | `clearError()`            | Clears the current error message                       |
 | `getError()`              | Returns the current error message, if any              |
 
@@ -2737,6 +2737,7 @@ export interface AutopilotChatDisabledFeatures {
     copy?: boolean;
 }
 ```
+
 ### AutopilotChatOverrideLabels
 
 ```typescript
@@ -2973,6 +2974,15 @@ The message renderer interface defines a custom renderer for chat messages:
 - `name`: Unique identifier for the renderer
 - `render`: Function that renders the message content into the provided container element. Can optionally return a cleanup function.
 
+
+### AutopilotChatErrorLevel
+
+```typescript
+/**
+ * Type representing the error level in the Autopilot Chat system.
+ */
+export type AutopilotChatErrorLevel = 'error' | 'warn';
+```
 
 ### AutopilotChatActionPayload
 

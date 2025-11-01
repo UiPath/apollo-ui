@@ -148,7 +148,7 @@ export const Link = React.memo(({
             variant={parentVariant ?? spacing.primaryFontToken}
             customStyle={{ display: 'inline' }}
         >
-            <ap-link href={href} target="_blank">{children}</ap-link>
+            <ap-link href={href} target="_blank" variant={FontVariantToken.fontSizeM}>{children}</ap-link>
         </Text>
     );
 });
