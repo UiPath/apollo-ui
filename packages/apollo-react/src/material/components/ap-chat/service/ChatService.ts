@@ -4,6 +4,8 @@ import type {
     AutopilotChatConfiguration,
     AutopilotChatCustomHeaderAction,
     AutopilotChatDisabledFeatures,
+    AutopilotChatError,
+    AutopilotChatErrorLevel,
     AutopilotChatEventHandler,
     AutopilotChatEventInterceptor,
     AutopilotChatFileInfo,
@@ -77,7 +79,7 @@ export class AutopilotChatService {
     private _messageRenderers: AutopilotChatMessageRenderer[] = [];
     private _eventUnsubscribers: Array<() => void> = [];
     private _conversation: AutopilotChatMessage[] = [];
-    private _error: string | undefined;
+    private _error: AutopilotChatError | undefined;
     private _prompt: AutopilotChatPrompt | string | undefined;
     private _history: AutopilotChatHistory[] = [];
     private _historyOpen: boolean = false;
@@ -731,18 +733,27 @@ export class AutopilotChatService {
     }
 
     /**
-     * Sets an error in the chat service
+     * Sets an error or warning message in the chat service (supports markdown)
      *
-     * @param error - The error to set
+     * @param message - The error/warning message to set (can include markdown formatting), or undefined to clear
+     * @param level - The severity level ('error' or 'warning'), defaults to 'error'
      */
-    setError(error: string) {
-        this._error = error;
+    setError(message: string | undefined, level: AutopilotChatErrorLevel = 'error') {
+        if (message === undefined) {
+            this.clearError();
+            return;
+        }
 
-        this._eventBus.publish(AutopilotChatEvent.Error, error);
+        this._error = {
+            message,
+            level,
+        };
+
+        this._eventBus.publish(AutopilotChatEvent.Error, this._error);
     }
 
     /**
-     * Clears the error in the chat service
+     * Clears the error/warning in the chat service
      */
     clearError() {
         this._error = undefined;
@@ -751,9 +762,9 @@ export class AutopilotChatService {
     }
 
     /**
-     * Gets the current error from the chat service
+     * Gets the current error/warning from the chat service
      *
-     * @returns The error
+     * @returns The error/warning
      */
     getError() {
         return this._error;
