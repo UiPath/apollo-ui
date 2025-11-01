@@ -151,6 +151,22 @@ export interface AutopilotChatMessageRenderer {
 }
 
 /**
+ * Type representing the error level in the Autopilot Chat system.
+ */
+export type AutopilotChatErrorLevel = 'error' | 'warn';
+
+/**
+ * Represents an error or warning in the Autopilot Chat system.
+ *
+ * @property message - The error/warning message (supports markdown)
+ * @property level - The severity level ('error' or 'warning')
+ */
+export interface AutopilotChatError {
+    message: string;
+    level: AutopilotChatErrorLevel;
+}
+
+/**
  * Enum representing the various events that can occur in the Autopilot Chat system.
  * These events are used for communication between components and for event handling.
  *
