@@ -137,6 +137,7 @@ const createAgentNodeWrapper = (handlers: {
   enableMcpTools?: boolean;
   enableMemory?: boolean;
   healthScore?: number;
+  suggestionGroupVersion?: string;
 }) => {
   return (props: NodeProps<AgentFlowNode>) => {
     const { props: storeProps, nodes } = useAgentFlowStore();
@@ -159,12 +160,13 @@ const createAgentNodeWrapper = (handlers: {
       (node) => isAgentFlowResourceNode(node) && node.data.type === "memorySpace" && node.data.parentNodeId === props.id
     );
 
-    // Check if agent itself is running OR if any of its resources are running
+    // Check if agent itself is running OR if any of its resources are running on view mode OR if it's processing a suggestion
     const agentRunning = hasAgentRunning(storeProps.spans);
     const resourceRunning = nodes.some(
-      (node) => isAgentFlowResourceNode(node) && node.data.parentNodeId === props.id && node.data.hasRunning
+      (node) => isAgentFlowResourceNode(node) && storeProps.mode === "view" && node.data.parentNodeId === props.id && node.data.hasRunning
     );
-    const hasRunning = agentRunning || resourceRunning;
+    const agentProcessing = props.data.isProcessing;
+    const hasRunning = agentRunning || resourceRunning || agentProcessing;
 
     const hasError =
       !hasRunning && nodes.some((node) => isAgentFlowResourceNode(node) && node.data.parentNodeId === props.id && node.data.hasError);
@@ -189,6 +191,7 @@ const createAgentNodeWrapper = (handlers: {
         suggestionTranslations={handlers.suggestionTranslations ?? DefaultSuggestionTranslations}
         enableMemory={handlers.enableMemory === true}
         healthScore={handlers.healthScore}
+        suggestionGroupVersion={handlers.suggestionGroupVersion}
       />
     );
   };
@@ -206,6 +209,7 @@ const createResourceNodeWrapper = (opts: {
   onCollapseResource?: (resourceId: string, resource: AgentFlowResourceNodeData) => void;
   translations?: ResourceNodeTranslations;
   suggestionTranslations?: SuggestionTranslations;
+  suggestionGroupVersion?: string;
 }) => {
   return (props: NodeProps<AgentFlowResourceNode>) => {
     const { props: storeProps, deleteNode } = useAgentFlowStore();
@@ -228,6 +232,7 @@ const createResourceNodeWrapper = (opts: {
         onCollapseResource={opts.onCollapseResource}
         translations={opts.translations ?? DefaultResourceNodeTranslations}
         suggestionTranslations={opts.suggestionTranslations ?? DefaultSuggestionTranslations}
+        suggestionGroupVersion={opts.suggestionGroupVersion}
       />
     );
   };
@@ -315,6 +320,8 @@ const AgentFlowInner = memo(
         createResourcePlaceholder(type);
       };
 
+      const suggestionGroupVersion = suggestionGroup?.metadata?.version;
+
       return {
         agent: createAgentNodeWrapper({
           onAddResource: handleAddResource,
@@ -323,6 +330,7 @@ const AgentFlowInner = memo(
           enableMcpTools,
           enableMemory,
           healthScore,
+          suggestionGroupVersion,
         }),
         resource: createResourceNodeWrapper({
           onEnable,
@@ -335,6 +343,7 @@ const AgentFlowInner = memo(
           onCollapseResource,
           translations: resourceNodeTranslations,
           suggestionTranslations,
+          suggestionGroupVersion,
         }),
       };
     }, [
@@ -353,6 +362,7 @@ const AgentFlowInner = memo(
       onCollapseResource,
       enableMcpTools,
       enableMemory,
+      suggestionGroup?.metadata?.version,
     ]);
 
     const handlePaneClick = useCallback(() => {

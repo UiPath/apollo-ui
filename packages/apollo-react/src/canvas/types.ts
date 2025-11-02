@@ -202,12 +202,15 @@ export type AgentFlowSuggestion = {
   resourceIdToDelete?: string;
   /** If true, this suggestion is a standalone/interactive placeholder and should not appear in the suggestion group panel */
   isStandalone?: boolean;
+  isProcessing?: boolean;
 };
 
 export type AgentFlowSuggestionGroup = {
   id: string;
   suggestions: AgentFlowSuggestion[];
   metadata?: {
+    /** Supports versioning so we can show/hide individual suggestion level actions if supported by the integration */
+    version?: string;
     title?: string;
     description?: string;
   };
@@ -321,6 +324,11 @@ export type AgentFlowNodeData = {
   description: string;
   definition: Record<string, unknown>; // TODO: NEED schema/Agent type definition
   parentNodeId?: string;
+  // suggestions
+  isSuggestion?: boolean;
+  suggestionId?: string;
+  suggestionType?: SuggestionType;
+  isProcessing?: boolean;
 };
 export type AgentFlowNode = Node<AgentFlowNodeData, "agent"> & {
   extent?: "parent" | CoordinateExtent | undefined;

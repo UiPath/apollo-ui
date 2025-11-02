@@ -49,6 +49,8 @@ interface AgentNodeProps extends NewBaseNodeDisplayProps {
   enableMemory?: boolean;
   healthScore?: number;
   suggestionTranslations?: SuggestionTranslations;
+  /** Supports versioning so we can show/hide individual suggestion level actions if supported by the integration */
+  suggestionGroupVersion?: string;
 }
 
 const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNodeProps) => {
@@ -70,6 +72,7 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
     enableMemory,
     healthScore,
     suggestionTranslations,
+    suggestionGroupVersion,
     ...nodeProps
   } = props;
   const { actOnSuggestion } = useAgentFlowStore();
@@ -240,8 +243,9 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
       return undefined;
     }
 
-    // If this is a suggestion, show accept/reject actions
+    // If this is a suggestion, show accept/reject actions only if version it's not "0.0.1"
     if (isSuggestion && suggestionId) {
+      if (suggestionGroupVersion === "0.0.1") return undefined;
       const rejectAction: ToolbarAction = {
         id: "reject-suggestion",
         icon: "close",
@@ -267,7 +271,7 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
     }
 
     return undefined;
-  }, [mode, isSuggestion, suggestionId, suggestTranslations, handleActOnSuggestion]);
+  }, [mode, isSuggestion, suggestionId, suggestionGroupVersion, suggestTranslations, handleActOnSuggestion]);
 
   const suggestionAdornment = useMemo((): NodeAdornment => {
     if (!isSuggestion) return { icon: undefined };
@@ -337,6 +341,7 @@ const AgentNodeWrapper = (props: NodeProps<Node<AgentNodeData>> & AgentNodeProps
     enableMemory,
     healthScore,
     suggestionTranslations,
+    suggestionGroupVersion,
     ...nodeProps
   } = props;
 
@@ -359,6 +364,7 @@ const AgentNodeWrapper = (props: NodeProps<Node<AgentNodeData>> & AgentNodeProps
       enableMemory={enableMemory}
       healthScore={healthScore}
       suggestionTranslations={suggestionTranslations}
+      suggestionGroupVersion={suggestionGroupVersion}
     />
   );
 };

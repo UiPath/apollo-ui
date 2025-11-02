@@ -406,10 +406,13 @@ const computeNodesAndEdgesWithSuggestions = (props: AgentFlowProps): { nodes: Ag
             ...node,
             data: {
               ...node.data,
+              suggestionVersion: props.suggestionGroup?.metadata?.version,
               isSuggestion: !suggestion.isStandalone,
               suggestionId: suggestion.id,
               suggestionType: "update" as const,
               isPlaceholder: false,
+              // Store processing state for agent node suggestions
+              // hasRunning: suggestion.isProcessing,
             },
           };
         }
@@ -422,10 +425,13 @@ const computeNodesAndEdgesWithSuggestions = (props: AgentFlowProps): { nodes: Ag
               ...node,
               data: {
                 ...node.data,
+                suggestionVersion: props.suggestionGroup?.metadata?.version,
                 isSuggestion: !suggestion.isStandalone,
                 suggestionId: suggestion.id,
                 suggestionType: "update" as const,
                 isPlaceholder: false,
+                // If suggestion is processing, show running state
+                // hasRunning: suggestion.isProcessing,
               },
             };
           }
@@ -439,10 +445,13 @@ const computeNodesAndEdgesWithSuggestions = (props: AgentFlowProps): { nodes: Ag
               ...node,
               data: {
                 ...node.data,
+                suggestionVersion: props.suggestionGroup?.metadata?.version,
                 isSuggestion: !suggestion.isStandalone,
                 suggestionId: suggestion.id,
                 suggestionType: "delete" as const,
                 isPlaceholder: false,
+                // If suggestion is processing, show running state
+                // hasRunning: suggestion.isProcessing,
               },
               style: {
                 ...node.style,

@@ -32,6 +32,8 @@ interface ResourceNodeProps extends NodeProps<AgentFlowResourceNode> {
   onRemoveResource?: (resourceId: string) => void;
   translations?: ResourceNodeTranslations;
   suggestionTranslations?: SuggestionTranslations;
+  /** Supports versioning so we can show/hide individual suggestion level actions if supported by the integration */
+  suggestionGroupVersion?: string;
 }
 
 export const ResourceNode = memo(
@@ -51,6 +53,7 @@ export const ResourceNode = memo(
     onGoToSource,
     translations,
     suggestionTranslations,
+    suggestionGroupVersion,
   }: ResourceNodeProps) => {
     const { nodes: _nodes, deleteNode, actOnSuggestion } = useAgentFlowStore();
 
@@ -137,8 +140,9 @@ export const ResourceNode = memo(
         return undefined;
       }
 
-      // If this is a suggestion, show accept/reject actions
+      // If this is a suggestion, show accept/reject actions only if version is not "0.0.1"
       if (isSuggestion && suggestionId) {
+        if (suggestionGroupVersion === "0.0.1") return undefined;
         const rejectAction: ToolbarAction = {
           id: "reject-suggestion",
           icon: "close",
@@ -233,6 +237,7 @@ export const ResourceNode = memo(
       isDisabled,
       isSuggestion,
       suggestionId,
+      suggestionGroupVersion,
       handleClickEnable,
       handleClickDisable,
       handleClickRemoveBreakpoint,

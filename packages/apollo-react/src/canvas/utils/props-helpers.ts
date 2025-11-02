@@ -343,6 +343,8 @@ export const computeSuggestionNodesAndEdges = (
         suggestionId: suggestion.id,
         suggestionType: "add",
         isPlaceholder: true,
+        // If suggestion is processing, show running state
+        hasRunning: suggestion.isProcessing,
       };
 
       // Make placeholder nodes semi-transparent
