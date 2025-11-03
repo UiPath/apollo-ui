@@ -3,6 +3,7 @@ import type { NodeProps } from "@uipath/uix/xyflow/react";
 import { NodeResizeControl, useReactFlow } from "@uipath/uix/xyflow/react";
 import { ApIcon } from "@uipath/portal-shell-react";
 import { AnimatePresence } from "motion/react";
+import { Global } from "@emotion/react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { NodeToolbar } from "../NodeToolbar";
@@ -13,10 +14,13 @@ import {
   StickyNoteTextArea,
   StickyNoteMarkdown,
   ResizeHandle,
-  CornerIndicators,
+  TopCornerIndicators,
   BottomCornerIndicators,
   ColorPickerPanel,
   ColorOption,
+  stickyNoteGlobalStyles,
+  StickyNoteWrapper,
+  RESIZE_CONTROL_Z_INDEX,
 } from "./StickyNoteNode.styles";
 import { BASE_CANVAS_GRID_SPACING } from "../BaseCanvas";
 
@@ -150,115 +154,118 @@ const StickyNoteNodeComponent = ({ id, data, selected, dragging }: StickyNoteNod
 
   return (
     <>
-      {/* Top-left resize control */}
-      <NodeResizeControl
-        style={{ background: "transparent", border: "none" }}
-        position="top-left"
-        minWidth={minWidth}
-        minHeight={minHeight}
-        onResizeStart={handleResizeStart}
-        onResizeEnd={handleResizeEnd}
-      >
-        <ResizeHandle selected={selected} cursor="nwse-resize" />
-      </NodeResizeControl>
+      <Global styles={stickyNoteGlobalStyles} />
+      <StickyNoteWrapper>
+        {/* Top-left resize control */}
+        <NodeResizeControl
+          style={{ background: "transparent", border: "none", zIndex: RESIZE_CONTROL_Z_INDEX }}
+          position="top-left"
+          minWidth={minWidth}
+          minHeight={minHeight}
+          onResizeStart={handleResizeStart}
+          onResizeEnd={handleResizeEnd}
+        >
+          <ResizeHandle selected={selected} cursor="nwse-resize" />
+        </NodeResizeControl>
 
-      {/* Top-right resize control */}
-      <NodeResizeControl
-        style={{ background: "transparent", border: "none" }}
-        position="top-right"
-        minWidth={minWidth}
-        minHeight={minHeight}
-        onResizeStart={handleResizeStart}
-        onResizeEnd={handleResizeEnd}
-      >
-        <ResizeHandle selected={selected} cursor="nesw-resize" />
-      </NodeResizeControl>
+        {/* Top-right resize control */}
+        <NodeResizeControl
+          style={{ background: "transparent", border: "none", zIndex: RESIZE_CONTROL_Z_INDEX }}
+          position="top-right"
+          minWidth={minWidth}
+          minHeight={minHeight}
+          onResizeStart={handleResizeStart}
+          onResizeEnd={handleResizeEnd}
+        >
+          <ResizeHandle selected={selected} cursor="nesw-resize" />
+        </NodeResizeControl>
 
-      {/* Bottom-left resize control */}
-      <NodeResizeControl
-        style={{ background: "transparent", border: "none" }}
-        position="bottom-left"
-        minWidth={minWidth}
-        minHeight={minHeight}
-        onResizeStart={handleResizeStart}
-        onResizeEnd={handleResizeEnd}
-      >
-        <ResizeHandle selected={selected} cursor="nesw-resize" />
-      </NodeResizeControl>
+        {/* Bottom-left resize control */}
+        <NodeResizeControl
+          style={{ background: "transparent", border: "none", zIndex: RESIZE_CONTROL_Z_INDEX }}
+          position="bottom-left"
+          minWidth={minWidth}
+          minHeight={minHeight}
+          onResizeStart={handleResizeStart}
+          onResizeEnd={handleResizeEnd}
+        >
+          <ResizeHandle selected={selected} cursor="nesw-resize" />
+        </NodeResizeControl>
 
-      {/* Bottom-right resize control */}
-      <NodeResizeControl
-        style={{ background: "transparent", border: "none" }}
-        position="bottom-right"
-        minWidth={minWidth}
-        minHeight={minHeight}
-        onResizeStart={handleResizeStart}
-        onResizeEnd={handleResizeEnd}
-      >
-        <ResizeHandle selected={selected} cursor="nwse-resize" />
-      </NodeResizeControl>
+        {/* Bottom-right resize control */}
+        <NodeResizeControl
+          style={{ background: "transparent", border: "none", zIndex: RESIZE_CONTROL_Z_INDEX }}
+          position="bottom-right"
+          minWidth={minWidth}
+          minHeight={minHeight}
+          onResizeStart={handleResizeStart}
+          onResizeEnd={handleResizeEnd}
+        >
+          <ResizeHandle selected={selected} cursor="nwse-resize" />
+        </NodeResizeControl>
 
-      <StickyNoteContainer backgroundColor={backgroundColor} isEditing={isEditing} selected={selected} onDoubleClick={handleDoubleClick}>
-        <CornerIndicators selected={selected} />
-        <BottomCornerIndicators selected={selected} />
-        {isEditing ? (
-          <StickyNoteTextArea
-            ref={textAreaRef}
-            value={localContent}
-            onChange={handleChange}
-            onBlur={handleBlur}
-            onKeyDown={handleKeyDown}
-            readOnly={!isEditing}
-            placeholder="Add text"
-            isEditing={isEditing}
-            className="nodrag nowheel"
-          />
-        ) : (
-          <StickyNoteMarkdown>
-            {localContent ? (
-              <ReactMarkdown remarkPlugins={[remarkGfm]}>{localContent}</ReactMarkdown>
-            ) : (
-              <span style={{ color: "var(--color-foreground-de-emp)" }}>Add text</span>
-            )}
-          </StickyNoteMarkdown>
+        <StickyNoteContainer backgroundColor={backgroundColor} isEditing={isEditing} selected={selected} onDoubleClick={handleDoubleClick}>
+          <TopCornerIndicators selected={selected} />
+          <BottomCornerIndicators selected={selected} />
+          {isEditing ? (
+            <StickyNoteTextArea
+              ref={textAreaRef}
+              value={localContent}
+              onChange={handleChange}
+              onBlur={handleBlur}
+              onKeyDown={handleKeyDown}
+              readOnly={!isEditing}
+              placeholder="Add text"
+              isEditing={isEditing}
+              className="nodrag nowheel"
+            />
+          ) : (
+            <StickyNoteMarkdown>
+              {localContent ? (
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>{localContent}</ReactMarkdown>
+              ) : (
+                <span style={{ color: "var(--color-foreground-de-emp)" }}>Add text</span>
+              )}
+            </StickyNoteMarkdown>
+          )}
+        </StickyNoteContainer>
+
+        {selected && !dragging && !isResizing && (
+          <NodeToolbar nodeId={id} config={toolbarConfig} visible={selected && !dragging && !isResizing} />
         )}
-      </StickyNoteContainer>
-
-      {selected && !dragging && !isResizing && (
-        <NodeToolbar nodeId={id} config={toolbarConfig} visible={selected && !dragging && !isResizing} />
-      )}
-      <AnimatePresence>
-        {selected && !dragging && !isResizing && isColorPickerOpen && (
-          <div
-            style={{
-              position: "absolute",
-              top: -74,
-              right: 0,
-              zIndex: 1000,
-            }}
-          >
-            <ColorPickerPanel
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 10 }}
-              transition={{ duration: 0.15, ease: "easeOut" }}
+        <AnimatePresence>
+          {selected && !dragging && !isResizing && isColorPickerOpen && (
+            <div
+              style={{
+                position: "absolute",
+                top: -74,
+                right: 0,
+                zIndex: 1000,
+              }}
             >
-              {Object.keys(STICKY_NOTE_COLORS).map((colorKey) => {
-                const colorName = colorKey as StickyNoteColor;
-                return (
-                  <ColorOption
-                    key={colorKey}
-                    color={STICKY_NOTE_COLORS[colorName]}
-                    isSelected={color === colorName}
-                    onClick={() => handleColorChange(colorName)}
-                    title={colorName.charAt(0).toUpperCase() + colorName.slice(1)}
-                  />
-                );
-              })}
-            </ColorPickerPanel>
-          </div>
-        )}
-      </AnimatePresence>
+              <ColorPickerPanel
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 10 }}
+                transition={{ duration: 0.15, ease: "easeOut" }}
+              >
+                {Object.keys(STICKY_NOTE_COLORS).map((colorKey) => {
+                  const colorName = colorKey as StickyNoteColor;
+                  return (
+                    <ColorOption
+                      key={colorKey}
+                      color={STICKY_NOTE_COLORS[colorName]}
+                      isSelected={color === colorName}
+                      onClick={() => handleColorChange(colorName)}
+                      title={colorName.charAt(0).toUpperCase() + colorName.slice(1)}
+                    />
+                  );
+                })}
+              </ColorPickerPanel>
+            </div>
+          )}
+        </AnimatePresence>
+      </StickyNoteWrapper>
     </>
   );
 };

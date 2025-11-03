@@ -1,5 +1,30 @@
 import styled from "@emotion/styled";
+import { css } from "@emotion/react";
 import { motion } from "motion/react";
+
+// Sticky notes must be below edges (z-index: 0). We use -10 instead of -1 to allow for future layers between sticky notes and edges if needed.
+export const STICKY_NOTE_BELOW_EDGE_Z_INDEX = -10;
+
+// Resize controls need to be above the sticky note content to be interactable
+export const RESIZE_CONTROL_Z_INDEX = 100;
+
+export const stickyNoteGlobalStyles = css`
+  /* Override React Flow's elevateNodesOnSelect behavior for sticky notes */
+  /* Edges have z-index: 0, so we use STICKY_NOTE_BELOW_EDGE_Z_INDEX to ensure sticky notes are below edges */
+  .react-flow__node[data-id^="sticky-"] {
+    z-index: ${STICKY_NOTE_BELOW_EDGE_Z_INDEX} !important;
+  }
+
+  .react-flow__node.selected[data-id^="sticky-"] {
+    z-index: ${STICKY_NOTE_BELOW_EDGE_Z_INDEX} !important;
+  }
+`;
+
+export const StickyNoteWrapper = styled.div`
+  position: relative;
+  width: 100%;
+  height: 100%;
+`;
 
 export const StickyNoteContainer = styled.div<{
   backgroundColor: string;
@@ -16,6 +41,8 @@ export const StickyNoteContainer = styled.div<{
   cursor: ${(props) => (props.isEditing ? "text" : "move")};
   transition: all 0.2s ease;
   position: relative;
+  /* Ensure resize handles are clickable */
+  pointer-events: auto;
 
   &:hover {
     box-shadow: ${(props) => (props.selected ? "0 4px 12px rgba(59, 130, 246, 0.4)" : "0 3px 8px rgba(0, 0, 0, 0.25)")};
@@ -155,9 +182,11 @@ export const ResizeHandle = styled.div<{ selected?: boolean; cursor?: string }>`
   cursor: ${(props) => props.cursor || "nwse-resize"};
   opacity: ${(props) => (props.selected ? 1 : 0)};
   transition: opacity 0.2s ease;
+  z-index: 10;
+  pointer-events: auto;
 `;
 
-export const CornerIndicators = styled.div<{ selected?: boolean }>`
+export const TopCornerIndicators = styled.div<{ selected?: boolean }>`
   position: absolute;
   inset: 0;
   pointer-events: none;
