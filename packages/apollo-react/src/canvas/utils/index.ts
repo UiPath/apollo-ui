@@ -1,3 +1,4 @@
+export * from "./ArrayUtil";
 export * from "./auto-layout";
 export * from "./CanvasEventBus";
 export * from "./coded-agents/d3-layout";
