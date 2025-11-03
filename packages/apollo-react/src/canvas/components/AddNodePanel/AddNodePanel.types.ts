@@ -1,25 +1,21 @@
-export interface NodeOption {
-  id: string;
-  type: string;
-  label: string;
-  icon?: React.FC | string;
-  category: string;
-  description?: string;
-  version?: string;
-}
+import type { ListItem } from "../Toolbox";
 
-export interface NodeCategory {
-  id: string;
-  label: string;
-  icon?: React.FC | string;
-  color?: string;
+export interface NodeItemData {
+  type: string;
+  version?: string;
+  category?: string;
 }
 
 export interface AddNodePanelProps {
-  onNodeSelect: (nodeType: NodeOption) => void;
+  onNodeSelect: (item: ListItem) => void;
   onClose: () => void;
-  fetchNodeOptions?: (category?: string, search?: string) => Promise<NodeOption[]>;
-  categories?: NodeCategory[];
-  onCategoryChange?: (categoryId: string) => void;
-  onCategoryHover?: (category: NodeCategory | null) => void;
+  onNodeHover?: (item: ListItem) => void;
+  onSearch?: (query: string, isTopLevelSearch: boolean, currentItems: ListItem[]) => Promise<ListItem[]>;
+  title?: string;
+  /**
+   * The options to show in the panel.
+   * When left undefined, the panel will generate options from the NodeTypeRegistry.
+   */
+  items?: ListItem[];
+  loading?: boolean;
 }

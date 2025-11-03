@@ -1,11 +1,10 @@
-import { useCallback, useRef } from "react";
-import { useStoreApi, type NodeProps } from "@uipath/uix/xyflow/react";
 import { ApIcon } from "@uipath/portal-shell-react";
-import { FloatingCanvasPanel } from "../FloatingCanvasPanel";
-import { AddNodePanel } from "../AddNodePanel";
+import { useStoreApi, type NodeProps } from "@uipath/uix/xyflow/react";
+import { useCallback, useRef } from "react";
 import { useCanvasStore } from "../../stores/canvasStore";
-import type { NodeOption } from "../AddNodePanel/AddNodePanel.types";
-import { NodeContainer, IconWrapper, TextContainer, Header } from "./BlankCanvasNode.styles";
+import { AddNodePanel, type NodeItemData } from "../AddNodePanel";
+import { FloatingCanvasPanel } from "../FloatingCanvasPanel";
+import { Header, IconWrapper, NodeContainer, TextContainer } from "./BlankCanvasNode.styles";
 
 interface BlankCanvasNodeProps extends NodeProps {
   data: Record<string, unknown>;
@@ -23,10 +22,10 @@ export const BlankCanvasNode = (props: BlankCanvasNodeProps) => {
   }, [storeApi]);
 
   const handleNodeSelect = useCallback(
-    (nodeOption: NodeOption) => {
+    (nodeItemData: NodeItemData) => {
       const position = { x: positionAbsoluteX, y: positionAbsoluteY };
       store.removeNode(id);
-      store.addNode(nodeOption.type, position);
+      store.addNode(nodeItemData.type, position);
     },
     [id, store, positionAbsoluteX, positionAbsoluteY]
   );
@@ -45,7 +44,7 @@ export const BlankCanvasNode = (props: BlankCanvasNodeProps) => {
       )}
 
       <FloatingCanvasPanel open={selected} nodeId={id} placement="right-start" offset={20}>
-        <AddNodePanel onNodeSelect={handleNodeSelect} onClose={handleClosePanel} />
+        <AddNodePanel onNodeSelect={(item) => handleNodeSelect(item.data)} onClose={handleClosePanel} />
       </FloatingCanvasPanel>
     </>
   );

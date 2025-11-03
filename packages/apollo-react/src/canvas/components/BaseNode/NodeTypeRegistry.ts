@@ -1,6 +1,7 @@
 // import { isValidElement } from "react";
 
-import type { NodeCategory, NodeOption } from "../AddNodePanel/AddNodePanel.types";
+import type { NodeItemData } from "../AddNodePanel/AddNodePanel.types";
+import type { ListItem } from "../Toolbox";
 import type { BaseNodeData, NodeRegistration, NodeTypeDefinition } from "./BaseNode.types";
 
 export class NodeTypeRegistry {
@@ -69,8 +70,8 @@ export class NodeTypeRegistry {
    * @param search - Search term for filtering (optional)
    * @returns Array of NodeOption objects
    */
-  getNodeOptions(category?: string, search?: string): NodeOption[] {
-    const options: NodeOption[] = [];
+  getNodeOptions(category?: string, search?: string): ListItem<NodeItemData>[] {
+    const options: ListItem<NodeItemData>[] = [];
 
     for (const [nodeType, metadata] of this.metadata.entries()) {
       // Skip hidden nodes
@@ -102,25 +103,27 @@ export class NodeTypeRegistry {
 
       options.push({
         id: nodeType,
-        type: nodeType,
-        label: metadata.displayName || nodeType,
+        name: metadata.displayName || nodeType,
         // FIXME: we need this to be serializable so no React.FC
-        icon: metadata.icon,
-        category: metadata.category || "misc",
+        icon: typeof metadata.icon === "string" ? { name: metadata.icon } : { Component: metadata.icon },
         description: metadata.description,
-        version: metadata.version,
+        data: {
+          type: nodeType,
+          category: metadata.category || "misc",
+          version: metadata.version,
+        },
       });
     }
 
     // Sort by sortOrder, then by label
     options.sort((a, b) => {
-      const aMetadata = this.metadata.get(a.type);
-      const bMetadata = this.metadata.get(b.type);
+      const aMetadata = this.metadata.get(a.id);
+      const bMetadata = this.metadata.get(b.id);
       const aOrder = aMetadata?.sortOrder ?? 999;
       const bOrder = bMetadata?.sortOrder ?? 999;
 
       if (aOrder !== bOrder) return aOrder - bOrder;
-      return a.label.localeCompare(b.label);
+      return a.name.localeCompare(b.name);
     });
 
     return options;
@@ -155,9 +158,9 @@ export class NodeTypeRegistry {
    * Get category configuration for AddNodePanel
    * @returns Array of NodeCategory objects with metadata
    */
-  getCategoryConfig(): NodeCategory[] {
+  getCategoryConfig(): ListItem[] {
     // Get unique categories from registered nodes
-    const categoriesMap = new Map<string, NodeCategory>();
+    const categoriesMap = new Map<string, ListItem>();
 
     for (const [_nodeType, metadata] of this.metadata.entries()) {
       if (metadata.isVisible !== false && metadata.category) {
@@ -166,9 +169,10 @@ export class NodeTypeRegistry {
         // Only add category if not already in map
         if (!categoriesMap.has(categoryId)) {
           // Use metadata from the first node of this category for icon/color hints
-          const categoryMeta: NodeCategory = {
+          const categoryMeta: ListItem = {
             id: categoryId,
-            label: categoryId.charAt(0).toUpperCase() + categoryId.slice(1),
+            name: categoryId.charAt(0).toUpperCase() + categoryId.slice(1),
+            data: null,
           };
 
           categoriesMap.set(categoryId, categoryMeta);

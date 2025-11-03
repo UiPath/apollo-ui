@@ -1,5 +1,4 @@
 import styled from "@emotion/styled";
-import { motion } from "motion/react";
 
 export const ScrollableList = styled.div`
   flex: 1;
@@ -26,36 +25,6 @@ export const ScrollableList = styled.div`
   &::-webkit-scrollbar-thumb:hover {
     background: var(--color-border);
   }
-`;
-
-export const ListItemButton = styled(motion.button)`
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  border: none;
-  background: transparent;
-  border-radius: 6px;
-  cursor: pointer;
-  text-align: left;
-  width: 100%;
-  transition: all 0.15s ease;
-
-  &:hover {
-    background: var(--color-background-hover);
-  }
-`;
-
-export const IconContainer = styled.div<{ bgColor?: string }>`
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: ${(props) => props.bgColor || "var(--color-background)"};
-  border-radius: 8px;
-  color: var(--color-foreground-emp);
-  opacity: 0.9;
-  flex-shrink: 0;
 `;
 
 export const AnimatedContainer = styled.div`

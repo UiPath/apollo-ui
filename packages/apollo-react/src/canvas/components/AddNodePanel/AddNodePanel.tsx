@@ -1,342 +1,59 @@
-import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
-import { ApIcon, ApIconButton, ApSkeleton, ApTextField, ApTypography } from "@uipath/portal-shell-react";
-import { FontVariantToken } from "@uipath/apollo-core";
-import { Column, Row } from "@uipath/uix/core";
-import { ScrollableList, ListItemButton, IconContainer, AnimatedContainer, AnimatedContent } from "./AddNodePanel.styles";
-import type { AddNodePanelProps, NodeOption, NodeCategory } from "./AddNodePanel.types";
-import { useNodeSearch } from "./AddNodePanel.hooks";
-import { useOptionalRegistryNodeOptions } from "./useRegistryNodeOptions";
+import { useCallback, useMemo } from "react";
+import { useOptionalNodeTypeRegistry } from "../BaseNode";
+import { Toolbox } from "../Toolbox";
+import type { ListItem } from "../Toolbox/ListView";
+import type { AddNodePanelProps } from "./AddNodePanel.types";
 
-type ViewState = "categories" | "nodes";
+export function AddNodePanel({ onNodeSelect, onClose, onSearch, onNodeHover, items, title, loading }: AddNodePanelProps) {
+  const registry = useOptionalNodeTypeRegistry();
 
-interface HeaderProps {
-  title: string;
-  onBack?: () => void;
-  onSearch?: () => void;
-  onClose: () => void;
-}
+  const nodeListOptions = useMemo((): ListItem[] => {
+    if (items) return items;
+    if (!registry) return [];
+    return registry
+      .getCategoryConfig()
+      .map((category) => {
+        const nodes = registry.getNodeOptions(category.id);
+        if (!nodes.length) return null;
+        const categoryListItem = category;
+        categoryListItem.children = nodes;
+        return categoryListItem;
+      })
+      .filter((item) => item !== null);
+  }, [items, registry]);
 
-const Header: React.FC<HeaderProps> = ({ title, onBack, onSearch, onClose }) => (
-  <Row justify="space-between" align="center" gap={6} mb={10}>
-    <Row align="center" gap={8}>
-      {onBack && (
-        <ApIconButton color="secondary" onClick={onBack}>
-          <ApIcon name="arrow_back" size="20px" />
-        </ApIconButton>
-      )}
-      <ApTypography variant={FontVariantToken.fontSizeMBold}>{title}</ApTypography>
-    </Row>
-    <Row align="center" gap={6}>
-      {onSearch && (
-        <ApIconButton color="secondary" onClick={onSearch}>
-          <ApIcon name="search" size="20px" />
-        </ApIconButton>
-      )}
-      <ApIconButton color="secondary" onClick={onClose}>
-        <ApIcon name="close" size="20px" />
-      </ApIconButton>
-    </Row>
-  </Row>
-);
-
-interface SearchBoxProps {
-  value: string;
-  onChange: (value: string) => void;
-  placeholder?: string;
-}
-
-const SearchBox: React.FC<SearchBoxProps> = ({ value, onChange, placeholder = "Search..." }) => (
-  <ApTextField
-    type="text"
-    placeholder={placeholder}
-    value={value}
-    size="small"
-    startAdornment={<ApIcon name="search" size="16px" />}
-    onValueChanged={(e) => onChange(e.detail)}
-    autoFocus
-  />
-);
-
-type ListItem = NodeCategory | NodeOption;
-
-interface ListViewProps<T extends ListItem> {
-  items: T[];
-  onItemClick: (item: T) => void;
-  onItemHover?: (item: T | null) => void;
-  getItemColor?: (item: T) => string | undefined;
-  showEmptyState?: boolean;
-  emptyStateMessage?: string;
-  emptyStateIcon?: string;
-  isLoading?: boolean;
-}
-
-const ListView = <T extends ListItem>(props: ListViewProps<T>) => {
-  const {
-    items,
-    onItemClick,
-    onItemHover,
-    getItemColor,
-    showEmptyState = false,
-    emptyStateMessage = "No items found",
-    emptyStateIcon = "search_off",
-    isLoading = false,
-  } = props;
-
-  if (isLoading && items.length === 0) {
-    return (
-      <Column gap={10}>
-        {[...Array(3)].map((_, index) => (
-          <ApSkeleton variant="rectangle" style={{ height: "32px", width: "100%" }} key={index} />
-        ))}
-      </Column>
-    );
-  }
-
-  // Show empty state if no items and explicitly requested
-  if (items.length === 0 && showEmptyState) {
-    return (
-      <Column align="center" justify="center" flex={1} gap={10} style={{ minHeight: "250px" }}>
-        <ApIcon name={emptyStateIcon} size="48px" color="var(--color-foreground-de-emp)" />
-        <ApTypography variant={FontVariantToken.fontSizeS} color="var(--color-foreground-de-emp)">
-          {emptyStateMessage}
-        </ApTypography>
-      </Column>
-    );
-  }
-
-  return (
-    <ScrollableList>
-      {items.map((item) => {
-        // Determine the background color - use provided function or item's color if it's a category
-        const bgColor = getItemColor ? getItemColor(item) : "color" in item ? item.color : undefined;
-
-        return (
-          <ListItemButton
-            key={item.id}
-            onClick={() => onItemClick(item)}
-            onMouseEnter={() => onItemHover?.(item)}
-            onMouseLeave={() => onItemHover?.(null)}
-          >
-            <IconContainer bgColor={bgColor}>
-              {item.icon &&
-                (typeof item.icon === "string" ? (
-                  <ApIcon name={item.icon} size="18px" color="var(--color-foreground-de-emp)" />
-                ) : (
-                  <item.icon />
-                ))}
-            </IconContainer>
-            <Column flex={1}>
-              <ApTypography variant={FontVariantToken.fontSizeS}>{item.label}</ApTypography>
-            </Column>
-          </ListItemButton>
-        );
-      })}
-    </ScrollableList>
-  );
-};
-
-export const AddNodePanel: React.FC<AddNodePanelProps> = ({
-  onNodeSelect,
-  onClose,
-  fetchNodeOptions,
-  categories,
-  onCategoryChange,
-  onCategoryHover,
-}) => {
-  const registryOptions = useOptionalRegistryNodeOptions();
-
-  const finalFetchNodeOptions = fetchNodeOptions || registryOptions?.fetchNodeOptions;
-  const finalCategories = useMemo(() => categories || registryOptions?.getCategories() || [], [categories, registryOptions]);
-  const [viewState, setViewState] = useState<ViewState>("categories");
-  const [selectedCategory, setSelectedCategory] = useState<NodeCategory | null>(null);
-  const [nodes, setNodes] = useState<NodeOption[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isTransitioning, setIsTransitioning] = useState(false);
-  const transitionTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
-
-  const { searchQuery, isSearching, searchedNodes, handleSearchToggle, handleSearchChange, clearSearch } = useNodeSearch(nodes);
-
-  useEffect(() => {
-    return () => {
-      if (transitionTimeoutRef.current) {
-        clearTimeout(transitionTimeoutRef.current);
-      }
-    };
-  }, []);
-
-  const handleBack = useCallback(() => {
-    if (transitionTimeoutRef.current) {
-      clearTimeout(transitionTimeoutRef.current);
-    }
-
-    setIsTransitioning(true);
-    setViewState("categories");
-    setSelectedCategory(null);
-
-    if (isSearching) {
-      clearSearch();
-    }
-
-    transitionTimeoutRef.current = setTimeout(() => setIsTransitioning(false), 150);
-  }, [clearSearch, isSearching]);
-
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        if (isSearching) {
-          clearSearch();
-        } else if (viewState === "nodes" && selectedCategory) {
-          handleBack();
-        } else {
-          onClose();
-        }
-      }
-    };
-
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [onClose, viewState, selectedCategory, isSearching, clearSearch, handleBack]);
-
-  // Filter nodes based on category and search
-  const filteredNodes = useMemo(() => {
-    // In nodes view, filter by selected category
-    if (!selectedCategory) return [];
-
-    let filtered = nodes.filter((node) => node.category === selectedCategory.id);
-
-    if (isSearching && searchQuery) {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter((node) => node.label.toLowerCase().includes(query) || node.description?.toLowerCase().includes(query));
-    }
-
-    return filtered;
-  }, [nodes, selectedCategory, searchQuery, isSearching]);
-
-  // Fetch nodes when category is selected
-  useEffect(() => {
-    if (finalFetchNodeOptions && selectedCategory) {
-      setIsLoading(true);
-      finalFetchNodeOptions(selectedCategory.id, searchQuery)
-        .then(setNodes)
-        .catch(console.error)
-        .finally(() => setIsLoading(false));
-    }
-  }, [selectedCategory, searchQuery, finalFetchNodeOptions]);
-
-  // Filter categories based on search
-  const filteredCategories = useMemo(() => {
-    if (!isSearching || !searchQuery) return finalCategories;
-
-    const query = searchQuery.toLowerCase();
-    const matchingNodes = searchedNodes;
-    const categoriesWithNodes = new Set(matchingNodes.map((node) => node.category));
-
-    return finalCategories.filter((cat) => categoriesWithNodes.has(cat.id) || cat.label.toLowerCase().includes(query));
-  }, [searchQuery, isSearching, searchedNodes, finalCategories]);
-
-  const handleCategorySelect = useCallback(
-    (category: NodeCategory) => {
-      // Clear any pending transitions
-      if (transitionTimeoutRef.current) {
-        clearTimeout(transitionTimeoutRef.current);
+  const handleSearch = useCallback(
+    (query: string, isTopLevelSearch: boolean, { currentItems, category }: { currentItems?: ListItem[]; category?: string }) => {
+      if (!onSearch && registry) {
+        const nodeResults = registry.getNodeOptions(category, query);
+        return Promise.resolve(nodeResults);
       }
 
-      setIsTransitioning(true);
-      setSelectedCategory(category);
-      setViewState("nodes");
-
-      // Notify parent about category change
-      if (onCategoryChange) {
-        onCategoryChange(category.id);
-      }
-
-      // Only clear search if actively searching
-      if (isSearching) {
-        clearSearch();
-      }
-
-      // Reset transition state after animation
-      transitionTimeoutRef.current = setTimeout(() => {
-        setIsTransitioning(false);
-      }, 150);
-    },
-    [clearSearch, isSearching, onCategoryChange]
-  );
-
-  const handleNodeSelect = useCallback(
-    (node: NodeOption) => {
-      onNodeSelect(node);
-      onClose();
-    },
-    [onNodeSelect, onClose]
-  );
-
-  const content = React.useMemo(() => {
-    if (viewState === "categories") {
-      if (isSearching && searchQuery) {
-        return (
-          <ListView
-            items={searchedNodes}
-            onItemClick={handleNodeSelect}
-            getItemColor={() => "var(--color-background-secondary)"}
-            showEmptyState={!isTransitioning && !isLoading}
-            emptyStateMessage="No nodes found"
-          />
-        );
-      } else {
-        return (
-          <ListView items={filteredCategories} onItemClick={handleCategorySelect} onItemHover={onCategoryHover} showEmptyState={false} />
-        );
-      }
-    } else if (viewState === "nodes" && selectedCategory) {
       return (
-        <ListView
-          items={filteredNodes}
-          onItemClick={handleNodeSelect}
-          getItemColor={() => selectedCategory.color}
-          showEmptyState={!isLoading && filteredNodes.length === 0}
-          emptyStateMessage="No nodes found"
-          isLoading={isLoading}
-        />
+        onSearch?.(query, isTopLevelSearch, currentItems ?? [])?.then((nodes) => {
+          return nodes;
+        }) ?? Promise.resolve([])
       );
-    }
-    return null;
-  }, [
-    viewState,
-    isSearching,
-    searchQuery,
-    searchedNodes,
-    handleNodeSelect,
-    isTransitioning,
-    isLoading,
-    filteredCategories,
-    handleCategorySelect,
-    selectedCategory,
-    filteredNodes,
-  ]);
+    },
+    [onSearch, registry]
+  );
+
+  const handleNodeListItemSelect = useCallback(
+    (item: ListItem) => {
+      onNodeSelect(item);
+    },
+    [onNodeSelect]
+  );
 
   return (
-    <Column p={10} w={320}>
-      <Header
-        title={viewState === "categories" ? "Choose node" : selectedCategory?.label || "Nodes"}
-        onBack={viewState === "nodes" ? handleBack : undefined}
-        onSearch={handleSearchToggle}
-        onClose={onClose}
-      />
-
-      {isSearching && (
-        <SearchBox
-          value={searchQuery}
-          onChange={handleSearchChange}
-          placeholder={viewState === "categories" ? "Search all nodes..." : `Search ${selectedCategory?.label?.toLowerCase()}...`}
-        />
-      )}
-
-      <AnimatedContainer>
-        <AnimatedContent entering={isTransitioning} direction={viewState === "nodes" ? "forward" : "back"}>
-          {content}
-        </AnimatedContent>
-      </AnimatedContainer>
-    </Column>
+    <Toolbox
+      title={title ?? "Add Node"}
+      initialItems={nodeListOptions}
+      loading={loading}
+      onItemSelect={handleNodeListItemSelect}
+      onSearch={handleSearch}
+      onClose={onClose}
+      onItemHover={onNodeHover}
+    />
   );
-};
+}

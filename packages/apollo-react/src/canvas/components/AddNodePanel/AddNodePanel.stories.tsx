@@ -1,36 +1,37 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { ReactFlowProvider, Position, applyNodeChanges, applyEdgeChanges, addEdge, Panel, useReactFlow } from "@uipath/uix/xyflow/react";
-import type { NodeChange, EdgeChange, Connection, Node, Edge } from "@uipath/uix/xyflow/react";
-import { useState, useCallback, useMemo } from "react";
-import { ApIcon, ApTypography } from "@uipath/portal-shell-react";
 import { FontVariantToken } from "@uipath/apollo-core";
+import { ApIcon, ApTypography } from "@uipath/portal-shell-react";
+import { Column } from "@uipath/uix/core";
+import type { Connection, Edge, EdgeChange, Node, NodeChange } from "@uipath/uix/xyflow/react";
+import { addEdge, applyEdgeChanges, applyNodeChanges, Panel, Position, ReactFlowProvider, useReactFlow } from "@uipath/uix/xyflow/react";
+import { useCallback, useMemo, useState } from "react";
 import { BaseCanvas } from "../BaseCanvas";
-import { BaseNode } from "../BaseNode";
-import type { HandleActionEvent } from "../ButtonHandle";
-import { AddNodePreview } from "./AddNodePreview";
-import { AddNodeManager } from "./AddNodeManager";
-import { CanvasPositionControls } from "../CanvasPositionControls";
-import { createAddNodePreview } from "./createAddNodePreview";
 import type { BaseNodeData } from "../BaseNode";
-import { NodeRegistryProvider } from "../BaseNode/NodeRegistryProvider";
+import { BaseNode } from "../BaseNode";
 import { ExecutionStatusContext } from "../BaseNode/ExecutionStatusContext";
 import {
-  baseNodeRegistration,
-  genericNodeRegistration,
-  agentNodeRegistration,
-  httpRequestNodeRegistration,
-  scriptNodeRegistration,
-  rpaNodeRegistration,
-  connectorNodeRegistration,
   agentContextNodeRegistration,
   agentEscalationNodeRegistration,
   agentMemoryNodeRegistration,
   agentModelNodeRegistration,
+  agentNodeRegistration,
   agentToolNodeRegistration,
+  baseNodeRegistration,
+  connectorNodeRegistration,
+  genericNodeRegistration,
+  httpRequestNodeRegistration,
+  rpaNodeRegistration,
+  scriptNodeRegistration,
 } from "../BaseNode/node-types";
-import type { NodeOption } from "./AddNodePanel.types";
+import { NodeRegistryProvider } from "../BaseNode/NodeRegistryProvider";
+import type { HandleActionEvent } from "../ButtonHandle";
+import { CanvasPositionControls } from "../CanvasPositionControls";
 import { AddNodePanel } from "./";
-import { Column } from "@uipath/uix/core";
+import { AddNodeManager } from "./AddNodeManager";
+import { AddNodePreview } from "./AddNodePreview";
+import { createAddNodePreview } from "./createAddNodePreview";
+import type { ListItem } from "../Toolbox";
+import type { NodeItemData } from "./AddNodePanel.types";
 
 const meta = {
   title: "Canvas/AddNodePanel",
@@ -78,29 +79,45 @@ export default meta;
 type Story = StoryObj<typeof AddNodePanel>;
 
 // Mock node options for the demo
-const AVAILABLE_NODE_OPTIONS: NodeOption[] = [
-  { id: "1", type: "manual-trigger", label: "Manual trigger", icon: "touch_app", category: "triggers" },
-  { id: "2", type: "schedule-trigger", label: "Schedule trigger", icon: "schedule", category: "triggers" },
-  { id: "3", type: "webhook-trigger", label: "Webhook trigger", icon: "webhook", category: "triggers" },
-  { id: "4", type: "ai-agent", label: "AI Agent", icon: "smart_toy", category: "ai", description: "Autonomous AI assistant" },
-  { id: "5", type: "openai", label: "OpenAI", icon: "psychology", category: "ai", description: "GPT models integration" },
+const AVAILABLE_NODE_OPTIONS: ListItem<NodeItemData>[] = [
+  { id: "1", name: "Manual trigger", icon: { name: "touch_app" }, data: { type: "manual-trigger", category: "triggers" } },
+  { id: "2", name: "Schedule trigger", icon: { name: "schedule" }, data: { type: "schedule-trigger", category: "triggers" } },
+  { id: "3", name: "Webhook trigger", icon: { name: "webhook" }, data: { type: "webhook-trigger", category: "triggers" } },
+  {
+    id: "4",
+    name: "AI Agent",
+    icon: { name: "smart_toy" },
+    data: { type: "ai-agent", category: "ai" },
+    description: "Autonomous AI assistant",
+  },
+  {
+    id: "5",
+    name: "OpenAI",
+    icon: { name: "psychology" },
+    data: { type: "openai", category: "ai" },
+    description: "GPT models integration",
+  },
   {
     id: "6",
-    type: "data-extractor",
-    label: "Data extractor",
-    icon: "file_copy",
-    category: "data",
+    name: "Data extractor",
+    icon: { name: "file_copy" },
+    data: { type: "data-extractor", category: "data" },
     description: "Extract data from documents",
   },
   {
     id: "7",
-    type: "sentiment-analyzer",
-    label: "Sentiment Analyzer",
-    icon: "sentiment_satisfied",
-    category: "ai",
+    name: "Sentiment Analyzer",
+    icon: { name: "sentiment_satisfied" },
+    data: { type: "sentiment-analyzer", category: "ai" },
     description: "Analyze text sentiment",
   },
-  { id: "8", type: "action", label: "Action", icon: "settings", category: "actions", description: "Generic action node" },
+  {
+    id: "8",
+    name: "Action",
+    icon: { name: "settings" },
+    data: { type: "action", category: "actions" },
+    description: "Generic action node",
+  },
 ];
 
 // Main story using the simple preview node selection approach
@@ -213,24 +230,24 @@ const NodeAdditionStory = () => {
 
     let filtered = AVAILABLE_NODE_OPTIONS;
     if (category && category !== "all") {
-      filtered = filtered.filter((node) => node.category === category);
+      filtered = filtered.filter((node) => node.data.category === category);
     }
     if (search) {
       const searchLower = search.toLowerCase();
       filtered = filtered.filter(
-        (node) => node.label.toLowerCase().includes(searchLower) || node.description?.toLowerCase().includes(searchLower)
+        (node) => node.name.toLowerCase().includes(searchLower) || node.description?.toLowerCase().includes(searchLower)
       );
     }
     return filtered;
   }, []);
 
   // Create node data from node option
-  const createNodeData = useCallback((nodeOption: NodeOption): BaseNodeData => {
+  const createNodeData = useCallback((nodeOption: ListItem<NodeItemData>): BaseNodeData => {
     // Determine shape based on category
     let _shape: "circle" | "square" | "rectangle" = "square";
-    if (nodeOption.category === "triggers") {
+    if (nodeOption.data.category === "triggers") {
       _shape = "circle";
-    } else if (nodeOption.category === "ai") {
+    } else if (nodeOption.data.category === "ai") {
       _shape = "rectangle";
     }
 
@@ -241,7 +258,7 @@ const NodeAdditionStory = () => {
       ) : undefined;
 
     return {
-      label: nodeOption.label,
+      label: nodeOption.name,
       subLabel: nodeOption.description,
       icon,
       parameters: {},
@@ -339,12 +356,13 @@ export const PreviewSelection: Story = {
 // Standalone selector story for testing the component in isolation
 export const StandaloneSelector: Story = {
   args: {
-    onNodeSelect: (node: NodeOption) => {
+    onNodeSelect: (node) => {
       console.log("Selected node:", node);
     },
     onClose: () => {
       console.log("Closed selector");
     },
+    onSearch: undefined,
   },
   render: (args) => (
     <div
@@ -365,13 +383,20 @@ export const StandaloneSelector: Story = {
 // Isolated selector with custom fetch for testing
 export const WithCustomFetch: Story = {
   args: {
-    onNodeSelect: (node: NodeOption) => {
+    onNodeSelect: (node) => {
       console.log("Selected node:", node);
-      alert(`Selected: ${node.label}`);
+      alert(`Selected: ${node.data.type}`);
     },
     onClose: () => {
       console.log("Closed selector");
     },
+    onSearch: async (query: string, _currentItems) => {
+      console.log("Searching for:", query);
+      // Simulate API delay
+      await new Promise((resolve) => setTimeout(resolve, Math.random() * 1000 + 200));
+      return AVAILABLE_NODE_OPTIONS.filter((node) => node.name.toLowerCase().includes(query.toLowerCase()));
+    },
+    items: AVAILABLE_NODE_OPTIONS,
   },
   render: (args) => (
     <div
@@ -392,13 +417,14 @@ export const WithCustomFetch: Story = {
 // Story demonstrating registry integration
 export const WithRegistryIntegration: Story = {
   args: {
-    onNodeSelect: (node: NodeOption) => {
+    onNodeSelect: (node) => {
       console.log("Selected node from registry:", node);
-      alert(`Selected: ${node.label} (${node.type})\nCategory: ${node.category}\n${node.description || ""}`);
+      alert(`Selected: ${node.data.type} (${node.data.category})\n${node.data.description || ""}`);
     },
     onClose: () => {
       console.log("Closed selector");
     },
+    onSearch: undefined,
   },
   render: (args) => (
     <div

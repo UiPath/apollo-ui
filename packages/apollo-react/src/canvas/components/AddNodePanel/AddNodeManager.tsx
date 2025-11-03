@@ -1,10 +1,11 @@
-import React, { useEffect, useState, useCallback, useRef } from "react";
 import type { Node } from "@uipath/uix/xyflow/react";
 import { useReactFlow, useStore } from "@uipath/uix/xyflow/react";
-import { FloatingCanvasPanel } from "../FloatingCanvasPanel";
-import { AddNodePanel } from "./AddNodePanel";
-import type { NodeOption, NodeCategory } from "./AddNodePanel.types";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import type { BaseNodeData } from "../BaseNode/BaseNode.types";
+import type { ListItem } from "../Toolbox";
+import { AddNodePanel } from "./AddNodePanel";
+import { FloatingCanvasPanel } from "../FloatingCanvasPanel";
+import type { NodeItemData } from "./AddNodePanel.types";
 
 export interface AddNodeManagerProps {
   /**
@@ -15,12 +16,12 @@ export interface AddNodeManagerProps {
   /**
    * Function to fetch available node options
    */
-  fetchNodeOptions?: (category?: string, search?: string) => Promise<NodeOption[]>;
+  fetchNodeOptions?: (category?: string, search?: string) => Promise<ListItem<NodeItemData>[]>;
 
   /**
    * Function to create node data from a node option
    */
-  createNodeData?: (nodeOption: NodeOption) => BaseNodeData;
+  createNodeData?: (nodeOption: ListItem<NodeItemData>) => BaseNodeData;
 
   /**
    * Callback when a new node is added
@@ -82,54 +83,26 @@ export const AddNodeManager: React.FC<AddNodeManagerProps> = ({ customPanel, cre
     setSelectedCategory(undefined);
   }, [reactFlowInstance]);
 
-  // Handle category change to update preview node icon
-  const handleCategoryChange = useCallback((category: string) => {
-    setSelectedCategory(category);
-  }, []);
-
-  // Handle category hover to update preview node icon
-  const handleCategoryHover = useCallback(
-    (category: NodeCategory | null) => {
-      if (!previewNode) return;
-
-      // Update the preview node with serializable data only
-      reactFlowInstance.setNodes((nodes) =>
-        nodes.map((n) =>
-          n.id === "preview-node-id"
-            ? {
-                ...n,
-                data: {
-                  ...n.data,
-                  iconName: typeof category?.icon === "string" ? category.icon : undefined,
-                },
-              }
-            : n
-        )
-      );
-    },
-    [reactFlowInstance, previewNode]
-  );
-
   // Handle node selection from the selector panel
   const handleNodeSelect = useCallback(
-    (nodeOption: NodeOption) => {
+    (nodeItem: ListItem) => {
       if (!sourceInfo || !previewNode) return;
 
       // Generate new node ID
-      const newNodeId = `${nodeOption.type}-${Date.now()}`;
+      const newNodeId = `${nodeItem.data.type}-${Date.now()}`;
 
       // Create node data
       const nodeData = createNodeData
-        ? createNodeData(nodeOption)
+        ? createNodeData(nodeItem)
         : {
-            label: nodeOption.label,
-            subLabel: nodeOption.description,
+            label: nodeItem.name,
+            subLabel: nodeItem.description,
           };
 
       // Create new node at preview position
       const newNode: Node = {
         id: newNodeId,
-        type: nodeOption.type,
+        type: nodeItem.data.type,
         position: previewNode.position,
         selected: true,
         data: nodeData,
@@ -162,6 +135,29 @@ export const AddNodeManager: React.FC<AddNodeManagerProps> = ({ customPanel, cre
     [sourceInfo, previewNode, reactFlowInstance, createNodeData, onNodeAdded, handleClose]
   );
 
+  // Handle node hover to update preview node icon
+  const handleNodeOptionHover = useCallback(
+    (category: ListItem) => {
+      if (!previewNode) return;
+
+      // Update the preview node with serializable data only
+      reactFlowInstance.setNodes((nodes) =>
+        nodes.map((n) =>
+          n.id === "preview-node-id"
+            ? {
+                ...n,
+                data: {
+                  ...n.data,
+                  iconName: typeof category.icon === "string" ? category.icon : undefined,
+                },
+              }
+            : n
+        )
+      );
+    },
+    [reactFlowInstance, previewNode]
+  );
+
   if (!isOpen || !sourceInfo || !previewNode) {
     return null;
   }
@@ -170,18 +166,11 @@ export const AddNodeManager: React.FC<AddNodeManagerProps> = ({ customPanel, cre
     <FloatingCanvasPanel open={isOpen} nodeId="preview-node-id" placement="right-start" offset={10}>
       {customPanel ? (
         React.createElement(customPanel, {
-          onNodeSelect: handleNodeSelect,
+          onNodeSelect: (item) => handleNodeSelect(item),
           onClose: handleClose,
-          onCategoryChange: handleCategoryChange,
-          onCategoryHover: handleCategoryHover,
         })
       ) : (
-        <AddNodePanel
-          onNodeSelect={handleNodeSelect}
-          onClose={handleClose}
-          onCategoryChange={handleCategoryChange}
-          onCategoryHover={handleCategoryHover}
-        />
+        <AddNodePanel onNodeSelect={(item) => handleNodeSelect(item)} onClose={handleClose} onNodeHover={handleNodeOptionHover} />
       )}
     </FloatingCanvasPanel>
   );

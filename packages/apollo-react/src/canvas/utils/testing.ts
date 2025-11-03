@@ -3,7 +3,7 @@ import { type RenderOptions, type RenderResult, render as rtlRender } from "@tes
 
 // Re-export testing-library functions
 export { act, fireEvent, screen, waitFor, within } from "@testing-library/react";
-export { userEvent } from "@testing-library/user-event";
+export { userEvent, type UserEvent } from "@testing-library/user-event";
 
 // Custom render function that includes providers if needed
 function render(ui: ReactElement, options?: Omit<RenderOptions, "wrapper">): RenderResult {
