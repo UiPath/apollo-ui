@@ -275,6 +275,8 @@ vi.mock("@uipath/portal-shell-react", () => ({
         "aria-label": label,
       })
     ),
+  ApProgressSpinner: () => React.createElement("div", { "data-testid": "ap-progress-spinner" }),
+  ApSkeleton: () => React.createElement("div", { "data-testid": "ap-skeleton" }),
 }));
 
 // Mock Apollo core constants
@@ -294,4 +296,32 @@ vi.mock("@uipath/apollo-core", () => ({
 // Mock sanitize-html
 vi.mock("sanitize-html", () => ({
   default: (html: string) => html.replace(/<[^>]*>/g, ""),
+}));
+
+// Mock react-window
+vi.mock("react-window", () => ({
+  List: ({
+    rowCount,
+    rowProps,
+    rowComponent: RowComponent,
+  }: {
+    rowCount: number;
+    rowProps: object;
+    rowComponent: (props: { index: number }) => JSX.Element;
+  }) =>
+    React.createElement(
+      "div",
+      { "data-testid": "virtualized-list" },
+      Array.from({ length: rowCount }).map((_, index) =>
+        React.createElement(
+          "div",
+          { key: index, role: "listitem" },
+          React.createElement(RowComponent, {
+            index,
+            key: index,
+            ...rowProps,
+          })
+        )
+      )
+    ),
 }));
