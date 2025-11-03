@@ -1,7 +1,7 @@
 import { ApIcon } from "@uipath/portal-shell-react";
+import { cx } from "@uipath/uix/core";
 import type React from "react";
 import { useEffect, useRef } from "react";
-import { cx } from "@uipath/uix-core";
 import { StyledSearchForm } from "./SearchBox.styles";
 
 interface SearchBoxProps {
