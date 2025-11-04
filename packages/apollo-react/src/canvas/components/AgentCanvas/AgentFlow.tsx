@@ -137,6 +137,7 @@ const createAgentNodeWrapper = (handlers: {
   enableMcpTools?: boolean;
   enableMemory?: boolean;
   healthScore?: number;
+  onHealthScoreClick?: () => void;
   suggestionGroupVersion?: string;
 }) => {
   return (props: NodeProps<AgentFlowNode>) => {
@@ -191,6 +192,7 @@ const createAgentNodeWrapper = (handlers: {
         suggestionTranslations={handlers.suggestionTranslations ?? DefaultSuggestionTranslations}
         enableMemory={handlers.enableMemory === true}
         healthScore={handlers.healthScore}
+        onHealthScoreClick={handlers.onHealthScoreClick}
         suggestionGroupVersion={handlers.suggestionGroupVersion}
       />
     );
@@ -263,6 +265,7 @@ const AgentFlowInner = memo(
     enableMcpTools,
     enableMemory,
     healthScore,
+    onHealthScoreClick,
     suggestionTranslations,
     suggestionGroup,
   }: PropsWithChildren<AgentFlowProps>) => {
@@ -337,6 +340,7 @@ const AgentFlowInner = memo(
           enableMcpTools,
           enableMemory,
           healthScore,
+          onHealthScoreClick,
           suggestionGroupVersion,
         }),
         resource: createResourceNodeWrapper({
@@ -361,6 +365,7 @@ const AgentFlowInner = memo(
       onAddGuardrail,
       onGoToSource,
       healthScore,
+      onHealthScoreClick,
       createResourcePlaceholder,
       agentNodeTranslations,
       resourceNodeTranslations,

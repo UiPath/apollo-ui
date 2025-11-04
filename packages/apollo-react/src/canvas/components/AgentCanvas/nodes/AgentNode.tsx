@@ -48,6 +48,7 @@ interface AgentNodeProps extends NewBaseNodeDisplayProps {
   translations: AgentNodeTranslations;
   enableMemory?: boolean;
   healthScore?: number;
+  onHealthScoreClick?: () => void;
   suggestionTranslations?: SuggestionTranslations;
   /** Supports versioning so we can show/hide individual suggestion level actions if supported by the integration */
   suggestionGroupVersion?: string;
@@ -71,6 +72,7 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
     translations,
     enableMemory,
     healthScore,
+    onHealthScoreClick,
     suggestionTranslations,
     suggestionGroupVersion,
     ...nodeProps
@@ -206,6 +208,12 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
     }
     return (
       <div
+        onClick={(e) => {
+          if (onHealthScoreClick) {
+            e.stopPropagation();
+            onHealthScoreClick();
+          }
+        }}
         style={{
           display: "inline-flex",
           alignItems: "center",
@@ -219,13 +227,14 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
           textAlign: "center",
           lineHeight: "16px",
           color: "var(--color-foreground-de-emp)",
+          cursor: "pointer",
         }}
       >
         <Icons.HealthScoreIcon w={16} h={16} />
         {healthScore.toString()}
       </div>
     );
-  }, [healthScore]);
+  }, [healthScore, onHealthScoreClick]);
 
   const shouldShowAddButtonFn = (opts: { showAddButton: boolean; selected: boolean }) => {
     return opts.showAddButton || opts.selected;
@@ -340,6 +349,7 @@ const AgentNodeWrapper = (props: NodeProps<Node<AgentNodeData>> & AgentNodeProps
     translations,
     enableMemory,
     healthScore,
+    onHealthScoreClick,
     suggestionTranslations,
     suggestionGroupVersion,
     ...nodeProps
@@ -363,6 +373,7 @@ const AgentNodeWrapper = (props: NodeProps<Node<AgentNodeData>> & AgentNodeProps
       translations={translations}
       enableMemory={enableMemory}
       healthScore={healthScore}
+      onHealthScoreClick={onHealthScoreClick}
       suggestionTranslations={suggestionTranslations}
       suggestionGroupVersion={suggestionGroupVersion}
     />

@@ -271,6 +271,7 @@ export type AgentFlowProps = {
 
   // health score
   healthScore?: number;
+  onHealthScoreClick?: () => void;
 
   // suggestions
   suggestionGroup?: AgentFlowSuggestionGroup | null;

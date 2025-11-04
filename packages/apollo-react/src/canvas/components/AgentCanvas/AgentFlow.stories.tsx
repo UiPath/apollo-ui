@@ -278,6 +278,7 @@ interface AgentFlowWrapperProps {
   enableTimelinePlayer?: boolean;
   enableMemory?: boolean;
   healthScore?: number;
+  onHealthScoreClick?: () => void;
 }
 
 const AgentFlowWrapper = ({
@@ -289,6 +290,7 @@ const AgentFlowWrapper = ({
   enableTimelinePlayer = true,
   enableMemory = true,
   healthScore,
+  onHealthScoreClick,
 }: AgentFlowWrapperProps) => {
   const [resources, setResources] = useState<AgentFlowResource[]>(initialResources);
   const [selectedResourceId, setSelectedResourceId] = useState<string | null>(null);
@@ -467,6 +469,7 @@ const AgentFlowWrapper = ({
             enableTimelinePlayer={mode === "view" && enableTimelinePlayer}
             enableMemory={enableMemory}
             healthScore={healthScore}
+            onHealthScoreClick={onHealthScoreClick}
           />
         </div>
         {renderSidebar()}
@@ -565,11 +568,21 @@ export const HealthScore: Story = {
     mode: "design",
     resources: sampleResources,
   },
-  render: (args) => <AgentFlowWrapper {...args} healthScore={95} />,
+  render: (args) => {
+    const HealthScoreWithClick = () => {
+      const handleHealthScoreClick = useCallback(() => {
+        alert("Health score clicked! This would open a panel with health score details.");
+      }, []);
+
+      return <AgentFlowWrapper {...args} healthScore={95} onHealthScoreClick={handleHealthScoreClick} />;
+    };
+
+    return <HealthScoreWithClick />;
+  },
   parameters: {
     docs: {
       description: {
-        story: "Agent with health score (95). The health score badge appears below the agent name.",
+        story: "Agent with health score (95). The health score badge appears below the agent name and is clickable.",
       },
     },
   },
