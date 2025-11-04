@@ -292,15 +292,18 @@ const AgentFlowInner = memo(
 
     const { fitView: reactFlowFitView } = useReactFlow();
     const timelinePlayerRef = useRef<HTMLDivElement>(null);
+    const suggestionGroupPanelRef = useRef<HTMLDivElement>(null);
 
     // Calculate adjusted fitView options that account for timeline player height
     const adjustedFitViewOptions = useMemo(() => {
       const timelineHeight = timelinePlayerRef.current?.offsetHeight || 0;
+      const suggestionGroupPanelHeight = suggestionGroupPanelRef.current?.offsetHeight || 0;
 
-      if (timelineHeight > 0) {
+      if (timelineHeight > 0 || suggestionGroupPanelHeight > 0) {
         const viewportHeight = window.innerHeight;
         const timelineRatio = timelineHeight / viewportHeight;
-        const bottomPadding = AGENT_FLOW_FIT_VIEW_OPTIONS.padding.bottom + 3 * timelineRatio;
+        const suggestionGroupPanelRatio = suggestionGroupPanelHeight / viewportHeight;
+        const bottomPadding = AGENT_FLOW_FIT_VIEW_OPTIONS.padding.bottom + 3 * (timelineRatio + suggestionGroupPanelRatio);
 
         return {
           ...AGENT_FLOW_FIT_VIEW_OPTIONS,
@@ -312,7 +315,11 @@ const AgentFlowInner = memo(
       }
 
       return AGENT_FLOW_FIT_VIEW_OPTIONS;
-    }, [timelinePlayerRef.current?.offsetHeight, AGENT_FLOW_FIT_VIEW_OPTIONS.padding.bottom]);
+    }, [
+      AGENT_FLOW_FIT_VIEW_OPTIONS.padding.bottom,
+      timelinePlayerRef.current?.offsetHeight,
+      suggestionGroupPanelRef.current?.offsetHeight,
+    ]);
 
     const nodeTypes = useMemo(() => {
       const handleAddResource = (type: "context" | "escalation" | "mcp" | "tool" | "memorySpace") => {
@@ -611,14 +618,16 @@ const AgentFlowInner = memo(
               </div>
             </Panel>
             <Panel position="bottom-center">
-              <SuggestionGroupPanel
-                suggestionGroup={suggestionGroup}
-                onRejectAll={(suggestionGroupId: string) => actOnSuggestionGroup?.(suggestionGroupId, "reject")}
-                onAcceptAll={(suggestionGroupId: string) => actOnSuggestionGroup?.(suggestionGroupId, "accept")}
-                currentIndex={currentSuggestionIndex}
-                onNavigateNext={navigateToNextSuggestion}
-                onNavigatePrevious={navigateToPreviousSuggestion}
-              />
+              <div ref={suggestionGroupPanelRef}>
+                <SuggestionGroupPanel
+                  suggestionGroup={suggestionGroup}
+                  onRejectAll={(suggestionGroupId: string) => actOnSuggestionGroup?.(suggestionGroupId, "reject")}
+                  onAcceptAll={(suggestionGroupId: string) => actOnSuggestionGroup?.(suggestionGroupId, "accept")}
+                  currentIndex={currentSuggestionIndex}
+                  onNavigateNext={navigateToNextSuggestion}
+                  onNavigatePrevious={navigateToPreviousSuggestion}
+                />
+              </div>
             </Panel>
             {children}
           </BaseCanvas>
