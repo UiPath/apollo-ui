@@ -4,6 +4,7 @@ import tsParser from '@typescript-eslint/parser';
 import reactPlugin from 'eslint-plugin-react';
 import reactHooksPlugin from 'eslint-plugin-react-hooks';
 import prettierConfig from 'eslint-config-prettier';
+import globals from 'globals';
 
 export default [
   js.configs.recommended,
@@ -24,9 +25,9 @@ export default [
         },
       },
       globals: {
-        browser: true,
-        node: true,
-        es6: true,
+        ...globals.browser,
+        ...globals.node,
+        ...globals.es2021,
       },
     },
     settings: {
