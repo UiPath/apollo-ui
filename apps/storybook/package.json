@@ -1,0 +1,34 @@
+{
+  "name": "storybook",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Storybook documentation for Apollo Design System",
+  "scripts": {
+    "dev": "storybook dev -p 6006",
+    "storybook": "storybook dev -p 6006",
+    "storybook:build": "storybook build",
+    "clean": "rm -rf storybook-static"
+  },
+  "dependencies": {
+    "@uipath/apollo-core": "workspace:*",
+    "@uipath/apollo-react": "workspace:*",
+    "@uipath/apollo-angular": "workspace:*",
+    "@uipath/apollo-wind": "workspace:*",
+    "@uipath/ap-autopilot-chat": "workspace:*",
+    "@uipath/ap-data-grid": "workspace:*",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@storybook/addon-essentials": "^8.6.14",
+    "@storybook/addon-interactions": "^8.6.14",
+    "@storybook/addon-links": "^8.6.14",
+    "@storybook/blocks": "^8.6.14",
+    "@storybook/react": "^8.6.14",
+    "@storybook/react-vite": "^8.6.14",
+    "@storybook/test": "^8.6.14",
+    "storybook": "^8.6.14",
+    "typescript": "^5.9.3",
+    "vite": "^7.0.5"
+  }
+}

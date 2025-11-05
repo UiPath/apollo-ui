@@ -1,0 +1,39 @@
+/* Apollo Design System - CSS Custom Properties */
+
+:root {
+  /* Colors */
+  --color-primary-500: #0066CC;
+  --color-secondary-500: #6C757D;
+  --color-success-500: #28A745;
+  --color-error-500: #DC3545;
+  --color-warning-500: #FFC107;
+
+  /* Spacing */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+
+  /* Typography */
+  --font-size-xs: 12px;
+  --font-size-sm: 14px;
+  --font-size-base: 16px;
+  --font-size-lg: 18px;
+  --font-size-xl: 20px;
+
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  /* Font Family */
+  --font-family-primary: Inter, system-ui, -apple-system, sans-serif;
+  --font-family-monospace: Monaco, Consolas, "Courier New", monospace;
+}
+
+body {
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-base);
+  line-height: 1.5;
+}

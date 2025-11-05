@@ -1,0 +1,37 @@
+{
+  "name": "@uipath/apollo-utils",
+  "version": "0.0.0",
+  "description": "Apollo Design System - Shared utilities and helper functions",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc && vite build",
+    "dev": "tsc --watch",
+    "lint": "eslint src --ext .ts,.tsx",
+    "test": "vitest",
+    "clean": "rm -rf dist"
+  },
+  "keywords": [
+    "design-system",
+    "utilities",
+    "apollo",
+    "uipath"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^5.9.3",
+    "vite": "^7.0.5",
+    "vitest": "^4.0.5"
+  }
+}

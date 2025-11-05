@@ -1,0 +1,53 @@
+{
+  "name": "@uipath/apollo-core",
+  "version": "0.0.0",
+  "description": "Apollo Design System - Core design tokens, icons, and fonts",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./tokens": {
+      "import": "./dist/tokens/index.mjs",
+      "require": "./dist/tokens/index.js",
+      "types": "./dist/tokens/index.d.ts"
+    },
+    "./icons": {
+      "import": "./dist/icons/index.mjs",
+      "require": "./dist/icons/index.js",
+      "types": "./dist/icons/index.d.ts"
+    },
+    "./fonts": {
+      "import": "./dist/fonts/index.mjs",
+      "require": "./dist/fonts/index.js",
+      "types": "./dist/fonts/index.d.ts"
+    },
+    "./theme.css": "./dist/theme.css"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc && vite build && cp src/theme.css dist/theme.css",
+    "dev": "tsc --watch",
+    "lint": "eslint src --ext .ts,.tsx",
+    "test": "vitest",
+    "clean": "rm -rf dist"
+  },
+  "keywords": [
+    "design-system",
+    "design-tokens",
+    "apollo",
+    "uipath"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^5.9.3",
+    "vite": "^7.0.5",
+    "vitest": "^4.0.5"
+  }
+}

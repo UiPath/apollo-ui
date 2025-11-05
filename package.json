@@ -1,0 +1,47 @@
+{
+  "name": "apollo-ui",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Apollo v.4 Design System - UiPath's open-source component library",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/UiPath/apollo-ui.git"
+  },
+  "license": "MIT",
+  "scripts": {
+    "build": "turbo build",
+    "dev": "turbo dev",
+    "lint": "turbo lint",
+    "test": "turbo test",
+    "test:visual": "turbo test:visual",
+    "storybook": "turbo storybook",
+    "storybook:build": "turbo storybook:build",
+    "clean": "turbo clean && rm -rf node_modules",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^19.7.1",
+    "@commitlint/config-conventional": "^19.7.1",
+    "@commitlint/config-pnpm-scopes": "^19.7.1",
+    "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/git": "^10.0.1",
+    "@typescript-eslint/eslint-plugin": "^8.19.1",
+    "@typescript-eslint/parser": "^8.19.1",
+    "eslint": "^9.39.1",
+    "eslint-config-prettier": "^10.0.1",
+    "eslint-plugin-react": "^7.37.3",
+    "eslint-plugin-react-hooks": "^5.1.0",
+    "husky": "^9.1.7",
+    "prettier": "^3.6.2",
+    "semantic-release": "^24.2.0",
+    "semantic-release-monorepo": "^8.0.2",
+    "turbo": "^2.6.0",
+    "typescript": "^5.9.3"
+  },
+  "engines": {
+    "node": ">=20.19.0",
+    "pnpm": ">=10.0.0"
+  },
+  "packageManager": "pnpm@10.18.1"
+}

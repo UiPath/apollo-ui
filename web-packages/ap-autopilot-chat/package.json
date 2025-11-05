@@ -1,0 +1,42 @@
+{
+  "name": "@uipath/ap-autopilot-chat",
+  "version": "0.0.0",
+  "description": "Apollo Design System - Autopilot Chat web component",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc && vite build",
+    "dev": "vite",
+    "lint": "eslint src --ext .ts",
+    "test": "vitest",
+    "clean": "rm -rf dist"
+  },
+  "keywords": [
+    "design-system",
+    "web-component",
+    "chat",
+    "autopilot",
+    "apollo",
+    "uipath"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@uipath/apollo-core": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3",
+    "vite": "^7.0.5",
+    "vitest": "^4.0.5"
+  }
+}

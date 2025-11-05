@@ -1,0 +1,51 @@
+{
+  "name": "@uipath/apollo-angular",
+  "version": "0.0.0",
+  "description": "Apollo Design System - Angular component library with Angular Material theming",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "ng-packagr -p ng-package.json",
+    "dev": "ng-packagr -p ng-package.json --watch",
+    "lint": "eslint src --ext .ts",
+    "test": "ng test",
+    "clean": "rm -rf dist"
+  },
+  "keywords": [
+    "design-system",
+    "angular",
+    "angular-material",
+    "apollo",
+    "uipath"
+  ],
+  "license": "MIT",
+  "peerDependencies": {
+    "@angular/core": "^19.0.0",
+    "@angular/common": "^19.0.0",
+    "@angular/material": "^20.0.0"
+  },
+  "dependencies": {
+    "@uipath/apollo-core": "workspace:*",
+    "@uipath/apollo-utils": "workspace:*"
+  },
+  "devDependencies": {
+    "@angular/core": "^19.1.2",
+    "@angular/common": "^19.1.2",
+    "@angular/material": "^20.2.11",
+    "@angular/compiler": "^19.1.2",
+    "@angular/compiler-cli": "^19.1.2",
+    "ng-packagr": "^20.3.0",
+    "typescript": "~5.7.2"
+  }
+}

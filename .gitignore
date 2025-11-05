@@ -1,0 +1,54 @@
+# AI
+.claude/*
+!.claude/commands/
+
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build outputs
+dist/
+build/
+.next/
+out/
+storybook-static/
+*.tsbuildinfo
+
+# Playwright MCP
+.playwright-mcp
+
+# Testing
+coverage/
+test-results/
+playwright-report/
+.nyc_output
+
+# Environment variables
+.env
+.env*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Temporary files
+*.tmp
+.cache/
+.turbo/
