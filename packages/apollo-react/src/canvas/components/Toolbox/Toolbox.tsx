@@ -154,6 +154,10 @@ export function Toolbox<T>({ onClose, onBack, onItemSelect, onSearch, onItemHove
   }, []);
 
   useEffect(() => {
+    setItems(initialItems);
+  }, [initialItems]);
+
+  useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         if (isSearching) {
