@@ -24,7 +24,7 @@
     "build": "rslib build",
     "dev": "rslib build --watch",
     "lint": "eslint src --ext .ts,.tsx",
-    "test": "vitest",
+    "test": "vitest --run --passWithNoTests",
     "clean": "rm -rf dist"
   },
   "keywords": [
