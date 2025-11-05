@@ -1,0 +1,29 @@
+{
+  "name": "react-playground",
+  "version": "0.0.0",
+  "private": true,
+  "description": "React playground for testing Apollo components",
+  "type": "module",
+  "scripts": {
+    "dev": "rsbuild dev",
+    "build": "rsbuild build",
+    "preview": "rsbuild preview",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@uipath/ap-autopilot-chat": "workspace:*",
+    "@uipath/ap-data-grid": "workspace:*",
+    "@uipath/apollo-core": "workspace:*",
+    "@uipath/apollo-react": "workspace:*",
+    "@uipath/apollo-wind": "workspace:*",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@rsbuild/core": "^1.6.1",
+    "@rsbuild/plugin-react": "^1.4.1",
+    "@types/react": "^19.0.6",
+    "@types/react-dom": "^19.0.3",
+    "typescript": "^5.9.3"
+  }
+}

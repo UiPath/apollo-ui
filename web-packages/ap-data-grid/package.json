@@ -1,0 +1,63 @@
+{
+  "name": "@uipath/ap-data-grid",
+  "version": "0.0.0",
+  "description": "Apollo Design System - Data Grid web component with React wrapper",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    },
+    "./react": {
+      "types": "./dist/react/index.d.ts",
+      "import": "./dist/react/index.mjs",
+      "require": "./dist/react/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "rslib build",
+    "dev": "rslib build --watch",
+    "lint": "eslint src --ext .ts,.tsx",
+    "test": "vitest --run --passWithNoTests",
+    "clean": "rm -rf dist"
+  },
+  "keywords": [
+    "design-system",
+    "web-component",
+    "data-grid",
+    "table",
+    "apollo",
+    "uipath"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@uipath/apollo-core": "workspace:*"
+  },
+  "devDependencies": {
+    "@rslib/core": "^0.17.0",
+    "@types/react": "^19.0.6",
+    "@types/react-dom": "^19.0.3",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.5"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    },
+    "react-dom": {
+      "optional": true
+    }
+  }
+}
