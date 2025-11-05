@@ -145,6 +145,7 @@ export const Default: Story = {
             label: "Application",
             tasks: [],
           },
+          onTaskAdd: () => {},
           menuItems: [
             {
               id: "edit",
@@ -175,6 +176,7 @@ export const Default: Story = {
             label: "Processing with a really really really long label that might wrap",
             tasks: sampleTasks,
           },
+          onTaskAdd: () => {},
           menuItems: [
             {
               id: "edit",

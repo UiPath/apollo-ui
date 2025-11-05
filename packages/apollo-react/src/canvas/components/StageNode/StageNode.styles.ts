@@ -206,6 +206,7 @@ export const StageTaskItem = styled.div<{ status?: StageStatus; selected?: boole
     selected &&
     css`
       border: 2px solid var(--color-selection-indicator);
+      padding: 6px 12px;
     `}
 `;
 
