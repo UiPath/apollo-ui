@@ -121,14 +121,14 @@ const DocumentIcon = () => (
 
 // Example with both sequential and parallel tasks
 const sampleTasks: StageTaskItem[][] = [
-  [{ id: "1", label: "Liability Check", icon: <VerificationIcon /> }],
-  [{ id: "2", label: "Credit Review", icon: <DocumentIcon /> }],
+  [{ id: "liability_check", label: "Liability Check", icon: <VerificationIcon /> }],
+  [{ id: "credit_review", label: "Credit Review", icon: <DocumentIcon /> }],
   // Parallel tasks - these run at the same time
   [
-    { id: "3", label: "Address Verification and a really long label that might wrap", icon: <VerificationIcon /> },
-    { id: "4", label: "Property Verification", icon: <VerificationIcon /> },
+    { id: "address_verification", label: "Address Verification and a really long label that might wrap", icon: <VerificationIcon /> },
+    { id: "property_verification", label: "Property Verification", icon: <VerificationIcon /> },
   ],
-  [{ id: "5", label: "Processing Review", icon: <ProcessIcon /> }],
+  [{ id: "processing_review", label: "Processing Review", icon: <ProcessIcon /> }],
 ];
 
 export const Default: Story = {
@@ -145,7 +145,9 @@ export const Default: Story = {
             label: "Application",
             tasks: [],
           },
-          onTaskAdd: () => {},
+          onTaskAdd: () => {
+            window.alert("Add task functionality - this would open a dialog to add a new task");
+          },
           menuItems: [
             {
               id: "edit",
@@ -176,7 +178,15 @@ export const Default: Story = {
             label: "Processing with a really really really long label that might wrap",
             tasks: sampleTasks,
           },
-          onTaskAdd: () => {},
+          onTaskAdd: (itemId: string) => {
+            window.alert(`Add task (${itemId}) - this would open a panel to configure the new task`);
+          },
+          taskOptions: sampleTasks.flat().map((task) => ({
+            id: task.id,
+            name: task.label,
+            icon: { Component: () => task.icon },
+            data: { id: task.id },
+          })),
           menuItems: [
             {
               id: "edit",

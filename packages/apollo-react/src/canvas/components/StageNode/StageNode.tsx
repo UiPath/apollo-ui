@@ -6,7 +6,7 @@ import {
   StageContent,
   StageTaskList,
   StageTaskGroup,
-  StageTaskItem,
+  StageTask,
   StageTaskIcon,
   StageParallelLabel,
   StageParallelBracket,
@@ -26,6 +26,8 @@ import { getContextMenuItems } from "./StageNodeTaskUtilities";
 import { useButtonHandles } from "../ButtonHandle/useButtonHandles";
 import type { HandleConfiguration } from "../BaseNode/BaseNode.types";
 import { useNodeSelection } from "../NodePropertiesPanel/hooks";
+import { FloatingCanvasPanel } from "../FloatingCanvasPanel";
+import { Toolbox } from "../Toolbox";
 
 const ProcessNodeIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
@@ -50,7 +52,8 @@ const StageNodeComponent = (props: StageNodeProps) => {
     id,
     execution,
     stageDetails,
-    addTaskLabel = "+ Add task",
+    addTaskLabel = "Add task",
+    taskOptions = [],
     menuItems,
     onStageClick,
     onTaskAdd,
@@ -95,6 +98,11 @@ const StageNodeComponent = (props: StageNodeProps) => {
     (state) => ({ edges: state.edges, isConnecting: !!state.connectionClickStartHandle }),
     (a, b) => a.edges === b.edges && a.isConnecting === b.isConnecting
   );
+
+  const [isAddingTask, setIsAddingTask] = useState(false);
+  useEffect(() => {
+    if (selected === false) setIsAddingTask(false);
+  }, [selected]);
 
   const hasConnections = useMemo(() => edges?.some((edge) => edge.source === id || edge.target === id) ?? false, [edges, id]);
 
@@ -326,9 +334,9 @@ const StageNodeComponent = (props: StageNodeProps) => {
               )}
             </Column>
           </Row>
-          <Row gap={Spacing.SpacingMicro} align="center">
+          <Row gap={Spacing.SpacingXs} align="center">
             {status && (
-              <Row gap={Spacing.SpacingMicro} align="center">
+              <Row gap={statusLabel ? Spacing.SpacingMicro : undefined} align="center">
                 <ExecutionStatusIcon status={status} />
                 <ApTypography variant={FontVariantToken.fontSizeS} color="var(--color-foreground-de-emp)">
                   {statusLabel}
@@ -357,115 +365,122 @@ const StageNodeComponent = (props: StageNodeProps) => {
         </StageHeader>
 
         <StageContent>
-          <Column gap={Spacing.SpacingS}>
-            {onTaskAdd && (
-              <Row pl={"2px"}>
-                <ApLink onClick={onTaskAdd}>{addTaskLabel}</ApLink>
-              </Row>
-            )}
+          {onTaskAdd && (
+            <Row pl={"2px"}>
+              <ApLink onClick={() => setIsAddingTask(true)}>+ {addTaskLabel}</ApLink>
+            </Row>
+          )}
 
-            {tasks && tasks.length > 0 && (
-              <StageTaskList>
-                {tasks.map((taskGroup, groupIndex) => {
-                  const isParallel = taskGroup.length > 1;
-                  return (
-                    <StageTaskGroup key={`group-${groupIndex}`} isParallel={isParallel}>
-                      {isParallel && (
-                        <>
-                          <StageParallelLabel>Parallel</StageParallelLabel>
-                          <StageParallelBracket />
-                        </>
-                      )}
-                      {taskGroup.map((task, taskIndex) => {
-                        const taskExecution = execution?.taskStatus?.[task.id];
-                        return (
-                          <StageTaskItem
-                            key={task.id}
-                            selected={!!selectedTasks?.includes(task.id)}
-                            status={taskExecution?.status}
-                            onClick={(e) => handleTaskClick(e, task.id)}
-                            {...(onTaskGroupModification && {
-                              onContextMenu: (e) => handleTaskContextMenuOpen(isParallel, groupIndex, taskIndex, e),
-                            })}
-                          >
-                            <StageTaskIcon>{task.icon ?? <ProcessNodeIcon />}</StageTaskIcon>
-                            <Column flex={1} style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                              <Row align="center" justify="space-between">
-                                <ApTooltip content={task.label} placement="top" delay>
-                                  <ApTypography
-                                    variant={FontVariantToken.fontSizeM}
-                                    color="var(--color-foreground)"
-                                    style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
-                                  >
-                                    {task.label}
-                                  </ApTypography>
-                                </ApTooltip>
-                                {taskExecution?.status &&
-                                  (taskExecution.message ? (
-                                    <ApTooltip content={taskExecution.message} placement="top">
-                                      <ExecutionStatusIcon status={taskExecution.status} />
-                                    </ApTooltip>
-                                  ) : (
+          {tasks && tasks.length > 0 && (
+            <StageTaskList>
+              {tasks.map((taskGroup, groupIndex) => {
+                const isParallel = taskGroup.length > 1;
+                return (
+                  <StageTaskGroup key={`group-${groupIndex}`} isParallel={isParallel}>
+                    {isParallel && (
+                      <>
+                        <StageParallelLabel>Parallel</StageParallelLabel>
+                        <StageParallelBracket />
+                      </>
+                    )}
+                    {taskGroup.map((task, taskIndex) => {
+                      const taskExecution = execution?.taskStatus?.[task.id];
+                      return (
+                        <StageTask
+                          key={task.id}
+                          selected={!!selectedTasks?.includes(task.id)}
+                          status={taskExecution?.status}
+                          onClick={(e) => handleTaskClick(e, task.id)}
+                          {...(onTaskGroupModification && {
+                            onContextMenu: (e) => handleTaskContextMenuOpen(isParallel, groupIndex, taskIndex, e),
+                          })}
+                        >
+                          <StageTaskIcon>{task.icon ?? <ProcessNodeIcon />}</StageTaskIcon>
+                          <Column flex={1} style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                            <Row align="center" justify="space-between">
+                              <ApTooltip content={task.label} placement="top" delay>
+                                <ApTypography
+                                  variant={FontVariantToken.fontSizeM}
+                                  color="var(--color-foreground)"
+                                  style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
+                                >
+                                  {task.label}
+                                </ApTypography>
+                              </ApTooltip>
+                              {taskExecution?.status &&
+                                (taskExecution.message ? (
+                                  <ApTooltip content={taskExecution.message} placement="top">
                                     <ExecutionStatusIcon status={taskExecution.status} />
-                                  ))}
-                              </Row>
-                              <Row align="center" justify="space-between">
-                                <Row gap={"2px"}>
-                                  {taskExecution?.duration && (
-                                    <ApTypography variant={FontVariantToken.fontSizeS} color="var(--color-foreground-de-emp)">
-                                      {taskExecution.duration}
+                                  </ApTooltip>
+                                ) : (
+                                  <ExecutionStatusIcon status={taskExecution.status} />
+                                ))}
+                            </Row>
+                            <Row align="center" justify="space-between">
+                              <Row gap={"2px"}>
+                                {taskExecution?.duration && (
+                                  <ApTypography variant={FontVariantToken.fontSizeS} color="var(--color-foreground-de-emp)">
+                                    {taskExecution.duration}
+                                  </ApTypography>
+                                )}
+                                {taskExecution?.retryDuration && (
+                                  <StageTaskRetryDuration status={taskExecution.badgeStatus ?? "warning"}>
+                                    <ApTypography variant={FontVariantToken.fontSizeS} color="inherit">
+                                      {`(+${taskExecution.retryDuration})`}
                                     </ApTypography>
-                                  )}
-                                  {taskExecution?.retryDuration && (
-                                    <StageTaskRetryDuration status={taskExecution.badgeStatus ?? "warning"}>
-                                      <ApTypography variant={FontVariantToken.fontSizeS} color="inherit">
-                                        {`(+${taskExecution.retryDuration})`}
-                                      </ApTypography>
-                                    </StageTaskRetryDuration>
-                                  )}
-                                </Row>
-                                {taskExecution?.badge && (
-                                  <ApBadge
-                                    size="small"
-                                    status={taskExecution.badgeStatus ?? "warning"}
-                                    label={generateBadgeText(taskExecution)}
-                                  />
+                                  </StageTaskRetryDuration>
                                 )}
                               </Row>
-                            </Column>
-                            <TaskContextMenu
-                              isVisible={
-                                isTaskContextMenuVisible &&
-                                taskStateReference.groupIndex === groupIndex &&
-                                taskStateReference.taskIndex === taskIndex
-                              }
-                              menuItems={contextMenuItems(
-                                tasks.length,
-                                taskGroup.length,
-                                (tasks[groupIndex - 1]?.length ?? 0) > 1,
-                                (tasks[groupIndex + 1]?.length ?? 0) > 1
+                              {taskExecution?.badge && (
+                                <ApBadge
+                                  size="small"
+                                  status={taskExecution.badgeStatus ?? "warning"}
+                                  label={generateBadgeText(taskExecution)}
+                                />
                               )}
-                              refTask={taskStateReference.anchor}
-                            />
-                            {onTaskGroupModification && (
-                              <StageTaskRemoveButton
-                                className="task-remove-button"
-                                onClick={(event) => handleTaskRemove(event, groupIndex, taskIndex)}
-                              >
-                                <ApIcon name="close" size="16px" />
-                              </StageTaskRemoveButton>
+                            </Row>
+                          </Column>
+                          <TaskContextMenu
+                            isVisible={
+                              isTaskContextMenuVisible &&
+                              taskStateReference.groupIndex === groupIndex &&
+                              taskStateReference.taskIndex === taskIndex
+                            }
+                            menuItems={contextMenuItems(
+                              tasks.length,
+                              taskGroup.length,
+                              (tasks[groupIndex - 1]?.length ?? 0) > 1,
+                              (tasks[groupIndex + 1]?.length ?? 0) > 1
                             )}
-                          </StageTaskItem>
-                        );
-                      })}
-                    </StageTaskGroup>
-                  );
-                })}
-              </StageTaskList>
-            )}
-          </Column>
+                            refTask={taskStateReference.anchor}
+                          />
+                          {onTaskGroupModification && (
+                            <StageTaskRemoveButton
+                              className="task-remove-button"
+                              onClick={(event) => handleTaskRemove(event, groupIndex, taskIndex)}
+                            >
+                              <ApIcon name="close" size="16px" />
+                            </StageTaskRemoveButton>
+                          )}
+                        </StageTask>
+                      );
+                    })}
+                  </StageTaskGroup>
+                );
+              })}
+            </StageTaskList>
+          )}
         </StageContent>
       </StageContainer>
+
+      <FloatingCanvasPanel open={isAddingTask} nodeId={id} offset={10}>
+        <Toolbox
+          title={addTaskLabel}
+          initialItems={taskOptions}
+          onClose={() => setIsAddingTask(false)}
+          onItemSelect={(item) => onTaskAdd?.(item.data.id)}
+        />
+      </FloatingCanvasPanel>
 
       {menuItems && !dragging && <NodeContextMenu menuItems={menuItems} isVisible={shouldShowMenu} />}
 

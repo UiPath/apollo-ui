@@ -114,6 +114,10 @@ export const StageContent = styled.div`
   border-radius: 0 0 12px 12px;
   overflow: hidden;
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 12px;
 `;
 
 export const StageTaskList = styled.div`
@@ -156,7 +160,7 @@ export const StageParallelBracket = styled.div`
   border-radius: 3px 0 0 3px;
 `;
 
-export const StageTaskItem = styled.div<{ status?: StageStatus; selected?: boolean }>`
+export const StageTask = styled.div<{ status?: StageStatus; selected?: boolean }>`
   position: relative;
   display: flex;
   align-items: center;
