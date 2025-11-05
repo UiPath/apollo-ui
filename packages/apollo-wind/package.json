@@ -18,8 +18,8 @@
     "tailwind.config.js"
   ],
   "scripts": {
-    "build": "tsc && vite build",
-    "dev": "tsc --watch",
+    "build": "rslib build",
+    "dev": "rslib build --watch",
     "lint": "eslint src --ext .ts,.tsx",
     "test": "vitest",
     "clean": "rm -rf dist"
@@ -44,6 +44,8 @@
     "tailwind-merge": "^3.3.1"
   },
   "devDependencies": {
+    "@rsbuild/plugin-react": "^1.4.1",
+    "@rslib/core": "^0.17.0",
     "@types/react": "^19.0.6",
     "@types/react-dom": "^19.0.3",
     "autoprefixer": "^10.4.21",
@@ -52,7 +54,6 @@
     "react-dom": "^19.0.0",
     "tailwindcss": "^4.0.14",
     "typescript": "^5.9.3",
-    "vite": "^7.0.5",
     "vitest": "^4.0.5"
   }
 }

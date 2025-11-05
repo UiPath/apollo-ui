@@ -10,12 +10,12 @@
     "clean": "rm -rf storybook-static"
   },
   "dependencies": {
-    "@uipath/apollo-core": "workspace:*",
-    "@uipath/apollo-react": "workspace:*",
-    "@uipath/apollo-angular": "workspace:*",
-    "@uipath/apollo-wind": "workspace:*",
     "@uipath/ap-autopilot-chat": "workspace:*",
     "@uipath/ap-data-grid": "workspace:*",
+    "@uipath/apollo-angular": "workspace:*",
+    "@uipath/apollo-core": "workspace:*",
+    "@uipath/apollo-react": "workspace:*",
+    "@uipath/apollo-wind": "workspace:*",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },
@@ -29,6 +29,6 @@
     "@storybook/test": "^8.6.14",
     "storybook": "^8.6.14",
     "typescript": "^5.9.3",
-    "vite": "^7.0.5"
+    "vite": "^6.4.1"
   }
 }

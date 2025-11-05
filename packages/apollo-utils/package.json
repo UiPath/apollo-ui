@@ -16,8 +16,8 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsc && vite build",
-    "dev": "tsc --watch",
+    "build": "rslib build",
+    "dev": "rslib build --watch",
     "lint": "eslint src --ext .ts,.tsx",
     "test": "vitest",
     "clean": "rm -rf dist"
@@ -30,8 +30,8 @@
   ],
   "license": "MIT",
   "devDependencies": {
+    "@rslib/core": "^0.17.0",
     "typescript": "^5.9.3",
-    "vite": "^7.0.5",
     "vitest": "^4.0.5"
   }
 }

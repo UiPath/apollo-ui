@@ -7,22 +7,22 @@
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs",
-      "require": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "require": "./dist/index.js"
     },
     "./react": {
+      "types": "./dist/react/index.d.ts",
       "import": "./dist/react/index.mjs",
-      "require": "./dist/react/index.js",
-      "types": "./dist/react/index.d.ts"
+      "require": "./dist/react/index.js"
     }
   },
   "files": [
     "dist"
   ],
   "scripts": {
-    "build": "tsc && vite build",
-    "dev": "vite",
+    "build": "rslib build",
+    "dev": "rslib build --watch",
     "lint": "eslint src --ext .ts,.tsx",
     "test": "vitest",
     "clean": "rm -rf dist"
@@ -40,12 +40,12 @@
     "@uipath/apollo-core": "workspace:*"
   },
   "devDependencies": {
+    "@rslib/core": "^0.17.0",
     "@types/react": "^19.0.6",
     "@types/react-dom": "^19.0.3",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "typescript": "^5.9.3",
-    "vite": "^7.0.5",
     "vitest": "^4.0.5"
   },
   "peerDependencies": {
