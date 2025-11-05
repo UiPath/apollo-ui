@@ -93,7 +93,8 @@ export const StageTitleInput = styled.input<{ isEditing?: boolean; isStageTitleE
   background: transparent;
   text-overflow: ellipsis;
   border-radius: 2px;
-  width: ${(props) => `${Math.max((props.value?.toString().length ?? 0) + 1, 1)}ch`};
+  min-width: 100px;
+  width: max-content;
   max-width: 180px;
   padding: ${(props) => (props.isStageTitleEditable ? "none" : "4px 0px")};
 
