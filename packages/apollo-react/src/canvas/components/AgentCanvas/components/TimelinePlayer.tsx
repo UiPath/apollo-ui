@@ -4,13 +4,21 @@ import { FontVariantToken, Spacing } from "@uipath/apollo-core";
 import { ApIconButton, ApTypography, type IRawSpan } from "@uipath/portal-shell-react";
 import { Column, Row, Icons } from "@uipath/uix/core";
 
+import type { NormalizedSpan } from "./TimelinePlayer.utils";
+import {
+  normalizeSpans,
+  findAgentRunSpan,
+  findAllAgentRunSpans,
+  filterChildSpans,
+  calculateDurationMs,
+  shouldRenderTimelinePlayer,
+} from "./TimelinePlayer.utils";
+
 const PERCENTAGE_MULTIPLIER = 100;
 const SECONDS_PER_MINUTE = 60;
 const MILLISECONDS_PER_SECOND = 1000;
 const TIME_PADDING_DIGITS = 2;
 const TIME_PADDING_CHAR = "0";
-const DEFAULT_SPAN_DURATION_MS = 1000;
-const MINIMUM_VISIBLE_DURATION = 0.01;
 const SPAN_Z_INDEX_INACTIVE = 2;
 const TIMELINE_BAR_HEIGHT = 30;
 const TIMELINE_TRACK_BAR_HEIGHT = 4;
@@ -20,12 +28,6 @@ const SPEED_LEVEL_1 = 1;
 const SPEED_LEVEL_2 = 2;
 const SPEED_LEVEL_3 = 3;
 const SPEED_LEVEL_4 = 5;
-
-interface NormalizedSpan extends IRawSpan {
-  normalizedStart: number;
-  normalizedDuration: number;
-  depth: number;
-}
 
 const TimelineBar = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>((props, ref) => (
   <div
@@ -191,114 +193,6 @@ const Scrubber: React.FC<{ left: number }> = ({ left }) => (
   </div>
 );
 
-function calculateSpanDepth(spans: IRawSpan[]): Map<string, number> {
-  const depthMap = new Map<string, number>();
-  const parentMap = new Map<string, string>();
-
-  // Build parent-child relationships
-  for (const span of spans) {
-    if (span.ParentId) {
-      parentMap.set(span.Id, span.ParentId);
-    }
-  }
-
-  // Calculate depth for each span
-  const getDepth = (spanId: string): number => {
-    if (depthMap.has(spanId)) {
-      return depthMap.get(spanId) || 0;
-    }
-
-    const parentId = parentMap.get(spanId);
-    if (!parentId) {
-      depthMap.set(spanId, 0);
-      return 0;
-    }
-
-    const depth = getDepth(parentId) + 1;
-    depthMap.set(spanId, depth);
-    return depth;
-  };
-
-  for (const span of spans) {
-    getDepth(span.Id);
-  }
-
-  return depthMap;
-}
-
-function normalizeSpans(spans: IRawSpan[]): NormalizedSpan[] {
-  const depthMap = calculateSpanDepth(spans);
-
-  const getTime = (s: string | null) => {
-    if (!s) {
-      return null;
-    }
-
-    const luxonDate = DateTime.fromISO(s);
-    if (luxonDate.isValid) {
-      return luxonDate.toMillis();
-    }
-    return null;
-  };
-
-  // Calculate end times, using UpdatedAt or current time for incomplete spans
-  const times = spans.map((s) => {
-    const start = getTime(s.StartTime);
-    let end = getTime(s.EndTime);
-
-    // Handle incomplete spans (EndTime is null)
-    if (!end && start) {
-      if (s.UpdatedAt) {
-        end = getTime(s.UpdatedAt);
-      } else {
-        end = Date.now();
-      }
-    }
-
-    return {
-      start: start || 0,
-      end: end || (start || 0) + DEFAULT_SPAN_DURATION_MS, // Default 1 second duration if all else fails
-    };
-  });
-
-  const validTimes = times.filter((t) => t.start > 0 && t.end > 0);
-  if (validTimes.length === 0) {
-    return spans.map((span) => ({
-      ...span,
-      normalizedStart: 0,
-      normalizedDuration: 0,
-      depth: depthMap.get(span.Id) || 0,
-    }));
-  }
-
-  const minStart = Math.min(...validTimes.map((t) => t.start));
-  const maxEnd = Math.max(...validTimes.map((t) => t.end));
-  const duration = maxEnd - minStart;
-
-  if (duration === 0) {
-    return spans.map((span) => ({
-      ...span,
-      normalizedStart: 0,
-      normalizedDuration: 1,
-      depth: depthMap.get(span.Id) || 0,
-    }));
-  }
-
-  return spans.map((span, index) => {
-    const time = times[index] as NonNullable<(typeof times)[number]>;
-    const start = time.start;
-    const end = time.end;
-    const spanDuration = end - start;
-
-    return {
-      ...span,
-      normalizedStart: (start - minStart) / duration,
-      normalizedDuration: Math.max(spanDuration / duration, MINIMUM_VISIBLE_DURATION), // Minimum visible width
-      depth: depthMap.get(span.Id) || 0,
-    };
-  });
-}
-
 function formatTime(ms: number): string {
   const totalSeconds = Math.floor(ms / MILLISECONDS_PER_SECOND);
   const minutes = Math.floor(totalSeconds / SECONDS_PER_MINUTE);
@@ -324,12 +218,9 @@ export const TimelinePlayer: React.FC<{
   // TODO: Decide if we want to use the parentSpan or agentRun span as the parent.
   // const parentSpan = useMemo(() => spans.find((span) => span.ParentId === null), [spans]);
 
-  const parentSpan = useMemo(() => spans.find((span) => span.SpanType === "agentRun"), [spans]);
-  const agentSpans = useMemo(() => spans.filter((span) => span.SpanType === "agentRun"), [spans]);
-  const filteredSpans = useMemo(
-    () => spans.filter((span) => agentSpans.map((s) => s.Id).includes(span.ParentId ?? "")),
-    [agentSpans, spans]
-  );
+  const parentSpan = useMemo(() => findAgentRunSpan(spans), [spans]);
+  const agentSpans = useMemo(() => findAllAgentRunSpans(spans), [spans]);
+  const filteredSpans = useMemo(() => filterChildSpans(spans, agentSpans), [agentSpans, spans]);
   const normalizedSpans = useMemo(() => normalizeSpans(filteredSpans), [filteredSpans]);
 
   useEffect(() => {
@@ -339,14 +230,7 @@ export const TimelinePlayer: React.FC<{
   }, []);
 
   // The time scale is shown for the total duration of the trace (based on the parent span).
-  const durationMs = useMemo(() => {
-    const start = parentSpan?.StartTime ?? 0;
-    const end = parentSpan?.EndTime ?? parentSpan?.UpdatedAt ?? 0;
-    if (start && end) {
-      return DateTime.fromISO(end).toMillis() - DateTime.fromISO(start).toMillis();
-    }
-    return 0;
-  }, [parentSpan]);
+  const durationMs = useMemo(() => calculateDurationMs(parentSpan), [parentSpan]);
 
   // Auto-set speed based on duration
   useEffect(() => {
@@ -556,7 +440,7 @@ export const TimelinePlayer: React.FC<{
     });
   }, []);
 
-  if (!enableTimelinePlayer || durationMs === 0 || normalizedSpans.length === 0) {
+  if (!shouldRenderTimelinePlayer(enableTimelinePlayer, durationMs, normalizedSpans)) {
     return null;
   }
 

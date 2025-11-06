@@ -31,6 +31,7 @@ import { hasAgentRunning } from "../../utils/props-helpers";
 import { ResourceNodeType, ResourceNodeTypeToPosition } from "./AgentFlow.constants";
 import { RESOURCE_NODE_SIZE } from "../../utils/auto-layout";
 import { SuggestionGroupPanel } from "./components/SuggestionGroupPanel";
+import { calculateTimelineHeight } from "./components/TimelinePlayer.utils";
 
 const edgeTypes = {
   default: Edge,
@@ -297,9 +298,11 @@ const AgentFlowInner = memo(
     const timelinePlayerRef = useRef<HTMLDivElement>(null);
     const suggestionGroupPanelRef = useRef<HTMLDivElement>(null);
 
+    // Calculate if timeline will be visible
+    const timelineHeight = useMemo(() => calculateTimelineHeight(enableTimelinePlayer, spans), [enableTimelinePlayer, spans]);
+
     // Calculate adjusted fitView options that account for timeline player height
     const adjustedFitViewOptions = useMemo(() => {
-      const timelineHeight = timelinePlayerRef.current?.offsetHeight || 0;
       const suggestionGroupPanelHeight = suggestionGroupPanelRef.current?.offsetHeight || 0;
 
       if (timelineHeight > 0 || suggestionGroupPanelHeight > 0) {
@@ -318,11 +321,7 @@ const AgentFlowInner = memo(
       }
 
       return AGENT_FLOW_FIT_VIEW_OPTIONS;
-    }, [
-      AGENT_FLOW_FIT_VIEW_OPTIONS.padding.bottom,
-      timelinePlayerRef.current?.offsetHeight,
-      suggestionGroupPanelRef.current?.offsetHeight,
-    ]);
+    }, [timelineHeight]);
 
     const nodeTypes = useMemo(() => {
       const handleAddResource = (type: "context" | "escalation" | "mcp" | "tool" | "memorySpace") => {
