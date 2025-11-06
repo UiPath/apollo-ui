@@ -27,7 +27,7 @@ import { useButtonHandles } from "../ButtonHandle/useButtonHandles";
 import type { HandleConfiguration } from "../BaseNode/BaseNode.types";
 import { useNodeSelection } from "../NodePropertiesPanel/hooks";
 import { FloatingCanvasPanel } from "../FloatingCanvasPanel";
-import { Toolbox } from "../Toolbox";
+import { type ListItem, Toolbox } from "../Toolbox";
 
 const ProcessNodeIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
@@ -233,6 +233,23 @@ const StageNodeComponent = (props: StageNodeProps) => {
     [onTaskClick, setSelectedNodeId, id]
   );
 
+  const handleTaskAddClick = useCallback(
+    (event: React.MouseEvent) => {
+      event.stopPropagation();
+      setIsAddingTask(true);
+      setSelectedNodeId(id);
+    },
+    [onTaskAdd, setSelectedNodeId, id]
+  );
+
+  const handleTaskToolboxItemSelected = useCallback(
+    (item: ListItem<{ id: string }>) => {
+      onTaskAdd?.(item.data.id);
+      setSelectedNodeId(id);
+    },
+    [onTaskAdd, setSelectedNodeId, id]
+  );
+
   const handleConfigurations: HandleConfiguration[] = isException
     ? []
     : [
@@ -367,7 +384,7 @@ const StageNodeComponent = (props: StageNodeProps) => {
         <StageContent>
           {onTaskAdd && (
             <Row pl={"2px"}>
-              <ApLink onClick={() => setIsAddingTask(true)}>+ {addTaskLabel}</ApLink>
+              <ApLink onClick={handleTaskAddClick}>+ {addTaskLabel}</ApLink>
             </Row>
           )}
 
@@ -478,7 +495,7 @@ const StageNodeComponent = (props: StageNodeProps) => {
           title={addTaskLabel}
           initialItems={taskOptions}
           onClose={() => setIsAddingTask(false)}
-          onItemSelect={(item) => onTaskAdd?.(item.data.id)}
+          onItemSelect={handleTaskToolboxItemSelected}
         />
       </FloatingCanvasPanel>
 
