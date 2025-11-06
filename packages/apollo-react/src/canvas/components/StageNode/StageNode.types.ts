@@ -1,6 +1,6 @@
 import type { NodeProps } from "@uipath/uix/xyflow/react";
 import type { NodeMenuItem } from "../NodeContextMenu";
-import type { ListItem } from "../Toolbox";
+import type { ListItem, ToolboxSearchHandler } from "../Toolbox";
 
 enum ElementStatusValues {
   Cancelled = "Cancelled",
@@ -38,7 +38,7 @@ export interface StageNodeProps extends NodeProps {
     selectedTasks?: string[];
   };
   addTaskLabel?: string;
-  taskOptions?: ListItem<{ id: string }>[];
+  taskOptions?: ListItem[];
   execution?: {
     stageStatus: {
       status?: StageStatus;
@@ -49,7 +49,9 @@ export interface StageNodeProps extends NodeProps {
   };
   menuItems?: NodeMenuItem[];
   onStageClick?: () => void;
-  onTaskAdd?: (taskId: string) => void;
+  onTaskAdd?: () => void;
+  onAddTaskFromToolbox?: (taskItem: ListItem) => void;
+  onTaskToolboxSearch?: ToolboxSearchHandler;
   onTaskClick?: (taskElementId: string) => void;
   onTaskGroupModification?: (groupModificationType: GroupModificationType, groupIndex: number, taskIndex: number) => void;
   onStageTitleChange?: (newTitle: string) => void;

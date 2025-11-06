@@ -57,6 +57,8 @@ const StageNodeComponent = (props: StageNodeProps) => {
     menuItems,
     onStageClick,
     onTaskAdd,
+    onAddTaskFromToolbox,
+    onTaskToolboxSearch,
     onTaskClick,
     onTaskGroupModification,
     onStageTitleChange,
@@ -236,18 +238,23 @@ const StageNodeComponent = (props: StageNodeProps) => {
   const handleTaskAddClick = useCallback(
     (event: React.MouseEvent) => {
       event.stopPropagation();
-      setIsAddingTask(true);
+      if (onTaskAdd) {
+        onTaskAdd();
+      } else if (onAddTaskFromToolbox) {
+        setIsAddingTask(true);
+      }
       setSelectedNodeId(id);
     },
-    [onTaskAdd, setSelectedNodeId, id]
+    [onTaskAdd, onAddTaskFromToolbox, setSelectedNodeId, id]
   );
 
   const handleTaskToolboxItemSelected = useCallback(
-    (item: ListItem<{ id: string }>) => {
-      onTaskAdd?.(item.data.id);
+    (item: ListItem) => {
+      onAddTaskFromToolbox?.(item);
+      setIsAddingTask(false);
       setSelectedNodeId(id);
     },
-    [onTaskAdd, setSelectedNodeId, id]
+    [onAddTaskFromToolbox, setSelectedNodeId, id]
   );
 
   const handleConfigurations: HandleConfiguration[] = isException
@@ -382,7 +389,7 @@ const StageNodeComponent = (props: StageNodeProps) => {
         </StageHeader>
 
         <StageContent>
-          {onTaskAdd && (
+          {(onTaskAdd || onAddTaskFromToolbox) && (
             <Row pl={"2px"}>
               <ApLink onClick={handleTaskAddClick}>+ {addTaskLabel}</ApLink>
             </Row>
@@ -490,14 +497,17 @@ const StageNodeComponent = (props: StageNodeProps) => {
         </StageContent>
       </StageContainer>
 
-      <FloatingCanvasPanel open={isAddingTask} nodeId={id} offset={10}>
-        <Toolbox
-          title={addTaskLabel}
-          initialItems={taskOptions}
-          onClose={() => setIsAddingTask(false)}
-          onItemSelect={handleTaskToolboxItemSelected}
-        />
-      </FloatingCanvasPanel>
+      {onAddTaskFromToolbox && (
+        <FloatingCanvasPanel open={isAddingTask} nodeId={id} offset={10}>
+          <Toolbox
+            title={addTaskLabel}
+            initialItems={taskOptions}
+            onClose={() => setIsAddingTask(false)}
+            onItemSelect={handleTaskToolboxItemSelected}
+            onSearch={onTaskToolboxSearch}
+          />
+        </FloatingCanvasPanel>
+      )}
 
       {menuItems && !dragging && <NodeContextMenu menuItems={menuItems} isVisible={shouldShowMenu} />}
 

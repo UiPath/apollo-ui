@@ -9,6 +9,12 @@ type AnimationDirection = "forward" | "back";
 
 const TRANSITION_DURATION = 150;
 
+export type ToolboxSearchHandler<T = any> = (
+  query: string,
+  isTopLevelSearch: boolean,
+  { currentItems, category }: { currentItems?: ListItem<T>[]; category?: string }
+) => Promise<ListItem<T>[]>;
+
 export interface ToolboxProps<T> {
   title: string;
   initialItems: ListItem<T>[];
@@ -17,11 +23,7 @@ export interface ToolboxProps<T> {
   onItemSelect: (item: ListItem<T>) => Promise<void> | void;
   onItemHover?: (item: ListItem<T>) => void;
   onBack?: () => void;
-  onSearch?: (
-    query: string,
-    isTopLevelSearch: boolean,
-    { currentItems, category }: { currentItems?: ListItem<T>[]; category?: string }
-  ) => Promise<ListItem<T>[]>;
+  onSearch?: ToolboxSearchHandler<T>;
 }
 
 function searchLeafItems<T>(items: ListItem<T>[], query: string): ListItem<T>[] {

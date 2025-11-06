@@ -8,6 +8,7 @@ import { BaseCanvas } from "../BaseCanvas";
 import { CanvasPositionControls } from "../CanvasPositionControls";
 import { StageEdge } from "./StageEdge";
 import { StageConnectionEdge } from "./StageConnectionEdge";
+import type { ListItem } from "../Toolbox";
 
 const meta = {
   title: "Canvas/StageNode",
@@ -178,14 +179,14 @@ export const Default: Story = {
             label: "Processing with a really really really long label that might wrap",
             tasks: sampleTasks,
           },
-          onTaskAdd: (itemId: string) => {
-            window.alert(`Add task (${itemId}) - this would open a panel to configure the new task`);
+          onAddTaskFromToolbox: (taskItem: ListItem) => {
+            window.alert(`Add task (${taskItem.data.type}) - this would open a panel to configure the new task`);
           },
           taskOptions: sampleTasks.flat().map((task) => ({
             id: task.id,
             name: task.label,
             icon: { Component: () => task.icon },
-            data: { id: task.id },
+            data: { type: task.id },
           })),
           menuItems: [
             {
