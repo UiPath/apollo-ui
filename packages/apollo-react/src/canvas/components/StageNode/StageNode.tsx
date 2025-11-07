@@ -391,7 +391,7 @@ const StageNodeComponent = (props: StageNodeProps) => {
         <StageContent>
           {(onTaskAdd || onAddTaskFromToolbox) && (
             <Row pl={"2px"}>
-              <ApLink onClick={handleTaskAddClick}>+ {addTaskLabel}</ApLink>
+              <ApLink onClick={handleTaskAddClick}>{addTaskLabel}</ApLink>
             </Row>
           )}
 
