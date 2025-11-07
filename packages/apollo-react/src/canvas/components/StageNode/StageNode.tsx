@@ -412,6 +412,7 @@ const StageNodeComponent = (props: StageNodeProps) => {
                       return (
                         <StageTask
                           key={task.id}
+                          data-testid={`task-${task.id}`}
                           selected={!!selectedTasks?.includes(task.id)}
                           status={taskExecution?.status}
                           onClick={(e) => handleTaskClick(e, task.id)}
@@ -481,6 +482,7 @@ const StageNodeComponent = (props: StageNodeProps) => {
                           {onTaskGroupModification && (
                             <StageTaskRemoveButton
                               className="task-remove-button"
+                              data-testid={`task-remove-${task.id}`}
                               onClick={(event) => handleTaskRemove(event, groupIndex, taskIndex)}
                             >
                               <ApIcon name="close" size="16px" />
