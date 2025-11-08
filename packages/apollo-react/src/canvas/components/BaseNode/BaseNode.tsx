@@ -36,8 +36,9 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
       isConnecting: inProgress,
       isSelected: selected,
       isDragging: dragging,
+      mode,
     }),
-    [id, executionState, inProgress, selected, dragging]
+    [id, executionState, inProgress, selected, dragging, mode]
   );
 
   const executionStatus = typeof executionState === "string" ? executionState : executionState?.status;
