@@ -9,7 +9,8 @@ export function createPreviewNode(
   sourceNodeId: string,
   sourceHandleId: string,
   reactFlowInstance: ReactFlowInstance,
-  position?: { x: number; y: number }
+  position?: { x: number; y: number },
+  data?: Record<string, any>
 ): { node: Node; edge: Edge } | null {
   const sourceNode = reactFlowInstance.getNode(sourceNodeId);
   if (!sourceNode) {
@@ -32,7 +33,7 @@ export function createPreviewNode(
     type: "preview",
     position: nodePosition,
     selected: true,
-    data: {},
+    data: data || {},
   };
 
   // Create preview edge with consistent styling

@@ -20,6 +20,7 @@ const PreviewContainer = styled.div<{ selected?: boolean }>`
 
 export interface AddNodePreviewData {
   iconName?: string;
+  showOutputHandle?: boolean;
 }
 
 const getIcon = (iconName?: string): React.ReactElement => {
@@ -49,6 +50,18 @@ export const AddNodePreview: React.FC<NodeProps> = ({ selected, data }) => {
           height: 8,
         }}
       />
+
+      {nodeData?.showOutputHandle && (
+        <Handle
+          type="source"
+          position={Position.Right}
+          id="output"
+          style={{
+            background: "transparent",
+            border: "none",
+          }}
+        />
+      )}
     </>
   );
 };
