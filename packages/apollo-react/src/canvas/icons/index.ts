@@ -28,3 +28,4 @@ export { DataTransformGroupIcon } from "./DataTransformGroupIcon";
 export { DataTransformFlattenIcon } from "./DataTransformFlattenIcon";
 export { DataTransformExtractIcon } from "./DataTransformExtractIcon";
 export { HealthScoreIcon } from "./HealthScoreIcon";
+export { LoopIcon } from "./LoopIcon";
