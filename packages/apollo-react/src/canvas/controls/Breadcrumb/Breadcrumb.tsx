@@ -67,7 +67,7 @@ export const Breadcrumb: React.FC<BreadcrumbProps> = ({ items, delimiter = ">" }
                   aria-current={index === items.length - 1 ? "page" : undefined}
                 >
                   {item.startAdornment ?? <></>}
-                  <ApTooltip delay content={item.label}>
+                  <ApTooltip smartTooltip content={item.label}>
                     <ApTypography
                       variant={index === items.length - 1 ? FontVariantToken.fontSizeMBold : FontVariantToken.fontSizeM}
                       style={{ textOverflow: "ellipsis", overflow: "hidden", whiteSpace: "nowrap" }}
@@ -87,7 +87,7 @@ export const Breadcrumb: React.FC<BreadcrumbProps> = ({ items, delimiter = ">" }
                 aria-current={index === items.length - 1 ? "page" : undefined}
               >
                 {item.startAdornment}
-                <ApTooltip delay content={item.label}>
+                <ApTooltip smartTooltip content={item.label}>
                   <ApTypography
                     variant={index === items.length - 1 ? FontVariantToken.fontSizeMBold : FontVariantToken.fontSizeM}
                     style={{ textOverflow: "ellipsis", overflow: "hidden", whiteSpace: "nowrap" }}
