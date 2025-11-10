@@ -1,6 +1,7 @@
 import prettierConfig from 'eslint-config-prettier';
 import reactPlugin from 'eslint-plugin-react';
 import reactHooksPlugin from 'eslint-plugin-react-hooks';
+import vitestPlugin from 'eslint-plugin-vitest';
 import globals from 'globals';
 
 import js from '@eslint/js';
@@ -53,6 +54,41 @@ const config = [
   },
   {
     ignores: ['dist/**', 'build/**', '.next/**', 'storybook-static/**', 'node_modules/**'],
+  },
+  // Test files configuration
+  {
+    files: [
+      '**/*.test.ts',
+      '**/*.test.tsx',
+      '**/*.test.js',
+      '**/*.test.jsx',
+      '**/*.spec.ts',
+      '**/*.spec.tsx',
+      '**/*.spec.js',
+      '**/*.spec.jsx',
+    ],
+    plugins: {
+      vitest: vitestPlugin,
+    },
+    languageOptions: {
+      parser: tsParser,
+      globals: {
+        ...globals.node,
+        describe: 'readonly',
+        it: 'readonly',
+        test: 'readonly',
+        expect: 'readonly',
+        vi: 'readonly',
+        vitest: 'readonly',
+        beforeEach: 'readonly',
+        afterEach: 'readonly',
+        beforeAll: 'readonly',
+        afterAll: 'readonly',
+      },
+    },
+    rules: {
+      ...vitestPlugin.configs.recommended.rules,
+    },
   },
   prettierConfig,
 ];

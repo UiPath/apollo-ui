@@ -1,0 +1,8 @@
+/**
+ * Apollo Wind UI Global Styles
+ * Import apollo-wind-css and apply global component styles
+ */
+
+@import "@uipath/apollo-wind-css";
+
+/* Additional component-specific styles can be added here */

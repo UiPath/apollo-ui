@@ -38,6 +38,8 @@ jobs:
           scope: '@uipath'
 
       - name: Install dependencies
+        env:
+          RELEASE_TOKEN: ${{ secrets.RELEASE_TOKEN }}
         run: pnpm install --frozen-lockfile
 
       - name: Cache Turborepo

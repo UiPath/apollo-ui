@@ -1,0 +1,1205 @@
+/* src/components.css - Tailwind v4 CSS-First Approach */
+
+/**
+ * ============================================================================
+ * APOLLO WIND COMPONENT PATTERNS
+ * ============================================================================
+ *
+ * This file provides component pattern utilities for Apollo Design System.
+ *
+ * ARCHITECTURE DECISION (2025-10-20 Expert Review):
+ * - Composable utilities only (no convenience classes)
+ * - Users combine utilities at HTML level
+ * - Example: <button class="btn btn-tall btn-primary-colors">Primary</button>
+ *
+ * WHY COMPOSABLE-ONLY?
+ * - Tailwind v4 @utility does NOT support @apply inside
+ * - Better tree-shaking (unused combinations not generated)
+ * - More flexible (any combination possible)
+ * - Component libraries can provide wrapper components for convenience
+ *
+ * TRANSITION STANDARDS:
+ * - Background/Border/Color: 200ms ease-in-out
+ * - Press feedback: 100ms ease-in-out
+ * - Loading animations: 600ms linear infinite
+ *
+ * Z-INDEX SCALE:
+ * - Tooltips: 1500 (highest)
+ * - Toasts/Snackbars: 1400
+ * - Modals: 1300
+ * - Dropdowns: 1000
+ *
+ * FOCUS INDICATORS (Accessibility):
+ * - Always use explicit outline: `outline: 2px solid var(--color-focus-indicator)`
+ * - Never use `outline: auto` (browser-dependent)
+ * - Always include `outline-offset: 2px`
+ *
+ * BOX SIZING:
+ * - All components with padding/borders MUST include `box-sizing: border-box`
+ * - Ensures consistent sizing across browsers
+ * ============================================================================
+ */
+
+/* ============================================================================
+   GLOBAL KEYFRAMES
+   Note: NOT inside @layer per expert review
+   ============================================================================ */
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* ============================================================================
+   COMPONENT UTILITIES
+   Using @layer components for component patterns with default values
+   Using @utility for simple single-purpose utilities
+   ============================================================================ */
+
+/**
+ * ARCHITECTURE DECISION:
+ * - Component patterns with default values (btn, card, input, etc.) use @layer components
+ * - This ensures Tailwind utilities can override component defaults
+ * - Simple utilities (icon-*, text-*) use @utility for variant support
+ *
+ * CSS Layer Order: @layer theme, base, components, utilities
+ * This means utilities (p-2, m-4, etc.) will always win over component defaults
+ */
+
+/* ============================================================================
+   BUTTON COMPONENTS
+   ============================================================================ */
+
+@layer components {
+
+/* Button Base - Layout, typography, and common states */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  font-weight: 600;
+  font-size: 0.875rem; /* 14px */
+  line-height: 1.125rem; /* 18px */
+  border-radius: 3px;
+  transition: background-color 200ms ease-in-out, border-color 200ms ease-in-out;
+  cursor: pointer;
+  user-select: none;
+  box-sizing: border-box;
+
+  &:focus-visible {
+    outline: 2px solid var(--color-focus-indicator);
+    outline-offset: 2px;
+  }
+
+  &:disabled {
+    opacity: 0.38;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+}
+
+/* Button Size - Tall (40px) */
+.btn-tall {
+  height: 40px;
+  padding-inline: 16px;
+  min-width: 120px;
+}
+
+/* Button Size - Small (32px) */
+.btn-small {
+  height: 32px;
+  padding-inline: 12px;
+  min-width: 100px;
+}
+
+/* Button Colors - Primary */
+.btn-primary-colors {
+  background-color: var(--color-primary);
+  color: var(--color-foreground-inverse);
+  border: 1px solid var(--color-primary);
+
+  &:hover:not(:disabled) {
+    background-color: var(--color-primary-hover);
+  }
+
+  &:focus-visible:not(:disabled) {
+    background-color: var(--color-primary-focused);
+  }
+
+  &:active:not(:disabled) {
+    background-color: var(--color-primary-pressed);
+  }
+}
+
+/* Button Colors - Secondary (outlined) */
+.btn-secondary-colors {
+  background-color: transparent;
+  color: var(--color-primary);
+  border: 1px solid var(--color-primary);
+
+  &:hover:not(:disabled) {
+    background-color: var(--color-background-hover);
+  }
+
+  &:focus-visible:not(:disabled) {
+    background-color: var(--color-secondary-focused);
+  }
+
+  &:active:not(:disabled) {
+    background-color: var(--color-secondary-pressed);
+  }
+}
+
+/* Button Colors - Tertiary (text only) */
+.btn-tertiary-colors {
+  background-color: transparent;
+  color: var(--color-primary);
+  border: none;
+
+  &:hover:not(:disabled) {
+    background-color: var(--color-background-hover);
+  }
+}
+
+/* Button Colors - Destructive (uses warn tokens per apollo-design-expert) */
+.btn-destructive-colors {
+  background-color: var(--color-warn);
+  color: var(--color-foreground-inverse);
+  border: 1px solid var(--color-warn);
+
+  &:hover:not(:disabled) {
+    background-color: var(--color-warn-darker);
+  }
+
+  &:focus-visible:not(:disabled) {
+    background-color: var(--color-warn-darker);
+  }
+
+  &:active:not(:disabled) {
+    background-color: var(--color-warn-darker);
+  }
+}
+
+/* Button Colors - Text Foreground */
+.btn-text-foreground-colors {
+  background-color: transparent;
+  color: var(--color-foreground);
+  border: none;
+
+  &:hover:not(:disabled) {
+    background-color: var(--color-background-hover);
+  }
+}
+
+/* Button Loading State */
+.btn-loading {
+  position: relative;
+  color: transparent;
+
+  &::after {
+    content: "";
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    border: 2px solid currentColor;
+    border-radius: 50%;
+    border-top-color: transparent;
+    animation: spin 0.6s linear infinite;
+  }
+}
+
+/* ============================================================================
+   ICON BUTTON COMPONENTS
+   ============================================================================ */
+
+/* Icon Button Base - Square buttons for icons */
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  padding: 0;
+  border-radius: 3px;
+  transition: background-color 200ms ease-in-out, border-color 200ms ease-in-out;
+  cursor: pointer;
+  user-select: none;
+  box-sizing: border-box;
+
+  &:focus-visible {
+    outline: 2px solid var(--color-focus-indicator);
+    outline-offset: 2px;
+  }
+
+  &:disabled {
+    opacity: 0.38;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+}
+
+/* Icon Button Size - Medium (40x40px) */
+.icon-btn-medium {
+  width: 40px;
+  height: 40px;
+}
+
+/* Icon Button Size - Small (32x32px) */
+.icon-btn-small {
+  width: 32px;
+  height: 32px;
+}
+
+/* ============================================================================
+   CARD COMPONENTS
+   ============================================================================ */
+
+/* Card Base - Container for content */
+.card {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--color-background-raised);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  padding: 16px;
+  box-sizing: border-box;
+  transition: box-shadow 200ms ease-in-out;
+}
+
+/* Card Variant - Elevated (with shadow) */
+.card-elevated {
+  box-shadow: var(--shadow-card-elevation);
+
+  &:hover {
+    box-shadow: var(--shadow-dp-4);
+  }
+}
+
+/* Card Variant - Outlined (with border) */
+.card-outlined {
+  border: 1px solid var(--color-border);
+}
+
+/* ============================================================================
+   INPUT COMPONENTS
+   ============================================================================ */
+
+/* Input Base - Text input fields */
+.input {
+  width: 100%;
+  height: 40px;
+  padding: 8px 12px;
+  font-size: 0.875rem;
+  line-height: 1.125rem;
+  color: var(--color-foreground);
+  background-color: var(--color-background);
+  border: 1px solid var(--color-foreground-de-emp);
+  border-radius: 3px;
+  transition: border-color 200ms ease-in-out;
+  box-sizing: border-box;
+
+  &::placeholder {
+    color: var(--color-foreground-light);
+  }
+
+  &:hover:not(:disabled):not(:focus) {
+    border-color: var(--color-foreground);
+  }
+
+  &:focus {
+    outline: none;
+    border-color: var(--color-focus-indicator);
+    border-width: 2px;
+    /* Adjust only vertical padding when border increases from 1px to 2px */
+    /* Do NOT adjust horizontal padding to preserve pl-* utility classes */
+    padding-top: 7px; /* 8px - 1px */
+    padding-bottom: 7px; /* 8px - 1px */
+  }
+
+  &:disabled {
+    opacity: 0.38;
+    cursor: not-allowed;
+    background-color: var(--color-background-disabled);
+    color: var(--color-foreground-disable);
+  }
+}
+
+/* Input State - Error */
+.input-error {
+  border-color: var(--color-error-icon);
+
+  &:focus {
+    border-color: var(--color-error-icon);
+  }
+}
+
+/* Input State - Success */
+.input-success {
+  border-color: var(--color-success-icon);
+
+  &:focus {
+    border-color: var(--color-success-icon);
+  }
+}
+
+/* ============================================================================
+   SELECT/DROPDOWN COMPONENTS
+   ============================================================================ */
+
+/* Select Base - Dropdown with theme-specific icon colors
+   NOTE: currentColor does NOT work in SVG data URIs (isolated context)
+   Using hardcoded icon colors per theme as recommended by expert review */
+.select {
+  width: 100%;
+  height: 40px;
+  padding: 8px 40px 8px 12px; /* Extra padding-right for icon */
+  font-size: 0.875rem;
+  line-height: 1.125rem;
+  color: var(--color-foreground);
+  background-color: var(--color-background);
+  border: 1px solid var(--color-foreground-de-emp);
+  border-radius: 3px;
+  transition: border-color 200ms ease-in-out;
+  box-sizing: border-box;
+  appearance: none; /* Remove default browser styling */
+  cursor: pointer;
+
+  /* Dropdown icon - Light theme default (#526069 = --color-icon-default light) */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cpath fill='%23526069' d='M5 8l5 5 5-5z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  background-size: 20px;
+
+  &:hover:not(:disabled):not(:focus) {
+    border-color: var(--color-foreground);
+  }
+
+  &:focus {
+    outline: none;
+    border-color: var(--color-focus-indicator);
+    border-width: 2px;
+    padding: 7px 39px 7px 11px; /* Adjust padding to maintain size when border increases */
+  }
+
+  &:disabled {
+    opacity: 0.38;
+    cursor: not-allowed;
+    background-color: var(--color-background-disabled);
+    color: var(--color-foreground-disable);
+  }
+}
+
+/* ============================================================================
+   CHECKBOX COMPONENTS
+   ============================================================================ */
+
+/* Checkbox Base - Custom checkbox with explicit focus indicators */
+.checkbox {
+  width: 18px;
+  height: 18px;
+  appearance: none;
+  border: 2px solid var(--color-foreground-de-emp, #526069);
+  border-radius: 2px;
+  background-color: transparent;
+  cursor: pointer;
+  position: relative;
+  transition: background-color 200ms ease-in-out, border-color 200ms ease-in-out;
+  box-sizing: border-box;
+
+  /* Checkmark (checked state) */
+  &:checked {
+    background-color: var(--color-toggle-thumb-on, #0067df);
+    border-color: var(--color-toggle-thumb-on, #0067df);
+
+    &::after {
+      content: "";
+      position: absolute;
+      left: 5px;
+      top: 2px;
+      width: 4px;
+      height: 8px;
+      border: solid var(--color-foreground-inverse, #f8f9fa);
+      border-width: 0 2px 2px 0;
+      transform: rotate(45deg);
+    }
+  }
+
+  /* Indeterminate state */
+  &:indeterminate {
+    background-color: var(--color-toggle-thumb-on, #0067df);
+    border-color: var(--color-toggle-thumb-on, #0067df);
+
+    &::after {
+      content: "";
+      position: absolute;
+      left: 3px;
+      top: 7px;
+      width: 10px;
+      height: 2px;
+      background-color: var(--color-foreground-inverse, #f8f9fa);
+    }
+  }
+
+  /* Focus indicator (unchecked) - EXPLICIT per expert review */
+  &:not(:checked):focus-visible:not(:disabled) {
+    outline: 2px solid var(--color-focus-indicator, #0067df);
+    outline-offset: 2px;
+    background-color: var(--color-toggle-off-focus, rgba(0, 103, 223, 0.04));
+  }
+
+  /* Focus indicator (checked/indeterminate) - EXPLICIT per expert review */
+  &:checked:focus-visible:not(:disabled),
+  &:indeterminate:focus-visible:not(:disabled) {
+    outline: 2px solid var(--color-focus-indicator, #0067df);
+    outline-offset: 2px;
+    background-color: var(--color-toggle-on-focus, #5296d8);
+  }
+
+  /* Hover states (unchecked) */
+  &:not(:checked):hover:not(:disabled) {
+    background-color: var(--color-toggle-off-hover, rgba(0, 0, 0, 0.04));
+  }
+
+  /* Hover states (checked/indeterminate) */
+  &:checked:hover:not(:disabled),
+  &:indeterminate:hover:not(:disabled) {
+    background-color: var(--color-toggle-on-hover, #5296d8);
+    border-color: var(--color-toggle-on-hover, #5296d8);
+  }
+
+  /* Pressed states (unchecked) */
+  &:not(:checked):active:not(:disabled) {
+    background-color: var(--color-toggle-off-pressed, rgba(0, 0, 0, 0.12));
+  }
+
+  /* Pressed states (checked/indeterminate) */
+  &:checked:active:not(:disabled),
+  &:indeterminate:active:not(:disabled) {
+    background-color: var(--color-toggle-on-pressed, #004a99);
+    border-color: var(--color-toggle-on-pressed, #004a99);
+  }
+
+  /* Disabled state (unchecked) */
+  &:disabled {
+    border-color: var(--color-foreground-disable, rgba(82, 96, 105, 0.38));
+    cursor: not-allowed;
+  }
+
+  /* Disabled state (checked/indeterminate) */
+  &:disabled:checked,
+  &:disabled:indeterminate {
+    background-color: var(--color-foreground-disable, rgba(82, 96, 105, 0.38));
+    border-color: var(--color-foreground-disable, rgba(82, 96, 105, 0.38));
+
+    &::after {
+      border-color: var(--color-foreground-inverse, #f8f9fa);
+      background-color: var(--color-foreground-inverse, #f8f9fa);
+    }
+  }
+}
+
+/* ============================================================================
+   RADIO BUTTON COMPONENTS
+   ============================================================================ */
+
+/* Radio Button Base - Custom radio with explicit focus indicators */
+.radio {
+  width: 18px;
+  height: 18px;
+  appearance: none;
+  border: 2px solid var(--color-foreground-de-emp, #526069);
+  border-radius: 50%;
+  background-color: transparent;
+  cursor: pointer;
+  position: relative;
+  transition: background-color 200ms ease-in-out, border-color 200ms ease-in-out;
+  box-sizing: border-box;
+
+  /* Inner dot (checked state) */
+  &:checked {
+    border-color: var(--color-toggle-thumb-on, #0067df);
+
+    &::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background-color: var(--color-toggle-thumb-on, #0067df);
+    }
+  }
+
+  /* Focus indicator (unchecked) - EXPLICIT per expert review */
+  &:not(:checked):focus-visible:not(:disabled) {
+    outline: 2px solid var(--color-focus-indicator, #0067df);
+    outline-offset: 2px;
+    background-color: var(--color-toggle-off-focus, rgba(0, 103, 223, 0.04));
+  }
+
+  /* Focus indicator (checked) - EXPLICIT per expert review */
+  &:checked:focus-visible:not(:disabled) {
+    outline: 2px solid var(--color-focus-indicator, #0067df);
+    outline-offset: 2px;
+    background-color: var(--color-toggle-on-focus, #5296d8);
+  }
+
+  /* Hover states (unchecked) */
+  &:not(:checked):hover:not(:disabled) {
+    background-color: var(--color-toggle-off-hover, rgba(0, 0, 0, 0.04));
+  }
+
+  /* Hover states (checked) */
+  &:checked:hover:not(:disabled) {
+    border-color: var(--color-toggle-on-hover, #5296d8);
+    background-color: var(--color-toggle-on-hover, #5296d8);
+
+    &::after {
+      background-color: var(--color-toggle-on-hover, #5296d8);
+    }
+  }
+
+  /* Pressed states (unchecked) */
+  &:not(:checked):active:not(:disabled) {
+    background-color: var(--color-toggle-off-pressed, rgba(0, 0, 0, 0.12));
+  }
+
+  /* Pressed states (checked) */
+  &:checked:active:not(:disabled) {
+    border-color: var(--color-toggle-on-pressed, #004a99);
+    background-color: var(--color-toggle-on-pressed, #004a99);
+
+    &::after {
+      background-color: var(--color-toggle-on-pressed, #004a99);
+    }
+  }
+
+  /* Disabled state (unchecked) */
+  &:disabled {
+    border-color: var(--color-foreground-disable, rgba(82, 96, 105, 0.38));
+    cursor: not-allowed;
+  }
+
+  /* Disabled state (checked) */
+  &:disabled:checked {
+    border-color: var(--color-foreground-disable, rgba(82, 96, 105, 0.38));
+
+    &::after {
+      background-color: var(--color-foreground-disable, rgba(82, 96, 105, 0.38));
+    }
+  }
+}
+
+/* ============================================================================
+   SWITCH / TOGGLE COMPONENTS
+   ============================================================================ */
+
+/* Switch Base - Toggle switch with track and thumb */
+.switch {
+  width: 40px;
+  height: 20px;
+  appearance: none;
+  background-color: var(--color-foreground-de-emp, #526069);
+  border-radius: 10px;
+  cursor: pointer;
+  position: relative;
+  transition: background-color 200ms ease-in-out;
+  box-sizing: border-box;
+  padding: 0;
+
+  /* Thumb (slider) */
+  &::after {
+    content: "";
+    position: absolute;
+    left: 3px;
+    top: 3px;
+    width: 14px;
+    height: 14px;
+    background-color: var(--color-background, #f8f9fa);
+    border-radius: 10px;
+    transition: transform 200ms ease-in-out, background-color 200ms ease-in-out;
+  }
+
+  /* Checked state */
+  &:checked {
+    background-color: var(--color-toggle-thumb-on, #0067df);
+
+    &::after {
+      transform: translateX(20px);
+      background-color: var(--color-background, #f8f9fa);
+    }
+  }
+
+  /* Focus indicator - EXPLICIT per expert review */
+  &:focus-visible:not(:disabled) {
+    outline: 2px solid var(--color-focus-indicator, #0067df);
+    outline-offset: 2px;
+  }
+
+  /* Note: MUI5 switch does NOT change track color on hover/press */
+  /* Only focus outline changes (implemented above) */
+
+  /* Disabled state (unchecked) */
+  &:disabled {
+    background-color: var(--color-toggle-track-off-disabled, rgba(82, 96, 105, 0.38));
+    cursor: not-allowed;
+
+    &::after {
+      background-color: var(--color-foreground-disable, rgba(82, 96, 105, 0.38));
+    }
+  }
+
+  /* Disabled state (checked) */
+  &:disabled:checked {
+    background-color: var(--color-background-disabled, rgba(248, 249, 250, 0.38));
+
+    &::after {
+      background-color: var(--color-foreground-disable, rgba(82, 96, 105, 0.38));
+    }
+  }
+}
+
+/* ========================================
+   TEXTAREA COMPONENT
+   ======================================== */
+
+/* Textarea Base - Multi-line text input with Apollo Design System tokens */
+.textarea {
+  width: 100%;
+  min-height: 80px;
+  padding: 8px 12px;
+  font-size: 0.875rem;
+  line-height: 1.5rem;
+  color: var(--color-foreground);
+  background-color: var(--color-background);
+  border: 1px solid var(--color-foreground-de-emp);
+  border-radius: 3px;
+  transition: border-color 200ms ease-in-out;
+  box-sizing: border-box;
+  resize: vertical;
+  font-family: inherit;
+
+  &::placeholder {
+    color: var(--color-foreground-light);
+    opacity: 1;
+  }
+
+  /* Hover state */
+  &:hover:not(:disabled):not(:focus) {
+    border-color: var(--color-foreground);
+  }
+
+  /* Focus state */
+  &:focus {
+    outline: none;
+    border-color: var(--color-focus-indicator);
+    border-width: 2px;
+    padding: 7px 11px; /* Adjust for border width */
+  }
+
+  /* Disabled state */
+  &:disabled {
+    cursor: not-allowed;
+    background-color: var(--color-background);
+    border-color: var(--color-border-disabled);
+    color: var(--color-foreground);
+    opacity: 0.38;
+    resize: none;
+  }
+}
+
+/* ============================================================================
+   BADGE COMPONENTS (FEEDBACK COMPONENTS)
+   ============================================================================ */
+
+/* Badge Base - Small status indicators */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 0.75rem;
+  line-height: 1;
+  border-radius: 10px;
+  white-space: nowrap;
+  box-sizing: border-box;
+}
+
+/* Badge Size Utilities */
+.badge-small-size {
+  height: 16px;
+  padding: 0 6px;
+  min-width: 16px;
+}
+
+.badge-large-size {
+  height: 20px;
+  padding: 0 8px;
+  min-width: 20px;
+}
+
+/* Badge Color Utilities */
+.badge-default-colors {
+  background-color: var(--color-background-gray, #f5f5f5);
+  color: var(--color-foreground, #000000);
+}
+
+.badge-primary-colors {
+  background-color: var(--color-primary, #0067df);
+  color: var(--color-foreground-inverse, #ffffff);
+}
+
+.badge-error-colors {
+  background-color: var(--color-error-icon, #cc3d45);
+  color: var(--color-foreground-inverse, #ffffff);
+}
+
+.badge-warning-colors {
+  background-color: var(--color-warning-icon, #ffb40e);
+  color: var(--color-foreground-inverse, #ffffff);
+}
+
+.badge-success-colors {
+  background-color: var(--color-success-icon, #038108);
+  color: var(--color-foreground-inverse, #ffffff);
+}
+
+.badge-info-colors {
+  background-color: var(--color-info-icon, #1976d2);
+  color: var(--color-foreground-inverse, #ffffff);
+}
+
+/* ============================================================================
+   CHIP COMPONENTS (FEEDBACK COMPONENTS)
+   ============================================================================ */
+
+/* Chip Base - Interactive tags/filters */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 32px;
+  padding: 0 12px;
+  font-size: 0.875rem;
+  font-weight: 400;
+  border-radius: 16px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: background-color 200ms ease-in-out, border-color 200ms ease-in-out;
+  box-sizing: border-box;
+}
+
+/* Chip Color Utilities */
+.chip-default-colors {
+  background-color: var(--color-background-raised, #ffffff);
+  color: var(--color-foreground, #000000);
+  border-color: var(--color-border, #e0e0e0);
+
+  &:hover {
+    background-color: var(--color-background-hover, #f5f5f5);
+  }
+}
+
+.chip-primary-colors {
+  background-color: var(--color-primary, #0067df);
+  color: var(--color-foreground-inverse, #ffffff);
+
+  &:hover {
+    background-color: var(--color-primary-hover, #5296d8);
+  }
+}
+
+/* ============================================================================
+   ALERT COMPONENTS (FEEDBACK COMPONENTS)
+   ============================================================================ */
+
+/* Alert Base - Informational messages */
+.alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 4px;
+  border: 1px solid transparent;
+  box-sizing: border-box;
+}
+
+/* Alert Color Utilities */
+.alert-info-colors {
+  background-color: var(--color-info-background, #e3f2fd);
+  color: var(--color-info, #1976d2);
+  border-color: var(--color-info, #1976d2);
+}
+
+.alert-success-colors {
+  background-color: var(--color-success-background, #e8f5e9);
+  color: var(--color-success, #388e3c);
+  border-color: var(--color-success, #388e3c);
+}
+
+.alert-warning-colors {
+  background-color: var(--color-warning-background, #fff3e0);
+  color: var(--color-warning-text, #9e6100);
+  border-color: var(--color-warning, #ff9800);
+}
+
+.alert-error-colors {
+  background-color: var(--color-error-background, #ffebee);
+  color: var(--color-error, #d32f2f);
+  border-color: var(--color-error, #d32f2f);
+}
+
+/* ============================================================================
+   TOAST UTILITIES (FEEDBACK COMPONENTS)
+   ============================================================================ */
+
+/* Toast Base - Temporary notifications */
+.toast {
+  position: fixed;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 288px;
+  max-width: 568px;
+  padding: 12px 16px;
+  border-radius: 4px;
+  background-color: var(--color-background-raised, #ffffff);
+  color: var(--color-foreground, #000000);
+  box-shadow: var(--shadow-dp-8, 0 8px 16px rgba(0,0,0,0.24));
+  z-index: var(--z-index-snackbar, 1400);
+  animation: slideInRight 300ms ease-out;
+  box-sizing: border-box;
+}
+
+/* Toast Position Utilities */
+.toast-top-right {
+  top: 24px;
+  right: 24px;
+}
+
+.toast-top-left {
+  top: 24px;
+  left: 24px;
+}
+
+.toast-bottom-right {
+  bottom: 24px;
+  right: 24px;
+}
+
+.toast-bottom-left {
+  bottom: 24px;
+  left: 24px;
+}
+
+/* ============================================================================
+   PROGRESS UTILITIES (FEEDBACK COMPONENTS)
+   ============================================================================ */
+
+/* Progress Base - Loading indicators */
+.progress {
+  width: 100%;
+  height: 4px;
+  background-color: var(--color-background-gray, #f5f5f5);
+  border-radius: 2px;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+/* Progress Bar */
+.progress-bar {
+  height: 100%;
+  background-color: var(--color-primary, #0067df);
+  border-radius: 2px;
+  transition: width 300ms ease-in-out;
+}
+
+/* ============================================================================
+   LOADER UTILITIES (FEEDBACK COMPONENTS)
+   ============================================================================ */
+
+/* Loader Base - Spinning indicators */
+.loader {
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  border: 3px solid var(--color-background-gray, #f5f5f5);
+  border-top-color: var(--color-primary, #0067df);
+  border-radius: 50%;
+  animation: spin 600ms linear infinite;
+  box-sizing: border-box;
+}
+
+/* Loader Size Utilities */
+.loader-small {
+  width: 16px;
+  height: 16px;
+  border-width: 2px;
+}
+
+.loader-large {
+  width: 32px;
+  height: 32px;
+  border-width: 4px;
+}
+
+/* ============================================================================
+   TOOLTIP UTILITIES (FEEDBACK COMPONENTS)
+   ============================================================================ */
+
+/* Tooltip Base - Hover information */
+.tooltip {
+  position: absolute;
+  padding: 4px 8px;
+  font-size: 0.75rem;
+  line-height: 1.4;
+  color: var(--color-foreground-inverse, #ffffff);
+  background-color: var(--color-background-inverse, #182027);
+  border-radius: 4px;
+  white-space: nowrap;
+  z-index: var(--z-index-tooltip, 1500);
+  animation: fadeIn 200ms ease-out;
+  box-sizing: border-box;
+}
+
+/* Tooltip Position Utilities */
+.tooltip-top {
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%) translateY(-4px);
+}
+
+.tooltip-bottom {
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%) translateY(4px);
+}
+
+.tooltip-left {
+  right: 100%;
+  top: 50%;
+  transform: translateY(-50%) translateX(-4px);
+}
+
+.tooltip-right {
+  left: 100%;
+  top: 50%;
+  transform: translateY(-50%) translateX(4px);
+}
+
+} /* End @layer components */
+
+/* ============================================================================
+   ICON SIZE UTILITIES
+   Keep as @utility for simple single-purpose utilities
+   ============================================================================ */
+
+/* Icon Sizes - Aligned with Apollo Core IconXxs/IconXs/IconS/IconM/IconL/IconXl/IconXxl tokens */
+@utility icon-xxs {
+  width: 14px;
+  height: 14px;
+}
+
+@utility icon-xs {
+  width: 16px;
+  height: 16px;
+}
+
+@utility icon-sm {
+  width: 18px;
+  height: 18px;
+}
+
+@utility icon-md {
+  width: 24px;
+  height: 24px;
+}
+
+@utility icon-lg {
+  width: 28px;
+  height: 28px;
+}
+
+@utility icon-xl {
+  width: 32px;
+  height: 32px;
+}
+
+@utility icon-xxl {
+  width: 48px;
+  height: 48px;
+}
+
+/* ============================================================================
+   TYPOGRAPHY UTILITIES
+   ============================================================================ */
+
+/* Typography Shortcuts - Composite utilities for Apollo typography tokens */
+
+@utility text-hero-bold {
+  font-family: var(--font-hero-bold-family);
+  font-size: var(--font-hero-bold-size);
+  line-height: var(--font-hero-bold-line-height);
+  font-weight: var(--font-hero-bold-weight);
+}
+
+@utility text-hero {
+  font-family: var(--font-hero-family);
+  font-size: var(--font-hero-size);
+  line-height: var(--font-hero-line-height);
+  font-weight: var(--font-hero-weight);
+}
+
+@utility text-h1-bold {
+  font-family: var(--font-header-1-bold-family);
+  font-size: var(--font-header-1-bold-size);
+  line-height: var(--font-header-1-bold-line-height);
+  font-weight: var(--font-header-1-bold-weight);
+}
+
+@utility text-h1 {
+  font-family: var(--font-header-1-family);
+  font-size: var(--font-header-1-size);
+  line-height: var(--font-header-1-line-height);
+  font-weight: var(--font-header-1-weight);
+}
+
+@utility text-h2-bold {
+  font-family: var(--font-header-2-bold-family);
+  font-size: var(--font-header-2-bold-size);
+  line-height: var(--font-header-2-bold-line-height);
+  font-weight: var(--font-header-2-bold-weight);
+}
+
+@utility text-h2 {
+  font-family: var(--font-header-2-family);
+  font-size: var(--font-header-2-size);
+  line-height: var(--font-header-2-line-height);
+  font-weight: var(--font-header-2-weight);
+}
+
+@utility text-h3-bold {
+  font-family: var(--font-header-3-bold-family);
+  font-size: var(--font-header-3-bold-size);
+  line-height: var(--font-header-3-bold-line-height);
+  font-weight: var(--font-header-3-bold-weight);
+}
+
+@utility text-h3 {
+  font-family: var(--font-header-3-family);
+  font-size: var(--font-header-3-size);
+  line-height: var(--font-header-3-line-height);
+  font-weight: var(--font-header-3-weight);
+}
+
+@utility text-h4-bold {
+  font-family: var(--font-header-4-bold-family);
+  font-size: var(--font-header-4-bold-size);
+  line-height: var(--font-header-4-bold-line-height);
+  font-weight: var(--font-header-4-bold-weight);
+}
+
+@utility text-h4 {
+  font-family: var(--font-header-4-family);
+  font-size: var(--font-header-4-size);
+  line-height: var(--font-header-4-line-height);
+  font-weight: var(--font-header-4-weight);
+}
+
+@utility text-l-bold {
+  font-family: var(--font-l-bold-family);
+  font-size: var(--font-l-bold-size);
+  line-height: var(--font-l-bold-line-height);
+  font-weight: var(--font-l-bold-weight);
+}
+
+@utility text-l {
+  font-family: var(--font-l-family);
+  font-size: var(--font-l-size);
+  line-height: var(--font-l-line-height);
+  font-weight: var(--font-l-weight);
+}
+
+@utility text-m-bold {
+  font-family: var(--font-m-bold-family);
+  font-size: var(--font-m-bold-size);
+  line-height: var(--font-m-bold-line-height);
+  font-weight: var(--font-m-bold-weight);
+}
+
+@utility text-m {
+  font-family: var(--font-m-family);
+  font-size: var(--font-m-size);
+  line-height: var(--font-m-line-height);
+  font-weight: var(--font-m-weight);
+}
+
+@utility text-s-bold {
+  font-family: var(--font-s-bold-family);
+  font-size: var(--font-s-bold-size);
+  line-height: var(--font-s-bold-line-height);
+  font-weight: var(--font-s-bold-weight);
+}
+
+@utility text-s {
+  font-family: var(--font-s-family);
+  font-size: var(--font-s-size);
+  line-height: var(--font-s-line-height);
+  font-weight: var(--font-s-weight);
+}
+
+@utility text-xs-bold {
+  font-family: var(--font-xs-bold-family);
+  font-size: var(--font-xs-bold-size);
+  line-height: var(--font-xs-bold-line-height);
+  font-weight: var(--font-xs-bold-weight);
+}
+
+@utility text-xs {
+  font-family: var(--font-xs-family);
+  font-size: var(--font-xs-size);
+  line-height: var(--font-xs-line-height);
+  font-weight: var(--font-xs-weight);
+}
+
+@utility text-link {
+  font-family: var(--font-link-family);
+  font-size: var(--font-link-size);
+  line-height: var(--font-link-line-height);
+  font-weight: var(--font-link-weight);
+}
