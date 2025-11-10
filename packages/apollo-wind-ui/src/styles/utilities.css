@@ -1,0 +1,165 @@
+/**
+ * shadcn/ui utility classes backed by Apollo tokens.
+ * Import this file together with @uipath/apollo-wind-css when using
+ * @uipath/apollo-wind-ui components in an application.
+ */
+
+.bg-primary {
+  background-color: var(--color-primary);
+}
+
+.bg-secondary {
+  background-color: var(--color-secondary);
+}
+
+.bg-destructive {
+  background-color: var(--color-destructive);
+}
+
+.bg-accent {
+  background-color: var(--color-accent);
+}
+
+.bg-muted {
+  background-color: var(--color-muted);
+}
+
+.bg-card {
+  background-color: var(--color-card);
+}
+
+.bg-popover {
+  background-color: var(--color-popover);
+}
+
+.bg-background {
+  background-color: var(--color-background);
+}
+
+.hover\:bg-primary\/90:hover {
+  background-color: color-mix(in srgb, var(--color-primary) 90%, transparent);
+}
+
+.hover\:bg-destructive\/90:hover {
+  background-color: color-mix(in srgb, var(--color-destructive) 90%, transparent);
+}
+
+.hover\:bg-accent:hover {
+  background-color: var(--color-accent);
+}
+
+.text-primary {
+  color: var(--color-primary);
+}
+
+.text-primary-foreground {
+  color: var(--color-primary-foreground);
+}
+
+.text-secondary-foreground {
+  color: var(--color-secondary-foreground);
+}
+
+.text-destructive-foreground {
+  color: var(--color-destructive-foreground);
+}
+
+.text-accent-foreground {
+  color: var(--color-accent-foreground);
+}
+
+.text-muted-foreground {
+  color: var(--color-muted-foreground);
+}
+
+.text-card-foreground {
+  color: var(--color-card-foreground);
+}
+
+.text-popover-foreground {
+  color: var(--color-popover-foreground);
+}
+
+.hover\:text-accent-foreground:hover {
+  color: var(--color-accent-foreground);
+}
+
+.border-input {
+  border-color: var(--color-input);
+}
+
+.ring-ring {
+  --tw-ring-color: var(--color-ring);
+}
+
+.focus\:ring-ring:focus {
+  --tw-ring-color: var(--color-ring);
+}
+
+.ring-offset-background {
+  --tw-ring-offset-color: var(--color-background);
+}
+
+.placeholder\:text-muted-foreground::placeholder {
+  color: var(--color-muted-foreground);
+}
+
+.file\:text-foreground::file-selector-button {
+  color: var(--color-foreground);
+}
+
+.data-\[placeholder\]\:text-muted-foreground[data-placeholder] {
+  color: var(--color-muted-foreground);
+}
+
+.text-foreground {
+  color: var(--color-foreground);
+}
+
+.focus\:bg-accent:focus {
+  background-color: var(--color-accent);
+}
+
+.focus\:text-accent-foreground:focus {
+  color: var(--color-accent-foreground);
+}
+
+.data-\[state\=open\]\:bg-accent[data-state="open"] {
+  background-color: var(--color-accent);
+}
+
+.data-\[state\=open\]\:text-muted-foreground[data-state="open"] {
+  color: var(--color-muted-foreground);
+}
+
+.data-\[highlighted\]\:bg-accent[data-highlighted] {
+  background-color: var(--color-accent);
+}
+
+.data-\[highlighted\]\:text-accent-foreground[data-highlighted] {
+  color: var(--color-accent-foreground);
+}
+
+.data-\[state\=checked\]\:bg-accent[data-state="checked"] {
+  background-color: var(--color-accent);
+}
+
+.data-\[state\=checked\]\:text-accent-foreground[data-state="checked"] {
+  color: var(--color-accent-foreground);
+}
+
+.data-\[state\=checked\]\:font-semibold[data-state="checked"] {
+  font-weight: 600;
+}
+
+.data-\[state\=active\]\:bg-background[data-state="active"] {
+  background-color: var(--color-background);
+}
+
+.data-\[state\=active\]\:text-foreground[data-state="active"] {
+  color: var(--color-foreground);
+}
+
+.focus-visible\:ring-ring:focus-visible {
+  --tw-ring-color: var(--color-ring);
+}

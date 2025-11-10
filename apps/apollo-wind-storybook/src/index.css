@@ -1,1 +1,38 @@
+/**
+ * Storybook Tailwind v4 Setup
+ *
+ * This demonstrates the correct way to integrate Tailwind v4 with Apollo Wind:
+ * 1. Import Tailwind to trigger JIT compilation
+ * 2. Import Apollo Wind theme (includes apollo-core CSS variables)
+ * 3. Import theme-selectors for light/dark mode switching
+ */
+
+/* Trigger Tailwind v4 JIT */
 @import "tailwindcss";
+
+/* Import Apollo Wind theme (includes apollo-core CSS variables) */
+@import "@uipath/apollo-wind-css";
+
+/* Import theme selectors for body.light, body.dark, etc. */
+@import "@uipath/apollo-wind-css/theme-selectors";
+
+/* Import shadcn/ui utility classes (pseudo-selectors and data-attribute variants) */
+@import "@uipath/apollo-wind-ui/utilities.css";
+
+/* Base Storybook styles */
+body {
+  margin: 0;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue",
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  /* Apply theme colors */
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
+}
