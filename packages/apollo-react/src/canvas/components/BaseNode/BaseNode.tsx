@@ -206,7 +206,7 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
 
         {displayLabel && (
           <BaseTextContainer hasBottomHandles={hasVisibleBottomHandlesWithLabels} shape={displayShape}>
-            <ApTooltip delay placement="top" content={displayLabelTooltip}>
+            <ApTooltip delay placement="top" content={displayLabelTooltip} smartTooltip>
               <BaseHeader shape={displayShape} backgroundColor={displayLabelBackgroundColor}>
                 {displayLabel}
               </BaseHeader>

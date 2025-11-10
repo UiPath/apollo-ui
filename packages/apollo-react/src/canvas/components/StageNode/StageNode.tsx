@@ -423,7 +423,7 @@ const StageNodeComponent = (props: StageNodeProps) => {
                           <StageTaskIcon>{task.icon ?? <ProcessNodeIcon />}</StageTaskIcon>
                           <Column flex={1} style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                             <Row align="center" justify="space-between">
-                              <ApTooltip content={task.label} placement="top" delay>
+                              <ApTooltip content={task.label} placement="top" smartTooltip>
                                 <ApTypography
                                   variant={FontVariantToken.fontSizeM}
                                   color="var(--color-foreground)"
