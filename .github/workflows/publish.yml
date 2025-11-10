@@ -35,6 +35,8 @@ jobs:
           run_install: false
 
       - name: Install dependencies
+        env:
+          RELEASE_TOKEN: ${{ secrets.RELEASE_TOKEN }}
         run: pnpm install --frozen-lockfile
 
       - name: Build packages
