@@ -140,6 +140,12 @@ export const ResourceNode = memo(
         return undefined;
       }
 
+      // If this is a standalone placeholder (not yet converted to permanent), disable toolbar
+      // Standalone placeholders have suggestionId but isSuggestion is false
+      if (!isSuggestion && suggestionId && data.isPlaceholder) {
+        return undefined;
+      }
+
       // If this is a suggestion, show accept/reject actions only if version is not "0.0.1"
       if (isSuggestion && suggestionId) {
         if (suggestionGroupVersion === "0.0.1") return undefined;
@@ -233,6 +239,7 @@ export const ResourceNode = memo(
       mode,
       data.projectId,
       data.type,
+      data.isPlaceholder,
       hasBreakpoint,
       isDisabled,
       isSuggestion,

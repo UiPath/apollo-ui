@@ -263,7 +263,7 @@ interface AgentFlowStore {
 
   // selection & UI
   selectedNodeId: string | null;
-  setSelectedNodeId: (nodeId: string | null) => void;
+  setSelectedNodeId: (nodeId: string | null, options?: { skipPlaceholderClickHandler?: boolean }) => void;
   openMenuNodeId: string | null;
   setOpenMenuNodeId: (nodeId: string | null) => void;
 
@@ -372,9 +372,12 @@ const findNodeForSuggestion = (
 /**
  * Computes nodes and edges with suggestions integrated
  */
-const computeNodesAndEdgesWithSuggestions = (props: AgentFlowProps): { nodes: AgentFlowCustomNode[]; edges: AgentFlowCustomEdge[] } => {
-  // First compute the base nodes and edges
-  const { nodes: baseNodes, edges: baseEdges } = computeNodesAndEdges(props);
+const computeNodesAndEdgesWithSuggestions = (
+  props: AgentFlowProps,
+  existingNodes?: AgentFlowCustomNode[]
+): { nodes: AgentFlowCustomNode[]; edges: AgentFlowCustomEdge[] } => {
+  // First compute the base nodes and edges, preserving order from existing nodes
+  const { nodes: baseNodes, edges: baseEdges } = computeNodesAndEdges(props, undefined, existingNodes);
 
   // If no suggestions, return base nodes and edges
   if (!props.suggestionGroup || props.suggestionGroup.suggestions.length === 0) {
@@ -387,12 +390,13 @@ const computeNodesAndEdgesWithSuggestions = (props: AgentFlowProps): { nodes: Ag
     return { nodes: baseNodes, edges: baseEdges };
   }
 
-  // Compute suggestion nodes for 'add' type suggestions
+  // Compute suggestion nodes for 'add' type suggestions, preserving order from existing nodes
   const { nodes: suggestionNodes, edges: suggestionEdges } = computeSuggestionNodesAndEdges(
     props.suggestionGroup,
     props,
     agentNode,
-    props.resources
+    props.resources,
+    existingNodes
   );
 
   // Mark existing nodes with suggestion metadata for 'update' and 'delete' types
@@ -496,8 +500,8 @@ export const createAgentFlowStore = (initialProps: AgentFlowProps) =>
         const removedIds = new Set([...currentResourceIds].filter((id) => !newResourceIds.has(id)));
         const resourcesAddedOrRemoved = addedIds.size > 0 || removedIds.size > 0;
 
-        // Always recompute nodes and edges to handle any ID changes
-        const { nodes: allNewNodes, edges: newEdges } = computeNodesAndEdgesWithSuggestions(newProps);
+        // Always recompute nodes and edges to handle any ID changes, preserving existing order
+        const { nodes: allNewNodes, edges: newEdges } = computeNodesAndEdgesWithSuggestions(newProps, state.nodes);
 
         // Map old nodes to new nodes while preserving visual state (position, selection, style)
         const updatedNodes = allNewNodes.map((newNode) => {
@@ -588,6 +592,51 @@ export const createAgentFlowStore = (initialProps: AgentFlowProps) =>
             get().autoArrange();
           }, 100);
         }
+
+        // Handle automatic placeholder removal when a resource is added
+        // Check if there was a standalone placeholder and a new resource was added
+        if (addedIds.size > 0 && state.props.suggestionGroup) {
+          const standalonePlaceholder = state.props.suggestionGroup.suggestions.find(
+            (s) => s.isStandalone && s.type === "add" && s.resource
+          );
+
+          if (standalonePlaceholder) {
+            const placeholderResourceId = standalonePlaceholder.resource?.id;
+            // A new resource was added that's not the placeholder itself
+            const nonPlaceholderResourceAdded = placeholderResourceId && !addedIds.has(placeholderResourceId) && addedIds.size > 0;
+
+            if (nonPlaceholderResourceAdded) {
+              // Notify parent to remove the placeholder immediately
+              newProps.onActOnSuggestion?.(standalonePlaceholder.id, "accept");
+            }
+          }
+        }
+
+        // Auto-select newly created standalone placeholder nodes
+        // Check if a new standalone placeholder was added to the suggestion group
+        const oldStandalonePlaceholders =
+          state.props.suggestionGroup?.suggestions.filter((s) => s.isStandalone && s.type === "add" && s.resource) ?? [];
+        const newStandalonePlaceholders =
+          newProps.suggestionGroup?.suggestions.filter((s) => s.isStandalone && s.type === "add" && s.resource) ?? [];
+
+        if (newStandalonePlaceholders.length > oldStandalonePlaceholders.length) {
+          // A new standalone placeholder was added, find it
+          const newPlaceholder = newStandalonePlaceholders.find((newP) => !oldStandalonePlaceholders.some((oldP) => oldP.id === newP.id));
+
+          if (newPlaceholder && newPlaceholder.resource) {
+            // Find the node for this placeholder
+            const currentState = get();
+            const placeholderNode = currentState.nodes.find(
+              (node) => isAgentFlowResourceNode(node) && node.data.suggestionId === newPlaceholder.id
+            );
+
+            if (placeholderNode) {
+              // Select the placeholder node, but skip triggering the click handler
+              currentState.setSelectedNodeId(placeholderNode.id, { skipPlaceholderClickHandler: true });
+              newProps.onSelectResource?.(placeholderNode.id);
+            }
+          }
+        }
       },
 
       // computed state from props
@@ -596,11 +645,25 @@ export const createAgentFlowStore = (initialProps: AgentFlowProps) =>
 
       // selection & UI
       selectedNodeId: null,
-      setSelectedNodeId: (nodeId) => {
+      setSelectedNodeId: (nodeId, options) => {
         const state = get();
 
         // Find the selected node
         const selectedNode = state.nodes.find((node) => node.id === nodeId);
+
+        // Check if this is a standalone placeholder node
+        if (selectedNode && isAgentFlowResourceNode(selectedNode)) {
+          const isStandalonePlaceholder =
+            !selectedNode.data.isSuggestion && selectedNode.data.suggestionId && selectedNode.data.isPlaceholder;
+
+          // Only trigger the click handler if not skipped (i.e., this is a real user click)
+          if (isStandalonePlaceholder && !options?.skipPlaceholderClickHandler && state.props.onPlaceholderNodeClick) {
+            // Trigger the placeholder click handler
+            state.props.onPlaceholderNodeClick(selectedNode.data.type, selectedNode.data);
+            // Don't select the node - just trigger the handler and return
+            return;
+          }
+        }
 
         // Check if the selected node is a non-standalone suggestion node and update the index
         let newSuggestionIndex = state.currentSuggestionIndex;
@@ -1187,7 +1250,7 @@ export const createAgentFlowStore = (initialProps: AgentFlowProps) =>
           activeResourceIds: [],
         };
 
-        const { nodes: nestedNodes, edges: nestedEdges } = computeNodesAndEdges(nestedAgentProps, resourceNode.id);
+        const { nodes: nestedNodes, edges: nestedEdges } = computeNodesAndEdges(nestedAgentProps, resourceNode.id, currentState.nodes);
 
         const agentNode = nestedNodes.find((node) => node.type === "agent");
         if (!agentNode) return;

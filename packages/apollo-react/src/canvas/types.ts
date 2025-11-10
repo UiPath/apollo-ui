@@ -318,6 +318,15 @@ export type AgentFlowProps = {
     type: AgentFlowResourceType,
     cleanedSuggestionGroup: AgentFlowSuggestionGroup | null
   ) => Partial<AgentFlowResource> | null;
+
+  /**
+   * Called when user clicks on a standalone placeholder node.
+   * Use this to open the appropriate side panel or modal for configuring the resource.
+   *
+   * @param resourceType - The type of resource (tool, context, mcp, etc.)
+   * @param placeholderData - The data of the placeholder node that was clicked
+   */
+  onPlaceholderNodeClick?: (resourceType: AgentFlowResourceType, placeholderData: AgentFlowResourceNodeData) => void;
 };
 
 export type AgentFlowNodeData = {

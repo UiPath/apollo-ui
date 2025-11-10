@@ -9,6 +9,7 @@ import type {
   AgentFlowResourceNode,
   AgentFlowSuggestionGroup,
 } from "../types";
+import { isAgentFlowResourceNode } from "../types";
 import { autoArrangeNodes } from "./auto-layout";
 import { ResourceNodeType } from "../components/AgentCanvas/AgentFlow.constants";
 import { Position } from "@uipath/uix/xyflow/react";
@@ -286,11 +287,13 @@ export const createResourceEdge = (
 /**
  * Computes nodes and edges for the agent flow visualization
  * @param props - The agent flow properties containing resources and spans
+ * @param existingNodes - Optional existing nodes to preserve order values
  * @returns Object containing arrays of nodes and edges for the flow
  */
 export const computeNodesAndEdges = (
   props: AgentFlowProps,
-  parentNodeId?: string
+  parentNodeId?: string,
+  existingNodes?: AgentFlowCustomNode[]
 ): { nodes: AgentFlowCustomNode[]; edges: AgentFlowCustomEdge[] } => {
   const agentNode = createAgentNode(props, parentNodeId);
 
@@ -298,7 +301,46 @@ export const computeNodesAndEdges = (
   const filteredResources =
     props.enableMcpTools === false ? props.resources.filter((resource) => resource.type !== "mcp") : props.resources;
 
-  const resourceNodes = filteredResources.map((resource, index) => createResourceNode(resource, index, props, agentNode.id));
+  // Build a map of existing orders by resource ID (for both full ID and base ID)
+  const existingOrderMap = new Map<string, number>();
+  let maxExistingOrder = -1;
+
+  if (existingNodes) {
+    for (const node of existingNodes) {
+      // Only process resource nodes with order property
+      if (!isAgentFlowResourceNode(node)) continue;
+      if (node.data.order === undefined) continue;
+
+      // Store by full node ID
+      existingOrderMap.set(node.id, node.data.order);
+
+      // Also store by base resource ID (extracted from node ID)
+      const parts = node.id.split(NODE_ID_DELIMITER);
+      const baseId = parts[parts.length - 1] ?? node.id;
+      const resourceIdPart = baseId.split(":")[1];
+      if (resourceIdPart) {
+        existingOrderMap.set(resourceIdPart, node.data.order);
+      }
+
+      maxExistingOrder = Math.max(maxExistingOrder, node.data.order);
+    }
+  }
+
+  let nextOrderIndex = maxExistingOrder + 1;
+
+  const resourceNodes = filteredResources.map((resource) => {
+    const resourceId = getResourceNodeId(resource);
+
+    // Check if this resource already has an order (preserve it)
+    let order = existingOrderMap.get(resourceId);
+
+    // If no existing order found, assign the next available order
+    if (order === undefined) {
+      order = nextOrderIndex++;
+    }
+
+    return createResourceNode(resource, order, props, agentNode.id);
+  });
 
   const edges = resourceNodes.map((resourceNode) => createResourceEdge(agentNode, resourceNode, props));
 
@@ -317,23 +359,54 @@ export const computeNodesAndEdges = (
  * @param props - The agent flow properties
  * @param agentNode - The agent node to connect suggestions to
  * @param existingResources - Existing resources to check for updates/deletes
+ * @param existingNodes - Optional existing nodes to preserve order values
  * @returns Object containing arrays of suggestion nodes and edges
  */
 export const computeSuggestionNodesAndEdges = (
   suggestionGroup: AgentFlowSuggestionGroup,
   props: AgentFlowProps,
   agentNode: AgentFlowNode,
-  existingResources: AgentFlowResource[]
+  existingResources: AgentFlowResource[],
+  existingNodes?: AgentFlowCustomNode[]
 ): { nodes: AgentFlowResourceNode[]; edges: AgentFlowCustomEdge[] } => {
   const suggestionNodes: AgentFlowResourceNode[] = [];
   const suggestionEdges: AgentFlowCustomEdge[] = [];
+
+  // Build a map of existing orders by suggestion ID
+  const existingOrderBySuggestionId = new Map<string, number>();
+  let maxExistingOrder = existingResources.length - 1;
+
+  if (existingNodes) {
+    for (const node of existingNodes) {
+      if (!isAgentFlowResourceNode(node)) continue;
+      if (node.data.order === undefined) continue;
+
+      // Track max order
+      maxExistingOrder = Math.max(maxExistingOrder, node.data.order);
+
+      // If this is a suggestion node, store its order by suggestion ID
+      if (node.data.suggestionId) {
+        existingOrderBySuggestionId.set(node.data.suggestionId, node.data.order);
+      }
+    }
+  }
+
+  let nextOrderIndex = maxExistingOrder + 1;
 
   for (const suggestion of suggestionGroup.suggestions) {
     if (suggestion.type === "add" && suggestion.resource) {
       // Create a placeholder node for the new resource
       const resource = suggestion.resource;
-      const index = existingResources.length + suggestionNodes.length;
-      const node = createResourceNode(resource, index, props, agentNode.id);
+
+      // Check if this suggestion already has an order (preserve it)
+      let order = existingOrderBySuggestionId.get(suggestion.id);
+
+      // If no existing order found, assign the next available order
+      if (order === undefined) {
+        order = nextOrderIndex++;
+      }
+
+      const node = createResourceNode(resource, order, props, agentNode.id);
 
       // Mark it as a suggestion placeholder
       // For standalone suggestions, don't set isSuggestion to true (they use click-to-accept/reject instead of toolbar)

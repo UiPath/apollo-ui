@@ -634,6 +634,8 @@ const SuggestionModeWrapper = ({
   const [suggestionGroup, setSuggestionGroup] = useState<AgentFlowSuggestionGroup | null>(null);
   const [selectedResourceId, setSelectedResourceId] = useState<string | null>(null);
   const [pendingStandalonePlaceholderId, setPendingStandalonePlaceholderId] = useState<string | null>(null);
+  const [openModalType, setOpenModalType] = useState<AgentFlowResourceType | null>(null);
+  const [placeholderBeingConfigured, setPlaceholderBeingConfigured] = useState<AgentFlowResourceNodeData | null>(null);
 
   const handleEnable = useCallback((resourceId: string, resource: AgentFlowResourceNodeData) => {
     setResources((prev) =>
@@ -687,6 +689,11 @@ const SuggestionModeWrapper = ({
   }, []);
 
   const handleRequestPlaceholder = useCallback((type: AgentFlowResourceType, cleanedSuggestionGroup: AgentFlowSuggestionGroup | null) => {
+    // Skip placeholder for escalation and memory space - they create directly
+    if (type === "escalation" || type === "memorySpace") {
+      return null;
+    }
+
     // Component automatically removes existing standalone placeholders
     // Use cleanedSuggestionGroup (not suggestionGroup) to build on the cleaned state
 
@@ -719,7 +726,16 @@ const SuggestionModeWrapper = ({
       setPendingStandalonePlaceholderId(newSuggestion.id);
     }
 
+    // Open the modal for this resource type
+    setOpenModalType(type);
+
     return placeholder;
+  }, []);
+
+  const handlePlaceholderNodeClick = useCallback((resourceType: AgentFlowResourceType, placeholderData: AgentFlowResourceNodeData) => {
+    // When a placeholder node is clicked, open the modal for that type
+    setOpenModalType(resourceType);
+    setPlaceholderBeingConfigured(placeholderData);
   }, []);
 
   const handleActOnSuggestion = useCallback(
@@ -729,9 +745,11 @@ const SuggestionModeWrapper = ({
       const suggestion = suggestionGroup.suggestions.find((s) => s.id === suggestionId);
       const remainingSuggestions = suggestionGroup.suggestions.filter((s) => s.id !== suggestionId);
 
-      // If we're acting on the pending standalone placeholder, clear the tracking
+      // If we're acting on the pending standalone placeholder, clear the tracking and close modal
       if (suggestion?.isStandalone && suggestionId === pendingStandalonePlaceholderId) {
         setPendingStandalonePlaceholderId(null);
+        setOpenModalType(null);
+        setPlaceholderBeingConfigured(null);
       }
 
       if (action === "reject") {
@@ -788,6 +806,26 @@ const SuggestionModeWrapper = ({
     },
     [suggestionGroup, pendingStandalonePlaceholderId]
   );
+
+  const handleConfirmModal = useCallback(() => {
+    // When modal is confirmed, auto-accept the pending placeholder
+    if (pendingStandalonePlaceholderId) {
+      handleActOnSuggestion(pendingStandalonePlaceholderId, "accept");
+      setPendingStandalonePlaceholderId(null);
+    }
+    setOpenModalType(null);
+    setPlaceholderBeingConfigured(null);
+  }, [pendingStandalonePlaceholderId, handleActOnSuggestion]);
+
+  const handleCancelModal = useCallback(() => {
+    // When modal is cancelled, reject the pending placeholder
+    if (pendingStandalonePlaceholderId) {
+      handleActOnSuggestion(pendingStandalonePlaceholderId, "reject");
+      setPendingStandalonePlaceholderId(null);
+    }
+    setOpenModalType(null);
+    setPlaceholderBeingConfigured(null);
+  }, [pendingStandalonePlaceholderId, handleActOnSuggestion]);
 
   const handleActOnSuggestionGroup = useCallback(
     (suggestionGroupId: string, action: "accept" | "reject") => {
@@ -862,18 +900,7 @@ const SuggestionModeWrapper = ({
     (resourceId: string | null) => {
       setSelectedResourceId(resourceId);
 
-      // If a standalone placeholder is pending and we selected it, auto-accept it
-      if (pendingStandalonePlaceholderId && resourceId && resourceId !== "pane") {
-        // Check if the selected resource is the pending placeholder and it still exists
-        const pendingSuggestion = suggestionGroup?.suggestions.find((s) => s.id === pendingStandalonePlaceholderId);
-        if (pendingSuggestion?.isStandalone && pendingSuggestion?.resource && resourceId.includes(pendingSuggestion.resource.id)) {
-          // Auto-accept the standalone placeholder
-          handleActOnSuggestion(pendingStandalonePlaceholderId, "accept");
-          setPendingStandalonePlaceholderId(null);
-        }
-      }
-
-      // If clicking on pane (empty space), reject the pending standalone placeholder
+      // If clicking on pane (empty space), reject the pending standalone placeholder and close modal
       if (resourceId === "pane" && pendingStandalonePlaceholderId) {
         // Verify the suggestion still exists and is standalone before rejecting
         const pendingSuggestion = suggestionGroup?.suggestions.find((s) => s.id === pendingStandalonePlaceholderId);
@@ -881,6 +908,8 @@ const SuggestionModeWrapper = ({
           handleActOnSuggestion(pendingStandalonePlaceholderId, "reject");
         }
         setPendingStandalonePlaceholderId(null);
+        setOpenModalType(null);
+        setPlaceholderBeingConfigured(null);
       }
     },
     [pendingStandalonePlaceholderId, suggestionGroup, handleActOnSuggestion]
@@ -962,23 +991,32 @@ const SuggestionModeWrapper = ({
                   Click any <strong>+</strong> button on the agent node
                 </li>
                 <li>
-                  A <strong>placeholder node</strong> appears on canvas
+                  A <strong>placeholder node</strong> appears on canvas (automatically selected)
                 </li>
                 <li>
-                  <strong>Click placeholder</strong> → Accepts & converts to real resource
+                  A <strong>configuration modal</strong> opens for that resource type
                 </li>
                 <li>
-                  <strong>Click empty space</strong> → Rejects & removes placeholder
+                  <strong>Confirm in modal</strong> → Accepts & converts placeholder to real resource
+                </li>
+                <li>
+                  <strong>Cancel modal or click empty space</strong> → Rejects & removes placeholder
+                </li>
+                <li>
+                  <strong>Click placeholder again</strong> → Re-opens the configuration modal
                 </li>
               </ol>
 
               <p style={{ margin: "8px 0 4px 0", fontSize: "0.8125rem", fontWeight: 600 }}>Key features:</p>
               <ul style={{ margin: "4px 0 0 0", paddingLeft: "20px", fontSize: "0.75rem", lineHeight: "1.6" }}>
-                <li>Lightweight UX: no modal interruption</li>
+                <li>Modal-based configuration workflow</li>
                 <li>Only one placeholder at a time (new ones replace old)</li>
+                <li>Placeholder auto-selected, cannot show toolbar</li>
+                <li>Clicking placeholder reopens modal</li>
                 <li>Marked as "standalone" suggestions</li>
                 <li>Won't appear in suggestion group panel</li>
                 <li>Excluded from bulk operations</li>
+                <li>Escalation & Memory Space bypass placeholder</li>
               </ul>
             </div>
 
@@ -1248,10 +1286,60 @@ const SuggestionModeWrapper = ({
             enableTimelinePlayer={enableTimelinePlayer}
             enableMemory={enableMemory}
             onRequestResourcePlaceholder={handleRequestPlaceholder}
+            onPlaceholderNodeClick={handlePlaceholderNodeClick}
             suggestionGroup={suggestionGroup}
             onActOnSuggestion={handleActOnSuggestion}
             onActOnSuggestionGroup={handleActOnSuggestionGroup}
           />
+          {openModalType && (
+            <div
+              style={{
+                position: "absolute",
+                top: "50%",
+                left: "50%",
+                transform: "translate(-50%, -50%)",
+                backgroundColor: "var(--color-background-raised)",
+                border: "1px solid var(--color-border)",
+                borderRadius: 8,
+                padding: 24,
+                minWidth: 400,
+                boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
+                zIndex: 1000,
+              }}
+            >
+              <h3 style={{ margin: "0 0 16px 0", color: "var(--color-foreground)" }}>
+                Configure {openModalType.charAt(0).toUpperCase() + openModalType.slice(1)}
+              </h3>
+              <p style={{ margin: "0 0 24px 0", color: "var(--color-foreground-de-emp)", fontSize: "0.875rem" }}>
+                This is a simulated modal/panel that would normally allow you to configure the resource.
+                {placeholderBeingConfigured && (
+                  <>
+                    <br />
+                    <br />
+                    Placeholder name: <strong>{placeholderBeingConfigured.name}</strong>
+                  </>
+                )}
+              </p>
+              <Row gap={8} style={{ justifyContent: "flex-end" }}>
+                <ApButton size="small" variant="secondary" label="Cancel" onClick={handleCancelModal} />
+                <ApButton size="small" variant="primary" label="Confirm" onClick={handleConfirmModal} />
+              </Row>
+            </div>
+          )}
+          {openModalType && (
+            <div
+              style={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: "rgba(0, 0, 0, 0.5)",
+                zIndex: 999,
+              }}
+              onClick={handleCancelModal}
+            />
+          )}
         </div>
         {renderControlPanel()}
         {renderSidebar()}
