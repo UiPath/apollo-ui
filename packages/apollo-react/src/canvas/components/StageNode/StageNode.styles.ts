@@ -209,8 +209,7 @@ export const StageTask = styled.div<{ status?: StageStatus; selected?: boolean }
   ${({ selected }) =>
     selected &&
     css`
-      border: 2px solid var(--color-selection-indicator);
-      padding: 6px 12px;
+      outline: 2px solid var(--color-selection-indicator);
     `}
 `;
 
