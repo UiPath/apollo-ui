@@ -7,7 +7,7 @@
  * This module maps apollo-core typography tokens to Tailwind-compatible configuration.
  */
 
-import { FontFamily } from '@uipath/apollo-core';
+import { FontFamily as ApolloCoreFontFamily } from '@uipath/apollo-core';
 
 import { cssVars } from '../generated/css-vars';
 
@@ -33,9 +33,9 @@ function parseFontFamily(fontFamilyString: string): string[] {
  * All font stacks are preserved exactly as defined in apollo-core
  */
 export const fontFamily = {
-  sans: parseFontFamily(FontFamily.FontNormal),
-  title: parseFontFamily(FontFamily.FontTitle),
-  mono: parseFontFamily(FontFamily.FontMono),
+  sans: parseFontFamily(ApolloCoreFontFamily.FontNormal),
+  title: parseFontFamily(ApolloCoreFontFamily.FontTitle),
+  mono: parseFontFamily(ApolloCoreFontFamily.FontMono),
 } as const;
 
 /**
