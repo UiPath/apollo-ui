@@ -1,0 +1,96 @@
+name: PR Checks
+
+on:
+  pull_request:
+    branches:
+      - main
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    name: ${{ matrix.check }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        check:
+          - Lint
+          - Lint CSS
+          - Typecheck
+          - Test Coverage
+          - Build
+          - Format
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        env:
+          GH_NPM_REGISTRY_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: pnpm install --frozen-lockfile
+
+      - name: Cache Turborepo
+        uses: actions/cache@v4
+        with:
+          path: .turbo
+          key: ${{ runner.os }}-turbo-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-turbo-
+
+      - name: Run Lint
+        if: matrix.check == 'Lint'
+        run: pnpm lint
+
+      - name: Run Lint CSS
+        if: matrix.check == 'Lint CSS'
+        run: pnpm lint:css
+
+      - name: Run Typecheck
+        if: matrix.check == 'Typecheck'
+        run: pnpm typecheck
+
+      - name: Run Test Coverage
+        if: matrix.check == 'Test Coverage'
+        run: pnpm test:coverage
+
+      - name: Upload Coverage
+        if: matrix.check == 'Test Coverage'
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: coverage/
+          retention-days: 7
+
+      - name: Run Build
+        if: matrix.check == 'Build'
+        run: pnpm build
+
+      - name: Run Format Check
+        if: matrix.check == 'Format'
+        run: pnpm format:check
+
+      - name: Upload Failure Artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: failure-${{ matrix.check }}-${{ github.sha }}
+          path: |
+            coverage/
+            dist/
+            .turbo/
+          retention-days: 3

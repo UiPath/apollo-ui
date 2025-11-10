@@ -2,6 +2,10 @@
 .claude/*
 !.claude/commands/
 
+# Planning (short-term, task-related documents)
+plan/*
+!plan/README.md
+
 # Dependencies
 node_modules/
 .pnp

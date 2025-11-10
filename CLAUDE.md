@@ -1,3 +1,44 @@
+# CLAUDE.md
+
+## Rules
+
+### Default to verified docs, not memory.
+
+When working with frameworks or UI libraries (e.g., Tailwind, Shadcn, Storybook, etc.) — **never rely on memory or training data**.
+
+- **Always check official documentation** for the latest APIs and examples.
+- **Use live sources** (e.g., Context7 API) to fetch up-to-date references when possible.
+- **Trust verified sources**, even for tools you already know well.
+
+### Think Critically and Verify
+
+When asked _"Does it make sense?"_, _"What do you think?"_, or given a statement or plan — **never assume it's correct**.
+
+- Always **analyze and validate** logic before agreeing.
+- **Push back** on mistakes or weak reasoning.
+- Give a **short, reasoned explanation** instead of simple approval.
+- If uncertain, **state assumptions** and what extra info you need to confirm.
+
+### Plan Before You Act
+
+Before making meaningful changes, **propose and confirm a plan first**.
+
+- Small safe edits (e.g., formatting, lint, typo) are fine directly.
+- **Discuss first** for any major change — type fixes, refactors, new features, or behavior changes.
+- Present **what you'll change and why** before acting.
+- Once agreed, **follow the plan** and summarize results after.
+
+### Pause on Unknowns — Hypothesize, Don't Act
+
+When facing an unexpected error or ambiguous situation, **never act on guesses**.
+
+- **Analyze first:** form hypotheses and note confidence levels.
+- **Diagnostics only:** run safe, read-only checks (logs, dry-runs), no side effects.
+- **Report back:** explain what happened, root cause, and possible solutions.
+- **Get approval, then act:** execute the agreed fix and confirm results.
+
+---
+
 # Apollo v.4 Design System Architecture
 
 ## Project Overview

@@ -15,6 +15,10 @@ module.exports = {
         'apollo-angular',
         'apollo-utils',
         'apollo-wind',
+        'apollo-wind-css',
+        'apollo-wind-ui',
+        'apollo-wind-storybook',
+        'apollo-wind-demo',
         'ap-data-grid',
         'ap-autopilot-chat',
 
@@ -26,7 +30,7 @@ module.exports = {
       ],
     ],
 
-    // Enforce types
+    // Enforce types (merged from both configs)
     'type-enum': [
       2,
       'always',

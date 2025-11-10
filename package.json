@@ -10,41 +10,79 @@
   },
   "license": "MIT",
   "scripts": {
-    "build": "turbo build",
-    "dev": "turbo dev",
-    "lint": "turbo lint",
-    "test": "turbo test",
-    "test:visual": "turbo test:visual",
-    "storybook": "turbo storybook",
-    "storybook:build": "turbo storybook:build",
-    "clean": "turbo clean && rm -rf node_modules",
+    "build": "turbo run build",
+    "build:packages": "turbo run build --filter='./packages/*'",
+    "build:apps": "turbo run build --filter='./apps/*'",
+    "dev": "turbo run dev",
+    "dev:storybook": "turbo run dev --filter=@uipath/apollo-wind-storybook",
+    "lint": "turbo run lint",
+    "lint:fix": "turbo run lint:fix",
+    "lint:css": "turbo run lint:css",
+    "lint:css:fix": "turbo run lint:css:fix",
+    "test": "turbo run test",
+    "test:watch": "turbo run test:watch",
+    "test:coverage": "turbo run test:coverage",
+    "test:visual": "turbo run test:visual",
+    "typecheck": "turbo run typecheck",
+    "storybook": "turbo run storybook",
+    "storybook:build": "turbo run storybook:build",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "clean": "turbo run clean && rm -rf .turbo && rm -rf node_modules",
+    "release": "pnpm build && multi-semantic-release",
+    "release:dry-run": "multi-semantic-release --dry-run",
     "prepare": "husky"
   },
   "devDependencies": {
-    "@commitlint/cli": "^19.7.1",
-    "@commitlint/config-conventional": "^19.7.1",
+    "@commitlint/cli": "^19.8.1",
+    "@commitlint/config-conventional": "^19.8.1",
     "@commitlint/config-pnpm-scopes": "^19.7.1",
     "@eslint/js": "^9.39.1",
     "@semantic-release/changelog": "^6.0.3",
     "@semantic-release/git": "^10.0.1",
-    "@typescript-eslint/eslint-plugin": "^8.19.1",
-    "@typescript-eslint/parser": "^8.19.1",
+    "@typescript-eslint/eslint-plugin": "^8.46.3",
+    "@typescript-eslint/parser": "^8.46.3",
     "eslint": "^9.39.1",
-    "eslint-config-prettier": "^10.0.1",
-    "eslint-plugin-react": "^7.37.3",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-import-resolver-typescript": "^4.4.4",
+    "eslint-plugin-import": "^2.32.0",
+    "eslint-plugin-jsx-a11y": "^6.10.2",
+    "eslint-plugin-prettier": "^5.5.4",
+    "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^5.1.0",
+    "eslint-plugin-storybook": "^10.0.4",
+    "eslint-plugin-vitest": "^0.5.4",
     "globals": "^16.5.0",
     "husky": "^9.1.7",
+    "lint-staged": "^16.2.6",
+    "multi-semantic-release": "^3.0.2",
     "prettier": "^3.6.2",
     "semantic-release": "^24.2.0",
     "semantic-release-monorepo": "^8.0.2",
+    "stylelint": "^16.12.0",
+    "stylelint-config-prettier": "^9.0.5",
+    "stylelint-config-standard": "^36.0.1",
+    "stylelint-config-tailwindcss": "^1.0.0",
+    "stylelint-prettier": "^5.0.2",
     "turbo": "^2.6.0",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.46.3",
+    "vitest": "^2.1.8"
   },
   "engines": {
-    "node": ">=20.19.0",
-    "pnpm": ">=10.0.0"
+    "node": ">=22",
+    "pnpm": ">=10"
   },
-  "packageManager": "pnpm@10.18.1"
+  "packageManager": "pnpm@10.18.1",
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx}": [
+      "eslint --fix --max-warnings 0"
+    ],
+    "*.css": [
+      "stylelint --fix"
+    ],
+    "packages/**/*.{js,jsx,ts,tsx}": [
+      "sh -c 'turbo run test --filter=[HEAD]'"
+    ]
+  }
 }
