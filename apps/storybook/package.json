@@ -6,7 +6,6 @@
   "scripts": {
     "dev": "storybook dev -p 6006",
     "storybook": "storybook dev -p 6006",
-    "storybook:build": "storybook build",
     "clean": "rm -rf storybook-static"
   },
   "dependencies": {
