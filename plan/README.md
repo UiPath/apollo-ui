@@ -15,6 +15,7 @@ This directory contains **short-term, task-related planning documents** that are
 ⚠️ **This directory is gitignored** (except for this README)
 
 All files added to `plan/` will be ignored by git. This allows you to:
+
 - Keep personal notes without cluttering the repository
 - Store temporary planning documents locally
 - Iterate on ideas without committing incomplete work
