@@ -26,6 +26,8 @@ export const ToolResourceIcon = ({ size = 24, tool }: ToolResourceIconProps) => 
       switch (tool.toolType) {
         case BuiltInToolType.AnalyzeAttachments:
           return <AttachmentIcon />;
+        case BuiltInToolType.LoadAttachments:
+          return <AttachmentIcon />;
         default:
           return <ProcessIcon />;
       }

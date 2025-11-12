@@ -16,6 +16,7 @@ export enum ProjectType {
 
 export enum BuiltInToolType {
   AnalyzeAttachments = "AnalyzeAttachments",
+  LoadAttachments = "LoadAttachments",
 }
 
 export type ErrorInfo = {
