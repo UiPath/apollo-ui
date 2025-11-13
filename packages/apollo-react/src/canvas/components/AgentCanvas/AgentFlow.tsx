@@ -300,11 +300,11 @@ const AgentFlowInner = memo(
 
     // Calculate if timeline will be visible
     const timelineHeight = useMemo(() => calculateTimelineHeight(enableTimelinePlayer, spans), [enableTimelinePlayer, spans]);
+    // Calculate suggestion group panel height
+    const suggestionGroupPanelHeight = suggestionGroupPanelRef.current?.offsetHeight || 0;
 
-    // Calculate adjusted fitView options that account for timeline player height
+    // Calculate adjusted fitView options that account for timeline player height and suggestion group panel height
     const adjustedFitViewOptions = useMemo(() => {
-      const suggestionGroupPanelHeight = suggestionGroupPanelRef.current?.offsetHeight || 0;
-
       if (timelineHeight > 0 || suggestionGroupPanelHeight > 0) {
         const viewportHeight = window.innerHeight;
         const timelineRatio = timelineHeight / viewportHeight;
@@ -321,7 +321,7 @@ const AgentFlowInner = memo(
       }
 
       return AGENT_FLOW_FIT_VIEW_OPTIONS;
-    }, [timelineHeight]);
+    }, [timelineHeight, suggestionGroupPanelHeight]);
 
     const nodeTypes = useMemo(() => {
       const handleAddResource = (type: "context" | "escalation" | "mcp" | "tool" | "memorySpace") => {
