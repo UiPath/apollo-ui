@@ -9,7 +9,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@uipath/apollo-wind-ui';
+} from '@uipath/apollo-wind/components';
 
 const meta = {
   title: 'Components/Tabs',

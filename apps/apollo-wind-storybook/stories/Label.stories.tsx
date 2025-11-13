@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { Label, Input } from '@uipath/apollo-wind-ui';
+import { Label, Input } from '@uipath/apollo-wind/components';
 
 const meta = {
   title: 'Components/Label',

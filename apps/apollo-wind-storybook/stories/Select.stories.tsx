@@ -5,7 +5,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@uipath/apollo-wind-ui';
+} from '@uipath/apollo-wind/components';
 
 const meta = {
   title: 'Components/Select',

@@ -1,34 +1,32 @@
 import { defineConfig } from '@rslib/core';
 import { pluginReact } from '@rsbuild/plugin-react';
 
+const entry: Record<string, string> = {
+  components: './src/components/index.ts',
+  css: './src/css/index.ts',
+};
+
 export default defineConfig({
   lib: [
     {
       format: 'esm',
-      output: {
-        distPath: {
-          root: './dist',
-        },
+      source: {
+        entry,
       },
+      bundle: true,
       dts: true,
     },
     {
       format: 'cjs',
-      output: {
-        distPath: {
-          root: './dist',
-        },
+      source: {
+        entry,
       },
       dts: false,
     },
   ],
-  source: {
-    entry: {
-      index: './src/index.ts',
-    },
-  },
   output: {
     target: 'web',
+    cleanDistPath: true,
   },
   plugins: [pluginReact()],
 });

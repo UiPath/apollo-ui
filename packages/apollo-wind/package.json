@@ -2,27 +2,38 @@
   "name": "@uipath/apollo-wind",
   "version": "0.0.0",
   "description": "Apollo Design System - Tailwind CSS and shadcn/ui implementation",
-  "main": "./dist/index.js",
-  "module": "./dist/index.mjs",
-  "types": "./dist/index.d.ts",
   "exports": {
-    ".": {
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.js",
-      "types": "./dist/index.d.ts"
-    },
-    "./tailwind.config": "./tailwind.config.js"
+    ".": "./dist/css/index.css",
+    "./css": "./dist/css/index.css",
+    "./index.css": "./dist/css/index.css",
+    "./theme-selectors": "./dist/theme-selectors.css",
+    "./theme-selectors.css": "./dist/theme-selectors.css",
+    "./components": {
+      "import": "./dist/components.mjs",
+      "require": "./dist/components.js",
+      "types": "./dist/components/index.d.ts"
+    }
   },
   "files": [
     "dist",
     "tailwind.config.js"
   ],
+  "sideEffects": [
+    "**/*.css"
+  ],
   "scripts": {
-    "build": "rslib build",
+    "build": "rslib build && pnpm generate:css-vars && pnpm generate:theme && pnpm generate:theme-selectors && pnpm build:css && pnpm copy:files",
     "dev": "rslib build --watch",
     "lint": "eslint src --ext .ts,.tsx",
     "test": "vitest --run --passWithNoTests",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "copy:files": "cp src/css/generated/theme-selectors.css dist/theme-selectors.css",
+    "build:css": "npx @tailwindcss/cli -i ./src/css/index.css -o ./dist/css/index.css --minify",
+    "build:css:dev": "npx @tailwindcss/cli -i ./src/css/index.css -o ./dist/css/index.css",
+    "build:css:watch": "npx @tailwindcss/cli -i ./src/css/index.css -o ./dist/css/index.css --watch",
+    "generate:css-vars": "tsx src/css/scripts/generate-css-vars.ts && prettier --write src/css/generated/css-vars.ts",
+    "generate:theme": "tsx src/css/scripts/generate-theme.ts && prettier --write src/css/generated/theme.css",
+    "generate:theme-selectors": "tsx src/css/scripts/generate-theme-with-selectors.ts && prettier --write src/css/generated/theme-selectors.css"
   },
   "keywords": [
     "design-system",
@@ -38,22 +49,40 @@
     "react-dom": "^19.0.0"
   },
   "dependencies": {
-    "@uipath/apollo-core": "workspace:*",
+    "@radix-ui/react-dialog": "^1.1.15",
+    "@radix-ui/react-dropdown-menu": "^2.1.16",
+    "@radix-ui/react-label": "^2.1.8",
+    "@radix-ui/react-popover": "^1.1.15",
+    "@radix-ui/react-select": "^2.2.6",
+    "@radix-ui/react-slot": "^1.2.4",
+    "@radix-ui/react-tabs": "^1.1.13",
+    "@radix-ui/react-tooltip": "^1.2.8",
+    "@uipath/apollo-core": "^4.32.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "tailwind-merge": "^3.3.1"
+    "lucide-react": "^0.468.0",
+    "tailwind-merge": "^2.5.5"
   },
   "devDependencies": {
     "@rsbuild/plugin-react": "^1.4.1",
     "@rslib/core": "^0.17.0",
-    "@types/react": "^19.0.6",
+    "@tailwindcss/cli": "^4.1.14",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.1.0",
+    "@types/node": "^24.10.1",
+    "@types/react": "^19.0.8",
     "@types/react-dom": "^19.0.3",
+    "@vitejs/plugin-react": "^4.3.4",
+    "@vitest/coverage-v8": "^2.1.9",
     "autoprefixer": "^10.4.21",
+    "jsdom": "^25.0.1",
     "postcss": "^8.5.6",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "tailwindcss": "^4.0.14",
-    "typescript": "^5.9.3",
-    "vitest": "^4.0.5"
+    "tailwindcss": "^4.1.16",
+    "tsup": "^8.3.5",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.9"
   }
 }

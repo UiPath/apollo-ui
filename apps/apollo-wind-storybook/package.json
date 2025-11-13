@@ -13,8 +13,7 @@
   },
   "dependencies": {
     "@uipath/apollo-core": "^4.32.0",
-    "@uipath/apollo-wind-css": "workspace:*",
-    "@uipath/apollo-wind-ui": "workspace:*"
+    "@uipath/apollo-wind": "workspace:*"
   },
   "devDependencies": {
     "@storybook/addon-a11y": "^10.0.4",

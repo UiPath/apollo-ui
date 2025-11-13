@@ -1,7 +1,8 @@
 import type { Preview } from '@storybook/react';
 
 import '../src/index.css';
-import '@uipath/apollo-wind-ui/utilities.css';
+// TODO: Enable utilities import when ready
+// import '@uipath/apollo-wind-ui/utilities.css';
 
 const preview: Preview = {
   // Global types for custom toolbar controls

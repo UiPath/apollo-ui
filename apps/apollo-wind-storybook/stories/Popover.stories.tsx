@@ -6,7 +6,7 @@ import {
   Button,
   Label,
   Input,
-} from '@uipath/apollo-wind-ui';
+} from '@uipath/apollo-wind/components';
 
 const meta = {
   title: 'Components/Popover',

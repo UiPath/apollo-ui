@@ -9,8 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@uipath/apollo-wind-css": "workspace:*",
-    "@uipath/apollo-wind-ui": "workspace:*",
+    "@uipath/apollo-wind": "workspace:*",
     "clsx": "^2.1.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
