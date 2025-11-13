@@ -1,4 +1,4 @@
-import { Button } from '@uipath/apollo-wind-ui';
+import { Button } from '@uipath/apollo-wind/components';
 
 export function App() {
   return (

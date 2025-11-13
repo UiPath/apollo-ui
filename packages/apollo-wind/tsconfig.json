@@ -15,7 +15,12 @@
     "**/*.test.ts",
     "**/*.test.tsx",
     "**/*.spec.ts",
-    "**/*.spec.tsx"
+    "**/*.spec.tsx",
+    "**/*.stories.tsx"
   ],
-  "references": [{ "path": "../apollo-core" }]
+  "references": [
+    {
+      "path": "../apollo-core"
+    }
+  ]
 }

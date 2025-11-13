@@ -10,7 +10,7 @@ import {
   Button,
   Input,
   Label,
-} from '@uipath/apollo-wind-ui';
+} from '@uipath/apollo-wind/components';
 import { useState } from 'react';
 
 const meta = {

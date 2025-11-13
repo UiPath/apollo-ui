@@ -11,13 +11,14 @@
 @import "tailwindcss";
 
 /* Import Apollo Wind theme (includes apollo-core CSS variables) */
-@import "@uipath/apollo-wind-css";
+@import "@uipath/apollo-wind/css";
 
 /* Import theme selectors for body.light, body.dark, etc. */
-@import "@uipath/apollo-wind-css/theme-selectors";
+@import "@uipath/apollo-wind/theme-selectors";
 
 /* Import shadcn/ui utility classes (pseudo-selectors and data-attribute variants) */
-@import "@uipath/apollo-wind-ui/utilities.css";
+/* TODO: re-enable once utilities.css is published with apollo-wind package */
+/* @import "@uipath/apollo-wind-u/utilities.css"; */
 
 /* Base Storybook styles */
 body {

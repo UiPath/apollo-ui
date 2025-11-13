@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { Button } from '@uipath/apollo-wind-ui';
+import { Button } from '@uipath/apollo-wind/components';
 
 const meta = {
   title: 'Components/Button',

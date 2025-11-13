@@ -1,7 +1,6 @@
 @import "tailwindcss";
-@import "@uipath/apollo-wind-css";
-@import "@uipath/apollo-wind-css/theme-selectors";
-@import "@uipath/apollo-wind-ui/utilities.css";
+@import "@uipath/apollo-wind/css";
+@import "@uipath/apollo-wind/theme-selectors";
 
 @config "../tailwind.config.ts";
 
