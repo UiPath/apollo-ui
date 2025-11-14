@@ -396,7 +396,7 @@ describe("agent-flow-store", () => {
     // Fast forward to allow the animation timeout to complete
     vi.runAllTimers();
 
-    const resourceNodes = store.getState().nodes.filter((n) => n.type === "resource");
+    const resourceNodes = store.getState().nodes.filter((n) => n.type === "resource" && !n.data.isVirtual);
     expect(resourceNodes.length).toBe(0);
   });
 

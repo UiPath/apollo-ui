@@ -15,9 +15,64 @@ import {
   isAgentFlowAgentNode,
   isAgentFlowResourceNode,
 } from "../../../types";
-import { autoArrangeNodes } from "../../../utils/auto-layout";
+import { autoArrangeNodes, RESOURCE_NODE_SIZE } from "../../../utils/auto-layout";
 import { computeNodesAndEdges, computeSuggestionNodesAndEdges, NODE_ID_DELIMITER } from "../../../utils/props-helpers";
 import { addAnimationClasses, removeAnimationClasses } from "../../../utils/resource-operations";
+import { ResourceNodeType } from "../AgentFlow.constants";
+
+/**
+ * Creates virtual spacing nodes for balanced fit view
+ * Virtual nodes are invisible and always present to ensure consistent viewport bounds
+ */
+const createVirtualNodes = (agentNode: AgentFlowCustomNode): AgentFlowResourceNode[] => {
+  const agentWidth = agentNode.measured?.width ?? agentNode.width ?? 320;
+  const agentHeight = agentNode.measured?.height ?? agentNode.height ?? 140;
+  const agentCenterX = agentNode.position.x + agentWidth / 2;
+
+  return [
+    {
+      id: "__virtual_top__",
+      type: "resource",
+      position: {
+        x: agentCenterX - RESOURCE_NODE_SIZE / 2,
+        y: agentNode.position.y - FLOW_LAYOUT.groupDistanceVertical - RESOURCE_NODE_SIZE,
+      },
+      data: {
+        type: ResourceNodeType.MemorySpace,
+        name: "",
+        description: "",
+        isVirtual: true,
+      },
+      width: RESOURCE_NODE_SIZE,
+      height: RESOURCE_NODE_SIZE,
+      style: {
+        opacity: 0,
+        pointerEvents: "none",
+      },
+      draggable: false,
+      selectable: false,
+    },
+    {
+      id: "__virtual_bottom__",
+      type: "resource",
+      position: {
+        x: agentCenterX - RESOURCE_NODE_SIZE / 2,
+        y: agentNode.position.y + agentHeight + FLOW_LAYOUT.groupDistanceVertical,
+      },
+      data: {
+        type: ResourceNodeType.Context,
+        name: "",
+        description: "",
+        isVirtual: true,
+      },
+      width: RESOURCE_NODE_SIZE,
+      height: RESOURCE_NODE_SIZE,
+      style: { opacity: 0, pointerEvents: "none" },
+      draggable: false,
+      selectable: false,
+    },
+  ];
+};
 
 const getSelectedNodeId = (props: AgentFlowProps, state: AgentFlowStore): string | null => {
   const { initialSelectedResource, onSelectResource, setSpanForSelectedNode } = props;
@@ -379,14 +434,17 @@ const computeNodesAndEdgesWithSuggestions = (
   // First compute the base nodes and edges, preserving order from existing nodes
   const { nodes: baseNodes, edges: baseEdges } = computeNodesAndEdges(props, undefined, existingNodes);
 
-  // If no suggestions, return base nodes and edges
-  if (!props.suggestionGroup || props.suggestionGroup.suggestions.length === 0) {
-    return { nodes: baseNodes, edges: baseEdges };
-  }
-
   // Find the agent node
   const agentNode = baseNodes.find(isAgentFlowAgentNode);
   if (!agentNode) {
+    return { nodes: baseNodes, edges: baseEdges };
+  }
+
+  const virtualNodes = createVirtualNodes(agentNode);
+  baseNodes.push(...virtualNodes);
+
+  // If no suggestions, return base nodes and edges
+  if (!props.suggestionGroup || props.suggestionGroup.suggestions.length === 0) {
     return { nodes: baseNodes, edges: baseEdges };
   }
 
