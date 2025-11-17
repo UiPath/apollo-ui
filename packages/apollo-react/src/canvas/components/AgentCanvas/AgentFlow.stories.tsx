@@ -689,8 +689,8 @@ const SuggestionModeWrapper = ({
   }, []);
 
   const handleRequestPlaceholder = useCallback((type: AgentFlowResourceType, cleanedSuggestionGroup: AgentFlowSuggestionGroup | null) => {
-    // Skip placeholder for escalation and memory space - they create directly
-    if (type === "escalation" || type === "memorySpace") {
+    // Skip placeholder for escalation - they create directly
+    if (type === "escalation") {
       return null;
     }
 
@@ -1353,5 +1353,5 @@ export const DesignModeWithPlaceholderAndAutopilotSuggestions: Story = {
     mode: "design",
     enableTimelinePlayer: false,
   },
-  render: (args) => <SuggestionModeWrapper {...args} initialResources={sampleResources.concat(createSampleMemorySpace())} />,
+  render: (args) => <SuggestionModeWrapper {...args} initialResources={sampleResources} />,
 };
