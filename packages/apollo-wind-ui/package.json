@@ -29,7 +29,9 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "clean": "rm -rf dist .turbo",
-    "generate:registry": "tsx registry/scripts/generate-registry.ts"
+    "generate:registry": "tsx registry/scripts/generate-registry.ts",
+    "size": "size-limit",
+    "size:why": "size-limit --why"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.15",
@@ -52,9 +54,11 @@
     "tailwindcss": ">=4.0.0"
   },
   "devDependencies": {
+    "@size-limit/preset-small-lib": "^11.1.6",
     "@tailwindcss/cli": "^4.1.14",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.1.0",
+    "@testing-library/user-event": "^14.5.2",
     "@types/react": "^19.0.8",
     "@types/react-dom": "^19.0.3",
     "@vitejs/plugin-react": "^4.3.4",
@@ -62,10 +66,19 @@
     "jsdom": "^25.0.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "size-limit": "^11.1.6",
     "tailwindcss": "^4.1.16",
     "tsup": "^8.3.5",
     "tsx": "^4.19.2",
     "typescript": "^5.7.2",
     "vitest": "^2.1.9"
-  }
+  },
+  "size-limit": [
+    {
+      "name": "Full bundle (ESM)",
+      "path": "dist/index.js",
+      "limit": "50 KB",
+      "gzip": true
+    }
+  ]
 }

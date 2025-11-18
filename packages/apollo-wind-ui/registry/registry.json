@@ -12,6 +12,14 @@
       "type": "registry:ui"
     },
     {
+      "name": "dialog",
+      "type": "registry:ui"
+    },
+    {
+      "name": "dropdown-menu",
+      "type": "registry:ui"
+    },
+    {
       "name": "input",
       "type": "registry:ui"
     },
@@ -20,7 +28,19 @@
       "type": "registry:ui"
     },
     {
+      "name": "popover",
+      "type": "registry:ui"
+    },
+    {
       "name": "select",
+      "type": "registry:ui"
+    },
+    {
+      "name": "tabs",
+      "type": "registry:ui"
+    },
+    {
+      "name": "tooltip",
       "type": "registry:ui"
     }
   ]
