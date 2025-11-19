@@ -89,14 +89,20 @@ const arrangeAgent = (
     [ResourceNodeType.MemorySpace]: [],
   };
 
-  // Group nodes by which handle they're connected to
+  // Group nodes by which handle they're connected to, excluding nodes with explicit positions
   for (const edge of edges) {
     if (edge.source === agent.id && edge.sourceHandle && edge.sourceHandle in groups) {
       const node = clonedNodes.find((n) => n.id === edge.target);
-      if (node) groups[edge.sourceHandle as keyof typeof groups].push(node);
+      // Skip nodes with explicit positions - they should not be auto-arranged
+      if (node && !(node as AgentFlowCustomNode & { hasExplicitPosition?: boolean }).hasExplicitPosition) {
+        groups[edge.sourceHandle as keyof typeof groups].push(node);
+      }
     } else if (edge.target === agent.id && edge.targetHandle && edge.targetHandle in groups) {
       const node = clonedNodes.find((n) => n.id === edge.source);
-      if (node) groups[edge.targetHandle as keyof typeof groups].push(node);
+      // Skip nodes with explicit positions - they should not be auto-arranged
+      if (node && !(node as AgentFlowCustomNode & { hasExplicitPosition?: boolean }).hasExplicitPosition) {
+        groups[edge.targetHandle as keyof typeof groups].push(node);
+      }
     }
   }
 
@@ -326,13 +332,18 @@ const arrangeAgent = (
   return xY.y;
 };
 
-export const autoArrangeNodes = (nodes: AgentFlowCustomNode[], edges: AgentFlowCustomEdge[]): AgentFlowCustomNode[] => {
+export const autoArrangeNodes = (
+  nodes: AgentFlowCustomNode[],
+  edges: AgentFlowCustomEdge[],
+  agentNodePosition?: { x: number; y: number } | undefined
+): AgentFlowCustomNode[] => {
   const clonedNodes = structuredClone(nodes);
 
   const agentNodes = clonedNodes.filter(isAgentFlowAgentNode).find((node) => node.data.parentNodeId === undefined);
 
   if (agentNodes) {
-    agentNodes.position = { x: 0, y: 0 };
+    // Use provided position or default to (0, 0)
+    agentNodes.position = agentNodePosition || { x: 0, y: 0 };
     // array to store the height offset at each "nested" agent node
     const heightOffsets: number[] = [];
     arrangeAgent(agentNodes, clonedNodes, edges, heightOffsets, 0);

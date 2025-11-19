@@ -26,7 +26,8 @@ const waitForNodeMeasurements = (getNodes: () => Node[]): Promise<void> => {
 export const useAutoLayout = (
   nodes: Node[] | undefined,
   initialAutoLayout?: () => Promise<void> | void,
-  fitViewOptions?: BaseCanvasFitViewOptions
+  fitViewOptions?: BaseCanvasFitViewOptions,
+  preventDefaultFitView?: boolean
 ) => {
   const [isReady, setIsReady] = useState(false);
   const hasRunLayout = useRef(false);
@@ -79,13 +80,18 @@ export const useAutoLayout = (
         // Mark as complete
         hasRunLayout.current = true;
 
-        // Fit view with custom options if provided
-        timeoutRef.current = setTimeout(() => {
-          const options = fitViewOptions || BASE_CANVAS_DEFAULTS.fitViewOptions;
-          reactFlow.fitView(options);
+        // Prevent default fit view if preventDefaultFitView is true
+        if (preventDefaultFitView === true) {
+          // Skip fitView
           setIsReady(true);
-          timeoutRef.current = null;
-        }, FIT_VIEW_DELAY_MS);
+        } else {
+          timeoutRef.current = setTimeout(() => {
+            const options = fitViewOptions || BASE_CANVAS_DEFAULTS.fitViewOptions;
+            reactFlow.fitView(options);
+            setIsReady(true);
+            timeoutRef.current = null;
+          }, FIT_VIEW_DELAY_MS);
+        }
       } catch {
         // Silent fail - just mark as ready so the component doesn't hang
         setIsReady(true);
@@ -101,7 +107,7 @@ export const useAutoLayout = (
         timeoutRef.current = null;
       }
     };
-  }, [nodes?.length, reactFlow, initialAutoLayout, isNewNodeSet]);
+  }, [nodes?.length, reactFlow, initialAutoLayout, isNewNodeSet, preventDefaultFitView, fitViewOptions]);
 
   return { isReady };
 };

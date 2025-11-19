@@ -16,7 +16,7 @@ import {
   isAgentFlowResourceNode,
 } from "../../../types";
 import { autoArrangeNodes, RESOURCE_NODE_SIZE } from "../../../utils/auto-layout";
-import { computeNodesAndEdges, computeSuggestionNodesAndEdges, NODE_ID_DELIMITER } from "../../../utils/props-helpers";
+import { computeNodesAndEdges, computeSuggestionNodesAndEdges, NODE_ID_DELIMITER, createResourceEdge } from "../../../utils/props-helpers";
 import { addAnimationClasses, removeAnimationClasses } from "../../../utils/resource-operations";
 import { ResourceNodeType } from "../AgentFlow.constants";
 
@@ -332,6 +332,7 @@ interface AgentFlowStore {
   // edges
   onEdgesChange: (changes: EdgeChange[]) => void;
   onConnect: (connection: Connection) => void;
+  recalculateEdges: () => void;
 
   // auto-arrange & drag
   isDragging: boolean;
@@ -533,7 +534,7 @@ const computeNodesAndEdgesWithSuggestions = (
   const allEdges = [...baseEdges, ...suggestionEdges];
 
   // Re-arrange nodes with suggestions
-  const arrangedNodes = autoArrangeNodes(allNodes, allEdges);
+  const arrangedNodes = autoArrangeNodes(allNodes, allEdges, props.agentNodePosition);
 
   return {
     nodes: arrangedNodes,
@@ -638,6 +639,10 @@ export const createAgentFlowStore = (initialProps: AgentFlowProps) =>
           selectedNodeId: firstNewNodeId || state.selectedNodeId,
           currentSuggestionIndex: newSuggestionIndex,
         });
+
+        // Recalculate edges with dynamic handles after props update
+        // This ensures edges adapt to current node positions
+        get().recalculateEdges();
 
         // Notify parent component of selection change
         if (firstNewNodeId && newProps.onSelectResource) {
@@ -985,6 +990,9 @@ export const createAgentFlowStore = (initialProps: AgentFlowProps) =>
         const currentSelectedId = get().selectedNodeId;
         const updatedNodes = applyNodeChanges(filteredChanges, nodes) as AgentFlowCustomNode[];
 
+        // Check if there are position changes
+        const hasPositionChanges = filteredChanges.some((change) => change.type === "position");
+
         // Ensure selection state is correct
         const finalNodes = updatedNodes.map((updatedNode) => {
           const shouldBeSelected = updatedNode.id === currentSelectedId;
@@ -998,6 +1006,11 @@ export const createAgentFlowStore = (initialProps: AgentFlowProps) =>
         });
 
         set({ nodes: finalNodes });
+
+        // Recalculate edges if positions changed
+        if (hasPositionChanges) {
+          get().recalculateEdges();
+        }
       },
 
       // edges
@@ -1051,6 +1064,24 @@ export const createAgentFlowStore = (initialProps: AgentFlowProps) =>
         }));
       },
 
+      recalculateEdges: () => {
+        const state = get();
+        const agentNode = state.nodes.find(isAgentFlowAgentNode);
+        if (!agentNode) return;
+
+        // Recalculate all edges based on current node positions
+        const updatedEdges = state.edges.map((edge) => {
+          // Find the resource node for this edge
+          const targetNode = state.nodes.find((node) => node.id === edge.target);
+          if (!targetNode || !isAgentFlowResourceNode(targetNode)) return edge;
+
+          // Recalculate edge with dynamic handles and animation state
+          return createResourceEdge(agentNode, targetNode, state.props);
+        });
+
+        set({ edges: updatedEdges });
+      },
+
       // auto-arrange & drag
       isDragging: false,
       draggedNodeId: null,
@@ -1068,12 +1099,15 @@ export const createAgentFlowStore = (initialProps: AgentFlowProps) =>
         const state = get();
 
         // Arrange nodes immediately without animation
-        const arrangedNodes = autoArrangeNodes(state.nodes, state.edges).map((node) => ({
+        const arrangedNodes = autoArrangeNodes(state.nodes, state.edges, state.props.agentNodePosition).map((node) => ({
           ...node,
           selected: node.id === state.selectedNodeId,
         }));
 
         set({ nodes: arrangedNodes });
+
+        // Recalculate edges after auto-arrange since positions changed
+        get().recalculateEdges();
       },
 
       clearDragAndAutoArrange: () => {

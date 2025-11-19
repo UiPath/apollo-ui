@@ -184,6 +184,9 @@ const AgentFlowInner = memo(
     onHealthScoreClick,
     suggestionTranslations,
     suggestionGroup,
+    agentNodePosition,
+    onAgentNodePositionChange,
+    onResourceNodePositionChange,
   }: PropsWithChildren<AgentFlowProps>) => {
     const {
       nodes,
@@ -193,12 +196,8 @@ const AgentFlowInner = memo(
       onConnect,
       autoArrange,
       updateNode,
-      reorderNodes,
-      insertNodeAfter,
-      setDragPreview,
       setSelectedNodeId,
       selectedNodeId,
-      clearDragAndAutoArrange,
       setDragging,
       expandAgent,
       collapseAgent,
@@ -346,94 +345,16 @@ const AgentFlowInner = memo(
       [setSelectedNodeId, onSelectResource, setDragging]
     );
 
-    const handleNodeDrag = useCallback(
-      (_event: React.MouseEvent, node: AgentFlowCustomNode, _nodes: AgentFlowCustomNode[]) => {
-        if (!isAgentFlowResourceNode(node)) return;
-
-        const sameTypeNodes = nodes.filter(
-          (n): n is AgentFlowResourceNode => n.type === "resource" && n.data.type === node.data.type && n.id !== node.id
-        );
-        if (sameTypeNodes.length === 0) return;
-
-        // find out where to insert
-        const orderedNodes = [...sameTypeNodes].sort((a, b) => (a.data.order ?? 0) - (b.data.order ?? 0));
-        const isVertical = node.data.type === "tool";
-        const draggedPos = isVertical ? node.position.y : node.position.x;
-
-        let insertAfterNode: AgentFlowCustomNode | null = null;
-
-        for (let i = 0; i < orderedNodes.length; i++) {
-          const targetNode = orderedNodes[i] as AgentFlowResourceNode;
-          const targetPos = isVertical
-            ? targetNode.data?.originalPosition?.y || targetNode.position.y
-            : targetNode.data?.originalPosition?.x || targetNode.position.x;
-
-          if (draggedPos < targetPos) {
-            insertAfterNode = i > 0 ? (orderedNodes[i - 1] as AgentFlowResourceNode) : null;
-            break;
-          }
-          if (i === orderedNodes.length - 1) {
-            insertAfterNode = targetNode;
-          }
-        }
-
-        setDragPreview(node.id, insertAfterNode?.id || null);
-      },
-      [nodes, setDragPreview]
-    );
-
     const handleNodeDragStop = useCallback(
       (_event: React.MouseEvent, node: AgentFlowCustomNode) => {
-        setDragPreview(null, null);
-        if (!isAgentFlowResourceNode(node)) return;
-
-        const sameTypeNodes = nodes.filter(
-          (n): n is AgentFlowResourceNode => n.type === "resource" && n.data.type === node.data.type && n.id !== node.id
-        );
-
-        // just auto-arrange if there are no siblings
-        if (sameTypeNodes.length === 0) {
-          clearDragAndAutoArrange();
+        if (!isAgentFlowResourceNode(node)) {
+          onAgentNodePositionChange?.({ x: node.position.x, y: node.position.y });
           return;
         }
 
-        // find out where to insert
-        const orderedNodes = [...sameTypeNodes].sort((a, b) => (a.data.order ?? 0) - (b.data.order ?? 0));
-        const isVertical = node.data.type === "tool";
-        const draggedPos = isVertical ? node.position.y : node.position.x;
-
-        let insertAfterNode: AgentFlowCustomNode | null = null;
-
-        for (let i = 0; i < orderedNodes.length; i++) {
-          const targetNode = orderedNodes[i] as AgentFlowResourceNode;
-          const targetPos = isVertical
-            ? targetNode.data?.originalPosition?.y || targetNode.position.y
-            : targetNode.data?.originalPosition?.x || targetNode.position.x;
-          if (draggedPos < targetPos) {
-            insertAfterNode = i > 0 ? (orderedNodes[i - 1] as AgentFlowResourceNode) : null;
-            break;
-          }
-          if (i === orderedNodes.length - 1) {
-            insertAfterNode = orderedNodes[i] as AgentFlowResourceNode;
-          }
-        }
-
-        // reorder if needed
-        const currentOrder = node.data.order || 0;
-        if (insertAfterNode) {
-          insertNodeAfter(node.id, insertAfterNode.id);
-        } else if (currentOrder !== 0) {
-          // move to the beginning
-          const firstNode = orderedNodes[0];
-          if (firstNode) {
-            reorderNodes(node.id, firstNode.id);
-          }
-        }
-
-        // clear drag state and auto-arrange
-        clearDragAndAutoArrange();
+        onResourceNodePositionChange?.(node.id, { x: node.position.x, y: node.position.y });
       },
-      [setDragPreview, nodes, clearDragAndAutoArrange, insertNodeAfter, reorderNodes]
+      [onAgentNodePositionChange, onResourceNodePositionChange]
     );
 
     // Listen for expand agent events from CanvasPanel
@@ -498,6 +419,21 @@ const AgentFlowInner = memo(
       return true;
     });
 
+    const preventDefaultFitView = useMemo(() => {
+      // Prevent default fit view if agent has explicit position
+      if (agentNodePosition !== undefined) {
+        return true;
+      }
+
+      // Prevent default fit view if any resource has explicit position
+      const hasResourceWithPosition = nodes.some((node) => {
+        if (!isAgentFlowResourceNode(node)) return false;
+        return node.hasExplicitPosition === true;
+      });
+
+      return hasResourceWithPosition;
+    }, [agentNodePosition, nodes]);
+
     return (
       <Column w="100%" h="100%" style={{ touchAction: "none" }}>
         <Column flex={1} position="relative" style={{ touchAction: "none" }}>
@@ -510,6 +446,7 @@ const AgentFlowInner = memo(
             mode={mode}
             initialAutoLayout={autoArrange}
             fitViewOptions={adjustedFitViewOptions}
+            preventDefaultFitView={preventDefaultFitView}
             onNodesChange={onNodesChange}
             onEdgesChange={onEdgesChange}
             onConnect={onConnect}
@@ -517,7 +454,6 @@ const AgentFlowInner = memo(
             onNodeContextMenu={handleNodeContextMenu}
             onPaneClick={handlePaneClick}
             onNodeDragStart={handleNodeDragStart}
-            onNodeDrag={handleNodeDrag}
             onNodeDragStop={handleNodeDragStop}
             deleteKeyCode={mode === "design" ? ["Backspace", "Delete"] : null}
             maintainNodesInView={[]}

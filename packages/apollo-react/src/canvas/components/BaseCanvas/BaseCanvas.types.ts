@@ -157,6 +157,13 @@ export interface BaseCanvasProps<NodeType extends Node = Node, EdgeType extends 
    * ```
    */
   fitViewOptions?: BaseCanvasFitViewOptions;
+
+  /**
+   * Whether to prevent the default fit view behavior.
+   * If true, the canvas will not fit the view to the nodes.
+   * @default false
+   */
+  preventDefaultFitView?: boolean;
 }
 
 /**

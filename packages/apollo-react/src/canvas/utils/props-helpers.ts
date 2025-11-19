@@ -138,7 +138,7 @@ const createAgentNode = (props: AgentFlowProps, parentNodeId?: string): AgentFlo
       definition: props.definition,
       parentNodeId,
     },
-    draggable: false, // Agent node is not draggable
+    draggable: Boolean(props.allowDragging && props.mode === "design"), // Agent node is draggable in design mode, not in view mode
   };
 };
 
@@ -166,81 +166,119 @@ const createResourceNode = (
     errors: resource.errors,
   };
 
-  const baseNode = {
-    id,
-    type: "resource" as const,
-    position: { x: 0, y: 0 },
-    draggable: Boolean(props.allowDragging && props.mode === "design"),
-  };
+  // Check if resource has explicit position defined
+  const hasExplicitPosition = "position" in resource && typeof resource.position === "object" && resource.position !== null;
+
+  // React Flow requires a position value, so we use {x: 0, y: 0} as placeholder when undefined
+  // This will be overwritten by auto-layout for nodes without explicit positions
+  const position = hasExplicitPosition ? (resource.position as { x: number; y: number }) : { x: 0, y: 0 };
 
   const resourceId = `${resource.name}:${id}`;
   const finalId = parentNodeId ? `${parentNodeId}${NODE_ID_DELIMITER}${resourceId}` : resourceId;
 
+  // Helper to create base node structure
+  const createBaseNode = (data: AgentFlowResourceNode["data"]): AgentFlowResourceNode => {
+    const node: AgentFlowResourceNode = {
+      id: finalId,
+      type: "resource" as const,
+      position,
+      draggable: Boolean(props.allowDragging && props.mode === "design"),
+      data,
+      hasExplicitPosition,
+    };
+
+    return node;
+  };
+
   switch (resource.type) {
     case "tool":
-      return {
-        ...baseNode,
-        id: finalId,
-        data: {
-          ...baseData,
-          type: "tool",
-          iconUrl: resource.iconUrl,
-          projectType: resource.projectType,
-          toolType: resource.toolType,
-          projectId: resource.projectId,
-          parentNodeId,
-          isExpandable: resource.isExpandable,
-          processName: resource.processName,
-        },
-      };
+      return createBaseNode({
+        ...baseData,
+        type: "tool",
+        iconUrl: resource.iconUrl,
+        projectType: resource.projectType,
+        toolType: resource.toolType,
+        projectId: resource.projectId,
+        parentNodeId,
+        isExpandable: resource.isExpandable,
+        processName: resource.processName,
+      });
     case "context":
-      return {
-        ...baseNode,
-        id: finalId,
-        type: "resource",
-        data: {
-          ...baseData,
-          type: "context",
-          projectId: resource.projectId,
-          parentNodeId,
-        },
-      };
+      return createBaseNode({
+        ...baseData,
+        type: "context",
+        projectId: resource.projectId,
+        parentNodeId,
+      });
     case "mcp":
-      return {
-        ...baseNode,
-        id: finalId,
-        data: {
-          ...baseData,
-          type: "mcp",
-          slug: resource.slug,
-          folderPath: resource.folderPath,
-          availableTools: resource.availableTools,
-          parentNodeId,
-        },
-      };
+      return createBaseNode({
+        ...baseData,
+        type: "mcp",
+        slug: resource.slug,
+        folderPath: resource.folderPath,
+        availableTools: resource.availableTools,
+        parentNodeId,
+      });
     case "memorySpace":
-      return {
-        ...baseNode,
-        id: finalId,
-        data: {
-          ...baseData,
-          type: "memorySpace",
-          parentNodeId,
-        },
-      };
+      return createBaseNode({
+        ...baseData,
+        type: "memorySpace",
+        parentNodeId,
+      });
     case "escalation":
     default:
-      return {
-        ...baseNode,
-        id: finalId,
-        data: {
-          ...baseData,
-          type: "escalation",
-          projectId: resource.projectId,
-          parentNodeId,
-        },
-      };
+      return createBaseNode({
+        ...baseData,
+        type: "escalation",
+        projectId: resource.projectId,
+        parentNodeId,
+      });
   }
+};
+
+// Calculate optimal edge handles based on relative positions of agent and resource nodes
+const calculateOptimalHandles = (
+  agentNode: AgentFlowNode,
+  resourceNode: AgentFlowResourceNode
+): { sourceHandle: string; targetHandle: Position } => {
+  const resourceType = resourceNode.data.type;
+
+  // Get agent node center Y position
+  const agentHeight = agentNode.measured?.height ?? agentNode.height ?? 0;
+  const agentCenterY = agentNode.position.y + agentHeight / 2;
+
+  // Get resource node center Y position
+  const resourceHeight = resourceNode.measured?.height ?? resourceNode.height ?? 0;
+  const resourceCenterY = resourceNode.position.y + resourceHeight / 2;
+
+  // Determine source handle based on resource type
+  let sourceHandle: string;
+  switch (resourceType) {
+    case "context":
+      sourceHandle = ResourceNodeType.Context;
+      break;
+    case "escalation":
+      sourceHandle = ResourceNodeType.Escalation;
+      break;
+    case "tool":
+      sourceHandle = ResourceNodeType.Tool;
+      break;
+    case "mcp":
+      sourceHandle = ResourceNodeType.Tool;
+      break;
+    case "memorySpace":
+      sourceHandle = ResourceNodeType.MemorySpace;
+      break;
+    default:
+      sourceHandle = resourceType;
+      break;
+  }
+
+  // If resource is above the agent, connect to bottom of resource
+  // If resource is below the agent, connect to top of resource
+  const targetHandle = resourceCenterY < agentCenterY ? Position.Bottom : Position.Top;
+
+  return { sourceHandle, targetHandle };
 };
 
 export const createResourceEdge = (
@@ -248,40 +286,26 @@ export const createResourceEdge = (
   resourceNode: AgentFlowResourceNode,
   props: AgentFlowProps
 ): AgentFlowCustomEdge => {
-  const resourceType = resourceNode.data.type;
   const isViewMode = props.mode === "view";
   const isResourceActive = resourceNode.data.isActive ?? false;
 
-  const createEdge = (source: string, target: string, sourceHandle: string, targetHandle: string): AgentFlowCustomEdge => {
-    const id = `${source}${EDGE_ID_DELIMITER}${target}`;
-    return {
-      id,
-      source,
-      target,
-      sourceHandle,
-      targetHandle,
-      type: "default",
-      data: {
-        label: null,
-      },
-      animated: isViewMode && isResourceActive,
-      selectable: false,
-    };
-  };
+  // Calculate optimal handles based on positions
+  const { sourceHandle, targetHandle } = calculateOptimalHandles(agentNode, resourceNode);
 
-  switch (resourceType) {
-    case "tool":
-      return createEdge(agentNode.id, resourceNode.id, ResourceNodeType.Tool, Position.Top);
-    case "context":
-      return createEdge(agentNode.id, resourceNode.id, ResourceNodeType.Context, Position.Top);
-    case "mcp":
-      return createEdge(agentNode.id, resourceNode.id, ResourceNodeType.Tool, Position.Top);
-    case "memorySpace":
-      return createEdge(agentNode.id, resourceNode.id, ResourceNodeType.MemorySpace, Position.Bottom);
-    case "escalation":
-    default:
-      return createEdge(agentNode.id, resourceNode.id, ResourceNodeType.Escalation, Position.Top);
-  }
+  const id = `${agentNode.id}${EDGE_ID_DELIMITER}${resourceNode.id}`;
+  return {
+    id,
+    source: agentNode.id,
+    target: resourceNode.id,
+    sourceHandle,
+    targetHandle,
+    type: "default",
+    data: {
+      label: null,
+    },
+    animated: isViewMode && isResourceActive,
+    selectable: false,
+  };
 };
 
 /**
@@ -345,7 +369,7 @@ export const computeNodesAndEdges = (
   const edges = resourceNodes.map((resourceNode) => createResourceEdge(agentNode, resourceNode, props));
 
   const allNodes = [agentNode, ...resourceNodes];
-  const arrangedNodes = autoArrangeNodes(allNodes, edges);
+  const arrangedNodes = autoArrangeNodes(allNodes, edges, props.agentNodePosition);
 
   return {
     nodes: arrangedNodes,

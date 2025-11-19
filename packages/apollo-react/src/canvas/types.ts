@@ -265,6 +265,20 @@ export type AgentFlowProps = {
   // canvas ref for imperative control
   canvasRef?: React.Ref<BaseCanvasRef<AgentFlowCustomNode, AgentFlowCustomEdge>>;
 
+  // layout customization
+  /**
+   * Initial position for the root agent node.
+   * If not provided, defaults to undefined
+   */
+  agentNodePosition?: { x: number; y: number } | undefined;
+  onAgentNodePositionChange?: (position: { x: number; y: number } | undefined) => void;
+  /**
+   * Called when a resource node position changes (e.g., after drag)
+   * @param resourceId - The ID of the resource
+   * @param position - The new position of the resource node
+   */
+  onResourceNodePositionChange?: (resourceId: string, position: { x: number; y: number }) => void;
+
   // feature flags
   enableMcpTools?: boolean;
   /** TODO: Remove once memory feature is fully implemented */
@@ -411,6 +425,8 @@ export type AgentFlowResourceNodeData = (
   SharedResourceData;
 export type AgentFlowResourceNode = Node<AgentFlowResourceNodeData, "resource"> & {
   extent?: "parent" | CoordinateExtent | undefined;
+  position?: { x: number; y: number } | undefined; // position of the node in the canvas, undefined means auto-layout should be used
+  hasExplicitPosition?: boolean; // true if the position is explicitly set, false means auto-layout should be used
 };
 export type AgentFlowResourceNodeProps = NodeProps<AgentFlowResourceNode>;
 
