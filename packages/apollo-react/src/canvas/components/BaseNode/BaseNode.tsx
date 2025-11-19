@@ -58,6 +58,7 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
   const displayLabelBackgroundColor = display.labelBackgroundColor;
   const displayShape = display.shape ?? "square";
   const displayBackground = display.background;
+  const displayColor = display.color;
   const displayIconBackground = executionStatus === "Failed" ? "var(--color-background)" : display.iconBackground;
   const displayCenterAdornment = display.centerAdornmentComponent;
 
@@ -178,7 +179,7 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
         backgroundColor={displayBackground}
       >
         {icon && (
-          <BaseIconWrapper shape={displayShape} backgroundColor={displayIconBackground} nodeHeight={height}>
+          <BaseIconWrapper shape={displayShape} color={displayColor} backgroundColor={displayIconBackground} nodeHeight={height}>
             {icon}
           </BaseIconWrapper>
         )}

@@ -172,6 +172,7 @@ export class NodeTypeRegistry {
           const categoryMeta: ListItem = {
             id: categoryId,
             name: categoryId.charAt(0).toUpperCase() + categoryId.slice(1),
+            icon: typeof metadata.icon === "string" ? { name: metadata.icon } : { Component: metadata.icon },
             data: null,
           };
 

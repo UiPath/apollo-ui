@@ -175,7 +175,7 @@ export const BaseContainer = styled.div<{
   }}
 `;
 
-export const BaseIconWrapper = styled.div<{ backgroundColor?: string; shape?: NodeShape; nodeHeight?: number }>`
+export const BaseIconWrapper = styled.div<{ color?: string; backgroundColor?: string; shape?: NodeShape; nodeHeight?: number }>`
   width: ${({ nodeHeight }) => {
     const scaleFactor = nodeHeight ? nodeHeight / 96 : 1;
     return `${72 * scaleFactor}px`;
@@ -187,6 +187,7 @@ export const BaseIconWrapper = styled.div<{ backgroundColor?: string; shape?: No
   display: flex;
   align-items: center;
   justify-content: center;
+  color: ${({ color }) => color || "var(--color-foreground)"};
   background: ${({ backgroundColor }) => backgroundColor || "var(--color-background-secondary)"};
   border-radius: ${({ shape }) => {
     if (shape === "circle") return "50%";

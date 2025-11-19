@@ -20,6 +20,7 @@ export interface BaseNodeData extends Record<string, unknown> {
     label?: string;
     subLabel?: string;
     shape?: NodeShape;
+    color?: string;
     background?: string;
     iconBackground?: string;
     iconColor?: string;
@@ -33,6 +34,7 @@ export interface NodeDisplay {
   labelBackgroundColor?: string;
   shape?: NodeShape;
   background?: string;
+  color?: string;
   iconBackground?: string;
   iconColor?: string;
   /** Custom content to render in the center text container, below label and subLabel */
