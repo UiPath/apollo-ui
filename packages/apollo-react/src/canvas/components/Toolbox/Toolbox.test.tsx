@@ -307,4 +307,396 @@ describe("Toolbox", () => {
       expect(onBack).toHaveBeenCalled();
     });
   });
+
+  describe("Smart item updates (initialItems prop changes)", () => {
+    let user: UserEvent;
+
+    beforeEach(() => {
+      user = userEvent.setup();
+    });
+
+    it("should update items when at root level and initialItems change", () => {
+      const initialItems: ListItem[] = [
+        {
+          id: "item-1",
+          name: "Initial Item 1",
+          data: {},
+          icon: { name: "star" },
+        },
+      ];
+
+      const { rerender } = render(<Toolbox {...defaultProps} initialItems={initialItems} />);
+
+      expect(screen.getByText("Initial Item 1")).toBeInTheDocument();
+
+      const updatedItems: ListItem[] = [
+        {
+          id: "item-1",
+          name: "Updated Item 1",
+          data: {},
+          icon: { name: "star" },
+        },
+        {
+          id: "item-2",
+          name: "New Item 2",
+          data: {},
+          icon: { name: "favorite" },
+        },
+      ];
+
+      rerender(<Toolbox {...defaultProps} initialItems={updatedItems} />);
+
+      // Should show updated items
+      expect(screen.getByText("Updated Item 1")).toBeInTheDocument();
+      expect(screen.getByText("New Item 2")).toBeInTheDocument();
+    });
+
+    it("should preserve navigation and update children when initialItems change during nested view", async () => {
+      const v1Items: ListItem[] = [
+        {
+          id: "parent-1",
+          name: "Parent v1",
+          data: {},
+          icon: { name: "folder" },
+          children: [
+            {
+              id: "child-1",
+              name: "Child v1",
+              data: {},
+              icon: { name: "file" },
+            },
+          ],
+        },
+      ];
+
+      const { rerender } = render(<Toolbox {...defaultProps} initialItems={v1Items} />);
+
+      // Navigate to children
+      await user.click(screen.getByText("Parent v1"));
+      expect(screen.getByText("Child v1")).toBeInTheDocument();
+      expect(screen.getByText("Parent v1")).toBeInTheDocument(); // Title
+
+      // Update items while in nested view
+      const v2Items: ListItem[] = [
+        {
+          id: "parent-1",
+          name: "Parent v2 Updated",
+          data: {},
+          icon: { name: "folder" },
+          children: [
+            {
+              id: "child-1",
+              name: "Child v2 Updated",
+              data: {},
+              icon: { name: "file" },
+            },
+            {
+              id: "child-2",
+              name: "New Child",
+              data: {},
+              icon: { name: "file" },
+            },
+          ],
+        },
+      ];
+
+      rerender(<Toolbox {...defaultProps} initialItems={v2Items} />);
+
+      // Should still be in children view with updated data
+      expect(screen.getByText("Child v2 Updated")).toBeInTheDocument();
+      expect(screen.getByText("New Child")).toBeInTheDocument();
+      // Title should update to new parent name
+      expect(screen.getByText("Parent v2 Updated")).toBeInTheDocument();
+      // Should not navigate back to root
+      expect(screen.queryByText("Test Toolbox")).not.toBeInTheDocument();
+    });
+
+    it("should keep stale items when parent is removed from initialItems", async () => {
+      const v1Items: ListItem[] = [
+        {
+          id: "parent-1",
+          name: "Parent 1",
+          data: {},
+          icon: { name: "folder" },
+          children: [
+            {
+              id: "child-1",
+              name: "Original Child",
+              data: {},
+              icon: { name: "file" },
+            },
+          ],
+        },
+      ];
+
+      const { rerender } = render(<Toolbox {...defaultProps} initialItems={v1Items} />);
+
+      // Navigate to children
+      await user.click(screen.getByText("Parent 1"));
+      expect(screen.getByText("Original Child")).toBeInTheDocument();
+
+      // Update items - remove parent
+      const v2Items: ListItem[] = [
+        {
+          id: "parent-2",
+          name: "Different Parent",
+          data: {},
+          icon: { name: "folder" },
+        },
+      ];
+
+      rerender(<Toolbox {...defaultProps} initialItems={v2Items} />);
+
+      // Should keep showing original child (stale data)
+      expect(screen.getByText("Original Child")).toBeInTheDocument();
+      // User can still navigate back and see updated items
+      await user.click(screen.getByRole("button", { name: /back/i }));
+      expect(screen.getByText("Different Parent")).toBeInTheDocument();
+      expect(screen.queryByText("Parent 1")).not.toBeInTheDocument();
+    });
+
+    it("should update navigation stack with refreshed parent data", async () => {
+      const v1Items: ListItem[] = [
+        {
+          id: "parent-1",
+          name: "Parent v1",
+          data: {},
+          icon: { name: "folder" },
+          children: [
+            {
+              id: "child-1",
+              name: "Child 1",
+              data: {},
+              icon: { name: "file" },
+              children: [
+                {
+                  id: "grandchild-1",
+                  name: "Grandchild v1",
+                  data: {},
+                  icon: { name: "file" },
+                },
+              ],
+            },
+          ],
+        },
+      ];
+
+      const { rerender } = render(<Toolbox {...defaultProps} initialItems={v1Items} />);
+
+      // Navigate: Root -> Parent -> Child
+      await user.click(screen.getByText("Parent v1"));
+      await user.click(screen.getByText("Child 1"));
+      expect(screen.getByText("Grandchild v1")).toBeInTheDocument();
+
+      // Update items while at deepest level
+      const v2Items: ListItem[] = [
+        {
+          id: "parent-1",
+          name: "Parent v2 Updated",
+          data: {},
+          icon: { name: "folder" },
+          children: [
+            {
+              id: "child-1",
+              name: "Child 1 Updated",
+              data: {},
+              icon: { name: "file" },
+              children: [
+                {
+                  id: "grandchild-1",
+                  name: "Grandchild v2 Updated",
+                  data: {},
+                  icon: { name: "file" },
+                },
+              ],
+            },
+          ],
+        },
+      ];
+
+      rerender(<Toolbox {...defaultProps} initialItems={v2Items} />);
+
+      // Should show updated grandchild
+      expect(screen.getByText("Grandchild v2 Updated")).toBeInTheDocument();
+
+      // Navigate back once
+      await user.click(screen.getByRole("button", { name: /back/i }));
+
+      // Should show updated child
+      expect(screen.getByText("Child 1 Updated")).toBeInTheDocument();
+
+      // Navigate back again
+      await user.click(screen.getByRole("button", { name: /back/i }));
+
+      // Should show updated parent
+      expect(screen.getByText("Parent v2 Updated")).toBeInTheDocument();
+    });
+
+    it("should handle dynamic children (function) when initialItems update", async () => {
+      const dynamicChildrenFn = vi.fn().mockResolvedValue([
+        {
+          id: "dynamic-child-1",
+          name: "Dynamically Loaded Child",
+          data: {},
+          icon: { name: "file" },
+        },
+      ]);
+
+      const v1Items: ListItem[] = [
+        {
+          id: "parent-1",
+          name: "Parent with Dynamic Children",
+          data: {},
+          icon: { name: "folder" },
+          children: dynamicChildrenFn,
+        },
+      ];
+
+      const { rerender } = render(<Toolbox {...defaultProps} initialItems={v1Items} />);
+
+      // Navigate to trigger dynamic loading
+      await user.click(screen.getByText("Parent with Dynamic Children"));
+      expect(dynamicChildrenFn).toHaveBeenCalledWith("parent-1", "Parent with Dynamic Children");
+      expect(screen.getByText("Dynamically Loaded Child")).toBeInTheDocument();
+
+      // Update items - parent still has function-based children
+      const v2Items: ListItem[] = [
+        {
+          id: "parent-1",
+          name: "Parent Updated",
+          data: {},
+          icon: { name: "folder" },
+          children: dynamicChildrenFn, // Same function reference
+        },
+      ];
+
+      rerender(<Toolbox {...defaultProps} initialItems={v2Items} />);
+
+      // Should keep showing the dynamically loaded children
+      // (not re-fetch since children are already loaded)
+      expect(screen.getByText("Dynamically Loaded Child")).toBeInTheDocument();
+      // Title should update
+      expect(screen.getByText("Parent Updated")).toBeInTheDocument();
+      // Should not call the function again
+      expect(dynamicChildrenFn).toHaveBeenCalledTimes(1);
+    });
+
+    it("should not trigger updates when initialItems reference is the same", () => {
+      const items: ListItem[] = [
+        {
+          id: "item-1",
+          name: "Item 1",
+          data: {},
+          icon: { name: "star" },
+        },
+      ];
+
+      const { rerender } = render(<Toolbox {...defaultProps} initialItems={items} />);
+
+      expect(screen.getByText("Item 1")).toBeInTheDocument();
+
+      // Rerender with same reference
+      rerender(<Toolbox {...defaultProps} initialItems={items} />);
+
+      // Should still show the same item (no re-render issues)
+      expect(screen.getByText("Item 1")).toBeInTheDocument();
+    });
+
+    it("should update items when multiple properties change at once", async () => {
+      const v1Items: ListItem[] = [
+        {
+          id: "item-1",
+          name: "Item 1",
+          data: { value: "v1" },
+          icon: { name: "star" },
+          color: "red",
+        },
+      ];
+
+      const { rerender } = render(<Toolbox {...defaultProps} initialItems={v1Items} />);
+
+      expect(screen.getByText("Item 1")).toBeInTheDocument();
+
+      // Update with all properties changed
+      const v2Items: ListItem[] = [
+        {
+          id: "item-1",
+          name: "Item 1 Updated",
+          data: { value: "v2" },
+          icon: { name: "favorite" },
+          color: "blue",
+          description: "New description",
+        },
+      ];
+
+      rerender(<Toolbox {...defaultProps} initialItems={v2Items} />);
+
+      // Should show updated item
+      expect(screen.getByText("Item 1 Updated")).toBeInTheDocument();
+      expect(screen.queryByText("Item 1")).not.toBeInTheDocument();
+    });
+
+    it("should handle adding and removing items at nested level", async () => {
+      const v1Items: ListItem[] = [
+        {
+          id: "parent-1",
+          name: "Parent",
+          data: {},
+          icon: { name: "folder" },
+          children: [
+            {
+              id: "child-1",
+              name: "Child 1",
+              data: {},
+              icon: { name: "file" },
+            },
+            {
+              id: "child-2",
+              name: "Child 2",
+              data: {},
+              icon: { name: "file" },
+            },
+          ],
+        },
+      ];
+
+      const { rerender } = render(<Toolbox {...defaultProps} initialItems={v1Items} />);
+
+      // Navigate to children
+      await user.click(screen.getByText("Parent"));
+      expect(screen.getByText("Child 1")).toBeInTheDocument();
+      expect(screen.getByText("Child 2")).toBeInTheDocument();
+
+      // Update: remove child-1, add child-3
+      const v2Items: ListItem[] = [
+        {
+          id: "parent-1",
+          name: "Parent",
+          data: {},
+          icon: { name: "folder" },
+          children: [
+            {
+              id: "child-2",
+              name: "Child 2",
+              data: {},
+              icon: { name: "file" },
+            },
+            {
+              id: "child-3",
+              name: "Child 3",
+              data: {},
+              icon: { name: "file" },
+            },
+          ],
+        },
+      ];
+
+      rerender(<Toolbox {...defaultProps} initialItems={v2Items} />);
+
+      // Should show updated children list
+      expect(screen.queryByText("Child 1")).not.toBeInTheDocument();
+      expect(screen.getByText("Child 2")).toBeInTheDocument();
+      expect(screen.getByText("Child 3")).toBeInTheDocument();
+    });
+  });
 });

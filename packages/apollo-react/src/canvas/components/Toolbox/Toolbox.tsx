@@ -9,6 +9,37 @@ type AnimationDirection = "forward" | "back";
 
 const TRANSITION_DURATION = 150;
 
+/**
+ * BFS for item by id.
+ */
+function findItemById<T>(items: ListItem<T>[], id: string): ListItem<T> | null {
+  const queue: ListItem<T>[] = [...items];
+  const visited = new Set<string>(items.map((item) => item.id));
+  let qIndex = 0;
+
+  while (qIndex < queue.length) {
+    // biome-ignore lint/style/noNonNullAssertion: Just checked index bounds above.
+    const item = queue[qIndex++]!;
+
+    if (item.id === id) {
+      return item;
+    }
+
+    if (!item.children || typeof item.children === "function") {
+      continue;
+    }
+
+    for (const child of item.children) {
+      if (!visited.has(child.id)) {
+        visited.add(child.id);
+        queue.push(child);
+      }
+    }
+  }
+
+  return null;
+}
+
 export type ToolboxSearchHandler<T = any> = (
   query: string,
   isTopLevelSearch: boolean,
@@ -59,6 +90,7 @@ export function Toolbox<T>({ onClose, onBack, onItemSelect, onSearch, onItemHove
 
   const transitionTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
   const searchIdRef = useRef(0);
+  const initialItemsRef = useRef(initialItems);
 
   const isSearching = useMemo(() => search.length > 0, [search]);
 
@@ -155,9 +187,70 @@ export function Toolbox<T>({ onClose, onBack, onItemSelect, onSearch, onItemHove
     };
   }, []);
 
+  // React to changes in initialItems prop while attempting to preserve navigation state.
   useEffect(() => {
-    setItems(initialItems);
-  }, [initialItems]);
+    // We only care about running this when the initialItems prop changes.
+    if (initialItems === initialItemsRef.current) return;
+    const newInitialItems = initialItems;
+    initialItemsRef.current = initialItems;
+
+    // If at root level (no active navigation), safely replace items.
+    if (navigationStack.isEmpty) {
+      setItems(newInitialItems);
+      return;
+    }
+
+    // Attempt to update current view.
+    if (currentParentItem) {
+      const updatedCurrentParent = findItemById(newInitialItems, currentParentItem.id);
+      if (updatedCurrentParent?.children && typeof updatedCurrentParent.children !== "function") {
+        // Parent still exists - update current children from new parent.
+        setItems(updatedCurrentParent.children);
+      }
+      if (updatedCurrentParent) {
+        setCurrentParentItem(updatedCurrentParent);
+      }
+      // If parent is missing or has no static children, keep current stale items.
+      // User can navigate back when ready.
+    }
+
+    // Update the previous views that are held in the navigation stack.
+    const updatedStack = navigationStack.stack.map((stackItem) => {
+      if (!stackItem.data.parentItem) {
+        // Root navigation item - replace with new initial items.
+        return {
+          ...stackItem,
+          data: {
+            items: newInitialItems,
+            parentItem: null,
+          },
+        };
+      }
+
+      const updatedParentItem = findItemById(newInitialItems, stackItem.data.parentItem.id);
+      // Default to existing items in case parent is missing in new items or has dynamic children.
+      let updatedItems = stackItem.data.items;
+      if (updatedParentItem?.children && typeof updatedParentItem.children !== "function") {
+        // Use static children from updated parent item.
+        updatedItems = updatedParentItem.children;
+      }
+
+      return {
+        ...stackItem,
+        data: {
+          items: updatedItems,
+          parentItem: updatedParentItem,
+        },
+      };
+    });
+
+    if (updatedStack.length > 0) {
+      navigationStack.clear();
+      for (const updatedStackItem of updatedStack) {
+        navigationStack.push(updatedStackItem);
+      }
+    }
+  }, [initialItems, navigationStack, currentParentItem]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {

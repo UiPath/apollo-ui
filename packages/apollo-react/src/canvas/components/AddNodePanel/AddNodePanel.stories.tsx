@@ -73,6 +73,9 @@ const meta = {
       );
     },
   ],
+  argTypes: {
+    items: { control: "object" },
+  },
 } satisfies Meta<typeof AddNodePanel>;
 
 export default meta;
@@ -80,45 +83,63 @@ type Story = StoryObj<typeof AddNodePanel>;
 
 // Mock node options for the demo
 const AVAILABLE_NODE_OPTIONS: ListItem<NodeItemData>[] = [
-  { id: "1", name: "Manual trigger", icon: { name: "touch_app" }, data: { type: "manual-trigger", category: "triggers" } },
-  { id: "2", name: "Schedule trigger", icon: { name: "schedule" }, data: { type: "schedule-trigger", category: "triggers" } },
-  { id: "3", name: "Webhook trigger", icon: { name: "webhook" }, data: { type: "webhook-trigger", category: "triggers" } },
+  { id: "1", name: "Manual trigger", icon: { name: "touch_app" }, data: { type: "manual-trigger", category: "Triggers" } },
+  { id: "2", name: "Schedule trigger", icon: { name: "schedule" }, data: { type: "schedule-trigger", category: "Triggers" } },
+  { id: "3", name: "Webhook trigger", icon: { name: "webhook" }, data: { type: "webhook-trigger", category: "Triggers" } },
   {
     id: "4",
     name: "AI Agent",
     icon: { name: "smart_toy" },
-    data: { type: "ai-agent", category: "ai" },
+    data: { type: "ai-agent", category: "AI" },
     description: "Autonomous AI assistant",
   },
   {
     id: "5",
     name: "OpenAI",
     icon: { name: "psychology" },
-    data: { type: "openai", category: "ai" },
+    data: { type: "openai", category: "AI" },
     description: "GPT models integration",
   },
   {
     id: "6",
     name: "Data extractor",
     icon: { name: "file_copy" },
-    data: { type: "data-extractor", category: "data" },
+    data: { type: "data-extractor", category: "Data" },
     description: "Extract data from documents",
   },
   {
     id: "7",
     name: "Sentiment Analyzer",
     icon: { name: "sentiment_satisfied" },
-    data: { type: "sentiment-analyzer", category: "ai" },
+    data: { type: "sentiment-analyzer", category: "AI" },
     description: "Analyze text sentiment",
   },
   {
     id: "8",
     name: "Action",
     icon: { name: "settings" },
-    data: { type: "action", category: "actions" },
+    data: { type: "action", category: "Actions" },
     description: "Generic action node",
   },
 ];
+
+const AVAILABLE_NODE_CATEGORIES = AVAILABLE_NODE_OPTIONS.reduce<Record<string, ListItem<NodeItemData>[]>>((acc, node) => {
+  if (node.data.category) {
+    if (!acc[node.data.category]) {
+      acc[node.data.category] = [];
+    }
+    acc[node.data.category]?.push(node);
+  }
+  return acc;
+}, {});
+
+const CATEGORY_LIST_ITEMS: ListItem<NodeItemData>[] = Object.entries(AVAILABLE_NODE_CATEGORIES).map(([category, nodes], index) => ({
+  id: `category-${index}`,
+  name: category,
+  icon: nodes[0]?.icon,
+  data: { type: "category", category },
+  children: nodes,
+}));
 
 // Main story using the simple preview node selection approach
 const NodeAdditionStory = () => {
@@ -396,7 +417,7 @@ export const WithCustomFetch: Story = {
       await new Promise((resolve) => setTimeout(resolve, Math.random() * 1000 + 200));
       return AVAILABLE_NODE_OPTIONS.filter((node) => node.name.toLowerCase().includes(query.toLowerCase()));
     },
-    items: AVAILABLE_NODE_OPTIONS,
+    items: CATEGORY_LIST_ITEMS,
   },
   render: (args) => (
     <div
