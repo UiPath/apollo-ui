@@ -5,6 +5,7 @@ import 'nextra-theme-docs/style.css';
 import { ReactNode } from 'react';
 import Image from 'next/image';
 import './globals.css';
+import { Analytics } from '@vercel/analytics/next';
 
 export const metadata = {
   title: {
@@ -67,6 +68,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
     >
       <Head>{/* Your additional tags should be passed as `children` of `<Head>` element */}</Head>
       <body>
+        <Analytics />
         <Layout
           sidebar={{ autoCollapse: false }}
           navbar={navbar}
