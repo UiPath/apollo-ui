@@ -1,3 +1,10 @@
+## [1.1.1](https://github.com/uipath/wind/compare/v1.1.0...v1.1.1) (2025-11-21)
+
+
+### Bug Fixes
+
+* add source directive for JavaScript and TypeScript files in globals.css ([acb2bd5](https://github.com/uipath/wind/commit/acb2bd5b453c8f36357360c9007da7f09533c5b9))
+
 # [1.1.0](https://github.com/uipath/wind/compare/v1.0.0...v1.1.0) (2025-11-21)
 
 
