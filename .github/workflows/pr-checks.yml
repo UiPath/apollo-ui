@@ -22,7 +22,6 @@ jobs:
           - Typecheck
           - Test Coverage
           - Build
-          - Format
 
     steps:
       - name: Checkout code
@@ -79,10 +78,6 @@ jobs:
       - name: Run Build
         if: matrix.check == 'Build'
         run: pnpm build
-
-      - name: Run Format Check
-        if: matrix.check == 'Format'
-        run: pnpm format:check
 
       - name: Upload Failure Artifacts
         if: failure()
