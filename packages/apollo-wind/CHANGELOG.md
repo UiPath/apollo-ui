@@ -1,3 +1,10 @@
+# [1.1.0](https://github.com/uipath/wind/compare/v1.0.0...v1.1.0) (2025-11-21)
+
+
+### Features
+
+* Add Localization Guide and enhance accessibility in UI components ([60bad78](https://github.com/uipath/wind/commit/60bad788e71fdaaebedc537cbf2cbb3853e3da40))
+
 # 1.0.0 (2025-11-21)
 
 
