@@ -8,13 +8,7 @@ import { Checkbox } from "./checkbox";
 import { Button } from "./button";
 import { Calendar } from "./calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "./popover";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "./select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./select";
 
 export type EditableCellType = "text" | "number" | "select" | "date" | "checkbox";
 
@@ -36,10 +30,7 @@ interface EditableCellProps<TData, TValue> {
   onUpdate: (value: TValue) => void;
 }
 
-export function EditableCell<TData, TValue>({
-  cell,
-  onUpdate,
-}: EditableCellProps<TData, TValue>) {
+export function EditableCell<TData, TValue>({ cell, onUpdate }: EditableCellProps<TData, TValue>) {
   const initialValue = cell.getValue();
   const meta = cell.column.columnDef.meta as EditableCellMeta | undefined;
   const type = meta?.type ?? "text";

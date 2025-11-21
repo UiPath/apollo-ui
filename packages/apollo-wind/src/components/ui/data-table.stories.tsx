@@ -415,37 +415,17 @@ export const Editable: Story = {
 
 export const Resizable: Story = {
   render: () => (
-    <DataTable
-      columns={sortableColumns}
-      data={sampleUsers}
-      searchKey="name"
-      resizable
-    />
+    <DataTable columns={sortableColumns} data={sampleUsers} searchKey="name" resizable />
   ),
 };
 
 export const Compact: Story = {
-  render: () => (
-    <DataTable
-      columns={sortableColumns}
-      data={sampleUsers}
-      searchKey="name"
-      compact
-    />
-  ),
+  render: () => <DataTable columns={sortableColumns} data={sampleUsers} searchKey="name" compact />,
 };
 
 // Full-featured editable table with all options
 const editableSortableColumns: ColumnDef<Task, unknown>[] = [
-  {
-    accessorKey: "completed",
-    header: "",
-    meta: { type: "checkbox" } as EditableCellMeta,
-    size: 50,
-    minSize: 50,
-    maxSize: 50,
-    enableResizing: false,
-  },
+  DataTableSelectColumn<Task>(),
   {
     accessorKey: "name",
     header: ({ column }) => <DataTableColumnHeader column={column} title="Task" />,
@@ -518,6 +498,8 @@ function FullFeaturedTableExample() {
         compact
         searchKey="name"
         searchPlaceholder="Filter tasks..."
+        showPagination
+        pageSize={10}
       />
     </div>
   );

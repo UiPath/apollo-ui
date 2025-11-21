@@ -13,7 +13,7 @@ import {
   useReactTable,
   VisibilityState,
 } from "@tanstack/react-table";
-import { ArrowUpDown, ChevronDown } from "lucide-react";
+import { ArrowUpDown, ArrowUp, ArrowDown, ChevronDown } from "lucide-react";
 import * as React from "react";
 
 import { Button } from "@/components/ui/button";
@@ -168,7 +168,11 @@ export function DataTable<TData, TValue>({
                       key={header.id}
                       className={compact ? "relative h-8 px-2 py-1" : "relative"}
                       style={{
-                        width: resizable ? header.getSize() : (column.getSize() !== 150 ? column.getSize() : undefined),
+                        width: resizable
+                          ? header.getSize()
+                          : column.getSize() !== 150
+                            ? column.getSize()
+                            : undefined,
                         minWidth: column.columnDef.minSize,
                         maxWidth: column.columnDef.maxSize,
                       }}
@@ -182,9 +186,13 @@ export function DataTable<TData, TValue>({
                           onTouchStart={header.getResizeHandler()}
                           className={`absolute -right-1 top-0 z-10 h-full w-2 cursor-col-resize select-none touch-none group`}
                         >
-                          <div className={`h-full w-px mx-auto ${
-                            header.column.getIsResizing() ? "bg-primary" : "group-hover:bg-primary/50"
-                          }`} />
+                          <div
+                            className={`h-full w-px mx-auto ${
+                              header.column.getIsResizing()
+                                ? "bg-primary"
+                                : "group-hover:bg-primary/50"
+                            }`}
+                          />
                         </div>
                       )}
                     </TableHead>
@@ -204,7 +212,11 @@ export function DataTable<TData, TValue>({
                         key={cell.id}
                         className={compact ? "truncate px-2 py-1" : "truncate"}
                         style={{
-                          width: resizable ? cell.column.getSize() : (column.getSize() !== 150 ? column.getSize() : undefined),
+                          width: resizable
+                            ? cell.column.getSize()
+                            : column.getSize() !== 150
+                              ? column.getSize()
+                              : undefined,
                           minWidth: column.columnDef.minSize,
                           maxWidth: column.columnDef.maxSize,
                         }}
@@ -266,15 +278,33 @@ export function DataTableColumnHeader<TData, TValue>({
   column: Column<TData, TValue>;
   title: string;
 }) {
+  const sorted = column.getIsSorted();
+
+  const handleClick = () => {
+    if (sorted === "asc") {
+      column.toggleSorting(true); // asc -> desc
+    } else if (sorted === "desc") {
+      column.clearSorting(); // desc -> clear
+    } else {
+      column.toggleSorting(false); // none -> asc
+    }
+  };
+
   return (
     <Button
       variant="ghost"
       size="sm"
       className="-ml-3 h-8 data-[state=open]:bg-accent"
-      onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+      onClick={handleClick}
     >
       <span>{title}</span>
-      <ArrowUpDown className="ml-2 h-4 w-4" />
+      {sorted === "asc" ? (
+        <ArrowUp className="ml-2 h-4 w-4" />
+      ) : sorted === "desc" ? (
+        <ArrowDown className="ml-2 h-4 w-4" />
+      ) : (
+        <ArrowUpDown className="ml-2 h-4 w-4" />
+      )}
     </Button>
   );
 }
