@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@source "../**/*.{js,jsx,ts,tsx}";
 
 @theme {
   /* Semantic Color Tokens - Apollo Wind Design System */
