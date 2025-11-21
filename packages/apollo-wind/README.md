@@ -1,4 +1,4 @@
-# Apollo Wind Design System
+# UiPath Wind Design System
 
 A modern, accessible React component library with bundled Tailwind CSS.
 Zero-config for quick starts, full Tailwind JIT for advanced needs.
