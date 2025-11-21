@@ -1,7 +1,7 @@
-import styled from 'styled-components';
+import styled from "styled-components";
 
 export const Section = styled.section<{ $marginBottom?: string }>`
-  margin-bottom: ${(props) => props.$marginBottom || '0'};
+  margin-bottom: ${(props) => props.$marginBottom || "0"};
 `;
 
 export const Grid = styled.div`

@@ -1,7 +1,7 @@
-import styled from 'styled-components';
+import styled from "styled-components";
 
 export const Section = styled.section<{ $marginBottom?: string }>`
-  margin-bottom: ${(props) => props.$marginBottom || '0'};
+  margin-bottom: ${(props) => props.$marginBottom || "0"};
 `;
 
 export const Grid = styled.div`
@@ -12,9 +12,13 @@ export const Grid = styled.div`
 
 export const BorderCard = styled.div<{ $isDark?: boolean }>`
   background: ${(props) =>
-    props.$isDark ? 'var(--color-background)' : 'var(--color-background-secondary)'};
+		props.$isDark
+			? "var(--color-background)"
+			: "var(--color-background-secondary)"};
   border: ${(props) =>
-    props.$isDark ? '2px solid var(--color-border)' : '2px solid var(--color-border)'};
+		props.$isDark
+			? "2px solid var(--color-border)"
+			: "2px solid var(--color-border)"};
   border-radius: 12px;
   padding: 24px;
   box-shadow: var(--shadow-sm);
@@ -34,7 +38,9 @@ export const TokenName = styled.div`
 export const TokenValue = styled.code<{ $isDark?: boolean }>`
   font-size: 14px;
   color: ${(props) =>
-    props.$isDark ? 'var(--color-foreground-de-emp)' : 'var(--color-foreground-de-emp)'};
+		props.$isDark
+			? "var(--color-foreground-de-emp)"
+			: "var(--color-foreground-de-emp)"};
 `;
 
 export const RadiusDemo = styled.div<{ $radius: string }>`
@@ -65,16 +71,16 @@ export const WidthDemo = styled.div<{ $width: string }>`
 `;
 
 export const SemanticBorderDemo = styled.div<{
-  $border: string;
-  $isDark?: boolean;
+	$border: string;
+	$isDark?: boolean;
 }>`
   width: 100%;
   padding: 20px;
   border: ${(props) => props.$border};
   border-radius: 8px;
-  background: ${(props) => (props.$isDark ? 'var(--color-background)' : 'var(--color-background)')};
+  background: ${(props) => (props.$isDark ? "var(--color-background)" : "var(--color-background)")};
   font-size: 14px;
-  color: ${(props) => (props.$isDark ? 'var(--color-foreground)' : 'var(--color-foreground-emp)')};
+  color: ${(props) => (props.$isDark ? "var(--color-foreground)" : "var(--color-foreground-emp)")};
   line-height: 1.6;
   min-height: 100px;
   display: flex;

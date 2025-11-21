@@ -1,5 +1,5 @@
-import { Link } from 'react-router-dom';
-import styled from 'styled-components';
+import { Link } from "react-router-dom";
+import styled from "styled-components";
 
 export const Nav = styled.nav`
   background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
@@ -30,15 +30,17 @@ export const NavLink = styled(Link)<{ $isActive: boolean }>`
   text-decoration: none;
   color: var(--color-background);
   background: ${(props) =>
-    props.$isActive ? 'var(--color-nav-active)' : 'var(--color-nav-inactive)'};
+		props.$isActive ? "var(--color-nav-active)" : "var(--color-nav-inactive)"};
   border: ${(props) =>
-    props.$isActive ? '2px solid var(--color-background)' : '2px solid transparent'};
-  font-weight: ${(props) => (props.$isActive ? 'bold' : 'normal')};
+		props.$isActive
+			? "2px solid var(--color-background)"
+			: "2px solid transparent"};
+  font-weight: ${(props) => (props.$isActive ? "bold" : "normal")};
   transition: all 0.3s ease;
   font-size: 14px;
 
   &:hover {
     background: ${(props) =>
-      props.$isActive ? 'var(--color-nav-active)' : 'var(--color-nav-hover)'};
+			props.$isActive ? "var(--color-nav-active)" : "var(--color-nav-hover)"};
   }
 `;
