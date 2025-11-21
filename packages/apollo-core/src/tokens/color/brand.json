@@ -1,0 +1,49 @@
+{
+  "shadow": {
+    "highlight-light": { "value": "inset 4px 0px 0px {color.selectionIndicator.light.value}" },
+    "highlight-light-hc": {
+      "value": "inset 4px 0px 0px {color.selectionIndicator.light-hc.value}"
+    },
+    "highlight-dark-hc": { "value": "inset 4px 0px 0px {color.selectionIndicator.dark-hc.value}" },
+    "highlight-dark": { "value": "inset 4px 0px 0px {color.selectionIndicator.dark.value}" }
+  },
+  "color": {
+    "brand": {
+      "primary": {
+        "value": "{color.orange.500.value}",
+        "comment": "Brand color direct from marketing."
+      },
+      "secondary": {
+        "value": "{color.blue.500.value}",
+        "comment": "Brand color direct from marketing."
+      },
+      "neutral_white": {
+        "value": "{color.white.value}"
+      },
+      "neutral_black": {
+        "value": "{color.black.value}"
+      },
+      "neutral_dark_gray": {
+        "value": "{color.gray.550.value}"
+      },
+      "neutral_pale_gray": {
+        "value": "{color.gray.250.value}"
+      },
+      "neutral_light_gray": {
+        "value": "{color.ink.150.value}"
+      },
+      "accessory_red": {
+        "value": "{color.red.500.value}"
+      },
+      "accessory_yellow": {
+        "value": "{color.yellow.500.value}"
+      },
+      "accessory_purple": {
+        "value": "{color.purple.500.value}"
+      },
+      "accessory_light_blue": {
+        "value": "{color.light_blue.500.value}"
+      }
+    }
+  }
+}

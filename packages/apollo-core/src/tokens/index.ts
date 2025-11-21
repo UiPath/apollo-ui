@@ -1,57 +1,38 @@
-// Design Tokens
-// This file will be auto-generated from Figma design tokens
+// Design tokens generated from style-dictionary
+// This file exports all the generated design tokens for use in the package
 
 // Colors
-export const ColorPrimary500 = '#0066CC';
-export const ColorSecondary500 = '#6C757D';
-export const ColorSuccess500 = '#28A745';
-export const ColorError500 = '#DC3545';
-export const ColorWarning500 = '#FFC107';
-
-// Spacing
-export const SpacingXs = '4px';
-export const SpacingSm = '8px';
-export const SpacingMd = '16px';
-export const SpacingLg = '24px';
-export const SpacingXl = '32px';
+export * from './_generated/Colors';
+export * as Colors from './_generated/Colors';
 
 // Typography
-export const FontSizeXs = '12px';
-export const FontSizeSm = '14px';
-export const FontSizeBase = '16px';
-export const FontSizeLg = '18px';
-export const FontSizeXl = '20px';
+export * from './_generated/FontFamily';
+export * as FontFamily from './_generated/FontFamily';
+export * from './_generated/Typography';
+export * as Typography from './_generated/Typography';
+export { FontVariantToken, HeaderVariants } from './_generated/Typography';
 
-export const FontWeightNormal = 400;
-export const FontWeightMedium = 500;
-export const FontWeightSemibold = 600;
-export const FontWeightBold = 700;
+// Spacing & Layout
+export * from './_generated/Padding';
+export * as Padding from './_generated/Padding';
+export * from './_generated/Spacing';
+export * as Spacing from './_generated/Spacing';
 
-// Export all tokens
-export const colors = {
-  ColorPrimary500,
-  ColorSecondary500,
-  ColorSuccess500,
-  ColorError500,
-  ColorWarning500,
-};
+// Border & Stroke
+export * from './_generated/Border';
+export * as Border from './_generated/Border';
+export * from './_generated/Stroke';
+export * as Stroke from './_generated/Stroke';
 
-export const spacing = {
-  SpacingXs,
-  SpacingSm,
-  SpacingMd,
-  SpacingLg,
-  SpacingXl,
-};
+// Effects
+export * from './_generated/Shadow';
+export * as Shadow from './_generated/Shadow';
 
-export const typography = {
-  FontSizeXs,
-  FontSizeSm,
-  FontSizeBase,
-  FontSizeLg,
-  FontSizeXl,
-  FontWeightNormal,
-  FontWeightMedium,
-  FontWeightSemibold,
-  FontWeightBold,
-};
+// Icons
+export * from './_generated/Icon';  
+export * as Icon from './_generated/Icon';
+
+// Screen sizes (breakpoints)
+export * from './_generated/ScreenSizes';
+export * as ScreenSizes from './_generated/ScreenSizes';
+

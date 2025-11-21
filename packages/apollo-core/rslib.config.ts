@@ -8,6 +8,9 @@ export default defineConfig({
         distPath: {
           root: './dist',
         },
+        filename: {
+          js: '[name].js',
+        },
       },
       dts: true,
     },
@@ -16,6 +19,9 @@ export default defineConfig({
       output: {
         distPath: {
           root: './dist',
+        },
+        filename: {
+          js: '[name].cjs',
         },
       },
       dts: false,
@@ -29,6 +35,11 @@ export default defineConfig({
   },
   output: {
     target: 'web',
-    copy: [{ from: './src/theme.css', to: './theme.css' }],
+    copy: [
+      { from: './.tokens-temp/css', to: './tokens/css' },
+      { from: './.tokens-temp/scss', to: './tokens/scss' },
+      { from: './.tokens-temp/less', to: './tokens/less' },
+      { from: './.tokens-temp/jss', to: './tokens/jss' },
+    ],
   },
 });

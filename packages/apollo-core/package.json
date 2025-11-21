@@ -2,37 +2,38 @@
   "name": "@uipath/apollo-core",
   "version": "0.0.0",
   "description": "Apollo Design System - Core design tokens, icons, and fonts",
-  "main": "./dist/index.js",
-  "module": "./dist/index.mjs",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.js",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs",
       "types": "./dist/index.d.ts"
     },
     "./tokens": {
-      "import": "./dist/tokens/index.mjs",
-      "require": "./dist/tokens/index.js",
+      "import": "./dist/tokens.js",
+      "require": "./dist/tokens.cjs",
       "types": "./dist/tokens/index.d.ts"
     },
     "./icons": {
-      "import": "./dist/icons/index.mjs",
-      "require": "./dist/icons/index.js",
-      "types": "./dist/icons/index.d.ts"
+      "import": "./dist/icons.js",
+      "require": "./dist/icons.cjs",
+      "types": "./dist/icons.d.ts"
     },
     "./fonts": {
-      "import": "./dist/fonts/index.mjs",
-      "require": "./dist/fonts/index.js",
-      "types": "./dist/fonts/index.d.ts"
+      "import": "./dist/fonts.js",
+      "require": "./dist/fonts.cjs",
+      "types": "./dist/fonts.d.ts"
     },
-    "./theme.css": "./dist/theme.css"
+    "./tokens/*": "./dist/tokens/*"
   },
   "files": [
     "dist"
   ],
   "scripts": {
-    "build": "rslib build",
+    "build": "pnpm run build:tokens && rslib build",
+    "build:tokens": "node build-tokens.js",
     "dev": "rslib build --watch",
     "lint": "eslint src --ext .ts,.tsx",
     "test": "vitest --run --passWithNoTests",
@@ -47,6 +48,8 @@
   "license": "MIT",
   "devDependencies": {
     "@rslib/core": "^0.17.0",
+    "lodash": "^4.17.21",
+    "style-dictionary": "2.8.3",
     "typescript": "^5.9.3",
     "vitest": "^4.0.5"
   }

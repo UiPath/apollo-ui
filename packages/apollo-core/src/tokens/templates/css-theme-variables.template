@@ -1,0 +1,33 @@
+@import "./variables.css";
+
+body.light {
+<% _.each(allProperties, function(property) { if (property.name.endsWith('light')) {
+%>  --<%= property.name.slice(0, -'-light'.length) %>: var(--<%= property.name %>);
+<% }}); %>
+  --border: var(--border-light);
+  color-scheme: light;
+}
+
+body.light-hc {
+<% _.each(allProperties, function(property) { if (property.name.endsWith('light-hc')) {
+%>  --<%= property.name.slice(0, -'-light-hc'.length) %>: var(--<%= property.name %>);
+<% }}); %>
+  --border: var(--border-light-hc);
+  color-scheme: light-hc;
+}
+
+body.dark {
+<% _.each(allProperties, function(property) { if (property.name.endsWith('dark')) {
+%>  --<%= property.name.slice(0, -'-dark'.length) %>: var(--<%= property.name %>);
+<% }}); %>
+  --border: var(--border-dark);
+  color-scheme: dark;
+}
+
+body.dark-hc {
+<% _.each(allProperties, function(property) { if (property.name.endsWith('dark-hc')) {
+%>  --<%= property.name.slice(0, -'-dark-hc'.length) %>: var(--<%= property.name %>);
+<% }}); %>
+  --border: var(--border-dark-hc);
+  color-scheme: dark-hc;
+}

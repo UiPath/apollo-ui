@@ -6,24 +6,31 @@
   "type": "module",
   "scripts": {
     "dev": "rsbuild dev",
-    "build": "rsbuild build",
+    "build": "pnpm typecheck && rsbuild build",
     "preview": "rsbuild preview",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "typecheck": "tsc --noEmit",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
+    "format": "biome format --write ."
   },
   "dependencies": {
     "@uipath/ap-autopilot-chat": "workspace:*",
     "@uipath/ap-data-grid": "workspace:*",
-    "@uipath/apollo-core": "workspace:*",
     "@uipath/apollo-react": "workspace:*",
     "@uipath/apollo-wind": "workspace:*",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "react-router-dom": "^7.9.6",
+    "styled-components": "^6.1.19"
   },
   "devDependencies": {
+    "@biomejs/biome": "^2.3.6",
     "@rsbuild/core": "^1.6.1",
     "@rsbuild/plugin-react": "^1.4.1",
     "@types/react": "^19.0.6",
     "@types/react-dom": "^19.0.3",
+    "@types/styled-components": "^5.1.36",
     "typescript": "^5.9.3"
   }
 }

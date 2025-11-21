@@ -1,0 +1,34 @@
+/* Custom CSS variables for shadows and other rgba values not in Apollo tokens */
+
+:root {
+	/* Secondary gradient color (purple) - not in Apollo tokens */
+	--color-secondary: #764ba2;
+
+	/* Shadow variables - using common box-shadow values */
+	--shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.5);
+	--shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.05);
+	--shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
+	--shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+	--shadow-xl: 0 12px 32px rgba(0, 0, 0, 0.12);
+	--shadow-2xl: 2px 0 12px rgba(0, 0, 0, 0.1);
+
+	/* Special shadow for hover effects */
+	--shadow-hover-primary: 0 8px 24px rgba(102, 126, 234, 0.2);
+	--shadow-hover-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+
+	/* Overlay/backdrop color */
+	--color-overlay: rgba(0, 0, 0, 0.5);
+
+	/* Semi-transparent backgrounds */
+	--color-nav-active: rgba(255, 255, 255, 0.3);
+	--color-nav-inactive: rgba(255, 255, 255, 0.1);
+	--color-nav-hover: rgba(255, 255, 255, 0.2);
+
+	/* Border subtle */
+	--color-border-subtle: rgba(0, 0, 0, 0.1);
+
+	/* Background tints */
+	--color-background-tint-primary: rgba(102, 126, 234, 0.05);
+	--color-background-tint-light: rgba(0, 0, 0, 0.08);
+	--color-background-tint-dark: rgba(0, 0, 0, 0.3);
+}

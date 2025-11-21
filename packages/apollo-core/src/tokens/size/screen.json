@@ -1,0 +1,30 @@
+{
+  "screen": {
+    "size": {
+      "xsmall": {
+        "min": { "value": "0px" },
+        "max": { "value": "480px" }
+      },
+      "small": {
+        "min": { "value": "480px" },
+        "max": { "value": "768px" }
+      },
+      "medium": {
+        "min": { "value": "768px" },
+        "max": { "value": "1024px" }
+      },
+      "large": {
+        "min": { "value": "1024px" },
+        "max": { "value": "1280px" }
+      },
+      "xlarge": {
+        "min": { "value": "1280px" },
+        "max": { "value": "1600px" }
+      },
+      "wide": {
+        "min": { "value": "1600px" },
+        "max": { "value": "100000px" }
+      }
+    }
+  }
+}

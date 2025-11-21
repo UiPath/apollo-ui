@@ -1,0 +1,33 @@
+@import "./variables";
+
+body.light {
+<% _.each(allProperties, function(property) { if (property.name.endsWith('light')) {
+%>  --<%= property.name.slice(0, -'-light'.length) %>: #{$<%= property.name %>};
+<% }}); %>
+  --border: #{$border-light};
+  color-scheme: light;
+}
+
+body.light-hc {
+<% _.each(allProperties, function(property) { if (property.name.endsWith('light-hc')) {
+%>  --<%= property.name.slice(0, -'-light-hc'.length) %>: #{$<%= property.name %>};
+<% }}); %>
+  --border: #{$border-light-hc};
+  color-scheme: light-hc;
+}
+
+body.dark {
+<% _.each(allProperties, function(property) { if (property.name.endsWith('dark')) {
+%>  --<%= property.name.slice(0, -'-dark'.length) %>: #{$<%= property.name %>};
+<% }}); %>
+  --border: #{$border-dark};
+  color-scheme: dark;
+}
+
+body.dark-hc {
+<% _.each(allProperties, function(property) { if (property.name.endsWith('dark-hc')) {
+%>  --<%= property.name.slice(0, -'-dark-hc'.length) %>: #{$<%= property.name %>};
+<% }}); %>
+  --border: #{$border-dark-hc};
+  color-scheme: dark-hc;
+}
