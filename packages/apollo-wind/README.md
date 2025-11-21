@@ -141,6 +141,10 @@ npm run build      # Build library
 ## Documentation
 
 - 📖 [Complete Usage Guide](./docs/USAGE.md) - Detailed consumption guide
+- ♿ [Accessibility Testing Guide](./docs/ACCESSIBILITY_TESTING_GUIDE.md) - WCAG
+  2.1 Level AA compliance and testing
+- 🌍 [Localization Guide](./docs/LOCALIZATION_GUIDE.md) - Internationalization
+  (i18n) implementation
 
 ## Tech Stack
 

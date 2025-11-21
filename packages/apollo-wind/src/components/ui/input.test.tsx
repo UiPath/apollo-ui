@@ -1,12 +1,25 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { axe } from "jest-axe";
 import { describe, expect, it } from "vitest";
 import { Input } from "./input";
+import { Label } from "./label";
 
 describe("Input", () => {
   it("renders input field", () => {
     render(<Input placeholder="Enter text" />);
     expect(screen.getByPlaceholderText(/enter text/i)).toBeInTheDocument();
+  });
+
+  it("has no accessibility violations", async () => {
+    const { container } = render(
+      <div>
+        <Label htmlFor="test-input">Test Input</Label>
+        <Input id="test-input" />
+      </div>,
+    );
+    const results = await axe(container);
+    expect(results).toHaveNoViolations();
   });
 
   it("accepts user input", async () => {
