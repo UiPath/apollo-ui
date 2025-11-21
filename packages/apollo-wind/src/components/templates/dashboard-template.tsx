@@ -1,9 +1,44 @@
+import * as React from "react";
+import { ColumnDef } from "@tanstack/react-table";
+import { Activity, CreditCard, DollarSign, Users, MoreHorizontal } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  DataTable,
+  DataTableColumnHeader,
+  DataTableSelectColumn,
+} from "@/components/ui/data-table";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
+import { StatsCard } from "@/components/ui/stats-card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib";
+
+// Types
+interface Transaction {
+  id: string;
+  customer: string;
+  email: string;
+  amount: number;
+  status: "completed" | "pending" | "failed";
+  date: string;
+}
+
+interface ActivityItem {
+  id: string;
+  user: string;
+  action: string;
+  time: string;
+  avatar?: string;
+}
 
 export interface DashboardTemplateProps {
   className?: string;
@@ -14,116 +49,156 @@ export interface DashboardTemplateProps {
     email: string;
     avatar?: string;
   };
-  stats?: Array<{
-    label: string;
-    value: string | number;
-    trend?: {
-      value: string;
-      direction: "up" | "down";
-    };
-    description?: string;
-  }>;
-  recentActivity?: Array<{
-    id: string;
-    title: string;
-    description: string;
-    time: string;
-    status?: "success" | "warning" | "error" | "info";
-  }>;
 }
+
+// Sample data
+const transactions: Transaction[] = [
+  {
+    id: "1",
+    customer: "Olivia Martin",
+    email: "olivia@example.com",
+    amount: 1999.0,
+    status: "completed",
+    date: "2024-01-15",
+  },
+  {
+    id: "2",
+    customer: "Jackson Lee",
+    email: "jackson@example.com",
+    amount: 39.0,
+    status: "completed",
+    date: "2024-01-14",
+  },
+  {
+    id: "3",
+    customer: "Isabella Nguyen",
+    email: "isabella@example.com",
+    amount: 299.0,
+    status: "pending",
+    date: "2024-01-14",
+  },
+  {
+    id: "4",
+    customer: "William Kim",
+    email: "will@example.com",
+    amount: 99.0,
+    status: "completed",
+    date: "2024-01-13",
+  },
+  {
+    id: "5",
+    customer: "Sofia Davis",
+    email: "sofia@example.com",
+    amount: 450.0,
+    status: "failed",
+    date: "2024-01-12",
+  },
+];
+
+const recentActivity: ActivityItem[] = [
+  { id: "1", user: "Olivia Martin", action: "Completed purchase of $1,999.00", time: "2 min ago" },
+  { id: "2", user: "Jackson Lee", action: "Created new account", time: "1 hour ago" },
+  {
+    id: "3",
+    user: "Isabella Nguyen",
+    action: "Submitted support ticket #1234",
+    time: "3 hours ago",
+  },
+  { id: "4", user: "William Kim", action: "Updated billing information", time: "5 hours ago" },
+];
+
+const columns: ColumnDef<Transaction, unknown>[] = [
+  DataTableSelectColumn<Transaction>(),
+  {
+    accessorKey: "customer",
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Customer" />,
+    cell: ({ row }) => (
+      <div className="flex items-center gap-2">
+        <Avatar className="h-8 w-8">
+          <AvatarFallback>
+            {row.original.customer
+              .split(" ")
+              .map((n) => n[0])
+              .join("")}
+          </AvatarFallback>
+        </Avatar>
+        <div>
+          <div className="font-medium">{row.original.customer}</div>
+          <div className="text-xs text-muted-foreground">{row.original.email}</div>
+        </div>
+      </div>
+    ),
+  },
+  {
+    accessorKey: "amount",
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Amount" />,
+    cell: ({ row }) => {
+      const amount = parseFloat(row.getValue("amount"));
+      const formatted = new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: "USD",
+      }).format(amount);
+      return <div className="font-medium">{formatted}</div>;
+    },
+  },
+  {
+    accessorKey: "status",
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Status" />,
+    cell: ({ row }) => {
+      const status = row.getValue("status") as string;
+      return (
+        <Badge
+          variant={
+            status === "completed" ? "default" : status === "pending" ? "secondary" : "destructive"
+          }
+        >
+          {status}
+        </Badge>
+      );
+    },
+  },
+  {
+    accessorKey: "date",
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Date" />,
+  },
+  {
+    id: "actions",
+    cell: () => (
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" size="icon" className="h-8 w-8">
+            <MoreHorizontal className="h-4 w-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuItem>View details</DropdownMenuItem>
+          <DropdownMenuItem>Download receipt</DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    ),
+  },
+];
 
 export function DashboardTemplate({
   className,
   title = "Dashboard",
-  description = "Welcome back! Here's an overview of your account.",
-  user = {
-    name: "John Doe",
-    email: "john.doe@example.com",
-  },
-  stats = [
-    {
-      label: "Total Revenue",
-      value: "$45,231.89",
-      trend: { value: "+20.1%", direction: "up" },
-      description: "from last month",
-    },
-    {
-      label: "Active Users",
-      value: "2,350",
-      trend: { value: "+180", direction: "up" },
-      description: "from last month",
-    },
-    {
-      label: "New Orders",
-      value: "145",
-      trend: { value: "+12%", direction: "up" },
-      description: "from last week",
-    },
-    {
-      label: "Bounce Rate",
-      value: "3.2%",
-      trend: { value: "-0.4%", direction: "down" },
-      description: "from last week",
-    },
-  ],
-  recentActivity = [
-    {
-      id: "1",
-      title: "New order received",
-      description: "Order #1234 from Jane Smith",
-      time: "2 minutes ago",
-      status: "success",
-    },
-    {
-      id: "2",
-      title: "Payment processed",
-      description: "Payment of $299.00 completed",
-      time: "10 minutes ago",
-      status: "success",
-    },
-    {
-      id: "3",
-      title: "Server warning",
-      description: "High CPU usage detected",
-      time: "1 hour ago",
-      status: "warning",
-    },
-    {
-      id: "4",
-      title: "New user signup",
-      description: "Alice Johnson joined",
-      time: "2 hours ago",
-      status: "info",
-    },
-  ],
+  description = "Welcome back! Here's an overview of your business.",
+  user = { name: "John Doe", email: "john@example.com" },
 }: DashboardTemplateProps) {
-  const getStatusBadgeVariant = (status?: string) => {
-    switch (status) {
-      case "success":
-        return "default";
-      case "warning":
-        return "secondary";
-      case "error":
-        return "destructive";
-      case "info":
-        return "outline";
-      default:
-        return "default";
-    }
-  };
+  const [activeTab, setActiveTab] = React.useState("overview");
 
   return (
     <div className={cn("min-h-screen bg-background", className)}>
       {/* Header */}
       <header className="border-b">
-        <div className="container mx-auto flex h-16 items-center justify-between px-4 py-4">
+        <div className="container mx-auto flex h-16 items-center justify-between px-4">
           <div>
             <h1 className="text-2xl font-bold">{title}</h1>
             <p className="text-sm text-muted-foreground">{description}</p>
           </div>
           <div className="flex items-center gap-4">
             <Button variant="outline" size="sm">
-              Settings
+              Download Report
             </Button>
             <Separator orientation="vertical" className="h-8" />
             <div className="flex items-center gap-2">
@@ -147,96 +222,150 @@ export function DashboardTemplate({
       </header>
 
       {/* Main Content */}
-      <main className="container mx-auto p-4 md:p-6 lg:p-8">
-        {/* Stats Grid */}
-        <div className="mb-8 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          {stats.map((stat, index) => (
-            <Card key={index}>
-              <CardHeader className="pb-2">
-                <CardDescription>{stat.label}</CardDescription>
-                <CardTitle className="text-3xl font-bold">{stat.value}</CardTitle>
+      <main className="container mx-auto p-4 md:p-6">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <TabsList>
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="analytics">Analytics</TabsTrigger>
+            <TabsTrigger value="reports">Reports</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="overview" className="space-y-6">
+            {/* Stats Cards */}
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+              <StatsCard
+                title="Total Revenue"
+                value="$45,231.89"
+                description="+20.1% from last month"
+                icon={<DollarSign className="h-4 w-4 text-muted-foreground" />}
+              />
+              <StatsCard
+                title="Subscriptions"
+                value="+2,350"
+                description="+180.1% from last month"
+                icon={<Users className="h-4 w-4 text-muted-foreground" />}
+              />
+              <StatsCard
+                title="Sales"
+                value="+12,234"
+                description="+19% from last month"
+                icon={<CreditCard className="h-4 w-4 text-muted-foreground" />}
+              />
+              <StatsCard
+                title="Active Now"
+                value="+573"
+                description="+201 since last hour"
+                icon={<Activity className="h-4 w-4 text-muted-foreground" />}
+              />
+            </div>
+
+            {/* Content Grid */}
+            <div className="grid gap-4 lg:grid-cols-7">
+              {/* Transactions Table */}
+              <Card className="lg:col-span-4">
+                <CardHeader>
+                  <CardTitle>Recent Transactions</CardTitle>
+                  <CardDescription>Latest customer transactions</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <DataTable
+                    columns={columns}
+                    data={transactions}
+                    searchKey="customer"
+                    searchPlaceholder="Search customers..."
+                    compact
+                    showColumnToggle={false}
+                  />
+                </CardContent>
+              </Card>
+
+              {/* Recent Activity */}
+              <Card className="lg:col-span-3">
+                <CardHeader>
+                  <CardTitle>Recent Activity</CardTitle>
+                  <CardDescription>Latest updates from your team</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {recentActivity.map((activity) => (
+                    <div key={activity.id} className="flex items-start gap-3">
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage src={activity.avatar} />
+                        <AvatarFallback>
+                          {activity.user
+                            .split(" ")
+                            .map((n) => n[0])
+                            .join("")}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 space-y-1">
+                        <p className="text-sm">
+                          <span className="font-medium">{activity.user}</span>{" "}
+                          <span className="text-muted-foreground">{activity.action}</span>
+                        </p>
+                        <p className="text-xs text-muted-foreground">{activity.time}</p>
+                      </div>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Goals Progress */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Monthly Goals</CardTitle>
+                <CardDescription>Track your progress towards monthly targets</CardDescription>
               </CardHeader>
-              <CardContent>
-                {stat.trend && (
-                  <div className="flex items-center gap-2 text-xs">
-                    <span
-                      className={cn(
-                        "font-medium",
-                        stat.trend.direction === "up" ? "text-green-600" : "text-red-600",
-                      )}
-                    >
-                      {stat.trend.value}
-                    </span>
-                    <span className="text-muted-foreground">{stat.description}</span>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-sm">
+                    <span>Revenue Target</span>
+                    <span className="font-medium">$45,231 / $50,000</span>
                   </div>
-                )}
+                  <Progress value={90} />
+                </div>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-sm">
+                    <span>New Customers</span>
+                    <span className="font-medium">2,350 / 3,000</span>
+                  </div>
+                  <Progress value={78} />
+                </div>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-sm">
+                    <span>Support Tickets Resolved</span>
+                    <span className="font-medium">145 / 150</span>
+                  </div>
+                  <Progress value={97} />
+                </div>
               </CardContent>
             </Card>
-          ))}
-        </div>
+          </TabsContent>
 
-        {/* Content Grid */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-          {/* Recent Activity */}
-          <Card className="col-span-4">
-            <CardHeader>
-              <CardTitle>Recent Activity</CardTitle>
-              <CardDescription>Your latest updates and notifications</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {recentActivity.map((activity) => (
-                  <div
-                    key={activity.id}
-                    className="flex items-start justify-between gap-4 rounded-lg border p-3"
-                  >
-                    <div className="flex-1 space-y-1">
-                      <div className="flex items-center gap-2">
-                        <p className="font-medium">{activity.title}</p>
-                        {activity.status && (
-                          <Badge
-                            variant={getStatusBadgeVariant(activity.status)}
-                            className="text-xs"
-                          >
-                            {activity.status}
-                          </Badge>
-                        )}
-                      </div>
-                      <p className="text-sm text-muted-foreground">{activity.description}</p>
-                      <p className="text-xs text-muted-foreground">{activity.time}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+          <TabsContent value="analytics" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Analytics</CardTitle>
+                <CardDescription>Detailed analytics coming soon</CardDescription>
+              </CardHeader>
+              <CardContent className="h-[400px] flex items-center justify-center text-muted-foreground">
+                Analytics charts and graphs would go here
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-          {/* Quick Actions */}
-          <Card className="col-span-3">
-            <CardHeader>
-              <CardTitle>Quick Actions</CardTitle>
-              <CardDescription>Common tasks and shortcuts</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <Button className="w-full justify-start" variant="outline">
-                Create New Project
-              </Button>
-              <Button className="w-full justify-start" variant="outline">
-                Invite Team Member
-              </Button>
-              <Button className="w-full justify-start" variant="outline">
-                View Reports
-              </Button>
-              <Button className="w-full justify-start" variant="outline">
-                Export Data
-              </Button>
-              <Separator className="my-4" />
-              <Button className="w-full justify-start" variant="ghost">
-                View All Actions
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
+          <TabsContent value="reports" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Reports</CardTitle>
+                <CardDescription>Generate and download reports</CardDescription>
+              </CardHeader>
+              <CardContent className="h-[400px] flex items-center justify-center text-muted-foreground">
+                Report generation interface would go here
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </main>
     </div>
   );
