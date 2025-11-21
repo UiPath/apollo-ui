@@ -13,6 +13,20 @@ import { expect } from "vitest";
 // Extend Vitest's expect with jest-axe matchers
 expect.extend(toHaveNoViolations);
 
+// Mock IntersectionObserver for components that use it (like Carousel from embla)
+global.IntersectionObserver = class IntersectionObserver {
+  root = null;
+  rootMargin = "";
+  thresholds = [];
+  constructor() {}
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+  takeRecords() {
+    return [];
+  }
+} as unknown as typeof IntersectionObserver;
+
 // Mock ResizeObserver for components that use it (like Command from cmdk)
 global.ResizeObserver = class ResizeObserver {
   observe() {
@@ -44,6 +58,21 @@ Element.prototype.setPointerCapture = function () {
 Element.prototype.releasePointerCapture = function () {
   // Mock implementation
 };
+
+// Mock matchMedia for components that use media queries (like Drawer/vaul)
+Object.defineProperty(window, "matchMedia", {
+  writable: true,
+  value: (query: string) => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addListener: () => {},
+    removeListener: () => {},
+    addEventListener: () => {},
+    removeEventListener: () => {},
+    dispatchEvent: () => false,
+  }),
+});
 
 // Mock Image for Avatar component tests
 // This allows the onload callback to fire in jsdom
