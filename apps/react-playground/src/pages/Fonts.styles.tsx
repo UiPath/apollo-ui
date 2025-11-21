@@ -1,4 +1,4 @@
-import styled from 'styled-components';
+import styled from "styled-components";
 
 export const Grid = styled.div`
   display: grid;
@@ -60,20 +60,22 @@ export const PropertyBadges = styled.div`
 
 export const Badge = styled.code<{ $primary?: boolean }>`
   background: ${(props) =>
-    props.$primary ? 'var(--color-background-selected)' : 'var(--color-background-hover)'};
+		props.$primary
+			? "var(--color-background-selected)"
+			: "var(--color-background-hover)"};
   padding: 6px 12px;
   border-radius: 6px;
-  color: ${(props) => (props.$primary ? 'var(--color-primary)' : 'var(--color-foreground-de-emp)')};
+  color: ${(props) => (props.$primary ? "var(--color-primary)" : "var(--color-foreground-de-emp)")};
   font-weight: 600;
-  border: ${(props) => (props.$primary ? '1px solid var(--color-primary)30' : 'none')};
+  border: ${(props) => (props.$primary ? "1px solid var(--color-primary)30" : "none")};
 `;
 
 export const SampleText = styled.div<{
-  $fontFamily?: string;
-  $fontSize?: string;
-  $lineHeight?: string;
-  $fontWeight?: number | string;
-  $letterSpacing?: string;
+	$fontFamily?: string;
+	$fontSize?: string;
+	$lineHeight?: string;
+	$fontWeight?: number | string;
+	$letterSpacing?: string;
 }>`
   font-family: ${(props) => props.$fontFamily};
   font-size: ${(props) => props.$fontSize};
@@ -202,7 +204,7 @@ export const PropertyName = styled.div`
 `;
 
 export const PropertyValue = styled.code<{ $isLong?: boolean }>`
-  font-size: ${(props) => (props.$isLong ? '11px' : '16px')};
+  font-size: ${(props) => (props.$isLong ? "11px" : "16px")};
   color: var(--color-foreground-emp);
   background: var(--color-background-hover);
   padding: 10px 12px;

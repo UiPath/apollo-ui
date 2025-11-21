@@ -35,7 +35,7 @@
     "build": "pnpm run build:tokens && rslib build",
     "build:tokens": "node build-tokens.js",
     "dev": "rslib build --watch",
-    "lint": "eslint src --ext .ts,.tsx",
+    "lint": "eslint src --ext .ts,.tsx --ignore-pattern 'src/tokens/**/*.js' --ignore-pattern 'src/tokens/_generated/**'",
     "test": "vitest --run --passWithNoTests",
     "clean": "rm -rf dist"
   },

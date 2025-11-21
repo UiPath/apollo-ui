@@ -1,4 +1,4 @@
-import styled from 'styled-components';
+import styled from "styled-components";
 
 export const ThemeControls = styled.div`
   display: flex;
@@ -58,8 +58,8 @@ export const CheckboxBox = styled.div<{ $checked: boolean }>`
   display: flex;
   align-items: center;
   justify-content: center;
-  background: ${(props) => (props.$checked ? 'var(--color-primary)' : 'transparent')};
-  border-color: ${(props) => (props.$checked ? 'var(--color-primary)' : 'var(--color-border)')};
+  background: ${(props) => (props.$checked ? "var(--color-primary)" : "transparent")};
+  border-color: ${(props) => (props.$checked ? "var(--color-primary)" : "var(--color-border)")};
   color: var(--color-foreground-inverse);
   font-size: 14px;
   font-weight: bold;
@@ -68,7 +68,9 @@ export const CheckboxBox = styled.div<{ $checked: boolean }>`
   ${CheckboxLabel}:hover & {
     border-color: var(--color-primary);
     background: ${(props) =>
-      props.$checked ? 'var(--color-primary-hover)' : 'var(--color-background-hover)'};
+			props.$checked
+				? "var(--color-primary-hover)"
+				: "var(--color-background-hover)"};
   }
 `;
 

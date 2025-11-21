@@ -1,4 +1,4 @@
-import styled from 'styled-components';
+import styled from "styled-components";
 
 export const OverviewCard = styled.div`
   background: var(--color-background);

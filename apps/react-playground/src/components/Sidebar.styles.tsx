@@ -1,5 +1,5 @@
-import { Link } from 'react-router-dom';
-import styled, { keyframes } from 'styled-components';
+import { Link } from "react-router-dom";
+import styled, { keyframes } from "styled-components";
 
 const fadeIn = keyframes`
   from {
@@ -30,7 +30,7 @@ export const SidebarContainer = styled.div<{ $isOpen: boolean }>`
   background: var(--color-background);
   box-shadow: var(--shadow-2xl);
   z-index: 1600;
-  transform: ${(props) => (props.$isOpen ? 'translateX(0)' : 'translateX(-100%)')};
+  transform: ${(props) => (props.$isOpen ? "translateX(0)" : "translateX(-100%)")};
   transition: transform 0.3s ease;
   overflow-y: auto;
   padding: 80px 0 20px 0;
@@ -46,17 +46,21 @@ export const NavLink = styled(Link)<{ $isActive: boolean }>`
   gap: 12px;
   padding: 14px 20px;
   text-decoration: none;
-  color: ${(props) => (props.$isActive ? 'var(--color-primary)' : 'var(--color-foreground-emp)')};
-  background: ${(props) => (props.$isActive ? 'var(--color-background-selected)' : 'transparent')};
+  color: ${(props) => (props.$isActive ? "var(--color-primary)" : "var(--color-foreground-emp)")};
+  background: ${(props) => (props.$isActive ? "var(--color-background-selected)" : "transparent")};
   border-left: ${(props) =>
-    props.$isActive ? '4px solid var(--color-primary)' : '4px solid transparent'};
-  font-weight: ${(props) => (props.$isActive ? '600' : '500')};
+		props.$isActive
+			? "4px solid var(--color-primary)"
+			: "4px solid transparent"};
+  font-weight: ${(props) => (props.$isActive ? "600" : "500")};
   font-size: 15px;
   transition: all 0.2s ease;
 
   &:hover {
     background: ${(props) =>
-      props.$isActive ? 'var(--color-background-selected)' : 'var(--color-background-hover)'};
+			props.$isActive
+				? "var(--color-background-selected)"
+				: "var(--color-background-hover)"};
   }
 `;
 
@@ -75,17 +79,23 @@ export const SubNavLink = styled(Link)<{ $isActive: boolean }>`
   padding: 10px 20px;
   text-decoration: none;
   color: ${(props) =>
-    props.$isActive ? 'var(--color-primary)' : 'var(--color-foreground-de-emp)'};
-  background: ${(props) => (props.$isActive ? 'var(--color-background-selected)' : 'transparent')};
+		props.$isActive
+			? "var(--color-primary)"
+			: "var(--color-foreground-de-emp)"};
+  background: ${(props) => (props.$isActive ? "var(--color-background-selected)" : "transparent")};
   border-left: ${(props) =>
-    props.$isActive ? '3px solid var(--color-primary)' : '3px solid transparent'};
-  font-weight: ${(props) => (props.$isActive ? '600' : '400')};
+		props.$isActive
+			? "3px solid var(--color-primary)"
+			: "3px solid transparent"};
+  font-weight: ${(props) => (props.$isActive ? "600" : "400")};
   font-size: 14px;
   transition: all 0.2s ease;
 
   &:hover {
     background: ${(props) =>
-      props.$isActive ? 'var(--color-background-selected)' : 'var(--color-background-hover)'};
-    color: ${(props) => (props.$isActive ? 'var(--color-primary)' : 'var(--color-foreground-emp)')};
+			props.$isActive
+				? "var(--color-background-selected)"
+				: "var(--color-background-hover)"};
+    color: ${(props) => (props.$isActive ? "var(--color-primary)" : "var(--color-foreground-emp)")};
   }
 `;
