@@ -141,7 +141,7 @@ jobs:
             echo "should_approve=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: Post review comment
+      - name: Post or update review comment
         uses: actions/github-script@v7
         env:
           REVIEW_BODY: ${{ steps.claude-review.outputs.review }}
@@ -153,12 +153,37 @@ jobs:
             const footer = '\n\n---\n*This automated review is temporary for solo development. Will be replaced with human reviews once the team grows.*';
             const review = header + reviewBody + footer;
 
-            await github.rest.issues.createComment({
+            // Check for existing AI review comment
+            const comments = await github.rest.issues.listComments({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              issue_number: context.issue.number,
-              body: review
+              issue_number: context.issue.number
             });
+
+            const botComment = comments.data.find(comment =>
+              comment.user.type === 'Bot' &&
+              comment.body.includes('🤖 AI Code Review (Claude)')
+            );
+
+            if (botComment) {
+              // Update existing comment
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: review
+              });
+              console.log('Updated existing AI review comment');
+            } else {
+              // Create new comment
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: review
+              });
+              console.log('Created new AI review comment');
+            }
 
       - name: Approve PR if safe and author has write/admin permissions
         if: steps.claude-review.outputs.should_approve == 'true' && steps.check-permissions.outputs.result == 'true'
