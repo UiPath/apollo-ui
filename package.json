@@ -26,8 +26,6 @@
     "typecheck": "turbo run typecheck",
     "storybook": "turbo run storybook",
     "storybook:build": "turbo run storybook:build",
-    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
-    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md}\"",
     "clean": "turbo run clean && rm -rf .turbo && rm -rf node_modules",
     "release": "pnpm build && multi-semantic-release",
     "release:dry-run": "multi-semantic-release --dry-run",
