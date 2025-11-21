@@ -19,6 +19,7 @@ export * from "./command";
 export * from "./context-menu";
 export * from "./date-picker";
 export * from "./data-table";
+export * from "./editable-cell";
 // Overlays
 export * from "./dialog";
 export * from "./drawer";

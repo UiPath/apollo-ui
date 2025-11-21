@@ -1,7 +1,9 @@
 import {
+  CellContext,
   Column,
   ColumnDef,
   ColumnFiltersState,
+  ColumnResizeMode,
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
@@ -31,6 +33,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { EditableCell, EditableCellMeta } from "@/components/ui/editable-cell";
 
 export interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -40,6 +43,10 @@ export interface DataTableProps<TData, TValue> {
   showColumnToggle?: boolean;
   showPagination?: boolean;
   pageSize?: number;
+  editable?: boolean;
+  onCellUpdate?: (rowIndex: number, columnId: string, value: unknown) => void;
+  resizable?: boolean;
+  compact?: boolean;
 }
 
 export function DataTable<TData, TValue>({
@@ -50,15 +57,42 @@ export function DataTable<TData, TValue>({
   showColumnToggle = true,
   showPagination = true,
   pageSize = 10,
+  editable = false,
+  onCellUpdate,
+  resizable = false,
+  compact = false,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
 
+  // Wrap columns with editable cell renderer if editable mode is enabled
+  const processedColumns = React.useMemo(() => {
+    if (!editable || !onCellUpdate) return columns;
+
+    return columns.map((col): ColumnDef<TData, TValue> => {
+      const meta = col.meta as EditableCellMeta | undefined;
+      // Skip columns without a type or with custom cell renderers
+      if (!meta?.type || col.cell) return col;
+
+      return {
+        ...col,
+        cell: (cellContext) => (
+          <EditableCell
+            cell={cellContext as CellContext<unknown, unknown>}
+            onUpdate={(value) => {
+              onCellUpdate(cellContext.row.index, cellContext.column.id, value);
+            }}
+          />
+        ),
+      };
+    });
+  }, [columns, editable, onCellUpdate]);
+
   const table = useReactTable({
     data,
-    columns,
+    columns: processedColumns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
@@ -67,6 +101,8 @@ export function DataTable<TData, TValue>({
     getFilteredRowModel: getFilteredRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
+    enableColumnResizing: resizable,
+    columnResizeMode: "onChange" as ColumnResizeMode,
     state: {
       sorting,
       columnFilters,
@@ -118,17 +154,39 @@ export function DataTable<TData, TValue>({
           </DropdownMenu>
         )}
       </div>
-      <div className="rounded-md border">
-        <Table>
+      <div className="rounded-md border overflow-auto">
+        <Table
+          style={resizable ? { width: table.getTotalSize(), tableLayout: "fixed" } : undefined}
+        >
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
+                  const { column } = header;
                   return (
-                    <TableHead key={header.id}>
+                    <TableHead
+                      key={header.id}
+                      className={compact ? "relative h-8 px-2 py-1" : "relative"}
+                      style={{
+                        width: resizable ? header.getSize() : (column.getSize() !== 150 ? column.getSize() : undefined),
+                        minWidth: column.columnDef.minSize,
+                        maxWidth: column.columnDef.maxSize,
+                      }}
+                    >
                       {header.isPlaceholder
                         ? null
                         : flexRender(header.column.columnDef.header, header.getContext())}
+                      {resizable && header.column.getCanResize() && (
+                        <div
+                          onMouseDown={header.getResizeHandler()}
+                          onTouchStart={header.getResizeHandler()}
+                          className={`absolute -right-1 top-0 z-10 h-full w-2 cursor-col-resize select-none touch-none group`}
+                        >
+                          <div className={`h-full w-px mx-auto ${
+                            header.column.getIsResizing() ? "bg-primary" : "group-hover:bg-primary/50"
+                          }`} />
+                        </div>
+                      )}
                     </TableHead>
                   );
                 })}
@@ -139,11 +197,22 @@ export function DataTable<TData, TValue>({
             {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
                 <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </TableCell>
-                  ))}
+                  {row.getVisibleCells().map((cell) => {
+                    const { column } = cell;
+                    return (
+                      <TableCell
+                        key={cell.id}
+                        className={compact ? "truncate px-2 py-1" : "truncate"}
+                        style={{
+                          width: resizable ? cell.column.getSize() : (column.getSize() !== 150 ? column.getSize() : undefined),
+                          minWidth: column.columnDef.minSize,
+                          maxWidth: column.columnDef.maxSize,
+                        }}
+                      >
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      </TableCell>
+                    );
+                  })}
                 </TableRow>
               ))
             ) : (

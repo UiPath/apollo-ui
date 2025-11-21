@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { ColumnDef } from "@tanstack/react-table";
 import { MoreHorizontal } from "lucide-react";
+import * as React from "react";
 import { Badge } from "./badge";
 import { Button } from "./button";
 import { DataTable, DataTableColumnHeader, DataTableSelectColumn } from "./data-table";
@@ -11,6 +12,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "./dropdown-menu";
+import type { EditableCellMeta } from "./editable-cell";
 
 const meta = {
   title: "Design System/Data Display/Data Table",
@@ -268,4 +270,259 @@ export const CustomPageSize: Story = {
   render: () => (
     <DataTable columns={sortableColumns} data={sampleUsers} searchKey="name" pageSize={5} />
   ),
+};
+
+// Editable table types and data
+type Task = {
+  id: string;
+  name: string;
+  status: string;
+  priority: string;
+  dueDate: Date | null;
+  completed: boolean;
+};
+
+const initialTasks: Task[] = [
+  {
+    id: "1",
+    name: "Design homepage mockup",
+    status: "in-progress",
+    priority: "high",
+    dueDate: new Date("2024-12-15"),
+    completed: false,
+  },
+  {
+    id: "2",
+    name: "Review pull request",
+    status: "todo",
+    priority: "medium",
+    dueDate: new Date("2024-12-10"),
+    completed: false,
+  },
+  {
+    id: "3",
+    name: "Update documentation",
+    status: "done",
+    priority: "low",
+    dueDate: new Date("2024-12-05"),
+    completed: true,
+  },
+  {
+    id: "4",
+    name: "Fix navigation bug",
+    status: "in-progress",
+    priority: "high",
+    dueDate: null,
+    completed: false,
+  },
+  {
+    id: "5",
+    name: "Write unit tests",
+    status: "todo",
+    priority: "medium",
+    dueDate: new Date("2024-12-20"),
+    completed: false,
+  },
+];
+
+const editableColumns: ColumnDef<Task, unknown>[] = [
+  {
+    accessorKey: "completed",
+    header: "",
+    meta: { type: "checkbox" } as EditableCellMeta,
+    size: 50,
+    minSize: 50,
+    maxSize: 50,
+  },
+  {
+    accessorKey: "name",
+    header: "Task",
+    meta: { type: "text", placeholder: "Enter task name..." } as EditableCellMeta,
+    size: 250,
+    minSize: 200,
+  },
+  {
+    accessorKey: "status",
+    header: "Status",
+    meta: {
+      type: "select",
+      options: [
+        { value: "todo", label: "To Do" },
+        { value: "in-progress", label: "In Progress" },
+        { value: "done", label: "Done" },
+      ],
+    } as EditableCellMeta,
+    size: 140,
+    minSize: 120,
+  },
+  {
+    accessorKey: "priority",
+    header: "Priority",
+    meta: {
+      type: "select",
+      options: [
+        { value: "low", label: "Low" },
+        { value: "medium", label: "Medium" },
+        { value: "high", label: "High" },
+      ],
+    } as EditableCellMeta,
+    size: 120,
+    minSize: 100,
+  },
+  {
+    accessorKey: "dueDate",
+    header: "Due Date",
+    meta: { type: "date", placeholder: "Set due date" } as EditableCellMeta,
+    size: 180,
+    minSize: 150,
+  },
+];
+
+function EditableTableExample() {
+  const [data, setData] = React.useState<Task[]>(initialTasks);
+
+  const handleCellUpdate = (rowIndex: number, columnId: string, value: unknown) => {
+    setData((prev) => {
+      const newData = [...prev];
+      newData[rowIndex] = {
+        ...newData[rowIndex],
+        [columnId]: value,
+      };
+      return newData;
+    });
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="text-sm text-muted-foreground">
+        Click on any cell to edit. Changes are saved automatically.
+      </div>
+      <DataTable
+        columns={editableColumns}
+        data={data}
+        editable
+        onCellUpdate={handleCellUpdate}
+        showPagination={false}
+        showColumnToggle={false}
+      />
+    </div>
+  );
+}
+
+export const Editable: Story = {
+  render: () => <EditableTableExample />,
+};
+
+export const Resizable: Story = {
+  render: () => (
+    <DataTable
+      columns={sortableColumns}
+      data={sampleUsers}
+      searchKey="name"
+      resizable
+    />
+  ),
+};
+
+export const Compact: Story = {
+  render: () => (
+    <DataTable
+      columns={sortableColumns}
+      data={sampleUsers}
+      searchKey="name"
+      compact
+    />
+  ),
+};
+
+// Full-featured editable table with all options
+const editableSortableColumns: ColumnDef<Task, unknown>[] = [
+  {
+    accessorKey: "completed",
+    header: "",
+    meta: { type: "checkbox" } as EditableCellMeta,
+    size: 50,
+    minSize: 50,
+    maxSize: 50,
+    enableResizing: false,
+  },
+  {
+    accessorKey: "name",
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Task" />,
+    meta: { type: "text", placeholder: "Enter task name..." } as EditableCellMeta,
+    size: 250,
+    minSize: 150,
+  },
+  {
+    accessorKey: "status",
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Status" />,
+    meta: {
+      type: "select",
+      options: [
+        { value: "todo", label: "To Do" },
+        { value: "in-progress", label: "In Progress" },
+        { value: "done", label: "Done" },
+      ],
+    } as EditableCellMeta,
+    size: 140,
+    minSize: 100,
+  },
+  {
+    accessorKey: "priority",
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Priority" />,
+    meta: {
+      type: "select",
+      options: [
+        { value: "low", label: "Low" },
+        { value: "medium", label: "Medium" },
+        { value: "high", label: "High" },
+      ],
+    } as EditableCellMeta,
+    size: 120,
+    minSize: 100,
+  },
+  {
+    accessorKey: "dueDate",
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Due Date" />,
+    meta: { type: "date", placeholder: "Set due date" } as EditableCellMeta,
+    size: 180,
+    minSize: 140,
+  },
+];
+
+function FullFeaturedTableExample() {
+  const [data, setData] = React.useState<Task[]>(initialTasks);
+
+  const handleCellUpdate = (rowIndex: number, columnId: string, value: unknown) => {
+    setData((prev) => {
+      const newData = [...prev];
+      newData[rowIndex] = {
+        ...newData[rowIndex],
+        [columnId]: value,
+      };
+      return newData;
+    });
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="text-sm text-muted-foreground">
+        Compact, resizable, editable, sortable, and filterable table.
+      </div>
+      <DataTable
+        columns={editableSortableColumns}
+        data={data}
+        editable
+        onCellUpdate={handleCellUpdate}
+        resizable
+        compact
+        searchKey="name"
+        searchPlaceholder="Filter tasks..."
+      />
+    </div>
+  );
+}
+
+export const FullFeatured: Story = {
+  render: () => <FullFeaturedTableExample />,
 };
