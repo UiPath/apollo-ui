@@ -19,8 +19,11 @@
  * So theme-selectors.css is optional and only needed for standalone environments.
  */
 
-/* Import theme definitions (includes Tailwind base and @theme inline) */
-@import "./generated/theme.css";
+/* Import Apollo Core CSS variables */
+@import "@uipath/apollo-core/tokens/css/variables.css";
+
+/* Tailwind base and utilities - @theme inline is defined in tailwind.config.js */
+@import "tailwindcss";
 
 /* Import semantic color utilities */
 @import "./semantic-colors.css";

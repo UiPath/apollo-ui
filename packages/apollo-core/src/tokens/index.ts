@@ -29,10 +29,9 @@ export * from './_generated/Shadow';
 export * as Shadow from './_generated/Shadow';
 
 // Icons
-export * from './_generated/Icon';  
+export * from './_generated/Icon';
 export * as Icon from './_generated/Icon';
 
 // Screen sizes (breakpoints)
 export * from './_generated/ScreenSizes';
 export * as ScreenSizes from './_generated/ScreenSizes';
-

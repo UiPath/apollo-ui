@@ -22,18 +22,14 @@
     "**/*.css"
   ],
   "scripts": {
-    "build": "rslib build && pnpm generate:css-vars && pnpm generate:theme && pnpm generate:theme-selectors && pnpm build:css && pnpm copy:files",
+    "build": "rslib build && pnpm build:css",
     "dev": "rslib build --watch",
     "lint": "eslint src --ext .ts,.tsx",
     "test": "vitest --run --passWithNoTests",
     "clean": "rm -rf dist",
-    "copy:files": "cp src/css/generated/theme-selectors.css dist/theme-selectors.css",
     "build:css": "npx @tailwindcss/cli -i ./src/css/index.css -o ./dist/css/index.css --minify",
     "build:css:dev": "npx @tailwindcss/cli -i ./src/css/index.css -o ./dist/css/index.css",
-    "build:css:watch": "npx @tailwindcss/cli -i ./src/css/index.css -o ./dist/css/index.css --watch",
-    "generate:css-vars": "tsx src/css/scripts/generate-css-vars.ts && prettier --write src/css/generated/css-vars.ts",
-    "generate:theme": "tsx src/css/scripts/generate-theme.ts && prettier --write src/css/generated/theme.css",
-    "generate:theme-selectors": "tsx src/css/scripts/generate-theme-with-selectors.ts && prettier --write src/css/generated/theme-selectors.css"
+    "build:css:watch": "npx @tailwindcss/cli -i ./src/css/index.css -o ./dist/css/index.css --watch"
   },
   "keywords": [
     "design-system",
