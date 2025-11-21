@@ -335,7 +335,8 @@ const arrangeAgent = (
 export const autoArrangeNodes = (
   nodes: AgentFlowCustomNode[],
   edges: AgentFlowCustomEdge[],
-  agentNodePosition?: { x: number; y: number } | undefined
+  agentNodePosition?: { x: number; y: number } | undefined,
+  resourceNodePositions?: Record<string, { x: number; y: number }>
 ): AgentFlowCustomNode[] => {
   const clonedNodes = structuredClone(nodes);
 
@@ -347,6 +348,20 @@ export const autoArrangeNodes = (
     // array to store the height offset at each "nested" agent node
     const heightOffsets: number[] = [];
     arrangeAgent(agentNodes, clonedNodes, edges, heightOffsets, 0);
+  }
+
+  // Apply resourceNodePositions overrides after auto-layout
+  if (resourceNodePositions) {
+    for (const node of clonedNodes) {
+      if (isAgentFlowResourceNode(node)) {
+        const externalPosition = resourceNodePositions[node.id];
+        if (externalPosition) {
+          node.position = externalPosition;
+          // Mark as having explicit position to prevent future auto-arrangement
+          node.hasExplicitPosition = true;
+        }
+      }
+    }
   }
 
   return clonedNodes;

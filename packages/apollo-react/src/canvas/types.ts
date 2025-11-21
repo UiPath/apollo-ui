@@ -273,12 +273,22 @@ export type AgentFlowProps = {
   agentNodePosition?: { x: number; y: number } | undefined;
   onAgentNodePositionChange?: (position: { x: number; y: number } | undefined) => void;
   /**
+   * Positions for the resource nodes.
+   * If not provided, defaults to undefined
+   */
+  resourceNodePositions?: Record<string, { x: number; y: number }>;
+  /**
    * Called when a resource node position changes (e.g., after drag)
    * @param resourceId - The ID of the resource
    * @param position - The new position of the resource node
    */
   onResourceNodePositionChange?: (resourceId: string, position: { x: number; y: number }) => void;
-
+  /**
+   * Zoom level for the canvas.
+   * If not provided, defaults to undefined
+   */
+  zoomLevel?: number;
+  onZoomLevelChange?: (zoomLevel: number) => void;
   // feature flags
   enableMcpTools?: boolean;
   /** TODO: Remove once memory feature is fully implemented */

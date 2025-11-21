@@ -534,7 +534,7 @@ const computeNodesAndEdgesWithSuggestions = (
   const allEdges = [...baseEdges, ...suggestionEdges];
 
   // Re-arrange nodes with suggestions
-  const arrangedNodes = autoArrangeNodes(allNodes, allEdges, props.agentNodePosition);
+  const arrangedNodes = autoArrangeNodes(allNodes, allEdges, props.agentNodePosition, props.resourceNodePositions);
 
   return {
     nodes: arrangedNodes,
@@ -1099,7 +1099,12 @@ export const createAgentFlowStore = (initialProps: AgentFlowProps) =>
         const state = get();
 
         // Arrange nodes immediately without animation
-        const arrangedNodes = autoArrangeNodes(state.nodes, state.edges, state.props.agentNodePosition).map((node) => ({
+        const arrangedNodes = autoArrangeNodes(
+          state.nodes,
+          state.edges,
+          state.props.agentNodePosition,
+          state.props.resourceNodePositions
+        ).map((node) => ({
           ...node,
           selected: node.id === state.selectedNodeId,
         }));

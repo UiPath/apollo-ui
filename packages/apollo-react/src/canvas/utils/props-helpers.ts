@@ -369,7 +369,7 @@ export const computeNodesAndEdges = (
   const edges = resourceNodes.map((resourceNode) => createResourceEdge(agentNode, resourceNode, props));
 
   const allNodes = [agentNode, ...resourceNodes];
-  const arrangedNodes = autoArrangeNodes(allNodes, edges, props.agentNodePosition);
+  const arrangedNodes = autoArrangeNodes(allNodes, edges, props.agentNodePosition, props.resourceNodePositions);
 
   return {
     nodes: arrangedNodes,

@@ -187,6 +187,8 @@ const AgentFlowInner = memo(
     agentNodePosition,
     onAgentNodePositionChange,
     onResourceNodePositionChange,
+    zoomLevel,
+    onZoomLevelChange,
   }: PropsWithChildren<AgentFlowProps>) => {
     const {
       nodes,
@@ -420,19 +422,35 @@ const AgentFlowInner = memo(
     });
 
     const preventDefaultFitView = useMemo(() => {
-      // Prevent default fit view if agent has explicit position
+      // Prevent fitView if agent position is explicitly controlled
       if (agentNodePosition !== undefined) {
         return true;
       }
+      return false;
+    }, [agentNodePosition]);
 
-      // Prevent default fit view if any resource has explicit position
-      const hasResourceWithPosition = nodes.some((node) => {
-        if (!isAgentFlowResourceNode(node)) return false;
-        return node.hasExplicitPosition === true;
-      });
+    // Create custom defaultViewport if zoomLevel is provided
+    const defaultViewport = useMemo(() => {
+      if (zoomLevel !== undefined) {
+        return {
+          x: 0,
+          y: 0,
+          zoom: zoomLevel,
+        };
+      }
+      return undefined; // Let BaseCanvas use its default
+    }, [zoomLevel]);
 
-      return hasResourceWithPosition;
-    }, [agentNodePosition, nodes]);
+    // Handle viewport changes to capture zoom level changes
+    const handleViewportChange = useCallback(
+      (_event: unknown, viewport: { x: number; y: number; zoom: number }) => {
+        // Only call onSetZoom when zoom actually changes
+        if (onZoomLevelChange && viewport.zoom !== zoomLevel) {
+          onZoomLevelChange(viewport.zoom);
+        }
+      },
+      [onZoomLevelChange, zoomLevel]
+    );
 
     return (
       <Column w="100%" h="100%" style={{ touchAction: "none" }}>
@@ -447,6 +465,8 @@ const AgentFlowInner = memo(
             initialAutoLayout={autoArrange}
             fitViewOptions={adjustedFitViewOptions}
             preventDefaultFitView={preventDefaultFitView}
+            defaultViewport={defaultViewport}
+            onMove={handleViewportChange}
             onNodesChange={onNodesChange}
             onEdgesChange={onEdgesChange}
             onConnect={onConnect}
