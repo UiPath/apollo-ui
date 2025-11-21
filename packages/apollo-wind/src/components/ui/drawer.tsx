@@ -5,7 +5,6 @@ import { Drawer as DrawerPrimitive } from "vaul";
 import { cn } from "@/lib";
 
 const Drawer = DrawerPrimitive.Root;
-Drawer.displayName = "Drawer";
 
 const DrawerTrigger = DrawerPrimitive.Trigger;
 
