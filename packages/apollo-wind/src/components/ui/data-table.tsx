@@ -47,6 +47,7 @@ export interface DataTableProps<TData, TValue> {
   onCellUpdate?: (rowIndex: number, columnId: string, value: unknown) => void;
   resizable?: boolean;
   compact?: boolean;
+  columnToggleText?: string;
 }
 
 export function DataTable<TData, TValue>({
@@ -61,6 +62,7 @@ export function DataTable<TData, TValue>({
   onCellUpdate,
   resizable = false,
   compact = false,
+  columnToggleText = "Columns",
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
@@ -131,7 +133,7 @@ export function DataTable<TData, TValue>({
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" className="ml-auto">
-                Columns <ChevronDown className="ml-2 h-4 w-4" />
+                {columnToggleText} <ChevronDown className="ml-2 h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">

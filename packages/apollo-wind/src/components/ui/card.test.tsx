@@ -1,4 +1,5 @@
 import { render, screen } from "@testing-library/react";
+import { axe } from "jest-axe";
 import { describe, expect, it } from "vitest";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "./card";
 
@@ -19,6 +20,20 @@ describe("Card", () => {
     expect(screen.getByText("Card Description")).toBeInTheDocument();
     expect(screen.getByText("Card Content")).toBeInTheDocument();
     expect(screen.getByText("Card Footer")).toBeInTheDocument();
+  });
+
+  it("has no accessibility violations", async () => {
+    const { container } = render(
+      <Card>
+        <CardHeader>
+          <CardTitle>Accessible Card</CardTitle>
+          <CardDescription>This card meets accessibility standards</CardDescription>
+        </CardHeader>
+        <CardContent>Content goes here</CardContent>
+      </Card>,
+    );
+    const results = await axe(container);
+    expect(results).toHaveNoViolations();
   });
 
   it("applies custom className to Card", () => {

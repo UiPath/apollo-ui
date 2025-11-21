@@ -23,6 +23,7 @@ export interface MultiSelectProps {
   maxSelected?: number;
   disabled?: boolean;
   searchPlaceholder?: string;
+  clearAllText?: string | ((count: number) => string);
 }
 
 const MultiSelect = React.forwardRef<HTMLDivElement, MultiSelectProps>(
@@ -37,6 +38,7 @@ const MultiSelect = React.forwardRef<HTMLDivElement, MultiSelectProps>(
       maxSelected,
       disabled = false,
       searchPlaceholder = "Search...",
+      clearAllText,
     },
     ref,
   ) => {
@@ -69,6 +71,7 @@ const MultiSelect = React.forwardRef<HTMLDivElement, MultiSelectProps>(
               variant="outline"
               role="combobox"
               aria-expanded={open}
+              aria-label={selected.length > 0 ? `${selected.length} items selected` : placeholder}
               className={cn(
                 "w-full justify-between",
                 selected.length > 0 ? "h-auto min-h-10" : "h-10",
@@ -165,7 +168,9 @@ const MultiSelect = React.forwardRef<HTMLDivElement, MultiSelectProps>(
             {selected.length > 0 && (
               <div className="border-t p-2">
                 <Button variant="ghost" size="sm" className="w-full" onClick={handleClearAll}>
-                  Clear All ({selected.length})
+                  {typeof clearAllText === "function"
+                    ? clearAllText(selected.length)
+                    : clearAllText || `Clear all (${selected.length})`}
                 </Button>
               </div>
             )}

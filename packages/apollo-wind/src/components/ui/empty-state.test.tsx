@@ -1,5 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { axe } from "jest-axe";
 import { describe, expect, it, vi } from "vitest";
 import { EmptyState } from "./empty-state";
 
@@ -7,6 +8,18 @@ describe("EmptyState", () => {
   it("renders with title", () => {
     render(<EmptyState title="No results found" />);
     expect(screen.getByText("No results found")).toBeInTheDocument();
+  });
+
+  it("has no accessibility violations", async () => {
+    const { container } = render(
+      <EmptyState
+        title="No data available"
+        description="Try adjusting your filters or adding new items"
+        action={{ label: "Add Item", onClick: vi.fn() }}
+      />,
+    );
+    const results = await axe(container);
+    expect(results).toHaveNoViolations();
   });
 
   it("renders with description", () => {

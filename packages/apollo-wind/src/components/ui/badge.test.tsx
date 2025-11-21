@@ -1,4 +1,5 @@
 import { render, screen } from "@testing-library/react";
+import { axe } from "jest-axe";
 import { describe, expect, it } from "vitest";
 import { Badge } from "./badge";
 
@@ -6,6 +7,12 @@ describe("Badge", () => {
   it("renders badge with text", () => {
     render(<Badge>New</Badge>);
     expect(screen.getByText("New")).toBeInTheDocument();
+  });
+
+  it("has no accessibility violations", async () => {
+    const { container } = render(<Badge>Accessible Badge</Badge>);
+    const results = await axe(container);
+    expect(results).toHaveNoViolations();
   });
 
   it("applies default variant classes", () => {

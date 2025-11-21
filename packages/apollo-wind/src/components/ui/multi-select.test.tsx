@@ -1,5 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { axe } from "jest-axe";
 import { describe, expect, it, vi } from "vitest";
 import { MultiSelect } from "./multi-select";
 
@@ -23,6 +24,15 @@ describe("MultiSelect", () => {
     );
     expect(screen.getByRole("combobox")).toBeInTheDocument();
     expect(screen.getByText("Select frameworks...")).toBeInTheDocument();
+  });
+
+  it("has no accessibility violations", async () => {
+    const onChange = vi.fn();
+    const { container } = render(
+      <MultiSelect options={mockOptions} selected={["react"]} onChange={onChange} />,
+    );
+    const results = await axe(container);
+    expect(results).toHaveNoViolations();
   });
 
   it("renders with default placeholder when none provided", () => {
