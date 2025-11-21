@@ -4,6 +4,10 @@ import "../src/styles/globals.css";
 import "../src/styles/theme.css";
 
 const preview: Preview = {
+  initialGlobals: {
+    theme: "light",
+    themeVariant: "uipath",
+  },
   parameters: {
     controls: {
       matchers: {
@@ -42,7 +46,7 @@ const preview: Preview = {
   decorators: [
     (Story, context) => {
       const theme = context.globals.theme || "light";
-      const themeVariant = context.globals.themeVariant || "default";
+      const themeVariant = context.globals.themeVariant || "uipath";
 
       useEffect(() => {
         const htmlElement = document.documentElement;
