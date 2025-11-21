@@ -18,8 +18,10 @@ export * from "./combobox";
 export * from "./command";
 export * from "./context-menu";
 export * from "./date-picker";
+export * from "./data-table";
 // Overlays
 export * from "./dialog";
+export * from "./drawer";
 export * from "./dropdown-menu";
 export * from "./file-upload";
 export * from "./hover-card";
@@ -39,6 +41,9 @@ export * from "./sheet";
 export * from "./skeleton";
 export * from "./slider";
 export * from "./sonner";
+export * from "./spinner";
+export * from "./stats-card";
+export * from "./stepper";
 // Form components
 export * from "./switch";
 export * from "./table";
