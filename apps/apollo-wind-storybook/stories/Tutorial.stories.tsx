@@ -6,36 +6,46 @@
  * and shows how Apollo Design System tokens map to Tailwind utilities.
  */
 
-import type { Meta, StoryObj } from '@storybook/react';
 import React from 'react';
+
+import type {
+  Meta,
+  StoryObj,
+} from '@storybook/react';
+
 // Theme CSS and Component CSS are imported via @uipath/apollo-wind-css in preview.ts
 
 // Theme Switcher Component
 const ThemeSwitcher: React.FC = () => {
-  const [theme, setTheme] = React.useState<'light' | 'dark' | 'high-contrast'>('light');
+  const [mode, setMode] = React.useState<'light' | 'dark'>('light');
+  const [isHighContrast, setIsHighContrast] = React.useState(false);
 
   React.useEffect(() => {
     // Apply theme class to body element (Storybook iframe context)
-    document.body.className = theme;
-  }, [theme]);
+    // Use light-hc/dark-hc for high contrast, or light/dark for regular
+    const themeClass = isHighContrast
+      ? (mode === 'dark' ? 'dark-hc' : 'light-hc')
+      : mode;
+    document.body.className = themeClass;
+  }, [mode, isHighContrast]);
 
   return (
     <div className="flex gap-2 mb-6">
       <button
-        onClick={() => setTheme('light')}
-        className={`btn btn-small ${theme === 'light' ? 'btn-primary-colors' : 'bg-surface text-foreground-emp border-2 border-border hover:bg-background-hover'}`}
+        onClick={() => { setMode('light'); setIsHighContrast(false); }}
+        className={`btn btn-small ${mode === 'light' && !isHighContrast ? 'btn-primary-colors' : 'bg-surface text-foreground-emp border-2 border-border hover:bg-background-hover'}`}
       >
         Light
       </button>
       <button
-        onClick={() => setTheme('dark')}
-        className={`btn btn-small ${theme === 'dark' ? 'btn-primary-colors' : 'bg-surface text-foreground-emp border-2 border-border hover:bg-background-hover'}`}
+        onClick={() => { setMode('dark'); setIsHighContrast(false); }}
+        className={`btn btn-small ${mode === 'dark' && !isHighContrast ? 'btn-primary-colors' : 'bg-surface text-foreground-emp border-2 border-border hover:bg-background-hover'}`}
       >
         Dark
       </button>
       <button
-        onClick={() => setTheme('high-contrast')}
-        className={`btn btn-small ${theme === 'high-contrast' ? 'btn-primary-colors' : 'bg-surface text-foreground-emp border-2 border-border hover:bg-background-hover'}`}
+        onClick={() => setIsHighContrast(!isHighContrast)}
+        className={`btn btn-small ${isHighContrast ? 'btn-primary-colors' : 'bg-surface text-foreground-emp border-2 border-border hover:bg-background-hover'}`}
       >
         High Contrast
       </button>
