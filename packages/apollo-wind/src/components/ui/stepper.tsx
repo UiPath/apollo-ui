@@ -33,7 +33,7 @@ const Stepper = React.forwardRef<HTMLDivElement, StepperProps>(
         ref={ref}
         className={cn(
           "flex",
-          orientation === "horizontal" ? "flex-row items-center" : "flex-col",
+          orientation === "horizontal" ? "flex-row items-start" : "flex-col",
           className,
         )}
         {...props}
@@ -45,17 +45,20 @@ const Stepper = React.forwardRef<HTMLDivElement, StepperProps>(
 
           return (
             <React.Fragment key={index}>
+              {/* Step item */}
               <div
                 className={cn(
-                  "flex items-center",
-                  orientation === "horizontal" ? "flex-col" : "flex-row",
+                  "flex shrink-0",
+                  orientation === "horizontal" ? "flex-col items-center" : "flex-row items-start",
                   orientation === "vertical" && "w-full",
                 )}
               >
                 <div
                   className={cn(
-                    "flex items-center",
-                    orientation === "horizontal" ? "flex-col" : "flex-row gap-4",
+                    "flex",
+                    orientation === "horizontal"
+                      ? "flex-col items-center"
+                      : "flex-row items-start gap-4",
                   )}
                 >
                   <button
@@ -87,7 +90,9 @@ const Stepper = React.forwardRef<HTMLDivElement, StepperProps>(
                   <div
                     className={cn(
                       "flex flex-col",
-                      orientation === "horizontal" ? "mt-2 text-center" : "flex-1",
+                      orientation === "horizontal"
+                        ? "mt-2 items-center text-center"
+                        : "flex-1 justify-center",
                     )}
                   >
                     <span
@@ -105,24 +110,25 @@ const Stepper = React.forwardRef<HTMLDivElement, StepperProps>(
                   </div>
                 </div>
               </div>
+              {/* Connector line */}
               {index < steps.length - 1 && (
                 <div
                   className={cn(
-                    "shrink-0",
                     orientation === "horizontal"
-                      ? "mx-2 h-[2px] w-full bg-muted"
-                      : "ml-5 h-8 w-[2px] bg-muted",
+                      ? "mt-5 flex h-[2px] flex-1 items-center"
+                      : "ml-5 h-8 w-[2px]",
+                    "bg-muted",
                   )}
                 >
                   <div
                     className={cn(
-                      "h-full transition-all",
-                      orientation === "horizontal" ? "w-full" : "h-full",
-                      isCompleted ? "bg-primary" : "bg-muted",
+                      "transition-all",
+                      orientation === "horizontal" ? "h-full" : "w-full",
+                      isCompleted ? "bg-primary" : "bg-transparent",
                     )}
                     style={{
-                      width: orientation === "horizontal" && isCompleted ? "100%" : "0%",
-                      height: orientation === "vertical" && isCompleted ? "100%" : "0%",
+                      width: orientation === "horizontal" ? (isCompleted ? "100%" : "0%") : "100%",
+                      height: orientation === "vertical" ? (isCompleted ? "100%" : "0%") : "100%",
                     }}
                   />
                 </div>
