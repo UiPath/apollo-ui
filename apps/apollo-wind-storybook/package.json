@@ -12,7 +12,7 @@
     "clean": "rm -rf storybook-static .turbo"
   },
   "dependencies": {
-    "@uipath/apollo-core": "^4.32.0",
+    "@uipath/apollo-core": "workspace:*",
     "@uipath/apollo-wind": "workspace:*"
   },
   "devDependencies": {

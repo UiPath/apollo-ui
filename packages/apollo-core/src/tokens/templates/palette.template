@@ -1,0 +1,781 @@
+import * as c from '../_generated/Colors';
+
+export type Palette = {
+  type: "light" | "light-hc" | "dark" | "dark-hc" | undefined;
+  semantic: {
+<% _.each(allProperties, function(property) { if (property.name.endsWith('Light')) {
+%>    <%= property.name[0].toLowerCase() + property.name.slice(1, -'Light'.length) %>: string;
+<% }}); %>
+    // Keep these typos for compatibility reasons
+    colorBackgroundHigh: string;
+    colorForegroundHigh: string;
+    colorForegroundHighSelected: string;
+    colorForegroundHighSelectedHover: string;
+  };
+  primary: {
+    contrastText: string;
+    light: string;
+    main: string;
+    dark: string;
+  };
+  secondary: {
+    contrastText: string;
+    light: string;
+    main: string;
+    dark: string;
+  };
+  error: {
+    contrastText: string;
+    light: string;
+    main: string;
+    dark: string;
+  };
+  success: {
+    contrastText: string;
+    light: string;
+    main: string;
+    dark: string;
+  };
+  warning: {
+    contrastText: string;
+    light: string;
+    main: string;
+    dark: string;
+  };
+  info: {
+    contrastText: string;
+    light: string;
+    main: string;
+    dark: string;
+  };
+  orange: {
+    100: string;
+    200: string;
+    300: string;
+    400: string;
+    500: string;
+    600: string;
+    700: string;
+    800: string;
+  };
+  blue: {
+    100: string;
+    200: string;
+    300: string;
+    400: string;
+    500: string;
+    600: string;
+    700: string;
+    800: string;
+  };
+  blue_secondary: {
+    100: string;
+    200: string;
+    300: string;
+    400: string;
+    500: string;
+    600: string;
+    700: string;
+    800: string;
+  };
+  green: {
+    100: string;
+    200: string;
+    300: string;
+    400: string;
+    500: string;
+    600: string;
+    700: string;
+    800: string;
+  };
+  yellow: {
+    100: string;
+    200: string;
+    300: string;
+    400: string;
+    500: string;
+    600: string;
+    700: string;
+    800: string;
+  };
+  red: {
+    100: string;
+    200: string;
+    300: string;
+    400: string;
+    500: string;
+    600: string;
+    700: string;
+    800: string;
+  };
+  purple: {
+    100: string;
+    200: string;
+    300: string;
+    400: string;
+    500: string;
+    600: string;
+    700: string;
+    800: string;
+  };
+  light_blue: {
+    100: string;
+    200: string;
+    300: string;
+    400: string;
+    500: string;
+    600: string;
+    700: string;
+    800: string;
+  };
+  ink: {
+    100: string;
+    150: string;
+    300: string;
+    400: string;
+    450: string;
+    550: string;
+    600: string;
+    650: string;
+    700: string;
+  };
+  text: {
+    primary: string,
+    secondary: string,
+    disabled: string
+  },
+  divider: string,
+  common: {
+    black: string,
+    white: string,
+  },
+  icon: string;
+  background: {
+    default: string;
+    paper: string;
+  };
+}
+
+export const lightPalette: Palette = {
+  type: 'light',
+  semantic: {
+<% _.each(allProperties, function(property) { if (property.name.endsWith('Light')) {
+%>    <%= property.name[0].toLowerCase() + property.name.slice(1, -'Light'.length) %>: c.<%= property.name %>,
+<% }}); %>
+    // Keep these typos for compatibility reasons
+    colorBackgroundHigh: c.ColorBackgroundHighlightLight,
+    colorForegroundHigh: c.ColorForegroundHighlightLight,
+    colorForegroundHighSelected: c.ColorForegroundHighlightSelectedLight,
+    colorForegroundHighSelectedHover: c.ColorForegroundHighlightSelectedHoverLight,
+  },
+  primary: {
+    contrastText: c.ColorWhite,
+    light: c.ColorPrimaryLighterLight,
+    main: c.ColorPrimaryLight,
+    dark: c.ColorPrimaryLighterDark,
+  },
+  secondary: {
+    contrastText: c.ColorWhite,
+    light: c.ColorPrimaryLighterLight,
+    main: c.ColorPrimaryLight,
+    dark: c.ColorPrimaryLighterDark,
+  },
+  error: {
+    contrastText: c.ColorWhite,
+    light: c.ColorError250,
+    main: c.ColorError500,
+    dark: c.ColorError750,
+  },
+  success: {
+    contrastText: c.ColorWhite,
+    light: c.ColorGreen250,
+    main: c.ColorGreen500,
+    dark: c.ColorGreen750,
+  },
+  warning: {
+    contrastText: c.ColorWhite,
+    light: c.ColorWarning300,
+    main: c.ColorWarning500,
+    dark: c.ColorWarning700,
+  },
+  info: {
+    contrastText: c.ColorBlack,
+    light: c.ColorInfoBackgroundLight,
+    main: c.ColorInfoForegroundLight,
+    dark: c.ColorInfo700,
+  },
+  orange: {
+    100: c.ColorOrange100,
+    200: c.ColorOrange200,
+    300: c.ColorOrange300,
+    400: c.ColorOrange400,
+    500: c.ColorOrange500,
+    600: c.ColorOrange600,
+    700: c.ColorOrange700,
+    800: c.ColorOrange800,
+  },
+  blue: {
+    100: c.ColorBlue100,
+    200: c.ColorBlue200,
+    300: c.ColorBlue300,
+    400: c.ColorBlue400,
+    500: c.ColorBlue500,
+    600: c.ColorBlue600,
+    700: c.ColorBlue700,
+    800: c.ColorBlue800,
+  },
+  blue_secondary: {
+    100: c.ColorBlueSecondary100,
+    200: c.ColorBlueSecondary200,
+    300: c.ColorBlueSecondary300,
+    400: c.ColorBlueSecondary400,
+    500: c.ColorBlueSecondary500,
+    600: c.ColorBlueSecondary600,
+    700: c.ColorBlueSecondary700,
+    800: c.ColorBlueSecondary800,
+  },
+  green: {
+    100: c.ColorGreen100,
+    200: c.ColorGreen200,
+    300: c.ColorGreen300,
+    400: c.ColorGreen400,
+    500: c.ColorGreen500,
+    600: c.ColorGreen600,
+    700: c.ColorGreen700,
+    800: c.ColorGreen800,
+  },
+  yellow: {
+    100: c.ColorYellow100,
+    200: c.ColorYellow200,
+    300: c.ColorYellow300,
+    400: c.ColorYellow400,
+    500: c.ColorYellow500,
+    600: c.ColorYellow600,
+    700: c.ColorYellow700,
+    800: c.ColorYellow800,
+  },
+  red: {
+    100: c.ColorRed100,
+    200: c.ColorRed200,
+    300: c.ColorRed300,
+    400: c.ColorRed400,
+    500: c.ColorRed500,
+    600: c.ColorRed600,
+    700: c.ColorRed700,
+    800: c.ColorRed800,
+  },
+  purple: {
+    100: c.ColorPurple100,
+    200: c.ColorPurple200,
+    300: c.ColorPurple300,
+    400: c.ColorPurple400,
+    500: c.ColorPurple500,
+    600: c.ColorPurple600,
+    700: c.ColorPurple700,
+    800: c.ColorPurple800,
+  },
+  light_blue: {
+    100: c.ColorLightBlue100,
+    200: c.ColorLightBlue200,
+    300: c.ColorLightBlue300,
+    400: c.ColorLightBlue400,
+    500: c.ColorLightBlue500,
+    600: c.ColorLightBlue600,
+    700: c.ColorLightBlue700,
+    800: c.ColorLightBlue800,
+  },
+  ink: {
+    100: c.ColorInk100,
+    150: c.ColorInk150,
+    300: c.ColorInk300,
+    400: c.ColorInk400,
+    450: c.ColorInk450,
+    550: c.ColorInk550,
+    600: c.ColorInk600,
+    650: c.ColorInk650,
+    700: c.ColorInk700,
+  },
+  text: {
+    primary: c.ColorForegroundLight,
+    secondary: c.ColorForegroundDeEmpLight,
+    disabled: c.ColorForegroundDisableLight
+  },
+  divider: c.ColorBorderLight,
+  common: {
+    black: c.ColorBlack,
+    white: c.ColorWhite,
+  },
+  icon: c.ColorIconDefaultLight,
+  background: {
+    default: c.ColorBackgroundLight,
+    paper: c.ColorBackgroundLight,
+  },
+};
+
+export const lightHighContrastPalette: Palette = {
+  type: 'light-hc',
+  semantic: {
+<% _.each(allProperties, function(property) { if (property.name.endsWith('LightHc')) {
+%>    <%= property.name[0].toLowerCase() + property.name.slice(1, -'LightHc'.length) %>: c.<%= property.name %>,
+<% }}); %>
+    // Keep these typos for compatibility reasons
+    colorBackgroundHigh: c.ColorBackgroundHighlightLightHc,
+    colorForegroundHigh: c.ColorForegroundHighlightLightHc,
+    colorForegroundHighSelected: c.ColorForegroundHighlightSelectedLightHc,
+    colorForegroundHighSelectedHover: c.ColorForegroundHighlightSelectedHoverLightHc,
+  },
+  primary: {
+    contrastText: c.ColorWhite,
+    light: c.ColorPrimaryLighterLightHc,
+    main: c.ColorPrimaryLightHc,
+    dark: c.ColorPrimaryLighterDark,
+  },
+  secondary: {
+    contrastText: c.ColorWhite,
+    light: c.ColorPrimaryLighterLightHc,
+    main: c.ColorPrimaryLightHc,
+    dark: c.ColorPrimaryLighterDark,
+  },
+  error: {
+    contrastText: c.ColorWhite,
+    light: c.ColorError250,
+    main: c.ColorError500,
+    dark: c.ColorError750,
+  },
+  success: {
+    contrastText: c.ColorWhite,
+    light: c.ColorGreen250,
+    main: c.ColorGreen500,
+    dark: c.ColorGreen750,
+  },
+  warning: {
+    contrastText: c.ColorWhite,
+    light: c.ColorWarning300,
+    main: c.ColorWarning500,
+    dark: c.ColorWarning700,
+  },
+  info: {
+    contrastText: c.ColorBlack,
+    light: c.ColorInfoBackgroundLightHc,
+    main: c.ColorInfoForegroundLightHc,
+    dark: c.ColorInfo700,
+  },
+  orange: {
+    100: c.ColorOrange100,
+    200: c.ColorOrange200,
+    300: c.ColorOrange300,
+    400: c.ColorOrange400,
+    500: c.ColorOrange500,
+    600: c.ColorOrange600,
+    700: c.ColorOrange700,
+    800: c.ColorOrange800,
+  },
+  blue: {
+    100: c.ColorBlue100,
+    200: c.ColorBlue200,
+    300: c.ColorBlue300,
+    400: c.ColorBlue400,
+    500: c.ColorBlue500,
+    600: c.ColorBlue600,
+    700: c.ColorBlue700,
+    800: c.ColorBlue800,
+  },
+  blue_secondary: {
+    100: c.ColorBlueSecondary100,
+    200: c.ColorBlueSecondary200,
+    300: c.ColorBlueSecondary300,
+    400: c.ColorBlueSecondary400,
+    500: c.ColorBlueSecondary500,
+    600: c.ColorBlueSecondary600,
+    700: c.ColorBlueSecondary700,
+    800: c.ColorBlueSecondary800,
+  },
+  green: {
+    100: c.ColorGreen100,
+    200: c.ColorGreen200,
+    300: c.ColorGreen300,
+    400: c.ColorGreen400,
+    500: c.ColorGreen500,
+    600: c.ColorGreen600,
+    700: c.ColorGreen700,
+    800: c.ColorGreen800,
+  },
+  yellow: {
+    100: c.ColorYellow100,
+    200: c.ColorYellow200,
+    300: c.ColorYellow300,
+    400: c.ColorYellow400,
+    500: c.ColorYellow500,
+    600: c.ColorYellow600,
+    700: c.ColorYellow700,
+    800: c.ColorYellow800,
+  },
+  red: {
+    100: c.ColorRed100,
+    200: c.ColorRed200,
+    300: c.ColorRed300,
+    400: c.ColorRed400,
+    500: c.ColorRed500,
+    600: c.ColorRed600,
+    700: c.ColorRed700,
+    800: c.ColorRed800,
+  },
+  purple: {
+    100: c.ColorPurple100,
+    200: c.ColorPurple200,
+    300: c.ColorPurple300,
+    400: c.ColorPurple400,
+    500: c.ColorPurple500,
+    600: c.ColorPurple600,
+    700: c.ColorPurple700,
+    800: c.ColorPurple800,
+  },
+  light_blue: {
+    100: c.ColorLightBlue100,
+    200: c.ColorLightBlue200,
+    300: c.ColorLightBlue300,
+    400: c.ColorLightBlue400,
+    500: c.ColorLightBlue500,
+    600: c.ColorLightBlue600,
+    700: c.ColorLightBlue700,
+    800: c.ColorLightBlue800,
+  },
+  ink: {
+    100: c.ColorInk100,
+    150: c.ColorInk150,
+    300: c.ColorInk300,
+    400: c.ColorInk400,
+    450: c.ColorInk450,
+    550: c.ColorInk550,
+    600: c.ColorInk600,
+    650: c.ColorInk650,
+    700: c.ColorInk700,
+  },
+  text: {
+    primary: c.ColorForegroundLightHc,
+    secondary: c.ColorForegroundDeEmpLightHc,
+    disabled: c.ColorForegroundDisableLightHc
+  },
+  divider: c.ColorBorderLightHc,
+  common: {
+    black: c.ColorBlack,
+    white: c.ColorWhite,
+  },
+  icon: c.ColorIconDefaultLightHc,
+  background: {
+    default: c.ColorBackgroundLightHc,
+    paper: c.ColorBackgroundLightHc,
+  },
+};
+
+export const darkPalette: Palette = {
+  type: "dark",
+  semantic: {
+<% _.each(allProperties, function(property) { if (property.name.endsWith('Dark')) {
+%>    <%= property.name[0].toLowerCase() + property.name.slice(1, -'Dark'.length) %>: c.<%= property.name %>,
+<% }}); %>
+    // Keep these typos for compatibility reasons
+    colorBackgroundHigh: c.ColorBackgroundHighlightDark,
+    colorForegroundHigh: c.ColorForegroundHighlightDark,
+    colorForegroundHighSelected: c.ColorForegroundHighlightSelectedDark,
+    colorForegroundHighSelectedHover: c.ColorForegroundHighlightSelectedHoverDark,
+  },
+  primary: {
+    contrastText: c.ColorWhite,
+    light: c.ColorPrimaryLighterLight,
+    main: c.ColorPrimaryDark,
+    dark: c.ColorPrimaryLighterDark,
+  },
+  secondary: {
+    contrastText: c.ColorWhite,
+    light: c.ColorPrimaryLighterLight,
+    main: c.ColorPrimaryDark,
+    dark: c.ColorPrimaryLighterDark,
+  },
+  error: {
+    contrastText: c.ColorWhite,
+    light: c.ColorError250,
+    main: c.ColorError500,
+    dark: c.ColorError750,
+  },
+  success: {
+    contrastText: c.ColorWhite,
+    light: c.ColorGreen250,
+    main: c.ColorGreen500,
+    dark: c.ColorGreen750,
+  },
+  warning: {
+    contrastText: c.ColorWhite,
+    light: c.ColorWarning300,
+    main: c.ColorWarning500,
+    dark: c.ColorWarning700,
+  },
+  info: {
+    contrastText: c.ColorBlack,
+    light: c.ColorInfoBackgroundDark,
+    main: c.ColorInfoForegroundDark,
+    dark: c.ColorInfo700,
+  },
+  orange: {
+    100: c.ColorOrange100,
+    200: c.ColorOrange200,
+    300: c.ColorOrange300,
+    400: c.ColorOrange400,
+    500: c.ColorOrange500,
+    600: c.ColorOrange600,
+    700: c.ColorOrange700,
+    800: c.ColorOrange800,
+  },
+  blue: {
+    100: c.ColorBlue100,
+    200: c.ColorBlue200,
+    300: c.ColorBlue300,
+    400: c.ColorBlue400,
+    500: c.ColorBlue500,
+    600: c.ColorBlue600,
+    700: c.ColorBlue700,
+    800: c.ColorBlue800,
+  },
+  blue_secondary: {
+    100: c.ColorBlueSecondary100,
+    200: c.ColorBlueSecondary200,
+    300: c.ColorBlueSecondary300,
+    400: c.ColorBlueSecondary400,
+    500: c.ColorBlueSecondary500,
+    600: c.ColorBlueSecondary600,
+    700: c.ColorBlueSecondary700,
+    800: c.ColorBlueSecondary800,
+  },
+  green: {
+    100: c.ColorGreen100,
+    200: c.ColorGreen200,
+    300: c.ColorGreen300,
+    400: c.ColorGreen400,
+    500: c.ColorGreen500,
+    600: c.ColorGreen600,
+    700: c.ColorGreen700,
+    800: c.ColorGreen800,
+  },
+  yellow: {
+    100: c.ColorYellow100,
+    200: c.ColorYellow200,
+    300: c.ColorYellow300,
+    400: c.ColorYellow400,
+    500: c.ColorYellow500,
+    600: c.ColorYellow600,
+    700: c.ColorYellow700,
+    800: c.ColorYellow800,
+  },
+  red: {
+    100: c.ColorRed100,
+    200: c.ColorRed200,
+    300: c.ColorRed300,
+    400: c.ColorRed400,
+    500: c.ColorRed500,
+    600: c.ColorRed600,
+    700: c.ColorRed700,
+    800: c.ColorRed800,
+  },
+  purple: {
+    100: c.ColorPurple100,
+    200: c.ColorPurple200,
+    300: c.ColorPurple300,
+    400: c.ColorPurple400,
+    500: c.ColorPurple500,
+    600: c.ColorPurple600,
+    700: c.ColorPurple700,
+    800: c.ColorPurple800,
+  },
+  light_blue: {
+    100: c.ColorLightBlue100,
+    200: c.ColorLightBlue200,
+    300: c.ColorLightBlue300,
+    400: c.ColorLightBlue400,
+    500: c.ColorLightBlue500,
+    600: c.ColorLightBlue600,
+    700: c.ColorLightBlue700,
+    800: c.ColorLightBlue800,
+  },
+  ink: {
+    100: c.ColorInk100,
+    150: c.ColorInk150,
+    300: c.ColorInk300,
+    400: c.ColorInk400,
+    450: c.ColorInk450,
+    550: c.ColorInk550,
+    600: c.ColorInk600,
+    650: c.ColorInk650,
+    700: c.ColorInk700,
+  },
+  text: {
+    primary: c.ColorForegroundDark,
+    secondary: c.ColorForegroundDeEmpDark,
+    disabled: c.ColorForegroundDisableDark
+  },
+  divider: c.ColorBorderDark,
+  common: {
+    black: c.ColorBlack,
+    white: c.ColorWhite,
+  },
+  icon: c.ColorIconDefaultDark,
+  background: {
+    default: c.ColorBackgroundDark,
+    paper: c.ColorBackgroundDark,
+  },
+};
+
+export const darkHighContrastPalette: Palette = {
+  type: "dark-hc",
+  semantic: {
+<% _.each(allProperties, function(property) { if (property.name.endsWith('DarkHc')) {
+%>    <%= property.name[0].toLowerCase() + property.name.slice(1, -'DarkHc'.length) %>: c.<%= property.name %>,
+<% }}); %>
+    // Keep these typos for compatibility reasons
+    colorBackgroundHigh: c.ColorBackgroundHighlightDarkHc,
+    colorForegroundHigh: c.ColorForegroundHighlightDarkHc,
+    colorForegroundHighSelected: c.ColorForegroundHighlightSelectedDarkHc,
+    colorForegroundHighSelectedHover: c.ColorForegroundHighlightSelectedHoverDarkHc,
+  },
+  primary: {
+    contrastText: c.ColorWhite,
+    light: c.ColorPrimaryLighterLight,
+    main: c.ColorPrimaryDarkHc,
+    dark: c.ColorPrimaryLighterDark,
+  },
+  secondary: {
+    contrastText: c.ColorWhite,
+    light: c.ColorPrimaryLighterLight,
+    main: c.ColorPrimaryDarkHc,
+    dark: c.ColorPrimaryLighterDark,
+  },
+  error: {
+    contrastText: c.ColorWhite,
+    light: c.ColorError250,
+    main: c.ColorError500,
+    dark: c.ColorError750,
+  },
+  success: {
+    contrastText: c.ColorWhite,
+    light: c.ColorGreen250,
+    main: c.ColorGreen500,
+    dark: c.ColorGreen750,
+  },
+  warning: {
+    contrastText: c.ColorWhite,
+    light: c.ColorWarning300,
+    main: c.ColorWarning500,
+    dark: c.ColorWarning700,
+  },
+  info: {
+    contrastText: c.ColorBlack,
+    light: c.ColorInfoBackgroundDarkHc,
+    main: c.ColorInfoForegroundDarkHc,
+    dark: c.ColorInfo700,
+  },
+  orange: {
+    100: c.ColorOrange100,
+    200: c.ColorOrange200,
+    300: c.ColorOrange300,
+    400: c.ColorOrange400,
+    500: c.ColorOrange500,
+    600: c.ColorOrange600,
+    700: c.ColorOrange700,
+    800: c.ColorOrange800,
+  },
+  blue: {
+    100: c.ColorBlue100,
+    200: c.ColorBlue200,
+    300: c.ColorBlue300,
+    400: c.ColorBlue400,
+    500: c.ColorBlue500,
+    600: c.ColorBlue600,
+    700: c.ColorBlue700,
+    800: c.ColorBlue800,
+  },
+  blue_secondary: {
+    100: c.ColorBlueSecondary100,
+    200: c.ColorBlueSecondary200,
+    300: c.ColorBlueSecondary300,
+    400: c.ColorBlueSecondary400,
+    500: c.ColorBlueSecondary500,
+    600: c.ColorBlueSecondary600,
+    700: c.ColorBlueSecondary700,
+    800: c.ColorBlueSecondary800,
+  },
+  green: {
+    100: c.ColorGreen100,
+    200: c.ColorGreen200,
+    300: c.ColorGreen300,
+    400: c.ColorGreen400,
+    500: c.ColorGreen500,
+    600: c.ColorGreen600,
+    700: c.ColorGreen700,
+    800: c.ColorGreen800,
+  },
+  yellow: {
+    100: c.ColorYellow100,
+    200: c.ColorYellow200,
+    300: c.ColorYellow300,
+    400: c.ColorYellow400,
+    500: c.ColorYellow500,
+    600: c.ColorYellow600,
+    700: c.ColorYellow700,
+    800: c.ColorYellow800,
+  },
+  red: {
+    100: c.ColorRed100,
+    200: c.ColorRed200,
+    300: c.ColorRed300,
+    400: c.ColorRed400,
+    500: c.ColorRed500,
+    600: c.ColorRed600,
+    700: c.ColorRed700,
+    800: c.ColorRed800,
+  },
+  purple: {
+    100: c.ColorPurple100,
+    200: c.ColorPurple200,
+    300: c.ColorPurple300,
+    400: c.ColorPurple400,
+    500: c.ColorPurple500,
+    600: c.ColorPurple600,
+    700: c.ColorPurple700,
+    800: c.ColorPurple800,
+  },
+  light_blue: {
+    100: c.ColorLightBlue100,
+    200: c.ColorLightBlue200,
+    300: c.ColorLightBlue300,
+    400: c.ColorLightBlue400,
+    500: c.ColorLightBlue500,
+    600: c.ColorLightBlue600,
+    700: c.ColorLightBlue700,
+    800: c.ColorLightBlue800,
+  },
+  ink: {
+    100: c.ColorInk100,
+    150: c.ColorInk150,
+    300: c.ColorInk300,
+    400: c.ColorInk400,
+    450: c.ColorInk450,
+    550: c.ColorInk550,
+    600: c.ColorInk600,
+    650: c.ColorInk650,
+    700: c.ColorInk700,
+  },
+  text: {
+    primary: c.ColorForegroundDarkHc,
+    secondary: c.ColorForegroundDeEmpDarkHc,
+    disabled: c.ColorForegroundDisableDarkHc
+  },
+  divider: c.ColorBorderDarkHc,
+  common: {
+    black: c.ColorBlack,
+    white: c.ColorWhite,
+  },
+  icon: c.ColorIconDefaultDarkHc,
+  background: {
+    default: c.ColorBackgroundDarkHc,
+    paper: c.ColorBackgroundDarkHc,
+  },
+};

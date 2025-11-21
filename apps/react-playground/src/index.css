@@ -1,10 +1,26 @@
+@import "@uipath/apollo-react/core/tokens/css/theme-variables.css";
+@import "./custom-variables.css";
+
+* {
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+}
+
 body {
-  margin: 0;
-  font-family: Inter, system-ui, -apple-system, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+	margin: 0;
+	padding: 0;
+	font-family: Inter, system-ui, -apple-system, sans-serif;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	background: var(--color-background);
+	color: var(--color-foreground);
+	transition:
+		background-color 0.3s ease,
+		color 0.3s ease;
 }
 
 #root {
-  padding: 2rem;
+	margin: 0;
+	padding: 0;
 }

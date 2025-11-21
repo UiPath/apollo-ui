@@ -2,31 +2,31 @@
   "name": "@uipath/apollo-react",
   "version": "0.0.0",
   "description": "Apollo Design System - React component library with Material UI theming",
-  "main": "./dist/index.js",
-  "module": "./dist/index.mjs",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.js",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs",
       "types": "./dist/index.d.ts"
     },
     "./components": {
-      "import": "./dist/components/index.mjs",
-      "require": "./dist/components/index.js",
+      "import": "./dist/components.js",
+      "require": "./dist/components.cjs",
       "types": "./dist/components/index.d.ts"
     },
     "./theme": {
-      "import": "./dist/theme/index.mjs",
-      "require": "./dist/theme/index.js",
+      "import": "./dist/theme.js",
+      "require": "./dist/theme.cjs",
       "types": "./dist/theme/index.d.ts"
     },
     "./core": {
-      "import": "./dist/core/index.mjs",
-      "require": "./dist/core/index.js",
+      "import": "./dist/core.js",
+      "require": "./dist/core.cjs",
       "types": "./dist/core/index.d.ts"
     },
-    "./core/theme.css": "./dist/theme.css"
+    "./core/tokens/*": "./dist/core/tokens/*"
   },
   "files": [
     "dist"
