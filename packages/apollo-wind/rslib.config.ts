@@ -1,5 +1,8 @@
-import { defineConfig } from '@rslib/core';
+import { readFileSync, writeFileSync } from 'fs';
+import { resolve } from 'path';
+
 import { pluginReact } from '@rsbuild/plugin-react';
+import { defineConfig } from '@rslib/core';
 
 const entry: Record<string, string> = {
   components: './src/components/index.ts',
@@ -28,5 +31,26 @@ export default defineConfig({
     target: 'web',
     cleanDistPath: true,
   },
-  plugins: [pluginReact()],
+  plugins: [
+    pluginReact(),
+    {
+      name: 'copy-theme-selectors',
+      setup(api) {
+        api.onAfterBuild(() => {
+          const source = resolve(__dirname, '../apollo-core/dist/tokens/css/theme-variables.css');
+          const dest = resolve(__dirname, 'dist/theme-selectors.css');
+
+          // Read the file and replace the relative import with apollo-core import
+          let content = readFileSync(source, 'utf-8');
+          content = content.replace(
+            '@import "./variables.css";',
+            '@import "@uipath/apollo-core/tokens/css/variables.css";'
+          );
+
+          writeFileSync(dest, content, 'utf-8');
+          console.log('✓ Copied theme-selectors.css from apollo-core');
+        });
+      },
+    },
+  ],
 });
