@@ -1,3 +1,10 @@
+## [1.1.2](https://github.com/uipath/wind/compare/v1.1.1...v1.1.2) (2025-11-21)
+
+
+### Bug Fixes
+
+* add more template examples ([4c10d80](https://github.com/uipath/wind/commit/4c10d8016a80cfe102d622687854c5c37552e156))
+
 ## [1.1.1](https://github.com/uipath/wind/compare/v1.1.0...v1.1.1) (2025-11-21)
 
 
