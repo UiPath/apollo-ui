@@ -1,0 +1,145 @@
+/**
+ * Apollo Wind - Complete Tailwind CSS with Design System Theme
+ *
+ * This file imports Tailwind CSS and applies the Apollo Wind design system theme.
+ * Consumers can import this single file to get:
+ * - All Tailwind utilities (with JIT)
+ * - Apollo Wind theme colors and variables
+ * - Component styles
+ *
+ * Usage:
+ *   import '@uipath/wind/tailwind.css'
+ */
+
+@import "tailwindcss";
+
+/* Apollo Wind Theme Variables */
+@theme {
+  /* Color Palette - Semantic tokens */
+  --color-border: oklch(0.914 0.008 264);
+  --color-input: oklch(0.914 0.008 264);
+  --color-ring: oklch(0.278 0.097 265);
+
+  --color-background: oklch(1 0 0);
+  --color-foreground: oklch(0.278 0.097 265);
+
+  --color-primary: oklch(0.408 0.096 265);
+  --color-primary-foreground: oklch(0.972 0.008 264);
+
+  --color-secondary: oklch(0.961 0.008 264);
+  --color-secondary-foreground: oklch(0.408 0.096 265);
+
+  --color-destructive: oklch(0.643 0.221 29);
+  --color-destructive-foreground: oklch(0.972 0.008 264);
+
+  --color-muted: oklch(0.961 0.008 264);
+  --color-muted-foreground: oklch(0.593 0.036 256);
+
+  --color-accent: oklch(0.961 0.008 264);
+  --color-accent-foreground: oklch(0.408 0.096 265);
+
+  --color-card: oklch(1 0 0);
+  --color-card-foreground: oklch(0.278 0.097 265);
+
+  /* Border Radius */
+  --radius-sm: 0.25rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.75rem;
+  --radius-2xl: 1rem;
+  --radius-full: 9999px;
+
+  /* Default radius */
+  --radius: 0.5rem;
+}
+
+/* Base Styles */
+@layer base {
+  * {
+    @apply border-gray-200;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+  }
+
+  /* Dark Mode Support */
+  @media (prefers-color-scheme: dark) {
+    :root:not(.light) {
+      --color-background: oklch(0.278 0.097 265);
+      --color-foreground: oklch(0.972 0.008 264);
+
+      --color-card: oklch(0.278 0.097 265);
+      --color-card-foreground: oklch(0.972 0.008 264);
+
+      --color-primary: oklch(0.972 0.008 264);
+      --color-primary-foreground: oklch(0.408 0.096 265);
+
+      --color-secondary: oklch(0.344 0.062 264);
+      --color-secondary-foreground: oklch(0.972 0.008 264);
+
+      --color-muted: oklch(0.344 0.062 264);
+      --color-muted-foreground: oklch(0.791 0.038 261);
+
+      --color-accent: oklch(0.344 0.062 264);
+      --color-accent-foreground: oklch(0.972 0.008 264);
+
+      --color-destructive: oklch(0.462 0.165 29);
+      --color-destructive-foreground: oklch(0.972 0.008 264);
+
+      --color-border: oklch(0.344 0.062 264);
+      --color-input: oklch(0.344 0.062 264);
+      --color-ring: oklch(0.833 0.048 264);
+    }
+  }
+
+  .dark {
+    --color-background: oklch(0.278 0.097 265);
+    --color-foreground: oklch(0.972 0.008 264);
+
+    --color-card: oklch(0.278 0.097 265);
+    --color-card-foreground: oklch(0.972 0.008 264);
+
+    --color-primary: oklch(0.972 0.008 264);
+    --color-primary-foreground: oklch(0.408 0.096 265);
+
+    --color-secondary: oklch(0.344 0.062 264);
+    --color-secondary-foreground: oklch(0.972 0.008 264);
+
+    --color-muted: oklch(0.344 0.062 264);
+    --color-muted-foreground: oklch(0.791 0.038 261);
+
+    --color-accent: oklch(0.344 0.062 264);
+    --color-accent-foreground: oklch(0.972 0.008 264);
+
+    --color-destructive: oklch(0.462 0.165 29);
+    --color-destructive-foreground: oklch(0.972 0.008 264);
+
+    --color-border: oklch(0.344 0.062 264);
+    --color-input: oklch(0.344 0.062 264);
+    --color-ring: oklch(0.833 0.048 264);
+  }
+}
+
+/* Component Layer - Apollo Wind Components */
+@layer components {
+  .wind-container {
+    @apply mx-auto px-4 sm:px-6 lg:px-8;
+  }
+}
+
+/* Utilities */
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}

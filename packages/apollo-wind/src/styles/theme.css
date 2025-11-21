@@ -1,0 +1,5 @@
+/* Apollo Wind Theme Variants */
+/* Additional theme variants for Apollo Wind components */
+
+@import "./themes/uipath.css";
+@import "./themes/vercel.css";
