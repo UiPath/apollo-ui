@@ -18,10 +18,18 @@ global.IntersectionObserver = class IntersectionObserver {
   root = null;
   rootMargin = "";
   thresholds = [];
-  constructor() {}
-  observe() {}
-  unobserve() {}
-  disconnect() {}
+  constructor() {
+    // Mock
+  }
+  observe() {
+    // Mock
+  }
+  unobserve() {
+    // Mock
+  }
+  disconnect() {
+    // Mock
+  }
   takeRecords() {
     return [];
   }
@@ -66,10 +74,10 @@ Object.defineProperty(window, "matchMedia", {
     matches: false,
     media: query,
     onchange: null,
-    addListener: () => {},
-    removeListener: () => {},
-    addEventListener: () => {},
-    removeEventListener: () => {},
+    addListener: () => undefined,
+    removeListener: () => undefined,
+    addEventListener: () => undefined,
+    removeEventListener: () => undefined,
     dispatchEvent: () => false,
   }),
 });
