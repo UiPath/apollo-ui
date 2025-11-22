@@ -15,15 +15,11 @@ import {
   ShellPane,
   ShellPanel,
   ShellStatusBar,
-} from "./vscode-template";
+} from "./vscode-example";
 
 const meta = {
-  title: "Templates/VSCode",
+  title: "Examples/VSCode",
   component: Shell,
-  parameters: {
-    layout: "padded",
-  },
-  tags: ["autodocs"],
 } satisfies Meta<typeof Shell>;
 
 export default meta;

@@ -39,7 +39,7 @@ const navItems: NavItem[] = [
   { id: "billing", label: "Billing", icon: <CreditCard className="h-4 w-4" /> },
 ];
 
-export function SettingsTemplate() {
+export function SettingsExample() {
   const [activeSection, setActiveSection] = React.useState("profile");
   const [formData, setFormData] = React.useState({
     firstName: "John",

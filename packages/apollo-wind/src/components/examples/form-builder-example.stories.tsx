@@ -1,13 +1,13 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { FormBuilderTemplate } from "./form-builder-template";
+import { FormBuilderExample } from "./form-builder-example";
 
 const meta = {
-  title: "Templates/Form Builder",
-  component: FormBuilderTemplate,
+  title: "Examples/Form Builder",
+  component: FormBuilderExample,
   parameters: {
     layout: "fullscreen",
   },
-} satisfies Meta<typeof FormBuilderTemplate>;
+} satisfies Meta<typeof FormBuilderExample>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;

@@ -225,7 +225,7 @@ const columns: ColumnDef<Product, unknown>[] = [
   },
 ];
 
-export function DataManagementTemplate() {
+export function DataManagementExample() {
   const [activeTab, setActiveTab] = React.useState("all");
   const [categoryFilter, setCategoryFilter] = React.useState("all");
   const [isCreateDialogOpen, setIsCreateDialogOpen] = React.useState(false);

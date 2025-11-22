@@ -1,13 +1,13 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { DashboardTemplate } from "./dashboard-template";
+import { DashboardExample } from "./dashboard-example";
 
 const meta = {
-  title: "Templates/Dashboard",
-  component: DashboardTemplate,
+  title: "Examples/Dashboard",
+  component: DashboardExample,
   parameters: {
     layout: "fullscreen",
   },
-} satisfies Meta<typeof DashboardTemplate>;
+} satisfies Meta<typeof DashboardExample>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
