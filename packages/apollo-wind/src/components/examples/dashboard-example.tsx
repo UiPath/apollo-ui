@@ -40,7 +40,7 @@ interface ActivityItem {
   avatar?: string;
 }
 
-export interface DashboardTemplateProps {
+export interface DashboardExampleProps {
   className?: string;
   title?: string;
   description?: string;
@@ -179,12 +179,12 @@ const columns: ColumnDef<Transaction, unknown>[] = [
   },
 ];
 
-export function DashboardTemplate({
+export function DashboardExample({
   className,
   title = "Dashboard",
   description = "Welcome back! Here's an overview of your business.",
   user = { name: "John Doe", email: "john@example.com" },
-}: DashboardTemplateProps) {
+}: DashboardExampleProps) {
   const [activeTab, setActiveTab] = React.useState("overview");
 
   return (

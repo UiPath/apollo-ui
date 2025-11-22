@@ -1,13 +1,13 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { DataManagementTemplate } from "./data-management-template";
+import { SettingsExample } from "./settings-example";
 
 const meta = {
-  title: "Templates/Data Management",
-  component: DataManagementTemplate,
+  title: "Examples/Settings",
+  component: SettingsExample,
   parameters: {
     layout: "fullscreen",
   },
-} satisfies Meta<typeof DataManagementTemplate>;
+} satisfies Meta<typeof SettingsExample>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;

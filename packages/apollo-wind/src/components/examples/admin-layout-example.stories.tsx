@@ -26,15 +26,11 @@ import {
   AdminPagination,
   DataTableColumnHeader,
   DataTableSelectColumn,
-} from "./admin-layout-template";
+} from "./admin-layout-example";
 
 const meta = {
-  title: "Templates/Admin Layout",
+  title: "Examples/Admin Layout",
   component: AdminLayout,
-  parameters: {
-    layout: "padded",
-  },
-  tags: ["autodocs"],
 } satisfies Meta<typeof AdminLayout>;
 
 export default meta;
@@ -45,9 +41,9 @@ const tenants = [
   { id: "1", name: "Maestro", type: "tenant" },
   { id: "2", name: "Staging", type: "tenant" },
   { id: "3", name: "ao", type: "tenant" },
-  { id: "8", name: "Development", type: "service", badge: "Canary Environment" },
-  { id: "9", name: "DefaultTenant", type: "tenant" },
-  { id: "15", name: "optimize", type: "service" },
+  { id: "4", name: "Development", type: "service", badge: "Canary Environment" },
+  { id: "5", name: "DefaultTenant", type: "tenant" },
+  { id: "6", name: "optimize", type: "service" },
 ];
 
 type User = {

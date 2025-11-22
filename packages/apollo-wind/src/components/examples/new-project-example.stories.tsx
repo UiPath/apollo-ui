@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import type { ProjectTemplate } from "./new-project-template";
-import { NewProjectTemplate } from "./new-project-template";
+import type { ProjectExample } from "./new-project-example";
+import { NewProjectExample } from "./new-project-example";
 
 const meta = {
-  title: "Templates/New Project",
-  component: NewProjectTemplate,
+  title: "Examples/New Project",
+  component: NewProjectExample,
   parameters: {
     layout: "fullscreen",
   },
@@ -14,12 +14,12 @@ const meta = {
       control: "object",
     },
   },
-} satisfies Meta<typeof NewProjectTemplate>;
+} satisfies Meta<typeof NewProjectExample>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-const defaultTemplates: ProjectTemplate[] = [
+const defaultExamples: ProjectExample[] = [
   {
     id: "1",
     name: "Client Onboarding Account Opening",
@@ -120,7 +120,7 @@ export const Default: Story = {
       disclaimer: "Autopilot can make mistakes. Please double check the responses.",
       onSubmit: (prompt: string) => console.log("Autopilot prompt:", prompt),
     },
-    templates: defaultTemplates,
+    templates: defaultExamples,
     categories: [
       { id: "financial", label: "Financial" },
       { id: "healthcare", label: "Healthcare" },

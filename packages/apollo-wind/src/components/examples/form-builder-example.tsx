@@ -42,7 +42,7 @@ interface FormData {
   customJson: string;
 }
 
-export function FormBuilderTemplate() {
+export function FormBuilderExample() {
   const [formData, setFormData] = React.useState<FormData>({
     firstName: "",
     lastName: "",

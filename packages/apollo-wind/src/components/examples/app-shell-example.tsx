@@ -14,7 +14,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib";
 
-export interface AppShellTemplateProps {
+export interface AppShellExampleProps {
   className?: string;
   logo?: React.ReactNode;
   tenant?: string;
@@ -65,7 +65,7 @@ export interface AppShellTemplateProps {
   };
 }
 
-export function AppShellTemplate({
+export function AppShellExample({
   className,
   logo = <div className="text-xl font-bold">Logo</div>,
   tenant = "DefaultTenant",
@@ -117,7 +117,7 @@ export function AppShellTemplate({
       ],
     },
     {
-      title: "Templates",
+      title: "Examples",
       items: [
         {
           id: "1",
@@ -152,7 +152,7 @@ export function AppShellTemplate({
       </div>
     ),
   },
-}: AppShellTemplateProps) {
+}: AppShellExampleProps) {
   const [leftSidebarCollapsed, setLeftSidebarCollapsed] = React.useState(false);
   const [rightSidebarCollapsed, setRightSidebarCollapsed] = React.useState(false);
 

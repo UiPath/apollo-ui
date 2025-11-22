@@ -15,7 +15,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib";
 
-export interface ProjectTemplate {
+export interface ProjectExample {
   id: string;
   name: string;
   description: string;
@@ -25,11 +25,11 @@ export interface ProjectTemplate {
   onUse?: () => void;
 }
 
-export interface NewProjectTemplateProps {
+export interface NewProjectExampleProps {
   className?: string;
   title?: string;
   subtitle?: string;
-  templates?: ProjectTemplate[];
+  templates?: ProjectExample[];
   categories?: Array<{ id: string; label: string }>;
   tools?: Array<{ id: string; label: string }>;
   autopilot?: {
@@ -40,7 +40,7 @@ export interface NewProjectTemplateProps {
   onCreateBlank?: () => void;
 }
 
-export function NewProjectTemplate({
+export function NewProjectExample({
   className,
   title = "Let's create an agentic process",
   subtitle = "Design and orchestrate end-to-end processes with AI agents, robots, and people using BPMN-based diagrams.",
@@ -85,7 +85,7 @@ export function NewProjectTemplate({
   ],
   autopilot,
   onCreateBlank,
-}: NewProjectTemplateProps) {
+}: NewProjectExampleProps) {
   const [autopilotPrompt, setAutopilotPrompt] = React.useState("");
   const [drawerOpen, setDrawerOpen] = React.useState(false);
   const [searchQuery, setSearchQuery] = React.useState("");
@@ -117,7 +117,7 @@ export function NewProjectTemplate({
     );
   };
 
-  const filteredTemplates = React.useMemo(() => {
+  const filteredExamples = React.useMemo(() => {
     return templates.filter((template) => {
       const matchesSearch =
         searchQuery === "" ||
@@ -136,7 +136,7 @@ export function NewProjectTemplate({
     });
   }, [templates, searchQuery, selectedCategories, selectedTools]);
 
-  const TemplateCard = ({ template }: { template: ProjectTemplate }) => (
+  const ExampleCard = ({ template }: { template: ProjectExample }) => (
     <div className="group flex flex-col rounded-lg border border-border/30 bg-card p-8 transition-all hover:border-border/60 hover:shadow-sm">
       <div className="mb-8 flex-1 space-y-4">
         <h3 className="text-base font-semibold leading-tight">{template.name}</h3>
@@ -186,9 +186,9 @@ export function NewProjectTemplate({
           </div>
         </div>
 
-        {/* Templates Grid */}
+        {/* Examples Grid */}
         <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
-          {/* Blank Template */}
+          {/* Blank Example */}
           <button
             className="group flex cursor-pointer flex-col items-center justify-between rounded-lg border border-dashed border-border/40 bg-card p-8 text-center transition-all hover:border-border/70 hover:shadow-sm"
             onClick={onCreateBlank}
@@ -202,9 +202,9 @@ export function NewProjectTemplate({
             </div>
           </button>
 
-          {/* Template Cards */}
+          {/* Example Cards */}
           {templates.slice(0, 3).map((template) => (
-            <TemplateCard key={template.id} template={template} />
+            <ExampleCard key={template.id} template={template} />
           ))}
         </div>
 
@@ -259,9 +259,9 @@ export function NewProjectTemplate({
         )}
       </div>
 
-      {/* Explore Templates Drawer */}
+      {/* Explore Examples Drawer */}
       <Drawer open={drawerOpen} onOpenChange={setDrawerOpen}>
-        <DrawerContent className="max-h-[45vh]">
+        <DrawerContent className="max-h-[75vh]">
           <DrawerHeader className="border-b px-4 py-2 md:px-6 md:py-3">
             <div className="flex items-start justify-between">
               <div>
@@ -279,7 +279,7 @@ export function NewProjectTemplate({
             </div>
           </DrawerHeader>
 
-          <div className="flex h-[calc(45vh-80px)] overflow-hidden">
+          <div className="flex h-[calc(75vh-80px)] overflow-hidden">
             {/* Sidebar */}
             <div className="hidden w-56 border-r bg-muted/20 p-3 md:block">
               <div className="mb-3">
@@ -381,12 +381,12 @@ export function NewProjectTemplate({
               </div>
 
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                {filteredTemplates.map((template) => (
-                  <TemplateCard key={template.id} template={template} />
+                {filteredExamples.map((template) => (
+                  <ExampleCard key={template.id} template={template} />
                 ))}
               </div>
 
-              {filteredTemplates.length === 0 && (
+              {filteredExamples.length === 0 && (
                 <div className="flex h-32 items-center justify-center">
                   <p className="text-sm text-muted-foreground">No templates found</p>
                 </div>
