@@ -166,7 +166,7 @@ function AutopilotChatInputComponent() {
             return;
         }
 
-        if (event.key === 'Enter' && !event.shiftKey && message.trim().length > 0) {
+        if (event.key === 'Enter' && !event.shiftKey && message.trim().length > 0 && !skeletonLoader) {
             handleSubmit();
         }
     }, [ message, handleSubmit, waitingResponse, streaming ]);
