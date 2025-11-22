@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/uipath/wind/compare/v1.1.3...v1.2.0) (2025-11-22)
+
+
+### Features
+
+* add Grid, Column, and Row components with responsive layout capabilities ([5cc6fad](https://github.com/uipath/wind/commit/5cc6fadc7d565354e71a1abc132fa91f5880c33c))
+
 ## [1.1.3](https://github.com/uipath/wind/compare/v1.1.2...v1.1.3) (2025-11-22)
 
 
