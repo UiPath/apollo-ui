@@ -1,7 +1,7 @@
 import * as React from "react";
 import { cn } from "@/lib";
 import type { LayoutProps } from "./types";
-import { buildLayoutClasses } from "./utils";
+import { buildLayoutClasses, spacingToRem } from "./utils";
 
 export interface ColumnProps extends LayoutProps {
   /**
@@ -26,6 +26,7 @@ const Column = React.forwardRef<HTMLDivElement, ColumnProps>(
     {
       children,
       className,
+      style,
       direction = "column",
       align,
       justify,
@@ -93,8 +94,19 @@ const Column = React.forwardRef<HTMLDivElement, ColumnProps>(
       my,
     });
 
+    // Use inline styles for gap as fallback for values not in Tailwind
+    const inlineStyles: React.CSSProperties = {
+      ...style,
+      ...(gap !== undefined && { gap: spacingToRem(gap) }),
+    };
+
     return (
-      <div ref={ref} className={cn(...layoutClasses, className)} {...htmlProps}>
+      <div
+        ref={ref}
+        className={cn(...layoutClasses, className)}
+        style={inlineStyles}
+        {...htmlProps}
+      >
         {children}
       </div>
     );

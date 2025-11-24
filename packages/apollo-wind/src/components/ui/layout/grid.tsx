@@ -99,9 +99,10 @@ const Grid = React.forwardRef<HTMLDivElement, GridProps>(
       my,
     });
 
-    // Use inline styles for gapX and gapY since Tailwind v4 doesn't have gap-x-* and gap-y-*
+    // Use inline styles for gapX, gapY, and gap as fallback for values not in Tailwind
     const inlineStyles: React.CSSProperties = {
       ...style,
+      ...(gap !== undefined && { gap: spacingToRem(gap) }),
       ...(gapX !== undefined && { columnGap: spacingToRem(gapX) }),
       ...(gapY !== undefined && { rowGap: spacingToRem(gapY) }),
     };

@@ -170,7 +170,7 @@ export function NewProjectExample({
     <>
       <Column
         minH="screen"
-        gap={16}
+        gap={8}
         className={cn("bg-background px-8 py-16 md:px-16 md:py-20", className)}
       >
         {/* Header Section */}
@@ -187,7 +187,7 @@ export function NewProjectExample({
         </div>
 
         {/* Examples Grid */}
-        <Grid gap={8} cols={4} className="md:grid-cols-2 lg:grid-cols-4">
+        <Grid gap={8} cols={1} className="sm:grid-cols-2 lg:grid-cols-4">
           {/* Blank Example */}
           <button
             className="group flex cursor-pointer flex-col items-center justify-between rounded-lg border border-dashed border-border/40 bg-card p-8 text-center transition-all hover:border-border/70 hover:shadow-sm"
@@ -380,7 +380,7 @@ export function NewProjectExample({
                 </div>
               </div>
 
-              <Grid gap={3} cols={3} className="sm:grid-cols-2 lg:grid-cols-3">
+              <Grid gap={3} cols={1} className="sm:grid-cols-2 lg:grid-cols-3">
                 {filteredExamples.map((template) => (
                   <ExampleCard key={template.id} template={template} />
                 ))}
