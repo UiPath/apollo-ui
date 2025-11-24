@@ -1,20 +1,19 @@
 {
-  "$schema": "https://ui.shadcn.com/schema/registry.json",
-  "name": "apollo-vertex",
-  "homepage": "https://apollo-vertex.vercel.app",
-  "items": [
-    {
-      "name": "button",
-      "type": "registry:ui",
-      "title": "Button",
-      "description": "A vertex button component.",
-      "files": [
+    "$schema": "https://ui.shadcn.com/schema/registry.json",
+    "name": "apollo-vertex",
+    "homepage": "https://apollo-vertex.vercel.app",
+    "items": [
         {
-          "path": "registry/button/button.tsx",
-          "type": "registry:ui"
+            "name": "button",
+            "type": "registry:ui",
+            "title": "Button",
+            "description": "A vertex button component.",
+            "files": [
+                {
+                    "path": "registry/button/button.tsx",
+                    "type": "registry:ui"
+                }
+            ]
         }
-      ]
-    }
-  ]
+    ]
 }
-
