@@ -27,6 +27,7 @@ import {
   DataTableColumnHeader,
   DataTableSelectColumn,
 } from "./admin-layout-example";
+import { Row, Column } from "@/components/ui/layout";
 
 const meta = {
   title: "Examples/Admin Layout",
@@ -90,10 +91,10 @@ function AdminPageDemo() {
       accessorKey: "name",
       header: ({ column }) => <DataTableColumnHeader column={column} title="Name" />,
       cell: ({ row }) => (
-        <div className="flex items-center gap-2">
+        <Row gap={2} align="center">
           <Users className="h-4 w-4 text-muted-foreground" />
           <span>{row.original.name}</span>
-        </div>
+        </Row>
       ),
     },
     {
@@ -136,16 +137,16 @@ function AdminPageDemo() {
     <AdminLayout className="h-[700px]">
       <AdminHeader
         logo={
-          <div className="flex items-center gap-2">
-            <div className="grid h-8 w-8 place-items-center">
+          <Row gap={2} align="center">
+            <Row justify="center" align="center" className="h-8 w-8">
               <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none">
                 <rect x="2" y="2" width="8" height="8" rx="1" fill="currentColor" />
                 <rect x="2" y="14" width="8" height="8" rx="1" fill="currentColor" />
                 <rect x="14" y="2" width="8" height="8" rx="1" fill="currentColor" />
                 <rect x="14" y="14" width="8" height="8" rx="1" fill="currentColor" />
               </svg>
-            </div>
-          </div>
+            </Row>
+          </Row>
         }
         title="Administration"
       >
@@ -155,7 +156,7 @@ function AdminPageDemo() {
       <AdminContent>
         <AdminSidebar width={260}>
           <div className="border-b px-4 py-3">
-            <div className="flex items-center gap-2 text-sm font-medium">
+            <Row gap={2} align="center" className="text-sm font-medium">
               <svg
                 viewBox="0 0 24 24"
                 className="h-5 w-5"
@@ -168,7 +169,7 @@ function AdminPageDemo() {
                 <path d="M9 21V9" />
               </svg>
               POPoC
-            </div>
+            </Row>
           </div>
           <AdminSidebarHeader title="Tenants" onSearch={() => undefined} onAdd={() => undefined} />
           <AdminSidebarNav
@@ -229,9 +230,9 @@ function AdminPageDemo() {
             />
           </AdminToolbar>
 
-          <div className="flex-1 overflow-auto px-6">
+          <Column flex={1} overflow="auto" className="px-6">
             <AdminTable columns={columns} data={users} compact />
-          </div>
+          </Column>
 
           <AdminPagination
             total={users.length}

@@ -5,6 +5,7 @@ import {
   ContextMenuItem,
   ContextMenuTrigger,
 } from "./context-menu";
+import { Row } from "./layout";
 
 const meta: Meta<typeof ContextMenu> = {
   title: "Design System/Overlays/Context Menu",
@@ -18,8 +19,16 @@ type Story = StoryObj<typeof ContextMenu>;
 export const Default: Story = {
   render: () => (
     <ContextMenu>
-      <ContextMenuTrigger className="flex h-[150px] w-[300px] items-center justify-center rounded-md border border-dashed text-sm">
-        Right click here
+      <ContextMenuTrigger asChild>
+        <Row
+          align="center"
+          justify="center"
+          h="150px"
+          w="300px"
+          className="rounded-md border border-dashed text-sm"
+        >
+          Right click here
+        </Row>
       </ContextMenuTrigger>
       <ContextMenuContent>
         <ContextMenuItem>Back</ContextMenuItem>

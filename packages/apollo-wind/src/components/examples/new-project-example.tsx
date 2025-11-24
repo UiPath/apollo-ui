@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib";
+import { Row, Column, Grid } from "@/components/ui/layout";
 
 export interface ProjectExample {
   id: string;
@@ -137,11 +138,11 @@ export function NewProjectExample({
   }, [templates, searchQuery, selectedCategories, selectedTools]);
 
   const ExampleCard = ({ template }: { template: ProjectExample }) => (
-    <div className="group flex flex-col rounded-lg border border-border/30 bg-card p-8 transition-all hover:border-border/60 hover:shadow-sm">
-      <div className="mb-8 flex-1 space-y-4">
+    <Column className="group rounded-lg border border-border/30 bg-card p-8 transition-all hover:border-border/60 hover:shadow-sm">
+      <Column gap={4} flex={1} className="mb-8">
         <h3 className="text-base font-semibold leading-tight">{template.name}</h3>
         <p className="text-sm text-muted-foreground leading-relaxed">{template.description}</p>
-        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+        <Row gap={1.5} align="center" className="text-xs text-muted-foreground">
           <svg
             className="h-3.5 w-3.5"
             fill="none"
@@ -157,46 +158,45 @@ export function NewProjectExample({
             />
           </svg>
           <span>{formatUsageCount(template.usageCount)}</span>
-        </div>
-      </div>
+        </Row>
+      </Column>
       <Button variant="outline" size="sm" className="h-9 w-full" onClick={template.onUse}>
         Use
       </Button>
-    </div>
+    </Column>
   );
 
   return (
     <>
-      <div
-        className={cn(
-          "flex min-h-screen flex-col gap-16 bg-background px-8 py-16 md:px-16 md:py-20",
-          className,
-        )}
+      <Column
+        minH="screen"
+        gap={16}
+        className={cn("bg-background px-8 py-16 md:px-16 md:py-20", className)}
       >
         {/* Header Section */}
         <div>
-          <div className="flex items-start justify-between gap-8">
-            <div className="flex-1">
+          <Row justify="between" align="start" gap={8}>
+            <Column flex={1}>
               <h1 className="text-3xl font-bold tracking-tight">{title}</h1>
               <p className="mt-4 text-base text-muted-foreground">{subtitle}</p>
-            </div>
+            </Column>
             <Button variant="link" onClick={() => setDrawerOpen(true)} className="shrink-0">
               Explore templates
             </Button>
-          </div>
+          </Row>
         </div>
 
         {/* Examples Grid */}
-        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
+        <Grid gap={8} cols={4} className="md:grid-cols-2 lg:grid-cols-4">
           {/* Blank Example */}
           <button
             className="group flex cursor-pointer flex-col items-center justify-between rounded-lg border border-dashed border-border/40 bg-card p-8 text-center transition-all hover:border-border/70 hover:shadow-sm"
             onClick={onCreateBlank}
           >
-            <div className="w-full space-y-4">
+            <Column gap={4} w="full">
               <h3 className="text-base font-semibold">Blank agentic process</h3>
               <p className="text-sm text-muted-foreground">Start building without a template.</p>
-            </div>
+            </Column>
             <div className="mt-8 flex h-20 w-20 items-center justify-center rounded-lg border-2 border-dashed border-border/50">
               <Plus className="h-8 w-8 text-primary" />
             </div>
@@ -206,7 +206,7 @@ export function NewProjectExample({
           {templates.slice(0, 3).map((template) => (
             <ExampleCard key={template.id} template={template} />
           ))}
-        </div>
+        </Grid>
 
         {/* Autopilot Section */}
         {autopilot && (
@@ -257,13 +257,13 @@ export function NewProjectExample({
             </div>
           </div>
         )}
-      </div>
+      </Column>
 
       {/* Explore Examples Drawer */}
       <Drawer open={drawerOpen} onOpenChange={setDrawerOpen}>
         <DrawerContent className="max-h-[75vh]">
           <DrawerHeader className="border-b px-4 py-2 md:px-6 md:py-3">
-            <div className="flex items-start justify-between">
+            <Row justify="between" align="start">
               <div>
                 <DrawerTitle className="text-base md:text-lg">Explore templates</DrawerTitle>
                 <DrawerDescription className="text-xs md:text-sm">
@@ -276,10 +276,10 @@ export function NewProjectExample({
                   <span className="sr-only">Close</span>
                 </Button>
               </DrawerClose>
-            </div>
+            </Row>
           </DrawerHeader>
 
-          <div className="flex h-[calc(75vh-80px)] overflow-hidden">
+          <Row overflow="hidden" className="h-[calc(75vh-80px)]">
             {/* Sidebar */}
             <div className="hidden w-56 border-r bg-muted/20 p-3 md:block">
               <div className="mb-3">
@@ -294,9 +294,9 @@ export function NewProjectExample({
                 </div>
               </div>
 
-              <div className="space-y-3">
+              <Column gap={3}>
                 <div>
-                  <div className="mb-1.5 flex items-center justify-between">
+                  <Row justify="between" align="center" className="mb-1.5">
                     <h4 className="text-xs font-semibold">Category</h4>
                     <Button
                       variant="ghost"
@@ -306,10 +306,10 @@ export function NewProjectExample({
                     >
                       Clear
                     </Button>
-                  </div>
-                  <div className="space-y-1.5">
+                  </Row>
+                  <Column gap={1.5}>
                     {categories.map((category) => (
-                      <div key={category.id} className="flex items-center space-x-2">
+                      <Row key={category.id} gap={2} align="center">
                         <Checkbox
                           id={`category-${category.id}`}
                           checked={selectedCategories.includes(category.id)}
@@ -322,13 +322,13 @@ export function NewProjectExample({
                         >
                           {category.label}
                         </Label>
-                      </div>
+                      </Row>
                     ))}
-                  </div>
+                  </Column>
                 </div>
 
                 <div>
-                  <div className="mb-1.5 flex items-center justify-between">
+                  <Row justify="between" align="center" className="mb-1.5">
                     <h4 className="text-xs font-semibold">Tool</h4>
                     <Button
                       variant="ghost"
@@ -338,10 +338,10 @@ export function NewProjectExample({
                     >
                       Clear
                     </Button>
-                  </div>
-                  <div className="space-y-1.5">
+                  </Row>
+                  <Column gap={1.5}>
                     {tools.map((tool) => (
-                      <div key={tool.id} className="flex items-center space-x-2">
+                      <Row key={tool.id} gap={2} align="center">
                         <Checkbox
                           id={`tool-${tool.id}`}
                           checked={selectedTools.includes(tool.id)}
@@ -354,15 +354,15 @@ export function NewProjectExample({
                         >
                           {tool.label}
                         </Label>
-                      </div>
+                      </Row>
                     ))}
-                  </div>
+                  </Column>
                 </div>
 
                 <Button variant="link" size="sm" className="h-auto p-0 text-[10px]">
                   Show more
                 </Button>
-              </div>
+              </Column>
             </div>
 
             {/* Main Content */}
@@ -380,19 +380,19 @@ export function NewProjectExample({
                 </div>
               </div>
 
-              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              <Grid gap={3} cols={3} className="sm:grid-cols-2 lg:grid-cols-3">
                 {filteredExamples.map((template) => (
                   <ExampleCard key={template.id} template={template} />
                 ))}
-              </div>
+              </Grid>
 
               {filteredExamples.length === 0 && (
-                <div className="flex h-32 items-center justify-center">
+                <Row h={32} justify="center" align="center">
                   <p className="text-sm text-muted-foreground">No templates found</p>
-                </div>
+                </Row>
               )}
             </div>
-          </div>
+          </Row>
         </DrawerContent>
       </Drawer>
     </>

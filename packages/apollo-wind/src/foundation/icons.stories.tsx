@@ -96,6 +96,7 @@ import {
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Row, Column, Grid } from "@/components/ui/layout";
 
 const meta = {
   title: "Design Foundation/Icons",
@@ -118,32 +119,34 @@ const IconGrid = ({
   }>;
   title?: string;
 }) => (
-  <div className="space-y-4">
+  <Column gap={4}>
     {title && <h3 className="text-lg font-semibold">{title}</h3>}
-    <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-12 gap-4">
+    <Grid cols={4} gap={4} className="sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-12">
       {icons.map(({ Icon, name }) => (
-        <div
+        <Column
           key={name}
-          className="flex flex-col items-center gap-2 p-3 rounded-lg hover:bg-muted transition-colors cursor-pointer group"
+          align="center"
+          gap={2}
+          className="p-3 rounded-lg hover:bg-muted transition-colors cursor-pointer group"
           title={name}
         >
           <Icon className="h-6 w-6 text-foreground group-hover:text-primary transition-colors" />
           <span className="text-xs text-muted-foreground text-center break-all">{name}</span>
-        </div>
+        </Column>
       ))}
-    </div>
-  </div>
+    </Grid>
+  </Column>
 );
 
 export const AllIcons: Story = {
   render: () => (
-    <div className="space-y-12">
-      <div>
+    <Column gap={12}>
+      <Column>
         <h2 className="text-2xl font-bold mb-2">Icon Library</h2>
         <p className="text-muted-foreground">
           Using lucide-react icons - a beautiful, consistent icon set
         </p>
-      </div>
+      </Column>
 
       <IconGrid
         title="Navigation & Actions"
@@ -333,111 +336,111 @@ export const AllIcons: Story = {
           { Icon: Layers, name: "Layers" },
         ]}
       />
-    </div>
+    </Column>
   ),
 };
 
 export const IconSizes: Story = {
   render: () => (
-    <div className="space-y-8">
-      <div>
+    <Column gap={8}>
+      <Column>
         <h2 className="text-2xl font-bold mb-2">Icon Sizes</h2>
         <p className="text-muted-foreground">
           Common icon sizes using Tailwind width/height utilities
         </p>
-      </div>
+      </Column>
 
-      <div className="flex items-center gap-8">
-        <div className="flex flex-col items-center gap-2">
+      <Row align="center" gap={8}>
+        <Column align="center" gap={2}>
           <Home className="h-4 w-4" />
           <Badge variant="outline" className="text-xs font-mono">
             h-4 w-4
           </Badge>
-        </div>
-        <div className="flex flex-col items-center gap-2">
+        </Column>
+        <Column align="center" gap={2}>
           <Home className="h-5 w-5" />
           <Badge variant="outline" className="text-xs font-mono">
             h-5 w-5
           </Badge>
-        </div>
-        <div className="flex flex-col items-center gap-2">
+        </Column>
+        <Column align="center" gap={2}>
           <Home className="h-6 w-6" />
           <Badge variant="outline" className="text-xs font-mono">
             h-6 w-6
           </Badge>
-        </div>
-        <div className="flex flex-col items-center gap-2">
+        </Column>
+        <Column align="center" gap={2}>
           <Home className="h-8 w-8" />
           <Badge variant="outline" className="text-xs font-mono">
             h-8 w-8
           </Badge>
-        </div>
-        <div className="flex flex-col items-center gap-2">
+        </Column>
+        <Column align="center" gap={2}>
           <Home className="h-10 w-10" />
           <Badge variant="outline" className="text-xs font-mono">
             h-10 w-10
           </Badge>
-        </div>
-        <div className="flex flex-col items-center gap-2">
+        </Column>
+        <Column align="center" gap={2}>
           <Home className="h-12 w-12" />
           <Badge variant="outline" className="text-xs font-mono">
             h-12 w-12
           </Badge>
-        </div>
-      </div>
-    </div>
+        </Column>
+      </Row>
+    </Column>
   ),
 };
 
 export const IconColors: Story = {
   render: () => (
-    <div className="space-y-8">
-      <div>
+    <Column gap={8}>
+      <Column>
         <h2 className="text-2xl font-bold mb-2">Icon Colors</h2>
         <p className="text-muted-foreground">
           Icons inherit text color and can use semantic color classes
         </p>
-      </div>
+      </Column>
 
-      <div className="flex items-center gap-8">
-        <div className="flex flex-col items-center gap-2">
+      <Row align="center" gap={8}>
+        <Column align="center" gap={2}>
           <Heart className="h-8 w-8 text-foreground" />
           <Badge variant="outline" className="text-xs font-mono">
             text-foreground
           </Badge>
-        </div>
-        <div className="flex flex-col items-center gap-2">
+        </Column>
+        <Column align="center" gap={2}>
           <Heart className="h-8 w-8 text-muted-foreground" />
           <Badge variant="outline" className="text-xs font-mono">
             text-muted-foreground
           </Badge>
-        </div>
-        <div className="flex flex-col items-center gap-2">
+        </Column>
+        <Column align="center" gap={2}>
           <Heart className="h-8 w-8 text-primary" />
           <Badge variant="outline" className="text-xs font-mono">
             text-primary
           </Badge>
-        </div>
-        <div className="flex flex-col items-center gap-2">
+        </Column>
+        <Column align="center" gap={2}>
           <Heart className="h-8 w-8 text-destructive" />
           <Badge variant="outline" className="text-xs font-mono">
             text-destructive
           </Badge>
-        </div>
-      </div>
-    </div>
+        </Column>
+      </Row>
+    </Column>
   ),
 };
 
 export const IconButtons: Story = {
   render: () => (
-    <div className="space-y-8">
-      <div>
+    <Column gap={8}>
+      <Column>
         <h2 className="text-2xl font-bold mb-2">Icon Buttons</h2>
         <p className="text-muted-foreground">Common patterns for using icons in buttons</p>
-      </div>
+      </Column>
 
-      <div className="flex flex-wrap items-center gap-4">
+      <Row wrap="wrap" align="center" gap={4}>
         <Button>
           <Plus className="h-4 w-4" />
           Icon Left
@@ -459,7 +462,7 @@ export const IconButtons: Story = {
         <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full">
           <MoreVertical className="h-4 w-4" />
         </Button>
-      </div>
-    </div>
+      </Row>
+    </Column>
   ),
 };

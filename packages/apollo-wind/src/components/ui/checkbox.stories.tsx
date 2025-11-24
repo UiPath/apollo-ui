@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { Checkbox } from "./checkbox";
 import { Label } from "./label";
+import { Row, Column } from "./layout";
 
 const meta = {
   title: "Design System/Forms/Checkbox",
@@ -20,10 +21,10 @@ export const Default: Story = {
 
 export const WithLabel: Story = {
   render: () => (
-    <div className="flex items-center space-x-2">
+    <Row gap={2} align="center">
       <Checkbox id="terms" />
       <Label htmlFor="terms">Accept terms and conditions</Label>
-    </div>
+    </Row>
   ),
 };
 
@@ -35,58 +36,58 @@ export const Checked: Story = {
 
 export const Disabled: Story = {
   render: () => (
-    <div className="flex items-center space-x-2">
+    <Row gap={2} align="center">
       <Checkbox id="disabled" disabled />
       <Label htmlFor="disabled">Disabled checkbox</Label>
-    </div>
+    </Row>
   ),
 };
 
 export const DisabledChecked: Story = {
   render: () => (
-    <div className="flex items-center space-x-2">
+    <Row gap={2} align="center">
       <Checkbox id="disabled-checked" disabled defaultChecked />
       <Label htmlFor="disabled-checked">Disabled and checked</Label>
-    </div>
+    </Row>
   ),
 };
 
 export const WithDescription: Story = {
   render: () => (
-    <div className="space-y-2">
-      <div className="flex items-center space-x-2">
+    <Column gap={2}>
+      <Row gap={2} align="center">
         <Checkbox id="marketing" />
         <Label htmlFor="marketing">Marketing emails</Label>
-      </div>
+      </Row>
       <p className="text-sm text-muted-foreground pl-6">
         Receive emails about new products, features, and more.
       </p>
-    </div>
+    </Column>
   ),
 };
 
 export const Group: Story = {
   render: () => (
-    <div className="space-y-3">
+    <Column gap={3}>
       <div className="font-medium text-sm">Notification preferences</div>
-      <div className="space-y-2">
-        <div className="flex items-center space-x-2">
+      <Column gap={2}>
+        <Row gap={2} align="center">
           <Checkbox id="all" defaultChecked />
           <Label htmlFor="all">All notifications</Label>
-        </div>
-        <div className="flex items-center space-x-2">
+        </Row>
+        <Row gap={2} align="center">
           <Checkbox id="email" defaultChecked />
           <Label htmlFor="email">Email notifications</Label>
-        </div>
-        <div className="flex items-center space-x-2">
+        </Row>
+        <Row gap={2} align="center">
           <Checkbox id="push" />
           <Label htmlFor="push">Push notifications</Label>
-        </div>
-        <div className="flex items-center space-x-2">
+        </Row>
+        <Row gap={2} align="center">
           <Checkbox id="sms" />
           <Label htmlFor="sms">SMS notifications</Label>
-        </div>
-      </div>
-    </div>
+        </Row>
+      </Column>
+    </Column>
   ),
 };

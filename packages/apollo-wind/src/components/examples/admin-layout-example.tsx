@@ -33,6 +33,7 @@ import {
   PaginationNext,
   PaginationEllipsis,
 } from "@/components/ui/pagination";
+import { Row, Column } from "@/components/ui/layout";
 
 // Admin Layout Container
 interface AdminLayoutProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -69,11 +70,13 @@ export function AdminHeader({ className, logo, title, children, ...props }: Admi
       )}
       {...props}
     >
-      <div className="flex items-center gap-3">
+      <Row gap={3} align="center">
         {logo}
         {title && <span className="text-lg font-semibold">{title}</span>}
-      </div>
-      <div className="flex items-center gap-2">{children}</div>
+      </Row>
+      <Row gap={2} align="center">
+        {children}
+      </Row>
     </header>
   );
 }
@@ -86,7 +89,7 @@ interface AdminHeaderActionsProps {
 
 export function AdminHeaderActions({ notifications, avatar }: AdminHeaderActionsProps) {
   return (
-    <div className="flex items-center gap-1">
+    <Row gap={1} align="center">
       <Button variant="ghost" size="icon" className="relative">
         <Bell className="h-5 w-5" />
         {notifications && notifications > 0 && (
@@ -103,7 +106,7 @@ export function AdminHeaderActions({ notifications, avatar }: AdminHeaderActions
           SN
         </div>
       )}
-    </div>
+    </Row>
   );
 }
 
@@ -114,9 +117,9 @@ interface AdminContentProps extends React.HTMLAttributes<HTMLDivElement> {
 
 export function AdminContent({ className, children, ...props }: AdminContentProps) {
   return (
-    <div className={cn("flex flex-1 overflow-hidden", className)} {...props}>
+    <Row flex={1} overflow="hidden" className={className} {...props}>
       {children}
-    </div>
+    </Row>
   );
 }
 
@@ -128,13 +131,9 @@ interface AdminSidebarProps extends React.HTMLAttributes<HTMLDivElement> {
 
 export function AdminSidebar({ className, children, width = 280, ...props }: AdminSidebarProps) {
   return (
-    <div
-      className={cn("flex flex-col border-r bg-muted/30", className)}
-      style={{ width }}
-      {...props}
-    >
+    <Column className={cn("border-r bg-muted/30", className)} style={{ width }} {...props}>
       {children}
-    </div>
+    </Column>
   );
 }
 
@@ -147,9 +146,9 @@ interface AdminSidebarHeaderProps {
 
 export function AdminSidebarHeader({ title, onSearch, onAdd }: AdminSidebarHeaderProps) {
   return (
-    <div className="flex items-center justify-between border-b px-4 py-3">
+    <Row justify="between" align="center" className="border-b px-4 py-3">
       <span className="text-sm font-medium">{title}</span>
-      <div className="flex items-center gap-1">
+      <Row gap={1} align="center">
         {onSearch && (
           <Button variant="ghost" size="icon" className="h-7 w-7" onClick={onSearch}>
             <Search className="h-4 w-4" />
@@ -160,8 +159,8 @@ export function AdminSidebarHeader({ title, onSearch, onAdd }: AdminSidebarHeade
             <Plus className="h-4 w-4" />
           </Button>
         )}
-      </div>
-    </div>
+      </Row>
+    </Row>
   );
 }
 
@@ -184,10 +183,12 @@ export function AdminSidebarNav({ items, selectedId, onSelect }: AdminSidebarNav
     <ScrollArea className="flex-1">
       <nav className="p-2">
         {items.map((item) => (
-          <div
+          <Row
             key={item.id}
+            gap={2}
+            align="center"
             className={cn(
-              "flex cursor-pointer items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors",
+              "cursor-pointer rounded-md px-3 py-2 text-sm transition-colors",
               selectedId === item.id
                 ? "bg-primary/10 text-primary"
                 : "text-muted-foreground hover:bg-muted hover:text-foreground",
@@ -197,7 +198,7 @@ export function AdminSidebarNav({ items, selectedId, onSelect }: AdminSidebarNav
             {item.icon}
             <span className="flex-1 truncate">{item.label}</span>
             {item.badge}
-          </div>
+          </Row>
         ))}
       </nav>
     </ScrollArea>
@@ -211,9 +212,9 @@ interface AdminMainProps extends React.HTMLAttributes<HTMLDivElement> {
 
 export function AdminMain({ className, children, ...props }: AdminMainProps) {
   return (
-    <div className={cn("flex flex-1 flex-col overflow-hidden", className)} {...props}>
+    <Column flex={1} overflow="hidden" className={className} {...props}>
       {children}
-    </div>
+    </Column>
   );
 }
 
@@ -273,10 +274,14 @@ export function AdminPageHeader({
           <AdminBreadcrumb items={breadcrumb} />
         </div>
       )}
-      <div className="flex items-center justify-between">
+      <Row justify="between" align="center">
         <h1 className="text-xl font-semibold">{title}</h1>
-        {actions && <div className="flex items-center gap-2">{actions}</div>}
-      </div>
+        {actions && (
+          <Row gap={2} align="center">
+            {actions}
+          </Row>
+        )}
+      </Row>
       {tabs && (
         <Tabs value={activeTab} onValueChange={onTabChange} className="mt-4">
           <TabsList className="h-auto bg-transparent p-0">
@@ -304,10 +309,14 @@ interface AdminToolbarProps {
 
 export function AdminToolbar({ children, actions }: AdminToolbarProps) {
   return (
-    <div className="flex items-center justify-between border-b px-6 py-3">
-      <div className="flex items-center gap-3">{children}</div>
-      <div className="flex items-center gap-2">{actions}</div>
-    </div>
+    <Row justify="between" align="center" className="border-b px-6 py-3">
+      <Row gap={3} align="center">
+        {children}
+      </Row>
+      <Row gap={2} align="center">
+        {actions}
+      </Row>
+    </Row>
   );
 }
 
@@ -321,7 +330,7 @@ interface AdminFilterProps {
 
 export function AdminFilter({ label, value, options, onValueChange }: AdminFilterProps) {
   return (
-    <div className="flex items-center gap-1.5 text-sm">
+    <Row gap={1.5} align="center" className="text-sm">
       <span className="text-muted-foreground">{label}:</span>
       <Select value={value} onValueChange={onValueChange}>
         <SelectTrigger className="h-7 w-auto gap-1 border-0 bg-transparent px-1 font-medium shadow-none">
@@ -335,7 +344,7 @@ export function AdminFilter({ label, value, options, onValueChange }: AdminFilte
           ))}
         </SelectContent>
       </Select>
-    </div>
+    </Row>
   );
 }
 
@@ -384,11 +393,11 @@ export function AdminPagination({
   const pageNumbers = getPageNumbers();
 
   return (
-    <div className="flex items-center justify-between border-t px-6 py-3">
+    <Row justify="between" align="center" className="border-t px-6 py-3">
       <span className="text-sm text-muted-foreground">
         {start} - {end} / {total}
       </span>
-      <div className="flex items-center gap-4">
+      <Row gap={4} align="center">
         <Pagination>
           <PaginationContent>
             <PaginationItem>
@@ -453,7 +462,7 @@ export function AdminPagination({
         </Pagination>
 
         {onPageSizeChange && (
-          <div className="flex items-center gap-2 text-sm">
+          <Row gap={2} align="center" className="text-sm">
             <span className="text-muted-foreground">Items</span>
             <Select value={String(pageSize)} onValueChange={(v) => onPageSizeChange(Number(v))}>
               <SelectTrigger className="h-8 w-16">
@@ -466,9 +475,9 @@ export function AdminPagination({
                 <SelectItem value="100">100</SelectItem>
               </SelectContent>
             </Select>
-          </div>
+          </Row>
         )}
-      </div>
-    </div>
+      </Row>
+    </Row>
   );
 }

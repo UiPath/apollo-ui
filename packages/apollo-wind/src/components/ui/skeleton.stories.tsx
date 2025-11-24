@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { Card, CardContent, CardHeader } from "./card";
 import { Skeleton } from "./skeleton";
+import { Row, Column } from "./layout";
 
 const meta = {
   title: "Design System/Feedback/Skeleton",
@@ -30,11 +31,11 @@ export const CardSkeleton: Story = {
         <Skeleton className="h-4 w-[200px]" />
       </CardHeader>
       <CardContent>
-        <div className="space-y-2">
+        <Column gap={2}>
           <Skeleton className="h-4 w-full" />
           <Skeleton className="h-4 w-full" />
           <Skeleton className="h-4 w-[80%]" />
-        </div>
+        </Column>
       </CardContent>
     </Card>
   ),
@@ -42,39 +43,39 @@ export const CardSkeleton: Story = {
 
 export const ProfileSkeleton: Story = {
   render: () => (
-    <div className="flex items-center space-x-4">
+    <Row gap={4} align="center">
       <Skeleton className="h-12 w-12 rounded-full" />
-      <div className="space-y-2">
+      <Column gap={2}>
         <Skeleton className="h-4 w-[250px]" />
         <Skeleton className="h-4 w-[200px]" />
-      </div>
-    </div>
+      </Column>
+    </Row>
   ),
 };
 
 export const ListSkeleton: Story = {
   render: () => (
-    <div className="w-[350px] space-y-4">
+    <Column gap={4} className="w-[350px]">
       {Array.from({ length: 5 }).map((_, i) => (
-        <div key={i} className="flex items-center space-x-4">
+        <Row key={i} gap={4} align="center">
           <Skeleton className="h-10 w-10 rounded-full" />
-          <div className="flex-1 space-y-2">
+          <Column flex={1} gap={2}>
             <Skeleton className="h-4 w-full" />
             <Skeleton className="h-4 w-3/4" />
-          </div>
-        </div>
+          </Column>
+        </Row>
       ))}
-    </div>
+    </Column>
   ),
 };
 
 export const TableSkeleton: Story = {
   render: () => (
-    <div className="w-[600px] space-y-3">
+    <Column gap={3} className="w-[600px]">
       <Skeleton className="h-8 w-full" />
       {Array.from({ length: 5 }).map((_, i) => (
         <Skeleton key={i} className="h-12 w-full" />
       ))}
-    </div>
+    </Column>
   ),
 };
