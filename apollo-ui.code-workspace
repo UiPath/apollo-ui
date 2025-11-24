@@ -1,0 +1,19 @@
+{
+  "folders": [
+    {
+      "name": "Workspace Root",
+      "path": ".",
+    },
+    {
+      "name": "apollo-vertex (Biome formatter)",
+      "path": "apps/apollo-vertex",
+      "settings": {
+        "editor.defaultFormatter": "biomejs.biome",
+        "editor.formatOnSave": true,
+      },
+    },
+  ],
+  "extensions": {
+    "recommendations": ["biomejs.biome", "esbenp.prettier-vscode", "dbaeumer.vscode-eslint"],
+  },
+}
