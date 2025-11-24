@@ -1,5 +1,5 @@
 {
-  "name": "apollo-vertex-docs",
+  "name": "apollo-vertex",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -7,6 +7,7 @@
     "dev": "next --turbopack",
     "build": "next build",
     "start": "next start",
+    "registry:build": "shadcn build",
     "postbuild": "pagefind --site .next/server/app --output-path public/_pagefind"
   },
   "keywords": [],
@@ -28,6 +29,7 @@
     "@types/node": "^24.10.1",
     "@types/react": "^19.2.6",
     "@types/react-dom": "^19.2.2",
-    "pagefind": "^1.4.0"
+    "pagefind": "^1.4.0",
+    "shadcn": "latest"
   }
 }
