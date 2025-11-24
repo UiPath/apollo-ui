@@ -1,3 +1,10 @@
+# [1.4.0](https://github.com/uipath/wind/compare/v1.3.0...v1.4.0) (2025-11-24)
+
+
+### Features
+
+* add component gallery stories and enhance grid layout styles ([1e8189a](https://github.com/uipath/wind/commit/1e8189a8d0255c29885afeb48f43eb459955d11a))
+
 # [1.3.0](https://github.com/uipath/wind/compare/v1.2.1...v1.3.0) (2025-11-24)
 
 
