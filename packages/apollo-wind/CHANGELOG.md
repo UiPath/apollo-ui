@@ -1,3 +1,10 @@
+## [1.2.1](https://github.com/uipath/wind/compare/v1.2.0...v1.2.1) (2025-11-24)
+
+
+### Bug Fixes
+
+* update stories to use Row and Column layout controls ([95615a4](https://github.com/uipath/wind/commit/95615a4512ae7dc22dd1912fea7b9ae247350315))
+
 # [1.2.0](https://github.com/uipath/wind/compare/v1.1.3...v1.2.0) (2025-11-22)
 
 
