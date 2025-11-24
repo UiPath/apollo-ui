@@ -9,6 +9,26 @@ const preview: Preview = {
     themeVariant: "uipath",
   },
   parameters: {
+    options: {
+      storySort: {
+        order: [
+          "Design Foundation",
+          "Design System",
+          [
+            "All Components",
+            "Core",
+            "Data Display",
+            "Forms",
+            "Layout",
+            "Navigation",
+            "Overlays",
+            "Feedback",
+          ],
+          "*",
+          "Examples",
+        ],
+      },
+    },
     controls: {
       matchers: {
         color: /(background|color)$/i,
