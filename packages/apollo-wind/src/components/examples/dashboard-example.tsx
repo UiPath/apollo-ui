@@ -16,6 +16,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Row, Column, Grid } from "@/components/ui/layout";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { StatsCard } from "@/components/ui/stats-card";
@@ -113,7 +114,7 @@ const columns: ColumnDef<Transaction, unknown>[] = [
     accessorKey: "customer",
     header: ({ column }) => <DataTableColumnHeader column={column} title="Customer" />,
     cell: ({ row }) => (
-      <div className="flex items-center gap-2">
+      <Row gap={2} align="center">
         <Avatar className="h-8 w-8">
           <AvatarFallback>
             {row.original.customer
@@ -122,11 +123,11 @@ const columns: ColumnDef<Transaction, unknown>[] = [
               .join("")}
           </AvatarFallback>
         </Avatar>
-        <div>
+        <Column gap={0}>
           <div className="font-medium">{row.original.customer}</div>
           <div className="text-xs text-muted-foreground">{row.original.email}</div>
-        </div>
-      </div>
+        </Column>
+      </Row>
     ),
   },
   {
@@ -196,12 +197,12 @@ export function DashboardExample({
             <h1 className="text-2xl font-bold">{title}</h1>
             <p className="text-sm text-muted-foreground">{description}</p>
           </div>
-          <div className="flex items-center gap-4">
+          <Row gap={4} align="center">
             <Button variant="outline" size="sm">
               Download Report
             </Button>
             <Separator orientation="vertical" className="h-8" />
-            <div className="flex items-center gap-2">
+            <Row gap={2} align="center">
               <Avatar className="h-8 w-8">
                 <AvatarImage src={user.avatar} alt={user.name} />
                 <AvatarFallback>
@@ -212,12 +213,12 @@ export function DashboardExample({
                     .toUpperCase()}
                 </AvatarFallback>
               </Avatar>
-              <div className="hidden flex-col text-sm md:flex">
+              <Column gap={0} className="hidden text-sm md:flex">
                 <span className="font-medium">{user.name}</span>
                 <span className="text-xs text-muted-foreground">{user.email}</span>
-              </div>
-            </div>
-          </div>
+              </Column>
+            </Row>
+          </Row>
         </div>
       </header>
 
@@ -232,7 +233,7 @@ export function DashboardExample({
 
           <TabsContent value="overview" className="space-y-6">
             {/* Stats Cards */}
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <Grid gap={4} cols={4} className="md:grid-cols-2 lg:grid-cols-4">
               <StatsCard
                 title="Total Revenue"
                 value="$45,231.89"
@@ -257,10 +258,10 @@ export function DashboardExample({
                 description="+201 since last hour"
                 icon={<Activity className="h-4 w-4 text-muted-foreground" />}
               />
-            </div>
+            </Grid>
 
             {/* Content Grid */}
-            <div className="grid gap-4 lg:grid-cols-7">
+            <Grid gap={4} cols={7} className="lg:grid-cols-7">
               {/* Transactions Table */}
               <Card className="lg:col-span-4">
                 <CardHeader>
@@ -287,7 +288,7 @@ export function DashboardExample({
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {recentActivity.map((activity) => (
-                    <div key={activity.id} className="flex items-start gap-3">
+                    <Row key={activity.id} gap={3} align="start">
                       <Avatar className="h-8 w-8">
                         <AvatarImage src={activity.avatar} />
                         <AvatarFallback>
@@ -297,18 +298,18 @@ export function DashboardExample({
                             .join("")}
                         </AvatarFallback>
                       </Avatar>
-                      <div className="flex-1 space-y-1">
+                      <Column gap={1} flex={1}>
                         <p className="text-sm">
                           <span className="font-medium">{activity.user}</span>{" "}
                           <span className="text-muted-foreground">{activity.action}</span>
                         </p>
                         <p className="text-xs text-muted-foreground">{activity.time}</p>
-                      </div>
-                    </div>
+                      </Column>
+                    </Row>
                   ))}
                 </CardContent>
               </Card>
-            </div>
+            </Grid>
 
             {/* Goals Progress */}
             <Card>
@@ -317,27 +318,27 @@ export function DashboardExample({
                 <CardDescription>Track your progress towards monthly targets</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between text-sm">
+                <Column gap={2}>
+                  <Row justify="between" align="center" className="text-sm">
                     <span>Revenue Target</span>
                     <span className="font-medium">$45,231 / $50,000</span>
-                  </div>
+                  </Row>
                   <Progress value={90} />
-                </div>
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between text-sm">
+                </Column>
+                <Column gap={2}>
+                  <Row justify="between" align="center" className="text-sm">
                     <span>New Customers</span>
                     <span className="font-medium">2,350 / 3,000</span>
-                  </div>
+                  </Row>
                   <Progress value={78} />
-                </div>
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between text-sm">
+                </Column>
+                <Column gap={2}>
+                  <Row justify="between" align="center" className="text-sm">
                     <span>Support Tickets Resolved</span>
                     <span className="font-medium">145 / 150</span>
-                  </div>
+                  </Row>
                   <Progress value={97} />
-                </div>
+                </Column>
               </CardContent>
             </Card>
           </TabsContent>

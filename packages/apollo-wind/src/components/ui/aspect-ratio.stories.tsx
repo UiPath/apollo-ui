@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import { AspectRatio } from "./aspect-ratio";
+import { Row } from "./layout";
 
 const meta: Meta<typeof AspectRatio> = {
   title: "Design System/Layout/Aspect Ratio",
@@ -28,9 +29,9 @@ export const Square: Story = {
   render: () => (
     <div className="w-[300px]">
       <AspectRatio ratio={1 / 1} className="bg-muted">
-        <div className="flex h-full items-center justify-center">
+        <Row h="full" justify="center" align="center">
           <p className="text-muted-foreground">1:1 Square</p>
-        </div>
+        </Row>
       </AspectRatio>
     </div>
   ),

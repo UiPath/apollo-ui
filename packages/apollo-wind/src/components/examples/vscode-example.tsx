@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Row, Column } from "@/components/ui/layout";
 
 // Shell container
 interface ShellProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -19,15 +20,13 @@ interface ShellProps extends React.HTMLAttributes<HTMLDivElement> {
 
 export function Shell({ className, children, ...props }: ShellProps) {
   return (
-    <div
-      className={cn(
-        "flex h-[600px] w-full flex-col overflow-hidden rounded-lg border bg-background",
-        className,
-      )}
+    <Column
+      overflow="hidden"
+      className={cn("h-[600px] w-full rounded-lg border bg-background", className)}
       {...props}
     >
       {children}
-    </div>
+    </Column>
   );
 }
 
@@ -38,20 +37,23 @@ interface ShellTitleBarProps extends React.HTMLAttributes<HTMLDivElement> {
 
 export function ShellTitleBar({ className, title, children, ...props }: ShellTitleBarProps) {
   return (
-    <div
-      className={cn("flex h-9 items-center justify-between border-b bg-muted/50 px-3", className)}
+    <Row
+      h={9}
+      justify="between"
+      align="center"
+      className={cn("border-b bg-muted/50 px-3", className)}
       {...props}
     >
-      <div className="flex items-center gap-2">
-        <div className="flex gap-1.5">
+      <Row gap={2} align="center">
+        <Row gap={1.5}>
           <div className="h-3 w-3 rounded-full bg-red-500" />
           <div className="h-3 w-3 rounded-full bg-yellow-500" />
           <div className="h-3 w-3 rounded-full bg-green-500" />
-        </div>
+        </Row>
         {title && <span className="ml-3 text-xs text-muted-foreground">{title}</span>}
-      </div>
+      </Row>
       {children}
-    </div>
+    </Row>
   );
 }
 
@@ -62,9 +64,9 @@ interface ShellContentProps extends React.HTMLAttributes<HTMLDivElement> {
 
 export function ShellContent({ className, children, ...props }: ShellContentProps) {
   return (
-    <div className={cn("flex flex-1 overflow-hidden", className)} {...props}>
+    <Row flex={1} overflow="hidden" className={className} {...props}>
       {children}
-    </div>
+    </Row>
   );
 }
 
@@ -84,9 +86,9 @@ export function ShellSidebar({
   ...props
 }: ShellSidebarProps) {
   return (
-    <div
+    <Column
       className={cn(
-        "flex flex-col border-r bg-muted/30 transition-all duration-200",
+        "border-r bg-muted/30 transition-all duration-200",
         collapsed ? "w-0 overflow-hidden" : "",
         className,
       )}
@@ -94,7 +96,7 @@ export function ShellSidebar({
       {...props}
     >
       {children}
-    </div>
+    </Column>
   );
 }
 
@@ -113,11 +115,11 @@ export function ShellSidebarHeader({
   ...props
 }: ShellSidebarHeaderProps) {
   return (
-    <div
-      className={cn(
-        "flex h-8 items-center justify-between px-3 text-xs font-medium uppercase text-muted-foreground",
-        className,
-      )}
+    <Row
+      h={8}
+      justify="between"
+      align="center"
+      className={cn("px-3 text-xs font-medium uppercase text-muted-foreground", className)}
       {...props}
     >
       <span>{title}</span>
@@ -131,7 +133,7 @@ export function ShellSidebarHeader({
           <PanelLeftClose className="h-3.5 w-3.5" />
         </Button>
       )}
-    </div>
+    </Row>
   );
 }
 
@@ -184,9 +186,11 @@ function FileTreeNode({
 
   return (
     <div>
-      <div
+      <Row
+        gap={1}
+        align="center"
         className={cn(
-          "flex cursor-pointer items-center gap-1 rounded px-2 py-0.5 text-sm hover:bg-muted",
+          "cursor-pointer rounded px-2 py-0.5 text-sm hover:bg-muted",
           isSelected && "bg-primary/10 text-primary",
         )}
         style={{ paddingLeft: depth * 12 + 8 }}
@@ -218,7 +222,7 @@ function FileTreeNode({
           </>
         )}
         <span className="truncate">{item.name}</span>
-      </div>
+      </Row>
       {isFolder && expanded && item.children && (
         <div>
           {item.children.map((child) => (
@@ -243,9 +247,9 @@ interface ShellMainProps extends React.HTMLAttributes<HTMLDivElement> {
 
 export function ShellMain({ className, children, ...props }: ShellMainProps) {
   return (
-    <div className={cn("flex flex-1 flex-col overflow-hidden", className)} {...props}>
+    <Column flex={1} overflow="hidden" className={className} {...props}>
       {children}
-    </div>
+    </Column>
   );
 }
 
@@ -265,12 +269,14 @@ interface ShellTabBarProps {
 
 export function ShellTabBar({ tabs, activeTab, onTabChange, onTabClose }: ShellTabBarProps) {
   return (
-    <div className="flex h-9 items-center border-b bg-muted/30">
+    <Row h={9} align="center" className="border-b bg-muted/30">
       {tabs.map((tab) => (
-        <div
+        <Row
           key={tab.id}
+          gap={2}
+          align="center"
           className={cn(
-            "group flex h-full cursor-pointer items-center gap-2 border-r px-3 text-sm",
+            "group h-full cursor-pointer border-r px-3 text-sm",
             activeTab === tab.id
               ? "bg-background text-foreground"
               : "text-muted-foreground hover:bg-muted/50",
@@ -292,9 +298,9 @@ export function ShellTabBar({ tabs, activeTab, onTabChange, onTabClose }: ShellT
               <X className="h-3 w-3" />
             </Button>
           )}
-        </div>
+        </Row>
       ))}
-    </div>
+    </Row>
   );
 }
 
@@ -319,15 +325,15 @@ interface ShellStatusBarProps extends React.HTMLAttributes<HTMLDivElement> {
 
 export function ShellStatusBar({ className, children, ...props }: ShellStatusBarProps) {
   return (
-    <div
-      className={cn(
-        "flex h-6 items-center justify-between border-t bg-primary px-2 text-xs text-primary-foreground",
-        className,
-      )}
+    <Row
+      h={6}
+      justify="between"
+      align="center"
+      className={cn("border-t bg-primary px-2 text-xs text-primary-foreground", className)}
       {...props}
     >
       {children}
-    </div>
+    </Row>
   );
 }
 
@@ -338,12 +344,15 @@ interface ShellActivityBarProps extends React.HTMLAttributes<HTMLDivElement> {
 
 export function ShellActivityBar({ className, children, ...props }: ShellActivityBarProps) {
   return (
-    <div
-      className={cn("flex w-12 flex-col items-center gap-2 border-r bg-muted/50 py-2", className)}
+    <Column
+      w={12}
+      gap={2}
+      align="center"
+      className={cn("border-r bg-muted/50 py-2", className)}
       {...props}
     >
       {children}
-    </div>
+    </Column>
   );
 }
 
@@ -393,9 +402,13 @@ export function ShellPanel({
   return (
     <div className={cn("border-t", className)} style={{ height }} {...props}>
       {title && (
-        <div className="flex h-8 items-center border-b bg-muted/30 px-3 text-xs font-medium uppercase text-muted-foreground">
+        <Row
+          h={8}
+          align="center"
+          className="border-b bg-muted/30 px-3 text-xs font-medium uppercase text-muted-foreground"
+        >
           {title}
-        </div>
+        </Row>
       )}
       <ScrollArea className="h-full">
         <div className="p-2 font-mono text-sm">{children}</div>

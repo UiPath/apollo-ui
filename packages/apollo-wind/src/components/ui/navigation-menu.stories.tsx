@@ -7,6 +7,7 @@ import {
   NavigationMenuList,
   NavigationMenuTrigger,
 } from "./navigation-menu";
+import { Column } from "./layout";
 
 const meta: Meta<typeof NavigationMenu> = {
   title: "Design System/Navigation/Navigation Menu",
@@ -27,15 +28,20 @@ export const Default: Story = {
             <ul className="grid gap-3 p-6 md:w-[400px] lg:w-[500px] lg:grid-cols-[.75fr_1fr]">
               <li className="row-span-3">
                 <NavigationMenuLink asChild>
-                  <a
-                    className="flex h-full w-full select-none flex-col justify-end rounded-md bg-gradient-to-b from-muted/50 to-muted p-6 no-underline outline-none focus:shadow-md"
-                    href="/"
+                  <Column
+                    asChild
+                    justify="end"
+                    h="full"
+                    w="full"
+                    className="select-none rounded-md bg-gradient-to-b from-muted/50 to-muted p-6 no-underline outline-none focus:shadow-md"
                   >
-                    <div className="mb-2 mt-4 text-lg font-medium">Apollo Wind</div>
-                    <p className="text-sm leading-tight text-muted-foreground">
-                      A comprehensive design system for React
-                    </p>
-                  </a>
+                    <a href="/">
+                      <div className="mb-2 mt-4 text-lg font-medium">Apollo Wind</div>
+                      <p className="text-sm leading-tight text-muted-foreground">
+                        A comprehensive design system for React
+                      </p>
+                    </a>
+                  </Column>
                 </NavigationMenuLink>
               </li>
               <li>

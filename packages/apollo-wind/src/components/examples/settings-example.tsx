@@ -23,6 +23,7 @@ import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib";
+import { Row, Column, Grid } from "@/components/ui/layout";
 
 interface NavItem {
   id: string;
@@ -60,15 +61,15 @@ export function SettingsExample() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <Column minH="screen" className="bg-background">
       {/* Header */}
       <header className="border-b">
-        <div className="container mx-auto flex h-14 items-center px-4">
+        <Row h={14} align="center" className="container mx-auto px-4">
           <h1 className="text-lg font-semibold">Settings</h1>
-        </div>
+        </Row>
       </header>
 
-      <div className="container mx-auto flex gap-8 p-6">
+      <Row gap={8} flex={1} className="container mx-auto p-6">
         {/* Sidebar Navigation */}
         <aside className="w-56 shrink-0">
           <nav className="space-y-1">
@@ -106,19 +107,21 @@ export function SettingsExample() {
                     Click on the avatar to upload a custom one from your files.
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="flex items-center gap-4">
-                  <Avatar className="h-20 w-20">
-                    <AvatarImage src="" />
-                    <AvatarFallback className="text-lg">JD</AvatarFallback>
-                  </Avatar>
-                  <div className="space-x-2">
-                    <Button variant="outline" size="sm">
-                      Upload
-                    </Button>
-                    <Button variant="ghost" size="sm">
-                      Remove
-                    </Button>
-                  </div>
+                <CardContent>
+                  <Row gap={4} align="center">
+                    <Avatar className="h-20 w-20">
+                      <AvatarImage src="" />
+                      <AvatarFallback className="text-lg">JD</AvatarFallback>
+                    </Avatar>
+                    <Row gap={2}>
+                      <Button variant="outline" size="sm">
+                        Upload
+                      </Button>
+                      <Button variant="ghost" size="sm">
+                        Remove
+                      </Button>
+                    </Row>
+                  </Row>
                 </CardContent>
               </Card>
 
@@ -128,33 +131,33 @@ export function SettingsExample() {
                   <CardDescription>Update your personal details here.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <div className="space-y-2">
+                  <Grid gap={4} cols={2} className="md:grid-cols-2">
+                    <Column gap={2}>
                       <Label htmlFor="firstName">First name</Label>
                       <Input
                         id="firstName"
                         value={formData.firstName}
                         onChange={(e) => updateField("firstName", e.target.value)}
                       />
-                    </div>
-                    <div className="space-y-2">
+                    </Column>
+                    <Column gap={2}>
                       <Label htmlFor="lastName">Last name</Label>
                       <Input
                         id="lastName"
                         value={formData.lastName}
                         onChange={(e) => updateField("lastName", e.target.value)}
                       />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
+                    </Column>
+                  </Grid>
+                  <Column gap={2}>
                     <Label htmlFor="username">Username</Label>
                     <Input
                       id="username"
                       value={formData.username}
                       onChange={(e) => updateField("username", e.target.value)}
                     />
-                  </div>
-                  <div className="space-y-2">
+                  </Column>
+                  <Column gap={2}>
                     <Label htmlFor="bio">Bio</Label>
                     <Textarea
                       id="bio"
@@ -165,7 +168,7 @@ export function SettingsExample() {
                     <p className="text-xs text-muted-foreground">
                       Brief description for your profile. URLs are hyperlinked.
                     </p>
-                  </div>
+                  </Column>
                 </CardContent>
                 <CardFooter className="border-t px-6 py-4">
                   <Button>Save changes</Button>
@@ -212,15 +215,15 @@ export function SettingsExample() {
                   <CardDescription>Irreversible and destructive actions.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div>
+                  <Row justify="between" align="center">
+                    <Column gap={0}>
                       <p className="font-medium">Delete account</p>
                       <p className="text-sm text-muted-foreground">
                         Permanently delete your account and all associated data.
                       </p>
-                    </div>
+                    </Column>
                     <Button variant="destructive">Delete account</Button>
-                  </div>
+                  </Row>
                 </CardContent>
               </Card>
             </>
@@ -292,44 +295,44 @@ export function SettingsExample() {
                   <CardDescription>Choose what notifications you want to receive.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
+                  <Row justify="between" align="center">
+                    <Column gap={0.5}>
                       <Label>Email notifications</Label>
                       <p className="text-sm text-muted-foreground">
                         Receive notifications via email.
                       </p>
-                    </div>
+                    </Column>
                     <Switch
                       checked={formData.emailNotifications}
                       onCheckedChange={(checked) => updateField("emailNotifications", checked)}
                     />
-                  </div>
+                  </Row>
                   <Separator />
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
+                  <Row justify="between" align="center">
+                    <Column gap={0.5}>
                       <Label>Push notifications</Label>
                       <p className="text-sm text-muted-foreground">
                         Receive push notifications on your device.
                       </p>
-                    </div>
+                    </Column>
                     <Switch
                       checked={formData.pushNotifications}
                       onCheckedChange={(checked) => updateField("pushNotifications", checked)}
                     />
-                  </div>
+                  </Row>
                   <Separator />
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
+                  <Row justify="between" align="center">
+                    <Column gap={0.5}>
                       <Label>Marketing emails</Label>
                       <p className="text-sm text-muted-foreground">
                         Receive emails about new features and updates.
                       </p>
-                    </div>
+                    </Column>
                     <Switch
                       checked={formData.marketingEmails}
                       onCheckedChange={(checked) => updateField("marketingEmails", checked)}
                     />
-                  </div>
+                  </Row>
                 </CardContent>
               </Card>
             </>
@@ -372,18 +375,18 @@ export function SettingsExample() {
                   <CardDescription>Add an extra layer of security to your account.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
+                  <Row justify="between" align="center">
+                    <Column gap={0.5}>
                       <p className="font-medium">Enable 2FA</p>
                       <p className="text-sm text-muted-foreground">
                         Secure your account with two-factor authentication.
                       </p>
-                    </div>
+                    </Column>
                     <Switch
                       checked={formData.twoFactor}
                       onCheckedChange={(checked) => updateField("twoFactor", checked)}
                     />
-                  </div>
+                  </Row>
                 </CardContent>
               </Card>
             </>
@@ -404,15 +407,15 @@ export function SettingsExample() {
                   <CardDescription>You are currently on the Pro plan.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="flex items-center justify-between rounded-lg border p-4">
-                    <div>
+                  <Row justify="between" align="center" className="rounded-lg border p-4">
+                    <Column gap={0}>
                       <p className="font-semibold">Pro Plan</p>
                       <p className="text-sm text-muted-foreground">
                         $29/month • Renews on Jan 1, 2025
                       </p>
-                    </div>
+                    </Column>
                     <Button variant="outline">Manage subscription</Button>
-                  </div>
+                  </Row>
                 </CardContent>
               </Card>
 
@@ -422,20 +425,20 @@ export function SettingsExample() {
                   <CardDescription>Update your payment information.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="flex items-center justify-between rounded-lg border p-4">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-14 items-center justify-center rounded bg-muted">
+                  <Row justify="between" align="center" className="rounded-lg border p-4">
+                    <Row gap={3} align="center">
+                      <Row justify="center" align="center" className="h-10 w-14 rounded bg-muted">
                         <CreditCard className="h-5 w-5" />
-                      </div>
-                      <div>
+                      </Row>
+                      <Column gap={0}>
                         <p className="font-medium">•••• •••• •••• 4242</p>
                         <p className="text-sm text-muted-foreground">Expires 12/25</p>
-                      </div>
-                    </div>
+                      </Column>
+                    </Row>
                     <Button variant="ghost" size="sm">
                       Edit
                     </Button>
-                  </div>
+                  </Row>
                 </CardContent>
                 <CardFooter className="border-t px-6 py-4">
                   <Button variant="outline">Add payment method</Button>
@@ -444,7 +447,7 @@ export function SettingsExample() {
             </>
           )}
         </main>
-      </div>
-    </div>
+      </Row>
+    </Column>
   );
 }

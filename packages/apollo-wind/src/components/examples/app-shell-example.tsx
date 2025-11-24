@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib";
+import { Row, Column, Grid } from "@/components/ui/layout";
 
 export interface AppShellExampleProps {
   className?: string;
@@ -157,10 +158,10 @@ export function AppShellExample({
   const [rightSidebarCollapsed, setRightSidebarCollapsed] = React.useState(false);
 
   return (
-    <div className={cn("flex h-screen flex-col bg-background", className)}>
+    <Column h="screen" className={cn("bg-background", className)}>
       {/* Header */}
-      <header className="flex h-14 items-center justify-between border-b px-4">
-        <div className="flex items-center gap-4">
+      <Row h={14} justify="between" align="center" className="border-b px-4">
+        <Row gap={4} align="center">
           <Button
             variant="ghost"
             size="icon"
@@ -170,9 +171,9 @@ export function AppShellExample({
             <Menu className="h-5 w-5" />
           </Button>
           {logo}
-        </div>
+        </Row>
 
-        <div className="flex items-center gap-2">
+        <Row gap={2} align="center">
           <Button variant="ghost" size="icon">
             <Bell className="h-5 w-5" />
           </Button>
@@ -180,13 +181,13 @@ export function AppShellExample({
             <HelpCircle className="h-5 w-5" />
           </Button>
           <Separator orientation="vertical" className="h-6" />
-          <div className="flex items-center gap-2">
+          <Row gap={2} align="center">
             <span className="hidden text-sm md:inline">Tenant:</span>
             <Button variant="ghost" className="font-normal">
               {tenant}
               <ChevronRight className="ml-1 h-4 w-4 rotate-90" />
             </Button>
-          </div>
+          </Row>
           <Avatar className="h-8 w-8">
             <AvatarImage src={user.avatar} alt={user.name} />
             <AvatarFallback>
@@ -197,10 +198,10 @@ export function AppShellExample({
                 .toUpperCase()}
             </AvatarFallback>
           </Avatar>
-        </div>
-      </header>
+        </Row>
+      </Row>
 
-      <div className="flex flex-1 overflow-hidden">
+      <Row flex={1} overflow="hidden">
         {/* Left Sidebar */}
         <aside
           className={cn(
@@ -208,8 +209,8 @@ export function AppShellExample({
             leftSidebarCollapsed ? "w-12" : "w-60",
           )}
         >
-          <div className="flex h-full flex-col overflow-hidden">
-            <div className="flex items-center justify-end p-2">
+          <Column h="full" overflow="hidden">
+            <Row justify="end" align="center" className="p-2">
               <Button
                 variant="ghost"
                 size="icon"
@@ -222,7 +223,7 @@ export function AppShellExample({
                   <ChevronLeft className="h-4 w-4" />
                 )}
               </Button>
-            </div>
+            </Row>
             {!leftSidebarCollapsed && (
               <nav className="space-y-1 overflow-y-auto p-2 pt-0">
                 {navigation.map((item, index) => (
@@ -241,7 +242,7 @@ export function AppShellExample({
                 ))}
               </nav>
             )}
-          </div>
+          </Column>
         </aside>
 
         {/* Main Content */}
@@ -250,23 +251,25 @@ export function AppShellExample({
             {/* Hero Section */}
             {heroSection && (
               <Card className="mb-8 border-0 bg-gradient-to-r from-muted/50 to-muted/20">
-                <CardContent className="flex flex-col items-center gap-6 p-8 md:flex-row md:justify-between">
-                  <div className="flex-1 space-y-4">
-                    <h1 className="text-3xl font-bold leading-tight md:text-4xl">
-                      {heroSection.title}
-                    </h1>
-                    {heroSection.description && (
-                      <p className="text-muted-foreground">{heroSection.description}</p>
+                <CardContent className="p-8">
+                  <Row gap={6} align="center" justify="between" className="flex-col md:flex-row">
+                    <Column gap={4} flex={1}>
+                      <h1 className="text-3xl font-bold leading-tight md:text-4xl">
+                        {heroSection.title}
+                      </h1>
+                      {heroSection.description && (
+                        <p className="text-muted-foreground">{heroSection.description}</p>
+                      )}
+                      {heroSection.cta && (
+                        <Button size="lg" onClick={heroSection.cta.onClick}>
+                          {heroSection.cta.label}
+                        </Button>
+                      )}
+                    </Column>
+                    {heroSection.illustration && (
+                      <div className="flex-shrink-0">{heroSection.illustration}</div>
                     )}
-                    {heroSection.cta && (
-                      <Button size="lg" onClick={heroSection.cta.onClick}>
-                        {heroSection.cta.label}
-                      </Button>
-                    )}
-                  </div>
-                  {heroSection.illustration && (
-                    <div className="flex-shrink-0">{heroSection.illustration}</div>
-                  )}
+                  </Row>
                 </CardContent>
               </Card>
             )}
@@ -274,15 +277,15 @@ export function AppShellExample({
             {/* Content Sections */}
             {sections.map((section, sectionIndex) => (
               <div key={sectionIndex} className="mb-8">
-                <div className="mb-4 flex items-center justify-between">
+                <Row justify="between" align="center" className="mb-4">
                   <h2 className="text-2xl font-semibold">{section.title}</h2>
                   {section.viewAllLink && (
                     <Button variant="link" onClick={section.viewAllLink.onClick}>
                       {section.viewAllLink.label}
                     </Button>
                   )}
-                </div>
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                </Row>
+                <Grid gap={4} cols={3} className="md:grid-cols-2 lg:grid-cols-3">
                   {section.items.map((item) => (
                     <Card key={item.id}>
                       <CardHeader>
@@ -295,25 +298,27 @@ export function AppShellExample({
                         {item.description && <CardDescription>{item.description}</CardDescription>}
                       </CardHeader>
                       {(item.footer || item.action) && (
-                        <CardFooter className="flex items-center justify-between">
-                          {item.footer && (
-                            <span className="text-xs text-muted-foreground">{item.footer}</span>
-                          )}
-                          {item.action && (
-                            <Button
-                              variant="link"
-                              size="sm"
-                              onClick={item.action.onClick}
-                              className="ml-auto"
-                            >
-                              {item.action.label}
-                            </Button>
-                          )}
+                        <CardFooter>
+                          <Row justify="between" align="center" w="full">
+                            {item.footer && (
+                              <span className="text-xs text-muted-foreground">{item.footer}</span>
+                            )}
+                            {item.action && (
+                              <Button
+                                variant="link"
+                                size="sm"
+                                onClick={item.action.onClick}
+                                className="ml-auto"
+                              >
+                                {item.action.label}
+                              </Button>
+                            )}
+                          </Row>
                         </CardFooter>
                       )}
                     </Card>
                   ))}
-                </div>
+                </Grid>
               </div>
             ))}
           </div>
@@ -327,8 +332,8 @@ export function AppShellExample({
               rightSidebarCollapsed ? "w-12" : "w-80",
             )}
           >
-            <div className="flex h-full flex-col overflow-hidden">
-              <div className="flex items-center justify-start p-2">
+            <Column h="full" overflow="hidden">
+              <Row justify="start" align="center" className="p-2">
                 <Button
                   variant="ghost"
                   size="icon"
@@ -341,17 +346,17 @@ export function AppShellExample({
                     <ChevronRight className="h-4 w-4" />
                   )}
                 </Button>
-              </div>
+              </Row>
               {!rightSidebarCollapsed && (
                 <div className="flex-1 overflow-y-auto px-6 pb-6">
                   <h3 className="mb-4 text-lg font-semibold">{sidebar.title}</h3>
                   {sidebar.content}
                 </div>
               )}
-            </div>
+            </Column>
           </aside>
         )}
-      </div>
-    </div>
+      </Row>
+    </Column>
   );
 }

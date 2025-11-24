@@ -18,6 +18,7 @@ import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
+import { Row, Column, Grid } from "@/components/ui/layout";
 
 interface FormData {
   // Personal Info
@@ -87,7 +88,7 @@ export function FormBuilderExample() {
   };
 
   return (
-    <div className="h-screen w-full bg-background">
+    <Column h="screen" w="full" className="bg-background">
       <ResizablePanelGroup direction="horizontal">
         <ResizablePanel defaultSize={50} minSize={30}>
           <ScrollArea className="h-screen">
@@ -115,8 +116,8 @@ export function FormBuilderExample() {
                         <CardDescription>Enter your personal details below</CardDescription>
                       </CardHeader>
                       <CardContent className="space-y-4">
-                        <div className="grid gap-4 md:grid-cols-2">
-                          <div className="space-y-2">
+                        <Grid gap={4} cols={2} className="md:grid-cols-2">
+                          <Column gap={2}>
                             <Label htmlFor="firstName">First Name</Label>
                             <Input
                               id="firstName"
@@ -124,8 +125,8 @@ export function FormBuilderExample() {
                               value={formData.firstName}
                               onChange={(e) => updateField("firstName", e.target.value)}
                             />
-                          </div>
-                          <div className="space-y-2">
+                          </Column>
+                          <Column gap={2}>
                             <Label htmlFor="lastName">Last Name</Label>
                             <Input
                               id="lastName"
@@ -133,9 +134,9 @@ export function FormBuilderExample() {
                               value={formData.lastName}
                               onChange={(e) => updateField("lastName", e.target.value)}
                             />
-                          </div>
-                        </div>
-                        <div className="space-y-2">
+                          </Column>
+                        </Grid>
+                        <Column gap={2}>
                           <Label htmlFor="email">Email</Label>
                           <Input
                             id="email"
@@ -144,8 +145,8 @@ export function FormBuilderExample() {
                             value={formData.email}
                             onChange={(e) => updateField("email", e.target.value)}
                           />
-                        </div>
-                        <div className="space-y-2">
+                        </Column>
+                        <Column gap={2}>
                           <Label htmlFor="phone">Phone Number</Label>
                           <Input
                             id="phone"
@@ -154,8 +155,8 @@ export function FormBuilderExample() {
                             value={formData.phone}
                             onChange={(e) => updateField("phone", e.target.value)}
                           />
-                        </div>
-                        <div className="space-y-2">
+                        </Column>
+                        <Column gap={2}>
                           <Label htmlFor="bio">Bio</Label>
                           <Textarea
                             id="bio"
@@ -164,7 +165,7 @@ export function FormBuilderExample() {
                             value={formData.bio}
                             onChange={(e) => updateField("bio", e.target.value)}
                           />
-                        </div>
+                        </Column>
                       </CardContent>
                     </Card>
                   </TabsContent>
@@ -176,7 +177,7 @@ export function FormBuilderExample() {
                         <CardDescription>Customize your experience</CardDescription>
                       </CardHeader>
                       <CardContent className="space-y-6">
-                        <div className="space-y-2">
+                        <Column gap={2}>
                           <Label htmlFor="theme">Theme</Label>
                           <Select
                             value={formData.theme}
@@ -191,9 +192,9 @@ export function FormBuilderExample() {
                               <SelectItem value="system">System</SelectItem>
                             </SelectContent>
                           </Select>
-                        </div>
+                        </Column>
 
-                        <div className="space-y-2">
+                        <Column gap={2}>
                           <Label htmlFor="language">Language</Label>
                           <Select
                             value={formData.language}
@@ -210,23 +211,23 @@ export function FormBuilderExample() {
                               <SelectItem value="ja">Japanese</SelectItem>
                             </SelectContent>
                           </Select>
-                        </div>
+                        </Column>
 
-                        <div className="flex items-center justify-between">
-                          <div className="space-y-0.5">
+                        <Row justify="between" align="center">
+                          <Column gap={0.5}>
                             <Label htmlFor="notifications">Notifications</Label>
                             <p className="text-sm text-muted-foreground">
                               Receive notifications about your account
                             </p>
-                          </div>
+                          </Column>
                           <Switch
                             id="notifications"
                             checked={formData.notifications}
                             onCheckedChange={(checked) => updateField("notifications", checked)}
                           />
-                        </div>
+                        </Row>
 
-                        <div className="flex items-center space-x-2">
+                        <Row gap={2} align="center">
                           <Checkbox
                             id="newsletter"
                             checked={formData.newsletter}
@@ -238,7 +239,7 @@ export function FormBuilderExample() {
                           >
                             Subscribe to newsletter
                           </Label>
-                        </div>
+                        </Row>
                       </CardContent>
                     </Card>
                   </TabsContent>
@@ -250,39 +251,39 @@ export function FormBuilderExample() {
                         <CardDescription>Configure your account settings</CardDescription>
                       </CardHeader>
                       <CardContent className="space-y-6">
-                        <div className="space-y-3">
+                        <Column gap={3}>
                           <Label>Profile Visibility</Label>
                           <RadioGroup
                             value={formData.visibility}
                             onValueChange={(value) => updateField("visibility", value)}
                           >
-                            <div className="flex items-center space-x-2">
+                            <Row gap={2} align="center">
                               <RadioGroupItem value="public" id="public" />
                               <Label htmlFor="public" className="font-normal">
                                 Public - Anyone can see your profile
                               </Label>
-                            </div>
-                            <div className="flex items-center space-x-2">
+                            </Row>
+                            <Row gap={2} align="center">
                               <RadioGroupItem value="private" id="private" />
                               <Label htmlFor="private" className="font-normal">
                                 Private - Only you can see your profile
                               </Label>
-                            </div>
-                            <div className="flex items-center space-x-2">
+                            </Row>
+                            <Row gap={2} align="center">
                               <RadioGroupItem value="friends" id="friends" />
                               <Label htmlFor="friends" className="font-normal">
                                 Friends - Only friends can see your profile
                               </Label>
-                            </div>
+                            </Row>
                           </RadioGroup>
-                        </div>
+                        </Column>
 
-                        <div className="space-y-3">
-                          <div className="flex items-center justify-between">
+                        <Column gap={3}>
+                          <Row justify="between" align="center">
                             <Label htmlFor="experience">
                               Experience Level: {formData.experience}
                             </Label>
-                          </div>
+                          </Row>
                           <Slider
                             id="experience"
                             min={0}
@@ -291,18 +292,18 @@ export function FormBuilderExample() {
                             value={[formData.experience]}
                             onValueChange={(value) => updateField("experience", value[0])}
                           />
-                          <div className="flex justify-between text-xs text-muted-foreground">
+                          <Row justify="between" className="text-xs text-muted-foreground">
                             <span>Beginner</span>
                             <span>Expert</span>
-                          </div>
-                        </div>
+                          </Row>
+                        </Column>
 
-                        <div className="space-y-3">
+                        <Column gap={3}>
                           <Label>Interests</Label>
-                          <div className="space-y-2">
+                          <Column gap={2}>
                             {["Technology", "Design", "Business", "Science", "Arts"].map(
                               (interest) => (
-                                <div key={interest} className="flex items-center space-x-2">
+                                <Row key={interest} gap={2} align="center">
                                   <Checkbox
                                     id={interest}
                                     checked={formData.interests.includes(interest)}
@@ -323,11 +324,11 @@ export function FormBuilderExample() {
                                   >
                                     {interest}
                                   </Label>
-                                </div>
+                                </Row>
                               ),
                             )}
-                          </div>
-                        </div>
+                          </Column>
+                        </Column>
                       </CardContent>
                     </Card>
                   </TabsContent>
@@ -341,7 +342,7 @@ export function FormBuilderExample() {
                         </CardDescription>
                       </CardHeader>
                       <CardContent className="space-y-4">
-                        <div className="space-y-2">
+                        <Column gap={2}>
                           <Label htmlFor="customJson">Custom Configuration (JSON)</Label>
                           <Textarea
                             id="customJson"
@@ -354,18 +355,18 @@ export function FormBuilderExample() {
                           <p className="text-xs text-muted-foreground">
                             Enter valid JSON for custom configuration
                           </p>
-                        </div>
+                        </Column>
                       </CardContent>
                     </Card>
                   </TabsContent>
                 </Tabs>
 
-                <div className="flex gap-4">
+                <Row gap={4}>
                   <Button type="submit">Submit</Button>
                   <Button type="button" variant="outline" onClick={handleReset}>
                     Reset
                   </Button>
-                </div>
+                </Row>
               </form>
             </div>
           </ScrollArea>
@@ -374,7 +375,7 @@ export function FormBuilderExample() {
         <ResizableHandle withHandle />
 
         <ResizablePanel defaultSize={50} minSize={30}>
-          <div className="h-screen border-l">
+          <Column h="screen" className="border-l">
             <ScrollArea className="h-full">
               <div className="p-6">
                 <div className="mb-4">
@@ -390,9 +391,9 @@ export function FormBuilderExample() {
                 </Card>
               </div>
             </ScrollArea>
-          </div>
+          </Column>
         </ResizablePanel>
       </ResizablePanelGroup>
-    </div>
+    </Column>
   );
 }

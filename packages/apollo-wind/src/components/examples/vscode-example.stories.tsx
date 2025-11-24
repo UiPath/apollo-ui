@@ -16,6 +16,7 @@ import {
   ShellPanel,
   ShellStatusBar,
 } from "./vscode-example";
+import { Row, Column } from "@/components/ui/layout";
 
 const meta = {
   title: "Examples/VSCode",
@@ -159,7 +160,7 @@ function VSCodeShellDemo() {
             }}
             tooltip="Extensions"
           />
-          <div className="flex-1" />
+          <Column flex={1} />
           <ShellActivityBarItem
             icon={<Settings className="h-5 w-5" />}
             onClick={() => undefined}
@@ -219,14 +220,14 @@ export function Shell({ children, className }: ShellProps) {
         </ShellMain>
       </ShellContent>
       <ShellStatusBar>
-        <div className="flex items-center gap-3">
+        <Row gap={3} align="center">
           <span>main</span>
           <span>TypeScript</span>
-        </div>
-        <div className="flex items-center gap-3">
+        </Row>
+        <Row gap={3} align="center">
           <span>Ln 1, Col 1</span>
           <span>UTF-8</span>
-        </div>
+        </Row>
       </ShellStatusBar>
     </Shell>
   );

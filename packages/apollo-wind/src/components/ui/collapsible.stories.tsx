@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react";
 import { useState } from "react";
 import { Button } from "./button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "./collapsible";
+import { Row } from "./layout";
 
 const meta: Meta<typeof Collapsible> = {
   title: "Design System/Data Display/Collapsible",
@@ -18,14 +19,14 @@ export const Default: Story = {
 
     return (
       <Collapsible open={isOpen} onOpenChange={setIsOpen} className="w-[350px] space-y-2">
-        <div className="flex items-center justify-between space-x-4 px-4">
+        <Row justify="between" gap={4} align="center" className="px-4">
           <h4 className="text-sm font-semibold">@peduarte starred 3 repositories</h4>
           <CollapsibleTrigger asChild>
             <Button variant="ghost" size="sm">
               {isOpen ? "Hide" : "Show"}
             </Button>
           </CollapsibleTrigger>
-        </div>
+        </Row>
         <div className="rounded-md border px-4 py-2 font-mono text-sm shadow-sm">
           @radix-ui/primitives
         </div>

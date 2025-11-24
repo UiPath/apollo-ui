@@ -34,6 +34,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Row, Column, Grid } from "@/components/ui/layout";
 
 // Types
 interface Product {
@@ -247,14 +248,14 @@ export function DataManagementExample() {
   const categories = [...new Set(products.map((p) => p.category))];
 
   return (
-    <div className="min-h-screen bg-background">
+    <Column minH="screen" className="bg-background">
       {/* Header */}
       <header className="border-b">
-        <div className="container mx-auto flex h-14 items-center justify-between px-4">
-          <div>
+        <Row h={14} justify="between" align="center" className="container mx-auto px-4">
+          <Column gap={0}>
             <h1 className="text-lg font-semibold">Products</h1>
-          </div>
-          <div className="flex items-center gap-2">
+          </Column>
+          <Row gap={2} align="center">
             <Button variant="outline" size="sm">
               <Upload className="mr-2 h-4 w-4" />
               Import
@@ -275,22 +276,22 @@ export function DataManagementExample() {
                   <DialogTitle>Add New Product</DialogTitle>
                   <DialogDescription>Enter the details for the new product.</DialogDescription>
                 </DialogHeader>
-                <div className="space-y-4 py-4">
-                  <div className="space-y-2">
+                <Column gap={4} className="py-4">
+                  <Column gap={2}>
                     <Label htmlFor="productName">Product name</Label>
                     <Input id="productName" placeholder="Enter product name" />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
+                  </Column>
+                  <Grid cols={2} gap={4}>
+                    <Column gap={2}>
                       <Label htmlFor="sku">SKU</Label>
                       <Input id="sku" placeholder="XX-000" />
-                    </div>
-                    <div className="space-y-2">
+                    </Column>
+                    <Column gap={2}>
                       <Label htmlFor="price">Price</Label>
                       <Input id="price" type="number" placeholder="0.00" />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
+                    </Column>
+                  </Grid>
+                  <Column gap={2}>
                     <Label htmlFor="category">Category</Label>
                     <Select>
                       <SelectTrigger id="category">
@@ -304,12 +305,12 @@ export function DataManagementExample() {
                         ))}
                       </SelectContent>
                     </Select>
-                  </div>
-                  <div className="space-y-2">
+                  </Column>
+                  <Column gap={2}>
                     <Label htmlFor="stock">Initial stock</Label>
                     <Input id="stock" type="number" placeholder="0" />
-                  </div>
-                </div>
+                  </Column>
+                </Column>
                 <DialogFooter>
                   <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
                     Cancel
@@ -318,13 +319,18 @@ export function DataManagementExample() {
                 </DialogFooter>
               </DialogContent>
             </Dialog>
-          </div>
-        </div>
+          </Row>
+        </Row>
       </header>
 
       <main className="container mx-auto p-4 md:p-6">
         {/* Tabs and Filters */}
-        <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <Row
+          gap={4}
+          justify="between"
+          align="center"
+          className="mb-4 flex-col sm:flex-row sm:items-center"
+        >
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsList>
               <TabsTrigger value="all">
@@ -354,7 +360,7 @@ export function DataManagementExample() {
             </TabsList>
           </Tabs>
 
-          <div className="flex items-center gap-2">
+          <Row gap={2} align="center">
             <Select value={categoryFilter} onValueChange={setCategoryFilter}>
               <SelectTrigger className="w-[150px]">
                 <Filter className="mr-2 h-4 w-4" />
@@ -372,8 +378,8 @@ export function DataManagementExample() {
             <Button variant="outline" size="icon">
               <RefreshCw className="h-4 w-4" />
             </Button>
-          </div>
-        </div>
+          </Row>
+        </Row>
 
         {/* Data Table */}
         <DataTable
@@ -385,6 +391,6 @@ export function DataManagementExample() {
           compact
         />
       </main>
-    </div>
+    </Column>
   );
 }

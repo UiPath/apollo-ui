@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import { Label } from "./label";
 import { Switch } from "./switch";
+import { Row } from "./layout";
 
 const meta: Meta<typeof Switch> = {
   title: "Design System/Forms/Switch",
@@ -17,18 +18,18 @@ export const Default: Story = {
 
 export const WithLabel: Story = {
   render: () => (
-    <div className="flex items-center space-x-2">
+    <Row gap={2} align="center">
       <Switch id="airplane-mode" />
       <Label htmlFor="airplane-mode">Airplane Mode</Label>
-    </div>
+    </Row>
   ),
 };
 
 export const Disabled: Story = {
   render: () => (
-    <div className="flex items-center space-x-2">
+    <Row gap={2} align="center">
       <Switch id="disabled" disabled />
       <Label htmlFor="disabled">Disabled</Label>
-    </div>
+    </Row>
   ),
 };
