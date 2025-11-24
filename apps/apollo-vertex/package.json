@@ -5,7 +5,7 @@
     "main": "index.js",
     "scripts": {
         "dev": "next --turbopack",
-        "build": "next build",
+        "build": "pnpm registry:build && next build",
         "start": "next start",
         "registry:build": "shadcn build",
         "postbuild": "pagefind --site .next/server/app --output-path public/_pagefind",
