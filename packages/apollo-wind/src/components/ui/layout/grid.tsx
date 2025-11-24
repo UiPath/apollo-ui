@@ -99,12 +99,15 @@ const Grid = React.forwardRef<HTMLDivElement, GridProps>(
       my,
     });
 
-    // Use inline styles for gapX, gapY, and gap as fallback for values not in Tailwind
+    // Use inline styles for gap, cols, and rows as fallback
     const inlineStyles: React.CSSProperties = {
       ...style,
       ...(gap !== undefined && { gap: spacingToRem(gap) }),
       ...(gapX !== undefined && { columnGap: spacingToRem(gapX) }),
       ...(gapY !== undefined && { rowGap: spacingToRem(gapY) }),
+      // Use inline styles for custom grid templates (better browser support)
+      ...(typeof cols === "string" && { gridTemplateColumns: cols }),
+      ...(typeof rows === "string" && { gridTemplateRows: rows }),
     };
 
     return (
