@@ -1,5 +1,6 @@
 import type { Node, XYPosition } from "@uipath/uix/xyflow/react";
 import { BASE_CANVAS_GRID_SPACING } from "../components/BaseCanvas";
+import { PREVIEW_NODE_ID } from "../constants";
 
 /**
  * Calculates the absolute position of a node, taking into account its parent nodes.
@@ -84,7 +85,7 @@ function getNonOverlappingPosition(
 ): XYPosition {
   const isOverlapping = nodes.some(
     (node) =>
-      node.id !== "preview-node-id" &&
+      node.id !== PREVIEW_NODE_ID &&
       node.position.x < newNodePosition.x + newNodeStyle.width &&
       node.position.x + (node.measured?.width ?? 0) > newNodePosition.x &&
       node.position.y < newNodePosition.y + newNodeStyle.height &&

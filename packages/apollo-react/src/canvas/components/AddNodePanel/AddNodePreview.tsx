@@ -49,6 +49,7 @@ export const AddNodePreview: React.FC<NodeProps> = ({ selected, data }) => {
           width: 8,
           height: 8,
         }}
+        isConnectable={false}
       />
 
       {nodeData?.showOutputHandle && (
@@ -60,6 +61,7 @@ export const AddNodePreview: React.FC<NodeProps> = ({ selected, data }) => {
             background: "transparent",
             border: "none",
           }}
+          isConnectable={false}
         />
       )}
     </>

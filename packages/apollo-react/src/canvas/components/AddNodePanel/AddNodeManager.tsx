@@ -6,6 +6,7 @@ import type { ListItem } from "../Toolbox";
 import { AddNodePanel } from "./AddNodePanel";
 import { FloatingCanvasPanel } from "../FloatingCanvasPanel";
 import type { NodeItemData } from "./AddNodePanel.types";
+import { PREVIEW_EDGE_ID, PREVIEW_NODE_ID } from "../../constants";
 
 export interface AddNodeManagerProps {
   /**
@@ -42,7 +43,7 @@ export const AddNodeManager: React.FC<AddNodeManagerProps> = ({ customPanel, cre
   // Watch for preview node selection
   const selectedNodes = useStore((state) => state.nodes.filter((node) => node.selected));
 
-  const previewNode = selectedNodes.find((node) => node.id === "preview-node-id");
+  const previewNode = selectedNodes.find((node) => node.id === PREVIEW_NODE_ID);
   const [isOpen, setIsOpen] = useState(false);
   const [sourceInfo, setSourceInfo] = useState<{ nodeId: string; handleId: string } | null>(null);
   const [_selectedCategory, setSelectedCategory] = useState<string | undefined>(undefined);
@@ -52,7 +53,7 @@ export const AddNodeManager: React.FC<AddNodeManagerProps> = ({ customPanel, cre
   useEffect(() => {
     if (previewNode && !lastPreviewNodeRef.current) {
       // Preview node just got selected
-      const previewEdge = reactFlowInstance.getEdges().find((edge) => edge.id === "preview-edge-id");
+      const previewEdge = reactFlowInstance.getEdges().find((edge) => edge.id === PREVIEW_EDGE_ID);
 
       if (previewEdge) {
         setSourceInfo({
@@ -67,8 +68,8 @@ export const AddNodeManager: React.FC<AddNodeManagerProps> = ({ customPanel, cre
       setSourceInfo(null);
 
       // Clean up preview node and edge if they still exist
-      reactFlowInstance.setNodes((nodes) => nodes.filter((n) => n.id !== "preview-node-id"));
-      reactFlowInstance.setEdges((edges) => edges.filter((e) => e.id !== "preview-edge-id"));
+      reactFlowInstance.setNodes((nodes) => nodes.filter((n) => n.id !== PREVIEW_NODE_ID));
+      reactFlowInstance.setEdges((edges) => edges.filter((e) => e.id !== PREVIEW_EDGE_ID));
     }
 
     lastPreviewNodeRef.current = previewNode || null;
@@ -76,7 +77,7 @@ export const AddNodeManager: React.FC<AddNodeManagerProps> = ({ customPanel, cre
 
   const handleClose = useCallback(() => {
     // Deselect preview node (which will trigger cleanup in the effect above)
-    reactFlowInstance.setNodes((nodes) => nodes.map((n) => (n.id === "preview-node-id" ? { ...n, selected: false } : n)));
+    reactFlowInstance.setNodes((nodes) => nodes.map((n) => (n.id === PREVIEW_NODE_ID ? { ...n, selected: false } : n)));
 
     setIsOpen(false);
     setSourceInfo(null);
@@ -110,12 +111,12 @@ export const AddNodeManager: React.FC<AddNodeManagerProps> = ({ customPanel, cre
 
       // Replace preview node and edge with actual ones
       reactFlowInstance.setNodes((nodes) => [
-        ...nodes.filter((n) => n.id !== "preview-node-id").map((n) => ({ ...n, selected: false })),
+        ...nodes.filter((n) => n.id !== PREVIEW_NODE_ID).map((n) => ({ ...n, selected: false })),
         newNode,
       ]);
 
       reactFlowInstance.setEdges((edges) => [
-        ...edges.filter((e) => e.id !== "preview-edge-id"),
+        ...edges.filter((e) => e.id !== PREVIEW_EDGE_ID),
         {
           id: `edge_${sourceInfo.nodeId}-${sourceInfo.handleId}-${newNodeId}`,
           source: sourceInfo.nodeId,
@@ -143,7 +144,7 @@ export const AddNodeManager: React.FC<AddNodeManagerProps> = ({ customPanel, cre
       // Update the preview node with serializable data only
       reactFlowInstance.setNodes((nodes) =>
         nodes.map((n) =>
-          n.id === "preview-node-id"
+          n.id === PREVIEW_NODE_ID
             ? {
                 ...n,
                 data: {
@@ -163,7 +164,7 @@ export const AddNodeManager: React.FC<AddNodeManagerProps> = ({ customPanel, cre
   }
 
   return (
-    <FloatingCanvasPanel open={isOpen} nodeId="preview-node-id" placement="right-start" offset={10}>
+    <FloatingCanvasPanel open={isOpen} nodeId={PREVIEW_NODE_ID} placement="right-start" offset={10}>
       {customPanel ? (
         React.createElement(customPanel, {
           onNodeSelect: (item) => handleNodeSelect(item),
