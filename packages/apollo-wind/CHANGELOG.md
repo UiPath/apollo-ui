@@ -1,3 +1,10 @@
+# [1.3.0](https://github.com/uipath/wind/compare/v1.2.1...v1.3.0) (2025-11-24)
+
+
+### Features
+
+* implement DateTimePicker component and add stories for usage examples ([c738059](https://github.com/uipath/wind/commit/c73805996658d6a4d9bf7371c47ccf8a2fddc445))
+
 ## [1.2.1](https://github.com/uipath/wind/compare/v1.2.0...v1.2.1) (2025-11-24)
 
 
