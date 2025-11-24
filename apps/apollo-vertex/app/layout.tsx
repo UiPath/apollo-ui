@@ -73,7 +73,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
           sidebar={{ autoCollapse: false }}
           navbar={navbar}
           pageMap={await getPageMap()}
-          docsRepositoryBase="https://github.com/UiPath/apollo-ui/tree/main/apps/apollo-vertex-docs"
+          docsRepositoryBase="https://github.com/UiPath/apollo-ui/tree/main/apps/apollo-vertex"
           footer={footer}
         >
           {children}
