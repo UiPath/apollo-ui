@@ -14,6 +14,7 @@ module.exports = {
         'apollo-react',
         'apollo-angular',
         'apollo-utils',
+        'apollo-vertex',
         'apollo-wind',
         'apollo-wind-storybook',
         'apollo-wind-demo',
@@ -25,6 +26,7 @@ module.exports = {
         'ci',
         'docs',
         'build',
+        'workspace'
       ],
     ],
 
