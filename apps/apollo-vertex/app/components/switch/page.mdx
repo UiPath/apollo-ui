@@ -1,0 +1,39 @@
+import { Switch } from '@/registry/switch/switch'
+import { Label } from '@/registry/label/label'
+
+# Switch
+
+A control that allows the user to toggle between on and off.
+
+<div className="p-4 border rounded-lg mt-4 space-y-4">
+  <div className="flex items-center space-x-2">
+    <Switch id="airplane-mode" />
+    <Label htmlFor="airplane-mode">Airplane Mode</Label>
+  </div>
+
+  <div className="flex items-center space-x-2">
+    <Switch id="notifications" defaultChecked />
+    <Label htmlFor="notifications">Enable notifications</Label>
+  </div>
+
+  <div className="flex items-center space-x-2">
+    <Switch id="disabled" disabled />
+    <Label htmlFor="disabled" className="opacity-50">Disabled</Label>
+  </div>
+</div>
+
+## Installation
+
+```bash
+npx shadcn@latest add https://apollo-vertex.vercel.app/r/switch.json
+```
+
+## Usage
+
+```tsx
+import { Switch } from "@/components/ui/switch"
+```
+
+```tsx
+<Switch />
+```

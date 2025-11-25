@@ -1,0 +1,48 @@
+import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger, ContextMenuSeparator, ContextMenuSub, ContextMenuSubContent, ContextMenuSubTrigger, ContextMenuCheckboxItem } from '@/registry/context-menu/context-menu'
+
+# Context Menu
+
+Displays a menu to the user triggered by a right-click or long-press.
+
+<div className="p-4 border rounded-lg mt-4">
+  <ContextMenu>
+    <ContextMenuTrigger className="flex h-[150px] w-[300px] items-center justify-center rounded-md border border-dashed text-sm">
+      Right click here
+    </ContextMenuTrigger>
+    <ContextMenuContent className="w-52">
+      <ContextMenuItem>Back</ContextMenuItem>
+      <ContextMenuItem>Forward</ContextMenuItem>
+      <ContextMenuItem>Reload</ContextMenuItem>
+      <ContextMenuSeparator />
+      <ContextMenuSub>
+        <ContextMenuSubTrigger>More Tools</ContextMenuSubTrigger>
+        <ContextMenuSubContent className="w-48">
+          <ContextMenuItem>Save Page As...</ContextMenuItem>
+          <ContextMenuItem>Create Shortcut...</ContextMenuItem>
+          <ContextMenuSeparator />
+          <ContextMenuItem>Developer Tools</ContextMenuItem>
+        </ContextMenuSubContent>
+      </ContextMenuSub>
+      <ContextMenuSeparator />
+      <ContextMenuCheckboxItem checked>Show Bookmarks</ContextMenuCheckboxItem>
+      <ContextMenuCheckboxItem>Show Full URLs</ContextMenuCheckboxItem>
+    </ContextMenuContent>
+  </ContextMenu>
+</div>
+
+## Installation
+
+```bash
+npx shadcn@latest add https://apollo-vertex.vercel.app/r/context-menu.json
+```
+
+## Usage
+
+```tsx
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+} from "@/components/ui/context-menu"
+```

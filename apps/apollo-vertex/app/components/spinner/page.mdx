@@ -1,0 +1,39 @@
+import { Spinner } from '@/registry/spinner/spinner'
+import { Button } from '@/registry/button/button'
+
+# Spinner
+
+A loading spinner component to indicate loading state.
+
+<div className="p-4 border rounded-lg mt-4 flex items-center gap-8">
+  <Spinner size="sm" />
+  <Spinner />
+  <Spinner size="lg" />
+</div>
+
+## In Button
+
+<div className="p-4 border rounded-lg mt-4">
+  <Button disabled>
+    <Spinner className="mr-2" />
+    Loading...
+  </Button>
+</div>
+
+## Installation
+
+```bash
+npx shadcn@latest add https://apollo-vertex.vercel.app/r/spinner.json
+```
+
+## Usage
+
+```tsx
+import { Spinner } from "@/components/ui/spinner"
+```
+
+```tsx
+<Spinner />
+<Spinner size="sm" />
+<Spinner size="lg" />
+```

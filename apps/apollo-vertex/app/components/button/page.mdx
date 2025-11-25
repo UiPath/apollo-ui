@@ -1,11 +1,46 @@
 import { Button } from '@/registry/button/button'
+import { Mail, Loader2, ChevronRight } from 'lucide-react'
 
 # Button
 
-Here is our Vertex button.
+Displays a button or a component that looks like a button.
 
-<div className="p-4 border rounded-lg mt-4">
-  <Button>Click me</Button>
+<div className="p-4 border rounded-lg mt-4 flex flex-wrap gap-2">
+  <Button>Default</Button>
+  <Button variant="secondary">Secondary</Button>
+  <Button variant="destructive">Destructive</Button>
+  <Button variant="outline">Outline</Button>
+  <Button variant="ghost">Ghost</Button>
+  <Button variant="link">Link</Button>
+</div>
+
+## Sizes
+
+<div className="p-4 border rounded-lg mt-4 flex flex-wrap gap-2 items-center">
+  <Button size="sm">Small</Button>
+  <Button size="default">Default</Button>
+  <Button size="lg">Large</Button>
+  <Button size="icon"><Mail className="h-4 w-4" /></Button>
+</div>
+
+## With Icon
+
+<div className="p-4 border rounded-lg mt-4 flex flex-wrap gap-2">
+  <Button>
+    <Mail className="mr-2 h-4 w-4" /> Login with Email
+  </Button>
+  <Button variant="outline">
+    Next <ChevronRight className="ml-2 h-4 w-4" />
+  </Button>
+</div>
+
+## Loading
+
+<div className="p-4 border rounded-lg mt-4 flex flex-wrap gap-2">
+  <Button disabled>
+    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+    Please wait
+  </Button>
 </div>
 
 ## Installation
@@ -14,5 +49,12 @@ Here is our Vertex button.
 npx shadcn@latest add https://apollo-vertex.vercel.app/r/button.json
 ```
 
+## Usage
 
+```tsx
+import { Button } from "@/components/ui/button"
+```
 
+```tsx
+<Button variant="outline">Button</Button>
+```

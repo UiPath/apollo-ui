@@ -1,0 +1,51 @@
+import { Input } from '@/registry/input/input'
+import { Label } from '@/registry/label/label'
+import { Button } from '@/registry/button/button'
+
+# Input
+
+Displays a form input field or a component that looks like an input field.
+
+<div className="p-4 border rounded-lg mt-4 space-y-4">
+  <Input type="email" placeholder="Email" />
+  
+  <Input type="password" placeholder="Password" />
+  
+  <Input disabled placeholder="Disabled" />
+  
+  <Input type="file" />
+</div>
+
+## With Label
+
+<div className="p-4 border rounded-lg mt-4">
+  <div className="grid w-full max-w-sm items-center gap-1.5">
+    <Label htmlFor="email">Email</Label>
+    <Input type="email" id="email" placeholder="Email" />
+  </div>
+</div>
+
+## With Button
+
+<div className="p-4 border rounded-lg mt-4">
+  <div className="flex w-full max-w-sm items-center space-x-2">
+    <Input type="email" placeholder="Email" />
+    <Button type="submit">Subscribe</Button>
+  </div>
+</div>
+
+## Installation
+
+```bash
+npx shadcn@latest add https://apollo-vertex.vercel.app/r/input.json
+```
+
+## Usage
+
+```tsx
+import { Input } from "@/components/ui/input"
+```
+
+```tsx
+<Input type="email" placeholder="Email" />
+```

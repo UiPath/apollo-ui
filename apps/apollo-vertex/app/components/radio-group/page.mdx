@@ -1,0 +1,49 @@
+import { RadioGroup, RadioGroupItem } from '@/registry/radio-group/radio-group'
+import { Label } from '@/registry/label/label'
+
+# Radio Group
+
+A set of checkable buttons—known as radio buttons—where no more than one can be checked.
+
+<div className="p-4 border rounded-lg mt-4">
+  <RadioGroup defaultValue="comfortable">
+    <div className="flex items-center space-x-2">
+      <RadioGroupItem value="default" id="r1" />
+      <Label htmlFor="r1">Default</Label>
+    </div>
+    <div className="flex items-center space-x-2">
+      <RadioGroupItem value="comfortable" id="r2" />
+      <Label htmlFor="r2">Comfortable</Label>
+    </div>
+    <div className="flex items-center space-x-2">
+      <RadioGroupItem value="compact" id="r3" />
+      <Label htmlFor="r3">Compact</Label>
+    </div>
+  </RadioGroup>
+</div>
+
+## Installation
+
+```bash
+npx shadcn@latest add https://apollo-vertex.vercel.app/r/radio-group.json
+```
+
+## Usage
+
+```tsx
+import { Label } from "@/components/ui/label"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+```
+
+```tsx
+<RadioGroup defaultValue="option-one">
+  <div className="flex items-center space-x-2">
+    <RadioGroupItem value="option-one" id="option-one" />
+    <Label htmlFor="option-one">Option One</Label>
+  </div>
+  <div className="flex items-center space-x-2">
+    <RadioGroupItem value="option-two" id="option-two" />
+    <Label htmlFor="option-two">Option Two</Label>
+  </div>
+</RadioGroup>
+```

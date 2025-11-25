@@ -1,0 +1,52 @@
+'use client'
+
+import { Calendar } from '@/registry/calendar/calendar'
+
+# Calendar
+
+A date field component that allows users to enter and edit dates.
+
+<div className="p-4 border rounded-lg mt-4">
+  <Calendar
+    mode="single"
+    className="rounded-md border shadow-sm"
+  />
+</div>
+
+## Installation
+
+```bash
+npx shadcn@latest add https://apollo-vertex.vercel.app/r/calendar.json
+```
+
+## Usage
+
+```tsx
+import { Calendar } from "@/components/ui/calendar"
+```
+
+```tsx
+const [date, setDate] = React.useState<Date | undefined>(new Date())
+
+return (
+  <Calendar
+    mode="single"
+    selected={date}
+    onSelect={setDate}
+    className="rounded-md border"
+  />
+)
+```
+
+## Examples
+
+### Date Range
+
+```tsx
+<Calendar
+  mode="range"
+  selected={dateRange}
+  onSelect={setDateRange}
+  numberOfMonths={2}
+/>
+```

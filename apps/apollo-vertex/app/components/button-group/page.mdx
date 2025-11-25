@@ -1,0 +1,47 @@
+import { ButtonGroup } from '@/registry/button-group/button-group'
+import { Button } from '@/registry/button/button'
+import { ChevronLeft, ChevronRight, Bold, Italic, Underline } from 'lucide-react'
+
+# Button Group
+
+Groups multiple buttons together with proper styling and spacing.
+
+<div className="p-4 border rounded-lg mt-4 space-y-4">
+  <ButtonGroup>
+    <Button variant="outline">Left</Button>
+    <Button variant="outline">Center</Button>
+    <Button variant="outline">Right</Button>
+  </ButtonGroup>
+
+  <ButtonGroup>
+    <Button variant="outline" size="icon"><ChevronLeft className="h-4 w-4" /></Button>
+    <Button variant="outline" size="icon"><ChevronRight className="h-4 w-4" /></Button>
+  </ButtonGroup>
+
+  <ButtonGroup>
+    <Button variant="outline" size="icon"><Bold className="h-4 w-4" /></Button>
+    <Button variant="outline" size="icon"><Italic className="h-4 w-4" /></Button>
+    <Button variant="outline" size="icon"><Underline className="h-4 w-4" /></Button>
+  </ButtonGroup>
+</div>
+
+## Installation
+
+```bash
+npx shadcn@latest add https://apollo-vertex.vercel.app/r/button-group.json
+```
+
+## Usage
+
+```tsx
+import { ButtonGroup } from "@/components/ui/button-group"
+import { Button } from "@/components/ui/button"
+```
+
+```tsx
+<ButtonGroup>
+  <Button variant="outline">Left</Button>
+  <Button variant="outline">Center</Button>
+  <Button variant="outline">Right</Button>
+</ButtonGroup>
+```
