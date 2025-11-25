@@ -1,0 +1,17 @@
+// Auto-generated from activities/category-assets-icon-set-assets.svg
+import React from 'react';
+
+export interface CategoryAssetsIconSetAssetsProps extends React.SVGProps<SVGSVGElement> {}
+
+export const CategoryAssetsIconSetAssets = React.forwardRef<SVGSVGElement, CategoryAssetsIconSetAssetsProps>(
+  (props, ref) => (
+    <svg width="24" height="25" viewBox="0 0 24 25" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+      <path d="M18 23.1177L18 19.1077L15 19.1077L19 15.1177L23 19.1077L20 19.1077L20 23.1177L18 23.1177Z" fill="#1976D2"/>
+<path d="M21 5.50003V11.5635L10.1934 21.2891L2 17.7774V11.6436L13.8682 1.93362L21 5.50003ZM10 15.5918V18.7715L19 10.6719V8.22757L10 15.5918ZM4 16.458L8 18.1719V15.7354L4 13.7354V16.458ZM4.82812 11.9131L8.86816 13.9336L18.1719 6.32132L14.1318 4.30179L4.82812 11.9131Z" fill="currentColor"/>
+    </svg>
+  )
+);
+
+CategoryAssetsIconSetAssets.displayName = 'CategoryAssetsIconSetAssets';
+
+export default CategoryAssetsIconSetAssets;

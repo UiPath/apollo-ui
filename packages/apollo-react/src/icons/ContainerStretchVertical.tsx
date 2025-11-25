@@ -1,0 +1,16 @@
+// Auto-generated from container-stretch/vertical.svg
+import React from 'react';
+
+export interface ContainerStretchVerticalProps extends React.SVGProps<SVGSVGElement> {}
+
+export const ContainerStretchVertical = React.forwardRef<SVGSVGElement, ContainerStretchVerticalProps>(
+  (props, ref) => (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+      <path fillRule="evenodd" clipRule="evenodd" d="M21 3L3 3V1.5H21V3ZM21 22.5L3 22.5V21H21V22.5ZM7.5 18H16.5L16.5 6L7.5 6L7.5 18Z" fill="currentColor"/>
+    </svg>
+  )
+);
+
+ContainerStretchVertical.displayName = 'ContainerStretchVertical';
+
+export default ContainerStretchVertical;

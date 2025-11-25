@@ -1,4 +1,4 @@
-import * as ApolloCore from "@uipath/apollo-react/core";
+import { Border, Stroke } from "@uipath/apollo-react/core";
 import {
 	PageContainer,
 	PageDescription,
@@ -23,17 +23,17 @@ import {
 } from "./Borders.styles";
 
 export function Borders() {
-	const borders = Object.entries(ApolloCore)
-		.filter(
-			([key, value]) => key.startsWith("Border") && typeof value === "string",
-		)
-		.map(([name, value]) => ({ name, value: value as unknown as string }));
+	// Use the Border namespace which contains only border tokens
+	const borders = Object.entries(Border).map(([name, value]) => ({
+		name,
+		value: value as string,
+	}));
 
-	const strokes = Object.entries(ApolloCore)
-		.filter(
-			([key, value]) => key.startsWith("Stroke") && typeof value === "string",
-		)
-		.map(([name, value]) => ({ name, value: value as unknown as string }));
+	// Use the Stroke namespace which contains only stroke tokens
+	const strokes = Object.entries(Stroke).map(([name, value]) => ({
+		name,
+		value: value as string,
+	}));
 
 	return (
 		<PageContainer>

@@ -1,0 +1,16 @@
+// Auto-generated from invoke.svg
+import React from 'react';
+
+export interface InvokeProps extends React.SVGProps<SVGSVGElement> {}
+
+export const Invoke = React.forwardRef<SVGSVGElement, InvokeProps>(
+  (props, ref) => (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+      <path d="M9 18L3 12L9 6L10.4 7.4L6.8 11H19V7H21V13H6.8L10.4 16.6L9 18Z" fill="currentColor"/>
+    </svg>
+  )
+);
+
+Invoke.displayName = 'Invoke';
+
+export default Invoke;

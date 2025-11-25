@@ -1,4 +1,4 @@
-import * as ApolloCore from "@uipath/apollo-react/core";
+import { ScreenSizes } from "@uipath/apollo-react/core";
 import {
 	PageContainer,
 	PageDescription,
@@ -26,11 +26,9 @@ import {
 } from "./Screens.styles";
 
 export function Screens() {
-	const screens = Object.entries(ApolloCore)
-		.filter(
-			([key, value]) => key.startsWith("Screen") && typeof value === "string",
-		)
-		.map(([name, value]) => ({ name, value: value as unknown as string }))
+	// Use the ScreenSizes namespace which contains only screen size tokens
+	const screens = Object.entries(ScreenSizes)
+		.map(([name, value]) => ({ name, value: value as string }))
 		.sort((a, b) => parseFloat(a.value) - parseFloat(b.value));
 
 	return (

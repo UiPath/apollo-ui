@@ -1,0 +1,19 @@
+// Auto-generated from postpone-transaction-item.svg
+import React from 'react';
+
+export interface PostponeTransactionItemProps extends React.SVGProps<SVGSVGElement> {}
+
+export const PostponeTransactionItem = React.forwardRef<SVGSVGElement, PostponeTransactionItemProps>(
+  (props, ref) => (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+      <path fillRule="evenodd" clipRule="evenodd" d="M22.7829 17.0118L21.1456 19.4874L22.8928 22.2824C23.0813 22.5839 22.8903 23 22.5634 23H16.4366C16.1096 23 15.9186 22.5839 16.1071 22.2824L17.8543 19.4874L16.2171 17.0118C15.6467 16.1493 16.2667 15 17.3024 15H21.6976C22.7333 15 23.3533 16.1493 22.7829 17.0118ZM19.5 18.8351L18.1077 16.7297H20.8923L19.5 18.8351Z" fill="#1976D2"/>
+<path d="M3 5L15.01 5V2L19 6L15.01 10L15.01 7L3 7V19C1.89543 19 1 18.1046 1 17V7C1 5.89543 1.89543 5 3 5Z" fill="currentColor"/>
+<path d="M23 7C23 5.89543 22.1046 5 21 5V13H23V7Z" fill="currentColor"/>
+<path d="M14 19V17H8.99L8.99 14L5 18L8.99 22V19H14Z" fill="currentColor"/>
+    </svg>
+  )
+);
+
+PostponeTransactionItem.displayName = 'PostponeTransactionItem';
+
+export default PostponeTransactionItem;

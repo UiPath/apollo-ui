@@ -26,13 +26,18 @@
       "require": "./dist/core.cjs",
       "types": "./dist/core/index.d.ts"
     },
-    "./core/tokens/*": "./dist/core/tokens/*"
+    "./core/tokens/*": "./dist/core/tokens/*",
+    "./icons": "./dist/icons/index.ts",
+    "./icons/*": "./dist/icons/*.tsx",
+    "./icons/svg/*": "./dist/icons/svg/*"
   },
   "files": [
     "dist"
   ],
   "scripts": {
-    "build": "rslib build",
+    "build": "pnpm run build:icons && rslib build && pnpm run copy:icons",
+    "build:icons": "tsx scripts/generate-icon-components.ts",
+    "copy:icons": "cp -r src/icons dist/",
     "dev": "rslib build --watch",
     "lint": "eslint src --ext .ts,.tsx",
     "test": "vitest --run",

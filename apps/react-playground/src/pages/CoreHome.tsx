@@ -1,4 +1,15 @@
-import * as ApolloCore from "@uipath/apollo-react/core";
+import {
+	Border,
+	Colors,
+	FontFamily,
+	Icon,
+	Padding,
+	ScreenSizes,
+	Shadow,
+	Spacing,
+	Stroke,
+	Typography,
+} from "@uipath/apollo-react/core";
 import { PageContainer } from "../components/SharedStyles";
 import {
 	CategoryBadge,
@@ -16,6 +27,17 @@ import {
 } from "./CoreHome.styles";
 
 export function CoreHome() {
+	// Use namespaces to count tokens
+	const colorCount = Object.keys(Colors).length;
+	const fontCount =
+		Object.keys(FontFamily).length + Object.keys(Typography).length;
+	const spacingCount =
+		Object.keys(Spacing).length + Object.keys(Padding).length;
+	const shadowCount = Object.keys(Shadow).length;
+	const borderCount = Object.keys(Border).length + Object.keys(Stroke).length;
+	const iconCount = Object.keys(Icon).length;
+	const screenCount = Object.keys(ScreenSizes).length;
+
 	const tokenCategories = [
 		{
 			title: "CSS Variables",
@@ -30,49 +52,49 @@ export function CoreHome() {
 			description: "Complete color palette with semantic naming",
 			path: "/core/colors",
 			icon: "🌈",
-			count: `${Object.keys(ApolloCore).filter((k) => k.startsWith("Color")).length} colors`,
+			count: `${colorCount} colors`,
 		},
 		{
 			title: "Typography",
 			description: "Font families, sizes, weights, and line heights",
 			path: "/core/fonts",
 			icon: "✍️",
-			count: `${Object.keys(ApolloCore).filter((k) => k.startsWith("Font")).length} tokens`,
+			count: `${fontCount} tokens`,
 		},
 		{
 			title: "Spacing & Padding",
 			description: "Consistent spacing scale for layouts",
 			path: "/core/spacing",
 			icon: "📏",
-			count: `${Object.keys(ApolloCore).filter((k) => k.startsWith("Spacing") || k.startsWith("Pad")).length} tokens`,
+			count: `${spacingCount} tokens`,
 		},
 		{
 			title: "Shadows",
 			description: "Elevation system for depth and hierarchy",
 			path: "/core/shadows",
 			icon: "🔲",
-			count: `${Object.keys(ApolloCore).filter((k) => k.startsWith("Shadow")).length} shadows`,
+			count: `${shadowCount} shadows`,
 		},
 		{
 			title: "Borders & Strokes",
 			description: "Border radii, widths, and stroke styles",
 			path: "/core/borders",
 			icon: "⬜",
-			count: `${Object.keys(ApolloCore).filter((k) => k.startsWith("Border") || k.startsWith("Stroke")).length} tokens`,
+			count: `${borderCount} tokens`,
 		},
 		{
 			title: "Icons",
 			description: "Icon sizing and spacing standards",
 			path: "/core/icons",
 			icon: "⭐",
-			count: `${Object.keys(ApolloCore).filter((k) => k.startsWith("Icon")).length} tokens`,
+			count: `${iconCount} tokens`,
 		},
 		{
 			title: "Breakpoints",
 			description: "Responsive screen size breakpoints",
 			path: "/core/screens",
 			icon: "📱",
-			count: `${Object.keys(ApolloCore).filter((k) => k.startsWith("Screen")).length} sizes`,
+			count: `${screenCount} sizes`,
 		},
 	];
 

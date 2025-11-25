@@ -1,0 +1,16 @@
+// Auto-generated from label-placement/top.svg
+import React from 'react';
+
+export interface LabelPlacementTopProps extends React.SVGProps<SVGSVGElement> {}
+
+export const LabelPlacementTop = React.forwardRef<SVGSVGElement, LabelPlacementTopProps>(
+  (props, ref) => (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+      <path fillRule="evenodd" clipRule="evenodd" d="M4.5 7.5L4.5 1.5H3V7.5V9H7.5L7.5 7.5H4.5ZM3 21H21V12H3V21Z" fill="currentColor"/>
+    </svg>
+  )
+);
+
+LabelPlacementTop.displayName = 'LabelPlacementTop';
+
+export default LabelPlacementTop;

@@ -7,16 +7,16 @@ export * from './fonts';
 
 // Re-export grouped token namespaces for easier consumption
 export {
+  Border,
   Colors,
   FontFamily,
-  Typography,
-  Padding,
-  Spacing,
-  Border,
-  Stroke,
-  Shadow,
-  Icon,
-  ScreenSizes,
   FontVariantToken,
   HeaderVariants,
+  Icon,
+  Padding,
+  ScreenSizes,
+  Shadow,
+  Spacing,
+  Stroke,
+  Typography,
 } from './tokens';

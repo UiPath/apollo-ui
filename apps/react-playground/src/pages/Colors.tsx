@@ -1,4 +1,4 @@
-import * as ApolloCore from "@uipath/apollo-react/core";
+import { Colors as ColorsTokens } from "@uipath/apollo-react/core";
 import { useState } from "react";
 
 import {
@@ -26,11 +26,12 @@ import {
 export function Colors() {
 	const [searchTerm, setSearchTerm] = useState("");
 
-	const colors = Object.entries(ApolloCore)
+	// Use the ColorsTokens namespace which contains only color tokens
+	const colors = Object.entries(ColorsTokens)
 		.filter(
 			([key, value]) => key.startsWith("Color") && typeof value === "string",
 		)
-		.map(([name, value]) => ({ name, value: value as unknown as string }));
+		.map(([name, value]) => ({ name, value: value as string }));
 
 	// Separate colors into Semantic and Base categories
 	const semanticColors: typeof colors = [];

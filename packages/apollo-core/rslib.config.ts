@@ -31,7 +31,7 @@ export default defineConfig({
     entry: {
       index: './src/index.ts',
       tokens: './src/tokens/index.ts',
-      icons: './src/icons/index.ts',
+      'icons/types': './src/icons/types.ts',
     },
   },
   output: {
@@ -43,17 +43,5 @@ export default defineConfig({
       { from: './.tokens-temp/jss', to: './tokens/jss' },
       { from: './src/icons/svg', to: './icons/svg' },
     ],
-  },
-  tools: {
-    rspack: {
-      module: {
-        rules: [
-          {
-            test: /\.svg$/,
-            type: 'asset/source',
-          },
-        ],
-      },
-    },
   },
 });

@@ -120,33 +120,42 @@ function generateIconExports(svgFiles: SvgFile[]): void {
 
 `;
 
-  // Sort directories (root first)
-  const sortedDirs = Array.from(exportsByDir.keys()).sort((a, b) => {
-    if (a === '') return -1;
-    if (b === '') return 1;
-    return a.localeCompare(b);
-  });
+  // Don't generate exports - just a comment file
+  content += `// Apollo Core Icons
+//
+// NOTE: This file does not export actual icon components.
+// Icon components are generated in the framework-specific packages:
+// - For React: import from '@uipath/apollo-react/icons'
+//
+// Raw SVG files are available at:
+// - import svg from '@uipath/apollo-core/icons/svg/academy.svg'
 
-  // Generate exports by directory
-  for (const dir of sortedDirs) {
-    const icons = exportsByDir.get(dir)!;
-    const dirLabel = dir === '' ? 'Root Icons' : `Icons from ${dir}/`;
+export type { IconName } from './types';
+export { iconNames } from './types';
+`;
 
-    content += `// ${dirLabel}\n`;
+  fs.writeFileSync(OUTPUT_FILE, content, 'utf8');
+  console.log(
+    `✅ Generated ${svgFiles.length} icon exports and types → ${OUTPUT_FILE}`
+  );
 
-    for (const icon of icons) {
-      content += `export { default as ${icon.exportName} } from '${icon.importPath}';\n`;
-    }
+  // Generate types file with iconNames array only
+  generateTypesFile(allIconNames);
+}
 
-    content += '\n';
-  }
+// ============================================================================
+// Generate types.ts file with only TypeScript types and iconNames array
+// ============================================================================
 
-  // Generate TypeScript types
-  const typeUnion = allIconNames.map((name) => `  | '${name}'`).join('\n');
-  const namesArray = allIconNames.map((name) => `  '${name}',`).join('\n');
+function generateTypesFile(iconNames: string[]): void {
+  const TYPES_FILE = path.join(ICONS_DIR, 'types.ts');
 
-  content += `// Icon Types
-// TypeScript types for all icon names
+  const typeUnion = iconNames.map((name) => `  | '${name}'`).join('\n');
+  const namesArray = iconNames.map((name) => `  '${name}',`).join('\n');
+
+  const fileContent = `// Auto-generated icon types and names
+// This file contains only types and the iconNames array without importing SVG files
+// For actual SVG imports, use index.ts directly
 
 export type IconName =
 ${typeUnion};
@@ -156,10 +165,8 @@ ${namesArray}
 ] as const;
 `;
 
-  fs.writeFileSync(OUTPUT_FILE, content, 'utf8');
-  console.log(
-    `✅ Generated ${svgFiles.length} icon exports and types → ${OUTPUT_FILE}`
-  );
+  fs.writeFileSync(TYPES_FILE, fileContent, 'utf8');
+  console.log(`✅ Generated types file with ${iconNames.length} icon names (no SVG imports)`);
 }
 
 // ============================================================================

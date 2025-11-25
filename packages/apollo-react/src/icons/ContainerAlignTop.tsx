@@ -1,0 +1,16 @@
+// Auto-generated from container-align/top.svg
+import React from 'react';
+
+export interface ContainerAlignTopProps extends React.SVGProps<SVGSVGElement> {}
+
+export const ContainerAlignTop = React.forwardRef<SVGSVGElement, ContainerAlignTopProps>(
+  (props, ref) => (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+      <path fillRule="evenodd" clipRule="evenodd" d="M3 4.5L21 4.5V3H3V4.5ZM16.5 19.5L16.5 7.5L7.5 7.5L7.5 19.5H16.5Z" fill="currentColor"/>
+    </svg>
+  )
+);
+
+ContainerAlignTop.displayName = 'ContainerAlignTop';
+
+export default ContainerAlignTop;

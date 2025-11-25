@@ -1,0 +1,19 @@
+// Auto-generated from suspend-vm.svg
+import React from 'react';
+
+export interface SuspendVmProps extends React.SVGProps<SVGSVGElement> {}
+
+export const SuspendVm = React.forwardRef<SVGSVGElement, SuspendVmProps>(
+  (props, ref) => (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+      <path d="M5 3H4C2.9 3 2 3.9 2 5V16C2 17.1 2.9 18 4 18H11V20H8V22H13V16H4V5H5V3Z" fill="currentColor"/>
+<path d="M19 5H20V11H22V5C22 3.9 21.1 3 20 3H19V5Z" fill="currentColor"/>
+<path d="M16.1963 5.57715V10.4219L12 12.8447L7.80371 10.4219V5.57715L12 3.1543L16.1963 5.57715Z" stroke="currentColor" strokeWidth="2"/>
+<path fillRule="evenodd" clipRule="evenodd" d="M15 14.9687V13H22V14.9687L19.8333 17.5L22 20.0312V22L15 22V20.0312L17.1667 17.5L15 14.9687ZM16.9444 14.75L20.0556 14.75L18.5 16.25L16.9444 14.75ZM20.0556 20.25H16.9444L18.5 18.75L20.0556 20.25Z" fill="#1976D2"/>
+    </svg>
+  )
+);
+
+SuspendVm.displayName = 'SuspendVm';
+
+export default SuspendVm;

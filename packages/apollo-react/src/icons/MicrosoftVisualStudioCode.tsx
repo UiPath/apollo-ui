@@ -1,0 +1,72 @@
+// Auto-generated from microsoft-visual-studio-code.svg
+import React from 'react';
+
+export interface MicrosoftVisualStudioCodeProps extends React.SVGProps<SVGSVGElement> {}
+
+export const MicrosoftVisualStudioCode = React.forwardRef<SVGSVGElement, MicrosoftVisualStudioCodeProps>(
+  (props, ref) => (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+      <g filter="url(#filter0_ii_2761_1848)">
+<mask id="mask0_2761_1848" style={{maskType:"alpha"}} maskUnits="userSpaceOnUse" x="2" y="2" width="20" height="20">
+<path fillRule="evenodd" clipRule="evenodd" d="M16.1823 21.8635C16.4973 21.9862 16.8566 21.9783 17.1745 21.8253L21.2922 19.844C21.7248 19.6358 22 19.1978 22 18.7174V5.28268C22 4.80227 21.7248 4.36438 21.2922 4.15617L17.1745 2.17477C16.7573 1.97399 16.2689 2.02317 15.9027 2.2894C15.8504 2.32744 15.8005 2.3699 15.7538 2.4167L7.87102 9.60831L4.43744 7.00195C4.1178 6.75932 3.67073 6.7792 3.37387 7.04923L2.27261 8.05099C1.90949 8.3813 1.90907 8.95256 2.27171 9.28341L5.24942 12L2.27171 14.7167C1.90907 15.0475 1.90949 15.6188 2.27261 15.9491L3.37387 16.9508C3.67073 17.2209 4.1178 17.2407 4.43744 16.9981L7.87102 14.3917L15.7538 21.5834C15.8785 21.7081 16.0249 21.8021 16.1823 21.8635ZM17.003 7.45981L11.0218 12L17.003 16.5403V7.45981Z" fill="white"/>
+</mask>
+<g mask="url(#mask0_2761_1848)">
+<path d="M21.2922 4.15967L17.1713 2.17554C16.6944 1.94588 16.1243 2.04275 15.7499 2.4171L2.25966 14.7171C1.89681 15.0479 1.89723 15.6192 2.26056 15.9495L3.36249 16.9512C3.65954 17.2213 4.10689 17.2411 4.42671 16.9986L20.6721 4.67441C21.2171 4.26095 21.9999 4.64967 21.9999 5.33377V5.28592C21.9999 4.80573 21.7248 4.36799 21.2922 4.15967Z" fill="#0065A9"/>
+<g filter="url(#filter1_d_2761_1848)">
+<path d="M21.2922 19.8408L17.1713 21.8249C16.6944 22.0545 16.1243 21.9577 15.7499 21.5834L2.25966 9.28338C1.89681 8.95255 1.89723 8.38127 2.26056 8.05097L3.36249 7.04921C3.65954 6.77917 4.10689 6.75929 4.42671 7.00192L20.6721 19.326C21.2171 19.7395 21.9999 19.3508 21.9999 18.6666V18.7145C21.9999 19.1947 21.7248 19.6324 21.2922 19.8408Z" fill="#007ACC"/>
+</g>
+<g filter="url(#filter2_d_2761_1848)">
+<path d="M17.1716 21.8252C16.6945 22.0547 16.1244 21.9577 15.75 21.5834C16.2113 22.0446 17 21.7179 17 21.0655V2.93442C17 2.28207 16.2113 1.95537 15.75 2.41665C16.1244 2.04227 16.6945 1.94526 17.1716 2.17472L21.2917 4.15613C21.7247 4.36433 22 4.80223 22 5.28264V18.7174C22 19.1978 21.7247 19.6357 21.2917 19.8439L17.1716 21.8252Z" fill="#1F9CF0"/>
+</g>
+<g style={{mixBlendMode:"overlay"}} opacity="0.25">
+<path style={{mixBlendMode:"overlay"}} opacity="0.25" fillRule="evenodd" clipRule="evenodd" d="M16.1702 21.8636C16.4852 21.9862 16.8444 21.9784 17.1623 21.8255L21.2799 19.8441C21.7127 19.6359 21.9878 19.198 21.9878 18.7176V5.2828C21.9878 4.80239 21.7127 4.36449 21.28 4.15629L17.1623 2.17489C16.7451 1.97411 16.2567 2.02329 15.8905 2.28953C15.8382 2.32756 15.7884 2.37002 15.7416 2.41682L7.8588 9.60843L4.42523 7.00206C4.1056 6.75944 3.65852 6.77932 3.36166 7.04935L2.2604 8.05111C1.89728 8.38142 1.89687 8.95269 2.2595 9.28353L5.23722 12.0002L2.2595 14.7168C1.89687 15.0477 1.89728 15.6189 2.2604 15.9492L3.36166 16.9509C3.65852 17.221 4.1056 17.2409 4.42523 16.9983L7.8588 14.3919L15.7416 21.5835C15.8662 21.7083 16.0127 21.8023 16.1702 21.8636ZM16.9909 7.45992L11.0096 12.0002L16.9909 16.5404V7.45992Z" fill="url(#paint0_linear_2761_1848)"/>
+</g>
+</g>
+</g>
+<defs>
+<filter id="filter0_ii_2761_1848" x="2" y="0" width="20" height="24" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="2"/>
+<feGaussianBlur stdDeviation="2"/>
+<feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1"/>
+<feColorMatrix type="matrix" values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.25 0"/>
+<feBlend mode="normal" in2="shape" result="effect1_innerShadow_2761_1848"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="-2"/>
+<feGaussianBlur stdDeviation="2"/>
+<feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.12 0"/>
+<feBlend mode="normal" in2="effect1_innerShadow_2761_1848" result="effect2_innerShadow_2761_1848"/>
+</filter>
+<filter id="filter1_d_2761_1848" x="-19.3456" y="-14.5009" width="62.679" height="57.7826" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset/>
+<feGaussianBlur stdDeviation="10.6667"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+<feBlend mode="overlay" in2="BackgroundImageFix" result="effect1_dropShadow_2761_1848"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_2761_1848" result="shape"/>
+</filter>
+<filter id="filter2_d_2761_1848" x="-5.5834" y="-19.2819" width="48.9168" height="62.5637" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset/>
+<feGaussianBlur stdDeviation="10.6667"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+<feBlend mode="overlay" in2="BackgroundImageFix" result="effect1_dropShadow_2761_1848"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_2761_1848" result="shape"/>
+</filter>
+<linearGradient id="paint0_linear_2761_1848" x1="11.9878" y1="2.05171" x2="11.9878" y2="21.9486" gradientUnits="userSpaceOnUse">
+<stop stop-color="white"/>
+<stop offset="1" stop-color="white" stop-opacity="0"/>
+</linearGradient>
+</defs>
+    </svg>
+  )
+);
+
+MicrosoftVisualStudioCode.displayName = 'MicrosoftVisualStudioCode';
+
+export default MicrosoftVisualStudioCode;
