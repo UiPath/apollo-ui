@@ -34,7 +34,14 @@
     },
     "overrides": [
         {
-            "includes": ["dist/**/*", ".next/**/*", "app/globals.css"],
+            "includes": [
+                "dist/**/*",
+                ".next/**/*",
+                "app/globals.css",
+                "registry/**/*",
+                "public/**/*",
+                "components/ui/**/*"
+            ],
             "formatter": {
                 "enabled": false
             },
