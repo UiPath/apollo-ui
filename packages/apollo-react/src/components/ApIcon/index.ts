@@ -1,13 +1,5 @@
-// Apollo React Components
-// Components will be added here following the Ap* naming convention
-
 export { ApIcon } from './ApIcon';
 export type { ApIconProps } from './ApIcon';
 // Re-export icon types from apollo-core for convenience
 export type { IconName } from '@uipath/apollo-core/icons';
 export { iconNames } from '@uipath/apollo-core/icons';
-
-// Example exports:
-// export { ApButton } from './ApButton';
-// export { ApTextField } from './ApTextField';
-// export { ApCard } from './ApCard';
