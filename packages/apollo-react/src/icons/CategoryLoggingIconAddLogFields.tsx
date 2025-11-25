@@ -1,0 +1,36 @@
+// Auto-generated from activities/category-logging-icon-add-log-fields.svg
+import React from 'react';
+
+export interface CategoryLoggingIconAddLogFieldsProps extends React.SVGProps<SVGSVGElement> {}
+
+export const CategoryLoggingIconAddLogFields = React.forwardRef<SVGSVGElement, CategoryLoggingIconAddLogFieldsProps>(
+  (props, ref) => (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+      <g clipPath="url(#clip0_4117_1432)">
+<path fillRule="evenodd" clipRule="evenodd" d="M2 5C2 4.44772 2.44772 4 3 4H8C8.55228 4 9 4.44772 9 5V10C9 10.5523 8.55228 11 8 11H3C2.44772 11 2 10.5523 2 10V5ZM4 9V6H7V9H4Z" fill="currentColor"/>
+<path fillRule="evenodd" clipRule="evenodd" d="M2 14C2 13.4477 2.44772 13 3 13H8C8.55228 13 9 13.4477 9 14V19C9 19.5523 8.55228 20 8 20H3C2.44772 20 2 19.5523 2 19V14ZM4 18V15H7V18H4Z" fill="currentColor"/>
+<path d="M11 4H22V6H11V4Z" fill="currentColor"/>
+<path d="M16 13H11V15H16V13Z" fill="currentColor"/>
+<path d="M11 8H17V10H11V8Z" fill="currentColor"/>
+<path d="M13 17H11V19H13V17Z" fill="currentColor"/>
+<path d="M20 15H18V18H15V20H18V23H20V20H23V18H20V15Z" fill="#038108"/>
+<path fillRule="evenodd" clipRule="evenodd" d="M1.69434 4.94141C1.69434 4.38912 2.14205 3.94141 2.69434 3.94141H7.69434C8.24662 3.94141 8.69434 4.38912 8.69434 4.94141V9.94141C8.69434 10.4937 8.24662 10.9414 7.69434 10.9414H2.69434C2.14205 10.9414 1.69434 10.4937 1.69434 9.94141V4.94141ZM3.69434 8.94141V5.94141H6.69434V8.94141H3.69434Z" fill="currentColor"/>
+<path fillRule="evenodd" clipRule="evenodd" d="M1.69434 13.9414C1.69434 13.3891 2.14205 12.9414 2.69434 12.9414H7.69434C8.24662 12.9414 8.69434 13.3891 8.69434 13.9414V18.9414C8.69434 19.4937 8.24662 19.9414 7.69434 19.9414H2.69434C2.14205 19.9414 1.69434 19.4937 1.69434 18.9414V13.9414ZM3.69434 17.9414V14.9414H6.69434V17.9414H3.69434Z" fill="currentColor"/>
+<path d="M10.6943 3.94141H21.6943V5.94141H10.6943V3.94141Z" fill="currentColor"/>
+<path d="M15.6943 12.9414H10.6943V14.9414H15.6943V12.9414Z" fill="currentColor"/>
+<path d="M10.6943 7.94141H16.6943V9.94141H10.6943V7.94141Z" fill="currentColor"/>
+<path d="M12.6943 16.9414H10.6943V18.9414H12.6943V16.9414Z" fill="currentColor"/>
+<path d="M19.6943 14.9414H17.6943V17.9414H14.6943V19.9414H17.6943V22.9414H19.6943V19.9414H22.6943V17.9414H19.6943V14.9414Z" fill="#038108"/>
+</g>
+<defs>
+<clipPath id="clip0_4117_1432">
+<rect width="24" height="24" fill="white"/>
+</clipPath>
+</defs>
+    </svg>
+  )
+);
+
+CategoryLoggingIconAddLogFields.displayName = 'CategoryLoggingIconAddLogFields';
+
+export default CategoryLoggingIconAddLogFields;

@@ -13,7 +13,9 @@ export default defineConfig({
           js: '[name].js',
         },
       },
-      dts: true,
+      dts: {
+        bundle: false,
+      },
     },
     {
       format: 'cjs',
@@ -45,6 +47,8 @@ export default defineConfig({
       { from: '../apollo-core/dist/tokens/scss', to: './core/tokens/scss' },
       { from: '../apollo-core/dist/tokens/less', to: './core/tokens/less' },
       { from: '../apollo-core/dist/tokens/jss', to: './core/tokens/jss' },
+      // Copy SVG icons to enable dynamic imports within apollo-react
+      { from: '../apollo-core/dist/icons/svg', to: './icons/svg' },
     ],
   },
 });

@@ -1,0 +1,17 @@
+// Auto-generated from activities/category-invoke-icon-invoke-workflow-file.svg
+import React from 'react';
+
+export interface CategoryInvokeIconInvokeWorkflowFileProps extends React.SVGProps<SVGSVGElement> {}
+
+export const CategoryInvokeIconInvokeWorkflowFile = React.forwardRef<SVGSVGElement, CategoryInvokeIconInvokeWorkflowFileProps>(
+  (props, ref) => (
+    <svg width="25" height="25" viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+      <path d="M13 19.353L13 15.353L15 15.353L15 18.353L19 18.353L19 15.853L22.5 19.353L19 22.853L19 20.353L14 20.353C13.45 20.353 13 19.903 13 19.353Z" fill="#1976D2"/>
+<path d="M14 2.353H6C4.9 2.353 4.01 3.253 4.01 4.353L4 20.353C4 21.453 4.89 22.353 5.99 22.353H9V20.353H6V4.353H13V9.353H18V13.353H20V8.353L14 2.353Z" fill="currentColor"/>
+    </svg>
+  )
+);
+
+CategoryInvokeIconInvokeWorkflowFile.displayName = 'CategoryInvokeIconInvokeWorkflowFile';
+
+export default CategoryInvokeIconInvokeWorkflowFile;

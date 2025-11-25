@@ -1,0 +1,17 @@
+// Auto-generated from write-storage-text.svg
+import React from 'react';
+
+export interface WriteStorageTextProps extends React.SVGProps<SVGSVGElement> {}
+
+export const WriteStorageText = React.forwardRef<SVGSVGElement, WriteStorageTextProps>(
+  (props, ref) => (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+      <path fillRule="evenodd" clipRule="evenodd" d="M21.2 11.585L22.41 12.795C23.2 13.575 23.2 14.845 22.41 15.625L15.04 22.995H11V18.955L18.37 11.585C19.15 10.805 20.42 10.805 21.2 11.585ZM13 20.995H14.21L20.87 14.335L19.66 13.125L13 19.785V20.995Z" fill="currentColor"/>
+<path d="M20 2H4V6H6V4H11V16.5L13 14.5V4H18V6H20V2Z" fill="currentColor"/>
+    </svg>
+  )
+);
+
+WriteStorageText.displayName = 'WriteStorageText';
+
+export default WriteStorageText;

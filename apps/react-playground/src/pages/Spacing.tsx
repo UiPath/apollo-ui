@@ -1,4 +1,7 @@
-import * as ApolloCore from "@uipath/apollo-react/core";
+import {
+	Padding as PaddingTokens,
+	Spacing as SpacingTokens,
+} from "@uipath/apollo-react/core";
 import {
 	PageContainer,
 	PageDescription,
@@ -23,18 +26,14 @@ import {
 } from "./Spacing.styles";
 
 export function Spacing() {
-	const spacingTokens = Object.entries(ApolloCore)
-		.filter(
-			([key, value]) => key.startsWith("Spacing") && typeof value === "string",
-		)
-		.map(([name, value]) => ({ name, value: value as unknown as string }))
+	// Use the Spacing namespace which contains only spacing tokens
+	const spacingTokens = Object.entries(SpacingTokens)
+		.map(([name, value]) => ({ name, value: value as string }))
 		.sort((a, b) => parseFloat(a.value) - parseFloat(b.value));
 
-	const paddingTokens = Object.entries(ApolloCore)
-		.filter(
-			([key, value]) => key.startsWith("Pad") && typeof value === "string",
-		)
-		.map(([name, value]) => ({ name, value: value as unknown as string }))
+	// Use the Padding namespace which contains only padding tokens
+	const paddingTokens = Object.entries(PaddingTokens)
+		.map(([name, value]) => ({ name, value: value as string }))
 		.sort((a, b) => parseFloat(a.value) - parseFloat(b.value));
 
 	const renderSpacingDemo = (token: { name: string; value: string }) => (

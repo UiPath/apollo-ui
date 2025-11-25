@@ -1,5 +1,95 @@
 import styled from "styled-components";
 
+// Search Input
+export const SearchInput = styled.input`
+  width: 100%;
+  padding: 16px 20px;
+  font-size: 16px;
+  border: 2px solid var(--color-border);
+  border-radius: 12px;
+  background: var(--color-background);
+  color: var(--color-foreground-emp);
+  margin-bottom: 32px;
+  transition: all 0.2s ease;
+
+  &:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(250, 70, 22, 0.1);
+  }
+
+  &::placeholder {
+    color: var(--color-foreground-de-emp);
+  }
+`;
+
+// Icon Browser Grid (dense layout like Lucide)
+export const IconBrowserGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(56px, 1fr));
+  gap: 8px;
+  margin-top: 24px;
+`;
+
+// Icon Browser Card (minimal card like Lucide)
+export const IconBrowserCard = styled.div`
+  background: var(--color-background);
+  border: 2px solid var(--color-border);
+  border-radius: 8px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  aspect-ratio: 1;
+
+  &:hover {
+    background: var(--color-background-hover);
+    border-color: var(--color-primary);
+
+    svg {
+      color: var(--color-primary);
+    }
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+
+  svg {
+    width: 20px;
+    height: 20px;
+    transition: color 0.2s ease;
+  }
+`;
+
+// Icon Preview Container (no longer needed - removed)
+export const IconPreview = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  color: var(--color-foreground-emp);
+
+  svg {
+    width: 24px;
+    height: 24px;
+  }
+`;
+
+// Icon Component Name (no longer needed - removed)
+export const IconComponentName = styled.div`
+  font-size: 12px;
+  color: var(--color-foreground-de-emp);
+  text-align: center;
+  word-break: break-word;
+  line-height: 1.3;
+  max-width: 100%;
+`;
+
+// Sizing Tokens Grid (larger cards for sizing demonstrations)
 export const Grid = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));

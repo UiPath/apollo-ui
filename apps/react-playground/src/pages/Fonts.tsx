@@ -1,4 +1,4 @@
-import * as ApolloCore from "@uipath/apollo-react/core";
+import { FontFamily, Typography } from "@uipath/apollo-react/core";
 
 import {
 	PageContainer,
@@ -17,11 +17,7 @@ import {
 	FamilyValue,
 	FontFamilyReference,
 	Grid,
-	PropertiesGrid,
 	PropertyBadges,
-	PropertyCard,
-	PropertyName,
-	PropertyValue,
 	SampleText,
 	TokenChip,
 	TokenChips,
@@ -41,35 +37,26 @@ type FontToken = {
 };
 
 export function Fonts() {
-	const fontTokens = Object.entries(ApolloCore)
-		.filter(
-			([key]) =>
-				(key.startsWith("Font") || key.startsWith("font")) &&
-				key !== "FontVariantToken" &&
-				key !== "fonts",
-		)
-		.map(([name, value]) => ({
-			name,
-			value: typeof value === "string" ? value : (value as FontToken),
-		}));
+	// Use the FontFamily namespace which contains only font family tokens (strings)
+	const fontFamilyTokens = Object.entries(FontFamily).map(([name, value]) => ({
+		name,
+		value: value as string,
+	}));
+
+	// Use the Typography namespace which contains only typography tokens (objects)
+	const typographyTokens = Object.entries(Typography).map(([name, value]) => ({
+		name,
+		value: value as FontToken,
+	}));
+
+	// Combine all font tokens for total count
+	const fontTokens = [...fontFamilyTokens, ...typographyTokens];
 
 	const realisticSamples = [
 		"Design systems enable teams to build consistent experiences",
 		"Typography creates hierarchy and improves readability",
 		"Choose fonts that reflect your brand personality",
 	];
-
-	// Separate typography objects from simple font properties
-	const typographyTokens = fontTokens.filter(
-		(t) => typeof t.value === "object",
-	);
-	const simpleFontTokens = fontTokens.filter(
-		(t) => typeof t.value === "string",
-	);
-
-	const otherFontProps = simpleFontTokens.filter(
-		(t) => !t.name.toLowerCase().includes("family"),
-	);
 
 	// Group all tokens by their font family value (deduplicate)
 	const tokensByFamily = fontTokens.reduce(
@@ -127,8 +114,8 @@ export function Fonts() {
 
 	// Sort typography tokens by font size for visual scale
 	const sortedTypography = [...typographyTokens].sort((a, b) => {
-		const sizeA = parseFloat((a.value as FontToken).fontSize || "0");
-		const sizeB = parseFloat((b.value as FontToken).fontSize || "0");
+		const sizeA = parseFloat(a.value.fontSize || "0");
+		const sizeB = parseFloat(b.value.fontSize || "0");
 		return sizeB - sizeA;
 	});
 
@@ -150,7 +137,7 @@ export function Fonts() {
 
 						<Grid>
 							{sortedTypography.map((token, index) => {
-								const fontStyle = token.value as FontToken;
+								const fontStyle = token.value;
 								const sampleIndex = index % realisticSamples.length;
 
 								return (
@@ -235,30 +222,6 @@ export function Fonts() {
 								</FamilyCard>
 							))}
 						</div>
-					</section>
-				)}
-
-				{/* Other Font Properties */}
-				{otherFontProps.length > 0 && (
-					<section>
-						<SectionHeader>Font Properties</SectionHeader>
-						<SectionDescription>
-							Additional typography settings and utilities
-						</SectionDescription>
-
-						<PropertiesGrid>
-							{otherFontProps.map((token) => {
-								const value = token.value as string;
-								const isLongValue = value.length > 50;
-
-								return (
-									<PropertyCard key={token.name}>
-										<PropertyName>{token.name}</PropertyName>
-										<PropertyValue $isLong={isLongValue}>{value}</PropertyValue>
-									</PropertyCard>
-								);
-							})}
-						</PropertiesGrid>
 					</section>
 				)}
 			</div>

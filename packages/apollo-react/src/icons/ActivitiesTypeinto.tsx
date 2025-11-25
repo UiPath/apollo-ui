@@ -1,0 +1,23 @@
+// Auto-generated from activities/activities-typeinto.svg
+import React from 'react';
+
+export interface ActivitiesTypeintoProps extends React.SVGProps<SVGSVGElement> {}
+
+export const ActivitiesTypeinto = React.forwardRef<SVGSVGElement, ActivitiesTypeintoProps>(
+  (props, ref) => (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+      <g clipPath="url(#clip0_4117_2282)">
+<path d="M15.5 4.5V7.5H10.5V19.5H7.5V7.5H2.5V4.5H15.5ZM21.5 9.5V12.5H18.5V19.5H15.5V12.5H12.5V9.5H21.5Z" fill="currentColor"/>
+</g>
+<defs>
+<clipPath id="clip0_4117_2282">
+<rect width="24" height="24" fill="white"/>
+</clipPath>
+</defs>
+    </svg>
+  )
+);
+
+ActivitiesTypeinto.displayName = 'ActivitiesTypeinto';
+
+export default ActivitiesTypeinto;

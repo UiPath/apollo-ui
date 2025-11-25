@@ -1,0 +1,19 @@
+// Auto-generated from archive.svg
+import React from 'react';
+
+export interface ArchiveProps extends React.SVGProps<SVGSVGElement> {}
+
+export const Archive = React.forwardRef<SVGSVGElement, ArchiveProps>(
+  (props, ref) => (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+      <path fillRule="evenodd" clipRule="evenodd" d="M20 10H4V20H20V10ZM2 8V22H22V8H2Z" fill="currentColor"/>
+<path fillRule="evenodd" clipRule="evenodd" d="M10 14V12H8V16H16V12H14V14H10Z" fill="currentColor"/>
+<path fillRule="evenodd" clipRule="evenodd" d="M20 7H4V5H20V7Z" fill="currentColor"/>
+<path fillRule="evenodd" clipRule="evenodd" d="M17 4H7V2H17V4Z" fill="currentColor"/>
+    </svg>
+  )
+);
+
+Archive.displayName = 'Archive';
+
+export default Archive;

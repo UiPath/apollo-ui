@@ -1,0 +1,16 @@
+// Auto-generated from thumb-down-pressed.svg
+import React from 'react';
+
+export interface ThumbDownPressedProps extends React.SVGProps<SVGSVGElement> {}
+
+export const ThumbDownPressed = React.forwardRef<SVGSVGElement, ThumbDownPressedProps>(
+  (props, ref) => (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+      <path d="M15 2C16.1 2 17 2.9 17 4V14C17 14.55 16.7802 15.0502 16.4102 15.4102L9.83008 22L8.76953 20.9502C8.49961 20.6802 8.33008 20.2996 8.33008 19.8896L8.36035 19.5703L9.30957 15H3C1.9 15 1 14.1 1 13V11C1 10.74 1.04965 10.4995 1.13965 10.2695L4.16016 3.21973C4.46023 2.49988 5.17011 2 6 2H15ZM23 14H19V2H23V14Z" fill="currentColor"/>
+    </svg>
+  )
+);
+
+ThumbDownPressed.displayName = 'ThumbDownPressed';
+
+export default ThumbDownPressed;

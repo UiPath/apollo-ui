@@ -1,0 +1,16 @@
+// Auto-generated from checklist.svg
+import React from 'react';
+
+export interface ChecklistProps extends React.SVGProps<SVGSVGElement> {}
+
+export const Checklist = React.forwardRef<SVGSVGElement, ChecklistProps>(
+  (props, ref) => (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+      <path d="M22 7.535H13V9.535H22V7.535ZM22 15.535H13V17.535H22V15.535ZM5.54 11.535L2 7.995L3.41 6.585L5.53 8.705L9.77 4.465L11.18 5.875L5.54 11.535ZM5.54 19.535L2 15.995L3.41 14.585L5.53 16.705L9.77 12.465L11.18 13.875L5.54 19.535Z" fill="currentColor"/>
+    </svg>
+  )
+);
+
+Checklist.displayName = 'Checklist';
+
+export default Checklist;

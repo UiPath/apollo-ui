@@ -1,0 +1,16 @@
+// Auto-generated from layout-distribute/horizontal.svg
+import React from 'react';
+
+export interface LayoutDistributeHorizontalProps extends React.SVGProps<SVGSVGElement> {}
+
+export const LayoutDistributeHorizontal = React.forwardRef<SVGSVGElement, LayoutDistributeHorizontalProps>(
+  (props, ref) => (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+      <path fillRule="evenodd" clipRule="evenodd" d="M4.5 21L4.5 3L3 3L3 21H4.5ZM21 21L21 3L19.5 3L19.5 21H21ZM18 7.5L18 16.5H15L15 7.5L18 7.5ZM9 16.5L9 7.5H6L6 16.5H9Z" fill="currentColor"/>
+    </svg>
+  )
+);
+
+LayoutDistributeHorizontal.displayName = 'LayoutDistributeHorizontal';
+
+export default LayoutDistributeHorizontal;

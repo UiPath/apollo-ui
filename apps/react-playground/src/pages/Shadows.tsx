@@ -1,4 +1,4 @@
-import * as ApolloCore from "@uipath/apollo-react/core";
+import { Shadow } from "@uipath/apollo-react/core";
 import {
 	PageContainer,
 	PageDescription,
@@ -14,11 +14,11 @@ import {
 } from "./Shadows.styles";
 
 export function Shadows() {
-	const shadows = Object.entries(ApolloCore)
-		.filter(
-			([key, value]) => key.startsWith("Shadow") && typeof value === "string",
-		)
-		.map(([name, value]) => ({ name, value: value as unknown as string }));
+	// Use the Shadow namespace which contains only shadow tokens
+	const shadows = Object.entries(Shadow).map(([name, value]) => ({
+		name,
+		value: value as string,
+	}));
 
 	return (
 		<PageContainer>

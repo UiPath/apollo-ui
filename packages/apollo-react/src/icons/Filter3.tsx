@@ -1,0 +1,16 @@
+// Auto-generated from filter/3.svg
+import React from 'react';
+
+export interface Filter3Props extends React.SVGProps<SVGSVGElement> {}
+
+export const Filter3 = React.forwardRef<SVGSVGElement, Filter3Props>(
+  (props, ref) => (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+      <path fillRule="evenodd" clipRule="evenodd" d="M7 1H21C22.1 1 23 1.9 23 3V17C23 18.1 22.1 19 21 19H7C5.9 19 5 18.1 5 17V3C5 1.9 5.9 1 7 1ZM7 17H21V3H7V17ZM3 5H1V21C1 22.1 1.9 23 3 23H19V21H3V5ZM17 11.5V13C17 14.11 16.1 15 15 15H11V13H15V11H13V9H15V7H11V5H15C16.1 5 17 5.89 17 7V8.5C17 9.33 16.33 10 15.5 10C16.33 10 17 10.67 17 11.5Z" fill="currentColor"/>
+    </svg>
+  )
+);
+
+Filter3.displayName = 'Filter3';
+
+export default Filter3;

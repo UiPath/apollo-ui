@@ -17,14 +17,11 @@
       "types": "./dist/tokens/index.d.ts"
     },
     "./icons": {
-      "import": "./dist/icons.js",
-      "require": "./dist/icons.cjs",
-      "types": "./dist/icons/index.d.ts"
+      "import": "./dist/icons/types.js",
+      "require": "./dist/icons/types.cjs",
+      "types": "./dist/icons/types.d.ts"
     },
-    "./icons/*": {
-      "import": "./dist/icons/svg/*.svg",
-      "types": "./dist/icons/svg/*.svg"
-    },
+    "./icons/svg/*": "./dist/icons/svg/*",
     "./fonts": {
       "import": "./dist/fonts.js",
       "require": "./dist/fonts.cjs",
@@ -36,9 +33,10 @@
     "dist"
   ],
   "scripts": {
-    "build": "pnpm run build:tokens && pnpm run build:icons && rslib build",
+    "build": "pnpm run build:tokens && pnpm run build:icons && rslib build && pnpm run clean:sourcemaps",
     "build:tokens": "node build-tokens.js",
     "build:icons": "tsx scripts/generate-icons.ts",
+    "clean:sourcemaps": "find dist -name '*.d.ts.map' -type f -delete",
     "dev": "rslib build --watch",
     "lint": "eslint src --ext .ts,.tsx --ignore-pattern 'src/tokens/**/*.js' --ignore-pattern 'src/tokens/_generated/**'",
     "test": "vitest --run --passWithNoTests",

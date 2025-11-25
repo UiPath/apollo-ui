@@ -1,0 +1,26 @@
+// Auto-generated from activities/category-api-icon-orchestrator-http-request.svg
+import React from 'react';
+
+export interface CategoryApiIconOrchestratorHttpRequestProps extends React.SVGProps<SVGSVGElement> {}
+
+export const CategoryApiIconOrchestratorHttpRequest = React.forwardRef<SVGSVGElement, CategoryApiIconOrchestratorHttpRequestProps>(
+  (props, ref) => (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+      <g clipPath="url(#clip0_4117_1399)">
+<path d="M11.059 2.99972L10.582 4.99972L3 5V19L7.249 18.9997L6.772 20.9997L3 21C1.89543 21 1 20.1046 1 19V5C1 3.89543 1.89543 3 3 3L11.059 2.99972ZM11.361 18.9997L10.885 20.9997H8.829L9.305 18.9997H11.361ZM15.461 18.9997L14.985 20.9997H12.929L13.405 18.9997H15.461ZM23 5V19C23 20.1046 22.1046 21 21 21L17.04 20.9997L17.517 18.9997L21 19V3.02559H21.3208C22.2729 3.17908 23 4.00462 23 5ZM15.171 2.99972L14.694 4.99972H12.638L13.114 2.99972H15.171ZM19.271 2.99972L18.794 4.99972H16.738L17.214 2.99972H19.271Z" fill="currentColor"/>
+<path d="M6.51758 11C7.34601 11 8.01758 10.3284 8.01758 9.5C8.01758 8.67157 7.34601 8 6.51758 8C5.68915 8 5.01758 8.67157 5.01758 9.5C5.01758 10.3284 5.68915 11 6.51758 11Z" fill="currentColor"/>
+<path d="M6.51758 16C7.34601 16 8.01758 15.3284 8.01758 14.5C8.01758 13.6716 7.34601 13 6.51758 13C5.68915 13 5.01758 13.6716 5.01758 14.5C5.01758 15.3284 5.68915 16 6.51758 16Z" fill="currentColor"/>
+<path d="M15.4088 2L10.6468 22H8.5918L13.3518 2H15.4088ZM19.5078 2L14.7468 22H12.6898L17.4518 2H19.5078Z" fill="currentColor"/>
+</g>
+<defs>
+<clipPath id="clip0_4117_1399">
+<rect width="24" height="24" fill="white"/>
+</clipPath>
+</defs>
+    </svg>
+  )
+);
+
+CategoryApiIconOrchestratorHttpRequest.displayName = 'CategoryApiIconOrchestratorHttpRequest';
+
+export default CategoryApiIconOrchestratorHttpRequest;
