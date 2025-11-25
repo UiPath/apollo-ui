@@ -1,5 +1,5 @@
 import type { Edge, Node, ReactFlowInstance } from "@uipath/uix/xyflow/react";
-import { PREVIEW_EDGE_ID, PREVIEW_NODE_ID } from "../constants";
+import { DEFAULT_NODE_SIZE, PREVIEW_EDGE_ID, PREVIEW_NODE_ID } from "../constants";
 import { getNewNodePosition } from "./NodeUtils";
 
 /**
@@ -12,7 +12,8 @@ export function createPreviewNode(
   reactFlowInstance: ReactFlowInstance,
   position?: { x: number; y: number },
   data?: Record<string, any>,
-  sourceHandleType?: "source" | "target"
+  sourceHandleType: "source" | "target" = "source",
+  previewNodeSize: { width: number; height: number } = { width: DEFAULT_NODE_SIZE, height: DEFAULT_NODE_SIZE }
 ): { node: Node; edge: Edge } | null {
   const sourceNode = reactFlowInstance.getNode(sourceNodeId);
   if (!sourceNode) {
@@ -20,25 +21,34 @@ export function createPreviewNode(
     return null;
   }
 
-  const nodePosition =
-    position ||
-    getNewNodePosition(
-      sourceNode,
-      { width: 96, height: 96 },
-      reactFlowInstance.getNodes().filter((n) => n.id !== PREVIEW_NODE_ID),
-      "right"
-    );
-
   // When dragging from a target handle, we should treat the preview as the source for the edge connection.
   const treatPreviewAsSource = sourceHandleType === "target";
 
+  const nodePosition = position
+    ? {
+        x: treatPreviewAsSource ? position.x - previewNodeSize.width : position.x,
+        y: position.y - previewNodeSize.height / 2,
+      }
+    : getNewNodePosition(
+        sourceNode,
+        previewNodeSize,
+        reactFlowInstance.getNodes().filter((n) => n.id !== PREVIEW_NODE_ID),
+        "right"
+      );
+
   // Create preview node
+  const finalData = { ...(data ?? {}) };
+  if (treatPreviewAsSource) {
+    // Only override custom data when true because the default is false.
+    finalData.showOutputHandle = true;
+  }
   const previewNode: Node = {
     id: PREVIEW_NODE_ID,
     type: "preview",
     position: nodePosition,
+    ...previewNodeSize,
     selected: true,
-    data: { ...(data ?? {}), showOutputHandle: treatPreviewAsSource },
+    data: finalData,
   };
 
   const previewSourceAndTargetData = treatPreviewAsSource

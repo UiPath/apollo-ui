@@ -3,10 +3,11 @@ import type { NodeProps } from "@uipath/uix/xyflow/react";
 import { Handle, Position } from "@uipath/uix/xyflow/react";
 import styled from "@emotion/styled";
 import { ApIcon } from "@uipath/portal-shell-react";
+import { DEFAULT_NODE_SIZE } from "../../constants";
 
-const PreviewContainer = styled.div<{ selected?: boolean }>`
-  width: 96px;
-  height: 96px;
+const PreviewContainer = styled.div<{ selected?: boolean; width?: number; height?: number }>`
+  width: ${(props) => props.width ?? DEFAULT_NODE_SIZE}px;
+  height: ${(props) => props.height ?? DEFAULT_NODE_SIZE}px;
   border-radius: 16px;
   background: var(--color-background-secondary);
   border: 2px dashed ${(props) => (props.selected ? "var(--color-selection-indicator)" : "var(--color-border-de-emp)")};
@@ -31,13 +32,15 @@ const getIcon = (iconName?: string): React.ReactElement => {
   return <ApIcon color="var(--color-foreground-de-emp)" name="more_horiz" size="40px" />;
 };
 
-export const AddNodePreview: React.FC<NodeProps> = ({ selected, data }) => {
+export const AddNodePreview: React.FC<NodeProps> = ({ selected, data, width, height }) => {
   const nodeData = data as AddNodePreviewData;
   const icon = getIcon(nodeData?.iconName);
 
   return (
     <>
-      <PreviewContainer selected={selected}>{icon}</PreviewContainer>
+      <PreviewContainer selected={selected} width={width} height={height}>
+        {icon}
+      </PreviewContainer>
 
       <Handle
         type="target"

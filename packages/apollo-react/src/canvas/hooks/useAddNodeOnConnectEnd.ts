@@ -11,17 +11,42 @@ export function useAddNodeOnConnectEnd() {
   const reactFlowInstance = useReactFlow();
 
   return useCallback<OnConnectEnd>(
-    (_event, connectionState) => {
+    (event, connectionState) => {
       if (
         // Check for required data.
-        !(reactFlowInstance && connectionState.fromNode && connectionState.fromHandle && connectionState.to) ||
+        !(reactFlowInstance && connectionState.fromNode && connectionState.fromHandle) ||
         // Should not add preview if connecting to an existing node/handle.
         connectionState.toHandle
       ) {
         return;
       }
+      // Calculate the position in flow coordinates
+      let clientX: number;
+      let clientY: number;
 
-      const flowDropPosition = reactFlowInstance.screenToFlowPosition(connectionState.to);
+      if ("clientX" in event) {
+        clientX = event.clientX;
+        clientY = event.clientY;
+      } else {
+        const touchEvent = event as TouchEvent;
+        if (touchEvent.changedTouches?.[0]) {
+          const touch = touchEvent.changedTouches[0];
+          clientX = touch.clientX;
+          clientY = touch.clientY;
+        } else if (touchEvent.touches?.[0]) {
+          const touch = touchEvent.touches[0];
+          clientX = touch.clientX;
+          clientY = touch.clientY;
+        } else {
+          return;
+        }
+      }
+
+      const flowDropPosition = reactFlowInstance.screenToFlowPosition({
+        x: clientX,
+        y: clientY,
+      });
+
       const preview = createPreviewNode(
         connectionState.fromNode.id,
         connectionState.fromHandle.id ?? "output",

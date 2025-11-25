@@ -37,6 +37,16 @@ describe("useAddNodeOnConnectEnd", () => {
     internals: ({} as Pick<InternalNodeBase, "internals">).internals,
   };
 
+  const mockMouseEvent = { clientX: 200, clientY: 200 } as MouseEvent;
+  const mockTouchEventWithTouches = {
+    touches: [{ clientX: 200, clientY: 200 }],
+    changedTouches: [],
+  } as unknown as TouchEvent;
+  const mockTouchEventWithChangedTouches = {
+    touches: [],
+    changedTouches: [{ clientX: 200, clientY: 200 }],
+  } as unknown as TouchEvent;
+
   const connectionStateBase: FinalConnectionState = {
     from: { x: 0, y: 0 },
     fromNode: mockFromNode,
@@ -82,7 +92,7 @@ describe("useAddNodeOnConnectEnd", () => {
 
     const { result } = renderHook(() => useAddNodeOnConnectEnd());
 
-    result.current({} as MouseEvent, connectionStateBase);
+    result.current(mockMouseEvent, connectionStateBase);
 
     expect(mockReactFlowInstance.screenToFlowPosition).toHaveBeenCalledWith({ x: 200, y: 200 });
     expect(mockCreatePreviewNode).toHaveBeenCalledWith(
@@ -112,7 +122,7 @@ describe("useAddNodeOnConnectEnd", () => {
       fromHandle: { type: "source", nodeId: "node-1", id: undefined, x: 10, y: 10, width: 10, height: 10, position: Position.Right },
     };
 
-    result.current({} as MouseEvent, connectionState);
+    result.current(mockTouchEventWithTouches, connectionState);
 
     expect(mockCreatePreviewNode).toHaveBeenCalledWith("node-1", "output", mockReactFlowInstance, expect.any(Object), undefined, "source");
   });
@@ -188,7 +198,7 @@ describe("useAddNodeOnConnectEnd", () => {
 
     const { result } = renderHook(() => useAddNodeOnConnectEnd());
 
-    result.current({} as MouseEvent, connectionStateBase);
+    result.current(mockTouchEventWithChangedTouches, connectionStateBase);
 
     expect(mockCreatePreviewNode).toHaveBeenCalled();
     expect(mockApplyPreviewToReactFlow).not.toHaveBeenCalled();
