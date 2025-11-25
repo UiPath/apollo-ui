@@ -1,0 +1,31 @@
+import { Badge } from '@/registry/badge/badge'
+
+# Badge
+
+Displays a badge or a component that looks like a badge.
+
+<div className="p-4 border rounded-lg mt-4 flex flex-wrap gap-2">
+  <Badge>Default</Badge>
+  <Badge variant="secondary">Secondary</Badge>
+  <Badge variant="destructive">Destructive</Badge>
+  <Badge variant="outline">Outline</Badge>
+</div>
+
+## Installation
+
+```bash
+npx shadcn@latest add https://apollo-vertex.vercel.app/r/badge.json
+```
+
+## Usage
+
+```tsx
+import { Badge } from "@/components/ui/badge"
+```
+
+```tsx
+<Badge>Badge</Badge>
+<Badge variant="secondary">Secondary</Badge>
+<Badge variant="destructive">Destructive</Badge>
+<Badge variant="outline">Outline</Badge>
+```

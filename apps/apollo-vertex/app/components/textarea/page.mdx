@@ -1,0 +1,50 @@
+import { Textarea } from '@/registry/textarea/textarea'
+import { Label } from '@/registry/label/label'
+import { Button } from '@/registry/button/button'
+
+# Textarea
+
+Displays a form textarea or a component that looks like a textarea.
+
+<div className="p-4 border rounded-lg mt-4 space-y-4">
+  <Textarea placeholder="Type your message here." />
+  
+  <Textarea placeholder="Disabled textarea" disabled />
+</div>
+
+## With Label
+
+<div className="p-4 border rounded-lg mt-4">
+  <div className="grid w-full gap-1.5">
+    <Label htmlFor="message">Your message</Label>
+    <Textarea placeholder="Type your message here." id="message" />
+    <p className="text-sm text-muted-foreground">
+      Your message will be copied to the support team.
+    </p>
+  </div>
+</div>
+
+## With Button
+
+<div className="p-4 border rounded-lg mt-4">
+  <div className="grid w-full gap-2">
+    <Textarea placeholder="Type your message here." />
+    <Button>Send message</Button>
+  </div>
+</div>
+
+## Installation
+
+```bash
+npx shadcn@latest add https://apollo-vertex.vercel.app/r/textarea.json
+```
+
+## Usage
+
+```tsx
+import { Textarea } from "@/components/ui/textarea"
+```
+
+```tsx
+<Textarea placeholder="Type your message here." />
+```

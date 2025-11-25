@@ -1,0 +1,49 @@
+# Chart
+
+Beautiful charts using Recharts with consistent theming and styling.
+
+<div className="p-4 border rounded-lg mt-4">
+  <p className="text-sm text-muted-foreground">
+    Charts require client-side rendering. See the usage examples below for implementation details.
+  </p>
+</div>
+
+## Installation
+
+```bash
+npx shadcn@latest add https://apollo-vertex.vercel.app/r/chart.json
+```
+
+## Usage
+
+```tsx
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
+import { Bar, BarChart } from "recharts"
+```
+
+```tsx
+const chartConfig = {
+  desktop: {
+    label: "Desktop",
+    color: "hsl(var(--chart-1))",
+  },
+}
+
+<ChartContainer config={chartConfig}>
+  <BarChart data={data}>
+    <Bar dataKey="desktop" fill="var(--color-desktop)" />
+    <ChartTooltip content={<ChartTooltipContent />} />
+  </BarChart>
+</ChartContainer>
+```
+
+## Chart Types
+
+The chart component supports multiple chart types from Recharts:
+
+- **Bar Charts** - Vertical and horizontal bar charts
+- **Line Charts** - Single and multiple line charts
+- **Area Charts** - Filled area charts with gradients
+- **Pie Charts** - Standard and donut pie charts
+- **Radar Charts** - Spider/radar charts
+- **Radial Charts** - Radial bar charts

@@ -1,0 +1,42 @@
+import { AspectRatio } from '@/registry/aspect-ratio/aspect-ratio'
+
+# Aspect Ratio
+
+Displays content within a desired ratio.
+
+<div className="p-4 border rounded-lg mt-4">
+  <div className="w-[450px]">
+    <AspectRatio ratio={16 / 9} className="bg-muted rounded-lg overflow-hidden">
+      <img
+        src="https://images.unsplash.com/photo-1588345921523-c2dcdb7f1dcd?w=800&dpr=2&q=80"
+        alt="Photo by Drew Beamer"
+        className="h-full w-full object-cover"
+      />
+    </AspectRatio>
+  </div>
+</div>
+
+## Installation
+
+```bash
+npx shadcn@latest add https://apollo-vertex.vercel.app/r/aspect-ratio.json
+```
+
+## Usage
+
+```tsx
+import { AspectRatio } from "@/components/ui/aspect-ratio"
+```
+
+```tsx
+<AspectRatio ratio={16 / 9}>
+  <img src="..." alt="Image" className="object-cover" />
+</AspectRatio>
+```
+
+## Common Ratios
+
+- **16:9** - Standard video format
+- **4:3** - Traditional TV format
+- **1:1** - Square format
+- **21:9** - Ultra-wide format

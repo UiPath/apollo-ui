@@ -1,0 +1,60 @@
+# Sidebar
+
+A composable, themeable and customizable sidebar component.
+
+<div className="p-4 border rounded-lg mt-4">
+  <p className="text-sm text-muted-foreground">
+    The Sidebar component is a complex layout component. See the usage example below for implementation details.
+  </p>
+</div>
+
+## Installation
+
+```bash
+npx shadcn@latest add https://apollo-vertex.vercel.app/r/sidebar.json
+```
+
+## Usage
+
+```tsx
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarHeader,
+  SidebarProvider,
+} from "@/components/ui/sidebar"
+```
+
+```tsx
+<SidebarProvider>
+  <Sidebar>
+    <SidebarHeader />
+    <SidebarContent>
+      <SidebarGroup />
+      <SidebarGroup />
+    </SidebarContent>
+    <SidebarFooter />
+  </Sidebar>
+</SidebarProvider>
+```
+
+## Features
+
+- **Collapsible** - Can collapse to icons only
+- **Composable** - Build your own sidebar structure
+- **Themeable** - Supports dark mode and custom themes
+- **Responsive** - Works well on mobile and desktop
+- **Keyboard accessible** - Full keyboard navigation support
+
+## Components
+
+- `SidebarProvider` - Provides context for sidebar state
+- `Sidebar` - The main sidebar container
+- `SidebarHeader` - Header section of the sidebar
+- `SidebarContent` - Main content area
+- `SidebarFooter` - Footer section
+- `SidebarGroup` - Groups related items
+- `SidebarMenu` - Navigation menu
+- `SidebarMenuItem` - Individual menu items

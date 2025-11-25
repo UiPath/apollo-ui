@@ -1,0 +1,52 @@
+import { Field, FieldContent, FieldDescription, FieldLabel } from '@/registry/field/field'
+import { Input } from '@/registry/input/input'
+import { Textarea } from '@/registry/textarea/textarea'
+
+# Field
+
+A form field component with label, input, and description.
+
+<div className="p-4 border rounded-lg mt-4 space-y-6">
+  <Field>
+    <FieldLabel>Email</FieldLabel>
+    <FieldContent>
+      <Input type="email" placeholder="Enter your email" />
+      <FieldDescription>We'll never share your email.</FieldDescription>
+    </FieldContent>
+  </Field>
+
+  <Field>
+    <FieldLabel>Bio</FieldLabel>
+    <FieldContent>
+      <Textarea placeholder="Tell us about yourself" />
+      <FieldDescription>Max 500 characters.</FieldDescription>
+    </FieldContent>
+  </Field>
+</div>
+
+## Installation
+
+```bash
+npx shadcn@latest add https://apollo-vertex.vercel.app/r/field.json
+```
+
+## Usage
+
+```tsx
+import {
+  Field,
+  FieldContent,
+  FieldDescription,
+  FieldLabel,
+} from "@/components/ui/field"
+```
+
+```tsx
+<Field>
+  <FieldLabel>Email</FieldLabel>
+  <FieldContent>
+    <Input type="email" placeholder="Enter your email" />
+    <FieldDescription>We'll never share your email.</FieldDescription>
+  </FieldContent>
+</Field>
+```

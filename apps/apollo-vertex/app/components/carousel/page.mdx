@@ -1,0 +1,56 @@
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/registry/carousel/carousel'
+import { Card, CardContent } from '@/registry/card/card'
+
+# Carousel
+
+A carousel with motion and swipe built using Embla.
+
+<div className="p-4 border rounded-lg mt-4 flex justify-center">
+  <Carousel className="w-full max-w-xs">
+    <CarouselContent>
+      {[1, 2, 3, 4, 5].map((num) => (
+        <CarouselItem key={num}>
+          <div className="p-1">
+            <Card>
+              <CardContent className="flex aspect-square items-center justify-center p-6">
+                <span className="text-4xl font-semibold">{num}</span>
+              </CardContent>
+            </Card>
+          </div>
+        </CarouselItem>
+      ))}
+    </CarouselContent>
+    <CarouselPrevious />
+    <CarouselNext />
+  </Carousel>
+</div>
+
+## Installation
+
+```bash
+npx shadcn@latest add https://apollo-vertex.vercel.app/r/carousel.json
+```
+
+## Usage
+
+```tsx
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel"
+```
+
+```tsx
+<Carousel>
+  <CarouselContent>
+    <CarouselItem>...</CarouselItem>
+    <CarouselItem>...</CarouselItem>
+    <CarouselItem>...</CarouselItem>
+  </CarouselContent>
+  <CarouselPrevious />
+  <CarouselNext />
+</Carousel>
+```

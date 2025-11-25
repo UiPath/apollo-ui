@@ -1,0 +1,60 @@
+import { Item, ItemContent, ItemDescription, ItemMedia, ItemTitle } from '@/registry/item/item'
+import { Avatar, AvatarFallback, AvatarImage } from '@/registry/avatar/avatar'
+import { Mail, Settings, User } from 'lucide-react'
+
+# Item
+
+A versatile list item component for displaying content in lists.
+
+<div className="p-4 border rounded-lg mt-4 space-y-2 max-w-sm">
+  <Item>
+    <ItemMedia>
+      <Avatar>
+        <AvatarImage src="https://github.com/shadcn.png" />
+        <AvatarFallback>JD</AvatarFallback>
+      </Avatar>
+    </ItemMedia>
+    <ItemContent>
+      <ItemTitle>John Doe</ItemTitle>
+      <ItemDescription>Software Engineer</ItemDescription>
+    </ItemContent>
+  </Item>
+
+  <Item>
+    <ItemMedia>
+      <Mail className="h-5 w-5" />
+    </ItemMedia>
+    <ItemContent>
+      <ItemTitle>Inbox</ItemTitle>
+      <ItemDescription>3 new messages</ItemDescription>
+    </ItemContent>
+  </Item>
+
+  <Item>
+    <ItemMedia>
+      <Settings className="h-5 w-5" />
+    </ItemMedia>
+    <ItemContent>
+      <ItemTitle>Settings</ItemTitle>
+      <ItemDescription>Manage your preferences</ItemDescription>
+    </ItemContent>
+  </Item>
+</div>
+
+## Installation
+
+```bash
+npx shadcn@latest add https://apollo-vertex.vercel.app/r/item.json
+```
+
+## Usage
+
+```tsx
+import {
+  Item,
+  ItemContent,
+  ItemDescription,
+  ItemMedia,
+  ItemTitle,
+} from "@/components/ui/item"
+```

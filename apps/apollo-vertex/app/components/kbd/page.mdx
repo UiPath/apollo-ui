@@ -1,0 +1,51 @@
+import { Kbd } from '@/registry/kbd/kbd'
+import { Button } from '@/registry/button/button'
+
+# Kbd
+
+The keyboard key component is used to display keyboard shortcuts.
+
+<div className="p-4 border rounded-lg mt-4 space-y-4">
+  <div className="flex items-center gap-1">
+    <Kbd>⌘</Kbd>
+    <Kbd>K</Kbd>
+  </div>
+
+  <div className="flex items-center gap-1">
+    <Kbd>Ctrl</Kbd>
+    <span className="text-muted-foreground">+</span>
+    <Kbd>C</Kbd>
+  </div>
+
+  <div className="flex items-center gap-1">
+    <Kbd>⇧</Kbd>
+    <Kbd>⌘</Kbd>
+    <Kbd>P</Kbd>
+  </div>
+</div>
+
+## In Button
+
+<div className="p-4 border rounded-lg mt-4">
+  <Button variant="outline" className="gap-2">
+    Search
+    <Kbd>⌘K</Kbd>
+  </Button>
+</div>
+
+## Installation
+
+```bash
+npx shadcn@latest add https://apollo-vertex.vercel.app/r/kbd.json
+```
+
+## Usage
+
+```tsx
+import { Kbd } from "@/components/ui/kbd"
+```
+
+```tsx
+<Kbd>⌘</Kbd>
+<Kbd>K</Kbd>
+```

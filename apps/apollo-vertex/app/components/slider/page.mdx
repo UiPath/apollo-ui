@@ -1,0 +1,36 @@
+import { Slider } from '@/registry/slider/slider'
+import { Label } from '@/registry/label/label'
+
+# Slider
+
+An input where the user selects a value from within a given range.
+
+<div className="p-4 border rounded-lg mt-4 space-y-6">
+  <Slider defaultValue={[50]} max={100} step={1} className="w-[60%]" />
+  
+  <Slider defaultValue={[25, 75]} max={100} step={1} className="w-[60%]" />
+  
+  <div className="space-y-2 w-[60%]">
+    <div className="flex justify-between text-sm">
+      <Label>Volume</Label>
+      <span className="text-muted-foreground">50%</span>
+    </div>
+    <Slider defaultValue={[50]} max={100} step={1} />
+  </div>
+</div>
+
+## Installation
+
+```bash
+npx shadcn@latest add https://apollo-vertex.vercel.app/r/slider.json
+```
+
+## Usage
+
+```tsx
+import { Slider } from "@/components/ui/slider"
+```
+
+```tsx
+<Slider defaultValue={[50]} max={100} step={1} />
+```
