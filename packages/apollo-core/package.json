@@ -19,7 +19,11 @@
     "./icons": {
       "import": "./dist/icons.js",
       "require": "./dist/icons.cjs",
-      "types": "./dist/icons.d.ts"
+      "types": "./dist/icons/index.d.ts"
+    },
+    "./icons/*": {
+      "import": "./dist/icons/svg/*.svg",
+      "types": "./dist/icons/svg/*.svg"
     },
     "./fonts": {
       "import": "./dist/fonts.js",
@@ -32,8 +36,9 @@
     "dist"
   ],
   "scripts": {
-    "build": "pnpm run build:tokens && rslib build",
+    "build": "pnpm run build:tokens && pnpm run build:icons && rslib build",
     "build:tokens": "node build-tokens.js",
+    "build:icons": "tsx scripts/generate-icons.ts",
     "dev": "rslib build --watch",
     "lint": "eslint src --ext .ts,.tsx --ignore-pattern 'src/tokens/**/*.js' --ignore-pattern 'src/tokens/_generated/**'",
     "test": "vitest --run --passWithNoTests",
@@ -50,6 +55,7 @@
     "@rslib/core": "^0.17.0",
     "lodash": "^4.17.21",
     "style-dictionary": "2.8.3",
+    "svg-to-ts": "^12.0.0",
     "typescript": "^5.9.3",
     "vitest": "^4.0.5"
   }
