@@ -4,7 +4,7 @@ import { RadioGroup, RadioGroupItem } from "./radio-group";
 import { Row } from "./layout";
 
 const meta: Meta<typeof RadioGroup> = {
-  title: "Design System/Forms/Radio Group",
+  title: "Design System/Core/Radio Group",
   component: RadioGroup,
   tags: ["autodocs"],
 };

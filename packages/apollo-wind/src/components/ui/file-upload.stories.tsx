@@ -4,7 +4,7 @@ import { FileUpload } from "./file-upload";
 import { Label } from "./label";
 
 const meta = {
-  title: "Design System/Forms/File Upload",
+  title: "Design System/Core/File Upload",
   component: FileUpload,
   parameters: {
     layout: "centered",

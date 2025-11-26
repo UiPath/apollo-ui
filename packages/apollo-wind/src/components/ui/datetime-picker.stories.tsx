@@ -3,7 +3,7 @@ import { useState } from "react";
 import { DateTimePicker } from "./datetime-picker";
 
 const meta = {
-  title: "Design System/Forms/DateTime Picker",
+  title: "Design System/Core/DateTime Picker",
   component: DateTimePicker,
   parameters: {
     layout: "centered",

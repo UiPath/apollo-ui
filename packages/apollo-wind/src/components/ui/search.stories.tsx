@@ -3,7 +3,7 @@ import * as React from "react";
 import { Search, SearchWithSuggestions } from "./search";
 
 const meta = {
-  title: "Design System/Forms/Search",
+  title: "Design System/Core/Search",
   component: Search,
   parameters: {
     layout: "centered",

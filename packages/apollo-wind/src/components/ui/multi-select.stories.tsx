@@ -3,7 +3,7 @@ import * as React from "react";
 import { MultiSelect } from "./multi-select";
 
 const meta = {
-  title: "Design System/Forms/Multi Select",
+  title: "Design System/Core/Multi Select",
   component: MultiSelect,
   parameters: {
     layout: "centered",
