@@ -3,7 +3,7 @@ import { Label } from "./label";
 import { Textarea } from "./textarea";
 
 const meta = {
-  title: "Design System/Forms/Textarea",
+  title: "Design System/Core/Textarea",
   component: Textarea,
   parameters: {
     layout: "centered",

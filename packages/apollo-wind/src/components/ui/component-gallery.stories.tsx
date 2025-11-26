@@ -28,11 +28,29 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+enum Category {
+  Core = "Core",
+  DataDisplay = "Data Display",
+  Layout = "Layout",
+  Navigation = "Navigation",
+  Overlays = "Overlays",
+  Feedback = "Feedback",
+}
+
+const CATEGORY_ORDER: Category[] = [
+  Category.Core,
+  Category.DataDisplay,
+  Category.Layout,
+  Category.Navigation,
+  Category.Overlays,
+  Category.Feedback,
+];
+
 interface ComponentInfo {
   name: string;
   description: string;
   storyPath: string;
-  category: string;
+  category: Category;
   preview: React.ReactNode;
 }
 
@@ -40,8 +58,8 @@ const components: ComponentInfo[] = [
   {
     name: "Accordion",
     description: "Interactive expandable sections",
-    storyPath: "design-system-data-display-accordion--default",
-    category: "Data Display",
+    storyPath: "design-system-data-display-accordion--docs",
+    category: Category.DataDisplay,
     preview: (
       <Accordion type="single" collapsible className="w-full">
         <AccordionItem value="item-1">
@@ -54,8 +72,8 @@ const components: ComponentInfo[] = [
   {
     name: "Alert",
     description: "Displays a callout message",
-    storyPath: "design-system-feedback-alert--default",
-    category: "Feedback",
+    storyPath: "design-system-feedback-alert--docs",
+    category: Category.Feedback,
     preview: (
       <Alert>
         <AlertTitle>Alert</AlertTitle>
@@ -66,15 +84,15 @@ const components: ComponentInfo[] = [
   {
     name: "Alert Dialog",
     description: "Modal dialog for important actions",
-    storyPath: "design-system-overlays-alert-dialog--default",
-    category: "Overlays",
+    storyPath: "design-system-overlays-alert-dialog--docs",
+    category: Category.Overlays,
     preview: <Button variant="outline">Show Dialog</Button>,
   },
   {
     name: "Aspect Ratio",
     description: "Content with desired ratio",
-    storyPath: "design-system-layout-aspect-ratio--default",
-    category: "Layout",
+    storyPath: "design-system-layout-aspect-ratio--docs",
+    category: Category.Layout,
     preview: (
       <div className="w-full aspect-video bg-muted rounded flex items-center justify-center text-xs">
         16:9
@@ -84,8 +102,8 @@ const components: ComponentInfo[] = [
   {
     name: "Badge",
     description: "Small status indicators",
-    storyPath: "design-system-data-display-badge--default",
-    category: "Data Display",
+    storyPath: "design-system-data-display-badge--docs",
+    category: Category.DataDisplay,
     preview: (
       <div className="flex gap-2 flex-wrap">
         <Badge>Badge</Badge>
@@ -96,8 +114,8 @@ const components: ComponentInfo[] = [
   {
     name: "Breadcrumb",
     description: "Navigation hierarchy path",
-    storyPath: "design-system-navigation-breadcrumb--default",
-    category: "Navigation",
+    storyPath: "design-system-navigation-breadcrumb--docs",
+    category: Category.Navigation,
     preview: (
       <Breadcrumb>
         <BreadcrumbList>
@@ -114,8 +132,8 @@ const components: ComponentInfo[] = [
   {
     name: "Button",
     description: "Clickable button element",
-    storyPath: "design-system-core-button--default",
-    category: "Core",
+    storyPath: "design-system-core-button--docs",
+    category: Category.Core,
     preview: (
       <div className="flex gap-2">
         <Button size="sm">Click me</Button>
@@ -128,15 +146,15 @@ const components: ComponentInfo[] = [
   {
     name: "Calendar",
     description: "Date selection calendar",
-    storyPath: "design-system-data-display-calendar--default",
-    category: "Data Display",
+    storyPath: "design-system-data-display-calendar--docs",
+    category: Category.DataDisplay,
     preview: <Calendar mode="single" className="scale-75 origin-top-left" />,
   },
   {
     name: "Card",
     description: "Container with content sections",
-    storyPath: "design-system-data-display-card--default",
-    category: "Data Display",
+    storyPath: "design-system-data-display-card--docs",
+    category: Category.DataDisplay,
     preview: (
       <Card className="w-full">
         <CardHeader className="p-4">
@@ -149,8 +167,8 @@ const components: ComponentInfo[] = [
   {
     name: "Checkbox",
     description: "Toggle checkbox input",
-    storyPath: "design-system-forms-checkbox--default",
-    category: "Forms",
+    storyPath: "design-system-core-checkbox--docs",
+    category: Category.Core,
     preview: (
       <div className="flex items-center gap-2">
         <Checkbox id="terms" />
@@ -163,8 +181,8 @@ const components: ComponentInfo[] = [
   {
     name: "Collapsible",
     description: "Expandable content panel",
-    storyPath: "design-system-data-display-collapsible--default",
-    category: "Data Display",
+    storyPath: "design-system-data-display-collapsible--docs",
+    category: Category.DataDisplay,
     preview: (
       <Button variant="outline" size="sm">
         Toggle
@@ -174,8 +192,8 @@ const components: ComponentInfo[] = [
   {
     name: "Combobox",
     description: "Searchable select input",
-    storyPath: "design-system-forms-combobox--default",
-    category: "Forms",
+    storyPath: "design-system-core-combobox--docs",
+    category: Category.Core,
     preview: (
       <Button variant="outline" size="sm">
         Open Combobox
@@ -185,8 +203,8 @@ const components: ComponentInfo[] = [
   {
     name: "Command",
     description: "Command palette menu",
-    storyPath: "design-system-navigation-command--default",
-    category: "Navigation",
+    storyPath: "design-system-navigation-command--docs",
+    category: Category.Navigation,
     preview: (
       <Button variant="outline" size="sm">
         Command Menu
@@ -196,15 +214,15 @@ const components: ComponentInfo[] = [
   {
     name: "Context Menu",
     description: "Right-click menu",
-    storyPath: "design-system-overlays-context-menu--default",
-    category: "Overlays",
+    storyPath: "design-system-overlays-context-menu--docs",
+    category: Category.Overlays,
     preview: <div className="border rounded p-2 text-xs text-center">Right click me</div>,
   },
   {
     name: "Data Table",
     description: "Powerful data table",
-    storyPath: "design-system-data-display-data-table--default",
-    category: "Data Display",
+    storyPath: "design-system-data-display-data-table--docs",
+    category: Category.DataDisplay,
     preview: (
       <Table>
         <TableHeader>
@@ -225,8 +243,8 @@ const components: ComponentInfo[] = [
   {
     name: "Date Picker",
     description: "Date selection input",
-    storyPath: "design-system-forms-date-picker--default",
-    category: "Forms",
+    storyPath: "design-system-core-date-picker--docs",
+    category: Category.Core,
     preview: (
       <Button variant="outline" size="sm">
         Pick a date
@@ -236,8 +254,8 @@ const components: ComponentInfo[] = [
   {
     name: "DateTime Picker",
     description: "Date and time input",
-    storyPath: "design-system-forms-datetime-picker--default",
-    category: "Forms",
+    storyPath: "design-system-core-datetime-picker--docs",
+    category: Category.Core,
     preview: (
       <Button variant="outline" size="sm">
         Pick date & time
@@ -247,8 +265,8 @@ const components: ComponentInfo[] = [
   {
     name: "Dialog",
     description: "Modal dialog window",
-    storyPath: "design-system-overlays-dialog--default",
-    category: "Overlays",
+    storyPath: "design-system-overlays-dialog--docs",
+    category: Category.Overlays,
     preview: (
       <Button variant="outline" size="sm">
         Open Dialog
@@ -258,8 +276,8 @@ const components: ComponentInfo[] = [
   {
     name: "Drawer",
     description: "Sliding side panel",
-    storyPath: "design-system-overlays-drawer--default",
-    category: "Overlays",
+    storyPath: "design-system-overlays-drawer--docs",
+    category: Category.Overlays,
     preview: (
       <Button variant="outline" size="sm">
         Open Drawer
@@ -269,8 +287,8 @@ const components: ComponentInfo[] = [
   {
     name: "Dropdown Menu",
     description: "Dropdown menu list",
-    storyPath: "design-system-overlays-dropdown-menu--default",
-    category: "Overlays",
+    storyPath: "design-system-overlays-dropdown-menu--docs",
+    category: Category.Overlays,
     preview: (
       <Button variant="outline" size="sm">
         Open Menu
@@ -280,15 +298,15 @@ const components: ComponentInfo[] = [
   {
     name: "Empty State",
     description: "No content placeholder",
-    storyPath: "design-system-feedback-empty-state--default",
-    category: "Feedback",
+    storyPath: "design-system-feedback-empty-state--docs",
+    category: Category.Feedback,
     preview: <div className="text-center p-4 text-muted-foreground text-xs">No items found</div>,
   },
   {
     name: "File Upload",
     description: "File upload with drag & drop",
-    storyPath: "design-system-forms-file-upload--default",
-    category: "Forms",
+    storyPath: "design-system-core-file-upload--docs",
+    category: Category.Core,
     preview: (
       <div className="border-2 border-dashed rounded p-4 text-xs text-center">Drop files here</div>
     ),
@@ -296,8 +314,8 @@ const components: ComponentInfo[] = [
   {
     name: "Grid",
     description: "Responsive grid layout",
-    storyPath: "design-system-layout-grid--default",
-    category: "Layout",
+    storyPath: "design-system-layout-grid--docs",
+    category: Category.Layout,
     preview: (
       <div className="grid grid-cols-2 gap-2">
         <div className="h-6 bg-muted rounded"></div>
@@ -308,8 +326,8 @@ const components: ComponentInfo[] = [
   {
     name: "Row",
     description: "Horizontal flex layout",
-    storyPath: "design-system-layout-row--default",
-    category: "Layout",
+    storyPath: "design-system-layout-row--docs",
+    category: Category.Layout,
     preview: (
       <div className="flex gap-2">
         <div className="h-6 w-12 bg-muted rounded"></div>
@@ -320,8 +338,8 @@ const components: ComponentInfo[] = [
   {
     name: "Column",
     description: "Vertical flex layout",
-    storyPath: "design-system-layout-column--default",
-    category: "Layout",
+    storyPath: "design-system-layout-column--docs",
+    category: Category.Layout,
     preview: (
       <div className="flex flex-col gap-2">
         <div className="h-4 w-full bg-muted rounded"></div>
@@ -332,29 +350,29 @@ const components: ComponentInfo[] = [
   {
     name: "Hover Card",
     description: "Hover preview card",
-    storyPath: "design-system-overlays-hover-card--default",
-    category: "Overlays",
+    storyPath: "design-system-overlays-hover-card--docs",
+    category: Category.Overlays,
     preview: <span className="underline text-xs">Hover me</span>,
   },
   {
     name: "Input",
     description: "Text input field",
-    storyPath: "design-system-forms-input--default",
-    category: "Forms",
+    storyPath: "design-system-core-input--docs",
+    category: Category.Core,
     preview: <Input placeholder="Type here..." className="h-8 text-xs" />,
   },
   {
     name: "Label",
     description: "Form field label",
-    storyPath: "design-system-forms-label--default",
-    category: "Forms",
+    storyPath: "design-system-core-label--docs",
+    category: Category.Core,
     preview: <label className="text-xs font-medium">Label</label>,
   },
   {
     name: "Menubar",
     description: "Desktop-style menu bar",
-    storyPath: "design-system-navigation-menubar--default",
-    category: "Navigation",
+    storyPath: "design-system-navigation-menubar--docs",
+    category: Category.Navigation,
     preview: (
       <div className="flex gap-2">
         <Button variant="ghost" size="sm">
@@ -369,8 +387,8 @@ const components: ComponentInfo[] = [
   {
     name: "Multi Select",
     description: "Multiple selection input",
-    storyPath: "design-system-forms-multi-select--default",
-    category: "Forms",
+    storyPath: "design-system-core-multi-select--docs",
+    category: Category.Core,
     preview: (
       <Button variant="outline" size="sm">
         Select items
@@ -380,8 +398,8 @@ const components: ComponentInfo[] = [
   {
     name: "Navigation Menu",
     description: "Navigation menu with dropdowns",
-    storyPath: "design-system-navigation-navigation-menu--default",
-    category: "Navigation",
+    storyPath: "design-system-navigation-navigation-menu--docs",
+    category: Category.Navigation,
     preview: (
       <div className="flex gap-2">
         <Button variant="ghost" size="sm">
@@ -396,8 +414,8 @@ const components: ComponentInfo[] = [
   {
     name: "Pagination",
     description: "Page navigation",
-    storyPath: "design-system-navigation-pagination--default",
-    category: "Navigation",
+    storyPath: "design-system-navigation-pagination--docs",
+    category: Category.Navigation,
     preview: (
       <div className="flex gap-1">
         <Button variant="outline" size="sm">
@@ -415,8 +433,8 @@ const components: ComponentInfo[] = [
   {
     name: "Popover",
     description: "Floating content panel",
-    storyPath: "design-system-overlays-popover--default",
-    category: "Overlays",
+    storyPath: "design-system-overlays-popover--docs",
+    category: Category.Overlays,
     preview: (
       <Button variant="outline" size="sm">
         Open Popover
@@ -426,15 +444,15 @@ const components: ComponentInfo[] = [
   {
     name: "Progress",
     description: "Progress indicator",
-    storyPath: "design-system-feedback-progress--default",
-    category: "Feedback",
+    storyPath: "design-system-feedback-progress--docs",
+    category: Category.Feedback,
     preview: <Progress value={60} className="w-full" />,
   },
   {
     name: "Radio Group",
     description: "Single selection group",
-    storyPath: "design-system-forms-radio-group--default",
-    category: "Forms",
+    storyPath: "design-system-core-radio-group--docs",
+    category: Category.Core,
     preview: (
       <div className="flex gap-2 text-xs">
         <div className="flex items-center gap-1">
@@ -447,8 +465,8 @@ const components: ComponentInfo[] = [
   {
     name: "Resizable",
     description: "Resizable panel groups",
-    storyPath: "design-system-layout-resizable--default",
-    category: "Layout",
+    storyPath: "design-system-layout-resizable--docs",
+    category: Category.Layout,
     preview: (
       <div className="flex gap-1 h-12">
         <div className="flex-1 bg-muted rounded" />
@@ -460,8 +478,8 @@ const components: ComponentInfo[] = [
   {
     name: "Scroll Area",
     description: "Custom scrollable area",
-    storyPath: "design-system-layout-scroll-area--default",
-    category: "Layout",
+    storyPath: "design-system-layout-scroll-area--docs",
+    category: Category.Layout,
     preview: (
       <div className="h-16 border rounded p-2 overflow-hidden text-xs">Scrollable content area</div>
     ),
@@ -469,15 +487,15 @@ const components: ComponentInfo[] = [
   {
     name: "Search",
     description: "Search input field",
-    storyPath: "design-system-forms-search--default",
-    category: "Forms",
+    storyPath: "design-system-core-search--docs",
+    category: Category.Core,
     preview: <Input placeholder="Search..." className="h-8 text-xs" />,
   },
   {
     name: "Select",
     description: "Dropdown selection",
-    storyPath: "design-system-forms-select--default",
-    category: "Forms",
+    storyPath: "design-system-core-select--docs",
+    category: Category.Core,
     preview: (
       <Button variant="outline" size="sm">
         Select option
@@ -487,15 +505,15 @@ const components: ComponentInfo[] = [
   {
     name: "Separator",
     description: "Content divider",
-    storyPath: "design-system-layout-separator--default",
-    category: "Layout",
+    storyPath: "design-system-layout-separator--docs",
+    category: Category.Layout,
     preview: <Separator className="w-full" />,
   },
   {
     name: "Sheet",
     description: "Side panel overlay",
-    storyPath: "design-system-overlays-sheet--default",
-    category: "Overlays",
+    storyPath: "design-system-overlays-sheet--docs",
+    category: Category.Overlays,
     preview: (
       <Button variant="outline" size="sm">
         Open Sheet
@@ -505,8 +523,8 @@ const components: ComponentInfo[] = [
   {
     name: "Skeleton",
     description: "Loading placeholder",
-    storyPath: "design-system-feedback-skeleton--default",
-    category: "Feedback",
+    storyPath: "design-system-feedback-skeleton--docs",
+    category: Category.Feedback,
     preview: (
       <div className="space-y-2">
         <Skeleton className="h-3 w-full" />
@@ -517,29 +535,29 @@ const components: ComponentInfo[] = [
   {
     name: "Slider",
     description: "Range slider input",
-    storyPath: "design-system-forms-slider--default",
-    category: "Forms",
+    storyPath: "design-system-core-slider--docs",
+    category: Category.Core,
     preview: <Slider defaultValue={[50]} max={100} step={1} className="w-full" />,
   },
   {
     name: "Sonner",
     description: "Toast notifications",
-    storyPath: "design-system-feedback-sonner--default",
-    category: "Feedback",
+    storyPath: "design-system-feedback-sonner--docs",
+    category: Category.Feedback,
     preview: <div className="border rounded p-2 text-xs">Toast notification</div>,
   },
   {
     name: "Spinner",
     description: "Loading spinner",
-    storyPath: "design-system-feedback-spinner--default",
-    category: "Feedback",
+    storyPath: "design-system-feedback-spinner--docs",
+    category: Category.Feedback,
     preview: <Spinner className="w-6 h-6" />,
   },
   {
     name: "Stats Card",
     description: "Statistics display card",
-    storyPath: "design-system-data-display-stats-card--default",
-    category: "Data Display",
+    storyPath: "design-system-data-display-stats-card--docs",
+    category: Category.DataDisplay,
     preview: (
       <Card className="w-full">
         <CardHeader className="p-4">
@@ -552,8 +570,8 @@ const components: ComponentInfo[] = [
   {
     name: "Stepper",
     description: "Step progress indicator",
-    storyPath: "design-system-navigation-stepper--default",
-    category: "Navigation",
+    storyPath: "design-system-navigation-stepper--docs",
+    category: Category.Navigation,
     preview: (
       <div className="flex gap-1">
         <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs">
@@ -568,8 +586,8 @@ const components: ComponentInfo[] = [
   {
     name: "Switch",
     description: "Toggle switch",
-    storyPath: "design-system-forms-switch--default",
-    category: "Forms",
+    storyPath: "design-system-core-switch--docs",
+    category: Category.Core,
     preview: (
       <div className="flex items-center gap-2">
         <Switch />
@@ -580,8 +598,8 @@ const components: ComponentInfo[] = [
   {
     name: "Table",
     description: "Data table",
-    storyPath: "design-system-data-display-table--default",
-    category: "Data Display",
+    storyPath: "design-system-data-display-table--docs",
+    category: Category.DataDisplay,
     preview: (
       <Table>
         <TableHeader>
@@ -600,8 +618,8 @@ const components: ComponentInfo[] = [
   {
     name: "Tabs",
     description: "Tabbed content panels",
-    storyPath: "design-system-navigation-tabs--default",
-    category: "Navigation",
+    storyPath: "design-system-navigation-tabs--docs",
+    category: Category.Navigation,
     preview: (
       <Tabs defaultValue="tab1" className="w-full">
         <TabsList className="grid w-full grid-cols-2">
@@ -618,8 +636,8 @@ const components: ComponentInfo[] = [
   {
     name: "Textarea",
     description: "Multi-line text input",
-    storyPath: "design-system-forms-textarea--default",
-    category: "Forms",
+    storyPath: "design-system-core-textarea--docs",
+    category: Category.Core,
     preview: (
       <textarea
         placeholder="Type here..."
@@ -630,8 +648,8 @@ const components: ComponentInfo[] = [
   {
     name: "Toggle",
     description: "Toggle button",
-    storyPath: "design-system-forms-toggle--default",
-    category: "Forms",
+    storyPath: "design-system-core-toggle--docs",
+    category: Category.Core,
     preview: (
       <Button variant="outline" size="sm">
         Toggle
@@ -641,8 +659,8 @@ const components: ComponentInfo[] = [
   {
     name: "Toggle Group",
     description: "Toggle button group",
-    storyPath: "design-system-forms-toggle-group--default",
-    category: "Forms",
+    storyPath: "design-system-core-toggle-group--docs",
+    category: Category.Core,
     preview: (
       <div className="flex gap-1">
         <Button variant="outline" size="sm">
@@ -657,8 +675,8 @@ const components: ComponentInfo[] = [
   {
     name: "Tooltip",
     description: "Hover tooltip",
-    storyPath: "design-system-overlays-tooltip--default",
-    category: "Overlays",
+    storyPath: "design-system-overlays-tooltip--docs",
+    category: Category.Overlays,
     preview: (
       <Button variant="outline" size="sm">
         Hover me
@@ -668,24 +686,21 @@ const components: ComponentInfo[] = [
 ];
 
 const getCategoryColor = (
-  category: string,
+  category: Category,
 ): "default" | "secondary" | "outline" | "destructive" => {
-  const colorMap: Record<string, "default" | "secondary" | "outline" | "destructive"> = {
-    Forms: "default",
-    Layout: "secondary",
-    "Data Display": "outline",
-    Navigation: "default",
-    Overlays: "secondary",
-    Feedback: "outline",
-    Core: "destructive",
+  const colorMap: Record<Category, "default" | "secondary" | "outline" | "destructive"> = {
+    [Category.Core]: "default",
+    [Category.DataDisplay]: "outline",
+    [Category.Layout]: "secondary",
+    [Category.Navigation]: "default",
+    [Category.Overlays]: "secondary",
+    [Category.Feedback]: "outline",
   };
-  return colorMap[category] || "default";
+  return colorMap[category];
 };
 
 export const Default: Story = {
   render: () => {
-    const categories = Array.from(new Set(components.map((c) => c.category)));
-
     return (
       <div style={{ padding: "2rem" }}>
         <div style={{ marginBottom: "2rem" }}>
@@ -697,7 +712,7 @@ export const Default: Story = {
           </p>
         </div>
 
-        {categories.map((category) => {
+        {CATEGORY_ORDER.map((category) => {
           const categoryComponents = components.filter((c) => c.category === category);
 
           return (

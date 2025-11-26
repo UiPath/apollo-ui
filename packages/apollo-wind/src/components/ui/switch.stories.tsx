@@ -4,7 +4,7 @@ import { Switch } from "./switch";
 import { Row } from "./layout";
 
 const meta: Meta<typeof Switch> = {
-  title: "Design System/Forms/Switch",
+  title: "Design System/Core/Switch",
   component: Switch,
   tags: ["autodocs"],
 };
