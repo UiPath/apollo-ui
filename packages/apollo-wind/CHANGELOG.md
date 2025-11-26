@@ -1,3 +1,10 @@
+## [1.4.2](https://github.com/uipath/wind/compare/v1.4.1...v1.4.2) (2025-11-26)
+
+
+### Bug Fixes
+
+* update component categories from 'Forms' to 'Core' in story files ([d2fbccc](https://github.com/uipath/wind/commit/d2fbccc972f118704ac2d1d9641b0d395622b9b1))
+
 ## [1.4.1](https://github.com/uipath/wind/compare/v1.4.0...v1.4.1) (2025-11-26)
 
 
