@@ -1,3 +1,13 @@
+## [1.4.1](https://github.com/uipath/wind/compare/v1.4.0...v1.4.1) (2025-11-26)
+
+
+### Bug Fixes
+
+* add .npmrc file and update component styles for Accordion, DatePicker, and Slider ([3a27f20](https://github.com/uipath/wind/commit/3a27f206337860294d6e80e818a8cd4776d58d97))
+* update permissions comments and use GITHUB_TOKEN for deployments ([af44784](https://github.com/uipath/wind/commit/af44784c57840602d4329ee50a1f4f4559e6d397))
+* update release workflow permissions and add NPM_TOKEN for semantic-release ([b0addeb](https://github.com/uipath/wind/commit/b0addeb8ae35d054063f116ca85d0740a40ab1de))
+* update release workflow to use RELEASE_TOKEN for GitHub actions ([74f087c](https://github.com/uipath/wind/commit/74f087c7cb93008f9187264c6176ae03a9213bc7))
+
 # [1.4.0](https://github.com/uipath/wind/compare/v1.3.0...v1.4.0) (2025-11-24)
 
 
