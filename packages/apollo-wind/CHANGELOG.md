@@ -1,3 +1,10 @@
+## [1.6.1](https://github.com/uipath/wind/compare/v1.6.0...v1.6.1) (2025-11-27)
+
+
+### Bug Fixes
+
+* improved organization and layout of foundation ([7b1bd5e](https://github.com/uipath/wind/commit/7b1bd5ed05ccf2638306c707b586c71fed396c30))
+
 # [1.6.0](https://github.com/uipath/wind/compare/v1.5.1...v1.6.0) (2025-11-27)
 
 
