@@ -1,1 +1,1 @@
-export { cn } from "./utils";
+export { cn, get, deepEqual } from "./utils";
