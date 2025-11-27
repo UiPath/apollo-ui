@@ -18,12 +18,12 @@ const preview: Preview = {
             "All Components",
             "Core",
             "Data Display",
-            "Forms",
             "Layout",
             "Navigation",
             "Overlays",
             "Feedback",
           ],
+          "Forms",
           "*",
           "Examples",
         ],
@@ -91,7 +91,7 @@ const preview: Preview = {
 
       // Wrap all stories with themed background
       return (
-        <div className={`bg-background text-foreground p-10`}>
+        <div className={`bg-background text-foreground p-2`}>
           <Story />
         </div>
       );
