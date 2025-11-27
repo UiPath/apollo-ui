@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { Grid } from "./layout/grid";
+import { useState, useMemo } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./card";
 import { Badge } from "./badge";
 import { Button } from "./button";
@@ -16,7 +16,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "./
 import { Tabs, TabsList, TabsTrigger } from "./tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "./table";
 import { Calendar } from "./calendar";
-import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList } from "./breadcrumb";
+import { Search } from "lucide-react";
 
 const meta = {
   title: "Design System/All Components",
@@ -117,16 +117,13 @@ const components: ComponentInfo[] = [
     storyPath: "design-system-navigation-breadcrumb--docs",
     category: Category.Navigation,
     preview: (
-      <Breadcrumb>
-        <BreadcrumbList>
-          <BreadcrumbItem>
-            <BreadcrumbLink href="#">Home</BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbItem>
-            <BreadcrumbLink href="#">Docs</BreadcrumbLink>
-          </BreadcrumbItem>
-        </BreadcrumbList>
-      </Breadcrumb>
+      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+        <span className="hover:text-foreground cursor-pointer">Home</span>
+        <span>/</span>
+        <span className="hover:text-foreground cursor-pointer">Docs</span>
+        <span>/</span>
+        <span className="text-foreground">Page</span>
+      </div>
     ),
   },
   {
@@ -318,8 +315,10 @@ const components: ComponentInfo[] = [
     category: Category.Layout,
     preview: (
       <div className="grid grid-cols-2 gap-2">
-        <div className="h-6 bg-muted rounded"></div>
-        <div className="h-6 bg-muted rounded"></div>
+        <div className="h-6 w-12 bg-muted rounded"></div>
+        <div className="h-6 w-12 bg-muted rounded"></div>
+        <div className="h-6 w-12 bg-muted rounded"></div>
+        <div className="h-6 w-12 bg-muted rounded"></div>
       </div>
     ),
   },
@@ -342,8 +341,8 @@ const components: ComponentInfo[] = [
     category: Category.Layout,
     preview: (
       <div className="flex flex-col gap-2">
-        <div className="h-4 w-full bg-muted rounded"></div>
-        <div className="h-4 w-full bg-muted rounded"></div>
+        <div className="h-4 w-12 bg-muted rounded"></div>
+        <div className="h-4 w-12 bg-muted rounded"></div>
       </div>
     ),
   },
@@ -446,7 +445,7 @@ const components: ComponentInfo[] = [
     description: "Progress indicator",
     storyPath: "design-system-feedback-progress--docs",
     category: Category.Feedback,
-    preview: <Progress value={60} className="w-full" />,
+    preview: <Progress value={60} className="w-20" />,
   },
   {
     name: "Radio Group",
@@ -507,7 +506,7 @@ const components: ComponentInfo[] = [
     description: "Content divider",
     storyPath: "design-system-layout-separator--docs",
     category: Category.Layout,
-    preview: <Separator className="w-full" />,
+    preview: <Separator className="w-12" />,
   },
   {
     name: "Sheet",
@@ -527,7 +526,7 @@ const components: ComponentInfo[] = [
     category: Category.Feedback,
     preview: (
       <div className="space-y-2">
-        <Skeleton className="h-3 w-full" />
+        <Skeleton className="h-3 w-20" />
         <Skeleton className="h-3 w-4/5" />
       </div>
     ),
@@ -685,100 +684,154 @@ const components: ComponentInfo[] = [
   },
 ];
 
-const getCategoryColor = (
-  category: Category,
-): "default" | "secondary" | "outline" | "destructive" => {
-  const colorMap: Record<Category, "default" | "secondary" | "outline" | "destructive"> = {
-    [Category.Core]: "default",
-    [Category.DataDisplay]: "outline",
-    [Category.Layout]: "secondary",
-    [Category.Navigation]: "default",
-    [Category.Overlays]: "secondary",
-    [Category.Feedback]: "outline",
-  };
-  return colorMap[category];
-};
+function ComponentGallery() {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<Category | "all">("all");
+
+  const filteredComponents = useMemo(() => {
+    return components.filter((component) => {
+      const matchesSearch =
+        searchQuery === "" ||
+        component.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        component.description.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesCategory = selectedCategory === "all" || component.category === selectedCategory;
+      return matchesSearch && matchesCategory;
+    });
+  }, [searchQuery, selectedCategory]);
+
+  const groupedComponents = useMemo(() => {
+    const grouped: Record<Category, typeof components> = {
+      [Category.Core]: [],
+      [Category.DataDisplay]: [],
+      [Category.Layout]: [],
+      [Category.Navigation]: [],
+      [Category.Overlays]: [],
+      [Category.Feedback]: [],
+    };
+    filteredComponents.forEach((component) => {
+      grouped[component.category].push(component);
+    });
+    return grouped;
+  }, [filteredComponents]);
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
+      {/* Hero Header */}
+      <div className="relative overflow-hidden border-b bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5">
+        <div className="absolute inset-0 bg-grid-pattern opacity-[0.02]" />
+        <div className="relative px-8 py-12 max-w-7xl mx-auto">
+          <div className="flex flex-col gap-6">
+            <div>
+              <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
+                All components
+              </h1>
+              <p className="mt-2 text-lg text-muted-foreground max-w-2xl">
+                Explore the collection of {components.length} beautifully crafted, accessible
+                components built with React and Tailwind CSS.
+              </p>
+            </div>
+
+            {/* Search and Filter Bar */}
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="relative flex-1 max-w-md">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search components..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10 h-11 bg-background/80 backdrop-blur-sm border-border/50 focus:border-primary/50 transition-colors"
+                />
+              </div>
+              <div className="flex gap-2 flex-wrap">
+                <Button
+                  variant={selectedCategory === "all" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setSelectedCategory("all")}
+                  className="transition-all duration-200"
+                >
+                  All ({components.length})
+                </Button>
+                {CATEGORY_ORDER.map((category) => {
+                  const count = components.filter((c) => c.category === category).length;
+                  return (
+                    <Button
+                      key={category}
+                      variant={selectedCategory === category ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setSelectedCategory(category)}
+                      className="transition-all duration-200"
+                    >
+                      {category} ({count})
+                    </Button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Component Grid */}
+      <div className="px-8 py-10 max-w-7xl mx-auto">
+        {filteredComponents.length === 0 ? (
+          <div className="text-center py-20">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-muted mb-4">
+              <Search className="h-8 w-8 text-muted-foreground" />
+            </div>
+            <h3 className="text-lg font-semibold mb-2">No components found</h3>
+            <p className="text-muted-foreground">
+              Try adjusting your search or filter to find what you're looking for.
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-12">
+            {CATEGORY_ORDER.map((category) => {
+              const categoryComponents = groupedComponents[category];
+              if (categoryComponents.length === 0) return null;
+
+              return (
+                <section key={category}>
+                  <div className="flex items-center gap-3 mb-6">
+                    <h2 className="text-2xl font-semibold tracking-tight">{category}</h2>
+                  </div>
+
+                  <div className="flex flex-wrap gap-4">
+                    {categoryComponents.map((component) => (
+                      <a
+                        key={component.name}
+                        href={`/?path=/story/${component.storyPath}`}
+                        target="_top"
+                        className="block group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded-lg w-[200px]"
+                      >
+                        <div className="h-full rounded-lg border border-border/50 bg-card overflow-hidden transition-all duration-200 hover:border-border hover:shadow-md">
+                          {/* Preview Area - fixed height */}
+                          <div className="h-[140px] bg-muted/30 flex items-center justify-center p-4">
+                            <div className="max-w-full">{component.preview}</div>
+                          </div>
+
+                          {/* Component Info */}
+                          <div className="px-4 py-3 border-t border-border/30">
+                            <h3 className="font-medium text-sm text-foreground">
+                              {component.name}
+                            </h3>
+                            <p className="mt-0.5 text-xs text-muted-foreground line-clamp-1">
+                              {component.description}
+                            </p>
+                          </div>
+                        </div>
+                      </a>
+                    ))}
+                  </div>
+                </section>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
 
 export const Default: Story = {
-  render: () => {
-    return (
-      <div style={{ padding: "2rem" }}>
-        <div style={{ marginBottom: "2rem" }}>
-          <h1 style={{ fontSize: "2rem", fontWeight: "bold", marginBottom: "0.5rem" }}>
-            All components by category
-          </h1>
-          <p style={{ color: "var(--muted-foreground)", fontSize: "1rem" }}>
-            Components organized by their primary purpose and use case.
-          </p>
-        </div>
-
-        {CATEGORY_ORDER.map((category) => {
-          const categoryComponents = components.filter((c) => c.category === category);
-
-          return (
-            <div key={category} style={{ marginBottom: "3rem" }}>
-              <div
-                style={{
-                  marginBottom: "1rem",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "0.5rem",
-                }}
-              >
-                <h2 style={{ fontSize: "1.5rem", fontWeight: "600" }}>{category}</h2>
-                <Badge variant={getCategoryColor(category)}>{categoryComponents.length}</Badge>
-              </div>
-
-              <Grid cols={4} gap={4}>
-                {categoryComponents.map((component) => (
-                  <a
-                    key={component.name}
-                    href={`/?path=/story/${component.storyPath}`}
-                    target="_top"
-                    style={{
-                      textDecoration: "none",
-                      color: "inherit",
-                      display: "block",
-                      height: "100%",
-                    }}
-                  >
-                    <Card
-                      style={{
-                        height: "100%",
-                        transition: "all 0.2s ease-in-out",
-                        cursor: "pointer",
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.transform = "translateY(-2px)";
-                        e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,0.1)";
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.transform = "translateY(0)";
-                        e.currentTarget.style.boxShadow = "";
-                      }}
-                    >
-                      <CardContent className="p-4">
-                        <div
-                          className="mb-4 rounded border bg-muted/50 flex items-center justify-center"
-                          style={{ minHeight: "160px" }}
-                        >
-                          <div className="w-full px-2">{component.preview}</div>
-                        </div>
-                        <div className="flex items-start justify-between gap-2 mb-2">
-                          <h3 className="font-semibold text-sm leading-tight">{component.name}</h3>
-                        </div>
-                        <p className="text-xs text-muted-foreground line-clamp-2">
-                          {component.description}
-                        </p>
-                      </CardContent>
-                    </Card>
-                  </a>
-                ))}
-              </Grid>
-            </div>
-          );
-        })}
-      </div>
-    );
-  },
+  render: () => <ComponentGallery />,
 };
