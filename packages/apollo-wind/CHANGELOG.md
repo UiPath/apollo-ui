@@ -1,3 +1,10 @@
+## [1.5.1](https://github.com/uipath/wind/compare/v1.5.0...v1.5.1) (2025-11-27)
+
+
+### Bug Fixes
+
+* update component gallery ([895ab37](https://github.com/uipath/wind/commit/895ab37e7bde0bfd8b348f0ca9a9cd2b827690b7))
+
 # [1.5.0](https://github.com/uipath/wind/compare/v1.4.2...v1.5.0) (2025-11-27)
 
 
