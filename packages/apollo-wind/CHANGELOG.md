@@ -1,3 +1,10 @@
+# [1.5.0](https://github.com/uipath/wind/compare/v1.4.2...v1.5.0) (2025-11-27)
+
+
+### Features
+
+* enhance Slider component to support multiple thumbs based on value or defaultValue ([353e490](https://github.com/uipath/wind/commit/353e490be81314daa01bdfdb35ccda96f3178c99))
+
 ## [1.4.2](https://github.com/uipath/wind/compare/v1.4.1...v1.4.2) (2025-11-26)
 
 
