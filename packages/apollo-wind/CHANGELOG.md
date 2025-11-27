@@ -1,3 +1,10 @@
+# [1.6.0](https://github.com/uipath/wind/compare/v1.5.1...v1.6.0) (2025-11-27)
+
+
+### Features
+
+* implement forms engine ([cc7447d](https://github.com/uipath/wind/commit/cc7447d3e4009e098a704d331cdf92c5ab501e34))
+
 ## [1.5.1](https://github.com/uipath/wind/compare/v1.5.0...v1.5.1) (2025-11-27)
 
 
