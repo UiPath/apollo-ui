@@ -1,4 +1,4 @@
-// Auto-generated from wrap-text.svg
+// Auto-generated from editor/wrap-text.svg
 import React from 'react';
 
 export interface WrapTextProps extends React.SVGProps<SVGSVGElement> {}

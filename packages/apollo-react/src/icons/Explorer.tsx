@@ -1,4 +1,4 @@
-// Auto-generated from explorer.svg
+// Auto-generated from object/explorer.svg
 import React from 'react';
 
 export interface ExplorerProps extends React.SVGProps<SVGSVGElement> {}

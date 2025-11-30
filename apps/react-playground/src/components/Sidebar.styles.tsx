@@ -1,42 +1,21 @@
 import { Link } from "react-router-dom";
-import styled, { keyframes } from "styled-components";
+import styled from "styled-components";
 
-const fadeIn = keyframes`
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-`;
-
-export const Overlay = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: var(--color-overlay);
-  z-index: 1500;
-  animation: ${fadeIn} 0.3s ease;
-`;
-
-export const SidebarContainer = styled.div<{ $isOpen: boolean }>`
+export const SidebarContainer = styled.aside`
   position: fixed;
   top: 0;
   left: 0;
   bottom: 0;
   width: 280px;
   background: var(--color-background);
-  box-shadow: var(--shadow-2xl);
-  z-index: 1600;
-  transform: ${(props) => (props.$isOpen ? "translateX(0)" : "translateX(-100%)")};
-  transition: transform 0.3s ease;
+  border-right: 1px solid var(--color-border);
+  z-index: 1000;
   overflow-y: auto;
-  padding: 80px 0 20px 0;
 `;
 
-export const SidebarNav = styled.nav``;
+export const SidebarNav = styled.nav`
+  padding: 0;
+`;
 
 export const NavSection = styled.div``;
 
@@ -44,7 +23,7 @@ export const NavLink = styled(Link)<{ $isActive: boolean }>`
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 14px 20px;
+  padding: 10px 20px;
   text-decoration: none;
   color: ${(props) => (props.$isActive ? "var(--color-primary)" : "var(--color-foreground-emp)")};
   background: ${(props) => (props.$isActive ? "var(--color-background-selected)" : "transparent")};
@@ -53,7 +32,7 @@ export const NavLink = styled(Link)<{ $isActive: boolean }>`
 			? "4px solid var(--color-primary)"
 			: "4px solid transparent"};
   font-weight: ${(props) => (props.$isActive ? "600" : "500")};
-  font-size: 15px;
+  font-size: 14px;
   transition: all 0.2s ease;
 
   &:hover {
@@ -65,7 +44,7 @@ export const NavLink = styled(Link)<{ $isActive: boolean }>`
 `;
 
 export const NavIcon = styled.span`
-  font-size: 20px;
+  font-size: 16px;
 `;
 
 export const NavLabel = styled.span``;
@@ -76,7 +55,7 @@ export const SubNav = styled.div`
 
 export const SubNavLink = styled(Link)<{ $isActive: boolean }>`
   display: block;
-  padding: 10px 20px;
+  padding: 8px 20px;
   text-decoration: none;
   color: ${(props) =>
 		props.$isActive
@@ -88,7 +67,7 @@ export const SubNavLink = styled(Link)<{ $isActive: boolean }>`
 			? "3px solid var(--color-primary)"
 			: "3px solid transparent"};
   font-weight: ${(props) => (props.$isActive ? "600" : "400")};
-  font-size: 14px;
+  font-size: 13px;
   transition: all 0.2s ease;
 
   &:hover {

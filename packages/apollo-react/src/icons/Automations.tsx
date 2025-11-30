@@ -1,4 +1,4 @@
-// Auto-generated from automations.svg
+// Auto-generated from object/automations.svg
 import React from 'react';
 
 export interface AutomationsProps extends React.SVGProps<SVGSVGElement> {}

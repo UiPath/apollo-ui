@@ -1,4 +1,4 @@
-// Auto-generated from action-center.svg
+// Auto-generated from product-logo/action-center.svg
 import React from 'react';
 
 export interface ActionCenterProps extends React.SVGProps<SVGSVGElement> {}

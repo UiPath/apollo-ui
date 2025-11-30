@@ -1,0 +1,20 @@
+// Auto-generated from studio-activities-icon-sets/activities-pipelines/pipelines-update-process.svg
+import React from 'react';
+
+export interface PipelinesUpdateProcessProps extends React.SVGProps<SVGSVGElement> {}
+
+export const PipelinesUpdateProcess = React.forwardRef<SVGSVGElement, PipelinesUpdateProcessProps>(
+  (props, ref) => (
+    <svg width="25" height="25" viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+      <path d="M12 2.35303C8.73 2.35303 5.82 3.93303 4 6.36303V4.35303H2V10.353H8V8.35303H5.09C6.47 5.96303 9.05 4.35303 12 4.35303V2.35303Z" fill="currentColor"/>
+<path d="M16 8.35303H14V2.35303L20 2.35303V4.35303H17.99C20.42 6.17302 22 9.083 22 12.353H20C20 9.403 18.39 6.82302 16 5.44303V8.35303Z" fill="currentColor"/>
+<path d="M6.01 20.353C3.58 18.533 2 15.623 2 12.353H4C4 15.303 5.61 17.883 8 19.263L8 16.353H10V22.353H4V20.353H6.01Z" fill="currentColor"/>
+<path d="M20.0322 14.9066C18.4983 14.0007 16.4895 14.2067 15.1716 15.5246C13.8536 16.8425 13.6476 18.8513 14.5536 20.3852L16.0679 18.8709C15.8897 18.2037 16.0623 17.4623 16.5858 16.9388C17.1092 16.4154 17.8507 16.2427 18.5179 16.4209L20.0322 14.9066Z" fill="#1976D2"/>
+<path d="M17.4821 20.2852C18.1493 20.4633 18.8908 20.2907 19.4142 19.7672C19.9377 19.2438 20.1103 18.5024 19.9321 17.8351L21.4464 16.3208C22.3524 17.8547 22.1464 19.8635 20.8284 21.1815C19.5105 22.4994 17.5017 22.7054 15.9678 21.7995L17.4821 20.2852Z" fill="#1976D2"/>
+    </svg>
+  )
+);
+
+PipelinesUpdateProcess.displayName = 'PipelinesUpdateProcess';
+
+export default PipelinesUpdateProcess;

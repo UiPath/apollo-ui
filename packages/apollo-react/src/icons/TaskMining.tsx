@@ -1,4 +1,4 @@
-// Auto-generated from task-mining.svg
+// Auto-generated from product-logo/task-mining.svg
 import React from 'react';
 
 export interface TaskMiningProps extends React.SVGProps<SVGSVGElement> {}

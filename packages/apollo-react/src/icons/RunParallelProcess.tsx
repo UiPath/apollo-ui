@@ -1,4 +1,4 @@
-// Auto-generated from run-parallel-process.svg
+// Auto-generated from studio-icons/run-parallel-process.svg
 import React from 'react';
 
 export interface RunParallelProcessProps extends React.SVGProps<SVGSVGElement> {}

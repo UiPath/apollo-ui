@@ -1,4 +1,4 @@
-// Auto-generated from expensify.svg
+// Auto-generated from third-party/expensify.svg
 import React from 'react';
 
 export interface ExpensifyProps extends React.SVGProps<SVGSVGElement> {}

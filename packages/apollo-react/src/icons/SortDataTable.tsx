@@ -1,4 +1,4 @@
-// Auto-generated from sort-data-table.svg
+// Auto-generated from studio-icons/sort-data-table.svg
 import React from 'react';
 
 export interface SortDataTableProps extends React.SVGProps<SVGSVGElement> {}

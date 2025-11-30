@@ -1,4 +1,4 @@
-// Auto-generated from organization.svg
+// Auto-generated from object/organization.svg
 import React from 'react';
 
 export interface OrganizationProps extends React.SVGProps<SVGSVGElement> {}

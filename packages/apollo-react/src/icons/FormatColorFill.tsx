@@ -1,4 +1,4 @@
-// Auto-generated from format-color-fill.svg
+// Auto-generated from editor/format-color-fill.svg
 import React from 'react';
 
 export interface FormatColorFillProps extends React.SVGProps<SVGSVGElement> {}

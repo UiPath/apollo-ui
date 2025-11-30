@@ -1,4 +1,4 @@
-// Auto-generated from do-while.svg
+// Auto-generated from logic/do-while.svg
 import React from 'react';
 
 export interface DoWhileProps extends React.SVGProps<SVGSVGElement> {}

@@ -1,4 +1,4 @@
-// Auto-generated from time-performance.svg
+// Auto-generated from indicator-and-alert/time-performance.svg
 import React from 'react';
 
 export interface TimePerformanceProps extends React.SVGProps<SVGSVGElement> {}

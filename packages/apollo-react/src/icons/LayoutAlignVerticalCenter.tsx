@@ -1,4 +1,4 @@
-// Auto-generated from layout-align/vertical-center.svg
+// Auto-generated from editor/layout-align/layout-align-vertical-center.svg
 import React from 'react';
 
 export interface LayoutAlignVerticalCenterProps extends React.SVGProps<SVGSVGElement> {}

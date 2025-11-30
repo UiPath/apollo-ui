@@ -1,4 +1,4 @@
-// Auto-generated from vmware-scope.svg
+// Auto-generated from studio-icons/vmware-scope.svg
 import React from 'react';
 
 export interface VmwareScopeProps extends React.SVGProps<SVGSVGElement> {}

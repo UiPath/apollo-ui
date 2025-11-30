@@ -1,4 +1,4 @@
-// Auto-generated from trello.svg
+// Auto-generated from third-party/trello.svg
 import React from 'react';
 
 export interface TrelloProps extends React.SVGProps<SVGSVGElement> {}

@@ -1,4 +1,4 @@
-// Auto-generated from zoom-not-fixed.svg
+// Auto-generated from navigation/zoom-not-fixed.svg
 import React from 'react';
 
 export interface ZoomNotFixedProps extends React.SVGProps<SVGSVGElement> {}

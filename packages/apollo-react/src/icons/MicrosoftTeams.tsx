@@ -1,4 +1,4 @@
-// Auto-generated from microsoft-teams.svg
+// Auto-generated from third-party/microsoft-teams.svg
 import React from 'react';
 
 export interface MicrosoftTeamsProps extends React.SVGProps<SVGSVGElement> {}

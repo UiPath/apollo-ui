@@ -1,4 +1,4 @@
-// Auto-generated from processes.svg
+// Auto-generated from product-logo/processes.svg
 import React from 'react';
 
 export interface ProcessesProps extends React.SVGProps<SVGSVGElement> {}

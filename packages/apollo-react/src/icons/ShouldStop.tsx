@@ -1,4 +1,4 @@
-// Auto-generated from should-stop.svg
+// Auto-generated from studio-icons/should-stop.svg
 import React from 'react';
 
 export interface ShouldStopProps extends React.SVGProps<SVGSVGElement> {}

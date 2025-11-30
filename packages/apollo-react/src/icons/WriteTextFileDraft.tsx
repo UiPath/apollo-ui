@@ -1,4 +1,4 @@
-// Auto-generated from write-text-file-draft.svg
+// Auto-generated from studio-icons/write-text-file-draft.svg
 import React from 'react';
 
 export interface WriteTextFileDraftProps extends React.SVGProps<SVGSVGElement> {}

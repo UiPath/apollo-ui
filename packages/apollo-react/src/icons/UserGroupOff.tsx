@@ -1,4 +1,4 @@
-// Auto-generated from user-group-off.svg
+// Auto-generated from social/user-group-off.svg
 import React from 'react';
 
 export interface UserGroupOffProps extends React.SVGProps<SVGSVGElement> {}

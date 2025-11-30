@@ -1,4 +1,4 @@
-// Auto-generated from layout-stretch/horizontal.svg
+// Auto-generated from editor/layout-stretch/layout-stretch-horizontal.svg
 import React from 'react';
 
 export interface LayoutStretchHorizontalProps extends React.SVGProps<SVGSVGElement> {}

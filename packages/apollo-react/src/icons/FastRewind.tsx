@@ -1,4 +1,4 @@
-// Auto-generated from fast-rewind.svg
+// Auto-generated from action/fast-rewind.svg
 import React from 'react';
 
 export interface FastRewindProps extends React.SVGProps<SVGSVGElement> {}

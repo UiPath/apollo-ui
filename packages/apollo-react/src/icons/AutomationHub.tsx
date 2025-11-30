@@ -1,4 +1,4 @@
-// Auto-generated from automation-hub.svg
+// Auto-generated from product-logo/automation-hub.svg
 import React from 'react';
 
 export interface AutomationHubProps extends React.SVGProps<SVGSVGElement> {}

@@ -1,4 +1,4 @@
-// Auto-generated from volume-up.svg
+// Auto-generated from action/volume-up.svg
 import React from 'react';
 
 export interface VolumeUpProps extends React.SVGProps<SVGSVGElement> {}

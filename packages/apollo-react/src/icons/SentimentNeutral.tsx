@@ -1,4 +1,4 @@
-// Auto-generated from sentiment-neutral.svg
+// Auto-generated from social/sentiment-neutral.svg
 import React from 'react';
 
 export interface SentimentNeutralProps extends React.SVGProps<SVGSVGElement> {}

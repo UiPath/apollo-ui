@@ -1,4 +1,4 @@
-// Auto-generated from tune.svg
+// Auto-generated from action/tune.svg
 import React from 'react';
 
 export interface TuneProps extends React.SVGProps<SVGSVGElement> {}

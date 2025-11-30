@@ -1,4 +1,4 @@
-// Auto-generated from select-all.svg
+// Auto-generated from action/select-all.svg
 import React from 'react';
 
 export interface SelectAllProps extends React.SVGProps<SVGSVGElement> {}

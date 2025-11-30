@@ -1,4 +1,4 @@
-// Auto-generated from amazon-web-services.svg
+// Auto-generated from third-party/amazon-web-services.svg
 import React from 'react';
 
 export interface AmazonWebServicesProps extends React.SVGProps<SVGSVGElement> {}

@@ -1,4 +1,4 @@
-// Auto-generated from layout-justify/top.svg
+// Auto-generated from editor/layout-justify/layout-justify-top.svg
 import React from 'react';
 
 export interface LayoutJustifyTopProps extends React.SVGProps<SVGSVGElement> {}

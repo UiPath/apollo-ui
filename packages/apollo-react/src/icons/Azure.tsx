@@ -1,4 +1,4 @@
-// Auto-generated from azure.svg
+// Auto-generated from third-party/azure.svg
 import React from 'react';
 
 export interface AzureProps extends React.SVGProps<SVGSVGElement> {}
@@ -14,19 +14,19 @@ export const Azure = React.forwardRef<SVGSVGElement, AzureProps>(
 </g>
 <defs>
 <linearGradient id="paint0_linear_2_1662" x1="10.5894" y1="2.31573" x2="3.21396" y2="24.1045" gradientUnits="userSpaceOnUse">
-<stop stop-color="#114A8B"/>
-<stop offset="1" stop-color="#0669BC"/>
+<stop stopColor="#114A8B"/>
+<stop offset="1" stopColor="#0669BC"/>
 </linearGradient>
 <linearGradient id="paint1_linear_2_1662" x1="12.8933" y1="12.4698" x2="11.1871" y2="13.0467" gradientUnits="userSpaceOnUse">
-<stop stop-opacity="0.3"/>
-<stop offset="0.071" stop-opacity="0.2"/>
-<stop offset="0.321" stop-opacity="0.1"/>
-<stop offset="0.623" stop-opacity="0.05"/>
-<stop offset="1" stop-opacity="0"/>
+<stop stopOpacity="0.3"/>
+<stop offset="0.071" stopOpacity="0.2"/>
+<stop offset="0.321" stopOpacity="0.1"/>
+<stop offset="0.623" stopOpacity="0.05"/>
+<stop offset="1" stopOpacity="0"/>
 </linearGradient>
 <linearGradient id="paint2_linear_2_1662" x1="11.9549" y1="1.68009" x2="20.0507" y2="23.2495" gradientUnits="userSpaceOnUse">
-<stop stop-color="#3CCBF4"/>
-<stop offset="1" stop-color="#2892DF"/>
+<stop stopColor="#3CCBF4"/>
+<stop offset="1" stopColor="#2892DF"/>
 </linearGradient>
 <clipPath id="clip0_2_1662">
 <rect width="24" height="24" fill="white"/>

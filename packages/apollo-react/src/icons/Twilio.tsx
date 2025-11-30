@@ -1,4 +1,4 @@
-// Auto-generated from twilio.svg
+// Auto-generated from third-party/twilio.svg
 import React from 'react';
 
 export interface TwilioProps extends React.SVGProps<SVGSVGElement> {}

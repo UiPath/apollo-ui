@@ -1,4 +1,4 @@
-// Auto-generated from google.svg
+// Auto-generated from third-party/google.svg
 import React from 'react';
 
 export interface GoogleProps extends React.SVGProps<SVGSVGElement> {}

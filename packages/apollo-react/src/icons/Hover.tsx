@@ -1,4 +1,4 @@
-// Auto-generated from hover.svg
+// Auto-generated from studio-icons/hover.svg
 import React from 'react';
 
 export interface HoverProps extends React.SVGProps<SVGSVGElement> {}

@@ -1,4 +1,4 @@
-// Auto-generated from user-group-add.svg
+// Auto-generated from social/user-group-add.svg
 import React from 'react';
 
 export interface UserGroupAddProps extends React.SVGProps<SVGSVGElement> {}

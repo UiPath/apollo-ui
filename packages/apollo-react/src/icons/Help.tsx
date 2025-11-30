@@ -1,4 +1,4 @@
-// Auto-generated from help.svg
+// Auto-generated from indicator-and-alert/help.svg
 import React from 'react';
 
 export interface HelpProps extends React.SVGProps<SVGSVGElement> {}

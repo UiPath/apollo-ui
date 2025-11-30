@@ -1,4 +1,4 @@
-// Auto-generated from screen-share.svg
+// Auto-generated from action/screen-share.svg
 import React from 'react';
 
 export interface ScreenShareProps extends React.SVGProps<SVGSVGElement> {}

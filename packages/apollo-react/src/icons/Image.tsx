@@ -1,4 +1,4 @@
-// Auto-generated from image.svg
+// Auto-generated from object/image.svg
 import React from 'react';
 
 export interface ImageProps extends React.SVGProps<SVGSVGElement> {}

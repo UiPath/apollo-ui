@@ -1,4 +1,4 @@
-// Auto-generated from pause.svg
+// Auto-generated from action/pause.svg
 import React from 'react';
 
 export interface PauseProps extends React.SVGProps<SVGSVGElement> {}

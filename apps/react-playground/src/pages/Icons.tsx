@@ -1,5 +1,4 @@
-import { iconNames } from "@uipath/apollo-react/components";
-import { Icon } from "@uipath/apollo-react/core";
+import { Icon, iconNames } from "@uipath/apollo-react/core";
 import * as ApolloIcons from "@uipath/apollo-react/icons";
 import type React from "react";
 import { useState } from "react";
@@ -19,6 +18,7 @@ import {
 	IconCircle,
 	IconDimensions,
 	IconInfo,
+	IconLabel,
 	IconName,
 	IconValue,
 	IconVisual,
@@ -84,20 +84,62 @@ export function Icons() {
 							)[iconName];
 							if (!IconComponent) return null;
 
+							const handleCopySvg = (e: React.MouseEvent<HTMLDivElement>) => {
+								const svgElement = e.currentTarget.querySelector("svg");
+								if (svgElement) {
+									// Clone the SVG to avoid modifying the original
+									const clonedSvg = svgElement.cloneNode(true) as SVGElement;
+
+									// Format the SVG with proper indentation
+									const serializer = new XMLSerializer();
+									const svgString = serializer.serializeToString(clonedSvg);
+
+									// Pretty print the SVG
+									const formatted = formatXml(svgString);
+									navigator.clipboard.writeText(formatted);
+								}
+							};
+
+							const formatXml = (xml: string): string => {
+								const PADDING = "  "; // 2 spaces for indentation
+								const reg = /(>)(<)(\/*)/g;
+								let pad = 0;
+
+								xml = xml.replace(reg, "$1\n$2$3");
+
+								return xml
+									.split("\n")
+									.map((node) => {
+										let indent = 0;
+										if (node.match(/.+<\/\w[^>]*>$/)) {
+											indent = 0;
+										} else if (node.match(/^<\/\w/) && pad > 0) {
+											pad -= 1;
+										} else if (node.match(/^<\w[^>]*[^/]>.*$/)) {
+											indent = 1;
+										} else {
+											indent = 0;
+										}
+
+										pad += indent;
+										return PADDING.repeat(pad - indent) + node;
+									})
+									.join("\n");
+							};
+
 							return (
 								<IconBrowserCard
 									key={iconName}
-									onClick={() => {
-										navigator.clipboard.writeText(iconName);
-									}}
+									onClick={handleCopySvg}
 									color="var(--color-foreground)"
-									title={iconName}
+									title={`Click to copy SVG: ${iconName}`}
 								>
 									<IconComponent
-										width={20}
-										height={20}
+										width={48}
+										height={48}
 										color="var(--color-foreground)"
 									/>
+									<IconLabel>{iconName}</IconLabel>
 								</IconBrowserCard>
 							);
 						})}

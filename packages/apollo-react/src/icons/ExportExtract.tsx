@@ -1,4 +1,4 @@
-// Auto-generated from export-extract.svg
+// Auto-generated from action/export-extract.svg
 import React from 'react';
 
 export interface ExportExtractProps extends React.SVGProps<SVGSVGElement> {}

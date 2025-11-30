@@ -1,4 +1,4 @@
-// Auto-generated from zoom.svg
+// Auto-generated from third-party/zoom.svg
 import React from 'react';
 
 export interface ZoomProps extends React.SVGProps<SVGSVGElement> {}

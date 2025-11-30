@@ -1,4 +1,4 @@
-// Auto-generated from container-align/left.svg
+// Auto-generated from editor/container-align/container-align-left.svg
 import React from 'react';
 
 export interface ContainerAlignLeftProps extends React.SVGProps<SVGSVGElement> {}

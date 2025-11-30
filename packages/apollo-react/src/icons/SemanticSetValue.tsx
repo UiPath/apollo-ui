@@ -1,4 +1,4 @@
-// Auto-generated from semantic-set-value.svg
+// Auto-generated from studio-icons/semantic-set-value.svg
 import React from 'react';
 
 export interface SemanticSetValueProps extends React.SVGProps<SVGSVGElement> {}

@@ -1,4 +1,4 @@
-// Auto-generated from folder-shared.svg
+// Auto-generated from object/folder-shared.svg
 import React from 'react';
 
 export interface FolderSharedProps extends React.SVGProps<SVGSVGElement> {}

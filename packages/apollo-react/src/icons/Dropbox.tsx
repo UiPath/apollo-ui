@@ -1,4 +1,4 @@
-// Auto-generated from dropbox.svg
+// Auto-generated from third-party/dropbox.svg
 import React from 'react';
 
 export interface DropboxProps extends React.SVGProps<SVGSVGElement> {}

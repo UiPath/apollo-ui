@@ -1,4 +1,4 @@
-// Auto-generated from icontact.svg
+// Auto-generated from third-party/icontact.svg
 import React from 'react';
 
 export interface IcontactProps extends React.SVGProps<SVGSVGElement> {}

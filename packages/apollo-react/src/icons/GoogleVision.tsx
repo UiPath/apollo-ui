@@ -1,4 +1,4 @@
-// Auto-generated from google-vision.svg
+// Auto-generated from third-party/google-vision.svg
 import React from 'react';
 
 export interface GoogleVisionProps extends React.SVGProps<SVGSVGElement> {}

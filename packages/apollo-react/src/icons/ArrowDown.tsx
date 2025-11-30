@@ -1,4 +1,4 @@
-// Auto-generated from arrow-down.svg
+// Auto-generated from navigation/arrow-down.svg
 import React from 'react';
 
 export interface ArrowDownProps extends React.SVGProps<SVGSVGElement> {}

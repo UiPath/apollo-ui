@@ -1,4 +1,4 @@
-// Auto-generated from date-select-set.svg
+// Auto-generated from action/date-select-set.svg
 import React from 'react';
 
 export interface DateSelectSetProps extends React.SVGProps<SVGSVGElement> {}

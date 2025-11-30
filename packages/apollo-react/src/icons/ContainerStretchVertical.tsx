@@ -1,4 +1,4 @@
-// Auto-generated from container-stretch/vertical.svg
+// Auto-generated from editor/container-stretch/container-stretch-vertical.svg
 import React from 'react';
 
 export interface ContainerStretchVerticalProps extends React.SVGProps<SVGSVGElement> {}

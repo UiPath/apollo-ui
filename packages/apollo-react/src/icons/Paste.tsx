@@ -1,4 +1,4 @@
-// Auto-generated from paste.svg
+// Auto-generated from action/paste.svg
 import React from 'react';
 
 export interface PasteProps extends React.SVGProps<SVGSVGElement> {}

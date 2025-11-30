@@ -1,4 +1,4 @@
-// Auto-generated from open-in-new.svg
+// Auto-generated from action/open-in-new.svg
 import React from 'react';
 
 export interface OpenInNewProps extends React.SVGProps<SVGSVGElement> {}

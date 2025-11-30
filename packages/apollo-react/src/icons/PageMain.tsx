@@ -1,4 +1,4 @@
-// Auto-generated from page-main.svg
+// Auto-generated from object/page-main.svg
 import React from 'react';
 
 export interface PageMainProps extends React.SVGProps<SVGSVGElement> {}

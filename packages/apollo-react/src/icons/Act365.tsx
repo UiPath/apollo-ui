@@ -1,4 +1,4 @@
-// Auto-generated from act-365.svg
+// Auto-generated from third-party/act-365.svg
 import React from 'react';
 
 export interface Act365Props extends React.SVGProps<SVGSVGElement> {}

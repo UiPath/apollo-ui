@@ -1,4 +1,4 @@
-// Auto-generated from google-tasks.svg
+// Auto-generated from third-party/google-tasks.svg
 import React from 'react';
 
 export interface GoogleTasksProps extends React.SVGProps<SVGSVGElement> {}

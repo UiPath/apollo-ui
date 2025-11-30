@@ -1,0 +1,23 @@
+// Auto-generated from studio-activities-icon-sets/activities-web-api/web-api-execute-xpath.svg
+import React from 'react';
+
+export interface WebAPIExecuteXPathProps extends React.SVGProps<SVGSVGElement> {}
+
+export const WebAPIExecuteXPath = React.forwardRef<SVGSVGElement, WebAPIExecuteXPathProps>(
+  (props, ref) => (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+      <g clipPath="url(#clip0_4117_1655)">
+<path d="M9.40039 7.40039L4.7998 12L9.40039 16.5996L8 18L2 12L8 6L9.40039 7.40039ZM22 12L16 18L14.5996 16.5996L19.2002 12L14.5996 7.40039L16 6L22 12Z" fill="currentColor"/>
+</g>
+<defs>
+<clipPath id="clip0_4117_1655">
+<rect width="24" height="24" fill="var(--color-foreground)"/>
+</clipPath>
+</defs>
+    </svg>
+  )
+);
+
+WebAPIExecuteXPath.displayName = 'WebAPIExecuteXPath';
+
+export default WebAPIExecuteXPath;

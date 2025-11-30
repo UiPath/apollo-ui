@@ -1,4 +1,4 @@
-// Auto-generated from constant-contact.svg
+// Auto-generated from third-party/constant-contact.svg
 import React from 'react';
 
 export interface ConstantContactProps extends React.SVGProps<SVGSVGElement> {}

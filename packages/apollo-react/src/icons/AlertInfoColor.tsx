@@ -1,4 +1,4 @@
-// Auto-generated from alert-info-color.svg
+// Auto-generated from indicator-and-alert/alert-info-color.svg
 import React from 'react';
 
 export interface AlertInfoColorProps extends React.SVGProps<SVGSVGElement> {}

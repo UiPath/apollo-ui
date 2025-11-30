@@ -1,4 +1,4 @@
-// Auto-generated from hubspot-marketing.svg
+// Auto-generated from third-party/hubspot-marketing.svg
 import React from 'react';
 
 export interface HubspotMarketingProps extends React.SVGProps<SVGSVGElement> {}

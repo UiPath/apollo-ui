@@ -1,4 +1,4 @@
-// Auto-generated from arrow-forward.svg
+// Auto-generated from navigation/arrow-forward.svg
 import React from 'react';
 
 export interface ArrowForwardProps extends React.SVGProps<SVGSVGElement> {}

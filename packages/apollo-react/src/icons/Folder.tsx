@@ -1,4 +1,4 @@
-// Auto-generated from folder.svg
+// Auto-generated from object/folder.svg
 import React from 'react';
 
 export interface FolderProps extends React.SVGProps<SVGSVGElement> {}

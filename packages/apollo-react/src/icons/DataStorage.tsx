@@ -1,4 +1,4 @@
-// Auto-generated from data-storage.svg
+// Auto-generated from object/data-storage.svg
 import React from 'react';
 
 export interface DataStorageProps extends React.SVGProps<SVGSVGElement> {}

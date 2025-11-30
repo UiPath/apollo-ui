@@ -1,4 +1,4 @@
-// Auto-generated from border/top.svg
+// Auto-generated from editor/border/border-top.svg
 import React from 'react';
 
 export interface BorderTopProps extends React.SVGProps<SVGSVGElement> {}

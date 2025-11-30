@@ -1,4 +1,4 @@
-// Auto-generated from autopilot.svg
+// Auto-generated from object/autopilot.svg
 import React from 'react';
 
 export interface AutopilotProps extends React.SVGProps<SVGSVGElement> {}

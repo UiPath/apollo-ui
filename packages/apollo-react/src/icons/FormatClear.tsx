@@ -1,4 +1,4 @@
-// Auto-generated from format-clear.svg
+// Auto-generated from editor/format-clear.svg
 import React from 'react';
 
 export interface FormatClearProps extends React.SVGProps<SVGSVGElement> {}

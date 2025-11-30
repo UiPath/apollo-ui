@@ -1,4 +1,4 @@
-// Auto-generated from microsoft-apps.svg
+// Auto-generated from third-party/microsoft-apps.svg
 import React from 'react';
 
 export interface MicrosoftAppsProps extends React.SVGProps<SVGSVGElement> {}
@@ -33,31 +33,31 @@ export const MicrosoftApps = React.forwardRef<SVGSVGElement, MicrosoftAppsProps>
 <use xlinkHref="#image1_2_1804" transform="scale(0.00588235 0.016129)"/>
 </pattern>
 <linearGradient id="paint0_linear_2_1804" x1="16.5372" y1="0.511875" x2="16.5372" y2="20.8688" gradientUnits="userSpaceOnUse">
-<stop stop-color="#FFB900"/>
-<stop offset="0.17" stop-color="#EF8400"/>
-<stop offset="0.31" stop-color="#E25C01"/>
-<stop offset="0.43" stop-color="#DB4401"/>
-<stop offset="0.5" stop-color="#D83B01"/>
+<stop stopColor="#FFB900"/>
+<stop offset="0.17" stopColor="#EF8400"/>
+<stop offset="0.31" stopColor="#E25C01"/>
+<stop offset="0.43" stopColor="#DB4401"/>
+<stop offset="0.5" stopColor="#D83B01"/>
 </linearGradient>
 <linearGradient id="paint1_linear_2_1804" x1="12.8663" y1="1.23031" x2="2.08625" y2="16.6234" gradientUnits="userSpaceOnUse">
-<stop stop-color="#800600"/>
-<stop offset="0.6" stop-color="#C72127"/>
-<stop offset="0.73" stop-color="#C13959"/>
-<stop offset="0.85" stop-color="#BC4B81"/>
-<stop offset="0.94" stop-color="#B95799"/>
-<stop offset="1" stop-color="#B85BA2"/>
+<stop stopColor="#800600"/>
+<stop offset="0.6" stopColor="#C72127"/>
+<stop offset="0.73" stopColor="#C13959"/>
+<stop offset="0.85" stopColor="#BC4B81"/>
+<stop offset="0.94" stopColor="#B95799"/>
+<stop offset="1" stopColor="#B85BA2"/>
 </linearGradient>
 <linearGradient id="paint2_linear_2_1804" x1="7.35932" y1="20.1228" x2="21.4324" y2="20.1228" gradientUnits="userSpaceOnUse">
-<stop stop-color="#F32B44"/>
-<stop offset="0.6" stop-color="#A4070A"/>
+<stop stopColor="#F32B44"/>
+<stop offset="0.6" stopColor="#A4070A"/>
 </linearGradient>
 <linearGradient id="paint3_linear_2_1804" x1="13.0863" y1="0.917497" x2="10.8038" y2="4.17625" gradientUnits="userSpaceOnUse">
-<stop stop-opacity="0.4"/>
-<stop offset="1" stop-opacity="0"/>
+<stop stopOpacity="0.4"/>
+<stop offset="1" stopOpacity="0"/>
 </linearGradient>
 <linearGradient id="paint4_linear_2_1804" x1="16.9224" y1="20.4391" x2="10.6215" y2="19.8891" gradientUnits="userSpaceOnUse">
-<stop stop-opacity="0.4"/>
-<stop offset="1" stop-opacity="0"/>
+<stop stopOpacity="0.4"/>
+<stop offset="1" stopOpacity="0"/>
 </linearGradient>
 <clipPath id="clip0_2_1804">
 <rect width="22" height="22" fill="white" transform="translate(1 1)"/>

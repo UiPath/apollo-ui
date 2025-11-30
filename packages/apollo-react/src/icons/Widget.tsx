@@ -1,4 +1,4 @@
-// Auto-generated from widget.svg
+// Auto-generated from object/widget.svg
 import React from 'react';
 
 export interface WidgetProps extends React.SVGProps<SVGSVGElement> {}

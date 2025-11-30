@@ -1,4 +1,4 @@
-// Auto-generated from radio-button/unchecked.svg
+// Auto-generated from toggle/radio-button/radio-button-unchecked.svg
 import React from 'react';
 
 export interface RadioButtonUncheckedProps extends React.SVGProps<SVGSVGElement> {}

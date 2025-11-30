@@ -1,4 +1,4 @@
-// Auto-generated from collapse-all.svg
+// Auto-generated from navigation/collapse-all.svg
 import React from 'react';
 
 export interface CollapseAllProps extends React.SVGProps<SVGSVGElement> {}

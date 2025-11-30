@@ -1,4 +1,4 @@
-// Auto-generated from check-mark.svg
+// Auto-generated from action/check-mark.svg
 import React from 'react';
 
 export interface CheckMarkProps extends React.SVGProps<SVGSVGElement> {}

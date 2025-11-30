@@ -1,4 +1,4 @@
-// Auto-generated from user-from-directory.svg
+// Auto-generated from social/user-from-directory.svg
 import React from 'react';
 
 export interface UserFromDirectoryProps extends React.SVGProps<SVGSVGElement> {}

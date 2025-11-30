@@ -1,4 +1,4 @@
-// Auto-generated from snowflake.svg
+// Auto-generated from third-party/snowflake.svg
 import React from 'react';
 
 export interface SnowflakeProps extends React.SVGProps<SVGSVGElement> {}

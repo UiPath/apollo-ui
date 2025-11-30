@@ -1,4 +1,4 @@
-// Auto-generated from fullscreen-maximize.svg
+// Auto-generated from navigation/fullscreen-maximize.svg
 import React from 'react';
 
 export interface FullscreenMaximizeProps extends React.SVGProps<SVGSVGElement> {}

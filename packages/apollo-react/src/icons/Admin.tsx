@@ -1,4 +1,4 @@
-// Auto-generated from admin.svg
+// Auto-generated from product-logo/admin.svg
 import React from 'react';
 
 export interface AdminProps extends React.SVGProps<SVGSVGElement> {}

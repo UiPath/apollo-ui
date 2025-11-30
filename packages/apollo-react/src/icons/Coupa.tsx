@@ -1,4 +1,4 @@
-// Auto-generated from coupa.svg
+// Auto-generated from third-party/coupa.svg
 import React from 'react';
 
 export interface CoupaProps extends React.SVGProps<SVGSVGElement> {}

@@ -1,4 +1,4 @@
-// Auto-generated from layout-distribute/horizontal.svg
+// Auto-generated from editor/layout-distribute/layout-distribute-horizontal.svg
 import React from 'react';
 
 export interface LayoutDistributeHorizontalProps extends React.SVGProps<SVGSVGElement> {}

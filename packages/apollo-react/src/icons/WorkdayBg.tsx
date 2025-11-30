@@ -1,4 +1,4 @@
-// Auto-generated from workday-bg.svg
+// Auto-generated from third-party/workday-bg.svg
 import React from 'react';
 
 export interface WorkdayBgProps extends React.SVGProps<SVGSVGElement> {}

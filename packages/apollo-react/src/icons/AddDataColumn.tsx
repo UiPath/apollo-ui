@@ -1,4 +1,4 @@
-// Auto-generated from add-data-column.svg
+// Auto-generated from studio-icons/add-data-column.svg
 import React from 'react';
 
 export interface AddDataColumnProps extends React.SVGProps<SVGSVGElement> {}

@@ -1,4 +1,4 @@
-// Auto-generated from move-project.svg
+// Auto-generated from studio-icons/move-project.svg
 import React from 'react';
 
 export interface MoveProjectProps extends React.SVGProps<SVGSVGElement> {}

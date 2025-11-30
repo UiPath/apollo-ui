@@ -1,4 +1,4 @@
-// Auto-generated from read-storage-text.svg
+// Auto-generated from studio-icons/read-storage-text.svg
 import React from 'react';
 
 export interface ReadStorageTextProps extends React.SVGProps<SVGSVGElement> {}

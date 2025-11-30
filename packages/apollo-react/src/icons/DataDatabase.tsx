@@ -1,4 +1,4 @@
-// Auto-generated from data-database.svg
+// Auto-generated from object/data-database.svg
 import React from 'react';
 
 export interface DataDatabaseProps extends React.SVGProps<SVGSVGElement> {}

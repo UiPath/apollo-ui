@@ -1,4 +1,4 @@
-// Auto-generated from remove-log-fields.svg
+// Auto-generated from studio-icons/remove-log-fields.svg
 import React from 'react';
 
 export interface RemoveLogFieldsProps extends React.SVGProps<SVGSVGElement> {}

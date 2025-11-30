@@ -1,4 +1,4 @@
-// Auto-generated from shuffle.svg
+// Auto-generated from action/shuffle.svg
 import React from 'react';
 
 export interface ShuffleProps extends React.SVGProps<SVGSVGElement> {}

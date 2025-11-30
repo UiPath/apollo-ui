@@ -1,4 +1,4 @@
-// Auto-generated from autopilot-marker.svg
+// Auto-generated from indicator-and-alert/autopilot-marker.svg
 import React from 'react';
 
 export interface AutopilotMarkerProps extends React.SVGProps<SVGSVGElement> {}

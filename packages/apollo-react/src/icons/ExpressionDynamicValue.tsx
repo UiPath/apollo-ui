@@ -1,4 +1,4 @@
-// Auto-generated from expression-dynamic-value.svg
+// Auto-generated from object/expression-dynamic-value.svg
 import React from 'react';
 
 export interface ExpressionDynamicValueProps extends React.SVGProps<SVGSVGElement> {}

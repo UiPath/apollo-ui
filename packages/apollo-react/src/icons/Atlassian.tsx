@@ -1,4 +1,4 @@
-// Auto-generated from atlassian.svg
+// Auto-generated from third-party/atlassian.svg
 import React from 'react';
 
 export interface AtlassianProps extends React.SVGProps<SVGSVGElement> {}
@@ -10,8 +10,8 @@ export const Atlassian = React.forwardRef<SVGSVGElement, AtlassianProps>(
 <path d="M11.2801 1.31162C9.91845 3.38036 9.12493 5.76305 8.97732 8.22592C8.82972 10.6888 9.33311 13.1473 10.4381 15.3601L14.107 22.6051C14.1612 22.7121 14.2446 22.8022 14.3477 22.8652C14.4508 22.9281 14.5696 22.9615 14.6909 22.9615H22.2992C22.385 22.9617 22.47 22.9452 22.5493 22.9129C22.6286 22.8805 22.7007 22.8331 22.7613 22.7732C22.822 22.7133 22.8701 22.6421 22.9029 22.5638C22.9356 22.4855 22.9523 22.4016 22.9521 22.3168C22.9522 22.2169 22.9291 22.1183 22.8845 22.0286L12.3909 1.30859C12.3411 1.20476 12.2624 1.11703 12.1641 1.0556C12.0658 0.994162 11.9518 0.961548 11.8355 0.961548C11.7191 0.961548 11.6051 0.994162 11.5068 1.0556C11.4085 1.11703 11.3299 1.20476 11.2801 1.30859V1.31162Z" fill="#2684FF"/>
 <defs>
 <linearGradient id="paint0_linear_2_1659" x1="9.92935" y1="12.8443" x2="4.13631" y2="22.3966" gradientUnits="userSpaceOnUse">
-<stop stop-color="#0052CC"/>
-<stop offset="0.92" stop-color="#2684FF"/>
+<stop stopColor="#0052CC"/>
+<stop offset="0.92" stopColor="#2684FF"/>
 </linearGradient>
 </defs>
     </svg>

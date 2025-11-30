@@ -1,4 +1,4 @@
-// Auto-generated from list-datastores.svg
+// Auto-generated from studio-icons/list-datastores.svg
 import React from 'react';
 
 export interface ListDatastoresProps extends React.SVGProps<SVGSVGElement> {}

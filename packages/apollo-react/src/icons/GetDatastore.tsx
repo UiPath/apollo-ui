@@ -1,4 +1,4 @@
-// Auto-generated from get-datastore.svg
+// Auto-generated from studio-icons/get-datastore.svg
 import React from 'react';
 
 export interface GetDatastoreProps extends React.SVGProps<SVGSVGElement> {}

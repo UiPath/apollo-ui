@@ -1,4 +1,4 @@
-// Auto-generated from table-chart.svg
+// Auto-generated from editor/table-chart.svg
 import React from 'react';
 
 export interface TableChartProps extends React.SVGProps<SVGSVGElement> {}

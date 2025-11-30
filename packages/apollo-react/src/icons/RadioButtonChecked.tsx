@@ -1,4 +1,4 @@
-// Auto-generated from radio-button/checked.svg
+// Auto-generated from toggle/radio-button/radio-button-checked.svg
 import React from 'react';
 
 export interface RadioButtonCheckedProps extends React.SVGProps<SVGSVGElement> {}

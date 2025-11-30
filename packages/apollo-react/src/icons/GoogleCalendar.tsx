@@ -1,4 +1,4 @@
-// Auto-generated from google-calendar.svg
+// Auto-generated from third-party/google-calendar.svg
 import React from 'react';
 
 export interface GoogleCalendarProps extends React.SVGProps<SVGSVGElement> {}

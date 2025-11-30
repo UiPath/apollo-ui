@@ -1,4 +1,4 @@
-// Auto-generated from feedback.svg
+// Auto-generated from action/feedback.svg
 import React from 'react';
 
 export interface FeedbackProps extends React.SVGProps<SVGSVGElement> {}

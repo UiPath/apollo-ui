@@ -1,0 +1,17 @@
+// Auto-generated from ui-agents-icons/agents/agents-set.svg
+import React from 'react';
+
+export interface AgentsSetProps extends React.SVGProps<SVGSVGElement> {}
+
+export const AgentsSet = React.forwardRef<SVGSVGElement, AgentsSetProps>(
+  (props, ref) => (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+      <path d="M6.65039 21L5.40039 19.75L12.0004 13.15L15.6004 16.75L20.9254 11.4L22.2004 12.675L15.6004 19.275L12.0004 15.675L6.65039 21Z" fill="#0067DF"/>
+<path d="M3.5998 19.8C3.0998 19.8 2.6748 19.6237 2.3248 19.2712C1.9748 18.9187 1.7998 18.495 1.7998 18V4.8C1.7998 4.31667 1.97897 3.89583 2.3373 3.5375C2.69564 3.17917 3.11647 3 3.5998 3H16.7998C17.2831 3 17.704 3.17917 18.0623 3.5375C18.4206 3.89583 18.5998 4.31667 18.5998 4.8V8.8H3.5998V19.8ZM3.5998 7H16.7998V4.8H3.5998V7Z" fill="currentColor"/>
+    </svg>
+  )
+);
+
+AgentsSet.displayName = 'AgentsSet';
+
+export default AgentsSet;

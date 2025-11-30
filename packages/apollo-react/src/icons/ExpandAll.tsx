@@ -1,4 +1,4 @@
-// Auto-generated from expand-all.svg
+// Auto-generated from navigation/expand-all.svg
 import React from 'react';
 
 export interface ExpandAllProps extends React.SVGProps<SVGSVGElement> {}

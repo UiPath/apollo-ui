@@ -1,4 +1,4 @@
-// Auto-generated from sugar.svg
+// Auto-generated from third-party/sugar.svg
 import React from 'react';
 
 export interface SugarProps extends React.SVGProps<SVGSVGElement> {}

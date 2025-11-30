@@ -1,4 +1,4 @@
-// Auto-generated from integration-service.svg
+// Auto-generated from product-logo/integration-service.svg
 import React from 'react';
 
 export interface IntegrationServiceProps extends React.SVGProps<SVGSVGElement> {}

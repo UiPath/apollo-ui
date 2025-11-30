@@ -1,4 +1,4 @@
-// Auto-generated from zoom-to-fit.svg
+// Auto-generated from navigation/zoom-to-fit.svg
 import React from 'react';
 
 export interface ZoomToFitProps extends React.SVGProps<SVGSVGElement> {}

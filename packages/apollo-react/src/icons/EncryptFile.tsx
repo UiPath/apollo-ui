@@ -1,4 +1,4 @@
-// Auto-generated from encrypt-file.svg
+// Auto-generated from studio-icons/encrypt-file.svg
 import React from 'react';
 
 export interface EncryptFileProps extends React.SVGProps<SVGSVGElement> {}

@@ -1,4 +1,4 @@
-// Auto-generated from create-list.svg
+// Auto-generated from studio-icons/create-list.svg
 import React from 'react';
 
 export interface CreateListProps extends React.SVGProps<SVGSVGElement> {}

@@ -1,4 +1,4 @@
-// Auto-generated from format-color-reset.svg
+// Auto-generated from editor/format-color-reset.svg
 import React from 'react';
 
 export interface FormatColorResetProps extends React.SVGProps<SVGSVGElement> {}

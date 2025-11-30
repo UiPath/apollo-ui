@@ -1,4 +1,4 @@
-// Auto-generated from microsoft-365.svg
+// Auto-generated from third-party/microsoft-365.svg
 import React from 'react';
 
 export interface Microsoft365Props extends React.SVGProps<SVGSVGElement> {}
@@ -16,28 +16,28 @@ export const Microsoft365 = React.forwardRef<SVGSVGElement, Microsoft365Props>(
 </g>
 <defs>
 <radialGradient id="paint0_radial_2_1796" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(8.52313 4.93956) rotate(110.528) scale(17.6307 30.7516)">
-<stop offset="0.06441" stop-color="#AE7FE2"/>
-<stop offset="1" stop-color="#0078D4"/>
+<stop offset="0.06441" stopColor="#AE7FE2"/>
+<stop offset="1" stopColor="#0078D4"/>
 </radialGradient>
 <linearGradient id="paint1_linear_2_1796" x1="8.57243" y1="19.3282" x2="6.05688" y2="14.9774" gradientUnits="userSpaceOnUse">
-<stop stop-color="#114A8B"/>
-<stop offset="1" stop-color="#0078D4" stop-opacity="0"/>
+<stop stopColor="#114A8B"/>
+<stop offset="1" stopColor="#0078D4" stopOpacity="0"/>
 </linearGradient>
 <radialGradient id="paint2_radial_2_1796" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(4.83006 18.5264) rotate(-8.36717) scale(16.4073 10.8381)">
-<stop offset="0.133928" stop-color="#D59DFF"/>
-<stop offset="1" stop-color="#5E438F"/>
+<stop offset="0.133928" stopColor="#D59DFF"/>
+<stop offset="1" stopColor="#5E438F"/>
 </radialGradient>
 <linearGradient id="paint3_linear_2_1796" x1="20.6436" y1="12.7275" x2="17.948" y2="16.5927" gradientUnits="userSpaceOnUse">
-<stop stop-color="#493474"/>
-<stop offset="1" stop-color="#8C66BA" stop-opacity="0"/>
+<stop stopColor="#493474"/>
+<stop offset="1" stopColor="#8C66BA" stopOpacity="0"/>
 </linearGradient>
 <radialGradient id="paint4_radial_2_1796" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(21.0128 13.3231) rotate(-165.772) scale(13.1694 22.1695)">
-<stop offset="0.0584996" stop-color="#50E6FF"/>
-<stop offset="1" stop-color="#436DCD"/>
+<stop offset="0.0584996" stopColor="#50E6FF"/>
+<stop offset="1" stopColor="#436DCD"/>
 </radialGradient>
 <linearGradient id="paint5_linear_2_1796" x1="8.28906" y1="0.933296" x2="12.2579" y2="0.933296" gradientUnits="userSpaceOnUse">
-<stop stop-color="#2D3F80"/>
-<stop offset="1" stop-color="#436DCD" stop-opacity="0"/>
+<stop stopColor="#2D3F80"/>
+<stop offset="1" stopColor="#436DCD" stopOpacity="0"/>
 </linearGradient>
 <clipPath id="clip0_2_1796">
 <rect width="21.1364" height="23.25" fill="white" transform="translate(1.43262 0.375)"/>

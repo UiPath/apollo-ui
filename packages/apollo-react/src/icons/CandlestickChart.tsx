@@ -1,4 +1,4 @@
-// Auto-generated from candlestick-chart.svg
+// Auto-generated from editor/candlestick-chart.svg
 import React from 'react';
 
 export interface CandlestickChartProps extends React.SVGProps<SVGSVGElement> {}

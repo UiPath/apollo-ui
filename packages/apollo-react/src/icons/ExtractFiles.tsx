@@ -1,4 +1,4 @@
-// Auto-generated from extract-files.svg
+// Auto-generated from studio-icons/extract-files.svg
 import React from 'react';
 
 export interface ExtractFilesProps extends React.SVGProps<SVGSVGElement> {}

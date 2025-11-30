@@ -1,4 +1,4 @@
-// Auto-generated from vmware.svg
+// Auto-generated from third-party/vmware.svg
 import React from 'react';
 
 export interface VmwareProps extends React.SVGProps<SVGSVGElement> {}

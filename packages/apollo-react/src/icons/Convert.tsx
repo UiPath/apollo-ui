@@ -1,4 +1,4 @@
-// Auto-generated from convert.svg
+// Auto-generated from action/convert.svg
 import React from 'react';
 
 export interface ConvertProps extends React.SVGProps<SVGSVGElement> {}

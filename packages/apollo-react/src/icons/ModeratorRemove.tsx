@@ -1,4 +1,4 @@
-// Auto-generated from moderator-remove.svg
+// Auto-generated from social/moderator-remove.svg
 import React from 'react';
 
 export interface ModeratorRemoveProps extends React.SVGProps<SVGSVGElement> {}

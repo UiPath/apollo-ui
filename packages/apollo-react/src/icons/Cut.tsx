@@ -1,4 +1,4 @@
-// Auto-generated from cut.svg
+// Auto-generated from action/cut.svg
 import React from 'react';
 
 export interface CutProps extends React.SVGProps<SVGSVGElement> {}

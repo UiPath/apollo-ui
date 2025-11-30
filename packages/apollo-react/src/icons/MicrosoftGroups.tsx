@@ -1,4 +1,4 @@
-// Auto-generated from microsoft-groups.svg
+// Auto-generated from third-party/microsoft-groups.svg
 import React from 'react';
 
 export interface MicrosoftGroupsProps extends React.SVGProps<SVGSVGElement> {}

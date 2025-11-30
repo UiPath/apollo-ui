@@ -1,4 +1,4 @@
-// Auto-generated from take-screenshot.svg
+// Auto-generated from studio-icons/take-screenshot.svg
 import React from 'react';
 
 export interface TakeScreenshotProps extends React.SVGProps<SVGSVGElement> {}

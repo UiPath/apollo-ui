@@ -1,4 +1,4 @@
-// Auto-generated from expression-editor.svg
+// Auto-generated from object/expression-editor.svg
 import React from 'react';
 
 export interface ExpressionEditorProps extends React.SVGProps<SVGSVGElement> {}

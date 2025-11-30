@@ -1,4 +1,4 @@
-// Auto-generated from title.svg
+// Auto-generated from editor/title.svg
 import React from 'react';
 
 export interface TitleProps extends React.SVGProps<SVGSVGElement> {}

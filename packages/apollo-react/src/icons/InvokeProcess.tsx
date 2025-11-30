@@ -1,4 +1,4 @@
-// Auto-generated from invoke-process.svg
+// Auto-generated from studio-icons/invoke-process.svg
 import React from 'react';
 
 export interface InvokeProcessProps extends React.SVGProps<SVGSVGElement> {}

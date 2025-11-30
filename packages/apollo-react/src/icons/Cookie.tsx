@@ -1,4 +1,4 @@
-// Auto-generated from cookie.svg
+// Auto-generated from social/cookie.svg
 import React from 'react';
 
 export interface CookieProps extends React.SVGProps<SVGSVGElement> {}

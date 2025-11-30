@@ -1,4 +1,4 @@
-// Auto-generated from yahoo.svg
+// Auto-generated from third-party/yahoo.svg
 import React from 'react';
 
 export interface YahooProps extends React.SVGProps<SVGSVGElement> {}

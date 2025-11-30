@@ -1,4 +1,4 @@
-// Auto-generated from intuit.svg
+// Auto-generated from third-party/intuit.svg
 import React from 'react';
 
 export interface IntuitProps extends React.SVGProps<SVGSVGElement> {}

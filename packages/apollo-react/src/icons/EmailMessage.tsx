@@ -1,4 +1,4 @@
-// Auto-generated from email-message.svg
+// Auto-generated from action/email-message.svg
 import React from 'react';
 
 export interface EmailMessageProps extends React.SVGProps<SVGSVGElement> {}

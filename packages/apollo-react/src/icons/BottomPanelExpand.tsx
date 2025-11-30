@@ -1,4 +1,4 @@
-// Auto-generated from bottom-panel-expand.svg
+// Auto-generated from studio-icons/bottom-panel-expand.svg
 import React from 'react';
 
 export interface BottomPanelExpandProps extends React.SVGProps<SVGSVGElement> {}

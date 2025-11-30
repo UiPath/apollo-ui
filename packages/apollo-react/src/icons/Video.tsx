@@ -1,4 +1,4 @@
-// Auto-generated from video.svg
+// Auto-generated from object/video.svg
 import React from 'react';
 
 export interface VideoProps extends React.SVGProps<SVGSVGElement> {}

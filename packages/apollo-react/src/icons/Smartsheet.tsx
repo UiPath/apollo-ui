@@ -1,4 +1,4 @@
-// Auto-generated from smartsheet.svg
+// Auto-generated from third-party/smartsheet.svg
 import React from 'react';
 
 export interface SmartsheetProps extends React.SVGProps<SVGSVGElement> {}

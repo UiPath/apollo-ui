@@ -1,4 +1,4 @@
-// Auto-generated from checklist.svg
+// Auto-generated from editor/checklist.svg
 import React from 'react';
 
 export interface ChecklistProps extends React.SVGProps<SVGSVGElement> {}

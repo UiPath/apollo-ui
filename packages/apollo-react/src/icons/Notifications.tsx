@@ -1,4 +1,4 @@
-// Auto-generated from notifications.svg
+// Auto-generated from indicator-and-alert/notifications.svg
 import React from 'react';
 
 export interface NotificationsProps extends React.SVGProps<SVGSVGElement> {}

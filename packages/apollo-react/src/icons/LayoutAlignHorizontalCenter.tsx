@@ -1,4 +1,4 @@
-// Auto-generated from layout-align/horizontal-center.svg
+// Auto-generated from editor/layout-align/layout-align-horizontal-center.svg
 import React from 'react';
 
 export interface LayoutAlignHorizontalCenterProps extends React.SVGProps<SVGSVGElement> {}

@@ -1,4 +1,4 @@
-// Auto-generated from get-host.svg
+// Auto-generated from studio-icons/get-host.svg
 import React from 'react';
 
 export interface GetHostProps extends React.SVGProps<SVGSVGElement> {}

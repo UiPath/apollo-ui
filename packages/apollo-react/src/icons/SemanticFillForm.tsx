@@ -1,4 +1,4 @@
-// Auto-generated from semantic-fill-form.svg
+// Auto-generated from studio-icons/semantic-fill-form.svg
 import React from 'react';
 
 export interface SemanticFillFormProps extends React.SVGProps<SVGSVGElement> {}

@@ -1,4 +1,4 @@
-// Auto-generated from publish.svg
+// Auto-generated from action/publish.svg
 import React from 'react';
 
 export interface PublishProps extends React.SVGProps<SVGSVGElement> {}

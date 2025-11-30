@@ -1,4 +1,4 @@
-// Auto-generated from agent-run.svg
+// Auto-generated from object/agent-run.svg
 import React from 'react';
 
 export interface AgentRunProps extends React.SVGProps<SVGSVGElement> {}

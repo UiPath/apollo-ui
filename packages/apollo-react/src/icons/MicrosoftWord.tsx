@@ -1,4 +1,4 @@
-// Auto-generated from microsoft-word.svg
+// Auto-generated from third-party/microsoft-word.svg
 import React from 'react';
 
 export interface MicrosoftWordProps extends React.SVGProps<SVGSVGElement> {}
@@ -10,29 +10,29 @@ export const MicrosoftWord = React.forwardRef<SVGSVGElement, MicrosoftWordProps>
 <path d="M6 17.25H24V20.5C24 21.6046 23.1046 22.5 22 22.5H8C6.89543 22.5 6 21.6046 6 20.5V17.25Z" fill="url(#paint1_linear_2761_1810)"/>
 <rect x="6" y="12" width="18" height="5.25" fill="url(#paint2_linear_2761_1810)"/>
 <rect x="6" y="6.75" width="18" height="5.25" fill="url(#paint3_linear_2761_1810)"/>
-<path d="M6 9.75C6 8.09315 7.34315 6.75 9 6.75H12C13.6569 6.75 15 8.09315 15 9.75V17.25C15 18.9069 13.6569 20.25 12 20.25H6V9.75Z" fill="black" fill-opacity="0.3"/>
+<path d="M6 9.75C6 8.09315 7.34315 6.75 9 6.75H12C13.6569 6.75 15 8.09315 15 9.75V17.25C15 18.9069 13.6569 20.25 12 20.25H6V9.75Z" fill="black" fillOpacity="0.3"/>
 <rect y="5.25" width="13.5" height="13.5" rx="2" fill="url(#paint4_linear_2761_1810)"/>
 <path d="M11.25 8.26064H9.78922L8.64216 13.1543L7.38725 8.25H6.15196L4.88725 13.1543L3.75 8.26064H2.25L4.20098 15.75H5.4951L6.75 11.016L8.0049 15.75H9.29902L11.25 8.26064Z" fill="white"/>
 <defs>
 <linearGradient id="paint0_linear_2761_1810" x1="6" y1="5" x2="24" y2="5" gradientUnits="userSpaceOnUse">
-<stop stop-color="#2B78B1"/>
-<stop offset="1" stop-color="#338ACD"/>
+<stop stopColor="#2B78B1"/>
+<stop offset="1" stopColor="#338ACD"/>
 </linearGradient>
 <linearGradient id="paint1_linear_2761_1810" x1="6" y1="20.5313" x2="24" y2="20.5313" gradientUnits="userSpaceOnUse">
-<stop stop-color="#1B366F"/>
-<stop offset="1" stop-color="#2657B0"/>
+<stop stopColor="#1B366F"/>
+<stop offset="1" stopColor="#2657B0"/>
 </linearGradient>
 <linearGradient id="paint2_linear_2761_1810" x1="13.875" y1="15" x2="24" y2="15" gradientUnits="userSpaceOnUse">
-<stop stop-color="#20478B"/>
-<stop offset="1" stop-color="#2D6FD1"/>
+<stop stopColor="#20478B"/>
+<stop offset="1" stopColor="#2D6FD1"/>
 </linearGradient>
 <linearGradient id="paint3_linear_2761_1810" x1="13.875" y1="9.75" x2="24" y2="9.75" gradientUnits="userSpaceOnUse">
-<stop stop-color="#215295"/>
-<stop offset="1" stop-color="#2E84D3"/>
+<stop stopColor="#215295"/>
+<stop offset="1" stopColor="#2E84D3"/>
 </linearGradient>
 <linearGradient id="paint4_linear_2761_1810" x1="2.48353e-08" y1="12.75" x2="14.25" y2="12.75" gradientUnits="userSpaceOnUse">
-<stop stop-color="#223E74"/>
-<stop offset="1" stop-color="#215091"/>
+<stop stopColor="#223E74"/>
+<stop offset="1" stopColor="#215091"/>
 </linearGradient>
 </defs>
     </svg>

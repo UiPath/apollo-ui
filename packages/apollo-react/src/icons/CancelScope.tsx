@@ -1,4 +1,4 @@
-// Auto-generated from cancel-scope.svg
+// Auto-generated from logic/cancel-scope.svg
 import React from 'react';
 
 export interface CancelScopeProps extends React.SVGProps<SVGSVGElement> {}

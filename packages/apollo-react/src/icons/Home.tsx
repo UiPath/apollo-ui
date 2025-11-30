@@ -1,4 +1,4 @@
-// Auto-generated from home.svg
+// Auto-generated from product-logo/home.svg
 import React from 'react';
 
 export interface HomeProps extends React.SVGProps<SVGSVGElement> {}

@@ -1,4 +1,4 @@
-// Auto-generated from format-text-direction-l-to-r.svg
+// Auto-generated from editor/format-text-direction-l-to-r.svg
 import React from 'react';
 
 export interface FormatTextDirectionLToRProps extends React.SVGProps<SVGSVGElement> {}

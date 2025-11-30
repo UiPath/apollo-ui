@@ -1,4 +1,4 @@
-// Auto-generated from more.svg
+// Auto-generated from navigation/more.svg
 import React from 'react';
 
 export interface MoreProps extends React.SVGProps<SVGSVGElement> {}

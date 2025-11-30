@@ -1,4 +1,4 @@
-// Auto-generated from remove-data-column.svg
+// Auto-generated from studio-icons/remove-data-column.svg
 import React from 'react';
 
 export interface RemoveDataColumnProps extends React.SVGProps<SVGSVGElement> {}

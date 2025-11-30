@@ -1,4 +1,4 @@
-// Auto-generated from netiq-edirectory.svg
+// Auto-generated from third-party/netiq-edirectory.svg
 import React from 'react';
 
 export interface NetiqEdirectoryProps extends React.SVGProps<SVGSVGElement> {}

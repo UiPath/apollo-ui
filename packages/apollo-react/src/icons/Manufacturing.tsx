@@ -1,4 +1,4 @@
-// Auto-generated from manufacturing.svg
+// Auto-generated from social/manufacturing.svg
 import React from 'react';
 
 export interface ManufacturingProps extends React.SVGProps<SVGSVGElement> {}

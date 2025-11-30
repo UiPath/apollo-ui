@@ -1,4 +1,4 @@
-// Auto-generated from list-numbered.svg
+// Auto-generated from editor/list-numbered.svg
 import React from 'react';
 
 export interface ListNumberedProps extends React.SVGProps<SVGSVGElement> {}

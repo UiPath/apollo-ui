@@ -1,4 +1,4 @@
-// Auto-generated from robot.svg
+// Auto-generated from object/robot.svg
 import React from 'react';
 
 export interface RobotProps extends React.SVGProps<SVGSVGElement> {}

@@ -1,4 +1,4 @@
-// Auto-generated from archive.svg
+// Auto-generated from action/archive.svg
 import React from 'react';
 
 export interface ArchiveProps extends React.SVGProps<SVGSVGElement> {}

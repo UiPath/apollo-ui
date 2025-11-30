@@ -1,4 +1,4 @@
-// Auto-generated from salesloft.svg
+// Auto-generated from third-party/salesloft.svg
 import React from 'react';
 
 export interface SalesloftProps extends React.SVGProps<SVGSVGElement> {}

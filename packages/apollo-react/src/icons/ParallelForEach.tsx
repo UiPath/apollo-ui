@@ -1,4 +1,4 @@
-// Auto-generated from parallel-for-each.svg
+// Auto-generated from logic/parallel-for-each.svg
 import React from 'react';
 
 export interface ParallelForEachProps extends React.SVGProps<SVGSVGElement> {}

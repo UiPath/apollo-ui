@@ -1,4 +1,4 @@
-// Auto-generated from bar-chart.svg
+// Auto-generated from editor/bar-chart.svg
 import React from 'react';
 
 export interface BarChartProps extends React.SVGProps<SVGSVGElement> {}

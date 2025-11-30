@@ -1,4 +1,4 @@
-// Auto-generated from language.svg
+// Auto-generated from object/language.svg
 import React from 'react';
 
 export interface LanguageProps extends React.SVGProps<SVGSVGElement> {}

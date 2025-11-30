@@ -1,4 +1,4 @@
-// Auto-generated from sendgrid.svg
+// Auto-generated from third-party/sendgrid.svg
 import React from 'react';
 
 export interface SendgridProps extends React.SVGProps<SVGSVGElement> {}

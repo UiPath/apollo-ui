@@ -1,4 +1,4 @@
-// Auto-generated from unmount-tools-installer.svg
+// Auto-generated from studio-icons/unmount-tools-installer.svg
 import React from 'react';
 
 export interface UnmountToolsInstallerProps extends React.SVGProps<SVGSVGElement> {}

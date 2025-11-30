@@ -1,4 +1,4 @@
-// Auto-generated from format-align-center.svg
+// Auto-generated from editor/format-align-center.svg
 import React from 'react';
 
 export interface FormatAlignCenterProps extends React.SVGProps<SVGSVGElement> {}

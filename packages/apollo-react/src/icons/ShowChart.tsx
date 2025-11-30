@@ -1,4 +1,4 @@
-// Auto-generated from show-chart.svg
+// Auto-generated from editor/show-chart.svg
 import React from 'react';
 
 export interface ShowChartProps extends React.SVGProps<SVGSVGElement> {}

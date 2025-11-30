@@ -1,4 +1,4 @@
-// Auto-generated from label-placement/top.svg
+// Auto-generated from editor/label-placement/label-placement-top.svg
 import React from 'react';
 
 export interface LabelPlacementTopProps extends React.SVGProps<SVGSVGElement> {}

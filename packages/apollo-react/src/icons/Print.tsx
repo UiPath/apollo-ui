@@ -1,4 +1,4 @@
-// Auto-generated from print.svg
+// Auto-generated from action/print.svg
 import React from 'react';
 
 export interface PrintProps extends React.SVGProps<SVGSVGElement> {}

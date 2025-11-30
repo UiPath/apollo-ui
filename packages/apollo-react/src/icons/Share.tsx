@@ -1,4 +1,4 @@
-// Auto-generated from share.svg
+// Auto-generated from social/share.svg
 import React from 'react';
 
 export interface ShareProps extends React.SVGProps<SVGSVGElement> {}

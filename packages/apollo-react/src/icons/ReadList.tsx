@@ -1,4 +1,4 @@
-// Auto-generated from read-list.svg
+// Auto-generated from studio-icons/read-list.svg
 import React from 'react';
 
 export interface ReadListProps extends React.SVGProps<SVGSVGElement> {}

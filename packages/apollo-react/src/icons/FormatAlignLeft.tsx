@@ -1,4 +1,4 @@
-// Auto-generated from format-align/left.svg
+// Auto-generated from editor/format-align/format-align-left.svg
 import React from 'react';
 
 export interface FormatAlignLeftProps extends React.SVGProps<SVGSVGElement> {}

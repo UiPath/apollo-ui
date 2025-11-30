@@ -1,4 +1,4 @@
-// Auto-generated from append-item-to-list.svg
+// Auto-generated from studio-icons/append-item-to-list.svg
 import React from 'react';
 
 export interface AppendItemToListProps extends React.SVGProps<SVGSVGElement> {}

@@ -1,4 +1,4 @@
-// Auto-generated from library.svg
+// Auto-generated from action/library.svg
 import React from 'react';
 
 export interface LibraryProps extends React.SVGProps<SVGSVGElement> {}

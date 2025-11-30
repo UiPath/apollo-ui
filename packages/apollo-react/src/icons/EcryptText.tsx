@@ -1,4 +1,4 @@
-// Auto-generated from ecrypt-text.svg
+// Auto-generated from studio-icons/ecrypt-text.svg
 import React from 'react';
 
 export interface EcryptTextProps extends React.SVGProps<SVGSVGElement> {}

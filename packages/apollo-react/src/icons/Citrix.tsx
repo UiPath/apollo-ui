@@ -1,4 +1,4 @@
-// Auto-generated from citrix.svg
+// Auto-generated from third-party/citrix.svg
 import React from 'react';
 
 export interface CitrixProps extends React.SVGProps<SVGSVGElement> {}

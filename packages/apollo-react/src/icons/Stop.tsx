@@ -1,4 +1,4 @@
-// Auto-generated from stop.svg
+// Auto-generated from action/stop.svg
 import React from 'react';
 
 export interface StopProps extends React.SVGProps<SVGSVGElement> {}

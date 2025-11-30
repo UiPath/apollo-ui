@@ -1,4 +1,4 @@
-// Auto-generated from upgrade-tools.svg
+// Auto-generated from studio-icons/upgrade-tools.svg
 import React from 'react';
 
 export interface UpgradeToolsProps extends React.SVGProps<SVGSVGElement> {}

@@ -1,4 +1,4 @@
-// Auto-generated from menu-collapse.svg
+// Auto-generated from navigation/menu-collapse.svg
 import React from 'react';
 
 export interface MenuCollapseProps extends React.SVGProps<SVGSVGElement> {}

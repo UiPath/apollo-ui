@@ -1,4 +1,4 @@
-// Auto-generated from alert-error.svg
+// Auto-generated from indicator-and-alert/alert-error.svg
 import React from 'react';
 
 export interface AlertErrorProps extends React.SVGProps<SVGSVGElement> {}

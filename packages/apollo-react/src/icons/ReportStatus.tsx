@@ -1,4 +1,4 @@
-// Auto-generated from report-status.svg
+// Auto-generated from studio-icons/report-status.svg
 import React from 'react';
 
 export interface ReportStatusProps extends React.SVGProps<SVGSVGElement> {}

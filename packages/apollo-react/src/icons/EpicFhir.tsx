@@ -1,4 +1,4 @@
-// Auto-generated from epic-fhir.svg
+// Auto-generated from third-party/epic-fhir.svg
 import React from 'react';
 
 export interface EpicFhirProps extends React.SVGProps<SVGSVGElement> {}

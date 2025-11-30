@@ -1,4 +1,4 @@
-// Auto-generated from asana.svg
+// Auto-generated from third-party/asana.svg
 import React from 'react';
 
 export interface AsanaProps extends React.SVGProps<SVGSVGElement> {}

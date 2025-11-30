@@ -1,0 +1,19 @@
+// Auto-generated from studio-icons/fetch-batch-from-stream.svg
+import React from 'react';
+
+export interface FetchBatchFromStreamProps extends React.SVGProps<SVGSVGElement> {}
+
+export const FetchBatchFromStream = React.forwardRef<SVGSVGElement, FetchBatchFromStreamProps>(
+  (props, ref) => (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+      <path d="M20 15L20 19.01L23 19.01L19 23L15 19.01L18 19.01L18 15L20 15Z" fill="#1976D2"/>
+<path d="M22 11.9999H20C18.61 11.9999 17.22 11.5299 16 10.6699C13.56 12.3799 10.44 12.3799 8 10.6699C6.78 11.5299 5.39 11.9999 4 11.9999H2V13.9999H4C5.37 13.9999 6.74 13.6499 8 12.9999C10.5 14.2999 13.5 14.2999 16 12.9999C17.26 13.6499 18.62 13.9999 20 13.9999H22V11.9999Z" fill="currentColor"/>
+<path d="M22 5.99992H20C18.61 5.99992 17.22 5.52992 16 4.66992C13.56 6.37992 10.44 6.37992 8 4.66992C6.78 5.52992 5.39 5.99992 4 5.99992H2V7.99992H4C5.37 7.99992 6.74 7.64992 8 6.99992C10.5 8.29992 13.5 8.29992 16 6.99992C17.26 7.64992 18.62 7.99992 20 7.99992H22V5.99992Z" fill="currentColor"/>
+<path d="M13 19.9174V17.8783C11.2881 18.1332 9.51326 17.7304 8 16.6699C6.78 17.5299 5.39 17.9999 4 17.9999H2V19.9999H4C5.37 19.9999 6.74 19.6499 8 18.9999C9.55357 19.8078 11.3002 20.1136 13 19.9174Z" fill="currentColor"/>
+    </svg>
+  )
+);
+
+FetchBatchFromStream.displayName = 'FetchBatchFromStream';
+
+export default FetchBatchFromStream;

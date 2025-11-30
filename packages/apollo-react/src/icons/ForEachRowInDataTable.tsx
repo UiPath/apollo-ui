@@ -1,4 +1,4 @@
-// Auto-generated from for-each-row-in-data-table.svg
+// Auto-generated from studio-icons/for-each-row-in-data-table.svg
 import React from 'react';
 
 export interface ForEachRowInDataTableProps extends React.SVGProps<SVGSVGElement> {}

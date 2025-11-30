@@ -1,4 +1,4 @@
-// Auto-generated from path-exists.svg
+// Auto-generated from studio-icons/path-exists.svg
 import React from 'react';
 
 export interface PathExistsProps extends React.SVGProps<SVGSVGElement> {}

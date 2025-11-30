@@ -1,4 +1,4 @@
-// Auto-generated from keyboard-shortcuts.svg
+// Auto-generated from action/keyboard-shortcuts.svg
 import React from 'react';
 
 export interface KeyboardShortcutsProps extends React.SVGProps<SVGSVGElement> {}
@@ -6,30 +6,7 @@ export interface KeyboardShortcutsProps extends React.SVGProps<SVGSVGElement> {}
 export const KeyboardShortcuts = React.forwardRef<SVGSVGElement, KeyboardShortcutsProps>(
   (props, ref) => (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
-      <mask id="path-1-inside-1_4041_1226" fill="white">
-<rect x="2" y="16" width="20" height="6" rx="1"/>
-</mask>
-<rect x="2" y="16" width="20" height="6" rx="1" stroke="currentColor" strokeWidth="4" mask="url(#path-1-inside-1_4041_1226)"/>
-<mask id="path-2-inside-2_4041_1226" fill="white">
-<rect x="2" y="9" width="10" height="6" rx="1"/>
-</mask>
-<rect x="2" y="9" width="10" height="6" rx="1" stroke="currentColor" strokeWidth="4" mask="url(#path-2-inside-2_4041_1226)"/>
-<mask id="path-3-inside-3_4041_1226" fill="white">
-<rect x="13" y="9" width="9" height="6" rx="1"/>
-</mask>
-<rect x="13" y="9" width="9" height="6" rx="1" stroke="currentColor" strokeWidth="4" mask="url(#path-3-inside-3_4041_1226)"/>
-<mask id="path-4-inside-4_4041_1226" fill="white">
-<rect x="2" y="2" width="6" height="6" rx="1"/>
-</mask>
-<rect x="2" y="2" width="6" height="6" rx="1" stroke="currentColor" strokeWidth="4" mask="url(#path-4-inside-4_4041_1226)"/>
-<mask id="path-5-inside-5_4041_1226" fill="white">
-<rect x="16" y="2" width="6" height="6" rx="1"/>
-</mask>
-<rect x="16" y="2" width="6" height="6" rx="1" stroke="currentColor" strokeWidth="4" mask="url(#path-5-inside-5_4041_1226)"/>
-<mask id="path-6-inside-6_4041_1226" fill="white">
-<rect x="9" y="2" width="6" height="6" rx="1"/>
-</mask>
-<rect x="9" y="2" width="6" height="6" rx="1" stroke="currentColor" strokeWidth="4" mask="url(#path-6-inside-6_4041_1226)"/>
+      <path fillRule="evenodd" clipRule="evenodd" d="M20 5H4C2.9 5 2.01 5.9 2.01 7L2 17C2 18.1 2.9 19 4 19H20C21.1 19 22 18.1 22 17V7C22 5.9 21.1 5 20 5ZM20 7V17H4V7H20ZM13 8H11V10H13V8ZM11 11H13V13H11V11ZM10 8H8V10H10V8ZM8 11H10V13H8V11ZM7 11H5V13H7V11ZM5 8H7V10H5V8ZM16 14H8V16H16V14ZM14 11H16V13H14V11ZM16 8H14V10H16V8ZM17 11H19V13H17V11ZM19 8H17V10H19V8Z" fill="currentColor"/>
     </svg>
   )
 );

@@ -1,4 +1,4 @@
-// Auto-generated from pan-hand-canvas.svg
+// Auto-generated from navigation/pan-hand-canvas.svg
 import React from 'react';
 
 export interface PanHandCanvasProps extends React.SVGProps<SVGSVGElement> {}

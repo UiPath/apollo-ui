@@ -1,4 +1,4 @@
-// Auto-generated from lookup-data-table.svg
+// Auto-generated from studio-icons/lookup-data-table.svg
 import React from 'react';
 
 export interface LookupDataTableProps extends React.SVGProps<SVGSVGElement> {}

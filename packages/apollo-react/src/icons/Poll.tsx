@@ -1,4 +1,4 @@
-// Auto-generated from poll.svg
+// Auto-generated from social/poll.svg
 import React from 'react';
 
 export interface PollProps extends React.SVGProps<SVGSVGElement> {}

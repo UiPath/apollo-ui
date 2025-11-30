@@ -1,4 +1,4 @@
-// Auto-generated from build-data-table.svg
+// Auto-generated from studio-icons/build-data-table.svg
 import React from 'react';
 
 export interface BuildDataTableProps extends React.SVGProps<SVGSVGElement> {}

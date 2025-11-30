@@ -1,4 +1,4 @@
-// Auto-generated from atlassian-jira.svg
+// Auto-generated from third-party/atlassian-jira.svg
 import React from 'react';
 
 export interface AtlassianJiraProps extends React.SVGProps<SVGSVGElement> {}
@@ -11,12 +11,12 @@ export const AtlassianJira = React.forwardRef<SVGSVGElement, AtlassianJiraProps>
 <path fillRule="evenodd" clipRule="evenodd" d="M15.0652 11.9921L12 14.9567C12.9661 15.8905 13.5088 17.1573 13.5088 18.4783C13.5088 19.7993 12.9661 21.0662 12 22L18.7063 15.5137L15.0652 11.9921Z" fill="url(#paint1_linear_2764_902)"/>
 <defs>
 <linearGradient id="paint0_linear_2764_902" x1="11.4539" y1="6.05225" x2="6.35447" y2="8.27876" gradientUnits="userSpaceOnUse">
-<stop offset="0.18" stop-color="#0052CC"/>
-<stop offset="1" stop-color="#2684FF"/>
+<stop offset="0.18" stopColor="#0052CC"/>
+<stop offset="1" stopColor="#2684FF"/>
 </linearGradient>
 <linearGradient id="paint1_linear_2764_902" x1="12.5841" y1="17.9134" x2="17.6744" y2="15.7027" gradientUnits="userSpaceOnUse">
-<stop offset="0.18" stop-color="#0052CC"/>
-<stop offset="1" stop-color="#2684FF"/>
+<stop offset="0.18" stopColor="#0052CC"/>
+<stop offset="1" stopColor="#2684FF"/>
 </linearGradient>
 </defs>
     </svg>

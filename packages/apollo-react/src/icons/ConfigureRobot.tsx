@@ -1,4 +1,4 @@
-// Auto-generated from configure-robot.svg
+// Auto-generated from studio-icons/configure-robot.svg
 import React from 'react';
 
 export interface ConfigureRobotProps extends React.SVGProps<SVGSVGElement> {}

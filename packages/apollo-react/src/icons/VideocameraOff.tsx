@@ -1,4 +1,4 @@
-// Auto-generated from videocamera-off.svg
+// Auto-generated from action/videocamera-off.svg
 import React from 'react';
 
 export interface VideocameraOffProps extends React.SVGProps<SVGSVGElement> {}

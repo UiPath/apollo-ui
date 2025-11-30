@@ -1,4 +1,4 @@
-// Auto-generated from format-underlined.svg
+// Auto-generated from editor/format-underlined.svg
 import React from 'react';
 
 export interface FormatUnderlinedProps extends React.SVGProps<SVGSVGElement> {}

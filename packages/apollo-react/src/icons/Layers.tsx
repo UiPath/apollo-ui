@@ -1,4 +1,4 @@
-// Auto-generated from layers.svg
+// Auto-generated from navigation/layers.svg
 import React from 'react';
 
 export interface LayersProps extends React.SVGProps<SVGSVGElement> {}

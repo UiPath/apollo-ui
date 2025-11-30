@@ -1,4 +1,4 @@
-// Auto-generated from microsoft.svg
+// Auto-generated from third-party/microsoft.svg
 import React from 'react';
 
 export interface MicrosoftProps extends React.SVGProps<SVGSVGElement> {}

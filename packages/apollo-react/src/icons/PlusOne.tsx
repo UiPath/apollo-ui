@@ -1,4 +1,4 @@
-// Auto-generated from plus-one.svg
+// Auto-generated from social/plus-one.svg
 import React from 'react';
 
 export interface PlusOneProps extends React.SVGProps<SVGSVGElement> {}

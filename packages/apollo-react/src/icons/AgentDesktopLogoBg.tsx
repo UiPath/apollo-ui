@@ -1,0 +1,63 @@
+// Auto-generated from studio-icons/agent-desktop-logo-bg.svg
+import React from 'react';
+
+export interface AgentDesktopLogoBgProps extends React.SVGProps<SVGSVGElement> {}
+
+export const AgentDesktopLogoBg = React.forwardRef<SVGSVGElement, AgentDesktopLogoBgProps>(
+  (props, ref) => (
+    <svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+      <path d="M0 5C0 2.23858 2.23858 0 5 0H25C27.7614 0 30 2.23858 30 5V25C30 27.7614 27.7614 30 25 30H5C2.23858 30 0 27.7614 0 25V5Z" fill="var(--color-foreground)"/>
+<path d="M1.5 11.8496C3.68651 11.8496 5.852 12.2804 7.87207 13.1172C9.89204 13.9539 11.7274 15.1805 13.2734 16.7266L8.81836 21.1816C7.85728 20.2206 6.71665 19.4576 5.46094 18.9375C4.20522 18.4174 2.85918 18.1504 1.5 18.1504L1.5 11.8496Z" fill="url(#paint0_linear_4286_9821)"/>
+<path d="M1.5 11.8496C3.68651 11.8496 5.852 12.2804 7.87207 13.1172C9.89204 13.9539 11.7274 15.1805 13.2734 16.7266C14.8195 18.2726 16.0461 20.108 16.8828 22.1279C17.7196 24.148 18.1504 26.3135 18.1504 28.5L11.8496 28.5C11.8496 27.1408 11.5826 25.7948 11.0625 24.5391C10.5424 23.2834 9.77944 22.1427 8.81836 21.1816C7.85728 20.2206 6.71665 19.4576 5.46094 18.9375C4.20522 18.4174 2.85918 18.1504 1.5 18.1504L1.5 11.8496Z" fill="url(#paint1_radial_4286_9821)"/>
+<path d="M18.1504 1.5C18.1504 3.68651 17.7196 5.852 16.8828 7.87207C16.0461 9.89204 14.8195 11.7274 13.2734 13.2734C11.7274 14.8195 9.89204 16.0461 7.87207 16.8828C5.852 17.7196 3.6865 18.1504 1.5 18.1504L1.5 11.8496C2.85918 11.8496 4.20522 11.5826 5.46094 11.0625C6.71665 10.5424 7.85728 9.77944 8.81836 8.81836C9.77944 7.85728 10.5424 6.71665 11.0625 5.46094C11.5826 4.20522 11.8496 2.85918 11.8496 1.5L18.1504 1.5Z" fill="url(#paint2_linear_4286_9821)"/>
+<path d="M18.1504 1.5C18.1504 3.68651 17.7196 5.852 16.8828 7.87207C16.0461 9.89204 14.8195 11.7274 13.2734 13.2734C11.7274 14.8195 9.89204 16.0461 7.87207 16.8828C5.852 17.7196 3.68651 18.1504 1.5 18.1504L1.5 11.8496C2.85918 11.8496 4.20522 11.5826 5.46094 11.0625C6.71665 10.5424 7.85728 9.77944 8.81836 8.81836C9.77944 7.85728 10.5424 6.71665 11.0625 5.46094C11.5826 4.20522 11.8496 2.85918 11.8496 1.5L18.1504 1.5Z" fill="url(#paint3_radial_4286_9821)"/>
+<path d="M28.5 18.1504C26.3135 18.1504 24.148 17.7196 22.1279 16.8828C20.108 16.0461 18.2726 14.8195 16.7266 13.2734C15.1805 11.7274 13.9539 9.89204 13.1172 7.87207C12.2804 5.852 11.8496 3.68651 11.8496 1.5L18.1504 1.5C18.1504 2.85918 18.4174 4.20522 18.9375 5.46094C19.4576 6.71665 20.2206 7.85728 21.1816 8.81836C22.1427 9.77944 23.2833 10.5424 24.5391 11.0625C25.7948 11.5826 27.1408 11.8496 28.5 11.8496L28.5 18.1504Z" fill="url(#paint4_linear_4286_9821)"/>
+<path d="M28.5 18.1504C26.3135 18.1504 24.148 17.7196 22.1279 16.8828C20.108 16.0461 18.2726 14.8195 16.7266 13.2734C15.1805 11.7274 13.9539 9.89204 13.1172 7.87207C12.2804 5.852 11.8496 3.68651 11.8496 1.5L18.1504 1.5C18.1504 2.85918 18.4174 4.20522 18.9375 5.46094C19.4576 6.71665 20.2206 7.85728 21.1816 8.81836C22.1427 9.77944 23.2833 10.5424 24.5391 11.0625C25.7948 11.5826 27.1408 11.8496 28.5 11.8496L28.5 18.1504Z" fill="url(#paint5_radial_4286_9821)"/>
+<path d="M11.8496 28.5C11.8496 26.3135 12.2804 24.148 13.1172 22.1279C13.9539 20.108 15.1805 18.2726 16.7266 16.7266C18.2726 15.1805 20.108 13.9539 22.1279 13.1172C24.148 12.2804 26.3135 11.8496 28.5 11.8496L28.5 18.1504C27.1408 18.1504 25.7948 18.4174 24.5391 18.9375C23.2833 19.4576 22.1427 20.2206 21.1816 21.1816C20.2206 22.1427 19.4576 23.2834 18.9375 24.5391C18.4174 25.7948 18.1504 27.1408 18.1504 28.5L11.8496 28.5Z" fill="url(#paint6_linear_4286_9821)"/>
+<path d="M11.8496 28.5C11.8496 26.3135 12.2804 24.148 13.1172 22.1279C13.9539 20.108 15.1805 18.2726 16.7266 16.7266C18.2726 15.1805 20.108 13.9539 22.1279 13.1172C24.148 12.2804 26.3135 11.8496 28.5 11.8496L28.5 18.1504C27.1408 18.1504 25.7948 18.4174 24.5391 18.9375C23.2833 19.4576 22.1427 20.2206 21.1816 21.1816C20.2206 22.1427 19.4576 23.2834 18.9375 24.5391C18.4174 25.7948 18.1504 27.1408 18.1504 28.5L11.8496 28.5Z" fill="url(#paint7_radial_4286_9821)"/>
+<path d="M13.2734 16.7266C14.8195 18.2726 16.0461 20.108 16.8828 22.1279C17.7196 24.148 18.1504 26.3135 18.1504 28.5L11.8496 28.5C11.8496 27.1408 11.5826 25.7948 11.0625 24.5391C10.5424 23.2834 9.77944 22.1427 8.81836 21.1816L13.2734 16.7266Z" fill="url(#paint8_linear_4286_9821)"/>
+<defs>
+<linearGradient id="paint0_linear_4286_9821" x1="18.1501" y1="28.5008" x2="4.75689" y2="9.54809" gradientUnits="userSpaceOnUse">
+<stop stopColor="#2FBDFE"/>
+<stop offset="1" stopColor="#0067DF"/>
+</linearGradient>
+<radialGradient id="paint1_radial_4286_9821" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(1.5 1.49937) rotate(90) scale(27.0006 27.0006)">
+<stop offset="0.6" stopColor="#004391"/>
+<stop offset="0.7" stopColor="#004391" stopOpacity="0"/>
+</radialGradient>
+<linearGradient id="paint2_linear_4286_9821" x1="1.5" y1="18.1504" x2="18.1504" y2="1.5" gradientUnits="userSpaceOnUse">
+<stop stopColor="#2FBDFE"/>
+<stop offset="1" stopColor="#0067DF"/>
+</linearGradient>
+<radialGradient id="paint3_radial_4286_9821" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(28.5006 1.5) rotate(180) scale(27.0006 27.0006)">
+<stop offset="0.6" stopColor="#004391"/>
+<stop offset="0.7" stopColor="#004391" stopOpacity="0"/>
+</radialGradient>
+<linearGradient id="paint4_linear_4286_9821" x1="11.8496" y1="1.5" x2="28.5" y2="18.1504" gradientUnits="userSpaceOnUse">
+<stop stopColor="#2FBDFE"/>
+<stop offset="1" stopColor="#0067DF"/>
+</linearGradient>
+<radialGradient id="paint5_radial_4286_9821" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(28.5 28.5006) rotate(-90) scale(27.0006 27.0006)">
+<stop offset="0.6" stopColor="#004391"/>
+<stop offset="0.7" stopColor="#004391" stopOpacity="0"/>
+</radialGradient>
+<linearGradient id="paint6_linear_4286_9821" x1="28.5" y1="11.8496" x2="11.8496" y2="28.5" gradientUnits="userSpaceOnUse">
+<stop stopColor="#2FBDFE"/>
+<stop offset="1" stopColor="#0067DF"/>
+</linearGradient>
+<radialGradient id="paint7_radial_4286_9821" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(1.49937 28.5) scale(27.0006 27.0006)">
+<stop offset="0.6" stopColor="#004391"/>
+<stop offset="0.7" stopColor="#004391" stopOpacity="0"/>
+</radialGradient>
+<linearGradient id="paint8_linear_4286_9821" x1="18.1504" y1="28.5" x2="-0.802349" y2="15.1068" gradientUnits="userSpaceOnUse">
+<stop stopColor="#2FBDFE"/>
+<stop offset="1" stopColor="#0067DF"/>
+</linearGradient>
+</defs>
+    </svg>
+  )
+);
+
+AgentDesktopLogoBg.displayName = 'AgentDesktopLogoBg';
+
+export default AgentDesktopLogoBg;

@@ -1,4 +1,4 @@
-// Auto-generated from quickbooks.svg
+// Auto-generated from third-party/quickbooks.svg
 import React from 'react';
 
 export interface QuickbooksProps extends React.SVGProps<SVGSVGElement> {}

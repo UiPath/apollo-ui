@@ -1,4 +1,4 @@
-// Auto-generated from subscript.svg
+// Auto-generated from editor/subscript.svg
 import React from 'react';
 
 export interface SubscriptProps extends React.SVGProps<SVGSVGElement> {}

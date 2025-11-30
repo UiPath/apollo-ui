@@ -1,4 +1,4 @@
-// Auto-generated from text.svg
+// Auto-generated from object/text.svg
 import React from 'react';
 
 export interface TextProps extends React.SVGProps<SVGSVGElement> {}

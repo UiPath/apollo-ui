@@ -1,4 +1,4 @@
-// Auto-generated from format-indent-decrease.svg
+// Auto-generated from editor/format-indent-decrease.svg
 import React from 'react';
 
 export interface FormatIndentDecreaseProps extends React.SVGProps<SVGSVGElement> {}

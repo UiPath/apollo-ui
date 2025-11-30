@@ -1,4 +1,4 @@
-// Auto-generated from view-grid.svg
+// Auto-generated from action/view-grid.svg
 import React from 'react';
 
 export interface ViewGridProps extends React.SVGProps<SVGSVGElement> {}

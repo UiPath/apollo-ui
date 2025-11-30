@@ -7,39 +7,49 @@
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
-      "require": "./dist/index.cjs",
-      "types": "./dist/index.d.ts"
+      "require": "./dist/index.cjs"
     },
     "./components": {
+      "types": "./dist/components/index.d.ts",
       "import": "./dist/components.js",
-      "require": "./dist/components.cjs",
-      "types": "./dist/components/index.d.ts"
+      "require": "./dist/components.cjs"
     },
     "./theme": {
+      "types": "./dist/theme/index.d.ts",
       "import": "./dist/theme.js",
-      "require": "./dist/theme.cjs",
-      "types": "./dist/theme/index.d.ts"
+      "require": "./dist/theme.cjs"
     },
     "./core": {
+      "types": "./dist/core/index.d.ts",
       "import": "./dist/core.js",
-      "require": "./dist/core.cjs",
-      "types": "./dist/core/index.d.ts"
+      "require": "./dist/core.cjs"
     },
     "./core/tokens/*": "./dist/core/tokens/*",
-    "./icons": "./dist/icons/index.ts",
-    "./icons/*": "./dist/icons/*.tsx",
-    "./icons/svg/*": "./dist/icons/svg/*"
+    "./icons": {
+      "types": "./dist/icons/index.d.ts",
+      "import": "./dist/icons/index.js",
+      "require": "./dist/icons/index.cjs"
+    },
+    "./icons/*": {
+      "types": "./dist/icons/*.d.ts",
+      "import": "./dist/icons/*.js",
+      "require": "./dist/icons/*.cjs"
+    }
   },
+  "sideEffects": false,
   "files": [
     "dist"
   ],
   "scripts": {
-    "build": "pnpm run build:icons && rslib build && pnpm run copy:icons",
-    "build:icons": "tsx scripts/generate-icon-components.ts",
-    "copy:icons": "cp -r src/icons dist/",
+    "build": "pnpm run build:icons && rslib build && pnpm run build:icons:compile",
+    "build:analyze": "ANALYZE=true pnpm run build",
+    "build:icons": "tsx scripts/icons-build.ts",
+    "build:icons:compile": "tsx scripts/icons-compile.ts",
     "dev": "rslib build --watch",
     "lint": "eslint src --ext .ts,.tsx",
+    "lint:fix": "eslint src --ext .ts,.tsx --fix",
     "test": "vitest --run",
     "test:watch": "vitest",
     "test:ui": "vitest --ui",
@@ -68,18 +78,22 @@
   "devDependencies": {
     "@rsbuild/plugin-react": "^1.4.1",
     "@rslib/core": "^0.17.0",
-    "@testing-library/react": "^16.0.1",
     "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.0.1",
     "@testing-library/user-event": "^14.5.2",
     "@types/react": "^19.0.6",
     "@types/react-dom": "^19.0.3",
+    "@types/webpack-bundle-analyzer": "^4.7.0",
     "@vitejs/plugin-react": "^4.3.4",
-    "@vitest/coverage-v8": "^2.1.8",
-    "@vitest/ui": "^2.1.8",
+    "@vitest/coverage-v8": "^4.0.14",
+    "@vitest/ui": "^4.0.14",
+    "esbuild": "^0.27.0",
+    "glob": "^13.0.0",
     "happy-dom": "^15.11.7",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "typescript": "^5.9.3",
-    "vitest": "^4.0.5"
+    "vitest": "^4.0.14",
+    "webpack-bundle-analyzer": "^5.0.1"
   }
 }

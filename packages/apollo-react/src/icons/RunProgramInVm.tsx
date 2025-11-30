@@ -1,4 +1,4 @@
-// Auto-generated from run-program-in-vm.svg
+// Auto-generated from studio-icons/run-program-in-vm.svg
 import React from 'react';
 
 export interface RunProgramInVmProps extends React.SVGProps<SVGSVGElement> {}

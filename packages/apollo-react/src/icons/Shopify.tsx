@@ -1,4 +1,4 @@
-// Auto-generated from shopify.svg
+// Auto-generated from third-party/shopify.svg
 import React from 'react';
 
 export interface ShopifyProps extends React.SVGProps<SVGSVGElement> {}

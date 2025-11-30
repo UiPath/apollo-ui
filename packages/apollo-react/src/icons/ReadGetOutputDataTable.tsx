@@ -1,4 +1,4 @@
-// Auto-generated from read-get-output-data-table.svg
+// Auto-generated from studio-icons/read-get-output-data-table.svg
 import React from 'react';
 
 export interface ReadGetOutputDataTableProps extends React.SVGProps<SVGSVGElement> {}
@@ -12,7 +12,7 @@ export const ReadGetOutputDataTable = React.forwardRef<SVGSVGElement, ReadGetOut
 </g>
 <defs>
 <clipPath id="clip0_4041_1191">
-<rect width="24" height="24" fill="white"/>
+<rect width="24" height="24" fill="var(--color-foreground)"/>
 </clipPath>
 </defs>
     </svg>

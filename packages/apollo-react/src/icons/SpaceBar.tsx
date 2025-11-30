@@ -1,4 +1,4 @@
-// Auto-generated from space-bar.svg
+// Auto-generated from editor/space-bar.svg
 import React from 'react';
 
 export interface SpaceBarProps extends React.SVGProps<SVGSVGElement> {}

@@ -1,0 +1,29 @@
+// Auto-generated from studio-activities-icon-sets/ui-data-extraction/ui-data-extraction-extract-url.svg
+import React from 'react';
+
+export interface UIDataExtractionExtractURLProps extends React.SVGProps<SVGSVGElement> {}
+
+export const UIDataExtractionExtractURL = React.forwardRef<SVGSVGElement, UIDataExtractionExtractURLProps>(
+  (props, ref) => (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+      <g clipPath="url(#clip0_4117_2806)">
+<g clipPath="url(#clip1_4117_2806)">
+<path d="M19.5557 15.1177L19.5557 19.1277L22.5557 19.1277L18.5557 23.1177L14.5557 19.1277L17.5557 19.1277L17.5557 15.1177L19.5557 15.1177Z" fill="#1976D2"/>
+<path d="M10.1623 3.65316L7.33384 6.48159L8.74805 7.8958L11.5765 5.06738C12.7432 3.90065 14.6524 3.90065 15.8191 5.06738C16.9858 6.2341 16.9858 8.14329 15.8191 9.31002L12.9907 12.1384L14.4049 13.5527L17.2333 10.7242C19.1849 8.77262 19.1849 5.60478 17.2333 3.65316C15.2817 1.70155 12.1139 1.70155 10.1623 3.65316ZM11.5765 13.5527L8.74805 16.3811C7.58133 17.5478 5.67214 17.5478 4.50541 16.3811C3.33869 15.2144 3.33869 13.3052 4.50541 12.1384L7.33384 9.31002L5.91962 7.8958L3.0912 10.7242C1.13958 12.6758 1.13958 15.8437 3.0912 17.7953C5.04281 19.7469 8.21065 19.7469 10.1623 17.7953L12.9907 14.9669L11.5765 13.5527ZM6.62673 12.8456L12.2836 7.1887L13.6978 8.60291L8.04095 14.2598L6.62673 12.8456Z" fill="currentColor"/>
+</g>
+</g>
+<defs>
+<clipPath id="clip0_4117_2806">
+<rect width="24" height="24" fill="var(--color-foreground)"/>
+</clipPath>
+<clipPath id="clip1_4117_2806">
+<rect width="24" height="24" fill="var(--color-foreground)" transform="translate(-0.444336 0.117676)"/>
+</clipPath>
+</defs>
+    </svg>
+  )
+);
+
+UIDataExtractionExtractURL.displayName = 'UIDataExtractionExtractURL';
+
+export default UIDataExtractionExtractURL;

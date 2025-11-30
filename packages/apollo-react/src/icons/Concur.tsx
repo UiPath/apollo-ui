@@ -1,4 +1,4 @@
-// Auto-generated from concur.svg
+// Auto-generated from third-party/concur.svg
 import React from 'react';
 
 export interface ConcurProps extends React.SVGProps<SVGSVGElement> {}

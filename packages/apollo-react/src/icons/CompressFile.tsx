@@ -1,4 +1,4 @@
-// Auto-generated from compress-file.svg
+// Auto-generated from studio-icons/compress-file.svg
 import React from 'react';
 
 export interface CompressFileProps extends React.SVGProps<SVGSVGElement> {}

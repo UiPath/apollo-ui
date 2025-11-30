@@ -1,4 +1,4 @@
-// Auto-generated from active-campaign.svg
+// Auto-generated from third-party/active-campaign.svg
 import React from 'react';
 
 export interface ActiveCampaignProps extends React.SVGProps<SVGSVGElement> {}

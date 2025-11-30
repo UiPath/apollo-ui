@@ -1,4 +1,4 @@
-// Auto-generated from process-diagram.svg
+// Auto-generated from object/process-diagram.svg
 import React from 'react';
 
 export interface ProcessDiagramProps extends React.SVGProps<SVGSVGElement> {}

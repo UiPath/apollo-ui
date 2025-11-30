@@ -1,4 +1,4 @@
-// Auto-generated from chat-new-autopilot.svg
+// Auto-generated from action/chat-new-autopilot.svg
 import React from 'react';
 
 export interface ChatNewAutopilotProps extends React.SVGProps<SVGSVGElement> {}

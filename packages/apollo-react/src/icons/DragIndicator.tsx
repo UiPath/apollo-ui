@@ -1,4 +1,4 @@
-// Auto-generated from drag-indicator.svg
+// Auto-generated from action/drag-indicator.svg
 import React from 'react';
 
 export interface DragIndicatorProps extends React.SVGProps<SVGSVGElement> {}

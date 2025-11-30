@@ -1,4 +1,4 @@
-// Auto-generated from add-to-collection.svg
+// Auto-generated from studio-icons/add-to-collection.svg
 import React from 'react';
 
 export interface AddToCollectionProps extends React.SVGProps<SVGSVGElement> {}

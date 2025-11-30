@@ -1,4 +1,4 @@
-// Auto-generated from cloud-download.svg
+// Auto-generated from object/cloud-download.svg
 import React from 'react';
 
 export interface CloudDownloadProps extends React.SVGProps<SVGSVGElement> {}

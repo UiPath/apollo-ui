@@ -19,6 +19,7 @@
     "build": "rslib build",
     "dev": "rslib build --watch",
     "lint": "eslint src --ext .ts,.tsx",
+    "lint:fix": "eslint src --ext .ts,.tsx --fix",
     "test": "vitest --run --passWithNoTests",
     "clean": "rm -rf dist"
   },

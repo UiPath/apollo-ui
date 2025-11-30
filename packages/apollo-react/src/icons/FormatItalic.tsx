@@ -1,4 +1,4 @@
-// Auto-generated from format-italic.svg
+// Auto-generated from editor/format-italic.svg
 import React from 'react';
 
 export interface FormatItalicProps extends React.SVGProps<SVGSVGElement> {}

@@ -1,4 +1,4 @@
-// Auto-generated from mailchimp.svg
+// Auto-generated from third-party/mailchimp.svg
 import React from 'react';
 
 export interface MailchimpProps extends React.SVGProps<SVGSVGElement> {}

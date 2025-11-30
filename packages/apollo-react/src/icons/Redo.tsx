@@ -1,4 +1,4 @@
-// Auto-generated from redo.svg
+// Auto-generated from action/redo.svg
 import React from 'react';
 
 export interface RedoProps extends React.SVGProps<SVGSVGElement> {}

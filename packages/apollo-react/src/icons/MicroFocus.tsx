@@ -1,4 +1,4 @@
-// Auto-generated from micro-focus.svg
+// Auto-generated from third-party/micro-focus.svg
 import React from 'react';
 
 export interface MicroFocusProps extends React.SVGProps<SVGSVGElement> {}

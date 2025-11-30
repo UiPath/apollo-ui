@@ -1,4 +1,4 @@
-// Auto-generated from download-package.svg
+// Auto-generated from studio-icons/download-package.svg
 import React from 'react';
 
 export interface DownloadPackageProps extends React.SVGProps<SVGSVGElement> {}

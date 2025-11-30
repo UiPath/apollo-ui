@@ -1,4 +1,4 @@
-// Auto-generated from suspend-vm.svg
+// Auto-generated from studio-icons/suspend-vm.svg
 import React from 'react';
 
 export interface SuspendVmProps extends React.SVGProps<SVGSVGElement> {}

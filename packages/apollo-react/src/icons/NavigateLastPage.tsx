@@ -1,4 +1,4 @@
-// Auto-generated from navigate-last-page.svg
+// Auto-generated from navigation/navigate-last-page.svg
 import React from 'react';
 
 export interface NavigateLastPageProps extends React.SVGProps<SVGSVGElement> {}

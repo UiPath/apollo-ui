@@ -1,4 +1,4 @@
-// Auto-generated from layout-justify/left.svg
+// Auto-generated from editor/layout-justify/layout-justify-left.svg
 import React from 'react';
 
 export interface LayoutJustifyLeftProps extends React.SVGProps<SVGSVGElement> {}

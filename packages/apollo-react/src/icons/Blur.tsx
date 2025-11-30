@@ -1,4 +1,4 @@
-// Auto-generated from blur.svg
+// Auto-generated from editor/blur.svg
 import React from 'react';
 
 export interface BlurProps extends React.SVGProps<SVGSVGElement> {}

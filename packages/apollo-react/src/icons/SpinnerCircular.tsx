@@ -1,4 +1,4 @@
-// Auto-generated from spinner-circular.svg
+// Auto-generated from indicator-and-alert/spinner-circular.svg
 import React from 'react';
 
 export interface SpinnerCircularProps extends React.SVGProps<SVGSVGElement> {}

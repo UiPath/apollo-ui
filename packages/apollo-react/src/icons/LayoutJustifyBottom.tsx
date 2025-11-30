@@ -1,4 +1,4 @@
-// Auto-generated from layout-justify/bottom.svg
+// Auto-generated from editor/layout-justify/layout-justify-bottom.svg
 import React from 'react';
 
 export interface LayoutJustifyBottomProps extends React.SVGProps<SVGSVGElement> {}

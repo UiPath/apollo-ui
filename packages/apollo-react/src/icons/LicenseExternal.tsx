@@ -1,4 +1,4 @@
-// Auto-generated from license-external.svg
+// Auto-generated from object/license-external.svg
 import React from 'react';
 
 export interface LicenseExternalProps extends React.SVGProps<SVGSVGElement> {}
@@ -6,7 +6,7 @@ export interface LicenseExternalProps extends React.SVGProps<SVGSVGElement> {}
 export const LicenseExternal = React.forwardRef<SVGSVGElement, LicenseExternalProps>(
   (props, ref) => (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
-      <mask id="path-1-inside-1_2_1395" fill="white">
+      <mask id="path-1-inside-1_2_1395" fill="var(--color-foreground)">
 <path fillRule="evenodd" clipRule="evenodd" d="M14.7152 8.23545L16.1443 9.7241L19.3081 6.42846L20.1304 7.28507L22.1304 9.36842V6.48045V4V2H20.1304H17.8292H15.0568L16.9768 4L17.879 4.93981L14.7152 8.23545ZM1.92004 22H18.0883V11.4737H16.0673V19.8947H3.94108V5.15789H14.0462V3.05263H1.92004V22ZM10.0042 7.26315H5.96215V9.36842H10.0042V7.26315ZM14.0463 11.4737V13.5789H5.96215V11.4737H14.0463ZM14.0463 17.7895V15.6842H5.96215V17.7895H14.0463Z"/>
 </mask>
 <path fillRule="evenodd" clipRule="evenodd" d="M14.7152 8.23545L16.1443 9.7241L19.3081 6.42846L20.1304 7.28507L22.1304 9.36842V6.48045V4V2H20.1304H17.8292H15.0568L16.9768 4L17.879 4.93981L14.7152 8.23545ZM1.92004 22H18.0883V11.4737H16.0673V19.8947H3.94108V5.15789H14.0462V3.05263H1.92004V22ZM10.0042 7.26315H5.96215V9.36842H10.0042V7.26315ZM14.0463 11.4737V13.5789H5.96215V11.4737H14.0463ZM14.0463 17.7895V15.6842H5.96215V17.7895H14.0463Z" fill="currentColor"/>

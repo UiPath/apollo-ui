@@ -1,4 +1,4 @@
-// Auto-generated from bubble-chart.svg
+// Auto-generated from editor/bubble-chart.svg
 import React from 'react';
 
 export interface BubbleChartProps extends React.SVGProps<SVGSVGElement> {}

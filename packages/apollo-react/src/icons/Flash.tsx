@@ -1,4 +1,4 @@
-// Auto-generated from flash.svg
+// Auto-generated from indicator-and-alert/flash.svg
 import React from 'react';
 
 export interface FlashProps extends React.SVGProps<SVGSVGElement> {}

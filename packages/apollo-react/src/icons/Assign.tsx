@@ -1,4 +1,4 @@
-// Auto-generated from assign.svg
+// Auto-generated from logic/assign.svg
 import React from 'react';
 
 export interface AssignProps extends React.SVGProps<SVGSVGElement> {}

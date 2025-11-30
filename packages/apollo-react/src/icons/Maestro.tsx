@@ -1,4 +1,4 @@
-// Auto-generated from maestro.svg
+// Auto-generated from product-logo/maestro.svg
 import React from 'react';
 
 export interface MaestroProps extends React.SVGProps<SVGSVGElement> {}

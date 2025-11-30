@@ -1,4 +1,4 @@
-// Auto-generated from license-allocate.svg
+// Auto-generated from object/license-allocate.svg
 import React from 'react';
 
 export interface LicenseAllocateProps extends React.SVGProps<SVGSVGElement> {}
@@ -6,7 +6,7 @@ export interface LicenseAllocateProps extends React.SVGProps<SVGSVGElement> {}
 export const LicenseAllocate = React.forwardRef<SVGSVGElement, LicenseAllocateProps>(
   (props, ref) => (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
-      <mask id="path-1-inside-1_2_1389" fill="white">
+      <mask id="path-1-inside-1_2_1389" fill="var(--color-foreground)">
 <path d="M13.44 3H11.52V9H13.44V3Z"/>
 <path d="M2.88 6H10.56V8H4.8V20H20.16V8H14.4V6H22.08V22H2.88V6Z"/>
 <path fillRule="evenodd" clipRule="evenodd" d="M6.72001 11H12.48V17H6.72001V11ZM8.64001 13V15H10.56V13H8.64001Z"/>

@@ -1,4 +1,4 @@
-// Auto-generated from get-row-item.svg
+// Auto-generated from studio-icons/get-row-item.svg
 import React from 'react';
 
 export interface GetRowItemProps extends React.SVGProps<SVGSVGElement> {}

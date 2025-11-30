@@ -1,4 +1,4 @@
-// Auto-generated from document-understanding.svg
+// Auto-generated from product-logo/document-understanding.svg
 import React from 'react';
 
 export interface DocumentUnderstandingProps extends React.SVGProps<SVGSVGElement> {}

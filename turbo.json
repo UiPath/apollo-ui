@@ -12,11 +12,9 @@
       "persistent": true
     },
     "lint": {
-      "dependsOn": ["^build"],
       "outputs": []
     },
     "lint:fix": {
-      "dependsOn": ["^build"],
       "outputs": []
     },
     "lint:css": {

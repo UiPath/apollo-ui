@@ -1,4 +1,4 @@
-// Auto-generated from amazon-workspaces.svg
+// Auto-generated from third-party/amazon-workspaces.svg
 import React from 'react';
 
 export interface AmazonWorkspacesProps extends React.SVGProps<SVGSVGElement> {}
