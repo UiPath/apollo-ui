@@ -1,4 +1,4 @@
-// Auto-generated from exists-in-collection.svg
+// Auto-generated from studio-icons/exists-in-collection.svg
 import React from 'react';
 
 export interface ExistsInCollectionProps extends React.SVGProps<SVGSVGElement> {}

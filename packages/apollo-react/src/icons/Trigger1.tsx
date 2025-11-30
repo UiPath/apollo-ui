@@ -1,4 +1,4 @@
-// Auto-generated from trigger-1.svg
+// Auto-generated from object/trigger-1.svg
 import React from 'react';
 
 export interface Trigger1Props extends React.SVGProps<SVGSVGElement> {}

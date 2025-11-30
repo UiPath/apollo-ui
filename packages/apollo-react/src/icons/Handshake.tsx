@@ -1,4 +1,4 @@
-// Auto-generated from handshake.svg
+// Auto-generated from social/handshake.svg
 import React from 'react';
 
 export interface HandshakeProps extends React.SVGProps<SVGSVGElement> {}

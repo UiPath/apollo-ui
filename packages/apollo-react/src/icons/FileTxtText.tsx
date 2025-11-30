@@ -1,4 +1,4 @@
-// Auto-generated from file-txt-text.svg
+// Auto-generated from object/file-txt-text.svg
 import React from 'react';
 
 export interface FileTxtTextProps extends React.SVGProps<SVGSVGElement> {}

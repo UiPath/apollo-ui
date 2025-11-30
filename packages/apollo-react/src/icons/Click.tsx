@@ -1,4 +1,4 @@
-// Auto-generated from click.svg
+// Auto-generated from studio-icons/click.svg
 import React from 'react';
 
 export interface ClickProps extends React.SVGProps<SVGSVGElement> {}

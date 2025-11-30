@@ -1,4 +1,4 @@
-// Auto-generated from refresh.svg
+// Auto-generated from action/refresh.svg
 import React from 'react';
 
 export interface RefreshProps extends React.SVGProps<SVGSVGElement> {}

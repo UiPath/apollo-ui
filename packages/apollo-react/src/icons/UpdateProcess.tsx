@@ -1,4 +1,4 @@
-// Auto-generated from update-process.svg
+// Auto-generated from studio-icons/update-process.svg
 import React from 'react';
 
 export interface UpdateProcessProps extends React.SVGProps<SVGSVGElement> {}

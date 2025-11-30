@@ -1,4 +1,4 @@
-// Auto-generated from change-element.svg
+// Auto-generated from action/change-element.svg
 import React from 'react';
 
 export interface ChangeElementProps extends React.SVGProps<SVGSVGElement> {}

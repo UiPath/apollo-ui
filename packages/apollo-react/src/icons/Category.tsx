@@ -1,4 +1,4 @@
-// Auto-generated from category.svg
+// Auto-generated from object/category.svg
 import React from 'react';
 
 export interface CategoryProps extends React.SVGProps<SVGSVGElement> {}

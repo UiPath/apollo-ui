@@ -1,4 +1,4 @@
-// Auto-generated from text-fields.svg
+// Auto-generated from editor/text-fields.svg
 import React from 'react';
 
 export interface TextFieldsProps extends React.SVGProps<SVGSVGElement> {}

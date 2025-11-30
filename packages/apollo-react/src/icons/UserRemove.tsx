@@ -1,4 +1,4 @@
-// Auto-generated from user-remove.svg
+// Auto-generated from social/user-remove.svg
 import React from 'react';
 
 export interface UserRemoveProps extends React.SVGProps<SVGSVGElement> {}

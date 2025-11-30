@@ -1,0 +1,26 @@
+// Auto-generated from third-party/apple-numbers.svg
+import React from 'react';
+
+export interface AppleNumbersProps extends React.SVGProps<SVGSVGElement> {}
+
+export const AppleNumbers = React.forwardRef<SVGSVGElement, AppleNumbersProps>(
+  (props, ref) => (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+      <path d="M1 6C1 3.23858 3.23858 1 6 1H18C20.7614 1 23 3.23858 23 6V18C23 20.7614 20.7614 23 18 23H6C3.23858 23 1 20.7614 1 18V6Z" fill="url(#paint0_linear_5291_9714)"/>
+<path d="M5.03564 15.7544C5.03564 15.4783 5.2595 15.2544 5.53564 15.2544H7.26937C7.54551 15.2544 7.76937 15.4783 7.76937 15.7544V19.5059C7.76937 19.782 7.54552 20.0059 7.26937 20.0059H5.53564C5.2595 20.0059 5.03564 19.782 5.03564 19.5059V15.7544Z" fill="white"/>
+<path d="M8.74572 11.8491C8.74572 11.573 8.96957 11.3491 9.24572 11.3491H10.9794C11.2556 11.3491 11.4794 11.573 11.4794 11.8491V19.5059C11.4794 19.782 11.2556 20.0059 10.9794 20.0059H9.24572C8.96957 20.0059 8.74572 19.782 8.74572 19.5059V11.8491Z" fill="white"/>
+<path d="M12.586 4.68926C12.586 4.41311 12.8098 4.18925 13.086 4.18925H14.8197C15.0958 4.18925 15.3197 4.41311 15.3197 4.68925V19.5058C15.3197 19.782 15.0958 20.0058 14.8197 20.0058H13.086C12.8098 20.0058 12.586 19.782 12.586 19.5058V4.68926Z" fill="white"/>
+<path d="M16.3611 8.72487C16.3611 8.44873 16.585 8.22487 16.8611 8.22487H18.5948C18.871 8.22487 19.0948 8.44873 19.0948 8.72487V19.5059C19.0948 19.7821 18.871 20.0059 18.5948 20.0059H16.8611C16.585 20.0059 16.3611 19.7821 16.3611 19.5059V8.72487Z" fill="white"/>
+<defs>
+<linearGradient id="paint0_linear_5291_9714" x1="4.84024" y1="1" x2="12" y2="23" gradientUnits="userSpaceOnUse">
+<stop stopColor="#7FF66E"/>
+<stop offset="1" stopColor="#1FD522"/>
+</linearGradient>
+</defs>
+    </svg>
+  )
+);
+
+AppleNumbers.displayName = 'AppleNumbers';
+
+export default AppleNumbers;

@@ -1,4 +1,4 @@
-// Auto-generated from pin.svg
+// Auto-generated from action/pin.svg
 import React from 'react';
 
 export interface PinProps extends React.SVGProps<SVGSVGElement> {}

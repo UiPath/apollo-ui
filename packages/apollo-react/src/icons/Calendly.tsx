@@ -1,4 +1,4 @@
-// Auto-generated from calendly.svg
+// Auto-generated from third-party/calendly.svg
 import React from 'react';
 
 export interface CalendlyProps extends React.SVGProps<SVGSVGElement> {}

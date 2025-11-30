@@ -1,4 +1,4 @@
-// Auto-generated from invoke.svg
+// Auto-generated from action/invoke.svg
 import React from 'react';
 
 export interface InvokeProps extends React.SVGProps<SVGSVGElement> {}

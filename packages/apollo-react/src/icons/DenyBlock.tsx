@@ -1,4 +1,4 @@
-// Auto-generated from deny-block.svg
+// Auto-generated from action/deny-block.svg
 import React from 'react';
 
 export interface DenyBlockProps extends React.SVGProps<SVGSVGElement> {}

@@ -1,4 +1,4 @@
-// Auto-generated from toolbox-tools.svg
+// Auto-generated from object/toolbox-tools.svg
 import React from 'react';
 
 export interface ToolboxToolsProps extends React.SVGProps<SVGSVGElement> {}

@@ -1,4 +1,4 @@
-// Auto-generated from add-data-row.svg
+// Auto-generated from studio-icons/add-data-row.svg
 import React from 'react';
 
 export interface AddDataRowProps extends React.SVGProps<SVGSVGElement> {}

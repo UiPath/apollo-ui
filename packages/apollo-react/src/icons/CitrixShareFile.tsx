@@ -1,4 +1,4 @@
-// Auto-generated from citrix-share-file.svg
+// Auto-generated from third-party/citrix-share-file.svg
 import React from 'react';
 
 export interface CitrixShareFileProps extends React.SVGProps<SVGSVGElement> {}

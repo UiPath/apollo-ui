@@ -1,4 +1,4 @@
-// Auto-generated from watch.svg
+// Auto-generated from action/watch.svg
 import React from 'react';
 
 export interface WatchProps extends React.SVGProps<SVGSVGElement> {}

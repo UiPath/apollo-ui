@@ -1,4 +1,4 @@
-// Auto-generated from safety.svg
+// Auto-generated from social/safety.svg
 import React from 'react';
 
 export interface SafetyProps extends React.SVGProps<SVGSVGElement> {}

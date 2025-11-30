@@ -1,4 +1,4 @@
-// Auto-generated from list-storage-files.svg
+// Auto-generated from studio-icons/list-storage-files.svg
 import React from 'react';
 
 export interface ListStorageFilesProps extends React.SVGProps<SVGSVGElement> {}

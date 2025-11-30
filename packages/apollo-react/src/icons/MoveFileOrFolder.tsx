@@ -1,4 +1,4 @@
-// Auto-generated from move-file-or-folder.svg
+// Auto-generated from studio-icons/move-file-or-folder.svg
 import React from 'react';
 
 export interface MoveFileOrFolderProps extends React.SVGProps<SVGSVGElement> {}

@@ -1,4 +1,4 @@
-// Auto-generated from record.svg
+// Auto-generated from action/record.svg
 import React from 'react';
 
 export interface RecordProps extends React.SVGProps<SVGSVGElement> {}

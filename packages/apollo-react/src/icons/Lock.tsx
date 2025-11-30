@@ -1,4 +1,4 @@
-// Auto-generated from lock.svg
+// Auto-generated from action/lock.svg
 import React from 'react';
 
 export interface LockProps extends React.SVGProps<SVGSVGElement> {}

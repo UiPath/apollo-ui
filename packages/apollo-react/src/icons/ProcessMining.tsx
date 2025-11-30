@@ -1,4 +1,4 @@
-// Auto-generated from process-mining.svg
+// Auto-generated from product-logo/process-mining.svg
 import React from 'react';
 
 export interface ProcessMiningProps extends React.SVGProps<SVGSVGElement> {}

@@ -1,4 +1,4 @@
-// Auto-generated from container-align/bottom.svg
+// Auto-generated from editor/container-align/container-align-bottom.svg
 import React from 'react';
 
 export interface ContainerAlignBottomProps extends React.SVGProps<SVGSVGElement> {}

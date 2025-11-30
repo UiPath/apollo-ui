@@ -1,4 +1,4 @@
-// Auto-generated from download-done.svg
+// Auto-generated from indicator-and-alert/download-done.svg
 import React from 'react';
 
 export interface DownloadDoneProps extends React.SVGProps<SVGSVGElement> {}

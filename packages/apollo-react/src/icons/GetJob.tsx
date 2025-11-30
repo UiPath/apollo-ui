@@ -1,4 +1,4 @@
-// Auto-generated from get-job.svg
+// Auto-generated from studio-icons/get-job.svg
 import React from 'react';
 
 export interface GetJobProps extends React.SVGProps<SVGSVGElement> {}

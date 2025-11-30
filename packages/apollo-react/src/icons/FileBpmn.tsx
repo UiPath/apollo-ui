@@ -1,4 +1,4 @@
-// Auto-generated from file-bpmn.svg
+// Auto-generated from object/file-bpmn.svg
 import React from 'react';
 
 export interface FileBpmnProps extends React.SVGProps<SVGSVGElement> {}

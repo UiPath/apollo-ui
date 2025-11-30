@@ -1,4 +1,4 @@
-// Auto-generated from run-tests.svg
+// Auto-generated from studio-icons/run-tests.svg
 import React from 'react';
 
 export interface RunTestsProps extends React.SVGProps<SVGSVGElement> {}

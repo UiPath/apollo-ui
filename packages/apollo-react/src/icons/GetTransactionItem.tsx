@@ -1,4 +1,4 @@
-// Auto-generated from get-transaction-item.svg
+// Auto-generated from studio-icons/get-transaction-item.svg
 import React from 'react';
 
 export interface GetTransactionItemProps extends React.SVGProps<SVGSVGElement> {}

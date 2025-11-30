@@ -1,4 +1,4 @@
-// Auto-generated from microsoft-vision.svg
+// Auto-generated from third-party/microsoft-vision.svg
 import React from 'react';
 
 export interface MicrosoftVisionProps extends React.SVGProps<SVGSVGElement> {}

@@ -1,4 +1,4 @@
-// Auto-generated from remove-data-row.svg
+// Auto-generated from studio-icons/remove-data-row.svg
 import React from 'react';
 
 export interface RemoveDataRowProps extends React.SVGProps<SVGSVGElement> {}

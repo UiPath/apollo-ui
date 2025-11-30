@@ -1,4 +1,4 @@
-// Auto-generated from link.svg
+// Auto-generated from action/link.svg
 import React from 'react';
 
 export interface LinkProps extends React.SVGProps<SVGSVGElement> {}

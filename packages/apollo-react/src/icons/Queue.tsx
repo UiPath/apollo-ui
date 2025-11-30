@@ -1,4 +1,4 @@
-// Auto-generated from queue.svg
+// Auto-generated from object/queue.svg
 import React from 'react';
 
 export interface QueueProps extends React.SVGProps<SVGSVGElement> {}

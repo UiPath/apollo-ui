@@ -1,4 +1,4 @@
-// Auto-generated from remove-minus.svg
+// Auto-generated from action/remove-minus.svg
 import React from 'react';
 
 export interface RemoveMinusProps extends React.SVGProps<SVGSVGElement> {}

@@ -1,4 +1,4 @@
-// Auto-generated from pick-pick-branch.svg
+// Auto-generated from logic/pick-pick-branch.svg
 import React from 'react';
 
 export interface PickPickBranchProps extends React.SVGProps<SVGSVGElement> {}

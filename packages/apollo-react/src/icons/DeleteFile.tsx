@@ -1,4 +1,4 @@
-// Auto-generated from delete-file.svg
+// Auto-generated from studio-icons/delete-file.svg
 import React from 'react';
 
 export interface DeleteFileProps extends React.SVGProps<SVGSVGElement> {}

@@ -1,4 +1,4 @@
-// Auto-generated from google-cloud.svg
+// Auto-generated from third-party/google-cloud.svg
 import React from 'react';
 
 export interface GoogleCloudProps extends React.SVGProps<SVGSVGElement> {}

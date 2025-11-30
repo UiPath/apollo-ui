@@ -1,4 +1,4 @@
-// Auto-generated from box.svg
+// Auto-generated from third-party/box.svg
 import React from 'react';
 
 export interface BoxProps extends React.SVGProps<SVGSVGElement> {}

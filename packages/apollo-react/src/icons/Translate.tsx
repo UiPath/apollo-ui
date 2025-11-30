@@ -1,4 +1,4 @@
-// Auto-generated from translate.svg
+// Auto-generated from action/translate.svg
 import React from 'react';
 
 export interface TranslateProps extends React.SVGProps<SVGSVGElement> {}

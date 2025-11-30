@@ -1,4 +1,4 @@
-// Auto-generated from pagerduty.svg
+// Auto-generated from third-party/pagerduty.svg
 import React from 'react';
 
 export interface PagerdutyProps extends React.SVGProps<SVGSVGElement> {}

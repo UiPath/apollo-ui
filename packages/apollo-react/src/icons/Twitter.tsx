@@ -1,4 +1,4 @@
-// Auto-generated from twitter.svg
+// Auto-generated from third-party/twitter.svg
 import React from 'react';
 
 export interface TwitterProps extends React.SVGProps<SVGSVGElement> {}

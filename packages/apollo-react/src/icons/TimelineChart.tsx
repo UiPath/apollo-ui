@@ -1,4 +1,4 @@
-// Auto-generated from timeline-chart.svg
+// Auto-generated from editor/timeline-chart.svg
 import React from 'react';
 
 export interface TimelineChartProps extends React.SVGProps<SVGSVGElement> {}

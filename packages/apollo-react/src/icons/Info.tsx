@@ -1,4 +1,4 @@
-// Auto-generated from info.svg
+// Auto-generated from indicator-and-alert/info.svg
 import React from 'react';
 
 export interface InfoProps extends React.SVGProps<SVGSVGElement> {}

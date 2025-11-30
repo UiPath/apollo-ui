@@ -1,4 +1,4 @@
-// Auto-generated from service-now.svg
+// Auto-generated from third-party/service-now.svg
 import React from 'react';
 
 export interface ServiceNowProps extends React.SVGProps<SVGSVGElement> {}

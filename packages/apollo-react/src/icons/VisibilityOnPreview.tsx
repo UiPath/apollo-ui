@@ -1,4 +1,4 @@
-// Auto-generated from visibility/visibility-on-preview.svg
+// Auto-generated from toggle/visibility/visibility-on-preview.svg
 import React from 'react';
 
 export interface VisibilityOnPreviewProps extends React.SVGProps<SVGSVGElement> {}

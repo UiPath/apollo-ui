@@ -1,4 +1,4 @@
-// Auto-generated from stop-job.svg
+// Auto-generated from studio-icons/stop-job.svg
 import React from 'react';
 
 export interface StopJobProps extends React.SVGProps<SVGSVGElement> {}

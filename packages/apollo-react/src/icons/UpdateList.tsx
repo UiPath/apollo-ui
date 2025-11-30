@@ -1,4 +1,4 @@
-// Auto-generated from update-list.svg
+// Auto-generated from studio-icons/update-list.svg
 import React from 'react';
 
 export interface UpdateListProps extends React.SVGProps<SVGSVGElement> {}

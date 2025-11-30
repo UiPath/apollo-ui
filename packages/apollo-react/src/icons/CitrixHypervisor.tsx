@@ -1,4 +1,4 @@
-// Auto-generated from citrix-hypervisor.svg
+// Auto-generated from third-party/citrix-hypervisor.svg
 import React from 'react';
 
 export interface CitrixHypervisorProps extends React.SVGProps<SVGSVGElement> {}

@@ -1,4 +1,4 @@
-// Auto-generated from subdirectory-arrow-right.svg
+// Auto-generated from action/subdirectory-arrow-right.svg
 import React from 'react';
 
 export interface SubdirectoryArrowRightProps extends React.SVGProps<SVGSVGElement> {}

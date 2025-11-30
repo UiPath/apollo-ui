@@ -1,4 +1,4 @@
-// Auto-generated from issues.svg
+// Auto-generated from object/issues.svg
 import React from 'react';
 
 export interface IssuesProps extends React.SVGProps<SVGSVGElement> {}

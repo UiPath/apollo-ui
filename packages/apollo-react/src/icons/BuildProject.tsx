@@ -1,4 +1,4 @@
-// Auto-generated from build-project.svg
+// Auto-generated from studio-icons/build-project.svg
 import React from 'react';
 
 export interface BuildProjectProps extends React.SVGProps<SVGSVGElement> {}
@@ -12,7 +12,7 @@ export const BuildProject = React.forwardRef<SVGSVGElement, BuildProjectProps>(
 </g>
 <defs>
 <clipPath id="clip0_4041_1030">
-<rect width="24" height="24" fill="white"/>
+<rect width="24" height="24" fill="var(--color-foreground)"/>
 </clipPath>
 </defs>
     </svg>

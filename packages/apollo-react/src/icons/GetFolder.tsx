@@ -1,4 +1,4 @@
-// Auto-generated from get-folder.svg
+// Auto-generated from studio-icons/get-folder.svg
 import React from 'react';
 
 export interface GetFolderProps extends React.SVGProps<SVGSVGElement> {}

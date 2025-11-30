@@ -1,4 +1,4 @@
-// Auto-generated from application-card.svg
+// Auto-generated from studio-icons/application-card.svg
 import React from 'react';
 
 export interface ApplicationCardProps extends React.SVGProps<SVGSVGElement> {}

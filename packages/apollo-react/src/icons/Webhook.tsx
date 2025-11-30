@@ -1,4 +1,4 @@
-// Auto-generated from webhook.svg
+// Auto-generated from object/webhook.svg
 import React from 'react';
 
 export interface WebhookProps extends React.SVGProps<SVGSVGElement> {}

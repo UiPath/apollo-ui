@@ -1,4 +1,4 @@
-// Auto-generated from filter-collection.svg
+// Auto-generated from studio-icons/filter-collection.svg
 import React from 'react';
 
 export interface FilterCollectionProps extends React.SVGProps<SVGSVGElement> {}

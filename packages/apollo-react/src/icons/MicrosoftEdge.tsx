@@ -1,4 +1,4 @@
-// Auto-generated from microsoft-edge.svg
+// Auto-generated from third-party/microsoft-edge.svg
 import React from 'react';
 
 export interface MicrosoftEdgeProps extends React.SVGProps<SVGSVGElement> {}
@@ -18,35 +18,35 @@ export const MicrosoftEdge = React.forwardRef<SVGSVGElement, MicrosoftEdgeProps>
 </g>
 <defs>
 <linearGradient id="paint0_linear_2761_1909" x1="5.50293" y1="16.5984" x2="22.2223" y2="16.5984" gradientUnits="userSpaceOnUse">
-<stop stop-color="#0C59A4"/>
-<stop offset="1" stop-color="#114A8B"/>
+<stop stopColor="#0C59A4"/>
+<stop offset="1" stopColor="#114A8B"/>
 </linearGradient>
 <radialGradient id="paint1_radial_2761_1909" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(14.7373 16.7302) scale(8.94187 8.49478)">
-<stop offset="0.72" stop-opacity="0"/>
-<stop offset="0.95" stop-opacity="0.53"/>
+<stop offset="0.72" stopOpacity="0"/>
+<stop offset="0.95" stopOpacity="0.53"/>
 <stop offset="1"/>
 </radialGradient>
 <linearGradient id="paint2_linear_2761_1909" x1="14.3174" y1="9.34594" x2="3.87455" y2="20.7206" gradientUnits="userSpaceOnUse">
-<stop stop-color="#1B9DE2"/>
-<stop offset="0.16" stop-color="#1595DF"/>
-<stop offset="0.67" stop-color="#0680D7"/>
-<stop offset="1" stop-color="#0078D4"/>
+<stop stopColor="#1B9DE2"/>
+<stop offset="0.16" stopColor="#1595DF"/>
+<stop offset="0.67" stopColor="#0680D7"/>
+<stop offset="1" stopColor="#0078D4"/>
 </linearGradient>
 <radialGradient id="paint3_radial_2761_1909" cx="0" cy="0" r="1" gradientTransform="matrix(2.01431 -13.2945 -10.743 -1.61145 6.61622 18.657)" gradientUnits="userSpaceOnUse">
-<stop offset="0.76" stop-opacity="0"/>
-<stop offset="0.95" stop-opacity="0.5"/>
+<stop offset="0.76" stopOpacity="0"/>
+<stop offset="0.95" stopOpacity="0.5"/>
 <stop offset="1"/>
 </radialGradient>
 <radialGradient id="paint4_radial_2761_1909" cx="0" cy="0" r="1" gradientTransform="matrix(-0.759112 18.9778 40.4227 1.51823 2.42266 4.44158)" gradientUnits="userSpaceOnUse">
-<stop stop-color="#35C1F1"/>
-<stop offset="0.11" stop-color="#34C1ED"/>
-<stop offset="0.23" stop-color="#2FC2DF"/>
-<stop offset="0.31" stop-color="#2BC3D2"/>
-<stop offset="0.67" stop-color="#36C752"/>
+<stop stopColor="#35C1F1"/>
+<stop offset="0.11" stopColor="#34C1ED"/>
+<stop offset="0.23" stopColor="#2FC2DF"/>
+<stop offset="0.31" stopColor="#2BC3D2"/>
+<stop offset="0.67" stopColor="#36C752"/>
 </radialGradient>
 <radialGradient id="paint5_radial_2761_1909" cx="0" cy="0" r="1" gradientTransform="matrix(2.55517 8.7606 7.11799 -2.09889 22.5048 7.25682)" gradientUnits="userSpaceOnUse">
-<stop stop-color="#66EB6E"/>
-<stop offset="1" stop-color="#66EB6E" stop-opacity="0"/>
+<stop stopColor="#66EB6E"/>
+<stop offset="1" stopColor="#66EB6E" stopOpacity="0"/>
 </radialGradient>
 <clipPath id="clip0_2761_1909">
 <rect width="24" height="24" fill="white"/>

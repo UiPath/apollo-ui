@@ -1,4 +1,4 @@
-// Auto-generated from hootsuite.svg
+// Auto-generated from third-party/hootsuite.svg
 import React from 'react';
 
 export interface HootsuiteProps extends React.SVGProps<SVGSVGElement> {}

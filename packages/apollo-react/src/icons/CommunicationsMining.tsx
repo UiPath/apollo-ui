@@ -1,4 +1,4 @@
-// Auto-generated from communications-mining.svg
+// Auto-generated from product-logo/communications-mining.svg
 import React from 'react';
 
 export interface CommunicationsMiningProps extends React.SVGProps<SVGSVGElement> {}

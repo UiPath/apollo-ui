@@ -1,4 +1,4 @@
-// Auto-generated from functions.svg
+// Auto-generated from editor/functions.svg
 import React from 'react';
 
 export interface FunctionsProps extends React.SVGProps<SVGSVGElement> {}

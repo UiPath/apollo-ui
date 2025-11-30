@@ -1,4 +1,4 @@
-// Auto-generated from folder-personal-workspace.svg
+// Auto-generated from object/folder-personal-workspace.svg
 import React from 'react';
 
 export interface FolderPersonalWorkspaceProps extends React.SVGProps<SVGSVGElement> {}

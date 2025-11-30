@@ -1,4 +1,4 @@
-// Auto-generated from code.svg
+// Auto-generated from object/code.svg
 import React from 'react';
 
 export interface CodeProps extends React.SVGProps<SVGSVGElement> {}

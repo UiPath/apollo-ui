@@ -1,4 +1,4 @@
-// Auto-generated from microsoft-visual-studio-code.svg
+// Auto-generated from third-party/microsoft-visual-studio-code.svg
 import React from 'react';
 
 export interface MicrosoftVisualStudioCodeProps extends React.SVGProps<SVGSVGElement> {}
@@ -24,8 +24,8 @@ export const MicrosoftVisualStudioCode = React.forwardRef<SVGSVGElement, Microso
 </g>
 </g>
 <defs>
-<filter id="filter0_ii_2761_1848" x="2" y="0" width="20" height="24" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
-<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<filter id="filter0_ii_2761_1848" x="2" y="0" width="20" height="24" filterUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
+<feFlood floodOpacity="0" result="BackgroundImageFix"/>
 <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
 <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
 <feOffset dy="2"/>
@@ -40,8 +40,8 @@ export const MicrosoftVisualStudioCode = React.forwardRef<SVGSVGElement, Microso
 <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.12 0"/>
 <feBlend mode="normal" in2="effect1_innerShadow_2761_1848" result="effect2_innerShadow_2761_1848"/>
 </filter>
-<filter id="filter1_d_2761_1848" x="-19.3456" y="-14.5009" width="62.679" height="57.7826" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
-<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<filter id="filter1_d_2761_1848" x="-19.3456" y="-14.5009" width="62.679" height="57.7826" filterUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
+<feFlood floodOpacity="0" result="BackgroundImageFix"/>
 <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
 <feOffset/>
 <feGaussianBlur stdDeviation="10.6667"/>
@@ -49,8 +49,8 @@ export const MicrosoftVisualStudioCode = React.forwardRef<SVGSVGElement, Microso
 <feBlend mode="overlay" in2="BackgroundImageFix" result="effect1_dropShadow_2761_1848"/>
 <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_2761_1848" result="shape"/>
 </filter>
-<filter id="filter2_d_2761_1848" x="-5.5834" y="-19.2819" width="48.9168" height="62.5637" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
-<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<filter id="filter2_d_2761_1848" x="-5.5834" y="-19.2819" width="48.9168" height="62.5637" filterUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
+<feFlood floodOpacity="0" result="BackgroundImageFix"/>
 <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
 <feOffset/>
 <feGaussianBlur stdDeviation="10.6667"/>
@@ -59,8 +59,8 @@ export const MicrosoftVisualStudioCode = React.forwardRef<SVGSVGElement, Microso
 <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_2761_1848" result="shape"/>
 </filter>
 <linearGradient id="paint0_linear_2761_1848" x1="11.9878" y1="2.05171" x2="11.9878" y2="21.9486" gradientUnits="userSpaceOnUse">
-<stop stop-color="white"/>
-<stop offset="1" stop-color="white" stop-opacity="0"/>
+<stop stopColor="white"/>
+<stop offset="1" stopColor="white" stopOpacity="0"/>
 </linearGradient>
 </defs>
     </svg>

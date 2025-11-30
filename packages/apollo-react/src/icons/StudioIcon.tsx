@@ -1,4 +1,4 @@
-// Auto-generated from studio-icon.svg
+// Auto-generated from product-logo/studio-icon.svg
 import React from 'react';
 
 export interface StudioIconProps extends React.SVGProps<SVGSVGElement> {}

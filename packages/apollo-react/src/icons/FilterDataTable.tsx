@@ -1,4 +1,4 @@
-// Auto-generated from filter-data-table.svg
+// Auto-generated from studio-icons/filter-data-table.svg
 import React from 'react';
 
 export interface FilterDataTableProps extends React.SVGProps<SVGSVGElement> {}

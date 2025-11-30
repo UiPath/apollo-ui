@@ -1,4 +1,4 @@
-// Auto-generated from attach.svg
+// Auto-generated from action/attach.svg
 import React from 'react';
 
 export interface AttachProps extends React.SVGProps<SVGSVGElement> {}

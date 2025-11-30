@@ -1,4 +1,4 @@
-// Auto-generated from log-message.svg
+// Auto-generated from studio-icons/log-message.svg
 import React from 'react';
 
 export interface LogMessageProps extends React.SVGProps<SVGSVGElement> {}

@@ -1,4 +1,4 @@
-// Auto-generated from robot-head.svg
+// Auto-generated from object/robot-head.svg
 import React from 'react';
 
 export interface RobotHeadProps extends React.SVGProps<SVGSVGElement> {}

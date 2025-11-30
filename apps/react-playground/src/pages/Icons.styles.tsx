@@ -26,7 +26,7 @@ export const SearchInput = styled.input`
 // Icon Browser Grid (dense layout like Lucide)
 export const IconBrowserGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(56px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
   gap: 8px;
   margin-top: 24px;
 `;
@@ -36,13 +36,15 @@ export const IconBrowserCard = styled.div`
   background: var(--color-background);
   border: 2px solid var(--color-border);
   border-radius: 8px;
-  padding: 16px;
+  padding: 12px;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 8px;
   cursor: pointer;
   transition: all 0.2s ease;
-  aspect-ratio: 1;
+  min-height: 110px;
 
   &:hover {
     background: var(--color-background-hover);
@@ -56,37 +58,21 @@ export const IconBrowserCard = styled.div`
   &:active {
     transform: scale(0.95);
   }
-
-  svg {
-    width: 20px;
-    height: 20px;
-    transition: color 0.2s ease;
-  }
 `;
 
-// Icon Preview Container (no longer needed - removed)
-export const IconPreview = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 48px;
-  height: 48px;
-  color: var(--color-foreground-emp);
-
-  svg {
-    width: 24px;
-    height: 24px;
-  }
-`;
-
-// Icon Component Name (no longer needed - removed)
-export const IconComponentName = styled.div`
-  font-size: 12px;
+// Icon name label
+export const IconLabel = styled.div`
+  font-size: 10px;
   color: var(--color-foreground-de-emp);
   text-align: center;
   word-break: break-word;
-  line-height: 1.3;
+  line-height: 1.2;
   max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
 `;
 
 // Sizing Tokens Grid (larger cards for sizing demonstrations)

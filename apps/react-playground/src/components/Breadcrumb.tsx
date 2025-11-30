@@ -7,16 +7,10 @@ import {
 	BreadcrumbNav,
 	BreadcrumbSeparator,
 	BreadcrumbText,
-	HamburgerButton,
-	HamburgerLine,
 } from "./Breadcrumb.styles";
 import { ThemeToggle } from "./ThemeToggle";
 
-interface BreadcrumbProps {
-	onMenuClick: () => void;
-}
-
-export function Breadcrumb({ onMenuClick }: BreadcrumbProps) {
+export function Breadcrumb() {
 	const location = useLocation();
 	const pathnames = location.pathname.split("/").filter((x) => x);
 
@@ -37,12 +31,6 @@ export function Breadcrumb({ onMenuClick }: BreadcrumbProps) {
 	return (
 		<BreadcrumbContainer>
 			<BreadcrumbInner>
-				<HamburgerButton onClick={onMenuClick}>
-					<HamburgerLine />
-					<HamburgerLine />
-					<HamburgerLine />
-				</HamburgerButton>
-
 				<BreadcrumbNav>
 					<BreadcrumbLink to="/" $isActive={pathnames.length === 0}>
 						Home

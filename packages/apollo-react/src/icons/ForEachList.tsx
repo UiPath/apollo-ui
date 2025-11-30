@@ -1,4 +1,4 @@
-// Auto-generated from for-each-list.svg
+// Auto-generated from studio-icons/for-each-list.svg
 import React from 'react';
 
 export interface ForEachListProps extends React.SVGProps<SVGSVGElement> {}

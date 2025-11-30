@@ -1,4 +1,4 @@
-// Auto-generated from salesmate.svg
+// Auto-generated from third-party/salesmate.svg
 import React from 'react';
 
 export interface SalesmateProps extends React.SVGProps<SVGSVGElement> {}

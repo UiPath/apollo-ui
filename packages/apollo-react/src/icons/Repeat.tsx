@@ -1,4 +1,4 @@
-// Auto-generated from repeat.svg
+// Auto-generated from logic/repeat.svg
 import React from 'react';
 
 export interface RepeatProps extends React.SVGProps<SVGSVGElement> {}

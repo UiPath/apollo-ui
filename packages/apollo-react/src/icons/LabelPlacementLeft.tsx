@@ -1,4 +1,4 @@
-// Auto-generated from label-placement/left.svg
+// Auto-generated from editor/label-placement/label-placement-left.svg
 import React from 'react';
 
 export interface LabelPlacementLeftProps extends React.SVGProps<SVGSVGElement> {}

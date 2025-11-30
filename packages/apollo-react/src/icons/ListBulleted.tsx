@@ -1,4 +1,4 @@
-// Auto-generated from list-bulleted.svg
+// Auto-generated from editor/list-bulleted.svg
 import React from 'react';
 
 export interface ListBulletedProps extends React.SVGProps<SVGSVGElement> {}

@@ -1,4 +1,4 @@
-// Auto-generated from navigate-before-first-page.svg
+// Auto-generated from navigation/navigate-before-first-page.svg
 import React from 'react';
 
 export interface NavigateBeforeFirstPageProps extends React.SVGProps<SVGSVGElement> {}

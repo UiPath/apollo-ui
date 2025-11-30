@@ -1,4 +1,4 @@
-// Auto-generated from scope.svg
+// Auto-generated from action/scope.svg
 import React from 'react';
 
 export interface ScopeProps extends React.SVGProps<SVGSVGElement> {}

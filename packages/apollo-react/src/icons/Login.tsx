@@ -1,4 +1,4 @@
-// Auto-generated from login.svg
+// Auto-generated from action/login.svg
 import React from 'react';
 
 export interface LoginProps extends React.SVGProps<SVGSVGElement> {}

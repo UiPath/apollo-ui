@@ -1,4 +1,4 @@
-// Auto-generated from health.svg
+// Auto-generated from object/health.svg
 import React from 'react';
 
 export interface HealthProps extends React.SVGProps<SVGSVGElement> {}

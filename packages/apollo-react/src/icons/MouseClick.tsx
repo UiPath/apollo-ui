@@ -1,4 +1,4 @@
-// Auto-generated from mouse-click.svg
+// Auto-generated from object/mouse-click.svg
 import React from 'react';
 
 export interface MouseClickProps extends React.SVGProps<SVGSVGElement> {}

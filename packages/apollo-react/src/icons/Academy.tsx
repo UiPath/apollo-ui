@@ -1,4 +1,4 @@
-// Auto-generated from academy.svg
+// Auto-generated from product-logo/academy.svg
 import React from 'react';
 
 export interface AcademyProps extends React.SVGProps<SVGSVGElement> {}

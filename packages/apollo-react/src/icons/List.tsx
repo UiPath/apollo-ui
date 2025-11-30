@@ -1,4 +1,4 @@
-// Auto-generated from data-type/list.svg
+// Auto-generated from studio-icons/list.svg
 import React from 'react';
 
 export interface ListProps extends React.SVGProps<SVGSVGElement> {}
@@ -6,14 +6,8 @@ export interface ListProps extends React.SVGProps<SVGSVGElement> {}
 export const List = React.forwardRef<SVGSVGElement, ListProps>(
   (props, ref) => (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
-      <path d="M3 15H5V13H3V15Z" fill="currentColor"/>
-<path d="M3 19H5V17H3V19Z" fill="currentColor"/>
-<path d="M3 11H5V9H3V11Z" fill="currentColor"/>
-<path d="M7 15H21V13H7V15Z" fill="currentColor"/>
-<path d="M7 19H21V17H7V19Z" fill="currentColor"/>
-<path d="M7 9V11H21V9H7Z" fill="currentColor"/>
-<path d="M3 7H5V5H3V7Z" fill="currentColor"/>
-<path d="M7 5V7H21V5H7Z" fill="currentColor"/>
+      <path d="M7 4H4V20H7V22H4C2.89543 22 2 21.1046 2 20V4C2 2.89543 2.89543 2 4 2H7V4ZM20 2C21.1046 2 22 2.89543 22 4V20C22 21.1046 21.1046 22 20 22H17V20H20V4H17V2H20Z" fill="currentColor"/>
+<path d="M17 17H7V15H17V17ZM17 13H7V11H17V13ZM17 9H7V7H17V9Z" fill="currentColor"/>
     </svg>
   )
 );

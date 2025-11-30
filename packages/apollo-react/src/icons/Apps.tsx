@@ -1,4 +1,4 @@
-// Auto-generated from apps.svg
+// Auto-generated from product-logo/apps.svg
 import React from 'react';
 
 export interface AppsProps extends React.SVGProps<SVGSVGElement> {}

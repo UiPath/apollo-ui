@@ -1,4 +1,4 @@
-// Auto-generated from data-manager.svg
+// Auto-generated from object/data-manager.svg
 import React from 'react';
 
 export interface DataManagerProps extends React.SVGProps<SVGSVGElement> {}

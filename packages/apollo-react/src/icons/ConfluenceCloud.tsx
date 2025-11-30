@@ -1,4 +1,4 @@
-// Auto-generated from confluence-cloud.svg
+// Auto-generated from third-party/confluence-cloud.svg
 import React from 'react';
 
 export interface ConfluenceCloudProps extends React.SVGProps<SVGSVGElement> {}
@@ -12,12 +12,12 @@ export const ConfluenceCloud = React.forwardRef<SVGSVGElement, ConfluenceCloudPr
 </g>
 <defs>
 <linearGradient id="paint0_linear_2_1701" x1="21.5704" y1="23.9734" x2="16.3089" y2="12.3751" gradientUnits="userSpaceOnUse">
-<stop offset="0.18" stop-color="#0052CC"/>
-<stop offset="1" stop-color="#2684FF"/>
+<stop offset="0.18" stopColor="#0052CC"/>
+<stop offset="1" stopColor="#2684FF"/>
 </linearGradient>
 <linearGradient id="paint1_linear_2_1701" x1="2.42942" y1="0.0382628" x2="7.69912" y2="11.6419" gradientUnits="userSpaceOnUse">
-<stop offset="0.18" stop-color="#0052CC"/>
-<stop offset="1" stop-color="#2684FF"/>
+<stop offset="0.18" stopColor="#0052CC"/>
+<stop offset="1" stopColor="#2684FF"/>
 </linearGradient>
 <clipPath id="clip0_2_1701">
 <rect width="24" height="24" fill="white"/>

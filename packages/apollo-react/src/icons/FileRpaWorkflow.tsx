@@ -1,4 +1,4 @@
-// Auto-generated from file-rpa-workflow.svg
+// Auto-generated from object/file-rpa-workflow.svg
 import React from 'react';
 
 export interface FileRpaWorkflowProps extends React.SVGProps<SVGSVGElement> {}

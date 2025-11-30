@@ -1,4 +1,4 @@
-// Auto-generated from invoke-code.svg
+// Auto-generated from studio-icons/invoke-code.svg
 import React from 'react';
 
 export interface InvokeCodeProps extends React.SVGProps<SVGSVGElement> {}

@@ -1,4 +1,4 @@
-// Auto-generated from format-align/right.svg
+// Auto-generated from editor/format-align/format-align-right.svg
 import React from 'react';
 
 export interface FormatAlignRightProps extends React.SVGProps<SVGSVGElement> {}

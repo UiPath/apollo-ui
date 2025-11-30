@@ -1,4 +1,4 @@
-// Auto-generated from user-group-remove.svg
+// Auto-generated from social/user-group-remove.svg
 import React from 'react';
 
 export interface UserGroupRemoveProps extends React.SVGProps<SVGSVGElement> {}

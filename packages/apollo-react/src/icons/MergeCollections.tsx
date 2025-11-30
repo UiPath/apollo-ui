@@ -1,4 +1,4 @@
-// Auto-generated from merge-collections.svg
+// Auto-generated from studio-icons/merge-collections.svg
 import React from 'react';
 
 export interface MergeCollectionsProps extends React.SVGProps<SVGSVGElement> {}

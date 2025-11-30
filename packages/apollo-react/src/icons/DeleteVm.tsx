@@ -1,4 +1,4 @@
-// Auto-generated from delete-vm.svg
+// Auto-generated from studio-icons/delete-vm.svg
 import React from 'react';
 
 export interface DeleteVmProps extends React.SVGProps<SVGSVGElement> {}

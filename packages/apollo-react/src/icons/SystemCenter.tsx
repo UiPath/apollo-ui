@@ -1,4 +1,4 @@
-// Auto-generated from system-center.svg
+// Auto-generated from third-party/system-center.svg
 import React from 'react';
 
 export interface SystemCenterProps extends React.SVGProps<SVGSVGElement> {}
@@ -16,19 +16,19 @@ export const SystemCenter = React.forwardRef<SVGSVGElement, SystemCenterProps>(
 </g>
 <defs>
 <linearGradient id="paint0_linear_2_1920" x1="2.51074" y1="16.8523" x2="14.3298" y2="16.8523" gradientUnits="userSpaceOnUse">
-<stop stop-color="#706F70"/>
-<stop offset="1" stop-color="#D9D9D9"/>
+<stop stopColor="#706F70"/>
+<stop offset="1" stopColor="#D9D9D9"/>
 </linearGradient>
 <linearGradient id="paint1_linear_2_1920" x1="5.92383" y1="3.23671" x2="12.217" y2="3.23671" gradientUnits="userSpaceOnUse">
-<stop stop-color="#706F70"/>
-<stop offset="1" stop-color="#D9D9D9"/>
+<stop stopColor="#706F70"/>
+<stop offset="1" stopColor="#D9D9D9"/>
 </linearGradient>
 <radialGradient id="paint2_radial_2_1920" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(9.44419 8.77427) scale(7.28653 7.28655)">
-<stop stop-color="#9DCAEA"/>
-<stop offset="0.0744" stop-color="#8CC1E7"/>
-<stop offset="0.2677" stop-color="#65ACDE"/>
-<stop offset="0.3685" stop-color="#56A4DB"/>
-<stop offset="1" stop-color="#3361A1"/>
+<stop stopColor="#9DCAEA"/>
+<stop offset="0.0744" stopColor="#8CC1E7"/>
+<stop offset="0.2677" stopColor="#65ACDE"/>
+<stop offset="0.3685" stopColor="#56A4DB"/>
+<stop offset="1" stopColor="#3361A1"/>
 </radialGradient>
 <clipPath id="clip0_2_1920">
 <rect width="24" height="24" fill="white"/>

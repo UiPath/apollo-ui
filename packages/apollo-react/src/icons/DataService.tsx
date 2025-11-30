@@ -1,4 +1,4 @@
-// Auto-generated from data-service.svg
+// Auto-generated from product-logo/data-service.svg
 import React from 'react';
 
 export interface DataServiceProps extends React.SVGProps<SVGSVGElement> {}

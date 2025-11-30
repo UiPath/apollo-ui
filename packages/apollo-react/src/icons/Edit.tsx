@@ -1,4 +1,4 @@
-// Auto-generated from edit.svg
+// Auto-generated from action/edit.svg
 import React from 'react';
 
 export interface EditProps extends React.SVGProps<SVGSVGElement> {}

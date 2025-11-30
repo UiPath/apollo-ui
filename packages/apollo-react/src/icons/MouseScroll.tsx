@@ -1,4 +1,4 @@
-// Auto-generated from mouse-scroll.svg
+// Auto-generated from studio-icons/mouse-scroll.svg
 import React from 'react';
 
 export interface MouseScrollProps extends React.SVGProps<SVGSVGElement> {}

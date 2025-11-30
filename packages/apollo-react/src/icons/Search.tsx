@@ -1,4 +1,4 @@
-// Auto-generated from search.svg
+// Auto-generated from action/search.svg
 import React from 'react';
 
 export interface SearchProps extends React.SVGProps<SVGSVGElement> {}

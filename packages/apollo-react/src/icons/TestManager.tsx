@@ -1,4 +1,4 @@
-// Auto-generated from test-manager.svg
+// Auto-generated from product-logo/test-manager.svg
 import React from 'react';
 
 export interface TestManagerProps extends React.SVGProps<SVGSVGElement> {}

@@ -1,4 +1,4 @@
-// Auto-generated from chatbot.svg
+// Auto-generated from product-logo/chatbot.svg
 import React from 'react';
 
 export interface ChatbotProps extends React.SVGProps<SVGSVGElement> {}

@@ -1,4 +1,4 @@
-// Auto-generated from polyline.svg
+// Auto-generated from editor/polyline.svg
 import React from 'react';
 
 export interface PolylineProps extends React.SVGProps<SVGSVGElement> {}

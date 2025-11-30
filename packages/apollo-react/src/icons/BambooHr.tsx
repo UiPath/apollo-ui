@@ -1,4 +1,4 @@
-// Auto-generated from bamboo-hr.svg
+// Auto-generated from third-party/bamboo-hr.svg
 import React from 'react';
 
 export interface BambooHrProps extends React.SVGProps<SVGSVGElement> {}

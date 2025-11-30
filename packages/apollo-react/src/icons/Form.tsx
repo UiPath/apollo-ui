@@ -1,4 +1,4 @@
-// Auto-generated from form.svg
+// Auto-generated from object/form.svg
 import React from 'react';
 
 export interface FormProps extends React.SVGProps<SVGSVGElement> {}

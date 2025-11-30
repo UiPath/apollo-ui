@@ -1,4 +1,4 @@
-// Auto-generated from invoke-workflow-file.svg
+// Auto-generated from studio-icons/invoke-workflow-file.svg
 import React from 'react';
 
 export interface InvokeWorkflowFileProps extends React.SVGProps<SVGSVGElement> {}

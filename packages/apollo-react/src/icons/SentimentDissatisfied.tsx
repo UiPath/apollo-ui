@@ -1,4 +1,4 @@
-// Auto-generated from sentiment-dissatisfied.svg
+// Auto-generated from social/sentiment-dissatisfied.svg
 import React from 'react';
 
 export interface SentimentDissatisfiedProps extends React.SVGProps<SVGSVGElement> {}

@@ -1,4 +1,4 @@
-// Auto-generated from microsoft-planner.svg
+// Auto-generated from third-party/microsoft-planner.svg
 import React from 'react';
 
 export interface MicrosoftPlannerProps extends React.SVGProps<SVGSVGElement> {}

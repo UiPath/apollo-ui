@@ -1,4 +1,4 @@
-// Auto-generated from insights.svg
+// Auto-generated from product-logo/insights.svg
 import React from 'react';
 
 export interface InsightsProps extends React.SVGProps<SVGSVGElement> {}

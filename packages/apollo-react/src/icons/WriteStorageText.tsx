@@ -1,4 +1,4 @@
-// Auto-generated from write-storage-text.svg
+// Auto-generated from studio-icons/write-storage-text.svg
 import React from 'react';
 
 export interface WriteStorageTextProps extends React.SVGProps<SVGSVGElement> {}

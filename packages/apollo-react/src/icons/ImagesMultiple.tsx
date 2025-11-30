@@ -1,4 +1,4 @@
-// Auto-generated from images-multiple.svg
+// Auto-generated from object/images-multiple.svg
 import React from 'react';
 
 export interface ImagesMultipleProps extends React.SVGProps<SVGSVGElement> {}

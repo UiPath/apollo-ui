@@ -1,4 +1,4 @@
-// Auto-generated from microsoft-excel.svg
+// Auto-generated from third-party/microsoft-excel.svg
 import React from 'react';
 
 export interface MicrosoftExcelProps extends React.SVGProps<SVGSVGElement> {}
@@ -258,8 +258,8 @@ export const MicrosoftExcel = React.forwardRef<SVGSVGElement, MicrosoftExcelProp
 </g>
 </g>
 <defs>
-<filter id="filter0_ii_2_1836" x="0.146484" y="-0.867508" width="23.7056" height="25.7051" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
-<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<filter id="filter0_ii_2_1836" x="0.146484" y="-0.867508" width="23.7056" height="25.7051" filterUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
+<feFlood floodOpacity="0" result="BackgroundImageFix"/>
 <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
 <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
 <feOffset dy="2"/>

@@ -1,4 +1,4 @@
-// Auto-generated from suggestion.svg
+// Auto-generated from action/suggestion.svg
 import React from 'react';
 
 export interface SuggestionProps extends React.SVGProps<SVGSVGElement> {}

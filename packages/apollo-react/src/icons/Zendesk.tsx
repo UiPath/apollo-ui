@@ -1,4 +1,4 @@
-// Auto-generated from zendesk.svg
+// Auto-generated from third-party/zendesk.svg
 import React from 'react';
 
 export interface ZendeskProps extends React.SVGProps<SVGSVGElement> {}

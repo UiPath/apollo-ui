@@ -1,4 +1,4 @@
-// Auto-generated from thumb-up-pressed.svg
+// Auto-generated from action/thumb-up-pressed.svg
 import React from 'react';
 
 export interface ThumbUpPressedProps extends React.SVGProps<SVGSVGElement> {}

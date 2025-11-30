@@ -1,4 +1,4 @@
-// Auto-generated from method.svg
+// Auto-generated from object/method.svg
 import React from 'react';
 
 export interface MethodProps extends React.SVGProps<SVGSVGElement> {}

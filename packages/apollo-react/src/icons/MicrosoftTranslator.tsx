@@ -1,4 +1,4 @@
-// Auto-generated from microsoft-translator.svg
+// Auto-generated from third-party/microsoft-translator.svg
 import React from 'react';
 
 export interface MicrosoftTranslatorProps extends React.SVGProps<SVGSVGElement> {}

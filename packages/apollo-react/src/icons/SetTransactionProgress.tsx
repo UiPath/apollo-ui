@@ -1,4 +1,4 @@
-// Auto-generated from set-transaction-progress.svg
+// Auto-generated from studio-icons/set-transaction-progress.svg
 import React from 'react';
 
 export interface SetTransactionProgressProps extends React.SVGProps<SVGSVGElement> {}

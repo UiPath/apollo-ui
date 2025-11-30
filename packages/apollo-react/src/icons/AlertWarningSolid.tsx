@@ -1,4 +1,4 @@
-// Auto-generated from alert-warning-solid.svg
+// Auto-generated from indicator-and-alert/alert-warning-solid.svg
 import React from 'react';
 
 export interface AlertWarningSolidProps extends React.SVGProps<SVGSVGElement> {}

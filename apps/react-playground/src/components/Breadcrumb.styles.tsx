@@ -4,13 +4,14 @@ import styled from "styled-components";
 export const BreadcrumbContainer = styled.div`
   position: sticky;
   top: 0;
-  z-index: 1000;
+  z-index: 100;
   background: var(--color-background);
-  border-bottom: 1px solid var(--color-border);
-  padding: 12px 20px;
+  padding: 4px 16px;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  border-bottom: 1px solid var(--color-border);
+  backdrop-filter: blur(8px);
 `;
 
 export const BreadcrumbInner = styled.div`

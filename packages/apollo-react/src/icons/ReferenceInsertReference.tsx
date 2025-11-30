@@ -1,4 +1,4 @@
-// Auto-generated from reference-insert-reference.svg
+// Auto-generated from object/reference-insert-reference.svg
 import React from 'react';
 
 export interface ReferenceInsertReferenceProps extends React.SVGProps<SVGSVGElement> {}

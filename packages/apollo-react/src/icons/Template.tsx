@@ -1,4 +1,4 @@
-// Auto-generated from template.svg
+// Auto-generated from object/template.svg
 import React from 'react';
 
 export interface TemplateProps extends React.SVGProps<SVGSVGElement> {}

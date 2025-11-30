@@ -1,4 +1,4 @@
-// Auto-generated from collection.svg
+// Auto-generated from object/collection.svg
 import React from 'react';
 
 export interface CollectionProps extends React.SVGProps<SVGSVGElement> {}

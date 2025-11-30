@@ -1,4 +1,4 @@
-// Auto-generated from data-setting.svg
+// Auto-generated from action/data-setting.svg
 import React from 'react';
 
 export interface DataSettingProps extends React.SVGProps<SVGSVGElement> {}

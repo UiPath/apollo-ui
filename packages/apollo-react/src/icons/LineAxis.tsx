@@ -1,4 +1,4 @@
-// Auto-generated from line-axis.svg
+// Auto-generated from editor/line-axis.svg
 import React from 'react';
 
 export interface LineAxisProps extends React.SVGProps<SVGSVGElement> {}

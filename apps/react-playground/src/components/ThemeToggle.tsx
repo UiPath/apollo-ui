@@ -5,8 +5,8 @@ import {
 	CheckboxLabel,
 	CheckboxText,
 	HighContrastCheckbox,
+	IconButton,
 	ThemeControls,
-	ToggleButton,
 } from "./ThemeToggle.styles";
 
 export function ThemeToggle() {
@@ -14,13 +14,14 @@ export function ThemeToggle() {
 
 	return (
 		<ThemeControls>
-			<ToggleButton
+			<IconButton
 				onClick={toggleTheme}
+				$isActive={false}
 				aria-label={`Switch to ${theme === "light" ? "dark" : "light"} mode`}
 				title={`Switch to ${theme === "light" ? "dark" : "light"} mode`}
 			>
 				{theme === "light" ? "🌙" : "☀️"}
-			</ToggleButton>
+			</IconButton>
 
 			<HighContrastCheckbox>
 				<CheckboxLabel>

@@ -1,4 +1,4 @@
-// Auto-generated from typeform.svg
+// Auto-generated from third-party/typeform.svg
 import React from 'react';
 
 export interface TypeformProps extends React.SVGProps<SVGSVGElement> {}

@@ -1,4 +1,4 @@
-// Auto-generated from filter/9.svg
+// Auto-generated from indicator-and-alert/filter/filter-9.svg
 import React from 'react';
 
 export interface Filter9Props extends React.SVGProps<SVGSVGElement> {}

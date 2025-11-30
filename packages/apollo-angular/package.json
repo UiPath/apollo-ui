@@ -18,6 +18,7 @@
     "build": "ng-packagr -p ng-package.json",
     "dev": "ng-packagr -p ng-package.json --watch",
     "lint": "eslint src --ext .ts",
+    "lint:fix": "eslint src --ext .ts --fix",
     "test": "echo 'No tests configured yet'",
     "clean": "rm -rf dist"
   },

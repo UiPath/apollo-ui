@@ -1,4 +1,4 @@
-// Auto-generated from dashboard.svg
+// Auto-generated from object/dashboard.svg
 import React from 'react';
 
 export interface DashboardProps extends React.SVGProps<SVGSVGElement> {}

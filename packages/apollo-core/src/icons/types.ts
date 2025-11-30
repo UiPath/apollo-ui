@@ -6,30 +6,17 @@ export type IconName =
   | 'Academy'
   | 'AccountSwitch'
   | 'Act365'
+  | 'ActOn'
   | 'ActionCenter'
   | 'ActiveCampaign'
   | 'ActiveDirectory'
-  | 'ActivitiesApplicationCard'
-  | 'ActivitiesCheck'
-  | 'ActivitiesCheckstate'
-  | 'ActivitiesClick'
-  | 'ActivitiesExtractData'
-  | 'ActivitiesForEachUiElement'
-  | 'ActivitiesGetAttribute'
-  | 'ActivitiesGetUrl'
-  | 'ActivitiesGettext'
-  | 'ActivitiesGotourl'
-  | 'ActivitiesHighlight'
-  | 'ActivitiesHover'
-  | 'ActivitiesKeyboardShortcuts'
-  | 'ActivitiesMouseScroll'
-  | 'ActivitiesNavigateBrowser'
-  | 'ActivitiesSelectitem'
-  | 'ActivitiesSemanticFillForm'
-  | 'ActivitiesSemanticSetValue'
-  | 'ActivitiesTakeScreenshot'
-  | 'ActivitiesTypeinto'
-  | 'AddCommentAnnotate'
+  | 'ActivityImap'
+  | 'ActivityInputDirectionInput'
+  | 'ActivityInputDirectionOutput'
+  | 'ActivityPop3'
+  | 'ActivitySmtp'
+  | 'AddCanvas'
+  | 'AddComment'
   | 'AddDataColumn'
   | 'AddDataRow'
   | 'AddLogFields'
@@ -37,15 +24,65 @@ export type IconName =
   | 'AddToCollection'
   | 'AddTransactionItem'
   | 'Admin'
-  | 'Agent'
+  | 'AdobePdf'
+  | 'AdobeSign'
+  | 'AdvanceStream'
   | 'AgentAutopilotMarker'
+  | 'AgentDesktopLogo'
+  | 'AgentDesktopLogoBg'
+  | 'AgentDesktopLogoFlat'
   | 'AgentRun'
-  | 'AgenticProcess'
+  | 'AgentTraceAgentRun'
+  | 'AgentTraceAgentTool'
+  | 'AgentTraceApiWorkflowRun'
+  | 'AgentTraceApiWorkflowTool'
+  | 'AgentTraceCompletion'
+  | 'AgentTraceContextGroundingTool'
+  | 'AgentTraceConversation'
+  | 'AgentTraceConversationAgentMessage'
+  | 'AgentTraceConversationCitation'
+  | 'AgentTraceConversationContent'
+  | 'AgentTraceConversationToolCall'
+  | 'AgentTraceConversationUserMessage'
+  | 'AgentTraceEscalationTool'
+  | 'AgentTraceEval'
+  | 'AgentTraceEvalSetRun'
+  | 'AgentTraceExchange'
+  | 'AgentTraceGovernanceEscalation'
+  | 'AgentTraceInsufficientPermissions'
+  | 'AgentTraceIntegrationTool'
+  | 'AgentTraceLlmCall'
+  | 'AgentTraceMcpServerCall'
+  | 'AgentTraceMcpServerRequest'
+  | 'AgentTraceMcpServerResponse'
+  | 'AgentTraceMockTool'
+  | 'AgentTraceOutputCorrection'
+  | 'AgentTraceProcessTool'
+  | 'AgentTraceToolCall'
+  | 'AgentTraceToolGuardrailEscalation'
+  | 'AgentTraceToolGuardrailEvaluation'
+  | 'AgentTraceToolPostGovernance'
+  | 'AgentTraceToolPostGuardrails'
+  | 'AgentTraceToolPreGovernance'
+  | 'AgentTraceToolPreGuardrails'
+  | 'AgentsAgent'
+  | 'AgentsContext'
+  | 'AgentsDefinition'
+  | 'AgentsEscalation'
+  | 'AgentsEscalations'
+  | 'AgentsEvals'
+  | 'AgentsEvaluator'
+  | 'AgentsIndex'
+  | 'AgentsRunHistory'
+  | 'AgentsSet'
+  | 'AgentsTool'
+  | 'AgentsTrace'
   | 'AiAutoSummarize'
   | 'AiAutofix'
   | 'AiCenter'
+  | 'AlertDelete'
   | 'AlertError'
-  | 'AlertErrorFatalLog'
+  | 'AlertErrorFatal'
   | 'AlertErrorOutline'
   | 'AlertErrorSolid'
   | 'AlertInfoColor'
@@ -54,21 +91,24 @@ export type IconName =
   | 'AlertWarning'
   | 'AlertWarningOutline'
   | 'AlertWarningSolid'
-  | 'All'
+  | 'AlignBottom'
+  | 'AlignCenter'
+  | 'AlignTop'
   | 'AmazonSagemaker'
   | 'AmazonWebServices'
   | 'AmazonWebServicesWorkspaces'
   | 'AmazonWorkspaces'
   | 'Analyze'
-  | 'ApiWorkflow'
   | 'App'
   | 'AppendItemToList'
   | 'AppendLine'
+  | 'AppleMail'
+  | 'AppleNumbers'
+  | 'AppleScript'
   | 'ApplicationCard'
   | 'Apps'
   | 'Archive'
   | 'AreaChart'
-  | 'Array'
   | 'ArrowBack'
   | 'ArrowDown'
   | 'ArrowDropDown'
@@ -80,8 +120,7 @@ export type IconName =
   | 'ArrowRight'
   | 'ArrowUp'
   | 'Asana'
-  | 'Ascending'
-  | 'AssessMeasureEvaluate'
+  | 'Assess'
   | 'Asset'
   | 'Assign'
   | 'Atlassian'
@@ -95,34 +134,117 @@ export type IconName =
   | 'Automations'
   | 'Autopilot'
   | 'AutopilotMarker'
-  | 'AwaitingPending'
   | 'Azure'
   | 'AzureActiveDirectory'
   | 'AzureActiveDirectory1'
   | 'AzureVirtualDesktop'
+  | 'AzureVirtualDesktopAddVmToHostPool'
+  | 'AzureVirtualDesktopAssignUsersAndGroupsToApplicationGroup'
+  | 'AzureVirtualDesktopCreateHostPool'
+  | 'AzureVirtualDesktopCreateWorkspace'
+  | 'AzureVirtualDesktopDeleteHostPool'
+  | 'AzureVirtualDesktopDeleteSessionHost'
+  | 'AzureVirtualDesktopDeleteUserSession'
+  | 'AzureVirtualDesktopDeleteWorkspace'
+  | 'AzureVirtualDesktopDisconnectUserSession'
+  | 'AzureVirtualDesktopForEachApplicationGroup'
+  | 'AzureVirtualDesktopForEachHostPool'
+  | 'AzureVirtualDesktopForEachSessionHost'
+  | 'AzureVirtualDesktopForEachUserSession'
+  | 'AzureVirtualDesktopForEachWorkspace'
+  | 'AzureVirtualDesktopGetApplicationGroup'
+  | 'AzureVirtualDesktopGetHostPool'
+  | 'AzureVirtualDesktopGetSessionHost'
+  | 'AzureVirtualDesktopGetWorkspace'
+  | 'AzureVirtualDesktopRemoveUsersAndGroupsFromApplicationGroup'
+  | 'AzureVirtualDesktopScope'
+  | 'AzureVirtualDesktopSendMessageToUserSession'
+  | 'AzureVirtualDesktopUpdateHostPool'
+  | 'AzureVirtualDesktopUpdateSessionHost'
+  | 'AzureVirtualDesktopUpdateWorkspace'
+  | 'BackstageDeleteProject'
+  | 'BackstageEditProjectProperties'
+  | 'BackstageOpenInDesktop'
+  | 'BackstageOpenProject'
+  | 'BackstagePin'
+  | 'BackstagePublishHistory'
   | 'BambooHr'
   | 'BarChart'
+  | 'Bigquery'
   | 'Blur'
-  | 'Boolean'
+  | 'BorderAll'
   | 'BorderBottom'
+  | 'BorderClear'
+  | 'BorderColor'
+  | 'BorderHorizontal'
+  | 'BorderInner'
+  | 'BorderLeft'
+  | 'BorderOuter'
+  | 'BorderRight'
+  | 'BorderStyle'
   | 'BorderTop'
-  | 'Bottom'
+  | 'BorderVertical'
   | 'BottomPanelCollapse'
   | 'BottomPanelExpand'
   | 'Box'
-  | 'BpmnBoundaryEvent'
-  | 'BpmnBoundaryNonInterruptingEvent'
-  | 'BpmnData'
-  | 'BpmnEndEvent'
-  | 'BpmnEndEvent1'
-  | 'BpmnGateway'
-  | 'BpmnGateway1'
-  | 'BpmnParticipant'
-  | 'BpmnStartEvent'
-  | 'BpmnStartEvent1'
-  | 'BpmnTasks'
-  | 'BpmnTasks1'
-  | 'BpmnToolbar'
+  | 'BpmnBoundaryCompensationCatch'
+  | 'BpmnBoundaryCompensationThrow'
+  | 'BpmnBoundaryCondition'
+  | 'BpmnBoundaryDefault'
+  | 'BpmnBoundaryEscalationCatch'
+  | 'BpmnBoundaryEscalationThrow'
+  | 'BpmnBoundaryEventCompensationCatch'
+  | 'BpmnBoundaryEventCompensationThrow'
+  | 'BpmnBoundaryEventCondition'
+  | 'BpmnBoundaryEventDefault'
+  | 'BpmnBoundaryEventError'
+  | 'BpmnBoundaryEventEscalationCatch'
+  | 'BpmnBoundaryEventEscalationThrow'
+  | 'BpmnBoundaryEventLinkCatch'
+  | 'BpmnBoundaryEventLinkThrow'
+  | 'BpmnBoundaryEventMessageCatch'
+  | 'BpmnBoundaryEventMessageThrow'
+  | 'BpmnBoundaryEventSignalCatch'
+  | 'BpmnBoundaryEventSignalThrow'
+  | 'BpmnBoundaryEventTimer'
+  | 'BpmnBoundaryLinkCatch'
+  | 'BpmnBoundaryLinkThrow'
+  | 'BpmnBoundaryMessageCatch'
+  | 'BpmnBoundaryMessageThrow'
+  | 'BpmnBoundarySignalCatch'
+  | 'BpmnBoundarySignalThrow'
+  | 'BpmnBoundaryTimer'
+  | 'BpmnDataDataObject'
+  | 'BpmnDataDataStore'
+  | 'BpmnEndEventCompensationCatch'
+  | 'BpmnEndEventCompensationThrow'
+  | 'BpmnEndEventCondition'
+  | 'BpmnEndEventDefault'
+  | 'BpmnEndEventError'
+  | 'BpmnEndEventEscalationCatch'
+  | 'BpmnEndEventEscalationThrow'
+  | 'BpmnEndEventLinkCatch'
+  | 'BpmnEndEventLinkThrow'
+  | 'BpmnEndEventMessageCatch'
+  | 'BpmnEndEventMessageThrow'
+  | 'BpmnEndEventSignalCatch'
+  | 'BpmnEndEventSignalThrow'
+  | 'BpmnEndEventTerminate'
+  | 'BpmnEndEventTimer'
+  | 'BpmnGatewayComplex'
+  | 'BpmnGatewayEvent'
+  | 'BpmnGatewayExclusive'
+  | 'BpmnGatewayInclusive'
+  | 'BpmnGatewayParallel'
+  | 'BpmnParticipantParticipant'
+  | 'BpmnToolbarChangeElement'
+  | 'BpmnToolbarComment'
+  | 'BpmnToolbarConnect'
+  | 'BpmnToolbarGroup'
+  | 'BpmnToolbarRemove'
+  | 'Branch'
+  | 'Break'
+  | 'Breakpoint'
   | 'BubbleChart'
   | 'BuildCollection'
   | 'BuildDataTable'
@@ -132,193 +254,205 @@ export type IconName =
   | 'CampaignMonitor'
   | 'CancelScope'
   | 'CandlestickChart'
-  | 'CaseManagement'
   | 'Category'
-  | 'CategoryAlertsIconRaiseAlert'
-  | 'CategoryApiIconOrchestratorHttpRequest'
-  | 'CategoryApplicationGroupsIconAssignUsersAndGroupsToApplicationGroup'
-  | 'CategoryApplicationGroupsIconForEachApplicationGroup'
-  | 'CategoryApplicationGroupsIconGetApplicationGroup'
-  | 'CategoryApplicationGroupsIconRemoveUsersAndGroupsFromApplicationGroup'
-  | 'CategoryAssetsIconGetAssets'
-  | 'CategoryAssetsIconGetCredentials'
-  | 'CategoryAssetsIconSetAssets'
-  | 'CategoryAssetsIconSetCredentials'
-  | 'CategoryControlIconBreak'
-  | 'CategoryControlIconCheckFalse'
-  | 'CategoryControlIconCheckTrue'
-  | 'CategoryControlIconContinue'
-  | 'CategoryControlIconDoWhile'
-  | 'CategoryControlIconForeach'
-  | 'CategoryControlIconRepeatNumberOfTimes'
-  | 'CategoryControlIconWhile'
-  | 'CategoryDataListIconAppendItemToList'
-  | 'CategoryDataListIconCreateList'
-  | 'CategoryDataListIconForEachList'
-  | 'CategoryDataListIconList'
-  | 'CategoryDataListIconReadList'
-  | 'CategoryDataListIconUpdateList'
-  | 'CategoryDatatableIconAddDataColumn'
-  | 'CategoryDatatableIconAddDataRow'
-  | 'CategoryDatatableIconBuildDataTable'
-  | 'CategoryDatatableIconClearDataTable'
-  | 'CategoryDatatableIconFilterDataTable'
-  | 'CategoryDatatableIconForEachRowInDataTable'
-  | 'CategoryDatatableIconGenerateDataTable'
-  | 'CategoryDatatableIconGetRowItem'
-  | 'CategoryDatatableIconJoinDataTable'
-  | 'CategoryDatatableIconLookupDataTable'
-  | 'CategoryDatatableIconMergeDataTable'
-  | 'CategoryDatatableIconOutputDataTable'
-  | 'CategoryDatatableIconRemoveDataColumn'
-  | 'CategoryDatatableIconRemoveDataRow'
-  | 'CategoryDatatableIconRemoveDuplicateRows'
-  | 'CategoryDatatableIconSortDataTable'
-  | 'CategoryDatatableIconUpdateRowItem'
-  | 'CategoryFileOperationsIconAppendLine'
-  | 'CategoryFileOperationsIconCompressFile'
-  | 'CategoryFileOperationsIconCopyFile'
-  | 'CategoryFileOperationsIconCreateFile'
-  | 'CategoryFileOperationsIconCreateFolder'
-  | 'CategoryFileOperationsIconDeleteFile'
-  | 'CategoryFileOperationsIconExtractFiles'
-  | 'CategoryFileOperationsIconMoveFile'
-  | 'CategoryFileOperationsIconPathExists'
-  | 'CategoryFileOperationsIconReadTextFile'
-  | 'CategoryFileOperationsIconWriteTextFile'
-  | 'CategoryFormattingIconFormatValues'
-  | 'CategoryFormattingIconIsMatch'
-  | 'CategoryFormattingIconMatches'
-  | 'CategoryFormattingIconModifyDate'
-  | 'CategoryFormattingIconReplace'
-  | 'CategoryFormattingIconTextLeftRight'
-  | 'CategoryHostPoolsIconAddVmToHostPool'
-  | 'CategoryHostPoolsIconCreateHostPool'
-  | 'CategoryHostPoolsIconDeleteHostPool'
-  | 'CategoryHostPoolsIconForEachHostPool'
-  | 'CategoryHostPoolsIconGetHostPool'
-  | 'CategoryHostPoolsIconUpdateHostPool'
-  | 'CategoryIamPoliciesIconGetIamPolicy'
-  | 'CategoryIamPoliciesIconSetIamPolicy'
-  | 'CategoryIamRolesIconCreateRole'
-  | 'CategoryIamRolesIconDeleteRole'
-  | 'CategoryIamRolesIconForEachGrantedRole'
-  | 'CategoryIamRolesIconForEachRole'
-  | 'CategoryIamRolesIconGetRole'
-  | 'CategoryIamRolesIconUndeleteRole'
-  | 'CategoryIamRolesIconUpdateRole'
-  | 'CategoryInvokeIconInvokeCode'
-  | 'CategoryInvokeIconInvokeProcess'
-  | 'CategoryInvokeIconInvokeWorkflowFile'
-  | 'CategoryInvokeIconRunParallelProcess'
-  | 'CategoryJobsIconGetJob'
-  | 'CategoryJobsIconStartJob'
-  | 'CategoryJobsIconStopJob'
-  | 'CategoryLoggingIconAddLogFields'
-  | 'CategoryLoggingIconLogMessage'
-  | 'CategoryLoggingIconRemoveLogFields'
-  | 'CategoryLoggingIconReportStatus'
-  | 'CategoryMiscelaneousIconModifyText'
-  | 'CategoryMiscelaneousIconMultipleAssign'
-  | 'CategoryMiscelaneousIconRetryScope'
-  | 'CategoryMiscelaneousIconWaitForDownload'
-  | 'CategoryProcessIconShouldStop'
-  | 'CategoryProjectsIconCreateProject'
-  | 'CategoryProjectsIconForEachProject'
-  | 'CategoryQueuesIconAddQueueItem'
-  | 'CategoryQueuesIconAddTransactionItem'
-  | 'CategoryQueuesIconBulkAddQueueItems'
-  | 'CategoryQueuesIconDeleteQueueItems'
-  | 'CategoryQueuesIconGetQueueItems'
-  | 'CategoryQueuesIconGetTransactionItem'
-  | 'CategoryQueuesIconPostponeTransactionItem'
-  | 'CategoryQueuesIconSetTransactionProgress'
-  | 'CategoryQueuesIconSetTransactionStatus'
-  | 'CategoryQueuesIconWaitQueueItem'
-  | 'CategoryScopeIconScope'
-  | 'CategorySecretsIconGetSecretData'
-  | 'CategorySessionHostIconDeleteSessionHost'
-  | 'CategorySessionHostIconForEachSessionHost'
-  | 'CategorySessionHostIconGetSessionHost'
-  | 'CategorySessionHostIconUpdateSessionHost'
-  | 'CategoryStorageIconDeleteStorageFile'
-  | 'CategoryStorageIconDownloadStorageFile'
-  | 'CategoryStorageIconListStorageFiles'
-  | 'CategoryStorageIconReadStorageText'
-  | 'CategoryStorageIconUploadStorageFile'
-  | 'CategoryStorageIconWriteStorageText'
-  | 'CategoryUserSessionsIconDeleteUserSession'
-  | 'CategoryUserSessionsIconDisconnectUserSession'
-  | 'CategoryUserSessionsIconForEachUserSession'
-  | 'CategoryUserSessionsIconSendMessageToUserSession'
-  | 'CategoryWorkspacesIconCreateWorkspace'
-  | 'CategoryWorkspacesIconDeleteWorkspace'
-  | 'CategoryWorkspacesIconForEachWorkspace'
-  | 'CategoryWorkspacesIconGetWorkspace'
-  | 'CategoryWorkspacesIconUpdateWorkspace'
-  | 'Center'
   | 'ChangeElement'
   | 'ChatNewAutopilot'
   | 'Chatbot'
   | 'Check'
+  | 'CheckFalse'
   | 'CheckMark'
-  | 'Checked'
+  | 'CheckState'
+  | 'CheckTrue'
+  | 'CheckboxIndeterminateOutline'
+  | 'CheckboxIndeterminateSolid'
+  | 'CheckboxSelectedOutline'
+  | 'CheckboxSelectedSolid'
+  | 'CheckboxUnselected'
   | 'Checklist'
-  | 'Checkstate'
+  | 'ChevronDown'
   | 'ChevronLeft'
   | 'ChevronRight'
-  | 'Circle'
+  | 'ChevronUp'
   | 'CiscoWebexTeams'
   | 'Citrix'
   | 'CitrixHypervisor'
   | 'CitrixShareFile'
-  | 'ClassicIconsPackageSearch'
-  | 'Clear'
   | 'ClearCollection'
   | 'Click'
-  | 'CloseClearCancelEventCancelThrowingRemove'
+  | 'Close'
   | 'Cloud'
   | 'CloudDownload'
+  | 'CloudOff'
   | 'CloudUpload'
+  | 'CloverMark'
   | 'Code'
   | 'CodedFileJson'
   | 'CollapseAll'
   | 'Collection'
   | 'Color'
-  | 'Column'
-  | 'CommentLeftAnnotated'
-  | 'CommunicationMining'
+  | 'Comment'
+  | 'Commit'
+  | 'CommunicationMiningAdvanceStream'
+  | 'CommunicationMiningCreateComment'
+  | 'CommunicationMiningFetchBatchFromStream'
+  | 'CommunicationMiningGetComment'
+  | 'CommunicationMiningPredictComment'
+  | 'CommunicationMiningResetStream'
+  | 'CommunicationMiningUploadComment'
   | 'CommunicationsMining'
   | 'Compare'
+  | 'ComponentAgent'
+  | 'ComponentAgenticProcess'
+  | 'ComponentApiWorkflow'
+  | 'ComponentApp'
+  | 'ComponentBusinessRule'
+  | 'ComponentCaseManagement'
+  | 'ComponentConnector'
+  | 'ComponentGeneric'
+  | 'ComponentIxp'
+  | 'ComponentRootProjectSolution'
+  | 'ComponentRpaWorkflow'
+  | 'ComponentSetAsMainComponent'
+  | 'ComponentTestAutomation'
   | 'CompressFile'
   | 'Concur'
+  | 'ConditionBuilder'
   | 'Configuration'
+  | 'ConfigurationPanelArgument'
+  | 'ConfigurationPanelArgumentIn'
+  | 'ConfigurationPanelArgumentOut'
+  | 'ConfigurationPanelClipboard'
+  | 'ConfigurationPanelCreateVariable'
+  | 'ConfigurationPanelDynamicValues'
+  | 'ConfigurationPanelExpressionEditor'
+  | 'ConfigurationPanelIterate'
+  | 'ConfigurationPanelOutput'
+  | 'ConfigurationPanelVariables'
   | 'ConfigureRobot'
   | 'ConfluenceCloud'
-  | 'ConnectionOffCloudOff'
-  | 'Connector'
+  | 'Connection'
   | 'ConstantContact'
   | 'ContainerAlignBottom'
+  | 'ContainerAlignHorizontalCenter'
   | 'ContainerAlignLeft'
   | 'ContainerAlignRight'
   | 'ContainerAlignTop'
+  | 'ContainerAlignVerticalCenter'
   | 'ContainerStretchHorizontal'
   | 'ContainerStretchVertical'
-  | 'Control'
+  | 'Control1AddDataColumn'
+  | 'Control1AddDataRow'
+  | 'Control1AddLogFields'
+  | 'Control1AppendItemToList'
+  | 'Control1AppendLine'
+  | 'Control1Break'
+  | 'Control1BuildDataTable'
+  | 'Control1CheckFalse'
+  | 'Control1CheckTrue'
+  | 'Control1ClearDataTable'
+  | 'Control1CompressFile'
+  | 'Control1Continue'
+  | 'Control1CopyFile'
+  | 'Control1CreateFile'
+  | 'Control1CreateFolder'
+  | 'Control1CreateList'
+  | 'Control1DeleteFile'
+  | 'Control1DoWhile'
+  | 'Control1ExtractFiles'
+  | 'Control1FilterDataTable'
+  | 'Control1ForEachList'
+  | 'Control1ForEachRowInDataTable'
+  | 'Control1Foreach'
+  | 'Control1FormatValues'
+  | 'Control1GenerateDataTable'
+  | 'Control1GetRowItem'
+  | 'Control1InvokeCode'
+  | 'Control1InvokeProcess'
+  | 'Control1InvokeWorkflowFile'
+  | 'Control1IsMatch'
+  | 'Control1JoinDataTable'
+  | 'Control1List'
+  | 'Control1LogMessage'
+  | 'Control1LookupDataTable'
+  | 'Control1Matches'
+  | 'Control1MergeDataTable'
+  | 'Control1ModifyDate'
+  | 'Control1ModifyText'
+  | 'Control1MoveFile'
+  | 'Control1MultipleAssign'
+  | 'Control1OutputDataTable'
+  | 'Control1PathExists'
+  | 'Control1ReadList'
+  | 'Control1ReadTextFile'
+  | 'Control1RemoveDataColumn'
+  | 'Control1RemoveDataRow'
+  | 'Control1RemoveDuplicateRows'
+  | 'Control1RemoveLogFields'
+  | 'Control1RepeatNumberOfTimes'
+  | 'Control1Replace'
+  | 'Control1ReportStatus'
+  | 'Control1RetryScope'
+  | 'Control1RunParallelProcess'
+  | 'Control1SortDataTable'
+  | 'Control1TextLeftRight'
+  | 'Control1UpdateList'
+  | 'Control1UpdateRowItem'
+  | 'Control1WaitForDownload'
+  | 'Control1While'
+  | 'Control1WriteTextFile'
+  | 'Control2AddToCollection'
+  | 'Control2AppendItemToCollection'
+  | 'Control2Assign'
+  | 'Control2BuildCollection'
+  | 'Control2CancellationScope'
+  | 'Control2ClearCollection'
+  | 'Control2Delay'
+  | 'Control2DoWhile'
+  | 'Control2ExistsInCollection'
+  | 'Control2FilterCollection'
+  | 'Control2ForEach'
+  | 'Control2If'
+  | 'Control2InvokeMethod'
+  | 'Control2MergeCollections'
+  | 'Control2Parallel'
+  | 'Control2ParallelForEach'
+  | 'Control2Pick'
+  | 'Control2PickBranch'
+  | 'Control2RemoveFromCollection'
+  | 'Control2Rethrow'
+  | 'Control2Sequence'
+  | 'Control2Switch'
+  | 'Control2TerminateWorkflow'
+  | 'Control2Throw'
+  | 'Control2TriggerActivity'
+  | 'Control2TryCatch'
+  | 'Control2While'
+  | 'Control2WriteLine'
+  | 'ControlDataRowsAddDataRow'
+  | 'ControlDataRowsCreateInsert'
+  | 'ControlDataRowsReadGet'
+  | 'ControlDataRowsRemoveDataRow'
+  | 'ControlDataRowsUpdateRowItem'
   | 'Controls'
   | 'Convert'
   | 'Cookie'
   | 'Copy'
   | 'Coupa'
+  | 'Create'
+  | 'CreateComment'
   | 'CreateFile'
   | 'CreateFolder'
   | 'CreateList'
-  | 'CreatePlusEventParallelBuild'
-  | 'Critical'
   | 'Cropp'
-  | 'Cryptography'
-  | 'Currency'
-  | 'Custom'
+  | 'CryptographyDecryptFile'
+  | 'CryptographyDecryptText'
+  | 'CryptographyEcryptText'
+  | 'CryptographyEncryptFile'
+  | 'CryptographyHashFile'
+  | 'CryptographyHashFileWithKey'
+  | 'CryptographyHashText'
+  | 'CryptographyHashTextWithKey'
+  | 'Customerio'
   | 'Cut'
   | 'Dashboard'
   | 'DataDatabase'
@@ -326,23 +460,53 @@ export type IconName =
   | 'DataService'
   | 'DataSetting'
   | 'DataStorage'
-  | 'DataTypeGeneric'
-  | 'Date'
+  | 'DataTypesArray'
+  | 'DataTypesBoolean'
+  | 'DataTypesCustom'
+  | 'DataTypesDataTable'
+  | 'DataTypesDate'
+  | 'DataTypesDatetime'
+  | 'DataTypesDictionary'
+  | 'DataTypesDouble'
+  | 'DataTypesFile'
+  | 'DataTypesGenericDataType'
+  | 'DataTypesInteger'
+  | 'DataTypesJson'
+  | 'DataTypesKey'
+  | 'DataTypesList'
+  | 'DataTypesMethod'
+  | 'DataTypesObject'
+  | 'DataTypesString'
+  | 'DataTypesTableColumn'
+  | 'DataTypesTableRow'
+  | 'DatabaseBulkInsert'
+  | 'DatabaseBulkUpdate'
+  | 'DatabaseConnect'
+  | 'DatabaseDisconnect'
+  | 'DatabaseInsert'
+  | 'DatabaseQuery'
+  | 'DatabaseRunCommand'
+  | 'DatabaseStartTransaction'
   | 'DateSelectSet'
-  | 'Datetime'
-  | 'DebugReportABug'
-  | 'Decimal'
-  | 'Default'
+  | 'Debug'
+  | 'DebugConfiguration'
+  | 'DebugHistory'
+  | 'Delay'
   | 'Delete'
   | 'DeleteFile'
   | 'DeleteFileOrFolder'
   | 'DeleteQueueItems'
   | 'DeleteVm'
   | 'DenyBlock'
-  | 'DeploymentConfigurationRocket'
-  | 'Descending'
+  | 'Deploy'
   | 'Details'
-  | 'Dictionary'
+  | 'DiffAccept'
+  | 'DiffAcceptAll'
+  | 'DiffAddedUntracked'
+  | 'DiffDeleted'
+  | 'DiffModified'
+  | 'DiffReject'
+  | 'DiffRejectAll'
   | 'DistributeHorizontal'
   | 'DistributeVertical'
   | 'DoWhile'
@@ -350,9 +514,6 @@ export type IconName =
   | 'DocumentUnderstanding'
   | 'Documentation'
   | 'Docusign'
-  | 'Dot'
-  | 'Double'
-  | 'Down'
   | 'DownloadDone'
   | 'DownloadDoneDone'
   | 'DownloadPackage'
@@ -367,15 +528,30 @@ export type IconName =
   | 'EmailReply'
   | 'EmailReplyAll'
   | 'EncryptFile'
+  | 'EntitiesCreateRecord'
+  | 'EntitiesDeleteFile'
+  | 'EntitiesDeleteRecord'
+  | 'EntitiesDownloadFile'
+  | 'EntitiesEntity'
+  | 'EntitiesFileUpload'
+  | 'EntitiesGetRecord'
+  | 'EntitiesQueryRecords'
+  | 'EntitiesUpdateRecord'
+  | 'Entity'
   | 'EpicFhir'
+  | 'Equifax'
+  | 'ErrorDot'
+  | 'ErrorNumber'
   | 'ExchangeServer'
+  | 'ExecutionPointer'
   | 'ExistsInCollection'
-  | 'ExitFullScreenMinimize'
   | 'ExpandAll'
   | 'Expensify'
+  | 'Experian'
   | 'Experiment'
   | 'Explorer'
   | 'ExportExtract'
+  | 'ExpressionArgument'
   | 'ExpressionDynamicValue'
   | 'ExpressionEditor'
   | 'ExpressionVariableCreate'
@@ -386,7 +562,14 @@ export type IconName =
   | 'ExtractUrl'
   | 'FastForward'
   | 'FastRewind'
+  | 'FavouriteChecked'
+  | 'FavouriteUnchecked'
   | 'Feedback'
+  | 'FetchBatchFromStream'
+  | 'FigureCircle'
+  | 'FigureRectangle169'
+  | 'FigureRectangle54'
+  | 'FigureSquare'
   | 'FileApiWorkflow'
   | 'FileApiWorkflowMain'
   | 'FileBpmn'
@@ -431,6 +614,7 @@ export type IconName =
   | 'ForEachUiElement'
   | 'Form'
   | 'FormatAlignCenter'
+  | 'FormatAlignJustify'
   | 'FormatAlignLeft'
   | 'FormatAlignRight'
   | 'FormatBold'
@@ -441,17 +625,44 @@ export type IconName =
   | 'FormatIndentDecrease'
   | 'FormatIndentIncrease'
   | 'FormatItalic'
+  | 'FormatStrikethrough'
   | 'FormatTextDirectionLToR'
   | 'FormatTextDirectionRToL'
   | 'FormatUnderlined'
+  | 'FormattingIsMatch'
+  | 'FormattingMatches'
   | 'Freshservice'
   | 'FtpConnection'
+  | 'FtpDeleteFileOrFolder'
+  | 'FtpDownloadFiles'
+  | 'FtpFileExists'
+  | 'FtpFolderExists'
+  | 'FtpFtpConnection'
+  | 'FtpGetFiles'
+  | 'FtpMoveFileOrFolder'
+  | 'FtpUploadFiles'
   | 'FullscreenMaximize'
   | 'Functions'
-  | 'Genai'
-  | 'Generic'
+  | 'GenAi'
+  | 'GenericActivityIconsDelete'
+  | 'GenericActivityIconsDownload'
+  | 'GenericActivityIconsFileDownload'
+  | 'GenericActivityIconsFileUpload'
+  | 'GenericActivityIconsGet'
+  | 'GenericActivityIconsImap'
+  | 'GenericActivityIconsInsert'
+  | 'GenericActivityIconsList'
+  | 'GenericActivityIconsListAll'
+  | 'GenericActivityIconsMethod'
+  | 'GenericActivityIconsPop3'
+  | 'GenericActivityIconsScope'
+  | 'GenericActivityIconsSearch'
+  | 'GenericActivityIconsSmtp'
+  | 'GenericActivityIconsUpdate'
+  | 'GenericActivityIconsUpload'
   | 'GetAssets'
   | 'GetAttribute'
+  | 'GetComment'
   | 'GetCredentials'
   | 'GetDatastore'
   | 'GetFiles'
@@ -460,19 +671,34 @@ export type IconName =
   | 'GetJob'
   | 'GetQueueItems'
   | 'GetRowItem'
-  | 'GetStepInto'
+  | 'GetText'
   | 'GetTransactionItem'
   | 'GetVm'
-  | 'Gettext'
-  | 'Github'
+  | 'Git'
+  | 'Git1'
+  | 'GitHub'
   | 'GlobalHandler'
   | 'GlobalHandlerSet'
   | 'GlobalHandlerUnset'
+  | 'GoToUrl'
   | 'Google'
+  | 'GoogleAds'
   | 'GoogleAppsScript'
   | 'GoogleCalendar'
   | 'GoogleChrome'
   | 'GoogleCloud'
+  | 'GoogleCloudPlatformCreateProject'
+  | 'GoogleCloudPlatformCreateRole'
+  | 'GoogleCloudPlatformDeleteRole'
+  | 'GoogleCloudPlatformForEachGrantedRole'
+  | 'GoogleCloudPlatformForEachProject'
+  | 'GoogleCloudPlatformForEachRole'
+  | 'GoogleCloudPlatformGetIamPolicy'
+  | 'GoogleCloudPlatformGetRole'
+  | 'GoogleCloudPlatformGetSecretData'
+  | 'GoogleCloudPlatformSetIamPolicy'
+  | 'GoogleCloudPlatformUndeleteRole'
+  | 'GoogleCloudPlatformUpdateRole'
   | 'GoogleDocs'
   | 'GoogleDrive'
   | 'GoogleForms'
@@ -480,9 +706,15 @@ export type IconName =
   | 'GoogleSheets'
   | 'GoogleTasks'
   | 'GoogleVision'
-  | 'Gotourl'
   | 'Gotowebinar'
   | 'Group'
+  | 'GsuiteAppsScript'
+  | 'GsuiteCalendar'
+  | 'GsuiteGdocs'
+  | 'GsuiteGdrive'
+  | 'GsuiteGmail'
+  | 'GsuiteGsheets'
+  | 'GsuiteGsuite'
   | 'HandWaving'
   | 'Handshake'
   | 'HashFileWithKey'
@@ -490,201 +722,68 @@ export type IconName =
   | 'Health'
   | 'Height'
   | 'Help'
-  | 'High'
-  | 'Highest'
   | 'Highlight'
   | 'HistoryRestore'
+  | 'HistoryRestoreEditedSize'
   | 'Home'
   | 'Hootsuite'
-  | 'Horizontal'
-  | 'HorizontalCenter'
-  | 'HorizontalLeft'
-  | 'HorizontalRight'
   | 'Hover'
-  | 'HttpApiRequestHttpClientActivity'
+  | 'HttpRequest'
   | 'HubspotMarketing'
   | 'HyperV'
-  | 'IconAddToCollection'
-  | 'IconAnalyzeProject'
-  | 'IconAppendItemToCollection'
-  | 'IconAppsScript'
-  | 'IconArgument'
-  | 'IconArgumentIn'
-  | 'IconArgumentOut'
-  | 'IconArray'
-  | 'IconAssign'
-  | 'IconAzureVirtualDesktop'
-  | 'IconBoolean'
-  | 'IconBuildCollection'
-  | 'IconBuildProject'
-  | 'IconBulkInsert'
-  | 'IconBulkUpdate'
-  | 'IconCalendar'
-  | 'IconCancellationScope'
-  | 'IconCell'
-  | 'IconClearCollection'
-  | 'IconClipboard'
-  | 'IconCloneProject'
-  | 'IconColor'
-  | 'IconConfigureRobot'
-  | 'IconConnect'
-  | 'IconCreateVariable'
-  | 'IconCustom'
-  | 'IconDataTable'
-  | 'IconDate'
-  | 'IconDatetime'
-  | 'IconDecryptFile'
-  | 'IconDecryptText'
-  | 'IconDelay'
-  | 'IconDeleteFileOrFolder'
-  | 'IconDeleteVm'
-  | 'IconDeserializeJson'
-  | 'IconDeserializeJsonArray'
-  | 'IconDeserializeXml'
-  | 'IconDictionary'
-  | 'IconDisconnect'
-  | 'IconDoWhile'
-  | 'IconDouble'
-  | 'IconDownloadFiles'
-  | 'IconDownloadPackage'
-  | 'IconDynamicValues'
-  | 'IconEcryptText'
-  | 'IconEditProjectProperties'
-  | 'IconEncryptFile'
-  | 'IconExcel'
-  | 'IconExchange'
-  | 'IconExecuteXpath'
-  | 'IconExistsInCollection'
-  | 'IconExpressionEditor'
-  | 'IconExtractSrc'
-  | 'IconExtractText'
-  | 'IconExtractUrl'
-  | 'IconFile'
-  | 'IconFileExists'
-  | 'IconFilterCollection'
-  | 'IconFolderExists'
-  | 'IconForEach'
-  | 'IconFtpConnection'
-  | 'IconGdocs'
-  | 'IconGdrive'
-  | 'IconGenericDataType'
-  | 'IconGetDatastore'
-  | 'IconGetFiles'
-  | 'IconGetFolder'
-  | 'IconGetHost'
-  | 'IconGetVm'
-  | 'IconGetXmlNodeAttributes'
-  | 'IconGetXmlNodes'
-  | 'IconGmail'
-  | 'IconGroups'
-  | 'IconGsheets'
-  | 'IconGsuite'
-  | 'IconHashFile'
-  | 'IconHashFileWithKey'
-  | 'IconHashText'
-  | 'IconHashTextWithKey'
-  | 'IconHttpClient'
-  | 'IconIdle'
-  | 'IconIf'
-  | 'IconInsert'
-  | 'IconInteger'
-  | 'IconInvokeMethod'
-  | 'IconIterate'
-  | 'IconJson'
-  | 'IconKey'
-  | 'IconList'
-  | 'IconListDatastores'
-  | 'IconListHosts'
-  | 'IconListVms'
-  | 'IconMergeCollections'
-  | 'IconMethod'
-  | 'IconMicrosoft365'
-  | 'IconMicrosoftGroups'
-  | 'IconMicrosoftOffice365'
-  | 'IconMountToolsInstaller'
-  | 'IconMoveFileOrFolder'
-  | 'IconMoveProject'
-  | 'IconNameRange'
-  | 'IconObject'
-  | 'IconOnedrive'
-  | 'IconOpenInDesktop'
-  | 'IconOpenProject'
-  | 'IconOrchestrator'
-  | 'IconOutlook'
-  | 'IconPackage'
-  | 'IconParallel'
-  | 'IconParallelForEach'
-  | 'IconPerformance'
-  | 'IconPick'
-  | 'IconPickBranch'
-  | 'IconPin'
-  | 'IconPivotTable'
-  | 'IconPlanner'
-  | 'IconPowerOffVm'
-  | 'IconPowerOnVm'
-  | 'IconPublishProject'
-  | 'IconQuery'
-  | 'IconRemoveFromCollection'
-  | 'IconRethrow'
-  | 'IconRunCommand'
-  | 'IconRunProgramInVm'
-  | 'IconRunTests'
-  | 'IconSequence'
-  | 'IconSharepoint'
-  | 'IconSharepoint1'
-  | 'IconSheet'
-  | 'IconSquare'
-  | 'IconStage'
-  | 'IconStartTransaction'
-  | 'IconString'
-  | 'IconSuspendVm'
-  | 'IconSwitch'
-  | 'IconTable'
-  | 'IconTableColumn'
-  | 'IconTableRow'
-  | 'IconTerminateWorkflow'
-  | 'IconThrow'
-  | 'IconTriggerActivity'
-  | 'IconTryCatch'
-  | 'IconUipath'
-  | 'IconUnmountToolsInstaller'
-  | 'IconUpdateProcess'
-  | 'IconUpdateRowItem'
-  | 'IconUpgradeTools'
-  | 'IconUploadFiles'
-  | 'IconVariables'
-  | 'IconVmwareScope'
-  | 'IconWhile'
-  | 'IconWriteLine'
   | 'Icontact'
+  | 'Idea'
+  | 'IfSplit'
   | 'Image'
   | 'ImagesMultiple'
-  | 'Imap'
-  | 'IndeterminateOutline'
-  | 'IndeterminateSolid'
+  | 'Import'
   | 'Info'
-  | 'Inner'
+  | 'InputDirectionInput'
+  | 'InputDirectionOutput'
   | 'Insert'
   | 'Insights'
-  | 'Integer'
   | 'IntegrationService'
+  | 'Intercom'
+  | 'InternalPackageControl'
+  | 'InternalPackageCryptography'
+  | 'InternalPackageDefault'
+  | 'InternalPackageUiAutomation'
+  | 'InternalPackageWebApi'
+  | 'InternalPackageWorkflowEvents'
   | 'Intuit'
   | 'Invoke'
   | 'InvokeCode'
   | 'InvokeProcess'
   | 'InvokeWorkflowFile'
   | 'Issues'
+  | 'ItAutomationActiveDirectory'
+  | 'ItAutomationAmazonWebServices'
+  | 'ItAutomationAmazonWebServicesWorkspaces'
+  | 'ItAutomationAzure'
+  | 'ItAutomationAzureActiveDirectory'
+  | 'ItAutomationAzureVirtualDesktop'
+  | 'ItAutomationCitrixHypervisor'
+  | 'ItAutomationExchangeServer'
+  | 'ItAutomationGoogleCloud'
+  | 'ItAutomationHyperV'
+  | 'ItAutomationMicroFocus'
+  | 'ItAutomationSystemCenter'
+  | 'ItAutomationVmwareEsxi'
   | 'JoinDataTable'
-  | 'Json'
-  | 'Justify'
-  | 'Key'
+  | 'Keap'
+  | 'KeyArrowUpDown'
+  | 'KeyReturn'
   | 'KeyboardShortcuts'
   | 'LabelPlacementLeft'
   | 'LabelPlacementTop'
   | 'Language'
   | 'Layers'
   | 'LayoutAlignHorizontalCenter'
+  | 'LayoutAlignHorizontalLeft'
+  | 'LayoutAlignHorizontalRight'
+  | 'LayoutAlignVerticalBottom'
   | 'LayoutAlignVerticalCenter'
+  | 'LayoutAlignVerticalTop'
   | 'LayoutDistributeHorizontal'
   | 'LayoutDistributeVertical'
   | 'LayoutJustifyBottom'
@@ -695,10 +794,10 @@ export type IconName =
   | 'LayoutJustifyVerticalCenter'
   | 'LayoutStretchHorizontal'
   | 'LayoutStretchVertical'
-  | 'Left'
   | 'Library'
   | 'LicenseAllocate'
   | 'LicenseExternal'
+  | 'LifionByAdp'
   | 'LineAxis'
   | 'Link'
   | 'Linkedin'
@@ -719,20 +818,15 @@ export type IconName =
   | 'Looks5'
   | 'Looks6'
   | 'LookupDataTable'
-  | 'Low'
-  | 'Lowest'
   | 'Machine'
   | 'Maestro'
   | 'Mailchimp'
   | 'Manufacturing'
-  | 'MapMoveTransition'
   | 'Marketo'
   | 'Marketplace'
-  | 'Medium'
-  | 'MediumHigh'
-  | 'MediumLow'
   | 'Menu'
   | 'MenuCollapse'
+  | 'Merge'
   | 'MergeCollections'
   | 'Method'
   | 'Mic'
@@ -747,10 +841,10 @@ export type IconName =
   | 'MicrosoftEdge'
   | 'MicrosoftExcel'
   | 'MicrosoftGroups'
-  | 'MicrosoftOnedrive'
+  | 'MicrosoftOneDrive'
   | 'MicrosoftOutlook'
   | 'MicrosoftPlanner'
-  | 'MicrosoftPowerpoint'
+  | 'MicrosoftPowerPoint'
   | 'MicrosoftSentiment'
   | 'MicrosoftSharepoint'
   | 'MicrosoftTeams'
@@ -758,13 +852,16 @@ export type IconName =
   | 'MicrosoftVision'
   | 'MicrosoftVisualStudioCode'
   | 'MicrosoftWord'
+  | 'Minimize'
   | 'MlSkills'
   | 'Mock'
+  | 'MockData'
   | 'ModeratorRemove'
   | 'More'
   | 'MountToolsInstaller'
   | 'MouseClick'
   | 'MouseScroll'
+  | 'Move'
   | 'MoveFile'
   | 'MoveFileOrFolder'
   | 'MoveProject'
@@ -772,108 +869,131 @@ export type IconName =
   | 'NavigateBeforeFirstPage'
   | 'NavigateBrowser'
   | 'NavigateLastPage'
-  | 'Navigation'
   | 'NetiqEdirectory'
   | 'New'
+  | 'NextStep'
   | 'NotificationAdd'
   | 'NotificationAlertAdd'
   | 'NotificationImportant'
   | 'Notifications'
   | 'NotificationsActive'
   | 'NotificationsOff'
-  | 'Number'
   | 'Numbers'
-  | 'Object'
-  | 'Off'
-  | 'On'
+  | 'Office365AppsExchange'
+  | 'Office365AppsGroups'
+  | 'Office365AppsMicrosoft365'
+  | 'Office365AppsMicrosoftOffice365'
+  | 'Office365AppsOutlook'
+  | 'Office365AppsPlanner'
+  | 'Office365AppsSharepoint'
+  | 'Office365ExcelCell'
+  | 'Office365ExcelExcel'
+  | 'Office365ExcelMicrosoftGroups'
+  | 'Office365ExcelNameRange'
+  | 'Office365ExcelOneDrive'
+  | 'Office365ExcelPivotTable'
+  | 'Office365ExcelSharepoint'
+  | 'Office365ExcelSheet'
+  | 'Office365ExcelTable'
   | 'OpenAi'
+  | 'OpenInDesktop'
   | 'OpenInNew'
   | 'OracleEloqua'
   | 'OracleNetsuite'
+  | 'OracleNetsuiteAttachFile'
+  | 'OracleNetsuiteDetachFile'
   | 'Orchestrator'
+  | 'OrchestratorAddQueueItem'
+  | 'OrchestratorAddTransactionItem'
+  | 'OrchestratorBulkAddQueueItems'
+  | 'OrchestratorDeleteQueueItems'
+  | 'OrchestratorDeleteStorageFile'
+  | 'OrchestratorDownloadStorageFile'
+  | 'OrchestratorGetAssets'
+  | 'OrchestratorGetCredentials'
+  | 'OrchestratorGetJob'
+  | 'OrchestratorGetQueueItems'
+  | 'OrchestratorGetTransactionItem'
+  | 'OrchestratorHttpRequest'
+  | 'OrchestratorListStorageFiles'
+  | 'OrchestratorPostponeTransactionItem'
+  | 'OrchestratorRaiseAlert'
+  | 'OrchestratorReadStorageText'
+  | 'OrchestratorSetAssets'
+  | 'OrchestratorSetCredentials'
+  | 'OrchestratorSetTransactionProgress'
+  | 'OrchestratorSetTransactionStatus'
+  | 'OrchestratorShouldStop'
+  | 'OrchestratorStartJob'
+  | 'OrchestratorStopJob'
+  | 'OrchestratorUploadStorageFile'
+  | 'OrchestratorWaitQueueItem'
+  | 'OrchestratorWriteStorageText'
   | 'Organization'
-  | 'Outer'
   | 'Output'
-  | 'PackageActiveDirectory'
-  | 'PackageAmazonWebServices'
-  | 'PackageAmazonWebServicesWorkspaces'
-  | 'PackageAttachFile'
-  | 'PackageAzure'
-  | 'PackageAzureActiveDirectory'
-  | 'PackageAzureVirtualDesktop'
-  | 'PackageCitrixHypervisor'
-  | 'PackageCreateChannel'
-  | 'PackageDelete'
-  | 'PackageDetachFile'
-  | 'PackageDownload'
-  | 'PackageDownloadFile'
-  | 'PackageExchangeServer'
-  | 'PackageFileDownload'
-  | 'PackageFileUpload'
-  | 'PackageGet'
-  | 'PackageGetMessages'
-  | 'PackageGetReplies'
-  | 'PackageGoogleCloud'
-  | 'PackageHyperV'
-  | 'PackageImap'
-  | 'PackageInsert'
-  | 'PackageInviteToChannel'
-  | 'PackageInvokeSlackAdminOperation'
-  | 'PackageInvokeSlackOperation'
-  | 'PackageJoinChannel'
-  | 'PackageLeaveChannel'
-  | 'PackageList'
-  | 'PackageListAll'
-  | 'PackageMethod'
-  | 'PackageMicroFocus'
-  | 'PackagePop3'
-  | 'PackageRemoveFromChannel'
-  | 'PackageReply'
-  | 'PackageScope'
-  | 'PackageSearch'
-  | 'PackageSendMessage'
-  | 'PackageSlackScope'
-  | 'PackageSmtp'
-  | 'PackageSystemCenter'
-  | 'PackageUpdate'
-  | 'PackageUpdateStatus'
-  | 'PackageUpload'
-  | 'PackageVmwareEsxi'
+  | 'OutputNegative'
+  | 'OutputPositive'
+  | 'Package'
   | 'Page'
   | 'PageMain'
   | 'Pagerduty'
   | 'PanHandCanvas'
+  | 'PanelsDataManager'
+  | 'PanelsDataManagerPanelErrorsNew'
+  | 'PanelsDataManagerPanelNew'
+  | 'PanelsOutputPanel'
+  | 'PanelsOutputPanelNew'
+  | 'PanelsProjectPanel'
+  | 'PanelsProjectPanelErrors'
+  | 'Parallel'
   | 'ParallelForEach'
   | 'Paste'
-  | 'Path'
   | 'PathExists'
   | 'Pause'
-  | 'PerformanceActivities'
+  | 'Payload'
+  | 'Pending'
+  | 'PerformanceTriggersIdle'
+  | 'PerformanceTriggersPerformance'
   | 'PickPickBranch'
   | 'PieChart'
   | 'Pin'
   | 'Pinecone'
-  | 'PinnedUnpin'
-  | 'PlaceholderThisIsNotToBeUsedInTheUiOnlyForWip'
-  | 'PlaySlowMotionPlayAnimation'
+  | 'PipelinesAnalyzeProject'
+  | 'PipelinesBuildProject'
+  | 'PipelinesCloneProject'
+  | 'PipelinesDownloadPackage'
+  | 'PipelinesMoveProject'
+  | 'PipelinesPublishProject'
+  | 'PipelinesRunTests'
+  | 'PipelinesStage'
+  | 'PipelinesUpdateProcess'
+  | 'Placeholder'
+  | 'Play'
+  | 'PlaySlow'
   | 'PlusOne'
   | 'Poll'
   | 'Polyline'
-  | 'Pop3'
   | 'PostponeTransactionItem'
   | 'PowerOffVm'
   | 'PowerOnVm'
+  | 'PredictComment'
   | 'Print'
+  | 'PriorityCritical'
+  | 'PriorityHigh'
+  | 'PriorityHighest'
+  | 'PriorityLow'
+  | 'PriorityLowest'
+  | 'PriorityMedium'
+  | 'PriorityMediumHigh'
+  | 'PriorityMediumLow'
+  | 'PriorityVeryHigh'
+  | 'PriorityVeryLow'
+  | 'Process'
   | 'ProcessDiagram'
   | 'ProcessDiagramMain'
   | 'ProcessMining'
   | 'Processes'
   | 'Properties'
-  | 'Property1AddDataRow'
-  | 'Property1CreateInsert'
-  | 'Property1ReadGet'
-  | 'Property1RemoveDataRow'
-  | 'Property1UpdateRowItem'
   | 'Publish'
   | 'Queue'
   | 'Quickbooks'
@@ -885,33 +1005,32 @@ export type IconName =
   | 'ReadStorageText'
   | 'ReadTextFile'
   | 'Record'
-  | 'Rectangle169'
-  | 'Rectangle54'
   | 'Redo'
   | 'ReferenceInsertReference'
   | 'Refresh'
   | 'RemoveDataColumn'
   | 'RemoveDataRow'
   | 'RemoveFromCollection'
-  | 'RemoveLinkLinkOffUnlink'
   | 'RemoveLogFields'
   | 'RemoveMinus'
   | 'Repeat'
-  | 'ReplayResetBpmnEventLoop'
+  | 'Replay'
   | 'ReportStatus'
-  | 'RetryRepeatNumberOfTimesForEachBreakContinueIterate'
-  | 'Right'
+  | 'RepositoryCloud'
+  | 'RepositoryLocal'
+  | 'ResetStream'
+  | 'Rethrow'
+  | 'Retry'
   | 'Robot'
   | 'RobotHead'
-  | 'RootProjectSolution'
-  | 'Row'
+  | 'RowUpdateRowItem'
   | 'RpaAutomation'
-  | 'RpaWorkflow'
   | 'RunParallelProcess'
-  | 'RunPlay'
   | 'RunProgramInVm'
   | 'RunTests'
   | 'Safety'
+  | 'Sage'
+  | 'Salesforce'
   | 'Salesloft'
   | 'Salesmate'
   | 'SapCloudForCustomer'
@@ -922,11 +1041,8 @@ export type IconName =
   | 'Scope'
   | 'ScreenShare'
   | 'Search'
-  | 'SecurityVerifiedUser'
   | 'SelectAll'
-  | 'SelectedOutline'
-  | 'SelectedSolid'
-  | 'Selectitem'
+  | 'SelectItem'
   | 'SemanticFillForm'
   | 'SemanticSetValue'
   | 'Send'
@@ -938,7 +1054,6 @@ export type IconName =
   | 'SentimentVerySatisfied'
   | 'Sequence'
   | 'ServiceNow'
-  | 'SetAsMainComponent'
   | 'SetAssets'
   | 'SetCredentials'
   | 'SetTransactionProgress'
@@ -950,43 +1065,69 @@ export type IconName =
   | 'ShowChart'
   | 'Shuffle'
   | 'Slack'
-  | 'SlackActivities'
+  | 'SlackCreateChannel'
+  | 'SlackDownloadFile'
+  | 'SlackGetMessages'
+  | 'SlackGetReplies'
+  | 'SlackInviteToChannel'
+  | 'SlackInvokeSlackAdminOperation'
+  | 'SlackInvokeSlackOperation'
+  | 'SlackJoinChannel'
+  | 'SlackLeaveChannel'
+  | 'SlackRemoveFromChannel'
+  | 'SlackReply'
+  | 'SlackScope'
+  | 'SlackSearch'
+  | 'SlackSendMessage'
+  | 'SlackUpdateStatus'
   | 'Smartsheet'
-  | 'Smtp'
+  | 'Snippet'
   | 'Snowflake'
+  | 'SortAscending'
   | 'SortDataTable'
   | 'SortDefault'
+  | 'SortDescending'
   | 'SpaceBar'
   | 'SpinnerCircular'
   | 'Square'
   | 'StackedLineChart'
   | 'StartJob'
-  | 'StateDefault'
   | 'StateMachine'
+  | 'StepInto'
+  | 'StepOut'
+  | 'StepOver'
   | 'Stop'
   | 'StopJob'
-  | 'String'
+  | 'StorageBucket'
+  | 'Stripe'
   | 'StudioIcon'
-  | 'StudioWebIconsIconList'
-  | 'Style'
+  | 'StudioIconsCheck'
+  | 'StudioIconsDebug'
+  | 'StudioIconsExpressionEditor'
+  | 'StudioIconsKeyboardShortcuts'
+  | 'StudioIconsPlaceholder'
+  | 'StudioNextLogo'
+  | 'StudioNextLogoBg'
   | 'SubdirectoryArrowLeft'
   | 'SubdirectoryArrowRight'
   | 'Subscript'
-  | 'SuccessCheckmarkCheckCircle'
+  | 'SuccessCheck'
   | 'Sugar'
   | 'Suggestion'
   | 'Superscript'
   | 'SuspendVm'
   | 'Switch'
   | 'SystemCenter'
-  | 'Table'
   | 'TableChart'
+  | 'TableColumn'
+  | 'TableRow'
   | 'TakeScreenshot'
+  | 'TaskCatalog'
   | 'TaskMining'
   | 'Template'
   | 'Tenant'
+  | 'Terminal'
   | 'TerminateWorkflow'
-  | 'TestAutomation'
   | 'TestCase'
   | 'TestCase1'
   | 'TestCaseCoded'
@@ -1000,47 +1141,107 @@ export type IconName =
   | 'TextDecrease'
   | 'TextFields'
   | 'TextIncrease'
-  | 'ThirdParty'
+  | 'ThirdPartyMock'
   | 'ThumbDown'
   | 'ThumbDownPressed'
   | 'ThumbUp'
   | 'ThumbUpPressed'
-  | 'TimeDurationToBeUsedInsteadOfTimerBpmnEventDuration'
   | 'TimeIdle'
   | 'TimePerformance'
   | 'TimelineChart'
   | 'Title'
+  | 'Toggle'
+  | 'ToggleOff'
+  | 'ToggleOn'
   | 'ToolboxTools'
-  | 'Top'
+  | 'TransUnion'
   | 'Translate'
   | 'Trello'
   | 'Trigger'
   | 'Trigger1'
+  | 'TriggerAgent'
+  | 'TriggerApi'
+  | 'TriggerApp'
+  | 'TriggerAutopilot'
+  | 'TriggerChat'
+  | 'TriggerConnection'
+  | 'TriggerData'
+  | 'TriggerDesktop'
+  | 'TriggerForm'
+  | 'TriggerManual'
+  | 'TriggerTime'
+  | 'TriggerWebhook'
+  | 'TryCatch'
   | 'Tune'
   | 'Twilio'
   | 'Twitter'
-  | 'TypeDataManager'
-  | 'TypeOutputPanel'
-  | 'TypeOutputPanelNew'
-  | 'TypeProjectPanel'
-  | 'TypeProjectPanelErrors'
-  | 'TypeQueue'
+  | 'TypeArray'
+  | 'TypeBoolean'
+  | 'TypeCurrency'
+  | 'TypeCustom'
+  | 'TypeDate'
+  | 'TypeDatetime'
+  | 'TypeDecimal'
+  | 'TypeDictionary'
+  | 'TypeDouble'
+  | 'TypeDuration'
+  | 'TypeGeneric'
+  | 'TypeInteger'
+  | 'TypeInto'
+  | 'TypeJson'
+  | 'TypeKey'
+  | 'TypeList'
+  | 'TypeObject'
+  | 'TypePercentage'
+  | 'TypeString'
+  | 'TypeTable'
   | 'Typeform'
-  | 'Typeinto'
-  | 'UiAutomation'
-  | 'Uipath'
+  | 'UiAutomationApplicationCard'
+  | 'UiAutomationCheck'
+  | 'UiAutomationCheckState'
+  | 'UiAutomationClick'
+  | 'UiAutomationExtractData'
+  | 'UiAutomationForEachUiElement'
+  | 'UiAutomationGetAttribute'
+  | 'UiAutomationGetText'
+  | 'UiAutomationGetUrl'
+  | 'UiAutomationGoToUrl'
+  | 'UiAutomationHighlight'
+  | 'UiAutomationHover'
+  | 'UiAutomationKeyboardShortcuts'
+  | 'UiAutomationMouseScroll'
+  | 'UiAutomationNavigateBrowser'
+  | 'UiAutomationSelectItem'
+  | 'UiAutomationSemanticFillForm'
+  | 'UiAutomationSemanticSetValue'
+  | 'UiAutomationTakeScreenshot'
+  | 'UiAutomationTypeInto'
+  | 'UiDataExtractionExtractSrc'
+  | 'UiDataExtractionExtractText'
+  | 'UiDataExtractionExtractUrl'
+  | 'UiExperimentalDefault'
+  | 'UiGridlistViewGrid'
+  | 'UiGridlistViewList'
+  | 'UiPath'
+  | 'UiPathUiPath'
+  | 'UiStudioWebIconDefault'
+  | 'UiSubmitAsTemplateDisabled'
+  | 'UiSubmitAsTemplateEnabled'
+  | 'UiTriggersManual'
+  | 'UiTriggersQueue'
+  | 'UiTriggersScheduled'
   | 'Unarchive'
-  | 'Unchecked'
   | 'Undo'
-  | 'UnlockLockOpen'
+  | 'Unlink'
+  | 'Unlock'
   | 'UnmountToolsInstaller'
-  | 'Unselected'
-  | 'Up'
+  | 'Unpin'
   | 'Update'
   | 'UpdateList'
   | 'UpdateProcess'
   | 'UpdateRowItem'
   | 'UpgradeTools'
+  | 'UploadComment'
   | 'UploadFiles'
   | 'User'
   | 'UserAdd'
@@ -1053,12 +1254,7 @@ export type IconName =
   | 'UserOff'
   | 'UserRemove'
   | 'UserSso'
-  | 'Vertical'
-  | 'VerticalBottom'
-  | 'VerticalCenter'
-  | 'VerticalTop'
-  | 'VeryHigh'
-  | 'VeryLow'
+  | 'Verified'
   | 'Video'
   | 'VideocameraOff'
   | 'VideocameraOn'
@@ -1066,66 +1262,80 @@ export type IconName =
   | 'VisibilityOff'
   | 'VisibilityOnPreview'
   | 'Vmware'
-  | 'VmwareActivities'
+  | 'VmwareConfigureRobot'
+  | 'VmwareDeleteVm'
   | 'VmwareEsxi'
+  | 'VmwareGetDatastore'
+  | 'VmwareGetFolder'
+  | 'VmwareGetHost'
+  | 'VmwareGetVm'
+  | 'VmwareListDatastores'
+  | 'VmwareListHosts'
+  | 'VmwareListVms'
+  | 'VmwareMountToolsInstaller'
+  | 'VmwarePowerOffVm'
+  | 'VmwarePowerOnVm'
+  | 'VmwareRunProgramInVm'
   | 'VmwareScope'
+  | 'VmwareSuspendVm'
+  | 'VmwareUnmountToolsInstaller'
+  | 'VmwareUpgradeTools'
+  | 'VmwareVmwareScope'
   | 'VolumeDown'
   | 'VolumeOff'
   | 'VolumeUp'
   | 'WaffleOutageWaffleMenu'
   | 'WaffleWaffleMenu'
+  | 'WaitForDownload'
   | 'WaitQueueItem'
   | 'Wallet'
   | 'Watch'
-  | 'WebApi'
+  | 'WebApiDeserializeJson'
+  | 'WebApiDeserializeJsonArray'
+  | 'WebApiDeserializeXml'
+  | 'WebApiExecuteXpath'
+  | 'WebApiGetXmlNodeAttributes'
+  | 'WebApiGetXmlNodes'
+  | 'WebApiHttpClient'
+  | 'WebApiPackage'
   | 'Webhook'
   | 'While'
   | 'Widget'
   | 'Workday'
   | 'WorkdayBg'
   | 'WorkflowCoded'
-  | 'WorkflowEvents'
+  | 'Workplace'
   | 'WrapText'
   | 'WriteStorageText'
   | 'WriteTextFileDraft'
+  | 'X'
   | 'Yahoo'
   | 'Youtube'
   | 'Zendesk'
+  | 'ZohoCrm'
   | 'Zoom'
   | 'ZoomIn'
   | 'ZoomNotFixed'
   | 'ZoomOff'
   | 'ZoomOut'
-  | 'ZoomToFit';
+  | 'ZoomToFit'
+  | 'Zuora';
 
 export const iconNames: readonly IconName[] = [
   'Academy',
   'AccountSwitch',
   'Act365',
+  'ActOn',
   'ActionCenter',
   'ActiveCampaign',
   'ActiveDirectory',
-  'ActivitiesApplicationCard',
-  'ActivitiesCheck',
-  'ActivitiesCheckstate',
-  'ActivitiesClick',
-  'ActivitiesExtractData',
-  'ActivitiesForEachUiElement',
-  'ActivitiesGetAttribute',
-  'ActivitiesGetUrl',
-  'ActivitiesGettext',
-  'ActivitiesGotourl',
-  'ActivitiesHighlight',
-  'ActivitiesHover',
-  'ActivitiesKeyboardShortcuts',
-  'ActivitiesMouseScroll',
-  'ActivitiesNavigateBrowser',
-  'ActivitiesSelectitem',
-  'ActivitiesSemanticFillForm',
-  'ActivitiesSemanticSetValue',
-  'ActivitiesTakeScreenshot',
-  'ActivitiesTypeinto',
-  'AddCommentAnnotate',
+  'ActivityImap',
+  'ActivityInputDirectionInput',
+  'ActivityInputDirectionOutput',
+  'ActivityPop3',
+  'ActivitySmtp',
+  'AddCanvas',
+  'AddComment',
   'AddDataColumn',
   'AddDataRow',
   'AddLogFields',
@@ -1133,15 +1343,65 @@ export const iconNames: readonly IconName[] = [
   'AddToCollection',
   'AddTransactionItem',
   'Admin',
-  'Agent',
+  'AdobePdf',
+  'AdobeSign',
+  'AdvanceStream',
   'AgentAutopilotMarker',
+  'AgentDesktopLogo',
+  'AgentDesktopLogoBg',
+  'AgentDesktopLogoFlat',
   'AgentRun',
-  'AgenticProcess',
+  'AgentTraceAgentRun',
+  'AgentTraceAgentTool',
+  'AgentTraceApiWorkflowRun',
+  'AgentTraceApiWorkflowTool',
+  'AgentTraceCompletion',
+  'AgentTraceContextGroundingTool',
+  'AgentTraceConversation',
+  'AgentTraceConversationAgentMessage',
+  'AgentTraceConversationCitation',
+  'AgentTraceConversationContent',
+  'AgentTraceConversationToolCall',
+  'AgentTraceConversationUserMessage',
+  'AgentTraceEscalationTool',
+  'AgentTraceEval',
+  'AgentTraceEvalSetRun',
+  'AgentTraceExchange',
+  'AgentTraceGovernanceEscalation',
+  'AgentTraceInsufficientPermissions',
+  'AgentTraceIntegrationTool',
+  'AgentTraceLlmCall',
+  'AgentTraceMcpServerCall',
+  'AgentTraceMcpServerRequest',
+  'AgentTraceMcpServerResponse',
+  'AgentTraceMockTool',
+  'AgentTraceOutputCorrection',
+  'AgentTraceProcessTool',
+  'AgentTraceToolCall',
+  'AgentTraceToolGuardrailEscalation',
+  'AgentTraceToolGuardrailEvaluation',
+  'AgentTraceToolPostGovernance',
+  'AgentTraceToolPostGuardrails',
+  'AgentTraceToolPreGovernance',
+  'AgentTraceToolPreGuardrails',
+  'AgentsAgent',
+  'AgentsContext',
+  'AgentsDefinition',
+  'AgentsEscalation',
+  'AgentsEscalations',
+  'AgentsEvals',
+  'AgentsEvaluator',
+  'AgentsIndex',
+  'AgentsRunHistory',
+  'AgentsSet',
+  'AgentsTool',
+  'AgentsTrace',
   'AiAutoSummarize',
   'AiAutofix',
   'AiCenter',
+  'AlertDelete',
   'AlertError',
-  'AlertErrorFatalLog',
+  'AlertErrorFatal',
   'AlertErrorOutline',
   'AlertErrorSolid',
   'AlertInfoColor',
@@ -1150,21 +1410,24 @@ export const iconNames: readonly IconName[] = [
   'AlertWarning',
   'AlertWarningOutline',
   'AlertWarningSolid',
-  'All',
+  'AlignBottom',
+  'AlignCenter',
+  'AlignTop',
   'AmazonSagemaker',
   'AmazonWebServices',
   'AmazonWebServicesWorkspaces',
   'AmazonWorkspaces',
   'Analyze',
-  'ApiWorkflow',
   'App',
   'AppendItemToList',
   'AppendLine',
+  'AppleMail',
+  'AppleNumbers',
+  'AppleScript',
   'ApplicationCard',
   'Apps',
   'Archive',
   'AreaChart',
-  'Array',
   'ArrowBack',
   'ArrowDown',
   'ArrowDropDown',
@@ -1176,8 +1439,7 @@ export const iconNames: readonly IconName[] = [
   'ArrowRight',
   'ArrowUp',
   'Asana',
-  'Ascending',
-  'AssessMeasureEvaluate',
+  'Assess',
   'Asset',
   'Assign',
   'Atlassian',
@@ -1191,34 +1453,117 @@ export const iconNames: readonly IconName[] = [
   'Automations',
   'Autopilot',
   'AutopilotMarker',
-  'AwaitingPending',
   'Azure',
   'AzureActiveDirectory',
   'AzureActiveDirectory1',
   'AzureVirtualDesktop',
+  'AzureVirtualDesktopAddVmToHostPool',
+  'AzureVirtualDesktopAssignUsersAndGroupsToApplicationGroup',
+  'AzureVirtualDesktopCreateHostPool',
+  'AzureVirtualDesktopCreateWorkspace',
+  'AzureVirtualDesktopDeleteHostPool',
+  'AzureVirtualDesktopDeleteSessionHost',
+  'AzureVirtualDesktopDeleteUserSession',
+  'AzureVirtualDesktopDeleteWorkspace',
+  'AzureVirtualDesktopDisconnectUserSession',
+  'AzureVirtualDesktopForEachApplicationGroup',
+  'AzureVirtualDesktopForEachHostPool',
+  'AzureVirtualDesktopForEachSessionHost',
+  'AzureVirtualDesktopForEachUserSession',
+  'AzureVirtualDesktopForEachWorkspace',
+  'AzureVirtualDesktopGetApplicationGroup',
+  'AzureVirtualDesktopGetHostPool',
+  'AzureVirtualDesktopGetSessionHost',
+  'AzureVirtualDesktopGetWorkspace',
+  'AzureVirtualDesktopRemoveUsersAndGroupsFromApplicationGroup',
+  'AzureVirtualDesktopScope',
+  'AzureVirtualDesktopSendMessageToUserSession',
+  'AzureVirtualDesktopUpdateHostPool',
+  'AzureVirtualDesktopUpdateSessionHost',
+  'AzureVirtualDesktopUpdateWorkspace',
+  'BackstageDeleteProject',
+  'BackstageEditProjectProperties',
+  'BackstageOpenInDesktop',
+  'BackstageOpenProject',
+  'BackstagePin',
+  'BackstagePublishHistory',
   'BambooHr',
   'BarChart',
+  'Bigquery',
   'Blur',
-  'Boolean',
+  'BorderAll',
   'BorderBottom',
+  'BorderClear',
+  'BorderColor',
+  'BorderHorizontal',
+  'BorderInner',
+  'BorderLeft',
+  'BorderOuter',
+  'BorderRight',
+  'BorderStyle',
   'BorderTop',
-  'Bottom',
+  'BorderVertical',
   'BottomPanelCollapse',
   'BottomPanelExpand',
   'Box',
-  'BpmnBoundaryEvent',
-  'BpmnBoundaryNonInterruptingEvent',
-  'BpmnData',
-  'BpmnEndEvent',
-  'BpmnEndEvent1',
-  'BpmnGateway',
-  'BpmnGateway1',
-  'BpmnParticipant',
-  'BpmnStartEvent',
-  'BpmnStartEvent1',
-  'BpmnTasks',
-  'BpmnTasks1',
-  'BpmnToolbar',
+  'BpmnBoundaryCompensationCatch',
+  'BpmnBoundaryCompensationThrow',
+  'BpmnBoundaryCondition',
+  'BpmnBoundaryDefault',
+  'BpmnBoundaryEscalationCatch',
+  'BpmnBoundaryEscalationThrow',
+  'BpmnBoundaryEventCompensationCatch',
+  'BpmnBoundaryEventCompensationThrow',
+  'BpmnBoundaryEventCondition',
+  'BpmnBoundaryEventDefault',
+  'BpmnBoundaryEventError',
+  'BpmnBoundaryEventEscalationCatch',
+  'BpmnBoundaryEventEscalationThrow',
+  'BpmnBoundaryEventLinkCatch',
+  'BpmnBoundaryEventLinkThrow',
+  'BpmnBoundaryEventMessageCatch',
+  'BpmnBoundaryEventMessageThrow',
+  'BpmnBoundaryEventSignalCatch',
+  'BpmnBoundaryEventSignalThrow',
+  'BpmnBoundaryEventTimer',
+  'BpmnBoundaryLinkCatch',
+  'BpmnBoundaryLinkThrow',
+  'BpmnBoundaryMessageCatch',
+  'BpmnBoundaryMessageThrow',
+  'BpmnBoundarySignalCatch',
+  'BpmnBoundarySignalThrow',
+  'BpmnBoundaryTimer',
+  'BpmnDataDataObject',
+  'BpmnDataDataStore',
+  'BpmnEndEventCompensationCatch',
+  'BpmnEndEventCompensationThrow',
+  'BpmnEndEventCondition',
+  'BpmnEndEventDefault',
+  'BpmnEndEventError',
+  'BpmnEndEventEscalationCatch',
+  'BpmnEndEventEscalationThrow',
+  'BpmnEndEventLinkCatch',
+  'BpmnEndEventLinkThrow',
+  'BpmnEndEventMessageCatch',
+  'BpmnEndEventMessageThrow',
+  'BpmnEndEventSignalCatch',
+  'BpmnEndEventSignalThrow',
+  'BpmnEndEventTerminate',
+  'BpmnEndEventTimer',
+  'BpmnGatewayComplex',
+  'BpmnGatewayEvent',
+  'BpmnGatewayExclusive',
+  'BpmnGatewayInclusive',
+  'BpmnGatewayParallel',
+  'BpmnParticipantParticipant',
+  'BpmnToolbarChangeElement',
+  'BpmnToolbarComment',
+  'BpmnToolbarConnect',
+  'BpmnToolbarGroup',
+  'BpmnToolbarRemove',
+  'Branch',
+  'Break',
+  'Breakpoint',
   'BubbleChart',
   'BuildCollection',
   'BuildDataTable',
@@ -1228,193 +1573,205 @@ export const iconNames: readonly IconName[] = [
   'CampaignMonitor',
   'CancelScope',
   'CandlestickChart',
-  'CaseManagement',
   'Category',
-  'CategoryAlertsIconRaiseAlert',
-  'CategoryApiIconOrchestratorHttpRequest',
-  'CategoryApplicationGroupsIconAssignUsersAndGroupsToApplicationGroup',
-  'CategoryApplicationGroupsIconForEachApplicationGroup',
-  'CategoryApplicationGroupsIconGetApplicationGroup',
-  'CategoryApplicationGroupsIconRemoveUsersAndGroupsFromApplicationGroup',
-  'CategoryAssetsIconGetAssets',
-  'CategoryAssetsIconGetCredentials',
-  'CategoryAssetsIconSetAssets',
-  'CategoryAssetsIconSetCredentials',
-  'CategoryControlIconBreak',
-  'CategoryControlIconCheckFalse',
-  'CategoryControlIconCheckTrue',
-  'CategoryControlIconContinue',
-  'CategoryControlIconDoWhile',
-  'CategoryControlIconForeach',
-  'CategoryControlIconRepeatNumberOfTimes',
-  'CategoryControlIconWhile',
-  'CategoryDataListIconAppendItemToList',
-  'CategoryDataListIconCreateList',
-  'CategoryDataListIconForEachList',
-  'CategoryDataListIconList',
-  'CategoryDataListIconReadList',
-  'CategoryDataListIconUpdateList',
-  'CategoryDatatableIconAddDataColumn',
-  'CategoryDatatableIconAddDataRow',
-  'CategoryDatatableIconBuildDataTable',
-  'CategoryDatatableIconClearDataTable',
-  'CategoryDatatableIconFilterDataTable',
-  'CategoryDatatableIconForEachRowInDataTable',
-  'CategoryDatatableIconGenerateDataTable',
-  'CategoryDatatableIconGetRowItem',
-  'CategoryDatatableIconJoinDataTable',
-  'CategoryDatatableIconLookupDataTable',
-  'CategoryDatatableIconMergeDataTable',
-  'CategoryDatatableIconOutputDataTable',
-  'CategoryDatatableIconRemoveDataColumn',
-  'CategoryDatatableIconRemoveDataRow',
-  'CategoryDatatableIconRemoveDuplicateRows',
-  'CategoryDatatableIconSortDataTable',
-  'CategoryDatatableIconUpdateRowItem',
-  'CategoryFileOperationsIconAppendLine',
-  'CategoryFileOperationsIconCompressFile',
-  'CategoryFileOperationsIconCopyFile',
-  'CategoryFileOperationsIconCreateFile',
-  'CategoryFileOperationsIconCreateFolder',
-  'CategoryFileOperationsIconDeleteFile',
-  'CategoryFileOperationsIconExtractFiles',
-  'CategoryFileOperationsIconMoveFile',
-  'CategoryFileOperationsIconPathExists',
-  'CategoryFileOperationsIconReadTextFile',
-  'CategoryFileOperationsIconWriteTextFile',
-  'CategoryFormattingIconFormatValues',
-  'CategoryFormattingIconIsMatch',
-  'CategoryFormattingIconMatches',
-  'CategoryFormattingIconModifyDate',
-  'CategoryFormattingIconReplace',
-  'CategoryFormattingIconTextLeftRight',
-  'CategoryHostPoolsIconAddVmToHostPool',
-  'CategoryHostPoolsIconCreateHostPool',
-  'CategoryHostPoolsIconDeleteHostPool',
-  'CategoryHostPoolsIconForEachHostPool',
-  'CategoryHostPoolsIconGetHostPool',
-  'CategoryHostPoolsIconUpdateHostPool',
-  'CategoryIamPoliciesIconGetIamPolicy',
-  'CategoryIamPoliciesIconSetIamPolicy',
-  'CategoryIamRolesIconCreateRole',
-  'CategoryIamRolesIconDeleteRole',
-  'CategoryIamRolesIconForEachGrantedRole',
-  'CategoryIamRolesIconForEachRole',
-  'CategoryIamRolesIconGetRole',
-  'CategoryIamRolesIconUndeleteRole',
-  'CategoryIamRolesIconUpdateRole',
-  'CategoryInvokeIconInvokeCode',
-  'CategoryInvokeIconInvokeProcess',
-  'CategoryInvokeIconInvokeWorkflowFile',
-  'CategoryInvokeIconRunParallelProcess',
-  'CategoryJobsIconGetJob',
-  'CategoryJobsIconStartJob',
-  'CategoryJobsIconStopJob',
-  'CategoryLoggingIconAddLogFields',
-  'CategoryLoggingIconLogMessage',
-  'CategoryLoggingIconRemoveLogFields',
-  'CategoryLoggingIconReportStatus',
-  'CategoryMiscelaneousIconModifyText',
-  'CategoryMiscelaneousIconMultipleAssign',
-  'CategoryMiscelaneousIconRetryScope',
-  'CategoryMiscelaneousIconWaitForDownload',
-  'CategoryProcessIconShouldStop',
-  'CategoryProjectsIconCreateProject',
-  'CategoryProjectsIconForEachProject',
-  'CategoryQueuesIconAddQueueItem',
-  'CategoryQueuesIconAddTransactionItem',
-  'CategoryQueuesIconBulkAddQueueItems',
-  'CategoryQueuesIconDeleteQueueItems',
-  'CategoryQueuesIconGetQueueItems',
-  'CategoryQueuesIconGetTransactionItem',
-  'CategoryQueuesIconPostponeTransactionItem',
-  'CategoryQueuesIconSetTransactionProgress',
-  'CategoryQueuesIconSetTransactionStatus',
-  'CategoryQueuesIconWaitQueueItem',
-  'CategoryScopeIconScope',
-  'CategorySecretsIconGetSecretData',
-  'CategorySessionHostIconDeleteSessionHost',
-  'CategorySessionHostIconForEachSessionHost',
-  'CategorySessionHostIconGetSessionHost',
-  'CategorySessionHostIconUpdateSessionHost',
-  'CategoryStorageIconDeleteStorageFile',
-  'CategoryStorageIconDownloadStorageFile',
-  'CategoryStorageIconListStorageFiles',
-  'CategoryStorageIconReadStorageText',
-  'CategoryStorageIconUploadStorageFile',
-  'CategoryStorageIconWriteStorageText',
-  'CategoryUserSessionsIconDeleteUserSession',
-  'CategoryUserSessionsIconDisconnectUserSession',
-  'CategoryUserSessionsIconForEachUserSession',
-  'CategoryUserSessionsIconSendMessageToUserSession',
-  'CategoryWorkspacesIconCreateWorkspace',
-  'CategoryWorkspacesIconDeleteWorkspace',
-  'CategoryWorkspacesIconForEachWorkspace',
-  'CategoryWorkspacesIconGetWorkspace',
-  'CategoryWorkspacesIconUpdateWorkspace',
-  'Center',
   'ChangeElement',
   'ChatNewAutopilot',
   'Chatbot',
   'Check',
+  'CheckFalse',
   'CheckMark',
-  'Checked',
+  'CheckState',
+  'CheckTrue',
+  'CheckboxIndeterminateOutline',
+  'CheckboxIndeterminateSolid',
+  'CheckboxSelectedOutline',
+  'CheckboxSelectedSolid',
+  'CheckboxUnselected',
   'Checklist',
-  'Checkstate',
+  'ChevronDown',
   'ChevronLeft',
   'ChevronRight',
-  'Circle',
+  'ChevronUp',
   'CiscoWebexTeams',
   'Citrix',
   'CitrixHypervisor',
   'CitrixShareFile',
-  'ClassicIconsPackageSearch',
-  'Clear',
   'ClearCollection',
   'Click',
-  'CloseClearCancelEventCancelThrowingRemove',
+  'Close',
   'Cloud',
   'CloudDownload',
+  'CloudOff',
   'CloudUpload',
+  'CloverMark',
   'Code',
   'CodedFileJson',
   'CollapseAll',
   'Collection',
   'Color',
-  'Column',
-  'CommentLeftAnnotated',
-  'CommunicationMining',
+  'Comment',
+  'Commit',
+  'CommunicationMiningAdvanceStream',
+  'CommunicationMiningCreateComment',
+  'CommunicationMiningFetchBatchFromStream',
+  'CommunicationMiningGetComment',
+  'CommunicationMiningPredictComment',
+  'CommunicationMiningResetStream',
+  'CommunicationMiningUploadComment',
   'CommunicationsMining',
   'Compare',
+  'ComponentAgent',
+  'ComponentAgenticProcess',
+  'ComponentApiWorkflow',
+  'ComponentApp',
+  'ComponentBusinessRule',
+  'ComponentCaseManagement',
+  'ComponentConnector',
+  'ComponentGeneric',
+  'ComponentIxp',
+  'ComponentRootProjectSolution',
+  'ComponentRpaWorkflow',
+  'ComponentSetAsMainComponent',
+  'ComponentTestAutomation',
   'CompressFile',
   'Concur',
+  'ConditionBuilder',
   'Configuration',
+  'ConfigurationPanelArgument',
+  'ConfigurationPanelArgumentIn',
+  'ConfigurationPanelArgumentOut',
+  'ConfigurationPanelClipboard',
+  'ConfigurationPanelCreateVariable',
+  'ConfigurationPanelDynamicValues',
+  'ConfigurationPanelExpressionEditor',
+  'ConfigurationPanelIterate',
+  'ConfigurationPanelOutput',
+  'ConfigurationPanelVariables',
   'ConfigureRobot',
   'ConfluenceCloud',
-  'ConnectionOffCloudOff',
-  'Connector',
+  'Connection',
   'ConstantContact',
   'ContainerAlignBottom',
+  'ContainerAlignHorizontalCenter',
   'ContainerAlignLeft',
   'ContainerAlignRight',
   'ContainerAlignTop',
+  'ContainerAlignVerticalCenter',
   'ContainerStretchHorizontal',
   'ContainerStretchVertical',
-  'Control',
+  'Control1AddDataColumn',
+  'Control1AddDataRow',
+  'Control1AddLogFields',
+  'Control1AppendItemToList',
+  'Control1AppendLine',
+  'Control1Break',
+  'Control1BuildDataTable',
+  'Control1CheckFalse',
+  'Control1CheckTrue',
+  'Control1ClearDataTable',
+  'Control1CompressFile',
+  'Control1Continue',
+  'Control1CopyFile',
+  'Control1CreateFile',
+  'Control1CreateFolder',
+  'Control1CreateList',
+  'Control1DeleteFile',
+  'Control1DoWhile',
+  'Control1ExtractFiles',
+  'Control1FilterDataTable',
+  'Control1ForEachList',
+  'Control1ForEachRowInDataTable',
+  'Control1Foreach',
+  'Control1FormatValues',
+  'Control1GenerateDataTable',
+  'Control1GetRowItem',
+  'Control1InvokeCode',
+  'Control1InvokeProcess',
+  'Control1InvokeWorkflowFile',
+  'Control1IsMatch',
+  'Control1JoinDataTable',
+  'Control1List',
+  'Control1LogMessage',
+  'Control1LookupDataTable',
+  'Control1Matches',
+  'Control1MergeDataTable',
+  'Control1ModifyDate',
+  'Control1ModifyText',
+  'Control1MoveFile',
+  'Control1MultipleAssign',
+  'Control1OutputDataTable',
+  'Control1PathExists',
+  'Control1ReadList',
+  'Control1ReadTextFile',
+  'Control1RemoveDataColumn',
+  'Control1RemoveDataRow',
+  'Control1RemoveDuplicateRows',
+  'Control1RemoveLogFields',
+  'Control1RepeatNumberOfTimes',
+  'Control1Replace',
+  'Control1ReportStatus',
+  'Control1RetryScope',
+  'Control1RunParallelProcess',
+  'Control1SortDataTable',
+  'Control1TextLeftRight',
+  'Control1UpdateList',
+  'Control1UpdateRowItem',
+  'Control1WaitForDownload',
+  'Control1While',
+  'Control1WriteTextFile',
+  'Control2AddToCollection',
+  'Control2AppendItemToCollection',
+  'Control2Assign',
+  'Control2BuildCollection',
+  'Control2CancellationScope',
+  'Control2ClearCollection',
+  'Control2Delay',
+  'Control2DoWhile',
+  'Control2ExistsInCollection',
+  'Control2FilterCollection',
+  'Control2ForEach',
+  'Control2If',
+  'Control2InvokeMethod',
+  'Control2MergeCollections',
+  'Control2Parallel',
+  'Control2ParallelForEach',
+  'Control2Pick',
+  'Control2PickBranch',
+  'Control2RemoveFromCollection',
+  'Control2Rethrow',
+  'Control2Sequence',
+  'Control2Switch',
+  'Control2TerminateWorkflow',
+  'Control2Throw',
+  'Control2TriggerActivity',
+  'Control2TryCatch',
+  'Control2While',
+  'Control2WriteLine',
+  'ControlDataRowsAddDataRow',
+  'ControlDataRowsCreateInsert',
+  'ControlDataRowsReadGet',
+  'ControlDataRowsRemoveDataRow',
+  'ControlDataRowsUpdateRowItem',
   'Controls',
   'Convert',
   'Cookie',
   'Copy',
   'Coupa',
+  'Create',
+  'CreateComment',
   'CreateFile',
   'CreateFolder',
   'CreateList',
-  'CreatePlusEventParallelBuild',
-  'Critical',
   'Cropp',
-  'Cryptography',
-  'Currency',
-  'Custom',
+  'CryptographyDecryptFile',
+  'CryptographyDecryptText',
+  'CryptographyEcryptText',
+  'CryptographyEncryptFile',
+  'CryptographyHashFile',
+  'CryptographyHashFileWithKey',
+  'CryptographyHashText',
+  'CryptographyHashTextWithKey',
+  'Customerio',
   'Cut',
   'Dashboard',
   'DataDatabase',
@@ -1422,23 +1779,53 @@ export const iconNames: readonly IconName[] = [
   'DataService',
   'DataSetting',
   'DataStorage',
-  'DataTypeGeneric',
-  'Date',
+  'DataTypesArray',
+  'DataTypesBoolean',
+  'DataTypesCustom',
+  'DataTypesDataTable',
+  'DataTypesDate',
+  'DataTypesDatetime',
+  'DataTypesDictionary',
+  'DataTypesDouble',
+  'DataTypesFile',
+  'DataTypesGenericDataType',
+  'DataTypesInteger',
+  'DataTypesJson',
+  'DataTypesKey',
+  'DataTypesList',
+  'DataTypesMethod',
+  'DataTypesObject',
+  'DataTypesString',
+  'DataTypesTableColumn',
+  'DataTypesTableRow',
+  'DatabaseBulkInsert',
+  'DatabaseBulkUpdate',
+  'DatabaseConnect',
+  'DatabaseDisconnect',
+  'DatabaseInsert',
+  'DatabaseQuery',
+  'DatabaseRunCommand',
+  'DatabaseStartTransaction',
   'DateSelectSet',
-  'Datetime',
-  'DebugReportABug',
-  'Decimal',
-  'Default',
+  'Debug',
+  'DebugConfiguration',
+  'DebugHistory',
+  'Delay',
   'Delete',
   'DeleteFile',
   'DeleteFileOrFolder',
   'DeleteQueueItems',
   'DeleteVm',
   'DenyBlock',
-  'DeploymentConfigurationRocket',
-  'Descending',
+  'Deploy',
   'Details',
-  'Dictionary',
+  'DiffAccept',
+  'DiffAcceptAll',
+  'DiffAddedUntracked',
+  'DiffDeleted',
+  'DiffModified',
+  'DiffReject',
+  'DiffRejectAll',
   'DistributeHorizontal',
   'DistributeVertical',
   'DoWhile',
@@ -1446,9 +1833,6 @@ export const iconNames: readonly IconName[] = [
   'DocumentUnderstanding',
   'Documentation',
   'Docusign',
-  'Dot',
-  'Double',
-  'Down',
   'DownloadDone',
   'DownloadDoneDone',
   'DownloadPackage',
@@ -1463,15 +1847,30 @@ export const iconNames: readonly IconName[] = [
   'EmailReply',
   'EmailReplyAll',
   'EncryptFile',
+  'EntitiesCreateRecord',
+  'EntitiesDeleteFile',
+  'EntitiesDeleteRecord',
+  'EntitiesDownloadFile',
+  'EntitiesEntity',
+  'EntitiesFileUpload',
+  'EntitiesGetRecord',
+  'EntitiesQueryRecords',
+  'EntitiesUpdateRecord',
+  'Entity',
   'EpicFhir',
+  'Equifax',
+  'ErrorDot',
+  'ErrorNumber',
   'ExchangeServer',
+  'ExecutionPointer',
   'ExistsInCollection',
-  'ExitFullScreenMinimize',
   'ExpandAll',
   'Expensify',
+  'Experian',
   'Experiment',
   'Explorer',
   'ExportExtract',
+  'ExpressionArgument',
   'ExpressionDynamicValue',
   'ExpressionEditor',
   'ExpressionVariableCreate',
@@ -1482,7 +1881,14 @@ export const iconNames: readonly IconName[] = [
   'ExtractUrl',
   'FastForward',
   'FastRewind',
+  'FavouriteChecked',
+  'FavouriteUnchecked',
   'Feedback',
+  'FetchBatchFromStream',
+  'FigureCircle',
+  'FigureRectangle169',
+  'FigureRectangle54',
+  'FigureSquare',
   'FileApiWorkflow',
   'FileApiWorkflowMain',
   'FileBpmn',
@@ -1527,6 +1933,7 @@ export const iconNames: readonly IconName[] = [
   'ForEachUiElement',
   'Form',
   'FormatAlignCenter',
+  'FormatAlignJustify',
   'FormatAlignLeft',
   'FormatAlignRight',
   'FormatBold',
@@ -1537,17 +1944,44 @@ export const iconNames: readonly IconName[] = [
   'FormatIndentDecrease',
   'FormatIndentIncrease',
   'FormatItalic',
+  'FormatStrikethrough',
   'FormatTextDirectionLToR',
   'FormatTextDirectionRToL',
   'FormatUnderlined',
+  'FormattingIsMatch',
+  'FormattingMatches',
   'Freshservice',
   'FtpConnection',
+  'FtpDeleteFileOrFolder',
+  'FtpDownloadFiles',
+  'FtpFileExists',
+  'FtpFolderExists',
+  'FtpFtpConnection',
+  'FtpGetFiles',
+  'FtpMoveFileOrFolder',
+  'FtpUploadFiles',
   'FullscreenMaximize',
   'Functions',
-  'Genai',
-  'Generic',
+  'GenAi',
+  'GenericActivityIconsDelete',
+  'GenericActivityIconsDownload',
+  'GenericActivityIconsFileDownload',
+  'GenericActivityIconsFileUpload',
+  'GenericActivityIconsGet',
+  'GenericActivityIconsImap',
+  'GenericActivityIconsInsert',
+  'GenericActivityIconsList',
+  'GenericActivityIconsListAll',
+  'GenericActivityIconsMethod',
+  'GenericActivityIconsPop3',
+  'GenericActivityIconsScope',
+  'GenericActivityIconsSearch',
+  'GenericActivityIconsSmtp',
+  'GenericActivityIconsUpdate',
+  'GenericActivityIconsUpload',
   'GetAssets',
   'GetAttribute',
+  'GetComment',
   'GetCredentials',
   'GetDatastore',
   'GetFiles',
@@ -1556,19 +1990,34 @@ export const iconNames: readonly IconName[] = [
   'GetJob',
   'GetQueueItems',
   'GetRowItem',
-  'GetStepInto',
+  'GetText',
   'GetTransactionItem',
   'GetVm',
-  'Gettext',
-  'Github',
+  'Git',
+  'Git1',
+  'GitHub',
   'GlobalHandler',
   'GlobalHandlerSet',
   'GlobalHandlerUnset',
+  'GoToUrl',
   'Google',
+  'GoogleAds',
   'GoogleAppsScript',
   'GoogleCalendar',
   'GoogleChrome',
   'GoogleCloud',
+  'GoogleCloudPlatformCreateProject',
+  'GoogleCloudPlatformCreateRole',
+  'GoogleCloudPlatformDeleteRole',
+  'GoogleCloudPlatformForEachGrantedRole',
+  'GoogleCloudPlatformForEachProject',
+  'GoogleCloudPlatformForEachRole',
+  'GoogleCloudPlatformGetIamPolicy',
+  'GoogleCloudPlatformGetRole',
+  'GoogleCloudPlatformGetSecretData',
+  'GoogleCloudPlatformSetIamPolicy',
+  'GoogleCloudPlatformUndeleteRole',
+  'GoogleCloudPlatformUpdateRole',
   'GoogleDocs',
   'GoogleDrive',
   'GoogleForms',
@@ -1576,9 +2025,15 @@ export const iconNames: readonly IconName[] = [
   'GoogleSheets',
   'GoogleTasks',
   'GoogleVision',
-  'Gotourl',
   'Gotowebinar',
   'Group',
+  'GsuiteAppsScript',
+  'GsuiteCalendar',
+  'GsuiteGdocs',
+  'GsuiteGdrive',
+  'GsuiteGmail',
+  'GsuiteGsheets',
+  'GsuiteGsuite',
   'HandWaving',
   'Handshake',
   'HashFileWithKey',
@@ -1586,201 +2041,68 @@ export const iconNames: readonly IconName[] = [
   'Health',
   'Height',
   'Help',
-  'High',
-  'Highest',
   'Highlight',
   'HistoryRestore',
+  'HistoryRestoreEditedSize',
   'Home',
   'Hootsuite',
-  'Horizontal',
-  'HorizontalCenter',
-  'HorizontalLeft',
-  'HorizontalRight',
   'Hover',
-  'HttpApiRequestHttpClientActivity',
+  'HttpRequest',
   'HubspotMarketing',
   'HyperV',
-  'IconAddToCollection',
-  'IconAnalyzeProject',
-  'IconAppendItemToCollection',
-  'IconAppsScript',
-  'IconArgument',
-  'IconArgumentIn',
-  'IconArgumentOut',
-  'IconArray',
-  'IconAssign',
-  'IconAzureVirtualDesktop',
-  'IconBoolean',
-  'IconBuildCollection',
-  'IconBuildProject',
-  'IconBulkInsert',
-  'IconBulkUpdate',
-  'IconCalendar',
-  'IconCancellationScope',
-  'IconCell',
-  'IconClearCollection',
-  'IconClipboard',
-  'IconCloneProject',
-  'IconColor',
-  'IconConfigureRobot',
-  'IconConnect',
-  'IconCreateVariable',
-  'IconCustom',
-  'IconDataTable',
-  'IconDate',
-  'IconDatetime',
-  'IconDecryptFile',
-  'IconDecryptText',
-  'IconDelay',
-  'IconDeleteFileOrFolder',
-  'IconDeleteVm',
-  'IconDeserializeJson',
-  'IconDeserializeJsonArray',
-  'IconDeserializeXml',
-  'IconDictionary',
-  'IconDisconnect',
-  'IconDoWhile',
-  'IconDouble',
-  'IconDownloadFiles',
-  'IconDownloadPackage',
-  'IconDynamicValues',
-  'IconEcryptText',
-  'IconEditProjectProperties',
-  'IconEncryptFile',
-  'IconExcel',
-  'IconExchange',
-  'IconExecuteXpath',
-  'IconExistsInCollection',
-  'IconExpressionEditor',
-  'IconExtractSrc',
-  'IconExtractText',
-  'IconExtractUrl',
-  'IconFile',
-  'IconFileExists',
-  'IconFilterCollection',
-  'IconFolderExists',
-  'IconForEach',
-  'IconFtpConnection',
-  'IconGdocs',
-  'IconGdrive',
-  'IconGenericDataType',
-  'IconGetDatastore',
-  'IconGetFiles',
-  'IconGetFolder',
-  'IconGetHost',
-  'IconGetVm',
-  'IconGetXmlNodeAttributes',
-  'IconGetXmlNodes',
-  'IconGmail',
-  'IconGroups',
-  'IconGsheets',
-  'IconGsuite',
-  'IconHashFile',
-  'IconHashFileWithKey',
-  'IconHashText',
-  'IconHashTextWithKey',
-  'IconHttpClient',
-  'IconIdle',
-  'IconIf',
-  'IconInsert',
-  'IconInteger',
-  'IconInvokeMethod',
-  'IconIterate',
-  'IconJson',
-  'IconKey',
-  'IconList',
-  'IconListDatastores',
-  'IconListHosts',
-  'IconListVms',
-  'IconMergeCollections',
-  'IconMethod',
-  'IconMicrosoft365',
-  'IconMicrosoftGroups',
-  'IconMicrosoftOffice365',
-  'IconMountToolsInstaller',
-  'IconMoveFileOrFolder',
-  'IconMoveProject',
-  'IconNameRange',
-  'IconObject',
-  'IconOnedrive',
-  'IconOpenInDesktop',
-  'IconOpenProject',
-  'IconOrchestrator',
-  'IconOutlook',
-  'IconPackage',
-  'IconParallel',
-  'IconParallelForEach',
-  'IconPerformance',
-  'IconPick',
-  'IconPickBranch',
-  'IconPin',
-  'IconPivotTable',
-  'IconPlanner',
-  'IconPowerOffVm',
-  'IconPowerOnVm',
-  'IconPublishProject',
-  'IconQuery',
-  'IconRemoveFromCollection',
-  'IconRethrow',
-  'IconRunCommand',
-  'IconRunProgramInVm',
-  'IconRunTests',
-  'IconSequence',
-  'IconSharepoint',
-  'IconSharepoint1',
-  'IconSheet',
-  'IconSquare',
-  'IconStage',
-  'IconStartTransaction',
-  'IconString',
-  'IconSuspendVm',
-  'IconSwitch',
-  'IconTable',
-  'IconTableColumn',
-  'IconTableRow',
-  'IconTerminateWorkflow',
-  'IconThrow',
-  'IconTriggerActivity',
-  'IconTryCatch',
-  'IconUipath',
-  'IconUnmountToolsInstaller',
-  'IconUpdateProcess',
-  'IconUpdateRowItem',
-  'IconUpgradeTools',
-  'IconUploadFiles',
-  'IconVariables',
-  'IconVmwareScope',
-  'IconWhile',
-  'IconWriteLine',
   'Icontact',
+  'Idea',
+  'IfSplit',
   'Image',
   'ImagesMultiple',
-  'Imap',
-  'IndeterminateOutline',
-  'IndeterminateSolid',
+  'Import',
   'Info',
-  'Inner',
+  'InputDirectionInput',
+  'InputDirectionOutput',
   'Insert',
   'Insights',
-  'Integer',
   'IntegrationService',
+  'Intercom',
+  'InternalPackageControl',
+  'InternalPackageCryptography',
+  'InternalPackageDefault',
+  'InternalPackageUiAutomation',
+  'InternalPackageWebApi',
+  'InternalPackageWorkflowEvents',
   'Intuit',
   'Invoke',
   'InvokeCode',
   'InvokeProcess',
   'InvokeWorkflowFile',
   'Issues',
+  'ItAutomationActiveDirectory',
+  'ItAutomationAmazonWebServices',
+  'ItAutomationAmazonWebServicesWorkspaces',
+  'ItAutomationAzure',
+  'ItAutomationAzureActiveDirectory',
+  'ItAutomationAzureVirtualDesktop',
+  'ItAutomationCitrixHypervisor',
+  'ItAutomationExchangeServer',
+  'ItAutomationGoogleCloud',
+  'ItAutomationHyperV',
+  'ItAutomationMicroFocus',
+  'ItAutomationSystemCenter',
+  'ItAutomationVmwareEsxi',
   'JoinDataTable',
-  'Json',
-  'Justify',
-  'Key',
+  'Keap',
+  'KeyArrowUpDown',
+  'KeyReturn',
   'KeyboardShortcuts',
   'LabelPlacementLeft',
   'LabelPlacementTop',
   'Language',
   'Layers',
   'LayoutAlignHorizontalCenter',
+  'LayoutAlignHorizontalLeft',
+  'LayoutAlignHorizontalRight',
+  'LayoutAlignVerticalBottom',
   'LayoutAlignVerticalCenter',
+  'LayoutAlignVerticalTop',
   'LayoutDistributeHorizontal',
   'LayoutDistributeVertical',
   'LayoutJustifyBottom',
@@ -1791,10 +2113,10 @@ export const iconNames: readonly IconName[] = [
   'LayoutJustifyVerticalCenter',
   'LayoutStretchHorizontal',
   'LayoutStretchVertical',
-  'Left',
   'Library',
   'LicenseAllocate',
   'LicenseExternal',
+  'LifionByAdp',
   'LineAxis',
   'Link',
   'Linkedin',
@@ -1815,20 +2137,15 @@ export const iconNames: readonly IconName[] = [
   'Looks5',
   'Looks6',
   'LookupDataTable',
-  'Low',
-  'Lowest',
   'Machine',
   'Maestro',
   'Mailchimp',
   'Manufacturing',
-  'MapMoveTransition',
   'Marketo',
   'Marketplace',
-  'Medium',
-  'MediumHigh',
-  'MediumLow',
   'Menu',
   'MenuCollapse',
+  'Merge',
   'MergeCollections',
   'Method',
   'Mic',
@@ -1843,10 +2160,10 @@ export const iconNames: readonly IconName[] = [
   'MicrosoftEdge',
   'MicrosoftExcel',
   'MicrosoftGroups',
-  'MicrosoftOnedrive',
+  'MicrosoftOneDrive',
   'MicrosoftOutlook',
   'MicrosoftPlanner',
-  'MicrosoftPowerpoint',
+  'MicrosoftPowerPoint',
   'MicrosoftSentiment',
   'MicrosoftSharepoint',
   'MicrosoftTeams',
@@ -1854,13 +2171,16 @@ export const iconNames: readonly IconName[] = [
   'MicrosoftVision',
   'MicrosoftVisualStudioCode',
   'MicrosoftWord',
+  'Minimize',
   'MlSkills',
   'Mock',
+  'MockData',
   'ModeratorRemove',
   'More',
   'MountToolsInstaller',
   'MouseClick',
   'MouseScroll',
+  'Move',
   'MoveFile',
   'MoveFileOrFolder',
   'MoveProject',
@@ -1868,108 +2188,131 @@ export const iconNames: readonly IconName[] = [
   'NavigateBeforeFirstPage',
   'NavigateBrowser',
   'NavigateLastPage',
-  'Navigation',
   'NetiqEdirectory',
   'New',
+  'NextStep',
   'NotificationAdd',
   'NotificationAlertAdd',
   'NotificationImportant',
   'Notifications',
   'NotificationsActive',
   'NotificationsOff',
-  'Number',
   'Numbers',
-  'Object',
-  'Off',
-  'On',
+  'Office365AppsExchange',
+  'Office365AppsGroups',
+  'Office365AppsMicrosoft365',
+  'Office365AppsMicrosoftOffice365',
+  'Office365AppsOutlook',
+  'Office365AppsPlanner',
+  'Office365AppsSharepoint',
+  'Office365ExcelCell',
+  'Office365ExcelExcel',
+  'Office365ExcelMicrosoftGroups',
+  'Office365ExcelNameRange',
+  'Office365ExcelOneDrive',
+  'Office365ExcelPivotTable',
+  'Office365ExcelSharepoint',
+  'Office365ExcelSheet',
+  'Office365ExcelTable',
   'OpenAi',
+  'OpenInDesktop',
   'OpenInNew',
   'OracleEloqua',
   'OracleNetsuite',
+  'OracleNetsuiteAttachFile',
+  'OracleNetsuiteDetachFile',
   'Orchestrator',
+  'OrchestratorAddQueueItem',
+  'OrchestratorAddTransactionItem',
+  'OrchestratorBulkAddQueueItems',
+  'OrchestratorDeleteQueueItems',
+  'OrchestratorDeleteStorageFile',
+  'OrchestratorDownloadStorageFile',
+  'OrchestratorGetAssets',
+  'OrchestratorGetCredentials',
+  'OrchestratorGetJob',
+  'OrchestratorGetQueueItems',
+  'OrchestratorGetTransactionItem',
+  'OrchestratorHttpRequest',
+  'OrchestratorListStorageFiles',
+  'OrchestratorPostponeTransactionItem',
+  'OrchestratorRaiseAlert',
+  'OrchestratorReadStorageText',
+  'OrchestratorSetAssets',
+  'OrchestratorSetCredentials',
+  'OrchestratorSetTransactionProgress',
+  'OrchestratorSetTransactionStatus',
+  'OrchestratorShouldStop',
+  'OrchestratorStartJob',
+  'OrchestratorStopJob',
+  'OrchestratorUploadStorageFile',
+  'OrchestratorWaitQueueItem',
+  'OrchestratorWriteStorageText',
   'Organization',
-  'Outer',
   'Output',
-  'PackageActiveDirectory',
-  'PackageAmazonWebServices',
-  'PackageAmazonWebServicesWorkspaces',
-  'PackageAttachFile',
-  'PackageAzure',
-  'PackageAzureActiveDirectory',
-  'PackageAzureVirtualDesktop',
-  'PackageCitrixHypervisor',
-  'PackageCreateChannel',
-  'PackageDelete',
-  'PackageDetachFile',
-  'PackageDownload',
-  'PackageDownloadFile',
-  'PackageExchangeServer',
-  'PackageFileDownload',
-  'PackageFileUpload',
-  'PackageGet',
-  'PackageGetMessages',
-  'PackageGetReplies',
-  'PackageGoogleCloud',
-  'PackageHyperV',
-  'PackageImap',
-  'PackageInsert',
-  'PackageInviteToChannel',
-  'PackageInvokeSlackAdminOperation',
-  'PackageInvokeSlackOperation',
-  'PackageJoinChannel',
-  'PackageLeaveChannel',
-  'PackageList',
-  'PackageListAll',
-  'PackageMethod',
-  'PackageMicroFocus',
-  'PackagePop3',
-  'PackageRemoveFromChannel',
-  'PackageReply',
-  'PackageScope',
-  'PackageSearch',
-  'PackageSendMessage',
-  'PackageSlackScope',
-  'PackageSmtp',
-  'PackageSystemCenter',
-  'PackageUpdate',
-  'PackageUpdateStatus',
-  'PackageUpload',
-  'PackageVmwareEsxi',
+  'OutputNegative',
+  'OutputPositive',
+  'Package',
   'Page',
   'PageMain',
   'Pagerduty',
   'PanHandCanvas',
+  'PanelsDataManager',
+  'PanelsDataManagerPanelErrorsNew',
+  'PanelsDataManagerPanelNew',
+  'PanelsOutputPanel',
+  'PanelsOutputPanelNew',
+  'PanelsProjectPanel',
+  'PanelsProjectPanelErrors',
+  'Parallel',
   'ParallelForEach',
   'Paste',
-  'Path',
   'PathExists',
   'Pause',
-  'PerformanceActivities',
+  'Payload',
+  'Pending',
+  'PerformanceTriggersIdle',
+  'PerformanceTriggersPerformance',
   'PickPickBranch',
   'PieChart',
   'Pin',
   'Pinecone',
-  'PinnedUnpin',
-  'PlaceholderThisIsNotToBeUsedInTheUiOnlyForWip',
-  'PlaySlowMotionPlayAnimation',
+  'PipelinesAnalyzeProject',
+  'PipelinesBuildProject',
+  'PipelinesCloneProject',
+  'PipelinesDownloadPackage',
+  'PipelinesMoveProject',
+  'PipelinesPublishProject',
+  'PipelinesRunTests',
+  'PipelinesStage',
+  'PipelinesUpdateProcess',
+  'Placeholder',
+  'Play',
+  'PlaySlow',
   'PlusOne',
   'Poll',
   'Polyline',
-  'Pop3',
   'PostponeTransactionItem',
   'PowerOffVm',
   'PowerOnVm',
+  'PredictComment',
   'Print',
+  'PriorityCritical',
+  'PriorityHigh',
+  'PriorityHighest',
+  'PriorityLow',
+  'PriorityLowest',
+  'PriorityMedium',
+  'PriorityMediumHigh',
+  'PriorityMediumLow',
+  'PriorityVeryHigh',
+  'PriorityVeryLow',
+  'Process',
   'ProcessDiagram',
   'ProcessDiagramMain',
   'ProcessMining',
   'Processes',
   'Properties',
-  'Property1AddDataRow',
-  'Property1CreateInsert',
-  'Property1ReadGet',
-  'Property1RemoveDataRow',
-  'Property1UpdateRowItem',
   'Publish',
   'Queue',
   'Quickbooks',
@@ -1981,33 +2324,32 @@ export const iconNames: readonly IconName[] = [
   'ReadStorageText',
   'ReadTextFile',
   'Record',
-  'Rectangle169',
-  'Rectangle54',
   'Redo',
   'ReferenceInsertReference',
   'Refresh',
   'RemoveDataColumn',
   'RemoveDataRow',
   'RemoveFromCollection',
-  'RemoveLinkLinkOffUnlink',
   'RemoveLogFields',
   'RemoveMinus',
   'Repeat',
-  'ReplayResetBpmnEventLoop',
+  'Replay',
   'ReportStatus',
-  'RetryRepeatNumberOfTimesForEachBreakContinueIterate',
-  'Right',
+  'RepositoryCloud',
+  'RepositoryLocal',
+  'ResetStream',
+  'Rethrow',
+  'Retry',
   'Robot',
   'RobotHead',
-  'RootProjectSolution',
-  'Row',
+  'RowUpdateRowItem',
   'RpaAutomation',
-  'RpaWorkflow',
   'RunParallelProcess',
-  'RunPlay',
   'RunProgramInVm',
   'RunTests',
   'Safety',
+  'Sage',
+  'Salesforce',
   'Salesloft',
   'Salesmate',
   'SapCloudForCustomer',
@@ -2018,11 +2360,8 @@ export const iconNames: readonly IconName[] = [
   'Scope',
   'ScreenShare',
   'Search',
-  'SecurityVerifiedUser',
   'SelectAll',
-  'SelectedOutline',
-  'SelectedSolid',
-  'Selectitem',
+  'SelectItem',
   'SemanticFillForm',
   'SemanticSetValue',
   'Send',
@@ -2034,7 +2373,6 @@ export const iconNames: readonly IconName[] = [
   'SentimentVerySatisfied',
   'Sequence',
   'ServiceNow',
-  'SetAsMainComponent',
   'SetAssets',
   'SetCredentials',
   'SetTransactionProgress',
@@ -2046,43 +2384,69 @@ export const iconNames: readonly IconName[] = [
   'ShowChart',
   'Shuffle',
   'Slack',
-  'SlackActivities',
+  'SlackCreateChannel',
+  'SlackDownloadFile',
+  'SlackGetMessages',
+  'SlackGetReplies',
+  'SlackInviteToChannel',
+  'SlackInvokeSlackAdminOperation',
+  'SlackInvokeSlackOperation',
+  'SlackJoinChannel',
+  'SlackLeaveChannel',
+  'SlackRemoveFromChannel',
+  'SlackReply',
+  'SlackScope',
+  'SlackSearch',
+  'SlackSendMessage',
+  'SlackUpdateStatus',
   'Smartsheet',
-  'Smtp',
+  'Snippet',
   'Snowflake',
+  'SortAscending',
   'SortDataTable',
   'SortDefault',
+  'SortDescending',
   'SpaceBar',
   'SpinnerCircular',
   'Square',
   'StackedLineChart',
   'StartJob',
-  'StateDefault',
   'StateMachine',
+  'StepInto',
+  'StepOut',
+  'StepOver',
   'Stop',
   'StopJob',
-  'String',
+  'StorageBucket',
+  'Stripe',
   'StudioIcon',
-  'StudioWebIconsIconList',
-  'Style',
+  'StudioIconsCheck',
+  'StudioIconsDebug',
+  'StudioIconsExpressionEditor',
+  'StudioIconsKeyboardShortcuts',
+  'StudioIconsPlaceholder',
+  'StudioNextLogo',
+  'StudioNextLogoBg',
   'SubdirectoryArrowLeft',
   'SubdirectoryArrowRight',
   'Subscript',
-  'SuccessCheckmarkCheckCircle',
+  'SuccessCheck',
   'Sugar',
   'Suggestion',
   'Superscript',
   'SuspendVm',
   'Switch',
   'SystemCenter',
-  'Table',
   'TableChart',
+  'TableColumn',
+  'TableRow',
   'TakeScreenshot',
+  'TaskCatalog',
   'TaskMining',
   'Template',
   'Tenant',
+  'Terminal',
   'TerminateWorkflow',
-  'TestAutomation',
   'TestCase',
   'TestCase1',
   'TestCaseCoded',
@@ -2096,47 +2460,107 @@ export const iconNames: readonly IconName[] = [
   'TextDecrease',
   'TextFields',
   'TextIncrease',
-  'ThirdParty',
+  'ThirdPartyMock',
   'ThumbDown',
   'ThumbDownPressed',
   'ThumbUp',
   'ThumbUpPressed',
-  'TimeDurationToBeUsedInsteadOfTimerBpmnEventDuration',
   'TimeIdle',
   'TimePerformance',
   'TimelineChart',
   'Title',
+  'Toggle',
+  'ToggleOff',
+  'ToggleOn',
   'ToolboxTools',
-  'Top',
+  'TransUnion',
   'Translate',
   'Trello',
   'Trigger',
   'Trigger1',
+  'TriggerAgent',
+  'TriggerApi',
+  'TriggerApp',
+  'TriggerAutopilot',
+  'TriggerChat',
+  'TriggerConnection',
+  'TriggerData',
+  'TriggerDesktop',
+  'TriggerForm',
+  'TriggerManual',
+  'TriggerTime',
+  'TriggerWebhook',
+  'TryCatch',
   'Tune',
   'Twilio',
   'Twitter',
-  'TypeDataManager',
-  'TypeOutputPanel',
-  'TypeOutputPanelNew',
-  'TypeProjectPanel',
-  'TypeProjectPanelErrors',
-  'TypeQueue',
+  'TypeArray',
+  'TypeBoolean',
+  'TypeCurrency',
+  'TypeCustom',
+  'TypeDate',
+  'TypeDatetime',
+  'TypeDecimal',
+  'TypeDictionary',
+  'TypeDouble',
+  'TypeDuration',
+  'TypeGeneric',
+  'TypeInteger',
+  'TypeInto',
+  'TypeJson',
+  'TypeKey',
+  'TypeList',
+  'TypeObject',
+  'TypePercentage',
+  'TypeString',
+  'TypeTable',
   'Typeform',
-  'Typeinto',
-  'UiAutomation',
-  'Uipath',
+  'UiAutomationApplicationCard',
+  'UiAutomationCheck',
+  'UiAutomationCheckState',
+  'UiAutomationClick',
+  'UiAutomationExtractData',
+  'UiAutomationForEachUiElement',
+  'UiAutomationGetAttribute',
+  'UiAutomationGetText',
+  'UiAutomationGetUrl',
+  'UiAutomationGoToUrl',
+  'UiAutomationHighlight',
+  'UiAutomationHover',
+  'UiAutomationKeyboardShortcuts',
+  'UiAutomationMouseScroll',
+  'UiAutomationNavigateBrowser',
+  'UiAutomationSelectItem',
+  'UiAutomationSemanticFillForm',
+  'UiAutomationSemanticSetValue',
+  'UiAutomationTakeScreenshot',
+  'UiAutomationTypeInto',
+  'UiDataExtractionExtractSrc',
+  'UiDataExtractionExtractText',
+  'UiDataExtractionExtractUrl',
+  'UiExperimentalDefault',
+  'UiGridlistViewGrid',
+  'UiGridlistViewList',
+  'UiPath',
+  'UiPathUiPath',
+  'UiStudioWebIconDefault',
+  'UiSubmitAsTemplateDisabled',
+  'UiSubmitAsTemplateEnabled',
+  'UiTriggersManual',
+  'UiTriggersQueue',
+  'UiTriggersScheduled',
   'Unarchive',
-  'Unchecked',
   'Undo',
-  'UnlockLockOpen',
+  'Unlink',
+  'Unlock',
   'UnmountToolsInstaller',
-  'Unselected',
-  'Up',
+  'Unpin',
   'Update',
   'UpdateList',
   'UpdateProcess',
   'UpdateRowItem',
   'UpgradeTools',
+  'UploadComment',
   'UploadFiles',
   'User',
   'UserAdd',
@@ -2149,12 +2573,7 @@ export const iconNames: readonly IconName[] = [
   'UserOff',
   'UserRemove',
   'UserSso',
-  'Vertical',
-  'VerticalBottom',
-  'VerticalCenter',
-  'VerticalTop',
-  'VeryHigh',
-  'VeryLow',
+  'Verified',
   'Video',
   'VideocameraOff',
   'VideocameraOn',
@@ -2162,35 +2581,62 @@ export const iconNames: readonly IconName[] = [
   'VisibilityOff',
   'VisibilityOnPreview',
   'Vmware',
-  'VmwareActivities',
+  'VmwareConfigureRobot',
+  'VmwareDeleteVm',
   'VmwareEsxi',
+  'VmwareGetDatastore',
+  'VmwareGetFolder',
+  'VmwareGetHost',
+  'VmwareGetVm',
+  'VmwareListDatastores',
+  'VmwareListHosts',
+  'VmwareListVms',
+  'VmwareMountToolsInstaller',
+  'VmwarePowerOffVm',
+  'VmwarePowerOnVm',
+  'VmwareRunProgramInVm',
   'VmwareScope',
+  'VmwareSuspendVm',
+  'VmwareUnmountToolsInstaller',
+  'VmwareUpgradeTools',
+  'VmwareVmwareScope',
   'VolumeDown',
   'VolumeOff',
   'VolumeUp',
   'WaffleOutageWaffleMenu',
   'WaffleWaffleMenu',
+  'WaitForDownload',
   'WaitQueueItem',
   'Wallet',
   'Watch',
-  'WebApi',
+  'WebApiDeserializeJson',
+  'WebApiDeserializeJsonArray',
+  'WebApiDeserializeXml',
+  'WebApiExecuteXpath',
+  'WebApiGetXmlNodeAttributes',
+  'WebApiGetXmlNodes',
+  'WebApiHttpClient',
+  'WebApiPackage',
   'Webhook',
   'While',
   'Widget',
   'Workday',
   'WorkdayBg',
   'WorkflowCoded',
-  'WorkflowEvents',
+  'Workplace',
   'WrapText',
   'WriteStorageText',
   'WriteTextFileDraft',
+  'X',
   'Yahoo',
   'Youtube',
   'Zendesk',
+  'ZohoCrm',
   'Zoom',
   'ZoomIn',
   'ZoomNotFixed',
   'ZoomOff',
   'ZoomOut',
   'ZoomToFit',
+  'Zuora',
 ] as const;

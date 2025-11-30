@@ -1,4 +1,4 @@
-// Auto-generated from get-vm.svg
+// Auto-generated from studio-icons/get-vm.svg
 import React from 'react';
 
 export interface GetVmProps extends React.SVGProps<SVGSVGElement> {}

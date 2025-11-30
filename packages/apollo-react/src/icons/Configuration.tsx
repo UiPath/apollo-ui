@@ -1,4 +1,4 @@
-// Auto-generated from configuration.svg
+// Auto-generated from object/configuration.svg
 import React from 'react';
 
 export interface ConfigurationProps extends React.SVGProps<SVGSVGElement> {}

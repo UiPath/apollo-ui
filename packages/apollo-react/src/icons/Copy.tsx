@@ -1,4 +1,4 @@
-// Auto-generated from copy.svg
+// Auto-generated from action/copy.svg
 import React from 'react';
 
 export interface CopyProps extends React.SVGProps<SVGSVGElement> {}

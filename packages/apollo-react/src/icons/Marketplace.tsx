@@ -1,4 +1,4 @@
-// Auto-generated from marketplace.svg
+// Auto-generated from product-logo/marketplace.svg
 import React from 'react';
 
 export interface MarketplaceProps extends React.SVGProps<SVGSVGElement> {}

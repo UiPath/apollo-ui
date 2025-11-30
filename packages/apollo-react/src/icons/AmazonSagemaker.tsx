@@ -1,4 +1,4 @@
-// Auto-generated from amazon-sagemaker.svg
+// Auto-generated from third-party/amazon-sagemaker.svg
 import React from 'react';
 
 export interface AmazonSagemakerProps extends React.SVGProps<SVGSVGElement> {}

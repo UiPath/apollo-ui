@@ -1,4 +1,4 @@
-// Auto-generated from postpone-transaction-item.svg
+// Auto-generated from studio-icons/postpone-transaction-item.svg
 import React from 'react';
 
 export interface PostponeTransactionItemProps extends React.SVGProps<SVGSVGElement> {}

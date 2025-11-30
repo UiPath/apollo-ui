@@ -1,4 +1,4 @@
-// Auto-generated from gotowebinar.svg
+// Auto-generated from third-party/gotowebinar.svg
 import React from 'react';
 
 export interface GotowebinarProps extends React.SVGProps<SVGSVGElement> {}

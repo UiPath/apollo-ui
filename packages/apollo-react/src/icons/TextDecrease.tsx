@@ -1,4 +1,4 @@
-// Auto-generated from text-decrease.svg
+// Auto-generated from editor/text-decrease.svg
 import React from 'react';
 
 export interface TextDecreaseProps extends React.SVGProps<SVGSVGElement> {}

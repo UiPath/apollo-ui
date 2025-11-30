@@ -1,4 +1,4 @@
-// Auto-generated from cisco-webex-teams.svg
+// Auto-generated from third-party/cisco-webex-teams.svg
 import React from 'react';
 
 export interface CiscoWebexTeamsProps extends React.SVGProps<SVGSVGElement> {}

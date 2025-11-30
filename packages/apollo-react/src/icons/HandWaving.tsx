@@ -1,4 +1,4 @@
-// Auto-generated from hand-waving.svg
+// Auto-generated from social/hand-waving.svg
 import React from 'react';
 
 export interface HandWavingProps extends React.SVGProps<SVGSVGElement> {}

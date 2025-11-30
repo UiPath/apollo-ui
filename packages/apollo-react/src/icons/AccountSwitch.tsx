@@ -1,4 +1,4 @@
-// Auto-generated from account-switch.svg
+// Auto-generated from social/account-switch.svg
 import React from 'react';
 
 export interface AccountSwitchProps extends React.SVGProps<SVGSVGElement> {}

@@ -1,4 +1,4 @@
-// Auto-generated from menu.svg
+// Auto-generated from navigation/menu.svg
 import React from 'react';
 
 export interface MenuProps extends React.SVGProps<SVGSVGElement> {}

@@ -1,4 +1,4 @@
-// Auto-generated from experiment.svg
+// Auto-generated from action/experiment.svg
 import React from 'react';
 
 export interface ExperimentProps extends React.SVGProps<SVGSVGElement> {}

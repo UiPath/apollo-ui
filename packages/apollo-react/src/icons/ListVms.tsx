@@ -1,4 +1,4 @@
-// Auto-generated from list-vms.svg
+// Auto-generated from studio-icons/list-vms.svg
 import React from 'react';
 
 export interface ListVmsProps extends React.SVGProps<SVGSVGElement> {}

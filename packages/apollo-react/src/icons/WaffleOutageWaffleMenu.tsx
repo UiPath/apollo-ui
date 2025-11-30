@@ -1,4 +1,4 @@
-// Auto-generated from waffle-outage-waffle-menu.svg
+// Auto-generated from navigation/waffle-outage-waffle-menu.svg
 import React from 'react';
 
 export interface WaffleOutageWaffleMenuProps extends React.SVGProps<SVGSVGElement> {}

@@ -1,4 +1,4 @@
-// Auto-generated from hyper-v.svg
+// Auto-generated from third-party/hyper-v.svg
 import React from 'react';
 
 export interface HyperVProps extends React.SVGProps<SVGSVGElement> {}

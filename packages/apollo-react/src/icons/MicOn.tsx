@@ -1,4 +1,4 @@
-// Auto-generated from mic-on.svg
+// Auto-generated from action/mic-on.svg
 import React from 'react';
 
 export interface MicOnProps extends React.SVGProps<SVGSVGElement> {}

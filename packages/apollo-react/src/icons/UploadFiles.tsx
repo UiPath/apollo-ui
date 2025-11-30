@@ -1,4 +1,4 @@
-// Auto-generated from upload-files.svg
+// Auto-generated from studio-icons/upload-files.svg
 import React from 'react';
 
 export interface UploadFilesProps extends React.SVGProps<SVGSVGElement> {}

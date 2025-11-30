@@ -1,4 +1,4 @@
-// Auto-generated from highlight.svg
+// Auto-generated from studio-icons/highlight.svg
 import React from 'react';
 
 export interface HighlightProps extends React.SVGProps<SVGSVGElement> {}

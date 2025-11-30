@@ -1,4 +1,4 @@
-// Auto-generated from send.svg
+// Auto-generated from action/send.svg
 import React from 'react';
 
 export interface SendProps extends React.SVGProps<SVGSVGElement> {}

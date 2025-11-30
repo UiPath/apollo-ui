@@ -25,6 +25,7 @@
     "build": "rslib build && pnpm build:css",
     "dev": "rslib build --watch",
     "lint": "eslint src --ext .ts,.tsx",
+    "lint:fix": "eslint src --ext .ts,.tsx --fix",
     "test": "vitest --run --passWithNoTests",
     "clean": "rm -rf dist",
     "build:css": "npx @tailwindcss/cli -i ./src/css/index.css -o ./dist/css/index.css --minify",

@@ -1,4 +1,4 @@
-// Auto-generated from visibility/visibility-off.svg
+// Auto-generated from toggle/visibility/visibility-off.svg
 import React from 'react';
 
 export interface VisibilityOffProps extends React.SVGProps<SVGSVGElement> {}

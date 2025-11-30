@@ -1,4 +1,4 @@
-// Auto-generated from slack.svg
+// Auto-generated from third-party/slack.svg
 import React from 'react';
 
 export interface SlackProps extends React.SVGProps<SVGSVGElement> {}

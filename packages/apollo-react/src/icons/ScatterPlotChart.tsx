@@ -1,4 +1,4 @@
-// Auto-generated from scatter-plot-chart.svg
+// Auto-generated from editor/scatter-plot-chart.svg
 import React from 'react';
 
 export interface ScatterPlotChartProps extends React.SVGProps<SVGSVGElement> {}

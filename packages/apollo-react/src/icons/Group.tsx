@@ -1,4 +1,4 @@
-// Auto-generated from group.svg
+// Auto-generated from editor/group.svg
 import React from 'react';
 
 export interface GroupProps extends React.SVGProps<SVGSVGElement> {}

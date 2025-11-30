@@ -1,4 +1,4 @@
-// Auto-generated from superscript.svg
+// Auto-generated from editor/superscript.svg
 import React from 'react';
 
 export interface SuperscriptProps extends React.SVGProps<SVGSVGElement> {}

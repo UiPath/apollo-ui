@@ -1,4 +1,4 @@
-// Auto-generated from oracle-eloqua.svg
+// Auto-generated from third-party/oracle-eloqua.svg
 import React from 'react';
 
 export interface OracleEloquaProps extends React.SVGProps<SVGSVGElement> {}

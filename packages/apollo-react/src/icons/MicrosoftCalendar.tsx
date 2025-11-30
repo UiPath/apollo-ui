@@ -1,4 +1,4 @@
-// Auto-generated from microsoft-calendar.svg
+// Auto-generated from third-party/microsoft-calendar.svg
 import React from 'react';
 
 export interface MicrosoftCalendarProps extends React.SVGProps<SVGSVGElement> {}

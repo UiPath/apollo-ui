@@ -1,4 +1,4 @@
-// Auto-generated from fast-forward.svg
+// Auto-generated from action/fast-forward.svg
 import React from 'react';
 
 export interface FastForwardProps extends React.SVGProps<SVGSVGElement> {}

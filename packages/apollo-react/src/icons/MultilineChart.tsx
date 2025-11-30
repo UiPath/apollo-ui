@@ -1,4 +1,4 @@
-// Auto-generated from multiline-chart.svg
+// Auto-generated from editor/multiline-chart.svg
 import React from 'react';
 
 export interface MultilineChartProps extends React.SVGProps<SVGSVGElement> {}

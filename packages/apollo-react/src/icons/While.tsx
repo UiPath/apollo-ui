@@ -1,4 +1,4 @@
-// Auto-generated from while.svg
+// Auto-generated from logic/while.svg
 import React from 'react';
 
 export interface WhileProps extends React.SVGProps<SVGSVGElement> {}

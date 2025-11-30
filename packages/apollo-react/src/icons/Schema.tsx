@@ -1,4 +1,4 @@
-// Auto-generated from schema.svg
+// Auto-generated from editor/schema.svg
 import React from 'react';
 
 export interface SchemaProps extends React.SVGProps<SVGSVGElement> {}

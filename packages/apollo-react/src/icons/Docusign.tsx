@@ -1,4 +1,4 @@
-// Auto-generated from docusign.svg
+// Auto-generated from third-party/docusign.svg
 import React from 'react';
 
 export interface DocusignProps extends React.SVGProps<SVGSVGElement> {}

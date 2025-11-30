@@ -1,4 +1,4 @@
-// Auto-generated from power-on-vm.svg
+// Auto-generated from studio-icons/power-on-vm.svg
 import React from 'react';
 
 export interface PowerOnVmProps extends React.SVGProps<SVGSVGElement> {}

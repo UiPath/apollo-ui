@@ -1,4 +1,4 @@
-// Auto-generated from microsoft-sentiment.svg
+// Auto-generated from third-party/microsoft-sentiment.svg
 import React from 'react';
 
 export interface MicrosoftSentimentProps extends React.SVGProps<SVGSVGElement> {}

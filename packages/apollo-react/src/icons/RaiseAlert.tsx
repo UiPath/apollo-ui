@@ -1,4 +1,4 @@
-// Auto-generated from raise-alert.svg
+// Auto-generated from studio-icons/raise-alert.svg
 import React from 'react';
 
 export interface RaiseAlertProps extends React.SVGProps<SVGSVGElement> {}

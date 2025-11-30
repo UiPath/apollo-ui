@@ -1,4 +1,4 @@
-// Auto-generated from email-reply-all.svg
+// Auto-generated from action/email-reply-all.svg
 import React from 'react';
 
 export interface EmailReplyAllProps extends React.SVGProps<SVGSVGElement> {}

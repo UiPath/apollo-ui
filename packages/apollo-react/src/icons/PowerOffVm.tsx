@@ -1,4 +1,4 @@
-// Auto-generated from power-off-vm.svg
+// Auto-generated from studio-icons/power-off-vm.svg
 import React from 'react';
 
 export interface PowerOffVmProps extends React.SVGProps<SVGSVGElement> {}

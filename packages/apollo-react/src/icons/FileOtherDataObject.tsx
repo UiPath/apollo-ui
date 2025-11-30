@@ -1,4 +1,4 @@
-// Auto-generated from file-other-data-object.svg
+// Auto-generated from object/file-other-data-object.svg
 import React from 'react';
 
 export interface FileOtherDataObjectProps extends React.SVGProps<SVGSVGElement> {}

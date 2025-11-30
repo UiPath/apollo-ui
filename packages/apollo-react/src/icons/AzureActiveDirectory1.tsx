@@ -1,4 +1,4 @@
-// Auto-generated from azure-active-directory-1.svg
+// Auto-generated from third-party/azure-active-directory-1.svg
 import React from 'react';
 
 export interface AzureActiveDirectory1Props extends React.SVGProps<SVGSVGElement> {}
@@ -14,8 +14,8 @@ export const AzureActiveDirectory1 = React.forwardRef<SVGSVGElement, AzureActive
 </g>
 <defs>
 <linearGradient id="paint0_linear_2_1664" x1="8.49375" y1="4.48218" x2="17.3855" y2="18.278" gradientUnits="userSpaceOnUse">
-<stop stop-color="#54AEF0"/>
-<stop offset="1" stop-color="#3499E4"/>
+<stop stopColor="#54AEF0"/>
+<stop offset="1" stopColor="#3499E4"/>
 </linearGradient>
 <clipPath id="clip0_2_1664">
 <rect width="22" height="22" fill="white" transform="translate(1 1)"/>

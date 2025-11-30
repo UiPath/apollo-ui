@@ -1,4 +1,4 @@
-// Auto-generated from area-chart.svg
+// Auto-generated from editor/area-chart.svg
 import React from 'react';
 
 export interface AreaChartProps extends React.SVGProps<SVGSVGElement> {}

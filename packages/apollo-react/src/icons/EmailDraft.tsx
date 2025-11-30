@@ -1,4 +1,4 @@
-// Auto-generated from email-draft.svg
+// Auto-generated from action/email-draft.svg
 import React from 'react';
 
 export interface EmailDraftProps extends React.SVGProps<SVGSVGElement> {}

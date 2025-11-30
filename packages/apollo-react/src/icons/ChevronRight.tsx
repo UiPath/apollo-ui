@@ -1,4 +1,4 @@
-// Auto-generated from chevron/right.svg
+// Auto-generated from navigation/chevron/chevron-right.svg
 import React from 'react';
 
 export interface ChevronRightProps extends React.SVGProps<SVGSVGElement> {}

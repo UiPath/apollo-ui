@@ -1,4 +1,4 @@
-// Auto-generated from remove-from-collection.svg
+// Auto-generated from studio-icons/remove-from-collection.svg
 import React from 'react';
 
 export interface RemoveFromCollectionProps extends React.SVGProps<SVGSVGElement> {}
@@ -13,7 +13,7 @@ export const RemoveFromCollection = React.forwardRef<SVGSVGElement, RemoveFromCo
 </g>
 <defs>
 <clipPath id="clip0_4041_1338">
-<rect width="24" height="24" fill="white"/>
+<rect width="24" height="24" fill="var(--color-foreground)"/>
 </clipPath>
 </defs>
     </svg>

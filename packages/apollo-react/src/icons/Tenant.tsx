@@ -1,4 +1,4 @@
-// Auto-generated from tenant.svg
+// Auto-generated from object/tenant.svg
 import React from 'react';
 
 export interface TenantProps extends React.SVGProps<SVGSVGElement> {}

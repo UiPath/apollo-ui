@@ -1,4 +1,4 @@
-// Auto-generated from exchange-server.svg
+// Auto-generated from third-party/exchange-server.svg
 import React from 'react';
 
 export interface ExchangeServerProps extends React.SVGProps<SVGSVGElement> {}

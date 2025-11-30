@@ -1,4 +1,4 @@
-// Auto-generated from google-drive.svg
+// Auto-generated from third-party/google-drive.svg
 import React from 'react';
 
 export interface GoogleDriveProps extends React.SVGProps<SVGSVGElement> {}

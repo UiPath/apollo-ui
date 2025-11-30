@@ -1,4 +1,4 @@
-// Auto-generated from stacked-line-chart.svg
+// Auto-generated from editor/stacked-line-chart.svg
 import React from 'react';
 
 export interface StackedLineChartProps extends React.SVGProps<SVGSVGElement> {}

@@ -1,4 +1,4 @@
-// Auto-generated from bottom-panel-collapse.svg
+// Auto-generated from studio-icons/bottom-panel-collapse.svg
 import React from 'react';
 
 export interface BottomPanelCollapseProps extends React.SVGProps<SVGSVGElement> {}

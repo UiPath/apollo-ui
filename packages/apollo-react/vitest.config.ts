@@ -7,6 +7,7 @@ export default defineConfig({
     globals: true,
     environment: 'happy-dom',
     setupFiles: ['./src/test/setup.ts'],
+    passWithNoTests: true,
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
@@ -16,6 +17,7 @@ export default defineConfig({
         'src/**/*.spec.{ts,tsx}',
         'src/**/index.ts',
         'src/test/**',
+        'src/icons/**',
       ],
     },
   },

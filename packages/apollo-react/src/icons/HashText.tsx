@@ -1,4 +1,4 @@
-// Auto-generated from hash-text.svg
+// Auto-generated from studio-icons/hash-text.svg
 import React from 'react';
 
 export interface HashTextProps extends React.SVGProps<SVGSVGElement> {}

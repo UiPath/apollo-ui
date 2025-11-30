@@ -1,4 +1,4 @@
-// Auto-generated from cropp.svg
+// Auto-generated from editor/cropp.svg
 import React from 'react';
 
 export interface CroppProps extends React.SVGProps<SVGSVGElement> {}

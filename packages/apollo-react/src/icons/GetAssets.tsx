@@ -1,4 +1,4 @@
-// Auto-generated from get-assets.svg
+// Auto-generated from studio-icons/get-assets.svg
 import React from 'react';
 
 export interface GetAssetsProps extends React.SVGProps<SVGSVGElement> {}

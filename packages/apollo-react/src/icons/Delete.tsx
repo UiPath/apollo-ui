@@ -1,4 +1,4 @@
-// Auto-generated from delete.svg
+// Auto-generated from action/delete.svg
 import React from 'react';
 
 export interface DeleteProps extends React.SVGProps<SVGSVGElement> {}

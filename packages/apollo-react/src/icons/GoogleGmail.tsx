@@ -1,4 +1,4 @@
-// Auto-generated from google-gmail.svg
+// Auto-generated from third-party/google-gmail.svg
 import React from 'react';
 
 export interface GoogleGmailProps extends React.SVGProps<SVGSVGElement> {}

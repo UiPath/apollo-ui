@@ -1,4 +1,4 @@
-// Auto-generated from marketo.svg
+// Auto-generated from third-party/marketo.svg
 import React from 'react';
 
 export interface MarketoProps extends React.SVGProps<SVGSVGElement> {}

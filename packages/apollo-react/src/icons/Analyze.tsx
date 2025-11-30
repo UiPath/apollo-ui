@@ -1,4 +1,4 @@
-// Auto-generated from analyze.svg
+// Auto-generated from action/analyze.svg
 import React from 'react';
 
 export interface AnalyzeProps extends React.SVGProps<SVGSVGElement> {}

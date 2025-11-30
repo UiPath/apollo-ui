@@ -1,4 +1,4 @@
-// Auto-generated from numbers.svg
+// Auto-generated from editor/numbers.svg
 import React from 'react';
 
 export interface NumbersProps extends React.SVGProps<SVGSVGElement> {}

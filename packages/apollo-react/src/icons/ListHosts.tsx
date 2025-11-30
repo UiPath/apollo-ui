@@ -1,4 +1,4 @@
-// Auto-generated from list-hosts.svg
+// Auto-generated from studio-icons/list-hosts.svg
 import React from 'react';
 
 export interface ListHostsProps extends React.SVGProps<SVGSVGElement> {}

@@ -1,4 +1,4 @@
-// Auto-generated from sequence.svg
+// Auto-generated from object/sequence.svg
 import React from 'react';
 
 export interface SequenceProps extends React.SVGProps<SVGSVGElement> {}

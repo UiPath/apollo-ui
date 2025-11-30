@@ -1,4 +1,4 @@
-// Auto-generated from pinecone.svg
+// Auto-generated from third-party/pinecone.svg
 import React from 'react';
 
 export interface PineconeProps extends React.SVGProps<SVGSVGElement> {}

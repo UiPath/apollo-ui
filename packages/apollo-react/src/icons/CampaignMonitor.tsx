@@ -1,4 +1,4 @@
-// Auto-generated from campaign-monitor.svg
+// Auto-generated from third-party/campaign-monitor.svg
 import React from 'react';
 
 export interface CampaignMonitorProps extends React.SVGProps<SVGSVGElement> {}

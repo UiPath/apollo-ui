@@ -1,4 +1,4 @@
-// Auto-generated from looks/5.svg
+// Auto-generated from indicator-and-alert/looks/looks-5.svg
 import React from 'react';
 
 export interface Looks5Props extends React.SVGProps<SVGSVGElement> {}

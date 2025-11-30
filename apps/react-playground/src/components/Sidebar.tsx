@@ -4,19 +4,13 @@ import {
 	NavLabel,
 	NavLink,
 	NavSection,
-	Overlay,
 	SidebarContainer,
 	SidebarNav,
 	SubNav,
 	SubNavLink,
 } from "./Sidebar.styles";
 
-interface SidebarProps {
-	isOpen: boolean;
-	onClose: () => void;
-}
-
-export function Sidebar({ isOpen, onClose }: SidebarProps) {
+export function Sidebar() {
 	const location = useLocation();
 
 	const navigation = [
@@ -55,40 +49,31 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
 	};
 
 	return (
-		<>
-			{isOpen && <Overlay onClick={onClose} />}
+		<SidebarContainer>
+			<SidebarNav>
+				{navigation.map((item) => (
+					<NavSection key={item.path}>
+						<NavLink to={item.path} $isActive={isActivePath(item.path)}>
+							<NavIcon>{item.icon}</NavIcon>
+							<NavLabel>{item.label}</NavLabel>
+						</NavLink>
 
-			<SidebarContainer $isOpen={isOpen}>
-				<SidebarNav>
-					{navigation.map((item) => (
-						<NavSection key={item.path}>
-							<NavLink
-								to={item.path}
-								onClick={onClose}
-								$isActive={isActivePath(item.path)}
-							>
-								<NavIcon>{item.icon}</NavIcon>
-								<NavLabel>{item.label}</NavLabel>
-							</NavLink>
-
-							{item.children && (
-								<SubNav>
-									{item.children.map((child) => (
-										<SubNavLink
-											key={child.path}
-											to={child.path}
-											onClick={onClose}
-											$isActive={location.pathname === child.path}
-										>
-											{child.label}
-										</SubNavLink>
-									))}
-								</SubNav>
-							)}
-						</NavSection>
-					))}
-				</SidebarNav>
-			</SidebarContainer>
-		</>
+						{item.children && (
+							<SubNav>
+								{item.children.map((child) => (
+									<SubNavLink
+										key={child.path}
+										to={child.path}
+										$isActive={location.pathname === child.path}
+									>
+										{child.label}
+									</SubNavLink>
+								))}
+							</SubNav>
+						)}
+					</NavSection>
+				))}
+			</SidebarNav>
+		</SidebarContainer>
 	);
 }

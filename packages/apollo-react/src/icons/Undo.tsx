@@ -1,4 +1,4 @@
-// Auto-generated from undo.svg
+// Auto-generated from action/undo.svg
 import React from 'react';
 
 export interface UndoProps extends React.SVGProps<SVGSVGElement> {}

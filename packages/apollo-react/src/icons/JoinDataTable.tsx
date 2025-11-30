@@ -1,4 +1,4 @@
-// Auto-generated from join-data-table.svg
+// Auto-generated from studio-icons/join-data-table.svg
 import React from 'react';
 
 export interface JoinDataTableProps extends React.SVGProps<SVGSVGElement> {}

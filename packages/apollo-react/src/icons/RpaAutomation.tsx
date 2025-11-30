@@ -1,4 +1,4 @@
-// Auto-generated from rpa-automation.svg
+// Auto-generated from object/rpa-automation.svg
 import React from 'react';
 
 export interface RpaAutomationProps extends React.SVGProps<SVGSVGElement> {}

@@ -1,5 +1,9 @@
+import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer';
+
 import { pluginReact } from '@rsbuild/plugin-react';
 import { defineConfig } from '@rslib/core';
+
+const enableAnalyzer = process.env['ANALYZE'] === 'true';
 
 export default defineConfig({
   lib: [
@@ -47,8 +51,19 @@ export default defineConfig({
       { from: '../apollo-core/dist/tokens/scss', to: './core/tokens/scss' },
       { from: '../apollo-core/dist/tokens/less', to: './core/tokens/less' },
       { from: '../apollo-core/dist/tokens/jss', to: './core/tokens/jss' },
-      // Copy SVG icons to enable dynamic imports within apollo-react
-      { from: '../apollo-core/dist/icons/svg', to: './icons/svg' },
     ],
+  },
+  tools: {
+    rspack: enableAnalyzer
+      ? {
+          plugins: [
+            new BundleAnalyzerPlugin({
+              analyzerMode: 'static',
+              openAnalyzer: true,
+              reportFilename: '../bundle-report.html',
+            }),
+          ],
+        }
+      : {},
   },
 });

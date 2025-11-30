@@ -1,4 +1,4 @@
-// Auto-generated from arrow-drop-left.svg
+// Auto-generated from navigation/arrow-drop-left.svg
 import React from 'react';
 
 export interface ArrowDropLeftProps extends React.SVGProps<SVGSVGElement> {}

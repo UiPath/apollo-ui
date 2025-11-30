@@ -1,4 +1,4 @@
-// Auto-generated from freshservice.svg
+// Auto-generated from third-party/freshservice.svg
 import React from 'react';
 
 export interface FreshserviceProps extends React.SVGProps<SVGSVGElement> {}

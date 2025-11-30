@@ -1,4 +1,4 @@
-// Auto-generated from hash-file-with-key.svg
+// Auto-generated from studio-icons/hash-file-with-key.svg
 import React from 'react';
 
 export interface HashFileWithKeyProps extends React.SVGProps<SVGSVGElement> {}

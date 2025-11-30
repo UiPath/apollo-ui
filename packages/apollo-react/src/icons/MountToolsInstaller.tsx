@@ -1,4 +1,4 @@
-// Auto-generated from mount-tools-installer.svg
+// Auto-generated from studio-icons/mount-tools-installer.svg
 import React from 'react';
 
 export interface MountToolsInstallerProps extends React.SVGProps<SVGSVGElement> {}

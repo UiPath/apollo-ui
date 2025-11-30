@@ -1,4 +1,4 @@
-// Auto-generated from wait-queue-item.svg
+// Auto-generated from studio-icons/wait-queue-item.svg
 import React from 'react';
 
 export interface WaitQueueItemProps extends React.SVGProps<SVGSVGElement> {}

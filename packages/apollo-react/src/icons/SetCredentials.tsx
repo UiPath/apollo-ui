@@ -1,4 +1,4 @@
-// Auto-generated from set-credentials.svg
+// Auto-generated from studio-icons/set-credentials.svg
 import React from 'react';
 
 export interface SetCredentialsProps extends React.SVGProps<SVGSVGElement> {}

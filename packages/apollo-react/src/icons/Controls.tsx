@@ -1,4 +1,4 @@
-// Auto-generated from controls.svg
+// Auto-generated from object/controls.svg
 import React from 'react';
 
 export interface ControlsProps extends React.SVGProps<SVGSVGElement> {}

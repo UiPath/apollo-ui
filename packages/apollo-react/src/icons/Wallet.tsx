@@ -1,4 +1,4 @@
-// Auto-generated from wallet.svg
+// Auto-generated from social/wallet.svg
 import React from 'react';
 
 export interface WalletProps extends React.SVGProps<SVGSVGElement> {}

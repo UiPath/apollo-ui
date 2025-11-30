@@ -1,4 +1,4 @@
-// Auto-generated from zoom-off.svg
+// Auto-generated from navigation/zoom-off.svg
 import React from 'react';
 
 export interface ZoomOffProps extends React.SVGProps<SVGSVGElement> {}

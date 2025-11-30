@@ -1,4 +1,4 @@
-// Auto-generated from auto-delete.svg
+// Auto-generated from indicator-and-alert/auto-delete.svg
 import React from 'react';
 
 export interface AutoDeleteProps extends React.SVGProps<SVGSVGElement> {}

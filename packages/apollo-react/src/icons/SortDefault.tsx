@@ -1,4 +1,4 @@
-// Auto-generated from sort/default.svg
+// Auto-generated from action/sort/sort-default.svg
 import React from 'react';
 
 export interface SortDefaultProps extends React.SVGProps<SVGSVGElement> {}

@@ -1,4 +1,4 @@
-// Auto-generated from expression-variable-variable.svg
+// Auto-generated from object/expression-variable-variable.svg
 import React from 'react';
 
 export interface ExpressionVariableVariableProps extends React.SVGProps<SVGSVGElement> {}

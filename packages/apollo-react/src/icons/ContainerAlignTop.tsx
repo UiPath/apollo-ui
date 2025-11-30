@@ -1,4 +1,4 @@
-// Auto-generated from container-align/top.svg
+// Auto-generated from editor/container-align/container-align-top.svg
 import React from 'react';
 
 export interface ContainerAlignTopProps extends React.SVGProps<SVGSVGElement> {}

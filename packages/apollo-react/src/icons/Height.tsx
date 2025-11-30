@@ -1,4 +1,4 @@
-// Auto-generated from height.svg
+// Auto-generated from editor/height.svg
 import React from 'react';
 
 export interface HeightProps extends React.SVGProps<SVGSVGElement> {}

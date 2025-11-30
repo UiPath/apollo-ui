@@ -1,4 +1,4 @@
-// Auto-generated from navigate-browser.svg
+// Auto-generated from studio-icons/navigate-browser.svg
 import React from 'react';
 
 export interface NavigateBrowserProps extends React.SVGProps<SVGSVGElement> {}

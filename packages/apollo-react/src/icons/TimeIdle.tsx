@@ -1,4 +1,4 @@
-// Auto-generated from time-idle.svg
+// Auto-generated from indicator-and-alert/time-idle.svg
 import React from 'react';
 
 export interface TimeIdleProps extends React.SVGProps<SVGSVGElement> {}

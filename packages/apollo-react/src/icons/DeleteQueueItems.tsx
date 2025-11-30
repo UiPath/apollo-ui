@@ -1,4 +1,4 @@
-// Auto-generated from delete-queue-items.svg
+// Auto-generated from studio-icons/delete-queue-items.svg
 import React from 'react';
 
 export interface DeleteQueueItemsProps extends React.SVGProps<SVGSVGElement> {}

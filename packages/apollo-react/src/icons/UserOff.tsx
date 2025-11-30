@@ -1,4 +1,4 @@
-// Auto-generated from user-off.svg
+// Auto-generated from social/user-off.svg
 import React from 'react';
 
 export interface UserOffProps extends React.SVGProps<SVGSVGElement> {}

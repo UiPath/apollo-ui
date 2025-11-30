@@ -1,4 +1,4 @@
-// Auto-generated from append-line.svg
+// Auto-generated from studio-icons/append-line.svg
 import React from 'react';
 
 export interface AppendLineProps extends React.SVGProps<SVGSVGElement> {}

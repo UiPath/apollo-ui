@@ -1,4 +1,4 @@
-// Auto-generated from user-group-from-directory.svg
+// Auto-generated from social/user-group-from-directory.svg
 import React from 'react';
 
 export interface UserGroupFromDirectoryProps extends React.SVGProps<SVGSVGElement> {}
@@ -11,7 +11,7 @@ export const UserGroupFromDirectory = React.forwardRef<SVGSVGElement, UserGroupF
 </g>
 <defs>
 <clipPath id="clip0_2839_909">
-<rect width="23.9819" height="23.9819" fill="white"/>
+<rect width="23.9819" height="23.9819" fill="var(--color-foreground)"/>
 </clipPath>
 </defs>
     </svg>

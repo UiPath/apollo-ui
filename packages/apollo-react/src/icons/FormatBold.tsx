@@ -1,4 +1,4 @@
-// Auto-generated from format-bold.svg
+// Auto-generated from editor/format-bold.svg
 import React from 'react';
 
 export interface FormatBoldProps extends React.SVGProps<SVGSVGElement> {}

@@ -1,4 +1,4 @@
-// Auto-generated from add-log-fields.svg
+// Auto-generated from studio-icons/add-log-fields.svg
 import React from 'react';
 
 export interface AddLogFieldsProps extends React.SVGProps<SVGSVGElement> {}

@@ -1,4 +1,4 @@
-// Auto-generated from update.svg
+// Auto-generated from action/update.svg
 import React from 'react';
 
 export interface UpdateProps extends React.SVGProps<SVGSVGElement> {}

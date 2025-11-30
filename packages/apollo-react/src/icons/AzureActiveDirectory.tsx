@@ -1,4 +1,4 @@
-// Auto-generated from azure-active-directory.svg
+// Auto-generated from third-party/azure-active-directory.svg
 import React from 'react';
 
 export interface AzureActiveDirectoryProps extends React.SVGProps<SVGSVGElement> {}

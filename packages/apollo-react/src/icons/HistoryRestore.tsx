@@ -1,4 +1,4 @@
-// Auto-generated from history-restore.svg
+// Auto-generated from action/history-restore.svg
 import React from 'react';
 
 export interface HistoryRestoreProps extends React.SVGProps<SVGSVGElement> {}

@@ -1,4 +1,4 @@
-// Auto-generated from compare.svg
+// Auto-generated from action/compare.svg
 import React from 'react';
 
 export interface CompareProps extends React.SVGProps<SVGSVGElement> {}

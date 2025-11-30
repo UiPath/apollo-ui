@@ -1,4 +1,4 @@
-// Auto-generated from clear-collection.svg
+// Auto-generated from studio-icons/clear-collection.svg
 import React from 'react';
 
 export interface ClearCollectionProps extends React.SVGProps<SVGSVGElement> {}

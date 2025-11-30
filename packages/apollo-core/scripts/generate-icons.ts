@@ -41,6 +41,7 @@ interface IconExport {
 
 function toPascalCase(str: string): string {
   return str
+    .replace(/\+/g, 'Plus') // Replace + with Plus before processing
     .split('-')
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
     .join('');
@@ -114,23 +115,26 @@ function generateIconExports(svgFiles: SvgFile[]): void {
 // Auto-generated exports for all SVG icons
 //
 // Usage:
-//   import { Academy, AlertError, ArrowLeft } from '@uipath/apollo-core/icons';
+//   import AcademySvg from '@uipath/apollo-core/icons/svg/academy.svg';
 //
 // All exports are tree-shakeable - only imported icons will be bundled.
 
 `;
 
-  // Don't generate exports - just a comment file
-  content += `// Apollo Core Icons
-//
-// NOTE: This file does not export actual icon components.
-// Icon components are generated in the framework-specific packages:
-// - For React: import from '@uipath/apollo-react/icons'
-//
-// Raw SVG files are available at:
-// - import svg from '@uipath/apollo-core/icons/svg/academy.svg'
+  // Generate exports grouped by directory for better organization
+  const sortedDirs = Array.from(exportsByDir.keys()).sort();
 
-export type { IconName } from './types';
+  for (const dir of sortedDirs) {
+    const exports = exportsByDir.get(dir)!;
+    const dirComment = dir ? `// ${dir}` : '// Root icons';
+    content += `\n${dirComment}\n`;
+
+    for (const exp of exports) {
+      content += `export { default as ${exp.exportName} } from '${exp.importPath}';\n`;
+    }
+  }
+
+  content += `\n// Types\nexport type { IconName } from './types';
 export { iconNames } from './types';
 `;
 

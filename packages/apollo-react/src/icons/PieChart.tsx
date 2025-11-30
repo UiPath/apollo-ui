@@ -1,4 +1,4 @@
-// Auto-generated from pie-chart.svg
+// Auto-generated from editor/pie-chart.svg
 import React from 'react';
 
 export interface PieChartProps extends React.SVGProps<SVGSVGElement> {}

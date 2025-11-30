@@ -1,4 +1,4 @@
-// Auto-generated from google-forms.svg
+// Auto-generated from third-party/google-forms.svg
 import React from 'react';
 
 export interface GoogleFormsProps extends React.SVGProps<SVGSVGElement> {}
