@@ -14,6 +14,7 @@ const ICONS_DIR = path.resolve(__dirname, '../src/icons');
 const DIST_ICONS_DIR = path.resolve(__dirname, '../dist/icons');
 
 async function compileIcons() {
+  const startTime = performance.now();
   console.log('🔨 Compiling icons with esbuild...');
 
   if (!fs.existsSync(DIST_ICONS_DIR)) {
@@ -50,7 +51,13 @@ async function compileIcons() {
     sourcemap: true,
   });
 
-  console.log(`✅ Compiled ${iconFiles.length} icons in <1s`);
+  const endTime = performance.now();
+  const duration = endTime - startTime;
+  const timeStr = duration < 1000
+    ? `${Math.round(duration)}ms`
+    : `${(duration / 1000).toFixed(2)}s`;
+
+  console.log(`✅ Compiled ${iconFiles.length} icons in ${timeStr}`);
 }
 
 compileIcons().catch((error) => {
