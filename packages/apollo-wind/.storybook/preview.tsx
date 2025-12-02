@@ -1,12 +1,12 @@
 import type { Preview } from "@storybook/react-vite";
 import { useEffect } from "react";
-import "../src/styles/globals.css";
+import "../src/styles/tailwind.css";
 import "../src/styles/theme.css";
 
 const preview: Preview = {
   initialGlobals: {
     theme: "light",
-    themeVariant: "uipath",
+    themeVariant: "default",
   },
   parameters: {
     options: {
@@ -55,8 +55,7 @@ const preview: Preview = {
         title: "Variant",
         icon: "paintbrush",
         items: [
-          { value: "default", title: "Default" },
-          { value: "uipath", title: "UiPath" },
+          { value: "default", title: "Default (UiPath)" },
           { value: "vercel", title: "Vercel" },
         ],
         dynamicTitle: true,
@@ -66,7 +65,7 @@ const preview: Preview = {
   decorators: [
     (Story, context) => {
       const theme = context.globals.theme || "light";
-      const themeVariant = context.globals.themeVariant || "uipath";
+      const themeVariant = context.globals.themeVariant || "default";
 
       useEffect(() => {
         const htmlElement = document.documentElement;
