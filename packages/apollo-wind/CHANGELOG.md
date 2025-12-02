@@ -1,3 +1,10 @@
+# [1.7.0](https://github.com/uipath/wind/compare/v1.6.2...v1.7.0) (2025-12-02)
+
+
+### Features
+
+* add ButtonGroup component with various configurations and stories ([c477610](https://github.com/uipath/wind/commit/c477610c92b66db5ecbf864dd680f445604d4ecb))
+
 ## [1.6.2](https://github.com/uipath/wind/compare/v1.6.1...v1.6.2) (2025-12-02)
 
 
