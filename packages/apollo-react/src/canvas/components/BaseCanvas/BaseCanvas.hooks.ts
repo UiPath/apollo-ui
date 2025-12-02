@@ -87,7 +87,9 @@ export const useAutoLayout = (
         } else {
           timeoutRef.current = setTimeout(() => {
             const options = fitViewOptions || BASE_CANVAS_DEFAULTS.fitViewOptions;
-            reactFlow.fitView(options);
+            // Use duration 0 on first render (instant), otherwise use provided duration (animated)
+            const duration = isReady ? options.duration : 0;
+            reactFlow.fitView({ ...options, duration });
             setIsReady(true);
             timeoutRef.current = null;
           }, FIT_VIEW_DELAY_MS);
