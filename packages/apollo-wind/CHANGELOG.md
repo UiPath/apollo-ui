@@ -1,3 +1,10 @@
+## [1.6.2](https://github.com/uipath/wind/compare/v1.6.1...v1.6.2) (2025-12-02)
+
+
+### Bug Fixes
+
+* add cursor pointer to interactive UI components for better accessibility ([16adf4f](https://github.com/uipath/wind/commit/16adf4f317d928138093d799d3820a82629d2e45))
+
 ## [1.6.1](https://github.com/uipath/wind/compare/v1.6.0...v1.6.1) (2025-11-27)
 
 
