@@ -358,7 +358,7 @@ function ColorsGallery() {
             Color System
           </h1>
           <p className="mt-2 text-lg text-muted-foreground max-w-2xl">
-            Semantic color tokens using OKLCH color space for perceptual uniformity
+            Semantic color tokens that adapt to light and dark mode
           </p>
         </div>
       </div>
