@@ -37,8 +37,7 @@ export default defineConfig({
   source: {
     entry: {
       index: './src/index.ts',
-      components: './src/components/index.ts',
-      theme: './src/theme/index.ts',
+      material: './src/material/index.ts',
       core: './src/core/index.ts',
     },
   },

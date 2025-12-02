@@ -11,15 +11,20 @@
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     },
-    "./components": {
-      "types": "./dist/components/index.d.ts",
-      "import": "./dist/components.js",
-      "require": "./dist/components.cjs"
+    "./material": {
+      "types": "./dist/material/index.d.ts",
+      "import": "./dist/material.js",
+      "require": "./dist/material.cjs"
     },
-    "./theme": {
-      "types": "./dist/theme/index.d.ts",
-      "import": "./dist/theme.js",
-      "require": "./dist/theme.cjs"
+    "./material/components": {
+      "types": "./dist/material/components/index.d.ts",
+      "import": "./dist/material/components.js",
+      "require": "./dist/material/components.cjs"
+    },
+    "./material/theme": {
+      "types": "./dist/material/theme/index.d.ts",
+      "import": "./dist/material/theme.js",
+      "require": "./dist/material/theme.cjs"
     },
     "./core": {
       "types": "./dist/core/index.d.ts",
