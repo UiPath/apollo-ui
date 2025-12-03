@@ -31,6 +31,7 @@ const OverflowContainer = styled('div')<OverflowContainerProps>(({
         flex: '1 1 100%',
         minHeight: 0,
         overflowY: 'auto' as const,
+        overflowX: 'hidden' as const,
         position: 'relative' as const,
         outline: 'none',
         // move the scrollbar to the right
