@@ -37,8 +37,10 @@ export default defineConfig({
   source: {
     entry: {
       index: './src/index.ts',
-      material: './src/material/index.ts',
       core: './src/core/index.ts',
+      material: './src/material/index.ts',
+      'material/theme': './src/material/theme/index.ts',
+      'material/components': './src/material/components/index.ts',
     },
   },
   plugins: [pluginReact()],
