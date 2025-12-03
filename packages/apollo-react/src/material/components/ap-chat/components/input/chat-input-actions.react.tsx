@@ -169,6 +169,7 @@ function AutopilotChatInputActionsComponent({
                                     </ap-typography>
                                 </>
                             }
+                            ariaLabel={t('autopilot-chat-attach-file-button')}
                         />
                     </>
                 )}
@@ -197,6 +198,7 @@ function AutopilotChatInputActionsComponent({
                         disabled={disableSubmit}
                         onClick={handleSubmit}
                         data-testid="autopilot-chat-submit-button"
+                        ariaLabel={waitingResponse ? t('autopilot-chat-stop') : t('autopilot-chat-send')}
                     />
                 </SubmitButtonContainer>
             </InputActionsGroup>

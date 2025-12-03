@@ -24,6 +24,11 @@ export const Text = ({
         return null;
     }
 
+    const roleInfo = (headingLevel ? {
+        'role': 'heading',
+        'aria-level': headingLevel,
+    } : {});
+
     return (
         <TypographyContext.Provider value={variant ?? spacing.primaryFontToken}>
             <ap-typography
@@ -33,12 +38,12 @@ export const Text = ({
                     maxWidth: 'fit-content',
                     ...customStyle,
                 }}
-                {...(headingLevel ? {
-                    'role': 'heading',
-                    'aria-level': headingLevel,
-                } : {})}
+                {...roleInfo}
             >
-                <div style={{ display: headingLevel ? 'flex' : 'inline' }}>
+                <div
+                    style={{ display: headingLevel ? 'flex' : 'inline' }}
+                    {...roleInfo}
+                >
                     {children}
                 </div>
             </ap-typography>

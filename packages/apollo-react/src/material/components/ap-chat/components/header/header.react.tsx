@@ -52,7 +52,12 @@ function AutopilotChatHeaderComponent() {
                     <span dangerouslySetInnerHTML={{ __html: AutopilotLogo }} />
                 ) : null}
 
-                <ap-typography variant={FontVariantToken.fontBrandL} color={theme.palette.semantic.colorForeground}>
+                <ap-typography
+                    variant={FontVariantToken.fontBrandL}
+                    color={theme.palette.semantic.colorForeground}
+                    role='heading'
+                    aria-level={1}
+                >
                     {overrideLabels.title ?? t('autopilot-chat-header')}
                 </ap-typography>
 

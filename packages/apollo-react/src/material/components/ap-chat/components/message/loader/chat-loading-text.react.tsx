@@ -92,6 +92,7 @@ export const LoadingMessage = () => {
             <ap-typography
                 variant={spacing.primaryFontToken}
                 color={theme.palette.semantic.colorForeground}
+                aria-live='polite'
             >
                 {t(messages[messageIdx])}
             </ap-typography>

@@ -129,6 +129,7 @@ function AutopilotChatHeaderActionsComponent() {
                     iconName="new_chat"
                     variant="custom"
                     tooltip={t('autopilot-chat-new-chat')}
+                    ariaLabel={t('autopilot-chat-new-chat')}
                     onClick={handleNewChat}
                     data-testid="autopilot-chat-new-chat"
                 />
@@ -138,6 +139,7 @@ function AutopilotChatHeaderActionsComponent() {
                 <AutopilotChatActionButton
                     iconName="settings"
                     tooltip={t('autopilot-chat-settings')}
+                    ariaLabel={t('autopilot-chat-settings')}
                     onClick={toggleSettings}
                     data-testid="autopilot-chat-settings"
                 />
@@ -149,6 +151,7 @@ function AutopilotChatHeaderActionsComponent() {
                     iconName="history"
                     variant="custom"
                     tooltip={t('autopilot-chat-history')}
+                    ariaLabel={t('autopilot-chat-history')}
                     onClick={toggleHistory}
                     data-testid="autopilot-chat-history"
                 />
@@ -158,6 +161,7 @@ function AutopilotChatHeaderActionsComponent() {
                 <AutopilotChatActionButton
                     iconName={chatMode !== AutopilotChatMode.FullScreen ? 'open_in_full' : 'close_fullscreen'}
                     tooltip={chatMode !== AutopilotChatMode.FullScreen ? t('autopilot-chat-expand') : t('autopilot-chat-collapse')}
+                    ariaLabel={chatMode !== AutopilotChatMode.FullScreen ? t('autopilot-chat-expand') : t('autopilot-chat-collapse')}
                     onClick={handleToggleChat}
                     data-testid="autopilot-chat-toggle-fullscreen"
                 />
@@ -188,6 +192,7 @@ function AutopilotChatHeaderActionsComponent() {
                     iconName="remove"
                     onClick={handleClose}
                     tooltip={t('autopilot-chat-close')}
+                    ariaLabel={t('autopilot-chat-close')}
                     data-testid="autopilot-chat-close"
                 />
             )}

@@ -33,7 +33,10 @@ const GroupItem = styled('div')<{ isActive: boolean; showRemoveIcon: boolean }>(
     outlineOffset: '-1px',
 
     '&:hover, &:active': { backgroundColor: theme.palette.semantic.colorBackgroundHover },
-    ...(isActive && { backgroundColor: theme.palette.semantic.colorBackgroundSelected }),
+    ...(isActive && {
+        backgroundColor: theme.palette.semantic.colorBackgroundSelected,
+        borderLeft: `4px solid ${theme.palette.semantic.colorSelectionIndicator}`,
+    }),
 
     '& .delete-button-wrapper': {
         opacity: showRemoveIcon ? 1 : 0,
@@ -212,6 +215,7 @@ const AutopilotChatHistoryItemComponent: React.FC<AutopilotChatHistoryItemProps>
                     iconSize="16px"
                     tooltip={(isRemoveIconVisible || isFocused) && isHistoryOpen ? t('autopilot-chat-delete-history') : ''}
                     data-testid="autopilot-chat-history-delete"
+                    ariaLabel={t('autopilot-chat-delete-history')}
                 />
             </div>
         </GroupItem>

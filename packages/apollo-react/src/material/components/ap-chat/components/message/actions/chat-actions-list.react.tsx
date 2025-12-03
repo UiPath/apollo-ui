@@ -145,8 +145,10 @@ function AutopilotChatActionsListComponent({
                     iconName={action.icon ?? ''}
                     iconSize="16px"
                     tooltip={action.label}
+                    ariaLabel={action.label}
                     variant={action.disabled ? 'normal' : 'outlined'}
-                    disableInteractiveTooltip={true}
+                    disableInteractiveTooltip={false}
+                    disabled={action.disabled ?? false}
                     data-testid={`autopilot-chat-message-action-${action.name}`}
                 />
             ))}
@@ -158,11 +160,12 @@ function AutopilotChatActionsListComponent({
                         iconName="more_vert"
                         iconSize="16px"
                         tooltip={t('autopilot-chat-more-actions')}
+                        ariaLabel={t('autopilot-chat-more-actions')}
                         onClick={handleOpenOverflowMenu}
                         onFocus={handleMouseEnter}
                         onMouseEnter={handleMouseEnter}
                         onMouseLeave={handleMouseLeave}
-                        disableInteractiveTooltip={true}
+                        disableInteractiveTooltip={false}
                         data-testid="autopilot-chat-message-actions-overflow"
                     />
                     <Menu
@@ -177,6 +180,7 @@ function AutopilotChatActionsListComponent({
                                     handleAction(action);
                                     handleCloseOverflowMenu();
                                 }}
+                                aria-label={action.label}
                             >
                                 {action.label}
                             </MenuItem>

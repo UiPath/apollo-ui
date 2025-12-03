@@ -38,9 +38,10 @@ const SuggestionList = styled('div')(({
     },
 }));
 
-const Suggestion = styled('div')(({
+const Suggestion = styled('button')(({
     theme, padding,
 }: { theme: Theme; padding: string }) => ({
+    backgroundColor: 'transparent',
     outlineColor: theme.palette.semantic.colorFocusIndicator,
     display: 'flex',
     alignItems: 'center',
@@ -78,7 +79,7 @@ function AutopilotChatSuggestionsComponent({
 
     const handleSuggestionClick = React.useCallback(
         (
-            _event: React.MouseEvent<HTMLDivElement> | React.KeyboardEvent<HTMLDivElement>,
+            _event: React.MouseEvent<HTMLButtonElement> | React.KeyboardEvent<HTMLButtonElement>,
             suggestion: AutopilotChatSuggestion,
         ) => {
             if (sendOnClick) {
@@ -91,13 +92,14 @@ function AutopilotChatSuggestionsComponent({
         [ chatService, sendOnClick ],
     );
 
-    const handleSuggestionKeyDown = React.useCallback((event: React.KeyboardEvent<HTMLDivElement>, suggestion: AutopilotChatSuggestion) => {
-        if (event.key === 'Enter' || event.key === ' ') {
-            event.preventDefault();
+    const handleSuggestionKeyDown = React.useCallback(
+        (event: React.KeyboardEvent<HTMLButtonElement>, suggestion: AutopilotChatSuggestion) => {
+            if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
 
-            handleSuggestionClick(event, suggestion);
-        }
-    }, [ handleSuggestionClick ]);
+                handleSuggestionClick(event, suggestion);
+            }
+        }, [ handleSuggestionClick ]);
 
     return (
         <SuggestionList disableAnimation={disableAnimation} gap={spacing.suggestionSpacing}>

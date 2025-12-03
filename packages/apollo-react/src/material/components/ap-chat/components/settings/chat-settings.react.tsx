@@ -78,6 +78,10 @@ export const AutopilotChatSettings: React.FC<AutopilotChatSettingsProps> = ({
 
         containerRef.current.innerHTML = '';
 
+        if (!settingsOpen) {
+            return;
+        }
+
         try {
             settingsRenderer(containerRef.current);
         } catch (error) {
@@ -86,7 +90,7 @@ export const AutopilotChatSettings: React.FC<AutopilotChatSettingsProps> = ({
                 console.warn('Could not render settings:', error);
             }
         }
-    }, [ chatService ]);
+    }, [ chatService, settingsOpen ]);
 
     return (
         <FocusLock

@@ -12,6 +12,7 @@ import token, { FontVariantToken } from '@uipath/apollo-core/lib';
 import { AutopilotChatInternalEvent } from '@uipath/portal-shell-util';
 import React from 'react';
 
+import { t } from '../../../../utils/localization/loc';
 import { useChatState } from '../../providers/chat-state-provider.react';
 import { AutopilotChatActionButton } from './action-button.react';
 import { AutopilotChatTooltip } from './tooltip.react';
@@ -76,7 +77,9 @@ export function DropdownPicker<T = string>({
     chatServiceInstance,
     iconVariant = 'outlined',
 }: DropdownPickerProps<T>) {
-    const { spacing } = useChatState();
+    const {
+        spacing, theming,
+    } = useChatState();
     const theme = useTheme();
     const [ anchorEl, setAnchorEl ] = React.useState<HTMLButtonElement | HTMLDivElement | null>(null);
 
@@ -138,6 +141,7 @@ export function DropdownPicker<T = string>({
                             )}
                         </>
                     ) : null}
+                    ariaLabel={t('autopilot-chat-model-selector-button')}
                 />
             );
         }
@@ -163,6 +167,7 @@ export function DropdownPicker<T = string>({
                     role="button"
                     aria-haspopup="true"
                     aria-expanded={open}
+                    aria-label={t('autopilot-chat-mode-selector-button')}
                 >
                     {selectedOption.icon && <ap-icon variant="outlined" name={selectedOption.icon} size={token.Icon.IconXs} />}
                     <ap-typography variant={spacing.primaryFontToken}>{selectedOption.name}</ap-typography>
@@ -204,7 +209,7 @@ export function DropdownPicker<T = string>({
                         selected={selectedOption.id === option.id}
                     >
                         <AutopilotChatTooltip
-                            placement="left"
+                            placement={theming?.chatMenu?.groupItemTooltipPlacement ?? 'left'}
                             title={
                                 option.description ? (
                                     <ap-typography

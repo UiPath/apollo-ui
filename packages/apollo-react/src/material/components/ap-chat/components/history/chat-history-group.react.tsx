@@ -17,9 +17,11 @@ const GroupContainer = styled('div')<{ compactMode: boolean }>(({ compactMode })
     { marginBottom: compactMode ? token.Spacing.SpacingXs : token.Spacing.SpacingBase }
 ));
 
-const GroupTitle = styled('div')(() => ({
-    padding: `${token.Padding.PadXl} ${token.Padding.PadL}`,
-    margin: `0 ${token.Spacing.SpacingBase}`,
+const GroupTitle = styled('h2')(() => ({
+    '&&': {
+        padding: `${token.Padding.PadXl} ${token.Padding.PadL}`,
+        margin: `0 ${token.Spacing.SpacingBase}`,
+    },
 }));
 
 interface AutopilotChatHistoryGroupProps {
