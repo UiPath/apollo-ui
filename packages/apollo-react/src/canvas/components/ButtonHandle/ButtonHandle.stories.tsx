@@ -85,8 +85,8 @@ const SimpleNode = ({ id, data, selected }: { id: string; data: any; selected: b
         width: 240,
         height: 70,
         borderRadius: 8,
-        backgroundColor: "var(--color-background)",
-        border: selected ? "1px solid var(--color-selection-indicator)" : "1px solid var(--color-border)",
+        backgroundColor: "var(--uix-canvas-background)",
+        border: selected ? "1px solid var(--uix-canvas-selection-indicator)" : "1px solid var(--uix-canvas-border)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -95,12 +95,12 @@ const SimpleNode = ({ id, data, selected }: { id: string; data: any; selected: b
       }}
     >
       <Row w="100%" gap={12} align="center">
-        <ApIcon name="smart_toy" size="32px" color="var(--color-foreground-de-emp)" />
+        <ApIcon name="smart_toy" size="32px" color="var(--uix-canvas-foreground-de-emp)" />
         <Column>
-          <ApTypography variant={FontVariantToken.fontSizeSBold} color="var(--color-foreground-de-emp)">
+          <ApTypography variant={FontVariantToken.fontSizeSBold} color="var(--uix-canvas-foreground-de-emp)">
             {data.label}
           </ApTypography>
-          <ApTypography variant={FontVariantToken.fontSizeS} color="var(--color-foreground-de-emp)">
+          <ApTypography variant={FontVariantToken.fontSizeS} color="var(--uix-canvas-foreground-de-emp)">
             {data.subLabel}
           </ApTypography>
         </Column>
@@ -272,15 +272,15 @@ export const MultipleHandles: Story = {
               width: 300,
               height: 150,
               borderRadius: 8,
-              backgroundColor: "var(--color-background)",
-              border: selected ? "1px solid var(--color-selection-indicator)" : "1px solid var(--color-foreground-de-emp)",
+              backgroundColor: "var(--uix-canvas-background)",
+              border: selected ? "1px solid var(--uix-canvas-selection-indicator)" : "1px solid var(--uix-canvas-foreground-de-emp)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               position: "relative",
             }}
           >
-            <div style={{ fontSize: 16, fontWeight: 500, color: "var(--color-foreground)" }}>{data.label}</div>
+            <div style={{ fontSize: 16, fontWeight: 500, color: "var(--uix-canvas-foreground)" }}>{data.label}</div>
 
             <ButtonHandles nodeId={id} handles={topHandles} position={Position.Top} selected={selected} />
 
@@ -380,14 +380,14 @@ export const ComplexExample: Story = {
             type: "source",
             handleType: "output",
             label: "Success",
-            color: "var(--color-success-icon)",
+            color: "var(--uix-canvas-success-icon)",
           },
           {
             id: "error",
             type: "source",
             handleType: "output",
             label: "Error",
-            color: "var(--color-error-icon)",
+            color: "var(--uix-canvas-error-icon)",
           },
         ];
 
@@ -397,15 +397,15 @@ export const ComplexExample: Story = {
               width: 300,
               height: 150,
               borderRadius: 8,
-              backgroundColor: "var(--color-background)",
-              border: selected ? "1px solid var(--color-selection-indicator)" : "1px solid var(--color-foreground-de-emp)",
+              backgroundColor: "var(--uix-canvas-background)",
+              border: selected ? "1px solid var(--uix-canvas-selection-indicator)" : "1px solid var(--uix-canvas-foreground-de-emp)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               position: "relative",
             }}
           >
-            <div style={{ fontSize: 16, fontWeight: 500, color: "var(--color-foreground)" }}>{data.label}</div>
+            <div style={{ fontSize: 16, fontWeight: 500, color: "var(--uix-canvas-foreground)" }}>{data.label}</div>
 
             <ButtonHandles nodeId={id} handles={topHandles} position={Position.Top} selected={selected} />
 
@@ -460,7 +460,7 @@ export const LogicFlow: Story = {
           type: "baseNode",
           position: { x: 300, y: 200 },
           data: {
-            icon: <ApIcon size="48px" name="alt_route" color="var(--color-foreground-de-emp)" />,
+            icon: <ApIcon size="48px" name="alt_route" color="var(--uix-canvas-foreground-de-emp)" />,
             label: "If",
             parameters: {},
             handleConfigurations: [
@@ -485,7 +485,7 @@ export const LogicFlow: Story = {
           type: "baseNode",
           position: { x: 300, y: 650 },
           data: {
-            icon: <ApIcon size="48px" variant="outlined" name="account_tree" color="var(--color-foreground-de-emp)" />,
+            icon: <ApIcon size="48px" variant="outlined" name="account_tree" color="var(--uix-canvas-foreground-de-emp)" />,
             label: "Switch",
             parameters: {},
             handleConfigurations: [
@@ -511,7 +511,7 @@ export const LogicFlow: Story = {
           type: "baseNode",
           position: { x: 50, y: 200 },
           data: {
-            icon: <ApIcon size="48px" name="input" color="var(--color-foreground-de-emp)" />,
+            icon: <ApIcon size="48px" name="input" color="var(--uix-canvas-foreground-de-emp)" />,
             label: "Condition",
             subLabel: "Boolean",
             parameters: {},
@@ -529,7 +529,7 @@ export const LogicFlow: Story = {
           type: "baseNode",
           position: { x: 50, y: 650 },
           data: {
-            icon: <ApIcon size="48px" name="input" color="var(--color-foreground-de-emp)" />,
+            icon: <ApIcon size="48px" name="input" color="var(--uix-canvas-foreground-de-emp)" />,
             label: "Value",
             subLabel: "Integer",
             parameters: {},
@@ -585,7 +585,7 @@ export const LogicFlow: Story = {
           type: "baseNode",
           position: { x: 600, y: 500 },
           data: {
-            icon: <ApIcon size="48px" name="help_outline" color="var(--color-foreground-de-emp)" />,
+            icon: <ApIcon size="48px" name="help_outline" color="var(--uix-canvas-foreground-de-emp)" />,
             label: "Default Case",
             subLabel: "No match",
             parameters: {},
@@ -717,8 +717,8 @@ export const LogicFlow: Story = {
             <Column
               p={12}
               style={{
-                color: "var(--color-foreground)",
-                backgroundColor: "var(--color-background-secondary)",
+                color: "var(--uix-canvas-foreground)",
+                backgroundColor: "var(--uix-canvas-background-secondary)",
                 borderRadius: 4,
               }}
             >

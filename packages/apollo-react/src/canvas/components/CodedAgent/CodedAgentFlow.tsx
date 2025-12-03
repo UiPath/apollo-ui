@@ -37,7 +37,7 @@ const CodedAgentEdge = memo(
       targetPosition,
     });
 
-    const strokeColor = animated ? "var(--color-primary)" : "var(--color-foreground-de-emp)";
+    const strokeColor = animated ? "var(--uix-canvas-primary)" : "var(--uix-canvas-foreground-de-emp)";
 
     return (
       <BaseEdge
@@ -127,8 +127,9 @@ const createCodedAgentNodeWrapper = (translations: CodedAgentNodeTranslations = 
     }, [nodeData.hasError, nodeData.hasSuccess, nodeData.hasRunning]);
 
     const statusAdornment = useMemo(() => {
-      if (nodeData.hasError) return <ApIcon name="error" size="16px" color="var(--color-error-icon)" />;
-      if (nodeData.hasSuccess && !nodeData.hasError) return <ApIcon name="check_circle" size="16px" color="var(--color-success-icon)" />;
+      if (nodeData.hasError) return <ApIcon name="error" size="16px" color="var(--uix-canvas-error-icon)" />;
+      if (nodeData.hasSuccess && !nodeData.hasError)
+        return <ApIcon name="check_circle" size="16px" color="var(--uix-canvas-success-icon)" />;
       if (nodeData.hasRunning && !nodeData.hasError && !nodeData.hasSuccess) return <ApCircularProgress size={20} />;
       return undefined;
     }, [nodeData.hasError, nodeData.hasSuccess, nodeData.hasRunning]);
@@ -184,8 +185,8 @@ const CodedResourceNodeElement = memo(({ data, selected, id }: NodeProps) => {
   }, [label, nodeData.type]);
 
   const statusAdornment = useMemo(() => {
-    if (nodeData.hasError) return <ApIcon name="error" size="16px" color="var(--color-error-icon)" />;
-    if (nodeData.hasSuccess && !nodeData.hasError) return <ApIcon name="check_circle" size="16px" color="var(--color-success-icon)" />;
+    if (nodeData.hasError) return <ApIcon name="error" size="16px" color="var(--uix-canvas-error-icon)" />;
+    if (nodeData.hasSuccess && !nodeData.hasError) return <ApIcon name="check_circle" size="16px" color="var(--uix-canvas-success-icon)" />;
     if (nodeData.hasRunning && !nodeData.hasError && !nodeData.hasSuccess) return <ApCircularProgress size={13} />;
     return undefined;
   }, [nodeData.hasError, nodeData.hasSuccess, nodeData.hasRunning]);
@@ -209,7 +210,7 @@ const CodedResourceNodeElement = memo(({ data, selected, id }: NodeProps) => {
         ]}
       />
       <TextContainer>
-        <ApTypography color="var(--color-foreground-de-emp)">{nodeData.label}</ApTypography>
+        <ApTypography color="var(--uix-canvas-foreground-de-emp)">{nodeData.label}</ApTypography>
       </TextContainer>
     </div>
   );
@@ -237,7 +238,7 @@ const CodedFlowNodeElement = memo(({ data, selected, id }: NodeProps) => {
           handleConfigurations={handleConfigs}
         />
         <TextContainer>
-          <ApTypography variant={FontVariantToken.fontSizeS} color="var(--color-foreground-de-emp)">
+          <ApTypography variant={FontVariantToken.fontSizeS} color="var(--uix-canvas-foreground-de-emp)">
             {nodeData.label}
           </ApTypography>
         </TextContainer>
@@ -375,7 +376,7 @@ const CodedAgentFlowInner = (props: CodedAgentFlowProps): JSX.Element => {
   if (parseError) {
     return (
       <CenteredDiv>
-        <ApTypography color="var(--color-error)">Error: {parseError}</ApTypography>
+        <ApTypography color="var(--uix-canvas-error)">Error: {parseError}</ApTypography>
       </CenteredDiv>
     );
   }
@@ -383,7 +384,7 @@ const CodedAgentFlowInner = (props: CodedAgentFlowProps): JSX.Element => {
   if (isLoading) {
     return (
       <CenteredDiv>
-        <ApTypography color="var(--color-foreground)">Loading...</ApTypography>
+        <ApTypography color="var(--uix-canvas-foreground)">Loading...</ApTypography>
       </CenteredDiv>
     );
   }
@@ -391,7 +392,7 @@ const CodedAgentFlowInner = (props: CodedAgentFlowProps): JSX.Element => {
   if (nodes.length === 0) {
     return (
       <CenteredDiv>
-        <ApTypography color="var(--color-foreground)">{agentNodeTranslations.noDataToDisplay}</ApTypography>
+        <ApTypography color="var(--uix-canvas-foreground)">{agentNodeTranslations.noDataToDisplay}</ApTypography>
       </CenteredDiv>
     );
   }
@@ -412,7 +413,7 @@ const CodedAgentFlowInner = (props: CodedAgentFlowProps): JSX.Element => {
         <Panel position="top-left">
           <Row align="center" gap={Spacing.SpacingXs}>
             <Icons.AgentIcon w={20} h={20} />
-            <ApTypography variant={FontVariantToken.fontSizeSBold} color="var(--color-foreground)">
+            <ApTypography variant={FontVariantToken.fontSizeSBold} color="var(--uix-canvas-foreground)">
               Coded Agent
             </ApTypography>
           </Row>

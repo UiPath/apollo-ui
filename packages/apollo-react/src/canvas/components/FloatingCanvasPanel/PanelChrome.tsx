@@ -6,9 +6,9 @@ import { Row } from "@uipath/uix/core";
 import styled from "@emotion/styled";
 
 const PanelHeader = styled.div`
-  border-bottom: 1px solid var(--color-border-de-emp);
+  border-bottom: 1px solid var(--uix-canvas-border-de-emp);
   padding: 8px 16px;
-  background-color: var(--color-background);
+  background-color: var(--uix-canvas-background);
   border-radius: 8px 8px 0 0;
   flex-shrink: 0;
 `;
@@ -23,16 +23,16 @@ const PanelContent = styled.div`
   }
 
   &::-webkit-scrollbar-track {
-    background: var(--color-background-secondary);
+    background: var(--uix-canvas-background-secondary);
     border-radius: 3px;
   }
 
   &::-webkit-scrollbar-thumb {
-    background: var(--color-border);
+    background: var(--uix-canvas-border);
     border-radius: 3px;
 
     &:hover {
-      background: var(--color-border-de-emp);
+      background: var(--uix-canvas-border-de-emp);
     }
   }
 `;
@@ -61,7 +61,7 @@ export function PanelChrome({ title, header, headerActions, children, onClose, s
         <PanelHeader>
           {header ?? (
             <Row gap={8} justify="between" align="center">
-              <ApTypography color="var(--color-foreground)" variant={FontVariantToken.fontSizeLBold}>
+              <ApTypography color="var(--uix-canvas-foreground)" variant={FontVariantToken.fontSizeLBold}>
                 {title}
               </ApTypography>
               <Row gap={8} align="center">

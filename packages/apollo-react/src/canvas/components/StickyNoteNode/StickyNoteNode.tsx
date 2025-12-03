@@ -224,7 +224,7 @@ const StickyNoteNodeComponent = ({ id, data, selected, dragging }: StickyNoteNod
               {localContent ? (
                 <ReactMarkdown remarkPlugins={[remarkGfm]}>{localContent}</ReactMarkdown>
               ) : (
-                <span style={{ color: "var(--color-foreground-de-emp)" }}>Add text</span>
+                <span style={{ color: "var(--uix-canvas-foreground-de-emp)" }}>Add text</span>
               )}
             </StickyNoteMarkdown>
           )}

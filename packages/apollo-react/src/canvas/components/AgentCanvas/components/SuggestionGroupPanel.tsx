@@ -42,7 +42,7 @@ const Divider = () => (
     style={{
       width: 1,
       height: "24px",
-      backgroundColor: "var(--color-border)",
+      backgroundColor: "var(--uix-canvas-border)",
     }}
   />
 );
@@ -61,13 +61,21 @@ const SuggestionGroupNavigator = ({ currentIndex, total, onNavigateNext, onNavig
   return (
     <div style={{ display: "flex", alignItems: "center", gap: Spacing.SpacingMicro, minWidth: "100px" }}>
       <ApIconButton onMouseEnter={() => setIsHoveringUp(true)} onMouseLeave={() => setIsHoveringUp(false)} onClick={onNavigatePrevious}>
-        <ApIcon name="keyboard_arrow_up" color={isHoveringUp ? "var(--color-primary)" : "var(--color-foreground-de-emp)"} size="20px" />
+        <ApIcon
+          name="keyboard_arrow_up"
+          color={isHoveringUp ? "var(--uix-canvas-primary)" : "var(--uix-canvas-foreground-de-emp)"}
+          size="20px"
+        />
       </ApIconButton>
-      <ApTypography variant={FontVariantToken.fontSizeMBold} color="var(--color-foreground-de-emp)">
+      <ApTypography variant={FontVariantToken.fontSizeMBold} color="var(--uix-canvas-foreground-de-emp)">
         {currentIndex + 1} of {total}
       </ApTypography>
       <ApIconButton onMouseEnter={() => setIsHoveringDown(true)} onMouseLeave={() => setIsHoveringDown(false)} onClick={onNavigateNext}>
-        <ApIcon name="keyboard_arrow_down" color={isHoveringDown ? "var(--color-primary)" : "var(--color-foreground-de-emp)"} size="20px" />
+        <ApIcon
+          name="keyboard_arrow_down"
+          color={isHoveringDown ? "var(--uix-canvas-primary)" : "var(--uix-canvas-foreground-de-emp)"}
+          size="20px"
+        />
       </ApIconButton>
     </div>
   );
@@ -93,10 +101,10 @@ export const SuggestionGroupPanel = ({
           px={Spacing.SpacingXs}
           gap={Spacing.SpacingXs}
           style={{
-            backgroundColor: "var(--color-background-secondary)",
-            color: "var(--color-foreground)",
+            backgroundColor: "var(--uix-canvas-background-secondary)",
+            color: "var(--uix-canvas-foreground)",
             borderRadius: "8px",
-            border: "1px solid var(--color-border-de-emp)",
+            border: "1px solid var(--uix-canvas-border-de-emp)",
             boxShadow: "0px 6px 10px rgba(0, 0, 0, 0.3)",
           }}
         >

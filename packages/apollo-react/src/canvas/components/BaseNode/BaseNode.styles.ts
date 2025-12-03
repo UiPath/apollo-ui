@@ -19,23 +19,23 @@ const getExecutionStatusBorder = (executionStatus?: string) => {
     case "NotExecuted":
     case "INFO":
       return css`
-        border-color: var(--color-border-de-emp);
+        border-color: var(--uix-canvas-border-de-emp);
       `;
     case "InProgress": {
       return css`
-        border-color: var(--color-info-icon);
-        animation: ${pulseAnimation("--color-info-icon")} 2s infinite;
+        border-color: var(--uix-canvas-info-icon);
+        animation: ${pulseAnimation("--uix-canvas-info-icon")} 2s infinite;
       `;
     }
     case "Completed":
       return css`
-        border-color: var(--color-success-icon);
+        border-color: var(--uix-canvas-success-icon);
       `;
     case "Paused":
     case "WARNING": {
       return css`
-        border-color: var(--color-warning-icon);
-        animation: ${pulseAnimation("--color-warning-icon")} 2s infinite;
+        border-color: var(--uix-canvas-warning-icon);
+        animation: ${pulseAnimation("--uix-canvas-warning-icon")} 2s infinite;
       `;
     }
     case "Cancelled":
@@ -44,14 +44,14 @@ const getExecutionStatusBorder = (executionStatus?: string) => {
     case "ERROR":
     case "CRITICAL": {
       return css`
-        border-color: var(--color-error-icon);
-        background: var(--color-error-background);
-        animation: ${pulseAnimation("--color-error-icon")} 2s infinite;
+        border-color: var(--uix-canvas-error-icon);
+        background: var(--uix-canvas-error-background);
+        animation: ${pulseAnimation("--uix-canvas-error-icon")} 2s infinite;
       `;
     }
     default:
       return css`
-        border-color: var(--color-border-de-emp);
+        border-color: var(--uix-canvas-border-de-emp);
       `;
   }
 };
@@ -60,7 +60,7 @@ const getInteractionStateBorder = (interactionState?: string) => {
   switch (interactionState) {
     case "hover":
       return css`
-        outline: 4px solid var(--color-secondary-focused);
+        outline: 4px solid var(--uix-canvas-secondary-focused);
       `;
     case "disabled":
       return css`
@@ -93,11 +93,11 @@ const getSuggestionTypeBorder = (suggestionType?: string) => {
 const getSuggestionTypeBorderColorVar = (suggestionType?: string) => {
   switch (suggestionType) {
     case "add":
-      return "--color-success-icon";
+      return "--uix-canvas-success-icon";
     case "update":
-      return "--color-warning-icon";
+      return "--uix-canvas-warning-icon";
     case "delete":
-      return "--color-error-icon";
+      return "--uix-canvas-error-icon";
     default:
       return null;
   }
@@ -106,11 +106,11 @@ const getSuggestionTypeBorderColorVar = (suggestionType?: string) => {
 const getSuggestionTypeBackgroundColorVar = (suggestionType?: string) => {
   switch (suggestionType) {
     case "add":
-      return "--color-success-background";
+      return "--uix-canvas-success-background";
     case "update":
-      return "--color-warning-background";
+      return "--uix-canvas-warning-background";
     case "delete":
-      return "--color-error-background";
+      return "--uix-canvas-error-background";
     default:
       return null;
   }
@@ -132,8 +132,8 @@ export const BaseContainer = styled.div<{
     return shape === "rectangle" ? "288px" : "96px";
   }};
   height: ${({ height }) => (height ? `${height}px` : "96px")};
-  background: ${({ backgroundColor }) => backgroundColor || "var(--color-background)"};
-  border: 1.5px solid var(--color-border-de-emp);
+  background: ${({ backgroundColor }) => backgroundColor || "var(--uix-canvas-background)"};
+  border: 1.5px solid var(--uix-canvas-border-de-emp);
   border-radius: ${({ shape }) => {
     if (shape === "circle") return "50%";
     return "16px";
@@ -168,8 +168,8 @@ export const BaseContainer = styled.div<{
 
     if (selected) {
       return css`
-        border-color: var(--color-primary);
-        outline: 4px solid var(--color-secondary-pressed);
+        border-color: var(--uix-canvas-primary);
+        outline: 4px solid var(--uix-canvas-secondary-pressed);
       `;
     }
   }}
@@ -187,8 +187,8 @@ export const BaseIconWrapper = styled.div<{ color?: string; backgroundColor?: st
   display: flex;
   align-items: center;
   justify-content: center;
-  color: ${({ color }) => color || "var(--color-foreground)"};
-  background: ${({ backgroundColor }) => backgroundColor || "var(--color-background-secondary)"};
+  color: ${({ color }) => color || "var(--uix-canvas-foreground)"};
+  background: ${({ backgroundColor }) => backgroundColor || "var(--uix-canvas-background-secondary)"};
   border-radius: ${({ shape }) => {
     if (shape === "circle") return "50%";
     return "8px";
@@ -233,20 +233,28 @@ export const BaseTextContainer = styled.div<{ hasBottomHandles?: boolean; shape?
           position: absolute;
           bottom: ${hasBottomHandles ? "-40px" : "-8px"};
           width: 150%;
-          transform: translateY(100%);
+          left: 50%;
+          transform: translateX(-50%) translateY(100%);
           display: flex;
           flex-direction: column;
           align-items: center;
           text-align: center;
           z-index: 10;
-          transition: bottom 0.2s ease-in-out;
+          transition: transform 0.2s ease-in-out;
+
+          /* When there's a bottom handle, offset text to the right to avoid overlapping */
+          ${hasBottomHandles &&
+          css`
+            transform: translateX(20%) translateY(50%);
+            text-align: left;
+          `}
         `}
 `;
 
 export const BaseHeader = styled.div<{ shape?: NodeShape; backgroundColor?: string }>`
   font-weight: 600;
   font-size: 13px;
-  color: var(--color-foreground);
+  color: var(--uix-canvas-foreground);
   ${({ backgroundColor }) =>
     backgroundColor &&
     css`
@@ -271,7 +279,7 @@ export const BaseHeader = styled.div<{ shape?: NodeShape; backgroundColor?: stri
 
 export const BaseSubHeader = styled.div`
   font-size: 11px;
-  color: var(--color-foreground-de-emp);
+  color: var(--uix-canvas-foreground-de-emp);
   line-height: 1.3;
   word-break: break-word;
 `;

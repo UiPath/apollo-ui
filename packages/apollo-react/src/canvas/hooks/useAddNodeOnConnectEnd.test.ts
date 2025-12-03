@@ -101,7 +101,9 @@ describe("useAddNodeOnConnectEnd", () => {
       mockReactFlowInstance,
       mockFlowPosition,
       undefined,
-      "source"
+      "source",
+      undefined, // previewNodeSize (uses default)
+      Position.Right // handlePosition from connectionState.fromHandle.position
     );
     expect(mockApplyPreviewToReactFlow).toHaveBeenCalledWith(mockPreview, mockReactFlowInstance);
   });
@@ -124,7 +126,16 @@ describe("useAddNodeOnConnectEnd", () => {
 
     result.current(mockTouchEventWithTouches, connectionState);
 
-    expect(mockCreatePreviewNode).toHaveBeenCalledWith("node-1", "output", mockReactFlowInstance, expect.any(Object), undefined, "source");
+    expect(mockCreatePreviewNode).toHaveBeenCalledWith(
+      "node-1",
+      "output",
+      mockReactFlowInstance,
+      expect.any(Object),
+      undefined,
+      "source",
+      undefined, // previewNodeSize (uses default)
+      Position.Right // handlePosition from connectionState.fromHandle.position
+    );
   });
 
   it("should not add preview if fromNode is missing", () => {

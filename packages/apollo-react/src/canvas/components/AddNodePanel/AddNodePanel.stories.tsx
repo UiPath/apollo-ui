@@ -150,7 +150,7 @@ const NodeAdditionStory = () => {
       position: { x: 100, y: 200 },
       type: "baseNode",
       data: {
-        icon: <ApIcon size="48px" name="touch_app" color="var(--color-foreground-de-emp)" />,
+        icon: <ApIcon size="48px" name="touch_app" color="var(--uix-canvas-foreground-de-emp)" />,
         label: "Manual trigger",
         handleConfigurations: [],
         parameters: {},
@@ -161,7 +161,7 @@ const NodeAdditionStory = () => {
       position: { x: 350, y: 200 },
       type: "baseNode",
       data: {
-        icon: <ApIcon size="32px" name="settings" color="var(--color-foreground-de-emp)" />,
+        icon: <ApIcon size="32px" name="settings" color="var(--uix-canvas-foreground-de-emp)" />,
         label: "Action",
         subLabel: "Process data",
         handleConfigurations: [],
@@ -185,10 +185,12 @@ const NodeAdditionStory = () => {
     (event: HandleActionEvent) => {
       if (!reactFlowInstance) return;
 
-      const { handleId, nodeId } = event;
+      const { handleId, nodeId, position, handleType } = event;
 
       if (handleId && nodeId) {
-        createAddNodePreview(nodeId, handleId, reactFlowInstance);
+        // Pass position and handle type (target handles are "input", source handles are "output")
+        const sourceHandleType = handleType === "input" ? "target" : "source";
+        createAddNodePreview(nodeId, handleId, reactFlowInstance, position, sourceHandleType);
       }
     },
     [reactFlowInstance]
@@ -275,7 +277,7 @@ const NodeAdditionStory = () => {
     // Create icon
     const icon =
       nodeOption.icon && typeof nodeOption.icon === "string" ? (
-        <ApIcon size="32px" name={nodeOption.icon} color="var(--color-foreground-de-emp)" />
+        <ApIcon size="32px" name={nodeOption.icon} color="var(--uix-canvas-foreground-de-emp)" />
       ) : undefined;
 
     return {
@@ -352,16 +354,16 @@ const NodeAdditionStory = () => {
         <Column
           p={20}
           style={{
-            color: "var(--color-foreground)",
-            backgroundColor: "var(--color-background-secondary)",
+            color: "var(--uix-canvas-foreground)",
+            backgroundColor: "var(--uix-canvas-background-secondary)",
             minWidth: 200,
           }}
         >
           <ApTypography variant={FontVariantToken.fontSizeH4Bold}>Node Addition via Selection</ApTypography>
-          <ApTypography variant={FontVariantToken.fontSizeS} color="var(--color-foreground-de-emp)">
+          <ApTypography variant={FontVariantToken.fontSizeS} color="var(--uix-canvas-foreground-de-emp)">
             Click + button → Creates preview → Select preview → Choose node type
           </ApTypography>
-          <ApTypography variant={FontVariantToken.fontSizeXs} color="var(--color-foreground-de-emp)" style={{ marginTop: "4px" }}>
+          <ApTypography variant={FontVariantToken.fontSizeXs} color="var(--uix-canvas-foreground-de-emp)" style={{ marginTop: "4px" }}>
             Clean architecture using React Flow's native selection mechanism
           </ApTypography>
         </Column>
@@ -390,8 +392,8 @@ export const StandaloneSelector: Story = {
       style={{
         width: "320px",
         margin: "40px auto",
-        backgroundColor: "var(--color-background)",
-        border: "1px solid var(--color-border-de-emp)",
+        backgroundColor: "var(--uix-canvas-background)",
+        border: "1px solid var(--uix-canvas-border-de-emp)",
         borderRadius: "8px",
         boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
       }}
@@ -424,8 +426,8 @@ export const WithCustomFetch: Story = {
       style={{
         width: "320px",
         margin: "40px auto",
-        backgroundColor: "var(--color-background)",
-        border: "1px solid var(--color-border-de-emp)",
+        backgroundColor: "var(--uix-canvas-background)",
+        border: "1px solid var(--uix-canvas-border-de-emp)",
         borderRadius: "8px",
         boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
       }}
@@ -433,6 +435,203 @@ export const WithCustomFetch: Story = {
       <AddNodePanel {...args} />
     </div>
   ),
+};
+
+// Story for testing source handles on all sides (Top, Bottom, Left, Right)
+const AllSidesHandlesStory = () => {
+  const reactFlowInstance = useReactFlow();
+  const [nodes, setNodes] = useState<Node<BaseNodeData>[]>([
+    {
+      id: "center",
+      position: { x: 400, y: 300 },
+      type: "baseNode",
+      data: {
+        icon: <ApIcon size="48px" name="hub" color="var(--uix-canvas-foreground-de-emp)" />,
+        label: "Hub Node",
+        subLabel: "Source handles on all sides",
+        handleConfigurations: [],
+        parameters: {},
+      },
+    },
+  ]);
+
+  const [edges, setEdges] = useState<Edge[]>([]);
+
+  const handleAddClick = useCallback(
+    (event: HandleActionEvent) => {
+      if (!reactFlowInstance) return;
+      const { handleId, nodeId, position, handleType } = event;
+      if (handleId && nodeId) {
+        const sourceHandleType = handleType === "input" ? "target" : "source";
+        createAddNodePreview(nodeId, handleId, reactFlowInstance, position, sourceHandleType);
+      }
+    },
+    [reactFlowInstance]
+  );
+
+  // Single node with source handles on all 4 sides
+  const nodesWithHandles = useMemo(() => {
+    return nodes.map((node) => {
+      if (node.id === "center") {
+        return {
+          ...node,
+          data: {
+            ...node.data,
+            handleConfigurations: [
+              {
+                position: Position.Right,
+                handles: [
+                  {
+                    id: "output-right",
+                    type: "source" as const,
+                    handleType: "output" as const,
+                    showButton: true,
+                    onAction: handleAddClick,
+                  },
+                ],
+              },
+              {
+                position: Position.Left,
+                handles: [
+                  { id: "output-left", type: "source" as const, handleType: "output" as const, showButton: true, onAction: handleAddClick },
+                ],
+              },
+              {
+                position: Position.Top,
+                handles: [
+                  { id: "output-top", type: "source" as const, handleType: "output" as const, showButton: true, onAction: handleAddClick },
+                ],
+              },
+              {
+                position: Position.Bottom,
+                handles: [
+                  {
+                    id: "output-bottom",
+                    type: "source" as const,
+                    handleType: "output" as const,
+                    showButton: true,
+                    onAction: handleAddClick,
+                  },
+                ],
+              },
+            ],
+          },
+        };
+      }
+      // For added nodes, configure handles based on how they were connected
+      const existingConfigs = Array.isArray(node.data.handleConfigurations) ? node.data.handleConfigurations : [];
+      return {
+        ...node,
+        data: {
+          ...node.data,
+          handleConfigurations: existingConfigs.length
+            ? existingConfigs
+            : [
+                {
+                  position: Position.Right,
+                  handles: [
+                    { id: "output", type: "source" as const, handleType: "output" as const, showButton: true, onAction: handleAddClick },
+                  ],
+                },
+                {
+                  position: Position.Left,
+                  handles: [{ id: "input", type: "target" as const, handleType: "input" as const }],
+                },
+              ],
+        },
+      };
+    });
+  }, [nodes, handleAddClick]);
+
+  const onNodesChange = useCallback(
+    (changes: NodeChange[]) => setNodes((nds) => applyNodeChanges(changes, nds) as Node<BaseNodeData>[]),
+    []
+  );
+  const onEdgesChange = useCallback((changes: EdgeChange[]) => setEdges((eds) => applyEdgeChanges(changes, eds)), []);
+  const onConnect = useCallback((params: Connection) => setEdges((eds) => addEdge(params, eds)), []);
+
+  const nodeTypes = useMemo(
+    () => ({
+      baseNode: BaseNode,
+      preview: AddNodePreview,
+    }),
+    []
+  );
+
+  const fetchNodeOptions = useCallback(async (category?: string, search?: string) => {
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    let filtered = AVAILABLE_NODE_OPTIONS;
+    if (category && category !== "all") {
+      filtered = filtered.filter((node) => node.data.category === category);
+    }
+    if (search) {
+      const searchLower = search.toLowerCase();
+      filtered = filtered.filter(
+        (node) => node.name.toLowerCase().includes(searchLower) || node.description?.toLowerCase().includes(searchLower)
+      );
+    }
+    return filtered;
+  }, []);
+
+  const createNodeData = useCallback((nodeOption: ListItem<NodeItemData>): BaseNodeData => {
+    const icon =
+      nodeOption.icon && typeof nodeOption.icon === "string" ? (
+        <ApIcon size="32px" name={nodeOption.icon} color="var(--uix-canvas-foreground-de-emp)" />
+      ) : undefined;
+
+    return {
+      label: nodeOption.name,
+      subLabel: nodeOption.description,
+      icon,
+      parameters: {},
+    };
+  }, []);
+
+  const onNodeAdded = useCallback((sourceNodeId: string, sourceHandleId: string, newNode: Node) => {
+    console.log(`Added node ${newNode.id} connected from ${sourceNodeId}:${sourceHandleId}`);
+  }, []);
+
+  return (
+    <BaseCanvas
+      nodes={nodesWithHandles}
+      edges={edges}
+      nodeTypes={nodeTypes}
+      onNodesChange={onNodesChange}
+      onEdgesChange={onEdgesChange}
+      onConnect={onConnect}
+      mode="design"
+      defaultViewport={{ x: 0, y: 0, zoom: 1 }}
+    >
+      <AddNodeManager fetchNodeOptions={fetchNodeOptions} createNodeData={createNodeData} onNodeAdded={onNodeAdded} />
+
+      <Panel position="bottom-right">
+        <CanvasPositionControls />
+      </Panel>
+
+      <Panel position="top-left">
+        <Column
+          p={20}
+          style={{
+            color: "var(--uix-canvas-foreground)",
+            backgroundColor: "var(--uix-canvas-background-secondary)",
+            minWidth: 280,
+          }}
+        >
+          <ApTypography variant={FontVariantToken.fontSizeH4Bold}>Source Handles on All Sides</ApTypography>
+          <ApTypography variant={FontVariantToken.fontSizeS} color="var(--uix-canvas-foreground-de-emp)">
+            Single node with source (output) handles on Top, Bottom, Left, and Right.
+          </ApTypography>
+          <ApTypography variant={FontVariantToken.fontSizeXs} color="var(--uix-canvas-foreground-de-emp)" style={{ marginTop: "8px" }}>
+            Click the + buttons to add preview nodes on each side. Preview nodes should not overlap with existing nodes.
+          </ApTypography>
+        </Column>
+      </Panel>
+    </BaseCanvas>
+  );
+};
+
+export const HandlesOnAllSides: Story = {
+  render: () => <AllSidesHandlesStory />,
 };
 
 // Story demonstrating registry integration
@@ -452,15 +651,15 @@ export const WithRegistryIntegration: Story = {
       style={{
         width: "320px",
         margin: "40px auto",
-        backgroundColor: "var(--color-background)",
-        border: "1px solid var(--color-border-de-emp)",
+        backgroundColor: "var(--uix-canvas-background)",
+        border: "1px solid var(--uix-canvas-border-de-emp)",
         borderRadius: "8px",
         boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
       }}
     >
       <Column p={20}>
         <ApTypography variant={FontVariantToken.fontSizeMBold}>Registry-Based Node Selector</ApTypography>
-        <ApTypography variant={FontVariantToken.fontSizeXs} color="var(--color-foreground-de-emp)">
+        <ApTypography variant={FontVariantToken.fontSizeXs} color="var(--uix-canvas-foreground-de-emp)">
           AddNodePanel automatically uses the NodeRegistryProvider when available. It dynamically discovers categories and only shows those
           with registered nodes!
         </ApTypography>

@@ -13,8 +13,8 @@ export const StyledToolbarContainer = styled(motion.div, {
   align-items: center;
   gap: 4px;
   padding: 2px;
-  background: var(--color-background);
-  border: 1px solid var(--color-border-grid);
+  background: var(--uix-canvas-background);
+  border: 1px solid var(--uix-canvas-border-grid);
   border-radius: 8px;
   box-shadow:
     0 2px 8px rgba(0, 0, 0, 0.08),
@@ -131,7 +131,7 @@ export const StyledToolbarContainer = styled(motion.div, {
 export const StyledToolbarSeparator = styled.div<{ $orientation: "horizontal" | "vertical" }>`
   width: ${({ $orientation }) => ($orientation === "vertical" ? "1px" : "calc(100%)")};
   height: ${({ $orientation }) => ($orientation === "horizontal" ? "1px" : "20px")};
-  background: var(--color-border-grid);
+  background: var(--uix-canvas-border-grid);
   align-self: center;
   ${({ $orientation }) =>
     $orientation === "horizontal" &&
@@ -146,8 +146,8 @@ export const StyledDropdownMenu = styled(motion.div)`
   top: -2px;
   left: calc(100% + 4px);
   min-width: 180px;
-  background: var(--color-background);
-  border: 1px solid var(--color-border-subtle);
+  background: var(--uix-canvas-background);
+  border: 1px solid var(--uix-canvas-border-subtle);
   border-radius: 6px;
   box-shadow:
     0 4px 12px rgba(0, 0, 0, 0.08),
@@ -172,22 +172,22 @@ export const StyledDropdownItem = styled.button<{
   opacity: ${({ $disabled }) => ($disabled ? 0.4 : 1)};
   transition: background 0.15s ease;
   font-size: 14px;
-  color: var(--color-foreground);
+  color: var(--uix-canvas-foreground);
   text-align: left;
   pointer-events: ${({ $disabled }) => ($disabled ? "none" : "auto")};
 
   &:hover:not(:disabled) {
-    background: var(--color-background-secondary);
+    background: var(--uix-canvas-background-secondary);
   }
 
   svg {
     flex-shrink: 0;
-    color: var(--color-foreground);
+    color: var(--uix-canvas-foreground);
   }
 
   span {
     flex: 1;
-    color: var(--color-foreground);
+    color: var(--uix-canvas-foreground);
   }
 `;
 
@@ -215,7 +215,7 @@ export const StyledToolbarButton = styled(motion.button, {
   pointer-events: ${({ $disabled }) => ($disabled ? "none" : "auto")};
 
   &:hover:not(:disabled) {
-    background: var(--color-background-secondary);
+    background: var(--uix-canvas-background-secondary);
   }
 
   &:active:not(:disabled) {
@@ -223,6 +223,6 @@ export const StyledToolbarButton = styled(motion.button, {
   }
 
   svg {
-    color: var(--color-foreground);
+    color: var(--uix-canvas-foreground);
   }
 `;

@@ -16,7 +16,7 @@ export const agentMemoryNodeRegistration: NodeRegistration = {
   version: "1.0.0",
 
   definition: {
-    getIcon: (_data, _context) => <ApIcon name="memory" color="var(--color-foreground-de-emp)" size="40px" />,
+    getIcon: (_data, _context) => <ApIcon name="memory" color="var(--uix-canvas-foreground-de-emp)" size="40px" />,
 
     getDisplay: (data, _context) => ({
       label: data.display?.label,

@@ -6,8 +6,8 @@ export const TriggerContainer = styled.div<{ selected?: boolean; status?: Trigge
   position: relative;
   width: 100%;
   height: 100%;
-  background: var(--color-background);
-  border: 1.5px solid var(--color-border-de-emp);
+  background: var(--uix-canvas-background);
+  border: 1.5px solid var(--uix-canvas-border-de-emp);
   border-radius: 16px;
   display: flex;
   align-items: center;
@@ -19,33 +19,33 @@ export const TriggerContainer = styled.div<{ selected?: boolean; status?: Trigge
   ${({ selected }) =>
     selected &&
     css`
-      outline: 4px solid var(--color-secondary-pressed);
-      border-color: var(--color-selection-indicator);
+      outline: 4px solid var(--uix-canvas-secondary-pressed);
+      border-color: var(--uix-canvas-selection-indicator);
       box-shadow: 0 0 0 2px rgba(0, 102, 204, 0.2);
     `}
 
   ${({ status }) =>
     status === "Completed" &&
     css`
-      border-color: var(--color-success-icon);
+      border-color: var(--uix-canvas-success-icon);
     `}
 
   ${({ status }) =>
     status === "InProgress" &&
     css`
-      border-color: var(--color-info-icon);
+      border-color: var(--uix-canvas-info-icon);
     `}
 
   ${({ status }) =>
     status === "Paused" &&
     css`
-      border-color: var(--color-warning-icon);
+      border-color: var(--uix-canvas-warning-icon);
     `}
 
   ${({ status }) =>
     status === "Failed" &&
     css`
-      border-color: var(--color-error-icon);
+      border-color: var(--uix-canvas-error-icon);
     `}
 
   ${({ status }) =>
@@ -63,30 +63,30 @@ export const TriggerIconWrapper = styled.div<{ status?: TriggerStatus }>`
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--color-foreground-emp);
+  color: var(--uix-canvas-foreground-emp);
 
   ${({ status }) =>
     status === "Completed" &&
     css`
-      color: var(--color-success-icon);
+      color: var(--uix-canvas-success-icon);
     `}
 
   ${({ status }) =>
     status === "InProgress" &&
     css`
-      color: var(--color-info-icon);
+      color: var(--uix-canvas-info-icon);
     `}
 
   ${({ status }) =>
     status === "Paused" &&
     css`
-      color: var(--color-warning-icon);
+      color: var(--uix-canvas-warning-icon);
     `}
 
   ${({ status }) =>
     status === "Failed" &&
     css`
-      color: var(--color-error-icon);
+      color: var(--uix-canvas-error-icon);
     `}
 
   svg {

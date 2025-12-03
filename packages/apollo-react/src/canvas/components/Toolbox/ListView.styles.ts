@@ -5,7 +5,7 @@ import { List } from "react-window";
 export const SectionHeader = styled.div`
   display: flex;
   align-items: center;
-  border-top: 1px solid var(--color-border-de-emp);
+  border-top: 1px solid var(--uix-canvas-border-de-emp);
 
   &:first-of-type {
     border-top: none;
@@ -30,7 +30,7 @@ export const ListItemButton = styled(motion.button)`
   transition: all 0.15s ease;
 
   &:hover {
-    background: var(--color-background-hover);
+    background: var(--uix-canvas-background-hover);
   }
 `;
 
@@ -40,9 +40,9 @@ export const IconContainer = styled.div<{ bgColor?: string }>`
   display: flex;
   align-items: center;
   justify-content: center;
-  background: ${(props) => props.bgColor || "var(--color-background)"};
+  background: ${(props) => props.bgColor || "var(--uix-canvas-background)"};
   border-radius: 8px;
-  color: var(--color-foreground-emp);
+  color: var(--uix-canvas-foreground-emp);
   opacity: 0.9;
   flex-shrink: 0;
 `;
@@ -57,12 +57,12 @@ export const StyledList = styled(List)`
   }
 
   &::-webkit-scrollbar-thumb {
-    background: var(--color-border-de-emp);
+    background: var(--uix-canvas-border-de-emp);
     border-radius: 3px;
   }
 
   &::-webkit-scrollbar-thumb:hover {
-    background: var(--color-border);
+    background: var(--uix-canvas-border);
   }
 
   .list-view-item-name {

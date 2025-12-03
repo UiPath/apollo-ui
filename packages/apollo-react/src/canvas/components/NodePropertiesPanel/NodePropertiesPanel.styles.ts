@@ -2,7 +2,7 @@ import styled from "@emotion/styled";
 
 export const ConfigSection = styled.div`
   padding: 16px;
-  border-bottom: 1px solid var(--color-border-de-emp);
+  border-bottom: 1px solid var(--uix-canvas-border-de-emp);
 
   &:last-child {
     border-bottom: none;
@@ -12,7 +12,7 @@ export const ConfigSection = styled.div`
 export const SectionTitle = styled.div`
   font-weight: 500;
   font-size: 14px;
-  color: var(--color-foreground);
+  color: var(--uix-canvas-foreground);
   margin-bottom: 8px;
 `;
 
@@ -26,21 +26,21 @@ export const FieldContainer = styled.div`
 
 export const FieldLabel = styled.label`
   font-size: 14px;
-  color: var(--color-foreground-de-emp);
+  color: var(--uix-canvas-foreground-de-emp);
   display: block;
   margin-bottom: 4px;
 `;
 
 export const FieldHelpText = styled.span`
   font-size: 12px;
-  color: var(--color-foreground-de-emp);
+  color: var(--uix-canvas-foreground-de-emp);
   display: block;
   margin-top: 4px;
 `;
 
 export const FieldError = styled.span`
   font-size: 12px;
-  color: var(--color-error);
+  color: var(--uix-canvas-error);
   display: block;
   margin-top: 4px;
 `;
@@ -54,18 +54,18 @@ export const TextInput = styled.input<InputProps>`
   padding: 8px 12px;
   font-size: 14px;
   font-family: inherit;
-  border: 1px solid ${(props) => (props.hasError ? "var(--color-error)" : "var(--color-border)")};
+  border: 1px solid ${(props) => (props.hasError ? "var(--uix-canvas-error)" : "var(--uix-canvas-border)")};
   border-radius: 4px;
-  background-color: var(--color-background);
-  color: var(--color-foreground);
+  background-color: var(--uix-canvas-background);
+  color: var(--uix-canvas-foreground);
   outline: none;
   transition:
     border-color 0.2s,
     box-shadow 0.2s;
 
   &:focus {
-    border-color: var(--color-primary);
-    box-shadow: 0 0 0 2px var(--color-primary-alpha-20);
+    border-color: var(--uix-canvas-primary);
+    box-shadow: 0 0 0 2px var(--uix-canvas-primary-alpha-20);
   }
 
   &:disabled {
@@ -79,10 +79,10 @@ export const TextArea = styled.textarea<InputProps>`
   padding: 8px 12px;
   font-size: 14px;
   font-family: inherit;
-  border: 1px solid ${(props) => (props.hasError ? "var(--color-error)" : "var(--color-border)")};
+  border: 1px solid ${(props) => (props.hasError ? "var(--uix-canvas-error)" : "var(--uix-canvas-border)")};
   border-radius: 4px;
-  background-color: var(--color-background);
-  color: var(--color-foreground);
+  background-color: var(--uix-canvas-background);
+  color: var(--uix-canvas-foreground);
   outline: none;
   transition:
     border-color 0.2s,
@@ -90,8 +90,8 @@ export const TextArea = styled.textarea<InputProps>`
   resize: vertical;
 
   &:focus {
-    border-color: var(--color-primary);
-    box-shadow: 0 0 0 2px var(--color-primary-alpha-20);
+    border-color: var(--uix-canvas-primary);
+    box-shadow: 0 0 0 2px var(--uix-canvas-primary-alpha-20);
   }
 
   &:disabled {
@@ -105,10 +105,10 @@ export const SelectInput = styled.select<InputProps>`
   padding: 8px 36px 8px 12px;
   font-size: 14px;
   font-family: inherit;
-  border: 1px solid ${(props) => (props.hasError ? "var(--color-error)" : "var(--color-border)")};
+  border: 1px solid ${(props) => (props.hasError ? "var(--uix-canvas-error)" : "var(--uix-canvas-border)")};
   border-radius: 4px;
-  background-color: var(--color-background);
-  color: var(--color-foreground);
+  background-color: var(--uix-canvas-background);
+  color: var(--uix-canvas-foreground);
   outline: none;
   cursor: pointer;
   transition:
@@ -121,8 +121,8 @@ export const SelectInput = styled.select<InputProps>`
   background-size: 20px;
 
   &:focus {
-    border-color: var(--color-primary);
-    box-shadow: 0 0 0 2px var(--color-primary-alpha-20);
+    border-color: var(--uix-canvas-primary);
+    box-shadow: 0 0 0 2px var(--uix-canvas-primary-alpha-20);
   }
 
   &:disabled {
@@ -136,18 +136,18 @@ export const NumberInput = styled.input<InputProps>`
   padding: 8px 12px;
   font-size: 14px;
   font-family: inherit;
-  border: 1px solid ${(props) => (props.hasError ? "var(--color-error)" : "var(--color-border)")};
+  border: 1px solid ${(props) => (props.hasError ? "var(--uix-canvas-error)" : "var(--uix-canvas-border)")};
   border-radius: 4px;
-  background-color: var(--color-background);
-  color: var(--color-foreground);
+  background-color: var(--uix-canvas-background);
+  color: var(--uix-canvas-foreground);
   outline: none;
   transition:
     border-color 0.2s,
     box-shadow 0.2s;
 
   &:focus {
-    border-color: var(--color-primary);
-    box-shadow: 0 0 0 2px var(--color-primary-alpha-20);
+    border-color: var(--uix-canvas-primary);
+    box-shadow: 0 0 0 2px var(--uix-canvas-primary-alpha-20);
   }
 
   &:disabled {
@@ -169,13 +169,13 @@ export const CheckboxContainer = styled.div`
   transition: background-color 0.2s;
 
   &:hover {
-    background-color: var(--color-background-hover);
+    background-color: var(--uix-canvas-background-hover);
   }
 `;
 
 export const CheckboxLabel = styled.label`
   font-size: 14px;
-  color: var(--color-foreground);
+  color: var(--uix-canvas-foreground);
   cursor: pointer;
   user-select: none;
   display: flex;
@@ -187,12 +187,12 @@ export const CheckboxInput = styled.input`
   height: 18px;
   margin-right: 8px;
   cursor: pointer;
-  accent-color: var(--color-primary);
+  accent-color: var(--uix-canvas-primary);
 `;
 
 export const CheckboxHelpText = styled.span`
   font-size: 12px;
-  color: var(--color-foreground-de-emp);
+  color: var(--uix-canvas-foreground-de-emp);
   margin-left: 26px;
   display: block;
 `;
@@ -204,7 +204,7 @@ export const InputWrapper = styled.div`
 `;
 
 export const InputSuffix = styled.span`
-  color: var(--color-foreground-de-emp);
+  color: var(--uix-canvas-foreground-de-emp);
   font-size: 14px;
   white-space: nowrap;
 `;

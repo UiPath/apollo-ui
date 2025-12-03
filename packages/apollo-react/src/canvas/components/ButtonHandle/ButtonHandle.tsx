@@ -72,10 +72,10 @@ const ButtonHandleBase = ({
   handleType,
   label,
   labelIcon,
-  labelBackgroundColor = "var(--color-background-secondary)",
+  labelBackgroundColor = "var(--uix-canvas-background-secondary)",
   visible = true,
   showButton = true,
-  color = "var(--color-border)",
+  color = "var(--uix-canvas-border)",
   selected = false,
   index = 0,
   total = 1,
@@ -134,7 +134,7 @@ const ButtonHandleBase = ({
         <StyledLabel $position={position} $backgroundColor={labelBackgroundColor}>
           <Row align="center" gap={4}>
             {labelIcon}
-            <ApTypography color="var(--color-foreground-de-emp)" variant={FontVariantToken.fontSizeSBold}>
+            <ApTypography color="var(--uix-canvas-foreground-de-emp)" variant={FontVariantToken.fontSizeSBold}>
               {label}
             </ApTypography>
           </Row>

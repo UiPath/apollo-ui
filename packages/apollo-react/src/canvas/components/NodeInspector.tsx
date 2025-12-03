@@ -95,7 +95,7 @@ function NodeInfoContent({ node, position, absPosition: _absPosition, width, hei
 
       {data && Object.keys(data).length > 0 && (
         <Column gap={4}>
-          <ApTypography variant={FontVariantToken.fontMonoM} color="var(--color-foreground-de-emp)">
+          <ApTypography variant={FontVariantToken.fontMonoM} color="var(--uix-canvas-foreground-de-emp)">
             Data:
           </ApTypography>
           <pre
@@ -104,10 +104,10 @@ function NodeInfoContent({ node, position, absPosition: _absPosition, width, hei
               whiteSpace: "pre-wrap",
               wordWrap: "break-word",
               padding: 8,
-              background: "var(--color-background-secondary)",
+              background: "var(--uix-canvas-background-secondary)",
               overflow: "auto",
               height: 300,
-              color: "var(--color-foreground-de-emp)",
+              color: "var(--uix-canvas-foreground-de-emp)",
               userSelect: "text",
             }}
           >
@@ -188,7 +188,7 @@ function EdgeInfoContent({ edge }: EdgeInfoContentProps) {
 
       {data && Object.keys(data).length > 0 && (
         <Column gap={4}>
-          <ApTypography variant={FontVariantToken.fontMonoM} color="var(--color-foreground-de-emp)">
+          <ApTypography variant={FontVariantToken.fontMonoM} color="var(--uix-canvas-foreground-de-emp)">
             Data:
           </ApTypography>
           <pre
@@ -197,10 +197,10 @@ function EdgeInfoContent({ edge }: EdgeInfoContentProps) {
               whiteSpace: "pre-wrap",
               wordWrap: "break-word",
               padding: 8,
-              background: "var(--color-background-secondary)",
+              background: "var(--uix-canvas-background-secondary)",
               overflow: "auto",
               height: 300,
-              color: "var(--color-foreground-de-emp)",
+              color: "var(--uix-canvas-foreground-de-emp)",
               userSelect: "text",
             }}
           >

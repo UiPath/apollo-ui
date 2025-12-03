@@ -124,7 +124,7 @@ export const ResourceNode = memo(
           icon = undefined;
           break;
       }
-      return <Row style={{ color: "var(--color-foreground-de-emp)" }}>{icon}</Row>;
+      return <Row style={{ color: "var(--uix-canvas-foreground-de-emp)" }}>{icon}</Row>;
     }, [data]);
 
     const executionStatus = useMemo(() => {
@@ -264,7 +264,7 @@ export const ResourceNode = memo(
           type: "target" as const,
           handleType: "artifact" as const,
           showButton: false,
-          color: "var(--color-foreground-de-emp)",
+          color: "var(--uix-canvas-foreground-de-emp)",
         },
       ],
       []
@@ -277,7 +277,7 @@ export const ResourceNode = memo(
           type: "source" as const,
           handleType: "artifact" as const,
           showButton: false,
-          color: "var(--color-foreground-de-emp)",
+          color: "var(--uix-canvas-foreground-de-emp)",
         },
       ],
       []
@@ -290,7 +290,7 @@ export const ResourceNode = memo(
           type: "source" as const,
           handleType: "artifact" as const,
           showButton: false,
-          color: "var(--color-foreground-de-emp)",
+          color: "var(--uix-canvas-foreground-de-emp)",
         },
       ],
       []
@@ -303,7 +303,7 @@ export const ResourceNode = memo(
           type: "target" as const,
           handleType: "artifact" as const,
           showButton: false,
-          color: "var(--color-foreground-de-emp)",
+          color: "var(--uix-canvas-foreground-de-emp)",
         },
       ],
       []
@@ -316,7 +316,7 @@ export const ResourceNode = memo(
           type: "target" as const,
           handleType: "artifact" as const,
           showButton: false,
-          color: "var(--color-foreground-de-emp)",
+          color: "var(--uix-canvas-foreground-de-emp)",
         },
       ],
       []
@@ -340,7 +340,7 @@ export const ResourceNode = memo(
     const guardrailsAdornment = useMemo((): NodeAdornment => {
       if (!hasGuardrails) return { icon: undefined };
       return {
-        icon: <ApIcon variant="outlined" name="gpp_good" size="18px" color="var(--color-icon-default)" />,
+        icon: <ApIcon variant="outlined" name="gpp_good" size="18px" color="var(--uix-canvas-icon-default)" />,
         tooltip: displayTooltips ? (translations?.guardrailsApplied ?? "") : undefined,
       };
     }, [displayTooltips, hasGuardrails, translations]);
@@ -348,14 +348,14 @@ export const ResourceNode = memo(
     const suggestionAdornment = useMemo((): NodeAdornment => {
       if (!isSuggestion) return { icon: undefined };
       let iconName = "swap_horizontal_circle";
-      let color = "var(--color-warning-icon)";
+      let color = "var(--uix-canvas-warning-icon)";
 
       if (suggestionType === "add") {
         iconName = "add_circle";
-        color = "var(--color-success-icon)";
+        color = "var(--uix-canvas-success-icon)";
       } else if (suggestionType === "delete") {
         iconName = "remove_circle";
-        color = "var(--color-error-icon)";
+        color = "var(--uix-canvas-error-icon)";
       }
 
       return {
@@ -408,11 +408,11 @@ export const ResourceNode = memo(
         suggestionType={suggestionType}
         icon={resourceIcon}
         display={{
-          iconBackground: "var(--color-background-secondary)",
+          iconBackground: "var(--uix-canvas-background-secondary)",
           label: data.name,
           subLabel: data.originalName,
           labelTooltip: displayTooltips ? data.description : undefined,
-          labelBackgroundColor: "var(--color-background-secondary)",
+          labelBackgroundColor: "var(--uix-canvas-background-secondary)",
           shape: "circle",
         }}
         toolbarConfig={toolbarConfig}

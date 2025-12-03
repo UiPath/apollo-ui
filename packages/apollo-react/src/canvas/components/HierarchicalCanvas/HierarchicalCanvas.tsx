@@ -285,7 +285,7 @@ export const HierarchicalCanvas: React.FC<HierarchicalCanvasProps> = ({ mode = "
   return (
     <div
       ref={containerRef}
-      style={{ width: "100%", height: "100%", position: "relative", background: "var(--color-background-secondary)" }}
+      style={{ width: "100%", height: "100%", position: "relative", background: "var(--uix-canvas-background-secondary)" }}
     >
       {breadcrumbs.length > 1 && (
         <div
@@ -294,7 +294,7 @@ export const HierarchicalCanvas: React.FC<HierarchicalCanvasProps> = ({ mode = "
             top: 16,
             left: 16,
             zIndex: 10,
-            background: "var(--color-background)",
+            background: "var(--uix-canvas-background)",
             borderRadius: "8px",
             padding: "8px 12px",
             boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",

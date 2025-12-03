@@ -47,7 +47,8 @@ const NewBaseNodeComponent = (
   const displayLabelBackgroundColor = finalDisplay.labelBackgroundColor;
   const displayShape = finalDisplay.shape ?? "square";
   const displayBackground = finalDisplay.background;
-  const displayIconBackground = suggestionType || executionStatus === "Failed" ? "var(--color-background)" : finalDisplay.iconBackground;
+  const displayIconBackground =
+    suggestionType || executionStatus === "Failed" ? "var(--uix-canvas-background)" : finalDisplay.iconBackground;
   const displayCenterAdornment = finalDisplay.centerAdornmentComponent;
 
   const { edges, isConnecting } = useStore(
@@ -69,14 +70,12 @@ const NewBaseNodeComponent = (
     [showHandles, inProgress, selected, isHovered, isConnecting]
   );
 
-  const hasVisibleBottomHandlesWithLabels = useMemo(() => {
-    if (!handleConfigurations || !Array.isArray(handleConfigurations) || !shouldShowHandles) {
+  const hasVisibleBottomHandles = useMemo(() => {
+    if (!handleConfigurations || !Array.isArray(handleConfigurations) || !selected) {
       return false;
     }
-    return handleConfigurations
-      .filter((config) => config.position === Position.Bottom)
-      .some((config) => config.handles.some((handle) => !!handle.label));
-  }, [handleConfigurations, shouldShowHandles]);
+    return handleConfigurations.some((config) => config.position === Position.Bottom && config.handles.length > 0);
+  }, [handleConfigurations, selected]);
 
   const handleMouseEnter = useCallback(() => setIsHovered(true), []);
   const handleMouseLeave = useCallback(() => setIsHovered(false), []);
@@ -125,8 +124,8 @@ const NewBaseNodeComponent = (
         onBlur={handleBlur}
       >
         <BaseContainer selected={selected} shape="square" className={interactionState} interactionState={interactionState}>
-          <BaseIconWrapper backgroundColor="var(--color-error-background)" shape="square" nodeHeight={height}>
-            <ApIcon color="var(--color-error-icon)" name="error" size="32px" />
+          <BaseIconWrapper backgroundColor="var(--uix-canvas-error-background)" shape="square" nodeHeight={height}>
+            <ApIcon color="var(--uix-canvas-error-icon)" name="error" size="32px" />
           </BaseIconWrapper>
 
           <BaseTextContainer shape="square">
@@ -200,7 +199,7 @@ const NewBaseNodeComponent = (
         })}
 
         {displayLabel && (
-          <BaseTextContainer hasBottomHandles={hasVisibleBottomHandlesWithLabels} shape={displayShape}>
+          <BaseTextContainer hasBottomHandles={hasVisibleBottomHandles} shape={displayShape}>
             <ApTooltip delay placement="top" content={displayLabelTooltip}>
               <BaseHeader shape={displayShape} backgroundColor={displayLabelBackgroundColor}>
                 {displayLabel}

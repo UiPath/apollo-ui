@@ -23,64 +23,21 @@ export const getAbsolutePosition = (node: Node, nodes: Node[]): { x: number; y: 
 };
 
 /**
- * Calculates a position for a new node to be aligned beside a target node without overlapping.
- *
- * @param targetNode The node beside which the new node should be positioned.
- * @param newNodeSize The style (height and width) of the new node.
- * @param existingNodes Array of all existing nodes, including dynamically added ones.
- * @param offset The default offset distance between nodes.
- * @returns { x: number, y: number } The position for the new node.
- */
-export const getNewNodePosition = (
-  targetNode: Node,
-  newNodeSize: { width: number; height: number },
-  existingNodes: Node[],
-  placementPreference: "right" | "top-right" | "align-top" = "right",
-  offset = BASE_CANVAS_GRID_SPACING * 5
-): { x: number; y: number } => {
-  const getNodesToCompare = (targetNode: Node | undefined) => {
-    if (targetNode?.parentId) {
-      return existingNodes.filter((node) => node.parentId === targetNode.parentId);
-    }
-    return existingNodes;
-  };
-  let nodesToCompare = getNodesToCompare(targetNode);
-  nodesToCompare = nodesToCompare.map((node) => {
-    return {
-      ...node,
-      position: getAbsolutePosition(node, existingNodes),
-    };
-  });
-  const targetAbsolutePosition = targetNode.parentId ? getAbsolutePosition(targetNode, existingNodes) : targetNode.position;
-  const currentNodeCenterY = targetAbsolutePosition.y + (targetNode.measured?.height ?? 0) / 2;
-  const newNodeHeight = newNodeSize.height;
-  const newNodePositionY = currentNodeCenterY - newNodeHeight / 2;
-  const newNodePositionX = targetAbsolutePosition.x + (targetNode.measured?.width ?? 0) + offset;
-
-  if (placementPreference === "top-right") {
-    return getNonOverlappingPosition(nodesToCompare, { x: newNodePositionX, y: newNodePositionY - offset }, newNodeSize, offset * -1);
-  }
-
-  if (placementPreference === "align-top") {
-    return getNonOverlappingPosition(nodesToCompare, { x: newNodePositionX, y: targetAbsolutePosition.y }, newNodeSize, offset);
-  }
-
-  return getNonOverlappingPosition(nodesToCompare, { x: newNodePositionX, y: newNodePositionY }, newNodeSize, offset);
-};
-
-/**
- * Recursively calculates a non-overlapping position for a new node.
+ * Direction-aware non-overlapping position calculation.
+ * Shifts the node perpendicular to the placement direction when overlap is detected.
  *
  * @param nodes Array of all existing nodes.
- * @param newNodePosition The position for the new node.
- * @param newNodeStyle The style (height and width) of the new node.
- * @param offset The default offset distance between nodes.
+ * @param newNodePosition The initial position for the new node.
+ * @param newNodeStyle The size (height and width) of the new node.
+ * @param direction The direction the node is placed relative to source ("left" | "right" | "top" | "bottom").
+ * @param offset The offset distance to shift when overlapping.
  * @returns { x: number, y: number } The non-overlapping position for the new node.
  */
-function getNonOverlappingPosition(
+export function getNonOverlappingPositionForDirection(
   nodes: Node[],
   newNodePosition: XYPosition,
   newNodeStyle: { width: number; height: number },
+  direction: "left" | "right" | "top" | "bottom",
   offset = BASE_CANVAS_GRID_SPACING * 2
 ): XYPosition {
   const isOverlapping = nodes.some(
@@ -93,8 +50,15 @@ function getNonOverlappingPosition(
   );
 
   if (isOverlapping) {
-    newNodePosition.y += offset;
-    return getNonOverlappingPosition(nodes, newNodePosition, newNodeStyle, offset);
+    // Shift perpendicular to the placement direction
+    if (direction === "left" || direction === "right") {
+      // For left/right placement, shift vertically (down)
+      newNodePosition.y += offset;
+    } else {
+      // For top/bottom placement, shift horizontally (right)
+      newNodePosition.x += offset;
+    }
+    return getNonOverlappingPositionForDirection(nodes, newNodePosition, newNodeStyle, direction, offset);
   }
 
   return newNodePosition;

@@ -122,7 +122,7 @@ const TriggerNodeStory = () => {
       data: {
         details: {
           tooltip: "Time Trigger",
-          icon: <ApIcon name="schedule" variant="outlined" color="var(--color-foreground-emp)" size="24px" />,
+          icon: <ApIcon name="schedule" variant="outlined" color="var(--uix-canvas-foreground-emp)" size="24px" />,
         },
       },
     },
@@ -135,7 +135,7 @@ const TriggerNodeStory = () => {
       data: {
         details: {
           tooltip: "Email Trigger",
-          icon: <ApIcon name="email" variant="outlined" color="var(--color-foreground-emp)" size="24px" />,
+          icon: <ApIcon name="email" variant="outlined" color="var(--uix-canvas-foreground-emp)" size="24px" />,
         },
       },
     },
@@ -148,7 +148,7 @@ const TriggerNodeStory = () => {
       data: {
         details: {
           tooltip: "Webhook Trigger",
-          icon: <ApIcon name="webhook" variant="outlined" color="var(--color-foreground-emp)" size="24px" />,
+          icon: <ApIcon name="webhook" variant="outlined" color="var(--uix-canvas-foreground-emp)" size="24px" />,
         },
       },
     },

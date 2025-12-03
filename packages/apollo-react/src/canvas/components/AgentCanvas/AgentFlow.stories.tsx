@@ -987,9 +987,9 @@ const SuggestionModeWrapper = ({
         p={16}
         gap={16}
         style={{
-          backgroundColor: "var(--color-background-raised)",
-          color: "var(--color-foreground)",
-          borderLeft: "1px solid var(--color-border-de-emp)",
+          backgroundColor: "var(--uix-canvas-background-raised)",
+          color: "var(--uix-canvas-foreground)",
+          borderLeft: "1px solid var(--uix-canvas-border-de-emp)",
           overflowY: "auto",
         }}
       >
@@ -1007,7 +1007,7 @@ const SuggestionModeWrapper = ({
               This story demonstrates two distinct suggestion workflows that can coexist on the canvas.
             </p>
 
-            <div style={{ borderTop: "1px solid var(--color-border)", margin: "12px 0", paddingTop: "12px" }}>
+            <div style={{ borderTop: "1px solid var(--uix-canvas-border)", margin: "12px 0", paddingTop: "12px" }}>
               <h4 style={{ margin: "0 0 8px 0", fontSize: "0.875rem", fontWeight: 600 }}>1️⃣ Placeholder on Direct Resource Creation</h4>
               <p style={{ margin: "0 0 8px 0", fontSize: "0.8125rem", fontStyle: "italic" }}>
                 User-initiated resource creation with confirmation workflow
@@ -1048,7 +1048,7 @@ const SuggestionModeWrapper = ({
               </ul>
             </div>
 
-            <div style={{ borderTop: "1px solid var(--color-border)", margin: "12px 0", paddingTop: "12px" }}>
+            <div style={{ borderTop: "1px solid var(--uix-canvas-border)", margin: "12px 0", paddingTop: "12px" }}>
               <h4 style={{ margin: "0 0 8px 0", fontSize: "0.875rem", fontWeight: 600 }}>2️⃣ Autopilot Suggestions View</h4>
               <p style={{ margin: "0 0 8px 0", fontSize: "0.8125rem", fontStyle: "italic" }}>Batch suggestions from AI/middleware</p>
 
@@ -1059,7 +1059,7 @@ const SuggestionModeWrapper = ({
                 </li>
                 <li>Multiple suggestions appear with visual indicators</li>
                 <li>
-                  Use <strong style={{ color: "var(--color-primary)" }}>suggestion group panel</strong> (bottom-center)
+                  Use <strong style={{ color: "var(--uix-canvas-primary)" }}>suggestion group panel</strong> (bottom-center)
                 </li>
                 <li>Accept/reject individually or use bulk operations</li>
               </ol>
@@ -1088,7 +1088,7 @@ const SuggestionModeWrapper = ({
                 style={{
                   margin: "8px 0 0 0",
                   padding: "8px",
-                  backgroundColor: "var(--color-background-secondary)",
+                  backgroundColor: "var(--uix-canvas-background-secondary)",
                   borderRadius: "4px",
                   fontSize: "0.7rem",
                   lineHeight: "1.5",
@@ -1270,8 +1270,8 @@ const SuggestionModeWrapper = ({
           gap={12}
           p={20}
           style={{
-            color: "var(--color-foreground)",
-            backgroundColor: "var(--color-background-secondary)",
+            color: "var(--uix-canvas-foreground)",
+            backgroundColor: "var(--uix-canvas-background-secondary)",
             minWidth: 280,
           }}
         >
@@ -1326,8 +1326,8 @@ const SuggestionModeWrapper = ({
                 top: "50%",
                 left: "50%",
                 transform: "translate(-50%, -50%)",
-                backgroundColor: "var(--color-background-raised)",
-                border: "1px solid var(--color-border)",
+                backgroundColor: "var(--uix-canvas-background-raised)",
+                border: "1px solid var(--uix-canvas-border)",
                 borderRadius: 8,
                 padding: 24,
                 minWidth: 400,
@@ -1335,10 +1335,10 @@ const SuggestionModeWrapper = ({
                 zIndex: 1000,
               }}
             >
-              <h3 style={{ margin: "0 0 16px 0", color: "var(--color-foreground)" }}>
+              <h3 style={{ margin: "0 0 16px 0", color: "var(--uix-canvas-foreground)" }}>
                 Configure {openModalType.charAt(0).toUpperCase() + openModalType.slice(1)}
               </h3>
-              <p style={{ margin: "0 0 24px 0", color: "var(--color-foreground-de-emp)", fontSize: "0.875rem" }}>
+              <p style={{ margin: "0 0 24px 0", color: "var(--uix-canvas-foreground-de-emp)", fontSize: "0.875rem" }}>
                 This is a simulated modal/panel that would normally allow you to configure the resource.
                 {placeholderBeingConfigured && (
                   <>

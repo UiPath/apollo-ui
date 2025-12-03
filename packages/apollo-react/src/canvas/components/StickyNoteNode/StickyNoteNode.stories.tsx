@@ -193,7 +193,7 @@ const WithBaseNodesStory = () => {
         type: "baseNode",
         position: { x: 128, y: 224 },
         data: {
-          icon: <ApIcon size="48px" name="cloud_upload" color="var(--color-foreground-de-emp)" />,
+          icon: <ApIcon size="48px" name="cloud_upload" color="var(--uix-canvas-foreground-de-emp)" />,
           label: "Data Source",
           subLabel: "Input Stream",
           parameters: {},
@@ -211,7 +211,7 @@ const WithBaseNodesStory = () => {
         type: "baseNode",
         position: { x: 416, y: 224 },
         data: {
-          icon: <ApIcon size="48px" name="filter_list" color="var(--color-foreground-de-emp)" />,
+          icon: <ApIcon size="48px" name="filter_list" color="var(--uix-canvas-foreground-de-emp)" />,
           label: "Filter",
           subLabel: "Validation Rules",
           parameters: {},
@@ -250,7 +250,7 @@ const WithBaseNodesStory = () => {
         type: "baseNode",
         position: { x: 800, y: 144 },
         data: {
-          icon: <ApIcon size="48px" name="settings" color="var(--color-foreground-de-emp)" />,
+          icon: <ApIcon size="48px" name="settings" color="var(--uix-canvas-foreground-de-emp)" />,
           label: "Transform",
           subLabel: "Data Processing",
           parameters: {},
@@ -272,7 +272,7 @@ const WithBaseNodesStory = () => {
         type: "baseNode",
         position: { x: 800, y: 304 },
         data: {
-          icon: <ApIcon size="48px" name="add_circle" color="var(--color-foreground-de-emp)" />,
+          icon: <ApIcon size="48px" name="add_circle" color="var(--uix-canvas-foreground-de-emp)" />,
           label: "Enrich",
           subLabel: "Add Metadata",
           parameters: {},
@@ -294,7 +294,7 @@ const WithBaseNodesStory = () => {
         type: "baseNode",
         position: { x: 1216, y: 224 },
         data: {
-          icon: <ApIcon size="48px" name="merge_type" color="var(--color-foreground-de-emp)" />,
+          icon: <ApIcon size="48px" name="merge_type" color="var(--uix-canvas-foreground-de-emp)" />,
           label: "Merge",
           subLabel: "Combine Streams",
           parameters: {},
@@ -333,7 +333,7 @@ const WithBaseNodesStory = () => {
         type: "baseNode",
         position: { x: 1664, y: 144 },
         data: {
-          icon: <ApIcon size="48px" name="storage" color="var(--color-foreground-de-emp)" />,
+          icon: <ApIcon size="48px" name="storage" color="var(--uix-canvas-foreground-de-emp)" />,
           label: "Storage",
           subLabel: "Database",
           parameters: {},
@@ -355,7 +355,7 @@ const WithBaseNodesStory = () => {
         type: "baseNode",
         position: { x: 1664, y: 304 },
         data: {
-          icon: <ApIcon size="48px" name="search" color="var(--color-foreground-de-emp)" />,
+          icon: <ApIcon size="48px" name="search" color="var(--uix-canvas-foreground-de-emp)" />,
           label: "Index",
           subLabel: "Search Engine",
           parameters: {},
@@ -377,7 +377,7 @@ const WithBaseNodesStory = () => {
         type: "baseNode",
         position: { x: 2080, y: 224 },
         data: {
-          icon: <ApIcon size="48px" name="analytics" color="var(--color-foreground-de-emp)" />,
+          icon: <ApIcon size="48px" name="analytics" color="var(--uix-canvas-foreground-de-emp)" />,
           label: "Monitor",
           subLabel: "Analytics",
           parameters: {},

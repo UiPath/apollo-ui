@@ -1,0 +1,93 @@
+/**
+ * UIX Canvas CSS Variables
+ *
+ * These variables provide a theming layer for the canvas package.
+ * They default to the Apollo design system variables but can be overridden
+ * by consumers to customize the appearance.
+ *
+ * Usage:
+ *   import '@uipath/uix-canvas/styles';
+ *
+ * To override, define the variables in your own CSS:
+ *   :root {
+ *     --uix-canvas-foreground: #333;
+ *     --uix-canvas-background: #fff;
+ *   }
+ *
+ * Note: We use `:where(*)` instead of `:root` because the --color-* variables
+ * from Portal Shell are defined in the shadow DOM and cascade down to slotted
+ * content. The `:where(*)` selector ensures our variables are evaluated in the
+ * context of each element, allowing proper inheritance of the --color-* values.
+ * `:where()` has zero specificity, making it easy to override these defaults.
+ */
+
+:where(*) {
+  /* ==========================================================================
+     Core Colors
+     ========================================================================== */
+
+  /* Foreground (text) colors */
+  --uix-canvas-foreground: var(--color-foreground);
+  --uix-canvas-foreground-emp: var(--color-foreground-emp);
+  --uix-canvas-foreground-de-emp: var(--color-foreground-de-emp);
+  --uix-canvas-foreground-inverse: var(--color-foreground-inverse);
+
+  /* Background colors */
+  --uix-canvas-background: var(--color-background);
+  --uix-canvas-background-secondary: var(--color-background-secondary);
+  --uix-canvas-background-raised: var(--color-background-raised);
+  --uix-canvas-background-hover: var(--color-background-hover);
+  --uix-canvas-background-inverse: var(--color-background-inverse);
+
+  /* Border colors */
+  --uix-canvas-border: var(--color-border);
+  --uix-canvas-border-de-emp: var(--color-border-de-emp);
+  --uix-canvas-border-hover: var(--color-border-hover);
+  --uix-canvas-border-subtle: var(--color-border-subtle);
+  --uix-canvas-border-grid: var(--color-border-grid);
+
+  /* ==========================================================================
+     Interactive Colors
+     ========================================================================== */
+
+  /* Primary */
+  --uix-canvas-primary: var(--color-primary);
+  --uix-canvas-primary-alpha-20: var(--color-primary-alpha-20);
+
+  /* Secondary */
+  --uix-canvas-secondary-pressed: var(--color-secondary-pressed);
+  --uix-canvas-secondary-focused: var(--color-secondary-focused);
+
+  /* Selection */
+  --uix-canvas-selection-indicator: var(--color-selection-indicator);
+
+  /* ==========================================================================
+     Status Colors
+     ========================================================================== */
+
+  /* Error */
+  --uix-canvas-error: var(--color-error);
+  --uix-canvas-error-icon: var(--color-error-icon);
+  --uix-canvas-error-text: var(--color-error-text);
+  --uix-canvas-error-background: var(--color-error-background);
+
+  /* Warning */
+  --uix-canvas-warning-icon: var(--color-warning-icon);
+  --uix-canvas-warning-text: var(--color-warning-text);
+  --uix-canvas-warning-background: var(--color-warning-background);
+
+  /* Success */
+  --uix-canvas-success-icon: var(--color-success-icon);
+  --uix-canvas-success-background: var(--color-success-background);
+
+  /* Info */
+  --uix-canvas-info-icon: var(--color-info-icon);
+  --uix-canvas-info-text: var(--color-info-text);
+
+  /* ==========================================================================
+     Misc
+     ========================================================================== */
+
+  --uix-canvas-icon-default: var(--color-icon-default);
+  --uix-canvas-text-primary: var(--color-text-primary);
+}

@@ -15,7 +15,7 @@ export const agentEscalationNodeRegistration: NodeRegistration = {
   version: "1.0.0",
 
   definition: {
-    getIcon: (_data, _context) => <ApIcon name="person" color="var(--color-foreground-de-emp)" size="40px" />,
+    getIcon: (_data, _context) => <ApIcon name="person" color="var(--uix-canvas-foreground-de-emp)" size="40px" />,
 
     getDisplay: (data, _context) => ({
       label: data.display?.label,

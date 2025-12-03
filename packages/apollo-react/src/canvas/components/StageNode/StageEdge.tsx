@@ -5,19 +5,19 @@ import styled from "@emotion/styled";
 
 export const StageEdgeLabel = styled.div`
   position: absolute;
-  color: var(--color-foreground);
-  background: var(--color-background);
+  color: var(--uix-canvas-foreground);
+  background: var(--uix-canvas-background);
   padding: 4px 8px;
   border-radius: 4px;
   font-size: 12px;
   font-weight: 500;
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--uix-canvas-border);
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
   pointer-events: all;
 
   &:hover {
-    background: var(--color-background-hover);
-    border-color: var(--color-border-hover);
+    background: var(--uix-canvas-background-hover);
+    border-color: var(--uix-canvas-border-hover);
   }
 `;
 
@@ -52,7 +52,7 @@ export function StageEdge({
   targetPosition,
   selected,
   style,
-  stroke = "var(--color-foreground-emp)",
+  stroke = "var(--uix-canvas-foreground-emp)",
   strokeWidth = 2,
   arrowSize = 8,
   ...rest
@@ -78,7 +78,7 @@ export function StageEdge({
 
   const arrowLineLength = arrowSize;
 
-  const strokeColor = selected ? "var(--color-selection-indicator)" : stroke;
+  const strokeColor = selected ? "var(--uix-canvas-selection-indicator)" : stroke;
   const strokeWidthValue = selected ? strokeWidth + 1 : strokeWidth;
 
   return (

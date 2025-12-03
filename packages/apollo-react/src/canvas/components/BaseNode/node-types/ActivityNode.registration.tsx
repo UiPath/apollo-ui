@@ -17,7 +17,7 @@ export const activityNodeRegistration: NodeRegistration = {
       if (data.icon) {
         return data.icon;
       }
-      return <ApIcon name="settings" color="var(--color-foreground-de-emp)" size="40px" />;
+      return <ApIcon name="settings" color="var(--uix-canvas-foreground-de-emp)" size="40px" />;
     },
 
     getDisplay: (data: any, _context) => ({

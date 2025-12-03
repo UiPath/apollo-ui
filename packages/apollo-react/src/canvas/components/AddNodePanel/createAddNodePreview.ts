@@ -1,4 +1,4 @@
-import type { ReactFlowInstance } from "@uipath/uix/xyflow/react";
+import { Position, type ReactFlowInstance } from "@uipath/uix/xyflow/react";
 import { createPreviewNode, applyPreviewToReactFlow } from "../../utils/createPreviewNode";
 
 /**
@@ -8,10 +8,27 @@ import { createPreviewNode, applyPreviewToReactFlow } from "../../utils/createPr
  * @param sourceNodeId - The ID of the source node
  * @param sourceHandleId - The ID of the source handle
  * @param reactFlowInstance - The React Flow instance
+ * @param handlePosition - The position/side of the handle (defaults to Right)
+ * @param sourceHandleType - Whether the source handle is a "source" or "target" (defaults to "source")
  */
-export function createAddNodePreview(sourceNodeId: string, sourceHandleId: string, reactFlowInstance: ReactFlowInstance): void {
+export function createAddNodePreview(
+  sourceNodeId: string,
+  sourceHandleId: string,
+  reactFlowInstance: ReactFlowInstance,
+  handlePosition: Position = Position.Right,
+  sourceHandleType: "source" | "target" = "source"
+): void {
   // Use the unified preview creation utility
-  const preview = createPreviewNode(sourceNodeId, sourceHandleId, reactFlowInstance);
+  const preview = createPreviewNode(
+    sourceNodeId,
+    sourceHandleId,
+    reactFlowInstance,
+    undefined, // No drop position - use auto-placement
+    undefined, // No custom data
+    sourceHandleType,
+    undefined, // Use default preview node size
+    handlePosition
+  );
 
   if (preview) {
     applyPreviewToReactFlow(preview, reactFlowInstance);

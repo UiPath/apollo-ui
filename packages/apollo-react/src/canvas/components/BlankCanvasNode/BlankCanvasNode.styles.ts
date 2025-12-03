@@ -6,8 +6,8 @@ export const NodeContainer = styled.div<{ selected?: boolean }>`
   width: 96px;
   height: 96px;
   border-radius: 16px;
-  background: var(--color-background);
-  border: 1.5px solid var(--color-border-de-emp);
+  background: var(--uix-canvas-background);
+  border: 1.5px solid var(--uix-canvas-border-de-emp);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
@@ -18,8 +18,8 @@ export const NodeContainer = styled.div<{ selected?: boolean }>`
   ${({ selected }) =>
     selected &&
     css`
-      border-color: var(--color-selection-indicator);
-      outline: 6px solid var(--color-secondary-pressed);
+      border-color: var(--uix-canvas-selection-indicator);
+      outline: 6px solid var(--uix-canvas-secondary-pressed);
     `}
 `;
 
@@ -30,7 +30,7 @@ export const IconWrapper = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--color-background-secondary);
+  background: var(--uix-canvas-background-secondary);
   object-fit: contain;
 `;
 
@@ -50,7 +50,7 @@ export const TextContainer = styled.div`
 export const Header = styled.div`
   font-weight: 600;
   font-size: 13px;
-  color: var(--color-foreground);
+  color: var(--uix-canvas-foreground);
   line-height: 1.4;
   margin-bottom: 2px;
   word-break: break-word;

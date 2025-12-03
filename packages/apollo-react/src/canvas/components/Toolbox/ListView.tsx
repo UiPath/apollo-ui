@@ -55,7 +55,7 @@ const ListViewRow = <T extends ListItem>({
   if (renderItem.type === "section") {
     return (
       <SectionHeader {...ariaAttributes} style={style}>
-        <ApTypography variant={FontVariantToken.fontSizeS} color="var(--color-foreground-emp)">
+        <ApTypography variant={FontVariantToken.fontSizeS} color="var(--uix-canvas-foreground-emp)">
           {renderItem.sectionName}
         </ApTypography>
       </SectionHeader>
@@ -74,22 +74,22 @@ const ListViewRow = <T extends ListItem>({
       className={isLoading ? "loading" : ""}
       disabled={isLoading}
     >
-      <IconContainer bgColor={bgColor} color="var(--color-foreground-emp)">
+      <IconContainer bgColor={bgColor} color="var(--uix-canvas-foreground-emp)">
         {item.icon?.url && <img src={item.icon?.url} alt={item.name} style={{ width: 24, height: 24 }} />}
-        {item.icon?.name && <ApIcon name={item.icon?.name} size="24px" color="var(--color-foreground-de-emp)" />}
+        {item.icon?.name && <ApIcon name={item.icon?.name} size="24px" color="var(--uix-canvas-foreground-de-emp)" />}
         {item.icon?.Component && <item.icon.Component />}
       </IconContainer>
       <Column flex={1} overflow="hidden">
-        <ApTypography variant={FontVariantToken.fontSizeS} className="list-view-item-name" color="var(--color-foreground-emp)">
+        <ApTypography variant={FontVariantToken.fontSizeS} className="list-view-item-name" color="var(--uix-canvas-foreground-emp)">
           {item.name}
         </ApTypography>
         {item.description && (
-          <ApTypography variant={FontVariantToken.fontSizeXs} className="list-view-item-name" color="var(--color-foreground-de-emp)">
+          <ApTypography variant={FontVariantToken.fontSizeXs} className="list-view-item-name" color="var(--uix-canvas-foreground-de-emp)">
             {item.description}
           </ApTypography>
         )}
       </Column>
-      {!!item.children && <ApIcon name="chevron_right" variant="outlined" size="20px" color="var(--color-foreground-de-emp)" />}
+      {!!item.children && <ApIcon name="chevron_right" variant="outlined" size="20px" color="var(--uix-canvas-foreground-de-emp)" />}
     </ListItemButton>
   );
 };
@@ -170,8 +170,8 @@ export const ListView = <T extends ListItem>({
   if (items.length === 0) {
     return (
       <Column align="center" justify="center" flex={1} gap={10} style={{ minHeight: "250px" }}>
-        <ApIcon name={emptyStateIcon} size="48px" color="var(--color-foreground-de-emp)" />
-        <ApTypography variant={FontVariantToken.fontSizeS} color="var(--color-foreground-de-emp)">
+        <ApIcon name={emptyStateIcon} size="48px" color="var(--uix-canvas-foreground-de-emp)" />
+        <ApTypography variant={FontVariantToken.fontSizeS} color="var(--uix-canvas-foreground-de-emp)">
           {emptyStateMessage}
         </ApTypography>
       </Column>

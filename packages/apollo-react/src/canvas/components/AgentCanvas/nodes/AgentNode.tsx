@@ -115,8 +115,8 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
         handleType: "artifact",
         label: translations.memory,
         showButton: mode === "design" && !hasMemory,
-        color: "var(--color-foreground-de-emp)",
-        labelBackgroundColor: "var(--color-background-secondary)",
+        color: "var(--uix-canvas-foreground-de-emp)",
+        labelBackgroundColor: "var(--uix-canvas-background-secondary)",
         visible: displayMemory,
         onAction: (_e: HandleActionEvent) => {
           onAddResource?.("memorySpace");
@@ -140,8 +140,8 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
           handleType: "artifact",
           label: translations.context,
           showButton: mode === "design",
-          color: "var(--color-foreground-de-emp)",
-          labelBackgroundColor: "var(--color-background-secondary)",
+          color: "var(--uix-canvas-foreground-de-emp)",
+          labelBackgroundColor: "var(--uix-canvas-background-secondary)",
           visible: displayContext,
           onAction: (_e: HandleActionEvent) => {
             onAddResource?.("context");
@@ -153,8 +153,8 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
           handleType: "artifact",
           label: translations.escalations,
           showButton: mode === "design",
-          color: "var(--color-foreground-de-emp)",
-          labelBackgroundColor: "var(--color-background-secondary)",
+          color: "var(--uix-canvas-foreground-de-emp)",
+          labelBackgroundColor: "var(--uix-canvas-background-secondary)",
           visible: displayEscalation,
           onAction: (_e: HandleActionEvent) => {
             onAddResource?.("escalation");
@@ -166,8 +166,8 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
           handleType: "artifact",
           label: translations.tools,
           showButton: mode === "design",
-          color: "var(--color-foreground-de-emp)",
-          labelBackgroundColor: "var(--color-background-secondary)",
+          color: "var(--uix-canvas-foreground-de-emp)",
+          labelBackgroundColor: "var(--uix-canvas-background-secondary)",
           visible: displayTool || displayMcp,
           onAction: (_e: HandleActionEvent) => {
             // Default to tool when both are available, or show the available option
@@ -191,9 +191,9 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
 
   const agentIcon = useMemo(() => {
     if (isConversational) {
-      return <ConversationalAgentIcon color="var(--color-foreground-de-emp)" w={32} h={32} />;
+      return <ConversationalAgentIcon color="var(--uix-canvas-foreground-de-emp)" w={32} h={32} />;
     }
-    return <AutonomousAgentIcon color="var(--color-foreground-de-emp)" w={32} h={32} />;
+    return <AutonomousAgentIcon color="var(--uix-canvas-foreground-de-emp)" w={32} h={32} />;
   }, [isConversational]);
 
   const statusAdornment = useMemo((): NodeAdornment => {
@@ -219,14 +219,14 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
           alignItems: "center",
           gap: "4px",
           padding: "4px 8px",
-          backgroundColor: "var(--color-background-secondary)",
+          backgroundColor: "var(--uix-canvas-background-secondary)",
           borderRadius: "16px",
           fontSize: "10px",
           fontWeight: "700",
           marginTop: "6px",
           textAlign: "center",
           lineHeight: "16px",
-          color: "var(--color-foreground-de-emp)",
+          color: "var(--uix-canvas-foreground-de-emp)",
           cursor: "pointer",
         }}
       >
@@ -285,14 +285,14 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
   const suggestionAdornment = useMemo((): NodeAdornment => {
     if (!isSuggestion) return { icon: undefined };
     let iconName = "swap_horizontal_circle";
-    let color = "var(--color-warning-icon)";
+    let color = "var(--uix-canvas-warning-icon)";
 
     if (suggestionType === "add") {
       iconName = "add_circle";
-      color = "var(--color-success-icon)";
+      color = "var(--uix-canvas-success-icon)";
     } else if (suggestionType === "delete") {
       iconName = "remove_circle";
-      color = "var(--color-error-icon)";
+      color = "var(--uix-canvas-error-icon)";
     }
 
     return {
@@ -311,8 +311,8 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
         label: name,
         subLabel: isConversational ? translations.conversationalAgent : translations.autonomousAgent,
         shape: "rectangle",
-        background: "var(--color-background)",
-        iconBackground: "var(--color-background-secondary)",
+        background: "var(--uix-canvas-background)",
+        iconBackground: "var(--uix-canvas-background-secondary)",
         centerAdornmentComponent: healthScoreElement,
       }}
       toolbarConfig={toolbarConfig}

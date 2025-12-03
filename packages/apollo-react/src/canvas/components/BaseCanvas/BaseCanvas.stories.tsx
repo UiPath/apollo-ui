@@ -157,7 +157,7 @@ const enhancedNodes: Node<BaseNodeData>[] = [
     position: { x: 50, y: 200 },
     type: "baseNode",
     data: {
-      icon: <ApIcon size="48px" name="cloud_upload" color="var(--color-foreground-de-emp)" />,
+      icon: <ApIcon size="48px" name="cloud_upload" color="var(--uix-canvas-foreground-de-emp)" />,
       label: "Data Source",
       subLabel: "Input Stream",
       topRightAdornment: <ApIcon name="check_circle" size="small" style={{ color: "green" }} />,
@@ -175,7 +175,7 @@ const enhancedNodes: Node<BaseNodeData>[] = [
     position: { x: 300, y: 100 },
     type: "baseNode",
     data: {
-      icon: <ApIcon size="48px" name="settings" color="var(--color-foreground-de-emp)" />,
+      icon: <ApIcon size="48px" name="settings" color="var(--uix-canvas-foreground-de-emp)" />,
       label: "Transform",
       subLabel: "Data Processing",
       parameters: {},
@@ -196,7 +196,7 @@ const enhancedNodes: Node<BaseNodeData>[] = [
     position: { x: 300, y: 300 },
     type: "baseNode",
     data: {
-      icon: <ApIcon size="48px" name="filter_list" color="var(--color-foreground-de-emp)" />,
+      icon: <ApIcon size="48px" name="filter_list" color="var(--uix-canvas-foreground-de-emp)" />,
       label: "Filter",
       subLabel: "Validation Rules",
       topRightAdornment: <ApIcon name="warning" size="16px" style={{ color: "orange" }} />,
@@ -221,7 +221,7 @@ const enhancedNodes: Node<BaseNodeData>[] = [
     position: { x: 550, y: 200 },
     type: "baseNode",
     data: {
-      icon: <ApIcon size="48px" name="merge_type" color="var(--color-foreground-de-emp)" />,
+      icon: <ApIcon size="48px" name="merge_type" color="var(--uix-canvas-foreground-de-emp)" />,
       label: "Merge",
       subLabel: "Combine Streams",
       parameters: {},
@@ -245,11 +245,11 @@ const enhancedNodes: Node<BaseNodeData>[] = [
     position: { x: 800, y: 200 },
     type: "baseNode",
     data: {
-      icon: <ApIcon size="48px" name="storage" color="var(--color-foreground-de-emp)" />,
+      icon: <ApIcon size="48px" name="storage" color="var(--uix-canvas-foreground-de-emp)" />,
       label: "Storage",
       subLabel: "Database",
-      topRightAdornment: <ApIcon name="lock" size="small" color="var(--color-foreground-de-emp)" />,
-      bottomLeftAdornment: <ApIcon name="schedule" size="small" color="var(--color-foreground-de-emp)" />,
+      topRightAdornment: <ApIcon name="lock" size="small" color="var(--uix-canvas-foreground-de-emp)" />,
+      bottomLeftAdornment: <ApIcon name="schedule" size="small" color="var(--uix-canvas-foreground-de-emp)" />,
       parameters: {},
       handleConfigurations: [
         {
@@ -268,7 +268,7 @@ const enhancedNodes: Node<BaseNodeData>[] = [
     position: { x: 1050, y: 200 },
     type: "baseNode",
     data: {
-      icon: <ApIcon size="48px" name="analytics" color="var(--color-foreground-de-emp)" />,
+      icon: <ApIcon size="48px" name="analytics" color="var(--uix-canvas-foreground-de-emp)" />,
       label: "Monitor",
       subLabel: "Analytics",
       parameters: {},
@@ -381,8 +381,8 @@ const DefaultStory = () => {
             gap={12}
             p={20}
             style={{
-              color: "var(--color-foreground)",
-              backgroundColor: "var(--color-background-secondary)",
+              color: "var(--uix-canvas-foreground)",
+              backgroundColor: "var(--uix-canvas-background-secondary)",
               minWidth: 280,
             }}
           >
@@ -422,9 +422,9 @@ const DefaultStory = () => {
                 style={{
                   padding: "8px",
                   borderRadius: "4px",
-                  border: "1px solid var(--color-border)",
-                  backgroundColor: "var(--color-background)",
-                  color: "var(--color-foreground)",
+                  border: "1px solid var(--uix-canvas-border)",
+                  backgroundColor: "var(--uix-canvas-background)",
+                  color: "var(--uix-canvas-foreground)",
                   fontSize: "14px",
                 }}
               >
@@ -523,7 +523,11 @@ const DifferentBackgroundsStory = () => {
         backgroundSize={size}
       >
         <Panel position="top-left">
-          <Column gap={8} p={16} style={{ color: "var(--color-foreground)", backgroundColor: "var(--color-background-secondary)" }}>
+          <Column
+            gap={8}
+            p={16}
+            style={{ color: "var(--uix-canvas-foreground)", backgroundColor: "var(--uix-canvas-background-secondary)" }}
+          >
             <ApTypography variant={FontVariantToken.fontSizeH3Bold}>Background Styles</ApTypography>
             <Row gap={8}>
               <ApButton
@@ -579,7 +583,7 @@ const ReadOnlyModeStory = () => {
         <Panel position="top-center">
           <Column
             p={12}
-            style={{ color: "var(--color-foreground)", backgroundColor: "var(--color-background-secondary)", borderRadius: 4 }}
+            style={{ color: "var(--uix-canvas-foreground)", backgroundColor: "var(--uix-canvas-background-secondary)", borderRadius: 4 }}
           >
             <ApTypography variant={FontVariantToken.fontSizeM}>
               <ApIcon name="lock" size="small" /> Read-only Mode - Interactions Disabled
@@ -633,7 +637,7 @@ const EmptyCanvasStory = () => {
       position: { x: 100 + (nodeCount % 3) * 200, y: 100 + Math.floor(nodeCount / 3) * 150 },
       type: "baseNode",
       data: {
-        icon: <ApIcon size="48px" name="widgets" color="var(--color-foreground-de-emp)" />,
+        icon: <ApIcon size="48px" name="widgets" color="var(--uix-canvas-foreground-de-emp)" />,
         label: `Node ${nodeCount + 1}`,
         subLabel: "Click to configure",
         parameters: {},
@@ -671,7 +675,11 @@ const EmptyCanvasStory = () => {
         onConnect={onConnect}
       >
         <Panel position="top-left">
-          <Column gap={8} p={16} style={{ color: "var(--color-foreground)", backgroundColor: "var(--color-background-secondary)" }}>
+          <Column
+            gap={8}
+            p={16}
+            style={{ color: "var(--uix-canvas-foreground)", backgroundColor: "var(--uix-canvas-background-secondary)" }}
+          >
             <ApTypography variant={FontVariantToken.fontSizeH3Bold}>Canvas Actions</ApTypography>
             <ApButton label="Add Node" onClick={addNode} size="small" />
             <ApButton label="Clear Canvas" onClick={clearCanvas} size="small" variant="secondary" disabled={nodes.length === 0} />
@@ -721,8 +729,8 @@ const WithChildrenStory = () => {
               p={20}
               gap={12}
               style={{
-                color: "var(--color-foreground)",
-                backgroundColor: "var(--color-background-secondary)",
+                color: "var(--uix-canvas-foreground)",
+                backgroundColor: "var(--uix-canvas-background-secondary)",
                 minWidth: 200,
               }}
             >
@@ -787,7 +795,7 @@ const BaseCanvasWithNodeFocus = () => {
       position: { x: 100, y: 100 },
       type: "baseNode",
       data: {
-        icon: <ApIcon size="48px" name="location_on" color="var(--color-foreground-de-emp)" />,
+        icon: <ApIcon size="48px" name="location_on" color="var(--uix-canvas-foreground-de-emp)" />,
         label: "Node 1",
         subLabel: "Top Left",
         parameters: {},
@@ -804,7 +812,7 @@ const BaseCanvasWithNodeFocus = () => {
       position: { x: 800, y: 100 },
       type: "baseNode",
       data: {
-        icon: <ApIcon size="48px" name="location_on" color="var(--color-foreground-de-emp)" />,
+        icon: <ApIcon size="48px" name="location_on" color="var(--uix-canvas-foreground-de-emp)" />,
         label: "Node 2",
         subLabel: "Top Right",
         parameters: {},
@@ -821,7 +829,7 @@ const BaseCanvasWithNodeFocus = () => {
       position: { x: 100, y: 600 },
       type: "baseNode",
       data: {
-        icon: <ApIcon size="48px" name="location_on" color="var(--color-foreground-de-emp)" />,
+        icon: <ApIcon size="48px" name="location_on" color="var(--uix-canvas-foreground-de-emp)" />,
         label: "Node 3",
         subLabel: "Bottom Left",
         parameters: {},
@@ -838,7 +846,7 @@ const BaseCanvasWithNodeFocus = () => {
       position: { x: 800, y: 600 },
       type: "baseNode",
       data: {
-        icon: <ApIcon size="48px" name="location_on" color="var(--color-foreground-de-emp)" />,
+        icon: <ApIcon size="48px" name="location_on" color="var(--uix-canvas-foreground-de-emp)" />,
         label: "Node 4",
         subLabel: "Bottom Right",
         parameters: {},
@@ -855,7 +863,7 @@ const BaseCanvasWithNodeFocus = () => {
       position: { x: 450, y: 350 },
       type: "baseNode",
       data: {
-        icon: <ApIcon size="48px" name="hub" color="var(--color-foreground-de-emp)" />,
+        icon: <ApIcon size="48px" name="hub" color="var(--uix-canvas-foreground-de-emp)" />,
         label: "Center Node",
         subLabel: "Hub",
         topRightAdornment: <ApIcon name="star" size="small" style={{ color: "gold" }} />,
@@ -896,8 +904,8 @@ const BaseCanvasWithNodeFocus = () => {
               gap={8}
               p={20}
               style={{
-                color: "var(--color-foreground)",
-                backgroundColor: "var(--color-background-secondary)",
+                color: "var(--uix-canvas-foreground)",
+                backgroundColor: "var(--uix-canvas-background-secondary)",
               }}
             >
               <ApTypography variant={FontVariantToken.fontSizeH3Bold}>Focus Controls</ApTypography>
@@ -985,7 +993,7 @@ const BaseCanvasWithMaintainNodesInView = () => {
       position: { x: 500, y: 200 },
       type: "baseNode",
       data: {
-        icon: <ApIcon size="48px" name="widgets" color="var(--color-foreground-de-emp)" />,
+        icon: <ApIcon size="48px" name="widgets" color="var(--uix-canvas-foreground-de-emp)" />,
         label: "Other Node 1",
         parameters: {},
         handleConfigurations: [
@@ -1001,7 +1009,7 @@ const BaseCanvasWithMaintainNodesInView = () => {
       position: { x: 100, y: 300 },
       type: "baseNode",
       data: {
-        icon: <ApIcon size="48px" name="widgets" color="var(--color-foreground-de-emp)" />,
+        icon: <ApIcon size="48px" name="widgets" color="var(--uix-canvas-foreground-de-emp)" />,
         label: "Other Node 2",
         parameters: {},
         handleConfigurations: [
@@ -1067,8 +1075,8 @@ const BaseCanvasWithMaintainNodesInView = () => {
         gap={8}
         p={20}
         style={{
-          color: "var(--color-foreground)",
-          backgroundColor: "var(--color-background-secondary)",
+          color: "var(--uix-canvas-foreground)",
+          backgroundColor: "var(--uix-canvas-background-secondary)",
         }}
       >
         <ApTypography variant={FontVariantToken.fontSizeH3Bold}>Maintain Nodes in View Demo</ApTypography>
@@ -1097,7 +1105,7 @@ const BaseCanvasWithMaintainNodesInView = () => {
       <div
         style={{
           flex: 1,
-          border: "1px solid var(--color-border)",
+          border: "1px solid var(--uix-canvas-border)",
           transition: "all 0.3s ease",
           ...containerSize,
         }}

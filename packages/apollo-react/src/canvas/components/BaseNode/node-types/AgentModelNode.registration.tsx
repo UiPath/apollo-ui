@@ -16,7 +16,7 @@ export const agentModelNodeRegistration: NodeRegistration = {
 
   definition: {
     getIcon: (_data, _context) => (
-      <Row style={{ color: "var(--color-foreground-de-emp)" }}>
+      <Row style={{ color: "var(--uix-canvas-foreground-de-emp)" }}>
         <Icons.OpenAIIcon />
       </Row>
     ),

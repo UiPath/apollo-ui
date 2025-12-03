@@ -35,7 +35,7 @@ export const StickyNoteContainer = styled.div<{
   height: 100%;
   background-color: ${(props) => props.backgroundColor};
   border-radius: 16px;
-  border: 2px solid ${(props) => (props.selected ? "var(--color-primary)" : "rgba(0, 0, 0, 0.2)")};
+  border: 2px solid ${(props) => (props.selected ? "var(--uix-canvas-primary)" : "rgba(0, 0, 0, 0.2)")};
   box-shadow: ${(props) => (props.selected ? "0 4px 12px rgba(59, 130, 246, 0.4)" : "0 2px 4px rgba(0, 0, 0, 0.2)")};
   padding: 12px;
   cursor: ${(props) => (props.isEditing ? "text" : "move")};
@@ -59,14 +59,14 @@ export const StickyNoteTextArea = styled.textarea<{ isEditing: boolean }>`
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   font-size: 14px;
   line-height: 1.5;
-  color: var(--color-text-primary);
+  color: var(--uix-canvas-text-primary);
   cursor: ${(props) => (props.isEditing ? "text" : "move")};
   user-select: ${(props) => (props.isEditing ? "text" : "none")};
   pointer-events: ${(props) => (props.isEditing ? "auto" : "none")};
   overflow-y: auto;
 
   &::placeholder {
-    color: var(--color-foreground-de-emp);
+    color: var(--uix-canvas-foreground-de-emp);
     opacity: ${(props) => (props.isEditing ? 1 : 0.6)};
   }
 
@@ -83,7 +83,7 @@ export const StickyNoteMarkdown = styled.div`
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   font-size: 14px;
   line-height: 1.5;
-  color: var(--color-text-primary);
+  color: var(--uix-canvas-text-primary);
   word-wrap: break-word;
 
   /* Markdown styles */
@@ -135,7 +135,7 @@ export const StickyNoteMarkdown = styled.div`
   }
 
   a {
-    color: var(--color-primary);
+    color: var(--uix-canvas-primary);
     text-decoration: underline;
   }
 
@@ -169,7 +169,7 @@ export const StickyNoteMarkdown = styled.div`
     border-left: 3px solid rgba(0, 0, 0, 0.2);
     padding-left: 12px;
     margin: 8px 0;
-    color: var(--color-foreground-de-emp);
+    color: var(--uix-canvas-foreground-de-emp);
   }
 `;
 
@@ -201,8 +201,8 @@ export const TopCornerIndicators = styled.div<{ selected?: boolean }>`
     left: -5px;
     width: 6px;
     height: 6px;
-    background: var(--color-background);
-    border: 1px solid var(--color-primary);
+    background: var(--uix-canvas-background);
+    border: 1px solid var(--uix-canvas-primary);
     border-radius: 1px;
   }
 
@@ -214,8 +214,8 @@ export const TopCornerIndicators = styled.div<{ selected?: boolean }>`
     right: -5px;
     width: 6px;
     height: 6px;
-    background: var(--color-background);
-    border: 1px solid var(--color-primary);
+    background: var(--uix-canvas-background);
+    border: 1px solid var(--uix-canvas-primary);
     border-radius: 1px;
   }
 `;
@@ -235,8 +235,8 @@ export const BottomCornerIndicators = styled.div<{ selected?: boolean }>`
     left: -5px;
     width: 6px;
     height: 6px;
-    background: var(--color-background);
-    border: 1px solid var(--color-primary);
+    background: var(--uix-canvas-background);
+    border: 1px solid var(--uix-canvas-primary);
     border-radius: 1px;
   }
 
@@ -248,8 +248,8 @@ export const BottomCornerIndicators = styled.div<{ selected?: boolean }>`
     right: -5px;
     width: 6px;
     height: 6px;
-    background: var(--color-background);
-    border: 1px solid var(--color-primary);
+    background: var(--uix-canvas-background);
+    border: 1px solid var(--uix-canvas-primary);
     border-radius: 1px;
   }
 `;
@@ -258,8 +258,8 @@ export const ColorPickerPanel = styled(motion.div)`
   display: flex;
   gap: 4px;
   padding: 2px;
-  background: var(--color-background);
-  border: 1px solid var(--color-border-grid);
+  background: var(--uix-canvas-background);
+  border: 1px solid var(--uix-canvas-border-grid);
   border-radius: 8px;
   box-shadow:
     0 2px 8px rgba(0, 0, 0, 0.08),
@@ -272,7 +272,7 @@ export const ColorOption = styled.button<{ color: string; isSelected: boolean }>
   height: 24px;
   border-radius: 50%;
   background-color: ${(props) => props.color};
-  border: ${(props) => (props.isSelected ? "2px solid var(--color-primary)" : "1px solid rgba(0, 0, 0, 0.2)")};
+  border: ${(props) => (props.isSelected ? "2px solid var(--uix-canvas-primary)" : "1px solid rgba(0, 0, 0, 0.2)")};
   cursor: pointer;
   transition: border 0.15s ease;
   padding: 0;
@@ -283,6 +283,6 @@ export const ColorOption = styled.button<{ color: string; isSelected: boolean }>
 
   &:focus {
     outline: none;
-    border: 2px solid var(--color-primary);
+    border: 2px solid var(--uix-canvas-primary);
   }
 `;

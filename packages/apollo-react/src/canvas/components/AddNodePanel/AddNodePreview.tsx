@@ -9,8 +9,8 @@ const PreviewContainer = styled.div<{ selected?: boolean; width?: number; height
   width: ${(props) => props.width ?? DEFAULT_NODE_SIZE}px;
   height: ${(props) => props.height ?? DEFAULT_NODE_SIZE}px;
   border-radius: 16px;
-  background: var(--color-background-secondary);
-  border: 2px dashed ${(props) => (props.selected ? "var(--color-selection-indicator)" : "var(--color-border-de-emp)")};
+  background: var(--uix-canvas-background-secondary);
+  border: 2px dashed ${(props) => (props.selected ? "var(--uix-canvas-selection-indicator)" : "var(--uix-canvas-border-de-emp)")};
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -22,19 +22,24 @@ const PreviewContainer = styled.div<{ selected?: boolean; width?: number; height
 export interface AddNodePreviewData {
   iconName?: string;
   showOutputHandle?: boolean;
+  inputHandlePosition?: Position;
+  outputHandlePosition?: Position;
 }
 
 const getIcon = (iconName?: string): React.ReactElement => {
   if (iconName) {
-    return <ApIcon color="var(--color-foreground-de-emp)" name={iconName} size="40px" />;
+    return <ApIcon color="var(--uix-canvas-foreground-de-emp)" name={iconName} size="40px" />;
   }
 
-  return <ApIcon color="var(--color-foreground-de-emp)" name="more_horiz" size="40px" />;
+  return <ApIcon color="var(--uix-canvas-foreground-de-emp)" name="more_horiz" size="40px" />;
 };
 
 export const AddNodePreview: React.FC<NodeProps> = ({ selected, data, width, height }) => {
   const nodeData = data as AddNodePreviewData;
   const icon = getIcon(nodeData?.iconName);
+
+  const inputPosition = nodeData?.inputHandlePosition ?? Position.Left;
+  const outputPosition = nodeData?.outputHandlePosition ?? Position.Right;
 
   return (
     <>
@@ -44,7 +49,7 @@ export const AddNodePreview: React.FC<NodeProps> = ({ selected, data, width, hei
 
       <Handle
         type="target"
-        position={Position.Left}
+        position={inputPosition}
         id="input"
         style={{
           background: "transparent",
@@ -58,7 +63,7 @@ export const AddNodePreview: React.FC<NodeProps> = ({ selected, data, width, hei
       {nodeData?.showOutputHandle && (
         <Handle
           type="source"
-          position={Position.Right}
+          position={outputPosition}
           id="output"
           style={{
             background: "transparent",

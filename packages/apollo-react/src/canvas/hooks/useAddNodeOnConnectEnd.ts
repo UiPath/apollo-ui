@@ -53,7 +53,9 @@ export function useAddNodeOnConnectEnd() {
         reactFlowInstance,
         flowDropPosition,
         undefined,
-        connectionState.fromHandle.type
+        connectionState.fromHandle.type,
+        undefined, // Use default preview node size
+        connectionState.fromHandle.position
       );
       if (preview) {
         applyPreviewToReactFlow(preview, reactFlowInstance);

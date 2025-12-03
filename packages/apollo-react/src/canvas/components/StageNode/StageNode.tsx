@@ -330,7 +330,7 @@ const StageNodeComponent = (props: StageNodeProps) => {
             <Column>
               <ApTypography
                 variant={isStageTitleEditing ? FontVariantToken.fontSizeM : FontVariantToken.fontSizeMBold}
-                color="var(--color-foreground)"
+                color="var(--uix-canvas-foreground)"
               >
                 <ApTooltip content={label} placement="top" delay>
                   <StageTitleContainer isEditing={isStageTitleEditing}>
@@ -352,7 +352,7 @@ const StageNodeComponent = (props: StageNodeProps) => {
                 </ApTooltip>
               </ApTypography>
               {stageDuration && (
-                <ApTypography variant={FontVariantToken.fontSizeS} color="var(--color-foreground-de-emp)">
+                <ApTypography variant={FontVariantToken.fontSizeS} color="var(--uix-canvas-foreground-de-emp)">
                   {stageDuration}
                 </ApTypography>
               )}
@@ -362,7 +362,7 @@ const StageNodeComponent = (props: StageNodeProps) => {
             {status && (
               <Row gap={statusLabel ? Spacing.SpacingMicro : undefined} align="center">
                 <ExecutionStatusIcon status={status} />
-                <ApTypography variant={FontVariantToken.fontSizeS} color="var(--color-foreground-de-emp)">
+                <ApTypography variant={FontVariantToken.fontSizeS} color="var(--uix-canvas-foreground-de-emp)">
                   {statusLabel}
                 </ApTypography>
               </Row>
@@ -372,7 +372,7 @@ const StageNodeComponent = (props: StageNodeProps) => {
                 <ApIcon
                   variant="outlined"
                   name="timer"
-                  color={slaBreached ? "var(--color-error-icon)" : "var(--color-foreground-de-emp)"}
+                  color={slaBreached ? "var(--uix-canvas-error-icon)" : "var(--uix-canvas-foreground-de-emp)"}
                 />
               </ApTooltip>
             )}
@@ -381,7 +381,7 @@ const StageNodeComponent = (props: StageNodeProps) => {
                 <ApIcon
                   variant="outlined"
                   name="notifications"
-                  color={escalationsTriggered ? "var(--color-success-icon)" : "var(--color-foreground-de-emp)"}
+                  color={escalationsTriggered ? "var(--uix-canvas-success-icon)" : "var(--uix-canvas-foreground-de-emp)"}
                 />
               </ApTooltip>
             )}
@@ -426,7 +426,7 @@ const StageNodeComponent = (props: StageNodeProps) => {
                               <ApTooltip content={task.label} placement="top" smartTooltip>
                                 <ApTypography
                                   variant={FontVariantToken.fontSizeM}
-                                  color="var(--color-foreground)"
+                                  color="var(--uix-canvas-foreground)"
                                   style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
                                 >
                                   {task.label}
@@ -444,7 +444,7 @@ const StageNodeComponent = (props: StageNodeProps) => {
                             <Row align="center" justify="space-between">
                               <Row gap={"2px"}>
                                 {taskExecution?.duration && (
-                                  <ApTypography variant={FontVariantToken.fontSizeS} color="var(--color-foreground-de-emp)">
+                                  <ApTypography variant={FontVariantToken.fontSizeS} color="var(--uix-canvas-foreground-de-emp)">
                                     {taskExecution.duration}
                                   </ApTypography>
                                 )}

@@ -13,17 +13,17 @@ export function ExecutionStatusIcon({
       case "InProgress":
         return <ApCircularProgress size={size} style={{ backgroundColor: "transparent" }} />;
       case "Completed":
-        return <ApIcon color="var(--color-success-icon)" name="check_circle" size={`${size}px`} />;
+        return <ApIcon color="var(--uix-canvas-success-icon)" name="check_circle" size={`${size}px`} />;
       case "Paused":
-        return <ApIcon color="var(--color-warning-icon)" name="pause" size={`${size}px`} />;
+        return <ApIcon color="var(--uix-canvas-warning-icon)" name="pause" size={`${size}px`} />;
       case "Failed":
-        return <ApIcon color="var(--color-error-icon)" name="error" size={`${size}px`} />;
+        return <ApIcon color="var(--uix-canvas-error-icon)" name="error" size={`${size}px`} />;
       case "Terminated":
-        return <ApIcon color="var(--color-error-icon)" name="close" size={`${size}px`} />;
+        return <ApIcon color="var(--uix-canvas-error-icon)" name="close" size={`${size}px`} />;
       case "Cancelled":
-        return <ApIcon color="var(--color-error-icon)" name="block" size={`${size}px`} />;
+        return <ApIcon color="var(--uix-canvas-error-icon)" name="block" size={`${size}px`} />;
       case "NotExecuted":
-        return <ApIcon color="var(--color-foreground-de-emp)" name="hourglass_empty" size={`${size}px`} />;
+        return <ApIcon color="var(--uix-canvas-foreground-de-emp)" name="hourglass_empty" size={`${size}px`} />;
       default:
         return null;
     }

@@ -32,7 +32,7 @@ interface PanShortcutTeachingUIProps {
 }
 
 const PanShortcutTeachingUIMessage = styled.div`
-  background-color: var(--color-background-inverse);
+  background-color: var(--uix-canvas-background-inverse);
   padding: 8px 8px;
   border-radius: 4px;
   box-shadow: 0 5px 10px 0 rgba(0, 0, 0, 0.1);
@@ -185,7 +185,7 @@ function PanShortcutTeachingUIInternal({ message = "Hold the Space bar and drag 
         <span
           style={{
             display: "inline-flex",
-            color: "var(--color-foreground-inverse)",
+            color: "var(--uix-canvas-foreground-inverse)",
             fontSize: "14px",
             textAlign: "center",
           }}

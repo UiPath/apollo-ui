@@ -110,17 +110,17 @@ export const Default: Story = {
                           : undefined,
               icon:
                 node.id === "1" ? (
-                  <ApIcon name="public" color="var(--color-foreground-de-emp)" size="40px" />
+                  <ApIcon name="public" color="var(--uix-canvas-foreground-de-emp)" size="40px" />
                 ) : node.id === "2" ? (
-                  <ApIcon name="code" color="var(--color-foreground-de-emp)" size="40px" />
+                  <ApIcon name="code" color="var(--uix-canvas-foreground-de-emp)" size="40px" />
                 ) : node.id === "3" ? (
-                  <ApIcon name="list_alt" color="var(--color-foreground-de-emp)" size="40px" />
+                  <ApIcon name="list_alt" color="var(--uix-canvas-foreground-de-emp)" size="40px" />
                 ) : node.id === "5" ? (
-                  <div style={{ color: "var(--color-foreground-de-emp)" }}>
+                  <div style={{ color: "var(--uix-canvas-foreground-de-emp)" }}>
                     <Icons.AgentIcon />
                   </div>
                 ) : node.id === "6" ? (
-                  <ApIcon name="settings" color="var(--color-foreground-de-emp)" size="40px" />
+                  <ApIcon name="settings" color="var(--uix-canvas-foreground-de-emp)" size="40px" />
                 ) : undefined,
               // Add adornments
               adornments:
@@ -643,7 +643,7 @@ export const CustomizedSizes: Story = {
                     <Icons.AgentIcon />
                   </div>
                 ) : (
-                  <ApIcon name="public" color="var(--color-foreground-de-emp)" size="40px" />
+                  <ApIcon name="public" color="var(--uix-canvas-foreground-de-emp)" size="40px" />
                 ),
               // Add adornments
               adornments:

@@ -39,7 +39,7 @@ export function StageConnectionEdge({ fromX, fromY, toX, toY, fromPosition, toPo
     targetPosition: toPosition,
   });
 
-  const stroke = "var(--color-selection-indicator)";
+  const stroke = "var(--uix-canvas-selection-indicator)";
   const strokeWidth = 2.5;
   const arrowSize = 10;
 

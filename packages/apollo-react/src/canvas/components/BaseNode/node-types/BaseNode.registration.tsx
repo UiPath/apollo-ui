@@ -18,7 +18,7 @@ export const baseNodeRegistration: NodeRegistration = {
       if (data.icon) {
         return data.icon;
       }
-      return <ApIcon variant="outlined" name="circle" color="var(--color-foreground-de-emp)" size="40px" />;
+      return <ApIcon variant="outlined" name="circle" color="var(--uix-canvas-foreground-de-emp)" size="40px" />;
     },
 
     getDisplay: (data: any, _context) => ({

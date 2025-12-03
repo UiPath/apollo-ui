@@ -7,9 +7,9 @@ import { useFloatingPosition, type AnchorRect } from "./useFloatingPosition";
 import styled from "@emotion/styled";
 
 const PanelContainer = styled.div<{ isPinned?: boolean }>`
-  color: var(--color-foreground);
-  background-color: var(--color-background);
-  border: 1px solid var(--color-border-de-emp);
+  color: var(--uix-canvas-foreground);
+  background-color: var(--uix-canvas-background);
+  border: 1px solid var(--uix-canvas-border-de-emp);
   border-radius: ${(props) => (props.isPinned ? "0" : "8px")};
   box-shadow: ${(props) => (props.isPinned ? "none" : "0 4px 16px rgba(0, 0, 0, 0.12)")};
   font-size: 14px;
@@ -21,7 +21,7 @@ const PanelContainer = styled.div<{ isPinned?: boolean }>`
   display: flex;
   flex-direction: column;
   transition: opacity 0.2s ease-in-out;
-  border-left: ${(props) => (props.isPinned ? "1px solid var(--color-border-de-emp)" : "none")};
+  border-left: ${(props) => (props.isPinned ? "1px solid var(--uix-canvas-border-de-emp)" : "none")};
 `;
 
 export type FloatingCanvasPanelProps = {

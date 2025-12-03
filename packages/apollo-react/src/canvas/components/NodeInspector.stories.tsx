@@ -136,8 +136,8 @@ const CanvasWithNodeInspector = () => {
           p={20}
           gap={8}
           style={{
-            backgroundColor: "var(--color-background-secondary)",
-            color: "var(--color-foreground)",
+            backgroundColor: "var(--uix-canvas-background-secondary)",
+            color: "var(--uix-canvas-foreground)",
           }}
         >
           <ApTypography variant={FontVariantToken.fontSizeH3Bold}>Node Inspector Demo</ApTypography>

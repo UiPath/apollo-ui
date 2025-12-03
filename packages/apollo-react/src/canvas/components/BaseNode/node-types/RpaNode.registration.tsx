@@ -15,7 +15,9 @@ export const rpaNodeRegistration: NodeRegistration = {
   version: "1.0.0",
 
   definition: {
-    getIcon: (data, _context) => <ApIcon name="list_alt" color={data.display?.iconColor || "var(--color-foreground-de-emp)"} size="40px" />,
+    getIcon: (data, _context) => (
+      <ApIcon name="list_alt" color={data.display?.iconColor || "var(--uix-canvas-foreground-de-emp)"} size="40px" />
+    ),
 
     getDisplay: (data, _context) => ({
       label: data.display?.label,

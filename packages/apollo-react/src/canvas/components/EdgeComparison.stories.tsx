@@ -742,7 +742,11 @@ export const AllEdgeTypes: Story = {
           }}
         >
           <Panel position="top-left">
-            <Column gap={8} p={16} style={{ color: "var(--color-foreground)", backgroundColor: "var(--color-background-secondary)" }}>
+            <Column
+              gap={8}
+              p={16}
+              style={{ color: "var(--uix-canvas-foreground)", backgroundColor: "var(--uix-canvas-background-secondary)" }}
+            >
               <ApTypography variant={FontVariantToken.fontSizeH3Bold}>React Flow Edge Types</ApTypography>
               <p style={{ margin: "0 0 8px 0" }}>
                 <strong>Built-in Types:</strong>
@@ -820,7 +824,7 @@ export const InteractiveEdgeSelection: Story = {
           position: { x: 200, y: 400 },
           data: {
             label: "Source Node",
-            icon: <ApIcon name="play_arrow" color="var(--color-foreground-de-emp)" size="48px" />,
+            icon: <ApIcon name="play_arrow" color="var(--uix-canvas-foreground-de-emp)" size="48px" />,
             handleConfigurations: [
               {
                 position: Position.Right,
@@ -841,7 +845,7 @@ export const InteractiveEdgeSelection: Story = {
           position: { x: 600, y: 400 },
           data: {
             label: "Target Node",
-            icon: <ApIcon name="stop" color="var(--color-foreground-de-emp)" size="48px" />,
+            icon: <ApIcon name="stop" color="var(--uix-canvas-foreground-de-emp)" size="48px" />,
             handleConfigurations: [
               {
                 position: Position.Left,
@@ -916,7 +920,11 @@ export const InteractiveEdgeSelection: Story = {
           mode="design"
         >
           <Panel position="top-left">
-            <Column gap={8} p={16} style={{ color: "var(--color-foreground)", backgroundColor: "var(--color-background-secondary)" }}>
+            <Column
+              gap={8}
+              p={16}
+              style={{ color: "var(--uix-canvas-foreground)", backgroundColor: "var(--uix-canvas-background-secondary)" }}
+            >
               <ApTypography variant={FontVariantToken.fontSizeH3Bold}>Edge Configuration</ApTypography>
               <ApDropdown
                 size="small"
@@ -956,12 +964,12 @@ export const InteractiveEdgeSelection: Story = {
                     width: "100%",
                     height: "32px",
                     borderRadius: "4px",
-                    border: "1px solid var(--color-border)",
+                    border: "1px solid var(--uix-canvas-border)",
                     cursor: "pointer",
                   }}
                 />
               </div>
-              <ApTypography color="var(--color-foreground-de-emp)" variant={FontVariantToken.fontSizeXs}>
+              <ApTypography color="var(--uix-canvas-foreground-de-emp)" variant={FontVariantToken.fontSizeXs}>
                 Drag the nodes to see how the edge adapts to different positions.
               </ApTypography>
             </Column>

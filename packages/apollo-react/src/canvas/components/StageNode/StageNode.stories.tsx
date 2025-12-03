@@ -706,7 +706,7 @@ export const LoanProcessingWorkflow: Story = {
         target: "rejected",
         targetHandle: "rejected____target____left",
         animated: true,
-        style: { stroke: "var(--color-error-text)" },
+        style: { stroke: "var(--uix-canvas-error-text)" },
       },
       // Withdrawal flow
       {
@@ -717,7 +717,7 @@ export const LoanProcessingWorkflow: Story = {
         target: "withdrawn",
         targetHandle: "withdrawn____target____left",
         animated: true,
-        style: { stroke: "var(--color-warning-text)", strokeDasharray: "5,5" },
+        style: { stroke: "var(--uix-canvas-warning-text)", strokeDasharray: "5,5" },
       },
     ] as Edge[],
   },
