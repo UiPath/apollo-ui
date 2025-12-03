@@ -1,4 +1,4 @@
-import * as c from '../_generated/Colors';
+import * as c from '../Colors';
 
 export type Palette = {
   type: "light" | "light-hc" | "dark" | "dark-hc" | undefined;

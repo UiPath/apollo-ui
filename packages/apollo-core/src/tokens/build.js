@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 const _ = require('lodash');
 const fs = require('fs');
 const StyleDictionary = require('style-dictionary').extend(require('./config'));

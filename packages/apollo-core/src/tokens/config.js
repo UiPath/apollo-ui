@@ -1,10 +1,11 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 module.exports = {
   source: ['src/tokens/**/*.json'],
   format: require('./formats'),
   platforms: {
     scss: {
       transformGroup: 'scss',
-      buildPath: 'dist/tokens/scss/',
+      buildPath: 'src/tokens/scss/',
       files: [
         {
           destination: '_variables.scss',
@@ -53,7 +54,7 @@ module.exports = {
     },
     css: {
       transformGroup: 'css',
-      buildPath: 'dist/tokens/css/',
+      buildPath: 'src/tokens/css/',
       files: [
         {
           format: 'css/variables',
@@ -78,7 +79,7 @@ module.exports = {
     },
     less: {
       transformGroup: 'less',
-      buildPath: 'dist/tokens/less/',
+      buildPath: 'src/tokens/less/',
       files: [
         {
           destination: '_variables.less',
@@ -91,7 +92,7 @@ module.exports = {
     },
     js: {
       transformGroup: 'js',
-      buildPath: 'dist/tokens/_generated/',
+      buildPath: 'src/tokens/',
       files: [
         {
           destination: 'Colors.ts',
@@ -214,7 +215,7 @@ module.exports = {
     },
     ts: {
       transformGroup: 'js',
-      buildPath: 'dist/tokens/jss/',
+      buildPath: 'src/tokens/jss/',
       files: [
         {
           destination: 'palette.ts',

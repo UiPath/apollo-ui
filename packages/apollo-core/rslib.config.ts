@@ -30,18 +30,18 @@ export default defineConfig({
   source: {
     entry: {
       index: './src/index.ts',
-      tokens: './src/tokens/index.ts',
-      'icons/types': './src/icons/types.ts',
+      'tokens/index': './src/tokens/index.ts',
+      'tokens/jss/palette': './src/tokens/jss/palette.ts',
+      'icons/index': './src/icons/index.ts',
     },
   },
   output: {
     target: 'web',
     copy: [
-      { from: './.tokens-temp/css', to: './tokens/css' },
-      { from: './.tokens-temp/scss', to: './tokens/scss' },
-      { from: './.tokens-temp/less', to: './tokens/less' },
-      { from: './.tokens-temp/jss', to: './tokens/jss' },
       { from: './src/icons/svg', to: './icons/svg' },
+      { from: './src/tokens/scss', to: './tokens/scss' },
+      { from: './src/tokens/less', to: './tokens/less' },
+      { from: './src/tokens/css', to: './tokens/css' },
     ],
   },
 });
