@@ -1,4 +1,4 @@
-import type { ComponentsOverrides } from '@mui/material/styles/overrides';
+import type { ComponentsOverrides } from '@mui/material/styles';
 
 export const MuiListItemText = (): ComponentsOverrides['MuiListItemText'] => ({
     root: {

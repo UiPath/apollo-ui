@@ -1,13 +1,13 @@
 import type { Components } from '@mui/material';
 import {
-    darkPalette,
-    lightPalette,
+  darkPalette,
+  lightPalette,
 } from '@uipath/apollo-core';
 import {
-    darkHighContrastPalette,
-    lightHighContrastPalette,
-    type Palette,
-} from '@uipath/apollo-core/lib/jss/palette';
+  darkHighContrastPalette,
+  lightHighContrastPalette,
+  type Palette,
+} from '@uipath/apollo-core/tokens/jss/palette';
 
 import { MuiAlert } from './MuiAlert';
 import { MuiAutocomplete } from './MuiAutocomplete';
@@ -42,8 +42,8 @@ import { MuiSelect } from './MuiSelect';
 import { MuiSlider } from './MuiSlider';
 import { MuiSnackbar } from './MuiSnackbar';
 import {
-    MuiStep,
-    MuiStepper,
+  MuiStep,
+  MuiStepper,
 } from './MuiStepper';
 import { MuiSwitch } from './MuiSwitch';
 import { MuiTab } from './MuiTab';
