@@ -480,7 +480,7 @@ export enum AutopilotChatPreHookAction {
  *                               render the settings page in the chat.
  * @property paginatedHistory - Flag to determine if the chat history is paginated
  * @property spacing - The spacing of the chat (prompt box, markdown tokens, etc)
- * @property theming - The theming of the chat (scroll appearance, etc)
+ * @property theming - The theming of the chat (scroll appearance, chat menu, etc)
  */
 export interface AutopilotChatConfiguration {
     mode: AutopilotChatMode;
@@ -509,6 +509,9 @@ export interface AutopilotChatConfiguration {
             scrollHoverColor?: string;
             scrollSize?: string;
             scrollBorderRadius?: string;
+        };
+        chatMenu?: {
+            groupItemTooltipPlacement?: 'top' | 'right' | 'bottom' | 'left';
         };
     };
     spacing?: {
