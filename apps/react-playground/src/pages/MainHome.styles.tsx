@@ -35,10 +35,18 @@ export const MainDescription = styled.p`
 
 export const SectionGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-  gap: 32px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
   width: 100%;
-  max-width: 800px;
+  max-width: 1000px;
+
+  @media (max-width: 1400px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr;
+  }
 `;
 
 export const SectionLink = styled(Link)`
@@ -50,13 +58,13 @@ export const SectionLink = styled(Link)`
 export const SectionCard = styled.div<{ $opacity: number }>`
   background: var(--color-background);
   border: 2px solid var(--color-border);
-  border-radius: 16px;
-  padding: 48px 32px;
+  border-radius: 12px;
+  padding: 32px 24px;
   box-shadow: var(--shadow-hover-md);
   transition: all 0.3s;
   cursor: pointer;
   text-align: center;
-  min-height: 280px;
+  min-height: 200px;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -76,19 +84,19 @@ export const WipBadge = styled.div`
 `;
 
 export const SectionIcon = styled.div`
-  font-size: 64px;
-  margin-bottom: 24px;
+  font-size: 48px;
+  margin-bottom: 16px;
 `;
 
 export const SectionTitle = styled.h2`
-  font-size: 32px;
-  margin-bottom: 16px;
+  font-size: 24px;
+  margin-bottom: 12px;
   color: var(--color-foreground-emp);
   font-weight: bold;
 `;
 
 export const SectionDescription = styled.p`
-  font-size: 16px;
+  font-size: 14px;
   color: var(--color-foreground-de-emp);
-  line-height: 1.6;
+  line-height: 1.5;
 `;

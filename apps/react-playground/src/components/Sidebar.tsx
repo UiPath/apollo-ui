@@ -1,9 +1,12 @@
+import { useState } from "react";
 import { useLocation } from "react-router-dom";
 import {
+	ChevronIcon,
 	NavIcon,
 	NavLabel,
 	NavLink,
 	NavSection,
+	ParentNavButton,
 	SidebarContainer,
 	SidebarNav,
 	SubNav,
@@ -12,6 +15,10 @@ import {
 
 export function Sidebar() {
 	const location = useLocation();
+	const [expandedMenus, setExpandedMenus] = useState<string[]>([
+		"/core",
+		"/material",
+	]);
 
 	const navigation = [
 		{
@@ -35,6 +42,40 @@ export function Sidebar() {
 			],
 		},
 		{
+			label: "Material Overrides",
+			path: "/material",
+			icon: "🎭",
+			children: [
+				{ label: "Alert", path: "/material/alert" },
+				{ label: "Autocomplete", path: "/material/autocomplete" },
+				{ label: "Button Base", path: "/material/button-base" },
+				{ label: "Buttons", path: "/material/buttons" },
+				{ label: "Checkbox", path: "/material/checkbox" },
+				{ label: "Chip", path: "/material/chip" },
+				{ label: "Circular Progress", path: "/material/circular-progress" },
+				{ label: "Datepicker", path: "/material/datepicker" },
+				{ label: "Dialog", path: "/material/dialog" },
+				{ label: "Divider", path: "/material/divider" },
+				{ label: "Form Controls", path: "/material/form-controls" },
+				{ label: "Input Base", path: "/material/input-base" },
+				{ label: "Inputs", path: "/material/inputs" },
+				{ label: "Linear Progress", path: "/material/linear-progress" },
+				{ label: "Link", path: "/material/link" },
+				{ label: "List", path: "/material/list" },
+				{ label: "Menu Item", path: "/material/menu-item" },
+				{ label: "Radio", path: "/material/radio" },
+				{ label: "Select", path: "/material/select" },
+				{ label: "Slider", path: "/material/slider" },
+				{ label: "Snackbar", path: "/material/snackbar" },
+				{ label: "Stepper", path: "/material/stepper" },
+				{ label: "Switch", path: "/material/switch" },
+				{ label: "Tabs", path: "/material/tabs" },
+				{ label: "Text Field", path: "/material/text-field" },
+				{ label: "Tooltip", path: "/material/tooltip" },
+				{ label: "Typography", path: "/material/typography" },
+			],
+		},
+		{
 			label: "Components",
 			path: "/components",
 			icon: "🧩",
@@ -48,18 +89,37 @@ export function Sidebar() {
 		return location.pathname.startsWith(path);
 	};
 
+	const toggleMenu = (path: string) => {
+		setExpandedMenus((prev) =>
+			prev.includes(path) ? prev.filter((p) => p !== path) : [...prev, path],
+		);
+	};
+
+	const isExpanded = (path: string) => expandedMenus.includes(path);
+
 	return (
 		<SidebarContainer>
 			<SidebarNav>
 				{navigation.map((item) => (
 					<NavSection key={item.path}>
-						<NavLink to={item.path} $isActive={isActivePath(item.path)}>
-							<NavIcon>{item.icon}</NavIcon>
-							<NavLabel>{item.label}</NavLabel>
-						</NavLink>
+						{item.children ? (
+							<ParentNavButton
+								onClick={() => toggleMenu(item.path)}
+								$isActive={isActivePath(item.path)}
+							>
+								<NavIcon>{item.icon}</NavIcon>
+								<NavLabel>{item.label}</NavLabel>
+								<ChevronIcon $isExpanded={isExpanded(item.path)}>▼</ChevronIcon>
+							</ParentNavButton>
+						) : (
+							<NavLink to={item.path} $isActive={isActivePath(item.path)}>
+								<NavIcon>{item.icon}</NavIcon>
+								<NavLabel>{item.label}</NavLabel>
+							</NavLink>
+						)}
 
 						{item.children && (
-							<SubNav>
+							<SubNav $isExpanded={isExpanded(item.path)}>
 								{item.children.map((child) => (
 									<SubNavLink
 										key={child.path}

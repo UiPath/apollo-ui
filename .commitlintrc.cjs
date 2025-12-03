@@ -14,12 +14,17 @@ module.exports = {
         'apollo-react',
         'apollo-angular',
         'apollo-utils',
-        'apollo-vertex',
         'apollo-wind',
-        'apollo-wind-storybook',
-        'apollo-wind-demo',
         'ap-data-grid',
         'ap-autopilot-chat',
+
+        // Apps scopes
+        'apollo-vertex',
+        'apollo-wind-storybook',
+        'apollo-wind-demo',
+        'react-playground',
+        'angular-playground',
+        'storybook',
 
         // Monorepo-wide scopes
         'repo',
