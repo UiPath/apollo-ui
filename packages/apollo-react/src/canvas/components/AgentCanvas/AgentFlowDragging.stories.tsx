@@ -513,19 +513,14 @@ export const DesignModeWithDragging: Story = {
 };
 
 /**
- * Design Mode with Single Resource Position
- * Demonstrates partial layout control - only one resource has a custom position
- * while everything else is auto-positioned by the layout engine
+ * Design Mode with Dragging Empty Positions
+ * Demonstrates the ability to drag the agent node and zoom in design mode
  */
-const DesignModeWithSingleResourcePositionComponent = (_args: AgentFlowProps) => {
-  // Only control position for one specific resource
+const DesignModeWithDraggingEmptyComponent = (_args: AgentFlowProps) => {
+  const [agentNodePosition, onAgentNodePositionChange] = useState<{ x: number; y: number } | undefined>(undefined);
+  const [zoomLevel, setZoomLevel] = useState<number>(1);
+
   const [resourceNodePositions, setResourceNodePositions] = useState<Record<string, { x: number; y: number }>>(() => {
-    const firstResource = sampleResources[0]; // "Send message" (Slack tool)
-    if (firstResource) {
-      return {
-        [`agent=>${firstResource.name}:${firstResource.id}`]: { x: 1400, y: 700 },
-      };
-    }
     return {};
   });
 
@@ -655,7 +650,7 @@ const DesignModeWithSingleResourcePositionComponent = (_args: AgentFlowProps) =>
           overflowY: "auto",
         }}
       >
-        <h3 style={{ margin: 0 }}>Single Resource Position</h3>
+        <h3 style={{ margin: 0 }}>Design Mode with Dragging</h3>
         {selectedResourceId && (
           <div>
             <strong>Selected:</strong> {selectedResourceId}
@@ -664,17 +659,26 @@ const DesignModeWithSingleResourcePositionComponent = (_args: AgentFlowProps) =>
         <div>
           <strong>Resources:</strong> {resources.length}
         </div>
-        <div
-          style={{
-            padding: "12px",
-            backgroundColor: "#fff",
-            borderRadius: "4px",
-            border: "1px solid #e0e0e0",
-          }}
-        >
-          <div style={{ fontWeight: "bold", marginBottom: "8px" }}>Agent Node Position</div>
-          <div style={{ fontSize: "0.875rem", fontFamily: "monospace", color: "#999", fontStyle: "italic" }}>Auto-positioned</div>
-        </div>
+        {agentNodePosition && (
+          <div
+            style={{
+              padding: "12px",
+              backgroundColor: "#fff",
+              borderRadius: "4px",
+              border: "1px solid #e0e0e0",
+            }}
+          >
+            <div style={{ fontWeight: "bold", marginBottom: "8px" }}>Agent Node Position</div>
+            <div style={{ fontSize: "0.875rem", fontFamily: "monospace" }}>
+              <div>
+                <strong>X:</strong> {agentNodePosition.x.toFixed(2)}
+              </div>
+              <div>
+                <strong>Y:</strong> {agentNodePosition.y.toFixed(2)}
+              </div>
+            </div>
+          </div>
+        )}
         <div
           style={{
             padding: "12px",
@@ -684,7 +688,9 @@ const DesignModeWithSingleResourcePositionComponent = (_args: AgentFlowProps) =>
           }}
         >
           <div style={{ fontWeight: "bold", marginBottom: "8px" }}>Zoom Level</div>
-          <div style={{ fontSize: "0.875rem", fontFamily: "monospace", color: "#999", fontStyle: "italic" }}>Auto (100%)</div>
+          <div style={{ fontSize: "0.875rem", fontFamily: "monospace" }}>
+            <strong>{(zoomLevel * 100).toFixed(0)}%</strong>
+          </div>
         </div>
         <div
           style={{
@@ -697,6 +703,8 @@ const DesignModeWithSingleResourcePositionComponent = (_args: AgentFlowProps) =>
           <div style={{ fontWeight: "bold", marginBottom: "8px" }}>Resource Positions</div>
           <div style={{ fontSize: "0.75rem", fontFamily: "monospace", maxHeight: "400px", overflowY: "auto" }}>
             {resources.map((resource) => {
+              // Find position from resourceNodePositions state
+              // Node ID pattern: {agentNodeId}=>{resource.name}:{resource.id}
               const nodeId = `agent=>${resource.name}:${resource.id}`;
               const position = resourceNodePositions[nodeId];
               return (
@@ -731,29 +739,14 @@ const DesignModeWithSingleResourcePositionComponent = (_args: AgentFlowProps) =>
             })}
           </div>
         </div>
-        <div
-          style={{
-            padding: "12px",
-            backgroundColor: "#fffbeb",
-            borderRadius: "4px",
-            border: "1px solid #fcd34d",
-          }}
-        >
-          <div style={{ fontWeight: "bold", marginBottom: "8px", color: "#92400e" }}>ℹ️ Note</div>
-          <div style={{ fontSize: "0.75rem", color: "#78350f", lineHeight: "1.5" }}>
-            <p style={{ margin: "0 0 8px 0" }}>
-              This story demonstrates <strong>partial layout control</strong>:
-            </p>
-            <ul style={{ margin: "0 0 8px 0", paddingLeft: "20px" }}>
-              <li>Only the first resource has a custom position (1400, 700)</li>
-              <li>Agent node is auto-positioned (center)</li>
-              <li>All other resources are auto-positioned</li>
-              <li>You can drag any resource to give it a custom position</li>
-            </ul>
-            <p style={{ margin: 0 }}>
-              <strong>Try dragging resources</strong> and watch them switch from "Auto-positioned" to showing coordinates!
-            </p>
-          </div>
+        <div style={{ fontSize: "0.875rem", color: "#666" }}>
+          <p>Click the + buttons on the agent node to add:</p>
+          <ul>
+            <li>Memory (top)</li>
+            <li>Context (bottom-left)</li>
+            <li>Escalations (bottom-center)</li>
+            <li>Tools & MCPs (bottom-right)</li>
+          </ul>
         </div>
       </Column>
     );
@@ -765,10 +758,12 @@ const DesignModeWithSingleResourcePositionComponent = (_args: AgentFlowProps) =>
         <div style={{ flex: 1, position: "relative" }}>
           <AgentFlow
             allowDragging={true}
-            // No agentNodePosition - let it auto-position
-            // No zoomLevel - let it auto-calculate
+            agentNodePosition={agentNodePosition}
+            onAgentNodePositionChange={onAgentNodePositionChange}
             resourceNodePositions={resourceNodePositions}
             onResourceNodePositionChange={handleSetResourceNodePosition}
+            zoomLevel={zoomLevel}
+            onZoomLevelChange={setZoomLevel}
             definition={sampleAgentDefinition}
             spans={[]}
             name="Test Agent"
@@ -795,7 +790,7 @@ const DesignModeWithSingleResourcePositionComponent = (_args: AgentFlowProps) =>
   );
 };
 
-export const DesignModeWithSingleResourcePosition: Story = {
+export const DesignModeWithDraggingEmpty: Story = {
   args: {
     mode: "design",
     resources: sampleResources,
@@ -805,15 +800,7 @@ export const DesignModeWithSingleResourcePosition: Story = {
     description: "Test Description",
     enableTimelinePlayer: false,
   },
-  render: (args) => <DesignModeWithSingleResourcePositionComponent {...args} />,
-  parameters: {
-    docs: {
-      description: {
-        story:
-          "Demonstrates partial layout control where only one resource has a custom position. The agent node and all other resources are auto-positioned. When you drag any resource, it gets added to the resourceNodePositions dictionary and will maintain its custom position.",
-      },
-    },
-  },
+  render: (args) => <DesignModeWithDraggingEmptyComponent {...args} />,
 };
 
 /**

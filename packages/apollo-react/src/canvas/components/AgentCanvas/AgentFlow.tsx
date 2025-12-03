@@ -19,6 +19,7 @@ import {
   type AgentNodeTranslations,
   DefaultAgentNodeTranslations,
   DefaultCanvasTranslations,
+  isAgentFlowAgentNode,
   isAgentFlowResourceNode,
   type AgentFlowResourceNodeData,
   DefaultResourceNodeTranslations,
@@ -184,7 +185,6 @@ const AgentFlowInner = memo(
     onHealthScoreClick,
     suggestionTranslations,
     suggestionGroup,
-    agentNodePosition,
     onAgentNodePositionChange,
     onResourceNodePositionChange,
     zoomLevel,
@@ -354,9 +354,15 @@ const AgentFlowInner = memo(
           return;
         }
 
+        // When resource is dragged, also capture current agent position
+        const agentNode = nodes.find(isAgentFlowAgentNode);
+        if (agentNode) {
+          onAgentNodePositionChange?.({ x: agentNode.position.x, y: agentNode.position.y });
+        }
+
         onResourceNodePositionChange?.(node.id, { x: node.position.x, y: node.position.y });
       },
-      [onAgentNodePositionChange, onResourceNodePositionChange]
+      [onAgentNodePositionChange, onResourceNodePositionChange, nodes]
     );
 
     // Listen for expand agent events from CanvasPanel
@@ -421,14 +427,6 @@ const AgentFlowInner = memo(
       return true;
     });
 
-    const preventDefaultFitView = useMemo(() => {
-      // Prevent fitView if agent position is explicitly controlled
-      if (agentNodePosition !== undefined) {
-        return true;
-      }
-      return false;
-    }, [agentNodePosition]);
-
     // Create custom defaultViewport if zoomLevel is provided
     const defaultViewport = useMemo(() => {
       if (zoomLevel !== undefined) {
@@ -444,9 +442,13 @@ const AgentFlowInner = memo(
     // Handle viewport changes to capture zoom level changes
     const handleViewportChange = useCallback(
       (_event: unknown, viewport: { x: number; y: number; zoom: number }) => {
+        // Round to 2 decimal places to avoid floating-point precision issues during pan
+        const newZoomLevel = Math.round(viewport.zoom * 100) / 100;
+        const currentZoomLevel = zoomLevel ? Math.round(zoomLevel * 100) / 100 : undefined;
+
         // Only call onSetZoom when zoom actually changes
-        if (onZoomLevelChange && viewport.zoom !== zoomLevel) {
-          onZoomLevelChange(viewport.zoom);
+        if (onZoomLevelChange && newZoomLevel !== currentZoomLevel) {
+          onZoomLevelChange(newZoomLevel);
         }
       },
       [onZoomLevelChange, zoomLevel]
@@ -464,7 +466,6 @@ const AgentFlowInner = memo(
             mode={mode}
             initialAutoLayout={autoArrange}
             fitViewOptions={adjustedFitViewOptions}
-            preventDefaultFitView={preventDefaultFitView}
             defaultViewport={defaultViewport}
             onMove={handleViewportChange}
             onNodesChange={onNodesChange}

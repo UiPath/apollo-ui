@@ -76,9 +76,6 @@ const BaseCanvasInnerComponent = <NodeType extends Node = Node, EdgeType extends
     // Pan Shortcut Teaching UI
     panShortcutTeachingUIMessage = "Hold Space and drag to pan around the canvas!",
 
-    // prevent default fit view
-    preventDefaultFitView = false,
-
     // Remaining ReactFlow props
     ...reactFlowProps
   } = canvasProps;
@@ -89,7 +86,7 @@ const BaseCanvasInnerComponent = <NodeType extends Node = Node, EdgeType extends
 
   const [reactFlowInstance, setReactFlowInstance] = useState<ReactFlowInstance<NodeType, EdgeType>>();
 
-  const { isReady } = useAutoLayout(nodes, initialAutoLayout, fitViewOptions, preventDefaultFitView);
+  const { isReady } = useAutoLayout(nodes, initialAutoLayout, fitViewOptions);
   const { ensureNodesInView, ensureAllNodesInView, centerNode } = useEnsureNodesInView();
 
   // Prevent browser back navigation on touch gestures
@@ -98,8 +95,7 @@ const BaseCanvasInnerComponent = <NodeType extends Node = Node, EdgeType extends
   // Maintain specified nodes in view when canvas resizes
   // This ensures important nodes remain visible in responsive layouts
   // The hook only pans the viewport without changing the zoom level
-  // Disable when preventDefaultFitView is true to allow manual positioning
-  useMaintainNodesInView(preventDefaultFitView ? undefined : maintainNodesInView, fitViewOptions);
+  useMaintainNodesInView(maintainNodesInView, fitViewOptions);
 
   // Give precedence to edges connected to selected nodes in cases of overlapping edges
   const normalizedEdges = useMemo(
