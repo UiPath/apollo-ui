@@ -86,6 +86,14 @@ jobs:
           - ⚠️ **Runtime code** (components, hooks, utilities): Runs in user applications - requires stricter security
           - ✅ **Icon processing**: SVG files from design team's Figma exports - trusted source, not user input
 
+          **Playground Apps (`apps/` folder)**: These are showcase/demo applications for testing and demonstrating the design system packages:
+          - `apps/storybook/` - Component documentation
+          - `apps/react-playground/` - React components showcase
+          - `apps/angular-playground/` - Angular components showcase
+          - **No tests required** for playground apps - they're for demonstration and manual testing only
+          - Still maintain code quality, but don't flag missing tests in `apps/` folder
+          - Focus on ensuring they properly showcase the packages
+
           **What to Flag as Security Issues**:
           - Secrets/credentials in code or configs
           - XSS vulnerabilities in React components
@@ -106,13 +114,13 @@ jobs:
           2. **Code Quality**: Critical issues with code structure, patterns, or best practices
           3. **Security**: Real security concerns (not theoretical build-time issues)
           4. **Type Safety**: TypeScript errors or type issues
-          5. **Testing**: Missing tests for critical functionality
+          5. **Testing**: Missing tests for critical functionality (NOT required for `apps/` folder - playground apps)
           6. **Performance**: Significant performance implications
           7. **Recommendation**: APPROVE or REQUEST_CHANGES
 
           Focus on **blocking issues** that prevent merging. Minor style/formatting issues are acceptable.
           APPROVE if changes are functionally correct and secure, even if style could be improved.
-          Be pragmatic - don't flag theoretical security issues in trusted build-time contexts.
+          Be pragmatic - don't flag theoretical security issues in trusted build-time contexts or missing tests in playground apps.
 
           PR Title: ${{ steps.pr-info.outputs.title }}
 
