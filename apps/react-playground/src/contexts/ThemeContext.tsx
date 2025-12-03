@@ -1,8 +1,16 @@
+import { createTheme, ThemeProvider as MuiThemeProvider } from "@mui/material";
+import {
+	darkHighContrastOverrides,
+	darkOverrides,
+	lightHighContrastOverrides,
+	lightOverrides,
+} from "@uipath/apollo-react/material/theme";
 import {
 	createContext,
 	type ReactNode,
 	useContext,
 	useEffect,
+	useMemo,
 	useState,
 } from "react";
 
@@ -52,11 +60,28 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 		setHighContrast((prev) => !prev);
 	};
 
+	const muiTheme = useMemo(() => {
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		let components: any;
+		if (theme === "dark") {
+			components = highContrast ? darkHighContrastOverrides : darkOverrides;
+		} else {
+			components = highContrast ? lightHighContrastOverrides : lightOverrides;
+		}
+
+		return createTheme({
+			palette: {
+				mode: theme,
+			},
+			components,
+		});
+	}, [theme, highContrast]);
+
 	return (
 		<ThemeContext.Provider
 			value={{ theme, highContrast, toggleTheme, toggleHighContrast }}
 		>
-			{children}
+			<MuiThemeProvider theme={muiTheme}>{children}</MuiThemeProvider>
 		</ThemeContext.Provider>
 	);
 }

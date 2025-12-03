@@ -23,6 +23,14 @@ export function MainHome() {
 			status: "available",
 		},
 		{
+			title: "Material Overrides",
+			description:
+				"Material UI component theme overrides with Apollo design system",
+			path: "/material",
+			icon: "🎭",
+			status: "available",
+		},
+		{
 			title: "Components",
 			description: "React components library built with Apollo design system",
 			path: "/components",

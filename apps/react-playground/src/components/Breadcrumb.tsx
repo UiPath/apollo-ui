@@ -17,6 +17,7 @@ export function Breadcrumb() {
 	// Define human-readable labels for routes
 	const routeLabels: Record<string, string> = {
 		core: "Core",
+		material: "Material Overrides",
 		components: "Components",
 		"css-variables": "CSS Variables",
 		colors: "Colors",
@@ -26,6 +27,34 @@ export function Breadcrumb() {
 		borders: "Borders & Strokes",
 		icons: "Icons",
 		screens: "Breakpoints",
+		// Material component routes
+		alert: "Alert",
+		autocomplete: "Autocomplete",
+		"button-base": "Button Base",
+		buttons: "Buttons",
+		checkbox: "Checkbox",
+		chip: "Chip",
+		"circular-progress": "Circular Progress",
+		datepicker: "Datepicker",
+		dialog: "Dialog",
+		divider: "Divider",
+		"form-controls": "Form Controls",
+		"input-base": "Input Base",
+		inputs: "Inputs",
+		"linear-progress": "Linear Progress",
+		link: "Link",
+		list: "List",
+		"menu-item": "Menu Item",
+		radio: "Radio",
+		select: "Select",
+		slider: "Slider",
+		snackbar: "Snackbar",
+		stepper: "Stepper",
+		switch: "Switch",
+		tabs: "Tabs",
+		"text-field": "Text Field",
+		tooltip: "Tooltip",
+		typography: "Typography",
 	};
 
 	return (
