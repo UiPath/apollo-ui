@@ -1,5 +1,5 @@
-import token from '@uipath/apollo-core/lib';
-import type { Palette } from '@uipath/apollo-core/lib/jss/palette';
+import token from '@uipath/apollo-core';
+import type { Palette } from '@uipath/apollo-core/tokens/jss/palette';
 
 // Define stepper circle properties for consistent sizing
 const stepperCircle = {

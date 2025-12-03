@@ -1,5 +1,5 @@
-import type { ComponentsOverrides } from '@mui/material/styles/overrides';
-import type { Palette } from '@uipath/apollo-core/lib/jss/palette';
+import type { ComponentsOverrides } from '@mui/material/styles';
+import type { Palette } from '@uipath/apollo-core/tokens/jss/palette';
 
 export const MuiSwitch = (palette: Palette): ComponentsOverrides['MuiSwitch'] => ({
     root: {
@@ -49,9 +49,9 @@ export const MuiSwitch = (palette: Palette): ComponentsOverrides['MuiSwitch'] =>
             opacity: 1,
         },
         '& .MuiSwitch-switchBase.Mui-checked .MuiSwitch-thumb': { backgroundColor: palette.semantic.colorBackground },
-        // eslint-disable-next-line max-len
+         
         '& .MuiSwitch-switchBase.Mui-checked.Mui-disabled + .MuiSwitch-track': { backgroundColor: palette.semantic.colorBackgroundDisabled },
-        // eslint-disable-next-line max-len
+         
         '& .MuiSwitch-switchBase.Mui-checked.Mui-disabled .MuiSwitch-thumb': { backgroundColor: palette.semantic.colorForegroundDisable },
     },
 });

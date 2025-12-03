@@ -71,16 +71,23 @@
   "license": "MIT",
   "peerDependencies": {
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "@emotion/react": "^11.6.0",
+    "@emotion/styled": "^11.6.0"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
-    "@mui/material": "^7.3.4",
     "@uipath/apollo-core": "workspace:*",
     "@uipath/apollo-utils": "workspace:*"
   },
   "devDependencies": {
+    "@emotion/react": "^11.6.0",
+    "@emotion/styled": "^11.6.0",
+    "@mui/icons-material": "^5.2.0",
+    "@mui/material": "5.15.3",
+    "@mui/system": "5.15.15",
+    "@mui/x-date-pickers": "^6.19.2",
     "@rsbuild/plugin-react": "^1.4.1",
     "@rslib/core": "^0.17.0",
     "@testing-library/jest-dom": "^6.6.3",

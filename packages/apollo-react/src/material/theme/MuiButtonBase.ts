@@ -1,4 +1,4 @@
-import type { ComponentsOverrides } from '@mui/material/styles/overrides';
+import type { ComponentsOverrides } from '@mui/material/styles';
 import type { Palette } from '@uipath/apollo-core';
 
 export const MuiButtonBase = (palette: Palette): ComponentsOverrides['MuiButtonBase'] => ({

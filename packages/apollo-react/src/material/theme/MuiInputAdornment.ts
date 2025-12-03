@@ -1,5 +1,5 @@
-import type { ComponentsOverrides } from '@mui/material/styles/overrides';
-import token from '@uipath/apollo-core/lib';
+import type { ComponentsOverrides } from '@mui/material/styles';
+import token from '@uipath/apollo-core';
 
 export const MuiInputAdornment = (): ComponentsOverrides['MuiInputAdornment'] => ({
     root: {

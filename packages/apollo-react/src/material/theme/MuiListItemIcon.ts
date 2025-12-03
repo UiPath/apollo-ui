@@ -1,5 +1,5 @@
-import type { ComponentsOverrides } from '@mui/material/styles/overrides';
-import type { Palette } from '@uipath/apollo-core/lib/jss/palette';
+import type { ComponentsOverrides } from '@mui/material/styles';
+import type { Palette } from '@uipath/apollo-core/tokens/jss/palette';
 
 export const MuiListItemIcon = (palette: Palette): ComponentsOverrides['MuiListItemIcon'] => ({
     root: {
