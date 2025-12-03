@@ -54,11 +54,7 @@ const typography = (dictionary) => {
   headerExport += `};\n\n`;
   typeExport += `}\n\n`;
 
-  const header =
-    '/* eslint-disable max-len */\n/* eslint-disable @typescript-eslint/comma-dangle */\n\n';
-
   return (
-    header +
     headerExport +
     typeExport +
     Object.keys(final)

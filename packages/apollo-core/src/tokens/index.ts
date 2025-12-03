@@ -2,36 +2,40 @@
 // This file exports all the generated design tokens for use in the package
 
 // Colors
-export * from './_generated/Colors';
-export * as Colors from './_generated/Colors';
+export * from './Colors';
+export * as Colors from './Colors';
 
 // Typography
-export * from './_generated/FontFamily';
-export * as FontFamily from './_generated/FontFamily';
-export * from './_generated/Typography';
-export * as Typography from './_generated/Typography';
-export { FontVariantToken, HeaderVariants } from './_generated/Typography';
+export * from './FontFamily';
+export * as FontFamily from './FontFamily';
+export * from './Typography';
+export * as Typography from './Typography';
+export { FontVariantToken, HeaderVariants } from './Typography';
 
 // Spacing & Layout
-export * from './_generated/Padding';
-export * as Padding from './_generated/Padding';
-export * from './_generated/Spacing';
-export * as Spacing from './_generated/Spacing';
+export * from './Padding';
+export * as Padding from './Padding';
+export * from './Spacing';
+export * as Spacing from './Spacing';
 
 // Border & Stroke
-export * from './_generated/Border';
-export * as Border from './_generated/Border';
-export * from './_generated/Stroke';
-export * as Stroke from './_generated/Stroke';
+export * from './Border';
+export * as Border from './Border';
+export * from './Stroke';
+export * as Stroke from './Stroke';
 
 // Effects
-export * from './_generated/Shadow';
-export * as Shadow from './_generated/Shadow';
+export * from './Shadow';
+export * as Shadow from './Shadow';
 
 // Icons
-export * from './_generated/Icon';
-export * as Icon from './_generated/Icon';
+export * from './Icon';
+export * as Icon from './Icon';
 
 // Screen sizes (breakpoints)
-export * from './_generated/ScreenSizes';
-export * as ScreenSizes from './_generated/ScreenSizes';
+export * from './ScreenSizes';
+export * as ScreenSizes from './ScreenSizes';
+
+// Palette
+export { darkPalette, darkHighContrastPalette, lightHighContrastPalette, lightPalette } from './jss/palette';
+export type { Palette } from './jss/palette';

@@ -12,20 +12,25 @@
       "types": "./dist/index.d.ts"
     },
     "./tokens": {
-      "import": "./dist/tokens.js",
-      "require": "./dist/tokens.cjs",
+      "import": "./dist/tokens/index.js",
+      "require": "./dist/tokens/index.cjs",
       "types": "./dist/tokens/index.d.ts"
     },
     "./icons": {
-      "import": "./dist/icons/types.js",
-      "require": "./dist/icons/types.cjs",
-      "types": "./dist/icons/types.d.ts"
+      "import": "./dist/icons/index.js",
+      "require": "./dist/icons/index.cjs",
+      "types": "./dist/icons/index.d.ts"
     },
-    "./icons/svg/*": "./dist/icons/svg/*",
+    "./icons/svg/*": "./dist/static/svg/*",
     "./fonts": {
       "import": "./dist/fonts.js",
       "require": "./dist/fonts.cjs",
       "types": "./dist/fonts.d.ts"
+    },
+    "./tokens/jss/palette": {
+      "import": "./dist/tokens/jss/palette.js",
+      "require": "./dist/tokens/jss/palette.cjs",
+      "types": "./dist/tokens/jss/palette.d.ts"
     },
     "./tokens/*": "./dist/tokens/*"
   },
@@ -33,12 +38,11 @@
     "dist"
   ],
   "scripts": {
-    "build": "pnpm run build:tokens && pnpm run process:icons && pnpm run build:icons && rslib build && pnpm run clean:sourcemaps",
+    "build": "pnpm run build:tokens && pnpm run process:icons && pnpm run build:icons && rslib build",
     "build:tokens": "node build-tokens.js",
     "build:icons": "tsx scripts/generate-icons.ts",
     "process:icons": "tsx scripts/process-icons.ts && tsx scripts/update-colors.ts",
     "process:icons:dry-run": "tsx scripts/process-icons.ts --dry-run && tsx scripts/update-colors.ts --dry-run",
-    "clean:sourcemaps": "find dist -name '*.d.ts.map' -type f -delete",
     "dev": "rslib build --watch",
     "lint": "eslint src --ext .ts,.tsx --ignore-pattern 'src/tokens/**/*.js' --ignore-pattern 'src/tokens/_generated/**'",
     "lint:fix": "eslint src --ext .ts,.tsx --ignore-pattern 'src/tokens/**/*.js' --ignore-pattern 'src/tokens/_generated/**' --fix",

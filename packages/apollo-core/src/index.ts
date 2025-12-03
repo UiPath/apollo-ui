@@ -1,12 +1,7 @@
 // Apollo Core - Design System Foundation
 // Export all tokens, icons, and fonts
 
-export * from './tokens';
-export * from './icons';
-export * from './fonts';
-
-// Re-export grouped token namespaces for easier consumption
-export {
+import {
   Border,
   Colors,
   FontFamily,
@@ -20,3 +15,22 @@ export {
   Stroke,
   Typography,
 } from './tokens';
+
+export * from './tokens';
+export * from './icons';
+export * from './fonts';
+
+export default {
+  Colors,
+  ScreenSizes,
+  FontFamily,
+  Border,
+  Icon,
+  Padding,
+  Shadow,
+  Stroke,
+  Spacing,
+  Typography,
+  FontVariantToken,
+  HeaderVariants,
+}
