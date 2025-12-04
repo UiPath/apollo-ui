@@ -16,9 +16,9 @@ import {
   Typography,
 } from './tokens';
 
-export * from './tokens';
-export * from './icons';
 export * from './fonts';
+export * from './icons';
+export * from './tokens';
 
 export default {
   Colors,
