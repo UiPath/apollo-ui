@@ -2,6 +2,11 @@
   "name": "@uipath/apollo-react",
   "version": "2.0.0",
   "description": "Apollo Design System - React component library with Material UI theming",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/UiPath/apollo-ui.git",
+    "directory": "packages/apollo-react"
+  },
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",

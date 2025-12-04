@@ -2,6 +2,11 @@
   "name": "@uipath/apollo-wind",
   "version": "0.0.0",
   "description": "Apollo Design System - Tailwind CSS and shadcn/ui implementation",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/UiPath/apollo-ui.git",
+    "directory": "packages/apollo-wind"
+  },
   "exports": {
     ".": "./dist/css/index.css",
     "./css": "./dist/css/index.css",
@@ -43,7 +48,8 @@
   "license": "MIT",
   "publishConfig": {
     "registry": "https://npm.pkg.github.com"
-  },  "peerDependencies": {
+  },
+  "peerDependencies": {
     "react": ">=18.3.0",
     "react-dom": "^18.3.0"
   },

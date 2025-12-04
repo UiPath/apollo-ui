@@ -2,6 +2,11 @@
   "name": "@uipath/ap-autopilot-chat",
   "version": "0.0.0",
   "description": "Apollo Design System - Autopilot Chat web component",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/UiPath/apollo-ui.git",
+    "directory": "web-packages/ap-autopilot-chat"
+  },
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
@@ -33,7 +38,8 @@
   "license": "MIT",
   "publishConfig": {
     "registry": "https://npm.pkg.github.com"
-  },  "dependencies": {
+  },
+  "dependencies": {
     "@uipath/apollo-core": "workspace:*"
   },
   "devDependencies": {
