@@ -16,6 +16,7 @@ import { usePicker } from '../../providers/picker-provider.react';
 import { parseFiles } from '../../utils/file-reader';
 import { AutopilotChatAudio } from '../audio/chat-audio.react';
 import { AutopilotChatActionButton } from '../common/action-button.react';
+import { VisuallyHidden } from '../common/shared-controls.react';
 import { AutopilotChatAgentModeSelector } from './chat-input-agent-mode-selector.react';
 import { AutopilotChatInputModelPicker } from './chat-input-model-picker.react';
 
@@ -105,6 +106,24 @@ function AutopilotChatInputActionsComponent({
             .join(',');
     }, [ allowedAttachments ]);
 
+    // Build full description text for screen readers
+    const attachmentDescription = React.useMemo(() => {
+        const parts: string[] = [];
+
+        if (allowedAttachments.maxCount && allowedAttachments.maxCount > 1 && allowedAttachments.multiple) {
+            parts.push(
+                t('autopilot-chat-dropzone-overlay-max-count', { maxCount: allowedAttachments.maxCount }),
+            );
+        }
+
+        parts.push(
+            t('autopilot-chat-dropzone-overlay-max-size', { maxSize: allowedAttachments.maxSize / 1024 / 1024 }),
+            t('autopilot-chat-allowed-file-types', { fileTypes: acceptedExtensions.split(',').join(', ') }),
+        );
+
+        return parts.join('. ');
+    }, [ allowedAttachments, acceptedExtensions ]);
+
     // Calculate if we should use icons based on how many features are enabled
     const hasMultipleFeatures = [
         !disabledFeatures.attachments,
@@ -125,11 +144,16 @@ function AutopilotChatInputActionsComponent({
                             multiple={allowedAttachments.multiple}
                             onChange={handleAttachment}
                         />
+                        <VisuallyHidden id="autopilot-chat-attach-file-description">
+                            {attachmentDescription}
+                        </VisuallyHidden>
                         <AutopilotChatActionButton
                             iconName="attach_file"
                             onClick={handleFileButtonClick}
                             tooltipPlacement="top"
                             data-testid="autopilot-chat-attach-file-button"
+                            ariaLabel={t('autopilot-chat-attach-file')}
+                            ariaDescribedby="autopilot-chat-attach-file-description"
                             tooltip={
                                 <>
                                     <ap-typography
@@ -169,7 +193,6 @@ function AutopilotChatInputActionsComponent({
                                     </ap-typography>
                                 </>
                             }
-                            ariaLabel={t('autopilot-chat-attach-file-button')}
                         />
                     </>
                 )}

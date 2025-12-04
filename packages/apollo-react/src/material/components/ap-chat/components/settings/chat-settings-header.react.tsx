@@ -13,6 +13,7 @@ import React from 'react';
 import { t } from '../../../../utils/localization/loc';
 import { useChatService } from '../../providers/chat-service.provider.react';
 import { AutopilotChatActionButton } from '../common/action-button.react';
+import { VisuallyHidden } from '../common/shared-controls.react';
 
 const HeaderContainer = styled('div')(() => ({
     display: 'flex',
@@ -50,10 +51,20 @@ const AutopilotChatSettingsHeaderComponent: React.FC<{ isFullScreen: boolean; is
     return (
         <HeaderContainer>
             {isFullScreen && (
-                <ap-typography variant={FontVariantToken.fontBrandL} color={theme.palette.semantic.colorForeground}>
+                <ap-typography
+                    variant={FontVariantToken.fontBrandL}
+                    color={theme.palette.semantic.colorForeground}
+                    id="settings-title"
+                    role="heading"
+                    aria-level={2}
+                >
                     {t('autopilot-chat-settings-title')}
                 </ap-typography>
             )}
+
+            <VisuallyHidden id="settings-heading-description">
+                {t('autopilot-chat-settings-heading-description')}
+            </VisuallyHidden>
 
             <ActionsContainer>
                 <AutopilotChatActionButton
@@ -61,12 +72,21 @@ const AutopilotChatSettingsHeaderComponent: React.FC<{ isFullScreen: boolean; is
                     iconName={isFullScreen ? 'right_panel_close' : 'chevron_left'}
                     onClick={handleCloseSettings}
                     tooltip={isSettingsOpen ? t('autopilot-chat-hide-settings') : ''}
+                    ariaLabel={isSettingsOpen ? t('autopilot-chat-hide-settings') : ''}
+                    ariaDescribedby={isSettingsOpen ? 'settings-title settings-heading-description' : ''}
+                    title={isSettingsOpen ? t('autopilot-chat-hide-settings') : ''}
                     {...(isFullScreen && { variant: 'custom' })}
                     data-testid="autopilot-chat-settings-close"
                 />
 
                 {!isFullScreen && (
-                    <ap-typography variant={FontVariantToken.fontBrandL} color={theme.palette.semantic.colorForeground}>
+                    <ap-typography
+                        variant={FontVariantToken.fontBrandL}
+                        color={theme.palette.semantic.colorForeground}
+                        id="settings-title"
+                        role="heading"
+                        aria-level={2}
+                    >
                         {t('autopilot-chat-settings-title')}
                     </ap-typography>
                 )}

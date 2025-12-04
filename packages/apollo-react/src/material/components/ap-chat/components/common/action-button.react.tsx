@@ -54,6 +54,8 @@ interface AutopilotChatActionButtonBaseProps {
     tooltip?: React.ReactNode;
     tooltipPlacement?: TooltipProps['placement'];
     ariaLabel?: string;
+    ariaDescribedby?: string;
+    title?: string;
     tabIndex?: number;
     disableInteractiveTooltip?: boolean;
     onFocus?: (event: React.FocusEvent<HTMLButtonElement>) => void;
@@ -86,6 +88,8 @@ const AutopilotChatActionButtonComponent = React.forwardRef<HTMLButtonElement, A
     tooltip,
     tooltipPlacement = 'bottom',
     ariaLabel,
+    ariaDescribedby,
+    title,
     tabIndex,
     onMouseEnter,
     onMouseLeave,
@@ -135,9 +139,12 @@ const AutopilotChatActionButtonComponent = React.forwardRef<HTMLButtonElement, A
                         size={iconSize ? iconSize : token.Icon.IconM}
                         color={overrideColor ?? iconColor}
                         name={iconName}
+                        aria-hidden="true"
                     />
                 }
                 aria-label={ariaLabel}
+                aria-describedby={ariaDescribedby}
+                title={title}
                 variant="text"
                 size="small"
                 label={text}
@@ -180,6 +187,8 @@ const AutopilotChatActionButtonComponent = React.forwardRef<HTMLButtonElement, A
             tabIndex={tabIndex}
             onKeyDown={onKeyDown}
             aria-label={ariaLabel}
+            aria-describedby={ariaDescribedby}
+            title={title}
             onMouseEnter={(event) => {
                 onMouseEnter?.(event);
                 if (!preventHover) {
@@ -204,6 +213,7 @@ const AutopilotChatActionButtonComponent = React.forwardRef<HTMLButtonElement, A
                 size={iconSize ? iconSize : token.Icon.IconXs}
                 color={overrideColor ?? iconColor}
                 name={iconName}
+                aria-hidden="true"
                 customvariantdisplay="flex"
             />
         </StyledIconButton>
