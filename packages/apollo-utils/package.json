@@ -31,6 +31,9 @@
     "uipath"
   ],
   "license": "MIT",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
   "devDependencies": {
     "@rslib/core": "^0.17.0",
     "typescript": "^5.9.3",

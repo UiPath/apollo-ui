@@ -30,6 +30,9 @@
     "uipath"
   ],
   "license": "MIT",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
   "peerDependencies": {
     "@angular/core": ">=19.0.0",
     "@angular/common": ">=19.0.0",

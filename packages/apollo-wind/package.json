@@ -42,7 +42,9 @@
     "uipath"
   ],
   "license": "MIT",
-  "peerDependencies": {
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },  "peerDependencies": {
     "react": ">=18.3.0",
     "react-dom": "^18.3.0"
   },
