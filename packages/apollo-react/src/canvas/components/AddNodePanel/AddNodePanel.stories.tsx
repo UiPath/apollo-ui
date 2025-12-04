@@ -1,88 +1,43 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { FontVariantToken } from "@uipath/apollo-core";
-import { ApIcon, ApTypography } from "@uipath/portal-shell-react";
-import { Column } from "@uipath/uix/core";
-import type { Connection, Edge, EdgeChange, Node, NodeChange } from "@uipath/uix/xyflow/react";
-import { addEdge, applyEdgeChanges, applyNodeChanges, Panel, Position, ReactFlowProvider, useReactFlow } from "@uipath/uix/xyflow/react";
-import { useCallback, useMemo, useState } from "react";
+import type { Node } from "@uipath/uix/xyflow/react";
+import { Panel, Position, useReactFlow } from "@uipath/uix/xyflow/react";
+import { useMemo } from "react";
 import { BaseCanvas } from "../BaseCanvas";
 import type { BaseNodeData } from "../BaseNode";
-import { BaseNode } from "../BaseNode";
-import { ExecutionStatusContext } from "../BaseNode/ExecutionStatusContext";
-import {
-  agentContextNodeRegistration,
-  agentEscalationNodeRegistration,
-  agentMemoryNodeRegistration,
-  agentModelNodeRegistration,
-  agentNodeRegistration,
-  agentToolNodeRegistration,
-  baseNodeRegistration,
-  connectorNodeRegistration,
-  genericNodeRegistration,
-  httpRequestNodeRegistration,
-  rpaNodeRegistration,
-  scriptNodeRegistration,
-} from "../BaseNode/node-types";
-import { NodeRegistryProvider } from "../BaseNode/NodeRegistryProvider";
-import type { HandleActionEvent } from "../ButtonHandle";
 import { CanvasPositionControls } from "../CanvasPositionControls";
-import { AddNodePanel } from "./";
+import { AddNodePanel } from ".";
 import { AddNodeManager } from "./AddNodeManager";
-import { AddNodePreview } from "./AddNodePreview";
 import { createAddNodePreview } from "./createAddNodePreview";
 import type { ListItem } from "../Toolbox";
 import type { NodeItemData } from "./AddNodePanel.types";
+import { withCanvasProviders, useCanvasStory, createNode, NodePositions, StoryInfoPanel } from "../../storybook-utils";
+import { useCanvasEvent } from "../../hooks";
+import type { CanvasHandleActionEvent } from "../../utils";
 
-const meta = {
+// ============================================================================
+// Meta Configuration
+// ============================================================================
+
+const meta: Meta<typeof AddNodePanel> = {
   title: "Canvas/AddNodePanel",
   component: AddNodePanel,
   parameters: {
     layout: "fullscreen",
   },
-  decorators: [
-    (Story: any) => {
-      const registrations = useMemo(
-        () => [
-          baseNodeRegistration,
-          genericNodeRegistration,
-          agentNodeRegistration,
-          agentModelNodeRegistration,
-          agentContextNodeRegistration,
-          agentEscalationNodeRegistration,
-          agentMemoryNodeRegistration,
-          agentToolNodeRegistration,
-          httpRequestNodeRegistration,
-          scriptNodeRegistration,
-          rpaNodeRegistration,
-          connectorNodeRegistration,
-        ],
-        []
-      );
-      const executions = useMemo(() => ({ getExecutionState: () => "idle" }), []);
-
-      return (
-        <NodeRegistryProvider registrations={registrations}>
-          <ExecutionStatusContext.Provider value={executions}>
-            <div style={{ height: "100vh", width: "100%" }}>
-              <ReactFlowProvider>
-                <Story />
-              </ReactFlowProvider>
-            </div>
-          </ExecutionStatusContext.Provider>
-        </NodeRegistryProvider>
-      );
-    },
-  ],
+  decorators: [withCanvasProviders()],
   argTypes: {
     items: { control: "object" },
   },
-} satisfies Meta<typeof AddNodePanel>;
+};
 
 export default meta;
 type Story = StoryObj<typeof AddNodePanel>;
 
-// Mock node options for the demo
-const AVAILABLE_NODE_OPTIONS: ListItem<NodeItemData>[] = [
+// ============================================================================
+// Shared
+// ============================================================================
+
+const NODE_OPTIONS: ListItem<NodeItemData>[] = [
   { id: "1", name: "Manual trigger", icon: { name: "touch_app" }, data: { type: "manual-trigger", category: "Triggers" } },
   { id: "2", name: "Schedule trigger", icon: { name: "schedule" }, data: { type: "schedule-trigger", category: "Triggers" } },
   { id: "3", name: "Webhook trigger", icon: { name: "webhook" }, data: { type: "webhook-trigger", category: "Triggers" } },
@@ -123,17 +78,16 @@ const AVAILABLE_NODE_OPTIONS: ListItem<NodeItemData>[] = [
   },
 ];
 
-const AVAILABLE_NODE_CATEGORIES = AVAILABLE_NODE_OPTIONS.reduce<Record<string, ListItem<NodeItemData>[]>>((acc, node) => {
-  if (node.data.category) {
-    if (!acc[node.data.category]) {
-      acc[node.data.category] = [];
+const CATEGORY_ITEMS: ListItem<NodeItemData>[] = Object.entries(
+  NODE_OPTIONS.reduce<Record<string, ListItem<NodeItemData>[]>>((acc, node) => {
+    const category = node.data.category;
+    if (category) {
+      acc[category] = acc[category] || [];
+      acc[category].push(node);
     }
-    acc[node.data.category]?.push(node);
-  }
-  return acc;
-}, {});
-
-const CATEGORY_LIST_ITEMS: ListItem<NodeItemData>[] = Object.entries(AVAILABLE_NODE_CATEGORIES).map(([category, nodes], index) => ({
+    return acc;
+  }, {})
+).map(([category, nodes], index) => ({
   id: `category-${index}`,
   name: category,
   icon: nodes[0]?.icon,
@@ -141,253 +95,28 @@ const CATEGORY_LIST_ITEMS: ListItem<NodeItemData>[] = Object.entries(AVAILABLE_N
   children: nodes,
 }));
 
-// Main story using the simple preview node selection approach
-const NodeAdditionStory = () => {
-  const reactFlowInstance = useReactFlow();
-  const [nodes, setNodes] = useState<Node<BaseNodeData>[]>([
-    {
+function createInitialNodes(): Node<BaseNodeData>[] {
+  return [
+    createNode({
       id: "trigger",
-      position: { x: 100, y: 200 },
-      type: "baseNode",
-      data: {
-        icon: <ApIcon size="48px" name="touch_app" color="var(--uix-canvas-foreground-de-emp)" />,
-        label: "Manual trigger",
-        handleConfigurations: [],
-        parameters: {},
-      },
-    },
-    {
-      id: "action-1",
-      position: { x: 350, y: 200 },
-      type: "baseNode",
-      data: {
-        icon: <ApIcon size="32px" name="settings" color="var(--uix-canvas-foreground-de-emp)" />,
-        label: "Action",
-        subLabel: "Process data",
-        handleConfigurations: [],
-        parameters: {},
-      },
-    },
-  ]);
-
-  const [edges, setEdges] = useState<Edge[]>([
-    {
-      id: "e-trigger-action-1",
-      source: "trigger",
-      target: "action-1",
-      sourceHandle: "output",
-      targetHandle: "input",
-    },
-  ]);
-
-  // Handle button click to create preview node
-  const handleAddClick = useCallback(
-    (event: HandleActionEvent) => {
-      if (!reactFlowInstance) return;
-
-      const { handleId, nodeId, position, handleType } = event;
-
-      if (handleId && nodeId) {
-        // Pass position and handle type (target handles are "input", source handles are "output")
-        const sourceHandleType = handleType === "input" ? "target" : "source";
-        createAddNodePreview(nodeId, handleId, reactFlowInstance, position, sourceHandleType);
-      }
-    },
-    [reactFlowInstance]
-  );
-
-  // Update node configurations to include button handles
-  const nodesWithHandles = useMemo(() => {
-    return nodes.map((node) => ({
-      ...node,
-      data: {
-        ...node.data,
-        handleConfigurations: [
-          {
-            position: Position.Right,
-            handles: [
-              {
-                id: "output",
-                type: "source" as const,
-                handleType: "output" as const,
-                showButton: true,
-                onAction: handleAddClick,
-              },
-            ],
-          },
-          {
-            position: Position.Left,
-            handles: [
-              {
-                id: "input",
-                type: "target" as const,
-                handleType: "input" as const,
-              },
-            ],
-          },
-        ],
-      },
-    }));
-  }, [nodes, handleAddClick]);
-
-  const onNodesChange = useCallback(
-    (changes: NodeChange[]) => setNodes((nds) => applyNodeChanges(changes, nds) as Node<BaseNodeData>[]),
-    []
-  );
-
-  const onEdgesChange = useCallback((changes: EdgeChange[]) => setEdges((eds) => applyEdgeChanges(changes, eds)), []);
-
-  const onConnect = useCallback((params: Connection) => setEdges((eds) => addEdge(params, eds)), []);
-
-  const nodeTypes = useMemo(
-    () => ({
-      baseNode: BaseNode,
-      preview: AddNodePreview,
+      type: "uipath.manual-trigger",
+      position: NodePositions.row2col1,
+      display: { label: "Manual trigger" },
     }),
-    []
-  );
+    createNode({
+      id: "action-1",
+      type: "uipath.blank-node",
+      position: NodePositions.row2col2,
+      display: { label: "Action", subLabel: "Process data" },
+    }),
+  ];
+}
 
-  // Fetch node options (simulated API call)
-  const fetchNodeOptions = useCallback(async (category?: string, search?: string) => {
-    await new Promise((resolve) => setTimeout(resolve, 100));
-
-    let filtered = AVAILABLE_NODE_OPTIONS;
-    if (category && category !== "all") {
-      filtered = filtered.filter((node) => node.data.category === category);
-    }
-    if (search) {
-      const searchLower = search.toLowerCase();
-      filtered = filtered.filter(
-        (node) => node.name.toLowerCase().includes(searchLower) || node.description?.toLowerCase().includes(searchLower)
-      );
-    }
-    return filtered;
-  }, []);
-
-  // Create node data from node option
-  const createNodeData = useCallback((nodeOption: ListItem<NodeItemData>): BaseNodeData => {
-    // Determine shape based on category
-    let _shape: "circle" | "square" | "rectangle" = "square";
-    if (nodeOption.data.category === "triggers") {
-      _shape = "circle";
-    } else if (nodeOption.data.category === "ai") {
-      _shape = "rectangle";
-    }
-
-    // Create icon
-    const icon =
-      nodeOption.icon && typeof nodeOption.icon === "string" ? (
-        <ApIcon size="32px" name={nodeOption.icon} color="var(--uix-canvas-foreground-de-emp)" />
-      ) : undefined;
-
-    return {
-      label: nodeOption.name,
-      subLabel: nodeOption.description,
-      icon,
-      parameters: {},
-    };
-  }, []);
-
-  const onNodeAdded = useCallback(
-    (sourceNodeId: string, sourceHandleId: string, newNode: Node) => {
-      console.log(`Added node ${newNode.id} connected from ${sourceNodeId}:${sourceHandleId}`);
-
-      // Update the new node to have button handles for chaining
-      setNodes((nodes) =>
-        nodes.map((n) =>
-          n.id === newNode.id
-            ? {
-                ...n,
-                data: {
-                  ...n.data,
-                  handleConfigurations: [
-                    {
-                      position: Position.Right,
-                      handles: [
-                        {
-                          id: "output",
-                          type: "source" as const,
-                          handleType: "output" as const,
-                          showButton: true,
-                          onAction: handleAddClick,
-                        },
-                      ],
-                    },
-                    {
-                      position: Position.Left,
-                      handles: [
-                        {
-                          id: "input",
-                          type: "target" as const,
-                          handleType: "input" as const,
-                        },
-                      ],
-                    },
-                  ],
-                },
-              }
-            : n
-        )
-      );
-    },
-    [handleAddClick]
-  );
-
+/**
+ * Standalone panel wrapper component.
+ */
+function StandalonePanelWrapper({ children }: { children: React.ReactNode }) {
   return (
-    <BaseCanvas
-      nodes={nodesWithHandles}
-      edges={edges}
-      nodeTypes={nodeTypes}
-      onNodesChange={onNodesChange}
-      onEdgesChange={onEdgesChange}
-      onConnect={onConnect}
-      mode="design"
-      defaultViewport={{ x: 0, y: 0, zoom: 1 }}
-    >
-      <AddNodeManager fetchNodeOptions={fetchNodeOptions} createNodeData={createNodeData} onNodeAdded={onNodeAdded} />
-
-      <Panel position="bottom-right">
-        <CanvasPositionControls />
-      </Panel>
-
-      <Panel position="top-left">
-        <Column
-          p={20}
-          style={{
-            color: "var(--uix-canvas-foreground)",
-            backgroundColor: "var(--uix-canvas-background-secondary)",
-            minWidth: 200,
-          }}
-        >
-          <ApTypography variant={FontVariantToken.fontSizeH4Bold}>Node Addition via Selection</ApTypography>
-          <ApTypography variant={FontVariantToken.fontSizeS} color="var(--uix-canvas-foreground-de-emp)">
-            Click + button → Creates preview → Select preview → Choose node type
-          </ApTypography>
-          <ApTypography variant={FontVariantToken.fontSizeXs} color="var(--uix-canvas-foreground-de-emp)" style={{ marginTop: "4px" }}>
-            Clean architecture using React Flow's native selection mechanism
-          </ApTypography>
-        </Column>
-      </Panel>
-    </BaseCanvas>
-  );
-};
-
-export const PreviewSelection: Story = {
-  render: () => <NodeAdditionStory />,
-};
-
-// Standalone selector story for testing the component in isolation
-export const StandaloneSelector: Story = {
-  args: {
-    onNodeSelect: (node) => {
-      console.log("Selected node:", node);
-    },
-    onClose: () => {
-      console.log("Closed selector");
-    },
-    onSearch: undefined,
-  },
-  render: (args) => (
     <div
       style={{
         width: "320px",
@@ -398,273 +127,156 @@ export const StandaloneSelector: Story = {
         boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
       }}
     >
-      <AddNodePanel {...args} />
+      {children}
     </div>
+  );
+}
+
+// ============================================================================
+// Story Components
+// ============================================================================
+
+/**
+ * Main preview selection story demonstrating node addition workflow.
+ */
+function PreviewSelectionStory() {
+  const initialNodes = useMemo(() => createInitialNodes(), []);
+  const { canvasProps } = useCanvasStory({
+    initialNodes,
+    initialEdges: [{ id: "e-trigger-action-1", source: "trigger", target: "action-1", sourceHandle: "output", targetHandle: "input" }],
+  });
+
+  const reactFlowInstance = useReactFlow();
+  useCanvasEvent("handle:action", (event: CanvasHandleActionEvent) => {
+    if (!reactFlowInstance) return;
+
+    const { handleId, nodeId, position, handleType } = event;
+    if (handleId && nodeId) {
+      const sourceHandleType = handleType === "input" ? "target" : "source";
+      createAddNodePreview(nodeId, handleId, reactFlowInstance, position as Position, sourceHandleType);
+    }
+  });
+
+  return (
+    <BaseCanvas {...canvasProps} deleteKeyCode={["Backspace", "Delete"]} mode="design" defaultViewport={{ x: 0, y: 0, zoom: 1 }}>
+      <AddNodeManager />
+      <Panel position="bottom-right">
+        <CanvasPositionControls />
+      </Panel>
+      <StoryInfoPanel
+        title="Add node with preview selection"
+        description="Click + button → Creates preview → Select preview → Choose node type"
+      />
+    </BaseCanvas>
+  );
+}
+
+/**
+ * Story demonstrating source handles on all four sides.
+ */
+function AllSidesStory() {
+  const initialNodes = useMemo(
+    () => [
+      createNode({
+        id: "center",
+        type: "uipath.blank-node",
+        position: NodePositions.row2col2,
+        display: { label: "Hub Node", subLabel: "Handles on all sides" },
+        handleConfigurations: [
+          { position: Position.Right, handles: [{ id: "output-right", type: "source", handleType: "output" }] },
+          { position: Position.Left, handles: [{ id: "output-left", type: "source", handleType: "output" }] },
+          { position: Position.Top, handles: [{ id: "output-top", type: "source", handleType: "output" }] },
+          { position: Position.Bottom, handles: [{ id: "output-bottom", type: "source", handleType: "output" }] },
+        ],
+      }),
+    ],
+    []
+  );
+  const { canvasProps } = useCanvasStory({ initialNodes });
+
+  const reactFlowInstance = useReactFlow();
+  useCanvasEvent("handle:action", (event: CanvasHandleActionEvent) => {
+    if (!reactFlowInstance) return;
+
+    const { handleId, nodeId, position, handleType } = event;
+    if (handleId && nodeId) {
+      const sourceHandleType = handleType === "input" ? "target" : "source";
+      createAddNodePreview(nodeId, handleId, reactFlowInstance, position as Position, sourceHandleType);
+    }
+  });
+
+  return (
+    <BaseCanvas {...canvasProps} mode="design" defaultViewport={{ x: 0, y: 0, zoom: 1 }}>
+      <AddNodeManager />
+      <Panel position="bottom-right">
+        <CanvasPositionControls />
+      </Panel>
+      <StoryInfoPanel title="Source handles on all sides" description="Single node with output handles on Top, Bottom, Left, and Right." />
+    </BaseCanvas>
+  );
+}
+
+// ============================================================================
+// Exported Stories
+// ============================================================================
+
+export const PreviewSelection: Story = {
+  name: "Add node with preview selection",
+  render: () => <PreviewSelectionStory />,
+};
+
+export const HandlesOnAllSides: Story = {
+  name: "Add node on all sides",
+  render: () => <AllSidesStory />,
+};
+
+export const NodePanelStaticItems: Story = {
+  name: "Add node panel with static items",
+  args: {
+    items: CATEGORY_ITEMS,
+    onNodeSelect: (node) => console.log("Selected node:", node),
+    onClose: () => console.log("Closed selector"),
+  },
+  render: (args) => (
+    <StandalonePanelWrapper>
+      <AddNodePanel {...args} />
+    </StandalonePanelWrapper>
   ),
 };
 
-// Isolated selector with custom fetch for testing
-export const WithCustomFetch: Story = {
+export const NodePanelWithCustomSearch: Story = {
+  name: "Add node panel with custom search",
   args: {
+    items: CATEGORY_ITEMS,
     onNodeSelect: (node) => {
       console.log("Selected node:", node);
       alert(`Selected: ${node.data.type}`);
     },
-    onClose: () => {
-      console.log("Closed selector");
+    onClose: () => console.log("Closed selector"),
+    onSearch: async (query: string) => {
+      await new Promise((resolve) => setTimeout(resolve, Math.random() * 500 + 200));
+      return NODE_OPTIONS.filter((node) => node.name.toLowerCase().includes(query.toLowerCase()));
     },
-    onSearch: async (query: string, _currentItems) => {
-      console.log("Searching for:", query);
-      // Simulate API delay
-      await new Promise((resolve) => setTimeout(resolve, Math.random() * 1000 + 200));
-      return AVAILABLE_NODE_OPTIONS.filter((node) => node.name.toLowerCase().includes(query.toLowerCase()));
-    },
-    items: CATEGORY_LIST_ITEMS,
   },
   render: (args) => (
-    <div
-      style={{
-        width: "320px",
-        margin: "40px auto",
-        backgroundColor: "var(--uix-canvas-background)",
-        border: "1px solid var(--uix-canvas-border-de-emp)",
-        borderRadius: "8px",
-        boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
-      }}
-    >
+    <StandalonePanelWrapper>
       <AddNodePanel {...args} />
-    </div>
+    </StandalonePanelWrapper>
   ),
 };
 
-// Story for testing source handles on all sides (Top, Bottom, Left, Right)
-const AllSidesHandlesStory = () => {
-  const reactFlowInstance = useReactFlow();
-  const [nodes, setNodes] = useState<Node<BaseNodeData>[]>([
-    {
-      id: "center",
-      position: { x: 400, y: 300 },
-      type: "baseNode",
-      data: {
-        icon: <ApIcon size="48px" name="hub" color="var(--uix-canvas-foreground-de-emp)" />,
-        label: "Hub Node",
-        subLabel: "Source handles on all sides",
-        handleConfigurations: [],
-        parameters: {},
-      },
-    },
-  ]);
-
-  const [edges, setEdges] = useState<Edge[]>([]);
-
-  const handleAddClick = useCallback(
-    (event: HandleActionEvent) => {
-      if (!reactFlowInstance) return;
-      const { handleId, nodeId, position, handleType } = event;
-      if (handleId && nodeId) {
-        const sourceHandleType = handleType === "input" ? "target" : "source";
-        createAddNodePreview(nodeId, handleId, reactFlowInstance, position, sourceHandleType);
-      }
-    },
-    [reactFlowInstance]
-  );
-
-  // Single node with source handles on all 4 sides
-  const nodesWithHandles = useMemo(() => {
-    return nodes.map((node) => {
-      if (node.id === "center") {
-        return {
-          ...node,
-          data: {
-            ...node.data,
-            handleConfigurations: [
-              {
-                position: Position.Right,
-                handles: [
-                  {
-                    id: "output-right",
-                    type: "source" as const,
-                    handleType: "output" as const,
-                    showButton: true,
-                    onAction: handleAddClick,
-                  },
-                ],
-              },
-              {
-                position: Position.Left,
-                handles: [
-                  { id: "output-left", type: "source" as const, handleType: "output" as const, showButton: true, onAction: handleAddClick },
-                ],
-              },
-              {
-                position: Position.Top,
-                handles: [
-                  { id: "output-top", type: "source" as const, handleType: "output" as const, showButton: true, onAction: handleAddClick },
-                ],
-              },
-              {
-                position: Position.Bottom,
-                handles: [
-                  {
-                    id: "output-bottom",
-                    type: "source" as const,
-                    handleType: "output" as const,
-                    showButton: true,
-                    onAction: handleAddClick,
-                  },
-                ],
-              },
-            ],
-          },
-        };
-      }
-      // For added nodes, configure handles based on how they were connected
-      const existingConfigs = Array.isArray(node.data.handleConfigurations) ? node.data.handleConfigurations : [];
-      return {
-        ...node,
-        data: {
-          ...node.data,
-          handleConfigurations: existingConfigs.length
-            ? existingConfigs
-            : [
-                {
-                  position: Position.Right,
-                  handles: [
-                    { id: "output", type: "source" as const, handleType: "output" as const, showButton: true, onAction: handleAddClick },
-                  ],
-                },
-                {
-                  position: Position.Left,
-                  handles: [{ id: "input", type: "target" as const, handleType: "input" as const }],
-                },
-              ],
-        },
-      };
-    });
-  }, [nodes, handleAddClick]);
-
-  const onNodesChange = useCallback(
-    (changes: NodeChange[]) => setNodes((nds) => applyNodeChanges(changes, nds) as Node<BaseNodeData>[]),
-    []
-  );
-  const onEdgesChange = useCallback((changes: EdgeChange[]) => setEdges((eds) => applyEdgeChanges(changes, eds)), []);
-  const onConnect = useCallback((params: Connection) => setEdges((eds) => addEdge(params, eds)), []);
-
-  const nodeTypes = useMemo(
-    () => ({
-      baseNode: BaseNode,
-      preview: AddNodePreview,
-    }),
-    []
-  );
-
-  const fetchNodeOptions = useCallback(async (category?: string, search?: string) => {
-    await new Promise((resolve) => setTimeout(resolve, 100));
-    let filtered = AVAILABLE_NODE_OPTIONS;
-    if (category && category !== "all") {
-      filtered = filtered.filter((node) => node.data.category === category);
-    }
-    if (search) {
-      const searchLower = search.toLowerCase();
-      filtered = filtered.filter(
-        (node) => node.name.toLowerCase().includes(searchLower) || node.description?.toLowerCase().includes(searchLower)
-      );
-    }
-    return filtered;
-  }, []);
-
-  const createNodeData = useCallback((nodeOption: ListItem<NodeItemData>): BaseNodeData => {
-    const icon =
-      nodeOption.icon && typeof nodeOption.icon === "string" ? (
-        <ApIcon size="32px" name={nodeOption.icon} color="var(--uix-canvas-foreground-de-emp)" />
-      ) : undefined;
-
-    return {
-      label: nodeOption.name,
-      subLabel: nodeOption.description,
-      icon,
-      parameters: {},
-    };
-  }, []);
-
-  const onNodeAdded = useCallback((sourceNodeId: string, sourceHandleId: string, newNode: Node) => {
-    console.log(`Added node ${newNode.id} connected from ${sourceNodeId}:${sourceHandleId}`);
-  }, []);
-
-  return (
-    <BaseCanvas
-      nodes={nodesWithHandles}
-      edges={edges}
-      nodeTypes={nodeTypes}
-      onNodesChange={onNodesChange}
-      onEdgesChange={onEdgesChange}
-      onConnect={onConnect}
-      mode="design"
-      defaultViewport={{ x: 0, y: 0, zoom: 1 }}
-    >
-      <AddNodeManager fetchNodeOptions={fetchNodeOptions} createNodeData={createNodeData} onNodeAdded={onNodeAdded} />
-
-      <Panel position="bottom-right">
-        <CanvasPositionControls />
-      </Panel>
-
-      <Panel position="top-left">
-        <Column
-          p={20}
-          style={{
-            color: "var(--uix-canvas-foreground)",
-            backgroundColor: "var(--uix-canvas-background-secondary)",
-            minWidth: 280,
-          }}
-        >
-          <ApTypography variant={FontVariantToken.fontSizeH4Bold}>Source Handles on All Sides</ApTypography>
-          <ApTypography variant={FontVariantToken.fontSizeS} color="var(--uix-canvas-foreground-de-emp)">
-            Single node with source (output) handles on Top, Bottom, Left, and Right.
-          </ApTypography>
-          <ApTypography variant={FontVariantToken.fontSizeXs} color="var(--uix-canvas-foreground-de-emp)" style={{ marginTop: "8px" }}>
-            Click the + buttons to add preview nodes on each side. Preview nodes should not overlap with existing nodes.
-          </ApTypography>
-        </Column>
-      </Panel>
-    </BaseCanvas>
-  );
-};
-
-export const HandlesOnAllSides: Story = {
-  render: () => <AllSidesHandlesStory />,
-};
-
-// Story demonstrating registry integration
-export const WithRegistryIntegration: Story = {
+export const NodePanelRegistryItems: Story = {
+  name: "Add node panel using registry",
   args: {
     onNodeSelect: (node) => {
       console.log("Selected node from registry:", node);
-      alert(`Selected: ${node.data.type} (${node.data.category})\n${node.data.description || ""}`);
+      alert(`Selected: ${node.data.type} (${node.data.category})`);
     },
-    onClose: () => {
-      console.log("Closed selector");
-    },
-    onSearch: undefined,
+    onClose: () => console.log("Closed selector"),
   },
   render: (args) => (
-    <div
-      style={{
-        width: "320px",
-        margin: "40px auto",
-        backgroundColor: "var(--uix-canvas-background)",
-        border: "1px solid var(--uix-canvas-border-de-emp)",
-        borderRadius: "8px",
-        boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
-      }}
-    >
-      <Column p={20}>
-        <ApTypography variant={FontVariantToken.fontSizeMBold}>Registry-Based Node Selector</ApTypography>
-        <ApTypography variant={FontVariantToken.fontSizeXs} color="var(--uix-canvas-foreground-de-emp)">
-          AddNodePanel automatically uses the NodeRegistryProvider when available. It dynamically discovers categories and only shows those
-          with registered nodes!
-        </ApTypography>
-      </Column>
+    <StandalonePanelWrapper>
       <AddNodePanel {...args} />
-    </div>
+    </StandalonePanelWrapper>
   ),
 };

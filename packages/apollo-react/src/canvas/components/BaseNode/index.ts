@@ -5,4 +5,3 @@ export * from "./NodeRegistryProvider";
 export * from "./useNodeTypeRegistry";
 export * from "./ExecutionStatusContext";
 export * from "./NodeTypeRegistry";
-export * from "./node-types";

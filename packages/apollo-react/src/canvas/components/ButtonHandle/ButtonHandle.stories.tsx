@@ -1,28 +1,40 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import type { Node, Edge } from "@uipath/uix/xyflow/react";
-import { Position, ReactFlowProvider, useNodesState, useEdgesState, Panel } from "@uipath/uix/xyflow/react";
-import { BaseCanvas } from "../BaseCanvas/BaseCanvas";
-import { type ButtonHandleConfig, ButtonHandles, type HandleActionEvent } from "./ButtonHandle";
-import { ApIcon, ApTypography } from "@uipath/portal-shell-react";
+import { Position, Panel } from "@uipath/uix/xyflow/react";
+import { ApButton, ApIcon, ApIconButton, ApTypography, ApDropdown, ApDropdownItem, ApCheckbox } from "@uipath/portal-shell-react";
 import { Column, Row } from "@uipath/uix/core";
 import { FontVariantToken } from "@uipath/apollo-core";
-import { BaseNode } from "../BaseNode/BaseNode";
+import { useMemo, useState, useCallback, useEffect } from "react";
+import { BaseCanvas } from "../BaseCanvas/BaseCanvas";
+import { type ButtonHandleConfig, ButtonHandles, type HandleActionEvent } from "./ButtonHandle";
 import type { BaseNodeData } from "../BaseNode/BaseNode.types";
 import { CanvasPositionControls } from "../CanvasPositionControls";
-import { NodeRegistryProvider } from "../BaseNode/NodeRegistryProvider";
-import { ExecutionStatusContext } from "../BaseNode/ExecutionStatusContext";
-import {
-  baseNodeRegistration,
-  genericNodeRegistration,
-  agentNodeRegistration,
-  httpRequestNodeRegistration,
-  scriptNodeRegistration,
-  rpaNodeRegistration,
-  connectorNodeRegistration,
-} from "../BaseNode/node-types";
-import { useMemo } from "react";
+import { withCanvasProviders, useCanvasStory, createNode, StoryInfoPanel } from "../../storybook-utils";
 
-const SimpleNode = ({ id, data, selected }: { id: string; data: any; selected: boolean }) => {
+// ============================================================================
+// Meta Configuration
+// ============================================================================
+
+const meta: Meta<typeof ButtonHandles> = {
+  title: "Canvas/ButtonHandles",
+  component: ButtonHandles,
+  parameters: {
+    layout: "fullscreen",
+  },
+  decorators: [withCanvasProviders()],
+};
+
+export default meta;
+type Story = StoryObj<typeof meta>;
+
+// ============================================================================
+// Custom Node Components (for direct ButtonHandles demos)
+// ============================================================================
+
+/**
+ * Simple node demonstrating ButtonHandles on all four sides.
+ */
+function SimpleNode({ id, data, selected }: { id: string; data: { label: string; subLabel: string }; selected: boolean }) {
   const topHandles: ButtonHandleConfig[] = [
     {
       id: "top",
@@ -36,6 +48,7 @@ const SimpleNode = ({ id, data, selected }: { id: string; data: any; selected: b
       },
     },
   ];
+
   const bottomHandles: ButtonHandleConfig[] = [
     {
       id: "bottom-memory",
@@ -60,13 +73,9 @@ const SimpleNode = ({ id, data, selected }: { id: string; data: any; selected: b
       },
     },
   ];
-  const leftHandles: ButtonHandleConfig[] = [
-    {
-      id: "left",
-      type: "target",
-      handleType: "input",
-    },
-  ];
+
+  const leftHandles: ButtonHandleConfig[] = [{ id: "left", type: "target", handleType: "input" }];
+
   const rightHandles: ButtonHandleConfig[] = [
     {
       id: "right",
@@ -79,6 +88,7 @@ const SimpleNode = ({ id, data, selected }: { id: string; data: any; selected: b
       },
     },
   ];
+
   return (
     <div
       style={{
@@ -105,634 +115,439 @@ const SimpleNode = ({ id, data, selected }: { id: string; data: any; selected: b
           </ApTypography>
         </Column>
       </Row>
-
       <ButtonHandles nodeId={id} handles={topHandles} position={Position.Top} selected={selected} />
-
       <ButtonHandles nodeId={id} handles={bottomHandles} position={Position.Bottom} selected={selected} />
-
       <ButtonHandles nodeId={id} handles={leftHandles} position={Position.Left} selected={selected} />
-
       <ButtonHandles nodeId={id} handles={rightHandles} position={Position.Right} selected={selected} />
     </div>
   );
-};
+}
 
-const nodeTypes = {
-  simpleNode: SimpleNode,
-};
+/**
+ * Handle configuration state for the configurable node.
+ */
+interface HandleConfigState {
+  top: ButtonHandleConfig[];
+  bottom: ButtonHandleConfig[];
+  left: ButtonHandleConfig[];
+  right: ButtonHandleConfig[];
+}
 
-const Flow = () => {
-  const [nodes, _setNodes, onNodesChange] = useNodesState([
-    {
-      id: "1",
-      type: "simpleNode",
-      position: { x: 250, y: 150 },
-      data: { label: "Screener agent", subLabel: "Agent", parameters: {} },
-    },
-  ]);
-  const [edges, _setEdges, onEdgesChange] = useEdgesState([]);
+/**
+ * Configurable node that receives handle configurations from parent state.
+ */
+function ConfigurableNode({
+  id,
+  data,
+  selected,
+}: {
+  id: string;
+  data: { label: string; handleConfig: HandleConfigState };
+  selected: boolean;
+}) {
+  const { handleConfig } = data;
 
   return (
-    <BaseCanvas
-      nodes={nodes}
-      edges={edges}
-      onNodesChange={onNodesChange}
-      onEdgesChange={onEdgesChange}
-      nodeTypes={nodeTypes}
-      mode="design"
-    />
+    <div
+      style={{
+        width: 300,
+        height: 150,
+        borderRadius: 8,
+        backgroundColor: "var(--uix-canvas-background)",
+        border: selected ? "1px solid var(--uix-canvas-selection-indicator)" : "1px solid var(--uix-canvas-foreground-de-emp)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        position: "relative",
+      }}
+    >
+      <div style={{ fontSize: 16, fontWeight: 500, color: "var(--uix-canvas-foreground)" }}>{data.label}</div>
+      <ButtonHandles nodeId={id} handles={handleConfig.top} position={Position.Top} selected={selected} />
+      <ButtonHandles nodeId={id} handles={handleConfig.bottom} position={Position.Bottom} selected={selected} />
+      <ButtonHandles nodeId={id} handles={handleConfig.left} position={Position.Left} selected={selected} />
+      <ButtonHandles nodeId={id} handles={handleConfig.right} position={Position.Right} selected={selected} />
+    </div>
   );
-};
+}
 
-const meta: Meta<typeof ButtonHandles> = {
-  title: "Canvas/ButtonHandles",
-  component: ButtonHandles,
-  parameters: {
-    layout: "fullscreen",
-  },
-  decorators: [
-    (Story) => {
-      const registrations = useMemo(
-        () => [
-          baseNodeRegistration,
-          genericNodeRegistration,
-          agentNodeRegistration,
-          httpRequestNodeRegistration,
-          scriptNodeRegistration,
-          rpaNodeRegistration,
-          connectorNodeRegistration,
-        ],
-        []
-      );
-      const executions = useMemo(() => ({ getExecutionState: () => "idle" }), []);
+// ============================================================================
+// Story Components
+// ============================================================================
 
-      return (
-        <NodeRegistryProvider registrations={registrations}>
-          <ExecutionStatusContext.Provider value={executions}>
-            <ReactFlowProvider>
-              <div style={{ height: "100vh", width: "100vw" }}>
-                <Story />
-              </div>
-            </ReactFlowProvider>
-          </ExecutionStatusContext.Provider>
-        </NodeRegistryProvider>
-      );
+function DefaultStory() {
+  const nodeTypes = useMemo(() => ({ simpleNode: SimpleNode }), []);
+  const { canvasProps } = useCanvasStory({
+    initialNodes: [
+      { id: "1", type: "simpleNode", position: { x: 250, y: 150 }, data: { label: "Screener agent", subLabel: "Agent", parameters: {} } },
+    ],
+  });
+
+  return (
+    <BaseCanvas {...canvasProps} nodeTypes={nodeTypes} mode="design">
+      <StoryInfoPanel title="ButtonHandles" description="Click + buttons on handles to trigger actions" />
+    </BaseCanvas>
+  );
+}
+
+// Shared action handler for demo purposes
+const handleAction = (event: HandleActionEvent) => console.log("Handle action:", event);
+
+/**
+ * Default handle configurations for the configurable story.
+ */
+const DEFAULT_HANDLE_CONFIG: HandleConfigState = {
+  top: [
+    { id: "out1", type: "source", handleType: "output", label: "Output 1", showButton: true, onAction: handleAction },
+    { id: "out2", type: "source", handleType: "output", label: "Output 2", showButton: true, onAction: handleAction },
+  ],
+  bottom: [
+    { id: "in1", type: "target", handleType: "input", label: "Input 1" },
+    { id: "in2", type: "target", handleType: "input", label: "Input 2" },
+  ],
+  left: [{ id: "config", type: "target", handleType: "artifact", label: "Config" }],
+  right: [
+    {
+      id: "success",
+      type: "source",
+      handleType: "output",
+      label: "Success",
+      color: "var(--uix-canvas-success-icon)",
+      showButton: true,
+      onAction: handleAction,
+    },
+    {
+      id: "error",
+      type: "source",
+      handleType: "output",
+      label: "Error",
+      color: "var(--uix-canvas-error-icon)",
+      showButton: true,
+      onAction: handleAction,
     },
   ],
 };
 
-export default meta;
-type Story = StoryObj<typeof meta>;
+type HandleTypeOption = "input" | "output" | "artifact";
+
+const HANDLE_TYPE_CONFIG: Record<HandleTypeOption, { type: "source" | "target"; label: string }> = {
+  input: { type: "target", label: "In" },
+  output: { type: "source", label: "Out" },
+  artifact: { type: "source", label: "Art" },
+};
+
+function HandleConfigurationStory() {
+  const [handleConfig, setHandleConfig] = useState<HandleConfigState>(DEFAULT_HANDLE_CONFIG);
+  const [showButtons, setShowButtons] = useState(true);
+  const [handleTypes, setHandleTypes] = useState<Record<keyof HandleConfigState, HandleTypeOption>>({
+    top: "output",
+    right: "output",
+    bottom: "input",
+    left: "input",
+  });
+
+  const updateHandleCount = useCallback(
+    (position: keyof HandleConfigState, delta: number) => {
+      setHandleConfig((prev) => {
+        const handles = [...prev[position]];
+        if (delta > 0) {
+          const handleType = handleTypes[position];
+          const config = HANDLE_TYPE_CONFIG[handleType];
+          const isSource = config.type === "source";
+          const newHandle: ButtonHandleConfig = {
+            id: `${position}-${Date.now()}`,
+            type: config.type,
+            handleType,
+            label: `${config.label} ${handles.length + 1}`,
+            showButton: isSource ? showButtons : undefined,
+            onAction: isSource ? handleAction : undefined,
+          };
+          return { ...prev, [position]: [...handles, newHandle] };
+        } else if (handles.length > 0) {
+          return { ...prev, [position]: handles.slice(0, -1) };
+        }
+        return prev;
+      });
+    },
+    [showButtons, handleTypes]
+  );
+
+  useEffect(() => {
+    setHandleConfig((prev) => ({
+      top: prev.top.map((h) => (h.type === "source" ? { ...h, showButton: showButtons } : h)),
+      bottom: prev.bottom.map((h) => (h.type === "source" ? { ...h, showButton: showButtons } : h)),
+      left: prev.left.map((h) => (h.type === "source" ? { ...h, showButton: showButtons } : h)),
+      right: prev.right.map((h) => (h.type === "source" ? { ...h, showButton: showButtons } : h)),
+    }));
+  }, [showButtons]);
+
+  const resetConfig = useCallback(() => {
+    setHandleConfig(DEFAULT_HANDLE_CONFIG);
+    setShowButtons(true);
+    setHandleTypes({ top: "output", right: "output", bottom: "input", left: "input" });
+  }, []);
+
+  const nodeTypes = useMemo(() => ({ configurableNode: ConfigurableNode }), []);
+
+  const initialNodes = useMemo(
+    () => [
+      {
+        id: "1",
+        type: "configurableNode",
+        position: { x: 350, y: 400 },
+        data: { label: "Configurable Node", handleConfig: DEFAULT_HANDLE_CONFIG, parameters: {} },
+      },
+    ],
+    []
+  );
+
+  const { canvasProps, setNodes } = useCanvasStory({ initialNodes });
+
+  useEffect(() => {
+    setNodes((nodes) => nodes.map((node) => (node.id === "1" ? { ...node, data: { ...node.data, handleConfig } } : node)));
+  }, [handleConfig, setNodes]);
+
+  const positions: Array<{ key: keyof HandleConfigState; label: string; icon: string }> = [
+    { key: "top", label: "Top", icon: "arrow_upward" },
+    { key: "right", label: "Right", icon: "arrow_forward" },
+    { key: "bottom", label: "Bottom", icon: "arrow_downward" },
+    { key: "left", label: "Left", icon: "arrow_back" },
+  ];
+
+  return (
+    <BaseCanvas {...canvasProps} nodeTypes={nodeTypes} mode="design">
+      <StoryInfoPanel title="Handle configuration" collapsible defaultCollapsed>
+        <Column align="start" gap={16} style={{ marginTop: 12 }}>
+          <Column gap={8}>
+            <ApTypography variant={FontVariantToken.fontSizeSBold}>Handles</ApTypography>
+            <Row gap={16} style={{ flexWrap: "wrap" }}>
+              {positions.map(({ key, label, icon }) => (
+                <Column key={key} gap={6} align="center">
+                  <Row gap={4} align="center">
+                    <ApIcon name={icon} size="14px" />
+                    <ApTypography variant={FontVariantToken.fontSizeXs}>{label}</ApTypography>
+                  </Row>
+                  <ApDropdown
+                    size="small"
+                    selectedValue={handleTypes[key]}
+                    onSelectedValueChanged={(e) => setHandleTypes((prev) => ({ ...prev, [key]: e.detail as HandleTypeOption }))}
+                  >
+                    <ApDropdownItem value="input" label="Input" />
+                    <ApDropdownItem value="output" label="Output" />
+                    <ApDropdownItem value="artifact" label="Artifact" />
+                  </ApDropdown>
+                  <Row gap={2} align="center">
+                    <ApIconButton onClick={() => updateHandleCount(key, -1)} disabled={handleConfig[key].length === 0}>
+                      <ApIcon name="remove" />
+                    </ApIconButton>
+                    <ApTypography variant={FontVariantToken.fontSizeMBold} style={{ minWidth: 24, textAlign: "center" }}>
+                      {handleConfig[key].length}
+                    </ApTypography>
+                    <ApIconButton onClick={() => updateHandleCount(key, 1)}>
+                      <ApIcon name="add" />
+                    </ApIconButton>
+                  </Row>
+                </Column>
+              ))}
+            </Row>
+          </Column>
+
+          {/* Show buttons toggle */}
+          <ApCheckbox label="Show + buttons on outputs" checked={showButtons} onValueChanged={(e) => setShowButtons(e.detail as boolean)} />
+
+          {/* Reset */}
+          <ApButton size="small" variant="secondary" label="Reset" onClick={resetConfig} />
+        </Column>
+      </StoryInfoPanel>
+    </BaseCanvas>
+  );
+}
+
+function LogicFlowStory() {
+  const logicNodes: Node<BaseNodeData>[] = useMemo(
+    () => [
+      // IF Node
+      createNode({
+        id: "if-node",
+        type: "uipath.control-flow.decision",
+        position: { x: 300, y: 200 },
+        display: { label: "If" },
+        handleConfigurations: [
+          { position: Position.Left, handles: [{ id: "input", type: "target", handleType: "input" }] },
+          {
+            position: Position.Right,
+            handles: [
+              { id: "then", type: "source", handleType: "output", label: "Then", showButton: true },
+              { id: "else", type: "source", handleType: "output", label: "Else", showButton: true },
+            ],
+          },
+        ],
+      }),
+
+      // SWITCH Node
+      createNode({
+        id: "switch-node",
+        type: "uipath.control-flow.switch",
+        position: { x: 300, y: 650 },
+        display: { label: "Switch" },
+        handleConfigurations: [
+          { position: Position.Left, handles: [{ id: "input", type: "target", handleType: "input" }] },
+          {
+            position: Position.Right,
+            handles: [
+              { id: "default", type: "source", handleType: "output", label: "Default", showButton: true },
+              { id: "case-0", type: "source", handleType: "output", label: "0", showButton: true },
+              { id: "case-1", type: "source", handleType: "output", label: "1", showButton: true },
+            ],
+          },
+        ],
+      }),
+
+      // Source nodes
+      createNode({
+        id: "condition-input",
+        type: "uipath.blank-node",
+        position: { x: 50, y: 200 },
+        display: { label: "Condition", subLabel: "Boolean" },
+        handleConfigurations: [{ position: Position.Right, handles: [{ id: "output", type: "source", handleType: "output" }] }],
+      }),
+
+      createNode({
+        id: "value-input",
+        type: "uipath.blank-node",
+        position: { x: 50, y: 650 },
+        display: { label: "Value", subLabel: "Integer" },
+        handleConfigurations: [{ position: Position.Right, handles: [{ id: "output", type: "source", handleType: "output" }] }],
+      }),
+
+      // Output nodes for IF
+      createNode({
+        id: "then-action",
+        type: "uipath.blank-node",
+        position: { x: 600, y: 100 },
+        display: { label: "Then Action", subLabel: "Execute if true", color: "green" },
+      }),
+
+      createNode({
+        id: "else-action",
+        type: "uipath.blank-node",
+        position: { x: 600, y: 300 },
+        display: { label: "Else Action", subLabel: "Execute if false", color: "red" },
+      }),
+
+      // Output nodes for SWITCH
+      createNode({
+        id: "default-action",
+        type: "uipath.blank-node",
+        position: { x: 600, y: 500 },
+        display: { label: "Default Case", subLabel: "No match" },
+        handleConfigurations: [{ position: Position.Left, handles: [{ id: "input", type: "target", handleType: "input" }] }],
+      }),
+
+      createNode({
+        id: "case-0-action",
+        type: "uipath.blank-node",
+        position: { x: 600, y: 700 },
+        display: { label: "Case 0", subLabel: "Value = 0" },
+        handleConfigurations: [{ position: Position.Left, handles: [{ id: "input", type: "target", handleType: "input" }] }],
+      }),
+
+      createNode({
+        id: "case-1-action",
+        type: "uipath.blank-node",
+        position: { x: 600, y: 900 },
+        display: { label: "Case 1", subLabel: "Value = 1" },
+        handleConfigurations: [{ position: Position.Left, handles: [{ id: "input", type: "target", handleType: "input" }] }],
+      }),
+    ],
+    []
+  );
+
+  const logicEdges: Edge[] = useMemo(
+    () => [
+      // IF connections
+      {
+        id: "condition-to-if",
+        source: "condition-input",
+        sourceHandle: "output",
+        target: "if-node",
+        targetHandle: "input",
+        animated: true,
+      },
+      {
+        id: "if-to-then",
+        source: "if-node",
+        sourceHandle: "then",
+        target: "then-action",
+        targetHandle: "input",
+        style: { stroke: "green" },
+      },
+      {
+        id: "if-to-else",
+        source: "if-node",
+        sourceHandle: "else",
+        target: "else-action",
+        targetHandle: "input",
+        style: { stroke: "orange" },
+      },
+      // SWITCH connections
+      {
+        id: "value-to-switch",
+        source: "value-input",
+        sourceHandle: "output",
+        target: "switch-node",
+        targetHandle: "input",
+        animated: true,
+      },
+      { id: "switch-to-default", source: "switch-node", sourceHandle: "default", target: "default-action", targetHandle: "input" },
+      {
+        id: "switch-to-0",
+        source: "switch-node",
+        sourceHandle: "case-0",
+        target: "case-0-action",
+        targetHandle: "input",
+        style: { stroke: "blue" },
+      },
+      {
+        id: "switch-to-1",
+        source: "switch-node",
+        sourceHandle: "case-1",
+        target: "case-1-action",
+        targetHandle: "input",
+        style: { stroke: "purple" },
+      },
+    ],
+    []
+  );
+
+  const { canvasProps } = useCanvasStory({ initialNodes: logicNodes, initialEdges: logicEdges });
+
+  return (
+    <BaseCanvas {...canvasProps} mode="design">
+      <StoryInfoPanel title="Logic Flow Examples" description="IF and SWITCH nodes with ButtonHandles" />
+      <Panel position="bottom-right">
+        <CanvasPositionControls />
+      </Panel>
+    </BaseCanvas>
+  );
+}
+
+// ============================================================================
+// Exported Stories
+// ============================================================================
 
 export const Default: Story = {
-  args: {
-    handles: [],
-    position: Position.Top,
-  },
-  render: () => <Flow />,
+  name: "Default",
+  args: { handles: [], position: Position.Top },
+  render: () => <DefaultStory />,
 };
 
-export const MultipleHandles: Story = {
-  args: {
-    handles: [],
-    position: Position.Top,
-  },
-  render: () => {
-    const MultipleHandlesStory = () => {
-      const MultiHandleNode = ({ id, data, selected }: { id: string; data: any; selected: boolean }) => {
-        const topHandles: ButtonHandleConfig[] = [
-          {
-            id: "top-1",
-            type: "source",
-            handleType: "output",
-            label: "Out 1",
-            showButton: true,
-            onAction: (e: HandleActionEvent) => console.log("Output 1 clicked", e),
-          },
-          {
-            id: "top-2",
-            type: "source",
-            handleType: "output",
-            label: "Out 2",
-            showButton: true,
-            onAction: (e: HandleActionEvent) => console.log("Output 2 clicked", e),
-          },
-          {
-            id: "top-3",
-            type: "source",
-            handleType: "output",
-            label: "Out 3",
-            showButton: true,
-            onAction: (e: HandleActionEvent) => console.log("Output 3 clicked", e),
-          },
-        ];
-
-        const bottomHandles: ButtonHandleConfig[] = [
-          {
-            id: "bottom-1",
-            type: "target",
-            handleType: "input",
-            label: "In 1",
-          },
-          {
-            id: "bottom-2",
-            type: "target",
-            handleType: "input",
-            label: "In 2",
-          },
-        ];
-
-        const leftHandles: ButtonHandleConfig[] = [
-          {
-            id: "left-1",
-            type: "target",
-            handleType: "artifact",
-          },
-          {
-            id: "left-2",
-            type: "target",
-            handleType: "artifact",
-          },
-        ];
-
-        const rightHandles: ButtonHandleConfig[] = [
-          {
-            id: "right",
-            type: "source",
-            handleType: "output",
-            label: "Main Output",
-            showButton: true,
-            onAction: (e: HandleActionEvent) => console.log("Main output clicked", e),
-          },
-        ];
-
-        return (
-          <div
-            style={{
-              width: 300,
-              height: 150,
-              borderRadius: 8,
-              backgroundColor: "var(--uix-canvas-background)",
-              border: selected ? "1px solid var(--uix-canvas-selection-indicator)" : "1px solid var(--uix-canvas-foreground-de-emp)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              position: "relative",
-            }}
-          >
-            <div style={{ fontSize: 16, fontWeight: 500, color: "var(--uix-canvas-foreground)" }}>{data.label}</div>
-
-            <ButtonHandles nodeId={id} handles={topHandles} position={Position.Top} selected={selected} />
-
-            <ButtonHandles nodeId={id} handles={bottomHandles} position={Position.Bottom} selected={selected} />
-
-            <ButtonHandles nodeId={id} handles={leftHandles} position={Position.Left} selected={selected} />
-
-            <ButtonHandles nodeId={id} handles={rightHandles} position={Position.Right} selected={selected} />
-          </div>
-        );
-      };
-
-      const multiHandleNodeTypes = {
-        multiHandleNode: MultiHandleNode,
-      };
-
-      const [nodes, _setNodes, onNodesChange] = useNodesState([
-        {
-          id: "1",
-          type: "multiHandleNode",
-          position: { x: 250, y: 150 },
-          data: { label: "Multi-Handle Node", parameters: {} },
-        },
-      ]);
-      const [edges, _setEdges, onEdgesChange] = useEdgesState([]);
-
-      return (
-        <BaseCanvas
-          nodes={nodes}
-          edges={edges}
-          onNodesChange={onNodesChange}
-          onEdgesChange={onEdgesChange}
-          nodeTypes={multiHandleNodeTypes}
-          mode="design"
-        />
-      );
-    };
-
-    return <MultipleHandlesStory />;
-  },
+export const HandleConfiguration: Story = {
+  name: "Handle configuration",
+  args: { handles: [], position: Position.Top },
+  render: () => <HandleConfigurationStory />,
 };
 
-export const ComplexExample: Story = {
-  args: {
-    handles: [],
-    position: Position.Top,
-  },
-  render: () => {
-    const ComplexExampleStory = () => {
-      const ComplexNode = ({ id, data, selected }: { id: string; data: any; selected: boolean }) => {
-        const topHandles: ButtonHandleConfig[] = [
-          {
-            id: "out1",
-            type: "source",
-            handleType: "output",
-            label: "Output 1",
-            showButton: true,
-            onAction: (event: HandleActionEvent) => {
-              console.log("Output 1 clicked", event);
-              alert("Output 1 clicked!");
-            },
-          },
-          {
-            id: "out2",
-            type: "source",
-            handleType: "output",
-            label: "Output 2",
-            showButton: true,
-            onAction: (event: HandleActionEvent) => {
-              console.log("Output 2 clicked", event);
-              alert("Output 2 clicked!");
-            },
-          },
-          {
-            id: "out3",
-            type: "source",
-            handleType: "output",
-            label: "Output 3",
-            showButton: true,
-            onAction: (event: HandleActionEvent) => {
-              console.log("Output 3 clicked", event);
-              alert("Output 3 clicked!");
-            },
-          },
-        ];
-
-        const bottomHandles: ButtonHandleConfig[] = [
-          { id: "in1", type: "target", handleType: "input", label: "Input 1" },
-          { id: "in2", type: "target", handleType: "input", label: "Input 2" },
-        ];
-
-        const leftHandles: ButtonHandleConfig[] = [{ id: "config", type: "target", handleType: "artifact", label: "Config" }];
-
-        const rightHandles: ButtonHandleConfig[] = [
-          {
-            id: "success",
-            type: "source",
-            handleType: "output",
-            label: "Success",
-            color: "var(--uix-canvas-success-icon)",
-          },
-          {
-            id: "error",
-            type: "source",
-            handleType: "output",
-            label: "Error",
-            color: "var(--uix-canvas-error-icon)",
-          },
-        ];
-
-        return (
-          <div
-            style={{
-              width: 300,
-              height: 150,
-              borderRadius: 8,
-              backgroundColor: "var(--uix-canvas-background)",
-              border: selected ? "1px solid var(--uix-canvas-selection-indicator)" : "1px solid var(--uix-canvas-foreground-de-emp)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              position: "relative",
-            }}
-          >
-            <div style={{ fontSize: 16, fontWeight: 500, color: "var(--uix-canvas-foreground)" }}>{data.label}</div>
-
-            <ButtonHandles nodeId={id} handles={topHandles} position={Position.Top} selected={selected} />
-
-            <ButtonHandles nodeId={id} handles={bottomHandles} position={Position.Bottom} selected={selected} />
-
-            <ButtonHandles nodeId={id} handles={leftHandles} position={Position.Left} selected={selected} />
-
-            <ButtonHandles nodeId={id} handles={rightHandles} position={Position.Right} selected={selected} />
-          </div>
-        );
-      };
-
-      const complexNodeTypes = {
-        complexNode: ComplexNode,
-      };
-
-      const [nodes, _setNodes, onNodesChange] = useNodesState([
-        {
-          id: "1",
-          type: "complexNode",
-          position: { x: 250, y: 150 },
-          data: { label: "Complex Node", parameters: {} },
-        },
-      ]);
-      const [edges, _setEdges, onEdgesChange] = useEdgesState([]);
-
-      return (
-        <BaseCanvas
-          nodes={nodes}
-          edges={edges}
-          onNodesChange={onNodesChange}
-          onEdgesChange={onEdgesChange}
-          nodeTypes={complexNodeTypes}
-          mode="design"
-        />
-      );
-    };
-
-    return <ComplexExampleStory />;
-  },
-};
-
-// Logic Flow Example - demonstrating If/Switch nodes with ButtonHandles
 export const LogicFlow: Story = {
-  render: () => {
-    const LogicFlowStory = () => {
-      // Define the nodes for If and Switch logic
-      const logicNodes: Node<BaseNodeData>[] = [
-        // IF Node
-        {
-          id: "if-node",
-          type: "baseNode",
-          position: { x: 300, y: 200 },
-          data: {
-            icon: <ApIcon size="48px" name="alt_route" color="var(--uix-canvas-foreground-de-emp)" />,
-            label: "If",
-            parameters: {},
-            handleConfigurations: [
-              {
-                position: Position.Left,
-                handles: [{ id: "input", type: "target" }],
-              },
-              {
-                position: Position.Right,
-                handles: [
-                  { id: "then", type: "source", label: "Then", showButton: true },
-                  { id: "else", type: "source", label: "Else", showButton: true },
-                ],
-              },
-            ],
-          },
-        },
-
-        // SWITCH Node
-        {
-          id: "switch-node",
-          type: "baseNode",
-          position: { x: 300, y: 650 },
-          data: {
-            icon: <ApIcon size="48px" variant="outlined" name="account_tree" color="var(--uix-canvas-foreground-de-emp)" />,
-            label: "Switch",
-            parameters: {},
-            handleConfigurations: [
-              {
-                position: Position.Left,
-                handles: [{ id: "input", type: "target" }],
-              },
-              {
-                position: Position.Right,
-                handles: [
-                  { id: "default", type: "source", label: "Default", showButton: true },
-                  { id: "case-0", type: "source", label: "0", showButton: true },
-                  { id: "case-1", type: "source", label: "1", showButton: true },
-                ],
-              },
-            ],
-          },
-        },
-
-        // Source nodes
-        {
-          id: "condition-input",
-          type: "baseNode",
-          position: { x: 50, y: 200 },
-          data: {
-            icon: <ApIcon size="48px" name="input" color="var(--uix-canvas-foreground-de-emp)" />,
-            label: "Condition",
-            subLabel: "Boolean",
-            parameters: {},
-            handleConfigurations: [
-              {
-                position: Position.Right,
-                handles: [{ id: "output", type: "source" }],
-              },
-            ],
-          },
-        },
-
-        {
-          id: "value-input",
-          type: "baseNode",
-          position: { x: 50, y: 650 },
-          data: {
-            icon: <ApIcon size="48px" name="input" color="var(--uix-canvas-foreground-de-emp)" />,
-            label: "Value",
-            subLabel: "Integer",
-            parameters: {},
-            handleConfigurations: [
-              {
-                position: Position.Right,
-                handles: [{ id: "output", type: "source" }],
-              },
-            ],
-          },
-        },
-
-        // Output nodes for IF
-        {
-          id: "then-action",
-          type: "baseNode",
-          position: { x: 600, y: 100 },
-          data: {
-            icon: <ApIcon size="48px" name="check_circle" color="green" />,
-            label: "Then Action",
-            subLabel: "Execute if true",
-            parameters: {},
-            handleConfigurations: [
-              {
-                position: Position.Left,
-                handles: [{ id: "input", type: "target" }],
-              },
-            ],
-          },
-        },
-
-        {
-          id: "else-action",
-          type: "baseNode",
-          position: { x: 600, y: 300 },
-          data: {
-            icon: <ApIcon size="48px" name="cancel" color="orange" />,
-            label: "Else Action",
-            subLabel: "Execute if false",
-            parameters: {},
-            handleConfigurations: [
-              {
-                position: Position.Left,
-                handles: [{ id: "input", type: "target" }],
-              },
-            ],
-          },
-        },
-
-        // Output nodes for SWITCH
-        {
-          id: "default-action",
-          type: "baseNode",
-          position: { x: 600, y: 500 },
-          data: {
-            icon: <ApIcon size="48px" name="help_outline" color="var(--uix-canvas-foreground-de-emp)" />,
-            label: "Default Case",
-            subLabel: "No match",
-            parameters: {},
-            handleConfigurations: [
-              {
-                position: Position.Left,
-                handles: [{ id: "input", type: "target" }],
-              },
-            ],
-          },
-        },
-
-        {
-          id: "case-0-action",
-          type: "baseNode",
-          position: { x: 600, y: 700 },
-          data: {
-            icon: <ApIcon size="48px" name="looks_one" color="blue" />,
-            label: "Case 0",
-            subLabel: "Value = 0",
-            parameters: {},
-            handleConfigurations: [
-              {
-                position: Position.Left,
-                handles: [{ id: "input", type: "target" }],
-              },
-            ],
-          },
-        },
-
-        {
-          id: "case-1-action",
-          type: "baseNode",
-          position: { x: 600, y: 900 },
-          data: {
-            icon: <ApIcon size="48px" name="looks_two" color="purple" />,
-            label: "Case 1",
-            subLabel: "Value = 1",
-            parameters: {},
-            handleConfigurations: [
-              {
-                position: Position.Left,
-                handles: [{ id: "input", type: "target" }],
-              },
-            ],
-          },
-        },
-      ];
-
-      // Define edges
-      const logicEdges: Edge[] = [
-        // IF connections
-        {
-          id: "condition-to-if",
-          source: "condition-input",
-          sourceHandle: "output",
-          target: "if-node",
-          targetHandle: "input",
-          animated: true,
-        },
-        {
-          id: "if-to-then",
-          source: "if-node",
-          sourceHandle: "then",
-          target: "then-action",
-          targetHandle: "input",
-          style: { stroke: "green" },
-        },
-        {
-          id: "if-to-else",
-          source: "if-node",
-          sourceHandle: "else",
-          target: "else-action",
-          targetHandle: "input",
-          style: { stroke: "orange" },
-        },
-
-        // SWITCH connections
-        {
-          id: "value-to-switch",
-          source: "value-input",
-          sourceHandle: "output",
-          target: "switch-node",
-          targetHandle: "input",
-          animated: true,
-        },
-        {
-          id: "switch-to-default",
-          source: "switch-node",
-          sourceHandle: "default",
-          target: "default-action",
-          targetHandle: "input",
-        },
-        {
-          id: "switch-to-0",
-          source: "switch-node",
-          sourceHandle: "case-0",
-          target: "case-0-action",
-          targetHandle: "input",
-          style: { stroke: "blue" },
-        },
-        {
-          id: "switch-to-1",
-          source: "switch-node",
-          sourceHandle: "case-1",
-          target: "case-1-action",
-          targetHandle: "input",
-          style: { stroke: "purple" },
-        },
-      ];
-
-      const [nodes, _setNodes, onNodesChange] = useNodesState(logicNodes);
-      const [edges, _setEdges, onEdgesChange] = useEdgesState(logicEdges);
-
-      const nodeTypes = {
-        baseNode: BaseNode,
-      };
-
-      return (
-        <BaseCanvas
-          nodes={nodes}
-          edges={edges}
-          onNodesChange={onNodesChange}
-          onEdgesChange={onEdgesChange}
-          nodeTypes={nodeTypes}
-          mode="design"
-        >
-          <Panel position="top-center">
-            <Column
-              p={12}
-              style={{
-                color: "var(--uix-canvas-foreground)",
-                backgroundColor: "var(--uix-canvas-background-secondary)",
-                borderRadius: 4,
-              }}
-            >
-              <ApTypography variant={FontVariantToken.fontSizeH3Bold}>Logic Flow Examples</ApTypography>
-              <ApTypography variant={FontVariantToken.fontSizeS}>IF and SWITCH nodes with ButtonHandles</ApTypography>
-            </Column>
-          </Panel>
-          <Panel position="bottom-right">
-            <CanvasPositionControls />
-          </Panel>
-        </BaseCanvas>
-      );
-    };
-
-    return <LogicFlowStory />;
-  },
+  name: "Logic flow",
+  render: () => <LogicFlowStory />,
 };

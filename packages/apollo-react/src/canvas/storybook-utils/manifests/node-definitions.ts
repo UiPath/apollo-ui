@@ -1,0 +1,823 @@
+import type { NodeManifest } from "./types";
+
+export const allNodeManifests: NodeManifest[] = [
+  // First Run Node
+  {
+    nodeType: "uipath.first-run",
+    version: "1.0.0",
+    category: "trigger",
+    tags: ["trigger", "start"],
+    sortOrder: 0,
+    display: {
+      label: "Add trigger",
+      icon: "plus",
+      shape: "circle",
+    },
+    handles: [],
+  },
+
+  // Blank Node
+  {
+    nodeType: "uipath.blank-node",
+    version: "1.0.0",
+    category: "recommended",
+    tags: ["blank", "todo"],
+    sortOrder: 2,
+    display: {
+      label: "Blank",
+      icon: "construction",
+    },
+    handles: [
+      {
+        position: "left",
+        handles: [{ id: "input", type: "target", handleType: "input" }],
+        visible: true,
+      },
+      {
+        position: "right",
+        handles: [{ id: "output", type: "source", handleType: "output" }],
+        visible: true,
+      },
+    ],
+  },
+
+  // Timer Activity (Delay)
+  {
+    nodeType: "uipath.timer-activity",
+    version: "1.0.0",
+    category: "control-flow",
+    tags: ["control", "flow", "logic", "if", "switch", "loop"],
+    sortOrder: 20,
+    display: {
+      label: "Delay",
+      icon: "timer",
+    },
+    handles: [
+      {
+        position: "left",
+        handles: [{ id: "input", type: "target", handleType: "input" }],
+      },
+      {
+        position: "right",
+        handles: [{ id: "output", type: "source", handleType: "output" }],
+      },
+    ],
+  },
+
+  // Timer Trigger (Schedule)
+  {
+    nodeType: "uipath.timer-trigger",
+    version: "1.0.0",
+    category: "trigger",
+    tags: ["trigger", "start", "event"],
+    sortOrder: 40,
+    display: {
+      label: "Schedule trigger",
+      icon: "timer",
+      shape: "circle",
+    },
+    handles: [
+      {
+        position: "left",
+        handles: [{ id: "input", type: "target", handleType: "input" }],
+      },
+      {
+        position: "right",
+        handles: [{ id: "output", type: "source", handleType: "output" }],
+      },
+    ],
+  },
+
+  // Decision (Control Flow)
+  {
+    nodeType: "uipath.control-flow.decision",
+    version: "1",
+    category: "control-flow",
+    tags: ["control-flow", "if", "loop", "switch"],
+    sortOrder: 1,
+    display: {
+      label: "Decision",
+      icon: "uipath.decision",
+    },
+    handles: [
+      {
+        position: "left",
+        handles: [
+          {
+            id: "input",
+            type: "target",
+            handleType: "input",
+            constraints: {
+              forbiddenSourceCategories: ["trigger"],
+              forbiddenSources: [
+                { nodeType: "uipath.agent-model" },
+                { nodeType: "uipath.agent-prompt" },
+                { nodeType: "uipath.agent-tools" },
+              ],
+              validationMessage: "Control flow cannot be directly triggered or accept configuration nodes",
+            },
+          },
+        ],
+        visible: true,
+      },
+      {
+        position: "right",
+        handles: [
+          {
+            id: "true",
+            type: "source",
+            handleType: "output",
+            label: "{parameters.trueLabel || 'True'}",
+            constraints: {
+              forbiddenTargetCategories: ["trigger"],
+              forbiddenTargets: [
+                { nodeType: "uipath.agent-model" },
+                { nodeType: "uipath.agent-prompt" },
+                { nodeType: "uipath.agent-tools" },
+              ],
+            },
+          },
+          {
+            id: "false",
+            type: "source",
+            handleType: "output",
+            label: "{parameters.falseLabel || 'False'}",
+            constraints: {
+              forbiddenTargetCategories: ["trigger"],
+              forbiddenTargets: [
+                { nodeType: "uipath.agent-model" },
+                { nodeType: "uipath.agent-prompt" },
+                { nodeType: "uipath.agent-tools" },
+              ],
+            },
+          },
+        ],
+        visible: true,
+      },
+    ],
+  },
+
+  // Switch (Control Flow)
+  {
+    nodeType: "uipath.control-flow.switch",
+    version: "1",
+    category: "control-flow",
+    tags: ["control-flow", "switch"],
+    sortOrder: 2,
+    display: {
+      label: "Switch",
+      icon: "uipath.switch",
+    },
+    handles: [
+      {
+        position: "left",
+        handles: [{ id: "input", type: "target", handleType: "input" }],
+        visible: true,
+      },
+      {
+        position: "right",
+        handles: [{ id: "output", type: "source", handleType: "output" }],
+        visible: true,
+      },
+    ],
+  },
+
+  // Manual Trigger
+  {
+    nodeType: "uipath.manual-trigger",
+    version: "1",
+    category: "trigger",
+    tags: ["trigger", "manual"],
+    sortOrder: 1,
+    display: {
+      label: "Manual trigger",
+      icon: "play",
+      shape: "circle",
+    },
+    handles: [
+      {
+        position: "right",
+        handles: [
+          {
+            id: "output",
+            type: "source",
+            handleType: "output",
+            showButton: true,
+            constraints: {
+              forbiddenTargets: [
+                { nodeType: "uipath.trigger.*" },
+                { nodeType: "uipath.agent-model" },
+                { nodeType: "uipath.agent-prompt" },
+                { nodeType: "uipath.agent-tools" },
+              ],
+              forbiddenTargetCategories: ["trigger"],
+              minConnections: 1,
+              validationMessage: "Trigger must connect to at least one workflow node (not configuration nodes)",
+            },
+          },
+        ],
+        visible: true,
+      },
+    ],
+  },
+
+  // For Each Loop
+  {
+    nodeType: "uipath.control-flow.foreach",
+    version: "1",
+    category: "control-flow",
+    tags: ["control-flow", "loop", "iteration"],
+    sortOrder: 3,
+    display: {
+      label: "For Each",
+      icon: "repeat",
+    },
+    handles: [
+      {
+        position: "left",
+        handles: [{ id: "input", type: "target", handleType: "input" }],
+      },
+      {
+        position: "right",
+        handles: [
+          {
+            id: "body",
+            label: "Body (Item {currentIndex + 1} of {collection.length || '?'})",
+            type: "source",
+            handleType: "output",
+          },
+          {
+            id: "completed",
+            label: "Completed",
+            type: "source",
+            handleType: "output",
+          },
+        ],
+      },
+    ],
+  },
+
+  // While Loop
+  {
+    nodeType: "uipath.control-flow.while",
+    version: "1",
+    category: "control-flow",
+    tags: ["control-flow", "loop", "while"],
+    sortOrder: 4,
+    display: {
+      label: "While",
+      icon: "repeat",
+    },
+    handles: [
+      {
+        position: "left",
+        handles: [{ id: "input", type: "target", handleType: "input" }],
+      },
+      {
+        position: "right",
+        handles: [
+          {
+            id: "body",
+            label: "Body (while {condition || 'true'})",
+            type: "source",
+            handleType: "output",
+          },
+          {
+            id: "exit",
+            label: "Exit",
+            type: "source",
+            handleType: "output",
+          },
+        ],
+      },
+    ],
+  },
+
+  // Try-Catch (Error Handling)
+  {
+    nodeType: "uipath.control-flow.trycatch",
+    version: "1",
+    category: "control-flow",
+    tags: ["control-flow", "error", "exception"],
+    sortOrder: 5,
+    display: {
+      label: "Try-Catch",
+      icon: "shield-alert",
+    },
+    handles: [
+      {
+        position: "left",
+        handles: [
+          {
+            id: "input",
+            type: "target",
+            handleType: "input",
+            constraints: {
+              maxConnections: 1,
+              forbiddenSourceCategories: ["trigger"],
+              forbiddenSources: [
+                { nodeType: "uipath.agent-model" },
+                { nodeType: "uipath.agent-prompt" },
+                { nodeType: "uipath.agent-tools" },
+              ],
+            },
+          },
+        ],
+      },
+      {
+        position: "right",
+        handles: [
+          {
+            id: "try",
+            label: "Try",
+            type: "source",
+            handleType: "output",
+            constraints: {
+              minConnections: 1,
+              forbiddenTargetCategories: ["trigger"],
+              validationMessage: "Try block must be connected",
+            },
+          },
+          {
+            id: "catch",
+            label: "Catch ({errorType || 'Any'})",
+            type: "source",
+            handleType: "output",
+            constraints: {
+              forbiddenTargetCategories: ["trigger"],
+            },
+          },
+          {
+            id: "finally",
+            label: "Finally",
+            type: "source",
+            handleType: "output",
+            constraints: {
+              forbiddenTargetCategories: ["trigger"],
+            },
+          },
+        ],
+      },
+    ],
+  },
+
+  // Parallel (Fork)
+  {
+    nodeType: "uipath.control-flow.parallel",
+    version: "1",
+    category: "control-flow",
+    tags: ["control-flow", "parallel", "concurrent"],
+    sortOrder: 6,
+    display: {
+      label: "Parallel",
+      icon: "git-fork",
+    },
+    handles: [
+      {
+        position: "left",
+        handles: [{ id: "input", type: "target", handleType: "input" }],
+      },
+      {
+        position: "right",
+        handles: [
+          {
+            id: "branch1",
+            label: "{parameters.branch1Label || 'Branch 1'}",
+            type: "source",
+            handleType: "output",
+          },
+          {
+            id: "branch2",
+            label: "{parameters.branch2Label || 'Branch 2'}",
+            type: "source",
+            handleType: "output",
+          },
+          {
+            id: "branch3",
+            label: "{parameters.branch3Label || 'Branch 3'}",
+            type: "source",
+            handleType: "output",
+          },
+        ],
+      },
+    ],
+  },
+
+  // Terminate
+  {
+    nodeType: "uipath.control-flow.terminate",
+    version: "1",
+    category: "control-flow",
+    tags: ["control-flow", "end", "stop"],
+    sortOrder: 99,
+    display: {
+      label: "Terminate",
+      icon: "octagon",
+      shape: "circle",
+    },
+    handles: [
+      {
+        position: "left",
+        handles: [
+          {
+            id: "input",
+            type: "target",
+            handleType: "input",
+            constraints: {
+              maxConnections: 1,
+              forbiddenSources: [{ nodeType: "uipath.trigger.*" }],
+              forbiddenSourceCategories: ["trigger"],
+              validationMessage: "Terminate cannot be directly connected to triggers",
+            },
+          },
+        ],
+      },
+    ],
+  },
+
+  // Transform Data
+  {
+    nodeType: "uipath.data.transform",
+    version: "1",
+    category: "data-and-tools",
+    tags: ["data", "transformation"],
+    sortOrder: 2,
+    display: {
+      label: "Transform",
+      icon: "rotate-cw",
+    },
+    handles: [
+      {
+        position: "left",
+        handles: [{ id: "input", type: "target", handleType: "input" }],
+      },
+      {
+        position: "right",
+        handles: [{ id: "output", type: "source", handleType: "output" }],
+      },
+    ],
+  },
+
+  // Agent Model (Configuration Node)
+  {
+    nodeType: "uipath.agent.agent-model",
+    version: "1",
+    category: "agent",
+    tags: ["agentic", "ai", "model", "llm"],
+    sortOrder: 0,
+    display: {
+      label: "Agent Model",
+      icon: "sparkles",
+      shape: "circle",
+    },
+    handles: [
+      {
+        position: "top",
+        handles: [
+          {
+            id: "output",
+            type: "source",
+            handleType: "artifact",
+            label: "{modelName || 'Model'}",
+            constraints: {
+              allowedTargets: [{ nodeType: "uipath.agent", handleId: "model" }],
+              validationMessage: "Agent Model can only connect to Agent node's model input",
+            },
+          },
+        ],
+      },
+    ],
+  },
+
+  // Agent Context (Configuration Node)
+  {
+    nodeType: "uipath.agent.agent-context",
+    version: "1",
+    category: "agent",
+    tags: ["agentic", "ai", "context"],
+    sortOrder: 0,
+    display: {
+      label: "Context",
+      icon: "message-square",
+      shape: "circle",
+    },
+    handles: [
+      {
+        position: "top",
+        handles: [
+          {
+            id: "output",
+            type: "target",
+            handleType: "artifact",
+            label: "{contextName || 'Context'}",
+            constraints: {
+              allowedTargets: [{ nodeType: "uipath.agent", handleId: "context" }],
+              validationMessage: "Agent Context can only connect to Agent node's context input",
+            },
+          },
+        ],
+      },
+    ],
+  },
+
+  // Agent Tools (Configuration Node)
+  {
+    nodeType: "uipath.agent.agent-tools",
+    version: "1",
+    category: "agent",
+    tags: ["agentic", "ai", "tools", "functions"],
+    sortOrder: 0,
+    display: {
+      label: "Agent Tools",
+      icon: "wrench",
+      shape: "circle",
+    },
+    handles: [
+      {
+        position: "top",
+        handles: [
+          {
+            id: "output",
+            type: "source",
+            handleType: "artifact",
+            label: "{toolCount || 0} tools",
+            constraints: {
+              allowedTargets: [{ nodeType: "uipath.agent", handleId: "tools" }],
+              validationMessage: "Agent Tools can only connect to Agent node's tools input",
+            },
+          },
+        ],
+      },
+    ],
+  },
+
+  // Agent
+  {
+    nodeType: "uipath.agent",
+    version: "1",
+    category: "agent",
+    tags: ["agentic", "ai", "agent"],
+    sortOrder: 1,
+    display: {
+      label: "Agent",
+      icon: "uipath.agent",
+      shape: "rectangle",
+      iconBackground: "linear-gradient(135deg, #FFE0FF 4.81%, #CFD9FF 97.27%)",
+    },
+    handles: [
+      {
+        position: "bottom",
+        handles: [
+          {
+            id: "context",
+            type: "source",
+            handleType: "artifact",
+            label: "Context",
+            constraints: {
+              allowedSources: [{ nodeType: "uipath.agent.agent-context" }],
+              maxConnections: 1,
+              validationMessage: "Only Agent Context nodes can connect here",
+            },
+          },
+          {
+            id: "escalation",
+            type: "source",
+            handleType: "artifact",
+            label: "Escalation",
+            constraints: {
+              allowedSources: [{ nodeType: "uipath.agent.escalation" }],
+              validationMessage: "Only Agent Escalation nodes can connect here",
+            },
+          },
+          {
+            id: "tools",
+            type: "source",
+            handleType: "artifact",
+            label: "Tools",
+            constraints: {
+              allowedSources: [{ nodeType: "uipath.agent.agent-tools" }],
+              validationMessage: "Only Agent Tools nodes can connect here",
+            },
+          },
+        ],
+      },
+      {
+        position: "left",
+        handles: [
+          {
+            id: "input",
+            type: "target",
+            handleType: "input",
+            constraints: {
+              forbiddenSourceCategories: ["trigger"],
+              validationMessage: "Agents cannot be directly triggered",
+            },
+          },
+        ],
+      },
+      {
+        position: "right",
+        handles: [
+          {
+            id: "success",
+            label: "{agentName || 'Agent'}",
+            type: "source",
+            handleType: "output",
+            constraints: {
+              forbiddenTargetCategories: ["trigger"],
+            },
+          },
+          {
+            id: "error",
+            label: "Error",
+            type: "source",
+            handleType: "output",
+            constraints: {
+              forbiddenTargetCategories: ["trigger"],
+            },
+          },
+        ],
+      },
+    ],
+  },
+
+  // Code Interpreter
+  {
+    nodeType: "uipath.script",
+    version: "1",
+    category: "data-and-tools",
+    tags: ["code", "javascript", "python"],
+    sortOrder: 3,
+    display: {
+      label: "Script",
+      icon: "code",
+    },
+    handles: [
+      {
+        position: "left",
+        handles: [{ id: "input", type: "target", handleType: "input" }],
+      },
+      {
+        position: "right",
+        handles: [
+          {
+            id: "success",
+            type: "source",
+            handleType: "output",
+          },
+          {
+            id: "error",
+            label: "Error",
+            type: "source",
+            handleType: "output",
+          },
+        ],
+      },
+    ],
+  },
+
+  // Approval Task
+  {
+    nodeType: "uipath.human-task.approval",
+    version: "1",
+    category: "human-task",
+    tags: ["human-task", "approval", "review"],
+    sortOrder: 1,
+    display: {
+      label: "Approval",
+      icon: "uipath.human-task",
+    },
+    handles: [
+      {
+        position: "left",
+        handles: [{ id: "input", type: "target", handleType: "input" }],
+      },
+      {
+        position: "right",
+        handles: [
+          {
+            id: "approved",
+            label: "{parameters.approveLabel || 'Approved'}",
+            type: "source",
+            handleType: "output",
+          },
+          {
+            id: "rejected",
+            label: "{parameters.rejectLabel || 'Rejected'}",
+            type: "source",
+            handleType: "output",
+          },
+          {
+            id: "timeout",
+            label: "Timeout ({timeoutMinutes || 60}m)",
+            type: "source",
+            handleType: "output",
+          },
+        ],
+      },
+    ],
+  },
+
+  // Form Task
+  {
+    nodeType: "uipath.human-task.form",
+    version: "1",
+    category: "human-task",
+    tags: ["human-task", "form", "input"],
+    sortOrder: 2,
+    display: {
+      label: "Form",
+      icon: "file-text",
+    },
+    handles: [
+      {
+        position: "left",
+        handles: [{ id: "input", type: "target", handleType: "input" }],
+      },
+      {
+        position: "right",
+        handles: [
+          {
+            id: "submitted",
+            label: "Submitted ({formName || 'Form'})",
+            type: "source",
+            handleType: "output",
+          },
+          {
+            id: "cancelled",
+            label: "Cancelled",
+            type: "source",
+            handleType: "output",
+          },
+        ],
+      },
+    ],
+  },
+
+  // Call Workflow (Sub-workflow)
+  {
+    nodeType: "uipath.workflow.call",
+    version: "1",
+    category: "rpa-workflow",
+    tags: ["rpa", "workflow", "subprocess"],
+    sortOrder: 1,
+    display: {
+      label: "Call Workflow",
+      icon: "uipath.rpa",
+    },
+    handles: [
+      {
+        position: "left",
+        handles: [{ id: "input", type: "target", handleType: "input" }],
+      },
+      {
+        position: "right",
+        handles: [
+          {
+            id: "success",
+            label: "{workflowName || 'Workflow'}",
+            type: "source",
+            handleType: "output",
+          },
+          {
+            id: "error",
+            label: "Error",
+            type: "source",
+            handleType: "output",
+          },
+        ],
+      },
+    ],
+  },
+
+  // API Workflow Trigger
+  {
+    nodeType: "uipath.api-workflow",
+    version: "1",
+    category: "api-workflow",
+    tags: ["api", "workflow", "endpoint"],
+    sortOrder: 1,
+    display: {
+      label: "API Workflow",
+      icon: "uipath.api",
+      shape: "square",
+    },
+    handles: [
+      {
+        position: "left",
+        handles: [{ id: "input", type: "target", handleType: "input" }],
+      },
+      {
+        position: "right",
+        handles: [
+          {
+            id: "output",
+            type: "source",
+            handleType: "output",
+            label: "{method || 'POST'} /{path || 'endpoint'}",
+          },
+        ],
+      },
+    ],
+  },
+];

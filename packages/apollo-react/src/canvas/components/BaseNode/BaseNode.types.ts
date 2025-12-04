@@ -22,6 +22,7 @@ export interface BaseNodeData extends Record<string, unknown> {
     shape?: NodeShape;
     color?: string;
     background?: string;
+    icon?: string;
     iconBackground?: string;
     iconColor?: string;
   };

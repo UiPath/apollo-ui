@@ -1,15 +1,19 @@
 import type { Meta, StoryObj } from "@storybook/react";
-import { useCallback, useMemo, useState } from "react";
-import type { Connection, Node, Edge, NodeChange, EdgeChange } from "@uipath/uix/xyflow/react";
-import { Panel, ReactFlowProvider, applyNodeChanges, applyEdgeChanges, addEdge } from "@uipath/uix/xyflow/react";
-import { BaseNode } from "../BaseNode/BaseNode";
+import { useMemo } from "react";
+import type { Node } from "@uipath/uix/xyflow/react";
+import { Panel, ReactFlowProvider } from "@uipath/uix/xyflow/react";
+import { ApIcon } from "@uipath/portal-shell-react";
 import { BaseCanvas } from "../BaseCanvas";
 import { CanvasPositionControls } from "../CanvasPositionControls";
-import type { NodeRegistration, BaseNodeData } from "../BaseNode/BaseNode.types";
-import { ExecutionStatusContext } from "../BaseNode";
+import type { NodeRegistration, BaseNodeData, NodeShape } from "../BaseNode/BaseNode.types";
+import { ExecutionStatusContext } from "../BaseNode/ExecutionStatusContext";
 import { NodeRegistryProvider } from "../BaseNode/NodeRegistryProvider";
 import { ExecutionStatusIcon } from "../ExecutionStatusIcon";
-import { ApIcon } from "@uipath/portal-shell-react";
+import { useCanvasStory, StoryInfoPanel } from "../../storybook-utils";
+
+// ============================================================================
+// Node Registration
+// ============================================================================
 
 const toolbarNodeRegistration: NodeRegistration = {
   nodeType: "toolbarDemo",
@@ -17,103 +21,45 @@ const toolbarNodeRegistration: NodeRegistration = {
   displayName: "Toolbar Demo Node",
   description: "Node demonstrating toolbar functionality",
   icon: "settings",
-  tags: ["toolbar", "demo"],
-  sortOrder: 1,
-  version: "1.0.0",
-
   definition: {
-    getIcon: (_data, _context) => <ApIcon name="home" variant="outlined" size="40px" />,
-
-    getDisplay: (data, _context) => ({
-      label: data.display?.label || "Toolbar Demo Node",
+    getIcon: () => <ApIcon name="home" variant="outlined" size="40px" />,
+    getDisplay: (data) => ({
+      label: data.display?.label || "Toolbar Demo",
       subLabel: data.display?.subLabel || "Hover to see toolbar",
-      shape: data.display?.shape || ("rectangle" as const),
+      shape: data.display?.shape || "rectangle",
     }),
-
     getAdornments: (_data, context) => {
-      const executionState = context.executionState;
-      const status = typeof executionState === "string" ? executionState : executionState?.status;
-
-      return {
-        topRight: <ExecutionStatusIcon status={status} />,
-      };
+      const state = context.executionState;
+      const status = typeof state === "string" ? state : state?.status;
+      return { topRight: <ExecutionStatusIcon status={status} /> };
     },
-
-    getToolbar: (data, _context) => ({
+    getToolbar: (data) => ({
       actions: [
-        {
-          id: "add",
-          icon: "add",
-          label: "Add",
-          onAction: (nodeId) => {
-            console.log(`Add action clicked for node ${nodeId}`);
-            alert(`Add action clicked for node ${nodeId}`);
-          },
-        },
-        {
-          id: "edit",
-          icon: "mode_edit",
-          label: "Edit",
-          onAction: (nodeId) => {
-            console.log(`Edit action clicked for node ${nodeId}`);
-            alert(`Edit action clicked for node ${nodeId}`);
-          },
-        },
-        {
-          id: "delete",
-          icon: "delete",
-          label: "Delete",
-          onAction: (nodeId) => {
-            console.log(`Delete action clicked for node ${nodeId}`);
-            if (confirm(`Are you sure you want to delete node ${nodeId}?`)) {
-              console.log(`Node ${nodeId} deleted`);
-            }
-          },
-        },
+        { id: "add", icon: "add", label: "Add", onAction: (nodeId) => console.log(`Add: ${nodeId}`) },
+        { id: "edit", icon: "mode_edit", label: "Edit", onAction: (nodeId) => console.log(`Edit: ${nodeId}`) },
+        { id: "delete", icon: "delete", label: "Delete", onAction: (nodeId) => console.log(`Delete: ${nodeId}`) },
       ],
       overflowActions: [
-        {
-          id: "duplicate",
-          icon: "content_copy",
-          label: "Duplicate",
-          onAction: (nodeId) => {
-            console.log(`Duplicate action clicked for node ${nodeId}`);
-            alert(`Duplicating node ${nodeId}`);
-          },
-        },
-        {
-          id: "settings",
-          icon: "settings",
-          label: "Settings",
-          onAction: (nodeId) => {
-            console.log(`Settings clicked for node ${nodeId}`);
-            alert(`Opening settings for node ${nodeId}`);
-          },
-        },
+        { id: "duplicate", icon: "content_copy", label: "Duplicate", onAction: (nodeId) => console.log(`Duplicate: ${nodeId}`) },
+        { id: "settings", icon: "settings", label: "Settings", onAction: (nodeId) => console.log(`Settings: ${nodeId}`) },
       ],
       position: (data?.parameters?.toolbarPosition as "top" | "bottom" | "left" | "right") || "top",
-      align: (data?.parameters?.toolbarAlign as "start" | "center" | "end") || "end", // Right-aligned toolbar by default
+      align: (data?.parameters?.toolbarAlign as "start" | "center" | "end") || "end",
     }),
-
-    getMenuItems: (_data, _context) => [],
-    getDefaultParameters: () => ({}),
   },
 };
 
+// ============================================================================
+// Meta Configuration
+// ============================================================================
+
 const meta: Meta = {
   title: "Canvas/NodeToolbar",
-  parameters: {
-    layout: "fullscreen",
-  },
+  parameters: { layout: "fullscreen" },
   decorators: [
     (Story) => {
       const registrations = useMemo(() => [toolbarNodeRegistration], []);
-      const executions = useMemo(
-        () => ({
-          getExecutionState: () => undefined,
-        }),
-        []
-      );
+      const executions = useMemo(() => ({ getExecutionState: () => undefined }), []);
 
       return (
         <NodeRegistryProvider registrations={registrations}>
@@ -131,194 +77,62 @@ const meta: Meta = {
 };
 
 export default meta;
-
 type Story = StoryObj<typeof meta>;
 
-const nodeTypes = {
-  toolbarDemo: BaseNode,
-};
+// ============================================================================
+// Helper Functions
+// ============================================================================
 
-export const Default: Story = {
-  render: () => <DefaultStory />,
-};
+const SHAPES: NodeShape[] = ["rectangle", "square", "circle"];
+const ALIGNS = ["start", "center", "end"] as const;
 
-const DefaultStory = () => {
-  const initialNodes = [
-    // Rectangle nodes - Row 1
-    {
-      id: "rect-1",
-      type: "toolbarDemo",
-      position: { x: 50, y: 50 },
-      data: {
-        parameters: {
-          toolbarAlign: "start",
-          toolbarPosition: "top",
-        },
-        display: {
-          label: "Rectangle",
-          subLabel: "align: start (left)",
-          shape: "rectangle" as const,
-        },
-      } as BaseNodeData,
-    },
-    {
-      id: "rect-2",
-      type: "toolbarDemo",
-      position: { x: 350, y: 50 },
-      data: {
-        parameters: {
-          toolbarAlign: "center",
-          toolbarPosition: "top",
-        },
-        display: {
-          label: "Rectangle",
-          subLabel: "align: center",
-          shape: "rectangle" as const,
-        },
-      } as BaseNodeData,
-    },
-    {
-      id: "rect-3",
-      type: "toolbarDemo",
-      position: { x: 650, y: 50 },
-      data: {
-        parameters: {
-          toolbarAlign: "end",
-          toolbarPosition: "top",
-        },
-        display: {
-          label: "Rectangle",
-          subLabel: "align: end (right)",
-          shape: "rectangle" as const,
-        },
-      } as BaseNodeData,
-    },
-    // Square nodes - Row 2
-    {
-      id: "square-1",
-      type: "toolbarDemo",
-      position: { x: 50, y: 200 },
-      data: {
-        parameters: {
-          toolbarAlign: "start",
-          toolbarPosition: "top",
-        },
-        display: {
-          label: "Square",
-          subLabel: "align: start",
-          shape: "square" as const,
-        },
-      } as BaseNodeData,
-    },
-    {
-      id: "square-2",
-      type: "toolbarDemo",
-      position: { x: 350, y: 200 },
-      data: {
-        parameters: {
-          toolbarAlign: "center",
-          toolbarPosition: "top",
-        },
-        display: {
-          label: "Square",
-          subLabel: "align: center",
-          shape: "square" as const,
-        },
-      } as BaseNodeData,
-    },
-    {
-      id: "square-3",
-      type: "toolbarDemo",
-      position: { x: 650, y: 200 },
-      data: {
-        parameters: {
-          toolbarAlign: "end",
-          toolbarPosition: "top",
-        },
-        display: {
-          label: "Square",
-          subLabel: "align: end",
-          shape: "square" as const,
-        },
-      } as BaseNodeData,
-    },
-    // Circle nodes - Row 3
-    {
-      id: "circle-1",
-      type: "toolbarDemo",
-      position: { x: 50, y: 400 },
-      data: {
-        parameters: {
-          toolbarAlign: "start",
-          toolbarPosition: "top",
-        },
-        display: {
-          label: "Circle",
-          subLabel: "align: start",
-          shape: "circle" as const,
-        },
-      } as BaseNodeData,
-    },
-    {
-      id: "circle-2",
-      type: "toolbarDemo",
-      position: { x: 350, y: 400 },
-      data: {
-        parameters: {
-          toolbarAlign: "center",
-          toolbarPosition: "top",
-        },
-        display: {
-          label: "Circle",
-          subLabel: "align: center",
-          shape: "circle" as const,
-        },
-      } as BaseNodeData,
-    },
-    {
-      id: "circle-3",
-      type: "toolbarDemo",
-      position: { x: 650, y: 400 },
-      data: {
-        parameters: {
-          toolbarAlign: "end",
-          toolbarPosition: "top",
-        },
-        display: {
-          label: "Circle",
-          subLabel: "align: end",
-          shape: "circle" as const,
-        },
-      } as BaseNodeData,
-    },
-  ];
+function createToolbarNodes(): Node<BaseNodeData>[] {
+  const nodes: Node<BaseNodeData>[] = [];
 
-  const [nodes, setNodes] = useState<Node<BaseNodeData>[]>(initialNodes);
-  const [edges, setEdges] = useState<Edge[]>([]);
+  SHAPES.forEach((shape, rowIndex) => {
+    ALIGNS.forEach((align, colIndex) => {
+      nodes.push({
+        id: `${shape}-${align}`,
+        type: "toolbarDemo",
+        position: { x: 96 + colIndex * 300, y: 192 + rowIndex * 200 },
+        data: {
+          parameters: { toolbarAlign: align, toolbarPosition: "top" },
+          display: {
+            label: shape.charAt(0).toUpperCase() + shape.slice(1),
+            subLabel: `align: ${align}`,
+            shape,
+          },
+        },
+      });
+    });
+  });
 
-  const onNodesChange = useCallback(
-    (changes: NodeChange[]) => setNodes((nds) => applyNodeChanges(changes, nds) as Node<BaseNodeData>[]),
-    []
-  );
+  return nodes;
+}
 
-  const onEdgesChange = useCallback((changes: EdgeChange[]) => setEdges((eds) => applyEdgeChanges(changes, eds)), []);
+// ============================================================================
+// Story Components
+// ============================================================================
 
-  const onConnect = useCallback((params: Connection) => setEdges((eds) => addEdge(params, eds)), [setEdges]);
+function DefaultStory() {
+  const initialNodes = useMemo(() => createToolbarNodes(), []);
+  const { canvasProps } = useCanvasStory({ initialNodes });
 
   return (
-    <BaseCanvas
-      nodes={nodes}
-      edges={edges}
-      onNodesChange={onNodesChange}
-      onEdgesChange={onEdgesChange}
-      onConnect={onConnect}
-      nodeTypes={nodeTypes}
-      mode="design"
-      fitView
-    >
+    <BaseCanvas {...canvasProps} mode="design">
+      <StoryInfoPanel title="Node Toolbar" description="Hover over nodes to see toolbar actions" />
       <Panel position="bottom-right">
         <CanvasPositionControls />
       </Panel>
     </BaseCanvas>
   );
+}
+
+// ============================================================================
+// Exported Stories
+// ============================================================================
+
+export const Default: Story = {
+  name: "Default",
+  render: () => <DefaultStory />,
 };
