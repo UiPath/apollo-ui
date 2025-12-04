@@ -1,6 +1,6 @@
 {
   "name": "@uipath/apollo-core",
-  "version": "0.0.0",
+  "version": "5.0.0",
   "description": "Apollo Design System - Core design tokens, icons, and fonts",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -49,7 +49,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "release": "semantic-release -e semantic-release-monorepo"
   },
   "keywords": [
     "design-system",

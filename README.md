@@ -1,50 +1,90 @@
 # Apollo v.4 Design System
 
-Apollo v.4 is an open-source design system for UiPath, providing a unified, accessible, and framework-agnostic component library.
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![pnpm](https://img.shields.io/badge/maintained%20with-pnpm-cc00ff.svg)](https://pnpm.io/)
+[![Turborepo](https://img.shields.io/badge/built%20with-Turborepo-ef4444.svg)](https://turbo.build/)
 
-## Features
+Apollo v.4 is UiPath's open-source design system for building consistent user experiences across all UiPath products.
 
-- **Framework-optimized**: First-class React and Angular support
-- **Design tokens**: Shared tokens across all frameworks
-- **Tailwind support**: Modern styling with apollo-wind
-- **Web Components**: Cross-framework components
-- **TypeScript**: Full type safety
-- **Storybook**: Interactive component documentation
-- **Monorepo**: Managed with Turborepo and pnpm
+## ✨ Features
 
-## Repository Structure
+- 🎨 **Design Tokens** - 1300+ icons, comprehensive color system, typography, spacing
+- ⚛️ **React Components** - Built on Material UI with Apollo theming
+- 🅰️ **Angular Components** - Built on Angular Material with Apollo theming
+- 🎐 **Tailwind CSS** - Modern utility-first styling with shadcn/ui
+- 🌐 **Web Components** - Cross-framework components for maximum flexibility
+- 📘 **TypeScript** - Full type safety across all packages
+- 📚 **Storybook** - Interactive component documentation
+- 🚀 **Monorepo** - Efficient development with Turborepo and pnpm
+
+## 📦 Package Dependency Graph
+
+```mermaid
+graph TD
+    Core["@uipath/apollo-core<br/>Design Tokens, Icons, Fonts"]
+    Utils["@uipath/apollo-utils<br/>Shared Utilities"]
+
+    React["@uipath/apollo-react<br/>React + Material UI"]
+    Angular["@uipath/apollo-angular<br/>Angular + Material"]
+    Wind["@uipath/apollo-wind<br/>Tailwind + shadcn/ui"]
+
+    Chat["@uipath/ap-autopilot-chat<br/>Chat Web Component"]
+    Grid["@uipath/ap-data-grid<br/>Data Grid"]
+
+    Core --> React
+    Utils --> React
+    Core --> Angular
+    Utils --> Angular
+    Core --> Wind
+    Core --> Chat
+    Core --> Grid
+
+    style Core fill:#fa4616,stroke:#333,stroke-width:2px,color:#fff
+    style Utils fill:#fa4616,stroke:#333,stroke-width:2px,color:#fff
+    style React fill:#61dafb,stroke:#333,stroke-width:2px
+    style Angular fill:#dd0031,stroke:#333,stroke-width:2px,color:#fff
+    style Wind fill:#06b6d4,stroke:#333,stroke-width:2px
+    style Chat fill:#10b981,stroke:#333,stroke-width:2px
+    style Grid fill:#10b981,stroke:#333,stroke-width:2px
+```
+
+## 📁 Repository Structure
 
 ```
 apollo-ui/
 ├── packages/              # Core + framework packages
-│   ├── apollo-core/       # Design tokens, icons, fonts
-│   ├── apollo-utils/      # Shared utilities
-│   ├── apollo-react/      # React components + MUI theme
-│   ├── apollo-angular/    # Angular components + Material theme
-│   └── apollo-wind/       # Tailwind + shadcn/ui
+│   ├── apollo-core/       # 🎨 Design tokens, icons, fonts
+│   ├── apollo-utils/      # 🛠️ Shared utilities
+│   ├── apollo-react/      # ⚛️ React components + MUI theme
+│   ├── apollo-angular/    # 🅰️ Angular components + Material theme
+│   └── apollo-wind/       # 🎐 Tailwind + shadcn/ui
 │
 ├── web-packages/          # Cross-framework web components
-│   ├── ap-autopilot-chat/ # Chat web component
-│   └── ap-data-grid/      # Data grid web component
+│   ├── ap-autopilot-chat/ # 💬 Chat web component
+│   └── ap-data-grid/      # 📊 Data grid web component
 │
 └── apps/                  # Development applications
-    ├── storybook/         # Component documentation
-    ├── react-playground/  # React testing environment
-    └── angular-playground/# Angular testing environment
+    ├── storybook/         # 📚 Component documentation
+    ├── react-playground/  # ⚛️ React testing environment
+    └── angular-playground/# 🅰️ Angular testing environment
 ```
 
-## Getting Started
+## 🚀 Getting Started
 
 ### Prerequisites
 
-- Node.js >= 18.0.0
-- pnpm >= 8.0.0
+- **Node.js** >= 22
+- **pnpm** >= 10
 
 ### Installation
 
 ```bash
 # Install pnpm if you haven't already
 npm install -g pnpm
+
+# Clone the repository
+git clone https://github.com/UiPath/apollo-ui.git
+cd apollo-ui
 
 # Install dependencies
 pnpm install
@@ -82,23 +122,29 @@ pnpm build
 pnpm storybook:build
 ```
 
-## Packages
+## 📦 Packages
 
 ### Core Packages
 
-- **[@uipath/apollo-core](./packages/apollo-core)** - Design tokens, icons, and fonts
-- **[@uipath/apollo-utils](./packages/apollo-utils)** - Shared utilities and helpers
+| Package | Description |
+|---------|-------------|
+| [@uipath/apollo-core](./packages/apollo-core) | Design tokens, 1300+ icons, fonts - Foundation of the design system |
+| [@uipath/apollo-utils](./packages/apollo-utils) | Shared utilities, formatters, and helper functions |
 
 ### Framework Packages
 
-- **[@uipath/apollo-react](./packages/apollo-react)** - React components with Material UI theming
-- **[@uipath/apollo-angular](./packages/apollo-angular)** - Angular components with Angular Material theming
-- **[@uipath/apollo-wind](./packages/apollo-wind)** - Tailwind CSS and shadcn/ui implementation
+| Package | Description |
+|---------|-------------|
+| [@uipath/apollo-react](./packages/apollo-react) | React components with Material UI theming and Apollo design tokens |
+| [@uipath/apollo-angular](./packages/apollo-angular) | Angular components with Angular Material theming *(Coming soon)* |
+| [@uipath/apollo-wind](./packages/apollo-wind) | Tailwind CSS utilities + shadcn/ui components |
 
-### Web Packages
+### Web Components (Cross-Framework)
 
-- **[@uipath/ap-autopilot-chat](./web-packages/ap-autopilot-chat)** - Chat web component
-- **[@uipath/ap-data-grid](./web-packages/ap-data-grid)** - Data grid web component with React wrapper
+| Package | Description |
+|---------|-------------|
+| [@uipath/ap-autopilot-chat](./web-packages/ap-autopilot-chat) | Chat interface web component |
+| [@uipath/ap-data-grid](./web-packages/ap-data-grid) | Data grid web component with React wrapper |
 
 ## Usage
 
@@ -157,7 +203,6 @@ Please read [CLAUDE.md](./CLAUDE.md) for detailed architecture documentation and
 - [ ] Has unit tests
 - [ ] Has visual regression tests
 - [ ] Documented in package README
-- [ ] Accessible (WCAG 2.1 AAA compliant)
 
 ## License
 

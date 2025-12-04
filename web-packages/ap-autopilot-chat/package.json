@@ -20,7 +20,8 @@
     "dev": "rslib build --watch",
     "lint": "eslint src --ext .ts",
     "test": "vitest --run --passWithNoTests",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "release": "semantic-release -e semantic-release-monorepo"
   },
   "keywords": [
     "design-system",

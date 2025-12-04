@@ -25,7 +25,8 @@
     "dev": "rslib build --watch",
     "lint": "eslint src --ext .ts,.tsx",
     "test": "vitest --run --passWithNoTests",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "release": "semantic-release -e semantic-release-monorepo"
   },
   "keywords": [
     "design-system",
@@ -49,8 +50,8 @@
     "vitest": "^4.0.5"
   },
   "peerDependencies": {
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react": ">=18.3.0",
+    "react-dom": ">=18.3.0"
   },
   "peerDependenciesMeta": {
     "react": {

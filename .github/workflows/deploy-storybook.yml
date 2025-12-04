@@ -35,9 +35,7 @@ jobs:
 
       - name: Install dependencies
         env:
-          GH_NPM_REGISTRY_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        env:
-          RELEASE_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+          GH_NPM_REGISTRY_TOKEN: ${{ secrets.GH_NPM_REGISTRY_TOKEN }}
         run: pnpm install --frozen-lockfile
 
       - name: Cache Turborepo
