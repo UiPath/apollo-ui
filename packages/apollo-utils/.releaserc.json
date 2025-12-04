@@ -1,7 +1,6 @@
 {
   "branches": ["main"],
   "tagFormat": "@uipath/apollo-utils@${version}",
-  "debug": true,
   "plugins": [
     "@semantic-release/commit-analyzer",
     "@semantic-release/release-notes-generator",
