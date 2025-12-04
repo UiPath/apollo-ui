@@ -27,7 +27,7 @@
     "storybook": "turbo run storybook",
     "storybook:build": "turbo run storybook:build",
     "clean": "turbo run clean && rm -rf .turbo && rm -rf node_modules",
-    "release": "pnpm build && turbo run release",
+    "release": "turbo run release",
     "release:dry-run": "turbo run release -- --dry-run",
     "prepare": "husky"
   },
