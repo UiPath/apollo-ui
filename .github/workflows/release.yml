@@ -5,6 +5,17 @@ on:
     branches:
       - main
 
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+  packages: write
+
+env:
+  GH_NPM_REGISTRY_TOKEN: ${{ secrets.GH_NPM_REGISTRY_TOKEN }}
+  TURBO_TELEMETRY_DISABLED: 1
+  DO_NOT_TRACK: 1
+
 concurrency:
   group: ${{ github.workflow }}
   cancel-in-progress: false
@@ -59,5 +70,6 @@ jobs:
       - name: Release
         env:
           GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
-          GH_NPM_REGISTRY_TOKEN: ${{ secrets.GH_NPM_REGISTRY_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.GH_NPM_REGISTRY_TOKEN }}
+          NPM_TOKEN: ${{ secrets.GH_NPM_REGISTRY_TOKEN }}
         run: pnpm release
