@@ -31,9 +31,9 @@
   ],
   "license": "MIT",
   "peerDependencies": {
-    "@angular/core": "^19.0.0",
-    "@angular/common": "^19.0.0",
-    "@angular/material": "^20.0.0"
+    "@angular/core": ">=19.0.0",
+    "@angular/common": ">=19.0.0",
+    "@angular/material": ">=19.0.0"
   },
   "dependencies": {
     "@uipath/apollo-core": "workspace:*",

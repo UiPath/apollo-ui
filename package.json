@@ -27,8 +27,8 @@
     "storybook": "turbo run storybook",
     "storybook:build": "turbo run storybook:build",
     "clean": "turbo run clean && rm -rf .turbo && rm -rf node_modules",
-    "release": "pnpm build && multi-semantic-release",
-    "release:dry-run": "multi-semantic-release --dry-run",
+    "release": "pnpm build && turbo run release",
+    "release:dry-run": "turbo run release -- --dry-run",
     "prepare": "husky"
   },
   "devDependencies": {
@@ -37,6 +37,7 @@
     "@commitlint/config-pnpm-scopes": "^19.7.1",
     "@eslint/js": "^9.39.1",
     "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/exec": "^6.0.3",
     "@semantic-release/git": "^10.0.1",
     "@typescript-eslint/eslint-plugin": "^8.46.3",
     "@typescript-eslint/parser": "^8.46.3",
@@ -53,7 +54,6 @@
     "globals": "^16.5.0",
     "husky": "^9.1.7",
     "lint-staged": "^16.2.6",
-    "multi-semantic-release": "^3.0.2",
     "prettier": "^3.6.2",
     "semantic-release": "^24.2.0",
     "semantic-release-monorepo": "^8.0.2",

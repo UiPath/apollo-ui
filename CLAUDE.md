@@ -43,7 +43,7 @@ When facing an unexpected error or ambiguous situation, **never act on guesses**
 
 ## Project Overview
 
-Apollo v.4 is an open-source design system for UiPath, built to provide a unified, accessible, and framework-agnostic component library for both internal and external consumers. This monorepo contains design tokens, utilities, and framework-specific implementations (React, Angular, Web Components).
+Apollo v.4 is an open-source design system for UiPath, built to provide a unified component library for both internal and external consumers. This monorepo contains design tokens, utilities, and framework-specific implementations (React, Angular, Web Components).
 
 ### Goals
 
@@ -472,7 +472,6 @@ Each package must include:
 - [ ] Has unit tests
 - [ ] Has visual regression tests
 - [ ] Documented in package README
-- [ ] Accessible (WCAG 2.1 AAA compliant)
 
 ### PR Requirements
 

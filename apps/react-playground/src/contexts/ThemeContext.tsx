@@ -1,4 +1,8 @@
-import { createTheme, ThemeProvider as MuiThemeProvider } from "@mui/material";
+import {
+	type Components,
+	createTheme,
+	ThemeProvider as MuiThemeProvider,
+} from "@mui/material";
 import {
 	darkHighContrastOverrides,
 	darkOverrides,
@@ -62,7 +66,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
 	const muiTheme = useMemo(() => {
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		let components: any;
+		let components: Components<unknown>;
 		if (theme === "dark") {
 			components = highContrast ? darkHighContrastOverrides : darkOverrides;
 		} else {
