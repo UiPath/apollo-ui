@@ -31,7 +31,8 @@ module.exports = {
         'ci',
         'docs',
         'build',
-        'workspace'
+        'workspace',
+        'release'
       ],
     ],
 
