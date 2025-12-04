@@ -32,7 +32,9 @@
     "uipath"
   ],
   "license": "MIT",
-  "dependencies": {
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },  "dependencies": {
     "@uipath/apollo-core": "workspace:*"
   },
   "devDependencies": {

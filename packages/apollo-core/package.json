@@ -59,6 +59,9 @@
     "uipath"
   ],
   "license": "MIT",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
   "devDependencies": {
     "@rslib/core": "^0.17.0",
     "@vitest/coverage-v8": "^4.0.14",
