@@ -50,14 +50,11 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-turbo-
 
-      - name: Build packages
-        run: pnpm build
-
       - name: Run tests
         run: pnpm test
 
       - name: Release
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_NPM_REGISTRY_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
           GH_NPM_REGISTRY_TOKEN: ${{ secrets.GH_NPM_REGISTRY_TOKEN }}
         run: pnpm release
