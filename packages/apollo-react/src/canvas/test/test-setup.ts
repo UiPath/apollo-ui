@@ -65,7 +65,12 @@ vi.mock("@uipath/uix/xyflow/react", () => ({
     })),
     getViewport: vi.fn(() => ({ x: 0, y: 0, zoom: 1 })),
     setCenter: vi.fn(),
+    updateNodeData: vi.fn(),
   }),
+  useConnection: () => ({
+    inProgress: false,
+  }),
+  useUpdateNodeInternals: () => vi.fn((_nodeId: string) => {}),
   useNodes: vi.fn(() => []),
   useOnSelectionChange: vi.fn(),
   useStoreApi: vi.fn(() => ({
@@ -125,6 +130,34 @@ vi.mock("@uipath/uix/xyflow/react", () => ({
     isVisible?: boolean;
     [key: string]: any;
   }) => React.createElement("div", { "data-testid": "node-toolbar", ...props }, children),
+  NodeResizeControl: ({
+    children,
+    position,
+    minWidth,
+    minHeight,
+    onResizeStart,
+    onResizeEnd,
+    style,
+    ...domProps
+  }: {
+    children?: React.ReactNode;
+    position?: string;
+    minWidth?: number;
+    minHeight?: number;
+    onResizeStart?: () => void;
+    onResizeEnd?: () => void;
+    style?: React.CSSProperties;
+    [key: string]: any;
+  }) =>
+    React.createElement(
+      "div",
+      {
+        "data-testid": `node-resize-control-${position}`,
+        style,
+        ...domProps,
+      },
+      children
+    ),
   ConnectionMode: {
     Loose: "loose",
     Strict: "strict",
