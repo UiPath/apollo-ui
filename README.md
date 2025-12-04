@@ -20,32 +20,23 @@ Apollo v.4 is UiPath's open-source design system for building consistent user ex
 ## 📦 Package Dependency Graph
 
 ```mermaid
-graph TD
-    Core["@uipath/apollo-core<br/>Design Tokens, Icons, Fonts"]
-    Utils["@uipath/apollo-utils<br/>Shared Utilities"]
+graph RL
+    React["@uipath/apollo-react<br/>React + Material UI"] -->|requires| Core["@uipath/apollo-core<br/>Design Tokens, Icons, Fonts"]
+    Angular["@uipath/apollo-angular<br/>Angular + Material"] -->|requires| Core
+    Wind["@uipath/apollo-wind<br/>Tailwind + shadcn/ui"] -->|requires| Core
+    Chat["@uipath/ap-autopilot-chat<br/>Chat Web Component"] -->|requires| Core
+    Grid["@uipath/ap-data-grid<br/>Data Grid"] -->|requires| Core
 
-    React["@uipath/apollo-react<br/>React + Material UI"]
-    Angular["@uipath/apollo-angular<br/>Angular + Material"]
-    Wind["@uipath/apollo-wind<br/>Tailwind + shadcn/ui"]
+    React -->|requires| Utils["@uipath/apollo-utils<br/>Shared Utilities"]
+    Angular -->|requires| Utils
 
-    Chat["@uipath/ap-autopilot-chat<br/>Chat Web Component"]
-    Grid["@uipath/ap-data-grid<br/>Data Grid"]
-
-    Core --> React
-    Utils --> React
-    Core --> Angular
-    Utils --> Angular
-    Core --> Wind
-    Core --> Chat
-    Core --> Grid
-
-    style Core fill:#fa4616,stroke:#333,stroke-width:2px,color:#fff
-    style Utils fill:#fa4616,stroke:#333,stroke-width:2px,color:#fff
-    style React fill:#61dafb,stroke:#333,stroke-width:2px
-    style Angular fill:#dd0031,stroke:#333,stroke-width:2px,color:#fff
-    style Wind fill:#06b6d4,stroke:#333,stroke-width:2px
-    style Chat fill:#10b981,stroke:#333,stroke-width:2px
-    style Grid fill:#10b981,stroke:#333,stroke-width:2px
+    style Core fill:#374151,stroke:#ef4444,stroke-width:3px,color:#fff
+    style Utils fill:#374151,stroke:#ef4444,stroke-width:3px,color:#fff
+    style React fill:#1e3a8a,stroke:#3b82f6,stroke-width:3px,color:#fff
+    style Angular fill:#7f1d1d,stroke:#dc2626,stroke-width:3px,color:#fff
+    style Wind fill:#164e63,stroke:#06b6d4,stroke-width:3px,color:#fff
+    style Chat fill:#064e3b,stroke:#10b981,stroke-width:3px,color:#fff
+    style Grid fill:#064e3b,stroke:#10b981,stroke-width:3px,color:#fff
 ```
 
 ## 📁 Repository Structure
