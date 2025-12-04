@@ -59,8 +59,7 @@
     "test:watch": "vitest",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest --coverage",
-    "clean": "rm -rf dist",
-    "release": "semantic-release -e semantic-release-monorepo"
+    "clean": "rm -rf dist"
   },
   "keywords": [
     "design-system",

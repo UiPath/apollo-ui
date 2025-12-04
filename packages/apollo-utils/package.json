@@ -21,8 +21,7 @@
     "lint": "eslint src --ext .ts,.tsx",
     "lint:fix": "eslint src --ext .ts,.tsx --fix",
     "test": "vitest --run --passWithNoTests",
-    "clean": "rm -rf dist",
-    "release": "semantic-release -e semantic-release-monorepo"
+    "clean": "rm -rf dist"
   },
   "keywords": [
     "design-system",

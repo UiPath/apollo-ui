@@ -1,5 +1,6 @@
 {
   "name": "@uipath/apollo-angular",
+  "private": true,
   "version": "0.0.0",
   "description": "Apollo Design System - Angular component library with Angular Material theming",
   "main": "./dist/index.js",

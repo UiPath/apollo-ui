@@ -56,9 +56,28 @@ jobs:
       - name: Run tests
         run: pnpm test
 
+      - name: Setup git user
+        run: |
+          git config --global user.name "semantic-release-bot"
+          git config --global user.email "semantic-release-bot@users.noreply.github.com"
+
       - name: Release
         env:
           GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+          GH_NPM_REGISTRY_TOKEN: ${{ secrets.GH_NPM_REGISTRY_TOKEN }}
           NPM_TOKEN: ${{ secrets.GH_NPM_REGISTRY_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.GH_NPM_REGISTRY_TOKEN }}
+          HUSKY: 0
         run: pnpm release
+
+      - name: Commit changelogs
+        env:
+          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            git add '**/CHANGELOG.md'
+            git commit -m "chore(release): update changelogs [skip ci]"
+            git push
+          else
+            echo "No changes to commit"
+          fi

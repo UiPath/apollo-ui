@@ -30,8 +30,7 @@
     "clean": "rm -rf dist",
     "build:css": "npx @tailwindcss/cli -i ./src/css/index.css -o ./dist/css/index.css --minify",
     "build:css:dev": "npx @tailwindcss/cli -i ./src/css/index.css -o ./dist/css/index.css",
-    "build:css:watch": "npx @tailwindcss/cli -i ./src/css/index.css -o ./dist/css/index.css --watch",
-    "release": "semantic-release -e semantic-release-monorepo"
+    "build:css:watch": "npx @tailwindcss/cli -i ./src/css/index.css -o ./dist/css/index.css --watch"
   },
   "keywords": [
     "design-system",
