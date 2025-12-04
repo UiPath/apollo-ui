@@ -14,6 +14,8 @@ export const useButtonHandles = ({
   showAddButton,
   showNotches,
   shouldShowAddButtonFn,
+  nodeWidth,
+  nodeHeight,
 }: {
   handleConfigurations: HandleConfiguration[];
   shouldShowHandles: boolean;
@@ -23,6 +25,8 @@ export const useButtonHandles = ({
   handleAction?: (event: HandleActionEvent) => void;
   showAddButton?: boolean;
   showNotches?: boolean;
+  nodeWidth?: number;
+  nodeHeight?: number;
 
   /**
    * Allows for consumers to control the predicate for showing the add button from the props that's passed in
@@ -69,6 +73,8 @@ export const useButtonHandles = ({
           showNotches={showNotches}
           customPositionAndOffsets={config.customPositionAndOffsets}
           shouldShowAddButtonFn={shouldShowAddButtonFn}
+          nodeWidth={nodeWidth}
+          nodeHeight={nodeHeight}
         />
       );
     });
@@ -84,6 +90,8 @@ export const useButtonHandles = ({
     showAddButton,
     showNotches,
     shouldShowAddButtonFn,
+    nodeWidth,
+    nodeHeight,
   ]);
 
   return handleElements;

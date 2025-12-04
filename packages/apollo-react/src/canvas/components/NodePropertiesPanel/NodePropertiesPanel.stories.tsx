@@ -5,10 +5,10 @@ import { ReactFlowProvider, applyNodeChanges, applyEdgeChanges, Panel } from "@u
 import { ApIcon } from "@uipath/portal-shell-react";
 import { NodePropertiesPanel } from "./NodePropertiesPanel";
 import { BaseCanvas } from "../BaseCanvas";
-import { BaseNode } from "../BaseNode";
+import { BaseNode, useNodeTypeRegistry } from "../BaseNode";
 import { StageNode } from "../StageNode";
 import { CanvasPositionControls } from "../CanvasPositionControls";
-import { Icons } from "@uipath/uix/core";
+import { Column, Icons } from "@uipath/uix/core";
 import { NodeRegistryProvider } from "../BaseNode/NodeRegistryProvider";
 import { ExecutionStatusContext } from "../BaseNode/ExecutionStatusContext";
 import {
@@ -79,18 +79,13 @@ const StageNodeWrapper = (props: NodeProps) => {
   );
 };
 
-const nodeTypes: NodeTypes = {
-  stage: StageNodeWrapper,
-  activity: BaseNode,
-};
-
 const initialNodes: Node[] = [
   {
     id: "1",
     type: "activity",
     position: { x: 100, y: 100 },
     data: {
-      icon: <ApIcon color="var(--color-foreground)" name="alt_route" size="48px" />,
+      icon: <ApIcon color="var(--uix-canvas-foreground)" name="alt_route" size="48px" />,
       label: "Decision Point",
       subLabel: "Select this node to configure",
       description: "Approve or reject application",
@@ -107,6 +102,7 @@ const initialNodes: Node[] = [
       model: "gpt-4",
       temperature: 0.7,
       maxTokens: 1024,
+      parameters: {},
     },
   },
   {
@@ -135,6 +131,8 @@ const initialEdges: Edge[] = [];
 function PropertiesPanelExample() {
   const [nodes, setNodes] = useState<Node[]>(initialNodes);
   const [edges, setEdges] = useState<Edge[]>(initialEdges);
+  const [isPinned, setIsPinned] = useState(false);
+  const nodeTypeRegistry = useNodeTypeRegistry();
 
   const onNodesChange = useCallback((changes: NodeChange[]) => {
     setNodes((nds) => applyNodeChanges(changes, nds));
@@ -144,16 +142,48 @@ function PropertiesPanelExample() {
     setEdges((eds) => applyEdgeChanges(changes, eds));
   }, []);
 
+  // Memoize the node type list separately to ensure stable dependencies
+  const registeredNodeTypes = useMemo(() => nodeTypeRegistry.getAllNodeTypes(), [nodeTypeRegistry]);
+
+  const nodeTypes = useMemo(() => {
+    return registeredNodeTypes.reduce(
+      (acc, nodeType) => {
+        acc[nodeType] = BaseNode;
+        return acc;
+      },
+      {
+        stage: StageNodeWrapper,
+        activity: BaseNode,
+      } as NodeTypes
+    );
+  }, [registeredNodeTypes]);
+
   return (
     <BaseCanvas nodes={nodes} edges={edges} nodeTypes={nodeTypes} mode="design" onNodesChange={onNodesChange} onEdgesChange={onEdgesChange}>
       <NodePropertiesPanel
         position="right"
         enableValidation={true}
         maintainSelection={true}
+        defaultPinned={isPinned}
+        onPinnedChange={setIsPinned}
         onChange={(nodeId, field, value) => {
           console.log(`Node ${nodeId}: ${field} = ${value}`);
         }}
       />
+      <Panel position="top-left">
+        <Column
+          gap={12}
+          p={10}
+          style={{
+            color: "var(--uix-canvas-foreground)",
+            backgroundColor: "var(--uix-canvas-background)",
+            border: "1px solid var(--uix-canvas-border-de-emp)",
+            borderRadius: 8,
+          }}
+        >
+          Click on nodes to open properties panel. Panel is {isPinned ? "pinned to the right" : "floating near node"}.
+        </Column>
+      </Panel>
       <Panel position="bottom-right">
         <CanvasPositionControls />
       </Panel>

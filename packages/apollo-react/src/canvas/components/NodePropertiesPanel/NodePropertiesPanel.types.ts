@@ -55,6 +55,8 @@ export interface NodePropertiesPanelProps {
   enableValidation?: boolean;
   onChange?: (nodeId: string, field: string, value: unknown) => void;
   maintainSelection?: boolean;
+  defaultPinned?: boolean;
+  onPinnedChange?: (pinned: boolean) => void;
 }
 
 export interface StageNodeConfig {

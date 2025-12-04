@@ -1,6 +1,6 @@
-import { memo, useMemo, useState, useCallback, useRef } from "react";
+import { memo, useMemo, useState, useCallback, useRef, useEffect } from "react";
 import type { Node, NodeProps } from "@uipath/uix/xyflow/react";
-import { Position, useConnection, useStore } from "@uipath/uix/xyflow/react";
+import { Position, useConnection, useStore, useUpdateNodeInternals } from "@uipath/uix/xyflow/react";
 import type { NodeStatusContext } from "./ExecutionStatusContext";
 import { useExecutionState } from "./ExecutionStatusContext";
 import type { HandleActionEvent } from "../ButtonHandle";
@@ -16,6 +16,7 @@ import { useButtonHandles } from "../ButtonHandle/useButtonHandles";
 const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
   const { type, data, selected, id, dragging, width, height } = props;
 
+  const updateNodeInternals = useUpdateNodeInternals();
   const containerRef = useRef<HTMLDivElement>(null);
   const [isHovered, setIsHovered] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
@@ -51,6 +52,13 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
     [nodeDefinition, data, statusContext]
   );
   const toolbarConfig = useMemo(() => nodeDefinition?.getToolbar?.(data, statusContext), [nodeDefinition, data, statusContext]);
+
+  // Force React Flow to recalculate handle positions when dimensions change
+  useEffect(() => {
+    if (width && height && handleConfigurations.length > 0) {
+      updateNodeInternals(id);
+    }
+  }, [id, width, height, handleConfigurations, updateNodeInternals]);
 
   const displayLabel = display.label;
   const displaySubLabel = display.subLabel;
@@ -88,7 +96,9 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
     if (!handleConfigurations || !selected) {
       return false;
     }
-    return handleConfigurations.some((config) => config.position === Position.Bottom && config.handles.length > 0);
+    return handleConfigurations.some(
+      (config) => config.position === Position.Bottom && config.handles.length > 0 && config.visible !== false
+    );
   }, [handleConfigurations, selected]);
 
   const handleMouseEnter = useCallback(() => setIsHovered(true), []);
@@ -129,6 +139,8 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
     selected,
     showNotches,
     showAddButton: mode === "design",
+    nodeWidth: width,
+    nodeHeight: height,
   });
 
   // TODO: refactor to standalone component

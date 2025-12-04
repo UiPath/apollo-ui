@@ -7,6 +7,7 @@ export * from "./CanvasPositionControls";
 export * from "./CodedAgent";
 export * from "./ExecutionStatusIcon";
 export * from "./FloatingCanvasPanel";
+export * from "./GroupNode";
 export * from "./HierarchicalCanvas";
 export * from "./MiniCanvasNavigator";
 export * from "./NodeContextMenu";

@@ -1,6 +1,5 @@
 import { Position, type Edge, type Node, type ReactFlowInstance } from "@uipath/uix/xyflow/react";
-import { BASE_CANVAS_GRID_SPACING } from "../components/BaseCanvas";
-import { DEFAULT_NODE_SIZE, PREVIEW_EDGE_ID, PREVIEW_NODE_ID } from "../constants";
+import { DEFAULT_NODE_SIZE, PREVIEW_EDGE_ID, PREVIEW_NODE_ID, GRID_SPACING } from "../constants";
 import { getAbsolutePosition, getNonOverlappingPositionForDirection } from "./NodeUtils";
 
 /**
@@ -75,7 +74,7 @@ function calculateAutoPosition(
   handlePosition: Position,
   previewNodeSize: { width: number; height: number },
   existingNodes: Node[],
-  offset = BASE_CANVAS_GRID_SPACING * 5
+  offset = GRID_SPACING * 5
 ): { x: number; y: number } {
   const sourceAbsolutePosition = sourceNode.parentId ? getAbsolutePosition(sourceNode, existingNodes) : sourceNode.position;
   const sourceWidth = sourceNode.measured?.width ?? 0;

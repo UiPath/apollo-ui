@@ -1,6 +1,6 @@
-import { memo, useMemo, useState, useCallback, useRef } from "react";
+import { memo, useMemo, useState, useCallback, useRef, useEffect } from "react";
 import type { Node, NodeProps } from "@uipath/uix/xyflow/react";
-import { Position, useConnection, useStore } from "@uipath/uix/xyflow/react";
+import { Position, useConnection, useStore, useUpdateNodeInternals } from "@uipath/uix/xyflow/react";
 import { BaseContainer, BaseIconWrapper, BaseBadgeSlot, BaseTextContainer, BaseHeader, BaseSubHeader } from "./BaseNode.styles";
 import type { NewBaseNodeData, NewBaseNodeDisplayProps, NodeAdornments } from "./NewBaseNode.types";
 import { cx, FontVariantToken } from "@uipath/uix/core";
@@ -31,6 +31,15 @@ const NewBaseNodeComponent = (
     showAddButton = false,
     shouldShowAddButtonFn = ({ showAddButton, selected }) => showAddButton && selected,
   } = props;
+
+  const updateNodeInternals = useUpdateNodeInternals();
+
+  // Force React Flow to recalculate handle positions when dimensions change
+  useEffect(() => {
+    if (width && height && handleConfigurations.length > 0) {
+      updateNodeInternals(id);
+    }
+  }, [id, width, height, handleConfigurations, updateNodeInternals]);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const [isHovered, setIsHovered] = useState(false);
@@ -74,7 +83,9 @@ const NewBaseNodeComponent = (
     if (!handleConfigurations || !Array.isArray(handleConfigurations) || !selected) {
       return false;
     }
-    return handleConfigurations.some((config) => config.position === Position.Bottom && config.handles.length > 0);
+    return handleConfigurations.some(
+      (config) => config.position === Position.Bottom && config.handles.length > 0 && config.visible !== false
+    );
   }, [handleConfigurations, selected]);
 
   const handleMouseEnter = useCallback(() => setIsHovered(true), []);
@@ -110,6 +121,8 @@ const NewBaseNodeComponent = (
     selected,
     showAddButton,
     shouldShowAddButtonFn,
+    nodeWidth: width,
+    nodeHeight: height,
   });
 
   // Fallback for missing configuration - show error state

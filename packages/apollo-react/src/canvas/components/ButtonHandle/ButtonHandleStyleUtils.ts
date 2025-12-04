@@ -1,5 +1,66 @@
 import { Position } from "@uipath/uix/xyflow/react";
 import type { HandleConfigurationSpecificPosition } from "../BaseNode/BaseNode.types";
+import { GRID_SPACING } from "../../constants";
+
+/**
+ * Snaps a value to the nearest grid multiple
+ * @param value - The value to snap
+ * @param gridSize - The grid size (defaults to GRID_SPACING)
+ * @returns The value snapped to the nearest grid multiple
+ */
+export const snapToGrid = (value: number, gridSize: number = GRID_SPACING): number => {
+  return Math.round(value / gridSize) * gridSize;
+};
+
+/**
+ * Calculates grid-aligned positions for handles along a dimension.
+ * First divides the space equally, then snaps each position to the nearest grid multiple.
+ * Positions are rounded away from center to maximize handle spacing.
+ * @param nodeSize - The size of the node in the relevant dimension (width for Top/Bottom handles, height for Left/Right handles)
+ * @param numHandles - Number of handles to position
+ * @param gridSize - The grid size
+ * @returns Array of grid-snapped pixel positions for each handle
+ */
+export const calculateGridAlignedHandlePositions = (nodeSize: number, numHandles: number, gridSize: number = GRID_SPACING): number[] => {
+  if (numHandles === 0) return [];
+  if (nodeSize <= 0) return [];
+
+  const center = nodeSize / 2;
+  const positions: number[] = [];
+
+  for (let i = 0; i < numHandles; i++) {
+    // Calculate ideal position using equal division
+    const idealPosition = ((i + 1) / (numHandles + 1)) * nodeSize;
+
+    // Snap to grid, rounding away from center to spread handles out
+    let snappedPosition: number;
+    if (idealPosition < center) {
+      // Below center: round down
+      snappedPosition = Math.floor(idealPosition / gridSize) * gridSize;
+    } else if (idealPosition > center) {
+      // Above center: round up
+      snappedPosition = Math.ceil(idealPosition / gridSize) * gridSize;
+    } else {
+      // At center: snap to nearest
+      snappedPosition = snapToGrid(idealPosition, gridSize);
+    }
+
+    positions.push(snappedPosition);
+  }
+
+  return positions;
+};
+
+/**
+ * Converts a grid-aligned pixel position to a percentage of the node size
+ * @param pixelPosition - The pixel position
+ * @param nodeSize - The total node size
+ * @returns The position as a percentage
+ */
+export const pixelToPercent = (pixelPosition: number, nodeSize: number): number => {
+  if (nodeSize === 0) return 0;
+  return (pixelPosition / nodeSize) * 100;
+};
 
 export const widthForHandleWithPosition = ({
   position,

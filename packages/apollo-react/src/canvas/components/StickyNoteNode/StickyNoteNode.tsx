@@ -22,14 +22,14 @@ import {
   StickyNoteWrapper,
   RESIZE_CONTROL_Z_INDEX,
 } from "./StickyNoteNode.styles";
-import { BASE_CANVAS_GRID_SPACING } from "../BaseCanvas";
+import { GRID_SPACING } from "../../constants";
 
 export interface StickyNoteNodeProps extends NodeProps {
   data: StickyNoteData;
 }
 
-const minWidth = BASE_CANVAS_GRID_SPACING * 8;
-const minHeight = BASE_CANVAS_GRID_SPACING * 8;
+const minWidth = GRID_SPACING * 8;
+const minHeight = GRID_SPACING * 8;
 
 const StickyNoteNodeComponent = ({ id, data, selected, dragging }: StickyNoteNodeProps) => {
   const { updateNodeData } = useReactFlow();

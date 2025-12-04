@@ -1,9 +1,12 @@
 import { Position } from "@uipath/uix/xyflow/react";
 import {
   bottomPositionForHandle,
+  calculateGridAlignedHandlePositions,
   heightForHandleWithPosition,
   leftPositionForHandle,
+  pixelToPercent,
   rightPositionForHandle,
+  snapToGrid,
   topPositionForHandle,
   transformForHandle,
   widthForHandleWithPosition,
@@ -581,6 +584,91 @@ describe("ButtonHandleStyleUtils", () => {
     it("should return the correct transform for a right handle with custom horizontal size/position", () => {
       const transform = transformForHandle({ position: Position.Right, customPositionAndOffsets: { left: 10, width: 100 } });
       expect(transform).toBe("translate(0%, -50%)");
+    });
+  });
+
+  describe("snapToGrid", () => {
+    it("should snap a value to the nearest grid multiple (default grid size 16)", () => {
+      expect(snapToGrid(0)).toBe(0);
+      expect(snapToGrid(8)).toBe(16); // 8/16 = 0.5, rounds to 1 * 16 = 16
+      expect(snapToGrid(7)).toBe(0); // 7/16 = 0.4375, rounds to 0
+      expect(snapToGrid(16)).toBe(16);
+      expect(snapToGrid(24)).toBe(32); // 24/16 = 1.5, rounds to 2 * 16 = 32
+      expect(snapToGrid(25)).toBe(32); // 25/16 = 1.5625, rounds to 2 * 16 = 32
+      expect(snapToGrid(48)).toBe(48);
+    });
+
+    it("should snap using custom grid size", () => {
+      expect(snapToGrid(5, 10)).toBe(10); // 5/10 = 0.5, rounds to 1 * 10 = 10
+      expect(snapToGrid(4, 10)).toBe(0); // 4/10 = 0.4, rounds to 0
+      expect(snapToGrid(15, 10)).toBe(20); // 15/10 = 1.5, rounds to 2 * 10 = 20
+    });
+  });
+
+  describe("calculateGridAlignedHandlePositions", () => {
+    it("should return empty array for 0 handles", () => {
+      expect(calculateGridAlignedHandlePositions(96, 0)).toEqual([]);
+    });
+
+    it("should return center grid position for 1 handle", () => {
+      // 96px node: ideal position 48px (center), snaps to 48
+      expect(calculateGridAlignedHandlePositions(96, 1)).toEqual([48]);
+    });
+
+    it("should divide equally and snap for 2 handles", () => {
+      // 96px node: ideal positions 32px (96/3), 64px (2*96/3)
+      // 32 < center(48): floor → 32, 64 > center: ceil → 64
+      expect(calculateGridAlignedHandlePositions(96, 2)).toEqual([32, 64]);
+    });
+
+    it("should divide equally and snap for 3 handles", () => {
+      // 96px node: ideal positions 24px, 48px, 72px
+      // 24 < center(48): floor(24/16)*16 = 16
+      // 48 = center: snap → 48
+      // 72 > center: ceil(72/16)*16 = 80
+      expect(calculateGridAlignedHandlePositions(96, 3)).toEqual([16, 48, 80]);
+    });
+
+    it("should divide equally and snap for 4 handles", () => {
+      // 96px node: ideal positions 19.2px, 38.4px, 57.6px, 76.8px
+      // 19.2 < 48: floor → 16, 38.4 < 48: floor → 32
+      // 57.6 > 48: ceil → 64, 76.8 > 48: ceil → 80
+      expect(calculateGridAlignedHandlePositions(96, 4)).toEqual([16, 32, 64, 80]);
+    });
+
+    it("should work with larger node sizes", () => {
+      // 160px node with 3 handles: ideal positions 40px, 80px, 120px
+      // center = 80px
+      // 40 < 80: floor(40/16)*16 = 32
+      // 80 = center: snap → 80
+      // 120 > 80: ceil(120/16)*16 = 128
+      expect(calculateGridAlignedHandlePositions(160, 3)).toEqual([32, 80, 128]);
+    });
+
+    it("should use custom grid size", () => {
+      // 100px node with grid size 10: ideal positions 33.3px, 66.7px
+      // center = 50px
+      // 33.3 < 50: floor(33.3/10)*10 = 30
+      // 66.7 > 50: ceil(66.7/10)*10 = 70
+      expect(calculateGridAlignedHandlePositions(100, 2, 10)).toEqual([30, 70]);
+    });
+
+    it("should handle 5 handles on a 96px node", () => {
+      // 96px node: ideal positions 16px, 32px, 48px, 64px, 80px
+      // 16 < 48: floor → 16, 32 < 48: floor → 32
+      // 48 = center: snap → 48
+      // 64 > 48: ceil → 64, 80 > 48: ceil → 80
+      expect(calculateGridAlignedHandlePositions(96, 5)).toEqual([16, 32, 48, 64, 80]);
+    });
+  });
+
+  describe("pixelToPercent", () => {
+    it("should convert pixel position to percentage", () => {
+      expect(pixelToPercent(48, 96)).toBe(50);
+      expect(pixelToPercent(32, 96)).toBeCloseTo(33.33, 1);
+      expect(pixelToPercent(64, 96)).toBeCloseTo(66.67, 1);
+      expect(pixelToPercent(0, 96)).toBe(0);
+      expect(pixelToPercent(96, 96)).toBe(100);
     });
   });
 });

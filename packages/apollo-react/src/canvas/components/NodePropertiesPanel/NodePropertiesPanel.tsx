@@ -1,11 +1,15 @@
-import { memo, useCallback } from "react";
 import { useReactFlow } from "@uipath/uix/xyflow/react";
 import { Column } from "@uipath/uix/core";
+import { memo, useCallback, useState, useEffect } from "react";
+import { ApIcon, ApIconButton } from "@uipath/portal-shell-react";
 import { TextField, SelectField, NumberField, CheckboxField } from "./fields";
 import { ConfigSection as StyledConfigSection, SectionTitle, FieldContainer } from "./NodePropertiesPanel.styles";
 import { FloatingCanvasPanel } from "../FloatingCanvasPanel";
 import { useNodeSelection, useNodeConfiguration } from "./hooks";
 import type { NodePropertiesPanelProps, ConfigField, ConfigSection } from "./NodePropertiesPanel.types";
+
+/** Width of the pinned panel in pixels. Must match minWidth in PanelContainer styles. */
+const PINNED_PANEL_WIDTH = 320;
 
 function renderField(field: ConfigField, value: unknown, onChange: (value: unknown) => void, error?: string) {
   switch (field.type) {
@@ -41,17 +45,31 @@ export const NodePropertiesPanel = memo(function NodePropertiesPanel({
   enableValidation = false,
   onChange,
   maintainSelection = true,
+  defaultPinned = false,
+  onPinnedChange,
 }: NodePropertiesPanelProps) {
   const { getInternalNode } = useReactFlow();
   const { setSelectedNodeId, selectedNode } = useNodeSelection(nodeId, maintainSelection);
   const { schema, errors, handleFieldChange } = useNodeConfiguration(selectedNode, customSchemas, enableValidation, onChange);
+  const [isPinned, setIsPinned] = useState(defaultPinned);
 
   const handleClose = useCallback(() => {
     setSelectedNodeId(null);
+    setIsPinned(false);
     if (onClose) {
       onClose();
     }
   }, [onClose, setSelectedNodeId]);
+
+  const handleTogglePin = useCallback(() => {
+    setIsPinned((prev) => !prev);
+  }, []);
+
+  useEffect(() => {
+    if (onPinnedChange) {
+      onPinnedChange(isPinned);
+    }
+  }, [isPinned, onPinnedChange]);
 
   const internalNode = selectedNode ? getInternalNode(selectedNode.id) : null;
 
@@ -76,14 +94,24 @@ export const NodePropertiesPanel = memo(function NodePropertiesPanel({
     return null;
   }
 
+  const headerActions = (
+    <ApIconButton color="secondary" onClick={handleTogglePin} title={isPinned ? "Unpin panel" : "Pin panel"}>
+      <ApIcon name={isPinned ? "unfold_less" : "unfold_more"} />
+    </ApIconButton>
+  );
+
   return (
     <FloatingCanvasPanel
       open={!!selectedNode}
-      nodeId={selectedNode.id}
-      placement={position === "right" ? "right-start" : "left-start"}
+      nodeId={isPinned ? undefined : selectedNode.id}
+      anchorRect={isPinned ? { x: window.innerWidth - PINNED_PANEL_WIDTH, y: 0, width: 0, height: window.innerHeight } : undefined}
+      placement={isPinned ? "left-start" : position === "right" ? "right-start" : "left-start"}
+      offset={isPinned ? 0 : 20}
       title={selectedNode.type === "stage" ? "Stage properties" : `${selectedNode.type || "Node"} Configuration`}
+      headerActions={headerActions}
       onClose={handleClose}
       scrollKey={selectedNode.id}
+      isPinned={isPinned}
     >
       {schema.sections ? (
         schema.sections.map((section) => renderSection(section))

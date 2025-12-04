@@ -1,8 +1,7 @@
 import { BackgroundVariant } from "@uipath/uix/xyflow/react";
+import { GRID_SPACING } from "../../constants";
 
-// This is the grid size used for snapping and layout
-// Nodes should be multiples of this size to allow for proper alignment
-export const BASE_CANVAS_GRID_SPACING = 16;
+export const BASE_CANVAS_GRID_SPACING = GRID_SPACING;
 
 export const BASE_CANVAS_DEFAULTS = {
   zoom: {

@@ -7,6 +7,7 @@ import { ApIcon, ApTypography } from "@uipath/portal-shell-react";
 import { canvasEventBus } from "../../utils/CanvasEventBus";
 import { StyledAddButton, StyledHandle, StyledLabel, StyledLine, StyledNotch, StyledWrapper } from "./ButtonHandle.styles";
 import type { HandleConfigurationSpecificPosition } from "../BaseNode/BaseNode.types";
+import { calculateGridAlignedHandlePositions, pixelToPercent } from "./ButtonHandleStyleUtils";
 export interface HandleActionEvent {
   handleId: string;
   nodeId: string;
@@ -62,6 +63,8 @@ type ButtonHandleProps = {
   onAction?: (event: HandleActionEvent) => void;
   showNotches?: boolean;
   customPositionAndOffsets?: HandleConfigurationSpecificPosition;
+  nodeWidth?: number;
+  nodeHeight?: number;
 };
 
 const ButtonHandleBase = ({
@@ -82,12 +85,28 @@ const ButtonHandleBase = ({
   onAction,
   showNotches = true,
   customPositionAndOffsets,
+  nodeWidth,
+  nodeHeight,
 }: ButtonHandleProps) => {
   const [isHovered, setIsHovered] = useState(false);
   const isVertical = position === Position.Top || position === Position.Bottom;
 
   // Calculate position along the edge for multiple handles
-  const positionPercent = useMemo(() => ((index + 1) / (total + 1)) * 100, [index, total]);
+  // Use grid-aligned positions when node dimensions are available
+  const positionPercent = useMemo(() => {
+    // Determine which dimension to use based on handle position
+    const relevantSize = isVertical ? nodeWidth : nodeHeight;
+
+    // If node size is available, use grid-aligned positioning
+    if (relevantSize && relevantSize > 0) {
+      const gridPositions = calculateGridAlignedHandlePositions(relevantSize, total);
+      const pixelPosition = gridPositions[index] ?? relevantSize / 2;
+      return pixelToPercent(pixelPosition, relevantSize);
+    }
+
+    // Fallback to percentage-based positioning
+    return ((index + 1) / (total + 1)) * 100;
+  }, [index, total, isVertical, nodeWidth, nodeHeight]);
 
   const handleButtonClick = useCallback(
     (event: React.MouseEvent) => {
@@ -188,6 +207,8 @@ const ButtonHandlesBase = ({
   showNotches = true,
   customPositionAndOffsets,
   shouldShowAddButtonFn = ({ showAddButton, selected }) => showAddButton && selected,
+  nodeWidth,
+  nodeHeight,
 }: {
   nodeId: string;
   handles: ButtonHandleConfig[];
@@ -197,6 +218,8 @@ const ButtonHandlesBase = ({
   showAddButton?: boolean;
   showNotches?: boolean;
   customPositionAndOffsets?: HandleConfigurationSpecificPosition;
+  nodeWidth?: number;
+  nodeHeight?: number;
 
   /**
    * Allows for consumers to control the predicate for showing the add button from the props that's passed in
@@ -234,6 +257,8 @@ const ButtonHandlesBase = ({
           onAction={handle.onAction}
           showNotches={showNotches}
           customPositionAndOffsets={customPositionAndOffsets}
+          nodeWidth={nodeWidth}
+          nodeHeight={nodeHeight}
         />
       ))}
     </>

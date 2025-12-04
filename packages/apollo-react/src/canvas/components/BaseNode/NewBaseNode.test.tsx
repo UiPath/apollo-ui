@@ -12,6 +12,7 @@ vi.mock("@uipath/uix/xyflow/react", () => ({
   },
   useStore: () => ({ edges: [], isConnecting: false }),
   useConnection: () => ({ inProgress: false }),
+  useUpdateNodeInternals: () => vi.fn(),
 }));
 
 vi.mock("../ButtonHandle/useButtonHandles", () => ({
@@ -42,6 +43,117 @@ const defaultProps = {
   selectable: true,
   deletable: true,
 };
+
+describe("NewBaseNode - Bottom Handle Text Positioning", () => {
+  it("should render text container when there are no bottom handles (hasVisibleBottomHandles=false)", () => {
+    render(
+      <NewBaseNode
+        {...defaultProps}
+        selected={true}
+        display={{ label: "Test Node Left Right" }}
+        handleConfigurations={[
+          {
+            position: "left" as any,
+            handles: [{ id: "input", type: "target", handleType: "input" }],
+          },
+          {
+            position: "right" as any,
+            handles: [{ id: "output", type: "source", handleType: "output" }],
+          },
+        ]}
+      />
+    );
+
+    // Text container renders - hasVisibleBottomHandles should be false since no bottom handles
+    expect(screen.getByText("Test Node Left Right")).toBeInTheDocument();
+  });
+
+  it("should render text container when node is not selected (hasVisibleBottomHandles=false)", () => {
+    render(
+      <NewBaseNode
+        {...defaultProps}
+        selected={false}
+        display={{ label: "Test Node Not Selected" }}
+        handleConfigurations={[
+          {
+            position: "bottom" as any,
+            handles: [{ id: "artifact", type: "source", handleType: "artifact" }],
+          },
+        ]}
+      />
+    );
+
+    // Text container renders - hasVisibleBottomHandles should be false even with bottom handles
+    // because the node is not selected
+    expect(screen.getByText("Test Node Not Selected")).toBeInTheDocument();
+  });
+
+  it("should render text container when selected with bottom handles (hasVisibleBottomHandles=true)", () => {
+    render(
+      <NewBaseNode
+        {...defaultProps}
+        selected={true}
+        display={{ label: "Test Node With Bottom" }}
+        handleConfigurations={[
+          {
+            position: "bottom" as any,
+            handles: [{ id: "artifact", type: "source", handleType: "artifact" }],
+          },
+        ]}
+      />
+    );
+
+    // Text container renders - hasVisibleBottomHandles should be true
+    // because selected=true AND there are bottom handles
+    expect(screen.getByText("Test Node With Bottom")).toBeInTheDocument();
+  });
+
+  it("should render text container when bottom handles array is empty (hasVisibleBottomHandles=false)", () => {
+    render(
+      <NewBaseNode
+        {...defaultProps}
+        selected={true}
+        display={{ label: "Test Node Empty Bottom" }}
+        handleConfigurations={[
+          {
+            position: "bottom" as any,
+            handles: [], // Empty handles array
+          },
+        ]}
+      />
+    );
+
+    // Text container renders - hasVisibleBottomHandles should be false
+    // because handles.length === 0
+    expect(screen.getByText("Test Node Empty Bottom")).toBeInTheDocument();
+  });
+
+  it("should not apply bottom handle offset when bottom handles have visible=false (hasVisibleBottomHandles=false)", () => {
+    render(
+      <NewBaseNode
+        {...defaultProps}
+        selected={true}
+        display={{ label: "Test Node Hidden Bottom" }}
+        handleConfigurations={[
+          {
+            position: "top" as any,
+            handles: [{ id: "top-handle", type: "target", handleType: "artifact" }],
+            visible: true,
+          },
+          {
+            position: "bottom" as any,
+            handles: [{ id: "bottom-handle", type: "source", handleType: "artifact" }],
+            visible: false, // Bottom handles exist but are not visible
+          },
+        ]}
+      />
+    );
+
+    // Text container renders - hasVisibleBottomHandles should be false
+    // because visible=false on the bottom handle configuration
+    expect(screen.getByText("Test Node Hidden Bottom")).toBeInTheDocument();
+  });
+});
 
 describe("NewBaseNode - Footer Display (centerAdornmentComponent)", () => {
   describe("Footer Rendering", () => {
