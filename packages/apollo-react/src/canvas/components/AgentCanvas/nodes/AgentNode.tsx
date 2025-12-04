@@ -103,9 +103,9 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
   const handleConfigurations = useMemo((): HandleConfiguration[] => {
     const configs: HandleConfiguration[] = [];
 
-    // Top handles (Memory)
+    // Top handles (Memory, Escalation)
     const topHandles: ButtonHandleConfig[] = [];
-    // Bottom handles (Context, Escalation, Tool)
+    // Bottom handles (Context, Tool)
     const bottomHandles: ButtonHandleConfig[] = [];
 
     if (displayMemory) {
@@ -124,6 +124,22 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
       });
     }
 
+    if (displayEscalation) {
+      topHandles.push({
+        id: ResourceNodeType.Escalation,
+        type: "source",
+        handleType: "artifact",
+        label: translations.escalations,
+        showButton: mode === "design",
+        color: "var(--color-foreground-de-emp)",
+        labelBackgroundColor: "var(--color-background-secondary)",
+        visible: displayEscalation,
+        onAction: (_e: HandleActionEvent) => {
+          onAddResource?.("escalation");
+        },
+      });
+    }
+
     if (topHandles.length) {
       configs.push({
         position: Position.Top,
@@ -132,7 +148,7 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
       });
     }
 
-    if (displayContext || displayEscalation || displayTool || displayMcp) {
+    if (displayContext || displayTool || displayMcp) {
       bottomHandles.push(
         {
           id: ResourceNodeType.Context,
@@ -145,19 +161,6 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
           visible: displayContext,
           onAction: (_e: HandleActionEvent) => {
             onAddResource?.("context");
-          },
-        },
-        {
-          id: ResourceNodeType.Escalation,
-          type: "source",
-          handleType: "artifact",
-          label: translations.escalations,
-          showButton: mode === "design",
-          color: "var(--uix-canvas-foreground-de-emp)",
-          labelBackgroundColor: "var(--uix-canvas-background-secondary)",
-          visible: displayEscalation,
-          onAction: (_e: HandleActionEvent) => {
-            onAddResource?.("escalation");
           },
         },
         {

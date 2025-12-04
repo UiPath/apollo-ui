@@ -74,15 +74,15 @@ describe("auto-layout", () => {
           id: "edge1",
           source: "agent1",
           target: "resource1",
-          sourceHandle: ResourceNodeType.Escalation, // handle that's on the bottom of the agent node
-          targetHandle: Position.Top,
+          sourceHandle: ResourceNodeType.Escalation, // handle that's on the top of the agent node
+          targetHandle: Position.Bottom,
         },
         {
           id: "edge2",
           source: "agent1",
           target: "resource2",
-          sourceHandle: ResourceNodeType.Escalation, // handle that's on the bottom of the agent node
-          targetHandle: Position.Top,
+          sourceHandle: ResourceNodeType.Escalation, // handle that's on the top of the agent node
+          targetHandle: Position.Bottom,
         },
       ];
 
@@ -167,8 +167,8 @@ describe("auto-layout", () => {
           id: "edge3",
           source: "agent1",
           target: "bottom1",
-          sourceHandle: ResourceNodeType.Escalation, // handle that's on the bottom of the agent node
-          targetHandle: Position.Top,
+          sourceHandle: ResourceNodeType.Escalation, // handle that's on the top of the agent node
+          targetHandle: Position.Bottom,
         },
       ];
 
