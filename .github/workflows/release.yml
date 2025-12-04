@@ -18,18 +18,13 @@ jobs:
   release:
     name: Release and Publish
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      packages: write
-      issues: write
-      pull-requests: write
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.RELEASE_TOKEN }}
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
