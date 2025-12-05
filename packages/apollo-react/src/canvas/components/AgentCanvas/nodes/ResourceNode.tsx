@@ -10,7 +10,7 @@ import {
   type SuggestionTranslations,
   DefaultSuggestionTranslations,
 } from "../../../types";
-import { useAgentFlowStore } from "../store/agent-flow-store";
+import { useAgentFlowStore, useEdges } from "../store/agent-flow-store";
 import { ExecutionStatusIcon } from "../../ExecutionStatusIcon/ExecutionStatusIcon";
 import type { NodeToolbarConfig, ToolbarAction } from "../../NodeToolbar/NodeToolbar.types";
 import { ToolResourceIcon } from "../components/ToolResourceIcon";
@@ -56,6 +56,13 @@ export const ResourceNode = memo(
     suggestionGroupVersion,
   }: ResourceNodeProps) => {
     const { nodes: _nodes, deleteNode, actOnSuggestion } = useAgentFlowStore();
+    const edges = useEdges();
+
+    // Find which handle position has a connection for this node
+    const connectedHandlePosition = useMemo(() => {
+      const nodeEdge = edges.find((e) => e.target === id);
+      return nodeEdge?.targetHandle as Position | undefined;
+    }, [edges, id]);
 
     const displayTooltips = mode === "design";
     const hasBreakpoint = data.hasBreakpoint ?? false;
@@ -369,34 +376,43 @@ export const ResourceNode = memo(
         {
           position: Position.Top,
           handles: toolTopHandles,
-          visible: data.type === "tool" || data.type === "mcp",
+          visible: (data.type === "tool" || data.type === "mcp") && connectedHandlePosition === Position.Top,
         },
         ...(data.isExpandable
           ? [
               {
                 position: Position.Bottom,
                 handles: toolBottomHandles,
-                visible: data.type === "tool" || data.type === "mcp",
+                visible: (data.type === "tool" || data.type === "mcp") && connectedHandlePosition === Position.Bottom,
               },
             ]
           : []),
         {
           position: Position.Top,
           handles: contextHandles,
-          visible: data.type === "context",
+          visible: data.type === "context" && connectedHandlePosition === Position.Top,
         },
         {
           position: Position.Bottom,
           handles: escalationHandles,
-          visible: data.type === "escalation",
+          visible: data.type === "escalation" && connectedHandlePosition === Position.Bottom,
         },
         {
           position: Position.Bottom,
           handles: memoryHandles,
-          visible: data.type === "memorySpace",
+          visible: data.type === "memorySpace" && connectedHandlePosition === Position.Bottom,
         },
       ],
-      [data.type, data.isExpandable, toolTopHandles, toolBottomHandles, contextHandles, escalationHandles, memoryHandles]
+      [
+        data.type,
+        data.isExpandable,
+        connectedHandlePosition,
+        toolTopHandles,
+        toolBottomHandles,
+        contextHandles,
+        escalationHandles,
+        memoryHandles,
+      ]
     );
 
     return (
