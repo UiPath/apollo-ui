@@ -27,8 +27,8 @@
     "storybook": "turbo run storybook",
     "storybook:build": "turbo run storybook:build",
     "clean": "turbo run clean && rm -rf .turbo && rm -rf node_modules",
-    "release": "pnpm --filter './packages/*' --filter './web-packages/*' exec -- semantic-release -e semantic-release-monorepo",
-    "release:dry-run": "pnpm --filter './packages/*' --filter './web-packages/*' exec -- semantic-release -e semantic-release-monorepo --dry-run",
+    "release": "pnpm --workspace-concurrency=1 --filter './packages/*' --filter '!@uipath/apollo-angular' --filter './web-packages/*' exec -- semantic-release",
+    "release:dry-run": "pnpm --workspace-concurrency=1 --filter './packages/*' --filter '!@uipath/apollo-angular' --filter './web-packages/*' exec -- semantic-release --dry-run",
     "prepare": "husky"
   },
   "devDependencies": {
@@ -58,7 +58,6 @@
     "lint-staged": "^16.2.6",
     "prettier": "^3.6.2",
     "semantic-release": "^24.2.0",
-    "semantic-release-monorepo": "^8.0.2",
     "stylelint": "^16.12.0",
     "stylelint-config-prettier": "^9.0.5",
     "stylelint-config-standard": "^36.0.1",

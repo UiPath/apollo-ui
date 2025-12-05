@@ -1,0 +1,30 @@
+{
+  "branches": ["main"],
+  "tagFormat": "@uipath/ap-data-grid@${version}",
+  "plugins": [
+    [
+      "@semantic-release/commit-analyzer",
+      {
+        "releaseRules": [
+          { "type": "feat", "scope": "apollo-core", "release": "minor" },
+          { "type": "fix", "scope": "apollo-core", "release": "patch" },
+          { "breaking": true, "scope": "apollo-core", "release": "major" }
+        ]
+      }
+    ],
+    "@semantic-release/release-notes-generator",
+    [
+      "@semantic-release/changelog",
+      {
+        "changelogFile": "CHANGELOG.md"
+      }
+    ],
+    [
+      "@semantic-release/npm",
+      {
+        "npmPublish": true
+      }
+    ],
+    "@semantic-release/github"
+  ]
+}

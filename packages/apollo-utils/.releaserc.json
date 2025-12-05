@@ -1,8 +1,7 @@
 {
   "branches": ["main"],
-  "tagFormat": "@${version}",
+  "tagFormat": "@uipath/apollo-utils@${version}",
   "plugins": [
-    "semantic-release-monorepo",
     "@semantic-release/commit-analyzer",
     "@semantic-release/release-notes-generator",
     [
@@ -14,8 +13,7 @@
     [
       "@semantic-release/npm",
       {
-        "npmPublish": true,
-        "pkgRoot": "."
+        "npmPublish": true
       }
     ],
     "@semantic-release/github"
