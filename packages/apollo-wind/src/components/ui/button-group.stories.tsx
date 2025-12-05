@@ -10,9 +10,17 @@ import {
   Save,
   FileDown,
   Send,
+  Play,
+  Plus,
+  Copy,
+  MoreVertical,
 } from "lucide-react";
 import { Button } from "./button";
 import { ButtonGroup, ButtonGroupSeparator, ButtonGroupText } from "./button-group";
+import { ToggleGroup, ToggleGroupItem } from "./toggle-group";
+import { Switch } from "./switch";
+import { Label } from "./label";
+import { Separator } from "./separator";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -233,5 +241,67 @@ export const MixedContent: Story = {
         Italic
       </Button>
     </ButtonGroup>
+  ),
+};
+
+export const CanvasModeToolbar: Story = {
+  render: () => (
+    <div className="flex items-center gap-1 rounded-lg border bg-background p-1">
+      <ToggleGroup type="single" defaultValue="build" className="gap-0">
+        <ToggleGroupItem
+          value="build"
+          className="h-8 rounded-md px-3 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+        >
+          Build
+        </ToggleGroupItem>
+        <ToggleGroupItem
+          value="evaluate"
+          className="h-8 rounded-md px-3 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+        >
+          Evaluate
+        </ToggleGroupItem>
+      </ToggleGroup>
+
+      <Separator orientation="vertical" className="mx-1 h-6" />
+
+      <Button variant="ghost" size="icon" className="h-8 w-8">
+        <Play className="h-4 w-4" />
+      </Button>
+
+      <Separator orientation="vertical" className="mx-1 h-6" />
+
+      <Button variant="ghost" size="icon" className="h-8 w-8">
+        <Plus className="h-4 w-4" />
+      </Button>
+      <Button variant="ghost" size="icon" className="h-8 w-8">
+        <Copy className="h-4 w-4" />
+      </Button>
+    </div>
+  ),
+};
+
+export const CanvasPublishToolbar: Story = {
+  render: () => (
+    <div className="flex items-center gap-3 rounded-lg border bg-background p-1 pl-3">
+      <Label htmlFor="toolbar-active" className="text-sm font-medium">
+        Active
+      </Label>
+      <Switch id="toolbar-active" />
+
+      <Separator orientation="vertical" className="h-6" />
+
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" size="icon" className="h-8 w-8">
+            <MoreVertical className="h-4 w-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuItem>Edit</DropdownMenuItem>
+          <DropdownMenuItem>Duplicate</DropdownMenuItem>
+          <DropdownMenuItem>Delete</DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
   ),
 };
