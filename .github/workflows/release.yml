@@ -70,13 +70,16 @@ jobs:
           HUSKY: 0
         run: pnpm release
 
-      - name: Commit changelogs
+      - name: Commit changelogs and package updates
         env:
           GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
         run: |
           if [ -n "$(git status --porcelain)" ]; then
-            git add '**/CHANGELOG.md'
-            git commit -m "chore(release): update changelogs [skip ci]"
+            # Get list of changed packages
+            CHANGED_PACKAGES=$(git diff --name-only | grep 'packages/\|web-packages/' | cut -d'/' -f2 | sort -u | tr '\n' ', ' | sed 's/,$//')
+
+            git add --all
+            git commit -m "chore(release): $CHANGED_PACKAGES [skip ci]"
             git push
           else
             echo "No changes to commit"

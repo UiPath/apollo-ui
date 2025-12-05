@@ -1,6 +1,8 @@
 {
   "branches": ["main"],
+  "tagFormat": "@${version}",
   "plugins": [
+    "semantic-release-monorepo",
     "@semantic-release/commit-analyzer",
     "@semantic-release/release-notes-generator",
     [
@@ -10,10 +12,10 @@
       }
     ],
     [
-      "@semantic-release/exec",
+      "@semantic-release/npm",
       {
-        "prepareCmd": "pnpm version ${nextRelease.version} --git-tag-version false --allow-same-version",
-        "publishCmd": "pnpm publish --no-git-checks"
+        "npmPublish": true,
+        "pkgRoot": "."
       }
     ],
     "@semantic-release/github"
