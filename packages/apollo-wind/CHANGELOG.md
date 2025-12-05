@@ -1,3 +1,10 @@
+# [1.9.0](https://github.com/uipath/wind/compare/v1.8.0...v1.9.0) (2025-12-05)
+
+
+### Features
+
+* add FlowStartExample component with process options and recent projects display ([2e3643b](https://github.com/uipath/wind/commit/2e3643bf897bcbddd0c8b8741c36fa9d2627153a))
+
 # [1.8.0](https://github.com/uipath/wind/compare/v1.7.0...v1.8.0) (2025-12-05)
 
 
