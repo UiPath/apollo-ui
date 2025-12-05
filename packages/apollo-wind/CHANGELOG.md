@@ -1,3 +1,10 @@
+# [1.10.0](https://github.com/uipath/wind/compare/v1.9.0...v1.10.0) (2025-12-05)
+
+
+### Features
+
+* add AI Consumer Guide documentation for @uipath/wind design system ([6277092](https://github.com/uipath/wind/commit/627709226cafbe3c967d0e31f9a9ededfdd26a15))
+
 # [1.9.0](https://github.com/uipath/wind/compare/v1.8.0...v1.9.0) (2025-12-05)
 
 
