@@ -1,3 +1,10 @@
+# [1.8.0](https://github.com/uipath/wind/compare/v1.7.0...v1.8.0) (2025-12-05)
+
+
+### Features
+
+* add CanvasModeToolbar and CanvasPublishToolbar stories with new components ([a78e450](https://github.com/uipath/wind/commit/a78e45046be5a19ea40afc1abb696cf362794d58))
+
 # [1.7.0](https://github.com/uipath/wind/compare/v1.6.2...v1.7.0) (2025-12-02)
 
 
