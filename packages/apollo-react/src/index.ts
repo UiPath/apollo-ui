@@ -1,6 +1,5 @@
-// Apollo React - React component library with Material UI theming
+// Core
+export * from './core';
 
 // Theme utilities
 export * from './material';
-// Core
-export * from './core';
