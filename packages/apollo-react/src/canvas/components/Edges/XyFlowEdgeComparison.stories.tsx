@@ -10,9 +10,9 @@ import { Panel, Position, MarkerType, useEdgesState } from "@uipath/uix/xyflow/r
 import { ApCheckbox, ApDropdown, ApDropdownItem, ApTypography } from "@uipath/portal-shell-react";
 import { FontVariantToken } from "@uipath/apollo-core";
 import { Column } from "@uipath/uix/core";
-import { BaseCanvas } from "./BaseCanvas";
-import { CanvasPositionControls } from "./CanvasPositionControls";
-import { withCanvasProviders, useCanvasStory, StoryInfoPanel } from "../storybook-utils";
+import { BaseCanvas } from "../BaseCanvas";
+import { CanvasPositionControls } from "../CanvasPositionControls";
+import { withCanvasProviders, useCanvasStory, StoryInfoPanel } from "../../storybook-utils";
 
 // ============================================================================
 // Meta Configuration

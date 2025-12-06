@@ -52,6 +52,7 @@
 
   /* Primary */
   --uix-canvas-primary: var(--color-primary);
+  --uix-canvas-primary-hover: var(--color-primary-hover);
   --uix-canvas-primary-alpha-20: var(--color-primary-alpha-20);
 
   /* Secondary */
@@ -89,5 +90,4 @@
      ========================================================================== */
 
   --uix-canvas-icon-default: var(--color-icon-default);
-  --uix-canvas-text-primary: var(--color-text-primary);
 }

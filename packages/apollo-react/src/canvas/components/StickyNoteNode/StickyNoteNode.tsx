@@ -1,4 +1,4 @@
-import { memo, useCallback, useState, useRef, useEffect } from "react";
+import { memo, useCallback, useState, useRef, useEffect, useMemo } from "react";
 import type { NodeProps } from "@uipath/uix/xyflow/react";
 import { NodeResizeControl, useReactFlow } from "@uipath/uix/xyflow/react";
 import { ApIcon } from "@uipath/portal-shell-react";
@@ -7,8 +7,9 @@ import { Global } from "@emotion/react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { NodeToolbar } from "../NodeToolbar";
+import type { ToolbarAction } from "../NodeToolbar";
 import type { StickyNoteData, StickyNoteColor } from "./StickyNoteNode.types";
-import { STICKY_NOTE_COLORS } from "./StickyNoteNode.types";
+import { STICKY_NOTE_COLORS, withAlpha } from "./StickyNoteNode.types";
 import {
   StickyNoteContainer,
   StickyNoteTextArea,
@@ -40,8 +41,9 @@ const StickyNoteNodeComponent = ({ id, data, selected, dragging }: StickyNoteNod
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
   const colorButtonRef = useRef<HTMLDivElement>(null);
 
-  const color = (data.color || "yellow") as StickyNoteColor;
-  const backgroundColor = STICKY_NOTE_COLORS[color] ?? STICKY_NOTE_COLORS.yellow;
+  const colorKey = (data.color || "yellow") as StickyNoteColor;
+  const color = STICKY_NOTE_COLORS[colorKey] ?? STICKY_NOTE_COLORS.yellow;
+  const colorWithAlpha = withAlpha(color);
 
   useEffect(() => {
     setLocalContent(data.content || "");
@@ -122,35 +124,39 @@ const StickyNoteNodeComponent = ({ id, data, selected, dragging }: StickyNoteNod
   }, []);
 
   // Build toolbar config with only Edit and Color buttons
-  const toolbarConfig = {
-    actions: [
+  const toolbarConfig = useMemo(() => {
+    const actions: ToolbarAction[] = [
       {
         id: "edit",
         icon: <ApIcon variant="outlined" name="edit" />,
         label: "Edit",
         onAction: handleEditClick,
       },
+      { id: "separator" },
       {
         id: "color",
         icon: (
           <div
             ref={colorButtonRef}
             style={{
-              width: "20px",
-              height: "20px",
+              width: "16px",
+              height: "16px",
               borderRadius: "50%",
-              backgroundColor,
-              border: "1px solid #d1d5db",
+              backgroundColor: color,
+              border: "1px solid transparent",
             }}
           />
         ),
         label: "Color",
         onAction: handleToggleColorPicker,
       },
-    ],
-    position: "top" as const,
-    align: "end" as const,
-  };
+    ];
+    return {
+      actions,
+      position: "top" as const,
+      align: "center" as const,
+    };
+  }, [handleEditClick, handleToggleColorPicker, color]);
 
   return (
     <>
@@ -204,7 +210,13 @@ const StickyNoteNodeComponent = ({ id, data, selected, dragging }: StickyNoteNod
           <ResizeHandle selected={selected} cursor="nwse-resize" />
         </NodeResizeControl>
 
-        <StickyNoteContainer backgroundColor={backgroundColor} isEditing={isEditing} selected={selected} onDoubleClick={handleDoubleClick}>
+        <StickyNoteContainer
+          backgroundColor={colorWithAlpha}
+          borderColor={color}
+          isEditing={isEditing}
+          selected={selected}
+          onDoubleClick={handleDoubleClick}
+        >
           <TopCornerIndicators selected={selected} />
           <BottomCornerIndicators selected={selected} />
           {isEditing ? (
@@ -238,8 +250,9 @@ const StickyNoteNodeComponent = ({ id, data, selected, dragging }: StickyNoteNod
             <div
               style={{
                 position: "absolute",
-                top: -74,
-                right: 0,
+                top: -40,
+                left: "50%",
+                transform: "translateX(40px)",
                 zIndex: 1000,
               }}
             >
@@ -249,13 +262,13 @@ const StickyNoteNodeComponent = ({ id, data, selected, dragging }: StickyNoteNod
                 exit={{ opacity: 0, y: 10 }}
                 transition={{ duration: 0.15, ease: "easeOut" }}
               >
-                {Object.keys(STICKY_NOTE_COLORS).map((colorKey) => {
-                  const colorName = colorKey as StickyNoteColor;
+                {Object.keys(STICKY_NOTE_COLORS).map((stickyColorKey) => {
+                  const colorName = stickyColorKey as StickyNoteColor;
                   return (
                     <ColorOption
-                      key={colorKey}
+                      key={stickyColorKey}
                       color={STICKY_NOTE_COLORS[colorName]}
-                      isSelected={color === colorName}
+                      isSelected={colorKey === colorName}
                       onClick={() => handleColorChange(colorName)}
                       title={colorName.charAt(0).toUpperCase() + colorName.slice(1)}
                     />

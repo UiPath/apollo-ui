@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from "react";
-import type { NodeToolbarConfig } from "./NodeToolbar.types";
-import type { ExtendedToolbarAction } from "./ToolbarButton";
+import type { NodeToolbarConfig, ToolbarSeparator, ToolbarActionItem } from "./NodeToolbar.types";
+import type { ProcessedToolbarItem } from "./NodeToolbar.utils";
 
 export interface UseToolbarStateProps {
   config: NodeToolbarConfig;
@@ -13,8 +13,8 @@ export interface UseToolbarStateReturn {
   setIsDropdownOpen: (open: boolean) => void;
   dropdownRef: React.RefObject<HTMLDivElement>;
   buttonRef: React.RefObject<HTMLButtonElement>;
-  actionsWithState: ExtendedToolbarAction[];
-  overflowActionsWithState: ExtendedToolbarAction[];
+  actionsWithState: ProcessedToolbarItem[];
+  overflowActionsWithState: ProcessedToolbarItem[];
   shouldShowToolbar: boolean;
   toggleDropdown: (e: React.MouseEvent) => void;
 }
@@ -25,31 +25,43 @@ export const useToolbarState = ({ config, visible, nodeId }: UseToolbarStateProp
   const buttonRef = useRef<HTMLButtonElement>(null);
 
   // Extend actions with pre-bound onClick handlers
-  const actionsWithState = useMemo<ExtendedToolbarAction[]>(() => {
-    return config.actions.map((action) => ({
-      ...action,
-      onClick: () => {
-        try {
-          action.onAction(nodeId);
-        } catch (error) {
-          console.error(`Error executing action ${action.id}:`, error);
-        }
-      },
-    }));
+  const actionsWithState = useMemo<ProcessedToolbarItem[]>(() => {
+    return config.actions.map((action): ProcessedToolbarItem => {
+      if (action.id === "separator") {
+        return action as ToolbarSeparator;
+      }
+      const item = action as ToolbarActionItem;
+      return {
+        ...item,
+        onClick: () => {
+          try {
+            item.onAction(nodeId);
+          } catch (error) {
+            console.error(`Error executing action ${item.id}:`, error);
+          }
+        },
+      };
+    });
   }, [config.actions, nodeId]);
 
-  const overflowActionsWithState = useMemo<ExtendedToolbarAction[]>(() => {
+  const overflowActionsWithState = useMemo<ProcessedToolbarItem[]>(() => {
     if (!config.overflowActions) return [];
-    return config.overflowActions.map((action) => ({
-      ...action,
-      onClick: () => {
-        try {
-          action.onAction(nodeId);
-        } catch (error) {
-          console.error(`Error executing action ${action.id}:`, error);
-        }
-      },
-    }));
+    return config.overflowActions.map((action): ProcessedToolbarItem => {
+      if (action.id === "separator") {
+        return action as ToolbarSeparator;
+      }
+      const item = action as ToolbarActionItem;
+      return {
+        ...item,
+        onClick: () => {
+          try {
+            item.onAction(nodeId);
+          } catch (error) {
+            console.error(`Error executing action ${item.id}:`, error);
+          }
+        },
+      };
+    });
   }, [config.overflowActions, nodeId]);
 
   // Determine if toolbar should be shown

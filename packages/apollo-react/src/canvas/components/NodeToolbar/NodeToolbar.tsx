@@ -12,6 +12,7 @@ import {
 import type { NodeToolbarProps } from "./NodeToolbar.types";
 import { ToolbarButton } from "./ToolbarButton";
 import { useToolbarState } from "./useToolbarState";
+import { isSeparator } from "./NodeToolbar.utils";
 
 const NodeToolbarComponent = ({ nodeId, config, visible }: NodeToolbarProps) => {
   const {
@@ -43,9 +44,13 @@ const NodeToolbarComponent = ({ nodeId, config, visible }: NodeToolbarProps) => 
           transition={{ duration: 0.15, ease: "easeOut" }}
           role="toolbar"
         >
-          {actionsWithState.map((action) => (
-            <ToolbarButton key={action.id} action={action} />
-          ))}
+          {actionsWithState.map((item, i) =>
+            isSeparator(item) ? (
+              <StyledToolbarSeparator key={`separator-${i}`} $orientation="vertical" />
+            ) : (
+              <ToolbarButton key={item.id} action={item} />
+            )
+          )}
           {overflowActionsWithState.length > 0 && (
             <>
               {actionsWithState.length > 0 && <StyledToolbarSeparator $orientation="vertical" />}
@@ -74,31 +79,31 @@ const NodeToolbarComponent = ({ nodeId, config, visible }: NodeToolbarProps) => 
                       role="menu"
                       aria-labelledby={buttonRef.current?.id}
                     >
-                      {overflowActionsWithState.map((action, i) => {
-                        if (action.id === "separator") {
+                      {overflowActionsWithState.map((item, i) => {
+                        if (isSeparator(item)) {
                           return <StyledToolbarSeparator key={`separator-${i}`} $orientation="horizontal" />;
                         }
                         return (
                           <StyledDropdownItem
-                            key={action.id}
+                            key={item.id}
                             type="button"
                             className="nodrag nopan"
                             onClick={(e) => {
                               e.stopPropagation();
                               e.preventDefault();
-                              if (!action.disabled) {
-                                action.onClick();
+                              if (!item.disabled) {
+                                item.onClick();
                                 setIsDropdownOpen(false);
                               }
                             }}
-                            aria-label={action.label}
-                            aria-disabled={action.disabled}
+                            aria-label={item.label}
+                            aria-disabled={item.disabled}
                             role="menuitem"
-                            $disabled={action.disabled}
+                            $disabled={item.disabled}
                           >
-                            {action.icon && typeof action.icon === "string" && <ApIcon variant="outlined" name={action.icon} size="16px" />}
-                            {action.icon && typeof action.icon !== "string" && action.icon}
-                            <span>{action.label}</span>
+                            {item.icon && typeof item.icon === "string" && <ApIcon variant="outlined" name={item.icon} size="16px" />}
+                            {item.icon && typeof item.icon !== "string" && item.icon}
+                            <span>{item.label}</span>
                           </StyledDropdownItem>
                         );
                       })}

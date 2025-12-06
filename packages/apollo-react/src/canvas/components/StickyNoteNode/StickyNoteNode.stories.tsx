@@ -5,7 +5,7 @@ import { Panel, Position } from "@uipath/uix/xyflow/react";
 import { BaseCanvas } from "../BaseCanvas";
 import { CanvasPositionControls } from "../CanvasPositionControls";
 import { StickyNoteNode } from "./StickyNoteNode";
-import type { StickyNoteData } from "./StickyNoteNode.types";
+import type { StickyNoteColor, StickyNoteData } from "./StickyNoteNode.types";
 import { withCanvasProviders, useCanvasStory } from "../../storybook-utils";
 
 // ============================================================================
@@ -28,8 +28,6 @@ type Story = StoryObj<typeof meta>;
 const nodeTypes = {
   stickyNote: StickyNoteNode,
 };
-
-type StickyNoteColor = "yellow" | "pink" | "blue" | "green" | "purple" | "orange" | "white";
 
 function createStickyNote(
   id: string,
@@ -58,19 +56,17 @@ function DefaultStory() {
   const initialNodes = useMemo<Node<StickyNoteData>[]>(
     () => [
       createStickyNote(
-        "yellow-note",
+        "sticky-yellow-note",
         "yellow",
         "**Markdown Support!**\n\nDouble-click to edit with *markdown*\n- Drag to move\n- Resize from corners",
         { x: 50, y: 50 }
       ),
-      createStickyNote("pink-note", "pink", "## Important\n\n~~Strikethrough~~ and `inline code` work too!", { x: 350, y: 50 }),
-      createStickyNote("blue-note", "blue", "**Lists:**\n\n1. First item\n2. Second item\n3. Third item", { x: 650, y: 50 }),
-      createStickyNote("green-note", "green", "Green note for positive feedback", { x: 50, y: 250 }),
-      createStickyNote("purple-note", "purple", "Purple note for creative thoughts", { x: 350, y: 250 }),
-      createStickyNote("orange-note", "orange", "Orange note for urgent items", { x: 650, y: 250 }),
-      createStickyNote("white-note", "white", "White note for general notes", { x: 50, y: 450 }),
+      createStickyNote("sticky-pink-note", "pink", "## Important\n\n~~Strikethrough~~ and `inline code` work too!", { x: 350, y: 50 }),
+      createStickyNote("sticky-blue-note", "blue", "**Lists:**\n\n1. First item\n2. Second item\n3. Third item", { x: 350, y: 250 }),
+      createStickyNote("sticky-green-note", "green", "Green note for positive feedback", { x: 50, y: 250 }),
+      createStickyNote("sticky-white-note", "white", "White note for general notes", { x: 50, y: 450 }),
       createStickyNote(
-        "long-note",
+        "sticky-long-note",
         "yellow",
         "This is a longer sticky note with lots of content to demonstrate scrolling.\n\nLorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.\n\nUt enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.\n\nDouble-click to edit, then use mouse wheel to scroll through the content.",
         { x: 350, y: 450 },

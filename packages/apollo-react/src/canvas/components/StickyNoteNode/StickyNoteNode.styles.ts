@@ -27,6 +27,7 @@ export const StickyNoteWrapper = styled.div`
 `;
 
 export const StickyNoteContainer = styled.div<{
+  borderColor: string;
   backgroundColor: string;
   isEditing: boolean;
   selected?: boolean;
@@ -35,17 +36,17 @@ export const StickyNoteContainer = styled.div<{
   height: 100%;
   background-color: ${(props) => props.backgroundColor};
   border-radius: 16px;
-  border: 2px solid ${(props) => (props.selected ? "var(--uix-canvas-primary)" : "rgba(0, 0, 0, 0.2)")};
-  box-shadow: ${(props) => (props.selected ? "0 4px 12px rgba(59, 130, 246, 0.4)" : "0 2px 4px rgba(0, 0, 0, 0.2)")};
-  padding: 12px;
+  border: 2px solid ${(props) => props.borderColor};
+  padding: 16px;
   cursor: ${(props) => (props.isEditing ? "text" : "move")};
-  transition: all 0.2s ease;
   position: relative;
   /* Ensure resize handles are clickable */
   pointer-events: auto;
 
+  outline: ${(props) => (props.selected ? `4px solid color-mix(in srgb, ${props.borderColor} 40%, transparent)` : "none")};
+
   &:hover {
-    box-shadow: ${(props) => (props.selected ? "0 4px 12px rgba(59, 130, 246, 0.4)" : "0 3px 8px rgba(0, 0, 0, 0.25)")};
+    outline: ${(props) => `4px solid color-mix(in srgb, ${props.borderColor} 40%, transparent)`};
   }
 `;
 
@@ -59,7 +60,7 @@ export const StickyNoteTextArea = styled.textarea<{ isEditing: boolean }>`
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   font-size: 14px;
   line-height: 1.5;
-  color: var(--uix-canvas-text-primary);
+  color: var(--uix-canvas-foreground);
   cursor: ${(props) => (props.isEditing ? "text" : "move")};
   user-select: ${(props) => (props.isEditing ? "text" : "none")};
   pointer-events: ${(props) => (props.isEditing ? "auto" : "none")};
@@ -83,7 +84,7 @@ export const StickyNoteMarkdown = styled.div`
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   font-size: 14px;
   line-height: 1.5;
-  color: var(--uix-canvas-text-primary);
+  color: var(--uix-canvas-foreground);
   word-wrap: break-word;
 
   /* Markdown styles */
@@ -191,7 +192,6 @@ export const TopCornerIndicators = styled.div<{ selected?: boolean }>`
   inset: 0;
   pointer-events: none;
   opacity: ${(props) => (props.selected ? 1 : 0)};
-  transition: opacity 0.2s ease;
 
   /* Top-left corner */
   &::before {
@@ -225,7 +225,6 @@ export const BottomCornerIndicators = styled.div<{ selected?: boolean }>`
   inset: 0;
   pointer-events: none;
   opacity: ${(props) => (props.selected ? 1 : 0)};
-  transition: opacity 0.2s ease;
 
   /* Bottom-left corner */
   &::before {
@@ -256,8 +255,10 @@ export const BottomCornerIndicators = styled.div<{ selected?: boolean }>`
 
 export const ColorPickerPanel = styled(motion.div)`
   display: flex;
+  height: 30px;
+  align-items: center;
   gap: 4px;
-  padding: 2px;
+  padding: 4px;
   background: var(--uix-canvas-background);
   border: 1px solid var(--uix-canvas-border-grid);
   border-radius: 8px;
@@ -268,11 +269,11 @@ export const ColorPickerPanel = styled(motion.div)`
 `;
 
 export const ColorOption = styled.button<{ color: string; isSelected: boolean }>`
-  width: 24px;
-  height: 24px;
+  width: 16px;
+  height: 16px;
   border-radius: 50%;
   background-color: ${(props) => props.color};
-  border: ${(props) => (props.isSelected ? "2px solid var(--uix-canvas-primary)" : "1px solid rgba(0, 0, 0, 0.2)")};
+  border: none;
   cursor: pointer;
   transition: border 0.15s ease;
   padding: 0;
@@ -282,7 +283,7 @@ export const ColorOption = styled.button<{ color: string; isSelected: boolean }>
   }
 
   &:focus {
-    outline: none;
-    border: 2px solid var(--uix-canvas-primary);
+    outline: 2px solid var(--uix-canvas-primary);
+    outline-offset: 1px;
   }
 `;

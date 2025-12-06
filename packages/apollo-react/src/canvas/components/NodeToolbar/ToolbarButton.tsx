@@ -1,9 +1,9 @@
 import { memo } from "react";
 import { ApIcon, ApTooltip } from "@uipath/portal-shell-react";
 import { StyledToolbarButton } from "./NodeToolbar.styles";
-import type { ToolbarAction } from "./NodeToolbar.types";
+import type { ToolbarActionItem } from "./NodeToolbar.types";
 
-export interface ExtendedToolbarAction extends ToolbarAction {
+export interface ExtendedToolbarAction extends ToolbarActionItem {
   onClick: () => void;
 }
 
