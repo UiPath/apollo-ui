@@ -257,62 +257,66 @@ const StageNodeComponent = (props: StageNodeProps) => {
     [onAddTaskFromToolbox, setSelectedNodeId, id]
   );
 
-  const handleConfigurations: HandleConfiguration[] = isException
-    ? []
-    : [
-        {
-          position: Position.Left,
-          handles: [
+  const handleConfigurations: HandleConfiguration[] = useMemo(
+    () =>
+      isException
+        ? []
+        : [
             {
-              id: `${id}____target____left`,
-              type: "target",
-              handleType: "input",
+              position: Position.Left,
+              handles: [
+                {
+                  id: `${id}____target____left`,
+                  type: "target",
+                  handleType: "input",
+                },
+              ],
+              visible: selected || isHovered || isConnecting,
+              customPositionAndOffsets: {
+                top: 0,
+                height: 64,
+              },
+            },
+            {
+              position: Position.Right,
+              handles: [
+                {
+                  id: `${id}____source____right`,
+                  type: "source",
+                  handleType: "output",
+                },
+              ],
+              visible: selected || isHovered || isConnecting,
+              customPositionAndOffsets: {
+                top: 0,
+                height: 64,
+              },
+            },
+            {
+              position: Position.Bottom,
+              handles: [
+                {
+                  id: `${id}____target____bottom`,
+                  type: "target",
+                  handleType: "input",
+                },
+              ],
+              visible: selected || isHovered || isConnecting,
+            },
+            {
+              position: Position.Bottom,
+              handles: [
+                {
+                  id: `${id}____source____bottom`,
+                  type: "source",
+                  handleType: "output",
+                },
+              ],
+              visible: selected || isHovered || isConnecting,
             },
           ],
-          visible: selected || isHovered || isConnecting,
-          customPositionAndOffsets: {
-            top: 0,
-            height: 64,
-          },
-        },
-        {
-          position: Position.Right,
-          handles: [
-            {
-              id: `${id}____source____right`,
-              type: "source",
-              handleType: "output",
-            },
-          ],
-          visible: selected || isHovered || isConnecting,
-          customPositionAndOffsets: {
-            top: 0,
-            height: 64,
-          },
-        },
-        {
-          position: Position.Bottom,
-          handles: [
-            {
-              id: `${id}____target____bottom`,
-              type: "target",
-              handleType: "input",
-            },
-          ],
-          visible: selected || isHovered || isConnecting,
-        },
-        {
-          position: Position.Bottom,
-          handles: [
-            {
-              id: `${id}____source____bottom`,
-              type: "source",
-              handleType: "output",
-            },
-          ],
-          visible: selected || isHovered || isConnecting,
-        },
-      ];
+    [isException, id, selected, isHovered, isConnecting]
+  );
   const handleElements = useButtonHandles({ handleConfigurations, shouldShowHandles, edges, nodeId: id, selected });
 
   return (

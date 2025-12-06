@@ -697,28 +697,6 @@ export const LoanProcessingWorkflow: Story = {
         target: "funding",
         targetHandle: "funding____target____left",
       },
-      // Rejection flow
-      {
-        id: "e5",
-        type: "stage",
-        source: "processing",
-        sourceHandle: "processing____source____right",
-        target: "rejected",
-        targetHandle: "rejected____target____left",
-        animated: true,
-        style: { stroke: "var(--uix-canvas-error-text)" },
-      },
-      // Withdrawal flow
-      {
-        id: "e6",
-        type: "stage",
-        source: "application",
-        sourceHandle: "application____source____right",
-        target: "withdrawn",
-        targetHandle: "withdrawn____target____left",
-        animated: true,
-        style: { stroke: "var(--uix-canvas-warning-text)", strokeDasharray: "5,5" },
-      },
     ] as Edge[],
   },
   args: {} as any, // No args needed as we're using parameters
