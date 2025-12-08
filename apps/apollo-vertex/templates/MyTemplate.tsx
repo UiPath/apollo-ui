@@ -1,5 +1,5 @@
-import { Button } from '@/registry/button/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/registry/card/card';
+import { Button } from "@/registry/button/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/registry/card/card";
 
 export function MyTemplate() {
     return (
