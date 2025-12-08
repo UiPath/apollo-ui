@@ -26,6 +26,13 @@ export interface BaseNodeData extends Record<string, unknown> {
     iconBackground?: string;
     iconColor?: string;
   };
+
+  /**
+   * When true, uses SmartHandle instead of ButtonHandle for dynamic handle positioning.
+   * SmartHandle positions handles based on connected node locations.
+   * @default false
+   */
+  useSmartHandles?: boolean;
 }
 
 export interface NodeDisplay {

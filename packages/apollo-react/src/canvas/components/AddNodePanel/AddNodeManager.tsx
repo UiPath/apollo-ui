@@ -93,12 +93,15 @@ export const AddNodeManager: React.FC<AddNodeManagerProps> = ({ customPanel, cre
       const newNodeId = `${nodeItem.data.type}-${Date.now()}`;
 
       // Create node data
-      const nodeData = createNodeData
+      const baseNodeData = createNodeData
         ? createNodeData(nodeItem)
         : {
             label: nodeItem.name,
             subLabel: nodeItem.description,
           };
+
+      // Inherit useSmartHandles from preview node if set
+      const nodeData = previewNode.data?.useSmartHandles ? { ...baseNodeData, useSmartHandles: true } : baseNodeData;
 
       // Create new node at preview position
       const newNode: Node = {

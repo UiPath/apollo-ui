@@ -21,6 +21,13 @@ const ARROW_OFFSETS: Record<Position, { x: number; y: number }> = {
   [Position.Bottom]: { x: 0, y: -8 },
 };
 
+const SOURCE_OFFSETS: Record<Position, { x: number; y: number }> = {
+  [Position.Left]: { x: 8, y: 0 },
+  [Position.Right]: { x: -8, y: 0 },
+  [Position.Top]: { x: 0, y: 8 },
+  [Position.Bottom]: { x: 0, y: -8 },
+};
+
 export const SequenceEdge = ({
   id,
   selected,
@@ -45,10 +52,11 @@ export const SequenceEdge = ({
 
   const angle = ANGLE_MAP[targetPosition];
   const { x: offsetX, y: offsetY } = ARROW_OFFSETS[targetPosition];
+  const { x: sourceOffsetX, y: sourceOffsetY } = SOURCE_OFFSETS[sourcePosition];
 
   const [edgePath] = getSmoothStepPath({
-    sourceX: sourceX - offsetX,
-    sourceY: sourceY - offsetY,
+    sourceX: sourceX + sourceOffsetX,
+    sourceY: sourceY + sourceOffsetY,
     sourcePosition,
     targetX,
     targetY,

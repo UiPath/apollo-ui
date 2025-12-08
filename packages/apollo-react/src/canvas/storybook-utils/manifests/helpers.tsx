@@ -107,6 +107,7 @@ export function resolveHandleGroups(
       type: handle.type,
       handleType: handle.handleType,
       label: handle.label,
+      showButton: handle.type === "source",
     })),
   }));
 }

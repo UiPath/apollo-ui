@@ -3,6 +3,16 @@ import type { HandleConfigurationSpecificPosition } from "../BaseNode/BaseNode.t
 import { GRID_SPACING } from "../../constants";
 
 /**
+ * Returns true if the position is on a horizontal edge (Top or Bottom)
+ */
+const isHorizontalEdge = (position: Position): boolean => position === Position.Top || position === Position.Bottom;
+
+/**
+ * Returns true if the position is on a vertical edge (Left or Right)
+ */
+const isVerticalEdge = (position: Position): boolean => position === Position.Left || position === Position.Right;
+
+/**
  * Snaps a value to the nearest grid multiple
  * @param value - The value to snap
  * @param gridSize - The grid size (defaults to GRID_SPACING)
@@ -70,13 +80,12 @@ export const widthForHandleWithPosition = ({
   position: Position;
   numHandles: number;
   customWidth?: number;
-}) => {
+}): string => {
   if (customWidth) {
-    // if we have a specific width, use it
     return `${customWidth}px`;
   }
-  // otherwise default width value
-  return position === Position.Top || position === Position.Bottom ? `${50 / numHandles}%` : "24px";
+  // Horizontal edges (Top/Bottom) scale width based on handle count; vertical edges use fixed width
+  return isHorizontalEdge(position) ? `${50 / numHandles}%` : "24px";
 };
 
 export const heightForHandleWithPosition = ({
@@ -87,13 +96,12 @@ export const heightForHandleWithPosition = ({
   position: Position;
   numHandles: number;
   customHeight?: number;
-}) => {
+}): string => {
   if (customHeight) {
-    // if we have a specific height, use it
     return `${customHeight}px`;
   }
-  // otherwise default height value
-  return position === Position.Top || position === Position.Bottom ? "24px" : `${50 / numHandles}%`;
+  // Horizontal edges (Top/Bottom) use fixed height; vertical edges scale height based on handle count
+  return isHorizontalEdge(position) ? "24px" : `${50 / numHandles}%`;
 };
 
 export const topPositionForHandle = ({
@@ -108,27 +116,24 @@ export const topPositionForHandle = ({
   customHeight?: number;
   customTop?: number;
   customBottom?: number;
-}) => {
+}): string => {
   if (customTop != null) {
-    // if we have a specific top, use it
-    if (position === Position.Left || position === Position.Right) {
-      // if we have multiple handles, we need to position accordingly
+    if (isVerticalEdge(position)) {
+      // For vertical edges with multiple handles, position along the edge
       if (customHeight) {
         return `${customTop + customHeight * (positionPercent / 100) - customHeight / 2}px`;
-      } else {
-        return `calc(${positionPercent}% + ${customTop / 2}px)`;
       }
-    } else {
-      return `${customTop}px`;
+      return `calc(${positionPercent}% + ${customTop / 2}px)`;
     }
+    return `${customTop}px`;
   }
 
   if (customBottom != null) {
-    // if we have a specific top, don't set a bottom value
+    // When customBottom is set, don't set top (use bottom positioning instead)
     return "unset";
   }
 
-  // otherwise default top value depending on the position
+  // Default positioning based on edge
   if (position === Position.Top) {
     return "0";
   }
@@ -150,27 +155,24 @@ export const bottomPositionForHandle = ({
   customHeight?: number;
   customTop?: number;
   customBottom?: number;
-}) => {
+}): string => {
   if (customBottom != null) {
-    // if we have a specific bottom, use it
-    if (position === Position.Left || position === Position.Right) {
-      // if we have multiple handles, we need to position accordingly
+    if (isVerticalEdge(position)) {
+      // For vertical edges with multiple handles, position along the edge
       if (customHeight) {
         return `${customBottom + customHeight * (positionPercent / 100) - customHeight / 2}px`;
-      } else {
-        return `calc(${positionPercent}% + ${customBottom / 2}px)`;
       }
-    } else {
-      return `${customBottom}px`;
+      return `calc(${positionPercent}% + ${customBottom / 2}px)`;
     }
+    return `${customBottom}px`;
   }
 
   if (customTop != null) {
-    // if we have a specific top, don't set a bottom value
+    // When customTop is set, don't set bottom (use top positioning instead)
     return "unset";
   }
 
-  // otherwise default top value depending on the position
+  // Default positioning based on edge
   if (position === Position.Bottom) {
     return "0";
   }
@@ -189,27 +191,24 @@ export const leftPositionForHandle = ({
   customWidth?: number;
   customRight?: number;
   customLeft?: number;
-}) => {
+}): string => {
   if (customLeft != null) {
-    // if we have a specific left, use it
-    if (position === Position.Top || position === Position.Bottom) {
-      // if we have multiple handles, we need to position accordingly
+    if (isHorizontalEdge(position)) {
+      // For horizontal edges with multiple handles, position along the edge
       if (customWidth) {
         return `${customLeft + customWidth * (positionPercent / 100) - customWidth / 2}px`;
-      } else {
-        return `calc(${positionPercent}% + ${customLeft / 2}px)`;
       }
-    } else {
-      return `${customLeft}px`;
+      return `calc(${positionPercent}% + ${customLeft / 2}px)`;
     }
+    return `${customLeft}px`;
   }
 
   if (customRight != null) {
-    // if we have a specific right, don't set a left value
+    // When customRight is set, don't set left (use right positioning instead)
     return "unset";
   }
 
-  // otherwise default left value depending on the position
+  // Default positioning based on edge
   if (position === Position.Left) {
     return "0";
   }
@@ -231,27 +230,24 @@ export const rightPositionForHandle = ({
   customWidth?: number;
   customRight?: number;
   customLeft?: number;
-}) => {
+}): string => {
   if (customRight != null) {
-    // if we have a specific right, use it
-    if (position === Position.Top || position === Position.Bottom) {
-      // if we have multiple handles, we need to position accordingly
+    if (isHorizontalEdge(position)) {
+      // For horizontal edges with multiple handles, position along the edge
       if (customWidth) {
         return `${customRight + customWidth * (positionPercent / 100) - customWidth / 2}px`;
-      } else {
-        return `calc(${positionPercent}% + ${customRight / 2}px)`;
       }
-    } else {
-      return `${customRight}px`;
+      return `calc(${positionPercent}% + ${customRight / 2}px)`;
     }
+    return `${customRight}px`;
   }
 
   if (customLeft != null) {
-    // if we have a specific left, don't set a right value
+    // When customLeft is set, don't set right (use left positioning instead)
     return "unset";
   }
 
-  // otherwise default right value depending on the position
+  // Default positioning based on edge
   if (position === Position.Right) {
     return "0";
   }
@@ -264,28 +260,14 @@ export const transformForHandle = ({
 }: {
   position: Position;
   customPositionAndOffsets?: HandleConfigurationSpecificPosition;
-}) => {
-  let horizontalPercent = "0%";
-  let verticalPercent = "0%";
+}): string => {
+  const hasCustomVertical =
+    (customPositionAndOffsets?.top != null || customPositionAndOffsets?.bottom != null) && customPositionAndOffsets?.height;
+  const hasCustomHorizontal =
+    (customPositionAndOffsets?.left != null || customPositionAndOffsets?.right != null) && customPositionAndOffsets?.width;
 
-  if ((customPositionAndOffsets?.top != null || customPositionAndOffsets?.bottom != null) && customPositionAndOffsets?.height) {
-    verticalPercent = "0%";
-  } else {
-    if (position === Position.Bottom) {
-      verticalPercent = "50%";
-    } else {
-      verticalPercent = "-50%";
-    }
-  }
+  const verticalPercent = hasCustomVertical ? "0%" : position === Position.Bottom ? "50%" : "-50%";
+  const horizontalPercent = hasCustomHorizontal ? "0%" : position === Position.Right ? "50%" : "-50%";
 
-  if ((customPositionAndOffsets?.left != null || customPositionAndOffsets?.right != null) && customPositionAndOffsets?.width) {
-    horizontalPercent = "0%";
-  } else {
-    if (position === Position.Right) {
-      horizontalPercent = "50%";
-    } else {
-      horizontalPercent = "-50%";
-    }
-  }
   return `translate(${horizontalPercent}, ${verticalPercent})`;
 };

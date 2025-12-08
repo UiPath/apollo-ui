@@ -109,11 +109,6 @@ export const allNodeManifests: NodeManifest[] = [
             handleType: "input",
             constraints: {
               forbiddenSourceCategories: ["trigger"],
-              forbiddenSources: [
-                { nodeType: "uipath.agent-model" },
-                { nodeType: "uipath.agent-prompt" },
-                { nodeType: "uipath.agent-tools" },
-              ],
               validationMessage: "Control flow cannot be directly triggered or accept configuration nodes",
             },
           },
@@ -127,13 +122,14 @@ export const allNodeManifests: NodeManifest[] = [
             id: "true",
             type: "source",
             handleType: "output",
-            label: "{parameters.trueLabel || 'True'}",
+            label: "True",
             constraints: {
               forbiddenTargetCategories: ["trigger"],
               forbiddenTargets: [
-                { nodeType: "uipath.agent-model" },
-                { nodeType: "uipath.agent-prompt" },
-                { nodeType: "uipath.agent-tools" },
+                { nodeType: "uipath.agent.resource.memory" },
+                { nodeType: "uipath.agent.resource.escalation" },
+                { nodeType: "uipath.agent.resource.context" },
+                { nodeType: "uipath.agent.resource.tool" },
               ],
             },
           },
@@ -141,13 +137,14 @@ export const allNodeManifests: NodeManifest[] = [
             id: "false",
             type: "source",
             handleType: "output",
-            label: "{parameters.falseLabel || 'False'}",
+            label: "False",
             constraints: {
               forbiddenTargetCategories: ["trigger"],
               forbiddenTargets: [
-                { nodeType: "uipath.agent-model" },
-                { nodeType: "uipath.agent-prompt" },
-                { nodeType: "uipath.agent-tools" },
+                { nodeType: "uipath.agent.resource.memory" },
+                { nodeType: "uipath.agent.resource.escalation" },
+                { nodeType: "uipath.agent.resource.context" },
+                { nodeType: "uipath.agent.resource.tool" },
               ],
             },
           },
@@ -208,7 +205,7 @@ export const allNodeManifests: NodeManifest[] = [
                 { nodeType: "uipath.trigger.*" },
                 { nodeType: "uipath.agent-model" },
                 { nodeType: "uipath.agent-prompt" },
-                { nodeType: "uipath.agent-tools" },
+                { nodeType: "uipath.agent-tool" },
               ],
               forbiddenTargetCategories: ["trigger"],
               minConnections: 1,
@@ -295,7 +292,7 @@ export const allNodeManifests: NodeManifest[] = [
 
   // Try-Catch (Error Handling)
   {
-    nodeType: "uipath.control-flow.trycatch",
+    nodeType: "uipath.control-flow.try-catch",
     version: "1",
     category: "control-flow",
     tags: ["control-flow", "error", "exception"],
@@ -315,11 +312,6 @@ export const allNodeManifests: NodeManifest[] = [
             constraints: {
               maxConnections: 1,
               forbiddenSourceCategories: ["trigger"],
-              forbiddenSources: [
-                { nodeType: "uipath.agent-model" },
-                { nodeType: "uipath.agent-prompt" },
-                { nodeType: "uipath.agent-tools" },
-              ],
             },
           },
         ],
@@ -458,16 +450,16 @@ export const allNodeManifests: NodeManifest[] = [
     ],
   },
 
-  // Agent Model (Configuration Node)
+  // Agent Memory (Configuration Node)
   {
-    nodeType: "uipath.agent.agent-model",
+    nodeType: "uipath.agent.resource.memory",
     version: "1",
     category: "agent",
-    tags: ["agentic", "ai", "model", "llm"],
+    tags: ["agentic", "ai", "memory"],
     sortOrder: 0,
     display: {
-      label: "Agent Model",
-      icon: "sparkles",
+      label: "Agent Memory",
+      icon: "database",
       shape: "circle",
     },
     handles: [
@@ -475,13 +467,42 @@ export const allNodeManifests: NodeManifest[] = [
         position: "top",
         handles: [
           {
-            id: "output",
-            type: "source",
+            id: "input",
+            type: "target",
             handleType: "artifact",
-            label: "{modelName || 'Model'}",
             constraints: {
-              allowedTargets: [{ nodeType: "uipath.agent", handleId: "model" }],
-              validationMessage: "Agent Model can only connect to Agent node's model input",
+              allowedSources: [{ nodeType: "uipath.agent", handleId: "memory" }],
+              validationMessage: "Agent Memory can only connect to Agent node's memory input",
+            },
+          },
+        ],
+      },
+    ],
+  },
+
+  // Agent Escalation (Configuration Node)
+  {
+    nodeType: "uipath.agent.resource.escalation",
+    version: "1",
+    category: "agent",
+    tags: ["agentic", "ai", "escalation"],
+    sortOrder: 0,
+    display: {
+      label: "Agent Escalation",
+      icon: "person-standing",
+      shape: "circle",
+    },
+    handles: [
+      {
+        position: "top",
+        handles: [
+          {
+            id: "input",
+            type: "target",
+            handleType: "artifact",
+            constraints: {
+              allowedSources: [{ nodeType: "uipath.agent", handleId: "escalation" }],
+              validationMessage: "Agent Escalation can only connect to Agent node's escalation input",
             },
           },
         ],
@@ -491,7 +512,7 @@ export const allNodeManifests: NodeManifest[] = [
 
   // Agent Context (Configuration Node)
   {
-    nodeType: "uipath.agent.agent-context",
+    nodeType: "uipath.agent.resource.context",
     version: "1",
     category: "agent",
     tags: ["agentic", "ai", "context"],
@@ -506,12 +527,11 @@ export const allNodeManifests: NodeManifest[] = [
         position: "top",
         handles: [
           {
-            id: "output",
+            id: "input",
             type: "target",
             handleType: "artifact",
-            label: "{contextName || 'Context'}",
             constraints: {
-              allowedTargets: [{ nodeType: "uipath.agent", handleId: "context" }],
+              allowedSources: [{ nodeType: "uipath.agent", handleId: "context" }],
               validationMessage: "Agent Context can only connect to Agent node's context input",
             },
           },
@@ -522,7 +542,7 @@ export const allNodeManifests: NodeManifest[] = [
 
   // Agent Tools (Configuration Node)
   {
-    nodeType: "uipath.agent.agent-tools",
+    nodeType: "uipath.agent.resource.tool",
     version: "1",
     category: "agent",
     tags: ["agentic", "ai", "tools", "functions"],
@@ -537,12 +557,11 @@ export const allNodeManifests: NodeManifest[] = [
         position: "top",
         handles: [
           {
-            id: "output",
-            type: "source",
+            id: "input",
+            type: "target",
             handleType: "artifact",
-            label: "{toolCount || 0} tools",
             constraints: {
-              allowedTargets: [{ nodeType: "uipath.agent", handleId: "tools" }],
+              allowedSources: [{ nodeType: "uipath.agent", handleId: "tool" }],
               validationMessage: "Agent Tools can only connect to Agent node's tools input",
             },
           },
@@ -566,6 +585,31 @@ export const allNodeManifests: NodeManifest[] = [
     },
     handles: [
       {
+        position: "top",
+        handles: [
+          {
+            id: "memory",
+            type: "source",
+            handleType: "artifact",
+            label: "Memory",
+            constraints: {
+              allowedTargets: [{ nodeType: "uipath.agent.resource.memory" }],
+              validationMessage: "Only Agent Memory nodes can connect here",
+            },
+          },
+          {
+            id: "escalation",
+            type: "source",
+            handleType: "artifact",
+            label: "Escalations",
+            constraints: {
+              allowedTargets: [{ nodeType: "uipath.agent.resource.escalation" }],
+              validationMessage: "Only Agent Escalation nodes can connect here",
+            },
+          },
+        ],
+      },
+      {
         position: "bottom",
         handles: [
           {
@@ -574,19 +618,9 @@ export const allNodeManifests: NodeManifest[] = [
             handleType: "artifact",
             label: "Context",
             constraints: {
-              allowedSources: [{ nodeType: "uipath.agent.agent-context" }],
+              allowedTargets: [{ nodeType: "uipath.agent.resource.context" }],
               maxConnections: 1,
               validationMessage: "Only Agent Context nodes can connect here",
-            },
-          },
-          {
-            id: "escalation",
-            type: "source",
-            handleType: "artifact",
-            label: "Escalation",
-            constraints: {
-              allowedSources: [{ nodeType: "uipath.agent.escalation" }],
-              validationMessage: "Only Agent Escalation nodes can connect here",
             },
           },
           {
@@ -595,7 +629,7 @@ export const allNodeManifests: NodeManifest[] = [
             handleType: "artifact",
             label: "Tools",
             constraints: {
-              allowedSources: [{ nodeType: "uipath.agent.agent-tools" }],
+              allowedTargets: [{ nodeType: "uipath.agent.resource.tool" }],
               validationMessage: "Only Agent Tools nodes can connect here",
             },
           },

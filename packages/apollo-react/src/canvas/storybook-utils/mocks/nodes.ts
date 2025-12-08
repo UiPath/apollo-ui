@@ -54,6 +54,8 @@ export interface CreateNodeOptions<T = Record<string, unknown>> {
   handleConfigurations?: HandleConfiguration[];
   /** Whether node is selected */
   selected?: boolean;
+  /** Enable SmartHandle for dynamic handle positioning */
+  useSmartHandles?: boolean;
 }
 
 /**
@@ -69,7 +71,16 @@ export interface CreateNodeOptions<T = Record<string, unknown>> {
  * ```
  */
 export function createNode<T = Record<string, unknown>>(options: CreateNodeOptions<T>): Node<BaseNodeData & T> {
-  const { id, type = "generic", position = { x: 0, y: 0 }, data = {}, display, handleConfigurations, selected = false } = options;
+  const {
+    id,
+    type = "generic",
+    position = { x: 0, y: 0 },
+    data = {},
+    display,
+    handleConfigurations,
+    selected = false,
+    useSmartHandles,
+  } = options;
 
   return {
     id,
@@ -80,6 +91,7 @@ export function createNode<T = Record<string, unknown>>(options: CreateNodeOptio
       parameters: {},
       display,
       handleConfigurations,
+      useSmartHandles,
       ...data,
     } as unknown as BaseNodeData & T,
   };

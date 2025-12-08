@@ -3,10 +3,10 @@
  * Use `withAlpha()` to derive background colors with transparency.
  */
 export const STICKY_NOTE_COLORS = {
-  yellow: "#FFB40E",
-  pink: "#ED145B",
   blue: "#42A1FF",
   green: "#6EB84A",
+  yellow: "#FFB40E",
+  pink: "#ED145B",
   white: "var(--uix-canvas-border)",
 } as const;
 
@@ -15,6 +15,8 @@ export type StickyNoteColor = keyof typeof STICKY_NOTE_COLORS;
 export interface StickyNoteData extends Record<string, unknown> {
   color?: StickyNoteColor;
   content?: string;
+  /** When true, the sticky note will start in edit mode with the textarea focused */
+  autoFocus?: boolean;
 }
 
 /** Default alpha value for sticky note backgrounds (8%) */

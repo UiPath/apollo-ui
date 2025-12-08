@@ -13,6 +13,10 @@ vi.mock("@uipath/uix/xyflow/react", () => ({
   useStore: () => ({ edges: [], isConnecting: false }),
   useConnection: () => ({ inProgress: false }),
   useUpdateNodeInternals: () => vi.fn(),
+  useReactFlow: () => ({
+    setNodes: vi.fn(),
+    setEdges: vi.fn(),
+  }),
 }));
 
 vi.mock("../ButtonHandle/useButtonHandles", () => ({

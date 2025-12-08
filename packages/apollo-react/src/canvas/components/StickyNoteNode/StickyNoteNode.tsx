@@ -34,7 +34,7 @@ const minHeight = GRID_SPACING * 8;
 
 const StickyNoteNodeComponent = ({ id, data, selected, dragging }: StickyNoteNodeProps) => {
   const { updateNodeData } = useReactFlow();
-  const [isEditing, setIsEditing] = useState(false);
+  const [isEditing, setIsEditing] = useState(data.autoFocus ?? false);
   const [isResizing, setIsResizing] = useState(false);
   const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
   const [localContent, setLocalContent] = useState(data.content || "");
@@ -48,6 +48,18 @@ const StickyNoteNodeComponent = ({ id, data, selected, dragging }: StickyNoteNod
   useEffect(() => {
     setLocalContent(data.content || "");
   }, [data.content]);
+
+  // Handle autoFocus - focus textarea when entering edit mode
+  useEffect(() => {
+    if (isEditing && textAreaRef.current) {
+      textAreaRef.current.focus();
+      textAreaRef.current.select();
+    }
+    // Clear autoFocus from data after initial focus to prevent re-focusing on re-renders
+    if (data.autoFocus) {
+      updateNodeData(id, { autoFocus: false });
+    }
+  }, [isEditing, data.autoFocus, id, updateNodeData]);
 
   useEffect(() => {
     if (!selected || isResizing) {
@@ -233,11 +245,7 @@ const StickyNoteNodeComponent = ({ id, data, selected, dragging }: StickyNoteNod
             />
           ) : (
             <StickyNoteMarkdown>
-              {localContent ? (
-                <ReactMarkdown remarkPlugins={[remarkGfm]}>{localContent}</ReactMarkdown>
-              ) : (
-                <span style={{ color: "var(--uix-canvas-foreground-de-emp)" }}>Add text</span>
-              )}
+              {localContent && <ReactMarkdown remarkPlugins={[remarkGfm]}>{localContent}</ReactMarkdown>}
             </StickyNoteMarkdown>
           )}
         </StickyNoteContainer>

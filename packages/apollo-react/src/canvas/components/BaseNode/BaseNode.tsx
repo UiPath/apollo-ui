@@ -3,7 +3,6 @@ import type { Node, NodeProps } from "@uipath/uix/xyflow/react";
 import { Position, useConnection, useStore, useUpdateNodeInternals } from "@uipath/uix/xyflow/react";
 import type { NodeStatusContext } from "./ExecutionStatusContext";
 import { useExecutionState } from "./ExecutionStatusContext";
-import type { HandleActionEvent } from "../ButtonHandle";
 import { NodeToolbar } from "../NodeToolbar";
 import { BaseContainer, BaseIconWrapper, BaseBadgeSlot, BaseTextContainer, BaseHeader, BaseSubHeader } from "./BaseNode.styles";
 import type { BaseNodeData } from "./BaseNode.types";
@@ -11,6 +10,7 @@ import { useNodeTypeRegistry } from "./useNodeTypeRegistry";
 import { cx } from "@uipath/uix/core";
 import { ApIcon, ApTooltip } from "@uipath/portal-shell-react";
 import { useBaseCanvasMode } from "../BaseCanvas/BaseCanvasModeProvider";
+import { SmartHandleProvider, SmartHandle } from "../ButtonHandle/SmartHandle";
 import { useButtonHandles } from "../ButtonHandle/useButtonHandles";
 
 const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
@@ -106,9 +106,18 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
   const handleFocus = useCallback(() => setIsFocused(true), []);
   const handleBlur = useCallback(() => setIsFocused(false), []);
 
+  // Calculate if notches should be shown (when node is hovered or selected)
+  const showNotches = inProgress || isHovered || selected;
+
   // Handle action callback that uses node type's default handler
   const handleAction = useCallback(
-    (event: HandleActionEvent) => {
+    (event: {
+      handleId: string;
+      nodeId: string;
+      handleType: "artifact" | "input" | "output";
+      position: Position;
+      originalEvent: React.MouseEvent;
+    }) => {
       // Reset hover state when handle is clicked
       setIsHovered(false);
       setIsFocused(false);
@@ -128,20 +137,81 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
     [nodeDefinition, handleConfigurations]
   );
 
-  // Calculate if notches should be shown (when node is hovered or selected)
-  const showNotches = inProgress || isHovered || selected;
-  const handleElements = useButtonHandles({
+  // Check if smart handles are enabled via node data
+  const useSmartHandles = data?.useSmartHandles ?? false;
+
+  // Generate ButtonHandle elements (default behavior)
+  const buttonHandleElements = useButtonHandles({
     handleConfigurations,
     shouldShowHandles,
     handleAction,
     edges,
     nodeId: id,
-    selected,
-    showNotches,
+    selected: selected ?? false,
     showAddButton: mode === "design",
+    showNotches,
     nodeWidth: width,
     nodeHeight: height,
   });
+
+  // Generate SmartHandle elements from handle configurations (opt-in)
+  // IMPORTANT: Always render all handles so they register with SmartHandleProvider for consistent positioning.
+  // Use the `visible` prop to hide visual elements instead of conditionally rendering.
+  const smartHandleElements = useMemo(() => {
+    if (!useSmartHandles) return null;
+    if (!handleConfigurations || !Array.isArray(handleConfigurations)) return null;
+
+    let handleIndex = 0;
+    const handles = handleConfigurations.flatMap((config) =>
+      config.handles.map((handle) => {
+        const defaultPosition = config.position;
+        const configVisible = config.visible ?? true;
+        const currentIndex = handleIndex++;
+
+        // Determine handle type for SmartHandle
+        const handleVisualType = handle.handleType ?? (handle.type === "source" ? "output" : "input");
+
+        // Check if this handle has a connection
+        const hasConnection = edges.some(
+          (edge) => (edge.source === id && edge.sourceHandle === handle.id) || (edge.target === id && edge.targetHandle === handle.id)
+        );
+
+        // Determine if the handle visuals should be visible
+        // Always render the handle for registration, but control visibility of visual elements
+        const isVisible = hasConnection || (shouldShowHandles && configVisible);
+
+        // Determine if add button should be shown
+        const shouldShowButton = mode === "design" && selected && handle.showButton;
+
+        return (
+          <SmartHandle
+            key={`${handle.id}-${handle.type}`}
+            type={handle.type}
+            id={handle.id}
+            defaultPosition={defaultPosition}
+            handleType={handleVisualType}
+            nodeWidth={width}
+            nodeHeight={height}
+            label={handle.label}
+            labelIcon={handle.labelIcon}
+            labelBackgroundColor={handle.labelBackgroundColor}
+            showButton={shouldShowButton}
+            selected={selected}
+            color={handle.color}
+            showNotches={showNotches}
+            onAction={handleAction}
+            visible={isVisible}
+            configOrder={currentIndex}
+          />
+        );
+      })
+    );
+
+    return handles.length > 0 ? handles : null;
+  }, [useSmartHandles, handleConfigurations, edges, id, shouldShowHandles, width, height, mode, selected, showNotches, handleAction]);
+
+  // Use SmartHandle elements if enabled, otherwise use ButtonHandle elements
+  const handleElements = useSmartHandles ? smartHandleElements : buttonHandleElements;
 
   // TODO: refactor to standalone component
   if (!nodeDefinition) {
@@ -169,7 +239,7 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
     );
   }
 
-  return (
+  const nodeContent = (
     <div
       ref={containerRef}
       style={{ position: "relative" }}
@@ -231,6 +301,17 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
       {toolbarConfig && <NodeToolbar nodeId={id} config={toolbarConfig} visible={selected && !dragging && selectedNodesCount === 1} />}
     </div>
   );
+
+  // Wrap with SmartHandleProvider only when smart handles are enabled
+  if (useSmartHandles) {
+    return (
+      <SmartHandleProvider nodeWidth={width} nodeHeight={height}>
+        {nodeContent}
+      </SmartHandleProvider>
+    );
+  }
+
+  return nodeContent;
 };
 
 export const BaseNode = memo(BaseNodeComponent);

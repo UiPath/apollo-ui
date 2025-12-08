@@ -1,9 +1,10 @@
 import { useCallback, useMemo } from "react";
-import type { Connection, Edge, Node, NodeTypes } from "@uipath/uix/xyflow/react";
+import type { Connection, Edge, EdgeTypes, Node, NodeTypes } from "@uipath/uix/xyflow/react";
 import { addEdge, useNodesState, useEdgesState } from "@uipath/uix/xyflow/react";
 import { BaseNode } from "../../components/BaseNode/BaseNode";
 import { useNodeTypeRegistry } from "../../components/BaseNode/useNodeTypeRegistry";
 import { AddNodePreview } from "../../components";
+import { SequenceEdge } from "../../components/Edges";
 
 /**
  * Options for the useCanvasStory hook.
@@ -45,6 +46,8 @@ export interface UseCanvasStoryReturn {
 
   /** Current edges state */
   edges: Edge[];
+  /** Edge types mapping for React Flow */
+  edgeTypes: EdgeTypes;
   /** Function to update edges */
   setEdges: React.Dispatch<React.SetStateAction<Edge[]>>;
   /** Handler for edge changes from React Flow */
@@ -69,6 +72,7 @@ export interface UseCanvasStoryReturn {
     onEdgesChange: ReturnType<typeof useEdgesState>[2];
     onConnect: (connection: Connection) => void;
     nodeTypes: NodeTypes;
+    edgeTypes: EdgeTypes;
   };
 }
 
@@ -129,6 +133,12 @@ export function useCanvasStory(options: UseCanvasStoryOptions): UseCanvasStoryRe
     return { ...types, ...additionalNodeTypes };
   }, [nodeTypeRegistry, nodeComponent, additionalNodeTypes]);
 
+  const edgeTypes = useMemo(() => {
+    return {
+      default: SequenceEdge,
+    };
+  }, []);
+
   const canvasProps = useMemo(
     () => ({
       nodes,
@@ -137,8 +147,9 @@ export function useCanvasStory(options: UseCanvasStoryOptions): UseCanvasStoryRe
       onEdgesChange,
       onConnect,
       nodeTypes,
+      edgeTypes,
     }),
-    [nodes, edges, onNodesChange, onEdgesChange, onConnect, nodeTypes]
+    [nodes, edges, onNodesChange, onEdgesChange, onConnect, nodeTypes, edgeTypes]
   );
 
   return {
@@ -146,6 +157,7 @@ export function useCanvasStory(options: UseCanvasStoryOptions): UseCanvasStoryRe
     setNodes,
     onNodesChange,
     edges,
+    edgeTypes,
     setEdges,
     onEdgesChange,
     onConnect,

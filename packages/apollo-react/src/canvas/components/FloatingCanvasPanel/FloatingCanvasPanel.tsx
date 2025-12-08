@@ -1,4 +1,5 @@
 import React, { type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { ViewportPortal } from "@uipath/uix/xyflow/react";
 import { type Placement } from "@floating-ui/react";
 import { CanvasPortal } from "./CanvasPortal";
@@ -32,6 +33,13 @@ export type FloatingCanvasPanelProps = {
   placement?: Placement;
   offset?: number;
   isPinned?: boolean;
+  /**
+   * When true, the panel uses fixed positioning and anchorRect is treated as screen-space
+   * coordinates (e.g., from getBoundingClientRect). When false (default), the panel uses
+   * flow-space coordinates that respect canvas zoom/pan.
+   * This is useful when anchoring to elements outside the canvas (like toolbar buttons).
+   */
+  useFixedPosition?: boolean;
 
   // Header/content
   title?: ReactNode;
@@ -49,6 +57,7 @@ export function FloatingCanvasPanel({
   placement = "right-start",
   offset = 20,
   isPinned = false,
+  useFixedPosition = false,
   title,
   header,
   headerActions,
@@ -66,6 +75,76 @@ export function FloatingCanvasPanel({
 
   if (!open || !computedAnchor) return null;
 
+  // For fixed positioning, render everything to document.body
+  // We calculate position manually since floating-ui doesn't handle fixed positioning well
+  if (useFixedPosition && anchorRect) {
+    // Calculate position based on placement
+    // For "top" placement: position above the anchor, centered horizontally
+    const getScreenSpacePosition = () => {
+      const anchorCenterX = computedAnchor.x + computedAnchor.width / 2;
+
+      switch (placement) {
+        case "top":
+        case "top-start":
+        case "top-end":
+          return {
+            left: anchorCenterX,
+            bottom: window.innerHeight - computedAnchor.y + offset,
+            transform: "translateX(-50%)",
+          };
+        case "bottom":
+        case "bottom-start":
+        case "bottom-end":
+          return {
+            left: anchorCenterX,
+            top: computedAnchor.y + computedAnchor.height + offset,
+            transform: "translateX(-50%)",
+          };
+        case "right":
+        case "right-start":
+        case "right-end":
+          return {
+            left: computedAnchor.x + computedAnchor.width + offset,
+            top: computedAnchor.y,
+          };
+        case "left":
+        case "left-start":
+        case "left-end":
+          return {
+            right: window.innerWidth - computedAnchor.x + offset,
+            top: computedAnchor.y,
+          };
+        default:
+          return {
+            left: anchorCenterX,
+            bottom: window.innerHeight - computedAnchor.y + offset,
+            transform: "translateX(-50%)",
+          };
+      }
+    };
+
+    const screenPosition = getScreenSpacePosition();
+
+    return createPortal(
+      <PanelContainer
+        className="nodrag nopan nowheel"
+        isPinned={isPinned}
+        style={{
+          position: "fixed",
+          ...screenPosition,
+          zIndex: 10000,
+          pointerEvents: "auto",
+        }}
+      >
+        <PanelChrome title={title} header={header} headerActions={headerActions} onClose={onClose} scrollKey={scrollKey}>
+          {children}
+        </PanelChrome>
+      </PanelContainer>,
+      document.body
+    );
+  }
+
+  // Default flow-space positioning
   return (
     <>
       <ViewportPortal>

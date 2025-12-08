@@ -30,6 +30,7 @@ export const getAbsolutePosition = (node: Node, nodes: Node[]): { x: number; y: 
  * @param newNodeStyle The size (height and width) of the new node.
  * @param direction The direction the node is placed relative to source ("left" | "right" | "top" | "bottom").
  * @param offset The offset distance to shift when overlapping.
+ * @param ignoredNodeTypes Optional array of node types to ignore when calculating overlap.
  * @returns { x: number, y: number } The non-overlapping position for the new node.
  */
 export function getNonOverlappingPositionForDirection(
@@ -37,11 +38,13 @@ export function getNonOverlappingPositionForDirection(
   newNodePosition: XYPosition,
   newNodeStyle: { width: number; height: number },
   direction: "left" | "right" | "top" | "bottom",
-  offset = GRID_SPACING * 2
+  offset = GRID_SPACING * 2,
+  ignoredNodeTypes: string[] = []
 ): XYPosition {
   const isOverlapping = nodes.some(
     (node) =>
       node.id !== PREVIEW_NODE_ID &&
+      !ignoredNodeTypes.includes(node.type ?? "") &&
       node.position.x < newNodePosition.x + newNodeStyle.width &&
       node.position.x + (node.measured?.width ?? 0) > newNodePosition.x &&
       node.position.y < newNodePosition.y + newNodeStyle.height &&
@@ -57,7 +60,7 @@ export function getNonOverlappingPositionForDirection(
       // For top/bottom placement, shift horizontally (right)
       newNodePosition.x += offset;
     }
-    return getNonOverlappingPositionForDirection(nodes, newNodePosition, newNodeStyle, direction, offset);
+    return getNonOverlappingPositionForDirection(nodes, newNodePosition, newNodeStyle, direction, offset, ignoredNodeTypes);
   }
 
   return newNodePosition;

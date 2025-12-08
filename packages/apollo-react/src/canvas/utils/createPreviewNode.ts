@@ -74,7 +74,8 @@ function calculateAutoPosition(
   handlePosition: Position,
   previewNodeSize: { width: number; height: number },
   existingNodes: Node[],
-  offset = GRID_SPACING * 5
+  offset = GRID_SPACING * 5,
+  ignoredNodeTypes: string[] = []
 ): { x: number; y: number } {
   const sourceAbsolutePosition = sourceNode.parentId ? getAbsolutePosition(sourceNode, existingNodes) : sourceNode.position;
   const sourceWidth = sourceNode.measured?.width ?? 0;
@@ -134,12 +135,21 @@ function calculateAutoPosition(
   }
 
   // Find non-overlapping position
-  return getNonOverlappingPositionForDirection(nodesWithAbsolutePositions, initialPosition, previewNodeSize, direction, offset);
+  return getNonOverlappingPositionForDirection(
+    nodesWithAbsolutePositions,
+    initialPosition,
+    previewNodeSize,
+    direction,
+    offset,
+    ignoredNodeTypes
+  );
 }
 
 /**
  * Creates a preview node and edge at a specific position or calculated position
  * This is the single source of truth for preview node creation
+ *
+ * @param ignoredNodeTypes Optional array of node types to ignore when calculating overlap (e.g., ["stickyNote"])
  */
 export function createPreviewNode(
   sourceNodeId: string,
@@ -149,7 +159,8 @@ export function createPreviewNode(
   data?: Record<string, any>,
   sourceHandleType: "source" | "target" = "source",
   previewNodeSize: { width: number; height: number } = { width: DEFAULT_NODE_SIZE, height: DEFAULT_NODE_SIZE },
-  handlePosition: Position = Position.Right
+  handlePosition: Position = Position.Right,
+  ignoredNodeTypes: string[] = []
 ): { node: Node; edge: Edge } | null {
   const sourceNode = reactFlowInstance.getNode(sourceNodeId);
   if (!sourceNode) {
@@ -170,7 +181,9 @@ export function createPreviewNode(
         sourceNode,
         effectiveHandlePosition,
         previewNodeSize,
-        reactFlowInstance.getNodes().filter((n) => n.id !== PREVIEW_NODE_ID)
+        reactFlowInstance.getNodes().filter((n) => n.id !== PREVIEW_NODE_ID),
+        undefined,
+        ignoredNodeTypes
       );
 
   // Calculate handle positions for the preview node
