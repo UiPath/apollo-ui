@@ -10,6 +10,14 @@ export default withNextra({
             "next-mdx-import-source-file": "./mdx-components.tsx",
         },
     },
+    async rewrites() {
+        return [
+            {
+                source: "/identity_",
+                destination: "https://alpha.uipath.com/identity_",
+            },
+        ];
+    },
     async headers() {
         return [
             {
