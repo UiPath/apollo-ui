@@ -492,6 +492,16 @@
             ]
         },
         {
+            "name": "shell",
+            "type": "registry:ui",
+            "title": "Shell",
+            "description": "Provides UiPath authentication and renders children only when authenticated.",
+            "dependencies": ["@uipath/auth-react"],
+            "files": [
+                { "path": "registry/shell/shell.tsx", "type": "registry:ui" }
+            ]
+        },
+        {
             "name": "sidebar",
             "type": "registry:ui",
             "title": "Sidebar",
