@@ -1,6 +1,6 @@
 {
   "name": "@uipath/apollo-wind",
-  "version": "0.1.2",
+  "version": "0.1.4",
   "description": "Apollo Design System - Tailwind CSS and shadcn/ui implementation",
   "repository": {
     "type": "git",
