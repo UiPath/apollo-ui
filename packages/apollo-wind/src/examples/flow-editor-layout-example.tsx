@@ -1,10 +1,9 @@
-import { Copy, MoreVertical, Play, Plus, StickyNote } from "lucide-react";
+import { Copy, MoreVertical, Play, Plus } from "lucide-react";
 import * as React from "react";
 import { Button } from "@/components/ui/button";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Row, Column } from "@/components/ui/layout";
 import { cn } from "@/lib";
