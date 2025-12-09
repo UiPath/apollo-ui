@@ -4,7 +4,7 @@ import type { ProcessOption, RecentProject } from "./flow-start-example";
 import { FlowStartExample } from "./flow-start-example";
 
 const meta = {
-  title: "Examples/Flow Start",
+  title: "Examples/Flow/Start",
   component: FlowStartExample,
   parameters: {
     layout: "fullscreen",
