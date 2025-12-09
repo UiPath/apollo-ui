@@ -172,19 +172,31 @@ export const ThemeProvider = ({
             "(prefers-color-scheme: dark)",
         );
 
-        const handleStorageChange = () => {
+        const handleThemeChange = () => {
             applyTheme(theme);
         };
 
+        // Listen to system theme changes if in system mode
         if (storedTheme === "system") {
-            systemThemeQuery.addEventListener("change", handleStorageChange);
+            systemThemeQuery.addEventListener("change", handleThemeChange);
         }
 
-        return () => {
-            systemThemeQuery.removeEventListener("change", handleStorageChange);
-            window.removeEventListener("storage", handleStorageChange);
-            const root = document.documentElement;
+        // Listen to storage changes (for cross-tab updates)
+        window.addEventListener("storage", handleThemeChange);
 
+        // Watch for class changes on the html element (for same-tab light/dark toggle)
+        const observer = new MutationObserver(handleThemeChange);
+        observer.observe(document.documentElement, {
+            attributes: true,
+            attributeFilter: ["class"],
+        });
+
+        return () => {
+            systemThemeQuery.removeEventListener("change", handleThemeChange);
+            window.removeEventListener("storage", handleThemeChange);
+            observer.disconnect();
+
+            const root = document.documentElement;
             for (const cssVar of Object.values(cssVarMap)) {
                 root.style.removeProperty(cssVar);
             }
