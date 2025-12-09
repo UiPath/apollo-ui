@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { useChatService } from '../providers/chat-service.provider.react';
+import { useChatService } from '../providers/chat-service.provider';
 import type { AutopilotChatMessage } from '../service';
 import { AutopilotChatEvent } from '../service';
 

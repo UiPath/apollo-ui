@@ -1,6 +1,6 @@
 import type { ITreeNode } from '@uipath/apollo-angular-elements';
 
-import type { ApTreeViewItem } from '../../../../ap-tree-view/ap-tree-view.react';
+import type { ApTreeViewItem } from '../../../../ap-tree-view/ap-tree-view';
 import type { TSpan } from '../../../service';
 
 export type ToolData = TSpan & {

@@ -1,2 +1,2 @@
-export * from './full-screen-layout.react';
-export * from './standard-layout.react';
+export * from './full-screen-layout';
+export * from './standard-layout';

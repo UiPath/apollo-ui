@@ -10,10 +10,10 @@ import {
 import token, { FontVariantToken } from '@uipath/apollo-core';
 
 import { t } from '../../../../utils/localization/loc';
-import { useChatState } from '../../providers/chat-state-provider.react';
+import { useChatState } from '../../providers/chat-state-provider';
 import { AutopilotChatInternalEvent } from '../../service';
-import { AutopilotChatActionButton } from './action-button.react';
-import { AutopilotChatTooltip } from './tooltip.react';
+import { AutopilotChatActionButton } from './action-button';
+import { AutopilotChatTooltip } from './tooltip';
 
 export interface DropdownOption<T = string> {
     id: T;
