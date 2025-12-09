@@ -1,3 +1,15 @@
+# [1.11.0](https://github.com/uipath/wind/compare/v1.10.0...v1.11.0) (2025-12-09)
+
+
+### Bug Fixes
+
+* remove unused imports in flow-editor-layout example ([ff93866](https://github.com/uipath/wind/commit/ff93866a13483f2e844960630504a49f579a0bbf))
+
+
+### Features
+
+* update Switch component styles and add FlowEditorLayout example stories ([4f25b66](https://github.com/uipath/wind/commit/4f25b66a77b1469db18dd5a77b22c84f77cbf082))
+
 # [1.10.0](https://github.com/uipath/wind/compare/v1.9.0...v1.10.0) (2025-12-05)
 
 
