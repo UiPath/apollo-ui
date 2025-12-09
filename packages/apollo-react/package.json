@@ -18,23 +18,28 @@
     },
     "./material": {
       "types": "./dist/material/index.d.ts",
-      "import": "./dist/material.js",
-      "require": "./dist/material.cjs"
-    },
-    "./material/components": {
-      "types": "./dist/material/components/index.d.ts",
-      "import": "./dist/material/components.js",
-      "require": "./dist/material/components.cjs"
+      "import": "./dist/material/index.js",
+      "require": "./dist/material/index.cjs"
     },
     "./material/theme": {
       "types": "./dist/material/theme/index.d.ts",
-      "import": "./dist/material/theme.js",
-      "require": "./dist/material/theme.cjs"
+      "import": "./dist/material/theme/index.js",
+      "require": "./dist/material/theme/index.cjs"
+    },
+    "./material/components": {
+      "types": "./dist/material/components/index.d.ts",
+      "import": "./dist/material/components/index.js",
+      "require": "./dist/material/components/index.cjs"
+    },
+    "./material/components/*": {
+      "types": "./dist/material/components/*.d.ts",
+      "import": "./dist/material/components/*.js",
+      "require": "./dist/material/components/*.cjs"
     },
     "./core": {
       "types": "./dist/core/index.d.ts",
-      "import": "./dist/core.js",
-      "require": "./dist/core.cjs"
+      "import": "./dist/core/index.js",
+      "require": "./dist/core/index.cjs"
     },
     "./core/tokens/*": "./dist/core/tokens/*",
     "./icons": {
@@ -53,10 +58,9 @@
     "dist"
   ],
   "scripts": {
-    "build": "pnpm run build:icons && rslib build && pnpm run build:icons:compile",
+    "build": "pnpm run build:icons && rslib build",
     "build:analyze": "ANALYZE=true pnpm run build",
     "build:icons": "tsx scripts/icons-build.ts",
-    "build:icons:compile": "tsx scripts/icons-compile.ts",
     "dev": "rslib build --watch",
     "lint": "eslint src --ext .ts,.tsx",
     "lint:fix": "eslint src --ext .ts,.tsx --fix",
