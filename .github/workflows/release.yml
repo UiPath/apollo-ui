@@ -79,7 +79,7 @@ jobs:
             CHANGED_PACKAGES=$(git diff --name-only | grep 'packages/\|web-packages/' | cut -d'/' -f2 | sort -u | tr '\n' ', ' | sed 's/,$//')
 
             git add --all
-            git commit -m "chore(release): $CHANGED_PACKAGES [skip ci]"
+            git commit -m "chore(release): version bump [skip ci]" -m "Packages: $CHANGED_PACKAGES"
             git push
           else
             echo "No changes to commit"

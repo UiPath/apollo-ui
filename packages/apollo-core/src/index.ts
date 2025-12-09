@@ -16,10 +16,6 @@ import {
   Typography,
 } from './tokens';
 
-export * from './fonts';
-export * from './icons';
-export * from './tokens';
-
 export default {
   Colors,
   ScreenSizes,
@@ -34,3 +30,7 @@ export default {
   FontVariantToken,
   HeaderVariants,
 }
+
+export * from './fonts';
+export * from './icons';
+export * from './tokens';
