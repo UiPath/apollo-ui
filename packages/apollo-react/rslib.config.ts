@@ -51,16 +51,26 @@ export default defineConfig({
     ],
   },
   tools: {
-    rspack: enableAnalyzer
-      ? {
-          plugins: [
-            new BundleAnalyzerPlugin({
-              analyzerMode: 'static',
-              openAnalyzer: true,
-              reportFilename: '../bundle-report.html',
-            }),
-          ],
-        }
-      : {},
+    rspack: {
+      ...(enableAnalyzer
+        ? {
+            plugins: [
+              new BundleAnalyzerPlugin({
+                analyzerMode: 'static',
+                openAnalyzer: true,
+                reportFilename: '../bundle-report.html',
+              }),
+            ],
+          }
+        : {}),
+      module: {
+        rules: [
+          {
+            test: /\.svg$/,
+            type: 'asset/inline',
+          },
+        ],
+      },
+    },
   },
 });
