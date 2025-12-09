@@ -1,21 +1,19 @@
-/** @jsx React.createElement */
-/** @jsxFrag React.Fragment */
+import React from 'react';
 
 import {
-    styled,
-    useTheme,
+  styled,
+  useTheme,
 } from '@mui/material';
-import token from '@uipath/apollo-core/lib';
-import {
-    AutopilotChatEvent,
-    AutopilotChatHistory,
-} from '@uipath/portal-shell-util';
-import React from 'react';
+import token from '@uipath/apollo-core';
 
 import { t } from '../../../../utils/localization/loc';
 import { useChatService } from '../../providers/chat-service.provider.react';
 import { useChatState } from '../../providers/chat-state-provider.react';
 import { useLoading } from '../../providers/loading-provider.react';
+import {
+  AutopilotChatEvent,
+  AutopilotChatHistory,
+} from '../../service';
 import { AutopilotChatActionButton } from '../common/action-button.react';
 
 const GroupItem = styled('div')<{ isActive: boolean; showRemoveIcon: boolean }>(({

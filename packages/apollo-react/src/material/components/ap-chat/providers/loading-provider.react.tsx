@@ -1,14 +1,12 @@
-/** @jsx React.createElement */
-/** @jsxFrag React.Fragment */
-import {
-    AutopilotChatEvent,
-    AutopilotChatInterceptableEvent,
-    AutopilotChatInternalEvent,
-    AutopilotChatMessage,
-    AutopilotChatRole,
-} from '@uipath/portal-shell-util';
 import React from 'react';
 
+import {
+  AutopilotChatEvent,
+  AutopilotChatInterceptableEvent,
+  AutopilotChatInternalEvent,
+  AutopilotChatMessage,
+  AutopilotChatRole,
+} from '../service';
 import { useChatService } from './chat-service.provider.react';
 
 interface AutopilotLoadingContextType {

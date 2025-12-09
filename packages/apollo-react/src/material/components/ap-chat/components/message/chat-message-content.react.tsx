@@ -1,27 +1,25 @@
-/** @jsx React.createElement */
-/** @jsxFrag React.Fragment */
+import React from 'react';
 
 import { styled } from '@mui/material';
-import token from '@uipath/apollo-core/lib';
-import {
-    AGENTS_TOOL_CALL_RENDERER,
-    APOLLO_CHAT_TREE_RENDERER,
-    AutopilotChatEvent,
-    AutopilotChatInternalEvent,
-    AutopilotChatMessage,
-    AutopilotChatMode,
-    AutopilotChatRole,
-    CHAT_MESSAGE_MAX_PADDING,
-    CHAT_WIDTH_KEY,
-    CHAT_WIDTH_SIDE_BY_SIDE_MIN,
-    DEFAULT_MESSAGE_RENDERER,
-    StorageService,
-} from '@uipath/portal-shell-util';
-import React from 'react';
+import token from '@uipath/apollo-core';
 
 import { ApToolCallReact } from '../../../ap-tool-call/ap-tool-call.react';
 import { useChatService } from '../../providers/chat-service.provider.react';
 import { useChatState } from '../../providers/chat-state-provider.react';
+import {
+  AGENTS_TOOL_CALL_RENDERER,
+  APOLLO_CHAT_TREE_RENDERER,
+  AutopilotChatEvent,
+  AutopilotChatInternalEvent,
+  AutopilotChatMessage,
+  AutopilotChatMode,
+  AutopilotChatRole,
+  CHAT_MESSAGE_MAX_PADDING,
+  CHAT_WIDTH_KEY,
+  CHAT_WIDTH_SIDE_BY_SIDE_MIN,
+  DEFAULT_MESSAGE_RENDERER,
+  StorageService,
+} from '../../service';
 import { calculateDynamicPadding } from '../../utils/dynamic-padding';
 import { Attachments } from '../common/attachments.react';
 import { AutopilotChatMessageActions } from './actions/chat-actions.react';

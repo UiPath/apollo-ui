@@ -1,19 +1,17 @@
-/** @jsx React.createElement */
-/** @jsxFrag React.Fragment */
+import React from 'react';
 
 import { styled } from '@mui/material/styles';
-import token from '@uipath/apollo-core/lib';
-import {
-    AutopilotChatMode,
-    AutopilotChatPreHookAction,
-} from '@uipath/portal-shell-util';
-import React from 'react';
+import token from '@uipath/apollo-core';
 
 import { t } from '../../../../utils/localization/loc';
 import { useAttachments } from '../../providers/attachements-provider.react';
 import { useChatService } from '../../providers/chat-service.provider.react';
 import { useChatState } from '../../providers/chat-state-provider.react';
 import { usePicker } from '../../providers/picker-provider.react';
+import {
+  AutopilotChatMode,
+  AutopilotChatPreHookAction,
+} from '../../service';
 import { AutopilotChatActionButton } from '../common/action-button.react';
 import { AutopilotChatHeaderActionMenu } from './header-action-menu.react';
 

@@ -1,18 +1,15 @@
-/** @jsx React.createElement */
-/** @jsxFrag React.Fragment */
-
-import {
-    AutopilotChatEvent,
-    AutopilotChatMessage,
-    AutopilotChatPreHookAction,
-    AutopilotChatRole,
-} from '@uipath/portal-shell-util';
 import React, { useEffect } from 'react';
 
 import { t } from '../../../../../utils/localization/loc';
 import { useIsStreamingMessage } from '../../../hooks/use-is-streaming-message';
 import { useChatService } from '../../../providers/chat-service.provider.react';
 import { useChatState } from '../../../providers/chat-state-provider.react';
+import {
+  AutopilotChatEvent,
+  AutopilotChatMessage,
+  AutopilotChatPreHookAction,
+  AutopilotChatRole,
+} from '../../../service';
 import { AutopilotChatActionsList } from './chat-actions-list.react';
 
 interface AutopilotChatMessageActionsProps {

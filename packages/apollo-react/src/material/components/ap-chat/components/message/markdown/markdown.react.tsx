@@ -1,56 +1,55 @@
-/** @jsx React.createElement */
-/** @jsxFrag React.Fragment */
-
 // Import Katex CSS
 import 'katex/dist/katex.min.css';
 
-import { styled } from '@mui/material';
-import token from '@uipath/apollo-core/lib';
-import {
-    AutopilotChatEvent,
-    AutopilotChatMessage,
-} from '@uipath/portal-shell-util';
-import { all } from 'lowlight';
 import React from 'react';
+
+import { all } from 'lowlight';
 import ReactMarkdown from 'react-markdown';
 import rehypeHighlight from 'rehype-highlight';
 import rehypeKatex from 'rehype-katex';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 
+import { styled } from '@mui/material';
+import token from '@uipath/apollo-core';
+
 import { t } from '../../../../../utils/localization/loc';
 import { useIsStreamingMessage } from '../../../hooks/use-is-streaming-message';
 import { useChatService } from '../../../providers/chat-service.provider.react';
 import { useChatState } from '../../../providers/chat-state-provider.react';
 import { useStreaming } from '../../../providers/streaming-provider.react';
+import {
+  AutopilotChatEvent,
+  AutopilotChatMessage,
+} from '../../../service';
 import { Citation } from './citation.react';
 import { Code } from './code.react';
 import {
-    Li,
-    Ol,
-    Ul,
+  Li,
+  Ol,
+  Ul,
 } from './lists.react';
 import {
-    citationPlugin,
-    contentPartsToMarkdown,
+  citationPlugin,
+  contentPartsToMarkdown,
 } from './parsers/citation-parser';
 import {
-    Cell,
-    HeaderCell,
-    Row,
-    Table,
-    TableHeader,
+  Cell,
+  HeaderCell,
+  Row,
+  Table,
+  TableHeader,
 } from './table.react';
 import {
-    Blockquote,
-    Break,
-    Del,
-    Emphazised,
-    getTextForVariant,
-    Hr,
-    Link,
-    Pre,
-    Strong,
+  Blockquote,
+  Break,
+  Del,
+  Emphazised,
+  getTextForVariant,
+  Hr,
+  Link,
+  Pre,
+  Strong,
 } from './text.react';
 
 const StyledMarkdown = React.memo(

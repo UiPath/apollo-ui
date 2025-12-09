@@ -1,16 +1,14 @@
-/** @jsx React.createElement */
-/** @jsxFrag React.Fragment */
-
-import {
-    Table as MuiTable,
-    TableCell,
-    TableHead,
-    TableRow,
-    useTheme,
-} from '@mui/material';
-import token from '@uipath/apollo-core/lib';
 import type { ReactNode } from 'react';
 import React from 'react';
+
+import {
+  Table as MuiTable,
+  TableCell,
+  TableHead,
+  TableRow,
+  useTheme,
+} from '@mui/material';
+import token from '@uipath/apollo-core';
 
 import { useChatState } from '../../../providers/chat-state-provider.react';
 import { Text } from './text.react';

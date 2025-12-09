@@ -1,27 +1,25 @@
-/** @jsx React.createElement */
-/** @jsxFrag React.Fragment */
+import React, { useMemo } from 'react';
 
 import { styled } from '@mui/material';
-import token from '@uipath/apollo-core/lib';
-import {
-    AutopilotChatActionPayload,
-    AutopilotChatEvent,
-    AutopilotChatInterceptableEvent,
-    AutopilotChatInternalEvent,
-    AutopilotChatMessage,
-    AutopilotChatRole,
-    AutopilotChatSuggestion,
-} from '@uipath/portal-shell-util';
-import React, { useMemo } from 'react';
+import token from '@uipath/apollo-core';
 
 import { useChatService } from '../../providers/chat-service.provider.react';
 import { useChatState } from '../../providers/chat-state-provider.react';
 import { useLoading } from '../../providers/loading-provider.react';
+import {
+  AutopilotChatActionPayload,
+  AutopilotChatEvent,
+  AutopilotChatInterceptableEvent,
+  AutopilotChatInternalEvent,
+  AutopilotChatMessage,
+  AutopilotChatRole,
+  AutopilotChatSuggestion,
+} from '../../service';
 import { SkeletonLoader } from '../common/skeleton-loader.react';
 import { AutopilotChatMessageContent } from './chat-message-content.react';
 import { AutopilotChatFRE } from './first-run-experience/chat-fre.react';
-import { AutopilotChatLoading } from './loader/chat-loading.react';
 import { AutopilotChatLoadingMessages } from './loader/chat-loading-messages.react';
+import { AutopilotChatLoading } from './loader/chat-loading.react';
 import { AutopilotChatSuggestions } from './suggestions/chat-suggestions.react';
 
 const MessageContainer = styled('div')(({

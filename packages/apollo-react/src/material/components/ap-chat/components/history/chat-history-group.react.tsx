@@ -1,17 +1,14 @@
-/** @jsx React.createElement */
-/** @jsxFrag React.Fragment */
-
-import {
-    styled,
-    useTheme,
-} from '@mui/material';
-import { FontVariantToken } from '@uipath/apollo-core';
-import token from '@uipath/apollo-core/lib';
 import React from 'react';
 
+import {
+  styled,
+  useTheme,
+} from '@mui/material';
+import token, { FontVariantToken } from '@uipath/apollo-core';
+
 import { useChatState } from '../../providers/chat-state-provider.react';
-import { ChatHistoryGroup } from './chat-history.react';
 import { AutopilotChatHistoryItem } from './chat-history-item.react';
+import { ChatHistoryGroup } from './chat-history.react';
 
 const GroupContainer = styled('div')<{ compactMode: boolean }>(({ compactMode }) => (
     { marginBottom: compactMode ? token.Spacing.SpacingXs : token.Spacing.SpacingBase }

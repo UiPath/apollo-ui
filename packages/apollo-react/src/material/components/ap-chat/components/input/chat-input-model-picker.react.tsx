@@ -1,6 +1,3 @@
-/** @jsx React.createElement */
-/** @jsxFrag React.Fragment */
-
 import React from 'react';
 
 import { t } from '../../../../utils/localization/loc';

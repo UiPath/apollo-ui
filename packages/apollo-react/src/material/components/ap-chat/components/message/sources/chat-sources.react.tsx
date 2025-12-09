@@ -1,31 +1,29 @@
-/** @jsx React.createElement */
-/** @jsxFrag React.Fragment */
+import React, {
+  useCallback,
+  useEffect,
+  useState,
+} from 'react';
 
 import {
-    Box,
-    Collapse,
-    styled,
-    Tooltip,
-    useTheme,
+  Box,
+  Collapse,
+  styled,
+  Tooltip,
+  useTheme,
 } from '@mui/material';
 import token from '@uipath/apollo-core';
-import {
-    AutopilotChatEvent,
-    AutopilotChatMessage,
-    AutopilotChatPreHookAction,
-    PdfCitation,
-    UrlCitation,
-} from '@uipath/portal-shell-util';
-import React, {
-    useCallback,
-    useEffect,
-    useState,
-} from 'react';
 
 import { t } from '../../../../../utils/localization/loc';
 import { useIsStreamingMessage } from '../../../hooks/use-is-streaming-message';
 import { useChatService } from '../../../providers/chat-service.provider.react';
 import { useChatState } from '../../../providers/chat-state-provider.react';
+import {
+  AutopilotChatEvent,
+  AutopilotChatMessage,
+  AutopilotChatPreHookAction,
+  PdfCitation,
+  UrlCitation,
+} from '../../../service';
 
 interface AutopilotChatSourcesProps {
     groupId: string;

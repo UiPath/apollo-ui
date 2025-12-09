@@ -1,8 +1,8 @@
 import {
-    useCallback,
-    useEffect,
-    useRef,
-    useState,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
 } from 'react';
 
 interface AudioQueueItem {
@@ -86,7 +86,6 @@ export const useAudioOutput = (
             };
 
             workerRef.current.onerror = (error) => {
-                // eslint-disable-next-line no-console
                 console.error('[AudioPlayer] Worker error:', error);
             };
         }
@@ -136,7 +135,7 @@ export const useAudioOutput = (
         // Create AudioBuffer at the correct sample rate
         const sourceSampleRate = 24000; // Gemini's audio sample rate
         const audioBuffer = audioContext.createBuffer(1, floatData.length, sourceSampleRate);
-        audioBuffer.copyToChannel(floatData, 0);
+        audioBuffer.copyToChannel(floatData as Float32Array<ArrayBuffer>, 0);
 
         return audioBuffer;
     }, [ initAudioContext, initWorker ]);
@@ -243,7 +242,6 @@ export const useAudioOutput = (
                     nextStartTimeRef.current = startTime + audioBuffer.duration;
 
                 } catch (error) {
-                    // eslint-disable-next-line no-console
                     console.error('[AudioPlayer] Error processing audio:', error);
                 }
             }
@@ -266,7 +264,6 @@ export const useAudioOutput = (
 
         // Sample rate needs to match sourceSampleRate value used above.
         if (mimeType != 'audio/pcm;rate=24000') {
-            // eslint-disable-next-line no-console
             console.error(`Unexpected mime type for audio output: {mimeType}`);
             return;
         }
@@ -274,7 +271,6 @@ export const useAudioOutput = (
         // Zero sequence number means a new stream, so no warning. If 0 isn't received first, we should get an out of
         // order 1, causing a warning. Then maybe the 0 (no warning) and then 2 (another warning).
         if (sequenceNumber != 0 && sequenceNumber != sequenceNumberRef.current) {
-            // eslint-disable-next-line no-console
             console.warn(`[AudioPlayer] sequence number ${sequenceNumber} received when ${sequenceNumberRef.current} was expected.`);
         }
         sequenceNumberRef.current = sequenceNumber + 1;
@@ -291,7 +287,6 @@ export const useAudioOutput = (
                     isDecodingRef.current.delete(base64Data);
                 })
                 .catch((error) => {
-                    // eslint-disable-next-line no-console
                     console.error('[AudioPlayer] Error preloading audio:', error);
                     isDecodingRef.current.delete(base64Data);
                 });

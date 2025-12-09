@@ -1,20 +1,18 @@
-/** @jsx React.createElement */
-/** @jsxFrag React.Fragment */
+import React from 'react';
 
 import {
-    styled,
-    Theme,
+  styled,
+  Theme,
 } from '@mui/material';
-import token from '@uipath/apollo-core/lib';
-import {
-    AutopilotChatConfiguration,
-    AutopilotChatMode,
-    CHAT_WIDTH_FULL_SCREEN_MAX_WIDTH,
-} from '@uipath/portal-shell-util';
-import React from 'react';
+import token from '@uipath/apollo-core';
 
 import { useChatScroll } from '../../providers/chat-scroll-provider.react';
 import { useChatState } from '../../providers/chat-state-provider.react';
+import {
+  AutopilotChatConfiguration,
+  AutopilotChatMode,
+  CHAT_WIDTH_FULL_SCREEN_MAX_WIDTH,
+} from '../../service';
 import { AutopilotChatMessages } from './chat-message.react';
 import { AutopilotChatScrollToBottomButton } from './chat-scroll-to-bottom.react';
 

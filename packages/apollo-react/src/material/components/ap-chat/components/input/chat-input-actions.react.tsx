@@ -1,12 +1,10 @@
-/** @jsx React.createElement */
-/** @jsxFrag React.Fragment */
+import React from 'react';
 
 import {
-    styled,
-    useTheme,
+  styled,
+  useTheme,
 } from '@mui/material';
-import token, { FontVariantToken } from '@uipath/apollo-core/lib';
-import React from 'react';
+import token, { FontVariantToken } from '@uipath/apollo-core';
 
 import { t } from '../../../../utils/localization/loc';
 import { useAttachments } from '../../providers/attachements-provider.react';

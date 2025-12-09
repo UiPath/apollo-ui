@@ -1,6 +1,3 @@
-/** @jsx React.createElement */
-/** @jsxFrag React.Fragment */
-
 import { styled } from '@mui/material';
 
 export const VisuallyHidden = styled('span')({

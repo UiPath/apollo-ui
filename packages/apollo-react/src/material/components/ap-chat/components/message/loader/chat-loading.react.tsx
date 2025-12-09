@@ -1,14 +1,10 @@
-/** @jsx React.createElement */
-/** @jsxFrag React.Fragment */
-
 import {
-    keyframes,
-    styled,
+  keyframes,
+  styled,
 } from '@mui/material';
-import { CHAT_LOADER_GRADIENT_WIDTH } from '@uipath/portal-shell-util';
-import React from 'react';
 
 import { useLoading } from '../../../providers/loading-provider.react';
+import { CHAT_LOADER_GRADIENT_WIDTH } from '../../../service';
 import { LoadingMessage } from './chat-loading-text.react';
 
 const shimmerAnimation = keyframes`

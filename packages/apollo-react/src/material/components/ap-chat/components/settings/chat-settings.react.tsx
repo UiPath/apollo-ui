@@ -1,17 +1,16 @@
-/** @jsx React.createElement */
-/** @jsxFrag React.Fragment */
+import React, {
+  useEffect,
+  useRef,
+} from 'react';
+
+import FocusLock from 'react-focus-lock';
 
 import { styled } from '@mui/material';
-import token from '@uipath/apollo-core/lib';
-import { CHAT_DRAWER_WIDTH_FULL_SCREEN } from '@uipath/portal-shell-util';
-import React, {
-    useEffect,
-    useRef,
-} from 'react';
-import FocusLock from 'react-focus-lock';
+import token from '@uipath/apollo-core';
 
 import { useChatService } from '../../providers/chat-service.provider.react';
 import { useChatState } from '../../providers/chat-state-provider.react';
+import { CHAT_DRAWER_WIDTH_FULL_SCREEN } from '../../service';
 import { AutopilotChatSettingsHeader } from './chat-settings-header.react';
 
 const ChatSettingsContainer = styled('div')<{ isOpen: boolean; isFullScreen: boolean }>(({
@@ -86,7 +85,6 @@ export const AutopilotChatSettings: React.FC<AutopilotChatSettingsProps> = ({
             settingsRenderer(containerRef.current);
         } catch (error) {
             if ((globalThis as any)['__StencilReactAdapter_EnableDebugging']) {
-                // eslint-disable-next-line no-console
                 console.warn('Could not render settings:', error);
             }
         }

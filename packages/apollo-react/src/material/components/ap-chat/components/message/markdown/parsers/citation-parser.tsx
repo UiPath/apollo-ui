@@ -1,9 +1,9 @@
-/* eslint-disable no-console */
-import {
-    CHAT_CITATION_START,
-    type ContentPart,
-} from '@uipath/portal-shell-util';
 import { visit } from 'unist-util-visit';
+
+import {
+  CHAT_CITATION_START,
+  type ContentPart,
+} from '../../../../service';
 
 /**
  * Citation plugin that finds citation markers within text nodes and places citation components at exact positions
@@ -55,7 +55,6 @@ export function citationPlugin() {
                             children: [],
                         });
                     } catch (e) {
-                        // eslint-disable-next-line no-console
                         console.error('[CitationPlugin] Failed to parse citation data:', e);
                     }
                 } else {

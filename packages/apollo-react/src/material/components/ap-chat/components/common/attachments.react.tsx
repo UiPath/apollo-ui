@@ -1,17 +1,15 @@
-/** @jsx React.createElement */
-/** @jsxFrag React.Fragment */
+import React from 'react';
 
 import { styled } from '@mui/material';
-import token from '@uipath/apollo-core/lib';
-import {
-    AutopilotChatFileInfo,
-    AutopilotChatFileType,
-} from '@uipath/portal-shell-util';
-import React from 'react';
+import token from '@uipath/apollo-core';
 
 import { t } from '../../../../utils/localization/loc';
 import { ApProgressSpinnerReact } from '../../../ap-progress-spinner/ap-progress-spinner.react';
 import { useChatState } from '../../providers/chat-state-provider.react';
+import {
+  AutopilotChatFileInfo,
+  AutopilotChatFileType,
+} from '../../service';
 import { fileToIcon } from '../../utils/file-to-icon';
 import { AutopilotChatActionButton } from './action-button.react';
 import { AutopilotChatTooltip } from './tooltip.react';

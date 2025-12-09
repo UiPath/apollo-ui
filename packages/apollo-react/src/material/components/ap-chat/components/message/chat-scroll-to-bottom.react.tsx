@@ -1,17 +1,15 @@
-/** @jsx React.createElement */
-/** @jsxFrag React.Fragment */
+import React from 'react';
 
 import { styled } from '@mui/material';
-import token from '@uipath/apollo-core/lib';
-import {
-    AutopilotChatEvent,
-    AutopilotChatInternalEvent,
-} from '@uipath/portal-shell-util';
-import React from 'react';
+import token from '@uipath/apollo-core';
 
 import { t } from '../../../../utils/localization/loc';
 import { useChatScroll } from '../../providers/chat-scroll-provider.react';
 import { useChatService } from '../../providers/chat-service.provider.react';
+import {
+  AutopilotChatEvent,
+  AutopilotChatInternalEvent,
+} from '../../service';
 import { AutopilotChatActionButton } from '../common/action-button.react';
 
 const ScrollButtonContainer = styled('div')<{ visible: boolean; bottom: number; left: number }>(({

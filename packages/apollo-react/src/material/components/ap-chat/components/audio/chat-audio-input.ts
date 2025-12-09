@@ -109,7 +109,6 @@ export const useAudioInput = (
             };
 
             encoderWorkerRef.current.onerror = (eventError) => {
-                // eslint-disable-next-line no-console
                 console.error('[AudioInput] Encoder worker error:', eventError);
             };
         }
@@ -238,7 +237,6 @@ export const useAudioInput = (
                         handleAudioInputData?.(MIME_TYPE, base64Data, sequenceNumberRef.current++);
 
                     } catch (e) {
-                        // eslint-disable-next-line no-console
                         console.error('[AudioInput] Error encoding audio:', e);
                     }
                 }
@@ -262,7 +260,6 @@ export const useAudioInput = (
             return true;
 
         } catch (err) {
-            // eslint-disable-next-line no-console
             console.error('Error starting audio input:', err);
             setError(err instanceof Error ? err.message : 'Failed to start audio input');
 

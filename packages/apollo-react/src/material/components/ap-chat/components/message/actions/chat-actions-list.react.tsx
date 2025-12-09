@@ -1,23 +1,21 @@
-/** @jsx React.createElement */
-/** @jsxFrag React.Fragment */
+import React from 'react';
 
 import {
-    Menu,
-    MenuItem,
-    styled,
+  Menu,
+  MenuItem,
+  styled,
 } from '@mui/material';
-import token from '@uipath/apollo-core/lib';
-import {
-    AutopilotChatActionPayload,
-    AutopilotChatMessage,
-    AutopilotChatMessageAction,
-    AutopilotChatPreHookAction,
-    AutopilotChatRole,
-} from '@uipath/portal-shell-util';
-import React from 'react';
+import token from '@uipath/apollo-core';
 
 import { t } from '../../../../../utils/localization/loc';
 import { useChatService } from '../../../providers/chat-service.provider.react';
+import {
+  AutopilotChatActionPayload,
+  AutopilotChatMessage,
+  AutopilotChatMessageAction,
+  AutopilotChatPreHookAction,
+  AutopilotChatRole,
+} from '../../../service';
 import { AutopilotChatActionButton } from '../../common/action-button.react';
 
 const ActionsListContainer = styled('div')<{ isRequest: boolean }>(({

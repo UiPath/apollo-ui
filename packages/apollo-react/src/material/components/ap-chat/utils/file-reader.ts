@@ -1,4 +1,4 @@
-import type { AutopilotChatFileInfo } from '@uipath/portal-shell-util';
+import type { AutopilotChatFileInfo } from '../service';
 
 /**
  * Mapping of file extensions to MIME types for cases where browsers don't detect them properly

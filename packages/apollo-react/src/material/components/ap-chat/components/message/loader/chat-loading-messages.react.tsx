@@ -1,12 +1,10 @@
-/** @jsx React.createElement */
-/** @jsxFrag React.Fragment */
+import React from 'react';
 
 import {
-    keyframes,
-    styled,
+  keyframes,
+  styled,
 } from '@mui/material';
-import token from '@uipath/apollo-core/lib';
-import React from 'react';
+import token from '@uipath/apollo-core';
 
 const fadeInOut = keyframes`
   0% { opacity: 0; }

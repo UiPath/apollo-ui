@@ -1,17 +1,15 @@
-/** @jsx React.createElement */
-/** @jsxFrag React.Fragment */
+import React from 'react';
 
 import {
-    styled,
-    TooltipProps,
+  styled,
+  TooltipProps,
 } from '@mui/material';
-import token from '@uipath/apollo-core/lib';
-import { AutopilotChatMode } from '@uipath/portal-shell-util';
-import React from 'react';
+import token from '@uipath/apollo-core';
 
 import { ApButtonReact } from '../../../ap-button/ap-button.react';
 import { ApIconButtonReact } from '../../../ap-icon-button/ap-icon-button.react';
 import { useChatState } from '../../providers/chat-state-provider.react';
+import { AutopilotChatMode } from '../../service';
 import { AutopilotChatTooltip } from './tooltip.react';
 
 const StyledButtonContainer = styled('div')(() => ({

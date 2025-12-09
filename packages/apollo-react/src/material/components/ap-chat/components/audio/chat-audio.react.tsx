@@ -1,25 +1,23 @@
-/** @jsx React.createElement */
-/** @jsxFrag React.Fragment */
-
-import {
-    keyframes,
-    styled,
-    useTheme,
-} from '@mui/material/styles';
-import {
-    AutopilotChatEvent,
-    AutopilotChatOutputStreamEvent,
-} from '@uipath/portal-shell-util';
 import React, {
-    useCallback,
-    useState,
+  useCallback,
+  useState,
 } from 'react';
 
+import {
+  keyframes,
+  styled,
+  useTheme,
+} from '@mui/material/styles';
+
 import { useChatService } from '../../providers/chat-service.provider.react';
+import {
+  AutopilotChatEvent,
+  AutopilotChatOutputStreamEvent,
+} from '../../service';
 import { AutopilotChatActionButton } from '../common/action-button.react';
 import {
-    AudioInputStartHandler,
-    useAudioInput,
+  AudioInputStartHandler,
+  useAudioInput,
 } from './chat-audio-input';
 import { useAudioOutput } from './chat-audio-output';
 
@@ -148,14 +146,12 @@ export const AutopilotChatAudio = (props: AutopilotChatAudioProps) => {
             }
 
             if (event.interrupted) {
-                // eslint-disable-next-line no-console
                 console.log('Received interrupted event, clearing queue', { ignoreOutputStreamData });
                 setIgnoreOutputStreamData(true);
                 clearOutputAudioQueue();
             }
 
             if (event.generationComplete) {
-                // eslint-disable-next-line no-console
                 console.log('Received generationComplete event, clearing ignoreOutputStreamData', { ignoreOutputStreamData });
                 setIgnoreOutputStreamData(false);
             }
@@ -200,7 +196,6 @@ export const AutopilotChatAudio = (props: AutopilotChatAudioProps) => {
                         setAudioInputMode('push-to-talk');
                     }
                 } catch (error) {
-                    // eslint-disable-next-line no-console
                     console.error(`Failed to start audio input (automatic detection): ${error}`);
                     setAudioInputState('inactive');
                     setAudioInputMode('push-to-talk');
@@ -225,7 +220,6 @@ export const AutopilotChatAudio = (props: AutopilotChatAudioProps) => {
                 setAudioInputState('inactive');
             }
         } catch (error) {
-            // eslint-disable-next-line no-console
             console.error(`Failed to start audio input (${audioInputState}): ${error}`);
             setAudioInputState('inactive');
         }

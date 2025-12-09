@@ -1,44 +1,43 @@
-/** @jsx React.createElement */
-/** @jsxFrag React.Fragment */
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
+
+import {
+  differenceInDays,
+  differenceInMonths,
+  isToday,
+  isYesterday,
+} from 'date-fns';
+import { debounce } from 'debounce';
+import FocusLock from 'react-focus-lock';
 
 import SearchIcon from '@mui/icons-material/Search';
 import {
-    CircularProgress,
-    Popover,
-    styled,
-    useTheme,
+  CircularProgress,
+  Popover,
+  styled,
+  useTheme,
 } from '@mui/material';
-import token from '@uipath/apollo-core/lib';
-import {
-    AutopilotChatEvent,
-    AutopilotChatHistory as AutopilotChatHistoryType,
-    AutopilotChatHistorySearchPayload,
-    AutopilotChatInternalEvent,
-    CHAT_HISTORY_FULL_SCREEN_WIDTH,
-    CHAT_HISTORY_SIDE_BY_SIDE_MAX_HEIGHT,
-    CHAT_HISTORY_SIDE_BY_SIDE_MAX_WIDTH,
-} from '@uipath/portal-shell-util';
-import {
-    differenceInDays,
-    differenceInMonths,
-    isToday,
-    isYesterday,
-} from 'date-fns';
-import { debounce } from 'debounce';
-import React, {
-    useCallback,
-    useEffect,
-    useMemo,
-    useRef,
-    useState,
-} from 'react';
-import FocusLock from 'react-focus-lock';
+import token from '@uipath/apollo-core';
 
 import { t } from '../../../../utils/localization/loc';
 import { ApTextFieldReact } from '../../../ap-text-field/ap-text-field.react';
 import { useChatService } from '../../providers/chat-service.provider.react';
 import { useChatState } from '../../providers/chat-state-provider.react';
 import { useChatWidth } from '../../providers/chat-width-provider.react';
+import {
+  AutopilotChatEvent,
+  AutopilotChatHistory as AutopilotChatHistoryType,
+  AutopilotChatHistorySearchPayload,
+  AutopilotChatInternalEvent,
+  CHAT_HISTORY_FULL_SCREEN_WIDTH,
+  CHAT_HISTORY_SIDE_BY_SIDE_MAX_HEIGHT,
+  CHAT_HISTORY_SIDE_BY_SIDE_MAX_WIDTH,
+} from '../../service';
 import { AutopilotChatHistoryGroup } from './chat-history-group.react';
 
 const ChatHistoryContainer = styled('div')<{ isFullScreen: boolean; width: number; fullScreenContainer: HTMLElement | null }>(({

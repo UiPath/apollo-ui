@@ -1,11 +1,8 @@
-/** @jsx React.createElement */
-/** @jsxFrag React.Fragment */
-
-import type { AutopilotChatMessage } from '@uipath/portal-shell-util';
-import { AutopilotChatEvent } from '@uipath/portal-shell-util';
 import React from 'react';
 
 import { useChatService } from '../providers/chat-service.provider.react';
+import type { AutopilotChatMessage } from '../service';
+import { AutopilotChatEvent } from '../service';
 
 export const useIsStreamingMessage = (message: AutopilotChatMessage) => {
     const chatService = useChatService();

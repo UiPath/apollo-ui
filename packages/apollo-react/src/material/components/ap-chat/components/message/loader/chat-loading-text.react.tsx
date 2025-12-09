@@ -1,19 +1,17 @@
-/** @jsx React.createElement */
-/** @jsxFrag React.Fragment */
+import {
+  useEffect,
+  useState,
+} from 'react';
 
 import {
-    Fade,
-    useTheme,
+  Fade,
+  useTheme,
 } from '@mui/material';
-import { AutopilotChatEvent } from '@uipath/portal-shell-util';
-import React, {
-    useEffect,
-    useState,
-} from 'react';
 
 import { t } from '../../../../../utils/localization/loc';
 import { useChatService } from '../../../providers/chat-service.provider.react';
 import { useChatState } from '../../../providers/chat-state-provider.react';
+import { AutopilotChatEvent } from '../../../service';
 
 const SECONDS = 1000;
 const FADE_DURATION = 0.5 * SECONDS;

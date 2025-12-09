@@ -1,24 +1,22 @@
-/** @jsx React.createElement */
-/** @jsxFrag React.Fragment */
+import React from 'react';
 
 import {
-    styled,
-    useTheme,
-} from '@mui/material/styles';
-import { FontVariantToken } from '@uipath/apollo-core';
-import token from '@uipath/apollo-core/lib';
-import { AutopilotChatFileInfo } from '@uipath/portal-shell-util';
-import React from 'react';
-import {
-    ErrorCode,
-    FileRejection,
-    useDropzone,
+  ErrorCode,
+  FileRejection,
+  useDropzone,
 } from 'react-dropzone';
+
+import {
+  styled,
+  useTheme,
+} from '@mui/material/styles';
+import token, { FontVariantToken } from '@uipath/apollo-core';
 
 import { t } from '../../../../utils/localization/loc';
 import { useAttachments } from '../../providers/attachements-provider.react';
 import { useChatState } from '../../providers/chat-state-provider.react';
 import { useError } from '../../providers/error-provider.react';
+import { AutopilotChatFileInfo } from '../../service';
 import { parseFiles } from '../../utils/file-reader';
 
 const DropzoneRoot = styled('div')({

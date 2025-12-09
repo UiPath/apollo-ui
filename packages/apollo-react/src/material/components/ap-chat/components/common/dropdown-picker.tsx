@@ -1,19 +1,17 @@
-/** @jsx React.createElement */
-/** @jsxFrag React.Fragment */
+import React from 'react';
 
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import {
-    Menu,
-    MenuItem,
-    styled,
-    useTheme,
+  Menu,
+  MenuItem,
+  styled,
+  useTheme,
 } from '@mui/material';
-import token, { FontVariantToken } from '@uipath/apollo-core/lib';
-import { AutopilotChatInternalEvent } from '@uipath/portal-shell-util';
-import React from 'react';
+import token, { FontVariantToken } from '@uipath/apollo-core';
 
 import { t } from '../../../../utils/localization/loc';
 import { useChatState } from '../../providers/chat-state-provider.react';
+import { AutopilotChatInternalEvent } from '../../service';
 import { AutopilotChatActionButton } from './action-button.react';
 import { AutopilotChatTooltip } from './tooltip.react';
 

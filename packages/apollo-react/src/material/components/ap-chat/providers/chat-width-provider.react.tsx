@@ -1,14 +1,11 @@
-/** @jsx React.createElement */
-/** @jsxFrag React.Fragment */
-
-import {
-    AutopilotChatMode,
-    CHAT_WIDTH_KEY,
-    CHAT_WIDTH_SIDE_BY_SIDE_MIN,
-    StorageService,
-} from '@uipath/portal-shell-util';
 import React from 'react';
 
+import {
+  AutopilotChatMode,
+  CHAT_WIDTH_KEY,
+  CHAT_WIDTH_SIDE_BY_SIDE_MIN,
+  StorageService,
+} from '../service';
 import { useChatService } from './chat-service.provider.react';
 import { useChatState } from './chat-state-provider.react';
 

@@ -1,40 +1,38 @@
-/** @jsx React.createElement */
-/** @jsxFrag React.Fragment */
+import React from 'react';
 
 import {
-    styled,
-    Theme,
+  styled,
+  Theme,
 } from '@mui/material/styles';
-import token from '@uipath/apollo-core/lib';
-import {
-    AutopilotChatMode,
-    AutopilotChatService,
-    CHAT_CONTAINER_ANIMATION_DURATION,
-    CHAT_WIDTH_FULL_SCREEN,
-} from '@uipath/portal-shell-util';
-import React from 'react';
+import token from '@uipath/apollo-core';
 
 import { DragHandle } from './components/common/drag-handle.react';
 import { AutopilotChatDropzone } from './components/dropzone/dropzone.react';
 import {
-    FullScreenLayout,
-    StandardLayout,
+  FullScreenLayout,
+  StandardLayout,
 } from './components/layout';
 import { AutopilotAttachmentsProvider } from './providers/attachements-provider.react';
 import { AutopilotChatScrollProvider } from './providers/chat-scroll-provider.react';
 import { AutopilotChatServiceProvider } from './providers/chat-service.provider.react';
 import {
-    AutopilotChatStateProvider,
-    useChatState,
+  AutopilotChatStateProvider,
+  useChatState,
 } from './providers/chat-state-provider.react';
 import {
-    AutopilotChatWidthProvider,
-    useChatWidth,
+  AutopilotChatWidthProvider,
+  useChatWidth,
 } from './providers/chat-width-provider.react';
 import { AutopilotErrorProvider } from './providers/error-provider.react';
 import { AutopilotLoadingProvider } from './providers/loading-provider.react';
 import { AutopilotPickerProvider } from './providers/picker-provider.react';
 import { AutopilotStreamingProvider } from './providers/streaming-provider.react';
+import {
+  AutopilotChatMode,
+  AutopilotChatService,
+  CHAT_CONTAINER_ANIMATION_DURATION,
+  CHAT_WIDTH_FULL_SCREEN,
+} from './service';
 
 const ChatContainer = styled('div')<{ shouldAnimate: boolean; mode: AutopilotChatMode; width: number; fullHeight: boolean }>(({
     shouldAnimate, mode, width, theme, fullHeight,

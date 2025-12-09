@@ -112,7 +112,7 @@ All styled components follow this pattern:
 
 ```typescript
 import { styled } from '@mui/material/styles';
-import token from '@uipath/apollo-core/lib';
+import token from '@uipath/apollo-core';
 
 const MyComponent = styled('div')(({ theme }) => ({
     // Use Apollo Core tokens for spacing, borders, typography
@@ -131,7 +131,7 @@ const MyComponent = styled('div')(({ theme }) => ({
 ```
 
 **Key principles:**
-- Always import `token` from `@uipath/apollo-core/lib` (not lib-esm)
+- Always import `token` from `@uipath/apollo-core` (not lib-esm)
 - Use `theme.palette.semantic.*` for all colors (never hardcode colors)
 - Use `token.*` for spacing, borders, shadows, typography sizes
 - MUI's `styled` API over CSS/SCSS for type safety

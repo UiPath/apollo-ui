@@ -1,20 +1,17 @@
-/** @jsx React.createElement */
-/** @jsxFrag React.Fragment */
-
-import {
-    AutopilotChatAgentModeInfo,
-    AutopilotChatCustomHeaderAction,
-    AutopilotChatEvent,
-    AutopilotChatModelInfo,
-} from '@uipath/portal-shell-util';
 import React, {
-    createContext,
-    useCallback,
-    useContext,
-    useEffect,
-    useState,
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
 } from 'react';
 
+import {
+  AutopilotChatAgentModeInfo,
+  AutopilotChatCustomHeaderAction,
+  AutopilotChatEvent,
+  AutopilotChatModelInfo,
+} from '../service';
 import { useChatService } from './chat-service.provider.react';
 
 interface PickerContextType {

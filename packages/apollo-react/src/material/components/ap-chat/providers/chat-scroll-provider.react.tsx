@@ -1,15 +1,12 @@
-/** @jsx React.createElement */
-/** @jsxFrag React.Fragment */
-
-import {
-    AutopilotChatEvent,
-    AutopilotChatInterceptableEvent,
-    AutopilotChatInternalEvent,
-    CHAT_SCROLL_BOTTOM_BUFFER,
-    CHAT_WIDTH_FULL_SCREEN_MAX_WIDTH,
-} from '@uipath/portal-shell-util';
 import React from 'react';
 
+import {
+  AutopilotChatEvent,
+  AutopilotChatInterceptableEvent,
+  AutopilotChatInternalEvent,
+  CHAT_SCROLL_BOTTOM_BUFFER,
+  CHAT_WIDTH_FULL_SCREEN_MAX_WIDTH,
+} from '../service';
 import { useChatService } from './chat-service.provider.react';
 import { useStreaming } from './streaming-provider.react';
 

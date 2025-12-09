@@ -1,7 +1,6 @@
-/** @jsx React.createElement */
-/** @jsxFrag React.Fragment */
-import { AutopilotChatService } from '@uipath/portal-shell-util';
 import React from 'react';
+
+import { AutopilotChatService } from '../service';
 
 interface AutopilotChatServiceContextType {
     chatService: AutopilotChatService | undefined;

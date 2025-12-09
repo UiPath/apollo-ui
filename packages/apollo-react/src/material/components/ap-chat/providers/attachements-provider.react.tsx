@@ -1,15 +1,14 @@
-/** @jsx React.createElement */
-/** @jsxFrag React.Fragment */
-import {
-    AutopilotChatEvent,
-    AutopilotChatFileInfo,
-    AutopilotChatInternalEvent,
-    AutopilotChatPrompt,
-} from '@uipath/portal-shell-util';
-import { isEqual } from 'lodash/fp';
 import React from 'react';
 
+import { isEqual } from 'lodash/fp';
+
 import { useTranslate } from '../../../react/ApLocalizationProvider.react';
+import {
+  AutopilotChatEvent,
+  AutopilotChatFileInfo,
+  AutopilotChatInternalEvent,
+  AutopilotChatPrompt,
+} from '../service';
 import { useChatService } from './chat-service.provider.react';
 import { useChatState } from './chat-state-provider.react';
 import { useError } from './error-provider.react';

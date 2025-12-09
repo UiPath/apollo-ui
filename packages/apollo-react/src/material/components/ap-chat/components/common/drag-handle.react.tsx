@@ -1,20 +1,18 @@
-/** @jsx React.createElement */
-/** @jsxFrag React.Fragment */
+import React from 'react';
 
 import { styled } from '@mui/material/styles';
-import token from '@uipath/apollo-core/lib';
-import {
-    AutopilotChatInternalEvent,
-    CHAT_WIDTH_KEY,
-    CHAT_WIDTH_SIDE_BY_SIDE_MAX,
-    CHAT_WIDTH_SIDE_BY_SIDE_MIN,
-    StorageService,
-} from '@uipath/portal-shell-util';
-import React from 'react';
+import token from '@uipath/apollo-core';
 
 import { useChatService } from '../../providers/chat-service.provider.react';
 import { useChatState } from '../../providers/chat-state-provider.react';
 import { useChatWidth } from '../../providers/chat-width-provider.react';
+import {
+  AutopilotChatInternalEvent,
+  CHAT_WIDTH_KEY,
+  CHAT_WIDTH_SIDE_BY_SIDE_MAX,
+  CHAT_WIDTH_SIDE_BY_SIDE_MIN,
+  StorageService,
+} from '../../service';
 
 const DragHandleContainer = styled('div')(({ theme }) => ({
     position: 'absolute',

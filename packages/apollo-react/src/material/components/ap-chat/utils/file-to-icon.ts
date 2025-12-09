@@ -1,8 +1,7 @@
-import { AutopilotChatFileType } from '@uipath/portal-shell-util';
-
 import FileIcon from '../assets/default-file.svg';
 import PowerPointFileIcon from '../assets/ppt-file.svg';
 import WordFileIcon from '../assets/word-file.svg';
+import { AutopilotChatFileType } from '../service';
 
 export const fileToIcon = (name: string) => {
     const extension = name.split('.').pop();

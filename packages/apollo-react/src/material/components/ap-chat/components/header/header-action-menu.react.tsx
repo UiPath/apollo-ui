@@ -1,17 +1,15 @@
-/** @jsx React.createElement */
-/** @jsxFrag React.Fragment */
+import React from 'react';
 
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import {
-    styled,
-    useTheme,
+  styled,
+  useTheme,
 } from '@mui/material/styles';
-import token, { FontVariantToken } from '@uipath/apollo-core/lib';
-import { AutopilotChatCustomHeaderAction } from '@uipath/portal-shell-util';
-import React from 'react';
+import token, { FontVariantToken } from '@uipath/apollo-core';
 
+import { AutopilotChatCustomHeaderAction } from '../../service';
 import { AutopilotChatTooltip } from '../common/tooltip.react';
 
 const StyledMenuItem = styled(MenuItem)(({ theme }) => ({

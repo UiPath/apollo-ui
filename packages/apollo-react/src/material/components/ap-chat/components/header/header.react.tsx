@@ -1,20 +1,16 @@
-/** @jsx React.createElement */
-/** @jsxFrag React.Fragment */
-
-// eslint-disable-next-line unused-imports/no-unused-imports
-import {
-    styled,
-    useTheme,
-} from '@mui/material';
-import { FontVariantToken } from '@uipath/apollo-core';
-import token from '@uipath/apollo-core/lib';
-import { AutopilotChatMode } from '@uipath/portal-shell-util';
 import React from 'react';
+
+import {
+  styled,
+  useTheme,
+} from '@mui/material';
+import token, { FontVariantToken } from '@uipath/apollo-core';
 
 import { StatusTypes } from '../../../../models/statusTypes';
 import { t } from '../../../../utils/localization/loc';
 import AutopilotLogo from '../../assets/autopilot-logo.svg';
 import { useChatState } from '../../providers/chat-state-provider.react';
+import { AutopilotChatMode } from '../../service';
 import { AutopilotChatHeaderActions } from './header-actions.react';
 
 const StyledHeader = styled('div')<{ hideSeparator?: boolean }>(({ hideSeparator }) => ({

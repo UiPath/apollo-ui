@@ -1,17 +1,10 @@
-/** @jsx React.createElement */
-/** @jsxFrag React.Fragment */
+import React from 'react';
 
 import {
-    Box,
-    styled,
+  Box,
+  styled,
 } from '@mui/material';
-import token, { FontVariantToken } from '@uipath/apollo-core/lib';
-import {
-    AutopilotChatEvent,
-    AutopilotChatInternalEvent,
-    AutopilotChatPrompt,
-} from '@uipath/portal-shell-util';
-import React from 'react';
+import token, { FontVariantToken } from '@uipath/apollo-core';
 
 import { t } from '../../../../utils/localization/loc';
 import { ApTextAreaReact } from '../../../ap-text-area/ap-text-area.react';
@@ -20,6 +13,11 @@ import { useChatService } from '../../providers/chat-service.provider.react';
 import { useChatState } from '../../providers/chat-state-provider.react';
 import { useLoading } from '../../providers/loading-provider.react';
 import { useStreaming } from '../../providers/streaming-provider.react';
+import {
+  AutopilotChatEvent,
+  AutopilotChatInternalEvent,
+  AutopilotChatPrompt,
+} from '../../service';
 import { parseFiles } from '../../utils/file-reader';
 import { fontByVariant } from '../../utils/font-by-variant';
 import { AutopilotChatInputActions } from './chat-input-actions.react';

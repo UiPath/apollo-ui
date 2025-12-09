@@ -1,17 +1,16 @@
-/** @jsx React.createElement */
-/** @jsxFrag React.Fragment */
-
-import token from '@uipath/apollo-core/lib';
 import React from 'react';
+
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+
+import token from '@uipath/apollo-core';
 
 import { StatusTypes } from '../../../../models/statusTypes';
 import { useError } from '../../providers/error-provider.react';
 import {
-    Li,
-    Ol,
-    Ul,
+  Li,
+  Ol,
+  Ul,
 } from '../message/markdown/lists.react';
 import { Link } from '../message/markdown/text.react';
 

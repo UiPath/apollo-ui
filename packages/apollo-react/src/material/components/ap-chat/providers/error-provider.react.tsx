@@ -1,12 +1,10 @@
-/** @jsx React.createElement */
-/** @jsxFrag React.Fragment */
-import {
-    AutopilotChatError,
-    AutopilotChatErrorLevel,
-    AutopilotChatEvent,
-} from '@uipath/portal-shell-util';
 import React from 'react';
 
+import {
+  AutopilotChatError,
+  AutopilotChatErrorLevel,
+  AutopilotChatEvent,
+} from '../service';
 import { useChatService } from './chat-service.provider.react';
 
 interface AutopilotErrorContextType {

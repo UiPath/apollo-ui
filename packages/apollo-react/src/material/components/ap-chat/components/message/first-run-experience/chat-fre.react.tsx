@@ -1,12 +1,10 @@
-/** @jsx React.createElement */
-/** @jsxFrag React.Fragment */
+import React from 'react';
 
 import {
-    styled,
-    useTheme,
+  styled,
+  useTheme,
 } from '@mui/material';
-import token from '@uipath/apollo-core/lib';
-import React from 'react';
+import token from '@uipath/apollo-core';
 
 import { useChatState } from '../../../providers/chat-state-provider.react';
 import { AutopilotChatSuggestions } from '../suggestions/chat-suggestions.react';

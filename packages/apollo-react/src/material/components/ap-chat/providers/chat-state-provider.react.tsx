@@ -1,28 +1,25 @@
-/** @jsx React.createElement */
-/** @jsxFrag React.Fragment */
-
-import { FontVariantToken } from '@uipath/apollo-core';
-import token from '@uipath/apollo-core/lib';
-import {
-    AutopilotChatAllowedAttachments,
-    AutopilotChatConfiguration,
-    AutopilotChatDisabledFeatures,
-    AutopilotChatEvent,
-    AutopilotChatInternalEvent,
-    AutopilotChatMode,
-    AutopilotChatOverrideLabels,
-    CHAT_COMPACT_MODE_INPUT_MAX_ROWS,
-    CHAT_COMPACT_MODE_INPUT_MIN_ROWS,
-    CHAT_COMPACT_MODE_MESSAGE_GROUP_GAP,
-    CHAT_COMPACT_MODE_MESSAGE_SPACING,
-    CHAT_INPUT_MAX_ROWS,
-    CHAT_INPUT_MIN_ROWS,
-    CHAT_MESSAGE_GROUP_GAP,
-    CHAT_MESSAGE_SPACING,
-    CHAT_SUGGESTION_SPACING,
-} from '@uipath/portal-shell-util';
 import React from 'react';
 
+import token, { FontVariantToken } from '@uipath/apollo-core';
+
+import {
+  AutopilotChatAllowedAttachments,
+  AutopilotChatConfiguration,
+  AutopilotChatDisabledFeatures,
+  AutopilotChatEvent,
+  AutopilotChatInternalEvent,
+  AutopilotChatMode,
+  AutopilotChatOverrideLabels,
+  CHAT_COMPACT_MODE_INPUT_MAX_ROWS,
+  CHAT_COMPACT_MODE_INPUT_MIN_ROWS,
+  CHAT_COMPACT_MODE_MESSAGE_GROUP_GAP,
+  CHAT_COMPACT_MODE_MESSAGE_SPACING,
+  CHAT_INPUT_MAX_ROWS,
+  CHAT_INPUT_MIN_ROWS,
+  CHAT_MESSAGE_GROUP_GAP,
+  CHAT_MESSAGE_SPACING,
+  CHAT_SUGGESTION_SPACING,
+} from '../service';
 import { useChatService } from './chat-service.provider.react';
 
 // Converts all properties of the type to required since we have defaults for all properties

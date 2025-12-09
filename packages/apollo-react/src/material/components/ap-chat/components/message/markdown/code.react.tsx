@@ -1,19 +1,18 @@
-/** @jsx React.createElement */
-/** @jsxFrag React.Fragment */
+import React from 'react';
+
+import dark from 'highlight.js/styles/github-dark.css';
+import light from 'highlight.js/styles/github.css';
+import katex from 'katex';
 
 import CloseIcon from '@mui/icons-material/Close';
 import {
-    Box,
-    IconButton,
-    Modal,
-    styled,
-    useTheme,
+  Box,
+  IconButton,
+  Modal,
+  styled,
+  useTheme,
 } from '@mui/material';
-import token from '@uipath/apollo-core/lib';
-import light from 'highlight.js/styles/github.css';
-import dark from 'highlight.js/styles/github-dark.css';
-import katex from 'katex';
-import React from 'react';
+import token from '@uipath/apollo-core';
 
 import { isDebuggingEnabled } from '../../../../../react/stencil-react-adapter/Utils/DebugUtils';
 import { t } from '../../../../../utils/localization/loc';
@@ -236,7 +235,6 @@ export const Code = React.memo(({
             );
         } catch (e) {
             if (isDebuggingEnabled()) {
-                // eslint-disable-next-line no-console
                 console.warn('Error rendering math block:', e);
             }
 

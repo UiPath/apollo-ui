@@ -1,21 +1,19 @@
-/** @jsx React.createElement */
-/** @jsxFrag React.Fragment */
+import React from 'react';
 
 import {
-    styled,
-    Theme,
-    useTheme,
+  styled,
+  Theme,
+  useTheme,
 } from '@mui/material';
-import token from '@uipath/apollo-core/lib';
-import {
-    AutopilotChatInternalEvent,
-    AutopilotChatSuggestion,
-} from '@uipath/portal-shell-util';
-import React from 'react';
+import token from '@uipath/apollo-core';
 
 import { t } from '../../../../../utils/localization/loc';
 import { useChatService } from '../../../providers/chat-service.provider.react';
 import { useChatState } from '../../../providers/chat-state-provider.react';
+import {
+  AutopilotChatInternalEvent,
+  AutopilotChatSuggestion,
+} from '../../../service';
 
 const SuggestionList = styled('div')(({
     disableAnimation, gap,

@@ -1,6 +1,3 @@
-/** @jsx React.createElement */
-/** @jsxFrag React.Fragment */
-
 import {
     Box,
     useTheme,

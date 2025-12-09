@@ -1,7 +1,7 @@
 import type { ITreeNode } from '@uipath/apollo-angular-elements';
-import type { TSpan } from '@uipath/portal-shell-util';
 
 import type { ApTreeViewItem } from '../../../../ap-tree-view/ap-tree-view.react';
+import type { TSpan } from '../../../service';
 
 export type ToolData = TSpan & {
     additionalInfo?: string;
