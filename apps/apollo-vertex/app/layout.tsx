@@ -6,6 +6,8 @@ import type { ReactNode } from "react";
 import Image from "next/image";
 import "./globals.css";
 import { Analytics } from "@vercel/analytics/next";
+import { ThemeWrapper } from "./components/theme-wrapper";
+import { ThemeSwitcher } from "./components/theme-switcher";
 
 export const metadata = {
     title: {
@@ -54,7 +56,9 @@ const navbar = (
             </>
         }
         // ... Your additional navbar options
-    />
+    >
+        <ThemeSwitcher />
+    </Navbar>
 );
 const footer = (
     <Footer>MIT {new Date().getFullYear()} - UiPath Apollo Vertex</Footer>
@@ -77,15 +81,17 @@ export default async function RootLayout({
             </Head>
             <body>
                 <Analytics />
-                <Layout
-                    sidebar={{ autoCollapse: false }}
-                    navbar={navbar}
-                    pageMap={await getPageMap()}
-                    docsRepositoryBase="https://github.com/UiPath/apollo-ui/tree/main/apps/apollo-vertex"
-                    footer={footer}
-                >
-                    {children}
-                </Layout>
+                <ThemeWrapper>
+                    <Layout
+                        sidebar={{ autoCollapse: false }}
+                        navbar={navbar}
+                        pageMap={await getPageMap()}
+                        docsRepositoryBase="https://github.com/UiPath/apollo-ui/tree/main/apps/apollo-vertex"
+                        footer={footer}
+                    >
+                        {children}
+                    </Layout>
+                </ThemeWrapper>
             </body>
         </html>
     );
