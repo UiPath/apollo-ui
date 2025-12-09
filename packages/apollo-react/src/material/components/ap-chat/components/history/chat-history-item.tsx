@@ -1,9 +1,6 @@
 import React from 'react';
 
-import {
-  styled,
-  useTheme,
-} from '@mui/material';
+import { styled } from '@mui/material';
 import token from '@uipath/apollo-core';
 
 import { t } from '../../../../utils/localization/loc';
@@ -17,7 +14,7 @@ import {
 import { AutopilotChatActionButton } from '../common/action-button';
 
 const GroupItem = styled('div')<{ isActive: boolean; showRemoveIcon: boolean }>(({
-    theme, isActive, showRemoveIcon,
+    isActive, showRemoveIcon,
 }) => ({
     width: `calc(100% - 2 * ${token.Spacing.SpacingBase})`,
     padding: `0 calc(${token.Padding.PadL} + ${token.Spacing.SpacingBase})`,
@@ -26,14 +23,14 @@ const GroupItem = styled('div')<{ isActive: boolean; showRemoveIcon: boolean }>(
     justifyContent: 'space-between',
     cursor: 'pointer',
     borderRadius: token.Border.BorderRadiusS,
-    outlineColor: theme.palette.semantic.colorFocusIndicator,
+    outlineColor: 'var(--color-focus-indicator)',
     outlineWidth: '1px',
     outlineOffset: '-1px',
 
-    '&:hover, &:active': { backgroundColor: theme.palette.semantic.colorBackgroundHover },
+    '&:hover, &:active': { backgroundColor: 'var(--color-background-hover)' },
     ...(isActive && {
-        backgroundColor: theme.palette.semantic.colorBackgroundSelected,
-        borderLeft: `4px solid ${theme.palette.semantic.colorSelectionIndicator}`,
+        backgroundColor: 'var(--color-background-selected)',
+        borderLeft: `4px solid var(--color-selection-indicator)`,
     }),
 
     '& .delete-button-wrapper': {
@@ -62,7 +59,6 @@ interface AutopilotChatHistoryItemProps {
 const AutopilotChatHistoryItemComponent: React.FC<AutopilotChatHistoryItemProps> = ({
     item, isHistoryOpen,
 }) => {
-    const theme = useTheme();
     const chatService = useChatService();
     const { spacing } = useChatState();
     const [ isActive, setIsActive ] = React.useState(chatService.activeConversationId === item.id);
@@ -185,7 +181,7 @@ const AutopilotChatHistoryItemComponent: React.FC<AutopilotChatHistoryItemProps>
             aria-pressed={isActive}
         >
             <GroupTitle>
-                <ap-typography variant={spacing.primaryFontToken} color={theme.palette.semantic.colorForeground}>{item.name}</ap-typography>
+                <ap-typography variant={spacing.primaryFontToken} color={'var(--color-foreground)'}>{item.name}</ap-typography>
             </GroupTitle>
 
             <div className="delete-button-wrapper">

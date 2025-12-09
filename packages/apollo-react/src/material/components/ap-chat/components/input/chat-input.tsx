@@ -26,16 +26,16 @@ import { AutopilotChatInputError } from './chat-input-error';
 import { AutopilotChatInputFooter } from './chat-input-footer';
 
 export const InputContainer = styled('div')<{ primaryFontToken: FontVariantToken }>(({
-    theme, primaryFontToken,
+    primaryFontToken,
 }) => ({
     border: `${token.Border.BorderThickM} solid transparent`,
-    boxShadow: `inset 0 0 0 ${token.Border.BorderThickS} ${theme.palette.semantic.colorBorder}`,
+    boxShadow: `inset 0 0 0 ${token.Border.BorderThickS} var(--color-border)`,
     borderRadius: token.Border.BorderRadiusL,
     gap: token.Spacing.SpacingBase,
     marginBottom: token.Spacing.SpacingXs,
 
     '&:has(textarea:focus)': {
-        borderColor: theme.palette.semantic.colorFocusIndicator,
+        borderColor: 'var(--color-focus-indicator)',
         boxShadow: 'none',
     },
 
@@ -53,9 +53,9 @@ export const InputContainer = styled('div')<{ primaryFontToken: FontVariantToken
         outline: 'none',
         borderRadius: token.Border.BorderRadiusL,
         backgroundColor: 'transparent',
-        color: theme.palette.semantic.colorForeground,
+        color: 'var(--color-foreground)',
 
-        '&::placeholder': { color: theme.palette.semantic.colorForegroundDeEmp },
+        '&::placeholder': { color: 'var(--color-foreground-de-emp)' },
 
         ...(primaryFontToken && {
             '&, &::placeholder': {
@@ -68,7 +68,7 @@ export const InputContainer = styled('div')<{ primaryFontToken: FontVariantToken
     },
 }));
 
-const GradientContainer = styled('div')(({ theme }) => ({
+const GradientContainer = styled('div')((() => ({
     position: 'absolute',
     zIndex: 1,
     bottom: '2px',
@@ -77,11 +77,11 @@ const GradientContainer = styled('div')(({ theme }) => ({
     height: token.Spacing.SpacingXs,
     background: `linear-gradient(
         to bottom,
-        ${theme.palette.semantic.colorBackground}50 0%,
-        ${theme.palette.semantic.colorBackground}75 25%,
-        ${theme.palette.semantic.colorBackground} 50%
+        var(--color-background)50 0%,
+        var(--color-background)75 25%,
+        var(--color-background) 50%
     )`,
-}));
+})));
 
 function AutopilotChatInputComponent() {
     const chatService = useChatService();
@@ -167,7 +167,7 @@ function AutopilotChatInputComponent() {
         if (event.key === 'Enter' && !event.shiftKey && message.trim().length > 0 && !skeletonLoader) {
             handleSubmit();
         }
-    }, [ message, handleSubmit, waitingResponse, streaming ]);
+    }, [ message, handleSubmit, waitingResponse, streaming, skeletonLoader ]);
 
     const handlePaste = React.useCallback(async (event: ClipboardEvent) => {
         if (disabledFeatures?.attachments) {
@@ -185,8 +185,8 @@ function AutopilotChatInputComponent() {
         let foundAllowedAttachment = false;
 
         for (let i = 0; i < items.length; i++) {
-            if (allowedAttachments.includes(items[i].type)) {
-                const blob = items[i].getAsFile();
+            if (allowedAttachments.includes(items[i]!.type)) {
+                const blob = items[i]!.getAsFile();
 
                 if (blob) {
                     attachmentsToAdd.push(blob);

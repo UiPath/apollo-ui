@@ -6,10 +6,7 @@ import {
   useDropzone,
 } from 'react-dropzone';
 
-import {
-  styled,
-  useTheme,
-} from '@mui/material/styles';
+import { styled } from '@mui/material/styles';
 import token, { FontVariantToken } from '@uipath/apollo-core';
 
 import { t } from '../../../../utils/localization/loc';
@@ -26,7 +23,7 @@ const DropzoneRoot = styled('div')({
 
 const DropzoneContent = styled('div')<{ isDragActive: boolean }>(({ isDragActive }) => ({ opacity: isDragActive ? 0.3 : 1 }));
 
-const DropzoneOverlay = styled('div')(({ theme }) => ({
+const DropzoneOverlay = styled('div')((() => ({
     position: 'absolute',
     top: 0,
     left: 0,
@@ -38,7 +35,7 @@ const DropzoneOverlay = styled('div')(({ theme }) => ({
     justifyContent: 'center',
     textAlign: 'center',
     pointerEvents: 'none',
-    border: `${token.Border.BorderThickM} dashed ${theme.palette.semantic.colorBorder}`,
+    border: `${token.Border.BorderThickM} dashed var(--color-border)`,
     borderRadius: token.Border.BorderRadiusL,
     margin: 0,
     padding: token.Spacing.SpacingXxl,
@@ -52,7 +49,6 @@ function AutopilotChatDropzoneComponent({
     children,
     ...dropzoneOptions
 }) {
-    const theme = useTheme();
     const {
         addAttachments, attachments,
     } = useAttachments();
@@ -126,9 +122,9 @@ function AutopilotChatDropzoneComponent({
             if (allowedAttachments.multiple) {
                 addAttachments(parsedFiles);
             } else if (parsedFiles.length === 1) {
-                addAttachments([ parsedFiles[0] ]);
+                addAttachments([ parsedFiles[0]! ]);
             }
-        } catch (error) {
+        } catch (error: string) {
             setError(error);
             return;
         }
@@ -157,21 +153,21 @@ function AutopilotChatDropzoneComponent({
 
             {isDragActive && (
                 <DropzoneOverlay>
-                    <ap-typography variant={FontVariantToken.fontSizeMBold} color={theme.palette.semantic.colorForeground}>
+                    <ap-typography variant={FontVariantToken.fontSizeMBold} color={'var(--color-foreground)'}>
                         {t('autopilot-chat-dropzone-overlay-title')}
                     </ap-typography>
 
                     {allowedAttachments.maxCount && allowedAttachments.maxCount > 1 && allowedAttachments.multiple && (
-                        <ap-typography variant={FontVariantToken.fontSizeS} color={theme.palette.semantic.colorForeground}>
+                        <ap-typography variant={FontVariantToken.fontSizeS} color={'var(--color-foreground)'}>
                             {t('autopilot-chat-dropzone-overlay-max-count', { maxCount: allowedAttachments.maxCount })}
                         </ap-typography>
                     )}
 
-                    <ap-typography variant={FontVariantToken.fontSizeS} color={theme.palette.semantic.colorForeground}>
+                    <ap-typography variant={FontVariantToken.fontSizeS} color={'var(--color-foreground)'}>
                         {t('autopilot-chat-dropzone-overlay-max-size', { maxSize: allowedAttachments.maxSize / 1024 / 1024 })}
                     </ap-typography>
 
-                    <ap-typography variant={FontVariantToken.fontSizeS} color={theme.palette.semantic.colorForeground}>
+                    <ap-typography variant={FontVariantToken.fontSizeS} color={'var(--color-foreground)'}>
                         {t('autopilot-chat-allowed-file-types', {
                             fileTypes: Object.values(allowedAttachments.types).flat()
                                 .join(', '),

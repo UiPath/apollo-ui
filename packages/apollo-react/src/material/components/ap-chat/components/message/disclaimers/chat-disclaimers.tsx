@@ -13,14 +13,14 @@ const DisclaimerList = styled('div')(() => ({
     gap: token.Spacing.SpacingXs,
 }));
 
-const Disclaimer = styled('div')(({ theme }) => ({
+const Disclaimer = styled('div')((() => ({
     display: 'flex',
     alignItems: 'flex-start',
     width: 'fit-content',
     gap: token.Spacing.SpacingXs,
     padding: token.Padding.PadL,
-    backgroundColor: theme.palette.semantic.colorWarningBackground,
-}));
+    backgroundColor: 'var(--color-warning-background)',
+})));
 
 function AutopilotChatDisclaimersComponent({ disclaimers }: { disclaimers: string[] }) {
     const theme = useTheme();
@@ -33,8 +33,8 @@ function AutopilotChatDisclaimersComponent({ disclaimers }: { disclaimers: strin
                     key={disclaimer}
                     data-cy={`autopilot-chat-disclaimer-nth-${index}`}
                 >
-                    <portal-custom-icon name="warning" color={theme.palette.semantic.colorWarningIcon}></portal-custom-icon>
-                    <ap-typography color={theme.palette.semantic.colorWarningText} variant={FontVariantToken.fontSizeM}>
+                    <portal-custom-icon name="warning" color={'var(--color-warning-icon)'}></portal-custom-icon>
+                    <ap-typography color={'var(--color-warning-text)'} variant={FontVariantToken.fontSizeM}>
                         {disclaimer}
                     </ap-typography>
                 </Disclaimer>

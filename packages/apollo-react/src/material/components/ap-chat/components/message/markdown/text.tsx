@@ -1,9 +1,7 @@
-import {
-    Box,
-    useTheme,
-} from '@mui/material';
-import token, { FontVariantToken } from '@uipath/apollo-core';
 import React from 'react';
+
+import { Box } from '@mui/material';
+import token, { FontVariantToken } from '@uipath/apollo-core';
 
 import { useChatState } from '../../../providers/chat-state-provider';
 import { fontByVariant } from '../../../utils/font-by-variant';
@@ -14,7 +12,6 @@ export const TypographyContext = React.createContext<FontVariantToken | undefine
 export const Text = ({
     children, variant, customStyle, headingLevel,
 }: { children: React.ReactNode; variant?: FontVariantToken; customStyle?: React.CSSProperties; headingLevel?: number }) => {
-    const theme = useTheme();
     const { spacing } = useChatState();
 
     if (Array.isArray(children) && children.length === 1 && children[0] === '') {
@@ -30,7 +27,7 @@ export const Text = ({
         <TypographyContext.Provider value={variant ?? spacing.primaryFontToken}>
             <ap-typography
                 variant={variant}
-                color={theme.palette.semantic.colorForeground}
+                color={'var(--color-foreground)'}
                 style={{
                     maxWidth: 'fit-content',
                     ...customStyle,
@@ -59,16 +56,15 @@ export const getTextForVariant = (variant: FontVariantToken, headingLevel?: numb
 export const Break = React.memo(() => <br />);
 
 export const Blockquote = React.memo(({ children }: { children: React.ReactNode }) => {
-    const theme = useTheme();
     const { spacing } = useChatState();
 
     return (
         <Box
             component="blockquote"
             sx={{
-                borderLeft: `6px solid ${theme.palette.semantic.colorBorder}`,
+                borderLeft: `6px solid var(--color-border)`,
                 padding: `${token.Spacing.SpacingBase} 0 ${token.Spacing.SpacingBase} ${token.Spacing.SpacingL}`,
-                color: theme.palette.semantic.colorForegroundEmp,
+                color: 'var(--color-foreground-emp)',
                 lineHeight: token.FontFamily.FontMicroLineHeight,
                 display: 'flex',
                 margin: 0,
@@ -124,14 +120,12 @@ export const Pre = React.memo(({ children }: { children: React.ReactNode }) => {
 });
 
 export const Hr = React.memo(() => {
-    const theme = useTheme();
-
     return (
         <Box
             component="hr"
             sx={{
                 border: 'none',
-                borderTop: `1px solid ${theme.palette.semantic.colorForeground}`,
+                borderTop: `1px solid var(--color-foreground)`,
                 width: '100%',
                 margin: 0,
             }}

@@ -1,9 +1,6 @@
 import React from 'react';
 
-import {
-  styled,
-  useTheme,
-} from '@mui/material';
+import { styled } from '@mui/material';
 import token, { FontVariantToken } from '@uipath/apollo-core';
 
 import { t } from '../../../../utils/localization/loc';
@@ -29,18 +26,18 @@ const InputActionsGroup = styled('div')(() => ({
     gap: token.Spacing.SpacingMicro,
 }));
 
-const SubmitButtonContainer = styled('div')(({ theme }) => ({
+const SubmitButtonContainer = styled('div')((() => ({
     '& .MuiIconButton-root': {
         borderRadius: token.Border.BorderRadiusM,
-        backgroundColor: theme.palette.semantic.colorBackgroundDisabled,
+        backgroundColor: 'var(--color-background-disabled)',
 
         '&:not(.Mui-disabled)': {
-            backgroundColor: `${theme.palette.semantic.colorForeground} !important`,
+            backgroundColor: `var(--color-foreground) !important`,
 
-            '&:hover, &:active, &:focus': { backgroundColor: `${theme.palette.semantic.colorForegroundDeEmp} !important` },
+            '&:hover, &:active, &:focus': { backgroundColor: `var(--color-foreground-de-emp) !important` },
         },
     },
-}));
+})));
 
 interface AutopilotChatInputActionsProps {
     handleSubmit: (event: React.MouseEvent) => void;
@@ -51,7 +48,6 @@ interface AutopilotChatInputActionsProps {
 function AutopilotChatInputActionsComponent({
     handleSubmit, disableSubmit, waitingResponse,
 }: AutopilotChatInputActionsProps) {
-    const theme = useTheme();
     const { addAttachments } = useAttachments();
     const { setError } = useError();
     const {
@@ -155,7 +151,7 @@ function AutopilotChatInputActionsComponent({
                             tooltip={
                                 <>
                                     <ap-typography
-                                        color={theme.palette.semantic.colorForegroundInverse}
+                                        color={'var(--color-foreground-inverse)'}
                                         variant={FontVariantToken.fontSizeM}
                                     >
                                         {t('autopilot-chat-attach-file')}
@@ -163,7 +159,7 @@ function AutopilotChatInputActionsComponent({
 
                                     {allowedAttachments.maxCount && allowedAttachments.maxCount > 1 && allowedAttachments.multiple && (
                                         <ap-typography
-                                            color={theme.palette.semantic.colorForegroundInverse}
+                                            color={'var(--color-foreground-inverse)'}
                                             variant={FontVariantToken.fontSizeXs}
                                         >
                                             {t('autopilot-chat-dropzone-overlay-max-count', { maxCount: allowedAttachments.maxCount })}
@@ -171,7 +167,7 @@ function AutopilotChatInputActionsComponent({
                                     )}
 
                                     <ap-typography
-                                        color={theme.palette.semantic.colorForegroundInverse}
+                                        color={'var(--color-foreground-inverse)'}
                                         variant={FontVariantToken.fontSizeXs}
                                     >
                                         {t(
@@ -181,7 +177,7 @@ function AutopilotChatInputActionsComponent({
                                     </ap-typography>
 
                                     <ap-typography
-                                        color={theme.palette.semantic.colorForegroundInverse}
+                                        color={'var(--color-foreground-inverse)'}
                                         variant={FontVariantToken.fontSizeXs}
                                     >
                                         {t(
@@ -211,8 +207,8 @@ function AutopilotChatInputActionsComponent({
                         iconName={waitingResponse ? 'stop' : 'arrow_upward'}
                         tooltip={waitingResponse ? t('autopilot-chat-stop') : t('autopilot-chat-send')}
                         overrideColor={disableSubmit
-                            ? theme.palette.semantic.colorForegroundDisable
-                            : theme.palette.semantic.colorBackground
+                            ? 'var(--color-foreground-disable)'
+                            : 'var(--color-background)'
                         }
                         variant={waitingResponse ? 'normal' : 'outlined'}
                         preventHover={true}

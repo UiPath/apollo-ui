@@ -1,14 +1,11 @@
 import React from 'react';
 
-import {
-  styled,
-  useTheme,
-} from '@mui/material';
+import { styled } from '@mui/material';
 import token, { FontVariantToken } from '@uipath/apollo-core';
 
 import { useChatState } from '../../providers/chat-state-provider';
-import { AutopilotChatHistoryItem } from './chat-history-item';
 import { ChatHistoryGroup } from './chat-history';
+import { AutopilotChatHistoryItem } from './chat-history-item';
 
 const GroupContainer = styled('div')<{ compactMode: boolean }>(({ compactMode }) => (
     { marginBottom: compactMode ? token.Spacing.SpacingXs : token.Spacing.SpacingBase }
@@ -29,13 +26,12 @@ interface AutopilotChatHistoryGroupProps {
 const AutopilotChatHistoryGroupComponent: React.FC<AutopilotChatHistoryGroupProps> = ({
     group, isHistoryOpen,
 }) => {
-    const theme = useTheme();
     const { spacing } = useChatState();
 
     return (
         <GroupContainer compactMode={spacing.compactMode}>
             <GroupTitle>
-                <ap-typography variant={FontVariantToken.fontSizeSBold} color={theme.palette.semantic.colorForeground}>
+                <ap-typography variant={FontVariantToken.fontSizeSBold} color={'var(--color-foreground)'}>
                     {group.title}
                 </ap-typography>
             </GroupTitle>

@@ -51,9 +51,9 @@ const audioInputTooltipAutoMap: Record<AudioInputState, string> = {
 
 // Icon color used on "push to talk" button.
 const audioInputColorMap: Record<AudioInputState, (theme: any) => string> = {
-    'active': (theme) => theme.palette.semantic.colorForegroundHighlight,
-    'starting': (theme) => theme.palette.semantic.colorForegroundDisable,
-    'inactive': (theme) => theme.palette.semantic.colorForeground,
+    'active': () => 'var(--color-foreground-highlight)',
+    'starting': () => 'var(--color-foreground-disable)',
+    'inactive': () => 'var(--color-foreground)',
 };
 
 function joinClasses(...classes: Array<string | boolean | undefined>) {
@@ -260,8 +260,8 @@ export const AutopilotChatAudio = (props: AutopilotChatAudioProps) => {
                     preventHover={true}
                     overrideColor={
                         isOutputAudioActive ?
-                            theme.palette.semantic.colorForegroundHighlight :
-                            theme.palette.semantic.colorForegroundDisable
+                            'var(--color-foreground-highlight)' :
+                            'var(--color-foreground-disable)'
                     }
                     data-testid="autopilot-chat-audio-output"
                 />
@@ -326,10 +326,10 @@ const AudioControlsContainer = styled('div')(({ theme }) => ({
     position: 'relative',
 
     '& .audio-input-button': {
-        '&.starting': { '& .MuiIconButton-root': { backgroundColor: `${theme.palette.semantic.colorBackgroundDisabled}` } },
+        '&.starting': { '& .MuiIconButton-root': { backgroundColor: `var(--color-background-disabled)` } },
         '&.active': {
             '& ap-icon': { animation: `${pulseAnimation} 1.2s ease-in-out infinite` },
-            '& .MuiIconButton-root': { backgroundColor: `${theme.palette.semantic.colorBackgroundHighlight}` },
+            '& .MuiIconButton-root': { backgroundColor: `var(--color-background-highlight)` },
         },
     },
 

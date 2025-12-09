@@ -3,7 +3,6 @@ import React from 'react';
 import {
   styled,
   Theme,
-  useTheme,
 } from '@mui/material';
 import token from '@uipath/apollo-core';
 
@@ -37,22 +36,22 @@ const SuggestionList = styled('div')(({
 }));
 
 const Suggestion = styled('button')(({
-    theme, padding,
+    padding,
 }: { theme: Theme; padding: string }) => ({
     backgroundColor: 'transparent',
-    outlineColor: theme.palette.semantic.colorFocusIndicator,
+    outlineColor: 'var(--color-focus-indicator)',
     display: 'flex',
     alignItems: 'center',
     width: 'fit-content',
     gap: token.Spacing.SpacingXs,
     padding,
     borderRadius: token.Border.BorderRadiusL,
-    border: `1px solid ${theme.palette.semantic.colorBorderDisabled}`,
+    border: `1px solid var(--color-border-disabled)`,
     cursor: 'pointer',
 
     '&:hover': {
-        backgroundColor: theme.palette.semantic.colorBackgroundSecondary,
-        borderColor: theme.palette.semantic.colorBorder,
+        backgroundColor: 'var(--color-background-secondary)',
+        borderColor: 'var(--color-border)',
     },
 }));
 
@@ -71,7 +70,6 @@ function AutopilotChatSuggestionsComponent({
     suggestions,
     disableAnimation,
 }: AutopilotChatSuggestionsProps) {
-    const theme = useTheme();
     const chatService = useChatService();
     const { spacing } = useChatState();
 
@@ -105,7 +103,7 @@ function AutopilotChatSuggestionsComponent({
                 <Title>
                     <ap-typography
                         variant={spacing.primaryBoldFontToken}
-                        color={theme.palette.semantic.colorForegroundEmp}
+                        color={'var(--color-foreground-emp)'}
                     >
                         {t('autopilot-chat-suggestions-title')}
                     </ap-typography>
@@ -120,7 +118,7 @@ function AutopilotChatSuggestionsComponent({
                     data-cy={`autopilot-chat-suggestion-nth-${index}`}
                     style={{ padding: spacing.suggestionPadding }}
                 >
-                    <ap-typography color={theme.palette.semantic.colorForeground} variant={spacing.suggestionFontToken}>
+                    <ap-typography color={'var(--color-foreground)'} variant={spacing.suggestionFontToken}>
                         {suggestion.label}
                     </ap-typography>
                 </Suggestion>

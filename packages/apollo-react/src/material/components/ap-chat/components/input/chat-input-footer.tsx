@@ -1,22 +1,18 @@
 import React from 'react';
 
-import {
-  Box,
-  useTheme,
-} from '@mui/material';
+import { Box } from '@mui/material';
 import { FontVariantToken } from '@uipath/apollo-core';
 
 import { t } from '../../../../utils/localization/loc';
 import { useChatState } from '../../providers/chat-state-provider';
 
 function AutopilotChatInputFooterComponent() {
-    const theme = useTheme();
     const { overrideLabels } = useChatState();
 
     return (
         <Box sx={{ textAlign: 'center' }}>
             <ap-typography
-                color={theme.palette.semantic.colorForegroundDeEmp}
+                color={'var(--color-foreground-de-emp)'}
                 variant={FontVariantToken.fontSizeXs}
             >
                 {overrideLabels?.footerDisclaimer ?? t('autopilot-chat-footer')}

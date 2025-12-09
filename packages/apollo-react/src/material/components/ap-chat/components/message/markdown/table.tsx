@@ -6,7 +6,6 @@ import {
   TableCell,
   TableHead,
   TableRow,
-  useTheme,
 } from '@mui/material';
 import token from '@uipath/apollo-core';
 
@@ -18,18 +17,16 @@ interface TableProps {
 }
 
 export const Table = React.memo(({ children }: TableProps) => {
-    const theme = useTheme();
-
     return (
         <MuiTable sx={{
-            border: `1px solid ${theme.palette.semantic.colorBorderDeEmp}`,
+            border: `1px solid var(--color-border-de-emp)`,
             borderRadius: token.Border.BorderRadiusL,
             borderCollapse: 'separate',
             borderSpacing: 0,
 
             '& td, & th': {
                 border: 'unset',
-                borderBottom: `1px solid ${theme.palette.semantic.colorBorderDeEmp}`,
+                borderBottom: `1px solid var(--color-border-de-emp)`,
             },
 
             '& tr:last-child td': { borderBottom: 'unset' },
@@ -43,11 +40,9 @@ export const Table = React.memo(({ children }: TableProps) => {
 });
 
 export const TableHeader = React.memo(({ children }: TableProps) => {
-    const theme = useTheme();
-
     return (
         <TableHead
-            sx={{ backgroundColor: theme.palette.semantic.colorBackgroundSecondary }}
+            sx={{ backgroundColor: 'var(--color-background-secondary)' }}
         >
             {children}
         </TableHead>
@@ -86,14 +81,13 @@ export const Cell = React.memo(({ children }: TableProps) => {
 });
 
 export const HeaderCell = React.memo(({ children }: TableProps) => {
-    const theme = useTheme();
     const { spacing } = useChatState();
 
     return (
         <TableCell>
             <ap-typography
                 variant={spacing.markdownTokens.th}
-                color={theme.palette.semantic.colorForeground}
+                color={'var(--color-foreground)'}
             >
                 {children}
             </ap-typography>

@@ -5,7 +5,6 @@ import {
   Menu,
   MenuItem,
   styled,
-  useTheme,
 } from '@mui/material';
 import token, { FontVariantToken } from '@uipath/apollo-core';
 
@@ -40,10 +39,10 @@ const DropdownPickerContainer = styled('div')({
     gap: token.Spacing.SpacingMicro,
 });
 
-const SelectedOptionContainer = styled('div')(({ theme }) => ({
+const SelectedOptionContainer = styled('div')((() => ({
     display: 'flex',
     alignItems: 'center',
-    color: theme.palette.semantic.colorForegroundLight,
+    color: 'var(--color-foreground-light)',
     gap: token.Spacing.SpacingMicro,
     paddingLeft: token.Spacing.SpacingMicro,
     cursor: 'pointer',
@@ -58,7 +57,7 @@ const SelectedOptionContainer = styled('div')(({ theme }) => ({
         transform: 'rotate(0deg)',
     },
     '& .arrow-icon.open': { transform: 'rotate(180deg)' },
-}));
+})));
 
 const StyledMenuItem = styled(MenuItem)({
     display: 'flex',
@@ -78,7 +77,6 @@ export function DropdownPicker<T = string>({
     const {
         spacing, theming,
     } = useChatState();
-    const theme = useTheme();
     const [ anchorEl, setAnchorEl ] = React.useState<HTMLButtonElement | HTMLDivElement | null>(null);
 
     const handleClose = React.useCallback(() => {
@@ -124,14 +122,14 @@ export function DropdownPicker<T = string>({
                     tooltip={ !open ? (
                         <>
                             <ap-typography
-                                color={theme.palette.semantic.colorForegroundInverse}
+                                color={'var(--color-foreground-inverse)'}
                                 variant={FontVariantToken.fontSizeM}
                             >
                                 {selectedOption.name}
                             </ap-typography>
                             {selectedOption.description && (
                                 <ap-typography
-                                    color={theme.palette.semantic.colorForegroundInverse}
+                                    color={'var(--color-foreground-inverse)'}
                                     variant={FontVariantToken.fontSizeXs}
                                 >
                                     {selectedOption.description}
@@ -150,7 +148,7 @@ export function DropdownPicker<T = string>({
                 title={
                     !open && selectedOption.description ? (
                         <ap-typography
-                            color={theme.palette.semantic.colorForegroundInverse}
+                            color={'var(--color-foreground-inverse)'}
                             variant={FontVariantToken.fontSizeS}
                         >
                             {selectedOption.description}
@@ -176,7 +174,7 @@ export function DropdownPicker<T = string>({
                 </SelectedOptionContainer>
             </AutopilotChatTooltip>
         );
-    }, [ selectedOption, useIcon, open, theme, handleClick, handleKeyDown, iconVariant, spacing ]);
+    }, [ selectedOption, useIcon, open, handleClick, handleKeyDown, iconVariant, spacing ]);
 
     return (
         <>
@@ -211,7 +209,7 @@ export function DropdownPicker<T = string>({
                             title={
                                 option.description ? (
                                     <ap-typography
-                                        color={theme.palette.semantic.colorForegroundInverse}
+                                        color={'var(--color-foreground-inverse)'}
                                         variant={FontVariantToken.fontSizeS}
                                     >
                                         {option.description}

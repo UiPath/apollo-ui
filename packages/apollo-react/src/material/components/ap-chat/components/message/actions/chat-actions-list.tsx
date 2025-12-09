@@ -19,7 +19,7 @@ import {
 import { AutopilotChatActionButton } from '../../common/action-button';
 
 const ActionsListContainer = styled('div')<{ isRequest: boolean }>(({
-    theme, isRequest,
+    isRequest,
 }) => ({
     display: 'flex',
     gap: token.Spacing.SpacingMicro,
@@ -27,9 +27,9 @@ const ActionsListContainer = styled('div')<{ isRequest: boolean }>(({
     bottom: isRequest ? `-${token.Spacing.SpacingS}` : `-${token.Spacing.SpacingXl}`,
     ...(isRequest ? {
         right: token.Spacing.SpacingS,
-        backgroundColor: theme.palette.semantic.colorBackground,
+        backgroundColor: 'var(--color-background)',
         borderRadius: token.Border.BorderRadiusM,
-        border: `1px solid ${theme.palette.semantic.colorBorderGrid}`,
+        border: `1px solid var(--color-border-grid)`,
     } : { left: 0 }),
     transition: 'opacity 0.2s ease-in-out',
     zIndex: 1,

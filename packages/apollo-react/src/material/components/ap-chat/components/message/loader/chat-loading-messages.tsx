@@ -10,7 +10,7 @@ const fadeInOut = keyframes`
   100% { opacity: 0; }
 `;
 
-const LoadingContainer = styled('div')(({ theme }) => {
+const LoadingContainer = styled('div')(() => {
     return {
         display: 'flex',
         padding: `0 ${token.Spacing.SpacingBase}`,
@@ -18,7 +18,7 @@ const LoadingContainer = styled('div')(({ theme }) => {
         alignItems: 'center',
         alignSelf: 'center',
         width: '100%',
-        color: theme.palette.semantic.colorForeground,
+        color: 'var(--color-foreground)',
         position: 'relative',
         top: token.Spacing.SpacingXs,
     };

@@ -1,9 +1,6 @@
 import React from 'react';
 
-import {
-  styled,
-  useTheme,
-} from '@mui/material';
+import { styled } from '@mui/material';
 import token, { FontVariantToken } from '@uipath/apollo-core';
 
 import { StatusTypes } from '../../../../models/statusTypes';
@@ -33,7 +30,6 @@ const StyledLogo = styled('div')(() => ({
 }));
 
 function AutopilotChatHeaderComponent() {
-    const theme = useTheme();
     const {
         disabledFeatures,
         overrideLabels,
@@ -50,7 +46,7 @@ function AutopilotChatHeaderComponent() {
 
                 <ap-typography
                     variant={FontVariantToken.fontBrandL}
-                    color={theme.palette.semantic.colorForeground}
+                    color={'var(--color-foreground)'}
                     role='heading'
                     aria-level={1}
                 >

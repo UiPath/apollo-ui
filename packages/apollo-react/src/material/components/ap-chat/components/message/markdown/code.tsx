@@ -10,7 +10,6 @@ import {
   IconButton,
   Modal,
   styled,
-  useTheme,
 } from '@mui/material';
 import token from '@uipath/apollo-core';
 
@@ -43,24 +42,24 @@ const extractTextFromChildren = (children: any): string => {
     return '';
 };
 
-const CodeBlockHeader = styled('div')(({ theme }) => ({
+const CodeBlockHeader = styled('div')((() => ({
     display: 'flex',
     width: '100%',
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: `${token.Spacing.SpacingXs} ${token.Spacing.SpacingBase}`,
-    color: theme.palette.semantic.colorForeground,
+    color: 'var(--color-foreground)',
     fontFamily: token.FontFamily.FontNormal,
     boxSizing: 'border-box',
-}));
+})));
 
-const CodeBlockContainer = styled('div')(({ theme }) => ({
+const CodeBlockContainer = styled('div')((() => ({
     position: 'relative',
     width: '100%',
     fontFamily: token.FontFamily.FontNormal,
-    background: theme.palette.semantic.colorBackground,
+    background: 'var(--color-background)',
     borderRadius: token.Border.BorderRadiusL,
-    border: `1px solid ${theme.palette.semantic.colorBackgroundGray}`,
+    border: `1px solid var(--color-background-gray)`,
     paddingBottom: token.Spacing.SpacingMicro,
 
     /* this is for inline codeblocks */
@@ -71,16 +70,16 @@ const CodeBlockContainer = styled('div')(({ theme }) => ({
         top: '6px',
         borderRadius: 0,
         border: 'none',
-        background: theme.palette.semantic.colorBackgroundDisabled,
+        background: 'var(--color-background-disabled)',
         padding: `0 ${token.Spacing.SpacingMicro}`,
 
         '& *': { padding: '0 !important' },
         [`& ${CodeBlockHeader}`]: { display: 'none !important' },
     },
-}));
+})));
 
-const NonCodeContentContainer = styled('div')(({ theme }) => ({
-    color: theme.palette.semantic.colorForeground,
+const NonCodeContentContainer = styled('div')(() => ({
+    color: 'var(--color-foreground)',
     padding: token.Spacing.SpacingM,
     maxWidth: '100%',
     overflow: 'auto',
@@ -88,7 +87,7 @@ const NonCodeContentContainer = styled('div')(({ theme }) => ({
 }));
 
 const HighlightedCodeContainer = styled('div')<{ isDark: boolean }>(({
-    isDark, theme,
+    isDark,
 }) => {
     const { spacing } = useChatState();
 
@@ -105,7 +104,7 @@ const HighlightedCodeContainer = styled('div')<{ isDark: boolean }>(({
         background: 'transparent',
         borderRadius: token.Border.BorderRadiusL,
         boxSizing: 'border-box',
-        color: theme.palette.semantic.colorForeground,
+        color: 'var(--color-foreground)',
         textWrap: 'wrap',
         ...codeFontStyles,
         // Apply GitHub theme colors from highlight.js conditionally
@@ -113,25 +112,25 @@ const HighlightedCodeContainer = styled('div')<{ isDark: boolean }>(({
     };
 });
 
-const ContentContainer = styled('div')(({ theme }) => ({
+const ContentContainer = styled('div')((() => ({
     display: 'flex',
     flexDirection: 'column',
     width: '100%',
     height: '400px',
     borderRadius: token.Border.BorderRadiusL,
     overflow: 'auto',
-    backgroundColor: theme.palette.semantic.colorBackground,
+    backgroundColor: 'var(--color-background)',
     boxSizing: 'border-box',
     resize: 'vertical',
-}));
+})));
 
-const PreviewIframe = styled('iframe')(({ theme }) => ({
+const PreviewIframe = styled('iframe')((() => ({
     width: '100%',
     height: '100%',
     border: 'none',
-    backgroundColor: theme.palette.semantic.colorBackground,
+    backgroundColor: 'var(--color-background)',
     flex: 1,
-}));
+})));
 
 const CustomModal = styled(Modal)(() => ({
     display: 'flex',
@@ -140,7 +139,7 @@ const CustomModal = styled(Modal)(() => ({
     '& .MuiBackdrop-root': { backgroundColor: 'rgba(0, 0, 0, 0.5)' },
 }));
 
-const ModalContainer = styled(Box)(({ theme }) => ({
+const ModalContainer = styled(Box)((() => ({
     position: 'absolute',
     top: '50%',
     left: '50%',
@@ -149,7 +148,7 @@ const ModalContainer = styled(Box)(({ theme }) => ({
     height: '90vh',
     maxWidth: '1400px',
     maxHeight: '900px',
-    backgroundColor: theme.palette.semantic.colorBackgroundRaised,
+    backgroundColor: 'var(--color-background-raised)',
     borderRadius: token.Border.BorderRadiusS,
     padding: token.Spacing.SpacingL,
     boxShadow: '0px 5px 5px -3px rgba(0, 0, 0, 0.20), 0px 8px 10px 1px rgba(0, 0, 0, 0.14), 0px 3px 14px 2px rgba(0, 0, 0, 0.12)',
@@ -158,7 +157,7 @@ const ModalContainer = styled(Box)(({ theme }) => ({
     overflow: 'hidden',
     outline: 'none',
     '&:focus-visible, &:focus': { outline: 'none' },
-}));
+})));
 
 const ModalContent = styled(Box)(() => ({
     flex: 1,
@@ -167,19 +166,18 @@ const ModalContent = styled(Box)(() => ({
     overflow: 'hidden',
 }));
 
-const CloseButton = styled(IconButton)(({ theme }) => ({
+const CloseButton = styled(IconButton)((() => ({
     position: 'absolute',
     top: token.Spacing.SpacingXs,
     right: token.Spacing.SpacingS,
     zIndex: 1,
-    backgroundColor: theme.palette.semantic.colorBackgroundRaised,
-    '&:hover': { backgroundColor: theme.palette.semantic.colorBackgroundHover },
-}));
+    backgroundColor: 'var(--color-background-raised)',
+    '&:hover': { backgroundColor: 'var(--color-background-hover)' },
+})));
 
 export const Code = React.memo(({
     inline, className, children, isStreaming, ...props
 }: any) => {
-    const theme = useTheme();
     const {
         disabledFeatures, spacing,
     } = useChatState();
@@ -206,9 +204,9 @@ export const Code = React.memo(({
     if (isInline) {
         return (
             <code style={{
-                color: theme.palette.semantic.colorForeground,
+                color: 'var(--color-foreground)',
                 padding: `0 ${token.Padding.PadS}`,
-                background: theme.palette.semantic.colorBackgroundDisabled,
+                background: 'var(--color-background-disabled)',
                 borderRadius: token.Border.BorderRadiusM,
                 display: 'inline-block',
                 width: 'fit-content',
@@ -239,7 +237,7 @@ export const Code = React.memo(({
             }
 
             return (
-                <pre style={{ color: theme.palette.semantic.colorForeground }}>
+                <pre style={{ color: 'var(--color-foreground)' }}>
                     {String(children)}
                 </pre>
             );

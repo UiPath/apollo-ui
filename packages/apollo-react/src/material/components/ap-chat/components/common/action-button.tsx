@@ -112,20 +112,20 @@ const AutopilotChatActionButtonComponent = React.forwardRef<HTMLButtonElement, A
         <StyledButtonContainer>
             <ApButtonReact
                 ref={ref}
-                onMouseEnter={(event) => {
-                    onMouseEnter?.(event as React.MouseEvent<HTMLElement>);
+                onMouseEnter={(event: React.MouseEvent<HTMLElement>) => {
+                    onMouseEnter?.(event);
                     if (!preventHover) {
                         setIconColor('var(--color-foreground-emp)');
                     }
                 }}
-                onMouseLeave={(event) => {
-                    onMouseLeave?.(event as React.MouseEvent<HTMLElement>);
+                onMouseLeave={(event: React.MouseEvent<HTMLButtonElement>) => {
+                    onMouseLeave?.(event);
                     if (isPressed) {
                         // Moving the mouse back over the button while still pressing does NOT retrigger onPress. The
                         // mouse must be released and re-pressed. This behavior is safer for the initial use of
                         // press/release behavior, which is for a "push to talk" button used to enable audio input.
                         setIsPressed(false);
-                        onRelease(event as React.MouseEvent<HTMLButtonElement>);
+                        onRelease(event);
                     }
                     if (!preventHover) {
                         setIconColor('var(--color-icon-default)');
@@ -149,15 +149,15 @@ const AutopilotChatActionButtonComponent = React.forwardRef<HTMLButtonElement, A
                 onClick={onClick}
                 onFocus={onFocus}
                 onBlur={onBlur}
-                onMouseDown={(event) => {
-                    onMouseDown?.(event as React.MouseEvent<HTMLButtonElement>);
+                onMouseDown={(event: React.MouseEvent<HTMLButtonElement>) => {
+                    onMouseDown?.(event);
                     setIsPressed(true);
-                    onPress(event as React.MouseEvent<HTMLButtonElement>);
+                    onPress(event);
                 }}
-                onMouseUp={(event) => {
-                    onMouseUp?.(event as React.MouseEvent<HTMLButtonElement>);
+                onMouseUp={(event: React.MouseEvent<HTMLButtonElement>) => {
+                    onMouseUp?.(event);
                     setIsPressed(false);
-                    onRelease(event as React.MouseEvent<HTMLButtonElement>);
+                    onRelease(event);
                 }}
                 tabIndex={tabIndex}
                 onKeyDown={onKeyDown}
@@ -172,33 +172,33 @@ const AutopilotChatActionButtonComponent = React.forwardRef<HTMLButtonElement, A
             onClick={onClick}
             onFocus={onFocus}
             onBlur={onBlur}
-            onMouseDown={(event) => {
-                onMouseDown?.(event as React.MouseEvent<HTMLButtonElement>);
+            onMouseDown={(event: React.MouseEvent<HTMLButtonElement>) => {
+                onMouseDown?.(event);
                 setIsPressed(true);
                 onPress(event as React.MouseEvent<HTMLButtonElement>);
             }}
-            onMouseUp={(event) => {
-                onMouseUp?.(event as React.MouseEvent<HTMLButtonElement>);
+            onMouseUp={(event: React.MouseEvent<HTMLButtonElement>) => {
+                onMouseUp?.(event);
                 setIsPressed(false);
-                onRelease(event as React.MouseEvent<HTMLButtonElement>);
+                onRelease(event);
             }}
             tabIndex={tabIndex}
             onKeyDown={onKeyDown}
             aria-label={ariaLabel}
             aria-describedby={ariaDescribedby}
             title={title}
-            onMouseEnter={(event) => {
+            onMouseEnter={(event: React.MouseEvent<HTMLButtonElement>) => {
                 onMouseEnter?.(event);
                 if (!preventHover) {
                     setIconColor('var(--color-foreground-emp)');
                 }
             }}
-            onMouseLeave={(event) => {
+            onMouseLeave={(event: React.MouseEvent<HTMLButtonElement>) => {
                 onMouseLeave?.(event);
                 if (isPressed) {
                     // See note above about re-enter behavior.
                     setIsPressed(false);
-                    onRelease(event as React.MouseEvent<HTMLButtonElement>);
+                    onRelease(event);
                 }
                 if (!preventHover) {
                     setIconColor('var(--color-icon-default)');

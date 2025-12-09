@@ -43,7 +43,7 @@ const ChatContainer = styled('div')<{ shouldAnimate: boolean; mode: AutopilotCha
     height: fullHeight ? '100vh' : 'calc(100vh - 48px)', // account for global header height
     position: 'relative',
     boxSizing: 'border-box',
-    border: `${token.Border.BorderThickS} solid ${theme.palette.semantic.colorBorderDeEmp}`,
+    border: `${token.Border.BorderThickS} solid var(--color-border-de-emp)`,
     borderTop: 'none',
     borderLeft: 'none',
     ...(shouldAnimate && { transition: `width ${CHAT_CONTAINER_ANIMATION_DURATION}ms ease` }),

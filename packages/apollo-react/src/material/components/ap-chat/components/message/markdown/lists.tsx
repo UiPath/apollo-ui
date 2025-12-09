@@ -1,9 +1,6 @@
 import React from 'react';
 
-import {
-  Box,
-  useTheme,
-} from '@mui/material';
+import { Box } from '@mui/material';
 import token from '@uipath/apollo-core';
 
 import { useChatState } from '../../../providers/chat-state-provider';
@@ -41,14 +38,13 @@ export const Ol = React.memo(({
 });
 
 export const Li = React.memo(({ children }: { children: React.ReactNode }) => {
-    const theme = useTheme();
     const { spacing } = useChatState();
 
     return <Box
         component="li"
         sx={{
             '&::marker': {
-                color: theme.palette.semantic.colorForeground,
+                color: 'var(--color-foreground)',
                 fontSize: token.FontFamily.FontMSize,
             },
         }}>

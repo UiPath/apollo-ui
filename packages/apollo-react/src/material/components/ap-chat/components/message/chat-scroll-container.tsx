@@ -1,9 +1,6 @@
 import React from 'react';
 
-import {
-  styled,
-  Theme,
-} from '@mui/material';
+import { styled } from '@mui/material';
 import token from '@uipath/apollo-core';
 
 import { useChatScroll } from '../../providers/chat-scroll-provider';
@@ -82,7 +79,7 @@ const MessagesContainer = styled('div')(
     }),
 );
 
-const StyledGradientContainer = styled('div')(({ theme }: { theme: Theme }) => ({
+const StyledGradientContainer = styled('div')(() => ({
     position: 'sticky',
     zIndex: 1,
     bottom: 0,
@@ -91,9 +88,9 @@ const StyledGradientContainer = styled('div')(({ theme }: { theme: Theme }) => (
     height: token.Spacing.SpacingBase,
     background: `linear-gradient(
         to bottom,
-            ${theme.palette.semantic.colorBackground}25 0%,
-            ${theme.palette.semantic.colorBackground}50 25%,
-            ${theme.palette.semantic.colorBackground} 50%
+            var(--color-background)25 0%,
+            var(--color-background)50 25%,
+            var(--color-background) 50%
         )`,
 }));
 

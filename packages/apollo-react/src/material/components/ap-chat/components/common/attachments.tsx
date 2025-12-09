@@ -15,7 +15,7 @@ import { AutopilotChatActionButton } from './action-button';
 import { AutopilotChatTooltip } from './tooltip';
 
 export const AttachmentIcon = styled('span')<{ fileType?: AutopilotChatFileType; width?: string; height?: string }>(({
-    theme, fileType, width, height,
+    fileType, width, height,
 }) => ({
     maxWidth: width ?? token.Spacing.SpacingM,
     maxHeight: height ?? token.Spacing.SpacingM,
@@ -30,7 +30,7 @@ export const AttachmentIcon = styled('span')<{ fileType?: AutopilotChatFileType;
         padding: token.Spacing.SpacingMicro,
         backgroundColor: '#078E9E',
     } : {
-        backgroundColor: theme.palette.semantic.colorBackgroundSecondary,
+        backgroundColor: 'var(--color-background-secondary)',
         '& svg': {
             width: width ?? token.Spacing.SpacingM,
             height: height ?? token.Spacing.SpacingM,
@@ -59,7 +59,7 @@ const AttachmentsContainer = styled('div')<{ removeSpacing?: boolean; disableOve
 }));
 
 const StyledAttachment = styled('div')<{ showRemoveIcon: boolean; isFullWidth?: boolean }>(({
-    theme, showRemoveIcon, isFullWidth,
+    showRemoveIcon, isFullWidth,
 }) => ({
     display: 'flex',
     alignItems: 'center',
@@ -68,17 +68,17 @@ const StyledAttachment = styled('div')<{ showRemoveIcon: boolean; isFullWidth?: 
     margin: `${token.Spacing.SpacingMicro} 0`,
     boxSizing: 'border-box',
     borderRadius: token.Border.BorderRadiusL,
-    border: `${token.Border.BorderThickS} solid ${theme.palette.semantic.colorBorderDeEmp}`,
+    border: `${token.Border.BorderThickS} solid var(--color-border-de-emp)`,
     position: 'relative',
     maxWidth: isFullWidth ? '100%' : `calc(50% - ${token.Spacing.SpacingXs} / 2)`,
-    outlineColor: theme.palette.semantic.colorFocusIndicator,
-    backgroundColor: theme.palette.semantic.colorBackground,
+    outlineColor: 'var(--color-focus-indicator)',
+    backgroundColor: 'var(--color-background)',
 
     '& .attachment-name': {
         textOverflow: 'ellipsis',
         overflow: 'hidden',
         whiteSpace: 'nowrap',
-        color: theme.palette.semantic.colorForeground,
+        color: 'var(--color-foreground)',
     },
 
     '& .attachment-remove': {
@@ -86,7 +86,7 @@ const StyledAttachment = styled('div')<{ showRemoveIcon: boolean; isFullWidth?: 
         marginLeft: 'auto',
         position: 'absolute',
         right: token.Spacing.SpacingMicro,
-        backgroundColor: theme.palette.semantic.colorBackground,
+        backgroundColor: 'var(--color-background)',
         height: token.Spacing.SpacingM,
         display: 'flex',
 

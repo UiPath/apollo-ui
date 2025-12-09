@@ -14,13 +14,13 @@ import {
   StorageService,
 } from '../../service';
 
-const DragHandleContainer = styled('div')(({ theme }) => ({
+const DragHandleContainer = styled('div')((() => ({
     position: 'absolute',
     left: 0,
     top: 0,
     width: token.Border.BorderThickS,
     height: '100%',
-    background: theme.palette.semantic.colorBorderDeEmp,
+    background: 'var(--color-border-de-emp)',
     cursor: 'ew-resize',
     transition: 'background 0.2s ease',
     userSelect: 'none',
@@ -40,19 +40,19 @@ const DragHandleContainer = styled('div')(({ theme }) => ({
     },
 
     '&:hover, &:focus, &:active': {
-        background: theme.palette.semantic.colorFocusIndicator,
+        background: 'var(--color-focus-indicator)',
         outline: 'none',
     },
-}));
+})));
 
-const Border = styled('div')(({ theme }) => ({
+const Border = styled('div')((() => ({
     position: 'absolute',
     left: 0,
     top: 0,
     width: token.Border.BorderThickS,
     height: '100%',
-    background: theme.palette.semantic.colorBorderDeEmp,
-}));
+    background: 'var(--color-border-de-emp)',
+})));
 
 function DragHandleComponent() {
     const isDraggingRef = React.useRef(false);

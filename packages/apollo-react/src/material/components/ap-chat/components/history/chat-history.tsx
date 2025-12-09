@@ -20,7 +20,6 @@ import {
   CircularProgress,
   Popover,
   styled,
-  useTheme,
 } from '@mui/material';
 import token from '@uipath/apollo-core';
 
@@ -45,7 +44,7 @@ const ChatHistoryContainer = styled('div')<{ isFullScreen: boolean; width: numbe
 }) => ({
     display: 'flex',
     flexDirection: 'column',
-    backgroundColor: theme.palette.semantic.colorBackground,
+    backgroundColor: 'var(--color-background)',
     padding: `${token.Spacing.SpacingXs} 0`,
     boxSizing: 'border-box',
     height: isFullScreen ? `calc(${fullScreenContainer?.clientHeight}px - ${token.Spacing.SpacingBase})` : CHAT_HISTORY_SIDE_BY_SIDE_MAX_HEIGHT,
@@ -57,7 +56,7 @@ const ChatHistoryContainer = styled('div')<{ isFullScreen: boolean; width: numbe
         width: `calc(100% - 2 * ${token.Spacing.SpacingBase})`,
         marginLeft: token.Spacing.SpacingBase,
 
-        '& .MuiInputBase-root': { backgroundColor: theme.palette.semantic.colorBackground },
+        '& .MuiInputBase-root': { backgroundColor: 'var(--color-background)' },
     },
 
     '& .chat-history-content': {
@@ -118,7 +117,6 @@ const AutopilotChatHistoryComponent: React.FC<AutopilotChatHistoryProps> = ({
     const chatService = useChatService();
     const internalService = chatService .__internalService__;
 
-    const theme = useTheme();
     const [ history, setHistory ] = useState<AutopilotChatHistoryType[]>(chatService?.getHistory() ?? []);
     const [ searchQuery, setSearchQuery ] = useState('');
     const [ isLoadingMore, setIsLoadingMore ] = useState(false);
@@ -289,7 +287,7 @@ const AutopilotChatHistoryComponent: React.FC<AutopilotChatHistoryProps> = ({
                     return new Date();
                 }
 
-                return new Date(group.items[0].timestamp);
+                return new Date(group.items[0]!.timestamp);
             };
 
             return getDate(b).getTime() - getDate(a).getTime();
@@ -322,7 +320,7 @@ const AutopilotChatHistoryComponent: React.FC<AutopilotChatHistoryProps> = ({
 
     const renderEmptyState = (messageKey: string) => (
         <EmptyStateContainer>
-            <ap-typography color={theme.palette.semantic.colorForeground} variant={spacing.primaryFontToken}>
+            <ap-typography color={'var(--color-foreground)'} variant={spacing.primaryFontToken}>
                 {t(messageKey)}
             </ap-typography>
         </EmptyStateContainer>

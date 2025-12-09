@@ -18,8 +18,8 @@ import {
 import { SkeletonLoader } from '../common/skeleton-loader';
 import { AutopilotChatMessageContent } from './chat-message-content';
 import { AutopilotChatFRE } from './first-run-experience/chat-fre';
-import { AutopilotChatLoadingMessages } from './loader/chat-loading-messages';
 import { AutopilotChatLoading } from './loader/chat-loading';
+import { AutopilotChatLoadingMessages } from './loader/chat-loading-messages';
 import { AutopilotChatSuggestions } from './suggestions/chat-suggestions';
 
 const MessageContainer = styled('div')(({
@@ -59,11 +59,11 @@ const MessageGroup = React.memo(({
     messages, isLastGroup,
 }: { messages: AutopilotChatMessage[]; isLastGroup: boolean }) => {
     const [ groupRef, setGroupRef ] = React.useState<HTMLDivElement | null>(null);
-    const disableActions = messages.length === 1 && !!messages[0].disableActions;
+    const disableActions = messages.length === 1 && !!messages[0]?.disableActions;
 
     return (
         <MessageGroupContainer
-            isAssistant={messages[0].role === AutopilotChatRole.Assistant}
+            isAssistant={messages[0]?.role === AutopilotChatRole.Assistant}
             disableActions={disableActions}
             isLastGroup={isLastGroup}
             ref={setGroupRef}
@@ -188,8 +188,8 @@ function AutopilotChatMessagesComponent({
         return messages.reduce((acc, message, index) => {
             if (!message.groupId) {
                 acc.push([ message ]);
-            } else if (index > 0 && messages[index - 1].groupId === message.groupId) {
-                acc[acc.length - 1].push(message);
+            } else if (index > 0 && messages[index - 1]?.groupId === message.groupId) {
+                acc[acc.length - 1]!.push(message);
             } else {
                 acc.push([ message ]);
             }
@@ -215,7 +215,7 @@ function AutopilotChatMessagesComponent({
                         <AutopilotChatFRE />
                     )}
                     {messageGroups.map((group, idx) => (
-                        <MessageGroup key={group[0].id} messages={group} isLastGroup={idx === messageGroups.length - 1} />
+                        <MessageGroup key={group[0]?.id} messages={group} isLastGroup={idx === messageGroups.length - 1} />
                     ))}
                     { messages.length > 0 && suggestions.length > 0 && (
                         <AutopilotChatSuggestions

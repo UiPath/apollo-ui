@@ -9,7 +9,6 @@ import {
   Collapse,
   styled,
   Tooltip,
-  useTheme,
 } from '@mui/material';
 import token from '@uipath/apollo-core';
 
@@ -64,27 +63,27 @@ const StyledContainer = styled(Box)(() => ({
     },
 }));
 
-const StyledToggleButton = styled(Box)(({ theme }) => ({
+const StyledToggleButton = styled(Box)((() => ({
     display: 'inline-flex',
     alignItems: 'center',
     gap: token.Spacing.SpacingXs,
     cursor: 'pointer',
     padding: `${token.Spacing.SpacingXs} ${token.Spacing.SpacingBase} ${token.Spacing.SpacingXs} ${token.Spacing.SpacingXs}`,
     borderRadius: token.Border.BorderRadiusL,
-    border: `1px solid ${theme.palette.semantic.colorBorderDeEmp}`,
-    backgroundColor: theme.palette.semantic.colorBackground,
-    '&:hover': { backgroundColor: theme.palette.semantic.colorBackgroundSecondary },
-    '&:active, &:focus': { outlineColor: theme.palette.semantic.colorFocusIndicator },
-}));
+    border: `1px solid var(--color-border-de-emp)`,
+    backgroundColor: 'var(--color-background)',
+    '&:hover': { backgroundColor: 'var(--color-background-secondary)' },
+    '&:active, &:focus': { outlineColor: 'var(--color-focus-indicator)' },
+})));
 
-const StyledContentContainer = styled(Box)(({ theme }) => ({
+const StyledContentContainer = styled(Box)((() => ({
     borderRadius: token.Border.BorderRadiusL,
     marginTop: token.Spacing.SpacingXs,
-    border: `1px solid ${theme.palette.semantic.colorBorderDeEmp}`,
-    backgroundColor: theme.palette.semantic.colorBackground,
+    border: `1px solid var(--color-border-de-emp)`,
+    backgroundColor: 'var(--color-background)',
     position: 'relative',
     padding: `${token.Spacing.SpacingXs} 0`,
-}));
+})));
 
 const StyledSourcesListWrapper = styled('div')<{ isCollapsed?: boolean }>(({ isCollapsed }) => ({
     position: 'relative',
@@ -101,7 +100,7 @@ const StyledSourcesList = styled(Box)(() => ({
     gap: token.Spacing.SpacingS,
 }));
 
-const StyledSourceItem = styled(Box)(({ theme }) => ({
+const StyledSourceItem = styled(Box)((() => ({
     display: 'flex',
     alignItems: 'flex-start',
     gap: token.Spacing.SpacingXs,
@@ -109,9 +108,9 @@ const StyledSourceItem = styled(Box)(({ theme }) => ({
     cursor: 'pointer',
     transition: 'background-color 0.2s',
     height: token.Spacing.SpacingM,
-    '&:hover': { backgroundColor: theme.palette.semantic.colorBackgroundHover },
-    '&:focus, &:active': { outlineColor: theme.palette.semantic.colorFocusIndicator },
-}));
+    '&:hover': { backgroundColor: 'var(--color-background-hover)' },
+    '&:focus, &:active': { outlineColor: 'var(--color-focus-indicator)' },
+})));
 
 const StyledSourceContent = styled(Box)(() => ({
     flex: 1,
@@ -125,15 +124,15 @@ const StyledSourceContent = styled(Box)(() => ({
     },
 }));
 
-const StyledGradientOverlay = styled(Box)(({ theme }) => ({
+const StyledGradientOverlay = styled(Box)((() => ({
     position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
     height: token.Spacing.SpacingM,
-    background: `linear-gradient(to bottom, transparent 0%, ${theme.palette.semantic.colorBackground} 70%)`,
+    background: `linear-gradient(to bottom, transparent 0%, var(--color-background) 70%)`,
     pointerEvents: 'none',
-}));
+})));
 
 const StyledActionContainer = styled(Box)(() => ({
     display: 'flex',
@@ -141,7 +140,7 @@ const StyledActionContainer = styled(Box)(() => ({
     marginTop: token.Spacing.SpacingXs,
 }));
 
-const StyledActionButton = styled(Box)(({ theme }) => ({
+const StyledActionButton = styled(Box)((() => ({
     display: 'inline-flex',
     alignItems: 'center',
     gap: token.Spacing.SpacingXs,
@@ -151,16 +150,15 @@ const StyledActionButton = styled(Box)(({ theme }) => ({
     backgroundColor: 'transparent',
     transition: 'all 0.2s',
     border: 'none',
-    '&:hover': { backgroundColor: theme.palette.semantic.colorBackgroundHover },
-    '&:focus, &:active': { outlineColor: theme.palette.semantic.colorFocusIndicator },
-}));
+    '&:hover': { backgroundColor: 'var(--color-background-hover)' },
+    '&:focus, &:active': { outlineColor: 'var(--color-focus-indicator)' },
+})));
 
 function AutopilotChatSourcesComponent({
     groupId, message,
 }: AutopilotChatSourcesProps) {
     const chatService = useChatService();
     const { spacing } = useChatState();
-    const theme = useTheme();
 
     const [ sources, setSources ] = useState<Array<UrlCitation | PdfCitation>>(
         getSources(chatService?.getMessagesInGroup(groupId) ?? []),
@@ -242,11 +240,11 @@ function AutopilotChatSourcesComponent({
                     name="link"
                     variant="outlined"
                     size={spacing.compactMode ? token.Icon.IconS : token.Icon.IconM}
-                    color={theme.palette.semantic.colorForeground}
+                    color={'var(--color-foreground)'}
                 />
                 <ap-typography
                     variant={spacing.primaryFontToken}
-                    color={theme.palette.semantic.colorForeground}
+                    color={'var(--color-foreground)'}
                 >
                     {t('autopilot-chat-sources')}
                 </ap-typography>
@@ -279,12 +277,12 @@ function AutopilotChatSourcesComponent({
                                                 variant={isUrl ? 'custom' : 'outlined'}
                                                 name={isUrl ? 'website' : 'file_open'}
                                                 size={token.Icon.IconXs}
-                                                color={theme.palette.semantic.colorPrimary}
+                                                color={'var(--color-primary)'}
                                             />
                                             <StyledSourceContent>
                                                 <ap-typography
                                                     variant={spacing.primaryBoldFontToken}
-                                                    color={theme.palette.semantic.colorForegroundDeEmp}
+                                                    color={'var(--color-foreground-de-emp)'}
                                                 >
                                                     {text}
                                                 </ap-typography>
@@ -308,7 +306,7 @@ function AutopilotChatSourcesComponent({
                             >
                                 <ap-typography
                                     variant={spacing.primaryBoldFontToken}
-                                    color={theme.palette.semantic.colorPrimary}
+                                    color={'var(--color-primary)'}
                                 >
                                     {showFullList ? t('autopilot-chat-show-less') : t('autopilot-chat-show-more')}
                                 </ap-typography>
@@ -316,7 +314,7 @@ function AutopilotChatSourcesComponent({
                                     name={showFullList ? 'expand_less' : 'expand_more'}
                                     variant="outlined"
                                     size={token.Icon.IconXs}
-                                    color={theme.palette.semantic.colorPrimary}
+                                    color={'var(--color-primary)'}
                                 />
                             </StyledActionButton>
                         </StyledActionContainer>

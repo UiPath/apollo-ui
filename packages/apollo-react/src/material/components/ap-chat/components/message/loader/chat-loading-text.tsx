@@ -3,10 +3,7 @@ import {
   useState,
 } from 'react';
 
-import {
-  Fade,
-  useTheme,
-} from '@mui/material';
+import { Fade } from '@mui/material';
 
 import { t } from '../../../../../utils/localization/loc';
 import { useChatService } from '../../../providers/chat-service.provider';
@@ -26,7 +23,6 @@ export const LoadingMessage = () => {
     const [ messages, setMessages ] = useState(chatService.getDefaultLoadingMessages() ?? defaultMessages);
     const [ messageDuration, setMessageDuration ] = useState(chatService.getLoadingMessageDuration() ?? DEFAULT_MESSAGE_DURATION);
     const { spacing } = useChatState();
-    const theme = useTheme();
 
     useEffect(() => {
         if (!chatService) {
@@ -89,7 +85,7 @@ export const LoadingMessage = () => {
         <Fade in={isVisible} timeout={FADE_DURATION}>
             <ap-typography
                 variant={spacing.primaryFontToken}
-                color={theme.palette.semantic.colorForeground}
+                color={'var(--color-foreground)'}
                 aria-live='polite'
             >
                 {t(messages[messageIdx])}

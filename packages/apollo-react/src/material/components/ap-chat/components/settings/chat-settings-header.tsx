@@ -1,9 +1,6 @@
 import React from 'react';
 
-import {
-  styled,
-  useTheme,
-} from '@mui/material';
+import { styled } from '@mui/material';
 import token, { FontVariantToken } from '@uipath/apollo-core';
 
 import { t } from '../../../../utils/localization/loc';
@@ -28,7 +25,6 @@ const ActionsContainer = styled('div')(() => ({
 const AutopilotChatSettingsHeaderComponent: React.FC<{ isFullScreen: boolean; isSettingsOpen: boolean }> = ({
     isFullScreen, isSettingsOpen,
 }) => {
-    const theme = useTheme();
     const chatService = useChatService();
 
     const handleCloseSettings = React.useCallback(() => {
@@ -50,7 +46,7 @@ const AutopilotChatSettingsHeaderComponent: React.FC<{ isFullScreen: boolean; is
             {isFullScreen && (
                 <ap-typography
                     variant={FontVariantToken.fontBrandL}
-                    color={theme.palette.semantic.colorForeground}
+                    color={'var(--color-foreground)'}
                     id="settings-title"
                     role="heading"
                     aria-level={2}
@@ -79,7 +75,7 @@ const AutopilotChatSettingsHeaderComponent: React.FC<{ isFullScreen: boolean; is
                 {!isFullScreen && (
                     <ap-typography
                         variant={FontVariantToken.fontBrandL}
-                        color={theme.palette.semantic.colorForeground}
+                        color={'var(--color-foreground)'}
                         id="settings-title"
                         role="heading"
                         aria-level={2}

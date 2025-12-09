@@ -53,13 +53,13 @@ import {
 } from './text';
 
 const StyledMarkdown = React.memo(
-    styled(ReactMarkdown)(({ theme }) => ({
-        '&, & .katex': { color: theme.palette.semantic.colorForeground },
+    styled(ReactMarkdown)((() => ({
+        '&, & .katex': { color: 'var(--color-foreground)' },
         display: 'flex',
         flexDirection: 'column',
         gap: token.Spacing.SpacingL,
     })),
-);
+));
 
 const FAKE_STREAM_CHARS_COUNT = 10;
 const FAKE_STREAM_INTERVAL = 50;
@@ -127,7 +127,10 @@ function AutopilotChatMarkdownRendererComponent({ message }: { message: Autopilo
 
         return () => {
             unsubscribeStopResponse?.();
-            fakeStreamInterval && clearInterval(fakeStreamInterval);
+            
+            if (fakeStreamInterval) {
+              clearInterval(fakeStreamInterval);
+            }
         };
     }, [ message, chatService, setStreaming, getInitialContent ]);
 

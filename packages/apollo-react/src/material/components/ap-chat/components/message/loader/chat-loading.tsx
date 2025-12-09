@@ -16,7 +16,7 @@ const shimmerAnimation = keyframes`
   }
 `;
 
-const LoadingMessageContainer = styled('div')(({ theme }) => ({
+const LoadingMessageContainer = styled('div')((() => ({
     position: 'relative',
     display: 'inline-block',
     overflow: 'hidden',
@@ -31,15 +31,15 @@ const LoadingMessageContainer = styled('div')(({ theme }) => ({
         height: '100%',
         background: `linear-gradient(
             90deg,
-            ${theme.palette.semantic.colorBackground}20 0%,
-            ${theme.palette.semantic.colorBackground}40 25%,
-            ${theme.palette.semantic.colorBackground}80 50%,
-            ${theme.palette.semantic.colorBackground}40 75%,
-            ${theme.palette.semantic.colorBackground}20 100%
+            var(--color-background)20 0%,
+            var(--color-background)40 25%,
+            var(--color-background)80 50%,
+            var(--color-background)40 75%,
+            var(--color-background)20 100%
         )`,
         animation: `${shimmerAnimation} 2s ease-in-out infinite`,
     },
-}));
+})));
 
 export function AutopilotChatLoading() {
     const { showLoading } = useLoading();

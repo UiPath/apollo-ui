@@ -13,7 +13,7 @@ import {
 import { AutopilotChatActionButton } from '../common/action-button';
 
 const ScrollButtonContainer = styled('div')<{ visible: boolean; bottom: number; left: number }>(({
-    theme, visible, bottom, left,
+    visible, bottom, left,
 }) => ({
     position: 'fixed',
     bottom,
@@ -25,15 +25,15 @@ const ScrollButtonContainer = styled('div')<{ visible: boolean; bottom: number; 
     opacity: visible ? 1 : 0,
     pointerEvents: visible ? 'auto' : 'none',
     '& .MuiIconButton-root': {
-        backgroundColor: theme.palette.semantic.colorBackground,
+        backgroundColor: 'var(--color-background)',
         boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)',
 
         '&:hover,&:focus': {
-            backgroundColor: `${theme.palette.semantic.colorHover} !important`,
+            backgroundColor: `var(--color-hover) !important`,
             boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.2)',
         },
 
-        '&:active': { backgroundColor: `${theme.palette.semantic.colorHover} !important` },
+        '&:active': { backgroundColor: `var(--color-hover) !important` },
     },
 }));
 

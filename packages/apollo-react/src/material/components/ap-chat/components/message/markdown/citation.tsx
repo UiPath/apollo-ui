@@ -3,7 +3,6 @@ import React from 'react';
 import {
   Box,
   Tooltip,
-  useTheme,
 } from '@mui/material';
 import token, { FontVariantToken } from '@uipath/apollo-core';
 
@@ -117,7 +116,6 @@ export const Citation = React.memo(({
     messageId,
 }: any) => {
     const pageText = page_number ? ` (${t('autopilot-chat-page-number', { page_number })})` : '';
-    const theme = useTheme();
     const chatService = useChatService();
     const { spacing } = useChatState();
     const { overflowContainer } = useChatScroll();
@@ -137,11 +135,11 @@ export const Citation = React.memo(({
                     startMarker,
                     ref.current,
                     container,
-                    theme.palette.semantic.colorBackgroundHighlight,
+                    'var(--color-background-highlight)',
                 );
             }
         }
-    }, [ id, messageId, theme ]);
+    }, [ id, messageId ]);
 
     const handleClose = React.useCallback(() => {
         setOpen(false);
@@ -224,7 +222,7 @@ export const Citation = React.memo(({
                         variant={ url ? 'custom' : 'outlined'}
                         name={ url ? 'website' : 'file_open'}
                         size={token.Icon.IconXs}
-                        color={theme.palette.semantic.colorPrimary}
+                        color={'var(--color-primary)'}
                     />
                     <ap-typography
                         color="inherit"
@@ -260,8 +258,8 @@ export const Citation = React.memo(({
                 },
                 tooltip: {
                     sx: {
-                        backgroundColor: theme.palette.semantic.colorBackgroundRaised,
-                        color: theme.palette.semantic.colorForeground,
+                        backgroundColor: 'var(--color-background-raised)',
+                        color: 'var(--color-foreground)',
                         boxShadow: token.Shadow.ShadowDp6,
                     },
                 },
@@ -271,7 +269,7 @@ export const Citation = React.memo(({
                 component="sup"
                 ref={ref}
                 sx={{
-                    background: theme.palette.semantic.colorBackgroundDisabled,
+                    background: 'var(--color-background-disabled)',
                     display: 'inline-flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -281,7 +279,7 @@ export const Citation = React.memo(({
                     borderRadius: token.Border.BorderRadiusM,
                     marginTop: `-${token.Spacing.SpacingMicro}`,
                     outline: 'none',
-                    '&:focus-visible': { outline: `1px solid ${theme.palette.semantic.colorFocusIndicator}` },
+                    '&:focus-visible': { outline: `1px solid var(--color-focus-indicator)` },
                 }}
                 data-citation-sup="true"
                 tabIndex={0}
@@ -293,7 +291,7 @@ export const Citation = React.memo(({
                 onClick={handleClick}
                 onKeyDown={handleKeyDown}
             >
-                <ap-typography color={theme.palette.semantic.colorForeground} variant={spacing.markdownTokens.citation}>
+                <ap-typography color={'var(--color-foreground)'} variant={spacing.markdownTokens.citation}>
                     {id}
                 </ap-typography>
             </Box>

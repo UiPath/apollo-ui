@@ -64,7 +64,7 @@ const MessageBoxComponent = styled('div')<{
     isAssistant: boolean;
     isCustomWidget?: boolean;
 }>(({
-    theme, isAssistant, isCustomWidget,
+    isAssistant, isCustomWidget,
 }) => {
     const chatService = useChatService();
     const { spacing } = useChatState();
@@ -110,7 +110,7 @@ const MessageBoxComponent = styled('div')<{
         alignSelf: isAssistant ? 'flex-start' : 'flex-end',
         gap: spacing.messageGroupGap,
         borderRadius: token.Border.BorderRadiusL,
-        backgroundColor: isAssistant ? 'unset' : `var(--custom-autopilot-chat-user-message-bg-color, ${theme.palette.semantic.colorBackgroundSecondary})`,
+        backgroundColor: isAssistant ? 'unset' : `var(--custom-autopilot-chat-user-message-bg-color, var(--color-background-secondary))`,
         marginLeft: isAssistant ? '0' : `${padding}px`,
         marginRight: isAssistant ? token.Spacing.SpacingXl : '0',
         whiteSpace: 'normal',

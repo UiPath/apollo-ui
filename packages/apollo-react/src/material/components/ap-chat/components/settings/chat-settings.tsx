@@ -14,12 +14,12 @@ import { CHAT_DRAWER_WIDTH_FULL_SCREEN } from '../../service';
 import { AutopilotChatSettingsHeader } from './chat-settings-header';
 
 const ChatSettingsContainer = styled('div')<{ isOpen: boolean; isFullScreen: boolean }>(({
-    theme, isOpen, isFullScreen,
+    isOpen, isFullScreen,
 }) => ({
     display: 'flex',
     flexDirection: 'column',
     gap: token.Spacing.SpacingL,
-    backgroundColor: theme.palette.semantic.colorBackgroundSecondary,
+    backgroundColor: 'var(--color-background-secondary)',
     height: '100%',
     zIndex: 1,
     transition: 'width 0.3s ease, padding 0.3s ease',

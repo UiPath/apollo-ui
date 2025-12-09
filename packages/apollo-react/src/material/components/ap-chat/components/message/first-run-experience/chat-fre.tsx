@@ -1,9 +1,6 @@
 import React from 'react';
 
-import {
-  styled,
-  useTheme,
-} from '@mui/material';
+import { styled } from '@mui/material';
 import token from '@uipath/apollo-core';
 
 import { useChatState } from '../../../providers/chat-state-provider';
@@ -29,7 +26,6 @@ const FREHeader = styled('div')(() => ({
 }));
 
 function AutopilotChatFREComponent() {
-    const theme = useTheme();
     const {
         firstRunExperience, spacing,
     } = useChatState();
@@ -43,13 +39,13 @@ function AutopilotChatFREComponent() {
             <FREHeader>
                 <ap-typography
                     variant={spacing.titleFontToken}
-                    color={theme.palette.semantic.colorForeground}
+                    color={'var(--color-foreground)'}
                 >
                     {firstRunExperience.title}
                 </ap-typography>
                 <ap-typography
                     variant={spacing.primaryFontToken}
-                    color={theme.palette.semantic.colorForegroundDeEmp}
+                    color={'var(--color-foreground-de-emp)'}
                 >
                     {firstRunExperience.description}
                 </ap-typography>

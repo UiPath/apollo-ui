@@ -3,24 +3,21 @@ import React from 'react';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import {
-  styled,
-  useTheme,
-} from '@mui/material/styles';
+import { styled } from '@mui/material/styles';
 import token, { FontVariantToken } from '@uipath/apollo-core';
 
 import { AutopilotChatCustomHeaderAction } from '../../service';
 import { AutopilotChatTooltip } from '../common/tooltip';
 
-const StyledMenuItem = styled(MenuItem)(({ theme }) => ({
+const StyledMenuItem = styled(MenuItem)((() => ({
     display: 'flex',
     alignItems: 'center',
     padding: `${token.Spacing.SpacingXs} ${token.Spacing.SpacingS}`,
     gap: token.Spacing.SpacingMicro,
     cursor: 'pointer',
     fontSize: FontVariantToken.fontSizeS,
-    color: theme.palette.semantic.colorForeground,
-}));
+    color: 'var(--color-foreground)',
+})));
 
 const NestedMenuContainer = styled('div')({
     display: 'flex',
@@ -45,7 +42,6 @@ interface NestedMenuItemProps {
 const NestedMenuItem = React.memo(React.forwardRef<HTMLLIElement, NestedMenuItemProps>(({
     action, onActionClick, isFirst = false,
 }, ref) => {
-    const theme = useTheme();
     const [ open, setOpen ] = React.useState(false);
     const menuItemRef = React.useRef<HTMLLIElement | null>(null);
     const submenuRef = React.useRef<HTMLDivElement | null>(null);
@@ -193,7 +189,7 @@ const NestedMenuItem = React.memo(React.forwardRef<HTMLLIElement, NestedMenuItem
                     title={
                         action.description ? (
                             <ap-typography
-                                color={theme.palette.semantic.colorForegroundInverse}
+                                color={'var(--color-foreground-inverse)'}
                                 variant={FontVariantToken.fontSizeS}
                             >
                                 {action.description}
@@ -271,7 +267,7 @@ const NestedMenuItem = React.memo(React.forwardRef<HTMLLIElement, NestedMenuItem
                                     title={
                                         child.description ? (
                                             <ap-typography
-                                                color={theme.palette.semantic.colorForegroundInverse}
+                                                color={'var(--color-foreground-inverse)'}
                                                 variant={FontVariantToken.fontSizeS}
                                             >
                                                 {child.description}
