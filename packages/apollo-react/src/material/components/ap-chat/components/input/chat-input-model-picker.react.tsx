@@ -4,8 +4,8 @@ import { t } from '../../../../utils/localization/loc';
 import { useChatService } from '../../providers/chat-service.provider.react';
 import { usePicker } from '../../providers/picker-provider.react';
 import {
-    DropdownOption,
-    DropdownPicker,
+  DropdownOption,
+  DropdownPicker,
 } from '../common/dropdown-picker';
 
 function AutopilotChatInputModelPickerComponent({ useIcon }: { useIcon: boolean }) {

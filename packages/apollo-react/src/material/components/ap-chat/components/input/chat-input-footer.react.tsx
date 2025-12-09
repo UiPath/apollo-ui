@@ -1,10 +1,10 @@
+import React from 'react';
+
 import {
-    Box,
-    useTheme,
+  Box,
+  useTheme,
 } from '@mui/material';
 import { FontVariantToken } from '@uipath/apollo-core';
-// eslint-disable-next-line unused-imports/no-unused-imports
-import React from 'react';
 
 import { t } from '../../../../utils/localization/loc';
 import { useChatState } from '../../providers/chat-state-provider.react';

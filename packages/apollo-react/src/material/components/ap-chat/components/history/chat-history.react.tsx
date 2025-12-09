@@ -12,7 +12,7 @@ import {
   isToday,
   isYesterday,
 } from 'date-fns';
-import { debounce } from 'debounce';
+import debounce from 'debounce';
 import FocusLock from 'react-focus-lock';
 
 import SearchIcon from '@mui/icons-material/Search';
