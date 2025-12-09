@@ -319,7 +319,7 @@ export class AutopilotChatService {
 
         if (!renderer) {
             if ((globalThis as any)['__StencilReactAdapter_EnableDebugging']) {
-                // eslint-disable-next-line no-console
+                 
                 console.warn(`AutopilotChatService: Message renderer with name ${name} not found, using markdown renderer`);
             }
         }
