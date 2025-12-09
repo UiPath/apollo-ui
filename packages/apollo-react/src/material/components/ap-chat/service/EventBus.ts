@@ -1,4 +1,4 @@
-import type { AutopilotChatEventInterceptor } from '../types/AutopilotChatModel';
+import type { AutopilotChatEventInterceptor } from './ChatModel';
 
 export type EventHandler<T = any> = (data?: T) => void;
 

@@ -3,13 +3,13 @@
  * The storage is organized with two databases: one for conversations and one for messages.
  */
 
-import type { AutopilotChatMessage } from '../types/AutopilotChatModel';
-import {
-    AutopilotChatEvent,
-    AutopilotChatInterceptableEvent,
-    AutopilotChatInternalEvent,
-} from '../types/AutopilotChatModel';
 import { CHAT_ACTIVE_CONVERSATION_ID_KEY } from './ChatConstants';
+import type { AutopilotChatMessage } from './ChatModel';
+import {
+  AutopilotChatEvent,
+  AutopilotChatInterceptableEvent,
+  AutopilotChatInternalEvent,
+} from './ChatModel';
 import type { AutopilotChatService } from './ChatService';
 import { StorageService } from './StorageService';
 

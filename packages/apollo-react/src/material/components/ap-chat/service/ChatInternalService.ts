@@ -1,7 +1,7 @@
 import type {
-    AutopilotChatEventHandler,
-    AutopilotChatInternalEvent,
-} from '../types/AutopilotChatModel';
+  AutopilotChatEventHandler,
+  AutopilotChatInternalEvent,
+} from './ChatModel';
 import { EventBus } from './EventBus';
 
 export class AutopilotChatInternalService {

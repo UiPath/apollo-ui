@@ -1,43 +1,42 @@
-import type {
-    AutopilotChatAgentModeInfo,
-    AutopilotChatAllowedAttachments,
-    AutopilotChatConfiguration,
-    AutopilotChatCustomHeaderAction,
-    AutopilotChatDisabledFeatures,
-    AutopilotChatError,
-    AutopilotChatErrorLevel,
-    AutopilotChatEventHandler,
-    AutopilotChatEventInterceptor,
-    AutopilotChatFileInfo,
-    AutopilotChatHistory,
-    AutopilotChatInputStreamEvent,
-    AutopilotChatMessage,
-    AutopilotChatMessageRenderer,
-    AutopilotChatModelInfo,
-    AutopilotChatOutputStreamEvent,
-    AutopilotChatOverrideLabels,
-    AutopilotChatPreHookAction,
-    AutopilotChatPrompt,
-    AutopilotChatSuggestion,
-    ContentPart,
-    ContentPartChunk,
-} from '../types/AutopilotChatModel';
 import {
-    AutopilotChatEvent,
-    AutopilotChatInterceptableEvent,
-    AutopilotChatInternalEvent,
-    AutopilotChatMode,
-    AutopilotChatRole,
-} from '../types/AutopilotChatModel';
-import {
-    ACCEPTED_FILE_MAX_COUNT,
-    ACCEPTED_FILE_MAX_SIZE,
-    ACCEPTED_FILES,
-    CHAT_INSTANCE_DEFAULT_NAME,
-    DEFAULT_MESSAGE_RENDERER,
-    getChatModeKey,
+  ACCEPTED_FILE_MAX_COUNT,
+  ACCEPTED_FILE_MAX_SIZE,
+  ACCEPTED_FILES,
+  CHAT_INSTANCE_DEFAULT_NAME,
+  DEFAULT_MESSAGE_RENDERER,
 } from './ChatConstants';
 import { AutopilotChatInternalService } from './ChatInternalService';
+import type {
+  AutopilotChatAgentModeInfo,
+  AutopilotChatAllowedAttachments,
+  AutopilotChatConfiguration,
+  AutopilotChatCustomHeaderAction,
+  AutopilotChatDisabledFeatures,
+  AutopilotChatError,
+  AutopilotChatErrorLevel,
+  AutopilotChatEventHandler,
+  AutopilotChatEventInterceptor,
+  AutopilotChatFileInfo,
+  AutopilotChatHistory,
+  AutopilotChatInputStreamEvent,
+  AutopilotChatMessage,
+  AutopilotChatMessageRenderer,
+  AutopilotChatModelInfo,
+  AutopilotChatOutputStreamEvent,
+  AutopilotChatOverrideLabels,
+  AutopilotChatPreHookAction,
+  AutopilotChatPrompt,
+  AutopilotChatSuggestion,
+  ContentPart,
+  ContentPartChunk,
+} from './ChatModel';
+import {
+  AutopilotChatEvent,
+  AutopilotChatInterceptableEvent,
+  AutopilotChatInternalEvent,
+  AutopilotChatMode,
+  AutopilotChatRole,
+} from './ChatModel';
 import { ContentPartBuilder } from './ContentPartBuilder';
 import { EventBus } from './EventBus';
 import { LocalHistoryService } from './LocalHistory';
@@ -46,33 +45,32 @@ import { StorageService } from './StorageService';
 export class AutopilotChatService {
     private static _instances: Record<string, AutopilotChatService> = {};
     private _initialConfig: AutopilotChatConfiguration = {
-        mode: StorageService.Instance.get(getChatModeKey()) as AutopilotChatMode
-            ?? AutopilotChatMode.Closed,
-        allowedAttachments: {
-            multiple: true,
-            types: ACCEPTED_FILES,
-            maxSize: ACCEPTED_FILE_MAX_SIZE,
-            maxCount: ACCEPTED_FILE_MAX_COUNT,
-        },
-        // Settings will be disabled by default since each consumer needs to implement their own settings page
-        // Header Separator will be disabled by default, consumers can selectively enable it
-        // Or the framework will provide a settings page that will be used by all framework consumers
-        // Audio will be disabled by default since each consumer needs to implement their own audio support
-        // FullHeight will be disabled by default since most of the consumers will have the portal-shell header
-        // HtmlPreview will be disabled by default
-        disabledFeatures: {
-            settings: true,
-            headerSeparator: true,
-            audio: true,
-            fullHeight: true,
-            htmlPreview: true,
-        },
-        settingsRenderer: () => {},
-        models: undefined,
-        selectedAgentMode: undefined,
-        selectedModel: undefined,
-        paginatedMessages: false,
-        paginatedHistory: false,
+      mode: AutopilotChatMode.Closed,
+      allowedAttachments: {
+          multiple: true,
+          types: ACCEPTED_FILES,
+          maxSize: ACCEPTED_FILE_MAX_SIZE,
+          maxCount: ACCEPTED_FILE_MAX_COUNT,
+      },
+      // Settings will be disabled by default since each consumer needs to implement their own settings page
+      // Header Separator will be disabled by default, consumers can selectively enable it
+      // Or the framework will provide a settings page that will be used by all framework consumers
+      // Audio will be disabled by default since each consumer needs to implement their own audio support
+      // FullHeight will be disabled by default since most of the consumers will have the portal-shell header
+      // HtmlPreview will be disabled by default
+      disabledFeatures: {
+          settings: true,
+          headerSeparator: true,
+          audio: true,
+          fullHeight: true,
+          htmlPreview: true,
+      },
+      settingsRenderer: () => {},
+      models: undefined,
+      selectedAgentMode: undefined,
+      selectedModel: undefined,
+      paginatedMessages: false,
+      paginatedHistory: false,
     };
     private _config: AutopilotChatConfiguration = { ...this._initialConfig };
     private _eventBus: EventBus;
@@ -93,6 +91,7 @@ export class AutopilotChatService {
     private _instanceName: string;
     private _contentPartBuilders: Map<string, ContentPartBuilder> = new Map();
     private _customHeaderActions: AutopilotChatCustomHeaderAction[] = [];
+    private _getChatModeKey: (instanceName?: string) => string = () => '';
 
     private constructor(instanceName: string) {
         this._instanceName = instanceName;
@@ -154,6 +153,7 @@ export class AutopilotChatService {
         this.setAttachmentsLoading = this.setAttachmentsLoading.bind(this);
         this.setCustomHeaderActions = this.setCustomHeaderActions.bind(this);
         this.getCustomHeaderActions = this.getCustomHeaderActions.bind(this);
+        this.setGetChatModeKey = this.setGetChatModeKey.bind(this);
     }
 
     static Instantiate({
@@ -173,7 +173,7 @@ export class AutopilotChatService {
             AutopilotChatService._instances[instanceName].initialize(config);
         }
 
-        messageRenderers.forEach(renderer => AutopilotChatService._instances[instanceName].injectMessageRenderer(renderer));
+        messageRenderers.forEach(renderer => AutopilotChatService._instances[instanceName]!.injectMessageRenderer(renderer));
 
         return AutopilotChatService._instances[instanceName];
     }
@@ -194,6 +194,10 @@ export class AutopilotChatService {
      */
     getConfig() {
         return this._config;
+    }
+
+    setGetChatModeKey(getChatModeKey: (_instanceName?: string) => string) {
+      this._getChatModeKey = getChatModeKey;
     }
 
     /**
@@ -375,21 +379,21 @@ export class AutopilotChatService {
      * Expands the chat window
      */
     setChatMode(mode: AutopilotChatMode, persist: boolean = true) {
-        const key = getChatModeKey(this._instanceName);
-        const storedMode = StorageService.Instance.get(key);
+      const key = this._getChatModeKey(this._instanceName);
+      const storedMode = StorageService.Instance.get(key);
 
-        if (storedMode && mode === AutopilotChatMode.Closed) {
-            StorageService.Instance.remove(key);
-        }
+      if (storedMode && mode === AutopilotChatMode.Closed) {
+          StorageService.Instance.remove(key);
+      }
 
-        if (persist && mode !== AutopilotChatMode.Closed) {
-            StorageService.Instance.set(key, mode);
-        }
+      if (persist && mode !== AutopilotChatMode.Closed) {
+          StorageService.Instance.set(key, mode);
+      }
 
-        this._config.mode = mode;
+      this._config.mode = mode;
 
-        this._eventBus.publish(AutopilotChatEvent.ModeChange, mode);
-    }
+      this._eventBus.publish(AutopilotChatEvent.ModeChange, mode);
+  }
 
     /**
      * Sets the enabled features in the chat service
@@ -639,10 +643,12 @@ export class AutopilotChatService {
         if (existingIndex !== -1) {
             if (response.stream) {
                 // send chunk if the response is streaming
-                this._conversation[existingIndex].content += assistantMessage.content;
-                this._conversation[existingIndex].done = !!response.done;
-                this._conversation[existingIndex].meta = response.meta ?? this._conversation[existingIndex].meta;
-                this._conversation[existingIndex].groupId = assistantMessage.groupId ?? this._conversation[existingIndex].groupId;
+                if (this._conversation[existingIndex]) {
+                  this._conversation[existingIndex].content += assistantMessage.content;
+                  this._conversation[existingIndex].done = !!response.done;
+                  this._conversation[existingIndex].meta = response.meta ?? this._conversation[existingIndex].meta;
+                  this._conversation[existingIndex].groupId = assistantMessage.groupId ?? this._conversation[existingIndex].groupId;
+                }
                 this._eventBus.publish(AutopilotChatEvent.SendChunk, assistantMessage);
             } else {
                 // send response if the response is not streaming
@@ -979,7 +985,7 @@ export class AutopilotChatService {
         this._config.agentModes = agentModes;
 
         // if none is selected, select the first one
-        if (!this._config.selectedAgentMode) {
+        if (!this._config.selectedAgentMode && agentModes[0]) {
             this.setAgentMode(agentModes[0].id);
         }
 

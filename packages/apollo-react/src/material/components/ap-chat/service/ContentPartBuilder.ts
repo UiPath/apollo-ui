@@ -1,9 +1,9 @@
 import type {
-    ContentPart,
-    ContentPartChunk,
-    PdfCitation,
-    UrlCitation,
-} from '../types/AutopilotChatModel';
+  ContentPart,
+  ContentPartChunk,
+  PdfCitation,
+  UrlCitation,
+} from './ChatModel';
 
 /**
  * Utility class for building and accumulating ContentParts from streaming chunks

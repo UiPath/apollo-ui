@@ -1,5 +1,3 @@
-import { ServiceType } from '../constants/ServiceConstants';
-
 export const DEFAULT_MESSAGE_RENDERER = 'apollo-markdown-renderer';
 export const AGENTS_TOOL_CALL_RENDERER = 'apollo-agents-tool-call';
 export const APOLLO_CHAT_TREE_RENDERER = 'apollo-chat-tree-renderer';
@@ -49,39 +47,3 @@ export const CHAT_COMPACT_MODE_MESSAGE_SPACING = 8;
 export const CHAT_MESSAGE_GROUP_GAP = 16;
 export const CHAT_COMPACT_MODE_MESSAGE_GROUP_GAP = 8;
 export const CHAT_SUGGESTION_SPACING = 8;
-
-export const getChatModeKey = (instanceName = CHAT_INSTANCE_DEFAULT_NAME) => {
-    const CHAT_MODE_KEY = 'mode';
-    // GUID pattern: 8-4-4-4-12 hex characters with optional braces
-    const guidPattern = /\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b/gi;
-
-    const pathParts = window.location.pathname.split('/');
-    const serviceIndex = pathParts.findIndex(path => {
-        if (!path.endsWith('_')) {
-            return false;
-        }
-
-        const pathWithoutUnderscore = path.slice(0, -1);
-
-        return Object.values(ServiceType).includes(pathWithoutUnderscore as ServiceType);
-    });
-
-    const pathname = window.location.pathname;
-
-    if (window.location.hostname === 'localhost') {
-        // Replace GUIDs in pathname for localhost
-        const normalizedPathname = pathname.replace(guidPattern, '<GUID>');
-        return `${CHAT_MODE_KEY}-${instanceName}-${normalizedPathname}`;
-    }
-
-    if (serviceIndex === -1) {
-        return CHAT_MODE_KEY;
-    }
-
-    // Replace GUIDs in the path parts
-    const normalizedPath = pathParts.slice(serviceIndex)
-        .map(part => part.replace(guidPattern, '<GUID>'))
-        .join('/');
-
-    return `${CHAT_MODE_KEY}-${instanceName}-${normalizedPath}`;
-};

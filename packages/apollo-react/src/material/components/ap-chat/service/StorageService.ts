@@ -7,7 +7,7 @@ export interface Storage {
 
 export class StorageService implements Storage {
     private static instance: StorageService;
-    private readonly prefix = 'autopilot-chat-';
+    private readonly prefix = 'ap-chat-';
 
     private constructor() {}
 
