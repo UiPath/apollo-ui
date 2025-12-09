@@ -8,19 +8,37 @@ import {
     SelectTrigger,
     SelectValue,
 } from "../../components/ui/select";
-import { themes, type ThemeName } from "../themes";
+import { themes, type ThemeName, hasCustomTheme } from "../themes";
 
 const THEME_STORAGE_KEY = "apollo-vertex-theme";
 
 export function ThemeSwitcher() {
     const [selectedTheme, setSelectedTheme] = useState<ThemeName>("ocean");
+    const [showCustom, setShowCustom] = useState(false);
 
     useEffect(() => {
+        // Check if custom theme exists
+        setShowCustom(hasCustomTheme());
+
         // Load saved theme from localStorage
         const savedTheme = localStorage.getItem(THEME_STORAGE_KEY);
-        if (savedTheme && savedTheme in themes) {
+        if (savedTheme && (savedTheme in themes || savedTheme === "custom")) {
             setSelectedTheme(savedTheme as ThemeName);
         }
+
+        // Listen for custom theme changes
+        const handleStorageChange = () => {
+            setShowCustom(hasCustomTheme());
+        };
+
+        window.addEventListener("storage", handleStorageChange);
+        // Also listen for theme-change events in case they happen in the same tab
+        window.addEventListener("theme-change", handleStorageChange);
+
+        return () => {
+            window.removeEventListener("storage", handleStorageChange);
+            window.removeEventListener("theme-change", handleStorageChange);
+        };
     }, []);
 
     const handleThemeChange = (value: string) => {
@@ -45,6 +63,11 @@ export function ThemeSwitcher() {
                         {theme.name}
                     </SelectItem>
                 ))}
+                {showCustom && (
+                    <SelectItem value="custom">
+                        Custom
+                    </SelectItem>
+                )}
             </SelectContent>
         </Select>
     );

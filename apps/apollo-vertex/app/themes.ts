@@ -113,5 +113,26 @@ export const themes = {
     },
 } as const;
 
-export type ThemeName = keyof typeof themes;
+export type ThemeName = keyof typeof themes | "custom";
+
+const CUSTOM_THEME_STORAGE_KEY = "apollo-vertex-custom-theme";
+
+export function getCustomTheme(): ThemeConfig | null {
+    if (typeof window === "undefined") return null;
+
+    const savedTheme = localStorage.getItem(CUSTOM_THEME_STORAGE_KEY);
+    if (!savedTheme) return null;
+
+    try {
+        return JSON.parse(savedTheme);
+    } catch (e) {
+        console.error("Failed to parse custom theme", e);
+        return null;
+    }
+}
+
+export function hasCustomTheme(): boolean {
+    if (typeof window === "undefined") return false;
+    return localStorage.getItem(CUSTOM_THEME_STORAGE_KEY) !== null;
+}
 
