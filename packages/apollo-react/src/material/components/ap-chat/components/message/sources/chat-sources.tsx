@@ -15,6 +15,7 @@ import {
 import token from '@uipath/apollo-core';
 
 import { ApTypography } from '../../../../ap-typography';
+import { AutopilotChatIcon } from '../../common/icon';
 import { useIsStreamingMessage } from '../../../hooks/use-is-streaming-message';
 import { useChatService } from '../../../providers/chat-service.provider';
 import { useChatState } from '../../../providers/chat-state-provider';
@@ -239,9 +240,9 @@ function AutopilotChatSourcesComponent({
     return (
         <StyledContainer>
             <StyledToggleButton component="button" title={_(msg({ id: 'autopilot-chat.message.sources', message: `Sources` }))} onClick={handleToggleExpand}>
-                <ap-icon
-                    name="link"
+                <AutopilotChatIcon
                     variant="outlined"
+                    name="link"
                     size={spacing.compactMode ? token.Icon.IconS : token.Icon.IconM}
                     color={'var(--color-foreground)'}
                 />
@@ -277,7 +278,7 @@ function AutopilotChatSourcesComponent({
                                             onClick={() => handleSourceClick(source)}
                                             tabIndex={ !showFullList && (index > COLLAPSED_ITEMS_COUNT - 1) ? -1 : 0 }
                                         >
-                                            <ap-icon
+                                            <AutopilotChatIcon
                                                 variant={isUrl ? 'custom' : 'outlined'}
                                                 name={isUrl ? 'website' : 'file_open'}
                                                 size={token.Icon.IconXs}
@@ -314,7 +315,7 @@ function AutopilotChatSourcesComponent({
                                 >
                                     {showFullList ? _(msg({ id: 'autopilot-chat.message.show-less', message: `Show less` })) : _(msg({ id: 'autopilot-chat.message.show-more', message: `Show more` }))}
                                 </ApTypography>
-                                <ap-icon
+                                <AutopilotChatIcon
                                     name={showFullList ? 'expand_less' : 'expand_more'}
                                     variant="outlined"
                                     size={token.Icon.IconXs}

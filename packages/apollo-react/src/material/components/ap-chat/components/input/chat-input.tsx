@@ -26,7 +26,7 @@ import { AutopilotChatInputAttachments } from './chat-input-attachments';
 import { AutopilotChatInputError } from './chat-input-error';
 import { AutopilotChatInputFooter } from './chat-input-footer';
 
-export const InputContainer = styled('div')<{ primaryFontToken: FontVariantToken }>(({
+const InputContainer = styled('div')<{ primaryFontToken: FontVariantToken }>(({
     primaryFontToken,
 }) => ({
     border: `${token.Border.BorderThickM} solid transparent`,
@@ -58,14 +58,17 @@ export const InputContainer = styled('div')<{ primaryFontToken: FontVariantToken
 
         '&::placeholder': { color: 'var(--color-foreground-de-emp)' },
 
-        ...(primaryFontToken && {
-            '&, &::placeholder': {
-                fontSize: fontByVariant(primaryFontToken).fontSize,
-                fontFamily: fontByVariant(primaryFontToken).fontFamily,
-                lineHeight: fontByVariant(primaryFontToken).lineHeight,
-                fontWeight: fontByVariant(primaryFontToken).fontWeight,
-            },
-        }),
+        ...(primaryFontToken && (() => {
+            const fontToken = fontByVariant(primaryFontToken);
+            return fontToken ? {
+                '&, &::placeholder': {
+                    fontSize: fontToken.fontSize,
+                    fontFamily: fontToken.fontFamily,
+                    lineHeight: fontToken.lineHeight,
+                    fontWeight: fontToken.fontWeight,
+                },
+            } : {};
+        })()),
     },
 }));
 

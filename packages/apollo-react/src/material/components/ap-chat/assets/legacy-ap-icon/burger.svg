@@ -1,0 +1,5 @@
+<svg class="portal-svg" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" alt="burger">
+    <path class="burger-svg" d="M4 7H20V4H4V7Z"/>
+    <path class="burger-svg" d="M4 20H20V17H4V20Z"/>
+    <path class="burger-svg" d="M4 13.5H20V10.5H4V13.5Z"/>
+</svg>

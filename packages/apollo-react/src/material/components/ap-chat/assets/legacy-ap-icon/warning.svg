@@ -1,0 +1,5 @@
+<svg class="portal-svg" width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" alt="warning">
+<path d="M1.66663 35H38.3333L20 3.33334L1.66663 35Z" class="warning-svg"/>
+<path d="M21.6666 30.0003H18.3333V26.667H21.6666V30.0003Z" class="warning-shebang-svg" stroke-width="0.25"/>
+<path d="M21.6666 23.4587H21.7916V23.3337V16.667V16.542H21.6666H18.3333H18.2083V16.667V23.3337V23.4587H18.3333H21.6666Z" class="warning-shebang-svg" stroke-width="0.25"/>
+</svg>

@@ -1,15 +1,16 @@
 import React from 'react';
 
 import {
+  Button,
   styled,
   TooltipProps,
 } from '@mui/material';
 import token from '@uipath/apollo-core';
 
-import { ApButtonReact } from '../../../ap-button/ap-button';
-import { ApIconButtonReact } from '../../../ap-icon-button/ap-icon-button';
 import { useChatState } from '../../providers/chat-state-provider';
 import { AutopilotChatMode } from '../../service';
+import { AutopilotChatIcon } from './icon';
+import { AutopilotChatIconButton } from './icon-button';
 import { AutopilotChatTooltip } from './tooltip';
 
 const StyledButtonContainer = styled('div')(() => ({
@@ -30,8 +31,6 @@ const StyledButtonContainer = styled('div')(() => ({
         },
     },
 }));
-
-const StyledIconButton = styled(ApIconButtonReact)(() => ({ '&.MuiIconButton-root': { borderRadius: token.Border.BorderRadiusM } }));
 
 /**
  * Either onClick or onPress and onRelease are required.
@@ -110,9 +109,9 @@ const AutopilotChatActionButtonComponent = React.forwardRef<HTMLButtonElement, A
 
     const button = text ? (
         <StyledButtonContainer>
-            <ApButtonReact
+            <Button
                 ref={ref}
-                onMouseEnter={(event: React.MouseEvent<HTMLElement>) => {
+                onMouseEnter={(event: React.MouseEvent<HTMLButtonElement>) => {
                     onMouseEnter?.(event);
                     if (!preventHover) {
                         setIconColor('var(--color-foreground-emp)');
@@ -132,12 +131,11 @@ const AutopilotChatActionButtonComponent = React.forwardRef<HTMLButtonElement, A
                     }
                 }}
                 startIcon={
-                    <ap-icon
-                        variant={variant}
-                        size={iconSize ? iconSize : token.Icon.IconM}
-                        color={overrideColor ?? iconColor}
+                    <AutopilotChatIcon
                         name={iconName}
-                        aria-hidden="true"
+                        variant={variant}
+                        size={iconSize || token.Icon.IconM}
+                        color={overrideColor ?? iconColor}
                     />
                 }
                 aria-label={ariaLabel}
@@ -145,7 +143,7 @@ const AutopilotChatActionButtonComponent = React.forwardRef<HTMLButtonElement, A
                 title={title}
                 variant="text"
                 size="small"
-                label={text}
+                disabled={disabled}
                 onClick={onClick}
                 onFocus={onFocus}
                 onBlur={onBlur}
@@ -162,10 +160,12 @@ const AutopilotChatActionButtonComponent = React.forwardRef<HTMLButtonElement, A
                 tabIndex={tabIndex}
                 onKeyDown={onKeyDown}
                 data-testid={dataTestId}
-            />
+            >
+                {text}
+            </Button>
         </StyledButtonContainer>
     ) : (
-        <StyledIconButton
+        <AutopilotChatIconButton
             ref={ref}
             disabled={disabled}
             color="secondary"
@@ -206,15 +206,13 @@ const AutopilotChatActionButtonComponent = React.forwardRef<HTMLButtonElement, A
             }}
             data-testid={dataTestId}
         >
-            <ap-icon
-                variant={variant}
-                size={iconSize ? iconSize : token.Icon.IconXs}
-                color={overrideColor ?? iconColor}
+            <AutopilotChatIcon
                 name={iconName}
-                aria-hidden="true"
-                customvariantdisplay="flex"
+                variant={variant}
+                size={iconSize || token.Icon.IconXs}
+                color={overrideColor ?? iconColor}
             />
-        </StyledIconButton>
+        </AutopilotChatIconButton>
     );
 
     return tooltip && chatMode !== AutopilotChatMode.Closed && !disabled ? (

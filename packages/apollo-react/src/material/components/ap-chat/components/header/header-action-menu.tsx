@@ -8,6 +8,7 @@ import token, { FontVariantToken } from '@uipath/apollo-core';
 
 import { ApTypography } from '../../../ap-typography';
 import { AutopilotChatCustomHeaderAction } from '../../service';
+import { AutopilotChatIcon } from '../common/icon';
 import { AutopilotChatTooltip } from '../common/tooltip';
 
 const StyledMenuItem = styled(MenuItem)((() => ({
@@ -201,7 +202,7 @@ const NestedMenuItem = React.memo(React.forwardRef<HTMLLIElement, NestedMenuItem
                     <NestedMenuContainer>
                         <MenuItemContent>
                             {action.icon && (
-                                <ap-icon
+                                <AutopilotChatIcon
                                     variant="outlined"
                                     name={action.icon}
                                     size={token.Icon.IconXs}
@@ -278,7 +279,7 @@ const NestedMenuItem = React.memo(React.forwardRef<HTMLLIElement, NestedMenuItem
                                 >
                                     <MenuItemContent>
                                         {child.icon && (
-                                            <ap-icon
+                                            <AutopilotChatIcon
                                                 variant="outlined"
                                                 name={child.icon}
                                                 size={token.Icon.IconXs}

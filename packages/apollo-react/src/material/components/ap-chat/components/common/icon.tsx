@@ -1,0 +1,62 @@
+import React from 'react';
+
+import {
+  Icon,
+  SvgIcon,
+} from '@mui/material';
+import token from '@uipath/apollo-core';
+
+import * as LegacyIcons from '../../assets/legacy-ap-icon/index';
+
+// Convert snake_case to PascalCase for legacy icon lookup
+const snakeToPascal = (str: string): string =>
+    str.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join('');
+
+export interface AutopilotChatIconProps {
+    name: string;
+    size?: string;
+    color?: string;
+    variant?: 'normal' | 'outlined' | 'custom';
+}
+
+export const AutopilotChatIcon: React.FC<AutopilotChatIconProps> = ({
+    name,
+    size,
+    color,
+    variant = 'normal',
+}) => {
+    // Handle Material Icons (when variant is 'outlined' or 'normal')
+    if (variant === 'outlined' || variant === 'normal') {
+        return (
+            <Icon
+                className={variant === 'outlined' ? 'material-icons-outlined' : 'material-icons'}
+                sx={{
+                    fontSize: size || token.Icon.IconM,
+                    color: color || 'currentColor',
+                }}
+            >
+                {name}
+            </Icon>
+        );
+    }
+
+    // Handle custom icons - check legacy icons first (snake_case names)
+    const legacyIconName = snakeToPascal(name);
+    
+    const LegacyIconComponent = (LegacyIcons as any)[legacyIconName];
+    if (LegacyIconComponent) {
+        return (
+            <SvgIcon
+                component={LegacyIconComponent}
+                sx={{
+                    width: size || token.Icon.IconM,
+                    height: size || token.Icon.IconM,
+                    color: color || 'currentColor',
+                }}
+            />
+        );
+    }
+
+    console.warn(`Icon "${name}" not found in legacy or core icons`);
+    return null;
+};

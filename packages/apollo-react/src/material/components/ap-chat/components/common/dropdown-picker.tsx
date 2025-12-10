@@ -15,6 +15,7 @@ import { useChatState } from '../../providers/chat-state-provider';
 import { AutopilotChatInternalEvent } from '../../service';
 import { AutopilotChatActionButton } from './action-button';
 import { AutopilotChatTooltip } from './tooltip';
+import { AutopilotChatIcon } from './icon';
 
 export interface DropdownOption<T = string> {
     id: T;
@@ -168,7 +169,7 @@ export function DropdownPicker<T = string>({
                     aria-expanded={open}
                     aria-label={_(msg({ id: 'autopilot-chat.common.mode-selector', message: `Mode selector` }))}
                 >
-                    {selectedOption.icon && <ap-icon variant="outlined" name={selectedOption.icon} size={token.Icon.IconXs} />}
+                    {selectedOption.icon && <AutopilotChatIcon variant="outlined" name={selectedOption.icon} size={token.Icon.IconXs} />}
                     <ApTypography variant={spacing.primaryFontToken}>{selectedOption.name}</ApTypography>
                     <KeyboardArrowDownIcon
                         className={`arrow-icon ${open ? 'open' : ''}`}
@@ -226,7 +227,7 @@ export function DropdownPicker<T = string>({
                                 gap: token.Spacing.SpacingMicro,
                                 width: '100%',
                             }}>
-                                {option.icon && <ap-icon variant="outlined" name={option.icon} size={token.Icon.IconXs} />}
+                                {option.icon && <AutopilotChatIcon variant="outlined" name={option.icon} size={token.Icon.IconXs} />}
                                 <ApTypography variant={spacing.primaryFontToken}>{option.name}</ApTypography>
                             </div>
                         </AutopilotChatTooltip>

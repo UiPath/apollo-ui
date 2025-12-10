@@ -328,12 +328,12 @@ const AudioControlsContainer = styled('div')(({ theme }) => ({
     '& .audio-input-button': {
         '&.starting': { '& .MuiIconButton-root': { backgroundColor: `var(--color-background-disabled)` } },
         '&.active': {
-            '& ap-icon': { animation: `${pulseAnimation} 1.2s ease-in-out infinite` },
+            '& .MuiSvgIcon-root': { animation: `${pulseAnimation} 1.2s ease-in-out infinite` },
             '& .MuiIconButton-root': { backgroundColor: `var(--color-background-highlight)` },
         },
     },
 
-    '& .audio-output-button': { '&.playing': { '& ap-icon': { animation: `${waveAnimation} 0.8s ease-in-out infinite` } } },
+    '& .audio-output-button': { '&.playing': { '& .MuiSvgIcon-root': { animation: `${waveAnimation} 0.8s ease-in-out infinite` } } },
 }));
 
 const ErrorMessage = styled('div')(({ theme }) => ({

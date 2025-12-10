@@ -1,6 +1,8 @@
+import React from 'react';
+
 import { styled } from '@mui/material';
 
-export const VisuallyHidden = styled('span')({
+export const VisuallyHidden: React.ComponentType<React.HTMLAttributes<HTMLSpanElement>> = styled('span')({
     position: 'absolute',
     width: '1px',
     height: '1px',
