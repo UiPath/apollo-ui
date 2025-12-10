@@ -8,7 +8,7 @@ import { useChatScroll } from '../../providers/chat-scroll-provider';
 const SkeletonLoaderContainer = styled('div')(() => ({
     width: '100%',
     display: 'flex',
-    flexDirection: 'column',
+    flexDirection: 'column' as const,
     gap: token.Spacing.SpacingBase,
 }));
 

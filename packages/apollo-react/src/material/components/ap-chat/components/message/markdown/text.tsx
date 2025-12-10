@@ -3,7 +3,7 @@ import React from 'react';
 import { Box } from '@mui/material';
 import token, { FontVariantToken } from '@uipath/apollo-core';
 
-import { ApTypography } from '../../../ap-typography';
+import { ApTypography } from '../../../../ap-typography';
 import { useChatState } from '../../../providers/chat-state-provider';
 import { fontByVariant } from '../../../utils/font-by-variant';
 
@@ -47,7 +47,7 @@ export const Text = ({
 };
 
 export const getTextForVariant = (variant: FontVariantToken, headingLevel?: number) => {
-    return React.memo(({ children }: { children: React.ReactNode }) => Text({
+    return React.memo(({ children }: { children?: React.ReactNode }) => Text({
         children,
         variant,
         headingLevel,
@@ -56,7 +56,7 @@ export const getTextForVariant = (variant: FontVariantToken, headingLevel?: numb
 
 export const Break = React.memo(() => <br />);
 
-export const Blockquote = React.memo(({ children }: { children: React.ReactNode }) => {
+export const Blockquote = React.memo(({ children }: { children?: React.ReactNode }) => {
     const { spacing } = useChatState();
 
     return (
@@ -83,7 +83,7 @@ export const Blockquote = React.memo(({ children }: { children: React.ReactNode 
     );
 });
 
-export const Emphazised = React.memo(({ children }: { children: React.ReactNode }) => {
+export const Emphazised = React.memo(({ children }: { children?: React.ReactNode }) => {
     const parentVariant = React.useContext(TypographyContext);
     const { spacing } = useChatState();
 
@@ -94,7 +94,7 @@ export const Emphazised = React.memo(({ children }: { children: React.ReactNode 
     });
 });
 
-export const Strong = React.memo(({ children }: { children: React.ReactNode }) => {
+export const Strong = React.memo(({ children }: { children?: React.ReactNode }) => {
     const parentVariant = React.useContext(TypographyContext);
     const { spacing } = useChatState();
 
@@ -105,7 +105,7 @@ export const Strong = React.memo(({ children }: { children: React.ReactNode }) =
     });
 });
 
-export const Del = React.memo(({ children }: { children: React.ReactNode }) => {
+export const Del = React.memo(({ children }: { children?: React.ReactNode }) => {
     const parentVariant = React.useContext(TypographyContext);
     const { spacing } = useChatState();
 
@@ -116,7 +116,7 @@ export const Del = React.memo(({ children }: { children: React.ReactNode }) => {
     });
 });
 
-export const Pre = React.memo(({ children }: { children: React.ReactNode }) => {
+export const Pre = React.memo(({ children }: { children?: React.ReactNode }) => {
     return <Box component="pre" sx={{ margin: 0 }}>{children}</Box>;
 });
 
@@ -136,7 +136,7 @@ export const Hr = React.memo(() => {
 
 export const Link = React.memo(({
     href, children,
-}: { href?: string; children: React.ReactNode }) => {
+}: { href?: string; children?: React.ReactNode }) => {
     const parentVariant = React.useContext(TypographyContext);
     const { spacing } = useChatState();
 

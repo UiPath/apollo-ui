@@ -177,7 +177,7 @@ export function DropdownPicker<T = string>({
                 </SelectedOptionContainer>
             </AutopilotChatTooltip>
         );
-    }, [ selectedOption, useIcon, open, handleClick, handleKeyDown, iconVariant, spacing ]);
+    }, [ selectedOption, useIcon, open, handleClick, handleKeyDown, iconVariant, spacing, _ ]);
 
     return (
         <>

@@ -1,6 +1,7 @@
 import React from 'react';
 
 import {
+  type DropzoneOptions,
   ErrorCode,
   FileRejection,
   useDropzone,
@@ -17,6 +18,10 @@ import { useChatState } from '../../providers/chat-state-provider';
 import { useError } from '../../providers/error-provider';
 import { AutopilotChatFileInfo } from '../../service';
 import { parseFiles } from '../../utils/file-reader';
+
+interface AutopilotChatDropzoneProps extends DropzoneOptions {
+  children: React.ReactNode;
+}
 
 const DropzoneRoot = styled('div')({
     height: '100%',
@@ -50,7 +55,7 @@ const DropzoneOverlay = styled('div')(() => ({
 function AutopilotChatDropzoneComponent({
     children,
     ...dropzoneOptions
-}) {
+}: AutopilotChatDropzoneProps) {
     const { _ } = useLingui();
     const {
         addAttachments, attachments,
@@ -127,8 +132,8 @@ function AutopilotChatDropzoneComponent({
             } else if (parsedFiles.length === 1) {
                 addAttachments([ parsedFiles[0]! ]);
             }
-        } catch (error: string) {
-            setError(error);
+        } catch (error) {
+            setError(error as string);
             return;
         }
     }, [ addAttachments, setError, allowedAttachments.multiple, handleRejections ]);

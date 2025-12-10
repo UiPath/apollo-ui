@@ -9,12 +9,12 @@ import {
 } from '@mui/material';
 import token from '@uipath/apollo-core';
 
-import { ApTypography } from '../../../ap-typography';
+import { ApTypography } from '../../../../ap-typography';
 import { useChatState } from '../../../providers/chat-state-provider';
 import { Text } from './text';
 
 interface TableProps {
-    children: ReactNode;
+    children?: ReactNode;
 }
 
 export const Table = React.memo(({ children }: TableProps) => {

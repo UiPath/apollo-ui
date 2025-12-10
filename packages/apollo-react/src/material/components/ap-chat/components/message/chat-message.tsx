@@ -125,7 +125,7 @@ function AutopilotChatMessagesComponent({
                     stream: false,
                     done: true,
                 } : {}),
-                feedback: { isPositive: action.details?.isPositive },
+                feedback: { isPositive: !!action.details?.isPositive },
             } satisfies AutopilotChatMessage);
         }
     }, [ chatService ]);

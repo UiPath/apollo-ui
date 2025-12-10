@@ -1,9 +1,6 @@
 import React from 'react';
 
-import {
-  styled,
-  Theme,
-} from '@mui/material/styles';
+import { styled } from '@mui/material/styles';
 import token from '@uipath/apollo-core';
 
 import {
@@ -39,8 +36,8 @@ import {
 } from './service';
 
 const ChatContainer = styled('div')<{ shouldAnimate: boolean; mode: AutopilotChatMode; width: number; fullHeight: boolean }>(({
-    shouldAnimate, mode, width, theme, fullHeight,
-}: { shouldAnimate: boolean; mode: AutopilotChatMode; width: number; theme: Theme; fullHeight: boolean }) => ({
+    shouldAnimate, mode, width, fullHeight,
+}: { shouldAnimate: boolean; mode: AutopilotChatMode; width: number; fullHeight: boolean }) => ({
     width: mode === AutopilotChatMode.FullScreen ? CHAT_WIDTH_FULL_SCREEN : width,
     display: 'flex',
     flexDirection: mode === AutopilotChatMode.FullScreen ? 'column' : 'row',

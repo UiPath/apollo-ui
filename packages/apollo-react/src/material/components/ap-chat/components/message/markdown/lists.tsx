@@ -6,7 +6,7 @@ import token from '@uipath/apollo-core';
 import { useChatState } from '../../../providers/chat-state-provider';
 import { Text } from './text';
 
-export const Ul = React.memo(({ children }: { children: React.ReactNode }) => {
+export const Ul = React.memo(({ children }: { children?: React.ReactNode }) => {
     return <Box
         component="ul"
         sx={{
@@ -23,7 +23,7 @@ export const Ul = React.memo(({ children }: { children: React.ReactNode }) => {
 
 export const Ol = React.memo(({
     children, start,
-}: { children: React.ReactNode; start?: number }) => {
+}: { children?: React.ReactNode; start?: number }) => {
     return <Box
         component="ol"
         start={start}
@@ -37,7 +37,7 @@ export const Ol = React.memo(({
     </Box>;
 });
 
-export const Li = React.memo(({ children }: { children: React.ReactNode }) => {
+export const Li = React.memo(({ children }: { children?: React.ReactNode }) => {
     const { spacing } = useChatState();
 
     return <Box

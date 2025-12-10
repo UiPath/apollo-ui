@@ -4,6 +4,8 @@ import dark from 'highlight.js/styles/github-dark.css';
 import light from 'highlight.js/styles/github.css';
 import katex from 'katex';
 
+import { msg } from '@lingui/core/macro';
+import { useLingui } from '@lingui/react';
 import CloseIcon from '@mui/icons-material/Close';
 import {
   Box,
@@ -13,9 +15,6 @@ import {
 } from '@mui/material';
 import token from '@uipath/apollo-core';
 
-import { msg } from '@lingui/core/macro';
-import { useLingui } from '@lingui/react';
-import { isDebuggingEnabled } from '../../../../../react/stencil-react-adapter/Utils/DebugUtils';
 import { ThemeInstanceResolver } from '../../../../../utils/theme/themeInstanceResolver';
 import { ApChipReact } from '../../../../ap-chip/ap-chip';
 import { useChatState } from '../../../providers/chat-state-provider';
@@ -234,10 +233,6 @@ export const Code = React.memo(({
                 />
             );
         } catch (e) {
-            if (isDebuggingEnabled()) {
-                console.warn('Error rendering math block:', e);
-            }
-
             return (
                 <pre style={{ color: 'var(--color-foreground)' }}>
                     {String(children)}

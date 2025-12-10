@@ -321,13 +321,6 @@ export class AutopilotChatService {
     renderMessage(container: HTMLElement, message: AutopilotChatMessage) {
         const renderer = this._messageRenderers.find(r => r.name === message.widget);
 
-        if (!renderer) {
-            if ((globalThis as any)['__StencilReactAdapter_EnableDebugging']) {
-                 
-                console.warn(`AutopilotChatService: Message renderer with name ${name} not found, using markdown renderer`);
-            }
-        }
-
         if (!renderer?.render) {
             return;
         }

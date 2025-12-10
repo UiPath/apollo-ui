@@ -13,7 +13,7 @@ export function citationPlugin() {
     const citationStack: Array<{ citationsData: any[] }> = [];
 
     return (tree: any) => {
-        visit(tree, 'text', (node: any, _index: number, parent: any) => {
+        visit(tree, 'text', (node: any, _index: number | undefined, parent: any) => {
             if (!node?.value || !parent) {
                 return;
             }

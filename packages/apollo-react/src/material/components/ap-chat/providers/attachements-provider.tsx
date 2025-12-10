@@ -2,7 +2,9 @@ import React from 'react';
 
 import { isEqual } from 'lodash/fp';
 
-import { useTranslate } from '../../../react/ApLocalizationProvider';
+import { msg } from '@lingui/core/macro';
+import { useLingui } from '@lingui/react';
+
 import {
   AutopilotChatEvent,
   AutopilotChatFileInfo,
@@ -30,7 +32,7 @@ export const AutopilotAttachmentsContext = React.createContext<AutopilotAttachme
 });
 
 export function AutopilotAttachmentsProvider({ children }: { children: React.ReactNode }) {
-    const { t } = useTranslate();
+    const { _ } = useLingui();
     const chatService = useChatService();
     const prompt = chatService?.getPrompt?.() as AutopilotChatPrompt | undefined;
 
@@ -90,19 +92,25 @@ export function AutopilotAttachmentsProvider({ children }: { children: React.Rea
         const totalCount = filesToAdd.length;
 
         if (allowedAttachments.maxCount && totalCount > allowedAttachments.maxCount) {
-            setError(t('autopilot-chat-error-too-many-files', { maxCount: allowedAttachments.maxCount }));
+            setError(_(msg({
+                id: 'autopilot-chat.error.too-many-files',
+                message: `Maximum ${allowedAttachments.maxCount} files allowed`,
+            })));
 
             return;
         }
 
         if (!allowedAttachments.multiple && totalCount > 1) {
-            setError(t('autopilot-chat-error-multiple-files'));
+            setError(_(msg({
+                id: 'autopilot-chat.error.multiple-files',
+                message: `Only one file is allowed`,
+            })));
 
             return;
         }
 
         setAttachments(filesToAdd);
-    }, [ allowedAttachments.maxCount, allowedAttachments.multiple, setError, t ]);
+    }, [ allowedAttachments.maxCount, allowedAttachments.multiple, setError, _ ]);
 
     const removeAttachment = React.useCallback((name: string, index: number) => {
         setAttachments(current => current.filter((file, i) => i !== index || file.name !== name));

@@ -12,10 +12,10 @@ import { useStreaming } from './streaming-provider';
 
 interface AutopilotChatScrollContextType {
     autoScroll: boolean;
-    scrollToBottom: (options?: { force?: boolean; behavior?: ScrollBehavior }) => void;
+    scrollToBottom: (options?: { force?: boolean; behavior?: 'auto' | 'smooth' | 'instant' }) => void;
     overflowContainer: HTMLDivElement | null;
     setOverflowContainer: (overflowContainer: HTMLDivElement) => void;
-    contentRef: React.RefObject<HTMLDivElement>;
+    contentRef: React.RefObject<HTMLDivElement | null>;
     isOverflow: boolean;
     isContainerWide: boolean;
 }
@@ -67,7 +67,7 @@ export const AutopilotChatScrollProvider: React.FC<AutopilotChatScrollProviderPr
     const scrollToBottom = React.useCallback(({
         force = false,
         behavior = 'smooth',
-    }: { force?: boolean; behavior?: ScrollBehavior } = {}) => {
+    }: { force?: boolean; behavior?: 'auto' | 'smooth' | 'instant' } = {}) => {
         if (!force && !autoScroll) {
             return;
         }

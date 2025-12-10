@@ -32,8 +32,8 @@ export const LoadingMessage = () => {
             return;
         }
 
-        let setDefaultLoadingMessagesTimeout: NodeJS.Timeout | undefined = undefined;
-        let setLoadingMessageTimeout: NodeJS.Timeout | undefined = undefined;
+        let setDefaultLoadingMessagesTimeout: ReturnType<typeof setTimeout> | undefined = undefined;
+        let setLoadingMessageTimeout: ReturnType<typeof setTimeout> | undefined = undefined;
 
         const unsubscribeSetDefaultLoadingMessages = chatService.on(
             AutopilotChatEvent.SetDefaultLoadingMessages, (data: { messages: string[]; duration?: number }) => {
@@ -68,7 +68,7 @@ export const LoadingMessage = () => {
             return;
         }
 
-        let childTimeout: NodeJS.Timeout | undefined = undefined;
+        let childTimeout: ReturnType<typeof setTimeout> | undefined = undefined;
 
         const parentTimeout = setTimeout(() => {
             setIsVisible(false);

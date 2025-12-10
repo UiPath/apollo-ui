@@ -91,10 +91,10 @@ function AutopilotChatInputActionsComponent({
             }
 
             addAttachments(parsedFiles.filter(file => file.size <= allowedAttachments.maxSize));
-        } catch (err: any) {
-            setError(err);
+        } catch (err) {
+            setError(err as string);
         }
-    }, [ addAttachments, setError, allowedAttachments.maxSize ]);
+    }, [ addAttachments, setError, allowedAttachments.maxSize, _ ]);
 
     const acceptedExtensions = React.useMemo(() => {
         return Object.values(allowedAttachments.types)

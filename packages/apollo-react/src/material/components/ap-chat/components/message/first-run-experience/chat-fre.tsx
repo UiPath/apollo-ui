@@ -3,7 +3,7 @@ import React from 'react';
 import { styled } from '@mui/material';
 import token from '@uipath/apollo-core';
 
-import { ApTypography } from '../../../ap-typography';
+import { ApTypography } from '../../../../ap-typography';
 import { useChatState } from '../../../providers/chat-state-provider';
 import { AutopilotChatSuggestions } from '../suggestions/chat-suggestions';
 

@@ -562,6 +562,18 @@ export interface AutopilotChatHistory {
 }
 
 /**
+ * Details for message actions with pre-hook support
+ *
+ * @property preHookAction - The pre-hook action to execute before the main action
+ * @property isPositive - Whether this is a positive action (e.g., thumbs up vs thumbs down)
+ */
+export interface AutopilotChatMessageActionDetails {
+    preHookAction?: AutopilotChatPreHookAction;
+    isPositive?: boolean;
+    [key: string]: any;
+}
+
+/**
  * Represents an action for a message in the Autopilot Chat.
  *
  * @property name - The name of the action
@@ -580,7 +592,7 @@ export interface AutopilotChatMessageAction {
     showInOverflow?: boolean;
     disabled?: boolean;
     eventName?: string;
-    details?: Record<string, any>;
+    details?: AutopilotChatMessageActionDetails;
 }
 
 /**

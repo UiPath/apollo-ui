@@ -1,3 +1,11 @@
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
+
 import {
   differenceInDays,
   differenceInMonths,
@@ -32,16 +40,6 @@ import {
   CHAT_HISTORY_SIDE_BY_SIDE_MAX_WIDTH,
 } from '../../service';
 import { AutopilotChatHistoryGroup } from './chat-history-group';
-
-import React, {
-import { ApTypography }
-from '../../../ap-typography';
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
 
 const ChatHistoryContainer = styled('div')<{ isFullScreen: boolean; width: number; fullScreenContainer: HTMLElement | null }>(({
     theme, isFullScreen, width, fullScreenContainer,

@@ -8,7 +8,7 @@ import {
 } from '@mui/material';
 import token, { FontVariantToken } from '@uipath/apollo-core';
 
-import { ApTypography } from '../../../ap-typography';
+import { ApTypography } from '../../../../ap-typography';
 import { useChatScroll } from '../../../providers/chat-scroll-provider';
 import { useChatService } from '../../../providers/chat-service.provider';
 import { useChatState } from '../../../providers/chat-state-provider';
@@ -20,7 +20,7 @@ import {
 } from '../../../service';
 
 // Helpers for additive range highlighting
-const getNearestStartMarker = (id: string | number, container: Element, endEl: Element): HTMLElement | null => {
+const getNearestStartMarker = (id: number, container: Element, endEl: Element): HTMLElement | null => {
     const candidates = Array.from(container.querySelectorAll(`.${CHAT_CITATION_START}[data-citation-ids~="${id}"]`)) as HTMLElement[];
     if (candidates.length === 0) {
         return null;
@@ -37,6 +37,15 @@ const getNearestStartMarker = (id: string | number, container: Element, endEl: E
 };
 
 type HighlightState = { highlightedElements: HTMLElement[]; wrappedTextSpans: HTMLElement[] };
+
+interface CitationProps {
+    id: number;
+    title: string;
+    url?: string;
+    page_number?: number;
+    download_url?: string;
+    messageId: string;
+}
 
 const highlightRange = (startMarker: HTMLElement, endEl: HTMLElement, container: Element, color: string): HighlightState => {
     const highlightedElements: HTMLElement[] = [];
@@ -116,7 +125,7 @@ export const Citation = React.memo(({
     page_number,
     download_url,
     messageId,
-}: any) => {
+}: CitationProps) => {
     const { _ } = useLingui();
     const pageNumber = page_number;
     const pageText = page_number ? ` (${_(msg({ id: 'autopilot-chat.message.page-number', message: `Page ${pageNumber}` }))})` : '';
@@ -125,7 +134,7 @@ export const Citation = React.memo(({
     const { overflowContainer } = useChatScroll();
     const ref = React.useRef<HTMLDivElement>(null);
     const [ open, setOpen ] = React.useState(false);
-    const highlightStateRef = React.useRef<HighlightState>();
+    const highlightStateRef = React.useRef<HighlightState | undefined>(undefined);
     const finalUrl = url || `${download_url}${page_number ? `#page=${page_number}` : ''}`;
 
     const handleOpen = React.useCallback(() => {
@@ -156,16 +165,14 @@ export const Citation = React.memo(({
             return;
         }
 
-        const source: UrlCitation | PdfCitation = url ? {
-            id,
-            title,
-            url,
-        } : {
-            id,
-            title,
-            download_url,
-            page_number,
-        };
+        const source: UrlCitation | PdfCitation = url
+            ? { id, title, url }
+            : {
+                id,
+                title,
+                download_url: download_url!,
+                page_number: page_number!,
+            };
 
         chatService.getPreHook(AutopilotChatPreHookAction.CitationClick)({ citation: source })
             .then((proceed) => {

@@ -84,9 +84,7 @@ export const AutopilotChatSettings: React.FC<AutopilotChatSettingsProps> = ({
         try {
             settingsRenderer(containerRef.current);
         } catch (error) {
-            if ((globalThis as any)['__StencilReactAdapter_EnableDebugging']) {
-                console.warn('Could not render settings:', error);
-            }
+          return;
         }
     }, [ chatService, settingsOpen ]);
 

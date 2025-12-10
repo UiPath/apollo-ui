@@ -46,7 +46,7 @@ const NestedMenuItem = React.memo(React.forwardRef<HTMLLIElement, NestedMenuItem
     const [ open, setOpen ] = React.useState(false);
     const menuItemRef = React.useRef<HTMLLIElement | null>(null);
     const submenuRef = React.useRef<HTMLDivElement | null>(null);
-    const closeTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+    const closeTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 
     // Merge external ref with internal ref
     React.useImperativeHandle(ref, () => menuItemRef.current as HTMLLIElement);

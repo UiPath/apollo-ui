@@ -2,7 +2,8 @@ import React from 'react';
 
 import { msg } from '@lingui/core/macro';
 import { useLingui } from '@lingui/react';
-import { styled } from '@mui/material';
+import { styled, StyledComponent } from '@mui/material';
+import type { MUIStyledCommonProps, Theme } from '@mui/system';
 import token from '@uipath/apollo-core';
 
 import { ApTypography } from '../../../';
@@ -16,7 +17,11 @@ import { fileToIcon } from '../../utils/file-to-icon';
 import { AutopilotChatActionButton } from './action-button';
 import { AutopilotChatTooltip } from './tooltip';
 
-export const AttachmentIcon = styled('span')<{ fileType?: AutopilotChatFileType; width?: string; height?: string }>(({
+export const AttachmentIcon: StyledComponent<
+  { fileType?: AutopilotChatFileType; width?: string; height?: string } & MUIStyledCommonProps<Theme>,
+  {},
+  {}
+> = styled('span')<{ fileType?: AutopilotChatFileType; width?: string; height?: string }>(({
     fileType, width, height,
 }) => ({
     maxWidth: width ?? token.Spacing.SpacingM,

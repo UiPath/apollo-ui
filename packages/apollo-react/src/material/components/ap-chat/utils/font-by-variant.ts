@@ -9,8 +9,8 @@ export const fontByVariant = (variant: FontVariantToken) => {
         key => FontVariantToken[key as keyof typeof FontVariantToken] === variant,
     );
 
-    if (enumKey && Typography[enumKey]) {
-        return Typography[enumKey];
+    if (enumKey && Typography[enumKey as keyof typeof Typography]) {
+        return Typography[enumKey as keyof typeof Typography];
     }
 
     return;

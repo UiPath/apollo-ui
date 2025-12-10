@@ -2,13 +2,10 @@ import React from 'react';
 
 import { msg } from '@lingui/core/macro';
 import { useLingui } from '@lingui/react';
-import {
-  styled,
-  Theme,
-} from '@mui/material';
+import { styled } from '@mui/material';
 import token from '@uipath/apollo-core';
 
-import { ApTypography } from '../../../ap-typography';
+import { ApTypography } from '../../../../ap-typography';
 import { useChatService } from '../../../providers/chat-service.provider';
 import { useChatState } from '../../../providers/chat-state-provider';
 import {
@@ -37,9 +34,9 @@ const SuggestionList = styled('div')(({
     },
 }));
 
-const Suggestion = styled('button')(({
+const Suggestion = styled('button')<{ padding: string }>(({
     padding,
-}: { theme: Theme; padding: string }) => ({
+}) => ({
     backgroundColor: 'transparent',
     outlineColor: 'var(--color-focus-indicator)',
     display: 'flex',
@@ -119,7 +116,7 @@ function AutopilotChatSuggestionsComponent({
                     tabIndex={0}
                     key={suggestion.label}
                     data-cy={`autopilot-chat-suggestion-nth-${index}`}
-                    style={{ padding: spacing.suggestionPadding }}
+                    padding={spacing.suggestionPadding}
                 >
                     <ApTypography color={'var(--color-foreground)'} variant={spacing.suggestionFontToken}>
                         {suggestion.label}

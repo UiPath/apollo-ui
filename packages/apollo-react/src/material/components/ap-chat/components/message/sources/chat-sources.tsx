@@ -14,7 +14,7 @@ import {
 } from '@mui/material';
 import token from '@uipath/apollo-core';
 
-import { ApTypography } from '../../../ap-typography';
+import { ApTypography } from '../../../../ap-typography';
 import { useIsStreamingMessage } from '../../../hooks/use-is-streaming-message';
 import { useChatService } from '../../../providers/chat-service.provider';
 import { useChatState } from '../../../providers/chat-state-provider';

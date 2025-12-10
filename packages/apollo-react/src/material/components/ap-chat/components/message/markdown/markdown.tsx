@@ -10,11 +10,11 @@ import rehypeKatex from 'rehype-katex';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 
+import { msg } from '@lingui/core/macro';
+import { useLingui } from '@lingui/react';
 import { styled } from '@mui/material';
 import token from '@uipath/apollo-core';
 
-import { msg } from '@lingui/core/macro';
-import { useLingui } from '@lingui/react';
 import { useIsStreamingMessage } from '../../../hooks/use-is-streaming-message';
 import { useChatService } from '../../../providers/chat-service.provider';
 import { useChatState } from '../../../providers/chat-state-provider';
@@ -90,7 +90,7 @@ function AutopilotChatMarkdownRendererComponent({ message }: { message: Autopilo
     // Update the message ID ref if a new message is passed
     React.useEffect(() => {
         let unsubscribeStopResponse: (() => void) | undefined;
-        let fakeStreamInterval: NodeJS.Timeout | undefined;
+        let fakeStreamInterval: ReturnType<typeof setInterval> | undefined;
 
         if (message.id !== messageId.current || !message.stream) {
             messageId.current = message.id;
@@ -231,7 +231,7 @@ function AutopilotChatMarkdownRendererComponent({ message }: { message: Autopilo
         >
             {content}
         </StyledMarkdown>
-    ), [ content, components ]);
+    ), [ content, components, _ ]);
 }
 
 export const AutopilotChatMarkdownRenderer = React.memo(AutopilotChatMarkdownRendererComponent);
