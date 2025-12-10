@@ -6,9 +6,10 @@
     "composite": true,
     "declaration": true,
     "declarationMap": true,
-    "jsx": "react-jsx"
+    "jsx": "react-jsx",
+    "resolveJsonModule": true
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.json"],
   "exclude": [
     "node_modules",
     "dist",

@@ -5,7 +5,8 @@ import {
 
 import { Fade } from '@mui/material';
 
-import { t } from '../../../../../utils/localization/loc';
+import { msg } from '@lingui/core/macro';
+import { useLingui } from '@lingui/react';
 import { useChatService } from '../../../providers/chat-service.provider';
 import { useChatState } from '../../../providers/chat-state-provider';
 import { AutopilotChatEvent } from '../../../service';
@@ -17,6 +18,7 @@ const DEFAULT_MESSAGE_DURATION = 5 * SECONDS;
 const defaultMessages = [ 'autopilot-chat-generating-response' ];
 
 export const LoadingMessage = () => {
+    const { _ } = useLingui();
     const chatService = useChatService();
     const [ messageIdx, setMessageIdx ] = useState(0);
     const [ isVisible, setIsVisible ] = useState(true);
@@ -81,6 +83,12 @@ export const LoadingMessage = () => {
         };
     }, [ messageIdx, messageDuration, messages ]);
 
+    // Map the current message key to translation
+    const currentMessage = messages[messageIdx];
+    const translatedMessage = currentMessage === 'autopilot-chat-generating-response'
+        ? _(msg({ id: 'autopilot-chat.message.generating-response', message: `Generating response...` }))
+        : currentMessage; // For custom messages, display as-is
+
     return (
         <Fade in={isVisible} timeout={FADE_DURATION}>
             <ap-typography
@@ -88,7 +96,7 @@ export const LoadingMessage = () => {
                 color={'var(--color-foreground)'}
                 aria-live='polite'
             >
-                {t(messages[messageIdx])}
+                {translatedMessage}
             </ap-typography>
         </Fade>
     );

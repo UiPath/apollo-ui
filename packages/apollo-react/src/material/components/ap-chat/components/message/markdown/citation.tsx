@@ -6,7 +6,8 @@ import {
 } from '@mui/material';
 import token, { FontVariantToken } from '@uipath/apollo-core';
 
-import { t } from '../../../../../utils/localization/loc';
+import { msg } from '@lingui/core/macro';
+import { useLingui } from '@lingui/react';
 import { useChatScroll } from '../../../providers/chat-scroll-provider';
 import { useChatService } from '../../../providers/chat-service.provider';
 import { useChatState } from '../../../providers/chat-state-provider';
@@ -115,7 +116,9 @@ export const Citation = React.memo(({
     download_url,
     messageId,
 }: any) => {
-    const pageText = page_number ? ` (${t('autopilot-chat-page-number', { page_number })})` : '';
+    const { _ } = useLingui();
+    const pageNumber = page_number;
+    const pageText = page_number ? ` (${_(msg({ id: 'autopilot-chat.message.page-number', message: `Page ${pageNumber}` }))})` : '';
     const chatService = useChatService();
     const { spacing } = useChatState();
     const { overflowContainer } = useChatScroll();
@@ -284,10 +287,7 @@ export const Citation = React.memo(({
                 data-citation-sup="true"
                 tabIndex={0}
                 role="button"
-                aria-label={t('autopilot-chat-citation-aria-label', {
-                    id,
-                    title: `${title}${pageText}`,
-                })}
+                aria-label={_(msg({ id: 'autopilot-chat.message.citation-aria-label', message: `Citation ${id}: ${title}${pageText}` }))}
                 onClick={handleClick}
                 onKeyDown={handleKeyDown}
             >

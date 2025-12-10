@@ -4,7 +4,8 @@ import { styled } from '@mui/material';
 import token, { FontVariantToken } from '@uipath/apollo-core';
 
 import { StatusTypes } from '../../../../models/statusTypes';
-import { t } from '../../../../utils/localization/loc';
+import { msg } from '@lingui/core/macro';
+import { useLingui } from '@lingui/react';
 import AutopilotLogo from '../../assets/autopilot-logo.svg';
 import { useChatState } from '../../providers/chat-state-provider';
 import { AutopilotChatMode } from '../../service';
@@ -30,6 +31,7 @@ const StyledLogo = styled('div')(() => ({
 }));
 
 function AutopilotChatHeaderComponent() {
+    const { _ } = useLingui();
     const {
         disabledFeatures,
         overrideLabels,
@@ -50,11 +52,11 @@ function AutopilotChatHeaderComponent() {
                     role='heading'
                     aria-level={1}
                 >
-                    {overrideLabels.title ?? t('autopilot-chat-header')}
+                    {overrideLabels.title ?? _(msg({ id: 'autopilot-chat.header.title', message: `Autopilot` }))}
                 </ap-typography>
 
                 {!disabledFeatures.preview && (
-                    <ap-badge label={t('autopilot-chat-header-preview')} status={StatusTypes.INFO}></ap-badge>
+                    <ap-badge label={_(msg({ id: 'autopilot-chat.header.preview', message: `Preview` }))} status={StatusTypes.INFO}></ap-badge>
                 )}
             </StyledLogo>
 

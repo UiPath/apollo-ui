@@ -13,7 +13,8 @@ import remarkMath from 'remark-math';
 import { styled } from '@mui/material';
 import token from '@uipath/apollo-core';
 
-import { t } from '../../../../../utils/localization/loc';
+import { msg } from '@lingui/core/macro';
+import { useLingui } from '@lingui/react';
 import { useIsStreamingMessage } from '../../../hooks/use-is-streaming-message';
 import { useChatService } from '../../../providers/chat-service.provider';
 import { useChatState } from '../../../providers/chat-state-provider';
@@ -66,6 +67,7 @@ const FAKE_STREAM_INTERVAL = 50;
 const CHUNK_QUEUE_PROCESS_INTERVAL = 50;
 
 function AutopilotChatMarkdownRendererComponent({ message }: { message: AutopilotChatMessage }) {
+    const { _ } = useLingui();
     // Only store message ID and content separately to minimize re-renders
     const messageId = React.useRef(message.id);
 
@@ -224,7 +226,7 @@ function AutopilotChatMarkdownRendererComponent({ message }: { message: Autopilo
                     throwOnError: false,
                 } ],
             ]}
-            remarkRehypeOptions={{ footnoteLabel: t('autopilot-chat-footnote-label') }}
+            remarkRehypeOptions={{ footnoteLabel: _(msg({ id: 'autopilot-chat.message.footnote-label', message: `Footnotes` })) }}
             components={components}
         >
             {content}

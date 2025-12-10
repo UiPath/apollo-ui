@@ -3,7 +3,8 @@ import React from 'react';
 import { styled } from '@mui/material';
 import token, { FontVariantToken } from '@uipath/apollo-core';
 
-import { t } from '../../../../utils/localization/loc';
+import { msg } from '@lingui/core/macro';
+import { useLingui } from '@lingui/react';
 import { useAttachments } from '../../providers/attachements-provider';
 import { useChatState } from '../../providers/chat-state-provider';
 import { useError } from '../../providers/error-provider';
@@ -48,6 +49,7 @@ interface AutopilotChatInputActionsProps {
 function AutopilotChatInputActionsComponent({
     handleSubmit, disableSubmit, waitingResponse,
 }: AutopilotChatInputActionsProps) {
+    const { _ } = useLingui();
     const { addAttachments } = useAttachments();
     const { setError } = useError();
     const {
@@ -75,12 +77,11 @@ function AutopilotChatInputActionsComponent({
             if (oversizedFiles.length > 0) {
                 const errorMessages = oversizedFiles.map(file => {
                     const fileSizeMB = Math.round(file.size / 1024 / 1024);
+                    const fileName = file.name;
+                    const fileSize = fileSizeMB;
+                    const maxSize = allowedAttachments.maxSize / 1024 / 1024;
 
-                    return t('autopilot-chat-error-file-too-large', {
-                        fileName: file.name,
-                        fileSize: fileSizeMB,
-                        maxSize: allowedAttachments.maxSize / 1024 / 1024,
-                    });
+                    return _(msg({ id: 'autopilot-chat.input.actions.error.file-too-large', message: `File "${fileName}" (${fileSize}MB) exceeds the maximum size of ${maxSize}MB` }));
                 });
 
                 setError(errorMessages.join('\n'));
@@ -103,20 +104,23 @@ function AutopilotChatInputActionsComponent({
     // Build full description text for screen readers
     const attachmentDescription = React.useMemo(() => {
         const parts: string[] = [];
+        const maxCount = allowedAttachments.maxCount;
+        const maxSize = allowedAttachments.maxSize / 1024 / 1024;
+        const fileTypes = acceptedExtensions.split(',').join(', ');
 
         if (allowedAttachments.maxCount && allowedAttachments.maxCount > 1 && allowedAttachments.multiple) {
             parts.push(
-                t('autopilot-chat-dropzone-overlay-max-count', { maxCount: allowedAttachments.maxCount }),
+                _(msg({ id: 'autopilot-chat.input.actions.attachments.max-count', message: `Maximum ${maxCount} files` })),
             );
         }
 
         parts.push(
-            t('autopilot-chat-dropzone-overlay-max-size', { maxSize: allowedAttachments.maxSize / 1024 / 1024 }),
-            t('autopilot-chat-allowed-file-types', { fileTypes: acceptedExtensions.split(',').join(', ') }),
+            _(msg({ id: 'autopilot-chat.input.actions.attachments.max-size', message: `Maximum ${maxSize}MB per file` })),
+            _(msg({ id: 'autopilot-chat.input.actions.attachments.allowed-types', message: `Allowed types: ${fileTypes}` })),
         );
 
         return parts.join('. ');
-    }, [ allowedAttachments, acceptedExtensions ]);
+    }, [ allowedAttachments, acceptedExtensions, _ ]);
 
     // Calculate if we should use icons based on how many features are enabled
     const hasMultipleFeatures = [
@@ -146,7 +150,7 @@ function AutopilotChatInputActionsComponent({
                             onClick={handleFileButtonClick}
                             tooltipPlacement="top"
                             data-testid="autopilot-chat-attach-file-button"
-                            ariaLabel={t('autopilot-chat-attach-file')}
+                            ariaLabel={_(msg({ id: 'autopilot-chat.input.actions.attach-file', message: `Attach file` }))}
                             ariaDescribedby="autopilot-chat-attach-file-description"
                             tooltip={
                                 <>
@@ -154,37 +158,44 @@ function AutopilotChatInputActionsComponent({
                                         color={'var(--color-foreground-inverse)'}
                                         variant={FontVariantToken.fontSizeM}
                                     >
-                                        {t('autopilot-chat-attach-file')}
+                                        {_(msg({ id: 'autopilot-chat.input.actions.attach-file', message: `Attach file` }))}
                                     </ap-typography>
 
-                                    {allowedAttachments.maxCount && allowedAttachments.maxCount > 1 && allowedAttachments.multiple && (
-                                        <ap-typography
-                                            color={'var(--color-foreground-inverse)'}
-                                            variant={FontVariantToken.fontSizeXs}
-                                        >
-                                            {t('autopilot-chat-dropzone-overlay-max-count', { maxCount: allowedAttachments.maxCount })}
-                                        </ap-typography>
-                                    )}
+                                    {allowedAttachments.maxCount && allowedAttachments.maxCount > 1 && allowedAttachments.multiple && (() => {
+                                        const maxCount = allowedAttachments.maxCount;
+                                        return (
+                                            <ap-typography
+                                                color={'var(--color-foreground-inverse)'}
+                                                variant={FontVariantToken.fontSizeXs}
+                                            >
+                                                {_(msg({ id: 'autopilot-chat.input.actions.attachments.max-count', message: `Maximum ${maxCount} files` }))}
+                                            </ap-typography>
+                                        );
+                                    })()}
 
-                                    <ap-typography
-                                        color={'var(--color-foreground-inverse)'}
-                                        variant={FontVariantToken.fontSizeXs}
-                                    >
-                                        {t(
-                                            'autopilot-chat-dropzone-overlay-max-size',
-                                            { maxSize: allowedAttachments.maxSize / 1024 / 1024 },
-                                        )}
-                                    </ap-typography>
+                                    {(() => {
+                                        const maxSize = allowedAttachments.maxSize / 1024 / 1024;
+                                        return (
+                                            <ap-typography
+                                                color={'var(--color-foreground-inverse)'}
+                                                variant={FontVariantToken.fontSizeXs}
+                                            >
+                                                {_(msg({ id: 'autopilot-chat.input.actions.attachments.max-size', message: `Maximum ${maxSize}MB per file` }))}
+                                            </ap-typography>
+                                        );
+                                    })()}
 
-                                    <ap-typography
-                                        color={'var(--color-foreground-inverse)'}
-                                        variant={FontVariantToken.fontSizeXs}
-                                    >
-                                        {t(
-                                            'autopilot-chat-allowed-file-types',
-                                            { fileTypes: acceptedExtensions.split(',').join(', ') },
-                                        )}
-                                    </ap-typography>
+                                    {(() => {
+                                        const fileTypes = acceptedExtensions.split(',').join(', ');
+                                        return (
+                                            <ap-typography
+                                                color={'var(--color-foreground-inverse)'}
+                                                variant={FontVariantToken.fontSizeXs}
+                                            >
+                                                {_(msg({ id: 'autopilot-chat.input.actions.attachments.allowed-types', message: `Allowed types: ${fileTypes}` }))}
+                                            </ap-typography>
+                                        );
+                                    })()}
                                 </>
                             }
                         />
@@ -205,7 +216,7 @@ function AutopilotChatInputActionsComponent({
                 <SubmitButtonContainer>
                     <AutopilotChatActionButton
                         iconName={waitingResponse ? 'stop' : 'arrow_upward'}
-                        tooltip={waitingResponse ? t('autopilot-chat-stop') : t('autopilot-chat-send')}
+                        tooltip={waitingResponse ? _(msg({ id: 'autopilot-chat.input.actions.stop', message: `Stop` })) : _(msg({ id: 'autopilot-chat.input.actions.send', message: `Send` }))}
                         overrideColor={disableSubmit
                             ? 'var(--color-foreground-disable)'
                             : 'var(--color-background)'
@@ -215,7 +226,7 @@ function AutopilotChatInputActionsComponent({
                         disabled={disableSubmit}
                         onClick={handleSubmit}
                         data-testid="autopilot-chat-submit-button"
-                        ariaLabel={waitingResponse ? t('autopilot-chat-stop') : t('autopilot-chat-send')}
+                        ariaLabel={waitingResponse ? _(msg({ id: 'autopilot-chat.input.actions.stop', message: `Stop` })) : _(msg({ id: 'autopilot-chat.input.actions.send', message: `Send` }))}
                     />
                 </SubmitButtonContainer>
             </InputActionsGroup>

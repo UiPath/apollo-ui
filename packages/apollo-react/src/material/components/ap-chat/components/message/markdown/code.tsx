@@ -13,8 +13,9 @@ import {
 } from '@mui/material';
 import token from '@uipath/apollo-core';
 
+import { msg } from '@lingui/core/macro';
+import { useLingui } from '@lingui/react';
 import { isDebuggingEnabled } from '../../../../../react/stencil-react-adapter/Utils/DebugUtils';
-import { t } from '../../../../../utils/localization/loc';
 import { ThemeInstanceResolver } from '../../../../../utils/theme/themeInstanceResolver';
 import { ApChipReact } from '../../../../ap-chip/ap-chip';
 import { useChatState } from '../../../providers/chat-state-provider';
@@ -178,6 +179,7 @@ const CloseButton = styled(IconButton)((() => ({
 export const Code = React.memo(({
     inline, className, children, isStreaming, ...props
 }: any) => {
+    const { _ } = useLingui();
     const {
         disabledFeatures, spacing,
     } = useChatState();
@@ -267,7 +269,7 @@ export const Code = React.memo(({
             <CodeBlockContainer>
                 <CodeBlockHeader>
                     <ApChipReact
-                        label={language || t('autopilot-chat-code-block-language')}
+                        label={language || _(msg({ id: 'autopilot-chat.message.code-block-language', message: `Code` }))}
                     />
                     <div style={{
                         display: 'flex',
@@ -276,7 +278,7 @@ export const Code = React.memo(({
                         {isPreviewable && (
                             <AutopilotChatActionButton
                                 iconName={showPreview ? 'code' : 'visibility'}
-                                tooltip={showPreview ? t('autopilot-chat-code-block-code') : t('autopilot-chat-code-block-preview')}
+                                tooltip={showPreview ? _(msg({ id: 'autopilot-chat.message.code-block-code', message: `Show code` })) : _(msg({ id: 'autopilot-chat.message.code-block-preview', message: `Preview` }))}
                                 onClick={() => {
                                     setShowPreview(!showPreview);
                                 }}
@@ -284,14 +286,14 @@ export const Code = React.memo(({
                         )}
                         <AutopilotChatActionButton
                             iconName="open_in_full"
-                            tooltip={t('autopilot-chat-expand')}
+                            tooltip={_(msg({ id: 'autopilot-chat.message.expand', message: `Expand` }))}
                             onClick={() => {
                                 setIsModalOpen(true);
                             }}
                         />
                         <AutopilotChatActionButton
                             iconName="content_copy"
-                            tooltip={t('autopilot-chat-code-block-copy')}
+                            tooltip={_(msg({ id: 'autopilot-chat.message.code-block-copy', message: `Copy code` }))}
                             onClick={() => {
                                 navigator.clipboard.writeText(codeContent);
                             }}
@@ -319,7 +321,7 @@ export const Code = React.memo(({
                     <CloseButton
                         size="small"
                         onClick={() => setIsModalOpen(false)}
-                        aria-label={t('autopilot-chat-close')}
+                        aria-label={_(msg({ id: 'autopilot-chat.message.close', message: `Close` }))}
                     >
                         <CloseIcon
                             sx={{

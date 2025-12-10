@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 
-import { t } from '../../../../../utils/localization/loc';
+import { msg } from '@lingui/core/macro';
+import { useLingui } from '@lingui/react';
 import { useIsStreamingMessage } from '../../../hooks/use-is-streaming-message';
 import { useChatService } from '../../../providers/chat-service.provider';
 import { useChatState } from '../../../providers/chat-state-provider';
@@ -20,6 +21,7 @@ interface AutopilotChatMessageActionsProps {
 function AutopilotChatMessageActionsComponent({
     message, containerElement,
 }: AutopilotChatMessageActionsProps) {
+    const { _ } = useLingui();
     const chatService = useChatService();
     const { disabledFeatures } = useChatState();
     const [ isLastAssistantMessage, setIsLastAssistantMessage ] = React.useState(false);
@@ -56,7 +58,7 @@ function AutopilotChatMessageActionsComponent({
         if (!disabledFeatures.copy) {
             baseActions.push({
                 name: 'autopilot-chat-copy',
-                label: t('autopilot-chat-copy'),
+                label: _(msg({ id: 'autopilot-chat.message.actions.copy', message: `Copy` })),
                 icon: 'copy',
                 eventName: AutopilotChatEvent.Copy,
             });
@@ -75,7 +77,7 @@ function AutopilotChatMessageActionsComponent({
                 ...baseActions,
                 {
                     name: isPositive ? 'autopilot-chat-good' : 'autopilot-chat-bad',
-                    label: isPositive ? t('autopilot-chat-good') : t('autopilot-chat-bad'),
+                    label: isPositive ? _(msg({ id: 'autopilot-chat.message.actions.good', message: `Good response` })) : _(msg({ id: 'autopilot-chat.message.actions.bad', message: `Bad response` })),
                     icon: isPositive ? 'thumb_up' : 'thumb_down',
                     disabled: true,
                 },
@@ -87,7 +89,7 @@ function AutopilotChatMessageActionsComponent({
             ...baseActions,
             {
                 name: 'autopilot-chat-good',
-                label: t('autopilot-chat-good'),
+                label: _(msg({ id: 'autopilot-chat.message.actions.good', message: `Good response` })),
                 icon: 'thumb_up',
                 eventName: AutopilotChatEvent.Feedback,
                 details: {
@@ -97,7 +99,7 @@ function AutopilotChatMessageActionsComponent({
             },
             {
                 name: 'autopilot-chat-bad',
-                label: t('autopilot-chat-bad'),
+                label: _(msg({ id: 'autopilot-chat.message.actions.bad', message: `Bad response` })),
                 icon: 'thumb_down',
                 eventName: AutopilotChatEvent.Feedback,
                 details: {
@@ -107,7 +109,7 @@ function AutopilotChatMessageActionsComponent({
             },
         ];
 
-    }, [ message, disabledFeatures.feedback, disabledFeatures.copy ]);
+    }, [ message, disabledFeatures.feedback, disabledFeatures.copy, _ ]);
 
     const isRelatedTarget = React.useCallback((target: Node) => {
         return actionsContainerRef.current && (

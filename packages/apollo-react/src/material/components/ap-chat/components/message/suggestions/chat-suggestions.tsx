@@ -6,7 +6,8 @@ import {
 } from '@mui/material';
 import token from '@uipath/apollo-core';
 
-import { t } from '../../../../../utils/localization/loc';
+import { msg } from '@lingui/core/macro';
+import { useLingui } from '@lingui/react';
 import { useChatService } from '../../../providers/chat-service.provider';
 import { useChatState } from '../../../providers/chat-state-provider';
 import {
@@ -70,6 +71,7 @@ function AutopilotChatSuggestionsComponent({
     suggestions,
     disableAnimation,
 }: AutopilotChatSuggestionsProps) {
+    const { _ } = useLingui();
     const chatService = useChatService();
     const { spacing } = useChatState();
 
@@ -105,7 +107,7 @@ function AutopilotChatSuggestionsComponent({
                         variant={spacing.primaryBoldFontToken}
                         color={'var(--color-foreground-emp)'}
                     >
-                        {t('autopilot-chat-suggestions-title')}
+                        {_(msg({ id: 'autopilot-chat.message.suggestions-title', message: `Suggestions` }))}
                     </ap-typography>
                 </Title>
             )}

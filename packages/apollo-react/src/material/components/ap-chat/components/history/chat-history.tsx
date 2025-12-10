@@ -23,7 +23,8 @@ import {
 } from '@mui/material';
 import token from '@uipath/apollo-core';
 
-import { t } from '../../../../utils/localization/loc';
+import { msg } from '@lingui/core/macro';
+import { useLingui } from '@lingui/react';
 import { ApTextFieldReact } from '../../../ap-text-field/ap-text-field';
 import { useChatService } from '../../providers/chat-service.provider';
 import { useChatState } from '../../providers/chat-state-provider';
@@ -114,8 +115,9 @@ interface AutopilotChatHistoryProps {
 const AutopilotChatHistoryComponent: React.FC<AutopilotChatHistoryProps> = ({
     open, isFullScreen,
 }) => {
+    const { _ } = useLingui();
     const chatService = useChatService();
-    const internalService = chatService .__internalService__;
+    const internalService = chatService?.__internalService__;
 
     const [ history, setHistory ] = useState<AutopilotChatHistoryType[]>(chatService?.getHistory() ?? []);
     const [ searchQuery, setSearchQuery ] = useState('');
@@ -254,16 +256,17 @@ const AutopilotChatHistoryComponent: React.FC<AutopilotChatHistoryProps> = ({
             let groupTitle = '';
 
             if (isToday(date)) {
-                groupTitle = t('chat-history-group-title-today');
+                groupTitle = _(msg({ id: 'autopilot-chat.history.group.today', message: `Today` }));
             } else if (isYesterday(date)) {
-                groupTitle = t('chat-history-group-title-yesterday');
+                groupTitle = _(msg({ id: 'autopilot-chat.history.group.yesterday', message: `Yesterday` }));
             } else if (daysAgo <= 7) {
-                groupTitle = t('chat-history-group-title-last-week');
+                groupTitle = _(msg({ id: 'autopilot-chat.history.group.last-week', message: `Last 7 days` }));
             } else if (daysAgo <= 30) {
-                groupTitle = t('chat-history-group-title-previous-30-days');
+                groupTitle = _(msg({ id: 'autopilot-chat.history.group.last-30-days', message: `Last 30 days` }));
             } else {
                 const monthsAgo = differenceInMonths(currentDate, date);
-                groupTitle = t('chat-history-group-title-months-ago', { count: monthsAgo });
+                const count = monthsAgo;
+                groupTitle = _(msg({ id: 'autopilot-chat.history.group.months-ago', message: `${count} months ago` }));
             }
 
             const existingGroup = acc.find(group => group.title === groupTitle);
@@ -301,7 +304,7 @@ const AutopilotChatHistoryComponent: React.FC<AutopilotChatHistoryProps> = ({
         });
 
         return grouped;
-    }, [ history, searchQuery, chatService ]);
+    }, [ history, searchQuery, chatService, _ ]);
 
     const handleSearchTextChange = useCallback((searchText: string | undefined) => {
         const newSearchText = searchText || '';
@@ -318,10 +321,10 @@ const AutopilotChatHistoryComponent: React.FC<AutopilotChatHistoryProps> = ({
     const showSkeletonLoader = isSearching && chatService?.getConfig()?.paginatedHistory;
     const showLoadMoreSpinner = isLoadingMore && chatService?.getConfig()?.paginatedHistory;
 
-    const renderEmptyState = (messageKey: string) => (
+    const renderEmptyState = (message: string) => (
         <EmptyStateContainer>
             <ap-typography color={'var(--color-foreground)'} variant={spacing.primaryFontToken}>
-                {t(messageKey)}
+                {message}
             </ap-typography>
         </EmptyStateContainer>
     );
@@ -349,7 +352,7 @@ const AutopilotChatHistoryComponent: React.FC<AutopilotChatHistoryProps> = ({
         }
 
         if (hasNoSearchResults) {
-            return renderEmptyState('chat-history-no-results');
+            return renderEmptyState(_(msg({ id: 'autopilot-chat.history.no-results', message: `No results found` })));
         }
 
         return renderHistoryGroups();
@@ -400,7 +403,7 @@ const AutopilotChatHistoryComponent: React.FC<AutopilotChatHistoryProps> = ({
                                 className="chat-history-search"
                                 size="small"
                                 startAdornment={<SearchIcon />}
-                                placeholder={t('chat-history-search-placeholder')}
+                                placeholder={_(msg({ id: 'autopilot-chat.history.search-placeholder', message: `Search chats` }))}
                                 value={searchQuery}
                                 onChange={handleSearchTextChange}
                             />
@@ -409,7 +412,7 @@ const AutopilotChatHistoryComponent: React.FC<AutopilotChatHistoryProps> = ({
                             </div>
                         </>
                     ) : (
-                        renderEmptyState('chat-history-empty')
+                        renderEmptyState(_(msg({ id: 'autopilot-chat.history.empty', message: `No chat history` })))
                     )}
                 </ChatHistoryContainer>
             </FocusLock>

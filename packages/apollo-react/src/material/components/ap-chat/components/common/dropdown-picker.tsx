@@ -8,7 +8,8 @@ import {
 } from '@mui/material';
 import token, { FontVariantToken } from '@uipath/apollo-core';
 
-import { t } from '../../../../utils/localization/loc';
+import { msg } from '@lingui/core/macro';
+import { useLingui } from '@lingui/react';
 import { useChatState } from '../../providers/chat-state-provider';
 import { AutopilotChatInternalEvent } from '../../service';
 import { AutopilotChatActionButton } from './action-button';
@@ -74,6 +75,7 @@ export function DropdownPicker<T = string>({
     chatServiceInstance,
     iconVariant = 'outlined',
 }: DropdownPickerProps<T>) {
+    const { _ } = useLingui();
     const {
         spacing, theming,
     } = useChatState();
@@ -137,7 +139,7 @@ export function DropdownPicker<T = string>({
                             )}
                         </>
                     ) : null}
-                    ariaLabel={t('autopilot-chat-model-selector-button')}
+                    ariaLabel={_(msg({ id: 'autopilot-chat.common.model-selector', message: `Model selector` }))}
                 />
             );
         }
@@ -163,7 +165,7 @@ export function DropdownPicker<T = string>({
                     role="button"
                     aria-haspopup="true"
                     aria-expanded={open}
-                    aria-label={t('autopilot-chat-mode-selector-button')}
+                    aria-label={_(msg({ id: 'autopilot-chat.common.mode-selector', message: `Mode selector` }))}
                 >
                     {selectedOption.icon && <ap-icon variant="outlined" name={selectedOption.icon} size={token.Icon.IconXs} />}
                     <ap-typography variant={spacing.primaryFontToken}>{selectedOption.name}</ap-typography>

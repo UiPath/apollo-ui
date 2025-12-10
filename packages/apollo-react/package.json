@@ -68,7 +68,10 @@
     "test:watch": "vitest",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest --coverage",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "i18n:extract": "lingui extract",
+    "i18n:extract:watch": "lingui extract --watch",
+    "i18n:compile": "lingui compile"
   },
   "keywords": [
     "design-system",
@@ -90,13 +93,15 @@
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
+    "@lingui/core": "^5.6.1",
+    "@lingui/react": "^5.6.1",
     "@uipath/apollo-core": "workspace:*",
     "@uipath/apollo-utils": "workspace:*",
     "date-fns": "^4.1.0",
     "debounce": "^3.0.0",
-    "lodash": "^4.17.21",
     "highlight.js": "^11.11.1",
     "katex": "^0.16.27",
+    "lodash": "^4.17.21",
     "lowlight": "^3.3.0",
     "react-dropzone": "^14.3.8",
     "react-focus-lock": "^2.13.7",
@@ -110,6 +115,11 @@
   "devDependencies": {
     "@emotion/react": "^11.6.0",
     "@emotion/styled": "^11.6.0",
+    "@lingui/cli": "^5.6.1",
+    "@lingui/conf": "^5.6.1",
+    "@lingui/format-json": "^5.6.1",
+    "@lingui/macro": "^5.6.1",
+    "@lingui/swc-plugin": "^5.9.0",
     "@mui/icons-material": "^5.2.0",
     "@mui/material": "5.15.3",
     "@mui/system": "5.15.15",

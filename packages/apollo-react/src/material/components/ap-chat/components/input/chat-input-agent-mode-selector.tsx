@@ -1,6 +1,7 @@
 import React from 'react';
 
-import { t } from '../../../../utils/localization/loc';
+import { msg } from '@lingui/core/macro';
+import { useLingui } from '@lingui/react';
 import { useChatService } from '../../providers/chat-service.provider';
 import { usePicker } from '../../providers/picker-provider';
 import {
@@ -13,6 +14,7 @@ interface AutopilotChatAgentModeSelectorProps {
 }
 
 function AutopilotChatAgentModeSelectorComponent({ useIcon }: AutopilotChatAgentModeSelectorProps) {
+    const { _ } = useLingui();
     const chatService = useChatService();
     const {
         agentModes, selectedAgentMode,
@@ -32,7 +34,7 @@ function AutopilotChatAgentModeSelectorComponent({ useIcon }: AutopilotChatAgent
             selectedOption={selectedAgentMode}
             onSelect={handleAgentModeSelect}
             useIcon={useIcon}
-            ariaLabel={t('autopilot-chat-agent-mode-selection-label')}
+            ariaLabel={_(msg({ id: 'autopilot-chat.input.agent-mode-selection-label', message: `Agent mode selection` }))}
             chatServiceInstance={chatService}
         />
     );

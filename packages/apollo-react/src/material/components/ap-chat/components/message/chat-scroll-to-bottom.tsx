@@ -3,7 +3,8 @@ import React from 'react';
 import { styled } from '@mui/material';
 import token from '@uipath/apollo-core';
 
-import { t } from '../../../../utils/localization/loc';
+import { msg } from '@lingui/core/macro';
+import { useLingui } from '@lingui/react';
 import { useChatScroll } from '../../providers/chat-scroll-provider';
 import { useChatService } from '../../providers/chat-service.provider';
 import {
@@ -51,6 +52,7 @@ interface ScrollToBottomButtonProps {
 }
 
 function AutopilotChatScrollToBottomButtonComponent({ overflowContainer }: ScrollToBottomButtonProps) {
+    const { _ } = useLingui();
     const [ bottom, setBottom ] = React.useState(0);
     const [ left, setLeft ] = React.useState(0);
     const {
@@ -110,8 +112,8 @@ function AutopilotChatScrollToBottomButtonComponent({ overflowContainer }: Scrol
                 <AutopilotChatActionButton
                     iconName="arrow_downward"
                     onClick={() => scrollToBottom({ force: true })}
-                    ariaLabel={t('autopilot-chat-scroll-to-bottom')}
-                    tooltip={isVisible ? t('autopilot-chat-scroll-to-bottom') : undefined}
+                    ariaLabel={_(msg({ id: 'autopilot-chat.message.scroll-to-bottom', message: `Scroll to bottom` }))}
+                    tooltip={isVisible ? _(msg({ id: 'autopilot-chat.message.scroll-to-bottom', message: `Scroll to bottom` })) : undefined}
                     tabIndex={isVisible ? 0 : -1}
                     data-testid="autopilot-chat-scroll-to-bottom"
                 />

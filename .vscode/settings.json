@@ -1,0 +1,4 @@
+{
+  // Test explorer settings
+  "testing.automaticallyOpenPeekView": "failureInVisibleDocument"
+}

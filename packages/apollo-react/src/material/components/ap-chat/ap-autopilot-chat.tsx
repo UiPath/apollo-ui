@@ -6,6 +6,10 @@ import {
 } from '@mui/material/styles';
 import token from '@uipath/apollo-core';
 
+import {
+  ApI18nProvider,
+  SupportedLocale,
+} from '../../../i18n';
 import { DragHandle } from './components/common/drag-handle';
 import { AutopilotChatDropzone } from './components/dropzone/dropzone';
 import {
@@ -102,28 +106,45 @@ const AutopilotChatContent = React.memo(() => {
     );
 });
 
-export function ApAutopilotChatReact({ chatServiceInstance }: { chatServiceInstance: AutopilotChatService }) {
+export interface ApAutopilotChatReactProps {
+    /**
+     * Chat service instance
+     */
+    chatServiceInstance: AutopilotChatService;
+    /**
+     * Locale for the chat interface.
+     * @default 'en'
+     */
+    locale?: SupportedLocale;
+}
+
+export function ApAutopilotChatReact({
+    chatServiceInstance,
+    locale = 'en',
+}: ApAutopilotChatReactProps) {
     return (
-        <AutopilotChatServiceProvider chatServiceInstance={chatServiceInstance}>
-            <AutopilotStreamingProvider>
-                <AutopilotChatScrollProvider>
-                    <AutopilotChatStateProvider>
-                        <AutopilotErrorProvider>
-                            <AutopilotLoadingProvider>
-                                <AutopilotAttachmentsProvider>
-                                    <AutopilotPickerProvider>
-                                        <AutopilotChatWidthProvider>
-                                            <AutopilotChatDropzone>
-                                                <AutopilotChatContent />
-                                            </AutopilotChatDropzone>
-                                        </AutopilotChatWidthProvider>
-                                    </AutopilotPickerProvider>
-                                </AutopilotAttachmentsProvider>
-                            </AutopilotLoadingProvider>
-                        </AutopilotErrorProvider>
-                    </AutopilotChatStateProvider>
-                </AutopilotChatScrollProvider>
-            </AutopilotStreamingProvider>
-        </AutopilotChatServiceProvider>
+        <ApI18nProvider component="material/components/ap-chat" locale={locale}>
+            <AutopilotChatServiceProvider chatServiceInstance={chatServiceInstance}>
+                <AutopilotStreamingProvider>
+                    <AutopilotChatScrollProvider>
+                        <AutopilotChatStateProvider>
+                            <AutopilotErrorProvider>
+                                <AutopilotLoadingProvider>
+                                    <AutopilotAttachmentsProvider>
+                                        <AutopilotPickerProvider>
+                                            <AutopilotChatWidthProvider>
+                                                <AutopilotChatDropzone>
+                                                    <AutopilotChatContent />
+                                                </AutopilotChatDropzone>
+                                            </AutopilotChatWidthProvider>
+                                        </AutopilotPickerProvider>
+                                    </AutopilotAttachmentsProvider>
+                                </AutopilotLoadingProvider>
+                            </AutopilotErrorProvider>
+                        </AutopilotChatStateProvider>
+                    </AutopilotChatScrollProvider>
+                </AutopilotStreamingProvider>
+            </AutopilotChatServiceProvider>
+        </ApI18nProvider>
     );
 }

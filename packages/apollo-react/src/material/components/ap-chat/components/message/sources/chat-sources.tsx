@@ -12,7 +12,8 @@ import {
 } from '@mui/material';
 import token from '@uipath/apollo-core';
 
-import { t } from '../../../../../utils/localization/loc';
+import { msg } from '@lingui/core/macro';
+import { useLingui } from '@lingui/react';
 import { useIsStreamingMessage } from '../../../hooks/use-is-streaming-message';
 import { useChatService } from '../../../providers/chat-service.provider';
 import { useChatState } from '../../../providers/chat-state-provider';
@@ -157,6 +158,7 @@ const StyledActionButton = styled(Box)((() => ({
 function AutopilotChatSourcesComponent({
     groupId, message,
 }: AutopilotChatSourcesProps) {
+    const { _ } = useLingui();
     const chatService = useChatService();
     const { spacing } = useChatState();
 
@@ -235,7 +237,7 @@ function AutopilotChatSourcesComponent({
 
     return (
         <StyledContainer>
-            <StyledToggleButton component="button" title={t('autopilot-chat-sources')} onClick={handleToggleExpand}>
+            <StyledToggleButton component="button" title={_(msg({ id: 'autopilot-chat.message.sources', message: `Sources` }))} onClick={handleToggleExpand}>
                 <ap-icon
                     name="link"
                     variant="outlined"
@@ -246,7 +248,7 @@ function AutopilotChatSourcesComponent({
                     variant={spacing.primaryFontToken}
                     color={'var(--color-foreground)'}
                 >
-                    {t('autopilot-chat-sources')}
+                    {_(msg({ id: 'autopilot-chat.message.sources', message: `Sources` }))}
                 </ap-typography>
             </StyledToggleButton>
 
@@ -257,8 +259,9 @@ function AutopilotChatSourcesComponent({
                             {sources.map((source, index) => {
                                 const isUrl = 'url' in source;
                                 const isPdf = 'download_url' in source;
+                                const pageNumber = isPdf && source.page_number ? source.page_number : 0;
                                 const pageText = isPdf && source.page_number
-                                    ? ` (${t('autopilot-chat-page-number', { page_number: source.page_number })})`
+                                    ? ` (${_(msg({ id: 'autopilot-chat.message.page-number', message: `Page ${pageNumber}` }))})`
                                     : '';
                                 const text = `[${source.id}] ${source.title}${pageText}`;
 
@@ -301,14 +304,14 @@ function AutopilotChatSourcesComponent({
                         <StyledActionContainer>
                             <StyledActionButton
                                 component="button"
-                                title={showFullList ? t('autopilot-chat-show-less') : t('autopilot-chat-show-more')}
+                                title={showFullList ? _(msg({ id: 'autopilot-chat.message.show-less', message: `Show less` })) : _(msg({ id: 'autopilot-chat.message.show-more', message: `Show more` }))}
                                 onClick={showFullList ? handleShowLess : handleShowMore}
                             >
                                 <ap-typography
                                     variant={spacing.primaryBoldFontToken}
                                     color={'var(--color-primary)'}
                                 >
-                                    {showFullList ? t('autopilot-chat-show-less') : t('autopilot-chat-show-more')}
+                                    {showFullList ? _(msg({ id: 'autopilot-chat.message.show-less', message: `Show less` })) : _(msg({ id: 'autopilot-chat.message.show-more', message: `Show more` }))}
                                 </ap-typography>
                                 <ap-icon
                                     name={showFullList ? 'expand_less' : 'expand_more'}

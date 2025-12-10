@@ -6,7 +6,8 @@ import {
 } from '@mui/material';
 import token, { FontVariantToken } from '@uipath/apollo-core';
 
-import { t } from '../../../../utils/localization/loc';
+import { msg } from '@lingui/core/macro';
+import { useLingui } from '@lingui/react';
 import { ApTextAreaReact } from '../../../ap-text-area/ap-text-area';
 import { useAttachments } from '../../providers/attachements-provider';
 import { useChatService } from '../../providers/chat-service.provider';
@@ -84,6 +85,7 @@ const GradientContainer = styled('div')((() => ({
 })));
 
 function AutopilotChatInputComponent() {
+    const { _ } = useLingui();
     const chatService = useChatService();
     const initialPrompt = chatService?.getPrompt?.();
     const {
@@ -231,7 +233,7 @@ function AutopilotChatInputComponent() {
                         resize="none"
                         ref={inputRef}
                         value={message}
-                        placeholder={overrideLabels?.inputPlaceholder ?? t('autopilot-chat-input-placeholder')}
+                        placeholder={overrideLabels?.inputPlaceholder ?? _(msg({ id: 'autopilot-chat.input.placeholder', message: `Type a message...` }))}
                         onChange={handleChange}
                         onKeyDown={handleKeyDown}
                         minRows={spacing.promptBox.minRows}

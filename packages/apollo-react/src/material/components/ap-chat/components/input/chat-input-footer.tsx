@@ -3,10 +3,12 @@ import React from 'react';
 import { Box } from '@mui/material';
 import { FontVariantToken } from '@uipath/apollo-core';
 
-import { t } from '../../../../utils/localization/loc';
+import { msg } from '@lingui/core/macro';
+import { useLingui } from '@lingui/react';
 import { useChatState } from '../../providers/chat-state-provider';
 
 function AutopilotChatInputFooterComponent() {
+    const { _ } = useLingui();
     const { overrideLabels } = useChatState();
 
     return (
@@ -15,7 +17,7 @@ function AutopilotChatInputFooterComponent() {
                 color={'var(--color-foreground-de-emp)'}
                 variant={FontVariantToken.fontSizeXs}
             >
-                {overrideLabels?.footerDisclaimer ?? t('autopilot-chat-footer')}
+                {overrideLabels?.footerDisclaimer ?? _(msg({ id: 'autopilot-chat.input.footer', message: `AI can make mistakes. Check important info.` }))}
             </ap-typography>
         </Box>
     );

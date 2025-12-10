@@ -1,6 +1,7 @@
 import React from 'react';
 
-import { t } from '../../../../../utils/localization/loc';
+import { msg } from '@lingui/core/macro';
+import { useLingui } from '@lingui/react';
 import {
     ApTreeViewItem,
     ApTreeViewReact,
@@ -17,6 +18,8 @@ export const ApolloChatTreeRenderer: React.FC<ApolloChatTreeRendererProps> = ({
     transformSpanToTreeItem: customTransformSpanToTreeItem,
     transformToTreeItems: customTransformToTreeItems,
 }) => {
+    const { _ } = useLingui();
+
     const defaultTransformToTreeItems = (): ApTreeViewItem[] => {
         const items: ApTreeViewItem[] = [];
 
@@ -55,8 +58,8 @@ export const ApolloChatTreeRenderer: React.FC<ApolloChatTreeRendererProps> = ({
 
         const item: ApTreeViewItem = {
             id: spanData.id ?? key,
-            title: spanNode.name ?? t('unknown'),
-            description: spanData.attributes?.description ?? spanData.attributes?.type ?? t('no-description'),
+            title: spanNode.name ?? _(msg({ id: 'autopilot-chat.tree.unknown', message: `Unknown` })),
+            description: spanData.attributes?.description ?? spanData.attributes?.type ?? _(msg({ id: 'autopilot-chat.tree.no-description', message: `No description` })),
             icon: spanData.icon,
             expanded: spanData.expanded,
             titleColor: spanData.titleColor,
@@ -114,7 +117,7 @@ export const ApolloChatTreeRenderer: React.FC<ApolloChatTreeRendererProps> = ({
     }, [ onItemSelect, treeItems ]);
 
     if (!treeItems || treeItems.length === 0) {
-        return <div className="apollo-chat-tree-renderer">{t('no_items')}</div>;
+        return <div className="apollo-chat-tree-renderer">{_(msg({ id: 'autopilot-chat.tree.no-items', message: `No items` }))}</div>;
     }
 
     return (

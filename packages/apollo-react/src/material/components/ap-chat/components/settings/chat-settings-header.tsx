@@ -3,7 +3,8 @@ import React from 'react';
 import { styled } from '@mui/material';
 import token, { FontVariantToken } from '@uipath/apollo-core';
 
-import { t } from '../../../../utils/localization/loc';
+import { msg } from '@lingui/core/macro';
+import { useLingui } from '@lingui/react';
 import { useChatService } from '../../providers/chat-service.provider';
 import { AutopilotChatPreHookAction } from '../../service';
 import { AutopilotChatActionButton } from '../common/action-button';
@@ -25,6 +26,7 @@ const ActionsContainer = styled('div')(() => ({
 const AutopilotChatSettingsHeaderComponent: React.FC<{ isFullScreen: boolean; isSettingsOpen: boolean }> = ({
     isFullScreen, isSettingsOpen,
 }) => {
+    const { _ } = useLingui();
     const chatService = useChatService();
 
     const handleCloseSettings = React.useCallback(() => {
@@ -51,12 +53,12 @@ const AutopilotChatSettingsHeaderComponent: React.FC<{ isFullScreen: boolean; is
                     role="heading"
                     aria-level={2}
                 >
-                    {t('autopilot-chat-settings-title')}
+                    {_(msg({ id: 'autopilot-chat.settings.title', message: `Settings` }))}
                 </ap-typography>
             )}
 
             <VisuallyHidden id="settings-heading-description">
-                {t('autopilot-chat-settings-heading-description')}
+                {_(msg({ id: 'autopilot-chat.settings.heading-description', message: `Settings panel` }))}
             </VisuallyHidden>
 
             <ActionsContainer>
@@ -64,10 +66,10 @@ const AutopilotChatSettingsHeaderComponent: React.FC<{ isFullScreen: boolean; is
                     disabled={!isSettingsOpen}
                     iconName={isFullScreen ? 'right_panel_close' : 'chevron_left'}
                     onClick={handleCloseSettings}
-                    tooltip={isSettingsOpen ? t('autopilot-chat-hide-settings') : ''}
-                    ariaLabel={isSettingsOpen ? t('autopilot-chat-hide-settings') : ''}
+                    tooltip={isSettingsOpen ? _(msg({ id: 'autopilot-chat.settings.hide', message: `Hide settings` })) : ''}
+                    ariaLabel={isSettingsOpen ? _(msg({ id: 'autopilot-chat.settings.hide', message: `Hide settings` })) : ''}
                     ariaDescribedby={isSettingsOpen ? 'settings-title settings-heading-description' : ''}
-                    title={isSettingsOpen ? t('autopilot-chat-hide-settings') : ''}
+                    title={isSettingsOpen ? _(msg({ id: 'autopilot-chat.settings.hide', message: `Hide settings` })) : ''}
                     {...(isFullScreen && { variant: 'custom' })}
                     data-testid="autopilot-chat-settings-close"
                 />
@@ -80,7 +82,7 @@ const AutopilotChatSettingsHeaderComponent: React.FC<{ isFullScreen: boolean; is
                         role="heading"
                         aria-level={2}
                     >
-                        {t('autopilot-chat-settings-title')}
+                        {_(msg({ id: 'autopilot-chat.settings.title', message: `Settings` }))}
                     </ap-typography>
                 )}
             </ActionsContainer>

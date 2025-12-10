@@ -3,7 +3,8 @@ import React from 'react';
 import { styled } from '@mui/material/styles';
 import token from '@uipath/apollo-core';
 
-import { t } from '../../../../utils/localization/loc';
+import { msg } from '@lingui/core/macro';
+import { useLingui } from '@lingui/react';
 import { useAttachments } from '../../providers/attachements-provider';
 import { useChatService } from '../../providers/chat-service.provider';
 import { useChatState } from '../../providers/chat-state-provider';
@@ -22,6 +23,7 @@ const StyledActions = styled('div')(() => ({
 }));
 
 function AutopilotChatHeaderActionsComponent() {
+    const { _ } = useLingui();
     const chatService = useChatService();
     const {
         disabledFeatures, chatMode, historyOpen, settingsOpen, setHistoryAnchorElement,
@@ -126,8 +128,8 @@ function AutopilotChatHeaderActionsComponent() {
                 <AutopilotChatActionButton
                     iconName="new_chat"
                     variant="custom"
-                    tooltip={t('autopilot-chat-new-chat')}
-                    ariaLabel={t('autopilot-chat-new-chat')}
+                    tooltip={_(msg({ id: 'autopilot-chat.header.actions.new-chat', message: `New chat` }))}
+                    ariaLabel={_(msg({ id: 'autopilot-chat.header.actions.new-chat', message: `New chat` }))}
                     onClick={handleNewChat}
                     data-testid="autopilot-chat-new-chat"
                 />
@@ -136,8 +138,8 @@ function AutopilotChatHeaderActionsComponent() {
             {!disabledFeatures.settings && (
                 <AutopilotChatActionButton
                     iconName="settings"
-                    tooltip={t('autopilot-chat-settings')}
-                    ariaLabel={t('autopilot-chat-settings')}
+                    tooltip={_(msg({ id: 'autopilot-chat.header.actions.settings', message: `Settings` }))}
+                    ariaLabel={_(msg({ id: 'autopilot-chat.header.actions.settings', message: `Settings` }))}
                     onClick={toggleSettings}
                     data-testid="autopilot-chat-settings"
                 />
@@ -148,8 +150,8 @@ function AutopilotChatHeaderActionsComponent() {
                     ref={setHistoryAnchorElement}
                     iconName="history"
                     variant="custom"
-                    tooltip={t('autopilot-chat-history')}
-                    ariaLabel={t('autopilot-chat-history')}
+                    tooltip={_(msg({ id: 'autopilot-chat.header.actions.history', message: `History` }))}
+                    ariaLabel={_(msg({ id: 'autopilot-chat.header.actions.history', message: `History` }))}
                     onClick={toggleHistory}
                     data-testid="autopilot-chat-history"
                 />
@@ -158,8 +160,8 @@ function AutopilotChatHeaderActionsComponent() {
             {!disabledFeatures.fullScreen && chatMode !== AutopilotChatMode.Embedded && (
                 <AutopilotChatActionButton
                     iconName={chatMode !== AutopilotChatMode.FullScreen ? 'open_in_full' : 'close_fullscreen'}
-                    tooltip={chatMode !== AutopilotChatMode.FullScreen ? t('autopilot-chat-expand') : t('autopilot-chat-collapse')}
-                    ariaLabel={chatMode !== AutopilotChatMode.FullScreen ? t('autopilot-chat-expand') : t('autopilot-chat-collapse')}
+                    tooltip={chatMode !== AutopilotChatMode.FullScreen ? _(msg({ id: 'autopilot-chat.header.actions.expand', message: `Expand` })) : _(msg({ id: 'autopilot-chat.header.actions.collapse', message: `Collapse` }))}
+                    ariaLabel={chatMode !== AutopilotChatMode.FullScreen ? _(msg({ id: 'autopilot-chat.header.actions.expand', message: `Expand` })) : _(msg({ id: 'autopilot-chat.header.actions.collapse', message: `Collapse` }))}
                     onClick={handleToggleChat}
                     data-testid="autopilot-chat-toggle-fullscreen"
                 />
@@ -170,7 +172,7 @@ function AutopilotChatHeaderActionsComponent() {
                     <AutopilotChatActionButton
                         iconName="more_vert"
                         variant="outlined"
-                        tooltip={t('autopilot-chat-custom-actions')}
+                        tooltip={_(msg({ id: 'autopilot-chat.header.actions.custom-actions', message: `More actions` }))}
                         onClick={handleOpenActionMenu}
                         data-testid="autopilot-chat-action-menu"
                     />
@@ -189,8 +191,8 @@ function AutopilotChatHeaderActionsComponent() {
                 <AutopilotChatActionButton
                     iconName="remove"
                     onClick={handleClose}
-                    tooltip={t('autopilot-chat-close')}
-                    ariaLabel={t('autopilot-chat-close')}
+                    tooltip={_(msg({ id: 'autopilot-chat.header.actions.close', message: `Close` }))}
+                    ariaLabel={_(msg({ id: 'autopilot-chat.header.actions.close', message: `Close` }))}
                     data-testid="autopilot-chat-close"
                 />
             )}

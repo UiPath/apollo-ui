@@ -9,7 +9,9 @@ import {
 import { styled } from '@mui/material/styles';
 import token, { FontVariantToken } from '@uipath/apollo-core';
 
-import { t } from '../../../../utils/localization/loc';
+import { msg } from '@lingui/core/macro';
+import { useLingui } from '@lingui/react';
+
 import { useAttachments } from '../../providers/attachements-provider';
 import { useChatState } from '../../providers/chat-state-provider';
 import { useError } from '../../providers/error-provider';
@@ -23,7 +25,7 @@ const DropzoneRoot = styled('div')({
 
 const DropzoneContent = styled('div')<{ isDragActive: boolean }>(({ isDragActive }) => ({ opacity: isDragActive ? 0.3 : 1 }));
 
-const DropzoneOverlay = styled('div')((() => ({
+const DropzoneOverlay = styled('div')(() => ({
     position: 'absolute',
     top: 0,
     left: 0,
@@ -49,6 +51,7 @@ function AutopilotChatDropzoneComponent({
     children,
     ...dropzoneOptions
 }) {
+    const { _ } = useLingui();
     const {
         addAttachments, attachments,
     } = useAttachments();
@@ -62,7 +65,7 @@ function AutopilotChatDropzoneComponent({
 
     const handleRejections = React.useCallback((parsedFiles: AutopilotChatFileInfo[], fileRejections: FileRejection[]) => {
         if (!allowedAttachments.multiple && (parsedFiles.length > 1 || attachmentsCountRef.current > 0 || fileRejections.length > 1)) {
-            setError(t('autopilot-chat-error-multiple-files'));
+            setError(_(msg({ id: 'autopilot-chat.error.multiple-files', message: `Only one file can be attached at a time` })));
 
             return true;
         }
@@ -71,7 +74,8 @@ function AutopilotChatDropzoneComponent({
             const tooManyFilesRejection = fileRejections.find(rejection => rejection.errors[0]?.code === ErrorCode.TooManyFiles);
 
             if (tooManyFilesRejection) {
-                setError(t('autopilot-chat-error-too-many-files', { maxCount: allowedAttachments.maxCount }));
+                const maxCount = allowedAttachments.maxCount;
+                setError(_(msg({ id: 'autopilot-chat.error.too-many-files', message: `Maximum ${maxCount} files allowed` })));
 
                 return true;
             }
@@ -85,16 +89,15 @@ function AutopilotChatDropzoneComponent({
 
                 if (errorCode === ErrorCode.FileTooLarge) {
                     const fileSizeMB = Math.round(file.size / 1024 / 1024);
+                    const fileName = file.name;
+                    const maxSize = allowedAttachments.maxSize / 1024 / 1024;
 
-                    errorMessages.push(t('autopilot-chat-error-file-too-large', {
-                        fileName: file.name,
-                        fileSize: fileSizeMB,
-                        maxSize: allowedAttachments.maxSize / 1024 / 1024,
-                    }));
+                    errorMessages.push(_(msg({ id: 'autopilot-chat.error.file-too-large', message: `${fileName} (${fileSizeMB}MB) exceeds maximum size of ${maxSize}MB` })));
                 }
 
                 if (errorCode === ErrorCode.FileInvalidType) {
-                    errorMessages.push(t('autopilot-chat-error-file-invalid-type', { fileName: file.name }));
+                    const fileName = file.name;
+                    errorMessages.push(_(msg({ id: 'autopilot-chat.error.file-invalid-type', message: `${fileName} has an invalid file type` })));
                 }
             }
 
@@ -104,7 +107,7 @@ function AutopilotChatDropzoneComponent({
         }
 
         return false;
-    }, [ setError, allowedAttachments.maxCount, allowedAttachments.maxSize, allowedAttachments.multiple ]);
+    }, [ _, setError, allowedAttachments.maxCount, allowedAttachments.maxSize, allowedAttachments.multiple ]);
 
     const handleDrop = React.useCallback(async (files: File[], fileRejections: FileRejection[]) => {
         try {
@@ -154,24 +157,30 @@ function AutopilotChatDropzoneComponent({
             {isDragActive && (
                 <DropzoneOverlay>
                     <ap-typography variant={FontVariantToken.fontSizeMBold} color={'var(--color-foreground)'}>
-                        {t('autopilot-chat-dropzone-overlay-title')}
+                        {_(msg({ id: 'autopilot-chat.dropzone.overlay-title', message: `Drop files here` }))}
                     </ap-typography>
 
-                    {allowedAttachments.maxCount && allowedAttachments.maxCount > 1 && allowedAttachments.multiple && (
-                        <ap-typography variant={FontVariantToken.fontSizeS} color={'var(--color-foreground)'}>
-                            {t('autopilot-chat-dropzone-overlay-max-count', { maxCount: allowedAttachments.maxCount })}
-                        </ap-typography>
-                    )}
+                    {allowedAttachments.maxCount && allowedAttachments.maxCount > 1 && allowedAttachments.multiple && (() => {
+                        const maxCount = allowedAttachments.maxCount;
+                        return (
+                            <ap-typography variant={FontVariantToken.fontSizeS} color={'var(--color-foreground)'}>
+                                {_(msg({ id: 'autopilot-chat.dropzone.overlay-max-count', message: `Maximum ${maxCount} files` }))}
+                            </ap-typography>
+                        );
+                    })()}
 
                     <ap-typography variant={FontVariantToken.fontSizeS} color={'var(--color-foreground)'}>
-                        {t('autopilot-chat-dropzone-overlay-max-size', { maxSize: allowedAttachments.maxSize / 1024 / 1024 })}
+                        {(() => {
+                            const maxSize = allowedAttachments.maxSize / 1024 / 1024;
+                            return _(msg({ id: 'autopilot-chat.dropzone.overlay-max-size', message: `Maximum file size: ${maxSize}MB` }));
+                        })()}
                     </ap-typography>
 
                     <ap-typography variant={FontVariantToken.fontSizeS} color={'var(--color-foreground)'}>
-                        {t('autopilot-chat-allowed-file-types', {
-                            fileTypes: Object.values(allowedAttachments.types).flat()
-                                .join(', '),
-                        })}
+                        {(() => {
+                            const fileTypes = Object.values(allowedAttachments.types).flat().join(', ');
+                            return _(msg({ id: 'autopilot-chat.dropzone.allowed-file-types', message: `Allowed file types: ${fileTypes}` }));
+                        })()}
                     </ap-typography>
                 </DropzoneOverlay>
             )}

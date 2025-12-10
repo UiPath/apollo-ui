@@ -1,9 +1,10 @@
 import React from 'react';
 
-import { styled } from '@mui/material';
+import { styled, StyledComponent } from '@mui/material';
 import token from '@uipath/apollo-core';
 
-import { t } from '../../../../utils/localization/loc';
+import { msg } from '@lingui/core/macro';
+import { useLingui } from '@lingui/react';
 import { ApProgressSpinnerReact } from '../../../ap-progress-spinner/ap-progress-spinner';
 import { useChatState } from '../../providers/chat-state-provider';
 import {
@@ -14,7 +15,7 @@ import { fileToIcon } from '../../utils/file-to-icon';
 import { AutopilotChatActionButton } from './action-button';
 import { AutopilotChatTooltip } from './tooltip';
 
-export const AttachmentIcon = styled('span')<{ fileType?: AutopilotChatFileType; width?: string; height?: string }>(({
+export const AttachmentIcon: StyledComponent<{ fileType?: AutopilotChatFileType; width?: string; height?: string }> = styled('span')<{ fileType?: AutopilotChatFileType; width?: string; height?: string }>(({
     fileType, width, height,
 }) => ({
     maxWidth: width ?? token.Spacing.SpacingM,
@@ -109,6 +110,7 @@ interface AttachmentProps {
 export const Attachment = React.memo(({
     attachment, onRemove, shouldFocus, isFullWidth, loading,
 }: AttachmentProps) => {
+    const { _ } = useLingui();
     const { spacing } = useChatState();
     const removeButtonRef = React.useRef<HTMLButtonElement>(null);
     const [ isRemoveIconVisible, setIsRemoveIconVisible ] = React.useState(false);
@@ -200,8 +202,8 @@ export const Attachment = React.memo(({
                         onBlur={() => setIsFocused(false)}
                         iconSize={token.Icon.IconS}
                         iconName="close"
-                        tooltip={t('autopilot-chat-remove-file')}
-                        ariaLabel={t('autopilot-chat-remove-file-name', { name: attachment.name })}
+                        tooltip={_(msg({ id: 'autopilot-chat.common.attachments.remove-file', message: `Remove file` }))}
+                        ariaLabel={_(msg({ id: 'autopilot-chat.common.attachments.remove-file-name', message: `Remove ${attachment.name}` }))}
                         onClick={() => {
                             if (onRemove) {
                                 onRemove(attachment.name);

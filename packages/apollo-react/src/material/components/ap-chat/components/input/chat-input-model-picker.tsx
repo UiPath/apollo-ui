@@ -1,6 +1,7 @@
 import React from 'react';
 
-import { t } from '../../../../utils/localization/loc';
+import { msg } from '@lingui/core/macro';
+import { useLingui } from '@lingui/react';
 import { useChatService } from '../../providers/chat-service.provider';
 import { usePicker } from '../../providers/picker-provider';
 import {
@@ -9,6 +10,7 @@ import {
 } from '../common/dropdown-picker';
 
 function AutopilotChatInputModelPickerComponent({ useIcon }: { useIcon: boolean }) {
+    const { _ } = useLingui();
     const chatService = useChatService();
     const {
         models, selectedModel,
@@ -31,7 +33,7 @@ function AutopilotChatInputModelPickerComponent({ useIcon }: { useIcon: boolean 
             } as DropdownOption}
             onSelect={handleModelSelect}
             useIcon={useIcon}
-            ariaLabel={t('autopilot-chat-model-selection-label')}
+            ariaLabel={_(msg({ id: 'autopilot-chat.input.model-selection-label', message: `Model selection` }))}
             chatServiceInstance={chatService}
             iconVariant="custom"
         />

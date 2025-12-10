@@ -7,7 +7,8 @@ import {
 } from '@mui/material';
 import token from '@uipath/apollo-core';
 
-import { t } from '../../../../../utils/localization/loc';
+import { msg } from '@lingui/core/macro';
+import { useLingui } from '@lingui/react';
 import { useChatService } from '../../../providers/chat-service.provider';
 import {
   AutopilotChatActionPayload,
@@ -47,6 +48,7 @@ interface AutopilotChatActionsListProps {
 function AutopilotChatActionsListComponent({
     message, defaultActions, isVisible, setIsVisible, onHoverChange, actionsContainerRef,
 }: AutopilotChatActionsListProps) {
+    const { _ } = useLingui();
     const [ anchorEl, setAnchorEl ] = React.useState<null | HTMLElement>(null);
     const overflowMenuOpen = Boolean(anchorEl);
     const overflowButtonRef = React.useRef<HTMLButtonElement>(null);
@@ -123,7 +125,7 @@ function AutopilotChatActionsListComponent({
             isRequest={message.role === AutopilotChatRole.User}
             style={{ opacity: shouldBeVisible ? 1 : 0 }}
             role="group"
-            aria-label={t('autopilot-chat-message-actions')}
+            aria-label={_(msg({ id: 'autopilot-chat.message.actions.label', message: `Message actions` }))}
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
             onFocus={handleMouseEnter}
@@ -157,8 +159,8 @@ function AutopilotChatActionsListComponent({
                         ref={overflowButtonRef}
                         iconName="more_vert"
                         iconSize="16px"
-                        tooltip={t('autopilot-chat-more-actions')}
-                        ariaLabel={t('autopilot-chat-more-actions')}
+                        tooltip={_(msg({ id: 'autopilot-chat.message.actions.more', message: `More actions` }))}
+                        ariaLabel={_(msg({ id: 'autopilot-chat.message.actions.more', message: `More actions` }))}
                         onClick={handleOpenOverflowMenu}
                         onFocus={handleMouseEnter}
                         onMouseEnter={handleMouseEnter}

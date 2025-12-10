@@ -3,7 +3,8 @@ import React from 'react';
 import { styled } from '@mui/material';
 import token from '@uipath/apollo-core';
 
-import { t } from '../../../../utils/localization/loc';
+import { msg } from '@lingui/core/macro';
+import { useLingui } from '@lingui/react';
 import { useChatService } from '../../providers/chat-service.provider';
 import { useChatState } from '../../providers/chat-state-provider';
 import { useLoading } from '../../providers/loading-provider';
@@ -59,6 +60,7 @@ interface AutopilotChatHistoryItemProps {
 const AutopilotChatHistoryItemComponent: React.FC<AutopilotChatHistoryItemProps> = ({
     item, isHistoryOpen,
 }) => {
+    const { _ } = useLingui();
     const chatService = useChatService();
     const { spacing } = useChatState();
     const [ isActive, setIsActive ] = React.useState(chatService.activeConversationId === item.id);
@@ -207,9 +209,9 @@ const AutopilotChatHistoryItemComponent: React.FC<AutopilotChatHistoryItemProps>
                     }}
                     iconName="delete"
                     iconSize="16px"
-                    tooltip={(isRemoveIconVisible || isFocused) && isHistoryOpen ? t('autopilot-chat-delete-history') : ''}
+                    tooltip={(isRemoveIconVisible || isFocused) && isHistoryOpen ? _(msg({ id: 'autopilot-chat.history.delete', message: `Delete chat` })) : ''}
                     data-testid="autopilot-chat-history-delete"
-                    ariaLabel={t('autopilot-chat-delete-history')}
+                    ariaLabel={_(msg({ id: 'autopilot-chat.history.delete', message: `Delete chat` }))}
                 />
             </div>
         </GroupItem>
