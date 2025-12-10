@@ -3,10 +3,11 @@ import {
   useState,
 } from 'react';
 
-import { Fade } from '@mui/material';
-
 import { msg } from '@lingui/core/macro';
 import { useLingui } from '@lingui/react';
+import { Fade } from '@mui/material';
+
+import { ApTypography } from '../../../../ap-typography';
 import { useChatService } from '../../../providers/chat-service.provider';
 import { useChatState } from '../../../providers/chat-state-provider';
 import { AutopilotChatEvent } from '../../../service';
@@ -91,13 +92,13 @@ export const LoadingMessage = () => {
 
     return (
         <Fade in={isVisible} timeout={FADE_DURATION}>
-            <ap-typography
+            <ApTypography
                 variant={spacing.primaryFontToken}
                 color={'var(--color-foreground)'}
                 aria-live='polite'
             >
                 {translatedMessage}
-            </ap-typography>
+            </ApTypography>
         </Fade>
     );
 };

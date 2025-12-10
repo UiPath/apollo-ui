@@ -4,6 +4,8 @@ import React, {
   useState,
 } from 'react';
 
+import { msg } from '@lingui/core/macro';
+import { useLingui } from '@lingui/react';
 import {
   Box,
   Collapse,
@@ -12,8 +14,7 @@ import {
 } from '@mui/material';
 import token from '@uipath/apollo-core';
 
-import { msg } from '@lingui/core/macro';
-import { useLingui } from '@lingui/react';
+import { ApTypography } from '../../../ap-typography';
 import { useIsStreamingMessage } from '../../../hooks/use-is-streaming-message';
 import { useChatService } from '../../../providers/chat-service.provider';
 import { useChatState } from '../../../providers/chat-state-provider';
@@ -118,7 +119,7 @@ const StyledSourceContent = styled(Box)(() => ({
     whiteSpace: 'nowrap',
     overflow: 'hidden',
 
-    '& ap-typography': {
+    '& .MuiTypography-root': {
         whiteSpace: 'nowrap',
         overflow: 'hidden',
         textOverflow: 'ellipsis',
@@ -244,12 +245,12 @@ function AutopilotChatSourcesComponent({
                     size={spacing.compactMode ? token.Icon.IconS : token.Icon.IconM}
                     color={'var(--color-foreground)'}
                 />
-                <ap-typography
+                <ApTypography
                     variant={spacing.primaryFontToken}
                     color={'var(--color-foreground)'}
                 >
                     {_(msg({ id: 'autopilot-chat.message.sources', message: `Sources` }))}
-                </ap-typography>
+                </ApTypography>
             </StyledToggleButton>
 
             <Collapse in={isExpanded} timeout={300}>
@@ -283,12 +284,12 @@ function AutopilotChatSourcesComponent({
                                                 color={'var(--color-primary)'}
                                             />
                                             <StyledSourceContent>
-                                                <ap-typography
+                                                <ApTypography
                                                     variant={spacing.primaryBoldFontToken}
                                                     color={'var(--color-foreground-de-emp)'}
                                                 >
                                                     {text}
-                                                </ap-typography>
+                                                </ApTypography>
                                             </StyledSourceContent>
                                         </StyledSourceItem>
                                     </Tooltip>
@@ -307,12 +308,12 @@ function AutopilotChatSourcesComponent({
                                 title={showFullList ? _(msg({ id: 'autopilot-chat.message.show-less', message: `Show less` })) : _(msg({ id: 'autopilot-chat.message.show-more', message: `Show more` }))}
                                 onClick={showFullList ? handleShowLess : handleShowMore}
                             >
-                                <ap-typography
+                                <ApTypography
                                     variant={spacing.primaryBoldFontToken}
                                     color={'var(--color-primary)'}
                                 >
                                     {showFullList ? _(msg({ id: 'autopilot-chat.message.show-less', message: `Show less` })) : _(msg({ id: 'autopilot-chat.message.show-more', message: `Show more` }))}
-                                </ap-typography>
+                                </ApTypography>
                                 <ap-icon
                                     name={showFullList ? 'expand_less' : 'expand_more'}
                                     variant="outlined"

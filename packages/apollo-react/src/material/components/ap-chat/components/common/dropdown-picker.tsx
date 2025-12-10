@@ -1,5 +1,7 @@
 import React from 'react';
 
+import { msg } from '@lingui/core/macro';
+import { useLingui } from '@lingui/react';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import {
   Menu,
@@ -8,8 +10,7 @@ import {
 } from '@mui/material';
 import token, { FontVariantToken } from '@uipath/apollo-core';
 
-import { msg } from '@lingui/core/macro';
-import { useLingui } from '@lingui/react';
+import { ApTypography } from '../../../ap-typography';
 import { useChatState } from '../../providers/chat-state-provider';
 import { AutopilotChatInternalEvent } from '../../service';
 import { AutopilotChatActionButton } from './action-button';
@@ -123,19 +124,19 @@ export function DropdownPicker<T = string>({
                     tooltipPlacement="top-start"
                     tooltip={ !open ? (
                         <>
-                            <ap-typography
+                            <ApTypography
                                 color={'var(--color-foreground-inverse)'}
                                 variant={FontVariantToken.fontSizeM}
                             >
                                 {selectedOption.name}
-                            </ap-typography>
+                            </ApTypography>
                             {selectedOption.description && (
-                                <ap-typography
+                                <ApTypography
                                     color={'var(--color-foreground-inverse)'}
                                     variant={FontVariantToken.fontSizeXs}
                                 >
                                     {selectedOption.description}
-                                </ap-typography>
+                                </ApTypography>
                             )}
                         </>
                     ) : null}
@@ -149,12 +150,12 @@ export function DropdownPicker<T = string>({
                 placement="top-start"
                 title={
                     !open && selectedOption.description ? (
-                        <ap-typography
+                        <ApTypography
                             color={'var(--color-foreground-inverse)'}
                             variant={FontVariantToken.fontSizeS}
                         >
                             {selectedOption.description}
-                        </ap-typography>
+                        </ApTypography>
                     ) : null
                 }
             >
@@ -168,7 +169,7 @@ export function DropdownPicker<T = string>({
                     aria-label={_(msg({ id: 'autopilot-chat.common.mode-selector', message: `Mode selector` }))}
                 >
                     {selectedOption.icon && <ap-icon variant="outlined" name={selectedOption.icon} size={token.Icon.IconXs} />}
-                    <ap-typography variant={spacing.primaryFontToken}>{selectedOption.name}</ap-typography>
+                    <ApTypography variant={spacing.primaryFontToken}>{selectedOption.name}</ApTypography>
                     <KeyboardArrowDownIcon
                         className={`arrow-icon ${open ? 'open' : ''}`}
                         fontSize="inherit"
@@ -210,12 +211,12 @@ export function DropdownPicker<T = string>({
                             placement={theming?.chatMenu?.groupItemTooltipPlacement ?? 'left'}
                             title={
                                 option.description ? (
-                                    <ap-typography
+                                    <ApTypography
                                         color={'var(--color-foreground-inverse)'}
                                         variant={FontVariantToken.fontSizeS}
                                     >
                                         {option.description}
-                                    </ap-typography>
+                                    </ApTypography>
                                 ) : null
                             }
                         >
@@ -226,7 +227,7 @@ export function DropdownPicker<T = string>({
                                 width: '100%',
                             }}>
                                 {option.icon && <ap-icon variant="outlined" name={option.icon} size={token.Icon.IconXs} />}
-                                <ap-typography variant={spacing.primaryFontToken}>{option.name}</ap-typography>
+                                <ApTypography variant={spacing.primaryFontToken}>{option.name}</ApTypography>
                             </div>
                         </AutopilotChatTooltip>
                     </StyledMenuItem>

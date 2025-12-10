@@ -3,6 +3,7 @@ import React from 'react';
 import { styled } from '@mui/material';
 import token from '@uipath/apollo-core';
 
+import { ApTypography } from '../../../ap-typography';
 import { useChatState } from '../../../providers/chat-state-provider';
 import { AutopilotChatSuggestions } from '../suggestions/chat-suggestions';
 
@@ -37,18 +38,18 @@ function AutopilotChatFREComponent() {
     return (
         <FREContainer>
             <FREHeader>
-                <ap-typography
+                <ApTypography
                     variant={spacing.titleFontToken}
                     color={'var(--color-foreground)'}
                 >
                     {firstRunExperience.title}
-                </ap-typography>
-                <ap-typography
+                </ApTypography>
+                <ApTypography
                     variant={spacing.primaryFontToken}
                     color={'var(--color-foreground-de-emp)'}
                 >
                     {firstRunExperience.description}
-                </ap-typography>
+                </ApTypography>
             </FREHeader>
 
             {firstRunExperience.suggestions && firstRunExperience.suggestions.length > 0 && (

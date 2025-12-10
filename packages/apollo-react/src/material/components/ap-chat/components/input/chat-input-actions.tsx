@@ -1,10 +1,11 @@
 import React from 'react';
 
+import { msg } from '@lingui/core/macro';
+import { useLingui } from '@lingui/react';
 import { styled } from '@mui/material';
 import token, { FontVariantToken } from '@uipath/apollo-core';
 
-import { msg } from '@lingui/core/macro';
-import { useLingui } from '@lingui/react';
+import { ApTypography } from '../../../ap-typography';
 import { useAttachments } from '../../providers/attachements-provider';
 import { useChatState } from '../../providers/chat-state-provider';
 import { useError } from '../../providers/error-provider';
@@ -154,46 +155,46 @@ function AutopilotChatInputActionsComponent({
                             ariaDescribedby="autopilot-chat-attach-file-description"
                             tooltip={
                                 <>
-                                    <ap-typography
+                                    <ApTypography
                                         color={'var(--color-foreground-inverse)'}
                                         variant={FontVariantToken.fontSizeM}
                                     >
                                         {_(msg({ id: 'autopilot-chat.input.actions.attach-file', message: `Attach file` }))}
-                                    </ap-typography>
+                                    </ApTypography>
 
                                     {allowedAttachments.maxCount && allowedAttachments.maxCount > 1 && allowedAttachments.multiple && (() => {
                                         const maxCount = allowedAttachments.maxCount;
                                         return (
-                                            <ap-typography
+                                            <ApTypography
                                                 color={'var(--color-foreground-inverse)'}
                                                 variant={FontVariantToken.fontSizeXs}
                                             >
                                                 {_(msg({ id: 'autopilot-chat.input.actions.attachments.max-count', message: `Maximum ${maxCount} files` }))}
-                                            </ap-typography>
+                                            </ApTypography>
                                         );
                                     })()}
 
                                     {(() => {
                                         const maxSize = allowedAttachments.maxSize / 1024 / 1024;
                                         return (
-                                            <ap-typography
+                                            <ApTypography
                                                 color={'var(--color-foreground-inverse)'}
                                                 variant={FontVariantToken.fontSizeXs}
                                             >
                                                 {_(msg({ id: 'autopilot-chat.input.actions.attachments.max-size', message: `Maximum ${maxSize}MB per file` }))}
-                                            </ap-typography>
+                                            </ApTypography>
                                         );
                                     })()}
 
                                     {(() => {
                                         const fileTypes = acceptedExtensions.split(',').join(', ');
                                         return (
-                                            <ap-typography
+                                            <ApTypography
                                                 color={'var(--color-foreground-inverse)'}
                                                 variant={FontVariantToken.fontSizeXs}
                                             >
                                                 {_(msg({ id: 'autopilot-chat.input.actions.attachments.allowed-types', message: `Allowed types: ${fileTypes}` }))}
-                                            </ap-typography>
+                                            </ApTypography>
                                         );
                                     })()}
                                 </>

@@ -1,11 +1,12 @@
 import React from 'react';
 
+import { msg } from '@lingui/core/macro';
+import { useLingui } from '@lingui/react';
 import { styled } from '@mui/material';
 import token, { FontVariantToken } from '@uipath/apollo-core';
 
 import { StatusTypes } from '../../../../models/statusTypes';
-import { msg } from '@lingui/core/macro';
-import { useLingui } from '@lingui/react';
+import { ApTypography } from '../../../ap-typography';
 import AutopilotLogo from '../../assets/autopilot-logo.svg';
 import { useChatState } from '../../providers/chat-state-provider';
 import { AutopilotChatMode } from '../../service';
@@ -46,14 +47,14 @@ function AutopilotChatHeaderComponent() {
                     <span dangerouslySetInnerHTML={{ __html: AutopilotLogo }} />
                 ) : null}
 
-                <ap-typography
+                <ApTypography
                     variant={FontVariantToken.fontBrandL}
                     color={'var(--color-foreground)'}
                     role='heading'
                     aria-level={1}
                 >
                     {overrideLabels.title ?? _(msg({ id: 'autopilot-chat.header.title', message: `Autopilot` }))}
-                </ap-typography>
+                </ApTypography>
 
                 {!disabledFeatures.preview && (
                     <ap-badge label={_(msg({ id: 'autopilot-chat.header.preview', message: `Preview` }))} status={StatusTypes.INFO}></ap-badge>

@@ -1,10 +1,11 @@
 import React from 'react';
 
+import { msg } from '@lingui/core/macro';
+import { useLingui } from '@lingui/react';
 import { styled } from '@mui/material';
 import token, { FontVariantToken } from '@uipath/apollo-core';
 
-import { msg } from '@lingui/core/macro';
-import { useLingui } from '@lingui/react';
+import { ApTypography } from '../../../ap-typography';
 import { useChatService } from '../../providers/chat-service.provider';
 import { AutopilotChatPreHookAction } from '../../service';
 import { AutopilotChatActionButton } from '../common/action-button';
@@ -46,7 +47,7 @@ const AutopilotChatSettingsHeaderComponent: React.FC<{ isFullScreen: boolean; is
     return (
         <HeaderContainer>
             {isFullScreen && (
-                <ap-typography
+                <ApTypography
                     variant={FontVariantToken.fontBrandL}
                     color={'var(--color-foreground)'}
                     id="settings-title"
@@ -54,7 +55,7 @@ const AutopilotChatSettingsHeaderComponent: React.FC<{ isFullScreen: boolean; is
                     aria-level={2}
                 >
                     {_(msg({ id: 'autopilot-chat.settings.title', message: `Settings` }))}
-                </ap-typography>
+                </ApTypography>
             )}
 
             <VisuallyHidden id="settings-heading-description">
@@ -75,7 +76,7 @@ const AutopilotChatSettingsHeaderComponent: React.FC<{ isFullScreen: boolean; is
                 />
 
                 {!isFullScreen && (
-                    <ap-typography
+                    <ApTypography
                         variant={FontVariantToken.fontBrandL}
                         color={'var(--color-foreground)'}
                         id="settings-title"
@@ -83,7 +84,7 @@ const AutopilotChatSettingsHeaderComponent: React.FC<{ isFullScreen: boolean; is
                         aria-level={2}
                     >
                         {_(msg({ id: 'autopilot-chat.settings.title', message: `Settings` }))}
-                    </ap-typography>
+                    </ApTypography>
                 )}
             </ActionsContainer>
         </HeaderContainer>

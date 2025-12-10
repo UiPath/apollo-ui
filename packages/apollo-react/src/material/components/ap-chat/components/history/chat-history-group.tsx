@@ -3,6 +3,7 @@ import React from 'react';
 import { styled } from '@mui/material';
 import token, { FontVariantToken } from '@uipath/apollo-core';
 
+import { ApTypography } from '../../../ap-typography';
 import { useChatState } from '../../providers/chat-state-provider';
 import { ChatHistoryGroup } from './chat-history';
 import { AutopilotChatHistoryItem } from './chat-history-item';
@@ -31,9 +32,9 @@ const AutopilotChatHistoryGroupComponent: React.FC<AutopilotChatHistoryGroupProp
     return (
         <GroupContainer compactMode={spacing.compactMode}>
             <GroupTitle>
-                <ap-typography variant={FontVariantToken.fontSizeSBold} color={'var(--color-foreground)'}>
+                <ApTypography variant={FontVariantToken.fontSizeSBold} color={'var(--color-foreground)'}>
                     {group.title}
-                </ap-typography>
+                </ApTypography>
             </GroupTitle>
 
             <div>

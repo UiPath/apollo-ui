@@ -6,6 +6,7 @@ import MenuItem from '@mui/material/MenuItem';
 import { styled } from '@mui/material/styles';
 import token, { FontVariantToken } from '@uipath/apollo-core';
 
+import { ApTypography } from '../../../ap-typography';
 import { AutopilotChatCustomHeaderAction } from '../../service';
 import { AutopilotChatTooltip } from '../common/tooltip';
 
@@ -188,12 +189,12 @@ const NestedMenuItem = React.memo(React.forwardRef<HTMLLIElement, NestedMenuItem
                     disableInteractive
                     title={
                         action.description ? (
-                            <ap-typography
+                            <ApTypography
                                 color={'var(--color-foreground-inverse)'}
                                 variant={FontVariantToken.fontSizeS}
                             >
                                 {action.description}
-                            </ap-typography>
+                            </ApTypography>
                         ) : null
                     }
                 >
@@ -206,9 +207,9 @@ const NestedMenuItem = React.memo(React.forwardRef<HTMLLIElement, NestedMenuItem
                                     size={token.Icon.IconXs}
                                 />
                             )}
-                            <ap-typography variant={FontVariantToken.fontSizeS}>
+                            <ApTypography variant={FontVariantToken.fontSizeS}>
                                 {action.name}
-                            </ap-typography>
+                            </ApTypography>
                         </MenuItemContent>
                         {action.children && action.children.length > 0 && (
                             <KeyboardArrowRightIcon fontSize="inherit" />
@@ -266,12 +267,12 @@ const NestedMenuItem = React.memo(React.forwardRef<HTMLLIElement, NestedMenuItem
                                     disableInteractive
                                     title={
                                         child.description ? (
-                                            <ap-typography
+                                            <ApTypography
                                                 color={'var(--color-foreground-inverse)'}
                                                 variant={FontVariantToken.fontSizeS}
                                             >
                                                 {child.description}
-                                            </ap-typography>
+                                            </ApTypography>
                                         ) : null
                                     }
                                 >
@@ -283,9 +284,9 @@ const NestedMenuItem = React.memo(React.forwardRef<HTMLLIElement, NestedMenuItem
                                                 size={token.Icon.IconXs}
                                             />
                                         )}
-                                        <ap-typography variant={FontVariantToken.fontSizeS}>
+                                        <ApTypography variant={FontVariantToken.fontSizeS}>
                                             {child.name}
-                                        </ap-typography>
+                                        </ApTypography>
                                     </MenuItemContent>
                                 </AutopilotChatTooltip>
                             </StyledMenuItem>

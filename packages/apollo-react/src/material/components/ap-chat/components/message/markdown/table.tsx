@@ -9,6 +9,7 @@ import {
 } from '@mui/material';
 import token from '@uipath/apollo-core';
 
+import { ApTypography } from '../../../ap-typography';
 import { useChatState } from '../../../providers/chat-state-provider';
 import { Text } from './text';
 
@@ -85,12 +86,12 @@ export const HeaderCell = React.memo(({ children }: TableProps) => {
 
     return (
         <TableCell>
-            <ap-typography
+            <ApTypography
                 variant={spacing.markdownTokens.th}
                 color={'var(--color-foreground)'}
             >
                 {children}
-            </ap-typography>
+            </ApTypography>
         </TableCell>
     );
 });

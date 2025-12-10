@@ -3,6 +3,7 @@ import React from 'react';
 import { Box } from '@mui/material';
 import token, { FontVariantToken } from '@uipath/apollo-core';
 
+import { ApTypography } from '../../../ap-typography';
 import { useChatState } from '../../../providers/chat-state-provider';
 import { fontByVariant } from '../../../utils/font-by-variant';
 
@@ -25,7 +26,7 @@ export const Text = ({
 
     return (
         <TypographyContext.Provider value={variant ?? spacing.primaryFontToken}>
-            <ap-typography
+            <ApTypography
                 variant={variant}
                 color={'var(--color-foreground)'}
                 style={{
@@ -40,7 +41,7 @@ export const Text = ({
                 >
                     {children}
                 </div>
-            </ap-typography>
+            </ApTypography>
         </TypographyContext.Provider>
     );
 };
@@ -69,7 +70,7 @@ export const Blockquote = React.memo(({ children }: { children: React.ReactNode 
                 display: 'flex',
                 margin: 0,
 
-                '& ap-typography': {
+                '& .MuiTypography-root': {
                     fontFamily: fontByVariant(spacing.markdownTokens.citation).fontFamily,
                     fontSize: fontByVariant(spacing.markdownTokens.citation).fontSize,
                     fontWeight: fontByVariant(spacing.markdownTokens.citation).fontWeight,

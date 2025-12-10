@@ -1,13 +1,14 @@
 import React from 'react';
 
+import { msg } from '@lingui/core/macro';
+import { useLingui } from '@lingui/react';
 import {
   styled,
   Theme,
 } from '@mui/material';
 import token from '@uipath/apollo-core';
 
-import { msg } from '@lingui/core/macro';
-import { useLingui } from '@lingui/react';
+import { ApTypography } from '../../../ap-typography';
 import { useChatService } from '../../../providers/chat-service.provider';
 import { useChatState } from '../../../providers/chat-state-provider';
 import {
@@ -103,12 +104,12 @@ function AutopilotChatSuggestionsComponent({
         <SuggestionList disableAnimation={disableAnimation} gap={spacing.suggestionSpacing}>
             {includeTitle && (
                 <Title>
-                    <ap-typography
+                    <ApTypography
                         variant={spacing.primaryBoldFontToken}
                         color={'var(--color-foreground-emp)'}
                     >
                         {_(msg({ id: 'autopilot-chat.message.suggestions-title', message: `Suggestions` }))}
-                    </ap-typography>
+                    </ApTypography>
                 </Title>
             )}
             {suggestions.map((suggestion, index) => (
@@ -120,9 +121,9 @@ function AutopilotChatSuggestionsComponent({
                     data-cy={`autopilot-chat-suggestion-nth-${index}`}
                     style={{ padding: spacing.suggestionPadding }}
                 >
-                    <ap-typography color={'var(--color-foreground)'} variant={spacing.suggestionFontToken}>
+                    <ApTypography color={'var(--color-foreground)'} variant={spacing.suggestionFontToken}>
                         {suggestion.label}
-                    </ap-typography>
+                    </ApTypography>
                 </Suggestion>
             ))}
         </SuggestionList>

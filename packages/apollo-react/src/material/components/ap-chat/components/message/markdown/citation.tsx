@@ -1,13 +1,14 @@
 import React from 'react';
 
+import { msg } from '@lingui/core/macro';
+import { useLingui } from '@lingui/react';
 import {
   Box,
   Tooltip,
 } from '@mui/material';
 import token, { FontVariantToken } from '@uipath/apollo-core';
 
-import { msg } from '@lingui/core/macro';
-import { useLingui } from '@lingui/react';
+import { ApTypography } from '../../../ap-typography';
 import { useChatScroll } from '../../../providers/chat-scroll-provider';
 import { useChatService } from '../../../providers/chat-service.provider';
 import { useChatState } from '../../../providers/chat-state-provider';
@@ -227,13 +228,13 @@ export const Citation = React.memo(({
                         size={token.Icon.IconXs}
                         color={'var(--color-primary)'}
                     />
-                    <ap-typography
+                    <ApTypography
                         color="inherit"
                         style={{ fontWeight: 500 }}
                         variant={FontVariantToken.fontSizeMBold}
                     >
                         {title}{pageText}
-                    </ap-typography>
+                    </ApTypography>
                 </Box>
             }
             slotProps={{
@@ -291,9 +292,9 @@ export const Citation = React.memo(({
                 onClick={handleClick}
                 onKeyDown={handleKeyDown}
             >
-                <ap-typography color={'var(--color-foreground)'} variant={spacing.markdownTokens.citation}>
+                <ApTypography color={'var(--color-foreground)'} variant={spacing.markdownTokens.citation}>
                     {id}
-                </ap-typography>
+                </ApTypography>
             </Box>
         </Tooltip>
     );

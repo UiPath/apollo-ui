@@ -1,10 +1,11 @@
 import React from 'react';
 
+import { msg } from '@lingui/core/macro';
+import { useLingui } from '@lingui/react';
 import { styled } from '@mui/material';
 import token from '@uipath/apollo-core';
 
-import { msg } from '@lingui/core/macro';
-import { useLingui } from '@lingui/react';
+import { ApTypography } from '../../../ap-typography';
 import { useChatService } from '../../providers/chat-service.provider';
 import { useChatState } from '../../providers/chat-state-provider';
 import { useLoading } from '../../providers/loading-provider';
@@ -45,7 +46,7 @@ const GroupItem = styled('div')<{ isActive: boolean; showRemoveIcon: boolean }>(
 const GroupTitle = styled('div')(() => ({
     flex: 1,
     minWidth: 0,
-    '& ap-typography': {
+    '& .MuiTypography-root': {
         overflow: 'hidden',
         textOverflow: 'ellipsis',
         whiteSpace: 'nowrap',
@@ -183,7 +184,7 @@ const AutopilotChatHistoryItemComponent: React.FC<AutopilotChatHistoryItemProps>
             aria-pressed={isActive}
         >
             <GroupTitle>
-                <ap-typography variant={spacing.primaryFontToken} color={'var(--color-foreground)'}>{item.name}</ap-typography>
+                <ApTypography variant={spacing.primaryFontToken} color={'var(--color-foreground)'}>{item.name}</ApTypography>
             </GroupTitle>
 
             <div className="delete-button-wrapper">

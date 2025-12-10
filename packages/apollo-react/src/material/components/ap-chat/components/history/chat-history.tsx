@@ -1,11 +1,3 @@
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
-
 import {
   differenceInDays,
   differenceInMonths,
@@ -15,6 +7,8 @@ import {
 import debounce from 'debounce';
 import FocusLock from 'react-focus-lock';
 
+import { msg } from '@lingui/core/macro';
+import { useLingui } from '@lingui/react';
 import SearchIcon from '@mui/icons-material/Search';
 import {
   CircularProgress,
@@ -23,9 +17,8 @@ import {
 } from '@mui/material';
 import token from '@uipath/apollo-core';
 
-import { msg } from '@lingui/core/macro';
-import { useLingui } from '@lingui/react';
 import { ApTextFieldReact } from '../../../ap-text-field/ap-text-field';
+import { ApTypography } from '../../../ap-typography';
 import { useChatService } from '../../providers/chat-service.provider';
 import { useChatState } from '../../providers/chat-state-provider';
 import { useChatWidth } from '../../providers/chat-width-provider';
@@ -39,6 +32,16 @@ import {
   CHAT_HISTORY_SIDE_BY_SIDE_MAX_WIDTH,
 } from '../../service';
 import { AutopilotChatHistoryGroup } from './chat-history-group';
+
+import React, {
+import { ApTypography }
+from '../../../ap-typography';
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 
 const ChatHistoryContainer = styled('div')<{ isFullScreen: boolean; width: number; fullScreenContainer: HTMLElement | null }>(({
     theme, isFullScreen, width, fullScreenContainer,
@@ -323,9 +326,9 @@ const AutopilotChatHistoryComponent: React.FC<AutopilotChatHistoryProps> = ({
 
     const renderEmptyState = (message: string) => (
         <EmptyStateContainer>
-            <ap-typography color={'var(--color-foreground)'} variant={spacing.primaryFontToken}>
+            <ApTypography color={'var(--color-foreground)'} variant={spacing.primaryFontToken}>
                 {message}
-            </ap-typography>
+            </ApTypography>
         </EmptyStateContainer>
     );
 

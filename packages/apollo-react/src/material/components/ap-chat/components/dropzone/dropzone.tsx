@@ -6,12 +6,12 @@ import {
   useDropzone,
 } from 'react-dropzone';
 
+import { msg } from '@lingui/core/macro';
+import { useLingui } from '@lingui/react';
 import { styled } from '@mui/material/styles';
 import token, { FontVariantToken } from '@uipath/apollo-core';
 
-import { msg } from '@lingui/core/macro';
-import { useLingui } from '@lingui/react';
-
+import { ApTypography } from '../../../ap-typography';
 import { useAttachments } from '../../providers/attachements-provider';
 import { useChatState } from '../../providers/chat-state-provider';
 import { useError } from '../../providers/error-provider';
@@ -156,32 +156,32 @@ function AutopilotChatDropzoneComponent({
 
             {isDragActive && (
                 <DropzoneOverlay>
-                    <ap-typography variant={FontVariantToken.fontSizeMBold} color={'var(--color-foreground)'}>
+                    <ApTypography variant={FontVariantToken.fontSizeMBold} color={'var(--color-foreground)'}>
                         {_(msg({ id: 'autopilot-chat.dropzone.overlay-title', message: `Drop files here` }))}
-                    </ap-typography>
+                    </ApTypography>
 
                     {allowedAttachments.maxCount && allowedAttachments.maxCount > 1 && allowedAttachments.multiple && (() => {
                         const maxCount = allowedAttachments.maxCount;
                         return (
-                            <ap-typography variant={FontVariantToken.fontSizeS} color={'var(--color-foreground)'}>
+                            <ApTypography variant={FontVariantToken.fontSizeS} color={'var(--color-foreground)'}>
                                 {_(msg({ id: 'autopilot-chat.dropzone.overlay-max-count', message: `Maximum ${maxCount} files` }))}
-                            </ap-typography>
+                            </ApTypography>
                         );
                     })()}
 
-                    <ap-typography variant={FontVariantToken.fontSizeS} color={'var(--color-foreground)'}>
+                    <ApTypography variant={FontVariantToken.fontSizeS} color={'var(--color-foreground)'}>
                         {(() => {
                             const maxSize = allowedAttachments.maxSize / 1024 / 1024;
                             return _(msg({ id: 'autopilot-chat.dropzone.overlay-max-size', message: `Maximum file size: ${maxSize}MB` }));
                         })()}
-                    </ap-typography>
+                    </ApTypography>
 
-                    <ap-typography variant={FontVariantToken.fontSizeS} color={'var(--color-foreground)'}>
+                    <ApTypography variant={FontVariantToken.fontSizeS} color={'var(--color-foreground)'}>
                         {(() => {
                             const fileTypes = Object.values(allowedAttachments.types).flat().join(', ');
                             return _(msg({ id: 'autopilot-chat.dropzone.allowed-file-types', message: `Allowed file types: ${fileTypes}` }));
                         })()}
-                    </ap-typography>
+                    </ApTypography>
                 </DropzoneOverlay>
             )}
         </DropzoneRoot>
