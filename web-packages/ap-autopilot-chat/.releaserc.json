@@ -8,9 +8,7 @@
         "releaseRules": [
           { "type": "chore", "scope": "ap-autopilot-chat", "release": "patch" },
           { "type": "chore", "scope": "apollo-core", "release": "patch" },
-          { "type": "feat", "scope": "apollo-core", "release": "minor" },
-          { "type": "fix", "scope": "apollo-core", "release": "patch" },
-          { "breaking": true, "scope": "apollo-core", "release": "major" }
+          { "scope": "!(ap-autopilot-chat|apollo-core)", "release": false }
         ]
       }
     ],

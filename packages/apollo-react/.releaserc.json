@@ -9,12 +9,7 @@
           { "type": "chore", "scope": "apollo-react", "release": "patch" },
           { "type": "chore", "scope": "apollo-core", "release": "patch" },
           { "type": "chore", "scope": "apollo-utils", "release": "patch" },
-          { "type": "feat", "scope": "apollo-core", "release": "minor" },
-          { "type": "feat", "scope": "apollo-utils", "release": "minor" },
-          { "type": "fix", "scope": "apollo-core", "release": "patch" },
-          { "type": "fix", "scope": "apollo-utils", "release": "patch" },
-          { "breaking": true, "scope": "apollo-core", "release": "major" },
-          { "breaking": true, "scope": "apollo-utils", "release": "major" }
+          { "scope": "!(apollo-react|apollo-core|apollo-utils)", "release": false }
         ]
       }
     ],

@@ -8,9 +8,7 @@
         "releaseRules": [
           { "type": "chore", "scope": "apollo-wind", "release": "patch" },
           { "type": "chore", "scope": "apollo-core", "release": "patch" },
-          { "type": "feat", "scope": "apollo-core", "release": "minor" },
-          { "type": "fix", "scope": "apollo-core", "release": "patch" },
-          { "breaking": true, "scope": "apollo-core", "release": "major" }
+          { "scope": "!(apollo-wind|apollo-core)", "release": false }
         ]
       }
     ],
