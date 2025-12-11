@@ -166,12 +166,12 @@ export const Attachment = React.memo(({
 
         return () => document.removeEventListener('mousemove', handleMouseMove);
     }, [ isFocused, onRemove ]);
-    const [ icon, friendlyType ] = React.useMemo(() => {
+    const [ IconComponent, friendlyType ] = React.useMemo(() => {
         const {
-            icon: iconName, friendlyType: fileType,
+            icon: IconComp, friendlyType: fileType,
         } = fileToIcon(attachment.name);
 
-        return [ iconName, fileType ];
+        return [ IconComp, fileType ];
     }, [ attachment ]);
 
     return (
@@ -186,8 +186,9 @@ export const Attachment = React.memo(({
         >
             <AttachmentIcon
                 fileType={friendlyType}
-                dangerouslySetInnerHTML={{ __html: icon }}
-            />
+            >
+                <IconComponent />
+            </AttachmentIcon>
 
             <AutopilotChatTooltip
                 title={attachment.name}

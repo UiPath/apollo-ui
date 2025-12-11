@@ -1,5 +1,6 @@
 import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer';
 
+import { pluginBabel } from '@rsbuild/plugin-babel';
 import { pluginReact } from '@rsbuild/plugin-react';
 import { defineConfig } from '@rslib/core';
 
@@ -42,11 +43,19 @@ export default defineConfig({
         '!src/test/**',
         '!src/icons/.cache',
         '!src/**/*.md',
-        '!src/**/locales/**',
       ],
     },
   },
-  plugins: [pluginReact()],
+  plugins: [
+    pluginReact(),
+    pluginBabel({
+      include: /\.(?:jsx?|tsx?)$/,
+      babelLoaderOptions(opts) {
+        opts.plugins?.push('@lingui/babel-plugin-lingui-macro');
+        return opts;
+      },
+    }),
+  ],
   output: {
     target: 'web',
     copy: [
@@ -74,7 +83,12 @@ export default defineConfig({
         rules: [
           {
             test: /\.svg$/,
-            type: 'asset/inline',
+            use: ['@svgr/webpack'],
+            type: 'javascript/auto',
+          },
+          {
+            test: /\.json$/,
+            type: 'asset/source',
           },
         ],
       },

@@ -43,9 +43,8 @@ function AutopilotChatHeaderComponent() {
     return (
         <StyledHeader hideSeparator={disabledFeatures.headerSeparator}>
             <StyledLogo>
-                {/* cannot directly use the svg as a component, throws error that the svg is not a valid react component */}
                 {chatMode === AutopilotChatMode.FullScreen ? (
-                    <span dangerouslySetInnerHTML={{ __html: AutopilotLogo }} />
+                    <AutopilotLogo />
                 ) : null}
 
                 <ApTypography

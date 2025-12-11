@@ -53,14 +53,12 @@ import {
   Strong,
 } from './text';
 
-const StyledMarkdown = React.memo(
-    styled(ReactMarkdown)((() => ({
-        '&, & .katex': { color: 'var(--color-foreground)' },
-        display: 'flex',
-        flexDirection: 'column',
-        gap: token.Spacing.SpacingL,
-    })),
-));
+const MarkdownContainer = styled('div')(() => ({
+    '&, & .katex': { color: 'var(--color-foreground)' },
+    display: 'flex',
+    flexDirection: 'column',
+    gap: token.Spacing.SpacingL,
+}));
 
 const FAKE_STREAM_CHARS_COUNT = 10;
 const FAKE_STREAM_INTERVAL = 50;
@@ -206,31 +204,33 @@ function AutopilotChatMarkdownRendererComponent({ message }: { message: Autopilo
     }), [ spacing, isStreaming ]);
 
     return React.useMemo(() => (
-        <StyledMarkdown
-            remarkPlugins={[
-                citationPlugin,
-                remarkGfm,
-                [ remarkMath, { singleDollarTextMath: false } ],
-            ]}
-            rehypePlugins={[
-                [ rehypeHighlight, {
-                    detect: false,
-                    ignoreMissing: true,
-                    plainText: [],
-                    languages: all,
-                } ],
-                [ rehypeKatex, {
-                    output: 'mathml',
-                    trust: false,
-                    strict: true,
-                    throwOnError: false,
-                } ],
-            ]}
-            remarkRehypeOptions={{ footnoteLabel: _(msg({ id: 'autopilot-chat.message.footnote-label', message: `Footnotes` })) }}
-            components={components}
-        >
-            {content}
-        </StyledMarkdown>
+        <MarkdownContainer>
+            <ReactMarkdown
+                remarkPlugins={[
+                    citationPlugin,
+                    remarkGfm,
+                    [ remarkMath, { singleDollarTextMath: false } ],
+                ]}
+                rehypePlugins={[
+                    [ rehypeHighlight, {
+                        detect: false,
+                        ignoreMissing: true,
+                        plainText: [],
+                        languages: all,
+                    } ],
+                    [ rehypeKatex, {
+                        output: 'mathml',
+                        trust: false,
+                        strict: true,
+                        throwOnError: false,
+                    } ],
+                ]}
+                remarkRehypeOptions={{ footnoteLabel: _(msg({ id: 'autopilot-chat.message.footnote-label', message: `Footnotes` })) }}
+                components={components}
+            >
+                {content}
+            </ReactMarkdown>
+        </MarkdownContainer>
     ), [ content, components, _ ]);
 }
 

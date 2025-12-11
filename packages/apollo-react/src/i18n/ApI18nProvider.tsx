@@ -40,13 +40,17 @@ async function loadMessages(
   locale: SupportedLocale
 ): Promise<Record<string, string>> {
   try {
-    const messages = await import(`../${component}/locales/${locale}.json`);
-    return messages.default || messages;
+    const messages = await import(`../${component}/locales/${locale}.js`);
+    const messageData = messages.default || messages;
+    // JSON files are compiled as JS modules that export strings, so parse them
+    return typeof messageData === 'string' ? JSON.parse(messageData) : messageData;
   } catch (error) {
     console.warn(`Failed to load locale ${locale} for ${component}, falling back to English`, error);
     try {
-      const fallback = await import(`../${component}/locales/en.json`);
-      return fallback.default || fallback;
+      const fallback = await import(`../${component}/locales/en.js`);
+      const fallbackData = fallback.default || fallback;
+      // JSON files are compiled as JS modules that export strings, so parse them
+      return typeof fallbackData === 'string' ? JSON.parse(fallbackData) : fallbackData;
     } catch {
       console.error(`Failed to load fallback locale for ${component}`);
       return {};

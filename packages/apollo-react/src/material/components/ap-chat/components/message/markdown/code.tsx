@@ -1,8 +1,8 @@
 import React from 'react';
 
-import dark from 'highlight.js/styles/github-dark.css';
-import light from 'highlight.js/styles/github.css';
 import katex from 'katex';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { oneDark, oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
 import { msg } from '@lingui/core/macro';
 import { useLingui } from '@lingui/react';
@@ -86,31 +86,16 @@ const NonCodeContentContainer = styled('div')(() => ({
     fontFamily: token.FontFamily.FontNormal,
 }));
 
-const HighlightedCodeContainer = styled('div')<{ isDark: boolean }>(({
-    isDark,
-}) => {
-    const { spacing } = useChatState();
-
-    const codeFontStyles = {
-        fontSize: spacing.compactMode ? token.FontFamily.FontMonoSSize : token.FontFamily.FontMonoMSize,
-        fontFamily: spacing.compactMode ? token.FontFamily.FontMonoSFamily : token.FontFamily.FontMonoMFamily,
-        fontWeight: spacing.compactMode ? token.FontFamily.FontMonoSWeight : token.FontFamily.FontMonoMWeight,
-    };
-
-    return {
-        margin: 0,
-        width: '100%',
-        padding: token.Spacing.SpacingBase,
-        background: 'transparent',
-        borderRadius: token.Border.BorderRadiusL,
-        boxSizing: 'border-box',
-        color: 'var(--color-foreground)',
-        textWrap: 'wrap',
-        ...codeFontStyles,
-        // Apply GitHub theme colors from highlight.js conditionally
-        ...(isDark ? { dark } : { light }),
-    };
-});
+const SyntaxHighlighterContainer = styled('div')(() => ({
+    margin: 0,
+    width: '100%',
+    borderRadius: token.Border.BorderRadiusL,
+    overflow: 'hidden',
+    '& pre': {
+        margin: '0 !important',
+        borderRadius: `${token.Border.BorderRadiusL} !important`,
+    },
+}));
 
 const ContentContainer = styled('div')((() => ({
     display: 'flex',
@@ -211,7 +196,7 @@ export const Code = React.memo(({
                 display: 'inline-block',
                 width: 'fit-content',
                 ...codeFontStyles,
-            }} className={className} {...props}>
+            }} {...props}>
                 {children}
             </code>
         );
@@ -249,9 +234,20 @@ export const Code = React.memo(({
     );
 
     const markdownContent = language ? (
-        <HighlightedCodeContainer isDark={isDark}>
-            {children}
-        </HighlightedCodeContainer>
+        <SyntaxHighlighterContainer>
+            <SyntaxHighlighter
+                language={language}
+                style={isDark ? oneDark : oneLight}
+                customStyle={{
+                    margin: 0,
+                    fontSize: spacing.compactMode ? token.FontFamily.FontMonoSSize : token.FontFamily.FontMonoMSize,
+                    fontFamily: spacing.compactMode ? token.FontFamily.FontMonoSFamily : token.FontFamily.FontMonoMFamily,
+                    padding: token.Spacing.SpacingBase,
+                }}
+            >
+                {codeContent}
+            </SyntaxHighlighter>
+        </SyntaxHighlighterContainer>
     ) : (
         <NonCodeContentContainer>
             {children}

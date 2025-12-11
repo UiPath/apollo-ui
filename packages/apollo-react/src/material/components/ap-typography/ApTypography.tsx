@@ -59,11 +59,11 @@ export const ApTypography = forwardRef<HTMLElement, ApTypographyProps>(
     },
     ref,
   ) => {
-    // Get MUI variant and component mapping
     const { muiVariant, component } = getVariantMapping(variant);
+    const variantKey = Object.keys(FontVariantToken).find(
+      key => FontVariantToken[key as keyof typeof FontVariantToken] === variant
+    ) as keyof typeof TypographyTokens;
 
-    // Get Apollo typography token
-    const variantKey = variant as keyof typeof TypographyTokens;
     const typographyToken = TypographyTokens[variantKey] as TypographyToken | undefined;
 
     return (
@@ -73,8 +73,7 @@ export const ApTypography = forwardRef<HTMLElement, ApTypographyProps>(
         component={component}
         color={color}
         align={align}
-        sx={{
-          // Apply Apollo token styles
+        style={{
           ...(typographyToken && {
             fontFamily: typographyToken.fontFamily,
             fontSize: typographyToken.fontSize,
@@ -84,9 +83,10 @@ export const ApTypography = forwardRef<HTMLElement, ApTypographyProps>(
               letterSpacing: typographyToken.letterSpacing,
             }),
           }),
-          // Apply display if provided
           ...(display && { display }),
-          // Merge with user sx
+        }}
+        sx={{
+          margin: 0,
           ...sx,
         }}
         {...rest}
