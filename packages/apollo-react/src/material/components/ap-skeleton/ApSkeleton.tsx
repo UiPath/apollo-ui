@@ -3,11 +3,7 @@ import { styled } from '@mui/material';
 import token from '@uipath/apollo-core';
 
 import type { ApSkeletonProps } from './ApSkeleton.types';
-import {
-    onSkeletonInstanceCreated,
-    onSkeletonInstanceDestroyed,
-    ensureSkeletonGlobalStyles,
-} from './skeleton-utils';
+import './ApSkeleton.css';
 
 const StyledSkeleton = styled('div')<{
     variant: 'rectangle' | 'circle' | 'border';
@@ -79,14 +75,12 @@ const StyledSkeleton = styled('div')<{
 export const ApSkeleton = React.forwardRef<HTMLDivElement, ApSkeletonProps>(
     ({ variant = 'rectangle', circleSize = 24, children, className, style }, ref) => {
         useEffect(() => {
-            // Ensure global styles are injected
-            ensureSkeletonGlobalStyles();
-
-            // Track skeleton instance
-            onSkeletonInstanceCreated();
+            // Add body class to enable skeleton animations
+            document.body.classList.add('has-skeletons');
 
             return () => {
-                onSkeletonInstanceDestroyed();
+                // Remove body class when all skeletons are unmounted
+                document.body.classList.remove('has-skeletons');
             };
         }, []);
 
