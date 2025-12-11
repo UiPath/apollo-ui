@@ -2,7 +2,10 @@ import React from 'react';
 
 import katex from 'katex';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { oneDark, oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import {
+  oneDark,
+  oneLight,
+} from 'react-syntax-highlighter/dist/esm/styles/prism';
 
 import { msg } from '@lingui/core/macro';
 import { useLingui } from '@lingui/react';
@@ -90,7 +93,7 @@ const SyntaxHighlighterContainer = styled('div')(() => ({
     margin: 0,
     width: '100%',
     borderRadius: token.Border.BorderRadiusL,
-    overflow: 'hidden',
+    maxWidth: '100%',
     '& pre': {
         margin: '0 !important',
         borderRadius: `${token.Border.BorderRadiusL} !important`,
@@ -243,7 +246,12 @@ export const Code = React.memo(({
                     fontSize: spacing.compactMode ? token.FontFamily.FontMonoSSize : token.FontFamily.FontMonoMSize,
                     fontFamily: spacing.compactMode ? token.FontFamily.FontMonoSFamily : token.FontFamily.FontMonoMFamily,
                     padding: token.Spacing.SpacingBase,
+                    whiteSpace: 'pre-wrap',
+                    wordWrap: 'break-word',
+                    overflowWrap: 'break-word',
                 }}
+                wrapLongLines={true}
+                lineProps={{ style: { wordWrap: 'break-word', whiteSpace: 'pre-wrap' } }}
             >
                 {codeContent}
             </SyntaxHighlighter>

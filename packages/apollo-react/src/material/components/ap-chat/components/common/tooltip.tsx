@@ -2,6 +2,7 @@ import {
     Tooltip,
     TooltipProps as MuiTooltipProps,
 } from '@mui/material';
+import token from '@uipath/apollo-core';
 import React from 'react';
 
 import { useChatScroll } from '../../providers/chat-scroll-provider';
@@ -62,6 +63,26 @@ export const AutopilotChatTooltip: React.FC<AutopilotChatTooltipProps> = React.m
             disableInteractive={disableInteractive}
             placement={placement}
             TransitionProps={{ timeout: 0 }}
+            slotProps={{
+                tooltip: {
+                    sx: {
+                        maxWidth: '300px',
+                        backgroundColor: 'var(--color-foreground)',
+                        color: 'var(--color-background)',
+                        padding: `${token.Spacing.SpacingXs} ${token.Spacing.SpacingS}`,
+                        borderRadius: token.Border.BorderRadiusM,
+                        fontSize: token.FontFamily.FontSSize,
+                        lineHeight: token.FontFamily.FontSLineHeight,
+                        '& > *': {
+                            display: 'block',
+                            marginBottom: token.Spacing.SpacingMicro,
+                            '&:last-child': {
+                                marginBottom: 0,
+                            },
+                        },
+                    },
+                },
+            }}
         >
             {children}
         </Tooltip>

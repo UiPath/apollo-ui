@@ -15,12 +15,10 @@ export type ApTreeViewItem = {
     children?: ApTreeViewItem[];
     /** Whether the item is disabled */
     disabled?: boolean;
-    /** Icon name for the item */
-    icon?: string;
+    /** Icon React element for the item */
+    icon?: React.ReactNode;
     /** Icon color override */
     iconColor?: string;
-    /** Custom icon name */
-    customIcon?: string;
     /** Additional info text shown on the right */
     additionalInfo?: string;
 };

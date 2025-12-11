@@ -55,6 +55,14 @@ export function Breadcrumb() {
 		"text-field": "Text Field",
 		tooltip: "Tooltip",
 		typography: "Typography",
+		// Apollo component routes
+		"alert-bar": "Alert Bar",
+		badge: "Badge",
+		chat: "Chat",
+		"text-area": "Text Area",
+		"tool-call": "Tool Call",
+		"tree-view": "Tree View",
+		skeleton: "Skeleton",
 	};
 
 	return (

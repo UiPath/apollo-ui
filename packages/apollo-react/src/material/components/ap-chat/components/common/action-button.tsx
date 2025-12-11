@@ -134,7 +134,7 @@ const AutopilotChatActionButtonComponent = React.forwardRef<HTMLButtonElement, A
                     <AutopilotChatIcon
                         name={iconName}
                         variant={variant}
-                        size={iconSize || token.Icon.IconM}
+                        size={iconSize || token.Icon.IconS}
                         color={overrideColor ?? iconColor}
                     />
                 }
@@ -205,11 +205,12 @@ const AutopilotChatActionButtonComponent = React.forwardRef<HTMLButtonElement, A
                 }
             }}
             data-testid={dataTestId}
+            sx={variant === 'custom' ? { padding: '8px 6px 6px 8px' } : undefined}
         >
             <AutopilotChatIcon
                 name={iconName}
                 variant={variant}
-                size={iconSize || token.Icon.IconXs}
+                size={iconSize || (variant === 'custom' ? '20px' : token.Icon.IconS)}
                 color={overrideColor ?? iconColor}
             />
         </AutopilotChatIconButton>

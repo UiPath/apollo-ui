@@ -40,12 +40,18 @@ export function CoreHome() {
 
 	const tokenCategories = [
 		{
-			title: "CSS Variables",
-			description:
-				"Browse all CSS custom properties available in the design system",
-			path: "/core/css-variables",
-			icon: "🎨",
-			count: "View All",
+			title: "Borders & Strokes",
+			description: "Border radii, widths, and stroke styles",
+			path: "/core/borders",
+			icon: "⬜",
+			count: `${borderCount} tokens`,
+		},
+		{
+			title: "Breakpoints",
+			description: "Responsive screen size breakpoints",
+			path: "/core/screens",
+			icon: "📱",
+			count: `${screenCount} sizes`,
 		},
 		{
 			title: "Colors",
@@ -55,32 +61,12 @@ export function CoreHome() {
 			count: `${colorCount} colors`,
 		},
 		{
-			title: "Typography",
-			description: "Font families, sizes, weights, and line heights",
-			path: "/core/fonts",
-			icon: "✍️",
-			count: `${fontCount} tokens`,
-		},
-		{
-			title: "Spacing & Padding",
-			description: "Consistent spacing scale for layouts",
-			path: "/core/spacing",
-			icon: "📏",
-			count: `${spacingCount} tokens`,
-		},
-		{
-			title: "Shadows",
-			description: "Elevation system for depth and hierarchy",
-			path: "/core/shadows",
-			icon: "🔲",
-			count: `${shadowCount} shadows`,
-		},
-		{
-			title: "Borders & Strokes",
-			description: "Border radii, widths, and stroke styles",
-			path: "/core/borders",
-			icon: "⬜",
-			count: `${borderCount} tokens`,
+			title: "CSS Variables",
+			description:
+				"Browse all CSS custom properties available in the design system",
+			path: "/core/css-variables",
+			icon: "🎨",
+			count: "View All",
 		},
 		{
 			title: "Icons",
@@ -90,11 +76,25 @@ export function CoreHome() {
 			count: `${iconCount} tokens`,
 		},
 		{
-			title: "Breakpoints",
-			description: "Responsive screen size breakpoints",
-			path: "/core/screens",
-			icon: "📱",
-			count: `${screenCount} sizes`,
+			title: "Shadows",
+			description: "Elevation system for depth and hierarchy",
+			path: "/core/shadows",
+			icon: "🔲",
+			count: `${shadowCount} shadows`,
+		},
+		{
+			title: "Spacing & Padding",
+			description: "Consistent spacing scale for layouts",
+			path: "/core/spacing",
+			icon: "📏",
+			count: `${spacingCount} tokens`,
+		},
+		{
+			title: "Typography",
+			description: "Font families, sizes, weights, and line heights",
+			path: "/core/fonts",
+			icon: "✍️",
+			count: `${fontCount} tokens`,
 		},
 	];
 

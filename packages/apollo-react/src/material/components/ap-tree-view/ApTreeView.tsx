@@ -1,32 +1,38 @@
-import React, { useCallback, useMemo, useState, useContext, createContext } from 'react';
-import { Box, Tooltip } from '@mui/material';
-import { styled } from '@mui/material/styles';
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useMemo,
+  useState,
+} from 'react';
+
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
-import { RichTreeView, TreeItem } from '@mui/x-tree-view';
-import { useTreeViewContext } from '@mui/x-tree-view/internals/TreeViewProvider';
-import { FontVariantToken } from '@uipath/apollo-core';
-import token from '@uipath/apollo-core';
+import {
+  Box,
+  Tooltip,
+} from '@mui/material';
+import { styled } from '@mui/material/styles';
+import {
+  RichTreeView,
+  TreeItem,
+} from '@mui/x-tree-view';
+import { useTreeItemModel, useTreeItemUtils } from '@mui/x-tree-view/hooks';
+import token, { FontVariantToken } from '@uipath/apollo-core';
 
 import { ApTypography } from '../ap-typography';
-import type { ApTreeViewProps, ApTreeViewItem, ApTreeItemProps } from './ApTreeView.types';
-import { deepFind, recursivelyExpand } from './utils';
+import type {
+  ApTreeItemProps,
+  ApTreeViewItem,
+  ApTreeViewProps,
+} from './ApTreeView.types';
+import {
+  deepFind,
+  recursivelyExpand,
+} from './utils';
 
 const ICON_SIZE = parseInt(token.Spacing.SpacingM, 10);
 const CHEVRON_ICON_SIZE = ICON_SIZE;
 const ICON_GAP = parseInt(token.Spacing.SpacingS, 10);
-
-const getFirstItem = (instance: any) =>
-    instance.getItemOrderedChildrenIds(null).find(instance.isItemNavigable);
-
-const isExpandable = (reactChildren: React.ReactNode) => {
-    if (Array.isArray(reactChildren)) {
-        return reactChildren.some(isExpandable);
-    }
-    return Boolean(reactChildren);
-};
-
-const isSelectable = (itemId: string, instance: any) =>
-    !instance.isItemDisabled(itemId);
 
 interface StyledTreeItemProps {
     levelPadding: number;
@@ -105,28 +111,26 @@ export const ApTreeItem: React.FC<ApTreeItemProps> = ({
     disableExpandCollapse,
     showSelectedChevron,
 }) => {
-    const instance = useTreeViewContext().instance as any;
-    const item = instance.getItem(itemId);
+    const item = useTreeItemModel<ApTreeViewItem>(itemId);
+    const { status, interactions } = useTreeItemUtils({ itemId, children });
+    const parentContext = useContext(ApTreeItemParentContext);
 
     const {
-        id,
-        title,
+        id = itemId,
+        title = '',
         description,
         icon,
         iconColor,
-        customIcon,
         disabled,
         children: descendants,
         additionalInfo,
         titleColor,
-    } = item;
+    } = item || {};
 
-    const parentContext = useContext(ApTreeItemParentContext);
-
-    const canExpand = isExpandable(children);
-    const isItemExpanded = instance.isItemExpanded(id);
-    const isItemSelected = instance.isItemSelected(id);
-    const canSelect = isSelectable(id, instance);
+    const canExpand = status.expandable;
+    const isItemExpanded = status.expanded;
+    const isItemSelected = status.selected;
+    const canSelect = !status.disabled;
     const hasChildren = !!(descendants?.length);
 
     const currentItemContext = useMemo(() => {
@@ -137,9 +141,9 @@ export const ApTreeItem: React.FC<ApTreeItemProps> = ({
                 parentContext.levelPadding +
                 (level > 1 ? CHEVRON_ICON_SIZE + ICON_SIZE : 0) -
                 (hasChildren ? 0 : CHEVRON_ICON_SIZE),
-            hasIcon: Boolean(icon ?? customIcon),
+            hasIcon: Boolean(icon),
         };
-    }, [parentContext, icon, customIcon, hasChildren]);
+    }, [parentContext, icon, hasChildren]);
 
     const { levelPadding } = currentItemContext;
 
@@ -153,31 +157,28 @@ export const ApTreeItem: React.FC<ApTreeItemProps> = ({
 
             if (e.key === ' ' && canSelect) {
                 e.preventDefault();
-                instance.selectItem(e, id);
+                interactions.handleSelection(e as any);
             } else if (e.key === 'Enter') {
                 if (canExpand) {
-                    instance.toggleItemExpansion(e, id);
+                    interactions.handleExpansion(e as any);
                     e.preventDefault();
                 } else if (canSelect) {
-                    instance.selectItem(e, id);
+                    interactions.handleSelection(e as any);
                     e.preventDefault();
                 }
             } else if (e.key === 'ArrowRight') {
                 if (!isItemExpanded) {
-                    instance.toggleItemExpansion(e, id);
+                    interactions.handleExpansion(e as any);
                 }
                 e.preventDefault();
             } else if (e.key === 'ArrowLeft') {
                 if (isItemExpanded) {
-                    instance.toggleItemExpansion(e, id);
+                    interactions.handleExpansion(e as any);
                 }
-                e.preventDefault();
-            } else if (e.key === 'Home') {
-                instance.focusItem(e, getFirstItem(instance));
                 e.preventDefault();
             }
         },
-        [canSelect, canExpand, id, instance, isItemExpanded]
+        [canSelect, canExpand, interactions, isItemExpanded]
     );
 
     const label = (
@@ -197,7 +198,7 @@ export const ApTreeItem: React.FC<ApTreeItemProps> = ({
                         gap: `${ICON_GAP}px`,
                     }}
                 >
-                    {(icon || customIcon) && (
+                    {icon && (
                         <Box
                             component="span"
                             sx={{
@@ -208,8 +209,7 @@ export const ApTreeItem: React.FC<ApTreeItemProps> = ({
                                 color: iconColor || 'inherit',
                             }}
                         >
-                            {/* Placeholder for icon - implement based on your icon system */}
-                            {icon || customIcon}
+                            {icon}
                         </Box>
                     )}
                     <ApTypography

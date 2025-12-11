@@ -3,9 +3,9 @@ import { styled, CircularProgress } from '@mui/material';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import ErrorIcon from '@mui/icons-material/Error';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-import token from '@uipath/apollo-core';
 import { msg } from '@lingui/core/macro';
 import { useLingui } from '@lingui/react';
+import token from '@uipath/apollo-core';
 
 import { ToolCallSection } from './ToolCallSection';
 import type { ApToolCallProps, ITreeNode, TSpan } from './ApToolCall.types';
@@ -129,6 +129,7 @@ const ExecutionItemContent = React.memo(ExecutionItem);
 export const ApToolCall = React.forwardRef<HTMLDivElement, ApToolCallProps>(
     (props, ref) => {
         const { span, toolName, input, output, isError, startTime, endTime } = props;
+        const { _ } = useLingui();
         const [toolCallExpanded, setToolCallExpanded] = useState(false);
         const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
             input: false,
@@ -137,8 +138,6 @@ export const ApToolCall = React.forwardRef<HTMLDivElement, ApToolCallProps>(
             output: false,
             errors: false,
         });
-
-        const { _ } = useLingui();
 
         // Helper to safely access attributes
         const getAttributes = useCallback((data: TSpan): Record<string, any> => {
@@ -291,15 +290,11 @@ export const ApToolCall = React.forwardRef<HTMLDivElement, ApToolCallProps>(
             const status = getStatus;
             const toolCallName =
                 toolName?.replace(/_/g, ' ') ||
-                span?.name?.replace('Tool call - ', '').replace(/_/g, ' ');
+                span?.name?.replace('Tool call - ', '').replace(/_/g, ' ') ||
+                'tool';
 
             if (status === 'loading') {
-                return _(
-                    msg({
-                        id: 'tool-call.running',
-                        message: `Running ${toolCallName}...`,
-                    })
-                );
+                return _(msg({ id: 'tool-call.running', message: `Running ${toolCallName}...` }));
             }
 
             // Calculate duration
@@ -312,12 +307,7 @@ export const ApToolCall = React.forwardRef<HTMLDivElement, ApToolCallProps>(
                       1000
                     : 0;
 
-            return _(
-                msg({
-                    id: 'tool-call.ran',
-                    message: `Ran ${toolCallName} (${duration.toFixed(2)}s)`,
-                })
-            );
+            return _(msg({ id: 'tool-call.ran', message: `Ran ${toolCallName} (${duration.toFixed(2)}s)` }));
         }, [getStatus, toolName, span, startTime, endTime, _]);
 
         const handleKeyDown = useCallback(

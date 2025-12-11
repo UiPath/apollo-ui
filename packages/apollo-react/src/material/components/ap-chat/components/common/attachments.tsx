@@ -21,25 +21,26 @@ import { AutopilotChatTooltip } from './tooltip';
 const AttachmentIcon = styled('span')<{ fileType?: AutopilotChatFileType; width?: string; height?: string }>(({
     fileType, width, height,
 }) => ({
-    maxWidth: width ?? token.Spacing.SpacingM,
-    maxHeight: height ?? token.Spacing.SpacingM,
+    width: width ?? token.Spacing.SpacingM,
+    height: height ?? token.Spacing.SpacingM,
     boxSizing: 'border-box',
-    display: 'flex',
+    flexShrink: 0,
+    display: 'inline-flex',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: token.Spacing.SpacingXs,
     borderRadius: token.Border.BorderRadiusM,
+    lineHeight: 0,
 
     ...(fileType === AutopilotChatFileType.File ? {
-        padding: token.Spacing.SpacingMicro,
         backgroundColor: '#078E9E',
     } : {
         backgroundColor: 'var(--color-background-secondary)',
-        '& svg': {
-            width: width ?? token.Spacing.SpacingM,
-            height: height ?? token.Spacing.SpacingM,
-        },
     }),
+
+    '& svg': {
+        transform: 'scale(0.8)',
+        display: 'block',
+    },
 }));
 
 const AttachmentsContainer = styled('div')<{ removeSpacing?: boolean; disableOverflow?: boolean }>(({

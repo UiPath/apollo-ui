@@ -3,9 +3,11 @@ import React from 'react';
 import { styled } from '@mui/material';
 import token from '@uipath/apollo-core';
 
+import type { SupportedLocale } from '../../../../../i18n';
 import { ApToolCall } from '../../../ap-tool-call';
 import { useChatService } from '../../providers/chat-service.provider';
 import { useChatState } from '../../providers/chat-state-provider';
+import { useLocale } from '../../providers/locale-provider';
 import {
   AGENTS_TOOL_CALL_RENDERER,
   APOLLO_CHAT_TREE_RENDERER,
@@ -27,7 +29,7 @@ import { AutopilotChatMarkdownRenderer } from './markdown/markdown';
 import { AutopilotChatSources } from './sources/chat-sources';
 import { ApolloChatTreeRenderer } from './tree/tree-renderer';
 
-const APOLLO_MESSAGE_RENDERERS = [
+const getApolloMessageRenderers = (locale: SupportedLocale) => [
     {
         name: DEFAULT_MESSAGE_RENDERER,
         component: AutopilotChatMarkdownRenderer,
@@ -46,6 +48,7 @@ const APOLLO_MESSAGE_RENDERERS = [
                 isError={message.meta.isError}
                 startTime={message.meta.startTime}
                 endTime={message.meta.endTime}
+                locale={locale}
             />;
         },
     },
@@ -171,12 +174,14 @@ function AutopilotChatMessageContentComponent({
     message, isLastInGroup = true, disableActions = false, containerRef,
 }: { message: AutopilotChatMessage; isLastInGroup?: boolean; disableActions?: boolean; containerRef: HTMLDivElement | null }) {
     const chatService = useChatService();
+    const { locale } = useLocale();
 
     if ((!message.content && !message.contentParts) && !message.attachments) {
         return null;
     }
 
     if (!chatService.getMessageRenderer(message.widget)) {
+        const APOLLO_MESSAGE_RENDERERS = getApolloMessageRenderers(locale);
         const ApolloMessageRenderer = APOLLO_MESSAGE_RENDERERS.find(renderer => renderer.name === message.widget)?.component;
 
         return (

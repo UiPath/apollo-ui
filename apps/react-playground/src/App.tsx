@@ -3,11 +3,22 @@ import { AppContainer, MainContent } from "./App.styles";
 import { Breadcrumb } from "./components/Breadcrumb";
 import { Sidebar } from "./components/Sidebar";
 import { ThemeProvider } from "./contexts/ThemeContext";
+import { ApChatShowcase } from "./pages/ApChatShowcase";
 import { Borders } from "./pages/Borders";
 import { Colors } from "./pages/Colors";
-import { ComponentsWIP } from "./pages/ComponentsWIP";
+import { ComponentsHome } from "./pages/ComponentsHome";
 import { CoreHome } from "./pages/CoreHome";
 import { CssVariables } from "./pages/CssVariables";
+import { AlertBarShowcase } from "./pages/components/AlertBarShowcase";
+import { BadgeShowcase } from "./pages/components/BadgeShowcase";
+import { ChipShowcase } from "./pages/components/ChipShowcase";
+import { LinkShowcase } from "./pages/components/LinkShowcase";
+import { SkeletonShowcase } from "./pages/components/SkeletonShowcase";
+import { TextAreaShowcase } from "./pages/components/TextAreaShowcase";
+import { TextFieldShowcase } from "./pages/components/TextFieldShowcase";
+import { ToolCallShowcase } from "./pages/components/ToolCallShowcase";
+import { TreeViewShowcase } from "./pages/components/TreeViewShowcase";
+import { TypographyShowcase } from "./pages/components/TypographyShowcase";
 import { Fonts } from "./pages/Fonts";
 import { Icons } from "./pages/Icons";
 import { MainHome } from "./pages/MainHome";
@@ -120,7 +131,39 @@ function App() {
 								path="/material/typography"
 								element={<MaterialTypography />}
 							/>
-							<Route path="/components" element={<ComponentsWIP />} />
+							<Route path="/components" element={<ComponentsHome />} />
+							<Route
+								path="/components/alert-bar"
+								element={<AlertBarShowcase />}
+							/>
+							<Route path="/components/badge" element={<BadgeShowcase />} />
+							<Route path="/components/chat" element={<ApChatShowcase />} />
+							<Route path="/components/chip" element={<ChipShowcase />} />
+							<Route path="/components/link" element={<LinkShowcase />} />
+							<Route
+								path="/components/skeleton"
+								element={<SkeletonShowcase />}
+							/>
+							<Route
+								path="/components/text-area"
+								element={<TextAreaShowcase />}
+							/>
+							<Route
+								path="/components/text-field"
+								element={<TextFieldShowcase />}
+							/>
+							<Route
+								path="/components/tool-call"
+								element={<ToolCallShowcase />}
+							/>
+							<Route
+								path="/components/tree-view"
+								element={<TreeViewShowcase />}
+							/>
+							<Route
+								path="/components/typography"
+								element={<TypographyShowcase />}
+							/>
 						</Routes>
 					</MainContent>
 				</AppContainer>

@@ -1,10 +1,10 @@
-# Autopilot Chat
+# Chat
 
-A flexible chat interface component that provides seamless integration with both React and Angular applications, powered by a globally accessible chat service.
+A flexible React chat interface component that provides AI assistant functionality with a powerful service-based API.
 
 ## Overview
 
-The Autopilot Chat component is a full-featured chat interface that can be embedded in applications to provide AI assistant functionality. The component includes:
+The Chat component is a full-featured chat interface that can be embedded in applications to provide AI assistant functionality. The component includes:
 
 - A resizable and collapsible UI that can operate in side-by-side, full-screen, or embedded mode
 - Support for text messages with markdown formatting and citations
@@ -46,15 +46,18 @@ The Autopilot Chat component is a full-featured chat interface that can be embed
 - Label overrides for internationalization
 - Spacing and theming configuration
 
-## Global Chat Service
+## Chat Service
 
-The chat service is instantiated by default and available at:
+The chat service must be imported and instantiated in your application:
 
 ```typescript
-const chatService = window.PortalShell.AutopilotChat;
+import { AutopilotChatService } from '@uipath/apollo-react/material/components';
+
+// Create a service instance
+const chatService = new AutopilotChatService();
 ```
 
-You can also access the `AutopilotChatService` class to create your own custom instances. See [Creating a Standalone Instance](#creating-a-standalone-instance) for details.
+See [Usage Examples](#usage-examples) for complete setup details.
 
 ## API Reference
 
@@ -65,6 +68,10 @@ You can also access the `AutopilotChatService` class to create your own custom i
 | `initialize(config: AutopilotChatConfiguration, messageRenderers?: AutopilotChatMessageRenderer[])`            | Initializes the chat service with the provided configuration (see [AutopilotChatConfiguration](#autopilotchatconfiguration)) and optional message renderers (see [AutopilotChatMessageRenderer](#autopilotchatmessagerenderer)) |
 | `patchConfig(config: Partial<AutopilotChatConfiguration>, messageRenderers?: AutopilotChatMessageRenderer[] )` | Patches the configuration of the chat service using existing value. (see [AutopilotChatConfiguration](#autopilotchatconfiguration))                                                                                             |
 | `getConfig()`                                                                                                  | Returns the current chat configuration object (see [AutopilotChatConfiguration](#autopilotchatconfiguration))                                                                                                                   |
+| `setLocale(locale: string)`                                                                                    | Sets the locale for the chat interface. Changes will be reflected immediately in the UI. Useful for embedded mode where locale needs to be changed dynamically                                                                  |
+| `getLocale()`                                                                                                  | Returns the current locale setting                                                                                                                                                                                              |
+| `setTheme(theme: string)`                                                                                      | Sets the theme for the chat interface ('light', 'dark', 'light-hc', 'dark-hc'). Changes will be reflected immediately in the UI. Useful for embedded mode where theme needs to be changed dynamically                          |
+| `getTheme()`                                                                                                   | Returns the current theme setting                                                                                                                                                                                               |
 | `injectMessageRenderer(renderer: AutopilotChatMessageRenderer)`                                                | Adds or replaces a custom message renderer in the chat service (see [AutopilotChatMessageRenderer](#autopilotchatmessagerenderer))                                                                                              |
 | `getMessageRenderer(name: string)`                                                                             | Retrieves a message renderer by name                                                                                                                                                                                            |
 | `setFirstRunExperience(config: AutopilotChatConfiguration['firstRunExperience'])`                              | Configures the first run experience (see [First Run Experience](#first-run-experience)) displayed when the chat is opened for the first time or when there are no messages                                                      |
@@ -242,7 +249,7 @@ Multiple interceptors can be added and will be called in parallel. If any interc
 
 ## Settings Panel
 
-The Autopilot Chat component includes a customizable settings panel that follows the same drawer-like UI pattern as the history panel. The settings feature is **disabled by default** and must be explicitly enabled.
+The Chat component includes a customizable settings panel that follows the same drawer-like UI pattern as the history panel. The settings feature is **disabled by default** and must be explicitly enabled.
 
 ### Enabling Settings
 
@@ -322,7 +329,7 @@ chatService.toggleHistory(true); // Settings panel closes automatically
 
 ### Message Actions
 
-The Autopilot Chat component supports adding custom actions to messages. These actions can be used to provide additional functionality for messages (on top of default actions).
+The Chat component supports adding custom actions to messages. These actions can be used to provide additional functionality for messages (on top of default actions).
 
 ```typescript
 // Example of sending a response with custom actions
@@ -366,7 +373,7 @@ When feedback has already been given on an assistant message, only the selected 
 
 ### Feedback Handling
 
-The Autopilot Chat component provides a built-in feedback system that allows users to give thumbs up or thumbs down feedback for assistant messages.
+The Chat component provides a built-in feedback system that allows users to give thumbs up or thumbs down feedback for assistant messages.
 
 ```typescript
 // Listen for feedback events
@@ -383,7 +390,7 @@ chatService.on(AutopilotChatEvent.Feedback, ({ message, action }) => {
 
 ### Copy Event Handling
 
-The Autopilot Chat component emits copy events when a user copies a message.
+The Chat component emits copy events when a user copies a message.
 
 ```typescript
 // Listen for copy events
@@ -425,7 +432,7 @@ chatService.sendResponse({
 
 ### Custom Header Actions
 
-The Autopilot Chat component supports adding custom actions to the chat header with support for 2-level nested menus. These actions provide additional functionality that can be accessed from the header toolbar.
+The Chat component supports adding custom actions to the chat header with support for 2-level nested menus. These actions provide additional functionality that can be accessed from the header toolbar.
 
 #### Setting Custom Header Actions
 
@@ -545,7 +552,7 @@ console.log('Current custom header actions:', currentActions);
 
 ### Model Selection
 
-The Autopilot Chat component supports configuring and selecting different AI models. This allows users to switch between various language models or AI assistants based on their needs.
+The Chat component supports configuring and selecting different AI models. This allows users to switch between various language models or AI assistants based on their needs.
 
 #### Setting Available Models
 
@@ -614,7 +621,7 @@ chatService.on(AutopilotChatEvent.SetSelectedModel, (modelId) => {
 
 ### Agent Mode Selection
 
-The Autopilot Chat component supports configuring different agent modes, allowing users to switch between various AI interaction patterns or capabilities.
+The Chat component supports configuring different agent modes, allowing users to switch between various AI interaction patterns or capabilities.
 
 #### Setting Available Agent Modes
 
@@ -743,7 +750,7 @@ chatService.initialize({
 
 ### Loading and Waiting States
 
-The Autopilot Chat component provides methods to control loading indicators and input availability, allowing you to create custom user experiences around async operations and state management.
+The Chat component provides methods to control loading indicators and input availability, allowing you to create custom user experiences around async operations and state management.
 
 #### Automatic vs Manual Control
 
@@ -912,130 +919,210 @@ chatService.initialize({
 ### Basic Chat Initialization
 
 ```typescript
-// Access the global chat service
-const chatService = window.PortalShell.AutopilotChat;
+import { ApChat, AutopilotChatService, AutopilotChatMode } from '@uipath/apollo-react/material/components';
+import { useState, useEffect } from 'react';
 
-// Initialize with custom configuration
-chatService.initialize({
-  mode: AutopilotChatMode.SideBySide,
-  firstRunExperience: {
-    title: "Welcome to Autopilot Chat!",
-    description: "Ask me anything about your data or how to use this application.",
-    suggestions: [
-      { label: "How to get started", prompt: "How do I get started with this application?" },
-      { label: "Generate a report", prompt: "Help me generate a quarterly sales report" }
-    ]
-  }
-});
+function MyApp() {
+  const [chatService] = useState(() => new AutopilotChatService());
 
-// Open the chat interface
-chatService.open();
+  useEffect(() => {
+    // Initialize with custom configuration
+    chatService.initialize({
+      mode: AutopilotChatMode.SideBySide,
+      firstRunExperience: {
+        title: "Welcome to Autopilot Chat!",
+        description: "Ask me anything about your data or how to use this application.",
+        suggestions: [
+          { label: "How to get started", prompt: "How do I get started with this application?" },
+          { label: "Generate a report", prompt: "Help me generate a quarterly sales report" }
+        ]
+      }
+    });
+
+    // Open the chat interface
+    chatService.open();
+
+    return () => {
+      chatService.close();
+    };
+  }, [chatService]);
+
+  return (
+    <ApChat
+      service={chatService}
+      locale="en"
+      theme="light"
+    />
+  );
+}
 ```
 
-### Creating a Standalone Instance
+### Creating Multiple Instances
+
+You can create multiple independent chat service instances:
 
 ```typescript
-// Create a standalone instance with a custom name
-const chatService = AutopilotChatService.Instantiate({
-  instanceName: 'my-custom-chat',
-  config: {
-    mode: AutopilotChatMode.SideBySide,
-    firstRunExperience: {
-      title: "Custom Chat Experience",
-      description: "This is a standalone chat instance"
-    }
-  }
+import { AutopilotChatService } from '@uipath/apollo-react/material/components';
+
+// Create multiple service instances
+const chatService1 = new AutopilotChatService();
+const chatService2 = new AutopilotChatService();
+
+// Each instance can have its own configuration
+chatService1.initialize({
+  mode: AutopilotChatMode.SideBySide,
+  // ... configuration
 });
 
-// Later, retrieve the same instance
-const sameInstance = AutopilotChatService.getInstance('my-custom-chat');
+chatService2.initialize({
+  mode: AutopilotChatMode.Embedded,
+  // ... different configuration
+});
 ```
 
-### Using with Web Component
+### Using the React Component
 
-The `ap-autopilot-chat` is a web component that accepts a chat service instance as a property. If no instance is provided, it will use the global instance by default.
+The ApChat component is a React component that requires a service instance:
 
-```html
-<script>
-  // Import the required modules (if using ES modules)
-  import { AutopilotChatService, AutopilotChatMode } from '@uipath/portal-shell-util';
+```typescript
+import { ApChat, AutopilotChatService } from '@uipath/apollo-react/material/components';
 
-  // Create a custom chat service instance
-  const customChatService = AutopilotChatService.Instantiate({
-    instanceName: 'custom-component-chat',
-    config: {
-      mode: AutopilotChatMode.SideBySide
-    }
-  });
+function MyComponent() {
+  const [chatService] = useState(() => new AutopilotChatService());
 
-  // Wait for custom elements to be defined
-  customElements.whenDefined('ap-autopilot-chat').then(() => {
-    // Get the element and assign the chat service
-    const chatElement = document.querySelector('ap-autopilot-chat');
-    chatElement.chatServiceInstance = customChatService;
-  });
-</script>
-
-<!-- The web component without a chat service will use the global instance -->
-<ap-autopilot-chat></ap-autopilot-chat>
+  return (
+    <ApChat
+      service={chatService}
+      locale="en"          // Optional: 'en', 'de', 'es', 'fr', 'ja', etc.
+      theme="light"        // Optional: 'light', 'dark', 'light-hc', 'dark-hc'
+    />
+  );
+}
 ```
 
 ### Opening Chat in Embedded Mode
 
+Embedded mode allows the chat to be rendered inside a specific container element, taking the full width and height of that container.
+
+#### Approach 1: Using ApChat Component with Embedded Container
+
+This is the standard approach where you render the ApChat component and configure embedded mode:
+
 ```typescript
-// Access the global chat service
-const chatService = window.PortalShell.AutopilotChat;
+import { ApChat, AutopilotChatService, AutopilotChatMode } from '@uipath/apollo-react/material/components';
+import { useState, useEffect, useRef } from 'react';
 
-// Get a container element where the chat will be embedded
-const container = document.getElementById('chat-container');
+function EmbeddedChat() {
+  const [chatService] = useState(() => new AutopilotChatService());
+  const containerRef = useRef<HTMLDivElement>(null);
 
-// Open the chat in embedded mode
-chatService.open({
-  mode: AutopilotChatMode.Embedded,
-  embeddedContainer: container,
-  // Optionally disable the header for a more minimal embedded appearance
-  disabledFeatures: {
-    header: true
-  }
-});
+  useEffect(() => {
+    chatService.initialize({
+      mode: AutopilotChatMode.Embedded,
+      embeddedContainer: containerRef.current!,
+      locale: 'en', // Optional: Set locale in initialization
+      theme: 'light', // Optional: Set theme in initialization
+      disabledFeatures: {
+        resize: true,
+        close: true,
+      }
+    });
 
-// The chat component will be appended to the container
-// You can interact with it using the same API as other modes
-// Note: resize and fullscreen are disabled by default in embedded mode
+    return () => {
+      chatService.close();
+    };
+  }, [chatService]);
+
+  return (
+    <>
+      {/* The ApChat component always renders once */}
+      <ApChat
+        chatServiceInstance={chatService}
+        locale="en"
+        theme="light"
+      />
+
+      {/* Container where chat will be embedded using React Portal */}
+      <div
+        ref={containerRef}
+        style={{
+          width: '400px',
+          height: '600px',
+          position: 'fixed',
+          bottom: '24px',
+          right: '24px',
+          boxShadow: '0 8px 24px rgba(0, 0, 0, 0.15)',
+          borderRadius: '12px',
+          overflow: 'hidden'
+        }}
+      />
+    </>
+  );
+}
 ```
 
-### Embedded Mode HTML Example
+#### Approach 2: Service-Only Configuration (No ApChat Component Needed)
 
-```html
-<!-- Example: Embedded mode with global chat service -->
-<div id="my-chat-container" style="width: 100%; height: 500px;"></div>
+For embedded mode, you can also configure locale and theme directly in the service without rendering the ApChat component. This is useful when the chat is fully managed by the service:
 
-<script>
-  // Get a container element where the chat will be embedded
-  const container = document.getElementById('my-chat-container');
+```typescript
+import { AutopilotChatService, AutopilotChatMode } from '@uipath/apollo-react/material/components';
+import { useState, useEffect, useRef } from 'react';
 
-  // Access the global chat service
-  const chatService = window.PortalShell.AutopilotChat;
+function EmbeddedChatServiceOnly() {
+  const [chatService] = useState(() => new AutopilotChatService());
+  const containerRef = useRef<HTMLDivElement>(null);
 
-  // Open the chat in embedded mode
-  chatService.open({
-    mode: AutopilotChatMode.Embedded,
-    embeddedContainer: container,
-    disabledFeatures: {
-      header: true  // Optional: create a headerless embedded chat
+  useEffect(() => {
+    if (containerRef.current) {
+      chatService.initialize({
+        mode: AutopilotChatMode.Embedded,
+        embeddedContainer: containerRef.current,
+        locale: 'en', // Set locale in service config
+        theme: 'dark', // Set theme in service config
+        disabledFeatures: {
+          resize: true,
+          close: true,
+        }
+      });
+
+      // You still need to render ApChat component somewhere in your app
+      // The service will use React Portal to render into the container
     }
-  });
 
-  // You can further customize the experience
-  chatService.setFirstRunExperience({
-    title: "Embedded Assistant",
-    description: "Ask questions about this specific section.",
-    suggestions: [
-      { label: "Help with this form", prompt: "How do I fill out this form correctly?" }
-    ]
-  });
-</script>
+    return () => {
+      chatService.close();
+    };
+  }, [chatService]);
+
+  return (
+    <div
+      ref={containerRef}
+      style={{ width: '100%', height: '600px' }}
+    />
+  );
+}
 ```
+
+#### Dynamically Changing Locale and Theme
+
+You can change the locale and theme at runtime using service methods:
+
+```typescript
+// Change locale
+chatService.setLocale('de'); // Changes to German
+
+// Change theme
+chatService.setTheme('dark'); // Changes to dark theme
+
+// Get current locale
+const currentLocale = chatService.getLocale(); // Returns current locale
+
+// Get current theme
+const currentTheme = chatService.getTheme(); // Returns current theme
+```
+
+**Note:** When you change locale or theme via the service, the ApChat component will automatically update to reflect the changes.
 
 ### Intercepting User Requests
 
@@ -1100,7 +1187,7 @@ chatService.getPreHook(AutopilotChatPreHookAction.ToggleSettings)({ settingsOpen
 
 ### Message Groups
 
-The Autopilot Chat component supports message grouping, which allows you to treat multiple related assistant responses as a logical unit. This is useful for chaining responses and handling multi-step interactions.
+The Chat component supports message grouping, which allows you to treat multiple related assistant responses as a logical unit. This is useful for chaining responses and handling multi-step interactions.
 
 ```typescript
 // Create a unique group ID for a sequence of related responses
@@ -1200,7 +1287,7 @@ chatService.sendResponse({
 
 ### Tree Renderer Component
 
-The Autopilot Chat component includes a built-in tree renderer that can display hierarchical data structures using the Apollo Tree View component. This is particularly useful for displaying structured data like workflow steps, organizational charts, or nested information.
+The Chat component includes a built-in tree renderer that can display hierarchical data structures using the Apollo Tree View component. This is particularly useful for displaying structured data like workflow steps, organizational charts, or nested information.
 
 #### Using the Tree Renderer
 
@@ -1426,7 +1513,7 @@ const customTreeData = {
 
 ## Streaming Capabilities
 
-The Autopilot Chat component provides streaming capabilities for response display. When using the default markdown renderer, you can leverage two different streaming approaches:
+The Chat component provides streaming capabilities for response display. When using the default markdown renderer, you can leverage two different streaming approaches:
 
 ### Real-time Streaming
 
@@ -1572,7 +1659,7 @@ The fake streaming feature uses two constants that can be customized by modifyin
 
 ## Citations
 
-The Autopilot Chat component supports displaying citations alongside assistant responses, enabling users to see and interact with source references. Citations can be displayed both in static responses and streaming responses.
+The Chat component supports displaying citations alongside assistant responses, enabling users to see and interact with source references. Citations can be displayed both in static responses and streaming responses.
 
 ### Static Citations
 
@@ -2324,7 +2411,7 @@ chatService.setOverrideLabels({
 
 ## Asynchronous Attachment Processing
 
-The Autopilot Chat component supports asynchronous processing of attachments, allowing you to show loading states while files are being uploaded, validated, or processed. This is useful when attachments need to be sent to a server or undergo transformation before being ready for use.
+The Chat component supports asynchronous processing of attachments, allowing you to show loading states while files are being uploaded, validated, or processed. This is useful when attachments need to be sent to a server or undergo transformation before being ready for use.
 
 ### SetAttachments Event
 
@@ -2477,7 +2564,7 @@ chatService.setAttachmentsLoading([]);
 
 ## Spacing Configuration
 
-The Autopilot Chat component provides comprehensive spacing customization capabilities through the `spacing` configuration property. This allows you to control the visual density and typography of the chat interface.
+The Chat component provides comprehensive spacing customization capabilities through the `spacing` configuration property. This allows you to control the visual density and typography of the chat interface.
 
 ### Compact Mode
 
@@ -2573,7 +2660,7 @@ The `@uipath/apollo-core` package provides the following font variant tokens tha
 
 ## Theming Configuration
 
-The Autopilot Chat component provides theming customization capabilities through the `theming` configuration property. This allows you to control the visual appearance of various UI elements within the chat interface.
+The Chat component provides theming customization capabilities through the `theming` configuration property. This allows you to control the visual appearance of various UI elements within the chat interface.
 
 ### Scroll Bar Theming
 
@@ -2601,10 +2688,12 @@ chatService.initialize({
 import { FontVariantToken } from '@uipath/apollo-core';
 
 /**
- * Represents the configuration for the Autopilot Chat system.
+ * Represents the configuration for the Chat system.
  *
  * @property mode - The mode of the chat
  * @property embeddedContainer - The container to embed the chat in
+ * @property locale - The locale for the chat interface (e.g., 'en', 'de', 'es'). Defaults to 'en'. Particularly useful in embedded mode
+ * @property theme - The theme for the chat interface ('light', 'dark', 'light-hc', 'dark-hc'). Defaults to 'light'. Particularly useful in embedded mode
  * @property disabledFeatures - The disabled features of the chat
  * @property overrideLabels - The override labels of the chat
  * @property firstRunExperience - The first run experience of the chat
@@ -2625,6 +2714,8 @@ import { FontVariantToken } from '@uipath/apollo-core';
 export interface AutopilotChatConfiguration {
     mode: AutopilotChatMode;
     embeddedContainer?: HTMLElement;
+    locale?: SupportedLocale; // 'en' | 'de' | 'es' | 'fr' | 'ja' | 'ko' | 'pt' | 'ru' | 'tr' | 'zh-CN' | 'zh-TW' | 'pt-BR' | 'es-MX' (defaults to 'en')
+    theme?: ApChatTheme; // 'light' | 'dark' | 'light-hc' | 'dark-hc' (defaults to 'light')
     disabledFeatures?: AutopilotChatDisabledFeatures;
     overrideLabels?: AutopilotChatOverrideLabels;
     firstRunExperience?: {
@@ -2701,7 +2792,7 @@ enum AutopilotChatMode {
 
 ```typescript
 /**
- * Represents the disabled features of the Autopilot Chat system.
+ * Represents the disabled features of the Chat system.
  *
  * @property resize - Whether the chat can be resized (has the resize handle)
  * @property fullScreen - Whether the chat has the full screen button
@@ -2759,7 +2850,7 @@ export interface AutopilotChatOverrideLabels {
 
 ```typescript
 /**
- * Represents a suggestion for the Autopilot Chat system.
+ * Represents a suggestion for the Chat system.
  *
  * @property label - The label of the suggestion
  * @property prompt - The prompt of the suggestion
@@ -2774,7 +2865,7 @@ export interface AutopilotChatSuggestion {
 
 ```typescript
 /**
- * Represents the allowed attachments for the Autopilot Chat system.
+ * Represents the allowed attachments for the Chat system.
  *
  * @property types - An object mapping MIME types to arrays of file extensions
  *   Example: { 'text/csv': ['.csv'], 'application/json': ['.json'] }
@@ -2796,7 +2887,7 @@ export interface AutopilotChatAllowedAttachments {
 
 ```typescript
 /**
- * Represents the model info for the Autopilot Chat system.
+ * Represents the model info for the Chat system.
  *
  * @property id - Unique identifier for the model
  * @property name - The name of the model
@@ -2817,7 +2908,7 @@ See [Model Selection](#model-selection) section for detailed usage examples.
 
 ```typescript
 /**
- * Represents the agent mode info for the Autopilot Chat system.
+ * Represents the agent mode info for the Chat system.
  * Consumers can define custom agent modes with any ID, name, icon, and description.
  *
  * @property id - The agent mode identifier (can be any string value)
@@ -2839,7 +2930,7 @@ See [Agent Mode Selection](#agent-mode-selection) section for detailed usage exa
 
 ```typescript
 /**
- * Represents a custom header action for the Autopilot Chat system.
+ * Represents a custom header action for the Chat system.
  * Supports 2-level nested menus with type-safe nesting constraints.
  *
  * @property id - Unique identifier for the action
@@ -2865,7 +2956,7 @@ See [Custom Header Actions](#custom-header-actions) section for detailed usage e
 
 ```typescript
 /**
- * Represents a message in the Autopilot Chat system.
+ * Represents a message in the Chat system.
  *
  * @property id - Unique identifier for the message. Automatically generated by the chat service if not provided.
  * @property content - The text content of the message.
@@ -2923,7 +3014,7 @@ enum AutopilotChatRole {
 
 ```typescript
 /**
- * Represents an action for a message in the Autopilot Chat.
+ * Represents an action for a message in the Chat.
  *
  * @property name - The name of the action
  * @property label - The label of the action
@@ -2948,7 +3039,7 @@ export interface AutopilotChatMessageAction {
 
 ```typescript
 /**
- * Represents a history item for the Autopilot Chat system.
+ * Represents a history item for the Chat system.
  *
  * @property id - The id of the history item
  * @property name - The name of the history item
@@ -2979,7 +3070,7 @@ The message renderer interface defines a custom renderer for chat messages:
 
 ```typescript
 /**
- * Type representing the error level in the Autopilot Chat system.
+ * Type representing the error level in the Chat system.
  */
 export type AutopilotChatErrorLevel = 'error' | 'warn';
 ```
@@ -2988,7 +3079,7 @@ export type AutopilotChatErrorLevel = 'error' | 'warn';
 
 ```typescript
 /**
- * Represents a payload for an action in the Autopilot Chat.
+ * Represents a payload for an action in the Chat.
  *
  * @property action - The action that was triggered
  * @property group - The group of messages that the action is associated with
@@ -3005,7 +3096,7 @@ export interface AutopilotChatActionPayload {
 
 ```typescript
 /**
- * Enum representing the various pre-hook actions that can occur in the Autopilot Chat system.
+ * Enum representing the various pre-hook actions that can occur in the Chat system.
  * These actions are used to trigger before the user action (UI interaction) of the chat.
  *
  * @enum {string}
@@ -3032,7 +3123,7 @@ export enum AutopilotChatPreHookAction {
 
 ```ts
 /**
- * Represents a payload for an action in the Autopilot Chat.
+ * Represents a payload for an action in the Chat.
  *
  * @property action - The action that was triggered
  * @property group - The group of messages that the action is associated with
@@ -3049,7 +3140,7 @@ export interface AutopilotChatActionPayload {
 
 ```ts
 /**
- * Represents the allowed attachments for the Autopilot Chat system.
+ * Represents the allowed attachments for the Chat system.
  *
  * @property types - An object mapping MIME types to arrays of file extensions
  *   Example: { 'text/csv': ['.csv'], 'application/json': ['.json'] }
@@ -3206,7 +3297,7 @@ export interface AutopilotChatMediaChunk {
 
 ```ts
 /**
- * Represents a content part in the Autopilot Chat system.
+ * Represents a content part in the Chat system.
  *
  * @property text - The text content of this part
  * @property citations - The citations that apply to this text
@@ -3221,7 +3312,7 @@ export interface ContentPart {
 
 ```ts
 /**
- * Represents a content part chunk for streaming in the Autopilot Chat system.
+ * Represents a content part chunk for streaming in the Chat system.
  *
  * @property index - The index of the content part this chunk belongs to
  * @property text - The text to append to the content part
@@ -3238,7 +3329,7 @@ export interface ContentPartChunk {
 
 ```ts
 /**
- * Base citation interface for the Autopilot Chat system.
+ * Base citation interface for the Chat system.
  *
  * @property id - Unique identifier for the citation
  * @property title - The title of the citation
@@ -3279,16 +3370,14 @@ export interface PdfCitation extends Citation {
 
 ## Component Architecture
 
-The Autopilot Chat component is built with a modular architecture that allows for easy customization and extension.
+The Chat component is built with a modular React architecture that allows for easy customization and extension.
 
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'lineColor': '#ffffff', 'primaryColor': '#2962ff', 'primaryTextColor': '#ffffff', 'primaryBorderColor': '#ffffff', 'edgeLabelBackground': '#444444', 'lineWidth': '2px' }}}%%
 graph LR
     %% Node definitions with clear borders
-    A["ap-autopilot-chat"]:::node
-    B["ReactToStencilAdapter"]:::node
-    C["AutopilotChatReact"]:::node
-    D["Provider Layer"]:::node
+    A["ApChat<br>(React Component)"]:::node
+    C["Provider Layer"]:::node
     K["ChatContainer"]:::node
     Mode{"Chat Mode"}:::decision
     FS["FullScreenLayout"]:::node
@@ -3377,18 +3466,17 @@ graph LR
     History["History<br>Components"]:::component
 
     %% Core Flow with thick edges
-    A ==> B
-    B ==> C
-    C ==> D
+    A ==> C
+    C ==> K
 
     %% Provider connections
-    D -.->|"provides"| E
-    D -.->|"provides"| F
-    D -.->|"provides"| G
-    D -.->|"provides"| H
-    D -.->|"provides"| I
-    D -.->|"provides"| J
-    D -.->|"provides"| AP
+    C -.->|"provides"| E
+    C -.->|"provides"| F
+    C -.->|"provides"| G
+    C -.->|"provides"| H
+    C -.->|"provides"| I
+    C -.->|"provides"| J
+    C -.->|"provides"| AP
 
     %% Providers connect to ChatContainer
     E ==> K
@@ -3414,7 +3502,7 @@ graph LR
     AD -.->|"events"| AP
 
     %% Service connections
-    AD ==>|"manages"| C
+    AD ==>|"manages"| A
     AD ==>|"uses"| AE
     AD ==>|"uses"| AF
     AD ==>|"uses"| AG
@@ -3423,7 +3511,7 @@ graph LR
     AD -.->|"handles events from"| MessageActions
 
     %% ChatService exposed to consumers
-    AD <-.->|"exposes methods<br>window.PortalShell.AutopilotChat"| Consumer
+    AD <-.->|"imported and instantiated<br>by consumers"| Consumer
 
     %% Layout connections
     FS ==>|"uses"| Header

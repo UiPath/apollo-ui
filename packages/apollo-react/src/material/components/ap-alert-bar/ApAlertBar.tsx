@@ -61,16 +61,16 @@ const AlertBarContainer = styled('div')<{ status: AlertBarStatus }>(({ status })
     }
 
     return {
-        minHeight: token.Spacing.SpacingXxl,
+        minHeight: '40px',
         display: 'flex',
-        border: `${token.Border.BorderThickS} solid ${borderColor}`,
+        border: `1px solid ${borderColor}`,
         backgroundColor,
         '--icon-color': iconColor,
     };
 });
 
 const IconContainer = styled('div')({
-    padding: `${token.Spacing.SpacingS} ${token.Spacing.SpacingS} 0`,
+    padding: `11px ${token.Padding.PadL} 0`,
     color: 'var(--icon-color)',
 
     '& .MuiSvgIcon-root': {
@@ -80,13 +80,19 @@ const IconContainer = styled('div')({
 });
 
 const TextContent = styled('div')({
-    padding: `${token.Spacing.SpacingXs} ${token.Spacing.SpacingBase} ${token.Spacing.SpacingXs} 0`,
+    padding: `${token.Padding.PadXl} ${token.Spacing.SpacingL} ${token.Padding.PadXl} 0`,
     width: '100%',
 });
 
 const CancelButton = styled('div')({
-    padding: `${token.Spacing.SpacingXs} ${token.Spacing.SpacingS} ${token.Spacing.SpacingXs} 0`,
+    padding: `${token.Padding.PadL} ${token.Padding.PadL} ${token.Padding.PadL} 0`,
     height: token.Icon.IconM,
+
+    '& .MuiIconButton-root': {
+        padding: 0,
+        width: token.Icon.IconM,
+        height: token.Icon.IconM,
+    },
 });
 
 /**

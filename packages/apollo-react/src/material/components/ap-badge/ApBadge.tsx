@@ -49,13 +49,12 @@ const StyledBadge = styled(Chip, {
         backgroundColor,
         color: textColor,
         fontWeight: token.FontFamily.FontWeightSemibold,
-        height: badgeSize === 'small' ? token.Spacing.SpacingM : token.Spacing.SpacingL,
+        height: badgeSize === 'small' ? token.Spacing.SpacingBase : token.Spacing.SpacingL,
         fontSize: badgeSize === 'small' ? token.FontFamily.FontXsSize : token.FontFamily.FontMSize,
         lineHeight: badgeSize === 'small' ? token.FontFamily.FontSLineHeight : token.FontFamily.FontMLineHeight,
-        borderRadius: token.Border.BorderRadiusS,
 
         '.MuiChip-label': {
-            padding: badgeSize === 'small' ? `0 ${token.Spacing.SpacingXs}` : `${token.Spacing.SpacingMicro} ${token.Spacing.SpacingS}`,
+            padding: badgeSize === 'small' ? '0' : `${token.Spacing.SpacingMicro} ${token.Spacing.SpacingS}`,
         },
 
         '&.MuiChip-root:hover': {

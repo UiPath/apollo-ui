@@ -42,15 +42,14 @@ export const AutopilotChatIcon: React.FC<AutopilotChatIconProps> = ({
 
     // Handle custom icons - check legacy icons first (snake_case names)
     const legacyIconName = snakeToPascal(name);
-    
+
     const LegacyIconComponent = (LegacyIcons as any)[legacyIconName];
     if (LegacyIconComponent) {
         return (
             <SvgIcon
                 component={LegacyIconComponent}
                 sx={{
-                    width: size || token.Icon.IconM,
-                    height: size || token.Icon.IconM,
+                    fontSize: size || token.Icon.IconM,
                     color: color || 'currentColor',
                 }}
             />

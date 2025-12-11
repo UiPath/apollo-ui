@@ -65,7 +65,7 @@ export interface ApI18nProviderProps {
    */
   component: string;
   /**
-   * Locale to use for translations.
+   * Locale to use for translations. If not provided, will attempt to use locale from LocaleProvider context.
    * @default 'en'
    */
   locale?: SupportedLocale;
@@ -87,8 +87,8 @@ export interface ApI18nProviderProps {
  *
  * function MyComponent() {
  *   return (
- *     <ApI18nProvider component="material/components/ap-chat" locale="en">
- *       <ApAutopilotChatReact chatServiceInstance={chatService} />
+ *     <ApI18nProvider component="material/components/ap-chat">
+ *       <ApChat chatServiceInstance={chatService} />
  *     </ApI18nProvider>
  *   );
  * }
@@ -96,9 +96,11 @@ export interface ApI18nProviderProps {
  */
 export function ApI18nProvider({
   component,
-  locale = 'en',
+  locale: propLocale,
   children,
 }: ApI18nProviderProps) {
+  // Use prop locale if provided, otherwise default to 'en'
+  const locale = propLocale || 'en';
   const [isLoaded, setIsLoaded] = useState(false);
 
   const loadAndActivate = useCallback(async () => {

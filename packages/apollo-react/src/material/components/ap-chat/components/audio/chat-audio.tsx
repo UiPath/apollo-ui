@@ -272,9 +272,12 @@ export const AutopilotChatAudio = (props: AutopilotChatAudioProps) => {
                     disabled={disabled}
                     onPress={onTalkButtonPressed}
                     onRelease={onTalkButtonReleased}
-                    tooltip={audioInputMode === 'automatic-detection' ?
-                        audioInputTooltipAutoMap[audioInputState] :
-                        audioInputTooltipMap[audioInputState]}
+                    tooltip={
+                        audioInputMode === 'automatic-detection' ?
+                            audioInputTooltipAutoMap[audioInputState] :
+                            audioInputTooltipMap[audioInputState]
+                    }
+                    tooltipPlacement="top-start"
                     preventHover={true}
                     overrideColor={audioInputColorMap[audioInputState](theme)}
                     data-testid="autopilot-chat-audio-input"

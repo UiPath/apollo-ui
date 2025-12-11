@@ -307,9 +307,6 @@ interface AutopilotChatHeaderActionMenuProps {
     onClose: () => void;
 }
 
-// Account for this icon being last in case close is disabled and display it to the left of the default calculation
-const paperSlotProps = { paper: { style: { marginLeft: `-50px` } } };
-
 export const AutopilotChatHeaderActionMenu = React.memo(({
     actions,
     onActionClick,
@@ -333,14 +330,13 @@ export const AutopilotChatHeaderActionMenu = React.memo(({
             onClose={onClose}
             anchorOrigin={{
                 vertical: 'bottom',
-                horizontal: 'left',
+                horizontal: 'right',
             }}
             transformOrigin={{
                 vertical: 'top',
                 horizontal: 'right',
             }}
             variant="menu"
-            slotProps={paperSlotProps}
             MenuListProps={{ autoFocusItem: false }}
             TransitionProps={{ onEntered: handleTransitionEntered }}
         >

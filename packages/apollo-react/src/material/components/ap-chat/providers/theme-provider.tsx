@@ -1,6 +1,8 @@
-import React, { createContext, useContext, useMemo } from 'react';
+import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
 
-export type ApChatTheme = 'light' | 'light-hc' | 'dark' | 'dark-hc';
+import type { ApChatTheme } from '../service/ChatModel';
+import { AutopilotChatInternalEvent } from '../service/ChatModel';
+import { useChatService } from './chat-service.provider';
 
 interface ThemeContextValue {
     theme: ApChatTheme;
@@ -10,11 +12,27 @@ interface ThemeContextValue {
 const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
 
 export interface ThemeProviderProps {
-    theme?: ApChatTheme;
     children: React.ReactNode;
 }
 
-export const ThemeProvider: React.FC<ThemeProviderProps> = ({ theme = 'light', children }) => {
+export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
+    const chatService = useChatService();
+    const [theme, setTheme] = useState<ApChatTheme>(chatService.getTheme() as ApChatTheme);
+
+    // Subscribe to theme changes from service (service → provider)
+    useEffect(() => {
+        const unsubscribe = chatService.__internalService__.on(
+            AutopilotChatInternalEvent.SetTheme,
+            (newTheme: ApChatTheme) => {
+                setTheme(newTheme);
+            },
+        );
+
+        return () => {
+            unsubscribe();
+        };
+    }, [chatService]);
+
     const value = useMemo<ThemeContextValue>(() => ({
         theme,
         isDark: theme.startsWith('dark'),

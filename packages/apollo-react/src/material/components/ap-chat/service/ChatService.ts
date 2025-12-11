@@ -46,6 +46,8 @@ export class AutopilotChatService {
     private static _instances: Record<string, AutopilotChatService> = {};
     private _initialConfig: AutopilotChatConfiguration = {
       mode: AutopilotChatMode.Closed,
+      locale: 'en',
+      theme: 'light',
       allowedAttachments: {
           multiple: true,
           types: ACCEPTED_FILES,
@@ -92,6 +94,8 @@ export class AutopilotChatService {
     private _contentPartBuilders: Map<string, ContentPartBuilder> = new Map();
     private _customHeaderActions: AutopilotChatCustomHeaderAction[] = [];
     private _getChatModeKey: (instanceName?: string) => string = () => '';
+    private _locale: string = 'en';
+    private _theme: string = 'light';
 
     private constructor(instanceName: string) {
         this._instanceName = instanceName;
@@ -154,6 +158,10 @@ export class AutopilotChatService {
         this.setCustomHeaderActions = this.setCustomHeaderActions.bind(this);
         this.getCustomHeaderActions = this.getCustomHeaderActions.bind(this);
         this.setGetChatModeKey = this.setGetChatModeKey.bind(this);
+        this.setLocale = this.setLocale.bind(this);
+        this.getLocale = this.getLocale.bind(this);
+        this.setTheme = this.setTheme.bind(this);
+        this.getTheme = this.getTheme.bind(this);
     }
 
     static Instantiate({
@@ -266,6 +274,14 @@ export class AutopilotChatService {
             this._internalService.publish(AutopilotChatInternalEvent.SetTheming, config.theming);
         }
 
+        if (config.locale) {
+            this.setLocale(config.locale);
+        }
+
+        if (config.theme) {
+            this.setTheme(config.theme);
+        }
+
         messageRenderers.forEach(renderer => this.injectMessageRenderer(renderer));
     }
 
@@ -335,19 +351,6 @@ export class AutopilotChatService {
      * @param messageRenderers - The custom message renderers to inject
      */
     open(config?: Partial<AutopilotChatConfiguration>, messageRenderers: AutopilotChatMessageRenderer[] = []) {
-        if (this._config.embeddedContainer) {
-            this._config.embeddedContainer.innerHTML = '';
-            this._config.embeddedContainer = undefined;
-        }
-
-        if (config?.mode === AutopilotChatMode.Embedded && config?.embeddedContainer) {
-            const chatElement = document.createElement('ap-autopilot-chat');
-            (chatElement as any).chatServiceInstance = this;
-
-            config.embeddedContainer.innerHTML = '';
-            config.embeddedContainer.appendChild(chatElement);
-        }
-
         this.patchConfig(
             {
                 mode: AutopilotChatMode.SideBySide,
@@ -1041,6 +1044,44 @@ export class AutopilotChatService {
      */
     getCustomHeaderActions() {
         return this._customHeaderActions;
+    }
+
+    /**
+     * Sets the locale/language for the chat interface
+     *
+     * @param locale - The locale to set (e.g., 'en', 'de', 'es', 'fr', 'ja', etc.)
+     */
+    setLocale(locale: string) {
+        this._locale = locale;
+        this._internalService.publish(AutopilotChatInternalEvent.SetLocale, locale);
+    }
+
+    /**
+     * Gets the current locale/language of the chat interface
+     *
+     * @returns The current locale
+     */
+    getLocale() {
+        return this._locale;
+    }
+
+    /**
+     * Sets the theme variant for the chat interface
+     *
+     * @param theme - The theme to set ('light', 'dark', 'light-hc', 'dark-hc')
+     */
+    setTheme(theme: string) {
+        this._theme = theme;
+        this._internalService.publish(AutopilotChatInternalEvent.SetTheme, theme);
+    }
+
+    /**
+     * Gets the current theme of the chat interface
+     *
+     * @returns The current theme
+     */
+    getTheme() {
+        return this._theme;
     }
 
     /**

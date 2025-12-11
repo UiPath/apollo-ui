@@ -1,11 +1,20 @@
 import React from 'react';
 
-import { IconButton, IconButtonProps, styled } from '@mui/material';
+import {
+  IconButton,
+  IconButtonProps,
+  styled,
+} from '@mui/material';
 import token from '@uipath/apollo-core';
 
 const StyledIconButton = styled(IconButton)(() => ({
     '&.MuiIconButton-root': {
         borderRadius: token.Border.BorderRadiusM,
+
+        '&:hover, &:focus': {
+            color: 'var(--color-foreground-emp)',
+            backgroundColor: 'var(--color-icon-button-hover) !important',
+        },
     },
 }));
 

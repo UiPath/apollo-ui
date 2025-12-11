@@ -15,8 +15,8 @@ module.exports = {
         'apollo-angular',
         'apollo-utils',
         'apollo-wind',
-        'ap-data-grid',
         'ap-autopilot-chat',
+        'ap-data-grid',
 
         // Apps scopes
         'apollo-vertex',

@@ -1,3 +1,3 @@
 export * from './service';
 export * from './ap-chat';
-export type { ApChatTheme } from './providers/theme-provider';
+export type { SupportedLocale } from '../../../i18n';

@@ -1,109 +1,182 @@
-# ap-autopilot-chat Component
+# ApChat Component
 
 ## Overview
 
-The `ap-autopilot-chat` component is a comprehensive AI chat interface built with a Stencil web component wrapper around a React implementation. It provides a full-featured chat experience with support for streaming, attachments, citations, custom message renderers, and extensive configuration options.
+The `ApChat` component is a comprehensive AI chat interface built as a pure React component. It provides a full-featured chat experience with support for streaming, attachments, citations, custom message renderers, and extensive configuration options.
 
 ## Architecture
 
 ```
-Stencil Web Component (ap-autopilot-chat.tsx)
-    ↓
-React Adapter (PortalShellStencilReactAdapter)
-    ↓
-React Component (ap-autopilot-chat.react.tsx)
+ApChat React Component (ap-chat.tsx)
     ↓
 Provider Layer (state management via React Context)
     ↓
-UI Components (layout, header, messages, input, etc.)
+Layout Components (FullScreenLayout / StandardLayout)
+    ↓
+UI Components (header, messages, input, history, settings, etc.)
+    ↓
+ChatService (service layer for state & event management)
 ```
 
 **Why this pattern?**
-- Stencil provides framework-agnostic web component API
-- React handles complex state management and UI logic
-- Adapter bridges Stencil lifecycle to React rendering
-
-## Code Location
-
-**Important**: The service layer and state management live in a separate package:
-
-```
-@uipath/portal-shell-util/src/autopilot/
-├── ChatService.ts              # Main chat service API
-├── ChatInternalService.ts      # Internal state management
-├── EventBus.ts                 # Event pub/sub system
-├── LocalHistory.ts             # IndexedDB history storage
-├── StorageService.ts           # Browser storage wrapper
-└── ContentPartBuilder.ts       # Citation builder utilities
-```
-
-This separation allows the chat service to be used independently of the UI component.
+- React handles all UI rendering and state management
+- Context providers isolate concerns and prevent prop drilling
+- ChatService provides a clean API for external control
+- MUI styled components ensure theme compatibility
 
 ## File Structure
 
 ```
-ap-autopilot-chat/
-├── ap-autopilot-chat.tsx           # Stencil wrapper (entry point)
-├── ap-autopilot-chat.react.tsx     # React root component
-├── ap-autopilot-chat.scss          # Minimal base styles
-├── DOCS.md                         # Complete API documentation
+ap-chat/
+├── ap-chat.tsx                 # Main React component (entry point)
+├── index.ts                    # Public exports
+├── DOCS.md                     # Complete API documentation
+├── CLAUDE.md                   # This file - development guide
+├── readme.md                   # Component overview
 │
-├── providers/                      # React Context providers for state
-│   ├── chat-service.provider.react.tsx      # ChatService access
-│   ├── chat-state-provider.react.tsx        # Chat mode, config state
-│   ├── chat-width-provider.react.tsx        # Resizable width state
-│   ├── chat-scroll-provider.react.tsx       # Auto-scroll behavior
-│   ├── attachements-provider.react.tsx      # File attachments state
-│   ├── loading-provider.react.tsx           # Loading indicators
-│   ├── error-provider.react.tsx             # Error messages
-│   ├── streaming-provider.react.tsx         # Streaming response state
-│   ├── model-picker-provider.react.tsx      # Model selection state
-│   └── agent-mode-picker-provider.react.tsx # Agent mode state
+├── service/                    # Chat service layer
+│   ├── ChatService.ts          # Main chat service API
+│   ├── ChatInternalService.ts  # Internal state management
+│   ├── EventBus.ts             # Event pub/sub system
+│   ├── LocalHistory.ts         # IndexedDB history storage
+│   ├── StorageService.ts       # Browser storage wrapper
+│   ├── ContentPartBuilder.ts   # Citation builder utilities
+│   ├── ChatModel.ts            # Type definitions
+│   ├── ChatConstants.ts        # Constants
+│   └── index.ts                # Service exports
 │
-├── components/                     # UI components
-│   ├── layout/                     # Layout containers
-│   │   ├── full-screen-layout.react.tsx
-│   │   └── standard-layout.react.tsx
-│   ├── header/                     # Header components
-│   │   ├── chat-header.react.tsx
-│   │   └── chat-header-actions.react.tsx
-│   ├── message/                    # Message display
-│   │   ├── message-container.react.tsx
-│   │   ├── message-content.react.tsx
-│   │   ├── message-actions.react.tsx
-│   │   ├── markdown-renderer.react.tsx
-│   │   └── ... (citations, loading, etc.)
-│   ├── input/                      # Input components
-│   │   ├── chat-input.react.tsx
-│   │   ├── chat-prompt-box.react.tsx
-│   │   ├── chat-suggestions.react.tsx
-│   │   └── ... (attachments, voice, etc.)
-│   ├── history/                    # History panel
-│   │   ├── chat-history-panel.react.tsx
-│   │   └── chat-history-item.react.tsx
-│   ├── settings/                   # Settings panel
-│   │   └── chat-settings.react.tsx
-│   ├── common/                     # Shared components
-│   │   ├── drag-handle.react.tsx
-│   │   ├── loading-indicator.react.tsx
-│   │   └── ... (buttons, icons, etc.)
-│   └── dropzone/                   # File drop zone
-│       └── dropzone.react.tsx
+├── providers/                  # React Context providers for state
+│   ├── chat-service.provider.tsx       # ChatService access
+│   ├── chat-state-provider.tsx         # Chat mode, config state
+│   ├── chat-width-provider.tsx         # Resizable width state
+│   ├── chat-scroll-provider.tsx        # Auto-scroll behavior
+│   ├── attachements-provider.tsx       # File attachments state
+│   ├── loading-provider.tsx            # Loading indicators
+│   ├── error-provider.tsx              # Error messages
+│   ├── streaming-provider.tsx          # Streaming response state
+│   ├── picker-provider.tsx             # Model/agent mode picker state
+│   ├── locale-provider.tsx             # Internationalization
+│   └── theme-provider.tsx              # Theme configuration
 │
-├── hooks/                          # React hooks
-│   └── use-chat-service.ts
+├── components/                 # UI components
+│   ├── layout/                 # Layout containers
+│   │   ├── full-screen-layout.tsx
+│   │   ├── standard-layout.tsx
+│   │   └── index.ts
+│   ├── header/                 # Header components
+│   │   ├── chat-header.tsx
+│   │   └── header-actions.tsx
+│   ├── message/                # Message display
+│   │   ├── chat-message.tsx
+│   │   ├── chat-message-content.tsx
+│   │   ├── chat-scroll-container.tsx
+│   │   ├── chat-scroll-to-bottom.tsx
+│   │   ├── actions/            # Message actions (copy, feedback)
+│   │   ├── loader/             # Loading states
+│   │   ├── markdown/           # Markdown rendering
+│   │   ├── suggestions/        # Suggestion chips
+│   │   └── first-run-experience/
+│   ├── input/                  # Input components
+│   │   ├── chat-input.tsx
+│   │   ├── chat-input-attachments.tsx
+│   │   ├── chat-input-footer.tsx
+│   │   ├── chat-input-model-picker.tsx
+│   │   └── chat-input-agent-mode-selector.tsx
+│   ├── history/                # History panel
+│   │   ├── chat-history-panel.tsx
+│   │   ├── chat-history-group.tsx
+│   │   └── chat-history-item.tsx
+│   ├── settings/               # Settings panel
+│   │   ├── chat-settings.tsx
+│   │   └── chat-settings-header.tsx
+│   ├── common/                 # Shared components
+│   │   ├── drag-handle.tsx
+│   │   ├── icon-button.tsx
+│   │   ├── icon.tsx
+│   │   ├── action-button.tsx
+│   │   ├── tooltip.tsx
+│   │   └── ...
+│   ├── dropzone/               # File drop zone
+│   │   └── dropzone.tsx
+│   └── audio/                  # Audio I/O
+│       ├── chat-audio-input.ts
+│       └── chat-audio-output.ts
 │
-├── utils/                          # Utility functions
-│   ├── message-utils.ts
-│   └── ...
+├── hooks/                      # React hooks
+│   └── use-is-streaming-message.tsx
 │
-├── assets/                         # Static assets
-│   └── ... (images, icons)
+├── utils/                      # Utility functions
+│   ├── dynamic-padding.ts
+│   └── file-reader.ts
 │
-└── stories/                        # Storybook stories
-    ├── ap-autopilot-chat.stories.js
-    ├── base.js                     # Shared story utilities
-    └── ... (individual feature stories)
+├── assets/                     # Static assets
+│   ├── autopilot-logo.svg
+│   ├── default-file.svg
+│   ├── word-file.svg
+│   ├── ppt-file.svg
+│   └── legacy-ap-icon/         # Legacy icon set
+│
+└── locales/                    # Internationalization
+    ├── en.json
+    ├── de.json
+    ├── es.json
+    ├── es-MX.json
+    ├── fr.json
+    ├── ja.json
+    ├── ko.json
+    ├── pt.json
+    ├── pt-BR.json
+    ├── ru.json
+    ├── tr.json
+    ├── zh-CN.json
+    └── zh-TW.json
+```
+
+## Usage
+
+### Basic Setup
+
+```typescript
+import { ApChat, AutopilotChatService } from '@uipath/apollo-react/material/components';
+
+function MyApp() {
+  const [chatService] = useState(() => new AutopilotChatService());
+
+  useEffect(() => {
+    chatService.initialize({
+      // Configuration options
+    });
+
+    // Event listeners
+    const unsubscribe = chatService.on('Request', (data) => {
+      console.log('User sent:', data);
+      // Handle request, send response
+    });
+
+    return () => {
+      unsubscribe();
+      chatService.close();
+    };
+  }, [chatService]);
+
+  return (
+    <ApChat
+      service={chatService}
+      locale="en"
+      theme="light"
+    />
+  );
+}
+```
+
+### Component Props
+
+```typescript
+interface ApChatProps {
+  service: AutopilotChatService;  // Chat service instance (required)
+  locale?: SupportedLocale;       // 'en' | 'de' | 'es' | 'fr' | 'ja' | etc.
+  theme?: ApChatTheme;            // 'light' | 'dark' | 'light-hc' | 'dark-hc'
+}
 ```
 
 ## Styling Patterns
@@ -117,177 +190,77 @@ import token from '@uipath/apollo-core';
 const MyComponent = styled('div')(({ theme }) => ({
     // Use Apollo Core tokens for spacing, borders, typography
     padding: token.Spacing.SpacingM,
-    border: `${token.Border.BorderThickS} solid ${theme.palette.semantic.colorBorderDeEmp}`,
+    border: `${token.Border.BorderThickS} solid var(--color-border-de-emp)`,
 
-    // Use theme.palette.semantic for colors (ensures theme compatibility)
-    backgroundColor: theme.palette.semantic.colorBackgroundDefault,
-    color: theme.palette.semantic.colorTextDefault,
+    // Use CSS variables for theme-aware colors
+    backgroundColor: 'var(--color-background)',
+    color: 'var(--color-foreground-emp)',
 
     // Nested selectors and pseudo-classes
     '&:hover': {
-        backgroundColor: theme.palette.semantic.colorBackgroundHover,
+        backgroundColor: 'var(--color-background-hover)',
     },
 }));
 ```
 
 **Key principles:**
-- Always import `token` from `@uipath/apollo-core` (not lib-esm)
-- Use `theme.palette.semantic.*` for all colors (never hardcode colors)
+- Always import `token` from `@uipath/apollo-core`
+- Use CSS variables for all colors (e.g., `var(--color-background)`)
 - Use `token.*` for spacing, borders, shadows, typography sizes
-- MUI's `styled` API over CSS/SCSS for type safety
+- MUI's `styled` API for type safety and theme integration
 
 ## Development Workflow
 
 ### Adding a New Feature
 
-1. **Add service layer changes** to `@uipath/portal-shell-util/src/autopilot/` if needed (add tests, avoid breaking changes)
+1. **Update service layer** in `service/` directory if needed
 2. **Create/modify React components** in `components/` directory
 3. **Update providers** if you need new state management
-4. **Test locally** using the test playground (see below)
-5. **Add Storybook story** for documentation and visual testing
-6. **Update DOCS.md** if adding public API methods
+4. **Test locally** using the React playground (see below)
+5. **Update DOCS.md** if adding public API methods
+6. **Add to showcase** for visual testing
 
 ### Testing Your Changes
 
-Use the interactive test playground at:
+Use the interactive React playground at:
 ```
-packages/portal-shell/src/singlecomponents/ap-autopilot-chat.html
+apps/react-playground/src/pages/ApChatShowcase.tsx
 ```
 
-This HTML file demonstrates all chat features with interactive buttons. To test:
+This is the primary development and testing environment. To test:
 
 ```bash
-# Start the portal-shell dev server
-yarn start:shell
+# Start the React playground dev server
+cd apps/react-playground
+pnpm dev
 
 # Open in browser
-# http://localhost:3333/singlecomponents/ap-autopilot-chat.html
+# http://localhost:5173 (or the port shown in terminal)
+# Navigate to "Components" → "Chat"
 ```
 
-The test page provides buttons for:
-- Opening/closing chat in different modes
+The showcase page provides interactive controls for:
+- Opening/closing chat in different modes (side-by-side, full-screen, embedded)
 - Sending requests/responses
 - Testing streaming and citations
 - Managing attachments
-- Configuring features
+- Configuring features via toggles
 - Testing error states
+- Testing model and agent mode selection
+- Testing custom header actions
+- Testing localization (13+ languages)
 
-**Add your test case** by creating a button and event handler in the HTML file.
+**Add your test case** by creating a button and handler in the showcase file.
 
-### Updating Storybook
+### Building for Production
 
-Stories are located in `stories/` directory. The bulk of Storybook setup happens in `stories/helpers.js`, which provides utility functions for initializing and configuring chat stories.
-
-#### Key Storybook Files
-
-- `ap-autopilot-chat.stories.js` - Main stories export
-- `base.js` - Shared utilities and setup code
-- `helpers.js` - **Core story utilities (where the bulk happens)**
-- Individual `.story.js` files - Feature-specific stories
-
-**Note**: The `helpers.js` file should eventually be rewritten for better maintainability.
-
-#### Using helpers.js Functions
-
-The `helpers.js` file provides several key functions:
-
-**1. `initializeChatService(args, container, storyId, canvasElement)`**
-
-Main function for initializing a chat service instance in stories. Handles:
-- Creating the chat element
-- Setting up event listeners
-- Initializing the chat service with proper configuration
-- Managing demo modes
-
-```javascript
-import { initializeChatService } from './helpers';
-
-export const MyStory = {
-    play: async ({ args, canvasElement }) => {
-        const chatService = await initializeChatService(
-            args,
-            'my-story-container',
-            'my-story-id',
-            canvasElement
-        );
-    },
-};
-```
-
-**2. `setupDemoMode(demoMode, chatService)`**
-
-Sets up pre-configured demo scenarios. Available modes:
-- `'basic'` - Simple request/response
-- `'streaming'` - Streaming response demo
-- `'attachments'` - File attachments demo
-- `'async-attachments'` - Async attachment handling
-- `'history'` - Chat history demo
-- `'interactive'` - Interactive suggestions
-- `'citations'` - Citations in messages
-- `'streaming-citations'` - Streaming with citations
-
-```javascript
-setupDemoMode('streaming-citations', chatService);
-```
-
-**3. `setupFullscreenHandling(chatService, storyId, canvasElement)`**
-
-Handles fullscreen mode changes in Storybook. Call this to enable proper fullscreen behavior:
-
-```javascript
-setupFullscreenHandling(chatService, 'my-story-id', canvasElement);
-```
-
-**4. `createStandardPlay(storyId)`**
-
-Helper function that creates a standard play function for stories:
-
-```javascript
-export const MyStory = {
-    play: createStandardPlay('my-story-id'),
-};
-```
-
-**5. `getStoryDocs(storyId)`**
-
-Returns pre-written documentation strings for stories. Use this to maintain consistent story descriptions.
-
-#### Creating a New Story
-
-Example using the helper functions:
-
-```javascript
-// stories/MyFeature.story.js
-import { initializeChatService, setupDemoMode } from './helpers';
-
-export const MyFeature = {
-    args: {
-        mode: 'side-by-side',
-        demoMode: 'basic',
-        // ... your configuration
-    },
-    render: () => {
-        return document.createElement('ap-autopilot-chat');
-    },
-    play: async ({ args, canvasElement }) => {
-        const chatService = await initializeChatService(
-            args,
-            'my-feature-container',
-            'my-feature-story',
-            canvasElement
-        );
-
-        // Optional: Set up demo mode
-        if (args.demoMode) {
-            setupDemoMode(args.demoMode, chatService);
-        }
-    },
-};
-```
-
-To run Storybook:
 ```bash
-yarn storybook:shell
+# From the monorepo root
+pnpm build
+
+# Or specifically for apollo-react
+cd packages/apollo-react
+pnpm build
 ```
 
 ## Provider Pattern
@@ -296,7 +269,7 @@ The component uses React Context providers for state management. Each provider m
 
 ```typescript
 // Example: Using a provider in a component
-import { useChatState } from '../../providers/chat-state-provider.react';
+import { useChatState } from '../../providers/chat-state-provider';
 
 const MyComponent = () => {
     const { chatMode, disabledFeatures } = useChatState();
@@ -307,6 +280,19 @@ const MyComponent = () => {
 };
 ```
 
+**Available Providers:**
+- `AutopilotChatServiceProvider` - ChatService access
+- `AutopilotChatStateProvider` - Chat mode, config state
+- `AutopilotChatWidthProvider` - Resizable width state
+- `AutopilotChatScrollProvider` - Auto-scroll behavior
+- `AutopilotAttachmentsProvider` - File attachments state
+- `AutopilotLoadingProvider` - Loading indicators
+- `AutopilotErrorProvider` - Error messages
+- `AutopilotStreamingProvider` - Streaming response state
+- `AutopilotPickerProvider` - Model/agent mode picker state
+- `LocaleProvider` - Internationalization
+- `ThemeProvider` - Theme configuration
+
 **When to add a new provider:**
 - State is needed by multiple components at different levels
 - State updates trigger re-renders in specific component subtrees
@@ -316,11 +302,11 @@ const MyComponent = () => {
 
 ### Adding a New Message Renderer
 
-Built-in renderers are defined in the `APOLLO_MESSAGE_RENDERERS` array at `components/message/chat-message-content.react.tsx:33-65`.
+Built-in renderers are defined in the `APOLLO_MESSAGE_RENDERERS` array at `components/message/chat-message-content.tsx`.
 
 To add a custom renderer:
 1. Create your renderer component
-2. Register it using `ChatService.injectMessageRenderer('your-renderer-name', YourComponent)`
+2. Register it using `chatService.injectMessageRenderer('your-renderer-name', YourComponent)`
 3. Use by setting `widget: 'your-renderer-name'` on messages
 
 Or add a built-in renderer by adding to the `APOLLO_MESSAGE_RENDERERS` array.
@@ -329,41 +315,46 @@ Or add a built-in renderer by adding to the `APOLLO_MESSAGE_RENDERERS` array.
 
 1. Define action in `AutopilotChatMessageAction` type
 2. Add to message via `actions` array
-3. Handle event in `ChatService.on('your-event-name', handler)`
+3. Handle event in `chatService.on('your-event-name', handler)`
 
 ### Modifying Chat Layout
 
-1. Edit `components/layout/full-screen-layout.react.tsx` or `standard-layout.react.tsx`
+1. Edit `components/layout/full-screen-layout.tsx` or `standard-layout.tsx`
 2. Update providers if new state is needed
 3. Test in all three modes: side-by-side, full-screen, embedded
 
-### Working with Action Menus
+### Working with Pickers and Menus
 
-The chat interface has three types of action menus:
+The chat interface has several picker/menu components:
 
-**Selection Menus (use DropdownPicker):**
-- **Model Picker**: Input section (bottom left) - uses `chat-input-model-picker.react.tsx`
-- **Agent Mode Selector**: Input section (bottom left) - uses `chat-input-agent-mode-selector.react.tsx`
+**Selection Pickers (bottom left of input):**
+- **Model Picker**: `chat-input-model-picker.tsx` - Select AI model
+- **Agent Mode Selector**: `chat-input-agent-mode-selector.tsx` - Select agent mode
 
-**Action Menus (use dedicated menu components):**
-- **Custom Header Actions**: Header section (top right, "..." button) - uses `header-action-menu.react.tsx`
+**Action Menus (header):**
+- **Custom Header Actions**: `header-actions.tsx` - Custom dropdown actions
 
 **Key Architecture:**
-- Dropdown pickers are for **selection** with persistent state
-- Action menus are for **triggering actions/commands** without state
-- All three share the unified `picker-provider.react.tsx` for state management
-- Custom header actions use `AutopilotChatHeaderActionMenu` component (not DropdownPicker)
+- Pickers are for **selection** with persistent state
+- Action menus are for **triggering actions/commands**
+- All share the unified `picker-provider.tsx` for state management
 
 **Implementation pattern:**
 1. Add service methods to `ChatService.ts` (set/get pattern)
 2. Add event types to `AutopilotChatEvent` enum
 3. Create/update React component in appropriate directory
-4. Wire into unified picker provider if state is needed
+4. Wire into picker provider if state is needed
 5. **ALWAYS update documentation** (see below)
+
+### Adding Internationalization
+
+1. Add translations to all locale files in `locales/` directory
+2. Use the `useLocale()` hook to access translations in components
+3. Test with multiple locales in the React playground
 
 ## Documentation Requirements
 
-**CRITICAL**: Whenever you add or modify a feature, you **MUST** update documentation and playgrounds in FOUR places:
+**CRITICAL**: Whenever you add or modify a feature, you **MUST** update documentation in THREE places:
 
 ### 1. DOCS.md (Consumer API Documentation)
 **Location**: `packages/apollo-react/src/material/components/ap-chat/DOCS.md`
@@ -381,43 +372,25 @@ The chat interface has three types of action menus:
 - Type definitions with examples
 - Configuration options
 
-### 2. HTML Test Playground (Default Development Playground)
-**Location**: `packages/portal-shell/src/singlecomponents/ap-autopilot-chat.html`
+### 2. React Playground Showcase (Development Testing)
+**Location**: `apps/react-playground/src/pages/ApChatShowcase.tsx`
 
-**CRITICAL**: This is the **default playground** that must have ALL features available for testing.
+**CRITICAL**: This is the **primary development and testing environment** that must have ALL features available for testing.
 
 **What to update:**
-- Add button for the new feature in the appropriate section
+- Add button/control for the new feature in the appropriate section
 - Add event handler that demonstrates how to use the feature
 - Include example data/configuration
 - Add console logging to show events firing
-- Test the feature works in the playground before committing
+- Test the feature works in the showcase before committing
 
 **Purpose:**
 - Primary development and testing environment
 - Must showcase all available features
 - Used for rapid iteration during development
-- Should be the first place to test changes
+- Visual testing and debugging
 
-**How to use:**
-```bash
-yarn start:shell
-# Open http://localhost:3333/singlecomponents/ap-autopilot-chat.html
-```
-
-### 3. Storybook Stories
-**Location**: `packages/apollo-react/src/material/components/ap-chat/stories/`
-
-**What to update:**
-- **FeaturePlayground.story.js**: Add feature with interactive controls (this is the Storybook equivalent of the HTML playground - must have ALL features)
-- Create dedicated story file if feature warrants it (e.g., `CustomMenus.story.js`)
-- Update `helpers.js` with documentation for new stories (use `getStoryDocs()`)
-- Include code examples in the story documentation
-- Stories serve as **both documentation and visual regression tests**
-
-**Note**: The bulk of Storybook setup happens in `helpers.js` - always update it when adding stories
-
-### 4. This CLAUDE.md File
+### 3. This CLAUDE.md File
 **What to update:**
 - Add to "Common Tasks" section if it's a frequent development pattern
 - Update architecture notes if component structure changes
@@ -427,14 +400,115 @@ yarn start:shell
 ## Key References
 
 - **API Documentation**: See `DOCS.md` for complete chat service API
-- **Chat Service**: `@uipath/portal-shell-util/src/autopilot/ChatService.ts`
+- **Chat Service**: `service/ChatService.ts` - Main API
 - **Apollo Core Tokens**: `@uipath/apollo-core` package
-- **Global Access**: `window.PortalShell.AutopilotChat`
+- **Type Definitions**: `service/ChatModel.ts`
 
 ## Important Notes
 
-- When modifying `portal-shell-util`: always add tests and avoid breaking changes (it's a shared dependency)
 - Always test in all three chat modes: side-by-side, full-screen, and embedded
-- Use the test playground HTML file for rapid iteration
+- Use the React playground for rapid iteration and testing
 - Follow the existing styled component patterns for consistency
+- Test with multiple locales to ensure i18n compatibility
+- Test with both light and dark themes (including high contrast variants)
 - **Never skip documentation updates** - outdated docs are worse than no docs
+
+## Theming
+
+The component supports four theme variants:
+- `light` - Standard light theme
+- `dark` - Standard dark theme
+- `light-hc` - Light theme with high contrast
+- `dark-hc` - Dark theme with high contrast
+
+Themes are applied via the `theme` prop and use Apollo design system CSS variables.
+
+## Chat Modes
+
+Three chat modes are supported:
+- `SideBySide` - Resizable panel on the right side of the screen
+- `FullScreen` - Full-screen overlay
+- `Embedded` - Embedded in a container (takes full width/height of parent)
+
+Set via `chatService.setChatMode(mode)`.
+
+## Feature Toggles
+
+Features can be disabled via `chatService.setDisabledFeatures()`:
+- `history` - Chat history panel
+- `settings` - Settings panel
+- `attachments` - File attachments
+- `audio` - Voice input/output
+- `htmlPreview` - HTML preview in messages
+- `headerSeparator` - Header separator line
+- `fullHeight` - Full viewport height
+- `resize` - Resizable width
+- `close` - Close button
+- `feedback` - Feedback actions (thumbs up/down)
+- `copy` - Copy message action
+
+## Best Practices
+
+### DO's
+
+✅ **Use CSS variables** for all colors (theme-aware)
+✅ **Use Apollo tokens** for spacing, borders, typography
+✅ **Test all chat modes** (side-by-side, full-screen, embedded)
+✅ **Test all themes** (light, dark, high contrast variants)
+✅ **Test internationalization** with multiple locales
+✅ **Update DOCS.md** when adding public APIs
+✅ **Update showcase** when adding features
+✅ **Follow provider pattern** for state management
+✅ **Use MUI styled API** for styled components
+✅ **Handle cleanup** in useEffect hooks (unsubscribe from events)
+
+### DON'Ts
+
+❌ **Don't hardcode colors** - use CSS variables
+❌ **Don't skip documentation** - update DOCS.md and showcase
+❌ **Don't forget cleanup** - always unsubscribe from events
+❌ **Don't use inline styles** - use styled components
+❌ **Don't bypass providers** - use context for shared state
+❌ **Don't forget theme compatibility** - test light and dark
+❌ **Don't forget i18n** - add translations for new text
+❌ **Don't mutate service state** - use service methods only
+
+## Troubleshooting
+
+### Issue: Chat not rendering
+- Check that `chatService.initialize()` was called
+- Check that `chatService.open()` was called
+- Check console for errors
+
+### Issue: Events not firing
+- Check that you subscribed before triggering the action
+- Check that you're using the correct event name
+- Check that you didn't forget to call `unsubscribe()` in cleanup
+
+### Issue: Styles not applying
+- Check that Apollo CSS variables are imported in your app
+- Check that theme prop is set correctly
+- Check browser console for CSS errors
+
+### Issue: Translations not working
+- Check that locale prop matches available locales
+- Check that locale files are included in build
+- Check that `LocaleProvider` is in the component tree
+
+## Contributing
+
+When contributing new features:
+
+1. Follow the existing patterns and conventions
+2. Update documentation in all three places (DOCS.md, showcase, CLAUDE.md)
+3. Test thoroughly in all modes and themes
+4. Add translations for all supported locales
+5. Write clean, maintainable code with proper types
+6. Follow the styling patterns (CSS variables, Apollo tokens, MUI styled)
+7. Ensure proper cleanup in React components
+
+---
+
+**Last Updated:** 2025-01-20
+
+For questions or issues, please refer to DOCS.md or open an issue in the repository.

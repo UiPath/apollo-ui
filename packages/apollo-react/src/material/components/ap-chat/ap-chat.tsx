@@ -1,4 +1,5 @@
 import React from 'react';
+import { createPortal } from 'react-dom';
 
 import { styled } from '@mui/material/styles';
 import token from '@uipath/apollo-core';
@@ -26,10 +27,16 @@ import {
 } from './providers/chat-width-provider';
 import { AutopilotErrorProvider } from './providers/error-provider';
 import { AutopilotLoadingProvider } from './providers/loading-provider';
+import {
+  LocaleProvider,
+  useLocale,
+} from './providers/locale-provider';
 import { AutopilotPickerProvider } from './providers/picker-provider';
 import { AutopilotStreamingProvider } from './providers/streaming-provider';
-import { ThemeProvider, ApChatTheme } from './providers/theme-provider';
+import { ThemeProvider } from './providers/theme-provider';
 import {
+  ApChatTheme,
+  AutopilotChatEvent,
   AutopilotChatMode,
   AutopilotChatService,
   CHAT_CONTAINER_ANIMATION_DURATION,
@@ -57,6 +64,17 @@ const ChatContainer = styled('div')<{ shouldAnimate: boolean; mode: AutopilotCha
         border: 'none',
     }),
 }));
+
+// Wrapper that connects ApI18nProvider to LocaleProvider context
+const ApI18nWithLocale = React.memo(({ children }: { children: React.ReactNode }) => {
+    const { locale } = useLocale();
+
+    return (
+        <ApI18nProvider component="material/components/ap-chat" locale={locale}>
+            {children}
+        </ApI18nProvider>
+    );
+});
 
 const AutopilotChatContent = React.memo(() => {
     const {
@@ -104,7 +122,7 @@ const AutopilotChatContent = React.memo(() => {
     );
 });
 
-export interface ApAutopilotChatReactProps {
+export interface ApChatProps {
     /**
      * Chat service instance
      */
@@ -121,36 +139,83 @@ export interface ApAutopilotChatReactProps {
     theme?: ApChatTheme;
 }
 
-export function ApAutopilotChatReact({
+export function ApChat({
     chatServiceInstance,
-    locale = 'en',
-    theme = 'light',
-}: ApAutopilotChatReactProps) {
-    return (
-        <ApI18nProvider component="material/components/ap-chat" locale={locale}>
-            <ThemeProvider theme={theme}>
-                <AutopilotChatServiceProvider chatServiceInstance={chatServiceInstance}>
-                    <AutopilotStreamingProvider>
-                        <AutopilotChatScrollProvider>
-                            <AutopilotChatStateProvider>
-                                <AutopilotErrorProvider>
-                                    <AutopilotLoadingProvider>
-                                        <AutopilotAttachmentsProvider>
-                                            <AutopilotPickerProvider>
-                                                <AutopilotChatWidthProvider>
-                                                    <AutopilotChatDropzone>
-                                                        <AutopilotChatContent />
-                                                    </AutopilotChatDropzone>
-                                                </AutopilotChatWidthProvider>
-                                            </AutopilotPickerProvider>
-                                        </AutopilotAttachmentsProvider>
-                                    </AutopilotLoadingProvider>
-                                </AutopilotErrorProvider>
-                            </AutopilotChatStateProvider>
-                        </AutopilotChatScrollProvider>
-                    </AutopilotStreamingProvider>
-                </AutopilotChatServiceProvider>
+    locale: initialLocale = 'en',
+    theme: initialTheme = 'light',
+}: ApChatProps) {
+    const [embeddedContainer, setEmbeddedContainer] = React.useState<HTMLElement | null>(null);
+
+    // Sync props to service (one-way: props → service → providers → components)
+    React.useEffect(() => {
+        chatServiceInstance.setLocale(initialLocale);
+    }, [initialLocale, chatServiceInstance]);
+
+    React.useEffect(() => {
+        chatServiceInstance.setTheme(initialTheme);
+    }, [initialTheme, chatServiceInstance]);
+
+    // Check for embedded container from service configuration
+    React.useEffect(() => {
+        const updateEmbeddedContainer = () => {
+            const config = chatServiceInstance.getConfig();
+            if (config.mode === AutopilotChatMode.Embedded && config.embeddedContainer) {
+                setEmbeddedContainer(config.embeddedContainer);
+            } else {
+                setEmbeddedContainer(null);
+            }
+        };
+
+        // Check initial config
+        updateEmbeddedContainer();
+
+        // Listen for mode changes
+        const unsubscribe = chatServiceInstance.on(
+            AutopilotChatEvent.ModeChange,
+            () => {
+                updateEmbeddedContainer();
+            },
+        );
+
+        return () => {
+            unsubscribe();
+        };
+    }, [chatServiceInstance]);
+
+    const chatContent = (
+        <AutopilotChatServiceProvider chatServiceInstance={chatServiceInstance}>
+            <ThemeProvider>
+                <LocaleProvider>
+                    <ApI18nWithLocale>
+                        <AutopilotStreamingProvider>
+                            <AutopilotChatScrollProvider>
+                                <AutopilotChatStateProvider>
+                                    <AutopilotErrorProvider>
+                                        <AutopilotLoadingProvider>
+                                            <AutopilotAttachmentsProvider>
+                                                <AutopilotPickerProvider>
+                                                    <AutopilotChatWidthProvider>
+                                                        <AutopilotChatDropzone>
+                                                            <AutopilotChatContent />
+                                                        </AutopilotChatDropzone>
+                                                    </AutopilotChatWidthProvider>
+                                                </AutopilotPickerProvider>
+                                            </AutopilotAttachmentsProvider>
+                                        </AutopilotLoadingProvider>
+                                    </AutopilotErrorProvider>
+                                </AutopilotChatStateProvider>
+                            </AutopilotChatScrollProvider>
+                        </AutopilotStreamingProvider>
+                    </ApI18nWithLocale>
+                </LocaleProvider>
             </ThemeProvider>
-        </ApI18nProvider>
+        </AutopilotChatServiceProvider>
     );
+
+    // Use portal for embedded mode with embeddedContainer
+    if (embeddedContainer) {
+        return createPortal(chatContent, embeddedContainer);
+    }
+
+    return chatContent;
 }

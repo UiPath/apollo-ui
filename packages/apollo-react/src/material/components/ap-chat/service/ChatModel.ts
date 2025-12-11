@@ -1,4 +1,7 @@
 import type { FontVariantToken } from '@uipath/apollo-core';
+import type { SupportedLocale } from '../../../../i18n';
+
+export type ApChatTheme = 'light' | 'light-hc' | 'dark' | 'dark-hc';
 
 export enum AutopilotChatMode {
     Closed = 'closed',
@@ -303,6 +306,8 @@ export enum AutopilotChatInternalEvent {
     SetAttachmentsLoading = 'setAttachmentsLoading',
     SetInputFocused = 'setInputFocused',
     SetTheming = 'setTheming',
+    SetLocale = 'setLocale',
+    SetTheme = 'setTheme',
     SetIsLoadingMoreHistory = 'setIsLoadingMoreHistory',
     ShouldShowLoadingMoreHistory = 'shouldShowLoadingMoreHistory',
     AppendOlderHistory = 'appendOlderHistory',
@@ -463,6 +468,8 @@ export enum AutopilotChatPreHookAction {
  *
  * @property mode - The mode of the chat
  * @property embeddedContainer - The container to embed the chat in
+ * @property locale - The locale/language for the chat interface (e.g., 'en', 'de', 'es', 'fr', 'ja', etc.)
+ * @property theme - The theme variant for the chat ('light', 'dark', 'light-hc', 'dark-hc')
  * @property disabledFeatures - The disabled features of the chat
  * @property overrideLabels - The override labels of the chat
  * @property firstRunExperience - The first run experience of the chat
@@ -485,6 +492,8 @@ export enum AutopilotChatPreHookAction {
 export interface AutopilotChatConfiguration {
     mode: AutopilotChatMode;
     embeddedContainer?: HTMLElement;
+    locale?: SupportedLocale;
+    theme?: ApChatTheme;
     disabledFeatures?: AutopilotChatDisabledFeatures;
     overrideLabels?: AutopilotChatOverrideLabels;
     firstRunExperience?: {

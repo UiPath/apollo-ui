@@ -1,13 +1,13 @@
 import React from 'react';
 
+import { msg } from '@lingui/core/macro';
+import { useLingui } from '@lingui/react';
 import {
   Box,
   styled,
 } from '@mui/material';
 import token, { FontVariantToken } from '@uipath/apollo-core';
 
-import { msg } from '@lingui/core/macro';
-import { useLingui } from '@lingui/react';
 import { ApTextArea } from '../../../ap-text-area';
 import { useAttachments } from '../../providers/attachements-provider';
 import { useChatService } from '../../providers/chat-service.provider';
@@ -48,7 +48,7 @@ const InputContainer = styled('div')<{ primaryFontToken: FontVariantToken }>(({
 
     '& .autopilot-chat-input': { position: 'relative' },
 
-    '& .autopilot-chat-input .ap-text-area-container textarea': {
+    '& .autopilot-chat-input textarea': {
         padding: `0 ${token.Spacing.SpacingBase} 0 !important`,
         border: 'none',
         outline: 'none',
@@ -56,6 +56,9 @@ const InputContainer = styled('div')<{ primaryFontToken: FontVariantToken }>(({
         backgroundColor: 'transparent',
         color: 'var(--color-foreground)',
 
+        '&:focus': {
+          boxShadow: 'none'
+        },
         '&::placeholder': { color: 'var(--color-foreground-de-emp)' },
 
         ...(primaryFontToken && (() => {

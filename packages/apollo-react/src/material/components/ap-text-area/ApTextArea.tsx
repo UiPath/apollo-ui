@@ -22,8 +22,8 @@ const StyledTextareaAutosize = styled(TextareaAutosize, {
     lineHeight: token.FontFamily.FontMLineHeight,
     fontFamily: token.FontFamily.FontMFamily,
     color: 'var(--color-foreground)',
-    backgroundColor: 'var(--color-background-primary)',
-    border: `${token.Border.BorderThickS} solid ${hasError ? 'var(--color-error-border)' : 'var(--color-border-primary)'}`,
+    backgroundColor: 'var(--color-background)',
+    border: `${token.Border.BorderThickS} solid ${hasError ? 'var(--color-error-icon)' : 'var(--color-border)'}`,
     borderRadius: token.Border.BorderRadiusS,
     resize,
     outline: 'none',
@@ -34,13 +34,13 @@ const StyledTextareaAutosize = styled(TextareaAutosize, {
     },
 
     '&:hover:not(:disabled):not(:focus)': {
-        borderColor: hasError ? 'var(--color-error-border)' : 'var(--color-border-hover)',
+        borderColor: hasError ? 'var(--color-error-icon)' : 'var(--color-border)',
     },
 
     '&:focus': {
-        borderColor: hasError ? 'var(--color-error-border)' : 'var(--color-focus-indicator)',
+        borderColor: hasError ? 'var(--color-error-icon)' : 'var(--color-focus-indicator)',
         boxShadow: hasError
-            ? `0 0 0 ${token.Border.BorderThickS} var(--color-error-border)`
+            ? `0 0 0 ${token.Border.BorderThickS} var(--color-error-icon)`
             : `0 0 0 ${token.Border.BorderThickS} var(--color-focus-indicator)`,
     },
 

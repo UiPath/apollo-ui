@@ -173,6 +173,9 @@ export function ApTextField<T extends InputType = 'text'>(
             required={required}
             type={type}
             disabled={disabled}
+            InputLabelProps={{
+                shrink: label && placeholder ? true : undefined,
+            }}
             inputProps={{
                 'data-testid': dataTestid,
                 min: type === 'number' ? min : undefined,
