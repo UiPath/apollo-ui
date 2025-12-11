@@ -1,36 +1,30 @@
 import {
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from 'react';
+	ApChat,
+	AutopilotChatEvent,
+	AutopilotChatMode,
+	AutopilotChatRole,
+	AutopilotChatService,
+	type SupportedLocale,
+} from "@uipath/apollo-react/material/components";
+import { useCallback, useEffect, useRef, useState } from "react";
 
+import { useTheme } from "../../contexts/ThemeContext";
 import {
-  ApChat,
-  AutopilotChatEvent,
-  AutopilotChatMode,
-  AutopilotChatRole,
-  AutopilotChatService,
-  type SupportedLocale,
-} from '@uipath/apollo-react/material/components';
-
-import { useTheme } from '../../contexts/ThemeContext';
-import {
-  Button,
-  ButtonGroup,
-  ChatContainer,
-  Checkbox,
-  ControlPanel,
-  FloatingChatContainer,
-  InfoText,
-  Input,
-  PrimaryButton,
-  Section,
-  SectionTitle,
-  Select,
-  ShowcaseContainer,
-  TextArea,
-} from './ApChatShowcase.styles';
+	Button,
+	ButtonGroup,
+	ChatContainer,
+	Checkbox,
+	ControlPanel,
+	FloatingChatContainer,
+	InfoText,
+	Input,
+	PrimaryButton,
+	Section,
+	SectionTitle,
+	Select,
+	ShowcaseContainer,
+	TextArea,
+} from "./ApChatShowcase.styles";
 
 export function ApChatShowcase() {
 	const { theme, highContrast } = useTheme();
