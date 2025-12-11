@@ -1,3 +1,5 @@
+## [5.3.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-core@5.3.0...@uipath/apollo-core@5.3.1) (2025-12-11)
+
 # [5.2.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-core@5.1.4...@uipath/apollo-core@5.2.0) (2025-12-09)
 
 
