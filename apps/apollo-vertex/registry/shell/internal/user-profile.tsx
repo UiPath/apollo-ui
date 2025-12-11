@@ -21,7 +21,7 @@ export const UserProfile = ({ isCollapsed, toggleCollapse }: UserProfileProps) =
     const firstName = user?.profile?.first_name as string;
     const lastName = user?.profile?.last_name as string;
 
-    return <div className="flex items-center gap-2 h-9">
+    return <div className="flex items-center gap-2 h-9 pb-2">
         {!isCollapsed && (
           <div className="flex items-center gap-2 flex-1 min-w-0">
             <Avatar className="w-8 h-8 rounded-full bg-sidebar-accent shrink-0">
