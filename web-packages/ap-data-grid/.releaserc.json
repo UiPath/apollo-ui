@@ -8,9 +8,7 @@
         "releaseRules": [
           { "type": "chore", "scope": "ap-data-grid", "release": "patch" },
           { "type": "chore", "scope": "apollo-core", "release": "patch" },
-          { "type": "feat", "scope": "apollo-core", "release": "minor" },
-          { "type": "fix", "scope": "apollo-core", "release": "patch" },
-          { "breaking": true, "scope": "apollo-core", "release": "major" }
+          { "scope": "!(ap-data-grid|apollo-core)", "release": false }
         ]
       }
     ],
