@@ -1,3 +1,17 @@
+## [2.4.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@2.4.0...@uipath/apollo-react@2.4.1) (2025-12-11)
+
+
+### Bug Fixes
+
+* **apollo-react:** badge types ([e978626](https://github.com/UiPath/apollo-ui/commit/e97862629964207def7e206501f836e73df3dc5a))
+* **apollo-react:** lingui setup ([7167f3e](https://github.com/UiPath/apollo-ui/commit/7167f3edf35a135c63ba15930f60da223f3837f3))
+* **apollo-react:** simplify skeleton ([56f1b78](https://github.com/UiPath/apollo-ui/commit/56f1b78d3fa9245e5477521b62b765228a1d8593))
+
+
+### Features
+
+* **apollo-vertex:** test release not trigger ([7fc1f46](https://github.com/UiPath/apollo-ui/commit/7fc1f4664af8d65b602ca5a96fc86d6a55103bb9))
+
 # [2.4.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@2.3.0...@uipath/apollo-react@2.4.0) (2025-12-11)
 
 
