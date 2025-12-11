@@ -1,0 +1,221 @@
+import React from 'react';
+import { createPortal } from 'react-dom';
+
+import { styled } from '@mui/material/styles';
+import token from '@uipath/apollo-core';
+
+import {
+  ApI18nProvider,
+  SupportedLocale,
+} from '../../../i18n';
+import { DragHandle } from './components/common/drag-handle';
+import { AutopilotChatDropzone } from './components/dropzone/dropzone';
+import {
+  FullScreenLayout,
+  StandardLayout,
+} from './components/layout';
+import { AutopilotAttachmentsProvider } from './providers/attachements-provider';
+import { AutopilotChatScrollProvider } from './providers/chat-scroll-provider';
+import { AutopilotChatServiceProvider } from './providers/chat-service.provider';
+import {
+  AutopilotChatStateProvider,
+  useChatState,
+} from './providers/chat-state-provider';
+import {
+  AutopilotChatWidthProvider,
+  useChatWidth,
+} from './providers/chat-width-provider';
+import { AutopilotErrorProvider } from './providers/error-provider';
+import { AutopilotLoadingProvider } from './providers/loading-provider';
+import {
+  LocaleProvider,
+  useLocale,
+} from './providers/locale-provider';
+import { AutopilotPickerProvider } from './providers/picker-provider';
+import { AutopilotStreamingProvider } from './providers/streaming-provider';
+import { ThemeProvider } from './providers/theme-provider';
+import {
+  ApChatTheme,
+  AutopilotChatEvent,
+  AutopilotChatMode,
+  AutopilotChatService,
+  CHAT_CONTAINER_ANIMATION_DURATION,
+  CHAT_WIDTH_FULL_SCREEN,
+} from './service';
+
+const ChatContainer = styled('div')<{ shouldAnimate: boolean; mode: AutopilotChatMode; width: number; fullHeight: boolean }>(({
+    shouldAnimate, mode, width, fullHeight,
+}: { shouldAnimate: boolean; mode: AutopilotChatMode; width: number; fullHeight: boolean }) => ({
+    width: mode === AutopilotChatMode.FullScreen ? CHAT_WIDTH_FULL_SCREEN : width,
+    display: 'flex',
+    flexDirection: mode === AutopilotChatMode.FullScreen ? 'column' : 'row',
+    height: fullHeight ? '100vh' : 'calc(100vh - 48px)', // account for global header height
+    position: 'relative',
+    boxSizing: 'border-box',
+    border: `${token.Border.BorderThickS} solid var(--color-border-de-emp)`,
+    borderTop: 'none',
+    borderLeft: 'none',
+    ...(shouldAnimate && { transition: `width ${CHAT_CONTAINER_ANIMATION_DURATION}ms ease` }),
+    ...(mode === AutopilotChatMode.Closed && { display: 'none' }),
+    ...(mode === AutopilotChatMode.Embedded && {
+        width: '100%',
+        height: '100%',
+        position: 'absolute',
+        border: 'none',
+    }),
+}));
+
+// Wrapper that connects ApI18nProvider to LocaleProvider context
+const ApI18nWithLocale = React.memo(({ children }: { children: React.ReactNode }) => {
+    const { locale } = useLocale();
+
+    return (
+        <ApI18nProvider component="material/components/ap-chat" locale={locale}>
+            {children}
+        </ApI18nProvider>
+    );
+});
+
+const AutopilotChatContent = React.memo(() => {
+    const {
+        width, shouldAnimate,
+    } = useChatWidth();
+    const {
+        historyOpen,
+        settingsOpen,
+        disabledFeatures,
+        chatMode,
+    } = useChatState();
+
+    return (
+        <ChatContainer
+            shouldAnimate={shouldAnimate}
+            mode={chatMode}
+            width={width}
+            fullHeight={disabledFeatures.fullHeight === false}
+        >
+            { chatMode === AutopilotChatMode.SideBySide && (
+                <DragHandle/>
+            )}
+
+            {chatMode === AutopilotChatMode.FullScreen ? (
+                <FullScreenLayout
+                    historyOpen={historyOpen}
+                    settingsOpen={settingsOpen}
+                    historyDisabled={disabledFeatures.history ?? false}
+                    settingsDisabled={disabledFeatures.settings ?? false}
+                    headerSeparatorDisabled={disabledFeatures.headerSeparator ?? false}
+                    mode={chatMode}
+                />
+            ) : (
+                <StandardLayout
+                    historyOpen={historyOpen}
+                    settingsOpen={settingsOpen}
+                    historyDisabled={disabledFeatures.history ?? false}
+                    settingsDisabled={disabledFeatures.settings ?? false}
+                    headerDisabled={disabledFeatures.header ?? false}
+                    headerSeparatorDisabled={disabledFeatures.headerSeparator ?? false}
+                    mode={chatMode}
+                />
+            )}
+        </ChatContainer>
+    );
+});
+
+export interface ApChatProps {
+    /**
+     * Chat service instance
+     */
+    chatServiceInstance: AutopilotChatService;
+    /**
+     * Locale for the chat interface.
+     * @default 'en'
+     */
+    locale?: SupportedLocale;
+    /**
+     * Theme variant for the chat interface.
+     * @default 'light'
+     */
+    theme?: ApChatTheme;
+}
+
+export function ApChat({
+    chatServiceInstance,
+    locale: initialLocale = 'en',
+    theme: initialTheme = 'light',
+}: ApChatProps) {
+    const [embeddedContainer, setEmbeddedContainer] = React.useState<HTMLElement | null>(null);
+
+    // Sync props to service (one-way: props → service → providers → components)
+    React.useEffect(() => {
+        chatServiceInstance.setLocale(initialLocale);
+    }, [initialLocale, chatServiceInstance]);
+
+    React.useEffect(() => {
+        chatServiceInstance.setTheme(initialTheme);
+    }, [initialTheme, chatServiceInstance]);
+
+    // Check for embedded container from service configuration
+    React.useEffect(() => {
+        const updateEmbeddedContainer = () => {
+            const config = chatServiceInstance.getConfig();
+            if (config.mode === AutopilotChatMode.Embedded && config.embeddedContainer) {
+                setEmbeddedContainer(config.embeddedContainer);
+            } else {
+                setEmbeddedContainer(null);
+            }
+        };
+
+        // Check initial config
+        updateEmbeddedContainer();
+
+        // Listen for mode changes
+        const unsubscribe = chatServiceInstance.on(
+            AutopilotChatEvent.ModeChange,
+            () => {
+                updateEmbeddedContainer();
+            },
+        );
+
+        return () => {
+            unsubscribe();
+        };
+    }, [chatServiceInstance]);
+
+    const chatContent = (
+        <AutopilotChatServiceProvider chatServiceInstance={chatServiceInstance}>
+            <ThemeProvider>
+                <LocaleProvider>
+                    <ApI18nWithLocale>
+                        <AutopilotStreamingProvider>
+                            <AutopilotChatScrollProvider>
+                                <AutopilotChatStateProvider>
+                                    <AutopilotErrorProvider>
+                                        <AutopilotLoadingProvider>
+                                            <AutopilotAttachmentsProvider>
+                                                <AutopilotPickerProvider>
+                                                    <AutopilotChatWidthProvider>
+                                                        <AutopilotChatDropzone>
+                                                            <AutopilotChatContent />
+                                                        </AutopilotChatDropzone>
+                                                    </AutopilotChatWidthProvider>
+                                                </AutopilotPickerProvider>
+                                            </AutopilotAttachmentsProvider>
+                                        </AutopilotLoadingProvider>
+                                    </AutopilotErrorProvider>
+                                </AutopilotChatStateProvider>
+                            </AutopilotChatScrollProvider>
+                        </AutopilotStreamingProvider>
+                    </ApI18nWithLocale>
+                </LocaleProvider>
+            </ThemeProvider>
+        </AutopilotChatServiceProvider>
+    );
+
+    // Use portal for embedded mode with embeddedContainer
+    if (embeddedContainer) {
+        return createPortal(chatContent, embeddedContainer);
+    }
+
+    return chatContent;
+}

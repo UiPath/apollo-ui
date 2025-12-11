@@ -18,6 +18,7 @@ export function Sidebar() {
 	const [expandedMenus, setExpandedMenus] = useState<string[]>([
 		"/core",
 		"/material",
+		"/components",
 	]);
 
 	const navigation = [
@@ -31,14 +32,32 @@ export function Sidebar() {
 			path: "/core",
 			icon: "🎨",
 			children: [
-				{ label: "CSS Variables", path: "/core/css-variables" },
-				{ label: "Colors", path: "/core/colors" },
-				{ label: "Typography", path: "/core/fonts" },
-				{ label: "Spacing & Padding", path: "/core/spacing" },
-				{ label: "Shadows", path: "/core/shadows" },
 				{ label: "Borders & Strokes", path: "/core/borders" },
-				{ label: "Icons", path: "/core/icons" },
 				{ label: "Breakpoints", path: "/core/screens" },
+				{ label: "Colors", path: "/core/colors" },
+				{ label: "CSS Variables", path: "/core/css-variables" },
+				{ label: "Icons", path: "/core/icons" },
+				{ label: "Shadows", path: "/core/shadows" },
+				{ label: "Spacing & Padding", path: "/core/spacing" },
+				{ label: "Typography", path: "/core/fonts" },
+			],
+		},
+		{
+			label: "Components",
+			path: "/components",
+			icon: "🧩",
+			children: [
+				{ label: "Alert Bar", path: "/components/alert-bar" },
+				{ label: "Badge", path: "/components/badge" },
+				{ label: "Chat", path: "/components/chat" },
+				{ label: "Chip", path: "/components/chip" },
+				{ label: "Link", path: "/components/link" },
+				{ label: "Skeleton", path: "/components/skeleton" },
+				{ label: "Text Area", path: "/components/text-area" },
+				{ label: "Text Field", path: "/components/text-field" },
+				{ label: "Tool Call", path: "/components/tool-call" },
+				{ label: "Tree View", path: "/components/tree-view" },
+				{ label: "Typography", path: "/components/typography" },
 			],
 		},
 		{
@@ -74,11 +93,6 @@ export function Sidebar() {
 				{ label: "Tooltip", path: "/material/tooltip" },
 				{ label: "Typography", path: "/material/typography" },
 			],
-		},
-		{
-			label: "Components",
-			path: "/components",
-			icon: "🧩",
 		},
 	];
 

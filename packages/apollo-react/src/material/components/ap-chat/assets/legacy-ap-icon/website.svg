@@ -1,0 +1,8 @@
+<svg class="portal-svg" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path fill-rule="evenodd" clip-rule="evenodd" d="M10 1C5.02944 1 1 5.02944 1 10C1 14.9706 5.02944 19 10 19C14.9706 19 19 14.9706 19 10C19 5.02944 14.9706 1 10 1ZM2.5 10C2.5 5.85786 5.85786 2.5 10 2.5C14.1421 2.5 17.5 5.85786 17.5 10C17.5 14.1421 14.1421 17.5 10 17.5C5.85786 17.5 2.5 14.1421 2.5 10Z" class="portal-custom-svg"/>
+    <path d="M10 2.5V17.5" stroke="currentColor" stroke-width="1" class="portal-custom-svg"/>
+    <path d="M2.5 10H17.5" stroke="currentColor" stroke-width="1" class="portal-custom-svg"/>
+    <path fill-rule="evenodd" clip-rule="evenodd" d="M10 2.5C7.5 2.5 5.5 5.5 5.5 10C5.5 14.5 7.5 17.5 10 17.5C12.5 17.5 14.5 14.5 14.5 10C14.5 5.5 12.5 2.5 10 2.5ZM6.5 10C6.5 6.5 8 3.5 10 3.5C12 3.5 13.5 6.5 13.5 10C13.5 13.5 12 16.5 10 16.5C8 16.5 6.5 13.5 6.5 10Z" class="portal-custom-svg"/>
+    <path d="M3.5 7C5.5 6.5 7.5 6.5 10 6.5C12.5 6.5 14.5 6.5 16.5 7" stroke="currentColor" stroke-width="0.5" class="portal-custom-svg"/>
+    <path d="M3.5 13C5.5 13.5 7.5 13.5 10 13.5C12.5 13.5 14.5 13.5 16.5 13" stroke="currentColor" stroke-width="0.5" class="portal-custom-svg"/>
+</svg>

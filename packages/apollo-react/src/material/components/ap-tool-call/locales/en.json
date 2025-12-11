@@ -1,0 +1,9 @@
+{
+  "tool-call.running": "Running {toolName}...",
+  "tool-call.ran": "Ran {toolName} ({duration}s)",
+  "tool-call.input": "Input",
+  "tool-call.execution": "Execution",
+  "tool-call.escalation": "Escalation",
+  "tool-call.errors": "Errors",
+  "tool-call.output": "Output"
+}

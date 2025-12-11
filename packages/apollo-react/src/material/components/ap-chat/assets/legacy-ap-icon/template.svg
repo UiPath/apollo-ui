@@ -1,0 +1,8 @@
+<svg class="portal-svg" width="42" height="42" viewBox="0 0 42 42" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path
+    d="M13.9989 3.5H27.9989L38.4989 14V35C38.4989 36.9331 36.9335 38.5 34.9989 38.5H13.9989V35H34.9989V15.75H26.2489V7H13.9989V10.5H10.5L10.516 7C10.516 5.07504 12.0746 3.5 13.9989 3.5Z"
+    class="template-fill" />
+  <path d="M7 14H19.25V17.5H7V14Z" class="template-fill" />
+  <path d="M3.5 21H15.75V24.5H3.5V21Z" class="template-fill" />
+  <path d="M22.75 28H10.5V31.5H22.75V28Z" class="template-fill" />
+</svg>

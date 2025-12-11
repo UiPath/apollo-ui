@@ -1,0 +1,6 @@
+<svg role="img" class="portal-svg" width="18" height="18" viewBox="-3.5 -3.5 25 25" fill="none" xmlns="http://www.w3.org/2000/svg" alt="apps" title="apps">
+    <path class="picker-svg-fill" fill-rule="evenodd" clip-rule="evenodd" d="M0 0H8V8H0V0ZM2 2V6H6V2H2Z" />
+    <path class="picker-svg-fill" fill-rule="evenodd" clip-rule="evenodd" d="M0 10H8V18H0V10ZM2 12V16H6V12H2Z" />
+    <path class="picker-svg-fill" fill-rule="evenodd" clip-rule="evenodd" d="M10 0H18V8H10V0ZM12 2V6H16V2H12Z" />
+    <path class="picker-svg-fill" fill-rule="evenodd" clip-rule="evenodd" d="M14.999 14.999V18H12.999V14.999H10V12.999H12.999V10H14.999V12.999H18V14.999H14.999Z" />
+</svg>
