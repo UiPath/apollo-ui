@@ -67,7 +67,7 @@ const MessageBoxComponent = styled('div')<{
     isAssistant, isCustomWidget,
 }) => {
     const chatService = useChatService();
-    const { spacing } = useChatState();
+    const { spacing } = useChatState();
     const chatInternalService = chatService.__internalService__;
     const [ padding, setPadding ] = React.useState(
         calculateDynamicPadding(parseInt(StorageService.Instance.get(CHAT_WIDTH_KEY) ?? CHAT_WIDTH_SIDE_BY_SIDE_MIN.toString(), 10)),

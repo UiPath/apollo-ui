@@ -90,7 +90,7 @@ export interface ICompletionAttributes {
   settings: IModelSettings;
   extra?: {
       // TODO: most likely this should be Record instead of Map
-      // eslint-disable-next-line @typescript-eslint/naming-convention
+       
       invocation_params?: (Map<string, any> | Record<string, unknown>) & { tools?: any[] };
   };
   response: {
@@ -156,7 +156,7 @@ export interface IEscalationChannelAttributes {
   taskId: string;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
+ 
 export interface ILicensingAttributes {}
 
 export interface IElementRunSpanAttributes {
