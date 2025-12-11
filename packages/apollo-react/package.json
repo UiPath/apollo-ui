@@ -58,7 +58,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "pnpm run build:icons && rslib build",
+    "build": "pnpm run build:icons && pnpm run i18n:compile && rslib build",
     "build:analyze": "ANALYZE=true pnpm run build",
     "build:icons": "tsx scripts/icons-build.ts",
     "dev": "rslib build --watch",

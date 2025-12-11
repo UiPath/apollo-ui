@@ -43,6 +43,7 @@ export default defineConfig({
         '!src/test/**',
         '!src/icons/.cache',
         '!src/**/*.md',
+        '!src/**/locales/*.js',
       ],
     },
   },

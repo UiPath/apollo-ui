@@ -6,8 +6,12 @@ const config: LinguiConfig = {
   sourceLocale: 'en',
   catalogs: [
     {
-      path: 'src/locales/{locale}',
+      path: 'src/material/components/ap-chat/locales/{locale}',
       include: ['src/material/components/ap-chat'],
+    },
+    {
+      path: 'src/material/components/ap-tool-call/locales/{locale}',
+      include: ['src/material/components/ap-tool-call'],
     },
   ],
   format: formatter({ style: 'minimal' }),
