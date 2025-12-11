@@ -10,7 +10,7 @@ interface CompanyProps {
 }
 
 export const Company = ({ isCollapsed, toggleCollapse, companyName, productName }: CompanyProps) => {
-    return <div className={"flex items-center justify-between h-7"}>
+    return <div className={"flex items-center justify-between h-7 pt-2"}>
         {!isCollapsed && <div className={"flex items-center gap-2"}>
           <div className="w-7 h-7 rounded-md bg-[#51B0BE] flex items-center justify-center shrink-0">
             <Box className="w-4 h-4 text-[#1A1E27]" />
