@@ -8,7 +8,7 @@ import token, { FontVariantToken } from '@uipath/apollo-core';
 
 import { msg } from '@lingui/core/macro';
 import { useLingui } from '@lingui/react';
-import { ApTextAreaReact } from '../../../ap-text-area/ap-text-area';
+import { ApTextArea } from '../../../ap-text-area';
 import { useAttachments } from '../../providers/attachements-provider';
 import { useChatService } from '../../providers/chat-service.provider';
 import { useChatState } from '../../providers/chat-state-provider';
@@ -134,7 +134,8 @@ function AutopilotChatInputComponent() {
         };
     }, [ chatService ]);
 
-    const handleChange = React.useCallback((value: string) => {
+    const handleChange = React.useCallback((event: React.ChangeEvent<HTMLTextAreaElement>) => {
+        const value = event.target.value;
         // if value is empty, clear input and return (handle empty new lines)
         if (value.trim().length === 0) {
             chatService.setPrompt('');
@@ -160,7 +161,7 @@ function AutopilotChatInputComponent() {
         clearAttachments();
     }, [ message, attachments, clearAttachments, chatService, waitingResponse, streaming ]);
 
-    const handleKeyDown = React.useCallback((event: KeyboardEvent) => {
+    const handleKeyDown = React.useCallback((event: React.KeyboardEvent<HTMLTextAreaElement>) => {
         if (waitingResponse || streaming) {
             if (event.key === 'Enter' && !event.shiftKey) {
                 event.preventDefault();
@@ -232,7 +233,7 @@ function AutopilotChatInputComponent() {
                 <AutopilotChatInputAttachments/>
 
                 <Box className="autopilot-chat-input" sx={{ padding: `${token.Spacing.SpacingS} 0 0 !important` }}>
-                    <ApTextAreaReact
+                    <ApTextArea
                         resize="none"
                         ref={inputRef}
                         value={message}

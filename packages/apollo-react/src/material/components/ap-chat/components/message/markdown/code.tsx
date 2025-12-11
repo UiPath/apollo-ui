@@ -16,7 +16,7 @@ import {
 import token from '@uipath/apollo-core';
 
 import { ThemeInstanceResolver } from '../../../../../utils/theme/themeInstanceResolver';
-import { ApChipReact } from '../../../../ap-chip/ap-chip';
+import { ApChip } from '../../../../ap-chip';
 import { useChatState } from '../../../providers/chat-state-provider';
 import { AutopilotChatActionButton } from '../../common/action-button';
 
@@ -263,7 +263,7 @@ export const Code = React.memo(({
         <>
             <CodeBlockContainer>
                 <CodeBlockHeader>
-                    <ApChipReact
+                    <ApChip
                         label={language || _(msg({ id: 'autopilot-chat.message.code-block-language', message: `Code` }))}
                     />
                     <div style={{

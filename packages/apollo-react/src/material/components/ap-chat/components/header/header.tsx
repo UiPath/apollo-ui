@@ -5,7 +5,8 @@ import { useLingui } from '@lingui/react';
 import { styled } from '@mui/material';
 import token, { FontVariantToken } from '@uipath/apollo-core';
 
-import { StatusTypes } from '../../../../models/statusTypes';
+import { StatusTypes } from '../../../../../types/statusTypes';
+import { ApBadge } from '../../../ap-badge';
 import { ApTypography } from '../../../ap-typography';
 import AutopilotLogo from '../../assets/autopilot-logo.svg';
 import { useChatState } from '../../providers/chat-state-provider';
@@ -57,7 +58,7 @@ function AutopilotChatHeaderComponent() {
                 </ApTypography>
 
                 {!disabledFeatures.preview && (
-                    <ap-badge label={_(msg({ id: 'autopilot-chat.header.preview', message: `Preview` }))} status={StatusTypes.INFO}></ap-badge>
+                    <ApBadge label={_(msg({ id: 'autopilot-chat.header.preview', message: `Preview` }))} status={StatusTypes.INFO} />
                 )}
             </StyledLogo>
 

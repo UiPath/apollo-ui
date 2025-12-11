@@ -6,6 +6,7 @@ import {
 } from '@mui/material';
 import token, { FontVariantToken } from '@uipath/apollo-core';
 
+import { AppIcon } from '../../../../../../icons';
 import { ApTypography } from '../../../../ap-typography';
 
 const DisclaimerList = styled('div')(() => ({
@@ -35,7 +36,7 @@ function AutopilotChatDisclaimersComponent({ disclaimers }: { disclaimers: strin
                     key={disclaimer}
                     data-cy={`autopilot-chat-disclaimer-nth-${index}`}
                 >
-                    <portal-custom-icon name="warning" color={'var(--color-warning-icon)'}></portal-custom-icon>
+                    <AppIcon name="warning" color={'var(--color-warning-icon)'}></AppIcon>
                     <ApTypography color={'var(--color-warning-text)'} variant={FontVariantToken.fontSizeM}>
                         {disclaimer}
                     </ApTypography>

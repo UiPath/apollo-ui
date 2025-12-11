@@ -25,7 +25,8 @@ import {
 } from '@mui/material';
 import token from '@uipath/apollo-core';
 
-import { ApTextFieldReact } from '../../../ap-text-field/ap-text-field';
+import { ApSkeleton } from '../../../ap-skeleton';
+import { ApTextField } from '../../../ap-text-field';
 import { ApTypography } from '../../../ap-typography';
 import { useChatService } from '../../providers/chat-service.provider';
 import { useChatState } from '../../providers/chat-state-provider';
@@ -42,7 +43,7 @@ import {
 import { AutopilotChatHistoryGroup } from './chat-history-group';
 
 const ChatHistoryContainer = styled('div')<{ isFullScreen: boolean; width: number; fullScreenContainer: HTMLElement | null }>(({
-    theme, isFullScreen, width, fullScreenContainer,
+    isFullScreen, width, fullScreenContainer,
 }) => ({
     display: 'flex',
     flexDirection: 'column',
@@ -89,7 +90,7 @@ const HistorySkeletonLoader: React.FC = () => (
     <HistorySkeletonContainer>
         {[ ...Array(6) ].map((_, index) => (
             <div key={index} className="skeleton-item">
-                <ap-skeleton
+                <ApSkeleton
                     style={{
                         width: '90%',
                         height: token.Spacing.SpacingL,
@@ -399,7 +400,7 @@ const AutopilotChatHistoryComponent: React.FC<AutopilotChatHistoryProps> = ({
                 >
                     {hasHistoryData ? (
                         <>
-                            <ApTextFieldReact
+                            <ApTextField
                                 disabled={!historyOpen}
                                 className="chat-history-search"
                                 size="small"

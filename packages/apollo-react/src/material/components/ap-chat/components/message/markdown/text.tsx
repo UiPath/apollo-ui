@@ -4,6 +4,7 @@ import { Box } from '@mui/material';
 import token, { FontVariantToken } from '@uipath/apollo-core';
 
 import { ApTypography } from '../../../../ap-typography';
+import { ApLink } from '../../../../ap-link';
 import { useChatState } from '../../../providers/chat-state-provider';
 import { fontByVariant } from '../../../utils/font-by-variant';
 
@@ -71,10 +72,10 @@ export const Blockquote = React.memo(({ children }: { children?: React.ReactNode
                 margin: 0,
 
                 '& .MuiTypography-root': {
-                    fontFamily: fontByVariant(spacing.markdownTokens.citation).fontFamily,
-                    fontSize: fontByVariant(spacing.markdownTokens.citation).fontSize,
-                    fontWeight: fontByVariant(spacing.markdownTokens.citation).fontWeight,
-                    lineHeight: fontByVariant(spacing.markdownTokens.citation).lineHeight,
+                    fontFamily: fontByVariant(spacing.markdownTokens.citation)?.fontFamily,
+                    fontSize: fontByVariant(spacing.markdownTokens.citation)?.fontSize,
+                    fontWeight: fontByVariant(spacing.markdownTokens.citation)?.fontWeight,
+                    lineHeight: fontByVariant(spacing.markdownTokens.citation)?.lineHeight,
                 },
             }}
         >
@@ -145,7 +146,9 @@ export const Link = React.memo(({
             variant={parentVariant ?? spacing.primaryFontToken}
             customStyle={{ display: 'inline' }}
         >
-            <ap-link href={href} target="_blank" variant={FontVariantToken.fontSizeM}>{children}</ap-link>
+            <ApLink href={href} target="_blank" variant={FontVariantToken.fontSizeM}>
+                {children}
+            </ApLink>
         </Text>
     );
 });

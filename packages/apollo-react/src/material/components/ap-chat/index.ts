@@ -1,2 +1,2 @@
 export * from './service';
-export * from './ap-autopilot-chat'
+export * from './ap-chat'

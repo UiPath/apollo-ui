@@ -2,11 +2,13 @@ import React from 'react';
 
 import { msg } from '@lingui/core/macro';
 import { useLingui } from '@lingui/react';
-import { styled } from '@mui/material';
+import {
+  CircularProgress,
+  styled,
+} from '@mui/material';
 import token from '@uipath/apollo-core';
 
 import { ApTypography } from '../../../';
-import { ApProgressSpinnerReact } from '../../../ap-progress-spinner/ap-progress-spinner';
 import { useChatState } from '../../providers/chat-state-provider';
 import {
   AutopilotChatFileInfo,
@@ -225,7 +227,7 @@ export const Attachment = React.memo(({
             )}
             {loading && (
                 <div className="attachment-loading">
-                    <ApProgressSpinnerReact size="s" color="primary"/>
+                    <CircularProgress size={16} color="primary"/>
                 </div>
             )}
         </StyledAttachment>

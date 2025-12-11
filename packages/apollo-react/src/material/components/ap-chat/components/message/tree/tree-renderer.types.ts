@@ -1,7 +1,13 @@
-import type { ITreeNode } from '@uipath/apollo-angular-elements';
+import type { TSpan } from '../../../../../../types/TraceModels';
+import type { ApTreeViewItem } from '../../../../ap-tree-view';
 
-import type { ApTreeViewItem } from '../../../../ap-tree-view/ap-tree-view';
-import type { TSpan } from '../../../service';
+export interface ITreeNode<T = any> {
+  key: string;
+  name: string;
+  data: T;
+  children?: Array<ITreeNode<T>>;
+  expandedByDefault?: boolean;
+}
 
 export type ToolData = TSpan & {
     additionalInfo?: string;

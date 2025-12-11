@@ -36,7 +36,14 @@ export default defineConfig({
   ],
   source: {
     entry: {
-      index: ['./src/**', '!src/**/*.test.{ts,tsx}', '!src/test/**', '!src/icons/.cache'],
+      index: [
+        './src/**',
+        '!src/**/*.test.{ts,tsx}',
+        '!src/test/**',
+        '!src/icons/.cache',
+        '!src/**/*.md',
+        '!src/**/locales/**',
+      ],
     },
   },
   plugins: [pluginReact()],

@@ -152,7 +152,7 @@ const NestedMenuItem = React.memo(React.forwardRef<HTMLLIElement, NestedMenuItem
             event.preventDefault();
             event.stopPropagation();
 
-            const menuItems = submenuRef.current?.querySelectorAll('[role="menuitem"]:not([disabled])') as NodeListOf<HTMLElement>;
+            const menuItems = submenuRef.current?.querySelectorAll<HTMLElement>('[role="menuitem"]:not([disabled])');
             if (!menuItems || menuItems.length === 0) {
                 return;
             }

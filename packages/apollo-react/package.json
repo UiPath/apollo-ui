@@ -95,6 +95,7 @@
     "@emotion/styled": "^11.14.1",
     "@lingui/core": "^5.6.1",
     "@lingui/react": "^5.6.1",
+    "@mui/x-tree-view": "^8.21.0",
     "@uipath/apollo-core": "workspace:*",
     "@uipath/apollo-utils": "workspace:*",
     "date-fns": "^4.1.0",

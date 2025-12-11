@@ -3,6 +3,7 @@ import React from 'react';
 import styled from '@emotion/styled';
 import token from '@uipath/apollo-core';
 
+import { ApSkeleton } from '../../../ap-skeleton';
 import { useChatScroll } from '../../providers/chat-scroll-provider';
 
 const SkeletonLoaderContainer = styled('div')(() => ({
@@ -37,12 +38,12 @@ export const SkeletonLoader = () => {
         <SkeletonLoaderContainer>
             {[ ...Array(skeletonCount) ].map((_, index) => (
                 <div key={index}>
-                    <ap-skeleton
+                    <ApSkeleton
                         style={{
                             width: index % 3 === 0 ? '90%' : index % 2 === 0 ? '80%' : '70%',
                             height: `${SKELETON_HEIGHT}px`,
                         }}
-                    ></ap-skeleton>
+                    />
                 </div>
             ))}
         </SkeletonLoaderContainer>

@@ -5,7 +5,8 @@ import remarkGfm from 'remark-gfm';
 
 import token from '@uipath/apollo-core';
 
-import { StatusTypes } from '../../../../models/statusTypes';
+import { StatusTypes } from '../../../../../types/statusTypes';
+import { ApAlertBar } from '../../../ap-alert-bar';
 import { useError } from '../../providers/error-provider';
 import {
   Li,
@@ -34,14 +35,15 @@ function AutopilotChatInputErrorComponent() {
     }
 
     return (
-        <ap-alert-bar
-            style={{
+        <ApAlertBar
+            sx={{
                 marginBottom: token.Spacing.SpacingBase,
                 width: '100%',
                 maxHeight: '300px',
                 overflowY: 'auto',
             }}
-            status={error.level === 'warn' ? StatusTypes.WARNING : StatusTypes.ERROR}>
+            status={error.level === 'warn' ? StatusTypes.WARNING : StatusTypes.ERROR}
+        >
             <ReactMarkdown
                 remarkPlugins={[ remarkGfm ]}
                 components={{
@@ -57,7 +59,7 @@ function AutopilotChatInputErrorComponent() {
             >
                 {error.message}
             </ReactMarkdown>
-        </ap-alert-bar>
+        </ApAlertBar>
     );
 }
 

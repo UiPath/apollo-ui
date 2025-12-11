@@ -37,7 +37,7 @@ export function citationPlugin() {
                 const token = match[0];
                 if (token.startsWith('[[cite-start:')) {
                     try {
-                        const decoded = atob(match[1]);
+                        const decoded = atob(match[1] as string);
                         const citationsData = JSON.parse(decoded);
                         citationStack.push({ citationsData });
 

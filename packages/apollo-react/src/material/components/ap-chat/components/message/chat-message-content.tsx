@@ -3,7 +3,7 @@ import React from 'react';
 import { styled } from '@mui/material';
 import token from '@uipath/apollo-core';
 
-import { ApToolCallReact } from '../../../ap-tool-call/ap-tool-call';
+import { ApToolCall } from '../../../ap-tool-call';
 import { useChatService } from '../../providers/chat-service.provider';
 import { useChatState } from '../../providers/chat-state-provider';
 import {
@@ -38,7 +38,7 @@ const APOLLO_MESSAGE_RENDERERS = [
             if (!message.meta.span && !message.meta.input && !message.meta.toolName) {
                 return null;
             }
-            return <ApToolCallReact
+            return <ApToolCall
                 span={message.meta.span}
                 toolName={message.meta.toolName}
                 input={message.meta.input}
