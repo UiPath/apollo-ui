@@ -28,6 +28,7 @@ import { AutopilotErrorProvider } from './providers/error-provider';
 import { AutopilotLoadingProvider } from './providers/loading-provider';
 import { AutopilotPickerProvider } from './providers/picker-provider';
 import { AutopilotStreamingProvider } from './providers/streaming-provider';
+import { ThemeProvider, ApChatTheme } from './providers/theme-provider';
 import {
   AutopilotChatMode,
   AutopilotChatService,
@@ -113,35 +114,43 @@ export interface ApAutopilotChatReactProps {
      * @default 'en'
      */
     locale?: SupportedLocale;
+    /**
+     * Theme variant for the chat interface.
+     * @default 'light'
+     */
+    theme?: ApChatTheme;
 }
 
 export function ApAutopilotChatReact({
     chatServiceInstance,
     locale = 'en',
+    theme = 'light',
 }: ApAutopilotChatReactProps) {
     return (
         <ApI18nProvider component="material/components/ap-chat" locale={locale}>
-            <AutopilotChatServiceProvider chatServiceInstance={chatServiceInstance}>
-                <AutopilotStreamingProvider>
-                    <AutopilotChatScrollProvider>
-                        <AutopilotChatStateProvider>
-                            <AutopilotErrorProvider>
-                                <AutopilotLoadingProvider>
-                                    <AutopilotAttachmentsProvider>
-                                        <AutopilotPickerProvider>
-                                            <AutopilotChatWidthProvider>
-                                                <AutopilotChatDropzone>
-                                                    <AutopilotChatContent />
-                                                </AutopilotChatDropzone>
-                                            </AutopilotChatWidthProvider>
-                                        </AutopilotPickerProvider>
-                                    </AutopilotAttachmentsProvider>
-                                </AutopilotLoadingProvider>
-                            </AutopilotErrorProvider>
-                        </AutopilotChatStateProvider>
-                    </AutopilotChatScrollProvider>
-                </AutopilotStreamingProvider>
-            </AutopilotChatServiceProvider>
+            <ThemeProvider theme={theme}>
+                <AutopilotChatServiceProvider chatServiceInstance={chatServiceInstance}>
+                    <AutopilotStreamingProvider>
+                        <AutopilotChatScrollProvider>
+                            <AutopilotChatStateProvider>
+                                <AutopilotErrorProvider>
+                                    <AutopilotLoadingProvider>
+                                        <AutopilotAttachmentsProvider>
+                                            <AutopilotPickerProvider>
+                                                <AutopilotChatWidthProvider>
+                                                    <AutopilotChatDropzone>
+                                                        <AutopilotChatContent />
+                                                    </AutopilotChatDropzone>
+                                                </AutopilotChatWidthProvider>
+                                            </AutopilotPickerProvider>
+                                        </AutopilotAttachmentsProvider>
+                                    </AutopilotLoadingProvider>
+                                </AutopilotErrorProvider>
+                            </AutopilotChatStateProvider>
+                        </AutopilotChatScrollProvider>
+                    </AutopilotStreamingProvider>
+                </AutopilotChatServiceProvider>
+            </ThemeProvider>
         </ApI18nProvider>
     );
 }

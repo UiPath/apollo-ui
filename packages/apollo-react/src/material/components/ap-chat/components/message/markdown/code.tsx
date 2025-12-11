@@ -15,9 +15,9 @@ import {
 } from '@mui/material';
 import token from '@uipath/apollo-core';
 
-import { ThemeInstanceResolver } from '../../../../../utils/theme/themeInstanceResolver';
 import { ApChip } from '../../../../ap-chip';
 import { useChatState } from '../../../providers/chat-state-provider';
+import { useTheme } from '../../../providers/theme-provider';
 import { AutopilotChatActionButton } from '../../common/action-button';
 
 enum LANGUAGES {
@@ -182,8 +182,7 @@ export const Code = React.memo(({
     const {
         disabledFeatures, spacing,
     } = useChatState();
-    const apolloTheme = ThemeInstanceResolver.Instance?.getTheme();
-    const isDark = apolloTheme?.includes('dark') || false;
+    const { isDark } = useTheme();
     const match = /language-(\w+)/.exec(className || '');
     const codeContent = extractTextFromChildren(children).replace(/\n$/, '');
     const language = match?.[1] || '';
