@@ -14,7 +14,8 @@ import { useAgentFlowStore, useEdges } from "../store/agent-flow-store";
 import { ExecutionStatusIcon } from "../../ExecutionStatusIcon/ExecutionStatusIcon";
 import type { NodeToolbarConfig, ToolbarAction } from "../../NodeToolbar/NodeToolbar.types";
 import { ToolResourceIcon } from "../components/ToolResourceIcon";
-import type { NodeAdornment } from "../../BaseNode/NewBaseNode.types";
+import type { HandleConfiguration, NodeAdornment } from "../../BaseNode/NewBaseNode.types";
+import type { ButtonHandleConfig } from "../../ButtonHandle";
 
 interface ResourceNodeProps extends NodeProps<AgentFlowResourceNode> {
   mode?: "design" | "view";
@@ -267,7 +268,7 @@ export const ResourceNode = memo(
     ]);
 
     const toolTopHandles = useMemo(
-      () => [
+      (): ButtonHandleConfig[] => [
         {
           id: Position.Top,
           type: "target" as const,
@@ -280,7 +281,7 @@ export const ResourceNode = memo(
     );
 
     const toolBottomHandles = useMemo(
-      () => [
+      (): ButtonHandleConfig[] => [
         {
           id: Position.Bottom,
           type: "source" as const,
@@ -293,7 +294,7 @@ export const ResourceNode = memo(
     );
 
     const contextHandles = useMemo(
-      () => [
+      (): ButtonHandleConfig[] => [
         {
           id: Position.Top,
           type: "source" as const,
@@ -306,7 +307,7 @@ export const ResourceNode = memo(
     );
 
     const escalationHandles = useMemo(
-      () => [
+      (): ButtonHandleConfig[] => [
         {
           id: Position.Bottom,
           type: "target" as const,
@@ -319,7 +320,7 @@ export const ResourceNode = memo(
     );
 
     const memoryHandles = useMemo(
-      () => [
+      (): ButtonHandleConfig[] => [
         {
           id: Position.Bottom,
           type: "target" as const,
@@ -374,7 +375,7 @@ export const ResourceNode = memo(
     }, [isSuggestion, suggestionType]);
 
     const handleConfigurations = useMemo(
-      () => [
+      (): HandleConfiguration[] => [
         {
           position: Position.Top,
           handles: toolTopHandles,

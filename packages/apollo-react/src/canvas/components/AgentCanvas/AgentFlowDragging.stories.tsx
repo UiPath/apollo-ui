@@ -354,9 +354,10 @@ const DesignModeWithDraggingComponent = (_args: AgentFlowProps) => {
         p={16}
         gap={16}
         style={{
-          backgroundColor: "#f5f5f5",
-          borderLeft: "1px solid #e0e0e0",
+          backgroundColor: "var(--uix-canvas-background-secondary)",
+          borderLeft: "1px solid var(--uix-canvas-border-de-emp)",
           overflowY: "auto",
+          color: "var(--uix-canvas-foreground)",
         }}
       >
         <h3 style={{ margin: 0 }}>Design Mode with Dragging</h3>
@@ -372,9 +373,9 @@ const DesignModeWithDraggingComponent = (_args: AgentFlowProps) => {
           <div
             style={{
               padding: "12px",
-              backgroundColor: "#fff",
+              backgroundColor: "var(--uix-canvas-background)",
               borderRadius: "4px",
-              border: "1px solid #e0e0e0",
+              border: "1px solid var(--uix-canvas-border-de-emp)",
             }}
           >
             <div style={{ fontWeight: "bold", marginBottom: "8px" }}>Agent Node Position</div>
@@ -391,9 +392,9 @@ const DesignModeWithDraggingComponent = (_args: AgentFlowProps) => {
         <div
           style={{
             padding: "12px",
-            backgroundColor: "#fff",
+            backgroundColor: "var(--uix-canvas-background)",
             borderRadius: "4px",
-            border: "1px solid #e0e0e0",
+            border: "1px solid var(--uix-canvas-border-de-emp)",
           }}
         >
           <div style={{ fontWeight: "bold", marginBottom: "8px" }}>Zoom Level</div>
@@ -404,9 +405,9 @@ const DesignModeWithDraggingComponent = (_args: AgentFlowProps) => {
         <div
           style={{
             padding: "12px",
-            backgroundColor: "#fff",
+            backgroundColor: "var(--uix-canvas-background)",
             borderRadius: "4px",
-            border: "1px solid #e0e0e0",
+            border: "1px solid var(--uix-canvas-border-de-emp)",
           }}
         >
           <div style={{ fontWeight: "bold", marginBottom: "8px" }}>Resource Positions</div>
@@ -422,17 +423,17 @@ const DesignModeWithDraggingComponent = (_args: AgentFlowProps) => {
                   style={{
                     padding: "8px",
                     marginBottom: "8px",
-                    backgroundColor: "#f9f9f9",
+                    backgroundColor: "var(--uix-canvas-background)",
                     borderRadius: "4px",
-                    border: "1px solid #e0e0e0",
+                    border: "1px solid var(--uix-canvas-border-de-emp)",
                   }}
                 >
                   <div style={{ fontWeight: "bold", marginBottom: "4px", fontSize: "0.8125rem" }}>{resource.name}</div>
-                  <div style={{ color: "#666", fontSize: "0.75rem", marginBottom: "4px" }}>
+                  <div style={{ color: "var(--uix-canvas-foreground-de-emp)", fontSize: "0.75rem", marginBottom: "4px" }}>
                     {resource.type} • {resource.id.substring(0, 12)}...
                   </div>
                   {position ? (
-                    <div style={{ color: "#2563eb" }}>
+                    <div style={{ color: "var(--uix-canvas-primary)" }}>
                       <div>
                         <strong>X:</strong> {position.x.toFixed(2)}
                       </div>
@@ -441,14 +442,14 @@ const DesignModeWithDraggingComponent = (_args: AgentFlowProps) => {
                       </div>
                     </div>
                   ) : (
-                    <div style={{ color: "#999", fontStyle: "italic" }}>Auto-positioned</div>
+                    <div style={{ color: "var(--uix-canvas-foreground-de-emp)", fontStyle: "italic" }}>Auto-positioned</div>
                   )}
                 </div>
               );
             })}
           </div>
         </div>
-        <div style={{ fontSize: "0.875rem", color: "#666" }}>
+        <div style={{ fontSize: "0.875rem", color: "var(--uix-canvas-foreground-de-emp)" }}>
           <p>Click the + buttons on the agent node to add:</p>
           <ul>
             <li>Memory (top)</li>
@@ -645,9 +646,10 @@ const DesignModeWithDraggingEmptyComponent = (_args: AgentFlowProps) => {
         p={16}
         gap={16}
         style={{
-          backgroundColor: "#f5f5f5",
-          borderLeft: "1px solid #e0e0e0",
+          backgroundColor: "var(--uix-canvas-background-secondary)",
+          borderLeft: "1px solid var(--uix-canvas-border-de-emp)",
           overflowY: "auto",
+          color: "var(--uix-canvas-foreground)",
         }}
       >
         <h3 style={{ margin: 0 }}>Design Mode with Dragging</h3>
@@ -663,9 +665,9 @@ const DesignModeWithDraggingEmptyComponent = (_args: AgentFlowProps) => {
           <div
             style={{
               padding: "12px",
-              backgroundColor: "#fff",
+              backgroundColor: "var(--uix-canvas-background)",
               borderRadius: "4px",
-              border: "1px solid #e0e0e0",
+              border: "1px solid var(--uix-canvas-border-de-emp)",
             }}
           >
             <div style={{ fontWeight: "bold", marginBottom: "8px" }}>Agent Node Position</div>
@@ -682,9 +684,9 @@ const DesignModeWithDraggingEmptyComponent = (_args: AgentFlowProps) => {
         <div
           style={{
             padding: "12px",
-            backgroundColor: "#fff",
+            backgroundColor: "var(--uix-canvas-background)",
             borderRadius: "4px",
-            border: "1px solid #e0e0e0",
+            border: "1px solid var(--uix-canvas-border-de-emp)",
           }}
         >
           <div style={{ fontWeight: "bold", marginBottom: "8px" }}>Zoom Level</div>
@@ -695,9 +697,9 @@ const DesignModeWithDraggingEmptyComponent = (_args: AgentFlowProps) => {
         <div
           style={{
             padding: "12px",
-            backgroundColor: "#fff",
+            backgroundColor: "var(--uix-canvas-background)",
             borderRadius: "4px",
-            border: "1px solid #e0e0e0",
+            border: "1px solid var(--uix-canvas-border-de-emp)",
           }}
         >
           <div style={{ fontWeight: "bold", marginBottom: "8px" }}>Resource Positions</div>
@@ -713,17 +715,17 @@ const DesignModeWithDraggingEmptyComponent = (_args: AgentFlowProps) => {
                   style={{
                     padding: "8px",
                     marginBottom: "8px",
-                    backgroundColor: "#f9f9f9",
+                    backgroundColor: "var(--uix-canvas-background)",
                     borderRadius: "4px",
-                    border: "1px solid #e0e0e0",
+                    border: "1px solid var(--uix-canvas-border-de-emp)",
                   }}
                 >
                   <div style={{ fontWeight: "bold", marginBottom: "4px", fontSize: "0.8125rem" }}>{resource.name}</div>
-                  <div style={{ color: "#666", fontSize: "0.75rem", marginBottom: "4px" }}>
+                  <div style={{ color: "var(--uix-canvas-foreground-de-emp)", fontSize: "0.75rem", marginBottom: "4px" }}>
                     {resource.type} • {resource.id.substring(0, 12)}...
                   </div>
                   {position ? (
-                    <div style={{ color: "#2563eb" }}>
+                    <div style={{ color: "var(--uix-canvas-primary)" }}>
                       <div>
                         <strong>X:</strong> {position.x.toFixed(2)}
                       </div>
@@ -732,14 +734,14 @@ const DesignModeWithDraggingEmptyComponent = (_args: AgentFlowProps) => {
                       </div>
                     </div>
                   ) : (
-                    <div style={{ color: "#999", fontStyle: "italic" }}>Auto-positioned</div>
+                    <div style={{ color: "var(--uix-canvas-foreground-de-emp)", fontStyle: "italic" }}>Auto-positioned</div>
                   )}
                 </div>
               );
             })}
           </div>
         </div>
-        <div style={{ fontSize: "0.875rem", color: "#666" }}>
+        <div style={{ fontSize: "0.875rem", color: "var(--uix-canvas-foreground-de-emp)" }}>
           <p>Click the + buttons on the agent node to add:</p>
           <ul>
             <li>Memory (top)</li>
@@ -925,8 +927,9 @@ const DesignModeWithZoomLevelOnlyComponent = (_args: AgentFlowProps) => {
         p={16}
         gap={16}
         style={{
-          backgroundColor: "#f5f5f5",
-          borderLeft: "1px solid #e0e0e0",
+          backgroundColor: "var(--uix-canvas-background-secondary)",
+          borderLeft: "1px solid var(--uix-canvas-border-de-emp)",
+          color: "var(--uix-canvas-foreground)",
           overflowY: "auto",
         }}
       >
@@ -941,22 +944,47 @@ const DesignModeWithZoomLevelOnlyComponent = (_args: AgentFlowProps) => {
         </div>
 
         {/* Agent Node Position */}
-        <div style={{ padding: "12px", backgroundColor: "#fff", borderRadius: "4px", border: "1px solid #e0e0e0" }}>
+        <div
+          style={{
+            padding: "12px",
+            backgroundColor: "var(--uix-canvas-background)",
+            borderRadius: "4px",
+            border: "1px solid var(--uix-canvas-border-de-emp)",
+          }}
+        >
           <div style={{ fontWeight: "bold", marginBottom: "8px" }}>Agent Node Position</div>
-          <div style={{ fontSize: "0.875rem", fontFamily: "monospace", color: "#999", fontStyle: "italic" }}>Auto-positioned</div>
+          <div style={{ fontSize: "0.875rem", fontFamily: "monospace", color: "var(--uix-canvas-foreground-de-emp)", fontStyle: "italic" }}>
+            Auto-positioned
+          </div>
         </div>
 
         {/* Zoom Level */}
-        <div style={{ padding: "12px", backgroundColor: "#fff", borderRadius: "4px", border: "1px solid #e0e0e0" }}>
+        <div
+          style={{
+            padding: "12px",
+            backgroundColor: "var(--uix-canvas-background)",
+            borderRadius: "4px",
+            border: "1px solid var(--uix-canvas-border-de-emp)",
+          }}
+        >
           <div style={{ fontWeight: "bold", marginBottom: "8px" }}>Zoom Level</div>
-          <div style={{ fontSize: "1.5rem", fontFamily: "monospace", fontWeight: "bold", color: "#2563eb" }}>
+          <div style={{ fontSize: "1.5rem", fontFamily: "monospace", fontWeight: "bold", color: "var(--uix-canvas-primary)" }}>
             {(zoomLevel * 100).toFixed(0)}%
           </div>
-          <div style={{ fontSize: "0.75rem", color: "#666", marginTop: "8px" }}>Use mouse wheel or trackpad to zoom in/out</div>
+          <div style={{ fontSize: "0.75rem", color: "var(--uix-canvas-foreground-de-emp)", marginTop: "8px" }}>
+            Use mouse wheel or trackpad to zoom in/out
+          </div>
         </div>
 
         {/* Resource Positions */}
-        <div style={{ padding: "12px", backgroundColor: "#fff", borderRadius: "4px", border: "1px solid #e0e0e0" }}>
+        <div
+          style={{
+            padding: "12px",
+            backgroundColor: "var(--uix-canvas-background)",
+            borderRadius: "4px",
+            border: "1px solid var(--uix-canvas-border-de-emp)",
+          }}
+        >
           <div style={{ fontWeight: "bold", marginBottom: "8px" }}>Resource Positions</div>
           <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
             {resources.map((resource) => {
@@ -967,13 +995,15 @@ const DesignModeWithZoomLevelOnlyComponent = (_args: AgentFlowProps) => {
                   style={{
                     fontSize: "0.75rem",
                     padding: "8px",
-                    backgroundColor: "#f9fafb",
+                    backgroundColor: "var(--uix-canvas-background)",
                     borderRadius: "4px",
-                    border: "1px solid #e5e7eb",
+                    border: "1px solid var(--uix-canvas-border-de-emp)",
                   }}
                 >
                   <div style={{ fontWeight: "500", marginBottom: "4px" }}>{resource.name}</div>
-                  <div style={{ fontFamily: "monospace", color: "#999", fontStyle: "italic" }}>Auto-positioned</div>
+                  <div style={{ fontFamily: "monospace", color: "var(--uix-canvas-foreground-de-emp)", fontStyle: "italic" }}>
+                    Auto-positioned
+                  </div>
                 </div>
               );
             })}
@@ -983,13 +1013,13 @@ const DesignModeWithZoomLevelOnlyComponent = (_args: AgentFlowProps) => {
         <div
           style={{
             padding: "12px",
-            backgroundColor: "#fffbeb",
+            backgroundColor: "var(--uix-canvas-background)",
             borderRadius: "4px",
-            border: "1px solid #fcd34d",
+            border: "1px solid var(--color-warning-icon)",
           }}
         >
-          <div style={{ fontWeight: "bold", marginBottom: "8px", color: "#92400e" }}>ℹ️ Note</div>
-          <div style={{ fontSize: "0.75rem", color: "#78350f", lineHeight: "1.5" }}>
+          <div style={{ fontWeight: "bold", marginBottom: "8px", color: "var(--color-warning-text)" }}>ℹ️ Note</div>
+          <div style={{ fontSize: "0.75rem", color: "var(--color-warning-text)", lineHeight: "1.5" }}>
             <p style={{ margin: "0 0 8px 0" }}>
               This story demonstrates <strong>zoom-only control</strong>:
             </p>

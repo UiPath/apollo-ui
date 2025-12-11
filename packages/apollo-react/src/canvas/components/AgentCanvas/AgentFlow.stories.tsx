@@ -1,7 +1,7 @@
 import { useCallback, useState } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { ApButton, ApTypography, type IRawSpan } from "@uipath/portal-shell-react";
-import { Panel, ReactFlowProvider } from "@uipath/uix/xyflow/react";
+import { ReactFlowProvider } from "@uipath/uix/xyflow/react";
 import { Column, FontVariantToken, Row } from "@uipath/uix/core";
 import { AgentFlow } from "./AgentFlow";
 import {
@@ -13,6 +13,7 @@ import {
   type AgentFlowSuggestionGroup,
   createPlaceholderSuggestion,
 } from "../../types";
+import { StoryInfoPanel } from "../../storybook-utils";
 
 const meta: Meta<typeof AgentFlow> = {
   title: "Canvas/AgentFlow",
@@ -422,9 +423,10 @@ const AgentFlowWrapper = ({
         p={16}
         gap={16}
         style={{
-          backgroundColor: "#f5f5f5",
-          borderLeft: "1px solid #e0e0e0",
+          backgroundColor: "var(--uix-canvas-background-secondary)",
+          borderLeft: "1px solid var(--uix-canvas-border-de-emp)",
           overflowY: "auto",
+          color: "var(--uix-canvas-foreground)",
         }}
       >
         <h3 style={{ margin: 0 }}>Design Mode</h3>
@@ -440,9 +442,9 @@ const AgentFlowWrapper = ({
           <div
             style={{
               padding: "12px",
-              backgroundColor: "#fff",
+              backgroundColor: "var(--uix-canvas-background)",
               borderRadius: "4px",
-              border: "1px solid #e0e0e0",
+              border: "1px solid var(--uix-canvas-border-de-emp)",
             }}
           >
             <div style={{ fontWeight: "bold", marginBottom: "8px" }}>Agent Node Position</div>
@@ -456,7 +458,7 @@ const AgentFlowWrapper = ({
             </div>
           </div>
         )}
-        <div style={{ fontSize: "0.875rem", color: "#666" }}>
+        <div style={{ fontSize: "0.875rem", color: "var(--uix-canvas-foreground-de-emp)" }}>
           <p>Click the + buttons on the agent node to add:</p>
           <ul>
             <li>Memory (top)</li>
@@ -1265,29 +1267,17 @@ const SuggestionModeWrapper = ({
 
   const renderControlPanel = () => {
     return (
-      <Panel position="top-left">
-        <Column
-          gap={12}
-          p={20}
-          style={{
-            color: "var(--uix-canvas-foreground)",
-            backgroundColor: "var(--uix-canvas-background-secondary)",
-            minWidth: 280,
-          }}
-        >
-          <ApTypography variant={FontVariantToken.fontSizeH3Bold}>Suggestion Controls</ApTypography>
-
-          <Column gap={8}>
-            <ApTypography variant={FontVariantToken.fontSizeM}>Suggestion type:</ApTypography>
-            <Row gap={8}>
-              <ApButton size="small" variant="primary" label="Inserts" onClick={handleCreateInsertSuggestions} />
-              <ApButton size="small" variant="primary" label="Deletes" onClick={handleCreateDeleteSuggestions} />
-              <ApButton size="small" variant="primary" label="Updates" onClick={handleCreateUpdateSuggestions} />
-              <ApButton size="small" variant="primary" label="Mixed" onClick={handleCreateMixedSuggestions} />
-            </Row>
-          </Column>
+      <StoryInfoPanel title="Suggestion controls">
+        <Column mt={12} gap={8}>
+          <ApTypography variant={FontVariantToken.fontSizeM}>Suggestion type:</ApTypography>
+          <Row gap={8}>
+            <ApButton size="small" variant="primary" label="Inserts" onClick={handleCreateInsertSuggestions} />
+            <ApButton size="small" variant="primary" label="Deletes" onClick={handleCreateDeleteSuggestions} />
+            <ApButton size="small" variant="primary" label="Updates" onClick={handleCreateUpdateSuggestions} />
+            <ApButton size="small" variant="primary" label="Mixed" onClick={handleCreateMixedSuggestions} />
+          </Row>
         </Column>
-      </Panel>
+      </StoryInfoPanel>
     );
   };
 

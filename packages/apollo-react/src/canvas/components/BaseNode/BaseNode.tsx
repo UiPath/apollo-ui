@@ -93,13 +93,17 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
   );
 
   const hasVisibleBottomHandles = useMemo(() => {
-    if (!handleConfigurations || !selected) {
+    if (!handleConfigurations || !Array.isArray(handleConfigurations) || !selected || displayShape === "circle") {
       return false;
     }
     return handleConfigurations.some(
-      (config) => config.position === Position.Bottom && config.handles.length > 0 && config.visible !== false
+      (config) =>
+        config.position === Position.Bottom &&
+        config.handles.length > 0 &&
+        config.visible !== false &&
+        (config.handles.some((h) => h.type === "source") || config.handles.some((h) => h.showButton))
     );
-  }, [handleConfigurations, selected]);
+  }, [handleConfigurations, selected, displayShape]);
 
   const handleMouseEnter = useCallback(() => setIsHovered(true), []);
   const handleMouseLeave = useCallback(() => setIsHovered(false), []);
