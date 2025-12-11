@@ -9,6 +9,7 @@ import { BaseNode } from "../BaseNode";
 import type { GroupNodeData } from "./GroupNode.types";
 import type { BaseNodeData } from "../BaseNode/BaseNode.types";
 import { withCanvasProviders, useCanvasStory, StoryInfoPanel } from "../../storybook-utils";
+import { DefaultCanvasTranslations } from "../../types";
 
 // ============================================================================
 // Meta Configuration
@@ -114,7 +115,7 @@ function DefaultStory() {
     <BaseCanvas {...canvasProps} nodeTypes={nodeTypes} mode="design">
       <StoryInfoPanel title="Group Nodes" description="Drag groups to move all child nodes together" />
       <Panel position="bottom-right">
-        <CanvasPositionControls />
+        <CanvasPositionControls translations={DefaultCanvasTranslations} showOrganize={false} />
       </Panel>
     </BaseCanvas>
   );
@@ -136,7 +137,7 @@ function EmptyGroupStory() {
     <BaseCanvas {...canvasProps} nodeTypes={nodeTypes} mode="design">
       <StoryInfoPanel title="Empty Group" description="A group node with no children" />
       <Panel position="bottom-right">
-        <CanvasPositionControls />
+        <CanvasPositionControls translations={DefaultCanvasTranslations} showOrganize={false} />
       </Panel>
     </BaseCanvas>
   );

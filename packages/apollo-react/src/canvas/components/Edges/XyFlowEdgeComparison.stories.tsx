@@ -13,6 +13,7 @@ import { Column } from "@uipath/uix/core";
 import { BaseCanvas } from "../BaseCanvas";
 import { CanvasPositionControls } from "../CanvasPositionControls";
 import { withCanvasProviders, useCanvasStory, StoryInfoPanel } from "../../storybook-utils";
+import { DefaultCanvasTranslations } from "../../types";
 
 // ============================================================================
 // Meta Configuration
@@ -267,7 +268,7 @@ function AllEdgeTypesStory() {
         </Column>
       </StoryInfoPanel>
       <Panel position="bottom-right">
-        <CanvasPositionControls />
+        <CanvasPositionControls translations={DefaultCanvasTranslations} showOrganize={false} />
       </Panel>
     </BaseCanvas>
   );
@@ -396,7 +397,7 @@ function InteractiveEdgeSelectionStory() {
         </Column>
       </StoryInfoPanel>
       <Panel position="bottom-right">
-        <CanvasPositionControls />
+        <CanvasPositionControls translations={DefaultCanvasTranslations} showOrganize={false} />
       </Panel>
     </BaseCanvas>
   );

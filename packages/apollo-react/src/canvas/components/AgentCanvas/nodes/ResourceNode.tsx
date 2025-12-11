@@ -175,6 +175,7 @@ export const ResourceNode = memo(
         return {
           actions: [rejectAction, acceptAction],
           overflowActions: [],
+          overflowLabel: "",
           position: "top",
           align: "center",
         };
@@ -239,6 +240,7 @@ export const ResourceNode = memo(
       return {
         actions,
         overflowActions,
+        overflowLabel: translations?.moreOptions ?? "",
         position: "top",
         align: "center",
       };

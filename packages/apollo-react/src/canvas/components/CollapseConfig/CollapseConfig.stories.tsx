@@ -9,6 +9,7 @@ import { NewBaseNode } from "../BaseNode/NewBaseNode";
 import type { NewBaseNodeData } from "../BaseNode/NewBaseNode.types";
 import type { NodeToolbarConfig } from "../NodeToolbar/NodeToolbar.types";
 import { withCanvasProviders, useCanvasStory, StoryInfoPanel, getIcon, allNodeManifests } from "../../storybook-utils";
+import { DefaultCanvasTranslations } from "../../types";
 
 // ============================================================================
 // Meta Configuration
@@ -88,6 +89,8 @@ function CollapsibleAgentNode(props: NodeProps<Node<CollapsibleAgentNodeData>>) 
           onAction: handleToggleCollapse,
         },
       ],
+      overflowActions: [],
+      overflowLabel: "",
     }),
     [collapsed, handleToggleCollapse]
   );
@@ -396,7 +399,7 @@ function DefaultStory() {
         description="Click on the agent node to see the collapse/expand button."
       />
       <Panel position="bottom-right">
-        <CanvasPositionControls />
+        <CanvasPositionControls translations={DefaultCanvasTranslations} showOrganize={false} />
       </Panel>
     </BaseCanvas>
   );

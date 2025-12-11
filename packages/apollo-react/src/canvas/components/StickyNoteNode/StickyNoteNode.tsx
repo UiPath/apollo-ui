@@ -165,6 +165,8 @@ const StickyNoteNodeComponent = ({ id, data, selected, dragging }: StickyNoteNod
     ];
     return {
       actions,
+      overflowActions: [],
+      overflowLabel: "",
       position: "top" as const,
       align: "center" as const,
     };

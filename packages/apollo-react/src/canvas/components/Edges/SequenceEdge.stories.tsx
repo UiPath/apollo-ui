@@ -14,6 +14,7 @@ import { StickyNoteNode } from "../StickyNoteNode";
 import type { StickyNoteColor, StickyNoteData } from "../StickyNoteNode/StickyNoteNode.types";
 import { withCanvasProviders, useCanvasStory } from "../../storybook-utils";
 import { SequenceEdge } from "./SequenceEdge";
+import { DefaultCanvasTranslations } from "../../types";
 
 // ============================================================================
 // Meta Configuration
@@ -225,7 +226,7 @@ function DefaultStory() {
   return (
     <BaseCanvas {...canvasProps} edgeTypes={edgeTypes} mode="design">
       <Panel position="bottom-right">
-        <CanvasPositionControls />
+        <CanvasPositionControls translations={DefaultCanvasTranslations} showOrganize={false} />
       </Panel>
     </BaseCanvas>
   );

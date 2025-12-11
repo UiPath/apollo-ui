@@ -13,6 +13,7 @@ import type { NodeItemData } from "./AddNodePanel.types";
 import { withCanvasProviders, useCanvasStory, createNode, NodePositions, StoryInfoPanel } from "../../storybook-utils";
 import { useCanvasEvent } from "../../hooks";
 import type { CanvasHandleActionEvent } from "../../utils";
+import { DefaultCanvasTranslations } from "../../types";
 
 // ============================================================================
 // Meta Configuration
@@ -161,7 +162,7 @@ function PreviewSelectionStory() {
     <BaseCanvas {...canvasProps} deleteKeyCode={["Backspace", "Delete"]} mode="design" defaultViewport={{ x: 0, y: 0, zoom: 1 }}>
       <AddNodeManager />
       <Panel position="bottom-right">
-        <CanvasPositionControls />
+        <CanvasPositionControls translations={DefaultCanvasTranslations} showOrganize={false} />
       </Panel>
       <StoryInfoPanel
         title="Add node with preview selection"
@@ -209,7 +210,7 @@ function AllSidesStory() {
     <BaseCanvas {...canvasProps} mode="design" defaultViewport={{ x: 0, y: 0, zoom: 1 }}>
       <AddNodeManager />
       <Panel position="bottom-right">
-        <CanvasPositionControls />
+        <CanvasPositionControls translations={DefaultCanvasTranslations} showOrganize={false} />
       </Panel>
       <StoryInfoPanel title="Source handles on all sides" description="Single node with output handles on Top, Bottom, Left, and Right." />
     </BaseCanvas>

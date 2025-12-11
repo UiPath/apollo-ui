@@ -10,6 +10,7 @@ import type { HandleActionEvent } from "../ButtonHandle";
 import { Icons } from "@uipath/uix/core";
 import { ApIcon, ApTypography } from "@uipath/portal-shell-react";
 import { FontVariantToken } from "@uipath/apollo-core";
+import { DefaultCanvasTranslations } from "../../types";
 
 const meta = {
   title: "Canvas/NewBaseNode",
@@ -255,7 +256,7 @@ export const Default: Story = {
           mode="design"
         >
           <Panel position="bottom-right">
-            <CanvasPositionControls />
+            <CanvasPositionControls translations={DefaultCanvasTranslations} showOrganize={false} />
           </Panel>
         </BaseCanvas>
       );
@@ -700,7 +701,7 @@ export const CustomizedSizes: Story = {
           mode="design"
         >
           <Panel position="bottom-right">
-            <CanvasPositionControls />
+            <CanvasPositionControls translations={DefaultCanvasTranslations} showOrganize={false} />
           </Panel>
         </BaseCanvas>
       );

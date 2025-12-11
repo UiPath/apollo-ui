@@ -481,7 +481,11 @@ const AgentFlowInner = memo(
             panShortcutTeachingUIMessage={(canvasTranslations ?? DefaultCanvasTranslations).panShortcutTeaching}
           >
             <Panel position="bottom-right">
-              <CanvasPositionControls fitViewOptions={adjustedFitViewOptions} />
+              <CanvasPositionControls
+                fitViewOptions={adjustedFitViewOptions}
+                translations={canvasTranslations ?? DefaultCanvasTranslations}
+                showOrganize={false} // TODO: Change to `mode === "design"` once tidy-up function is implemented
+              />
             </Panel>
             <Panel position="bottom-center">
               <div ref={timelinePlayerRef}>

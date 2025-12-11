@@ -19,8 +19,8 @@ import { BaseCanvas } from "../BaseCanvas";
 import { NewBaseNode } from "../BaseNode/NewBaseNode";
 import type { NewBaseNodeData } from "../BaseNode/NewBaseNode.types";
 import { CanvasPositionControls } from "../CanvasPositionControls";
-import type { CodedAgentNodeTranslations } from "../../types";
-import { DefaultCodedAgentNodeTranslations } from "../../types";
+import type { CanvasTranslations, CodedAgentNodeTranslations } from "../../types";
+import { DefaultCanvasTranslations, DefaultCodedAgentNodeTranslations } from "../../types";
 import { d3HierarchyLayout, type LayoutDirection } from "../../utils/coded-agents/d3-layout";
 import { mermaidToReactFlow } from "../../utils/coded-agents/mermaid-parser";
 
@@ -266,6 +266,7 @@ export interface CodedAgentFlowProps {
   mermaidText: string;
   layoutDirection?: LayoutDirection;
   agentNodeTranslations?: CodedAgentNodeTranslations;
+  canvasTranslations?: CanvasTranslations;
   canvasRef?: React.Ref<BaseCanvasRef>;
   mode?: "view" | "readonly";
 }
@@ -419,7 +420,7 @@ const CodedAgentFlowInner = (props: CodedAgentFlowProps): JSX.Element => {
           </Row>
         </Panel>
         <Panel position="bottom-right">
-          <CanvasPositionControls />
+          <CanvasPositionControls translations={props.canvasTranslations ?? DefaultCanvasTranslations} showOrganize={false} />
         </Panel>
       </BaseCanvas>
     </div>

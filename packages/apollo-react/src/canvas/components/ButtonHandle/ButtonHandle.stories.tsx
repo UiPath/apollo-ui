@@ -10,6 +10,7 @@ import { type ButtonHandleConfig, ButtonHandles, type HandleActionEvent } from "
 import type { BaseNodeData } from "../BaseNode/BaseNode.types";
 import { CanvasPositionControls } from "../CanvasPositionControls";
 import { withCanvasProviders, useCanvasStory, createNode, StoryInfoPanel } from "../../storybook-utils";
+import { DefaultCanvasTranslations } from "../../types";
 
 // ============================================================================
 // Meta Configuration
@@ -525,7 +526,7 @@ function LogicFlowStory() {
     <BaseCanvas {...canvasProps} mode="design">
       <StoryInfoPanel title="Logic Flow Examples" description="IF and SWITCH nodes with ButtonHandles" />
       <Panel position="bottom-right">
-        <CanvasPositionControls />
+        <CanvasPositionControls translations={DefaultCanvasTranslations} showOrganize={false} />
       </Panel>
     </BaseCanvas>
   );

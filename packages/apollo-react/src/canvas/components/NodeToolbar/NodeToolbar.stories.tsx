@@ -10,6 +10,7 @@ import { ExecutionStatusContext } from "../BaseNode/ExecutionStatusContext";
 import { NodeRegistryProvider } from "../BaseNode/NodeRegistryProvider";
 import { ExecutionStatusIcon } from "../ExecutionStatusIcon";
 import { useCanvasStory, StoryInfoPanel } from "../../storybook-utils";
+import { DefaultCanvasTranslations } from "../../types";
 
 // ============================================================================
 // Node Registration
@@ -43,6 +44,7 @@ const toolbarNodeRegistration: NodeRegistration = {
         { id: "duplicate", icon: "content_copy", label: "Duplicate", onAction: (nodeId) => console.log(`Duplicate: ${nodeId}`) },
         { id: "settings", icon: "settings", label: "Settings", onAction: (nodeId) => console.log(`Settings: ${nodeId}`) },
       ],
+      overflowLabel: "More options",
       position: (data?.parameters?.toolbarPosition as "top" | "bottom" | "left" | "right") || "top",
       align: (data?.parameters?.toolbarAlign as "start" | "center" | "end") || "end",
     }),
@@ -122,7 +124,7 @@ function DefaultStory() {
     <BaseCanvas {...canvasProps} mode="design">
       <StoryInfoPanel title="Node Toolbar" description="Hover over nodes to see toolbar actions" />
       <Panel position="bottom-right">
-        <CanvasPositionControls />
+        <CanvasPositionControls translations={DefaultCanvasTranslations} showOrganize={false} />
       </Panel>
     </BaseCanvas>
   );

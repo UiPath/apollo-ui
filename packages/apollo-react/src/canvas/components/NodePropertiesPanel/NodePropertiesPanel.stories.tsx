@@ -7,6 +7,7 @@ import { BaseCanvas } from "../BaseCanvas";
 import { CanvasPositionControls } from "../CanvasPositionControls";
 import type { BaseNodeData } from "../BaseNode";
 import { withCanvasProviders, useCanvasStory, createNode, NodePositions, StoryInfoPanel } from "../../storybook-utils";
+import { DefaultCanvasTranslations } from "../../types";
 
 // ============================================================================
 // Meta Configuration
@@ -74,7 +75,7 @@ function PropertiesPanelStory() {
         description={`Click on nodes to open properties panel. Panel is ${isPinned ? "pinned to the right" : "floating near node"}.`}
       />
       <Panel position="bottom-right">
-        <CanvasPositionControls />
+        <CanvasPositionControls translations={DefaultCanvasTranslations} showOrganize={false} />
       </Panel>
     </BaseCanvas>
   );

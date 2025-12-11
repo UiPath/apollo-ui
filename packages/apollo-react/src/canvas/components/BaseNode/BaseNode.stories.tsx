@@ -13,6 +13,7 @@ import { NodeInspector } from "../NodeInspector";
 import type { BaseNodeData } from "./BaseNode.types";
 import { useNodeTypeRegistry } from "./useNodeTypeRegistry";
 import { withCanvasProviders, useCanvasStory, createNode, StoryInfoPanel } from "../../storybook-utils";
+import { DefaultCanvasTranslations } from "../../types";
 
 // ============================================================================
 // Meta Configuration
@@ -169,7 +170,7 @@ function DefaultStory() {
   return (
     <BaseCanvas {...canvasProps} mode="design">
       <Panel position="bottom-right">
-        <CanvasPositionControls />
+        <CanvasPositionControls translations={DefaultCanvasTranslations} showOrganize={false} />
       </Panel>
       <StoryInfoPanel
         title="BaseNode Shapes & States"
@@ -188,7 +189,7 @@ function CustomizedSizesStory() {
     <BaseCanvas {...canvasProps} mode="design">
       <NodeInspector />
       <Panel position="bottom-right">
-        <CanvasPositionControls />
+        <CanvasPositionControls translations={DefaultCanvasTranslations} showOrganize={false} />
       </Panel>
       <StoryInfoPanel title="Customized Sizes" description="Nodes with various dimensions aligned to 16px grid." />
     </BaseCanvas>

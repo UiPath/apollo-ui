@@ -277,6 +277,7 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
       return {
         actions: [rejectAction, acceptAction],
         overflowActions: [],
+        overflowLabel: "",
         position: "top",
         align: "center",
       };

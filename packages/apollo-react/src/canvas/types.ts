@@ -486,6 +486,7 @@ export const DefaultAgentNodeTranslations: AgentNodeTranslations = {
 };
 
 export interface ResourceNodeTranslations {
+  moreOptions: string;
   enable: string;
   disable: string;
   expand: string;
@@ -499,6 +500,7 @@ export interface ResourceNodeTranslations {
 }
 
 export const DefaultResourceNodeTranslations: ResourceNodeTranslations = {
+  moreOptions: "More options",
   enable: "Enable",
   disable: "Disable",
   expand: "Expand",
@@ -523,10 +525,18 @@ export const DefaultCodedAgentNodeTranslations: CodedAgentNodeTranslations = {
 
 export interface CanvasTranslations {
   panShortcutTeaching: string;
+  organize: string;
+  zoomIn: string;
+  zoomOut: string;
+  zoomToFit: string;
 }
 
 export const DefaultCanvasTranslations: CanvasTranslations = {
   panShortcutTeaching: "Hold Space and drag to pan around the canvas",
+  organize: "Organize",
+  zoomIn: "Zoom in",
+  zoomOut: "Zoom out",
+  zoomToFit: "Zoom to fit",
 };
 
 export interface SuggestionTranslations {

@@ -9,6 +9,7 @@ import { type CanvasLevel } from "../../types/canvas.types";
 import { NodeRegistryProvider } from "../BaseNode/NodeRegistryProvider";
 import type { BaseNodeData, NodeDisplay, NodeRegistration } from "../BaseNode";
 import { canvasEventBus } from "../../utils/CanvasEventBus";
+import { DefaultResourceNodeTranslations } from "../../types";
 
 const workflowNodeTypes = {
   start: {
@@ -233,6 +234,8 @@ const workflowNodeTypes = {
               },
             },
           ],
+          // TODO: Localize
+          overflowLabel: DefaultResourceNodeTranslations.moreOptions,
           position: "top" as const,
           align: "end" as const,
         };

@@ -30,7 +30,6 @@ const NodeToolbarComponent = ({ nodeId, config, visible }: NodeToolbarProps) => 
     return null;
   }
 
-  // TODO: Localization
   return (
     <AnimatePresence>
       {shouldShowToolbar && (
@@ -64,7 +63,7 @@ const NodeToolbarComponent = ({ nodeId, config, visible }: NodeToolbarProps) => 
                   aria-expanded={isDropdownOpen}
                   aria-haspopup="menu"
                 >
-                  <ApTooltip content="More options" placement="top">
+                  <ApTooltip content={config.overflowLabel} placement="top">
                     <ApIcon variant="outlined" name="more_vert" size="16px" />
                   </ApTooltip>
                 </StyledToolbarButton>

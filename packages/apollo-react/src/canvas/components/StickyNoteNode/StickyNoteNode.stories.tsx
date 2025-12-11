@@ -7,6 +7,7 @@ import { CanvasPositionControls } from "../CanvasPositionControls";
 import { StickyNoteNode } from "./StickyNoteNode";
 import type { StickyNoteColor, StickyNoteData } from "./StickyNoteNode.types";
 import { withCanvasProviders, useCanvasStory } from "../../storybook-utils";
+import { DefaultCanvasTranslations } from "../../types";
 
 // ============================================================================
 // Meta Configuration
@@ -81,7 +82,7 @@ function DefaultStory() {
   return (
     <BaseCanvas {...canvasProps} mode="design">
       <Panel position="bottom-right">
-        <CanvasPositionControls />
+        <CanvasPositionControls translations={DefaultCanvasTranslations} showOrganize={false} />
       </Panel>
     </BaseCanvas>
   );
@@ -291,7 +292,7 @@ function WithBaseNodesStory() {
   return (
     <BaseCanvas {...canvasProps} mode="design" elevateNodesOnSelect>
       <Panel position="bottom-right">
-        <CanvasPositionControls />
+        <CanvasPositionControls translations={DefaultCanvasTranslations} showOrganize={false} />
       </Panel>
     </BaseCanvas>
   );

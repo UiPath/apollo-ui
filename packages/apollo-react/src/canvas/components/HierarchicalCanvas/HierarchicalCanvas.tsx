@@ -41,6 +41,7 @@ import { MiniCanvasNavigator } from "../MiniCanvasNavigator";
 import { shallow } from "zustand/shallow";
 import { PREVIEW_EDGE_ID, PREVIEW_NODE_ID } from "../../constants";
 import { useAddNodeOnConnectEnd } from "../../hooks/useAddNodeOnConnectEnd";
+import { DefaultCanvasTranslations } from "../../types";
 
 interface HierarchicalCanvasProps {
   mode?: "view" | "design" | "readonly";
@@ -349,7 +350,7 @@ export const HierarchicalCanvas: React.FC<HierarchicalCanvasProps> = ({ mode = "
         fitViewOptions={{ padding: 0.2, minZoom: 1, maxZoom: 1 }}
       >
         <Panel position="bottom-right">
-          <CanvasPositionControls />
+          <CanvasPositionControls translations={DefaultCanvasTranslations} showOrganize={false} />
         </Panel>
 
         <AddNodeManager />

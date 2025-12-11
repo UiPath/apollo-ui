@@ -10,6 +10,7 @@ import { CanvasPositionControls } from "../CanvasPositionControls";
 import { SequenceEdge } from "../Edges/SequenceEdge";
 import { withCanvasProviders, useCanvasStory, StoryInfoPanel } from "../../storybook-utils";
 import { SmartHandle, SmartSourceHandle, SmartTargetHandle, SmartHandleProvider } from "./SmartHandle";
+import { DefaultCanvasTranslations } from "../../types";
 
 // ============================================================================
 // Meta Configuration
@@ -205,7 +206,7 @@ function DefaultStory() {
         </Column>
       </StoryInfoPanel>
       <Panel position="bottom-right">
-        <CanvasPositionControls />
+        <CanvasPositionControls translations={DefaultCanvasTranslations} showOrganize={false} />
       </Panel>
     </BaseCanvas>
   );
@@ -356,7 +357,7 @@ function MultiHandleStory() {
         </Column>
       </StoryInfoPanel>
       <Panel position="bottom-right">
-        <CanvasPositionControls />
+        <CanvasPositionControls translations={DefaultCanvasTranslations} showOrganize={false} />
       </Panel>
     </BaseCanvas>
   );

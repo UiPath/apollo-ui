@@ -10,6 +10,7 @@ import { BaseCanvas } from "./BaseCanvas";
 import type { BaseCanvasRef } from "./BaseCanvas.types";
 import type { BaseNodeData } from "../BaseNode/BaseNode.types";
 import { withCanvasProviders, useCanvasStory, createNode, StoryInfoPanel } from "../../storybook-utils";
+import { DefaultCanvasTranslations } from "../../types";
 
 // ============================================================================
 // Meta Configuration
@@ -162,7 +163,7 @@ function DefaultStory() {
         </Column>
       </StoryInfoPanel>
       <Panel position="bottom-right">
-        <CanvasPositionControls />
+        <CanvasPositionControls translations={DefaultCanvasTranslations} showOrganize={false} />
       </Panel>
     </BaseCanvas>
   );
@@ -196,7 +197,7 @@ function DifferentBackgroundsStory() {
         </Row>
       </StoryInfoPanel>
       <Panel position="bottom-right">
-        <CanvasPositionControls />
+        <CanvasPositionControls translations={DefaultCanvasTranslations} showOrganize={false} />
       </Panel>
     </BaseCanvas>
   );
@@ -210,7 +211,7 @@ function ReadOnlyModeStory() {
     <BaseCanvas {...canvasProps} mode="readonly">
       <StoryInfoPanel title="Read-only mode" description="Interactions are disabled. Canvas cannot be panned, zoomed, or edited." />
       <Panel position="bottom-right">
-        <CanvasPositionControls />
+        <CanvasPositionControls translations={DefaultCanvasTranslations} showOrganize={false} />
       </Panel>
     </BaseCanvas>
   );
@@ -248,7 +249,7 @@ function EmptyCanvasStory() {
         </Column>
       </StoryInfoPanel>
       <Panel position="bottom-right">
-        <CanvasPositionControls />
+        <CanvasPositionControls translations={DefaultCanvasTranslations} showOrganize={false} />
       </Panel>
     </BaseCanvas>
   );
@@ -336,7 +337,7 @@ function WithNodeFocusControlsStory() {
         </Column>
       </StoryInfoPanel>
       <Panel position="bottom-right">
-        <CanvasPositionControls orientation="vertical" />
+        <CanvasPositionControls orientation="vertical" translations={DefaultCanvasTranslations} showOrganize={false} />
       </Panel>
     </BaseCanvas>
   );
@@ -422,7 +423,7 @@ function WithMaintainNodesInViewStory() {
       <div style={{ flex: 1, border: "1px solid var(--uix-canvas-border)", transition: "all 0.3s ease", ...containerSize }}>
         <BaseCanvas {...canvasProps} mode="view" maintainNodesInView={maintainNodes}>
           <Panel position="bottom-right">
-            <CanvasPositionControls orientation="vertical" />
+            <CanvasPositionControls orientation="vertical" translations={DefaultCanvasTranslations} showOrganize={false} />
           </Panel>
         </BaseCanvas>
       </div>

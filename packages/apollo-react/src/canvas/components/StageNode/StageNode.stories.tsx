@@ -9,6 +9,7 @@ import { CanvasPositionControls } from "../CanvasPositionControls";
 import { StageEdge } from "./StageEdge";
 import { StageConnectionEdge } from "./StageConnectionEdge";
 import type { ListItem } from "../Toolbox";
+import { DefaultCanvasTranslations } from "../../types";
 
 const meta = {
   title: "Canvas/StageNode",
@@ -74,7 +75,7 @@ const meta = {
               elevateEdgesOnSelect
             >
               <Panel position="bottom-right">
-                <CanvasPositionControls />
+                <CanvasPositionControls translations={DefaultCanvasTranslations} showOrganize={false} />
               </Panel>
             </BaseCanvas>
           </ReactFlowProvider>
