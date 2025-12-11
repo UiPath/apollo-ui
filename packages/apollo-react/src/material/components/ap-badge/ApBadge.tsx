@@ -7,7 +7,7 @@ import {
 import token from '@uipath/apollo-core';
 
 import { StatusTypes } from '../../../types/statusTypes';
-import type {
+import {
   ApBadgeProps,
   BadgeSize,
 } from './ApBadge.types';
@@ -68,7 +68,7 @@ const StyledBadge = styled(Chip, {
  * It wraps MUI's Chip component with Apollo design system styling and semantic colors.
  */
 export const ApBadge = React.forwardRef<HTMLDivElement, ApBadgeProps>(
-    ({ label, size = 'small', status = 'default', className, style }, ref) => {
+    ({ label, size = BadgeSize.SMALL, status = 'default', className, style }, ref) => {
         return (
             <StyledBadge
                 ref={ref}

@@ -1,6 +1,6 @@
 import {
-	type AlertBarStatus,
 	ApAlertBar,
+	StatusTypes,
 } from "@uipath/apollo-react/material/components";
 import { useState } from "react";
 import styled from "styled-components";
@@ -68,7 +68,7 @@ export function AlertBarShowcase() {
 					<Label>Success Alert</Label>
 					{showAlert1 && (
 						<ApAlertBar
-							status={"success" as AlertBarStatus}
+							status={StatusTypes.SUCCESS}
 							onCancel={() => setShowAlert1(false)}
 						>
 							Operation completed successfully!
@@ -89,7 +89,7 @@ export function AlertBarShowcase() {
 					<Label>Error Alert</Label>
 					{showAlert2 && (
 						<ApAlertBar
-							status={"error" as AlertBarStatus}
+							status={StatusTypes.ERROR}
 							onCancel={() => setShowAlert2(false)}
 						>
 							An error occurred. Please try again.
@@ -110,7 +110,7 @@ export function AlertBarShowcase() {
 					<Label>Warning Alert</Label>
 					{showAlert3 && (
 						<ApAlertBar
-							status={"warning" as AlertBarStatus}
+							status={StatusTypes.WARNING}
 							onCancel={() => setShowAlert3(false)}
 						>
 							This action cannot be undone.
@@ -131,7 +131,7 @@ export function AlertBarShowcase() {
 					<Label>Info Alert</Label>
 					{showAlert4 && (
 						<ApAlertBar
-							status={"info" as AlertBarStatus}
+							status={StatusTypes.INFO}
 							onCancel={() => setShowAlert4(false)}
 						>
 							Here&apos;s some helpful information for you.
@@ -156,7 +156,7 @@ export function AlertBarShowcase() {
 					<Label>Success with long message</Label>
 					{showAlert5 && (
 						<ApAlertBar
-							status={"success" as AlertBarStatus}
+							status={StatusTypes.SUCCESS}
 							onCancel={() => setShowAlert5(false)}
 						>
 							Your operation has been completed successfully! All validation
@@ -180,7 +180,7 @@ export function AlertBarShowcase() {
 					<Label>Error with detailed explanation</Label>
 					{showAlert6 && (
 						<ApAlertBar
-							status={"error" as AlertBarStatus}
+							status={StatusTypes.ERROR}
 							onCancel={() => setShowAlert6(false)}
 						>
 							An error occurred while processing your request. The server
@@ -205,7 +205,7 @@ export function AlertBarShowcase() {
 					<Label>Warning with multiple sentences</Label>
 					{showAlert7 && (
 						<ApAlertBar
-							status={"warning" as AlertBarStatus}
+							status={StatusTypes.WARNING}
 							onCancel={() => setShowAlert7(false)}
 						>
 							This action will permanently delete all associated data and cannot
@@ -230,7 +230,7 @@ export function AlertBarShowcase() {
 					<Label>Info with comprehensive details</Label>
 					{showAlert8 && (
 						<ApAlertBar
-							status={"info" as AlertBarStatus}
+							status={StatusTypes.INFO}
 							onCancel={() => setShowAlert8(false)}
 						>
 							We&apos;ve recently updated our privacy policy and terms of

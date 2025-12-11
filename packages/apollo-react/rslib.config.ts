@@ -39,11 +39,11 @@ export default defineConfig({
     entry: {
       index: [
         './src/**',
-        '!src/**/*.test.{ts,tsx}',
-        '!src/test/**',
-        '!src/icons/.cache',
-        '!src/**/*.md',
-        '!src/**/locales/*.js',
+        '!./src/**/*.test.{ts,tsx}',
+        '!./src/test/**',
+        '!./src/icons/.cache',
+        '!./src/**/*.md',
+        '!./src/**/locales/*.js',
       ],
     },
   },

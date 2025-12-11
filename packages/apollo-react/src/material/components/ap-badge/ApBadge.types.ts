@@ -2,7 +2,10 @@ import React from 'react';
 
 import { StatusTypes } from '../../../types/statusTypes';
 
-export type BadgeSize = 'small' | 'large';
+export enum BadgeSize {
+  SMALL = 'small',
+  LARGE = 'large'
+}
 
 export interface ApBadgeProps extends React.HTMLAttributes<HTMLDivElement> {
     /** The text label to display in the badge */
