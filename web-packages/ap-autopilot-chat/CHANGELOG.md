@@ -1,3 +1,12 @@
+# [0.3.0](https://github.com/UiPath/apollo-ui/compare/@uipath/ap-autopilot-chat@0.2.0...@uipath/ap-autopilot-chat@0.3.0) (2025-12-11)
+
+
+### Features
+
+* **apollo-vertex:** add shell component to registry ([1d068de](https://github.com/UiPath/apollo-ui/commit/1d068de1764a3dae2439c93e2f629f1f360223a6))
+* **apollo-vertex:** add shell layout ([6f699a3](https://github.com/UiPath/apollo-ui/commit/6f699a34ad6bbb03363b8ae2a46831da63a91a1a))
+* **apollo-vertex:** auth shell component ([f4f3cbf](https://github.com/UiPath/apollo-ui/commit/f4f3cbfa1df9667508df93b8ca31ad210d35e8d9))
+
 # [0.2.0](https://github.com/UiPath/apollo-ui/compare/@uipath/ap-autopilot-chat@0.1.0...@uipath/ap-autopilot-chat@0.2.0) (2025-12-11)
 
 
