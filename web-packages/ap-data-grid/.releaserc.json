@@ -33,6 +33,13 @@
         "publishCmd": "pnpm publish --no-git-checks"
       }
     ],
-    "@semantic-release/github"
+    [
+      "@semantic-release/github",
+      {
+        "successComment": false,
+        "failComment": false,
+        "releasedLabels": false
+      }
+    ]
   ]
 }
