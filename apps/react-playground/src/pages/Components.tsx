@@ -1,4 +1,4 @@
-export function ComponentsWIP() {
+export function Components() {
 	return (
 		<div
 			style={{

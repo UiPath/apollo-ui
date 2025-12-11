@@ -1,58 +1,66 @@
-import { BrowserRouter, Route, Routes } from "react-router-dom";
-import { AppContainer, MainContent } from "./App.styles";
-import { Breadcrumb } from "./components/Breadcrumb";
-import { Sidebar } from "./components/Sidebar";
-import { ThemeProvider } from "./contexts/ThemeContext";
-import { ApChatShowcase } from "./pages/ApChatShowcase";
-import { Borders } from "./pages/Borders";
-import { Colors } from "./pages/Colors";
-import { ComponentsHome } from "./pages/ComponentsHome";
-import { CoreHome } from "./pages/CoreHome";
-import { CssVariables } from "./pages/CssVariables";
-import { AlertBarShowcase } from "./pages/components/AlertBarShowcase";
-import { BadgeShowcase } from "./pages/components/BadgeShowcase";
-import { ChipShowcase } from "./pages/components/ChipShowcase";
-import { LinkShowcase } from "./pages/components/LinkShowcase";
-import { SkeletonShowcase } from "./pages/components/SkeletonShowcase";
-import { TextAreaShowcase } from "./pages/components/TextAreaShowcase";
-import { TextFieldShowcase } from "./pages/components/TextFieldShowcase";
-import { ToolCallShowcase } from "./pages/components/ToolCallShowcase";
-import { TreeViewShowcase } from "./pages/components/TreeViewShowcase";
-import { TypographyShowcase } from "./pages/components/TypographyShowcase";
-import { Fonts } from "./pages/Fonts";
-import { Icons } from "./pages/Icons";
-import { MainHome } from "./pages/MainHome";
-import { MaterialHome } from "./pages/MaterialHome";
-import { MaterialAlert } from "./pages/material/MaterialAlert";
-import { MaterialAutocomplete } from "./pages/material/MaterialAutocomplete";
-import { MaterialButtonBase } from "./pages/material/MaterialButtonBase";
-import { MaterialButtons } from "./pages/material/MaterialButtons";
-import { MaterialCheckbox } from "./pages/material/MaterialCheckbox";
-import { MaterialChip } from "./pages/material/MaterialChip";
-import { MaterialCircularProgress } from "./pages/material/MaterialCircularProgress";
-import { MaterialDatepicker } from "./pages/material/MaterialDatepicker";
-import { MaterialDialog } from "./pages/material/MaterialDialog";
-import { MaterialDivider } from "./pages/material/MaterialDivider";
-import { MaterialFormControls } from "./pages/material/MaterialFormControls";
-import { MaterialInputBase } from "./pages/material/MaterialInputBase";
-import { MaterialInputs } from "./pages/material/MaterialInputs";
-import { MaterialLinearProgress } from "./pages/material/MaterialLinearProgress";
-import { MaterialLink } from "./pages/material/MaterialLink";
-import { MaterialList } from "./pages/material/MaterialList";
-import { MaterialMenuItem } from "./pages/material/MaterialMenuItem";
-import { MaterialRadio } from "./pages/material/MaterialRadio";
-import { MaterialSelect } from "./pages/material/MaterialSelect";
-import { MaterialSlider } from "./pages/material/MaterialSlider";
-import { MaterialSnackbar } from "./pages/material/MaterialSnackbar";
-import { MaterialStepper } from "./pages/material/MaterialStepper";
-import { MaterialSwitch } from "./pages/material/MaterialSwitch";
-import { MaterialTabs } from "./pages/material/MaterialTabs";
-import { MaterialTextField } from "./pages/material/MaterialTextField";
-import { MaterialTooltip } from "./pages/material/MaterialTooltip";
-import { MaterialTypography } from "./pages/material/MaterialTypography";
-import { Screens } from "./pages/Screens";
-import { Shadows } from "./pages/Shadows";
-import { Spacing } from "./pages/Spacing";
+import {
+  BrowserRouter,
+  Route,
+  Routes,
+} from 'react-router-dom';
+
+import {
+  AppContainer,
+  MainContent,
+} from './App.styles';
+import { Breadcrumb } from './components/Breadcrumb';
+import { Sidebar } from './components/Sidebar';
+import { ThemeProvider } from './contexts/ThemeContext';
+import { Borders } from './pages/Borders';
+import { Colors } from './pages/Colors';
+import { AlertBarShowcase } from './pages/components/AlertBarShowcase';
+import { ApChatShowcase } from './pages/components/ApChatShowcase';
+import { BadgeShowcase } from './pages/components/BadgeShowcase';
+import { ChipShowcase } from './pages/components/ChipShowcase';
+import { LinkShowcase } from './pages/components/LinkShowcase';
+import { SkeletonShowcase } from './pages/components/SkeletonShowcase';
+import { TextAreaShowcase } from './pages/components/TextAreaShowcase';
+import { TextFieldShowcase } from './pages/components/TextFieldShowcase';
+import { ToolCallShowcase } from './pages/components/ToolCallShowcase';
+import { TreeViewShowcase } from './pages/components/TreeViewShowcase';
+import { TypographyShowcase } from './pages/components/TypographyShowcase';
+import { ComponentsHome } from './pages/ComponentsHome';
+import { CoreHome } from './pages/CoreHome';
+import { CssVariables } from './pages/CssVariables';
+import { Fonts } from './pages/Fonts';
+import { Icons } from './pages/Icons';
+import { MainHome } from './pages/MainHome';
+import { MaterialAlert } from './pages/material/MaterialAlert';
+import { MaterialAutocomplete } from './pages/material/MaterialAutocomplete';
+import { MaterialButtonBase } from './pages/material/MaterialButtonBase';
+import { MaterialButtons } from './pages/material/MaterialButtons';
+import { MaterialCheckbox } from './pages/material/MaterialCheckbox';
+import { MaterialChip } from './pages/material/MaterialChip';
+import { MaterialCircularProgress } from './pages/material/MaterialCircularProgress';
+import { MaterialDatepicker } from './pages/material/MaterialDatepicker';
+import { MaterialDialog } from './pages/material/MaterialDialog';
+import { MaterialDivider } from './pages/material/MaterialDivider';
+import { MaterialFormControls } from './pages/material/MaterialFormControls';
+import { MaterialInputBase } from './pages/material/MaterialInputBase';
+import { MaterialInputs } from './pages/material/MaterialInputs';
+import { MaterialLinearProgress } from './pages/material/MaterialLinearProgress';
+import { MaterialLink } from './pages/material/MaterialLink';
+import { MaterialList } from './pages/material/MaterialList';
+import { MaterialMenuItem } from './pages/material/MaterialMenuItem';
+import { MaterialRadio } from './pages/material/MaterialRadio';
+import { MaterialSelect } from './pages/material/MaterialSelect';
+import { MaterialSlider } from './pages/material/MaterialSlider';
+import { MaterialSnackbar } from './pages/material/MaterialSnackbar';
+import { MaterialStepper } from './pages/material/MaterialStepper';
+import { MaterialSwitch } from './pages/material/MaterialSwitch';
+import { MaterialTabs } from './pages/material/MaterialTabs';
+import { MaterialTextField } from './pages/material/MaterialTextField';
+import { MaterialTooltip } from './pages/material/MaterialTooltip';
+import { MaterialTypography } from './pages/material/MaterialTypography';
+import { MaterialHome } from './pages/MaterialHome';
+import { Screens } from './pages/Screens';
+import { Shadows } from './pages/Shadows';
+import { Spacing } from './pages/Spacing';
 
 function App() {
 	return (

@@ -1,30 +1,36 @@
 import {
-	ApChat,
-	AutopilotChatEvent,
-	AutopilotChatMode,
-	AutopilotChatRole,
-	AutopilotChatService,
-	type SupportedLocale,
-} from "@uipath/apollo-react/material/components";
-import { useCallback, useEffect, useRef, useState } from "react";
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 
-import { useTheme } from "../contexts/ThemeContext";
 import {
-	Button,
-	ButtonGroup,
-	ChatContainer,
-	Checkbox,
-	ControlPanel,
-	FloatingChatContainer,
-	InfoText,
-	Input,
-	PrimaryButton,
-	Section,
-	SectionTitle,
-	Select,
-	ShowcaseContainer,
-	TextArea,
-} from "./ApChatShowcase.styles";
+  ApChat,
+  AutopilotChatEvent,
+  AutopilotChatMode,
+  AutopilotChatRole,
+  AutopilotChatService,
+  type SupportedLocale,
+} from '@uipath/apollo-react/material/components';
+
+import { useTheme } from '../../contexts/ThemeContext';
+import {
+  Button,
+  ButtonGroup,
+  ChatContainer,
+  Checkbox,
+  ControlPanel,
+  FloatingChatContainer,
+  InfoText,
+  Input,
+  PrimaryButton,
+  Section,
+  SectionTitle,
+  Select,
+  ShowcaseContainer,
+  TextArea,
+} from './ApChatShowcase.styles';
 
 export function ApChatShowcase() {
 	const { theme, highContrast } = useTheme();
@@ -462,7 +468,7 @@ export function ApChatShowcase() {
 	useEffect(() => {
 		if (chatService) {
 			chatService.initialize({
-				mode: AutopilotChatMode.SideBySide,
+				mode: chatMode,
 				disabledFeatures: {
 					history: !features.history,
 					settings: !features.settings,
@@ -477,6 +483,10 @@ export function ApChatShowcase() {
 					copy: !features.copy,
 				},
 				settingsRenderer: createSettingsRenderer(),
+				...(chatMode === AutopilotChatMode.Embedded &&
+					embeddedContainerRef.current && {
+						embeddedContainer: embeddedContainerRef.current,
+					}),
 			});
 
 			// Re-set models and agent modes after initialization (or clear if disabled)
@@ -573,6 +583,7 @@ export function ApChatShowcase() {
 		selectedModel,
 		selectedAgentMode,
 		createSettingsRenderer,
+		chatMode,
 	]);
 
 	// Chat mode controls
