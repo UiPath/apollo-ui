@@ -29,3 +29,7 @@ export { DataTransformFlattenIcon } from "./DataTransformFlattenIcon";
 export { DataTransformExtractIcon } from "./DataTransformExtractIcon";
 export { HealthScoreIcon } from "./HealthScoreIcon";
 export { LoopIcon } from "./LoopIcon";
+export { OrganizeIcon } from "./OrganizeIcon";
+export { ZoomInIcon } from "./ZoomInIcon";
+export { ZoomOutIcon } from "./ZoomOutIcon";
+export { ZoomToFitIcon } from "./ZoomToFitIcon";
