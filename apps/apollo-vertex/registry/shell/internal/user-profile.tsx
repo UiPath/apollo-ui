@@ -8,7 +8,9 @@ interface UserProfileProps {
 }
 
 export const UserProfile = ({ isCollapsed, toggleCollapse }: UserProfileProps) => {
-    const { user } = useAuth();
+    const auth = useAuth();
+
+    const user = auth?.user;
 
   const userInitials = user?.profile?.name
     ? user.profile.name
