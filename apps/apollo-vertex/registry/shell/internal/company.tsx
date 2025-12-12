@@ -1,5 +1,5 @@
-import { Button } from "@/registry/button/button";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/registry/tooltip/tooltip";
+import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Box, PanelLeft } from "lucide-react";
 
 interface CompanyProps {

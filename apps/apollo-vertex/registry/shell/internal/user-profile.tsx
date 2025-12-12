@@ -1,5 +1,5 @@
-import { Avatar, AvatarFallback, AvatarImage } from "@/registry/avatar/avatar";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/registry/tooltip/tooltip";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useAuth } from "@uipath/auth-react";
 
 interface UserProfileProps {
