@@ -1,0 +1,12 @@
+{
+	"buildCommand": "cd ../.. && pnpm turbo run build --filter=react-playground",
+	"outputDirectory": "dist",
+	"installCommand": "pnpm install",
+	"framework": null,
+	"rewrites": [
+		{
+			"source": "/(.*)",
+			"destination": "/index.html"
+		}
+	]
+}
