@@ -16,10 +16,64 @@ The `@uipath/vs-core` package provides everything you need to build data-driven 
 
 To create a new vertical solution, you have two options:
 
-**Option 1: Use the CLI (Recommended)**
+**Option 1: Install the UI CLI + plugins (Recommended)**
 
 ```bash
-npx @uipath/ui-cli create my-solution
+npm install @uipath/ui-cli @uipath/ui-cli-vss @uipath/ui-cli-deploy
+```
+
+After installing, you can run commands via `ui-cli`.
+
+### `@uipath/ui-cli-vss` commands
+
+VSS plugin for Vertical Solution Templates.
+
+Also supports flags, for more info ui-cli vss --help or ui-cli vss [command] --help.
+
+Plugin docs: https://github.com/UiPath/ui-cli/tree/master/packages/vss
+
+- **Initialize a new VSS project**
+
+```bash
+ui-cli vss init [path]
+```
+
+- **Add an entity**
+
+```bash
+ui-cli vss add entity
+```
+
+- **Add a process**
+
+```bash
+ui-cli vss add process
+```
+
+- **Sync entities**
+
+```bash
+ui-cli vss sync
+```
+
+### `@uipath/ui-cli-deploy` commands
+
+Deployment automation plugin for building, packaging, and publishing UiPath apps.
+
+Also supports flags, for more info ui-cli deploy --help or ui-cli deploy [command] --help.
+
+Plugin docs: https://github.com/UiPath/ui-cli/tree/master/packages/deploy
+
+- **Initialize deployment configuration**
+
+```bash
+ui-cli deploy init
+```
+
+- **Deploy your app**
+
+```bash
+ui-cli deploy run
 ```
 
 **Option 2: Fork the Template**
@@ -74,6 +128,12 @@ function InvoicesList() {
 ```
 
 That's it! The `useSolution` hook gives you access to all your UiPath data through reactive TanStack Query collections.
+
+### Example (real app)
+
+For a concrete example of a “solutions hook” pattern in a Vertical Solution app, see `useTask.tsx` from the Invoice Processing solution:
+
+https://github.com/UiPath/vertical-solution-invoice-processing/blob/b071b09161c701e3b6ad0754f53682ca142170ff/client/src/hooks/useTask.tsx
 
 ## What Gets Auto-Generated
 
