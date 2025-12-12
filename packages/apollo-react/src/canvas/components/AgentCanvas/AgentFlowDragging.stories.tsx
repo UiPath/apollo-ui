@@ -1015,11 +1015,11 @@ const DesignModeWithZoomLevelOnlyComponent = (_args: AgentFlowProps) => {
             padding: "12px",
             backgroundColor: "var(--uix-canvas-background)",
             borderRadius: "4px",
-            border: "1px solid var(--color-warning-icon)",
+            border: "1px solid var(--uix-canvas-warning-icon)",
           }}
         >
-          <div style={{ fontWeight: "bold", marginBottom: "8px", color: "var(--color-warning-text)" }}>ℹ️ Note</div>
-          <div style={{ fontSize: "0.75rem", color: "var(--color-warning-text)", lineHeight: "1.5" }}>
+          <div style={{ fontWeight: "bold", marginBottom: "8px", color: "var(--uix-canvas-warning-text)" }}>ℹ️ Note</div>
+          <div style={{ fontSize: "0.75rem", color: "var(--uix-canvas-warning-text)", lineHeight: "1.5" }}>
             <p style={{ margin: "0 0 8px 0" }}>
               This story demonstrates <strong>zoom-only control</strong>:
             </p>

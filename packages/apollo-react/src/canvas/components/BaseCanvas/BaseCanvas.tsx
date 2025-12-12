@@ -185,7 +185,7 @@ const BaseCanvasInnerComponent = <NodeType extends Node = Node, EdgeType extends
           />
         )}
 
-        {mode === "design" && <PanShortcutTeachingUI message={panShortcutTeachingUIMessage} />}
+        {mode === "design" && panShortcutTeachingUIMessage && <PanShortcutTeachingUI message={panShortcutTeachingUIMessage} />}
         {children}
       </ReactFlow>
     </BaseCanvasModeProvider>

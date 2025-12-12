@@ -131,8 +131,8 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
         handleType: "artifact",
         label: translations.escalations,
         showButton: mode === "design",
-        color: "var(--color-foreground-de-emp)",
-        labelBackgroundColor: "var(--color-background-secondary)",
+        color: "var(--uix-canvas-foreground-de-emp)",
+        labelBackgroundColor: "var(--uix-canvas-background-secondary)",
         visible: displayEscalation,
         onAction: (_e: HandleActionEvent) => {
           onAddResource?.("escalation");
