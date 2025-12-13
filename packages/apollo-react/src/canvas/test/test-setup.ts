@@ -324,6 +324,9 @@ vi.mock("@uipath/apollo-core", () => ({
     SpacingS: "12px",
     SpacingBase: "16px",
   },
+  Colors: {
+    ColorInk300: "#8D9299",
+  },
 }));
 
 // Mock sanitize-html
