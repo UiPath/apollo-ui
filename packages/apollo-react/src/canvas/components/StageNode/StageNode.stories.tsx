@@ -19,6 +19,11 @@ const meta = {
   },
   decorators: [
     (Story, context) => {
+      // Allow stories to use custom render
+      if (context.parameters?.useCustomRender) {
+        return <Story />;
+      }
+
       // Create a wrapper component that passes props correctly
       const StageNodeWrapper = (props: any) => {
         // React Flow passes node data in props.data, so we need to spread it
@@ -83,6 +88,12 @@ const meta = {
       );
     },
   ],
+  args: {
+    stageDetails: {
+      label: "Default Stage",
+      tasks: [],
+    },
+  },
   argTypes: {
     addTaskLabel: {
       control: "text",
@@ -701,4 +712,117 @@ export const LoanProcessingWorkflow: Story = {
     ] as Edge[],
   },
   args: {} as any, // No args needed as we're using parameters
+};
+
+const initialTasks: StageTaskItem[][] = [
+  [{ id: "task-1", label: "KYC Verification", icon: <VerificationIcon /> }],
+  [{ id: "task-2", label: "Document Review", icon: <DocumentIcon /> }],
+  [
+    { id: "task-3", label: "Address Check", icon: <VerificationIcon /> },
+    { id: "task-4", label: "Property Check", icon: <VerificationIcon /> },
+    { id: "task-6", label: "Credit Check", icon: <VerificationIcon /> },
+  ],
+  [{ id: "task-5", label: "Final Approval", icon: <ProcessIcon /> }],
+];
+
+const DraggableTaskReorderingStory = () => {
+  const StageNodeWrapper = useMemo(
+    () =>
+      function StageNodeWrapperComponent(props: any) {
+        return <StageNode {...props} {...props.data} />;
+      },
+    []
+  );
+
+  const nodeTypes = useMemo(() => ({ stage: StageNodeWrapper }), [StageNodeWrapper]);
+  const edgeTypes = useMemo(() => ({ stage: StageEdge }), []);
+
+  const [nodes, setNodes, onNodesChange] = useNodesState([
+    {
+      id: "reorder-stage",
+      type: "stage",
+      position: { x: 100, y: 100 },
+      width: 300,
+      data: {
+        stageDetails: {
+          label: "Drag to Reorder Tasks",
+          tasks: initialTasks,
+        },
+        onTaskClick: (taskId: string) => console.log("Task clicked:", taskId),
+      },
+    },
+  ]);
+
+  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+
+  const handleTaskReorder = useCallback(
+    (reorderedTasks: StageTaskItem[][]) => {
+      setNodes((nds) =>
+        nds.map((node) =>
+          node.id === "reorder-stage"
+            ? {
+                ...node,
+                data: {
+                  ...node.data,
+                  stageDetails: {
+                    ...node.data.stageDetails,
+                    tasks: reorderedTasks,
+                  },
+                },
+              }
+            : node
+        )
+      );
+    },
+    [setNodes]
+  );
+
+  const nodesWithHandler = useMemo(
+    () =>
+      nodes.map((node) => ({
+        ...node,
+        data: {
+          ...node.data,
+          onTaskReorder: handleTaskReorder,
+        },
+      })),
+    [nodes, handleTaskReorder]
+  );
+
+  const onConnect = useCallback((connection: Connection) => setEdges((eds) => addEdge(connection, eds)), [setEdges]);
+
+  return (
+    <div style={{ width: "100vw", height: "100vh" }}>
+      <ReactFlowProvider>
+        <BaseCanvas
+          nodes={nodesWithHandler}
+          edges={edges}
+          onNodesChange={onNodesChange}
+          onEdgesChange={onEdgesChange}
+          onConnect={onConnect}
+          nodeTypes={nodeTypes}
+          edgeTypes={edgeTypes}
+          mode="design"
+          connectionMode={ConnectionMode.Strict}
+          defaultEdgeOptions={{ type: "stage" }}
+          connectionLineComponent={StageConnectionEdge}
+          elevateEdgesOnSelect
+          defaultViewport={{ x: 0, y: 0, zoom: 1.5 }}
+        >
+          <Panel position="bottom-right">
+            <CanvasPositionControls />
+          </Panel>
+        </BaseCanvas>
+      </ReactFlowProvider>
+    </div>
+  );
+};
+
+export const DraggableTaskReordering: Story = {
+  name: "Draggable Task Reordering",
+  parameters: {
+    useCustomRender: true,
+  },
+  render: () => <DraggableTaskReorderingStory />,
+  args: {},
 };

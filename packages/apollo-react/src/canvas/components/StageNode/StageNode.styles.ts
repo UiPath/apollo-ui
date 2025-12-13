@@ -3,6 +3,11 @@ import { css } from "@emotion/react";
 import { Colors } from "@uipath/apollo-core";
 import type { StageStatus } from "./StageNode.types";
 
+export const INDENTATION_WIDTH = 30;
+export const STAGE_CONTENT_PADDING_X = 16;
+export const STAGE_BORDER_WIDTH = 1;
+export const STAGE_CONTENT_INSET = STAGE_CONTENT_PADDING_X * 2 + STAGE_BORDER_WIDTH * 2;
+
 export const StageContainer = styled.div<{ selected?: boolean; status?: StageStatus; isException?: boolean }>`
   position: relative;
   min-width: 200px;
@@ -111,7 +116,7 @@ export const StageTitleInput = styled.input<{ isEditing?: boolean; isStageTitleE
 
 export const StageContent = styled.div`
   background: var(--uix-canvas-background-secondary);
-  padding: 12px 16px;
+  padding: 12px ${STAGE_CONTENT_PADDING_X}px;
   border-radius: 0 0 12px 12px;
   overflow: hidden;
   flex: 1;
@@ -133,7 +138,7 @@ export const StageTaskGroup = styled.div<{ isParallel?: boolean }>`
   display: flex;
   flex-direction: column;
   gap: 4px;
-  margin-left: ${({ isParallel }) => (isParallel ? "30px" : "0")};
+  margin-left: ${({ isParallel }) => (isParallel ? `${INDENTATION_WIDTH}px` : "0")};
 `;
 
 export const StageParallelLabel = styled.div`
@@ -161,7 +166,12 @@ export const StageParallelBracket = styled.div`
   border-radius: 3px 0 0 3px;
 `;
 
-export const StageTask = styled.div<{ status?: StageStatus; selected?: boolean }>`
+export const StageTaskWrapper = styled.div<{ isParallel?: boolean }>`
+  width: ${({ isParallel }) => (isParallel ? "var(--stage-task-width-parallel, 216px)" : "var(--stage-task-width, 246px)")};
+  height: 40px;
+`;
+
+export const StageTask = styled.div<{ status?: StageStatus; selected?: boolean; isParallel?: boolean; isDragEnabled?: boolean }>`
   position: relative;
   display: flex;
   align-items: center;
@@ -174,6 +184,9 @@ export const StageTask = styled.div<{ status?: StageStatus; selected?: boolean }
   color: var(--uix-canvas-foreground);
   transition: all 0.2s ease;
   min-height: 36px;
+  width: ${({ isParallel, isDragEnabled }) =>
+    isDragEnabled ? "100%" : isParallel ? "var(--stage-task-width-parallel, 216px)" : "var(--stage-task-width, 246px)"};
+  height: ${({ isDragEnabled }) => (isDragEnabled ? "100%" : "auto")};
 
   .task-remove-button {
     display: none;
@@ -264,4 +277,22 @@ export const StageTaskRemoveButton = styled.div`
   &:hover {
     color: var(--uix-canvas-foreground);
   }
+`;
+
+export const StageTaskDragPlaceholderWrapper = styled.div`
+  width: var(--stage-task-width, 246px);
+  height: 40px;
+`;
+
+export const StageTaskDragPlaceholder = styled.div<{ isTargetParallel?: boolean }>`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: transparent;
+  border: 2px dashed var(--uix-canvas-selection-indicator);
+  border-radius: 6px;
+
+  height: 100%;
+  width: ${({ isTargetParallel }) => (isTargetParallel ? "var(--stage-task-width-parallel, 216px)" : "var(--stage-task-width, 246px)")};
 `;

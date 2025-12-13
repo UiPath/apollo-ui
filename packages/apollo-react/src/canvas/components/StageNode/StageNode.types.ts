@@ -55,6 +55,7 @@ export interface StageNodeProps extends NodeProps {
   onTaskClick?: (taskElementId: string) => void;
   onTaskGroupModification?: (groupModificationType: GroupModificationType, groupIndex: number, taskIndex: number) => void;
   onStageTitleChange?: (newTitle: string) => void;
+  onTaskReorder?: (reorderedTasks: StageTaskItem[][]) => void;
 }
 
 export interface StageTaskExecution {
