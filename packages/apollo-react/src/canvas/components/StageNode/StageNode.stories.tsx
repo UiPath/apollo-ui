@@ -810,7 +810,7 @@ const DraggableTaskReorderingStory = () => {
           defaultViewport={{ x: 0, y: 0, zoom: 1.5 }}
         >
           <Panel position="bottom-right">
-            <CanvasPositionControls />
+            <CanvasPositionControls translations={DefaultCanvasTranslations} showOrganize={false} />
           </Panel>
         </BaseCanvas>
       </ReactFlowProvider>
