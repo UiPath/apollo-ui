@@ -2,7 +2,7 @@ import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { ApBadge, ApIcon, ApTooltip, ApTypography } from "@uipath/portal-shell-react";
 import { Column, FontVariantToken, Row } from "@uipath/uix/core";
-import { memo, useCallback } from "react";
+import { memo, useCallback, useMemo } from "react";
 import { ExecutionStatusIcon } from "../ExecutionStatusIcon";
 import type { DraggableTaskProps, TaskContentProps } from "./DraggableTask.types";
 import {
@@ -37,7 +37,7 @@ const generateBadgeText = (taskExecution: StageTaskExecution) => {
   return taskExecution.badge;
 };
 
-export const TaskContent = ({ task, taskExecution, isDragging }: TaskContentProps) => (
+export const TaskContent = memo(({ task, taskExecution, isDragging }: TaskContentProps) => (
   <>
     <StageTaskIcon>{task.icon ?? <ProcessNodeIcon />}</StageTaskIcon>
     <Column flex={1} style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
@@ -82,7 +82,7 @@ export const TaskContent = ({ task, taskExecution, isDragging }: TaskContentProp
       </Row>
     </Column>
   </>
-);
+));
 
 const DraggableTaskComponent = ({
   task,
@@ -108,26 +108,27 @@ const DraggableTaskComponent = ({
 
   const { attributes, listeners, setNodeRef, transition, transform, isDragging } = useSortable({ id: task.id, disabled: isDragDisabled });
 
-  const getMarginLeft = () => {
-    if (!isDragging || projectedDepth === undefined) return undefined;
-    if (projectedDepth === 1 && !isParallel) return `${INDENTATION_WIDTH}px`;
-    if (projectedDepth === 0 && isParallel) return `-${INDENTATION_WIDTH}px`;
-    return undefined;
-  };
+  const style = useMemo<React.CSSProperties>(() => {
+    const scaledTransform = transform
+      ? {
+          ...transform,
+          x: transform.x / zoom,
+          y: transform.y / zoom,
+        }
+      : null;
 
-  const scaledTransform = transform
-    ? {
-        ...transform,
-        x: transform.x / zoom,
-        y: transform.y / zoom,
-      }
-    : null;
+    let marginLeft: string | undefined;
+    if (isDragging && projectedDepth !== undefined) {
+      if (projectedDepth === 1 && !isParallel) marginLeft = `${INDENTATION_WIDTH}px`;
+      else if (projectedDepth === 0 && isParallel) marginLeft = `-${INDENTATION_WIDTH}px`;
+    }
 
-  const style: React.CSSProperties = {
-    transition,
-    transform: CSS.Transform.toString(scaledTransform),
-    marginLeft: getMarginLeft(),
-  };
+    return {
+      transition,
+      transform: CSS.Transform.toString(scaledTransform),
+      marginLeft,
+    };
+  }, [transform, zoom, transition, isDragging, projectedDepth, isParallel]);
 
   if (isDragging) {
     const isTargetParallel = projectedDepth === 1;

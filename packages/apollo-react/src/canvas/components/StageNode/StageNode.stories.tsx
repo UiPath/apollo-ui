@@ -1,15 +1,15 @@
 import type { Meta, StoryObj } from "@storybook/react";
-import { useCallback, useMemo } from "react";
 import type { Connection, Edge } from "@uipath/uix/xyflow/react";
-import { Panel, ReactFlowProvider, useNodesState, useEdgesState, addEdge, ConnectionMode } from "@uipath/uix/xyflow/react";
-import { StageNode } from "./StageNode";
-import type { StageTaskItem, StageNodeProps } from "./StageNode.types";
+import { addEdge, ConnectionMode, Panel, ReactFlowProvider, useEdgesState, useNodesState } from "@uipath/uix/xyflow/react";
+import { useCallback, useMemo } from "react";
+import { DefaultCanvasTranslations } from "../../types";
 import { BaseCanvas } from "../BaseCanvas";
 import { CanvasPositionControls } from "../CanvasPositionControls";
-import { StageEdge } from "./StageEdge";
-import { StageConnectionEdge } from "./StageConnectionEdge";
 import type { ListItem } from "../Toolbox";
-import { DefaultCanvasTranslations } from "../../types";
+import { StageConnectionEdge } from "./StageConnectionEdge";
+import { StageEdge } from "./StageEdge";
+import { StageNode } from "./StageNode";
+import type { StageNodeProps, StageTaskItem } from "./StageNode.types";
 
 const meta = {
   title: "Canvas/StageNode",
@@ -716,11 +716,13 @@ export const LoanProcessingWorkflow: Story = {
 
 const initialTasks: StageTaskItem[][] = [
   [{ id: "task-1", label: "KYC Verification", icon: <VerificationIcon /> }],
-  [{ id: "task-2", label: "Document Review", icon: <DocumentIcon /> }],
+  [
+    { id: "task-2", label: "Document Review", icon: <DocumentIcon /> },
+    { id: "task-6", label: "Credit Check", icon: <VerificationIcon /> },
+  ],
   [
     { id: "task-3", label: "Address Check", icon: <VerificationIcon /> },
     { id: "task-4", label: "Property Check", icon: <VerificationIcon /> },
-    { id: "task-6", label: "Credit Check", icon: <VerificationIcon /> },
   ],
   [{ id: "task-5", label: "Final Approval", icon: <ProcessIcon /> }],
 ];
@@ -741,7 +743,7 @@ const DraggableTaskReorderingStory = () => {
     {
       id: "reorder-stage",
       type: "stage",
-      position: { x: 100, y: 100 },
+      position: { x: 25, y: 25 },
       width: 300,
       data: {
         stageDetails: {

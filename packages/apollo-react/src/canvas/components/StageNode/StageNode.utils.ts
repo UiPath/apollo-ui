@@ -43,11 +43,12 @@ export function buildTaskGroups(flattenedTasks: FlattenedTask[]): StageTaskItem[
   const groups: StageTaskItem[][] = [];
   let currentGroup: StageTaskItem[] = [];
   let previousDepth: number | null = null;
+  let previousGroupIndex: number | null = null;
 
   for (const item of flattenedTasks) {
     if (previousDepth === null) {
       currentGroup.push(item.task);
-    } else if (item.depth === 1 && previousDepth === 1) {
+    } else if (item.depth === 1 && previousDepth === 1 && item.groupIndex === previousGroupIndex) {
       currentGroup.push(item.task);
     } else {
       if (currentGroup.length > 0) {
@@ -56,6 +57,7 @@ export function buildTaskGroups(flattenedTasks: FlattenedTask[]): StageTaskItem[
       currentGroup = [item.task];
     }
     previousDepth = item.depth;
+    previousGroupIndex = item.groupIndex;
   }
 
   if (currentGroup.length > 0) {
@@ -83,7 +85,19 @@ export function reorderTasks(tasks: StageTaskItem[][], activeId: string, overId:
   const reordered = arrayMove(flattened, activeIndex, overIndex);
   const movedItem = reordered[overIndex];
   if (movedItem) {
-    reordered[overIndex] = { ...movedItem, depth: projectedDepth };
+    let newGroupIndex = movedItem.groupIndex;
+
+    if (projectedDepth === 1) {
+      const prevItem = reordered[overIndex - 1];
+      const nextItem = reordered[overIndex + 1];
+      if (prevItem?.depth === 1) {
+        newGroupIndex = prevItem.groupIndex;
+      } else if (nextItem?.depth === 1) {
+        newGroupIndex = nextItem.groupIndex;
+      }
+    }
+
+    reordered[overIndex] = { ...movedItem, depth: projectedDepth, groupIndex: newGroupIndex };
   }
 
   return buildTaskGroups(reordered);

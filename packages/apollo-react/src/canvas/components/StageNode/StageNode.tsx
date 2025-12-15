@@ -398,6 +398,14 @@ const StageNodeComponent = (props: StageNodeProps) => {
     resetState();
   }, [resetState]);
 
+  const dragOverlayStyle = useMemo<React.CSSProperties>(
+    () => ({
+      transform: `scale(${zoom})`,
+      transformOrigin: "top left",
+    }),
+    [zoom]
+  );
+
   return (
     <div
       data-testid={`stage-${id}`}
@@ -553,12 +561,7 @@ const StageNodeComponent = (props: StageNodeProps) => {
               {createPortal(
                 <DragOverlay>
                   {activeTask ? (
-                    <div
-                      style={{
-                        transform: `scale(${zoom})`,
-                        transformOrigin: "top left",
-                      }}
-                    >
+                    <div style={dragOverlayStyle}>
                       <StageTask selected style={{ cursor: "grabbing" }}>
                         <TaskContent task={activeTask} isDragging />
                       </StageTask>
