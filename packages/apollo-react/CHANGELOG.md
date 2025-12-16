@@ -1,3 +1,17 @@
+# [2.5.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@2.4.1...@uipath/apollo-react@2.5.0) (2025-12-16)
+
+
+### Bug Fixes
+
+* **apollo-vertex:** add static template to docs page ([a9b0d4f](https://github.com/UiPath/apollo-ui/commit/a9b0d4fb21a079a0496d8e03c1dc49dbdff5a87f))
+* **apollo-vertex:** shell installing ([859ab8e](https://github.com/UiPath/apollo-ui/commit/859ab8ee1a1aba22d01e47bbf97116edd01b129d))
+* **react-playground:** add vercel.json ([d7c226e](https://github.com/UiPath/apollo-ui/commit/d7c226e8f9e2b85f11e008c77bfabd8335df29c6))
+
+
+### Features
+
+* **apollo-react:** replace width/height with size ([b88a0b1](https://github.com/UiPath/apollo-ui/commit/b88a0b1eb314b5c0bd2a0f5be8422b0cd6cc0469))
+
 ## [2.4.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@2.4.0...@uipath/apollo-react@2.4.1) (2025-12-11)
 
 
