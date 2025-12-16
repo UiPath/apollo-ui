@@ -1,11 +1,17 @@
 // Auto-generated from third-party/azure-active-directory-1.svg
 import React from 'react';
 
-export interface AzureActiveDirectory1Props extends React.SVGProps<SVGSVGElement> {}
+export interface AzureActiveDirectory1Props extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const AzureActiveDirectory1 = React.forwardRef<SVGSVGElement, AzureActiveDirectory1Props>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <g clipPath="url(#clip0_2_1664)">
 <path d="M11.3125 9.93634V14.0613L12 18.4453L21.068 12.6153L17.4999 10.6238L11.3125 9.93634Z" fill="#53B1E0"/>
 <path d="M23 14.8772L12 22.0112L11.3125 20.9364L12 19.7333L21.7785 13.4472L23 14.8772ZM12 1.98883L11.3125 6.49886L12 10.4955L21.0681 12.6154L12 1.98883Z" fill="url(#paint0_linear_2_1664)"/>

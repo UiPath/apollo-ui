@@ -1,11 +1,17 @@
 // Auto-generated from studio-activities-icon-sets/activities-it-automation/it-automation-exchange-server.svg
 import React from 'react';
 
-export interface ItAutomationExchangeServerProps extends React.SVGProps<SVGSVGElement> {}
+export interface ItAutomationExchangeServerProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 32
+   */
+  size?: string | number;
+}
 
 export const ItAutomationExchangeServer = React.forwardRef<SVGSVGElement, ItAutomationExchangeServerProps>(
-  (props, ref) => (
-    <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 32} height={size ?? 32}>
       <g clipPath="url(#clip0_4117_1885)">
 <g clipPath="url(#clip1_4117_1885)">
 <path d="M27.3496 4.78345H21.579C21.3623 4.78342 21.1478 4.8248 20.9476 4.90521C20.7474 4.98562 20.5656 5.10349 20.4124 5.25207L6.79194 18.4578C6.63869 18.6063 6.51712 18.7826 6.43418 18.9767C6.35125 19.1708 6.30857 19.3788 6.30859 19.5889V25.1837C6.30858 25.3938 6.35125 25.6018 6.43416 25.7959C6.51707 25.99 6.6386 26.1664 6.79182 26.3149C6.94503 26.4635 7.12692 26.5813 7.3271 26.6617C7.52729 26.7421 7.74184 26.7835 7.95852 26.7834H13.7291C13.9458 26.7835 14.1603 26.7421 14.3605 26.6617C14.5607 26.5813 14.7425 26.4634 14.8957 26.3148L28.5164 13.1091C28.8257 12.8091 28.9995 12.4022 28.9995 11.978V6.38315C28.9995 6.17308 28.9568 5.96505 28.8739 5.77096C28.791 5.57687 28.6695 5.40052 28.5163 5.25197C28.3631 5.10342 28.1812 4.98559 27.981 4.9052C27.7808 4.82481 27.5663 4.78344 27.3496 4.78345Z" fill="#28A8EA"/>

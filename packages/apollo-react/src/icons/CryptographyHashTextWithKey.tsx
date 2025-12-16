@@ -1,11 +1,17 @@
 // Auto-generated from studio-activities-icon-sets/activities-cryptography/cryptography-hash-text-with-key.svg
 import React from 'react';
 
-export interface CryptographyHashTextWithKeyProps extends React.SVGProps<SVGSVGElement> {}
+export interface CryptographyHashTextWithKeyProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const CryptographyHashTextWithKey = React.forwardRef<SVGSVGElement, CryptographyHashTextWithKeyProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <g clipPath="url(#clip0_4117_1937)">
 <path d="M22.1113 16.4121H16.1113V18.4121H22.1113V16.4121Z" fill="#1976D2"/>
 <path d="M19.1113 20.4121H16.1113V22.4121H19.1113V20.4121Z" fill="#1976D2"/>

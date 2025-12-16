@@ -1,11 +1,17 @@
 // Auto-generated from studio-activities-icon-sets/activities-orchestrator/orchestrator-write-storage-text.svg
 import React from 'react';
 
-export interface OrchestratorWriteStorageTextProps extends React.SVGProps<SVGSVGElement> {}
+export interface OrchestratorWriteStorageTextProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 25
+   */
+  size?: string | number;
+}
 
 export const OrchestratorWriteStorageText = React.forwardRef<SVGSVGElement, OrchestratorWriteStorageTextProps>(
-  (props, ref) => (
-    <svg width="25" height="25" viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 25} height={size ?? 25}>
       <path fillRule="evenodd" clipRule="evenodd" d="M21.3387 11.938L22.5487 13.148C23.3387 13.928 23.3387 15.198 22.5487 15.978L15.1787 23.348H11.1387V19.308L18.5087 11.938C19.2887 11.158 20.5587 11.158 21.3387 11.938ZM13.1387 21.348H14.3487L21.0087 14.688L19.7987 13.478L13.1387 20.138V21.348Z" fill="currentColor"/>
 <path d="M20.1387 2.353H4.13867V6.353H6.13867V4.353H11.1387V16.853L13.1387 14.853V4.353H18.1387V6.353H20.1387V2.353Z" fill="currentColor"/>
     </svg>

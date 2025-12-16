@@ -1,11 +1,17 @@
 // Auto-generated from studio-activities-icon-sets/activities-pipelines/pipelines-run-tests.svg
 import React from 'react';
 
-export interface PipelinesRunTestsProps extends React.SVGProps<SVGSVGElement> {}
+export interface PipelinesRunTestsProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const PipelinesRunTests = React.forwardRef<SVGSVGElement, PipelinesRunTestsProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <path d="M8 2H12V3H17V6.53125H15V5H12V6H8V5H5V18H8V20H3V3H8V2Z" fill="currentColor"/>
 <path d="M20 8H9V20H13.5V18H11V10H18V13H20V8Z" fill="currentColor"/>
 <path d="M17 11.5H12V13.5H17V11.5Z" fill="currentColor"/>

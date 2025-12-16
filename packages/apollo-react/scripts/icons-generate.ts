@@ -213,17 +213,42 @@ async function generateIconComponents(): Promise<void> {
       continue;
     }
 
-    const [, svgAttrs, innerSvg] = svgMatch;
+    const svgAttrs = svgMatch[1] ?? '';
+    const innerSvg = svgMatch[2] ?? '';
+
+    // Extract width and height from svgAttrs
+    const widthMatch = svgAttrs.match(/\swidth="([^"]*)"/);
+    const heightMatch = svgAttrs.match(/\sheight="([^"]*)"/);
+    const defaultWidth = widthMatch?.[1] ?? undefined;
+    const defaultHeight = heightMatch?.[1] ?? undefined;
+
+    // Helper to format default values - keep numbers as numbers, wrap strings with units in quotes
+    const formatDefaultValue = (val: string | undefined): string => {
+      if (!val) return 'undefined';
+      // Check if it's a pure number (including decimals)
+      return /^\d+(\.\d+)?$/.test(val) ? val : `'${val}'`;
+    };
+
+    // Remove width and height from svgAttrs since we'll handle them explicitly
+    const svgAttrsWithoutSize = svgAttrs
+      .replace(/\swidth="[^"]*"/g, '')
+      .replace(/\sheight="[^"]*"/g, '');
 
     // Generate React component
     const componentContent = `// Auto-generated from ${file.relativePath}
 import React from 'react';
 
-export interface ${componentName}Props extends React.SVGProps<SVGSVGElement> {}
+export interface ${componentName}Props extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default ${defaultWidth || defaultHeight || 'undefined'}
+   */
+  size?: string | number;
+}
 
 export const ${componentName} = React.forwardRef<SVGSVGElement, ${componentName}Props>(
-  (props, ref) => (
-    <svg${svgAttrs} ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg${svgAttrsWithoutSize} ref={ref} {...props} width={size ?? ${formatDefaultValue(defaultWidth)}} height={size ?? ${formatDefaultValue(defaultHeight)}}>
       ${innerSvg.trim()}
     </svg>
   )

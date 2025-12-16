@@ -1,11 +1,17 @@
 // Auto-generated from studio-icons/list-storage-files.svg
 import React from 'react';
 
-export interface ListStorageFilesProps extends React.SVGProps<SVGSVGElement> {}
+export interface ListStorageFilesProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const ListStorageFiles = React.forwardRef<SVGSVGElement, ListStorageFilesProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <path d="M14 2H6C4.9 2 4.01 2.9 4.01 4L4 20C4 21.1 4.89 22 5.99 22H10V20H6V4H13V9H18V11H20V8L14 2Z" fill="currentColor"/>
 <path d="M12 13H23V15H12V13Z" fill="#1976D2"/>
 <path d="M12 17H23V19H12V17Z" fill="#1976D2"/>

@@ -1,11 +1,17 @@
 // Auto-generated from studio-activities-icon-sets/activities-it-automation/it-automation-azure-virtual-desktop.svg
 import React from 'react';
 
-export interface ItAutomationAzureVirtualDesktopProps extends React.SVGProps<SVGSVGElement> {}
+export interface ItAutomationAzureVirtualDesktopProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 32
+   */
+  size?: string | number;
+}
 
 export const ItAutomationAzureVirtualDesktop = React.forwardRef<SVGSVGElement, ItAutomationAzureVirtualDesktopProps>(
-  (props, ref) => (
-    <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 32} height={size ?? 32}>
       <g clipPath="url(#clip0_4117_1867)">
 <g clipPath="url(#clip1_4117_1867)">
 <rect width="32" height="32" fill="url(#pattern0_4117_1867)"/>

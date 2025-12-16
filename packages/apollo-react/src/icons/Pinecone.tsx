@@ -1,11 +1,17 @@
 // Auto-generated from third-party/pinecone.svg
 import React from 'react';
 
-export interface PineconeProps extends React.SVGProps<SVGSVGElement> {}
+export interface PineconeProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const Pinecone = React.forwardRef<SVGSVGElement, PineconeProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <path fillRule="evenodd" clipRule="evenodd" d="M14.7948 1.49482L14.0121 5.8447L12.6665 5.60258L13.4492 1.2527L14.7948 1.49482Z" fill="#201D1E"/>
 <path fillRule="evenodd" clipRule="evenodd" d="M13.7177 1.09341C14.008 0.923781 14.3785 0.990449 14.5915 1.25062L16.9086 4.08126L15.8507 4.94725L13.9034 2.56835L11.2532 4.11687L10.5635 2.93645L13.7177 1.09341Z" fill="#201D1E"/>
 <path fillRule="evenodd" clipRule="evenodd" d="M12.5214 14.3117L11.7608 18.663L10.4141 18.4276L11.1747 14.0763L12.5214 14.3117Z" fill="#201D1E"/>

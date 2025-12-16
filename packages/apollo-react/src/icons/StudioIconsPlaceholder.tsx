@@ -1,11 +1,17 @@
 // Auto-generated from studio-icons/studio-icons-placeholder.svg
 import React from 'react';
 
-export interface StudioIconsPlaceholderProps extends React.SVGProps<SVGSVGElement> {}
+export interface StudioIconsPlaceholderProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 18
+   */
+  size?: string | number;
+}
 
 export const StudioIconsPlaceholder = React.forwardRef<SVGSVGElement, StudioIconsPlaceholderProps>(
-  (props, ref) => (
-    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 18} height={size ?? 18}>
       <g clipPath="url(#clip0_4861_9652)">
 <path fillRule="evenodd" clipRule="evenodd" d="M15.8665 2.41475C16.0862 2.63442 16.0862 2.99058 15.8665 3.21025L3.21025 15.8665C2.99058 16.0862 2.63442 16.0862 2.41475 15.8665C2.19508 15.6468 2.19508 15.2907 2.41475 15.071L15.071 2.41475C15.2907 2.19508 15.6468 2.19508 15.8665 2.41475Z" fill="#9747FF"/>
 <path fillRule="evenodd" clipRule="evenodd" d="M12.4915 2.41475C12.7112 2.63442 12.7112 2.99058 12.4915 3.21025L3.21025 12.4915C2.99058 12.7112 2.63442 12.7112 2.41475 12.4915C2.19508 12.2718 2.19508 11.9157 2.41475 11.696L11.696 2.41475C11.9157 2.19508 12.2718 2.19508 12.4915 2.41475Z" fill="#9747FF"/>

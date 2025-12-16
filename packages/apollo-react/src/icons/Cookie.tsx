@@ -1,11 +1,17 @@
 // Auto-generated from social/cookie.svg
 import React from 'react';
 
-export interface CookieProps extends React.SVGProps<SVGSVGElement> {}
+export interface CookieProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const Cookie = React.forwardRef<SVGSVGElement, CookieProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <path d="M10.4995 10.0128C11.3279 10.0128 11.9995 9.34119 11.9995 8.51276C11.9995 7.68433 11.3279 7.01276 10.4995 7.01276C9.67108 7.01276 8.99951 7.68433 8.99951 8.51276C8.99951 9.34119 9.67108 10.0128 10.4995 10.0128Z" fill="currentColor"/>
 <path d="M8.49951 15.0128C9.32794 15.0128 9.99951 14.3412 9.99951 13.5128C9.99951 12.6843 9.32794 12.0128 8.49951 12.0128C7.67108 12.0128 6.99951 12.6843 6.99951 13.5128C6.99951 14.3412 7.67108 15.0128 8.49951 15.0128Z" fill="currentColor"/>
 <path d="M14.9995 16.0128C15.5518 16.0128 15.9995 15.565 15.9995 15.0128C15.9995 14.4605 15.5518 14.0128 14.9995 14.0128C14.4472 14.0128 13.9995 14.4605 13.9995 15.0128C13.9995 15.565 14.4472 16.0128 14.9995 16.0128Z" fill="currentColor"/>

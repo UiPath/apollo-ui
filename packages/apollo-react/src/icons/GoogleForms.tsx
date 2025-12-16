@@ -1,11 +1,17 @@
 // Auto-generated from third-party/google-forms.svg
 import React from 'react';
 
-export interface GoogleFormsProps extends React.SVGProps<SVGSVGElement> {}
+export interface GoogleFormsProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const GoogleForms = React.forwardRef<SVGSVGElement, GoogleFormsProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <rect x="1.125" y="1.125" width="21.75" height="21.75" fill="url(#pattern0_2_1760)"/>
 <defs>
 <pattern id="pattern0_2_1760" patternContentUnits="objectBoundingBox" width="1" height="1">

@@ -1,11 +1,17 @@
 // Auto-generated from studio-icons/read-list.svg
 import React from 'react';
 
-export interface ReadListProps extends React.SVGProps<SVGSVGElement> {}
+export interface ReadListProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const ReadList = React.forwardRef<SVGSVGElement, ReadListProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <rect x="7" y="7" width="10" height="2" fill="currentColor"/>
 <rect x="7" y="11" width="10" height="2" fill="currentColor"/>
 <rect x="7" y="15" width="7" height="2" fill="currentColor"/>

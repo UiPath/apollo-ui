@@ -1,11 +1,17 @@
 // Auto-generated from studio-icons/output-negative.svg
 import React from 'react';
 
-export interface OutputNegativeProps extends React.SVGProps<SVGSVGElement> {}
+export interface OutputNegativeProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const OutputNegative = React.forwardRef<SVGSVGElement, OutputNegativeProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <path d="M5.29291 19.7071C5.10535 19.5196 5 19.2652 5 19C5 18.79 5.07001 18.59 5.17999 18.43L11 8.35001V4H13V8.35001L15.9377 13.0922C16.2327 13.5686 16.8839 13.6681 17.3078 13.3016C17.638 13.0161 17.7193 12.5366 17.5016 12.1582L15 7.81V6C15.2652 6 15.5196 5.89465 15.7071 5.70709C15.8947 5.51956 16 5.26523 16 5V4C16 3.46957 15.7893 2.96085 15.4142 2.58578C15.0391 2.21072 14.5305 2 14 2H10C9.46954 2 8.96088 2.21072 8.58582 2.58578C8.21069 2.96085 8 3.46957 8 4V5C8 5.26523 8.10535 5.51956 8.29291 5.70709C8.48041 5.89465 8.7348 6 9 6V7.81L3.5 17.37C3.17999 17.84 3 18.4 3 19C3 19.7957 3.3161 20.5587 3.87866 21.1213C4.44128 21.6839 5.20435 22 6 22H12C12.5523 22 13 21.5523 13 21C13 20.4477 12.5523 20 12 20H6C5.7348 20 5.48041 19.8947 5.29291 19.7071Z" fill="#CC3D45"/>
 <path d="M13 16.8284C13 16.298 12.7893 15.7893 12.4142 15.4142L10.39 13.39L7.72998 18H12C12.5523 18 13 17.5523 13 17V16.8284Z" fill="#CC3D45"/>
 <path d="M13 12C13.2653 12 13.5195 12.1053 13.7072 12.2929C13.8947 12.4804 14 12.7348 14 13C14 13.2652 13.8947 13.5196 13.7072 13.7071C13.5195 13.8947 13.2653 14 13 14C12.7347 14 12.4805 13.8947 12.2928 13.7071C12.1053 13.5196 12 13.2652 12 13C12 12.7348 12.1053 12.4804 12.2928 12.2929C12.4805 12.1053 12.7347 12 13 12Z" fill="#CC3D45"/>

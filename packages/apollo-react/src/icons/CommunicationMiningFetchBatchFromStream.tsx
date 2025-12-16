@@ -1,11 +1,17 @@
 // Auto-generated from studio-activities-icon-sets/activities-communication-mining/communication-mining-fetch-batch-from-stream.svg
 import React from 'react';
 
-export interface CommunicationMiningFetchBatchFromStreamProps extends React.SVGProps<SVGSVGElement> {}
+export interface CommunicationMiningFetchBatchFromStreamProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const CommunicationMiningFetchBatchFromStream = React.forwardRef<SVGSVGElement, CommunicationMiningFetchBatchFromStreamProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <g clipPath="url(#clip0_4117_2974)">
 <path d="M19.5547 15.1177L19.5547 19.1277L22.5547 19.1277L18.5547 23.1177L14.5547 19.1277L17.5547 19.1277L17.5547 15.1177L19.5547 15.1177Z" fill="#1976D2"/>
 <path d="M21.5547 12.1176H19.5547C18.1647 12.1176 16.7747 11.6476 15.5547 10.7876C13.1147 12.4976 9.99469 12.4976 7.55469 10.7876C6.33469 11.6476 4.94469 12.1176 3.55469 12.1176H1.55469V14.1176H3.55469C4.92469 14.1176 6.29469 13.7676 7.55469 13.1176C10.0547 14.4176 13.0547 14.4176 15.5547 13.1176C16.8147 13.7676 18.1747 14.1176 19.5547 14.1176H21.5547V12.1176Z" fill="currentColor"/>

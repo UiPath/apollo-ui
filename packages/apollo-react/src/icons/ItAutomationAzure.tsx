@@ -1,11 +1,17 @@
 // Auto-generated from studio-activities-icon-sets/activities-it-automation/it-automation-azure.svg
 import React from 'react';
 
-export interface ItAutomationAzureProps extends React.SVGProps<SVGSVGElement> {}
+export interface ItAutomationAzureProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 32
+   */
+  size?: string | number;
+}
 
 export const ItAutomationAzure = React.forwardRef<SVGSVGElement, ItAutomationAzureProps>(
-  (props, ref) => (
-    <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 32} height={size ?? 32}>
       <g clipPath="url(#clip0_4117_1887)">
 <g clipPath="url(#clip1_4117_1887)">
 <path d="M10.6678 0.853271H20.137L10.3075 29.9779C10.2064 30.2772 10.014 30.5374 9.75739 30.7216C9.50073 30.9059 9.19275 31.005 8.8768 31.005H1.50764C1.26828 31.005 1.03236 30.948 0.819394 30.8388C0.606427 30.7295 0.422537 30.5711 0.282939 30.3767C0.143341 30.1822 0.0520476 29.9573 0.016612 29.7206C-0.0188236 29.4839 0.00261742 29.2422 0.079161 29.0154L9.23717 1.88036C9.3382 1.58099 9.53059 1.32087 9.78724 1.13661C10.0439 0.952354 10.3519 0.853255 10.6678 0.853271Z" fill="url(#paint0_linear_4117_1887)"/>

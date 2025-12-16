@@ -1,11 +1,17 @@
 // Auto-generated from studio-activities-icon-sets/activities-vmware-activities/vmware-get-host.svg
 import React from 'react';
 
-export interface VmwareGetHostProps extends React.SVGProps<SVGSVGElement> {}
+export interface VmwareGetHostProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const VmwareGetHost = React.forwardRef<SVGSVGElement, VmwareGetHostProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <g clipPath="url(#clip0_4117_2892)">
 <rect x="1.55469" y="2.11768" width="20" height="20" fill="url(#pattern0_4117_2892)"/>
 </g>

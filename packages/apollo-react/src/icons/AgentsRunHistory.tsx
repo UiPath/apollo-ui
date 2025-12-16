@@ -1,11 +1,17 @@
 // Auto-generated from ui-agents-icons/agents/agents-run-history.svg
 import React from 'react';
 
-export interface AgentsRunHistoryProps extends React.SVGProps<SVGSVGElement> {}
+export interface AgentsRunHistoryProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const AgentsRunHistory = React.forwardRef<SVGSVGElement, AgentsRunHistoryProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <path d="M15.915 22.1697L21.315 18.5697L15.915 14.9697V22.1697Z" fill="#0067DF"/>
 <path fillRule="evenodd" clipRule="evenodd" d="M13.7287 14.6283L14.9968 13.3463L12.9004 11.25V5.99996H11.1004V12L13.7287 14.6283ZM8.27064 20.85C9.43414 21.35 10.6774 21.6 12.0004 21.6C12.7027 21.6 13.3827 21.5301 14.0403 21.3905V19.5518C13.3991 19.7172 12.7231 19.8 12.0124 19.8C9.85439 19.8 8.01289 19.0375 6.48789 17.5125C4.96289 15.9875 4.20039 14.146 4.20039 11.988C4.20039 9.83013 4.96289 7.99263 6.48789 6.47546C8.01289 4.95846 9.85439 4.19996 12.0124 4.19996C14.1702 4.19996 16.0077 4.95846 17.5249 6.47546C19.0419 7.99263 19.8004 9.83013 19.8004 11.988C19.8004 13.0484 19.6172 14.0324 19.2509 14.94L20.7558 15.9433C20.788 15.8726 20.8196 15.8014 20.8504 15.7297C21.3504 14.5662 21.6004 13.323 21.6004 12C21.6004 10.672 21.3486 9.42396 20.8451 8.25596C20.3416 7.08796 19.6584 6.07196 18.7954 5.20796C17.9322 4.34396 16.9173 3.65996 15.7506 3.15596C14.5838 2.65196 13.3376 2.39996 12.0119 2.39996C10.6862 2.39996 9.44039 2.64996 8.27439 3.14996C7.10839 3.64996 6.08789 4.3333 5.21289 5.19996C4.33789 6.06663 3.65039 7.0833 3.15039 8.24996C2.65039 9.41663 2.40039 10.6628 2.40039 11.9885C2.40039 13.3141 2.65039 14.56 3.15039 15.726C3.65039 16.892 4.33789 17.9125 5.21289 18.7875C6.08789 19.6625 7.10714 20.35 8.27064 20.85Z" fill="currentColor"/>
     </svg>

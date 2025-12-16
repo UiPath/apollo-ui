@@ -1,11 +1,17 @@
 // Auto-generated from studio-activities-icon-sets/activities-control-2/control-2-parallel.svg
 import React from 'react';
 
-export interface Control2ParallelProps extends React.SVGProps<SVGSVGElement> {}
+export interface Control2ParallelProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const Control2Parallel = React.forwardRef<SVGSVGElement, Control2ParallelProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <g clipPath="url(#clip0_4117_1624)">
 <g clipPath="url(#clip1_4117_1624)">
 <path d="M8 2H6V6H8V2Z" fill="currentColor"/>

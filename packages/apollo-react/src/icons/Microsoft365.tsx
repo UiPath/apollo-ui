@@ -1,11 +1,17 @@
 // Auto-generated from third-party/microsoft-365.svg
 import React from 'react';
 
-export interface Microsoft365Props extends React.SVGProps<SVGSVGElement> {}
+export interface Microsoft365Props extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const Microsoft365 = React.forwardRef<SVGSVGElement, Microsoft365Props>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <g clipPath="url(#clip0_2_1796)">
 <path d="M9.93165 0.917084L9.81292 0.9889C9.62407 1.10314 9.44615 1.23087 9.28013 1.37044L9.62259 1.12956H12.5292L13.0576 5.13068L10.4156 7.77273L7.77353 9.60916V11.7268C7.77353 13.2058 8.54654 14.5773 9.81181 15.3431L12.5932 17.0267L6.71671 20.4547H5.58332L3.47089 19.176C2.20561 18.4101 1.43262 17.0386 1.43262 15.5596V8.43884C1.43262 6.95935 2.2061 5.58749 3.47202 4.82177L9.81292 0.9863C9.85223 0.962532 9.89181 0.939462 9.93165 0.917084Z" fill="url(#paint0_radial_2_1796)"/>
 <path d="M9.93165 0.917084L9.81292 0.9889C9.62407 1.10314 9.44615 1.23087 9.28013 1.37044L9.62259 1.12956H12.5292L13.0576 5.13068L10.4156 7.77273L7.77353 9.60916V11.7268C7.77353 13.2058 8.54654 14.5773 9.81181 15.3431L12.5932 17.0267L6.71671 20.4547H5.58332L3.47089 19.176C2.20561 18.4101 1.43262 17.0386 1.43262 15.5596V8.43884C1.43262 6.95935 2.2061 5.58749 3.47202 4.82177L9.81292 0.9863C9.85223 0.962532 9.89181 0.939462 9.93165 0.917084Z" fill="url(#paint1_linear_2_1796)"/>

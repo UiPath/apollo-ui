@@ -1,11 +1,17 @@
 // Auto-generated from studio-activities-icon-sets/activities-vmware-activities/vmware-delete-vm.svg
 import React from 'react';
 
-export interface VmwareDeleteVmProps extends React.SVGProps<SVGSVGElement> {}
+export interface VmwareDeleteVmProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const VmwareDeleteVm = React.forwardRef<SVGSVGElement, VmwareDeleteVmProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <g clipPath="url(#clip0_4117_2946)">
 <rect x="1.55469" y="2.11768" width="20" height="20" fill="url(#pattern0_4117_2946)"/>
 </g>

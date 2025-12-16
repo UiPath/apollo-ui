@@ -1,11 +1,17 @@
 // Auto-generated from studio-activities-icon-sets/activities-orchestrator/orchestrator-get-queue-items.svg
 import React from 'react';
 
-export interface OrchestratorGetQueueItemsProps extends React.SVGProps<SVGSVGElement> {}
+export interface OrchestratorGetQueueItemsProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const OrchestratorGetQueueItems = React.forwardRef<SVGSVGElement, OrchestratorGetQueueItemsProps>(
-  (props, ref) => (
-    <svg width="24" height="25" viewBox="0 0 24 25" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 25" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 25}>
       <path d="M6 5H18V7H6V5Z" fill="currentColor"/>
 <path d="M18 9H6V11H18V9Z" fill="currentColor"/>
 <path d="M16 13H6V15H16V13Z" fill="currentColor"/>

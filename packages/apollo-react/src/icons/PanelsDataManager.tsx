@@ -1,11 +1,17 @@
 // Auto-generated from studio-activities-icon-sets/panels/panels-data-manager.svg
 import React from 'react';
 
-export interface PanelsDataManagerProps extends React.SVGProps<SVGSVGElement> {}
+export interface PanelsDataManagerProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const PanelsDataManager = React.forwardRef<SVGSVGElement, PanelsDataManagerProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <g clipPath="url(#clip0_4117_2329)">
 <g clipPath="url(#clip1_4117_2329)">
 <path d="M10 4L12 6H20C21.1 6 22 6.9 22 8V12.1016C21.4258 11.5156 20.7497 11.03 20 10.6738V8H11.1699L9.16992 6H4V18H10.0723C10.1733 18.7062 10.3794 19.3782 10.6748 20H4C2.9 20 2 19.1 2 18L2.00977 6C2.00977 4.9 2.9 4 4 4H10Z" fill="currentColor"/>

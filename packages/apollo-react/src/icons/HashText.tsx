@@ -1,11 +1,17 @@
 // Auto-generated from studio-icons/hash-text.svg
 import React from 'react';
 
-export interface HashTextProps extends React.SVGProps<SVGSVGElement> {}
+export interface HashTextProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const HashText = React.forwardRef<SVGSVGElement, HashTextProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <path d="M22 16H16V18H22V16Z" fill="#1976D2"/>
 <path d="M19 20H16V22H19V20Z" fill="#1976D2"/>
 <path fillRule="evenodd" clipRule="evenodd" d="M14.37 18L14.69 15H17V13H14.9L15.1 11H17V9H15.31L15.63 6H13.63L13.31 9H11.31L11.63 6H9.63L9.31 9H7V11H9.1L8.9 13H7V15H8.69L8.37 18H10.37L10.69 15H12.69L12.37 18H14.37ZM10.9 13L11.1 11H13.1L12.9 13H10.9Z" fill="currentColor"/>

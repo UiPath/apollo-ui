@@ -1,11 +1,17 @@
 // Auto-generated from studio-activities-icon-sets/activities-control-2/control-2-clear-collection.svg
 import React from 'react';
 
-export interface Control2ClearCollectionProps extends React.SVGProps<SVGSVGElement> {}
+export interface Control2ClearCollectionProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const Control2ClearCollection = React.forwardRef<SVGSVGElement, Control2ClearCollectionProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <g clipPath="url(#clip0_4117_1581)">
 <path fillRule="evenodd" clipRule="evenodd" d="M20.6569 15.4121L22.0711 16.8263L19.95 18.9471L22.0711 21.069L20.6569 22.4832L18.535 20.3621L16.4142 22.4832L15 21.069L17.121 18.9471L15 16.8263L16.4142 15.4121L18.535 17.5331L20.6569 15.4121Z" fill="#CC3D45"/>
 <path d="M14 1.41211C15.0544 1.41211 15.9182 2.22799 15.9945 3.26285L16 3.41211V4.41211H14V3.41211H3V14.4121H4V16.4121H3C1.94564 16.4121 1.08183 15.5962 1.00549 14.5614L1 14.4121V3.41211C1 2.35775 1.81588 1.49394 2.85074 1.4176L3 1.41211H14Z" fill="currentColor"/>

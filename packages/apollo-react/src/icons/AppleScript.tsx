@@ -1,11 +1,17 @@
 // Auto-generated from third-party/apple-script.svg
 import React from 'react';
 
-export interface AppleScriptProps extends React.SVGProps<SVGSVGElement> {}
+export interface AppleScriptProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const AppleScript = React.forwardRef<SVGSVGElement, AppleScriptProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <g clipPath="url(#clip0_5291_9725)">
 <g filter="url(#filter0_d_5291_9725)">
 <path d="M1 6C1 3.23858 3.23858 1 6 1H18C20.7614 1 23 3.23858 23 6V18C23 20.7614 20.7614 23 18 23H6C3.23858 23 1 20.7614 1 18V6Z" fill="url(#paint0_linear_5291_9725)"/>

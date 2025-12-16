@@ -1,11 +1,17 @@
 // Auto-generated from studio-icons/for-each-row-in-data-table.svg
 import React from 'react';
 
-export interface ForEachRowInDataTableProps extends React.SVGProps<SVGSVGElement> {}
+export interface ForEachRowInDataTableProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const ForEachRowInDataTable = React.forwardRef<SVGSVGElement, ForEachRowInDataTableProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <path fillRule="evenodd" clipRule="evenodd" d="M20 4H4C3.44772 4 3 4.44772 3 5V20C3 20.5523 3.44772 21 4 21H11V11H19V13H21V5C21 4.44772 20.5523 4 20 4ZM9 16V19H5V16H9ZM9 11V14H5V11H9ZM5 9V6H19V9H5Z" fill="currentColor"/>
 <path d="M15 17H16.34V19L19 16L16.34 13V15H15C13.8954 15 13 15.8954 13 17V21C13 22.1046 13.8954 23 15 23H21C22.1046 23 23 22.1046 23 21V17C23 15.8954 22.1046 15 21 15V21H15V17Z" fill="currentColor"/>
     </svg>

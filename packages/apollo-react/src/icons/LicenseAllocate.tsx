@@ -1,11 +1,17 @@
 // Auto-generated from object/license-allocate.svg
 import React from 'react';
 
-export interface LicenseAllocateProps extends React.SVGProps<SVGSVGElement> {}
+export interface LicenseAllocateProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const LicenseAllocate = React.forwardRef<SVGSVGElement, LicenseAllocateProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <mask id="path-1-inside-1_2_1389" fill="var(--color-foreground)">
 <path d="M13.44 3H11.52V9H13.44V3Z"/>
 <path d="M2.88 6H10.56V8H4.8V20H20.16V8H14.4V6H22.08V22H2.88V6Z"/>

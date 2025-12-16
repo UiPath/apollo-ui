@@ -1,11 +1,17 @@
 // Auto-generated from studio-activities-icon-sets/activities-it-automation/it-automation-hyper-v.svg
 import React from 'react';
 
-export interface ItAutomationHyperVProps extends React.SVGProps<SVGSVGElement> {}
+export interface ItAutomationHyperVProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 32
+   */
+  size?: string | number;
+}
 
 export const ItAutomationHyperV = React.forwardRef<SVGSVGElement, ItAutomationHyperVProps>(
-  (props, ref) => (
-    <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 32} height={size ?? 32}>
       <g clipPath="url(#clip0_4117_1883)">
 <path d="M27.9658 22.2385V27.2738C27.9658 27.8621 27.787 27.9832 27.2276 27.8909C23.4785 27.3315 19.6832 26.8181 15.9053 26.2875C15.2247 26.1952 14.9824 25.953 14.9824 25.2147C15.0401 22.5384 15.0113 19.8506 14.9824 17.1454C14.9824 16.5571 15.1612 16.3726 15.7553 16.3726C19.6255 16.4014 23.4323 16.4014 27.2276 16.4014C27.8447 16.4014 28.0004 16.6436 28.0004 17.2031C27.937 18.8989 27.9658 20.56 27.9658 22.2385Z" fill="#00AAF2"/>
 <path d="M21.5466 15.4382C19.6432 15.4382 17.7398 15.4093 15.8364 15.4382C15.2481 15.4382 15.0059 15.317 15.0059 14.6364C15.0347 11.9025 15.0347 9.20889 15.0059 6.50377C15.0059 5.97313 15.1847 5.79433 15.6865 5.70204C19.5855 5.14256 23.4846 4.60038 27.3837 4.01206C28.0643 3.91978 27.9431 4.37544 27.9431 4.75035C27.9431 7.16707 27.972 9.62994 27.9431 12.0524C27.9431 12.9465 27.9143 13.8347 27.9431 14.7287C27.972 15.2882 27.7643 15.4382 27.2337 15.4382C25.3534 15.4093 23.45 15.4382 21.5466 15.4382Z" fill="#00AAF2"/>

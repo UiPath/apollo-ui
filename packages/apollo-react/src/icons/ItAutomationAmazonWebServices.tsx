@@ -1,11 +1,17 @@
 // Auto-generated from studio-activities-icon-sets/activities-it-automation/it-automation-amazon-web-services.svg
 import React from 'react';
 
-export interface ItAutomationAmazonWebServicesProps extends React.SVGProps<SVGSVGElement> {}
+export interface ItAutomationAmazonWebServicesProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 32
+   */
+  size?: string | number;
+}
 
 export const ItAutomationAmazonWebServices = React.forwardRef<SVGSVGElement, ItAutomationAmazonWebServicesProps>(
-  (props, ref) => (
-    <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 32} height={size ?? 32}>
       <g clipPath="url(#clip0_4117_1869)">
 <rect x="1" y="1" width="30" height="30" rx="2" fill="var(--color-foreground)"/>
 <g clipPath="url(#clip1_4117_1869)">

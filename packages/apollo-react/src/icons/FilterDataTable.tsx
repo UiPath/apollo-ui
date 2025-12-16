@@ -1,11 +1,17 @@
 // Auto-generated from studio-icons/filter-data-table.svg
 import React from 'react';
 
-export interface FilterDataTableProps extends React.SVGProps<SVGSVGElement> {}
+export interface FilterDataTableProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const FilterDataTable = React.forwardRef<SVGSVGElement, FilterDataTableProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <path fillRule="evenodd" clipRule="evenodd" d="M4 3C3.44772 3 3 3.44772 3 4V19C3 19.5523 3.44772 20 4 20H11V10H19V13H21V4C21 3.44772 20.5523 3 20 3H4ZM5 5V8H9V5H5ZM5 10H9V13H5V10ZM5 15H9V18H5V15ZM11 5V8H19V5H11Z" fill="currentColor"/>
 <path d="M17 22V19L14 15H22L19 19V21L17 22Z" fill="currentColor"/>
     </svg>

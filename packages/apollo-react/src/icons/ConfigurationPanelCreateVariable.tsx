@@ -1,11 +1,17 @@
 // Auto-generated from studio-activities-icon-sets/classic-icons-configuration-panel/configuration-panel-create-variable.svg
 import React from 'react';
 
-export interface ConfigurationPanelCreateVariableProps extends React.SVGProps<SVGSVGElement> {}
+export interface ConfigurationPanelCreateVariableProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const ConfigurationPanelCreateVariable = React.forwardRef<SVGSVGElement, ConfigurationPanelCreateVariableProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <path d="M19 17H22V19H19V22H17V19H14V17H17V14H19V17Z" fill="currentColor"/>
 <path d="M19.1904 6C19.7723 6 20.2196 6.12562 20.5322 6.37695C20.8436 6.62823 20.9999 6.96754 21 7.39453C21 7.79668 20.8435 8.12528 20.5322 8.38086C20.2202 8.63648 19.8306 8.76465 19.3652 8.76465C19.0267 8.76463 18.6373 8.71657 18.1992 8.62012C17.7598 8.52405 17.4557 8.47559 17.2861 8.47559C16.842 8.47559 16.4185 8.60134 16.0166 8.85254C15.4662 9.19608 14.7884 9.92934 13.9844 11.0518C14.3521 12.0793 14.6921 12.9419 15 13.6416V15H11.4268C11.2768 14.6651 11.1186 14.2912 10.9531 13.8779C9.71516 15.126 8.74381 16.0379 8.04004 16.6113C7.33578 17.1851 6.7515 17.5595 6.28613 17.7354C5.82081 17.9112 5.32318 18 4.79395 18C4.24406 18 3.80727 17.8744 3.48438 17.623C3.16148 17.3717 3 17.0445 3 16.6426C3.00011 16.2158 3.17443 15.8644 3.52344 15.5879C3.87288 15.3113 4.31781 15.1729 4.85742 15.1729C5.14286 15.1729 5.46559 15.2398 5.8252 15.374C6.35436 15.5751 6.73533 15.6757 6.96777 15.6758C7.27437 15.6758 7.54974 15.6252 7.79297 15.5244C8.11045 15.3987 8.51294 15.1266 9 14.708C9.29638 14.4485 9.84116 13.8945 10.6348 13.0488C9.619 10.067 8.82546 8.28256 8.25391 7.69629C7.89425 7.31942 7.43893 7.13191 6.88867 7.13184C6.60323 7.13184 6.25351 7.16457 5.84082 7.23145L5.95312 6.75391L11.4922 6C12.4971 7.24846 13.2063 8.62176 13.6191 10.1211C14.6561 8.90647 15.4394 8.05625 15.9688 7.57031C16.6778 6.91725 17.2627 6.49176 17.7227 6.29492C18.183 6.09861 18.6721 6 19.1904 6Z" fill="currentColor"/>
     </svg>

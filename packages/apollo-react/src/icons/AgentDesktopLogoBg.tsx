@@ -1,11 +1,17 @@
 // Auto-generated from studio-icons/agent-desktop-logo-bg.svg
 import React from 'react';
 
-export interface AgentDesktopLogoBgProps extends React.SVGProps<SVGSVGElement> {}
+export interface AgentDesktopLogoBgProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 30
+   */
+  size?: string | number;
+}
 
 export const AgentDesktopLogoBg = React.forwardRef<SVGSVGElement, AgentDesktopLogoBgProps>(
-  (props, ref) => (
-    <svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 30} height={size ?? 30}>
       <path d="M0 5C0 2.23858 2.23858 0 5 0H25C27.7614 0 30 2.23858 30 5V25C30 27.7614 27.7614 30 25 30H5C2.23858 30 0 27.7614 0 25V5Z" fill="var(--color-foreground)"/>
 <path d="M1.5 11.8496C3.68651 11.8496 5.852 12.2804 7.87207 13.1172C9.89204 13.9539 11.7274 15.1805 13.2734 16.7266L8.81836 21.1816C7.85728 20.2206 6.71665 19.4576 5.46094 18.9375C4.20522 18.4174 2.85918 18.1504 1.5 18.1504L1.5 11.8496Z" fill="url(#paint0_linear_4286_9821)"/>
 <path d="M1.5 11.8496C3.68651 11.8496 5.852 12.2804 7.87207 13.1172C9.89204 13.9539 11.7274 15.1805 13.2734 16.7266C14.8195 18.2726 16.0461 20.108 16.8828 22.1279C17.7196 24.148 18.1504 26.3135 18.1504 28.5L11.8496 28.5C11.8496 27.1408 11.5826 25.7948 11.0625 24.5391C10.5424 23.2834 9.77944 22.1427 8.81836 21.1816C7.85728 20.2206 6.71665 19.4576 5.46094 18.9375C4.20522 18.4174 2.85918 18.1504 1.5 18.1504L1.5 11.8496Z" fill="url(#paint1_radial_4286_9821)"/>

@@ -1,11 +1,17 @@
 // Auto-generated from studio-activities-icon-sets/activities-control-2/control-2-terminate-workflow.svg
 import React from 'react';
 
-export interface Control2TerminateWorkflowProps extends React.SVGProps<SVGSVGElement> {}
+export interface Control2TerminateWorkflowProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const Control2TerminateWorkflow = React.forwardRef<SVGSVGElement, Control2TerminateWorkflowProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <g clipPath="url(#clip0_4117_1632)">
 <path d="M12 23C14.7614 23 17 20.7614 17 18C17 15.2386 14.7614 13 12 13C9.23858 13 7 15.2386 7 18C7 20.7614 9.23858 23 12 23Z" fill="currentColor"/>
 <path fillRule="evenodd" clipRule="evenodd" d="M13.5569 15.5L14.5711 16.5142L13.0499 18.0352L14.5711 19.5569L13.5569 20.5711L12.0352 19.0499L10.5142 20.5711L9.5 19.5569L11.0211 18.0352L9.5 16.5142L10.5142 15.5L12.0352 17.0211L13.5569 15.5Z" fill="var(--color-foreground)"/>

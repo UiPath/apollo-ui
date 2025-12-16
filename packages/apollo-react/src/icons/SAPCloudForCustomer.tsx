@@ -1,11 +1,17 @@
 // Auto-generated from third-party/sap-cloud-for-customer.svg
 import React from 'react';
 
-export interface SAPCloudForCustomerProps extends React.SVGProps<SVGSVGElement> {}
+export interface SAPCloudForCustomerProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const SAPCloudForCustomer = React.forwardRef<SVGSVGElement, SAPCloudForCustomerProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <g clipPath="url(#clip0_2_1898)">
 <rect x="-3.375" y="-3.375" width="30.75" height="30.75" fill="url(#pattern0_2_1898)"/>
 </g>

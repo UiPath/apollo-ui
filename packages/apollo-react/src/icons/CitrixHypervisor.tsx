@@ -1,11 +1,17 @@
 // Auto-generated from third-party/citrix-hypervisor.svg
 import React from 'react';
 
-export interface CitrixHypervisorProps extends React.SVGProps<SVGSVGElement> {}
+export interface CitrixHypervisorProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const CitrixHypervisor = React.forwardRef<SVGSVGElement, CitrixHypervisorProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <g clipPath="url(#clip0_2_1684)">
 <rect y="-0.19989" width="24" height="24" fill="#35C2CC"/>
 <path d="M0.922852 12.3277C0.922852 10.7862 1.96162 9.70712 3.44695 9.70712C4.44689 9.70712 5.26236 10.2081 5.59244 10.9789C5.63127 11.0463 5.64098 11.1234 5.64098 11.2005C5.64098 11.3642 5.50507 11.4895 5.34974 11.4895C5.34003 11.4895 5.34003 11.4895 5.33032 11.4895C5.1847 11.4895 5.05849 11.3931 5.01966 11.2583C4.76725 10.632 4.18477 10.2756 3.45666 10.2756C2.34994 10.2756 1.56358 11.1137 1.56358 12.3277C1.56358 13.532 2.33052 14.3702 3.44695 14.3702C4.17506 14.3702 4.72842 14.0233 5.01966 13.2911C5.05849 13.1562 5.1847 13.0599 5.32061 13.0599C5.49536 13.0599 5.63127 13.1948 5.63127 13.3682V13.3778C5.63127 13.4453 5.62156 13.5127 5.59244 13.5801C5.29149 14.4087 4.48572 14.9386 3.44695 14.9386C1.95191 14.9386 0.922852 13.8692 0.922852 12.3277Z" fill="#215361"/>

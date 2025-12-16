@@ -1,11 +1,17 @@
 // Auto-generated from third-party/internal-package/internal-package-web-api.svg
 import React from 'react';
 
-export interface InternalPackageWebAPIProps extends React.SVGProps<SVGSVGElement> {}
+export interface InternalPackageWebAPIProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const InternalPackageWebAPI = React.forwardRef<SVGSVGElement, InternalPackageWebAPIProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <circle cx="12" cy="16" r="1" fill="#526069"/>
 <circle cx="12" cy="21" r="1" fill="#526069"/>
 <path d="M16 14H18L16 22H14L16 14Z" fill="#526069"/>

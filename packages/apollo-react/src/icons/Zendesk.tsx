@@ -1,11 +1,17 @@
 // Auto-generated from third-party/zendesk.svg
 import React from 'react';
 
-export interface ZendeskProps extends React.SVGProps<SVGSVGElement> {}
+export interface ZendeskProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const Zendesk = React.forwardRef<SVGSVGElement, ZendeskProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <path d="M11.1621 8.06745V20.3364H1L11.1621 8.06745Z" fill="#03363D"/>
 <path d="M11.1621 3.66365C11.1621 5.01123 10.6268 6.30362 9.67391 7.2565C8.72103 8.20938 7.42864 8.74471 6.08106 8.74471C4.73348 8.74471 3.44109 8.20938 2.48821 7.2565C1.53532 6.30362 1 5.01123 1 3.66365H11.1621Z" fill="#03363D"/>
 <path d="M12.837 20.3364C12.8272 19.669 12.9489 19.0063 13.1953 18.386C13.4416 17.7658 13.8077 17.2001 14.2727 16.7213C15.2117 15.7544 16.4964 15.2 17.8441 15.1803C19.1918 15.1605 20.4922 15.677 21.4592 16.616C21.9379 17.0809 22.3205 17.6357 22.5849 18.2484C22.8493 18.8612 22.9904 19.5201 23.0002 20.1874C23.0002 20.2374 23.0002 20.2863 23.0002 20.3364H12.837Z" fill="#03363D"/>

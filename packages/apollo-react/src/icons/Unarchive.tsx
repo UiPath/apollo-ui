@@ -1,11 +1,17 @@
 // Auto-generated from action/unarchive.svg
 import React from 'react';
 
-export interface UnarchiveProps extends React.SVGProps<SVGSVGElement> {}
+export interface UnarchiveProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const Unarchive = React.forwardRef<SVGSVGElement, UnarchiveProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <rect width="24" height="24" fill="var(--color-background)"/>
 <path fillRule="evenodd" clipRule="evenodd" d="M20 9.99998H4V20H20V9.99998ZM2 7.99998V22H22V7.99998H2Z" fill="currentColor"/>
 <path fillRule="evenodd" clipRule="evenodd" d="M10 14V12H8V16H16V12H14V14H10Z" fill="currentColor"/>

@@ -1,11 +1,17 @@
 // Auto-generated from studio-activities-icon-sets/classic-icons-gsuite-apps/gsuite-apps-script.svg
 import React from 'react';
 
-export interface GsuiteAppsScriptProps extends React.SVGProps<SVGSVGElement> {}
+export interface GsuiteAppsScriptProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const GsuiteAppsScript = React.forwardRef<SVGSVGElement, GsuiteAppsScriptProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <path d="M14.9111 14.1324H3.48145C2.21184 14.1324 1.18262 15.1617 1.18262 16.4313C1.18262 17.7009 2.21184 18.7301 3.48145 18.7301H14.9111C16.1807 18.7301 17.21 17.7009 17.21 16.4313C17.21 15.1617 16.1807 14.1324 14.9111 14.1324Z" fill="#EA4335"/>
 <path d="M4.3309 11.5827L13.5777 18.3009C14.6048 19.0471 16.0425 18.8194 16.7887 17.7923C17.535 16.7652 17.3073 15.3276 16.2801 14.5813L7.03333 7.8631C6.0062 7.11684 4.56858 7.34454 3.82232 8.37167C3.07607 9.39881 3.30376 10.8364 4.3309 11.5827Z" fill="#FBBC04"/>
 <path d="M17.1447 15.6988L13.6127 4.82853C13.2204 3.62106 11.9235 2.96026 10.716 3.35259C9.50856 3.74492 8.84776 5.04181 9.24009 6.24928L12.7721 17.1196C13.1644 18.327 14.4613 18.9878 15.6687 18.5955C16.8762 18.2032 17.537 16.9063 17.1447 15.6988Z" fill="#34A853"/>

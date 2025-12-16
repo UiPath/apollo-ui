@@ -1,11 +1,17 @@
 // Auto-generated from ui-bpmn-canvas/bpmn-toolbar/bpmn-toolbar-group.svg
 import React from 'react';
 
-export interface BpmnToolbarGroupProps extends React.SVGProps<SVGSVGElement> {}
+export interface BpmnToolbarGroupProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const BpmnToolbarGroup = React.forwardRef<SVGSVGElement, BpmnToolbarGroupProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <path fillRule="evenodd" clipRule="evenodd" d="M19.5 5C19.5 4.72386 19.2761 4.5 19 4.5H5C4.72386 4.5 4.5 4.72386 4.5 5V19C4.5 19.2761 4.72386 19.5 5 19.5H19C19.2761 19.5 19.5 19.2761 19.5 19V5ZM5 3C3.89543 3 3 3.89543 3 5V19C3 20.1046 3.89543 21 5 21H19C20.1046 21 21 20.1046 21 19V5C21 3.89543 20.1046 3 19 3C19 3 14.7337 3 12 3C9.26633 3 5 3 5 3Z" fill="currentColor"/>
 <path d="M2 2H6V6H2V2Z" fill="currentColor"/>
 <path d="M18 2H22V6H18V2Z" fill="currentColor"/>

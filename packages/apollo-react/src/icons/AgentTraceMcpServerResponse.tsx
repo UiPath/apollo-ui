@@ -1,11 +1,17 @@
 // Auto-generated from ui-agents-icons/agent-trace/agent-trace-mcp-server-response.svg
 import React from 'react';
 
-export interface AgentTraceMcpServerResponseProps extends React.SVGProps<SVGSVGElement> {}
+export interface AgentTraceMcpServerResponseProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const AgentTraceMcpServerResponse = React.forwardRef<SVGSVGElement, AgentTraceMcpServerResponseProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <g clipPath="url(#clip0_4228_9973)">
 <ellipse cx="6.33727" cy="6.53817" rx="1.36364" ry="1.36364" fill="currentColor"/>
 <ellipse cx="6.33727" cy="10.2515" rx="1.36364" ry="1.36364" fill="currentColor"/>

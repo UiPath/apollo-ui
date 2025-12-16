@@ -1,11 +1,17 @@
 // Auto-generated from third-party/salesmate.svg
 import React from 'react';
 
-export interface SalesmateProps extends React.SVGProps<SVGSVGElement> {}
+export interface SalesmateProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const Salesmate = React.forwardRef<SVGSVGElement, SalesmateProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <g clipPath="url(#clip0_2_1896)">
 <rect x="-1.125" y="-1.125" width="26.25" height="26.25" fill="url(#pattern0_2_1896)"/>
 </g>

@@ -1,11 +1,17 @@
 // Auto-generated from action/ai-autofix.svg
 import React from 'react';
 
-export interface AIAutofixProps extends React.SVGProps<SVGSVGElement> {}
+export interface AIAutofixProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const AIAutofix = React.forwardRef<SVGSVGElement, AIAutofixProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <path d="M18.9652 1.87232C19.1489 1.37589 19.8511 1.37589 20.0348 1.87232L20.6 3.39996L22.1277 3.96524C22.6241 4.14893 22.6241 4.85107 22.1277 5.03476L20.6 5.60004L20.0348 7.12768C19.8511 7.62411 19.1489 7.62411 18.9652 7.12768L18.4 5.60004L16.8723 5.03476C16.3759 4.85107 16.3759 4.14893 16.8723 3.96524L18.4 3.39996L18.9652 1.87232Z" fill="#0067DF"/>
 <path d="M7.96524 2.37232C8.14893 1.87589 8.85107 1.87589 9.03476 2.37232L9.60004 3.89996L11.1277 4.46524C11.6241 4.64893 11.6241 5.35107 11.1277 5.53476L9.60004 6.10004L9.03476 7.62768C8.85107 8.12411 8.14893 8.12411 7.96524 7.62768L7.39996 6.10004L5.87232 5.53476C5.37589 5.35107 5.37589 4.64893 5.87232 4.46524L7.39996 3.89996L7.96524 2.37232Z" fill="#0067DF"/>
 <path d="M18.4652 12.8723C18.6489 12.3759 19.3511 12.3759 19.5348 12.8723L20.1 14.4L21.6277 14.9652C22.1241 15.1489 22.1241 15.8511 21.6277 16.0348L20.1 16.6L19.5348 18.1277C19.3511 18.6241 18.6489 18.6241 18.4652 18.1277L17.9 16.6L16.3723 16.0348C15.8759 15.8511 15.8759 15.1489 16.3723 14.9652L17.9 14.4L18.4652 12.8723Z" fill="#0067DF"/>

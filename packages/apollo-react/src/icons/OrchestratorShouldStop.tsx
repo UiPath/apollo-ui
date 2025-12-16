@@ -1,11 +1,17 @@
 // Auto-generated from studio-activities-icon-sets/activities-orchestrator/orchestrator-should-stop.svg
 import React from 'react';
 
-export interface OrchestratorShouldStopProps extends React.SVGProps<SVGSVGElement> {}
+export interface OrchestratorShouldStopProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const OrchestratorShouldStop = React.forwardRef<SVGSVGElement, OrchestratorShouldStopProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <g clipPath="url(#clip0_4117_1401)">
 <path d="M11.6943 2C8.42434 2 5.51434 3.58 3.69434 6.01V4H1.69434V10H7.69434V8H4.78434C6.16434 5.61 8.74434 4 11.6943 4V2Z" fill="currentColor"/>
 <path d="M15.6943 8H13.6943V2L19.6943 2V4H17.6843C20.1143 5.81999 21.6943 8.72997 21.6943 12H19.6943C19.6943 9.04997 18.0843 6.46999 15.6943 5.09V8Z" fill="currentColor"/>

@@ -1,11 +1,17 @@
 // Auto-generated from studio-activities-icon-sets/activities-slack-activities/slack-search.svg
 import React from 'react';
 
-export interface SlackSearchProps extends React.SVGProps<SVGSVGElement> {}
+export interface SlackSearchProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const SlackSearch = React.forwardRef<SVGSVGElement, SlackSearchProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <g clipPath="url(#clip0_4117_1983)">
 <path fillRule="evenodd" clipRule="evenodd" d="M9.27217 2.05176C8.15278 2.05258 7.24685 2.95919 7.24768 4.07635C7.24685 5.1935 8.15361 6.10011 9.273 6.10093H11.2983V4.07717C11.2991 2.96001 10.3924 2.05341 9.27217 2.05176C9.273 2.05176 9.273 2.05176 9.27217 2.05176V2.05176ZM9.27217 7.45176H3.87298C2.75359 7.45259 1.84683 8.35919 1.84766 9.47635C1.846 10.5935 2.75276 11.5001 3.87215 11.5018H9.27217C10.3916 11.5009 11.2983 10.5943 11.2975 9.47717C11.2983 8.35919 10.3916 7.45259 9.27217 7.45176Z" fill="#1AB9FE"/>
 <path fillRule="evenodd" clipRule="evenodd" d="M22.0973 9.47635C22.0981 8.35919 21.1914 7.45259 20.072 7.45176C18.9526 7.45259 18.0458 8.35919 18.0467 9.47635V11.5018H20.072C21.1914 11.5009 22.0981 10.5943 22.0973 9.47635ZM16.6973 9.47635V4.07635C16.6981 2.96001 15.7922 2.05341 14.6728 2.05176C13.5534 2.05258 12.6466 2.95919 12.6475 4.07635V9.47635C12.6458 10.5935 13.5526 11.5001 14.672 11.5018C15.7913 11.5009 16.6981 10.5943 16.6973 9.47635Z" fill="#40B658"/>

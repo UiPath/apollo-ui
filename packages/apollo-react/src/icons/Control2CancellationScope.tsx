@@ -1,11 +1,17 @@
 // Auto-generated from studio-activities-icon-sets/activities-control-2/control-2-cancellation-scope.svg
 import React from 'react';
 
-export interface Control2CancellationScopeProps extends React.SVGProps<SVGSVGElement> {}
+export interface Control2CancellationScopeProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const Control2CancellationScope = React.forwardRef<SVGSVGElement, Control2CancellationScopeProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <g clipPath="url(#clip0_4117_1583)">
 <path fillRule="evenodd" clipRule="evenodd" d="M14.1178 8.45996L15.532 9.87417L13.4109 11.995L15.532 14.1168L14.1178 15.531L11.9959 13.41L9.87515 15.531L8.46094 14.1168L10.5819 11.995L8.46094 9.87417L9.87515 8.45996L11.9959 10.581L14.1178 8.45996Z" fill="currentColor"/>
 <path fillRule="evenodd" clipRule="evenodd" d="M16 4V2H20C21.0544 2 21.9182 2.81588 21.9945 3.85074L22 4V8H20V4H16Z" fill="currentColor"/>

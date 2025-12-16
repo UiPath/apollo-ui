@@ -1,11 +1,17 @@
 // Auto-generated from third-party/microsoft-dynamics-crm.svg
 import React from 'react';
 
-export interface MicrosoftDynamicsCRMProps extends React.SVGProps<SVGSVGElement> {}
+export interface MicrosoftDynamicsCRMProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const MicrosoftDynamicsCRM = React.forwardRef<SVGSVGElement, MicrosoftDynamicsCRMProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <g clipPath="url(#clip0_2_1834)">
 <rect width="24" height="24" fill="url(#pattern0_2_1834)"/>
 </g>

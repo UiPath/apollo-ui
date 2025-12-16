@@ -1,11 +1,17 @@
 // Auto-generated from third-party/pagerduty.svg
 import React from 'react';
 
-export interface PagerdutyProps extends React.SVGProps<SVGSVGElement> {}
+export interface PagerdutyProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const Pagerduty = React.forwardRef<SVGSVGElement, PagerdutyProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <rect x="4.5" y="1.125" width="15" height="21.75" fill="url(#pattern0_2_1877)"/>
 <defs>
 <pattern id="pattern0_2_1877" patternContentUnits="objectBoundingBox" width="1" height="1">

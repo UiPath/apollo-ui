@@ -1,11 +1,17 @@
 // Auto-generated from third-party/bigquery.svg
 import React from 'react';
 
-export interface BigqueryProps extends React.SVGProps<SVGSVGElement> {}
+export interface BigqueryProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const Bigquery = React.forwardRef<SVGSVGElement, BigqueryProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <path d="M5.77649 20.7427L1.26479 12.928C1.09132 12.6275 1 12.2867 1 11.9398C1 11.5928 1.09132 11.252 1.26479 10.9516L5.77649 3.13696C5.94998 2.83647 6.19951 2.58694 6.50001 2.41346C6.80051 2.23998 7.14138 2.14866 7.48836 2.14868H16.5118C16.8587 2.14869 17.1995 2.24002 17.5 2.4135C17.8005 2.58698 18.05 2.83649 18.2235 3.13696L22.7352 10.9516C22.9087 11.252 23 11.5929 23 11.9398C23 12.2868 22.9087 12.6277 22.7352 12.9281L18.2235 20.7427C18.05 21.0432 17.8004 21.2927 17.5 21.4661C17.1995 21.6395 16.8587 21.7309 16.5118 21.7308H7.48836C7.14138 21.7309 6.8005 21.6396 6.5 21.4661C6.1995 21.2926 5.94996 21.0431 5.77649 20.7426V20.7427Z" fill="url(#paint0_linear_4497_14854)"/>
 <path opacity="0.07" d="M21.4921 15.8036L14.8571 9.1682L11.9997 8.40353L9.43309 9.35744L8.44189 11.9398L9.23888 14.8151L16.2751 21.8513L17.7681 21.785L21.4921 15.8036Z" fill="black"/>
 <path d="M11.9998 7.95306C9.7981 7.95306 8.01318 9.73798 8.01318 11.9399C8.01318 14.1416 9.7981 15.9265 11.9998 15.9265C14.2015 15.9265 15.9863 14.1416 15.9863 11.9399C15.9863 9.73798 14.2013 7.95306 11.9998 7.95306ZM11.9998 14.9647C10.3292 14.9647 8.97482 13.6103 8.97482 11.9397C8.97482 10.2691 10.3292 8.91487 11.9998 8.91487C13.6704 8.91487 15.0248 10.2692 15.0248 11.9399C15.0248 13.6105 13.6704 14.9649 11.9998 14.9649" fill="white"/>

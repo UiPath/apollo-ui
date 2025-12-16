@@ -1,11 +1,17 @@
 // Auto-generated from third-party/microsoft-edge.svg
 import React from 'react';
 
-export interface MicrosoftEdgeProps extends React.SVGProps<SVGSVGElement> {}
+export interface MicrosoftEdgeProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const MicrosoftEdge = React.forwardRef<SVGSVGElement, MicrosoftEdgeProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <g clipPath="url(#clip0_2761_1909)">
 <g clipPath="url(#clip1_2761_1909)">
 <path d="M21.6607 17.8631C21.3408 18.0305 21.0108 18.1779 20.6726 18.3047C19.5963 18.7074 18.4562 18.9126 17.307 18.9103C12.8707 18.9103 9.00637 15.8587 9.00637 11.9428C9.01205 11.4176 9.15779 10.9034 9.42857 10.4533C9.69934 10.0032 10.0853 9.63357 10.5467 9.38249C6.53418 9.55124 5.50293 13.7325 5.50293 16.1822C5.50293 23.1084 11.8864 23.8106 13.2617 23.8106C14.0032 23.8106 15.1217 23.595 15.7929 23.3831L15.9157 23.3419C18.4988 22.4489 20.7008 20.7031 22.1595 18.3919C22.2042 18.3215 22.2241 18.2382 22.2162 18.1552C22.2082 18.0722 22.1729 17.9942 22.1157 17.9336C22.0585 17.873 21.9827 17.8331 21.9003 17.8203C21.8179 17.8076 21.7336 17.8226 21.6607 17.8631Z" fill="url(#paint0_linear_2761_1909)"/>

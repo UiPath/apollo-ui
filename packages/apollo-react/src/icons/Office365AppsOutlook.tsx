@@ -1,11 +1,17 @@
 // Auto-generated from studio-activities-icon-sets/activities-microsoft-office365-apps/office365-apps-outlook.svg
 import React from 'react';
 
-export interface Office365AppsOutlookProps extends React.SVGProps<SVGSVGElement> {}
+export interface Office365AppsOutlookProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const Office365AppsOutlook = React.forwardRef<SVGSVGElement, Office365AppsOutlookProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <g clipPath="url(#clip0_4117_2220)">
 <path fillRule="evenodd" clipRule="evenodd" d="M20.7819 2.23877H8.79532C8.2583 2.23877 7.81641 2.68066 7.81641 3.21768V4.33036L14.5724 6.42216L21.7608 4.33036V3.21768C21.7608 2.68066 21.3189 2.23877 20.7819 2.23877Z" fill="#0364B8"/>
 <path fillRule="evenodd" clipRule="evenodd" d="M22.9104 12.9796C23.0125 12.6586 23.0941 12.3315 23.1544 12C23.1544 11.8342 23.0659 11.6805 22.9223 11.5977L22.9132 11.5928L22.9104 11.5915L15.3539 7.2868C15.3213 7.26571 15.2875 7.24633 15.2529 7.22889C14.9603 7.08386 14.616 7.08386 14.3234 7.22889C14.2888 7.24633 14.255 7.2656 14.2223 7.2868L6.66589 11.5915L6.66305 11.5928L6.65393 11.5977C6.51042 11.6805 6.42188 11.8342 6.42188 12C6.48222 12.3315 6.56376 12.6586 6.66589 12.9796L14.6783 18.8397L22.9104 12.9796Z" fill="#0A2767"/>

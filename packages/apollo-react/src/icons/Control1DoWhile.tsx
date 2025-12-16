@@ -1,11 +1,17 @@
 // Auto-generated from studio-activities-icon-sets/activities-control-1/control-1-do-while.svg
 import React from 'react';
 
-export interface Control1DoWhileProps extends React.SVGProps<SVGSVGElement> {}
+export interface Control1DoWhileProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const Control1DoWhile = React.forwardRef<SVGSVGElement, Control1DoWhileProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <g clipPath="url(#clip0_4117_1492)">
 <path fillRule="evenodd" clipRule="evenodd" d="M8.85235 18C8.93602 17.8588 9.03856 17.7256 9.15998 17.6042L10.5742 16.19C10.7042 16.06 10.8476 15.9517 11 15.8649V11.99H8L12 8L16 11.99H13V15.8783C13.1438 15.9627 13.2792 16.0666 13.4026 16.19L14.8168 17.6042C15.5979 18.3853 15.5979 19.6516 14.8168 20.4326L13.4026 21.8469C12.6216 22.6279 11.3552 22.6279 10.5742 21.8469L9.15998 20.4326C9.02521 20.2979 8.9137 20.1487 8.82545 19.99H6C4.9 19.99 4 19.1 4 18V4C4 2.9 4.9 2 6 2H18C19.1 2 20 2.9 20 4V18C20 19.1 19.1 20 18 20H17V18H18V4H6V18H8.85235ZM11.9884 17.6042L13.4026 19.0184L11.9884 20.4326L10.5742 19.0184L11.9884 17.6042Z" fill="currentColor"/>
 </g>

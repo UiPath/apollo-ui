@@ -1,11 +1,17 @@
 // Auto-generated from studio-activities-icon-sets/activities-control-2/control-2-assign.svg
 import React from 'react';
 
-export interface Control2AssignProps extends React.SVGProps<SVGSVGElement> {}
+export interface Control2AssignProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const Control2Assign = React.forwardRef<SVGSVGElement, Control2AssignProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <g clipPath="url(#clip0_4117_1585)">
 <path d="M5.00671 19V14H7.00671V19H18V15.5H16L19 12.5L22 15.5H20V19C20 20.1 19.1 21 18 21H10.5H8.00671H7.00671C5.90214 21 5.00671 20.1046 5.00671 19Z" fill="currentColor"/>
 <path fillRule="evenodd" clipRule="evenodd" d="M8.11702 2.87622L12 5.46488V9.67709L5.86054 12.1329L2 9.34466V5.32303L8.11702 2.87622ZM4 6.67709V8.32205L6.13946 9.86724L10 8.32303V6.53524L7.88298 5.1239L4 6.67709Z" fill="currentColor"/>

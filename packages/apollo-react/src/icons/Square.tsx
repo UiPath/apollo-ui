@@ -1,11 +1,17 @@
 // Auto-generated from third-party/square.svg
 import React from 'react';
 
-export interface SquareProps extends React.SVGProps<SVGSVGElement> {}
+export interface SquareProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const Square = React.forwardRef<SVGSVGElement, SquareProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <rect x="2.25" y="2.25" width="19.5" height="19.5" fill="url(#pattern0_2_1916)"/>
 <defs>
 <pattern id="pattern0_2_1916" patternContentUnits="objectBoundingBox" width="1" height="1">

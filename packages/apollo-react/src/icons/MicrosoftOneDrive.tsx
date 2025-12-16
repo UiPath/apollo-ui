@@ -1,11 +1,17 @@
 // Auto-generated from third-party/microsoft-one-drive.svg
 import React from 'react';
 
-export interface MicrosoftOneDriveProps extends React.SVGProps<SVGSVGElement> {}
+export interface MicrosoftOneDriveProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const MicrosoftOneDrive = React.forwardRef<SVGSVGElement, MicrosoftOneDriveProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <mask id="mask0_2_1842" style={{maskType:"alpha"}} maskUnits="userSpaceOnUse" x="1" y="5" width="22" height="14">
 <path d="M6.38298 18.875C3.41002 18.875 1 16.5152 1 13.6042C1 10.7571 3.30534 8.43729 6.18796 8.33675C7.3768 6.41177 9.5349 5.125 12 5.125C15.1837 5.125 17.8554 7.27126 18.5882 10.1668C21.028 10.1852 23 12.1276 23 14.5208C23 16.8487 20.9375 18.875 18.7872 18.8691L6.38298 18.875Z" fill="#C4C4C4"/>
 </mask>

@@ -1,11 +1,17 @@
 // Auto-generated from studio-icons/list-datastores.svg
 import React from 'react';
 
-export interface ListDatastoresProps extends React.SVGProps<SVGSVGElement> {}
+export interface ListDatastoresProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const ListDatastores = React.forwardRef<SVGSVGElement, ListDatastoresProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <path fillRule="evenodd" clipRule="evenodd" d="M4 7C4 4.79 7.58 3 12 3C16.42 3 20 4.79 20 7V12H18V9.64C16.53 10.47 14.39 11 12 11C9.61 11 7.47 10.47 6 9.64V12.45C6.52519 12.8338 7.21031 13.1605 8 13.4135C9.16504 13.7869 10.5577 14 12 14V16C10.86 16 9.7625 15.8875 8.74875 15.6775C8.65371 15.6578 8.55941 15.6373 8.46588 15.6159L8.43779 15.6094C8.29152 15.5757 8.14713 15.5398 8.00479 15.502L8 15.5007C7.27485 15.3075 6.60243 15.0619 6 14.77V17C6 17.4218 7.51596 18.5554 10.3137 18.8995C10.65 18.9409 11.0048 18.9709 11.3777 18.9868C11.5798 18.9955 11.7873 19 12 19V21C11.181 21 10.3903 20.9383 9.64565 20.8236L9.55516 20.8093C9.00899 20.7216 8.48821 20.6053 7.99994 20.464C5.61083 19.7723 4 18.4804 4 17V7ZM6 7C6 7.5 8.13 9 12 9C15.87 9 18 7.5 18 7C18 6.5 15.87 5 12 5C8.13 5 6 6.5 6 7Z" fill="currentColor"/>
 <path d="M14 14H22V16H14V14Z" fill="#1976D2"/>
 <path d="M14 17H22V19H14V17Z" fill="#1976D2"/>

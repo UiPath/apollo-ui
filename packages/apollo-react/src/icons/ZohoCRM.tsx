@@ -1,11 +1,17 @@
 // Auto-generated from third-party/zoho-crm.svg
 import React from 'react';
 
-export interface ZohoCRMProps extends React.SVGProps<SVGSVGElement> {}
+export interface ZohoCRMProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const ZohoCRM = React.forwardRef<SVGSVGElement, ZohoCRMProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <path d="M22.9999 9.82569V15.0441L22.2915 15.7539V10.6441L22.9999 9.82569Z" fill="#DC7E28"/>
 <path d="M22.2901 10.6441H17.519V15.7539H22.2901V10.6441Z" fill="url(#paint0_linear_4497_14851)"/>
 <path d="M18.267 9.83009L17.5205 10.6441H22.2916L23 9.82569L18.267 9.83009Z" fill="#FDD600"/>

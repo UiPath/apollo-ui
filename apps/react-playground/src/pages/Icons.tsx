@@ -76,8 +76,7 @@ export function Icons() {
 								ApolloIcons as Record<
 									string,
 									React.ComponentType<{
-										width?: number;
-										height?: number;
+										size?: string | number;
 										color?: string;
 									}>
 								>
@@ -134,11 +133,7 @@ export function Icons() {
 									color="var(--color-foreground)"
 									title={`Click to copy SVG: ${iconName}`}
 								>
-									<IconComponent
-										width={48}
-										height={48}
-										color="var(--color-foreground)"
-									/>
+									<IconComponent size={48} color="var(--color-foreground)" />
 									<IconLabel>{iconName}</IconLabel>
 								</IconBrowserCard>
 							);

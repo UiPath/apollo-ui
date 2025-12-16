@@ -1,11 +1,17 @@
 // Auto-generated from third-party/google-vision.svg
 import React from 'react';
 
-export interface GoogleVisionProps extends React.SVGProps<SVGSVGElement> {}
+export interface GoogleVisionProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const GoogleVision = React.forwardRef<SVGSVGElement, GoogleVisionProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <rect x="0.375" y="1.875" width="23.25" height="20.25" fill="url(#pattern0_2_1770)"/>
 <defs>
 <pattern id="pattern0_2_1770" patternContentUnits="objectBoundingBox" width="1" height="1">

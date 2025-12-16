@@ -1,11 +1,17 @@
 // Auto-generated from studio-activities-icon-sets/activities-vmware-activities/vmware-power-on-vm.svg
 import React from 'react';
 
-export interface VmwarePowerOnVmProps extends React.SVGProps<SVGSVGElement> {}
+export interface VmwarePowerOnVmProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const VmwarePowerOnVm = React.forwardRef<SVGSVGElement, VmwarePowerOnVmProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <g clipPath="url(#clip0_4117_2922)">
 <rect x="1.55469" y="2.11768" width="20" height="20" fill="url(#pattern0_4117_2922)"/>
 </g>

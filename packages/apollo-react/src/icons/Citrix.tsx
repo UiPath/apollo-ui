@@ -1,11 +1,17 @@
 // Auto-generated from third-party/citrix.svg
 import React from 'react';
 
-export interface CitrixProps extends React.SVGProps<SVGSVGElement> {}
+export interface CitrixProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const Citrix = React.forwardRef<SVGSVGElement, CitrixProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <rect y="8.25" width="24" height="7.5" fill="url(#pattern0_2_1682)"/>
 <defs>
 <pattern id="pattern0_2_1682" patternContentUnits="objectBoundingBox" width="1" height="1">

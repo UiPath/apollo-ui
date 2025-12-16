@@ -1,11 +1,17 @@
 // Auto-generated from studio-activities-icon-sets/activities-control-2/control-2-remove-from-collection.svg
 import React from 'react';
 
-export interface Control2RemoveFromCollectionProps extends React.SVGProps<SVGSVGElement> {}
+export interface Control2RemoveFromCollectionProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const Control2RemoveFromCollection = React.forwardRef<SVGSVGElement, Control2RemoveFromCollectionProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <g clipPath="url(#clip0_4117_1573)">
 <g clipPath="url(#clip1_4117_1573)">
 <path d="M14 16.4121V18.4121H22V16.4121H14Z" fill="#CC3D45"/>

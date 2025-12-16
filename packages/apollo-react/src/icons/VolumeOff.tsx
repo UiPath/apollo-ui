@@ -1,11 +1,17 @@
 // Auto-generated from action/volume-off.svg
 import React from 'react';
 
-export interface VolumeOffProps extends React.SVGProps<SVGSVGElement> {}
+export interface VolumeOffProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const VolumeOff = React.forwardRef<SVGSVGElement, VolumeOffProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <path fillRule="evenodd" clipRule="evenodd" d="M4.33993 2.935L2.92993 4.345L7.28993 8.705L6.99993 9.005H2.99993V15.005H6.99993L11.9999 20.005V13.415L16.1799 17.595C15.5299 18.085 14.7999 18.475 13.9999 18.705V20.765C15.3399 20.465 16.5699 19.845 17.6099 19.015L19.6599 21.065L21.0699 19.655L4.33993 2.935ZM9.99993 15.175L7.82993 13.005H4.99993V11.005H7.82993L8.70993 10.125L9.99993 11.415V15.175ZM18.5899 14.345C18.8499 13.615 18.9999 12.825 18.9999 12.005C18.9999 8.835 16.8899 6.155 13.9999 5.295V3.235C18.0099 4.145 20.9999 7.725 20.9999 12.005C20.9999 13.395 20.6799 14.705 20.1199 15.875L18.5899 14.345ZM11.9999 4.005L10.1199 5.885L11.9999 7.765V4.005ZM13.9999 7.975C15.4799 8.715 16.4999 10.235 16.4999 12.005C16.4999 12.085 16.4899 12.165 16.4799 12.245L13.9999 9.765V7.975Z" fill="currentColor"/>
     </svg>
   )

@@ -1,11 +1,17 @@
 // Auto-generated from third-party/slack.svg
 import React from 'react';
 
-export interface SlackProps extends React.SVGProps<SVGSVGElement> {}
+export interface SlackProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const Slack = React.forwardRef<SVGSVGElement, SlackProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <path fillRule="evenodd" clipRule="evenodd" d="M9.29951 1.875C8.18013 1.87583 7.2742 2.78243 7.27502 3.89959C7.2742 5.01674 8.18096 5.92335 9.30034 5.92418H11.3257V3.90041C11.3265 2.78326 10.4197 1.87665 9.29951 1.875C9.30034 1.875 9.30034 1.875 9.29951 1.875V1.875ZM9.29951 7.275H3.90032C2.78094 7.27583 1.87417 8.18243 1.875 9.29959C1.87335 10.4167 2.78011 11.3234 3.89949 11.325H9.29951C10.4189 11.3242 11.3257 10.4176 11.3248 9.30042C11.3257 8.18243 10.4189 7.27583 9.29951 7.275Z" fill="#1AB9FE"/>
 <path fillRule="evenodd" clipRule="evenodd" d="M22.1251 9.29959C22.126 8.18243 21.2192 7.27583 20.0998 7.275C18.9804 7.27583 18.0737 8.18243 18.0745 9.29959V11.325H20.0998C21.2192 11.3242 22.126 10.4176 22.1251 9.29959ZM16.7251 9.29959V3.89959C16.7259 2.78326 15.82 1.87665 14.7006 1.875C13.5812 1.87583 12.6745 2.78243 12.6753 3.89959V9.29959C12.6736 10.4167 13.5804 11.3234 14.6998 11.325C15.8192 11.3242 16.7259 10.4176 16.7251 9.29959Z" fill="#40B658"/>
 <path fillRule="evenodd" clipRule="evenodd" d="M14.6996 22.125C15.819 22.1241 16.7258 21.2175 16.725 20.1004C16.7258 18.9832 15.819 18.0766 14.6996 18.0758H12.6743V20.1004C12.6735 21.2167 13.5802 22.1233 14.6996 22.125ZM14.6996 16.7241H20.0997C21.219 16.7233 22.1258 15.8167 22.125 14.6995C22.1266 13.5824 21.2199 12.6758 20.1005 12.6741H14.7005C13.5811 12.675 12.6743 13.5816 12.6751 14.6987C12.6743 15.8167 13.5802 16.7233 14.6996 16.7241Z" fill="#FCC003"/>

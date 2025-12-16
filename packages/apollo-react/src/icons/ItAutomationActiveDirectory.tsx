@@ -1,11 +1,17 @@
 // Auto-generated from studio-activities-icon-sets/activities-it-automation/it-automation-active-directory.svg
 import React from 'react';
 
-export interface ItAutomationActiveDirectoryProps extends React.SVGProps<SVGSVGElement> {}
+export interface ItAutomationActiveDirectoryProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 32
+   */
+  size?: string | number;
+}
 
 export const ItAutomationActiveDirectory = React.forwardRef<SVGSVGElement, ItAutomationActiveDirectoryProps>(
-  (props, ref) => (
-    <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 32} height={size ?? 32}>
       <g clipPath="url(#clip0_4117_1881)">
 <path d="M28.9819 26.1192V28.6369C28.9819 28.9311 28.8925 28.9916 28.6128 28.9455C26.7383 28.6657 24.8406 28.4091 22.9517 28.1437C22.6114 28.0976 22.4902 27.9765 22.4902 27.6073C22.5191 26.2692 22.5047 24.9253 22.4902 23.5727C22.4902 23.2786 22.5796 23.1863 22.8767 23.1863C24.8118 23.2007 26.7152 23.2007 28.6128 23.2007C28.9214 23.2007 28.9992 23.3218 28.9992 23.6016C28.9675 24.4494 28.9819 25.28 28.9819 26.1192Z" fill="#00AAF2"/>
 <path d="M25.7723 22.7191C24.8206 22.7191 23.8689 22.7047 22.9172 22.7191C22.6231 22.7191 22.502 22.6585 22.502 22.3182C22.5164 20.9512 22.5164 19.6044 22.502 18.2519C22.502 17.9866 22.5914 17.8972 22.8423 17.851C24.7918 17.5713 26.7413 17.3002 28.6909 17.006C29.0312 16.9599 28.9706 17.1877 28.9706 17.3752C28.9706 18.5835 28.985 19.815 28.9706 21.0262C28.9706 21.4732 28.9562 21.9174 28.9706 22.3644C28.985 22.6441 28.8812 22.7191 28.6159 22.7191C27.6757 22.7047 26.724 22.7191 25.7723 22.7191Z" fill="#00AAF2"/>

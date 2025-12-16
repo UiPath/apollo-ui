@@ -1,11 +1,17 @@
 // Auto-generated from studio-activities-icon-sets/activities-vmware-activities/vmware-get-folder.svg
 import React from 'react';
 
-export interface VmwareGetFolderProps extends React.SVGProps<SVGSVGElement> {}
+export interface VmwareGetFolderProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 25
+   */
+  size?: string | number;
+}
 
 export const VmwareGetFolder = React.forwardRef<SVGSVGElement, VmwareGetFolderProps>(
-  (props, ref) => (
-    <svg width="25" height="25" viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 25} height={size ?? 25}>
       <rect x="2" y="2.11768" width="20" height="20" fill="url(#pattern0_4117_2957)"/>
 <defs>
 <pattern id="pattern0_4117_2957" patternContentUnits="objectBoundingBox" width="1" height="1">

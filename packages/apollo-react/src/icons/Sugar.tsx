@@ -1,11 +1,17 @@
 // Auto-generated from third-party/sugar.svg
 import React from 'react';
 
-export interface SugarProps extends React.SVGProps<SVGSVGElement> {}
+export interface SugarProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const Sugar = React.forwardRef<SVGSVGElement, SugarProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <path d="M12.0321 1.00004L1 5.25792V8.0968L12.0321 12.4194L23 8.0968V5.25792L12.0321 1.00004Z" fill="#12181F"/>
 <path d="M1 15.9032V18.6774L12.0321 23L23 18.6774V15.9032L12.0321 20.1611L1 15.9032Z" fill="#12181F"/>
 <path d="M1 10.5485V13.3869L12.0321 17.7095L23 13.3869V10.5485L12.0321 14.8711L1 10.5485Z" fill="#12181F"/>

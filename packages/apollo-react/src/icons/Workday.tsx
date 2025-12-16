@@ -1,11 +1,17 @@
 // Auto-generated from third-party/workday.svg
 import React from 'react';
 
-export interface WorkdayProps extends React.SVGProps<SVGSVGElement> {}
+export interface WorkdayProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const Workday = React.forwardRef<SVGSVGElement, WorkdayProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <rect x="3.5" y="2.5" width="17" height="19" fill="url(#pattern0_2_1957)"/>
 <defs>
 <pattern id="pattern0_2_1957" patternContentUnits="objectBoundingBox" width="1" height="1">

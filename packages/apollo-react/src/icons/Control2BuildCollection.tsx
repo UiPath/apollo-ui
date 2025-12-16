@@ -1,11 +1,17 @@
 // Auto-generated from studio-activities-icon-sets/activities-control-2/control-2-build-collection.svg
 import React from 'react';
 
-export interface Control2BuildCollectionProps extends React.SVGProps<SVGSVGElement> {}
+export interface Control2BuildCollectionProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const Control2BuildCollection = React.forwardRef<SVGSVGElement, Control2BuildCollectionProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <g clipPath="url(#clip0_4117_1595)">
 <path d="M15 2.41211C16.0544 2.41211 16.9182 3.22799 16.9945 4.26285L17 4.41211V5.41211H15V4.41211H4V15.4121H5V17.4121H4C2.94564 17.4121 2.08183 16.5962 2.00549 15.5614L2 15.4121V4.41211C2 3.35775 2.81588 2.49394 3.85074 2.4176L4 2.41211H15Z" fill="currentColor"/>
 <path d="M20 7.41211C21.0544 7.41211 21.9182 8.22799 21.9945 9.26285L22 9.41211V12.4121H20V9.41211H9V20.4121H12V22.4121H9C7.94564 22.4121 7.08183 21.5962 7.00549 20.5614L7 20.4121V9.41211C7 8.35775 7.81588 7.49394 8.85074 7.41759L9 7.41211H20Z" fill="currentColor"/>

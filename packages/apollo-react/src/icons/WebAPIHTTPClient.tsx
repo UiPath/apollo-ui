@@ -1,11 +1,17 @@
 // Auto-generated from studio-activities-icon-sets/activities-web-api/web-api-http-client.svg
 import React from 'react';
 
-export interface WebAPIHTTPClientProps extends React.SVGProps<SVGSVGElement> {}
+export interface WebAPIHTTPClientProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const WebAPIHTTPClient = React.forwardRef<SVGSVGElement, WebAPIHTTPClientProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <g clipPath="url(#clip0_4117_1647)">
 <path d="M11.059 2.99972L10.582 4.99972L3 5V19L7.249 18.9997L6.772 20.9997L3 21C1.89543 21 1 20.1046 1 19V5C1 3.89543 1.89543 3 3 3L11.059 2.99972ZM11.361 18.9997L10.885 20.9997H8.829L9.305 18.9997H11.361ZM15.461 18.9997L14.985 20.9997H12.929L13.405 18.9997H15.461ZM23 5V19C23 20.1046 22.1046 21 21 21L17.04 20.9997L17.517 18.9997L21 19V3.02559H21.3208C22.2729 3.17908 23 4.00462 23 5ZM15.171 2.99972L14.694 4.99972H12.638L13.114 2.99972H15.171ZM19.271 2.99972L18.794 4.99972H16.738L17.214 2.99972H19.271Z" fill="currentColor"/>
 <path d="M6.51758 11C7.34601 11 8.01758 10.3284 8.01758 9.5C8.01758 8.67157 7.34601 8 6.51758 8C5.68915 8 5.01758 8.67157 5.01758 9.5C5.01758 10.3284 5.68915 11 6.51758 11Z" fill="currentColor"/>
