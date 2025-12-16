@@ -1,4 +1,4 @@
-# ap-autopilot-chat
+# ap-chat
 
 
 
@@ -25,9 +25,9 @@
 ### Graph
 ```mermaid
 graph TD;
-  ap-autopilot-chat --> ap-typography
-  ap-shell --> ap-autopilot-chat
-  style ap-autopilot-chat fill:#f9f,stroke:#333,stroke-width:4px
+  ap-chat --> ap-typography
+  ap-shell --> ap-chat
+  style ap-chat fill:#f9f,stroke:#333,stroke-width:4px
 ```
 
 ----------------------------------------------

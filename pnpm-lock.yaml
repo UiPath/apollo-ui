@@ -471,9 +471,9 @@ importers:
       '@mui/x-date-pickers':
         specifier: ^6.20.2
         version: 6.20.2(@emotion/react@11.14.0(@types/react@19.2.6)(react@19.2.0))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.6)(react@19.2.0))(@types/react@19.2.6)(react@19.2.0))(@mui/material@5.15.3(@emotion/react@11.14.0(@types/react@19.2.6)(react@19.2.0))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.6)(react@19.2.0))(@types/react@19.2.6)(react@19.2.0))(@types/react@19.2.6)(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(@mui/system@5.15.15(@emotion/react@11.14.0(@types/react@19.2.6)(react@19.2.0))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.6)(react@19.2.0))(@types/react@19.2.6)(react@19.2.0))(@types/react@19.2.6)(react@19.2.0))(@types/react@19.2.6)(date-fns@3.6.0)(dayjs@1.11.19)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
-      '@uipath/ap-autopilot-chat':
+      '@uipath/ap-chat':
         specifier: workspace:*
-        version: link:../../web-packages/ap-autopilot-chat
+        version: link:../../web-packages/ap-chat
       '@uipath/ap-data-grid':
         specifier: workspace:*
         version: link:../../web-packages/ap-data-grid
@@ -523,9 +523,9 @@ importers:
 
   apps/storybook:
     dependencies:
-      '@uipath/ap-autopilot-chat':
+      '@uipath/ap-chat':
         specifier: workspace:*
-        version: link:../../web-packages/ap-autopilot-chat
+        version: link:../../web-packages/ap-chat
       '@uipath/ap-data-grid':
         specifier: workspace:*
         version: link:../../web-packages/ap-data-grid
@@ -909,7 +909,7 @@ importers:
         specifier: ^2.1.9
         version: 2.1.9(@types/node@24.10.1)(@vitest/ui@2.1.9)(happy-dom@15.11.7)(jsdom@25.0.1)(less@4.4.2)(lightningcss@1.30.2)(msw@2.12.3(@types/node@24.10.1)(typescript@5.9.3))(sass@1.94.2)(terser@5.43.1)
 
-  web-packages/ap-autopilot-chat:
+  web-packages/ap-chat:
     dependencies:
       '@uipath/apollo-core':
         specifier: workspace:*

@@ -24,8 +24,8 @@ class ApAutopilotChat extends HTMLElement {
 }
 
 // Define custom element
-if (!customElements.get('ap-autopilot-chat')) {
-  customElements.define('ap-autopilot-chat', ApAutopilotChat);
+if (!customElements.get('ap-chat')) {
+  customElements.define('ap-chat', ApAutopilotChat);
 }
 
 export { ApAutopilotChat };

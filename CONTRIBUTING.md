@@ -96,7 +96,7 @@ Must be one of:
 - `apollo-utils` - Utility functions
 - `apollo-wind` - Tailwind/shadcn components
 - `ap-data-grid` - Data grid component
-- `ap-autopilot-chat` - Chat component
+- `ap-chat` - Chat component
 
 Or one of these monorepo-wide scopes:
 
@@ -250,7 +250,7 @@ apollo-ui/
 │   └── apollo-wind/       # Tailwind components
 ├── web-packages/          # Web components
 │   ├── ap-data-grid/      # Data grid
-│   └── ap-autopilot-chat/ # Chat component
+│   └── ap-chat/ # Chat component
 └── apps/                  # Development apps
     ├── storybook/         # Documentation
     └── react-playground/  # React testing
