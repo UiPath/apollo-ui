@@ -107,7 +107,7 @@ apollo-ui/
 │   └── apollo-wind/            # Tailwind/shadcn implementation
 │
 ├── web-packages/               # Cross-framework web components
-│   ├── ap-autopilot-chat/      # Chat component (web component)
+│   ├── ap-chat/      # Chat component (web component)
 │   └── ap-data-grid/           # Data grid (web component + React wrapper)
 │
 ├── turbo.json                  # Turborepo configuration
@@ -202,11 +202,11 @@ apollo-ui/
 
 ### Web Packages (Cross-Framework)
 
-#### `ap-autopilot-chat`
+#### `ap-chat`
 
 - **Purpose**: Chat interface as a web component
 - **Technology**: Web Components (Custom Elements)
-- **Exports**: `<ap-autopilot-chat>` custom element
+- **Exports**: `<ap-chat>` custom element
 
 #### `ap-data-grid`
 
@@ -226,7 +226,7 @@ apollo-core (tokens, icons, fonts)
 apollo-utils (utilities)
     ↓
 ├─→ apollo-react (React + MUI)
-│   └─→ ap-autopilot-chat (Web Component)
+│   └─→ ap-chat (Web Component)
 ├─→ apollo-angular (Angular + Material)
 │   └─→ ap-data-grid (Web Component + React wrapper)
 └─→ apollo-wind (Tailwind + shadcn)
@@ -240,7 +240,7 @@ apollo-utils (utilities)
 
 - **React components**: `Ap` prefix (e.g., `ApButton`, `ApTextField`)
 - **Angular components**: No specific selector naming convention enforced
-- **Web components**: `ap-` prefix (e.g., `<ap-autopilot-chat>`, `<ap-data-grid>`)
+- **Web components**: `ap-` prefix (e.g., `<ap-chat>`, `<ap-data-grid>`)
 
 ### Component Structure
 

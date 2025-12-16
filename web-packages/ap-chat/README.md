@@ -1,19 +1,19 @@
-# @uipath/ap-autopilot-chat
+# @uipath/ap-chat
 
 Autopilot Chat component as a framework-agnostic web component.
 
 ## Overview
 
-`ap-autopilot-chat` provides a chat interface built as a web component (Custom Element), making it usable in any framework or vanilla JavaScript.
+`ap-chat` provides a chat interface built as a web component (Custom Element), making it usable in any framework or vanilla JavaScript.
 
 ## Installation
 
 ```bash
-npm install @uipath/ap-autopilot-chat
+npm install @uipath/ap-chat
 # or
-pnpm add @uipath/ap-autopilot-chat
+pnpm add @uipath/ap-chat
 # or
-yarn add @uipath/ap-autopilot-chat
+yarn add @uipath/ap-chat
 ```
 
 ## Usage
@@ -22,19 +22,19 @@ yarn add @uipath/ap-autopilot-chat
 
 ```html
 <script type="module">
-  import '@uipath/ap-autopilot-chat';
+  import '@uipath/ap-chat';
 </script>
 
-<ap-autopilot-chat></ap-autopilot-chat>
+<ap-chat></ap-chat>
 ```
 
 ### React
 
 ```typescript
-import '@uipath/ap-autopilot-chat';
+import '@uipath/ap-chat';
 
 function App() {
-  return <ap-autopilot-chat />;
+  return <ap-chat />;
 }
 ```
 
@@ -42,7 +42,7 @@ function App() {
 
 ```typescript
 // In app.module.ts
-import '@uipath/ap-autopilot-chat';
+import '@uipath/ap-chat';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 
 @NgModule({
@@ -53,18 +53,18 @@ export class AppModule {}
 
 ```html
 <!-- In template -->
-<ap-autopilot-chat></ap-autopilot-chat>
+<ap-chat></ap-chat>
 ```
 
 ### Vue
 
 ```vue
 <template>
-  <ap-autopilot-chat></ap-autopilot-chat>
+  <ap-chat></ap-chat>
 </template>
 
 <script>
-import '@uipath/ap-autopilot-chat';
+import '@uipath/ap-chat';
 </script>
 ```
 

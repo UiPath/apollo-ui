@@ -20,7 +20,7 @@
 		"@mui/icons-material": "^5.15.3",
 		"@mui/material": "5.15.3",
 		"@mui/x-date-pickers": "^6.20.2",
-		"@uipath/ap-autopilot-chat": "workspace:*",
+		"@uipath/ap-chat": "workspace:*",
 		"@uipath/ap-data-grid": "workspace:*",
 		"@uipath/apollo-react": "workspace:*",
 		"@uipath/apollo-wind": "workspace:*",

@@ -15,7 +15,7 @@ module.exports = {
         'apollo-angular',
         'apollo-utils',
         'apollo-wind',
-        'ap-autopilot-chat',
+        'ap-chat',
         'ap-data-grid',
 
         // Apps scopes

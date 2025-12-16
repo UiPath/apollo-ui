@@ -1,4 +1,4 @@
-# [0.3.0](https://github.com/UiPath/apollo-ui/compare/@uipath/ap-autopilot-chat@0.2.0...@uipath/ap-autopilot-chat@0.3.0) (2025-12-11)
+# [0.3.0](https://github.com/UiPath/apollo-ui/compare/@uipath/ap-chat@0.2.0...@uipath/ap-chat@0.3.0) (2025-12-11)
 
 
 ### Features
@@ -7,7 +7,7 @@
 * **apollo-vertex:** add shell layout ([6f699a3](https://github.com/UiPath/apollo-ui/commit/6f699a34ad6bbb03363b8ae2a46831da63a91a1a))
 * **apollo-vertex:** auth shell component ([f4f3cbf](https://github.com/UiPath/apollo-ui/commit/f4f3cbfa1df9667508df93b8ca31ad210d35e8d9))
 
-# [0.2.0](https://github.com/UiPath/apollo-ui/compare/@uipath/ap-autopilot-chat@0.1.0...@uipath/ap-autopilot-chat@0.2.0) (2025-12-11)
+# [0.2.0](https://github.com/UiPath/apollo-ui/compare/@uipath/ap-chat@0.1.0...@uipath/ap-chat@0.2.0) (2025-12-11)
 
 
 ### Bug Fixes
@@ -292,15 +292,15 @@
 * **apollo-react:** use tokens and add translations ([0555551](https://github.com/UiPath/apollo-ui/commit/055555143df0891e8aadccbfe56dc57f16c90052))
 * **react-playground:** add components showcase ([23d6df8](https://github.com/UiPath/apollo-ui/commit/23d6df8246f1f04ddd866ffbb251db276a6cc567))
 
-# [0.1.0](https://github.com/UiPath/apollo-ui/compare/@uipath/ap-autopilot-chat@0.0.5...@uipath/ap-autopilot-chat@0.1.0) (2025-12-09)
+# [0.1.0](https://github.com/UiPath/apollo-ui/compare/@uipath/ap-chat@0.0.5...@uipath/ap-chat@0.1.0) (2025-12-09)
 
 
 ### Features
 
 * **apollo-vertex:** add theme provider ([fc4f1b1](https://github.com/UiPath/apollo-ui/commit/fc4f1b1950bf8e9063c493d367b8d67cfe7c805b))
 
-## [0.0.5](https://github.com/UiPath/apollo-ui/compare/@uipath/ap-autopilot-chat@0.0.4...@uipath/ap-autopilot-chat@0.0.5) (2025-12-09)
+## [0.0.5](https://github.com/UiPath/apollo-ui/compare/@uipath/ap-chat@0.0.4...@uipath/ap-chat@0.0.5) (2025-12-09)
 
-## [0.0.3](https://github.com/UiPath/apollo-ui/compare/@uipath/ap-autopilot-chat@0.0.2...@uipath/ap-autopilot-chat@0.0.3) (2025-12-05)
+## [0.0.3](https://github.com/UiPath/apollo-ui/compare/@uipath/ap-chat@0.0.2...@uipath/ap-chat@0.0.3) (2025-12-05)
 
-## [0.0.2](https://github.com/UiPath/apollo-ui/compare/@uipath/ap-autopilot-chat@0.0.1...@uipath/ap-autopilot-chat@0.0.2) (2025-12-05)
+## [0.0.2](https://github.com/UiPath/apollo-ui/compare/@uipath/ap-chat@0.0.1...@uipath/ap-chat@0.0.2) (2025-12-05)

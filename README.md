@@ -24,7 +24,7 @@ graph RL
     React["@uipath/apollo-react<br/>React + Material UI"] -->|requires| Core["@uipath/apollo-core<br/>Design Tokens, Icons, Fonts"]
     Angular["@uipath/apollo-angular<br/>Angular + Material"] -->|requires| Core
     Wind["@uipath/apollo-wind<br/>Tailwind + shadcn/ui"] -->|requires| Core
-    Chat["@uipath/ap-autopilot-chat<br/>Chat Web Component"] -->|requires| React
+    Chat["@uipath/ap-chat<br/>Chat Web Component"] -->|requires| React
     Grid["@uipath/ap-data-grid<br/>Data Grid"] -->|requires| Angular
 
     React -->|requires| Utils["@uipath/apollo-utils<br/>Shared Utilities"]
@@ -51,7 +51,7 @@ apollo-ui/
 │   └── apollo-wind/       # 🎐 Tailwind + shadcn/ui
 │
 ├── web-packages/          # Cross-framework web components
-│   ├── ap-autopilot-chat/ # 💬 Chat web component
+│   ├── ap-chat/ # 💬 Chat web component
 │   └── ap-data-grid/      # 📊 Data grid web component
 │
 └── apps/                  # Development applications
@@ -134,7 +134,7 @@ pnpm storybook:build
 
 | Package | Description |
 |---------|-------------|
-| [@uipath/ap-autopilot-chat](./web-packages/ap-autopilot-chat) | Chat interface web component |
+| [@uipath/ap-chat](./web-packages/ap-chat) | Chat interface web component |
 | [@uipath/ap-data-grid](./web-packages/ap-data-grid) | Data grid web component with React wrapper |
 
 ## Usage
@@ -175,10 +175,10 @@ function App() {
 
 ```html
 <script type="module">
-  import '@uipath/ap-autopilot-chat';
+  import '@uipath/ap-chat';
 </script>
 
-<ap-autopilot-chat></ap-autopilot-chat>
+<ap-chat></ap-chat>
 ```
 
 ## Contributing
