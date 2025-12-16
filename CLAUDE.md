@@ -226,9 +226,10 @@ apollo-core (tokens, icons, fonts)
 apollo-utils (utilities)
     ↓
 ├─→ apollo-react (React + MUI)
+│   └─→ ap-autopilot-chat (Web Component)
 ├─→ apollo-angular (Angular + Material)
-├─→ apollo-wind (Tailwind + shadcn)
-└─→ web-packages/* (Web Components)
+│   └─→ ap-data-grid (Web Component + React wrapper)
+└─→ apollo-wind (Tailwind + shadcn)
 ```
 
 ---

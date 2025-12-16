@@ -24,8 +24,8 @@ graph RL
     React["@uipath/apollo-react<br/>React + Material UI"] -->|requires| Core["@uipath/apollo-core<br/>Design Tokens, Icons, Fonts"]
     Angular["@uipath/apollo-angular<br/>Angular + Material"] -->|requires| Core
     Wind["@uipath/apollo-wind<br/>Tailwind + shadcn/ui"] -->|requires| Core
-    Chat["@uipath/ap-autopilot-chat<br/>Chat Web Component"] -->|requires| Core
-    Grid["@uipath/ap-data-grid<br/>Data Grid"] -->|requires| Core
+    Chat["@uipath/ap-autopilot-chat<br/>Chat Web Component"] -->|requires| React
+    Grid["@uipath/ap-data-grid<br/>Data Grid"] -->|requires| Angular
 
     React -->|requires| Utils["@uipath/apollo-utils<br/>Shared Utilities"]
     Angular -->|requires| Utils
