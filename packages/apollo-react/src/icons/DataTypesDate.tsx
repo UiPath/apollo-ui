@@ -1,11 +1,17 @@
 // Auto-generated from studio-activities-icon-sets/studio-web-icons-data-types/data-types-date.svg
 import React from 'react';
 
-export interface DataTypesDateProps extends React.SVGProps<SVGSVGElement> {}
+export interface DataTypesDateProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const DataTypesDate = React.forwardRef<SVGSVGElement, DataTypesDateProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <g clipPath="url(#clip0_4117_1282)">
 <path fillRule="evenodd" clipRule="evenodd" d="M12.9 12.0848C11.9059 12.0848 11.1 12.913 11.1 13.9345V15.7843C11.1 16.8058 11.9059 17.634 12.9 17.634H14.7C15.6941 17.634 16.5 16.8058 16.5 15.7843V13.9345C16.5 12.913 15.6941 12.0848 14.7 12.0848H12.9ZM12.9 13.9345H14.7V15.7843H12.9V13.9345Z" fill="currentColor"/>
 <path fillRule="evenodd" clipRule="evenodd" d="M16.05 2.25824C16.5471 2.25824 16.95 2.67231 16.95 3.1831V3.76113H19.2C20.1941 3.76113 21 4.58927 21 5.61084L20.9999 20.4085C21 21.43 20.1941 22.2582 19.1999 22.2582H4.8C3.80589 22.2582 3 21.4301 3 20.4085V5.61084C3 4.58927 3.80588 3.76113 4.79999 3.76113H7.05V3.1831C7.05 2.67231 7.45295 2.25824 7.95 2.25824C8.44706 2.25824 8.85 2.67231 8.85 3.1831V3.76113H15.15V3.1831C15.15 2.67231 15.5529 2.25824 16.05 2.25824ZM7.05 5.61084V6.13107C7.05 6.64186 7.45295 7.05593 7.95 7.05593C8.44706 7.05593 8.85 6.64186 8.85 6.13107V5.61084H15.15V6.13107C15.15 6.64186 15.5529 7.05593 16.05 7.05593C16.5471 7.05593 16.95 6.64186 16.95 6.13107V5.61084H19.2L19.2 8.38541H4.8V5.61084H7.05ZM4.8 10.2351H19.2L19.1999 20.4084L4.8 20.4085V10.2351Z" fill="currentColor"/>

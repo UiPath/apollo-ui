@@ -1,11 +1,17 @@
 // Auto-generated from third-party/mailchimp.svg
 import React from 'react';
 
-export interface MailchimpProps extends React.SVGProps<SVGSVGElement> {}
+export interface MailchimpProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const Mailchimp = React.forwardRef<SVGSVGElement, MailchimpProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <path d="M12 2C6.48438 2 2 6.48438 2 12C2 17.5156 6.48438 22 12 22C17.5156 22 22 17.5156 22 12C22 6.48438 17.5156 2 12 2Z" fill="#FDDD4C"/>
 <path d="M7.62081 14.6073C7.40215 14.2762 7.95211 13.7752 7.72843 13.3545C7.59948 13.1119 7.3887 12.9607 7.13558 12.929C6.89265 12.8985 6.64239 12.9874 6.48288 13.1612C6.23103 13.4353 6.19187 13.8083 6.24058 13.9403C6.25841 13.9887 6.28643 14.0019 6.30649 14.0048C6.44366 14.0228 6.52084 13.6708 6.56821 13.5975C6.69914 13.3954 6.99647 13.3342 7.20181 13.467C7.59115 13.7189 7.25355 14.1258 7.28268 14.4696C7.31101 14.8043 7.51956 14.9388 7.70677 14.953C7.88889 14.9599 8.01625 14.8587 8.04841 14.7848C8.12551 14.6085 7.80072 14.8796 7.62081 14.6073Z" fill="black"/>
 <path d="M15.7557 11.5685C15.6536 11.5543 15.542 11.5547 15.4259 11.5685C15.3377 11.4572 15.2587 11.2771 15.2141 11.0669C15.1348 10.6929 15.1431 10.4219 15.3644 10.3867C15.5857 10.3515 15.6927 10.5778 15.7719 10.9518C15.8251 11.2033 15.8149 11.4343 15.7557 11.5685Z" fill="black"/>

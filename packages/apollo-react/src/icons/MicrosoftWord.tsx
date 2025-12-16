@@ -1,11 +1,17 @@
 // Auto-generated from third-party/microsoft-word.svg
 import React from 'react';
 
-export interface MicrosoftWordProps extends React.SVGProps<SVGSVGElement> {}
+export interface MicrosoftWordProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const MicrosoftWord = React.forwardRef<SVGSVGElement, MicrosoftWordProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <rect x="6" y="1.5" width="18" height="21" rx="2" fill="url(#paint0_linear_2761_1810)"/>
 <path d="M6 17.25H24V20.5C24 21.6046 23.1046 22.5 22 22.5H8C6.89543 22.5 6 21.6046 6 20.5V17.25Z" fill="url(#paint1_linear_2761_1810)"/>
 <rect x="6" y="12" width="18" height="5.25" fill="url(#paint2_linear_2761_1810)"/>

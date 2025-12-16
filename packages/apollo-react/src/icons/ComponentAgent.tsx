@@ -1,11 +1,17 @@
 // Auto-generated from object/component/component-agent.svg
 import React from 'react';
 
-export interface ComponentAgentProps extends React.SVGProps<SVGSVGElement> {}
+export interface ComponentAgentProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const ComponentAgent = React.forwardRef<SVGSVGElement, ComponentAgentProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <path fillRule="evenodd" clipRule="evenodd" d="M1.63635 5.72728L4.61087 2.29514C4.97349 1.87674 5.49988 1.63637 6.05355 1.63637H17.9464C18.5001 1.63637 19.0265 1.87674 19.3891 2.29514L22.3636 5.72728V20.4545C22.3636 21.5089 21.5089 22.3636 20.4545 22.3636H3.54544C2.49108 22.3636 1.63635 21.5089 1.63635 20.4545V5.72728ZM6.05355 3.27273H17.9464C18.0255 3.27273 18.1007 3.30707 18.1525 3.36684L19.4891 4.90909H4.51084L5.84746 3.36684C5.89926 3.30707 5.97446 3.27273 6.05355 3.27273ZM20.7273 6.54546H3.27272L3.27272 20.4545C3.27272 20.6052 3.39482 20.7273 3.54544 20.7273H20.4545C20.6052 20.7273 20.7273 20.6052 20.7273 20.4545V6.54546Z" fill="currentColor"/>
 <path d="M9.23476 9.13345C9.43515 8.59189 10.2011 8.59189 10.4015 9.13345L11.0182 10.8L12.6847 11.4166C13.2263 11.617 13.2263 12.383 12.6847 12.5834L11.0182 13.2001L10.4015 14.8666C10.2011 15.4081 9.43515 15.4081 9.23476 14.8666L8.61809 13.2001L6.95158 12.5834C6.41002 12.383 6.41002 11.617 6.95158 11.4166L8.61809 10.8L9.23476 9.13345Z" fill="currentColor"/>
 <path d="M12.5454 16.7727C12.5454 16.2455 12.9728 15.8182 13.5 15.8182C14.0271 15.8182 14.4545 16.2455 14.4545 16.7727V17.5909C14.4545 18.1181 14.0271 18.5454 13.5 18.5454C12.9728 18.5454 12.5454 18.1181 12.5454 17.5909V16.7727Z" fill="currentColor"/>

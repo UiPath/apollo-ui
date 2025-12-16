@@ -1,11 +1,17 @@
 // Auto-generated from studio-activities-icon-sets/activities-microsoft-office365-apps/office365-apps-planner.svg
 import React from 'react';
 
-export interface Office365AppsPlannerProps extends React.SVGProps<SVGSVGElement> {}
+export interface Office365AppsPlannerProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const Office365AppsPlanner = React.forwardRef<SVGSVGElement, Office365AppsPlannerProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <g clipPath="url(#clip0_4117_2226)">
 <g clipPath="url(#clip1_4117_2226)">
 <path d="M7.60736 23H2.99264C2.86228 23 2.73321 22.9743 2.61277 22.9244C2.49234 22.8745 2.38291 22.8014 2.29074 22.7092C2.19856 22.6171 2.12545 22.5076 2.07556 22.3872C2.02568 22.2668 2 22.1377 2 22.0073V11.67L5.48333 10.6433L8.6 11.67V22.0073C8.6 22.1377 8.57432 22.2668 8.52444 22.3872C8.47455 22.5076 8.40144 22.6171 8.30926 22.7092C8.21709 22.8014 8.10766 22.8745 7.98723 22.9244C7.86679 22.9743 7.73771 23 7.60736 23Z" fill="#185C37"/>

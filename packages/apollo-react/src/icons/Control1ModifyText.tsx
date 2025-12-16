@@ -1,11 +1,17 @@
 // Auto-generated from studio-activities-icon-sets/activities-control-1/control-1-modify-text.svg
 import React from 'react';
 
-export interface Control1ModifyTextProps extends React.SVGProps<SVGSVGElement> {}
+export interface Control1ModifyTextProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const Control1ModifyText = React.forwardRef<SVGSVGElement, Control1ModifyTextProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <g clipPath="url(#clip0_4117_1510)">
 <path d="M17.8086 9.94043L6.74902 21H2.99902V17.25L14.0586 6.19043L17.8086 9.94043ZM4.99902 18.0801V19H5.91895L14.9795 9.94043L14.0586 9.01953L4.99902 18.0801ZM17.6592 3C17.9191 3.00004 18.1692 3.09008 18.3691 3.29004L20.709 5.62988C21.099 6.01988 21.099 6.65004 20.709 7.04004L18.8789 8.87012L15.1289 5.12012L16.959 3.29004C17.149 3.10004 17.4092 3 17.6592 3Z" fill="currentColor"/>
 </g>

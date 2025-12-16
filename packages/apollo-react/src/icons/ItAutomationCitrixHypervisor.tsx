@@ -1,11 +1,17 @@
 // Auto-generated from studio-activities-icon-sets/activities-it-automation/it-automation-citrix-hypervisor.svg
 import React from 'react';
 
-export interface ItAutomationCitrixHypervisorProps extends React.SVGProps<SVGSVGElement> {}
+export interface ItAutomationCitrixHypervisorProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 32
+   */
+  size?: string | number;
+}
 
 export const ItAutomationCitrixHypervisor = React.forwardRef<SVGSVGElement, ItAutomationCitrixHypervisorProps>(
-  (props, ref) => (
-    <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 32} height={size ?? 32}>
       <g clipPath="url(#clip0_4117_1879)">
 <g clipPath="url(#clip1_4117_1879)">
 <rect y="-0.266602" width="32" height="32" fill="#35C2CC"/>

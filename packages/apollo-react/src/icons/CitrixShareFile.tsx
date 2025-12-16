@@ -1,11 +1,17 @@
 // Auto-generated from third-party/citrix-share-file.svg
 import React from 'react';
 
-export interface CitrixShareFileProps extends React.SVGProps<SVGSVGElement> {}
+export interface CitrixShareFileProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const CitrixShareFile = React.forwardRef<SVGSVGElement, CitrixShareFileProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <g clipPath="url(#clip0_2_1697)">
 <rect width="24" height="24" rx="12" fill="#2071C5"/>
 <path fillRule="evenodd" clipRule="evenodd" d="M19.3415 10.9659C19.5275 10.8135 19.6998 10.6413 19.8531 10.4481C20.4012 9.75468 20.649 8.89134 20.5472 8.01723L20.5427 7.97672C19.9343 3.44473 15.6584 1 11.9441 1C7.74374 1 3.3999 4.00811 3.3999 9.04316C3.3999 10.4883 3.82304 11.8286 4.65775 13.0333C4.47113 13.1857 4.29945 13.357 4.14666 13.5508C3.5978 14.245 3.35142 15.1075 3.45205 15.9811L3.45713 16.0224C4.06576 20.5541 8.34053 23 12.0557 23C16.2561 23 20.5999 19.9905 20.5999 14.9554C20.5999 13.5103 20.1765 12.1711 19.3415 10.9659Z" fill="#2071C5"/>

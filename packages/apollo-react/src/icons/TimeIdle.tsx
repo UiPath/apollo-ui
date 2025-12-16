@@ -1,11 +1,17 @@
 // Auto-generated from indicator-and-alert/time-idle.svg
 import React from 'react';
 
-export interface TimeIdleProps extends React.SVGProps<SVGSVGElement> {}
+export interface TimeIdleProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const TimeIdle = React.forwardRef<SVGSVGElement, TimeIdleProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <path fillRule="evenodd" clipRule="evenodd" d="M18 2H6V8L10 12L6 16V22H9V20H8V16.5L12 12.5L15.125 15.625L16.5312 14.5312L14 12L18 8V2ZM16 4V7.5L12 11.5L8 7.5V4H16ZM14 6H10V6.75L12 8.75L14 6.75V6Z" fill="currentColor"/>
 <path d="M19.5 17H20.9325L19.1159 19.1799C18.9917 19.3289 18.9649 19.5364 19.0472 19.7121C19.1295 19.8878 19.306 20 19.5 20H22V19H20.5675L22.3841 16.8201C22.5083 16.6711 22.5351 16.4636 22.4528 16.2879C22.3705 16.1122 22.194 16 22 16H19.5V17Z" fill="currentColor"/>
 <path d="M16.9325 18H15.5V17H18C18.194 17 18.3705 17.1122 18.4528 17.2879C18.5351 17.4636 18.5083 17.6711 18.3841 17.8201L16.5675 20H18V21H15.5C15.306 21 15.1295 20.8878 15.0472 20.7121C14.9649 20.5364 14.9917 20.3289 15.1159 20.1799L16.9325 18Z" fill="currentColor"/>

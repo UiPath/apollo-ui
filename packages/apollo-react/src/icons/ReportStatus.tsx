@@ -1,11 +1,17 @@
 // Auto-generated from studio-icons/report-status.svg
 import React from 'react';
 
-export interface ReportStatusProps extends React.SVGProps<SVGSVGElement> {}
+export interface ReportStatusProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const ReportStatus = React.forwardRef<SVGSVGElement, ReportStatusProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <path fillRule="evenodd" clipRule="evenodd" d="M2 5C2 4.44772 2.44772 4 3 4H8C8.55228 4 9 4.44772 9 5V10C9 10.5523 8.55228 11 8 11H3C2.44772 11 2 10.5523 2 10V5ZM4 9V6H7V9H4Z" fill="currentColor"/>
 <path fillRule="evenodd" clipRule="evenodd" d="M2 14C2 13.4477 2.44772 13 3 13H8C8.55228 13 9 13.4477 9 14V19C9 19.5523 8.55228 20 8 20H3C2.44772 20 2 19.5523 2 19V14ZM4 18V15H7V18H4Z" fill="currentColor"/>
 <path d="M11 4H22V6H11V4Z" fill="currentColor"/>

@@ -1,11 +1,17 @@
 // Auto-generated from third-party/microsoft-calendar.svg
 import React from 'react';
 
-export interface MicrosoftCalendarProps extends React.SVGProps<SVGSVGElement> {}
+export interface MicrosoftCalendarProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const MicrosoftCalendar = React.forwardRef<SVGSVGElement, MicrosoftCalendarProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <g clipPath="url(#clip0_2_1821)">
 <rect x="2.57031" y="4.14285" width="6.28571" height="6.28571" fill="#0F77D3"/>
 <rect x="2.57031" y="10.4286" width="6.28571" height="6.28572" fill="#0564B1"/>

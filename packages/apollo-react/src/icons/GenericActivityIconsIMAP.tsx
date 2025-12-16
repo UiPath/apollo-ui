@@ -1,11 +1,17 @@
 // Auto-generated from studio-activities-icon-sets/activities-generic-activity-icons/generic-activity-icons-imap.svg
 import React from 'react';
 
-export interface GenericActivityIconsIMAPProps extends React.SVGProps<SVGSVGElement> {}
+export interface GenericActivityIconsIMAPProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const GenericActivityIconsIMAP = React.forwardRef<SVGSVGElement, GenericActivityIconsIMAPProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <path fillRule="evenodd" clipRule="evenodd" d="M20 3C21.1 3 22 3.9 22 5V13H20V7L12 12L4 7V13H2V5C2 3.9 2.9 3 4 3H20ZM12 9.99L20 5H4L12 9.99Z" fill="currentColor"/>
 <path d="M1.69336 21V19.757H3.02436V15.39H1.75936V14.147H5.80736V15.39H4.47636V19.757H5.86236V21H1.69336Z" fill="currentColor"/>
 <path d="M6.78636 21V14.147H8.19436L9.28336 17.15L10.3614 14.136H11.7804V21H10.4714V16.468L9.66836 18.833H8.85436L8.08436 16.468V21H6.78636Z" fill="currentColor"/>

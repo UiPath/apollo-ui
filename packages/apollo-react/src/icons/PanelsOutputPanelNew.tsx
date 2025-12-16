@@ -1,11 +1,17 @@
 // Auto-generated from studio-activities-icon-sets/panels/panels-output-panel-new.svg
 import React from 'react';
 
-export interface PanelsOutputPanelNewProps extends React.SVGProps<SVGSVGElement> {}
+export interface PanelsOutputPanelNewProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const PanelsOutputPanelNew = React.forwardRef<SVGSVGElement, PanelsOutputPanelNewProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <g clipPath="url(#clip0_4117_2350)">
 <path d="M21.2153 17.0633C21.5577 17.2539 21.5577 17.7464 21.2153 17.937L15.7432 20.9835C15.4099 21.169 15 20.9281 15 20.5466L15 14.4537C15 14.0722 15.4099 13.8313 15.7432 14.0168L21.2153 17.0633Z" fill="currentColor"/>
 <path d="M5.29291 19.7071C5.10535 19.5196 5 19.2652 5 19C5 18.79 5.07001 18.59 5.17999 18.43L11 8.35001V4H13V8.35001L14.4243 10.8167L17.8765 12.8099L15 7.81V6C15.2652 6 15.5196 5.89465 15.7071 5.70709C15.8947 5.51956 16 5.26523 16 5V4C16 3.46957 15.7893 2.96085 15.4142 2.58578C15.0391 2.21072 14.5305 2 14 2H10C9.46954 2 8.96088 2.21072 8.58582 2.58578C8.21069 2.96085 8 3.46957 8 4V5C8 5.26523 8.10535 5.51956 8.29291 5.70709C8.48041 5.89465 8.7348 6 9 6V7.81L3.5 17.37C3.17999 17.84 3 18.4 3 19C3 19.7957 3.3161 20.5587 3.87866 21.1213C4.44128 21.6839 5.20435 22 6 22H13V20H6C5.7348 20 5.48041 19.8947 5.29291 19.7071Z" fill="currentColor"/>

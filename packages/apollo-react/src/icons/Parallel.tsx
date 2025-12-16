@@ -1,11 +1,17 @@
 // Auto-generated from logic/parallel.svg
 import React from 'react';
 
-export interface ParallelProps extends React.SVGProps<SVGSVGElement> {}
+export interface ParallelProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const Parallel = React.forwardRef<SVGSVGElement, ParallelProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <g clipPath="url(#clip0_4049_1704)">
 <path d="M8 2H6V6H8V2Z" fill="currentColor"/>
 <path d="M18 2H16V6H18V2Z" fill="currentColor"/>

@@ -1,11 +1,17 @@
 // Auto-generated from studio-icons/trigger-agent.svg
 import React from 'react';
 
-export interface TriggerAgentProps extends React.SVGProps<SVGSVGElement> {}
+export interface TriggerAgentProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const TriggerAgent = React.forwardRef<SVGSVGElement, TriggerAgentProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <path d="M6.18592 3.71273C6.40302 3.12605 7.23281 3.12605 7.44991 3.71273L8.11796 5.51813L9.92336 6.18618C10.51 6.40328 10.51 7.23307 9.92336 7.45017L8.11796 8.11822L7.44991 9.92361C7.23281 10.5103 6.40302 10.5103 6.18592 9.92361L5.51787 8.11822L3.71248 7.45017C3.12579 7.23307 3.12579 6.40328 3.71247 6.18618L5.51787 5.51813L6.18592 3.71273Z" fill="currentColor"/>
 <path d="M12 11.8636C12 11.3365 12.4274 10.9091 12.9545 10.9091C13.4817 10.9091 13.9091 11.3365 13.9091 11.8636V13.2273C13.9091 13.7545 13.4817 14.1818 12.9545 14.1818C12.4274 14.1818 12 13.7545 12 13.2273V11.8636Z" fill="currentColor"/>
 <path d="M16.3633 11.8636C16.3633 11.3365 16.7906 10.9091 17.3178 10.9091C17.845 10.9091 18.2724 11.3365 18.2724 11.8636V13.2273C18.2724 13.7545 17.845 14.1818 17.3178 14.1818C16.7906 14.1818 16.3633 13.7545 16.3633 13.2273V11.8636Z" fill="currentColor"/>

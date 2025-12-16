@@ -1,11 +1,17 @@
 // Auto-generated from studio-activities-icon-sets/activities-control-1/control-1-check-false.svg
 import React from 'react';
 
-export interface Control1CheckFalseProps extends React.SVGProps<SVGSVGElement> {}
+export interface Control1CheckFalseProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const Control1CheckFalse = React.forwardRef<SVGSVGElement, Control1CheckFalseProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <g clipPath="url(#clip0_4117_1500)">
 <path d="M17.4142 16L16 17.4142L17.975 19.3892L16.0001 21.3641L17.4143 22.7783L19.3892 20.8034L21.364 22.7782L22.7782 21.364L20.8034 19.3892L22.7782 17.4144L21.364 16.0002L19.3892 17.975L17.4142 16Z" fill="#CC3D45"/>
 <path d="M12 18C12.72 18 13.25 17.43 13.25 16.74C13.25 16.04 12.71 15.49 12 15.49C11.3 15.49 10.74 16.03 10.74 16.74C10.74 17.44 11.3 18 12 18Z" fill="currentColor"/>

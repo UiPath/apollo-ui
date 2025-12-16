@@ -1,11 +1,17 @@
 // Auto-generated from indicator-and-alert/priority/priority-very-high.svg
 import React from 'react';
 
-export interface PriorityVeryHighProps extends React.SVGProps<SVGSVGElement> {}
+export interface PriorityVeryHighProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const PriorityVeryHigh = React.forwardRef<SVGSVGElement, PriorityVeryHighProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <path d="M12.7317 4.26745C12.3078 3.91085 11.6922 3.91085 11.2683 4.26745L4.41123 10.0368C3.92635 10.4448 3.86085 11.1724 4.26494 11.6619C4.66903 12.1514 5.38968 12.2176 5.87456 11.8096L12 6.65582L18.1254 11.8096C18.6103 12.2176 19.331 12.1514 19.7351 11.6619C20.1391 11.1724 20.0737 10.4448 19.5888 10.0368L12.7317 4.26745Z" fill="#CC3D45"/>
 <path d="M19.5888 16.9598L12.7317 11.1904C12.3078 10.8338 11.6922 10.8338 11.2683 11.1904L4.41123 16.9598C3.92635 17.3677 3.86085 18.0953 4.26494 18.5848C4.66903 19.0744 5.38968 19.1405 5.87456 18.7325L12 13.5787L18.1254 18.7325C18.6103 19.1405 19.331 19.0744 19.7351 18.5848C20.1391 18.0953 20.0737 17.3677 19.5888 16.9598Z" fill="#CC3D45"/>
     </svg>

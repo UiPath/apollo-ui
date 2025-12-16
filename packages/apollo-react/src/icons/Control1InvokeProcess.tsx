@@ -1,11 +1,17 @@
 // Auto-generated from studio-activities-icon-sets/activities-control-1/control-1-invoke-process.svg
 import React from 'react';
 
-export interface Control1InvokeProcessProps extends React.SVGProps<SVGSVGElement> {}
+export interface Control1InvokeProcessProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const Control1InvokeProcess = React.forwardRef<SVGSVGElement, Control1InvokeProcessProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <g clipPath="url(#clip0_4117_1442)">
 <path d="M11.9727 2.353C8.70266 2.353 5.79266 3.933 3.97266 6.363V4.353H1.97266V10.353H7.97266V8.353H5.06266C6.44266 5.963 9.02266 4.353 11.9727 4.353V2.353Z" fill="currentColor"/>
 <path d="M15.9727 8.353H13.9727V2.353L19.9727 2.353V4.353H17.9627C20.3926 6.17299 21.9726 9.08297 21.9727 12.3529H19.9727C19.9726 9.40297 18.3626 6.82299 15.9727 5.443V8.353Z" fill="currentColor"/>

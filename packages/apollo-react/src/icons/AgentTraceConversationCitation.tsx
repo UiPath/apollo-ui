@@ -1,11 +1,17 @@
 // Auto-generated from ui-agents-icons/agent-trace/agent-trace-conversation-citation.svg
 import React from 'react';
 
-export interface AgentTraceConversationCitationProps extends React.SVGProps<SVGSVGElement> {}
+export interface AgentTraceConversationCitationProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const AgentTraceConversationCitation = React.forwardRef<SVGSVGElement, AgentTraceConversationCitationProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <path d="M19.2979 19.383H20.0099V14.151H19.2979V13.159H21.2499V20.375H19.2979V19.383Z" fill="#0067DF"/>
 <path d="M17.8956 19.8269L16.5389 19.8268V17.0028C16.5389 16.9495 16.5389 16.8535 16.5389 16.7148C16.5389 16.5762 16.5415 16.4215 16.5469 16.2508C16.5522 16.0802 16.5575 15.9282 16.5629 15.7948C16.4935 15.8748 16.4295 15.9442 16.3709 16.0028C16.3175 16.0615 16.2615 16.1148 16.2029 16.1628L15.5549 16.6988L14.7549 15.7148L16.7149 14.1148L17.8956 14.1149V19.8269Z" fill="#0067DF"/>
 <path d="M14.2411 20.375H12.2891V13.159H14.2411V14.151H13.5291V19.383H14.2411V20.375Z" fill="#0067DF"/>

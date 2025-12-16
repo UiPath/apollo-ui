@@ -1,11 +1,17 @@
 // Auto-generated from studio-icons/trigger-connection.svg
 import React from 'react';
 
-export interface TriggerConnectionProps extends React.SVGProps<SVGSVGElement> {}
+export interface TriggerConnectionProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 26
+   */
+  size?: string | number;
+}
 
 export const TriggerConnection = React.forwardRef<SVGSVGElement, TriggerConnectionProps>(
-  (props, ref) => (
-    <svg width="26" height="26" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 26} height={size ?? 26}>
       <g clipPath="url(#clip0_4234_9796)">
 <path fillRule="evenodd" clipRule="evenodd" d="M19.9831 3.12627H9.08621C8.59801 3.12627 8.19629 3.52798 8.19629 4.01618V5.02772L14.3381 6.92935L20.873 5.02772V4.01618C20.873 3.52798 20.4713 3.12627 19.9831 3.12627Z" fill="#0364B8"/>
 <path fillRule="evenodd" clipRule="evenodd" d="M21.9183 12.8906C22.0111 12.5988 22.0853 12.3013 22.1401 12C22.1401 11.8493 22.0596 11.7096 21.9291 11.6343L21.9209 11.6298L21.9183 11.6286L15.0487 7.71528C15.0191 7.6961 14.9884 7.67849 14.9569 7.66264C14.6909 7.53079 14.3779 7.53079 14.112 7.66264C14.0804 7.67849 14.0497 7.69601 14.02 7.71528L7.15055 11.6286L7.14796 11.6298L7.13967 11.6343C7.0092 11.7096 6.92871 11.8493 6.92871 12C6.98357 12.3013 7.0577 12.5988 7.15055 12.8906L14.4346 18.2179L21.9183 12.8906Z" fill="#0A2767"/>

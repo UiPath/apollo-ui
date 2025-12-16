@@ -1,11 +1,17 @@
 // Auto-generated from third-party/experian.svg
 import React from 'react';
 
-export interface ExperianProps extends React.SVGProps<SVGSVGElement> {}
+export interface ExperianProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const Experian = React.forwardRef<SVGSVGElement, ExperianProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <path d="M14.348 1H11.8644C11.1195 1 10.5156 1.60388 10.5156 2.34879V4.83087C10.5156 5.57579 11.1195 6.17966 11.8644 6.17966H14.348C15.0929 6.17966 15.6968 5.57579 15.6968 4.83087V2.34879C15.6968 1.60388 15.0929 1 14.348 1Z" fill="#406EB3"/>
 <path d="M7.93969 5.95242H5.08084C4.26305 5.95242 3.6001 6.61537 3.6001 7.43316V10.2906C3.6001 11.1083 4.26305 11.7713 5.08084 11.7713H7.93969C8.75749 11.7713 9.42044 11.1083 9.42044 10.2906V7.43316C9.42044 6.61537 8.75749 5.95242 7.93969 5.95242Z" fill="#632678"/>
 <path d="M7.62916 14.054H5.93877C5.42866 14.054 5.01514 14.4675 5.01514 14.9776V16.668C5.01514 17.1781 5.42866 17.5916 5.93877 17.5916H7.62916C8.13926 17.5916 8.55279 17.1781 8.55279 16.668V14.9776C8.55279 14.4675 8.13926 14.054 7.62916 14.054Z" fill="#982881"/>

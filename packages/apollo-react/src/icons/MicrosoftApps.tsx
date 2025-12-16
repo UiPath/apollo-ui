@@ -1,11 +1,17 @@
 // Auto-generated from third-party/microsoft-apps.svg
 import React from 'react';
 
-export interface MicrosoftAppsProps extends React.SVGProps<SVGSVGElement> {}
+export interface MicrosoftAppsProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const MicrosoftApps = React.forwardRef<SVGSVGElement, MicrosoftAppsProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <g clipPath="url(#clip0_2_1804)">
 <g style={{mixBlendMode:"multiply"}} opacity="0.2">
 <rect x="6.21875" y="17.7681" width="14.6025" height="5.775" fill="url(#pattern0_2_1804)"/>

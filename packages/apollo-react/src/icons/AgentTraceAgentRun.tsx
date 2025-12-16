@@ -1,11 +1,17 @@
 // Auto-generated from ui-agents-icons/agent-trace/agent-trace-agent-run.svg
 import React from 'react';
 
-export interface AgentTraceAgentRunProps extends React.SVGProps<SVGSVGElement> {}
+export interface AgentTraceAgentRunProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const AgentTraceAgentRun = React.forwardRef<SVGSVGElement, AgentTraceAgentRunProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <rect x="10.875" y="11.25" width="2.25" height="3.75" rx="1.125" fill="currentColor"/>
 <rect x="16.0566" y="11.25" width="2.25" height="3.75" rx="1.125" fill="currentColor"/>
 <path fillRule="evenodd" clipRule="evenodd" d="M4.70391 6.01482V7.53002C4.01923 7.669 3.50391 8.27432 3.50391 9.00001V16.5C3.50391 17.3284 4.17548 18 5.00391 18H20.0039C20.8323 18 21.5039 17.3284 21.5039 16.5V9.00001C21.5039 8.17158 20.8323 7.50001 20.0039 7.50001L14.1389 7.49997C14.224 7.2617 14.2685 7.00947 14.2685 6.74997C14.2685 6.49047 14.224 6.23824 14.1389 5.99997L20.0039 6.00001C21.6608 6.00001 23.0039 7.34316 23.0039 9.00001V16.5C23.0039 18.1569 21.6608 19.5 20.0039 19.5H5.00391C3.34705 19.5 2.00391 18.1569 2.00391 16.5V9.00001C2.00391 7.44441 3.18791 6.16534 4.70391 6.01482Z" fill="currentColor"/>

@@ -1,11 +1,17 @@
 // Auto-generated from studio-activities-icon-sets/activities-generic-activity-icons/generic-activity-icons-list.svg
 import React from 'react';
 
-export interface GenericActivityIconsListProps extends React.SVGProps<SVGSVGElement> {}
+export interface GenericActivityIconsListProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const GenericActivityIconsList = React.forwardRef<SVGSVGElement, GenericActivityIconsListProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <g clipPath="url(#clip0_4117_2178)">
 <path d="M3 15H5V13H3V15Z" fill="currentColor"/>
 <path d="M3 19H5V17H3V19Z" fill="currentColor"/>

@@ -1,11 +1,17 @@
 // Auto-generated from studio-icons/vmware-scope.svg
 import React from 'react';
 
-export interface VmwareScopeProps extends React.SVGProps<SVGSVGElement> {}
+export interface VmwareScopeProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const VmwareScope = React.forwardRef<SVGSVGElement, VmwareScopeProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <path d="M20 4H16V2H20C21.1046 2 22 2.89543 22 4V8H20V4Z" fill="currentColor"/>
 <path d="M20 16V20H16V22H20C21.1046 22 22 21.1046 22 20V16H20Z" fill="currentColor"/>
 <path d="M8 20H4V16H2V20C2 21.1046 2.89543 22 4 22H8V20Z" fill="currentColor"/>

@@ -1,11 +1,17 @@
 // Auto-generated from studio-activities-icon-sets/activities-pipelines/pipelines-update-process.svg
 import React from 'react';
 
-export interface PipelinesUpdateProcessProps extends React.SVGProps<SVGSVGElement> {}
+export interface PipelinesUpdateProcessProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 25
+   */
+  size?: string | number;
+}
 
 export const PipelinesUpdateProcess = React.forwardRef<SVGSVGElement, PipelinesUpdateProcessProps>(
-  (props, ref) => (
-    <svg width="25" height="25" viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 25} height={size ?? 25}>
       <path d="M12 2.35303C8.73 2.35303 5.82 3.93303 4 6.36303V4.35303H2V10.353H8V8.35303H5.09C6.47 5.96303 9.05 4.35303 12 4.35303V2.35303Z" fill="currentColor"/>
 <path d="M16 8.35303H14V2.35303L20 2.35303V4.35303H17.99C20.42 6.17302 22 9.083 22 12.353H20C20 9.403 18.39 6.82302 16 5.44303V8.35303Z" fill="currentColor"/>
 <path d="M6.01 20.353C3.58 18.533 2 15.623 2 12.353H4C4 15.303 5.61 17.883 8 19.263L8 16.353H10V22.353H4V20.353H6.01Z" fill="currentColor"/>

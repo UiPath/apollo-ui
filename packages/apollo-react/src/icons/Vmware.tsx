@@ -1,11 +1,17 @@
 // Auto-generated from third-party/vmware.svg
 import React from 'react';
 
-export interface VmwareProps extends React.SVGProps<SVGSVGElement> {}
+export interface VmwareProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const Vmware = React.forwardRef<SVGSVGElement, VmwareProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <rect x="2" y="2" width="20" height="20" fill="url(#pattern0_2_1955)"/>
 <defs>
 <pattern id="pattern0_2_1955" patternContentUnits="objectBoundingBox" width="1" height="1">

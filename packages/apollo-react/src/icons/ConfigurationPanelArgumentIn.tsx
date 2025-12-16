@@ -1,11 +1,17 @@
 // Auto-generated from studio-activities-icon-sets/classic-icons-configuration-panel/configuration-panel-argument-in.svg
 import React from 'react';
 
-export interface ConfigurationPanelArgumentInProps extends React.SVGProps<SVGSVGElement> {}
+export interface ConfigurationPanelArgumentInProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const ConfigurationPanelArgumentIn = React.forwardRef<SVGSVGElement, ConfigurationPanelArgumentInProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <g clipPath="url(#clip0_4117_1345)">
 <path d="M2.14926 12.0055C3.18412 12.0818 4 12.9456 4 14V18C4 18.5523 4.44772 19 5 19H6V21H4C2.89543 21 2 20.1046 2 19V13H1C0.447715 13 0 12.5523 0 12C0 11.4477 0.447715 11 1 11H2V5L2.00549 4.85074C2.08183 3.81588 2.94564 3 4 3H6V5H5C4.44772 5 4 5.44772 4 6V10C4 11.1046 3.10457 12 2 12L2.14926 12.0055Z" fill="currentColor"/>
 <path d="M22 19C22 20.1046 21.1046 21 20 21H18V19H19C19.5523 19 20 18.5523 20 18V14C20 12.9456 20.8159 12.0818 21.8507 12.0055L22 12C20.8954 12 20 11.1046 20 10V6C20 5.44772 19.5523 5 19 5H18V3H20C21.0544 3 21.9182 3.81588 21.9945 4.85074L22 5V11H23C23.5523 11 24 11.4477 24 12C24 12.5523 23.5523 13 23 13H22V19Z" fill="currentColor"/>

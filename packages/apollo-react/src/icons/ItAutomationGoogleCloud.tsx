@@ -1,11 +1,17 @@
 // Auto-generated from studio-activities-icon-sets/activities-it-automation/it-automation-google-cloud.svg
 import React from 'react';
 
-export interface ItAutomationGoogleCloudProps extends React.SVGProps<SVGSVGElement> {}
+export interface ItAutomationGoogleCloudProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 32
+   */
+  size?: string | number;
+}
 
 export const ItAutomationGoogleCloud = React.forwardRef<SVGSVGElement, ItAutomationGoogleCloudProps>(
-  (props, ref) => (
-    <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 32} height={size ?? 32}>
       <g clipPath="url(#clip0_4117_1873)">
 <path d="M20.2907 11.7706L22.5507 9.51056L22.7013 8.55892C18.5829 4.81401 12.0361 5.23864 8.32345 9.44495C7.29219 10.6132 6.52712 12.0697 6.11914 13.5738L6.92859 13.4597L11.4486 12.7143L11.7976 12.3575C13.8082 10.1493 17.2078 9.85222 19.5293 11.731L20.2907 11.7706Z" fill="#EA4335"/>
 <path d="M25.771 13.5074C25.2515 11.5944 24.185 9.87462 22.7021 8.55908L19.5301 11.7311C20.8695 12.8255 21.6326 14.4743 21.5999 16.2036V16.7667C23.1589 16.7667 24.423 18.0306 24.423 19.5897C24.423 21.1489 23.1589 22.3811 21.5999 22.3811H15.9458L15.3906 22.9838V26.3699L15.9458 26.9012H21.5999C25.6552 26.9328 28.9684 23.7026 29 19.6472C29.0191 17.1891 27.8071 14.8846 25.771 13.5074Z" fill="#4285F4"/>

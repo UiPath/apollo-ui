@@ -1,11 +1,17 @@
 // Auto-generated from third-party/trello.svg
 import React from 'react';
 
-export interface TrelloProps extends React.SVGProps<SVGSVGElement> {}
+export interface TrelloProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const Trello = React.forwardRef<SVGSVGElement, TrelloProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <rect x="2.25" y="2.25" width="19.5" height="19.5" fill="url(#pattern0_2_1929)"/>
 <defs>
 <pattern id="pattern0_2_1929" patternContentUnits="objectBoundingBox" width="1" height="1">

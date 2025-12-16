@@ -1,11 +1,17 @@
 // Auto-generated from studio-activities-icon-sets/ui-data-extraction/ui-data-extraction-extract-url.svg
 import React from 'react';
 
-export interface UIDataExtractionExtractURLProps extends React.SVGProps<SVGSVGElement> {}
+export interface UIDataExtractionExtractURLProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const UIDataExtractionExtractURL = React.forwardRef<SVGSVGElement, UIDataExtractionExtractURLProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <g clipPath="url(#clip0_4117_2806)">
 <g clipPath="url(#clip1_4117_2806)">
 <path d="M19.5557 15.1177L19.5557 19.1277L22.5557 19.1277L18.5557 23.1177L14.5557 19.1277L17.5557 19.1277L17.5557 15.1177L19.5557 15.1177Z" fill="#1976D2"/>

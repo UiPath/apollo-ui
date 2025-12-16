@@ -1,11 +1,17 @@
 // Auto-generated from object/coded-file-json.svg
 import React from 'react';
 
-export interface CodedFileJSONProps extends React.SVGProps<SVGSVGElement> {}
+export interface CodedFileJSONProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const CodedFileJSON = React.forwardRef<SVGSVGElement, CodedFileJSONProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <path d="M3.27271 15.2727H4.90907V3.06297C4.90907 2.97897 4.94407 2.90206 5.01407 2.83224C5.08389 2.76224 5.1608 2.72725 5.2448 2.72725H13.9559C14.1005 2.72725 14.2393 2.78471 14.3416 2.887L18.3145 6.8599C18.6545 7.19999 19.2063 7.19863 19.5447 6.85687C19.8808 6.51748 19.8794 5.97035 19.5417 5.63263L15.5749 1.66579C15.3958 1.4867 15.185 1.34615 14.9424 1.24415C14.6997 1.14197 14.4469 1.09088 14.184 1.09088H5.2448C4.6937 1.09088 4.22725 1.28179 3.84543 1.66361C3.46361 2.04543 3.27271 2.51188 3.27271 3.06297V15.2727Z" fill="currentColor"/>
 <path d="M12 22.0909C12 22.5428 12.3663 22.9091 12.8182 22.9091H18.7552C19.3063 22.9091 19.7727 22.7182 20.1545 22.3363C20.5363 21.9545 20.7273 21.4881 20.7273 20.937V18.2727C20.7273 17.8208 20.3609 17.4545 19.9091 17.4545C19.4572 17.4545 19.0909 17.8208 19.0909 18.2727V20.937C19.0909 21.021 19.0559 21.0979 18.9859 21.1677C18.9161 21.2377 18.8392 21.2727 18.7552 21.2727H12.8182C12.3663 21.2727 12 21.639 12 22.0909Z" fill="currentColor"/>
 <path d="M23.729 8.82233V15.7235H22.237L20.64 11.4292V15.7235H19.1437V8.82233H20.64L22.237 13.1166V8.82233H23.729Z" fill="currentColor"/>

@@ -1,11 +1,17 @@
 // Auto-generated from studio-icons/agent-desktop-logo-flat.svg
 import React from 'react';
 
-export interface AgentDesktopLogoFlatProps extends React.SVGProps<SVGSVGElement> {}
+export interface AgentDesktopLogoFlatProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 30
+   */
+  size?: string | number;
+}
 
 export const AgentDesktopLogoFlat = React.forwardRef<SVGSVGElement, AgentDesktopLogoFlatProps>(
-  (props, ref) => (
-    <svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 30} height={size ?? 30}>
       <path d="M11.6538 15.6333C12.1504 16.0361 12.6272 16.4646 13.0811 16.9185C14.7989 18.6363 16.1616 20.6759 17.0913 22.9204C18.021 25.1649 18.4995 27.5706 18.4995 30H11.4995C11.4995 28.4898 11.202 26.9944 10.624 25.5991C10.0461 24.2039 9.19921 22.936 8.13135 21.8682C7.06349 20.8003 5.79561 19.9534 4.40039 19.3755C4.18944 19.2881 3.97598 19.2078 3.76074 19.1333C5.0254 18.8847 6.26544 18.5112 7.46191 18.0156C8.95583 17.3968 10.3632 16.5954 11.6538 15.6333Z" fill="currentColor"/>
 <path d="M10.8662 3.76123C11.1148 5.02592 11.4888 6.2659 11.9844 7.4624C12.6031 8.95623 13.4041 10.3637 14.3662 11.6543C13.9634 12.1508 13.5353 12.6278 13.0815 13.0815C11.3637 14.7994 9.32411 16.1621 7.07959 17.0918C4.83508 18.0215 2.42943 18.5 0 18.5V11.5C1.5102 11.5 3.00563 11.2024 4.40088 10.6245C5.7961 10.0466 7.06397 9.19969 8.13183 8.13184C9.19969 7.06398 10.0466 5.7961 10.6245 4.40088C10.7119 4.18998 10.7917 3.97641 10.8662 3.76123Z" fill="currentColor"/>
 <path d="M18.5 0C18.5 1.5102 18.7976 3.00563 19.3755 4.40088C19.9534 5.7961 20.8003 7.06398 21.8682 8.13184C22.936 9.1997 24.2039 10.0466 25.5991 10.6245C25.8099 10.7118 26.0232 10.7918 26.2383 10.8662C24.9738 11.1148 23.7339 11.4888 22.5376 11.9844C21.0436 12.6032 19.6359 13.404 18.3452 14.3662C17.8488 13.9635 17.3721 13.5352 16.9185 13.0815C15.2006 11.3637 13.8379 9.32411 12.9082 7.07959C11.9785 4.83508 11.5 2.42943 11.5 0H18.5Z" fill="currentColor"/>

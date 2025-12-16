@@ -1,11 +1,17 @@
 // Auto-generated from studio-activities-icon-sets/activities-control-1/control-1-for-each-list.svg
 import React from 'react';
 
-export interface Control1ForEachListProps extends React.SVGProps<SVGSVGElement> {}
+export interface Control1ForEachListProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const Control1ForEachList = React.forwardRef<SVGSVGElement, Control1ForEachListProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <g clipPath="url(#clip0_4117_1556)">
 <path d="M13 16.7061H7V14.7061H13V16.7061ZM13 12.7061H7V10.7061H13V12.7061ZM17 8.70605H7V6.70605H17V8.70605Z" fill="currentColor"/>
 <path d="M2 3.70605C2 2.60148 2.89543 1.70605 4 1.70605H7V3.70605L4 3.70605V19.7061H7V21.7061H4C2.89543 21.7061 2 20.8106 2 19.7061V3.70605Z" fill="currentColor"/>

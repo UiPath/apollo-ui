@@ -1,11 +1,17 @@
 // Auto-generated from third-party/act-on.svg
 import React from 'react';
 
-export interface ActOnProps extends React.SVGProps<SVGSVGElement> {}
+export interface ActOnProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const ActOn = React.forwardRef<SVGSVGElement, ActOnProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <path d="M16.3568 1C15.2427 1.02237 14.1597 1.37176 13.2426 2.00473C12.3255 2.6377 11.6147 3.52631 11.1986 4.56004C10.7826 5.59378 10.6796 6.72703 10.9024 7.81884C11.1253 8.91066 11.6642 9.91286 12.4522 10.7008C13.2401 11.4888 14.2423 12.0277 15.3342 12.2506C16.426 12.4734 17.5592 12.3704 18.593 11.9544C19.6267 11.5383 20.5153 10.8275 21.1483 9.91037C21.7812 8.99326 22.1306 7.91031 22.153 6.79621V1H16.3568Z" fill="#E2E41A"/>
 <path d="M16.3568 1C15.2426 1.02218 14.1594 1.37147 13.2421 2.00443C12.3248 2.63738 11.6139 3.52607 11.1977 4.55992C10.7816 5.59378 10.6786 6.72718 10.9015 7.81912C11.1245 8.91106 11.6636 9.91336 12.4517 10.7013C15.6961 4.07467 19.0971 7.00272 22.1543 1H16.3568Z" fill="#E8E947"/>
 <path d="M20.1749 18.1534C20.1561 17.2221 19.864 16.317 19.3348 15.5504C18.8057 14.7839 18.0629 14.1898 17.1988 13.8421C16.3347 13.4944 15.3874 13.4084 14.4748 13.5947C13.5622 13.7811 12.7246 14.2316 12.066 14.8903C11.4074 15.5489 10.957 16.3867 10.7707 17.2993C10.5845 18.2119 10.6707 19.1592 11.0185 20.0232C11.3663 20.8872 11.9605 21.63 12.7271 22.159C13.4937 22.6881 14.3989 22.9801 15.3301 22.9987H20.1761L20.1749 18.1534Z" fill="#E34E64"/>

@@ -1,11 +1,17 @@
 // Auto-generated from studio-activities-icon-sets/activities-ui-automation/ui-automation-mouse-scroll.svg
 import React from 'react';
 
-export interface UIAutomationMouseScrollProps extends React.SVGProps<SVGSVGElement> {}
+export interface UIAutomationMouseScrollProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const UIAutomationMouseScroll = React.forwardRef<SVGSVGElement, UIAutomationMouseScrollProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <g clipPath="url(#clip0_4117_2310)">
 <rect x="3" y="3" width="10" height="18" rx="5" stroke="currentColor" strokeWidth="2"/>
 <rect x="7" y="6" width="2" height="5" rx="1" fill="currentColor"/>

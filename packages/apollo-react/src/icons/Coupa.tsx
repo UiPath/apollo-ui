@@ -1,11 +1,17 @@
 // Auto-generated from third-party/coupa.svg
 import React from 'react';
 
-export interface CoupaProps extends React.SVGProps<SVGSVGElement> {}
+export interface CoupaProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const Coupa = React.forwardRef<SVGSVGElement, CoupaProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <g clipPath="url(#clip0_2_1705)">
 <rect x="-4.5" y="-4.5" width="33" height="33" fill="url(#pattern0_2_1705)"/>
 </g>

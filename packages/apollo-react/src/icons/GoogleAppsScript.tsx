@@ -1,11 +1,17 @@
 // Auto-generated from third-party/google-apps-script.svg
 import React from 'react';
 
-export interface GoogleAppsScriptProps extends React.SVGProps<SVGSVGElement> {}
+export interface GoogleAppsScriptProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 22
+   */
+  size?: string | number;
+}
 
 export const GoogleAppsScript = React.forwardRef<SVGSVGElement, GoogleAppsScriptProps>(
-  (props, ref) => (
-    <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 22} height={size ?? 22}>
       <path d="M14.9116 14.1324H3.48193C2.21233 14.1324 1.18311 15.1616 1.18311 16.4312C1.18311 17.7009 2.21233 18.7301 3.48193 18.7301H14.9116C16.1812 18.7301 17.2104 17.7009 17.2104 16.4312C17.2104 15.1616 16.1812 14.1324 14.9116 14.1324Z" fill="#EA4335"/>
 <path d="M4.33041 11.5827L13.5772 18.3009C14.6044 19.0472 16.042 18.8195 16.7882 17.7923C17.5345 16.7652 17.3068 15.3276 16.2797 14.5813L7.03284 7.86313C6.00571 7.11687 4.56809 7.34457 3.82184 8.3717C3.07558 9.39884 3.30328 10.8365 4.33041 11.5827Z" fill="#FBBC04"/>
 <path d="M17.1447 15.6988L13.6127 4.82853C13.2204 3.62106 11.9235 2.96026 10.716 3.35259C9.50856 3.74492 8.84776 5.04181 9.24009 6.24928L12.7721 17.1196C13.1644 18.327 14.4613 18.9878 15.6687 18.5955C16.8762 18.2032 17.537 16.9063 17.1447 15.6988Z" fill="#34A853"/>

@@ -1,11 +1,17 @@
 // Auto-generated from product-logo/integration-service.svg
 import React from 'react';
 
-export interface IntegrationServiceProps extends React.SVGProps<SVGSVGElement> {}
+export interface IntegrationServiceProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const IntegrationService = React.forwardRef<SVGSVGElement, IntegrationServiceProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <path fillRule="evenodd" clipRule="evenodd" d="M5.5933 5.26453H9.31046V2.85271H5.5933C3.54036 2.85271 1.87613 4.47242 1.87613 6.47044V10.0882H4.35424V6.47044C4.35424 5.80443 4.90898 5.26453 5.5933 5.26453Z" fill="currentColor"/>
 <path fillRule="evenodd" clipRule="evenodd" d="M17.9838 19.7355H14.2667V22.1473H17.9838C20.0368 22.1473 21.701 20.5276 21.701 18.5296V14.9118H19.2229V18.5296C19.2229 19.1956 18.6682 19.7355 17.9838 19.7355Z" fill="currentColor"/>
 <path fillRule="evenodd" clipRule="evenodd" d="M11.4256 12.1468L8.94752 14.5586L7.19524 12.8532L9.67335 10.4413L11.4256 12.1468Z" fill="currentColor"/>

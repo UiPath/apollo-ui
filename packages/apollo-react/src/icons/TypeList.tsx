@@ -1,11 +1,17 @@
 // Auto-generated from object/data-type/type-list.svg
 import React from 'react';
 
-export interface TypeListProps extends React.SVGProps<SVGSVGElement> {}
+export interface TypeListProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const TypeList = React.forwardRef<SVGSVGElement, TypeListProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <path d="M3 15H5V13H3V15Z" fill="currentColor"/>
 <path d="M3 19H5V17H3V19Z" fill="currentColor"/>
 <path d="M3 11H5V9H3V11Z" fill="currentColor"/>

@@ -1,11 +1,17 @@
 // Auto-generated from third-party/google-calendar.svg
 import React from 'react';
 
-export interface GoogleCalendarProps extends React.SVGProps<SVGSVGElement> {}
+export interface GoogleCalendarProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const GoogleCalendar = React.forwardRef<SVGSVGElement, GoogleCalendarProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <g clipPath="url(#clip0_2_1748)">
 <g clipPath="url(#clip1_2_1748)">
 <path d="M17.4525 6.54776H6.54785V17.4524H17.4525V6.54776Z" fill="white"/>

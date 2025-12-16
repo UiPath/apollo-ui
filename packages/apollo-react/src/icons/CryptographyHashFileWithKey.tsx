@@ -1,11 +1,17 @@
 // Auto-generated from studio-activities-icon-sets/activities-cryptography/cryptography-hash-file-with-key.svg
 import React from 'react';
 
-export interface CryptographyHashFileWithKeyProps extends React.SVGProps<SVGSVGElement> {}
+export interface CryptographyHashFileWithKeyProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const CryptographyHashFileWithKey = React.forwardRef<SVGSVGElement, CryptographyHashFileWithKeyProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <g clipPath="url(#clip0_4117_1941)">
 <path fillRule="evenodd" clipRule="evenodd" d="M16.9727 13.4121H18.9727L22.9727 17.4121V21.4121C22.9727 22.5167 22.0772 23.4121 20.9727 23.4121H16.9727C15.8681 23.4121 14.9727 22.5167 14.9727 21.4121V15.4121C14.9727 14.3075 15.8681 13.4121 16.9727 13.4121ZM20.9727 17.4121H18.9727V15.4121H16.9727V21.4121H20.9727V17.4121Z" fill="#1976D2"/>
 <path fillRule="evenodd" clipRule="evenodd" d="M16.9727 11.4121V9.41211H15.2827L15.6027 6.41211H13.6027L13.2827 9.41211H11.2827L11.6027 6.41211H9.60266L9.28266 9.41211H6.97266V11.4121H9.07266L8.87266 13.4121H6.97266V15.4121H8.66266L8.34266 18.4121H10.3427L10.6627 15.4121H12.6627L12.3427 18.4121H14.3427L15.0727 11.4121H16.9727ZM10.8727 13.4121L11.0727 11.4121H13.0727L12.8727 13.4121H10.8727Z" fill="currentColor"/>

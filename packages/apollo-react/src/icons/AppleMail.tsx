@@ -1,11 +1,17 @@
 // Auto-generated from third-party/apple-mail.svg
 import React from 'react';
 
-export interface AppleMailProps extends React.SVGProps<SVGSVGElement> {}
+export interface AppleMailProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const AppleMail = React.forwardRef<SVGSVGElement, AppleMailProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <path d="M1 6C1 3.23858 3.23858 1 6 1H18C20.7614 1 23 3.23858 23 6V18C23 20.7614 20.7614 23 18 23H6C3.23858 23 1 20.7614 1 18V6Z" fill="url(#paint0_linear_5291_9721)"/>
 <path d="M19.3873 16.7349C19.1496 16.9012 18.8595 17 18.5455 17H5.45455C5.12966 17 4.83066 16.8941 4.58854 16.7173L8.85653 12.1065L9.87216 13.104C10.9135 14.1265 12.6016 14.1265 13.643 13.104L14.6667 12.0986L19.3873 16.7349Z" fill="white"/>
 <path d="M19.4995 7.35156C19.8058 7.61346 20 7.99844 20 8.42857V15.5714C20 15.8799 19.8994 16.1648 19.7301 16.3983L15.0095 11.7619L19.4995 7.35156Z" fill="white"/>

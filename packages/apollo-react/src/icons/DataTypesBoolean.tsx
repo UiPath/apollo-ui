@@ -1,11 +1,17 @@
 // Auto-generated from studio-activities-icon-sets/studio-web-icons-data-types/data-types-boolean.svg
 import React from 'react';
 
-export interface DataTypesBooleanProps extends React.SVGProps<SVGSVGElement> {}
+export interface DataTypesBooleanProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const DataTypesBoolean = React.forwardRef<SVGSVGElement, DataTypesBooleanProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <g clipPath="url(#clip0_4117_1292)">
 <path d="M6.6 19.2H18.3C19.7912 19.2 21 17.9912 21 16.5C21 15.0088 19.7912 13.8 18.3 13.8L6.6 13.8C5.10883 13.8 3.9 15.0088 3.9 16.5C3.9 17.9912 5.10883 19.2 6.6 19.2ZM18.3 17.4H6.6C6.10294 17.4 5.7 16.9971 5.7 16.5C5.7 16.003 6.10294 15.6 6.6 15.6L18.3 15.6C18.7971 15.6 19.2 16.003 19.2 16.5C19.2 16.9971 18.7971 17.4 18.3 17.4Z" fill="currentColor"/>
 <path d="M10.1996 10.2V8.40001L17.3996 8.40001C17.8612 8.40001 18.2416 8.05258 18.2936 7.60497L18.2996 7.50001C18.2996 7.03846 17.9522 6.65806 17.5046 6.60607L17.3996 6.60001L10.1996 6.60001V4.80001L17.3996 4.80001C18.8375 4.80001 20.0129 5.92404 20.095 7.34137L20.0996 7.50001C20.0996 8.93793 18.9756 10.1133 17.5583 10.1954L17.3996 10.2L10.1996 10.2Z" fill="currentColor"/>

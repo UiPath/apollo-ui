@@ -1,11 +1,17 @@
 // Auto-generated from studio-activities-icon-sets/activities-control-2/control-2-append-item-to-collection.svg
 import React from 'react';
 
-export interface Control2AppendItemToCollectionProps extends React.SVGProps<SVGSVGElement> {}
+export interface Control2AppendItemToCollectionProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const Control2AppendItemToCollection = React.forwardRef<SVGSVGElement, Control2AppendItemToCollectionProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <g clipPath="url(#clip0_4117_1589)">
 <path d="M23 20.4121V18.4121H15V20.4121H23Z" fill="#038108"/>
 <path d="M18 23.4121H20V15.4121H18V23.4121Z" fill="#038108"/>

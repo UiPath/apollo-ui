@@ -1,11 +1,17 @@
 // Auto-generated from third-party/microsoft-power-point.svg
 import React from 'react';
 
-export interface MicrosoftPowerPointProps extends React.SVGProps<SVGSVGElement> {}
+export interface MicrosoftPowerPointProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const MicrosoftPowerPoint = React.forwardRef<SVGSVGElement, MicrosoftPowerPointProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <g clipPath="url(#clip0_2761_1883)" filter="url(#filter0_ii_2761_1883)">
 <path d="M14.5115 13.2833L12.8371 1H12.7121C6.62347 1.01778 1.69209 5.95087 1.67432 12.0416V12.1667L14.5115 13.2833Z" fill="#ED6C47"/>
 <path d="M12.9624 1H12.8374V12.1667L18.4188 14.4L24.0002 12.1667V12.0416C23.9824 5.95087 19.051 1.01778 12.9624 1Z" fill="#FF8F6B"/>

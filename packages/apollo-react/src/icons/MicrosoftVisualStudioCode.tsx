@@ -1,11 +1,17 @@
 // Auto-generated from third-party/microsoft-visual-studio-code.svg
 import React from 'react';
 
-export interface MicrosoftVisualStudioCodeProps extends React.SVGProps<SVGSVGElement> {}
+export interface MicrosoftVisualStudioCodeProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const MicrosoftVisualStudioCode = React.forwardRef<SVGSVGElement, MicrosoftVisualStudioCodeProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <g filter="url(#filter0_ii_2761_1848)">
 <mask id="mask0_2761_1848" style={{maskType:"alpha"}} maskUnits="userSpaceOnUse" x="2" y="2" width="20" height="20">
 <path fillRule="evenodd" clipRule="evenodd" d="M16.1823 21.8635C16.4973 21.9862 16.8566 21.9783 17.1745 21.8253L21.2922 19.844C21.7248 19.6358 22 19.1978 22 18.7174V5.28268C22 4.80227 21.7248 4.36438 21.2922 4.15617L17.1745 2.17477C16.7573 1.97399 16.2689 2.02317 15.9027 2.2894C15.8504 2.32744 15.8005 2.3699 15.7538 2.4167L7.87102 9.60831L4.43744 7.00195C4.1178 6.75932 3.67073 6.7792 3.37387 7.04923L2.27261 8.05099C1.90949 8.3813 1.90907 8.95256 2.27171 9.28341L5.24942 12L2.27171 14.7167C1.90907 15.0475 1.90949 15.6188 2.27261 15.9491L3.37387 16.9508C3.67073 17.2209 4.1178 17.2407 4.43744 16.9981L7.87102 14.3917L15.7538 21.5834C15.8785 21.7081 16.0249 21.8021 16.1823 21.8635ZM17.003 7.45981L11.0218 12L17.003 16.5403V7.45981Z" fill="white"/>

@@ -1,11 +1,17 @@
 // Auto-generated from studio-icons/log-message.svg
 import React from 'react';
 
-export interface LogMessageProps extends React.SVGProps<SVGSVGElement> {}
+export interface LogMessageProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const LogMessage = React.forwardRef<SVGSVGElement, LogMessageProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <path fillRule="evenodd" clipRule="evenodd" d="M3 4C2.44772 4 2 4.44772 2 5V10C2 10.5523 2.44772 11 3 11H8C8.55228 11 9 10.5523 9 10V5C9 4.44772 8.55228 4 8 4H3ZM4 6V9H7V6H4Z" fill="currentColor"/>
 <path fillRule="evenodd" clipRule="evenodd" d="M3 13C2.44772 13 2 13.4477 2 14V19C2 19.5523 2.44772 20 3 20H8C8.55228 20 9 19.5523 9 19V14C9 13.4477 8.55228 13 8 13H3ZM4 15V18H7V15H4Z" fill="currentColor"/>
 <path d="M22 4H11V6H22V4Z" fill="currentColor"/>

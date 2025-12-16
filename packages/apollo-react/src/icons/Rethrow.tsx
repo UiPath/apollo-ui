@@ -1,11 +1,17 @@
 // Auto-generated from studio-icons/rethrow.svg
 import React from 'react';
 
-export interface RethrowProps extends React.SVGProps<SVGSVGElement> {}
+export interface RethrowProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const Rethrow = React.forwardRef<SVGSVGElement, RethrowProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <g clipPath="url(#clip0_4049_1932)">
 <path fillRule="evenodd" clipRule="evenodd" d="M7 11C4.23858 11 2 13.2386 2 16C2 18.7614 4.23858 21 7 21C9.76142 21 12 18.7614 12 16C12 13.2386 9.76142 11 7 11ZM0 16C0 12.134 3.13401 9 7 9C10.866 9 14 12.134 14 16C14 19.866 10.866 23 7 23C3.13401 23 0 19.866 0 16Z" fill="currentColor"/>
 <path d="M8 13H6V16H8V13Z" fill="currentColor"/>

@@ -1,11 +1,17 @@
 // Auto-generated from third-party/internal-package/internal-package-control.svg
 import React from 'react';
 
-export interface InternalPackageControlProps extends React.SVGProps<SVGSVGElement> {}
+export interface InternalPackageControlProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const InternalPackageControl = React.forwardRef<SVGSVGElement, InternalPackageControlProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <path d="M18 13L18.0008 14.1262C18.3675 14.2207 18.7139 14.3659 19.032 14.5538L19.8284 13.7574L21.2426 15.1716L20.4462 15.968C20.6343 16.2864 20.7796 16.6331 20.874 17.0002L22 17V19L20.8738 19.0008C20.7793 19.3675 20.6341 19.7139 20.4462 20.032L21.2426 20.8284L19.8284 22.2426L19.032 21.4462C18.7139 21.6341 18.3675 21.7793 18.0008 21.8738L18 23H16L16.0002 21.874C15.6331 21.7796 15.2864 21.6343 14.968 21.4462L14.1716 22.2426L12.7574 20.8284L13.5538 20.032C13.3659 19.7139 13.2207 19.3675 13.1262 19.0008L12 19V17L13.126 17.0002C13.2204 16.6331 13.3657 16.2864 13.5538 15.968L12.7574 15.1716L14.1716 13.7574L14.968 14.5538C15.2864 14.3657 15.6331 14.2204 16.0002 14.126L16 13H18ZM17 16C15.8954 16 15 16.8954 15 18C15 19.1046 15.8954 20 17 20C18.1046 20 19 19.1046 19 18C19 16.8954 18.1046 16 17 16Z" fill="#526069"/>
 <path fillRule="evenodd" clipRule="evenodd" d="M3.5 17.4L9.99999 21.0203V18.7333L5 15.9V9.2L12 13.15L19 9.2V11H21V7.5C21 7.1 20.8 6.8 20.5 6.6L12.6 2.2C12.4 2.1 12.2 2 12 2C11.8 2 11.6 2.1 11.4 2.2L3.5 6.6C3.2 6.8 3 7.1 3 7.5V16.5C3 16.689 3.04464 16.8557 3.12338 17C3.12797 17.0084 3.13268 17.0167 3.1375 17.025C3.225 17.175 3.35 17.3 3.5 17.4ZM12 4.2L18 7.5L16 8.6L10.1 5.2L12 4.2ZM12 10.8L6 7.5L8 6.3L14 9.8L12 10.8Z" fill="#FA4616"/>
     </svg>

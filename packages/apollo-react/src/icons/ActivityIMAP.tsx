@@ -1,11 +1,17 @@
 // Auto-generated from object/activity/activity-imap.svg
 import React from 'react';
 
-export interface ActivityIMAPProps extends React.SVGProps<SVGSVGElement> {}
+export interface ActivityIMAPProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const ActivityIMAP = React.forwardRef<SVGSVGElement, ActivityIMAPProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <path fillRule="evenodd" clipRule="evenodd" d="M20 3C21.1 3 22 3.9 22 5V13H20V7L12 12L4 7V13H2V5C2 3.9 2.9 3 4 3H20ZM12 9.99L20 5H4L12 9.99Z" fill="currentColor"/>
 <path d="M1.69299 21V19.757H3.02399V15.39H1.75899V14.147H5.80699V15.39H4.47599V19.757H5.86199V21H1.69299Z" fill="currentColor"/>
 <path d="M6.78599 21V14.147H8.19399L9.28299 17.15L10.361 14.136H11.78V21H10.471V16.468L9.66799 18.833H8.85399L8.08399 16.468V21H6.78599Z" fill="currentColor"/>

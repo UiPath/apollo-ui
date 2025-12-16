@@ -1,11 +1,17 @@
 // Auto-generated from action/ai-auto-summarize.svg
 import React from 'react';
 
-export interface AIAutoSummarizeProps extends React.SVGProps<SVGSVGElement> {}
+export interface AIAutoSummarizeProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const AIAutoSummarize = React.forwardRef<SVGSVGElement, AIAutoSummarizeProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <g clipPath="url(#clip0_2_2020)">
 <path fillRule="evenodd" clipRule="evenodd" d="M2.00006 12C2.00006 11.4477 2.44778 11 3.00006 11H7.07642C7.6287 11 8.07642 11.4477 8.07642 12C8.07642 12.5523 7.6287 13 7.07642 13H3.00006C2.44778 13 2.00006 12.5523 2.00006 12Z" fill="currentColor"/>
 <path fillRule="evenodd" clipRule="evenodd" d="M2 7C2 6.44772 2.44772 6 3 6L11 6C11.5523 6 12 6.44772 12 7C12 7.55228 11.5523 8 11 8L3 8C2.44771 8 2 7.55228 2 7Z" fill="currentColor"/>

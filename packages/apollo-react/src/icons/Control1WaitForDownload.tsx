@@ -1,11 +1,17 @@
 // Auto-generated from studio-activities-icon-sets/activities-control-1/control-1-wait-for-download.svg
 import React from 'react';
 
-export interface Control1WaitForDownloadProps extends React.SVGProps<SVGSVGElement> {}
+export interface Control1WaitForDownloadProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const Control1WaitForDownload = React.forwardRef<SVGSVGElement, Control1WaitForDownloadProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <g clipPath="url(#clip0_4117_1508)">
 <path d="M13 4V11.01H16L12 15L8 11.01L11 11.01V4H13Z" fill="currentColor"/>
 <path d="M5 15H3V20H11V18H5V15Z" fill="currentColor"/>

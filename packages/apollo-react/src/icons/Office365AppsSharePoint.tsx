@@ -1,11 +1,17 @@
 // Auto-generated from studio-activities-icon-sets/activities-microsoft-office365-apps/office365-apps-sharepoint.svg
 import React from 'react';
 
-export interface Office365AppsSharePointProps extends React.SVGProps<SVGSVGElement> {}
+export interface Office365AppsSharePointProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const Office365AppsSharePoint = React.forwardRef<SVGSVGElement, Office365AppsSharePointProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <g clipPath="url(#clip0_4117_2222)">
 <g clipPath="url(#clip1_4117_2222)">
 <g clipPath="url(#clip2_4117_2222)">

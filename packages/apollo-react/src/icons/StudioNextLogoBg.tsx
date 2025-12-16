@@ -1,11 +1,17 @@
 // Auto-generated from studio-icons/studio-next-logo-bg.svg
 import React from 'react';
 
-export interface StudioNextLogoBgProps extends React.SVGProps<SVGSVGElement> {}
+export interface StudioNextLogoBgProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 30
+   */
+  size?: string | number;
+}
 
 export const StudioNextLogoBg = React.forwardRef<SVGSVGElement, StudioNextLogoBgProps>(
-  (props, ref) => (
-    <svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 30} height={size ?? 30}>
       <path d="M0 5C0 2.23858 2.23858 0 5 0H25C27.7614 0 30 2.23858 30 5V25C30 27.7614 27.7614 30 25 30H5C2.23858 30 0 27.7614 0 25V5Z" fill="var(--color-foreground)"/>
 <path d="M23.9995 19.5C23.9995 15.85 21.8268 12.7076 18.7041 11.2954L6.79492 23.2046C8.2071 26.3273 11.3496 28.5 14.9995 28.5C19.9701 28.5 23.9995 24.4705 23.9995 19.5Z" fill="#0067DF"/>
 <path d="M23.9995 19.5C23.9995 15.85 21.8268 12.7076 18.7041 11.2954L6.79492 23.2046C8.2071 26.3273 11.3496 28.5 14.9995 28.5C19.9701 28.5 23.9995 24.4705 23.9995 19.5Z" fill="url(#paint0_linear_4286_9830)"/>

@@ -1,11 +1,17 @@
 // Auto-generated from studio-activities-icon-sets/classic-icons-google-cloud-platform/google-cloud-platform-for-each-project.svg
 import React from 'react';
 
-export interface GoogleCloudPlatformForEachProjectProps extends React.SVGProps<SVGSVGElement> {}
+export interface GoogleCloudPlatformForEachProjectProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const GoogleCloudPlatformForEachProject = React.forwardRef<SVGSVGElement, GoogleCloudPlatformForEachProjectProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <g clipPath="url(#clip0_4117_1845)">
 <g clipPath="url(#clip1_4117_1845)">
 <g clipPath="url(#clip2_4117_1845)">

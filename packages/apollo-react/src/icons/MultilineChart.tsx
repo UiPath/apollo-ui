@@ -1,11 +1,17 @@
 // Auto-generated from editor/multiline-chart.svg
 import React from 'react';
 
-export interface MultilineChartProps extends React.SVGProps<SVGSVGElement> {}
+export interface MultilineChartProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const MultilineChart = React.forwardRef<SVGSVGElement, MultilineChartProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <path d="M22 7.175L20.59 5.76501L17.74 8.97501C15.68 6.65501 12.83 5.255 9.61 5.255C6.72 5.255 4.07 6.415 2 8.255L3.42 9.675C5.12 8.185 7.27 7.255 9.61 7.255C12.35 7.255 14.7 8.515 16.38 10.495L13.5 13.735L9.5 9.735L2 17.245L3.5 18.745L9.5 12.735L13.5 16.735L17.55 12.185C18.3 13.535 18.8 15.085 18.99 16.735H21C20.78 14.435 20.05 12.345 18.96 10.595L22 7.175Z" fill="currentColor"/>
     </svg>
   )

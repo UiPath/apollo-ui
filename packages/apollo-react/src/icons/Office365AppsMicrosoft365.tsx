@@ -1,11 +1,17 @@
 // Auto-generated from studio-activities-icon-sets/activities-microsoft-office365-apps/office365-apps-microsoft-365.svg
 import React from 'react';
 
-export interface Office365AppsMicrosoft365Props extends React.SVGProps<SVGSVGElement> {}
+export interface Office365AppsMicrosoft365Props extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const Office365AppsMicrosoft365 = React.forwardRef<SVGSVGElement, Office365AppsMicrosoft365Props>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <g clipPath="url(#clip0_4117_2224)">
 <g clipPath="url(#clip1_4117_2224)">
 <path d="M9.93165 0.916992L9.81292 0.988808C9.62407 1.10305 9.44615 1.23078 9.28013 1.37035L9.62259 1.12947H12.5292L13.0576 5.13059L10.4156 7.77264L7.77353 9.60907V11.7267C7.77353 13.2057 8.54654 14.5772 9.81181 15.343L12.5932 17.0266L6.71671 20.4546H5.58332L3.47089 19.1759C2.20561 18.41 1.43262 17.0386 1.43262 15.5595V8.43875C1.43262 6.95926 2.2061 5.5874 3.47202 4.82168L9.81292 0.986208C9.85223 0.962441 9.89181 0.93937 9.93165 0.916992Z" fill="url(#paint0_radial_4117_2224)"/>

@@ -1,11 +1,17 @@
 // Auto-generated from studio-activities-icon-sets/activities-control-1/control-1-read-list.svg
 import React from 'react';
 
-export interface Control1ReadListProps extends React.SVGProps<SVGSVGElement> {}
+export interface Control1ReadListProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const Control1ReadList = React.forwardRef<SVGSVGElement, Control1ReadListProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <g clipPath="url(#clip0_4117_1552)">
 <rect x="7" y="6.70605" width="10" height="2" fill="currentColor"/>
 <rect x="7" y="10.7061" width="10" height="2" fill="currentColor"/>

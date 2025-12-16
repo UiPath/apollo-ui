@@ -1,11 +1,17 @@
 // Auto-generated from third-party/azure.svg
 import React from 'react';
 
-export interface AzureProps extends React.SVGProps<SVGSVGElement> {}
+export interface AzureProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const Azure = React.forwardRef<SVGSVGElement, AzureProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <g clipPath="url(#clip0_2_1662)">
 <path d="M8.00088 0.640015H15.1027L7.73061 22.4835C7.65483 22.708 7.51053 22.9031 7.31804 23.0413C7.12555 23.1795 6.89456 23.2538 6.6576 23.2538H1.13073C0.951213 23.2538 0.774271 23.2111 0.614546 23.1291C0.45482 23.0472 0.316903 22.9284 0.212204 22.7826C0.107506 22.6367 0.0390357 22.4681 0.012459 22.2905C-0.0141177 22.113 0.00196306 21.9317 0.0593707 21.7616L6.92788 1.41033C7.00365 1.18581 7.14794 0.99071 7.34043 0.852518C7.53293 0.714327 7.76392 0.640003 8.00088 0.640015Z" fill="url(#paint0_linear_2_1662)"/>
 <path d="M18.3208 15.2911H7.05906C6.95439 15.2911 6.85214 15.3226 6.76561 15.3815C6.67908 15.4404 6.61228 15.524 6.57391 15.6213C6.53553 15.7187 6.52735 15.8254 6.55044 15.9275C6.57352 16.0296 6.6268 16.1224 6.70334 16.1938L13.94 22.9478C14.1506 23.1444 14.428 23.2538 14.7161 23.2538H21.0927L18.3208 15.2911Z" fill="#0078D4"/>

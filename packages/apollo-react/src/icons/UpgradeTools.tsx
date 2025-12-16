@@ -1,11 +1,17 @@
 // Auto-generated from studio-icons/upgrade-tools.svg
 import React from 'react';
 
-export interface UpgradeToolsProps extends React.SVGProps<SVGSVGElement> {}
+export interface UpgradeToolsProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const UpgradeTools = React.forwardRef<SVGSVGElement, UpgradeToolsProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <path fillRule="evenodd" clipRule="evenodd" d="M17 7H20C21.1 7 22 7.9 22 9V14H20V9H4V13H6V12H8V13H16V12H18V13L16 15H8V16H6V15H4V19H15V21H2V9C2 7.9 2.9 7 4 7H7V5C7 3.9 7.9 3 9 3H15C16.1 3 17 3.9 17 5V7ZM15 5H9V7H15V5Z" fill="currentColor"/>
 <path d="M20 18H22L19 15L16 18H18V22H20V18Z" fill="#1976D2"/>
     </svg>

@@ -1,11 +1,17 @@
 // Auto-generated from studio-icons/extract-src.svg
 import React from 'react';
 
-export interface ExtractSrcProps extends React.SVGProps<SVGSVGElement> {}
+export interface ExtractSrcProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const ExtractSrc = React.forwardRef<SVGSVGElement, ExtractSrcProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <path d="M20 15L20 19.01L23 19.01L19 23L15 19.01L18 19.01L18 15L20 15Z" fill="#1976D2"/>
 <path d="M10.531 21L14.817 3H12.76L8.476 21H10.531Z" fill="currentColor"/>
 <path d="M7.36396 8.46421L5.94975 7.05L1 11.9997L5.94975 16.9495L7.36396 15.5353L3.82843 11.9997L7.36396 8.46421Z" fill="currentColor"/>

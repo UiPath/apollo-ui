@@ -1,11 +1,17 @@
 // Auto-generated from object/agent-autopilot-marker.svg
 import React from 'react';
 
-export interface AgentAutopilotMarkerProps extends React.SVGProps<SVGSVGElement> {}
+export interface AgentAutopilotMarkerProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const AgentAutopilotMarker = React.forwardRef<SVGSVGElement, AgentAutopilotMarkerProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <path fillRule="evenodd" clipRule="evenodd" d="M2.50062 6.84777C1.8118 7.16365 1.33337 7.8593 1.33337 8.66669V16.6667C1.33337 17.7713 2.22881 18.6667 3.33338 18.6667H20.6667C21.7713 18.6667 22.6667 17.7713 22.6667 16.6667V8.66669C22.6667 7.56212 21.7713 6.66669 20.6667 6.66669H13.4884C13.5621 7.40358 13.2861 8.17296 12.6601 8.66669H20.6667L20.6667 16.6667H3.33337V8.66669H3.33997C2.76514 8.21329 2.48536 7.52744 2.50062 6.84777Z" fill="currentColor"/>
 <rect x="11" y="11.3333" width="2" height="3.33333" rx="1" fill="currentColor"/>
 <rect x="16" y="11.3333" width="2" height="3.33333" rx="1" fill="currentColor"/>

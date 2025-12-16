@@ -1,11 +1,17 @@
 // Auto-generated from studio-icons/studio-icons-keyboard-shortcuts.svg
 import React from 'react';
 
-export interface StudioIconsKeyboardShortcutsProps extends React.SVGProps<SVGSVGElement> {}
+export interface StudioIconsKeyboardShortcutsProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const StudioIconsKeyboardShortcuts = React.forwardRef<SVGSVGElement, StudioIconsKeyboardShortcutsProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <mask id="path-1-inside-1_4041_1226" fill="var(--color-foreground)">
 <rect x="2" y="16" width="20" height="6" rx="1"/>
 </mask>

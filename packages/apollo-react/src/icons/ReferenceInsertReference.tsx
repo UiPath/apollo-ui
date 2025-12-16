@@ -1,11 +1,17 @@
 // Auto-generated from object/reference-insert-reference.svg
 import React from 'react';
 
-export interface ReferenceInsertReferenceProps extends React.SVGProps<SVGSVGElement> {}
+export interface ReferenceInsertReferenceProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const ReferenceInsertReference = React.forwardRef<SVGSVGElement, ReferenceInsertReferenceProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <path fillRule="evenodd" clipRule="evenodd" d="M5.8916 9.33438C5.8916 8.81222 6.3378 8.38892 6.88822 8.38892H16.5041C17.0545 8.38892 17.5007 8.81222 17.5007 9.33438V21.1349C17.5007 21.6571 17.0545 22.0804 16.5041 22.0804H6.88822C6.3378 22.0804 5.8916 21.6571 5.8916 21.1349V9.33438ZM7.88484 10.2799V20.1895H15.5074V10.2799H7.88484Z" fill="currentColor"/>
 <path fillRule="evenodd" clipRule="evenodd" d="M12.1299 4.20572C12.1299 3.68355 12.5532 3.26025 13.0754 3.26025H21.9258C22.4479 3.26025 22.8712 3.68355 22.8712 4.20572V16.0063C22.8712 16.5284 22.4479 16.9517 21.9258 16.9517H19.3636V15.0608H20.9803V5.15119H14.0208V6.64949H12.1299V4.20572Z" fill="currentColor"/>
 <path d="M9.45605 11.4904H13.9362V13.2185H9.45605V11.4904Z" fill="currentColor"/>

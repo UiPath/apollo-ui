@@ -1,11 +1,17 @@
 // Auto-generated from third-party/google-chrome.svg
 import React from 'react';
 
-export interface GoogleChromeProps extends React.SVGProps<SVGSVGElement> {}
+export interface GoogleChromeProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const GoogleChrome = React.forwardRef<SVGSVGElement, GoogleChromeProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <g clipPath="url(#clip0_2761_1000)">
 <g filter="url(#filter0_ii_2761_1000)">
 <g clipPath="url(#clip1_2761_1000)">

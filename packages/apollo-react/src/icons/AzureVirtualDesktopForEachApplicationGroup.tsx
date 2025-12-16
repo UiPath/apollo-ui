@@ -1,11 +1,17 @@
 // Auto-generated from studio-activities-icon-sets/activities-azure-virtual-desktop/azure-virtual-desktop-for-each-application-group.svg
 import React from 'react';
 
-export interface AzureVirtualDesktopForEachApplicationGroupProps extends React.SVGProps<SVGSVGElement> {}
+export interface AzureVirtualDesktopForEachApplicationGroupProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const AzureVirtualDesktopForEachApplicationGroup = React.forwardRef<SVGSVGElement, AzureVirtualDesktopForEachApplicationGroupProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <g clipPath="url(#clip0_4117_1754)">
 <g clipPath="url(#clip1_4117_1754)">
 <rect width="24" height="24" fill="url(#pattern0_4117_1754)"/>

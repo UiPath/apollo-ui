@@ -1,11 +1,17 @@
 // Auto-generated from action/mic-off.svg
 import React from 'react';
 
-export interface MicOffProps extends React.SVGProps<SVGSVGElement> {}
+export interface MicOffProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const MicOff = React.forwardRef<SVGSVGElement, MicOffProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <path fillRule="evenodd" clipRule="evenodd" d="M10.7199 5.38999C10.7199 4.72999 11.2599 4.18999 11.9199 4.18999C12.5799 4.18999 13.1199 4.72999 13.1199 5.38999L13.1099 9.29999L14.9199 11.09V5.48999C14.9199 3.82999 13.5799 2.48999 11.9199 2.48999C10.3799 2.48999 9.12992 3.64999 8.95992 5.13999L10.7199 6.89999V5.38999ZM18.9199 11.49H17.2199C17.2199 12.07 17.1199 12.62 16.9499 13.13L18.2199 14.4C18.6599 13.52 18.9199 12.53 18.9199 11.49ZM2.91992 4.75999L4.32992 3.34999L21.0799 20.1L19.6699 21.51L15.4699 17.31C14.6899 17.76 13.8299 18.08 12.9199 18.21V21.49H10.9199V18.21C7.63992 17.72 4.91992 14.9 4.91992 11.49H6.61992C6.61992 14.49 9.15992 16.59 11.9199 16.59C12.7299 16.59 13.5199 16.4 14.2299 16.07L12.5699 14.41C12.3599 14.46 12.1499 14.49 11.9199 14.49C10.2599 14.49 8.91992 13.15 8.91992 11.49V10.76L2.91992 4.75999Z" fill="currentColor"/>
     </svg>
   )

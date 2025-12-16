@@ -1,11 +1,17 @@
 // Auto-generated from studio-activities-icon-sets/activities-azure-virtual-desktop/azure-virtual-desktop-send-message-to-user-session.svg
 import React from 'react';
 
-export interface AzureVirtualDesktopSendMessageToUserSessionProps extends React.SVGProps<SVGSVGElement> {}
+export interface AzureVirtualDesktopSendMessageToUserSessionProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const AzureVirtualDesktopSendMessageToUserSession = React.forwardRef<SVGSVGElement, AzureVirtualDesktopSendMessageToUserSessionProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <g clipPath="url(#clip0_4117_1752)">
 <g clipPath="url(#clip1_4117_1752)">
 <rect width="24" height="24" fill="url(#pattern0_4117_1752)"/>

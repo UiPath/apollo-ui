@@ -1,11 +1,17 @@
 // Auto-generated from third-party/apple-numbers.svg
 import React from 'react';
 
-export interface AppleNumbersProps extends React.SVGProps<SVGSVGElement> {}
+export interface AppleNumbersProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const AppleNumbers = React.forwardRef<SVGSVGElement, AppleNumbersProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <path d="M1 6C1 3.23858 3.23858 1 6 1H18C20.7614 1 23 3.23858 23 6V18C23 20.7614 20.7614 23 18 23H6C3.23858 23 1 20.7614 1 18V6Z" fill="url(#paint0_linear_5291_9714)"/>
 <path d="M5.03564 15.7544C5.03564 15.4783 5.2595 15.2544 5.53564 15.2544H7.26937C7.54551 15.2544 7.76937 15.4783 7.76937 15.7544V19.5059C7.76937 19.782 7.54552 20.0059 7.26937 20.0059H5.53564C5.2595 20.0059 5.03564 19.782 5.03564 19.5059V15.7544Z" fill="white"/>
 <path d="M8.74572 11.8491C8.74572 11.573 8.96957 11.3491 9.24572 11.3491H10.9794C11.2556 11.3491 11.4794 11.573 11.4794 11.8491V19.5059C11.4794 19.782 11.2556 20.0059 10.9794 20.0059H9.24572C8.96957 20.0059 8.74572 19.782 8.74572 19.5059V11.8491Z" fill="white"/>

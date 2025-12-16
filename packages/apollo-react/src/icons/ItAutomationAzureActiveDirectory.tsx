@@ -1,11 +1,17 @@
 // Auto-generated from studio-activities-icon-sets/activities-it-automation/it-automation-azure-active-directory.svg
 import React from 'react';
 
-export interface ItAutomationAzureActiveDirectoryProps extends React.SVGProps<SVGSVGElement> {}
+export interface ItAutomationAzureActiveDirectoryProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 32
+   */
+  size?: string | number;
+}
 
 export const ItAutomationAzureActiveDirectory = React.forwardRef<SVGSVGElement, ItAutomationAzureActiveDirectoryProps>(
-  (props, ref) => (
-    <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 32} height={size ?? 32}>
       <g clipPath="url(#clip0_4117_1865)">
 <g clipPath="url(#clip1_4117_1865)">
 <path d="M15.083 13.2483V18.7483L15.9997 24.5936L28.0903 16.8202L23.3329 14.165L15.083 13.2483Z" fill="#53B1E0"/>

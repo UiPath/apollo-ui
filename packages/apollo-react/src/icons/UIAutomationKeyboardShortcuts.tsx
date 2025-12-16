@@ -1,11 +1,17 @@
 // Auto-generated from studio-activities-icon-sets/activities-ui-automation/ui-automation-keyboard-shortcuts.svg
 import React from 'react';
 
-export interface UIAutomationKeyboardShortcutsProps extends React.SVGProps<SVGSVGElement> {}
+export interface UIAutomationKeyboardShortcutsProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const UIAutomationKeyboardShortcuts = React.forwardRef<SVGSVGElement, UIAutomationKeyboardShortcutsProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <g clipPath="url(#clip0_4117_2284)">
 <mask id="path-1-inside-1_4117_2284" fill="var(--color-foreground)">
 <rect x="2" y="16" width="20" height="6" rx="1"/>

@@ -1,11 +1,17 @@
 // Auto-generated from third-party/exchange-server.svg
 import React from 'react';
 
-export interface ExchangeServerProps extends React.SVGProps<SVGSVGElement> {}
+export interface ExchangeServerProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const ExchangeServer = React.forwardRef<SVGSVGElement, ExchangeServerProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <g clipPath="url(#clip0_2_1713)">
 <path d="M20.5122 3.58759H16.1842C16.0217 3.58757 15.8608 3.6186 15.7107 3.67891C15.5606 3.73921 15.4242 3.82761 15.3093 3.93906L5.09395 13.8434C4.97901 13.9547 4.88784 14.087 4.82564 14.2325C4.76344 14.3781 4.73143 14.5341 4.73145 14.6916V18.8878C4.73144 19.0454 4.76344 19.2014 4.82562 19.3469C4.8878 19.4925 4.97895 19.6248 5.09386 19.7362C5.20877 19.8476 5.34519 19.936 5.49533 19.9963C5.64547 20.0566 5.80638 20.0876 5.96889 20.0876H10.2968C10.4593 20.0876 10.6202 20.0566 10.7704 19.9963C10.9205 19.936 11.0569 19.8476 11.1718 19.7361L21.3873 9.8318C21.6193 9.60682 21.7496 9.30168 21.7496 8.98352V4.78737C21.7496 4.62981 21.7176 4.47379 21.6555 4.32822C21.5933 4.18266 21.5021 4.05039 21.3872 3.93898C21.2723 3.82757 21.1359 3.73919 20.9857 3.6789C20.8356 3.61861 20.6747 3.58758 20.5122 3.58759Z" fill="#28A8EA"/>
 <path d="M20.5125 20.0876H16.1844C15.8563 20.0876 15.5415 19.9612 15.3095 19.7362L13.2407 17.7304V13.9826C13.2407 13.4137 13.4738 12.8681 13.8887 12.4658C14.3036 12.0636 14.8663 11.8376 15.4531 11.8376H19.3186L21.3874 13.8434C21.6194 14.0683 21.7498 14.3735 21.7498 14.6917V18.8879C21.7498 19.2061 21.6194 19.5112 21.3874 19.7362C21.1553 19.9612 20.8406 20.0876 20.5125 20.0876Z" fill="#0078D4"/>

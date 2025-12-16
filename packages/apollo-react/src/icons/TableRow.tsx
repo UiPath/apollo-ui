@@ -1,11 +1,17 @@
 // Auto-generated from object/data-type-table/table-row.svg
 import React from 'react';
 
-export interface TableRowProps extends React.SVGProps<SVGSVGElement> {}
+export interface TableRowProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const TableRow = React.forwardRef<SVGSVGElement, TableRowProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <path d="M14 21V8C14 7.44772 13.5523 7 13 7C12.4477 7 12 7.44772 12 8V21C12 21.5523 12.4477 22 13 22C13.5523 22 14 21.5523 14 21Z" fill="currentColor"/>
 <path d="M8 21V7C8 6.44772 7.55228 6 7 6C6.44772 6 6 6.44772 6 7V21C6 21.5523 6.44772 22 7 22C7.55228 22 8 21.5523 8 21Z" fill="currentColor"/>
 <path d="M21 12H8C7.44772 12 7 12.4477 7 13C7 13.5523 7.44772 14 8 14H21C21.5523 14 22 13.5523 22 13C22 12.4477 21.5523 12 21 12Z" fill="currentColor"/>

@@ -1,11 +1,17 @@
 // Auto-generated from studio-activities-icon-sets/activities-microsoft-office365-apps/office365-apps-exchange.svg
 import React from 'react';
 
-export interface Office365AppsExchangeProps extends React.SVGProps<SVGSVGElement> {}
+export interface Office365AppsExchangeProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const Office365AppsExchange = React.forwardRef<SVGSVGElement, Office365AppsExchangeProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <g clipPath="url(#clip0_4117_2230)">
 <g clipPath="url(#clip1_4117_2230)">
 <path d="M20.5122 3.58765H16.1842C16.0217 3.58763 15.8608 3.61866 15.7107 3.67897C15.5606 3.73928 15.4242 3.82768 15.3093 3.93912L5.09395 13.8434C4.97901 13.9548 4.88784 14.087 4.82564 14.2326C4.76344 14.3781 4.73143 14.5342 4.73145 14.6917V18.8879C4.73144 19.0454 4.76344 19.2014 4.82562 19.347C4.8878 19.4926 4.97895 19.6248 5.09386 19.7363C5.20877 19.8477 5.34519 19.936 5.49533 19.9963C5.64547 20.0566 5.80638 20.0877 5.96889 20.0876H10.2968C10.4593 20.0877 10.6202 20.0566 10.7704 19.9963C10.9205 19.936 11.0569 19.8476 11.1718 19.7362L21.3873 9.83187C21.6193 9.60688 21.7496 9.30174 21.7496 8.98358V4.78743C21.7496 4.62987 21.7176 4.47385 21.6555 4.32828C21.5933 4.18272 21.5021 4.05045 21.3872 3.93904C21.2723 3.82763 21.1359 3.73925 20.9857 3.67896C20.8356 3.61867 20.6747 3.58764 20.5122 3.58765Z" fill="#28A8EA"/>

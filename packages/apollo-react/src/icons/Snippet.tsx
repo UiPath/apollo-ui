@@ -1,11 +1,17 @@
 // Auto-generated from studio-icons/snippet.svg
 import React from 'react';
 
-export interface SnippetProps extends React.SVGProps<SVGSVGElement> {}
+export interface SnippetProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
 
 export const Snippet = React.forwardRef<SVGSVGElement, SnippetProps>(
-  (props, ref) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props}>
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <path d="M4 14C4 12.9456 3.18412 12.0818 2.14926 12.0055L2 12C3.10457 12 4 11.1046 4 10V6C4 5.44772 4.44772 5 5 5H6V3H4C2.94564 3 2.08183 3.81588 2.00549 4.85074L2 5V11H1C0.447715 11 0 11.4477 0 12C0 12.5523 0.447715 13 1 13H2V19C2 20.1046 2.89543 21 4 21H6V19H5C4.44772 19 4 18.5523 4 18V14Z" fill="currentColor"/>
 <path d="M22 19C22 20.1046 21.1046 21 20 21H18V19H19C19.5523 19 20 18.5523 20 18V14C20 12.9456 20.8159 12.0818 21.8507 12.0055L22 12C20.8954 12 20 11.1046 20 10V6C20 5.44772 19.5523 5 19 5H18V3H20C21.0544 3 21.9182 3.81588 21.9945 4.85074L22 5V11H23C23.5523 11 24 11.4477 24 12C24 12.5523 23.5523 13 23 13H22V19Z" fill="currentColor"/>
 <path d="M14.6341 5.4378C14.9103 4.95951 15.5219 4.79564 16.0002 5.07178C16.4785 5.34792 16.6423 5.95951 16.3662 6.4378L9.36619 18.5622C9.09005 19.0405 8.47846 19.2043 8.00017 18.9282C7.52187 18.652 7.358 18.0405 7.63414 17.5622L14.6341 5.4378Z" fill="currentColor"/>
