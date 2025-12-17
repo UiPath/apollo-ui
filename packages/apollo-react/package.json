@@ -31,6 +31,16 @@
       "import": "./dist/material/components/index.js",
       "require": "./dist/material/components/index.cjs"
     },
+    "./ap-chat": {
+      "types": "./dist/material/components/ap-chat/index.d.ts",
+      "import": "./dist/material/components/ap-chat/index.js",
+      "require": "./dist/material/components/ap-chat/index.cjs"
+    },
+    "./ap-chat/service": {
+      "types": "./dist/material/components/ap-chat/service/index.d.ts",
+      "import": "./dist/material/components/ap-chat/service/index.js",
+      "require": "./dist/material/components/ap-chat/service/index.cjs"
+    },
     "./material/components/*": {
       "types": "./dist/material/components/*.d.ts",
       "import": "./dist/material/components/*.js",

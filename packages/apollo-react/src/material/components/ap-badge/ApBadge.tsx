@@ -52,6 +52,7 @@ const StyledBadge = styled(Chip, {
         height: badgeSize === 'small' ? token.Spacing.SpacingBase : token.Spacing.SpacingL,
         fontSize: badgeSize === 'small' ? token.FontFamily.FontXsSize : token.FontFamily.FontMSize,
         lineHeight: badgeSize === 'small' ? token.FontFamily.FontSLineHeight : token.FontFamily.FontMLineHeight,
+        padding: badgeSize === 'small' ? `${token.Padding.PadXs} ${token.Padding.PadL}` : `${token.Padding.PadS} ${token.Padding.PadL}`,
 
         '.MuiChip-label': {
             padding: badgeSize === 'small' ? '0' : `${token.Spacing.SpacingMicro} ${token.Spacing.SpacingS}`,

@@ -59,7 +59,7 @@ function AutopilotChatMessageActionsComponent({
             baseActions.push({
                 name: 'autopilot-chat-copy',
                 label: _(msg({ id: 'autopilot-chat.message.actions.copy', message: `Copy` })),
-                icon: 'copy',
+                icon: 'content_copy',
                 eventName: AutopilotChatEvent.Copy,
             });
         }

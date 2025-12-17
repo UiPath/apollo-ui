@@ -145,6 +145,8 @@ export function ApChat({
     theme: initialTheme = 'light',
 }: ApChatProps) {
     const [embeddedContainer, setEmbeddedContainer] = React.useState<HTMLElement | null>(null);
+    const [isInShadowDOM, setIsInShadowDOM] = React.useState(false);
+    const containerRef = React.useRef<HTMLDivElement | null>(null);
 
     // Sync props to service (one-way: props → service → providers → components)
     React.useEffect(() => {
@@ -154,6 +156,21 @@ export function ApChat({
     React.useEffect(() => {
         chatServiceInstance.setTheme(initialTheme);
     }, [initialTheme, chatServiceInstance]);
+
+    // Detect ap-chat Shadow DOM synchronously
+    const handleContainerRef = React.useCallback((node: HTMLDivElement | null) => {
+        containerRef.current = node;
+        if (node) {
+            const rootNode = node.getRootNode();
+            // Only consider it as shadow DOM if it's specifically ap-chat's shadow root
+            // If it's another shadow root, we should portal instead
+            const inApChatShadowDOM =
+                rootNode instanceof ShadowRoot &&
+                rootNode.host instanceof HTMLElement &&
+                rootNode.host.tagName?.toLowerCase() === 'ap-chat';
+            setIsInShadowDOM(inApChatShadowDOM);
+        }
+    }, []);
 
     // Check for embedded container from service configuration
     React.useEffect(() => {
@@ -183,37 +200,39 @@ export function ApChat({
     }, [chatServiceInstance]);
 
     const chatContent = (
-        <AutopilotChatServiceProvider chatServiceInstance={chatServiceInstance}>
-            <ThemeProvider>
-                <LocaleProvider>
-                    <ApI18nWithLocale>
-                        <AutopilotStreamingProvider>
-                            <AutopilotChatScrollProvider>
-                                <AutopilotChatStateProvider>
-                                    <AutopilotErrorProvider>
-                                        <AutopilotLoadingProvider>
-                                            <AutopilotAttachmentsProvider>
-                                                <AutopilotPickerProvider>
-                                                    <AutopilotChatWidthProvider>
-                                                        <AutopilotChatDropzone>
-                                                            <AutopilotChatContent />
-                                                        </AutopilotChatDropzone>
-                                                    </AutopilotChatWidthProvider>
-                                                </AutopilotPickerProvider>
-                                            </AutopilotAttachmentsProvider>
-                                        </AutopilotLoadingProvider>
-                                    </AutopilotErrorProvider>
-                                </AutopilotChatStateProvider>
-                            </AutopilotChatScrollProvider>
-                        </AutopilotStreamingProvider>
-                    </ApI18nWithLocale>
-                </LocaleProvider>
-            </ThemeProvider>
-        </AutopilotChatServiceProvider>
+        <div ref={handleContainerRef} style={{ width: '100%', height: '100%' }}>
+            <AutopilotChatServiceProvider chatServiceInstance={chatServiceInstance}>
+                <ThemeProvider>
+                    <LocaleProvider>
+                        <ApI18nWithLocale>
+                            <AutopilotStreamingProvider>
+                                <AutopilotChatScrollProvider>
+                                    <AutopilotChatStateProvider>
+                                        <AutopilotErrorProvider>
+                                            <AutopilotLoadingProvider>
+                                                <AutopilotAttachmentsProvider>
+                                                    <AutopilotPickerProvider>
+                                                        <AutopilotChatWidthProvider>
+                                                            <AutopilotChatDropzone>
+                                                                <AutopilotChatContent />
+                                                            </AutopilotChatDropzone>
+                                                        </AutopilotChatWidthProvider>
+                                                    </AutopilotPickerProvider>
+                                                </AutopilotAttachmentsProvider>
+                                            </AutopilotLoadingProvider>
+                                        </AutopilotErrorProvider>
+                                    </AutopilotChatStateProvider>
+                                </AutopilotChatScrollProvider>
+                            </AutopilotStreamingProvider>
+                        </ApI18nWithLocale>
+                    </LocaleProvider>
+                </ThemeProvider>
+            </AutopilotChatServiceProvider>
+        </div>
     );
 
-    // Use portal for embedded mode with embeddedContainer
-    if (embeddedContainer) {
+    // Use portal for embedded mode, but only if NOT in web component (Shadow DOM)
+    if (embeddedContainer && !isInShadowDOM) {
         return createPortal(chatContent, embeddedContainer);
     }
 
