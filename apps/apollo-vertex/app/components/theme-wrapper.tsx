@@ -9,7 +9,7 @@ import { themes, type ThemeName, getCustomTheme } from "../themes";
 const THEME_STORAGE_KEY = "apollo-vertex-theme";
 
 export function ThemeWrapper({ children }: { children: React.ReactNode }) {
-    const [themeConfig, setThemeConfig] = useState<ThemeConfig>(themes.ocean.config);
+    const [themeConfig, setThemeConfig] = useState<ThemeConfig>(themes.default.config);
 
     useEffect(() => {
         const savedTheme = localStorage.getItem(THEME_STORAGE_KEY);
@@ -19,8 +19,8 @@ export function ThemeWrapper({ children }: { children: React.ReactNode }) {
                 if (customTheme) {
                     setThemeConfig(customTheme);
                 } else {
-                    // Fallback to ocean if custom theme doesn't exist
-                    setThemeConfig(themes.ocean.config);
+                    // Fallback to default if custom theme doesn't exist
+                    setThemeConfig(themes.default.config);
                 }
             } else if (savedTheme in themes) {
                 setThemeConfig(themes[savedTheme as keyof typeof themes].config);
