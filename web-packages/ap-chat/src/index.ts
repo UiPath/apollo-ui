@@ -1,31 +1,29 @@
-// Autopilot Chat Web Component
+/**
+ * @uipath/ap-chat - Autopilot Chat Web Component
+ *
+ * A framework-agnostic web component version of the ApChat component.
+ * Wraps the React implementation in a custom element with Shadow DOM
+ * for style encapsulation.
+ *
+ * @example
+ * ```typescript
+ * import { AutopilotChatService } from '@uipath/ap-chat/service';
+ * import '@uipath/ap-chat';
+ *
+ * const service = new AutopilotChatService();
+ * service.initialize({ mode: 'side-by-side' });
+ *
+ * const chat = document.querySelector('ap-chat');
+ * chat.chatServiceInstance = service;
+ * service.open();
+ * ```
+ */
 
-class ApAutopilotChat extends HTMLElement {
-  constructor() {
-    super();
-    this.attachShadow({ mode: 'open' });
-  }
+// Web component (auto-registers when imported)
+export { ApChat } from './ap-chat-element';
 
-  connectedCallback() {
-    if (this.shadowRoot) {
-      this.shadowRoot.innerHTML = `
-        <style>
-          :host {
-            display: block;
-            font-family: Inter, system-ui, -apple-system, sans-serif;
-          }
-        </style>
-        <div>
-          <p>Autopilot Chat Component</p>
-        </div>
-      `;
-    }
-  }
-}
+// Service layer re-exports for convenience
+export * from './service';
 
-// Define custom element
-if (!customElements.get('ap-chat')) {
-  customElements.define('ap-chat', ApAutopilotChat);
-}
-
-export { ApAutopilotChat };
+// TypeScript types
+export * from './types';
