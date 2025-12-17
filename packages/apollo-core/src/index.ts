@@ -1,5 +1,5 @@
 // Apollo Core - Design System Foundation
-// Export all tokens, icons, and fonts
+// Export all tokens and fonts
 
 import {
   Border,
@@ -32,5 +32,4 @@ export default {
 }
 
 export * from './fonts';
-export * from './icons';
 export * from './tokens';
