@@ -7,8 +7,8 @@
       {
         "releaseRules": [
           { "type": "chore", "scope": "ap-chat", "release": "patch" },
-          { "type": "chore", "scope": "apollo-core", "release": "patch" },
-          { "scope": "!(ap-chat|apollo-core)", "release": false }
+          { "type": "chore", "scope": "apollo-react", "release": "patch" },
+          { "scope": "!(ap-chat|apollo-react)", "release": false }
         ]
       }
     ],
