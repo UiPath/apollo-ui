@@ -7,14 +7,19 @@
     "url": "https://github.com/UiPath/apollo-ui.git",
     "directory": "web-packages/ap-chat"
   },
-  "main": "./dist/index.js",
-  "module": "./dist/index.mjs",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.js"
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./service": {
+      "types": "./dist/service.d.ts",
+      "import": "./dist/service.js",
+      "require": "./dist/service.cjs"
     }
   },
   "files": [
@@ -22,9 +27,12 @@
   ],
   "scripts": {
     "build": "rslib build",
-    "dev": "rslib build --watch",
-    "lint": "eslint src --ext .ts",
-    "test": "vitest --run --passWithNoTests",
+    "dev": "rsbuild dev",
+    "lint": "eslint src --ext .ts,.tsx",
+    "test": "vitest --run",
+    "test:watch": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest --run --coverage",
     "clean": "rm -rf dist"
   },
   "keywords": [
@@ -40,10 +48,23 @@
     "registry": "https://npm.pkg.github.com"
   },
   "dependencies": {
-    "@uipath/apollo-core": "workspace:*"
+    "@emotion/cache": "^11.13.5",
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@mui/material": "^5.15.3",
+    "@uipath/apollo-react": "workspace:*",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
   },
   "devDependencies": {
+    "@rsbuild/core": "^1.6.7",
+    "@rsbuild/plugin-react": "^1.1.2",
     "@rslib/core": "^0.17.0",
+    "@types/react": "^19.0.6",
+    "@types/react-dom": "^19.0.3",
+    "@vitest/coverage-v8": "^4.0.12",
+    "@vitest/ui": "^4.0.12",
+    "happy-dom": "^15.11.7",
     "typescript": "^5.9.3",
     "vitest": "^4.0.5"
   }

@@ -6,9 +6,13 @@
     "composite": true,
     "declaration": true,
     "declarationMap": true,
+    "jsx": "react-jsx",
     "lib": ["ES2020", "DOM"]
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", "**/*.test.ts", "**/*.spec.ts"],
-  "references": [{ "path": "../../packages/apollo-core" }]
+  "exclude": ["node_modules", "dist", "**/*.test.ts", "**/*.spec.ts", "**/__tests__/**"],
+  "references": [
+    { "path": "../../packages/apollo-core" },
+    { "path": "../../packages/apollo-react" }
+  ]
 }
