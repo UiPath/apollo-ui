@@ -12,48 +12,7 @@ import { themes } from "../../themes";
 const CUSTOM_THEME_STORAGE_KEY = "apollo-vertex-custom-theme";
 const THEME_STORAGE_KEY = "apollo-vertex-theme";
 
-const defaultCustomTheme: ThemeConfig = {
-    light: {
-        background: "oklch(0.98 0.01 220)",
-        foreground: "oklch(0.15 0.02 250)",
-        card: "oklch(1 0 0)",
-        cardForeground: "oklch(0.15 0.02 250)",
-        popover: "oklch(1 0 0)",
-        popoverForeground: "oklch(0.15 0.02 250)",
-        primary: "oklch(0.55 0.15 240)",
-        primaryForeground: "oklch(0.98 0.01 220)",
-        secondary: "oklch(0.85 0.05 200)",
-        secondaryForeground: "oklch(0.15 0.02 250)",
-        muted: "oklch(0.92 0.02 220)",
-        mutedForeground: "oklch(0.45 0.03 240)",
-        accent: "oklch(0.75 0.12 200)",
-        accentForeground: "oklch(0.98 0.01 220)",
-        destructive: "oklch(0.577 0.245 27.325)",
-        border: "oklch(0.88 0.02 220)",
-        input: "oklch(0.88 0.02 220)",
-        ring: "oklch(0.55 0.15 240)",
-    },
-    dark: {
-        background: "oklch(0.12 0.02 250)",
-        foreground: "oklch(0.95 0.01 220)",
-        card: "oklch(0.18 0.02 250)",
-        cardForeground: "oklch(0.95 0.01 220)",
-        popover: "oklch(0.18 0.02 250)",
-        popoverForeground: "oklch(0.95 0.01 220)",
-        primary: "oklch(0.65 0.18 220)",
-        primaryForeground: "oklch(0.12 0.02 250)",
-        secondary: "oklch(0.25 0.03 240)",
-        secondaryForeground: "oklch(0.95 0.01 220)",
-        muted: "oklch(0.25 0.03 240)",
-        mutedForeground: "oklch(0.65 0.04 220)",
-        accent: "oklch(0.35 0.08 200)",
-        accentForeground: "oklch(0.95 0.01 220)",
-        destructive: "oklch(0.704 0.191 22.216)",
-        border: "oklch(1 0 0 / 10%)",
-        input: "oklch(1 0 0 / 15%)",
-        ring: "oklch(0.65 0.18 220)",
-    },
-};
+const defaultCustomTheme: ThemeConfig = themes.default.config;
 
 const colorFields = [
     { key: "background", label: "Background" },

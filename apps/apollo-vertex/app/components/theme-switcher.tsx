@@ -13,7 +13,7 @@ import { themes, type ThemeName, hasCustomTheme } from "../themes";
 const THEME_STORAGE_KEY = "apollo-vertex-theme";
 
 export function ThemeSwitcher() {
-    const [selectedTheme, setSelectedTheme] = useState<ThemeName>("ocean");
+    const [selectedTheme, setSelectedTheme] = useState<ThemeName>("default");
     const [showCustom, setShowCustom] = useState(false);
 
     useEffect(() => {
