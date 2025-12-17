@@ -9,7 +9,6 @@ The `@uipath/vs-core` package provides everything you need to build data-driven 
 - **UiPath SDK Integration**: Simplified APIs for working with UiPath Data Service entities and process executions
 - **React Context Provider**: `SolutionProvider` for easy SDK initialization and data access
 - **TanStack Query Collections**: Ready-to-use data collections with built-in caching and reactivity
-- **Vite Plugin**: Build-time tooling for type generation and configuration
 - **TypeScript Types**: Full type safety for entities, processes, and configurations
 
 ## Getting Started
@@ -134,13 +133,3 @@ That's it! The `useSolution` hook gives you access to all your UiPath data throu
 For a concrete example of a “solutions hook” pattern in a Vertical Solution app, see `useTask.tsx` from the Invoice Processing solution:
 
 https://github.com/UiPath/vertical-solution-invoice-processing/blob/b071b09161c701e3b6ad0754f53682ca142170ff/client/src/hooks/useTask.tsx
-
-## What Gets Auto-Generated
-
-The Vite plugin (`@uipath/vs-core/vite`) automatically generates the `vss.gen.ts` file based on your UiPath Data Service schema. This file contains:
-
-- Entity definitions with all fields and types
-- Process definitions with their IDs and folder keys
-- Full TypeScript types for type-safe data access
-
-You never need to manually write entity or process configurations - just connect to your UiPath environment and the plugin handles the rest.
