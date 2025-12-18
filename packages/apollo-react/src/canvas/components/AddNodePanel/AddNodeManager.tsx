@@ -1,4 +1,4 @@
-import type { Node } from "@uipath/uix/xyflow/react";
+import type { Edge, Node } from "@uipath/uix/xyflow/react";
 import { useReactFlow, useStore } from "@uipath/uix/xyflow/react";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import type { BaseNodeData } from "../BaseNode/BaseNode.types";
@@ -25,6 +25,13 @@ export interface AddNodeManagerProps {
   createNodeData?: (nodeOption: ListItem<NodeItemData>) => BaseNodeData;
 
   /**
+   * Callback to customize the node and edge configuration before they are created.
+   *
+   * This takes precedence over the default configuration, except for the node's and edge's `id`.
+   */
+  onBeforeNodeAdded?: (newNode: Node, newEdge: Edge) => { newNode: Node; newEdge: Edge };
+
+  /**
    * Callback when a new node is added
    */
   onNodeAdded?: (sourceNodeId: string, sourceHandleId: string, newNode: Node) => void;
@@ -37,7 +44,7 @@ export interface AddNodeManagerProps {
  * When a preview node is selected, it automatically shows a node selector panel.
  * When a node type is selected, it replaces the preview with the actual node.
  */
-export const AddNodeManager: React.FC<AddNodeManagerProps> = ({ customPanel, createNodeData, onNodeAdded }) => {
+export const AddNodeManager: React.FC<AddNodeManagerProps> = ({ customPanel, createNodeData, onBeforeNodeAdded, onNodeAdded }) => {
   const reactFlowInstance = useReactFlow();
 
   // Watch for preview node selection
@@ -91,6 +98,7 @@ export const AddNodeManager: React.FC<AddNodeManagerProps> = ({ customPanel, cre
 
       // Generate new node ID
       const newNodeId = `${nodeItem.data.type}-${Date.now()}`;
+      const newEdgeId = `edge_${sourceInfo.nodeId}-${sourceInfo.handleId}-${newNodeId}`;
 
       // Create node data
       const baseNodeData = createNodeData
@@ -112,31 +120,31 @@ export const AddNodeManager: React.FC<AddNodeManagerProps> = ({ customPanel, cre
         data: nodeData,
       };
 
+      // Create new edge at preview position
+      const newEdge: Edge = {
+        id: newEdgeId,
+        source: sourceInfo.nodeId,
+        sourceHandle: sourceInfo.handleId,
+        target: newNodeId,
+        targetHandle: "input",
+        type: "default",
+      };
+
+      const { newNode: finalNode, newEdge: finalEdge } = onBeforeNodeAdded?.(newNode, newEdge) ?? { newNode, newEdge };
+
       // Replace preview node and edge with actual ones
       reactFlowInstance.setNodes((nodes) => [
         ...nodes.filter((n) => n.id !== PREVIEW_NODE_ID).map((n) => ({ ...n, selected: false })),
-        newNode,
+        finalNode,
       ]);
 
-      reactFlowInstance.setEdges((edges) => [
-        ...edges.filter((e) => e.id !== PREVIEW_EDGE_ID),
-        {
-          id: `edge_${sourceInfo.nodeId}-${sourceInfo.handleId}-${newNodeId}`,
-          source: sourceInfo.nodeId,
-          sourceHandle: sourceInfo.handleId,
-          target: newNodeId,
-          targetHandle: "input",
-          type: "default",
-        },
-      ]);
+      reactFlowInstance.setEdges((edges) => [...edges.filter((e) => e.id !== PREVIEW_EDGE_ID), finalEdge]);
 
-      if (onNodeAdded) {
-        onNodeAdded(sourceInfo.nodeId, sourceInfo.handleId, newNode);
-      }
+      onNodeAdded?.(sourceInfo.nodeId, sourceInfo.handleId, newNode);
 
       handleClose();
     },
-    [sourceInfo, previewNode, reactFlowInstance, createNodeData, onNodeAdded, handleClose]
+    [sourceInfo, previewNode, reactFlowInstance, createNodeData, onBeforeNodeAdded, onNodeAdded, handleClose]
   );
 
   // Handle node hover to update preview node icon
