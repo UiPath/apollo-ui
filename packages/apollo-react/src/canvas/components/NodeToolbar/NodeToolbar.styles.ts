@@ -1,5 +1,4 @@
 import styled from "@emotion/styled";
-import { css } from "@emotion/react";
 import { motion } from "motion/react";
 
 export const StyledToolbarContainer = styled(motion.div, {
@@ -133,12 +132,6 @@ export const StyledToolbarSeparator = styled.div<{ $orientation: "horizontal" | 
   height: ${({ $orientation }) => ($orientation === "horizontal" ? "1px" : "20px")};
   background: var(--uix-canvas-border-grid);
   align-self: center;
-  ${({ $orientation }) =>
-    $orientation === "horizontal" &&
-    css`
-      margin-top: 8px;
-      margin-bottom: 8px;
-    `}
 `;
 
 export const StyledDropdownMenu = styled(motion.div)`
@@ -199,6 +192,9 @@ export const StyledToolbarButton = styled(motion.button, {
   shouldForwardProp: (prop: string) => !prop.startsWith("$"),
 })<{
   $disabled?: boolean;
+  $isToggled?: boolean;
+  $color?: string;
+  $hoverColor?: string;
 }>`
   display: flex;
   align-items: center;
@@ -206,16 +202,19 @@ export const StyledToolbarButton = styled(motion.button, {
   width: 24px;
   height: 24px;
   padding: 0;
-  background: transparent;
+  background: ${({ $isToggled, $hoverColor }) =>
+    ($isToggled && ($hoverColor || "var(--uix-canvas-background-secondary)")) || "transparent"};
   border: none;
   border-radius: 8px;
   cursor: ${({ $disabled }) => ($disabled ? "not-allowed" : "pointer")};
   opacity: ${({ $disabled }) => ($disabled ? 0.4 : 1)};
-  transition: all 0.15s ease;
+  transition:
+    background 0.15s ease,
+    opacity 0.15s ease;
   pointer-events: ${({ $disabled }) => ($disabled ? "none" : "auto")};
 
   &:hover:not(:disabled) {
-    background: var(--uix-canvas-background-secondary);
+    background: ${({ $hoverColor }) => $hoverColor || "var(--uix-canvas-background-secondary)"};
   }
 
   &:active:not(:disabled) {
@@ -223,6 +222,6 @@ export const StyledToolbarButton = styled(motion.button, {
   }
 
   svg {
-    color: var(--uix-canvas-foreground);
+    color: ${({ $color }) => $color || "var(--uix-canvas-foreground)"};
   }
 `;

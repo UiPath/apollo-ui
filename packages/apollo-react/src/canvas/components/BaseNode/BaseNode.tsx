@@ -302,7 +302,7 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
         )}
       </BaseContainer>
       {handleElements}
-      {toolbarConfig && <NodeToolbar nodeId={id} config={toolbarConfig} visible={selected && !dragging && selectedNodesCount === 1} />}
+      {toolbarConfig && <NodeToolbar nodeId={id} config={toolbarConfig} expanded={selected} hidden={dragging || selectedNodesCount > 1} />}
     </div>
   );
 

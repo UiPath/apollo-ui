@@ -227,7 +227,7 @@ const NewBaseNodeComponent = (
           </BaseTextContainer>
         )}
       </BaseContainer>
-      {toolbarConfig && <NodeToolbar nodeId={id} config={toolbarConfig} visible={selected && !dragging} />}
+      {toolbarConfig && <NodeToolbar nodeId={id} config={toolbarConfig} expanded={selected && !dragging} />}
       {handleElements}
     </div>
   );

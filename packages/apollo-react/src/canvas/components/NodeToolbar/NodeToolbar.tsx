@@ -1,4 +1,4 @@
-import { memo } from "react";
+import { memo, useMemo } from "react";
 import { AnimatePresence } from "motion/react";
 import { ApIcon, ApTooltip } from "@uipath/portal-shell-react";
 import {
@@ -14,17 +14,33 @@ import { ToolbarButton } from "./ToolbarButton";
 import { useToolbarState } from "./useToolbarState";
 import { isSeparator } from "./NodeToolbar.utils";
 
-const NodeToolbarComponent = ({ nodeId, config, visible }: NodeToolbarProps) => {
+const NodeToolbarComponent = ({ nodeId, config, expanded, hidden }: NodeToolbarProps) => {
   const {
     isDropdownOpen,
     setIsDropdownOpen,
     dropdownRef,
     buttonRef,
-    actionsWithState,
-    overflowActionsWithState,
-    shouldShowToolbar,
+    actionsToDisplay,
+    displayState,
+    shouldShowOverflow,
+    overflowActionsToDisplay,
+    separatorOrientation,
     toggleDropdown,
-  } = useToolbarState({ config, visible, nodeId });
+  } = useToolbarState({ config, expanded, nodeId, hidden });
+
+  const toolbarAnimationVariants = useMemo(() => {
+    const offsetAxis = config.position === "top" || config.position === "bottom" ? "y" : "x";
+    const offsetAmount = config.position === "top" || config.position === "left" ? -10 : 10;
+
+    const offset = displayState !== "pinned" ? { [offsetAxis]: offsetAmount } : {};
+    const offsetAtRest = displayState !== "pinned" ? { [offsetAxis]: 0 } : {};
+
+    return {
+      initial: { opacity: 0, ...offset },
+      animate: { opacity: 1, ...offsetAtRest },
+      exit: { opacity: 0, ...offset },
+    };
+  }, [config.position, displayState]);
 
   if (config.actions.length === 0 && (!config.overflowActions || config.overflowActions.length === 0)) {
     return null;
@@ -32,27 +48,27 @@ const NodeToolbarComponent = ({ nodeId, config, visible }: NodeToolbarProps) => 
 
   return (
     <AnimatePresence>
-      {shouldShowToolbar && (
+      {displayState !== "hidden" && (
         <StyledToolbarContainer
           layout
           $position={config.position || "top"}
           $align={config.align || "end"}
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -10 }}
+          initial={toolbarAnimationVariants.initial}
+          animate={toolbarAnimationVariants.animate}
+          exit={toolbarAnimationVariants.exit}
           transition={{ duration: 0.15, ease: "easeOut" }}
           role="toolbar"
         >
-          {actionsWithState.map((item, i) =>
+          {actionsToDisplay.map((item, i) =>
             isSeparator(item) ? (
-              <StyledToolbarSeparator key={`separator-${i}`} $orientation="vertical" />
+              <StyledToolbarSeparator key={`separator-${i}`} $orientation={separatorOrientation} />
             ) : (
-              <ToolbarButton key={item.id} action={item} />
+              <ToolbarButton key={item.id} action={item} layoutId={item.isPinned ? `toolbar-btn-${nodeId}-${item.id}` : undefined} />
             )
           )}
-          {overflowActionsWithState.length > 0 && (
+          {shouldShowOverflow && (
             <>
-              {actionsWithState.length > 0 && <StyledToolbarSeparator $orientation="vertical" />}
+              {actionsToDisplay.length > 0 && <StyledToolbarSeparator $orientation={separatorOrientation} />}
               <StyledOverflowContainer>
                 <StyledToolbarButton
                   ref={buttonRef}
@@ -78,7 +94,7 @@ const NodeToolbarComponent = ({ nodeId, config, visible }: NodeToolbarProps) => 
                       role="menu"
                       aria-labelledby={buttonRef.current?.id}
                     >
-                      {overflowActionsWithState.map((item, i) => {
+                      {overflowActionsToDisplay.map((item, i) => {
                         if (isSeparator(item)) {
                           return <StyledToolbarSeparator key={`separator-${i}`} $orientation="horizontal" />;
                         }

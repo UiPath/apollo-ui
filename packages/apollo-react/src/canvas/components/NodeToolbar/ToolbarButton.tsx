@@ -1,5 +1,6 @@
-import { memo } from "react";
 import { ApIcon, ApTooltip } from "@uipath/portal-shell-react";
+import { memo } from "react";
+import { getLighterColor } from "@uipath/uix/core";
 import { StyledToolbarButton } from "./NodeToolbar.styles";
 import type { ToolbarActionItem } from "./NodeToolbar.types";
 
@@ -9,10 +10,16 @@ export interface ExtendedToolbarAction extends ToolbarActionItem {
 
 export interface ToolbarButtonProps {
   action: ExtendedToolbarAction;
+  /**
+   * Used for Framer Motion layout animations.
+   * Provide a unique `layoutId` to enable smooth transitions between layout change for this button.
+   */
+  layoutId?: string;
 }
 
-export const ToolbarButton = memo(({ action }: ToolbarButtonProps) => {
+export const ToolbarButton = memo(({ action, layoutId }: ToolbarButtonProps) => {
   const isEnabled = !action.disabled;
+  const hoverColor = action.color ? getLighterColor(action.color) : undefined;
 
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -24,15 +31,24 @@ export const ToolbarButton = memo(({ action }: ToolbarButtonProps) => {
 
   return (
     <StyledToolbarButton
+      layout={layoutId ? true : undefined}
+      layoutId={layoutId}
+      transition={{ type: "tween", duration: 0.2, ease: "easeOut" }}
       type="button"
       className="nodrag nopan"
       onClick={handleClick}
       aria-label={action.label}
       aria-disabled={!isEnabled}
+      aria-pressed={action.isToggled}
       $disabled={!isEnabled}
+      $isToggled={action.isToggled}
+      $color={action.color}
+      $hoverColor={hoverColor}
     >
       <ApTooltip content={action.label} placement="top">
-        {action.icon && typeof action.icon === "string" && <ApIcon variant="outlined" name={action.icon} size="16px" />}
+        {action.icon && typeof action.icon === "string" && (
+          <ApIcon variant="outlined" name={action.icon} size="16px" color={action.color} />
+        )}
         {action.icon && typeof action.icon !== "string" && action.icon}
       </ApTooltip>
     </StyledToolbarButton>

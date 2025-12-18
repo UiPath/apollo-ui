@@ -253,7 +253,7 @@ const StickyNoteNodeComponent = ({ id, data, selected, dragging }: StickyNoteNod
         </StickyNoteContainer>
 
         {selected && !dragging && !isResizing && (
-          <NodeToolbar nodeId={id} config={toolbarConfig} visible={selected && !dragging && !isResizing} />
+          <NodeToolbar nodeId={id} config={toolbarConfig} expanded={selected && !dragging && !isResizing} />
         )}
         <AnimatePresence>
           {selected && !dragging && !isResizing && isColorPickerOpen && (
