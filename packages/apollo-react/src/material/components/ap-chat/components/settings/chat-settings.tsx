@@ -14,7 +14,7 @@ import { CHAT_DRAWER_WIDTH_FULL_SCREEN } from '../../service';
 import { AutopilotChatSettingsHeader } from './chat-settings-header';
 
 const ChatSettingsContainer = styled('div')<{ isOpen: boolean; isFullScreen: boolean }>(({
-    isOpen, isFullScreen,
+    isFullScreen,
 }) => ({
     display: 'flex',
     flexDirection: 'column',
@@ -22,20 +22,18 @@ const ChatSettingsContainer = styled('div')<{ isOpen: boolean; isFullScreen: boo
     backgroundColor: 'var(--color-background-secondary)',
     height: '100%',
     zIndex: 1,
-    transition: 'width 0.3s ease, padding 0.3s ease',
-    padding: token.Spacing.SpacingBase,
     boxSizing: 'border-box',
     overflow: 'hidden',
     whiteSpace: 'nowrap',
+    width: 'var(--settings-width)',
+    paddingLeft: 'var(--settings-padding-left)',
+    paddingRight: 'var(--settings-padding-right)',
+    paddingTop: token.Spacing.SpacingBase,
+    paddingBottom: token.Spacing.SpacingBase,
 
-    ...(isOpen ? { width: '100%' } : {
-        width: 0,
-        paddingLeft: 0,
-        paddingRight: 0,
-    }),
+    transition: 'width 0.3s ease, padding-left 0.3s ease, padding-right 0.3s ease',
 
     ...(isFullScreen ? {
-        width: isOpen ? `calc(${CHAT_DRAWER_WIDTH_FULL_SCREEN}px + 2 * ${token.Spacing.SpacingBase})` : 0, // account for padding
         borderTopLeftRadius: token.Spacing.SpacingXs,
     } : {
         position: 'absolute',
@@ -62,6 +60,21 @@ export const AutopilotChatSettings: React.FC<AutopilotChatSettingsProps> = ({
     const containerRef = useRef<HTMLDivElement>(null);
     const chatService = useChatService();
     const { settingsOpen } = useChatState();
+
+    // CSS variables must be set as inline styles (not in the styled component)
+    // to keep the Emotion class stable and enable proper transitions
+    const cssVars = React.useMemo(() => {
+        const width = open
+            ? (isFullScreen ? `calc(${CHAT_DRAWER_WIDTH_FULL_SCREEN}px + 2 * ${token.Spacing.SpacingBase})` : '100%')
+            : '0';
+        const padding = open ? token.Spacing.SpacingBase : '0';
+
+        return {
+            '--settings-width': width,
+            '--settings-padding-left': padding,
+            '--settings-padding-right': padding,
+        } as React.CSSProperties;
+    }, [ open, isFullScreen ]);
 
     useEffect(() => {
         if (!containerRef.current || !chatService) {
@@ -93,7 +106,11 @@ export const AutopilotChatSettings: React.FC<AutopilotChatSettingsProps> = ({
             disabled={!open || !settingsOpen || isFullScreen}
             returnFocus={false}
         >
-            <ChatSettingsContainer isOpen={open} isFullScreen={isFullScreen}>
+            <ChatSettingsContainer
+                isOpen={open}
+                isFullScreen={isFullScreen}
+                style={cssVars}
+            >
                 <AutopilotChatSettingsHeader isFullScreen={isFullScreen} isSettingsOpen={settingsOpen}/>
 
                 <div
