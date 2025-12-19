@@ -1,3 +1,10 @@
+## [1.12.2](https://github.com/uipath/wind/compare/v1.12.1...v1.12.2) (2025-12-19)
+
+
+### Bug Fixes
+
+* release tokens ([#3](https://github.com/uipath/wind/issues/3)) ([964a379](https://github.com/uipath/wind/commit/964a3797e9c9967d6ff27ab73ebd41a3e01cbfaa))
+
 ## [1.12.1](https://github.com/uipath/wind/compare/v1.12.0...v1.12.1) (2025-12-19)
 
 
