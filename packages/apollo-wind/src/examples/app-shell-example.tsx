@@ -253,7 +253,7 @@ export function AppShellExample({
               <Card className="mb-8 border-0 bg-gradient-to-r from-muted/50 to-muted/20">
                 <CardContent className="p-8">
                   <Row gap={6} align="center" justify="between" className="flex-col md:flex-row">
-                    <Column gap={4} flex={1}>
+                    <Column align="start" gap={4} flex={1}>
                       <h1 className="text-3xl font-bold leading-tight md:text-4xl">
                         {heroSection.title}
                       </h1>

@@ -1,7 +1,7 @@
 import * as React from "react";
 import { cn } from "@/lib";
 import type { LayoutProps } from "./types";
-import { buildLayoutClasses, spacingToRem } from "./utils";
+import { buildLayoutStyles } from "./utils";
 
 export interface RowProps extends LayoutProps {
   /**
@@ -61,7 +61,7 @@ const Row = React.forwardRef<HTMLDivElement, RowProps>(
     },
     ref,
   ) => {
-    const layoutClasses = buildLayoutClasses({
+    const layoutStyles = buildLayoutStyles({
       direction,
       align,
       justify,
@@ -94,19 +94,8 @@ const Row = React.forwardRef<HTMLDivElement, RowProps>(
       my,
     });
 
-    // Use inline styles for gap as fallback for values not in Tailwind
-    const inlineStyles: React.CSSProperties = {
-      ...style,
-      ...(gap !== undefined && { gap: spacingToRem(gap) }),
-    };
-
     return (
-      <div
-        ref={ref}
-        className={cn(...layoutClasses, className)}
-        style={inlineStyles}
-        {...htmlProps}
-      >
+      <div ref={ref} className={cn(className)} style={{ ...layoutStyles, ...style }} {...htmlProps}>
         {children}
       </div>
     );

@@ -12,44 +12,14 @@
  */
 
 @import "tailwindcss";
-@source "../**/*.{js,jsx,ts,tsx}";
 
-/* Apollo Wind Theme Variables - UiPath Default */
-@theme {
-  /* Color Palette - Semantic tokens */
-  --color-background: #f5f6f7;
-  --color-foreground: #333333;
-  --color-card: #ffffff;
-  --color-card-foreground: #333333;
-  --color-popover: #ffffff;
-  --color-popover-foreground: #333333;
-  --color-primary: #0067df;
-  --color-primary-foreground: #ffffff;
-  --color-secondary: #ffffff;
-  --color-secondary-foreground: #4f5968;
-  --color-muted: #ffffff;
-  --color-muted-foreground: #707886;
-  --color-accent: #e7eff6;
-  --color-accent-foreground: #203d91;
-  --color-destructive: #f05252;
-  --color-destructive-foreground: #ffffff;
-  --color-border: #e8eaec;
-  --color-input: #ffffff;
-  --color-ring: #006cea;
-  --color-chart-1: #91afcd;
-  --color-chart-2: #f1b3a2;
-  --color-chart-3: #6283aa;
-  --color-chart-4: #4a699b;
-  --color-chart-5: #365089;
-  --color-sidebar: #e9eaec;
-  --color-sidebar-foreground: #333333;
-  --color-sidebar-primary: #006cea;
-  --color-sidebar-primary-foreground: #ffffff;
-  --color-sidebar-accent: #e7eff6;
-  --color-sidebar-accent-foreground: #203d91;
-  --color-sidebar-border: #f2f3f5;
-  --color-sidebar-ring: #006cea;
+@import "@uipath/apollo-core/tokens/css/theme-variables.css";
 
+@import "./semantic-colors.css";
+
+@import "./shadcn-colors.css";
+
+@theme inline {
   /* Typography */
   --font-sans: Noto Sans, ui-sans-serif, sans-serif, system-ui;
   --font-serif: Noto Serif, ui-serif, serif;
@@ -82,106 +52,10 @@
 /* Base Styles */
 @layer base {
   * {
-    @apply border-border;
+    @apply border-de-emp;
   }
 
   body {
     @apply bg-background text-foreground antialiased;
-  }
-
-  /* Dark Mode Support */
-  @media (prefers-color-scheme: dark) {
-    :root:not(.light) {
-      --color-background: #1d2636;
-      --color-foreground: #e5e5e5;
-      --color-card: #2c3243;
-      --color-card-foreground: #e5e5e5;
-      --color-popover: #282d3b;
-      --color-popover-foreground: #e5e5e5;
-      --color-primary: #0067df;
-      --color-primary-foreground: #ffffff;
-      --color-secondary: #2c3241;
-      --color-secondary-foreground: #e5e5e5;
-      --color-muted: #2c3241;
-      --color-muted-foreground: #a3a3a3;
-      --color-accent: #2c395a;
-      --color-accent-foreground: #d5e7fe;
-      --color-destructive: #f05252;
-      --color-destructive-foreground: #ffffff;
-      --color-border: #404658;
-      --color-input: #404658;
-      --color-ring: #006cea;
-      --color-chart-1: #91afcd;
-      --color-chart-2: #e9ad9e;
-      --color-chart-3: #6283aa;
-      --color-chart-4: #4a699b;
-      --color-chart-5: #365089;
-      --color-sidebar: #2c3242;
-      --color-sidebar-foreground: #e5e5e5;
-      --color-sidebar-primary: #006cea;
-      --color-sidebar-primary-foreground: #ffffff;
-      --color-sidebar-accent: #2c395a;
-      --color-sidebar-accent-foreground: #d5e7fe;
-      --color-sidebar-border: #404658;
-      --color-sidebar-ring: #006cea;
-    }
-  }
-
-  .dark {
-    --color-background: #1d2636;
-    --color-foreground: #e5e5e5;
-    --color-card: #2c3243;
-    --color-card-foreground: #e5e5e5;
-    --color-popover: #282d3b;
-    --color-popover-foreground: #e5e5e5;
-    --color-primary: #0067df;
-    --color-primary-foreground: #ffffff;
-    --color-secondary: #2c3241;
-    --color-secondary-foreground: #e5e5e5;
-    --color-muted: #2c3241;
-    --color-muted-foreground: #a3a3a3;
-    --color-accent: #2c395a;
-    --color-accent-foreground: #d5e7fe;
-    --color-destructive: #f05252;
-    --color-destructive-foreground: #ffffff;
-    --color-border: #404658;
-    --color-input: #404658;
-    --color-ring: #006cea;
-    --color-chart-1: #91afcd;
-    --color-chart-2: #e9ad9e;
-    --color-chart-3: #6283aa;
-    --color-chart-4: #4a699b;
-    --color-chart-5: #365089;
-    --color-sidebar: #2c3242;
-    --color-sidebar-foreground: #e5e5e5;
-    --color-sidebar-primary: #006cea;
-    --color-sidebar-primary-foreground: #ffffff;
-    --color-sidebar-accent: #2c395a;
-    --color-sidebar-accent-foreground: #d5e7fe;
-    --color-sidebar-border: #404658;
-    --color-sidebar-ring: #006cea;
-  }
-}
-
-/* Component Layer - Apollo Wind Components */
-@layer components {
-  .wind-container {
-    @apply mx-auto px-4 sm:px-6 lg:px-8;
-  }
-}
-
-/* Utilities */
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
-
-  .no-scrollbar::-webkit-scrollbar {
-    display: none;
-  }
-
-  .no-scrollbar {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
   }
 }
