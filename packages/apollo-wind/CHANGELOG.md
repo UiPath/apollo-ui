@@ -1,3 +1,10 @@
+# [1.12.0](https://github.com/uipath/wind/compare/v1.11.0...v1.12.0) (2025-12-19)
+
+
+### Features
+
+* update to consume apollo-core colors ([acee70f](https://github.com/uipath/wind/commit/acee70f12547c47d78020f0d938ead3065a7d7a6))
+
 # [1.11.0](https://github.com/uipath/wind/compare/v1.10.0...v1.11.0) (2025-12-09)
 
 

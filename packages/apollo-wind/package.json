@@ -1,6 +1,6 @@
 {
   "name": "@uipath/wind",
-  "version": "1.11.0",
+  "version": "1.12.0",
   "description": "UiPath wind design system - A Tailwind CSS based React component library",
   "type": "module",
   "main": "./dist/index.js",
