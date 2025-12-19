@@ -1,3 +1,10 @@
+## [1.12.1](https://github.com/uipath/wind/compare/v1.12.0...v1.12.1) (2025-12-19)
+
+
+### Bug Fixes
+
+* trigger release ([#2](https://github.com/uipath/wind/issues/2)) ([6163780](https://github.com/uipath/wind/commit/616378055b03a5eedb2e777300b5421411d90c7c))
+
 # [1.12.0](https://github.com/uipath/wind/compare/v1.11.0...v1.12.0) (2025-12-19)
 
 
