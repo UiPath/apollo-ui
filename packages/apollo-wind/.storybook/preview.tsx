@@ -45,18 +45,8 @@ const preview: Preview = {
         items: [
           { value: "light", icon: "sun", title: "Light" },
           { value: "dark", icon: "moon", title: "Dark" },
-        ],
-        dynamicTitle: true,
-      },
-    },
-    themeVariant: {
-      description: "Theme variant (color scheme)",
-      toolbar: {
-        title: "Variant",
-        icon: "paintbrush",
-        items: [
-          { value: "default", title: "Default (UiPath)" },
-          { value: "vercel", title: "Vercel" },
+          { value: "light-hc", icon: "sun", title: "Light High Contrast" },
+          { value: "dark-hc", icon: "moon", title: "Dark High Contrast" },
         ],
         dynamicTitle: true,
       },
@@ -65,28 +55,24 @@ const preview: Preview = {
   decorators: [
     (Story, context) => {
       const theme = context.globals.theme || "light";
-      const themeVariant = context.globals.themeVariant || "default";
 
       useEffect(() => {
         const htmlElement = document.documentElement;
         const body = document.body;
 
-        // Remove existing theme class, add new one
-        htmlElement.classList.remove("light", "dark");
-        htmlElement.classList.add(theme);
+        // Remove existing theme class from both html and body
+        htmlElement.classList.remove("light", "dark", "light-hc", "dark-hc");
+        body.classList.remove("light", "dark", "light-hc", "dark-hc");
 
-        // Set data-theme attribute
-        if (themeVariant === "default") {
-          htmlElement.removeAttribute("data-theme");
-        } else {
-          htmlElement.setAttribute("data-theme", themeVariant);
-        }
+        // Add theme class to both (html for legacy, body for apollo-core)
+        htmlElement.classList.add(theme);
+        body.classList.add(theme);
 
         // Apply background and text color to body for full coverage
-        body.style.backgroundColor = "var(--color-background)";
-        body.style.color = "var(--color-foreground)";
+        body.style.backgroundColor = "var(--bg-background)";
+        body.style.color = "var(--text-foreground)";
         body.style.minHeight = "100vh";
-      }, [theme, themeVariant]);
+      }, [theme]);
 
       // Wrap all stories with themed background
       return (
