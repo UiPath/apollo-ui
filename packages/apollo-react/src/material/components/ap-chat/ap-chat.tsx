@@ -1,13 +1,22 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
 
-import { styled } from '@mui/material/styles';
+import {
+  styled,
+  ThemeProvider as MuiThemeProvider,
+} from '@mui/material/styles';
 import token from '@uipath/apollo-core';
 
 import {
   ApI18nProvider,
   SupportedLocale,
 } from '../../../i18n';
+import {
+  apolloMaterialUiThemeDark,
+  apolloMaterialUiThemeDarkHC,
+  apolloMaterialUiThemeLight,
+  apolloMaterialUiThemeLightHC,
+} from '../../theme';
 import { DragHandle } from './components/common/drag-handle';
 import { AutopilotChatDropzone } from './components/dropzone/dropzone';
 import {
@@ -137,16 +146,31 @@ export interface ApChatProps {
      * @default 'light'
      */
     theme?: ApChatTheme;
+    /**
+     * Container element for MUI portals (Menu, Popover, etc).
+     * When rendering inside Shadow DOM, pass the container element inside the shadow root.
+     * @default undefined
+     */
+    portalContainer?: HTMLElement;
+    /**
+     * Enable internal MUI ThemeProvider wrapper.
+     * Set to true when using as a web component to ensure proper theme context.
+     * React consumers should leave this false and provide their own MUI theme context.
+     * @default false
+     * @internal
+     */
+    enableInternalThemeProvider?: boolean;
 }
 
 export function ApChat({
     chatServiceInstance,
     locale: initialLocale = 'en',
     theme: initialTheme = 'light',
+    portalContainer,
+    enableInternalThemeProvider = false,
 }: ApChatProps) {
     const [embeddedContainer, setEmbeddedContainer] = React.useState<HTMLElement | null>(null);
-    const [isInShadowDOM, setIsInShadowDOM] = React.useState(false);
-    const containerRef = React.useRef<HTMLDivElement | null>(null);
+    const [currentTheme, setCurrentTheme] = React.useState<ApChatTheme>(initialTheme);
 
     // Sync props to service (one-way: props → service → providers → components)
     React.useEffect(() => {
@@ -155,22 +179,8 @@ export function ApChat({
 
     React.useEffect(() => {
         chatServiceInstance.setTheme(initialTheme);
+        setCurrentTheme(initialTheme);
     }, [initialTheme, chatServiceInstance]);
-
-    // Detect ap-chat Shadow DOM synchronously
-    const handleContainerRef = React.useCallback((node: HTMLDivElement | null) => {
-        containerRef.current = node;
-        if (node) {
-            const rootNode = node.getRootNode();
-            // Only consider it as shadow DOM if it's specifically ap-chat's shadow root
-            // If it's another shadow root, we should portal instead
-            const inApChatShadowDOM =
-                rootNode instanceof ShadowRoot &&
-                rootNode.host instanceof HTMLElement &&
-                rootNode.host.tagName?.toLowerCase() === 'ap-chat';
-            setIsInShadowDOM(inApChatShadowDOM);
-        }
-    }, []);
 
     // Check for embedded container from service configuration
     React.useEffect(() => {
@@ -199,15 +209,27 @@ export function ApChat({
         };
     }, [chatServiceInstance]);
 
-    const chatContent = (
-        <div ref={handleContainerRef} style={{ width: '100%', height: '100%' }}>
-            <AutopilotChatServiceProvider chatServiceInstance={chatServiceInstance}>
+    // Select MUI theme based on current theme (only if internal theme provider is enabled)
+    const muiTheme = React.useMemo(() => {
+        if (!enableInternalThemeProvider) return null;
+        
+        const selected =
+            currentTheme === 'dark' ? apolloMaterialUiThemeDark :
+            currentTheme === 'light-hc' ? apolloMaterialUiThemeLightHC :
+            currentTheme === 'dark-hc' ? apolloMaterialUiThemeDarkHC :
+            apolloMaterialUiThemeLight;
+        
+        return selected;
+    }, [currentTheme, enableInternalThemeProvider]);
+
+    const chatProviders = (
+        <AutopilotChatServiceProvider chatServiceInstance={chatServiceInstance}>
                 <ThemeProvider>
                     <LocaleProvider>
                         <ApI18nWithLocale>
                             <AutopilotStreamingProvider>
                                 <AutopilotChatScrollProvider>
-                                    <AutopilotChatStateProvider>
+                                    <AutopilotChatStateProvider portalContainer={portalContainer}>
                                         <AutopilotErrorProvider>
                                             <AutopilotLoadingProvider>
                                                 <AutopilotAttachmentsProvider>
@@ -228,11 +250,17 @@ export function ApChat({
                     </LocaleProvider>
                 </ThemeProvider>
             </AutopilotChatServiceProvider>
-        </div>
     );
 
-    // Use portal for embedded mode, but only if NOT in web component (Shadow DOM)
-    if (embeddedContainer && !isInShadowDOM) {
+    // Conditionally wrap with MUI ThemeProvider (for web component usage)
+    const chatContent = enableInternalThemeProvider && muiTheme ? (
+        <MuiThemeProvider theme={muiTheme}>
+            {chatProviders}
+        </MuiThemeProvider>
+    ) : chatProviders;
+
+    // Use portal for embedded mode
+    if (embeddedContainer) {
         return createPortal(chatContent, embeddedContainer);
     }
 

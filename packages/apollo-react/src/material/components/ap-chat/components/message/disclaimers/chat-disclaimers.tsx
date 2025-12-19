@@ -1,9 +1,6 @@
 import React from 'react';
 
-import {
-  styled,
-  useTheme,
-} from '@mui/material';
+import { styled } from '@mui/material';
 import token, { FontVariantToken } from '@uipath/apollo-core';
 
 import { AppIcon } from '../../../../../../icons';
@@ -26,13 +23,10 @@ const Disclaimer = styled('div')((() => ({
 })));
 
 function AutopilotChatDisclaimersComponent({ disclaimers }: { disclaimers: string[] }) {
-    const theme = useTheme();
-
     return (
         <DisclaimerList>
             {disclaimers.map((disclaimer, index) => (
                 <Disclaimer
-                    theme={theme}
                     key={disclaimer}
                     data-cy={`autopilot-chat-disclaimer-nth-${index}`}
                 >

@@ -7,6 +7,7 @@ import { styled } from '@mui/material/styles';
 import token, { FontVariantToken } from '@uipath/apollo-core';
 
 import { ApTypography } from '../../../ap-typography';
+import { useChatState } from '../../providers/chat-state-provider';
 import { AutopilotChatCustomHeaderAction } from '../../service';
 import { AutopilotChatIcon } from '../common/icon';
 import { AutopilotChatTooltip } from '../common/tooltip';
@@ -39,15 +40,44 @@ interface NestedMenuItemProps {
     action: AutopilotChatCustomHeaderAction;
     onActionClick: (action: AutopilotChatCustomHeaderAction) => void;
     isFirst?: boolean;
+    portalContainer?: HTMLElement;
 }
 
 const NestedMenuItem = React.memo(React.forwardRef<HTMLLIElement, NestedMenuItemProps>(({
-    action, onActionClick, isFirst = false,
+    action, onActionClick, isFirst = false, portalContainer,
 }, ref) => {
     const [ open, setOpen ] = React.useState(false);
     const menuItemRef = React.useRef<HTMLLIElement | null>(null);
     const submenuRef = React.useRef<HTMLDivElement | null>(null);
     const closeTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+    const nestedPopoverActionRef = React.useRef<{ updatePosition: () => void } | null>(null);
+
+    const handleNestedTransitionEnter = React.useCallback(() => {
+        // Force layout recalculation before Popper positions
+        if (portalContainer && menuItemRef.current) {
+            // Force browser to calculate positions
+            menuItemRef.current.getBoundingClientRect();
+            portalContainer.getBoundingClientRect();
+            
+            // Update Popper position after layout is calculated
+            requestAnimationFrame(() => {
+                if (nestedPopoverActionRef.current) {
+                    nestedPopoverActionRef.current.updatePosition();
+                }
+            });
+        }
+    }, [portalContainer]);
+
+    const handleNestedTransitionEntered = React.useCallback(() => {
+        // Force another position update after transition completes
+        if (nestedPopoverActionRef.current) {
+            requestAnimationFrame(() => {
+                if (nestedPopoverActionRef.current) {
+                    nestedPopoverActionRef.current.updatePosition();
+                }
+            });
+        }
+    }, []);
 
     // Merge external ref with internal ref
     React.useImperativeHandle(ref, () => menuItemRef.current as HTMLLIElement);
@@ -225,6 +255,7 @@ const NestedMenuItem = React.memo(React.forwardRef<HTMLLIElement, NestedMenuItem
                     open={open}
                     anchorEl={menuItemRef.current}
                     onClose={handleClose}
+                    container={portalContainer}
                     anchorOrigin={{
                         vertical: 'top',
                         horizontal: 'left',
@@ -236,11 +267,22 @@ const NestedMenuItem = React.memo(React.forwardRef<HTMLLIElement, NestedMenuItem
                     autoFocus={false}
                     disableAutoFocus
                     disableEnforceFocus
+                    action={nestedPopoverActionRef}
                     MenuListProps={{
                         sx: { padding: 0 },
                         disableListWrap: true,
                     }}
-                    slotProps={{ paper: { sx: { marginRight: token.Spacing.SpacingXs } } }}
+                    slotProps={{ 
+                        paper: { 
+                            sx: { 
+                                marginRight: token.Spacing.SpacingXs,
+                            },
+                        },
+                    }}
+                    TransitionProps={{
+                        onEnter: handleNestedTransitionEnter,
+                        onEntered: handleNestedTransitionEntered,
+                    }}
                 >
                     <div
                         ref={submenuRef}
@@ -314,12 +356,38 @@ export const AutopilotChatHeaderActionMenu = React.memo(({
     open,
     onClose,
 }: AutopilotChatHeaderActionMenuProps) => {
+    const { portalContainer } = useChatState();
     const firstItemRef = React.useRef<HTMLLIElement | null>(null);
+    const popoverActionRef = React.useRef<{ updatePosition: () => void } | null>(null);
+
+    const handleTransitionEnter = React.useCallback(() => {
+        // Force layout recalculation before Popper positions
+        if (portalContainer && anchorEl) {
+            // Force browser to calculate positions
+            anchorEl.getBoundingClientRect();
+            portalContainer.getBoundingClientRect();
+            
+            // Update Popper position after layout is calculated
+            requestAnimationFrame(() => {
+                if (popoverActionRef.current) {
+                    popoverActionRef.current.updatePosition();
+                }
+            });
+        }
+    }, [portalContainer, anchorEl]);
 
     const handleTransitionEntered = () => {
         // Focus the first item after menu transition is complete
         if (firstItemRef.current) {
             firstItemRef.current.focus();
+        }
+        // Force another position update after transition completes
+        if (popoverActionRef.current) {
+            requestAnimationFrame(() => {
+                if (popoverActionRef.current) {
+                    popoverActionRef.current.updatePosition();
+                }
+            });
         }
     };
 
@@ -328,6 +396,7 @@ export const AutopilotChatHeaderActionMenu = React.memo(({
             open={open}
             anchorEl={anchorEl}
             onClose={onClose}
+            container={portalContainer}
             anchorOrigin={{
                 vertical: 'bottom',
                 horizontal: 'right',
@@ -338,7 +407,11 @@ export const AutopilotChatHeaderActionMenu = React.memo(({
             }}
             variant="menu"
             MenuListProps={{ autoFocusItem: false }}
-            TransitionProps={{ onEntered: handleTransitionEntered }}
+            action={popoverActionRef}
+            TransitionProps={{ 
+                onEnter: handleTransitionEnter,
+                onEntered: handleTransitionEntered,
+            }}
         >
             {actions.map((action, index) => (
                 <NestedMenuItem
@@ -347,6 +420,7 @@ export const AutopilotChatHeaderActionMenu = React.memo(({
                     onActionClick={onActionClick}
                     ref={index === 0 ? firstItemRef : undefined}
                     isFirst={index === 0}
+                    portalContainer={portalContainer}
                 />
             ))}
         </Menu>

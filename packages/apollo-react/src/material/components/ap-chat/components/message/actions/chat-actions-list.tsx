@@ -10,6 +10,7 @@ import token from '@uipath/apollo-core';
 import { msg } from '@lingui/core/macro';
 import { useLingui } from '@lingui/react';
 import { useChatService } from '../../../providers/chat-service.provider';
+import { useChatState } from '../../../providers/chat-state-provider';
 import {
   AutopilotChatActionPayload,
   AutopilotChatMessage,
@@ -49,9 +50,38 @@ function AutopilotChatActionsListComponent({
     message, defaultActions, isVisible, setIsVisible, onHoverChange, actionsContainerRef,
 }: AutopilotChatActionsListProps) {
     const { _ } = useLingui();
+    const { portalContainer } = useChatState();
     const [ anchorEl, setAnchorEl ] = React.useState<null | HTMLElement>(null);
     const overflowMenuOpen = Boolean(anchorEl);
     const overflowButtonRef = React.useRef<HTMLButtonElement>(null);
+    const popoverActionRef = React.useRef<{ updatePosition: () => void } | null>(null);
+
+    const handleTransitionEnter = React.useCallback(() => {
+        // Force layout recalculation before Popper positions
+        if (portalContainer && anchorEl) {
+            // Force browser to calculate positions
+            anchorEl.getBoundingClientRect();
+            portalContainer.getBoundingClientRect();
+            
+            // Update Popper position after layout is calculated
+            requestAnimationFrame(() => {
+                if (popoverActionRef.current) {
+                    popoverActionRef.current.updatePosition();
+                }
+            });
+        }
+    }, [portalContainer, anchorEl]);
+
+    const handleTransitionEntered = React.useCallback(() => {
+        // Force another position update after transition completes
+        if (popoverActionRef.current) {
+            requestAnimationFrame(() => {
+                if (popoverActionRef.current) {
+                    popoverActionRef.current.updatePosition();
+                }
+            });
+        }
+    }, []);
     const mainActions = [
         ...defaultActions?.filter(action => !action.showInOverflow) || [],
         ...(message?.actions?.filter(action => !action.showInOverflow) || []),
@@ -172,6 +202,12 @@ function AutopilotChatActionsListComponent({
                         anchorEl={anchorEl}
                         open={overflowMenuOpen}
                         onClose={handleCloseOverflowMenu}
+                        container={portalContainer}
+                        action={popoverActionRef}
+                        TransitionProps={{
+                            onEnter: handleTransitionEnter,
+                            onEntered: handleTransitionEntered,
+                        }}
                     >
                         {overflowActions.map((action) => (
                             <MenuItem
