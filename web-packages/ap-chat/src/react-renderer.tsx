@@ -34,7 +34,7 @@ function getOrCreateGlobalObserver() {
  * Creates a React renderer function with Shadow DOM support.
  * Uses a shared MutationObserver to efficiently mirror Emotion styles.
  */
-export function createReactRenderer(shadowRoot: ShadowRoot, container: HTMLElement) {
+export function createReactRenderer(shadowRoot: ShadowRoot, portalContainer: HTMLElement) {
   // Create Emotion cache that injects into the Shadow DOM
   const emotionCache = createCache({
     key: 'ap-chat',
@@ -57,15 +57,16 @@ export function createReactRenderer(shadowRoot: ShadowRoot, container: HTMLEleme
     const { chatServiceInstance, locale = 'en', theme = 'light' } = props;
 
     // Enable internal MUI ThemeProvider for web component usage
-    // Pass container as portalContainer so portals render inside shadow DOM
-    // Disable embedded portal - the web component wrapper handles positioning
+    // Pass dedicated portalContainer so tooltips/popovers can extend beyond content bounds
+    // The portalContainer is positioned at Shadow DOM root with fixed positioning
+    // This prevents clipping in embedded mode while being a real HTMLElement for MUI
     return (
         <CacheProvider value={emotionCache}>
           <ReactApChat
             chatServiceInstance={chatServiceInstance}
             locale={locale}
             theme={theme}
-            portalContainer={container}
+            portalContainer={portalContainer}
             enableInternalThemeProvider={true}
             disableEmbeddedPortal={true}
           />

@@ -13,6 +13,7 @@
     "build": "turbo run build",
     "build:packages": "turbo run build --filter='./packages/*'",
     "build:apps": "turbo run build --filter='./apps/*'",
+    "build:analyze": "turbo run build:analyze",
     "dev": "turbo run dev",
     "dev:storybook": "turbo run dev --filter=@uipath/apollo-wind-storybook",
     "lint": "turbo run lint",

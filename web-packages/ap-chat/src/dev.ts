@@ -3,8 +3,6 @@
  * Comprehensive showcase of all ApChat features and capabilities
  */
 import './index'; // Load the web component
-import '@uipath/apollo-react/core/tokens/css/variables.css';
-import '@uipath/apollo-react/core/tokens/css/theme-variables.css';
 
 import {
   AutopilotChatEvent,
@@ -13,14 +11,7 @@ import {
   AutopilotChatService,
 } from './service';
 
-// Load Material Icons font
-const materialIconsLink = document.createElement('link');
-materialIconsLink.rel = 'stylesheet';
-materialIconsLink.href =
-  'https://fonts.googleapis.com/icon?family=Material+Icons|Material+Icons+Outlined';
-document.head.appendChild(materialIconsLink);
-
-// Add Material Icons font-face and classes
+// Add base styles
 const iconStyles = document.createElement('style');
 iconStyles.textContent = `
   * {
@@ -35,8 +26,23 @@ iconStyles.textContent = `
   body {
     margin: 0;
     padding: 0;
-    background: var(--color-background);
-    color: var(--color-foreground-emp);
+    background: #ffffff;
+    color: #1a1a1a;
+  }
+
+  body.dark {
+    background: #1a1a1a;
+    color: #ffffff;
+  }
+
+  body.light-hc {
+    background: #ffffff;
+    color: #000000;
+  }
+
+  body.dark-hc {
+    background: #000000;
+    color: #ffffff;
   }
 
   .showcase-container {
@@ -50,16 +56,36 @@ iconStyles.textContent = `
     flex: 1 1 0;
     min-width: 0;
     padding: 24px;
-    background: var(--color-background);
-    border-right: 2px solid var(--color-border);
+    background: #ffffff;
+    border-right: 2px solid #e0e0e0;
     overflow-y: auto;
+  }
+
+  body.dark .control-panel {
+    background: #1a1a1a;
+    border-right-color: #333333;
+  }
+
+  body.light-hc .control-panel {
+    background: #ffffff;
+    border-right-color: #000000;
+  }
+
+  body.dark-hc .control-panel {
+    background: #000000;
+    border-right-color: #ffffff;
   }
 
   .control-panel h2 {
     margin: 0 0 24px 0;
-    color: var(--color-foreground-emp);
+    color: #1a1a1a;
     font-size: 24px;
     font-weight: 700;
+  }
+
+  body.dark .control-panel h2,
+  body.dark-hc .control-panel h2 {
+    color: #ffffff;
   }
 
   .section {
@@ -70,9 +96,24 @@ iconStyles.textContent = `
     font-size: 16px;
     font-weight: 600;
     margin: 0 0 16px 0;
-    color: var(--color-foreground-emp);
-    border-bottom: 1px solid var(--color-border);
+    color: #1a1a1a;
+    border-bottom: 1px solid #e0e0e0;
     padding-bottom: 8px;
+  }
+
+  body.dark .section-title {
+    color: #ffffff;
+    border-bottom-color: #333333;
+  }
+
+  body.light-hc .section-title {
+    color: #000000;
+    border-bottom-color: #000000;
+  }
+
+  body.dark-hc .section-title {
+    color: #ffffff;
+    border-bottom-color: #ffffff;
   }
 
   .button-group {
@@ -84,34 +125,57 @@ iconStyles.textContent = `
 
   button {
     padding: 8px 16px;
-    border: 2px solid var(--color-border);
+    border: 2px solid #e0e0e0;
     border-radius: 8px;
-    background: var(--color-background);
-    color: var(--color-foreground-emp);
+    background: #ffffff;
+    color: #1a1a1a;
     cursor: pointer;
     font-size: 14px;
     font-weight: 500;
     transition: all 0.2s;
   }
 
+  body.dark button {
+    background: #1a1a1a;
+    color: #ffffff;
+    border-color: #333333;
+  }
+
+  body.light-hc button {
+    background: #ffffff;
+    color: #000000;
+    border-color: #000000;
+  }
+
+  body.dark-hc button {
+    background: #000000;
+    color: #ffffff;
+    border-color: #ffffff;
+  }
+
   button:hover {
-    background: var(--color-background-hover);
-    border-color: var(--color-primary);
+    background: #f5f5f5;
+    border-color: #0066CC;
+  }
+
+  body.dark button:hover {
+    background: #2a2a2a;
+    border-color: #0066CC;
+  }
+
+  body.light-hc button:hover {
+    background: #f0f0f0;
+    border-color: #0066CC;
+  }
+
+  body.dark-hc button:hover {
+    background: #1a1a1a;
+    border-color: #0066CC;
   }
 
   button:disabled {
     opacity: 0.5;
     cursor: not-allowed;
-  }
-
-  button.primary {
-    background: var(--color-primary);
-    color: var(--color-foreground-inverse);
-    border-color: var(--color-primary);
-  }
-
-  button.primary:hover {
-    opacity: 0.9;
   }
 
   input[type="text"],
@@ -121,13 +185,40 @@ iconStyles.textContent = `
     width: 100%;
     max-width: 500px;
     padding: 8px 12px;
-    border: 2px solid var(--color-border);
+    border: 2px solid #e0e0e0;
     border-radius: 8px;
-    background: var(--color-background);
-    color: var(--color-foreground-emp);
+    background: #ffffff;
+    color: #1a1a1a;
     font-size: 14px;
     font-family: inherit;
     margin-bottom: 12px;
+  }
+
+  body.dark input[type="text"],
+  body.dark input[type="number"],
+  body.dark textarea,
+  body.dark select {
+    background: #1a1a1a;
+    color: #ffffff;
+    border-color: #333333;
+  }
+
+  body.light-hc input[type="text"],
+  body.light-hc input[type="number"],
+  body.light-hc textarea,
+  body.light-hc select {
+    background: #ffffff;
+    color: #000000;
+    border-color: #000000;
+  }
+
+  body.dark-hc input[type="text"],
+  body.dark-hc input[type="number"],
+  body.dark-hc textarea,
+  body.dark-hc select {
+    background: #000000;
+    color: #ffffff;
+    border-color: #ffffff;
   }
 
   input[type="text"]:focus,
@@ -135,7 +226,7 @@ iconStyles.textContent = `
   textarea:focus,
   select:focus {
     outline: none;
-    border-color: var(--color-primary);
+    border-color: #0066CC;
   }
 
   textarea {
@@ -165,8 +256,20 @@ iconStyles.textContent = `
 
   .info-text {
     font-size: 12px;
-    color: var(--color-foreground-de-emp);
+    color: #666666;
     margin-top: 8px;
+  }
+
+  body.dark .info-text {
+    color: #999999;
+  }
+
+  body.light-hc .info-text {
+    color: #333333;
+  }
+
+  body.dark-hc .info-text {
+    color: #cccccc;
   }
 
   .chat-container {
@@ -182,11 +285,26 @@ iconStyles.textContent = `
     width: 400px;
     height: 600px;
     border-radius: 12px;
-    border: 2px solid var(--color-border);
-    box-shadow: var(--shadow-xl);
-    background: var(--color-background);
+    border: 2px solid #e0e0e0;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    background: #ffffff;
     display: none;
     overflow: hidden;
+  }
+
+  body.dark .embedded-container {
+    background: #1a1a1a;
+    border-color: #333333;
+  }
+
+  body.light-hc .embedded-container {
+    background: #ffffff;
+    border-color: #000000;
+  }
+
+  body.dark-hc .embedded-container {
+    background: #000000;
+    border-color: #ffffff;
   }
 
   .embedded-container.visible {
@@ -252,7 +370,7 @@ function createSettingsRenderer() {
   return (container: HTMLElement) => {
     const settingsDiv = document.createElement('div');
     settingsDiv.style.padding = '24px';
-    settingsDiv.style.color = 'var(--color-foreground)';
+    settingsDiv.style.color = 'inherit';
 
     settingsDiv.innerHTML = `
       <h2 style="margin: 0 0 16px 0; font-size: 20px; font-weight: 600;">Chat Settings</h2>
@@ -286,20 +404,20 @@ function createSettingsRenderer() {
         <label style="display: block; margin-bottom: 8px;">
           <span style="display: block; margin-bottom: 4px;">Max Messages</span>
           <input type="number" id="maxMessages" value="100" min="10" max="500"
-            style="padding: 8px; border: 1px solid var(--color-border); border-radius: 4px; background: var(--color-background); color: var(--color-foreground); width: 100px;" />
+            style="padding: 8px; border: 1px solid #e0e0e0; border-radius: 4px; background: inherit; color: inherit; width: 100px;" />
         </label>
         <label style="display: block;">
           <span style="display: block; margin-bottom: 4px;">Response Delay (ms)</span>
           <input type="number" id="responseDelay" value="0" min="0" max="5000" step="100"
-            style="padding: 8px; border: 1px solid var(--color-border); border-radius: 4px; background: var(--color-background); color: var(--color-foreground); width: 100px;" />
+            style="padding: 8px; border: 1px solid #e0e0e0; border-radius: 4px; background: inherit; color: inherit; width: 100px;" />
         </label>
       </div>
 
       <div style="display: flex; gap: 12px;">
-        <button id="saveSettings" style="padding: 8px 16px; background: var(--color-primary); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 500;">
+        <button id="saveSettings" style="padding: 8px 16px; background: inherit; color: inherit; border: 2px solid #e0e0e0; border-radius: 4px; cursor: pointer; font-weight: 500;">
           Save Settings
         </button>
-        <button id="resetSettings" style="padding: 8px 16px; background: transparent; color: var(--color-foreground); border: 1px solid var(--color-border); border-radius: 4px; cursor: pointer;">
+        <button id="resetSettings" style="padding: 8px 16px; background: inherit; color: inherit; border: 2px solid #e0e0e0; border-radius: 4px; cursor: pointer;">
           Reset to Defaults
         </button>
       </div>
