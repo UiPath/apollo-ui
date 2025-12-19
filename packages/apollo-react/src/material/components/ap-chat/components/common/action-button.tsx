@@ -107,6 +107,9 @@ const AutopilotChatActionButtonComponent = React.forwardRef<HTMLButtonElement, A
     const onPress = 'onPress' in props ? props.onPress : () => {};
     const onRelease = 'onRelease' in props ? props.onRelease : () => {};
 
+    // Determine if we should show tooltip
+    const showTooltip = tooltip && chatMode !== AutopilotChatMode.Closed && !disabled;
+
     const button = text ? (
         <StyledButtonContainer>
             <Button
@@ -140,7 +143,7 @@ const AutopilotChatActionButtonComponent = React.forwardRef<HTMLButtonElement, A
                 }
                 aria-label={ariaLabel}
                 aria-describedby={ariaDescribedby}
-                title={title}
+                title={showTooltip ? '' : (title ?? '')}
                 variant="text"
                 size="small"
                 disabled={disabled}
@@ -186,7 +189,7 @@ const AutopilotChatActionButtonComponent = React.forwardRef<HTMLButtonElement, A
             onKeyDown={onKeyDown}
             aria-label={ariaLabel}
             aria-describedby={ariaDescribedby}
-            title={title}
+            title={showTooltip ? '' : (title ?? '')}
             onMouseEnter={(event: React.MouseEvent<HTMLButtonElement>) => {
                 onMouseEnter?.(event);
                 if (!preventHover) {
@@ -216,7 +219,7 @@ const AutopilotChatActionButtonComponent = React.forwardRef<HTMLButtonElement, A
         </AutopilotChatIconButton>
     );
 
-    return tooltip && chatMode !== AutopilotChatMode.Closed && !disabled ? (
+    return showTooltip ? (
         <AutopilotChatTooltip
             title={tooltip}
             placement={tooltipPlacement}

@@ -28,6 +28,7 @@ import token from '@uipath/apollo-core';
 import { ApSkeleton } from '../../../ap-skeleton';
 import { ApTextField } from '../../../ap-text-field';
 import { ApTypography } from '../../../ap-typography';
+import { useScheduledCallback } from '../../hooks/use-scheduled-callback';
 import { useChatService } from '../../providers/chat-service.provider';
 import { useChatState } from '../../providers/chat-state-provider';
 import { useChatWidth } from '../../providers/chat-width-provider';
@@ -144,32 +145,19 @@ const AutopilotChatHistoryComponent: React.FC<AutopilotChatHistoryProps> = ({
 
     const popoverActionRef = useRef<{ updatePosition: () => void } | null>(null);
 
-    const handleTransitionEnter = useCallback(() => {
-        // Force layout recalculation before Popper positions
-        if (portalContainer && historyAnchorElement) {
-            // Force browser to calculate positions
-            historyAnchorElement.getBoundingClientRect();
-            portalContainer.getBoundingClientRect();
-            
-            // Update Popper position after layout is calculated
-            requestAnimationFrame(() => {
-                if (popoverActionRef.current) {
-                    popoverActionRef.current.updatePosition();
-                }
-            });
+    const schedulePositionUpdate = useScheduledCallback(() => {
+        if (popoverActionRef.current) {
+            popoverActionRef.current.updatePosition();
         }
-    }, [portalContainer, historyAnchorElement]);
+    });
+
+    const handleTransitionEnter = useCallback(() => {
+        schedulePositionUpdate();
+    }, [schedulePositionUpdate]);
 
     const handleTransitionEntered = useCallback(() => {
-        // Force another position update after transition completes
-        if (popoverActionRef.current) {
-            requestAnimationFrame(() => {
-                if (popoverActionRef.current) {
-                    popoverActionRef.current.updatePosition();
-                }
-            });
-        }
-    }, []);
+        schedulePositionUpdate();
+    }, [schedulePositionUpdate]);
     const { width } = useChatWidth();
 
     const handleScroll = useCallback(() => {
