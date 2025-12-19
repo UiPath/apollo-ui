@@ -344,6 +344,204 @@ describe('ApChat Web Component', () => {
     });
   });
 
+  describe('Portal Container', () => {
+    it('should create a portal container in Shadow DOM', () => {
+      element.chatServiceInstance = mockService;
+      element.connectedCallback();
+
+      const shadowRoot = element.shadowRoot;
+      expect(shadowRoot).not.toBeNull();
+
+      const portalContainer = shadowRoot?.querySelector('.portal-container');
+      expect(portalContainer).not.toBeNull();
+      expect(portalContainer?.tagName).toBe('DIV');
+    });
+
+    it('should position portal container with fixed positioning', () => {
+      element.chatServiceInstance = mockService;
+      element.connectedCallback();
+
+      const shadowRoot = element.shadowRoot;
+      const portalContainer = shadowRoot?.querySelector('.portal-container') as HTMLDivElement;
+
+      expect(portalContainer).not.toBeNull();
+      expect(portalContainer.style.position).toBe('fixed');
+      expect(portalContainer.style.top).toBe('0px');
+      expect(portalContainer.style.left).toBe('0px');
+      expect(portalContainer.style.width).toBe('100%');
+      expect(portalContainer.style.height).toBe('100%');
+    });
+
+    it('should set high z-index on portal container', () => {
+      element.chatServiceInstance = mockService;
+      element.connectedCallback();
+
+      const shadowRoot = element.shadowRoot;
+      const portalContainer = shadowRoot?.querySelector('.portal-container') as HTMLDivElement;
+
+      expect(portalContainer).not.toBeNull();
+      expect(portalContainer.style.zIndex).toBe('9999');
+    });
+
+    it('should have pointer-events: none on portal container in CSS', () => {
+      element.chatServiceInstance = mockService;
+      element.connectedCallback();
+
+      const shadowRoot = element.shadowRoot;
+      const styles = Array.from(shadowRoot?.querySelectorAll('style') || []);
+      const hasPointerEventsRule = styles.some(style => 
+        style.textContent?.includes('.portal-container') && 
+        style.textContent?.includes('pointer-events: none')
+      );
+
+      expect(hasPointerEventsRule).toBe(true);
+    });
+
+    it('should allow pointer-events on portal container children', () => {
+      element.chatServiceInstance = mockService;
+      element.connectedCallback();
+
+      const shadowRoot = element.shadowRoot;
+      const styles = Array.from(shadowRoot?.querySelectorAll('style') || []);
+      const hasChildPointerEventsRule = styles.some(style => 
+        style.textContent?.includes('.portal-container > *') && 
+        style.textContent?.includes('pointer-events: auto')
+      );
+
+      expect(hasChildPointerEventsRule).toBe(true);
+    });
+
+    it('should pass portal container to React renderer', () => {
+      element.chatServiceInstance = mockService;
+      element.connectedCallback();
+
+      const shadowRoot = element.shadowRoot;
+      const portalContainer = shadowRoot?.querySelector('.portal-container') as HTMLDivElement;
+      
+      // The portal container should exist and be ready for React portals
+      expect(portalContainer).not.toBeNull();
+      expect(portalContainer).toBeInstanceOf(HTMLDivElement);
+      
+      // Verify it's accessible from the element's internal state
+      const internalPortalContainer = (element as any).portalContainer;
+      expect(internalPortalContainer).toBe(portalContainer);
+    });
+
+    it('should maintain portal container across theme changes', () => {
+      element.chatServiceInstance = mockService;
+      element.connectedCallback();
+
+      const shadowRoot = element.shadowRoot;
+      const portalContainer = shadowRoot?.querySelector('.portal-container') as HTMLDivElement;
+      
+      expect(portalContainer).not.toBeNull();
+
+      // Change theme
+      element.theme = 'dark';
+
+      // Portal container should still exist and be the same element
+      const portalContainerAfter = shadowRoot?.querySelector('.portal-container') as HTMLDivElement;
+      expect(portalContainerAfter).toBe(portalContainer);
+    });
+
+    it('should maintain portal container across locale changes', () => {
+      element.chatServiceInstance = mockService;
+      element.connectedCallback();
+
+      const shadowRoot = element.shadowRoot;
+      const portalContainer = shadowRoot?.querySelector('.portal-container') as HTMLDivElement;
+      
+      expect(portalContainer).not.toBeNull();
+
+      // Change locale
+      element.locale = 'fr';
+
+      // Portal container should still exist and be the same element
+      const portalContainerAfter = shadowRoot?.querySelector('.portal-container') as HTMLDivElement;
+      expect(portalContainerAfter).toBe(portalContainer);
+    });
+
+    it('should not reinitialize portal container on reconnect', () => {
+      element.chatServiceInstance = mockService;
+      element.connectedCallback();
+
+      const shadowRoot = element.shadowRoot;
+      const portalContainer = shadowRoot?.querySelector('.portal-container') as HTMLDivElement;
+      
+      expect(portalContainer).not.toBeNull();
+
+      // Remove and re-add element (simulating moving in DOM)
+      const parent = element.parentElement;
+      parent?.removeChild(element);
+      parent?.appendChild(element);
+      element.connectedCallback();
+
+      // Portal container should still exist (same Shadow DOM)
+      const portalContainerAfter = shadowRoot?.querySelector('.portal-container') as HTMLDivElement;
+      expect(portalContainerAfter).toBe(portalContainer);
+    });
+
+    it('should handle embedded mode with portal container', () => {
+      element.chatServiceInstance = mockService;
+      element.connectedCallback();
+
+      const shadowRoot = element.shadowRoot;
+      const portalContainer = shadowRoot?.querySelector('.portal-container') as HTMLDivElement;
+      
+      expect(portalContainer).not.toBeNull();
+
+      // Create embedded container
+      const embeddedContainer = document.createElement('div');
+      embeddedContainer.id = 'embedded-test';
+      document.body.appendChild(embeddedContainer);
+
+      // Switch to embedded mode
+      mockService.initialize({
+        mode: AutopilotChatMode.Embedded,
+        embeddedContainer,
+      });
+
+      // Portal container should still exist in Shadow DOM
+      const portalContainerAfter = shadowRoot?.querySelector('.portal-container') as HTMLDivElement;
+      expect(portalContainerAfter).toBe(portalContainer);
+
+      // Cleanup
+      document.body.removeChild(embeddedContainer);
+    });
+
+    it('should have proper stacking context for portals', () => {
+      element.chatServiceInstance = mockService;
+      element.connectedCallback();
+
+      const shadowRoot = element.shadowRoot;
+      const portalContainer = shadowRoot?.querySelector('.portal-container') as HTMLDivElement;
+
+      expect(portalContainer).not.toBeNull();
+
+      // Portal container should have high z-index
+      const portalZIndex = parseInt(portalContainer.style.zIndex || '0');
+      expect(portalZIndex).toBeGreaterThan(1000);
+    });
+
+    it('should maintain portal container styling on service changes', () => {
+      element.chatServiceInstance = mockService;
+      element.connectedCallback();
+
+      const shadowRoot = element.shadowRoot;
+      const portalContainer = shadowRoot?.querySelector('.portal-container') as HTMLDivElement;
+      
+      expect(portalContainer).not.toBeNull();
+      const initialZIndex = portalContainer.style.zIndex;
+
+      // Make service changes
+      mockService.open();
+
+      // Portal styling should remain unchanged
+      expect(portalContainer.style.zIndex).toBe(initialZIndex);
+      expect(portalContainer.style.position).toBe('fixed');
+    });
+  });
+
   describe('Error Handling', () => {
     it('should handle missing shadowRoot gracefully', () => {
       // Simulate missing shadow root by overriding the getter
