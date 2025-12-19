@@ -1,5 +1,8 @@
 import { pluginReact } from '@rsbuild/plugin-react';
 import { defineConfig } from '@rslib/core';
+import { createRequire } from 'node:module';
+
+const require = createRequire(import.meta.url);
 
 export default defineConfig({
   plugins: [pluginReact()],
@@ -49,11 +52,11 @@ export default defineConfig({
     },
   },
   tools: {
-    rspack: (config) => {
+    rspack: async (config) => {
       // Add bundle analyzer when ANALYZE env var is set
       if (process.env.ANALYZE) {
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
-        const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
+        // @ts-expect-error - webpack-bundle-analyzer doesn't have types for dynamic import
+        const { BundleAnalyzerPlugin } = await import('webpack-bundle-analyzer');
         config.plugins = config.plugins || [];
         config.plugins.push(
           new BundleAnalyzerPlugin({
