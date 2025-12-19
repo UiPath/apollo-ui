@@ -76,14 +76,15 @@ describe('ApChat Web Component', () => {
       expect(element.shadowRoot?.mode).toBe('open');
     });
 
-    it('should initialize adoptedStyleSheets in shadow root', () => {
+    it('should initialize adoptedStyleSheets in shadow root with document styles', () => {
       element.chatServiceInstance = mockService;
 
       // Trigger connectedCallback
       element.connectedCallback();
 
-      // Check that adoptedStyleSheets is set (may be empty array if no font-face rules)
+      // Check that adoptedStyleSheets includes document.adoptedStyleSheets + shadow stylesheet
       expect(element.shadowRoot?.adoptedStyleSheets).toBeDefined();
+      expect(element.shadowRoot?.adoptedStyleSheets.length).toBeGreaterThanOrEqual(1);
     });
 
     it('should copy font-face rules from document to shadow DOM', () => {
@@ -106,9 +107,10 @@ describe('ApChat Web Component', () => {
       element.chatServiceInstance = mockService;
       element.connectedCallback();
 
-      // Check that adoptedStyleSheets contains the font-face rule
-      const sheet = element.shadowRoot?.adoptedStyleSheets[0];
-      expect(sheet).toBeDefined();
+      // Check that adoptedStyleSheets contains the font-face rule (last stylesheet is the shadow one)
+      const sheets = element.shadowRoot?.adoptedStyleSheets;
+      expect(sheets).toBeDefined();
+      expect(sheets!.length).toBeGreaterThan(0);
 
       // Restore original styleSheets
       Object.defineProperty(document, 'styleSheets', {
@@ -305,15 +307,16 @@ describe('ApChat Web Component', () => {
       element.chatServiceInstance = mockService;
       element.connectedCallback();
 
-      // Verify that adoptedStyleSheets array exists with icon styles
+      // Verify that adoptedStyleSheets array exists with icon styles and document styles
       expect(element.shadowRoot?.adoptedStyleSheets).toBeDefined();
       expect(Array.isArray(element.shadowRoot?.adoptedStyleSheets)).toBe(true);
-      expect(element.shadowRoot?.adoptedStyleSheets.length).toBeGreaterThan(0);
+      expect(element.shadowRoot?.adoptedStyleSheets.length).toBeGreaterThanOrEqual(1);
 
       // Verify host styles are present
       const hostStyles = element.shadowRoot?.querySelector('style');
       expect(hostStyles).toBeDefined();
       expect(hostStyles?.textContent).toContain(':host');
+      expect(hostStyles?.textContent).toContain('display: block');
     });
   });
 
@@ -322,13 +325,9 @@ describe('ApChat Web Component', () => {
       element.chatServiceInstance = mockService;
       element.connectedCallback();
 
-      // Verify containers were created (emotion-container and React container)
-      const emotionContainer = element.shadowRoot?.querySelector('#emotion-container');
-      expect(emotionContainer).toBeDefined();
-
-      // The React container is the second div (without an id)
-      const allDivs = element.shadowRoot?.querySelectorAll('div');
-      const reactContainer = allDivs?.[1]; // Second div is the React container
+      // Verify React container was created with theme class
+      // Access the container directly from the element's internal state
+      const reactContainer = (element as any).container;
       expect(reactContainer).toBeDefined();
       expect(reactContainer?.className).toBe('light'); // default theme
     });
@@ -339,9 +338,8 @@ describe('ApChat Web Component', () => {
 
       element.theme = 'dark';
 
-      // The React container is the second div
-      const allDivs = element.shadowRoot?.querySelectorAll('div');
-      const reactContainer = allDivs?.[1];
+      // The React container should have updated theme class
+      const reactContainer = (element as any).container;
       expect(reactContainer?.className).toBe('dark');
     });
   });

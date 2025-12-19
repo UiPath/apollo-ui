@@ -1,9 +1,18 @@
+// Import Material Icons fonts - these load into document and are available to Shadow DOM
+import '@fontsource/material-icons';
+import '@fontsource/material-icons-outlined';
+
 import { createElement } from 'react';
 
 import {
   createRoot,
   type Root,
 } from 'react-dom/client';
+
+import apolloThemeVariablesCSS from '@uipath/apollo-react/core/tokens/css/theme-variables.css?raw';
+// Import Apollo CSS variables as raw strings for Shadow DOM injection
+// Using ?raw query parameter to import CSS as text instead of injecting globally
+import apolloVariablesCSS from '@uipath/apollo-react/core/tokens/css/variables.css?raw';
 
 import {
   cleanupReactRenderer,
@@ -49,6 +58,7 @@ export class ApChat extends HTMLElement {
   private originalNextSibling: Node | null = null;
   private _initialized: boolean = false;
   private container: HTMLDivElement | null = null;
+  private portalContainer: HTMLDivElement | null = null;
 
   // Properties (not attributes - these are complex objects)
   private _chatServiceInstance: AutopilotChatService | null = null;
@@ -169,9 +179,9 @@ export class ApChat extends HTMLElement {
       }
 
       // Recreate React root if it was cleaned up (happens when element is moved)
-      if (!this.root && this.container && this.shadowRoot) {
+      if (!this.root && this.container && this.portalContainer && this.shadowRoot) {
         this.root = createRoot(this.container);
-        this.ReactRenderer = createReactRenderer(this.shadowRoot, this.container);
+        this.ReactRenderer = createReactRenderer(this.shadowRoot, this.portalContainer);
       }
 
       // Re-render with current props if already initialized
@@ -228,8 +238,24 @@ export class ApChat extends HTMLElement {
     `;
 
     // Create a constructable stylesheet for Shadow DOM
+    // Include Apollo design tokens, font faces, and icon styles
+    // Transform CSS selectors to work in Shadow DOM context
+    const transformedVariablesCSS = apolloVariablesCSS
+      .replace(/:root\s*\{/g, ':host {');  // Transform :root to :host for Shadow DOM
+
+    // For theme variables, apply to both :host and all children to ensure proper cascading
+    // This ensures theme variables are available everywhere in the shadow tree
+    const transformedThemeVariablesCSS = apolloThemeVariablesCSS
+      .replace(/:root\s*\{/g, ':host {')
+      .replace(/body\.(light|dark|light-hc|dark-hc)\s*\{/g, ':host(.$1), :host(.$1) * {'); // Apply to host and all descendants
+
     const shadowStyleSheet = new CSSStyleSheet();
-    const allStyles = [...fontFaceRules, iconStylesText].join('\n');
+    const allStyles = [
+      transformedVariablesCSS,
+      transformedThemeVariablesCSS,
+      ...fontFaceRules,
+      iconStylesText,
+    ].join('\n');
     shadowStyleSheet.replaceSync(allStyles);
 
     // Copy document-level adopted stylesheets (e.g., MUI/Emotion styles) into shadow DOM
@@ -246,19 +272,42 @@ export class ApChat extends HTMLElement {
         width: 100%;
         height: 100%;
       }
+      /* Portal container for tooltips/dropdowns - allow interaction with children */
+      .portal-container {
+        pointer-events: none;
+      }
+      .portal-container > * {
+        pointer-events: auto;
+      }
     `;
     this.shadowRoot.appendChild(hostStyles);
+
+    // Apply theme class to host element for :host(.theme) selectors
+    this.className = this._theme || 'light';
 
     // Create container for React
     this.container = document.createElement('div');
     this.container.className = this._theme || 'light';
     this.container.style.width = '100%';
     this.container.style.height = '100%';
+    this.container.style.backgroundColor = 'var(--color-background)';
     this.shadowRoot.appendChild(this.container);
 
-    // Create React root with Shadow DOM, passing emotion container
+    // Create dedicated portal container for tooltips/popovers at Shadow DOM root
+    // This prevents clipping in embedded mode while being a real HTMLElement for MUI
+    this.portalContainer = document.createElement('div');
+    this.portalContainer.className = 'portal-container';
+    this.portalContainer.style.position = 'fixed';
+    this.portalContainer.style.top = '0';
+    this.portalContainer.style.left = '0';
+    this.portalContainer.style.width = '100%';
+    this.portalContainer.style.height = '100%';
+    this.portalContainer.style.zIndex = '9999';
+    this.shadowRoot.appendChild(this.portalContainer);
+
+    // Create React root with Shadow DOM, passing portal container
     this.root = createRoot(this.container);
-    this.ReactRenderer = createReactRenderer(this.shadowRoot, this.container);
+    this.ReactRenderer = createReactRenderer(this.shadowRoot, this.portalContainer);
 
     // Initial render
     this.render();
@@ -315,8 +364,12 @@ export class ApChat extends HTMLElement {
     if (!this.root || !this.ReactRenderer || !this._chatServiceInstance) {
       return;
     }
+
+    // Update theme class on both host element and container
+    const theme = this._theme || 'light';
+    this.className = theme; // For :host(.theme) selectors in Shadow DOM
     if (this.container) {
-      this.container.className = this._theme || 'light';
+      this.container.className = theme;
     }
 
     const props: ApChatProperties = {

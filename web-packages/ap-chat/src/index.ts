@@ -5,6 +5,9 @@
  * Wraps the React implementation in a custom element with Shadow DOM
  * for style encapsulation.
  *
+ * NOTE: Apollo design tokens CSS is automatically loaded within the Shadow DOM,
+ * so no global CSS imports are needed. The component is fully self-contained.
+ *
  * @example
  * ```typescript
  * import { AutopilotChatService } from '@uipath/ap-chat/service';

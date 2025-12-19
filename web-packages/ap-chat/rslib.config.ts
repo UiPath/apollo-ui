@@ -44,22 +44,53 @@ export default defineConfig({
       js: true,
       css: true,
     },
+    sourceMap: {
+      js: 'source-map',
+    },
   },
   tools: {
-    rspack: {
-      resolve: {
-        alias: {
-          'react': require.resolve('react'),
-          'react-dom': require.resolve('react-dom'),
-        },
-      },
-      module: {
-        parser: {
-          javascript: {
-            dynamicImportMode: 'eager',
+    rspack: (config) => {
+      // Add bundle analyzer when ANALYZE env var is set
+      if (process.env.ANALYZE) {
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
+        config.plugins = config.plugins || [];
+        config.plugins.push(
+          new BundleAnalyzerPlugin({
+            analyzerMode: 'static',
+            reportFilename: 'bundle-report.html',
+            openAnalyzer: true,
+          })
+        );
+      }
+
+      return {
+        ...config,
+        resolve: {
+          ...config.resolve,
+          alias: {
+            'react': require.resolve('react'),
+            'react-dom': require.resolve('react-dom'),
           },
         },
-      },
+        module: {
+          ...config.module,
+          rules: [
+            ...(config.module?.rules || []),
+            {
+              // Support importing CSS as raw strings for Shadow DOM injection
+              test: /\.css$/,
+              resourceQuery: /raw/,
+              type: 'asset/source',
+            },
+          ],
+          parser: {
+            javascript: {
+              dynamicImportMode: 'eager',
+            },
+          },
+        },
+      };
     },
   },
 });
