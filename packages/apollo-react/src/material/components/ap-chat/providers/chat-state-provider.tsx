@@ -43,12 +43,14 @@ interface AutopilotChatStateContextType {
     setHasMessages: (hasMessages: boolean) => void;
     spacing: DeepRequired<NonNullable<AutopilotChatConfiguration['spacing']>>;
     theming?: AutopilotChatConfiguration['theming'];
+    portalContainer?: HTMLElement;
 }
 
 const AutopilotChatStateContext = React.createContext<AutopilotChatStateContextType | null>(null);
 
 interface AutopilotChatStateProviderProps {
     children: React.ReactNode;
+    portalContainer?: HTMLElement;
 }
 
 const calculateSpacing = (chatSpacing: AutopilotChatConfiguration['spacing']) => {
@@ -119,7 +121,7 @@ const calculateSpacing = (chatSpacing: AutopilotChatConfiguration['spacing']) =>
     };
 };
 
-export const AutopilotChatStateProvider: React.FC<AutopilotChatStateProviderProps> = ({ children }) => {
+export const AutopilotChatStateProvider: React.FC<AutopilotChatStateProviderProps> = ({ children, portalContainer }) => {
     const chatService = useChatService();
     const chatInternalService = chatService.__internalService__;
 
@@ -246,6 +248,7 @@ export const AutopilotChatStateProvider: React.FC<AutopilotChatStateProviderProp
         setHasMessages,
         spacing,
         theming,
+        portalContainer,
     }), [
         historyOpen,
         settingsOpen,
@@ -262,6 +265,7 @@ export const AutopilotChatStateProvider: React.FC<AutopilotChatStateProviderProp
         setHasMessages,
         spacing,
         theming,
+        portalContainer,
     ]);
 
     return (

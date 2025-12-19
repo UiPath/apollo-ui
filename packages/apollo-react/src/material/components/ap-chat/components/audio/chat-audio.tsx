@@ -6,7 +6,6 @@ import React, {
 import {
   keyframes,
   styled,
-  useTheme,
 } from '@mui/material/styles';
 
 import { useChatService } from '../../providers/chat-service.provider';
@@ -50,10 +49,10 @@ const audioInputTooltipAutoMap: Record<AudioInputState, string> = {
 };
 
 // Icon color used on "push to talk" button.
-const audioInputColorMap: Record<AudioInputState, (theme: any) => string> = {
-    'active': () => 'var(--color-foreground-highlight)',
-    'starting': () => 'var(--color-foreground-disable)',
-    'inactive': () => 'var(--color-foreground)',
+const audioInputColorMap: Record<AudioInputState, string> = {
+    'active': 'var(--color-foreground-highlight)',
+    'starting': 'var(--color-foreground-disable)',
+    'inactive': 'var(--color-foreground)',
 };
 
 function joinClasses(...classes: Array<string | boolean | undefined>) {
@@ -158,8 +157,6 @@ export const AutopilotChatAudio = (props: AutopilotChatAudioProps) => {
 
         });
     }, [ chatService, queueOutputAudio, ignoreOutputStreamData, clearOutputAudioQueue ]);
-
-    const theme = useTheme();
 
     // "press to talk" pressed - start sending audio
     const onTalkButtonPressed = useCallback(async (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -279,7 +276,7 @@ export const AutopilotChatAudio = (props: AutopilotChatAudioProps) => {
                     }
                     tooltipPlacement="top-start"
                     preventHover={true}
-                    overrideColor={audioInputColorMap[audioInputState](theme)}
+                    overrideColor={audioInputColorMap[audioInputState]}
                     data-testid="autopilot-chat-audio-input"
                 />
             </div>

@@ -79,9 +79,39 @@ export function DropdownPicker<T = string>({
 }: DropdownPickerProps<T>) {
     const { _ } = useLingui();
     const {
-        spacing, theming,
+        spacing, theming, portalContainer,
     } = useChatState();
     const [ anchorEl, setAnchorEl ] = React.useState<HTMLButtonElement | HTMLDivElement | null>(null);
+    const popoverActionRef = React.useRef<{ updatePosition: () => void } | null>(null);
+
+    const open = Boolean(anchorEl);
+
+    const handleTransitionEnter = React.useCallback(() => {
+        // Force layout recalculation before Popper positions
+        if (portalContainer && anchorEl) {
+            // Force browser to calculate positions
+            anchorEl.getBoundingClientRect();
+            portalContainer.getBoundingClientRect();
+            
+            // Update Popper position after layout is calculated
+            requestAnimationFrame(() => {
+                if (popoverActionRef.current) {
+                    popoverActionRef.current.updatePosition();
+                }
+            });
+        }
+    }, [portalContainer, anchorEl]);
+
+    const handleTransitionEntered = React.useCallback(() => {
+        // Force another position update after transition completes
+        if (popoverActionRef.current) {
+            requestAnimationFrame(() => {
+                if (popoverActionRef.current) {
+                    popoverActionRef.current.updatePosition();
+                }
+            });
+        }
+    }, []);
 
     const handleClose = React.useCallback(() => {
         setAnchorEl(null);
@@ -112,8 +142,6 @@ export function DropdownPicker<T = string>({
             handleClick(event);
         }
     }, [ handleClick ]);
-
-    const open = Boolean(anchorEl);
 
     const renderSelectedOption = React.useCallback(() => {
         if (useIcon) {
@@ -189,6 +217,7 @@ export function DropdownPicker<T = string>({
                 open={open}
                 anchorEl={anchorEl}
                 onClose={handleClose}
+                container={portalContainer}
                 anchorOrigin={{
                     vertical: 'top',
                     horizontal: 'left',
@@ -200,6 +229,11 @@ export function DropdownPicker<T = string>({
                 MenuListProps={{
                     'aria-label': ariaLabel,
                     dense: true,
+                }}
+                action={popoverActionRef}
+                TransitionProps={{
+                    onEnter: handleTransitionEnter,
+                    onEntered: handleTransitionEntered,
                 }}
             >
                 {options.map((option) => (

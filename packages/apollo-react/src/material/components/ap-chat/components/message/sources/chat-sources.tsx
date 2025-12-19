@@ -162,7 +162,7 @@ function AutopilotChatSourcesComponent({
 }: AutopilotChatSourcesProps) {
     const { _ } = useLingui();
     const chatService = useChatService();
-    const { spacing } = useChatState();
+    const { spacing, portalContainer } = useChatState();
 
     const [ sources, setSources ] = useState<Array<UrlCitation | PdfCitation>>(
         getSources(chatService?.getMessagesInGroup(groupId) ?? []),
@@ -269,7 +269,7 @@ function AutopilotChatSourcesComponent({
 
                                 return (
                                     <Tooltip
-                                        componentsProps={{ popper: { disablePortal: true } }}
+                                        slotProps={{ popper: { container: portalContainer } }}
                                         key={`${source.id}-${index}`}
                                         title={text}
                                     >

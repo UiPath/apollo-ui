@@ -168,7 +168,7 @@ export const Code = React.memo(({
 }: any) => {
     const { _ } = useLingui();
     const {
-        disabledFeatures, spacing,
+        disabledFeatures, spacing, portalContainer,
     } = useChatState();
     const { isDark } = useTheme();
     const match = /language-(\w+)/.exec(className || '');
@@ -312,7 +312,7 @@ export const Code = React.memo(({
             <CustomModal
                 open={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
-                disablePortal
+                container={portalContainer}
                 keepMounted
             >
                 <ModalContainer>

@@ -139,7 +139,37 @@ const AutopilotChatHistoryComponent: React.FC<AutopilotChatHistoryProps> = ({
         historyAnchorElement,
         fullScreenContainer,
         spacing,
+        portalContainer,
     } = useChatState();
+
+    const popoverActionRef = useRef<{ updatePosition: () => void } | null>(null);
+
+    const handleTransitionEnter = useCallback(() => {
+        // Force layout recalculation before Popper positions
+        if (portalContainer && historyAnchorElement) {
+            // Force browser to calculate positions
+            historyAnchorElement.getBoundingClientRect();
+            portalContainer.getBoundingClientRect();
+            
+            // Update Popper position after layout is calculated
+            requestAnimationFrame(() => {
+                if (popoverActionRef.current) {
+                    popoverActionRef.current.updatePosition();
+                }
+            });
+        }
+    }, [portalContainer, historyAnchorElement]);
+
+    const handleTransitionEntered = useCallback(() => {
+        // Force another position update after transition completes
+        if (popoverActionRef.current) {
+            requestAnimationFrame(() => {
+                if (popoverActionRef.current) {
+                    popoverActionRef.current.updatePosition();
+                }
+            });
+        }
+    }, []);
     const { width } = useChatWidth();
 
     const handleScroll = useCallback(() => {
@@ -367,6 +397,7 @@ const AutopilotChatHistoryComponent: React.FC<AutopilotChatHistoryProps> = ({
             onClose={() => {
                 chatService?.toggleHistory();
             }}
+            container={portalContainer}
             anchorOrigin={{
                 vertical: 'bottom',
                 horizontal: 'left',
@@ -385,6 +416,11 @@ const AutopilotChatHistoryComponent: React.FC<AutopilotChatHistoryProps> = ({
                     },
                 },
             }}
+            action={popoverActionRef}
+            TransitionProps={{
+                onEnter: handleTransitionEnter,
+                onEntered: handleTransitionEntered,
+            }}
         >
             <FocusLock
                 disabled={!open || !historyOpen}
@@ -394,7 +430,7 @@ const AutopilotChatHistoryComponent: React.FC<AutopilotChatHistoryProps> = ({
                     isFullScreen={isFullScreen}
                     width={Math.min(
                         width - 2 * parseInt(token.Spacing.SpacingBase, 10),
-                        popperContainerRef.current?.clientWidth ?? Number.POSITIVE_INFINITY,
+                        popperContainerRef.current?.clientWidth ?? (portalContainer ? width - 2 * parseInt(token.Spacing.SpacingBase, 10) : Number.POSITIVE_INFINITY),
                     )}
                     fullScreenContainer={fullScreenContainer}
                 >
