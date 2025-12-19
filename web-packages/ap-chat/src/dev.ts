@@ -611,6 +611,11 @@ function applyTheme(newTheme: 'light' | 'dark' | 'light-hc' | 'dark-hc') {
     chatService.setTheme(newTheme);
   }
 
+  // Update chat element theme prop (for React component re-render with new MUI theme)
+  if (chatElement) {
+    chatElement.theme = newTheme;
+  }
+
   console.log(`Theme changed to: ${newTheme}`);
 }
 
