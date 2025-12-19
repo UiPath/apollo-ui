@@ -6,12 +6,21 @@ import token from '@uipath/apollo-core';
 import React from 'react';
 
 import { useChatScroll } from '../../providers/chat-scroll-provider';
+import { useChatState } from '../../providers/chat-state-provider';
 
 export interface AutopilotChatTooltipProps {
     title: React.ReactNode;
     disableInteractive?: boolean;
     children: React.ReactElement;
     placement?: MuiTooltipProps['placement'];
+    /** Controlled open state */
+    open?: boolean;
+    /** Callback when tooltip requests to open */
+    onOpen?: () => void;
+    /** Callback when tooltip requests to close */
+    onClose?: () => void;
+    /** Custom slot props (merged with defaults) */
+    slotProps?: MuiTooltipProps['slotProps'];
 }
 
 export const AutopilotChatTooltip: React.FC<AutopilotChatTooltipProps> = React.memo(({
@@ -19,10 +28,19 @@ export const AutopilotChatTooltip: React.FC<AutopilotChatTooltipProps> = React.m
     disableInteractive = false,
     placement = 'bottom',
     children,
+    open: controlledOpen,
+    onOpen: controlledOnOpen,
+    onClose: controlledOnClose,
+    slotProps: customSlotProps,
 }) => {
-    const [ open, setOpen ] = React.useState(false);
+    const [ internalOpen, setInternalOpen ] = React.useState(false);
     const { overflowContainer } = useChatScroll();
+    const { portalContainer } = useChatState();
     const tooltipRef = React.useRef<HTMLDivElement>(null);
+
+    // Use controlled state if provided, otherwise use internal state
+    const isControlled = controlledOpen !== undefined;
+    const open = isControlled ? controlledOpen : internalOpen;
 
     // Close the tooltip immediately at the first sign of scrolling
     React.useEffect(() => {
@@ -31,7 +49,11 @@ export const AutopilotChatTooltip: React.FC<AutopilotChatTooltipProps> = React.m
         }
 
         const handleScroll = () => {
-            setOpen(false);
+            if (isControlled) {
+                controlledOnClose?.();
+            } else {
+                setInternalOpen(false);
+            }
         };
 
         // Use capture and passive for better performance and immediate execution
@@ -43,15 +65,60 @@ export const AutopilotChatTooltip: React.FC<AutopilotChatTooltipProps> = React.m
         return () => {
             overflowContainer.removeEventListener('scroll', handleScroll, { capture: true });
         };
-    }, [ overflowContainer, open ]);
+    }, [ overflowContainer, open, isControlled, controlledOnClose ]);
 
     const handleTooltipClose = React.useCallback(() => {
-        setOpen(false);
-    }, []);
+        if (isControlled) {
+            controlledOnClose?.();
+        } else {
+            setInternalOpen(false);
+        }
+    }, [ isControlled, controlledOnClose ]);
 
     const handleTooltipOpen = React.useCallback(() => {
-        setOpen(true);
-    }, []);
+        if (isControlled) {
+            controlledOnOpen?.();
+        } else {
+            setInternalOpen(true);
+        }
+    }, [ isControlled, controlledOnOpen ]);
+
+    const defaultSlotProps = React.useMemo<MuiTooltipProps['slotProps']>(() => ({
+        popper: {
+            container: portalContainer,
+        },
+        tooltip: {
+            sx: {
+                maxWidth: '300px',
+                backgroundColor: 'var(--color-foreground)',
+                color: 'var(--color-background)',
+                padding: `${token.Spacing.SpacingXs} ${token.Spacing.SpacingS}`,
+                borderRadius: token.Border.BorderRadiusM,
+                fontSize: token.FontFamily.FontSSize,
+                lineHeight: token.FontFamily.FontSLineHeight,
+                '& > *': {
+                    display: 'block',
+                    marginBottom: token.Spacing.SpacingMicro,
+                    '&:last-child': {
+                        marginBottom: 0,
+                    },
+                },
+            },
+        },
+    }), [ portalContainer ]);
+
+    const mergedSlotProps = React.useMemo<MuiTooltipProps['slotProps']>(() => 
+        customSlotProps ? {
+            popper: {
+                ...defaultSlotProps?.popper,
+                ...customSlotProps.popper,
+            },
+            tooltip: {
+                ...defaultSlotProps?.tooltip,
+                ...customSlotProps.tooltip,
+            },
+        } : defaultSlotProps,
+    [ defaultSlotProps, customSlotProps ]);
 
     return (
         <Tooltip
@@ -63,26 +130,7 @@ export const AutopilotChatTooltip: React.FC<AutopilotChatTooltipProps> = React.m
             disableInteractive={disableInteractive}
             placement={placement}
             TransitionProps={{ timeout: 0 }}
-            slotProps={{
-                tooltip: {
-                    sx: {
-                        maxWidth: '300px',
-                        backgroundColor: 'var(--color-foreground)',
-                        color: 'var(--color-background)',
-                        padding: `${token.Spacing.SpacingXs} ${token.Spacing.SpacingS}`,
-                        borderRadius: token.Border.BorderRadiusM,
-                        fontSize: token.FontFamily.FontSSize,
-                        lineHeight: token.FontFamily.FontSLineHeight,
-                        '& > *': {
-                            display: 'block',
-                            marginBottom: token.Spacing.SpacingMicro,
-                            '&:last-child': {
-                                marginBottom: 0,
-                            },
-                        },
-                    },
-                },
-            }}
+            slotProps={mergedSlotProps}
         >
             {children}
         </Tooltip>

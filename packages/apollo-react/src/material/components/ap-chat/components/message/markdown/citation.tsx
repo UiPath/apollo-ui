@@ -2,15 +2,12 @@ import React from 'react';
 
 import { msg } from '@lingui/core/macro';
 import { useLingui } from '@lingui/react';
-import {
-  Box,
-  Tooltip,
-} from '@mui/material';
+import { Box } from '@mui/material';
 import token, { FontVariantToken } from '@uipath/apollo-core';
 
 import { ApTypography } from '../../../../ap-typography';
 import { AutopilotChatIcon } from '../../common/icon';
-import { useChatScroll } from '../../../providers/chat-scroll-provider';
+import { AutopilotChatTooltip } from '../../common/tooltip';
 import { useChatService } from '../../../providers/chat-service.provider';
 import { useChatState } from '../../../providers/chat-state-provider';
 import {
@@ -132,7 +129,6 @@ export const Citation = React.memo(({
     const pageText = page_number ? ` (${_(msg({ id: 'autopilot-chat.message.page-number', message: `Page ${pageNumber}` }))})` : '';
     const chatService = useChatService();
     const { spacing } = useChatState();
-    const { overflowContainer } = useChatScroll();
     const ref = React.useRef<HTMLDivElement>(null);
     const [ open, setOpen ] = React.useState(false);
     const highlightStateRef = React.useRef<HighlightState | undefined>(undefined);
@@ -191,30 +187,8 @@ export const Citation = React.memo(({
         }
     }, [ handleClick ]);
 
-    // Close tooltip on scroll
-    React.useEffect(() => {
-        const handleScroll = () => {
-            if (open) {
-                setOpen(false);
-                clearHighlightRange(highlightStateRef.current);
-                highlightStateRef.current = undefined;
-            }
-        };
-
-        if (open && overflowContainer) {
-            // Listen to scroll events on the chat overflow container
-            overflowContainer.addEventListener('scroll', handleScroll, { passive: true });
-        }
-
-        return () => {
-            if (overflowContainer) {
-                overflowContainer.removeEventListener('scroll', handleScroll);
-            }
-        };
-    }, [ open, overflowContainer ]);
-
     return (
-        <Tooltip
+        <AutopilotChatTooltip
             open={open}
             placement="bottom-end"
             onOpen={handleOpen}
@@ -304,6 +278,6 @@ export const Citation = React.memo(({
                     {id}
                 </ApTypography>
             </Box>
-        </Tooltip>
+        </AutopilotChatTooltip>
     );
 });

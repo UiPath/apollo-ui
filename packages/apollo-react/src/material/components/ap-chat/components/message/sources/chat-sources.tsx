@@ -10,12 +10,12 @@ import {
   Box,
   Collapse,
   styled,
-  Tooltip,
 } from '@mui/material';
 import token from '@uipath/apollo-core';
 
 import { ApTypography } from '../../../../ap-typography';
 import { AutopilotChatIcon } from '../../common/icon';
+import { AutopilotChatTooltip } from '../../common/tooltip';
 import { useIsStreamingMessage } from '../../../hooks/use-is-streaming-message';
 import { useChatService } from '../../../providers/chat-service.provider';
 import { useChatState } from '../../../providers/chat-state-provider';
@@ -162,7 +162,7 @@ function AutopilotChatSourcesComponent({
 }: AutopilotChatSourcesProps) {
     const { _ } = useLingui();
     const chatService = useChatService();
-    const { spacing, portalContainer } = useChatState();
+    const { spacing } = useChatState();
 
     const [ sources, setSources ] = useState<Array<UrlCitation | PdfCitation>>(
         getSources(chatService?.getMessagesInGroup(groupId) ?? []),
@@ -268,8 +268,7 @@ function AutopilotChatSourcesComponent({
                                 const text = `[${source.id}] ${source.title}${pageText}`;
 
                                 return (
-                                    <Tooltip
-                                        slotProps={{ popper: { container: portalContainer } }}
+                                    <AutopilotChatTooltip
                                         key={`${source.id}-${index}`}
                                         title={text}
                                     >
@@ -293,7 +292,7 @@ function AutopilotChatSourcesComponent({
                                                 </ApTypography>
                                             </StyledSourceContent>
                                         </StyledSourceItem>
-                                    </Tooltip>
+                                    </AutopilotChatTooltip>
                                 );
                             })}
                         </StyledSourcesList>
