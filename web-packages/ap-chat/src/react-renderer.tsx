@@ -58,6 +58,7 @@ export function createReactRenderer(shadowRoot: ShadowRoot, container: HTMLEleme
 
     // Enable internal MUI ThemeProvider for web component usage
     // Pass container as portalContainer so portals render inside shadow DOM
+    // Disable embedded portal - the web component wrapper handles positioning
     return (
         <CacheProvider value={emotionCache}>
           <ReactApChat
@@ -66,6 +67,7 @@ export function createReactRenderer(shadowRoot: ShadowRoot, container: HTMLEleme
             theme={theme}
             portalContainer={container}
             enableInternalThemeProvider={true}
+            disableEmbeddedPortal={true}
           />
         </CacheProvider>
     );
