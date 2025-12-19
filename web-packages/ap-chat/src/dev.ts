@@ -23,25 +23,6 @@ document.head.appendChild(materialIconsLink);
 // Add Material Icons font-face and classes
 const iconStyles = document.createElement('style');
 iconStyles.textContent = `
-  .material-icons,
-  .material-icons-outlined {
-    font-family: 'Material Icons', 'Material Icons Outlined' !important;
-    font-weight: normal;
-    font-style: normal;
-    font-size: 24px;
-    display: inline-block;
-    line-height: 1;
-    text-transform: none;
-    letter-spacing: normal;
-    word-wrap: normal;
-    white-space: nowrap;
-    direction: ltr;
-    -webkit-font-smoothing: antialiased;
-    text-rendering: optimizeLegibility;
-    -moz-osx-font-smoothing: grayscale;
-    font-feature-settings: 'liga';
-  }
-
   * {
     box-sizing: border-box;
   }
@@ -54,7 +35,6 @@ iconStyles.textContent = `
   body {
     margin: 0;
     padding: 0;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     background: var(--color-background);
     color: var(--color-foreground-emp);
   }
@@ -241,7 +221,7 @@ const features = {
   audio: true,
   htmlPreview: true,
   headerSeparator: false,
-  fullHeight: true, // Enable full height by default
+  fullHeight: true,
   resize: true,
   close: true,
   feedback: true,
@@ -625,11 +605,6 @@ function applyTheme(newTheme: 'light' | 'dark' | 'light-hc' | 'dark-hc') {
 
   // Save to localStorage
   localStorage.setItem('theme', newTheme);
-
-  // Update chat element theme
-  if (chatElement) {
-    chatElement.theme = newTheme;
-  }
 
   // Update chat service theme
   if (chatService) {
