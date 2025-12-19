@@ -49,7 +49,6 @@ export class ApChat extends HTMLElement {
   private originalNextSibling: Node | null = null;
   private _initialized: boolean = false;
   private container: HTMLDivElement | null = null;
-  private emotionContainer: HTMLElement | null = null;
 
   // Properties (not attributes - these are complex objects)
   private _chatServiceInstance: AutopilotChatService | null = null;
@@ -140,9 +139,9 @@ export class ApChat extends HTMLElement {
       this.serviceUnsubscribe = null;
     }
 
-    // Cleanup emotion observer callback (lightweight, can be re-registered on reconnect)
-    if (this.emotionContainer) {
-      cleanupReactRenderer(this.emotionContainer);
+    // Cleanup emotion cache (lightweight, can be re-registered on reconnect)
+    if (this.shadowRoot) {
+      cleanupReactRenderer(this.shadowRoot);
     }
 
     // Unmount React root to prevent memory leaks
@@ -157,7 +156,7 @@ export class ApChat extends HTMLElement {
   /**
    * Initializes the Shadow DOM and React root
    */
-  private init() {
+  private async init() {
     if (!this.shadowRoot) return;
 
     // Prevent duplicate Shadow DOM initialization when element is moved between containers
@@ -170,9 +169,9 @@ export class ApChat extends HTMLElement {
       }
 
       // Recreate React root if it was cleaned up (happens when element is moved)
-      if (!this.root && this.container && this.emotionContainer) {
+      if (!this.root && this.container && this.shadowRoot) {
         this.root = createRoot(this.container);
-        this.ReactRenderer = createReactRenderer(this.emotionContainer);
+        this.ReactRenderer = createReactRenderer(this.shadowRoot, this.container);
       }
 
       // Re-render with current props if already initialized
@@ -182,17 +181,10 @@ export class ApChat extends HTMLElement {
 
     this._initialized = true;
 
-    // Inject Apollo CSS into Shadow DOM
-    // Get Apollo CSS from document
-    const apolloCssLinks = Array.from(document.querySelectorAll('link[href*="apollo-core"]'));
-    apolloCssLinks.forEach(link => {
-      const clonedLink = link.cloneNode(true) as HTMLLinkElement;
-      this.shadowRoot!.appendChild(clonedLink);
-    });
-
     // Copy @font-face rules from parent document to Shadow DOM using adoptedStyleSheets
     const fontFaceRules: string[] = [];
     const stylesheets = Array.from(document.styleSheets);
+    
     stylesheets.forEach(sheet => {
       try {
         const rules = Array.from(sheet.cssRules || []);
@@ -201,7 +193,7 @@ export class ApChat extends HTMLElement {
             fontFaceRules.push(rule.cssText);
           }
         });
-      } catch (e) {
+      } catch {
         // CORS or other access issues - skip this stylesheet
       }
     });
@@ -239,9 +231,14 @@ export class ApChat extends HTMLElement {
     const shadowStyleSheet = new CSSStyleSheet();
     const allStyles = [...fontFaceRules, iconStylesText].join('\n');
     shadowStyleSheet.replaceSync(allStyles);
-    this.shadowRoot.adoptedStyleSheets = [shadowStyleSheet];
 
-    // Host styles
+    // Copy document-level adopted stylesheets (e.g., MUI/Emotion styles) into shadow DOM
+    // This ensures portaled elements and shadow DOM elements can both access the same styles
+    this.shadowRoot.adoptedStyleSheets = [
+      ...document.adoptedStyleSheets,
+      shadowStyleSheet,
+    ];
+
     const hostStyles = document.createElement('style');
     hostStyles.textContent = `
       :host {
@@ -252,11 +249,6 @@ export class ApChat extends HTMLElement {
     `;
     this.shadowRoot.appendChild(hostStyles);
 
-    // Create Emotion style container at the top of Shadow DOM
-    this.emotionContainer = document.createElement('div');
-    this.emotionContainer.id = 'emotion-container';
-    this.shadowRoot.appendChild(this.emotionContainer);
-
     // Create container for React
     this.container = document.createElement('div');
     this.container.className = this._theme || 'light';
@@ -266,7 +258,7 @@ export class ApChat extends HTMLElement {
 
     // Create React root with Shadow DOM, passing emotion container
     this.root = createRoot(this.container);
-    this.ReactRenderer = createReactRenderer(this.emotionContainer);
+    this.ReactRenderer = createReactRenderer(this.shadowRoot, this.container);
 
     // Initial render
     this.render();
@@ -323,7 +315,6 @@ export class ApChat extends HTMLElement {
     if (!this.root || !this.ReactRenderer || !this._chatServiceInstance) {
       return;
     }
-    // Update container theme class
     if (this.container) {
       this.container.className = this._theme || 'light';
     }

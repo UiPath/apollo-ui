@@ -1,5 +1,3 @@
-import { createElement } from 'react';
-
 import createCache from '@emotion/cache';
 import { CacheProvider } from '@emotion/react';
 import { ApChat as ReactApChat } from '@uipath/apollo-react/ap-chat';
@@ -8,7 +6,7 @@ import type { ApChatProperties } from './types';
 
 // Singleton observer to watch document.head for all instances
 let globalObserver: MutationObserver | null = null;
-const containerCallbacks = new Map<HTMLElement, (node: Node) => void>();
+const containerCallbacks = new Map<ShadowRoot, (node: Node) => void>();
 
 function getOrCreateGlobalObserver() {
   if (!globalObserver) {
@@ -36,19 +34,21 @@ function getOrCreateGlobalObserver() {
  * Creates a React renderer function with Shadow DOM support.
  * Uses a shared MutationObserver to efficiently mirror Emotion styles.
  */
-export function createReactRenderer(emotionContainer: HTMLElement) {
-  // Create Emotion cache with default behavior (injects to document head)
+export function createReactRenderer(shadowRoot: ShadowRoot, container: HTMLElement) {
+  // Create Emotion cache that injects into the Shadow DOM
   const emotionCache = createCache({
     key: 'ap-chat',
+    container: shadowRoot,
+    prepend: true,
   });
 
-  // Register callback for this container
+  // Also mirror styles from document.head to shadowRoot for compatibility
   const handleStyleNode = (node: Node) => {
     const clone = node.cloneNode(true) as HTMLStyleElement;
-    emotionContainer.appendChild(clone);
+    shadowRoot.appendChild(clone);
   };
 
-  containerCallbacks.set(emotionContainer, handleStyleNode);
+  containerCallbacks.set(shadowRoot, handleStyleNode);
 
   // Initialize the shared observer
   getOrCreateGlobalObserver();
@@ -56,14 +56,18 @@ export function createReactRenderer(emotionContainer: HTMLElement) {
   return function ReactRenderer(props: ApChatProperties) {
     const { chatServiceInstance, locale = 'en', theme = 'light' } = props;
 
-    return createElement(
-      CacheProvider,
-      { value: emotionCache },
-      createElement(ReactApChat, {
-        chatServiceInstance,
-        locale,
-        theme,
-      })
+    // Enable internal MUI ThemeProvider for web component usage
+    // Pass container as portalContainer so portals render inside shadow DOM
+    return (
+        <CacheProvider value={emotionCache}>
+          <ReactApChat
+            chatServiceInstance={chatServiceInstance}
+            locale={locale}
+            theme={theme}
+            portalContainer={container}
+            enableInternalThemeProvider={true}
+          />
+        </CacheProvider>
     );
   };
 }
@@ -71,8 +75,8 @@ export function createReactRenderer(emotionContainer: HTMLElement) {
 /**
  * Cleanup function to unregister a container (call when web component disconnects)
  */
-export function cleanupReactRenderer(emotionContainer: HTMLElement) {
-  containerCallbacks.delete(emotionContainer);
+export function cleanupReactRenderer(shadowRoot: ShadowRoot) {
+  containerCallbacks.delete(shadowRoot);
 
   // If no more containers, disconnect the global observer
   if (containerCallbacks.size === 0 && globalObserver) {
