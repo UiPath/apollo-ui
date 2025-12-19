@@ -1,13 +1,9 @@
+import { ThemeProvider as MuiThemeProvider } from "@mui/material";
 import {
-	type Components,
-	createTheme,
-	ThemeProvider as MuiThemeProvider,
-} from "@mui/material";
-import {
-	darkHighContrastOverrides,
-	darkOverrides,
-	lightHighContrastOverrides,
-	lightOverrides,
+	apolloMaterialUiThemeDark,
+	apolloMaterialUiThemeDarkHC,
+	apolloMaterialUiThemeLight,
+	apolloMaterialUiThemeLightHC,
 } from "@uipath/apollo-react/material/theme";
 import {
 	createContext,
@@ -65,20 +61,14 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 	};
 
 	const muiTheme = useMemo(() => {
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		let components: Components<unknown>;
 		if (theme === "dark") {
-			components = highContrast ? darkHighContrastOverrides : darkOverrides;
-		} else {
-			components = highContrast ? lightHighContrastOverrides : lightOverrides;
+			return highContrast
+				? apolloMaterialUiThemeDarkHC
+				: apolloMaterialUiThemeDark;
 		}
-
-		return createTheme({
-			palette: {
-				mode: theme,
-			},
-			components,
-		});
+		return highContrast
+			? apolloMaterialUiThemeLightHC
+			: apolloMaterialUiThemeLight;
 	}, [theme, highContrast]);
 
 	return (
