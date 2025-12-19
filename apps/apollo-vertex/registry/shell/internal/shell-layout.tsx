@@ -1,5 +1,5 @@
-import type { PropsWithChildren } from 'react';
-import { Sidebar } from './sidebar';
+import type { PropsWithChildren } from "react";
+import { Sidebar } from "./sidebar";
 
 interface ShellLayoutProps {
   companyName: string;
@@ -12,19 +12,12 @@ export function ShellLayout({
   productName,
 }: PropsWithChildren<ShellLayoutProps>) {
   return (
-    <div
-      className="h-full w-full p-3 rounded-2xl overflow-hidden flex sidebar/primary-foreground gap-2"
-      style={{ backgroundColor: '#001214' }}
-    >
+    <div className="h-screen p-3 overflow-hidden flex gap-2 bg-sidebar">
       <Sidebar companyName={companyName} productName={productName} />
-      <main
-        className="flex-1 flex flex-col"
-        style={{
-          borderRadius: '16px',
-          background: '#121E2E',
-        }}
-      >
-        {children}
+      <main className="flex-1 flex flex-col overflow-hidden bg-background rounded-2xl">
+        <div className="flex-1 overflow-y-auto custom-scrollbar">
+          {children}
+        </div>
       </main>
     </div>
   );
