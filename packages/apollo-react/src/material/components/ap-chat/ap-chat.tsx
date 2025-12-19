@@ -160,6 +160,15 @@ export interface ApChatProps {
      * @internal
      */
     enableInternalThemeProvider?: boolean;
+    /**
+     * Disable embedded mode portal behavior.
+     * When true, the component will render normally inside its container without using React portals.
+     * This should be set to true when the component is wrapped in a web component that handles
+     * the embedded mode positioning itself.
+     * @default false
+     * @internal
+     */
+    disableEmbeddedPortal?: boolean;
 }
 
 export function ApChat({
@@ -168,6 +177,7 @@ export function ApChat({
     theme: initialTheme = 'light',
     portalContainer,
     enableInternalThemeProvider = false,
+    disableEmbeddedPortal = false,
 }: ApChatProps) {
     const [embeddedContainer, setEmbeddedContainer] = React.useState<HTMLElement | null>(null);
     const [currentTheme, setCurrentTheme] = React.useState<ApChatTheme>(initialTheme);
@@ -259,8 +269,8 @@ export function ApChat({
         </MuiThemeProvider>
     ) : chatProviders;
 
-    // Use portal for embedded mode
-    if (embeddedContainer) {
+    // Use portal for embedded mode (unless disabled by web component wrapper)
+    if (embeddedContainer && !disableEmbeddedPortal) {
         return createPortal(chatContent, embeddedContainer);
     }
 
