@@ -148,6 +148,7 @@ export function useCanvasStory(options: UseCanvasStoryOptions): UseCanvasStoryRe
       onConnect,
       nodeTypes,
       edgeTypes,
+      panShortcutTeachingUIMessage: "", // Disable for stories
     }),
     [nodes, edges, onNodesChange, onEdgesChange, onConnect, nodeTypes, edgeTypes]
   );

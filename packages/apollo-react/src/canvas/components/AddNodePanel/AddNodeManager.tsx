@@ -1,4 +1,4 @@
-import type { Edge, Node } from "@uipath/uix/xyflow/react";
+import type { Edge, Node, ReactFlowState } from "@uipath/uix/xyflow/react";
 import { useReactFlow, useStore } from "@uipath/uix/xyflow/react";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import type { BaseNodeData } from "../BaseNode/BaseNode.types";
@@ -7,6 +7,12 @@ import { AddNodePanel } from "./AddNodePanel";
 import { FloatingCanvasPanel } from "../FloatingCanvasPanel";
 import type { NodeItemData } from "./AddNodePanel.types";
 import { PREVIEW_EDGE_ID, PREVIEW_NODE_ID } from "../../constants";
+
+// Optimized selector - only find the preview node instead of filtering all nodes
+const previewNodeSelector = (state: ReactFlowState) => {
+  const node = state.nodes.find((n) => n.id === PREVIEW_NODE_ID);
+  return node?.selected ? node : null;
+};
 
 export interface AddNodeManagerProps {
   /**
@@ -48,9 +54,7 @@ export const AddNodeManager: React.FC<AddNodeManagerProps> = ({ customPanel, cre
   const reactFlowInstance = useReactFlow();
 
   // Watch for preview node selection
-  const selectedNodes = useStore((state) => state.nodes.filter((node) => node.selected));
-
-  const previewNode = selectedNodes.find((node) => node.id === PREVIEW_NODE_ID);
+  const previewNode = useStore(previewNodeSelector);
   const [isOpen, setIsOpen] = useState(false);
   const [sourceInfo, setSourceInfo] = useState<{ nodeId: string; handleId: string } | null>(null);
   const [_selectedCategory, setSelectedCategory] = useState<string | undefined>(undefined);

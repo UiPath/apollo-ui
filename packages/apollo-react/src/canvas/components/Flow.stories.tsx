@@ -1,4 +1,4 @@
-import { useMemo, useCallback, useState, useRef } from "react";
+import { useMemo, useCallback, useState, useRef, useEffect } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { Panel, useReactFlow } from "@uipath/uix/xyflow/react";
 import type { Edge, Node, Position } from "@uipath/uix/xyflow/react";
@@ -151,7 +151,7 @@ function DefaultStory({ useSmartHandles }: FlowStoryArgs) {
   }, [setNodes, useSmartHandles]);
 
   // Keep nodes in sync with useSmartHandles prop
-  useMemo(() => {
+  useEffect(() => {
     handleSmartHandlesToggle();
   }, [handleSmartHandlesToggle]);
 
@@ -308,4 +308,112 @@ function DefaultStory({ useSmartHandles }: FlowStoryArgs) {
 
 export const Default: Story = {
   render: (args) => <DefaultStory {...args} />,
+};
+
+// ============================================================================
+// Performance Story - 500 Nodes
+// ============================================================================
+
+const GRID_COLS = 25;
+const GRID_ROWS = 20;
+const NODE_SPACING_X = 250;
+const NODE_SPACING_Y = 150;
+
+function createPerformanceNodes(useSmartHandles: boolean): Node<BaseNodeData>[] {
+  const nodes: Node<BaseNodeData>[] = [];
+
+  for (let row = 0; row < GRID_ROWS; row++) {
+    for (let col = 0; col < GRID_COLS; col++) {
+      const index = row * GRID_COLS + col;
+      nodes.push(
+        createNode({
+          id: `node-${index}`,
+          type: "uipath.blank-node",
+          position: {
+            x: col * NODE_SPACING_X,
+            y: row * NODE_SPACING_Y,
+          },
+          display: { label: `Node ${index + 1}`, subLabel: `Row ${row + 1}, Col ${col + 1}` },
+          useSmartHandles,
+        })
+      );
+    }
+  }
+
+  return nodes;
+}
+
+function createPerformanceEdges(): Edge[] {
+  const edges: Edge[] = [];
+
+  for (let row = 0; row < GRID_ROWS; row++) {
+    for (let col = 0; col < GRID_COLS; col++) {
+      const index = row * GRID_COLS + col;
+
+      // Connect to the node on the right (if exists)
+      if (col < GRID_COLS - 1) {
+        edges.push({
+          id: `e-${index}-right`,
+          source: `node-${index}`,
+          target: `node-${index + 1}`,
+          sourceHandle: "output",
+          targetHandle: "input",
+        });
+      }
+
+      // Connect to the node below (if exists)
+      if (row < GRID_ROWS - 1) {
+        edges.push({
+          id: `e-${index}-down`,
+          source: `node-${index}`,
+          target: `node-${index + GRID_COLS}`,
+          sourceHandle: "output",
+          targetHandle: "input",
+        });
+      }
+    }
+  }
+
+  return edges;
+}
+
+function PerformanceStory({ useSmartHandles }: FlowStoryArgs) {
+  const initialNodes = useMemo(() => createPerformanceNodes(useSmartHandles), [useSmartHandles]);
+  const initialEdges = useMemo(() => createPerformanceEdges(), []);
+
+  const { canvasProps, setNodes } = useCanvasStory({
+    initialNodes,
+    initialEdges,
+  });
+
+  // Update nodes when useSmartHandles changes
+  const handleSmartHandlesToggle = useCallback(() => {
+    setNodes((nodes) =>
+      nodes.map((node) => ({
+        ...node,
+        data: {
+          ...node.data,
+          useSmartHandles,
+        },
+      }))
+    );
+  }, [setNodes, useSmartHandles]);
+
+  // Keep nodes in sync with useSmartHandles prop
+  useEffect(() => {
+    handleSmartHandlesToggle();
+  }, [handleSmartHandlesToggle]);
+
+  return <BaseCanvas {...canvasProps} deleteKeyCode={DELETE_KEY_CODES} mode="design" selectionOnDrag />;
+}
+
+export const Performance: Story = {
+  render: (args) => <PerformanceStory {...args} />,
+  parameters: {
+    docs: {
+      description: {
+        story: "Performance test with 500 nodes (25x20 grid) connected horizontally and vertically.",
+      },
+    },
+  },
 };

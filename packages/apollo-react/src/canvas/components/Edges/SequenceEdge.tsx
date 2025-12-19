@@ -1,5 +1,5 @@
 import { type EdgeProps, getSmoothStepPath, Position } from "@uipath/uix/xyflow/react";
-import { useState } from "react";
+import { memo, useState } from "react";
 
 const ARROW_SIZE = 10;
 
@@ -28,7 +28,28 @@ const SOURCE_OFFSETS: Record<Position, { x: number; y: number }> = {
   [Position.Bottom]: { x: 0, y: -8 },
 };
 
-export const SequenceEdge = ({
+// Custom comparison to prevent re-renders during pan/zoom
+// Coordinates can have tiny floating point differences that don't affect visual output
+function areEdgePropsEqual(prevProps: EdgeProps, nextProps: EdgeProps): boolean {
+  // Always re-render if these change
+  if (prevProps.id !== nextProps.id) return false;
+  if (prevProps.selected !== nextProps.selected) return false;
+  if (prevProps.sourcePosition !== nextProps.sourcePosition) return false;
+  if (prevProps.targetPosition !== nextProps.targetPosition) return false;
+  if (prevProps.data !== nextProps.data) return false;
+  if (prevProps.style !== nextProps.style) return false;
+
+  // For coordinates, only re-render if change is > 0.5px (avoids floating point noise)
+  const threshold = 0.5;
+  if (Math.abs(prevProps.sourceX - nextProps.sourceX) > threshold) return false;
+  if (Math.abs(prevProps.sourceY - nextProps.sourceY) > threshold) return false;
+  if (Math.abs(prevProps.targetX - nextProps.targetX) > threshold) return false;
+  if (Math.abs(prevProps.targetY - nextProps.targetY) > threshold) return false;
+
+  return true;
+}
+
+export const SequenceEdge = memo(function SequenceEdge({
   id,
   selected,
   sourceX,
@@ -39,7 +60,7 @@ export const SequenceEdge = ({
   targetPosition,
   style,
   data,
-}: EdgeProps) => {
+}: EdgeProps) {
   const [isHovered, setIsHovered] = useState(false);
 
   // TODO: Replace with actual read-only state from the canvas
@@ -136,4 +157,4 @@ export const SequenceEdge = ({
       />
     </g>
   );
-};
+}, areEdgePropsEqual);

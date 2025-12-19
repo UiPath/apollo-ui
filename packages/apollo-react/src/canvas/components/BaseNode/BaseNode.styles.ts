@@ -127,6 +127,14 @@ export const BaseContainer = styled.div<{
   height?: number;
 }>`
   position: relative;
+  contain: layout style paint;
+  /* Allow browser to skip rendering for off-screen nodes during pan/zoom */
+  content-visibility: auto;
+  contain-intrinsic-size: ${({ shape, width, height }) => {
+    const w = width || (shape === "rectangle" ? 288 : 96);
+    const h = height || 96;
+    return `${w}px ${h}px`;
+  }};
   width: ${({ shape, width }) => {
     const defaultWidth = shape === "rectangle" ? 288 : 96;
     if (width && width !== 96 && width !== 288) {

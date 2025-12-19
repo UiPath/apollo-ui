@@ -1,10 +1,11 @@
 import { memo, useMemo, useState, useCallback } from "react";
-import { useStore, Position } from "@uipath/uix/xyflow/react";
+import { Position, useStore } from "@uipath/uix/xyflow/react";
 import { TriggerContainer, TriggerIconWrapper } from "./TriggerNode.styles";
 import type { TriggerNodeProps } from "./TriggerNode.types";
 import { ApTooltip, ApIcon } from "@uipath/portal-shell-react";
 import type { HandleConfiguration } from "../BaseNode";
 import { useButtonHandles } from "../ButtonHandle/useButtonHandles";
+import { useConnectedHandles } from "../BaseCanvas/ConnectedHandlesContext";
 
 const TriggerNodeComponent = (props: TriggerNodeProps) => {
   const { selected, id, details = {} } = props;
@@ -12,11 +13,9 @@ const TriggerNodeComponent = (props: TriggerNodeProps) => {
 
   const [isHovered, setIsHovered] = useState(false);
 
-  const { edges, isConnecting } = useStore(
-    (state) => ({ edges: state.edges, isConnecting: !!state.connectionClickStartHandle }),
-    (a, b) => a.edges === b.edges && a.isConnecting === b.isConnecting
-  );
-  const hasConnections = useMemo(() => edges?.some((edge) => edge.source === id || edge.target === id) ?? false, [edges, id]);
+  const isConnecting = useStore((state) => !!state.connectionClickStartHandle);
+  const connectedHandleIds = useConnectedHandles(id);
+  const hasConnections = connectedHandleIds.size > 0;
 
   const shouldShowHandles = useMemo(() => {
     return selected || isHovered || isConnecting || hasConnections;
@@ -38,7 +37,7 @@ const TriggerNodeComponent = (props: TriggerNodeProps) => {
       visible: selected || isHovered || isConnecting,
     },
   ];
-  const handleElements = useButtonHandles({ handleConfigurations, shouldShowHandles, edges, nodeId: id, selected });
+  const handleElements = useButtonHandles({ handleConfigurations, shouldShowHandles, nodeId: id, selected });
 
   const triggerContent = (
     <TriggerContainer selected={!!selected} status={status}>

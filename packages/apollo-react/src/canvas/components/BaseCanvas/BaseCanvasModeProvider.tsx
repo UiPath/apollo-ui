@@ -1,4 +1,4 @@
-import React, { createContext, useContext } from "react";
+import React, { createContext, useContext, useMemo } from "react";
 import type { BaseCanvasProps } from "./BaseCanvas.types";
 
 type BaseCanvasMode = BaseCanvasProps["mode"];
@@ -9,7 +9,8 @@ type BaseCanvasModeContextType = {
 const BaseCanvasModeContext = createContext<BaseCanvasModeContextType | undefined>(undefined);
 
 export const BaseCanvasModeProvider: React.FC<React.PropsWithChildren<{ mode: BaseCanvasMode }>> = ({ children, mode }) => {
-  return <BaseCanvasModeContext.Provider value={{ mode }}>{children}</BaseCanvasModeContext.Provider>;
+  const value = useMemo(() => ({ mode }), [mode]);
+  return <BaseCanvasModeContext.Provider value={value}>{children}</BaseCanvasModeContext.Provider>;
 };
 
 export function useBaseCanvasMode() {

@@ -15,11 +15,12 @@ import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrate
 import { Spacing } from "@uipath/apollo-core";
 import { ApIcon, ApLink, ApTooltip, ApTypography } from "@uipath/portal-shell-react";
 import { Column, FontVariantToken, Row } from "@uipath/uix/core";
-import { Position, useStore, useViewport } from "@uipath/uix/xyflow/react";
+import { Position, useViewport, useStore } from "@uipath/uix/xyflow/react";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import type { HandleConfiguration } from "../BaseNode/BaseNode.types";
 import { useButtonHandles } from "../ButtonHandle/useButtonHandles";
+import { useConnectedHandles } from "../BaseCanvas/ConnectedHandlesContext";
 import { ExecutionStatusIcon } from "../ExecutionStatusIcon";
 import { FloatingCanvasPanel } from "../FloatingCanvasPanel";
 import { NodeContextMenu } from "../NodeContextMenu";
@@ -109,10 +110,8 @@ const StageNodeComponent = (props: StageNodeProps) => {
     taskIndex: -1,
   });
   const [isTaskContextMenuVisible, setIsTaskContextMenuVisible] = useState<boolean>(false);
-  const { edges, isConnecting } = useStore(
-    (state) => ({ edges: state.edges, isConnecting: !!state.connectionClickStartHandle }),
-    (a, b) => a.edges === b.edges && a.isConnecting === b.isConnecting
-  );
+  const isConnecting = useStore((state) => !!state.connectionClickStartHandle);
+  const connectedHandleIds = useConnectedHandles(id);
 
   const [isAddingTask, setIsAddingTask] = useState(false);
   const [activeDragId, setActiveDragId] = useState<string | null>(null);
@@ -130,7 +129,7 @@ const StageNodeComponent = (props: StageNodeProps) => {
     if (selected === false) setIsAddingTask(false);
   }, [selected]);
 
-  const hasConnections = useMemo(() => edges?.some((edge) => edge.source === id || edge.target === id) ?? false, [edges, id]);
+  const hasConnections = connectedHandleIds.size > 0;
 
   const shouldShowHandles = useMemo(() => {
     return selected || isHovered || isConnecting || hasConnections;
@@ -331,7 +330,7 @@ const StageNodeComponent = (props: StageNodeProps) => {
           ],
     [isException, id, selected, isHovered, isConnecting]
   );
-  const handleElements = useButtonHandles({ handleConfigurations, shouldShowHandles, edges, nodeId: id, selected });
+  const handleElements = useButtonHandles({ handleConfigurations, shouldShowHandles, nodeId: id, selected });
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {

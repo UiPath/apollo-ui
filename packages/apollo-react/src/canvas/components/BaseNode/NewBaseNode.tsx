@@ -1,6 +1,6 @@
 import { memo, useMemo, useState, useCallback, useRef, useEffect } from "react";
 import type { Node, NodeProps } from "@uipath/uix/xyflow/react";
-import { Position, useConnection, useStore, useUpdateNodeInternals } from "@uipath/uix/xyflow/react";
+import { Position, useUpdateNodeInternals, useStore } from "@uipath/uix/xyflow/react";
 import { BaseContainer, BaseIconWrapper, BaseBadgeSlot, BaseTextContainer, BaseHeader, BaseSubHeader } from "./BaseNode.styles";
 import type { NewBaseNodeData, NewBaseNodeDisplayProps, NodeAdornments } from "./NewBaseNode.types";
 import { cx, FontVariantToken } from "@uipath/uix/core";
@@ -35,17 +35,29 @@ const NewBaseNodeComponent = (
   const updateNodeInternals = useUpdateNodeInternals();
 
   // Force React Flow to recalculate handle positions when dimensions change
+  // Use refs to track previous dimensions and avoid unnecessary calls
+  const prevDimensionsRef = useRef<{ width?: number; height?: number }>({});
+
   useEffect(() => {
     if (width && height && handleConfigurations.length > 0) {
-      updateNodeInternals(id);
+      const prevWidth = prevDimensionsRef.current.width;
+      const prevHeight = prevDimensionsRef.current.height;
+
+      // Only update if dimensions actually changed (not on initial mount)
+      if (prevWidth !== undefined && prevHeight !== undefined && (prevWidth !== width || prevHeight !== height)) {
+        // Use requestAnimationFrame to batch DOM reads and avoid forced reflow
+        requestAnimationFrame(() => {
+          updateNodeInternals(id);
+        });
+      }
+
+      prevDimensionsRef.current = { width, height };
     }
   }, [id, width, height, handleConfigurations, updateNodeInternals]);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const [isHovered, setIsHovered] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
-
-  const { inProgress } = useConnection();
 
   // Use display config from data
   const finalDisplay = display ?? {};
@@ -60,10 +72,7 @@ const NewBaseNodeComponent = (
     suggestionType || executionStatus === "Failed" ? "var(--uix-canvas-background)" : finalDisplay.iconBackground;
   const displayCenterAdornment = finalDisplay.centerAdornmentComponent;
 
-  const { edges, isConnecting } = useStore(
-    (state) => ({ edges: state.edges, isConnecting: !!state.connectionClickStartHandle }),
-    (a, b) => a.edges === b.edges && a.isConnecting === b.isConnecting
-  );
+  const isConnecting = useStore((state) => !!state.connectionClickStartHandle);
 
   const interactionState = useMemo(() => {
     if (disabled) return "disabled";
@@ -75,8 +84,8 @@ const NewBaseNodeComponent = (
   }, [disabled, dragging, selected, isFocused, isHovered]);
 
   const shouldShowHandles = useMemo(
-    () => (showHandles !== undefined ? showHandles : inProgress || selected || isHovered || isConnecting),
-    [showHandles, inProgress, selected, isHovered, isConnecting]
+    () => (showHandles !== undefined ? showHandles : isConnecting || selected || isHovered),
+    [showHandles, isConnecting, selected, isHovered]
   );
 
   const hasVisibleBottomHandles = useMemo(() => {
@@ -120,7 +129,6 @@ const NewBaseNodeComponent = (
     handleConfigurations,
     shouldShowHandles,
     handleAction,
-    edges,
     nodeId: id,
     selected,
     showAddButton,

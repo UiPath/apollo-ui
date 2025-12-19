@@ -1,4 +1,4 @@
-import { forwardRef, memo, useCallback, useImperativeHandle, useMemo, useState } from "react";
+import { forwardRef, memo, useCallback, useImperativeHandle, useMemo, useState, type CSSProperties } from "react";
 import type { Edge, Node, ReactFlowInstance } from "@uipath/uix/xyflow/react";
 import { ConnectionMode, ReactFlow } from "@uipath/uix/xyflow/react";
 import { BASE_CANVAS_DEFAULTS } from "./BaseCanvas.constants";
@@ -8,6 +8,7 @@ import { usePreventBackNavigation } from "./usePreventBackNavigation";
 import { CanvasBackground } from "./CanvasBackground";
 import { PanShortcutTeachingUI } from "./PanShortcutTeachingUI";
 import { BaseCanvasModeProvider } from "./BaseCanvasModeProvider";
+import { ConnectedHandlesProvider } from "./ConnectedHandlesContext";
 
 const BaseCanvasInnerComponent = <NodeType extends Node = Node, EdgeType extends Edge = Edge>(
   props: BaseCanvasProps<NodeType, EdgeType> & { innerRef?: React.Ref<BaseCanvasRef<NodeType, EdgeType>> }
@@ -97,17 +98,25 @@ const BaseCanvasInnerComponent = <NodeType extends Node = Node, EdgeType extends
   // The hook only pans the viewport without changing the zoom level
   useMaintainNodesInView(maintainNodesInView, fitViewOptions);
 
+  // Pre-compute selected node IDs for O(1) lookup instead of O(n) per edge
+  const selectedNodeIds = useMemo(() => {
+    const ids = new Set<string>();
+    for (const node of nodes) {
+      if (node.selected) {
+        ids.add(node.id);
+      }
+    }
+    return ids;
+  }, [nodes]);
+
   // Give precedence to edges connected to selected nodes in cases of overlapping edges
   const normalizedEdges = useMemo(
     () =>
-      edges.map((edge) => {
-        const isConnectedToSelectedNode = nodes.some((node) => node.selected && (node.id === edge.source || node.id === edge.target));
-        return {
-          ...edge,
-          zIndex: isConnectedToSelectedNode ? 0 : -1,
-        };
-      }),
-    [edges, nodes]
+      edges.map((edge) => ({
+        ...edge,
+        zIndex: selectedNodeIds.has(edge.source) || selectedNodeIds.has(edge.target) ? 0 : -1,
+      })),
+    [edges, selectedNodeIds]
   );
 
   const handleInit = useCallback(
@@ -129,66 +138,72 @@ const BaseCanvasInnerComponent = <NodeType extends Node = Node, EdgeType extends
     [ensureNodesInView, ensureAllNodesInView, centerNode, reactFlowInstance]
   );
 
-  return (
-    <BaseCanvasModeProvider mode={mode}>
-      <ReactFlow
-        {...reactFlowProps}
-        nodes={nodes}
-        edges={normalizedEdges}
-        nodeTypes={nodeTypes}
-        edgeTypes={edgeTypes}
-        fitViewOptions={fitViewOptions}
-        defaultEdgeOptions={defaultEdgeOptions}
-        defaultViewport={defaultViewport}
-        proOptions={proOptions}
-        connectionMode={connectionMode}
-        connectionLineComponent={connectionLineComponent}
-        connectionLineStyle={connectionLineStyle}
-        deleteKeyCode={isDesignMode ? deleteKeyCode : null}
-        selectNodesOnDrag={isInteractive && selectNodesOnDrag}
-        nodesDraggable={isDesignMode && nodesDraggable}
-        nodesConnectable={isDesignMode && nodesConnectable}
-        elementsSelectable={isInteractive && elementsSelectable}
-        onlyRenderVisibleElements={onlyRenderVisibleElements}
-        snapToGrid={snapToGrid}
-        snapGrid={snapGrid}
-        minZoom={minZoom}
-        maxZoom={maxZoom}
-        panOnScroll={isInteractive}
-        zoomOnScroll={isInteractive}
-        zoomOnDoubleClick={isInteractive}
-        panOnDrag={isInteractive ? [1] : false}
-        onInit={handleInit}
-        onNodesChange={isInteractive ? onNodesChange : undefined}
-        onEdgesChange={isInteractive ? onEdgesChange : undefined}
-        onConnect={isDesignMode ? onConnect : undefined}
-        onConnectStart={isDesignMode ? onConnectStart : undefined}
-        onConnectEnd={isDesignMode ? onConnectEnd : undefined}
-        onNodeClick={isInteractive ? onNodeClick : undefined}
-        onNodeDragStart={isDesignMode ? onNodeDragStart : undefined}
-        onNodeDrag={isDesignMode ? onNodeDrag : undefined}
-        onNodeDragStop={isDesignMode ? onNodeDragStop : undefined}
-        onPaneClick={isInteractive ? onPaneClick : undefined}
-        onSelectionChange={onSelectionChange}
-        style={{
-          opacity: isReady ? 1 : 0,
-          transition: BASE_CANVAS_DEFAULTS.transitions.opacity,
-        }}
-      >
-        {showBackground && (
-          <CanvasBackground
-            color={backgroundColor}
-            bgColor={backgroundSecondaryColor}
-            variant={backgroundVariant}
-            gap={backgroundGap}
-            size={backgroundSize}
-          />
-        )}
+  const reactFlowStyle = useMemo<CSSProperties>(
+    () => ({
+      opacity: isReady ? 1 : 0,
+      transition: BASE_CANVAS_DEFAULTS.transitions.opacity,
+    }),
+    [isReady]
+  );
 
-        {mode === "design" && panShortcutTeachingUIMessage && <PanShortcutTeachingUI message={panShortcutTeachingUIMessage} />}
-        {children}
-      </ReactFlow>
-    </BaseCanvasModeProvider>
+  return (
+    <ConnectedHandlesProvider edges={edges}>
+      <BaseCanvasModeProvider mode={mode}>
+        <ReactFlow
+          {...reactFlowProps}
+          nodes={nodes}
+          edges={normalizedEdges}
+          nodeTypes={nodeTypes}
+          edgeTypes={edgeTypes}
+          fitViewOptions={fitViewOptions}
+          defaultEdgeOptions={defaultEdgeOptions}
+          defaultViewport={defaultViewport}
+          proOptions={proOptions}
+          connectionMode={connectionMode}
+          connectionLineComponent={connectionLineComponent}
+          connectionLineStyle={connectionLineStyle}
+          deleteKeyCode={isDesignMode ? deleteKeyCode : null}
+          selectNodesOnDrag={isInteractive && selectNodesOnDrag}
+          nodesDraggable={isDesignMode && nodesDraggable}
+          nodesConnectable={isDesignMode && nodesConnectable}
+          elementsSelectable={isInteractive && elementsSelectable}
+          onlyRenderVisibleElements={onlyRenderVisibleElements}
+          snapToGrid={snapToGrid}
+          snapGrid={snapGrid}
+          minZoom={minZoom}
+          maxZoom={maxZoom}
+          panOnScroll={isInteractive}
+          zoomOnScroll={isInteractive}
+          zoomOnDoubleClick={isInteractive}
+          panOnDrag={isInteractive ? [1] : false}
+          onInit={handleInit}
+          onNodesChange={isInteractive ? onNodesChange : undefined}
+          onEdgesChange={isInteractive ? onEdgesChange : undefined}
+          onConnect={isDesignMode ? onConnect : undefined}
+          onConnectStart={isDesignMode ? onConnectStart : undefined}
+          onConnectEnd={isDesignMode ? onConnectEnd : undefined}
+          onNodeClick={isInteractive ? onNodeClick : undefined}
+          onNodeDragStart={isDesignMode ? onNodeDragStart : undefined}
+          onNodeDrag={isDesignMode ? onNodeDrag : undefined}
+          onNodeDragStop={isDesignMode ? onNodeDragStop : undefined}
+          onPaneClick={isInteractive ? onPaneClick : undefined}
+          onSelectionChange={onSelectionChange}
+          style={reactFlowStyle}
+        >
+          {showBackground && (
+            <CanvasBackground
+              color={backgroundColor}
+              bgColor={backgroundSecondaryColor}
+              variant={backgroundVariant}
+              gap={backgroundGap}
+              size={backgroundSize}
+            />
+          )}
+          {mode === "design" && panShortcutTeachingUIMessage && <PanShortcutTeachingUI message={panShortcutTeachingUIMessage} />}
+          {children}
+        </ReactFlow>
+      </BaseCanvasModeProvider>
+    </ConnectedHandlesProvider>
   );
 };
 

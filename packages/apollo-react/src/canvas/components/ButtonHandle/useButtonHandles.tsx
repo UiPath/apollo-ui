@@ -2,13 +2,12 @@ import { useMemo } from "react";
 import { ButtonHandles } from "../ButtonHandle";
 import type { HandleActionEvent } from "../ButtonHandle";
 import type { HandleConfiguration } from "../BaseNode/BaseNode.types";
-import type { Edge } from "@xyflow/react";
+import { useConnectedHandles } from "../BaseCanvas/ConnectedHandlesContext";
 
 export const useButtonHandles = ({
   handleConfigurations,
   shouldShowHandles,
   handleAction,
-  edges,
   nodeId,
   selected,
   showAddButton,
@@ -19,7 +18,6 @@ export const useButtonHandles = ({
 }: {
   handleConfigurations: HandleConfiguration[];
   shouldShowHandles: boolean;
-  edges: Edge[];
   nodeId: string;
   selected: boolean;
   handleAction?: (event: HandleActionEvent) => void;
@@ -38,15 +36,7 @@ export const useButtonHandles = ({
    */
   shouldShowAddButtonFn?: ({ showAddButton, selected }: { showAddButton: boolean; selected: boolean }) => boolean;
 }) => {
-  const connectedHandleIds = useMemo(() => {
-    const ids = new Set<string>();
-    if (!edges) return ids;
-    for (const edge of edges) {
-      if (edge.source === nodeId && edge.sourceHandle) ids.add(edge.sourceHandle);
-      if (edge.target === nodeId && edge.targetHandle) ids.add(edge.targetHandle);
-    }
-    return ids;
-  }, [edges, nodeId]);
+  const connectedHandleIds = useConnectedHandles(nodeId);
 
   const handleElements = useMemo(() => {
     if (!handleConfigurations || !Array.isArray(handleConfigurations) || handleConfigurations.length === 0) return <></>;

@@ -1,6 +1,6 @@
 import { memo, useMemo, useState, useCallback, useRef, useEffect } from "react";
-import type { Node, NodeProps } from "@uipath/uix/xyflow/react";
-import { Position, useConnection, useStore, useUpdateNodeInternals } from "@uipath/uix/xyflow/react";
+import type { Node, NodeProps, ReactFlowState } from "@uipath/uix/xyflow/react";
+import { Position, useUpdateNodeInternals, useStore } from "@uipath/uix/xyflow/react";
 import type { NodeStatusContext } from "./ExecutionStatusContext";
 import { useExecutionState } from "./ExecutionStatusContext";
 import { NodeToolbar } from "../NodeToolbar";
@@ -12,6 +12,19 @@ import { ApIcon, ApTooltip } from "@uipath/portal-shell-react";
 import { useBaseCanvasMode } from "../BaseCanvas/BaseCanvasModeProvider";
 import { SmartHandleProvider, SmartHandle } from "../ButtonHandle/SmartHandle";
 import { useButtonHandles } from "../ButtonHandle/useButtonHandles";
+import { useConnectedHandles } from "../BaseCanvas/ConnectedHandlesContext";
+
+const selectIsConnecting = (state: ReactFlowState) => !!state.connectionClickStartHandle;
+const selectMultipleNodesSelected = (state: ReactFlowState) => {
+  let count = 0;
+  for (const node of state.nodes) {
+    if (node.selected) {
+      count++;
+      if (count > 1) return true;
+    }
+  }
+  return false;
+};
 
 const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
   const { type, data, selected, id, dragging, width, height } = props;
@@ -26,20 +39,24 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
   const nodeTypeRegistry = useNodeTypeRegistry();
   const { mode } = useBaseCanvasMode();
 
-  const nodeDefinition = useMemo(() => nodeTypeRegistry.get(type), [type, nodeTypeRegistry]);
+  // Use context for connected handles - O(1) lookup instead of O(edges) per node
+  const connectedHandleIds = useConnectedHandles(id);
 
-  const { inProgress } = useConnection();
+  const isConnecting = useStore(selectIsConnecting);
+  const multipleNodesSelected = useStore(selectMultipleNodesSelected);
+
+  const nodeDefinition = useMemo(() => nodeTypeRegistry.get(type), [type, nodeTypeRegistry]);
 
   const statusContext: NodeStatusContext = useMemo(
     () => ({
       nodeId: id,
       executionState,
-      isConnecting: inProgress,
+      isConnecting,
       isSelected: selected,
       isDragging: dragging,
       mode,
     }),
-    [id, executionState, inProgress, selected, dragging, mode]
+    [id, executionState, isConnecting, selected, dragging, mode]
   );
 
   const executionStatus = typeof executionState === "string" ? executionState : executionState?.status;
@@ -54,9 +71,23 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
   const toolbarConfig = useMemo(() => nodeDefinition?.getToolbar?.(data, statusContext), [nodeDefinition, data, statusContext]);
 
   // Force React Flow to recalculate handle positions when dimensions change
+  // Use refs to track previous dimensions and avoid unnecessary calls
+  const prevDimensionsRef = useRef<{ width?: number; height?: number }>({});
+
   useEffect(() => {
     if (width && height && handleConfigurations.length > 0) {
-      updateNodeInternals(id);
+      const prevWidth = prevDimensionsRef.current.width;
+      const prevHeight = prevDimensionsRef.current.height;
+
+      // Only update if dimensions actually changed (not on initial mount)
+      if (prevWidth !== undefined && prevHeight !== undefined && (prevWidth !== width || prevHeight !== height)) {
+        // Use requestAnimationFrame to batch DOM reads and avoid forced reflow
+        requestAnimationFrame(() => {
+          updateNodeInternals(id);
+        });
+      }
+
+      prevDimensionsRef.current = { width, height };
     }
   }, [id, width, height, handleConfigurations, updateNodeInternals]);
 
@@ -70,15 +101,6 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
   const displayIconBackground = executionStatus === "Failed" ? "var(--uix-canvas-background)" : display.iconBackground;
   const displayCenterAdornment = display.centerAdornmentComponent;
 
-  const { edges, isConnecting, selectedNodesCount } = useStore(
-    (state) => ({
-      edges: state.edges,
-      isConnecting: !!state.connectionClickStartHandle,
-      selectedNodesCount: state.nodes.filter((n) => n.selected).length,
-    }),
-    (a, b) => a.edges === b.edges && a.isConnecting === b.isConnecting && a.selectedNodesCount === b.selectedNodesCount
-  );
-
   const interactionState = useMemo(() => {
     if (dragging) return "drag";
     if (selected) return "selected";
@@ -87,10 +109,7 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
     return "default";
   }, [dragging, selected, isFocused, isHovered]);
 
-  const shouldShowHandles = useMemo(
-    () => inProgress || selected || isHovered || isConnecting,
-    [inProgress, isConnecting, selected, isHovered]
-  );
+  const shouldShowHandles = useMemo(() => isConnecting || selected || isHovered, [isConnecting, selected, isHovered]);
 
   const hasVisibleBottomHandles = useMemo(() => {
     if (!handleConfigurations || !Array.isArray(handleConfigurations) || !selected || displayShape === "circle") {
@@ -111,7 +130,7 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
   const handleBlur = useCallback(() => setIsFocused(false), []);
 
   // Calculate if notches should be shown (when node is hovered or selected)
-  const showNotches = inProgress || isHovered || selected;
+  const showNotches = isConnecting || isHovered || selected;
 
   // Handle action callback that uses node type's default handler
   const handleAction = useCallback(
@@ -145,14 +164,14 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
   const useSmartHandles = data?.useSmartHandles ?? false;
 
   // Generate ButtonHandle elements (default behavior)
+  // Hide add buttons when multiple nodes are selected to avoid visual clutter
   const buttonHandleElements = useButtonHandles({
     handleConfigurations,
     shouldShowHandles,
     handleAction,
-    edges,
     nodeId: id,
     selected: selected ?? false,
-    showAddButton: mode === "design",
+    showAddButton: mode === "design" && !multipleNodesSelected,
     showNotches,
     nodeWidth: width,
     nodeHeight: height,
@@ -175,17 +194,15 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
         // Determine handle type for SmartHandle
         const handleVisualType = handle.handleType ?? (handle.type === "source" ? "output" : "input");
 
-        // Check if this handle has a connection
-        const hasConnection = edges.some(
-          (edge) => (edge.source === id && edge.sourceHandle === handle.id) || (edge.target === id && edge.targetHandle === handle.id)
-        );
+        // Check if this handle has a connection - O(1) lookup from context
+        const hasConnection = connectedHandleIds.has(handle.id);
 
         // Determine if the handle visuals should be visible
         // Always render the handle for registration, but control visibility of visual elements
         const isVisible = hasConnection || (shouldShowHandles && configVisible);
 
-        // Determine if add button should be shown
-        const shouldShowButton = mode === "design" && selected && handle.showButton;
+        // Determine if add button should be shown (hide when multiple nodes selected)
+        const shouldShowButton = mode === "design" && selected && handle.showButton && !multipleNodesSelected;
 
         return (
           <SmartHandle
@@ -212,7 +229,19 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
     );
 
     return handles.length > 0 ? handles : null;
-  }, [useSmartHandles, handleConfigurations, edges, id, shouldShowHandles, width, height, mode, selected, showNotches, handleAction]);
+  }, [
+    useSmartHandles,
+    handleConfigurations,
+    connectedHandleIds,
+    shouldShowHandles,
+    width,
+    height,
+    mode,
+    selected,
+    showNotches,
+    handleAction,
+    multipleNodesSelected,
+  ]);
 
   // Use SmartHandle elements if enabled, otherwise use ButtonHandle elements
   const handleElements = useSmartHandles ? smartHandleElements : buttonHandleElements;
@@ -291,18 +320,27 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
 
         {displayLabel && (
           <BaseTextContainer hasBottomHandles={hasVisibleBottomHandles} shape={displayShape}>
-            <ApTooltip delay placement="top" content={displayLabelTooltip} smartTooltip>
-              <BaseHeader shape={displayShape} backgroundColor={displayLabelBackgroundColor}>
-                {displayLabel}
-              </BaseHeader>
-              {displaySubLabel && <BaseSubHeader>{displaySubLabel}</BaseSubHeader>}
-            </ApTooltip>
+            {displayLabelTooltip ? (
+              <ApTooltip delay placement="top" content={displayLabelTooltip} smartTooltip>
+                <BaseHeader shape={displayShape} backgroundColor={displayLabelBackgroundColor}>
+                  {displayLabel}
+                </BaseHeader>
+                {displaySubLabel && <BaseSubHeader>{displaySubLabel}</BaseSubHeader>}
+              </ApTooltip>
+            ) : (
+              <>
+                <BaseHeader shape={displayShape} backgroundColor={displayLabelBackgroundColor}>
+                  {displayLabel}
+                </BaseHeader>
+                {displaySubLabel && <BaseSubHeader>{displaySubLabel}</BaseSubHeader>}
+              </>
+            )}
             {displayCenterAdornment}
           </BaseTextContainer>
         )}
       </BaseContainer>
       {handleElements}
-      {toolbarConfig && <NodeToolbar nodeId={id} config={toolbarConfig} expanded={selected} hidden={dragging || selectedNodesCount > 1} />}
+      {toolbarConfig && <NodeToolbar nodeId={id} config={toolbarConfig} expanded={selected} hidden={dragging || multipleNodesSelected} />}
     </div>
   );
 
