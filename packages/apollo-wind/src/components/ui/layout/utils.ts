@@ -1,3 +1,4 @@
+import type React from "react";
 import type {
   AlignValue,
   DirectionValue,
@@ -305,6 +306,190 @@ export function buildLayoutClasses(props: Partial<LayoutProps>): string[] {
     ...getOverflowClasses(props),
     ...getPositionClasses(props),
   ];
+}
+
+/**
+ * Map align values to CSS alignItems values
+ */
+const alignToCSS: Record<AlignValue, React.CSSProperties["alignItems"]> = {
+  start: "flex-start",
+  center: "center",
+  end: "flex-end",
+  baseline: "baseline",
+  stretch: "stretch",
+};
+
+/**
+ * Map justify values to CSS justifyContent values
+ */
+const justifyToCSS: Record<JustifyValue, React.CSSProperties["justifyContent"]> = {
+  start: "flex-start",
+  center: "center",
+  end: "flex-end",
+  between: "space-between",
+  around: "space-around",
+  evenly: "space-evenly",
+};
+
+/**
+ * Map wrap values to CSS flexWrap values
+ */
+const wrapToCSS: Record<WrapValue, React.CSSProperties["flexWrap"]> = {
+  nowrap: "nowrap",
+  wrap: "wrap",
+  "wrap-reverse": "wrap-reverse",
+};
+
+/**
+ * Map direction values to CSS flexDirection values
+ */
+const directionToCSS: Record<DirectionValue, React.CSSProperties["flexDirection"]> = {
+  row: "row",
+  "row-reverse": "row-reverse",
+  column: "column",
+  "column-reverse": "column-reverse",
+};
+
+/**
+ * Convert a size value to a CSS value
+ */
+function sizeToCSS(value: SizeValue): string {
+  if (value === "auto") return "auto";
+  if (value === "full") return "100%";
+  if (value === "screen") return "100vw";
+  if (value === "min") return "min-content";
+  if (value === "max") return "max-content";
+  if (value === "fit") return "fit-content";
+  if (typeof value === "string") {
+    // Handle percentages like "50%"
+    if (value.includes("%")) return value;
+    // Handle fractions like "1/2"
+    if (value.includes("/")) {
+      const [num, denom] = value.split("/").map(Number);
+      return `${(num / denom) * 100}%`;
+    }
+  }
+  // Numeric spacing value: 1 unit = 0.25rem
+  return `${(value as number) * 0.25}rem`;
+}
+
+/**
+ * Build inline styles for flex-based layout components (Row, Column)
+ * This approach avoids Tailwind class generation issues with decimal values
+ * and provides a more predictable styling experience.
+ */
+export function buildLayoutStyles(props: Partial<LayoutProps>): React.CSSProperties {
+  const styles: React.CSSProperties = {
+    display: "flex",
+  };
+
+  // Flex properties
+  if (props.direction !== undefined) {
+    styles.flexDirection = directionToCSS[props.direction];
+  }
+  if (props.align !== undefined) {
+    styles.alignItems = alignToCSS[props.align];
+  }
+  if (props.justify !== undefined) {
+    styles.justifyContent = justifyToCSS[props.justify];
+  }
+  if (props.wrap !== undefined) {
+    styles.flexWrap = wrapToCSS[props.wrap];
+  }
+  if (props.gap !== undefined) {
+    styles.gap = spacingToRem(props.gap);
+  }
+  if (props.flex !== undefined) {
+    styles.flex = props.flex;
+  }
+
+  // Size properties
+  if (props.w !== undefined) {
+    styles.width = sizeToCSS(props.w);
+  }
+  if (props.h !== undefined) {
+    styles.height = sizeToCSS(props.h);
+  }
+  if (props.maxW !== undefined) {
+    styles.maxWidth = sizeToCSS(props.maxW);
+  }
+  if (props.minW !== undefined) {
+    styles.minWidth = sizeToCSS(props.minW);
+  }
+  if (props.maxH !== undefined) {
+    styles.maxHeight = sizeToCSS(props.maxH);
+  }
+  if (props.minH !== undefined) {
+    styles.minHeight = sizeToCSS(props.minH);
+  }
+
+  // Overflow properties
+  if (props.overflow !== undefined) {
+    styles.overflow = props.overflow;
+  }
+  if (props.overflowX !== undefined) {
+    styles.overflowX = props.overflowX;
+  }
+  if (props.overflowY !== undefined) {
+    styles.overflowY = props.overflowY;
+  }
+
+  // Position
+  if (props.position !== undefined) {
+    styles.position = props.position;
+  }
+
+  // Padding
+  if (props.p !== undefined) {
+    styles.padding = spacingToRem(props.p);
+  }
+  if (props.pt !== undefined) {
+    styles.paddingTop = spacingToRem(props.pt);
+  }
+  if (props.pb !== undefined) {
+    styles.paddingBottom = spacingToRem(props.pb);
+  }
+  if (props.pl !== undefined) {
+    styles.paddingLeft = spacingToRem(props.pl);
+  }
+  if (props.pr !== undefined) {
+    styles.paddingRight = spacingToRem(props.pr);
+  }
+  if (props.px !== undefined) {
+    if (props.pl === undefined) styles.paddingLeft = spacingToRem(props.px);
+    if (props.pr === undefined) styles.paddingRight = spacingToRem(props.px);
+  }
+  if (props.py !== undefined) {
+    if (props.pt === undefined) styles.paddingTop = spacingToRem(props.py);
+    if (props.pb === undefined) styles.paddingBottom = spacingToRem(props.py);
+  }
+
+  // Margin
+  if (props.m !== undefined) {
+    styles.margin = spacingToRem(props.m);
+  }
+  if (props.mt !== undefined) {
+    styles.marginTop = spacingToRem(props.mt);
+  }
+  if (props.mb !== undefined) {
+    styles.marginBottom = spacingToRem(props.mb);
+  }
+  if (props.ml !== undefined) {
+    styles.marginLeft = spacingToRem(props.ml);
+  }
+  if (props.mr !== undefined) {
+    styles.marginRight = spacingToRem(props.mr);
+  }
+  if (props.mx !== undefined) {
+    if (props.ml === undefined) styles.marginLeft = spacingToRem(props.mx);
+    if (props.mr === undefined) styles.marginRight = spacingToRem(props.mx);
+  }
+  if (props.my !== undefined) {
+    if (props.mt === undefined) styles.marginTop = spacingToRem(props.my);
+    if (props.mb === undefined) styles.marginBottom = spacingToRem(props.my);
+  }
+
+  return styles;
 }
 
 /**

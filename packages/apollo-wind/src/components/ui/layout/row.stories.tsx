@@ -214,19 +214,19 @@ export const Overflow: Story = {
   render: () => (
     <div className="space-y-4">
       <div>
-        <p className="mb-2 text-sm font-medium">overflow="auto"</p>
+        <p className="mb-2 text-sm font-medium">overflow="auto" (scrollable)</p>
         <Row gap={4} overflow="auto" className="h-32 w-96 border">
-          <Box className="w-64">Wide Item 1</Box>
-          <Box className="w-64">Wide Item 2</Box>
-          <Box className="w-64">Wide Item 3</Box>
+          <Box className="w-64 shrink-0">Wide Item 1</Box>
+          <Box className="w-64 shrink-0">Wide Item 2</Box>
+          <Box className="w-64 shrink-0">Wide Item 3</Box>
         </Row>
       </div>
       <div>
-        <p className="mb-2 text-sm font-medium">overflow="hidden"</p>
+        <p className="mb-2 text-sm font-medium">overflow="hidden" (clipped)</p>
         <Row gap={4} overflow="hidden" className="h-32 w-96 border">
-          <Box className="w-64">Wide Item 1</Box>
-          <Box className="w-64">Wide Item 2</Box>
-          <Box className="w-64">Wide Item 3</Box>
+          <Box className="w-64 shrink-0">Wide Item 1</Box>
+          <Box className="w-64 shrink-0">Wide Item 2</Box>
+          <Box className="w-64 shrink-0">Wide Item 3</Box>
         </Row>
       </div>
     </div>
