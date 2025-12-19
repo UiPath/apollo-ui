@@ -52,6 +52,14 @@ import {
   CHAT_WIDTH_FULL_SCREEN,
 } from './service';
 
+// Theme lookup map - created once, reused across all instances
+const MUI_THEME_MAP = {
+  light: apolloMaterialUiThemeLight,
+  dark: apolloMaterialUiThemeDark,
+  'light-hc': apolloMaterialUiThemeLightHC,
+  'dark-hc': apolloMaterialUiThemeDarkHC,
+} as const;
+
 const ChatContainer = styled('div')<{ shouldAnimate: boolean; mode: AutopilotChatMode; width: number; fullHeight: boolean }>(({
     shouldAnimate, mode, width, fullHeight,
 }: { shouldAnimate: boolean; mode: AutopilotChatMode; width: number; fullHeight: boolean }) => ({
@@ -220,17 +228,7 @@ export function ApChat({
     }, [chatServiceInstance]);
 
     // Select MUI theme based on current theme (only if internal theme provider is enabled)
-    const muiTheme = React.useMemo(() => {
-        if (!enableInternalThemeProvider) return null;
-        
-        const selected =
-            currentTheme === 'dark' ? apolloMaterialUiThemeDark :
-            currentTheme === 'light-hc' ? apolloMaterialUiThemeLightHC :
-            currentTheme === 'dark-hc' ? apolloMaterialUiThemeDarkHC :
-            apolloMaterialUiThemeLight;
-        
-        return selected;
-    }, [currentTheme, enableInternalThemeProvider]);
+    const muiTheme = enableInternalThemeProvider ? MUI_THEME_MAP[currentTheme] : null;
 
     const chatProviders = (
         <AutopilotChatServiceProvider chatServiceInstance={chatServiceInstance}>

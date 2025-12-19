@@ -7,6 +7,7 @@ import { styled } from '@mui/material/styles';
 import token, { FontVariantToken } from '@uipath/apollo-core';
 
 import { ApTypography } from '../../../ap-typography';
+import { useScheduledCallback } from '../../hooks/use-scheduled-callback';
 import { useChatState } from '../../providers/chat-state-provider';
 import { AutopilotChatCustomHeaderAction } from '../../service';
 import { AutopilotChatIcon } from '../common/icon';
@@ -52,32 +53,19 @@ const NestedMenuItem = React.memo(React.forwardRef<HTMLLIElement, NestedMenuItem
     const closeTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
     const nestedPopoverActionRef = React.useRef<{ updatePosition: () => void } | null>(null);
 
-    const handleNestedTransitionEnter = React.useCallback(() => {
-        // Force layout recalculation before Popper positions
-        if (portalContainer && menuItemRef.current) {
-            // Force browser to calculate positions
-            menuItemRef.current.getBoundingClientRect();
-            portalContainer.getBoundingClientRect();
-            
-            // Update Popper position after layout is calculated
-            requestAnimationFrame(() => {
-                if (nestedPopoverActionRef.current) {
-                    nestedPopoverActionRef.current.updatePosition();
-                }
-            });
+    const scheduleNestedPositionUpdate = useScheduledCallback(() => {
+        if (nestedPopoverActionRef.current) {
+            nestedPopoverActionRef.current.updatePosition();
         }
-    }, [portalContainer]);
+    });
+
+    const handleNestedTransitionEnter = React.useCallback(() => {
+        scheduleNestedPositionUpdate();
+    }, [scheduleNestedPositionUpdate]);
 
     const handleNestedTransitionEntered = React.useCallback(() => {
-        // Force another position update after transition completes
-        if (nestedPopoverActionRef.current) {
-            requestAnimationFrame(() => {
-                if (nestedPopoverActionRef.current) {
-                    nestedPopoverActionRef.current.updatePosition();
-                }
-            });
-        }
-    }, []);
+        scheduleNestedPositionUpdate();
+    }, [scheduleNestedPositionUpdate]);
 
     // Merge external ref with internal ref
     React.useImperativeHandle(ref, () => menuItemRef.current as HTMLLIElement);
@@ -360,36 +348,25 @@ export const AutopilotChatHeaderActionMenu = React.memo(({
     const firstItemRef = React.useRef<HTMLLIElement | null>(null);
     const popoverActionRef = React.useRef<{ updatePosition: () => void } | null>(null);
 
-    const handleTransitionEnter = React.useCallback(() => {
-        // Force layout recalculation before Popper positions
-        if (portalContainer && anchorEl) {
-            // Force browser to calculate positions
-            anchorEl.getBoundingClientRect();
-            portalContainer.getBoundingClientRect();
-            
-            // Update Popper position after layout is calculated
-            requestAnimationFrame(() => {
-                if (popoverActionRef.current) {
-                    popoverActionRef.current.updatePosition();
-                }
-            });
+    // Schedule position updates with automatic RAF cancellation
+    const schedulePositionUpdate = useScheduledCallback(() => {
+        if (popoverActionRef.current) {
+            popoverActionRef.current.updatePosition();
         }
-    }, [portalContainer, anchorEl]);
+    });
 
-    const handleTransitionEntered = () => {
+    const handleTransitionEnter = React.useCallback(() => {
+        schedulePositionUpdate();
+    }, [schedulePositionUpdate]);
+
+    const handleTransitionEntered = React.useCallback(() => {
         // Focus the first item after menu transition is complete
         if (firstItemRef.current) {
             firstItemRef.current.focus();
         }
         // Force another position update after transition completes
-        if (popoverActionRef.current) {
-            requestAnimationFrame(() => {
-                if (popoverActionRef.current) {
-                    popoverActionRef.current.updatePosition();
-                }
-            });
-        }
-    };
+        schedulePositionUpdate();
+    }, [schedulePositionUpdate]);
 
     return (
         <Menu

@@ -11,11 +11,12 @@ import {
 import token, { FontVariantToken } from '@uipath/apollo-core';
 
 import { ApTypography } from '../../../ap-typography';
+import { useScheduledCallback } from '../../hooks/use-scheduled-callback';
 import { useChatState } from '../../providers/chat-state-provider';
 import { AutopilotChatInternalEvent } from '../../service';
 import { AutopilotChatActionButton } from './action-button';
-import { AutopilotChatTooltip } from './tooltip';
 import { AutopilotChatIcon } from './icon';
+import { AutopilotChatTooltip } from './tooltip';
 
 export interface DropdownOption<T = string> {
     id: T;
@@ -86,32 +87,19 @@ export function DropdownPicker<T = string>({
 
     const open = Boolean(anchorEl);
 
-    const handleTransitionEnter = React.useCallback(() => {
-        // Force layout recalculation before Popper positions
-        if (portalContainer && anchorEl) {
-            // Force browser to calculate positions
-            anchorEl.getBoundingClientRect();
-            portalContainer.getBoundingClientRect();
-            
-            // Update Popper position after layout is calculated
-            requestAnimationFrame(() => {
-                if (popoverActionRef.current) {
-                    popoverActionRef.current.updatePosition();
-                }
-            });
+    const schedulePositionUpdate = useScheduledCallback(() => {
+        if (popoverActionRef.current) {
+            popoverActionRef.current.updatePosition();
         }
-    }, [portalContainer, anchorEl]);
+    });
+
+    const handleTransitionEnter = React.useCallback(() => {
+        schedulePositionUpdate();
+    }, [schedulePositionUpdate]);
 
     const handleTransitionEntered = React.useCallback(() => {
-        // Force another position update after transition completes
-        if (popoverActionRef.current) {
-            requestAnimationFrame(() => {
-                if (popoverActionRef.current) {
-                    popoverActionRef.current.updatePosition();
-                }
-            });
-        }
-    }, []);
+        schedulePositionUpdate();
+    }, [schedulePositionUpdate]);
 
     const handleClose = React.useCallback(() => {
         setAnchorEl(null);
