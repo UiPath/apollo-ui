@@ -1,3 +1,10 @@
+## [1.13.2](https://github.com/uipath/wind/compare/v1.13.1...v1.13.2) (2025-12-20)
+
+
+### Bug Fixes
+
+* update Tailwind CSS integration and add consumer styles copying ([4b1a252](https://github.com/uipath/wind/commit/4b1a2528b6f49b25800dd9aa311ba93b80c98b9a))
+
 ## [1.13.1](https://github.com/uipath/wind/compare/v1.13.0...v1.13.1) (2025-12-20)
 
 
