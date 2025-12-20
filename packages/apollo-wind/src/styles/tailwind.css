@@ -17,7 +17,12 @@
  * shadcn/ui color mappings
  * Maps Apollo Design System tokens to shadcn expected variable names.
  * These are defined per-theme so they respond to theme switching.
+ * Supports theme class on either <html> or <body> for flash-free loading.
  */
+:root.light,
+:root.dark,
+:root.light-hc,
+:root.dark-hc,
 body.light,
 body.dark,
 body.light-hc,
@@ -268,7 +273,7 @@ body.dark-hc {
 /* Base Styles */
 @layer base {
   * {
-    @apply border-border-de-emp;
+    border-color: var(--color-border-de-emp);
   }
 
   body {
@@ -276,17 +281,207 @@ body.dark-hc {
   }
 }
 
-/* Divide utilities (for flex/grid dividers) */
+/* ===== Explicit Apollo utilities for consuming projects ===== */
+
+/* Background utilities */
 @layer utilities {
-  .divide-default > * + * {
-    border-color: var(--color-border);
+  .bg-background-secondary {
+    background-color: var(--color-background-secondary);
   }
 
-  .divide-de-emp > * + * {
+  .bg-background-inverse {
+    background-color: var(--color-background-inverse);
+  }
+
+  .bg-background-raised {
+    background-color: var(--color-background-raised);
+  }
+
+  .bg-background-gray {
+    background-color: var(--color-background-gray);
+  }
+
+  .bg-background-disabled {
+    background-color: var(--color-background-disabled);
+  }
+
+  .bg-background-highlight {
+    background-color: var(--color-background-highlight);
+  }
+
+  .bg-background-edit {
+    background-color: var(--color-background-edit);
+  }
+
+  .bg-background-gray-emp {
+    background-color: var(--color-background-gray-emp);
+  }
+
+  .bg-background-hover {
+    background-color: var(--color-background-hover);
+  }
+
+  .bg-background-pressed {
+    background-color: var(--color-background-pressed);
+  }
+
+  .bg-background-selected {
+    background-color: var(--color-background-selected);
+  }
+}
+
+/* Foreground/text utilities */
+@layer utilities {
+  .text-foreground-light {
+    color: var(--color-foreground-light);
+  }
+
+  .text-foreground-emp {
+    color: var(--color-foreground-emp);
+  }
+
+  .text-foreground-de-emp {
+    color: var(--color-foreground-de-emp);
+  }
+
+  .text-foreground-disable {
+    color: var(--color-foreground-disable);
+  }
+
+  .text-foreground-inverse {
+    color: var(--color-foreground-inverse);
+  }
+
+  .text-foreground-highlight {
+    color: var(--color-foreground-highlight);
+  }
+
+  .text-foreground-link {
+    color: var(--color-foreground-link);
+  }
+
+  .text-foreground-link-pressed {
+    color: var(--color-foreground-link-pressed);
+  }
+
+  .text-foreground-inv-de-emp {
+    color: var(--color-foreground-inv-de-emp);
+  }
+}
+
+/* Border utilities */
+@layer utilities {
+  .border-de-emp {
     border-color: var(--color-border-de-emp);
   }
 
-  .divide-grid > * + * {
+  .border-default {
+    border-color: var(--color-border);
+  }
+
+  .border-grid {
+    border-color: var(--color-border-grid);
+  }
+
+  .border-disabled {
+    border-color: var(--color-border-disabled);
+  }
+}
+
+/* Primary utilities */
+@layer utilities {
+  .bg-primary-lighter {
+    background-color: var(--color-primary-lighter);
+  }
+
+  .bg-primary-darker {
+    background-color: var(--color-primary-darker);
+  }
+
+  .bg-primary-hover {
+    background-color: var(--color-primary-hover);
+  }
+
+  .bg-primary-focused {
+    background-color: var(--color-primary-focused);
+  }
+
+  .bg-primary-pressed {
+    background-color: var(--color-primary-pressed);
+  }
+}
+
+/* Status utilities - Error */
+@layer utilities {
+  .bg-error-background {
+    background-color: var(--color-error-background);
+  }
+
+  .text-error-text {
+    color: var(--color-error-text);
+  }
+
+  .text-error-icon {
+    color: var(--color-error-icon);
+  }
+}
+
+/* Status utilities - Warning */
+@layer utilities {
+  .bg-warning-background {
+    background-color: var(--color-warning-background);
+  }
+
+  .text-warning-text {
+    color: var(--color-warning-text);
+  }
+
+  .text-warning-icon {
+    color: var(--color-warning-icon);
+  }
+}
+
+/* Status utilities - Success */
+@layer utilities {
+  .bg-success-background {
+    background-color: var(--color-success-background);
+  }
+
+  .text-success-text {
+    color: var(--color-success-text);
+  }
+
+  .text-success-icon {
+    color: var(--color-success-icon);
+  }
+}
+
+/* Status utilities - Info */
+@layer utilities {
+  .bg-info-background {
+    background-color: var(--color-info-background);
+  }
+
+  .text-info-text {
+    color: var(--color-info-text);
+  }
+
+  .text-info-icon {
+    color: var(--color-info-icon);
+  }
+}
+
+/* Divide utilities (for flex/grid dividers) */
+@layer utilities {
+  .divide-default>*+* {
+    border-color: var(--color-border);
+  }
+
+  .divide-de-emp>*+* {
+    border-color: var(--color-border-de-emp);
+  }
+
+  .divide-grid>*+* {
     border-color: var(--color-border-grid);
   }
 }
