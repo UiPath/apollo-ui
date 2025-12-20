@@ -8,24 +8,27 @@ const EMPTY_SET: ReadonlySet<string> = Object.freeze(new Set()) as ReadonlySet<s
 
 /**
  * Store that manages connected handles with granular subscriptions.
- * Only notifies nodes whose connected handles actually changed.
+ * Guarantees snapshot identity stability for useSyncExternalStore.
  */
 class ConnectedHandlesStore {
   private map: ConnectedHandlesMap = new Map();
   private listeners = new Map<string, Set<Listener>>();
 
   /**
-   * Subscribe to changes for a specific node's connected handles.
+   * Subscribe to changes for a specific node.
    */
   subscribe(nodeId: string, listener: Listener): () => void {
-    if (!this.listeners.has(nodeId)) {
-      this.listeners.set(nodeId, new Set());
+    let nodeListeners = this.listeners.get(nodeId);
+    if (!nodeListeners) {
+      nodeListeners = new Set();
+      this.listeners.set(nodeId, nodeListeners);
     }
-    this.listeners.get(nodeId)!.add(listener);
+
+    nodeListeners.add(listener);
 
     return () => {
-      this.listeners.get(nodeId)?.delete(listener);
-      if (this.listeners.get(nodeId)?.size === 0) {
+      nodeListeners!.delete(listener);
+      if (nodeListeners!.size === 0) {
         this.listeners.delete(nodeId);
       }
     };
@@ -33,29 +36,39 @@ class ConnectedHandlesStore {
 
   /**
    * Get connected handles for a specific node.
+   * Snapshot identity is stable unless the node's handles actually change.
    */
   getSnapshot(nodeId: string): ReadonlySet<string> {
     return this.map.get(nodeId) ?? EMPTY_SET;
   }
 
   /**
-   * Update the store with new edges. Only notifies affected nodes.
+   * Update store from edges.
+   * Only replaces Set instances for nodes whose handles changed.
    */
   update(edges: Edge[]): void {
-    const newMap = buildConnectedHandlesMap(edges);
+    const nextMap = buildConnectedHandlesMap(edges);
+    const prevMap = this.map;
+
+    const finalMap: ConnectedHandlesMap = new Map();
     const changedNodeIds = new Set<string>();
 
-    // Find nodes whose connected handles changed
-    for (const [nodeId, newHandles] of newMap) {
-      const oldHandles = this.map.get(nodeId);
-      if (!setsEqual(oldHandles, newHandles)) {
+    // Added or updated nodes
+    for (const [nodeId, nextSet] of nextMap) {
+      const prevSet = prevMap.get(nodeId);
+
+      if (setsEqual(prevSet, nextSet)) {
+        // Reuse previous Set reference to preserve snapshot identity
+        finalMap.set(nodeId, prevSet!);
+      } else {
+        finalMap.set(nodeId, nextSet);
         changedNodeIds.add(nodeId);
       }
     }
 
-    // Nodes removed entirely
-    for (const nodeId of this.map.keys()) {
-      if (!newMap.has(nodeId)) {
+    // Removed nodes
+    for (const nodeId of prevMap.keys()) {
+      if (!nextMap.has(nodeId)) {
         changedNodeIds.add(nodeId);
       }
     }
@@ -64,9 +77,9 @@ class ConnectedHandlesStore {
       return;
     }
 
-    this.map = newMap;
+    this.map = finalMap;
 
-    // Notify only affected nodes
+    // Notify only affected subscribers
     for (const nodeId of changedNodeIds) {
       const nodeListeners = this.listeners.get(nodeId);
       if (nodeListeners) {
@@ -81,35 +94,41 @@ class ConnectedHandlesStore {
 /**
  * Compare two Sets for equality.
  */
-function setsEqual(a: Set<string> | undefined, b: Set<string> | undefined): boolean {
+function setsEqual(a?: Set<string>, b?: Set<string>): boolean {
   if (a === b) return true;
   if (!a || !b) return false;
   if (a.size !== b.size) return false;
-  for (const item of a) {
-    if (!b.has(item)) return false;
+
+  for (const value of a) {
+    if (!b.has(value)) return false;
   }
+
   return true;
 }
 
 /**
- * Builds the connected handles map from edges.
+ * Build connected handles map from edges.
  */
 function buildConnectedHandlesMap(edges: Edge[]): ConnectedHandlesMap {
   const map: ConnectedHandlesMap = new Map();
 
   for (const edge of edges) {
     if (edge.sourceHandle) {
-      if (!map.has(edge.source)) {
-        map.set(edge.source, new Set());
+      let set = map.get(edge.source);
+      if (!set) {
+        set = new Set();
+        map.set(edge.source, set);
       }
-      map.get(edge.source)!.add(edge.sourceHandle);
+      set.add(edge.sourceHandle);
     }
 
     if (edge.targetHandle) {
-      if (!map.has(edge.target)) {
-        map.set(edge.target, new Set());
+      let set = map.get(edge.target);
+      if (!set) {
+        set = new Set();
+        map.set(edge.target, set);
       }
-      map.get(edge.target)!.add(edge.targetHandle);
+      set.add(edge.targetHandle);
     }
   }
 
@@ -119,14 +138,11 @@ function buildConnectedHandlesMap(edges: Edge[]): ConnectedHandlesMap {
 const ConnectedHandlesContext = createContext<ConnectedHandlesStore | null>(null);
 
 /**
- * Provides connected handles store to the tree.
- * Uses a subscription-based approach for granular updates - only nodes
- * whose connected handles actually change will re-render.
+ * Provides the connected handles store to the tree.
  */
 export function ConnectedHandlesProvider({ edges, children }: { edges: Edge[]; children: ReactNode }) {
-  const storeRef = useRef<ConnectedHandlesStore | null>(null);
+  const storeRef = useRef<ConnectedHandlesStore>();
 
-  // Create store once
   if (!storeRef.current) {
     storeRef.current = new ConnectedHandlesStore();
   }
@@ -139,9 +155,8 @@ export function ConnectedHandlesProvider({ edges, children }: { edges: Edge[]; c
 }
 
 /**
- * Returns the set of connected handle IDs for a given node.
- * Uses useSyncExternalStore for efficient granular subscriptions -
- * only re-renders when this specific node's connected handles change.
+ * Hook to access connected handles for a specific node.
+ * Only re-renders when that node's handles change.
  */
 export function useConnectedHandles(nodeId: string): ReadonlySet<string> {
   const store = useContext(ConnectedHandlesContext);
@@ -155,8 +170,7 @@ export function useConnectedHandles(nodeId: string): ReadonlySet<string> {
   );
 
   const getSnapshot = useCallback(() => {
-    if (!store) return EMPTY_SET;
-    return store.getSnapshot(nodeId);
+    return store?.getSnapshot(nodeId) ?? EMPTY_SET;
   }, [store, nodeId]);
 
   return useSyncExternalStore(subscribe, getSnapshot, getSnapshot);

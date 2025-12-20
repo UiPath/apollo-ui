@@ -1,20 +1,20 @@
-import { useMemo, useCallback, useState, useRef, useEffect } from "react";
+import { useMemo, useCallback, useState, useRef, useEffect, memo, type FC } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { Panel, useReactFlow } from "@uipath/uix/xyflow/react";
-import type { Edge, Node, Position } from "@uipath/uix/xyflow/react";
+import { Panel, useReactFlow, Handle, Position } from "@uipath/uix/xyflow/react";
+import type { Edge, Node, NodeProps } from "@uipath/uix/xyflow/react";
 import styled from "@emotion/styled";
 import { BaseCanvas } from "./BaseCanvas";
 import type { BaseNodeData } from "./BaseNode/BaseNode.types";
-import { withCanvasProviders, useCanvasStory, createNode, NodePositions } from "../storybook-utils";
+import { withCanvasProviders, useCanvasStory, createNode, NodePositions, StoryInfoPanel } from "../storybook-utils";
 import { AddNodeManager, AddNodePanel } from "./AddNodePanel";
 import { FloatingCanvasPanel } from "./FloatingCanvasPanel";
 import type { ListItem } from "./Toolbox";
-import { useCanvasEvent } from "../hooks";
+import { useCanvasEvent, useExportCanvas } from "../hooks";
 import type { CanvasHandleActionEvent } from "../utils";
 import { createPreviewNode, applyPreviewToReactFlow } from "../utils/createPreviewNode";
 import { StickyNoteNode } from "./StickyNoteNode";
 import type { StickyNoteData } from "./StickyNoteNode/StickyNoteNode.types";
-import { Plus, StickyNote } from "lucide-react";
+import { Download, Plus, StickyNote } from "lucide-react";
 
 // ============================================================================
 // Meta Configuration
@@ -113,6 +113,31 @@ const ToolbarDivider = styled.div`
   background: var(--uix-canvas-border-de-emp);
 `;
 
+const ExportOverlay = styled.div`
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  color: white;
+  gap: 12px;
+`;
+
+const ExportTitle = styled.div`
+  font-size: 18px;
+  font-weight: 500;
+`;
+
+const ExportMessage = styled.div`
+  font-size: 14px;
+  opacity: 0.8;
+  text-align: center;
+  max-width: 300px;
+`;
+
 // ============================================================================
 // Story Components
 // ============================================================================
@@ -130,6 +155,9 @@ function DefaultStory({ useSmartHandles }: FlowStoryArgs) {
   const [isAddPanelOpen, setIsAddPanelOpen] = useState(false);
   const [addButtonRect, setAddButtonRect] = useState<{ x: number; y: number; width: number; height: number } | null>(null);
   const addButtonRef = useRef<HTMLButtonElement>(null);
+
+  // Export canvas hook
+  const { isExporting, downloadAsImage } = useExportCanvas();
 
   const { canvasProps, setNodes } = useCanvasStory({
     initialNodes,
@@ -251,6 +279,15 @@ function DefaultStory({ useSmartHandles }: FlowStoryArgs) {
     [reactFlowInstance, setNodes, stickyNoteCounter]
   );
 
+  // Handle export to PNG
+  const handleExportToPng = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      downloadAsImage("flow-export");
+    },
+    [downloadAsImage]
+  );
+
   useCanvasEvent("handle:action", (event: CanvasHandleActionEvent) => {
     if (!reactFlowInstance) return;
 
@@ -291,6 +328,10 @@ function DefaultStory({ useSmartHandles }: FlowStoryArgs) {
           <ToolbarButton type="button" onClick={handleAddStickyNote} title="Add note">
             <StickyNote size={16} />
           </ToolbarButton>
+          <ToolbarDivider />
+          <ToolbarButton type="button" onClick={handleExportToPng} disabled={isExporting} title="Export to PNG">
+            <Download size={16} />
+          </ToolbarButton>
         </ToolbarContainer>
       </Panel>
       {addButtonRect && (
@@ -311,77 +352,92 @@ export const Default: Story = {
 };
 
 // ============================================================================
-// Performance Story - 500 Nodes
+// Performance Story - Dynamic Node Count
 // ============================================================================
 
-const GRID_COLS = 25;
-const GRID_ROWS = 20;
 const NODE_SPACING_X = 250;
 const NODE_SPACING_Y = 150;
 
-function createPerformanceNodes(useSmartHandles: boolean): Node<BaseNodeData>[] {
-  const nodes: Node<BaseNodeData>[] = [];
+function calculateGridDimensions(nodeCount: number): { cols: number; rows: number } {
+  // Calculate grid dimensions to be roughly square
+  const cols = Math.ceil(Math.sqrt(nodeCount));
+  const rows = Math.ceil(nodeCount / cols);
+  return { cols, rows };
+}
 
-  for (let row = 0; row < GRID_ROWS; row++) {
-    for (let col = 0; col < GRID_COLS; col++) {
-      const index = row * GRID_COLS + col;
-      nodes.push(
-        createNode({
-          id: `node-${index}`,
-          type: "uipath.blank-node",
-          position: {
-            x: col * NODE_SPACING_X,
-            y: row * NODE_SPACING_Y,
-          },
-          display: { label: `Node ${index + 1}`, subLabel: `Row ${row + 1}, Col ${col + 1}` },
-          useSmartHandles,
-        })
-      );
-    }
+function createPerformanceNodes(nodeCount: number, useSmartHandles: boolean): Node<BaseNodeData>[] {
+  const nodes: Node<BaseNodeData>[] = [];
+  const { cols } = calculateGridDimensions(nodeCount);
+
+  for (let i = 0; i < nodeCount; i++) {
+    const row = Math.floor(i / cols);
+    const col = i % cols;
+    nodes.push(
+      createNode({
+        id: `node-${i}`,
+        type: "uipath.blank-node",
+        position: {
+          x: col * NODE_SPACING_X,
+          y: row * NODE_SPACING_Y,
+        },
+        display: { label: `Node ${i + 1}`, subLabel: `Row ${row + 1}, Col ${col + 1}` },
+        useSmartHandles,
+      })
+    );
   }
 
   return nodes;
 }
 
-function createPerformanceEdges(): Edge[] {
+function createPerformanceEdges(nodeCount: number): Edge[] {
   const edges: Edge[] = [];
+  const { cols, rows } = calculateGridDimensions(nodeCount);
 
-  for (let row = 0; row < GRID_ROWS; row++) {
-    for (let col = 0; col < GRID_COLS; col++) {
-      const index = row * GRID_COLS + col;
+  for (let i = 0; i < nodeCount; i++) {
+    const row = Math.floor(i / cols);
+    const col = i % cols;
 
-      // Connect to the node on the right (if exists)
-      if (col < GRID_COLS - 1) {
-        edges.push({
-          id: `e-${index}-right`,
-          source: `node-${index}`,
-          target: `node-${index + 1}`,
-          sourceHandle: "output",
-          targetHandle: "input",
-        });
-      }
+    // Connect to the node on the right (if exists and within nodeCount)
+    const rightIndex = i + 1;
+    if (col < cols - 1 && rightIndex < nodeCount) {
+      edges.push({
+        id: `e-${i}-right`,
+        source: `node-${i}`,
+        target: `node-${rightIndex}`,
+        sourceHandle: "output",
+        targetHandle: "input",
+      });
+    }
 
-      // Connect to the node below (if exists)
-      if (row < GRID_ROWS - 1) {
-        edges.push({
-          id: `e-${index}-down`,
-          source: `node-${index}`,
-          target: `node-${index + GRID_COLS}`,
-          sourceHandle: "output",
-          targetHandle: "input",
-        });
-      }
+    // Connect to the node below (if exists and within nodeCount)
+    const downIndex = i + cols;
+    if (row < rows - 1 && downIndex < nodeCount) {
+      edges.push({
+        id: `e-${i}-down`,
+        source: `node-${i}`,
+        target: `node-${downIndex}`,
+        sourceHandle: "output",
+        targetHandle: "input",
+      });
     }
   }
 
   return edges;
 }
 
-function PerformanceStory({ useSmartHandles }: FlowStoryArgs) {
-  const initialNodes = useMemo(() => createPerformanceNodes(useSmartHandles), [useSmartHandles]);
-  const initialEdges = useMemo(() => createPerformanceEdges(), []);
+const DEFAULT_NODE_COUNT = 500;
+const MIN_NODE_COUNT = 1;
+const MAX_NODE_COUNT = 1000;
 
-  const { canvasProps, setNodes } = useCanvasStory({
+function PerformanceStory({ useSmartHandles }: FlowStoryArgs) {
+  const [nodeCount, setNodeCount] = useState(DEFAULT_NODE_COUNT);
+  const initialNodes = useMemo(() => createPerformanceNodes(DEFAULT_NODE_COUNT, useSmartHandles), [useSmartHandles]);
+  const initialEdges = useMemo(() => createPerformanceEdges(DEFAULT_NODE_COUNT), []);
+
+  // Export canvas hook
+  const { isExporting, downloadAsImage } = useExportCanvas();
+
+  const { canvasProps, setNodes, setEdges } = useCanvasStory({
     initialNodes,
     initialEdges,
   });
@@ -404,7 +460,61 @@ function PerformanceStory({ useSmartHandles }: FlowStoryArgs) {
     handleSmartHandlesToggle();
   }, [handleSmartHandlesToggle]);
 
-  return <BaseCanvas {...canvasProps} deleteKeyCode={DELETE_KEY_CODES} mode="design" selectionOnDrag />;
+  // Handle node count change
+  const handleNodeCountChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const newCount = parseInt(e.target.value, 10);
+      setNodeCount(newCount);
+      setNodes(createPerformanceNodes(newCount, useSmartHandles));
+      setEdges(createPerformanceEdges(newCount));
+    },
+    [setNodes, setEdges, useSmartHandles]
+  );
+
+  // Handle export to PNG
+  const handleExportToPng = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      downloadAsImage("performance-flow-export");
+    },
+    [downloadAsImage]
+  );
+
+  return (
+    <>
+      {isExporting && (
+        <ExportOverlay role="status" aria-live="polite">
+          <ExportTitle>Exporting Canvas</ExportTitle>
+          <ExportMessage>Processing {nodeCount} nodes. The screen may freeze briefly - this is normal.</ExportMessage>
+        </ExportOverlay>
+      )}
+      <BaseCanvas {...canvasProps} deleteKeyCode={DELETE_KEY_CODES} mode="design" selectionOnDrag>
+        <StoryInfoPanel title="Performance Test" description="Adjust the number of nodes to test canvas performance">
+          <div className="nodrag nopan nowheel" style={{ marginTop: 12 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+              <span style={{ fontSize: 12 }}>Node Count</span>
+              <span style={{ fontWeight: 600, fontSize: 14 }}>{nodeCount}</span>
+            </div>
+            <input
+              type="range"
+              min={MIN_NODE_COUNT}
+              max={MAX_NODE_COUNT}
+              value={nodeCount}
+              onChange={handleNodeCountChange}
+              style={{ width: "100%", cursor: "pointer" }}
+            />
+          </div>
+        </StoryInfoPanel>
+        <Panel position="bottom-center">
+          <ToolbarContainer className="nodrag nopan nowheel">
+            <ToolbarButton type="button" onClick={handleExportToPng} disabled={isExporting} title="Export to PNG">
+              <Download size={16} />
+            </ToolbarButton>
+          </ToolbarContainer>
+        </Panel>
+      </BaseCanvas>
+    </>
+  );
 }
 
 export const Performance: Story = {
@@ -412,7 +522,167 @@ export const Performance: Story = {
   parameters: {
     docs: {
       description: {
-        story: "Performance test with 500 nodes (25x20 grid) connected horizontally and vertically.",
+        story:
+          "Performance test with adjustable node count (1-1000). Nodes are arranged in a grid and connected horizontally and vertically.",
+      },
+    },
+  },
+};
+
+// ============================================================================
+// Performance Baseline Story - Simplified Node
+// ============================================================================
+
+interface SimpleNodeData extends Record<string, unknown> {
+  label: string;
+  subLabel?: string;
+}
+
+/**
+ * Minimal node component for performance baseline comparison.
+ * No hooks, no context, no complex styling - just basic rendering.
+ */
+const SimpleNodeComponent: FC<NodeProps<Node<SimpleNodeData>>> = ({ data, selected }) => {
+  return (
+    <div
+      style={{
+        width: 96,
+        height: 96,
+        background: selected ? "#e3f2fd" : "#fff",
+        border: `2px solid ${selected ? "#2196f3" : "#ddd"}`,
+        borderRadius: 16,
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        fontSize: 11,
+        fontFamily: "sans-serif",
+        boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+      }}
+    >
+      <div style={{ fontWeight: 600, textAlign: "center", padding: "0 4px" }}>{data.label}</div>
+      {data.subLabel && <div style={{ color: "#666", fontSize: 9, textAlign: "center" }}>{data.subLabel}</div>}
+      <Handle type="target" position={Position.Left} style={{ background: "#555" }} />
+      <Handle type="source" position={Position.Right} style={{ background: "#555" }} />
+    </div>
+  );
+};
+
+const SimpleNode = memo(SimpleNodeComponent);
+
+const simpleNodeTypes = {
+  simpleNode: SimpleNode,
+};
+
+function createSimpleNodes(nodeCount: number): Node<SimpleNodeData>[] {
+  const nodes: Node<SimpleNodeData>[] = [];
+  const { cols } = calculateGridDimensions(nodeCount);
+
+  for (let i = 0; i < nodeCount; i++) {
+    const row = Math.floor(i / cols);
+    const col = i % cols;
+    nodes.push({
+      id: `node-${i}`,
+      type: "simpleNode",
+      position: {
+        x: col * NODE_SPACING_X,
+        y: row * NODE_SPACING_Y,
+      },
+      data: {
+        label: `Node ${i + 1}`,
+        subLabel: `R${row + 1}, C${col + 1}`,
+      },
+    });
+  }
+
+  return nodes;
+}
+
+function createSimpleEdges(nodeCount: number): Edge[] {
+  const edges: Edge[] = [];
+  const { cols, rows } = calculateGridDimensions(nodeCount);
+
+  for (let i = 0; i < nodeCount; i++) {
+    const row = Math.floor(i / cols);
+    const col = i % cols;
+
+    // Connect to the node on the right
+    const rightIndex = i + 1;
+    if (col < cols - 1 && rightIndex < nodeCount) {
+      edges.push({
+        id: `e-${i}-right`,
+        source: `node-${i}`,
+        target: `node-${rightIndex}`,
+      });
+    }
+
+    // Connect to the node below
+    const downIndex = i + cols;
+    if (row < rows - 1 && downIndex < nodeCount) {
+      edges.push({
+        id: `e-${i}-down`,
+        source: `node-${i}`,
+        target: `node-${downIndex}`,
+      });
+    }
+  }
+
+  return edges;
+}
+
+function PerformanceBaselineStory() {
+  const [nodeCount, setNodeCount] = useState(DEFAULT_NODE_COUNT);
+  const initialNodes = useMemo(() => createSimpleNodes(DEFAULT_NODE_COUNT), []);
+  const initialEdges = useMemo(() => createSimpleEdges(DEFAULT_NODE_COUNT), []);
+
+  const { canvasProps, setNodes, setEdges } = useCanvasStory({
+    initialNodes,
+    initialEdges,
+    additionalNodeTypes: simpleNodeTypes,
+  });
+
+  const handleNodeCountChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const newCount = parseInt(e.target.value, 10);
+      setNodeCount(newCount);
+      setNodes(createSimpleNodes(newCount));
+      setEdges(createSimpleEdges(newCount));
+    },
+    [setNodes, setEdges]
+  );
+
+  return (
+    <BaseCanvas {...canvasProps} deleteKeyCode={DELETE_KEY_CODES} mode="design" selectionOnDrag>
+      <StoryInfoPanel
+        title="Performance Baseline"
+        description="Simplified nodes for performance comparison. No hooks, no context, minimal rendering."
+      >
+        <div className="nodrag nopan nowheel" style={{ marginTop: 12 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+            <span style={{ fontSize: 12 }}>Node Count</span>
+            <span style={{ fontWeight: 600, fontSize: 14 }}>{nodeCount}</span>
+          </div>
+          <input
+            type="range"
+            min={MIN_NODE_COUNT}
+            max={MAX_NODE_COUNT}
+            value={nodeCount}
+            onChange={handleNodeCountChange}
+            style={{ width: "100%", cursor: "pointer" }}
+          />
+        </div>
+      </StoryInfoPanel>
+    </BaseCanvas>
+  );
+}
+
+export const PerformanceBaseline: Story = {
+  render: () => <PerformanceBaselineStory />,
+  parameters: {
+    docs: {
+      description: {
+        story:
+          "Performance baseline with simplified nodes. Compare panning performance with the regular Performance story to measure BaseNode overhead.",
       },
     },
   },

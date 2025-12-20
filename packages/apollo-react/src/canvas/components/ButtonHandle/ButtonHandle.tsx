@@ -135,6 +135,9 @@ const ButtonHandleBase = ({
     [id, nodeId, handleType, position, onAction]
   );
 
+  const markAsHovered = useCallback(() => setIsHovered(true), []);
+  const unmarkAsHovered = useCallback(() => setIsHovered(false), []);
+
   return (
     <StyledHandle
       type={type}
@@ -145,9 +148,9 @@ const ButtonHandleBase = ({
       $total={total}
       $visible={visible}
       $customPositionAndOffsets={customPositionAndOffsets}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      onMouseDown={() => setIsHovered(false)}
+      onMouseEnter={markAsHovered}
+      onMouseLeave={unmarkAsHovered}
+      onMouseDown={unmarkAsHovered}
     >
       {label && (
         <StyledLabel $position={position} $backgroundColor={labelBackgroundColor}>

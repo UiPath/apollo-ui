@@ -10,21 +10,12 @@ import { useNodeTypeRegistry } from "./useNodeTypeRegistry";
 import { cx } from "@uipath/uix/core";
 import { ApIcon, ApTooltip } from "@uipath/portal-shell-react";
 import { useBaseCanvasMode } from "../BaseCanvas/BaseCanvasModeProvider";
+import { useSelectionState } from "../BaseCanvas/SelectionStateContext";
 import { SmartHandleProvider, SmartHandle } from "../ButtonHandle/SmartHandle";
 import { useButtonHandles } from "../ButtonHandle/useButtonHandles";
 import { useConnectedHandles } from "../BaseCanvas/ConnectedHandlesContext";
 
 const selectIsConnecting = (state: ReactFlowState) => !!state.connectionClickStartHandle;
-const selectMultipleNodesSelected = (state: ReactFlowState) => {
-  let count = 0;
-  for (const node of state.nodes) {
-    if (node.selected) {
-      count++;
-      if (count > 1) return true;
-    }
-  }
-  return false;
-};
 
 const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
   const { type, data, selected, id, dragging, width, height } = props;
@@ -43,7 +34,7 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
   const connectedHandleIds = useConnectedHandles(id);
 
   const isConnecting = useStore(selectIsConnecting);
-  const multipleNodesSelected = useStore(selectMultipleNodesSelected);
+  const { multipleNodesSelected } = useSelectionState();
 
   const nodeDefinition = useMemo(() => nodeTypeRegistry.get(type), [type, nodeTypeRegistry]);
 

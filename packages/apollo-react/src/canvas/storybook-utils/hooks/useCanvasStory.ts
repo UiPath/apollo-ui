@@ -105,12 +105,12 @@ export interface UseCanvasStoryReturn {
  * ```
  */
 export function useCanvasStory(options: UseCanvasStoryOptions): UseCanvasStoryReturn {
-  const { initialNodes, initialEdges = [], nodeComponent = BaseNode, additionalNodeTypes = {} } = options;
+  const { initialNodes, initialEdges, nodeComponent = BaseNode, additionalNodeTypes } = options;
 
   const nodeTypeRegistry = useNodeTypeRegistry();
 
-  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes ?? []);
+  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges ?? []);
 
   const onConnect = useCallback(
     (connection: Connection) => {
