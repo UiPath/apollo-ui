@@ -62,32 +62,16 @@ import type { SupportedLocale } from './ApI18nProvider';
 type LocaleMessages = Record<string, string>;
 
 /**
- * Helper to extract messages from locale module
- * Handles both CommonJS (module.exports) and ES module formats
+ * Extract messages from compiled Lingui locale module
+ * Lingui compiles to: module.exports={messages:JSON.parse("{...}")};
  */
 function extractMessages(localeModule: unknown): LocaleMessages {
-  // CommonJS format: module.exports = { messages: ... }
   if (typeof localeModule === 'object' && localeModule !== null && 'messages' in localeModule) {
-    const moduleWithMessages = localeModule as { messages: LocaleMessages };
-    return moduleWithMessages.messages;
+    return (localeModule as { messages: LocaleMessages }).messages;
   }
-  // ES module default export
-  if (typeof localeModule === 'object' && localeModule !== null && 'default' in localeModule) {
-    const moduleWithDefault = localeModule as { default: unknown };
-    const defaultExport = moduleWithDefault.default;
-    if (typeof defaultExport === 'object' && defaultExport !== null && 'messages' in defaultExport) {
-      return (defaultExport as { messages: LocaleMessages }).messages;
-    }
-    if (typeof defaultExport === 'string') {
-      return JSON.parse(defaultExport);
-    }
-    return defaultExport as LocaleMessages;
-  }
-  // Direct export or string
-  if (typeof localeModule === 'string') {
-    return JSON.parse(localeModule);
-  }
-  return localeModule as LocaleMessages;
+  // Fallback for unexpected format
+  console.warn('Unexpected locale module format:', localeModule);
+  return {};
 }
 
 /**
