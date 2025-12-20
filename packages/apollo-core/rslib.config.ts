@@ -1,3 +1,4 @@
+import type { RslibConfig } from '@rslib/core';
 import { defineConfig } from '@rslib/core';
 
 export default defineConfig({
@@ -37,6 +38,7 @@ export default defineConfig({
   },
   output: {
     target: 'web',
+    cleanDistPath: true,
     copy: [
       { from: './src/icons/svg', to: './icons/svg' },
       { from: './src/tokens/scss', to: './tokens/scss' },
@@ -44,4 +46,14 @@ export default defineConfig({
       { from: './src/tokens/css', to: './tokens/css' },
     ],
   },
-});
+  tools: {
+    rspack: {
+      resolve: {
+        extensions: ['.tsx', '.ts', '.jsx', '.js', '.json'],
+      },
+      optimization: {
+        usedExports: true,
+      },
+    },
+  },
+} satisfies RslibConfig);
