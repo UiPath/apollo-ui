@@ -1,3 +1,10 @@
+## [1.13.1](https://github.com/uipath/wind/compare/v1.13.0...v1.13.1) (2025-12-20)
+
+
+### Bug Fixes
+
+* clean up theme styles and remove unused CSS files ([9ab82f2](https://github.com/uipath/wind/commit/9ab82f20471bc564afbd75a52ac550b3a0baa0f0))
+
 # [1.13.0](https://github.com/uipath/wind/compare/v1.12.4...v1.13.0) (2025-12-20)
 
 
