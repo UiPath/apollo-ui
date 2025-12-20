@@ -1,3 +1,10 @@
+## [1.12.4](https://github.com/uipath/wind/compare/v1.12.3...v1.12.4) (2025-12-20)
+
+
+### Bug Fixes
+
+* update version to 1.12.3 and remove unused semantic and shadcn color styles ([36f1551](https://github.com/uipath/wind/commit/36f1551fc3d7657c6be02c0c1f2dc525467d04dd))
+
 ## [1.12.3](https://github.com/uipath/wind/compare/v1.12.2...v1.12.3) (2025-12-20)
 
 
