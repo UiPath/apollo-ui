@@ -57,11 +57,13 @@ function AutopilotChatActionsListComponent({
     const overflowButtonRef = React.useRef<HTMLButtonElement>(null);
     const popoverActionRef = React.useRef<{ updatePosition: () => void } | null>(null);
 
-    const schedulePositionUpdate = useScheduledCallback(() => {
+    const updatePosition = React.useCallback(() => {
         if (popoverActionRef.current) {
             popoverActionRef.current.updatePosition();
         }
-    });
+    }, []);
+
+    const schedulePositionUpdate = useScheduledCallback(updatePosition);
 
     const handleTransitionEnter = React.useCallback(() => {
         schedulePositionUpdate();

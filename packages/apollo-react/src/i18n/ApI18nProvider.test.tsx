@@ -20,6 +20,7 @@ import {
   SUPPORTED_LOCALES,
   useApI18n,
 } from './ApI18nProvider';
+import { getAllPreImportedLocales } from './locale-registry';
 
 // Test message catalogs - pre-loaded directly into i18n for testing
 const testMessages = {
@@ -73,7 +74,7 @@ describe('ApI18nProvider', () => {
   });
 
   describe('Rendering', () => {
-    it('should render children after loading locale', async () => {
+    it('should render children after loading locale (dynamic import)', async () => {
       render(
         <ApI18nProvider component="test/fixtures" locale="en">
           <div data-testid="child">Content</div>
@@ -85,15 +86,26 @@ describe('ApI18nProvider', () => {
       });
     });
 
-    it('should not render children while loading', () => {
-      const { container } = render(
+    it('should render children immediately', () => {
+      render(
         <ApI18nProvider component="test/fixtures" locale="en">
           <div data-testid="child">Content</div>
         </ApI18nProvider>
       );
 
-      // Initially null (loading)
-      expect(container.firstChild).toBeNull();
+      // Children render immediately, translations load asynchronously (for non-registered components)
+      expect(screen.getByTestId('child')).toBeInTheDocument();
+    });
+
+    it('should render children immediately for pre-imported components', () => {
+      render(
+        <ApI18nProvider component="material/components/ap-chat" locale="en">
+          <div data-testid="child">Content</div>
+        </ApI18nProvider>
+      );
+
+      // Children render immediately, locales are pre-imported and load synchronously
+      expect(screen.getByTestId('child')).toBeInTheDocument();
     });
 
     it('should default to English when locale not specified', async () => {
@@ -224,7 +236,7 @@ describe('ApI18nProvider', () => {
   });
 
   describe('Dynamic Updates', () => {
-    it('should reload when locale changes', async () => {
+    it('should reload when locale changes (dynamic import)', async () => {
       const { rerender } = render(
         <ApI18nProvider component="test/fixtures" locale="en">
           <div data-testid="child">Content</div>
@@ -247,7 +259,30 @@ describe('ApI18nProvider', () => {
       });
     });
 
-    it('should reload when component path changes', async () => {
+    it('should reload when locale changes (pre-imported)', async () => {
+      const { rerender } = render(
+        <ApI18nProvider component="material/components/ap-chat" locale="en">
+          <div data-testid="child">Content</div>
+        </ApI18nProvider>
+      );
+
+      await waitFor(() => {
+        expect(screen.getByTestId('child')).toBeInTheDocument();
+      });
+      expect(i18n.locale).toBe('en');
+
+      rerender(
+        <ApI18nProvider component="material/components/ap-chat" locale="es">
+          <div data-testid="child">Content</div>
+        </ApI18nProvider>
+      );
+
+      await waitFor(() => {
+        expect(i18n.locale).toBe('es');
+      });
+    });
+
+    it('should reload when component path changes (dynamic import)', async () => {
       const { rerender } = render(
         <ApI18nProvider component="test/fixtures" locale="en">
           <div data-testid="child">Content</div>
@@ -268,10 +303,29 @@ describe('ApI18nProvider', () => {
         expect(consoleSpy.warn).toHaveBeenCalled();
       });
     });
+
+    it('should preload all locales for registered components', async () => {
+      render(
+        <ApI18nProvider component="material/components/ap-chat" locale="en">
+          <div data-testid="child">Content</div>
+        </ApI18nProvider>
+      );
+
+      await waitFor(() => {
+        expect(screen.getByTestId('child')).toBeInTheDocument();
+      });
+
+      // All locales should be loaded for pre-imported components
+      const preImportedLocales = getAllPreImportedLocales('material/components/ap-chat');
+      expect(preImportedLocales).toBeDefined();
+      expect(preImportedLocales?.en).toBeDefined();
+      expect(preImportedLocales?.es).toBeDefined();
+      expect(preImportedLocales?.fr).toBeDefined();
+    });
   });
 
   describe('Error Handling', () => {
-    it('should fallback to English when locale file not found', async () => {
+    it('should fallback to English when locale file not found (dynamic import)', async () => {
       render(
         <ApI18nProvider component="test/fixtures" locale="de">
           <div data-testid="child">Content</div>
@@ -286,6 +340,22 @@ describe('ApI18nProvider', () => {
         expect.stringContaining('Failed to load locale de'),
         expect.any(Error)
       );
+      expect(i18n.locale).toBe('de');
+    });
+
+    it('should load pre-imported locale without warnings', async () => {
+      render(
+        <ApI18nProvider component="material/components/ap-chat" locale="de">
+          <div data-testid="child">Content</div>
+        </ApI18nProvider>
+      );
+
+      await waitFor(() => {
+        expect(screen.getByTestId('child')).toBeInTheDocument();
+      });
+
+      // Pre-imported locales should not trigger warnings
+      expect(consoleSpy.warn).not.toHaveBeenCalled();
       expect(i18n.locale).toBe('de');
     });
 
@@ -309,7 +379,7 @@ describe('ApI18nProvider', () => {
 
   describe('useApI18n Hook', () => {
     it('should return i18n instance', async () => {
-      let hookResult: any;
+      let hookResult: typeof i18n | undefined;
 
       function TestComponent() {
         hookResult = useApI18n();
@@ -326,8 +396,9 @@ describe('ApI18nProvider', () => {
         expect(screen.getByTestId('child')).toBeInTheDocument();
       });
 
+      expect(hookResult).toBeDefined();
       expect(hookResult).toBe(i18n);
-      expect(hookResult.locale).toBe('en');
+      expect(hookResult!.locale).toBe('en');
     });
   });
 });
