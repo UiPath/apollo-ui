@@ -13,14 +13,13 @@
       "require": "./dist/index.cjs"
     },
     "./styles.css": "./dist/styles.css",
-    "./tailwind.css": "./src/styles/tailwind.css",
+    "./tailwind.css": "./dist/styles.css",
     "./theme.css": "./src/styles/theme.css",
     "./tailwind": "./src/tailwind.preset.js",
     "./postcss": "./postcss.config.export.js"
   },
   "files": [
     "dist",
-    "src/styles/tailwind.css",
     "src/styles/theme.css",
     "src/tailwind.preset.js",
     "postcss.config.export.js"
