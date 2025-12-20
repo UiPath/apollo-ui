@@ -1,3 +1,10 @@
+## [2.6.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@2.6.0...@uipath/apollo-react@2.6.1) (2025-12-20)
+
+
+### Bug Fixes
+
+* **apollo-react:** attempt to fix translations ([b6d61db](https://github.com/UiPath/apollo-ui/commit/b6d61dbcacf8b06374ad478e6f8c23811b00ba49))
+
 # [2.6.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@2.5.0...@uipath/apollo-react@2.6.0) (2025-12-20)
 
 

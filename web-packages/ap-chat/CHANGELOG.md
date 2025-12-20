@@ -1,3 +1,10 @@
+## [1.0.1](https://github.com/UiPath/apollo-ui/compare/@uipath/ap-chat@1.0.0...@uipath/ap-chat@1.0.1) (2025-12-20)
+
+
+### Bug Fixes
+
+* **apollo-react:** attempt to fix translations ([b6d61db](https://github.com/UiPath/apollo-ui/commit/b6d61dbcacf8b06374ad478e6f8c23811b00ba49))
+
 # 1.0.0 (2025-12-20)
 
 
