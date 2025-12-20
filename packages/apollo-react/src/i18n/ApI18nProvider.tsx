@@ -2,7 +2,6 @@ import {
   ReactNode,
   useCallback,
   useEffect,
-  useState,
 } from 'react';
 
 import { i18n } from '@lingui/core';
@@ -101,23 +100,16 @@ export function ApI18nProvider({
 }: ApI18nProviderProps) {
   // Use prop locale if provided, otherwise default to 'en'
   const locale = propLocale || 'en';
-  const [isLoaded, setIsLoaded] = useState(false);
 
   const loadAndActivate = useCallback(async () => {
-    setIsLoaded(false);
     const messages = await loadMessages(component, locale);
     i18n.load(locale, messages);
     i18n.activate(locale);
-    setIsLoaded(true);
   }, [component, locale]);
 
   useEffect(() => {
     loadAndActivate();
   }, [loadAndActivate]);
-
-  if (!isLoaded) {
-    return null;
-  }
 
   return (
     <I18nProvider i18n={i18n}>

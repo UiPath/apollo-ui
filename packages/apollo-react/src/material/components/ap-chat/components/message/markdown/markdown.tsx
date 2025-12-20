@@ -3,9 +3,7 @@ import 'katex/dist/katex.min.css';
 
 import React from 'react';
 
-import { all } from 'lowlight';
 import ReactMarkdown from 'react-markdown';
-import rehypeHighlight from 'rehype-highlight';
 import rehypeKatex from 'rehype-katex';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
@@ -212,12 +210,6 @@ function AutopilotChatMarkdownRendererComponent({ message }: { message: Autopilo
                     [ remarkMath, { singleDollarTextMath: false } ],
                 ]}
                 rehypePlugins={[
-                    [ rehypeHighlight, {
-                        detect: false,
-                        ignoreMissing: true,
-                        plainText: [],
-                        languages: all,
-                    } ],
                     [ rehypeKatex, {
                         output: 'mathml',
                         trust: false,

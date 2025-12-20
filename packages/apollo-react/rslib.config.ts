@@ -1,10 +1,21 @@
-import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer';
-
 import { pluginBabel } from '@rsbuild/plugin-babel';
 import { pluginReact } from '@rsbuild/plugin-react';
+import type { RslibConfig } from '@rslib/core';
 import { defineConfig } from '@rslib/core';
 
-const enableAnalyzer = process.env['ANALYZE'] === 'true';
+// Shared externals list to avoid duplication
+const externals = [
+  'react',
+  'react-dom',
+  'react/jsx-runtime',
+  '@emotion/react',
+  '@emotion/styled',
+  '@mui/material',
+  '@mui/system',
+  '@mui/icons-material',
+  '@mui/x-tree-view',
+  '@mui/x-date-pickers',
+];
 
 export default defineConfig({
   lib: [
@@ -17,18 +28,7 @@ export default defineConfig({
         filename: {
           js: '[name].js',
         },
-        externals: [
-          'react',
-          'react-dom',
-          'react/jsx-runtime',
-          '@emotion/react',
-          '@emotion/styled',
-          '@mui/material',
-          '@mui/system',
-          '@mui/icons-material',
-          '@mui/x-tree-view',
-          '@mui/x-date-pickers',
-        ],
+        externals,
       },
       dts: true,
       bundle: false,
@@ -42,18 +42,7 @@ export default defineConfig({
         filename: {
           js: '[name].cjs',
         },
-        externals: [
-          'react',
-          'react-dom',
-          'react/jsx-runtime',
-          '@emotion/react',
-          '@emotion/styled',
-          '@mui/material',
-          '@mui/system',
-          '@mui/icons-material',
-          '@mui/x-tree-view',
-          '@mui/x-date-pickers',
-        ],
+        externals,
       },
       dts: false,
       bundle: false,
@@ -76,13 +65,18 @@ export default defineConfig({
     pluginBabel({
       include: /\.(?:jsx?|tsx?)$/,
       babelLoaderOptions(opts) {
-        opts.plugins?.push('@lingui/babel-plugin-lingui-macro');
+        // Ensure plugins array exists
+        if (!opts.plugins) {
+          opts.plugins = [];
+        }
+        opts.plugins.push('@lingui/babel-plugin-lingui-macro');
         return opts;
       },
     }),
   ],
   output: {
     target: 'web',
+    cleanDistPath: true,
     copy: [
       // Copy all token files from apollo-core to make them available at @uipath/apollo-react/core/tokens/*
       { from: '../apollo-core/dist/tokens/css', to: './core/tokens/css' },
@@ -93,17 +87,9 @@ export default defineConfig({
   },
   tools: {
     rspack: {
-      ...(enableAnalyzer
-        ? {
-            plugins: [
-              new BundleAnalyzerPlugin({
-                analyzerMode: 'static',
-                openAnalyzer: true,
-                reportFilename: '../bundle-report.html',
-              }),
-            ],
-          }
-        : {}),
+      resolve: {
+        extensions: ['.tsx', '.ts', '.jsx', '.js', '.json'],
+      },
       module: {
         rules: [
           {
@@ -119,4 +105,4 @@ export default defineConfig({
       },
     },
   },
-});
+} satisfies RslibConfig);
