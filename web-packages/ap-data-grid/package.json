@@ -1,6 +1,6 @@
 {
   "name": "@uipath/ap-data-grid",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Apollo Design System - Data Grid web component with React wrapper",
   "repository": {
     "type": "git",
