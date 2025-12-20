@@ -143,7 +143,7 @@ const AutopilotChatActionButtonComponent = React.forwardRef<HTMLButtonElement, A
                 }
                 aria-label={ariaLabel}
                 aria-describedby={ariaDescribedby}
-                title={showTooltip ? '' : (title ?? '')}
+                title={showTooltip ? undefined : title}
                 variant="text"
                 size="small"
                 disabled={disabled}
@@ -189,7 +189,7 @@ const AutopilotChatActionButtonComponent = React.forwardRef<HTMLButtonElement, A
             onKeyDown={onKeyDown}
             aria-label={ariaLabel}
             aria-describedby={ariaDescribedby}
-            title={showTooltip ? '' : (title ?? '')}
+            title={showTooltip ? undefined : title}
             onMouseEnter={(event: React.MouseEvent<HTMLButtonElement>) => {
                 onMouseEnter?.(event);
                 if (!preventHover) {
