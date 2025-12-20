@@ -13,11 +13,28 @@
  * import { AutopilotChatService } from '@uipath/ap-chat/service';
  * import '@uipath/ap-chat';
  *
- * const service = new AutopilotChatService();
- * service.initialize({ mode: 'side-by-side' });
+ * // Create or get chat service instance (singleton pattern)
+ * const service = AutopilotChatService.Instantiate({
+ *   instanceName: 'my-chat', // optional, defaults to 'default'
+ *   config: {
+ *     mode: 'side-by-side',
+ *   },
+ * });
+ *
+ * // Set initial conversation if needed
+ * service.setConversation([
+ *   {
+ *     id: '1',
+ *     role: 'assistant',
+ *     content: 'Hello! How can I help you?',
+ *     created_at: new Date().toISOString(),
+ *     widget: 'default',
+ *   },
+ * ]);
  *
  * const chat = document.querySelector('ap-chat');
  * chat.chatServiceInstance = service;
+ *
  * service.open();
  * ```
  */

@@ -4,7 +4,7 @@ import { ApChat as ReactApChat } from '@uipath/apollo-react/ap-chat';
 
 import type { ApChatProperties } from './types';
 
-// Singleton observer to watch document.head for all instances
+// Singleton observer to watch document.head for styles that need to be mirrored
 let globalObserver: MutationObserver | null = null;
 const containerCallbacks = new Map<ShadowRoot, (node: Node) => void>();
 
@@ -13,8 +13,8 @@ function getOrCreateGlobalObserver() {
     globalObserver = new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {
         mutation.addedNodes.forEach((node) => {
-          if (node.nodeName === 'STYLE' && (node as HTMLStyleElement).getAttribute('data-emotion')) {
-            // Notify all registered containers
+          if (node.nodeName === 'STYLE') {
+            // Mirror any style elements added to document.head into all registered shadow roots
             containerCallbacks.forEach((callback) => {
               callback(node);
             });
@@ -32,17 +32,18 @@ function getOrCreateGlobalObserver() {
 
 /**
  * Creates a React renderer function with Shadow DOM support.
- * Uses a shared MutationObserver to efficiently mirror Emotion styles.
+ * Emotion cache is configured to inject styles directly into the Shadow DOM.
+ * MutationObserver mirrors any additional styles from document.head (e.g., MUI base styles).
  */
 export function createReactRenderer(shadowRoot: ShadowRoot, portalContainer: HTMLElement) {
-  // Create Emotion cache that injects into the Shadow DOM
+  // Create Emotion cache that injects styles directly into the Shadow DOM
   const emotionCache = createCache({
     key: 'ap-chat',
     container: shadowRoot,
     prepend: true,
   });
 
-  // Also mirror styles from document.head to shadowRoot for compatibility
+  // Mirror styles from document.head to shadowRoot for styles injected by other libraries
   const handleStyleNode = (node: Node) => {
     const clone = node.cloneNode(true) as HTMLStyleElement;
     shadowRoot.appendChild(clone);
@@ -76,7 +77,7 @@ export function createReactRenderer(shadowRoot: ShadowRoot, portalContainer: HTM
 }
 
 /**
- * Cleanup function to unregister a container (call when web component disconnects)
+ * Cleanup function to unregister a shadow root from style mirroring
  */
 export function cleanupReactRenderer(shadowRoot: ShadowRoot) {
   containerCallbacks.delete(shadowRoot);
@@ -87,3 +88,4 @@ export function cleanupReactRenderer(shadowRoot: ShadowRoot) {
     globalObserver = null;
   }
 }
+

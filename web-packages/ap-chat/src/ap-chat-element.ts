@@ -9,9 +9,9 @@ import {
   type Root,
 } from 'react-dom/client';
 
-import apolloThemeVariablesCSS from '@uipath/apollo-react/core/tokens/css/theme-variables.css?raw';
 // Import Apollo CSS variables as raw strings for Shadow DOM injection
 // Using ?raw query parameter to import CSS as text instead of injecting globally
+import apolloThemeVariablesCSS from '@uipath/apollo-react/core/tokens/css/theme-variables.css?raw';
 import apolloVariablesCSS from '@uipath/apollo-react/core/tokens/css/variables.css?raw';
 
 import {
@@ -36,13 +36,27 @@ import type { ApChatProperties } from './types';
  *   import { AutopilotChatService } from '@uipath/ap-chat/service';
  *   import '@uipath/ap-chat';
  *
- *   const service = new AutopilotChatService();
- *   service.initialize({ mode: 'side-by-side' });
+ *   // Create or get chat service instance
+ *   const service = AutopilotChatService.Instantiate({
+ *     instanceName: 'my-chat', // optional, defaults to 'default'
+ *     config: {
+ *       mode: 'side-by-side',
+ *     },
+ *   });
+ *
+ *   // Set initial conversation if needed
+ *   service.setConversation([
+ *     {
+ *       id: '1',
+ *       role: 'assistant',
+ *       content: 'Hello! How can I help you?',
+ *       created_at: new Date().toISOString(),
+ *       widget: 'default',
+ *     },
+ *   ]);
  *
  *   const chat = document.querySelector('ap-chat');
  *   chat.chatServiceInstance = service;
- *   chat.locale = 'en';
- *   chat.theme = 'light';
  *
  *   service.open();
  * </script>
@@ -149,7 +163,7 @@ export class ApChat extends HTMLElement {
       this.serviceUnsubscribe = null;
     }
 
-    // Cleanup emotion cache (lightweight, can be re-registered on reconnect)
+    // Cleanup style mirroring observer
     if (this.shadowRoot) {
       cleanupReactRenderer(this.shadowRoot);
     }
@@ -258,12 +272,8 @@ export class ApChat extends HTMLElement {
     ].join('\n');
     shadowStyleSheet.replaceSync(allStyles);
 
-    // Copy document-level adopted stylesheets (e.g., MUI/Emotion styles) into shadow DOM
-    // This ensures portaled elements and shadow DOM elements can both access the same styles
-    this.shadowRoot.adoptedStyleSheets = [
-      ...document.adoptedStyleSheets,
-      shadowStyleSheet,
-    ];
+    // Apply our custom stylesheet to Shadow DOM
+    this.shadowRoot.adoptedStyleSheets = [shadowStyleSheet];
 
     const hostStyles = document.createElement('style');
     hostStyles.textContent = `
