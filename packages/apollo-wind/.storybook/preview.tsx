@@ -1,7 +1,6 @@
 import type { Preview } from "@storybook/react-vite";
 import { useEffect } from "react";
 import "../src/styles/tailwind.css";
-import "../src/styles/theme.css";
 
 const preview: Preview = {
   initialGlobals: {
@@ -67,16 +66,13 @@ const preview: Preview = {
         // Add theme class to both (html for legacy, body for apollo-core)
         htmlElement.classList.add(theme);
         body.classList.add(theme);
-
-        // Apply background and text color to body for full coverage
-        body.style.backgroundColor = "var(--bg-background)";
-        body.style.color = "var(--text-foreground)";
+        body.classList.add("bg-background", "text-foreground");
         body.style.minHeight = "100vh";
       }, [theme]);
 
       // Wrap all stories with themed background
       return (
-        <div className={`bg-background text-foreground p-2`}>
+        <div className="bg-background text-foreground p-1">
           <Story />
         </div>
       );
