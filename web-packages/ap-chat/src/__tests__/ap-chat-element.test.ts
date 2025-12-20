@@ -76,15 +76,16 @@ describe('ApChat Web Component', () => {
       expect(element.shadowRoot?.mode).toBe('open');
     });
 
-    it('should initialize adoptedStyleSheets in shadow root with document styles', () => {
+    it('should initialize adoptedStyleSheets in shadow root', () => {
       element.chatServiceInstance = mockService;
 
       // Trigger connectedCallback
       element.connectedCallback();
 
-      // Check that adoptedStyleSheets includes document.adoptedStyleSheets + shadow stylesheet
+      // Check that adoptedStyleSheets contains our custom stylesheet
+      // Additional styles are mirrored via MutationObserver, not adoptedStyleSheets
       expect(element.shadowRoot?.adoptedStyleSheets).toBeDefined();
-      expect(element.shadowRoot?.adoptedStyleSheets.length).toBeGreaterThanOrEqual(1);
+      expect(element.shadowRoot?.adoptedStyleSheets.length).toBe(1);
     });
 
     it('should copy font-face rules from document to shadow DOM', () => {
@@ -107,10 +108,10 @@ describe('ApChat Web Component', () => {
       element.chatServiceInstance = mockService;
       element.connectedCallback();
 
-      // Check that adoptedStyleSheets contains the font-face rule (last stylesheet is the shadow one)
+      // Check that adoptedStyleSheets contains exactly one stylesheet with font-face rules
       const sheets = element.shadowRoot?.adoptedStyleSheets;
       expect(sheets).toBeDefined();
-      expect(sheets!.length).toBeGreaterThan(0);
+      expect(sheets!.length).toBe(1);
 
       // Restore original styleSheets
       Object.defineProperty(document, 'styleSheets', {
