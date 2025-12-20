@@ -60,9 +60,23 @@ const MUI_THEME_MAP = {
   'dark-hc': apolloMaterialUiThemeDarkHC,
 } as const;
 
-const ChatContainer = styled('div')<{ shouldAnimate: boolean; mode: AutopilotChatMode; width: number; fullHeight: boolean }>(({
-    shouldAnimate, mode, width, fullHeight,
-}: { shouldAnimate: boolean; mode: AutopilotChatMode; width: number; fullHeight: boolean }) => ({
+const ChatContainer = styled('div')<{
+  shouldAnimate: boolean;
+  mode: AutopilotChatMode;
+  width: number;
+  fullHeight: boolean;
+}>(
+  ({
+    shouldAnimate,
+    mode,
+    width,
+    fullHeight,
+  }: {
+    shouldAnimate: boolean;
+    mode: AutopilotChatMode;
+    width: number;
+    fullHeight: boolean;
+  }) => ({
     width: mode === AutopilotChatMode.FullScreen ? CHAT_WIDTH_FULL_SCREEN : width,
     display: 'flex',
     flexDirection: mode === AutopilotChatMode.FullScreen ? 'column' : 'row',
@@ -75,202 +89,192 @@ const ChatContainer = styled('div')<{ shouldAnimate: boolean; mode: AutopilotCha
     ...(shouldAnimate && { transition: `width ${CHAT_CONTAINER_ANIMATION_DURATION}ms ease` }),
     ...(mode === AutopilotChatMode.Closed && { display: 'none' }),
     ...(mode === AutopilotChatMode.Embedded && {
-        width: '100%',
-        height: '100%',
-        position: 'absolute',
-        border: 'none',
+      width: '100%',
+      height: '100%',
+      position: 'absolute',
+      border: 'none',
     }),
-}));
+  })
+);
 
 // Wrapper that connects ApI18nProvider to LocaleProvider context
 const ApI18nWithLocale = React.memo(({ children }: { children: React.ReactNode }) => {
-    const { locale } = useLocale();
+  const { locale } = useLocale();
 
-    return (
-        <ApI18nProvider component="material/components/ap-chat" locale={locale}>
-            {children}
-        </ApI18nProvider>
-    );
+  return (
+    <ApI18nProvider component="material/components/ap-chat" locale={locale}>
+      {children}
+    </ApI18nProvider>
+  );
 });
 
 const AutopilotChatContent = React.memo(() => {
-    const {
-        width, shouldAnimate,
-    } = useChatWidth();
-    const {
-        historyOpen,
-        settingsOpen,
-        disabledFeatures,
-        chatMode,
-    } = useChatState();
+  const { width, shouldAnimate } = useChatWidth();
+  const { historyOpen, settingsOpen, disabledFeatures, chatMode } = useChatState();
 
-    return (
-        <ChatContainer
-            shouldAnimate={shouldAnimate}
-            mode={chatMode}
-            width={width}
-            fullHeight={disabledFeatures.fullHeight === false}
-        >
-            { chatMode === AutopilotChatMode.SideBySide && (
-                <DragHandle/>
-            )}
+  return (
+    <ChatContainer
+      shouldAnimate={shouldAnimate}
+      mode={chatMode}
+      width={width}
+      fullHeight={disabledFeatures.fullHeight === false}
+    >
+      {chatMode === AutopilotChatMode.SideBySide && <DragHandle />}
 
-            {chatMode === AutopilotChatMode.FullScreen ? (
-                <FullScreenLayout
-                    historyOpen={historyOpen}
-                    settingsOpen={settingsOpen}
-                    historyDisabled={disabledFeatures.history ?? false}
-                    settingsDisabled={disabledFeatures.settings ?? false}
-                    headerSeparatorDisabled={disabledFeatures.headerSeparator ?? false}
-                    mode={chatMode}
-                />
-            ) : (
-                <StandardLayout
-                    historyOpen={historyOpen}
-                    settingsOpen={settingsOpen}
-                    historyDisabled={disabledFeatures.history ?? false}
-                    settingsDisabled={disabledFeatures.settings ?? false}
-                    headerDisabled={disabledFeatures.header ?? false}
-                    headerSeparatorDisabled={disabledFeatures.headerSeparator ?? false}
-                    mode={chatMode}
-                />
-            )}
-        </ChatContainer>
-    );
+      {chatMode === AutopilotChatMode.FullScreen ? (
+        <FullScreenLayout
+          historyOpen={historyOpen}
+          settingsOpen={settingsOpen}
+          historyDisabled={disabledFeatures.history ?? false}
+          settingsDisabled={disabledFeatures.settings ?? false}
+          headerSeparatorDisabled={disabledFeatures.headerSeparator ?? false}
+          mode={chatMode}
+        />
+      ) : (
+        <StandardLayout
+          historyOpen={historyOpen}
+          settingsOpen={settingsOpen}
+          historyDisabled={disabledFeatures.history ?? false}
+          settingsDisabled={disabledFeatures.settings ?? false}
+          headerDisabled={disabledFeatures.header ?? false}
+          headerSeparatorDisabled={disabledFeatures.headerSeparator ?? false}
+          mode={chatMode}
+        />
+      )}
+    </ChatContainer>
+  );
 });
 
 export interface ApChatProps {
-    /**
-     * Chat service instance
-     */
-    chatServiceInstance: AutopilotChatService;
-    /**
-     * Locale for the chat interface.
-     * @default 'en'
-     */
-    locale?: SupportedLocale;
-    /**
-     * Theme variant for the chat interface.
-     * @default 'light'
-     */
-    theme?: ApChatTheme;
-    /**
-     * Container element for MUI portals (Menu, Popover, etc).
-     * When rendering inside Shadow DOM, pass the container element inside the shadow root.
-     * @default undefined
-     */
-    portalContainer?: HTMLElement;
-    /**
-     * Enable internal MUI ThemeProvider wrapper.
-     * Set to true when using as a web component to ensure proper theme context.
-     * React consumers should leave this false and provide their own MUI theme context.
-     * @default false
-     * @internal
-     */
-    enableInternalThemeProvider?: boolean;
-    /**
-     * Disable embedded mode portal behavior.
-     * When true, the component will render normally inside its container without using React portals.
-     * This should be set to true when the component is wrapped in a web component that handles
-     * the embedded mode positioning itself.
-     * @default false
-     * @internal
-     */
-    disableEmbeddedPortal?: boolean;
+  /**
+   * Chat service instance
+   */
+  chatServiceInstance: AutopilotChatService;
+  /**
+   * Locale for the chat interface.
+   * @default 'en'
+   */
+  locale?: SupportedLocale;
+  /**
+   * Theme variant for the chat interface.
+   * @default 'light'
+   */
+  theme?: ApChatTheme;
+  /**
+   * Container element for MUI portals (Menu, Popover, etc).
+   * When rendering inside Shadow DOM, pass the container element inside the shadow root.
+   * @default undefined
+   */
+  portalContainer?: HTMLElement;
+  /**
+   * Enable internal MUI ThemeProvider wrapper.
+   * Set to true when using as a web component to ensure proper theme context.
+   * React consumers should leave this false and provide their own MUI theme context.
+   * @default false
+   * @internal
+   */
+  enableInternalThemeProvider?: boolean;
+  /**
+   * Disable embedded mode portal behavior.
+   * When true, the component will render normally inside its container without using React portals.
+   * This should be set to true when the component is wrapped in a web component that handles
+   * the embedded mode positioning itself.
+   * @default false
+   * @internal
+   */
+  disableEmbeddedPortal?: boolean;
 }
 
 export function ApChat({
-    chatServiceInstance,
-    locale: initialLocale = 'en',
-    theme: initialTheme = 'light',
-    portalContainer,
-    enableInternalThemeProvider = false,
-    disableEmbeddedPortal = false,
+  chatServiceInstance,
+  locale: initialLocale = 'en',
+  theme: initialTheme = 'light',
+  portalContainer,
+  enableInternalThemeProvider = false,
+  disableEmbeddedPortal = false,
 }: ApChatProps) {
-    const [embeddedContainer, setEmbeddedContainer] = React.useState<HTMLElement | null>(null);
-    const [currentTheme, setCurrentTheme] = React.useState<ApChatTheme>(initialTheme);
+  const [embeddedContainer, setEmbeddedContainer] = React.useState<HTMLElement | null>(null);
+  const [currentTheme, setCurrentTheme] = React.useState<ApChatTheme>(initialTheme);
 
-    // Sync props to service (one-way: props → service → providers → components)
-    React.useEffect(() => {
-        chatServiceInstance.setLocale(initialLocale);
-    }, [initialLocale, chatServiceInstance]);
+  // Sync props to service (one-way: props → service → providers → components)
+  React.useEffect(() => {
+    chatServiceInstance.setLocale(initialLocale);
+  }, [initialLocale, chatServiceInstance]);
 
-    React.useEffect(() => {
-        chatServiceInstance.setTheme(initialTheme);
-        setCurrentTheme(initialTheme);
-    }, [initialTheme, chatServiceInstance]);
+  React.useEffect(() => {
+    chatServiceInstance.setTheme(initialTheme);
+    setCurrentTheme(initialTheme);
+  }, [initialTheme, chatServiceInstance]);
 
-    // Check for embedded container from service configuration
-    React.useEffect(() => {
-        const updateEmbeddedContainer = () => {
-            const config = chatServiceInstance.getConfig();
-            if (config.mode === AutopilotChatMode.Embedded && config.embeddedContainer) {
-                setEmbeddedContainer(config.embeddedContainer);
-            } else {
-                setEmbeddedContainer(null);
-            }
-        };
+  // Check for embedded container from service configuration
+  React.useEffect(() => {
+    const updateEmbeddedContainer = () => {
+      const config = chatServiceInstance.getConfig();
+      if (config.mode === AutopilotChatMode.Embedded && config.embeddedContainer) {
+        setEmbeddedContainer(config.embeddedContainer);
+      } else {
+        setEmbeddedContainer(null);
+      }
+    };
 
-        // Check initial config
-        updateEmbeddedContainer();
+    // Check initial config
+    updateEmbeddedContainer();
 
-        // Listen for mode changes
-        const unsubscribe = chatServiceInstance.on(
-            AutopilotChatEvent.ModeChange,
-            () => {
-                updateEmbeddedContainer();
-            },
-        );
+    // Listen for mode changes
+    const unsubscribe = chatServiceInstance.on(AutopilotChatEvent.ModeChange, () => {
+      updateEmbeddedContainer();
+    });
 
-        return () => {
-            unsubscribe();
-        };
-    }, [chatServiceInstance]);
+    return () => {
+      unsubscribe();
+    };
+  }, [chatServiceInstance]);
 
-    // Select MUI theme based on current theme (only if internal theme provider is enabled)
-    const muiTheme = enableInternalThemeProvider ? MUI_THEME_MAP[currentTheme] : null;
+  // Select MUI theme based on current theme (only if internal theme provider is enabled)
+  const muiTheme = enableInternalThemeProvider ? MUI_THEME_MAP[currentTheme] : null;
 
-    const chatProviders = (
-        <AutopilotChatServiceProvider chatServiceInstance={chatServiceInstance}>
-                <ThemeProvider>
-                    <LocaleProvider>
-                        <ApI18nWithLocale>
-                            <AutopilotStreamingProvider>
-                                <AutopilotChatScrollProvider>
-                                    <AutopilotChatStateProvider portalContainer={portalContainer}>
-                                        <AutopilotErrorProvider>
-                                            <AutopilotLoadingProvider>
-                                                <AutopilotAttachmentsProvider>
-                                                    <AutopilotPickerProvider>
-                                                        <AutopilotChatWidthProvider>
-                                                            <AutopilotChatDropzone>
-                                                                <AutopilotChatContent />
-                                                            </AutopilotChatDropzone>
-                                                        </AutopilotChatWidthProvider>
-                                                    </AutopilotPickerProvider>
-                                                </AutopilotAttachmentsProvider>
-                                            </AutopilotLoadingProvider>
-                                        </AutopilotErrorProvider>
-                                    </AutopilotChatStateProvider>
-                                </AutopilotChatScrollProvider>
-                            </AutopilotStreamingProvider>
-                        </ApI18nWithLocale>
-                    </LocaleProvider>
-                </ThemeProvider>
-            </AutopilotChatServiceProvider>
+  const chatProviders = (
+    <AutopilotChatServiceProvider chatServiceInstance={chatServiceInstance}>
+      <ThemeProvider>
+        <LocaleProvider>
+          <ApI18nWithLocale>
+            <AutopilotStreamingProvider>
+              <AutopilotChatScrollProvider>
+                <AutopilotChatStateProvider portalContainer={portalContainer}>
+                  <AutopilotErrorProvider>
+                    <AutopilotLoadingProvider>
+                      <AutopilotAttachmentsProvider>
+                        <AutopilotPickerProvider>
+                          <AutopilotChatWidthProvider>
+                            <AutopilotChatDropzone>
+                              <AutopilotChatContent />
+                            </AutopilotChatDropzone>
+                          </AutopilotChatWidthProvider>
+                        </AutopilotPickerProvider>
+                      </AutopilotAttachmentsProvider>
+                    </AutopilotLoadingProvider>
+                  </AutopilotErrorProvider>
+                </AutopilotChatStateProvider>
+              </AutopilotChatScrollProvider>
+            </AutopilotStreamingProvider>
+          </ApI18nWithLocale>
+        </LocaleProvider>
+      </ThemeProvider>
+    </AutopilotChatServiceProvider>
+  );
+
+  // Conditionally wrap with MUI ThemeProvider (for web component usage)
+  const chatContent =
+    enableInternalThemeProvider && muiTheme ? (
+      <MuiThemeProvider theme={muiTheme}>{chatProviders}</MuiThemeProvider>
+    ) : (
+      chatProviders
     );
 
-    // Conditionally wrap with MUI ThemeProvider (for web component usage)
-    const chatContent = enableInternalThemeProvider && muiTheme ? (
-        <MuiThemeProvider theme={muiTheme}>
-            {chatProviders}
-        </MuiThemeProvider>
-    ) : chatProviders;
+  // Use portal for embedded mode (unless disabled by web component wrapper)
+  if (embeddedContainer && !disableEmbeddedPortal) {
+    return createPortal(chatContent, embeddedContainer);
+  }
 
-    // Use portal for embedded mode (unless disabled by web component wrapper)
-    if (embeddedContainer && !disableEmbeddedPortal) {
-        return createPortal(chatContent, embeddedContainer);
-    }
-
-    return chatContent;
+  return chatContent;
 }
