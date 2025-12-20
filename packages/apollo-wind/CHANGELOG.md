@@ -1,3 +1,10 @@
+## [1.12.3](https://github.com/uipath/wind/compare/v1.12.2...v1.12.3) (2025-12-20)
+
+
+### Bug Fixes
+
+* update version to 1.12.2 and correct tailwind.css path ([6b8c805](https://github.com/uipath/wind/commit/6b8c805ae92b858a0fc437ab2e3d500bef538c30))
+
 ## [1.12.2](https://github.com/uipath/wind/compare/v1.12.1...v1.12.2) (2025-12-19)
 
 
