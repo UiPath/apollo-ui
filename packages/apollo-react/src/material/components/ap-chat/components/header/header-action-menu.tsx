@@ -53,11 +53,13 @@ const NestedMenuItem = React.memo(React.forwardRef<HTMLLIElement, NestedMenuItem
     const closeTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
     const nestedPopoverActionRef = React.useRef<{ updatePosition: () => void } | null>(null);
 
-    const scheduleNestedPositionUpdate = useScheduledCallback(() => {
+    const updateNestedPosition = React.useCallback(() => {
         if (nestedPopoverActionRef.current) {
             nestedPopoverActionRef.current.updatePosition();
         }
-    });
+    }, []);
+
+    const scheduleNestedPositionUpdate = useScheduledCallback(updateNestedPosition);
 
     const handleNestedTransitionEnter = React.useCallback(() => {
         scheduleNestedPositionUpdate();
@@ -348,12 +350,14 @@ export const AutopilotChatHeaderActionMenu = React.memo(({
     const firstItemRef = React.useRef<HTMLLIElement | null>(null);
     const popoverActionRef = React.useRef<{ updatePosition: () => void } | null>(null);
 
-    // Schedule position updates with automatic RAF cancellation
-    const schedulePositionUpdate = useScheduledCallback(() => {
+    const updatePosition = React.useCallback(() => {
         if (popoverActionRef.current) {
             popoverActionRef.current.updatePosition();
         }
-    });
+    }, []);
+
+    // Schedule position updates with automatic RAF cancellation
+    const schedulePositionUpdate = useScheduledCallback(updatePosition);
 
     const handleTransitionEnter = React.useCallback(() => {
         schedulePositionUpdate();

@@ -145,11 +145,13 @@ const AutopilotChatHistoryComponent: React.FC<AutopilotChatHistoryProps> = ({
 
     const popoverActionRef = useRef<{ updatePosition: () => void } | null>(null);
 
-    const schedulePositionUpdate = useScheduledCallback(() => {
+    const updatePosition = useCallback(() => {
         if (popoverActionRef.current) {
             popoverActionRef.current.updatePosition();
         }
-    });
+    }, []);
+
+    const schedulePositionUpdate = useScheduledCallback(updatePosition);
 
     const handleTransitionEnter = useCallback(() => {
         schedulePositionUpdate();

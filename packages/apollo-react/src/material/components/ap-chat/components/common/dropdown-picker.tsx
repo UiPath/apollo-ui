@@ -87,11 +87,13 @@ export function DropdownPicker<T = string>({
 
     const open = Boolean(anchorEl);
 
-    const schedulePositionUpdate = useScheduledCallback(() => {
+    const updatePosition = React.useCallback(() => {
         if (popoverActionRef.current) {
             popoverActionRef.current.updatePosition();
         }
-    });
+    }, []);
+
+    const schedulePositionUpdate = useScheduledCallback(updatePosition);
 
     const handleTransitionEnter = React.useCallback(() => {
         schedulePositionUpdate();

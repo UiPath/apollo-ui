@@ -39,11 +39,7 @@ const config: RsbuildConfig = defineConfig({
           js: '[name].js',
         },
         minify: true,
-        sourceMap: {
-          js: 'hidden-source-map',
-          css: false,
-        },
-        filenameHash: false,
+        sourceMap: false,
         cleanDistPath: true,
       }
     : {
@@ -65,15 +61,14 @@ const config: RsbuildConfig = defineConfig({
       strategy: 'split-by-experience',
       override: {
         chunks: 'all',
-        minSize: 500000,
-        maxSize: 1000000,
+        minSize: 50000,
+        maxSize: 200000,
       },
     },
   },
   tools: {
     htmlPlugin: isProd ? false : true, // Disable HTML plugin in production
     rspack: async (config, { isProd: rsbuildIsProd }) => {
-
       // Add bundle analyzer when BUNDLE_ANALYZE env var is set
       if (process.env.BUNDLE_ANALYZE) {
         try {
@@ -99,10 +94,23 @@ const config: RsbuildConfig = defineConfig({
         optimization: {
           ...config.optimization,
           moduleIds: 'deterministic',
-          chunkIds: 'named',
+          chunkIds: 'natural',
           usedExports: rsbuildIsProd,
           sideEffects: false,
           minimize: rsbuildIsProd,
+          splitChunks: {
+            chunks: 'all',
+            cacheGroups: {
+              vendors: {
+                test: /[\\/]node_modules[\\/]/,
+                name: 'vendors',
+                priority: 10,
+                reuseExistingChunk: true,
+                maxSize: 200000,
+              },
+              default: false,
+            },
+          },
         },
         resolve: {
           ...config.resolve,
@@ -143,10 +151,9 @@ const config: RsbuildConfig = defineConfig({
           library: {
             type: 'module',
           },
-          // Shorter chunk filenames
           chunkFilename: rsbuildIsProd
-            ? 'static/js/[name].[contenthash:6].js'
-            : 'static/js/[name].js',
+            ? '[name].[contenthash:6].js'
+            : '[name].js',
         },
         experiments: {
           ...config.experiments,
