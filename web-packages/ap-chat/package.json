@@ -26,9 +26,9 @@
     "dist"
   ],
   "scripts": {
-    "build": "rslib build",
-    "build:analyze": "ANALYZE=true rslib build",
-    "dev": "rsbuild dev",
+    "build": "NODE_ENV=production rsbuild build",
+    "build:analyze": "NODE_ENV=production BUNDLE_ANALYZE=true rsbuild build",
+    "dev": "NODE_ENV=development rsbuild dev",
     "lint": "eslint src --ext .ts,.tsx",
     "test": "vitest --run",
     "test:watch": "vitest",
@@ -55,6 +55,7 @@
     "@fontsource/material-icons": "^5.2.7",
     "@fontsource/material-icons-outlined": "^5.2.6",
     "@mui/material": "^5.18.0",
+    "@swc/helpers": "^0.5.17",
     "@uipath/apollo-react": "workspace:*",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"

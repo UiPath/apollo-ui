@@ -22,6 +22,18 @@ The `ap-chat` web component provides AI assistant functionality with a powerful 
 - Loading and waiting state management
 - Pagination support for large conversations
 
+## Bundle & Performance
+
+This package is a **self-contained web component** with all dependencies bundled (React, Material-UI, etc.):
+
+- **Format:** ESM only (no CommonJS) - requires modern bundlers and Node.js 14+
+- **Code splitting:** Vendor chunks and locales are lazy-loaded on demand
+- **Tree-shaking:** Not applicable (self-contained bundle)
+
+### Why ESM-only?
+
+Web components are designed for modern browsers and bundlers. If you need CommonJS support, use the React components from `@uipath/apollo-react` directly instead.
+
 ## Installation
 
 ```bash
@@ -294,6 +306,12 @@ Supported browsers:
 - Chrome/Edge 88+
 - Firefox 90+
 - Safari 14+
+
+## Development Notes
+
+### Hot Module Replacement (HMR)
+
+When developing with this package in dev mode, you may see HMR errors in the console when switching locales. This is a known limitation of how webpack/rspack handles dynamically imported locale chunks. The functionality works correctly (triggers a full page reload), but logs an error message. This only affects development and does not impact production builds.
 
 ## License
 

@@ -1429,6 +1429,7 @@ function createUI() {
   // Add event listeners
   document.getElementById('locale-select')?.addEventListener('change', (e) => {
     locale = (e.target as HTMLSelectElement).value;
+    chatService?.setLocale(locale);
     chatElement.locale = locale;
   });
 
