@@ -13,8 +13,7 @@
       "require": "./dist/index.cjs"
     },
     "./styles.css": "./dist/styles.css",
-    "./tailwind.css": "./dist/styles.css",
-    "./theme.css": "./src/styles/theme.css",
+    "./tailwind.css": "./dist/tailwind.css",
     "./tailwind": "./src/tailwind.preset.js",
     "./postcss": "./postcss.config.export.js"
   },

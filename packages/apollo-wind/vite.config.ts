@@ -1,5 +1,6 @@
-import react from "@vitejs/plugin-react";
+import { copyFileSync } from "fs";
 import { resolve } from "path";
+import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 import dts from "vite-plugin-dts";
 
@@ -18,6 +19,15 @@ export default defineConfig({
         "src/**/*.stories.tsx",
       ],
     }),
+    {
+      name: "copy-tailwind-css",
+      closeBundle() {
+        copyFileSync(
+          resolve(__dirname, "src/styles/tailwind.consumer.css"),
+          resolve(__dirname, "dist/tailwind.css"),
+        );
+      },
+    },
   ],
   build: {
     lib: {

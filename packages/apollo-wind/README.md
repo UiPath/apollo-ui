@@ -40,7 +40,12 @@ export { default } from "@uipath/wind/postcss";
 ```css
 /* src/app.css */
 @import "@uipath/wind/tailwind.css";
-@source "../node_modules/@uipath/wind";
+
+/* Scan your source files for Tailwind classes */
+@source "./src/**/*.{js,jsx,ts,tsx}";
+
+/* Scan wind components to include their styles */
+@source "./node_modules/@uipath/wind/dist/**/*.js";
 ```
 
 ```tsx
