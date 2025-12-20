@@ -1,3 +1,10 @@
+# [1.13.0](https://github.com/uipath/wind/compare/v1.12.4...v1.13.0) (2025-12-20)
+
+
+### Features
+
+* enhance ResizableHandle styles and add new background utilities in tailwind.css ([6e2e95e](https://github.com/uipath/wind/commit/6e2e95ec6947e8ffc506866529ae24d133e36b9d))
+
 ## [1.12.4](https://github.com/uipath/wind/compare/v1.12.3...v1.12.4) (2025-12-20)
 
 
