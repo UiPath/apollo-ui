@@ -9,7 +9,7 @@
     "jsx": "react-jsx",
     "lib": ["ES2020", "DOM"]
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "rsbuild.config.ts"],
   "exclude": ["node_modules", "dist", "**/*.test.ts", "**/*.spec.ts", "**/__tests__/**"],
   "references": [
     { "path": "../../packages/apollo-core" },
