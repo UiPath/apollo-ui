@@ -1,3 +1,10 @@
+## [1.13.3](https://github.com/uipath/wind/compare/v1.13.2...v1.13.3) (2025-12-23)
+
+
+### Bug Fixes
+
+* correct destructive color mappings and apply background styles to body ([7903919](https://github.com/uipath/wind/commit/79039199d3f9964967641333f5dd17de5f01c66d))
+
 ## [1.13.2](https://github.com/uipath/wind/compare/v1.13.1...v1.13.2) (2025-12-20)
 
 
