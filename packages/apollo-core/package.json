@@ -41,7 +41,7 @@
   "scripts": {
     "build": "pnpm run build:tokens && pnpm run build:fonts && pnpm run process:icons && pnpm run build:icons && rslib build",
     "build:tokens": "node build-tokens.js",
-    "build:fonts": "postcss **/*.base-css --base . --dir . --ext .css --verbose",
+    "build:fonts": "postcss 'src/fonts/**/*.base-css' --base src/fonts --dir src/fonts --ext .css --verbose",
     "build:icons": "tsx scripts/generate-icons.ts",
     "process:icons": "tsx scripts/process-icons.ts && tsx scripts/update-colors.ts",
     "process:icons:dry-run": "tsx scripts/process-icons.ts --dry-run && tsx scripts/update-colors.ts --dry-run",
