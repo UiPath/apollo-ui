@@ -75,7 +75,7 @@
     "dev": "rslib build --watch",
     "lint": "eslint src --ext .ts,.tsx",
     "lint:fix": "eslint src --ext .ts,.tsx --fix",
-    "test": "vitest --run",
+    "test": "pnpm run i18n:compile && vitest --run",
     "test:watch": "vitest",
     "test:ui": "vitest --ui",
     "test:coverage": "pnpm run i18n:compile && vitest --run --coverage",
