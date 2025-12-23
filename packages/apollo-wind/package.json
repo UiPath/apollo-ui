@@ -28,7 +28,7 @@
     "build": "tsc && vite build && npm run build:css",
     "build:css": "npx @tailwindcss/cli -i ./src/styles/tailwind.css -o ./dist/styles.css",
     "preview": "vite preview",
-    "test": "vitest",
+    "test": "vitest run",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest run --coverage",
     "lint": "eslint .",
