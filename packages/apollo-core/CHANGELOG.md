@@ -1,3 +1,57 @@
+# [5.5.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-core@5.4.1...@uipath/apollo-core@5.5.0) (2025-12-23)
+
+
+### Bug Fixes
+
+* **apollo-core:** adding jp and kr glyphs to package ([a295a44](https://github.com/UiPath/apollo-ui/commit/a295a444f22c00f524549d28063cebe3e3bf62c9))
+* **apollo-core:** adding jp and kr glyphs to package ([7a9738e](https://github.com/UiPath/apollo-ui/commit/7a9738eb80d79c3b3230190a59685b0b0296590a))
+* **apollo-core:** adding new splittings for JP, KR and SC ([16b9c42](https://github.com/UiPath/apollo-ui/commit/16b9c42302703da303c327f317efd91583b13d5f))
+* **apollo-core:** adding new splittings for JP, KR and SC ([ee1ef3a](https://github.com/UiPath/apollo-ui/commit/ee1ef3abadfbe04c4e895f4f9cc86ee7a4cf2311))
+* **apollo-core:** adding new splittings for JP, KR and SC ([6c6aa80](https://github.com/UiPath/apollo-ui/commit/6c6aa8044890095b410d2f81311278c7bf6db396))
+* **apollo-core:** adding new splittings for JP, KR and SC ([c865757](https://github.com/UiPath/apollo-ui/commit/c865757abbd6e43d08a4147fecc6d82a81fcd11d))
+* **apollo-core:** adding new splittings for JP, KR and SC ([646afed](https://github.com/UiPath/apollo-ui/commit/646afeda21e08756bbda005a8f2b0b62064b5eb7))
+* **apollo-core:** adding new splittings for JP, KR and SC ([c021efd](https://github.com/UiPath/apollo-ui/commit/c021efdc229b29c13f6cfe4341e32381d9c9a9e3))
+* **apollo-core:** change font display to swap [CNCTT-5083] ([#1188](https://github.com/UiPath/apollo-ui/issues/1188)) ([b6b89e1](https://github.com/UiPath/apollo-ui/commit/b6b89e1ba2565ad90740b775f784d0e4c6730047))
+* **apollo-core:** fixing the icons for apollo-fonts [DSGN-1767][DSGN-1766] ([#212](https://github.com/UiPath/apollo-ui/issues/212)) ([3447266](https://github.com/UiPath/apollo-ui/commit/3447266807af89f8bd2c68427ab6c95159bf6b0f))
+* **apollo-core:** fixing the icons for apollo-fonts [DSGN-1767][DSGN-1766] ([#212](https://github.com/UiPath/apollo-ui/issues/212)) ([e7609a1](https://github.com/UiPath/apollo-ui/commit/e7609a1a02e48ddbd400697ed03034451946ffb9))
+* **apollo-core:** persist relative urls on generation [PLT-59145] ([#2672](https://github.com/UiPath/apollo-ui/issues/2672)) ([6dadf78](https://github.com/UiPath/apollo-ui/commit/6dadf7867cc2e891c6033bdc5479aef3fdb55a60))
+* **apollo-core:** persist relative urls on generation [PLT-59145] ([#2672](https://github.com/UiPath/apollo-ui/issues/2672)) ([cbf3c63](https://github.com/UiPath/apollo-ui/commit/cbf3c633732a4a80b679e37fe832df9030428ba4))
+* **apollo-core:** persist relative urls on generation [PLT-59145] ([#2672](https://github.com/UiPath/apollo-ui/issues/2672)) ([6561220](https://github.com/UiPath/apollo-ui/commit/6561220984d26a14146592df743d04de332c701e))
+* **apollo-core:** persist relative urls on generation [PLT-59145] ([#2672](https://github.com/UiPath/apollo-ui/issues/2672)) ([952d1ac](https://github.com/UiPath/apollo-ui/commit/952d1ac11e185f2b16d96f5aea55fc22df2b5ff1))
+* **apollo-core:** persist relative urls on generation [PLT-59145] ([#2672](https://github.com/UiPath/apollo-ui/issues/2672)) ([79c654f](https://github.com/UiPath/apollo-ui/commit/79c654f20af5e39cb3795a4271345f5108bdcc09))
+* **apollo-core:** persist relative urls on generation [PLT-59145] ([#2672](https://github.com/UiPath/apollo-ui/issues/2672)) ([3826588](https://github.com/UiPath/apollo-ui/commit/382658876da64d3a21eec469ea65d735e2b9058f))
+* **apollo-core:** revert icon styling ([#3198](https://github.com/UiPath/apollo-ui/issues/3198)) ([d793f28](https://github.com/UiPath/apollo-ui/commit/d793f280f7d576bf0f9a5f2b89f9c97ee5ab79b0))
+* **apollo-core:** revert icon styling ([#3198](https://github.com/UiPath/apollo-ui/issues/3198)) ([05ac5ed](https://github.com/UiPath/apollo-ui/commit/05ac5ed0657b2fef245178c2bd6f834a61c03629))
+* **apollo-fonts:** persist relative urls on generation [PLT-59145] ([#2672](https://github.com/UiPath/apollo-ui/issues/2672)) ([ec1a737](https://github.com/UiPath/apollo-ui/commit/ec1a737422933d6cca44f001f14f38b8250a2168))
+* **apollo-fonts:** revertng back naming change ([f624319](https://github.com/UiPath/apollo-ui/commit/f6243191dfcfd0910c95f0dde8b9cb99f52fdd7a))
+* **apollo-react:** attempt to fix translations ([b6d61db](https://github.com/UiPath/apollo-ui/commit/b6d61dbcacf8b06374ad478e6f8c23811b00ba49))
+* **react-playground:** use fonts ([a19c4ca](https://github.com/UiPath/apollo-ui/commit/a19c4ca05f7228e96c23370200f9de9e28812581))
+
+
+### Features
+
+* **apollo-core:** add poppins full font [PLT-17662] ([#1223](https://github.com/UiPath/apollo-ui/issues/1223)) ([58c58ba](https://github.com/UiPath/apollo-ui/commit/58c58ba0c24ba46d8159a096393e72808965e997))
+* **apollo-core:** add poppins full font [PLT-17662] ([#1223](https://github.com/UiPath/apollo-ui/issues/1223)) ([e6b89f1](https://github.com/UiPath/apollo-ui/commit/e6b89f1e16487d008547ec69307e1e5d4a655fe7))
+* **apollo-core:** add robot icon ([58eeaef](https://github.com/UiPath/apollo-ui/commit/58eeaef6224b258498c21f8b04aacd1fe6c8c782))
+* **apollo-core:** adding fonts to package for onpremise use, added material and apollo icons to the package. ([#120](https://github.com/UiPath/apollo-ui/issues/120)) ([4ab21e2](https://github.com/UiPath/apollo-ui/commit/4ab21e281551f512ba3aeb2c2b37da756aacc767))
+* **apollo-core:** adding fonts to package for onpremise use, added material and apollo icons to the package. ([#120](https://github.com/UiPath/apollo-ui/issues/120)) ([5bfef4c](https://github.com/UiPath/apollo-ui/commit/5bfef4cfdd9bb46cc9cd2ba3366be9ad5c4c5c89))
+* **apollo-core:** adding fonts to package for onpremise use, added material and apollo icons to the package. ([#120](https://github.com/UiPath/apollo-ui/issues/120)) ([cc3cd87](https://github.com/UiPath/apollo-ui/commit/cc3cd877963fe823caeaeaa3f6e32116e9c95bbc))
+* **apollo-core:** adding material icon outlined - [DSGN-1820] ([#214](https://github.com/UiPath/apollo-ui/issues/214)) ([ba66e19](https://github.com/UiPath/apollo-ui/commit/ba66e1910fab4a4d079d23db6982915767eda4db))
+* **apollo-core:** adding material icon outlined - [DSGN-1820] ([#214](https://github.com/UiPath/apollo-ui/issues/214)) ([2d4a517](https://github.com/UiPath/apollo-ui/commit/2d4a517b57fd9d16067d7cb0a6eb838fe86a52d7))
+* **apollo-core:** minify css [PLT-38601] ([#1956](https://github.com/UiPath/apollo-ui/issues/1956)) ([9c12c92](https://github.com/UiPath/apollo-ui/commit/9c12c92ef56405fe68e7203d30b268d7269d7831))
+* **apollo-core:** minify css [PLT-38601] ([#1956](https://github.com/UiPath/apollo-ui/issues/1956)) ([f556dd5](https://github.com/UiPath/apollo-ui/commit/f556dd51b46904a39d1e0b9a641c05b183ed7cf9))
+* **apollo-core:** minify css [PLT-38601] ([#1956](https://github.com/UiPath/apollo-ui/issues/1956)) ([c85608f](https://github.com/UiPath/apollo-ui/commit/c85608f07103514e953e9d9c4b1a803ee45f8ead))
+* **apollo-core:** minify css [PLT-38601] ([#1956](https://github.com/UiPath/apollo-ui/issues/1956)) ([435d28b](https://github.com/UiPath/apollo-ui/commit/435d28b3a46edb5491eaedb9355c3c90b1064d87))
+* **apollo-core:** minify css [PLT-38601] ([#1956](https://github.com/UiPath/apollo-ui/issues/1956)) ([d2ac8e4](https://github.com/UiPath/apollo-ui/commit/d2ac8e44eb07eff429bcee96127cf3a7bc00d630))
+* **apollo-core:** minify css [PLT-38601] ([#1956](https://github.com/UiPath/apollo-ui/issues/1956)) ([cf4c76f](https://github.com/UiPath/apollo-ui/commit/cf4c76f66608ef283c7fff288808426481ad003c))
+* **apollo-core:** minify css [PLT-38601] ([#1956](https://github.com/UiPath/apollo-ui/issues/1956)) ([00103ac](https://github.com/UiPath/apollo-ui/commit/00103ac4eead365c50dd90f30ffd81b8d4c91fe0))
+* **apollo-core:** zh-tw font ([e52f4ae](https://github.com/UiPath/apollo-ui/commit/e52f4ae1f25b75949e9e834ad9cd515af4644c19))
+* **apollo-core:** zh-tw font ([59f4975](https://github.com/UiPath/apollo-ui/commit/59f4975bac2601a673339a1eac07280ae507f576))
+* **apollo-fonts:** add robot icon ([fb088c1](https://github.com/UiPath/apollo-ui/commit/fb088c15df5b2d719d31fca6a9ce02584c13d641))
+* **apollo-fonts:** adding fonts to package for onpremise use, added material and apollo icons to the package. ([#120](https://github.com/UiPath/apollo-ui/issues/120)) ([d2df4c7](https://github.com/UiPath/apollo-ui/commit/d2df4c754cb7b5a1da6a78d74f100a26a98314d2))
+* **apollo-fonts:** minify css [PLT-38601] ([#1956](https://github.com/UiPath/apollo-ui/issues/1956)) ([0c00ae4](https://github.com/UiPath/apollo-ui/commit/0c00ae41fb1c8269fef2e606635754df3740a5f7))
+* **apollo-vertex:** add theme toggle component ([c07f383](https://github.com/UiPath/apollo-ui/commit/c07f383ee3e91837812e569b5d01a26de0f7ef82))
+
 ## [5.4.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-core@5.4.0...@uipath/apollo-core@5.4.1) (2025-12-20)
 
 
