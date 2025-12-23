@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react-vite";
+import type { Meta } from "@storybook/react-vite";
 import * as React from "react";
 import { MultiSelect } from "./multi-select";
 
@@ -12,7 +12,6 @@ const meta = {
 } satisfies Meta<typeof MultiSelect>;
 
 export default meta;
-type Story = StoryObj<typeof meta>;
 
 const frameworkOptions = [
   { label: "React", value: "react" },
@@ -25,7 +24,8 @@ const frameworkOptions = [
   { label: "Astro", value: "astro" },
 ];
 
-export const Default: Story = {
+export const Default = {
+  args: {},
   render: () => {
     const [selected, setSelected] = React.useState<string[]>([]);
     return (
@@ -41,7 +41,8 @@ export const Default: Story = {
   },
 };
 
-export const WithPreselected: Story = {
+export const WithPreselected = {
+  args: {},
   render: () => {
     const [selected, setSelected] = React.useState<string[]>(["react", "vue", "svelte"]);
     return (
@@ -57,7 +58,8 @@ export const WithPreselected: Story = {
   },
 };
 
-export const WithMaxSelected: Story = {
+export const WithMaxSelected = {
+  args: {},
   render: () => {
     const [selected, setSelected] = React.useState<string[]>(["react"]);
     return (
@@ -75,7 +77,8 @@ export const WithMaxSelected: Story = {
   },
 };
 
-export const Disabled: Story = {
+export const Disabled = {
+  args: {},
   render: () => {
     const [selected, setSelected] = React.useState<string[]>(["react", "vue"]);
     return (
@@ -92,7 +95,8 @@ export const Disabled: Story = {
   },
 };
 
-export const CustomMessages: Story = {
+export const CustomMessages = {
+  args: {},
   render: () => {
     const [selected, setSelected] = React.useState<string[]>([]);
     return (
@@ -110,7 +114,8 @@ export const CustomMessages: Story = {
   },
 };
 
-export const SelectUsers: Story = {
+export const SelectUsers = {
+  args: {},
   render: () => {
     const [selected, setSelected] = React.useState<string[]>([]);
     const users = [
@@ -152,7 +157,8 @@ export const SelectUsers: Story = {
   },
 };
 
-export const SelectCategories: Story = {
+export const SelectCategories = {
+  args: {},
   render: () => {
     const [selected, setSelected] = React.useState<string[]>([]);
     const categories = [
@@ -181,7 +187,8 @@ export const SelectCategories: Story = {
   },
 };
 
-export const Interactive: Story = {
+export const Interactive = {
+  args: {},
   render: () => {
     const [selected, setSelected] = React.useState<string[]>([]);
     const [searchResults, setSearchResults] = React.useState<string[]>([]);

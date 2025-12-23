@@ -1,37 +1,57 @@
-import type { Meta, StoryObj } from "@storybook/react";
-import { MetadataForm } from "./metadata-form";
-import type { FormSchema, CustomFieldComponentProps, FormPlugin } from "./form-schema";
-import { SchemaViewer } from "./schema-viewer";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Slider } from "@/components/ui/slider";
-import { Textarea } from "@/components/ui/textarea";
+import {
+  useRef,
+  useState,
+} from 'react';
+
+import {
+  AlignCenter,
+  AlignLeft,
+  AlignRight,
+  Bold,
+  Italic,
+  Palette,
+  Star,
+  StarHalf,
+  Underline,
+} from 'lucide-react';
+
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
-import { cn } from "@/lib";
-import { useRef, useState } from "react";
-import { Toaster } from "@/components/ui/sonner";
+} from '@/components/ui/select';
+import { Separator } from '@/components/ui/separator';
+import { Slider } from '@/components/ui/slider';
+import { Toaster } from '@/components/ui/sonner';
+import { Textarea } from '@/components/ui/textarea';
+import { Toggle } from '@/components/ui/toggle';
 import {
-  Star,
-  StarHalf,
-  Palette,
-  Bold,
-  Italic,
-  Underline,
-  AlignLeft,
-  AlignCenter,
-  AlignRight,
-} from "lucide-react";
-import { Toggle } from "@/components/ui/toggle";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+  ToggleGroup,
+  ToggleGroupItem,
+} from '@/components/ui/toggle-group';
+import { cn } from '@/lib';
+import type {
+  Meta,
+  StoryObj,
+} from '@storybook/react-vite';
+
+import type {
+  CustomFieldComponentProps,
+  FormPlugin,
+  FormSchema,
+} from './form-schema';
+import { MetadataForm } from './metadata-form';
+import { SchemaViewer } from './schema-viewer';
 
 const meta: Meta<typeof MetadataForm> = {
   title: "Forms/Custom Controls",

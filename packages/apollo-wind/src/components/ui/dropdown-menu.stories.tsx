@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta } from "@storybook/react-vite";
 import { Button } from "./button";
 import {
   DropdownMenu,
@@ -16,9 +16,9 @@ const meta: Meta<typeof DropdownMenu> = {
 };
 
 export default meta;
-type Story = StoryObj<typeof DropdownMenu>;
 
-export const Default: Story = {
+export const Default = {
+  args: {},
   render: () => (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>

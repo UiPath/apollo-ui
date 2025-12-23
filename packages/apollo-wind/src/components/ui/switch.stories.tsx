@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta } from "@storybook/react-vite";
 import { Label } from "./label";
 import { Switch } from "./switch";
 import { Row } from "./layout";
@@ -10,13 +10,14 @@ const meta: Meta<typeof Switch> = {
 };
 
 export default meta;
-type Story = StoryObj<typeof Switch>;
 
-export const Default: Story = {
+export const Default = {
+  args: {},
   render: () => <Switch />,
 };
 
-export const WithLabel: Story = {
+export const WithLabel = {
+  args: {},
   render: () => (
     <Row gap={2} align="center">
       <Switch id="airplane-mode" />
@@ -25,7 +26,8 @@ export const WithLabel: Story = {
   ),
 };
 
-export const Disabled: Story = {
+export const Disabled = {
+  args: {},
   render: () => (
     <Row gap={2} align="center">
       <Switch id="disabled" disabled />

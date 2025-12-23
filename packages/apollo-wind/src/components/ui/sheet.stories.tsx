@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta } from "@storybook/react-vite";
 import { Button } from "./button";
 import {
   Sheet,
@@ -16,9 +16,9 @@ const meta: Meta<typeof Sheet> = {
 };
 
 export default meta;
-type Story = StoryObj<typeof Sheet>;
 
-export const Default: Story = {
+export const Default = {
+  args: {},
   render: () => (
     <Sheet>
       <SheetTrigger asChild>
@@ -50,7 +50,8 @@ export const Default: Story = {
   ),
 };
 
-export const Left: Story = {
+export const Left = {
+  args: {},
   render: () => (
     <Sheet>
       <SheetTrigger asChild>

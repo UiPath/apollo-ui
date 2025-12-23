@@ -124,7 +124,7 @@ Create Storybook stories for visual testing:
 
 ```tsx
 // src/components/ui/new-component.stories.tsx
-import type { Meta, StoryObj } from '@storybook/react'
+import type { Meta, StoryObj } from '@storybook/react-vite'
 import { Component } from './new-component'
 
 const meta = {

@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta } from "@storybook/react-vite";
 import { useState } from "react";
 import { Calendar } from "./calendar";
 
@@ -9,9 +9,9 @@ const meta: Meta<typeof Calendar> = {
 };
 
 export default meta;
-type Story = StoryObj<typeof Calendar>;
 
-export const Default: Story = {
+export const Default = {
+  args: {},
   render: () => {
     const [date, setDate] = useState<Date | undefined>(new Date());
 

@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta } from "@storybook/react-vite";
 import { toast } from "sonner";
 import { Button } from "./button";
 import { Toaster } from "./sonner";
@@ -10,9 +10,9 @@ const meta: Meta<typeof Toaster> = {
 };
 
 export default meta;
-type Story = StoryObj<typeof Toaster>;
 
-export const Default: Story = {
+export const Default = {
+  args: {},
   render: () => (
     <>
       <Toaster />

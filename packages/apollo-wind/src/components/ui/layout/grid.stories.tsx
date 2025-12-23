@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta } from "@storybook/react-vite";
 import { Grid } from "./grid";
 
 const meta = {
@@ -11,13 +11,13 @@ const meta = {
 } satisfies Meta<typeof Grid>;
 
 export default meta;
-type Story = StoryObj<typeof meta>;
 
 const Box = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => (
   <div className={`rounded-md border bg-primary/10 p-4 text-center ${className}`}>{children}</div>
 );
 
-export const Default: Story = {
+export const Default = {
+  args: {},
   render: () => (
     <Grid cols={3} gap={4}>
       <Box>Item 1</Box>
@@ -30,7 +30,8 @@ export const Default: Story = {
   ),
 };
 
-export const DifferentColumns: Story = {
+export const DifferentColumns = {
+  args: {},
   render: () => (
     <div className="space-y-8">
       <div>
@@ -70,7 +71,8 @@ export const DifferentColumns: Story = {
   ),
 };
 
-export const WithGap: Story = {
+export const WithGap = {
+  args: {},
   render: () => (
     <div className="space-y-8">
       <div>
@@ -101,7 +103,8 @@ export const WithGap: Story = {
   ),
 };
 
-export const CustomGaps: Story = {
+export const CustomGaps = {
+  args: {},
   render: () => (
     <div className="space-y-8">
       <div>
@@ -134,7 +137,8 @@ export const CustomGaps: Story = {
   ),
 };
 
-export const CustomTemplate: Story = {
+export const CustomTemplate = {
+  args: {},
   render: () => (
     <div className="space-y-8">
       <div>
@@ -168,7 +172,8 @@ export const CustomTemplate: Story = {
   ),
 };
 
-export const WithRows: Story = {
+export const WithRows = {
+  args: {},
   render: () => (
     <div className="space-y-8">
       <div>
@@ -196,7 +201,8 @@ export const WithRows: Story = {
   ),
 };
 
-export const WithPadding: Story = {
+export const WithPadding = {
+  args: {},
   render: () => (
     <div className="space-y-8">
       <div>
@@ -221,7 +227,8 @@ export const WithPadding: Story = {
   ),
 };
 
-export const AutoFlow: Story = {
+export const AutoFlow = {
+  args: {},
   render: () => (
     <div className="space-y-8">
       <div>
@@ -257,7 +264,8 @@ export const AutoFlow: Story = {
   ),
 };
 
-export const DashboardLayout: Story = {
+export const DashboardLayout = {
+  args: {},
   render: () => (
     <Grid cols={4} rows={3} gap={4} className="h-[600px]">
       <Box className="col-span-4">Header</Box>
@@ -269,7 +277,8 @@ export const DashboardLayout: Story = {
   ),
 };
 
-export const PhotoGrid: Story = {
+export const PhotoGrid = {
+  args: {},
   render: () => (
     <Grid cols={3} gap={4}>
       <Box className="h-32">Photo 1</Box>
@@ -283,7 +292,8 @@ export const PhotoGrid: Story = {
   ),
 };
 
-export const CardGrid: Story = {
+export const CardGrid = {
+  args: {},
   render: () => (
     <Grid cols={3} gap={6} p={6} className="border">
       {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((i) => (
@@ -295,7 +305,8 @@ export const CardGrid: Story = {
   ),
 };
 
-export const ResponsiveGrid: Story = {
+export const ResponsiveGrid = {
+  args: {},
   render: () => (
     <Grid cols="repeat(auto-fill, minmax(250px, 1fr))" gap={4} p={4} className="border">
       <Box>Responsive 1</Box>
@@ -308,7 +319,8 @@ export const ResponsiveGrid: Story = {
   ),
 };
 
-export const ComplexLayout: Story = {
+export const ComplexLayout = {
+  args: {},
   render: () => (
     <Grid cols="200px 1fr 200px" rows="auto 1fr auto" gap={4} className="h-screen">
       <Box className="col-span-3">Top Bar</Box>
@@ -325,7 +337,8 @@ export const ComplexLayout: Story = {
   ),
 };
 
-export const Overflow: Story = {
+export const Overflow = {
+  args: {},
   render: () => (
     <div className="space-y-8">
       <div>

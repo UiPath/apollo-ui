@@ -1,22 +1,40 @@
-import type { Meta, StoryObj } from "@storybook/react-vite";
-import * as React from "react";
-import { Files, Search, GitBranch, Bug, Blocks, Settings, FileCode, FileJson } from "lucide-react";
+import * as React from 'react';
+
+import {
+  Blocks,
+  Bug,
+  FileCode,
+  FileJson,
+  Files,
+  GitBranch,
+  Search,
+  Settings,
+} from 'lucide-react';
+
+import {
+  Column,
+  Row,
+} from '@/components/ui/layout';
+import type {
+  Meta,
+  StoryObj,
+} from '@storybook/react-vite';
+
 import {
   Shell,
-  ShellTitleBar,
-  ShellContent,
   ShellActivityBar,
   ShellActivityBarItem,
-  ShellSidebar,
-  ShellSidebarHeader,
+  ShellContent,
   ShellFileTree,
   ShellMain,
-  ShellTabBar,
   ShellPane,
   ShellPanel,
+  ShellSidebar,
+  ShellSidebarHeader,
   ShellStatusBar,
-} from "./vscode-example";
-import { Row, Column } from "@/components/ui/layout";
+  ShellTabBar,
+  ShellTitleBar,
+} from './vscode-example';
 
 const meta = {
   title: "Examples/VSCode",
@@ -233,11 +251,15 @@ export function Shell({ children, className }: ShellProps) {
   );
 }
 
-export const Default: Story = {
+export const Default = {
+  // @ts-expect-error - args not needed when using render, but Storybook requires it
+  args: {},
   render: () => <VSCodeShellDemo />,
-};
+} satisfies Story;
 
-export const MinimalShell: Story = {
+export const MinimalShell = {
+  // @ts-expect-error - args not needed when using render, but Storybook requires it
+  args: {},
   render: () => (
     <Shell className="h-[400px]">
       <ShellTitleBar title="My App" />
@@ -256,9 +278,11 @@ export const MinimalShell: Story = {
       </ShellStatusBar>
     </Shell>
   ),
-};
+} satisfies Story;
 
-export const WithSidebarOnly: Story = {
+export const WithSidebarOnly = {
+  // @ts-expect-error - args not needed when using render, but Storybook requires it
+  args: {},
   render: () => (
     <Shell className="h-[500px]">
       <ShellTitleBar title="File Browser" />
@@ -275,4 +299,4 @@ export const WithSidebarOnly: Story = {
       </ShellContent>
     </Shell>
   ),
-};
+} satisfies Story;

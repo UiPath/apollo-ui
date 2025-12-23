@@ -19,14 +19,14 @@ export const Default: Story = {
   args: {},
 };
 
-export const WithLabel: Story = {
-  render: () => (
+export const WithLabel = {
+    render: () => (
     <Row gap={2} align="center">
       <Checkbox id="terms" />
       <Label htmlFor="terms">Accept terms and conditions</Label>
     </Row>
   ),
-};
+} satisfies Story;;
 
 export const Checked: Story = {
   args: {
@@ -34,26 +34,26 @@ export const Checked: Story = {
   },
 };
 
-export const Disabled: Story = {
-  render: () => (
+export const Disabled = {
+    render: () => (
     <Row gap={2} align="center">
       <Checkbox id="disabled" disabled />
       <Label htmlFor="disabled">Disabled checkbox</Label>
     </Row>
   ),
-};
+} satisfies Story;;
 
-export const DisabledChecked: Story = {
-  render: () => (
+export const DisabledChecked = {
+    render: () => (
     <Row gap={2} align="center">
       <Checkbox id="disabled-checked" disabled defaultChecked />
       <Label htmlFor="disabled-checked">Disabled and checked</Label>
     </Row>
   ),
-};
+} satisfies Story;;
 
-export const WithDescription: Story = {
-  render: () => (
+export const WithDescription = {
+    render: () => (
     <Column gap={2}>
       <Row gap={2} align="center">
         <Checkbox id="marketing" />
@@ -64,10 +64,10 @@ export const WithDescription: Story = {
       </p>
     </Column>
   ),
-};
+} satisfies Story;;
 
-export const Group: Story = {
-  render: () => (
+export const Group = {
+    render: () => (
     <Column gap={3}>
       <div className="font-medium text-sm">Notification preferences</div>
       <Column gap={2}>
@@ -90,4 +90,4 @@ export const Group: Story = {
       </Column>
     </Column>
   ),
-};
+} satisfies Story;;

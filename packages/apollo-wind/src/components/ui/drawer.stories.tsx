@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta } from "@storybook/react-vite";
 import { Button } from "./button";
 import {
   Drawer,
@@ -18,9 +18,9 @@ const meta: Meta<typeof Drawer> = {
 };
 
 export default meta;
-type Story = StoryObj<typeof Drawer>;
 
-export const Default: Story = {
+export const Default = {
+  args: {},
   render: () => (
     <Drawer>
       <DrawerTrigger asChild>
@@ -49,7 +49,8 @@ export const Default: Story = {
   ),
 };
 
-export const WithForm: Story = {
+export const WithForm = {
+  args: {},
   render: () => (
     <Drawer>
       <DrawerTrigger asChild>

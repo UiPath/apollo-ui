@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta } from "@storybook/react-vite";
 import {
   ContextMenu,
   ContextMenuContent,
@@ -14,18 +14,16 @@ const meta: Meta<typeof ContextMenu> = {
 };
 
 export default meta;
-type Story = StoryObj<typeof ContextMenu>;
 
-export const Default: Story = {
+export const Default = {
+  args: {},
   render: () => (
     <ContextMenu>
       <ContextMenuTrigger asChild>
         <Row
           align="center"
           justify="center"
-          h="150px"
-          w="300px"
-          className="rounded-md border border-dashed text-sm"
+          className="h-[150px] w-[300px] rounded-md border border-dashed text-sm"
         >
           Right click here
         </Row>

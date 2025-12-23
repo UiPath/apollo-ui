@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react-vite";
+import type { Meta } from "@storybook/react-vite";
 import { ColumnDef } from "@tanstack/react-table";
 import { MoreHorizontal } from "lucide-react";
 import * as React from "react";
@@ -24,7 +24,6 @@ const meta = {
 } satisfies Meta<typeof DataTable>;
 
 export default meta;
-type Story = StoryObj<typeof meta>;
 
 // Sample data types
 type User = {
@@ -212,11 +211,13 @@ const selectableColumns: ColumnDef<User>[] = [
   },
 ];
 
-export const Default: Story = {
+export const Default = {
+  args: {},
   render: () => <DataTable columns={basicColumns} data={sampleUsers} />,
 };
 
-export const WithSearch: Story = {
+export const WithSearch = {
+  args: {},
   render: () => (
     <DataTable
       columns={basicColumns}
@@ -227,7 +228,8 @@ export const WithSearch: Story = {
   ),
 };
 
-export const Sortable: Story = {
+export const Sortable = {
+  args: {},
   render: () => (
     <DataTable
       columns={sortableColumns}
@@ -238,7 +240,8 @@ export const Sortable: Story = {
   ),
 };
 
-export const WithSelection: Story = {
+export const WithSelection = {
+  args: {},
   render: () => (
     <DataTable
       columns={selectableColumns}
@@ -249,13 +252,15 @@ export const WithSelection: Story = {
   ),
 };
 
-export const NoPagination: Story = {
+export const NoPagination = {
+  args: {},
   render: () => (
     <DataTable columns={basicColumns} data={sampleUsers.slice(0, 5)} showPagination={false} />
   ),
 };
 
-export const NoColumnToggle: Story = {
+export const NoColumnToggle = {
+  args: {},
   render: () => (
     <DataTable
       columns={basicColumns}
@@ -266,7 +271,8 @@ export const NoColumnToggle: Story = {
   ),
 };
 
-export const CustomPageSize: Story = {
+export const CustomPageSize = {
+  args: {},
   render: () => (
     <DataTable columns={sortableColumns} data={sampleUsers} searchKey="name" pageSize={5} />
   ),
@@ -409,17 +415,20 @@ function EditableTableExample() {
   );
 }
 
-export const Editable: Story = {
+export const Editable = {
+  args: {},
   render: () => <EditableTableExample />,
 };
 
-export const Resizable: Story = {
+export const Resizable = {
+  args: {},
   render: () => (
     <DataTable columns={sortableColumns} data={sampleUsers} searchKey="name" resizable />
   ),
 };
 
-export const Compact: Story = {
+export const Compact = {
+  args: {},
   render: () => <DataTable columns={sortableColumns} data={sampleUsers} searchKey="name" compact />,
 };
 
@@ -505,6 +514,7 @@ function FullFeaturedTableExample() {
   );
 }
 
-export const FullFeatured: Story = {
+export const FullFeatured = {
+  args: {},
   render: () => <FullFeaturedTableExample />,
 };

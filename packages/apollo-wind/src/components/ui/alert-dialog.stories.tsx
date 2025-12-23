@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta } from "@storybook/react-vite";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -19,9 +19,9 @@ const meta: Meta<typeof AlertDialog> = {
 };
 
 export default meta;
-type Story = StoryObj<typeof AlertDialog>;
 
-export const Default: Story = {
+export const Default = {
+  args: {},
   render: () => (
     <AlertDialog>
       <AlertDialogTrigger asChild>

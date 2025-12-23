@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta } from "@storybook/react-vite";
 import { useState } from "react";
 import { DateTimePicker } from "./datetime-picker";
 
@@ -12,9 +12,9 @@ const meta = {
 } satisfies Meta<typeof DateTimePicker>;
 
 export default meta;
-type Story = StoryObj<typeof meta>;
 
-export const Default: Story = {
+export const Default = {
+  args: {},
   render: () => {
     const [date, setDate] = useState<Date | undefined>();
     return (
@@ -28,7 +28,8 @@ export const Default: Story = {
   },
 };
 
-export const WithInitialValue: Story = {
+export const WithInitialValue = {
+  args: {},
   render: () => {
     const [date, setDate] = useState<Date | undefined>(new Date());
     return (
@@ -42,7 +43,8 @@ export const WithInitialValue: Story = {
   },
 };
 
-export const With12HourFormat: Story = {
+export const With12HourFormat = {
+  args: {},
   render: () => {
     const [date, setDate] = useState<Date | undefined>();
     return (
@@ -56,7 +58,8 @@ export const With12HourFormat: Story = {
   },
 };
 
-export const Disabled: Story = {
+export const Disabled = {
+  args: {},
   render: () => {
     const [date, setDate] = useState<Date | undefined>(new Date());
     return (
@@ -67,7 +70,8 @@ export const Disabled: Story = {
   },
 };
 
-export const CustomPlaceholder: Story = {
+export const CustomPlaceholder = {
+  args: {},
   render: () => {
     const [date, setDate] = useState<Date | undefined>();
     return (
@@ -78,7 +82,8 @@ export const CustomPlaceholder: Story = {
   },
 };
 
-export const InForm: Story = {
+export const InForm = {
+  args: {},
   render: () => {
     const [meetingDate, setMeetingDate] = useState<Date | undefined>();
     const [deadline, setDeadline] = useState<Date | undefined>();

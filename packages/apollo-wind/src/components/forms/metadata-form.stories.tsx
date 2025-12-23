@@ -1,9 +1,9 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
 import { MetadataForm } from "./metadata-form";
 import { FormStateViewer } from "./form-state-viewer";
 import type { FormSchema } from "./form-schema";
 import { z } from "zod";
-import { useForm, FormProvider, type FieldValues } from "react-hook-form";
+import { useForm, FormProvider, type FieldValues, type UseFormReturn } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { RuleBuilder } from "./rules-engine";
 import { autoSavePlugin, analyticsPlugin } from "./form-plugins";
@@ -723,8 +723,8 @@ export const MultiStepWizard: Story = {
  * - Upload progress tracking
  * - Visual progress bars
  */
-export const FileUpload: Story = {
-  render: () => (
+export const FileUpload = {
+    render: () => (
     <>
       <div className="flex justify-end mb-4">
         <SchemaViewer schema={fileUploadSchema} />
@@ -732,7 +732,7 @@ export const FileUpload: Story = {
       <FileUploadExample />
     </>
   ),
-};
+} satisfies Story;;
 
 // ============================================================================
 // PLUGINS
@@ -866,7 +866,7 @@ const StateViewerExample = () => {
       <form onSubmit={form.handleSubmit(onSubmit)}>
         <div className="grid grid-cols-2 gap-6">
           <ManualFormFields />
-          <FormStateViewer form={form} title="Live Form State" />
+          <FormStateViewer form={form as unknown as UseFormReturn<FieldValues>} title="Live Form State" />
         </div>
       </form>
     </FormProvider>
@@ -881,9 +881,9 @@ const StateViewerExample = () => {
  * - See validation errors as you type
  * - Track dirty and touched fields
  */
-export const WithStateViewer: Story = {
-  render: () => <StateViewerExample />,
-};
+export const WithStateViewer = {
+    render: () => <StateViewerExample />,
+} satisfies Story;;
 
 const CompactStateExample = () => {
   const zodSchema = z.object({
@@ -953,7 +953,7 @@ const CompactStateExample = () => {
           <Button type="submit">Submit</Button>
         </div>
 
-        <FormStateViewer form={form} compact />
+        <FormStateViewer form={form as unknown as UseFormReturn<FieldValues>} compact />
       </form>
     </FormProvider>
   );
@@ -966,9 +966,9 @@ const CompactStateExample = () => {
  * - Condensed view of form state
  * - Perfect for monitoring without taking space
  */
-export const WithCompactStateViewer: Story = {
-  render: () => <CompactStateExample />,
-};
+export const WithCompactStateViewer = {
+    render: () => <CompactStateExample />,
+} satisfies Story;;
 
 /**
  * With DevTools

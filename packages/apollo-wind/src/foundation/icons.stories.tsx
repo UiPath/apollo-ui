@@ -506,6 +506,6 @@ function IconsGallery() {
   );
 }
 
-export const Default: Story = {
-  render: () => <IconsGallery />,
-};
+export const Default = {
+    render: () => <IconsGallery />,
+} satisfies Story;;

@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta } from "@storybook/react-vite";
 import { useState } from "react";
 import { Button } from "./button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "./collapsible";
@@ -11,9 +11,9 @@ const meta: Meta<typeof Collapsible> = {
 };
 
 export default meta;
-type Story = StoryObj<typeof Collapsible>;
 
-export const Default: Story = {
+export const Default = {
+  args: {},
   render: () => {
     const [isOpen, setIsOpen] = useState(false);
 

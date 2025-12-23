@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta } from "@storybook/react-vite";
 import { Alert, AlertDescription, AlertTitle } from "./alert";
 
 const meta: Meta<typeof Alert> = {
@@ -8,9 +8,9 @@ const meta: Meta<typeof Alert> = {
 };
 
 export default meta;
-type Story = StoryObj<typeof Alert>;
 
-export const Default: Story = {
+export const Default = {
+  args: {},
   render: () => (
     <Alert>
       <AlertTitle>Heads up!</AlertTitle>
@@ -19,7 +19,8 @@ export const Default: Story = {
   ),
 };
 
-export const Destructive: Story = {
+export const Destructive = {
+  args: {},
   render: () => (
     <Alert variant="destructive">
       <AlertTitle>Error</AlertTitle>

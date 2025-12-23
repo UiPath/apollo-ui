@@ -20,14 +20,14 @@ export const Default: Story = {
   },
 };
 
-export const WithLabel: Story = {
-  render: () => (
+export const WithLabel = {
+    render: () => (
     <div className="grid w-full max-w-sm gap-1.5">
       <Label htmlFor="message">Your message</Label>
       <Textarea id="message" placeholder="Type your message here..." />
     </div>
   ),
-};
+} satisfies Story;;
 
 export const WithText: Story = {
   args: {
@@ -49,12 +49,12 @@ export const WithRows: Story = {
   },
 };
 
-export const WithDescription: Story = {
-  render: () => (
+export const WithDescription = {
+    render: () => (
     <div className="grid w-full max-w-sm gap-1.5">
       <Label htmlFor="bio">Biography</Label>
       <Textarea id="bio" placeholder="Tell us about yourself..." />
       <p className="text-sm text-muted-foreground">You can use markdown syntax here.</p>
     </div>
   ),
-};
+} satisfies Story;;

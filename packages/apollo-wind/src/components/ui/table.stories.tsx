@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta } from "@storybook/react-vite";
 import {
   Table,
   TableBody,
@@ -16,7 +16,6 @@ const meta: Meta<typeof Table> = {
 };
 
 export default meta;
-type Story = StoryObj<typeof Table>;
 
 const invoices = [
   {
@@ -45,7 +44,8 @@ const invoices = [
   },
 ];
 
-export const Default: Story = {
+export const Default = {
+  args: {},
   render: () => (
     <Table>
       <TableCaption>A list of your recent invoices.</TableCaption>

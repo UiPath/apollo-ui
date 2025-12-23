@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta } from "@storybook/react-vite";
 import { Column } from "./column";
 
 const meta = {
@@ -11,13 +11,13 @@ const meta = {
 } satisfies Meta<typeof Column>;
 
 export default meta;
-type Story = StoryObj<typeof meta>;
 
 const Box = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => (
   <div className={`rounded-md border bg-primary/10 p-4 text-center ${className}`}>{children}</div>
 );
 
-export const Default: Story = {
+export const Default = {
+  args: {},
   render: () => (
     <Column gap={4}>
       <Box>Item 1</Box>
@@ -27,7 +27,8 @@ export const Default: Story = {
   ),
 };
 
-export const WithGap: Story = {
+export const WithGap = {
+  args: {},
   render: () => (
     <div className="flex gap-8">
       <div>
@@ -58,7 +59,8 @@ export const WithGap: Story = {
   ),
 };
 
-export const Alignment: Story = {
+export const Alignment = {
+  args: {},
   render: () => (
     <div className="grid grid-cols-2 gap-8">
       <div>
@@ -97,7 +99,8 @@ export const Alignment: Story = {
   ),
 };
 
-export const Justification: Story = {
+export const Justification = {
+  args: {},
   render: () => (
     <div className="grid grid-cols-3 gap-8">
       <div>
@@ -149,7 +152,8 @@ export const Justification: Story = {
   ),
 };
 
-export const WithPadding: Story = {
+export const WithPadding = {
+  args: {},
   render: () => (
     <div className="flex gap-8">
       <div>
@@ -174,7 +178,8 @@ export const WithPadding: Story = {
   ),
 };
 
-export const WithHeight: Story = {
+export const WithHeight = {
+  args: {},
   render: () => (
     <div className="flex gap-8">
       <div>
@@ -198,7 +203,8 @@ export const WithHeight: Story = {
   ),
 };
 
-export const Overflow: Story = {
+export const Overflow = {
+  args: {},
   render: () => (
     <div className="flex gap-8">
       <div>
@@ -231,7 +237,8 @@ export const Overflow: Story = {
   ),
 };
 
-export const NestedLayout: Story = {
+export const NestedLayout = {
+  args: {},
   render: () => (
     <Column gap={4} p={4} className="border">
       <Box>Header</Box>
@@ -245,7 +252,8 @@ export const NestedLayout: Story = {
   ),
 };
 
-export const Sidebar: Story = {
+export const Sidebar = {
+  args: {},
   render: () => (
     <div className="flex h-screen">
       <Column gap={4} p={6} className="w-64 border-r bg-muted/30">
@@ -262,7 +270,8 @@ export const Sidebar: Story = {
   ),
 };
 
-export const FormLayout: Story = {
+export const FormLayout = {
+  args: {},
   render: () => (
     <Column gap={6} p={6} maxW={96} className="border">
       <div>
@@ -282,7 +291,8 @@ export const FormLayout: Story = {
   ),
 };
 
-export const CombinedPropsExample: Story = {
+export const CombinedPropsExample = {
+  args: {},
   render: () => (
     <Column
       gap={4}

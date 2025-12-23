@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react-vite";
+import type { Meta } from "@storybook/react-vite";
 import * as React from "react";
 import { Button } from "./button";
 import { Card, CardContent } from "./card";
@@ -14,7 +14,6 @@ const meta = {
 } satisfies Meta<typeof Stepper>;
 
 export default meta;
-type Story = StoryObj<typeof meta>;
 
 const steps: Step[] = [
   { title: "Account", description: "Create your account" },
@@ -23,7 +22,8 @@ const steps: Step[] = [
   { title: "Complete", description: "Finish setup" },
 ];
 
-export const Default: Story = {
+export const Default = {
+  args: {},
   render: () => (
     <div className="w-[600px]">
       <Stepper steps={steps} currentStep={1} />
@@ -31,7 +31,8 @@ export const Default: Story = {
   ),
 };
 
-export const Completed: Story = {
+export const Completed = {
+  args: {},
   render: () => (
     <div className="w-[600px]">
       <Stepper steps={steps} currentStep={4} />
@@ -39,7 +40,8 @@ export const Completed: Story = {
   ),
 };
 
-export const FirstStep: Story = {
+export const FirstStep = {
+  args: {},
   render: () => (
     <div className="w-[600px]">
       <Stepper steps={steps} currentStep={0} />
@@ -47,7 +49,8 @@ export const FirstStep: Story = {
   ),
 };
 
-export const Vertical: Story = {
+export const Vertical = {
+  args: {},
   render: () => (
     <div className="w-[400px]">
       <Stepper steps={steps} currentStep={1} orientation="vertical" />
@@ -55,7 +58,8 @@ export const Vertical: Story = {
   ),
 };
 
-export const Interactive: Story = {
+export const Interactive = {
+  args: {},
   render: () => {
     const [currentStep, setCurrentStep] = React.useState(0);
 
@@ -90,7 +94,8 @@ export const Interactive: Story = {
   },
 };
 
-export const WithoutDescriptions: Story = {
+export const WithoutDescriptions = {
+  args: {},
   render: () => {
     const simpleSteps: Step[] = [
       { title: "Step 1" },
@@ -107,7 +112,8 @@ export const WithoutDescriptions: Story = {
   },
 };
 
-export const ManySteps: Story = {
+export const ManySteps = {
+  args: {},
   render: () => {
     const manySteps: Step[] = [
       { title: "Start" },

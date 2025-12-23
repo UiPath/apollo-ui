@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta } from "@storybook/react-vite";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -15,9 +15,9 @@ const meta: Meta<typeof Breadcrumb> = {
 };
 
 export default meta;
-type Story = StoryObj<typeof Breadcrumb>;
 
-export const Default: Story = {
+export const Default = {
+  args: {},
   render: () => (
     <Breadcrumb>
       <BreadcrumbList>

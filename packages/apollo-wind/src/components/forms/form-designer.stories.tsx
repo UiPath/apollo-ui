@@ -1,5 +1,9 @@
-import type { Meta, StoryObj } from "@storybook/react";
-import { FormDesigner } from "./form-designer";
+import type {
+  Meta,
+  StoryObj,
+} from '@storybook/react-vite';
+
+import { FormDesigner } from './form-designer';
 
 const meta: Meta<typeof FormDesigner> = {
   title: "Forms/Designer",

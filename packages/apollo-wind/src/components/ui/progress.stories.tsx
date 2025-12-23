@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta } from "@storybook/react-vite";
 import { useEffect, useState } from "react";
 import { Progress } from "./progress";
 
@@ -9,17 +9,19 @@ const meta: Meta<typeof Progress> = {
 };
 
 export default meta;
-type Story = StoryObj<typeof Progress>;
 
-export const Default: Story = {
+export const Default = {
+  args: {},
   render: () => <Progress value={33} className="w-[60%]" />,
 };
 
-export const Indeterminate: Story = {
+export const Indeterminate = {
+  args: {},
   render: () => <Progress value={undefined} className="w-[60%]" />,
 };
 
-export const Animated: Story = {
+export const Animated = {
+  args: {},
   render: () => {
     const [progress, setProgress] = useState(13);
 

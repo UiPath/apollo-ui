@@ -612,6 +612,6 @@ function SpacingGallery() {
   );
 }
 
-export const Default: Story = {
-  render: () => <SpacingGallery />,
-};
+export const Default = {
+    render: () => <SpacingGallery />,
+} satisfies Story;;

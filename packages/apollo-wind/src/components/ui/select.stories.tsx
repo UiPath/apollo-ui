@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react-vite";
+import type { Meta } from "@storybook/react-vite";
 import { Label } from "./label";
 import {
   Select,
@@ -20,9 +20,9 @@ const meta = {
 } satisfies Meta<typeof Select>;
 
 export default meta;
-type Story = StoryObj<typeof meta>;
 
-export const Default: Story = {
+export const Default = {
+  args: {},
   render: () => (
     <Select>
       <SelectTrigger className="w-[180px]">
@@ -37,7 +37,8 @@ export const Default: Story = {
   ),
 };
 
-export const WithLabel: Story = {
+export const WithLabel = {
+  args: {},
   render: () => (
     <div className="grid w-full max-w-sm items-center gap-1.5">
       <Label htmlFor="country">Country</Label>
@@ -56,7 +57,8 @@ export const WithLabel: Story = {
   ),
 };
 
-export const WithDefaultValue: Story = {
+export const WithDefaultValue = {
+  args: {},
   render: () => (
     <Select defaultValue="2">
       <SelectTrigger className="w-[180px]">
@@ -71,7 +73,8 @@ export const WithDefaultValue: Story = {
   ),
 };
 
-export const Disabled: Story = {
+export const Disabled = {
+  args: {},
   render: () => (
     <Select disabled>
       <SelectTrigger className="w-[180px]">
@@ -86,7 +89,8 @@ export const Disabled: Story = {
   ),
 };
 
-export const WithGroups: Story = {
+export const WithGroups = {
+  args: {},
   render: () => (
     <div className="grid w-full max-w-sm items-center gap-1.5">
       <Label htmlFor="food">Choose a food</Label>
@@ -113,7 +117,8 @@ export const WithGroups: Story = {
   ),
 };
 
-export const Scrollable: Story = {
+export const Scrollable = {
+  args: {},
   render: () => (
     <Select>
       <SelectTrigger className="w-[280px]">

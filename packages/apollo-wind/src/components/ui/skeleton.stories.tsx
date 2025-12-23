@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react-vite";
+import type { Meta } from "@storybook/react-vite";
 import { Card, CardContent, CardHeader } from "./card";
 import { Skeleton } from "./skeleton";
 import { Row, Column } from "./layout";
@@ -13,17 +13,19 @@ const meta = {
 } satisfies Meta<typeof Skeleton>;
 
 export default meta;
-type Story = StoryObj<typeof meta>;
 
-export const Default: Story = {
+export const Default = {
+  args: {},
   render: () => <Skeleton className="h-12 w-[250px]" />,
 };
 
-export const Circle: Story = {
+export const Circle = {
+  args: {},
   render: () => <Skeleton className="h-12 w-12 rounded-full" />,
 };
 
-export const CardSkeleton: Story = {
+export const CardSkeleton = {
+  args: {},
   render: () => (
     <Card className="w-[350px]">
       <CardHeader>
@@ -41,7 +43,8 @@ export const CardSkeleton: Story = {
   ),
 };
 
-export const ProfileSkeleton: Story = {
+export const ProfileSkeleton = {
+  args: {},
   render: () => (
     <Row gap={4} align="center">
       <Skeleton className="h-12 w-12 rounded-full" />
@@ -53,7 +56,8 @@ export const ProfileSkeleton: Story = {
   ),
 };
 
-export const ListSkeleton: Story = {
+export const ListSkeleton = {
+  args: {},
   render: () => (
     <Column gap={4} className="w-[350px]">
       {Array.from({ length: 5 }).map((_, i) => (
@@ -69,7 +73,8 @@ export const ListSkeleton: Story = {
   ),
 };
 
-export const TableSkeleton: Story = {
+export const TableSkeleton = {
+  args: {},
   render: () => (
     <Column gap={3} className="w-[600px]">
       <Skeleton className="h-8 w-full" />

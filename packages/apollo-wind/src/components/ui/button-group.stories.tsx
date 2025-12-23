@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react-vite";
+import type { Meta } from "@storybook/react-vite";
 import {
   Bold,
   Italic,
@@ -44,9 +44,9 @@ const meta = {
 } satisfies Meta<typeof ButtonGroup>;
 
 export default meta;
-type Story = StoryObj<typeof meta>;
 
-export const Default: Story = {
+export const Default = {
+  args: {},
   render: () => (
     <ButtonGroup>
       <Button variant="outline">Left</Button>
@@ -56,7 +56,8 @@ export const Default: Story = {
   ),
 };
 
-export const Horizontal: Story = {
+export const Horizontal = {
+  args: {},
   render: () => (
     <ButtonGroup orientation="horizontal">
       <Button variant="outline">One</Button>
@@ -66,7 +67,8 @@ export const Horizontal: Story = {
   ),
 };
 
-export const Vertical: Story = {
+export const Vertical = {
+  args: {},
   render: () => (
     <ButtonGroup orientation="vertical">
       <Button variant="outline">Top</Button>
@@ -76,7 +78,8 @@ export const Vertical: Story = {
   ),
 };
 
-export const WithIcons: Story = {
+export const WithIcons = {
+  args: {},
   render: () => (
     <ButtonGroup>
       <Button variant="outline" size="icon">
@@ -92,7 +95,8 @@ export const WithIcons: Story = {
   ),
 };
 
-export const TextAlignment: Story = {
+export const TextAlignment = {
+  args: {},
   render: () => (
     <ButtonGroup>
       <Button variant="outline" size="icon">
@@ -108,7 +112,8 @@ export const TextAlignment: Story = {
   ),
 };
 
-export const WithSeparator: Story = {
+export const WithSeparator = {
+  args: {},
   render: () => (
     <ButtonGroup>
       <Button variant="outline">Save</Button>
@@ -128,7 +133,8 @@ export const WithSeparator: Story = {
   ),
 };
 
-export const SplitButton: Story = {
+export const SplitButton = {
+  args: {},
   render: () => (
     <ButtonGroup>
       <Button>
@@ -160,7 +166,8 @@ export const SplitButton: Story = {
   ),
 };
 
-export const Variants: Story = {
+export const Variants = {
+  args: {},
   render: () => (
     <div className="flex flex-col gap-4">
       <ButtonGroup>
@@ -183,7 +190,8 @@ export const Variants: Story = {
   ),
 };
 
-export const Sizes: Story = {
+export const Sizes = {
+  args: {},
   render: () => (
     <div className="flex flex-col gap-4 items-start">
       <ButtonGroup>
@@ -210,7 +218,8 @@ export const Sizes: Story = {
   ),
 };
 
-export const WithText: Story = {
+export const WithText = {
+  args: {},
   render: () => (
     <div className="flex items-center gap-2 rounded-md border p-1">
       <ButtonGroupText>Page</ButtonGroupText>
@@ -229,7 +238,8 @@ export const WithText: Story = {
   ),
 };
 
-export const MixedContent: Story = {
+export const MixedContent = {
+  args: {},
   render: () => (
     <ButtonGroup>
       <Button variant="outline">
@@ -244,7 +254,8 @@ export const MixedContent: Story = {
   ),
 };
 
-export const CanvasModeToolbar: Story = {
+export const CanvasModeToolbar = {
+  args: {},
   render: () => (
     <div className="flex items-center gap-1 rounded-lg border bg-background p-1">
       <ToggleGroup type="single" defaultValue="build" className="gap-0">
@@ -280,7 +291,8 @@ export const CanvasModeToolbar: Story = {
   ),
 };
 
-export const CanvasPublishToolbar: Story = {
+export const CanvasPublishToolbar = {
+  args: {},
   render: () => (
     <div className="flex items-center gap-3 rounded-lg border bg-background p-1 pl-3">
       <Label htmlFor="toolbar-active" className="text-sm font-medium">

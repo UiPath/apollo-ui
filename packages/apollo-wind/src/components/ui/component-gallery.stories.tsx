@@ -1,6 +1,6 @@
-import type { Meta, StoryObj } from "@storybook/react-vite";
+import type { Meta } from "@storybook/react-vite";
 import { useState, useMemo } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./card";
+import { Card, CardDescription, CardHeader, CardTitle } from "./card";
 import { Badge } from "./badge";
 import { Button } from "./button";
 import { Input } from "./input";
@@ -26,7 +26,6 @@ const meta = {
 } satisfies Meta;
 
 export default meta;
-type Story = StoryObj<typeof meta>;
 
 enum Category {
   Core = "Core",
@@ -832,6 +831,7 @@ function ComponentGallery() {
   );
 }
 
-export const Default: Story = {
+export const Default = {
+  args: {},
   render: () => <ComponentGallery />,
 };
