@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta } from "@storybook/react-vite";
 import { Button } from "./button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "./card";
 import { Input } from "./input";
@@ -12,9 +12,9 @@ const meta: Meta<typeof Tabs> = {
 };
 
 export default meta;
-type Story = StoryObj<typeof Tabs>;
 
-export const Default: Story = {
+export const Default = {
+  args: {},
   render: () => (
     <Tabs defaultValue="account" className="w-[400px]">
       <TabsList>

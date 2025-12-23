@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState } from "react";
 import { Combobox, ComboboxItem } from "./combobox";
 import { Label } from "./label";
@@ -29,6 +29,8 @@ const largeList: ComboboxItem[] = Array.from({ length: 50 }, (_, i) => ({
 }));
 
 export const Default: Story = {
+  // @ts-expect-error - args not needed when using render, but Storybook requires it
+  args: {},
   render: () => {
     const [value, setValue] = useState<string>("");
 
@@ -43,8 +45,9 @@ export const Default: Story = {
     );
   },
 };
-
 export const WithLabel: Story = {
+  // @ts-expect-error - args not needed when using render, but Storybook requires it
+  args: {},
   render: () => {
     const [value, setValue] = useState<string>("");
 
@@ -64,6 +67,8 @@ export const WithLabel: Story = {
 };
 
 export const WithValue: Story = {
+  // @ts-expect-error - args not needed when using render, but Storybook requires it
+  args: {},
   render: () => {
     const [value, setValue] = useState<string>("next.js");
 
@@ -80,6 +85,8 @@ export const WithValue: Story = {
 };
 
 export const Disabled: Story = {
+  // @ts-expect-error - args not needed when using render, but Storybook requires it
+  args: {},
   render: () => {
     const [value, setValue] = useState<string>("next.js");
 
@@ -97,6 +104,8 @@ export const Disabled: Story = {
 };
 
 export const LargeList: Story = {
+  // @ts-expect-error - args not needed when using render, but Storybook requires it
+  args: {},
   render: () => {
     const [value, setValue] = useState<string>("");
 

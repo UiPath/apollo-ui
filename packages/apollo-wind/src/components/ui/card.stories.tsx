@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react-vite";
+import type { Meta } from "@storybook/react-vite";
 import { Button } from "./button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "./card";
 
@@ -12,9 +12,9 @@ const meta = {
 } satisfies Meta<typeof Card>;
 
 export default meta;
-type Story = StoryObj<typeof meta>;
 
-export const Default: Story = {
+export const Default = {
+  args: {},
   render: () => (
     <Card className="w-[350px]">
       <CardHeader>
@@ -31,7 +31,8 @@ export const Default: Story = {
   ),
 };
 
-export const Simple: Story = {
+export const Simple = {
+  args: {},
   render: () => (
     <Card className="w-[350px]">
       <CardContent className="pt-6">
@@ -41,7 +42,8 @@ export const Simple: Story = {
   ),
 };
 
-export const WithoutFooter: Story = {
+export const WithoutFooter = {
+  args: {},
   render: () => (
     <Card className="w-[350px]">
       <CardHeader>

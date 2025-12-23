@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta } from "@storybook/react-vite";
 import { Label } from "./label";
 import { RadioGroup, RadioGroupItem } from "./radio-group";
 import { Row } from "./layout";
@@ -10,9 +10,9 @@ const meta: Meta<typeof RadioGroup> = {
 };
 
 export default meta;
-type Story = StoryObj<typeof RadioGroup>;
 
-export const Default: Story = {
+export const Default = {
+  args: {},
   render: () => (
     <RadioGroup defaultValue="comfortable">
       <Row gap={2} align="center">

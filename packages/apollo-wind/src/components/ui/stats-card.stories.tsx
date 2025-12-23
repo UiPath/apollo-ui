@@ -98,7 +98,9 @@ export const DangerVariant: Story = {
   },
 };
 
-export const Grid: Story = {
+export const Grid = {
+  // @ts-expect-error - args not needed when using render, but Storybook requires it
+  args: {},
   render: () => (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
       <StatsCard
@@ -128,9 +130,11 @@ export const Grid: Story = {
       />
     </div>
   ),
-};
+} satisfies Story;
 
-export const MixedTrends: Story = {
+export const MixedTrends = {
+  // @ts-expect-error - args not needed when using render, but Storybook requires it
+  args: {},
   render: () => (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
       <StatsCard
@@ -153,4 +157,4 @@ export const MixedTrends: Story = {
       />
     </div>
   ),
-};
+} satisfies Story;

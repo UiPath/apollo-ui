@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta } from "@storybook/react-vite";
 import { Row } from "./row";
 
 const meta = {
@@ -11,13 +11,13 @@ const meta = {
 } satisfies Meta<typeof Row>;
 
 export default meta;
-type Story = StoryObj<typeof meta>;
 
 const Box = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => (
   <div className={`rounded-md border bg-primary/10 p-4 text-center ${className}`}>{children}</div>
 );
 
-export const Default: Story = {
+export const Default = {
+  args: {},
   render: () => (
     <Row gap={4}>
       <Box>Item 1</Box>
@@ -27,7 +27,8 @@ export const Default: Story = {
   ),
 };
 
-export const WithGap: Story = {
+export const WithGap = {
+  args: {},
   render: () => (
     <div className="space-y-4">
       <div>
@@ -58,7 +59,8 @@ export const WithGap: Story = {
   ),
 };
 
-export const Alignment: Story = {
+export const Alignment = {
+  args: {},
   render: () => (
     <div className="space-y-4">
       <div>
@@ -97,7 +99,8 @@ export const Alignment: Story = {
   ),
 };
 
-export const Justification: Story = {
+export const Justification = {
+  args: {},
   render: () => (
     <div className="space-y-4">
       <div>
@@ -149,7 +152,8 @@ export const Justification: Story = {
   ),
 };
 
-export const Wrapping: Story = {
+export const Wrapping = {
+  args: {},
   render: () => (
     <div className="space-y-4">
       <div>
@@ -174,7 +178,8 @@ export const Wrapping: Story = {
   ),
 };
 
-export const WithPadding: Story = {
+export const WithPadding = {
+  args: {},
   render: () => (
     <div className="space-y-4">
       <div>
@@ -199,7 +204,8 @@ export const WithPadding: Story = {
   ),
 };
 
-export const WithMargin: Story = {
+export const WithMargin = {
+  args: {},
   render: () => (
     <div className="border bg-muted/20">
       <Row gap={4} m={4} className="bg-background">
@@ -210,7 +216,8 @@ export const WithMargin: Story = {
   ),
 };
 
-export const Overflow: Story = {
+export const Overflow = {
+  args: {},
   render: () => (
     <div className="space-y-4">
       <div>
@@ -233,7 +240,8 @@ export const Overflow: Story = {
   ),
 };
 
-export const ResponsiveExample: Story = {
+export const ResponsiveExample = {
+  args: {},
   render: () => (
     <Row gap={4} p={4} className="border">
       <Box className="flex-1">Flex Item 1</Box>
@@ -243,7 +251,8 @@ export const ResponsiveExample: Story = {
   ),
 };
 
-export const NestedLayout: Story = {
+export const NestedLayout = {
+  args: {},
   render: () => (
     <Row gap={4} p={4} className="border">
       <Row gap={2} p={2} className="flex-1 border">
@@ -259,7 +268,8 @@ export const NestedLayout: Story = {
   ),
 };
 
-export const CombinedPropsExample: Story = {
+export const CombinedPropsExample = {
+  args: {},
   render: () => (
     <Row gap={4} p={6} align="center" justify="between" className="rounded-lg border bg-muted/50">
       <Box>Left Content</Box>

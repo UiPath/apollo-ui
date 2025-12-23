@@ -247,9 +247,11 @@ function AdminPageDemo() {
   );
 }
 
-export const Default: Story = {
+export const Default = {
+  // @ts-expect-error - args not needed when using render, but Storybook requires it
+  args: {},
   render: () => <AdminPageDemo />,
-};
+} satisfies Story;
 
 // Simple settings page
 function SettingsPageDemo() {
@@ -285,6 +287,8 @@ function SettingsPageDemo() {
   );
 }
 
-export const SettingsPage: Story = {
+export const SettingsPage = {
+  // @ts-expect-error - args not needed when using render, but Storybook requires it
+  args: {},
   render: () => <SettingsPageDemo />,
-};
+} satisfies Story;

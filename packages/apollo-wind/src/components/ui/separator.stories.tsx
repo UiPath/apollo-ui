@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta } from "@storybook/react-vite";
 import { Separator } from "./separator";
 import { Row, Column } from "./layout";
 
@@ -9,9 +9,9 @@ const meta: Meta<typeof Separator> = {
 };
 
 export default meta;
-type Story = StoryObj<typeof Separator>;
 
-export const Horizontal: Story = {
+export const Horizontal = {
+  args: {},
   render: () => (
     <Column gap={4}>
       <div>
@@ -30,7 +30,8 @@ export const Horizontal: Story = {
   ),
 };
 
-export const Vertical: Story = {
+export const Vertical = {
+  args: {},
   render: () => (
     <Row h={20} gap={4} align="center">
       <div>Item 1</div>

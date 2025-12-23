@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react-vite";
+import type { Meta } from "@storybook/react-vite";
 import * as React from "react";
 import { Search, SearchWithSuggestions } from "./search";
 
@@ -12,9 +12,9 @@ const meta = {
 } satisfies Meta<typeof Search>;
 
 export default meta;
-type Story = StoryObj<typeof meta>;
 
-export const Default: Story = {
+export const Default = {
+  args: {},
   render: () => {
     const [value, setValue] = React.useState("");
     return (
@@ -25,7 +25,8 @@ export const Default: Story = {
   },
 };
 
-export const WithValue: Story = {
+export const WithValue = {
+  args: {},
   render: () => {
     const [value, setValue] = React.useState("React components");
     return (
@@ -36,7 +37,8 @@ export const WithValue: Story = {
   },
 };
 
-export const NoClearButton: Story = {
+export const NoClearButton = {
+  args: {},
   render: () => {
     const [value, setValue] = React.useState("");
     return (
@@ -47,7 +49,8 @@ export const NoClearButton: Story = {
   },
 };
 
-export const WithSuggestions: Story = {
+export const WithSuggestions = {
+  args: {},
   render: () => {
     const [value, setValue] = React.useState("");
     const suggestions = [
@@ -79,7 +82,8 @@ export const WithSuggestions: Story = {
   },
 };
 
-export const WithCustomEmptyMessage: Story = {
+export const WithCustomEmptyMessage = {
+  args: {},
   render: () => {
     const [value, setValue] = React.useState("");
     const suggestions = ["Apple", "Banana", "Cherry"];
@@ -98,7 +102,8 @@ export const WithCustomEmptyMessage: Story = {
   },
 };
 
-export const SearchUsers: Story = {
+export const SearchUsers = {
+  args: {},
   render: () => {
     const [value, setValue] = React.useState("");
     const users = [
@@ -127,7 +132,8 @@ export const SearchUsers: Story = {
   },
 };
 
-export const Interactive: Story = {
+export const Interactive = {
+  args: {},
   render: () => {
     const [value, setValue] = React.useState("");
     const [results, setResults] = React.useState<string[]>([]);

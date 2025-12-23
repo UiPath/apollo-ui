@@ -35,8 +35,8 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const Default: Story = {
-  render: () => {
+export const Default = {
+    render: () => {
     const [activeSidebarId, setActiveSidebarId] = React.useState("autopilot");
     const [sidebarOpen, setSidebarOpen] = React.useState(true);
 
@@ -60,10 +60,10 @@ export const Default: Story = {
       />
     );
   },
-};
+} satisfies Story;;
 
-export const WithToolbars: Story = {
-  render: () => {
+export const WithToolbars = {
+    render: () => {
     const [activeSidebarId, setActiveSidebarId] = React.useState("autopilot");
     const [sidebarOpen, setSidebarOpen] = React.useState(true);
 
@@ -94,10 +94,10 @@ export const WithToolbars: Story = {
       />
     );
   },
-};
+} satisfies Story;;
 
-export const WithBottomPanel: Story = {
-  render: () => {
+export const WithBottomPanel = {
+    render: () => {
     const [activeSidebarId, setActiveSidebarId] = React.useState("folders");
     const [sidebarOpen, setSidebarOpen] = React.useState(true);
     return (
@@ -138,10 +138,10 @@ export const WithBottomPanel: Story = {
       />
     );
   },
-};
+} satisfies Story;;
 
-export const WithCustomSidebar: Story = {
-  render: () => {
+export const WithCustomSidebar = {
+    render: () => {
     const [activeSidebarId, setActiveSidebarId] = React.useState("autopilot");
     const [sidebarOpen, setSidebarOpen] = React.useState(true);
 
@@ -181,7 +181,7 @@ export const WithCustomSidebar: Story = {
       />
     );
   },
-};
+} satisfies Story;;
 
 const customSidebarOptions: SidebarPanelConfig[] = [
   { id: "files", icon: <Folders className="h-4 w-4" />, label: "Files" },
@@ -189,8 +189,8 @@ const customSidebarOptions: SidebarPanelConfig[] = [
   { id: "ai", icon: <Sparkles className="h-4 w-4" />, label: "AI Assistant" },
 ];
 
-export const CustomPanels: Story = {
-  render: () => {
+export const CustomPanels = {
+    render: () => {
     const [activeSidebarId, setActiveSidebarId] = React.useState("ai");
     const [sidebarOpen, setSidebarOpen] = React.useState(true);
 
@@ -217,10 +217,10 @@ export const CustomPanels: Story = {
       />
     );
   },
-};
+} satisfies Story;;
 
-export const PanelClosed: Story = {
-  render: () => {
+export const PanelClosed = {
+    render: () => {
     const [activeSidebarId, setActiveSidebarId] = React.useState("autopilot");
     const [sidebarOpen, setSidebarOpen] = React.useState(false);
 
@@ -244,4 +244,4 @@ export const PanelClosed: Story = {
       />
     );
   },
-};
+} satisfies Story;;

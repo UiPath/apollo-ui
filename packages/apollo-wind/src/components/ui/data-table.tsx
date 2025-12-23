@@ -1,3 +1,33 @@
+import * as React from 'react';
+
+import {
+  ArrowDown,
+  ArrowUp,
+  ArrowUpDown,
+  ChevronDown,
+} from 'lucide-react';
+
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
+  EditableCell,
+  EditableCellMeta,
+} from '@/components/ui/editable-cell';
+import { Input } from '@/components/ui/input';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import {
   CellContext,
   Column,
@@ -12,28 +42,7 @@ import {
   SortingState,
   useReactTable,
   VisibilityState,
-} from "@tanstack/react-table";
-import { ArrowUpDown, ArrowUp, ArrowDown, ChevronDown } from "lucide-react";
-import * as React from "react";
-
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { EditableCell, EditableCellMeta } from "@/components/ui/editable-cell";
+} from '@tanstack/react-table';
 
 export interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -276,9 +285,11 @@ export function DataTable<TData, TValue>({
 export function DataTableColumnHeader<TData, TValue>({
   column,
   title,
+  children,
 }: {
   column: Column<TData, TValue>;
   title: string;
+  children?: React.ReactNode;
 }) {
   const sorted = column.getIsSorted();
 
@@ -300,6 +311,7 @@ export function DataTableColumnHeader<TData, TValue>({
       onClick={handleClick}
     >
       <span>{title}</span>
+      {children}
       {sorted === "asc" ? (
         <ArrowUp className="ml-2 h-4 w-4" />
       ) : sorted === "desc" ? (

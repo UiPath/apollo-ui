@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
 import { Button } from "./button";
 import { Spinner } from "./spinner";
 import { Row, Column } from "./layout";
@@ -40,8 +40,8 @@ export const ExtraLarge: Story = {
   },
 };
 
-export const AllSizes: Story = {
-  render: () => (
+export const AllSizes = {
+    render: () => (
     <Row align="center" gap={4}>
       <Spinner size="sm" />
       <Spinner size="default" />
@@ -49,7 +49,7 @@ export const AllSizes: Story = {
       <Spinner size="xl" />
     </Row>
   ),
-};
+} satisfies Story;;
 
 export const WithLabel: Story = {
   args: {
@@ -58,35 +58,34 @@ export const WithLabel: Story = {
   },
 };
 
-export const InButton: Story = {
-  render: () => (
+export const InButton = {
+    render: () => (
     <Button disabled>
       <Spinner size="sm" className="mr-2" />
       Loading...
     </Button>
   ),
-};
+} satisfies Story;;
 
-export const Centered: Story = {
-  render: () => (
+export const Centered = {
+    render: () => (
     <Row h={40} align="center" justify="center" className="rounded-md border">
       <Spinner size="lg" />
     </Row>
   ),
-};
+} satisfies Story;;
 
-export const FullPage: Story = {
-  render: () => (
+export const FullPage = {
+    render: () => (
     <Column
-      h="300px"
       w="full"
       align="center"
       justify="center"
       gap={4}
-      className="rounded-md border"
+      className="h-[300px] rounded-md border"
     >
       <Spinner size="xl" />
       <p className="text-sm text-muted-foreground">Loading content...</p>
     </Column>
   ),
-};
+} satisfies Story;;

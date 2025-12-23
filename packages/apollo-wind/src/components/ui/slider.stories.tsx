@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta } from "@storybook/react-vite";
 import { Slider } from "./slider";
 
 const meta: Meta<typeof Slider> = {
@@ -8,9 +8,9 @@ const meta: Meta<typeof Slider> = {
 };
 
 export default meta;
-type Story = StoryObj<typeof Slider>;
 
-export const Default: Story = {
+export const Default = {
+  args: {},
   render: () => (
     <div className="w-[300px]">
       <Slider defaultValue={[33]} max={100} step={1} />
@@ -18,7 +18,8 @@ export const Default: Story = {
   ),
 };
 
-export const WithRange: Story = {
+export const WithRange = {
+  args: {},
   render: () => (
     <div className="w-[300px]">
       <Slider defaultValue={[25, 75]} max={100} step={1} />

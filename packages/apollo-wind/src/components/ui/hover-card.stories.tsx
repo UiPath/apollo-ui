@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta } from "@storybook/react-vite";
 import { Button } from "./button";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "./hover-card";
 import { Row, Column } from "./layout";
@@ -10,9 +10,9 @@ const meta: Meta<typeof HoverCard> = {
 };
 
 export default meta;
-type Story = StoryObj<typeof HoverCard>;
 
-export const Default: Story = {
+export const Default = {
+  args: {},
   render: () => (
     <HoverCard>
       <HoverCardTrigger asChild>

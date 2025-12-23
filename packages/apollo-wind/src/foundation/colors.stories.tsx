@@ -696,6 +696,6 @@ function ColorsGallery() {
   );
 }
 
-export const Default: Story = {
-  render: () => <ColorsGallery />,
-};
+export const Default = {
+    render: () => <ColorsGallery />,
+} satisfies Story;;

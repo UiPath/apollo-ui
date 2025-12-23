@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react-vite";
+import type { Meta } from "@storybook/react-vite";
 import {
   Calendar,
   CreditCard,
@@ -31,9 +31,9 @@ const meta = {
 } satisfies Meta<typeof Command>;
 
 export default meta;
-type Story = StoryObj<typeof meta>;
 
-export const Default: Story = {
+export const Default = {
+  args: {},
   render: () => (
     <Command className="rounded-lg border shadow-md w-[450px]">
       <CommandInput placeholder="Type a command or search..." />
@@ -69,7 +69,8 @@ export const Default: Story = {
   ),
 };
 
-export const WithShortcuts: Story = {
+export const WithShortcuts = {
+  args: {},
   render: () => (
     <Command className="rounded-lg border shadow-md w-[450px]">
       <CommandInput placeholder="Type a command or search..." />
@@ -102,7 +103,8 @@ export const WithShortcuts: Story = {
   ),
 };
 
-export const Dialog: Story = {
+export const Dialog = {
+  args: {},
   render: () => {
     const [open, setOpen] = React.useState(false);
 

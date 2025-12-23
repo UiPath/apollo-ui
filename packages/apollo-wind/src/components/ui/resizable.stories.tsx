@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react-vite";
+import type { Meta } from "@storybook/react-vite";
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "./resizable";
 import { Row } from "./layout";
 
@@ -12,9 +12,9 @@ const meta = {
 } satisfies Meta<typeof ResizablePanelGroup>;
 
 export default meta;
-type Story = StoryObj<typeof meta>;
 
-export const Horizontal: Story = {
+export const Horizontal = {
+  args: {},
   render: () => (
     <div className="h-screen p-4">
       <ResizablePanelGroup direction="horizontal" className="min-h-[400px] rounded-lg border">
@@ -34,7 +34,8 @@ export const Horizontal: Story = {
   ),
 };
 
-export const Vertical: Story = {
+export const Vertical = {
+  args: {},
   render: () => (
     <div className="h-screen p-4">
       <ResizablePanelGroup direction="vertical" className="min-h-[400px] rounded-lg border">
@@ -54,7 +55,8 @@ export const Vertical: Story = {
   ),
 };
 
-export const ThreePanels: Story = {
+export const ThreePanels = {
+  args: {},
   render: () => (
     <div className="h-screen p-4">
       <ResizablePanelGroup direction="horizontal" className="min-h-[400px] rounded-lg border">
@@ -80,7 +82,8 @@ export const ThreePanels: Story = {
   ),
 };
 
-export const Nested: Story = {
+export const Nested = {
+  args: {},
   render: () => (
     <div className="h-screen p-4">
       <ResizablePanelGroup direction="horizontal" className="min-h-[400px] rounded-lg border">
@@ -110,7 +113,8 @@ export const Nested: Story = {
   ),
 };
 
-export const WithHandleVariant: Story = {
+export const WithHandleVariant = {
+  args: {},
   render: () => (
     <div className="h-screen p-4">
       <ResizablePanelGroup direction="horizontal" className="min-h-[400px] rounded-lg border">

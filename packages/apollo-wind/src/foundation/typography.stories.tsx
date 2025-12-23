@@ -336,6 +336,6 @@ function TypographyGallery() {
   );
 }
 
-export const Default: Story = {
-  render: () => <TypographyGallery />,
-};
+export const Default = {
+    render: () => <TypographyGallery />,
+} satisfies Story;;

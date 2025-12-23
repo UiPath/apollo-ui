@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta } from "@storybook/react-vite";
 import { Toggle } from "./toggle";
 
 const meta: Meta<typeof Toggle> = {
@@ -8,20 +8,23 @@ const meta: Meta<typeof Toggle> = {
 };
 
 export default meta;
-type Story = StoryObj<typeof Toggle>;
 
-export const Default: Story = {
+export const Default = {
+  args: {},
   render: () => <Toggle>Toggle</Toggle>,
 };
 
-export const Outline: Story = {
+export const Outline = {
+  args: {},
   render: () => <Toggle variant="outline">Outline</Toggle>,
 };
 
-export const Disabled: Story = {
+export const Disabled = {
+  args: {},
   render: () => <Toggle disabled>Disabled</Toggle>,
 };
 
-export const WithText: Story = {
+export const WithText = {
+  args: {},
   render: () => <Toggle aria-label="Toggle bold">Bold</Toggle>,
 };

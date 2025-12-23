@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "./accordion";
 
 const meta: Meta<typeof Accordion> = {
@@ -10,7 +10,7 @@ const meta: Meta<typeof Accordion> = {
 export default meta;
 type Story = StoryObj<typeof Accordion>;
 
-export const Default: Story = {
+export const Default = {
   render: () => (
     <Accordion type="single" collapsible className="w-full">
       <AccordionItem value="item-1">
@@ -31,4 +31,4 @@ export const Default: Story = {
       </AccordionItem>
     </Accordion>
   ),
-};
+} satisfies Story;

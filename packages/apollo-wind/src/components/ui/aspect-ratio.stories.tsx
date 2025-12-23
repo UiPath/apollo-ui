@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta } from "@storybook/react-vite";
 import { AspectRatio } from "./aspect-ratio";
 import { Row } from "./layout";
 
@@ -9,9 +9,9 @@ const meta: Meta<typeof AspectRatio> = {
 };
 
 export default meta;
-type Story = StoryObj<typeof AspectRatio>;
 
-export const Default: Story = {
+export const Default = {
+  args: {},
   render: () => (
     <div className="w-[450px]">
       <AspectRatio ratio={16 / 9} className="bg-muted">
@@ -25,7 +25,8 @@ export const Default: Story = {
   ),
 };
 
-export const Square: Story = {
+export const Square = {
+  args: {},
   render: () => (
     <div className="w-[300px]">
       <AspectRatio ratio={1 / 1} className="bg-muted">

@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react-vite";
+import type { Meta } from "@storybook/react-vite";
 import { ToggleGroup, ToggleGroupItem } from "./toggle-group";
 
 const meta = {
@@ -11,9 +11,9 @@ const meta = {
 } satisfies Meta<typeof ToggleGroup>;
 
 export default meta;
-type Story = StoryObj<typeof meta>;
 
-export const Default: Story = {
+export const Default = {
+  args: {},
   render: () => (
     <ToggleGroup type="single">
       <ToggleGroupItem value="left">Left</ToggleGroupItem>
@@ -23,7 +23,8 @@ export const Default: Story = {
   ),
 };
 
-export const WithDefaultValue: Story = {
+export const WithDefaultValue = {
+  args: {},
   render: () => (
     <ToggleGroup type="single" defaultValue="center">
       <ToggleGroupItem value="left">Left</ToggleGroupItem>
@@ -33,7 +34,8 @@ export const WithDefaultValue: Story = {
   ),
 };
 
-export const Multiple: Story = {
+export const Multiple = {
+  args: {},
   render: () => (
     <ToggleGroup type="multiple">
       <ToggleGroupItem value="bold">B</ToggleGroupItem>
@@ -44,7 +46,8 @@ export const Multiple: Story = {
   ),
 };
 
-export const MultipleWithDefault: Story = {
+export const MultipleWithDefault = {
+  args: {},
   render: () => (
     <ToggleGroup type="multiple" defaultValue={["bold", "italic"]}>
       <ToggleGroupItem value="bold">B</ToggleGroupItem>
@@ -55,7 +58,8 @@ export const MultipleWithDefault: Story = {
   ),
 };
 
-export const Outline: Story = {
+export const Outline = {
+  args: {},
   render: () => (
     <ToggleGroup type="single" variant="outline">
       <ToggleGroupItem value="left">Left</ToggleGroupItem>
@@ -65,7 +69,8 @@ export const Outline: Story = {
   ),
 };
 
-export const Small: Story = {
+export const Small = {
+  args: {},
   render: () => (
     <ToggleGroup type="single" size="sm">
       <ToggleGroupItem value="left">Left</ToggleGroupItem>
@@ -75,7 +80,8 @@ export const Small: Story = {
   ),
 };
 
-export const Large: Story = {
+export const Large = {
+  args: {},
   render: () => (
     <ToggleGroup type="single" size="lg">
       <ToggleGroupItem value="left">Left</ToggleGroupItem>
@@ -85,7 +91,8 @@ export const Large: Story = {
   ),
 };
 
-export const Disabled: Story = {
+export const Disabled = {
+  args: {},
   render: () => (
     <ToggleGroup type="single">
       <ToggleGroupItem value="left">Left</ToggleGroupItem>

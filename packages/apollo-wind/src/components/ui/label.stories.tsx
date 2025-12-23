@@ -20,17 +20,17 @@ export const Default: Story = {
   },
 };
 
-export const WithInput: Story = {
-  render: () => (
+export const WithInput = {
+    render: () => (
     <div className="grid w-full max-w-sm items-center gap-1.5">
       <Label htmlFor="email">Email</Label>
       <Input type="email" id="email" placeholder="Email" />
     </div>
   ),
-};
+} satisfies Story;;
 
-export const Required: Story = {
-  render: () => (
+export const Required = {
+    render: () => (
     <div className="grid w-full max-w-sm items-center gap-1.5">
       <Label htmlFor="required">
         Username <span className="text-destructive">*</span>
@@ -38,14 +38,14 @@ export const Required: Story = {
       <Input id="required" placeholder="Enter username" />
     </div>
   ),
-};
+} satisfies Story;;
 
-export const WithDescription: Story = {
-  render: () => (
+export const WithDescription = {
+    render: () => (
     <div className="grid w-full max-w-sm items-center gap-1.5">
       <Label htmlFor="password">Password</Label>
       <Input type="password" id="password" />
       <p className="text-sm text-muted-foreground">Must be at least 8 characters long</p>
     </div>
   ),
-};
+} satisfies Story;;

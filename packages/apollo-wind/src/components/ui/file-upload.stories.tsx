@@ -1,7 +1,9 @@
-import type { Meta, StoryObj } from "@storybook/react";
-import { useState } from "react";
-import { FileUpload } from "./file-upload";
-import { Label } from "./label";
+import { useState } from 'react';
+
+import type { Meta } from '@storybook/react-vite';
+
+import { FileUpload } from './file-upload';
+import { Label } from './label';
 
 const meta = {
   title: "Design System/Core/File Upload",
@@ -13,11 +15,11 @@ const meta = {
 } satisfies Meta<typeof FileUpload>;
 
 export default meta;
-type Story = StoryObj<typeof meta>;
 
-export const Default: Story = {
+export const Default = {
+  args: {},
   render: () => {
-    const [files, setFiles] = useState<File[]>([]);
+    const [, setFiles] = useState<File[]>([]);
 
     return (
       <div className="w-[400px]">
@@ -27,9 +29,10 @@ export const Default: Story = {
   },
 };
 
-export const WithLabel: Story = {
+export const WithLabel = {
+  args: {},
   render: () => {
-    const [files, setFiles] = useState<File[]>([]);
+    const [, setFiles] = useState<File[]>([]);
 
     return (
       <div className="w-[400px] space-y-2">
@@ -40,9 +43,10 @@ export const WithLabel: Story = {
   },
 };
 
-export const Multiple: Story = {
+export const Multiple = {
+  args: {},
   render: () => {
-    const [files, setFiles] = useState<File[]>([]);
+    const [, setFiles] = useState<File[]>([]);
 
     return (
       <div className="w-[400px]">
@@ -52,9 +56,10 @@ export const Multiple: Story = {
   },
 };
 
-export const ImageOnly: Story = {
+export const ImageOnly = {
+  args: {},
   render: () => {
-    const [files, setFiles] = useState<File[]>([]);
+    const [, setFiles] = useState<File[]>([]);
 
     return (
       <div className="w-[400px]">
@@ -64,9 +69,10 @@ export const ImageOnly: Story = {
   },
 };
 
-export const Disabled: Story = {
+export const Disabled = {
+  args: {},
   render: () => {
-    const [files, setFiles] = useState<File[]>([]);
+    const [, setFiles] = useState<File[]>([]);
 
     return (
       <div className="w-[400px]">
@@ -76,9 +82,10 @@ export const Disabled: Story = {
   },
 };
 
-export const WithPreview: Story = {
+export const WithPreview = {
+  args: {},
   render: () => {
-    const [files, setFiles] = useState<File[]>([]);
+    const [, setFiles] = useState<File[]>([]);
 
     return (
       <div className="w-[400px]">
@@ -93,9 +100,10 @@ export const WithPreview: Story = {
   },
 };
 
-export const WithMaxSize: Story = {
+export const WithMaxSize = {
+  args: {},
   render: () => {
-    const [files, setFiles] = useState<File[]>([]);
+    const [, setFiles] = useState<File[]>([]);
 
     return (
       <div className="w-[400px]">

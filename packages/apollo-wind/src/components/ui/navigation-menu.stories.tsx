@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta } from "@storybook/react-vite";
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -16,9 +16,9 @@ const meta: Meta<typeof NavigationMenu> = {
 };
 
 export default meta;
-type Story = StoryObj<typeof NavigationMenu>;
 
-export const Default: Story = {
+export const Default = {
+  args: {},
   render: () => (
     <NavigationMenu>
       <NavigationMenuList>
@@ -28,12 +28,7 @@ export const Default: Story = {
             <ul className="grid gap-3 p-6 md:w-[400px] lg:w-[500px] lg:grid-cols-[.75fr_1fr]">
               <li className="row-span-3">
                 <NavigationMenuLink asChild>
-                  <Column
-                    asChild
-                    justify="end"
-                    h="full"
-                    w="full"
-                    className="select-none rounded-md bg-gradient-to-b from-muted/50 to-muted p-6 no-underline outline-none focus:shadow-md"
+                  <Column className="select-none rounded-md bg-gradient-to-b from-muted/50 to-muted p-6 no-underline outline-none focus:shadow-md"
                   >
                     <a href="/">
                       <div className="mb-2 mt-4 text-lg font-medium">Apollo Wind</div>

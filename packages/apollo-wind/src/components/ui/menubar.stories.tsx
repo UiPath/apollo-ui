@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta } from "@storybook/react-vite";
 import {
   Menubar,
   MenubarContent,
@@ -16,9 +16,9 @@ const meta: Meta<typeof Menubar> = {
 };
 
 export default meta;
-type Story = StoryObj<typeof Menubar>;
 
-export const Default: Story = {
+export const Default = {
+  args: {},
   render: () => (
     <Menubar>
       <MenubarMenu>

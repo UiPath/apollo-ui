@@ -1,5 +1,6 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta } from "@storybook/react-vite";
 import { useState } from "react";
+import type { DateRange } from "react-day-picker";
 import { DatePicker, DateRangePicker } from "./date-picker";
 import { Label } from "./label";
 
@@ -13,9 +14,9 @@ const meta = {
 } satisfies Meta<typeof DatePicker>;
 
 export default meta;
-type Story = StoryObj<typeof meta>;
 
-export const Default: Story = {
+export const Default = {
+  args: {},
   render: () => {
     const [date, setDate] = useState<Date | undefined>();
 
@@ -23,7 +24,8 @@ export const Default: Story = {
   },
 };
 
-export const WithLabel: Story = {
+export const WithLabel = {
+  args: {},
   render: () => {
     const [date, setDate] = useState<Date | undefined>();
 
@@ -36,7 +38,8 @@ export const WithLabel: Story = {
   },
 };
 
-export const WithValue: Story = {
+export const WithValue = {
+  args: {},
   render: () => {
     const [date, setDate] = useState<Date | undefined>(new Date());
 
@@ -44,7 +47,8 @@ export const WithValue: Story = {
   },
 };
 
-export const Disabled: Story = {
+export const Disabled = {
+  args: {},
   render: () => {
     const [date, setDate] = useState<Date | undefined>(new Date());
 
@@ -52,27 +56,23 @@ export const Disabled: Story = {
   },
 };
 
-export const DateRange: Story = {
+export const DateRangeStory = {
+  args: {},
   render: () => {
-    const [dateRange, setDateRange] = useState<{
-      from: Date | undefined;
-      to?: Date | undefined;
-    }>();
+    const [dateRange, setDateRange] = useState<DateRange | undefined>();
 
-    return <DateRangePicker value={dateRange} onValueChange={setDateRange} />;
+    return <DateRangePicker value={dateRange} onValueChange={(range) => setDateRange(range ?? undefined)} />;
   },
 };
 
-export const DateRangeWithValue: Story = {
+export const DateRangeWithValue = {
+  args: {},
   render: () => {
-    const [dateRange, setDateRange] = useState<{
-      from: Date | undefined;
-      to?: Date | undefined;
-    }>({
+    const [dateRange, setDateRange] = useState<DateRange | undefined>({
       from: new Date(),
       to: new Date(new Date().setDate(new Date().getDate() + 7)),
     });
 
-    return <DateRangePicker value={dateRange} onValueChange={setDateRange} />;
+    return <DateRangePicker value={dateRange} onValueChange={(range) => setDateRange(range ?? undefined)} />;
   },
 };
