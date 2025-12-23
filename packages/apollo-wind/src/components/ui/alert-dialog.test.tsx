@@ -135,10 +135,6 @@ describe("AlertDialog", () => {
     });
   });
 
-  it.skip("does not close with Escape key by default", async () => {
-    // Skipped: Radix AlertDialog may close with Escape depending on version
-  });
-
   it("supports controlled mode", async () => {
     const user = userEvent.setup();
     const handleOpenChange = vi.fn();
@@ -178,10 +174,6 @@ describe("AlertDialog", () => {
     await waitFor(() => {
       expect(screen.getByRole("alertdialog")).toBeInTheDocument();
     });
-  });
-
-  it.skip("traps focus within alert dialog", async () => {
-    // Skipped: Focus trapping behavior is complex in jsdom
   });
 
   it("applies custom className to content", async () => {

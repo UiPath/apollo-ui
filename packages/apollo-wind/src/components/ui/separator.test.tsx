@@ -84,10 +84,6 @@ describe("Separator", () => {
     expect(separator).toHaveClass("bg-border");
   });
 
-  it.skip("applies shrink-0 class", () => {
-    // Skipped: Class may vary by implementation
-  });
-
   it("supports additional HTML attributes", () => {
     const { container } = render(<Separator data-testid="custom-separator" />);
     expect(container.querySelector('[data-testid="custom-separator"]')).toBeInTheDocument();

@@ -51,10 +51,6 @@ describe("Switch", () => {
     expect(handleChange).toHaveBeenCalledWith(true);
   });
 
-  it.skip("supports keyboard interaction with Enter key", async () => {
-    // Skipped: Radix Switch only responds to Space key, not Enter
-  });
-
   it("can be disabled", () => {
     render(<Switch disabled aria-label="Toggle" />);
     const switchElement = screen.getByRole("switch");
@@ -125,13 +121,5 @@ describe("Switch", () => {
 
     await user.click(switchElement);
     expect(switchElement).toHaveAttribute("data-state", "unchecked");
-  });
-
-  it.skip("has required attribute when required", () => {
-    // Skipped: Radix Switch doesn't expose required attribute directly
-  });
-
-  it.skip("has name attribute for form submission", () => {
-    // Skipped: Radix Switch uses hidden input for name attribute
   });
 });

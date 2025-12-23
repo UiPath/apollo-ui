@@ -237,8 +237,4 @@ describe("Tabs", () => {
     const tab1 = screen.getByRole("tab", { name: "Tab 1" });
     expect(tab1).toHaveAttribute("aria-controls");
   });
-
-  it.skip("wraps around with keyboard navigation", async () => {
-    // Skipped: Tab wrap-around behavior varies by implementation
-  });
 });

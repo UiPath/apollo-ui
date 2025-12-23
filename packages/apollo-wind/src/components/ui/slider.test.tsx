@@ -10,10 +10,6 @@ describe("Slider", () => {
     expect(screen.getByRole("slider")).toBeInTheDocument();
   });
 
-  it.skip("has no accessibility violations", async () => {
-    // Skipped: Radix Slider has known a11y issues with orientation attribute
-  });
-
   it("renders with default value", () => {
     render(<Slider defaultValue={[50]} aria-label="Volume" />);
     const slider = screen.getByRole("slider");

@@ -127,10 +127,6 @@ describe("Dialog", () => {
     });
   });
 
-  it.skip("closes dialog with X button", async () => {
-    // Skipped: X button may have different aria-label depending on implementation
-  });
-
   it("closes dialog with Escape key", async () => {
     const user = userEvent.setup();
     render(<DialogExample />);
@@ -147,10 +143,6 @@ describe("Dialog", () => {
     await waitFor(() => {
       expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     });
-  });
-
-  it.skip("can hide close button", async () => {
-    // Skipped: showCloseButton prop behavior varies
   });
 
   it("supports controlled mode", async () => {
@@ -186,10 +178,6 @@ describe("Dialog", () => {
     await waitFor(() => {
       expect(screen.getByRole("dialog")).toBeInTheDocument();
     });
-  });
-
-  it.skip("traps focus within dialog", async () => {
-    // Skipped: Focus trapping behavior is complex in jsdom
   });
 
   it("applies custom className to content", async () => {

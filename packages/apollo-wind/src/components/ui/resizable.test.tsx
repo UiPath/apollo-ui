@@ -174,11 +174,4 @@ describe("Resizable", () => {
       expect(container.querySelectorAll("[data-panel-resize-handle-id]")).toHaveLength(2);
     });
   });
-
-  // Skip resize interaction tests - requires browser resize observer APIs not available in jsdom
-  describe.skip("Interactions", () => {
-    it.skip("resizes panels when dragging handle", () => {
-      // ResizeObserver and pointer events needed for drag testing are not fully supported in jsdom
-    });
-  });
 });

@@ -118,14 +118,6 @@ describe("Drawer", () => {
   });
 
   describe("interactions", () => {
-    it.skip("closes drawer with close button", async () => {
-      // Skipped: vaul drawer close behavior doesn't work properly in jsdom
-    });
-
-    it.skip("closes drawer with Escape key", async () => {
-      // Skipped: vaul drawer close behavior doesn't work properly in jsdom
-    });
-
     it("supports controlled mode", async () => {
       const user = userEvent.setup();
       const handleOpenChange = vi.fn();

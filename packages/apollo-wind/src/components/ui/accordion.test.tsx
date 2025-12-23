@@ -251,8 +251,4 @@ describe("Accordion", () => {
     const chevron = container.querySelector("svg");
     expect(chevron).toBeInTheDocument();
   });
-
-  it.skip("rotates chevron when expanded", async () => {
-    // Skipped: Chevron rotation depends on data-state CSS transitions which are not testable in jsdom
-  });
 });

@@ -38,10 +38,6 @@ describe("Avatar", () => {
     expect(screen.getByText("AB")).toBeInTheDocument();
   });
 
-  it.skip("displays image when src is provided", () => {
-    // Skipped: Image loading doesn't work reliably in jsdom
-  });
-
   it("shows fallback when image fails to load", async () => {
     render(
       <Avatar>
@@ -64,10 +60,6 @@ describe("Avatar", () => {
     expect(container.firstChild).toHaveClass("custom-avatar");
   });
 
-  it.skip("applies custom className to AvatarImage", () => {
-    // Skipped: Image loading doesn't work reliably in jsdom
-  });
-
   it("applies custom className to AvatarFallback", () => {
     render(
       <Avatar>
@@ -88,10 +80,6 @@ describe("Avatar", () => {
     expect(ref.current).toBeInstanceOf(HTMLSpanElement);
   });
 
-  it.skip("forwards ref correctly to AvatarImage", () => {
-    // Skipped: Image loading doesn't work reliably in jsdom
-  });
-
   it("forwards ref correctly to AvatarFallback", () => {
     const ref = { current: null };
     render(
@@ -100,10 +88,6 @@ describe("Avatar", () => {
       </Avatar>,
     );
     expect(ref.current).toBeInstanceOf(HTMLSpanElement);
-  });
-
-  it.skip("has proper image attributes", () => {
-    // Skipped: Image loading doesn't work reliably in jsdom
   });
 
   it("renders with initials as fallback", () => {
@@ -149,9 +133,5 @@ describe("Avatar", () => {
       </Avatar>,
     );
     expect(container.firstChild).toHaveClass("rounded-full");
-  });
-
-  it.skip("renders with proper aspect ratio", () => {
-    // Skipped: Image loading doesn't work reliably in jsdom
   });
 });

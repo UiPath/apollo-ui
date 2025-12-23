@@ -1,4 +1,4 @@
-import { copyFileSync } from "fs";
+import { copyFileSync, existsSync } from "fs";
 import { resolve } from "path";
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
@@ -22,10 +22,12 @@ export default defineConfig({
     {
       name: "copy-tailwind-css",
       closeBundle() {
-        copyFileSync(
-          resolve(__dirname, "src/styles/tailwind.consumer.css"),
-          resolve(__dirname, "dist/tailwind.css"),
-        );
+        const src = resolve(__dirname, "src/styles/tailwind.consumer.css");
+        const dest = resolve(__dirname, "dist/tailwind.css");
+        // Only copy during library builds (when dist exists and source file exists)
+        if (existsSync(src) && existsSync(resolve(__dirname, "dist"))) {
+          copyFileSync(src, dest);
+        }
       },
     },
   ],

@@ -37,10 +37,6 @@ describe("Tooltip", () => {
     });
   });
 
-  it.skip("hides tooltip on unhover", async () => {
-    // Skipped: Radix tooltip hide animation timing is unreliable in jsdom
-  });
-
   it("shows tooltip on focus", async () => {
     render(
       <TooltipProvider delayDuration={0}>
@@ -61,10 +57,6 @@ describe("Tooltip", () => {
     await waitFor(() => {
       expect(screen.getByRole("tooltip")).toBeInTheDocument();
     });
-  });
-
-  it.skip("hides tooltip on blur", async () => {
-    // Skipped: Radix tooltip hide animation timing is unreliable in jsdom
   });
 
   it("applies custom className to content", async () => {
