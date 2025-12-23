@@ -1,4 +1,5 @@
 @import "@uipath/apollo-react/core/tokens/css/theme-variables.css";
+@import "@uipath/apollo-react/core/fonts/font.css";
 @import "./custom-variables.css";
 
 * {
@@ -10,7 +11,9 @@
 body {
 	margin: 0;
 	padding: 0;
-	font-family: Inter, system-ui, -apple-system, sans-serif;
+	font-family:
+		"noto-sans", -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI",
+		Roboto, "Helvetica Neue", Arial, sans-serif;
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
 	background: var(--color-background);
