@@ -1,3 +1,10 @@
+## [1.13.4](https://github.com/uipath/wind/compare/v1.13.3...v1.13.4) (2025-12-23)
+
+
+### Bug Fixes
+
+* update Select and Textarea components for improved styling and responsiveness; enhance Vite config to conditionally copy Tailwind CSS ([7176258](https://github.com/uipath/wind/commit/71762589fd4a5e5ec14c14d2ded57c363ac8942b))
+
 ## [1.13.3](https://github.com/uipath/wind/compare/v1.13.2...v1.13.3) (2025-12-23)
 
 
