@@ -82,16 +82,19 @@ export function FormFieldRenderer({
     return hasShowRule ? false : true;
   };
 
-  // Calculate initial required state based on rules
+  // Calculate initial required state based on validation config and rules
   const getInitialRequired = () => {
+    // Check static validation.required first
+    const staticRequired = field.validation?.required ?? false;
+
     if (!field.rules || field.rules.length === 0) {
-      return false; // Default to not required if no rules
+      return staticRequired;
     }
 
-    // Apply rules to determine initial required state
+    // Apply rules to determine initial required state (rules can override static)
     const allValues = getValues();
     const ruleResult = RulesEngine.applyRules(field.rules, allValues, context);
-    return ruleResult.required ?? false;
+    return ruleResult.required ?? staticRequired;
   };
 
   const [fieldState, setFieldState] = useState({
@@ -170,7 +173,7 @@ export function FormFieldRenderer({
       newState.visible = hasShowRule ? false : true;
     }
 
-    // Handle required: if there are conditional required rules, default to false when not matched
+    // Handle required: if there are conditional required rules, fall back to validation.required when not matched
     if (ruleResult.required !== undefined) {
       newState.required = ruleResult.required;
     } else if (hasRequiredRule) {
@@ -178,7 +181,8 @@ export function FormFieldRenderer({
       const hasUnconditionalRequired = field.rules.some(
         (rule) => rule.effects?.required === true && rule.conditions.length === 0,
       );
-      newState.required = hasUnconditionalRequired;
+      // Fall back to static validation.required if no unconditional rule
+      newState.required = hasUnconditionalRequired || (field.validation?.required ?? false);
     }
 
     // Handle disabled: if there are conditional disabled rules, default to false when not matched

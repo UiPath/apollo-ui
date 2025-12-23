@@ -221,6 +221,32 @@ export class RulesEngine {
   }
 
   /**
+   * Determine if a field is visible based on its rules and current form values
+   * Extracted for reuse in validation and field rendering
+   */
+  static isFieldVisible(rules: FieldRule[] | undefined, values: Record<string, unknown>): boolean {
+    if (!rules || rules.length === 0) return true;
+
+    const ruleResult = this.applyRules(rules, values, {} as FormContext);
+
+    // Check if field has show/hide rules
+    const hasShowRule = rules.some((rule) => rule.effects?.visible === true);
+    const hasHideRule = rules.some((rule) => rule.effects?.visible === false);
+
+    if (ruleResult.visible !== undefined) {
+      return ruleResult.visible;
+    } else if (hasShowRule) {
+      // Field has show rule but no rule matched - hidden by default
+      return false;
+    } else if (hasHideRule) {
+      // Field has hide rule but no rule matched - visible by default
+      return true;
+    }
+
+    return true; // Default visible
+  }
+
+  /**
    * Build a dependency graph for optimized field watching
    */
   static buildDependencyGraph(rules: FieldRule[]): Map<string, Set<string>> {

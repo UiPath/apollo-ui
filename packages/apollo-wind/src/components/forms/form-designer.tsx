@@ -596,7 +596,7 @@ function SectionConfigForm({ section, onUpdate, existingSectionIds }: SectionCon
           <span>Section ID &quot;{attemptedId}&quot; already exists. Please use a unique ID.</span>
         </div>
       )}
-      <MetadataForm key={section.id} schema={schema} plugins={plugins} />
+      <MetadataForm key={section.id} schema={schema} plugins={plugins} autoComplete="off" />
       <Separator />
       <div className="text-sm text-muted-foreground">
         <p>This section contains {section.fields.length} field(s).</p>
@@ -764,7 +764,7 @@ function FieldConfigForm({ field, onUpdate, allFields, existingFieldNames }: Fie
           </span>
         </div>
       )}
-      <MetadataForm key={field.id} schema={schema} plugins={plugins} />
+      <MetadataForm key={field.id} schema={schema} plugins={plugins} autoComplete="off" />
 
       {/* Options Editor - rendered separately since it's complex */}
       {needsOptions && (
@@ -1294,6 +1294,7 @@ export function FormDesigner() {
                   alert("Form submitted! Check console for data.");
                 }}
                 disabled={previewDisabled}
+                autoComplete="off"
               />
             </TabsContent>
             <TabsContent value="code" className="flex-1 overflow-auto">
