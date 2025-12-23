@@ -923,12 +923,6 @@ importers:
       '@emotion/styled':
         specifier: ^11.14.1
         version: 11.14.1(@emotion/react@11.14.0(@types/react@19.2.6)(react@19.2.1))(@types/react@19.2.6)(react@19.2.1)
-      '@fontsource/material-icons':
-        specifier: ^5.2.7
-        version: 5.2.7
-      '@fontsource/material-icons-outlined':
-        specifier: ^5.2.6
-        version: 5.2.6
       '@mui/material':
         specifier: ^5.18.0
         version: 5.18.0(@emotion/react@11.14.0(@types/react@19.2.6)(react@19.2.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.6)(react@19.2.1))(@types/react@19.2.6)(react@19.2.1))(@types/react@19.2.6)(react-dom@19.2.1(react@19.2.1))(react@19.2.1)
@@ -2947,12 +2941,6 @@ packages:
 
   '@floating-ui/utils@0.2.10':
     resolution: {integrity: sha512-aGTxbpbg8/b5JfU1HXSrbH3wXZuLPJcNEcZQFMxLs3oSzgtVu6nFPkbbGGUvBcUjKV2YyB9Wxxabo+HEH9tcRQ==}
-
-  '@fontsource/material-icons-outlined@5.2.6':
-    resolution: {integrity: sha512-99XKAkwnCg0s0/ywax+o3m01HSNM5gGzSBw+WnlWG2+WY3wOjcN+wXMfm4zP37Yme7Yze2DvKxF78tHWOrlwFw==}
-
-  '@fontsource/material-icons@5.2.7':
-    resolution: {integrity: sha512-crPmK0L34lPGmS5GSGLasKpRGQzl95SxMsLM+QhBHPgR9uxSsyI5CUTb0cgoMpjtR+Bf1bC9QOe6pavoybbBwg==}
 
   '@formatjs/intl-localematcher@0.6.2':
     resolution: {integrity: sha512-XOMO2Hupl0wdd172Y06h6kLpBz6Dv+J4okPLl4LPtzbr8f66WbIoy4ev98EBuZ6ZK4h5ydTN6XneT4QVpD7cdA==}
@@ -16367,10 +16355,6 @@ snapshots:
       tabbable: 6.3.0
 
   '@floating-ui/utils@0.2.10': {}
-
-  '@fontsource/material-icons-outlined@5.2.6': {}
-
-  '@fontsource/material-icons@5.2.7': {}
 
   '@formatjs/intl-localematcher@0.6.2':
     dependencies:
