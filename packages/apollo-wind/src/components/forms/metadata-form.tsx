@@ -1,29 +1,43 @@
-import React, { useEffect, useMemo, useState, memo, useRef } from "react";
-import { useForm, FormProvider, type Control, type FieldValues } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod/v4";
-import { DevTool } from "@hookform/devtools";
-import type {
-  FormSchema,
-  FormContext,
-  FieldCondition,
-  FormPlugin,
-  DataSource,
-  FormSection as FormSectionType,
-  FieldOption,
-  CustomFieldComponentProps,
-} from "./form-schema";
-import { FormFieldRenderer } from "./field-renderer";
-import { RulesEngine } from "./rules-engine";
-import { validationConfigToZod } from "./validation-converter";
-import { DataFetcher } from "./data-fetcher";
-import { Button } from "@/components/ui/button";
+import React, {
+  memo,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
+
+import {
+  type Control,
+  type FieldValues,
+  FormProvider,
+  useForm,
+} from 'react-hook-form';
+import { z } from 'zod/v4';
+
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@/components/ui/accordion";
+} from '@/components/ui/accordion';
+import { Button } from '@/components/ui/button';
+import { DevTool } from '@hookform/devtools';
+import { standardSchemaResolver } from '@hookform/resolvers/standard-schema';
+
+import { DataFetcher } from './data-fetcher';
+import { FormFieldRenderer } from './field-renderer';
+import type {
+  CustomFieldComponentProps,
+  DataSource,
+  FieldCondition,
+  FieldOption,
+  FormContext,
+  FormPlugin,
+  FormSchema,
+  FormSection as FormSectionType,
+} from './form-schema';
+import { RulesEngine } from './rules-engine';
+import { validationConfigToZod } from './validation-converter';
 
 /**
  * Core MetadataForm Component
@@ -76,9 +90,7 @@ export function MetadataForm({
 
   // Initialize React Hook Form
   const form = useForm({
-    // @ts-expect-error - Zod v4 type compatibility issue with @hookform/resolvers 5.2.2
-    // See: https://github.com/react-hook-form/react-hook-form/issues/12829
-    resolver: zodResolver(zodSchema),
+    resolver: standardSchemaResolver(zodSchema),
     mode: schema.mode || "onSubmit",
     reValidateMode: schema.reValidateMode || "onChange",
   });
