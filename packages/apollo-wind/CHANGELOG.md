@@ -1,3 +1,10 @@
+## [1.14.1](https://github.com/uipath/wind/compare/v1.14.0...v1.14.1) (2025-12-23)
+
+
+### Bug Fixes
+
+* add custom field components and corresponding stories for MetadataForm ([646e6c5](https://github.com/uipath/wind/commit/646e6c5776d7ef4ee23cf39cf9373accd92fcdf9))
+
 # [1.14.0](https://github.com/uipath/wind/compare/v1.13.4...v1.14.0) (2025-12-23)
 
 
