@@ -1,6 +1,6 @@
 {
   "name": "@uipath/apollo-wind",
-  "version": "1.14.1",
+  "version": "0.5.0",
   "description": "UiPath wind design system - A Tailwind CSS based React component library",
   "type": "module",
   "main": "./dist/index.js",
@@ -40,7 +40,7 @@
     "format:check": "prettier --check \"**/*.{js,jsx,ts,tsx,json,md}\"",
     "format:css": "prettier --write --tab-width 2 --print-width 100 \"**/*.css\" \"!**/node_modules/**\" \"!**/dist/**\"",
     "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build"
+    "storybook:build": "storybook build"
   },
   "peerDependencies": {
     "react": ">=18.0.0",
@@ -161,5 +161,5 @@
   "bugs": {
     "url": "https://github.com/uipath/apollo-ui/issues"
   },
-  "homepage": "https://github.com/uipath/apollo-ui#readme"
+  "homepage": "https://apollo-wind.vercel.app"
 }

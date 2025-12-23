@@ -1,6 +1,6 @@
 {
-  "buildCommand": "cd ../.. && pnpm turbo run build-storybook --filter=@uipath/apollo-wind",
+  "buildCommand": "cd ../.. && pnpm turbo run storybook:build --filter=@uipath/apollo-wind",
   "outputDirectory": "storybook-static",
   "installCommand": "pnpm install",
-  "framework": "storybook"
+  "framework": null
 }
