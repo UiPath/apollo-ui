@@ -44,6 +44,13 @@ export default defineConfig({
       { from: './src/tokens/scss', to: './tokens/scss' },
       { from: './src/tokens/less', to: './tokens/less' },
       { from: './src/tokens/css', to: './tokens/css' },
+      {
+        from: './src/fonts',
+        to: './fonts',
+        globOptions: {
+          ignore: ['**/*.base-css', '**/postcss.config.js']
+        }
+      },
     ],
   },
   tools: {

@@ -31,5 +31,4 @@ export default {
   HeaderVariants,
 }
 
-export * from './fonts';
 export * from './tokens';
