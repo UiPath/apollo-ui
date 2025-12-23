@@ -1,6 +1,6 @@
-// Import Material Icons fonts - these load into document and are available to Shadow DOM
-import '@fontsource/material-icons';
-import '@fontsource/material-icons-outlined';
+// Import Apollo fonts (includes Material Icons and all other fonts)
+// These load into document and are available to Shadow DOM
+import '@uipath/apollo-react/core/fonts/font.css';
 
 import { createElement } from 'react';
 

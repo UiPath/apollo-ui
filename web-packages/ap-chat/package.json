@@ -52,8 +52,6 @@
     "@emotion/cache": "^11.13.5",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
-    "@fontsource/material-icons": "^5.2.7",
-    "@fontsource/material-icons-outlined": "^5.2.6",
     "@mui/material": "^5.18.0",
     "@swc/helpers": "^0.5.17",
     "@uipath/apollo-react": "workspace:*",
