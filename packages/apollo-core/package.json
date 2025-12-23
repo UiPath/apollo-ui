@@ -27,11 +27,7 @@
       "types": "./dist/icons/index.d.ts"
     },
     "./icons/svg/*": "./dist/static/svg/*",
-    "./fonts": {
-      "import": "./dist/fonts.js",
-      "require": "./dist/fonts.cjs",
-      "types": "./dist/fonts.d.ts"
-    },
+    "./fonts/*": "./dist/fonts/*",
     "./tokens/jss/palette": {
       "import": "./dist/tokens/jss/palette.js",
       "require": "./dist/tokens/jss/palette.cjs",
@@ -43,8 +39,9 @@
     "dist"
   ],
   "scripts": {
-    "build": "pnpm run build:tokens && pnpm run process:icons && pnpm run build:icons && rslib build",
+    "build": "pnpm run build:tokens && pnpm run build:fonts && pnpm run process:icons && pnpm run build:icons && rslib build",
     "build:tokens": "node build-tokens.js",
+    "build:fonts": "postcss **/*.base-css --base . --dir . --ext .css --verbose",
     "build:icons": "tsx scripts/generate-icons.ts",
     "process:icons": "tsx scripts/process-icons.ts && tsx scripts/update-colors.ts",
     "process:icons:dry-run": "tsx scripts/process-icons.ts --dry-run && tsx scripts/update-colors.ts --dry-run",
@@ -73,6 +70,9 @@
     "style-dictionary": "2.8.3",
     "svg-to-ts": "^12.0.0",
     "typescript": "^5.9.3",
-    "vitest": "^4.0.14"
+    "vitest": "^4.0.14",
+    "cssnano": "^6.0.1",
+    "postcss": "^8.4.31",
+    "postcss-cli": "^10.1.0"
   }
 }
