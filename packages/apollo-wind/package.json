@@ -14,20 +14,23 @@
     },
     "./styles.css": "./dist/styles.css",
     "./tailwind.css": "./dist/tailwind.css",
-    "./tailwind": "./src/tailwind.preset.js",
-    "./postcss": "./postcss.config.export.js"
+    "./tailwind": {
+      "import": "./dist/tailwind.preset.js",
+      "require": "./dist/tailwind.preset.cjs"
+    },
+    "./postcss": {
+      "import": "./dist/postcss.config.export.js",
+      "require": "./dist/postcss.config.export.cjs"
+    }
   },
   "files": [
     "dist",
-    "src/styles/theme.css",
-    "src/tailwind.preset.js",
     "postcss.config.export.js"
   ],
   "scripts": {
-    "dev": "vite",
-    "build": "tsc && vite build && npm run build:css",
+    "dev": "rslib build --watch",
+    "build": "rslib build && npm run build:css",
     "build:css": "npx @tailwindcss/cli -i ./src/styles/tailwind.css -o ./dist/styles.css",
-    "preview": "vite preview",
     "test": "vitest run",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest run --coverage",
@@ -112,7 +115,8 @@
     "@types/react-dom": "^19.2.3",
     "@typescript-eslint/eslint-plugin": "^8.46.3",
     "@typescript-eslint/parser": "^8.46.3",
-    "@vitejs/plugin-react": "^5.1.1",
+    "@rsbuild/plugin-react": "^1.4.1",
+    "@rslib/core": "^0.17.0",
     "@vitest/coverage-v8": "^4.0.12",
     "@vitest/ui": "^4.0.12",
     "ajv": "^8.17.1",
@@ -134,8 +138,6 @@
     "storybook": "^10.0.8",
     "tailwindcss": "^4.1.17",
     "typescript": "^5.9.3",
-    "vite": "^7.2.4",
-    "vite-plugin-dts": "^4.5.4",
     "vitest": "^4.0.12"
   },
   "keywords": [

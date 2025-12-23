@@ -1,9 +1,8 @@
-import react from "@vitejs/plugin-react";
 import { resolve } from "path";
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [],
   define: {
     "globalThis.IS_REACT_ACT_ENVIRONMENT": "true",
     "global.IS_REACT_ACT_ENVIRONMENT": "true",
