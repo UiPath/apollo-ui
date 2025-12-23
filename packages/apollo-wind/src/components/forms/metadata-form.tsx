@@ -37,6 +37,8 @@ interface MetadataFormProps {
   className?: string;
   showDevTools?: boolean;
   disabled?: boolean;
+  /** Disable browser autocomplete suggestions. Defaults to undefined (browser default). */
+  autoComplete?: "off" | "on";
 }
 
 // Memoized DevTool wrapper to prevent flickering
@@ -61,6 +63,7 @@ export function MetadataForm({
   className,
   showDevTools = false,
   disabled = false,
+  autoComplete,
 }: MetadataFormProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [customComponents, setCustomComponents] = useState<
@@ -219,7 +222,7 @@ export function MetadataForm({
   return (
     <>
       <FormProvider {...form}>
-        <form onSubmit={handleFormSubmit} className={className}>
+        <form onSubmit={handleFormSubmit} className={className} autoComplete={autoComplete}>
           {renderContent()}
 
           {/* Only render FormActions for single-page forms - multi-step forms have their own navigation */}
@@ -484,6 +487,7 @@ function FormActions({ schema, context, onReset }: FormActionsProps) {
  *
  * Converts ValidationConfig to Zod schemas for each field.
  * Falls back to type-based inference for fields without explicit validation.
+ * Adds dynamic validation for conditional required fields using superRefine.
  */
 function buildZodSchema(schema: FormSchema): z.ZodObject<Record<string, z.ZodTypeAny>> {
   const shape: Record<string, z.ZodTypeAny> = {};
@@ -492,16 +496,58 @@ function buildZodSchema(schema: FormSchema): z.ZodObject<Record<string, z.ZodTyp
     ? schema.steps.flatMap((step) => step.sections.flatMap((s) => s.fields))
     : schema.sections?.flatMap((s) => s.fields) || [];
 
+  // Track fields that need dynamic validation:
+  // 1. Fields with conditional required rules
+  // 2. Fields with static required + conditional visibility (shouldn't validate when hidden)
+  const dynamicValidationFields: Array<{
+    name: string;
+    rules: NonNullable<(typeof fields)[0]["rules"]>;
+    staticRequired: boolean;
+    customRequiredMessage?: string;
+  }> = [];
+
   fields.forEach((field) => {
     // Check if field has unconditional required rule
     const hasUnconditionalRequired = field.rules?.some(
       (rule) => rule.effects.required === true && rule.conditions.length === 0,
     );
 
+    // Check if field has conditional required rule (with conditions)
+    const hasConditionalRequired = field.rules?.some(
+      (rule) => rule.effects.required === true && rule.conditions.length > 0,
+    );
+
+    // Check if field has visibility rules (show/hide)
+    const hasVisibilityRules = field.rules?.some((rule) => rule.effects.visible !== undefined);
+
+    // Check if field has static required via validation config
+    const hasStaticRequired = field.validation?.required === true;
+
+    // Any form of "required" (static, unconditional rule, or conditional rule)
+    const hasAnyRequired = hasStaticRequired || hasUnconditionalRequired || hasConditionalRequired;
+
+    // Track for dynamic validation if field has BOTH:
+    // - Any form of required, AND
+    // - Visibility rules (need to skip validation when hidden)
+    // OR if field has conditional required rules (required state depends on other fields)
+    if (field.rules && (hasConditionalRequired || (hasAnyRequired && hasVisibilityRules))) {
+      dynamicValidationFields.push({
+        name: field.name,
+        rules: field.rules,
+        staticRequired: hasStaticRequired || hasUnconditionalRequired || false,
+        customRequiredMessage: field.validation?.messages?.required,
+      });
+    }
+
     // Build validation config, merging with required from rules
+    // Only include required in base schema if field is ALWAYS visible AND has unconditional required
+    // Fields with visibility rules must have required handled by superRefine
+    const shouldIncludeRequiredInBase =
+      (hasUnconditionalRequired || hasStaticRequired) && !hasVisibilityRules;
+
     const validationConfig = field.validation
-      ? { ...field.validation, required: field.validation.required ?? hasUnconditionalRequired }
-      : hasUnconditionalRequired
+      ? { ...field.validation, required: shouldIncludeRequiredInBase }
+      : shouldIncludeRequiredInBase
         ? { required: true }
         : undefined;
 
@@ -509,7 +555,53 @@ function buildZodSchema(schema: FormSchema): z.ZodObject<Record<string, z.ZodTyp
     shape[field.name] = validationConfigToZod(validationConfig, field.type);
   });
 
-  return z.object(shape);
+  const baseSchema = z.object(shape);
+
+  // If no fields need dynamic validation, return base schema
+  if (dynamicValidationFields.length === 0) {
+    return baseSchema;
+  }
+
+  // Add dynamic validation for conditional required fields
+  // Cast to maintain type compatibility with zodResolver
+  return baseSchema.superRefine((data, ctx) => {
+    const values = data as Record<string, unknown>;
+
+    for (const { name, rules, staticRequired, customRequiredMessage } of dynamicValidationFields) {
+      // Check if field is currently visible
+      const isVisible = RulesEngine.isFieldVisible(rules, values);
+
+      // If field is hidden, skip all required validation
+      if (!isVisible) {
+        continue;
+      }
+
+      // Evaluate rules to check required state
+      const ruleResult = RulesEngine.applyRules(rules, values, {} as FormContext);
+
+      // Field is required if:
+      // 1. Rule sets required: true, OR
+      // 2. Field has static validation.required and is visible
+      const isRequired = ruleResult.required === true || staticRequired;
+
+      if (isRequired) {
+        const value = values[name];
+        const isEmpty =
+          value === undefined ||
+          value === null ||
+          value === "" ||
+          (Array.isArray(value) && value.length === 0);
+
+        if (isEmpty) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: customRequiredMessage || "This field is required",
+            path: [name],
+          });
+        }
+      }
+    }
+  }) as unknown as z.ZodObject<Record<string, z.ZodTypeAny>>;
 }
 
 async function loadInitialData(
