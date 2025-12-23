@@ -126,7 +126,7 @@ export const positionMap: Record<PositionValue, string> = {
 /**
  * Map spacing value to complete Tailwind class name
  */
-function mapSpacingClass(prefix(apollo-wind): string, value: SpacingValue): string {
+function mapSpacingClass(prefix: string, value: SpacingValue): string {
   const suffix = getSpacingClass(value);
   return `${prefix}-${suffix}` as const;
 }
