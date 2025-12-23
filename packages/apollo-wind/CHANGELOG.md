@@ -1,3 +1,10 @@
+# [1.14.0](https://github.com/uipath/wind/compare/v1.13.4...v1.14.0) (2025-12-23)
+
+
+### Features
+
+* add field visibility determination and schema serialization tests ([ef0314c](https://github.com/uipath/wind/commit/ef0314ce22c4aaec422cd7b8a192aecb5f2bea51))
+
 ## [1.13.4](https://github.com/uipath/wind/compare/v1.13.3...v1.13.4) (2025-12-23)
 
 
