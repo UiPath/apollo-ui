@@ -1,4 +1,4 @@
-@import "./icons/apollo/apollo.css";
+@import "./apollo/apollo.css";
 @import './JP/jp.css';
 @import './KR/kr.css';
 @import './SC/sc.css';
@@ -501,10 +501,10 @@
   font-family: "Apollo Icons";
   font-style: normal;
   font-weight: 400;
-  src: url("./icons/apollo/apollo.eot");
+  src: url("./apollo/apollo.eot");
   /* For IE6-8 */
-  src: local("Apollo Icons"), local("ApolloIcons-Regular"), url("./icons/apollo/apollo.woff2") format("woff2"),
-    url("./icons/apollo/apollo.woff") format("woff"), url("./icons/apollo/apollo.ttf") format("truetype");
+  src: local("Apollo Icons"), local("ApolloIcons-Regular"), url("./apollo/apollo.woff2") format("woff2"),
+    url("./apollo/apollo.woff") format("woff"), url("./apollo/apollo.ttf") format("truetype");
 }
 
 .apollo-icons {
