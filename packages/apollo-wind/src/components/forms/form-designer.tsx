@@ -877,7 +877,7 @@ export function FormDesigner() {
       collapsible: section.collapsible,
       defaultExpanded: section.defaultExpanded,
       fields: section.fields.map((field) => {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+         
         const { id: _id, validation: _validationConfig, ...fieldMeta } = field;
         // Build ValidationConfig from field config
         const validationConfig = buildValidationConfig(field);

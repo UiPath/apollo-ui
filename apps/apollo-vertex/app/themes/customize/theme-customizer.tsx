@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, ChangeEvent, startTransition } from "react";
+import { useState, useEffect, type ChangeEvent, startTransition } from "react";
 import { Card } from "../../../components/ui/card";
 import { Label } from "../../../components/ui/label";
 import { Input } from "../../../components/ui/input";
@@ -29,7 +29,7 @@ function linearToSrgb(val: number): number {
     if (val <= 0.0031308) {
       return 12.92 * val;
     }
-    return 1.055 * Math.pow(val, 1 / 2.4) - 0.055;
+    return 1.055 * val ** (1 / 2.4) - 0.055;
   }
 /**
  * Convert OKLCH string to Hex
@@ -45,8 +45,8 @@ function oklchToHex(oklchString: string): string {
     }
     
     let l = parseFloat(match[1]);
-    let c = parseFloat(match[2]);
-    let h = parseFloat(match[3]);
+    const c = parseFloat(match[2]);
+    const h = parseFloat(match[3]);
     // Alpha is optional, defaults to 1 (fully opaque)
     let alpha = match[4] ? parseFloat(match[4]) : 1;
     

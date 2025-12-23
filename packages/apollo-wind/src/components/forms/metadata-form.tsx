@@ -73,6 +73,8 @@ export function MetadataForm({
 
   // Initialize React Hook Form
   const form = useForm({
+    // @ts-expect-error - Zod v4 type compatibility issue with @hookform/resolvers 5.2.2
+    // See: https://github.com/react-hook-form/react-hook-form/issues/12829
     resolver: zodResolver(zodSchema),
     mode: schema.mode || "onSubmit",
     reValidateMode: schema.reValidateMode || "onChange",
@@ -170,7 +172,7 @@ export function MetadataForm({
     });
 
     return () => subscription.unsubscribe();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [watch, isInitialized, plugins]);
 
   // Handle form submission
