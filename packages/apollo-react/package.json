@@ -52,6 +52,7 @@
       "require": "./dist/core/index.cjs"
     },
     "./core/tokens/*": "./dist/core/tokens/*",
+    "./core/fonts/*": "./dist/core/fonts/*",
     "./icons": {
       "types": "./dist/icons/index.d.ts",
       "import": "./dist/icons/index.js",

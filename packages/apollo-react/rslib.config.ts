@@ -87,6 +87,8 @@ export default defineConfig({
       { from: '../apollo-core/dist/tokens/scss', to: './core/tokens/scss' },
       { from: '../apollo-core/dist/tokens/less', to: './core/tokens/less' },
       { from: '../apollo-core/dist/tokens/jss', to: './core/tokens/jss' },
+      // Copy fonts from apollo-core to make them available at @uipath/apollo-react/core/fonts/*
+      { from: '../apollo-core/dist/fonts', to: './core/fonts' },
     ],
   },
   tools: {
