@@ -47,8 +47,8 @@ body.dark-hc {
   --color-accent-foreground: var(--color-foreground-emp);
 
   /* Destructive - map to error colors */
-  --color-destructive: var(--color-error-background);
-  --color-destructive-foreground: var(--color-error-text);
+  --color-destructive: var(--color-error-text);
+  --color-destructive-foreground: var(--color-error-foreground-inverse);
 
   /* Input - map to border for input borders */
   --color-input: var(--color-border-de-emp);
@@ -231,5 +231,9 @@ body.dark-hc {
 @layer base {
   * {
     border-color: var(--color-border-de-emp);
+  }
+
+  body {
+    @apply bg-background text-foreground;
   }
 }
