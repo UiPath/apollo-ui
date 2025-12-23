@@ -72,14 +72,6 @@ describe("RadioGroup", () => {
     expect(radio1).not.toBeChecked();
   });
 
-  it.skip("supports keyboard navigation with Arrow Down", async () => {
-    // Skipped: Radix keyboard navigation doesn't check the item in jsdom without proper focus management
-  });
-
-  it.skip("supports keyboard navigation with Arrow Up", async () => {
-    // Skipped: Radix keyboard navigation doesn't check the item in jsdom without proper focus management
-  });
-
   it("supports keyboard navigation with Arrow Right", async () => {
     const user = userEvent.setup();
     render(<RadioGroupExample />);
@@ -259,10 +251,6 @@ describe("RadioGroup", () => {
     render(<RadioGroupExample />);
     const radiogroup = screen.getByRole("radiogroup");
     expect(radiogroup).toHaveAttribute("aria-label", "Choose an option");
-  });
-
-  it.skip("has required attribute when required", () => {
-    // Skipped: Radix RadioGroup doesn't set required attribute on the root element
   });
 
   it("wraps around when navigating with keyboard", async () => {

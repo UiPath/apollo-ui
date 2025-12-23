@@ -125,10 +125,5 @@ describe("Combobox", () => {
         expect(screen.getByRole("combobox")).toHaveAttribute("aria-expanded", "false");
       });
     });
-
-    // cmdk library behavior - selecting same item toggles it off
-    it.skip("deselects when clicking already selected item", async () => {
-      // This test is skipped due to cmdk library's internal handling of selection
-    });
   });
 });

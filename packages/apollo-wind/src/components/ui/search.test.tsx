@@ -112,10 +112,6 @@ describe("SearchWithSuggestions", () => {
     expect(screen.getByRole("searchbox")).toBeInTheDocument();
   });
 
-  it.skip("has no accessibility violations", async () => {
-    // Skipped: SearchWithSuggestions may have a11y issues with combobox pattern
-  });
-
   it("displays placeholder text", () => {
     render(<SearchWithSuggestions placeholder="Search fruits..." suggestions={suggestions} />);
     expect(screen.getByPlaceholderText("Search fruits...")).toBeInTheDocument();
@@ -131,10 +127,6 @@ describe("SearchWithSuggestions", () => {
     await waitFor(() => {
       expect(screen.getByText("Apple")).toBeInTheDocument();
     });
-  });
-
-  it.skip("filters suggestions based on input", async () => {
-    // Skipped: Suggestion filtering behavior varies by implementation
   });
 
   it("calls onSelect when suggestion is clicked", async () => {
@@ -169,18 +161,6 @@ describe("SearchWithSuggestions", () => {
     await waitFor(() => {
       expect(input).toHaveValue("Apple");
     });
-  });
-
-  it.skip("closes suggestions when item is selected", async () => {
-    // Skipped: Popover closing timing is unreliable in jsdom
-  });
-
-  it.skip("displays empty message when no suggestions match", async () => {
-    // Skipped: Empty state behavior varies by implementation
-  });
-
-  it.skip("supports controlled mode", async () => {
-    // Skipped: Controlled mode behavior varies by implementation
   });
 
   it("applies custom className", () => {

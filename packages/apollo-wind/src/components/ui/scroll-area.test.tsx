@@ -40,14 +40,6 @@ describe("ScrollArea", () => {
     expect(container.firstChild).toHaveClass("custom-scroll");
   });
 
-  it.skip("renders with vertical scrollbar by default", () => {
-    // Skipped: Scrollbar visibility depends on actual scroll overflow which jsdom doesn't compute
-  });
-
-  it.skip("renders with horizontal scrollbar", () => {
-    // Skipped: Scrollbar visibility depends on actual scroll overflow which jsdom doesn't compute
-  });
-
   it("applies overflow hidden class", () => {
     const { container } = render(<ScrollAreaExample />);
     expect(container.firstChild).toHaveClass("overflow-hidden");
@@ -61,13 +53,5 @@ describe("ScrollArea", () => {
       </ScrollArea>,
     );
     expect(ref.current).toBeInstanceOf(HTMLDivElement);
-  });
-
-  it.skip("forwards ref correctly to ScrollBar", () => {
-    // Skipped: ScrollBar may not render without actual overflow
-  });
-
-  it.skip("applies custom className to ScrollBar", () => {
-    // Skipped: ScrollBar may not render without actual overflow
   });
 });

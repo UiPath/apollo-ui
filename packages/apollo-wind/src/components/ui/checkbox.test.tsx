@@ -51,10 +51,6 @@ describe("Checkbox", () => {
     expect(handleChange).toHaveBeenCalledWith(true);
   });
 
-  it.skip("supports keyboard interaction with Enter key", async () => {
-    // Skipped: Radix Checkbox only responds to Space key, not Enter
-  });
-
   it("can be disabled", () => {
     render(<Checkbox disabled aria-label="Checkbox" />);
     const checkbox = screen.getByRole("checkbox");

@@ -145,22 +145,6 @@ describe("Sheet", () => {
     });
   });
 
-  it.skip("supports right side variant", async () => {
-    // Skipped: Class checking for positioning is implementation-specific
-  });
-
-  it.skip("supports left side variant", async () => {
-    // Skipped: Class checking for positioning is implementation-specific
-  });
-
-  it.skip("supports top side variant", async () => {
-    // Skipped: Class checking for positioning is implementation-specific
-  });
-
-  it.skip("supports bottom side variant", async () => {
-    // Skipped: Class checking for positioning is implementation-specific
-  });
-
   it("supports controlled mode", async () => {
     const user = userEvent.setup();
     const handleOpenChange = vi.fn();
@@ -196,10 +180,6 @@ describe("Sheet", () => {
     });
   });
 
-  it.skip("traps focus within sheet", async () => {
-    // Skipped: Focus trapping behavior is complex in jsdom
-  });
-
   it("applies custom className to content", async () => {
     const user = userEvent.setup();
     render(
@@ -233,13 +213,5 @@ describe("Sheet", () => {
       expect(dialog).toHaveAttribute("aria-describedby");
       expect(dialog).toHaveAttribute("aria-labelledby");
     });
-  });
-
-  it.skip("renders overlay when open", async () => {
-    // Skipped: Overlay selector may vary
-  });
-
-  it.skip("can prevent closing on overlay click", async () => {
-    // Skipped: This test depends on overlay click behavior
   });
 });

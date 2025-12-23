@@ -219,10 +219,6 @@ describe("Select", () => {
     });
   });
 
-  it.skip("renders SelectSeparator", async () => {
-    // Skipped: Separator role may vary by Radix version
-  });
-
   it("supports disabled items", async () => {
     const user = userEvent.setup();
     const handleValueChange = vi.fn();

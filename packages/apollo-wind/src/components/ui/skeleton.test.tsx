@@ -9,10 +9,6 @@ describe("Skeleton", () => {
     expect(container.firstChild).toBeInTheDocument();
   });
 
-  it.skip("has no accessibility violations", async () => {
-    // Skipped: Skeleton is a purely visual component, a11y testing is limited
-  });
-
   it("applies animate-pulse class", () => {
     const { container } = render(<Skeleton />);
     const skeleton = container.firstChild;
@@ -47,10 +43,6 @@ describe("Skeleton", () => {
   it("supports additional HTML attributes", () => {
     render(<Skeleton data-testid="skeleton-loader" />);
     expect(screen.getByTestId("skeleton-loader")).toBeInTheDocument();
-  });
-
-  it.skip("can render with aria-label for accessibility", () => {
-    // Skipped: Skeleton component may not expose aria-label directly
   });
 
   it("can render circular skeleton", () => {
