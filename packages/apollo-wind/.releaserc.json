@@ -7,7 +7,8 @@
       {
         "releaseRules": [
           { "type": "chore", "scope": "apollo-wind", "release": "patch" },
-          { "scope": "!apollo-core", "release": false }
+          { "type": "chore", "scope": "apollo-core", "release": "patch" },
+          { "scope": "!(apollo-wind|apollo-core)", "release": false }
         ]
       }
     ],
