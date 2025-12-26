@@ -16,6 +16,8 @@ export enum ProjectType {
 
 export enum BuiltInToolType {
   AnalyzeAttachments = "AnalyzeAttachments",
+  BatchTransform = "BatchTransform",
+  DeepRAG = "DeepRAG",
   LoadAttachments = "LoadAttachments",
 }
 

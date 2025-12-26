@@ -3,6 +3,8 @@ import { Icons } from "@uipath/uix/core";
 import { IxpIcon } from "./IXPIcon";
 import { ProcessIcon } from "./ProcessIcon";
 import { AttachmentIcon } from "./AttachmentIcon";
+import { AddDataColumnIcon } from "./AddDataColumnIcon";
+import { AnalyzeIcon } from "./AnalyzeIcon";
 
 interface ToolResourceIconProps {
   size?: number;
@@ -26,6 +28,10 @@ export const ToolResourceIcon = ({ size = 24, tool }: ToolResourceIconProps) => 
       switch (tool.toolType) {
         case BuiltInToolType.AnalyzeAttachments:
           return <AttachmentIcon />;
+        case BuiltInToolType.BatchTransform:
+          return <AddDataColumnIcon />;
+        case BuiltInToolType.DeepRAG:
+          return <AnalyzeIcon />;
         case BuiltInToolType.LoadAttachments:
           return <AttachmentIcon />;
         default:
