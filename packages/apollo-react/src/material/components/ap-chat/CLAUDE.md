@@ -137,15 +137,19 @@ ap-chat/
 ### Basic Setup
 
 ```typescript
-import { ApChat, AutopilotChatService } from '@uipath/apollo-react/material/components';
+import { ApChat, AutopilotChatService, AutopilotChatMode } from '@uipath/apollo-react/material/components';
 
 function MyApp() {
-  const [chatService] = useState(() => new AutopilotChatService());
+  const [chatService] = useState(() => AutopilotChatService.Instantiate({
+    instanceName: 'my-chat',
+    config: {
+      mode: AutopilotChatMode.SideBySide
+      // Configuration options
+    }
+  }));
 
   useEffect(() => {
-    chatService.initialize({
-      // Configuration options
-    });
+    // Service is already initialized with Instantiate
 
     // Event listeners
     const unsubscribe = chatService.on('Request', (data) => {

@@ -54,7 +54,12 @@ The chat service must be imported and instantiated in your application:
 import { AutopilotChatService } from '@uipath/apollo-react/material/components';
 
 // Create a service instance
-const chatService = new AutopilotChatService();
+const chatService = AutopilotChatService.Instantiate({
+  instanceName: 'my-chat',
+  config: {
+    mode: AutopilotChatMode.SideBySide
+  }
+});
 ```
 
 See [Usage Examples](#usage-examples) for complete setup details.
@@ -923,22 +928,22 @@ import { ApChat, AutopilotChatService, AutopilotChatMode } from '@uipath/apollo-
 import { useState, useEffect } from 'react';
 
 function MyApp() {
-  const [chatService] = useState(() => new AutopilotChatService());
-
-  useEffect(() => {
-    // Initialize with custom configuration
-    chatService.initialize({
+  const [chatService] = useState(() => AutopilotChatService.Instantiate({
+    instanceName: 'my-chat',
+    config: {
       mode: AutopilotChatMode.SideBySide,
       firstRunExperience: {
-        title: "Welcome to Autopilot Chat!",
+        title: "Welcome to Chat!",
         description: "Ask me anything about your data or how to use this application.",
         suggestions: [
           { label: "How to get started", prompt: "How do I get started with this application?" },
           { label: "Generate a report", prompt: "Help me generate a quarterly sales report" }
         ]
       }
-    });
+    }
+  }));
 
+  useEffect(() => {
     // Open the chat interface
     chatService.open();
 
@@ -957,27 +962,23 @@ function MyApp() {
 }
 ```
 
-### Creating Multiple Instances
-
-You can create multiple independent chat service instances:
+### Creating a Standalone Instance
 
 ```typescript
-import { AutopilotChatService } from '@uipath/apollo-react/material/components';
-
-// Create multiple service instances
-const chatService1 = new AutopilotChatService();
-const chatService2 = new AutopilotChatService();
-
-// Each instance can have its own configuration
-chatService1.initialize({
-  mode: AutopilotChatMode.SideBySide,
-  // ... configuration
+// Create a standalone instance with a custom name
+const chatService = AutopilotChatService.Instantiate({
+  instanceName: 'my-custom-chat',
+  config: {
+    mode: AutopilotChatMode.SideBySide,
+    firstRunExperience: {
+      title: "Custom Chat Experience",
+      description: "This is a standalone chat instance"
+    }
+  }
 });
 
-chatService2.initialize({
-  mode: AutopilotChatMode.Embedded,
-  // ... different configuration
-});
+// Later, retrieve the same instance
+const sameInstance = AutopilotChatService.getInstance('my-custom-chat');
 ```
 
 ### Using the React Component
@@ -988,7 +989,12 @@ The ApChat component is a React component that requires a service instance:
 import { ApChat, AutopilotChatService } from '@uipath/apollo-react/material/components';
 
 function MyComponent() {
-  const [chatService] = useState(() => new AutopilotChatService());
+  const [chatService] = useState(() => AutopilotChatService.Instantiate({
+    instanceName: 'my-component-chat',
+    config: {
+      mode: AutopilotChatMode.SideBySide
+    }
+  }));
 
   return (
     <ApChat
@@ -1002,45 +1008,51 @@ function MyComponent() {
 
 ### Opening Chat in Embedded Mode
 
-Embedded mode allows the chat to be rendered inside a specific container element, taking the full width and height of that container.
-
-#### Approach 1: Using ApChat Component with Embedded Container
-
-This is the standard approach where you render the ApChat component and configure embedded mode:
+Embedded mode allows the chat to be rendered inside a specific container element, taking the full width and height of that container. You need to render the ApChat component and configure embedded mode:
 
 ```typescript
 import { ApChat, AutopilotChatService, AutopilotChatMode } from '@uipath/apollo-react/material/components';
 import { useState, useEffect, useRef } from 'react';
 
 function EmbeddedChat() {
-  const [chatService] = useState(() => new AutopilotChatService());
+  const [chatService, setChatService] = useState<AutopilotChatService | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    chatService.initialize({
-      mode: AutopilotChatMode.Embedded,
-      embeddedContainer: containerRef.current!,
-      locale: 'en', // Optional: Set locale in initialization
-      theme: 'light', // Optional: Set theme in initialization
-      disabledFeatures: {
-        resize: true,
-        close: true,
-      }
-    });
+    if (containerRef.current && !chatService) {
+      const service = AutopilotChatService.Instantiate({
+        instanceName: 'embedded-chat',
+        config: {
+          mode: AutopilotChatMode.Embedded,
+          embeddedContainer: containerRef.current,
+          locale: 'en', // Optional: Set locale in initialization
+          theme: 'light', // Optional: Set theme in initialization
+          disabledFeatures: {
+            resize: true,
+            close: true,
+          }
+        }
+      });
+      
+      setChatService(service);
+      service.open();
 
-    return () => {
-      chatService.close();
-    };
+      return () => {
+        service.close();
+      };
+    }
   }, [chatService]);
 
   return (
     <>
-      {/* The ApChat component always renders once */}
-      <ApChat
-        chatServiceInstance={chatService}
-        locale="en"
-        theme="light"
-      />
+      {/* The ApChat component renders once the service is initialized */}
+      {chatService && (
+        <ApChat
+          service={chatService}
+          locale="en"
+          theme="light"
+        />
+      )}
 
       {/* Container where chat will be embedded using React Portal */}
       <div
@@ -1057,49 +1069,6 @@ function EmbeddedChat() {
         }}
       />
     </>
-  );
-}
-```
-
-#### Approach 2: Service-Only Configuration (No ApChat Component Needed)
-
-For embedded mode, you can also configure locale and theme directly in the service without rendering the ApChat component. This is useful when the chat is fully managed by the service:
-
-```typescript
-import { AutopilotChatService, AutopilotChatMode } from '@uipath/apollo-react/material/components';
-import { useState, useEffect, useRef } from 'react';
-
-function EmbeddedChatServiceOnly() {
-  const [chatService] = useState(() => new AutopilotChatService());
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (containerRef.current) {
-      chatService.initialize({
-        mode: AutopilotChatMode.Embedded,
-        embeddedContainer: containerRef.current,
-        locale: 'en', // Set locale in service config
-        theme: 'dark', // Set theme in service config
-        disabledFeatures: {
-          resize: true,
-          close: true,
-        }
-      });
-
-      // You still need to render ApChat component somewhere in your app
-      // The service will use React Portal to render into the container
-    }
-
-    return () => {
-      chatService.close();
-    };
-  }, [chatService]);
-
-  return (
-    <div
-      ref={containerRef}
-      style={{ width: '100%', height: '600px' }}
-    />
   );
 }
 ```
