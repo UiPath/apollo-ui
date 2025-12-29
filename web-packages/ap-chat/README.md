@@ -63,16 +63,18 @@ yarn add @uipath/ap-chat
     import '@uipath/ap-chat';
 
     // Create and initialize the service
-    const service = new AutopilotChatService();
-    service.initialize({
-      mode: 'side-by-side',
-      firstRunExperience: {
-        title: "Welcome to Autopilot Chat!",
-        description: "Ask me anything about your data or how to use this application.",
-        suggestions: [
-          { label: "Get started", prompt: "How do I get started?" },
-          { label: "Show features", prompt: "What features are available?" }
-        ]
+    const service = AutopilotChatService.Instantiate({
+      instanceName: 'my-chat',
+      config: {
+        mode: 'side-by-side',
+        firstRunExperience: {
+          title: "Welcome to Autopilot Chat!",
+          description: "Ask me anything about your data or how to use this application.",
+          suggestions: [
+            { label: "Get started", prompt: "How do I get started?" },
+            { label: "Show features", prompt: "What features are available?" }
+          ]
+        }
       }
     });
 
@@ -107,11 +109,15 @@ yarn add @uipath/ap-chat
 For React applications, use the `@uipath/apollo-react` package directly instead of the web component:
 
 ```typescript
-import { ApChat } from '@uipath/apollo-react/ap-chat';
-import { AutopilotChatService } from '@uipath/apollo-react/ap-chat/service';
+import { ApChat, AutopilotChatService, AutopilotChatMode } from '@uipath/apollo-react/ap-chat';
 
 function App() {
-  const service = new AutopilotChatService();
+  const service = AutopilotChatService.Instantiate({
+    instanceName: 'my-chat',
+    config: {
+      mode: AutopilotChatMode.SideBySide
+    }
+  });
   // ... use ApChat React component directly
 }
 ```
@@ -133,10 +139,14 @@ import '@uipath/ap-chat';
 })
 export class AppComponent implements OnInit, AfterViewInit {
   @ViewChild('chat') chatElement!: ElementRef;
-  private service = new AutopilotChatService();
+  private service = AutopilotChatService.Instantiate({
+    instanceName: 'angular-chat',
+    config: {
+      mode: 'side-by-side'
+    }
+  });
 
   ngOnInit() {
-    this.service.initialize({ mode: 'side-by-side' });
 
     this.service.on('Request', (data) => {
       this.service.sendResponse({
@@ -210,7 +220,12 @@ The complete chat service API documentation is available in the [@uipath/apollo-
 ```javascript
 import { AutopilotChatService } from '@uipath/ap-chat/service';
 
-const service = new AutopilotChatService();
+const service = AutopilotChatService.Instantiate({
+  instanceName: 'streaming-chat',
+  config: {
+    mode: 'side-by-side'
+  }
+});
 
 // Stream a response word by word
 const messageId = 'stream-' + Date.now();
