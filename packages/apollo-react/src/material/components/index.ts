@@ -1,5 +1,6 @@
 export * from './ap-alert-bar'
 export * from './ap-badge'
+export * from './ap-button'
 export * from './ap-chat'
 export * from './ap-chip'
 export * from './ap-link'

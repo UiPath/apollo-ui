@@ -49,6 +49,7 @@ export function Sidebar() {
 			children: [
 				{ label: "Alert Bar", path: "/components/alert-bar" },
 				{ label: "Badge", path: "/components/badge" },
+				{ label: "Button", path: "/components/button" },
 				{ label: "Chat", path: "/components/chat" },
 				{ label: "Chip", path: "/components/chip" },
 				{ label: "Link", path: "/components/link" },

@@ -58,6 +58,7 @@ export function Breadcrumb() {
 		// Apollo component routes
 		"alert-bar": "Alert Bar",
 		badge: "Badge",
+		button: "Button",
 		chat: "Chat",
 		"text-area": "Text Area",
 		"tool-call": "Tool Call",

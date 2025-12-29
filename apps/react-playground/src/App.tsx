@@ -12,6 +12,7 @@ import { CssVariables } from "./pages/CssVariables";
 import { AlertBarShowcase } from "./pages/components/AlertBarShowcase";
 import { ApChatShowcase } from "./pages/components/ApChatShowcase";
 import { BadgeShowcase } from "./pages/components/BadgeShowcase";
+import { ButtonShowcase } from "./pages/components/ButtonShowcase";
 import { ChipShowcase } from "./pages/components/ChipShowcase";
 import { LinkShowcase } from "./pages/components/LinkShowcase";
 import { SkeletonShowcase } from "./pages/components/SkeletonShowcase";
@@ -138,6 +139,7 @@ function App() {
 								element={<AlertBarShowcase />}
 							/>
 							<Route path="/components/badge" element={<BadgeShowcase />} />
+							<Route path="/components/button" element={<ButtonShowcase />} />
 							<Route path="/components/chat" element={<ApChatShowcase />} />
 							<Route path="/components/chip" element={<ChipShowcase />} />
 							<Route path="/components/link" element={<LinkShowcase />} />

@@ -17,6 +17,7 @@ export function ComponentsHome() {
 	const components = [
 		{ label: "Alert Bar", path: "/components/alert-bar", icon: "⚠️" },
 		{ label: "Badge", path: "/components/badge", icon: "🏷️" },
+		{ label: "Button", path: "/components/button", icon: "🔘" },
 		{ label: "Chat", path: "/components/chat", icon: "💬" },
 		{ label: "Chip", path: "/components/chip", icon: "🔖" },
 		{ label: "Link", path: "/components/link", icon: "🔗" },
