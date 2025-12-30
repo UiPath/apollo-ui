@@ -1,19 +1,35 @@
-import { useCallback, useState } from "react";
-import type { Meta, StoryObj } from "@storybook/react-vite";
-import { ApButton, ApTypography, type IRawSpan } from "@uipath/portal-shell-react";
-import { ReactFlowProvider } from "@uipath/uix/xyflow/react";
-import { Column, FontVariantToken, Row } from "@uipath/uix/core";
-import { AgentFlow } from "./AgentFlow";
 import {
-  ProjectType,
+  useCallback,
+  useState,
+} from 'react';
+
+import type {
+  Meta,
+  StoryObj,
+} from '@storybook/react-vite';
+import {
+  ApButton,
+  ApTypography,
+  type IRawSpan,
+} from '@uipath/portal-shell-react';
+import {
+  Column,
+  FontVariantToken,
+  Row,
+} from '@uipath/uix/core';
+import { ReactFlowProvider } from '@uipath/uix/xyflow/react';
+
+import { StoryInfoPanel } from '../../storybook-utils';
+import {
   type AgentFlowProps,
   type AgentFlowResource,
   type AgentFlowResourceNodeData,
   type AgentFlowResourceType,
   type AgentFlowSuggestionGroup,
   createPlaceholderSuggestion,
-} from "../../types";
-import { StoryInfoPanel } from "../../storybook-utils";
+  ProjectType,
+} from '../../types';
+import { AgentFlow } from './AgentFlow';
 
 const meta: Meta<typeof AgentFlow> = {
   title: "Canvas/AgentFlow",
