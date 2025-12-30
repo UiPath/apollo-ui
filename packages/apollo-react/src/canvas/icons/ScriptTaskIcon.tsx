@@ -1,4 +1,10 @@
-export const ScriptTaskIcon = ({ w = 48, h = 48 }: { w?: number | string; h?: number | string }) => {
+export const ScriptTaskIcon = ({
+  w = 48,
+  h = 48,
+}: {
+  w?: number | string;
+  h?: number | string;
+}) => {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" width={w} height={h} viewBox="0 0 24 24" fill="none">
       <path

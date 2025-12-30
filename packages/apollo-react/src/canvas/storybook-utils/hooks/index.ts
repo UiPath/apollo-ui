@@ -1,1 +1,1 @@
-export * from "./useCanvasStory";
+export * from './useCanvasStory';

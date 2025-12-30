@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { ReactNode } from 'react';
 
 export interface NodeMenuAction {
   id: string;
@@ -9,7 +9,7 @@ export interface NodeMenuAction {
 }
 
 export interface NodeMenuDivider {
-  type: "divider";
+  type: 'divider';
 }
 
 export type NodeMenuItem = NodeMenuAction | NodeMenuDivider;

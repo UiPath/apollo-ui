@@ -1,1 +1,1 @@
-export * from "./ToolResourceIcon";
+export * from './ToolResourceIcon';

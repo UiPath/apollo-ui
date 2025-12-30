@@ -1,12 +1,12 @@
-import type { Edge, Node, ReactFlowState } from "@uipath/uix/xyflow/react";
-import { useReactFlow, useStore } from "@uipath/uix/xyflow/react";
-import React, { useCallback, useEffect, useRef, useState } from "react";
-import type { BaseNodeData } from "../BaseNode/BaseNode.types";
-import type { ListItem } from "../Toolbox";
-import { AddNodePanel } from "./AddNodePanel";
-import { FloatingCanvasPanel } from "../FloatingCanvasPanel";
-import type { NodeItemData } from "./AddNodePanel.types";
-import { PREVIEW_EDGE_ID, PREVIEW_NODE_ID } from "../../constants";
+import type { Edge, Node, ReactFlowState } from '@uipath/uix/xyflow/react';
+import { useReactFlow, useStore } from '@uipath/uix/xyflow/react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import type { BaseNodeData } from '../BaseNode/BaseNode.types';
+import type { ListItem } from '../Toolbox';
+import { AddNodePanel } from './AddNodePanel';
+import { FloatingCanvasPanel } from '../FloatingCanvasPanel';
+import type { NodeItemData } from './AddNodePanel.types';
+import { PREVIEW_EDGE_ID, PREVIEW_NODE_ID } from '../../constants';
 
 // Optimized selector - only find the preview node instead of filtering all nodes
 const previewNodeSelector = (state: ReactFlowState) => {
@@ -50,7 +50,12 @@ export interface AddNodeManagerProps {
  * When a preview node is selected, it automatically shows a node selector panel.
  * When a node type is selected, it replaces the preview with the actual node.
  */
-export const AddNodeManager: React.FC<AddNodeManagerProps> = ({ customPanel, createNodeData, onBeforeNodeAdded, onNodeAdded }) => {
+export const AddNodeManager: React.FC<AddNodeManagerProps> = ({
+  customPanel,
+  createNodeData,
+  onBeforeNodeAdded,
+  onNodeAdded,
+}) => {
   const reactFlowInstance = useReactFlow();
 
   // Watch for preview node selection
@@ -69,7 +74,7 @@ export const AddNodeManager: React.FC<AddNodeManagerProps> = ({ customPanel, cre
       if (previewEdge) {
         setSourceInfo({
           nodeId: previewEdge.source,
-          handleId: previewEdge.sourceHandle || "output",
+          handleId: previewEdge.sourceHandle || 'output',
         });
         setIsOpen(true);
       }
@@ -88,7 +93,9 @@ export const AddNodeManager: React.FC<AddNodeManagerProps> = ({ customPanel, cre
 
   const handleClose = useCallback(() => {
     // Deselect preview node (which will trigger cleanup in the effect above)
-    reactFlowInstance.setNodes((nodes) => nodes.map((n) => (n.id === PREVIEW_NODE_ID ? { ...n, selected: false } : n)));
+    reactFlowInstance.setNodes((nodes) =>
+      nodes.map((n) => (n.id === PREVIEW_NODE_ID ? { ...n, selected: false } : n))
+    );
 
     setIsOpen(false);
     setSourceInfo(null);
@@ -113,7 +120,9 @@ export const AddNodeManager: React.FC<AddNodeManagerProps> = ({ customPanel, cre
           };
 
       // Inherit useSmartHandles from preview node if set
-      const nodeData = previewNode.data?.useSmartHandles ? { ...baseNodeData, useSmartHandles: true } : baseNodeData;
+      const nodeData = previewNode.data?.useSmartHandles
+        ? { ...baseNodeData, useSmartHandles: true }
+        : baseNodeData;
 
       // Create new node at preview position
       const newNode: Node = {
@@ -130,11 +139,14 @@ export const AddNodeManager: React.FC<AddNodeManagerProps> = ({ customPanel, cre
         source: sourceInfo.nodeId,
         sourceHandle: sourceInfo.handleId,
         target: newNodeId,
-        targetHandle: "input",
-        type: "default",
+        targetHandle: 'input',
+        type: 'default',
       };
 
-      const { newNode: finalNode, newEdge: finalEdge } = onBeforeNodeAdded?.(newNode, newEdge) ?? { newNode, newEdge };
+      const { newNode: finalNode, newEdge: finalEdge } = onBeforeNodeAdded?.(newNode, newEdge) ?? {
+        newNode,
+        newEdge,
+      };
 
       // Replace preview node and edge with actual ones
       reactFlowInstance.setNodes((nodes) => [
@@ -142,13 +154,24 @@ export const AddNodeManager: React.FC<AddNodeManagerProps> = ({ customPanel, cre
         finalNode,
       ]);
 
-      reactFlowInstance.setEdges((edges) => [...edges.filter((e) => e.id !== PREVIEW_EDGE_ID), finalEdge]);
+      reactFlowInstance.setEdges((edges) => [
+        ...edges.filter((e) => e.id !== PREVIEW_EDGE_ID),
+        finalEdge,
+      ]);
 
       onNodeAdded?.(sourceInfo.nodeId, sourceInfo.handleId, newNode);
 
       handleClose();
     },
-    [sourceInfo, previewNode, reactFlowInstance, createNodeData, onBeforeNodeAdded, onNodeAdded, handleClose]
+    [
+      sourceInfo,
+      previewNode,
+      reactFlowInstance,
+      createNodeData,
+      onBeforeNodeAdded,
+      onNodeAdded,
+      handleClose,
+    ]
   );
 
   // Handle node hover to update preview node icon
@@ -164,7 +187,7 @@ export const AddNodeManager: React.FC<AddNodeManagerProps> = ({ customPanel, cre
                 ...n,
                 data: {
                   ...n.data,
-                  iconName: typeof category.icon === "string" ? category.icon : undefined,
+                  iconName: typeof category.icon === 'string' ? category.icon : undefined,
                 },
               }
             : n
@@ -186,7 +209,11 @@ export const AddNodeManager: React.FC<AddNodeManagerProps> = ({ customPanel, cre
           onClose: handleClose,
         })
       ) : (
-        <AddNodePanel onNodeSelect={(item) => handleNodeSelect(item)} onClose={handleClose} onNodeHover={handleNodeOptionHover} />
+        <AddNodePanel
+          onNodeSelect={(item) => handleNodeSelect(item)}
+          onClose={handleClose}
+          onNodeHover={handleNodeOptionHover}
+        />
       )}
     </FloatingCanvasPanel>
   );

@@ -1,29 +1,34 @@
-import { useCallback, useState } from "react";
-import type { Meta, StoryObj } from "@storybook/react-vite";
-import { ReactFlowProvider } from "@uipath/uix/xyflow/react";
-import { Row } from "@uipath/uix/core";
-import { TimelinePlayer } from "./TimelinePlayer";
-import { AgentFlow } from "../AgentFlow";
-import type { IRawSpan } from "@uipath/portal-shell-react";
-import { ProjectType, type AgentFlowResource, type AgentFlowResourceNodeData, type AgentFlowResourceType } from "../../../types";
+import { useCallback, useState } from 'react';
+import type { Meta, StoryObj } from '@storybook/react-vite';
+import { ReactFlowProvider } from '@uipath/uix/xyflow/react';
+import { Row } from '@uipath/uix/core';
+import { TimelinePlayer } from './TimelinePlayer';
+import { AgentFlow } from '../AgentFlow';
+import type { IRawSpan } from '@uipath/portal-shell-react';
+import {
+  ProjectType,
+  type AgentFlowResource,
+  type AgentFlowResourceNodeData,
+  type AgentFlowResourceType,
+} from '../../../types';
 
 const meta: Meta<typeof TimelinePlayer> = {
-  title: "Canvas/TimelinePlayer",
+  title: 'Canvas/TimelinePlayer',
   component: TimelinePlayer,
   parameters: {
-    layout: "fullscreen",
+    layout: 'fullscreen',
   },
   decorators: [
     (Story) => (
       <div
         style={{
-          position: "absolute",
+          position: 'absolute',
           top: 0,
           left: 0,
-          width: "100%",
-          height: "100%",
-          backgroundColor: "var(--uix-canvas-background)",
-          color: "var(--uix-canvas-foreground)",
+          width: '100%',
+          height: '100%',
+          backgroundColor: 'var(--uix-canvas-background)',
+          color: 'var(--uix-canvas-foreground)',
         }}
       >
         <Story />
@@ -59,46 +64,79 @@ const createMockSpan = (
   }) as IRawSpan;
 
 // Generate realistic timestamps
-const baseTime = new Date("2024-01-15T10:00:00.000Z");
-const createTimestamp = (offsetMs: number): string => new Date(baseTime.getTime() + offsetMs).toISOString();
+const baseTime = new Date('2024-01-15T10:00:00.000Z');
+const createTimestamp = (offsetMs: number): string =>
+  new Date(baseTime.getTime() + offsetMs).toISOString();
 
 // Sample spans representing a typical agent execution
 const sampleSpans: IRawSpan[] = [
   // Main agent run
   createMockSpan(
-    "agent-run-1",
+    'agent-run-1',
     undefined,
-    "agentRun",
-    "Process Insurance Claim",
+    'agentRun',
+    'Process Insurance Claim',
     createTimestamp(0),
     createTimestamp(45000), // 45 seconds total
     1 // Success status
   ),
 
   // Child spans under the agent run
-  createMockSpan("context-load-1", "agent-run-1", "contextLoad", "Load User Profile", createTimestamp(100), createTimestamp(2500), 1),
-
-  createMockSpan("tool-call-1", "agent-run-1", "toolCall", "Validate Claim Data", createTimestamp(2500), createTimestamp(8000), 1),
+  createMockSpan(
+    'context-load-1',
+    'agent-run-1',
+    'contextLoad',
+    'Load User Profile',
+    createTimestamp(100),
+    createTimestamp(2500),
+    1
+  ),
 
   createMockSpan(
-    "completion-1",
-    "agent-run-1",
-    "completion",
-    "Generate Initial Response",
+    'tool-call-1',
+    'agent-run-1',
+    'toolCall',
+    'Validate Claim Data',
+    createTimestamp(2500),
+    createTimestamp(8000),
+    1
+  ),
+
+  createMockSpan(
+    'completion-1',
+    'agent-run-1',
+    'completion',
+    'Generate Initial Response',
     createTimestamp(8000),
     createTimestamp(12000),
     1
   ),
 
-  createMockSpan("tool-call-2", "agent-run-1", "toolCall", "Check Policy Status", createTimestamp(12000), createTimestamp(20000), 2), // Error status
-
-  createMockSpan("tool-call-3", "agent-run-1", "toolCall", "Calculate Payout Amount", createTimestamp(20000), createTimestamp(28000), 1),
+  createMockSpan(
+    'tool-call-2',
+    'agent-run-1',
+    'toolCall',
+    'Check Policy Status',
+    createTimestamp(12000),
+    createTimestamp(20000),
+    2
+  ), // Error status
 
   createMockSpan(
-    "escalation-1",
-    "agent-run-1",
-    "escalation",
-    "Manager Approval Required",
+    'tool-call-3',
+    'agent-run-1',
+    'toolCall',
+    'Calculate Payout Amount',
+    createTimestamp(20000),
+    createTimestamp(28000),
+    1
+  ),
+
+  createMockSpan(
+    'escalation-1',
+    'agent-run-1',
+    'escalation',
+    'Manager Approval Required',
     createTimestamp(28100),
     createTimestamp(44000),
     1
@@ -107,54 +145,86 @@ const sampleSpans: IRawSpan[] = [
 
 // Shorter timeline for quick interactions
 const shortSpans: IRawSpan[] = [
-  createMockSpan("agent-run-short", undefined, "agentRun", "Quick Query Response", createTimestamp(0), createTimestamp(8000), 1),
+  createMockSpan(
+    'agent-run-short',
+    undefined,
+    'agentRun',
+    'Quick Query Response',
+    createTimestamp(0),
+    createTimestamp(8000),
+    1
+  ),
 
   createMockSpan(
-    "context-load-short",
-    "agent-run-short",
-    "contextLoad",
-    "Load Session Context",
+    'context-load-short',
+    'agent-run-short',
+    'contextLoad',
+    'Load Session Context',
     createTimestamp(100),
     createTimestamp(1000),
     1
   ),
 
-  createMockSpan("completion-short", "agent-run-short", "completion", "Generate Response", createTimestamp(1000), createTimestamp(7500), 1),
+  createMockSpan(
+    'completion-short',
+    'agent-run-short',
+    'completion',
+    'Generate Response',
+    createTimestamp(1000),
+    createTimestamp(7500),
+    1
+  ),
 ];
 
 // Complex nested timeline with multiple tools and escalations
 const complexSpans: IRawSpan[] = [
   createMockSpan(
-    "agent-run-complex",
+    'agent-run-complex',
     undefined,
-    "agentRun",
-    "Multi-step Document Processing",
+    'agentRun',
+    'Multi-step Document Processing',
     createTimestamp(0),
     createTimestamp(120000), // 2 minutes
     1
   ),
 
   // First phase - document analysis
-  createMockSpan("tool-doc-parse", "agent-run-complex", "toolCall", "Parse PDF Document", createTimestamp(500), createTimestamp(15000), 1),
+  createMockSpan(
+    'tool-doc-parse',
+    'agent-run-complex',
+    'toolCall',
+    'Parse PDF Document',
+    createTimestamp(500),
+    createTimestamp(15000),
+    1
+  ),
 
-  createMockSpan("tool-ocr", "agent-run-complex", "toolCall", "OCR Text Extraction", createTimestamp(15000), createTimestamp(35000), 2), // OCR failed
+  createMockSpan(
+    'tool-ocr',
+    'agent-run-complex',
+    'toolCall',
+    'OCR Text Extraction',
+    createTimestamp(15000),
+    createTimestamp(35000),
+    2
+  ), // OCR failed
 
   // Second phase - data validation
   createMockSpan(
-    "tool-validate",
-    "agent-run-complex",
-    "toolCall",
-    "Validate Extracted Data",
+    'tool-validate',
+    'agent-run-complex',
+    'toolCall',
+    'Validate Extracted Data',
     createTimestamp(35000),
     createTimestamp(48000),
     1
   ),
 
   createMockSpan(
-    "completion-validation",
-    "agent-run-complex",
-    "completion",
-    "Validation Results",
+    'completion-validation',
+    'agent-run-complex',
+    'completion',
+    'Validation Results',
     createTimestamp(48000),
     createTimestamp(56000),
     1
@@ -162,23 +232,31 @@ const complexSpans: IRawSpan[] = [
 
   // Third phase - external API calls
   createMockSpan(
-    "tool-api-1",
-    "agent-run-complex",
-    "toolCall",
-    "Check Customer Database",
+    'tool-api-1',
+    'agent-run-complex',
+    'toolCall',
+    'Check Customer Database',
     createTimestamp(56000),
     createTimestamp(68000),
     1
   ),
 
-  createMockSpan("tool-api-2", "agent-run-complex", "toolCall", "Verify Identity", createTimestamp(68000), createTimestamp(82000), 2), // Identity verification failed
+  createMockSpan(
+    'tool-api-2',
+    'agent-run-complex',
+    'toolCall',
+    'Verify Identity',
+    createTimestamp(68000),
+    createTimestamp(82000),
+    2
+  ), // Identity verification failed
 
   // Fourth phase - decision making
   createMockSpan(
-    "completion-decision",
-    "agent-run-complex",
-    "completion",
-    "Process Decision Logic",
+    'completion-decision',
+    'agent-run-complex',
+    'completion',
+    'Process Decision Logic',
     createTimestamp(83000),
     createTimestamp(95000),
     1
@@ -186,22 +264,30 @@ const complexSpans: IRawSpan[] = [
 
   // Final phase - output generation
   createMockSpan(
-    "tool-email",
-    "agent-run-complex",
-    "toolCall",
-    "Send Notification Email",
+    'tool-email',
+    'agent-run-complex',
+    'toolCall',
+    'Send Notification Email',
     createTimestamp(96000),
     createTimestamp(105000),
     1
   ),
 
-  createMockSpan("tool-database", "agent-run-complex", "toolCall", "Update Records", createTimestamp(106000), createTimestamp(115000), 1),
+  createMockSpan(
+    'tool-database',
+    'agent-run-complex',
+    'toolCall',
+    'Update Records',
+    createTimestamp(106000),
+    createTimestamp(115000),
+    1
+  ),
 
   createMockSpan(
-    "completion-final",
-    "agent-run-complex",
-    "completion",
-    "Generate Final Report",
+    'completion-final',
+    'agent-run-complex',
+    'completion',
+    'Generate Final Report',
     createTimestamp(116000),
     createTimestamp(119000),
     1
@@ -210,20 +296,20 @@ const complexSpans: IRawSpan[] = [
 
 const sampleResources: AgentFlowResource[] = [
   {
-    id: "context-load-short",
-    type: "context",
-    name: "Load Session Context",
-    description: "Current session information",
+    id: 'context-load-short',
+    type: 'context',
+    name: 'Load Session Context',
+    description: 'Current session information',
     hasBreakpoint: false,
     isCurrentBreakpoint: false,
     hasGuardrails: false,
   },
   {
-    id: "completion-short",
-    type: "tool",
-    name: "Generate Response",
-    description: "AI completion generation",
-    iconUrl: "",
+    id: 'completion-short',
+    type: 'tool',
+    name: 'Generate Response',
+    description: 'AI completion generation',
+    iconUrl: '',
     hasBreakpoint: false,
     isCurrentBreakpoint: false,
     hasGuardrails: false,
@@ -232,11 +318,11 @@ const sampleResources: AgentFlowResource[] = [
 ];
 
 const sampleDefinition = {
-  name: "Quick Query Agent",
-  version: "1.0",
+  name: 'Quick Query Agent',
+  version: '1.0',
   settings: {
-    model: "gpt-4",
-    engine: "openai",
+    model: 'gpt-4',
+    engine: 'openai',
   },
   tools: [],
   resources: [],
@@ -249,7 +335,11 @@ interface AgentFlowWithTimelineProps {
   activeResourceIds?: string[];
 }
 
-const AgentFlowWithTimeline = ({ spans, enableTimelinePlayer = true, activeResourceIds = [] }: AgentFlowWithTimelineProps) => {
+const AgentFlowWithTimeline = ({
+  spans,
+  enableTimelinePlayer = true,
+  activeResourceIds = [],
+}: AgentFlowWithTimelineProps) => {
   const [resources] = useState<AgentFlowResource[]>(sampleResources);
   const [_selectedResourceId, setSelectedResourceId] = useState<string | null>(null);
 
@@ -265,17 +355,26 @@ const AgentFlowWithTimeline = ({ spans, enableTimelinePlayer = true, activeResou
     // Mock implementation for storybook
   }, []);
 
-  const handleAddBreakpoint = useCallback((_resourceId: string, _resource: AgentFlowResourceNodeData) => {
-    // Mock implementation for storybook
-  }, []);
+  const handleAddBreakpoint = useCallback(
+    (_resourceId: string, _resource: AgentFlowResourceNodeData) => {
+      // Mock implementation for storybook
+    },
+    []
+  );
 
-  const handleRemoveBreakpoint = useCallback((_resourceId: string, _resource: AgentFlowResourceNodeData) => {
-    // Mock implementation for storybook
-  }, []);
+  const handleRemoveBreakpoint = useCallback(
+    (_resourceId: string, _resource: AgentFlowResourceNodeData) => {
+      // Mock implementation for storybook
+    },
+    []
+  );
 
-  const handleAddGuardrail = useCallback((_resourceId: string, _resource: AgentFlowResourceNodeData) => {
-    // Mock implementation for storybook
-  }, []);
+  const handleAddGuardrail = useCallback(
+    (_resourceId: string, _resource: AgentFlowResourceNodeData) => {
+      // Mock implementation for storybook
+    },
+    []
+  );
 
   const setSpanForSelectedNode = useCallback((_node: any) => {
     // Mock implementation for storybook
@@ -287,8 +386,8 @@ const AgentFlowWithTimeline = ({ spans, enableTimelinePlayer = true, activeResou
 
   return (
     <ReactFlowProvider>
-      <Row w="100%" h="100%" style={{ position: "relative" }}>
-        <div style={{ flex: 1, position: "relative" }}>
+      <Row w="100%" h="100%" style={{ position: 'relative' }}>
+        <div style={{ flex: 1, position: 'relative' }}>
           <AgentFlow
             allowDragging={false}
             definition={sampleDefinition}
@@ -321,22 +420,26 @@ interface CenteredTimelinePlayerProps {
   scale?: number;
 }
 
-const CenteredTimelinePlayer = ({ spans, enableTimelinePlayer = true, scale = 1 }: CenteredTimelinePlayerProps) => {
+const CenteredTimelinePlayer = ({
+  spans,
+  enableTimelinePlayer = true,
+  scale = 1,
+}: CenteredTimelinePlayerProps) => {
   return (
     <div
       style={{
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        width: "100%",
-        height: "100vh",
-        padding: "20px",
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        width: '100%',
+        height: '100vh',
+        padding: '20px',
       }}
     >
       <div
         style={{
           transform: `scale(${scale})`,
-          transformOrigin: "center center",
+          transformOrigin: 'center center',
         }}
       >
         <TimelinePlayer spans={spans} enableTimelinePlayer={enableTimelinePlayer} />
@@ -359,6 +462,10 @@ export const LongExecution: Story = {
 
 export const WithAgentFlow: Story = {
   render: () => (
-    <AgentFlowWithTimeline spans={shortSpans} enableTimelinePlayer={true} activeResourceIds={["context-load-short", "completion-short"]} />
+    <AgentFlowWithTimeline
+      spans={shortSpans}
+      enableTimelinePlayer={true}
+      activeResourceIds={['context-load-short', 'completion-short']}
+    />
   ),
 };

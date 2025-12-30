@@ -1,11 +1,11 @@
-import { Column, useNavigationStack } from "@uipath/uix/core";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Header } from "./Header";
-import { type ListItem, ListView } from "./ListView";
-import { SearchBox } from "./SearchBox";
-import { AnimatedContainer, AnimatedContent } from "./Toolbox.styles";
+import { Column, useNavigationStack } from '@uipath/uix/core';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Header } from './Header';
+import { type ListItem, ListView } from './ListView';
+import { SearchBox } from './SearchBox';
+import { AnimatedContainer, AnimatedContent } from './Toolbox.styles';
 
-type AnimationDirection = "forward" | "back";
+type AnimationDirection = 'forward' | 'back';
 
 const TRANSITION_DURATION = 150;
 
@@ -25,7 +25,7 @@ function findItemById<T>(items: ListItem<T>[], id: string): ListItem<T> | null {
       return item;
     }
 
-    if (!item.children || typeof item.children === "function") {
+    if (!item.children || typeof item.children === 'function') {
       continue;
     }
 
@@ -61,7 +61,7 @@ function searchLeafItems<T>(items: ListItem<T>[], query: string): ListItem<T>[] 
   const results: ListItem<T>[] = [];
 
   for (const item of items) {
-    if (typeof item.children === "function") {
+    if (typeof item.children === 'function') {
       // Skip dynamically fetched children in default search.
       continue;
     }
@@ -75,18 +75,30 @@ function searchLeafItems<T>(items: ListItem<T>[], query: string): ListItem<T>[] 
   return results;
 }
 
-export function Toolbox<T>({ onClose, onBack, onItemSelect, onSearch, onItemHover, title, initialItems, loading }: ToolboxProps<T>) {
+export function Toolbox<T>({
+  onClose,
+  onBack,
+  onItemSelect,
+  onSearch,
+  onItemHover,
+  title,
+  initialItems,
+  loading,
+}: ToolboxProps<T>) {
   const [items, setItems] = useState<ListItem<T>[]>(initialItems);
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState('');
   const [searchLoading, setSearchLoading] = useState(false);
   const [childrenLoading, setChildrenLoading] = useState(false);
   const [isSearchingInitialItems, setIsSearchingInitialItems] = useState(true);
   const [searchedItems, setSearchedItems] = useState<ListItem<T>[]>([]);
   const [currentParentItem, setCurrentParentItem] = useState<ListItem<T> | null>(null);
   const [isTransitioning, setIsTransitioning] = useState(false);
-  const [animationDirection, setAnimationDirection] = useState<AnimationDirection>("forward");
+  const [animationDirection, setAnimationDirection] = useState<AnimationDirection>('forward');
 
-  const navigationStack = useNavigationStack<{ items: ListItem<T>[]; parentItem: ListItem<T> | null }>();
+  const navigationStack = useNavigationStack<{
+    items: ListItem<T>[];
+    parentItem: ListItem<T> | null;
+  }>();
 
   const transitionTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
   const searchIdRef = useRef(0);
@@ -108,7 +120,7 @@ export function Toolbox<T>({ onClose, onBack, onItemSelect, onSearch, onItemHove
   }, []);
 
   const clearSearch = useCallback(() => {
-    setSearch("");
+    setSearch('');
     setSearchedItems([]);
     setSearchLoading(false);
     setIsSearchingInitialItems(true);
@@ -120,7 +132,7 @@ export function Toolbox<T>({ onClose, onBack, onItemSelect, onSearch, onItemHove
         setSearchLoading(false);
         setSearchedItems([]);
         setIsSearchingInitialItems(true);
-        setSearch("");
+        setSearch('');
         return;
       }
 
@@ -129,7 +141,9 @@ export function Toolbox<T>({ onClose, onBack, onItemSelect, onSearch, onItemHove
       const currentRequestId = searchIdRef.current;
 
       setSearchLoading(true);
-      const result = onSearch ? await onSearch(query, !navigationStack.canGoBack, { currentItems: items }) : searchLeafItems(items, query);
+      const result = onSearch
+        ? await onSearch(query, !navigationStack.canGoBack, { currentItems: items })
+        : searchLeafItems(items, query);
 
       // Only update if this is still the latest request
       if (currentRequestId === searchIdRef.current) {
@@ -142,7 +156,7 @@ export function Toolbox<T>({ onClose, onBack, onItemSelect, onSearch, onItemHove
   );
 
   const handleBackTransition = useCallback(() => {
-    startTransition("back");
+    startTransition('back');
 
     const previousState = navigationStack.pop();
 
@@ -165,7 +179,10 @@ export function Toolbox<T>({ onClose, onBack, onItemSelect, onSearch, onItemHove
         return;
       }
       setChildrenLoading(true);
-      const nestedItems = typeof item.children === "function" ? await item.children(item.id, item.name) : item.children;
+      const nestedItems =
+        typeof item.children === 'function'
+          ? await item.children(item.id, item.name)
+          : item.children;
       navigationStack.push({
         title: currentParentItem?.name || title,
         data: { items, parentItem: currentParentItem },
@@ -173,7 +190,7 @@ export function Toolbox<T>({ onClose, onBack, onItemSelect, onSearch, onItemHove
       setItems(nestedItems);
       setCurrentParentItem(item);
       clearSearch();
-      startTransition("forward");
+      startTransition('forward');
       setChildrenLoading(false);
     },
     [navigationStack, currentParentItem, title, items, clearSearch, startTransition, onItemSelect]
@@ -203,7 +220,7 @@ export function Toolbox<T>({ onClose, onBack, onItemSelect, onSearch, onItemHove
     // Attempt to update current view.
     if (currentParentItem) {
       const updatedCurrentParent = findItemById(newInitialItems, currentParentItem.id);
-      if (updatedCurrentParent?.children && typeof updatedCurrentParent.children !== "function") {
+      if (updatedCurrentParent?.children && typeof updatedCurrentParent.children !== 'function') {
         // Parent still exists - update current children from new parent.
         setItems(updatedCurrentParent.children);
       }
@@ -230,7 +247,7 @@ export function Toolbox<T>({ onClose, onBack, onItemSelect, onSearch, onItemHove
       const updatedParentItem = findItemById(newInitialItems, stackItem.data.parentItem.id);
       // Default to existing items in case parent is missing in new items or has dynamic children.
       let updatedItems = stackItem.data.items;
-      if (updatedParentItem?.children && typeof updatedParentItem.children !== "function") {
+      if (updatedParentItem?.children && typeof updatedParentItem.children !== 'function') {
         // Use static children from updated parent item.
         updatedItems = updatedParentItem.children;
       }
@@ -254,10 +271,10 @@ export function Toolbox<T>({ onClose, onBack, onItemSelect, onSearch, onItemHove
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
+      if (e.key === 'Escape') {
         if (isSearching) {
           searchIdRef.current += 1;
-          startTransition("back");
+          startTransition('back');
           clearSearch();
         } else if (navigationStack.canGoBack) {
           handleBackTransition();
@@ -267,13 +284,24 @@ export function Toolbox<T>({ onClose, onBack, onItemSelect, onSearch, onItemHove
       }
     };
 
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [isSearching, navigationStack.canGoBack, onClose, clearSearch, startTransition, handleBackTransition]);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [
+    isSearching,
+    navigationStack.canGoBack,
+    onClose,
+    clearSearch,
+    startTransition,
+    handleBackTransition,
+  ]);
 
   return (
     <Column px={20} py={12} gap={12} w={320} h={440}>
-      <Header title={currentParentItem?.name || title} onBack={handleBackTransition} showBackButton={navigationStack.canGoBack} />
+      <Header
+        title={currentParentItem?.name || title}
+        onBack={handleBackTransition}
+        showBackButton={navigationStack.canGoBack}
+      />
 
       <SearchBox value={search} onChange={handleSearch} clear={clearSearch} placeholder="Search" />
 
@@ -282,7 +310,7 @@ export function Toolbox<T>({ onClose, onBack, onItemSelect, onSearch, onItemHove
           <ListView
             isLoading={childrenLoading || searchLoading || loading}
             items={isSearching && !isSearchingInitialItems ? searchedItems : items}
-            emptyStateMessage={isSearching ? "No matching nodes found" : "No nodes found"}
+            emptyStateMessage={isSearching ? 'No matching nodes found' : 'No nodes found'}
             enableSections={!isSearching}
             onItemClick={handleItemSelect}
             onItemHover={onItemHover}

@@ -6,50 +6,54 @@ import {
   type AgentFlowEscalationResource,
   type AgentFlowMcpResource,
   type AgentFlowMemorySpaceResource,
-} from "../../types";
+} from '../../types';
 
 /**
  * Generates a unique resource ID.
  */
-export const generateResourceId = (): string => `resource-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
+export const generateResourceId = (): string =>
+  `resource-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
 
 /**
  * Sample context data for stories.
  */
 export const sampleContexts = [
-  { name: "User Profile", description: "Information about the current user" },
-  { name: "Session Context", description: "Current session information" },
-  { name: "Organization Settings", description: "Organization configuration" },
-  { name: "Environment Variables", description: "System environment settings" },
+  { name: 'User Profile', description: 'Information about the current user' },
+  { name: 'Session Context', description: 'Current session information' },
+  { name: 'Organization Settings', description: 'Organization configuration' },
+  { name: 'Environment Variables', description: 'System environment settings' },
 ] as const;
 
 /**
  * Sample tool data for stories.
  */
 export const sampleTools = [
-  { name: "Send Email", description: "Email Service", projectType: ProjectType.Internal },
-  { name: "Query Database", description: "Database", projectType: ProjectType.Internal },
-  { name: "Call API", description: "REST API", projectType: ProjectType.Api },
-  { name: "Process Document", description: "Document AI", projectType: ProjectType.Internal },
-  { name: "Run Automation", description: "Automation", projectType: ProjectType.Internal },
+  { name: 'Send Email', description: 'Email Service', projectType: ProjectType.Internal },
+  { name: 'Query Database', description: 'Database', projectType: ProjectType.Internal },
+  { name: 'Call API', description: 'REST API', projectType: ProjectType.Api },
+  { name: 'Process Document', description: 'Document AI', projectType: ProjectType.Internal },
+  { name: 'Run Automation', description: 'Automation', projectType: ProjectType.Internal },
 ] as const;
 
 /**
  * Sample escalation data for stories.
  */
 export const sampleEscalations = [
-  { name: "Manager Approval", description: "Escalate to manager" },
-  { name: "Amount Exceeded", description: "Transaction limit exceeded" },
-  { name: "Security Alert", description: "Suspicious activity detected" },
-  { name: "Manual Review", description: "Requires human review" },
+  { name: 'Manager Approval', description: 'Escalate to manager' },
+  { name: 'Amount Exceeded', description: 'Transaction limit exceeded' },
+  { name: 'Security Alert', description: 'Suspicious activity detected' },
+  { name: 'Manual Review', description: 'Requires human review' },
 ] as const;
 
 /**
  * Sample MCP server data for stories.
  */
 export const sampleMcpServers = [
-  { name: "File parser", description: "Parse files in the workspace" },
-  { name: "Budget Assistant RPC", description: "Using RPC to connect to a budget assistant server API" },
+  { name: 'File parser', description: 'Parse files in the workspace' },
+  {
+    name: 'Budget Assistant RPC',
+    description: 'Using RPC to connect to a budget assistant server API',
+  },
 ] as const;
 
 /**
@@ -79,7 +83,7 @@ export function createResourceGenerators() {
       contextIndex++;
       return {
         id: generateResourceId(),
-        type: "context",
+        type: 'context',
         name: sample.name,
         description: sample.description,
         hasBreakpoint: false,
@@ -96,10 +100,10 @@ export function createResourceGenerators() {
       toolIndex++;
       return {
         id: generateResourceId(),
-        type: "tool",
+        type: 'tool',
         name: sample.name,
         description: sample.description,
-        iconUrl: "",
+        iconUrl: '',
         projectType: sample.projectType,
         hasBreakpoint: false,
         hasGuardrails: false,
@@ -115,7 +119,7 @@ export function createResourceGenerators() {
       escalationIndex++;
       return {
         id: generateResourceId(),
-        type: "escalation",
+        type: 'escalation',
         name: sample.name,
         description: sample.description,
         hasBreakpoint: false,
@@ -132,11 +136,11 @@ export function createResourceGenerators() {
       mcpIndex++;
       return {
         id: generateResourceId(),
-        type: "mcp",
+        type: 'mcp',
         name: sample.name,
         description: sample.description,
-        slug: "",
-        folderPath: "",
+        slug: '',
+        folderPath: '',
         availableTools: [],
         hasBreakpoint: false,
         hasGuardrails: false,
@@ -147,12 +151,14 @@ export function createResourceGenerators() {
     /**
      * Creates a sample memory space resource.
      */
-    memorySpace: (overrides?: Partial<AgentFlowMemorySpaceResource>): AgentFlowMemorySpaceResource => {
+    memorySpace: (
+      overrides?: Partial<AgentFlowMemorySpaceResource>
+    ): AgentFlowMemorySpaceResource => {
       return {
         id: generateResourceId(),
-        type: "memorySpace",
-        name: "Agent Memory Space",
-        description: "Memory space for the agent",
+        type: 'memorySpace',
+        name: 'Agent Memory Space',
+        description: 'Memory space for the agent',
         hasBreakpoint: false,
         hasGuardrails: false,
         ...overrides,
@@ -176,38 +182,38 @@ export function createResourceGenerators() {
  */
 export const defaultSampleResources: AgentFlowResource[] = [
   {
-    id: "tool-slack",
-    type: "tool",
-    name: "Send message",
-    description: "Slack",
-    iconUrl: "",
+    id: 'tool-slack',
+    type: 'tool',
+    name: 'Send message',
+    description: 'Slack',
+    iconUrl: '',
     hasBreakpoint: false,
     isCurrentBreakpoint: false,
     hasGuardrails: false,
   },
   {
-    id: "tool-email",
-    type: "tool",
-    name: "Send Email",
-    description: "Email Service",
-    iconUrl: "",
+    id: 'tool-email',
+    type: 'tool',
+    name: 'Send Email',
+    description: 'Email Service',
+    iconUrl: '',
     hasBreakpoint: false,
     hasGuardrails: false,
     projectType: ProjectType.Internal,
   },
   {
-    id: "context-user",
-    type: "context",
-    name: "User Profile",
-    description: "Information about the current user",
+    id: 'context-user',
+    type: 'context',
+    name: 'User Profile',
+    description: 'Information about the current user',
     hasBreakpoint: false,
     hasGuardrails: false,
   },
   {
-    id: "escalation-manager",
-    type: "escalation",
-    name: "Manager Approval",
-    description: "Escalate to manager",
+    id: 'escalation-manager',
+    type: 'escalation',
+    name: 'Manager Approval',
+    description: 'Escalate to manager',
     hasBreakpoint: false,
     hasGuardrails: false,
   },

@@ -1,1 +1,1 @@
-export * from "./StoryInfoPanel";
+export * from './StoryInfoPanel';

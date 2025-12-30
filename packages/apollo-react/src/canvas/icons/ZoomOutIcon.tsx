@@ -1,4 +1,12 @@
-export const ZoomOutIcon = ({ w = 32, h = 32, color = "currentColor" }: { w?: number | string; h?: number | string; color?: string }) => {
+export const ZoomOutIcon = ({
+  w = 32,
+  h = 32,
+  color = 'currentColor',
+}: {
+  w?: number | string;
+  h?: number | string;
+  color?: string;
+}) => {
   return (
     <svg width={w} height={h} viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path

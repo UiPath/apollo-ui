@@ -1,16 +1,18 @@
-import { Position } from "@uipath/uix/xyflow/react";
-import type { HandleConfigurationSpecificPosition } from "../BaseNode/BaseNode.types";
-import { GRID_SPACING } from "../../constants";
+import { Position } from '@uipath/uix/xyflow/react';
+import type { HandleConfigurationSpecificPosition } from '../BaseNode/BaseNode.types';
+import { GRID_SPACING } from '../../constants';
 
 /**
  * Returns true if the position is on a horizontal edge (Top or Bottom)
  */
-const isHorizontalEdge = (position: Position): boolean => position === Position.Top || position === Position.Bottom;
+const isHorizontalEdge = (position: Position): boolean =>
+  position === Position.Top || position === Position.Bottom;
 
 /**
  * Returns true if the position is on a vertical edge (Left or Right)
  */
-const isVerticalEdge = (position: Position): boolean => position === Position.Left || position === Position.Right;
+const isVerticalEdge = (position: Position): boolean =>
+  position === Position.Left || position === Position.Right;
 
 /**
  * Snaps a value to the nearest grid multiple
@@ -31,7 +33,11 @@ export const snapToGrid = (value: number, gridSize: number = GRID_SPACING): numb
  * @param gridSize - The grid size
  * @returns Array of grid-snapped pixel positions for each handle
  */
-export const calculateGridAlignedHandlePositions = (nodeSize: number, numHandles: number, gridSize: number = GRID_SPACING): number[] => {
+export const calculateGridAlignedHandlePositions = (
+  nodeSize: number,
+  numHandles: number,
+  gridSize: number = GRID_SPACING
+): number[] => {
   if (numHandles === 0) return [];
   if (nodeSize <= 0) return [];
 
@@ -85,7 +91,7 @@ export const widthForHandleWithPosition = ({
     return `${customWidth}px`;
   }
   // Horizontal edges (Top/Bottom) scale width based on handle count; vertical edges use fixed width
-  return isHorizontalEdge(position) ? `${50 / numHandles}%` : "24px";
+  return isHorizontalEdge(position) ? `${50 / numHandles}%` : '24px';
 };
 
 export const heightForHandleWithPosition = ({
@@ -101,7 +107,7 @@ export const heightForHandleWithPosition = ({
     return `${customHeight}px`;
   }
   // Horizontal edges (Top/Bottom) use fixed height; vertical edges scale height based on handle count
-  return isHorizontalEdge(position) ? "24px" : `${50 / numHandles}%`;
+  return isHorizontalEdge(position) ? '24px' : `${50 / numHandles}%`;
 };
 
 export const topPositionForHandle = ({
@@ -130,15 +136,15 @@ export const topPositionForHandle = ({
 
   if (customBottom != null) {
     // When customBottom is set, don't set top (use bottom positioning instead)
-    return "unset";
+    return 'unset';
   }
 
   // Default positioning based on edge
   if (position === Position.Top) {
-    return "0";
+    return '0';
   }
   if (position === Position.Bottom) {
-    return "unset";
+    return 'unset';
   }
   return `${positionPercent}%`;
 };
@@ -169,14 +175,14 @@ export const bottomPositionForHandle = ({
 
   if (customTop != null) {
     // When customTop is set, don't set bottom (use top positioning instead)
-    return "unset";
+    return 'unset';
   }
 
   // Default positioning based on edge
   if (position === Position.Bottom) {
-    return "0";
+    return '0';
   }
-  return "unset";
+  return 'unset';
 };
 
 export const leftPositionForHandle = ({
@@ -205,15 +211,15 @@ export const leftPositionForHandle = ({
 
   if (customRight != null) {
     // When customRight is set, don't set left (use right positioning instead)
-    return "unset";
+    return 'unset';
   }
 
   // Default positioning based on edge
   if (position === Position.Left) {
-    return "0";
+    return '0';
   }
   if (position === Position.Right) {
-    return "unset";
+    return 'unset';
   }
   return `${positionPercent}%`;
 };
@@ -244,14 +250,14 @@ export const rightPositionForHandle = ({
 
   if (customLeft != null) {
     // When customLeft is set, don't set right (use left positioning instead)
-    return "unset";
+    return 'unset';
   }
 
   // Default positioning based on edge
   if (position === Position.Right) {
-    return "0";
+    return '0';
   }
-  return "unset";
+  return 'unset';
 };
 
 export const transformForHandle = ({
@@ -262,12 +268,18 @@ export const transformForHandle = ({
   customPositionAndOffsets?: HandleConfigurationSpecificPosition;
 }): string => {
   const hasCustomVertical =
-    (customPositionAndOffsets?.top != null || customPositionAndOffsets?.bottom != null) && customPositionAndOffsets?.height;
+    (customPositionAndOffsets?.top != null || customPositionAndOffsets?.bottom != null) &&
+    customPositionAndOffsets?.height;
   const hasCustomHorizontal =
-    (customPositionAndOffsets?.left != null || customPositionAndOffsets?.right != null) && customPositionAndOffsets?.width;
+    (customPositionAndOffsets?.left != null || customPositionAndOffsets?.right != null) &&
+    customPositionAndOffsets?.width;
 
-  const verticalPercent = hasCustomVertical ? "0%" : position === Position.Bottom ? "50%" : "-50%";
-  const horizontalPercent = hasCustomHorizontal ? "0%" : position === Position.Right ? "50%" : "-50%";
+  const verticalPercent = hasCustomVertical ? '0%' : position === Position.Bottom ? '50%' : '-50%';
+  const horizontalPercent = hasCustomHorizontal
+    ? '0%'
+    : position === Position.Right
+      ? '50%'
+      : '-50%';
 
   return `translate(${horizontalPercent}, ${verticalPercent})`;
 };

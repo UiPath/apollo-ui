@@ -1,4 +1,4 @@
-import { BaseIcon } from "./BaseIcon";
+import { BaseIcon } from './BaseIcon';
 
 type AddDataColumnIconProps = {
   width?: number;
@@ -7,9 +7,20 @@ type AddDataColumnIconProps = {
   className?: string;
 };
 
-export const AddDataColumnIcon = ({ width = 24, height = 24, color = "#526069", className }: AddDataColumnIconProps) => {
+export const AddDataColumnIcon = ({
+  width = 24,
+  height = 24,
+  color = '#526069',
+  className,
+}: AddDataColumnIconProps) => {
   return (
-    <BaseIcon width={width} height={height} viewBox="0 0 24 24" className={className} testId="add-data-column-icon">
+    <BaseIcon
+      width={width}
+      height={height}
+      viewBox="0 0 24 24"
+      className={className}
+      testId="add-data-column-icon"
+    >
       <path
         fillRule="evenodd"
         clipRule="evenodd"

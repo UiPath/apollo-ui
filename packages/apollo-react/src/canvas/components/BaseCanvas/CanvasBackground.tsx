@@ -1,5 +1,5 @@
-import { Background, type BackgroundVariant } from "@uipath/uix/xyflow/react";
-import { BASE_CANVAS_DEFAULTS } from "./BaseCanvas.constants";
+import { Background, type BackgroundVariant } from '@uipath/uix/xyflow/react';
+import { BASE_CANVAS_DEFAULTS } from './BaseCanvas.constants';
 
 interface CanvasBackgroundProps {
   color?: string;
@@ -16,5 +16,14 @@ export const CanvasBackground: React.FC<CanvasBackgroundProps> = ({
   gap = BASE_CANVAS_DEFAULTS.background.gap,
   size = BASE_CANVAS_DEFAULTS.background.size,
 }) => {
-  return <Background color={color} bgColor={bgColor} variant={variant} gap={gap} size={size} offset={gap + 1} />;
+  return (
+    <Background
+      color={color}
+      bgColor={bgColor}
+      variant={variant}
+      gap={gap}
+      size={size}
+      offset={gap + 1}
+    />
+  );
 };

@@ -1,16 +1,6 @@
-import {
-  afterEach,
-  beforeEach,
-  describe,
-  expect,
-  it,
-  vi,
-} from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import {
-  act,
-  renderHook,
-} from '@testing-library/react';
+import { act, renderHook } from '@testing-library/react';
 
 import { useScheduledCallback } from './use-scheduled-callback';
 
@@ -63,11 +53,10 @@ describe('useScheduledCallback', () => {
   it('should use the latest callback when executed', () => {
     const callback1 = vi.fn();
     const callback2 = vi.fn();
-    
-    const { result, rerender } = renderHook(
-      ({ cb }) => useScheduledCallback(cb),
-      { initialProps: { cb: callback1 } }
-    );
+
+    const { result, rerender } = renderHook(({ cb }) => useScheduledCallback(cb), {
+      initialProps: { cb: callback1 },
+    });
 
     // Schedule with first callback
     act(() => {
@@ -89,7 +78,7 @@ describe('useScheduledCallback', () => {
   it('should cleanup on unmount', () => {
     const callback = vi.fn();
     const cancelAnimationFrameSpy = vi.spyOn(window, 'cancelAnimationFrame');
-    
+
     const { result, unmount } = renderHook(() => useScheduledCallback(callback));
 
     // Schedule a callback
@@ -113,10 +102,9 @@ describe('useScheduledCallback', () => {
 
   it('should return a stable function reference', () => {
     const callback = vi.fn();
-    const { result, rerender } = renderHook(
-      ({ cb }) => useScheduledCallback(cb),
-      { initialProps: { cb: callback } }
-    );
+    const { result, rerender } = renderHook(({ cb }) => useScheduledCallback(cb), {
+      initialProps: { cb: callback },
+    });
 
     const firstRef = result.current;
 
@@ -159,7 +147,7 @@ describe('useScheduledCallback', () => {
     const errorCallback = vi.fn(() => {
       throw new Error('Test error');
     });
-    
+
     const { result } = renderHook(() => useScheduledCallback(errorCallback));
 
     act(() => {
@@ -207,7 +195,7 @@ describe('useScheduledCallback', () => {
     const callback = vi.fn(() => {
       counter += 1;
     });
-    
+
     const { result } = renderHook(() => useScheduledCallback(callback));
 
     act(() => {
@@ -232,4 +220,3 @@ describe('useScheduledCallback', () => {
     expect(() => unmount()).not.toThrow();
   });
 });
-

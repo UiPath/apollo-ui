@@ -14,56 +14,54 @@ import { AutopilotChatMode } from '../../service';
 import { AutopilotChatHeaderActions } from './header-actions';
 
 const StyledHeader = styled('div')<{ hideSeparator?: boolean }>(({ hideSeparator }) => ({
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    ...(!hideSeparator && {
-        margin: `0 -${token.Spacing.SpacingBase} -${token.Spacing.SpacingBase}`,
-        paddingLeft: token.Spacing.SpacingBase,
-        paddingBottom: token.Spacing.SpacingMicro,
-        paddingRight: token.Spacing.SpacingBase,
-        borderBottom: '1px solid var(--color-border-de-emp)',
-    }),
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  ...(!hideSeparator && {
+    margin: `0 -${token.Spacing.SpacingBase} -${token.Spacing.SpacingBase}`,
+    paddingLeft: token.Spacing.SpacingBase,
+    paddingBottom: token.Spacing.SpacingMicro,
+    paddingRight: token.Spacing.SpacingBase,
+    borderBottom: '1px solid var(--color-border-de-emp)',
+  }),
 }));
 
 const StyledLogo = styled('div')(() => ({
-    display: 'flex',
-    alignItems: 'center',
-    gap: token.Spacing.SpacingXs,
+  display: 'flex',
+  alignItems: 'center',
+  gap: token.Spacing.SpacingXs,
 }));
 
 function AutopilotChatHeaderComponent() {
-    const { _ } = useLingui();
-    const {
-        disabledFeatures,
-        overrideLabels,
-        chatMode,
-    } = useChatState();
+  const { _ } = useLingui();
+  const { disabledFeatures, overrideLabels, chatMode } = useChatState();
 
-    return (
-        <StyledHeader hideSeparator={disabledFeatures.headerSeparator}>
-            <StyledLogo>
-                {chatMode === AutopilotChatMode.FullScreen ? (
-                    <AutopilotLogo />
-                ) : null}
+  return (
+    <StyledHeader hideSeparator={disabledFeatures.headerSeparator}>
+      <StyledLogo>
+        {chatMode === AutopilotChatMode.FullScreen ? <AutopilotLogo /> : null}
 
-                <ApTypography
-                    variant={FontVariantToken.fontBrandL}
-                    color={'var(--color-foreground)'}
-                    role='heading'
-                    aria-level={1}
-                >
-                    {overrideLabels.title ?? _(msg({ id: 'autopilot-chat.header.title', message: `Autopilot` }))}
-                </ApTypography>
+        <ApTypography
+          variant={FontVariantToken.fontBrandL}
+          color={'var(--color-foreground)'}
+          role="heading"
+          aria-level={1}
+        >
+          {overrideLabels.title ??
+            _(msg({ id: 'autopilot-chat.header.title', message: `Autopilot` }))}
+        </ApTypography>
 
-                {!disabledFeatures.preview && (
-                    <ApBadge label={_(msg({ id: 'autopilot-chat.header.preview', message: `Preview` }))} status={StatusTypes.INFO} />
-                )}
-            </StyledLogo>
+        {!disabledFeatures.preview && (
+          <ApBadge
+            label={_(msg({ id: 'autopilot-chat.header.preview', message: `Preview` }))}
+            status={StatusTypes.INFO}
+          />
+        )}
+      </StyledLogo>
 
-            <AutopilotChatHeaderActions />
-        </StyledHeader>
-    );
+      <AutopilotChatHeaderActions />
+    </StyledHeader>
+  );
 }
 
 export const AutopilotChatHeader = React.memo(AutopilotChatHeaderComponent);

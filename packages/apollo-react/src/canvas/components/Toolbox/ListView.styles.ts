@@ -1,6 +1,6 @@
-import styled from "@emotion/styled";
-import { motion } from "motion/react";
-import { List } from "react-window";
+import styled from '@emotion/styled';
+import { motion } from 'motion/react';
+import { List } from 'react-window';
 
 export const SectionHeader = styled.div`
   display: flex;
@@ -40,7 +40,7 @@ export const IconContainer = styled.div<{ bgColor?: string }>`
   display: flex;
   align-items: center;
   justify-content: center;
-  background: ${(props) => props.bgColor || "var(--uix-canvas-background)"};
+  background: ${(props) => props.bgColor || 'var(--uix-canvas-background)'};
   border-radius: 8px;
   color: var(--uix-canvas-foreground-emp);
   opacity: 0.9;

@@ -1,19 +1,26 @@
-import { memo, useMemo, useState, useCallback, useRef, useEffect } from "react";
-import type { Node, NodeProps, ReactFlowState } from "@uipath/uix/xyflow/react";
-import { Position, useUpdateNodeInternals, useStore } from "@uipath/uix/xyflow/react";
-import type { NodeStatusContext } from "./ExecutionStatusContext";
-import { useExecutionState } from "./ExecutionStatusContext";
-import { NodeToolbar } from "../NodeToolbar";
-import { BaseContainer, BaseIconWrapper, BaseBadgeSlot, BaseTextContainer, BaseHeader, BaseSubHeader } from "./BaseNode.styles";
-import type { BaseNodeData } from "./BaseNode.types";
-import { useNodeTypeRegistry } from "./useNodeTypeRegistry";
-import { cx } from "@uipath/uix/core";
-import { ApIcon, ApTooltip } from "@uipath/portal-shell-react";
-import { useBaseCanvasMode } from "../BaseCanvas/BaseCanvasModeProvider";
-import { useSelectionState } from "../BaseCanvas/SelectionStateContext";
-import { SmartHandleProvider, SmartHandle } from "../ButtonHandle/SmartHandle";
-import { useButtonHandles } from "../ButtonHandle/useButtonHandles";
-import { useConnectedHandles } from "../BaseCanvas/ConnectedHandlesContext";
+import { memo, useMemo, useState, useCallback, useRef, useEffect } from 'react';
+import type { Node, NodeProps, ReactFlowState } from '@uipath/uix/xyflow/react';
+import { Position, useUpdateNodeInternals, useStore } from '@uipath/uix/xyflow/react';
+import type { NodeStatusContext } from './ExecutionStatusContext';
+import { useExecutionState } from './ExecutionStatusContext';
+import { NodeToolbar } from '../NodeToolbar';
+import {
+  BaseContainer,
+  BaseIconWrapper,
+  BaseBadgeSlot,
+  BaseTextContainer,
+  BaseHeader,
+  BaseSubHeader,
+} from './BaseNode.styles';
+import type { BaseNodeData } from './BaseNode.types';
+import { useNodeTypeRegistry } from './useNodeTypeRegistry';
+import { cx } from '@uipath/uix/core';
+import { ApIcon, ApTooltip } from '@uipath/portal-shell-react';
+import { useBaseCanvasMode } from '../BaseCanvas/BaseCanvasModeProvider';
+import { useSelectionState } from '../BaseCanvas/SelectionStateContext';
+import { SmartHandleProvider, SmartHandle } from '../ButtonHandle/SmartHandle';
+import { useButtonHandles } from '../ButtonHandle/useButtonHandles';
+import { useConnectedHandles } from '../BaseCanvas/ConnectedHandlesContext';
 
 const selectIsConnecting = (state: ReactFlowState) => !!state.connectionClickStartHandle;
 
@@ -50,16 +57,29 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
     [id, executionState, isConnecting, selected, dragging, mode]
   );
 
-  const executionStatus = typeof executionState === "string" ? executionState : executionState?.status;
+  const executionStatus =
+    typeof executionState === 'string' ? executionState : executionState?.status;
 
-  const icon = useMemo(() => nodeDefinition?.getIcon?.(data, statusContext) ?? <></>, [nodeDefinition, data, statusContext]);
-  const display = useMemo(() => nodeDefinition?.getDisplay?.(data, statusContext) ?? {}, [nodeDefinition, data, statusContext]);
-  const adornments = useMemo(() => nodeDefinition?.getAdornments?.(data, statusContext) ?? {}, [nodeDefinition, data, statusContext]);
+  const icon = useMemo(
+    () => nodeDefinition?.getIcon?.(data, statusContext) ?? <></>,
+    [nodeDefinition, data, statusContext]
+  );
+  const display = useMemo(
+    () => nodeDefinition?.getDisplay?.(data, statusContext) ?? {},
+    [nodeDefinition, data, statusContext]
+  );
+  const adornments = useMemo(
+    () => nodeDefinition?.getAdornments?.(data, statusContext) ?? {},
+    [nodeDefinition, data, statusContext]
+  );
   const handleConfigurations = useMemo(
     () => nodeDefinition?.getHandleConfigurations?.(data, statusContext) ?? [],
     [nodeDefinition, data, statusContext]
   );
-  const toolbarConfig = useMemo(() => nodeDefinition?.getToolbar?.(data, statusContext), [nodeDefinition, data, statusContext]);
+  const toolbarConfig = useMemo(
+    () => nodeDefinition?.getToolbar?.(data, statusContext),
+    [nodeDefinition, data, statusContext]
+  );
 
   // Force React Flow to recalculate handle positions when dimensions change
   // Use refs to track previous dimensions and avoid unnecessary calls
@@ -71,7 +91,11 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
       const prevHeight = prevDimensionsRef.current.height;
 
       // Only update if dimensions actually changed (not on initial mount)
-      if (prevWidth !== undefined && prevHeight !== undefined && (prevWidth !== width || prevHeight !== height)) {
+      if (
+        prevWidth !== undefined &&
+        prevHeight !== undefined &&
+        (prevWidth !== width || prevHeight !== height)
+      ) {
         // Use requestAnimationFrame to batch DOM reads and avoid forced reflow
         requestAnimationFrame(() => {
           updateNodeInternals(id);
@@ -86,24 +110,33 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
   const displaySubLabel = display.subLabel;
   const displayLabelTooltip = display.labelTooltip;
   const displayLabelBackgroundColor = display.labelBackgroundColor;
-  const displayShape = display.shape ?? "square";
+  const displayShape = display.shape ?? 'square';
   const displayBackground = display.background;
   const displayColor = display.color;
-  const displayIconBackground = executionStatus === "Failed" ? "var(--uix-canvas-background)" : display.iconBackground;
+  const displayIconBackground =
+    executionStatus === 'Failed' ? 'var(--uix-canvas-background)' : display.iconBackground;
   const displayCenterAdornment = display.centerAdornmentComponent;
 
   const interactionState = useMemo(() => {
-    if (dragging) return "drag";
-    if (selected) return "selected";
-    if (isFocused) return "focus";
-    if (isHovered) return "hover";
-    return "default";
+    if (dragging) return 'drag';
+    if (selected) return 'selected';
+    if (isFocused) return 'focus';
+    if (isHovered) return 'hover';
+    return 'default';
   }, [dragging, selected, isFocused, isHovered]);
 
-  const shouldShowHandles = useMemo(() => isConnecting || selected || isHovered, [isConnecting, selected, isHovered]);
+  const shouldShowHandles = useMemo(
+    () => isConnecting || selected || isHovered,
+    [isConnecting, selected, isHovered]
+  );
 
   const hasVisibleBottomHandles = useMemo(() => {
-    if (!handleConfigurations || !Array.isArray(handleConfigurations) || !selected || displayShape === "circle") {
+    if (
+      !handleConfigurations ||
+      !Array.isArray(handleConfigurations) ||
+      !selected ||
+      displayShape === 'circle'
+    ) {
       return false;
     }
     return handleConfigurations.some(
@@ -111,7 +144,8 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
         config.position === Position.Bottom &&
         config.handles.length > 0 &&
         config.visible !== false &&
-        (config.handles.some((h) => h.type === "source") || config.handles.some((h) => h.showButton))
+        (config.handles.some((h) => h.type === 'source') ||
+          config.handles.some((h) => h.showButton))
     );
   }, [handleConfigurations, selected, displayShape]);
 
@@ -128,7 +162,7 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
     (event: {
       handleId: string;
       nodeId: string;
-      handleType: "artifact" | "input" | "output";
+      handleType: 'artifact' | 'input' | 'output';
       position: Position;
       originalEvent: React.MouseEvent;
     }) => {
@@ -142,7 +176,9 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
       }
 
       // Then, check if there's an instance-specific handler in the handle configuration
-      const handleConfig = handleConfigurations?.flatMap((config) => config.handles)?.find((h) => h.id === event.handleId);
+      const handleConfig = handleConfigurations
+        ?.flatMap((config) => config.handles)
+        ?.find((h) => h.id === event.handleId);
 
       if (handleConfig?.onAction) {
         handleConfig.onAction(event);
@@ -162,7 +198,7 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
     handleAction,
     nodeId: id,
     selected: selected ?? false,
-    showAddButton: mode === "design" && !multipleNodesSelected,
+    showAddButton: mode === 'design' && !multipleNodesSelected,
     showNotches,
     nodeWidth: width,
     nodeHeight: height,
@@ -183,7 +219,8 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
         const currentIndex = handleIndex++;
 
         // Determine handle type for SmartHandle
-        const handleVisualType = handle.handleType ?? (handle.type === "source" ? "output" : "input");
+        const handleVisualType =
+          handle.handleType ?? (handle.type === 'source' ? 'output' : 'input');
 
         // Check if this handle has a connection - O(1) lookup from context
         const hasConnection = connectedHandleIds.has(handle.id);
@@ -193,7 +230,8 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
         const isVisible = hasConnection || (shouldShowHandles && configVisible);
 
         // Determine if add button should be shown (hide when multiple nodes selected)
-        const shouldShowButton = mode === "design" && selected && handle.showButton && !multipleNodesSelected;
+        const shouldShowButton =
+          mode === 'design' && selected && handle.showButton && !multipleNodesSelected;
 
         return (
           <SmartHandle
@@ -242,14 +280,23 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
     return (
       <div
         ref={containerRef}
-        style={{ position: "relative" }}
+        style={{ position: 'relative' }}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
         onFocus={handleFocus}
         onBlur={handleBlur}
       >
-        <BaseContainer selected={selected} shape="square" className={interactionState} interactionState={interactionState}>
-          <BaseIconWrapper backgroundColor="var(--uix-canvas-error-background)" shape="square" nodeHeight={height}>
+        <BaseContainer
+          selected={selected}
+          shape="square"
+          className={interactionState}
+          interactionState={interactionState}
+        >
+          <BaseIconWrapper
+            backgroundColor="var(--uix-canvas-error-background)"
+            shape="square"
+            nodeHeight={height}
+          >
             <ApIcon color="var(--uix-canvas-error-icon)" name="error" size="32px" />
           </BaseIconWrapper>
 
@@ -266,7 +313,7 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
   const nodeContent = (
     <div
       ref={containerRef}
-      style={{ position: "relative" }}
+      style={{ position: 'relative' }}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       onFocus={handleFocus}
@@ -283,7 +330,12 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
         backgroundColor={displayBackground}
       >
         {icon && (
-          <BaseIconWrapper shape={displayShape} color={displayColor} backgroundColor={displayIconBackground} nodeHeight={height}>
+          <BaseIconWrapper
+            shape={displayShape}
+            color={displayColor}
+            backgroundColor={displayIconBackground}
+            nodeHeight={height}
+          >
             {icon}
           </BaseIconWrapper>
         )}
@@ -331,7 +383,14 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
         )}
       </BaseContainer>
       {handleElements}
-      {toolbarConfig && <NodeToolbar nodeId={id} config={toolbarConfig} expanded={selected} hidden={dragging || multipleNodesSelected} />}
+      {toolbarConfig && (
+        <NodeToolbar
+          nodeId={id}
+          config={toolbarConfig}
+          expanded={selected}
+          hidden={dragging || multipleNodesSelected}
+        />
+      )}
     </div>
   );
 

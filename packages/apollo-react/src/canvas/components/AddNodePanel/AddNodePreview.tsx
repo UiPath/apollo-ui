@@ -1,16 +1,18 @@
-import React from "react";
-import type { NodeProps } from "@uipath/uix/xyflow/react";
-import { Handle, Position } from "@uipath/uix/xyflow/react";
-import styled from "@emotion/styled";
-import { ApIcon } from "@uipath/portal-shell-react";
-import { DEFAULT_NODE_SIZE } from "../../constants";
+import React from 'react';
+import type { NodeProps } from '@uipath/uix/xyflow/react';
+import { Handle, Position } from '@uipath/uix/xyflow/react';
+import styled from '@emotion/styled';
+import { ApIcon } from '@uipath/portal-shell-react';
+import { DEFAULT_NODE_SIZE } from '../../constants';
 
 const PreviewContainer = styled.div<{ selected?: boolean; width?: number; height?: number }>`
   width: ${(props) => props.width ?? DEFAULT_NODE_SIZE}px;
   height: ${(props) => props.height ?? DEFAULT_NODE_SIZE}px;
   border-radius: 16px;
   background: var(--uix-canvas-background-secondary);
-  border: 2px dashed ${(props) => (props.selected ? "var(--uix-canvas-selection-indicator)" : "var(--uix-canvas-border-de-emp)")};
+  border: 2px dashed
+    ${(props) =>
+      props.selected ? 'var(--uix-canvas-selection-indicator)' : 'var(--uix-canvas-border-de-emp)'};
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -52,8 +54,8 @@ export const AddNodePreview: React.FC<NodeProps> = ({ selected, data, width, hei
         position={inputPosition}
         id="input"
         style={{
-          background: "transparent",
-          border: "none",
+          background: 'transparent',
+          border: 'none',
           width: 8,
           height: 8,
         }}
@@ -66,8 +68,8 @@ export const AddNodePreview: React.FC<NodeProps> = ({ selected, data, width, hei
           position={outputPosition}
           id="output"
           style={{
-            background: "transparent",
-            border: "none",
+            background: 'transparent',
+            border: 'none',
           }}
           isConnectable={false}
         />

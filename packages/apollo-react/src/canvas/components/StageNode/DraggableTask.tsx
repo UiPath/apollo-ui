@@ -1,10 +1,10 @@
-import { useSortable } from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
-import { ApBadge, ApIcon, ApTooltip, ApTypography } from "@uipath/portal-shell-react";
-import { Column, FontVariantToken, Row } from "@uipath/uix/core";
-import { memo, useCallback, useMemo } from "react";
-import { ExecutionStatusIcon } from "../ExecutionStatusIcon";
-import type { DraggableTaskProps, TaskContentProps } from "./DraggableTask.types";
+import { useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import { ApBadge, ApIcon, ApTooltip, ApTypography } from '@uipath/portal-shell-react';
+import { Column, FontVariantToken, Row } from '@uipath/uix/core';
+import { memo, useCallback, useMemo } from 'react';
+import { ExecutionStatusIcon } from '../ExecutionStatusIcon';
+import type { DraggableTaskProps, TaskContentProps } from './DraggableTask.types';
 import {
   INDENTATION_WIDTH,
   StageTask,
@@ -14,9 +14,9 @@ import {
   StageTaskRemoveButton,
   StageTaskRetryDuration,
   StageTaskWrapper,
-} from "./StageNode.styles";
-import type { StageTaskExecution } from "./StageNode.types";
-import { TaskContextMenu } from "./TaskContextMenu";
+} from './StageNode.styles';
+import type { StageTaskExecution } from './StageNode.types';
+import { TaskContextMenu } from './TaskContextMenu';
 
 const ProcessNodeIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
@@ -40,14 +40,19 @@ const generateBadgeText = (taskExecution: StageTaskExecution) => {
 export const TaskContent = memo(({ task, taskExecution, isDragging }: TaskContentProps) => (
   <>
     <StageTaskIcon>{task.icon ?? <ProcessNodeIcon />}</StageTaskIcon>
-    <Column flex={1} style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+    <Column flex={1} style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
       <Row align="center" justify="space-between">
         {/* disable tooltip when dragging to avoid tooltip flickering */}
-        <ApTooltip content={task.label} placement="top" smartTooltip {...(isDragging && { isOpen: false })}>
+        <ApTooltip
+          content={task.label}
+          placement="top"
+          smartTooltip
+          {...(isDragging && { isOpen: false })}
+        >
           <ApTypography
             variant={FontVariantToken.fontSizeM}
             color="var(--uix-canvas-foreground)"
-            style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
+            style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
           >
             {task.label}
           </ApTypography>
@@ -62,14 +67,17 @@ export const TaskContent = memo(({ task, taskExecution, isDragging }: TaskConten
           ))}
       </Row>
       <Row align="center" justify="space-between">
-        <Row gap={"2px"}>
+        <Row gap={'2px'}>
           {taskExecution?.duration && (
-            <ApTypography variant={FontVariantToken.fontSizeS} color="var(--uix-canvas-foreground-de-emp)">
+            <ApTypography
+              variant={FontVariantToken.fontSizeS}
+              color="var(--uix-canvas-foreground-de-emp)"
+            >
               {taskExecution.duration}
             </ApTypography>
           )}
           {taskExecution?.retryDuration && (
-            <StageTaskRetryDuration status={taskExecution.badgeStatus ?? "warning"}>
+            <StageTaskRetryDuration status={taskExecution.badgeStatus ?? 'warning'}>
               <ApTypography variant={FontVariantToken.fontSizeS} color="inherit">
                 {`(+${taskExecution.retryDuration})`}
               </ApTypography>
@@ -77,7 +85,11 @@ export const TaskContent = memo(({ task, taskExecution, isDragging }: TaskConten
           )}
         </Row>
         {taskExecution?.badge && (
-          <ApBadge size="small" status={taskExecution.badgeStatus ?? "warning"} label={generateBadgeText(taskExecution)} />
+          <ApBadge
+            size="small"
+            status={taskExecution.badgeStatus ?? 'warning'}
+            label={generateBadgeText(taskExecution)}
+          />
         )}
       </Row>
     </Column>
@@ -106,7 +118,10 @@ const DraggableTaskComponent = ({
     [onTaskClick, task.id]
   );
 
-  const { attributes, listeners, setNodeRef, transition, transform, isDragging } = useSortable({ id: task.id, disabled: isDragDisabled });
+  const { attributes, listeners, setNodeRef, transition, transform, isDragging } = useSortable({
+    id: task.id,
+    disabled: isDragDisabled,
+  });
 
   const style = useMemo<React.CSSProperties>(() => {
     const scaledTransform = transform
@@ -150,9 +165,17 @@ const DraggableTaskComponent = ({
       {...(onContextMenu && { onContextMenu })}
     >
       <TaskContent task={task} taskExecution={taskExecution} />
-      <TaskContextMenu isVisible={isContextMenuVisible} menuItems={contextMenuItems} refTask={contextMenuAnchor} />
+      <TaskContextMenu
+        isVisible={isContextMenuVisible}
+        menuItems={contextMenuItems}
+        refTask={contextMenuAnchor}
+      />
       {onRemove && (
-        <StageTaskRemoveButton className="task-remove-button" data-testid={`stage-task-remove-${task.id}`} onClick={onRemove}>
+        <StageTaskRemoveButton
+          className="task-remove-button"
+          data-testid={`stage-task-remove-${task.id}`}
+          onClick={onRemove}
+        >
           <ApIcon name="close" size="16px" />
         </StageTaskRemoveButton>
       )}
@@ -164,7 +187,13 @@ const DraggableTaskComponent = ({
   }
 
   return (
-    <StageTaskWrapper ref={setNodeRef} style={style} isParallel={isParallel} {...attributes} {...listeners}>
+    <StageTaskWrapper
+      ref={setNodeRef}
+      style={style}
+      isParallel={isParallel}
+      {...attributes}
+      {...listeners}
+    >
       {taskElement}
     </StageTaskWrapper>
   );

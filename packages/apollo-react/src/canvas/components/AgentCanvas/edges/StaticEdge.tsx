@@ -1,9 +1,14 @@
-import { BaseEdge, type EdgeProps, getSmoothStepPath, type Position } from "@uipath/uix/xyflow/react";
+import {
+  BaseEdge,
+  type EdgeProps,
+  getSmoothStepPath,
+  type Position,
+} from '@uipath/uix/xyflow/react';
 
-import type { AgentFlowDefaultEdge, SuggestionType } from "../../../types";
-import { EDGE_STYLES } from "../../../components/BaseCanvas/BaseCanvas.constants";
-import { useAgentFlowStore } from "../store/agent-flow-store";
-import { useMemo } from "react";
+import type { AgentFlowDefaultEdge, SuggestionType } from '../../../types';
+import { EDGE_STYLES } from '../../../components/BaseCanvas/BaseCanvas.constants';
+import { useAgentFlowStore } from '../store/agent-flow-store';
+import { useMemo } from 'react';
 
 type StaticEdgeProps = EdgeProps &
   AgentFlowDefaultEdge & {
@@ -43,21 +48,32 @@ export const StaticEdge = ({
   const sourceNode = useMemo(() => nodes.find((node) => node.id === source), [nodes, source]);
   const targetNode = useMemo(() => nodes.find((node) => node.id === target), [nodes, target]);
   const isConnectedToSelectedResource = useMemo(() => {
-    return (sourceNode?.type === "resource" && sourceNode?.selected) || (targetNode?.type === "resource" && targetNode?.selected);
+    return (
+      (sourceNode?.type === 'resource' && sourceNode?.selected) ||
+      (targetNode?.type === 'resource' && targetNode?.selected)
+    );
   }, [sourceNode, targetNode]);
 
   const strokeColor = useMemo(() => {
     if (isSuggestion) {
-      if (suggestionType === "add") return "var(--uix-canvas-success-icon)";
-      if (suggestionType === "update") return "var(--uix-canvas-warning-icon)";
-      if (suggestionType === "delete") return "var(--uix-canvas-error-icon)";
+      if (suggestionType === 'add') return 'var(--uix-canvas-success-icon)';
+      if (suggestionType === 'update') return 'var(--uix-canvas-warning-icon)';
+      if (suggestionType === 'delete') return 'var(--uix-canvas-error-icon)';
     }
-    if (hasError) return "var(--uix-canvas-error-icon)";
-    if (isCurrentBreakpoint) return "var(--uix-canvas-warning-icon)";
-    if (hasSuccess) return "var(--uix-canvas-success-icon)";
-    if (hasRunning) return "var(--uix-canvas-primary)";
-    return isConnectedToSelectedResource ? "var(--uix-canvas-primary)" : "var(--uix-canvas-border)";
-  }, [hasError, isCurrentBreakpoint, hasSuccess, hasRunning, isConnectedToSelectedResource, isSuggestion, suggestionType]);
+    if (hasError) return 'var(--uix-canvas-error-icon)';
+    if (isCurrentBreakpoint) return 'var(--uix-canvas-warning-icon)';
+    if (hasSuccess) return 'var(--uix-canvas-success-icon)';
+    if (hasRunning) return 'var(--uix-canvas-primary)';
+    return isConnectedToSelectedResource ? 'var(--uix-canvas-primary)' : 'var(--uix-canvas-border)';
+  }, [
+    hasError,
+    isCurrentBreakpoint,
+    hasSuccess,
+    hasRunning,
+    isConnectedToSelectedResource,
+    isSuggestion,
+    suggestionType,
+  ]);
 
   const strokeWidth = useMemo(() => {
     return isConnectedToSelectedResource ? EDGE_STYLES.selectedStrokeWidth : 2;
@@ -81,7 +97,7 @@ export const StaticEdge = ({
       style={{
         stroke: strokeColor,
         strokeWidth,
-        strokeDasharray: "5 5",
+        strokeDasharray: '5 5',
       }}
     />
   );

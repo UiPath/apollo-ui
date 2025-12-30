@@ -1,4 +1,4 @@
-import type { ReactFlowInstance, Viewport, Node } from "@uipath/uix/xyflow/react";
+import type { ReactFlowInstance, Viewport, Node } from '@uipath/uix/xyflow/react';
 import {
   animateViewport,
   animateDrillIn,
@@ -8,12 +8,12 @@ import {
   type NodeBounds,
   TRANSITION_CONFIG,
   ANIMATION_CONSTANTS,
-} from "../utils/transitions";
+} from '../utils/transitions';
 
 /**
  * Represents different types of viewport transitions
  */
-export type TransitionType = "drill-in" | "drill-out" | "viewport" | "none";
+export type TransitionType = 'drill-in' | 'drill-out' | 'viewport' | 'none';
 
 /**
  * State of the viewport transition
@@ -36,7 +36,7 @@ class AnimatedViewportManager {
   private currentViewport: Viewport = { x: 0, y: 0, zoom: 1 };
   private transitionState: TransitionState = {
     isTransitioning: false,
-    type: "none",
+    type: 'none',
     startTime: 0,
     progress: 0,
   };
@@ -125,7 +125,9 @@ class AnimatedViewportManager {
     this.clearTransitionTimeout();
     this.transitionTimeoutId = window.setTimeout(() => {
       if (this.isTransitioning()) {
-        console.warn(`AnimatedViewportManager: Transition timeout after ${ANIMATION_CONSTANTS.TRANSITION_TIMEOUT}ms, forcing completion`);
+        console.warn(
+          `AnimatedViewportManager: Transition timeout after ${ANIMATION_CONSTANTS.TRANSITION_TIMEOUT}ms, forcing completion`
+        );
         this.completeTransition();
       }
     }, ANIMATION_CONSTANTS.TRANSITION_TIMEOUT);
@@ -141,7 +143,7 @@ class AnimatedViewportManager {
 
     this.updateTransitionState({
       isTransitioning: false,
-      type: "none",
+      type: 'none',
       progress: 1,
     });
 
@@ -163,14 +165,22 @@ class AnimatedViewportManager {
   /**
    * Smoothly animates to a target viewport
    */
-  async animateToViewport(targetViewport: Viewport, duration?: number, type: TransitionType = "viewport"): Promise<void> {
+  async animateToViewport(
+    targetViewport: Viewport,
+    duration?: number,
+    type: TransitionType = 'viewport'
+  ): Promise<void> {
     if (!this.reactFlowInstance) {
-      console.warn("AnimatedViewportManager: No ReactFlow instance available for viewport animation");
+      console.warn(
+        'AnimatedViewportManager: No ReactFlow instance available for viewport animation'
+      );
       return;
     }
 
     if (this.isTransitioning()) {
-      console.warn("AnimatedViewportManager: Transition already in progress, skipping viewport animation");
+      console.warn(
+        'AnimatedViewportManager: Transition already in progress, skipping viewport animation'
+      );
       return;
     }
 
@@ -199,7 +209,7 @@ class AnimatedViewportManager {
         }
       );
     } catch (error) {
-      console.error("AnimatedViewportManager: Animation failed", error);
+      console.error('AnimatedViewportManager: Animation failed', error);
       this.completeTransition();
     }
   }
@@ -210,17 +220,17 @@ class AnimatedViewportManager {
    */
   async drillIntoNode(node: Node): Promise<void> {
     if (!this.reactFlowInstance) {
-      console.warn("AnimatedViewportManager: No ReactFlow instance available for drill-in");
+      console.warn('AnimatedViewportManager: No ReactFlow instance available for drill-in');
       return;
     }
 
     if (this.isTransitioning()) {
-      console.warn("AnimatedViewportManager: Transition already in progress, skipping drill-in");
+      console.warn('AnimatedViewportManager: Transition already in progress, skipping drill-in');
       return;
     }
 
     // Get canvas container size from ReactFlow DOM element
-    const canvasElement = document.querySelector(".react-flow") as HTMLElement;
+    const canvasElement = document.querySelector('.react-flow') as HTMLElement;
     const canvasSize = getCanvasSize(canvasElement);
 
     // Calculate node bounds
@@ -232,11 +242,15 @@ class AnimatedViewportManager {
     };
 
     // Calculate the viewport that focuses on the node with padding
-    const nodeFocusViewport = calculateNodeFocusViewport(nodeBounds, canvasSize, ANIMATION_CONSTANTS.NODE_FOCUS_PADDING);
+    const nodeFocusViewport = calculateNodeFocusViewport(
+      nodeBounds,
+      canvasSize,
+      ANIMATION_CONSTANTS.NODE_FOCUS_PADDING
+    );
 
     const fromViewport = this.getCurrentViewport();
 
-    this.startTransition("drill-in", fromViewport, nodeFocusViewport);
+    this.startTransition('drill-in', fromViewport, nodeFocusViewport);
 
     try {
       // Animate zoom to node focus
@@ -254,7 +268,10 @@ class AnimatedViewportManager {
       this.currentViewport = nodeFocusViewport;
       this.completeTransition();
     } catch (error) {
-      console.error(`AnimatedViewportManager: Drill-in animation failed for node ${node.id}:`, error);
+      console.error(
+        `AnimatedViewportManager: Drill-in animation failed for node ${node.id}:`,
+        error
+      );
       this.completeTransition();
     }
   }
@@ -264,17 +281,17 @@ class AnimatedViewportManager {
    */
   async drillOutToParent(parentViewport: Viewport): Promise<void> {
     if (!this.reactFlowInstance) {
-      console.warn("AnimatedViewportManager: No ReactFlow instance available for drill-out");
+      console.warn('AnimatedViewportManager: No ReactFlow instance available for drill-out');
       return;
     }
 
     if (this.isTransitioning()) {
-      console.warn("AnimatedViewportManager: Transition already in progress, skipping drill-out");
+      console.warn('AnimatedViewportManager: Transition already in progress, skipping drill-out');
       return;
     }
 
     const fromViewport = this.getCurrentViewport();
-    this.startTransition("drill-out", fromViewport, parentViewport);
+    this.startTransition('drill-out', fromViewport, parentViewport);
 
     try {
       // Clean drill-out animation
@@ -291,7 +308,7 @@ class AnimatedViewportManager {
       this.currentViewport = parentViewport;
       this.completeTransition();
     } catch (error) {
-      console.error("AnimatedViewportManager: Drill-out animation failed", error);
+      console.error('AnimatedViewportManager: Drill-out animation failed', error);
       this.completeTransition();
     }
   }
@@ -328,7 +345,7 @@ class AnimatedViewportManager {
    */
   cancelTransition() {
     if (this.isTransitioning()) {
-      console.warn("AnimatedViewportManager: Cancelling active transition");
+      console.warn('AnimatedViewportManager: Cancelling active transition');
       this.completeTransition();
     }
   }

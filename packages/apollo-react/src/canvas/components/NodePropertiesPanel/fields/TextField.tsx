@@ -1,7 +1,15 @@
-import { memo, useCallback, useState, useEffect, useRef } from "react";
-import { Column } from "@uipath/uix/core";
-import { TextInput, TextArea, FieldLabel, FieldHelpText, FieldError, InputWrapper, InputSuffix } from "../NodePropertiesPanel.styles";
-import type { ConfigField } from "../NodePropertiesPanel.types";
+import { memo, useCallback, useState, useEffect, useRef } from 'react';
+import { Column } from '@uipath/uix/core';
+import {
+  TextInput,
+  TextArea,
+  FieldLabel,
+  FieldHelpText,
+  FieldError,
+  InputWrapper,
+  InputSuffix,
+} from '../NodePropertiesPanel.styles';
+import type { ConfigField } from '../NodePropertiesPanel.types';
 
 interface TextFieldProps {
   field: ConfigField;
@@ -10,12 +18,17 @@ interface TextFieldProps {
   error?: string;
 }
 
-export const TextField = memo(function TextField({ field, value, onChange, error }: TextFieldProps) {
-  const [localValue, setLocalValue] = useState(value || "");
+export const TextField = memo(function TextField({
+  field,
+  value,
+  onChange,
+  error,
+}: TextFieldProps) {
+  const [localValue, setLocalValue] = useState(value || '');
   const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    setLocalValue(value || "");
+    setLocalValue(value || '');
   }, [value]);
 
   // Cleanup debounce timer on unmount or when debounce changes
@@ -55,7 +68,7 @@ export const TextField = memo(function TextField({ field, value, onChange, error
   return (
     <Column gap={4}>
       <FieldLabel>{field.label}</FieldLabel>
-      {field.type === "textarea" ? (
+      {field.type === 'textarea' ? (
         <TextArea
           className="nodrag"
           value={localValue}

@@ -1,6 +1,6 @@
-import styled from "@emotion/styled";
-import { css, keyframes } from "@emotion/react";
-import type { NodeShape } from "./BaseNode.types";
+import styled from '@emotion/styled';
+import { css, keyframes } from '@emotion/react';
+import type { NodeShape } from './BaseNode.types';
 
 const pulseAnimation = (cssVar: string) => keyframes`
   0% {
@@ -16,37 +16,37 @@ const pulseAnimation = (cssVar: string) => keyframes`
 
 const getExecutionStatusBorder = (executionStatus?: string) => {
   switch (executionStatus) {
-    case "NotExecuted":
-    case "INFO":
+    case 'NotExecuted':
+    case 'INFO':
       return css`
         border-color: var(--uix-canvas-border-de-emp);
       `;
-    case "InProgress": {
+    case 'InProgress': {
       return css`
         border-color: var(--uix-canvas-info-icon);
-        animation: ${pulseAnimation("--uix-canvas-info-icon")} 2s infinite;
+        animation: ${pulseAnimation('--uix-canvas-info-icon')} 2s infinite;
       `;
     }
-    case "Completed":
+    case 'Completed':
       return css`
         border-color: var(--uix-canvas-success-icon);
       `;
-    case "Paused":
-    case "WARNING": {
+    case 'Paused':
+    case 'WARNING': {
       return css`
         border-color: var(--uix-canvas-warning-icon);
-        animation: ${pulseAnimation("--uix-canvas-warning-icon")} 2s infinite;
+        animation: ${pulseAnimation('--uix-canvas-warning-icon')} 2s infinite;
       `;
     }
-    case "Cancelled":
-    case "Failed":
-    case "Terminated":
-    case "ERROR":
-    case "CRITICAL": {
+    case 'Cancelled':
+    case 'Failed':
+    case 'Terminated':
+    case 'ERROR':
+    case 'CRITICAL': {
       return css`
         border-color: var(--uix-canvas-error-icon);
         background: var(--uix-canvas-error-background);
-        animation: ${pulseAnimation("--uix-canvas-error-icon")} 2s infinite;
+        animation: ${pulseAnimation('--uix-canvas-error-icon')} 2s infinite;
       `;
     }
     default:
@@ -58,16 +58,16 @@ const getExecutionStatusBorder = (executionStatus?: string) => {
 
 const getInteractionStateBorder = (interactionState?: string) => {
   switch (interactionState) {
-    case "hover":
+    case 'hover':
       return css`
         outline: 4px solid var(--uix-canvas-secondary-focused);
       `;
-    case "disabled":
+    case 'disabled':
       return css`
         opacity: 0.5;
         cursor: not-allowed;
       `;
-    case "drag":
+    case 'drag':
       return css`
         cursor: grabbing;
         opacity: 0.8;
@@ -92,12 +92,12 @@ const getSuggestionTypeBorder = (suggestionType?: string) => {
 
 const getSuggestionTypeBorderColorVar = (suggestionType?: string) => {
   switch (suggestionType) {
-    case "add":
-      return "--uix-canvas-success-icon";
-    case "update":
-      return "--uix-canvas-warning-icon";
-    case "delete":
-      return "--uix-canvas-error-icon";
+    case 'add':
+      return '--uix-canvas-success-icon';
+    case 'update':
+      return '--uix-canvas-warning-icon';
+    case 'delete':
+      return '--uix-canvas-error-icon';
     default:
       return null;
   }
@@ -105,12 +105,12 @@ const getSuggestionTypeBorderColorVar = (suggestionType?: string) => {
 
 const getSuggestionTypeBackgroundColorVar = (suggestionType?: string) => {
   switch (suggestionType) {
-    case "add":
-      return "--uix-canvas-success-background";
-    case "update":
-      return "--uix-canvas-warning-background";
-    case "delete":
-      return "--uix-canvas-error-background";
+    case 'add':
+      return '--uix-canvas-success-background';
+    case 'update':
+      return '--uix-canvas-warning-background';
+    case 'delete':
+      return '--uix-canvas-error-background';
     default:
       return null;
   }
@@ -128,31 +128,31 @@ export const BaseContainer = styled.div<{
 }>`
   position: relative;
   width: ${({ shape, width }) => {
-    const defaultWidth = shape === "rectangle" ? 288 : 96;
+    const defaultWidth = shape === 'rectangle' ? 288 : 96;
     if (width && width !== 96 && width !== 288) {
       return `${width}px`;
     }
     return `${defaultWidth}px`;
   }};
-  height: ${({ height }) => (height ? `${height}px` : "96px")};
-  background: ${({ backgroundColor }) => backgroundColor || "var(--uix-canvas-background)"};
+  height: ${({ height }) => (height ? `${height}px` : '96px')};
+  background: ${({ backgroundColor }) => backgroundColor || 'var(--uix-canvas-background)'};
   border: 1.5px solid var(--uix-canvas-border-de-emp);
   border-radius: ${({ shape }) => {
-    if (shape === "circle") return "50%";
-    return "16px";
+    if (shape === 'circle') return '50%';
+    return '16px';
   }};
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   display: flex;
-  flex-direction: ${({ shape }) => (shape === "rectangle" ? "row" : "column")};
+  flex-direction: ${({ shape }) => (shape === 'rectangle' ? 'row' : 'column')};
   align-items: center;
-  justify-content: ${({ shape }) => (shape === "rectangle" ? "flex-start" : "center")};
-  gap: ${({ shape }) => (shape === "rectangle" ? "12px" : "0")};
+  justify-content: ${({ shape }) => (shape === 'rectangle' ? 'flex-start' : 'center')};
+  gap: ${({ shape }) => (shape === 'rectangle' ? '12px' : '0')};
   padding: ${({ shape, height }) => {
-    if (shape === "rectangle") {
+    if (shape === 'rectangle') {
       const scaleFactor = height ? height / 100 : 1;
       return `${14 * scaleFactor}px`;
     }
-    return "0";
+    return '0';
   }};
   cursor: pointer;
 
@@ -178,7 +178,12 @@ export const BaseContainer = styled.div<{
   }}
 `;
 
-export const BaseIconWrapper = styled.div<{ color?: string; backgroundColor?: string; shape?: NodeShape; nodeHeight?: number }>`
+export const BaseIconWrapper = styled.div<{
+  color?: string;
+  backgroundColor?: string;
+  shape?: NodeShape;
+  nodeHeight?: number;
+}>`
   width: ${({ nodeHeight }) => {
     const scaleFactor = nodeHeight ? nodeHeight / 96 : 1;
     return `${72 * scaleFactor}px`;
@@ -190,11 +195,12 @@ export const BaseIconWrapper = styled.div<{ color?: string; backgroundColor?: st
   display: flex;
   align-items: center;
   justify-content: center;
-  color: ${({ color }) => color || "var(--uix-canvas-foreground)"};
-  background: ${({ backgroundColor }) => backgroundColor || "var(--uix-canvas-background-secondary)"};
+  color: ${({ color }) => color || 'var(--uix-canvas-foreground)'};
+  background: ${({ backgroundColor }) =>
+    backgroundColor || 'var(--uix-canvas-background-secondary)'};
   border-radius: ${({ shape }) => {
-    if (shape === "circle") return "50%";
-    return "8px";
+    if (shape === 'circle') return '50%';
+    return '8px';
   }};
 
   svg {
@@ -223,7 +229,7 @@ export const BaseIconWrapper = styled.div<{ color?: string; backgroundColor?: st
 
 export const BaseTextContainer = styled.div<{ hasBottomHandles?: boolean; shape?: NodeShape }>`
   ${({ shape, hasBottomHandles }) =>
-    shape === "rectangle"
+    shape === 'rectangle'
       ? css`
           flex: 1;
           min-width: 0;
@@ -234,7 +240,7 @@ export const BaseTextContainer = styled.div<{ hasBottomHandles?: boolean; shape?
         `
       : css`
           position: absolute;
-          bottom: ${hasBottomHandles ? "-40px" : "-8px"};
+          bottom: ${hasBottomHandles ? '-40px' : '-8px'};
           width: 150%;
           left: 50%;
           transform: translateX(-50%) translateY(100%);
@@ -268,7 +274,7 @@ export const BaseHeader = styled.div<{ shape?: NodeShape; backgroundColor?: stri
   line-height: 1.4;
   margin-bottom: 2px;
   ${({ shape }) =>
-    shape === "rectangle"
+    shape === 'rectangle'
       ? css`
           width: 100%;
           white-space: nowrap;
@@ -288,7 +294,7 @@ export const BaseSubHeader = styled.div`
 `;
 
 export const BaseBadgeSlot = styled.div<{
-  position: "top-left" | "top-right" | "bottom-left" | "bottom-right";
+  position: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
   shape?: NodeShape;
 }>`
   display: flex;
@@ -299,15 +305,15 @@ export const BaseBadgeSlot = styled.div<{
   background: transparent;
   position: absolute;
   ${({ position, shape }) => {
-    const offset = shape === "circle" ? "12px" : "6px";
+    const offset = shape === 'circle' ? '12px' : '6px';
     switch (position) {
-      case "top-left":
+      case 'top-left':
         return `top: ${offset}; left: ${offset};`;
-      case "top-right":
+      case 'top-right':
         return `top: ${offset}; right: ${offset};`;
-      case "bottom-left":
+      case 'bottom-left':
         return `bottom: ${offset}; left: ${offset};`;
-      case "bottom-right":
+      case 'bottom-right':
         return `bottom: ${offset}; right: ${offset};`;
     }
   }}

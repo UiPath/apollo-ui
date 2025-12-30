@@ -1,9 +1,9 @@
-import type { ReactNode } from "react";
-import { useRef, useEffect } from "react";
-import { ApIcon, ApIconButton, ApTypography } from "@uipath/portal-shell-react";
-import { FontVariantToken } from "@uipath/apollo-core";
-import { Row } from "@uipath/uix/core";
-import styled from "@emotion/styled";
+import type { ReactNode } from 'react';
+import { useRef, useEffect } from 'react';
+import { ApIcon, ApIconButton, ApTypography } from '@uipath/portal-shell-react';
+import { FontVariantToken } from '@uipath/apollo-core';
+import { Row } from '@uipath/uix/core';
+import styled from '@emotion/styled';
 
 const PanelHeader = styled.div`
   border-bottom: 1px solid var(--uix-canvas-border-de-emp);
@@ -46,7 +46,14 @@ export interface PanelChromeProps {
   scrollKey?: string;
 }
 
-export function PanelChrome({ title, header, headerActions, children, onClose, scrollKey }: PanelChromeProps) {
+export function PanelChrome({
+  title,
+  header,
+  headerActions,
+  children,
+  onClose,
+  scrollKey,
+}: PanelChromeProps) {
   const contentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -61,7 +68,10 @@ export function PanelChrome({ title, header, headerActions, children, onClose, s
         <PanelHeader>
           {header ?? (
             <Row gap={8} justify="between" align="center">
-              <ApTypography color="var(--uix-canvas-foreground)" variant={FontVariantToken.fontSizeLBold}>
+              <ApTypography
+                color="var(--uix-canvas-foreground)"
+                variant={FontVariantToken.fontSizeLBold}
+              >
                 {title}
               </ApTypography>
               <Row gap={8} align="center">

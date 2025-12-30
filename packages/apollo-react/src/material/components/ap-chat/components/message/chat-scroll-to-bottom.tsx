@@ -7,15 +7,11 @@ import { msg } from '@lingui/core/macro';
 import { useLingui } from '@lingui/react';
 import { useChatScroll } from '../../providers/chat-scroll-provider';
 import { useChatService } from '../../providers/chat-service.provider';
-import {
-  AutopilotChatEvent,
-  AutopilotChatInternalEvent,
-} from '../../service';
+import { AutopilotChatEvent, AutopilotChatInternalEvent } from '../../service';
 import { AutopilotChatActionButton } from '../common/action-button';
 
-const ScrollButtonContainer = styled('div')<{ visible: boolean; bottom: number; left: number }>(({
-    visible, bottom, left,
-}) => ({
+const ScrollButtonContainer = styled('div')<{ visible: boolean; bottom: number; left: number }>(
+  ({ visible, bottom, left }) => ({
     position: 'fixed',
     bottom,
     left,
@@ -26,100 +22,117 @@ const ScrollButtonContainer = styled('div')<{ visible: boolean; bottom: number; 
     opacity: visible ? 1 : 0,
     pointerEvents: visible ? 'auto' : 'none',
     '& .MuiIconButton-root': {
-        backgroundColor: 'var(--color-background)',
-        boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)',
+      backgroundColor: 'var(--color-background)',
+      boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)',
 
-        '&:hover,&:focus': {
-            backgroundColor: `var(--color-hover) !important`,
-            boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.2)',
-        },
+      '&:hover,&:focus': {
+        backgroundColor: `var(--color-hover) !important`,
+        boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.2)',
+      },
 
-        '&:active': { backgroundColor: `var(--color-hover) !important` },
+      '&:active': { backgroundColor: `var(--color-hover) !important` },
     },
-}));
+  })
+);
 
 const ScrollButtonWrapper = styled('div')(() => ({
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: token.Spacing.SpacingXxl,
-    height: token.Spacing.SpacingXxl,
-    backgroundColor: 'transparent',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  width: token.Spacing.SpacingXxl,
+  height: token.Spacing.SpacingXxl,
+  backgroundColor: 'transparent',
 }));
 
 interface ScrollToBottomButtonProps {
-    overflowContainer: HTMLDivElement | null;
+  overflowContainer: HTMLDivElement | null;
 }
 
-function AutopilotChatScrollToBottomButtonComponent({ overflowContainer }: ScrollToBottomButtonProps) {
-    const { _ } = useLingui();
-    const [ bottom, setBottom ] = React.useState(0);
-    const [ left, setLeft ] = React.useState(0);
-    const {
-        autoScroll, scrollToBottom,
-    } = useChatScroll();
+function AutopilotChatScrollToBottomButtonComponent({
+  overflowContainer,
+}: ScrollToBottomButtonProps) {
+  const { _ } = useLingui();
+  const [bottom, setBottom] = React.useState(0);
+  const [left, setLeft] = React.useState(0);
+  const { autoScroll, scrollToBottom } = useChatScroll();
 
-    const chatService = useChatService();
-    const chatInternalService = chatService.__internalService__;
+  const chatService = useChatService();
+  const chatInternalService = chatService.__internalService__;
 
-    React.useEffect(() => {
-        if (!chatService || !chatInternalService) {
-            return;
+  React.useEffect(() => {
+    if (!chatService || !chatInternalService) {
+      return;
+    }
+
+    let animationFrameRef: number | null = null;
+
+    const updatePosition = () => {
+      animationFrameRef = requestAnimationFrame(() => {
+        if (overflowContainer) {
+          const rect = overflowContainer.getBoundingClientRect();
+
+          setBottom(Math.round(window.innerHeight - rect.bottom));
+          setLeft(Math.round(rect.left + rect.width / 2 - parseInt(token.Spacing.SpacingM, 10)));
         }
+      });
+    };
 
-        let animationFrameRef: number | null = null;
+    // Delay to ensure the overflow container is rendered properly
+    const timeout = setTimeout(() => {
+      updatePosition();
+    }, 200);
 
-        const updatePosition = () => {
-            animationFrameRef = requestAnimationFrame(() => {
-                if (overflowContainer) {
-                    const rect = overflowContainer.getBoundingClientRect();
-
-                    setBottom(Math.round(window.innerHeight - rect.bottom));
-                    setLeft(Math.round(rect.left + rect.width / 2 - parseInt(token.Spacing.SpacingM, 10)));
-                }
-            });
-        };
-
-        // Delay to ensure the overflow container is rendered properly
-        const timeout = setTimeout(() => {
-            updatePosition();
-        }, 200);
-
-        window.addEventListener('resize', updatePosition);
-        const unsubscribeResize = chatInternalService.on(AutopilotChatInternalEvent.ChatResize, updatePosition);
-        const unsubscribeModeChange = chatService.on(AutopilotChatEvent.ModeChange, updatePosition);
-
-        return () => {
-            window.removeEventListener('resize', updatePosition);
-            unsubscribeResize();
-            unsubscribeModeChange();
-
-            if (animationFrameRef) {
-                cancelAnimationFrame(animationFrameRef);
-            }
-
-            if (timeout) {
-                clearTimeout(timeout);
-            }
-        };
-    }, [ overflowContainer, chatInternalService, chatService, bottom ]);
-
-    const isVisible = !autoScroll;
-
-    return (
-        <ScrollButtonContainer visible={isVisible} bottom={bottom} left={left}>
-            <ScrollButtonWrapper>
-                <AutopilotChatActionButton
-                    iconName="arrow_downward"
-                    onClick={() => scrollToBottom({ force: true })}
-                    ariaLabel={_(msg({ id: 'autopilot-chat.message.scroll-to-bottom', message: `Scroll to bottom` }))}
-                    tooltip={isVisible ? _(msg({ id: 'autopilot-chat.message.scroll-to-bottom', message: `Scroll to bottom` })) : undefined}
-                    tabIndex={isVisible ? 0 : -1}
-                    data-testid="autopilot-chat-scroll-to-bottom"
-                />
-            </ScrollButtonWrapper>
-        </ScrollButtonContainer>
+    window.addEventListener('resize', updatePosition);
+    const unsubscribeResize = chatInternalService.on(
+      AutopilotChatInternalEvent.ChatResize,
+      updatePosition
     );
+    const unsubscribeModeChange = chatService.on(AutopilotChatEvent.ModeChange, updatePosition);
+
+    return () => {
+      window.removeEventListener('resize', updatePosition);
+      unsubscribeResize();
+      unsubscribeModeChange();
+
+      if (animationFrameRef) {
+        cancelAnimationFrame(animationFrameRef);
+      }
+
+      if (timeout) {
+        clearTimeout(timeout);
+      }
+    };
+  }, [overflowContainer, chatInternalService, chatService, bottom]);
+
+  const isVisible = !autoScroll;
+
+  return (
+    <ScrollButtonContainer visible={isVisible} bottom={bottom} left={left}>
+      <ScrollButtonWrapper>
+        <AutopilotChatActionButton
+          iconName="arrow_downward"
+          onClick={() => scrollToBottom({ force: true })}
+          ariaLabel={_(
+            msg({ id: 'autopilot-chat.message.scroll-to-bottom', message: `Scroll to bottom` })
+          )}
+          tooltip={
+            isVisible
+              ? _(
+                  msg({
+                    id: 'autopilot-chat.message.scroll-to-bottom',
+                    message: `Scroll to bottom`,
+                  })
+                )
+              : undefined
+          }
+          tabIndex={isVisible ? 0 : -1}
+          data-testid="autopilot-chat-scroll-to-bottom"
+        />
+      </ScrollButtonWrapper>
+    </ScrollButtonContainer>
+  );
 }
 
-export const AutopilotChatScrollToBottomButton = React.memo(AutopilotChatScrollToBottomButtonComponent);
+export const AutopilotChatScrollToBottomButton = React.memo(
+  AutopilotChatScrollToBottomButtonComponent
+);

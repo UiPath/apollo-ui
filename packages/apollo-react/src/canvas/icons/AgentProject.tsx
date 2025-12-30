@@ -1,5 +1,12 @@
 export const AgentProject = ({ w = 29, h = 28 }: { w?: number | string; h?: number | string }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" id="agent-project" width={w} height={h} fill="none" viewBox="0 0 29 28">
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    id="agent-project"
+    width={w}
+    height={h}
+    fill="none"
+    viewBox="0 0 29 28"
+  >
     <path
       fill="currentColor"
       fillRule="evenodd"

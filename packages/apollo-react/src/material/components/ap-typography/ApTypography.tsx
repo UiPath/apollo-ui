@@ -1,10 +1,7 @@
 import { forwardRef } from 'react';
 
 import Typography from '@mui/material/Typography';
-import {
-  FontVariantToken,
-  Typography as TypographyTokens,
-} from '@uipath/apollo-core';
+import { FontVariantToken, Typography as TypographyTokens } from '@uipath/apollo-core';
 
 import { ApTypographyProps } from './ApTypography.types';
 import { getVariantMapping } from './ApTypography.utils';
@@ -47,21 +44,10 @@ interface TypographyToken {
  * ```
  */
 export const ApTypography = forwardRef<HTMLElement, ApTypographyProps>(
-  (
-    {
-      variant = FontVariantToken.fontSizeM,
-      color,
-      display,
-      align,
-      children,
-      sx,
-      ...rest
-    },
-    ref,
-  ) => {
+  ({ variant = FontVariantToken.fontSizeM, color, display, align, children, sx, ...rest }, ref) => {
     const { muiVariant, component } = getVariantMapping(variant);
     const variantKey = Object.keys(FontVariantToken).find(
-      key => FontVariantToken[key as keyof typeof FontVariantToken] === variant
+      (key) => FontVariantToken[key as keyof typeof FontVariantToken] === variant
     ) as keyof typeof TypographyTokens;
 
     const typographyToken = TypographyTokens[variantKey] as TypographyToken | undefined;
@@ -94,7 +80,7 @@ export const ApTypography = forwardRef<HTMLElement, ApTypographyProps>(
         {children}
       </Typography>
     );
-  },
+  }
 );
 
 ApTypography.displayName = 'ApTypography';

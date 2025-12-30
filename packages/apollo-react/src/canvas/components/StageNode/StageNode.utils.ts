@@ -1,6 +1,6 @@
-import { arrayMove } from "@dnd-kit/sortable";
-import type { StageTaskItem } from "./StageNode.types";
-import { INDENTATION_WIDTH } from "./StageNode.styles";
+import { arrayMove } from '@dnd-kit/sortable';
+import type { StageTaskItem } from './StageNode.types';
+import { INDENTATION_WIDTH } from './StageNode.styles';
 
 export interface FlattenedTask {
   id: string;
@@ -67,7 +67,12 @@ export function buildTaskGroups(flattenedTasks: FlattenedTask[]): StageTaskItem[
   return groups;
 }
 
-export function reorderTasks(tasks: StageTaskItem[][], activeId: string, overId: string, projectedDepth: number): StageTaskItem[][] {
+export function reorderTasks(
+  tasks: StageTaskItem[][],
+  activeId: string,
+  overId: string,
+  projectedDepth: number
+): StageTaskItem[][] {
   const flattened = flattenTasks(tasks);
 
   const activeIndex = flattened.findIndex((t) => t.id === activeId);
@@ -123,7 +128,12 @@ function getParallelGroupInfo(
   };
 }
 
-export function getProjection(tasks: StageTaskItem[][], activeId: string, overId: string, offsetLeft: number): ProjectionResult | null {
+export function getProjection(
+  tasks: StageTaskItem[][],
+  activeId: string,
+  overId: string,
+  offsetLeft: number
+): ProjectionResult | null {
   const flattened = flattenTasks(tasks);
 
   const activeIndex = flattened.findIndex((t) => t.id === activeId);
@@ -170,7 +180,8 @@ export function getProjection(tasks: StageTaskItem[][], activeId: string, overId
       }
     }
   } else if (overInfo.isParallel) {
-    const isEdgeInsertion = (isDraggingUp && overInfo.isFirstItem) || (isDraggingDown && overInfo.isLastItem);
+    const isEdgeInsertion =
+      (isDraggingUp && overInfo.isFirstItem) || (isDraggingDown && overInfo.isLastItem);
 
     if (isEdgeInsertion) {
       depth = Math.max(minDepth, Math.min(maxDepth, dragDepth));
@@ -180,7 +191,8 @@ export function getProjection(tasks: StageTaskItem[][], activeId: string, overId
   } else {
     const nextTask = flattened[overIndex + 1];
     const prevTask = flattened[overIndex - 1];
-    const isAdjacentToParallel = (isDraggingDown && nextTask?.depth === 1) || (isDraggingUp && prevTask?.depth === 1);
+    const isAdjacentToParallel =
+      (isDraggingDown && nextTask?.depth === 1) || (isDraggingUp && prevTask?.depth === 1);
 
     if (isAdjacentToParallel) {
       depth = Math.max(minDepth, Math.min(maxDepth, dragDepth));

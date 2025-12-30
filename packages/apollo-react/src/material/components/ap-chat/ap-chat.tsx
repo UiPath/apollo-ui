@@ -1,16 +1,10 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
 
-import {
-  styled,
-  ThemeProvider as MuiThemeProvider,
-} from '@mui/material/styles';
+import { styled, ThemeProvider as MuiThemeProvider } from '@mui/material/styles';
 import token from '@uipath/apollo-core';
 
-import {
-  ApI18nProvider,
-  SupportedLocale,
-} from '../../../i18n';
+import { ApI18nProvider, SupportedLocale } from '../../../i18n';
 import {
   apolloMaterialUiThemeDark,
   apolloMaterialUiThemeDarkHC,
@@ -19,27 +13,15 @@ import {
 } from '../../theme';
 import { DragHandle } from './components/common/drag-handle';
 import { AutopilotChatDropzone } from './components/dropzone/dropzone';
-import {
-  FullScreenLayout,
-  StandardLayout,
-} from './components/layout';
+import { FullScreenLayout, StandardLayout } from './components/layout';
 import { AutopilotAttachmentsProvider } from './providers/attachements-provider';
 import { AutopilotChatScrollProvider } from './providers/chat-scroll-provider';
 import { AutopilotChatServiceProvider } from './providers/chat-service.provider';
-import {
-  AutopilotChatStateProvider,
-  useChatState,
-} from './providers/chat-state-provider';
-import {
-  AutopilotChatWidthProvider,
-  useChatWidth,
-} from './providers/chat-width-provider';
+import { AutopilotChatStateProvider, useChatState } from './providers/chat-state-provider';
+import { AutopilotChatWidthProvider, useChatWidth } from './providers/chat-width-provider';
 import { AutopilotErrorProvider } from './providers/error-provider';
 import { AutopilotLoadingProvider } from './providers/loading-provider';
-import {
-  LocaleProvider,
-  useLocale,
-} from './providers/locale-provider';
+import { LocaleProvider, useLocale } from './providers/locale-provider';
 import { AutopilotPickerProvider } from './providers/picker-provider';
 import { AutopilotStreamingProvider } from './providers/streaming-provider';
 import { ThemeProvider } from './providers/theme-provider';

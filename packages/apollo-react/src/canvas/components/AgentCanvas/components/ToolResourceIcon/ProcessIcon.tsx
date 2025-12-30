@@ -3,23 +3,33 @@ type ProcessIconProps = {
   height?: number | string;
   primaryColor?: string;
   secondaryColor?: string;
-  variant?: "default" | "filled";
+  variant?: 'default' | 'filled';
 };
 
 export const ProcessIcon = ({
   width = 24,
   height = 24,
-  primaryColor = "#526069",
-  secondaryColor = "#0067DF",
-  variant = "default",
+  primaryColor = '#526069',
+  secondaryColor = '#0067DF',
+  variant = 'default',
 }: ProcessIconProps) => {
-  const iconPrimaryColor = variant === "filled" ? "#FFFFFF" : primaryColor;
-  const iconSecondaryColor = variant === "filled" ? "#FFFFFF" : secondaryColor;
+  const iconPrimaryColor = variant === 'filled' ? '#FFFFFF' : primaryColor;
+  const iconSecondaryColor = variant === 'filled' ? '#FFFFFF' : secondaryColor;
 
   return (
-    <svg fill="none" height={height} viewBox="0 0 24 25" width={width} xmlns="http://www.w3.org/2000/svg">
-      {variant === "filled" && <circle cx="12" cy="12.5" r="12" fill={secondaryColor} />}
-      <g transform={variant === "filled" ? "translate(12, 12.5) scale(0.7) translate(-12, -12.5)" : undefined}>
+    <svg
+      fill="none"
+      height={height}
+      viewBox="0 0 24 25"
+      width={width}
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      {variant === 'filled' && <circle cx="12" cy="12.5" r="12" fill={secondaryColor} />}
+      <g
+        transform={
+          variant === 'filled' ? 'translate(12, 12.5) scale(0.7) translate(-12, -12.5)' : undefined
+        }
+      >
         <path
           clipRule="evenodd"
           d="M4.50113 5.32211L4.50591 11.6564L10.8403 11.6517L10.8355 5.31733L4.50113 5.32211ZM3.75 3.82268C3.33579 3.82299 3.00025 4.15903 3.00057 4.57324L3.00648 12.4076C3.00679 12.8218 3.34283 13.1573 3.75705 13.157L11.5914 13.1511C12.0056 13.1508 12.3411 12.8147 12.3408 12.4005L12.3349 4.56619C12.3346 4.15198 11.9986 3.81645 11.5843 3.81676L3.75 3.82268Z"

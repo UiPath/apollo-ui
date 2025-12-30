@@ -1,2 +1,2 @@
-export * from "./StickyNoteNode";
-export * from "./StickyNoteNode.types";
+export * from './StickyNoteNode';
+export * from './StickyNoteNode.types';

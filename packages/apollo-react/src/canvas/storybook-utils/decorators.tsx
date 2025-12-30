@@ -3,13 +3,16 @@
  *
  * Provides reusable decorators to reduce boilerplate in story files.
  */
-import React, { useMemo } from "react";
-import type { Decorator } from "@storybook/react";
-import { ReactFlowProvider } from "@uipath/uix/xyflow/react";
-import type { ExecutionStateContextValue, NodeExecutionState } from "../components/BaseNode/ExecutionStatusContext";
-import { ExecutionStatusContext } from "../components/BaseNode/ExecutionStatusContext";
-import { NodeRegistryProvider } from "../components/BaseNode/NodeRegistryProvider";
-import { allNodeManifests, createNodesFromManifests } from "./manifests";
+import React, { useMemo } from 'react';
+import type { Decorator } from '@storybook/react';
+import { ReactFlowProvider } from '@uipath/uix/xyflow/react';
+import type {
+  ExecutionStateContextValue,
+  NodeExecutionState,
+} from '../components/BaseNode/ExecutionStatusContext';
+import { ExecutionStatusContext } from '../components/BaseNode/ExecutionStatusContext';
+import { NodeRegistryProvider } from '../components/BaseNode/NodeRegistryProvider';
+import { allNodeManifests, createNodesFromManifests } from './manifests';
 
 /**
  * Props for execution state configuration.
@@ -43,17 +46,23 @@ export interface CanvasProvidersOptions {
  * Node IDs like "node-InProgress" will return "InProgress" as the status.
  */
 const defaultExecutionState: ExecutionStateConfig = {
-  getExecutionState: (nodeId: string): NodeExecutionState | undefined => nodeId.split("-")[1],
+  getExecutionState: (nodeId: string): NodeExecutionState | undefined => nodeId.split('-')[1],
 };
 
 /**
  * Fullscreen container component.
  */
-const FullscreenContainer = ({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) => (
+const FullscreenContainer = ({
+  children,
+  style,
+}: {
+  children: React.ReactNode;
+  style?: React.CSSProperties;
+}) => (
   <div
     style={{
-      height: "100vh",
-      width: "100vw",
+      height: '100vh',
+      width: '100vw',
       ...style,
     }}
   >

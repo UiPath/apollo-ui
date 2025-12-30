@@ -1,5 +1,5 @@
-import { createContext, useContext, useMemo, type ReactNode } from "react";
-import type { Node } from "@uipath/uix/xyflow/react";
+import { createContext, useContext, useMemo, type ReactNode } from 'react';
+import type { Node } from '@uipath/uix/xyflow/react';
 
 interface SelectionStateContextValue {
   /** True when more than one node is selected */
@@ -38,7 +38,10 @@ export function SelectionStateProvider({ children, nodes }: SelectionStateProvid
     return false;
   }, [nodes]);
 
-  const value = useMemo<SelectionStateContextValue>(() => ({ multipleNodesSelected }), [multipleNodesSelected]);
+  const value = useMemo<SelectionStateContextValue>(
+    () => ({ multipleNodesSelected }),
+    [multipleNodesSelected]
+  );
 
   return <SelectionStateContext.Provider value={value}>{children}</SelectionStateContext.Provider>;
 }

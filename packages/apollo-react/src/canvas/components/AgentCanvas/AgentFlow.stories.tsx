@@ -1,22 +1,8 @@
-import {
-  useCallback,
-  useState,
-} from 'react';
+import { useCallback, useState } from 'react';
 
-import type {
-  Meta,
-  StoryObj,
-} from '@storybook/react-vite';
-import {
-  ApButton,
-  ApTypography,
-  type IRawSpan,
-} from '@uipath/portal-shell-react';
-import {
-  Column,
-  FontVariantToken,
-  Row,
-} from '@uipath/uix/core';
+import type { Meta, StoryObj } from '@storybook/react-vite';
+import { ApButton, ApTypography, type IRawSpan } from '@uipath/portal-shell-react';
+import { Column, FontVariantToken, Row } from '@uipath/uix/core';
 import { ReactFlowProvider } from '@uipath/uix/xyflow/react';
 
 import { StoryInfoPanel } from '../../storybook-utils';
@@ -32,17 +18,17 @@ import {
 import { AgentFlow } from './AgentFlow';
 
 const meta: Meta<typeof AgentFlow> = {
-  title: "Canvas/AgentFlow",
+  title: 'Canvas/AgentFlow',
   component: AgentFlow,
   decorators: [
     (Story) => (
       <div
         style={{
-          position: "absolute",
+          position: 'absolute',
           top: 0,
           left: 0,
-          width: "100%",
-          height: "100%",
+          width: '100%',
+          height: '100%',
         }}
       >
         <Story />
@@ -55,33 +41,37 @@ export default meta;
 type Story = StoryObj<typeof AgentFlow>;
 
 // Sample data generators
-const generateResourceId = () => `resource-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
+const generateResourceId = () =>
+  `resource-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
 
 const sampleContexts = [
-  { name: "User Profile", description: "Information about the current user" },
-  { name: "Session Context", description: "Current session information" },
-  { name: "Organization Settings", description: "Organization configuration" },
-  { name: "Environment Variables", description: "System environment settings" },
+  { name: 'User Profile', description: 'Information about the current user' },
+  { name: 'Session Context', description: 'Current session information' },
+  { name: 'Organization Settings', description: 'Organization configuration' },
+  { name: 'Environment Variables', description: 'System environment settings' },
 ];
 
 const sampleTools = [
-  { name: "Send Email", description: "Email Service", projectType: ProjectType.Internal },
-  { name: "Query Database", description: "Database", projectType: ProjectType.Internal },
-  { name: "Call API", description: "REST API", projectType: ProjectType.Api },
-  { name: "Process Document", description: "Document AI", projectType: ProjectType.Internal },
-  { name: "Run Automation", description: "Automation", projectType: ProjectType.Internal },
+  { name: 'Send Email', description: 'Email Service', projectType: ProjectType.Internal },
+  { name: 'Query Database', description: 'Database', projectType: ProjectType.Internal },
+  { name: 'Call API', description: 'REST API', projectType: ProjectType.Api },
+  { name: 'Process Document', description: 'Document AI', projectType: ProjectType.Internal },
+  { name: 'Run Automation', description: 'Automation', projectType: ProjectType.Internal },
 ];
 
 const sampleEscalations = [
-  { name: "Manager Approval", description: "Escalate to manager" },
-  { name: "Amount Exceeded", description: "Transaction limit exceeded" },
-  { name: "Security Alert", description: "Suspicious activity detected" },
-  { name: "Manual Review", description: "Requires human review" },
+  { name: 'Manager Approval', description: 'Escalate to manager' },
+  { name: 'Amount Exceeded', description: 'Transaction limit exceeded' },
+  { name: 'Security Alert', description: 'Suspicious activity detected' },
+  { name: 'Manual Review', description: 'Requires human review' },
 ];
 
 const sampleMcp = [
-  { name: "File parser", description: "Parse files in the workspace" },
-  { name: "Budget Assistant RPC", description: "Using RPC to connect to a budget assistant server API" },
+  { name: 'File parser', description: 'Parse files in the workspace' },
+  {
+    name: 'Budget Assistant RPC',
+    description: 'Using RPC to connect to a budget assistant server API',
+  },
 ];
 
 let contextIndex = 0;
@@ -90,11 +80,13 @@ let escalationIndex = 0;
 let mcpIndex = 0;
 
 const createSampleContext = (): AgentFlowResource => {
-  const sample = sampleContexts[contextIndex % sampleContexts.length] as NonNullable<(typeof sampleContexts)[number]>;
+  const sample = sampleContexts[contextIndex % sampleContexts.length] as NonNullable<
+    (typeof sampleContexts)[number]
+  >;
   contextIndex++;
   return {
     id: generateResourceId(),
-    type: "context",
+    type: 'context',
     name: sample.name,
     hasBreakpoint: false,
     hasGuardrails: false,
@@ -103,14 +95,16 @@ const createSampleContext = (): AgentFlowResource => {
 };
 
 const createSampleTool = (): AgentFlowResource => {
-  const sample = sampleTools[toolIndex % sampleTools.length] as NonNullable<(typeof sampleTools)[number]>;
+  const sample = sampleTools[toolIndex % sampleTools.length] as NonNullable<
+    (typeof sampleTools)[number]
+  >;
   toolIndex++;
   return {
     id: generateResourceId(),
-    type: "tool",
+    type: 'tool',
     name: sample.name,
     description: sample.description,
-    iconUrl: "",
+    iconUrl: '',
     hasBreakpoint: false,
     hasGuardrails: false,
     projectType: sample.projectType as ProjectType,
@@ -118,11 +112,13 @@ const createSampleTool = (): AgentFlowResource => {
 };
 
 const createSampleEscalation = (): AgentFlowResource => {
-  const sample = sampleEscalations[escalationIndex % sampleEscalations.length] as NonNullable<(typeof sampleEscalations)[number]>;
+  const sample = sampleEscalations[escalationIndex % sampleEscalations.length] as NonNullable<
+    (typeof sampleEscalations)[number]
+  >;
   escalationIndex++;
   return {
     id: generateResourceId(),
-    type: "escalation",
+    type: 'escalation',
     name: sample.name,
     hasBreakpoint: false,
     hasGuardrails: false,
@@ -135,10 +131,10 @@ const createSampleMcp = (): AgentFlowResource => {
   mcpIndex++;
   return {
     id: generateResourceId(),
-    type: "mcp",
+    type: 'mcp',
     name: sample.name,
-    slug: "",
-    folderPath: "",
+    slug: '',
+    folderPath: '',
     availableTools: [],
     description: sample.description,
     hasBreakpoint: false,
@@ -149,19 +145,19 @@ const createSampleMcp = (): AgentFlowResource => {
 const createSampleMemorySpace = (): AgentFlowResource => {
   return {
     id: generateResourceId(),
-    type: "memorySpace",
-    name: "Agent Memory Space",
-    description: "Memory space for the agent",
+    type: 'memorySpace',
+    name: 'Agent Memory Space',
+    description: 'Memory space for the agent',
   };
 };
 
 const sampleResources: AgentFlowResource[] = [
   {
-    id: "tool-slack",
-    type: "tool",
-    name: "Send message",
-    description: "Slack",
-    iconUrl: "",
+    id: 'tool-slack',
+    type: 'tool',
+    name: 'Send message',
+    description: 'Slack',
+    iconUrl: '',
     hasBreakpoint: false,
     isCurrentBreakpoint: false,
     hasGuardrails: false,
@@ -169,11 +165,11 @@ const sampleResources: AgentFlowResource[] = [
     isDisabled: false,
   },
   {
-    id: "tool-ixp",
-    type: "tool",
-    name: "Extract data",
-    description: "IXP",
-    iconUrl: "",
+    id: 'tool-ixp',
+    type: 'tool',
+    name: 'Extract data',
+    description: 'IXP',
+    iconUrl: '',
     hasBreakpoint: false,
     isCurrentBreakpoint: false,
     hasGuardrails: false,
@@ -181,11 +177,11 @@ const sampleResources: AgentFlowResource[] = [
     isDisabled: false,
   },
   {
-    id: "tool-claim",
-    type: "tool",
-    name: "Validate claim",
-    description: "Automation",
-    iconUrl: "",
+    id: 'tool-claim',
+    type: 'tool',
+    name: 'Validate claim',
+    description: 'Automation',
+    iconUrl: '',
     hasBreakpoint: false,
     isCurrentBreakpoint: false,
     hasGuardrails: false,
@@ -193,42 +189,42 @@ const sampleResources: AgentFlowResource[] = [
     isDisabled: false,
   },
   {
-    id: "context-user-profile",
-    type: "context",
-    name: "User Profile",
-    description: "Information about the current user",
+    id: 'context-user-profile',
+    type: 'context',
+    name: 'User Profile',
+    description: 'Information about the current user',
     hasBreakpoint: false,
     isCurrentBreakpoint: false,
   },
   {
-    id: "escalation-amount-exceeded",
-    type: "escalation",
-    name: "Amount exceeded",
-    description: "Claim form",
+    id: 'escalation-amount-exceeded',
+    type: 'escalation',
+    name: 'Amount exceeded',
+    description: 'Claim form',
     hasBreakpoint: false,
     isCurrentBreakpoint: false,
   },
   {
-    id: "mcp-file-parser",
-    type: "mcp",
-    name: "File Parser",
-    description: "File Parser",
+    id: 'mcp-file-parser',
+    type: 'mcp',
+    name: 'File Parser',
+    description: 'File Parser',
     hasBreakpoint: false,
     isCurrentBreakpoint: false,
     hasGuardrails: false,
-    slug: "file-parser",
-    folderPath: "file-parser",
+    slug: 'file-parser',
+    folderPath: 'file-parser',
     availableTools: [],
   },
 ];
 
 // Real agent definition from frontend examples
 const sampleAgentDefinition = {
-  name: "Test Agent",
-  version: "1.0",
+  name: 'Test Agent',
+  version: '1.0',
   settings: {
-    model: "gpt-4",
-    engine: "test-engine",
+    model: 'gpt-4',
+    engine: 'test-engine',
   },
   tools: [],
   resources: [],
@@ -237,57 +233,57 @@ const sampleAgentDefinition = {
 // Real trace data from frontend examples
 const sampleSpans: IRawSpan[] = [
   {
-    Id: "span1",
-    TraceId: "trace1",
-    ParentId: "parent1",
-    Name: "agentRun",
-    StartTime: "2021-01-01T00:00:00Z",
-    EndTime: "2021-01-01T00:00:30Z",
+    Id: 'span1',
+    TraceId: 'trace1',
+    ParentId: 'parent1',
+    Name: 'agentRun',
+    StartTime: '2021-01-01T00:00:00Z',
+    EndTime: '2021-01-01T00:00:30Z',
     Status: 1,
-    CreatedAt: "2021-01-01T00:00:00Z",
-    UpdatedAt: "2021-01-01T00:00:00Z",
-    SpanType: "agentRun",
-    Attributes: JSON.stringify({ type: "agentRun" }),
-    OrganizationId: "org1",
-    TenantId: "tenant1",
+    CreatedAt: '2021-01-01T00:00:00Z',
+    UpdatedAt: '2021-01-01T00:00:00Z',
+    SpanType: 'agentRun',
+    Attributes: JSON.stringify({ type: 'agentRun' }),
+    OrganizationId: 'org1',
+    TenantId: 'tenant1',
     Source: 1,
   },
   {
-    Id: "span2",
-    TraceId: "trace1",
-    ParentId: "span1",
-    Name: "contextLoad",
-    StartTime: "2021-01-01T00:00:31Z",
-    EndTime: "2021-01-01T00:01:00Z",
+    Id: 'span2',
+    TraceId: 'trace1',
+    ParentId: 'span1',
+    Name: 'contextLoad',
+    StartTime: '2021-01-01T00:00:31Z',
+    EndTime: '2021-01-01T00:01:00Z',
     Status: 1,
-    CreatedAt: "2021-01-01T00:00:00Z",
-    UpdatedAt: "2021-01-01T00:00:00Z",
-    SpanType: "contextLoad",
-    Attributes: JSON.stringify({ type: "contextLoad", contextName: "test_context" }),
-    OrganizationId: "org1",
-    TenantId: "tenant1",
+    CreatedAt: '2021-01-01T00:00:00Z',
+    UpdatedAt: '2021-01-01T00:00:00Z',
+    SpanType: 'contextLoad',
+    Attributes: JSON.stringify({ type: 'contextLoad', contextName: 'test_context' }),
+    OrganizationId: 'org1',
+    TenantId: 'tenant1',
     Source: 1,
   },
   {
-    Id: "span3",
-    TraceId: "trace1",
-    ParentId: "span2",
-    Name: "completion",
-    StartTime: "2021-01-01T00:01:01Z",
-    EndTime: "2021-01-01T00:03:00Z",
+    Id: 'span3',
+    TraceId: 'trace1',
+    ParentId: 'span2',
+    Name: 'completion',
+    StartTime: '2021-01-01T00:01:01Z',
+    EndTime: '2021-01-01T00:03:00Z',
     Status: 1,
-    CreatedAt: "2021-01-01T00:00:00Z",
-    UpdatedAt: "2021-01-01T00:00:00Z",
-    SpanType: "completion",
-    Attributes: JSON.stringify({ type: "completion" }),
-    OrganizationId: "org1",
-    TenantId: "tenant1",
+    CreatedAt: '2021-01-01T00:00:00Z',
+    UpdatedAt: '2021-01-01T00:00:00Z',
+    SpanType: 'completion',
+    Attributes: JSON.stringify({ type: 'completion' }),
+    OrganizationId: 'org1',
+    TenantId: 'tenant1',
     Source: 1,
   },
 ];
 
 interface AgentFlowWrapperProps {
-  mode: AgentFlowProps["mode"];
+  mode: AgentFlowProps['mode'];
   initialResources?: AgentFlowResource[];
   activeResourceIds?: string[];
   spans?: any[];
@@ -318,35 +314,35 @@ const AgentFlowWrapper = ({
   const [resources, setResources] = useState<AgentFlowResource[]>(initialResources);
   const [selectedResourceId, setSelectedResourceId] = useState<string | null>(null);
   const [_sidebarMode, setSidebarMode] = useState<
-    "add-context" | "add-escalation" | "add-model" | "add-tool" | "add-memory" | "properties"
-  >("properties");
+    'add-context' | 'add-escalation' | 'add-model' | 'add-tool' | 'add-memory' | 'properties'
+  >('properties');
 
   const handleSelectResource = useCallback((resourceId: string | null) => {
     setSelectedResourceId(resourceId);
-    setSidebarMode("properties");
+    setSidebarMode('properties');
   }, []);
 
   const handleAddResourceRequest = useCallback((type: AgentFlowResourceType) => {
     let newResource: AgentFlowResource;
 
     switch (type) {
-      case "context": {
+      case 'context': {
         newResource = createSampleContext();
         break;
       }
-      case "tool": {
+      case 'tool': {
         newResource = createSampleTool();
         break;
       }
-      case "escalation": {
+      case 'escalation': {
         newResource = createSampleEscalation();
         break;
       }
-      case "mcp": {
+      case 'mcp': {
         newResource = createSampleMcp();
         break;
       }
-      case "memorySpace": {
+      case 'memorySpace': {
         newResource = createSampleMemorySpace();
         break;
       }
@@ -357,7 +353,7 @@ const AgentFlowWrapper = ({
 
     setResources((prev) => [...prev, newResource]);
     setSelectedResourceId(newResource.id);
-    setSidebarMode("properties");
+    setSidebarMode('properties');
   }, []);
 
   const handleRemoveResource = useCallback(
@@ -388,38 +384,47 @@ const AgentFlowWrapper = ({
     );
   }, []);
 
-  const handleAddBreakpoint = useCallback((resourceId: string, resource: AgentFlowResourceNodeData) => {
-    setResources((prev) =>
-      prev.map((r) => ({
-        ...r,
-        ...(`${resource.parentNodeId}=>${r.name}:${r.id}` === resourceId && {
-          hasBreakpoint: true,
-        }),
-      }))
-    );
-  }, []);
+  const handleAddBreakpoint = useCallback(
+    (resourceId: string, resource: AgentFlowResourceNodeData) => {
+      setResources((prev) =>
+        prev.map((r) => ({
+          ...r,
+          ...(`${resource.parentNodeId}=>${r.name}:${r.id}` === resourceId && {
+            hasBreakpoint: true,
+          }),
+        }))
+      );
+    },
+    []
+  );
 
-  const handleRemoveBreakpoint = useCallback((resourceId: string, resource: AgentFlowResourceNodeData) => {
-    setResources((prev) =>
-      prev.map((r) => ({
-        ...r,
-        ...(`${resource.parentNodeId}=>${r.name}:${r.id}` === resourceId && {
-          hasBreakpoint: false,
-        }),
-      }))
-    );
-  }, []);
+  const handleRemoveBreakpoint = useCallback(
+    (resourceId: string, resource: AgentFlowResourceNodeData) => {
+      setResources((prev) =>
+        prev.map((r) => ({
+          ...r,
+          ...(`${resource.parentNodeId}=>${r.name}:${r.id}` === resourceId && {
+            hasBreakpoint: false,
+          }),
+        }))
+      );
+    },
+    []
+  );
 
-  const handleAddGuardrail = useCallback((resourceId: string, resource: AgentFlowResourceNodeData) => {
-    setResources((prev) =>
-      prev.map((r) => ({
-        ...r,
-        ...(`${resource.parentNodeId}=>${r.name}:${r.id}` === resourceId && {
-          hasGuardrails: true,
-        }),
-      }))
-    );
-  }, []);
+  const handleAddGuardrail = useCallback(
+    (resourceId: string, resource: AgentFlowResourceNodeData) => {
+      setResources((prev) =>
+        prev.map((r) => ({
+          ...r,
+          ...(`${resource.parentNodeId}=>${r.name}:${r.id}` === resourceId && {
+            hasGuardrails: true,
+          }),
+        }))
+      );
+    },
+    []
+  );
 
   // Real span/node mapping functions from frontend
   const setSpanForSelectedNode = useCallback((_node: any) => {}, []);
@@ -429,7 +434,7 @@ const AgentFlowWrapper = ({
   }, []);
 
   const renderSidebar = () => {
-    if (mode !== "design") {
+    if (mode !== 'design') {
       return null;
     }
 
@@ -439,10 +444,10 @@ const AgentFlowWrapper = ({
         p={16}
         gap={16}
         style={{
-          backgroundColor: "var(--uix-canvas-background-secondary)",
-          borderLeft: "1px solid var(--uix-canvas-border-de-emp)",
-          overflowY: "auto",
-          color: "var(--uix-canvas-foreground)",
+          backgroundColor: 'var(--uix-canvas-background-secondary)',
+          borderLeft: '1px solid var(--uix-canvas-border-de-emp)',
+          overflowY: 'auto',
+          color: 'var(--uix-canvas-foreground)',
         }}
       >
         <h3 style={{ margin: 0 }}>Design Mode</h3>
@@ -457,14 +462,14 @@ const AgentFlowWrapper = ({
         {allowDragging && agentNodePosition && (
           <div
             style={{
-              padding: "12px",
-              backgroundColor: "var(--uix-canvas-background)",
-              borderRadius: "4px",
-              border: "1px solid var(--uix-canvas-border-de-emp)",
+              padding: '12px',
+              backgroundColor: 'var(--uix-canvas-background)',
+              borderRadius: '4px',
+              border: '1px solid var(--uix-canvas-border-de-emp)',
             }}
           >
-            <div style={{ fontWeight: "bold", marginBottom: "8px" }}>Agent Node Position</div>
-            <div style={{ fontSize: "0.875rem", fontFamily: "monospace" }}>
+            <div style={{ fontWeight: 'bold', marginBottom: '8px' }}>Agent Node Position</div>
+            <div style={{ fontSize: '0.875rem', fontFamily: 'monospace' }}>
               <div>
                 <strong>X:</strong> {agentNodePosition.x.toFixed(2)}
               </div>
@@ -474,7 +479,7 @@ const AgentFlowWrapper = ({
             </div>
           </div>
         )}
-        <div style={{ fontSize: "0.875rem", color: "var(--uix-canvas-foreground-de-emp)" }}>
+        <div style={{ fontSize: '0.875rem', color: 'var(--uix-canvas-foreground-de-emp)' }}>
           <p>Click the + buttons on the agent node to add:</p>
           <ul>
             <li>Memory (top)</li>
@@ -489,14 +494,14 @@ const AgentFlowWrapper = ({
 
   return (
     <ReactFlowProvider>
-      <Row w="100%" h="100%" style={{ position: "relative" }}>
-        <div style={{ flex: 1, position: "relative" }}>
+      <Row w="100%" h="100%" style={{ position: 'relative' }}>
+        <div style={{ flex: 1, position: 'relative' }}>
           <AgentFlow
             allowDragging={allowDragging}
             agentNodePosition={agentNodePosition}
             onAgentNodePositionChange={onAgentNodePositionChange}
             definition={definition}
-            spans={mode === "view" ? spans : []}
+            spans={mode === 'view' ? spans : []}
             name="Test Agent"
             description="Test Description"
             mode={mode}
@@ -512,7 +517,7 @@ const AgentFlowWrapper = ({
             onAddResource={handleAddResourceRequest}
             onRemoveResource={handleRemoveResource}
             onSelectResource={handleSelectResource}
-            enableTimelinePlayer={mode === "view" && enableTimelinePlayer}
+            enableTimelinePlayer={mode === 'view' && enableTimelinePlayer}
             enableMemory={enableMemory}
             healthScore={healthScore}
             onHealthScoreClick={onHealthScoreClick}
@@ -526,7 +531,7 @@ const AgentFlowWrapper = ({
 
 export const DesignMode: Story = {
   args: {
-    mode: "design",
+    mode: 'design',
     resources: sampleResources,
   },
   render: (args) => <AgentFlowWrapper {...args} />,
@@ -534,7 +539,7 @@ export const DesignMode: Story = {
 
 export const ViewMode: Story = {
   args: {
-    mode: "view",
+    mode: 'view',
     resources: sampleResources,
     activeResourceIds: [],
     spans: [],
@@ -544,7 +549,7 @@ export const ViewMode: Story = {
 
 export const DesignModeEmpty: Story = {
   args: {
-    mode: "design",
+    mode: 'design',
   },
   render: (args) => <AgentFlowWrapper {...args} initialResources={[]} />,
 };
@@ -552,7 +557,7 @@ export const DesignModeEmpty: Story = {
 // New stories based on real frontend usage patterns
 export const ViewModeWithTraceData: Story = {
   args: {
-    mode: "view",
+    mode: 'view',
     resources: sampleResources,
     definition: sampleAgentDefinition,
     spans: sampleSpans,
@@ -564,7 +569,7 @@ export const ViewModeWithTraceData: Story = {
 
 export const DesignModeWithRealData: Story = {
   args: {
-    mode: "design",
+    mode: 'design',
     resources: sampleResources,
     definition: sampleAgentDefinition,
     spans: sampleSpans,
@@ -574,7 +579,7 @@ export const DesignModeWithRealData: Story = {
 
 export const ViewModeEmptyTrace: Story = {
   args: {
-    mode: "view",
+    mode: 'view',
     resources: sampleResources,
     definition: sampleAgentDefinition,
     spans: [],
@@ -585,7 +590,7 @@ export const ViewModeEmptyTrace: Story = {
 
 export const ViewModeWithoutTimelinePlayer: Story = {
   args: {
-    mode: "view",
+    mode: 'view',
     resources: sampleResources,
     definition: sampleAgentDefinition,
     spans: sampleSpans,
@@ -597,11 +602,13 @@ export const ViewModeWithoutTimelinePlayer: Story = {
 
 export const ViewModeWithTimelinePlayer: Story = {
   args: {
-    mode: "view",
+    mode: 'view',
     resources: sampleResources,
     activeResourceIds: [],
   },
-  render: (args) => <AgentFlowWrapper {...args} spans={sampleSpans} definition={sampleAgentDefinition} />,
+  render: (args) => (
+    <AgentFlowWrapper {...args} spans={sampleSpans} definition={sampleAgentDefinition} />
+  ),
 };
 
 /**
@@ -611,16 +618,18 @@ export const ViewModeWithTimelinePlayer: Story = {
 
 export const HealthScore: Story = {
   args: {
-    mode: "design",
+    mode: 'design',
     resources: sampleResources,
   },
   render: (args) => {
     const HealthScoreWithClick = () => {
       const handleHealthScoreClick = useCallback(() => {
-        alert("Health score clicked! This would open a panel with health score details.");
+        alert('Health score clicked! This would open a panel with health score details.');
       }, []);
 
-      return <AgentFlowWrapper {...args} healthScore={95} onHealthScoreClick={handleHealthScoreClick} />;
+      return (
+        <AgentFlowWrapper {...args} healthScore={95} onHealthScoreClick={handleHealthScoreClick} />
+      );
     };
 
     return <HealthScoreWithClick />;
@@ -628,7 +637,8 @@ export const HealthScore: Story = {
   parameters: {
     docs: {
       description: {
-        story: "Agent with health score (95). The health score badge appears below the agent name and is clickable.",
+        story:
+          'Agent with health score (95). The health score badge appears below the agent name and is clickable.',
       },
     },
   },
@@ -636,14 +646,14 @@ export const HealthScore: Story = {
 
 export const HealthScoreZero: Story = {
   args: {
-    mode: "design",
+    mode: 'design',
     resources: sampleResources,
   },
   render: (args) => <AgentFlowWrapper {...args} healthScore={0} />,
   parameters: {
     docs: {
       description: {
-        story: "Agent with zero health score (0).",
+        story: 'Agent with zero health score (0).',
       },
     },
   },
@@ -651,14 +661,14 @@ export const HealthScoreZero: Story = {
 
 export const NoHealthScore: Story = {
   args: {
-    mode: "design",
+    mode: 'design',
     resources: sampleResources,
   },
   render: (args) => <AgentFlowWrapper {...args} healthScore={undefined} />,
   parameters: {
     docs: {
       description: {
-        story: "Agent without health score. The health score badge is not rendered when undefined.",
+        story: 'Agent without health score. The health score badge is not rendered when undefined.',
       },
     },
   },
@@ -679,9 +689,12 @@ const SuggestionModeWrapper = ({
   const [resources, setResources] = useState<AgentFlowResource[]>(initialResources);
   const [suggestionGroup, setSuggestionGroup] = useState<AgentFlowSuggestionGroup | null>(null);
   const [selectedResourceId, setSelectedResourceId] = useState<string | null>(null);
-  const [pendingStandalonePlaceholderId, setPendingStandalonePlaceholderId] = useState<string | null>(null);
+  const [pendingStandalonePlaceholderId, setPendingStandalonePlaceholderId] = useState<
+    string | null
+  >(null);
   const [openModalType, setOpenModalType] = useState<AgentFlowResourceType | null>(null);
-  const [placeholderBeingConfigured, setPlaceholderBeingConfigured] = useState<AgentFlowResourceNodeData | null>(null);
+  const [placeholderBeingConfigured, setPlaceholderBeingConfigured] =
+    useState<AgentFlowResourceNodeData | null>(null);
 
   const handleEnable = useCallback((resourceId: string, resource: AgentFlowResourceNodeData) => {
     setResources((prev) =>
@@ -701,91 +714,111 @@ const SuggestionModeWrapper = ({
     );
   }, []);
 
-  const handleAddBreakpoint = useCallback((resourceId: string, resource: AgentFlowResourceNodeData) => {
-    setResources((prev) =>
-      prev.map((r) => ({
-        ...r,
-        ...(`${resource.parentNodeId}=>${r.name}:${r.id}` === resourceId && {
-          hasBreakpoint: true,
-        }),
-      }))
-    );
-  }, []);
+  const handleAddBreakpoint = useCallback(
+    (resourceId: string, resource: AgentFlowResourceNodeData) => {
+      setResources((prev) =>
+        prev.map((r) => ({
+          ...r,
+          ...(`${resource.parentNodeId}=>${r.name}:${r.id}` === resourceId && {
+            hasBreakpoint: true,
+          }),
+        }))
+      );
+    },
+    []
+  );
 
-  const handleRemoveBreakpoint = useCallback((resourceId: string, resource: AgentFlowResourceNodeData) => {
-    setResources((prev) =>
-      prev.map((r) => ({
-        ...r,
-        ...(`${resource.parentNodeId}=>${r.name}:${r.id}` === resourceId && {
-          hasBreakpoint: false,
-        }),
-      }))
-    );
-  }, []);
+  const handleRemoveBreakpoint = useCallback(
+    (resourceId: string, resource: AgentFlowResourceNodeData) => {
+      setResources((prev) =>
+        prev.map((r) => ({
+          ...r,
+          ...(`${resource.parentNodeId}=>${r.name}:${r.id}` === resourceId && {
+            hasBreakpoint: false,
+          }),
+        }))
+      );
+    },
+    []
+  );
 
-  const handleAddGuardrail = useCallback((resourceId: string, resource: AgentFlowResourceNodeData) => {
-    setResources((prev) =>
-      prev.map((r) => ({
-        ...r,
-        ...(`${resource.parentNodeId}=>${r.name}:${r.id}` === resourceId && {
-          hasGuardrails: true,
-        }),
-      }))
-    );
-  }, []);
+  const handleAddGuardrail = useCallback(
+    (resourceId: string, resource: AgentFlowResourceNodeData) => {
+      setResources((prev) =>
+        prev.map((r) => ({
+          ...r,
+          ...(`${resource.parentNodeId}=>${r.name}:${r.id}` === resourceId && {
+            hasGuardrails: true,
+          }),
+        }))
+      );
+    },
+    []
+  );
 
-  const handleRequestPlaceholder = useCallback((type: AgentFlowResourceType, cleanedSuggestionGroup: AgentFlowSuggestionGroup | null) => {
-    // Skip placeholder for escalation - they create directly
-    if (type === "escalation") {
-      return null;
-    }
+  const handleRequestPlaceholder = useCallback(
+    (type: AgentFlowResourceType, cleanedSuggestionGroup: AgentFlowSuggestionGroup | null) => {
+      // Skip placeholder for escalation - they create directly
+      if (type === 'escalation') {
+        return null;
+      }
 
-    // Component automatically removes existing standalone placeholders
-    // Use cleanedSuggestionGroup (not suggestionGroup) to build on the cleaned state
+      // Component automatically removes existing standalone placeholders
+      // Use cleanedSuggestionGroup (not suggestionGroup) to build on the cleaned state
 
-    // Create a placeholder resource
-    const placeholder: Partial<AgentFlowResource> = {
-      id: `placeholder-${type}-${Date.now()}`,
-      type,
-      name: `New ${type.charAt(0).toUpperCase() + type.slice(1)}`,
-      description: `Configure this ${type}...`,
-    };
+      // Create a placeholder resource
+      const placeholder: Partial<AgentFlowResource> = {
+        id: `placeholder-${type}-${Date.now()}`,
+        type,
+        name: `New ${type.charAt(0).toUpperCase() + type.slice(1)}`,
+        description: `Configure this ${type}...`,
+      };
 
-    // Add type-specific fields
-    if (type === "tool") {
-      (placeholder as any).iconUrl = "";
-      (placeholder as any).projectType = ProjectType.Internal;
-    } else if (type === "mcp") {
-      (placeholder as any).slug = "";
-      (placeholder as any).folderPath = "";
-      (placeholder as any).availableTools = [];
-    }
+      // Add type-specific fields
+      if (type === 'tool') {
+        (placeholder as any).iconUrl = '';
+        (placeholder as any).projectType = ProjectType.Internal;
+      } else if (type === 'mcp') {
+        (placeholder as any).slug = '';
+        (placeholder as any).folderPath = '';
+        (placeholder as any).availableTools = [];
+      }
 
-    // Use the cleaned suggestion group provided by the component (with standalone placeholders removed)
-    // This ensures only one standalone placeholder exists at a time
-    const updatedSuggestionGroup = createPlaceholderSuggestion(placeholder, cleanedSuggestionGroup, { isStandalone: true });
-    setSuggestionGroup(updatedSuggestionGroup);
+      // Use the cleaned suggestion group provided by the component (with standalone placeholders removed)
+      // This ensures only one standalone placeholder exists at a time
+      const updatedSuggestionGroup = createPlaceholderSuggestion(
+        placeholder,
+        cleanedSuggestionGroup,
+        { isStandalone: true }
+      );
+      setSuggestionGroup(updatedSuggestionGroup);
 
-    // Find the suggestion ID for this placeholder and track it
-    const newSuggestion = updatedSuggestionGroup.suggestions[updatedSuggestionGroup.suggestions.length - 1];
-    if (newSuggestion) {
-      setPendingStandalonePlaceholderId(newSuggestion.id);
-    }
+      // Find the suggestion ID for this placeholder and track it
+      const newSuggestion =
+        updatedSuggestionGroup.suggestions[updatedSuggestionGroup.suggestions.length - 1];
+      if (newSuggestion) {
+        setPendingStandalonePlaceholderId(newSuggestion.id);
+      }
 
-    // Open the modal for this resource type
-    setOpenModalType(type);
+      // Open the modal for this resource type
+      setOpenModalType(type);
 
-    return placeholder;
-  }, []);
+      return placeholder;
+    },
+    []
+  );
 
-  const handlePlaceholderNodeClick = useCallback((resourceType: AgentFlowResourceType, placeholderData: AgentFlowResourceNodeData) => {
-    // When a placeholder node is clicked, open the modal for that type
-    setOpenModalType(resourceType);
-    setPlaceholderBeingConfigured(placeholderData);
-  }, []);
+  const handlePlaceholderNodeClick = useCallback(
+    (resourceType: AgentFlowResourceType, placeholderData: AgentFlowResourceNodeData) => {
+      // When a placeholder node is clicked, open the modal for that type
+      setOpenModalType(resourceType);
+      setPlaceholderBeingConfigured(placeholderData);
+    },
+    []
+  );
 
   const handleActOnSuggestion = useCallback(
-    (suggestionId: string, action: "accept" | "reject") => {
+    (suggestionId: string, action: 'accept' | 'reject') => {
       if (!suggestionGroup) return;
 
       const suggestion = suggestionGroup.suggestions.find((s) => s.id === suggestionId);
@@ -798,7 +831,7 @@ const SuggestionModeWrapper = ({
         setPlaceholderBeingConfigured(null);
       }
 
-      if (action === "reject") {
+      if (action === 'reject') {
         // Clear the suggestion group if no more suggestions
         if (remainingSuggestions.length === 0) {
           setSuggestionGroup(null);
@@ -815,22 +848,26 @@ const SuggestionModeWrapper = ({
 
       // Handle different suggestion types
       switch (suggestion.type) {
-        case "add": {
+        case 'add': {
           if (suggestion.resource) {
             setResources((prev) => [...prev, suggestion.resource as AgentFlowResource]);
             setSelectedResourceId(suggestion.resource.id);
           }
           break;
         }
-        case "update": {
+        case 'update': {
           if (suggestion.resourceId && suggestion.updatedFields) {
             setResources((prev) =>
-              prev.map((r) => (r.id === suggestion.resourceId ? ({ ...r, ...suggestion.updatedFields } as AgentFlowResource) : r))
+              prev.map((r) =>
+                r.id === suggestion.resourceId
+                  ? ({ ...r, ...suggestion.updatedFields } as AgentFlowResource)
+                  : r
+              )
             );
           }
           break;
         }
-        case "delete": {
+        case 'delete': {
           if (suggestion.resourceIdToDelete) {
             setResources((prev) => prev.filter((r) => r.id !== suggestion.resourceIdToDelete));
           }
@@ -856,7 +893,7 @@ const SuggestionModeWrapper = ({
   const handleConfirmModal = useCallback(() => {
     // When modal is confirmed, auto-accept the pending placeholder
     if (pendingStandalonePlaceholderId) {
-      handleActOnSuggestion(pendingStandalonePlaceholderId, "accept");
+      handleActOnSuggestion(pendingStandalonePlaceholderId, 'accept');
       setPendingStandalonePlaceholderId(null);
     }
     setOpenModalType(null);
@@ -866,7 +903,7 @@ const SuggestionModeWrapper = ({
   const handleCancelModal = useCallback(() => {
     // When modal is cancelled, reject the pending placeholder
     if (pendingStandalonePlaceholderId) {
-      handleActOnSuggestion(pendingStandalonePlaceholderId, "reject");
+      handleActOnSuggestion(pendingStandalonePlaceholderId, 'reject');
       setPendingStandalonePlaceholderId(null);
     }
     setOpenModalType(null);
@@ -874,13 +911,13 @@ const SuggestionModeWrapper = ({
   }, [pendingStandalonePlaceholderId, handleActOnSuggestion]);
 
   const handleActOnSuggestionGroup = useCallback(
-    (suggestionGroupId: string, action: "accept" | "reject") => {
+    (suggestionGroupId: string, action: 'accept' | 'reject') => {
       if (!suggestionGroup) return;
 
       // Filter out standalone suggestions - they should not be affected by bulk operations
       const nonStandaloneSuggestions = suggestionGroup.suggestions.filter((s) => !s.isStandalone);
 
-      if (action === "reject") {
+      if (action === 'reject') {
         // Keep standalone suggestions, remove non-standalone ones
         const remainingSuggestions = suggestionGroup.suggestions.filter((s) => s.isStandalone);
         if (remainingSuggestions.length > 0) {
@@ -900,23 +937,27 @@ const SuggestionModeWrapper = ({
 
         nonStandaloneSuggestions.forEach((suggestion) => {
           switch (suggestion.type) {
-            case "add": {
+            case 'add': {
               if (suggestion.resource) {
                 updatedResources.push(suggestion.resource as AgentFlowResource);
               }
               break;
             }
-            case "update": {
+            case 'update': {
               if (suggestion.resourceId && suggestion.updatedFields) {
                 updatedResources = updatedResources.map((r) =>
-                  r.id === suggestion.resourceId ? ({ ...r, ...suggestion.updatedFields } as AgentFlowResource) : r
+                  r.id === suggestion.resourceId
+                    ? ({ ...r, ...suggestion.updatedFields } as AgentFlowResource)
+                    : r
                 );
               }
               break;
             }
-            case "delete": {
+            case 'delete': {
               if (suggestion.resourceIdToDelete) {
-                updatedResources = updatedResources.filter((r) => r.id !== suggestion.resourceIdToDelete);
+                updatedResources = updatedResources.filter(
+                  (r) => r.id !== suggestion.resourceIdToDelete
+                );
               }
               break;
             }
@@ -947,11 +988,13 @@ const SuggestionModeWrapper = ({
       setSelectedResourceId(resourceId);
 
       // If clicking on pane (empty space), reject the pending standalone placeholder and close modal
-      if (resourceId === "pane" && pendingStandalonePlaceholderId) {
+      if (resourceId === 'pane' && pendingStandalonePlaceholderId) {
         // Verify the suggestion still exists and is standalone before rejecting
-        const pendingSuggestion = suggestionGroup?.suggestions.find((s) => s.id === pendingStandalonePlaceholderId);
+        const pendingSuggestion = suggestionGroup?.suggestions.find(
+          (s) => s.id === pendingStandalonePlaceholderId
+        );
         if (pendingSuggestion?.isStandalone) {
-          handleActOnSuggestion(pendingStandalonePlaceholderId, "reject");
+          handleActOnSuggestion(pendingStandalonePlaceholderId, 'reject');
         }
         setPendingStandalonePlaceholderId(null);
         setOpenModalType(null);
@@ -965,19 +1008,19 @@ const SuggestionModeWrapper = ({
     let newResource: AgentFlowResource;
 
     switch (type) {
-      case "escalation":
+      case 'escalation':
         newResource = createSampleEscalation();
         break;
-      case "context":
+      case 'context':
         newResource = createSampleContext();
         break;
-      case "tool":
+      case 'tool':
         newResource = createSampleTool();
         break;
-      case "mcp":
+      case 'mcp':
         newResource = createSampleMcp();
         break;
-      case "memorySpace":
+      case 'memorySpace':
         newResource = createSampleMemorySpace();
         break;
       default:
@@ -1005,10 +1048,10 @@ const SuggestionModeWrapper = ({
         p={16}
         gap={16}
         style={{
-          backgroundColor: "var(--uix-canvas-background-raised)",
-          color: "var(--uix-canvas-foreground)",
-          borderLeft: "1px solid var(--uix-canvas-border-de-emp)",
-          overflowY: "auto",
+          backgroundColor: 'var(--uix-canvas-background-raised)',
+          color: 'var(--uix-canvas-foreground)',
+          borderLeft: '1px solid var(--uix-canvas-border-de-emp)',
+          overflowY: 'auto',
         }}
       >
         <h3>Placeholder Mode Demo</h3>
@@ -1017,22 +1060,33 @@ const SuggestionModeWrapper = ({
           style={{
             padding: 12,
             borderRadius: 4,
-            fontSize: "0.875rem",
+            fontSize: '0.875rem',
           }}
         >
-          <div style={{ lineHeight: "1.5" }}>
-            <p style={{ margin: "0 0 12px 0" }}>
-              This story demonstrates two distinct suggestion workflows that can coexist on the canvas.
+          <div style={{ lineHeight: '1.5' }}>
+            <p style={{ margin: '0 0 12px 0' }}>
+              This story demonstrates two distinct suggestion workflows that can coexist on the
+              canvas.
             </p>
 
-            <div style={{ borderTop: "1px solid var(--uix-canvas-border)", margin: "12px 0", paddingTop: "12px" }}>
-              <h4 style={{ margin: "0 0 8px 0", fontSize: "0.875rem", fontWeight: 600 }}>1️⃣ Placeholder on Direct Resource Creation</h4>
-              <p style={{ margin: "0 0 8px 0", fontSize: "0.8125rem", fontStyle: "italic" }}>
+            <div
+              style={{
+                borderTop: '1px solid var(--uix-canvas-border)',
+                margin: '12px 0',
+                paddingTop: '12px',
+              }}
+            >
+              <h4 style={{ margin: '0 0 8px 0', fontSize: '0.875rem', fontWeight: 600 }}>
+                1️⃣ Placeholder on Direct Resource Creation
+              </h4>
+              <p style={{ margin: '0 0 8px 0', fontSize: '0.8125rem', fontStyle: 'italic' }}>
                 User-initiated resource creation with confirmation workflow
               </p>
 
-              <p style={{ margin: "8px 0 4px 0", fontSize: "0.8125rem", fontWeight: 600 }}>How it works:</p>
-              <ol style={{ margin: "4px 0 8px 0", paddingLeft: "20px", fontSize: "0.75rem" }}>
+              <p style={{ margin: '8px 0 4px 0', fontSize: '0.8125rem', fontWeight: 600 }}>
+                How it works:
+              </p>
+              <ol style={{ margin: '4px 0 8px 0', paddingLeft: '20px', fontSize: '0.75rem' }}>
                 <li>
                   Click any <strong>+</strong> button on the agent node
                 </li>
@@ -1043,7 +1097,8 @@ const SuggestionModeWrapper = ({
                   A <strong>configuration modal</strong> opens for that resource type
                 </li>
                 <li>
-                  <strong>Confirm in modal</strong> → Accepts & converts placeholder to real resource
+                  <strong>Confirm in modal</strong> → Accepts & converts placeholder to real
+                  resource
                 </li>
                 <li>
                   <strong>Cancel modal or click empty space</strong> → Rejects & removes placeholder
@@ -1053,8 +1108,17 @@ const SuggestionModeWrapper = ({
                 </li>
               </ol>
 
-              <p style={{ margin: "8px 0 4px 0", fontSize: "0.8125rem", fontWeight: 600 }}>Key features:</p>
-              <ul style={{ margin: "4px 0 0 0", paddingLeft: "20px", fontSize: "0.75rem", lineHeight: "1.6" }}>
+              <p style={{ margin: '8px 0 4px 0', fontSize: '0.8125rem', fontWeight: 600 }}>
+                Key features:
+              </p>
+              <ul
+                style={{
+                  margin: '4px 0 0 0',
+                  paddingLeft: '20px',
+                  fontSize: '0.75rem',
+                  lineHeight: '1.6',
+                }}
+              >
                 <li>Modal-based configuration workflow</li>
                 <li>Only one placeholder at a time (new ones replace old)</li>
                 <li>Placeholder auto-selected, cannot show toolbar</li>
@@ -1066,30 +1130,55 @@ const SuggestionModeWrapper = ({
               </ul>
             </div>
 
-            <div style={{ borderTop: "1px solid var(--uix-canvas-border)", margin: "12px 0", paddingTop: "12px" }}>
-              <h4 style={{ margin: "0 0 8px 0", fontSize: "0.875rem", fontWeight: 600 }}>2️⃣ Autopilot Suggestions View</h4>
-              <p style={{ margin: "0 0 8px 0", fontSize: "0.8125rem", fontStyle: "italic" }}>Batch suggestions from AI/middleware</p>
+            <div
+              style={{
+                borderTop: '1px solid var(--uix-canvas-border)',
+                margin: '12px 0',
+                paddingTop: '12px',
+              }}
+            >
+              <h4 style={{ margin: '0 0 8px 0', fontSize: '0.875rem', fontWeight: 600 }}>
+                2️⃣ Autopilot Suggestions View
+              </h4>
+              <p style={{ margin: '0 0 8px 0', fontSize: '0.8125rem', fontStyle: 'italic' }}>
+                Batch suggestions from AI/middleware
+              </p>
 
-              <p style={{ margin: "8px 0 4px 0", fontSize: "0.8125rem", fontWeight: 600 }}>How it works:</p>
-              <ol style={{ margin: "4px 0 8px 0", paddingLeft: "20px", fontSize: "0.75rem" }}>
+              <p style={{ margin: '8px 0 4px 0', fontSize: '0.8125rem', fontWeight: 600 }}>
+                How it works:
+              </p>
+              <ol style={{ margin: '4px 0 8px 0', paddingLeft: '20px', fontSize: '0.75rem' }}>
                 <li>
                   Click <strong>Inserts/Deletes/Updates/Mixed</strong> buttons (top-left)
                 </li>
                 <li>Multiple suggestions appear with visual indicators</li>
                 <li>
-                  Use <strong style={{ color: "var(--uix-canvas-primary)" }}>suggestion group panel</strong> (bottom-center)
+                  Use{' '}
+                  <strong style={{ color: 'var(--uix-canvas-primary)' }}>
+                    suggestion group panel
+                  </strong>{' '}
+                  (bottom-center)
                 </li>
                 <li>Accept/reject individually or use bulk operations</li>
               </ol>
 
-              <p style={{ margin: "8px 0 4px 0", fontSize: "0.8125rem", fontWeight: 600 }}>Key features:</p>
-              <ul style={{ margin: "4px 0 8px 0", paddingLeft: "20px", fontSize: "0.75rem", lineHeight: "1.6" }}>
+              <p style={{ margin: '8px 0 4px 0', fontSize: '0.8125rem', fontWeight: 600 }}>
+                Key features:
+              </p>
+              <ul
+                style={{
+                  margin: '4px 0 8px 0',
+                  paddingLeft: '20px',
+                  fontSize: '0.75rem',
+                  lineHeight: '1.6',
+                }}
+              >
                 <li>Navigation controls with up/down arrows</li>
                 <li>
                   <strong>Bulk operations:</strong> Accept all / Reject all
                 </li>
-                <li style={{ marginTop: "4px" }}>Visual indicators:</li>
-                <ul style={{ margin: "2px 0 0 0", paddingLeft: "16px", fontSize: "0.7rem" }}>
+                <li style={{ marginTop: '4px' }}>Visual indicators:</li>
+                <ul style={{ margin: '2px 0 0 0', paddingLeft: '16px', fontSize: '0.7rem' }}>
                   <li>
                     <span>●</span> <strong>Add:</strong> New resources
                   </li>
@@ -1104,16 +1193,16 @@ const SuggestionModeWrapper = ({
 
               <div
                 style={{
-                  margin: "8px 0 0 0",
-                  padding: "8px",
-                  backgroundColor: "var(--uix-canvas-background-secondary)",
-                  borderRadius: "4px",
-                  fontSize: "0.7rem",
-                  lineHeight: "1.5",
+                  margin: '8px 0 0 0',
+                  padding: '8px',
+                  backgroundColor: 'var(--uix-canvas-background-secondary)',
+                  borderRadius: '4px',
+                  fontSize: '0.7rem',
+                  lineHeight: '1.5',
                 }}
               >
-                <strong>💡 Coexistence:</strong> Both workflows can be active simultaneously without conflicts. Interactive placeholders and
-                batch suggestions operate independently.
+                <strong>💡 Coexistence:</strong> Both workflows can be active simultaneously without
+                conflicts. Interactive placeholders and batch suggestions operate independently.
               </div>
             </div>
           </div>
@@ -1128,13 +1217,13 @@ const SuggestionModeWrapper = ({
       suggestions: [
         {
           id: `suggestion-add-1-${Date.now()}`,
-          type: "add",
+          type: 'add',
           resource: {
             id: `suggestion-tool-${Date.now()}`,
-            type: "tool",
-            name: "Email Service",
-            description: "Send emails to users",
-            iconUrl: "",
+            type: 'tool',
+            name: 'Email Service',
+            description: 'Send emails to users',
+            iconUrl: '',
             hasBreakpoint: false,
             hasGuardrails: false,
             projectType: ProjectType.Internal,
@@ -1142,19 +1231,19 @@ const SuggestionModeWrapper = ({
         },
         {
           id: `suggestion-add-2-${Date.now()}`,
-          type: "add",
+          type: 'add',
           resource: {
             id: `suggestion-context-${Date.now()}`,
-            type: "context",
-            name: "User Preferences",
-            description: "User preference data",
+            type: 'context',
+            name: 'User Preferences',
+            description: 'User preference data',
             hasBreakpoint: false,
           },
         },
       ],
       metadata: {
-        title: "Add Suggestions",
-        description: "Suggested resources to add",
+        title: 'Add Suggestions',
+        description: 'Suggested resources to add',
       },
     };
     setSuggestionGroup(newSuggestions);
@@ -1168,12 +1257,12 @@ const SuggestionModeWrapper = ({
       id: `suggestion-group-${Date.now()}`,
       suggestions: resourcesToDelete.map((resource, index) => ({
         id: `suggestion-delete-${index}-${Date.now()}`,
-        type: "delete" as const,
+        type: 'delete' as const,
         resourceIdToDelete: resource.id,
       })),
       metadata: {
-        title: "Delete Suggestions",
-        description: "Suggested resources to delete",
+        title: 'Delete Suggestions',
+        description: 'Suggested resources to delete',
       },
     };
     setSuggestionGroup(newSuggestions);
@@ -1190,17 +1279,17 @@ const SuggestionModeWrapper = ({
         // Agent update suggestion
         {
           id: `suggestion-update-agent-${timestamp}`,
-          type: "update" as const,
-          resourceId: "agent",
+          type: 'update' as const,
+          resourceId: 'agent',
           updatedFields: {
-            name: "Test Agent (Updated)",
-            description: "Test Description - Updated via suggestions",
+            name: 'Test Agent (Updated)',
+            description: 'Test Description - Updated via suggestions',
           },
         },
         // Resource update suggestions
         ...resourcesToUpdate.map((resource, index) => ({
           id: `suggestion-update-${index}-${timestamp}`,
-          type: "update" as const,
+          type: 'update' as const,
           resourceId: resource.id,
           updatedFields: {
             name: `${resource.name} (Updated)`,
@@ -1209,8 +1298,8 @@ const SuggestionModeWrapper = ({
         })),
       ],
       metadata: {
-        title: "Update Suggestions",
-        description: "Suggested resource updates",
+        title: 'Update Suggestions',
+        description: 'Suggested resource updates',
       },
     };
     setSuggestionGroup(newSuggestions);
@@ -1226,13 +1315,13 @@ const SuggestionModeWrapper = ({
         // Add suggestions
         {
           id: `suggestion-add-1-${timestamp}`,
-          type: "add",
+          type: 'add',
           resource: {
             id: `suggestion-tool-${timestamp}`,
-            type: "tool",
-            name: "Database Query",
-            description: "Query database",
-            iconUrl: "",
+            type: 'tool',
+            name: 'Database Query',
+            description: 'Query database',
+            iconUrl: '',
             hasBreakpoint: false,
             hasGuardrails: false,
             projectType: ProjectType.Internal,
@@ -1241,11 +1330,11 @@ const SuggestionModeWrapper = ({
         // Agent update suggestion
         {
           id: `suggestion-update-agent-${timestamp}`,
-          type: "update" as const,
-          resourceId: "agent",
+          type: 'update' as const,
+          resourceId: 'agent',
           updatedFields: {
-            name: "Test Agent (Updated)",
-            description: "Updated via mixed suggestions",
+            name: 'Test Agent (Updated)',
+            description: 'Updated via mixed suggestions',
           },
         },
         // Update suggestion for resource
@@ -1253,11 +1342,11 @@ const SuggestionModeWrapper = ({
           ? [
               {
                 id: `suggestion-update-1-${timestamp}`,
-                type: "update" as const,
+                type: 'update' as const,
                 resourceId: existingResources[0]!.id,
                 updatedFields: {
                   name: `${existingResources[0]!.name} (Updated)`,
-                  description: "Updated via mixed suggestions",
+                  description: 'Updated via mixed suggestions',
                 },
               },
             ]
@@ -1267,15 +1356,15 @@ const SuggestionModeWrapper = ({
           ? [
               {
                 id: `suggestion-delete-1-${timestamp}`,
-                type: "delete" as const,
+                type: 'delete' as const,
                 resourceIdToDelete: existingResources[1]!.id,
               },
             ]
           : []),
       ],
       metadata: {
-        title: "Mixed Suggestions",
-        description: "Combination of add, update, and delete suggestions",
+        title: 'Mixed Suggestions',
+        description: 'Combination of add, update, and delete suggestions',
       },
     };
     setSuggestionGroup(newSuggestions);
@@ -1287,10 +1376,30 @@ const SuggestionModeWrapper = ({
         <Column mt={12} gap={8}>
           <ApTypography variant={FontVariantToken.fontSizeM}>Suggestion type:</ApTypography>
           <Row gap={8}>
-            <ApButton size="small" variant="primary" label="Inserts" onClick={handleCreateInsertSuggestions} />
-            <ApButton size="small" variant="primary" label="Deletes" onClick={handleCreateDeleteSuggestions} />
-            <ApButton size="small" variant="primary" label="Updates" onClick={handleCreateUpdateSuggestions} />
-            <ApButton size="small" variant="primary" label="Mixed" onClick={handleCreateMixedSuggestions} />
+            <ApButton
+              size="small"
+              variant="primary"
+              label="Inserts"
+              onClick={handleCreateInsertSuggestions}
+            />
+            <ApButton
+              size="small"
+              variant="primary"
+              label="Deletes"
+              onClick={handleCreateDeleteSuggestions}
+            />
+            <ApButton
+              size="small"
+              variant="primary"
+              label="Updates"
+              onClick={handleCreateUpdateSuggestions}
+            />
+            <ApButton
+              size="small"
+              variant="primary"
+              label="Mixed"
+              onClick={handleCreateMixedSuggestions}
+            />
           </Row>
         </Column>
       </StoryInfoPanel>
@@ -1299,12 +1408,12 @@ const SuggestionModeWrapper = ({
 
   return (
     <ReactFlowProvider>
-      <Row w="100%" h="100%" style={{ position: "relative" }}>
-        <div style={{ flex: 1, position: "relative" }}>
+      <Row w="100%" h="100%" style={{ position: 'relative' }}>
+        <div style={{ flex: 1, position: 'relative' }}>
           <AgentFlow
             allowDragging={false}
             definition={sampleAgentDefinition}
-            spans={mode === "view" ? spans : []}
+            spans={mode === 'view' ? spans : []}
             name="Test Agent"
             description="Test Description"
             mode={mode}
@@ -1328,24 +1437,31 @@ const SuggestionModeWrapper = ({
           {openModalType && (
             <div
               style={{
-                position: "absolute",
-                top: "50%",
-                left: "50%",
-                transform: "translate(-50%, -50%)",
-                backgroundColor: "var(--uix-canvas-background-raised)",
-                border: "1px solid var(--uix-canvas-border)",
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+                backgroundColor: 'var(--uix-canvas-background-raised)',
+                border: '1px solid var(--uix-canvas-border)',
                 borderRadius: 8,
                 padding: 24,
                 minWidth: 400,
-                boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
                 zIndex: 1000,
               }}
             >
-              <h3 style={{ margin: "0 0 16px 0", color: "var(--uix-canvas-foreground)" }}>
+              <h3 style={{ margin: '0 0 16px 0', color: 'var(--uix-canvas-foreground)' }}>
                 Configure {openModalType.charAt(0).toUpperCase() + openModalType.slice(1)}
               </h3>
-              <p style={{ margin: "0 0 24px 0", color: "var(--uix-canvas-foreground-de-emp)", fontSize: "0.875rem" }}>
-                This is a simulated modal/panel that would normally allow you to configure the resource.
+              <p
+                style={{
+                  margin: '0 0 24px 0',
+                  color: 'var(--uix-canvas-foreground-de-emp)',
+                  fontSize: '0.875rem',
+                }}
+              >
+                This is a simulated modal/panel that would normally allow you to configure the
+                resource.
                 {placeholderBeingConfigured && (
                   <>
                     <br />
@@ -1354,21 +1470,31 @@ const SuggestionModeWrapper = ({
                   </>
                 )}
               </p>
-              <Row gap={8} style={{ justifyContent: "flex-end" }}>
-                <ApButton size="small" variant="secondary" label="Cancel" onClick={handleCancelModal} />
-                <ApButton size="small" variant="primary" label="Confirm" onClick={handleConfirmModal} />
+              <Row gap={8} style={{ justifyContent: 'flex-end' }}>
+                <ApButton
+                  size="small"
+                  variant="secondary"
+                  label="Cancel"
+                  onClick={handleCancelModal}
+                />
+                <ApButton
+                  size="small"
+                  variant="primary"
+                  label="Confirm"
+                  onClick={handleConfirmModal}
+                />
               </Row>
             </div>
           )}
           {openModalType && (
             <div
               style={{
-                position: "absolute",
+                position: 'absolute',
                 top: 0,
                 left: 0,
                 right: 0,
                 bottom: 0,
-                backgroundColor: "rgba(0, 0, 0, 0.5)",
+                backgroundColor: 'rgba(0, 0, 0, 0.5)',
                 zIndex: 999,
               }}
               onClick={handleCancelModal}
@@ -1384,7 +1510,7 @@ const SuggestionModeWrapper = ({
 
 export const DesignModeWithPlaceholderAndAutopilotSuggestions: Story = {
   args: {
-    mode: "design",
+    mode: 'design',
     enableTimelinePlayer: false,
   },
   render: (args) => <SuggestionModeWrapper {...args} initialResources={sampleResources} />,

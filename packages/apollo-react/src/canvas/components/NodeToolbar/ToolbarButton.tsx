@@ -1,8 +1,8 @@
-import { ApIcon, ApTooltip } from "@uipath/portal-shell-react";
-import { memo } from "react";
-import { getLighterColor } from "@uipath/uix/core";
-import { StyledToolbarButton } from "./NodeToolbar.styles";
-import type { ToolbarActionItem } from "./NodeToolbar.types";
+import { ApIcon, ApTooltip } from '@uipath/portal-shell-react';
+import { memo } from 'react';
+import { getLighterColor } from '@uipath/uix/core';
+import { StyledToolbarButton } from './NodeToolbar.styles';
+import type { ToolbarActionItem } from './NodeToolbar.types';
 
 export interface ExtendedToolbarAction extends ToolbarActionItem {
   onClick: () => void;
@@ -33,7 +33,7 @@ export const ToolbarButton = memo(({ action, layoutId }: ToolbarButtonProps) => 
     <StyledToolbarButton
       layout={layoutId ? true : undefined}
       layoutId={layoutId}
-      transition={{ type: "tween", duration: 0.2, ease: "easeOut" }}
+      transition={{ type: 'tween', duration: 0.2, ease: 'easeOut' }}
       type="button"
       className="nodrag nopan"
       onClick={handleClick}
@@ -46,13 +46,13 @@ export const ToolbarButton = memo(({ action, layoutId }: ToolbarButtonProps) => 
       $hoverColor={hoverColor}
     >
       <ApTooltip content={action.label} placement="top">
-        {action.icon && typeof action.icon === "string" && (
+        {action.icon && typeof action.icon === 'string' && (
           <ApIcon variant="outlined" name={action.icon} size="16px" color={action.color} />
         )}
-        {action.icon && typeof action.icon !== "string" && action.icon}
+        {action.icon && typeof action.icon !== 'string' && action.icon}
       </ApTooltip>
     </StyledToolbarButton>
   );
 });
 
-ToolbarButton.displayName = "ToolbarButton";
+ToolbarButton.displayName = 'ToolbarButton';

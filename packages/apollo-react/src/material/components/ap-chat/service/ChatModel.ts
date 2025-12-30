@@ -4,29 +4,29 @@ import type { SupportedLocale } from '../../../../i18n';
 export type ApChatTheme = 'light' | 'light-hc' | 'dark' | 'dark-hc';
 
 export enum AutopilotChatMode {
-    Closed = 'closed',
-    SideBySide = 'side-by-side',
-    FullScreen = 'full-screen',
-    Embedded = 'embedded',
+  Closed = 'closed',
+  SideBySide = 'side-by-side',
+  FullScreen = 'full-screen',
+  Embedded = 'embedded',
 }
 
 export enum AutopilotChatFileType {
-    Word = 'Word',
-    PowerPoint = 'PowerPoint',
-    File = 'File',
+  Word = 'Word',
+  PowerPoint = 'PowerPoint',
+  File = 'File',
 }
 
 export interface AutopilotChatFileInfo {
-    name: string;
-    type: string;
-    size: number;
-    lastModified: number;
-    content: {
-        text: string | null;
-        binary: Uint8Array | null;
-        base64: string | null;
-    };
-    loading?: boolean;
+  name: string;
+  type: string;
+  size: number;
+  lastModified: number;
+  content: {
+    text: string | null;
+    binary: Uint8Array | null;
+    base64: string | null;
+  };
+  loading?: boolean;
 }
 
 /**
@@ -38,10 +38,10 @@ export interface AutopilotChatFileInfo {
  * @property description - The description of the model
  */
 export interface AutopilotChatModelInfo {
-    id: string;
-    name: string;
-    icon?: string;
-    description: string | null;
+  id: string;
+  name: string;
+  icon?: string;
+  description: string | null;
 }
 
 /**
@@ -53,10 +53,10 @@ export interface AutopilotChatModelInfo {
  * @property description - The description of the agent mode (optional)
  */
 export interface AutopilotChatAgentModeInfo {
-    id: string;
-    name: string;
-    icon?: string;
-    description?: string;
+  id: string;
+  name: string;
+  icon?: string;
+  description?: string;
 }
 
 /**
@@ -71,17 +71,17 @@ export interface AutopilotChatAgentModeInfo {
  * @property disabled - Optional flag to disable the action
  */
 export interface AutopilotChatCustomHeaderAction {
-    id: string;
-    name: string;
-    description?: string;
-    icon?: string;
-    children?: Array<Omit<AutopilotChatCustomHeaderAction, 'children'>>;
-    disabled?: boolean;
+  id: string;
+  name: string;
+  description?: string;
+  icon?: string;
+  children?: Array<Omit<AutopilotChatCustomHeaderAction, 'children'>>;
+  disabled?: boolean;
 }
 
 export enum AutopilotChatRole {
-    User = 'user',
-    Assistant = 'assistant',
+  User = 'user',
+  Assistant = 'assistant',
 }
 
 /**
@@ -116,29 +116,30 @@ export enum AutopilotChatRole {
  *                                        should wait for more messages
  */
 export interface AutopilotChatMessage {
-    id: string;
-    content: string;
-    created_at: string;
-    role: AutopilotChatRole;
-    widget: string;
-    attachments?: AutopilotChatFileInfo[];
-    contentParts?: ContentPart[];
-    hijacked?: boolean;
-    fakeStream?: boolean;
-    stream?: boolean;
-    done?: boolean;
-    actions?: AutopilotChatMessageAction[];
-    feedback?: {
-        isPositive: boolean;
-    };
-    groupId?: string;
-    meta?: any;
-    toCopy?: string;
-    shouldWaitForMoreMessages?: boolean;
-    disableActions?: boolean;
+  id: string;
+  content: string;
+  created_at: string;
+  role: AutopilotChatRole;
+  widget: string;
+  attachments?: AutopilotChatFileInfo[];
+  contentParts?: ContentPart[];
+  hijacked?: boolean;
+  fakeStream?: boolean;
+  stream?: boolean;
+  done?: boolean;
+  actions?: AutopilotChatMessageAction[];
+  feedback?: {
+    isPositive: boolean;
+  };
+  groupId?: string;
+  meta?: any;
+  toCopy?: string;
+  shouldWaitForMoreMessages?: boolean;
+  disableActions?: boolean;
 }
 
-export interface AutopilotChatPrompt extends Pick<AutopilotChatMessage, 'content' | 'attachments'> {}
+export interface AutopilotChatPrompt
+  extends Pick<AutopilotChatMessage, 'content' | 'attachments'> {}
 
 /**
  * Represents a message renderer for the Autopilot Chat system.
@@ -149,8 +150,8 @@ export interface AutopilotChatPrompt extends Pick<AutopilotChatMessage, 'content
  * @returns void or a function to clean up the message renderer
  */
 export interface AutopilotChatMessageRenderer {
-    name: string;
-    render: (container: HTMLElement, message: AutopilotChatMessage) => void | (() => void);
+  name: string;
+  render: (container: HTMLElement, message: AutopilotChatMessage) => void | (() => void);
 }
 
 /**
@@ -165,8 +166,8 @@ export type AutopilotChatErrorLevel = 'error' | 'warn';
  * @property level - The severity level ('error' or 'warning')
  */
 export interface AutopilotChatError {
-    message: string;
-    level: AutopilotChatErrorLevel;
+  message: string;
+  level: AutopilotChatErrorLevel;
 }
 
 /**
@@ -210,40 +211,40 @@ export interface AutopilotChatError {
  * @property {string} HistorySearch - Emitted when the history search is triggered (search for a conversation in the history list)
  */
 export enum AutopilotChatEvent {
-    Error = 'error',
-    NewChat = 'newChat',
-    ModeChange = 'modeChange',
-    SetPrompt = 'setPrompt',
-    Request = 'request',
-    Response = 'response',
-    StopResponse = 'stopResponse',
-    SetDefaultLoadingMessages = 'setDefaultLoadingMessages',
-    SetLoadingMessage = 'setLoadingMessage',
-    SetFirstRunExperience = 'setFirstRunExperience',
-    SetDisabledFeatures = 'setDisabledFeatures',
-    SetOverrideLabels = 'setOverrideLabels',
-    Open = 'open',
-    Close = 'close',
-    SendChunk = 'sendChunk',
-    SetConversation = 'setConversation',
-    SetHistory = 'setHistory',
-    DeleteConversation = 'deleteConversation',
-    OpenConversation = 'openConversation',
-    Feedback = 'feedback',
-    Copy = 'copy',
-    SetModels = 'setModels',
-    SetSelectedModel = 'setSelectedModel',
-    SetAgentModes = 'setAgentModes',
-    ConversationLoadMore = 'conversationLoadMore',
-    HistoryLoadMore = 'historyLoadMore',
-    HistorySearch = 'historySearch',
-    Attachments = 'attachments',
-    SetAttachments = 'setAttachments',
-    InputStream = 'inputStream',
-    OutputStream = 'outputStream',
-    SetSelectedAgentMode = 'setSelectedAgentMode',
-    SetCustomHeaderActions = 'setCustomHeaderActions',
-    CustomHeaderActionClicked = 'customHeaderActionClicked',
+  Error = 'error',
+  NewChat = 'newChat',
+  ModeChange = 'modeChange',
+  SetPrompt = 'setPrompt',
+  Request = 'request',
+  Response = 'response',
+  StopResponse = 'stopResponse',
+  SetDefaultLoadingMessages = 'setDefaultLoadingMessages',
+  SetLoadingMessage = 'setLoadingMessage',
+  SetFirstRunExperience = 'setFirstRunExperience',
+  SetDisabledFeatures = 'setDisabledFeatures',
+  SetOverrideLabels = 'setOverrideLabels',
+  Open = 'open',
+  Close = 'close',
+  SendChunk = 'sendChunk',
+  SetConversation = 'setConversation',
+  SetHistory = 'setHistory',
+  DeleteConversation = 'deleteConversation',
+  OpenConversation = 'openConversation',
+  Feedback = 'feedback',
+  Copy = 'copy',
+  SetModels = 'setModels',
+  SetSelectedModel = 'setSelectedModel',
+  SetAgentModes = 'setAgentModes',
+  ConversationLoadMore = 'conversationLoadMore',
+  HistoryLoadMore = 'historyLoadMore',
+  HistorySearch = 'historySearch',
+  Attachments = 'attachments',
+  SetAttachments = 'setAttachments',
+  InputStream = 'inputStream',
+  OutputStream = 'outputStream',
+  SetSelectedAgentMode = 'setSelectedAgentMode',
+  SetCustomHeaderActions = 'setCustomHeaderActions',
+  CustomHeaderActionClicked = 'customHeaderActionClicked',
 }
 
 /**
@@ -254,7 +255,7 @@ export enum AutopilotChatEvent {
  * @property {string} Request - Emitted when a user sends a message request
  */
 export enum AutopilotChatInterceptableEvent {
-    Request = AutopilotChatEvent.Request,
+  Request = AutopilotChatEvent.Request,
 }
 
 /**
@@ -288,29 +289,29 @@ export enum AutopilotChatInterceptableEvent {
  * @property {string} AppendOlderHistory - Emitted when older history items are appended to the history
  */
 export enum AutopilotChatInternalEvent {
-    ChatResize = 'chatResize',
-    ScrollToBottom = 'scrollToBottom',
-    ToggleHistory = 'toggleHistory',
-    ToggleSettings = 'toggleSettings',
-    UseLocalHistory = 'useLocalHistory',
-    SetAllowedAttachments = 'setAllowedAttachments',
-    ToggleAutoScroll = 'toggleAutoScroll',
-    SetIsLoadingMoreMessages = 'setIsLoadingMoreMessages',
-    SetShowLoading = 'setShowLoading',
-    ShouldShowLoadingMoreMessages = 'shouldShowLoadingMoreMessages',
-    PrependOlderMessages = 'prependOlderMessages',
-    ShowLoadingState = 'showLoadingState',
-    SetWaiting = 'setWaiting',
-    SetSuggestions = 'setSuggestions',
-    SetSpacing = 'setSpacing',
-    SetAttachmentsLoading = 'setAttachmentsLoading',
-    SetInputFocused = 'setInputFocused',
-    SetTheming = 'setTheming',
-    SetLocale = 'setLocale',
-    SetTheme = 'setTheme',
-    SetIsLoadingMoreHistory = 'setIsLoadingMoreHistory',
-    ShouldShowLoadingMoreHistory = 'shouldShowLoadingMoreHistory',
-    AppendOlderHistory = 'appendOlderHistory',
+  ChatResize = 'chatResize',
+  ScrollToBottom = 'scrollToBottom',
+  ToggleHistory = 'toggleHistory',
+  ToggleSettings = 'toggleSettings',
+  UseLocalHistory = 'useLocalHistory',
+  SetAllowedAttachments = 'setAllowedAttachments',
+  ToggleAutoScroll = 'toggleAutoScroll',
+  SetIsLoadingMoreMessages = 'setIsLoadingMoreMessages',
+  SetShowLoading = 'setShowLoading',
+  ShouldShowLoadingMoreMessages = 'shouldShowLoadingMoreMessages',
+  PrependOlderMessages = 'prependOlderMessages',
+  ShowLoadingState = 'showLoadingState',
+  SetWaiting = 'setWaiting',
+  SetSuggestions = 'setSuggestions',
+  SetSpacing = 'setSpacing',
+  SetAttachmentsLoading = 'setAttachmentsLoading',
+  SetInputFocused = 'setInputFocused',
+  SetTheming = 'setTheming',
+  SetLocale = 'setLocale',
+  SetTheme = 'setTheme',
+  SetIsLoadingMoreHistory = 'setIsLoadingMoreHistory',
+  ShouldShowLoadingMoreHistory = 'shouldShowLoadingMoreHistory',
+  AppendOlderHistory = 'appendOlderHistory',
 }
 
 export type AutopilotChatEventHandler<T = any> = (data?: T) => void;
@@ -320,7 +321,9 @@ export type AutopilotChatEventHandler<T = any> = (data?: T) => void;
  * @returns void if the event is not hijacked
  * @returns a promise that resolves to true if the event is hijacked
  */
-export type AutopilotChatEventInterceptor<T = any> = (data?: T) => boolean | Promise<boolean> | void;
+export type AutopilotChatEventInterceptor<T = any> = (
+  data?: T
+) => boolean | Promise<boolean> | void;
 
 /**
  * Represents a suggestion for the Autopilot Chat system.
@@ -329,8 +332,8 @@ export type AutopilotChatEventInterceptor<T = any> = (data?: T) => boolean | Pro
  * @property prompt - The prompt of the suggestion
  */
 export interface AutopilotChatSuggestion {
-    label: string;
-    prompt: string;
+  label: string;
+  prompt: string;
 }
 
 /**
@@ -340,8 +343,8 @@ export interface AutopilotChatSuggestion {
  * @property citations - The citations that apply to this text
  */
 export interface ContentPart {
-    text?: string;
-    citations?: Array<UrlCitation | PdfCitation>;
+  text?: string;
+  citations?: Array<UrlCitation | PdfCitation>;
 }
 
 /**
@@ -352,9 +355,9 @@ export interface ContentPart {
  * @property citation - A citation to add to the content part
  */
 export interface ContentPartChunk {
-    index: number;
-    text?: string;
-    citation?: UrlCitation | PdfCitation;
+  index: number;
+  text?: string;
+  citation?: UrlCitation | PdfCitation;
 }
 
 /**
@@ -364,8 +367,8 @@ export interface ContentPartChunk {
  * @property title - The title of the citation
  */
 export interface Citation {
-    id: number;
-    title: string;
+  id: number;
+  title: string;
 }
 
 /**
@@ -374,7 +377,7 @@ export interface Citation {
  * @property url - The URL of the citation
  */
 export interface UrlCitation extends Citation {
-    url: string;
+  url: string;
 }
 
 /**
@@ -384,8 +387,8 @@ export interface UrlCitation extends Citation {
  * @property page_number - The page number in the PDF
  */
 export interface PdfCitation extends Citation {
-    download_url: string;
-    page_number: number;
+  download_url: string;
+  page_number: number;
 }
 
 /**
@@ -409,22 +412,22 @@ export interface PdfCitation extends Citation {
  * @property htmlPreview - Whether the chat has HTML preview for code blocks
  */
 export interface AutopilotChatDisabledFeatures {
-    resize?: boolean;
-    fullScreen?: boolean;
-    attachments?: boolean;
-    history?: boolean;
-    header?: boolean;
-    headerSeparator?: boolean;
-    footer?: boolean;
-    preview?: boolean;
-    close?: boolean;
-    newChat?: boolean;
-    settings?: boolean;
-    audio?: boolean;
-    feedback?: boolean;
-    fullHeight?: boolean;
-    copy?: boolean;
-    htmlPreview?: boolean;
+  resize?: boolean;
+  fullScreen?: boolean;
+  attachments?: boolean;
+  history?: boolean;
+  header?: boolean;
+  headerSeparator?: boolean;
+  footer?: boolean;
+  preview?: boolean;
+  close?: boolean;
+  newChat?: boolean;
+  settings?: boolean;
+  audio?: boolean;
+  feedback?: boolean;
+  fullHeight?: boolean;
+  copy?: boolean;
+  htmlPreview?: boolean;
 }
 
 /**
@@ -435,9 +438,9 @@ export interface AutopilotChatDisabledFeatures {
  * @property title - The override label for title
  */
 export interface AutopilotChatOverrideLabels {
-    inputPlaceholder?: string;
-    footerDisclaimer?: string;
-    title?: string;
+  inputPlaceholder?: string;
+  footerDisclaimer?: string;
+  title?: string;
 }
 
 /**
@@ -454,13 +457,13 @@ export interface AutopilotChatOverrideLabels {
  * @property {string} Feedback - Emitted when the user clicks on feedback thumbs up or down
  */
 export enum AutopilotChatPreHookAction {
-    NewChat = 'new-chat',
-    ToggleHistory = 'toggle-history',
-    ToggleSettings = 'toggle-settings',
-    ToggleChat = 'toggle-chat',
-    CloseChat = 'close-chat',
-    CitationClick = 'citation-click',
-    Feedback = 'feedback',
+  NewChat = 'new-chat',
+  ToggleHistory = 'toggle-history',
+  ToggleSettings = 'toggle-settings',
+  ToggleChat = 'toggle-chat',
+  CloseChat = 'close-chat',
+  CitationClick = 'citation-click',
+  Feedback = 'feedback',
 }
 
 /**
@@ -490,71 +493,71 @@ export enum AutopilotChatPreHookAction {
  * @property theming - The theming of the chat (scroll appearance, chat menu, etc)
  */
 export interface AutopilotChatConfiguration {
-    mode: AutopilotChatMode;
-    embeddedContainer?: HTMLElement;
-    locale?: SupportedLocale;
-    theme?: ApChatTheme;
-    disabledFeatures?: AutopilotChatDisabledFeatures;
-    overrideLabels?: AutopilotChatOverrideLabels;
-    firstRunExperience?: {
-        title: string;
-        description: string;
-        suggestions?: AutopilotChatSuggestion[];
-        sendOnClick?: boolean;
+  mode: AutopilotChatMode;
+  embeddedContainer?: HTMLElement;
+  locale?: SupportedLocale;
+  theme?: ApChatTheme;
+  disabledFeatures?: AutopilotChatDisabledFeatures;
+  overrideLabels?: AutopilotChatOverrideLabels;
+  firstRunExperience?: {
+    title: string;
+    description: string;
+    suggestions?: AutopilotChatSuggestion[];
+    sendOnClick?: boolean;
+  };
+  useLocalHistory?: boolean;
+  allowedAttachments?: AutopilotChatAllowedAttachments;
+  models?: AutopilotChatModelInfo[];
+  selectedModel?: AutopilotChatModelInfo;
+  agentModes?: AutopilotChatAgentModeInfo[];
+  selectedAgentMode?: AutopilotChatAgentModeInfo;
+  preHooks?: Partial<Record<AutopilotChatPreHookAction, (data?: any) => Promise<boolean>>>;
+  paginatedMessages?: boolean;
+  paginatedHistory?: boolean;
+  settingsRenderer?: (container: HTMLElement) => void;
+  theming?: {
+    scrollBar?: {
+      scrollThumbColor?: string;
+      scrollHoverColor?: string;
+      scrollSize?: string;
+      scrollBorderRadius?: string;
     };
-    useLocalHistory?: boolean;
-    allowedAttachments?: AutopilotChatAllowedAttachments;
-    models?: AutopilotChatModelInfo[];
-    selectedModel?: AutopilotChatModelInfo;
-    agentModes?: AutopilotChatAgentModeInfo[];
-    selectedAgentMode?: AutopilotChatAgentModeInfo;
-    preHooks?: Partial<Record<AutopilotChatPreHookAction, (data?: any) => Promise<boolean>>>;
-    paginatedMessages?: boolean;
-    paginatedHistory?: boolean;
-    settingsRenderer?: (container: HTMLElement) => void;
-    theming?: {
-        scrollBar?: {
-            scrollThumbColor?: string;
-            scrollHoverColor?: string;
-            scrollSize?: string;
-            scrollBorderRadius?: string;
-        };
-        chatMenu?: {
-            groupItemTooltipPlacement?: 'top' | 'right' | 'bottom' | 'left';
-        };
+    chatMenu?: {
+      groupItemTooltipPlacement?: 'top' | 'right' | 'bottom' | 'left';
     };
-    spacing?: {
-        compactMode?: boolean;
-        promptBox?: {
-            minRows?: number;
-            maxRows?: number;
-        };
-        messageSpacing?: number;
-        messageGroupGap?: number;
-        primaryFontToken?: FontVariantToken;
-        primaryBoldFontToken?: FontVariantToken;
-        titleFontToken?: FontVariantToken;
-        suggestionSpacing?: number;
-        suggestionFontToken?: FontVariantToken;
-        suggestionPadding?: string;
-        markdownTokens?: {
-            li?: FontVariantToken;
-            p?: FontVariantToken;
-            h1?: FontVariantToken;
-            h2?: FontVariantToken;
-            h3?: FontVariantToken;
-            h4?: FontVariantToken;
-            h5?: FontVariantToken;
-            h6?: FontVariantToken;
-            th?: FontVariantToken;
-            td?: FontVariantToken;
-            em?: FontVariantToken;
-            del?: FontVariantToken;
-            strong?: FontVariantToken;
-            link?: FontVariantToken;
-            citation?: FontVariantToken;
-        };
+  };
+  spacing?: {
+    compactMode?: boolean;
+    promptBox?: {
+      minRows?: number;
+      maxRows?: number;
     };
+    messageSpacing?: number;
+    messageGroupGap?: number;
+    primaryFontToken?: FontVariantToken;
+    primaryBoldFontToken?: FontVariantToken;
+    titleFontToken?: FontVariantToken;
+    suggestionSpacing?: number;
+    suggestionFontToken?: FontVariantToken;
+    suggestionPadding?: string;
+    markdownTokens?: {
+      li?: FontVariantToken;
+      p?: FontVariantToken;
+      h1?: FontVariantToken;
+      h2?: FontVariantToken;
+      h3?: FontVariantToken;
+      h4?: FontVariantToken;
+      h5?: FontVariantToken;
+      h6?: FontVariantToken;
+      th?: FontVariantToken;
+      td?: FontVariantToken;
+      em?: FontVariantToken;
+      del?: FontVariantToken;
+      strong?: FontVariantToken;
+      link?: FontVariantToken;
+      citation?: FontVariantToken;
+    };
+  };
 }
 
 /**
@@ -565,9 +568,9 @@ export interface AutopilotChatConfiguration {
  * @property timestamp - The timestamp of the history item
  */
 export interface AutopilotChatHistory {
-    id: string;
-    name: string;
-    timestamp: string;
+  id: string;
+  name: string;
+  timestamp: string;
 }
 
 /**
@@ -577,9 +580,9 @@ export interface AutopilotChatHistory {
  * @property isPositive - Whether this is a positive action (e.g., thumbs up vs thumbs down)
  */
 export interface AutopilotChatMessageActionDetails {
-    preHookAction?: AutopilotChatPreHookAction;
-    isPositive?: boolean;
-    [key: string]: any;
+  preHookAction?: AutopilotChatPreHookAction;
+  isPositive?: boolean;
+  [key: string]: any;
 }
 
 /**
@@ -595,13 +598,13 @@ export interface AutopilotChatMessageActionDetails {
  * @property details - Additional details for the action
  */
 export interface AutopilotChatMessageAction {
-    name: string;
-    label: string;
-    icon?: string;
-    showInOverflow?: boolean;
-    disabled?: boolean;
-    eventName?: string;
-    details?: AutopilotChatMessageActionDetails;
+  name: string;
+  label: string;
+  icon?: string;
+  showInOverflow?: boolean;
+  disabled?: boolean;
+  eventName?: string;
+  details?: AutopilotChatMessageActionDetails;
 }
 
 /**
@@ -612,9 +615,9 @@ export interface AutopilotChatMessageAction {
  * @property message - The last message that the action is associated with.
  */
 export interface AutopilotChatActionPayload {
-    action: AutopilotChatMessageAction;
-    message: AutopilotChatMessage;
-    group: AutopilotChatMessage[];
+  action: AutopilotChatMessageAction;
+  message: AutopilotChatMessage;
+  group: AutopilotChatMessage[];
 }
 
 /**
@@ -627,32 +630,32 @@ export interface AutopilotChatActionPayload {
  * @property multiple - Whether the chat allows multiple attachments per message
  */
 export interface AutopilotChatAllowedAttachments {
-    multiple: boolean;
-    types: {
-        [key: string]: string[];
-    };
-    maxSize: number;
-    maxCount?: number;
+  multiple: boolean;
+  types: {
+    [key: string]: string[];
+  };
+  maxSize: number;
+  maxCount?: number;
 }
 
 /**
  * Input stream event data.
  */
 export interface AutopilotChatInputStreamEvent {
-    /**
-     * If set, indicates that an user input activity is starting.
-     */
-    activityStart?: AutopilotChatInputStreamActivityStart;
+  /**
+   * If set, indicates that an user input activity is starting.
+   */
+  activityStart?: AutopilotChatInputStreamActivityStart;
 
-    /**
-     * If set, indicates that an user input activity has ended.
-     */
-    activityEnd?: AutopilotChatInputStreamActivityEnd;
+  /**
+   * If set, indicates that an user input activity has ended.
+   */
+  activityEnd?: AutopilotChatInputStreamActivityEnd;
 
-    /**
-     * If set, contains input media stream chunks.
-     */
-    mediaChunks?: AutopilotChatInputStreamMediaChunk[];
+  /**
+   * If set, contains input media stream chunks.
+   */
+  mediaChunks?: AutopilotChatInputStreamMediaChunk[];
 }
 
 /**
@@ -661,92 +664,90 @@ export interface AutopilotChatInputStreamEvent {
  * been sent.
  */
 export interface AutopilotChatInputStreamActivityStart {
-    /**
-     * Indicates whether automatic activity detection is enabled for this input stream
-     * activity. If enabled, continuously send input media chunks and the LLM will decide
-     * when to respond and multiple turns will be taken within the single input activity.
-     * If not enabled, the LLM responds when the end activity signal is sent and another
-     * start activity needs to be sent to start a new turn.
-     */
-    automaticActivityDetectionEnabled?: boolean;
+  /**
+   * Indicates whether automatic activity detection is enabled for this input stream
+   * activity. If enabled, continuously send input media chunks and the LLM will decide
+   * when to respond and multiple turns will be taken within the single input activity.
+   * If not enabled, the LLM responds when the end activity signal is sent and another
+   * start activity needs to be sent to start a new turn.
+   */
+  automaticActivityDetectionEnabled?: boolean;
 }
 
 /**
  * Arguments for an input activity end event.
  */
 export interface AutopilotChatInputStreamActivityEnd {
-    /**
-     * The number following the sequenceNumber of the last media chunk sent in the activity
-     * that has ended. This value can be used to verify that all input data messages have
-     * been received. TODO: this property will be removed at some point, it is currently
-     * used to work around some threading issues in the Agent's service.
-     */
-    sequenceNumber: number;
+  /**
+   * The number following the sequenceNumber of the last media chunk sent in the activity
+   * that has ended. This value can be used to verify that all input data messages have
+   * been received. TODO: this property will be removed at some point, it is currently
+   * used to work around some threading issues in the Agent's service.
+   */
+  sequenceNumber: number;
 }
 
 /**
  * Arguments for an input media chunk event.
  */
-export interface AutopilotChatInputStreamMediaChunk extends AutopilotChatMediaChunk {
-}
+export interface AutopilotChatInputStreamMediaChunk extends AutopilotChatMediaChunk {}
 
 /**
  * Arguments for output stream event.
  */
 export interface AutopilotChatOutputStreamEvent {
-    /**
-     * If set, contains output media stream chunks.
-     */
-    mediaChunks?: AutopilotChatOutputStreamMediaChunk[];
+  /**
+   * If set, contains output media stream chunks.
+   */
+  mediaChunks?: AutopilotChatOutputStreamMediaChunk[];
 
-    /**
-     * If set (it will be true), indicates that the LLM output was interrupted by user
-     * input. This event will only be generated when automaticActivityDetectionEnabled is
-     * set to true in the activity start event.
-     */
-    interrupted?: boolean;
+  /**
+   * If set (it will be true), indicates that the LLM output was interrupted by user
+   * input. This event will only be generated when automaticActivityDetectionEnabled is
+   * set to true in the activity start event.
+   */
+  interrupted?: boolean;
 
-    /**
-     * If set (it will be true), indicates that the LLM has finished generating output in
-     * response to an user input. When automaticActivityDetectionEnabled is set, this can
-     * occur multiple times during the input activity, otherwise it will occur once, after
-     * activity end is sent. If the model was interrupted, generation complete is not sent.
-     */
-    generationComplete?: boolean;
+  /**
+   * If set (it will be true), indicates that the LLM has finished generating output in
+   * response to an user input. When automaticActivityDetectionEnabled is set, this can
+   * occur multiple times during the input activity, otherwise it will occur once, after
+   * activity end is sent. If the model was interrupted, generation complete is not sent.
+   */
+  generationComplete?: boolean;
 
-    /**
-     * If set (it will be true), indicates that the turn as completed and the model will
-     * generate no more output until a new turn is started by user input. When model assumes
-     * realtime playback there will be delay between generation complete and turn complete
-     * that is caused by model waiting for playback to finish.
-     */
-    turnComplete?: boolean;
+  /**
+   * If set (it will be true), indicates that the turn as completed and the model will
+   * generate no more output until a new turn is started by user input. When model assumes
+   * realtime playback there will be delay between generation complete and turn complete
+   * that is caused by model waiting for playback to finish.
+   */
+  turnComplete?: boolean;
 }
 
 /**
  * Arguments for an output media chunk event.
  */
-export interface AutopilotChatOutputStreamMediaChunk extends AutopilotChatMediaChunk {
-}
+export interface AutopilotChatOutputStreamMediaChunk extends AutopilotChatMediaChunk {}
 
 /**
  * Media chunks used for input and output streams.
  */
 export interface AutopilotChatMediaChunk {
-    /**
-     * Sequence of the chunk in the stream. TODO: this property will be removed at some
-     * point, it is currently used to work around some threading issues in the Agent's
-     * service.
-     */
-    sequenceNumber: number;
-    /**
-     * Mime type of the data.
-     */
-    mimeType: string;
-    /**
-     * Base64 encoded chunk of data.
-     */
-    data: string;
+  /**
+   * Sequence of the chunk in the stream. TODO: this property will be removed at some
+   * point, it is currently used to work around some threading issues in the Agent's
+   * service.
+   */
+  sequenceNumber: number;
+  /**
+   * Mime type of the data.
+   */
+  mimeType: string;
+  /**
+   * Base64 encoded chunk of data.
+   */
+  data: string;
 }
 
 /**
@@ -755,5 +756,5 @@ export interface AutopilotChatMediaChunk {
  * @property searchText - The search text to filter history items
  */
 export interface AutopilotChatHistorySearchPayload {
-    searchText: string;
+  searchText: string;
 }

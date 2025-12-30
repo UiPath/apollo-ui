@@ -1,8 +1,15 @@
-import { type Node, type Edge, useNodes, useEdges, useReactFlow, type XYPosition } from "@uipath/uix/xyflow/react";
-import { Column, Row } from "@uipath/uix/core";
-import { FloatingCanvasPanel } from "./FloatingCanvasPanel";
-import { ApTypography } from "@uipath/portal-shell-react";
-import { FontVariantToken } from "@uipath/apollo-core";
+import {
+  type Node,
+  type Edge,
+  useNodes,
+  useEdges,
+  useReactFlow,
+  type XYPosition,
+} from '@uipath/uix/xyflow/react';
+import { Column, Row } from '@uipath/uix/core';
+import { FloatingCanvasPanel } from './FloatingCanvasPanel';
+import { ApTypography } from '@uipath/portal-shell-react';
+import { FontVariantToken } from '@uipath/apollo-core';
 
 function safeStringify(obj: unknown, indent = 2): string {
   const seen = new WeakSet();
@@ -11,27 +18,27 @@ function safeStringify(obj: unknown, indent = 2): string {
     obj,
     (key, value) => {
       // Handle circular references
-      if (typeof value === "object" && value !== null) {
+      if (typeof value === 'object' && value !== null) {
         if (seen.has(value)) {
-          return "[Circular Reference]";
+          return '[Circular Reference]';
         }
         seen.add(value);
       }
 
       // Handle React elements
-      if (value && typeof value === "object" && "$$typeof" in value) {
-        const componentName = value.type?.name || value.type?.displayName || "React.Component";
+      if (value && typeof value === 'object' && '$$typeof' in value) {
+        const componentName = value.type?.name || value.type?.displayName || 'React.Component';
         return `[React Element: ${componentName}]`;
       }
 
       // Handle functions
-      if (typeof value === "function") {
-        return `[Function: ${value.name || "anonymous"}]`;
+      if (typeof value === 'function') {
+        return `[Function: ${value.name || 'anonymous'}]`;
       }
 
       // Handle undefined (JSON.stringify skips undefined values)
       if (value === undefined) {
-        return "[undefined]";
+        return '[undefined]';
       }
 
       // Handle DOM elements
@@ -57,7 +64,13 @@ type EdgeInfoContentProps = {
   edge: Edge;
 };
 
-function NodeInfoContent({ node, position, absPosition: _absPosition, width, height }: NodeInfoContentProps) {
+function NodeInfoContent({
+  node,
+  position,
+  absPosition: _absPosition,
+  width,
+  height,
+}: NodeInfoContentProps) {
   const { id, type, selected, data } = node;
 
   return (
@@ -69,12 +82,14 @@ function NodeInfoContent({ node, position, absPosition: _absPosition, width, hei
 
       <Row gap={4}>
         <ApTypography variant={FontVariantToken.fontMonoM}>Type:</ApTypography>
-        <ApTypography variant={FontVariantToken.fontMonoMBold}>{type || "default"}</ApTypography>
+        <ApTypography variant={FontVariantToken.fontMonoMBold}>{type || 'default'}</ApTypography>
       </Row>
 
       <Row gap={4}>
         <ApTypography variant={FontVariantToken.fontMonoM}>Selected:</ApTypography>
-        <ApTypography variant={FontVariantToken.fontMonoMBold}>{selected ? "Yes" : "No"}</ApTypography>
+        <ApTypography variant={FontVariantToken.fontMonoMBold}>
+          {selected ? 'Yes' : 'No'}
+        </ApTypography>
       </Row>
 
       <Row gap={4}>
@@ -95,23 +110,26 @@ function NodeInfoContent({ node, position, absPosition: _absPosition, width, hei
 
       {data && Object.keys(data).length > 0 && (
         <Column gap={4}>
-          <ApTypography variant={FontVariantToken.fontMonoM} color="var(--uix-canvas-foreground-de-emp)">
+          <ApTypography
+            variant={FontVariantToken.fontMonoM}
+            color="var(--uix-canvas-foreground-de-emp)"
+          >
             Data:
           </ApTypography>
           <pre
             style={{
-              fontFamily: "monospace",
-              whiteSpace: "pre-wrap",
-              wordWrap: "break-word",
+              fontFamily: 'monospace',
+              whiteSpace: 'pre-wrap',
+              wordWrap: 'break-word',
               padding: 8,
-              background: "var(--uix-canvas-background-secondary)",
-              overflow: "auto",
+              background: 'var(--uix-canvas-background-secondary)',
+              overflow: 'auto',
               height: 300,
-              color: "var(--uix-canvas-foreground-de-emp)",
-              userSelect: "text",
+              color: 'var(--uix-canvas-foreground-de-emp)',
+              userSelect: 'text',
             }}
           >
-            {typeof data === "string" ? data : safeStringify(data)}
+            {typeof data === 'string' ? data : safeStringify(data)}
           </pre>
         </Column>
       )}
@@ -120,7 +138,20 @@ function NodeInfoContent({ node, position, absPosition: _absPosition, width, hei
 }
 
 function EdgeInfoContent({ edge }: EdgeInfoContentProps) {
-  const { id, type, source, target, sourceHandle, targetHandle, selected, data, label, animated, markerStart, markerEnd } = edge;
+  const {
+    id,
+    type,
+    source,
+    target,
+    sourceHandle,
+    targetHandle,
+    selected,
+    data,
+    label,
+    animated,
+    markerStart,
+    markerEnd,
+  } = edge;
 
   return (
     <Column gap={4} pt={4} px={16}>
@@ -131,12 +162,14 @@ function EdgeInfoContent({ edge }: EdgeInfoContentProps) {
 
       <Row gap={4}>
         <ApTypography variant={FontVariantToken.fontMonoM}>Type:</ApTypography>
-        <ApTypography variant={FontVariantToken.fontMonoMBold}>{type || "default"}</ApTypography>
+        <ApTypography variant={FontVariantToken.fontMonoMBold}>{type || 'default'}</ApTypography>
       </Row>
 
       <Row gap={4}>
         <ApTypography variant={FontVariantToken.fontMonoM}>Selected:</ApTypography>
-        <ApTypography variant={FontVariantToken.fontMonoMBold}>{selected ? "Yes" : "No"}</ApTypography>
+        <ApTypography variant={FontVariantToken.fontMonoMBold}>
+          {selected ? 'Yes' : 'No'}
+        </ApTypography>
       </Row>
 
       <Row gap={4}>
@@ -166,14 +199,18 @@ function EdgeInfoContent({ edge }: EdgeInfoContentProps) {
       {animated !== undefined && (
         <Row gap={4}>
           <ApTypography variant={FontVariantToken.fontMonoM}>Animated:</ApTypography>
-          <ApTypography variant={FontVariantToken.fontMonoMBold}>{animated ? "Yes" : "No"}</ApTypography>
+          <ApTypography variant={FontVariantToken.fontMonoMBold}>
+            {animated ? 'Yes' : 'No'}
+          </ApTypography>
         </Row>
       )}
 
       {label && (
         <Row gap={4}>
           <ApTypography variant={FontVariantToken.fontMonoM}>Label:</ApTypography>
-          <ApTypography variant={FontVariantToken.fontMonoMBold}>{typeof label === "string" ? label : "[React Element]"}</ApTypography>
+          <ApTypography variant={FontVariantToken.fontMonoMBold}>
+            {typeof label === 'string' ? label : '[React Element]'}
+          </ApTypography>
         </Row>
       )}
 
@@ -181,30 +218,33 @@ function EdgeInfoContent({ edge }: EdgeInfoContentProps) {
         <Row gap={4}>
           <ApTypography variant={FontVariantToken.fontMonoM}>Markers:</ApTypography>
           <ApTypography variant={FontVariantToken.fontMonoMBold}>
-            {markerStart && markerEnd ? "Both ends" : markerStart ? "Start only" : "End only"}
+            {markerStart && markerEnd ? 'Both ends' : markerStart ? 'Start only' : 'End only'}
           </ApTypography>
         </Row>
       )}
 
       {data && Object.keys(data).length > 0 && (
         <Column gap={4}>
-          <ApTypography variant={FontVariantToken.fontMonoM} color="var(--uix-canvas-foreground-de-emp)">
+          <ApTypography
+            variant={FontVariantToken.fontMonoM}
+            color="var(--uix-canvas-foreground-de-emp)"
+          >
             Data:
           </ApTypography>
           <pre
             style={{
-              fontFamily: "monospace",
-              whiteSpace: "pre-wrap",
-              wordWrap: "break-word",
+              fontFamily: 'monospace',
+              whiteSpace: 'pre-wrap',
+              wordWrap: 'break-word',
               padding: 8,
-              background: "var(--uix-canvas-background-secondary)",
-              overflow: "auto",
+              background: 'var(--uix-canvas-background-secondary)',
+              overflow: 'auto',
               height: 300,
-              color: "var(--uix-canvas-foreground-de-emp)",
-              userSelect: "text",
+              color: 'var(--uix-canvas-foreground-de-emp)',
+              userSelect: 'text',
             }}
           >
-            {typeof data === "string" ? data : safeStringify(data)}
+            {typeof data === 'string' ? data : safeStringify(data)}
           </pre>
         </Column>
       )}
@@ -304,7 +344,13 @@ export function NodeInspector({
             offset={10}
             onClose={showCloseButton ? onClose : undefined}
           >
-            <NodeInfoContent node={node} position={node.position} absPosition={absPosition} width={width} height={height} />
+            <NodeInfoContent
+              node={node}
+              position={node.position}
+              absPosition={absPosition}
+              width={width}
+              height={height}
+            />
           </FloatingCanvasPanel>
         );
       })}

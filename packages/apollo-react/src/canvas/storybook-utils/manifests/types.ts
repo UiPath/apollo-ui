@@ -14,7 +14,7 @@ export interface ManifestDisplay {
   /** Optional sub-label */
   subLabel?: string;
   /** Node shape */
-  shape?: "square" | "rectangle" | "circle";
+  shape?: 'square' | 'rectangle' | 'circle';
   /** Node color */
   color?: string;
   /** Background color */
@@ -32,7 +32,7 @@ export interface ManifestDisplay {
 /**
  * Handle type for connections.
  */
-export type HandleType = "input" | "output" | "artifact";
+export type HandleType = 'input' | 'output' | 'artifact';
 
 /**
  * Handle definition in a manifest.
@@ -41,7 +41,7 @@ export interface ManifestHandle {
   /** Unique handle ID */
   id: string;
   /** Handle type (source/target) */
-  type: "source" | "target";
+  type: 'source' | 'target';
   /** Semantic handle type for styling */
   handleType: HandleType;
   /** Optional label for artifact handles */
@@ -57,7 +57,7 @@ export interface ManifestHandle {
  */
 export interface ManifestHandleGroup {
   /** Position on the node */
-  position: "top" | "right" | "bottom" | "left";
+  position: 'top' | 'right' | 'bottom' | 'left';
   /** Handles at this position */
   handles: ManifestHandle[];
   /** Whether this group is visible */

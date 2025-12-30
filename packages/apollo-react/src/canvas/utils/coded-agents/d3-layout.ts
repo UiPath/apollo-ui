@@ -1,30 +1,34 @@
-import { type Edge, getIncomers, type Node } from "@uipath/uix/xyflow/react";
-import { type HierarchyPointNode, stratify, tree } from "d3-hierarchy";
+import { type Edge, getIncomers, type Node } from '@uipath/uix/xyflow/react';
+import { type HierarchyPointNode, stratify, tree } from 'd3-hierarchy';
 
 // the layout direction (T = top, R = right, B = bottom, L = left, TB = top to bottom, ...)
-export type LayoutDirection = "BT" | "LR" | "RL" | "TD";
+export type LayoutDirection = 'BT' | 'LR' | 'RL' | 'TD';
 
 export type LayoutAlgorithmOptions = {
   direction: LayoutDirection;
   spacing: [number, number];
 };
 
-export type LayoutAlgorithm = (nodes: Node[], edges: Edge[], options: LayoutAlgorithmOptions) => Promise<{ nodes: Node[]; edges: Edge[] }>;
+export type LayoutAlgorithm = (
+  nodes: Node[],
+  edges: Edge[],
+  options: LayoutAlgorithmOptions
+) => Promise<{ nodes: Node[]; edges: Edge[] }>;
 
 // D3 Hierarchy doesn't support layouting in different directions, but we can
 // swap the coordinates around in different ways to get the same effect.
 const getPosition = (x: number, y: number, direction: LayoutDirection) => {
   switch (direction) {
-    case "TD": {
+    case 'TD': {
       return { x, y };
     }
-    case "LR": {
+    case 'LR': {
       return { x: y, y: x };
     }
-    case "BT": {
+    case 'BT': {
       return { x: -x, y: -y };
     }
-    case "RL": {
+    case 'RL': {
       return { x: -y, y: x };
     }
   }
@@ -43,7 +47,7 @@ const layout = tree<NodeWithPosition>()
 // guarantee that, we create a fake root node here and will make sure any real
 // nodes without an incoming edge will get connected to this fake root node.
 const rootNode = {
-  id: "d3-hierarchy-root",
+  id: 'd3-hierarchy-root',
   x: 0,
   y: 0,
   position: { x: 0, y: 0 },
@@ -56,7 +60,7 @@ const DEFAULT_NODE_HEIGHT = 100;
 export const d3HierarchyLayout: LayoutAlgorithm = (nodes, edges, options) =>
   Promise.resolve(
     (() => {
-      const isHorizontal = options.direction === "RL" || options.direction === "LR";
+      const isHorizontal = options.direction === 'RL' || options.direction === 'LR';
 
       const initialNodes = [] as NodeWithPosition[];
       let maxNodeWidth = 0;

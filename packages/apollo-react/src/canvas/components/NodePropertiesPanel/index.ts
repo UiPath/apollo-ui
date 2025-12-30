@@ -1,4 +1,4 @@
-export { NodePropertiesPanel } from "./NodePropertiesPanel";
+export { NodePropertiesPanel } from './NodePropertiesPanel';
 export type {
   NodePropertiesPanelProps,
   NodeConfigSchema,
@@ -11,6 +11,12 @@ export type {
   AgentNodeConfig,
   NodeConfigData,
   ConfigurableNode,
-} from "./NodePropertiesPanel.types";
-export { nodeSchemas, stageNodeSchema, agentNodeSchema, artifactNodeSchema, defaultNodeSchema } from "./schemas";
-export * from "./NodePropertiesPanel.styles";
+} from './NodePropertiesPanel.types';
+export {
+  nodeSchemas,
+  stageNodeSchema,
+  agentNodeSchema,
+  artifactNodeSchema,
+  defaultNodeSchema,
+} from './schemas';
+export * from './NodePropertiesPanel.styles';

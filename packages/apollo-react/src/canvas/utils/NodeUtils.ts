@@ -1,5 +1,5 @@
-import type { Node, XYPosition } from "@uipath/uix/xyflow/react";
-import { PREVIEW_NODE_ID, GRID_SPACING } from "../constants";
+import type { Node, XYPosition } from '@uipath/uix/xyflow/react';
+import { PREVIEW_NODE_ID, GRID_SPACING } from '../constants';
 
 /**
  * Calculates the absolute position of a node, taking into account its parent nodes.
@@ -37,14 +37,14 @@ export function getNonOverlappingPositionForDirection(
   nodes: Node[],
   newNodePosition: XYPosition,
   newNodeStyle: { width: number; height: number },
-  direction: "left" | "right" | "top" | "bottom",
+  direction: 'left' | 'right' | 'top' | 'bottom',
   offset = GRID_SPACING * 2,
   ignoredNodeTypes: string[] = []
 ): XYPosition {
   const isOverlapping = nodes.some(
     (node) =>
       node.id !== PREVIEW_NODE_ID &&
-      !ignoredNodeTypes.includes(node.type ?? "") &&
+      !ignoredNodeTypes.includes(node.type ?? '') &&
       node.position.x < newNodePosition.x + newNodeStyle.width &&
       node.position.x + (node.measured?.width ?? 0) > newNodePosition.x &&
       node.position.y < newNodePosition.y + newNodeStyle.height &&
@@ -53,14 +53,21 @@ export function getNonOverlappingPositionForDirection(
 
   if (isOverlapping) {
     // Shift perpendicular to the placement direction
-    if (direction === "left" || direction === "right") {
+    if (direction === 'left' || direction === 'right') {
       // For left/right placement, shift vertically (down)
       newNodePosition.y += offset;
     } else {
       // For top/bottom placement, shift horizontally (right)
       newNodePosition.x += offset;
     }
-    return getNonOverlappingPositionForDirection(nodes, newNodePosition, newNodeStyle, direction, offset, ignoredNodeTypes);
+    return getNonOverlappingPositionForDirection(
+      nodes,
+      newNodePosition,
+      newNodeStyle,
+      direction,
+      offset,
+      ignoredNodeTypes
+    );
   }
 
   return newNodePosition;

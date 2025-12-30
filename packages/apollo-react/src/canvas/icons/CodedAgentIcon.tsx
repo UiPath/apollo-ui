@@ -1,14 +1,21 @@
 export const CodedAgentIcon = ({
   w = 48,
   h = 48,
-  color = "var(--color-foreground-emp)",
+  color = 'var(--color-foreground-emp)',
 }: {
   w?: number | string;
   h?: number | string;
   color?: string;
 }) => {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" width={w} height={h} viewBox="0 0 26 26" fill="none" data-testid="coded-agent-icon">
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={w}
+      height={h}
+      viewBox="0 0 26 26"
+      fill="none"
+      data-testid="coded-agent-icon"
+    >
       <path
         d="M9.20828 13.542L11.7649 16.0987L10.4866 17.377L9.20828 16.0987L7.92994 17.377L6.65161 16.0987L9.20828 13.542ZM16.7916 13.542L19.3483 16.0987L18.0699 17.377L16.7916 16.0987L15.5133 17.377L14.2349 16.0987L16.7916 13.542Z"
         fill={color}

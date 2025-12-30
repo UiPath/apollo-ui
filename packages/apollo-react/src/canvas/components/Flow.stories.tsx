@@ -1,20 +1,26 @@
-import { useMemo, useCallback, useState, useRef, useEffect, memo, type FC } from "react";
-import type { Meta, StoryObj } from "@storybook/react-vite";
-import { Panel, useReactFlow, Handle, Position } from "@uipath/uix/xyflow/react";
-import type { Edge, Node, NodeProps } from "@uipath/uix/xyflow/react";
-import styled from "@emotion/styled";
-import { BaseCanvas } from "./BaseCanvas";
-import type { BaseNodeData } from "./BaseNode/BaseNode.types";
-import { withCanvasProviders, useCanvasStory, createNode, NodePositions, StoryInfoPanel } from "../storybook-utils";
-import { AddNodeManager, AddNodePanel } from "./AddNodePanel";
-import { FloatingCanvasPanel } from "./FloatingCanvasPanel";
-import type { ListItem } from "./Toolbox";
-import { useCanvasEvent, useExportCanvas } from "../hooks";
-import type { CanvasHandleActionEvent } from "../utils";
-import { createPreviewNode, applyPreviewToReactFlow } from "../utils/createPreviewNode";
-import { StickyNoteNode } from "./StickyNoteNode";
-import type { StickyNoteData } from "./StickyNoteNode/StickyNoteNode.types";
-import { Download, Plus, StickyNote } from "lucide-react";
+import { useMemo, useCallback, useState, useRef, useEffect, memo, type FC } from 'react';
+import type { Meta, StoryObj } from '@storybook/react-vite';
+import { Panel, useReactFlow, Handle, Position } from '@uipath/uix/xyflow/react';
+import type { Edge, Node, NodeProps } from '@uipath/uix/xyflow/react';
+import styled from '@emotion/styled';
+import { BaseCanvas } from './BaseCanvas';
+import type { BaseNodeData } from './BaseNode/BaseNode.types';
+import {
+  withCanvasProviders,
+  useCanvasStory,
+  createNode,
+  NodePositions,
+  StoryInfoPanel,
+} from '../storybook-utils';
+import { AddNodeManager, AddNodePanel } from './AddNodePanel';
+import { FloatingCanvasPanel } from './FloatingCanvasPanel';
+import type { ListItem } from './Toolbox';
+import { useCanvasEvent, useExportCanvas } from '../hooks';
+import type { CanvasHandleActionEvent } from '../utils';
+import { createPreviewNode, applyPreviewToReactFlow } from '../utils/createPreviewNode';
+import { StickyNoteNode } from './StickyNoteNode';
+import type { StickyNoteData } from './StickyNoteNode/StickyNoteNode.types';
+import { Download, Plus, StickyNote } from 'lucide-react';
 
 // ============================================================================
 // Meta Configuration
@@ -25,17 +31,18 @@ interface FlowStoryArgs {
 }
 
 const meta: Meta<FlowStoryArgs> = {
-  title: "Flow",
+  title: 'Flow',
   parameters: {
-    layout: "fullscreen",
+    layout: 'fullscreen',
   },
   decorators: [withCanvasProviders()],
   argTypes: {
     useSmartHandles: {
-      control: "boolean",
-      description: "Enable SmartHandle for dynamic handle positioning based on connected node locations",
+      control: 'boolean',
+      description:
+        'Enable SmartHandle for dynamic handle positioning based on connected node locations',
       table: {
-        defaultValue: { summary: "false" },
+        defaultValue: { summary: 'false' },
       },
     },
   },
@@ -54,24 +61,32 @@ type Story = StoryObj<typeof meta>;
 function createInitialNodes(useSmartHandles: boolean): Node<BaseNodeData>[] {
   return [
     createNode({
-      id: "trigger",
-      type: "uipath.manual-trigger",
+      id: 'trigger',
+      type: 'uipath.manual-trigger',
       position: NodePositions.row2col1,
-      display: { label: "Manual trigger" },
+      display: { label: 'Manual trigger' },
       useSmartHandles,
     }),
     createNode({
-      id: "action-1",
-      type: "uipath.blank-node",
+      id: 'action-1',
+      type: 'uipath.blank-node',
       position: NodePositions.row2col2,
-      display: { label: "Action", subLabel: "Process data" },
+      display: { label: 'Action', subLabel: 'Process data' },
       useSmartHandles,
     }),
   ];
 }
 
 function createInitialEdges(): Edge[] {
-  return [{ id: "e-trigger-action-1", source: "trigger", target: "action-1", sourceHandle: "output", targetHandle: "input" }];
+  return [
+    {
+      id: 'e-trigger-action-1',
+      source: 'trigger',
+      target: 'action-1',
+      sourceHandle: 'output',
+      targetHandle: 'input',
+    },
+  ];
 }
 
 // ============================================================================
@@ -142,7 +157,7 @@ const ExportMessage = styled.div`
 // Story Components
 // ============================================================================
 
-const DELETE_KEY_CODES = ["Backspace", "Delete"];
+const DELETE_KEY_CODES = ['Backspace', 'Delete'];
 
 const additionalNodeTypes = {
   stickyNote: StickyNoteNode,
@@ -153,7 +168,12 @@ function DefaultStory({ useSmartHandles }: FlowStoryArgs) {
   const initialEdges = useMemo(() => createInitialEdges(), []);
   const [stickyNoteCounter, setStickyNoteCounter] = useState(0);
   const [isAddPanelOpen, setIsAddPanelOpen] = useState(false);
-  const [addButtonRect, setAddButtonRect] = useState<{ x: number; y: number; width: number; height: number } | null>(null);
+  const [addButtonRect, setAddButtonRect] = useState<{
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  } | null>(null);
   const addButtonRef = useRef<HTMLButtonElement>(null);
 
   // Export canvas hook
@@ -221,7 +241,7 @@ function DefaultStory({ useSmartHandles }: FlowStoryArgs) {
         y: window.innerHeight / 2,
       });
 
-      const newNodeId = `${nodeItem.data?.type || "node"}-${Date.now()}`;
+      const newNodeId = `${nodeItem.data?.type || 'node'}-${Date.now()}`;
       const newNode: Node = {
         id: newNodeId,
         type: nodeItem.data?.type,
@@ -258,14 +278,14 @@ function DefaultStory({ useSmartHandles }: FlowStoryArgs) {
 
       const newStickyNote: Node<StickyNoteData> = {
         id: `sticky-note-${Date.now()}-${stickyNoteCounter}`,
-        type: "stickyNote",
+        type: 'stickyNote',
         position: {
           x: viewportCenter.x - 125, // Center the 250px wide sticky note
           y: viewportCenter.y - 75, // Center the 150px tall sticky note
         },
         data: {
-          color: "blue",
-          content: "",
+          color: 'blue',
+          content: '',
           autoFocus: true,
         },
         width: 304,
@@ -283,17 +303,17 @@ function DefaultStory({ useSmartHandles }: FlowStoryArgs) {
   const handleExportToPng = useCallback(
     (e: React.MouseEvent) => {
       e.stopPropagation();
-      downloadAsImage("flow-export");
+      downloadAsImage('flow-export');
     },
     [downloadAsImage]
   );
 
-  useCanvasEvent("handle:action", (event: CanvasHandleActionEvent) => {
+  useCanvasEvent('handle:action', (event: CanvasHandleActionEvent) => {
     if (!reactFlowInstance) return;
 
     const { handleId, nodeId, position, handleType } = event;
     if (handleId && nodeId) {
-      const sourceHandleType = handleType === "input" ? "target" : "source";
+      const sourceHandleType = handleType === 'input' ? 'target' : 'source';
       // Inherit useSmartHandles from the source node
       const sourceNode = reactFlowInstance.getNode(nodeId);
       const customData = sourceNode?.data?.useSmartHandles ? { useSmartHandles: true } : undefined;
@@ -307,7 +327,7 @@ function DefaultStory({ useSmartHandles }: FlowStoryArgs) {
         sourceHandleType,
         undefined, // Use default preview node size
         position as Position,
-        ["stickyNote"] // Ignore sticky notes when calculating overlap
+        ['stickyNote'] // Ignore sticky notes when calculating overlap
       );
 
       if (preview) {
@@ -317,11 +337,22 @@ function DefaultStory({ useSmartHandles }: FlowStoryArgs) {
   });
 
   return (
-    <BaseCanvas {...canvasProps} deleteKeyCode={DELETE_KEY_CODES} mode="design" selectionOnDrag onPaneClick={handlePaneClick}>
+    <BaseCanvas
+      {...canvasProps}
+      deleteKeyCode={DELETE_KEY_CODES}
+      mode="design"
+      selectionOnDrag
+      onPaneClick={handlePaneClick}
+    >
       <AddNodeManager />
       <Panel position="bottom-center">
         <ToolbarContainer className="nodrag nopan nowheel">
-          <ToolbarButton type="button" ref={addButtonRef} onClick={handleOpenAddPanel} title="Add node">
+          <ToolbarButton
+            type="button"
+            ref={addButtonRef}
+            onClick={handleOpenAddPanel}
+            title="Add node"
+          >
             <Plus size={16} />
           </ToolbarButton>
           <ToolbarDivider />
@@ -329,13 +360,24 @@ function DefaultStory({ useSmartHandles }: FlowStoryArgs) {
             <StickyNote size={16} />
           </ToolbarButton>
           <ToolbarDivider />
-          <ToolbarButton type="button" onClick={handleExportToPng} disabled={isExporting} title="Export to PNG">
+          <ToolbarButton
+            type="button"
+            onClick={handleExportToPng}
+            disabled={isExporting}
+            title="Export to PNG"
+          >
             <Download size={16} />
           </ToolbarButton>
         </ToolbarContainer>
       </Panel>
       {addButtonRect && (
-        <FloatingCanvasPanel open={isAddPanelOpen} anchorRect={addButtonRect} useFixedPosition placement="top" offset={10}>
+        <FloatingCanvasPanel
+          open={isAddPanelOpen}
+          anchorRect={addButtonRect}
+          useFixedPosition
+          placement="top"
+          offset={10}
+        >
           <AddNodePanel onNodeSelect={handleNodeSelect} onClose={handleCloseAddPanel} />
         </FloatingCanvasPanel>
       )}
@@ -375,7 +417,7 @@ function createPerformanceNodes(nodeCount: number, useSmartHandles: boolean): No
     nodes.push(
       createNode({
         id: `node-${i}`,
-        type: "uipath.blank-node",
+        type: 'uipath.blank-node',
         position: {
           x: col * NODE_SPACING_X,
           y: row * NODE_SPACING_Y,
@@ -404,8 +446,8 @@ function createPerformanceEdges(nodeCount: number): Edge[] {
         id: `e-${i}-right`,
         source: `node-${i}`,
         target: `node-${rightIndex}`,
-        sourceHandle: "output",
-        targetHandle: "input",
+        sourceHandle: 'output',
+        targetHandle: 'input',
       });
     }
 
@@ -416,8 +458,8 @@ function createPerformanceEdges(nodeCount: number): Edge[] {
         id: `e-${i}-down`,
         source: `node-${i}`,
         target: `node-${downIndex}`,
-        sourceHandle: "output",
-        targetHandle: "input",
+        sourceHandle: 'output',
+        targetHandle: 'input',
       });
     }
   }
@@ -431,7 +473,10 @@ const MAX_NODE_COUNT = 1000;
 
 function PerformanceStory({ useSmartHandles }: FlowStoryArgs) {
   const [nodeCount, setNodeCount] = useState(DEFAULT_NODE_COUNT);
-  const initialNodes = useMemo(() => createPerformanceNodes(DEFAULT_NODE_COUNT, useSmartHandles), [useSmartHandles]);
+  const initialNodes = useMemo(
+    () => createPerformanceNodes(DEFAULT_NODE_COUNT, useSmartHandles),
+    [useSmartHandles]
+  );
   const initialEdges = useMemo(() => createPerformanceEdges(DEFAULT_NODE_COUNT), []);
 
   // Export canvas hook
@@ -475,7 +520,7 @@ function PerformanceStory({ useSmartHandles }: FlowStoryArgs) {
   const handleExportToPng = useCallback(
     (e: React.MouseEvent) => {
       e.stopPropagation();
-      downloadAsImage("performance-flow-export");
+      downloadAsImage('performance-flow-export');
     },
     [downloadAsImage]
   );
@@ -485,13 +530,25 @@ function PerformanceStory({ useSmartHandles }: FlowStoryArgs) {
       {isExporting && (
         <ExportOverlay role="status" aria-live="polite">
           <ExportTitle>Exporting Canvas</ExportTitle>
-          <ExportMessage>Processing {nodeCount} nodes. The screen may freeze briefly - this is normal.</ExportMessage>
+          <ExportMessage>
+            Processing {nodeCount} nodes. The screen may freeze briefly - this is normal.
+          </ExportMessage>
         </ExportOverlay>
       )}
       <BaseCanvas {...canvasProps} deleteKeyCode={DELETE_KEY_CODES} mode="design" selectionOnDrag>
-        <StoryInfoPanel title="Performance Test" description="Adjust the number of nodes to test canvas performance">
+        <StoryInfoPanel
+          title="Performance Test"
+          description="Adjust the number of nodes to test canvas performance"
+        >
           <div className="nodrag nopan nowheel" style={{ marginTop: 12 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: 8,
+              }}
+            >
               <span style={{ fontSize: 12 }}>Node Count</span>
               <span style={{ fontWeight: 600, fontSize: 14 }}>{nodeCount}</span>
             </div>
@@ -501,13 +558,18 @@ function PerformanceStory({ useSmartHandles }: FlowStoryArgs) {
               max={MAX_NODE_COUNT}
               value={nodeCount}
               onChange={handleNodeCountChange}
-              style={{ width: "100%", cursor: "pointer" }}
+              style={{ width: '100%', cursor: 'pointer' }}
             />
           </div>
         </StoryInfoPanel>
         <Panel position="bottom-center">
           <ToolbarContainer className="nodrag nopan nowheel">
-            <ToolbarButton type="button" onClick={handleExportToPng} disabled={isExporting} title="Export to PNG">
+            <ToolbarButton
+              type="button"
+              onClick={handleExportToPng}
+              disabled={isExporting}
+              title="Export to PNG"
+            >
               <Download size={16} />
             </ToolbarButton>
           </ToolbarContainer>
@@ -523,7 +585,7 @@ export const Performance: Story = {
     docs: {
       description: {
         story:
-          "Performance test with adjustable node count (1-1000). Nodes are arranged in a grid and connected horizontally and vertically.",
+          'Performance test with adjustable node count (1-1000). Nodes are arranged in a grid and connected horizontally and vertically.',
       },
     },
   },
@@ -548,22 +610,24 @@ const SimpleNodeComponent: FC<NodeProps<Node<SimpleNodeData>>> = ({ data, select
       style={{
         width: 96,
         height: 96,
-        background: selected ? "#e3f2fd" : "#fff",
-        border: `2px solid ${selected ? "#2196f3" : "#ddd"}`,
+        background: selected ? '#e3f2fd' : '#fff',
+        border: `2px solid ${selected ? '#2196f3' : '#ddd'}`,
         borderRadius: 16,
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
         fontSize: 11,
-        fontFamily: "sans-serif",
-        boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+        fontFamily: 'sans-serif',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
       }}
     >
-      <div style={{ fontWeight: 600, textAlign: "center", padding: "0 4px" }}>{data.label}</div>
-      {data.subLabel && <div style={{ color: "#666", fontSize: 9, textAlign: "center" }}>{data.subLabel}</div>}
-      <Handle type="target" position={Position.Left} style={{ background: "#555" }} />
-      <Handle type="source" position={Position.Right} style={{ background: "#555" }} />
+      <div style={{ fontWeight: 600, textAlign: 'center', padding: '0 4px' }}>{data.label}</div>
+      {data.subLabel && (
+        <div style={{ color: '#666', fontSize: 9, textAlign: 'center' }}>{data.subLabel}</div>
+      )}
+      <Handle type="target" position={Position.Left} style={{ background: '#555' }} />
+      <Handle type="source" position={Position.Right} style={{ background: '#555' }} />
     </div>
   );
 };
@@ -583,7 +647,7 @@ function createSimpleNodes(nodeCount: number): Node<SimpleNodeData>[] {
     const col = i % cols;
     nodes.push({
       id: `node-${i}`,
-      type: "simpleNode",
+      type: 'simpleNode',
       position: {
         x: col * NODE_SPACING_X,
         y: row * NODE_SPACING_Y,
@@ -658,7 +722,14 @@ function PerformanceBaselineStory() {
         description="Simplified nodes for performance comparison. No hooks, no context, minimal rendering."
       >
         <div className="nodrag nopan nowheel" style={{ marginTop: 12 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: 8,
+            }}
+          >
             <span style={{ fontSize: 12 }}>Node Count</span>
             <span style={{ fontWeight: 600, fontSize: 14 }}>{nodeCount}</span>
           </div>
@@ -668,7 +739,7 @@ function PerformanceBaselineStory() {
             max={MAX_NODE_COUNT}
             value={nodeCount}
             onChange={handleNodeCountChange}
-            style={{ width: "100%", cursor: "pointer" }}
+            style={{ width: '100%', cursor: 'pointer' }}
           />
         </div>
       </StoryInfoPanel>
@@ -682,7 +753,7 @@ export const PerformanceBaseline: Story = {
     docs: {
       description: {
         story:
-          "Performance baseline with simplified nodes. Compare panning performance with the regular Performance story to measure BaseNode overhead.",
+          'Performance baseline with simplified nodes. Compare panning performance with the regular Performance story to measure BaseNode overhead.',
       },
     },
   },

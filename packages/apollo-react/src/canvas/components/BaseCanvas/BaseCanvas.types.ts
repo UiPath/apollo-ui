@@ -1,5 +1,11 @@
-import type { ReactNode } from "react";
-import type { BackgroundVariant, Edge, Node, ReactFlowInstance, ReactFlowProps } from "@uipath/uix/xyflow/react";
+import type { ReactNode } from 'react';
+import type {
+  BackgroundVariant,
+  Edge,
+  Node,
+  ReactFlowInstance,
+  ReactFlowProps,
+} from '@uipath/uix/xyflow/react';
 
 /**
  * Configuration options for viewport fit operations in BaseCanvas.
@@ -48,7 +54,8 @@ export interface BaseCanvasFitViewOptions {
  * @template NodeType - The type of nodes used in the canvas, extends the base Node type
  * @template EdgeType - The type of edges used in the canvas, extends the base Edge type
  */
-export interface BaseCanvasProps<NodeType extends Node = Node, EdgeType extends Edge = Edge> extends ReactFlowProps<NodeType, EdgeType> {
+export interface BaseCanvasProps<NodeType extends Node = Node, EdgeType extends Edge = Edge>
+  extends ReactFlowProps<NodeType, EdgeType> {
   /**
    * Determines the interaction mode of the canvas.
    * - "design": Full editing capabilities - add, remove, and modify nodes/edges
@@ -63,7 +70,7 @@ export interface BaseCanvasProps<NodeType extends Node = Node, EdgeType extends 
    * - "view": Can only pan, zoom, and select nodes (no modifications)
    * - "readonly": Complete static view with no user interactions
    */
-  mode?: "design" | "readonly" | "view";
+  mode?: 'design' | 'readonly' | 'view';
 
   /**
    * React children to render inside the canvas.

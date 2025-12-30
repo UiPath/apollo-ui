@@ -128,7 +128,8 @@ export function getPreImportedMessages(
 /**
  * Get all pre-imported locales for a component
  */
-export function getAllPreImportedLocales(component: string): Record<SupportedLocale, LocaleMessages> | undefined {
+export function getAllPreImportedLocales(
+  component: string
+): Record<SupportedLocale, LocaleMessages> | undefined {
   return localeRegistry[component];
 }
-

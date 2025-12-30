@@ -1,6 +1,6 @@
-import { useMemo } from "react";
-import type { Position } from "@uipath/uix/xyflow/react";
-import type { HandleConfigurationSpecificPosition } from "../BaseNode/BaseNode.types";
+import { useMemo } from 'react';
+import type { Position } from '@uipath/uix/xyflow/react';
+import type { HandleConfigurationSpecificPosition } from '../BaseNode/BaseNode.types';
 import {
   bottomPositionForHandle,
   heightForHandleWithPosition,
@@ -9,7 +9,7 @@ import {
   topPositionForHandle,
   transformForHandle,
   widthForHandleWithPosition,
-} from "./ButtonHandleStyleUtils";
+} from './ButtonHandleStyleUtils';
 
 export const useButtonHandleSizeAndPosition = ({
   position,
@@ -23,11 +23,19 @@ export const useButtonHandleSizeAndPosition = ({
   customPositionAndOffsets?: HandleConfigurationSpecificPosition;
 }) => {
   const width = useMemo(() => {
-    return widthForHandleWithPosition({ position, numHandles, customWidth: customPositionAndOffsets?.width });
+    return widthForHandleWithPosition({
+      position,
+      numHandles,
+      customWidth: customPositionAndOffsets?.width,
+    });
   }, [customPositionAndOffsets?.width, position, numHandles]);
 
   const height = useMemo(() => {
-    return heightForHandleWithPosition({ position, numHandles, customHeight: customPositionAndOffsets?.height });
+    return heightForHandleWithPosition({
+      position,
+      numHandles,
+      customHeight: customPositionAndOffsets?.height,
+    });
   }, [customPositionAndOffsets?.height, position, numHandles]);
 
   const top = useMemo(() => {
@@ -38,7 +46,13 @@ export const useButtonHandleSizeAndPosition = ({
       customTop: customPositionAndOffsets?.top,
       customBottom: customPositionAndOffsets?.bottom,
     });
-  }, [customPositionAndOffsets?.top, customPositionAndOffsets?.bottom, customPositionAndOffsets?.height, position, positionPercent]);
+  }, [
+    customPositionAndOffsets?.top,
+    customPositionAndOffsets?.bottom,
+    customPositionAndOffsets?.height,
+    position,
+    positionPercent,
+  ]);
 
   const bottom = useMemo(() => {
     return bottomPositionForHandle({
@@ -48,7 +62,13 @@ export const useButtonHandleSizeAndPosition = ({
       customTop: customPositionAndOffsets?.top,
       customBottom: customPositionAndOffsets?.bottom,
     });
-  }, [customPositionAndOffsets?.bottom, customPositionAndOffsets?.top, customPositionAndOffsets?.height, position, positionPercent]);
+  }, [
+    customPositionAndOffsets?.bottom,
+    customPositionAndOffsets?.top,
+    customPositionAndOffsets?.height,
+    position,
+    positionPercent,
+  ]);
 
   const left = useMemo(() => {
     return leftPositionForHandle({
@@ -58,7 +78,13 @@ export const useButtonHandleSizeAndPosition = ({
       customRight: customPositionAndOffsets?.right,
       customLeft: customPositionAndOffsets?.left,
     });
-  }, [customPositionAndOffsets?.left, customPositionAndOffsets?.right, customPositionAndOffsets?.width, position, positionPercent]);
+  }, [
+    customPositionAndOffsets?.left,
+    customPositionAndOffsets?.right,
+    customPositionAndOffsets?.width,
+    position,
+    positionPercent,
+  ]);
 
   const right = useMemo(() => {
     return rightPositionForHandle({
@@ -68,7 +94,13 @@ export const useButtonHandleSizeAndPosition = ({
       customRight: customPositionAndOffsets?.right,
       customLeft: customPositionAndOffsets?.left,
     });
-  }, [customPositionAndOffsets?.right, customPositionAndOffsets?.left, customPositionAndOffsets?.width, position, positionPercent]);
+  }, [
+    customPositionAndOffsets?.right,
+    customPositionAndOffsets?.left,
+    customPositionAndOffsets?.width,
+    position,
+    positionPercent,
+  ]);
 
   const transform = useMemo(() => {
     return transformForHandle({ position, customPositionAndOffsets });

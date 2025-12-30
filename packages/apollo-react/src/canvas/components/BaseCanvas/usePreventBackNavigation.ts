@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect } from 'react';
 
 /**
  * Custom hook to prevent browser back navigation on touch gestures and horizontal wheel scrolling.
@@ -19,14 +19,14 @@ export function usePreventBackNavigation() {
       }
     };
 
-    document.addEventListener("touchstart", preventBackNavigation, { passive: false });
-    document.addEventListener("touchmove", preventBackNavigation, { passive: false });
-    document.addEventListener("wheel", preventWheel, { passive: false });
+    document.addEventListener('touchstart', preventBackNavigation, { passive: false });
+    document.addEventListener('touchmove', preventBackNavigation, { passive: false });
+    document.addEventListener('wheel', preventWheel, { passive: false });
 
     return () => {
-      document.removeEventListener("touchstart", preventBackNavigation);
-      document.removeEventListener("touchmove", preventBackNavigation);
-      document.removeEventListener("wheel", preventWheel);
+      document.removeEventListener('touchstart', preventBackNavigation);
+      document.removeEventListener('touchmove', preventBackNavigation);
+      document.removeEventListener('wheel', preventWheel);
     };
   }, []);
 }

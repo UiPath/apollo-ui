@@ -2,20 +2,20 @@ export const DEFAULT_MESSAGE_RENDERER = 'apollo-markdown-renderer';
 export const AGENTS_TOOL_CALL_RENDERER = 'apollo-agents-tool-call';
 export const APOLLO_CHAT_TREE_RENDERER = 'apollo-chat-tree-renderer';
 export const ACCEPTED_FILES = {
-    'text/csv': [ '.csv' ],
-    'application/json': [ '.json' ],
-    'text/plain': [ '.txt' ],
-    'application/pdf': [ '.pdf' ],
-    'image/png': [ '.png' ],
-    'image/jpeg': [ '.jpg', '.jpeg' ],
-    'image/tiff': [ '.tif', '.tiff' ],
-    'application/msword': [ '.doc' ],
-    'application/vnd.openxmlformats-officedocument.wordprocessingml.document': [ '.docx' ],
-    'application/vnd.ms-excel': [ '.xls' ],
-    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': [ '.xlsx' ],
-    'application/vnd.ms-powerpoint': [ '.ppt' ],
-    'application/vnd.openxmlformats-officedocument.presentationml.presentation': [ '.pptx' ],
-    'application/x-bpmn': [ '.bpmn' ],
+  'text/csv': ['.csv'],
+  'application/json': ['.json'],
+  'text/plain': ['.txt'],
+  'application/pdf': ['.pdf'],
+  'image/png': ['.png'],
+  'image/jpeg': ['.jpg', '.jpeg'],
+  'image/tiff': ['.tif', '.tiff'],
+  'application/msword': ['.doc'],
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
+  'application/vnd.ms-excel': ['.xls'],
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'],
+  'application/vnd.ms-powerpoint': ['.ppt'],
+  'application/vnd.openxmlformats-officedocument.presentationml.presentation': ['.pptx'],
+  'application/x-bpmn': ['.bpmn'],
 };
 
 export const ACCEPTED_FILE_MAX_COUNT = 10;

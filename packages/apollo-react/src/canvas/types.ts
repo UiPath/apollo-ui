@@ -1,24 +1,29 @@
-import type { Edge, Node, Viewport as ReactFlowViewport, CoordinateExtent } from "@uipath/uix/xyflow/react";
-import type { NodeProps } from "@uipath/uix/xyflow/system";
-import type { IRawSpan } from "@uipath/portal-shell-react";
-import type { BaseCanvasRef } from "./components/BaseCanvas/BaseCanvas.types";
+import type {
+  Edge,
+  Node,
+  Viewport as ReactFlowViewport,
+  CoordinateExtent,
+} from '@uipath/uix/xyflow/react';
+import type { NodeProps } from '@uipath/uix/xyflow/system';
+import type { IRawSpan } from '@uipath/portal-shell-react';
+import type { BaseCanvasRef } from './components/BaseCanvas/BaseCanvas.types';
 
 export enum ProjectType {
-  Agent = "Agent",
-  Api = "Api",
-  Rpa = "Rpa",
-  Process = "Process",
-  ProcessOrchestration = "ProcessOrchestration",
-  Integration = "Integration",
-  IXP = "IXP",
-  Internal = "Internal",
+  Agent = 'Agent',
+  Api = 'Api',
+  Rpa = 'Rpa',
+  Process = 'Process',
+  ProcessOrchestration = 'ProcessOrchestration',
+  Integration = 'Integration',
+  IXP = 'IXP',
+  Internal = 'Internal',
 }
 
 export enum BuiltInToolType {
-  AnalyzeAttachments = "AnalyzeAttachments",
-  BatchTransform = "BatchTransform",
-  DeepRAG = "DeepRAG",
-  LoadAttachments = "LoadAttachments",
+  AnalyzeAttachments = 'AnalyzeAttachments',
+  BatchTransform = 'BatchTransform',
+  DeepRAG = 'DeepRAG',
+  LoadAttachments = 'LoadAttachments',
 }
 
 export type ErrorInfo = {
@@ -37,7 +42,7 @@ export type AgentFlowModel = {
 
 export type AgentFlowToolResource = {
   id: string;
-  type: "tool";
+  type: 'tool';
   name: string;
   originalName?: string;
   description: string;
@@ -56,7 +61,7 @@ export type AgentFlowToolResource = {
 
 export type AgentFlowContextResource = {
   id: string;
-  type: "context";
+  type: 'context';
   name: string;
   originalName?: string;
   description: string;
@@ -70,7 +75,7 @@ export type AgentFlowContextResource = {
 
 export type AgentFlowEscalationResource = {
   id: string;
-  type: "escalation";
+  type: 'escalation';
   name: string;
   originalName?: string;
   description: string;
@@ -84,7 +89,7 @@ export type AgentFlowEscalationResource = {
 
 export type AgentFlowMcpResource = {
   id: string;
-  type: "mcp";
+  type: 'mcp';
   name: string;
   originalName?: string;
   description: string;
@@ -106,7 +111,7 @@ export type AgentFlowMcpResource = {
 
 export type AgentFlowMemorySpaceResource = {
   id: string;
-  type: "memorySpace";
+  type: 'memorySpace';
   name: string;
   originalName?: string;
   description: string;
@@ -124,7 +129,7 @@ export type AgentFlowResource =
   | AgentFlowMcpResource
   | AgentFlowToolResource
   | AgentFlowMemorySpaceResource;
-export type AgentFlowResourceType = AgentFlowResource["type"];
+export type AgentFlowResourceType = AgentFlowResource['type'];
 
 /**
  * Suggestion Types
@@ -191,7 +196,7 @@ export type AgentFlowResourceType = AgentFlowResource["type"];
  * />
  * ```
  */
-export type SuggestionType = "add" | "update" | "delete";
+export type SuggestionType = 'add' | 'update' | 'delete';
 
 export type AgentFlowSuggestion = {
   id: string;
@@ -222,7 +227,7 @@ export type AgentFlowSuggestionGroup = {
 export type SpanAttributes = Record<string, unknown>;
 
 export type AgentFlowProps = {
-  mode: "design" | "view";
+  mode: 'design' | 'view';
 
   // all modes
   definition: Record<string, unknown>;
@@ -232,7 +237,7 @@ export type AgentFlowProps = {
   resources: AgentFlowResource[];
   allowDragging?: boolean;
   initialSelectedResource?: {
-    type: "context" | "escalation" | "mcp" | "pane" | "run" | "tool" | "memorySpace";
+    type: 'context' | 'escalation' | 'mcp' | 'pane' | 'run' | 'tool' | 'memorySpace';
     name: string;
   } | null;
   onSelectResource?: (resourceId: string | null) => void;
@@ -302,8 +307,8 @@ export type AgentFlowProps = {
 
   // suggestions
   suggestionGroup?: AgentFlowSuggestionGroup | null;
-  onActOnSuggestion?: (suggestionId: string, action: "accept" | "reject") => void;
-  onActOnSuggestionGroup?: (suggestionGroupId: string, action: "accept" | "reject") => void;
+  onActOnSuggestion?: (suggestionId: string, action: 'accept' | 'reject') => void;
+  onActOnSuggestionGroup?: (suggestionGroupId: string, action: 'accept' | 'reject') => void;
   suggestionTranslations?: SuggestionTranslations;
 
   // placeholder creation (uses suggestion system internally)
@@ -353,7 +358,10 @@ export type AgentFlowProps = {
    * @param resourceType - The type of resource (tool, context, mcp, etc.)
    * @param placeholderData - The data of the placeholder node that was clicked
    */
-  onPlaceholderNodeClick?: (resourceType: AgentFlowResourceType, placeholderData: AgentFlowResourceNodeData) => void;
+  onPlaceholderNodeClick?: (
+    resourceType: AgentFlowResourceType,
+    placeholderData: AgentFlowResourceNodeData
+  ) => void;
 };
 
 export type AgentFlowNodeData = {
@@ -367,26 +375,26 @@ export type AgentFlowNodeData = {
   suggestionType?: SuggestionType;
   isProcessing?: boolean;
 };
-export type AgentFlowNode = Node<AgentFlowNodeData, "agent"> & {
-  extent?: "parent" | CoordinateExtent | undefined;
+export type AgentFlowNode = Node<AgentFlowNodeData, 'agent'> & {
+  extent?: 'parent' | CoordinateExtent | undefined;
 };
 export type AgentFlowNodeProps = NodeProps<AgentFlowNode>;
 
 export type ToolResourceData = {
-  type: "tool";
+  type: 'tool';
   toolType?: BuiltInToolType;
 };
 export type ContextResourceData = {
-  type: "context";
+  type: 'context';
 };
 export type EscalationResourceData = {
-  type: "escalation";
+  type: 'escalation';
 };
 type McpResourceData = {
-  type: "mcp";
+  type: 'mcp';
 };
 export type MemorySpaceResourceData = {
-  type: "memorySpace";
+  type: 'memorySpace';
 };
 
 export type SharedResourceData = {
@@ -435,25 +443,27 @@ export type AgentFlowResourceNodeData = (
   | MemorySpaceResourceData
 ) &
   SharedResourceData;
-export type AgentFlowResourceNode = Node<AgentFlowResourceNodeData, "resource"> & {
-  extent?: "parent" | CoordinateExtent | undefined;
+export type AgentFlowResourceNode = Node<AgentFlowResourceNodeData, 'resource'> & {
+  extent?: 'parent' | CoordinateExtent | undefined;
   position?: { x: number; y: number } | undefined; // position of the node in the canvas, undefined means auto-layout should be used
   hasExplicitPosition?: boolean; // true if the position is explicitly set, false means auto-layout should be used
 };
 export type AgentFlowResourceNodeProps = NodeProps<AgentFlowResourceNode>;
 
 export type AgentFlowCustomNode = AgentFlowNode | AgentFlowResourceNode;
-export type AgentFlowNodeDataUpdate<T extends AgentFlowCustomNode> = Partial<T["data"]>;
+export type AgentFlowNodeDataUpdate<T extends AgentFlowCustomNode> = Partial<T['data']>;
 
 export type AgentFlowDefaultEdgeData = {
   label: string | null;
   isDimmed?: boolean;
 };
-export type AgentFlowDefaultEdge = Edge<AgentFlowDefaultEdgeData, "default">;
+export type AgentFlowDefaultEdge = Edge<AgentFlowDefaultEdgeData, 'default'>;
 export type AgentFlowCustomEdge = AgentFlowDefaultEdge;
 
-export const isAgentFlowAgentNode = (node: AgentFlowCustomNode): node is AgentFlowNode => node.type === "agent";
-export const isAgentFlowResourceNode = (node: AgentFlowCustomNode): node is AgentFlowResourceNode => node.type === "resource";
+export const isAgentFlowAgentNode = (node: AgentFlowCustomNode): node is AgentFlowNode =>
+  node.type === 'agent';
+export const isAgentFlowResourceNode = (node: AgentFlowCustomNode): node is AgentFlowResourceNode =>
+  node.type === 'resource';
 
 export interface AgentNodeTranslations {
   arguments: string;
@@ -472,19 +482,19 @@ export interface AgentNodeTranslations {
 }
 
 export const DefaultAgentNodeTranslations: AgentNodeTranslations = {
-  arguments: "Arguments",
-  input: "Input",
-  output: "Output",
-  user: "User",
-  system: "System",
-  autonomousAgent: "Autonomous Agent",
-  codedAgent: "Coded Agent",
-  conversationalAgent: "Conversational Agent",
-  escalations: "Escalations",
-  model: "Model",
-  context: "Context",
-  tools: "Tools",
-  memory: "Memory",
+  arguments: 'Arguments',
+  input: 'Input',
+  output: 'Output',
+  user: 'User',
+  system: 'System',
+  autonomousAgent: 'Autonomous Agent',
+  codedAgent: 'Coded Agent',
+  conversationalAgent: 'Conversational Agent',
+  escalations: 'Escalations',
+  model: 'Model',
+  context: 'Context',
+  tools: 'Tools',
+  memory: 'Memory',
 };
 
 export interface ResourceNodeTranslations {
@@ -502,17 +512,17 @@ export interface ResourceNodeTranslations {
 }
 
 export const DefaultResourceNodeTranslations: ResourceNodeTranslations = {
-  moreOptions: "More options",
-  enable: "Enable",
-  disable: "Disable",
-  expand: "Expand",
-  collapse: "Collapse",
-  remove: "Remove",
-  addBreakpoint: "Add breakpoint",
-  removeBreakpoint: "Remove breakpoint",
-  addGuardrail: "Add guardrail",
-  guardrailsApplied: "Guardrail(s) applied",
-  goToSource: "Go to source",
+  moreOptions: 'More options',
+  enable: 'Enable',
+  disable: 'Disable',
+  expand: 'Expand',
+  collapse: 'Collapse',
+  remove: 'Remove',
+  addBreakpoint: 'Add breakpoint',
+  removeBreakpoint: 'Remove breakpoint',
+  addGuardrail: 'Add guardrail',
+  guardrailsApplied: 'Guardrail(s) applied',
+  goToSource: 'Go to source',
 };
 
 export interface CodedAgentNodeTranslations {
@@ -521,8 +531,8 @@ export interface CodedAgentNodeTranslations {
 }
 
 export const DefaultCodedAgentNodeTranslations: CodedAgentNodeTranslations = {
-  codedAgentStep: "Coded Agent Step",
-  noDataToDisplay: "No data to display",
+  codedAgentStep: 'Coded Agent Step',
+  noDataToDisplay: 'No data to display',
 };
 
 export interface CanvasTranslations {
@@ -534,11 +544,11 @@ export interface CanvasTranslations {
 }
 
 export const DefaultCanvasTranslations: CanvasTranslations = {
-  panShortcutTeaching: "Hold Space and drag to pan around the canvas",
-  organize: "Organize",
-  zoomIn: "Zoom in",
-  zoomOut: "Zoom out",
-  zoomToFit: "Zoom to fit",
+  panShortcutTeaching: 'Hold Space and drag to pan around the canvas',
+  organize: 'Organize',
+  zoomIn: 'Zoom in',
+  zoomOut: 'Zoom out',
+  zoomToFit: 'Zoom to fit',
 };
 
 export interface SuggestionTranslations {
@@ -549,10 +559,10 @@ export interface SuggestionTranslations {
 }
 
 export const DefaultSuggestionTranslations: SuggestionTranslations = {
-  accept: "Accept",
-  reject: "Reject",
-  acceptAll: "Accept all",
-  rejectAll: "Reject all",
+  accept: 'Accept',
+  reject: 'Reject',
+  acceptAll: 'Accept all',
+  rejectAll: 'Reject all',
 };
 
 /**
@@ -593,20 +603,20 @@ export function createPlaceholderSuggestion(
   options?: { isStandalone?: boolean }
 ): AgentFlowSuggestionGroup {
   if (!partialResource.type || !partialResource.id) {
-    throw new Error("partialResource must have at least type and id fields");
+    throw new Error('partialResource must have at least type and id fields');
   }
 
   const fullResource: AgentFlowResource = {
     type: partialResource.type,
     id: partialResource.id,
     name: partialResource.name || `New ${partialResource.type}`,
-    description: partialResource.description || "",
+    description: partialResource.description || '',
     ...partialResource,
   } as AgentFlowResource;
 
   const newSuggestion: AgentFlowSuggestion = {
     id: `suggestion-${partialResource.id}`,
-    type: "add",
+    type: 'add',
     resource: fullResource,
     isStandalone: options?.isStandalone ?? false,
   };
@@ -622,8 +632,8 @@ export function createPlaceholderSuggestion(
     id: `placeholder-group-${Date.now()}`,
     suggestions: [newSuggestion],
     metadata: {
-      title: "New Resource",
-      description: "Complete the resource details or remove",
+      title: 'New Resource',
+      description: 'Complete the resource details or remove',
     },
   };
 }

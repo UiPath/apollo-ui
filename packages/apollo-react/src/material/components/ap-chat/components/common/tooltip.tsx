@@ -1,7 +1,4 @@
-import {
-    Tooltip,
-    TooltipProps as MuiTooltipProps,
-} from '@mui/material';
+import { Tooltip, TooltipProps as MuiTooltipProps } from '@mui/material';
 import token from '@uipath/apollo-core';
 import React from 'react';
 
@@ -9,21 +6,22 @@ import { useChatScroll } from '../../providers/chat-scroll-provider';
 import { useChatState } from '../../providers/chat-state-provider';
 
 export interface AutopilotChatTooltipProps {
-    title: React.ReactNode;
-    disableInteractive?: boolean;
-    children: React.ReactElement;
-    placement?: MuiTooltipProps['placement'];
-    /** Controlled open state */
-    open?: boolean;
-    /** Callback when tooltip requests to open */
-    onOpen?: () => void;
-    /** Callback when tooltip requests to close */
-    onClose?: () => void;
-    /** Custom slot props (merged with defaults) */
-    slotProps?: MuiTooltipProps['slotProps'];
+  title: React.ReactNode;
+  disableInteractive?: boolean;
+  children: React.ReactElement;
+  placement?: MuiTooltipProps['placement'];
+  /** Controlled open state */
+  open?: boolean;
+  /** Callback when tooltip requests to open */
+  onOpen?: () => void;
+  /** Callback when tooltip requests to close */
+  onClose?: () => void;
+  /** Custom slot props (merged with defaults) */
+  slotProps?: MuiTooltipProps['slotProps'];
 }
 
-export const AutopilotChatTooltip: React.FC<AutopilotChatTooltipProps> = React.memo(({
+export const AutopilotChatTooltip: React.FC<AutopilotChatTooltipProps> = React.memo(
+  ({
     title,
     disableInteractive = false,
     placement = 'bottom',
@@ -32,8 +30,8 @@ export const AutopilotChatTooltip: React.FC<AutopilotChatTooltipProps> = React.m
     onOpen: controlledOnOpen,
     onClose: controlledOnClose,
     slotProps: customSlotProps,
-}) => {
-    const [ internalOpen, setInternalOpen ] = React.useState(false);
+  }) => {
+    const [internalOpen, setInternalOpen] = React.useState(false);
     const { overflowContainer } = useChatScroll();
     const { portalContainer } = useChatState();
     const tooltipRef = React.useRef<HTMLDivElement>(null);
@@ -44,95 +42,103 @@ export const AutopilotChatTooltip: React.FC<AutopilotChatTooltipProps> = React.m
 
     // Close the tooltip immediately at the first sign of scrolling
     React.useEffect(() => {
-        if (!overflowContainer || !open) {
-            return undefined;
+      if (!overflowContainer || !open) {
+        return undefined;
+      }
+
+      const handleScroll = () => {
+        if (isControlled) {
+          controlledOnClose?.();
+        } else {
+          setInternalOpen(false);
         }
+      };
 
-        const handleScroll = () => {
-            if (isControlled) {
-                controlledOnClose?.();
-            } else {
-                setInternalOpen(false);
-            }
-        };
+      // Use capture and passive for better performance and immediate execution
+      overflowContainer.addEventListener('scroll', handleScroll, {
+        passive: true,
+        capture: true,
+      });
 
-        // Use capture and passive for better performance and immediate execution
-        overflowContainer.addEventListener('scroll', handleScroll, {
-            passive: true,
-            capture: true,
-        });
-
-        return () => {
-            overflowContainer.removeEventListener('scroll', handleScroll, { capture: true });
-        };
-    }, [ overflowContainer, open, isControlled, controlledOnClose ]);
+      return () => {
+        overflowContainer.removeEventListener('scroll', handleScroll, { capture: true });
+      };
+    }, [overflowContainer, open, isControlled, controlledOnClose]);
 
     const handleTooltipClose = React.useCallback(() => {
-        if (isControlled) {
-            controlledOnClose?.();
-        } else {
-            setInternalOpen(false);
-        }
-    }, [ isControlled, controlledOnClose ]);
+      if (isControlled) {
+        controlledOnClose?.();
+      } else {
+        setInternalOpen(false);
+      }
+    }, [isControlled, controlledOnClose]);
 
     const handleTooltipOpen = React.useCallback(() => {
-        if (isControlled) {
-            controlledOnOpen?.();
-        } else {
-            setInternalOpen(true);
-        }
-    }, [ isControlled, controlledOnOpen ]);
+      if (isControlled) {
+        controlledOnOpen?.();
+      } else {
+        setInternalOpen(true);
+      }
+    }, [isControlled, controlledOnOpen]);
 
-    const defaultSlotProps = React.useMemo<MuiTooltipProps['slotProps']>(() => ({
+    const defaultSlotProps = React.useMemo<MuiTooltipProps['slotProps']>(
+      () => ({
         popper: {
-            container: portalContainer,
+          container: portalContainer,
         },
         tooltip: {
-            sx: {
-                maxWidth: '300px',
-                backgroundColor: 'var(--color-foreground)',
-                color: 'var(--color-background)',
-                padding: `${token.Spacing.SpacingXs} ${token.Spacing.SpacingS}`,
-                borderRadius: token.Border.BorderRadiusM,
-                fontSize: token.FontFamily.FontSSize,
-                lineHeight: token.FontFamily.FontSLineHeight,
-                '& > *': {
-                    display: 'block',
-                    marginBottom: token.Spacing.SpacingMicro,
-                    '&:last-child': {
-                        marginBottom: 0,
-                    },
-                },
+          sx: {
+            maxWidth: '300px',
+            backgroundColor: 'var(--color-foreground)',
+            color: 'var(--color-background)',
+            padding: `${token.Spacing.SpacingXs} ${token.Spacing.SpacingS}`,
+            borderRadius: token.Border.BorderRadiusM,
+            fontSize: token.FontFamily.FontSSize,
+            lineHeight: token.FontFamily.FontSLineHeight,
+            '& > *': {
+              display: 'block',
+              marginBottom: token.Spacing.SpacingMicro,
+              '&:last-child': {
+                marginBottom: 0,
+              },
             },
+          },
         },
-    }), [ portalContainer ]);
+      }),
+      [portalContainer]
+    );
 
-    const mergedSlotProps = React.useMemo<MuiTooltipProps['slotProps']>(() => 
-        customSlotProps ? {
-            popper: {
+    const mergedSlotProps = React.useMemo<MuiTooltipProps['slotProps']>(
+      () =>
+        customSlotProps
+          ? {
+              popper: {
                 ...defaultSlotProps?.popper,
                 ...customSlotProps.popper,
-            },
-            tooltip: {
+              },
+              tooltip: {
                 ...defaultSlotProps?.tooltip,
                 ...customSlotProps.tooltip,
-            },
-        } : defaultSlotProps,
-    [ defaultSlotProps, customSlotProps ]);
+              },
+            }
+          : defaultSlotProps,
+      [defaultSlotProps, customSlotProps]
+    );
 
     return (
-        <Tooltip
-            ref={tooltipRef}
-            title={title}
-            open={open}
-            onClose={handleTooltipClose}
-            onOpen={handleTooltipOpen}
-            disableInteractive={disableInteractive}
-            placement={placement}
-            TransitionProps={{ timeout: 0 }}
-            slotProps={mergedSlotProps}
-        >
-            {children}
-        </Tooltip>
+      <Tooltip
+        ref={tooltipRef}
+        title={title}
+        open={open}
+        onClose={handleTooltipClose}
+        onOpen={handleTooltipOpen}
+        disableInteractive={disableInteractive}
+        placement={placement}
+        TransitionProps={{ timeout: 0 }}
+        slotProps={mergedSlotProps}
+      >
+        {children}
+      </Tooltip>
     );
-});
+  }
+);

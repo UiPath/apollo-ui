@@ -1,7 +1,7 @@
-import type { EdgeProps } from "@uipath/uix/xyflow/react";
-import { StaticEdge } from "./StaticEdge";
-import { useAgentFlowStore } from "../store/agent-flow-store";
-import type { SuggestionType } from "../../../types";
+import type { EdgeProps } from '@uipath/uix/xyflow/react';
+import { StaticEdge } from './StaticEdge';
+import { useAgentFlowStore } from '../store/agent-flow-store';
+import type { SuggestionType } from '../../../types';
 
 export const Edge = (props: EdgeProps) => {
   const { nodes } = useAgentFlowStore();
@@ -20,7 +20,7 @@ export const Edge = (props: EdgeProps) => {
     let suggestionType: SuggestionType | undefined = undefined;
 
     // Check source node status
-    if (sourceNode?.type === "resource") {
+    if (sourceNode?.type === 'resource') {
       hasError = hasError || (sourceNode.data?.hasError ?? false);
       hasSuccess = hasSuccess || (sourceNode.data?.hasSuccess ?? false);
       hasRunning = hasRunning || (sourceNode.data?.hasRunning ?? false);
@@ -30,7 +30,7 @@ export const Edge = (props: EdgeProps) => {
     }
 
     // Check target node status
-    if (targetNode?.type === "resource") {
+    if (targetNode?.type === 'resource') {
       hasError = hasError || (targetNode.data?.hasError ?? false);
       hasSuccess = hasSuccess || (targetNode.data?.hasSuccess ?? false);
       hasRunning = hasRunning || (targetNode.data?.hasRunning ?? false);
@@ -42,7 +42,8 @@ export const Edge = (props: EdgeProps) => {
     return { hasError, hasSuccess, hasRunning, isCurrentBreakpoint, isSuggestion, suggestionType };
   };
 
-  const { hasError, hasSuccess, hasRunning, isCurrentBreakpoint, isSuggestion, suggestionType } = getConnectedNodesStatus();
+  const { hasError, hasSuccess, hasRunning, isCurrentBreakpoint, isSuggestion, suggestionType } =
+    getConnectedNodesStatus();
   const staticEdgeProps = {
     ...props,
     data: { label: null },

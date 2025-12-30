@@ -35,7 +35,12 @@ export interface IPlanUpdateAttributes {
   newObservations: string[];
 }
 
-export type TToolType = 'processTool' | 'agentTool' | 'AgentToolCall' | 'integrationTool' | 'contextGrounding';
+export type TToolType =
+  | 'processTool'
+  | 'agentTool'
+  | 'AgentToolCall'
+  | 'integrationTool'
+  | 'contextGrounding';
 
 export interface IToolAttributes {
   callId: string;
@@ -71,7 +76,7 @@ export const ToolChoiceValue = {
   Tool: 3,
 } as const;
 
-export type ToolChoiceType = typeof ToolChoiceValue[keyof typeof ToolChoiceValue];
+export type ToolChoiceType = (typeof ToolChoiceValue)[keyof typeof ToolChoiceValue];
 
 export interface IModelSettings {
   topP?: number;
@@ -89,25 +94,25 @@ export interface IModelSettings {
 export interface ICompletionAttributes {
   settings: IModelSettings;
   extra?: {
-      // TODO: most likely this should be Record instead of Map
-       
-      invocation_params?: (Map<string, any> | Record<string, unknown>) & { tools?: any[] };
+    // TODO: most likely this should be Record instead of Map
+
+    invocation_params?: (Map<string, any> | Record<string, unknown>) & { tools?: any[] };
   };
   response: {
-      message: {
-          toolCalls: Array<{
-              id: string;
-              name: string;
-              // TODO: most likely this should be Record instead of Map
-              arguments: Map<string, any> | Record<string, unknown>;
-          }>;
-          content: string | null;
-      };
+    message: {
+      toolCalls: Array<{
+        id: string;
+        name: string;
+        // TODO: most likely this should be Record instead of Map
+        arguments: Map<string, any> | Record<string, unknown>;
+      }>;
+      content: string | null;
+    };
   };
   usage: {
-      completionTokens: number;
-      promptTokens: number;
-      totalTokens: number;
+    completionTokens: number;
+    promptTokens: number;
+    totalTokens: number;
   };
   toolCalls: ICompletionToolCall[];
   output: string | null;
@@ -156,7 +161,6 @@ export interface IEscalationChannelAttributes {
   taskId: string;
 }
 
- 
 export interface ILicensingAttributes {}
 
 export interface IElementRunSpanAttributes {
@@ -200,71 +204,71 @@ export interface IAttachmentAttributes {
   attachments: IAttachment[];
 }
 
-type AsConstExtractor<TAsConstEnum> = TAsConstEnum [keyof TAsConstEnum];
+type AsConstExtractor<TAsConstEnum> = TAsConstEnum[keyof TAsConstEnum];
 
 type MakeNullable<T> = {
   [K in keyof T]: T[K] | null;
 };
 
 export const SpanType = {
-  'AgentRun': 'agentRun',
-  'EvalSetRun': 'evalSetRun',
-  'Eval': 'eval',
-  'Completion': 'completion',
-  'ToolCall': 'toolCall',
-  'ToolPreGovernance': 'toolPreGovernance',
-  'ToolPostGovernance': 'toolPostGovernance',
-  'GovernanceEscalation': 'governanceEscalation',
-  'ProcessTool': 'processTool',
-  'AgentTool': 'agentTool',
-  'ApiWorkflowTool': 'apiWorkflowTool',
-  'IntegrationTool': 'integrationTool',
-  'ContextGroundingTool': 'contextGroundingTool',
-  'EscalationTool': 'escalationTool',
-  'MockTool': 'mockTool',
-  'OutputCorrection': 'outputCorrection',
+  AgentRun: 'agentRun',
+  EvalSetRun: 'evalSetRun',
+  Eval: 'eval',
+  Completion: 'completion',
+  ToolCall: 'toolCall',
+  ToolPreGovernance: 'toolPreGovernance',
+  ToolPostGovernance: 'toolPostGovernance',
+  GovernanceEscalation: 'governanceEscalation',
+  ProcessTool: 'processTool',
+  AgentTool: 'agentTool',
+  ApiWorkflowTool: 'apiWorkflowTool',
+  IntegrationTool: 'integrationTool',
+  ContextGroundingTool: 'contextGroundingTool',
+  EscalationTool: 'escalationTool',
+  MockTool: 'mockTool',
+  OutputCorrection: 'outputCorrection',
 
-  'licensing': 'licensing',
+  licensing: 'licensing',
 
   // Trigger types
-  'TimeTrigger': 'TimeTrigger',
-  'QueueTrigger': 'QueueTrigger',
-  'ApiTrigger': 'ApiTrigger',
+  TimeTrigger: 'TimeTrigger',
+  QueueTrigger: 'QueueTrigger',
+  ApiTrigger: 'ApiTrigger',
 
   // Additional types
-  'agentOutput': 'agentOutput',
-  'parser': 'parser',
-  'chain': 'chain',
-  'AgentToolCall': 'AgentToolCall',
-  'OpenTelemetry': 'OpenTelemetry',
-  'apiWorkflowTaskRun': 'apiWorkflowTaskRun',
-  'apiWorkflowRun': 'apiWorkflowRun',
-  'MCPServer': 'MCP Server',
-  'MCPResponse': 'MCP response',
-  'MCPRequest': 'MCP request',
+  agentOutput: 'agentOutput',
+  parser: 'parser',
+  chain: 'chain',
+  AgentToolCall: 'AgentToolCall',
+  OpenTelemetry: 'OpenTelemetry',
+  apiWorkflowTaskRun: 'apiWorkflowTaskRun',
+  apiWorkflowRun: 'apiWorkflowRun',
+  MCPServer: 'MCP Server',
+  MCPResponse: 'MCP response',
+  MCPRequest: 'MCP request',
 
   // PO types
-  'ProcessRun': 'ProcessRun',
-  'ElementRun': 'ElementRun',
-  'InstanceOperation': 'InstanceOperation',
-  'Incident': 'Incident',
+  ProcessRun: 'ProcessRun',
+  ElementRun: 'ElementRun',
+  InstanceOperation: 'InstanceOperation',
+  Incident: 'Incident',
 
   // Memory types
-  'AgentMemoryLookup': 'agentMemoryLookup',
-  'AgentMemoryStore': 'agentMemoryStore',
+  AgentMemoryLookup: 'agentMemoryLookup',
+  AgentMemoryStore: 'agentMemoryStore',
 
   // Governance types
-  'PreGovernance': 'preGovernance',
-  'AgentPreGuardrails': 'agentPreGuardrails',
-  'ApplyDynamicFewShot': 'applyDynamicFewShot',
+  PreGovernance: 'preGovernance',
+  AgentPreGuardrails: 'agentPreGuardrails',
+  ApplyDynamicFewShot: 'applyDynamicFewShot',
 
   // Conversation types
-  'Conversation': 'conversation',
-  'ConversationExchange': 'conversationExchange',
-  'ConversationUserMessage': 'conversationUserMessage',
-  'ConversationAgentMessage': 'conversationAgentMessage',
-  'ConversationContentPart': 'conversationContentPart',
-  'ConversationCitation': 'conversationCitation',
+  Conversation: 'conversation',
+  ConversationExchange: 'conversationExchange',
+  ConversationUserMessage: 'conversationUserMessage',
+  ConversationAgentMessage: 'conversationAgentMessage',
+  ConversationContentPart: 'conversationContentPart',
+  ConversationCitation: 'conversationCitation',
 } as const;
 
 // FIXME: integrate inside SpanType, currently no info about this kind of span
@@ -303,13 +307,16 @@ export type ISpanBase<TType extends keyof SpanAttributesMap = TSpanType> = {
   tenantId?: string;
   expiryTimeUtc?: string;
   source?: number;
-} & ({
-  error: object;
-  attributes: MakeNullable<SpanAttributesMap[TType]>;
-} | {
-  error?: null;
-  attributes: SpanAttributesMap[TType] & { agentId?: string };
-});
+} & (
+  | {
+      error: object;
+      attributes: MakeNullable<SpanAttributesMap[TType]>;
+    }
+  | {
+      error?: null;
+      attributes: SpanAttributesMap[TType] & { agentId?: string };
+    }
+);
 
 // Can this be dropped?
 interface SpanAttributesMap {
@@ -369,7 +376,7 @@ type SpanList = {
 }[TSpanType];
 
 // The umbrella type for all span types
-export type TSpan = SpanList extends (infer T extends ISpanBase) ? T : never;
+export type TSpan = SpanList extends infer T extends ISpanBase ? T : never;
 
 export interface IRawSpan {
   Id: string;

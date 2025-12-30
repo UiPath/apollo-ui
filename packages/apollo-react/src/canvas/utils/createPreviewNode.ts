@@ -1,6 +1,6 @@
-import { Position, type Edge, type Node, type ReactFlowInstance } from "@uipath/uix/xyflow/react";
-import { DEFAULT_NODE_SIZE, PREVIEW_EDGE_ID, PREVIEW_NODE_ID, GRID_SPACING } from "../constants";
-import { getAbsolutePosition, getNonOverlappingPositionForDirection } from "./NodeUtils";
+import { Position, type Edge, type Node, type ReactFlowInstance } from '@uipath/uix/xyflow/react';
+import { DEFAULT_NODE_SIZE, PREVIEW_EDGE_ID, PREVIEW_NODE_ID, GRID_SPACING } from '../constants';
+import { getAbsolutePosition, getNonOverlappingPositionForDirection } from './NodeUtils';
 
 /**
  * Returns the opposite position for a given handle position.
@@ -77,7 +77,9 @@ function calculateAutoPosition(
   offset = GRID_SPACING * 5,
   ignoredNodeTypes: string[] = []
 ): { x: number; y: number } {
-  const sourceAbsolutePosition = sourceNode.parentId ? getAbsolutePosition(sourceNode, existingNodes) : sourceNode.position;
+  const sourceAbsolutePosition = sourceNode.parentId
+    ? getAbsolutePosition(sourceNode, existingNodes)
+    : sourceNode.position;
   const sourceWidth = sourceNode.measured?.width ?? 0;
   const sourceHeight = sourceNode.measured?.height ?? 0;
   const sourceCenterX = sourceAbsolutePosition.x + sourceWidth / 2;
@@ -90,7 +92,7 @@ function calculateAutoPosition(
   }));
 
   let initialPosition: { x: number; y: number };
-  let direction: "left" | "right" | "top" | "bottom";
+  let direction: 'left' | 'right' | 'top' | 'bottom';
 
   switch (handlePosition) {
     case Position.Left:
@@ -99,7 +101,7 @@ function calculateAutoPosition(
         x: sourceAbsolutePosition.x - previewNodeSize.width - offset,
         y: sourceCenterY - previewNodeSize.height / 2,
       };
-      direction = "left";
+      direction = 'left';
       break;
     case Position.Right:
       // Place preview to the right of source node
@@ -107,7 +109,7 @@ function calculateAutoPosition(
         x: sourceAbsolutePosition.x + sourceWidth + offset,
         y: sourceCenterY - previewNodeSize.height / 2,
       };
-      direction = "right";
+      direction = 'right';
       break;
     case Position.Top:
       // Place preview above source node
@@ -115,7 +117,7 @@ function calculateAutoPosition(
         x: sourceCenterX - previewNodeSize.width / 2,
         y: sourceAbsolutePosition.y - previewNodeSize.height - offset,
       };
-      direction = "top";
+      direction = 'top';
       break;
     case Position.Bottom:
       // Place preview below source node
@@ -123,7 +125,7 @@ function calculateAutoPosition(
         x: sourceCenterX - previewNodeSize.width / 2,
         y: sourceAbsolutePosition.y + sourceHeight + offset,
       };
-      direction = "bottom";
+      direction = 'bottom';
       break;
     default:
       // Fallback to right-side behavior
@@ -131,7 +133,7 @@ function calculateAutoPosition(
         x: sourceAbsolutePosition.x + sourceWidth + offset,
         y: sourceCenterY - previewNodeSize.height / 2,
       };
-      direction = "right";
+      direction = 'right';
   }
 
   // Find non-overlapping position
@@ -157,8 +159,11 @@ export function createPreviewNode(
   reactFlowInstance: ReactFlowInstance,
   position?: { x: number; y: number },
   data?: Record<string, any>,
-  sourceHandleType: "source" | "target" = "source",
-  previewNodeSize: { width: number; height: number } = { width: DEFAULT_NODE_SIZE, height: DEFAULT_NODE_SIZE },
+  sourceHandleType: 'source' | 'target' = 'source',
+  previewNodeSize: { width: number; height: number } = {
+    width: DEFAULT_NODE_SIZE,
+    height: DEFAULT_NODE_SIZE,
+  },
   handlePosition: Position = Position.Right,
   ignoredNodeTypes: string[] = []
 ): { node: Node; edge: Edge } | null {
@@ -169,11 +174,13 @@ export function createPreviewNode(
   }
 
   // When dragging from a target handle, we should treat the preview as the source for the edge connection.
-  const treatPreviewAsSource = sourceHandleType === "target";
+  const treatPreviewAsSource = sourceHandleType === 'target';
 
   // Determine which side to place the preview based on handle position and handle type
   // If dragging from a target handle, the preview should be on the opposite side
-  const effectiveHandlePosition = treatPreviewAsSource ? getOppositePosition(handlePosition) : handlePosition;
+  const effectiveHandlePosition = treatPreviewAsSource
+    ? getOppositePosition(handlePosition)
+    : handlePosition;
 
   const nodePosition = position
     ? calculatePositionFromDrop(position, effectiveHandlePosition, previewNodeSize)
@@ -207,7 +214,7 @@ export function createPreviewNode(
 
   const previewNode: Node = {
     id: PREVIEW_NODE_ID,
-    type: "preview",
+    type: 'preview',
     position: nodePosition,
     ...previewNodeSize,
     selected: true,
@@ -215,18 +222,28 @@ export function createPreviewNode(
   };
 
   const previewSourceAndTargetData = treatPreviewAsSource
-    ? { source: PREVIEW_NODE_ID, sourceHandle: "output", target: sourceNodeId, targetHandle: sourceHandleId }
-    : { source: sourceNodeId, sourceHandle: sourceHandleId, target: PREVIEW_NODE_ID, targetHandle: "input" };
+    ? {
+        source: PREVIEW_NODE_ID,
+        sourceHandle: 'output',
+        target: sourceNodeId,
+        targetHandle: sourceHandleId,
+      }
+    : {
+        source: sourceNodeId,
+        sourceHandle: sourceHandleId,
+        target: PREVIEW_NODE_ID,
+        targetHandle: 'input',
+      };
 
   // Create preview edge with consistent styling
   const previewEdge: Edge = {
     id: PREVIEW_EDGE_ID,
     ...previewSourceAndTargetData,
-    type: "default",
+    type: 'default',
     style: {
-      strokeDasharray: "5,5",
+      strokeDasharray: '5,5',
       opacity: 0.8,
-      stroke: "var(--uix-canvas-selection-indicator)",
+      stroke: 'var(--uix-canvas-selection-indicator)',
       strokeWidth: 2,
     },
   };
@@ -238,7 +255,10 @@ export function createPreviewNode(
  * Applies preview node and edge to React Flow instance
  * Handles cleanup of existing previews and selection
  */
-export function applyPreviewToReactFlow(preview: { node: Node; edge: Edge }, reactFlowInstance: ReactFlowInstance): void {
+export function applyPreviewToReactFlow(
+  preview: { node: Node; edge: Edge },
+  reactFlowInstance: ReactFlowInstance
+): void {
   // Use a timeout to avoid React Flow internal reset.
   setTimeout(() => {
     // Update nodes and edges (remove any existing preview first)
@@ -247,7 +267,10 @@ export function applyPreviewToReactFlow(preview: { node: Node; edge: Edge }, rea
       preview.node,
     ]);
 
-    reactFlowInstance.setEdges((edges) => [...edges.filter((e) => e.id !== PREVIEW_EDGE_ID), preview.edge]);
+    reactFlowInstance.setEdges((edges) => [
+      ...edges.filter((e) => e.id !== PREVIEW_EDGE_ID),
+      preview.edge,
+    ]);
   }, 0);
 }
 

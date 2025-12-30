@@ -1,4 +1,4 @@
-import type { IRawSpan } from "@uipath/portal-shell-react";
+import type { IRawSpan } from '@uipath/portal-shell-react';
 import type {
   AgentFlowCustomEdge,
   AgentFlowCustomNode,
@@ -8,11 +8,11 @@ import type {
   AgentFlowResource,
   AgentFlowResourceNode,
   AgentFlowSuggestionGroup,
-} from "../types";
-import { isAgentFlowResourceNode } from "../types";
-import { autoArrangeNodes } from "./auto-layout";
-import { ResourceNodeType } from "../components/AgentCanvas/AgentFlow.constants";
-import { Position } from "@uipath/uix/xyflow/react";
+} from '../types';
+import { isAgentFlowResourceNode } from '../types';
+import { autoArrangeNodes } from './auto-layout';
+import { ResourceNodeType } from '../components/AgentCanvas/AgentFlow.constants';
+import { Position } from '@uipath/uix/xyflow/react';
 
 // Status constants
 const SPAN_STATUS = {
@@ -20,8 +20,8 @@ const SPAN_STATUS = {
   SUCCESS: 1,
   ERROR: 2,
 } as const;
-export const NODE_ID_DELIMITER = "=>";
-export const EDGE_ID_DELIMITER = "::";
+export const NODE_ID_DELIMITER = '=>';
+export const EDGE_ID_DELIMITER = '::';
 
 const getResourceNodeId = (resource: AgentFlowResource): string => {
   return resource.id;
@@ -29,23 +29,32 @@ const getResourceNodeId = (resource: AgentFlowResource): string => {
 
 // Helper function to normalize tool names
 const normalizeToolName = (resource: AgentFlowResource): string => {
-  if (resource.type === "escalation") {
-    return `escalate_${resource.name.toLowerCase().replace(/\s/g, "_")}`;
+  if (resource.type === 'escalation') {
+    return `escalate_${resource.name.toLowerCase().replace(/\s/g, '_')}`;
   }
-  if (resource.type === "mcp") {
-    return `mcp_${resource.name.toLowerCase().replace(/\s/g, "_")}`;
+  if (resource.type === 'mcp') {
+    return `mcp_${resource.name.toLowerCase().replace(/\s/g, '_')}`;
   }
-  return resource.name.replace(/\s+/g, "_");
+  return resource.name.replace(/\s+/g, '_');
 };
 
 // Helper function to check if a resource has a specific status
-const hasResourceStatus = (resource: AgentFlowResource, spans: IRawSpan[], targetStatus: number): boolean => {
+const hasResourceStatus = (
+  resource: AgentFlowResource,
+  spans: IRawSpan[],
+  targetStatus: number
+): boolean => {
   for (const span of spans) {
     const attributes = span.Attributes ? JSON.parse(span.Attributes) : null;
     if (!attributes) continue;
 
     // Check for tool/context/escalation/mcp status
-    if (resource.type === "context" || resource.type === "escalation" || resource.type === "tool" || resource.type === "mcp") {
+    if (
+      resource.type === 'context' ||
+      resource.type === 'escalation' ||
+      resource.type === 'tool' ||
+      resource.type === 'mcp'
+    ) {
       const normalizedToolName = normalizeToolName(resource);
 
       if (attributes.toolName === normalizedToolName && span.Status === targetStatus) {
@@ -76,13 +85,17 @@ export const hasResourceSuccess = (resource: AgentFlowResource, spans: IRawSpan[
 };
 
 // Helper function to check if a model has a specific status
-const hasModelStatus = (_model: AgentFlowModel, spans: IRawSpan[], targetStatus: number): boolean => {
+const hasModelStatus = (
+  _model: AgentFlowModel,
+  spans: IRawSpan[],
+  targetStatus: number
+): boolean => {
   for (const span of spans) {
     const attributes = span.Attributes ? JSON.parse(span.Attributes) : null;
     if (!attributes) continue;
 
     // Check for model status
-    if (attributes.type === "completion" && span.Status === targetStatus) {
+    if (attributes.type === 'completion' && span.Status === targetStatus) {
       return true;
     }
   }
@@ -115,7 +128,7 @@ export const hasAgentRunning = (spans: IRawSpan[]): boolean => {
     if (!attributes) continue;
 
     // Check for agent run status
-    if (attributes.type === "agentRun") {
+    if (attributes.type === 'agentRun') {
       const isRunning = span.Status === SPAN_STATUS.RUNNING;
       return isRunning;
     }
@@ -126,11 +139,11 @@ export const hasAgentRunning = (spans: IRawSpan[]): boolean => {
 const createAgentNode = (props: AgentFlowProps, parentNodeId?: string): AgentFlowNode => {
   const agentId = parentNodeId
     ? `${parentNodeId}${NODE_ID_DELIMITER}${props.definition.processKey}`
-    : (props.definition.processKey as string) || "agent"; // fallback would only be for design time which won't have expanded agents
+    : (props.definition.processKey as string) || 'agent'; // fallback would only be for design time which won't have expanded agents
 
   return {
     id: agentId,
-    type: "agent",
+    type: 'agent',
     position: { x: 0, y: 0 },
     data: {
       name: props.name,
@@ -138,7 +151,7 @@ const createAgentNode = (props: AgentFlowProps, parentNodeId?: string): AgentFlo
       definition: props.definition,
       parentNodeId,
     },
-    draggable: Boolean(props.allowDragging && props.mode === "design"), // Agent node is draggable in design mode, not in view mode
+    draggable: Boolean(props.allowDragging && props.mode === 'design'), // Agent node is draggable in design mode, not in view mode
   };
 };
 
@@ -167,22 +180,25 @@ const createResourceNode = (
   };
 
   // Check if resource has explicit position defined
-  const hasExplicitPosition = "position" in resource && typeof resource.position === "object" && resource.position !== null;
+  const hasExplicitPosition =
+    'position' in resource && typeof resource.position === 'object' && resource.position !== null;
 
   // React Flow requires a position value, so we use {x: 0, y: 0} as placeholder when undefined
   // This will be overwritten by auto-layout for nodes without explicit positions
-  const position = hasExplicitPosition ? (resource.position as { x: number; y: number }) : { x: 0, y: 0 };
+  const position = hasExplicitPosition
+    ? (resource.position as { x: number; y: number })
+    : { x: 0, y: 0 };
 
   const resourceId = `${resource.name}:${id}`;
   const finalId = parentNodeId ? `${parentNodeId}${NODE_ID_DELIMITER}${resourceId}` : resourceId;
 
   // Helper to create base node structure
-  const createBaseNode = (data: AgentFlowResourceNode["data"]): AgentFlowResourceNode => {
+  const createBaseNode = (data: AgentFlowResourceNode['data']): AgentFlowResourceNode => {
     const node: AgentFlowResourceNode = {
       id: finalId,
-      type: "resource" as const,
+      type: 'resource' as const,
       position,
-      draggable: Boolean(props.allowDragging && props.mode === "design"),
+      draggable: Boolean(props.allowDragging && props.mode === 'design'),
       data,
       hasExplicitPosition,
     };
@@ -191,10 +207,10 @@ const createResourceNode = (
   };
 
   switch (resource.type) {
-    case "tool":
+    case 'tool':
       return createBaseNode({
         ...baseData,
-        type: "tool",
+        type: 'tool',
         iconUrl: resource.iconUrl,
         projectType: resource.projectType,
         toolType: resource.toolType,
@@ -203,33 +219,33 @@ const createResourceNode = (
         isExpandable: resource.isExpandable,
         processName: resource.processName,
       });
-    case "context":
+    case 'context':
       return createBaseNode({
         ...baseData,
-        type: "context",
+        type: 'context',
         projectId: resource.projectId,
         parentNodeId,
       });
-    case "mcp":
+    case 'mcp':
       return createBaseNode({
         ...baseData,
-        type: "mcp",
+        type: 'mcp',
         slug: resource.slug,
         folderPath: resource.folderPath,
         availableTools: resource.availableTools,
         parentNodeId,
       });
-    case "memorySpace":
+    case 'memorySpace':
       return createBaseNode({
         ...baseData,
-        type: "memorySpace",
+        type: 'memorySpace',
         parentNodeId,
       });
-    case "escalation":
+    case 'escalation':
     default:
       return createBaseNode({
         ...baseData,
-        type: "escalation",
+        type: 'escalation',
         projectId: resource.projectId,
         parentNodeId,
       });
@@ -254,19 +270,19 @@ const calculateOptimalHandles = (
   // Determine source handle based on resource type
   let sourceHandle: string;
   switch (resourceType) {
-    case "context":
+    case 'context':
       sourceHandle = ResourceNodeType.Context;
       break;
-    case "escalation":
+    case 'escalation':
       sourceHandle = ResourceNodeType.Escalation;
       break;
-    case "tool":
+    case 'tool':
       sourceHandle = ResourceNodeType.Tool;
       break;
-    case "mcp":
+    case 'mcp':
       sourceHandle = ResourceNodeType.Tool;
       break;
-    case "memorySpace":
+    case 'memorySpace':
       sourceHandle = ResourceNodeType.MemorySpace;
       break;
     default:
@@ -286,7 +302,7 @@ export const createResourceEdge = (
   resourceNode: AgentFlowResourceNode,
   props: AgentFlowProps
 ): AgentFlowCustomEdge => {
-  const isViewMode = props.mode === "view";
+  const isViewMode = props.mode === 'view';
   const isResourceActive = resourceNode.data.isActive ?? false;
 
   // Calculate optimal handles based on positions
@@ -299,7 +315,7 @@ export const createResourceEdge = (
     target: resourceNode.id,
     sourceHandle,
     targetHandle,
-    type: "default",
+    type: 'default',
     data: {
       label: null,
     },
@@ -323,7 +339,9 @@ export const computeNodesAndEdges = (
 
   // Filter out MCP resources if the feature flag is disabled
   const filteredResources =
-    props.enableMcpTools === false ? props.resources.filter((resource) => resource.type !== "mcp") : props.resources;
+    props.enableMcpTools === false
+      ? props.resources.filter((resource) => resource.type !== 'mcp')
+      : props.resources;
 
   // Build a map of existing orders by resource ID (for both full ID and base ID)
   const existingOrderMap = new Map<string, number>();
@@ -341,7 +359,7 @@ export const computeNodesAndEdges = (
       // Also store by base resource ID (extracted from node ID)
       const parts = node.id.split(NODE_ID_DELIMITER);
       const baseId = parts[parts.length - 1] ?? node.id;
-      const resourceIdPart = baseId.split(":")[1];
+      const resourceIdPart = baseId.split(':')[1];
       if (resourceIdPart) {
         existingOrderMap.set(resourceIdPart, node.data.order);
       }
@@ -366,10 +384,17 @@ export const computeNodesAndEdges = (
     return createResourceNode(resource, order, props, agentNode.id);
   });
 
-  const edges = resourceNodes.map((resourceNode) => createResourceEdge(agentNode, resourceNode, props));
+  const edges = resourceNodes.map((resourceNode) =>
+    createResourceEdge(agentNode, resourceNode, props)
+  );
 
   const allNodes = [agentNode, ...resourceNodes];
-  const arrangedNodes = autoArrangeNodes(allNodes, edges, props.agentNodePosition, props.resourceNodePositions);
+  const arrangedNodes = autoArrangeNodes(
+    allNodes,
+    edges,
+    props.agentNodePosition,
+    props.resourceNodePositions
+  );
 
   return {
     nodes: arrangedNodes,
@@ -418,7 +443,7 @@ export const computeSuggestionNodesAndEdges = (
   let nextOrderIndex = maxExistingOrder + 1;
 
   for (const suggestion of suggestionGroup.suggestions) {
-    if (suggestion.type === "add" && suggestion.resource) {
+    if (suggestion.type === 'add' && suggestion.resource) {
       // Create a placeholder node for the new resource
       const resource = suggestion.resource;
 
@@ -438,7 +463,7 @@ export const computeSuggestionNodesAndEdges = (
         ...node.data,
         isSuggestion: !suggestion.isStandalone,
         suggestionId: suggestion.id,
-        suggestionType: "add",
+        suggestionType: 'add',
         isPlaceholder: true,
         // If suggestion is processing, show running state
         hasRunning: suggestion.isProcessing,

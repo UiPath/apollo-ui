@@ -1,37 +1,50 @@
-import { useReactFlow } from "@uipath/uix/xyflow/react";
-import { Column } from "@uipath/uix/core";
-import { memo, useCallback, useState, useEffect } from "react";
-import { ApIcon, ApIconButton } from "@uipath/portal-shell-react";
-import { TextField, SelectField, NumberField, CheckboxField } from "./fields";
-import { ConfigSection as StyledConfigSection, SectionTitle, FieldContainer } from "./NodePropertiesPanel.styles";
-import { FloatingCanvasPanel } from "../FloatingCanvasPanel";
-import { useNodeSelection, useNodeConfiguration } from "./hooks";
-import type { NodePropertiesPanelProps, ConfigField, ConfigSection } from "./NodePropertiesPanel.types";
+import { useReactFlow } from '@uipath/uix/xyflow/react';
+import { Column } from '@uipath/uix/core';
+import { memo, useCallback, useState, useEffect } from 'react';
+import { ApIcon, ApIconButton } from '@uipath/portal-shell-react';
+import { TextField, SelectField, NumberField, CheckboxField } from './fields';
+import {
+  ConfigSection as StyledConfigSection,
+  SectionTitle,
+  FieldContainer,
+} from './NodePropertiesPanel.styles';
+import { FloatingCanvasPanel } from '../FloatingCanvasPanel';
+import { useNodeSelection, useNodeConfiguration } from './hooks';
+import type {
+  NodePropertiesPanelProps,
+  ConfigField,
+  ConfigSection,
+} from './NodePropertiesPanel.types';
 
 /** Width of the pinned panel in pixels. Must match minWidth in PanelContainer styles. */
 const PINNED_PANEL_WIDTH = 320;
 
-function renderField(field: ConfigField, value: unknown, onChange: (value: unknown) => void, error?: string) {
+function renderField(
+  field: ConfigField,
+  value: unknown,
+  onChange: (value: unknown) => void,
+  error?: string
+) {
   switch (field.type) {
-    case "text":
-    case "textarea": {
-      const textValue = typeof value === "string" ? value : String(value ?? "");
+    case 'text':
+    case 'textarea': {
+      const textValue = typeof value === 'string' ? value : String(value ?? '');
       return <TextField field={field} value={textValue} onChange={onChange} error={error} />;
     }
-    case "select": {
+    case 'select': {
       const selectValue = value as string | number | undefined;
       return <SelectField field={field} value={selectValue} onChange={onChange} error={error} />;
     }
-    case "number": {
-      const numberValue = typeof value === "number" ? value : undefined;
+    case 'number': {
+      const numberValue = typeof value === 'number' ? value : undefined;
       return <NumberField field={field} value={numberValue} onChange={onChange} error={error} />;
     }
-    case "checkbox": {
-      const boolValue = typeof value === "boolean" ? value : !!value;
+    case 'checkbox': {
+      const boolValue = typeof value === 'boolean' ? value : !!value;
       return <CheckboxField field={field} value={boolValue} onChange={onChange} error={error} />;
     }
     default: {
-      const defaultValue = String(value ?? "");
+      const defaultValue = String(value ?? '');
       return <TextField field={field} value={defaultValue} onChange={onChange} error={error} />;
     }
   }
@@ -40,7 +53,7 @@ function renderField(field: ConfigField, value: unknown, onChange: (value: unkno
 export const NodePropertiesPanel = memo(function NodePropertiesPanel({
   nodeId,
   onClose,
-  position = "right",
+  position = 'right',
   customSchemas = {},
   enableValidation = false,
   onChange,
@@ -50,7 +63,12 @@ export const NodePropertiesPanel = memo(function NodePropertiesPanel({
 }: NodePropertiesPanelProps) {
   const { getInternalNode } = useReactFlow();
   const { setSelectedNodeId, selectedNode } = useNodeSelection(nodeId, maintainSelection);
-  const { schema, errors, handleFieldChange } = useNodeConfiguration(selectedNode, customSchemas, enableValidation, onChange);
+  const { schema, errors, handleFieldChange } = useNodeConfiguration(
+    selectedNode,
+    customSchemas,
+    enableValidation,
+    onChange
+  );
   const [isPinned, setIsPinned] = useState(defaultPinned);
 
   const handleClose = useCallback(() => {
@@ -82,7 +100,12 @@ export const NodePropertiesPanel = memo(function NodePropertiesPanel({
         <Column gap={16}>
           {section.fields.map((field) => (
             <FieldContainer key={field.key}>
-              {renderField(field, selectedNode.data[field.key], (value) => handleFieldChange(field.key, value), errors[field.key])}
+              {renderField(
+                field,
+                selectedNode.data[field.key],
+                (value) => handleFieldChange(field.key, value),
+                errors[field.key]
+              )}
             </FieldContainer>
           ))}
         </Column>
@@ -95,8 +118,12 @@ export const NodePropertiesPanel = memo(function NodePropertiesPanel({
   }
 
   const headerActions = (
-    <ApIconButton color="secondary" onClick={handleTogglePin} title={isPinned ? "Unpin panel" : "Pin panel"}>
-      <ApIcon name={isPinned ? "unfold_less" : "unfold_more"} />
+    <ApIconButton
+      color="secondary"
+      onClick={handleTogglePin}
+      title={isPinned ? 'Unpin panel' : 'Pin panel'}
+    >
+      <ApIcon name={isPinned ? 'unfold_less' : 'unfold_more'} />
     </ApIconButton>
   );
 
@@ -104,10 +131,23 @@ export const NodePropertiesPanel = memo(function NodePropertiesPanel({
     <FloatingCanvasPanel
       open={!!selectedNode}
       nodeId={isPinned ? undefined : selectedNode.id}
-      anchorRect={isPinned ? { x: window.innerWidth - PINNED_PANEL_WIDTH, y: 0, width: 0, height: window.innerHeight } : undefined}
-      placement={isPinned ? "left-start" : position === "right" ? "right-start" : "left-start"}
+      anchorRect={
+        isPinned
+          ? {
+              x: window.innerWidth - PINNED_PANEL_WIDTH,
+              y: 0,
+              width: 0,
+              height: window.innerHeight,
+            }
+          : undefined
+      }
+      placement={isPinned ? 'left-start' : position === 'right' ? 'right-start' : 'left-start'}
       offset={isPinned ? 0 : 20}
-      title={selectedNode.type === "stage" ? "Stage properties" : `${selectedNode.type || "Node"} Configuration`}
+      title={
+        selectedNode.type === 'stage'
+          ? 'Stage properties'
+          : `${selectedNode.type || 'Node'} Configuration`
+      }
       headerActions={headerActions}
       onClose={handleClose}
       scrollKey={selectedNode.id}
@@ -121,7 +161,12 @@ export const NodePropertiesPanel = memo(function NodePropertiesPanel({
             {schema.fields?.map((field) => (
               <FieldContainer key={field.key}>
                 {selectedNode &&
-                  renderField(field, selectedNode.data[field.key], (value) => handleFieldChange(field.key, value), errors[field.key])}
+                  renderField(
+                    field,
+                    selectedNode.data[field.key],
+                    (value) => handleFieldChange(field.key, value),
+                    errors[field.key]
+                  )}
               </FieldContainer>
             ))}
           </Column>

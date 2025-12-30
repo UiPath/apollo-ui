@@ -1,10 +1,10 @@
-import { toPng, toJpeg, toSvg } from "html-to-image";
-import type { Node, ReactFlowInstance, Viewport } from "@uipath/uix/xyflow/react";
+import { toPng, toJpeg, toSvg } from 'html-to-image';
+import type { Node, ReactFlowInstance, Viewport } from '@uipath/uix/xyflow/react';
 
 /**
  * Supported image formats for canvas export
  */
-export type ExportImageFormat = "png" | "jpeg" | "svg";
+export type ExportImageFormat = 'png' | 'jpeg' | 'svg';
 
 /**
  * Options for exporting the canvas to an image
@@ -128,12 +128,14 @@ export interface ExportCanvasResult {
  * Gets the canvas background color from CSS variable
  */
 function getCanvasBackgroundColor(): string {
-  const reactFlowElement = document.querySelector(".react-flow");
+  const reactFlowElement = document.querySelector('.react-flow');
   if (reactFlowElement) {
-    const color = getComputedStyle(reactFlowElement).getPropertyValue("--uix-canvas-background").trim();
+    const color = getComputedStyle(reactFlowElement)
+      .getPropertyValue('--uix-canvas-background')
+      .trim();
     if (color) return color;
   }
-  return "#ffffff";
+  return '#ffffff';
 }
 
 /**
@@ -142,17 +144,19 @@ function getCanvasBackgroundColor(): string {
  */
 const RENDER_STABILIZATION_DELAY_MS = 300;
 
-const DEFAULT_OPTIONS: Omit<Required<Omit<ExportCanvasOptions, "filter">>, "backgroundColor"> & { backgroundColor?: string } = {
+const DEFAULT_OPTIONS: Omit<Required<Omit<ExportCanvasOptions, 'filter'>>, 'backgroundColor'> & {
+  backgroundColor?: string;
+} = {
   width: 1920,
   height: 1080,
   fitToContent: true,
   backgroundColor: undefined, // Resolved at runtime from CSS variable
-  format: "png",
+  format: 'png',
   quality: 0.95,
   minZoom: 0.01, // Very low to allow fitting large canvases
   maxZoom: 2,
   padding: 0.05,
-  viewportSelector: ".react-flow__viewport",
+  viewportSelector: '.react-flow__viewport',
   includeImages: true,
   pixelRatio: 3, // Higher resolution output for better quality
   skipFonts: false, // Include fonts for better text rendering
@@ -163,11 +167,11 @@ const DEFAULT_OPTIONS: Omit<Required<Omit<ExportCanvasOptions, "filter">>, "back
  */
 function getExportFunction(format: ExportImageFormat) {
   switch (format) {
-    case "jpeg":
+    case 'jpeg':
       return toJpeg;
-    case "svg":
+    case 'svg':
       return toSvg;
-    case "png":
+    case 'png':
     default:
       return toPng;
   }
@@ -177,7 +181,7 @@ function getExportFunction(format: ExportImageFormat) {
  * Gets the file extension for a given format
  */
 export function getFileExtension(format: ExportImageFormat): string {
-  return format === "jpeg" ? "jpg" : format;
+  return format === 'jpeg' ? 'jpg' : format;
 }
 
 /**
@@ -185,13 +189,13 @@ export function getFileExtension(format: ExportImageFormat): string {
  */
 export function getMimeType(format: ExportImageFormat): string {
   switch (format) {
-    case "jpeg":
-      return "image/jpeg";
-    case "svg":
-      return "image/svg+xml";
-    case "png":
+    case 'jpeg':
+      return 'image/jpeg';
+    case 'svg':
+      return 'image/svg+xml';
+    case 'png':
     default:
-      return "image/png";
+      return 'image/png';
   }
 }
 
@@ -296,13 +300,13 @@ export async function exportCanvasToImage<NodeType extends Node = Node>(
   const nodes = reactFlowInstance.getNodes();
 
   if (nodes.length === 0) {
-    throw new Error("Cannot export canvas: no nodes found");
+    throw new Error('Cannot export canvas: no nodes found');
   }
 
   // Find the React Flow wrapper to get its dimensions
-  const reactFlowWrapper = document.querySelector<HTMLElement>(".react-flow");
+  const reactFlowWrapper = document.querySelector<HTMLElement>('.react-flow');
   if (!reactFlowWrapper) {
-    throw new Error("Cannot find React Flow wrapper element");
+    throw new Error('Cannot find React Flow wrapper element');
   }
 
   const viewportElement = document.querySelector<HTMLElement>(opts.viewportSelector);
@@ -333,8 +337,10 @@ export async function exportCanvasToImage<NodeType extends Node = Node>(
   const fitZoom = Math.min(fitZoomX, fitZoomY, opts.maxZoom);
 
   // Calculate the viewport position to center the nodes in the container
-  const centeredX = (containerWidth - contentWidth * fitZoom) / 2 - bounds.x * fitZoom + paddingAmount * fitZoom;
-  const centeredY = (containerHeight - contentHeight * fitZoom) / 2 - bounds.y * fitZoom + paddingAmount * fitZoom;
+  const centeredX =
+    (containerWidth - contentWidth * fitZoom) / 2 - bounds.x * fitZoom + paddingAmount * fitZoom;
+  const centeredY =
+    (containerHeight - contentHeight * fitZoom) / 2 - bounds.y * fitZoom + paddingAmount * fitZoom;
 
   // Set viewport to show all nodes - they will all be rendered since they fit in the container
   reactFlowInstance.setViewport({ x: centeredX, y: centeredY, zoom: fitZoom }, { duration: 0 });
@@ -363,13 +369,13 @@ export async function exportCanvasToImage<NodeType extends Node = Node>(
   const defaultFilter = (node: HTMLElement): boolean => {
     // Skip React Flow UI elements that aren't part of the flow content
     const className = node.className;
-    if (typeof className === "string") {
+    if (typeof className === 'string') {
       if (
-        className.includes("react-flow__minimap") ||
-        className.includes("react-flow__controls") ||
-        className.includes("react-flow__attribution") ||
-        className.includes("react-flow__panel") ||
-        className.includes("react-flow__background")
+        className.includes('react-flow__minimap') ||
+        className.includes('react-flow__controls') ||
+        className.includes('react-flow__attribution') ||
+        className.includes('react-flow__panel') ||
+        className.includes('react-flow__background')
       ) {
         return false;
       }
@@ -382,7 +388,7 @@ export async function exportCanvasToImage<NodeType extends Node = Node>(
     if (!defaultFilter(node)) return false;
     if (!opts.includeImages) {
       const tagName = node.tagName?.toLowerCase();
-      if (tagName === "img" || tagName === "image") return false;
+      if (tagName === 'img' || tagName === 'image') return false;
     }
     if (opts.filter && !opts.filter(node)) return false;
     return true;
@@ -390,7 +396,7 @@ export async function exportCanvasToImage<NodeType extends Node = Node>(
 
   // Capture the viewport element at the container's current dimensions
   // The pixelRatio will scale up the output for better quality
-  const isSvgFormat = opts.format === "svg";
+  const isSvgFormat = opts.format === 'svg';
   const exportOptions: Parameters<typeof toPng>[1] = {
     backgroundColor: opts.backgroundColor,
     width: containerWidth,
@@ -400,7 +406,7 @@ export async function exportCanvasToImage<NodeType extends Node = Node>(
     filter: combinedFilter,
     // pixelRatio only applies to raster formats (PNG, JPEG), not SVG
     ...(!isSvgFormat && { pixelRatio: opts.pixelRatio }),
-    ...(opts.format === "jpeg" && { quality: opts.quality }),
+    ...(opts.format === 'jpeg' && { quality: opts.quality }),
   };
 
   let dataUrl: string;
@@ -449,7 +455,7 @@ export async function exportCanvasToImage<NodeType extends Node = Node>(
  */
 export async function downloadCanvasAsImage<NodeType extends Node = Node>(
   reactFlowInstance: ReactFlowInstance<NodeType>,
-  filename: string = "canvas-export",
+  filename: string = 'canvas-export',
   options: ExportCanvasOptions = {}
 ): Promise<void> {
   const result = await exportCanvasToImage(reactFlowInstance, options);
@@ -457,7 +463,7 @@ export async function downloadCanvasAsImage<NodeType extends Node = Node>(
   const extension = getFileExtension(result.format);
   const fullFilename = filename.endsWith(`.${extension}`) ? filename : `${filename}.${extension}`;
 
-  const link = document.createElement("a");
+  const link = document.createElement('a');
   link.download = fullFilename;
   link.href = result.dataUrl;
   link.click();
@@ -488,15 +494,17 @@ export async function downloadCanvasAsImage<NodeType extends Node = Node>(
  */
 export async function copyCanvasToClipboard<NodeType extends Node = Node>(
   reactFlowInstance: ReactFlowInstance<NodeType>,
-  options: Omit<ExportCanvasOptions, "format"> = {}
+  options: Omit<ExportCanvasOptions, 'format'> = {}
 ): Promise<void> {
   // Check if Clipboard API is available
   if (!navigator.clipboard?.write) {
-    throw new Error("Clipboard API is not supported in this browser. Try using a modern browser like Chrome, Firefox, or Edge.");
+    throw new Error(
+      'Clipboard API is not supported in this browser. Try using a modern browser like Chrome, Firefox, or Edge.'
+    );
   }
 
   // Clipboard API only supports PNG
-  const result = await exportCanvasToImage(reactFlowInstance, { ...options, format: "png" });
+  const result = await exportCanvasToImage(reactFlowInstance, { ...options, format: 'png' });
 
   // Convert data URL to blob
   const response = await fetch(result.dataUrl);

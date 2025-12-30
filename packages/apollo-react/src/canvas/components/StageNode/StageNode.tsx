@@ -10,23 +10,27 @@ import {
   type DragMoveEvent,
   type DragOverEvent,
   type DragStartEvent,
-} from "@dnd-kit/core";
-import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from "@dnd-kit/sortable";
-import { Spacing } from "@uipath/apollo-core";
-import { ApIcon, ApLink, ApTooltip, ApTypography } from "@uipath/portal-shell-react";
-import { Column, FontVariantToken, Row } from "@uipath/uix/core";
-import { Position, useViewport, useStore } from "@uipath/uix/xyflow/react";
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { createPortal } from "react-dom";
-import type { HandleConfiguration } from "../BaseNode/BaseNode.types";
-import { useButtonHandles } from "../ButtonHandle/useButtonHandles";
-import { useConnectedHandles } from "../BaseCanvas/ConnectedHandlesContext";
-import { ExecutionStatusIcon } from "../ExecutionStatusIcon";
-import { FloatingCanvasPanel } from "../FloatingCanvasPanel";
-import { NodeContextMenu } from "../NodeContextMenu";
-import { useNodeSelection } from "../NodePropertiesPanel/hooks";
-import { Toolbox, type ListItem } from "../Toolbox";
-import { DraggableTask, TaskContent } from "./DraggableTask";
+} from '@dnd-kit/core';
+import {
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { Spacing } from '@uipath/apollo-core';
+import { ApIcon, ApLink, ApTooltip, ApTypography } from '@uipath/portal-shell-react';
+import { Column, FontVariantToken, Row } from '@uipath/uix/core';
+import { Position, useViewport, useStore } from '@uipath/uix/xyflow/react';
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
+import type { HandleConfiguration } from '../BaseNode/BaseNode.types';
+import { useButtonHandles } from '../ButtonHandle/useButtonHandles';
+import { useConnectedHandles } from '../BaseCanvas/ConnectedHandlesContext';
+import { ExecutionStatusIcon } from '../ExecutionStatusIcon';
+import { FloatingCanvasPanel } from '../FloatingCanvasPanel';
+import { NodeContextMenu } from '../NodeContextMenu';
+import { useNodeSelection } from '../NodePropertiesPanel/hooks';
+import { Toolbox, type ListItem } from '../Toolbox';
+import { DraggableTask, TaskContent } from './DraggableTask';
 import {
   INDENTATION_WIDTH,
   STAGE_CONTENT_INSET,
@@ -40,10 +44,10 @@ import {
   StageTaskList,
   StageTitleContainer,
   StageTitleInput,
-} from "./StageNode.styles";
-import { GroupModificationType, type StageNodeProps } from "./StageNode.types";
-import { flattenTasks, getProjection, reorderTasks } from "./StageNode.utils";
-import { getContextMenuItems } from "./StageNodeTaskUtilities";
+} from './StageNode.styles';
+import { GroupModificationType, type StageNodeProps } from './StageNode.types';
+import { flattenTasks, getProjection, reorderTasks } from './StageNode.utils';
+import { getContextMenuItems } from './StageNodeTaskUtilities';
 
 interface TaskStateReference {
   anchor: React.RefObject<HTMLDivElement>;
@@ -60,7 +64,7 @@ const StageNodeComponent = (props: StageNodeProps) => {
     width,
     execution,
     stageDetails,
-    addTaskLabel = "Add task",
+    addTaskLabel = 'Add task',
     taskOptions = [],
     menuItems,
     onStageClick,
@@ -90,7 +94,10 @@ const StageNodeComponent = (props: StageNodeProps) => {
   const status = execution?.stageStatus?.status;
   const statusLabel = execution?.stageStatus?.label;
   const stageDuration = execution?.stageStatus?.duration;
-  const reGroupTaskFunction = useMemo(() => onTaskGroupModification || (() => {}), [onTaskGroupModification]);
+  const reGroupTaskFunction = useMemo(
+    () => onTaskGroupModification || (() => {}),
+    [onTaskGroupModification]
+  );
 
   const isStageTitleEditable = !!onStageTitleChange;
 
@@ -117,7 +124,10 @@ const StageNodeComponent = (props: StageNodeProps) => {
   const [activeDragId, setActiveDragId] = useState<string | null>(null);
   const [offsetLeft, setOffsetLeft] = useState(0);
   const [overId, setOverId] = useState<string | null>(null);
-  const activeTask = useMemo(() => flatTasks.find((t) => t.id === activeDragId), [flatTasks, activeDragId]);
+  const activeTask = useMemo(
+    () => flatTasks.find((t) => t.id === activeDragId),
+    [flatTasks, activeDragId]
+  );
   const { zoom } = useViewport();
 
   const projected = useMemo(() => {
@@ -152,7 +162,7 @@ const StageNodeComponent = (props: StageNodeProps) => {
       if (isStageTitleEditing && !stageTitleRef.current?.contains(e.target as Node)) {
         setIsStageTitleEditing(false);
         if (onStageTitleChange) {
-          if (label.trim() === "") setLabel("Untitled Stage");
+          if (label.trim() === '') setLabel('Untitled Stage');
           onStageTitleChange(label);
         }
       }
@@ -164,7 +174,7 @@ const StageNodeComponent = (props: StageNodeProps) => {
     if (isStageTitleEditing) {
       setIsStageTitleEditing(false);
       if (onStageTitleChange) {
-        if (label.trim() === "") setLabel("Untitled Stage");
+        if (label.trim() === '') setLabel('Untitled Stage');
         onStageTitleChange(label);
       }
     }
@@ -172,7 +182,7 @@ const StageNodeComponent = (props: StageNodeProps) => {
 
   const handleStageTitleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLInputElement>) => {
-      if (e.key === "Enter") {
+      if (e.key === 'Enter') {
         setIsStageTitleEditing(false);
         if (onStageTitleChange) {
           onStageTitleChange(label);
@@ -183,11 +193,21 @@ const StageNodeComponent = (props: StageNodeProps) => {
   );
 
   const handleTaskContextMenuOpen = useCallback(
-    (isParallel: boolean, groupIndex: number, taskIndex: number, e: React.MouseEvent<HTMLDivElement>) => {
+    (
+      isParallel: boolean,
+      groupIndex: number,
+      taskIndex: number,
+      e: React.MouseEvent<HTMLDivElement>
+    ) => {
       e.preventDefault();
       e.stopPropagation();
       setIsTaskContextMenuVisible(true);
-      setTaskStateReference({ anchor: { current: e.currentTarget }, isParallel, groupIndex, taskIndex });
+      setTaskStateReference({
+        anchor: { current: e.currentTarget },
+        isParallel,
+        groupIndex,
+        taskIndex,
+      });
     },
     [setIsTaskContextMenuVisible, setTaskStateReference]
   );
@@ -198,21 +218,31 @@ const StageNodeComponent = (props: StageNodeProps) => {
 
   useEffect(() => {
     if (isTaskContextMenuVisible) {
-      document.addEventListener("click", handleTaskContextMenuClose);
-      document.addEventListener("keydown", handleTaskContextMenuClose);
+      document.addEventListener('click', handleTaskContextMenuClose);
+      document.addEventListener('keydown', handleTaskContextMenuClose);
     }
     if (isStageTitleEditing) {
-      document.addEventListener("click", handleStageTitleClickToSave);
+      document.addEventListener('click', handleStageTitleClickToSave);
     }
     return () => {
-      document.removeEventListener("click", handleStageTitleClickToSave);
-      document.removeEventListener("click", handleTaskContextMenuClose);
-      document.removeEventListener("keydown", handleTaskContextMenuClose);
+      document.removeEventListener('click', handleStageTitleClickToSave);
+      document.removeEventListener('click', handleTaskContextMenuClose);
+      document.removeEventListener('keydown', handleTaskContextMenuClose);
     };
-  }, [handleTaskContextMenuClose, isTaskContextMenuVisible, handleStageTitleClickToSave, isStageTitleEditing]);
+  }, [
+    handleTaskContextMenuClose,
+    isTaskContextMenuVisible,
+    handleStageTitleClickToSave,
+    isStageTitleEditing,
+  ]);
 
   const contextMenuItems = useCallback(
-    (tasksLength: number, taskGroupLength: number, isAboveParallel: boolean, isBelowParallel: boolean) =>
+    (
+      tasksLength: number,
+      taskGroupLength: number,
+      isAboveParallel: boolean,
+      isBelowParallel: boolean
+    ) =>
       getContextMenuItems(
         taskStateReference.isParallel,
         taskStateReference.groupIndex,
@@ -223,7 +253,12 @@ const StageNodeComponent = (props: StageNodeProps) => {
         isBelowParallel,
         reGroupTaskFunction
       ),
-    [taskStateReference.isParallel, taskStateReference.groupIndex, taskStateReference.taskIndex, reGroupTaskFunction]
+    [
+      taskStateReference.isParallel,
+      taskStateReference.groupIndex,
+      taskStateReference.taskIndex,
+      reGroupTaskFunction,
+    ]
   );
 
   const handleTaskRemove = useCallback(
@@ -280,8 +315,8 @@ const StageNodeComponent = (props: StageNodeProps) => {
               handles: [
                 {
                   id: `${id}____target____left`,
-                  type: "target",
-                  handleType: "input",
+                  type: 'target',
+                  handleType: 'input',
                 },
               ],
               visible: selected || isHovered || isConnecting,
@@ -295,8 +330,8 @@ const StageNodeComponent = (props: StageNodeProps) => {
               handles: [
                 {
                   id: `${id}____source____right`,
-                  type: "source",
-                  handleType: "output",
+                  type: 'source',
+                  handleType: 'output',
                 },
               ],
               visible: selected || isHovered || isConnecting,
@@ -310,8 +345,8 @@ const StageNodeComponent = (props: StageNodeProps) => {
               handles: [
                 {
                   id: `${id}____target____bottom`,
-                  type: "target",
-                  handleType: "input",
+                  type: 'target',
+                  handleType: 'input',
                 },
               ],
               visible: selected || isHovered || isConnecting,
@@ -321,8 +356,8 @@ const StageNodeComponent = (props: StageNodeProps) => {
               handles: [
                 {
                   id: `${id}____source____bottom`,
-                  type: "source",
-                  handleType: "output",
+                  type: 'source',
+                  handleType: 'output',
                 },
               ],
               visible: selected || isHovered || isConnecting,
@@ -330,7 +365,12 @@ const StageNodeComponent = (props: StageNodeProps) => {
           ],
     [isException, id, selected, isHovered, isConnecting]
   );
-  const handleElements = useButtonHandles({ handleConfigurations, shouldShowHandles, nodeId: id, selected });
+  const handleElements = useButtonHandles({
+    handleConfigurations,
+    shouldShowHandles,
+    nodeId: id,
+    selected,
+  });
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -373,7 +413,12 @@ const StageNodeComponent = (props: StageNodeProps) => {
         return;
       }
 
-      const projection = getProjection(tasks, active.id as string, over.id as string, currentOffsetLeft);
+      const projection = getProjection(
+        tasks,
+        active.id as string,
+        over.id as string,
+        currentOffsetLeft
+      );
       if (!projection) {
         return;
       }
@@ -387,7 +432,12 @@ const StageNodeComponent = (props: StageNodeProps) => {
         }
       }
 
-      const newTasks = reorderTasks(tasks, active.id as string, over.id as string, projection.depth);
+      const newTasks = reorderTasks(
+        tasks,
+        active.id as string,
+        over.id as string,
+        projection.depth
+      );
       onTaskReorder(newTasks);
     },
     [tasks, onTaskReorder, offsetLeft, resetState]
@@ -400,7 +450,7 @@ const StageNodeComponent = (props: StageNodeProps) => {
   const dragOverlayStyle = useMemo<React.CSSProperties>(
     () => ({
       transform: `scale(${zoom})`,
-      transformOrigin: "top left",
+      transformOrigin: 'top left',
     }),
     [zoom]
   );
@@ -408,7 +458,7 @@ const StageNodeComponent = (props: StageNodeProps) => {
   return (
     <div
       data-testid={`stage-${id}`}
-      style={{ position: "relative" }}
+      style={{ position: 'relative' }}
       onClick={handleStageClick}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
@@ -420,8 +470,8 @@ const StageNodeComponent = (props: StageNodeProps) => {
         style={
           taskWidth
             ? ({
-                "--stage-task-width": `${taskWidth}px`,
-                "--stage-task-width-parallel": `${taskWidth - INDENTATION_WIDTH}px`,
+                '--stage-task-width': `${taskWidth}px`,
+                '--stage-task-width-parallel': `${taskWidth - INDENTATION_WIDTH}px`,
               } as React.CSSProperties)
             : undefined
         }
@@ -431,7 +481,9 @@ const StageNodeComponent = (props: StageNodeProps) => {
             {icon}
             <Column>
               <ApTypography
-                variant={isStageTitleEditing ? FontVariantToken.fontSizeM : FontVariantToken.fontSizeMBold}
+                variant={
+                  isStageTitleEditing ? FontVariantToken.fontSizeM : FontVariantToken.fontSizeMBold
+                }
                 color="var(--uix-canvas-foreground)"
               >
                 <ApTooltip content={label} placement="top" delay>
@@ -454,7 +506,10 @@ const StageNodeComponent = (props: StageNodeProps) => {
                 </ApTooltip>
               </ApTypography>
               {stageDuration && (
-                <ApTypography variant={FontVariantToken.fontSizeS} color="var(--uix-canvas-foreground-de-emp)">
+                <ApTypography
+                  variant={FontVariantToken.fontSizeS}
+                  color="var(--uix-canvas-foreground-de-emp)"
+                >
                   {stageDuration}
                 </ApTypography>
               )}
@@ -464,7 +519,10 @@ const StageNodeComponent = (props: StageNodeProps) => {
             {status && (
               <Row gap={statusLabel ? Spacing.SpacingMicro : undefined} align="center">
                 <ExecutionStatusIcon status={status} />
-                <ApTypography variant={FontVariantToken.fontSizeS} color="var(--uix-canvas-foreground-de-emp)">
+                <ApTypography
+                  variant={FontVariantToken.fontSizeS}
+                  color="var(--uix-canvas-foreground-de-emp)"
+                >
                   {statusLabel}
                 </ApTypography>
               </Row>
@@ -474,7 +532,11 @@ const StageNodeComponent = (props: StageNodeProps) => {
                 <ApIcon
                   variant="outlined"
                   name="timer"
-                  color={slaBreached ? "var(--uix-canvas-error-icon)" : "var(--uix-canvas-foreground-de-emp)"}
+                  color={
+                    slaBreached
+                      ? 'var(--uix-canvas-error-icon)'
+                      : 'var(--uix-canvas-foreground-de-emp)'
+                  }
                 />
               </ApTooltip>
             )}
@@ -483,7 +545,11 @@ const StageNodeComponent = (props: StageNodeProps) => {
                 <ApIcon
                   variant="outlined"
                   name="notifications"
-                  color={escalationsTriggered ? "var(--uix-canvas-success-icon)" : "var(--uix-canvas-foreground-de-emp)"}
+                  color={
+                    escalationsTriggered
+                      ? 'var(--uix-canvas-success-icon)'
+                      : 'var(--uix-canvas-foreground-de-emp)'
+                  }
                 />
               </ApTooltip>
             )}
@@ -492,7 +558,7 @@ const StageNodeComponent = (props: StageNodeProps) => {
 
         <StageContent>
           {(onTaskAdd || onAddTaskFromToolbox) && (
-            <Row pl={"2px"}>
+            <Row pl={'2px'}>
               <ApLink onClick={handleTaskAddClick}>{addTaskLabel}</ApLink>
             </Row>
           )}
@@ -542,11 +608,14 @@ const StageNodeComponent = (props: StageNodeProps) => {
                               )}
                               contextMenuAnchor={taskStateReference.anchor}
                               onTaskClick={handleTaskClick}
-                              projectedDepth={task.id === activeDragId && projected ? projected.depth : undefined}
+                              projectedDepth={
+                                task.id === activeDragId && projected ? projected.depth : undefined
+                              }
                               isDragDisabled={!onTaskReorder}
                               zoom={zoom}
                               {...(onTaskGroupModification && {
-                                onContextMenu: (e) => handleTaskContextMenuOpen(isParallel, groupIndex, taskIndex, e),
+                                onContextMenu: (e) =>
+                                  handleTaskContextMenuOpen(isParallel, groupIndex, taskIndex, e),
                                 onRemove: (event) => handleTaskRemove(event, groupIndex, taskIndex),
                               })}
                             />
@@ -561,7 +630,7 @@ const StageNodeComponent = (props: StageNodeProps) => {
                 <DragOverlay>
                   {activeTask ? (
                     <div style={dragOverlayStyle}>
-                      <StageTask selected style={{ cursor: "grabbing" }}>
+                      <StageTask selected style={{ cursor: 'grabbing' }}>
                         <TaskContent task={activeTask} isDragging />
                       </StageTask>
                     </div>
@@ -586,7 +655,9 @@ const StageNodeComponent = (props: StageNodeProps) => {
         </FloatingCanvasPanel>
       )}
 
-      {menuItems && !dragging && <NodeContextMenu menuItems={menuItems} isVisible={shouldShowMenu} />}
+      {menuItems && !dragging && (
+        <NodeContextMenu menuItems={menuItems} isVisible={shouldShowMenu} />
+      )}
 
       {handleElements}
     </div>

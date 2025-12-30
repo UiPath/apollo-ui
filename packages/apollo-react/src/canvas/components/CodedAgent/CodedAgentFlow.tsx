@@ -1,6 +1,6 @@
-import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import styled from "@emotion/styled";
-import type { Edge, EdgeProps, Node, NodeProps } from "@uipath/uix/xyflow/react";
+import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import styled from '@emotion/styled';
+import type { Edge, EdgeProps, Node, NodeProps } from '@uipath/uix/xyflow/react';
 import {
   BaseEdge,
   getSimpleBezierPath,
@@ -10,24 +10,35 @@ import {
   useEdgesState,
   useNodesState,
   useReactFlow,
-} from "@uipath/uix/xyflow/react";
-import { FontVariantToken, Spacing } from "@uipath/apollo-core";
-import { ApCircularProgress, ApIcon, ApTypography } from "@uipath/portal-shell-react";
-import { Icons, Row } from "@uipath/uix/core";
-import type { BaseCanvasRef } from "../BaseCanvas";
-import { BaseCanvas } from "../BaseCanvas";
-import { NewBaseNode } from "../BaseNode/NewBaseNode";
-import type { NewBaseNodeData } from "../BaseNode/NewBaseNode.types";
-import { CanvasPositionControls } from "../CanvasPositionControls";
-import type { CanvasTranslations, CodedAgentNodeTranslations } from "../../types";
-import { DefaultCanvasTranslations, DefaultCodedAgentNodeTranslations } from "../../types";
-import { d3HierarchyLayout, type LayoutDirection } from "../../utils/coded-agents/d3-layout";
-import { mermaidToReactFlow } from "../../utils/coded-agents/mermaid-parser";
+} from '@uipath/uix/xyflow/react';
+import { FontVariantToken, Spacing } from '@uipath/apollo-core';
+import { ApCircularProgress, ApIcon, ApTypography } from '@uipath/portal-shell-react';
+import { Icons, Row } from '@uipath/uix/core';
+import type { BaseCanvasRef } from '../BaseCanvas';
+import { BaseCanvas } from '../BaseCanvas';
+import { NewBaseNode } from '../BaseNode/NewBaseNode';
+import type { NewBaseNodeData } from '../BaseNode/NewBaseNode.types';
+import { CanvasPositionControls } from '../CanvasPositionControls';
+import type { CanvasTranslations, CodedAgentNodeTranslations } from '../../types';
+import { DefaultCanvasTranslations, DefaultCodedAgentNodeTranslations } from '../../types';
+import { d3HierarchyLayout, type LayoutDirection } from '../../utils/coded-agents/d3-layout';
+import { mermaidToReactFlow } from '../../utils/coded-agents/mermaid-parser';
 
 const LAYOUT_SPACING = [110, 80] as [number, number]; // Horizontal and vertical spacing for layout
 
 const CodedAgentEdge = memo(
-  ({ id, sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition, style, markerEnd, animated }: EdgeProps) => {
+  ({
+    id,
+    sourceX,
+    sourceY,
+    targetX,
+    targetY,
+    sourcePosition,
+    targetPosition,
+    style,
+    markerEnd,
+    animated,
+  }: EdgeProps) => {
     const [edgePath] = getSimpleBezierPath({
       sourceX,
       sourceY,
@@ -37,7 +48,9 @@ const CodedAgentEdge = memo(
       targetPosition,
     });
 
-    const strokeColor = animated ? "var(--uix-canvas-primary)" : "var(--uix-canvas-foreground-de-emp)";
+    const strokeColor = animated
+      ? 'var(--uix-canvas-primary)'
+      : 'var(--uix-canvas-foreground-de-emp)';
 
     return (
       <BaseEdge
@@ -48,7 +61,7 @@ const CodedAgentEdge = memo(
           ...style,
           stroke: strokeColor,
           strokeWidth: 1,
-          transition: "stroke 0.2s ease-in-out",
+          transition: 'stroke 0.2s ease-in-out',
         }}
       />
     );
@@ -81,56 +94,60 @@ interface CodedNodeData extends NewBaseNodeData {
 
 const leftTargetHandle = [
   {
-    id: "left",
-    type: "target" as const,
-    handleType: "artifact" as const,
+    id: 'left',
+    type: 'target' as const,
+    handleType: 'artifact' as const,
     showButton: false,
   },
 ];
 
 const rightSourceHandle = [
   {
-    id: "right",
-    type: "source" as const,
-    handleType: "artifact" as const,
+    id: 'right',
+    type: 'source' as const,
+    handleType: 'artifact' as const,
     showButton: false,
   },
 ];
 
 const rightOutputHandle = [
   {
-    id: "right",
-    type: "source" as const,
-    handleType: "output" as const,
+    id: 'right',
+    type: 'source' as const,
+    handleType: 'output' as const,
     showButton: false,
   },
 ];
 
 const leftInputHandle = [
   {
-    id: "left",
-    type: "target" as const,
-    handleType: "input" as const,
+    id: 'left',
+    type: 'target' as const,
+    handleType: 'input' as const,
     showButton: false,
   },
 ];
 
-const createCodedAgentNodeWrapper = (translations: CodedAgentNodeTranslations = DefaultCodedAgentNodeTranslations) => {
+const createCodedAgentNodeWrapper = (
+  translations: CodedAgentNodeTranslations = DefaultCodedAgentNodeTranslations
+) => {
   return memo(({ data, selected, id }: NodeProps) => {
     const nodeData = data as unknown as CodedNodeData;
 
     const executionStatus = useMemo(() => {
-      if (nodeData.hasError) return "Failed";
-      if (nodeData.hasSuccess) return "Success";
-      if (nodeData.hasRunning) return "Running";
+      if (nodeData.hasError) return 'Failed';
+      if (nodeData.hasSuccess) return 'Success';
+      if (nodeData.hasRunning) return 'Running';
       return undefined;
     }, [nodeData.hasError, nodeData.hasSuccess, nodeData.hasRunning]);
 
     const statusAdornment = useMemo(() => {
-      if (nodeData.hasError) return <ApIcon name="error" size="16px" color="var(--uix-canvas-error-icon)" />;
+      if (nodeData.hasError)
+        return <ApIcon name="error" size="16px" color="var(--uix-canvas-error-icon)" />;
       if (nodeData.hasSuccess && !nodeData.hasError)
         return <ApIcon name="check_circle" size="16px" color="var(--uix-canvas-success-icon)" />;
-      if (nodeData.hasRunning && !nodeData.hasError && !nodeData.hasSuccess) return <ApCircularProgress size={20} />;
+      if (nodeData.hasRunning && !nodeData.hasError && !nodeData.hasSuccess)
+        return <ApCircularProgress size={20} />;
       return undefined;
     }, [nodeData.hasError, nodeData.hasSuccess, nodeData.hasRunning]);
 
@@ -143,7 +160,7 @@ const createCodedAgentNodeWrapper = (translations: CodedAgentNodeTranslations = 
         display={{
           label: nodeData.label,
           subLabel: translations.codedAgentStep,
-          shape: "rectangle",
+          shape: 'rectangle',
         }}
         adornments={{
           topRight: statusAdornment,
@@ -162,44 +179,47 @@ const CodedResourceNodeElement = memo(({ data, selected, id }: NodeProps) => {
   const label = nodeData.label.toLowerCase();
 
   const executionStatus = useMemo(() => {
-    if (nodeData.hasError) return "Failed";
-    if (nodeData.hasSuccess) return "Success";
-    if (nodeData.hasRunning) return "Running";
+    if (nodeData.hasError) return 'Failed';
+    if (nodeData.hasSuccess) return 'Success';
+    if (nodeData.hasRunning) return 'Running';
     return undefined;
   }, [nodeData.hasError, nodeData.hasSuccess, nodeData.hasRunning]);
 
   // Determine icon based on label content or type
   const resourceIcon = useMemo(() => {
-    const resourceType = nodeData.type || "";
+    const resourceType = nodeData.type || '';
 
-    if (resourceType === "tool" || label.includes("tool") || label.includes("function")) {
+    if (resourceType === 'tool' || label.includes('tool') || label.includes('function')) {
       return <ApIcon name="build" size="40px" />;
     }
-    if (resourceType === "context" || label.includes("context") || label.includes("knowledge")) {
+    if (resourceType === 'context' || label.includes('context') || label.includes('knowledge')) {
       return <ApIcon name="account_tree" size="40px" />;
     }
-    if (resourceType === "escalation" || label.includes("escalation") || label.includes("human")) {
+    if (resourceType === 'escalation' || label.includes('escalation') || label.includes('human')) {
       return <ApIcon name="person" size="40px" />;
     }
     return <ApIcon name="chat" size="40px" />;
   }, [label, nodeData.type]);
 
   const statusAdornment = useMemo(() => {
-    if (nodeData.hasError) return <ApIcon name="error" size="16px" color="var(--uix-canvas-error-icon)" />;
-    if (nodeData.hasSuccess && !nodeData.hasError) return <ApIcon name="check_circle" size="16px" color="var(--uix-canvas-success-icon)" />;
-    if (nodeData.hasRunning && !nodeData.hasError && !nodeData.hasSuccess) return <ApCircularProgress size={13} />;
+    if (nodeData.hasError)
+      return <ApIcon name="error" size="16px" color="var(--uix-canvas-error-icon)" />;
+    if (nodeData.hasSuccess && !nodeData.hasError)
+      return <ApIcon name="check_circle" size="16px" color="var(--uix-canvas-success-icon)" />;
+    if (nodeData.hasRunning && !nodeData.hasError && !nodeData.hasSuccess)
+      return <ApCircularProgress size={13} />;
     return undefined;
   }, [nodeData.hasError, nodeData.hasSuccess, nodeData.hasRunning]);
 
   return (
-    <div style={{ position: "relative" }}>
+    <div style={{ position: 'relative' }}>
       <NewBaseNode
         {...({ id, selected } as any)}
         data={nodeData}
         executionStatus={executionStatus}
         icon={resourceIcon}
         display={{
-          shape: "circle",
+          shape: 'circle',
         }}
         adornments={{
           topRight: statusAdornment,
@@ -218,8 +238,8 @@ const CodedResourceNodeElement = memo(({ data, selected, id }: NodeProps) => {
 
 const CodedFlowNodeElement = memo(({ data, selected, id }: NodeProps) => {
   const nodeData = data as unknown as CodedNodeData;
-  const isStart = nodeData.label.toLowerCase().includes("start");
-  const isEnd = nodeData.label.toLowerCase().includes("end");
+  const isStart = nodeData.label.toLowerCase().includes('start');
+  const isEnd = nodeData.label.toLowerCase().includes('end');
 
   if (isStart || isEnd) {
     const handleConfigs = isStart
@@ -227,18 +247,21 @@ const CodedFlowNodeElement = memo(({ data, selected, id }: NodeProps) => {
       : [{ position: Position.Left, handles: leftInputHandle, visible: true }];
 
     return (
-      <div style={{ position: "relative" }}>
+      <div style={{ position: 'relative' }}>
         <NewBaseNode
           {...({ id, selected } as any)}
           data={nodeData}
-          icon={<ApIcon variant="outlined" name={isStart ? "circle" : "trip_origin"} size="40px" />}
+          icon={<ApIcon variant="outlined" name={isStart ? 'circle' : 'trip_origin'} size="40px" />}
           display={{
-            shape: "square",
+            shape: 'square',
           }}
           handleConfigurations={handleConfigs}
         />
         <TextContainer>
-          <ApTypography variant={FontVariantToken.fontSizeS} color="var(--uix-canvas-foreground-de-emp)">
+          <ApTypography
+            variant={FontVariantToken.fontSizeS}
+            color="var(--uix-canvas-foreground-de-emp)"
+          >
             {nodeData.label}
           </ApTypography>
         </TextContainer>
@@ -252,7 +275,7 @@ const CodedFlowNodeElement = memo(({ data, selected, id }: NodeProps) => {
       data={nodeData}
       display={{
         label: nodeData.label,
-        shape: "rectangle",
+        shape: 'rectangle',
       }}
       handleConfigurations={[
         { position: Position.Left, handles: leftTargetHandle, visible: true },
@@ -268,7 +291,7 @@ export interface CodedAgentFlowProps {
   agentNodeTranslations?: CodedAgentNodeTranslations;
   canvasTranslations?: CanvasTranslations;
   canvasRef?: React.Ref<BaseCanvasRef>;
-  mode?: "view" | "readonly";
+  mode?: 'view' | 'readonly';
 }
 
 const edgeTypes = {
@@ -299,7 +322,7 @@ const CodedAgentFlowInner = (props: CodedAgentFlowProps): JSX.Element => {
     [agentNodeTranslations]
   );
 
-  const layoutDirection = useMemo(() => props.layoutDirection || "LR", [props.layoutDirection]);
+  const layoutDirection = useMemo(() => props.layoutDirection || 'LR', [props.layoutDirection]);
 
   // Handle mermaid text parsing
   useEffect(() => {
@@ -317,7 +340,7 @@ const CodedAgentFlowInner = (props: CodedAgentFlowProps): JSX.Element => {
 
           // Check if parsing resulted in no nodes - this indicates a parse error
           if (parsedResult.nodes.length === 0) {
-            throw new Error("Invalid mermaid syntax");
+            throw new Error('Invalid mermaid syntax');
           }
 
           // Store the edges and direction, but don't apply layout yet
@@ -393,20 +416,22 @@ const CodedAgentFlowInner = (props: CodedAgentFlowProps): JSX.Element => {
   if (nodes.length === 0) {
     return (
       <CenteredDiv>
-        <ApTypography color="var(--uix-canvas-foreground)">{agentNodeTranslations.noDataToDisplay}</ApTypography>
+        <ApTypography color="var(--uix-canvas-foreground)">
+          {agentNodeTranslations.noDataToDisplay}
+        </ApTypography>
       </CenteredDiv>
     );
   }
 
   return (
-    <div style={{ width: "100%", height: "100%", touchAction: "none" }}>
+    <div style={{ width: '100%', height: '100%', touchAction: 'none' }}>
       <BaseCanvas
         ref={props.canvasRef}
         nodes={nodes}
         edges={edges}
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
-        mode={props.mode || "view"}
+        mode={props.mode || 'view'}
         initialAutoLayout={autoLayout}
         onNodesChange={onNodesChange}
         deleteKeyCode={[]} // Disable delete key for Coded agents
@@ -414,13 +439,19 @@ const CodedAgentFlowInner = (props: CodedAgentFlowProps): JSX.Element => {
         <Panel position="top-left">
           <Row align="center" gap={Spacing.SpacingXs}>
             <Icons.AgentIcon w={20} h={20} />
-            <ApTypography variant={FontVariantToken.fontSizeSBold} color="var(--uix-canvas-foreground)">
+            <ApTypography
+              variant={FontVariantToken.fontSizeSBold}
+              color="var(--uix-canvas-foreground)"
+            >
               Coded Agent
             </ApTypography>
           </Row>
         </Panel>
         <Panel position="bottom-right">
-          <CanvasPositionControls translations={props.canvasTranslations ?? DefaultCanvasTranslations} showOrganize={false} />
+          <CanvasPositionControls
+            translations={props.canvasTranslations ?? DefaultCanvasTranslations}
+            showOrganize={false}
+          />
         </Panel>
       </BaseCanvas>
     </div>

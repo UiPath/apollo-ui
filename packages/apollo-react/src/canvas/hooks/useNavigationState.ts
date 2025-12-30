@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useRef, useState } from 'react';
 
 export interface NavigationStackItem<T = unknown> {
   title: string;
@@ -22,7 +22,9 @@ export interface NavigationStackService<T = unknown> {
  * @param initialItem - Optional initial item to start the stack with
  * @returns NavigationStackService with push, pop, clear operations
  */
-export function useNavigationStack<T = unknown>(initialItem?: NavigationStackItem<T>): NavigationStackService<T> {
+export function useNavigationStack<T = unknown>(
+  initialItem?: NavigationStackItem<T>
+): NavigationStackService<T> {
   const [stack, setStack] = useState<NavigationStackItem<T>[]>(initialItem ? [initialItem] : []);
   const stackRef = useRef<NavigationStackItem<T>[]>(stack);
 

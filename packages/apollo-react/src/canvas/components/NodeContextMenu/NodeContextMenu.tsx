@@ -1,7 +1,7 @@
-import { useRef, useState, useCallback, useMemo, memo, useEffect } from "react";
-import type { NodeContextMenuProps, NodeMenuAction } from "./NodeContextMenu.types";
-import { MenuButton } from "./NodeContextMenu.styles";
-import { ApIcon, ApIconButton, ApMenu } from "@uipath/portal-shell-react";
+import { useRef, useState, useCallback, useMemo, memo, useEffect } from 'react';
+import type { NodeContextMenuProps, NodeMenuAction } from './NodeContextMenu.types';
+import { MenuButton } from './NodeContextMenu.styles';
+import { ApIcon, ApIconButton, ApMenu } from '@uipath/portal-shell-react';
 
 export const NodeContextMenu = memo(({ menuItems, isVisible = false }: NodeContextMenuProps) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -26,7 +26,7 @@ export const NodeContextMenu = memo(({ menuItems, isVisible = false }: NodeConte
     }
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape" || e.key === "Esc") {
+      if (e.key === 'Escape' || e.key === 'Esc') {
         e.preventDefault();
         e.stopPropagation();
         setIsOpen(false);
@@ -47,12 +47,12 @@ export const NodeContextMenu = memo(({ menuItems, isVisible = false }: NodeConte
       }
     };
 
-    window.addEventListener("keydown", handleKeyDown, true);
-    document.addEventListener("mousedown", handleClickAway);
+    window.addEventListener('keydown', handleKeyDown, true);
+    document.addEventListener('mousedown', handleClickAway);
 
     return () => {
-      window.removeEventListener("keydown", handleKeyDown, true);
-      document.removeEventListener("mousedown", handleClickAway);
+      window.removeEventListener('keydown', handleKeyDown, true);
+      document.removeEventListener('mousedown', handleClickAway);
     };
   }, [isOpen]);
 
@@ -70,11 +70,11 @@ export const NodeContextMenu = memo(({ menuItems, isVisible = false }: NodeConte
   const transformedMenuItems = useMemo(
     () =>
       menuItems?.map((item, index) => {
-        if ("type" in item && item.type === "divider") {
+        if ('type' in item && item.type === 'divider') {
           return {
             divider: true,
             key: `divider-${index}`,
-            variant: "separator" as const,
+            variant: 'separator' as const,
           };
         }
         const actionItem = item as NodeMenuAction;
@@ -84,7 +84,7 @@ export const NodeContextMenu = memo(({ menuItems, isVisible = false }: NodeConte
           startIcon: actionItem.icon,
           disabled: actionItem.disabled,
           onClick: () => handleMenuItemClick(actionItem),
-          variant: "item" as const,
+          variant: 'item' as const,
         };
       }) || [],
     [menuItems, handleMenuItemClick]
@@ -116,7 +116,13 @@ export const NodeContextMenu = memo(({ menuItems, isVisible = false }: NodeConte
         </ApIconButton>
       </MenuButton>
       {isOpen && anchorRef.current && (
-        <ApMenu isOpen={isOpen} anchorEl={anchorRef.current} menuItems={transformedMenuItems} onClose={handleMenuClose} autoFocus />
+        <ApMenu
+          isOpen={isOpen}
+          anchorEl={anchorRef.current}
+          menuItems={transformedMenuItems}
+          onClose={handleMenuClose}
+          autoFocus
+        />
       )}
     </>
   );

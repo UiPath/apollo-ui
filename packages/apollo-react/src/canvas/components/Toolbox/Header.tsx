@@ -1,5 +1,5 @@
-import { ApIcon, ApIconButton, ApTypography } from "@uipath/portal-shell-react";
-import { FontVariantToken, Row } from "@uipath/uix/core";
+import { ApIcon, ApIconButton, ApTypography } from '@uipath/portal-shell-react';
+import { FontVariantToken, Row } from '@uipath/uix/core';
 
 interface HeaderProps {
   title: string;
@@ -14,12 +14,13 @@ export const Header: React.FC<HeaderProps> = ({ title, onBack, showBackButton })
     <Row h={32} align="center">
       <div
         style={{
-          width: isBackButtonVisible ? "32px" : "0px",
+          width: isBackButtonVisible ? '32px' : '0px',
           opacity: isBackButtonVisible ? 1 : 0,
-          transform: isBackButtonVisible ? "translateX(0)" : "translateX(20px)",
-          marginRight: isBackButtonVisible ? "8px" : "0px",
-          transition: "width 0.3s ease-in-out, opacity 0.3s ease-in-out, transform 0.3s ease-in-out",
-          overflow: "hidden",
+          transform: isBackButtonVisible ? 'translateX(0)' : 'translateX(20px)',
+          marginRight: isBackButtonVisible ? '8px' : '0px',
+          transition:
+            'width 0.3s ease-in-out, opacity 0.3s ease-in-out, transform 0.3s ease-in-out',
+          overflow: 'hidden',
         }}
       >
         {isBackButtonVisible && (
@@ -28,7 +29,7 @@ export const Header: React.FC<HeaderProps> = ({ title, onBack, showBackButton })
             color="secondary"
             onClick={onBack}
             style={{
-              transition: "transform 0.3s ease-in-out",
+              transition: 'transform 0.3s ease-in-out',
             }}
           >
             <ApIcon name="chevron_left" size="20px" />
@@ -39,7 +40,7 @@ export const Header: React.FC<HeaderProps> = ({ title, onBack, showBackButton })
         variant={FontVariantToken.fontSizeLBold}
         color="var(--uix-canvas-foreground-emp)"
         style={{
-          transition: "transform 0.3s ease-in-out, margin 0.3s ease-in-out",
+          transition: 'transform 0.3s ease-in-out, margin 0.3s ease-in-out',
         }}
       >
         {title}

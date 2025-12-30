@@ -1,16 +1,24 @@
-import { memo, useMemo, useState, useCallback, useRef, useEffect } from "react";
-import type { Node, NodeProps } from "@uipath/uix/xyflow/react";
-import { Position, useUpdateNodeInternals, useStore } from "@uipath/uix/xyflow/react";
-import { BaseContainer, BaseIconWrapper, BaseBadgeSlot, BaseTextContainer, BaseHeader, BaseSubHeader } from "./BaseNode.styles";
-import type { NewBaseNodeData, NewBaseNodeDisplayProps, NodeAdornments } from "./NewBaseNode.types";
-import { cx, FontVariantToken } from "@uipath/uix/core";
-import { ApIcon, ApTooltip, ApTypography } from "@uipath/portal-shell-react";
-import { useButtonHandles } from "../ButtonHandle/useButtonHandles";
-import { NodeToolbar } from "../NodeToolbar";
+import { memo, useMemo, useState, useCallback, useRef, useEffect } from 'react';
+import type { Node, NodeProps } from '@uipath/uix/xyflow/react';
+import { Position, useUpdateNodeInternals, useStore } from '@uipath/uix/xyflow/react';
+import {
+  BaseContainer,
+  BaseIconWrapper,
+  BaseBadgeSlot,
+  BaseTextContainer,
+  BaseHeader,
+  BaseSubHeader,
+} from './BaseNode.styles';
+import type { NewBaseNodeData, NewBaseNodeDisplayProps, NodeAdornments } from './NewBaseNode.types';
+import { cx, FontVariantToken } from '@uipath/uix/core';
+import { ApIcon, ApTooltip, ApTypography } from '@uipath/portal-shell-react';
+import { useButtonHandles } from '../ButtonHandle/useButtonHandles';
+import { NodeToolbar } from '../NodeToolbar';
 
 // Internal component that expects display props as direct props
 const NewBaseNodeComponent = (
-  props: Omit<NodeProps<Node<NewBaseNodeData>>, "data"> & NewBaseNodeDisplayProps & { data?: NewBaseNodeData }
+  props: Omit<NodeProps<Node<NewBaseNodeData>>, 'data'> &
+    NewBaseNodeDisplayProps & { data?: NewBaseNodeData }
 ) => {
   const {
     id,
@@ -44,7 +52,11 @@ const NewBaseNodeComponent = (
       const prevHeight = prevDimensionsRef.current.height;
 
       // Only update if dimensions actually changed (not on initial mount)
-      if (prevWidth !== undefined && prevHeight !== undefined && (prevWidth !== width || prevHeight !== height)) {
+      if (
+        prevWidth !== undefined &&
+        prevHeight !== undefined &&
+        (prevWidth !== width || prevHeight !== height)
+      ) {
         // Use requestAnimationFrame to batch DOM reads and avoid forced reflow
         requestAnimationFrame(() => {
           updateNodeInternals(id);
@@ -66,21 +78,23 @@ const NewBaseNodeComponent = (
   const displaySubLabel = finalDisplay.subLabel;
   const displayLabelTooltip = finalDisplay.labelTooltip;
   const displayLabelBackgroundColor = finalDisplay.labelBackgroundColor;
-  const displayShape = finalDisplay.shape ?? "square";
+  const displayShape = finalDisplay.shape ?? 'square';
   const displayBackground = finalDisplay.background;
   const displayIconBackground =
-    suggestionType || executionStatus === "Failed" ? "var(--uix-canvas-background)" : finalDisplay.iconBackground;
+    suggestionType || executionStatus === 'Failed'
+      ? 'var(--uix-canvas-background)'
+      : finalDisplay.iconBackground;
   const displayCenterAdornment = finalDisplay.centerAdornmentComponent;
 
   const isConnecting = useStore((state) => !!state.connectionClickStartHandle);
 
   const interactionState = useMemo(() => {
-    if (disabled) return "disabled";
-    if (dragging) return "drag";
-    if (selected) return "selected";
-    if (isFocused) return "focus";
-    if (isHovered) return "hover";
-    return "default";
+    if (disabled) return 'disabled';
+    if (dragging) return 'drag';
+    if (selected) return 'selected';
+    if (isFocused) return 'focus';
+    if (isHovered) return 'hover';
+    return 'default';
   }, [disabled, dragging, selected, isFocused, isHovered]);
 
   const shouldShowHandles = useMemo(
@@ -89,7 +103,12 @@ const NewBaseNodeComponent = (
   );
 
   const hasVisibleBottomHandles = useMemo(() => {
-    if (!handleConfigurations || !Array.isArray(handleConfigurations) || !selected || displayShape === "circle") {
+    if (
+      !handleConfigurations ||
+      !Array.isArray(handleConfigurations) ||
+      !selected ||
+      displayShape === 'circle'
+    ) {
       return false;
     }
     return handleConfigurations.some(
@@ -97,7 +116,8 @@ const NewBaseNodeComponent = (
         config.position === Position.Bottom &&
         config.handles.length > 0 &&
         config.visible !== false &&
-        (config.handles.some((h) => h.type === "source") || config.handles.some((h) => h.showButton))
+        (config.handles.some((h) => h.type === 'source') ||
+          config.handles.some((h) => h.showButton))
     );
   }, [handleConfigurations, selected, displayShape]);
 
@@ -116,7 +136,9 @@ const NewBaseNodeComponent = (
 
       // Then, check if there's an instance-specific handler in the handle configuration
       if (handleConfigurations && Array.isArray(handleConfigurations)) {
-        const handleConfig = handleConfigurations.flatMap((config) => config.handles)?.find((h) => h.id === event.handleId);
+        const handleConfig = handleConfigurations
+          .flatMap((config) => config.handles)
+          ?.find((h) => h.id === event.handleId);
         if (handleConfig?.onAction) {
           handleConfig.onAction(event);
         }
@@ -142,14 +164,23 @@ const NewBaseNodeComponent = (
     return (
       <div
         ref={containerRef}
-        style={{ position: "relative" }}
+        style={{ position: 'relative' }}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
         onFocus={handleFocus}
         onBlur={handleBlur}
       >
-        <BaseContainer selected={selected} shape="square" className={interactionState} interactionState={interactionState}>
-          <BaseIconWrapper backgroundColor="var(--uix-canvas-error-background)" shape="square" nodeHeight={height}>
+        <BaseContainer
+          selected={selected}
+          shape="square"
+          className={interactionState}
+          interactionState={interactionState}
+        >
+          <BaseIconWrapper
+            backgroundColor="var(--uix-canvas-error-background)"
+            shape="square"
+            nodeHeight={height}
+          >
             <ApIcon color="var(--uix-canvas-error-icon)" name="error" size="32px" />
           </BaseIconWrapper>
 
@@ -165,7 +196,7 @@ const NewBaseNodeComponent = (
   return (
     <div
       ref={containerRef}
-      style={{ position: "relative" }}
+      style={{ position: 'relative' }}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       onFocus={handleFocus}
@@ -174,7 +205,7 @@ const NewBaseNodeComponent = (
       <BaseContainer
         selected={selected}
         shape={displayShape}
-        className={cx(executionStatus ?? "", interactionState, "Failed")}
+        className={cx(executionStatus ?? '', interactionState, 'Failed')}
         interactionState={interactionState}
         executionStatus={executionStatus}
         suggestionType={suggestionType}
@@ -184,7 +215,7 @@ const NewBaseNodeComponent = (
       >
         {icon && (
           <BaseIconWrapper
-            shape={displayShape as "square" | "circle" | "rectangle"}
+            shape={displayShape as 'square' | 'circle' | 'rectangle'}
             backgroundColor={displayIconBackground}
             nodeHeight={height}
           >
@@ -195,10 +226,10 @@ const NewBaseNodeComponent = (
         {Object.keys(adornments).map((key) => {
           const position = key as keyof NodeAdornments;
           const map = {
-            topLeft: "top-left",
-            topRight: "top-right",
-            bottomLeft: "bottom-left",
-            bottomRight: "bottom-right",
+            topLeft: 'top-left',
+            topRight: 'top-right',
+            bottomLeft: 'bottom-left',
+            bottomRight: 'bottom-right',
           } as const;
           const adornment = adornments[position];
           if (!adornment?.icon) return undefined;
@@ -207,11 +238,15 @@ const NewBaseNodeComponent = (
               <ApTooltip
                 delay
                 placement="top"
-                {...(adornment.tooltip && typeof adornment.tooltip === "string" && { content: adornment.tooltip })}
                 {...(adornment.tooltip &&
-                  typeof adornment.tooltip !== "string" && {
+                  typeof adornment.tooltip === 'string' && { content: adornment.tooltip })}
+                {...(adornment.tooltip &&
+                  typeof adornment.tooltip !== 'string' && {
                     formattedContent: (
-                      <ApTypography variant={FontVariantToken.fontSizeSBold} style={{ fontSize: "13px", minWidth: "130px" }}>
+                      <ApTypography
+                        variant={FontVariantToken.fontSizeSBold}
+                        style={{ fontSize: '13px', minWidth: '130px' }}
+                      >
                         {adornment.tooltip}
                       </ApTypography>
                     ),
@@ -235,7 +270,9 @@ const NewBaseNodeComponent = (
           </BaseTextContainer>
         )}
       </BaseContainer>
-      {toolbarConfig && <NodeToolbar nodeId={id} config={toolbarConfig} expanded={selected && !dragging} />}
+      {toolbarConfig && (
+        <NodeToolbar nodeId={id} config={toolbarConfig} expanded={selected && !dragging} />
+      )}
       {handleElements}
     </div>
   );
@@ -244,7 +281,8 @@ const NewBaseNodeComponent = (
 // Wrapper component that extracts display props from data for React Flow compatibility
 // Also supports direct props for standalone usage (non-React Flow components)
 const NewBaseNodeWrapper = (
-  props: Omit<NodeProps<Node<NewBaseNodeData>>, "data"> & NewBaseNodeDisplayProps & { data?: NewBaseNodeData }
+  props: Omit<NodeProps<Node<NewBaseNodeData>>, 'data'> &
+    NewBaseNodeDisplayProps & { data?: NewBaseNodeData }
 ) => {
   const {
     data,

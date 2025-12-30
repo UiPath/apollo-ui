@@ -1,6 +1,10 @@
-import type { Node } from "@uipath/uix/xyflow/react";
-import { Position } from "@uipath/uix/xyflow/react";
-import type { BaseNodeData, NodeShape, HandleConfiguration } from "../../components/BaseNode/BaseNode.types";
+import type { Node } from '@uipath/uix/xyflow/react';
+import { Position } from '@uipath/uix/xyflow/react';
+import type {
+  BaseNodeData,
+  NodeShape,
+  HandleConfiguration,
+} from '../../components/BaseNode/BaseNode.types';
 
 /**
  * Common node positions for grid layouts.
@@ -70,10 +74,12 @@ export interface CreateNodeOptions<T = Record<string, unknown>> {
  * });
  * ```
  */
-export function createNode<T = Record<string, unknown>>(options: CreateNodeOptions<T>): Node<BaseNodeData & T> {
+export function createNode<T = Record<string, unknown>>(
+  options: CreateNodeOptions<T>
+): Node<BaseNodeData & T> {
   const {
     id,
-    type = "generic",
+    type = 'generic',
     position = { x: 0, y: 0 },
     data = {},
     display,
@@ -128,7 +134,15 @@ export function createNodeGrid(options: {
   /** Vertical gap between rows */
   gapY?: number;
 }): Node<BaseNodeData>[] {
-  const { baseId, type = "generic", rows, startX = 96, startY = 96, gapX = 192, gapY = 159 } = options;
+  const {
+    baseId,
+    type = 'generic',
+    rows,
+    startX = 96,
+    startY = 96,
+    gapX = 192,
+    gapY = 159,
+  } = options;
 
   const nodes: Node<BaseNodeData>[] = [];
 
@@ -145,7 +159,7 @@ export function createNodeGrid(options: {
           display: {
             label: cell.label,
             subLabel: cell.subLabel,
-            shape: cell.shape ?? "square",
+            shape: cell.shape ?? 'square',
           },
         })
       );
@@ -163,7 +177,9 @@ export const HandleConfigs = {
   rightOutput: [
     {
       position: Position.Right,
-      handles: [{ id: "output", type: "source" as const, handleType: "output" as const, label: "Output" }],
+      handles: [
+        { id: 'output', type: 'source' as const, handleType: 'output' as const, label: 'Output' },
+      ],
     },
   ],
 
@@ -171,7 +187,9 @@ export const HandleConfigs = {
   leftInput: [
     {
       position: Position.Left,
-      handles: [{ id: "input", type: "target" as const, handleType: "input" as const, label: "Input" }],
+      handles: [
+        { id: 'input', type: 'target' as const, handleType: 'input' as const, label: 'Input' },
+      ],
     },
   ],
 
@@ -179,11 +197,15 @@ export const HandleConfigs = {
   inputOutput: [
     {
       position: Position.Left,
-      handles: [{ id: "input", type: "target" as const, handleType: "input" as const, label: "Input" }],
+      handles: [
+        { id: 'input', type: 'target' as const, handleType: 'input' as const, label: 'Input' },
+      ],
     },
     {
       position: Position.Right,
-      handles: [{ id: "output", type: "source" as const, handleType: "output" as const, label: "Output" }],
+      handles: [
+        { id: 'output', type: 'source' as const, handleType: 'output' as const, label: 'Output' },
+      ],
     },
   ],
 
@@ -193,8 +215,8 @@ export const HandleConfigs = {
       position: Position.Bottom,
       handles: labels.map((label, i) => ({
         id: `artifact-${i}`,
-        type: "source" as const,
-        handleType: "artifact" as const,
+        type: 'source' as const,
+        handleType: 'artifact' as const,
         label,
       })),
     },
@@ -204,8 +226,10 @@ export const HandleConfigs = {
 /**
  * Creates execution status variations of a node for testing status display.
  */
-export function createStatusVariations(baseConfig: Omit<CreateNodeOptions, "id">): Node<BaseNodeData>[] {
-  const statuses = ["NotExecuted", "InProgress", "Completed", "Failed", "Paused"];
+export function createStatusVariations(
+  baseConfig: Omit<CreateNodeOptions, 'id'>
+): Node<BaseNodeData>[] {
+  const statuses = ['NotExecuted', 'InProgress', 'Completed', 'Failed', 'Paused'];
 
   return statuses.map((status, index) =>
     createNode({

@@ -6,7 +6,7 @@
  */
 export const getLighterColor = (color: string, opacity: number = 0.2): string | undefined => {
   // Validate color format
-  const isValidColor = CSS.supports("color", color);
+  const isValidColor = CSS.supports('color', color);
   if (!isValidColor) {
     console.warn(`Invalid color format: ${color}`);
     return;

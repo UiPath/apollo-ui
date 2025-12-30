@@ -1,7 +1,21 @@
-export const OrganizeIcon = ({ w = 32, h = 32, color = "currentColor" }: { w?: number | string; h?: number | string; color?: string }) => {
+export const OrganizeIcon = ({
+  w = 32,
+  h = 32,
+  color = 'currentColor',
+}: {
+  w?: number | string;
+  h?: number | string;
+  color?: string;
+}) => {
   return (
     <svg width={w} height={h} viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M12.5001 18.3333L11.6667 15" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      <path
+        d="M12.5001 18.3333L11.6667 15"
+        stroke={color}
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
       <path
         d="M15.8333 11.6584C16.0543 11.6584 16.2662 11.5706 16.4225 11.4143C16.5788 11.258 16.6666 11.0461 16.6666 10.825V10C16.6666 9.55801 16.6666 10 16.6666 9.52406C16.6666 8.33337 16.6666 8.33337 14.9999 8.33337H12.4999C12.2789 8.33337 12.067 8.24558 11.9107 8.0893C11.7544 7.93302 11.6666 7.72105 11.6666 7.50004V2.08337M8.33326 2.08337V7.50004C8.33326 7.72105 8.24546 7.93302 8.08918 8.0893C7.9329 8.24558 7.72094 8.33337 7.49993 8.33337H4.99993C3.33326 8.33337 3.33325 8.33337 3.33325 9.58337C3.33325 10.8334 3.33326 9.55801 3.33326 10V10.825C3.33326 11.0461 3.42106 11.258 3.57734 11.4143C3.73362 11.5706 3.94558 11.6584 4.1666 11.6584"
         stroke={color}
@@ -16,7 +30,13 @@ export const OrganizeIcon = ({ w = 32, h = 32, color = "currentColor" }: { w?: n
         strokeLinecap="round"
         strokeLinejoin="round"
       />
-      <path d="M7.49992 18.3333L8.33325 15" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      <path
+        d="M7.49992 18.3333L8.33325 15"
+        stroke={color}
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
       <line x1="8.33325" y1="1.95837" x2="11.6666" y2="1.95837" stroke={color} strokeWidth="1.5" />
     </svg>
   );

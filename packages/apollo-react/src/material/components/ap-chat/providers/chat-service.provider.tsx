@@ -3,34 +3,35 @@ import React from 'react';
 import { AutopilotChatService } from '../service';
 
 interface AutopilotChatServiceContextType {
-    chatService: AutopilotChatService | undefined;
+  chatService: AutopilotChatService | undefined;
 }
 
-export const AutopilotChatServiceContext = React.createContext<AutopilotChatServiceContextType>({ chatService: undefined });
+export const AutopilotChatServiceContext = React.createContext<AutopilotChatServiceContextType>({
+  chatService: undefined,
+});
 
 export function AutopilotChatServiceProvider({
-    chatServiceInstance,
-    children,
+  chatServiceInstance,
+  children,
 }: {
-    chatServiceInstance: AutopilotChatService;
-    children: React.ReactNode;
+  chatServiceInstance: AutopilotChatService;
+  children: React.ReactNode;
 }) {
-    const chatService = chatServiceInstance;
+  const chatService = chatServiceInstance;
 
-    return (
-        <AutopilotChatServiceContext.Provider value={{ chatService }}>
-            {children}
-        </AutopilotChatServiceContext.Provider>
-    );
+  return (
+    <AutopilotChatServiceContext.Provider value={{ chatService }}>
+      {children}
+    </AutopilotChatServiceContext.Provider>
+  );
 }
 
 export function useChatService() {
-    const context = React.useContext(AutopilotChatServiceContext);
+  const context = React.useContext(AutopilotChatServiceContext);
 
-    if (!context) {
-        throw new Error('useChatService must be used within a AutopilotChatServiceProvider');
-    }
+  if (!context) {
+    throw new Error('useChatService must be used within a AutopilotChatServiceProvider');
+  }
 
-    return context.chatService as AutopilotChatService;
+  return context.chatService as AutopilotChatService;
 }
-

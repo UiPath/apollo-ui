@@ -1,8 +1,5 @@
 import type { Components } from '@mui/material';
-import {
-  darkPalette,
-  lightPalette,
-} from '@uipath/apollo-core';
+import { darkPalette, lightPalette } from '@uipath/apollo-core';
 import {
   darkHighContrastPalette,
   lightHighContrastPalette,
@@ -41,10 +38,7 @@ import { MuiRadio } from './MuiRadio';
 import { MuiSelect } from './MuiSelect';
 import { MuiSlider } from './MuiSlider';
 import { MuiSnackbar } from './MuiSnackbar';
-import {
-  MuiStep,
-  MuiStepper,
-} from './MuiStepper';
+import { MuiStep, MuiStepper } from './MuiStepper';
 import { MuiSwitch } from './MuiSwitch';
 import { MuiTab } from './MuiTab';
 import { MuiTabs } from './MuiTabs';
@@ -53,52 +47,56 @@ import { MuiTooltip } from './MuiTooltip';
 import { MuiTypography } from './MuiTypography';
 
 const muiComponents = {
-    MuiAlert,
-    MuiButton,
-    MuiButtonBase,
-    MuiAutocomplete,
-    MuiCheckbox,
-    MuiChip,
-    MuiCircularProgress,
-    MuiDialog,
-    MuiDivider,
-    MuiFab,
-    MuiFormControl,
-    MuiFormControlLabel,
-    MuiFormHelperText,
-    MuiFormLabel,
-    MuiIconButton,
-    MuiInputAdornment,
-    MuiInputBase,
-    MuiInputLabel,
-    MuiLinearProgress,
-    MuiLink,
-    MuiList,
-    MuiListItem,
-    MuiListItemButton,
-    MuiListItemIcon,
-    MuiListItemText,
-    MuiMenuItem,
-    MuiOutlinedInput,
-    MuiRadio,
-    MuiSelect,
-    MuiSlider,
-    MuiSnackbar,
-    MuiSwitch,
-    MuiTab,
-    MuiTabs,
-    MuiTextField,
-    MuiTooltip,
-    MuiTypography,
-    MuiPopper: MuiDatepicker,
-    MuiStepper,
-    MuiStep,
+  MuiAlert,
+  MuiButton,
+  MuiButtonBase,
+  MuiAutocomplete,
+  MuiCheckbox,
+  MuiChip,
+  MuiCircularProgress,
+  MuiDialog,
+  MuiDivider,
+  MuiFab,
+  MuiFormControl,
+  MuiFormControlLabel,
+  MuiFormHelperText,
+  MuiFormLabel,
+  MuiIconButton,
+  MuiInputAdornment,
+  MuiInputBase,
+  MuiInputLabel,
+  MuiLinearProgress,
+  MuiLink,
+  MuiList,
+  MuiListItem,
+  MuiListItemButton,
+  MuiListItemIcon,
+  MuiListItemText,
+  MuiMenuItem,
+  MuiOutlinedInput,
+  MuiRadio,
+  MuiSelect,
+  MuiSlider,
+  MuiSnackbar,
+  MuiSwitch,
+  MuiTab,
+  MuiTabs,
+  MuiTextField,
+  MuiTooltip,
+  MuiTypography,
+  MuiPopper: MuiDatepicker,
+  MuiStepper,
+  MuiStep,
 };
 
-const getOverrides = (palette: Palette) => Object.entries(muiComponents).reduce((overrides, [ name, muiComponent ]) => ({
-    ...overrides,
-    [name]: { styleOverrides: muiComponent(palette) },
-}), {});
+const getOverrides = (palette: Palette) =>
+  Object.entries(muiComponents).reduce(
+    (overrides, [name, muiComponent]) => ({
+      ...overrides,
+      [name]: { styleOverrides: muiComponent(palette) },
+    }),
+    {}
+  );
 
 export const lightOverrides: Components = getOverrides(lightPalette);
 export const lightHighContrastOverrides: Components = getOverrides(lightHighContrastPalette);

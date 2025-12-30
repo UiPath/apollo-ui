@@ -1,15 +1,15 @@
-import React, { memo, useCallback, useEffect, useMemo, useRef } from "react";
-import type { PropsWithChildren } from "react";
-import { Panel, useReactFlow } from "@uipath/uix/xyflow/react";
-import type { NodeProps } from "@uipath/uix/xyflow/system";
-import { BaseCanvas } from "../../components/BaseCanvas";
-import { TimelinePlayer } from "./components/TimelinePlayer";
-import { Edge } from "./edges/Edge";
-import { Column } from "@uipath/uix/core";
-import { AgentNodeElement } from "./nodes/AgentNode";
-import { ResourceNode } from "./nodes/ResourceNode";
-import { CanvasPositionControls } from "../CanvasPositionControls";
-import { AgentFlowProvider, useAgentFlowStore } from "./store/agent-flow-store";
+import React, { memo, useCallback, useEffect, useMemo, useRef } from 'react';
+import type { PropsWithChildren } from 'react';
+import { Panel, useReactFlow } from '@uipath/uix/xyflow/react';
+import type { NodeProps } from '@uipath/uix/xyflow/system';
+import { BaseCanvas } from '../../components/BaseCanvas';
+import { TimelinePlayer } from './components/TimelinePlayer';
+import { Edge } from './edges/Edge';
+import { Column } from '@uipath/uix/core';
+import { AgentNodeElement } from './nodes/AgentNode';
+import { ResourceNode } from './nodes/ResourceNode';
+import { CanvasPositionControls } from '../CanvasPositionControls';
+import { AgentFlowProvider, useAgentFlowStore } from './store/agent-flow-store';
 import {
   type AgentFlowCustomEdge,
   type AgentFlowCustomNode,
@@ -26,10 +26,10 @@ import {
   type ResourceNodeTranslations,
   type SuggestionTranslations,
   DefaultSuggestionTranslations,
-} from "../../types";
-import { hasAgentRunning } from "../../utils/props-helpers";
-import { SuggestionGroupPanel } from "./components/SuggestionGroupPanel";
-import { calculateTimelineHeight } from "./components/TimelinePlayer.utils";
+} from '../../types';
+import { hasAgentRunning } from '../../utils/props-helpers';
+import { SuggestionGroupPanel } from './components/SuggestionGroupPanel';
+import { calculateTimelineHeight } from './components/TimelinePlayer.utils';
 
 const edgeTypes = {
   default: Edge,
@@ -48,7 +48,7 @@ const AGENT_FLOW_FIT_VIEW_OPTIONS = {
 
 // agent node wrapper
 const createAgentNodeWrapper = (handlers: {
-  onAddResource?: (type: "context" | "escalation" | "mcp" | "tool" | "memorySpace") => void;
+  onAddResource?: (type: 'context' | 'escalation' | 'mcp' | 'tool' | 'memorySpace') => void;
   translations?: AgentNodeTranslations;
   suggestionTranslations?: SuggestionTranslations;
   enableMcpTools?: boolean;
@@ -61,35 +61,68 @@ const createAgentNodeWrapper = (handlers: {
     const { props: storeProps, nodes } = useAgentFlowStore();
 
     const hasContext = nodes.some(
-      (node) => isAgentFlowResourceNode(node) && node.data.type === "context" && node.data.parentNodeId === props.id
+      (node) =>
+        isAgentFlowResourceNode(node) &&
+        node.data.type === 'context' &&
+        node.data.parentNodeId === props.id
     );
 
     const hasEscalation = nodes.some(
-      (node) => isAgentFlowResourceNode(node) && node.data.type === "escalation" && node.data.parentNodeId === props.id
+      (node) =>
+        isAgentFlowResourceNode(node) &&
+        node.data.type === 'escalation' &&
+        node.data.parentNodeId === props.id
     );
 
-    const hasTool = nodes.some((node) => isAgentFlowResourceNode(node) && node.data.type === "tool" && node.data.parentNodeId === props.id);
+    const hasTool = nodes.some(
+      (node) =>
+        isAgentFlowResourceNode(node) &&
+        node.data.type === 'tool' &&
+        node.data.parentNodeId === props.id
+    );
 
     const hasMcp =
       handlers.enableMcpTools !== false &&
-      nodes.some((node) => isAgentFlowResourceNode(node) && node.data.type === "mcp" && node.data.parentNodeId === props.id);
+      nodes.some(
+        (node) =>
+          isAgentFlowResourceNode(node) &&
+          node.data.type === 'mcp' &&
+          node.data.parentNodeId === props.id
+      );
 
     const hasMemory = nodes.some(
-      (node) => isAgentFlowResourceNode(node) && node.data.type === "memorySpace" && node.data.parentNodeId === props.id
+      (node) =>
+        isAgentFlowResourceNode(node) &&
+        node.data.type === 'memorySpace' &&
+        node.data.parentNodeId === props.id
     );
 
     // Check if agent itself is running OR if any of its resources are running on view mode OR if it's processing a suggestion
     const agentRunning = hasAgentRunning(storeProps.spans);
     const resourceRunning = nodes.some(
-      (node) => isAgentFlowResourceNode(node) && storeProps.mode === "view" && node.data.parentNodeId === props.id && node.data.hasRunning
+      (node) =>
+        isAgentFlowResourceNode(node) &&
+        storeProps.mode === 'view' &&
+        node.data.parentNodeId === props.id &&
+        node.data.hasRunning
     );
     const agentProcessing = props.data.isProcessing;
     const hasRunning = agentRunning || resourceRunning || agentProcessing;
 
     const hasError =
-      !hasRunning && nodes.some((node) => isAgentFlowResourceNode(node) && node.data.parentNodeId === props.id && node.data.hasError);
+      !hasRunning &&
+      nodes.some(
+        (node) =>
+          isAgentFlowResourceNode(node) && node.data.parentNodeId === props.id && node.data.hasError
+      );
     const hasSuccess =
-      !hasRunning && nodes.some((node) => isAgentFlowResourceNode(node) && node.data.parentNodeId === props.id && node.data.hasSuccess);
+      !hasRunning &&
+      nodes.some(
+        (node) =>
+          isAgentFlowResourceNode(node) &&
+          node.data.parentNodeId === props.id &&
+          node.data.hasSuccess
+      );
 
     return (
       <AgentNodeElement
@@ -215,7 +248,10 @@ const AgentFlowInner = memo(
     const suggestionGroupPanelRef = useRef<HTMLDivElement>(null);
 
     // Calculate if timeline will be visible
-    const timelineHeight = useMemo(() => calculateTimelineHeight(enableTimelinePlayer, spans), [enableTimelinePlayer, spans]);
+    const timelineHeight = useMemo(
+      () => calculateTimelineHeight(enableTimelinePlayer, spans),
+      [enableTimelinePlayer, spans]
+    );
     // Calculate suggestion group panel height
     const suggestionGroupPanelHeight = suggestionGroupPanelRef.current?.offsetHeight || 0;
 
@@ -225,7 +261,9 @@ const AgentFlowInner = memo(
         const viewportHeight = window.innerHeight;
         const timelineRatio = timelineHeight / viewportHeight;
         const suggestionGroupPanelRatio = suggestionGroupPanelHeight / viewportHeight;
-        const bottomPadding = AGENT_FLOW_FIT_VIEW_OPTIONS.padding.bottom + 3 * (timelineRatio + suggestionGroupPanelRatio);
+        const bottomPadding =
+          AGENT_FLOW_FIT_VIEW_OPTIONS.padding.bottom +
+          3 * (timelineRatio + suggestionGroupPanelRatio);
 
         return {
           ...AGENT_FLOW_FIT_VIEW_OPTIONS,
@@ -240,7 +278,9 @@ const AgentFlowInner = memo(
     }, [timelineHeight, suggestionGroupPanelHeight]);
 
     const nodeTypes = useMemo(() => {
-      const handleAddResource = (type: "context" | "escalation" | "mcp" | "tool" | "memorySpace") => {
+      const handleAddResource = (
+        type: 'context' | 'escalation' | 'mcp' | 'tool' | 'memorySpace'
+      ) => {
         // Use createResourcePlaceholder which will either create a placeholder or call onAddResource
         createResourcePlaceholder(type);
       };
@@ -294,7 +334,7 @@ const AgentFlowInner = memo(
 
     const handlePaneClick = useCallback(() => {
       setSelectedNodeId(null);
-      onSelectResource?.("pane");
+      onSelectResource?.('pane');
 
       // If there are placeholder suggestions, reject them when clicking outside
       // if (storeProps.suggestionGroup?.suggestions) {
@@ -373,9 +413,9 @@ const AgentFlowInner = memo(
         expandAgent(resourceId, agentDetails);
       };
 
-      window.addEventListener("expandAgent", handleExpandAgent);
+      window.addEventListener('expandAgent', handleExpandAgent);
       return () => {
-        window.removeEventListener("expandAgent", handleExpandAgent);
+        window.removeEventListener('expandAgent', handleExpandAgent);
       };
     }, [expandAgent]);
 
@@ -387,9 +427,9 @@ const AgentFlowInner = memo(
         collapseAgent(resourceId);
       };
 
-      window.addEventListener("collapseAgent", handleCollapseAgent);
+      window.addEventListener('collapseAgent', handleCollapseAgent);
       return () => {
-        window.removeEventListener("collapseAgent", handleCollapseAgent);
+        window.removeEventListener('collapseAgent', handleCollapseAgent);
       };
     }, [collapseAgent]);
 
@@ -401,9 +441,9 @@ const AgentFlowInner = memo(
         reactFlowFitView(adjustedFitViewOptions);
       };
 
-      window.addEventListener("resetSelectedNode", handleResetSelectedNode);
+      window.addEventListener('resetSelectedNode', handleResetSelectedNode);
       return () => {
-        window.removeEventListener("resetSelectedNode", handleResetSelectedNode);
+        window.removeEventListener('resetSelectedNode', handleResetSelectedNode);
       };
     }, [setSelectedNodeId, onSelectResource, reactFlowFitView, adjustedFitViewOptions]);
 
@@ -417,13 +457,21 @@ const AgentFlowInner = memo(
         setSelectedNodeId(targetNode.id);
         onSelectResource?.(targetNode.id);
       }
-    }, [nodes, setSelectedNodeId, onSelectResource, getNodeFromSelectedSpan, selectedNodeId, updateNode, spans]);
+    }, [
+      nodes,
+      setSelectedNodeId,
+      onSelectResource,
+      getNodeFromSelectedSpan,
+      selectedNodeId,
+      updateNode,
+      spans,
+    ]);
 
     // Filter nodes based on feature flags
     const filteredNodes = nodes.filter((node) => {
       if (!isAgentFlowResourceNode(node)) return true;
       if (node.data.isVirtual) return true; // Always keep virtual nodes
-      if (node.data.type === "memorySpace") return !!enableMemory;
+      if (node.data.type === 'memorySpace') return !!enableMemory;
       return true;
     });
 
@@ -455,8 +503,8 @@ const AgentFlowInner = memo(
     );
 
     return (
-      <Column w="100%" h="100%" style={{ touchAction: "none" }}>
-        <Column flex={1} position="relative" style={{ touchAction: "none" }}>
+      <Column w="100%" h="100%" style={{ touchAction: 'none' }}>
+        <Column flex={1} position="relative" style={{ touchAction: 'none' }}>
           <BaseCanvas<AgentFlowCustomNode, AgentFlowCustomEdge>
             ref={canvasRef}
             nodes={filteredNodes}
@@ -476,9 +524,11 @@ const AgentFlowInner = memo(
             onPaneClick={handlePaneClick}
             onNodeDragStart={handleNodeDragStart}
             onNodeDragStop={handleNodeDragStop}
-            deleteKeyCode={mode === "design" ? ["Backspace", "Delete"] : null}
+            deleteKeyCode={mode === 'design' ? ['Backspace', 'Delete'] : null}
             maintainNodesInView={[]}
-            panShortcutTeachingUIMessage={(canvasTranslations ?? DefaultCanvasTranslations).panShortcutTeaching}
+            panShortcutTeachingUIMessage={
+              (canvasTranslations ?? DefaultCanvasTranslations).panShortcutTeaching
+            }
           >
             <Panel position="bottom-right">
               <CanvasPositionControls
@@ -489,15 +539,22 @@ const AgentFlowInner = memo(
             </Panel>
             <Panel position="bottom-center">
               <div ref={timelinePlayerRef}>
-                <TimelinePlayer spans={spans ?? []} enableTimelinePlayer={enableTimelinePlayer ?? true} />
+                <TimelinePlayer
+                  spans={spans ?? []}
+                  enableTimelinePlayer={enableTimelinePlayer ?? true}
+                />
               </div>
             </Panel>
             <Panel position="bottom-center">
               <div ref={suggestionGroupPanelRef}>
                 <SuggestionGroupPanel
                   suggestionGroup={suggestionGroup}
-                  onRejectAll={(suggestionGroupId: string) => actOnSuggestionGroup?.(suggestionGroupId, "reject")}
-                  onAcceptAll={(suggestionGroupId: string) => actOnSuggestionGroup?.(suggestionGroupId, "accept")}
+                  onRejectAll={(suggestionGroupId: string) =>
+                    actOnSuggestionGroup?.(suggestionGroupId, 'reject')
+                  }
+                  onAcceptAll={(suggestionGroupId: string) =>
+                    actOnSuggestionGroup?.(suggestionGroupId, 'accept')
+                  }
                   currentIndex={currentSuggestionIndex}
                   onNavigateNext={navigateToNextSuggestion}
                   onNavigatePrevious={navigateToPreviousSuggestion}
@@ -511,7 +568,7 @@ const AgentFlowInner = memo(
     );
   }
 );
-AgentFlowInner.displayName = "AgentFlowInner";
+AgentFlowInner.displayName = 'AgentFlowInner';
 
 export const AgentFlow = (props: PropsWithChildren<AgentFlowProps>) => {
   return (

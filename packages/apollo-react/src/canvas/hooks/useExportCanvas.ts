@@ -1,12 +1,12 @@
-import { useCallback, useState } from "react";
-import { useReactFlow } from "@uipath/uix/xyflow/react";
+import { useCallback, useState } from 'react';
+import { useReactFlow } from '@uipath/uix/xyflow/react';
 import {
   exportCanvasToImage,
   downloadCanvasAsImage,
   copyCanvasToClipboard,
   type ExportCanvasOptions,
   type ExportCanvasResult,
-} from "../utils/export-canvas";
+} from '../utils/export-canvas';
 
 /**
  * State returned by the useExportCanvas hook
@@ -50,7 +50,7 @@ export interface UseExportCanvasActions {
    * Copy the canvas image to the clipboard
    * @param options - Export configuration options (format will be forced to PNG)
    */
-  copyToClipboard: (options?: Omit<ExportCanvasOptions, "format">) => Promise<void>;
+  copyToClipboard: (options?: Omit<ExportCanvasOptions, 'format'>) => Promise<void>;
 
   /**
    * Clear the last error state
@@ -158,7 +158,7 @@ export function useExportCanvas(): UseExportCanvasReturn {
         setLastResult(result);
         return result;
       } catch (err) {
-        const exportError = err instanceof Error ? err : new Error("Failed to export canvas");
+        const exportError = err instanceof Error ? err : new Error('Failed to export canvas');
         setError(exportError);
         return null;
       } finally {
@@ -179,7 +179,7 @@ export function useExportCanvas(): UseExportCanvasReturn {
       try {
         await downloadCanvasAsImage(reactFlowInstance, filename, options);
       } catch (err) {
-        const downloadError = err instanceof Error ? err : new Error("Failed to download canvas");
+        const downloadError = err instanceof Error ? err : new Error('Failed to download canvas');
         setError(downloadError);
       } finally {
         setIsExporting(false);
@@ -189,7 +189,7 @@ export function useExportCanvas(): UseExportCanvasReturn {
   );
 
   const copyToClipboard = useCallback(
-    async (options?: Omit<ExportCanvasOptions, "format">): Promise<void> => {
+    async (options?: Omit<ExportCanvasOptions, 'format'>): Promise<void> => {
       setIsExporting(true);
       setError(null);
 
@@ -199,7 +199,8 @@ export function useExportCanvas(): UseExportCanvasReturn {
       try {
         await copyCanvasToClipboard(reactFlowInstance, options);
       } catch (err) {
-        const copyError = err instanceof Error ? err : new Error("Failed to copy canvas to clipboard");
+        const copyError =
+          err instanceof Error ? err : new Error('Failed to copy canvas to clipboard');
         setError(copyError);
       } finally {
         setIsExporting(false);

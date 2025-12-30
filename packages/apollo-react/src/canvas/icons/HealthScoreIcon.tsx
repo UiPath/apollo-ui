@@ -1,7 +1,7 @@
 export const HealthScoreIcon = ({
   w = 48,
   h = 48,
-  color = "var(--color-foreground-de-emp)",
+  color = 'var(--color-foreground-de-emp)',
 }: {
   w?: number | string;
   h?: number | string;

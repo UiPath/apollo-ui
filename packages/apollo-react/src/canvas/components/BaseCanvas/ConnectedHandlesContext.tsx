@@ -1,5 +1,13 @@
-import { createContext, useContext, useRef, useSyncExternalStore, useCallback, useEffect, type ReactNode } from "react";
-import type { Edge } from "@uipath/uix/xyflow/react";
+import {
+  createContext,
+  useContext,
+  useRef,
+  useSyncExternalStore,
+  useCallback,
+  useEffect,
+  type ReactNode,
+} from 'react';
+import type { Edge } from '@uipath/uix/xyflow/react';
 
 type ConnectedHandlesMap = Map<string, Set<string>>;
 type Listener = () => void;
@@ -140,7 +148,13 @@ const ConnectedHandlesContext = createContext<ConnectedHandlesStore | null>(null
 /**
  * Provides the connected handles store to the tree.
  */
-export function ConnectedHandlesProvider({ edges, children }: { edges: Edge[]; children: ReactNode }) {
+export function ConnectedHandlesProvider({
+  edges,
+  children,
+}: {
+  edges: Edge[];
+  children: ReactNode;
+}) {
   const storeRef = useRef<ConnectedHandlesStore>();
 
   if (!storeRef.current) {
@@ -151,7 +165,11 @@ export function ConnectedHandlesProvider({ edges, children }: { edges: Edge[]; c
     storeRef.current!.update(edges);
   }, [edges]);
 
-  return <ConnectedHandlesContext.Provider value={storeRef.current}>{children}</ConnectedHandlesContext.Provider>;
+  return (
+    <ConnectedHandlesContext.Provider value={storeRef.current}>
+      {children}
+    </ConnectedHandlesContext.Provider>
+  );
 }
 
 /**

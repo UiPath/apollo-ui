@@ -3,26 +3,31 @@
  *
  * Demonstrates the BaseNode component with various shapes, sizes, and execution states.
  */
-import type { Meta, StoryObj } from "@storybook/react";
-import { useMemo } from "react";
-import type { Node } from "@uipath/uix/xyflow/react";
-import { Panel } from "@uipath/uix/xyflow/react";
-import { BaseCanvas } from "../BaseCanvas";
-import { CanvasPositionControls } from "../CanvasPositionControls";
-import { NodeInspector } from "../NodeInspector";
-import type { BaseNodeData } from "./BaseNode.types";
-import { useNodeTypeRegistry } from "./useNodeTypeRegistry";
-import { withCanvasProviders, useCanvasStory, createNode, StoryInfoPanel } from "../../storybook-utils";
-import { DefaultCanvasTranslations } from "../../types";
+import type { Meta, StoryObj } from '@storybook/react';
+import { useMemo } from 'react';
+import type { Node } from '@uipath/uix/xyflow/react';
+import { Panel } from '@uipath/uix/xyflow/react';
+import { BaseCanvas } from '../BaseCanvas';
+import { CanvasPositionControls } from '../CanvasPositionControls';
+import { NodeInspector } from '../NodeInspector';
+import type { BaseNodeData } from './BaseNode.types';
+import { useNodeTypeRegistry } from './useNodeTypeRegistry';
+import {
+  withCanvasProviders,
+  useCanvasStory,
+  createNode,
+  StoryInfoPanel,
+} from '../../storybook-utils';
+import { DefaultCanvasTranslations } from '../../types';
 
 // ============================================================================
 // Meta Configuration
 // ============================================================================
 
 const meta: Meta<BaseNodeData> = {
-  title: "Canvas/BaseNode",
+  title: 'Canvas/BaseNode',
   parameters: {
-    layout: "fullscreen",
+    layout: 'fullscreen',
   },
   decorators: [withCanvasProviders()],
 };
@@ -34,8 +39,8 @@ type Story = StoryObj<typeof meta>;
 // Node Grid Definitions
 // ============================================================================
 
-const SHAPES = ["circle", "square", "rectangle"] as const;
-const STATUSES = ["NotExecuted", "InProgress", "Completed", "Failed", "Paused"] as const;
+const SHAPES = ['circle', 'square', 'rectangle'] as const;
+const STATUSES = ['NotExecuted', 'InProgress', 'Completed', 'Failed', 'Paused'] as const;
 
 const GRID_CONFIG = {
   startX: 96,
@@ -47,23 +52,25 @@ const GRID_CONFIG = {
 /**
  * Creates a grid of nodes showing all shape/status combinations.
  */
-function createShapeStatusGrid(registry: ReturnType<typeof useNodeTypeRegistry>): Node<BaseNodeData>[] {
+function createShapeStatusGrid(
+  registry: ReturnType<typeof useNodeTypeRegistry>
+): Node<BaseNodeData>[] {
   const nodes: Node<BaseNodeData>[] = [];
 
   STATUSES.forEach((status, rowIndex) => {
     SHAPES.forEach((shape, colIndex) => {
-      const label = shape === "rectangle" ? "Invoice approval agent" : "Header";
+      const label = shape === 'rectangle' ? 'Invoice approval agent' : 'Header';
       nodes.push(
         createNode({
           id: `${shape}-${status}`,
-          type: "uipath.blank-node",
+          type: 'uipath.blank-node',
           position: {
             x: GRID_CONFIG.startX + colIndex * GRID_CONFIG.gapX,
             y: GRID_CONFIG.startY + rowIndex * GRID_CONFIG.gapY,
           },
           data: {
-            ...registry.createDefaultData("generic"),
-            display: { label, subLabel: status.replace(/([A-Z])/g, " $1").trim(), shape },
+            ...registry.createDefaultData('generic'),
+            display: { label, subLabel: status.replace(/([A-Z])/g, ' $1').trim(), shape },
           },
         })
       );
@@ -98,11 +105,11 @@ function createSizeGrid(registry: ReturnType<typeof useNodeTypeRegistry>): Node<
     nodes.push({
       ...createNode({
         id: `sq-${size}`,
-        type: "uipath.blank-node",
+        type: 'uipath.blank-node',
         position: { x: xOffset, y: 96 },
         data: {
-          ...registry.createDefaultData("uipath.blank-node"),
-          display: { label: String(size), shape: "square" },
+          ...registry.createDefaultData('uipath.blank-node'),
+          display: { label: String(size), shape: 'square' },
         },
       }),
       width: size,
@@ -117,11 +124,11 @@ function createSizeGrid(registry: ReturnType<typeof useNodeTypeRegistry>): Node<
     nodes.push({
       ...createNode({
         id: `c-${size}`,
-        type: "uipath.blank-node",
+        type: 'uipath.blank-node',
         position: { x: xOffset, y: 272 },
         data: {
-          ...registry.createDefaultData("uipath.blank-node"),
-          display: { label: String(size), shape: "circle" },
+          ...registry.createDefaultData('uipath.blank-node'),
+          display: { label: String(size), shape: 'circle' },
         },
       }),
       width: size,
@@ -137,11 +144,11 @@ function createSizeGrid(registry: ReturnType<typeof useNodeTypeRegistry>): Node<
     nodes.push({
       ...createNode({
         id: `r-${index}`,
-        type: "uipath.agent",
+        type: 'uipath.agent',
         position: { x: rectX, y: rectY },
         data: {
-          ...registry.createDefaultData("uipath.agent"),
-          display: { label: `${width}×${height}`, shape: "rectangle" },
+          ...registry.createDefaultData('uipath.agent'),
+          display: { label: `${width}×${height}`, shape: 'rectangle' },
         },
       }),
       width,
@@ -191,7 +198,10 @@ function CustomizedSizesStory() {
       <Panel position="bottom-right">
         <CanvasPositionControls translations={DefaultCanvasTranslations} showOrganize={false} />
       </Panel>
-      <StoryInfoPanel title="Customized Sizes" description="Nodes with various dimensions aligned to 16px grid." />
+      <StoryInfoPanel
+        title="Customized Sizes"
+        description="Nodes with various dimensions aligned to 16px grid."
+      />
     </BaseCanvas>
   );
 }
@@ -201,11 +211,11 @@ function CustomizedSizesStory() {
 // ============================================================================
 
 export const Default: Story = {
-  name: "Default",
+  name: 'Default',
   render: () => <DefaultStory />,
 };
 
 export const CustomizedSizes: Story = {
-  name: "Customized sizes",
+  name: 'Customized sizes',
   render: () => <CustomizedSizesStory />,
 };

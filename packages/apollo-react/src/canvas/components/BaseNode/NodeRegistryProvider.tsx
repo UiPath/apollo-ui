@@ -1,8 +1,8 @@
-import type { ReactNode } from "react";
-import { useMemo } from "react";
-import type { NodeRegistration } from "./BaseNode.types";
-import { NodeTypeRegistry } from "./NodeTypeRegistry";
-import { NodeRegistryContext } from "./useNodeTypeRegistry";
+import type { ReactNode } from 'react';
+import { useMemo } from 'react';
+import type { NodeRegistration } from './BaseNode.types';
+import { NodeTypeRegistry } from './NodeTypeRegistry';
+import { NodeRegistryContext } from './useNodeTypeRegistry';
 
 interface NodeRegistryProviderProps {
   children: ReactNode;
@@ -10,7 +10,10 @@ interface NodeRegistryProviderProps {
   onRegistration?: (nodeType: string, success: boolean) => void;
 }
 
-export const NodeRegistryProvider: React.FC<NodeRegistryProviderProps> = ({ children, registrations = [] }) => {
+export const NodeRegistryProvider: React.FC<NodeRegistryProviderProps> = ({
+  children,
+  registrations = [],
+}) => {
   const registry = useMemo(() => {
     const reg = new NodeTypeRegistry();
     registrations.forEach((registration) => reg.register(registration));
@@ -19,5 +22,7 @@ export const NodeRegistryProvider: React.FC<NodeRegistryProviderProps> = ({ chil
 
   const contextValue = useMemo(() => ({ registry }), [registry]);
 
-  return <NodeRegistryContext.Provider value={contextValue}>{children}</NodeRegistryContext.Provider>;
+  return (
+    <NodeRegistryContext.Provider value={contextValue}>{children}</NodeRegistryContext.Provider>
+  );
 };

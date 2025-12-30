@@ -1,17 +1,24 @@
-import { useMemo, useCallback, memo, useState } from "react";
-import { Position } from "@uipath/uix/xyflow/react";
-import { AnimatePresence } from "motion/react";
-import { FontVariantToken } from "@uipath/apollo-core";
-import { Row } from "@uipath/uix/core";
-import { ApIcon, ApTypography } from "@uipath/portal-shell-react";
-import { canvasEventBus } from "../../utils/CanvasEventBus";
-import { StyledAddButton, StyledHandle, StyledLabel, StyledLine, StyledNotch, StyledWrapper } from "./ButtonHandle.styles";
-import type { HandleConfigurationSpecificPosition } from "../BaseNode/BaseNode.types";
-import { calculateGridAlignedHandlePositions, pixelToPercent } from "./ButtonHandleStyleUtils";
+import { useMemo, useCallback, memo, useState } from 'react';
+import { Position } from '@uipath/uix/xyflow/react';
+import { AnimatePresence } from 'motion/react';
+import { FontVariantToken } from '@uipath/apollo-core';
+import { Row } from '@uipath/uix/core';
+import { ApIcon, ApTypography } from '@uipath/portal-shell-react';
+import { canvasEventBus } from '../../utils/CanvasEventBus';
+import {
+  StyledAddButton,
+  StyledHandle,
+  StyledLabel,
+  StyledLine,
+  StyledNotch,
+  StyledWrapper,
+} from './ButtonHandle.styles';
+import type { HandleConfigurationSpecificPosition } from '../BaseNode/BaseNode.types';
+import { calculateGridAlignedHandlePositions, pixelToPercent } from './ButtonHandleStyleUtils';
 export interface HandleActionEvent {
   handleId: string;
   nodeId: string;
-  handleType: "artifact" | "input" | "output";
+  handleType: 'artifact' | 'input' | 'output';
   position: Position;
   originalEvent: React.MouseEvent;
 }
@@ -48,9 +55,9 @@ const AddButton = memo(({ onAction }: AddButtonProps) => {
 type ButtonHandleProps = {
   id: string;
   nodeId: string;
-  type: "source" | "target";
+  type: 'source' | 'target';
   position: Position;
-  handleType: "artifact" | "input" | "output";
+  handleType: 'artifact' | 'input' | 'output';
   label?: string;
   labelIcon?: React.ReactNode;
   labelBackgroundColor?: string;
@@ -75,10 +82,10 @@ const ButtonHandleBase = ({
   handleType,
   label,
   labelIcon,
-  labelBackgroundColor = "var(--uix-canvas-background-secondary)",
+  labelBackgroundColor = 'var(--uix-canvas-background-secondary)',
   visible = true,
   showButton = true,
-  color = "var(--uix-canvas-border)",
+  color = 'var(--uix-canvas-border)',
   selected = false,
   index = 0,
   total = 1,
@@ -124,7 +131,7 @@ const ButtonHandleBase = ({
       onAction?.(actionEvent);
 
       // Emit to event bus for global listeners
-      canvasEventBus.emit("handle:action", {
+      canvasEventBus.emit('handle:action', {
         handleId: id,
         nodeId,
         handleType,
@@ -143,7 +150,7 @@ const ButtonHandleBase = ({
       type={type}
       position={position}
       id={id}
-      isConnectable={handleType !== "artifact"}
+      isConnectable={handleType !== 'artifact'}
       $positionPercent={positionPercent}
       $total={total}
       $visible={visible}
@@ -156,16 +163,23 @@ const ButtonHandleBase = ({
         <StyledLabel $position={position} $backgroundColor={labelBackgroundColor}>
           <Row align="center" gap={4}>
             {labelIcon}
-            <ApTypography color="var(--uix-canvas-foreground-de-emp)" variant={FontVariantToken.fontSizeSBold}>
+            <ApTypography
+              color="var(--uix-canvas-foreground-de-emp)"
+              variant={FontVariantToken.fontSizeSBold}
+            >
               {label}
             </ApTypography>
           </Row>
         </StyledLabel>
       )}
-      {showButton && onAction && type === "source" && (
+      {showButton && onAction && type === 'source' && (
         <StyledWrapper $position={position}>
-          <StyledLine $isVertical={isVertical} $selected={selected} $size={label ? "60px" : "16px"} />
-          <div className="nodrag nopan" style={{ pointerEvents: "auto" }}>
+          <StyledLine
+            $isVertical={isVertical}
+            $selected={selected}
+            $size={label ? '60px' : '16px'}
+          />
+          <div className="nodrag nopan" style={{ pointerEvents: 'auto' }}>
             <AddButton onAction={handleButtonClick} />
           </div>
         </StyledWrapper>
@@ -188,8 +202,8 @@ export const ButtonHandle = memo(ButtonHandleBase);
 export interface ButtonHandleConfig {
   /** Is of type string but `ButtonHandleId` should be used for reserved ids */
   id: string;
-  type: "source" | "target";
-  handleType: "artifact" | "input" | "output";
+  type: 'source' | 'target';
+  handleType: 'artifact' | 'input' | 'output';
   label?: string;
   labelIcon?: React.ReactNode;
   showButton?: boolean;
@@ -232,7 +246,13 @@ const ButtonHandlesBase = ({
    * ({ showAddButton, selected }) => showAddButton && selected
    * ```
    */
-  shouldShowAddButtonFn?: ({ showAddButton, selected }: { showAddButton: boolean; selected: boolean }) => boolean;
+  shouldShowAddButtonFn?: ({
+    showAddButton,
+    selected,
+  }: {
+    showAddButton: boolean;
+    selected: boolean;
+  }) => boolean;
 }) => {
   const total = handles.length;
   const finalSelected = shouldShowAddButtonFn({ showAddButton, selected });

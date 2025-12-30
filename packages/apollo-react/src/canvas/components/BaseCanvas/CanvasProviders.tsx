@@ -1,14 +1,14 @@
-import type { ReactNode } from "react";
-import type { Edge, Node } from "@uipath/uix/xyflow/react";
-import { ConnectedHandlesProvider } from "./ConnectedHandlesContext";
-import { BaseCanvasModeProvider } from "./BaseCanvasModeProvider";
-import { SelectionStateProvider } from "./SelectionStateContext";
-import type { BaseCanvasProps } from "./BaseCanvas.types";
+import type { ReactNode } from 'react';
+import type { Edge, Node } from '@uipath/uix/xyflow/react';
+import { ConnectedHandlesProvider } from './ConnectedHandlesContext';
+import { BaseCanvasModeProvider } from './BaseCanvasModeProvider';
+import { SelectionStateProvider } from './SelectionStateContext';
+import type { BaseCanvasProps } from './BaseCanvas.types';
 
 interface CanvasProvidersProps {
   nodes: Node[];
   edges: Edge[];
-  mode: BaseCanvasProps["mode"];
+  mode: BaseCanvasProps['mode'];
   children: ReactNode;
 }
 

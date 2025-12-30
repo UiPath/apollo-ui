@@ -1,4 +1,4 @@
-import type { BaseNodeData } from "../BaseNode/BaseNode.types";
+import type { BaseNodeData } from '../BaseNode/BaseNode.types';
 
 export interface GroupNodeData extends BaseNodeData {
   /** The title displayed in the group header */

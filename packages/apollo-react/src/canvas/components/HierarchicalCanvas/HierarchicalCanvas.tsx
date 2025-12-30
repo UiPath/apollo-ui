@@ -1,7 +1,7 @@
-import type React from "react";
-import { useEffect, useCallback, useMemo, useRef, useState } from "react";
-import { Panel, applyNodeChanges, applyEdgeChanges } from "@uipath/uix/xyflow/react";
-import { prefersReducedMotion } from "../../utils/transitions";
+import type React from 'react';
+import { useEffect, useCallback, useMemo, useRef, useState } from 'react';
+import { Panel, applyNodeChanges, applyEdgeChanges } from '@uipath/uix/xyflow/react';
+import { prefersReducedMotion } from '../../utils/transitions';
 import type {
   Node,
   Edge,
@@ -17,8 +17,8 @@ import type {
   EdgeChange,
   ReactFlowInstance,
   NodeTypes,
-} from "@uipath/uix/xyflow/react";
-import { BaseCanvas, type BaseCanvasRef } from "../BaseCanvas";
+} from '@uipath/uix/xyflow/react';
+import { BaseCanvas, type BaseCanvasRef } from '../BaseCanvas';
 import {
   useCanvasStore,
   selectCurrentCanvas,
@@ -26,41 +26,41 @@ import {
   selectCanvasActions,
   selectPreviousCanvas,
   selectTransitionState,
-} from "../../stores/canvasStore";
-import { viewportManager } from "../../stores/viewportManager";
-import { animatedViewportManager } from "../../stores/animatedViewportManager";
-import { Breadcrumb } from "@uipath/uix/core";
-import { ApIcon, ApProgressSpinner } from "@uipath/portal-shell-react";
-import { CanvasPositionControls } from "../CanvasPositionControls";
-import { useNodeRegistrations } from "../BaseNode/useNodeTypeRegistry";
-import { BaseNode } from "../BaseNode";
-import { BlankCanvasNode } from "../BlankCanvasNode";
-import { AddNodePreview } from "../AddNodePanel/AddNodePreview";
-import { AddNodeManager } from "../AddNodePanel/AddNodeManager";
-import { MiniCanvasNavigator } from "../MiniCanvasNavigator";
-import { shallow } from "zustand/shallow";
-import { PREVIEW_EDGE_ID, PREVIEW_NODE_ID } from "../../constants";
-import { useAddNodeOnConnectEnd } from "../../hooks/useAddNodeOnConnectEnd";
-import { DefaultCanvasTranslations } from "../../types";
+} from '../../stores/canvasStore';
+import { viewportManager } from '../../stores/viewportManager';
+import { animatedViewportManager } from '../../stores/animatedViewportManager';
+import { Breadcrumb } from '@uipath/uix/core';
+import { ApIcon, ApProgressSpinner } from '@uipath/portal-shell-react';
+import { CanvasPositionControls } from '../CanvasPositionControls';
+import { useNodeRegistrations } from '../BaseNode/useNodeTypeRegistry';
+import { BaseNode } from '../BaseNode';
+import { BlankCanvasNode } from '../BlankCanvasNode';
+import { AddNodePreview } from '../AddNodePanel/AddNodePreview';
+import { AddNodeManager } from '../AddNodePanel/AddNodeManager';
+import { MiniCanvasNavigator } from '../MiniCanvasNavigator';
+import { shallow } from 'zustand/shallow';
+import { PREVIEW_EDGE_ID, PREVIEW_NODE_ID } from '../../constants';
+import { useAddNodeOnConnectEnd } from '../../hooks/useAddNodeOnConnectEnd';
+import { DefaultCanvasTranslations } from '../../types';
 
 interface HierarchicalCanvasProps {
-  mode?: "view" | "design" | "readonly";
+  mode?: 'view' | 'design' | 'readonly';
 }
 
 // Default node type mapping
 const DEFAULT_NODE_TYPES = {
   default: BaseNode,
-  "blank-canvas-node": BlankCanvasNode,
+  'blank-canvas-node': BlankCanvasNode,
   preview: AddNodePreview,
 } as const;
 
-export const HierarchicalCanvas: React.FC<HierarchicalCanvasProps> = ({ mode = "design" }) => {
+export const HierarchicalCanvas: React.FC<HierarchicalCanvasProps> = ({ mode = 'design' }) => {
   const canvasRef = useRef<BaseCanvasRef>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [reactFlowInstance, setReactFlowInstance] = useState<ReactFlowInstance | null>(null);
   const currentViewportRef = useRef<Viewport>({ x: 0, y: 0, zoom: 1 });
   const lastCanvasIdRef = useRef<string | null>(null);
-  const shouldAnimate = mode === "design" && !prefersReducedMotion();
+  const shouldAnimate = mode === 'design' && !prefersReducedMotion();
 
   // Build node types mapping from registrations and defaults
   const nodeRegistrations = useNodeRegistrations();
@@ -170,9 +170,11 @@ export const HierarchicalCanvas: React.FC<HierarchicalCanvasProps> = ({ mode = "
 
       // Only update if selection actually changed
       const nodeIdsChanged =
-        nodeIds.length !== currentCanvas.selection.nodeIds.length || !nodeIds.every((id) => currentCanvas.selection.nodeIds.includes(id));
+        nodeIds.length !== currentCanvas.selection.nodeIds.length ||
+        !nodeIds.every((id) => currentCanvas.selection.nodeIds.includes(id));
       const edgeIdsChanged =
-        edgeIds.length !== currentCanvas.selection.edgeIds.length || !edgeIds.every((id) => currentCanvas.selection.edgeIds.includes(id));
+        edgeIds.length !== currentCanvas.selection.edgeIds.length ||
+        !edgeIds.every((id) => currentCanvas.selection.edgeIds.includes(id));
 
       if (nodeIdsChanged || edgeIdsChanged) {
         actions.updateSelection(nodeIds, edgeIds);
@@ -245,7 +247,10 @@ export const HierarchicalCanvas: React.FC<HierarchicalCanvasProps> = ({ mode = "
   );
 
   const maintainNodesInView = useMemo(
-    () => (currentCanvas?.nodes?.length === 1 && currentCanvas?.nodes[0]?.id === "blank-canvas-node" ? ["blank-canvas-node"] : undefined),
+    () =>
+      currentCanvas?.nodes?.length === 1 && currentCanvas?.nodes[0]?.id === 'blank-canvas-node'
+        ? ['blank-canvas-node']
+        : undefined,
     [currentCanvas]
   );
 
@@ -271,11 +276,11 @@ export const HierarchicalCanvas: React.FC<HierarchicalCanvasProps> = ({ mode = "
     return (
       <div
         style={{
-          height: "100vh",
-          width: "100vw",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
+          height: '100vh',
+          width: '100vw',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
         }}
       >
         <ApProgressSpinner />
@@ -286,25 +291,31 @@ export const HierarchicalCanvas: React.FC<HierarchicalCanvasProps> = ({ mode = "
   return (
     <div
       ref={containerRef}
-      style={{ width: "100%", height: "100%", position: "relative", background: "var(--uix-canvas-background-secondary)" }}
+      style={{
+        width: '100%',
+        height: '100%',
+        position: 'relative',
+        background: 'var(--uix-canvas-background-secondary)',
+      }}
     >
       {breadcrumbs.length > 1 && (
         <div
           style={{
-            position: "absolute",
+            position: 'absolute',
             top: 16,
             left: 16,
             zIndex: 10,
-            background: "var(--uix-canvas-background)",
-            borderRadius: "8px",
-            padding: "8px 12px",
-            boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
+            background: 'var(--uix-canvas-background)',
+            borderRadius: '8px',
+            padding: '8px 12px',
+            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
           }}
         >
           <Breadcrumb
             items={breadcrumbs.map((crumb, index) => ({
               label: crumb.name,
-              onClick: index < breadcrumbs.length - 1 ? () => handleNavigateToDepth(index) : undefined,
+              onClick:
+                index < breadcrumbs.length - 1 ? () => handleNavigateToDepth(index) : undefined,
               startAdornment: index === 0 ? <ApIcon name="home" /> : undefined,
             }))}
             delimiter={<ApIcon name="chevron_right" />}
@@ -315,7 +326,7 @@ export const HierarchicalCanvas: React.FC<HierarchicalCanvasProps> = ({ mode = "
       {previousCanvas && (
         <div
           style={{
-            position: "absolute",
+            position: 'absolute',
             bottom: 16,
             left: 16,
             zIndex: 10,

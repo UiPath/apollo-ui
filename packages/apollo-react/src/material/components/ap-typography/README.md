@@ -44,16 +44,16 @@ import { FontVariantToken } from '@uipath/apollo-react/core';
 
 Apollo variants map to MUI variants and HTML elements:
 
-| Apollo Variant | MUI Variant | HTML Element |
-|----------------|-------------|--------------|
-| fontSizeH1, fontSizeH1Bold, fontSizeHero | h1 | `<h1>` |
-| fontSizeH2, fontSizeH2Bold | h2 | `<h2>` |
-| fontSizeH3, fontSizeH3Bold | h3 | `<h3>` |
-| fontSizeH4, fontSizeH4Bold, fontBrandH4 | h4 | `<h4>` |
-| fontSizeL, fontSizeLBold, fontBrandL | body1 | `<p>` |
-| fontSizeM, fontSizeMBold, fontSizeLink | body2 | `<span>` |
-| fontSizeS, fontSizeXs (and Bold) | caption | `<span>` |
-| fontMono* | body2 | `<code>` |
+| Apollo Variant                           | MUI Variant | HTML Element |
+| ---------------------------------------- | ----------- | ------------ |
+| fontSizeH1, fontSizeH1Bold, fontSizeHero | h1          | `<h1>`       |
+| fontSizeH2, fontSizeH2Bold               | h2          | `<h2>`       |
+| fontSizeH3, fontSizeH3Bold               | h3          | `<h3>`       |
+| fontSizeH4, fontSizeH4Bold, fontBrandH4  | h4          | `<h4>`       |
+| fontSizeL, fontSizeLBold, fontBrandL     | body1       | `<p>`        |
+| fontSizeM, fontSizeMBold, fontSizeLink   | body2       | `<span>`     |
+| fontSizeS, fontSizeXs (and Bold)         | caption     | `<span>`     |
+| fontMono\*                               | body2       | `<code>`     |
 
 ## Props
 

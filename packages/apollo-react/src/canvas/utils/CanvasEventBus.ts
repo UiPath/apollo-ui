@@ -1,15 +1,15 @@
 // Canvas Event Bus - Type-safe global event system
 export interface CanvasEvents {
-  "handle:action": CanvasHandleActionEvent;
-  "node:select": { nodeId: string };
-  "node:delete": { nodeId: string };
+  'handle:action': CanvasHandleActionEvent;
+  'node:select': { nodeId: string };
+  'node:delete': { nodeId: string };
 }
 
 export interface CanvasHandleActionEvent {
   handleId: string;
   nodeId: string;
-  handleType: "artifact" | "input" | "output";
-  position: "top" | "bottom" | "left" | "right";
+  handleType: 'artifact' | 'input' | 'output';
+  position: 'top' | 'bottom' | 'left' | 'right';
   timestamp?: number; // Added automatically by event bus
 }
 

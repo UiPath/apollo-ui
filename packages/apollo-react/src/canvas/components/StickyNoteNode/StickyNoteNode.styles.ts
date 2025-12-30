@@ -1,6 +1,6 @@
-import styled from "@emotion/styled";
-import { css } from "@emotion/react";
-import { motion } from "motion/react";
+import styled from '@emotion/styled';
+import { css } from '@emotion/react';
+import { motion } from 'motion/react';
 
 // Sticky notes must be below edges (z-index: 0). We use -10 instead of -1 to allow for future layers between sticky notes and edges if needed.
 export const STICKY_NOTE_BELOW_EDGE_Z_INDEX = -10;
@@ -11,11 +11,11 @@ export const RESIZE_CONTROL_Z_INDEX = 100;
 export const stickyNoteGlobalStyles = css`
   /* Override React Flow's elevateNodesOnSelect behavior for sticky notes */
   /* Edges have z-index: 0, so we use STICKY_NOTE_BELOW_EDGE_Z_INDEX to ensure sticky notes are below edges */
-  .react-flow__node[data-id^="sticky-"] {
+  .react-flow__node[data-id^='sticky-'] {
     z-index: ${STICKY_NOTE_BELOW_EDGE_Z_INDEX} !important;
   }
 
-  .react-flow__node.selected[data-id^="sticky-"] {
+  .react-flow__node.selected[data-id^='sticky-'] {
     z-index: ${STICKY_NOTE_BELOW_EDGE_Z_INDEX} !important;
   }
 `;
@@ -38,12 +38,15 @@ export const StickyNoteContainer = styled.div<{
   border-radius: 16px;
   border: 2px solid ${(props) => props.borderColor};
   padding: 16px;
-  cursor: ${(props) => (props.isEditing ? "text" : "move")};
+  cursor: ${(props) => (props.isEditing ? 'text' : 'move')};
   position: relative;
   /* Ensure resize handles are clickable */
   pointer-events: auto;
 
-  outline: ${(props) => (props.selected ? `4px solid color-mix(in srgb, ${props.borderColor} 40%, transparent)` : "none")};
+  outline: ${(props) =>
+    props.selected
+      ? `4px solid color-mix(in srgb, ${props.borderColor} 40%, transparent)`
+      : 'none'};
 
   &:hover {
     outline: ${(props) => `4px solid color-mix(in srgb, ${props.borderColor} 40%, transparent)`};
@@ -57,13 +60,14 @@ export const StickyNoteTextArea = styled.textarea<{ isEditing: boolean }>`
   border: none;
   outline: none;
   resize: none;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   font-size: 14px;
   line-height: 1.5;
   color: var(--uix-canvas-foreground);
-  cursor: ${(props) => (props.isEditing ? "text" : "move")};
-  user-select: ${(props) => (props.isEditing ? "text" : "none")};
-  pointer-events: ${(props) => (props.isEditing ? "auto" : "none")};
+  cursor: ${(props) => (props.isEditing ? 'text' : 'move')};
+  user-select: ${(props) => (props.isEditing ? 'text' : 'none')};
+  pointer-events: ${(props) => (props.isEditing ? 'auto' : 'none')};
   overflow-y: auto;
 
   &::placeholder {
@@ -81,7 +85,8 @@ export const StickyNoteMarkdown = styled.div`
   width: 100%;
   height: 100%;
   overflow-y: auto;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   font-size: 14px;
   line-height: 1.5;
   color: var(--uix-canvas-foreground);
@@ -108,7 +113,8 @@ export const StickyNoteMarkdown = styled.div`
     background: rgba(0, 0, 0, 0.1);
     padding: 2px 4px;
     border-radius: 3px;
-    font-family: "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, "Courier New", monospace;
+    font-family:
+      'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
     font-size: 0.9em;
   }
 
@@ -180,7 +186,7 @@ export const ResizeHandle = styled.div<{ selected?: boolean; cursor?: string }>`
   bottom: 0;
   width: 20px;
   height: 20px;
-  cursor: ${(props) => props.cursor || "nwse-resize"};
+  cursor: ${(props) => props.cursor || 'nwse-resize'};
   opacity: ${(props) => (props.selected ? 1 : 0)};
   transition: opacity 0.2s ease;
   z-index: 10;
@@ -195,7 +201,7 @@ export const TopCornerIndicators = styled.div<{ selected?: boolean }>`
 
   /* Top-left corner */
   &::before {
-    content: "";
+    content: '';
     position: absolute;
     top: -5px;
     left: -5px;
@@ -208,7 +214,7 @@ export const TopCornerIndicators = styled.div<{ selected?: boolean }>`
 
   /* Top-right corner */
   &::after {
-    content: "";
+    content: '';
     position: absolute;
     top: -5px;
     right: -5px;
@@ -228,7 +234,7 @@ export const BottomCornerIndicators = styled.div<{ selected?: boolean }>`
 
   /* Bottom-left corner */
   &::before {
-    content: "";
+    content: '';
     position: absolute;
     bottom: -5px;
     left: -5px;
@@ -241,7 +247,7 @@ export const BottomCornerIndicators = styled.div<{ selected?: boolean }>`
 
   /* Bottom-right corner */
   &::after {
-    content: "";
+    content: '';
     position: absolute;
     bottom: -5px;
     right: -5px;

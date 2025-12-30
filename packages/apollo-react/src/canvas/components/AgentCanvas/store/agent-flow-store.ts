@@ -1,7 +1,14 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
-import { addEdge, applyEdgeChanges, applyNodeChanges, type Connection, type EdgeChange, type NodeChange } from "@uipath/uix/xyflow/react";
-import { createStore, useStore } from "zustand";
-import { BASE_CANVAS_DEFAULTS, FLOW_LAYOUT } from "../../BaseCanvas/BaseCanvas.constants";
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import {
+  addEdge,
+  applyEdgeChanges,
+  applyNodeChanges,
+  type Connection,
+  type EdgeChange,
+  type NodeChange,
+} from '@uipath/uix/xyflow/react';
+import { createStore, useStore } from 'zustand';
+import { BASE_CANVAS_DEFAULTS, FLOW_LAYOUT } from '../../BaseCanvas/BaseCanvas.constants';
 import {
   type AgentFlowCustomEdge,
   type AgentFlowCustomNode,
@@ -14,11 +21,16 @@ import {
   type AgentFlowResourceType,
   isAgentFlowAgentNode,
   isAgentFlowResourceNode,
-} from "../../../types";
-import { autoArrangeNodes, RESOURCE_NODE_SIZE } from "../../../utils/auto-layout";
-import { computeNodesAndEdges, computeSuggestionNodesAndEdges, NODE_ID_DELIMITER, createResourceEdge } from "../../../utils/props-helpers";
-import { addAnimationClasses, removeAnimationClasses } from "../../../utils/resource-operations";
-import { ResourceNodeType } from "../AgentFlow.constants";
+} from '../../../types';
+import { autoArrangeNodes, RESOURCE_NODE_SIZE } from '../../../utils/auto-layout';
+import {
+  computeNodesAndEdges,
+  computeSuggestionNodesAndEdges,
+  NODE_ID_DELIMITER,
+  createResourceEdge,
+} from '../../../utils/props-helpers';
+import { addAnimationClasses, removeAnimationClasses } from '../../../utils/resource-operations';
+import { ResourceNodeType } from '../AgentFlow.constants';
 
 /**
  * Creates virtual spacing nodes for balanced fit view
@@ -31,43 +43,43 @@ const createVirtualNodes = (agentNode: AgentFlowCustomNode): AgentFlowResourceNo
 
   return [
     {
-      id: "__virtual_top__",
-      type: "resource",
+      id: '__virtual_top__',
+      type: 'resource',
       position: {
         x: agentCenterX - RESOURCE_NODE_SIZE / 2,
         y: agentNode.position.y - FLOW_LAYOUT.groupDistanceVertical - RESOURCE_NODE_SIZE,
       },
       data: {
         type: ResourceNodeType.MemorySpace,
-        name: "",
-        description: "",
+        name: '',
+        description: '',
         isVirtual: true,
       },
       width: RESOURCE_NODE_SIZE,
       height: RESOURCE_NODE_SIZE,
       style: {
         opacity: 0,
-        pointerEvents: "none",
+        pointerEvents: 'none',
       },
       draggable: false,
       selectable: false,
     },
     {
-      id: "__virtual_bottom__",
-      type: "resource",
+      id: '__virtual_bottom__',
+      type: 'resource',
       position: {
         x: agentCenterX - RESOURCE_NODE_SIZE / 2,
         y: agentNode.position.y + agentHeight + FLOW_LAYOUT.groupDistanceVertical,
       },
       data: {
         type: ResourceNodeType.Context,
-        name: "",
-        description: "",
+        name: '',
+        description: '',
         isVirtual: true,
       },
       width: RESOURCE_NODE_SIZE,
       height: RESOURCE_NODE_SIZE,
-      style: { opacity: 0, pointerEvents: "none" },
+      style: { opacity: 0, pointerEvents: 'none' },
       draggable: false,
       selectable: false,
     },
@@ -80,8 +92,8 @@ const getSelectedNodeId = (props: AgentFlowProps, state: AgentFlowStore): string
 
   // If no initial selected resource, auto-select the agent node
   if (!initialSelectedResource) {
-    onSelectResource?.("agent");
-    return "agent";
+    onSelectResource?.('agent');
+    return 'agent';
   }
 
   const node = nodes.find(
@@ -103,24 +115,37 @@ const clearNodeAnimations = (node: AgentFlowCustomNode): AgentFlowCustomNode => 
   return { ...node, style: cleanStyle };
 };
 
-const shouldCreateSpacing = (insertIndex: number, siblingCount: number, originalIndex?: number): boolean => {
+const shouldCreateSpacing = (
+  insertIndex: number,
+  siblingCount: number,
+  originalIndex?: number
+): boolean => {
   const isInsertingBetween = insertIndex > 0 && insertIndex < siblingCount;
   const isMovingToEdge =
-    originalIndex !== undefined && (insertIndex === 0 || insertIndex === siblingCount) && originalIndex !== insertIndex;
+    originalIndex !== undefined &&
+    (insertIndex === 0 || insertIndex === siblingCount) &&
+    originalIndex !== insertIndex;
   return isInsertingBetween || isMovingToEdge;
 };
 
 const hasExistingSpacing = (
   nodes: AgentFlowCustomNode[],
-  draggedNodeType: AgentFlowResourceNodeData["type"],
+  draggedNodeType: AgentFlowResourceNodeData['type'],
   draggedNodeId: string
 ): boolean => {
   return nodes.some(
-    (node) => isAgentFlowResourceNode(node) && node.data.type === draggedNodeType && node.id !== draggedNodeId && node.data.originalPosition
+    (node) =>
+      isAgentFlowResourceNode(node) &&
+      node.data.type === draggedNodeType &&
+      node.id !== draggedNodeId &&
+      node.data.originalPosition
   );
 };
 
-const applyTransitionToNode = (node: AgentFlowCustomNode, draggedNodeId: string): AgentFlowCustomNode => {
+const applyTransitionToNode = (
+  node: AgentFlowCustomNode,
+  draggedNodeId: string
+): AgentFlowCustomNode => {
   if (node.style?.transition || node.id === draggedNodeId) return node;
   return {
     ...node,
@@ -152,9 +177,12 @@ const calculateSpacingPositions = (
 
       if (isVertical) {
         const baseY =
-          agentCenterY - nodeHeight / 2 + (index + (insertIndex === 0 ? 1 : 0) - siblingNodes.length / 2) * FLOW_LAYOUT.groupSpacing;
+          agentCenterY -
+          nodeHeight / 2 +
+          (index + (insertIndex === 0 ? 1 : 0) - siblingNodes.length / 2) *
+            FLOW_LAYOUT.groupSpacing;
 
-        if (draggedNode.data.type === "tool") {
+        if (draggedNode.data.type === 'tool') {
           positions[node.id] = {
             x: agentNode.position.x + agentWidth + FLOW_LAYOUT.groupDistanceHorizontal,
             y: baseY,
@@ -167,10 +195,13 @@ const calculateSpacingPositions = (
         }
       } else {
         const baseX =
-          agentCenterX - nodeWidth / 2 + (index + (insertIndex === 0 ? 1 : 0) - siblingNodes.length / 2) * FLOW_LAYOUT.groupSpacing;
+          agentCenterX -
+          nodeWidth / 2 +
+          (index + (insertIndex === 0 ? 1 : 0) - siblingNodes.length / 2) *
+            FLOW_LAYOUT.groupSpacing;
 
         // escalation
-        if (draggedNode.data.type === "escalation") {
+        if (draggedNode.data.type === 'escalation') {
           positions[node.id] = {
             x: baseX,
             y: agentNode.position.y - nodeHeight - FLOW_LAYOUT.groupDistanceVertical,
@@ -207,10 +238,13 @@ const calculateSpacingPositions = (
     const nodeHeight = node.measured?.height ?? node.height ?? 0;
 
     if (isVertical) {
-      const baseY = agentCenterY - nodeHeight / 2 + (index - (previewOrder.length - 1) / 2) * FLOW_LAYOUT.groupSpacing;
+      const baseY =
+        agentCenterY -
+        nodeHeight / 2 +
+        (index - (previewOrder.length - 1) / 2) * FLOW_LAYOUT.groupSpacing;
 
       // tool
-      if (draggedNode.data.type === "tool") {
+      if (draggedNode.data.type === 'tool') {
         positions[node.id] = {
           x: agentNode.position.x + agentWidth + FLOW_LAYOUT.groupDistanceHorizontal,
           y: baseY,
@@ -223,10 +257,13 @@ const calculateSpacingPositions = (
         };
       }
     } else {
-      const baseX = agentCenterX - nodeWidth / 2 + (index - (previewOrder.length - 1) / 2) * FLOW_LAYOUT.groupSpacing;
+      const baseX =
+        agentCenterX -
+        nodeWidth / 2 +
+        (index - (previewOrder.length - 1) / 2) * FLOW_LAYOUT.groupSpacing;
 
       // escalation
-      if (draggedNode.data.type === "escalation") {
+      if (draggedNode.data.type === 'escalation') {
         positions[node.id] = {
           x: baseX,
           y: agentNode.position.y - nodeHeight - FLOW_LAYOUT.groupDistanceVertical,
@@ -282,10 +319,15 @@ const createCollapseState = (
   nodes: AgentFlowCustomNode[],
   edges: AgentFlowCustomEdge[],
   draggedNodeId: string,
-  draggedNodeType: AgentFlowResourceNodeData["type"]
+  draggedNodeType: AgentFlowResourceNodeData['type']
 ): { nodes: AgentFlowCustomNode[]; edges: AgentFlowCustomEdge[] } => {
   const collapsedNodes = nodes.map((node) => {
-    if (!isAgentFlowResourceNode(node) || node.data.type !== draggedNodeType || node.id === draggedNodeId || !node.data.originalPosition) {
+    if (
+      !isAgentFlowResourceNode(node) ||
+      node.data.type !== draggedNodeType ||
+      node.id === draggedNodeId ||
+      !node.data.originalPosition
+    ) {
       return node;
     }
 
@@ -318,12 +360,18 @@ interface AgentFlowStore {
 
   // selection & UI
   selectedNodeId: string | null;
-  setSelectedNodeId: (nodeId: string | null, options?: { skipPlaceholderClickHandler?: boolean }) => void;
+  setSelectedNodeId: (
+    nodeId: string | null,
+    options?: { skipPlaceholderClickHandler?: boolean }
+  ) => void;
   openMenuNodeId: string | null;
   setOpenMenuNodeId: (nodeId: string | null) => void;
 
   // nodes
-  updateNode: <T extends AgentFlowCustomNode>(nodeId: string, updates: AgentFlowNodeDataUpdate<T>) => void;
+  updateNode: <T extends AgentFlowCustomNode>(
+    nodeId: string,
+    updates: AgentFlowNodeDataUpdate<T>
+  ) => void;
   deleteNode: (nodeId: string) => void;
   reorderNodes: (draggedNodeId: string, targetNodeId: string) => void;
   insertNodeAfter: (draggedNodeId: string, targetNodeId: string) => void;
@@ -366,8 +414,8 @@ interface AgentFlowStore {
   collapseAgent: (resourceId: string) => void;
 
   // autopilot suggestions
-  actOnSuggestion: (suggestionId: string, action: "accept" | "reject") => void;
-  actOnSuggestionGroup: (suggestionGroupId: string, action: "accept" | "reject") => void;
+  actOnSuggestion: (suggestionId: string, action: 'accept' | 'reject') => void;
+  actOnSuggestionGroup: (suggestionGroupId: string, action: 'accept' | 'reject') => void;
   currentSuggestionIndex: number;
   setCurrentSuggestionIndex: (index: number) => void;
   navigateToNextSuggestion: () => void;
@@ -377,27 +425,32 @@ interface AgentFlowStore {
   createResourcePlaceholder: (type: AgentFlowResourceType) => void;
 }
 
-export const hasResourceNode = (node: AgentFlowCustomNode, resource: AgentFlowResource) => node?.id?.endsWith(`:${resource.id}`);
+export const hasResourceNode = (node: AgentFlowCustomNode, resource: AgentFlowResource) =>
+  node?.id?.endsWith(`:${resource.id}`);
 
 /**
  * Helper function to find the node corresponding to a suggestion
  */
 const findNodeForSuggestion = (
-  suggestion: NonNullable<AgentFlowProps["suggestionGroup"]>["suggestions"][number],
-  suggestionGroup: AgentFlowProps["suggestionGroup"],
+  suggestion: NonNullable<AgentFlowProps['suggestionGroup']>['suggestions'][number],
+  suggestionGroup: AgentFlowProps['suggestionGroup'],
   nodes: AgentFlowCustomNode[]
 ): AgentFlowCustomNode | null => {
   if (!suggestion) return null;
 
   // For 'add' type suggestions, find node by suggestionId
-  if (suggestion.type === "add") {
-    return nodes.find((node) => isAgentFlowResourceNode(node) && node.data.suggestionId === suggestion.id) ?? null;
+  if (suggestion.type === 'add') {
+    return (
+      nodes.find(
+        (node) => isAgentFlowResourceNode(node) && node.data.suggestionId === suggestion.id
+      ) ?? null
+    );
   }
 
   // For 'update' type suggestions, find node by resourceId
-  if (suggestion.type === "update" && suggestion.resourceId) {
+  if (suggestion.type === 'update' && suggestion.resourceId) {
     // Check if this is an agent node update
-    if (suggestion.resourceId === "agent") {
+    if (suggestion.resourceId === 'agent') {
       return nodes.find((node) => isAgentFlowAgentNode(node)) ?? null;
     }
 
@@ -405,18 +458,18 @@ const findNodeForSuggestion = (
     return (
       nodes.find((node) => {
         if (!isAgentFlowResourceNode(node)) return false;
-        const resourceId = node.id.split(":").pop();
+        const resourceId = node.id.split(':').pop();
         return resourceId === suggestion.resourceId;
       }) ?? null
     );
   }
 
   // For 'delete' type suggestions, find node by resourceIdToDelete
-  if (suggestion.type === "delete" && suggestion.resourceIdToDelete) {
+  if (suggestion.type === 'delete' && suggestion.resourceIdToDelete) {
     return (
       nodes.find((node) => {
         if (!isAgentFlowResourceNode(node)) return false;
-        const resourceId = node.id.split(":").pop();
+        const resourceId = node.id.split(':').pop();
         return resourceId === suggestion.resourceIdToDelete;
       }) ?? null
     );
@@ -433,7 +486,11 @@ const computeNodesAndEdgesWithSuggestions = (
   existingNodes?: AgentFlowCustomNode[]
 ): { nodes: AgentFlowCustomNode[]; edges: AgentFlowCustomEdge[] } => {
   // First compute the base nodes and edges, preserving order from existing nodes
-  const { nodes: baseNodes, edges: baseEdges } = computeNodesAndEdges(props, undefined, existingNodes);
+  const { nodes: baseNodes, edges: baseEdges } = computeNodesAndEdges(
+    props,
+    undefined,
+    existingNodes
+  );
 
   // Find the agent node
   const agentNode = baseNodes.find(isAgentFlowAgentNode);
@@ -462,9 +519,9 @@ const computeNodesAndEdgesWithSuggestions = (
   const markedNodes = baseNodes.map((node) => {
     // Check if this node has an update or delete suggestion
     for (const suggestion of props.suggestionGroup!.suggestions) {
-      if (suggestion.type === "update" && suggestion.resourceId) {
+      if (suggestion.type === 'update' && suggestion.resourceId) {
         // Check if this is the agent node
-        if (isAgentFlowAgentNode(node) && suggestion.resourceId === "agent") {
+        if (isAgentFlowAgentNode(node) && suggestion.resourceId === 'agent') {
           return {
             ...node,
             data: {
@@ -472,7 +529,7 @@ const computeNodesAndEdgesWithSuggestions = (
               suggestionVersion: props.suggestionGroup?.metadata?.version,
               isSuggestion: !suggestion.isStandalone,
               suggestionId: suggestion.id,
-              suggestionType: "update" as const,
+              suggestionType: 'update' as const,
               isPlaceholder: false,
               // Store processing state for agent node suggestions
               // hasRunning: suggestion.isProcessing,
@@ -482,7 +539,7 @@ const computeNodesAndEdgesWithSuggestions = (
 
         // Check if this node matches the resource ID
         if (isAgentFlowResourceNode(node)) {
-          const resourceId = node.id.split(":").pop();
+          const resourceId = node.id.split(':').pop();
           if (resourceId === suggestion.resourceId) {
             return {
               ...node,
@@ -491,7 +548,7 @@ const computeNodesAndEdgesWithSuggestions = (
                 suggestionVersion: props.suggestionGroup?.metadata?.version,
                 isSuggestion: !suggestion.isStandalone,
                 suggestionId: suggestion.id,
-                suggestionType: "update" as const,
+                suggestionType: 'update' as const,
                 isPlaceholder: false,
                 // If suggestion is processing, show running state
                 // hasRunning: suggestion.isProcessing,
@@ -499,10 +556,10 @@ const computeNodesAndEdgesWithSuggestions = (
             };
           }
         }
-      } else if (suggestion.type === "delete" && suggestion.resourceIdToDelete) {
+      } else if (suggestion.type === 'delete' && suggestion.resourceIdToDelete) {
         // Check if this node matches the resource ID to delete
         if (isAgentFlowResourceNode(node)) {
-          const resourceId = node.id.split(":").pop();
+          const resourceId = node.id.split(':').pop();
           if (resourceId === suggestion.resourceIdToDelete) {
             return {
               ...node,
@@ -511,7 +568,7 @@ const computeNodesAndEdgesWithSuggestions = (
                 suggestionVersion: props.suggestionGroup?.metadata?.version,
                 isSuggestion: !suggestion.isStandalone,
                 suggestionId: suggestion.id,
-                suggestionType: "delete" as const,
+                suggestionType: 'delete' as const,
                 isPlaceholder: false,
                 // If suggestion is processing, show running state
                 // hasRunning: suggestion.isProcessing,
@@ -534,7 +591,12 @@ const computeNodesAndEdgesWithSuggestions = (
   const allEdges = [...baseEdges, ...suggestionEdges];
 
   // Re-arrange nodes with suggestions
-  const arrangedNodes = autoArrangeNodes(allNodes, allEdges, props.agentNodePosition, props.resourceNodePositions);
+  const arrangedNodes = autoArrangeNodes(
+    allNodes,
+    allEdges,
+    props.agentNodePosition,
+    props.resourceNodePositions
+  );
 
   return {
     nodes: arrangedNodes,
@@ -544,7 +606,8 @@ const computeNodesAndEdgesWithSuggestions = (
 
 export const createAgentFlowStore = (initialProps: AgentFlowProps) =>
   createStore<AgentFlowStore>()((set, get) => {
-    const { nodes: initialNodes, edges: initialEdges } = computeNodesAndEdgesWithSuggestions(initialProps);
+    const { nodes: initialNodes, edges: initialEdges } =
+      computeNodesAndEdgesWithSuggestions(initialProps);
 
     return {
       // props state
@@ -560,21 +623,24 @@ export const createAgentFlowStore = (initialProps: AgentFlowProps) =>
         const resourcesAddedOrRemoved = addedIds.size > 0 || removedIds.size > 0;
 
         // Always recompute nodes and edges to handle any ID changes, preserving existing order
-        const { nodes: allNewNodes, edges: newEdges } = computeNodesAndEdgesWithSuggestions(newProps, state.nodes);
+        const { nodes: allNewNodes, edges: newEdges } = computeNodesAndEdgesWithSuggestions(
+          newProps,
+          state.nodes
+        );
 
         // Map old nodes to new nodes while preserving visual state (position, selection, style)
         const updatedNodes = allNewNodes.map((newNode) => {
           // Find corresponding old node
           const oldNode = state.nodes.find((oldNode) => {
             // Match agent nodes
-            if (newNode.type === "agent" && oldNode.type === "agent") {
+            if (newNode.type === 'agent' && oldNode.type === 'agent') {
               return newNode.data.parentNodeId === oldNode.data.parentNodeId;
             }
             // Match resource nodes by resource ID (extracted from node ID)
             if (isAgentFlowResourceNode(newNode) && isAgentFlowResourceNode(oldNode)) {
               // Extract resource ID from node ID (part after the last ':')
-              const newResourceId = newNode.id.split(":").pop();
-              const oldResourceId = oldNode.id.split(":").pop();
+              const newResourceId = newNode.id.split(':').pop();
+              const oldResourceId = oldNode.id.split(':').pop();
               return newResourceId === oldResourceId;
             }
             return false;
@@ -596,7 +662,9 @@ export const createAgentFlowStore = (initialProps: AgentFlowProps) =>
             const isFirstAddedResource =
               isAgentFlowResourceNode(newNode) &&
               [...addedIds][0] &&
-              newProps.resources.find((r) => r.id === [...addedIds][0] && hasResourceNode(newNode, r));
+              newProps.resources.find(
+                (r) => r.id === [...addedIds][0] && hasResourceNode(newNode, r)
+              );
 
             return {
               ...newNode,
@@ -611,21 +679,27 @@ export const createAgentFlowStore = (initialProps: AgentFlowProps) =>
         let firstNewNodeId: string | null = null;
         if (resourcesAddedOrRemoved) {
           // Find first added resource node
-          const firstAddedResource = addedIds.size > 0 ? updatedNodes.find((node) => node.selected) : null;
+          const firstAddedResource =
+            addedIds.size > 0 ? updatedNodes.find((node) => node.selected) : null;
           if (firstAddedResource) {
             firstNewNodeId = firstAddedResource.id;
           }
         }
 
         // Check if suggestionGroup changed and reset index if so
-        const suggestionGroupChanged = state.props.suggestionGroup?.id !== newProps.suggestionGroup?.id;
+        const suggestionGroupChanged =
+          state.props.suggestionGroup?.id !== newProps.suggestionGroup?.id;
         let newSuggestionIndex = state.currentSuggestionIndex;
 
         if (suggestionGroupChanged && newProps.suggestionGroup?.suggestions) {
           // Find the first non-standalone suggestion
-          const firstNonStandalone = newProps.suggestionGroup.suggestions.find((s) => !s.isStandalone);
+          const firstNonStandalone = newProps.suggestionGroup.suggestions.find(
+            (s) => !s.isStandalone
+          );
           if (firstNonStandalone) {
-            newSuggestionIndex = newProps.suggestionGroup.suggestions.findIndex((s) => s.id === firstNonStandalone.id);
+            newSuggestionIndex = newProps.suggestionGroup.suggestions.findIndex(
+              (s) => s.id === firstNonStandalone.id
+            );
           } else {
             newSuggestionIndex = 0; // Fallback if all are standalone
           }
@@ -660,17 +734,18 @@ export const createAgentFlowStore = (initialProps: AgentFlowProps) =>
         // Check if there was a standalone placeholder and a new resource was added
         if (addedIds.size > 0 && state.props.suggestionGroup) {
           const standalonePlaceholder = state.props.suggestionGroup.suggestions.find(
-            (s) => s.isStandalone && s.type === "add" && s.resource
+            (s) => s.isStandalone && s.type === 'add' && s.resource
           );
 
           if (standalonePlaceholder) {
             const placeholderResourceId = standalonePlaceholder.resource?.id;
             // A new resource was added that's not the placeholder itself
-            const nonPlaceholderResourceAdded = placeholderResourceId && !addedIds.has(placeholderResourceId) && addedIds.size > 0;
+            const nonPlaceholderResourceAdded =
+              placeholderResourceId && !addedIds.has(placeholderResourceId) && addedIds.size > 0;
 
             if (nonPlaceholderResourceAdded) {
               // Notify parent to remove the placeholder immediately
-              newProps.onActOnSuggestion?.(standalonePlaceholder.id, "accept");
+              newProps.onActOnSuggestion?.(standalonePlaceholder.id, 'accept');
             }
           }
         }
@@ -678,24 +753,33 @@ export const createAgentFlowStore = (initialProps: AgentFlowProps) =>
         // Auto-select newly created standalone placeholder nodes
         // Check if a new standalone placeholder was added to the suggestion group
         const oldStandalonePlaceholders =
-          state.props.suggestionGroup?.suggestions.filter((s) => s.isStandalone && s.type === "add" && s.resource) ?? [];
+          state.props.suggestionGroup?.suggestions.filter(
+            (s) => s.isStandalone && s.type === 'add' && s.resource
+          ) ?? [];
         const newStandalonePlaceholders =
-          newProps.suggestionGroup?.suggestions.filter((s) => s.isStandalone && s.type === "add" && s.resource) ?? [];
+          newProps.suggestionGroup?.suggestions.filter(
+            (s) => s.isStandalone && s.type === 'add' && s.resource
+          ) ?? [];
 
         if (newStandalonePlaceholders.length > oldStandalonePlaceholders.length) {
           // A new standalone placeholder was added, find it
-          const newPlaceholder = newStandalonePlaceholders.find((newP) => !oldStandalonePlaceholders.some((oldP) => oldP.id === newP.id));
+          const newPlaceholder = newStandalonePlaceholders.find(
+            (newP) => !oldStandalonePlaceholders.some((oldP) => oldP.id === newP.id)
+          );
 
           if (newPlaceholder && newPlaceholder.resource) {
             // Find the node for this placeholder
             const currentState = get();
             const placeholderNode = currentState.nodes.find(
-              (node) => isAgentFlowResourceNode(node) && node.data.suggestionId === newPlaceholder.id
+              (node) =>
+                isAgentFlowResourceNode(node) && node.data.suggestionId === newPlaceholder.id
             );
 
             if (placeholderNode) {
               // Select the placeholder node, but skip triggering the click handler
-              currentState.setSelectedNodeId(placeholderNode.id, { skipPlaceholderClickHandler: true });
+              currentState.setSelectedNodeId(placeholderNode.id, {
+                skipPlaceholderClickHandler: true,
+              });
               newProps.onSelectResource?.(placeholderNode.id);
             }
           }
@@ -717,10 +801,16 @@ export const createAgentFlowStore = (initialProps: AgentFlowProps) =>
         // Check if this is a standalone placeholder node
         if (selectedNode && isAgentFlowResourceNode(selectedNode)) {
           const isStandalonePlaceholder =
-            !selectedNode.data.isSuggestion && selectedNode.data.suggestionId && selectedNode.data.isPlaceholder;
+            !selectedNode.data.isSuggestion &&
+            selectedNode.data.suggestionId &&
+            selectedNode.data.isPlaceholder;
 
           // Only trigger the click handler if not skipped (i.e., this is a real user click)
-          if (isStandalonePlaceholder && !options?.skipPlaceholderClickHandler && state.props.onPlaceholderNodeClick) {
+          if (
+            isStandalonePlaceholder &&
+            !options?.skipPlaceholderClickHandler &&
+            state.props.onPlaceholderNodeClick
+          ) {
             // Trigger the placeholder click handler
             state.props.onPlaceholderNodeClick(selectedNode.data.type, selectedNode.data);
             // Don't select the node - just trigger the handler and return
@@ -730,13 +820,21 @@ export const createAgentFlowStore = (initialProps: AgentFlowProps) =>
 
         // Check if the selected node is a non-standalone suggestion node and update the index
         let newSuggestionIndex = state.currentSuggestionIndex;
-        if (selectedNode && isAgentFlowResourceNode(selectedNode) && selectedNode.data.suggestionId) {
+        if (
+          selectedNode &&
+          isAgentFlowResourceNode(selectedNode) &&
+          selectedNode.data.suggestionId
+        ) {
           const suggestionGroup = state.props.suggestionGroup;
           if (suggestionGroup?.suggestions) {
-            const suggestion = suggestionGroup.suggestions.find((s) => s.id === selectedNode.data.suggestionId);
+            const suggestion = suggestionGroup.suggestions.find(
+              (s) => s.id === selectedNode.data.suggestionId
+            );
             // Only update index for non-standalone suggestions
             if (suggestion && !suggestion.isStandalone) {
-              const suggestionIndex = suggestionGroup.suggestions.findIndex((s) => s.id === selectedNode.data.suggestionId);
+              const suggestionIndex = suggestionGroup.suggestions.findIndex(
+                (s) => s.id === selectedNode.data.suggestionId
+              );
               if (suggestionIndex !== -1) {
                 newSuggestionIndex = suggestionIndex;
               }
@@ -775,12 +873,14 @@ export const createAgentFlowStore = (initialProps: AgentFlowProps) =>
       deleteNode: (nodeId) => {
         const { props } = get();
 
-        if (props.mode === "design") {
+        if (props.mode === 'design') {
           // delete other resources
           if (props.onRemoveResource) {
             const nodeToDelete = get().nodes.find((node) => node.id === nodeId);
             if (nodeToDelete && isAgentFlowResourceNode(nodeToDelete)) {
-              const resourceToRemove = props.resources.find((r) => hasResourceNode(nodeToDelete, r));
+              const resourceToRemove = props.resources.find((r) =>
+                hasResourceNode(nodeToDelete, r)
+              );
               if (resourceToRemove) {
                 props.onRemoveResource(resourceToRemove);
               }
@@ -794,12 +894,20 @@ export const createAgentFlowStore = (initialProps: AgentFlowProps) =>
           const draggedNode = state.nodes.find((node) => node.id === draggedNodeId);
           const targetNode = state.nodes.find((node) => node.id === targetNodeId);
 
-          if (!draggedNode || !targetNode || !isAgentFlowResourceNode(draggedNode) || !isAgentFlowResourceNode(targetNode)) {
+          if (
+            !draggedNode ||
+            !targetNode ||
+            !isAgentFlowResourceNode(draggedNode) ||
+            !isAgentFlowResourceNode(targetNode)
+          ) {
             return state;
           }
 
           const sameTypeNodes = state.nodes
-            .filter((node): node is AgentFlowResourceNode => node.type === "resource" && node.data.type === draggedNode.data.type)
+            .filter(
+              (node): node is AgentFlowResourceNode =>
+                node.type === 'resource' && node.data.type === draggedNode.data.type
+            )
             .sort((a, b) => (a.data.order || 0) - (b.data.order || 0));
           const draggedIndex = sameTypeNodes.findIndex((node) => node.id === draggedNodeId);
           const targetIndex = sameTypeNodes.findIndex((node) => node.id === targetNodeId);
@@ -832,12 +940,20 @@ export const createAgentFlowStore = (initialProps: AgentFlowProps) =>
           const draggedNode = state.nodes.find((node) => node.id === draggedNodeId);
           const targetNode = state.nodes.find((node) => node.id === targetNodeId);
 
-          if (!draggedNode || !targetNode || !isAgentFlowResourceNode(draggedNode) || !isAgentFlowResourceNode(targetNode)) {
+          if (
+            !draggedNode ||
+            !targetNode ||
+            !isAgentFlowResourceNode(draggedNode) ||
+            !isAgentFlowResourceNode(targetNode)
+          ) {
             return state;
           }
 
           const sameTypeNodes = state.nodes
-            .filter((node): node is AgentFlowResourceNode => node.type === "resource" && node.data.type === draggedNode.data.type)
+            .filter(
+              (node): node is AgentFlowResourceNode =>
+                node.type === 'resource' && node.data.type === draggedNode.data.type
+            )
             .sort((a, b) => (a.data.order || 0) - (b.data.order || 0));
 
           // remove the dragged node
@@ -848,7 +964,11 @@ export const createAgentFlowStore = (initialProps: AgentFlowProps) =>
           if (targetIndex === -1) return state;
 
           // insert the dragged node
-          const reorderedNodes = [...otherNodes.slice(0, targetIndex + 1), draggedNode, ...otherNodes.slice(targetIndex + 1)];
+          const reorderedNodes = [
+            ...otherNodes.slice(0, targetIndex + 1),
+            draggedNode,
+            ...otherNodes.slice(targetIndex + 1),
+          ];
 
           // update order values
           const updatedNodes = state.nodes.map((node) => {
@@ -872,20 +992,22 @@ export const createAgentFlowStore = (initialProps: AgentFlowProps) =>
         if (changes.length === 0) return;
 
         // Check for node removals (keyboard delete)
-        const removeChanges = changes.filter((change) => change.type === "remove");
-        if (removeChanges.length > 0 && props.mode === "design") {
+        const removeChanges = changes.filter((change) => change.type === 'remove');
+        if (removeChanges.length > 0 && props.mode === 'design') {
           // Handle each node removal through our deletion flow
           for (const removeChange of removeChanges) {
             const nodeToDelete = nodes.find((n) => n.id === removeChange.id);
             if (nodeToDelete) {
               // Prevent deletion of agent nodes
-              if (nodeToDelete.type === "agent") {
+              if (nodeToDelete.type === 'agent') {
                 continue; // Skip this removal
               }
 
               // Trigger our deletion callbacks for allowed deletions
               if (isAgentFlowResourceNode(nodeToDelete) && props.onRemoveResource) {
-                const resourceToRemove = props.resources.find((r) => hasResourceNode(nodeToDelete, r));
+                const resourceToRemove = props.resources.find((r) =>
+                  hasResourceNode(nodeToDelete, r)
+                );
                 if (resourceToRemove) {
                   props.onRemoveResource(resourceToRemove);
                 }
@@ -899,7 +1021,7 @@ export const createAgentFlowStore = (initialProps: AgentFlowProps) =>
             if (!nodeToDelete) return true; // Allow removal if node not found
 
             // Prevent deletion of agent nodes
-            if (nodeToDelete.type === "agent") return false;
+            if (nodeToDelete.type === 'agent') return false;
 
             return true; // Allow deletion of other nodes
           });
@@ -910,7 +1032,7 @@ export const createAgentFlowStore = (initialProps: AgentFlowProps) =>
           }
 
           // Apply only the allowed remove changes along with other changes
-          const nonRemoveChanges = changes.filter((change) => change.type !== "remove");
+          const nonRemoveChanges = changes.filter((change) => change.type !== 'remove');
           const filteredChanges = [...nonRemoveChanges, ...allowedRemoveChanges];
 
           if (filteredChanges.length === 0) return;
@@ -925,13 +1047,13 @@ export const createAgentFlowStore = (initialProps: AgentFlowProps) =>
         }
 
         // Check if there are selection changes
-        const hasSelectionChanges = changes.some((change) => "selected" in change);
+        const hasSelectionChanges = changes.some((change) => 'selected' in change);
 
         if (hasSelectionChanges) {
           // If there are selection changes, let React Flow handle them
           // but also update our internal selectedNodeId
-          const selectionChange = changes.find((change) => "selected" in change);
-          if (selectionChange && "selected" in selectionChange) {
+          const selectionChange = changes.find((change) => 'selected' in change);
+          if (selectionChange && 'selected' in selectionChange) {
             const newSelectedId = selectionChange.selected ? selectionChange.id : null;
             const updatedNodes = applyNodeChanges(changes, nodes) as AgentFlowCustomNode[];
 
@@ -947,11 +1069,13 @@ export const createAgentFlowStore = (initialProps: AgentFlowProps) =>
         }
 
         // For non-selection changes, check if they're only dimension changes
-        const filteredChanges = changes.filter((change) => !("selected" in change));
+        const filteredChanges = changes.filter((change) => !('selected' in change));
         if (filteredChanges.length === 0) return;
 
         // Check if changes are ONLY dimensions (which React Flow sends constantly)
-        const onlyDimensionChanges = filteredChanges.every((change) => change.type === "dimensions");
+        const onlyDimensionChanges = filteredChanges.every(
+          (change) => change.type === 'dimensions'
+        );
 
         if (onlyDimensionChanges) {
           // For dimension-only changes, update silently without triggering subscribers
@@ -991,7 +1115,7 @@ export const createAgentFlowStore = (initialProps: AgentFlowProps) =>
         const updatedNodes = applyNodeChanges(filteredChanges, nodes) as AgentFlowCustomNode[];
 
         // Check if there are position changes
-        const hasPositionChanges = filteredChanges.some((change) => change.type === "position");
+        const hasPositionChanges = filteredChanges.some((change) => change.type === 'position');
 
         // Ensure selection state is correct
         const finalNodes = updatedNodes.map((updatedNode) => {
@@ -1019,7 +1143,7 @@ export const createAgentFlowStore = (initialProps: AgentFlowProps) =>
         // Allow removal only when a connected non-agent node no longer exists (legitimate cleanup)
         const filteredChanges = changes.filter((change) => {
           // Only filter removal changes
-          if (change.type !== "remove") return true;
+          if (change.type !== 'remove') return true;
 
           // Find the edge being removed
           const edgeToRemove = get().edges.find((edge) => edge.id === change.id);
@@ -1029,8 +1153,8 @@ export const createAgentFlowStore = (initialProps: AgentFlowProps) =>
           const sourceNode = get().nodes.find((node) => node.id === edgeToRemove.source);
           const targetNode = get().nodes.find((node) => node.id === edgeToRemove.target);
 
-          const isSourceAgent = sourceNode?.type === "agent";
-          const isTargetAgent = targetNode?.type === "agent";
+          const isSourceAgent = sourceNode?.type === 'agent';
+          const isTargetAgent = targetNode?.type === 'agent';
 
           // If neither node is an agent, allow removal
           if (!isSourceAgent && !isTargetAgent) {
@@ -1163,7 +1287,9 @@ export const createAgentFlowStore = (initialProps: AgentFlowProps) =>
         }
 
         // clear node and edge animations
-        const clearedNodes = state.nodes.map((node) => (node.id === draggedNodeId ? clearNodeAnimations(node) : node));
+        const clearedNodes = state.nodes.map((node) =>
+          node.id === draggedNodeId ? clearNodeAnimations(node) : node
+        );
         const clearedEdges = state.edges.map((edge) => {
           if (edge.source === draggedNodeId || edge.target === draggedNodeId) {
             return removeAnimationClasses([edge])[0] as AgentFlowCustomEdge;
@@ -1183,7 +1309,10 @@ export const createAgentFlowStore = (initialProps: AgentFlowProps) =>
 
         // get all nodes of same type (including dragged) to find original index
         const allSameTypeNodes = updatedState.nodes
-          .filter((node): node is AgentFlowResourceNode => node.type === "resource" && node.data.type === draggedNode.data.type)
+          .filter(
+            (node): node is AgentFlowResourceNode =>
+              node.type === 'resource' && node.data.type === draggedNode.data.type
+          )
           .sort((a, b) => (a.data.order || 0) - (b.data.order || 0));
 
         // find the original index of the dragged node in its group
@@ -1236,7 +1365,11 @@ export const createAgentFlowStore = (initialProps: AgentFlowProps) =>
           insertIndex = afterIndex >= 0 ? afterIndex + 1 : 0;
         }
 
-        const isInsertingBetween = shouldCreateSpacing(insertIndex, siblingNodes.length, originalIndex >= 0 ? originalIndex : undefined);
+        const isInsertingBetween = shouldCreateSpacing(
+          insertIndex,
+          siblingNodes.length,
+          originalIndex >= 0 ? originalIndex : undefined
+        );
 
         if (!isInsertingBetween) {
           // handle spacing collapse
@@ -1260,7 +1393,11 @@ export const createAgentFlowStore = (initialProps: AgentFlowProps) =>
           } else {
             // no spacing needed, just store the original positions
             const nodesWithTracking = updatedState.nodes.map((node) => {
-              if (isAgentFlowResourceNode(node) && node.data.type === draggedNode.data.type && node.id !== draggedNodeId) {
+              if (
+                isAgentFlowResourceNode(node) &&
+                node.data.type === draggedNode.data.type &&
+                node.id !== draggedNodeId
+              ) {
                 return {
                   ...node,
                   data: {
@@ -1288,7 +1425,12 @@ export const createAgentFlowStore = (initialProps: AgentFlowProps) =>
         const agentNode = updatedState.nodes.find(isAgentFlowAgentNode);
         if (!agentNode) return;
 
-        const spacingPositions = calculateSpacingPositions(siblingNodes, insertIndex, draggedNode, agentNode);
+        const spacingPositions = calculateSpacingPositions(
+          siblingNodes,
+          insertIndex,
+          draggedNode,
+          agentNode
+        );
         const { nodes: spacedNodes, edges: animatedEdges } = createSpacingState(
           updatedState.nodes,
           updatedState.edges,
@@ -1319,13 +1461,15 @@ export const createAgentFlowStore = (initialProps: AgentFlowProps) =>
         }
       ) => {
         const currentState = get();
-        const resourceNode = currentState.nodes.find((node) => isAgentFlowResourceNode(node) && node.id === resourceId);
+        const resourceNode = currentState.nodes.find(
+          (node) => isAgentFlowResourceNode(node) && node.id === resourceId
+        );
 
         if (
           !resourceNode ||
           !isAgentFlowResourceNode(resourceNode) ||
-          resourceNode.data.type !== "tool" ||
-          resourceNode.data.projectType !== "Agent"
+          resourceNode.data.type !== 'tool' ||
+          resourceNode.data.projectType !== 'Agent'
         ) {
           return;
         }
@@ -1347,18 +1491,22 @@ export const createAgentFlowStore = (initialProps: AgentFlowProps) =>
           activeResourceIds: [],
         };
 
-        const { nodes: nestedNodes, edges: nestedEdges } = computeNodesAndEdges(nestedAgentProps, resourceNode.id, currentState.nodes);
+        const { nodes: nestedNodes, edges: nestedEdges } = computeNodesAndEdges(
+          nestedAgentProps,
+          resourceNode.id,
+          currentState.nodes
+        );
 
-        const agentNode = nestedNodes.find((node) => node.type === "agent");
+        const agentNode = nestedNodes.find((node) => node.type === 'agent');
         if (!agentNode) return;
 
         const connectionEdge: AgentFlowCustomEdge = {
           id: `${resourceId}::${agentNode.id}`,
           source: resourceNode.id,
           target: agentNode.id,
-          type: "default",
-          sourceHandle: "right",
-          targetHandle: "left",
+          type: 'default',
+          sourceHandle: 'right',
+          targetHandle: 'left',
           data: {
             label: null,
           },
@@ -1385,7 +1533,9 @@ export const createAgentFlowStore = (initialProps: AgentFlowProps) =>
         const state = get();
 
         // get all nodes where id starts with resourceId
-        const nodesToRemove = state.nodes.filter((node) => node.id.startsWith(`${resourceId}${NODE_ID_DELIMITER}`));
+        const nodesToRemove = state.nodes.filter((node) =>
+          node.id.startsWith(`${resourceId}${NODE_ID_DELIMITER}`)
+        );
 
         const edgesToRemove = state.edges.filter((edge) =>
           nodesToRemove.some((node) => edge.source === node.id || edge.target === node.id)
@@ -1400,7 +1550,7 @@ export const createAgentFlowStore = (initialProps: AgentFlowProps) =>
       },
 
       fitView: () => {
-        window.dispatchEvent(new CustomEvent("agentFlowFitView"));
+        window.dispatchEvent(new CustomEvent('agentFlowFitView'));
       },
 
       autoArrangeAndFitView: () => {
@@ -1457,24 +1607,37 @@ export const createAgentFlowStore = (initialProps: AgentFlowProps) =>
           const currentNonStandaloneIndex = currentSuggestion?.isStandalone
             ? -1
             : nonStandaloneSuggestions.findIndex((s) => s.id === currentSuggestion?.id);
-          const removedNonStandaloneIndex = nonStandaloneSuggestions.findIndex((s) => s.id === suggestionId);
+          const removedNonStandaloneIndex = nonStandaloneSuggestions.findIndex(
+            (s) => s.id === suggestionId
+          );
 
           if (removedNonStandaloneIndex !== -1) {
             // If we're removing a non-standalone suggestion before the current one, decrement
             if (removedNonStandaloneIndex < currentNonStandaloneIndex) {
               const newNonStandaloneIndex = Math.max(0, currentNonStandaloneIndex - 1);
-              const adjustedNonStandalone = nonStandaloneSuggestions.filter((s) => s.id !== suggestionId);
+              const adjustedNonStandalone = nonStandaloneSuggestions.filter(
+                (s) => s.id !== suggestionId
+              );
               if (adjustedNonStandalone[newNonStandaloneIndex]) {
-                nextIndex = suggestions.findIndex((s) => s.id === adjustedNonStandalone[newNonStandaloneIndex]?.id);
+                nextIndex = suggestions.findIndex(
+                  (s) => s.id === adjustedNonStandalone[newNonStandaloneIndex]?.id
+                );
               }
             }
             // If we're removing the current suggestion
             else if (removedNonStandaloneIndex === currentNonStandaloneIndex) {
-              const adjustedNonStandalone = nonStandaloneSuggestions.filter((s) => s.id !== suggestionId);
+              const adjustedNonStandalone = nonStandaloneSuggestions.filter(
+                (s) => s.id !== suggestionId
+              );
               if (adjustedNonStandalone.length > 0) {
                 // Try to keep the same index, or go to previous if it's the last one
-                const newNonStandaloneIndex = Math.min(currentNonStandaloneIndex, adjustedNonStandalone.length - 1);
-                nextIndex = suggestions.findIndex((s) => s.id === adjustedNonStandalone[newNonStandaloneIndex]?.id);
+                const newNonStandaloneIndex = Math.min(
+                  currentNonStandaloneIndex,
+                  adjustedNonStandalone.length - 1
+                );
+                nextIndex = suggestions.findIndex(
+                  (s) => s.id === adjustedNonStandalone[newNonStandaloneIndex]?.id
+                );
               } else {
                 nextIndex = -1; // No more non-standalone suggestions
               }
@@ -1511,7 +1674,11 @@ export const createAgentFlowStore = (initialProps: AgentFlowProps) =>
               }
 
               if (nextSuggestion && !nextSuggestion.isStandalone) {
-                const node = findNodeForSuggestion(nextSuggestion, state.props.suggestionGroup, state.nodes);
+                const node = findNodeForSuggestion(
+                  nextSuggestion,
+                  state.props.suggestionGroup,
+                  state.nodes
+                );
                 if (node) {
                   state.setSelectedNodeId(node.id);
                   state.props.onSelectResource?.(node.id);
@@ -1528,7 +1695,9 @@ export const createAgentFlowStore = (initialProps: AgentFlowProps) =>
         // When acting on the group, only act on non-standalone suggestions
         // Standalone suggestions are interactive placeholders that shouldn't be included in bulk operations
         if (props.suggestionGroup && props.suggestionGroup.id === suggestionGroupId) {
-          const nonStandaloneSuggestions = props.suggestionGroup.suggestions.filter((s) => !s.isStandalone);
+          const nonStandaloneSuggestions = props.suggestionGroup.suggestions.filter(
+            (s) => !s.isStandalone
+          );
 
           // If there are no non-standalone suggestions, don't do anything
           if (nonStandaloneSuggestions.length === 0) {
@@ -1547,10 +1716,13 @@ export const createAgentFlowStore = (initialProps: AgentFlowProps) =>
 
       navigateToNextSuggestion: () => {
         const { props, nodes, currentSuggestionIndex, setSelectedNodeId } = get();
-        if (!props.suggestionGroup?.suggestions || props.suggestionGroup.suggestions.length === 0) return;
+        if (!props.suggestionGroup?.suggestions || props.suggestionGroup.suggestions.length === 0)
+          return;
 
         // Filter out standalone suggestions for navigation
-        const nonStandaloneSuggestions = props.suggestionGroup.suggestions.filter((s) => !s.isStandalone);
+        const nonStandaloneSuggestions = props.suggestionGroup.suggestions.filter(
+          (s) => !s.isStandalone
+        );
         if (nonStandaloneSuggestions.length === 0) return;
 
         // Find current suggestion in non-standalone list
@@ -1560,12 +1732,15 @@ export const createAgentFlowStore = (initialProps: AgentFlowProps) =>
           : nonStandaloneSuggestions.findIndex((s) => s.id === currentSuggestion?.id);
 
         // Move to next non-standalone suggestion
-        const nextNonStandaloneIndex = (currentNonStandaloneIndex + 1) % nonStandaloneSuggestions.length;
+        const nextNonStandaloneIndex =
+          (currentNonStandaloneIndex + 1) % nonStandaloneSuggestions.length;
         const nextSuggestion = nonStandaloneSuggestions[nextNonStandaloneIndex];
         if (!nextSuggestion) return;
 
         // Find the actual index in the full suggestions array
-        const nextIndex = props.suggestionGroup.suggestions.findIndex((s) => s.id === nextSuggestion.id);
+        const nextIndex = props.suggestionGroup.suggestions.findIndex(
+          (s) => s.id === nextSuggestion.id
+        );
         if (nextIndex === -1) return;
 
         set({ currentSuggestionIndex: nextIndex });
@@ -1580,10 +1755,13 @@ export const createAgentFlowStore = (initialProps: AgentFlowProps) =>
 
       navigateToPreviousSuggestion: () => {
         const { props, nodes, currentSuggestionIndex, setSelectedNodeId } = get();
-        if (!props.suggestionGroup?.suggestions || props.suggestionGroup.suggestions.length === 0) return;
+        if (!props.suggestionGroup?.suggestions || props.suggestionGroup.suggestions.length === 0)
+          return;
 
         // Filter out standalone suggestions for navigation
-        const nonStandaloneSuggestions = props.suggestionGroup.suggestions.filter((s) => !s.isStandalone);
+        const nonStandaloneSuggestions = props.suggestionGroup.suggestions.filter(
+          (s) => !s.isStandalone
+        );
         if (nonStandaloneSuggestions.length === 0) return;
 
         // Find current suggestion in non-standalone list
@@ -1593,12 +1771,16 @@ export const createAgentFlowStore = (initialProps: AgentFlowProps) =>
           : nonStandaloneSuggestions.findIndex((s) => s.id === currentSuggestion?.id);
 
         // Move to previous non-standalone suggestion
-        const prevNonStandaloneIndex = (currentNonStandaloneIndex - 1 + nonStandaloneSuggestions.length) % nonStandaloneSuggestions.length;
+        const prevNonStandaloneIndex =
+          (currentNonStandaloneIndex - 1 + nonStandaloneSuggestions.length) %
+          nonStandaloneSuggestions.length;
         const prevSuggestion = nonStandaloneSuggestions[prevNonStandaloneIndex];
         if (!prevSuggestion) return;
 
         // Find the actual index in the full suggestions array
-        const prevIndex = props.suggestionGroup.suggestions.findIndex((s) => s.id === prevSuggestion.id);
+        const prevIndex = props.suggestionGroup.suggestions.findIndex(
+          (s) => s.id === prevSuggestion.id
+        );
         if (prevIndex === -1) return;
 
         set({ currentSuggestionIndex: prevIndex });
@@ -1647,11 +1829,17 @@ export const createAgentFlowStore = (initialProps: AgentFlowProps) =>
 type AgentFlowStoreType = ReturnType<typeof createAgentFlowStore>;
 const AgentFlowContext = createContext<AgentFlowStoreType | null>(null);
 
-export const AgentFlowProvider = ({ children, ...props }: AgentFlowProps & { children: React.ReactNode }) => {
+export const AgentFlowProvider = ({
+  children,
+  ...props
+}: AgentFlowProps & { children: React.ReactNode }) => {
   const [store] = useState(createAgentFlowStore(props));
 
   useEffect(() => {
-    store.setState({ ...store.getState(), selectedNodeId: getSelectedNodeId(props, store.getState()) });
+    store.setState({
+      ...store.getState(),
+      selectedNodeId: getSelectedNodeId(props, store.getState()),
+    });
   }, []);
 
   useEffect(() => {
@@ -1667,7 +1855,7 @@ export function useAgentFlowStore<T>(selector: (state: AgentFlowStore) => T): T;
 export function useAgentFlowStore<T>(selector?: (state: AgentFlowStore) => T): AgentFlowStore | T {
   const store = useContext(AgentFlowContext);
   if (!store) {
-    throw new Error("useAgentFlowStore must be used within AgentFlowProvider");
+    throw new Error('useAgentFlowStore must be used within AgentFlowProvider');
   }
 
   const selectorFn = selector ?? ((state: AgentFlowStore) => state as AgentFlowStore | T);

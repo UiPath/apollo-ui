@@ -1,7 +1,11 @@
-import { ResourceNodeType, ResourceNodeTypeOrder, ResourceNodeTypeToPosition } from "../components/AgentCanvas/AgentFlow.constants";
-import type { AgentFlowCustomEdge, AgentFlowCustomNode } from "../types";
-import { Position } from "@uipath/uix/xyflow/react";
-import { isAgentFlowAgentNode, isAgentFlowResourceNode } from "../types";
+import {
+  ResourceNodeType,
+  ResourceNodeTypeOrder,
+  ResourceNodeTypeToPosition,
+} from '../components/AgentCanvas/AgentFlow.constants';
+import type { AgentFlowCustomEdge, AgentFlowCustomNode } from '../types';
+import { Position } from '@uipath/uix/xyflow/react';
+import { isAgentFlowAgentNode, isAgentFlowResourceNode } from '../types';
 
 const GROUP_DISTANCE_HORIZONTAL = 280;
 const GROUP_DISTANCE_VERTICAL = 200;
@@ -10,7 +14,8 @@ const AGENT_NODE_OFFSET_HORIZONTAL = 360;
 const AGENT_NODE_OFFSET_VERTICAL_SMALL = 50;
 const AGENT_NODE_OFFSET_VERTICAL_LARGE = 300;
 
-const getResourceNodeTypeOrder = (nodeType: ResourceNodeType): number => ResourceNodeTypeOrder[nodeType] ?? 999;
+const getResourceNodeTypeOrder = (nodeType: ResourceNodeType): number =>
+  ResourceNodeTypeOrder[nodeType] ?? 999;
 
 // Size (diameter) of the resource node in the canvas
 export const RESOURCE_NODE_SIZE = 80;
@@ -94,13 +99,19 @@ const arrangeAgent = (
     if (edge.source === agent.id && edge.sourceHandle && edge.sourceHandle in groups) {
       const node = clonedNodes.find((n) => n.id === edge.target);
       // Skip nodes with explicit positions - they should not be auto-arranged
-      if (node && !(node as AgentFlowCustomNode & { hasExplicitPosition?: boolean }).hasExplicitPosition) {
+      if (
+        node &&
+        !(node as AgentFlowCustomNode & { hasExplicitPosition?: boolean }).hasExplicitPosition
+      ) {
         groups[edge.sourceHandle as keyof typeof groups].push(node);
       }
     } else if (edge.target === agent.id && edge.targetHandle && edge.targetHandle in groups) {
       const node = clonedNodes.find((n) => n.id === edge.source);
       // Skip nodes with explicit positions - they should not be auto-arranged
-      if (node && !(node as AgentFlowCustomNode & { hasExplicitPosition?: boolean }).hasExplicitPosition) {
+      if (
+        node &&
+        !(node as AgentFlowCustomNode & { hasExplicitPosition?: boolean }).hasExplicitPosition
+      ) {
         groups[edge.targetHandle as keyof typeof groups].push(node);
       }
     }
@@ -117,7 +128,10 @@ const arrangeAgent = (
   }
 
   // Group handles by their position to handle multiple handles per position
-  const positionGroups: Record<Position, Array<{ handleId: ResourceNodeType; nodes: AgentFlowCustomNode[] }>> = {
+  const positionGroups: Record<
+    Position,
+    Array<{ handleId: ResourceNodeType; nodes: AgentFlowCustomNode[] }>
+  > = {
     [Position.Top]: [],
     [Position.Bottom]: [],
     [Position.Left]: [],
@@ -139,7 +153,9 @@ const arrangeAgent = (
     if (position === Position.Top || position === Position.Bottom) {
       // Handle top and bottom positions with potential multiple handle types
       const yPosition =
-        position === Position.Top ? agent.position.y - GROUP_DISTANCE_VERTICAL : agent.position.y + agentHeight + GROUP_DISTANCE_VERTICAL;
+        position === Position.Top
+          ? agent.position.y - GROUP_DISTANCE_VERTICAL
+          : agent.position.y + agentHeight + GROUP_DISTANCE_VERTICAL;
 
       if (handleGroups.length === 1) {
         const handleGroup = handleGroups[0];
@@ -160,14 +176,20 @@ const arrangeAgent = (
           const singleNodeOffset = nodes.length === 1 ? -(GROUP_SPACING / 2) : 0;
 
           node.position = {
-            x: handleCenterX - nodeWidth / 2 + (i - (nodes.length - 1) / 2) * GROUP_SPACING + singleNodeOffset,
+            x:
+              handleCenterX -
+              nodeWidth / 2 +
+              (i - (nodes.length - 1) / 2) * GROUP_SPACING +
+              singleNodeOffset,
             y: position === Position.Top ? yPosition - nodeHeight : yPosition,
           };
         }
       } else if (handleGroups.length === 2) {
         // Two handle types - position them on left and right sides
         // Sort by resource node type order to ensure consistent Model -> Context -> Tool ordering
-        const sortedGroups = handleGroups.sort((a, b) => getResourceNodeTypeOrder(a.handleId) - getResourceNodeTypeOrder(b.handleId));
+        const sortedGroups = handleGroups.sort(
+          (a, b) => getResourceNodeTypeOrder(a.handleId) - getResourceNodeTypeOrder(b.handleId)
+        );
 
         for (const [groupIndex, { nodes }] of sortedGroups.entries()) {
           const isFirstGroup = groupIndex === 0; // First in ordering (Model) goes left, second (Context/Tool) goes right
@@ -196,7 +218,9 @@ const arrangeAgent = (
       } else if (handleGroups.length === 3) {
         // Three handle types - position them on left, center, and right sides
         // Custom sort to ensure Context comes first, then Escalation, then Tool
-        const sortedGroups = handleGroups.sort((a, b) => getResourceNodeTypeOrder(a.handleId) - getResourceNodeTypeOrder(b.handleId));
+        const sortedGroups = handleGroups.sort(
+          (a, b) => getResourceNodeTypeOrder(a.handleId) - getResourceNodeTypeOrder(b.handleId)
+        );
 
         // First, calculate center group positions (escalation)
         const centerGroup = sortedGroups[1];
@@ -238,7 +262,9 @@ const arrangeAgent = (
       } else {
         // Four or more handle types - distribute them evenly across the bottom
         // Sort by resource node type order to ensure consistent Context -> Escalation -> Tool ordering
-        const sortedGroups = handleGroups.sort((a, b) => getResourceNodeTypeOrder(a.handleId) - getResourceNodeTypeOrder(b.handleId));
+        const sortedGroups = handleGroups.sort(
+          (a, b) => getResourceNodeTypeOrder(a.handleId) - getResourceNodeTypeOrder(b.handleId)
+        );
         const totalGroups = sortedGroups.length;
 
         for (const [groupIndex, { nodes }] of sortedGroups.entries()) {
@@ -264,7 +290,7 @@ const arrangeAgent = (
       const { nodes } = handleGroup;
       for (const [i, node] of nodes.entries()) {
         // Skip parent agent nodes
-        if (isAgentFlowResourceNode(node) && node.data.projectType === "Agent") {
+        if (isAgentFlowResourceNode(node) && node.data.projectType === 'Agent') {
           continue;
         }
 
@@ -289,11 +315,15 @@ const arrangeAgent = (
 
         node.position = {
           x: agent.position.x + agentWidth + GROUP_DISTANCE_HORIZONTAL,
-          y: agentCenterY - nodeHeight / 2 + (i - (nodes.length - 1) / 2) * GROUP_SPACING + singleNodeOffset,
+          y:
+            agentCenterY -
+            nodeHeight / 2 +
+            (i - (nodes.length - 1) / 2) * GROUP_SPACING +
+            singleNodeOffset,
         };
 
         // Handle recursive expansion for agent nodes connected to tools
-        if (isAgentFlowResourceNode(node) && node.data.projectType === "Agent") {
+        if (isAgentFlowResourceNode(node) && node.data.projectType === 'Agent') {
           const agentNode = clonedNodes.find((n) => n.data.parentNodeId === node.id);
 
           if (agentNode) {
@@ -301,25 +331,41 @@ const arrangeAgent = (
 
             // Check for upper edges using position mapping
             const hasUpperEdge = edges.some((edge) => {
-              const edgePosition = ResourceNodeTypeToPosition[edge.targetHandle as ResourceNodeType];
+              const edgePosition =
+                ResourceNodeTypeToPosition[edge.targetHandle as ResourceNodeType];
               return edge.source === agentNode.id && edgePosition === Position.Top;
             });
 
             // Count left-connected nodes using position mapping
             const leftNodesConnectedToAgentNode = edges.filter((edge) => {
-              const edgePosition = ResourceNodeTypeToPosition[edge.targetHandle as ResourceNodeType];
+              const edgePosition =
+                ResourceNodeTypeToPosition[edge.targetHandle as ResourceNodeType];
               return edge.source === agentNode.id && edgePosition === Position.Left;
             });
 
             agentNode.position = {
-              x: node.position.x + (node.measured?.width ?? node.width ?? 0) + GROUP_DISTANCE_HORIZONTAL + AGENT_NODE_OFFSET_HORIZONTAL,
+              x:
+                node.position.x +
+                (node.measured?.width ?? node.width ?? 0) +
+                GROUP_DISTANCE_HORIZONTAL +
+                AGENT_NODE_OFFSET_HORIZONTAL,
               y:
                 agentNodeY +
-                (hasUpperEdge ? AGENT_NODE_OFFSET_VERTICAL_LARGE : AGENT_NODE_OFFSET_VERTICAL_SMALL) +
-                (heightOffsets[currentDepth] ? (leftNodesConnectedToAgentNode.length / 2) * GROUP_SPACING : 0),
+                (hasUpperEdge
+                  ? AGENT_NODE_OFFSET_VERTICAL_LARGE
+                  : AGENT_NODE_OFFSET_VERTICAL_SMALL) +
+                (heightOffsets[currentDepth]
+                  ? (leftNodesConnectedToAgentNode.length / 2) * GROUP_SPACING
+                  : 0),
             };
 
-            const dimensions = arrangeAgent(agentNode, clonedNodes, edges, heightOffsets, currentDepth + 1);
+            const dimensions = arrangeAgent(
+              agentNode,
+              clonedNodes,
+              edges,
+              heightOffsets,
+              currentDepth + 1
+            );
 
             heightOffsets[currentDepth] = Math.max(heightOffsets[currentDepth] ?? 0, dimensions);
           }
@@ -340,7 +386,9 @@ export const autoArrangeNodes = (
 ): AgentFlowCustomNode[] => {
   const clonedNodes = structuredClone(nodes);
 
-  const agentNodes = clonedNodes.filter(isAgentFlowAgentNode).find((node) => node.data.parentNodeId === undefined);
+  const agentNodes = clonedNodes
+    .filter(isAgentFlowAgentNode)
+    .find((node) => node.data.parentNodeId === undefined);
 
   if (agentNodes) {
     // Use provided position or default to (0, 0)

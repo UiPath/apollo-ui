@@ -1,15 +1,20 @@
-import React, { useMemo } from "react";
-import type { FlexProps, OverflowProps, PositionProps, SizeProps, SpacingProps } from "./core";
-import { alignMap, calcSpacingPx, justifyMap } from "./core";
+import React, { useMemo } from 'react';
+import type { FlexProps, OverflowProps, PositionProps, SizeProps, SpacingProps } from './core';
+import { alignMap, calcSpacingPx, justifyMap } from './core';
 
-type StackProps = FlexProps & OverflowProps & PositionProps & React.HTMLAttributes<HTMLDivElement> & SizeProps & SpacingProps;
+type StackProps = FlexProps &
+  OverflowProps &
+  PositionProps &
+  React.HTMLAttributes<HTMLDivElement> &
+  SizeProps &
+  SpacingProps;
 
 const Stack: React.FC<StackProps> = ({
   children,
   className,
   style,
   // Extract all our custom props
-  direction = "row",
+  direction = 'row',
   align,
   justify,
   wrap,
@@ -45,7 +50,7 @@ const Stack: React.FC<StackProps> = ({
   // Keep useMemo for style calculations - this is still valuable
   const dynamicStyle: React.CSSProperties = useMemo(() => {
     return {
-      display: "flex",
+      display: 'flex',
       flexDirection: direction,
 
       // Flex properties

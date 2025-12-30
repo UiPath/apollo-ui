@@ -1,8 +1,8 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import { useReactFlow, useStoreApi } from "@uipath/uix/xyflow/react";
-import type { Node } from "@uipath/uix/xyflow/react";
-import type { BaseCanvasFitViewOptions, EnsureNodesInViewOptions } from "./BaseCanvas.types";
-import { BASE_CANVAS_DEFAULTS, FIT_VIEW_DELAY_MS } from "./BaseCanvas.constants";
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { useReactFlow, useStoreApi } from '@uipath/uix/xyflow/react';
+import type { Node } from '@uipath/uix/xyflow/react';
+import type { BaseCanvasFitViewOptions, EnsureNodesInViewOptions } from './BaseCanvas.types';
+import { BASE_CANVAS_DEFAULTS, FIT_VIEW_DELAY_MS } from './BaseCanvas.constants';
 
 const waitForNodeMeasurements = (getNodes: () => Node[]): Promise<void> => {
   return new Promise((resolve) => {
@@ -35,14 +35,14 @@ export const useAutoLayout = (
 
   // Track the nodes array to detect when it's a completely new set of nodes
   const nodesRef = useRef<Node[] | undefined>([]);
-  const prevNodeIds = useRef<string>("");
+  const prevNodeIds = useRef<string>('');
 
   // Check if this is a new set of nodes (different IDs)
   const currentNodeIds =
     nodes
       ?.map((n) => n.id)
       .sort()
-      .join(",") ?? "";
+      .join(',') ?? '';
   const isNewNodeSet = currentNodeIds !== prevNodeIds.current && currentNodeIds?.length > 0;
 
   if (isNewNodeSet) {
@@ -107,7 +107,11 @@ export const useAutoLayout = (
   return { isReady };
 };
 
-export const useFitView = (nodes?: Node[], delay?: number, fitViewOptions?: BaseCanvasFitViewOptions) => {
+export const useFitView = (
+  nodes?: Node[],
+  delay?: number,
+  fitViewOptions?: BaseCanvasFitViewOptions
+) => {
   const reactFlow = useReactFlow();
   const currentViewport = reactFlow.getViewport();
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -262,7 +266,10 @@ export const useEnsureNodesInView = () => {
  *
  * @see {@link BaseCanvasProps.maintainNodesInView} for the component prop that uses this hook
  */
-export const useMaintainNodesInView = (nodeIds?: string[], fitViewOptions?: BaseCanvasFitViewOptions) => {
+export const useMaintainNodesInView = (
+  nodeIds?: string[],
+  fitViewOptions?: BaseCanvasFitViewOptions
+) => {
   const flowStoreApi = useStoreApi();
   const reactFlowInstance = useReactFlow();
   const resizeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);

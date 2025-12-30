@@ -1,6 +1,6 @@
-import { type OnConnectEnd, useReactFlow } from "@uipath/uix/xyflow/react";
-import { useCallback } from "react";
-import { applyPreviewToReactFlow, createPreviewNode } from "../utils";
+import { type OnConnectEnd, useReactFlow } from '@uipath/uix/xyflow/react';
+import { useCallback } from 'react';
+import { applyPreviewToReactFlow, createPreviewNode } from '../utils';
 
 /**
  * Use this hook to get a callback that adds a preview node when a connection ends on an empty space.
@@ -24,7 +24,7 @@ export function useAddNodeOnConnectEnd() {
       let clientX: number;
       let clientY: number;
 
-      if ("clientX" in event) {
+      if ('clientX' in event) {
         clientX = event.clientX;
         clientY = event.clientY;
       } else {
@@ -49,7 +49,7 @@ export function useAddNodeOnConnectEnd() {
 
       const preview = createPreviewNode(
         connectionState.fromNode.id,
-        connectionState.fromHandle.id ?? "output",
+        connectionState.fromHandle.id ?? 'output',
         reactFlowInstance,
         flowDropPosition,
         undefined,

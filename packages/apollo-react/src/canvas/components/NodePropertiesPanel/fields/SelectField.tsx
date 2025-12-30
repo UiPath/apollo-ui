@@ -1,7 +1,7 @@
-import { memo, useCallback } from "react";
-import { Column } from "@uipath/uix/core";
-import { SelectInput, FieldLabel, FieldHelpText, FieldError } from "../NodePropertiesPanel.styles";
-import type { ConfigField } from "../NodePropertiesPanel.types";
+import { memo, useCallback } from 'react';
+import { Column } from '@uipath/uix/core';
+import { SelectInput, FieldLabel, FieldHelpText, FieldError } from '../NodePropertiesPanel.styles';
+import type { ConfigField } from '../NodePropertiesPanel.types';
 
 interface SelectFieldProps {
   field: ConfigField;
@@ -10,7 +10,12 @@ interface SelectFieldProps {
   error?: string;
 }
 
-export const SelectField = memo(function SelectField({ field, value, onChange, error }: SelectFieldProps) {
+export const SelectField = memo(function SelectField({
+  field,
+  value,
+  onChange,
+  error,
+}: SelectFieldProps) {
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLSelectElement>) => {
       onChange(e.target.value);
@@ -23,7 +28,7 @@ export const SelectField = memo(function SelectField({ field, value, onChange, e
       <FieldLabel>{field.label}</FieldLabel>
       <SelectInput
         className="nodrag"
-        value={value || (field.defaultValue as string | undefined) || ""}
+        value={value || (field.defaultValue as string | undefined) || ''}
         onChange={handleChange}
         disabled={field.disabled}
         hasError={!!error}

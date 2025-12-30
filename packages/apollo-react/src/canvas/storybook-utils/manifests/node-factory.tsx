@@ -1,8 +1,8 @@
-import type { NodeRegistration } from "../../components/BaseNode/BaseNode.types";
-import type { NodeExecutionStatusWithCount } from "../../components/BaseNode/ExecutionStatusContext";
-import { ExecutionStatusIcon } from "../../components/ExecutionStatusIcon";
-import type { NodeManifest } from "./types";
-import { getIcon, resolveHandleGroups } from "./helpers";
+import type { NodeRegistration } from '../../components/BaseNode/BaseNode.types';
+import type { NodeExecutionStatusWithCount } from '../../components/BaseNode/ExecutionStatusContext';
+import { ExecutionStatusIcon } from '../../components/ExecutionStatusIcon';
+import type { NodeManifest } from './types';
+import { getIcon, resolveHandleGroups } from './helpers';
 
 /**
  * Creates a NodeRegistration from a declarative manifest.
@@ -35,7 +35,7 @@ export function createNodeFromManifest(manifest: NodeManifest): NodeRegistration
     // Node type definition with render functions
     definition: {
       getIcon: (data, _context) => {
-        if (typeof data.display?.icon === "function") {
+        if (typeof data.display?.icon === 'function') {
           return data.display.icon;
         }
         const Icon = getIcon(data.display?.icon ?? manifest.display.icon);
@@ -53,7 +53,9 @@ export function createNodeFromManifest(manifest: NodeManifest): NodeRegistration
       }),
 
       getAdornments: (_data, context) => {
-        const status = (context.executionState as NodeExecutionStatusWithCount)?.status ?? context.executionState;
+        const status =
+          (context.executionState as NodeExecutionStatusWithCount)?.status ??
+          context.executionState;
 
         return {
           topRight: <ExecutionStatusIcon status={status as string | undefined} />,

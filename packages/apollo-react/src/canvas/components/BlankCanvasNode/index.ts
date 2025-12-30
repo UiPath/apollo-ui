@@ -1,1 +1,1 @@
-export { BlankCanvasNode } from "./BlankCanvasNode";
+export { BlankCanvasNode } from './BlankCanvasNode';

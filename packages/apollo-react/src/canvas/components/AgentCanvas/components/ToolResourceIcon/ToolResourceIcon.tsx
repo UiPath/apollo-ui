@@ -1,10 +1,15 @@
-import { BuiltInToolType, ProjectType, type SharedResourceData, type ToolResourceData } from "packages/apollo-react/src/canvas/types";
-import { Icons } from "@uipath/uix/core";
-import { IxpIcon } from "./IXPIcon";
-import { ProcessIcon } from "./ProcessIcon";
-import { AttachmentIcon } from "./AttachmentIcon";
-import { AddDataColumnIcon } from "./AddDataColumnIcon";
-import { AnalyzeIcon } from "./AnalyzeIcon";
+import {
+  BuiltInToolType,
+  ProjectType,
+  type SharedResourceData,
+  type ToolResourceData,
+} from 'packages/apollo-react/src/canvas/types';
+import { Icons } from '@uipath/uix/core';
+import { IxpIcon } from './IXPIcon';
+import { ProcessIcon } from './ProcessIcon';
+import { AttachmentIcon } from './AttachmentIcon';
+import { AddDataColumnIcon } from './AddDataColumnIcon';
+import { AnalyzeIcon } from './AnalyzeIcon';
 
 interface ToolResourceIconProps {
   size?: number;
@@ -14,7 +19,13 @@ interface ToolResourceIconProps {
 /** Mapped icons from agents frontend-sw */
 export const ToolResourceIcon = ({ size = 24, tool }: ToolResourceIconProps) => {
   if (tool.iconUrl) {
-    return <img src={tool.iconUrl} alt={tool.name} style={{ width: size, height: size, objectFit: "contain" }} />;
+    return (
+      <img
+        src={tool.iconUrl}
+        alt={tool.name}
+        style={{ width: size, height: size, objectFit: 'contain' }}
+      />
+    );
   }
 
   switch (tool.projectType) {

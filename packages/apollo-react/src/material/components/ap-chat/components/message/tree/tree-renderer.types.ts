@@ -10,18 +10,18 @@ export interface ITreeNode<T = any> {
 }
 
 export type ToolData = TSpan & {
-    additionalInfo?: string;
-    icon?: string;
-    titleColor?: string;
-    customIcon?: string;
-    expanded?: boolean;
+  additionalInfo?: string;
+  icon?: string;
+  titleColor?: string;
+  customIcon?: string;
+  expanded?: boolean;
 };
 export type TreeSpanNode = ITreeNode<ToolData>;
 
 export interface ApolloChatTreeRendererProps {
-    span: TreeSpanNode;
-    useApIcon?: boolean;
-    onItemSelect?: (itemId: string, item: ApTreeViewItem) => void;
-    transformSpanToTreeItem?: (spanNode: TreeSpanNode, key: string) => ApTreeViewItem | null;
-    transformToTreeItems?: (span: TreeSpanNode) => ApTreeViewItem[];
+  span: TreeSpanNode;
+  useApIcon?: boolean;
+  onItemSelect?: (itemId: string, item: ApTreeViewItem) => void;
+  transformSpanToTreeItem?: (spanNode: TreeSpanNode, key: string) => ApTreeViewItem | null;
+  transformToTreeItems?: (span: TreeSpanNode) => ApTreeViewItem[];
 }

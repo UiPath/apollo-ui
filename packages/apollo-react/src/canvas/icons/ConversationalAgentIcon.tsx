@@ -1,14 +1,21 @@
 export const ConversationalAgentIcon = ({
   w = 48,
   h = 48,
-  color = "var(--color-foreground-emp)",
+  color = 'var(--color-foreground-emp)',
 }: {
   w?: number | string;
   h?: number | string;
   color?: string;
 }) => {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" width={w} height={h} viewBox="0 0 26 26" fill="none" data-testid="conversational-agent-icon">
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={w}
+      height={h}
+      viewBox="0 0 26 26"
+      fill="none"
+      data-testid="conversational-agent-icon"
+    >
       <path
         d="M9.20901 13.541L11.7657 16.0977L10.4873 17.376L9.20901 16.0977L7.93068 17.376L6.65234 16.0977L9.20901 13.541ZM16.7923 13.541L19.349 16.0977L18.0707 17.376L16.7923 16.0977L15.514 17.376L14.2357 16.0977L16.7923 13.541Z"
         fill={color}

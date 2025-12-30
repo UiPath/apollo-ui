@@ -1,9 +1,6 @@
 # ap-chat
 
-
-
 <!-- Auto Generated Below -->
-
 
 ## Properties
 
@@ -11,18 +8,18 @@
 | --------------------- | --------- | ----------- | ----------------------------------- | ----------- |
 | `chatServiceInstance` | --        |             | `AutopilotChatService \| undefined` | `undefined` |
 
-
 ## Dependencies
 
 ### Used by
 
- - [ap-shell](../ap-shell)
+- [ap-shell](../ap-shell)
 
 ### Depends on
 
 - [ap-typography](../ap-typography)
 
 ### Graph
+
 ```mermaid
 graph TD;
   ap-chat --> ap-typography
@@ -30,6 +27,6 @@ graph TD;
   style ap-chat fill:#f9f,stroke:#333,stroke-width:4px
 ```
 
-----------------------------------------------
+---
 
 Made with ❤️ by UiPath Apollo Team

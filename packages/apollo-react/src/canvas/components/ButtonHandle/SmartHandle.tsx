@@ -1,4 +1,13 @@
-import { useEffect, useMemo, useRef, useState, createContext, useContext, useCallback, memo } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  createContext,
+  useContext,
+  useCallback,
+  memo,
+} from 'react';
 import {
   Handle,
   Position,
@@ -9,28 +18,34 @@ import {
   type ReactFlowState,
   type Node,
   type Edge,
-} from "@xyflow/react";
-import { AnimatePresence } from "motion/react";
-import { FontVariantToken } from "@uipath/apollo-core";
-import { Row } from "@uipath/uix/core";
-import { ApIcon, ApTypography } from "@uipath/portal-shell-react";
-import { StyledAddButton, StyledLabel, StyledLine, StyledNotch, StyledWrapper } from "./ButtonHandle.styles";
-import { useButtonHandleSizeAndPosition } from "./useButtonHandleSizeAndPosition";
-import { calculateGridAlignedHandlePositions, pixelToPercent } from "./ButtonHandleStyleUtils";
-import { canvasEventBus } from "../../utils/CanvasEventBus";
-import type { HandleActionEvent } from "./ButtonHandle";
+} from '@xyflow/react';
+import { AnimatePresence } from 'motion/react';
+import { FontVariantToken } from '@uipath/apollo-core';
+import { Row } from '@uipath/uix/core';
+import { ApIcon, ApTypography } from '@uipath/portal-shell-react';
+import {
+  StyledAddButton,
+  StyledLabel,
+  StyledLine,
+  StyledNotch,
+  StyledWrapper,
+} from './ButtonHandle.styles';
+import { useButtonHandleSizeAndPosition } from './useButtonHandleSizeAndPosition';
+import { calculateGridAlignedHandlePositions, pixelToPercent } from './ButtonHandleStyleUtils';
+import { canvasEventBus } from '../../utils/CanvasEventBus';
+import type { HandleActionEvent } from './ButtonHandle';
 
 // ============================================================================
 // Types
 // ============================================================================
 
-type Side = "top" | "right" | "bottom" | "left";
+type Side = 'top' | 'right' | 'bottom' | 'left';
 
-export interface SmartHandleProps extends Omit<HandleProps, "position"> {
+export interface SmartHandleProps extends Omit<HandleProps, 'position'> {
   /** Initial/default position if no connections exist */
   defaultPosition?: Position;
   /** Handle visual type - affects shape */
-  handleType?: "input" | "output" | "artifact";
+  handleType?: 'input' | 'output' | 'artifact';
   /** Custom styles */
   style?: React.CSSProperties;
   /** Additional class name */
@@ -85,7 +100,7 @@ interface ConnectionInfo {
 
 interface HandleRegistration {
   handleId: string | null | undefined;
-  handleType: "source" | "target";
+  handleType: 'source' | 'target';
   computedPosition: Position;
   /** Order from configuration - used to maintain consistent handle ordering */
   configOrder: number;
@@ -93,7 +108,11 @@ interface HandleRegistration {
 
 interface SmartHandleContextValue {
   registerHandle: (nodeId: string | null, registration: HandleRegistration) => void;
-  unregisterHandle: (nodeId: string | null, handleId: string | null | undefined, handleType: "source" | "target") => void;
+  unregisterHandle: (
+    nodeId: string | null,
+    handleId: string | null | undefined,
+    handleType: 'source' | 'target'
+  ) => void;
   getRegistrations: () => Map<string, HandleRegistration[]>;
   /** Version counter that increments when registrations change - use in dependency arrays */
   version: number;
@@ -111,10 +130,10 @@ const SIDE_TO_POSITION: Record<Side, Position> = {
 };
 
 const NEXT_SIDE_CLOCKWISE: Record<Side, Side> = {
-  top: "right",
-  right: "bottom",
-  bottom: "left",
-  left: "top",
+  top: 'right',
+  right: 'bottom',
+  bottom: 'left',
+  left: 'top',
 };
 
 // ============================================================================
@@ -150,7 +169,7 @@ const AddButton = memo(({ onAction }: AddButtonProps) => {
   );
 });
 
-AddButton.displayName = "AddButton";
+AddButton.displayName = 'AddButton';
 
 // ============================================================================
 // Smart Handle Context (for coordinating multiple handles on same side)
@@ -184,11 +203,16 @@ export function SmartHandleProvider({
     if (!nodeId) return;
     const current = registrationsRef.current.get(nodeId) ?? [];
     // Check if already registered (by handleId + handleType)
-    const existingIndex = current.findIndex((r) => r.handleId === registration.handleId && r.handleType === registration.handleType);
+    const existingIndex = current.findIndex(
+      (r) => r.handleId === registration.handleId && r.handleType === registration.handleType
+    );
     const existing = existingIndex >= 0 ? current[existingIndex] : undefined;
     if (existing) {
       // Only update if position or configOrder changed
-      if (existing.computedPosition === registration.computedPosition && existing.configOrder === registration.configOrder) {
+      if (
+        existing.computedPosition === registration.computedPosition &&
+        existing.configOrder === registration.configOrder
+      ) {
         return; // No change needed
       }
       current[existingIndex] = registration;
@@ -200,17 +224,26 @@ export function SmartHandleProvider({
     setVersion((v) => v + 1);
   }, []);
 
-  const unregisterHandle = useCallback((nodeId: string | null, handleId: string | null | undefined, handleType: "source" | "target") => {
-    if (!nodeId) return;
-    const current = registrationsRef.current.get(nodeId) ?? [];
-    const filtered = current.filter((r) => !(r.handleId === handleId && r.handleType === handleType));
-    if (filtered.length === current.length) {
-      return; // No change needed
-    }
-    registrationsRef.current.set(nodeId, filtered);
-    // Increment version to trigger re-renders
-    setVersion((v) => v + 1);
-  }, []);
+  const unregisterHandle = useCallback(
+    (
+      nodeId: string | null,
+      handleId: string | null | undefined,
+      handleType: 'source' | 'target'
+    ) => {
+      if (!nodeId) return;
+      const current = registrationsRef.current.get(nodeId) ?? [];
+      const filtered = current.filter(
+        (r) => !(r.handleId === handleId && r.handleType === handleType)
+      );
+      if (filtered.length === current.length) {
+        return; // No change needed
+      }
+      registrationsRef.current.set(nodeId, filtered);
+      // Increment version to trigger re-renders
+      setVersion((v) => v + 1);
+    },
+    []
+  );
 
   const getRegistrations = useCallback(() => registrationsRef.current, []);
 
@@ -239,7 +272,7 @@ function getHandleIndexOnSide(
   registrations: Map<string, HandleRegistration[]>,
   nodeId: string | null,
   handleId: string | null | undefined,
-  handleType: "source" | "target",
+  handleType: 'source' | 'target',
   position: Position
 ): { index: number; total: number } {
   if (!nodeId) return { index: 0, total: 1 };
@@ -305,13 +338,13 @@ function calculateOptimalSide(currentBounds: NodeBounds, connectedBounds: NodeBo
   const threshold = Math.atan(1 / aspectRatio) * (180 / Math.PI);
 
   if (degrees >= -threshold && degrees < threshold) {
-    return "right";
+    return 'right';
   } else if (degrees >= threshold && degrees < 180 - threshold) {
-    return "bottom";
+    return 'bottom';
   } else if (degrees >= 180 - threshold || degrees < -(180 - threshold)) {
-    return "left";
+    return 'left';
   } else {
-    return "top";
+    return 'top';
   }
 }
 
@@ -322,12 +355,12 @@ function findHandleConnections(
   edges: Edge[],
   nodeId: string,
   handleId: string | null | undefined,
-  handleType: "source" | "target"
+  handleType: 'source' | 'target'
 ): ConnectionInfo[] {
   const connections: ConnectionInfo[] = [];
 
   for (const edge of edges) {
-    if (handleType === "source") {
+    if (handleType === 'source') {
       if (edge.source === nodeId) {
         const handleMatches = handleId ? edge.sourceHandle === handleId : !edge.sourceHandle;
 
@@ -372,18 +405,20 @@ const selectEdges = (state: ReactFlowState) => state.edges;
 function findOptimalSidesForHandleType(
   edges: Edge[],
   nodeId: string,
-  handleType: "source" | "target",
+  handleType: 'source' | 'target',
   currentBounds: NodeBounds,
   nodeMap: Map<string, Node>
 ): Map<string | null | undefined, Side> {
   const handleSides = new Map<string | null | undefined, Side>();
 
   // Find all edges for this node and handle type
-  const relevantEdges = edges.filter((edge) => (handleType === "source" ? edge.source === nodeId : edge.target === nodeId));
+  const relevantEdges = edges.filter((edge) =>
+    handleType === 'source' ? edge.source === nodeId : edge.target === nodeId
+  );
 
   for (const edge of relevantEdges) {
-    const handleId = handleType === "source" ? edge.sourceHandle : edge.targetHandle;
-    const connectedNodeId = handleType === "source" ? edge.target : edge.source;
+    const handleId = handleType === 'source' ? edge.sourceHandle : edge.targetHandle;
+    const connectedNodeId = handleType === 'source' ? edge.target : edge.source;
     const connectedNode = nodeMap.get(connectedNodeId);
 
     if (connectedNode) {
@@ -399,7 +434,7 @@ function findOptimalSidesForHandleType(
 function useSmartPosition(
   nodeId: string | null,
   handleId: string | null | undefined,
-  handleType: "source" | "target",
+  handleType: 'source' | 'target',
   defaultPosition: Position,
   hasSourceHandles: boolean
 ): Position {
@@ -476,36 +511,42 @@ function useSmartPosition(
     // This ensures source and target handles on the same node never overlap,
     // regardless of where connected nodes are positioned.
 
-    if (handleType === "source" && optimalSide === "left") {
+    if (handleType === 'source' && optimalSide === 'left') {
       // Source handles cannot use 'left' (reserved for targets)
       // Rotate clockwise: left → top
-      optimalSide = "top";
-    } else if (handleType === "target" && optimalSide === "right" && hasSourceHandles) {
+      optimalSide = 'top';
+    } else if (handleType === 'target' && optimalSide === 'right' && hasSourceHandles) {
       // Target handles cannot use 'right' (reserved for sources) - but only if the node has source handles
       // Rotate clockwise: right → bottom
-      optimalSide = "bottom";
+      optimalSide = 'bottom';
     }
 
     // Additionally, target handles should avoid sides that connected source handles are using
     // Only apply this logic if the node actually has source handles
-    if (handleType === "target" && hasSourceHandles) {
-      const sourceSides = findOptimalSidesForHandleType(edges, nodeId, "source", currentBounds, nodeMap);
+    if (handleType === 'target' && hasSourceHandles) {
+      const sourceSides = findOptimalSidesForHandleType(
+        edges,
+        nodeId,
+        'source',
+        currentBounds,
+        nodeMap
+      );
 
       // Apply the same reservation rule to source positions
       const adjustedSourceSides = new Set<Side>();
       for (const side of sourceSides.values()) {
         // Source handles on 'left' would have been adjusted to 'top'
-        adjustedSourceSides.add(side === "left" ? "top" : side);
+        adjustedSourceSides.add(side === 'left' ? 'top' : side);
       }
 
       // Also reserve 'right' for potentially unconnected source handles
-      adjustedSourceSides.add("right");
+      adjustedSourceSides.add('right');
 
       if (adjustedSourceSides.has(optimalSide)) {
         // Rotate clockwise to find a free side (but never 'right')
         let newSide = NEXT_SIDE_CLOCKWISE[optimalSide];
         let attempts = 0;
-        while ((adjustedSourceSides.has(newSide) || newSide === "right") && attempts < 3) {
+        while ((adjustedSourceSides.has(newSide) || newSide === 'right') && attempts < 3) {
           newSide = NEXT_SIDE_CLOCKWISE[newSide];
           attempts++;
         }
@@ -549,18 +590,18 @@ function useSmartPosition(
 export function SmartHandle({
   type,
   id,
-  defaultPosition = type === "source" ? Position.Right : Position.Left,
-  handleType = type === "source" ? "output" : "input",
+  defaultPosition = type === 'source' ? Position.Right : Position.Left,
+  handleType = type === 'source' ? 'output' : 'input',
   style,
   className,
   nodeWidth,
   nodeHeight,
   label,
   labelIcon,
-  labelBackgroundColor = "var(--uix-canvas-background-secondary)",
+  labelBackgroundColor = 'var(--uix-canvas-background-secondary)',
   showButton = false,
   selected = false,
-  color = "var(--uix-canvas-border)",
+  color = 'var(--uix-canvas-border)',
   showNotches = true,
   onAction,
   visible = true,
@@ -583,7 +624,7 @@ export function SmartHandle({
     if (!nodeId || !smartHandleContext) return false;
     const registrations = smartHandleContext.getRegistrations();
     const nodeRegistrations = registrations.get(nodeId) ?? [];
-    return nodeRegistrations.some((r) => r.handleType === "source");
+    return nodeRegistrations.some((r) => r.handleType === 'source');
     // eslint-disable-next-line react-hooks/exhaustive-deps -- contextVersion is included because smartHandleContext.version may change without the context object reference changing
   }, [nodeId, smartHandleContext, contextVersion]);
 
@@ -674,7 +715,7 @@ export function SmartHandle({
       if (!nodeId) return;
 
       const actionEvent: HandleActionEvent = {
-        handleId: id ?? "",
+        handleId: id ?? '',
         nodeId,
         handleType,
         position: computedPosition,
@@ -685,8 +726,8 @@ export function SmartHandle({
       onAction?.(actionEvent);
 
       // Emit to event bus for global listeners
-      canvasEventBus.emit("handle:action", {
-        handleId: id ?? "",
+      canvasEventBus.emit('handle:action', {
+        handleId: id ?? '',
         nodeId,
         handleType,
         position: computedPosition,
@@ -701,14 +742,14 @@ export function SmartHandle({
       position={computedPosition}
       id={id}
       className={className}
-      isConnectable={visible && handleType !== "artifact"}
+      isConnectable={visible && handleType !== 'artifact'}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onMouseDown={() => setIsHovered(false)}
       style={{
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
         width,
         height,
         top,
@@ -718,9 +759,9 @@ export function SmartHandle({
         transform,
         borderWidth: 0,
         borderRadius: 0,
-        backgroundColor: "transparent",
-        cursor: visible ? "crosshair" : "default",
-        pointerEvents: visible ? "auto" : "none",
+        backgroundColor: 'transparent',
+        cursor: visible ? 'crosshair' : 'default',
+        pointerEvents: visible ? 'auto' : 'none',
         ...style,
       }}
       {...rest}
@@ -732,16 +773,23 @@ export function SmartHandle({
             <StyledLabel $position={computedPosition} $backgroundColor={labelBackgroundColor}>
               <Row align="center" gap={4}>
                 {labelIcon}
-                <ApTypography color="var(--uix-canvas-foreground-de-emp)" variant={FontVariantToken.fontSizeSBold}>
+                <ApTypography
+                  color="var(--uix-canvas-foreground-de-emp)"
+                  variant={FontVariantToken.fontSizeSBold}
+                >
                   {label}
                 </ApTypography>
               </Row>
             </StyledLabel>
           )}
-          {showButton && onAction && type === "source" && (
+          {showButton && onAction && type === 'source' && (
             <StyledWrapper $position={computedPosition}>
-              <StyledLine $isVertical={isVertical} $selected={selected} $size={label ? "60px" : "16px"} />
-              <div className="nodrag nopan" style={{ pointerEvents: "auto" }}>
+              <StyledLine
+                $isVertical={isVertical}
+                $selected={selected}
+                $size={label ? '60px' : '16px'}
+              />
+              <div className="nodrag nopan" style={{ pointerEvents: 'auto' }}>
                 <AddButton onAction={handleButtonClick} />
               </div>
             </StyledWrapper>
@@ -768,13 +816,13 @@ export function SmartHandle({
 /**
  * Pre-configured smart source handle (output style)
  */
-export function SmartSourceHandle(props: Omit<SmartHandleProps, "type">) {
+export function SmartSourceHandle(props: Omit<SmartHandleProps, 'type'>) {
   return <SmartHandle type="source" handleType="output" {...props} />;
 }
 
 /**
  * Pre-configured smart target handle (input style)
  */
-export function SmartTargetHandle(props: Omit<SmartHandleProps, "type">) {
+export function SmartTargetHandle(props: Omit<SmartHandleProps, 'type'>) {
   return <SmartHandle type="target" handleType="input" {...props} />;
 }

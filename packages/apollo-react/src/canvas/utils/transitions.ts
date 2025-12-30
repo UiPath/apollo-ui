@@ -1,5 +1,5 @@
-import type { Viewport } from "@uipath/uix/xyflow/react";
-import { animate } from "motion";
+import type { Viewport } from '@uipath/uix/xyflow/react';
+import { animate } from 'motion';
 
 export const ANIMATION_CONSTANTS = {
   MAX_ZOOM: 3, // Maximum zoom level for node focus
@@ -177,7 +177,10 @@ export async function animateDrillOut(
 /**
  * Helper to get canvas dimensions from a React Flow instance
  */
-export function getCanvasSize(containerElement?: HTMLElement | null): { width: number; height: number } {
+export function getCanvasSize(containerElement?: HTMLElement | null): {
+  width: number;
+  height: number;
+} {
   if (!containerElement) {
     return {
       width: ANIMATION_CONSTANTS.DEFAULT_CANVAS_WIDTH,
@@ -196,8 +199,8 @@ export function getCanvasSize(containerElement?: HTMLElement | null): { width: n
  * Check if user prefers reduced motion
  */
 export function prefersReducedMotion(): boolean {
-  if (typeof window === "undefined") return false;
+  if (typeof window === 'undefined') return false;
 
-  const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+  const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
   return mediaQuery.matches;
 }

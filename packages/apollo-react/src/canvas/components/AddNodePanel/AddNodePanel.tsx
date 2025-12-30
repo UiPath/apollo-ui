@@ -1,10 +1,18 @@
-import { useCallback, useMemo } from "react";
-import { useOptionalNodeTypeRegistry } from "../BaseNode";
-import { Toolbox } from "../Toolbox";
-import type { ListItem } from "../Toolbox/ListView";
-import type { AddNodePanelProps } from "./AddNodePanel.types";
+import { useCallback, useMemo } from 'react';
+import { useOptionalNodeTypeRegistry } from '../BaseNode';
+import { Toolbox } from '../Toolbox';
+import type { ListItem } from '../Toolbox/ListView';
+import type { AddNodePanelProps } from './AddNodePanel.types';
 
-export function AddNodePanel({ onNodeSelect, onClose, onSearch, onNodeHover, items, title, loading }: AddNodePanelProps) {
+export function AddNodePanel({
+  onNodeSelect,
+  onClose,
+  onSearch,
+  onNodeHover,
+  items,
+  title,
+  loading,
+}: AddNodePanelProps) {
   const registry = useOptionalNodeTypeRegistry();
 
   const nodeListOptions = useMemo((): ListItem[] => {
@@ -23,7 +31,11 @@ export function AddNodePanel({ onNodeSelect, onClose, onSearch, onNodeHover, ite
   }, [items, registry]);
 
   const handleSearch = useCallback(
-    (query: string, isTopLevelSearch: boolean, { currentItems, category }: { currentItems?: ListItem[]; category?: string }) => {
+    (
+      query: string,
+      isTopLevelSearch: boolean,
+      { currentItems, category }: { currentItems?: ListItem[]; category?: string }
+    ) => {
       if (!onSearch && registry) {
         const nodeResults = registry.getNodeOptions(category, query);
         return Promise.resolve(nodeResults);
@@ -47,7 +59,7 @@ export function AddNodePanel({ onNodeSelect, onClose, onSearch, onNodeHover, ite
 
   return (
     <Toolbox
-      title={title ?? "Add Node"}
+      title={title ?? 'Add Node'}
       initialItems={nodeListOptions}
       loading={loading}
       onItemSelect={handleNodeListItemSelect}

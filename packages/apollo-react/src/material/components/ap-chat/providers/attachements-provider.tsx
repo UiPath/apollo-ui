@@ -16,153 +16,172 @@ import { useChatState } from './chat-state-provider';
 import { useError } from './error-provider';
 
 interface AutopilotAttachmentsContextType {
-    attachments: AutopilotChatFileInfo[];
-    attachmentsLoading: AutopilotChatFileInfo[];
-    addAttachments: (files: AutopilotChatFileInfo[]) => void;
-    removeAttachment: (name: string, index: number) => void;
-    clearAttachments: () => void;
+  attachments: AutopilotChatFileInfo[];
+  attachmentsLoading: AutopilotChatFileInfo[];
+  addAttachments: (files: AutopilotChatFileInfo[]) => void;
+  removeAttachment: (name: string, index: number) => void;
+  clearAttachments: () => void;
 }
 
 export const AutopilotAttachmentsContext = React.createContext<AutopilotAttachmentsContextType>({
-    attachments: [],
-    attachmentsLoading: [],
-    addAttachments: () => {},
-    removeAttachment: () => {},
-    clearAttachments: () => {},
+  attachments: [],
+  attachmentsLoading: [],
+  addAttachments: () => {},
+  removeAttachment: () => {},
+  clearAttachments: () => {},
 });
 
 export function AutopilotAttachmentsProvider({ children }: { children: React.ReactNode }) {
-    const { _ } = useLingui();
-    const chatService = useChatService();
-    const prompt = chatService?.getPrompt?.() as AutopilotChatPrompt | undefined;
+  const { _ } = useLingui();
+  const chatService = useChatService();
+  const prompt = chatService?.getPrompt?.() as AutopilotChatPrompt | undefined;
 
-    const { allowedAttachments } = useChatState();
-    const { setError } = useError();
+  const { allowedAttachments } = useChatState();
+  const { setError } = useError();
 
-    const [ attachments, setAttachments ] = React.useState<AutopilotChatFileInfo[]>(
-        prompt?.attachments ?? [],
+  const [attachments, setAttachments] = React.useState<AutopilotChatFileInfo[]>(
+    prompt?.attachments ?? []
+  );
+  const [attachmentsLoading, setAttachmentsLoading] = React.useState<AutopilotChatFileInfo[]>([]);
+
+  const attachmentsRef = React.useRef<AutopilotChatFileInfo[]>(attachments);
+
+  React.useEffect(() => {
+    const currentAttachmentsWithoutContent = attachmentsRef.current.map(
+      ({ content: _content, ...rest }) => rest
     );
-    const [ attachmentsLoading, setAttachmentsLoading ] = React.useState<AutopilotChatFileInfo[]>([]);
+    const newAttachmentsWithoutContent = attachments.map(({ content: _content, ...rest }) => rest);
 
-    const attachmentsRef = React.useRef<AutopilotChatFileInfo[]>(attachments);
+    if (!isEqual(currentAttachmentsWithoutContent, newAttachmentsWithoutContent)) {
+      // Calculate diff
+      const added = attachments.filter(
+        (newAtt) =>
+          !attachmentsRef.current.some(
+            (currentAtt) => currentAtt.name === newAtt.name && currentAtt.size === newAtt.size
+          )
+      );
 
-    React.useEffect(() => {
-        const currentAttachmentsWithoutContent = attachmentsRef.current.map(({
-            content: _content, ...rest
-        }) => rest);
-        const newAttachmentsWithoutContent = attachments.map(({
-            content: _content, ...rest
-        }) => rest);
+      const removed = attachmentsRef.current.filter(
+        (currentAtt) =>
+          !attachments.some(
+            (newAtt) => newAtt.name === currentAtt.name && newAtt.size === currentAtt.size
+          )
+      );
 
-        if (!isEqual(currentAttachmentsWithoutContent, newAttachmentsWithoutContent)) {
-            // Calculate diff
-            const added = attachments.filter(newAtt =>
-                !attachmentsRef.current.some(currentAtt =>
-                    currentAtt.name === newAtt.name && currentAtt.size === newAtt.size,
-                ),
-            );
+      attachmentsRef.current = attachments;
 
-            const removed = attachmentsRef.current.filter(currentAtt =>
-                !attachments.some(newAtt =>
-                    newAtt.name === currentAtt.name && newAtt.size === currentAtt.size,
-                ),
-            );
+      const eventBus = (chatService as any)?._eventBus;
 
-            attachmentsRef.current = attachments;
+      if (eventBus && (added.length > 0 || removed.length > 0)) {
+        eventBus.publish(AutopilotChatEvent.Attachments, attachments);
+        eventBus.publish(AutopilotChatEvent.SetAttachments, {
+          added,
+          removed,
+        });
+      }
+    }
+  }, [attachments, chatService]);
 
-            const eventBus = (chatService as any)?._eventBus;
+  const addAttachments = React.useCallback(
+    (newFiles: AutopilotChatFileInfo[]) => {
+      const filesToAdd = [
+        ...attachmentsRef.current,
+        ...newFiles.filter(
+          (file) =>
+            !attachmentsRef.current.some(
+              (existing) => existing.name === file.name && existing.size === file.size
+            )
+        ),
+      ];
+      const totalCount = filesToAdd.length;
 
-            if (eventBus && (added.length > 0 || removed.length > 0)) {
-                eventBus.publish(AutopilotChatEvent.Attachments, attachments);
-                eventBus.publish(AutopilotChatEvent.SetAttachments, {
-                    added,
-                    removed,
-                });
-            }
-        }
-    }, [ attachments, chatService ]);
-
-    const addAttachments = React.useCallback((newFiles: AutopilotChatFileInfo[]) => {
-        const filesToAdd = [
-            ...attachmentsRef.current,
-            ...newFiles.filter(file => !attachmentsRef.current.some(existing =>
-                existing.name === file.name && existing.size === file.size,
-            )),
-        ];
-        const totalCount = filesToAdd.length;
-
-        if (allowedAttachments.maxCount && totalCount > allowedAttachments.maxCount) {
-            setError(_(msg({
-                id: 'autopilot-chat.error.too-many-files',
-                message: `Maximum ${allowedAttachments.maxCount} files allowed`,
-            })));
-
-            return;
-        }
-
-        if (!allowedAttachments.multiple && totalCount > 1) {
-            setError(_(msg({
-                id: 'autopilot-chat.error.multiple-files',
-                message: `Only one file is allowed`,
-            })));
-
-            return;
-        }
-
-        setAttachments(filesToAdd);
-    }, [ allowedAttachments.maxCount, allowedAttachments.multiple, setError, _ ]);
-
-    const removeAttachment = React.useCallback((name: string, index: number) => {
-        setAttachments(current => current.filter((file, i) => i !== index || file.name !== name));
-    }, []);
-
-    const clearAttachments = React.useCallback(() => {
-        setAttachments([]);
-    }, []);
-
-    React.useEffect(() => {
-        if (!chatService) {
-            return;
-        }
-
-        const unsubscribeSetAttachmentsLoading = chatService.__internalService__.on(
-            AutopilotChatInternalEvent.SetAttachmentsLoading,
-            (state: AutopilotChatFileInfo[]) => {
-                setAttachmentsLoading(state);
-            },
+      if (allowedAttachments.maxCount && totalCount > allowedAttachments.maxCount) {
+        setError(
+          _(
+            msg({
+              id: 'autopilot-chat.error.too-many-files',
+              message: `Maximum ${allowedAttachments.maxCount} files allowed`,
+            })
+          )
         );
 
-        const unsubscribe = chatService.on(AutopilotChatEvent.SetPrompt, (p: AutopilotChatPrompt | string) => {
-            const newAttachments = typeof p === 'string' ? [] : p.attachments ?? [];
+        return;
+      }
 
-            addAttachments(newAttachments);
-        });
+      if (!allowedAttachments.multiple && totalCount > 1) {
+        setError(
+          _(
+            msg({
+              id: 'autopilot-chat.error.multiple-files',
+              message: `Only one file is allowed`,
+            })
+          )
+        );
 
-        return () => {
-            unsubscribeSetAttachmentsLoading();
-            unsubscribe();
-        };
-    }, [ chatService, addAttachments ]);
+        return;
+      }
 
-    return (
-        <AutopilotAttachmentsContext.Provider value={{
-            attachments,
-            attachmentsLoading,
-            addAttachments,
-            removeAttachment,
-            clearAttachments,
-        }}>
-            {children}
-        </AutopilotAttachmentsContext.Provider>
+      setAttachments(filesToAdd);
+    },
+    [allowedAttachments.maxCount, allowedAttachments.multiple, setError, _]
+  );
+
+  const removeAttachment = React.useCallback((name: string, index: number) => {
+    setAttachments((current) => current.filter((file, i) => i !== index || file.name !== name));
+  }, []);
+
+  const clearAttachments = React.useCallback(() => {
+    setAttachments([]);
+  }, []);
+
+  React.useEffect(() => {
+    if (!chatService) {
+      return;
+    }
+
+    const unsubscribeSetAttachmentsLoading = chatService.__internalService__.on(
+      AutopilotChatInternalEvent.SetAttachmentsLoading,
+      (state: AutopilotChatFileInfo[]) => {
+        setAttachmentsLoading(state);
+      }
     );
+
+    const unsubscribe = chatService.on(
+      AutopilotChatEvent.SetPrompt,
+      (p: AutopilotChatPrompt | string) => {
+        const newAttachments = typeof p === 'string' ? [] : (p.attachments ?? []);
+
+        addAttachments(newAttachments);
+      }
+    );
+
+    return () => {
+      unsubscribeSetAttachmentsLoading();
+      unsubscribe();
+    };
+  }, [chatService, addAttachments]);
+
+  return (
+    <AutopilotAttachmentsContext.Provider
+      value={{
+        attachments,
+        attachmentsLoading,
+        addAttachments,
+        removeAttachment,
+        clearAttachments,
+      }}
+    >
+      {children}
+    </AutopilotAttachmentsContext.Provider>
+  );
 }
 
 export function useAttachments() {
-    const context = React.useContext(AutopilotAttachmentsContext);
+  const context = React.useContext(AutopilotAttachmentsContext);
 
-    if (!context) {
-        throw new Error('useAttachments must be used within a AutopilotAttachmentsProvider');
-    }
+  if (!context) {
+    throw new Error('useAttachments must be used within a AutopilotAttachmentsProvider');
+  }
 
-    return context;
+  return context;
 }

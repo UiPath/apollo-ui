@@ -63,11 +63,7 @@ export interface ApI18nProviderProps {
  * }
  * ```
  */
-export function ApI18nProvider({
-  component,
-  locale: propLocale,
-  children,
-}: ApI18nProviderProps) {
+export function ApI18nProvider({ component, locale: propLocale, children }: ApI18nProviderProps) {
   const locale = propLocale || 'en';
 
   const loadAndActivate = useCallback(() => {
@@ -96,11 +92,7 @@ export function ApI18nProvider({
     loadAndActivate();
   }, [loadAndActivate]);
 
-  return (
-    <I18nProvider i18n={i18n}>
-      {children}
-    </I18nProvider>
-  );
+  return <I18nProvider i18n={i18n}>{children}</I18nProvider>;
 }
 
 export function useApI18n() {

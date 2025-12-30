@@ -1,5 +1,5 @@
-import { Position, type ReactFlowInstance } from "@uipath/uix/xyflow/react";
-import { createPreviewNode, applyPreviewToReactFlow } from "../../utils/createPreviewNode";
+import { Position, type ReactFlowInstance } from '@uipath/uix/xyflow/react';
+import { createPreviewNode, applyPreviewToReactFlow } from '../../utils/createPreviewNode';
 
 /**
  * Creates a preview node and edge when a button handle is clicked.
@@ -16,7 +16,7 @@ export function createAddNodePreview(
   sourceHandleId: string,
   reactFlowInstance: ReactFlowInstance,
   handlePosition: Position = Position.Right,
-  sourceHandleType: "source" | "target" = "source"
+  sourceHandleType: 'source' | 'target' = 'source'
 ): void {
   // Use the unified preview creation utility
   const preview = createPreviewNode(

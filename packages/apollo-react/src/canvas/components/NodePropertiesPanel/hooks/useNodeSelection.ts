@@ -1,6 +1,6 @@
-import { useState, useCallback, useEffect } from "react";
-import { useNodes, useOnSelectionChange, useReactFlow } from "@uipath/uix/xyflow/react";
-import type { ConfigurableNode } from "../NodePropertiesPanel.types";
+import { useState, useCallback, useEffect } from 'react';
+import { useNodes, useOnSelectionChange, useReactFlow } from '@uipath/uix/xyflow/react';
+import type { ConfigurableNode } from '../NodePropertiesPanel.types';
 
 export function useNodeSelection(nodeId?: string, maintainSelection = true) {
   const nodes = useNodes();
@@ -33,7 +33,9 @@ export function useNodeSelection(nodeId?: string, maintainSelection = true) {
     }
   }, [selectedNodeId, maintainSelection, setNodes]);
 
-  const selectedNode = nodes.find((node) => node.id === selectedNodeId) as ConfigurableNode | undefined;
+  const selectedNode = nodes.find((node) => node.id === selectedNodeId) as
+    | ConfigurableNode
+    | undefined;
 
   return {
     selectedNodeId,

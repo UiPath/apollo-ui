@@ -7,64 +7,73 @@ import { useChatState } from '../../../providers/chat-state-provider';
 import { Text } from './text';
 
 export const Ul = React.memo(({ children }: { children?: React.ReactNode }) => {
-    return <Box
-        component="ul"
-        sx={{
-            listStyleType: 'disc',
-            marginBlock: 'unset',
-            marginInline: 'unset',
-            paddingInlineStart: token.Spacing.SpacingM,
-            display: 'block',
-            lineHeight: token.FontFamily.FontMicroLineHeight,
-        }}>
-        {children}
-    </Box>;
+  return (
+    <Box
+      component="ul"
+      sx={{
+        listStyleType: 'disc',
+        marginBlock: 'unset',
+        marginInline: 'unset',
+        paddingInlineStart: token.Spacing.SpacingM,
+        display: 'block',
+        lineHeight: token.FontFamily.FontMicroLineHeight,
+      }}
+    >
+      {children}
+    </Box>
+  );
 });
 
-export const Ol = React.memo(({
-    children, start,
-}: { children?: React.ReactNode; start?: number }) => {
-    return <Box
+export const Ol = React.memo(
+  ({ children, start }: { children?: React.ReactNode; start?: number }) => {
+    return (
+      <Box
         component="ol"
         start={start}
         sx={{
-            marginBlock: 'unset',
-            marginInline: 'unset',
-            paddingInlineStart: token.Spacing.SpacingBase,
-            lineHeight: token.FontFamily.FontMicroLineHeight,
-        }}>
+          marginBlock: 'unset',
+          marginInline: 'unset',
+          paddingInlineStart: token.Spacing.SpacingBase,
+          lineHeight: token.FontFamily.FontMicroLineHeight,
+        }}
+      >
         {children}
-    </Box>;
-});
+      </Box>
+    );
+  }
+);
 
 export const Li = React.memo(({ children }: { children?: React.ReactNode }) => {
-    const { spacing } = useChatState();
+  const { spacing } = useChatState();
 
-    return <Box
-        component="li"
-        sx={{
-            '&::marker': {
-                color: 'var(--color-foreground)',
-                fontSize: token.FontFamily.FontMSize,
-            },
-        }}>
-        {/* Only return ap-typography on strings that are not just empty spaces */}
-        {React.Children.map(children, child => {
-            if (typeof child === 'string') {
-                const hasVisibleContent = child.trim().length > 0;
+  return (
+    <Box
+      component="li"
+      sx={{
+        '&::marker': {
+          color: 'var(--color-foreground)',
+          fontSize: token.FontFamily.FontMSize,
+        },
+      }}
+    >
+      {/* Only return ap-typography on strings that are not just empty spaces */}
+      {React.Children.map(children, (child) => {
+        if (typeof child === 'string') {
+          const hasVisibleContent = child.trim().length > 0;
 
-                if (!hasVisibleContent) {
-                    return null;
-                }
+          if (!hasVisibleContent) {
+            return null;
+          }
 
-                return Text({
-                    children: child,
-                    customStyle: { display: 'inline' },
-                    variant: spacing.markdownTokens.li,
-                });
-            }
+          return Text({
+            children: child,
+            customStyle: { display: 'inline' },
+            variant: spacing.markdownTokens.li,
+          });
+        }
 
-            return child;
-        })}
-    </Box>;
+        return child;
+      })}
+    </Box>
+  );
 });

@@ -1,6 +1,13 @@
-import { useMemo, useRef, useEffect } from "react";
-import { useNodes, useReactFlow } from "@uipath/uix/xyflow/react";
-import { autoUpdate, flip, offset, useFloating, useMergeRefs, type Placement } from "@floating-ui/react";
+import { useMemo, useRef, useEffect } from 'react';
+import { useNodes, useReactFlow } from '@uipath/uix/xyflow/react';
+import {
+  autoUpdate,
+  flip,
+  offset,
+  useFloating,
+  useMergeRefs,
+  type Placement,
+} from '@floating-ui/react';
 
 export type AnchorRect = { x: number; y: number; width: number; height: number };
 
@@ -16,7 +23,7 @@ export function useFloatingPosition({
   open = true,
   nodeId,
   anchorRect,
-  placement = "right-start",
+  placement = 'right-start',
   offset: offsetValue = 20,
 }: UseFloatingPositionOptions) {
   const { getInternalNode } = useReactFlow();
@@ -52,7 +59,14 @@ export function useFloatingPosition({
 
   useEffect(() => {
     if (open) update();
-  }, [open, computedAnchor?.x, computedAnchor?.y, computedAnchor?.width, computedAnchor?.height, update]);
+  }, [
+    open,
+    computedAnchor?.x,
+    computedAnchor?.y,
+    computedAnchor?.width,
+    computedAnchor?.height,
+    update,
+  ]);
 
   return {
     computedAnchor,

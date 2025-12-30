@@ -1,8 +1,8 @@
-import { useMemo } from "react";
-import { ButtonHandles } from "../ButtonHandle";
-import type { HandleActionEvent } from "../ButtonHandle";
-import type { HandleConfiguration } from "../BaseNode/BaseNode.types";
-import { useConnectedHandles } from "../BaseCanvas/ConnectedHandlesContext";
+import { useMemo } from 'react';
+import { ButtonHandles } from '../ButtonHandle';
+import type { HandleActionEvent } from '../ButtonHandle';
+import type { HandleConfiguration } from '../BaseNode/BaseNode.types';
+import { useConnectedHandles } from '../BaseCanvas/ConnectedHandlesContext';
 
 export const useButtonHandles = ({
   handleConfigurations,
@@ -34,12 +34,23 @@ export const useButtonHandles = ({
    * ({ showAddButton, selected }) => showAddButton && selected
    * ```
    */
-  shouldShowAddButtonFn?: ({ showAddButton, selected }: { showAddButton: boolean; selected: boolean }) => boolean;
+  shouldShowAddButtonFn?: ({
+    showAddButton,
+    selected,
+  }: {
+    showAddButton: boolean;
+    selected: boolean;
+  }) => boolean;
 }) => {
   const connectedHandleIds = useConnectedHandles(nodeId);
 
   const handleElements = useMemo(() => {
-    if (!handleConfigurations || !Array.isArray(handleConfigurations) || handleConfigurations.length === 0) return <></>;
+    if (
+      !handleConfigurations ||
+      !Array.isArray(handleConfigurations) ||
+      handleConfigurations.length === 0
+    )
+      return <></>;
 
     const elements = handleConfigurations.map((config, i) => {
       const hasConnectedHandle = config.handles.some((h) => connectedHandleIds.has(h.id));
@@ -53,7 +64,7 @@ export const useButtonHandles = ({
 
       return (
         <ButtonHandles
-          key={`${i}:${config.position}:${config.handles.map((h) => h.id).join(",")}`}
+          key={`${i}:${config.position}:${config.handles.map((h) => h.id).join(',')}`}
           nodeId={nodeId}
           handles={enhancedHandles}
           position={config.position}

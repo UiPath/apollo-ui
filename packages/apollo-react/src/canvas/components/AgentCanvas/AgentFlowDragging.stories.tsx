@@ -1,28 +1,28 @@
-import { useCallback, useState } from "react";
-import type { Meta, StoryObj } from "@storybook/react-vite";
-import { ReactFlowProvider } from "@uipath/uix/xyflow/react";
-import { Column, Row } from "@uipath/uix/core";
-import { AgentFlow } from "./AgentFlow";
+import { useCallback, useState } from 'react';
+import type { Meta, StoryObj } from '@storybook/react-vite';
+import { ReactFlowProvider } from '@uipath/uix/xyflow/react';
+import { Column, Row } from '@uipath/uix/core';
+import { AgentFlow } from './AgentFlow';
 import {
   ProjectType,
   type AgentFlowProps,
   type AgentFlowResource,
   type AgentFlowResourceNodeData,
   type AgentFlowResourceType,
-} from "../../types";
+} from '../../types';
 
 const meta: Meta<typeof AgentFlow> = {
-  title: "Canvas/AgentFlow with Dragging",
+  title: 'Canvas/AgentFlow with Dragging',
   component: AgentFlow,
   decorators: [
     (Story) => (
       <div
         style={{
-          position: "absolute",
+          position: 'absolute',
           top: 0,
           left: 0,
-          width: "100%",
-          height: "100%",
+          width: '100%',
+          height: '100%',
         }}
       >
         <Story />
@@ -35,33 +35,37 @@ export default meta;
 type Story = StoryObj<typeof AgentFlow>;
 
 // Sample data generators
-const generateResourceId = () => `resource-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
+const generateResourceId = () =>
+  `resource-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
 
 const sampleContexts = [
-  { name: "User Profile", description: "Information about the current user" },
-  { name: "Session Context", description: "Current session information" },
-  { name: "Organization Settings", description: "Organization configuration" },
-  { name: "Environment Variables", description: "System environment settings" },
+  { name: 'User Profile', description: 'Information about the current user' },
+  { name: 'Session Context', description: 'Current session information' },
+  { name: 'Organization Settings', description: 'Organization configuration' },
+  { name: 'Environment Variables', description: 'System environment settings' },
 ];
 
 const sampleTools = [
-  { name: "Send Email", description: "Email Service", projectType: ProjectType.Internal },
-  { name: "Query Database", description: "Database", projectType: ProjectType.Internal },
-  { name: "Call API", description: "REST API", projectType: ProjectType.Api },
-  { name: "Process Document", description: "Document AI", projectType: ProjectType.Internal },
-  { name: "Run Automation", description: "Automation", projectType: ProjectType.Internal },
+  { name: 'Send Email', description: 'Email Service', projectType: ProjectType.Internal },
+  { name: 'Query Database', description: 'Database', projectType: ProjectType.Internal },
+  { name: 'Call API', description: 'REST API', projectType: ProjectType.Api },
+  { name: 'Process Document', description: 'Document AI', projectType: ProjectType.Internal },
+  { name: 'Run Automation', description: 'Automation', projectType: ProjectType.Internal },
 ];
 
 const sampleEscalations = [
-  { name: "Manager Approval", description: "Escalate to manager" },
-  { name: "Amount Exceeded", description: "Transaction limit exceeded" },
-  { name: "Security Alert", description: "Suspicious activity detected" },
-  { name: "Manual Review", description: "Requires human review" },
+  { name: 'Manager Approval', description: 'Escalate to manager' },
+  { name: 'Amount Exceeded', description: 'Transaction limit exceeded' },
+  { name: 'Security Alert', description: 'Suspicious activity detected' },
+  { name: 'Manual Review', description: 'Requires human review' },
 ];
 
 const sampleMcp = [
-  { name: "File parser", description: "Parse files in the workspace" },
-  { name: "Budget Assistant RPC", description: "Using RPC to connect to a budget assistant server API" },
+  { name: 'File parser', description: 'Parse files in the workspace' },
+  {
+    name: 'Budget Assistant RPC',
+    description: 'Using RPC to connect to a budget assistant server API',
+  },
 ];
 
 let contextIndex = 0;
@@ -70,11 +74,13 @@ let escalationIndex = 0;
 let mcpIndex = 0;
 
 const createSampleContext = (): AgentFlowResource => {
-  const sample = sampleContexts[contextIndex % sampleContexts.length] as NonNullable<(typeof sampleContexts)[number]>;
+  const sample = sampleContexts[contextIndex % sampleContexts.length] as NonNullable<
+    (typeof sampleContexts)[number]
+  >;
   contextIndex++;
   return {
     id: generateResourceId(),
-    type: "context",
+    type: 'context',
     name: sample.name,
     hasBreakpoint: false,
     hasGuardrails: false,
@@ -83,14 +89,16 @@ const createSampleContext = (): AgentFlowResource => {
 };
 
 const createSampleTool = (): AgentFlowResource => {
-  const sample = sampleTools[toolIndex % sampleTools.length] as NonNullable<(typeof sampleTools)[number]>;
+  const sample = sampleTools[toolIndex % sampleTools.length] as NonNullable<
+    (typeof sampleTools)[number]
+  >;
   toolIndex++;
   return {
     id: generateResourceId(),
-    type: "tool",
+    type: 'tool',
     name: sample.name,
     description: sample.description,
-    iconUrl: "",
+    iconUrl: '',
     hasBreakpoint: false,
     hasGuardrails: false,
     projectType: sample.projectType as ProjectType,
@@ -98,11 +106,13 @@ const createSampleTool = (): AgentFlowResource => {
 };
 
 const createSampleEscalation = (): AgentFlowResource => {
-  const sample = sampleEscalations[escalationIndex % sampleEscalations.length] as NonNullable<(typeof sampleEscalations)[number]>;
+  const sample = sampleEscalations[escalationIndex % sampleEscalations.length] as NonNullable<
+    (typeof sampleEscalations)[number]
+  >;
   escalationIndex++;
   return {
     id: generateResourceId(),
-    type: "escalation",
+    type: 'escalation',
     name: sample.name,
     hasBreakpoint: false,
     hasGuardrails: false,
@@ -115,10 +125,10 @@ const createSampleMcp = (): AgentFlowResource => {
   mcpIndex++;
   return {
     id: generateResourceId(),
-    type: "mcp",
+    type: 'mcp',
     name: sample.name,
-    slug: "",
-    folderPath: "",
+    slug: '',
+    folderPath: '',
     availableTools: [],
     description: sample.description,
     hasBreakpoint: false,
@@ -129,19 +139,19 @@ const createSampleMcp = (): AgentFlowResource => {
 const createSampleMemorySpace = (): AgentFlowResource => {
   return {
     id: generateResourceId(),
-    type: "memorySpace",
-    name: "Agent Memory Space",
-    description: "Memory space for the agent",
+    type: 'memorySpace',
+    name: 'Agent Memory Space',
+    description: 'Memory space for the agent',
   };
 };
 
 const sampleResources: AgentFlowResource[] = [
   {
-    id: "tool-slack",
-    type: "tool",
-    name: "Send message",
-    description: "Slack",
-    iconUrl: "",
+    id: 'tool-slack',
+    type: 'tool',
+    name: 'Send message',
+    description: 'Slack',
+    iconUrl: '',
     hasBreakpoint: false,
     isCurrentBreakpoint: false,
     hasGuardrails: false,
@@ -149,11 +159,11 @@ const sampleResources: AgentFlowResource[] = [
     isDisabled: false,
   },
   {
-    id: "tool-ixp",
-    type: "tool",
-    name: "Extract data",
-    description: "IXP",
-    iconUrl: "",
+    id: 'tool-ixp',
+    type: 'tool',
+    name: 'Extract data',
+    description: 'IXP',
+    iconUrl: '',
     hasBreakpoint: false,
     isCurrentBreakpoint: false,
     hasGuardrails: false,
@@ -161,11 +171,11 @@ const sampleResources: AgentFlowResource[] = [
     isDisabled: false,
   },
   {
-    id: "tool-claim",
-    type: "tool",
-    name: "Validate claim",
-    description: "Automation",
-    iconUrl: "",
+    id: 'tool-claim',
+    type: 'tool',
+    name: 'Validate claim',
+    description: 'Automation',
+    iconUrl: '',
     hasBreakpoint: false,
     isCurrentBreakpoint: false,
     hasGuardrails: false,
@@ -173,42 +183,42 @@ const sampleResources: AgentFlowResource[] = [
     isDisabled: false,
   },
   {
-    id: "context-user-profile",
-    type: "context",
-    name: "User Profile",
-    description: "Information about the current user",
+    id: 'context-user-profile',
+    type: 'context',
+    name: 'User Profile',
+    description: 'Information about the current user',
     hasBreakpoint: false,
     isCurrentBreakpoint: false,
   },
   {
-    id: "escalation-amount-exceeded",
-    type: "escalation",
-    name: "Amount exceeded",
-    description: "Claim form",
+    id: 'escalation-amount-exceeded',
+    type: 'escalation',
+    name: 'Amount exceeded',
+    description: 'Claim form',
     hasBreakpoint: false,
     isCurrentBreakpoint: false,
   },
   {
-    id: "mcp-file-parser",
-    type: "mcp",
-    name: "File Parser",
-    description: "File Parser",
+    id: 'mcp-file-parser',
+    type: 'mcp',
+    name: 'File Parser',
+    description: 'File Parser',
     hasBreakpoint: false,
     isCurrentBreakpoint: false,
     hasGuardrails: false,
-    slug: "file-parser",
-    folderPath: "file-parser",
+    slug: 'file-parser',
+    folderPath: 'file-parser',
     availableTools: [],
   },
 ];
 
 // Real agent definition from frontend examples
 const sampleAgentDefinition = {
-  name: "Test Agent",
-  version: "1.0",
+  name: 'Test Agent',
+  version: '1.0',
   settings: {
-    model: "gpt-4",
-    engine: "test-engine",
+    model: 'gpt-4',
+    engine: 'test-engine',
   },
   tools: [],
   resources: [],
@@ -219,11 +229,15 @@ const sampleAgentDefinition = {
  * Demonstrates the ability to drag the agent node and zoom in design mode
  */
 const DesignModeWithDraggingComponent = (_args: AgentFlowProps) => {
-  const [agentNodePosition, onAgentNodePositionChange] = useState<{ x: number; y: number } | undefined>({ x: 100, y: 400 });
+  const [agentNodePosition, onAgentNodePositionChange] = useState<
+    { x: number; y: number } | undefined
+  >({ x: 100, y: 400 });
   const [zoomLevel, setZoomLevel] = useState<number>(1);
 
   // Initialize resourceNodePositions with one resource having a custom position
-  const [resourceNodePositions, setResourceNodePositions] = useState<Record<string, { x: number; y: number }>>(() => {
+  const [resourceNodePositions, setResourceNodePositions] = useState<
+    Record<string, { x: number; y: number }>
+  >(() => {
     const firstResource = sampleResources[0];
     if (firstResource) {
       return {
@@ -244,23 +258,23 @@ const DesignModeWithDraggingComponent = (_args: AgentFlowProps) => {
     let newResource: AgentFlowResource;
 
     switch (type) {
-      case "context": {
+      case 'context': {
         newResource = createSampleContext();
         break;
       }
-      case "tool": {
+      case 'tool': {
         newResource = createSampleTool();
         break;
       }
-      case "escalation": {
+      case 'escalation': {
         newResource = createSampleEscalation();
         break;
       }
-      case "mcp": {
+      case 'mcp': {
         newResource = createSampleMcp();
         break;
       }
-      case "memorySpace": {
+      case 'memorySpace': {
         newResource = createSampleMemorySpace();
         break;
       }
@@ -301,45 +315,57 @@ const DesignModeWithDraggingComponent = (_args: AgentFlowProps) => {
     );
   }, []);
 
-  const handleAddBreakpoint = useCallback((resourceId: string, resource: AgentFlowResourceNodeData) => {
-    setResources((prev) =>
-      prev.map((r) => ({
-        ...r,
-        ...(`${resource.parentNodeId}=>${r.name}:${r.id}` === resourceId && {
-          hasBreakpoint: true,
-        }),
-      }))
-    );
-  }, []);
+  const handleAddBreakpoint = useCallback(
+    (resourceId: string, resource: AgentFlowResourceNodeData) => {
+      setResources((prev) =>
+        prev.map((r) => ({
+          ...r,
+          ...(`${resource.parentNodeId}=>${r.name}:${r.id}` === resourceId && {
+            hasBreakpoint: true,
+          }),
+        }))
+      );
+    },
+    []
+  );
 
-  const handleRemoveBreakpoint = useCallback((resourceId: string, resource: AgentFlowResourceNodeData) => {
-    setResources((prev) =>
-      prev.map((r) => ({
-        ...r,
-        ...(`${resource.parentNodeId}=>${r.name}:${r.id}` === resourceId && {
-          hasBreakpoint: false,
-        }),
-      }))
-    );
-  }, []);
+  const handleRemoveBreakpoint = useCallback(
+    (resourceId: string, resource: AgentFlowResourceNodeData) => {
+      setResources((prev) =>
+        prev.map((r) => ({
+          ...r,
+          ...(`${resource.parentNodeId}=>${r.name}:${r.id}` === resourceId && {
+            hasBreakpoint: false,
+          }),
+        }))
+      );
+    },
+    []
+  );
 
-  const handleAddGuardrail = useCallback((resourceId: string, resource: AgentFlowResourceNodeData) => {
-    setResources((prev) =>
-      prev.map((r) => ({
-        ...r,
-        ...(`${resource.parentNodeId}=>${r.name}:${r.id}` === resourceId && {
-          hasGuardrails: true,
-        }),
-      }))
-    );
-  }, []);
+  const handleAddGuardrail = useCallback(
+    (resourceId: string, resource: AgentFlowResourceNodeData) => {
+      setResources((prev) =>
+        prev.map((r) => ({
+          ...r,
+          ...(`${resource.parentNodeId}=>${r.name}:${r.id}` === resourceId && {
+            hasGuardrails: true,
+          }),
+        }))
+      );
+    },
+    []
+  );
 
-  const handleSetResourceNodePosition = useCallback((resourceId: string, position: { x: number; y: number }) => {
-    setResourceNodePositions((prev) => ({
-      ...prev,
-      [resourceId]: position,
-    }));
-  }, []);
+  const handleSetResourceNodePosition = useCallback(
+    (resourceId: string, position: { x: number; y: number }) => {
+      setResourceNodePositions((prev) => ({
+        ...prev,
+        [resourceId]: position,
+      }));
+    },
+    []
+  );
 
   const setSpanForSelectedNode = useCallback((_node: any) => {}, []);
 
@@ -354,10 +380,10 @@ const DesignModeWithDraggingComponent = (_args: AgentFlowProps) => {
         p={16}
         gap={16}
         style={{
-          backgroundColor: "var(--uix-canvas-background-secondary)",
-          borderLeft: "1px solid var(--uix-canvas-border-de-emp)",
-          overflowY: "auto",
-          color: "var(--uix-canvas-foreground)",
+          backgroundColor: 'var(--uix-canvas-background-secondary)',
+          borderLeft: '1px solid var(--uix-canvas-border-de-emp)',
+          overflowY: 'auto',
+          color: 'var(--uix-canvas-foreground)',
         }}
       >
         <h3 style={{ margin: 0 }}>Design Mode with Dragging</h3>
@@ -372,14 +398,14 @@ const DesignModeWithDraggingComponent = (_args: AgentFlowProps) => {
         {agentNodePosition && (
           <div
             style={{
-              padding: "12px",
-              backgroundColor: "var(--uix-canvas-background)",
-              borderRadius: "4px",
-              border: "1px solid var(--uix-canvas-border-de-emp)",
+              padding: '12px',
+              backgroundColor: 'var(--uix-canvas-background)',
+              borderRadius: '4px',
+              border: '1px solid var(--uix-canvas-border-de-emp)',
             }}
           >
-            <div style={{ fontWeight: "bold", marginBottom: "8px" }}>Agent Node Position</div>
-            <div style={{ fontSize: "0.875rem", fontFamily: "monospace" }}>
+            <div style={{ fontWeight: 'bold', marginBottom: '8px' }}>Agent Node Position</div>
+            <div style={{ fontSize: '0.875rem', fontFamily: 'monospace' }}>
               <div>
                 <strong>X:</strong> {agentNodePosition.x.toFixed(2)}
               </div>
@@ -391,27 +417,34 @@ const DesignModeWithDraggingComponent = (_args: AgentFlowProps) => {
         )}
         <div
           style={{
-            padding: "12px",
-            backgroundColor: "var(--uix-canvas-background)",
-            borderRadius: "4px",
-            border: "1px solid var(--uix-canvas-border-de-emp)",
+            padding: '12px',
+            backgroundColor: 'var(--uix-canvas-background)',
+            borderRadius: '4px',
+            border: '1px solid var(--uix-canvas-border-de-emp)',
           }}
         >
-          <div style={{ fontWeight: "bold", marginBottom: "8px" }}>Zoom Level</div>
-          <div style={{ fontSize: "0.875rem", fontFamily: "monospace" }}>
+          <div style={{ fontWeight: 'bold', marginBottom: '8px' }}>Zoom Level</div>
+          <div style={{ fontSize: '0.875rem', fontFamily: 'monospace' }}>
             <strong>{(zoomLevel * 100).toFixed(0)}%</strong>
           </div>
         </div>
         <div
           style={{
-            padding: "12px",
-            backgroundColor: "var(--uix-canvas-background)",
-            borderRadius: "4px",
-            border: "1px solid var(--uix-canvas-border-de-emp)",
+            padding: '12px',
+            backgroundColor: 'var(--uix-canvas-background)',
+            borderRadius: '4px',
+            border: '1px solid var(--uix-canvas-border-de-emp)',
           }}
         >
-          <div style={{ fontWeight: "bold", marginBottom: "8px" }}>Resource Positions</div>
-          <div style={{ fontSize: "0.75rem", fontFamily: "monospace", maxHeight: "400px", overflowY: "auto" }}>
+          <div style={{ fontWeight: 'bold', marginBottom: '8px' }}>Resource Positions</div>
+          <div
+            style={{
+              fontSize: '0.75rem',
+              fontFamily: 'monospace',
+              maxHeight: '400px',
+              overflowY: 'auto',
+            }}
+          >
             {resources.map((resource) => {
               // Find position from resourceNodePositions state
               // Node ID pattern: {agentNodeId}=>{resource.name}:{resource.id}
@@ -421,19 +454,27 @@ const DesignModeWithDraggingComponent = (_args: AgentFlowProps) => {
                 <div
                   key={resource.id}
                   style={{
-                    padding: "8px",
-                    marginBottom: "8px",
-                    backgroundColor: "var(--uix-canvas-background)",
-                    borderRadius: "4px",
-                    border: "1px solid var(--uix-canvas-border-de-emp)",
+                    padding: '8px',
+                    marginBottom: '8px',
+                    backgroundColor: 'var(--uix-canvas-background)',
+                    borderRadius: '4px',
+                    border: '1px solid var(--uix-canvas-border-de-emp)',
                   }}
                 >
-                  <div style={{ fontWeight: "bold", marginBottom: "4px", fontSize: "0.8125rem" }}>{resource.name}</div>
-                  <div style={{ color: "var(--uix-canvas-foreground-de-emp)", fontSize: "0.75rem", marginBottom: "4px" }}>
+                  <div style={{ fontWeight: 'bold', marginBottom: '4px', fontSize: '0.8125rem' }}>
+                    {resource.name}
+                  </div>
+                  <div
+                    style={{
+                      color: 'var(--uix-canvas-foreground-de-emp)',
+                      fontSize: '0.75rem',
+                      marginBottom: '4px',
+                    }}
+                  >
                     {resource.type} • {resource.id.substring(0, 12)}...
                   </div>
                   {position ? (
-                    <div style={{ color: "var(--uix-canvas-primary)" }}>
+                    <div style={{ color: 'var(--uix-canvas-primary)' }}>
                       <div>
                         <strong>X:</strong> {position.x.toFixed(2)}
                       </div>
@@ -442,14 +483,18 @@ const DesignModeWithDraggingComponent = (_args: AgentFlowProps) => {
                       </div>
                     </div>
                   ) : (
-                    <div style={{ color: "var(--uix-canvas-foreground-de-emp)", fontStyle: "italic" }}>Auto-positioned</div>
+                    <div
+                      style={{ color: 'var(--uix-canvas-foreground-de-emp)', fontStyle: 'italic' }}
+                    >
+                      Auto-positioned
+                    </div>
                   )}
                 </div>
               );
             })}
           </div>
         </div>
-        <div style={{ fontSize: "0.875rem", color: "var(--uix-canvas-foreground-de-emp)" }}>
+        <div style={{ fontSize: '0.875rem', color: 'var(--uix-canvas-foreground-de-emp)' }}>
           <p>Click the + buttons on the agent node to add:</p>
           <ul>
             <li>Memory (top)</li>
@@ -464,8 +509,8 @@ const DesignModeWithDraggingComponent = (_args: AgentFlowProps) => {
 
   return (
     <ReactFlowProvider>
-      <Row w="100%" h="100%" style={{ position: "relative" }}>
-        <div style={{ flex: 1, position: "relative" }}>
+      <Row w="100%" h="100%" style={{ position: 'relative' }}>
+        <div style={{ flex: 1, position: 'relative' }}>
           <AgentFlow
             allowDragging={true}
             agentNodePosition={agentNodePosition}
@@ -502,12 +547,12 @@ const DesignModeWithDraggingComponent = (_args: AgentFlowProps) => {
 
 export const DesignModeWithDragging: Story = {
   args: {
-    mode: "design",
+    mode: 'design',
     resources: sampleResources,
     definition: sampleAgentDefinition,
     spans: [],
-    name: "Test Agent",
-    description: "Test Description",
+    name: 'Test Agent',
+    description: 'Test Description',
     enableTimelinePlayer: false,
   },
   render: (args) => <DesignModeWithDraggingComponent {...args} />,
@@ -518,10 +563,14 @@ export const DesignModeWithDragging: Story = {
  * Demonstrates the ability to drag the agent node and zoom in design mode
  */
 const DesignModeWithDraggingEmptyComponent = (_args: AgentFlowProps) => {
-  const [agentNodePosition, onAgentNodePositionChange] = useState<{ x: number; y: number } | undefined>(undefined);
+  const [agentNodePosition, onAgentNodePositionChange] = useState<
+    { x: number; y: number } | undefined
+  >(undefined);
   const [zoomLevel, setZoomLevel] = useState<number>(1);
 
-  const [resourceNodePositions, setResourceNodePositions] = useState<Record<string, { x: number; y: number }>>(() => {
+  const [resourceNodePositions, setResourceNodePositions] = useState<
+    Record<string, { x: number; y: number }>
+  >(() => {
     return {};
   });
 
@@ -536,23 +585,23 @@ const DesignModeWithDraggingEmptyComponent = (_args: AgentFlowProps) => {
     let newResource: AgentFlowResource;
 
     switch (type) {
-      case "context": {
+      case 'context': {
         newResource = createSampleContext();
         break;
       }
-      case "tool": {
+      case 'tool': {
         newResource = createSampleTool();
         break;
       }
-      case "escalation": {
+      case 'escalation': {
         newResource = createSampleEscalation();
         break;
       }
-      case "mcp": {
+      case 'mcp': {
         newResource = createSampleMcp();
         break;
       }
-      case "memorySpace": {
+      case 'memorySpace': {
         newResource = createSampleMemorySpace();
         break;
       }
@@ -593,45 +642,57 @@ const DesignModeWithDraggingEmptyComponent = (_args: AgentFlowProps) => {
     );
   }, []);
 
-  const handleAddBreakpoint = useCallback((resourceId: string, resource: AgentFlowResourceNodeData) => {
-    setResources((prev) =>
-      prev.map((r) => ({
-        ...r,
-        ...(`${resource.parentNodeId}=>${r.name}:${r.id}` === resourceId && {
-          hasBreakpoint: true,
-        }),
-      }))
-    );
-  }, []);
+  const handleAddBreakpoint = useCallback(
+    (resourceId: string, resource: AgentFlowResourceNodeData) => {
+      setResources((prev) =>
+        prev.map((r) => ({
+          ...r,
+          ...(`${resource.parentNodeId}=>${r.name}:${r.id}` === resourceId && {
+            hasBreakpoint: true,
+          }),
+        }))
+      );
+    },
+    []
+  );
 
-  const handleRemoveBreakpoint = useCallback((resourceId: string, resource: AgentFlowResourceNodeData) => {
-    setResources((prev) =>
-      prev.map((r) => ({
-        ...r,
-        ...(`${resource.parentNodeId}=>${r.name}:${r.id}` === resourceId && {
-          hasBreakpoint: false,
-        }),
-      }))
-    );
-  }, []);
+  const handleRemoveBreakpoint = useCallback(
+    (resourceId: string, resource: AgentFlowResourceNodeData) => {
+      setResources((prev) =>
+        prev.map((r) => ({
+          ...r,
+          ...(`${resource.parentNodeId}=>${r.name}:${r.id}` === resourceId && {
+            hasBreakpoint: false,
+          }),
+        }))
+      );
+    },
+    []
+  );
 
-  const handleAddGuardrail = useCallback((resourceId: string, resource: AgentFlowResourceNodeData) => {
-    setResources((prev) =>
-      prev.map((r) => ({
-        ...r,
-        ...(`${resource.parentNodeId}=>${r.name}:${r.id}` === resourceId && {
-          hasGuardrails: true,
-        }),
-      }))
-    );
-  }, []);
+  const handleAddGuardrail = useCallback(
+    (resourceId: string, resource: AgentFlowResourceNodeData) => {
+      setResources((prev) =>
+        prev.map((r) => ({
+          ...r,
+          ...(`${resource.parentNodeId}=>${r.name}:${r.id}` === resourceId && {
+            hasGuardrails: true,
+          }),
+        }))
+      );
+    },
+    []
+  );
 
-  const handleSetResourceNodePosition = useCallback((resourceId: string, position: { x: number; y: number }) => {
-    setResourceNodePositions((prev) => ({
-      ...prev,
-      [resourceId]: position,
-    }));
-  }, []);
+  const handleSetResourceNodePosition = useCallback(
+    (resourceId: string, position: { x: number; y: number }) => {
+      setResourceNodePositions((prev) => ({
+        ...prev,
+        [resourceId]: position,
+      }));
+    },
+    []
+  );
 
   const setSpanForSelectedNode = useCallback((_node: any) => {}, []);
 
@@ -646,10 +707,10 @@ const DesignModeWithDraggingEmptyComponent = (_args: AgentFlowProps) => {
         p={16}
         gap={16}
         style={{
-          backgroundColor: "var(--uix-canvas-background-secondary)",
-          borderLeft: "1px solid var(--uix-canvas-border-de-emp)",
-          overflowY: "auto",
-          color: "var(--uix-canvas-foreground)",
+          backgroundColor: 'var(--uix-canvas-background-secondary)',
+          borderLeft: '1px solid var(--uix-canvas-border-de-emp)',
+          overflowY: 'auto',
+          color: 'var(--uix-canvas-foreground)',
         }}
       >
         <h3 style={{ margin: 0 }}>Design Mode with Dragging</h3>
@@ -664,14 +725,14 @@ const DesignModeWithDraggingEmptyComponent = (_args: AgentFlowProps) => {
         {agentNodePosition && (
           <div
             style={{
-              padding: "12px",
-              backgroundColor: "var(--uix-canvas-background)",
-              borderRadius: "4px",
-              border: "1px solid var(--uix-canvas-border-de-emp)",
+              padding: '12px',
+              backgroundColor: 'var(--uix-canvas-background)',
+              borderRadius: '4px',
+              border: '1px solid var(--uix-canvas-border-de-emp)',
             }}
           >
-            <div style={{ fontWeight: "bold", marginBottom: "8px" }}>Agent Node Position</div>
-            <div style={{ fontSize: "0.875rem", fontFamily: "monospace" }}>
+            <div style={{ fontWeight: 'bold', marginBottom: '8px' }}>Agent Node Position</div>
+            <div style={{ fontSize: '0.875rem', fontFamily: 'monospace' }}>
               <div>
                 <strong>X:</strong> {agentNodePosition.x.toFixed(2)}
               </div>
@@ -683,27 +744,34 @@ const DesignModeWithDraggingEmptyComponent = (_args: AgentFlowProps) => {
         )}
         <div
           style={{
-            padding: "12px",
-            backgroundColor: "var(--uix-canvas-background)",
-            borderRadius: "4px",
-            border: "1px solid var(--uix-canvas-border-de-emp)",
+            padding: '12px',
+            backgroundColor: 'var(--uix-canvas-background)',
+            borderRadius: '4px',
+            border: '1px solid var(--uix-canvas-border-de-emp)',
           }}
         >
-          <div style={{ fontWeight: "bold", marginBottom: "8px" }}>Zoom Level</div>
-          <div style={{ fontSize: "0.875rem", fontFamily: "monospace" }}>
+          <div style={{ fontWeight: 'bold', marginBottom: '8px' }}>Zoom Level</div>
+          <div style={{ fontSize: '0.875rem', fontFamily: 'monospace' }}>
             <strong>{(zoomLevel * 100).toFixed(0)}%</strong>
           </div>
         </div>
         <div
           style={{
-            padding: "12px",
-            backgroundColor: "var(--uix-canvas-background)",
-            borderRadius: "4px",
-            border: "1px solid var(--uix-canvas-border-de-emp)",
+            padding: '12px',
+            backgroundColor: 'var(--uix-canvas-background)',
+            borderRadius: '4px',
+            border: '1px solid var(--uix-canvas-border-de-emp)',
           }}
         >
-          <div style={{ fontWeight: "bold", marginBottom: "8px" }}>Resource Positions</div>
-          <div style={{ fontSize: "0.75rem", fontFamily: "monospace", maxHeight: "400px", overflowY: "auto" }}>
+          <div style={{ fontWeight: 'bold', marginBottom: '8px' }}>Resource Positions</div>
+          <div
+            style={{
+              fontSize: '0.75rem',
+              fontFamily: 'monospace',
+              maxHeight: '400px',
+              overflowY: 'auto',
+            }}
+          >
             {resources.map((resource) => {
               // Find position from resourceNodePositions state
               // Node ID pattern: {agentNodeId}=>{resource.name}:{resource.id}
@@ -713,19 +781,27 @@ const DesignModeWithDraggingEmptyComponent = (_args: AgentFlowProps) => {
                 <div
                   key={resource.id}
                   style={{
-                    padding: "8px",
-                    marginBottom: "8px",
-                    backgroundColor: "var(--uix-canvas-background)",
-                    borderRadius: "4px",
-                    border: "1px solid var(--uix-canvas-border-de-emp)",
+                    padding: '8px',
+                    marginBottom: '8px',
+                    backgroundColor: 'var(--uix-canvas-background)',
+                    borderRadius: '4px',
+                    border: '1px solid var(--uix-canvas-border-de-emp)',
                   }}
                 >
-                  <div style={{ fontWeight: "bold", marginBottom: "4px", fontSize: "0.8125rem" }}>{resource.name}</div>
-                  <div style={{ color: "var(--uix-canvas-foreground-de-emp)", fontSize: "0.75rem", marginBottom: "4px" }}>
+                  <div style={{ fontWeight: 'bold', marginBottom: '4px', fontSize: '0.8125rem' }}>
+                    {resource.name}
+                  </div>
+                  <div
+                    style={{
+                      color: 'var(--uix-canvas-foreground-de-emp)',
+                      fontSize: '0.75rem',
+                      marginBottom: '4px',
+                    }}
+                  >
                     {resource.type} • {resource.id.substring(0, 12)}...
                   </div>
                   {position ? (
-                    <div style={{ color: "var(--uix-canvas-primary)" }}>
+                    <div style={{ color: 'var(--uix-canvas-primary)' }}>
                       <div>
                         <strong>X:</strong> {position.x.toFixed(2)}
                       </div>
@@ -734,14 +810,18 @@ const DesignModeWithDraggingEmptyComponent = (_args: AgentFlowProps) => {
                       </div>
                     </div>
                   ) : (
-                    <div style={{ color: "var(--uix-canvas-foreground-de-emp)", fontStyle: "italic" }}>Auto-positioned</div>
+                    <div
+                      style={{ color: 'var(--uix-canvas-foreground-de-emp)', fontStyle: 'italic' }}
+                    >
+                      Auto-positioned
+                    </div>
                   )}
                 </div>
               );
             })}
           </div>
         </div>
-        <div style={{ fontSize: "0.875rem", color: "var(--uix-canvas-foreground-de-emp)" }}>
+        <div style={{ fontSize: '0.875rem', color: 'var(--uix-canvas-foreground-de-emp)' }}>
           <p>Click the + buttons on the agent node to add:</p>
           <ul>
             <li>Memory (top)</li>
@@ -756,8 +836,8 @@ const DesignModeWithDraggingEmptyComponent = (_args: AgentFlowProps) => {
 
   return (
     <ReactFlowProvider>
-      <Row w="100%" h="100%" style={{ position: "relative" }}>
-        <div style={{ flex: 1, position: "relative" }}>
+      <Row w="100%" h="100%" style={{ position: 'relative' }}>
+        <div style={{ flex: 1, position: 'relative' }}>
           <AgentFlow
             allowDragging={true}
             agentNodePosition={agentNodePosition}
@@ -794,12 +874,12 @@ const DesignModeWithDraggingEmptyComponent = (_args: AgentFlowProps) => {
 
 export const DesignModeWithDraggingEmpty: Story = {
   args: {
-    mode: "design",
+    mode: 'design',
     resources: sampleResources,
     definition: sampleAgentDefinition,
     spans: [],
-    name: "Test Agent",
-    description: "Test Description",
+    name: 'Test Agent',
+    description: 'Test Description',
     enableTimelinePlayer: false,
   },
   render: (args) => <DesignModeWithDraggingEmptyComponent {...args} />,
@@ -824,23 +904,23 @@ const DesignModeWithZoomLevelOnlyComponent = (_args: AgentFlowProps) => {
     let newResource: AgentFlowResource;
 
     switch (type) {
-      case "context": {
+      case 'context': {
         newResource = createSampleContext();
         break;
       }
-      case "tool": {
+      case 'tool': {
         newResource = createSampleTool();
         break;
       }
-      case "escalation": {
+      case 'escalation': {
         newResource = createSampleEscalation();
         break;
       }
-      case "mcp": {
+      case 'mcp': {
         newResource = createSampleMcp();
         break;
       }
-      case "memorySpace": {
+      case 'memorySpace': {
         newResource = createSampleMemorySpace();
         break;
       }
@@ -881,38 +961,47 @@ const DesignModeWithZoomLevelOnlyComponent = (_args: AgentFlowProps) => {
     );
   }, []);
 
-  const handleAddBreakpoint = useCallback((resourceId: string, resource: AgentFlowResourceNodeData) => {
-    setResources((prev) =>
-      prev.map((r) => ({
-        ...r,
-        ...(`${resource.parentNodeId}=>${r.name}:${r.id}` === resourceId && {
-          hasBreakpoint: true,
-        }),
-      }))
-    );
-  }, []);
+  const handleAddBreakpoint = useCallback(
+    (resourceId: string, resource: AgentFlowResourceNodeData) => {
+      setResources((prev) =>
+        prev.map((r) => ({
+          ...r,
+          ...(`${resource.parentNodeId}=>${r.name}:${r.id}` === resourceId && {
+            hasBreakpoint: true,
+          }),
+        }))
+      );
+    },
+    []
+  );
 
-  const handleRemoveBreakpoint = useCallback((resourceId: string, resource: AgentFlowResourceNodeData) => {
-    setResources((prev) =>
-      prev.map((r) => ({
-        ...r,
-        ...(`${resource.parentNodeId}=>${r.name}:${r.id}` === resourceId && {
-          hasBreakpoint: false,
-        }),
-      }))
-    );
-  }, []);
+  const handleRemoveBreakpoint = useCallback(
+    (resourceId: string, resource: AgentFlowResourceNodeData) => {
+      setResources((prev) =>
+        prev.map((r) => ({
+          ...r,
+          ...(`${resource.parentNodeId}=>${r.name}:${r.id}` === resourceId && {
+            hasBreakpoint: false,
+          }),
+        }))
+      );
+    },
+    []
+  );
 
-  const handleAddGuardrail = useCallback((resourceId: string, resource: AgentFlowResourceNodeData) => {
-    setResources((prev) =>
-      prev.map((r) => ({
-        ...r,
-        ...(`${resource.parentNodeId}=>${r.name}:${r.id}` === resourceId && {
-          hasGuardrails: true,
-        }),
-      }))
-    );
-  }, []);
+  const handleAddGuardrail = useCallback(
+    (resourceId: string, resource: AgentFlowResourceNodeData) => {
+      setResources((prev) =>
+        prev.map((r) => ({
+          ...r,
+          ...(`${resource.parentNodeId}=>${r.name}:${r.id}` === resourceId && {
+            hasGuardrails: true,
+          }),
+        }))
+      );
+    },
+    []
+  );
 
   const setSpanForSelectedNode = useCallback((_node: any) => {}, []);
 
@@ -927,10 +1016,10 @@ const DesignModeWithZoomLevelOnlyComponent = (_args: AgentFlowProps) => {
         p={16}
         gap={16}
         style={{
-          backgroundColor: "var(--uix-canvas-background-secondary)",
-          borderLeft: "1px solid var(--uix-canvas-border-de-emp)",
-          color: "var(--uix-canvas-foreground)",
-          overflowY: "auto",
+          backgroundColor: 'var(--uix-canvas-background-secondary)',
+          borderLeft: '1px solid var(--uix-canvas-border-de-emp)',
+          color: 'var(--uix-canvas-foreground)',
+          overflowY: 'auto',
         }}
       >
         <h3 style={{ margin: 0 }}>Zoom Level Control</h3>
@@ -946,14 +1035,21 @@ const DesignModeWithZoomLevelOnlyComponent = (_args: AgentFlowProps) => {
         {/* Agent Node Position */}
         <div
           style={{
-            padding: "12px",
-            backgroundColor: "var(--uix-canvas-background)",
-            borderRadius: "4px",
-            border: "1px solid var(--uix-canvas-border-de-emp)",
+            padding: '12px',
+            backgroundColor: 'var(--uix-canvas-background)',
+            borderRadius: '4px',
+            border: '1px solid var(--uix-canvas-border-de-emp)',
           }}
         >
-          <div style={{ fontWeight: "bold", marginBottom: "8px" }}>Agent Node Position</div>
-          <div style={{ fontSize: "0.875rem", fontFamily: "monospace", color: "var(--uix-canvas-foreground-de-emp)", fontStyle: "italic" }}>
+          <div style={{ fontWeight: 'bold', marginBottom: '8px' }}>Agent Node Position</div>
+          <div
+            style={{
+              fontSize: '0.875rem',
+              fontFamily: 'monospace',
+              color: 'var(--uix-canvas-foreground-de-emp)',
+              fontStyle: 'italic',
+            }}
+          >
             Auto-positioned
           </div>
         </div>
@@ -961,17 +1057,30 @@ const DesignModeWithZoomLevelOnlyComponent = (_args: AgentFlowProps) => {
         {/* Zoom Level */}
         <div
           style={{
-            padding: "12px",
-            backgroundColor: "var(--uix-canvas-background)",
-            borderRadius: "4px",
-            border: "1px solid var(--uix-canvas-border-de-emp)",
+            padding: '12px',
+            backgroundColor: 'var(--uix-canvas-background)',
+            borderRadius: '4px',
+            border: '1px solid var(--uix-canvas-border-de-emp)',
           }}
         >
-          <div style={{ fontWeight: "bold", marginBottom: "8px" }}>Zoom Level</div>
-          <div style={{ fontSize: "1.5rem", fontFamily: "monospace", fontWeight: "bold", color: "var(--uix-canvas-primary)" }}>
+          <div style={{ fontWeight: 'bold', marginBottom: '8px' }}>Zoom Level</div>
+          <div
+            style={{
+              fontSize: '1.5rem',
+              fontFamily: 'monospace',
+              fontWeight: 'bold',
+              color: 'var(--uix-canvas-primary)',
+            }}
+          >
             {(zoomLevel * 100).toFixed(0)}%
           </div>
-          <div style={{ fontSize: "0.75rem", color: "var(--uix-canvas-foreground-de-emp)", marginTop: "8px" }}>
+          <div
+            style={{
+              fontSize: '0.75rem',
+              color: 'var(--uix-canvas-foreground-de-emp)',
+              marginTop: '8px',
+            }}
+          >
             Use mouse wheel or trackpad to zoom in/out
           </div>
         </div>
@@ -979,29 +1088,35 @@ const DesignModeWithZoomLevelOnlyComponent = (_args: AgentFlowProps) => {
         {/* Resource Positions */}
         <div
           style={{
-            padding: "12px",
-            backgroundColor: "var(--uix-canvas-background)",
-            borderRadius: "4px",
-            border: "1px solid var(--uix-canvas-border-de-emp)",
+            padding: '12px',
+            backgroundColor: 'var(--uix-canvas-background)',
+            borderRadius: '4px',
+            border: '1px solid var(--uix-canvas-border-de-emp)',
           }}
         >
-          <div style={{ fontWeight: "bold", marginBottom: "8px" }}>Resource Positions</div>
-          <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+          <div style={{ fontWeight: 'bold', marginBottom: '8px' }}>Resource Positions</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             {resources.map((resource) => {
               const resourceId = `agent=>${resource.name}:${resource.id}`;
               return (
                 <div
                   key={resourceId}
                   style={{
-                    fontSize: "0.75rem",
-                    padding: "8px",
-                    backgroundColor: "var(--uix-canvas-background)",
-                    borderRadius: "4px",
-                    border: "1px solid var(--uix-canvas-border-de-emp)",
+                    fontSize: '0.75rem',
+                    padding: '8px',
+                    backgroundColor: 'var(--uix-canvas-background)',
+                    borderRadius: '4px',
+                    border: '1px solid var(--uix-canvas-border-de-emp)',
                   }}
                 >
-                  <div style={{ fontWeight: "500", marginBottom: "4px" }}>{resource.name}</div>
-                  <div style={{ fontFamily: "monospace", color: "var(--uix-canvas-foreground-de-emp)", fontStyle: "italic" }}>
+                  <div style={{ fontWeight: '500', marginBottom: '4px' }}>{resource.name}</div>
+                  <div
+                    style={{
+                      fontFamily: 'monospace',
+                      color: 'var(--uix-canvas-foreground-de-emp)',
+                      fontStyle: 'italic',
+                    }}
+                  >
                     Auto-positioned
                   </div>
                 </div>
@@ -1012,18 +1127,32 @@ const DesignModeWithZoomLevelOnlyComponent = (_args: AgentFlowProps) => {
 
         <div
           style={{
-            padding: "12px",
-            backgroundColor: "var(--uix-canvas-background)",
-            borderRadius: "4px",
-            border: "1px solid var(--uix-canvas-warning-icon)",
+            padding: '12px',
+            backgroundColor: 'var(--uix-canvas-background)',
+            borderRadius: '4px',
+            border: '1px solid var(--uix-canvas-warning-icon)',
           }}
         >
-          <div style={{ fontWeight: "bold", marginBottom: "8px", color: "var(--uix-canvas-warning-text)" }}>ℹ️ Note</div>
-          <div style={{ fontSize: "0.75rem", color: "var(--uix-canvas-warning-text)", lineHeight: "1.5" }}>
-            <p style={{ margin: "0 0 8px 0" }}>
+          <div
+            style={{
+              fontWeight: 'bold',
+              marginBottom: '8px',
+              color: 'var(--uix-canvas-warning-text)',
+            }}
+          >
+            ℹ️ Note
+          </div>
+          <div
+            style={{
+              fontSize: '0.75rem',
+              color: 'var(--uix-canvas-warning-text)',
+              lineHeight: '1.5',
+            }}
+          >
+            <p style={{ margin: '0 0 8px 0' }}>
               This story demonstrates <strong>zoom-only control</strong>:
             </p>
-            <ul style={{ margin: "0 0 8px 0", paddingLeft: "20px" }}>
+            <ul style={{ margin: '0 0 8px 0', paddingLeft: '20px' }}>
               <li>Initial zoom level is set to 150%</li>
               <li>All nodes (agent + resources) are auto-positioned</li>
               <li>Zoom changes are captured and displayed in real-time</li>
@@ -1036,8 +1165,8 @@ const DesignModeWithZoomLevelOnlyComponent = (_args: AgentFlowProps) => {
 
   return (
     <ReactFlowProvider>
-      <Row w="100%" h="100%" style={{ position: "relative" }}>
-        <div style={{ flex: 1, position: "relative" }}>
+      <Row w="100%" h="100%" style={{ position: 'relative' }}>
+        <div style={{ flex: 1, position: 'relative' }}>
           <AgentFlow
             allowDragging={true}
             // No agentNodePosition - let it auto-position
@@ -1072,12 +1201,12 @@ const DesignModeWithZoomLevelOnlyComponent = (_args: AgentFlowProps) => {
 
 export const DesignModeWithZoomLevelOnly: Story = {
   args: {
-    mode: "design",
+    mode: 'design',
     resources: sampleResources,
     definition: sampleAgentDefinition,
     spans: [],
-    name: "Test Agent",
-    description: "Test Description",
+    name: 'Test Agent',
+    description: 'Test Description',
     enableTimelinePlayer: false,
   },
   render: (args) => <DesignModeWithZoomLevelOnlyComponent {...args} />,
@@ -1085,7 +1214,7 @@ export const DesignModeWithZoomLevelOnly: Story = {
     docs: {
       description: {
         story:
-          "Demonstrates zoom-only control where all nodes are auto-positioned but the zoom level is controlled by the parent. Initial zoom is set to 150%. Perfect for persisting user zoom preferences while using automatic layout.",
+          'Demonstrates zoom-only control where all nodes are auto-positioned but the zoom level is controlled by the parent. Initial zoom is set to 150%. Perfect for persisting user zoom preferences while using automatic layout.',
       },
     },
   },

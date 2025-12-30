@@ -1,9 +1,9 @@
-import { vi } from "vitest";
-import type { AgentFlowProps } from "../../types";
-import { render, screen } from "../../utils/testing";
+import { vi } from 'vitest';
+import type { AgentFlowProps } from '../../types';
+import { render, screen } from '../../utils/testing';
 
 // Mock BaseCanvas hooks to avoid ReactFlow dependencies in tests
-vi.mock("../BaseCanvas/BaseCanvas.hooks", () => ({
+vi.mock('../BaseCanvas/BaseCanvas.hooks', () => ({
   useAutoLayout: () => ({
     isReady: true,
   }),
@@ -21,43 +21,45 @@ vi.mock("../BaseCanvas/BaseCanvas.hooks", () => ({
 // Create configurable mock store data
 const mockNodes = [
   {
-    id: "agent",
-    type: "agent",
+    id: 'agent',
+    type: 'agent',
     position: { x: 0, y: 0 },
-    data: { name: "Test Agent" },
+    data: { name: 'Test Agent' },
   },
   {
-    id: "tool-1",
-    type: "resource",
+    id: 'tool-1',
+    type: 'resource',
     position: { x: 100, y: 0 },
-    data: { type: "tool", name: "Test Tool" },
+    data: { type: 'tool', name: 'Test Tool' },
   },
   {
-    id: "context-1",
-    type: "resource",
+    id: 'context-1',
+    type: 'resource',
     position: { x: 0, y: 100 },
-    data: { type: "context", name: "Test Context" },
+    data: { type: 'context', name: 'Test Context' },
   },
 ];
 
 const mockEdges = [
   {
-    id: "agent-tool-1",
-    source: "agent",
-    target: "tool-1",
-    type: "default",
+    id: 'agent-tool-1',
+    source: 'agent',
+    target: 'tool-1',
+    type: 'default',
   },
   {
-    id: "context-agent-1",
-    source: "context-1",
-    target: "agent",
-    type: "default",
+    id: 'context-agent-1',
+    source: 'context-1',
+    target: 'agent',
+    type: 'default',
   },
 ];
 
 // Mock the store with more comprehensive data
-vi.mock("./store/agent-flow-store", () => ({
-  AgentFlowProvider: ({ children }: { children: React.ReactNode }) => <div data-testid="agent-flow-provider">{children}</div>,
+vi.mock('./store/agent-flow-store', () => ({
+  AgentFlowProvider: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="agent-flow-provider">{children}</div>
+  ),
   useAgentFlowStore: () => ({
     nodes: mockNodes,
     edges: mockEdges,
@@ -80,7 +82,7 @@ vi.mock("./store/agent-flow-store", () => ({
 }));
 
 // Mock ReactFlow components and hooks with more functionality
-vi.mock("@uipath/uix/xyflow/react", () => ({
+vi.mock('@uipath/uix/xyflow/react', () => ({
   ReactFlow: ({
     children,
     nodes,
@@ -140,12 +142,20 @@ vi.mock("@uipath/uix/xyflow/react", () => ({
       </div>
     );
   },
-  Background: ({ children }: { children?: React.ReactNode }) => <div data-testid="background">{children}</div>,
-  Controls: ({ children }: { children?: React.ReactNode }) => <div data-testid="controls">{children}</div>,
-  Panel: ({ children }: { children?: React.ReactNode }) => <div data-testid="panel">{children}</div>,
-  NodeToolbar: ({ children }: { children?: React.ReactNode }) => <div data-testid="node-toolbar">{children}</div>,
+  Background: ({ children }: { children?: React.ReactNode }) => (
+    <div data-testid="background">{children}</div>
+  ),
+  Controls: ({ children }: { children?: React.ReactNode }) => (
+    <div data-testid="controls">{children}</div>
+  ),
+  Panel: ({ children }: { children?: React.ReactNode }) => (
+    <div data-testid="panel">{children}</div>
+  ),
+  NodeToolbar: ({ children }: { children?: React.ReactNode }) => (
+    <div data-testid="node-toolbar">{children}</div>
+  ),
   BackgroundVariant: {
-    Dots: "dots",
+    Dots: 'dots',
   },
   useReactFlow: () => ({
     setViewport: vi.fn(),
@@ -157,31 +167,44 @@ vi.mock("@uipath/uix/xyflow/react", () => ({
     isPanning: false,
   }),
   ConnectionMode: {
-    Loose: "loose",
-    Strict: "strict",
+    Loose: 'loose',
+    Strict: 'strict',
   },
   DefaultEdgeOptions: {},
   FitViewOptions: {},
-  Handle: ({ type, position, id }: { type: string; position: string; id: string; isConnectable?: boolean }) => (
-    <div data-testid={`handle-${type}-${id}`} data-position={position} />
-  ),
+  Handle: ({
+    type,
+    position,
+    id,
+  }: {
+    type: string;
+    position: string;
+    id: string;
+    isConnectable?: boolean;
+  }) => <div data-testid={`handle-${type}-${id}`} data-position={position} />,
   Position: {
-    Left: "left",
-    Right: "right",
-    Top: "top",
-    Bottom: "bottom",
+    Left: 'left',
+    Right: 'right',
+    Top: 'top',
+    Bottom: 'bottom',
   },
 }));
 
 // Mock the node components with more functionality
-vi.mock("./nodes/AgentNode", () => ({
-  AgentNodeElement: ({ data, onAddResource }: { data: { name?: string }; onAddResource?: (type: string) => void }) => (
+vi.mock('./nodes/AgentNode', () => ({
+  AgentNodeElement: ({
+    data,
+    onAddResource,
+  }: {
+    data: { name?: string };
+    onAddResource?: (type: string) => void;
+  }) => (
     <div data-testid="agent-node">
       {data?.name}
-      <button data-testid="add-tool" onClick={() => onAddResource?.("tool")}>
+      <button data-testid="add-tool" onClick={() => onAddResource?.('tool')}>
         Add Tool
       </button>
-      <button data-testid="add-context" onClick={() => onAddResource?.("context")}>
+      <button data-testid="add-context" onClick={() => onAddResource?.('context')}>
         Add Context
       </button>
     </div>
@@ -189,17 +212,17 @@ vi.mock("./nodes/AgentNode", () => ({
 }));
 
 // Mock the edge components
-vi.mock("./edges/AnimatedEdge", () => ({
+vi.mock('./edges/AnimatedEdge', () => ({
   AnimatedSVGEdge: () => <div data-testid="animated-edge" />,
 }));
 
-vi.mock("./edges/DefaultEdge", () => ({
+vi.mock('./edges/DefaultEdge', () => ({
   DefaultEdgeElement: () => <div data-testid="default-edge" />,
 }));
 
 // Mock the dialog components with more functionality
 
-vi.mock("./components/TimelinePlayer", () => ({
+vi.mock('./components/TimelinePlayer', () => ({
   TimelinePlayer: ({ spans }: { spans: unknown[]; enableTimelinePlayer?: boolean }) => (
     <div data-testid="timeline-player">{spans?.length ?? 0} spans</div>
   ),
@@ -225,40 +248,40 @@ type IRawSpan = {
   Source: number;
   SpanType: string;
 };
-import { AgentFlow } from "./AgentFlow";
+import { AgentFlow } from './AgentFlow';
 
 const mockProps: AgentFlowProps = {
   allowDragging: false,
-  name: "Test Agent",
-  description: "A test agent",
+  name: 'Test Agent',
+  description: 'A test agent',
   definition: {
     inputSchema: {},
     outputSchema: {},
-    messages: [{ role: "User", content: "Test message" }],
+    messages: [{ role: 'User', content: 'Test message' }],
   },
   resources: [
     {
-      id: "tool-1",
-      name: "Test Tool",
-      description: "A test tool",
-      type: "tool" as const,
-      iconUrl: "test-icon.png",
+      id: 'tool-1',
+      name: 'Test Tool',
+      description: 'A test tool',
+      type: 'tool' as const,
+      iconUrl: 'test-icon.png',
       hasGuardrails: true,
     },
     {
-      id: "context-1",
-      name: "Test Context",
-      description: "A test context",
-      type: "context" as const,
+      id: 'context-1',
+      name: 'Test Context',
+      description: 'A test context',
+      type: 'context' as const,
     },
   ],
   spans: [
     {
-      Id: "span-1",
-      TraceId: "trace-1",
+      Id: 'span-1',
+      TraceId: 'trace-1',
       Status: 1,
       Attributes: '{"toolName": "test_tool"}',
-      Name: "test-span",
+      Name: 'test-span',
       StartTime: new Date().toISOString(),
       EndTime: new Date().toISOString(),
       CreatedAt: new Date().toISOString(),
@@ -266,180 +289,180 @@ const mockProps: AgentFlowProps = {
       ParentId: undefined,
       Events: [],
       Links: [],
-      OrganizationId: "test-org",
-      TenantId: "test-tenant",
+      OrganizationId: 'test-org',
+      TenantId: 'test-tenant',
       Source: 1,
-      SpanType: "test-type",
+      SpanType: 'test-type',
     } as IRawSpan,
   ],
-  mode: "design" as const,
-  activeResourceIds: ["tool-1"],
+  mode: 'design' as const,
+  activeResourceIds: ['tool-1'],
   setSpanForSelectedNode: vi.fn(),
   getNodeFromSelectedSpan: vi.fn(),
 };
 
-describe("AgentFlow", () => {
+describe('AgentFlow', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it("renders without crashing", () => {
+  it('renders without crashing', () => {
     expect(() => render(<AgentFlow {...mockProps} />)).not.toThrow();
   });
 
-  it("renders ReactFlow component", () => {
+  it('renders ReactFlow component', () => {
     // Empty nodes to avoid initial layout
     render(<AgentFlow {...mockProps} />);
-    expect(screen.getByTestId("react-flow")).toBeInTheDocument();
+    expect(screen.getByTestId('react-flow')).toBeInTheDocument();
   });
 
-  it("renders background component", () => {
+  it('renders background component', () => {
     // Empty nodes to avoid initial layout
     render(<AgentFlow {...mockProps} />);
-    expect(screen.getByTestId("background")).toBeInTheDocument();
+    expect(screen.getByTestId('background')).toBeInTheDocument();
   });
 
-  it("renders canvas controls component", () => {
+  it('renders canvas controls component', () => {
     // Empty nodes to avoid initial layout
     render(<AgentFlow {...mockProps} />);
-    expect(screen.getByTestId("canvas-controls")).toBeInTheDocument();
+    expect(screen.getByTestId('canvas-controls')).toBeInTheDocument();
   });
 
-  it("renders timeline player with spans", () => {
+  it('renders timeline player with spans', () => {
     render(<AgentFlow {...mockProps} />);
-    expect(screen.getByTestId("timeline-player")).toBeInTheDocument();
-    expect(screen.getByText("1 spans")).toBeInTheDocument();
+    expect(screen.getByTestId('timeline-player')).toBeInTheDocument();
+    expect(screen.getByText('1 spans')).toBeInTheDocument();
   });
 
-  it("shows correct number of nodes and edges", () => {
+  it('shows correct number of nodes and edges', () => {
     // For this test, we need to bypass the loading state
     render(<AgentFlow {...mockProps} />);
-    expect(screen.getByTestId("nodes-count")).toHaveTextContent("3");
-    expect(screen.getByTestId("edges-count")).toHaveTextContent("2");
+    expect(screen.getByTestId('nodes-count')).toHaveTextContent('3');
+    expect(screen.getByTestId('edges-count')).toHaveTextContent('2');
   });
 
-  it("renders in design mode", () => {
+  it('renders in design mode', () => {
     render(<AgentFlow {...mockProps} mode="design" />);
-    expect(screen.getByTestId("react-flow")).toBeInTheDocument();
+    expect(screen.getByTestId('react-flow')).toBeInTheDocument();
   });
 
-  it("renders in view mode", () => {
+  it('renders in view mode', () => {
     render(<AgentFlow {...mockProps} mode="view" />);
-    expect(screen.getByTestId("react-flow")).toBeInTheDocument();
+    expect(screen.getByTestId('react-flow')).toBeInTheDocument();
   });
 
-  it("handles node click events", () => {
+  it('handles node click events', () => {
     render(<AgentFlow {...mockProps} />);
-    const nodeClickButton = screen.getByTestId("node-click");
+    const nodeClickButton = screen.getByTestId('node-click');
     expect(nodeClickButton).toBeInTheDocument();
   });
 
-  it("handles pane click events", () => {
+  it('handles pane click events', () => {
     render(<AgentFlow {...mockProps} />);
-    const paneClickButton = screen.getByTestId("pane-click");
+    const paneClickButton = screen.getByTestId('pane-click');
     expect(paneClickButton).toBeInTheDocument();
   });
 
-  it("handles node changes", () => {
+  it('handles node changes', () => {
     render(<AgentFlow {...mockProps} />);
-    const nodesChangeButton = screen.getByTestId("nodes-change");
+    const nodesChangeButton = screen.getByTestId('nodes-change');
     expect(nodesChangeButton).toBeInTheDocument();
   });
 
-  it("handles edge changes", () => {
+  it('handles edge changes', () => {
     render(<AgentFlow {...mockProps} />);
-    const edgesChangeButton = screen.getByTestId("edges-change");
+    const edgesChangeButton = screen.getByTestId('edges-change');
     expect(edgesChangeButton).toBeInTheDocument();
   });
 
-  it("handles connect events", () => {
+  it('handles connect events', () => {
     render(<AgentFlow {...mockProps} />);
-    const connectButton = screen.getByTestId("connect");
+    const connectButton = screen.getByTestId('connect');
     expect(connectButton).toBeInTheDocument();
   });
 
-  it("handles node drag events", () => {
+  it('handles node drag events', () => {
     render(<AgentFlow {...mockProps} />);
-    expect(screen.getByTestId("node-drag-start")).toBeInTheDocument();
-    expect(screen.getByTestId("node-drag")).toBeInTheDocument();
-    expect(screen.getByTestId("node-drag-stop")).toBeInTheDocument();
+    expect(screen.getByTestId('node-drag-start')).toBeInTheDocument();
+    expect(screen.getByTestId('node-drag')).toBeInTheDocument();
+    expect(screen.getByTestId('node-drag-stop')).toBeInTheDocument();
   });
 
-  it("handles empty spans array", () => {
+  it('handles empty spans array', () => {
     const propsWithoutSpans = { ...mockProps, spans: [] };
     render(<AgentFlow {...propsWithoutSpans} />);
-    expect(screen.getByText("0 spans")).toBeInTheDocument();
+    expect(screen.getByText('0 spans')).toBeInTheDocument();
   });
 
-  it("handles null model", () => {
+  it('handles null model', () => {
     const propsWithoutModel = { ...mockProps, model: null };
     expect(() => render(<AgentFlow {...propsWithoutModel} />)).not.toThrow();
   });
 
-  it("handles empty resources array", () => {
+  it('handles empty resources array', () => {
     const propsWithoutResources = { ...mockProps, resources: [] };
     expect(() => render(<AgentFlow {...propsWithoutResources} />)).not.toThrow();
   });
 
-  it("renders agent flow provider", () => {
+  it('renders agent flow provider', () => {
     render(<AgentFlow {...mockProps} />);
-    expect(screen.getByTestId("agent-flow-provider")).toBeInTheDocument();
+    expect(screen.getByTestId('agent-flow-provider')).toBeInTheDocument();
   });
 
-  it("renders agent node with add resource buttons", () => {
+  it('renders agent node with add resource buttons', () => {
     render(<AgentFlow {...mockProps} />);
     // The agent node buttons are rendered through ReactFlow, so we check ReactFlow is rendered
-    expect(screen.getByTestId("react-flow")).toBeInTheDocument();
+    expect(screen.getByTestId('react-flow')).toBeInTheDocument();
   });
 
-  it("renders resource nodes with action buttons", () => {
+  it('renders resource nodes with action buttons', () => {
     render(<AgentFlow {...mockProps} />);
     // The resource node buttons are rendered through ReactFlow, so we check ReactFlow is rendered
-    expect(screen.getByTestId("react-flow")).toBeInTheDocument();
+    expect(screen.getByTestId('react-flow')).toBeInTheDocument();
   });
 
-  it("handles multiple resource types", () => {
+  it('handles multiple resource types', () => {
     render(<AgentFlow {...mockProps} />);
     // The resource types are rendered through ReactFlow, so we check ReactFlow is rendered
-    expect(screen.getByTestId("react-flow")).toBeInTheDocument();
+    expect(screen.getByTestId('react-flow')).toBeInTheDocument();
   });
 
-  it("handles active resource IDs", () => {
+  it('handles active resource IDs', () => {
     render(<AgentFlow {...mockProps} />);
     // The component should handle activeResourceIds properly
-    expect(screen.getByTestId("react-flow")).toBeInTheDocument();
+    expect(screen.getByTestId('react-flow')).toBeInTheDocument();
   });
 
-  it("handles enableTimelinePlayer prop", () => {
+  it('handles enableTimelinePlayer prop', () => {
     // Test with timeline player enabled (default)
     const { rerender } = render(<AgentFlow {...mockProps} />);
-    expect(screen.getByTestId("react-flow")).toBeInTheDocument();
+    expect(screen.getByTestId('react-flow')).toBeInTheDocument();
 
     // Test with timeline player disabled
     rerender(<AgentFlow {...mockProps} enableTimelinePlayer={false} />);
-    expect(screen.getByTestId("react-flow")).toBeInTheDocument();
+    expect(screen.getByTestId('react-flow')).toBeInTheDocument();
   });
 
-  describe("Keyboard Delete Functionality", () => {
+  describe('Keyboard Delete Functionality', () => {
     let removeEventListenerSpy: ReturnType<typeof vi.spyOn>;
 
     beforeEach(() => {
-      removeEventListenerSpy = vi.spyOn(document, "removeEventListener");
+      removeEventListenerSpy = vi.spyOn(document, 'removeEventListener');
     });
 
     afterEach(() => {
       removeEventListenerSpy.mockRestore();
     });
 
-    it("handles Backspace and Delete keyboard events when component is mounted", () => {
+    it('handles Backspace and Delete keyboard events when component is mounted', () => {
       render(<AgentFlow {...mockProps} />);
 
       // Simulate Backspace key press
-      const backspaceEvent = new KeyboardEvent("keydown", { key: "Backspace" });
+      const backspaceEvent = new KeyboardEvent('keydown', { key: 'Backspace' });
       document.dispatchEvent(backspaceEvent);
 
       // Simulate Delete key press
-      const deleteEvent = new KeyboardEvent("keydown", { key: "Delete" });
+      const deleteEvent = new KeyboardEvent('keydown', { key: 'Delete' });
       document.dispatchEvent(deleteEvent);
 
       // The event should be handled (no error thrown)
@@ -448,24 +471,24 @@ describe("AgentFlow", () => {
       expect(removeEventListenerSpy).not.toHaveBeenCalled(); // Not called until unmount
     });
 
-    it("handles Delete key events when component is mounted", () => {
+    it('handles Delete key events when component is mounted', () => {
       render(<AgentFlow {...mockProps} />);
 
       // Simulate Delete key press
-      const deleteEvent = new KeyboardEvent("keydown", { key: "Delete" });
+      const deleteEvent = new KeyboardEvent('keydown', { key: 'Delete' });
       document.dispatchEvent(deleteEvent);
 
       // The event should be handled (no error thrown)
       expect(removeEventListenerSpy).not.toHaveBeenCalled(); // Not called until unmount
     });
 
-    it("handles other keyboard events without errors", () => {
+    it('handles other keyboard events without errors', () => {
       render(<AgentFlow {...mockProps} />);
 
       // Simulate other key presses
-      const enterEvent = new KeyboardEvent("keydown", { key: "Enter" });
-      const escapeEvent = new KeyboardEvent("keydown", { key: "Escape" });
-      const tabEvent = new KeyboardEvent("keydown", { key: "Tab" });
+      const enterEvent = new KeyboardEvent('keydown', { key: 'Enter' });
+      const escapeEvent = new KeyboardEvent('keydown', { key: 'Escape' });
+      const tabEvent = new KeyboardEvent('keydown', { key: 'Tab' });
 
       document.dispatchEvent(enterEvent);
       document.dispatchEvent(escapeEvent);

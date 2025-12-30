@@ -1,14 +1,21 @@
 export const AgentIcon = ({
   w = 48,
   h = 48,
-  color = "var(--color-foreground-de-emp)",
+  color = 'var(--color-foreground-de-emp)',
 }: {
   w?: number | string;
   h?: number | string;
   color?: string;
 }) => {
   return (
-    <svg data-testid="agent-icon" fill="none" height={h} viewBox="0 0 16 16" width={w} xmlns="http://www.w3.org/2000/svg">
+    <svg
+      data-testid="agent-icon"
+      fill="none"
+      height={h}
+      viewBox="0 0 16 16"
+      width={w}
+      xmlns="http://www.w3.org/2000/svg"
+    >
       <rect height="7" rx="1.5" stroke={color} width="13.2222" x="1.38867" y="4.94434" />
       <rect fill={color} height="2.22222" rx="0.666667" width="1.33333" x="7.33398" y="7.55566" />
       <rect fill={color} height="2.22222" rx="0.666667" width="1.33333" x="10.666" y="7.55566" />

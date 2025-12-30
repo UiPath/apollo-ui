@@ -1,16 +1,26 @@
-import { forwardRef, memo, useCallback, useImperativeHandle, useMemo, useState, type CSSProperties } from "react";
-import type { Edge, Node, ReactFlowInstance } from "@uipath/uix/xyflow/react";
-import { ConnectionMode, ReactFlow } from "@uipath/uix/xyflow/react";
-import { BASE_CANVAS_DEFAULTS } from "./BaseCanvas.constants";
-import { useAutoLayout, useEnsureNodesInView, useMaintainNodesInView } from "./BaseCanvas.hooks";
-import type { BaseCanvasProps, BaseCanvasRef } from "./BaseCanvas.types";
-import { usePreventBackNavigation } from "./usePreventBackNavigation";
-import { CanvasBackground } from "./CanvasBackground";
-import { PanShortcutTeachingUI } from "./PanShortcutTeachingUI";
-import { CanvasProviders } from "./CanvasProviders";
+import {
+  forwardRef,
+  memo,
+  useCallback,
+  useImperativeHandle,
+  useMemo,
+  useState,
+  type CSSProperties,
+} from 'react';
+import type { Edge, Node, ReactFlowInstance } from '@uipath/uix/xyflow/react';
+import { ConnectionMode, ReactFlow } from '@uipath/uix/xyflow/react';
+import { BASE_CANVAS_DEFAULTS } from './BaseCanvas.constants';
+import { useAutoLayout, useEnsureNodesInView, useMaintainNodesInView } from './BaseCanvas.hooks';
+import type { BaseCanvasProps, BaseCanvasRef } from './BaseCanvas.types';
+import { usePreventBackNavigation } from './usePreventBackNavigation';
+import { CanvasBackground } from './CanvasBackground';
+import { PanShortcutTeachingUI } from './PanShortcutTeachingUI';
+import { CanvasProviders } from './CanvasProviders';
 
 const BaseCanvasInnerComponent = <NodeType extends Node = Node, EdgeType extends Edge = Edge>(
-  props: BaseCanvasProps<NodeType, EdgeType> & { innerRef?: React.Ref<BaseCanvasRef<NodeType, EdgeType>> }
+  props: BaseCanvasProps<NodeType, EdgeType> & {
+    innerRef?: React.Ref<BaseCanvasRef<NodeType, EdgeType>>;
+  }
 ) => {
   const { innerRef, fitViewOptions: fitViewOptionsProps, ...canvasProps } = props;
 
@@ -25,7 +35,7 @@ const BaseCanvasInnerComponent = <NodeType extends Node = Node, EdgeType extends
     children,
 
     // Behavior
-    mode = "view",
+    mode = 'view',
 
     // Styling
     showBackground = true,
@@ -74,17 +84,18 @@ const BaseCanvasInnerComponent = <NodeType extends Node = Node, EdgeType extends
     maintainNodesInView,
 
     // Pan Shortcut Teaching UI
-    panShortcutTeachingUIMessage = "Hold Space and drag to pan around the canvas!",
+    panShortcutTeachingUIMessage = 'Hold Space and drag to pan around the canvas!',
 
     // Remaining ReactFlow props
     ...reactFlowProps
   } = canvasProps;
 
   // Derive interactivity from mode
-  const isInteractive = mode !== "readonly";
-  const isDesignMode = mode === "design";
+  const isInteractive = mode !== 'readonly';
+  const isDesignMode = mode === 'design';
 
-  const [reactFlowInstance, setReactFlowInstance] = useState<ReactFlowInstance<NodeType, EdgeType>>();
+  const [reactFlowInstance, setReactFlowInstance] =
+    useState<ReactFlowInstance<NodeType, EdgeType>>();
 
   const { isReady } = useAutoLayout(nodes, initialAutoLayout, fitViewOptions);
   const { ensureNodesInView, ensureAllNodesInView, centerNode } = useEnsureNodesInView();
@@ -176,7 +187,9 @@ const BaseCanvasInnerComponent = <NodeType extends Node = Node, EdgeType extends
             size={backgroundSize}
           />
         )}
-        {mode === "design" && panShortcutTeachingUIMessage && <PanShortcutTeachingUI message={panShortcutTeachingUIMessage} />}
+        {mode === 'design' && panShortcutTeachingUIMessage && (
+          <PanShortcutTeachingUI message={panShortcutTeachingUIMessage} />
+        )}
         {children}
       </ReactFlow>
     </CanvasProviders>
@@ -186,11 +199,13 @@ const BaseCanvasInnerComponent = <NodeType extends Node = Node, EdgeType extends
 const BaseCanvasInner = memo(BaseCanvasInnerComponent) as typeof BaseCanvasInnerComponent;
 
 // Create the final component with proper typing
-export const BaseCanvas = forwardRef(function BaseCanvas<NodeType extends Node = Node, EdgeType extends Edge = Edge>(
-  props: BaseCanvasProps<NodeType, EdgeType>,
-  ref: React.Ref<BaseCanvasRef<NodeType, EdgeType>>
-) {
+export const BaseCanvas = forwardRef(function BaseCanvas<
+  NodeType extends Node = Node,
+  EdgeType extends Edge = Edge,
+>(props: BaseCanvasProps<NodeType, EdgeType>, ref: React.Ref<BaseCanvasRef<NodeType, EdgeType>>) {
   return <BaseCanvasInner {...props} innerRef={ref} />;
 }) as <NodeType extends Node = Node, EdgeType extends Edge = Edge>(
-  props: BaseCanvasProps<NodeType, EdgeType> & { ref?: React.Ref<BaseCanvasRef<NodeType, EdgeType>> }
+  props: BaseCanvasProps<NodeType, EdgeType> & {
+    ref?: React.Ref<BaseCanvasRef<NodeType, EdgeType>>;
+  }
 ) => JSX.Element;

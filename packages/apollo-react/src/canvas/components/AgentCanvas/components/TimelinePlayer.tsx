@@ -1,10 +1,10 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { DateTime } from "luxon";
-import { FontVariantToken, Spacing } from "@uipath/apollo-core";
-import { ApIconButton, ApTypography, type IRawSpan } from "@uipath/portal-shell-react";
-import { Column, Row, Icons } from "@uipath/uix/core";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { DateTime } from 'luxon';
+import { FontVariantToken, Spacing } from '@uipath/apollo-core';
+import { ApIconButton, ApTypography, type IRawSpan } from '@uipath/portal-shell-react';
+import { Column, Row, Icons } from '@uipath/uix/core';
 
-import type { NormalizedSpan } from "./TimelinePlayer.utils";
+import type { NormalizedSpan } from './TimelinePlayer.utils';
 import {
   normalizeSpans,
   findAgentRunSpan,
@@ -12,13 +12,13 @@ import {
   filterChildSpans,
   calculateDurationMs,
   shouldRenderTimelinePlayer,
-} from "./TimelinePlayer.utils";
+} from './TimelinePlayer.utils';
 
 const PERCENTAGE_MULTIPLIER = 100;
 const SECONDS_PER_MINUTE = 60;
 const MILLISECONDS_PER_SECOND = 1000;
 const TIME_PADDING_DIGITS = 2;
-const TIME_PADDING_CHAR = "0";
+const TIME_PADDING_CHAR = '0';
 const SPAN_Z_INDEX_INACTIVE = 2;
 const TIMELINE_BAR_HEIGHT = 30;
 const TIMELINE_TRACK_BAR_HEIGHT = 4;
@@ -29,19 +29,21 @@ const SPEED_LEVEL_2 = 2;
 const SPEED_LEVEL_3 = 3;
 const SPEED_LEVEL_4 = 5;
 
-const TimelineBar = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>((props, ref) => (
-  <div
-    ref={ref}
-    {...props}
-    style={{
-      position: "relative",
-      height: `${TIMELINE_BAR_HEIGHT}px`,
-      flex: 1,
-      cursor: "pointer",
-      ...props.style,
-    }}
-  />
-));
+const TimelineBar = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
+  (props, ref) => (
+    <div
+      ref={ref}
+      {...props}
+      style={{
+        position: 'relative',
+        height: `${TIMELINE_BAR_HEIGHT}px`,
+        flex: 1,
+        cursor: 'pointer',
+        ...props.style,
+      }}
+    />
+  )
+);
 
 const SpanBlock: React.FC<{
   left: number;
@@ -52,14 +54,23 @@ const SpanBlock: React.FC<{
   title?: string;
   status?: number;
   progressPosition?: number; // Current progress position as percentage (0-100)
-}> = ({ left, width, isActive = false, isPlayed = false, depth = 0, title, status, progressPosition = 0 }) => {
+}> = ({
+  left,
+  width,
+  isActive = false,
+  isPlayed = false,
+  depth = 0,
+  title,
+  status,
+  progressPosition = 0,
+}) => {
   const [isHovered, setIsHovered] = useState(false);
 
   const getStatusColor = () => {
-    if (status === 1) return "var(--uix-canvas-success-icon)"; // Green for success
-    if (status === 2) return "var(--uix-canvas-error-icon)"; // Red for error
-    if (status === 3) return "var(--uix-canvas-info-icon)"; // Blue for running
-    return "var(--uix-canvas-border-de-emp)"; // Default gray
+    if (status === 1) return 'var(--uix-canvas-success-icon)'; // Green for success
+    if (status === 2) return 'var(--uix-canvas-error-icon)'; // Red for error
+    if (status === 3) return 'var(--uix-canvas-info-icon)'; // Blue for running
+    return 'var(--uix-canvas-border-de-emp)'; // Default gray
   };
 
   const getBackgroundStyle = () => {
@@ -68,7 +79,7 @@ const SpanBlock: React.FC<{
       return { backgroundColor: getStatusColor() };
     }
 
-    return { backgroundColor: "var(--uix-canvas-border-de-emp)" };
+    return { backgroundColor: 'var(--uix-canvas-border-de-emp)' };
   };
 
   const getBaseBackgroundStyle = () => {
@@ -76,7 +87,7 @@ const SpanBlock: React.FC<{
 
     if (hasPartialElements) {
       // Transparent background allows partial blue/gray elements to show
-      return { backgroundColor: "transparent" };
+      return { backgroundColor: 'transparent' };
     } else {
       // Use standard background logic (status colors for played, gray for unplayed)
       return getBackgroundStyle();
@@ -108,29 +119,29 @@ const SpanBlock: React.FC<{
           {/* Blue running portion */}
           <div
             style={{
-              position: "absolute",
+              position: 'absolute',
               top: 0,
               left: 0,
               width: `${progressWithinSpan}%`,
-              height: "100%",
-              backgroundColor: "var(--uix-canvas-info-icon)",
-              borderRadius: "var(--Small, 2px)",
-              borderTopRightRadius: progressWithinSpan === 100 ? "var(--Small, 2px)" : 0,
-              borderBottomRightRadius: progressWithinSpan === 100 ? "var(--Small, 2px)" : 0,
+              height: '100%',
+              backgroundColor: 'var(--uix-canvas-info-icon)',
+              borderRadius: 'var(--Small, 2px)',
+              borderTopRightRadius: progressWithinSpan === 100 ? 'var(--Small, 2px)' : 0,
+              borderBottomRightRadius: progressWithinSpan === 100 ? 'var(--Small, 2px)' : 0,
             }}
           />
           {/* Remaining gray portion */}
           <div
             style={{
-              position: "absolute",
+              position: 'absolute',
               top: 0,
               left: `${progressWithinSpan}%`,
               width: `${100 - progressWithinSpan}%`,
-              height: "100%",
-              backgroundColor: "var(--uix-canvas-border-de-emp)",
-              borderRadius: "var(--Small, 2px)",
-              borderTopLeftRadius: progressWithinSpan === 0 ? "var(--Small, 2px)" : 0,
-              borderBottomLeftRadius: progressWithinSpan === 0 ? "var(--Small, 2px)" : 0,
+              height: '100%',
+              backgroundColor: 'var(--uix-canvas-border-de-emp)',
+              borderRadius: 'var(--Small, 2px)',
+              borderTopLeftRadius: progressWithinSpan === 0 ? 'var(--Small, 2px)' : 0,
+              borderBottomLeftRadius: progressWithinSpan === 0 ? 'var(--Small, 2px)' : 0,
             }}
           />
         </>
@@ -144,19 +155,19 @@ const SpanBlock: React.FC<{
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       style={{
-        position: "absolute",
+        position: 'absolute',
         top: `${(TIMELINE_BAR_HEIGHT - TIMELINE_SPAN_HEIGHT) / 2}px`,
         ...getBaseBackgroundStyle(),
-        borderRadius: "var(--Small, 2px)",
+        borderRadius: 'var(--Small, 2px)',
         left: `${left}%`,
         width: `${width}%`,
         height: `${TIMELINE_SPAN_HEIGHT}px`,
-        boxShadow: "inset 0 0 0 0px rgba(0, 0, 0, 0.1)",
+        boxShadow: 'inset 0 0 0 0px rgba(0, 0, 0, 0.1)',
         zIndex: SPAN_Z_INDEX_INACTIVE + depth + (isActive ? 1 : 0) + (isHovered ? 2 : 0),
-        transition: "all 0.2s ease-in-out",
-        transform: isActive || isHovered ? "scaleY(1.1)" : "scaleY(1)",
-        cursor: "pointer",
-        overflow: "hidden",
+        transition: 'all 0.2s ease-in-out',
+        transform: isActive || isHovered ? 'scaleY(1.1)' : 'scaleY(1)',
+        cursor: 'pointer',
+        overflow: 'hidden',
       }}
     >
       {getPartialElements()}
@@ -167,12 +178,12 @@ const SpanBlock: React.FC<{
 const TrackBar: React.FC = () => (
   <div
     style={{
-      position: "absolute",
+      position: 'absolute',
       top: `${TIMELINE_BAR_HEIGHT / 2 - TIMELINE_TRACK_BAR_HEIGHT / 2}px`,
-      backgroundColor: "var(--uix-canvas-background)",
+      backgroundColor: 'var(--uix-canvas-background)',
       height: `${TIMELINE_TRACK_BAR_HEIGHT}px`,
-      borderRadius: "2px",
-      width: "100%",
+      borderRadius: '2px',
+      width: '100%',
       zIndex: 0,
     }}
   />
@@ -181,15 +192,19 @@ const TrackBar: React.FC = () => (
 const Scrubber: React.FC<{ left: number }> = ({ left }) => (
   <div
     style={{
-      position: "absolute",
+      position: 'absolute',
       top: `${TIMELINE_BAR_HEIGHT / 2 - SCRUBBER_SIZE / 2}px`,
       left: `calc(${left}% - ${SCRUBBER_SIZE / 2}px)`,
-      display: "flex",
+      display: 'flex',
       zIndex: 100,
-      cursor: "ew-resize",
+      cursor: 'ew-resize',
     }}
   >
-    <Icons.TimelineProgressIcon w={10} h={10} color="color-mix(in srgb, var(--uix-canvas-info-icon) 85%, black)" />
+    <Icons.TimelineProgressIcon
+      w={10}
+      h={10}
+      color="color-mix(in srgb, var(--uix-canvas-info-icon) 85%, black)"
+    />
   </div>
 );
 
@@ -280,7 +295,9 @@ export const TimelinePlayer: React.FC<{
     // Calculate current absolute time using the same timeline as visual spans
     const currentAbsoluteTime = timelineInfo.minStart + progress * timelineInfo.duration;
 
-    return spanTimes.filter((span) => currentAbsoluteTime >= span.start && currentAbsoluteTime <= span.end).map((span) => span.id);
+    return spanTimes
+      .filter((span) => currentAbsoluteTime >= span.start && currentAbsoluteTime <= span.end)
+      .map((span) => span.id);
   }, [progress, spanTimes, timelineInfo]);
 
   // Calculate which spans have been played (timeline progress has reached their start time)
@@ -300,7 +317,9 @@ export const TimelinePlayer: React.FC<{
     }
     // Find the active span with the highest depth (most specific/deepest in hierarchy)
     const activeSpans = normalizedSpans.filter((span) => activeSpanIds.includes(span.Id));
-    return activeSpans.reduce((deepest, current) => (current.depth > deepest.depth ? current : deepest));
+    return activeSpans.reduce((deepest, current) =>
+      current.depth > deepest.depth ? current : deepest
+    );
   }, [activeSpanIds, normalizedSpans]);
 
   const previousMostActiveSpanId = useRef<string | null>(null);
@@ -308,7 +327,7 @@ export const TimelinePlayer: React.FC<{
     if (!enableTimelinePlayer) return;
     const currentSpanId = mostActiveSpan?.Id || null;
     if (currentSpanId !== previousMostActiveSpanId.current) {
-      const event = new CustomEvent("activeSpanChange", {
+      const event = new CustomEvent('activeSpanChange', {
         detail: currentSpanId,
       });
       window.dispatchEvent(event);
@@ -352,11 +371,11 @@ export const TimelinePlayer: React.FC<{
 
   useEffect(() => {
     if (isDragging) {
-      document.addEventListener("mousemove", handleMouseMove);
-      document.addEventListener("mouseup", handleMouseUp);
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
       return () => {
-        document.removeEventListener("mousemove", handleMouseMove);
-        document.removeEventListener("mouseup", handleMouseUp);
+        document.removeEventListener('mousemove', handleMouseMove);
+        document.removeEventListener('mouseup', handleMouseUp);
       };
     }
   }, [isDragging, handleMouseMove, handleMouseUp]);
@@ -451,10 +470,10 @@ export const TimelinePlayer: React.FC<{
       gap={Spacing.SpacingXs}
       minW={640}
       style={{
-        backgroundColor: "var(--uix-canvas-background-secondary)",
-        color: "var(--uix-canvas-foreground)",
-        borderRadius: "8px",
-        border: "1px solid var(--uix-canvas-border-de-emp)",
+        backgroundColor: 'var(--uix-canvas-background-secondary)',
+        color: 'var(--uix-canvas-foreground)',
+        borderRadius: '8px',
+        border: '1px solid var(--uix-canvas-border-de-emp)',
       }}
     >
       <Row align="center" gap={Spacing.SpacingXs}>
@@ -479,7 +498,7 @@ export const TimelinePlayer: React.FC<{
         </ApIconButton>
       </Row>
 
-      <Row align="center" style={{ marginLeft: "15px" }}>
+      <Row align="center" style={{ marginLeft: '15px' }}>
         <TimelineBar ref={timelineRef} onClick={handleTimelineClick} onMouseDown={handleMouseDown}>
           <TrackBar />
 

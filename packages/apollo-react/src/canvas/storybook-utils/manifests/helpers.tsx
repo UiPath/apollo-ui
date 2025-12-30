@@ -1,10 +1,10 @@
-import React from "react";
-import { Position } from "@uipath/uix/xyflow/react";
-import { Icons } from "@uipath/uix/core";
-import type { HandleConfiguration } from "../../components/BaseNode/BaseNode.types";
-import type { BaseNodeData } from "../../components/BaseNode/BaseNode.types";
-import type { ManifestHandleGroup } from "./types";
-import { icons } from "lucide-react";
+import React from 'react';
+import { Position } from '@uipath/uix/xyflow/react';
+import { Icons } from '@uipath/uix/core';
+import type { HandleConfiguration } from '../../components/BaseNode/BaseNode.types';
+import type { BaseNodeData } from '../../components/BaseNode/BaseNode.types';
+import type { ManifestHandleGroup } from './types';
+import { icons } from 'lucide-react';
 
 export type IconComponent = (props: { w?: number; h?: number }) => JSX.Element;
 
@@ -14,15 +14,15 @@ export type IconComponent = (props: { w?: number; h?: number }) => JSX.Element;
  */
 const iconRegistry: Record<string, IconComponent> = {
   // UIPath icons
-  "uipath.agent": ({ w, h }) => <Icons.AgentProject w={w ?? 29} h={h ?? 28} />,
-  "uipath.connector": ({ w, h }) => <Icons.ConnectorBuilderProject w={w ?? 29} h={h ?? 28} />,
-  "uipath.data-tools": ({ w, h }) => <Icons.DataAndTools w={w ?? 29} h={h ?? 28} />,
-  "uipath.control-flow": ({ w, h }) => <Icons.ControlFlowIcon w={w ?? 29} h={h ?? 28} />,
-  "uipath.human-task": ({ w, h }) => <Icons.WebAppProject w={w ?? 29} h={h ?? 28} />,
-  "uipath.rpa": ({ w, h }) => <Icons.RpaProject w={w ?? 29} h={h ?? 28} />,
-  "uipath.api": ({ w, h }) => <Icons.ApiProject w={w ?? 29} h={h ?? 28} />,
-  "uipath.decision": ({ w, h }) => <Icons.DecisionIcon w={w ?? 24} h={h ?? 24} />,
-  "uipath.switch": ({ w, h }) => <Icons.SwitchIcon w={w ?? 24} h={h ?? 24} />,
+  'uipath.agent': ({ w, h }) => <Icons.AgentProject w={w ?? 29} h={h ?? 28} />,
+  'uipath.connector': ({ w, h }) => <Icons.ConnectorBuilderProject w={w ?? 29} h={h ?? 28} />,
+  'uipath.data-tools': ({ w, h }) => <Icons.DataAndTools w={w ?? 29} h={h ?? 28} />,
+  'uipath.control-flow': ({ w, h }) => <Icons.ControlFlowIcon w={w ?? 29} h={h ?? 28} />,
+  'uipath.human-task': ({ w, h }) => <Icons.WebAppProject w={w ?? 29} h={h ?? 28} />,
+  'uipath.rpa': ({ w, h }) => <Icons.RpaProject w={w ?? 29} h={h ?? 28} />,
+  'uipath.api': ({ w, h }) => <Icons.ApiProject w={w ?? 29} h={h ?? 28} />,
+  'uipath.decision': ({ w, h }) => <Icons.DecisionIcon w={w ?? 24} h={h ?? 24} />,
+  'uipath.switch': ({ w, h }) => <Icons.SwitchIcon w={w ?? 24} h={h ?? 24} />,
 };
 
 /**
@@ -31,9 +31,9 @@ const iconRegistry: Record<string, IconComponent> = {
  */
 function kebabToPascal(str: string): string {
   return str
-    .split("-")
+    .split('-')
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join("");
+    .join('');
 }
 
 /**
@@ -50,7 +50,9 @@ export function getIcon(iconId: string): IconComponent {
 
   // Try to get lucide icon - convert kebab-case to PascalCase
   const pascalCaseId = kebabToPascal(iconId);
-  const LucideIcon = (icons as Record<string, React.ComponentType<{ width?: number; height?: number }>>)[pascalCaseId];
+  const LucideIcon = (
+    icons as Record<string, React.ComponentType<{ width?: number; height?: number }>>
+  )[pascalCaseId];
   if (LucideIcon) {
     return ({ w, h }) => <LucideIcon width={w ?? 24} height={h ?? 24} />;
   }
@@ -63,7 +65,7 @@ export function getIcon(iconId: string): IconComponent {
 /**
  * Position string to React Flow Position enum mapping.
  */
-const positionToEnum: Record<ManifestHandleGroup["position"], Position> = {
+const positionToEnum: Record<ManifestHandleGroup['position'], Position> = {
   top: Position.Top,
   right: Position.Right,
   bottom: Position.Bottom,
@@ -107,7 +109,7 @@ export function resolveHandleGroups(
       type: handle.type,
       handleType: handle.handleType,
       label: handle.label,
-      showButton: handle.type === "source",
+      showButton: handle.type === 'source',
     })),
   }));
 }

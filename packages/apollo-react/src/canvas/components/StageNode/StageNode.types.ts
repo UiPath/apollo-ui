@@ -1,16 +1,16 @@
-import type { NodeProps } from "@uipath/uix/xyflow/react";
-import type { NodeMenuItem } from "../NodeContextMenu";
-import type { ListItem, ToolboxSearchHandler } from "../Toolbox";
+import type { NodeProps } from '@uipath/uix/xyflow/react';
+import type { NodeMenuItem } from '../NodeContextMenu';
+import type { ListItem, ToolboxSearchHandler } from '../Toolbox';
 
 enum ElementStatusValues {
-  Cancelled = "Cancelled",
-  Completed = "Completed",
-  UserCancelled = "UserCancelled",
-  Failed = "Failed",
-  InProgress = "InProgress",
-  NotExecuted = "NotExecuted",
-  Paused = "Paused",
-  Terminated = "Terminated",
+  Cancelled = 'Cancelled',
+  Completed = 'Completed',
+  UserCancelled = 'UserCancelled',
+  Failed = 'Failed',
+  InProgress = 'InProgress',
+  NotExecuted = 'NotExecuted',
+  Paused = 'Paused',
+  Terminated = 'Terminated',
 }
 
 export type StageStatus = `${ElementStatusValues}`;
@@ -53,7 +53,11 @@ export interface StageNodeProps extends NodeProps {
   onAddTaskFromToolbox?: (taskItem: ListItem) => void;
   onTaskToolboxSearch?: ToolboxSearchHandler;
   onTaskClick?: (taskElementId: string) => void;
-  onTaskGroupModification?: (groupModificationType: GroupModificationType, groupIndex: number, taskIndex: number) => void;
+  onTaskGroupModification?: (
+    groupModificationType: GroupModificationType,
+    groupIndex: number,
+    taskIndex: number
+  ) => void;
   onStageTitleChange?: (newTitle: string) => void;
   onTaskReorder?: (reorderedTasks: StageTaskItem[][]) => void;
 }
@@ -65,17 +69,17 @@ export interface StageTaskExecution {
   duration?: string;
   retryDuration?: string;
   badge?: string;
-  badgeStatus?: "warning" | "info" | "error";
+  badgeStatus?: 'warning' | 'info' | 'error';
   retryCount?: number;
 }
 
 export enum GroupModificationType {
-  TASK_GROUP_UP = "task_group_up",
-  TASK_GROUP_DOWN = "task_group_down",
-  UNGROUP_ALL_TASKS = "ungroup_all_tasks",
-  SPLIT_GROUP = "split_group",
-  MERGE_GROUP_UP = "merge_group_up",
-  MERGE_GROUP_DOWN = "merge_group_down",
-  REMOVE_TASK = "remove_task",
-  REMOVE_GROUP = "remove_group",
+  TASK_GROUP_UP = 'task_group_up',
+  TASK_GROUP_DOWN = 'task_group_down',
+  UNGROUP_ALL_TASKS = 'ungroup_all_tasks',
+  SPLIT_GROUP = 'split_group',
+  MERGE_GROUP_UP = 'merge_group_up',
+  MERGE_GROUP_DOWN = 'merge_group_down',
+  REMOVE_TASK = 'remove_task',
+  REMOVE_GROUP = 'remove_group',
 }

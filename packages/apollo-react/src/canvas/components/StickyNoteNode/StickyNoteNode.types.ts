@@ -3,11 +3,11 @@
  * Use `withAlpha()` to derive background colors with transparency.
  */
 export const STICKY_NOTE_COLORS = {
-  blue: "#42A1FF",
-  green: "#6EB84A",
-  yellow: "#FFB40E",
-  pink: "#ED145B",
-  white: "var(--uix-canvas-border)",
+  blue: '#42A1FF',
+  green: '#6EB84A',
+  yellow: '#FFB40E',
+  pink: '#ED145B',
+  white: 'var(--uix-canvas-border)',
 } as const;
 
 export type StickyNoteColor = keyof typeof STICKY_NOTE_COLORS;
@@ -33,20 +33,20 @@ export function withAlpha(hex: string, alpha: number = STICKY_NOTE_BG_ALPHA): st
   const clampedAlpha = Math.max(0, Math.min(1, alpha));
 
   // Handle CSS variables - can't parse them, so use color-mix as fallback
-  if (hex.startsWith("var(")) {
+  if (hex.startsWith('var(')) {
     return `color-mix(in srgb, ${hex} ${Math.round(clampedAlpha * 100)}%, transparent)`;
   }
 
   // Normalize hex string: add leading # if missing
-  let normalized = hex.startsWith("#") ? hex : `#${hex}`;
+  let normalized = hex.startsWith('#') ? hex : `#${hex}`;
 
   // Expand 3-digit shorthand hex to 6-digit
   if (/^#([a-fA-F0-9]{3})$/.test(normalized)) {
     normalized = `#${normalized
       .slice(1)
-      .split("")
+      .split('')
       .map((c) => c + c)
-      .join("")}`;
+      .join('')}`;
   }
 
   const r = parseInt(normalized.slice(1, 3), 16);

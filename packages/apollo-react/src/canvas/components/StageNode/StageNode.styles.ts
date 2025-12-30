@@ -1,14 +1,18 @@
-import styled from "@emotion/styled";
-import { css } from "@emotion/react";
-import { Colors } from "@uipath/apollo-core";
-import type { StageStatus } from "./StageNode.types";
+import styled from '@emotion/styled';
+import { css } from '@emotion/react';
+import { Colors } from '@uipath/apollo-core';
+import type { StageStatus } from './StageNode.types';
 
 export const INDENTATION_WIDTH = 30;
 export const STAGE_CONTENT_PADDING_X = 16;
 export const STAGE_BORDER_WIDTH = 1;
 export const STAGE_CONTENT_INSET = STAGE_CONTENT_PADDING_X * 2 + STAGE_BORDER_WIDTH * 2;
 
-export const StageContainer = styled.div<{ selected?: boolean; status?: StageStatus; isException?: boolean }>`
+export const StageContainer = styled.div<{
+  selected?: boolean;
+  status?: StageStatus;
+  isException?: boolean;
+}>`
   position: relative;
   min-width: 200px;
   min-height: 120px;
@@ -34,31 +38,31 @@ export const StageContainer = styled.div<{ selected?: boolean; status?: StageSta
     `}
 
   ${({ status }) =>
-    status === "Completed" &&
+    status === 'Completed' &&
     css`
       border-color: var(--uix-canvas-success-icon);
     `}
 
   ${({ status }) =>
-    status === "InProgress" &&
+    status === 'InProgress' &&
     css`
       border-color: var(--uix-canvas-info-icon);
     `}
 
   ${({ status }) =>
-    status === "Paused" &&
+    status === 'Paused' &&
     css`
       border-color: var(--uix-canvas-warning-icon);
     `}
 
   ${({ status }) =>
-    status === "Failed" &&
+    status === 'Failed' &&
     css`
       border-color: var(--uix-canvas-error-icon);
     `}
 
   ${({ status }) =>
-    status === "NotExecuted" &&
+    status === 'NotExecuted' &&
     css`
       opacity: 0.8;
     `}
@@ -77,7 +81,9 @@ export const StageHeader = styled.div<{ isException?: boolean }>`
   justify-content: space-between;
   padding: 12px 16px;
   border-bottom: ${(props) =>
-    props.isException ? "2px dashed var(--uix-canvas-border-de-emp)" : "solid 1px var(--uix-canvas-border-de-emp)"};
+    props.isException
+      ? '2px dashed var(--uix-canvas-border-de-emp)'
+      : 'solid 1px var(--uix-canvas-border-de-emp)'};
   background: var(--uix-canvas-background);
   border-radius: 12px 12px 0 0;
   overflow: hidden;
@@ -87,10 +93,14 @@ export const StageTitleContainer = styled.div<{ isEditing?: boolean }>`
   display: inline-block;
   border-radius: 4px;
   height: 100%;
-  border: ${(props) => (props.isEditing ? "1px solid var(--uix-canvas-border-de-emp)" : "none")};
+  border: ${(props) => (props.isEditing ? '1px solid var(--uix-canvas-border-de-emp)' : 'none')};
 `;
 
-export const StageTitleInput = styled.input<{ isEditing?: boolean; isStageTitleEditable?: boolean; value?: string }>`
+export const StageTitleInput = styled.input<{
+  isEditing?: boolean;
+  isStageTitleEditable?: boolean;
+  value?: string;
+}>`
   font-family: inherit;
   font-size: inherit;
   font-weight: inherit;
@@ -102,15 +112,18 @@ export const StageTitleInput = styled.input<{ isEditing?: boolean; isStageTitleE
   min-width: 100px;
   width: max-content;
   max-width: 180px;
-  padding: ${(props) => (props.isStageTitleEditable ? "none" : "4px 0px")};
+  padding: ${(props) => (props.isStageTitleEditable ? 'none' : '4px 0px')};
 
   &:focus {
     outline: none;
   }
 
   &:hover {
-    cursor: ${(props) => (props.isStageTitleEditable ? "text" : "pointer")};
-    background: ${(props) => (props.isEditing || props.isStageTitleEditable ? "var(--uix-canvas-background-secondary)" : "transparent")};
+    cursor: ${(props) => (props.isStageTitleEditable ? 'text' : 'pointer')};
+    background: ${(props) =>
+      props.isEditing || props.isStageTitleEditable
+        ? 'var(--uix-canvas-background-secondary)'
+        : 'transparent'};
   }
 `;
 
@@ -138,7 +151,7 @@ export const StageTaskGroup = styled.div<{ isParallel?: boolean }>`
   display: flex;
   flex-direction: column;
   gap: 4px;
-  margin-left: ${({ isParallel }) => (isParallel ? `${INDENTATION_WIDTH}px` : "0")};
+  margin-left: ${({ isParallel }) => (isParallel ? `${INDENTATION_WIDTH}px` : '0')};
 `;
 
 export const StageParallelLabel = styled.div`
@@ -167,11 +180,17 @@ export const StageParallelBracket = styled.div`
 `;
 
 export const StageTaskWrapper = styled.div<{ isParallel?: boolean }>`
-  width: ${({ isParallel }) => (isParallel ? "var(--stage-task-width-parallel, 216px)" : "var(--stage-task-width, 246px)")};
+  width: ${({ isParallel }) =>
+    isParallel ? 'var(--stage-task-width-parallel, 216px)' : 'var(--stage-task-width, 246px)'};
   height: 40px;
 `;
 
-export const StageTask = styled.div<{ status?: StageStatus; selected?: boolean; isParallel?: boolean; isDragEnabled?: boolean }>`
+export const StageTask = styled.div<{
+  status?: StageStatus;
+  selected?: boolean;
+  isParallel?: boolean;
+  isDragEnabled?: boolean;
+}>`
   position: relative;
   display: flex;
   align-items: center;
@@ -185,8 +204,12 @@ export const StageTask = styled.div<{ status?: StageStatus; selected?: boolean; 
   transition: all 0.2s ease;
   min-height: 36px;
   width: ${({ isParallel, isDragEnabled }) =>
-    isDragEnabled ? "100%" : isParallel ? "var(--stage-task-width-parallel, 216px)" : "var(--stage-task-width, 246px)"};
-  height: ${({ isDragEnabled }) => (isDragEnabled ? "100%" : "auto")};
+    isDragEnabled
+      ? '100%'
+      : isParallel
+        ? 'var(--stage-task-width-parallel, 216px)'
+        : 'var(--stage-task-width, 246px)'};
+  height: ${({ isDragEnabled }) => (isDragEnabled ? '100%' : 'auto')};
 
   .task-remove-button {
     display: none;
@@ -197,25 +220,25 @@ export const StageTask = styled.div<{ status?: StageStatus; selected?: boolean; 
   }
 
   ${({ status }) =>
-    status === "InProgress" &&
+    status === 'InProgress' &&
     css`
       border-color: var(--uix-canvas-info-icon);
     `}
 
   ${({ status }) =>
-    status === "Completed" &&
+    status === 'Completed' &&
     css`
       border-color: var(--uix-canvas-success-icon);
     `}
 
   ${({ status }) =>
-    status === "Paused" &&
+    status === 'Paused' &&
     css`
       border-color: var(--uix-canvas-warning-icon);
     `}
 
   ${({ status }) =>
-    status === "Failed" &&
+    status === 'Failed' &&
     css`
       border-color: var(--uix-canvas-error-icon);
     `}
@@ -242,21 +265,21 @@ export const StageTaskIcon = styled.div`
   }
 `;
 
-export const StageTaskRetryDuration = styled.div<{ status?: "warning" | "info" | "error" }>`
+export const StageTaskRetryDuration = styled.div<{ status?: 'warning' | 'info' | 'error' }>`
   ${({ status }) =>
-    status === "info" &&
+    status === 'info' &&
     css`
       color: var(--uix-canvas-info-text);
     `}
 
   ${({ status }) =>
-    status === "warning" &&
+    status === 'warning' &&
     css`
       color: var(--uix-canvas-warning-text);
     `}
 
   ${({ status }) =>
-    status === "error" &&
+    status === 'error' &&
     css`
       color: var(--uix-canvas-error-text);
     `}
@@ -294,5 +317,8 @@ export const StageTaskDragPlaceholder = styled.div<{ isTargetParallel?: boolean 
   border-radius: 6px;
 
   height: 100%;
-  width: ${({ isTargetParallel }) => (isTargetParallel ? "var(--stage-task-width-parallel, 216px)" : "var(--stage-task-width, 246px)")};
+  width: ${({ isTargetParallel }) =>
+    isTargetParallel
+      ? 'var(--stage-task-width-parallel, 216px)'
+      : 'var(--stage-task-width, 246px)'};
 `;

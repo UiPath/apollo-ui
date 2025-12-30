@@ -1,25 +1,25 @@
 export const alignMap = {
-  start: "flex-start",
-  end: "flex-end",
-  "flex-start": "flex-start",
-  "flex-end": "flex-end",
-  center: "center",
-  stretch: "stretch",
-  baseline: "baseline",
+  start: 'flex-start',
+  end: 'flex-end',
+  'flex-start': 'flex-start',
+  'flex-end': 'flex-end',
+  center: 'center',
+  stretch: 'stretch',
+  baseline: 'baseline',
 };
 
 export const justifyMap = {
-  start: "flex-start",
-  end: "flex-end",
-  "flex-start": "flex-start",
-  "flex-end": "flex-end",
-  center: "center",
-  between: "space-between",
-  around: "space-around",
-  evenly: "space-evenly",
-  "space-between": "space-between",
-  "space-around": "space-around",
-  "space-evenly": "space-evenly",
+  start: 'flex-start',
+  end: 'flex-end',
+  'flex-start': 'flex-start',
+  'flex-end': 'flex-end',
+  center: 'center',
+  between: 'space-between',
+  around: 'space-around',
+  evenly: 'space-evenly',
+  'space-between': 'space-between',
+  'space-around': 'space-around',
+  'space-evenly': 'space-evenly',
 };
 
 export function calcSpacingPx(value?: number | string) {
@@ -27,11 +27,11 @@ export function calcSpacingPx(value?: number | string) {
     return undefined;
   }
 
-  if (typeof value === "number") {
+  if (typeof value === 'number') {
     return `${value}px`;
   }
 
-  if (typeof value === "string") {
+  if (typeof value === 'string') {
     return value;
   }
 
@@ -71,13 +71,13 @@ export interface SpacingProps {
 
 export interface FlexProps {
   /** Flex direction */
-  direction?: "row" | "column" | "row-reverse" | "column-reverse";
+  direction?: 'row' | 'column' | 'row-reverse' | 'column-reverse';
   /** Alignment of items along cross axis */
   align?: keyof typeof alignMap;
   /** Justification of items along main axis */
   justify?: keyof typeof justifyMap;
   /** Flex wrap behavior */
-  wrap?: "nowrap" | "wrap-reverse" | "wrap";
+  wrap?: 'nowrap' | 'wrap-reverse' | 'wrap';
   /** Gap between items */
   gap?: number | string;
   /** Flex grow/shrink/basis */
@@ -92,7 +92,7 @@ export interface GridProps {
   /** Grid template areas */
   templateAreas?: string;
   /** Grid auto flow */
-  autoFlow?: "row" | "column" | "dense" | "row dense" | "column dense";
+  autoFlow?: 'row' | 'column' | 'dense' | 'row dense' | 'column dense';
   /** Grid auto columns */
   autoColumns?: string;
   /** Grid auto rows */
@@ -134,14 +134,14 @@ export interface SizeProps {
 
 export interface OverflowProps {
   /** Overflow behavior */
-  overflow?: "auto" | "clip" | "hidden" | "scroll" | "visible";
+  overflow?: 'auto' | 'clip' | 'hidden' | 'scroll' | 'visible';
   /** Horizontal overflow behavior */
-  overflowX?: "auto" | "clip" | "hidden" | "scroll" | "visible";
+  overflowX?: 'auto' | 'clip' | 'hidden' | 'scroll' | 'visible';
   /** Vertical overflow behavior */
-  overflowY?: "auto" | "clip" | "hidden" | "scroll" | "visible";
+  overflowY?: 'auto' | 'clip' | 'hidden' | 'scroll' | 'visible';
 }
 
 export interface PositionProps {
   /** Position type */
-  position?: "absolute" | "fixed" | "relative" | "sticky";
+  position?: 'absolute' | 'fixed' | 'relative' | 'sticky';
 }

@@ -1,11 +1,11 @@
-import { render } from "@testing-library/react";
-import { Position } from "@uipath/uix/xyflow/react";
-import { describe, expect, it, vi } from "vitest";
-import type { EdgeProps } from "@uipath/uix/xyflow/react";
-import { Edge } from "./Edge";
+import { render } from '@testing-library/react';
+import { Position } from '@uipath/uix/xyflow/react';
+import { describe, expect, it, vi } from 'vitest';
+import type { EdgeProps } from '@uipath/uix/xyflow/react';
+import { Edge } from './Edge';
 
 // Mock StaticEdge
-vi.mock("./StaticEdge", () => ({
+vi.mock('./StaticEdge', () => ({
   StaticEdge: (props: Record<string, unknown>) => {
     // Filter out EdgeProps that would cause React warnings
     const {
@@ -41,22 +41,22 @@ vi.mock("./StaticEdge", () => ({
 
 // Mock useAgentFlowStore
 const mockNodes = [
-  { id: "agent", type: "agent" },
+  { id: 'agent', type: 'agent' },
   {
-    id: "resource",
-    type: "resource",
+    id: 'resource',
+    type: 'resource',
     selected: true,
     data: { hasError: false, hasSuccess: false, hasRunning: false },
   },
 ];
-vi.mock("../store/agent-flow-store", () => ({
+vi.mock('../store/agent-flow-store', () => ({
   useAgentFlowStore: () => ({
     nodes: mockNodes,
-    props: { mode: "view" }, // Add props with mode
+    props: { mode: 'view' }, // Add props with mode
   }),
 }));
 
-const baseEdgeProps: Omit<EdgeProps, "id" | "source" | "target"> = {
+const baseEdgeProps: Omit<EdgeProps, 'id' | 'source' | 'target'> = {
   sourceX: 0,
   sourceY: 0,
   targetX: 0,
@@ -80,18 +80,18 @@ const baseEdgeProps: Omit<EdgeProps, "id" | "source" | "target"> = {
   selectable: undefined,
 };
 
-describe("Edge", () => {
-  it("renders StaticEdge", () => {
+describe('Edge', () => {
+  it('renders StaticEdge', () => {
     // Neither agent nor resource is selected
     const props: EdgeProps = {
       ...baseEdgeProps,
-      id: "test-edge",
-      source: "agent",
-      target: "resource",
+      id: 'test-edge',
+      source: 'agent',
+      target: 'resource',
     };
     // Change selected to false
     (mockNodes[1] as NonNullable<(typeof mockNodes)[number]>).selected = false;
     const { getByTestId } = render(<Edge {...props} />);
-    expect(getByTestId("default-edge")).toBeInTheDocument();
+    expect(getByTestId('default-edge')).toBeInTheDocument();
   });
 });

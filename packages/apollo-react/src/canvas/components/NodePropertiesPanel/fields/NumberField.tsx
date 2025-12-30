@@ -1,7 +1,14 @@
-import { memo, useCallback, useState, useEffect, useRef } from "react";
-import { Column } from "@uipath/uix/core";
-import { NumberInput, FieldLabel, FieldHelpText, FieldError, InputWrapper, InputSuffix } from "../NodePropertiesPanel.styles";
-import type { ConfigField } from "../NodePropertiesPanel.types";
+import { memo, useCallback, useState, useEffect, useRef } from 'react';
+import { Column } from '@uipath/uix/core';
+import {
+  NumberInput,
+  FieldLabel,
+  FieldHelpText,
+  FieldError,
+  InputWrapper,
+  InputSuffix,
+} from '../NodePropertiesPanel.styles';
+import type { ConfigField } from '../NodePropertiesPanel.types';
 
 interface NumberFieldProps {
   field: ConfigField;
@@ -10,12 +17,19 @@ interface NumberFieldProps {
   error?: string;
 }
 
-export const NumberField = memo(function NumberField({ field, value, onChange, error }: NumberFieldProps) {
-  const [localValue, setLocalValue] = useState<string | number>(value ?? (field.defaultValue as number | undefined) ?? "");
+export const NumberField = memo(function NumberField({
+  field,
+  value,
+  onChange,
+  error,
+}: NumberFieldProps) {
+  const [localValue, setLocalValue] = useState<string | number>(
+    value ?? (field.defaultValue as number | undefined) ?? ''
+  );
   const debounceTimer = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    setLocalValue(value ?? (field.defaultValue as number | undefined) ?? "");
+    setLocalValue(value ?? (field.defaultValue as number | undefined) ?? '');
   }, [value, field.defaultValue]);
 
   // Cleanup debounce timer on unmount
@@ -41,12 +55,12 @@ export const NumberField = memo(function NumberField({ field, value, onChange, e
       const debounceDelay = field.debounce || 0;
       if (debounceDelay > 0) {
         debounceTimer.current = setTimeout(() => {
-          const numValue = newValue === "" ? undefined : Number(newValue);
+          const numValue = newValue === '' ? undefined : Number(newValue);
           onChange(numValue);
           debounceTimer.current = null;
         }, debounceDelay);
       } else {
-        const numValue = newValue === "" ? undefined : Number(newValue);
+        const numValue = newValue === '' ? undefined : Number(newValue);
         onChange(numValue);
       }
     },

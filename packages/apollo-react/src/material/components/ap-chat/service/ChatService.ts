@@ -43,1193 +43,1224 @@ import { LocalHistoryService } from './LocalHistory';
 import { StorageService } from './StorageService';
 
 export class AutopilotChatService {
-    private static _instances: Record<string, AutopilotChatService> = {};
-    private _initialConfig: AutopilotChatConfiguration = {
-      mode: AutopilotChatMode.Closed,
-      locale: 'en',
-      theme: 'light',
-      allowedAttachments: {
-          multiple: true,
-          types: ACCEPTED_FILES,
-          maxSize: ACCEPTED_FILE_MAX_SIZE,
-          maxCount: ACCEPTED_FILE_MAX_COUNT,
-      },
-      // Settings will be disabled by default since each consumer needs to implement their own settings page
-      // Header Separator will be disabled by default, consumers can selectively enable it
-      // Or the framework will provide a settings page that will be used by all framework consumers
-      // Audio will be disabled by default since each consumer needs to implement their own audio support
-      // FullHeight will be disabled by default since most of the consumers will have the portal-shell header
-      // HtmlPreview will be disabled by default
-      disabledFeatures: {
-          settings: true,
-          headerSeparator: true,
-          audio: true,
-          fullHeight: true,
-          htmlPreview: true,
-      },
-      settingsRenderer: () => {},
-      models: undefined,
-      selectedAgentMode: undefined,
-      selectedModel: undefined,
-      paginatedMessages: false,
-      paginatedHistory: false,
-    };
-    private _config: AutopilotChatConfiguration = { ...this._initialConfig };
-    private _eventBus: EventBus;
-    private _messageRenderers: AutopilotChatMessageRenderer[] = [];
-    private _eventUnsubscribers: Array<() => void> = [];
-    private _conversation: AutopilotChatMessage[] = [];
-    private _error: AutopilotChatError | undefined;
-    private _prompt: AutopilotChatPrompt | string | undefined;
-    private _history: AutopilotChatHistory[] = [];
-    private _historyOpen: boolean = false;
-    private _settingsOpen: boolean = false;
-    private _activeConversationId: string | null = null;
-    private _defaultLoadingMessages: string[] | null = null;
-    private _loadingMessage: string | null = null;
-    private _loadingMessageDuration: number | null = null;
-    private _internalService: AutopilotChatInternalService;
-    private _groupId?: string;
-    private _instanceName: string;
-    private _contentPartBuilders: Map<string, ContentPartBuilder> = new Map();
-    private _customHeaderActions: AutopilotChatCustomHeaderAction[] = [];
-    private _getChatModeKey: (instanceName?: string) => string = () => '';
-    private _locale: string = 'en';
-    private _theme: string = 'light';
+  private static _instances: Record<string, AutopilotChatService> = {};
+  private _initialConfig: AutopilotChatConfiguration = {
+    mode: AutopilotChatMode.Closed,
+    locale: 'en',
+    theme: 'light',
+    allowedAttachments: {
+      multiple: true,
+      types: ACCEPTED_FILES,
+      maxSize: ACCEPTED_FILE_MAX_SIZE,
+      maxCount: ACCEPTED_FILE_MAX_COUNT,
+    },
+    // Settings will be disabled by default since each consumer needs to implement their own settings page
+    // Header Separator will be disabled by default, consumers can selectively enable it
+    // Or the framework will provide a settings page that will be used by all framework consumers
+    // Audio will be disabled by default since each consumer needs to implement their own audio support
+    // FullHeight will be disabled by default since most of the consumers will have the portal-shell header
+    // HtmlPreview will be disabled by default
+    disabledFeatures: {
+      settings: true,
+      headerSeparator: true,
+      audio: true,
+      fullHeight: true,
+      htmlPreview: true,
+    },
+    settingsRenderer: () => {},
+    models: undefined,
+    selectedAgentMode: undefined,
+    selectedModel: undefined,
+    paginatedMessages: false,
+    paginatedHistory: false,
+  };
+  private _config: AutopilotChatConfiguration = { ...this._initialConfig };
+  private _eventBus: EventBus;
+  private _messageRenderers: AutopilotChatMessageRenderer[] = [];
+  private _eventUnsubscribers: Array<() => void> = [];
+  private _conversation: AutopilotChatMessage[] = [];
+  private _error: AutopilotChatError | undefined;
+  private _prompt: AutopilotChatPrompt | string | undefined;
+  private _history: AutopilotChatHistory[] = [];
+  private _historyOpen: boolean = false;
+  private _settingsOpen: boolean = false;
+  private _activeConversationId: string | null = null;
+  private _defaultLoadingMessages: string[] | null = null;
+  private _loadingMessage: string | null = null;
+  private _loadingMessageDuration: number | null = null;
+  private _internalService: AutopilotChatInternalService;
+  private _groupId?: string;
+  private _instanceName: string;
+  private _contentPartBuilders: Map<string, ContentPartBuilder> = new Map();
+  private _customHeaderActions: AutopilotChatCustomHeaderAction[] = [];
+  private _getChatModeKey: (instanceName?: string) => string = () => '';
+  private _locale: string = 'en';
+  private _theme: string = 'light';
 
-    private constructor(instanceName: string) {
-        this._instanceName = instanceName;
-        this._eventBus = new EventBus();
+  private constructor(instanceName: string) {
+    this._instanceName = instanceName;
+    this._eventBus = new EventBus();
 
-        this._internalService = AutopilotChatInternalService.Instantiate();
-        LocalHistoryService.Initialize(instanceName, this);
+    this._internalService = AutopilotChatInternalService.Instantiate();
+    LocalHistoryService.Initialize(instanceName, this);
 
-        this.getConfig = this.getConfig.bind(this);
-        this.initialize = this.initialize.bind(this);
-        this.on = this.on.bind(this);
-        this.open = this.open.bind(this);
-        this.injectMessageRenderer = this.injectMessageRenderer.bind(this);
-        this.renderMessage = this.renderMessage.bind(this);
-        this.close = this.close.bind(this);
-        this.setError = this.setError.bind(this);
-        this.clearError = this.clearError.bind(this);
-        this.newChat = this.newChat.bind(this);
-        this.setChatMode = this.setChatMode.bind(this);
-        this.sendRequest = this.sendRequest.bind(this);
-        this.sendResponse = this.sendResponse.bind(this);
-        this.setDefaultLoadingMessages = this.setDefaultLoadingMessages.bind(this);
-        this.getDefaultLoadingMessages = this.getDefaultLoadingMessages.bind(this);
-        this.getLoadingMessageDuration = this.getLoadingMessageDuration.bind(this);
-        this.setLoadingMessage = this.setLoadingMessage.bind(this);
-        this.getLoadingMessage = this.getLoadingMessage.bind(this);
-        this.setPrompt = this.setPrompt.bind(this);
-        this.intercept = this.intercept.bind(this);
-        this.setFirstRunExperience = this.setFirstRunExperience.bind(this);
-        this.setConversation = this.setConversation.bind(this);
-        this.getConversation = this.getConversation.bind(this);
-        this.getPrompt = this.getPrompt.bind(this);
-        this.getError = this.getError.bind(this);
-        this.setHistory = this.setHistory.bind(this);
-        this.getHistory = this.getHistory.bind(this);
-        this.toggleHistory = this.toggleHistory.bind(this);
-        this.toggleSettings = this.toggleSettings.bind(this);
-        this.deleteConversation = this.deleteConversation.bind(this);
-        this.openConversation = this.openConversation.bind(this);
-        this.setAllowedAttachments = this.setAllowedAttachments.bind(this);
-        this.toggleAutoScroll = this.toggleAutoScroll.bind(this);
-        this.setModels = this.setModels.bind(this);
-        this.setSelectedModel = this.setSelectedModel.bind(this);
-        this.getSelectedModel = this.getSelectedModel.bind(this);
-        this.setAgentModes = this.setAgentModes.bind(this);
-        this.getAgentModes = this.getAgentModes.bind(this);
-        this.setAgentMode = this.setAgentMode.bind(this);
-        this.getAgentMode = this.getAgentMode.bind(this);
-        this.getMessagesInGroup = this.getMessagesInGroup.bind(this);
-        this.setPreHook = this.setPreHook.bind(this);
-        this.getPreHook = this.getPreHook.bind(this);
-        this.prependOlderMessages = this.prependOlderMessages.bind(this);
-        this.appendOlderHistoryItems = this.appendOlderHistoryItems.bind(this);
-        this.setSuggestions = this.setSuggestions.bind(this);
-        this.sendInputStreamEvent = this.sendInputStreamEvent.bind(this);
-        this.sendOutputStreamEvent = this.sendOutputStreamEvent.bind(this);
-        this.setShowLoading = this.setShowLoading.bind(this);
-        this.setWaiting = this.setWaiting.bind(this);
-        this.setAttachmentsLoading = this.setAttachmentsLoading.bind(this);
-        this.setCustomHeaderActions = this.setCustomHeaderActions.bind(this);
-        this.getCustomHeaderActions = this.getCustomHeaderActions.bind(this);
-        this.setGetChatModeKey = this.setGetChatModeKey.bind(this);
-        this.setLocale = this.setLocale.bind(this);
-        this.getLocale = this.getLocale.bind(this);
-        this.setTheme = this.setTheme.bind(this);
-        this.getTheme = this.getTheme.bind(this);
-    }
-
-    static Instantiate({
-        instanceName = CHAT_INSTANCE_DEFAULT_NAME,
-        config,
-        messageRenderers = [],
-    }: {
-        instanceName?: string;
-        config?: AutopilotChatConfiguration;
-        messageRenderers?: AutopilotChatMessageRenderer[];
-    }) {
-        if (!AutopilotChatService._instances[instanceName]) {
-            AutopilotChatService._instances[instanceName] = new AutopilotChatService(instanceName);
-        }
-
-        if (config) {
-            AutopilotChatService._instances[instanceName].initialize(config);
-        }
-
-        messageRenderers.forEach(renderer => AutopilotChatService._instances[instanceName]!.injectMessageRenderer(renderer));
-
-        return AutopilotChatService._instances[instanceName];
-    }
-
-    static getInstance(instanceName: string = CHAT_INSTANCE_DEFAULT_NAME) {
-        return AutopilotChatService._instances[instanceName];
-    }
-
-    /**
-     * @returns The current active conversation ID
-     */
-    get activeConversationId() {
-        return this._activeConversationId;
-    }
-
-    /**
-     * @returns The current configuration
-     */
-    getConfig() {
-        return this._config;
-    }
-
-    setGetChatModeKey(getChatModeKey: (_instanceName?: string) => string) {
-      this._getChatModeKey = getChatModeKey;
-    }
-
-    /**
-     * Initializes the chat service
-     *
-     * @param config - The configuration to use
-     */
-    initialize(config: AutopilotChatConfiguration, messageRenderers: AutopilotChatMessageRenderer[] = []) {
-        // Cleanup existing handlers
-        this._eventUnsubscribers.forEach(unsubscribe => unsubscribe());
-        this._eventUnsubscribers = [];
-
-        this._config = {
-            ...this._initialConfig,
-            ...config,
-        };
-
-        if (config.mode) {
-            this.setChatMode(config.mode);
-        }
-
-        if (config.disabledFeatures) {
-            this.setDisabledFeatures(config.disabledFeatures);
-        }
-
-        if (config.overrideLabels) {
-            this.setOverrideLabels(config.overrideLabels);
-        }
-
-        if (config.firstRunExperience) {
-            this.setFirstRunExperience(config.firstRunExperience);
-        }
-
-        if (config.useLocalHistory !== undefined) {
-            this._internalService.publish(AutopilotChatInternalEvent.UseLocalHistory, config.useLocalHistory);
-        }
-
-        if (config.allowedAttachments) {
-            this.setAllowedAttachments({
-                ...this._config.allowedAttachments,
-                ...config.allowedAttachments,
-            });
-        }
-
-        if (config.models) {
-            this.setModels(config.models);
-        }
-
-        if (config.selectedModel) {
-            this.setSelectedModel(config.selectedModel.id);
-        }
-
-        if (config.agentModes) {
-            this.setAgentModes(config.agentModes);
-        }
-
-        if (config.selectedAgentMode) {
-            this.setAgentMode(config.selectedAgentMode.id);
-        }
-
-        if (config.spacing) {
-            this._internalService.publish(AutopilotChatInternalEvent.SetSpacing, config.spacing);
-        }
-
-        if (config.theming) {
-            this._internalService.publish(AutopilotChatInternalEvent.SetTheming, config.theming);
-        }
-
-        if (config.locale) {
-            this.setLocale(config.locale);
-        }
-
-        if (config.theme) {
-            this.setTheme(config.theme);
-        }
-
-        messageRenderers.forEach(renderer => this.injectMessageRenderer(renderer));
-    }
-
-    /**
-     * Patches the configuration in the chat service
-     *
-     * @param config - The configuration to patch
-     */
-    patchConfig(config: Partial<AutopilotChatConfiguration>, messageRenderers: AutopilotChatMessageRenderer[] = []) {
-        this._config = {
-            ...this._config,
-            ...config,
-        };
-
-        this.initialize(this._config, messageRenderers);
-    }
-
-    /**
-     * Injects a message renderer into the chat service, overrides existing message renderer if it exists
-     *
-     * @param renderer - The message renderer to inject
-     */
-    injectMessageRenderer(renderer: AutopilotChatMessageRenderer) {
-        const existingRenderer = this._messageRenderers.find(r => r.name === renderer.name);
-
-        if (existingRenderer) {
-            const index = this._messageRenderers.indexOf(existingRenderer);
-            this._messageRenderers[index] = renderer;
-        } else {
-            this._messageRenderers.push(renderer);
-        }
-    }
-
-    /**
-     * Gets a message renderer by name and defaults to the default renderer if not found
-     *
-     * @param name - The name of the message renderer to get
-     * @returns The message renderer
-     */
-    getMessageRenderer(name: string) {
-        return this._messageRenderers.find(r => r.name === name);
-    }
-
-    /**
-     * Renders a message renderer into the container.
-     * If the message renderer is not found, it will use the default renderer.
-     *
-     * @param name - The name of the message renderer to render based on the message renderer
-     * @param container - The container to render the message renderer into
-     * @param message - The message to render the message renderer for
-     * @internal
-     */
-    renderMessage(container: HTMLElement, message: AutopilotChatMessage) {
-        const renderer = this._messageRenderers.find(r => r.name === message.widget);
-
-        if (!renderer?.render) {
-            return;
-        }
-
-        return renderer.render(container, message);
-    }
-
-    /**
-     * Opens the chat service
-     *
-     * @param config - The configuration to use
-     * @param messageRenderers - The custom message renderers to inject
-     */
-    open(config?: Partial<AutopilotChatConfiguration>, messageRenderers: AutopilotChatMessageRenderer[] = []) {
-        this.patchConfig(
-            {
-                mode: AutopilotChatMode.SideBySide,
-                ...(config ?? {}),
-            },
-            messageRenderers,
-        );
-
-        this._eventBus.publish(AutopilotChatEvent.Open);
-    }
-
-    /**
-     * Closes the chat service
-     */
-    close() {
-        this.setChatMode(AutopilotChatMode.Closed);
-
-        this._eventBus.publish(AutopilotChatEvent.Close);
-    }
-
-    /**
-     * Expands the chat window
-     */
-    setChatMode(mode: AutopilotChatMode, persist: boolean = true) {
-      const key = this._getChatModeKey(this._instanceName);
-      const storedMode = StorageService.Instance.get(key);
-
-      if (storedMode && mode === AutopilotChatMode.Closed) {
-          StorageService.Instance.remove(key);
-      }
-
-      if (persist && mode !== AutopilotChatMode.Closed) {
-          StorageService.Instance.set(key, mode);
-      }
-
-      this._config.mode = mode;
-
-      this._eventBus.publish(AutopilotChatEvent.ModeChange, mode);
+    this.getConfig = this.getConfig.bind(this);
+    this.initialize = this.initialize.bind(this);
+    this.on = this.on.bind(this);
+    this.open = this.open.bind(this);
+    this.injectMessageRenderer = this.injectMessageRenderer.bind(this);
+    this.renderMessage = this.renderMessage.bind(this);
+    this.close = this.close.bind(this);
+    this.setError = this.setError.bind(this);
+    this.clearError = this.clearError.bind(this);
+    this.newChat = this.newChat.bind(this);
+    this.setChatMode = this.setChatMode.bind(this);
+    this.sendRequest = this.sendRequest.bind(this);
+    this.sendResponse = this.sendResponse.bind(this);
+    this.setDefaultLoadingMessages = this.setDefaultLoadingMessages.bind(this);
+    this.getDefaultLoadingMessages = this.getDefaultLoadingMessages.bind(this);
+    this.getLoadingMessageDuration = this.getLoadingMessageDuration.bind(this);
+    this.setLoadingMessage = this.setLoadingMessage.bind(this);
+    this.getLoadingMessage = this.getLoadingMessage.bind(this);
+    this.setPrompt = this.setPrompt.bind(this);
+    this.intercept = this.intercept.bind(this);
+    this.setFirstRunExperience = this.setFirstRunExperience.bind(this);
+    this.setConversation = this.setConversation.bind(this);
+    this.getConversation = this.getConversation.bind(this);
+    this.getPrompt = this.getPrompt.bind(this);
+    this.getError = this.getError.bind(this);
+    this.setHistory = this.setHistory.bind(this);
+    this.getHistory = this.getHistory.bind(this);
+    this.toggleHistory = this.toggleHistory.bind(this);
+    this.toggleSettings = this.toggleSettings.bind(this);
+    this.deleteConversation = this.deleteConversation.bind(this);
+    this.openConversation = this.openConversation.bind(this);
+    this.setAllowedAttachments = this.setAllowedAttachments.bind(this);
+    this.toggleAutoScroll = this.toggleAutoScroll.bind(this);
+    this.setModels = this.setModels.bind(this);
+    this.setSelectedModel = this.setSelectedModel.bind(this);
+    this.getSelectedModel = this.getSelectedModel.bind(this);
+    this.setAgentModes = this.setAgentModes.bind(this);
+    this.getAgentModes = this.getAgentModes.bind(this);
+    this.setAgentMode = this.setAgentMode.bind(this);
+    this.getAgentMode = this.getAgentMode.bind(this);
+    this.getMessagesInGroup = this.getMessagesInGroup.bind(this);
+    this.setPreHook = this.setPreHook.bind(this);
+    this.getPreHook = this.getPreHook.bind(this);
+    this.prependOlderMessages = this.prependOlderMessages.bind(this);
+    this.appendOlderHistoryItems = this.appendOlderHistoryItems.bind(this);
+    this.setSuggestions = this.setSuggestions.bind(this);
+    this.sendInputStreamEvent = this.sendInputStreamEvent.bind(this);
+    this.sendOutputStreamEvent = this.sendOutputStreamEvent.bind(this);
+    this.setShowLoading = this.setShowLoading.bind(this);
+    this.setWaiting = this.setWaiting.bind(this);
+    this.setAttachmentsLoading = this.setAttachmentsLoading.bind(this);
+    this.setCustomHeaderActions = this.setCustomHeaderActions.bind(this);
+    this.getCustomHeaderActions = this.getCustomHeaderActions.bind(this);
+    this.setGetChatModeKey = this.setGetChatModeKey.bind(this);
+    this.setLocale = this.setLocale.bind(this);
+    this.getLocale = this.getLocale.bind(this);
+    this.setTheme = this.setTheme.bind(this);
+    this.getTheme = this.getTheme.bind(this);
   }
 
-    /**
-     * Sets the enabled features in the chat service
-     *
-     * @param features - The features to set
-     */
-    setDisabledFeatures(features: AutopilotChatDisabledFeatures) {
-        this._config.disabledFeatures = {
-            ...this._initialConfig.disabledFeatures,
-            ...this._config.disabledFeatures,
-            ...features,
+  static Instantiate({
+    instanceName = CHAT_INSTANCE_DEFAULT_NAME,
+    config,
+    messageRenderers = [],
+  }: {
+    instanceName?: string;
+    config?: AutopilotChatConfiguration;
+    messageRenderers?: AutopilotChatMessageRenderer[];
+  }) {
+    if (!AutopilotChatService._instances[instanceName]) {
+      AutopilotChatService._instances[instanceName] = new AutopilotChatService(instanceName);
+    }
+
+    if (config) {
+      AutopilotChatService._instances[instanceName].initialize(config);
+    }
+
+    messageRenderers.forEach((renderer) =>
+      AutopilotChatService._instances[instanceName]!.injectMessageRenderer(renderer)
+    );
+
+    return AutopilotChatService._instances[instanceName];
+  }
+
+  static getInstance(instanceName: string = CHAT_INSTANCE_DEFAULT_NAME) {
+    return AutopilotChatService._instances[instanceName];
+  }
+
+  /**
+   * @returns The current active conversation ID
+   */
+  get activeConversationId() {
+    return this._activeConversationId;
+  }
+
+  /**
+   * @returns The current configuration
+   */
+  getConfig() {
+    return this._config;
+  }
+
+  setGetChatModeKey(getChatModeKey: (_instanceName?: string) => string) {
+    this._getChatModeKey = getChatModeKey;
+  }
+
+  /**
+   * Initializes the chat service
+   *
+   * @param config - The configuration to use
+   */
+  initialize(
+    config: AutopilotChatConfiguration,
+    messageRenderers: AutopilotChatMessageRenderer[] = []
+  ) {
+    // Cleanup existing handlers
+    this._eventUnsubscribers.forEach((unsubscribe) => unsubscribe());
+    this._eventUnsubscribers = [];
+
+    this._config = {
+      ...this._initialConfig,
+      ...config,
+    };
+
+    if (config.mode) {
+      this.setChatMode(config.mode);
+    }
+
+    if (config.disabledFeatures) {
+      this.setDisabledFeatures(config.disabledFeatures);
+    }
+
+    if (config.overrideLabels) {
+      this.setOverrideLabels(config.overrideLabels);
+    }
+
+    if (config.firstRunExperience) {
+      this.setFirstRunExperience(config.firstRunExperience);
+    }
+
+    if (config.useLocalHistory !== undefined) {
+      this._internalService.publish(
+        AutopilotChatInternalEvent.UseLocalHistory,
+        config.useLocalHistory
+      );
+    }
+
+    if (config.allowedAttachments) {
+      this.setAllowedAttachments({
+        ...this._config.allowedAttachments,
+        ...config.allowedAttachments,
+      });
+    }
+
+    if (config.models) {
+      this.setModels(config.models);
+    }
+
+    if (config.selectedModel) {
+      this.setSelectedModel(config.selectedModel.id);
+    }
+
+    if (config.agentModes) {
+      this.setAgentModes(config.agentModes);
+    }
+
+    if (config.selectedAgentMode) {
+      this.setAgentMode(config.selectedAgentMode.id);
+    }
+
+    if (config.spacing) {
+      this._internalService.publish(AutopilotChatInternalEvent.SetSpacing, config.spacing);
+    }
+
+    if (config.theming) {
+      this._internalService.publish(AutopilotChatInternalEvent.SetTheming, config.theming);
+    }
+
+    if (config.locale) {
+      this.setLocale(config.locale);
+    }
+
+    if (config.theme) {
+      this.setTheme(config.theme);
+    }
+
+    messageRenderers.forEach((renderer) => this.injectMessageRenderer(renderer));
+  }
+
+  /**
+   * Patches the configuration in the chat service
+   *
+   * @param config - The configuration to patch
+   */
+  patchConfig(
+    config: Partial<AutopilotChatConfiguration>,
+    messageRenderers: AutopilotChatMessageRenderer[] = []
+  ) {
+    this._config = {
+      ...this._config,
+      ...config,
+    };
+
+    this.initialize(this._config, messageRenderers);
+  }
+
+  /**
+   * Injects a message renderer into the chat service, overrides existing message renderer if it exists
+   *
+   * @param renderer - The message renderer to inject
+   */
+  injectMessageRenderer(renderer: AutopilotChatMessageRenderer) {
+    const existingRenderer = this._messageRenderers.find((r) => r.name === renderer.name);
+
+    if (existingRenderer) {
+      const index = this._messageRenderers.indexOf(existingRenderer);
+      this._messageRenderers[index] = renderer;
+    } else {
+      this._messageRenderers.push(renderer);
+    }
+  }
+
+  /**
+   * Gets a message renderer by name and defaults to the default renderer if not found
+   *
+   * @param name - The name of the message renderer to get
+   * @returns The message renderer
+   */
+  getMessageRenderer(name: string) {
+    return this._messageRenderers.find((r) => r.name === name);
+  }
+
+  /**
+   * Renders a message renderer into the container.
+   * If the message renderer is not found, it will use the default renderer.
+   *
+   * @param name - The name of the message renderer to render based on the message renderer
+   * @param container - The container to render the message renderer into
+   * @param message - The message to render the message renderer for
+   * @internal
+   */
+  renderMessage(container: HTMLElement, message: AutopilotChatMessage) {
+    const renderer = this._messageRenderers.find((r) => r.name === message.widget);
+
+    if (!renderer?.render) {
+      return;
+    }
+
+    return renderer.render(container, message);
+  }
+
+  /**
+   * Opens the chat service
+   *
+   * @param config - The configuration to use
+   * @param messageRenderers - The custom message renderers to inject
+   */
+  open(
+    config?: Partial<AutopilotChatConfiguration>,
+    messageRenderers: AutopilotChatMessageRenderer[] = []
+  ) {
+    this.patchConfig(
+      {
+        mode: AutopilotChatMode.SideBySide,
+        ...(config ?? {}),
+      },
+      messageRenderers
+    );
+
+    this._eventBus.publish(AutopilotChatEvent.Open);
+  }
+
+  /**
+   * Closes the chat service
+   */
+  close() {
+    this.setChatMode(AutopilotChatMode.Closed);
+
+    this._eventBus.publish(AutopilotChatEvent.Close);
+  }
+
+  /**
+   * Expands the chat window
+   */
+  setChatMode(mode: AutopilotChatMode, persist: boolean = true) {
+    const key = this._getChatModeKey(this._instanceName);
+    const storedMode = StorageService.Instance.get(key);
+
+    if (storedMode && mode === AutopilotChatMode.Closed) {
+      StorageService.Instance.remove(key);
+    }
+
+    if (persist && mode !== AutopilotChatMode.Closed) {
+      StorageService.Instance.set(key, mode);
+    }
+
+    this._config.mode = mode;
+
+    this._eventBus.publish(AutopilotChatEvent.ModeChange, mode);
+  }
+
+  /**
+   * Sets the enabled features in the chat service
+   *
+   * @param features - The features to set
+   */
+  setDisabledFeatures(features: AutopilotChatDisabledFeatures) {
+    this._config.disabledFeatures = {
+      ...this._initialConfig.disabledFeatures,
+      ...this._config.disabledFeatures,
+      ...features,
+    };
+
+    this._eventBus.publish(AutopilotChatEvent.SetDisabledFeatures, this._config.disabledFeatures);
+  }
+
+  /**
+   * Sets the override labels in the chat service
+   *
+   * @param labels - The override labels to set
+   */
+  setOverrideLabels(labels: AutopilotChatOverrideLabels) {
+    this._config.overrideLabels = {
+      ...this._config.overrideLabels,
+      ...labels,
+    };
+
+    this._eventBus.publish(AutopilotChatEvent.SetOverrideLabels, this._config.overrideLabels);
+  }
+
+  /**
+   * Sets the first run configuration in the chat service
+   *
+   * @param config - The configuration to set
+   */
+  setFirstRunExperience(config: AutopilotChatConfiguration['firstRunExperience']) {
+    this._config.firstRunExperience = config;
+
+    this._eventBus.publish(AutopilotChatEvent.SetFirstRunExperience, config);
+  }
+
+  /**
+   * Sets a prompt in the chat service
+   *
+   * @param prompt - The prompt to set
+   */
+  setPrompt(prompt: AutopilotChatPrompt | string) {
+    this._prompt = prompt;
+
+    this._eventBus.publish(AutopilotChatEvent.SetPrompt, prompt);
+  }
+
+  /**
+   * Sets the loading state in the chat service.
+   * If this method is used, it overrides the default behavior from apollo.
+   *
+   * @param showLoading - Whether to show the loading state
+   */
+  setShowLoading(showLoading: boolean) {
+    this._internalService.publish(AutopilotChatInternalEvent.SetShowLoading, showLoading);
+  }
+
+  /**
+   * Sets the waiting state for the prompt in the chat service.
+   * If this method is used, it overrides the default behavior from apollo.
+   *
+   * @param waiting - Whether to show the waiting state
+   */
+  setWaiting(waiting: boolean) {
+    this._internalService.publish(AutopilotChatInternalEvent.SetWaiting, waiting);
+  }
+
+  /**
+   * Gets the current prompt from the chat service
+   *
+   * @returns The prompt
+   */
+  getPrompt() {
+    return this._prompt;
+  }
+
+  /**
+   * Sets the suggestions in the chat service
+   *
+   * @param suggestions - The suggestions to set
+   * @param sendOnClick - Whether to send the suggestion on click
+   */
+  setSuggestions(suggestions: AutopilotChatSuggestion[], sendOnClick?: boolean) {
+    this._internalService.publish(AutopilotChatInternalEvent.SetSuggestions, {
+      suggestions,
+      sendOnClick,
+    });
+  }
+
+  /**
+   * Sets a conversation in the chat service
+   *
+   * @param messages - The messages to set
+   */
+  setConversation(messages: AutopilotChatMessage[]) {
+    this._conversation = messages;
+
+    this._internalService.publish(AutopilotChatInternalEvent.ShowLoadingState, false);
+    this._internalService.publish(AutopilotChatInternalEvent.SetIsLoadingMoreMessages, false);
+    this._eventBus.publish(AutopilotChatEvent.SetConversation, messages);
+  }
+
+  /**
+   * Prepends older messages to the conversation when scrolling up and reaching the top
+   * This is called by the consumer in response to the ConversationLoadMore event
+   *
+   * @param messages - The older messages to prepend
+   * @param done - Whether the messages are the last set of messages
+   */
+  prependOlderMessages(messages: AutopilotChatMessage[] = [], done?: boolean) {
+    if (done) {
+      // wait for the next frame to ensure the conversation is updated
+      requestAnimationFrame(() => {
+        this._internalService.publish(
+          AutopilotChatInternalEvent.ShouldShowLoadingMoreMessages,
+          false
+        );
+      });
+    }
+
+    if (messages.length === 0) {
+      return;
+    }
+
+    // Emit internal event to signal that messages are being prepended in order to maintain scroll position
+    this._internalService.publish(AutopilotChatInternalEvent.PrependOlderMessages);
+
+    this.setConversation([...messages, ...this._conversation]);
+  }
+
+  /**
+   * Appends older history items to the history when scrolling down and reaching the bottom
+   * This is called by the consumer in response to the HistoryLoadMore event
+   *
+   * @param items - The older history items to append
+   * @param done - Whether the items are the last set of items
+   */
+  appendOlderHistoryItems(items: AutopilotChatHistory[] = [], done?: boolean) {
+    if (done) {
+      this._internalService.publish(AutopilotChatInternalEvent.ShouldShowLoadingMoreHistory, false);
+    }
+
+    if (items.length === 0) {
+      return;
+    }
+
+    // Emit internal event to signal that items are being appended
+    this._internalService.publish(AutopilotChatInternalEvent.AppendOlderHistory);
+
+    this.setHistory([...this._history, ...items]);
+  }
+
+  /**
+   * Gets the current conversation from the chat service
+   *
+   * @returns The conversation
+   */
+  getConversation() {
+    return this._conversation;
+  }
+
+  /**
+   * Sends a request as an user request to the chat service
+   *
+   * @param request - The request to send
+   */
+  sendRequest(
+    request: Omit<AutopilotChatMessage, 'role' | 'id' | 'created_at' | 'widget' | 'fakeStream'> & {
+      id?: string;
+      created_at?: string;
+    }
+  ) {
+    this._groupId = crypto.randomUUID();
+
+    const userMessage = {
+      id: crypto.randomUUID(), // Generate a new ID in case it's not provided
+      created_at: new Date().toISOString(),
+      ...request,
+      role: AutopilotChatRole.User,
+      widget: DEFAULT_MESSAGE_RENDERER,
+    };
+
+    this.setPrompt('');
+    this.setSuggestions([]);
+    this._conversation.push(userMessage);
+    this._eventBus.publish(AutopilotChatEvent.Request, userMessage);
+  }
+
+  /**
+   * Stops the response in the chat service
+   */
+  stopResponse() {
+    const lastMessage = this._conversation[this._conversation.length - 1];
+
+    if (lastMessage?.stream && !lastMessage.done) {
+      this.sendResponse({
+        ...lastMessage,
+        done: true,
+        content: '',
+      });
+    }
+
+    this._eventBus.publish(AutopilotChatEvent.StopResponse);
+  }
+
+  /**
+   * Sends a response as an AI assistant response to the chat service
+   *
+   * @param response - The response to send (supports legacy format or new ContentPart format)
+   */
+  sendResponse(
+    response: Omit<AutopilotChatMessage, 'role' | 'id' | 'content'> & {
+      id?: string;
+      content?: string;
+      contentPartChunk?: ContentPartChunk;
+    }
+  ) {
+    const lastMessage = this._conversation[this._conversation.length - 1];
+    const messageId = response.id || crypto.randomUUID();
+
+    // Set the last message groupId as the groupId for the response if it's an assistant message
+    if (
+      lastMessage?.groupId &&
+      lastMessage.role === AutopilotChatRole.Assistant &&
+      this._groupId !== lastMessage.groupId
+    ) {
+      this._groupId = lastMessage.groupId;
+    }
+
+    // Handle ContentPartChunk streaming
+    if (response.contentPartChunk) {
+      this._processContentPartChunk(messageId, response);
+
+      return;
+    }
+
+    const { contentPartChunk: _contentPartChunk, ...rest } = response;
+
+    const assistantMessage = {
+      id: messageId,
+      ...rest,
+      content: response.content ?? response.contentParts?.map((part) => part.text).join('') ?? '',
+      groupId: response.groupId ?? this._groupId,
+      created_at: response.created_at ?? new Date().toISOString(),
+      role: AutopilotChatRole.Assistant,
+    };
+
+    // Check if message with the same ID already exists and emit chunk, otherwise emit response
+    const existingIndex = this._conversation.findIndex(
+      (message) => message.id === assistantMessage.id
+    );
+
+    if (existingIndex !== -1) {
+      if (response.stream) {
+        // send chunk if the response is streaming
+        if (this._conversation[existingIndex]) {
+          this._conversation[existingIndex].content += assistantMessage.content;
+          this._conversation[existingIndex].done = !!response.done;
+          this._conversation[existingIndex].meta =
+            response.meta ?? this._conversation[existingIndex].meta;
+          this._conversation[existingIndex].groupId =
+            assistantMessage.groupId ?? this._conversation[existingIndex].groupId;
+        }
+        this._eventBus.publish(AutopilotChatEvent.SendChunk, assistantMessage);
+      } else {
+        // send response if the response is not streaming
+        this._conversation[existingIndex] = {
+          ...this._conversation[existingIndex],
+          ...assistantMessage,
         };
+        this._eventBus.publish(AutopilotChatEvent.Response, assistantMessage);
+      }
+    } else {
+      this._conversation.push(assistantMessage);
+      this._eventBus.publish(AutopilotChatEvent.Response, assistantMessage);
+    }
+  }
 
-        this._eventBus.publish(AutopilotChatEvent.SetDisabledFeatures, this._config.disabledFeatures);
+  /**
+   * Sets the loading message in the chat service
+   *
+   * @param messages - The messages to show in the loading state
+   * @param duration - The duration in milliseconds to show each message (optional)
+   */
+  setDefaultLoadingMessages(messages: string[], duration?: number) {
+    this._defaultLoadingMessages = messages;
+    if (duration) {
+      this._loadingMessageDuration = duration;
     }
 
-    /**
-     * Sets the override labels in the chat service
-     *
-     * @param labels - The override labels to set
-     */
-    setOverrideLabels(labels: AutopilotChatOverrideLabels) {
-        this._config.overrideLabels = {
-            ...this._config.overrideLabels,
-            ...labels,
-        };
+    this._eventBus.publish(AutopilotChatEvent.SetDefaultLoadingMessages, {
+      messages,
+      duration,
+    });
+  }
 
-        this._eventBus.publish(AutopilotChatEvent.SetOverrideLabels, this._config.overrideLabels);
+  /**
+   * Gets the default loading messages in the chat service
+   *
+   * @returns The default loading messages
+   */
+  getDefaultLoadingMessages() {
+    return this._defaultLoadingMessages;
+  }
+
+  /**
+   * Gets the current loading message duration
+   *
+   * @returns The loading message duration in milliseconds
+   */
+  getLoadingMessageDuration() {
+    return this._loadingMessageDuration;
+  }
+
+  /**
+   * Sets a single loading message in the chat service
+   *
+   * @param message - The message to show in the loading state
+   */
+  setLoadingMessage(message: string) {
+    this._loadingMessage = message;
+
+    this._eventBus.publish(AutopilotChatEvent.SetLoadingMessage, message);
+  }
+
+  /**
+   * Gets the current loading message
+   *
+   * @returns The loading message
+   */
+  getLoadingMessage() {
+    return this._loadingMessage;
+  }
+
+  /**
+   * Creates a new chat
+   *
+   * @param config - The configuration to use
+   * @param messageRenderers - The custom message renderers to inject
+   */
+  newChat(config?: AutopilotChatConfiguration) {
+    if (config) {
+      this.patchConfig(config);
     }
 
-    /**
-     * Sets the first run configuration in the chat service
-     *
-     * @param config - The configuration to set
-     */
-    setFirstRunExperience(config: AutopilotChatConfiguration['firstRunExperience']) {
-        this._config.firstRunExperience = config;
+    this._groupId = undefined;
+    this._conversation = [];
+    this._eventBus.publish(AutopilotChatEvent.NewChat);
+    this._internalService.publish(AutopilotChatInternalEvent.ShouldShowLoadingMoreMessages, true);
+    this._internalService.publish(AutopilotChatInternalEvent.SetIsLoadingMoreMessages, false);
+  }
 
-        this._eventBus.publish(AutopilotChatEvent.SetFirstRunExperience, config);
+  /**
+   * Sets an error or warning message in the chat service (supports markdown)
+   *
+   * @param message - The error/warning message to set (can include markdown formatting), or undefined to clear
+   * @param level - The severity level ('error' or 'warning'), defaults to 'error'
+   */
+  setError(message: string | undefined, level: AutopilotChatErrorLevel = 'error') {
+    if (message === undefined) {
+      this.clearError();
+      return;
     }
 
-    /**
-     * Sets a prompt in the chat service
-     *
-     * @param prompt - The prompt to set
-     */
-    setPrompt(prompt: AutopilotChatPrompt | string) {
-        this._prompt = prompt;
+    this._error = {
+      message,
+      level,
+    };
 
-        this._eventBus.publish(AutopilotChatEvent.SetPrompt, prompt);
+    this._eventBus.publish(AutopilotChatEvent.Error, this._error);
+  }
+
+  /**
+   * Clears the error/warning in the chat service
+   */
+  clearError() {
+    this._error = undefined;
+
+    this._eventBus.publish(AutopilotChatEvent.Error, undefined);
+  }
+
+  /**
+   * Gets the current error/warning from the chat service
+   *
+   * @returns The error/warning
+   */
+  getError() {
+    return this._error;
+  }
+
+  /**
+   * Subscribes to an event
+   *
+   * @param event - The event to subscribe to
+   * @param handler - The handler to subscribe to the event
+   * @returns A function to unsubscribe from the event
+   */
+  on(event: AutopilotChatEvent, handler: AutopilotChatEventHandler) {
+    return this._eventBus.subscribe(event, handler);
+  }
+
+  /**
+   * Adds an interceptor to the event bus
+   *
+   * @param event - The event to intercept
+   * @param interceptor - The interceptor to add
+   * @returns A function to remove the interceptor
+   */
+  intercept(event: AutopilotChatInterceptableEvent, interceptor: AutopilotChatEventInterceptor) {
+    if (Object.values(AutopilotChatInterceptableEvent).includes(event)) {
+      return this._eventBus.intercept(event, interceptor);
     }
 
-    /**
-     * Sets the loading state in the chat service.
-     * If this method is used, it overrides the default behavior from apollo.
-     *
-     * @param showLoading - Whether to show the loading state
-     */
-    setShowLoading(showLoading: boolean) {
-        this._internalService.publish(AutopilotChatInternalEvent.SetShowLoading, showLoading);
+    return () => {};
+  }
+
+  /**
+   * Sets the history in the chat service
+   *
+   * @param history - The history to set
+   * @param done - Whether this is the last set of history items (optional, used for pagination)
+   */
+  setHistory(history: AutopilotChatHistory[], done?: boolean) {
+    this._history = history;
+    this._internalService.publish(AutopilotChatInternalEvent.SetIsLoadingMoreHistory, false);
+
+    if (done !== undefined) {
+      this._internalService.publish(AutopilotChatInternalEvent.ShouldShowLoadingMoreHistory, !done);
     }
 
-    /**
-     * Sets the waiting state for the prompt in the chat service.
-     * If this method is used, it overrides the default behavior from apollo.
-     *
-     * @param waiting - Whether to show the waiting state
-     */
-    setWaiting(waiting: boolean) {
-        this._internalService.publish(AutopilotChatInternalEvent.SetWaiting, waiting);
+    this._eventBus.publish(AutopilotChatEvent.SetHistory, history);
+  }
+
+  /**
+   * Gets the history from the chat service
+   *
+   * @returns The history
+   */
+  getHistory() {
+    return this._history;
+  }
+
+  /**
+   * Gets the history open state from the chat service
+   *
+   * @returns The history open state
+   */
+  get historyOpen() {
+    return this._historyOpen;
+  }
+
+  /**
+   * Gets the settings open state from the chat service
+   *
+   * @returns The settings open state
+   */
+  get settingsOpen() {
+    return this._settingsOpen;
+  }
+
+  /**
+   * Toggles the history in the chat service
+   *
+   * @param open - The open state to set (optional, defaults to toggle)
+   */
+  toggleHistory(open?: boolean) {
+    this._historyOpen = open ?? !this._historyOpen;
+
+    // close settings if history is open
+    if (this._historyOpen) {
+      this._settingsOpen = false;
+      this._internalService.publish(AutopilotChatInternalEvent.ToggleSettings, false);
     }
 
-    /**
-     * Gets the current prompt from the chat service
-     *
-     * @returns The prompt
-     */
-    getPrompt() {
-        return this._prompt;
+    this._internalService.publish(AutopilotChatInternalEvent.ToggleHistory, this._historyOpen);
+  }
+
+  /**
+   * Toggles the settings in the chat service
+   *
+   * @param open - The open state to set (optional, defaults to toggle)
+   */
+  toggleSettings(open?: boolean) {
+    this._settingsOpen = open ?? !this._settingsOpen;
+
+    // close history if settings is open
+    if (this._settingsOpen) {
+      this._historyOpen = false;
+      this._internalService.publish(AutopilotChatInternalEvent.ToggleHistory, false);
     }
 
-    /**
-     * Sets the suggestions in the chat service
-     *
-     * @param suggestions - The suggestions to set
-     * @param sendOnClick - Whether to send the suggestion on click
-     */
-    setSuggestions(suggestions: AutopilotChatSuggestion[], sendOnClick?: boolean) {
-        this._internalService.publish(AutopilotChatInternalEvent.SetSuggestions, {
-            suggestions,
-            sendOnClick,
-        });
+    this._internalService.publish(AutopilotChatInternalEvent.ToggleSettings, this._settingsOpen);
+  }
+
+  /**
+   * Deletes a conversation from the chat service
+   *
+   * @param conversationId - The conversation ID to delete
+   */
+  deleteConversation(conversationId: string) {
+    if (conversationId === this._activeConversationId) {
+      this._activeConversationId = null;
+      this._groupId = undefined;
     }
 
-    /**
-     * Sets a conversation in the chat service
-     *
-     * @param messages - The messages to set
-     */
-    setConversation(messages: AutopilotChatMessage[]) {
-        this._conversation = messages;
+    this._eventBus.publish(AutopilotChatEvent.DeleteConversation, conversationId);
+  }
 
-        this._internalService.publish(AutopilotChatInternalEvent.ShowLoadingState, false);
-        this._internalService.publish(AutopilotChatInternalEvent.SetIsLoadingMoreMessages, false);
-        this._eventBus.publish(AutopilotChatEvent.SetConversation, messages);
+  /**
+   * Opens a conversation from the chat service
+   *
+   * @param conversationId - The conversation ID to open
+   */
+  openConversation(conversationId: string | null, showLoadingState = true) {
+    this._activeConversationId = conversationId;
+    this._eventBus.publish(AutopilotChatEvent.OpenConversation, conversationId);
+    this._internalService.publish(AutopilotChatInternalEvent.ShowLoadingState, showLoadingState);
+    this._internalService.publish(AutopilotChatInternalEvent.ShouldShowLoadingMoreMessages, true);
+  }
+
+  /**
+   * Sets the allowed attachments in the chat service
+   *
+   * @param allowedAttachments - The allowed attachments to set
+   */
+  setAllowedAttachments(allowedAttachments: AutopilotChatAllowedAttachments) {
+    this._config.allowedAttachments = allowedAttachments;
+
+    this._internalService.publish(
+      AutopilotChatInternalEvent.SetAllowedAttachments,
+      allowedAttachments
+    );
+  }
+
+  /**
+   * Toggles the auto scroll in the chat service
+   *
+   * @param autoScroll - The auto scroll state to set
+   */
+  toggleAutoScroll(autoScroll: boolean) {
+    this._internalService.publish(AutopilotChatInternalEvent.ToggleAutoScroll, autoScroll);
+  }
+
+  /**
+   * Sets the models in the chat service
+   *
+   * @param models - The models to set
+   */
+  setModels(models: AutopilotChatModelInfo[]) {
+    this._config.models = models;
+
+    this._eventBus.publish(AutopilotChatEvent.SetModels, models);
+  }
+
+  /**
+   * Gets the models from the chat service
+   *
+   * @returns The models
+   */
+  getModels() {
+    return this._config.models;
+  }
+
+  /**
+   * Sets the selected model in the chat service
+   *
+   * @param modelId - The model ID to set
+   */
+  setSelectedModel(modelId: string) {
+    if (!this._config.models) {
+      return;
     }
 
-    /**
-     * Prepends older messages to the conversation when scrolling up and reaching the top
-     * This is called by the consumer in response to the ConversationLoadMore event
-     *
-     * @param messages - The older messages to prepend
-     * @param done - Whether the messages are the last set of messages
-     */
-    prependOlderMessages(messages: AutopilotChatMessage[] = [], done?: boolean) {
-        if (done) {
-            // wait for the next frame to ensure the conversation is updated
-            requestAnimationFrame(() => {
-                this._internalService.publish(AutopilotChatInternalEvent.ShouldShowLoadingMoreMessages, false);
-            });
-        }
+    const newSelectedModel = this._config.models.find((model) => model.id === modelId);
 
-        if (messages.length === 0) {
-            return;
-        }
-
-        // Emit internal event to signal that messages are being prepended in order to maintain scroll position
-        this._internalService.publish(AutopilotChatInternalEvent.PrependOlderMessages);
-
-        this.setConversation([ ...messages, ...this._conversation ]);
+    if (!newSelectedModel) {
+      return;
     }
 
-    /**
-     * Appends older history items to the history when scrolling down and reaching the bottom
-     * This is called by the consumer in response to the HistoryLoadMore event
-     *
-     * @param items - The older history items to append
-     * @param done - Whether the items are the last set of items
-     */
-    appendOlderHistoryItems(items: AutopilotChatHistory[] = [], done?: boolean) {
-        if (done) {
-            this._internalService.publish(AutopilotChatInternalEvent.ShouldShowLoadingMoreHistory, false);
-        }
+    this._config.selectedModel = newSelectedModel;
 
-        if (items.length === 0) {
-            return;
-        }
+    this._eventBus.publish(AutopilotChatEvent.SetSelectedModel, newSelectedModel);
+  }
 
-        // Emit internal event to signal that items are being appended
-        this._internalService.publish(AutopilotChatInternalEvent.AppendOlderHistory);
+  /**
+   * Gets the selected model from the chat service
+   *
+   * @returns The selected model
+   */
+  getSelectedModel() {
+    return this._config.selectedModel;
+  }
 
-        this.setHistory([ ...this._history, ...items ]);
+  /**
+   * Sets the agent modes in the chat service
+   *
+   * @param agentModes - The agent modes to set
+   */
+  setAgentModes(agentModes: AutopilotChatAgentModeInfo[]) {
+    this._config.agentModes = agentModes;
+
+    // if none is selected, select the first one
+    if (!this._config.selectedAgentMode && agentModes[0]) {
+      this.setAgentMode(agentModes[0].id);
     }
 
-    /**
-     * Gets the current conversation from the chat service
-     *
-     * @returns The conversation
-     */
-    getConversation() {
-        return this._conversation;
+    this._eventBus.publish(AutopilotChatEvent.SetAgentModes, agentModes);
+  }
+
+  /**
+   * Gets the agent modes from the chat service
+   *
+   * @returns The agent modes
+   */
+  getAgentModes() {
+    return this._config.agentModes;
+  }
+
+  /**
+   * Sets the agent mode in the chat service
+   *
+   * @param modeId - The agent mode to set
+   */
+  setAgentMode(modeId: string) {
+    if (!this._config.agentModes) {
+      return;
     }
 
-    /**
-     * Sends a request as an user request to the chat service
-     *
-     * @param request - The request to send
-     */
-    sendRequest(request: Omit<AutopilotChatMessage, 'role' | 'id' | 'created_at' | 'widget' | 'fakeStream'> & {
-        id?: string;
-        created_at?: string;
-    }) {
-        this._groupId = crypto.randomUUID();
+    const newSelectedMode = this._config.agentModes.find((mode) => mode.id === modeId);
 
-        const userMessage = {
-            id: crypto.randomUUID(), // Generate a new ID in case it's not provided
-            created_at: new Date().toISOString(),
-            ...request,
-            role: AutopilotChatRole.User,
-            widget: DEFAULT_MESSAGE_RENDERER,
-        };
-
-        this.setPrompt('');
-        this.setSuggestions([]);
-        this._conversation.push(userMessage);
-        this._eventBus.publish(AutopilotChatEvent.Request, userMessage);
+    if (!newSelectedMode) {
+      return;
     }
 
-    /**
-     * Stops the response in the chat service
-     */
-    stopResponse() {
-        const lastMessage = this._conversation[this._conversation.length - 1];
+    this._config.selectedAgentMode = newSelectedMode;
 
-        if (lastMessage?.stream && !lastMessage.done) {
-            this.sendResponse({
-                ...lastMessage,
-                done: true,
-                content: '',
-            });
-        }
+    this._eventBus.publish(AutopilotChatEvent.SetSelectedAgentMode, newSelectedMode);
+  }
 
-        this._eventBus.publish(AutopilotChatEvent.StopResponse);
+  /**
+   * Gets the selected agent mode from the chat service
+   *
+   * @returns The selected agent mode
+   */
+  getAgentMode() {
+    return this._config.selectedAgentMode;
+  }
+
+  /**
+   * Sets the custom header actions in the chat header
+   *
+   * @param actions - The custom header actions to set
+   */
+  setCustomHeaderActions(actions: AutopilotChatCustomHeaderAction[]) {
+    this._customHeaderActions = actions;
+    this._eventBus.publish(AutopilotChatEvent.SetCustomHeaderActions, actions);
+  }
+
+  /**
+   * Gets the custom header actions from the chat service
+   *
+   * @returns The custom header actions
+   */
+  getCustomHeaderActions() {
+    return this._customHeaderActions;
+  }
+
+  /**
+   * Sets the locale/language for the chat interface
+   *
+   * @param locale - The locale to set (e.g., 'en', 'de', 'es', 'fr', 'ja', etc.)
+   */
+  setLocale(locale: string) {
+    this._locale = locale;
+    this._internalService.publish(AutopilotChatInternalEvent.SetLocale, locale);
+  }
+
+  /**
+   * Gets the current locale/language of the chat interface
+   *
+   * @returns The current locale
+   */
+  getLocale() {
+    return this._locale;
+  }
+
+  /**
+   * Sets the theme variant for the chat interface
+   *
+   * @param theme - The theme to set ('light', 'dark', 'light-hc', 'dark-hc')
+   */
+  setTheme(theme: string) {
+    this._theme = theme;
+    this._internalService.publish(AutopilotChatInternalEvent.SetTheme, theme);
+  }
+
+  /**
+   * Gets the current theme of the chat interface
+   *
+   * @returns The current theme
+   */
+  getTheme() {
+    return this._theme;
+  }
+
+  /**
+   * Should not be consumed by the public API
+   * @internal
+   * @returns The internal service
+   */
+  get __internalService__() {
+    return this._internalService;
+  }
+
+  /**
+   * Gets the messages in a group
+   *
+   * @param groupId - The group ID to get the messages for
+   * @returns The messages in the group
+   */
+  getMessagesInGroup(groupId: string) {
+    return this._conversation.filter((message) => message.groupId === groupId);
+  }
+
+  /**
+   * Sets a pre hook in the chat service
+   *
+   * @param action - The action to set the pre hook for
+   * @param hook - The pre hook to set
+   */
+  setPreHook(action: AutopilotChatPreHookAction, hook: (data?: any) => Promise<boolean>) {
+    if (!this._config.preHooks) {
+      this._config.preHooks = {};
     }
 
-    /**
-     * Sends a response as an AI assistant response to the chat service
-     *
-     * @param response - The response to send (supports legacy format or new ContentPart format)
-     */
-    sendResponse(response: Omit<AutopilotChatMessage, 'role' | 'id' | 'content'> & {
-        id?: string;
-        content?: string;
-        contentPartChunk?: ContentPartChunk;
-    }) {
-        const lastMessage = this._conversation[this._conversation.length - 1];
-        const messageId = response.id || crypto.randomUUID();
+    this._config.preHooks[action] = hook;
+  }
 
-        // Set the last message groupId as the groupId for the response if it's an assistant message
-        if (lastMessage?.groupId && lastMessage.role === AutopilotChatRole.Assistant && this._groupId !== lastMessage.groupId) {
-            this._groupId = lastMessage.groupId;
-        }
+  /**
+   * Gets the pre hook from the chat service
+   *
+   * @param action - The action to get the pre hook for
+   * @returns The pre hook
+   */
+  getPreHook(action: AutopilotChatPreHookAction) {
+    return this._config.preHooks?.[action] ?? (() => Promise.resolve(true));
+  }
 
-        // Handle ContentPartChunk streaming
-        if (response.contentPartChunk) {
-            this._processContentPartChunk(messageId, response);
+  /**
+   * Sends an input stream event.
+   * @param event The event data.
+   */
+  sendInputStreamEvent(event: AutopilotChatInputStreamEvent) {
+    this._eventBus.publish(AutopilotChatEvent.InputStream, event);
+  }
 
-            return;
-        }
+  /**
+   * Sends an output stream event.
+   * @param event The event data.
+   */
+  sendOutputStreamEvent(event: AutopilotChatOutputStreamEvent) {
+    this._eventBus.publish(AutopilotChatEvent.OutputStream, event);
+  }
 
-        const {
-            contentPartChunk: _contentPartChunk, ...rest
-        } = response;
+  /**
+   * Sets the attachments loading in the chat service
+   *
+   * @param attachments - The attachments to set (with loading state on them)
+   */
+  setAttachmentsLoading(attachments: AutopilotChatFileInfo[]) {
+    this._internalService.publish(AutopilotChatInternalEvent.SetAttachmentsLoading, attachments);
+  }
 
-        const assistantMessage = {
-            id: messageId,
-            ...rest,
-            content: response.content ?? response.contentParts?.map(part => part.text).join('') ?? '',
-            groupId: response.groupId ?? this._groupId,
-            created_at: response.created_at ?? new Date().toISOString(),
-            role: AutopilotChatRole.Assistant,
-        };
-
-        // Check if message with the same ID already exists and emit chunk, otherwise emit response
-        const existingIndex = this._conversation.findIndex(message => message.id === assistantMessage.id);
-
-        if (existingIndex !== -1) {
-            if (response.stream) {
-                // send chunk if the response is streaming
-                if (this._conversation[existingIndex]) {
-                  this._conversation[existingIndex].content += assistantMessage.content;
-                  this._conversation[existingIndex].done = !!response.done;
-                  this._conversation[existingIndex].meta = response.meta ?? this._conversation[existingIndex].meta;
-                  this._conversation[existingIndex].groupId = assistantMessage.groupId ?? this._conversation[existingIndex].groupId;
-                }
-                this._eventBus.publish(AutopilotChatEvent.SendChunk, assistantMessage);
-            } else {
-                // send response if the response is not streaming
-                this._conversation[existingIndex] = {
-                    ...this._conversation[existingIndex],
-                    ...assistantMessage,
-                };
-                this._eventBus.publish(AutopilotChatEvent.Response, assistantMessage);
-            }
-        } else {
-            this._conversation.push(assistantMessage);
-            this._eventBus.publish(AutopilotChatEvent.Response, assistantMessage);
-        }
+  /**
+   * Accumulates a ContentPartChunk using ContentPartBuilder
+   * @internal
+   */
+  private _accumulateContentPart(messageId: string, chunk: ContentPartChunk) {
+    if (!this._contentPartBuilders.has(messageId)) {
+      this._contentPartBuilders.set(messageId, new ContentPartBuilder());
     }
 
-    /**
-     * Sets the loading message in the chat service
-     *
-     * @param messages - The messages to show in the loading state
-     * @param duration - The duration in milliseconds to show each message (optional)
-     */
-    setDefaultLoadingMessages(messages: string[], duration?: number) {
-        this._defaultLoadingMessages = messages;
-        if (duration) {
-            this._loadingMessageDuration = duration;
-        }
+    const builder = this._contentPartBuilders.get(messageId)!;
+    builder.addChunk(chunk);
+  }
 
-        this._eventBus.publish(AutopilotChatEvent.SetDefaultLoadingMessages, {
-            messages,
-            duration,
-        });
+  /**
+   * Converts accumulated ContentParts to a message's content and contentParts
+   * @internal
+   */
+  private _getAccumulatedContent(messageId: string): ContentPart[] {
+    const builder = this._contentPartBuilders.get(messageId);
+
+    if (!builder) {
+      return [];
     }
 
-    /**
-     * Gets the default loading messages in the chat service
-     *
-     * @returns The default loading messages
-     */
-    getDefaultLoadingMessages() {
-        return this._defaultLoadingMessages;
+    return builder.getContentParts();
+  }
+
+  /**
+   * Clears accumulated content parts for a message
+   * @internal
+   */
+  private _clearAccumulatedContent(messageId: string) {
+    this._contentPartBuilders.delete(messageId);
+  }
+
+  /**
+   * Processes a content part chunk
+   * @internal
+   */
+  private _processContentPartChunk(
+    messageId: string,
+    response: Omit<AutopilotChatMessage, 'role' | 'id' | 'content'> & {
+      id?: string;
+      contentPartChunk?: ContentPartChunk;
+    }
+  ) {
+    const { contentPartChunk, ...rest } = response;
+
+    this._accumulateContentPart(messageId, contentPartChunk!);
+    const accumulatedContent = this._getAccumulatedContent(messageId);
+
+    const assistantMessage = {
+      id: messageId,
+      ...rest,
+      content: accumulatedContent.map((part) => part.text).join(''),
+      contentParts: accumulatedContent,
+      groupId: response.groupId ?? this._groupId,
+      created_at: response.created_at ?? new Date().toISOString(),
+      role: AutopilotChatRole.Assistant,
+      stream: true,
+      done: response.done ?? false,
+    };
+
+    const existingIndex = this._conversation.findIndex((message) => message.id === messageId);
+
+    if (existingIndex !== -1) {
+      this._conversation[existingIndex] = {
+        ...this._conversation[existingIndex],
+        ...assistantMessage,
+      };
+      this._eventBus.publish(AutopilotChatEvent.SendChunk, assistantMessage);
+    } else {
+      this._conversation.push(assistantMessage);
+      this._eventBus.publish(AutopilotChatEvent.Response, assistantMessage);
     }
 
-    /**
-     * Gets the current loading message duration
-     *
-     * @returns The loading message duration in milliseconds
-     */
-    getLoadingMessageDuration() {
-        return this._loadingMessageDuration;
+    // Clear accumulator if done
+    if (response.done) {
+      this._clearAccumulatedContent(messageId);
     }
-
-    /**
-     * Sets a single loading message in the chat service
-     *
-     * @param message - The message to show in the loading state
-     */
-    setLoadingMessage(message: string) {
-        this._loadingMessage = message;
-
-        this._eventBus.publish(AutopilotChatEvent.SetLoadingMessage, message);
-    }
-
-    /**
-     * Gets the current loading message
-     *
-     * @returns The loading message
-     */
-    getLoadingMessage() {
-        return this._loadingMessage;
-    }
-
-    /**
-     * Creates a new chat
-     *
-     * @param config - The configuration to use
-     * @param messageRenderers - The custom message renderers to inject
-     */
-    newChat(config?: AutopilotChatConfiguration) {
-        if (config) {
-            this.patchConfig(config);
-        }
-
-        this._groupId = undefined;
-        this._conversation = [];
-        this._eventBus.publish(AutopilotChatEvent.NewChat);
-        this._internalService.publish(AutopilotChatInternalEvent.ShouldShowLoadingMoreMessages, true);
-        this._internalService.publish(AutopilotChatInternalEvent.SetIsLoadingMoreMessages, false);
-    }
-
-    /**
-     * Sets an error or warning message in the chat service (supports markdown)
-     *
-     * @param message - The error/warning message to set (can include markdown formatting), or undefined to clear
-     * @param level - The severity level ('error' or 'warning'), defaults to 'error'
-     */
-    setError(message: string | undefined, level: AutopilotChatErrorLevel = 'error') {
-        if (message === undefined) {
-            this.clearError();
-            return;
-        }
-
-        this._error = {
-            message,
-            level,
-        };
-
-        this._eventBus.publish(AutopilotChatEvent.Error, this._error);
-    }
-
-    /**
-     * Clears the error/warning in the chat service
-     */
-    clearError() {
-        this._error = undefined;
-
-        this._eventBus.publish(AutopilotChatEvent.Error, undefined);
-    }
-
-    /**
-     * Gets the current error/warning from the chat service
-     *
-     * @returns The error/warning
-     */
-    getError() {
-        return this._error;
-    }
-
-    /**
-     * Subscribes to an event
-     *
-     * @param event - The event to subscribe to
-     * @param handler - The handler to subscribe to the event
-     * @returns A function to unsubscribe from the event
-     */
-    on(event: AutopilotChatEvent, handler: AutopilotChatEventHandler) {
-        return this._eventBus.subscribe(event, handler);
-    }
-
-    /**
-     * Adds an interceptor to the event bus
-     *
-     * @param event - The event to intercept
-     * @param interceptor - The interceptor to add
-     * @returns A function to remove the interceptor
-     */
-    intercept(event: AutopilotChatInterceptableEvent, interceptor: AutopilotChatEventInterceptor) {
-        if (Object.values(AutopilotChatInterceptableEvent).includes(event)) {
-            return this._eventBus.intercept(event, interceptor);
-        }
-
-        return () => {};
-    }
-
-    /**
-     * Sets the history in the chat service
-     *
-     * @param history - The history to set
-     * @param done - Whether this is the last set of history items (optional, used for pagination)
-     */
-    setHistory(history: AutopilotChatHistory[], done?: boolean) {
-        this._history = history;
-        this._internalService.publish(AutopilotChatInternalEvent.SetIsLoadingMoreHistory, false);
-
-        if (done !== undefined) {
-            this._internalService.publish(AutopilotChatInternalEvent.ShouldShowLoadingMoreHistory, !done);
-        }
-
-        this._eventBus.publish(AutopilotChatEvent.SetHistory, history);
-    }
-
-    /**
-     * Gets the history from the chat service
-     *
-     * @returns The history
-     */
-    getHistory() {
-        return this._history;
-    }
-
-    /**
-     * Gets the history open state from the chat service
-     *
-     * @returns The history open state
-     */
-    get historyOpen() {
-        return this._historyOpen;
-    }
-
-    /**
-     * Gets the settings open state from the chat service
-     *
-     * @returns The settings open state
-     */
-    get settingsOpen() {
-        return this._settingsOpen;
-    }
-
-    /**
-     * Toggles the history in the chat service
-     *
-     * @param open - The open state to set (optional, defaults to toggle)
-     */
-    toggleHistory(open?: boolean) {
-        this._historyOpen = open ?? !this._historyOpen;
-
-        // close settings if history is open
-        if (this._historyOpen) {
-            this._settingsOpen = false;
-            this._internalService.publish(AutopilotChatInternalEvent.ToggleSettings, false);
-        }
-
-        this._internalService.publish(AutopilotChatInternalEvent.ToggleHistory, this._historyOpen);
-    }
-
-    /**
-     * Toggles the settings in the chat service
-     *
-     * @param open - The open state to set (optional, defaults to toggle)
-     */
-    toggleSettings(open?: boolean) {
-        this._settingsOpen = open ?? !this._settingsOpen;
-
-        // close history if settings is open
-        if (this._settingsOpen) {
-            this._historyOpen = false;
-            this._internalService.publish(AutopilotChatInternalEvent.ToggleHistory, false);
-        }
-
-        this._internalService.publish(AutopilotChatInternalEvent.ToggleSettings, this._settingsOpen);
-    }
-
-    /**
-     * Deletes a conversation from the chat service
-     *
-     * @param conversationId - The conversation ID to delete
-     */
-    deleteConversation(conversationId: string) {
-        if (conversationId === this._activeConversationId) {
-            this._activeConversationId = null;
-            this._groupId = undefined;
-        }
-
-        this._eventBus.publish(AutopilotChatEvent.DeleteConversation, conversationId);
-    }
-
-    /**
-     * Opens a conversation from the chat service
-     *
-     * @param conversationId - The conversation ID to open
-     */
-    openConversation(conversationId: string | null, showLoadingState = true) {
-        this._activeConversationId = conversationId;
-        this._eventBus.publish(AutopilotChatEvent.OpenConversation, conversationId);
-        this._internalService.publish(AutopilotChatInternalEvent.ShowLoadingState, showLoadingState);
-        this._internalService.publish(AutopilotChatInternalEvent.ShouldShowLoadingMoreMessages, true);
-    }
-
-    /**
-     * Sets the allowed attachments in the chat service
-     *
-     * @param allowedAttachments - The allowed attachments to set
-     */
-    setAllowedAttachments(allowedAttachments: AutopilotChatAllowedAttachments) {
-        this._config.allowedAttachments = allowedAttachments;
-
-        this._internalService.publish(AutopilotChatInternalEvent.SetAllowedAttachments, allowedAttachments);
-    }
-
-    /**
-     * Toggles the auto scroll in the chat service
-     *
-     * @param autoScroll - The auto scroll state to set
-     */
-    toggleAutoScroll(autoScroll: boolean) {
-        this._internalService.publish(AutopilotChatInternalEvent.ToggleAutoScroll, autoScroll);
-    }
-
-    /**
-     * Sets the models in the chat service
-     *
-     * @param models - The models to set
-     */
-    setModels(models: AutopilotChatModelInfo[]) {
-        this._config.models = models;
-
-        this._eventBus.publish(AutopilotChatEvent.SetModels, models);
-    }
-
-    /**
-     * Gets the models from the chat service
-     *
-     * @returns The models
-     */
-    getModels() {
-        return this._config.models;
-    }
-
-    /**
-     * Sets the selected model in the chat service
-     *
-     * @param modelId - The model ID to set
-     */
-    setSelectedModel(modelId: string) {
-        if (!this._config.models) {
-            return;
-        }
-
-        const newSelectedModel = this._config.models.find(model => model.id === modelId);
-
-        if (!newSelectedModel) {
-            return;
-        }
-
-        this._config.selectedModel = newSelectedModel;
-
-        this._eventBus.publish(AutopilotChatEvent.SetSelectedModel, newSelectedModel);
-    }
-
-    /**
-     * Gets the selected model from the chat service
-     *
-     * @returns The selected model
-     */
-    getSelectedModel() {
-        return this._config.selectedModel;
-    }
-
-    /**
-     * Sets the agent modes in the chat service
-     *
-     * @param agentModes - The agent modes to set
-     */
-    setAgentModes(agentModes: AutopilotChatAgentModeInfo[]) {
-        this._config.agentModes = agentModes;
-
-        // if none is selected, select the first one
-        if (!this._config.selectedAgentMode && agentModes[0]) {
-            this.setAgentMode(agentModes[0].id);
-        }
-
-        this._eventBus.publish(AutopilotChatEvent.SetAgentModes, agentModes);
-    }
-
-    /**
-     * Gets the agent modes from the chat service
-     *
-     * @returns The agent modes
-     */
-    getAgentModes() {
-        return this._config.agentModes;
-    }
-
-    /**
-     * Sets the agent mode in the chat service
-     *
-     * @param modeId - The agent mode to set
-     */
-    setAgentMode(modeId: string) {
-        if (!this._config.agentModes) {
-            return;
-        }
-
-        const newSelectedMode = this._config.agentModes.find(mode => mode.id === modeId);
-
-        if (!newSelectedMode) {
-            return;
-        }
-
-        this._config.selectedAgentMode = newSelectedMode;
-
-        this._eventBus.publish(AutopilotChatEvent.SetSelectedAgentMode, newSelectedMode);
-    }
-
-    /**
-     * Gets the selected agent mode from the chat service
-     *
-     * @returns The selected agent mode
-     */
-    getAgentMode() {
-        return this._config.selectedAgentMode;
-    }
-
-    /**
-     * Sets the custom header actions in the chat header
-     *
-     * @param actions - The custom header actions to set
-     */
-    setCustomHeaderActions(actions: AutopilotChatCustomHeaderAction[]) {
-        this._customHeaderActions = actions;
-        this._eventBus.publish(AutopilotChatEvent.SetCustomHeaderActions, actions);
-    }
-
-    /**
-     * Gets the custom header actions from the chat service
-     *
-     * @returns The custom header actions
-     */
-    getCustomHeaderActions() {
-        return this._customHeaderActions;
-    }
-
-    /**
-     * Sets the locale/language for the chat interface
-     *
-     * @param locale - The locale to set (e.g., 'en', 'de', 'es', 'fr', 'ja', etc.)
-     */
-    setLocale(locale: string) {
-        this._locale = locale;
-        this._internalService.publish(AutopilotChatInternalEvent.SetLocale, locale);
-    }
-
-    /**
-     * Gets the current locale/language of the chat interface
-     *
-     * @returns The current locale
-     */
-    getLocale() {
-        return this._locale;
-    }
-
-    /**
-     * Sets the theme variant for the chat interface
-     *
-     * @param theme - The theme to set ('light', 'dark', 'light-hc', 'dark-hc')
-     */
-    setTheme(theme: string) {
-        this._theme = theme;
-        this._internalService.publish(AutopilotChatInternalEvent.SetTheme, theme);
-    }
-
-    /**
-     * Gets the current theme of the chat interface
-     *
-     * @returns The current theme
-     */
-    getTheme() {
-        return this._theme;
-    }
-
-    /**
-     * Should not be consumed by the public API
-     * @internal
-     * @returns The internal service
-     */
-    get __internalService__() {
-        return this._internalService;
-    }
-
-    /**
-     * Gets the messages in a group
-     *
-     * @param groupId - The group ID to get the messages for
-     * @returns The messages in the group
-     */
-    getMessagesInGroup(groupId: string) {
-        return this._conversation.filter(message => message.groupId === groupId);
-    }
-
-    /**
-     * Sets a pre hook in the chat service
-     *
-     * @param action - The action to set the pre hook for
-     * @param hook - The pre hook to set
-     */
-    setPreHook(action: AutopilotChatPreHookAction, hook: (data?: any) => Promise<boolean>) {
-        if (!this._config.preHooks) {
-            this._config.preHooks = {};
-        }
-
-        this._config.preHooks[action] = hook;
-    }
-
-    /**
-     * Gets the pre hook from the chat service
-     *
-     * @param action - The action to get the pre hook for
-     * @returns The pre hook
-     */
-    getPreHook(action: AutopilotChatPreHookAction) {
-        return this._config.preHooks?.[action] ?? (() => Promise.resolve(true));
-    }
-
-    /**
-     * Sends an input stream event.
-     * @param event The event data.
-     */
-    sendInputStreamEvent(event: AutopilotChatInputStreamEvent) {
-        this._eventBus.publish(AutopilotChatEvent.InputStream, event);
-    }
-
-    /**
-     * Sends an output stream event.
-     * @param event The event data.
-     */
-    sendOutputStreamEvent(event: AutopilotChatOutputStreamEvent) {
-        this._eventBus.publish(AutopilotChatEvent.OutputStream, event);
-    }
-
-    /**
-     * Sets the attachments loading in the chat service
-     *
-     * @param attachments - The attachments to set (with loading state on them)
-     */
-    setAttachmentsLoading(attachments: AutopilotChatFileInfo[]) {
-        this._internalService.publish(AutopilotChatInternalEvent.SetAttachmentsLoading, attachments);
-    }
-
-    /**
-     * Accumulates a ContentPartChunk using ContentPartBuilder
-     * @internal
-     */
-    private _accumulateContentPart(messageId: string, chunk: ContentPartChunk) {
-        if (!this._contentPartBuilders.has(messageId)) {
-            this._contentPartBuilders.set(messageId, new ContentPartBuilder());
-        }
-
-        const builder = this._contentPartBuilders.get(messageId)!;
-        builder.addChunk(chunk);
-    }
-
-    /**
-     * Converts accumulated ContentParts to a message's content and contentParts
-     * @internal
-     */
-    private _getAccumulatedContent(messageId: string): ContentPart[] {
-        const builder = this._contentPartBuilders.get(messageId);
-
-        if (!builder) {
-            return [];
-        }
-
-        return builder.getContentParts();
-    }
-
-    /**
-     * Clears accumulated content parts for a message
-     * @internal
-     */
-    private _clearAccumulatedContent(messageId: string) {
-        this._contentPartBuilders.delete(messageId);
-    }
-
-    /**
-     * Processes a content part chunk
-     * @internal
-     */
-    private _processContentPartChunk(messageId: string, response: Omit<AutopilotChatMessage, 'role' | 'id' | 'content'> & {
-        id?: string;
-        contentPartChunk?: ContentPartChunk;
-    }) {
-        const {
-            contentPartChunk, ...rest
-        } = response;
-
-        this._accumulateContentPart(messageId, contentPartChunk!);
-        const accumulatedContent = this._getAccumulatedContent(messageId);
-
-        const assistantMessage = {
-            id: messageId,
-            ...rest,
-            content: accumulatedContent.map(part => part.text).join(''),
-            contentParts: accumulatedContent,
-            groupId: response.groupId ?? this._groupId,
-            created_at: response.created_at ?? new Date().toISOString(),
-            role: AutopilotChatRole.Assistant,
-            stream: true,
-            done: response.done ?? false,
-        };
-
-        const existingIndex = this._conversation.findIndex(message => message.id === messageId);
-
-        if (existingIndex !== -1) {
-            this._conversation[existingIndex] = {
-                ...this._conversation[existingIndex],
-                ...assistantMessage,
-            };
-            this._eventBus.publish(AutopilotChatEvent.SendChunk, assistantMessage);
-        } else {
-            this._conversation.push(assistantMessage);
-            this._eventBus.publish(AutopilotChatEvent.Response, assistantMessage);
-        }
-
-        // Clear accumulator if done
-        if (response.done) {
-            this._clearAccumulatedContent(messageId);
-        }
-    }
+  }
 }

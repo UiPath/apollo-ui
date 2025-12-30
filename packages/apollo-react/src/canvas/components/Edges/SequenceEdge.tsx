@@ -1,5 +1,5 @@
-import { type EdgeProps, getSmoothStepPath, Position } from "@uipath/uix/xyflow/react";
-import { memo, useState } from "react";
+import { type EdgeProps, getSmoothStepPath, Position } from '@uipath/uix/xyflow/react';
+import { memo, useState } from 'react';
 
 const ARROW_SIZE = 10;
 
@@ -65,7 +65,7 @@ export const SequenceEdge = memo(function SequenceEdge({
 
   // TODO: Replace with actual read-only state from the canvas
   const isReadOnly = false;
-  const isPreviewEdge = id === "preview-edge-id";
+  const isPreviewEdge = id === 'preview-edge-id';
 
   // Check if this edge has diff styling applied
   const isDiffAdded = data?.isDiffAdded === true;
@@ -87,13 +87,13 @@ export const SequenceEdge = memo(function SequenceEdge({
 
   const getEdgeColor = () => {
     // Diff styling takes priority
-    if (isDiffAdded) return "var(--uix-canvas-success-icon)";
-    if (isDiffRemoved) return "var(--uix-canvas-error-icon)";
+    if (isDiffAdded) return 'var(--uix-canvas-success-icon)';
+    if (isDiffRemoved) return 'var(--uix-canvas-error-icon)';
 
-    if (isPreviewEdge) return "var(--uix-canvas-primary)";
-    if (selected) return "var(--uix-canvas-primary)";
-    if (isHovered) return "var(--uix-canvas-primary-hover)";
-    return "var(--uix-canvas-border)";
+    if (isPreviewEdge) return 'var(--uix-canvas-primary)';
+    if (selected) return 'var(--uix-canvas-primary)';
+    if (isHovered) return 'var(--uix-canvas-primary-hover)';
+    return 'var(--uix-canvas-border)';
   };
 
   const edgeColor = getEdgeColor();
@@ -107,7 +107,7 @@ export const SequenceEdge = memo(function SequenceEdge({
         fill="none"
         stroke="transparent"
         strokeWidth={20}
-        style={{ pointerEvents: "stroke", cursor: isReadOnly ? "default" : "pointer" }}
+        style={{ pointerEvents: 'stroke', cursor: isReadOnly ? 'default' : 'pointer' }}
       />
 
       {/* Outline for selected state */}
@@ -120,8 +120,8 @@ export const SequenceEdge = memo(function SequenceEdge({
           strokeWidth={10}
           opacity={0.3}
           style={{
-            pointerEvents: "none",
-            transition: "opacity 0.2s ease",
+            pointerEvents: 'none',
+            transition: 'opacity 0.2s ease',
           }}
         />
       )}
@@ -134,9 +134,13 @@ export const SequenceEdge = memo(function SequenceEdge({
         strokeWidth={style?.strokeWidth || 2}
         style={{
           stroke: edgeColor,
-          strokeDasharray: isDiffRemoved ? style?.strokeDasharray || "5,5" : isPreviewEdge ? "5,5" : "0",
+          strokeDasharray: isDiffRemoved
+            ? style?.strokeDasharray || '5,5'
+            : isPreviewEdge
+              ? '5,5'
+              : '0',
           opacity: style?.opacity !== undefined ? style.opacity : 1,
-          transition: "stroke 0.2s ease, opacity 0.2s ease",
+          transition: 'stroke 0.2s ease, opacity 0.2s ease',
         }}
       />
 
@@ -149,9 +153,9 @@ export const SequenceEdge = memo(function SequenceEdge({
           `}
         fill={edgeColor}
         style={{
-          pointerEvents: "none",
+          pointerEvents: 'none',
           opacity: style?.opacity !== undefined ? style.opacity : 1,
-          transition: "fill 0.2s ease, opacity 0.2s ease",
+          transition: 'fill 0.2s ease, opacity 0.2s ease',
           transform: `translate(${offsetX}px, ${offsetY}px)`,
         }}
       />

@@ -1,8 +1,19 @@
-import React, { useMemo } from "react";
-import type { GridProps as CoreGridProps, OverflowProps, PositionProps, SizeProps, SpacingProps } from "./core";
-import { alignMap, calcSpacingPx, justifyMap } from "./core";
+import React, { useMemo } from 'react';
+import type {
+  GridProps as CoreGridProps,
+  OverflowProps,
+  PositionProps,
+  SizeProps,
+  SpacingProps,
+} from './core';
+import { alignMap, calcSpacingPx, justifyMap } from './core';
 
-type GridProps = CoreGridProps & OverflowProps & PositionProps & React.HTMLAttributes<HTMLDivElement> & SizeProps & SpacingProps;
+type GridProps = CoreGridProps &
+  OverflowProps &
+  PositionProps &
+  React.HTMLAttributes<HTMLDivElement> &
+  SizeProps &
+  SpacingProps;
 
 const Grid: React.FC<GridProps> = ({
   children,
@@ -54,7 +65,7 @@ const Grid: React.FC<GridProps> = ({
   // Keep useMemo for style calculations - this is still valuable
   const dynamicStyle: React.CSSProperties = useMemo(() => {
     return {
-      display: "grid",
+      display: 'grid',
 
       // Grid template properties
       ...(templateColumns && { gridTemplateColumns: templateColumns }),

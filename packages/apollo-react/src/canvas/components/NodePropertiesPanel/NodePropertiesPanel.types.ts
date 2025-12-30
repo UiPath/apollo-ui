@@ -1,6 +1,6 @@
-import type { Node } from "@uipath/uix/xyflow/react";
+import type { Node } from '@uipath/uix/xyflow/react';
 
-export type FieldType = "text" | "textarea" | "number" | "select" | "checkbox" | "date" | "time";
+export type FieldType = 'text' | 'textarea' | 'number' | 'select' | 'checkbox' | 'date' | 'time';
 
 export interface SelectOption {
   label: string;
@@ -8,7 +8,7 @@ export interface SelectOption {
 }
 
 export interface ValidationRule<T = unknown> {
-  type: "required" | "min" | "max" | "pattern" | "custom";
+  type: 'required' | 'min' | 'max' | 'pattern' | 'custom';
   value?: T;
   message?: string;
   validator?: (value: T) => boolean;
@@ -44,13 +44,13 @@ export interface ConfigSection {
 export interface NodeConfigSchema {
   fields?: ConfigField[];
   sections?: ConfigSection[];
-  layout?: "vertical" | "horizontal";
+  layout?: 'vertical' | 'horizontal';
 }
 
 export interface NodePropertiesPanelProps {
   nodeId?: string;
   onClose?: () => void;
-  position?: "left" | "right" | "auto";
+  position?: 'left' | 'right' | 'auto';
   customSchemas?: Record<string, NodeConfigSchema>;
   enableValidation?: boolean;
   onChange?: (nodeId: string, field: string, value: unknown) => void;
@@ -64,7 +64,7 @@ export interface StageNodeConfig {
   description: string;
   markAsException?: boolean;
   slaLength?: number;
-  slaUnit?: "Days" | "Hours" | "Minutes";
+  slaUnit?: 'Days' | 'Hours' | 'Minutes';
 }
 
 export interface AgentNodeConfig {

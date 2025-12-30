@@ -1,6 +1,6 @@
-import type { Edge, Node } from "@uipath/uix/xyflow/react";
-import mermaid from "mermaid";
-import sanitizeHtml from "sanitize-html";
+import type { Edge, Node } from '@uipath/uix/xyflow/react';
+import mermaid from 'mermaid';
+import sanitizeHtml from 'sanitize-html';
 
 interface IMermaidNodeDefinition {
   id: string;
@@ -25,7 +25,7 @@ function ensureArray<T>(data: Map<string, T> | Record<string, T> | T[] | null | 
     return data;
   } else if (data instanceof Map) {
     return Array.from(data.values());
-  } else if (data && typeof data === "object") {
+  } else if (data && typeof data === 'object') {
     return Object.values(data);
   }
   return [];
@@ -33,11 +33,11 @@ function ensureArray<T>(data: Map<string, T> | Record<string, T> | T[] | null | 
 
 function getNodeType(nodeLabel: string): string {
   const lowerLabel = nodeLabel.toLowerCase();
-  if (lowerLabel.includes("agent")) return "agent";
-  if (lowerLabel.includes("tool") || lowerLabel.includes("function")) return "resource";
-  if (lowerLabel.includes("context") || lowerLabel.includes("knowledge")) return "resource";
-  if (lowerLabel.includes("escalation") || lowerLabel.includes("human")) return "resource";
-  return "flow"; // For start, end, and other flow nodes
+  if (lowerLabel.includes('agent')) return 'agent';
+  if (lowerLabel.includes('tool') || lowerLabel.includes('function')) return 'resource';
+  if (lowerLabel.includes('context') || lowerLabel.includes('knowledge')) return 'resource';
+  if (lowerLabel.includes('escalation') || lowerLabel.includes('human')) return 'resource';
+  return 'flow'; // For start, end, and other flow nodes
 }
 
 export async function mermaidToReactFlow(mermaidText: string): Promise<MermaidParserResult> {
@@ -48,7 +48,7 @@ export async function mermaidToReactFlow(mermaidText: string): Promise<MermaidPa
     // First validate the diagram syntax
     const parseResult = await mermaid.parse(mermaidText, { suppressErrors: true });
     if (!parseResult) {
-      throw new Error("Invalid mermaid syntax");
+      throw new Error('Invalid mermaid syntax');
     }
 
     // Get the diagram using the mermaidAPI
@@ -63,7 +63,7 @@ export async function mermaidToReactFlow(mermaidText: string): Promise<MermaidPa
     }
 
     if (rawNodes.length === 0) {
-      throw new Error("Unable to extract nodes from diagram");
+      throw new Error('Unable to extract nodes from diagram');
     }
 
     // Process edges with proper formatting
@@ -73,12 +73,12 @@ export async function mermaidToReactFlow(mermaidText: string): Promise<MermaidPa
           id: crypto.randomUUID(),
           source: mermaidEdge.start,
           target: mermaidEdge.end,
-          type: "default",
+          type: 'default',
           label: mermaidEdge.text,
           animated: false,
-          markerEnd: "arrow",
+          markerEnd: 'arrow',
           style: {
-            stroke: "var(--uix-canvas-foreground-de-emp)",
+            stroke: 'var(--uix-canvas-foreground-de-emp)',
             strokeWidth: 1,
           },
           data: {
@@ -92,7 +92,7 @@ export async function mermaidToReactFlow(mermaidText: string): Promise<MermaidPa
     const nodes: Node[] = rawNodes.map((mermaidNode: IMermaidNodeDefinition) => {
       // Clean label from HTML if needed
       let label = mermaidNode.text;
-      if (typeof label === "string" && label.includes("<")) {
+      if (typeof label === 'string' && label.includes('<')) {
         label = sanitizeHtml(label, {
           allowedTags: [],
           allowedAttributes: {},

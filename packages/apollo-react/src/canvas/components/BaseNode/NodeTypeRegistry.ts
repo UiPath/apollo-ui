@@ -1,13 +1,13 @@
 // import { isValidElement } from "react";
 
-import type { NodeItemData } from "../AddNodePanel/AddNodePanel.types";
-import type { ListItem } from "../Toolbox";
-import type { BaseNodeData, NodeRegistration, NodeTypeDefinition } from "./BaseNode.types";
+import type { NodeItemData } from '../AddNodePanel/AddNodePanel.types';
+import type { ListItem } from '../Toolbox';
+import type { BaseNodeData, NodeRegistration, NodeTypeDefinition } from './BaseNode.types';
 
 export class NodeTypeRegistry {
   private definitions = new Map<string, NodeTypeDefinition>();
   private allDefinitions = new Map<string, NodeTypeDefinition>();
-  private metadata = new Map<string, Omit<NodeRegistration, "definition">>();
+  private metadata = new Map<string, Omit<NodeRegistration, 'definition'>>();
   private categories = new Map<string, string[]>();
 
   register(registration: NodeRegistration) {
@@ -19,7 +19,7 @@ export class NodeTypeRegistry {
     this.metadata.set(nodeType, metadata);
     this.allDefinitions.set(subType ?? nodeType, definition);
 
-    const category = metadata.category || "misc";
+    const category = metadata.category || 'misc';
     if (!this.categories.has(category)) {
       this.categories.set(category, []);
     }
@@ -56,7 +56,7 @@ export class NodeTypeRegistry {
 
     return {
       nodeType,
-      version: metadata?.version || "1.0.0",
+      version: metadata?.version || '1.0.0',
       parameters: definition?.getDefaultParameters?.() ?? {},
       display: {
         label: label || nodeType,
@@ -78,7 +78,7 @@ export class NodeTypeRegistry {
       if (metadata.isVisible === false) continue;
 
       // Filter by category if specified
-      if (category && category !== "all" && metadata.category !== category) continue;
+      if (category && category !== 'all' && metadata.category !== category) continue;
 
       // Filter by search term if specified
       if (search) {
@@ -105,11 +105,14 @@ export class NodeTypeRegistry {
         id: nodeType,
         name: metadata.displayName || nodeType,
         // FIXME: we need this to be serializable so no React.FC
-        icon: typeof metadata.icon === "string" ? { name: metadata.icon } : { Component: metadata.icon },
+        icon:
+          typeof metadata.icon === 'string'
+            ? { name: metadata.icon }
+            : { Component: metadata.icon },
         description: metadata.description,
         data: {
           type: nodeType,
-          category: metadata.category || "misc",
+          category: metadata.category || 'misc',
           version: metadata.version,
         },
       });
@@ -172,7 +175,10 @@ export class NodeTypeRegistry {
           const categoryMeta: ListItem = {
             id: categoryId,
             name: categoryId.charAt(0).toUpperCase() + categoryId.slice(1),
-            icon: typeof metadata.icon === "string" ? { name: metadata.icon } : { Component: metadata.icon },
+            icon:
+              typeof metadata.icon === 'string'
+                ? { name: metadata.icon }
+                : { Component: metadata.icon },
             data: null,
           };
 

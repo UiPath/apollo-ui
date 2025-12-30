@@ -1,24 +1,10 @@
-import {
-  afterEach,
-  beforeEach,
-  describe,
-  expect,
-  it,
-  vi,
-} from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { i18n } from '@lingui/core';
 import { Trans } from '@lingui/react';
-import {
-  render,
-  screen,
-} from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 
-import {
-  ApI18nProvider,
-  SUPPORTED_LOCALES,
-  useApI18n,
-} from './ApI18nProvider';
+import { ApI18nProvider, SUPPORTED_LOCALES, useApI18n } from './ApI18nProvider';
 import { getAllPreImportedLocales } from './locale-registry';
 
 // Test message catalogs - pre-loaded directly into i18n for testing
@@ -60,14 +46,25 @@ describe('ApI18nProvider', () => {
   describe('Configuration', () => {
     it('should export supported locales array', () => {
       expect(SUPPORTED_LOCALES).toEqual([
-        'en', 'es', 'pt', 'de', 'fr', 'ja', 'ko', 'ru', 'tr',
-        'zh-CN', 'zh-TW', 'pt-BR', 'es-MX',
+        'en',
+        'es',
+        'pt',
+        'de',
+        'fr',
+        'ja',
+        'ko',
+        'ru',
+        'tr',
+        'zh-CN',
+        'zh-TW',
+        'pt-BR',
+        'es-MX',
       ]);
     });
 
     it('should derive SupportedLocale type from array', () => {
       // TypeScript compile-time check
-      const locale: typeof SUPPORTED_LOCALES[number] = 'en';
+      const locale: (typeof SUPPORTED_LOCALES)[number] = 'en';
       expect(locale).toBe('en');
     });
   });
@@ -149,8 +146,12 @@ describe('ApI18nProvider', () => {
       render(
         <ApI18nProvider component="material/components/ap-chat" locale="en">
           <div>
-            <div data-testid="message"><Trans id="test.message" /></div>
-            <div data-testid="greeting"><Trans id="test.greeting" /></div>
+            <div data-testid="message">
+              <Trans id="test.message" />
+            </div>
+            <div data-testid="greeting">
+              <Trans id="test.greeting" />
+            </div>
           </div>
         </ApI18nProvider>
       );
@@ -270,7 +271,6 @@ describe('ApI18nProvider', () => {
       loadSpy.mockRestore();
     });
   });
-
 
   describe('useApI18n Hook', () => {
     it('should return i18n instance', () => {

@@ -1,18 +1,18 @@
-import type { Meta, StoryObj } from "@storybook/react-vite";
-import { CodedAgentFlow } from "./CodedAgentFlow";
+import type { Meta, StoryObj } from '@storybook/react-vite';
+import { CodedAgentFlow } from './CodedAgentFlow';
 
 const meta: Meta<typeof CodedAgentFlow> = {
-  title: "Canvas/CodedAgentFlow",
+  title: 'Canvas/CodedAgentFlow',
   component: CodedAgentFlow,
   decorators: [
     (Story) => (
       <div
         style={{
-          position: "absolute",
+          position: 'absolute',
           top: 0,
           left: 0,
-          width: "100%",
-          height: "100%",
+          width: '100%',
+          height: '100%',
         }}
       >
         <Story />
@@ -61,26 +61,26 @@ flowchart LR
 export const SimpleFlow: Story = {
   args: {
     mermaidText: simpleMermaidText,
-    layoutDirection: "LR",
+    layoutDirection: 'LR',
   },
 };
 
 export const ComplexFlow: Story = {
   args: {
     mermaidText: complexMermaidText,
-    layoutDirection: "LR",
+    layoutDirection: 'LR',
   },
 };
 
 export const ResourceFlow: Story = {
   args: {
     mermaidText: resourceFlowMermaidText,
-    layoutDirection: "LR",
+    layoutDirection: 'LR',
   },
 };
 
 export const EmptyState: Story = {
   args: {
-    mermaidText: "",
+    mermaidText: '',
   },
 };

@@ -1,4 +1,4 @@
-import styled from "@emotion/styled";
+import styled from '@emotion/styled';
 
 export const MenuButton = styled.div<{ $isVisible?: boolean }>`
   position: absolute;
@@ -8,7 +8,7 @@ export const MenuButton = styled.div<{ $isVisible?: boolean }>`
   background: transparent;
   border: none;
   opacity: ${(props) => (props.$isVisible ? 1 : 0)};
-  pointer-events: ${(props) => (props.$isVisible ? "auto" : "none")};
+  pointer-events: ${(props) => (props.$isVisible ? 'auto' : 'none')};
   transition: opacity 0.3s ease-in-out;
   z-index: 10;
   padding: 4px;

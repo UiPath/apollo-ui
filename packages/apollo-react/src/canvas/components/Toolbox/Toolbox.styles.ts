@@ -1,4 +1,4 @@
-import styled from "@emotion/styled";
+import styled from '@emotion/styled';
 
 export const ScrollableList = styled.div`
   flex: 1;
@@ -36,11 +36,11 @@ export const AnimatedContainer = styled.div`
   min-height: 300px;
 `;
 
-export const AnimatedContent = styled.div<{ entering?: boolean; direction?: "forward" | "back" }>`
+export const AnimatedContent = styled.div<{ entering?: boolean; direction?: 'forward' | 'back' }>`
   flex: 1;
   display: flex;
   flex-direction: column;
-  animation: ${(props) => (props.entering ? `slideIn-${props.direction}` : "none")} 0.15s ease-out;
+  animation: ${(props) => (props.entering ? `slideIn-${props.direction}` : 'none')} 0.15s ease-out;
   min-height: 300px;
 
   @keyframes slideIn-forward {

@@ -1,24 +1,24 @@
-import { Fragment, memo, useCallback, useMemo } from "react";
-import { ApIcon } from "@uipath/portal-shell-react";
-import { Icons, Row } from "@uipath/uix/core";
-import { Position, type NodeProps } from "@uipath/uix/xyflow/react";
-import { NewBaseNode } from "../../BaseNode/NewBaseNode";
+import { Fragment, memo, useCallback, useMemo } from 'react';
+import { ApIcon } from '@uipath/portal-shell-react';
+import { Icons, Row } from '@uipath/uix/core';
+import { Position, type NodeProps } from '@uipath/uix/xyflow/react';
+import { NewBaseNode } from '../../BaseNode/NewBaseNode';
 import {
   type AgentFlowResourceNode,
   type AgentFlowResourceNodeData,
   type ResourceNodeTranslations,
   type SuggestionTranslations,
   DefaultSuggestionTranslations,
-} from "../../../types";
-import { useAgentFlowStore, useEdges } from "../store/agent-flow-store";
-import { ExecutionStatusIcon } from "../../ExecutionStatusIcon/ExecutionStatusIcon";
-import type { NodeToolbarConfig, ToolbarAction } from "../../NodeToolbar/NodeToolbar.types";
-import { ToolResourceIcon } from "../components/ToolResourceIcon";
-import type { HandleConfiguration, NodeAdornment } from "../../BaseNode/NewBaseNode.types";
-import type { ButtonHandleConfig } from "../../ButtonHandle";
+} from '../../../types';
+import { useAgentFlowStore, useEdges } from '../store/agent-flow-store';
+import { ExecutionStatusIcon } from '../../ExecutionStatusIcon/ExecutionStatusIcon';
+import type { NodeToolbarConfig, ToolbarAction } from '../../NodeToolbar/NodeToolbar.types';
+import { ToolResourceIcon } from '../components/ToolResourceIcon';
+import type { HandleConfiguration, NodeAdornment } from '../../BaseNode/NewBaseNode.types';
+import type { ButtonHandleConfig } from '../../ButtonHandle';
 
 interface ResourceNodeProps extends NodeProps<AgentFlowResourceNode> {
-  mode?: "design" | "view";
+  mode?: 'design' | 'view';
   hasError?: boolean;
   hasSuccess?: boolean;
   hasRunning?: boolean;
@@ -65,7 +65,7 @@ export const ResourceNode = memo(
       return nodeEdge?.targetHandle as Position | undefined;
     }, [edges, id]);
 
-    const displayTooltips = mode === "design";
+    const displayTooltips = mode === 'design';
     const hasBreakpoint = data.hasBreakpoint ?? false;
     const hasGuardrails = data.hasGuardrails ?? false;
     const isCurrentBreakpoint = data.isCurrentBreakpoint ?? false;
@@ -104,7 +104,7 @@ export const ResourceNode = memo(
     }, [id, deleteNode]);
 
     const handleActOnSuggestion = useCallback(
-      (suggestionId: string, action: "accept" | "reject") => {
+      (suggestionId: string, action: 'accept' | 'reject') => {
         actOnSuggestion(suggestionId, action);
       },
       [actOnSuggestion]
@@ -113,38 +113,38 @@ export const ResourceNode = memo(
     const resourceIcon = useMemo(() => {
       let icon: React.ReactNode | undefined;
       switch (data.type) {
-        case "context":
+        case 'context':
           icon = <ApIcon name="description" size="40px" />;
           break;
-        case "escalation":
+        case 'escalation':
           icon = <ApIcon name="person" size="40px" />;
           break;
-        case "memorySpace":
+        case 'memorySpace':
           icon = <Icons.MemoryIcon w={40} h={40} />;
           break;
-        case "mcp":
+        case 'mcp':
           icon = <Icons.McpIcon w={40} h={40} />;
           break;
-        case "tool":
+        case 'tool':
           icon = <ToolResourceIcon size={48} tool={data} />;
           break;
         default:
           icon = undefined;
           break;
       }
-      return <Row style={{ color: "var(--uix-canvas-foreground-de-emp)" }}>{icon}</Row>;
+      return <Row style={{ color: 'var(--uix-canvas-foreground-de-emp)' }}>{icon}</Row>;
     }, [data]);
 
     const executionStatus = useMemo(() => {
-      if (isCurrentBreakpoint) return "Paused";
-      if (hasError) return "Failed";
-      if (hasSuccess) return "Completed";
-      if (hasRunning) return "InProgress";
+      if (isCurrentBreakpoint) return 'Paused';
+      if (hasError) return 'Failed';
+      if (hasSuccess) return 'Completed';
+      if (hasRunning) return 'InProgress';
       return undefined;
     }, [hasError, hasSuccess, hasRunning, isCurrentBreakpoint]);
 
     const toolbarConfig = useMemo((): NodeToolbarConfig | undefined => {
-      if (mode === "view") {
+      if (mode === 'view') {
         return undefined;
       }
 
@@ -156,74 +156,74 @@ export const ResourceNode = memo(
 
       // If this is a suggestion, show accept/reject actions only if version is not "0.0.1"
       if (isSuggestion && suggestionId) {
-        if (suggestionGroupVersion === "0.0.1") return undefined;
+        if (suggestionGroupVersion === '0.0.1') return undefined;
         const rejectAction: ToolbarAction = {
-          id: "reject-suggestion",
-          icon: "close",
+          id: 'reject-suggestion',
+          icon: 'close',
           label: suggestTranslations.reject,
           disabled: false,
-          onAction: () => handleActOnSuggestion(suggestionId, "reject"),
+          onAction: () => handleActOnSuggestion(suggestionId, 'reject'),
         };
 
         const acceptAction: ToolbarAction = {
-          id: "accept-suggestion",
-          icon: "check",
+          id: 'accept-suggestion',
+          icon: 'check',
           label: suggestTranslations.accept,
           disabled: false,
-          onAction: () => handleActOnSuggestion(suggestionId, "accept"),
+          onAction: () => handleActOnSuggestion(suggestionId, 'accept'),
         };
 
         return {
           actions: [rejectAction, acceptAction],
           overflowActions: [],
-          overflowLabel: "",
-          position: "top",
-          align: "center",
+          overflowLabel: '',
+          position: 'top',
+          align: 'center',
         };
       }
 
       const toggleBreakpointAction: ToolbarAction = {
-        id: "toggle-breakpoint",
+        id: 'toggle-breakpoint',
         icon: undefined,
-        label: (hasBreakpoint ? translations?.removeBreakpoint : translations?.addBreakpoint) ?? "",
+        label: (hasBreakpoint ? translations?.removeBreakpoint : translations?.addBreakpoint) ?? '',
         disabled: false,
         onAction: hasBreakpoint ? handleClickRemoveBreakpoint : handleClickAddBreakpoint,
       };
 
       const addGuardrailAction: ToolbarAction = {
-        id: "add-guardrail",
+        id: 'add-guardrail',
         icon: undefined,
-        label: translations?.addGuardrail ?? "",
+        label: translations?.addGuardrail ?? '',
         disabled: false,
         onAction: handleClickAddGuardrail,
       };
 
       const goToSourceAction: ToolbarAction = {
-        id: "go-to-source",
+        id: 'go-to-source',
         icon: undefined,
-        label: translations?.goToSource ?? "",
+        label: translations?.goToSource ?? '',
         disabled: false,
         onAction: handleClickGoToSource,
       };
 
       const removeAction: ToolbarAction = {
-        id: "remove",
-        icon: "delete",
-        label: translations?.remove ?? "",
+        id: 'remove',
+        icon: 'delete',
+        label: translations?.remove ?? '',
         disabled: false,
         onAction: handleClickRemove,
       };
 
       const toggleEnabledAction: ToolbarAction = {
-        id: "toggle-enabled",
+        id: 'toggle-enabled',
         icon: undefined,
-        label: (isDisabled ? translations?.enable : translations?.disable) ?? "",
+        label: (isDisabled ? translations?.enable : translations?.disable) ?? '',
         disabled: false,
         onAction: isDisabled ? handleClickEnable : handleClickDisable,
       };
 
       const separator: ToolbarAction = {
-        id: "separator",
+        id: 'separator',
         icon: undefined,
         label: undefined,
         disabled: false,
@@ -232,18 +232,18 @@ export const ResourceNode = memo(
 
       const actions: ToolbarAction[] = [removeAction];
       const overflowActions: ToolbarAction[] = [
-        ...(data.type !== "memorySpace" ? [toggleBreakpointAction] : []),
-        ...(data.type === "tool" ? [addGuardrailAction] : []),
+        ...(data.type !== 'memorySpace' ? [toggleBreakpointAction] : []),
+        ...(data.type === 'tool' ? [addGuardrailAction] : []),
         ...(data.projectId ? [goToSourceAction] : []),
-        ...(data.type === "tool" ? [separator, toggleEnabledAction] : []),
+        ...(data.type === 'tool' ? [separator, toggleEnabledAction] : []),
       ];
 
       return {
         actions,
         overflowActions,
-        overflowLabel: translations?.moreOptions ?? "",
-        position: "top",
-        align: "center",
+        overflowLabel: translations?.moreOptions ?? '',
+        position: 'top',
+        align: 'center',
       };
     }, [
       mode,
@@ -271,10 +271,10 @@ export const ResourceNode = memo(
       (): ButtonHandleConfig[] => [
         {
           id: Position.Top,
-          type: "target" as const,
-          handleType: "artifact" as const,
+          type: 'target' as const,
+          handleType: 'artifact' as const,
           showButton: false,
-          color: "var(--uix-canvas-foreground-de-emp)",
+          color: 'var(--uix-canvas-foreground-de-emp)',
         },
       ],
       []
@@ -284,10 +284,10 @@ export const ResourceNode = memo(
       (): ButtonHandleConfig[] => [
         {
           id: Position.Bottom,
-          type: "source" as const,
-          handleType: "artifact" as const,
+          type: 'source' as const,
+          handleType: 'artifact' as const,
           showButton: false,
-          color: "var(--uix-canvas-foreground-de-emp)",
+          color: 'var(--uix-canvas-foreground-de-emp)',
         },
       ],
       []
@@ -297,10 +297,10 @@ export const ResourceNode = memo(
       (): ButtonHandleConfig[] => [
         {
           id: Position.Top,
-          type: "source" as const,
-          handleType: "artifact" as const,
+          type: 'source' as const,
+          handleType: 'artifact' as const,
           showButton: false,
-          color: "var(--uix-canvas-foreground-de-emp)",
+          color: 'var(--uix-canvas-foreground-de-emp)',
         },
       ],
       []
@@ -310,10 +310,10 @@ export const ResourceNode = memo(
       (): ButtonHandleConfig[] => [
         {
           id: Position.Bottom,
-          type: "target" as const,
-          handleType: "artifact" as const,
+          type: 'target' as const,
+          handleType: 'artifact' as const,
           showButton: false,
-          color: "var(--uix-canvas-foreground-de-emp)",
+          color: 'var(--uix-canvas-foreground-de-emp)',
         },
       ],
       []
@@ -323,10 +323,10 @@ export const ResourceNode = memo(
       (): ButtonHandleConfig[] => [
         {
           id: Position.Bottom,
-          type: "target" as const,
-          handleType: "artifact" as const,
+          type: 'target' as const,
+          handleType: 'artifact' as const,
           showButton: false,
-          color: "var(--uix-canvas-foreground-de-emp)",
+          color: 'var(--uix-canvas-foreground-de-emp)',
         },
       ],
       []
@@ -341,7 +341,7 @@ export const ResourceNode = memo(
       return {
         icon: <ExecutionStatusIcon status={executionStatus} size={16} />,
         tooltip:
-          displayTooltips && executionStatus === "Failed"
+          displayTooltips && executionStatus === 'Failed'
             ? data.errors?.map((error) => <Fragment key={error.value}>- {error.label}</Fragment>)
             : undefined,
       };
@@ -350,22 +350,29 @@ export const ResourceNode = memo(
     const guardrailsAdornment = useMemo((): NodeAdornment => {
       if (!hasGuardrails) return { icon: undefined };
       return {
-        icon: <ApIcon variant="outlined" name="gpp_good" size="18px" color="var(--uix-canvas-icon-default)" />,
-        tooltip: displayTooltips ? (translations?.guardrailsApplied ?? "") : undefined,
+        icon: (
+          <ApIcon
+            variant="outlined"
+            name="gpp_good"
+            size="18px"
+            color="var(--uix-canvas-icon-default)"
+          />
+        ),
+        tooltip: displayTooltips ? (translations?.guardrailsApplied ?? '') : undefined,
       };
     }, [displayTooltips, hasGuardrails, translations]);
 
     const suggestionAdornment = useMemo((): NodeAdornment => {
       if (!isSuggestion) return { icon: undefined };
-      let iconName = "swap_horizontal_circle";
-      let color = "var(--uix-canvas-warning-icon)";
+      let iconName = 'swap_horizontal_circle';
+      let color = 'var(--uix-canvas-warning-icon)';
 
-      if (suggestionType === "add") {
-        iconName = "add_circle";
-        color = "var(--uix-canvas-success-icon)";
-      } else if (suggestionType === "delete") {
-        iconName = "remove_circle";
-        color = "var(--uix-canvas-error-icon)";
+      if (suggestionType === 'add') {
+        iconName = 'add_circle';
+        color = 'var(--uix-canvas-success-icon)';
+      } else if (suggestionType === 'delete') {
+        iconName = 'remove_circle';
+        color = 'var(--uix-canvas-error-icon)';
       }
 
       return {
@@ -379,31 +386,35 @@ export const ResourceNode = memo(
         {
           position: Position.Top,
           handles: toolTopHandles,
-          visible: (data.type === "tool" || data.type === "mcp") && connectedHandlePosition === Position.Top,
+          visible:
+            (data.type === 'tool' || data.type === 'mcp') &&
+            connectedHandlePosition === Position.Top,
         },
         ...(data.isExpandable
           ? [
               {
                 position: Position.Bottom,
                 handles: toolBottomHandles,
-                visible: (data.type === "tool" || data.type === "mcp") && connectedHandlePosition === Position.Bottom,
+                visible:
+                  (data.type === 'tool' || data.type === 'mcp') &&
+                  connectedHandlePosition === Position.Bottom,
               },
             ]
           : []),
         {
           position: Position.Top,
           handles: contextHandles,
-          visible: data.type === "context" && connectedHandlePosition === Position.Top,
+          visible: data.type === 'context' && connectedHandlePosition === Position.Top,
         },
         {
           position: Position.Bottom,
           handles: escalationHandles,
-          visible: data.type === "escalation" && connectedHandlePosition === Position.Bottom,
+          visible: data.type === 'escalation' && connectedHandlePosition === Position.Bottom,
         },
         {
           position: Position.Bottom,
           handles: memoryHandles,
-          visible: data.type === "memorySpace" && connectedHandlePosition === Position.Bottom,
+          visible: data.type === 'memorySpace' && connectedHandlePosition === Position.Bottom,
         },
       ],
       [
@@ -427,12 +438,12 @@ export const ResourceNode = memo(
         suggestionType={suggestionType}
         icon={resourceIcon}
         display={{
-          iconBackground: "var(--uix-canvas-background-secondary)",
+          iconBackground: 'var(--uix-canvas-background-secondary)',
           label: data.name,
           subLabel: data.originalName,
           labelTooltip: displayTooltips ? data.description : undefined,
-          labelBackgroundColor: "var(--uix-canvas-background-secondary)",
-          shape: "circle",
+          labelBackgroundColor: 'var(--uix-canvas-background-secondary)',
+          shape: 'circle',
         }}
         toolbarConfig={toolbarConfig}
         adornments={{

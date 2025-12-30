@@ -1,5 +1,5 @@
-import { BackgroundVariant } from "@uipath/uix/xyflow/react";
-import { GRID_SPACING } from "../../constants";
+import { BackgroundVariant } from '@uipath/uix/xyflow/react';
+import { GRID_SPACING } from '../../constants';
 
 export const BASE_CANVAS_GRID_SPACING = GRID_SPACING;
 
@@ -21,19 +21,19 @@ export const BASE_CANVAS_DEFAULTS = {
   background: {
     gap: BASE_CANVAS_GRID_SPACING,
     size: 2,
-    color: "color-mix(in srgb, var(--uix-canvas-border-de-emp), transparent 50%)",
-    bgColor: "var(--uix-canvas-background-secondary)",
+    color: 'color-mix(in srgb, var(--uix-canvas-border-de-emp), transparent 50%)',
+    bgColor: 'var(--uix-canvas-background-secondary)',
     variant: BackgroundVariant.Dots,
   },
   transitions: {
-    opacity: "opacity 0.2s ease-in-out",
+    opacity: 'opacity 0.2s ease-in-out',
     default: {
-      cssValue: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+      cssValue: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
       durationMs: 300,
     },
   },
   edge: {
-    type: "default",
+    type: 'default',
   },
   pro: {
     hideAttribution: true,

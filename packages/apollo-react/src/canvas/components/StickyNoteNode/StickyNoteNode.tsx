@@ -1,15 +1,15 @@
-import { memo, useCallback, useState, useRef, useEffect, useMemo } from "react";
-import type { NodeProps } from "@uipath/uix/xyflow/react";
-import { NodeResizeControl, useReactFlow } from "@uipath/uix/xyflow/react";
-import { ApIcon } from "@uipath/portal-shell-react";
-import { AnimatePresence } from "motion/react";
-import { Global } from "@emotion/react";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
-import { NodeToolbar } from "../NodeToolbar";
-import type { ToolbarAction } from "../NodeToolbar";
-import type { StickyNoteData, StickyNoteColor } from "./StickyNoteNode.types";
-import { STICKY_NOTE_COLORS, withAlpha } from "./StickyNoteNode.types";
+import { memo, useCallback, useState, useRef, useEffect, useMemo } from 'react';
+import type { NodeProps } from '@uipath/uix/xyflow/react';
+import { NodeResizeControl, useReactFlow } from '@uipath/uix/xyflow/react';
+import { ApIcon } from '@uipath/portal-shell-react';
+import { AnimatePresence } from 'motion/react';
+import { Global } from '@emotion/react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import { NodeToolbar } from '../NodeToolbar';
+import type { ToolbarAction } from '../NodeToolbar';
+import type { StickyNoteData, StickyNoteColor } from './StickyNoteNode.types';
+import { STICKY_NOTE_COLORS, withAlpha } from './StickyNoteNode.types';
 import {
   StickyNoteContainer,
   StickyNoteTextArea,
@@ -22,8 +22,8 @@ import {
   stickyNoteGlobalStyles,
   StickyNoteWrapper,
   RESIZE_CONTROL_Z_INDEX,
-} from "./StickyNoteNode.styles";
-import { GRID_SPACING } from "../../constants";
+} from './StickyNoteNode.styles';
+import { GRID_SPACING } from '../../constants';
 
 export interface StickyNoteNodeProps extends NodeProps {
   data: StickyNoteData;
@@ -37,16 +37,16 @@ const StickyNoteNodeComponent = ({ id, data, selected, dragging }: StickyNoteNod
   const [isEditing, setIsEditing] = useState(data.autoFocus ?? false);
   const [isResizing, setIsResizing] = useState(false);
   const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
-  const [localContent, setLocalContent] = useState(data.content || "");
+  const [localContent, setLocalContent] = useState(data.content || '');
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
   const colorButtonRef = useRef<HTMLDivElement>(null);
 
-  const colorKey = (data.color || "yellow") as StickyNoteColor;
+  const colorKey = (data.color || 'yellow') as StickyNoteColor;
   const color = STICKY_NOTE_COLORS[colorKey] ?? STICKY_NOTE_COLORS.yellow;
   const colorWithAlpha = withAlpha(color);
 
   useEffect(() => {
-    setLocalContent(data.content || "");
+    setLocalContent(data.content || '');
   }, [data.content]);
 
   // Handle autoFocus - focus textarea when entering edit mode
@@ -91,9 +91,9 @@ const StickyNoteNodeComponent = ({ id, data, selected, dragging }: StickyNoteNod
   // Handle key down for saving on Enter (optional, depends on UX preference)
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-      if (e.key === "Escape") {
+      if (e.key === 'Escape') {
         setIsEditing(false);
-        setLocalContent(data.content || "");
+        setLocalContent(data.content || '');
         textAreaRef.current?.blur();
       }
       // Allow Enter for new lines, use Ctrl+Enter or blur to save
@@ -139,36 +139,36 @@ const StickyNoteNodeComponent = ({ id, data, selected, dragging }: StickyNoteNod
   const toolbarConfig = useMemo(() => {
     const actions: ToolbarAction[] = [
       {
-        id: "edit",
+        id: 'edit',
         icon: <ApIcon variant="outlined" name="edit" />,
-        label: "Edit",
+        label: 'Edit',
         onAction: handleEditClick,
       },
-      { id: "separator" },
+      { id: 'separator' },
       {
-        id: "color",
+        id: 'color',
         icon: (
           <div
             ref={colorButtonRef}
             style={{
-              width: "16px",
-              height: "16px",
-              borderRadius: "50%",
+              width: '16px',
+              height: '16px',
+              borderRadius: '50%',
               backgroundColor: color,
-              border: "1px solid transparent",
+              border: '1px solid transparent',
             }}
           />
         ),
-        label: "Color",
+        label: 'Color',
         onAction: handleToggleColorPicker,
       },
     ];
     return {
       actions,
       overflowActions: [],
-      overflowLabel: "",
-      position: "top" as const,
-      align: "center" as const,
+      overflowLabel: '',
+      position: 'top' as const,
+      align: 'center' as const,
     };
   }, [handleEditClick, handleToggleColorPicker, color]);
 
@@ -178,7 +178,7 @@ const StickyNoteNodeComponent = ({ id, data, selected, dragging }: StickyNoteNod
       <StickyNoteWrapper>
         {/* Top-left resize control */}
         <NodeResizeControl
-          style={{ background: "transparent", border: "none", zIndex: RESIZE_CONTROL_Z_INDEX }}
+          style={{ background: 'transparent', border: 'none', zIndex: RESIZE_CONTROL_Z_INDEX }}
           position="top-left"
           minWidth={minWidth}
           minHeight={minHeight}
@@ -190,7 +190,7 @@ const StickyNoteNodeComponent = ({ id, data, selected, dragging }: StickyNoteNod
 
         {/* Top-right resize control */}
         <NodeResizeControl
-          style={{ background: "transparent", border: "none", zIndex: RESIZE_CONTROL_Z_INDEX }}
+          style={{ background: 'transparent', border: 'none', zIndex: RESIZE_CONTROL_Z_INDEX }}
           position="top-right"
           minWidth={minWidth}
           minHeight={minHeight}
@@ -202,7 +202,7 @@ const StickyNoteNodeComponent = ({ id, data, selected, dragging }: StickyNoteNod
 
         {/* Bottom-left resize control */}
         <NodeResizeControl
-          style={{ background: "transparent", border: "none", zIndex: RESIZE_CONTROL_Z_INDEX }}
+          style={{ background: 'transparent', border: 'none', zIndex: RESIZE_CONTROL_Z_INDEX }}
           position="bottom-left"
           minWidth={minWidth}
           minHeight={minHeight}
@@ -214,7 +214,7 @@ const StickyNoteNodeComponent = ({ id, data, selected, dragging }: StickyNoteNod
 
         {/* Bottom-right resize control */}
         <NodeResizeControl
-          style={{ background: "transparent", border: "none", zIndex: RESIZE_CONTROL_Z_INDEX }}
+          style={{ background: 'transparent', border: 'none', zIndex: RESIZE_CONTROL_Z_INDEX }}
           position="bottom-right"
           minWidth={minWidth}
           minHeight={minHeight}
@@ -247,22 +247,28 @@ const StickyNoteNodeComponent = ({ id, data, selected, dragging }: StickyNoteNod
             />
           ) : (
             <StickyNoteMarkdown>
-              {localContent && <ReactMarkdown remarkPlugins={[remarkGfm]}>{localContent}</ReactMarkdown>}
+              {localContent && (
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>{localContent}</ReactMarkdown>
+              )}
             </StickyNoteMarkdown>
           )}
         </StickyNoteContainer>
 
         {selected && !dragging && !isResizing && (
-          <NodeToolbar nodeId={id} config={toolbarConfig} expanded={selected && !dragging && !isResizing} />
+          <NodeToolbar
+            nodeId={id}
+            config={toolbarConfig}
+            expanded={selected && !dragging && !isResizing}
+          />
         )}
         <AnimatePresence>
           {selected && !dragging && !isResizing && isColorPickerOpen && (
             <div
               style={{
-                position: "absolute",
+                position: 'absolute',
                 top: -40,
-                left: "50%",
-                transform: "translateX(40px)",
+                left: '50%',
+                transform: 'translateX(40px)',
                 zIndex: 1000,
               }}
             >
@@ -270,7 +276,7 @@ const StickyNoteNodeComponent = ({ id, data, selected, dragging }: StickyNoteNod
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 10 }}
-                transition={{ duration: 0.15, ease: "easeOut" }}
+                transition={{ duration: 0.15, ease: 'easeOut' }}
               >
                 {Object.keys(STICKY_NOTE_COLORS).map((stickyColorKey) => {
                   const colorName = stickyColorKey as StickyNoteColor;

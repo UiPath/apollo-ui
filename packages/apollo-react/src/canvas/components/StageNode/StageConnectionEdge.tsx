@@ -1,10 +1,10 @@
-import React from "react";
-import type { ConnectionLineComponentProps } from "@uipath/uix/xyflow/react";
-import { getBezierPath } from "@uipath/uix/xyflow/react";
+import React from 'react';
+import type { ConnectionLineComponentProps } from '@uipath/uix/xyflow/react';
+import { getBezierPath } from '@uipath/uix/xyflow/react';
 
 function getArrowFromBezier(path: string, arrowSize: number) {
-  const pathEl = document.createElementNS("http://www.w3.org/2000/svg", "path");
-  pathEl.setAttribute("d", path);
+  const pathEl = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  pathEl.setAttribute('d', path);
 
   const totalLength = pathEl.getTotalLength();
   const endPoint = pathEl.getPointAtLength(totalLength);
@@ -18,7 +18,16 @@ function getArrowFromBezier(path: string, arrowSize: number) {
   };
 }
 
-export function StageConnectionEdge({ fromX, fromY, toX, toY, fromPosition, toPosition, fromNode, toNode }: ConnectionLineComponentProps) {
+export function StageConnectionEdge({
+  fromX,
+  fromY,
+  toX,
+  toY,
+  fromPosition,
+  toPosition,
+  fromNode,
+  toNode,
+}: ConnectionLineComponentProps) {
   // Check if we have valid coordinates
   if (fromX === undefined || fromY === undefined || toX === undefined || toY === undefined) {
     return null;
@@ -39,7 +48,7 @@ export function StageConnectionEdge({ fromX, fromY, toX, toY, fromPosition, toPo
     targetPosition: toPosition,
   });
 
-  const stroke = "var(--uix-canvas-selection-indicator)";
+  const stroke = 'var(--uix-canvas-selection-indicator)';
   const strokeWidth = 2.5;
   const arrowSize = 10;
 
@@ -57,7 +66,7 @@ export function StageConnectionEdge({ fromX, fromY, toX, toY, fromPosition, toPo
         fill="none"
         strokeDasharray="5,5"
         style={{
-          animation: "dashdraw 0.5s linear infinite",
+          animation: 'dashdraw 0.5s linear infinite',
         }}
       />
       <style>

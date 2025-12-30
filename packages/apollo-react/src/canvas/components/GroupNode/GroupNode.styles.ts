@@ -1,4 +1,4 @@
-import styled from "@emotion/styled";
+import styled from '@emotion/styled';
 
 export const GroupContainer = styled.div<{
   backgroundColor?: string;
@@ -9,16 +9,22 @@ export const GroupContainer = styled.div<{
   position: relative;
   width: 100%;
   height: 100%;
-  background-color: ${({ backgroundColor }) => backgroundColor || "var(--uix-canvas-background-raised)"} !important;
-  border: 2px solid ${({ borderColor, selected }) => (selected ? "var(--uix-canvas-primary)" : borderColor || "var(--uix-canvas-border)")} !important;
+  background-color: ${({ backgroundColor }) =>
+    backgroundColor || 'var(--uix-canvas-background-raised)'} !important;
+  border: 2px solid
+    ${({ borderColor, selected }) =>
+      selected
+        ? 'var(--uix-canvas-primary)'
+        : borderColor || 'var(--uix-canvas-border)'} !important;
   border-radius: 16px !important;
   transition: border-color 0.2s ease;
   overflow: visible;
-  box-shadow: ${({ selected }) => (selected ? "0 0 0 1px var(--uix-canvas-primary)" : "none")};
+  box-shadow: ${({ selected }) => (selected ? '0 0 0 1px var(--uix-canvas-primary)' : 'none')};
   padding: 0 !important;
 
   &:hover {
-    border-color: ${({ selected }) => (selected ? "var(--uix-canvas-primary)" : "var(--uix-canvas-border-hover)")} !important;
+    border-color: ${({ selected }) =>
+      selected ? 'var(--uix-canvas-primary)' : 'var(--uix-canvas-border-hover)'} !important;
   }
 `;
 
@@ -85,10 +91,10 @@ export const GroupHeaderButton = styled.button<{ $disabled?: boolean }>`
   background: transparent;
   border: none;
   border-radius: 8px;
-  cursor: ${({ $disabled }) => ($disabled ? "not-allowed" : "pointer")};
+  cursor: ${({ $disabled }) => ($disabled ? 'not-allowed' : 'pointer')};
   opacity: ${({ $disabled }) => ($disabled ? 0.4 : 1)};
   transition: all 0.15s ease;
-  pointer-events: ${({ $disabled }) => ($disabled ? "none" : "auto")};
+  pointer-events: ${({ $disabled }) => ($disabled ? 'none' : 'auto')};
 
   &:hover:not(:disabled) {
     background: var(--uix-canvas-background-secondary);
@@ -114,7 +120,7 @@ export const GroupContent = styled.div<{ collapsed?: boolean }>`
   width: 100%;
   height: 100%;
   padding: 16px;
-  display: ${({ collapsed }) => (collapsed ? "none" : "block")};
+  display: ${({ collapsed }) => (collapsed ? 'none' : 'block')};
 `;
 
 export const ResizeHandle = styled.div<{ selected?: boolean; cursor?: string }>`
@@ -123,7 +129,7 @@ export const ResizeHandle = styled.div<{ selected?: boolean; cursor?: string }>`
   bottom: 0;
   width: 20px;
   height: 20px;
-  cursor: ${({ cursor }) => cursor || "nwse-resize"};
+  cursor: ${({ cursor }) => cursor || 'nwse-resize'};
   opacity: ${({ selected }) => (selected ? 1 : 0)};
   transition: opacity 0.2s ease;
   z-index: 10;
@@ -139,7 +145,7 @@ export const TopCornerIndicators = styled.div<{ selected?: boolean }>`
 
   /* Top-left corner */
   &::before {
-    content: "";
+    content: '';
     position: absolute;
     top: -5px;
     left: -5px;
@@ -152,7 +158,7 @@ export const TopCornerIndicators = styled.div<{ selected?: boolean }>`
 
   /* Top-right corner */
   &::after {
-    content: "";
+    content: '';
     position: absolute;
     top: -5px;
     right: -5px;
@@ -173,7 +179,7 @@ export const BottomCornerIndicators = styled.div<{ selected?: boolean }>`
 
   /* Bottom-left corner */
   &::before {
-    content: "";
+    content: '';
     position: absolute;
     bottom: -5px;
     left: -5px;
@@ -186,7 +192,7 @@ export const BottomCornerIndicators = styled.div<{ selected?: boolean }>`
 
   /* Bottom-right corner */
   &::after {
-    content: "";
+    content: '';
     position: absolute;
     bottom: -5px;
     right: -5px;

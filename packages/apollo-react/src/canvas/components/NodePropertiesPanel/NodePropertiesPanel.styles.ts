@@ -1,4 +1,4 @@
-import styled from "@emotion/styled";
+import styled from '@emotion/styled';
 
 export const ConfigSection = styled.div`
   padding: 16px;
@@ -54,7 +54,8 @@ export const TextInput = styled.input<InputProps>`
   padding: 8px 12px;
   font-size: 14px;
   font-family: inherit;
-  border: 1px solid ${(props) => (props.hasError ? "var(--uix-canvas-error)" : "var(--uix-canvas-border)")};
+  border: 1px solid
+    ${(props) => (props.hasError ? 'var(--uix-canvas-error)' : 'var(--uix-canvas-border)')};
   border-radius: 4px;
   background-color: var(--uix-canvas-background);
   color: var(--uix-canvas-foreground);
@@ -79,7 +80,8 @@ export const TextArea = styled.textarea<InputProps>`
   padding: 8px 12px;
   font-size: 14px;
   font-family: inherit;
-  border: 1px solid ${(props) => (props.hasError ? "var(--uix-canvas-error)" : "var(--uix-canvas-border)")};
+  border: 1px solid
+    ${(props) => (props.hasError ? 'var(--uix-canvas-error)' : 'var(--uix-canvas-border)')};
   border-radius: 4px;
   background-color: var(--uix-canvas-background);
   color: var(--uix-canvas-foreground);
@@ -105,7 +107,8 @@ export const SelectInput = styled.select<InputProps>`
   padding: 8px 36px 8px 12px;
   font-size: 14px;
   font-family: inherit;
-  border: 1px solid ${(props) => (props.hasError ? "var(--uix-canvas-error)" : "var(--uix-canvas-border)")};
+  border: 1px solid
+    ${(props) => (props.hasError ? 'var(--uix-canvas-error)' : 'var(--uix-canvas-border)')};
   border-radius: 4px;
   background-color: var(--uix-canvas-background);
   color: var(--uix-canvas-foreground);
@@ -136,7 +139,8 @@ export const NumberInput = styled.input<InputProps>`
   padding: 8px 12px;
   font-size: 14px;
   font-family: inherit;
-  border: 1px solid ${(props) => (props.hasError ? "var(--uix-canvas-error)" : "var(--uix-canvas-border)")};
+  border: 1px solid
+    ${(props) => (props.hasError ? 'var(--uix-canvas-error)' : 'var(--uix-canvas-border)')};
   border-radius: 4px;
   background-color: var(--uix-canvas-background);
   color: var(--uix-canvas-foreground);

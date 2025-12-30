@@ -57,8 +57,8 @@ import { AutopilotChatService } from '@uipath/apollo-react/material/components';
 const chatService = AutopilotChatService.Instantiate({
   instanceName: 'my-chat',
   config: {
-    mode: AutopilotChatMode.SideBySide
-  }
+    mode: AutopilotChatMode.SideBySide,
+  },
 });
 ```
 
@@ -75,22 +75,22 @@ See [Usage Examples](#usage-examples) for complete setup details.
 | `getConfig()`                                                                                                  | Returns the current chat configuration object (see [AutopilotChatConfiguration](#autopilotchatconfiguration))                                                                                                                   |
 | `setLocale(locale: string)`                                                                                    | Sets the locale for the chat interface. Changes will be reflected immediately in the UI. Useful for embedded mode where locale needs to be changed dynamically                                                                  |
 | `getLocale()`                                                                                                  | Returns the current locale setting                                                                                                                                                                                              |
-| `setTheme(theme: string)`                                                                                      | Sets the theme for the chat interface ('light', 'dark', 'light-hc', 'dark-hc'). Changes will be reflected immediately in the UI. Useful for embedded mode where theme needs to be changed dynamically                          |
+| `setTheme(theme: string)`                                                                                      | Sets the theme for the chat interface ('light', 'dark', 'light-hc', 'dark-hc'). Changes will be reflected immediately in the UI. Useful for embedded mode where theme needs to be changed dynamically                           |
 | `getTheme()`                                                                                                   | Returns the current theme setting                                                                                                                                                                                               |
 | `injectMessageRenderer(renderer: AutopilotChatMessageRenderer)`                                                | Adds or replaces a custom message renderer in the chat service (see [AutopilotChatMessageRenderer](#autopilotchatmessagerenderer))                                                                                              |
 | `getMessageRenderer(name: string)`                                                                             | Retrieves a message renderer by name                                                                                                                                                                                            |
 | `setFirstRunExperience(config: AutopilotChatConfiguration['firstRunExperience'])`                              | Configures the first run experience (see [First Run Experience](#first-run-experience)) displayed when the chat is opened for the first time or when there are no messages                                                      |
 | `setAllowedAttachments(allowedAttachments: AutopilotChatAllowedAttachments)`                                   | Configures the allowed file attachments (see [AutopilotChatAllowedAttachments](#autopilotchatallowedattachments))                                                                                                               |
-| `setModels(models: AutopilotChatModelInfo[])`                                                                 | Configures the models (see [Model Selection](#model-selection))                                                                                                                                                   |
+| `setModels(models: AutopilotChatModelInfo[])`                                                                  | Configures the models (see [Model Selection](#model-selection))                                                                                                                                                                 |
 | `getModels()`                                                                                                  | Returns the current list of available models                                                                                                                                                                                    |
-| `setSelectedModel(modelId: string)`                                                                            | Configures the selected model (see [Model Selection](#model-selection))                                                                                                                                                                                                   |
+| `setSelectedModel(modelId: string)`                                                                            | Configures the selected model (see [Model Selection](#model-selection))                                                                                                                                                         |
 | `getSelectedModel()`                                                                                           | Returns the currently selected model                                                                                                                                                                                            |
-| `setAgentModes(agentModes: AutopilotChatAgentModeInfo[])`                                                     | Configures the agent modes (see [Agent Mode Selection](#agent-mode-selection))                                                                                                                                      |
+| `setAgentModes(agentModes: AutopilotChatAgentModeInfo[])`                                                      | Configures the agent modes (see [Agent Mode Selection](#agent-mode-selection))                                                                                                                                                  |
 | `getAgentModes()`                                                                                              | Returns the current list of available agent modes                                                                                                                                                                               |
-| `setAgentMode(mode: string)`                                                                                   | Sets the agent mode (any string value). This emits the `SetSelectedAgentMode` event that consumers can listen to (see [Agent Mode Selection](#agent-mode-selection))                                                                                                                     |
+| `setAgentMode(mode: string)`                                                                                   | Sets the agent mode (any string value). This emits the `SetSelectedAgentMode` event that consumers can listen to (see [Agent Mode Selection](#agent-mode-selection))                                                            |
 | `getAgentMode()`                                                                                               | Returns the currently selected agent mode                                                                                                                                                                                       |
-| `setCustomHeaderActions(actions: AutopilotChatCustomHeaderAction[])`                                         | Configures custom header actions with support for nested menus (see [Custom Header Actions](#custom-header-actions))                                                                                           |
-| `getCustomHeaderActions()`                                                                                     | Returns the current list of custom header actions                                                                                                                                                                                  |
+| `setCustomHeaderActions(actions: AutopilotChatCustomHeaderAction[])`                                           | Configures custom header actions with support for nested menus (see [Custom Header Actions](#custom-header-actions))                                                                                                            |
+| `getCustomHeaderActions()`                                                                                     | Returns the current list of custom header actions                                                                                                                                                                               |
 
 ### Chat Window Control
 
@@ -104,25 +104,26 @@ See [Usage Examples](#usage-examples) for complete setup details.
 
 ### Message Handling
 
-| Method                                                                          | Description                                                                                                                                                                                                                                                                  |
-| ------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `setConversation(messages: AutopilotChatMessage[])`                             | Sets the entire conversation history in the chat interface (see [AutopilotChatMessage](#autopilotchatmessage))                                                                                                                                                               |
-| `getConversation()`                                                             | Returns the current conversation history                                                                                                                                                                                                                                     |
-| `prependOlderMessages(messages: AutopilotChatMessage[], done?: boolean)`        | Prepends older messages to the conversation when loading more history. Preserves scroll position. Set `done` to `true` when no more messages are available (see [Pagination and Loading More Messages](#pagination-and-loading-more-messages))                               |
-| `setPrompt(prompt: AutopilotChatMessage \| string)`                             | Sets a prompt in the input field of the chat interface (accepts either a string or see [AutopilotChatMessage](#autopilotchatmessage))                                                                                                                                        |
-| `getPrompt()`                                                                   | Returns the current prompt                                                                                                                                                                                                                                                   |
-| `sendRequest(request: AutopilotChatMessage)`                                    | Sends a user request to the chat and triggers the request event (see [AutopilotChatMessage](#autopilotchatmessage))                                                                                                                                                          |
-| `sendResponse(response: AutopilotChatMessage)`                                  | Sends an AI assistant response to display in the chat (see [AutopilotChatMessage](#autopilotchatmessage))                                                                                                                                                                    |
-| `stopResponse()`                                                                | Stops the current streaming response, if applicable                                                                                                                                                                                                                          |
-| `setDefaultLoadingMessages(messages: string[], duration?: number)`              | Sets the default loading messages and duration between switching messages                                                                                                                                                                                                    |
-| `setLoadingMessage(message: string)`                                            | Sets the loading message, overriding the default loading messages                                                                                                                                                                                                            |
-| `setShowLoading(showLoading: boolean)`                                          | Shows or hides the loading indicator in the chat service (see [Loading and Waiting States](#loading-and-waiting-states)). When used, this method overrides the default automatic loading behavior from apollo (except for request), giving you manual control over when the loading state is displayed.                                      |
+| Method                                                                          | Description                                                                                                                                                                                                                                                                                                                                   |
+| ------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `setConversation(messages: AutopilotChatMessage[])`                             | Sets the entire conversation history in the chat interface (see [AutopilotChatMessage](#autopilotchatmessage))                                                                                                                                                                                                                                |
+| `getConversation()`                                                             | Returns the current conversation history                                                                                                                                                                                                                                                                                                      |
+| `prependOlderMessages(messages: AutopilotChatMessage[], done?: boolean)`        | Prepends older messages to the conversation when loading more history. Preserves scroll position. Set `done` to `true` when no more messages are available (see [Pagination and Loading More Messages](#pagination-and-loading-more-messages))                                                                                                |
+| `setPrompt(prompt: AutopilotChatMessage \| string)`                             | Sets a prompt in the input field of the chat interface (accepts either a string or see [AutopilotChatMessage](#autopilotchatmessage))                                                                                                                                                                                                         |
+| `getPrompt()`                                                                   | Returns the current prompt                                                                                                                                                                                                                                                                                                                    |
+| `sendRequest(request: AutopilotChatMessage)`                                    | Sends a user request to the chat and triggers the request event (see [AutopilotChatMessage](#autopilotchatmessage))                                                                                                                                                                                                                           |
+| `sendResponse(response: AutopilotChatMessage)`                                  | Sends an AI assistant response to display in the chat (see [AutopilotChatMessage](#autopilotchatmessage))                                                                                                                                                                                                                                     |
+| `stopResponse()`                                                                | Stops the current streaming response, if applicable                                                                                                                                                                                                                                                                                           |
+| `setDefaultLoadingMessages(messages: string[], duration?: number)`              | Sets the default loading messages and duration between switching messages                                                                                                                                                                                                                                                                     |
+| `setLoadingMessage(message: string)`                                            | Sets the loading message, overriding the default loading messages                                                                                                                                                                                                                                                                             |
+| `setShowLoading(showLoading: boolean)`                                          | Shows or hides the loading indicator in the chat service (see [Loading and Waiting States](#loading-and-waiting-states)). When used, this method overrides the default automatic loading behavior from apollo (except for request), giving you manual control over when the loading state is displayed.                                       |
 | `setWaiting(waiting: boolean)`                                                  | Sets the waiting state for the input prompt box (see [Loading and Waiting States](#loading-and-waiting-states)). When set to true, users can still type in the input field but cannot send messages. This overrides the default automatic waiting behavior (except for request), giving you manual control over when users can send messages. |
-| `setSuggestions(suggestions: AutopilotChatSuggestion[], sendOnClick?: boolean)` | Sets suggestions that appear in the chat interface. When `sendOnClick` is true, clicking a suggestion sends it immediately (defaults to the first run experience setting); otherwise it sets the prompt (see [AutopilotChatSuggestion](#autopilotchatsuggestion))            |
-| `getMessagesInGroup(groupId: string)`                                           | Returns all messages that belong to the specified group ID                                                                                                                                                                                                                   |
-| `setAttachmentsLoading(attachments: AutopilotChatFileInfo[])`                   | Sets the loading state for attachments. Use this to show loading indicators while attachments are being processed asynchronously (see [Asynchronous Attachment Processing](#asynchronous-attachment-processing))                                                             |
+| `setSuggestions(suggestions: AutopilotChatSuggestion[], sendOnClick?: boolean)` | Sets suggestions that appear in the chat interface. When `sendOnClick` is true, clicking a suggestion sends it immediately (defaults to the first run experience setting); otherwise it sets the prompt (see [AutopilotChatSuggestion](#autopilotchatsuggestion))                                                                             |
+| `getMessagesInGroup(groupId: string)`                                           | Returns all messages that belong to the specified group ID                                                                                                                                                                                                                                                                                    |
+| `setAttachmentsLoading(attachments: AutopilotChatFileInfo[])`                   | Sets the loading state for attachments. Use this to show loading indicators while attachments are being processed asynchronously (see [Asynchronous Attachment Processing](#asynchronous-attachment-processing))                                                                                                                              |
 
 ### Input/Output Stream Handling
+
 | Method                                                         | Description                                                                                         |
 | -------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
 | `sendInputStreamEvent(event: AutopilotChatInputStreamEvent)`   | Sends an input stream event. (see [AutopilotChatInputStreamEvent](#autopilotchatinputstreamevent))  |
@@ -130,14 +131,14 @@ See [Usage Examples](#usage-examples) for complete setup details.
 
 ### History Management
 
-| Method                                                                        | Description                                                                                                                                            |
-| ----------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `setHistory(history: AutopilotChatHistory[], done?: boolean)`                 | Sets the chat history list. Set `done` to `true` when no more items are available for pagination (see [AutopilotChatHistory](#autopilotchathistory)) |
-| `getHistory()`                                                                | Returns the current chat history                                                                                                                       |
-| `appendOlderHistoryItems(items: AutopilotChatHistory[], done?: boolean)`       | (Only when `paginatedHistory` is enabled) Appends older history items when loading more. Set `done` to `true` when no more items are available (see [Pagination and Loading More History](#pagination-and-loading-more-history))     |
-| `toggleHistory(open?: boolean)`                                               | Toggles the history panel visibility                                                                                                                   |
-| `deleteConversation(conversationId: string)`                                  | Deletes a conversation from the history                                                                                                                |
-| `openConversation(conversationId: string \| null, showLoadingState: boolean)` | Opens a specific conversation from the history, second parameter indicates if the chat should show loading spinner for conversation (defaults to true) |
+| Method                                                                        | Description                                                                                                                                                                                                                      |
+| ----------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `setHistory(history: AutopilotChatHistory[], done?: boolean)`                 | Sets the chat history list. Set `done` to `true` when no more items are available for pagination (see [AutopilotChatHistory](#autopilotchathistory))                                                                             |
+| `getHistory()`                                                                | Returns the current chat history                                                                                                                                                                                                 |
+| `appendOlderHistoryItems(items: AutopilotChatHistory[], done?: boolean)`      | (Only when `paginatedHistory` is enabled) Appends older history items when loading more. Set `done` to `true` when no more items are available (see [Pagination and Loading More History](#pagination-and-loading-more-history)) |
+| `toggleHistory(open?: boolean)`                                               | Toggles the history panel visibility                                                                                                                                                                                             |
+| `deleteConversation(conversationId: string)`                                  | Deletes a conversation from the history                                                                                                                                                                                          |
+| `openConversation(conversationId: string \| null, showLoadingState: boolean)` | Opens a specific conversation from the history, second parameter indicates if the chat should show loading spinner for conversation (defaults to true)                                                                           |
 
 ### Settings Management
 
@@ -155,11 +156,11 @@ See [Usage Examples](#usage-examples) for complete setup details.
 
 ### Error Handling
 
-| Method                    | Description                                            |
-| ------------------------- | ------------------------------------------------------ |
+| Method                                                       | Description                                                                                                                                    |
+| ------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------- |
 | `setError(message: string, level?: AutopilotChatErrorLevel)` | Sets an error or warning message to display in the chat interface. Supports markdown formatting. Defaults to `'error'` level if not specified. |
-| `clearError()`            | Clears the current error message                       |
-| `getError()`              | Returns the current error message, if any              |
+| `clearError()`                                               | Clears the current error message                                                                                                               |
+| `getError()`                                                 | Returns the current error message, if any                                                                                                      |
 
 ### Feature Configuration
 
@@ -191,10 +192,12 @@ on(event: AutopilotChatEvent, handler: AutopilotChatEventHandler): () => void
 Subscribes to chat events and returns an unsubscribe function. The handler will be called whenever the specified event is published.
 
 **Parameters:**
+
 - `event`: The event type to subscribe to
 - `handler`: The function to call when the event is triggered
 
 **Available Events:**
+
 - `Error`: When an error occurs
 - `NewChat`: When a new chat is started
 - `ModeChange`: When the chat mode changes
@@ -238,14 +241,17 @@ intercept(event: AutopilotChatInterceptableEvent, interceptor: AutopilotChatEven
 Adds an event interceptor for interceptable events. Returns a function to remove the interceptor.
 
 **Parameters:**
+
 - `event`: The event type to intercept
 - `interceptor`: The function that will intercept the event
 
 **Available Interceptable Events:**
+
 - `Request`: When a user sends a message (currently only Request events are interceptable)
 
 **Interceptor Function:**
 The interceptor function receives the event data and can:
+
 - Return `true` to indicate it has handled the event and prevent further processing (by adding a `hijacked` property on the message that can be read by `on` subscribers)
 - Return `false | void` if the event should proceed with normal handling
 - Return a Promise that resolves to true if the event is handled asynchronously
@@ -261,7 +267,7 @@ The Chat component includes a customizable settings panel that follows the same 
 ```typescript
 // Enable the settings feature
 chatService.setDisabledFeatures({
-  settings: false // Enable settings (disabled by default)
+  settings: false, // Enable settings (disabled by default)
 });
 ```
 
@@ -298,7 +304,7 @@ chatService.initialize({
 
     // Append to the container
     container.appendChild(settingsDiv);
-  }
+  },
 });
 ```
 
@@ -339,24 +345,24 @@ The Chat component supports adding custom actions to messages. These actions can
 ```typescript
 // Example of sending a response with custom actions
 chatService.sendResponse({
-  id: "msg-123",
+  id: 'msg-123',
   content: "Here's your sales chart:",
   role: AutopilotChatRole.Assistant,
-  widget: "apollo-markdown-renderer",
+  widget: 'apollo-markdown-renderer',
   actions: [
     {
-      name: "export-data",
-      label: "Export Data",
-      icon: "export-icon", // Optional icon
+      name: 'export-data',
+      label: 'Export Data',
+      icon: 'export-icon', // Optional icon
       showInOverflow: false, // Show directly in toolbar, not in overflow menu
-      eventName: "export-data", // Event name that the component will emit on click and you can subscribe to
-      details: { format: "csv" } // Additional data to pass with the event
-    }
-  ]
+      eventName: 'export-data', // Event name that the component will emit on click and you can subscribe to
+      details: { format: 'csv' }, // Additional data to pass with the event
+    },
+  ],
 });
 
 // Listen for the custom action event
-chatService.on("export-data", ({ message, action }: AutopilotChatActionPayload) => {
+chatService.on('export-data', ({ message, action }: AutopilotChatActionPayload) => {
   // Handle the export action
   console.log(`Export data from message: ${message.id}, format: ${action.details.format}`);
 });
@@ -397,7 +403,7 @@ chatService.on(AutopilotChatEvent.Feedback, ({ message, action }) => {
 
 The Chat component emits copy events when a user copies a message.
 
-```typescript
+````typescript
 // Listen for copy events
 chatService.on(AutopilotChatEvent.Copy, ({ message, group, action }) => {
   // Handle the copy event
@@ -408,7 +414,7 @@ chatService.on(AutopilotChatEvent.Copy, ({ message, group, action }) => {
     console.log(`This response is part of a group with ${group.length} messages`);
 
     // Process all related assistant messages in the same group
-    group.forEach(msg => {
+    group.forEach((msg) => {
       console.log(`Related message in group: ${msg.id}`);
     });
   }
@@ -420,12 +426,12 @@ chatService.on(AutopilotChatEvent.Copy, ({ message, group, action }) => {
 // You can specify custom content to be copied when a user copies a message
 // using the toCopy property, which overrides the default content
 chatService.sendResponse({
-  id: "msg-123",
+  id: 'msg-123',
   content: "Here's your code snippet:\n```javascript\nconst result = calculate();\n```",
   role: AutopilotChatRole.Assistant,
-  widget: "apollo-markdown-renderer",
+  widget: 'apollo-markdown-renderer',
   // Specify content to be copied instead of the displayed content
-  toCopy: "const result = calculate();"
+  toCopy: 'const result = calculate();',
 });
 
 // This is useful for:
@@ -433,7 +439,7 @@ chatService.sendResponse({
 // - Including additional instructions or context when copying content
 // - Formatting data in a way that's ready to paste into another application
 // - Removing UI-specific formatting from copied content
-```
+````
 
 ### Custom Header Actions
 
@@ -454,27 +460,27 @@ chatService.setCustomHeaderActions([
         id: 'export-pdf',
         name: 'Export as PDF',
         icon: 'picture_as_pdf',
-        description: 'Download conversation as PDF file'
+        description: 'Download conversation as PDF file',
       },
       {
         id: 'export-docx',
         name: 'Export as DOCX',
         icon: 'description',
-        description: 'Download conversation as Word document'
+        description: 'Download conversation as Word document',
       },
       {
         id: 'export-json',
         name: 'Export as JSON',
         icon: 'data_object',
-        description: 'Download conversation as JSON file'
-      }
-    ]
+        description: 'Download conversation as JSON file',
+      },
+    ],
   },
   {
     id: 'share',
     name: 'Share Conversation',
     icon: 'share',
-    description: 'Share this conversation with others'
+    description: 'Share this conversation with others',
   },
   {
     id: 'translate',
@@ -486,23 +492,23 @@ chatService.setCustomHeaderActions([
         id: 'translate-es',
         name: 'Spanish',
         icon: 'language',
-        description: 'Translate to Spanish'
+        description: 'Translate to Spanish',
       },
       {
         id: 'translate-fr',
         name: 'French',
         icon: 'language',
-        description: 'Translate to French'
-      }
-    ]
+        description: 'Translate to French',
+      },
+    ],
   },
   {
     id: 'advanced',
     name: 'Advanced Settings',
     icon: 'tune',
     description: 'Advanced configuration options',
-    disabled: true // This action will appear disabled
-  }
+    disabled: true, // This action will appear disabled
+  },
 ]);
 ```
 
@@ -568,26 +574,26 @@ chatService.setModels([
     id: 'gpt-4',
     name: 'GPT-4',
     icon: 'psychology',
-    description: 'Most capable model, best for complex tasks'
+    description: 'Most capable model, best for complex tasks',
   },
   {
     id: 'gpt-3.5-turbo',
     name: 'GPT-3.5 Turbo',
     icon: 'speed',
-    description: 'Fast and efficient, good for most tasks'
+    description: 'Fast and efficient, good for most tasks',
   },
   {
     id: 'claude-3',
     name: 'Claude 3',
     icon: 'memory',
-    description: 'Excellent for analysis and reasoning'
+    description: 'Excellent for analysis and reasoning',
   },
   {
     id: 'custom-model',
     name: 'Custom Model',
     icon: 'smart_toy',
-    description: null // Description is optional
-  }
+    description: null, // Description is optional
+  },
 ]);
 ```
 
@@ -616,7 +622,7 @@ console.log('Current model:', selectedModel);
 // Listen for model selection changes
 chatService.on(AutopilotChatEvent.SetSelectedModel, (modelId) => {
   console.log('User switched to model:', modelId);
-  
+
   // You might want to adjust settings based on the model
   if (modelId === 'gpt-4') {
     // Configure for GPT-4 specific settings
@@ -637,26 +643,26 @@ chatService.setAgentModes([
     id: 'agent',
     name: 'Agent',
     description: 'AI-powered autonomous agent mode',
-    icon: 'smart_toy'
+    icon: 'smart_toy',
   },
   {
     id: 'plan',
     name: 'Plan',
     description: 'Create and review execution plans',
-    icon: 'edit_note'
+    icon: 'edit_note',
   },
   {
     id: 'attended',
     name: 'Attended',
     description: 'Human assisted execution',
-    icon: 'play_arrow'
+    icon: 'play_arrow',
   },
   {
     id: 'copilot',
     name: 'Copilot',
     description: 'Collaborative assistance mode',
-    icon: 'group'
-  }
+    icon: 'group',
+  },
 ]);
 ```
 
@@ -688,7 +694,7 @@ console.log('Current agent mode:', selectedMode);
 // Listen for agent mode selection changes
 chatService.on(AutopilotChatEvent.SetSelectedAgentMode, (mode) => {
   console.log('User switched to agent mode:', mode);
-  
+
   // Handle mode-specific logic
   switch (mode) {
     case 'agent':
@@ -715,41 +721,41 @@ chatService.initialize({
       id: 'gpt-4',
       name: 'GPT-4',
       icon: 'psychology',
-      description: 'Most capable model'
+      description: 'Most capable model',
     },
     {
       id: 'gpt-3.5-turbo',
       name: 'GPT-3.5 Turbo',
       icon: 'speed',
-      description: 'Fast and efficient'
-    }
+      description: 'Fast and efficient',
+    },
   ],
-  selectedModel: { 
-    id: 'gpt-4', 
-    name: 'GPT-4', 
-    icon: 'psychology', 
-    description: 'Most capable model' 
+  selectedModel: {
+    id: 'gpt-4',
+    name: 'GPT-4',
+    icon: 'psychology',
+    description: 'Most capable model',
   },
   agentModes: [
     {
       id: 'agent',
       name: 'Agent',
       description: 'Autonomous agent mode',
-      icon: 'smart_toy'
+      icon: 'smart_toy',
     },
     {
       id: 'copilot',
       name: 'Copilot',
       description: 'Collaborative mode',
-      icon: 'group'
-    }
+      icon: 'group',
+    },
   ],
   selectedAgentMode: {
     id: 'agent',
     name: 'Agent',
     description: 'Autonomous agent mode',
-    icon: 'smart_toy'
-  }
+    icon: 'smart_toy',
+  },
 });
 ```
 
@@ -760,6 +766,7 @@ The Chat component provides methods to control loading indicators and input avai
 #### Automatic vs Manual Control
 
 By default, the chat automatically manages loading and waiting states based on message flow:
+
 - Shows loading when awaiting responses
 - Disables input during processing
 - Enables input when ready for user interaction
@@ -782,6 +789,7 @@ chatService.setShowLoading(false);
 ```
 
 **Important considerations:**
+
 - Once you use `setShowLoading()`, the chat will no longer automatically show loading when processing responses (except for request)
 - You must explicitly call `setShowLoading(false)` to hide the loading state
 - This gives you full control but also full responsibility for managing the loading state
@@ -791,15 +799,15 @@ chatService.setShowLoading(false);
 chatService.on(AutopilotChatEvent.Request, async (message) => {
   // Show loading
   chatService.setShowLoading(true);
-  
+
   try {
     // Fetch data from your API
     const response = await fetchFromAPI(message.content);
-    
+
     // Send response
     chatService.sendResponse({
       content: response.data,
-      role: AutopilotChatRole.Assistant
+      role: AutopilotChatRole.Assistant,
     });
   } catch (error) {
     chatService.setError('Failed to process request');
@@ -826,6 +834,7 @@ chatService.setWaiting(false);
 ```
 
 **Use cases for waiting control:**
+
 - **External Conditions**: Block sending until external conditions are met (e.g., authentication, initialization)
 - **Rate Limiting**: Prevent rapid message submission
 - **Sequential Operations**: Ensure messages are processed in order
@@ -836,7 +845,7 @@ chatService.setWaiting(false);
 async function initializeChat() {
   // Block sending until authenticated
   chatService.setWaiting(true);
-  
+
   try {
     await authenticateUser();
     // User is authenticated, allow sending
@@ -849,8 +858,9 @@ async function initializeChat() {
 ```
 
 **Important considerations:**
+
 - When `setWaiting(true)`: Users can type in the input field but cannot send messages
-- When `setWaiting(false)`: Users can both type and send messages normally  
+- When `setWaiting(false)`: Users can both type and send messages normally
 - The send state will remain as you set it until you explicitly change it (or the user clicks stop response)
 - Once you use `setWaiting()`, you are responsible for managing that state throughout the session (except for request handling)
 
@@ -865,20 +875,19 @@ async function handleComplexRequest(message: AutopilotChatMessage) {
   chatService.setWaiting(true);
   chatService.setShowLoading(true);
   chatService.setLoadingMessage('Processing your request...');
-  
+
   try {
     // Step 2: Perform async operation
     const result = await processRequest(message);
-    
+
     // Step 3: Update loading message
     chatService.setLoadingMessage('Generating response...');
-    
+
     // Step 4: Send response
     chatService.sendResponse({
       content: result,
-      role: AutopilotChatRole.Assistant
+      role: AutopilotChatRole.Assistant,
     });
-    
   } catch (error) {
     chatService.setError('An error occurred');
   } finally {
@@ -971,10 +980,10 @@ const chatService = AutopilotChatService.Instantiate({
   config: {
     mode: AutopilotChatMode.SideBySide,
     firstRunExperience: {
-      title: "Custom Chat Experience",
-      description: "This is a standalone chat instance"
-    }
-  }
+      title: 'Custom Chat Experience',
+      description: 'This is a standalone chat instance',
+    },
+  },
 });
 
 // Later, retrieve the same instance
@@ -1033,7 +1042,7 @@ function EmbeddedChat() {
           }
         }
       });
-      
+
       setChatService(service);
       service.open();
 
@@ -1101,12 +1110,12 @@ const unsubscribe = chatService.intercept(AutopilotChatInterceptableEvent.Reques
   const userMessage = event.data;
 
   // Process the user message in your application
-  processUserMessage(userMessage).then(response => {
+  processUserMessage(userMessage).then((response) => {
     // Send the AI response back to the chat
     chatService.sendResponse({
       content: response,
       role: AutopilotChatRole.Assistant,
-      shouldWaitForMoreMessages: true // Indicates that more messages are expected in this response group and prevents user input until explicitly stopped
+      shouldWaitForMoreMessages: true, // Indicates that more messages are expected in this response group and prevents user input until explicitly stopped
     });
   });
 
@@ -1123,35 +1132,37 @@ unsubscribe();
 ```typescript
 // Set the pre-hook for the toggle history action
 chatService.setPreHook(AutopilotChatPreHookAction.ToggleHistory, async (data) => {
-    // Do any business to determine whether the user should be allowed to toggle the history or not
-    const shouldBeAbleToProceed: boolean = getShouldAllowToggleHistory();
-    return shouldBeAbleToProceed;
+  // Do any business to determine whether the user should be allowed to toggle the history or not
+  const shouldBeAbleToProceed: boolean = getShouldAllowToggleHistory();
+  return shouldBeAbleToProceed;
 });
 
 // Set the pre-hook for the toggle settings action
 chatService.setPreHook(AutopilotChatPreHookAction.ToggleSettings, async (data) => {
-    // Do any business logic to determine whether the user should be allowed to toggle the settings or not
-    const shouldBeAbleToProceed: boolean = getShouldAllowToggleSettings();
-    return shouldBeAbleToProceed;
+  // Do any business logic to determine whether the user should be allowed to toggle the settings or not
+  const shouldBeAbleToProceed: boolean = getShouldAllowToggleSettings();
+  return shouldBeAbleToProceed;
 });
 
 // Get the pre-hook for the toggle history action
-chatService.getPreHook(AutopilotChatPreHookAction.ToggleHistory)({ historyOpen: isHistoryOpen })
-    .then((proceed) => {
-        if (!proceed) {
-            return;
-        }
-        chatService?.toggleHistory();
-    });
+chatService
+  .getPreHook(AutopilotChatPreHookAction.ToggleHistory)({ historyOpen: isHistoryOpen })
+  .then((proceed) => {
+    if (!proceed) {
+      return;
+    }
+    chatService?.toggleHistory();
+  });
 
 // Get the pre-hook for the toggle settings action
-chatService.getPreHook(AutopilotChatPreHookAction.ToggleSettings)({ settingsOpen: isSettingsOpen })
-    .then((proceed) => {
-        if (!proceed) {
-            return;
-        }
-        chatService?.toggleSettings();
-    });
+chatService
+  .getPreHook(AutopilotChatPreHookAction.ToggleSettings)({ settingsOpen: isSettingsOpen })
+  .then((proceed) => {
+    if (!proceed) {
+      return;
+    }
+    chatService?.toggleSettings();
+  });
 ```
 
 ### Message Groups
@@ -1164,19 +1175,19 @@ const groupId = crypto.randomUUID();
 
 // Send a user request (note: user requests don't use groupId)
 chatService.sendRequest({
-  content: "Can you explain quantum computing?"
+  content: 'Can you explain quantum computing?',
 });
 
 // Send first assistant response in a group
 chatService.sendResponse({
-  content: "Quantum computing uses quantum bits or qubits...",
-  groupId: groupId // Associate this response with a group
+  content: 'Quantum computing uses quantum bits or qubits...',
+  groupId: groupId, // Associate this response with a group
 });
 
 // Send another related assistant response in the same group
 chatService.sendResponse({
-  content: "These qubits can exist in multiple states simultaneously...",
-  groupId: groupId // Associate this response with the same group
+  content: 'These qubits can exist in multiple states simultaneously...',
+  groupId: groupId, // Associate this response with the same group
 });
 
 // Later, get all messages in this group
@@ -1184,12 +1195,12 @@ const groupMessages = chatService.getMessagesInGroup(groupId);
 console.log(`Found ${groupMessages.length} messages in group ${groupId}`);
 
 // Working with message groups in action handlers
-chatService.on("custom-action", ({ message, action, group }) => {
+chatService.on('custom-action', ({ message, action, group }) => {
   // For assistant messages, 'group' contains all messages that share the same groupId
   console.log(`Action triggered on message ${message.id} in a group with ${group.length} messages`);
 
   // Process all related messages in the group
-  group.forEach(msg => {
+  group.forEach((msg) => {
     console.log(`Related message in group: ${msg.content}`);
   });
 });
@@ -1200,12 +1211,12 @@ chatService.on("custom-action", ({ message, action, group }) => {
 ```typescript
 // Create a custom message renderer for special message types
 chatService.injectMessageRenderer({
-  name: "custom-text-renderer",
+  name: 'custom-text-renderer',
   render: (container, message) => {
     // A simple text renderer that just displays the message content as-is
     if (message.content) {
       // Create a text element
-      const textElement = document.createElement("div");
+      const textElement = document.createElement('div');
 
       // Simply set the content as plain text
       textElement.textContent = message.content;
@@ -1213,19 +1224,18 @@ chatService.injectMessageRenderer({
       // Add to the container
       container.appendChild(textElement);
     }
-  }
+  },
 });
 
 // Send a message that uses the custom renderer
 chatService.sendResponse({
-  id: "msg-123", // Unique identifier for the message
+  id: 'msg-123', // Unique identifier for the message
   content: "Here's your sales chart:",
   created_at: new Date().toISOString(),
   role: AutopilotChatRole.Assistant,
-  widget: "custom-text-renderer" // Reference to our custom renderer
+  widget: 'custom-text-renderer', // Reference to our custom renderer
 });
 ```
-
 
 ### Disabling Message Actions
 
@@ -1253,7 +1263,6 @@ chatService.sendResponse({
 
 ```
 
-
 ### Tree Renderer Component
 
 The Chat component includes a built-in tree renderer that can display hierarchical data structures using the Apollo Tree View component. This is particularly useful for displaying structured data like workflow steps, organizational charts, or nested information.
@@ -1272,21 +1281,21 @@ chatService.sendResponse({
       name: 'Agent Execution Flow',
       data: {
         id: 'agent-1',
-        titleColor: "#FFA500",
+        titleColor: '#FFA500',
         parentId: null,
         name: 'Agent Execution Flow',
         startTime: new Date('2024-04-04T12:00:00Z'),
         endTime: new Date('2024-04-04T12:02:00Z'),
         status: 'ok',
         customIcon: 'robot',
-        additionalInfo: "5s",
+        additionalInfo: '5s',
         attributes: {
           type: 'agentRun',
           description: 'Main agent execution workflow',
           systemPrompt: 'Executing agent workflow',
           userPrompt: 'Perform multiple operations with different tools',
           inputSchema: {},
-          input: {}
+          input: {},
         },
       },
       children: [
@@ -1297,7 +1306,7 @@ chatService.sendResponse({
             id: 'process-1',
             parentId: 'agent-1',
             name: 'Tool Call 1',
-            icon: "code", // mui icon
+            icon: 'code', // mui icon
             startTime: new Date('2024-04-04T12:00:10Z'),
             endTime: new Date('2024-04-04T12:00:30Z'),
             status: 'ok',
@@ -1309,8 +1318,8 @@ chatService.sendResponse({
               arguments: {
                 provider: 'GoogleCustomSearch',
                 query: 'most interesting scientific fact discovered recently 2025',
-                num: 5
-              }
+                num: 5,
+              },
             },
           },
           children: [
@@ -1324,15 +1333,15 @@ chatService.sendResponse({
                 startTime: new Date('2024-04-04T12:00:15Z'),
                 endTime: new Date('2024-04-04T12:00:25Z'),
                 status: 'ok',
-                customIcon: "waffle",
+                customIcon: 'waffle',
                 additionalInfo: '10s',
                 attributes: {
                   type: 'ProcessRun',
-                  description: 'Data transformation step'
-                }
-              }
+                  description: 'Data transformation step',
+                },
+              },
             },
-          ]
+          ],
         },
         {
           key: 'completion-1',
@@ -1352,10 +1361,10 @@ chatService.sendResponse({
               usage: {
                 completionTokens: 50,
                 promptTokens: 100,
-                totalTokens: 150
-              }
-            }
-          }
+                totalTokens: 150,
+              },
+            },
+          },
         },
         {
           key: 'process-2',
@@ -1371,8 +1380,8 @@ chatService.sendResponse({
             attributes: {
               type: 'toolCall',
               description: 'Second tool execution',
-              toolName: 'Data_Processor'
-            }
+              toolName: 'Data_Processor',
+            },
           },
           children: [
             {
@@ -1388,15 +1397,15 @@ chatService.sendResponse({
                 status: 'ok',
                 attributes: {
                   type: 'parser',
-                  description: 'Data parsing step'
-                }
-              }
+                  description: 'Data parsing step',
+                },
+              },
             },
-          ]
+          ],
         },
-      ]
-    }
-  }
+      ],
+    },
+  },
 });
 ```
 
@@ -1406,19 +1415,19 @@ The tree renderer expects a `span` property with the following structure:
 
 ```typescript
 interface TreeSpanNode {
-  name: string;                    // Display name for the node
+  name: string; // Display name for the node
   data: {
-    id: string;                    // Unique identifier
+    id: string; // Unique identifier
     attributes?: {
-      description?: string;         // Optional description
-      type?: string;               // Node type (folder, file, etc.)
+      description?: string; // Optional description
+      type?: string; // Node type (folder, file, etc.)
     };
-    icon?: string;                 // Icon name (uses Apollo icons)
-    titleColor?: string;           // Color for the title text
-    customIcon?: string;           // Custom icon identifier
-    additionalInfo?: string;       // Additional information to display
+    icon?: string; // Icon name (uses Apollo icons)
+    titleColor?: string; // Color for the title text
+    customIcon?: string; // Custom icon identifier
+    additionalInfo?: string; // Additional information to display
   };
-  children?: TreeSpanNode[];       // Child nodes (optional)
+  children?: TreeSpanNode[]; // Child nodes (optional)
 }
 ```
 
@@ -1438,45 +1447,45 @@ You can customize the tree appearance by modifying the data structure:
 ```typescript
 // Example with custom styling and additional info
 const customTreeData = {
-  name: "Workflow Steps",
+  name: 'Workflow Steps',
   data: {
-    id: "workflow",
+    id: 'workflow',
     attributes: {
-      description: "Automated workflow execution",
-      type: "process"
+      description: 'Automated workflow execution',
+      type: 'process',
     },
-    icon: "play_circle",
-    titleColor: "#2196f3",
-    additionalInfo: "Status: Running"
+    icon: 'play_circle',
+    titleColor: '#2196f3',
+    additionalInfo: 'Status: Running',
   },
   children: [
     {
-      name: "Step 1: Data Collection",
+      name: 'Step 1: Data Collection',
       data: {
-        id: "step1",
+        id: 'step1',
         attributes: {
-          description: "Collect input data from various sources",
-          type: "step"
+          description: 'Collect input data from various sources',
+          type: 'step',
         },
-        icon: "input",
-        titleColor: "#4caf50",
-        additionalInfo: "Duration: 2.3s"
-      }
+        icon: 'input',
+        titleColor: '#4caf50',
+        additionalInfo: 'Duration: 2.3s',
+      },
     },
     {
-      name: "Step 2: Data Processing",
+      name: 'Step 2: Data Processing',
       data: {
-        id: "step2",
+        id: 'step2',
         attributes: {
-          description: "Process and validate the collected data",
-          type: "step"
+          description: 'Process and validate the collected data',
+          type: 'step',
         },
-        icon: "settings",
-        titleColor: "#ff9800",
-        additionalInfo: "Duration: 1.8s"
-      }
-    }
-  ]
+        icon: 'settings',
+        titleColor: '#ff9800',
+        additionalInfo: 'Duration: 1.8s',
+      },
+    },
+  ],
 };
 ```
 
@@ -1518,10 +1527,10 @@ Alternatively, you can mark a streaming response as complete by sending a messag
 ```typescript
 // Using the same ID as in your streaming response
 chatService.sendResponse({
-  id: "unique-message-id",
-  content: "",
+  id: 'unique-message-id',
+  content: '',
   stream: true,
-  done: true
+  done: true,
 });
 ```
 
@@ -1535,8 +1544,18 @@ const randomId = Math.random().toString(36).substring(2, 15);
 
 // Array of words to stream
 const words = [
-  "Hello", "World", "This", "is", "a", "streaming",
-  "response", "that", "appears", "word", "by", "word"
+  'Hello',
+  'World',
+  'This',
+  'is',
+  'a',
+  'streaming',
+  'response',
+  'that',
+  'appears',
+  'word',
+  'by',
+  'word',
 ];
 
 // Send each word with a timer
@@ -1557,7 +1576,7 @@ const interval = setInterval(() => {
       id: randomId,
       content: '',
       stream: true,
-      done: true
+      done: true,
     });
   }
 }, 200);
@@ -1575,14 +1594,15 @@ For cases where you don't have a true streaming API but want to provide a stream
 ```typescript
 // Send a complete response with the fakeStream flag
 chatService.sendResponse({
-  id: "unique-message-id",
-  content: "Your complete response that will be displayed character by character.",
+  id: 'unique-message-id',
+  content: 'Your complete response that will be displayed character by character.',
   role: AutopilotChatRole.Assistant,
-  fakeStream: true  // Enables fake streaming
+  fakeStream: true, // Enables fake streaming
 });
 ```
 
 With fake streaming:
+
 - The message content is split into characters and displayed incrementally
 - Characters are shown in small chunks at timed intervals
 - The component handles the display animation automatically
@@ -1615,7 +1635,7 @@ function example() {
 | Data 3   | Data 4   |
 
 > This is a blockquote that will be streamed character by character.`,
-  fakeStream: true  // Enable character-by-character animation
+  fakeStream: true, // Enable character-by-character animation
 });
 ```
 
@@ -1640,90 +1660,90 @@ chatService.sendResponse({
   id: 'response-with-citations',
   role: AutopilotChatRole.Assistant,
   contentParts: [
-      {
-          text: '# NBA Championship Analysis\n',
-          citations: [],
-      },
-      {
-          text: 'The NBA Finals are the annual championship series of the _National Basketball Association (NBA)_.',
-          citations: [
-              {
-                  id: 1,
-                  title: 'NBA Official Finals Overview',
-                  url: 'https://www.nba.com/history/finals',
-              } as UrlCitation,
-          ],
-      },
-      {
-          text: ' Out of all the teams, the ',
-          citations: [],
-      },
-      {
-          text: '**Boston Celtics** have won the most championships in NBA history, followed closely by the Los Angeles Lakers.',
-          citations: [
-              {
-                  id: 2,
-                  title: 'Boston Celtics - History',
-                  download_url: 'https://ontheline.trincoll.edu/images/bookdown/sample-local-pdf.pdf',
-                  page_number: 2,
-              } as PdfCitation,
-              {
-                  id: 3,
-                  title: 'Celtics vs Lakers Rivalry - ESPN',
-                  url: 'https://www.espn.com/nba/story/_/id/29325513/celtics-vs-lakers-nba-most-storied-rivalry',
-              } as UrlCitation,
-          ],
-      },
-      { text: '\n\n' },
-      {
-          text: '## Recent Champions\n',
-          citations: [],
-      },
-      {
-          text: '| Year | Champion | Finals MVP |\n',
-          citations: [],
-      },
-      {
-          text: '|------|----------|------------|\n',
-          citations: [],
-      },
-      {
-          text: '| 2023-24 | ',
-          citations: [],
-      },
-      {
-          text: '**Boston Celtics**',
-          citations: [
-              {
-                  id: 5,
-                  title: '2024 NBA Finals Recap',
-                  url: 'https://www.nba.com/news/2024-finals-recap',
-              } as UrlCitation,
-          ],
-      },
-      {
-          text: ' | ',
-          citations: [],
-      },
-      {
-          text: 'Jaylen Brown',
-          citations: [
-              {
-                  id: 5,
-                  title: '2024 NBA Finals Recap',
-                  url: 'https://www.nba.com/news/2024-finals-recap',
-              } as UrlCitation,
-              {
-                  id: 6,
-                  title: 'Jaylen Brown - Wikipedia',
-                  url: 'https://en.wikipedia.org/wiki/Jaylen_Brown',
-              } as UrlCitation,
-          ],
-      },
-      {
-          text: ' |\n',
-          citations: [],
-      }
+    {
+      text: '# NBA Championship Analysis\n',
+      citations: [],
+    },
+    {
+      text: 'The NBA Finals are the annual championship series of the _National Basketball Association (NBA)_.',
+      citations: [
+        {
+          id: 1,
+          title: 'NBA Official Finals Overview',
+          url: 'https://www.nba.com/history/finals',
+        } as UrlCitation,
+      ],
+    },
+    {
+      text: ' Out of all the teams, the ',
+      citations: [],
+    },
+    {
+      text: '**Boston Celtics** have won the most championships in NBA history, followed closely by the Los Angeles Lakers.',
+      citations: [
+        {
+          id: 2,
+          title: 'Boston Celtics - History',
+          download_url: 'https://ontheline.trincoll.edu/images/bookdown/sample-local-pdf.pdf',
+          page_number: 2,
+        } as PdfCitation,
+        {
+          id: 3,
+          title: 'Celtics vs Lakers Rivalry - ESPN',
+          url: 'https://www.espn.com/nba/story/_/id/29325513/celtics-vs-lakers-nba-most-storied-rivalry',
+        } as UrlCitation,
+      ],
+    },
+    { text: '\n\n' },
+    {
+      text: '## Recent Champions\n',
+      citations: [],
+    },
+    {
+      text: '| Year | Champion | Finals MVP |\n',
+      citations: [],
+    },
+    {
+      text: '|------|----------|------------|\n',
+      citations: [],
+    },
+    {
+      text: '| 2023-24 | ',
+      citations: [],
+    },
+    {
+      text: '**Boston Celtics**',
+      citations: [
+        {
+          id: 5,
+          title: '2024 NBA Finals Recap',
+          url: 'https://www.nba.com/news/2024-finals-recap',
+        } as UrlCitation,
+      ],
+    },
+    {
+      text: ' | ',
+      citations: [],
+    },
+    {
+      text: 'Jaylen Brown',
+      citations: [
+        {
+          id: 5,
+          title: '2024 NBA Finals Recap',
+          url: 'https://www.nba.com/news/2024-finals-recap',
+        } as UrlCitation,
+        {
+          id: 6,
+          title: 'Jaylen Brown - Wikipedia',
+          url: 'https://en.wikipedia.org/wiki/Jaylen_Brown',
+        } as UrlCitation,
+      ],
+    },
+    {
+      text: ' |\n',
+      citations: [],
+    },
   ],
 });
 ```
@@ -1737,7 +1757,7 @@ For streaming responses with citations, send the message with a `contentPartChun
 function streamResponseWithCitations() {
   const messageId = 'streaming-citations-' + Date.now();
   let streamIndex = 0;
-  
+
   const streamingParts = [
     {
       index: 0,
@@ -1779,9 +1799,9 @@ function streamResponseWithCitations() {
       index: 1,
       text: '',
       citation: {
-          id: 1,
-          title: 'UiPath - Wikipedia',
-          url: 'https://en.wikipedia.org/wiki/UiPath',
+        id: 1,
+        title: 'UiPath - Wikipedia',
+        url: 'https://en.wikipedia.org/wiki/UiPath',
       },
     },
     {
@@ -1820,38 +1840,38 @@ function streamResponseWithCitations() {
       index: 3,
       text: 'dor',
       citation: {
-          id: 1,
-          title: 'UiPath - Wikipedia',
-          url: 'https://en.wikipedia.org/wiki/UiPath',
+        id: 1,
+        title: 'UiPath - Wikipedia',
+        url: 'https://en.wikipedia.org/wiki/UiPath',
       },
     },
     {
       index: 3,
       text: '',
       citation: {
-          id: 2,
-          title: 'UiPath - Research Document',
-          download_url: 'https://ontheline.trincoll.edu/images/bookdown/sample-local-pdf.pdf',
-          page_number: 2,
+        id: 2,
+        title: 'UiPath - Research Document',
+        download_url: 'https://ontheline.trincoll.edu/images/bookdown/sample-local-pdf.pdf',
+        page_number: 2,
       },
-    }
+    },
   ];
 
   const streamInterval = setInterval(() => {
     if (streamIndex < streamingParts.length) {
       const part = streamingParts[streamIndex];
-      
+
       chatService.sendResponse({
         id: messageId,
         contentPartChunk: {
           index: part.index,
           text: part.text,
-          citation: part.citation
+          citation: part.citation,
         },
         stream: true,
-        done: streamIndex === streamingParts.length - 1
+        done: streamIndex === streamingParts.length - 1,
       });
-      
+
       streamIndex++;
     } else {
       clearInterval(streamInterval);
@@ -1867,19 +1887,19 @@ Citations support two types: UrlCitation and PdfCitation:
 ```typescript
 // Base citation interface
 interface Citation {
-  id: number;                    // Unique identifier for the citation
-  title: string;                 // Display title of the source
+  id: number; // Unique identifier for the citation
+  title: string; // Display title of the source
 }
 
 // URL citation for web resources
 interface UrlCitation extends Citation {
-  url: string;                   // Direct URL to the source
+  url: string; // Direct URL to the source
 }
 
 // PDF citation for downloadable documents
 interface PdfCitation extends Citation {
-  download_url: string;          // URL to download the PDF
-  page_number: number;           // Specific page number within the PDF
+  download_url: string; // URL to download the PDF
+  page_number: number; // Specific page number within the PDF
 }
 ```
 
@@ -1891,19 +1911,19 @@ By default, clicking a citation opens the URL in a new tab. You can intercept th
 // Set a pre-hook for citation clicks
 chatService.setPreHook(AutopilotChatPreHookAction.CitationClick, async (citationData) => {
   const { citation } = citationData;
-  
+
   // Custom handling logic
   console.log('Citation clicked:', citation.title);
-  
+
   // Example: Show citation in a modal instead of opening in new tab
   if (citation.download_url) {
     showDownloadModal(citation);
     return false; // Prevent default behavior (opening in new tab)
   }
-  
+
   // Example: Track citation clicks in analytics
   trackCitationClick(citation.id, message.id);
-  
+
   // Return true to proceed with default behavior (open in new tab)
   return true;
 });
@@ -1914,9 +1934,8 @@ chatService.setPreHook(AutopilotChatPreHookAction.CitationClick, async (citation
 When using `contentPartChunk` for streaming citations, the structure includes:
 
 - **index**: Segment index for grouping related chunks
-- **text**: Optional text content to append to the segment  
+- **text**: Optional text content to append to the segment
 - **citation**: Optional citation object (UrlCitation or PdfCitation) to attach to this chunk
-
 
 ## First Run Experience
 
@@ -1926,13 +1945,13 @@ The first run experience is displayed when the chat is opened for the first time
 
 ```typescript
 chatService.setFirstRunExperience({
-  title: "Welcome to Autopilot Chat",
-  description: "Ask me anything about your data or how to use this application.",
+  title: 'Welcome to Autopilot Chat',
+  description: 'Ask me anything about your data or how to use this application.',
   suggestions: [
-    { label: "Get started", prompt: "How do I get started with this application?" },
-    { label: "Show features", prompt: "What features are available?" }
+    { label: 'Get started', prompt: 'How do I get started with this application?' },
+    { label: 'Show features', prompt: 'What features are available?' },
   ],
-  sendOnClick: true // sends the message instead of setting the prompt
+  sendOnClick: true, // sends the message instead of setting the prompt
 });
 ```
 
@@ -1946,16 +1965,19 @@ Suggestions are automatically cleared once a request is sent in the chat.
 ```typescript
 // Set suggestions that appear in the chat
 chatService.setSuggestions([
-  { label: "Generate report", prompt: "Create a quarterly sales report for Q3" },
-  { label: "Data analysis", prompt: "Analyze customer engagement metrics" },
-  { label: "Help", prompt: "How can I use this feature?" }
+  { label: 'Generate report', prompt: 'Create a quarterly sales report for Q3' },
+  { label: 'Data analysis', prompt: 'Analyze customer engagement metrics' },
+  { label: 'Help', prompt: 'How can I use this feature?' },
 ]);
 
 // Set suggestions that send immediately when clicked
-chatService.setSuggestions([
-  { label: "Quick action", prompt: "Execute quick data refresh" },
-  { label: "Status check", prompt: "Check system status" }
-], true); // sendOnClick = true means clicking sends the message immediately (defaults to the first run experience setting)
+chatService.setSuggestions(
+  [
+    { label: 'Quick action', prompt: 'Execute quick data refresh' },
+    { label: 'Status check', prompt: 'Check system status' },
+  ],
+  true
+); // sendOnClick = true means clicking sends the message immediately (defaults to the first run experience setting)
 
 // Clear suggestions
 chatService.setSuggestions([]);
@@ -1975,33 +1997,35 @@ The chat service allows you to set and retrieve the entire conversation history.
 ```typescript
 chatService.setConversation([
   {
-    id: "1",
+    id: '1',
     role: AutopilotChatRole.User,
-    content: "How do I extract data from invoices?",
+    content: 'How do I extract data from invoices?',
     created_at: new Date().toISOString(),
-    widget: "apollo-markdown-renderer" // default renderer defined in apollo for markdown
+    widget: 'apollo-markdown-renderer', // default renderer defined in apollo for markdown
   },
   {
-    id: "2",
+    id: '2',
     role: AutopilotChatRole.Assistant,
-    content: "To extract data from invoices, you can use Document Understanding. Here's a step-by-step approach:\n\n1. Install the Document Understanding package\n2. Create a new workflow\n3. Add the Digitize Document activity\n4. Configure it to use Invoice Extraction ML skills\n5. Use Data Extraction to get specific fields",
+    content:
+      "To extract data from invoices, you can use Document Understanding. Here's a step-by-step approach:\n\n1. Install the Document Understanding package\n2. Create a new workflow\n3. Add the Digitize Document activity\n4. Configure it to use Invoice Extraction ML skills\n5. Use Data Extraction to get specific fields",
     created_at: new Date().toISOString(),
-    widget: "apollo-markdown-renderer"
+    widget: 'apollo-markdown-renderer',
   },
   {
-    id: "3",
+    id: '3',
     role: AutopilotChatRole.User,
-    content: "Can I handle multilingual invoices?",
+    content: 'Can I handle multilingual invoices?',
     created_at: new Date().toISOString(),
-    widget: "apollo-markdown-renderer"
+    widget: 'apollo-markdown-renderer',
   },
   {
-    id: "4",
+    id: '4',
     role: AutopilotChatRole.Assistant,
-    content: "Yes, Document Understanding supports multiple languages. You can:\n\n- Specify OCR language settings\n- Use pre-built ML skills that support various languages\n- Train custom ML models for specific languages\n- Add language detection pre-processing\n- Use translation activities for standardization",
+    content:
+      'Yes, Document Understanding supports multiple languages. You can:\n\n- Specify OCR language settings\n- Use pre-built ML skills that support various languages\n- Train custom ML models for specific languages\n- Add language detection pre-processing\n- Use translation activities for standardization',
     created_at: new Date().toISOString(),
-    widget: "apollo-markdown-renderer"
-  }
+    widget: 'apollo-markdown-renderer',
+  },
 ]);
 ```
 
@@ -2022,15 +2046,15 @@ The chat service provides methods to manage multiple conversations in a history 
 // Set the list of available conversations in the history panel
 chatService.setHistory([
   {
-    id: "conversation-1",
-    name: "Invoice Data Extraction",
-    timestamp: new Date().toISOString()
+    id: 'conversation-1',
+    name: 'Invoice Data Extraction',
+    timestamp: new Date().toISOString(),
   },
   {
-    id: "conversation-2",
-    name: "Multilingual Document Processing",
-    timestamp: new Date().toISOString()
-  }
+    id: 'conversation-2',
+    name: 'Multilingual Document Processing',
+    timestamp: new Date().toISOString(),
+  },
 ]);
 
 // Get the current history list
@@ -2059,7 +2083,7 @@ chatService.on(AutopilotChatEvent.NewChat, () => {
 
 // Open a specific conversation from history by ID
 // The chat component automatically calls this method when a user selects a conversation from the history panel
-chatService.openConversation("conversation-1");
+chatService.openConversation('conversation-1');
 // To disable the loading spinner when opening a conversation, pass false as the second parameter: chatService.openConversation("conversation-1", false)
 
 // Listen for conversation opening events
@@ -2082,7 +2106,7 @@ chatService.on(AutopilotChatEvent.SetConversation, (messages) => {
 
 ```typescript
 // Delete a conversation from history
-chatService.deleteConversation("conversation-2");
+chatService.deleteConversation('conversation-2');
 
 // Listen for conversation deletion events
 // The chat component will automatically call newChat method when a conversation is deleted
@@ -2116,7 +2140,7 @@ The chat service can optionally store conversation history locally using Indexed
 // Enable local history storage during initialization
 chatService.initialize({
   mode: AutopilotChatMode.SideBySide,
-  useLocalHistory: true
+  useLocalHistory: true,
 });
 
 // With local history enabled:
@@ -2136,7 +2160,7 @@ To enable pagination, configure the chat service with the `paginatedMessages` op
 ```typescript
 chatService.initialize({
   mode: AutopilotChatMode.SideBySide,
-  paginatedMessages: true // Enable pagination support
+  paginatedMessages: true, // Enable pagination support
 });
 ```
 
@@ -2151,13 +2175,13 @@ chatService.on(AutopilotChatEvent.ConversationLoadMore, () => {
 
   // Fetch older messages from your API or storage
   fetchOlderMessages(currentConversationId, lastMessageId)
-    .then(olderMessages => {
+    .then((olderMessages) => {
       // Prepend the older messages to the conversation
       // Set done=true when no more messages are available
       const isLastBatch = olderMessages.length < pageSize;
       chatService.prependOlderMessages(olderMessages, isLastBatch);
     })
-    .catch(error => {
+    .catch((error) => {
       console.error('Failed to load older messages:', error);
       // Set done=true to stop further load attempts
       chatService.prependOlderMessages([], true);
@@ -2191,7 +2215,7 @@ To enable history pagination, configure the chat service with the `paginatedHist
 ```typescript
 chatService.initialize({
   mode: AutopilotChatMode.SideBySide,
-  paginatedHistory: true // Enable history pagination with server-side search
+  paginatedHistory: true, // Enable history pagination with server-side search
 });
 ```
 
@@ -2220,7 +2244,7 @@ chatService.on(AutopilotChatEvent.HistorySearch, async (event) => {
   const response = await fetchHistory({
     searchText,
     offset: 0,
-    limit: 20
+    limit: 20,
   });
 
   // Replace history with search results and indicate if more pages exist
@@ -2239,7 +2263,7 @@ chatService.on(AutopilotChatEvent.HistoryLoadMore, async (event) => {
   const response = await fetchHistory({
     searchText,
     offset,
-    limit: 20
+    limit: 20,
   });
 
   // Append to existing history
@@ -2262,57 +2286,57 @@ The chat service allows you to disable specific features to customize the experi
 ```typescript
 // Disable the resize handle
 chatService.setDisabledFeatures({
-  resize: true
+  resize: true,
 });
 
 // Disable file attachments
 chatService.setDisabledFeatures({
-  attachments: true
+  attachments: true,
 });
 
 // Disable full screen mode
 chatService.setDisabledFeatures({
-  fullScreen: true
+  fullScreen: true,
 });
 
 // Disable conversation history panel
 chatService.setDisabledFeatures({
-  history: true
+  history: true,
 });
 
 // Disable settings panel (disabled by default)
 chatService.setDisabledFeatures({
-  settings: true
+  settings: true,
 });
 
 // Disable header
 chatService.setDisabledFeatures({
-  header: true
+  header: true,
 });
 
 // Disable header separator (border and padding)
 chatService.setDisabledFeatures({
-  headerSeparator: true
+  headerSeparator: true,
 });
 
 // Disable footer
 chatService.setDisabledFeatures({
-  footer: true
+  footer: true,
 });
 
 // Disable preview badge
 chatService.setDisabledFeatures({
-  preview: true
+  preview: true,
 });
 
 // Disable close button
 chatService.setDisabledFeatures({
-  close: true
+  close: true,
 });
 
 // Disable new chat button
 chatService.setDisabledFeatures({
-  newChat: true
+  newChat: true,
 });
 ```
 
@@ -2326,14 +2350,14 @@ chatService.setDisabledFeatures({
   attachments: true,
   history: true,
   settings: false, // Enable settings (disabled by default)
-  header: true
+  header: true,
 });
 
 // Later, re-enable features
 chatService.setDisabledFeatures({
   resize: false,
   fullScreen: false,
-  header: false
+  header: false,
 });
 ```
 
@@ -2374,7 +2398,7 @@ chatService.setOverrideLabels({
 chatService.setOverrideLabels({
   inputPlaceholder: '',
   footerDisclaimer: '',
-  title: ''
+  title: '',
 });
 ```
 
@@ -2391,7 +2415,7 @@ The `SetAttachments` event provides granular information about attachment change
 chatService.on(AutopilotChatEvent.SetAttachments, ({ added, removed }) => {
   console.log('Added attachments:', added);
   console.log('Removed attachments:', removed);
-  
+
   // Process newly added attachments
   if (added.length > 0) {
     // Your async processing logic here
@@ -2410,17 +2434,17 @@ chatService.on(AutopilotChatEvent.SetAttachments, ({ added, removed }) => {
   if (added.length > 0) {
     // Set loading state for newly added attachments
     chatService.setAttachmentsLoading(
-      added.map(attachment => ({
+      added.map((attachment) => ({
         ...attachment,
         loading: true,
       }))
     );
-    
+
     // Simulate async processing
     setTimeout(() => {
       // Clear loading state once processing is complete
       chatService.setAttachmentsLoading(
-        added.map(attachment => ({
+        added.map((attachment) => ({
           ...attachment,
           loading: false,
         }))
@@ -2436,79 +2460,82 @@ Here's a comprehensive example showing how to upload attachments to a server and
 
 ```typescript
 // Subscribe to attachment changes
-const unsubscribe = chatService.on(AutopilotChatEvent.SetAttachments, async ({ added, removed }) => {
-  if (added.length === 0) {
-    return;
-  }
-  
-  // Mark attachments as loading
-  chatService.setAttachmentsLoading(
-    added.map(attachment => ({
-      ...attachment,
-      loading: true,
-    }))
-  );
-  
-  try {
-    // Upload each attachment to your server
-    const uploadPromises = added.map(async (attachment) => {
-      const formData = new FormData();
-      
-      // Convert base64 or binary content to Blob
-      let blob;
-      if (attachment.content.base64) {
-        const binary = atob(attachment.content.base64);
-        const bytes = new Uint8Array(binary.length);
-        for (let i = 0; i < binary.length; i++) {
-          bytes[i] = binary.charCodeAt(i);
-        }
-        blob = new Blob([bytes], { type: attachment.type });
-      } else if (attachment.content.binary) {
-        blob = new Blob([attachment.content.binary], { type: attachment.type });
-      }
-      
-      formData.append('file', blob, attachment.name);
-      
-      // Upload to server
-      const response = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData,
-      });
-      
-      return {
-        attachment,
-        uploadedUrl: await response.json(),
-      };
-    });
-    
-    // Wait for all uploads to complete
-    const results = await Promise.all(uploadPromises);
-    
-    // Update attachments with uploaded URLs
-    const updatedAttachments = results.map(({ attachment, uploadedUrl }) => ({
-      ...attachment,
-      loading: false,
-      uploadedUrl, // Add custom metadata
-    }));
-    
-    chatService.setAttachmentsLoading(updatedAttachments);
-    
-    console.log('All attachments uploaded successfully');
-  } catch (error) {
-    console.error('Error uploading attachments:', error);
-    
-    // Clear loading state on error
+const unsubscribe = chatService.on(
+  AutopilotChatEvent.SetAttachments,
+  async ({ added, removed }) => {
+    if (added.length === 0) {
+      return;
+    }
+
+    // Mark attachments as loading
     chatService.setAttachmentsLoading(
-      added.map(attachment => ({
+      added.map((attachment) => ({
         ...attachment,
-        loading: false,
+        loading: true,
       }))
     );
-    
-    // Optionally show an error message
-    chatService.setError('Failed to upload attachments. Please try again.');
+
+    try {
+      // Upload each attachment to your server
+      const uploadPromises = added.map(async (attachment) => {
+        const formData = new FormData();
+
+        // Convert base64 or binary content to Blob
+        let blob;
+        if (attachment.content.base64) {
+          const binary = atob(attachment.content.base64);
+          const bytes = new Uint8Array(binary.length);
+          for (let i = 0; i < binary.length; i++) {
+            bytes[i] = binary.charCodeAt(i);
+          }
+          blob = new Blob([bytes], { type: attachment.type });
+        } else if (attachment.content.binary) {
+          blob = new Blob([attachment.content.binary], { type: attachment.type });
+        }
+
+        formData.append('file', blob, attachment.name);
+
+        // Upload to server
+        const response = await fetch('/api/upload', {
+          method: 'POST',
+          body: formData,
+        });
+
+        return {
+          attachment,
+          uploadedUrl: await response.json(),
+        };
+      });
+
+      // Wait for all uploads to complete
+      const results = await Promise.all(uploadPromises);
+
+      // Update attachments with uploaded URLs
+      const updatedAttachments = results.map(({ attachment, uploadedUrl }) => ({
+        ...attachment,
+        loading: false,
+        uploadedUrl, // Add custom metadata
+      }));
+
+      chatService.setAttachmentsLoading(updatedAttachments);
+
+      console.log('All attachments uploaded successfully');
+    } catch (error) {
+      console.error('Error uploading attachments:', error);
+
+      // Clear loading state on error
+      chatService.setAttachmentsLoading(
+        added.map((attachment) => ({
+          ...attachment,
+          loading: false,
+        }))
+      );
+
+      // Optionally show an error message
+      chatService.setError('Failed to upload attachments. Please try again.');
+    }
   }
-});
+);
 
 // Later, clean up the subscription when no longer needed
 // unsubscribe();
@@ -2544,8 +2571,8 @@ The chat supports a compact mode that reduces the overall visual density of the 
 chatService.initialize({
   mode: AutopilotChatMode.SideBySide,
   spacing: {
-    compactMode: true // This will apply compact defaults to all spacing values
-  }
+    compactMode: true, // This will apply compact defaults to all spacing values
+  },
 });
 ```
 
@@ -2573,21 +2600,21 @@ chatService.initialize({
   spacing: {
     // Start with compact mode defaults
     compactMode: true,
-    
+
     // Override specific values
     promptBox: {
-      minRows: 1,  // Override compact default of 2
-      maxRows: 3   // Override compact default of 4
+      minRows: 1, // Override compact default of 2
+      maxRows: 3, // Override compact default of 4
     },
-    
+
     // Customize message spacing
-    messageSpacing: 12,        // Space between messages in a group
-    messageGroupGap: 24,        // Space between message groups
-    
+    messageSpacing: 12, // Space between messages in a group
+    messageGroupGap: 24, // Space between message groups
+
     // Primary typography tokens
     primaryFontToken: FontVariantToken.fontSizeM,
     primaryBoldFontToken: FontVariantToken.fontSizeMBold,
-    
+
     // Fine-tune markdown typography
     markdownTokens: {
       li: FontVariantToken.fontSizeS,
@@ -2604,9 +2631,9 @@ chatService.initialize({
       del: FontVariantToken.fontSizeS,
       strong: FontVariantToken.fontSizeMBold,
       link: FontVariantToken.fontSizeM,
-      citation: FontVariantToken.fontSizeXs
-    }
-  }
+      citation: FontVariantToken.fontSizeXs,
+    },
+  },
 });
 ```
 
@@ -2616,16 +2643,16 @@ The `@uipath/apollo-core` package provides the following font variant tokens tha
 
 ### Spacing Properties Reference
 
-| Property | Type | Description | Default (Normal) | Default (Compact) |
-|----------|------|-------------|------------------|-------------------|
-| `compactMode` | `boolean` | Enables compact spacing defaults | `false` | - |
-| `promptBox.minRows` | `number` | Minimum rows for input field | `2` | `2` |
-| `promptBox.maxRows` | `number` | Maximum rows for input field | `12` | `4` |
-| `messageSpacing` | `number` | Pixels between messages in a group | `32` | `8` |
-| `messageGroupGap` | `number` | Pixels between message groups | `16` | `8` |
-| `primaryFontToken` | `FontVariantToken` | Default font size for primary text | `fontSizeM` | `fontSizeS` |
-| `primaryBoldFontToken` | `FontVariantToken` | Default bold font size | `fontSizeMBold` | `fontSizeSBold` |
-| `markdownTokens.*` | `FontVariantToken` | Individual markdown element typography | Various | Scaled down |
+| Property               | Type               | Description                            | Default (Normal) | Default (Compact) |
+| ---------------------- | ------------------ | -------------------------------------- | ---------------- | ----------------- |
+| `compactMode`          | `boolean`          | Enables compact spacing defaults       | `false`          | -                 |
+| `promptBox.minRows`    | `number`           | Minimum rows for input field           | `2`              | `2`               |
+| `promptBox.maxRows`    | `number`           | Maximum rows for input field           | `12`             | `4`               |
+| `messageSpacing`       | `number`           | Pixels between messages in a group     | `32`             | `8`               |
+| `messageGroupGap`      | `number`           | Pixels between message groups          | `16`             | `8`               |
+| `primaryFontToken`     | `FontVariantToken` | Default font size for primary text     | `fontSizeM`      | `fontSizeS`       |
+| `primaryBoldFontToken` | `FontVariantToken` | Default bold font size                 | `fontSizeMBold`  | `fontSizeSBold`   |
+| `markdownTokens.*`     | `FontVariantToken` | Individual markdown element typography | Various          | Scaled down       |
 
 ## Theming Configuration
 
@@ -2653,6 +2680,7 @@ chatService.initialize({
 ## Configuration Types
 
 ### AutopilotChatConfiguration
+
 ```typescript
 import { FontVariantToken } from '@uipath/apollo-core';
 
@@ -2681,68 +2709,68 @@ import { FontVariantToken } from '@uipath/apollo-core';
  * @property theming - The theming of the chat (scrollbar appearance, etc)
  */
 export interface AutopilotChatConfiguration {
-    mode: AutopilotChatMode;
-    embeddedContainer?: HTMLElement;
-    locale?: SupportedLocale; // 'en' | 'de' | 'es' | 'fr' | 'ja' | 'ko' | 'pt' | 'ru' | 'tr' | 'zh-CN' | 'zh-TW' | 'pt-BR' | 'es-MX' (defaults to 'en')
-    theme?: ApChatTheme; // 'light' | 'dark' | 'light-hc' | 'dark-hc' (defaults to 'light')
-    disabledFeatures?: AutopilotChatDisabledFeatures;
-    overrideLabels?: AutopilotChatOverrideLabels;
-    firstRunExperience?: {
-        title: string;
-        description: string;
-        suggestions?: AutopilotChatSuggestion[];
-        sendOnClick?: boolean;
+  mode: AutopilotChatMode;
+  embeddedContainer?: HTMLElement;
+  locale?: SupportedLocale; // 'en' | 'de' | 'es' | 'fr' | 'ja' | 'ko' | 'pt' | 'ru' | 'tr' | 'zh-CN' | 'zh-TW' | 'pt-BR' | 'es-MX' (defaults to 'en')
+  theme?: ApChatTheme; // 'light' | 'dark' | 'light-hc' | 'dark-hc' (defaults to 'light')
+  disabledFeatures?: AutopilotChatDisabledFeatures;
+  overrideLabels?: AutopilotChatOverrideLabels;
+  firstRunExperience?: {
+    title: string;
+    description: string;
+    suggestions?: AutopilotChatSuggestion[];
+    sendOnClick?: boolean;
+  };
+  useLocalHistory?: boolean;
+  allowedAttachments?: AutopilotChatAllowedAttachments;
+  models?: AutopilotChatModelInfo[];
+  selectedModel?: AutopilotChatModelInfo;
+  agentModes?: AutopilotChatAgentModeInfo[];
+  selectedAgentMode?: AutopilotChatAgentModeInfo;
+  preHooks?: Partial<Record<AutopilotChatPreHookAction, (data?: any) => Promise<boolean>>>;
+  paginatedMessages?: boolean;
+  paginatedHistory?: boolean;
+  settingsRenderer?: (container: HTMLElement) => void;
+  theming?: {
+    scrollBar?: {
+      scrollThumbColor?: string;
+      scrollHoverColor?: string;
+      scrollSize?: string;
+      scrollBorderRadius?: string;
     };
-    useLocalHistory?: boolean;
-    allowedAttachments?: AutopilotChatAllowedAttachments;
-    models?: AutopilotChatModelInfo[];
-    selectedModel?: AutopilotChatModelInfo;
-    agentModes?: AutopilotChatAgentModeInfo[];
-    selectedAgentMode?: AutopilotChatAgentModeInfo;
-    preHooks?: Partial<Record<AutopilotChatPreHookAction, (data?: any) => Promise<boolean>>>;
-    paginatedMessages?: boolean;
-    paginatedHistory?: boolean;
-    settingsRenderer?: (container: HTMLElement) => void;
-    theming?: {
-        scrollBar?: {
-            scrollThumbColor?: string;
-            scrollHoverColor?: string;
-            scrollSize?: string;
-            scrollBorderRadius?: string;
-        };
+  };
+  spacing?: {
+    compactMode?: boolean;
+    promptBox?: {
+      minRows?: number;
+      maxRows?: number;
     };
-    spacing?: {
-        compactMode?: boolean;
-        promptBox?: {
-            minRows?: number;
-            maxRows?: number;
-        };
-        messageSpacing?: number;
-        messageGroupGap?: number;
-        primaryFontToken?: FontVariantToken;
-        primaryBoldFontToken?: FontVariantToken;
-        titleFontToken?: FontVariantToken;
-        suggestionSpacing?: number;
-        suggestionFontToken?: FontVariantToken;
-        suggestionPadding?: string;
-        markdownTokens?: {
-            li?: FontVariantToken;
-            p?: FontVariantToken;
-            h1?: FontVariantToken;
-            h2?: FontVariantToken;
-            h3?: FontVariantToken;
-            h4?: FontVariantToken;
-            h5?: FontVariantToken;
-            h6?: FontVariantToken;
-            th?: FontVariantToken;
-            td?: FontVariantToken;
-            em?: FontVariantToken;
-            del?: FontVariantToken;
-            strong?: FontVariantToken;
-            link?: FontVariantToken;
-            citation?: FontVariantToken;
-        };
+    messageSpacing?: number;
+    messageGroupGap?: number;
+    primaryFontToken?: FontVariantToken;
+    primaryBoldFontToken?: FontVariantToken;
+    titleFontToken?: FontVariantToken;
+    suggestionSpacing?: number;
+    suggestionFontToken?: FontVariantToken;
+    suggestionPadding?: string;
+    markdownTokens?: {
+      li?: FontVariantToken;
+      p?: FontVariantToken;
+      h1?: FontVariantToken;
+      h2?: FontVariantToken;
+      h3?: FontVariantToken;
+      h4?: FontVariantToken;
+      h5?: FontVariantToken;
+      h6?: FontVariantToken;
+      th?: FontVariantToken;
+      td?: FontVariantToken;
+      em?: FontVariantToken;
+      del?: FontVariantToken;
+      strong?: FontVariantToken;
+      link?: FontVariantToken;
+      citation?: FontVariantToken;
     };
+  };
 }
 ```
 
@@ -2753,7 +2781,7 @@ enum AutopilotChatMode {
   SideBySide = 'side-by-side',
   FullScreen = 'full-screen',
   Embedded = 'embedded',
-  Closed = 'closed'
+  Closed = 'closed',
 }
 ```
 
@@ -2780,21 +2808,21 @@ enum AutopilotChatMode {
  * @property copy - Whether the chat has copy button
  */
 export interface AutopilotChatDisabledFeatures {
-    resize?: boolean;
-    fullScreen?: boolean;
-    attachments?: boolean;
-    history?: boolean;
-    header?: boolean;
-    headerSeparator?: boolean;
-    footer?: boolean;
-    preview?: boolean;
-    close?: boolean;
-    newChat?: boolean;
-    settings?: boolean;
-    audio?: boolean;
-    feedback?: boolean;
-    fullHeight?: boolean;
-    copy?: boolean;
+  resize?: boolean;
+  fullScreen?: boolean;
+  attachments?: boolean;
+  history?: boolean;
+  header?: boolean;
+  headerSeparator?: boolean;
+  footer?: boolean;
+  preview?: boolean;
+  close?: boolean;
+  newChat?: boolean;
+  settings?: boolean;
+  audio?: boolean;
+  feedback?: boolean;
+  fullHeight?: boolean;
+  copy?: boolean;
 }
 ```
 
@@ -2825,8 +2853,8 @@ export interface AutopilotChatOverrideLabels {
  * @property prompt - The prompt of the suggestion
  */
 export interface AutopilotChatSuggestion {
-    label: string;
-    prompt: string;
+  label: string;
+  prompt: string;
 }
 ```
 
@@ -2843,12 +2871,12 @@ export interface AutopilotChatSuggestion {
  * @property multiple - Whether the chat allows multiple attachments per message
  */
 export interface AutopilotChatAllowedAttachments {
-    multiple: boolean;
-    types: {
-        [key: string]: string[];
-    };
-    maxSize: number;
-    maxCount?: number;
+  multiple: boolean;
+  types: {
+    [key: string]: string[];
+  };
+  maxSize: number;
+  maxCount?: number;
 }
 ```
 
@@ -2864,10 +2892,10 @@ export interface AutopilotChatAllowedAttachments {
  * @property description - The description of the model
  */
 export interface AutopilotChatModelInfo {
-    id: string;
-    name: string;
-    icon?: string;
-    description: string | null;
+  id: string;
+  name: string;
+  icon?: string;
+  description: string | null;
 }
 ```
 
@@ -2886,10 +2914,10 @@ See [Model Selection](#model-selection) section for detailed usage examples.
  * @property description - The description of the agent mode (optional)
  */
 export interface AutopilotChatAgentModeInfo {
-    id: string;
-    name: string;
-    icon?: string;
-    description?: string;
+  id: string;
+  name: string;
+  icon?: string;
+  description?: string;
 }
 ```
 
@@ -2910,12 +2938,12 @@ See [Agent Mode Selection](#agent-mode-selection) section for detailed usage exa
  * @property disabled - Whether the action is disabled (optional, default false)
  */
 export interface AutopilotChatCustomHeaderAction {
-    id: string;
-    name: string;
-    icon?: string;
-    description?: string;
-    children?: Array<Omit<AutopilotChatCustomHeaderAction, 'children'>>;
-    disabled?: boolean;
+  id: string;
+  name: string;
+  icon?: string;
+  description?: string;
+  children?: Array<Omit<AutopilotChatCustomHeaderAction, 'children'>>;
+  disabled?: boolean;
 }
 ```
 
@@ -2948,25 +2976,25 @@ See [Custom Header Actions](#custom-header-actions) section for detailed usage e
  * @property shouldWaitForMoreMessages - Optional flag to indicate if the chat service should wait for more messages
  */
 export interface AutopilotChatMessage {
-    id: string;
-    content: string;
-    created_at: string;
-    role: AutopilotChatRole;
-    widget: string;
-    attachments?: AutopilotChatFileInfo[];
-    contentParts?: ContentPart[];
-    hijacked?: boolean;
-    fakeStream?: boolean;
-    stream?: boolean;
-    done?: boolean;
-    actions?: AutopilotChatMessageAction[];
-    feedback?: {
-        isPositive: boolean;
-    };
-    groupId?: string;
-    meta?: any;
-    toCopy?: string;
-    shouldWaitForMoreMessages?: boolean;
+  id: string;
+  content: string;
+  created_at: string;
+  role: AutopilotChatRole;
+  widget: string;
+  attachments?: AutopilotChatFileInfo[];
+  contentParts?: ContentPart[];
+  hijacked?: boolean;
+  fakeStream?: boolean;
+  stream?: boolean;
+  done?: boolean;
+  actions?: AutopilotChatMessageAction[];
+  feedback?: {
+    isPositive: boolean;
+  };
+  groupId?: string;
+  meta?: any;
+  toCopy?: string;
+  shouldWaitForMoreMessages?: boolean;
 }
 ```
 
@@ -2974,8 +3002,8 @@ export interface AutopilotChatMessage {
 
 ```typescript
 enum AutopilotChatRole {
-    User = 'user',
-    Assistant = 'assistant',
+  User = 'user',
+  Assistant = 'assistant',
 }
 ```
 
@@ -2994,13 +3022,13 @@ enum AutopilotChatRole {
  * @property details - Additional details for the action
  */
 export interface AutopilotChatMessageAction {
-    name: string;
-    label: string;
-    icon?: string;
-    showInOverflow?: boolean;
-    disabled?: boolean;
-    eventName?: string;
-    details?: Record<string, any>;
+  name: string;
+  label: string;
+  icon?: string;
+  showInOverflow?: boolean;
+  disabled?: boolean;
+  eventName?: string;
+  details?: Record<string, any>;
 }
 ```
 
@@ -3015,9 +3043,9 @@ export interface AutopilotChatMessageAction {
  * @property timestamp - The timestamp of the history item
  */
 export interface AutopilotChatHistory {
-    id: string;
-    name: string;
-    timestamp: string;
+  id: string;
+  name: string;
+  timestamp: string;
 }
 ```
 
@@ -3025,15 +3053,15 @@ export interface AutopilotChatHistory {
 
 ```typescript
 interface AutopilotChatMessageRenderer {
-    name: string;
-    render: (container: HTMLElement, message: AutopilotChatMessage) => void | (() => void);
+  name: string;
+  render: (container: HTMLElement, message: AutopilotChatMessage) => void | (() => void);
 }
 ```
 
 The message renderer interface defines a custom renderer for chat messages:
+
 - `name`: Unique identifier for the renderer
 - `render`: Function that renders the message content into the provided container element. Can optionally return a cleanup function.
-
 
 ### AutopilotChatErrorLevel
 
@@ -3055,9 +3083,9 @@ export type AutopilotChatErrorLevel = 'error' | 'warn';
  * @property message - The last message that the action is associated with.
  */
 export interface AutopilotChatActionPayload {
-    action: AutopilotChatMessageAction;
-    message: AutopilotChatMessage;
-    group: AutopilotChatMessage[];
+  action: AutopilotChatMessageAction;
+  message: AutopilotChatMessage;
+  group: AutopilotChatMessage[];
 }
 ```
 
@@ -3078,13 +3106,13 @@ export interface AutopilotChatActionPayload {
  * @property {string} Feedback - Emitted when the user clicks on the feedback buttons thumbs up/down
  */
 export enum AutopilotChatPreHookAction {
-    NewChat = 'new-chat',
-    ToggleHistory = 'toggle-history',
-    ToggleSettings = 'toggle-settings',
-    ToggleChat = 'toggle-chat',
-    CloseChat = 'close-chat',
-    CitationClick = 'citation-click',
-    Feedback = 'feedback'
+  NewChat = 'new-chat',
+  ToggleHistory = 'toggle-history',
+  ToggleSettings = 'toggle-settings',
+  ToggleChat = 'toggle-chat',
+  CloseChat = 'close-chat',
+  CitationClick = 'citation-click',
+  Feedback = 'feedback',
 }
 ```
 
@@ -3099,9 +3127,9 @@ export enum AutopilotChatPreHookAction {
  * @property message - The last message that the action is associated with.
  */
 export interface AutopilotChatActionPayload {
-    action: AutopilotChatMessageAction;
-    message: AutopilotChatMessage;
-    group: AutopilotChatMessage[];
+  action: AutopilotChatMessageAction;
+  message: AutopilotChatMessage;
+  group: AutopilotChatMessage[];
 }
 ```
 
@@ -3118,12 +3146,12 @@ export interface AutopilotChatActionPayload {
  * @property multiple - Whether the chat allows multiple attachments per message
  */
 export interface AutopilotChatAllowedAttachments {
-    multiple: boolean;
-    types: {
-        [key: string]: string[];
-    };
-    maxSize: number;
-    maxCount?: number;
+  multiple: boolean;
+  types: {
+    [key: string]: string[];
+  };
+  maxSize: number;
+  maxCount?: number;
 }
 ```
 
@@ -3134,20 +3162,20 @@ export interface AutopilotChatAllowedAttachments {
  * Input stream event data.
  */
 export interface AutopilotChatInputStreamEvent {
-    /**
-     * If set, indicates that an user input activity is starting.
-     */
-    activityStart?: AutopilotChatInputStreamActivityStart;
+  /**
+   * If set, indicates that an user input activity is starting.
+   */
+  activityStart?: AutopilotChatInputStreamActivityStart;
 
-    /**
-     * If set, indicates that an user input activity has ended.
-     */
-    activityEnd?: AutopilotChatInputStreamActivityEnd;
+  /**
+   * If set, indicates that an user input activity has ended.
+   */
+  activityEnd?: AutopilotChatInputStreamActivityEnd;
 
-    /**
-     * If set, contains input media stream chunks.
-     */
-    mediaChunk?: AutopilotChatInputStreamMediaChunk[];
+  /**
+   * If set, contains input media stream chunks.
+   */
+  mediaChunk?: AutopilotChatInputStreamMediaChunk[];
 }
 ```
 
@@ -3159,13 +3187,13 @@ export interface AutopilotChatInputStreamEvent {
  * activity end event should be sent after all media chunks have been sent.
  */
 export interface AutopilotChatInputStreamActivityStart {
-    /**
-     * Indicates whether automatic activity detection is enabled for this input stream activity. If enabled,
-     * continuously send input media chunks and the LLM will decide when to respond and multiple turns will be taken
-     * within the single input activity. If not enabled, the LLM responds when the end activity signal is sent and
-     * another start activity needs to be sent to start a new turn.
-     */
-    automaticActivityDetectionEnabled?: boolean;
+  /**
+   * Indicates whether automatic activity detection is enabled for this input stream activity. If enabled,
+   * continuously send input media chunks and the LLM will decide when to respond and multiple turns will be taken
+   * within the single input activity. If not enabled, the LLM responds when the end activity signal is sent and
+   * another start activity needs to be sent to start a new turn.
+   */
+  automaticActivityDetectionEnabled?: boolean;
 }
 ```
 
@@ -3176,12 +3204,12 @@ export interface AutopilotChatInputStreamActivityStart {
  * Arguments for an input activity end event.
  */
 export interface AutopilotChatInputStreamActivityEnd {
-    /**
-     * The number following the sequenceNumber of the last media chunk sent in the activity that has ended. This value
-     * can be used to verify that all input data messages have been received. TODO: this property will be removed at
-     * some point, it is currently used to work around some threading issues in the Agent's service.
-     */
-    sequenceNumber: number;
+  /**
+   * The number following the sequenceNumber of the last media chunk sent in the activity that has ended. This value
+   * can be used to verify that all input data messages have been received. TODO: this property will be removed at
+   * some point, it is currently used to work around some threading issues in the Agent's service.
+   */
+  sequenceNumber: number;
 }
 ```
 
@@ -3191,8 +3219,7 @@ export interface AutopilotChatInputStreamActivityEnd {
 /**
  * Arguments for an input media chunk event.
  */
-export interface AutopilotChatInputStreamMediaChunk extends AutopilotChatMediaChunk {
-}
+export interface AutopilotChatInputStreamMediaChunk extends AutopilotChatMediaChunk {}
 ```
 
 ### AutopilotChatOutputStreamEvent
@@ -3202,30 +3229,30 @@ export interface AutopilotChatInputStreamMediaChunk extends AutopilotChatMediaCh
  * Arguments for output stream event.
  */
 export interface AutopilotChatOutputStreamEvent {
-    /**
-     * If set, contains output media stream chunks.
-     */
-    mediaChunk?: AutopilotChatOutputStreamMediaChunk[];
+  /**
+   * If set, contains output media stream chunks.
+   */
+  mediaChunk?: AutopilotChatOutputStreamMediaChunk[];
 
-    /**
-     * If set (it will be true), indicates that the LLM output was interrupted by user input. This event will only be
-     * generated when automaticActivityDetectionEnabled is set to true in the activity start event.
-     */
-    interrupted?: boolean;
+  /**
+   * If set (it will be true), indicates that the LLM output was interrupted by user input. This event will only be
+   * generated when automaticActivityDetectionEnabled is set to true in the activity start event.
+   */
+  interrupted?: boolean;
 
-    /**
-     * If set (it will be true), indicates that the LLM has finished generating output in response to an user input. When
-     * automaticActivityDetectionEnabled is set, this can occur multiple times during the input activity, otherwise it will
-     * occur once, after activity end is sent. If the model was interrupted, generation complete is not sent.
-     */
-    generationComplete?: boolean;
+  /**
+   * If set (it will be true), indicates that the LLM has finished generating output in response to an user input. When
+   * automaticActivityDetectionEnabled is set, this can occur multiple times during the input activity, otherwise it will
+   * occur once, after activity end is sent. If the model was interrupted, generation complete is not sent.
+   */
+  generationComplete?: boolean;
 
-    /**
-     * If set (it will be true), indicates that the turn as completed and the model will generate no more output until a
-     * new turn is started by user input. When model assumes realtime playback there will be delay between
-     * generation complete and turn complete that is caused by model waiting for playback to finish.
-     */
-    turnComplete?: boolean;
+  /**
+   * If set (it will be true), indicates that the turn as completed and the model will generate no more output until a
+   * new turn is started by user input. When model assumes realtime playback there will be delay between
+   * generation complete and turn complete that is caused by model waiting for playback to finish.
+   */
+  turnComplete?: boolean;
 }
 ```
 
@@ -3235,8 +3262,7 @@ export interface AutopilotChatOutputStreamEvent {
 /**
  * Arguments for an output media chunk event.
  */
-export interface AutopilotChatOutputStreamMediaChunk extends AutopilotChatMediaChunk {
-}
+export interface AutopilotChatOutputStreamMediaChunk extends AutopilotChatMediaChunk {}
 ```
 
 ### AutopilotChatMediaChunk
@@ -3246,19 +3272,19 @@ export interface AutopilotChatOutputStreamMediaChunk extends AutopilotChatMediaC
  * Media chunks used for input and output streams.
  */
 export interface AutopilotChatMediaChunk {
-    /**
-     * Sequence of the chunk in the stream. TODO: this property will be removed at some point, it is currently used to
-     * work around some threading issues in the Agent's service.
-     */
-    sequenceNumber: number;
-    /**
-     * Mime type of the data.
-     */
-    mimeType: string;
-    /**
-     * Base64 encoded chunk of data.
-     */
-    data: string;
+  /**
+   * Sequence of the chunk in the stream. TODO: this property will be removed at some point, it is currently used to
+   * work around some threading issues in the Agent's service.
+   */
+  sequenceNumber: number;
+  /**
+   * Mime type of the data.
+   */
+  mimeType: string;
+  /**
+   * Base64 encoded chunk of data.
+   */
+  data: string;
 }
 ```
 
@@ -3272,8 +3298,8 @@ export interface AutopilotChatMediaChunk {
  * @property citations - The citations that apply to this text
  */
 export interface ContentPart {
-    text?: string;
-    citations?: Array<UrlCitation | PdfCitation>;
+  text?: string;
+  citations?: Array<UrlCitation | PdfCitation>;
 }
 ```
 
@@ -3288,9 +3314,9 @@ export interface ContentPart {
  * @property citation - A citation to add to the content part
  */
 export interface ContentPartChunk {
-    index: number;
-    text?: string;
-    citation?: UrlCitation | PdfCitation;
+  index: number;
+  text?: string;
+  citation?: UrlCitation | PdfCitation;
 }
 ```
 
@@ -3304,8 +3330,8 @@ export interface ContentPartChunk {
  * @property title - The title of the citation
  */
 export interface Citation {
-    id: number;
-    title: string;
+  id: number;
+  title: string;
 }
 ```
 
@@ -3318,7 +3344,7 @@ export interface Citation {
  * @property url - The URL of the citation
  */
 export interface UrlCitation extends Citation {
-    url: string;
+  url: string;
 }
 ```
 
@@ -3332,8 +3358,8 @@ export interface UrlCitation extends Citation {
  * @property page_number - The page number in the PDF
  */
 export interface PdfCitation extends Citation {
-    download_url: string;
-    page_number: number;
+  download_url: string;
+  page_number: number;
 }
 ```
 

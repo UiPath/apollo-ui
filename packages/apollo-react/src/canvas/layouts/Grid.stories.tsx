@@ -1,22 +1,25 @@
-import type { Meta, StoryObj } from "@storybook/react";
-import { Grid, SimpleGrid } from "./Grid";
+import type { Meta, StoryObj } from '@storybook/react';
+import { Grid, SimpleGrid } from './Grid';
 
 // Common box component for demonstrations
-const Box = ({ children, ...props }: React.PropsWithChildren<React.HTMLAttributes<HTMLDivElement>>) => (
+const Box = ({
+  children,
+  ...props
+}: React.PropsWithChildren<React.HTMLAttributes<HTMLDivElement>>) => (
   <div
     {...props}
     style={{
-      color: "var(--color-foreground)",
-      backgroundColor: "var(--color-background-secondary)",
-      padding: "16px",
-      borderRadius: "4px",
-      border: "1px solid var(--color-border)",
-      minWidth: "60px",
-      minHeight: "60px",
-      textAlign: "center",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
+      color: 'var(--color-foreground)',
+      backgroundColor: 'var(--color-background-secondary)',
+      padding: '16px',
+      borderRadius: '4px',
+      border: '1px solid var(--color-border)',
+      minWidth: '60px',
+      minHeight: '60px',
+      textAlign: 'center',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
       ...props.style,
     }}
   >
@@ -25,76 +28,82 @@ const Box = ({ children, ...props }: React.PropsWithChildren<React.HTMLAttribute
 );
 
 const meta: Meta<typeof Grid> = {
-  title: "Core/Layouts/Grid",
+  title: 'Core/Layouts/Grid',
   component: Grid,
   parameters: {
-    layout: "fullscreen",
+    layout: 'fullscreen',
   },
   argTypes: {
     templateColumns: {
-      control: { type: "text" },
+      control: { type: 'text' },
       description: 'Grid template columns (e.g., "1fr 1fr" or "repeat(3, 1fr)")',
     },
     templateRows: {
-      control: { type: "text" },
-      description: "Grid template rows",
+      control: { type: 'text' },
+      description: 'Grid template rows',
     },
     templateAreas: {
-      control: { type: "text" },
-      description: "Grid template areas",
+      control: { type: 'text' },
+      description: 'Grid template areas',
     },
     autoFlow: {
-      control: { type: "select" },
-      options: ["row", "column", "dense", "row dense", "column dense"],
+      control: { type: 'select' },
+      options: ['row', 'column', 'dense', 'row dense', 'column dense'],
     },
     gap: {
-      control: { type: "number" },
-      description: "Gap between grid items",
+      control: { type: 'number' },
+      description: 'Gap between grid items',
     },
     rowGap: {
-      control: { type: "number" },
-      description: "Gap between rows",
+      control: { type: 'number' },
+      description: 'Gap between rows',
     },
     columnGap: {
-      control: { type: "number" },
-      description: "Gap between columns",
+      control: { type: 'number' },
+      description: 'Gap between columns',
     },
     alignItems: {
-      control: { type: "select" },
-      options: ["start", "end", "center", "stretch"],
+      control: { type: 'select' },
+      options: ['start', 'end', 'center', 'stretch'],
     },
     justifyItems: {
-      control: { type: "select" },
-      options: ["start", "end", "center", "stretch"],
+      control: { type: 'select' },
+      options: ['start', 'end', 'center', 'stretch'],
     },
     alignContent: {
-      control: { type: "select" },
-      options: ["start", "end", "center", "stretch", "between", "around", "evenly"],
+      control: { type: 'select' },
+      options: ['start', 'end', 'center', 'stretch', 'between', 'around', 'evenly'],
     },
     justifyContent: {
-      control: { type: "select" },
-      options: ["start", "end", "center", "stretch", "between", "around", "evenly"],
+      control: { type: 'select' },
+      options: ['start', 'end', 'center', 'stretch', 'between', 'around', 'evenly'],
     },
     w: {
-      control: { type: "text" },
-      description: "Width",
+      control: { type: 'text' },
+      description: 'Width',
     },
     h: {
-      control: { type: "text" },
-      description: "Height",
+      control: { type: 'text' },
+      description: 'Height',
     },
     p: {
-      control: { type: "number" },
-      description: "Padding (all sides)",
+      control: { type: 'number' },
+      description: 'Padding (all sides)',
     },
     m: {
-      control: { type: "number" },
-      description: "Margin (all sides)",
+      control: { type: 'number' },
+      description: 'Margin (all sides)',
     },
   },
   decorators: [
     (Story) => (
-      <div style={{ padding: "16px", color: "var(--color-foreground)", backgroundColor: "var(--color-background)" }}>
+      <div
+        style={{
+          padding: '16px',
+          color: 'var(--color-foreground)',
+          backgroundColor: 'var(--color-background)',
+        }}
+      >
         <Story />
       </div>
     ),
@@ -184,10 +193,10 @@ export const TemplateAreas: Story = {
       gap={16}
       h={400}
     >
-      <Box style={{ gridArea: "header" }}>Header</Box>
-      <Box style={{ gridArea: "sidebar" }}>Sidebar</Box>
-      <Box style={{ gridArea: "content" }}>Content</Box>
-      <Box style={{ gridArea: "footer" }}>Footer</Box>
+      <Box style={{ gridArea: 'header' }}>Header</Box>
+      <Box style={{ gridArea: 'sidebar' }}>Sidebar</Box>
+      <Box style={{ gridArea: 'content' }}>Content</Box>
+      <Box style={{ gridArea: 'footer' }}>Footer</Box>
     </Grid>
   ),
 };
@@ -238,11 +247,11 @@ export const Alignment: Story = {
         alignItems="start"
         h={120}
         mb={32}
-        style={{ backgroundColor: "var(--color-background-secondary)" }}
+        style={{ backgroundColor: 'var(--color-background-secondary)' }}
       >
-        <Box style={{ height: "40px" }}>Short</Box>
-        <Box style={{ height: "80px" }}>Tall</Box>
-        <Box style={{ height: "60px" }}>Medium</Box>
+        <Box style={{ height: '40px' }}>Short</Box>
+        <Box style={{ height: '80px' }}>Tall</Box>
+        <Box style={{ height: '60px' }}>Medium</Box>
       </Grid>
 
       <h3>Align Items: center</h3>
@@ -252,11 +261,11 @@ export const Alignment: Story = {
         alignItems="center"
         h={120}
         mb={32}
-        style={{ backgroundColor: "var(--color-background-secondary)" }}
+        style={{ backgroundColor: 'var(--color-background-secondary)' }}
       >
-        <Box style={{ height: "40px" }}>Short</Box>
-        <Box style={{ height: "80px" }}>Tall</Box>
-        <Box style={{ height: "60px" }}>Medium</Box>
+        <Box style={{ height: '40px' }}>Short</Box>
+        <Box style={{ height: '80px' }}>Tall</Box>
+        <Box style={{ height: '60px' }}>Medium</Box>
       </Grid>
 
       <h3>Align Items: stretch</h3>
@@ -265,7 +274,7 @@ export const Alignment: Story = {
         gap={16}
         alignItems="stretch"
         h={120}
-        style={{ backgroundColor: "var(--color-background-secondary)" }}
+        style={{ backgroundColor: 'var(--color-background-secondary)' }}
       >
         <Box>Stretched</Box>
         <Box>Stretched</Box>
@@ -284,11 +293,11 @@ export const Justification: Story = {
         gap={16}
         justifyItems="start"
         mb={32}
-        style={{ backgroundColor: "var(--color-background-secondary)" }}
+        style={{ backgroundColor: 'var(--color-background-secondary)' }}
       >
-        <Box style={{ width: "60px" }}>A</Box>
-        <Box style={{ width: "80px" }}>B</Box>
-        <Box style={{ width: "70px" }}>C</Box>
+        <Box style={{ width: '60px' }}>A</Box>
+        <Box style={{ width: '80px' }}>B</Box>
+        <Box style={{ width: '70px' }}>C</Box>
       </Grid>
 
       <h3>Justify Items: center</h3>
@@ -297,18 +306,23 @@ export const Justification: Story = {
         gap={16}
         justifyItems="center"
         mb={32}
-        style={{ backgroundColor: "var(--color-background-secondary)" }}
+        style={{ backgroundColor: 'var(--color-background-secondary)' }}
       >
-        <Box style={{ width: "60px" }}>A</Box>
-        <Box style={{ width: "80px" }}>B</Box>
-        <Box style={{ width: "70px" }}>C</Box>
+        <Box style={{ width: '60px' }}>A</Box>
+        <Box style={{ width: '80px' }}>B</Box>
+        <Box style={{ width: '70px' }}>C</Box>
       </Grid>
 
       <h3>Justify Items: end</h3>
-      <Grid templateColumns="repeat(3, 1fr)" gap={16} justifyItems="end" style={{ backgroundColor: "var(--color-background-secondary)" }}>
-        <Box style={{ width: "60px" }}>A</Box>
-        <Box style={{ width: "80px" }}>B</Box>
-        <Box style={{ width: "70px" }}>C</Box>
+      <Grid
+        templateColumns="repeat(3, 1fr)"
+        gap={16}
+        justifyItems="end"
+        style={{ backgroundColor: 'var(--color-background-secondary)' }}
+      >
+        <Box style={{ width: '60px' }}>A</Box>
+        <Box style={{ width: '80px' }}>B</Box>
+        <Box style={{ width: '70px' }}>C</Box>
       </Grid>
     </div>
   ),
@@ -342,7 +356,7 @@ export const AutoFlow: Story = {
       <h3>Auto Flow: dense</h3>
       <Grid templateColumns="repeat(3, 80px)" autoFlow="dense" gap={8}>
         <Box>1</Box>
-        <Box style={{ gridColumn: "span 2" }}>2 (spans 2)</Box>
+        <Box style={{ gridColumn: 'span 2' }}>2 (spans 2)</Box>
         <Box>3</Box>
         <Box>4</Box>
         <Box>5</Box>
@@ -356,7 +370,7 @@ export const ResponsiveLayout: Story = {
     <Grid
       templateColumns="repeat(auto-fit, minmax(200px, 1fr))"
       gap={16}
-      style={{ resize: "horizontal", overflow: "auto", border: "1px dashed var(--color-border)" }}
+      style={{ resize: 'horizontal', overflow: 'auto', border: '1px dashed var(--color-border)' }}
     >
       <Box>Responsive</Box>
       <Box>Card</Box>
@@ -377,14 +391,22 @@ export const Spacing: Story = {
         gap={16}
         p={24}
         m={16}
-        style={{ backgroundColor: "var(--color-border)", border: "2px dashed var(--color-border)" }}
+        style={{ backgroundColor: 'var(--color-border)', border: '2px dashed var(--color-border)' }}
       >
         <Box>Padded</Box>
         <Box>Grid</Box>
       </Grid>
 
       <h3>Directional Spacing</h3>
-      <Grid templateColumns="repeat(2, 1fr)" gap={8} pt={32} pb={16} px={24} mt={16} style={{ backgroundColor: "var(--color-border)" }}>
+      <Grid
+        templateColumns="repeat(2, 1fr)"
+        gap={8}
+        pt={32}
+        pb={16}
+        px={24}
+        mt={16}
+        style={{ backgroundColor: 'var(--color-border)' }}
+      >
         <Box>Custom</Box>
         <Box>Spacing</Box>
       </Grid>
@@ -402,7 +424,10 @@ export const Sizing: Story = {
         w={400}
         h={200}
         mb={32}
-        style={{ backgroundColor: "var(--color-background-secondary)", border: "1px solid var(--color-border)" }}
+        style={{
+          backgroundColor: 'var(--color-background-secondary)',
+          border: '1px solid var(--color-border)',
+        }}
       >
         <Box>Fixed</Box>
         <Box>Width</Box>
@@ -416,7 +441,10 @@ export const Sizing: Story = {
         minW={200}
         maxW={600}
         minH={100}
-        style={{ backgroundColor: "var(--color-background-secondary)", border: "1px solid var(--color-border)" }}
+        style={{
+          backgroundColor: 'var(--color-background-secondary)',
+          border: '1px solid var(--color-border)',
+        }}
       >
         <Box>Min/Max</Box>
         <Box>Constrained</Box>
@@ -429,16 +457,16 @@ export const Sizing: Story = {
 export const ComplexLayout: Story = {
   render: () => (
     <Grid templateColumns="repeat(4, 1fr)" templateRows="repeat(4, 80px)" gap={8} p={16}>
-      <Box style={{ gridColumn: "1 / 3", gridRow: "1 / 3" }}>Spans 2x2</Box>
+      <Box style={{ gridColumn: '1 / 3', gridRow: '1 / 3' }}>Spans 2x2</Box>
       <Box>Regular</Box>
       <Box>Regular</Box>
       <Box>Regular</Box>
-      <Box style={{ gridColumn: "2 / 5" }}>Spans 3 columns</Box>
+      <Box style={{ gridColumn: '2 / 5' }}>Spans 3 columns</Box>
       <Box>Regular</Box>
       <Box>Regular</Box>
       <Box>Regular</Box>
       <Box>Regular</Box>
-      <Box style={{ gridRow: "3 / 5" }}>Spans 2 rows</Box>
+      <Box style={{ gridRow: '3 / 5' }}>Spans 2 rows</Box>
       <Box>Regular</Box>
       <Box>Regular</Box>
       <Box>Regular</Box>
@@ -448,10 +476,10 @@ export const ComplexLayout: Story = {
 
 export const Interactive: Story = {
   args: {
-    templateColumns: "repeat(3, 1fr)",
+    templateColumns: 'repeat(3, 1fr)',
     gap: 16,
-    alignItems: "stretch",
-    justifyItems: "stretch",
+    alignItems: 'stretch',
+    justifyItems: 'stretch',
   },
   render: (args) => (
     <Grid {...args}>

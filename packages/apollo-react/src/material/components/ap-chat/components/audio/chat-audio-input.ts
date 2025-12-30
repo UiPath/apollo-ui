@@ -1,37 +1,37 @@
-import {
-    useCallback,
-    useRef,
-    useState,
-} from 'react';
+import { useCallback, useRef, useState } from 'react';
 
 const SAMPLE_RATE = 24000;
 const MIME_TYPE = `audio/pcm;rate=${SAMPLE_RATE}`;
 
 interface PendingEncode {
-    resolve: (value: string) => void;
-    reject: (error: Error) => void;
+  resolve: (value: string) => void;
+  reject: (error: Error) => void;
 }
 
 /**
  * State of audio input.
  */
 enum AudioInputState {
-    Inactive = 'inactive',
-    Starting = 'starting',
-    Active = 'active',
-    Stopping = 'stopping',
+  Inactive = 'inactive',
+  Starting = 'starting',
+  Active = 'active',
+  Stopping = 'stopping',
 }
 
 /**
  * Object passed to useAudioInputHook.
  */
 export type AudioInputHookProps = {
-    handleAudioInputData?: AudioInputDataHandler;
-    handleAudioInputStart?: AudioInputStartHandler;
-    handleAudioInputEnd?: AudioInputEndHandler;
+  handleAudioInputData?: AudioInputDataHandler;
+  handleAudioInputStart?: AudioInputStartHandler;
+  handleAudioInputEnd?: AudioInputEndHandler;
 };
 
-export type AudioInputDataHandler = (mimeType: string, data: string, sequenceNumber: number) => void;
+export type AudioInputDataHandler = (
+  mimeType: string,
+  data: string,
+  sequenceNumber: number
+) => void;
 export type AudioInputStartHandler = (automaticActivityDetectionEnabled: boolean) => void;
 export type AudioInputEndHandler = (sequenceNumber: number) => void;
 
@@ -42,269 +42,263 @@ export type StopAudioInput = () => void;
  * Object returned by useAudioInputHook.
  */
 interface AudioInputHookResult {
-    /**
-     * Starts reading an audio stream from the default microphone provided by the browser. The user is prompted by the
-     * browser for access and their choice is associated with the origin domain, and will be reused without prompting
-     * again in the future.
-     *
-     * @returns true if audio input was started or false if the user denied access to the microphone or an error
-     * occurred while starting audio input.
-     */
-    startAudioInput: StartAudioInput;
-    /**
-     * Stops reading the audio input stream.
-     */
-    stopAudioInput: StopAudioInput;
-    /**
-     * Set to the Error.message property of an error that occurs when starting or reading audio.
-     */
-    audioInputError: string | null;
+  /**
+   * Starts reading an audio stream from the default microphone provided by the browser. The user is prompted by the
+   * browser for access and their choice is associated with the origin domain, and will be reused without prompting
+   * again in the future.
+   *
+   * @returns true if audio input was started or false if the user denied access to the microphone or an error
+   * occurred while starting audio input.
+   */
+  startAudioInput: StartAudioInput;
+  /**
+   * Stops reading the audio input stream.
+   */
+  stopAudioInput: StopAudioInput;
+  /**
+   * Set to the Error.message property of an error that occurs when starting or reading audio.
+   */
+  audioInputError: string | null;
 }
 
 /**
  * Produces a 16-bit PCM format stream of audio input from a microphone.
  * @returns Functions that can be used to start/stop audio input.
  */
-export const useAudioInput = (
-    {
-        handleAudioInputData,
-        handleAudioInputStart,
-        handleAudioInputEnd,
-    }: AudioInputHookProps = {},
-): AudioInputHookResult => {
-    const [ error, setError ] = useState<string | null>(null);
+export const useAudioInput = ({
+  handleAudioInputData,
+  handleAudioInputStart,
+  handleAudioInputEnd,
+}: AudioInputHookProps = {}): AudioInputHookResult => {
+  const [error, setError] = useState<string | null>(null);
 
-    const mediaStreamRef = useRef<MediaStream | null>(null);
-    const audioContextRef = useRef<AudioContext | null>(null);
-    const workletNodeRef = useRef<AudioWorkletNode | null>(null);
-    const sourceRef = useRef<MediaStreamAudioSourceNode | null>(null);
-    const stateRef = useRef<AudioInputState>(AudioInputState.Inactive);
-    const sequenceNumberRef = useRef<number>(0);
-    const encoderWorkerRef = useRef<Worker | null>(null);
-    const pendingEncodesRef = useRef<Map<string, PendingEncode>>(new Map());
-    const encodeIdCounterRef = useRef(0);
+  const mediaStreamRef = useRef<MediaStream | null>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const workletNodeRef = useRef<AudioWorkletNode | null>(null);
+  const sourceRef = useRef<MediaStreamAudioSourceNode | null>(null);
+  const stateRef = useRef<AudioInputState>(AudioInputState.Inactive);
+  const sequenceNumberRef = useRef<number>(0);
+  const encoderWorkerRef = useRef<Worker | null>(null);
+  const pendingEncodesRef = useRef<Map<string, PendingEncode>>(new Map());
+  const encodeIdCounterRef = useRef(0);
 
-    // Initialize encoder worker
-    const initEncoderWorker = useCallback(() => {
-        if (!encoderWorkerRef.current) {
-            encoderWorkerRef.current = new Worker(getAudioEncoderUrl());
+  // Initialize encoder worker
+  const initEncoderWorker = useCallback(() => {
+    if (!encoderWorkerRef.current) {
+      encoderWorkerRef.current = new Worker(getAudioEncoderUrl());
 
-            // Handle messages from the worker
-            encoderWorkerRef.current.onmessage = (event: MessageEvent) => {
-                const {
-                    id,
-                    base64Data,
-                    error: eventError,
-                } = event.data;
-                const pending = pendingEncodesRef.current.get(id);
+      // Handle messages from the worker
+      encoderWorkerRef.current.onmessage = (event: MessageEvent) => {
+        const { id, base64Data, error: eventError } = event.data;
+        const pending = pendingEncodesRef.current.get(id);
 
-                if (pending) {
-                    if (eventError) {
-                        pending.reject(new Error(eventError));
-                    } else {
-                        pending.resolve(base64Data);
-                    }
-                    pendingEncodesRef.current.delete(id);
-                }
-            };
-
-            encoderWorkerRef.current.onerror = (eventError) => {
-                console.error('[AudioInput] Encoder worker error:', eventError);
-            };
+        if (pending) {
+          if (eventError) {
+            pending.reject(new Error(eventError));
+          } else {
+            pending.resolve(base64Data);
+          }
+          pendingEncodesRef.current.delete(id);
         }
-        return encoderWorkerRef.current;
-    }, []);
+      };
 
-    const cleanup = useCallback(() => {
-        if (workletNodeRef.current) {
-            workletNodeRef.current.disconnect();
-            workletNodeRef.current.port.close();
-            workletNodeRef.current = null;
+      encoderWorkerRef.current.onerror = (eventError) => {
+        console.error('[AudioInput] Encoder worker error:', eventError);
+      };
+    }
+    return encoderWorkerRef.current;
+  }, []);
+
+  const cleanup = useCallback(() => {
+    if (workletNodeRef.current) {
+      workletNodeRef.current.disconnect();
+      workletNodeRef.current.port.close();
+      workletNodeRef.current = null;
+    }
+
+    if (sourceRef.current) {
+      sourceRef.current.disconnect();
+      sourceRef.current = null;
+    }
+
+    if (audioContextRef.current) {
+      audioContextRef.current.close();
+      audioContextRef.current = null;
+    }
+
+    if (mediaStreamRef.current) {
+      mediaStreamRef.current.getTracks().forEach((track) => track.stop());
+      mediaStreamRef.current = null;
+    }
+
+    if (encoderWorkerRef.current) {
+      encoderWorkerRef.current.terminate();
+      encoderWorkerRef.current = null;
+    }
+
+    pendingEncodesRef.current.clear();
+  }, []);
+
+  const startAudioInput = useCallback<StartAudioInput>(
+    async (automaticActivityDetectionEnabled) => {
+      // Prevent multiple simultaneous start attempts
+      if (stateRef.current !== AudioInputState.Inactive) {
+        return false;
+      }
+
+      stateRef.current = AudioInputState.Starting;
+      sequenceNumberRef.current = 0;
+      setError(null);
+
+      try {
+        // Request microphone access
+        const stream = await navigator.mediaDevices.getUserMedia({
+          audio: {
+            channelCount: 1,
+            sampleRate: SAMPLE_RATE,
+            echoCancellation: true,
+            noiseSuppression: true,
+          },
+        });
+
+        // Check if we were cancelled during media access
+        if (stateRef.current !== AudioInputState.Starting) {
+          cleanup();
+          return false;
         }
 
-        if (sourceRef.current) {
-            sourceRef.current.disconnect();
-            sourceRef.current = null;
+        mediaStreamRef.current = stream;
+        audioContextRef.current = new AudioContext({ sampleRate: SAMPLE_RATE });
+
+        // Load the audio worklet module from inline source
+        await audioContextRef.current.audioWorklet.addModule(getAudioProcessorUrl());
+
+        // Check if we were cancelled during worklet loading
+        if (stateRef.current !== AudioInputState.Starting || !audioContextRef.current) {
+          cleanup();
+          return false;
         }
 
-        if (audioContextRef.current) {
-            audioContextRef.current.close();
-            audioContextRef.current = null;
+        // Create the audio worklet node
+        workletNodeRef.current = new AudioWorkletNode(audioContextRef.current, 'audio-processor');
+
+        // Check if we were cancelled during worklet creation
+        if (stateRef.current !== AudioInputState.Starting) {
+          cleanup();
+          return false;
         }
 
-        if (mediaStreamRef.current) {
-            mediaStreamRef.current.getTracks().forEach(track => track.stop());
-            mediaStreamRef.current = null;
-        }
+        // Initialize encoder worker
+        const encoderWorker = initEncoderWorker();
 
-        if (encoderWorkerRef.current) {
-            encoderWorkerRef.current.terminate();
-            encoderWorkerRef.current = null;
-        }
+        // Handle messages from the audio worklet
+        workletNodeRef.current.port.onmessage = async (event) => {
+          if (stateRef.current !== AudioInputState.Active) {
+            return;
+          }
 
-        pendingEncodesRef.current.clear();
-    }, []);
+          if (event.data.type === 'audio') {
+            const inputData = event.data.buffer;
 
-    const startAudioInput = useCallback<StartAudioInput>(async (automaticActivityDetectionEnabled) => {
+            // Generate unique ID for this encode request
+            const encodeId = `encode-${encodeIdCounterRef.current++}`;
 
-        // Prevent multiple simultaneous start attempts
-        if (stateRef.current !== AudioInputState.Inactive) {
-            return false;
-        }
+            try {
+              // Send data to worker for encoding
+              const base64Data = await new Promise<string>((resolve, reject) => {
+                pendingEncodesRef.current.set(encodeId, {
+                  resolve,
+                  reject,
+                });
 
-        stateRef.current = AudioInputState.Starting;
-        sequenceNumberRef.current = 0;
-        setError(null);
+                // Send encode request to worker
+                encoderWorker.postMessage(
+                  {
+                    id: encodeId,
+                    floatData: inputData,
+                  },
+                  [inputData.buffer]
+                ); // Transfer the buffer to avoid copying
 
-        try {
+                // Set timeout to prevent hanging
+                setTimeout(() => {
+                  if (pendingEncodesRef.current.has(encodeId)) {
+                    pendingEncodesRef.current.delete(encodeId);
+                    reject(new Error('Audio encode timeout'));
+                  }
+                }, 5000); // 5 second timeout
+              });
 
-            // Request microphone access
-            const stream = await navigator.mediaDevices.getUserMedia({
-                audio: {
-                    channelCount: 1,
-                    sampleRate: SAMPLE_RATE,
-                    echoCancellation: true,
-                    noiseSuppression: true,
-                },
-            });
-
-            // Check if we were cancelled during media access
-            if (stateRef.current !== AudioInputState.Starting) {
-                cleanup();
-                return false;
+              // Send base64 encoded PCM data
+              handleAudioInputData?.(MIME_TYPE, base64Data, sequenceNumberRef.current++);
+            } catch (e) {
+              console.error('[AudioInput] Error encoding audio:', e);
             }
+          }
+        };
 
-            mediaStreamRef.current = stream;
-            audioContextRef.current = new AudioContext({ sampleRate: SAMPLE_RATE });
+        // Create media stream source but don't connect it yet
+        sourceRef.current = audioContextRef.current.createMediaStreamSource(stream);
 
-            // Load the audio worklet module from inline source
-            await audioContextRef.current.audioWorklet.addModule(getAudioProcessorUrl());
+        // Now active...
+        stateRef.current = AudioInputState.Active;
 
-            // Check if we were cancelled during worklet loading
-            if (stateRef.current !== AudioInputState.Starting || !audioContextRef.current) {
-                cleanup();
-                return false;
-            }
+        // Call the start handler BEFORE connecting audio nodes to prevent race condition with reading the first of
+        // the stream's data chunks.
+        handleAudioInputStart?.(automaticActivityDetectionEnabled);
 
-            // Create the audio worklet node
-            workletNodeRef.current = new AudioWorkletNode(audioContextRef.current, 'audio-processor');
+        // Now it's safe to connect the audio nodes and start processing
+        sourceRef.current.connect(workletNodeRef.current);
+        workletNodeRef.current.connect(audioContextRef.current.destination);
 
-            // Check if we were cancelled during worklet creation
-            if (stateRef.current !== AudioInputState.Starting) {
-                cleanup();
-                return false;
-            }
+        // Successful startup.
+        return true;
+      } catch (err) {
+        console.error('Error starting audio input:', err);
+        setError(err instanceof Error ? err.message : 'Failed to start audio input');
 
-            // Initialize encoder worker
-            const encoderWorker = initEncoderWorker();
-
-            // Handle messages from the audio worklet
-            workletNodeRef.current.port.onmessage = async (event) => {
-                if (stateRef.current !== AudioInputState.Active) {
-                    return;
-                }
-
-                if (event.data.type === 'audio') {
-                    const inputData = event.data.buffer;
-
-                    // Generate unique ID for this encode request
-                    const encodeId = `encode-${encodeIdCounterRef.current++}`;
-
-                    try {
-                        // Send data to worker for encoding
-                        const base64Data = await new Promise<string>((resolve, reject) => {
-                            pendingEncodesRef.current.set(encodeId, {
-                                resolve,
-                                reject,
-                            });
-
-                            // Send encode request to worker
-                            encoderWorker.postMessage({
-                                id: encodeId,
-                                floatData: inputData,
-                            }, [ inputData.buffer ]); // Transfer the buffer to avoid copying
-
-                            // Set timeout to prevent hanging
-                            setTimeout(() => {
-                                if (pendingEncodesRef.current.has(encodeId)) {
-                                    pendingEncodesRef.current.delete(encodeId);
-                                    reject(new Error('Audio encode timeout'));
-                                }
-                            }, 5000); // 5 second timeout
-                        });
-
-                        // Send base64 encoded PCM data
-                        handleAudioInputData?.(MIME_TYPE, base64Data, sequenceNumberRef.current++);
-
-                    } catch (e) {
-                        console.error('[AudioInput] Error encoding audio:', e);
-                    }
-                }
-            };
-
-            // Create media stream source but don't connect it yet
-            sourceRef.current = audioContextRef.current.createMediaStreamSource(stream);
-
-            // Now active...
-            stateRef.current = AudioInputState.Active;
-
-            // Call the start handler BEFORE connecting audio nodes to prevent race condition with reading the first of
-            // the stream's data chunks.
-            handleAudioInputStart?.(automaticActivityDetectionEnabled);
-
-            // Now it's safe to connect the audio nodes and start processing
-            sourceRef.current.connect(workletNodeRef.current);
-            workletNodeRef.current.connect(audioContextRef.current.destination);
-
-            // Successful startup.
-            return true;
-
-        } catch (err) {
-            console.error('Error starting audio input:', err);
-            setError(err instanceof Error ? err.message : 'Failed to start audio input');
-
-            // Reset state and cleanup on error
-            stateRef.current = AudioInputState.Inactive;
-            cleanup();
-
-            // Failed startup.
-            return false;
-        }
-    }, [ handleAudioInputData, handleAudioInputStart, cleanup, initEncoderWorker ]);
-
-    const stopAudioInput = useCallback<StopAudioInput>(() => {
-
-        const currentState = stateRef.current;
-
-        if (currentState === AudioInputState.Inactive) {
-            return; // Already stopped
-        }
-
-        if (currentState === AudioInputState.Stopping) {
-            return; // Already stopping
-        }
-
-        stateRef.current = AudioInputState.Stopping;
-
-        // Clean up all resources
+        // Reset state and cleanup on error
+        stateRef.current = AudioInputState.Inactive;
         cleanup();
 
-        // Reset state
-        stateRef.current = AudioInputState.Inactive;
+        // Failed startup.
+        return false;
+      }
+    },
+    [handleAudioInputData, handleAudioInputStart, cleanup, initEncoderWorker]
+  );
 
-        // Actually checking previous state at this point... if was active then "start" was called
-        // so we need to call "end".
-        if (currentState == AudioInputState.Active) {
-            handleAudioInputEnd?.(sequenceNumberRef.current);
-        }
+  const stopAudioInput = useCallback<StopAudioInput>(() => {
+    const currentState = stateRef.current;
 
-    }, [ cleanup, handleAudioInputEnd ]);
+    if (currentState === AudioInputState.Inactive) {
+      return; // Already stopped
+    }
 
-    return {
-        startAudioInput,
-        stopAudioInput,
-        audioInputError: error,
-    };
+    if (currentState === AudioInputState.Stopping) {
+      return; // Already stopping
+    }
+
+    stateRef.current = AudioInputState.Stopping;
+
+    // Clean up all resources
+    cleanup();
+
+    // Reset state
+    stateRef.current = AudioInputState.Inactive;
+
+    // Actually checking previous state at this point... if was active then "start" was called
+    // so we need to call "end".
+    if (currentState == AudioInputState.Active) {
+      handleAudioInputEnd?.(sequenceNumberRef.current);
+    }
+  }, [cleanup, handleAudioInputEnd]);
+
+  return {
+    startAudioInput,
+    stopAudioInput,
+    audioInputError: error,
+  };
 };
 
 // Inline AudioWorklet processor code
@@ -350,11 +344,11 @@ registerProcessor('audio-processor', AudioProcessor);
 // Create blob URL for the processor
 let audioProcessorUrl: string | null = null;
 const getAudioProcessorUrl = (): string => {
-    if (!audioProcessorUrl) {
-        const blob = new Blob([ AUDIO_PROCESSOR_CODE ], { type: 'application/javascript' });
-        audioProcessorUrl = URL.createObjectURL(blob);
-    }
-    return audioProcessorUrl;
+  if (!audioProcessorUrl) {
+    const blob = new Blob([AUDIO_PROCESSOR_CODE], { type: 'application/javascript' });
+    audioProcessorUrl = URL.createObjectURL(blob);
+  }
+  return audioProcessorUrl;
 };
 
 // Inline Web Worker code for audio encoding
@@ -406,9 +400,9 @@ self.addEventListener('message', (event) => {
 // Create blob URL for the encoder worker
 let audioEncoderUrl: string | null = null;
 const getAudioEncoderUrl = (): string => {
-    if (!audioEncoderUrl) {
-        const blob = new Blob([ AUDIO_ENCODER_CODE ], { type: 'application/javascript' });
-        audioEncoderUrl = URL.createObjectURL(blob);
-    }
-    return audioEncoderUrl;
+  if (!audioEncoderUrl) {
+    const blob = new Blob([AUDIO_ENCODER_CODE], { type: 'application/javascript' });
+    audioEncoderUrl = URL.createObjectURL(blob);
+  }
+  return audioEncoderUrl;
 };

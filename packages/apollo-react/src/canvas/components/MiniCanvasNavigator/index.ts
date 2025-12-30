@@ -1,1 +1,1 @@
-export * from "./MiniCanvasNavigator";
+export * from './MiniCanvasNavigator';

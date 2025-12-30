@@ -1,1 +1,1 @@
-export { HierarchicalCanvas } from "./HierarchicalCanvas";
+export { HierarchicalCanvas } from './HierarchicalCanvas';

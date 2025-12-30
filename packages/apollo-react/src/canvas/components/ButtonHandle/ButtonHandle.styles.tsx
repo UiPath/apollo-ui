@@ -1,9 +1,9 @@
-import { Handle, type HandleProps, Position } from "@uipath/uix/xyflow/react";
-import { motion } from "motion/react";
-import styled from "@emotion/styled";
-import { css } from "@emotion/react";
-import type { HandleConfigurationSpecificPosition } from "../BaseNode/BaseNode.types";
-import { useButtonHandleSizeAndPosition } from "./useButtonHandleSizeAndPosition";
+import { Handle, type HandleProps, Position } from '@uipath/uix/xyflow/react';
+import { motion } from 'motion/react';
+import styled from '@emotion/styled';
+import { css } from '@emotion/react';
+import type { HandleConfigurationSpecificPosition } from '../BaseNode/BaseNode.types';
+import { useButtonHandleSizeAndPosition } from './useButtonHandleSizeAndPosition';
 
 export const StyledAddButton = styled(motion.div)`
   display: flex;
@@ -73,9 +73,10 @@ export const StyledLine = styled.div<{ $isVertical: boolean; $selected: boolean;
   background-color: transparent;
   border-style: solid;
   border-width: 1px;
-  border-color: ${(p) => (p.$selected ? "var(--uix-canvas-selection-indicator)" : "var(--uix-canvas-border-de-emp)")};
-  height: ${(p) => (p.$isVertical ? p.$size : "1px")};
-  width: ${(p) => (p.$isVertical ? "1px" : p.$size)};
+  border-color: ${(p) =>
+    p.$selected ? 'var(--uix-canvas-selection-indicator)' : 'var(--uix-canvas-border-de-emp)'};
+  height: ${(p) => (p.$isVertical ? p.$size : '1px')};
+  width: ${(p) => (p.$isVertical ? '1px' : p.$size)};
   transition: border-color 0.2s ease-in-out;
 `;
 
@@ -120,7 +121,7 @@ export const StyledLabel = styled.div<{ $position: Position; $backgroundColor: s
 
 export const StyledNotch = styled.div<{
   $notchColor: string;
-  $handleType: "artifact" | "input" | "output";
+  $handleType: 'artifact' | 'input' | 'output';
   $isVertical?: boolean;
   $visible: boolean;
   $selected: boolean;
@@ -128,26 +129,26 @@ export const StyledNotch = styled.div<{
   $showNotch?: boolean;
 }>`
   width: ${(p) => {
-    if (p.$handleType === "input" && !p.$isVertical) return "8px";
-    if (p.$handleType === "artifact") return "10px";
-    return "12px";
+    if (p.$handleType === 'input' && !p.$isVertical) return '8px';
+    if (p.$handleType === 'artifact') return '10px';
+    return '12px';
   }};
   height: ${(p) => {
-    if (p.$handleType === "input" && p.$isVertical) return "8px";
-    if (p.$handleType === "artifact") return "10px";
-    return "12px";
+    if (p.$handleType === 'input' && p.$isVertical) return '8px';
+    if (p.$handleType === 'artifact') return '10px';
+    return '12px';
   }};
   border-width: 2px;
   border-style: solid;
   border-color: ${(p) => {
-    if (p.$selected || p.$hovered) return "var(--uix-canvas-primary)";
-    return "var(--uix-canvas-border)";
+    if (p.$selected || p.$hovered) return 'var(--uix-canvas-primary)';
+    return 'var(--uix-canvas-border)';
   }};
-  border-radius: ${(p) => (p.$handleType === "artifact" || p.$handleType === "input" ? 0 : "50%")};
-  transform: ${(p) => (p.$handleType === "artifact" ? "rotate(45deg)" : "none")};
+  border-radius: ${(p) => (p.$handleType === 'artifact' || p.$handleType === 'input' ? 0 : '50%')};
+  transform: ${(p) => (p.$handleType === 'artifact' ? 'rotate(45deg)' : 'none')};
   background-color: ${(p) => {
-    if (p.$selected || p.$hovered) return "var(--uix-canvas-primary)";
-    return "var(--uix-canvas-background, white)";
+    if (p.$selected || p.$hovered) return 'var(--uix-canvas-primary)';
+    return 'var(--uix-canvas-background, white)';
   }};
   opacity: ${(p) => (p.$showNotch ? 1 : 0)};
   pointer-events: none;
@@ -178,14 +179,14 @@ export const StyledHandle = (
       style={{
         width,
         height,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
         borderWidth: 0,
         borderRadius: 0,
-        backgroundColor: "transparent",
+        backgroundColor: 'transparent',
         opacity: $visible ? 1 : 0,
-        cursor: "crosshair",
+        cursor: 'crosshair',
         top,
         bottom,
         left,

@@ -1,8 +1,13 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import type { StorageType } from "../utils/Storage";
-import { getStoredValue, setStoredValue } from "../utils/Storage";
+import { useCallback, useEffect, useRef, useState } from 'react';
+import type { StorageType } from '../utils/Storage';
+import { getStoredValue, setStoredValue } from '../utils/Storage';
 
-export const useStorageState = <T>(key: string, initialValue: T, storageType: StorageType = "localStorage", prefix = "ui") => {
+export const useStorageState = <T>(
+  key: string,
+  initialValue: T,
+  storageType: StorageType = 'localStorage',
+  prefix = 'ui'
+) => {
   const getValue = useCallback(() => {
     const storedValue = getStoredValue<T>(key, storageType, prefix);
     const result: T = storedValue !== undefined ? storedValue : initialValue;

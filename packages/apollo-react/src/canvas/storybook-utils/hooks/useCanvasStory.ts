@@ -1,10 +1,10 @@
-import { useCallback, useMemo } from "react";
-import type { Connection, Edge, EdgeTypes, Node, NodeTypes } from "@uipath/uix/xyflow/react";
-import { addEdge, useNodesState, useEdgesState } from "@uipath/uix/xyflow/react";
-import { BaseNode } from "../../components/BaseNode/BaseNode";
-import { useNodeTypeRegistry } from "../../components/BaseNode/useNodeTypeRegistry";
-import { AddNodePreview } from "../../components";
-import { SequenceEdge } from "../../components/Edges";
+import { useCallback, useMemo } from 'react';
+import type { Connection, Edge, EdgeTypes, Node, NodeTypes } from '@uipath/uix/xyflow/react';
+import { addEdge, useNodesState, useEdgesState } from '@uipath/uix/xyflow/react';
+import { BaseNode } from '../../components/BaseNode/BaseNode';
+import { useNodeTypeRegistry } from '../../components/BaseNode/useNodeTypeRegistry';
+import { AddNodePreview } from '../../components';
+import { SequenceEdge } from '../../components/Edges';
 
 /**
  * Options for the useCanvasStory hook.
@@ -148,7 +148,7 @@ export function useCanvasStory(options: UseCanvasStoryOptions): UseCanvasStoryRe
       onConnect,
       nodeTypes,
       edgeTypes,
-      panShortcutTeachingUIMessage: "", // Disable for stories
+      panShortcutTeachingUIMessage: '', // Disable for stories
     }),
     [nodes, edges, onNodesChange, onEdgesChange, onConnect, nodeTypes, edgeTypes]
   );

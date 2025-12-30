@@ -19,6 +19,7 @@ ChatService (service layer for state & event management)
 ```
 
 **Why this pattern?**
+
 - React handles all UI rendering and state management
 - Context providers isolate concerns and prevent prop drilling
 - ChatService provides a clean API for external control
@@ -177,9 +178,9 @@ function MyApp() {
 
 ```typescript
 interface ApChatProps {
-  service: AutopilotChatService;  // Chat service instance (required)
-  locale?: SupportedLocale;       // 'en' | 'de' | 'es' | 'fr' | 'ja' | etc.
-  theme?: ApChatTheme;            // 'light' | 'dark' | 'light-hc' | 'dark-hc'
+  service: AutopilotChatService; // Chat service instance (required)
+  locale?: SupportedLocale; // 'en' | 'de' | 'es' | 'fr' | 'ja' | etc.
+  theme?: ApChatTheme; // 'light' | 'dark' | 'light-hc' | 'dark-hc'
 }
 ```
 
@@ -192,22 +193,23 @@ import { styled } from '@mui/material/styles';
 import token from '@uipath/apollo-core';
 
 const MyComponent = styled('div')(({ theme }) => ({
-    // Use Apollo Core tokens for spacing, borders, typography
-    padding: token.Spacing.SpacingM,
-    border: `${token.Border.BorderThickS} solid var(--color-border-de-emp)`,
+  // Use Apollo Core tokens for spacing, borders, typography
+  padding: token.Spacing.SpacingM,
+  border: `${token.Border.BorderThickS} solid var(--color-border-de-emp)`,
 
-    // Use CSS variables for theme-aware colors
-    backgroundColor: 'var(--color-background)',
-    color: 'var(--color-foreground-emp)',
+  // Use CSS variables for theme-aware colors
+  backgroundColor: 'var(--color-background)',
+  color: 'var(--color-foreground-emp)',
 
-    // Nested selectors and pseudo-classes
-    '&:hover': {
-        backgroundColor: 'var(--color-background-hover)',
-    },
+  // Nested selectors and pseudo-classes
+  '&:hover': {
+    backgroundColor: 'var(--color-background-hover)',
+  },
 }));
 ```
 
 **Key principles:**
+
 - Always import `token` from `@uipath/apollo-core`
 - Use CSS variables for all colors (e.g., `var(--color-background)`)
 - Use `token.*` for spacing, borders, shadows, typography sizes
@@ -227,6 +229,7 @@ const MyComponent = styled('div')(({ theme }) => ({
 ### Testing Your Changes
 
 Use the interactive React playground at:
+
 ```
 apps/react-playground/src/pages/ApChatShowcase.tsx
 ```
@@ -244,6 +247,7 @@ pnpm dev
 ```
 
 The showcase page provides interactive controls for:
+
 - Opening/closing chat in different modes (side-by-side, full-screen, embedded)
 - Sending requests/responses
 - Testing streaming and citations
@@ -276,15 +280,16 @@ The component uses React Context providers for state management. Each provider m
 import { useChatState } from '../../providers/chat-state-provider';
 
 const MyComponent = () => {
-    const { chatMode, disabledFeatures } = useChatState();
+  const { chatMode, disabledFeatures } = useChatState();
 
-    if (chatMode === AutopilotChatMode.FullScreen) {
-        // Render full screen layout
-    }
+  if (chatMode === AutopilotChatMode.FullScreen) {
+    // Render full screen layout
+  }
 };
 ```
 
 **Available Providers:**
+
 - `AutopilotChatServiceProvider` - ChatService access
 - `AutopilotChatStateProvider` - Chat mode, config state
 - `AutopilotChatWidthProvider` - Resizable width state
@@ -298,6 +303,7 @@ const MyComponent = () => {
 - `ThemeProvider` - Theme configuration
 
 **When to add a new provider:**
+
 - State is needed by multiple components at different levels
 - State updates trigger re-renders in specific component subtrees
 - State should be isolated from other concerns
@@ -309,6 +315,7 @@ const MyComponent = () => {
 Built-in renderers are defined in the `APOLLO_MESSAGE_RENDERERS` array at `components/message/chat-message-content.tsx`.
 
 To add a custom renderer:
+
 1. Create your renderer component
 2. Register it using `chatService.injectMessageRenderer('your-renderer-name', YourComponent)`
 3. Use by setting `widget: 'your-renderer-name'` on messages
@@ -332,18 +339,22 @@ Or add a built-in renderer by adding to the `APOLLO_MESSAGE_RENDERERS` array.
 The chat interface has several picker/menu components:
 
 **Selection Pickers (bottom left of input):**
+
 - **Model Picker**: `chat-input-model-picker.tsx` - Select AI model
 - **Agent Mode Selector**: `chat-input-agent-mode-selector.tsx` - Select agent mode
 
 **Action Menus (header):**
+
 - **Custom Header Actions**: `header-actions.tsx` - Custom dropdown actions
 
 **Key Architecture:**
+
 - Pickers are for **selection** with persistent state
 - Action menus are for **triggering actions/commands**
 - All share the unified `picker-provider.tsx` for state management
 
 **Implementation pattern:**
+
 1. Add service methods to `ChatService.ts` (set/get pattern)
 2. Add event types to `AutopilotChatEvent` enum
 3. Create/update React component in appropriate directory
@@ -361,9 +372,11 @@ The chat interface has several picker/menu components:
 **CRITICAL**: Whenever you add or modify a feature, you **MUST** update documentation in THREE places:
 
 ### 1. DOCS.md (Consumer API Documentation)
+
 **Location**: `packages/apollo-react/src/material/components/ap-chat/DOCS.md`
 
 **What to update:**
+
 - Add new methods to the API reference table with descriptions
 - Add new events to the events list
 - Add new type definitions with full JSDoc comments and examples
@@ -371,17 +384,20 @@ The chat interface has several picker/menu components:
 - Keep this file **always up to date** - it's the source of truth for consumers
 
 **Structure:**
+
 - API Methods table
 - Events list
 - Type definitions with examples
 - Configuration options
 
 ### 2. React Playground Showcase (Development Testing)
+
 **Location**: `apps/react-playground/src/pages/ApChatShowcase.tsx`
 
 **CRITICAL**: This is the **primary development and testing environment** that must have ALL features available for testing.
 
 **What to update:**
+
 - Add button/control for the new feature in the appropriate section
 - Add event handler that demonstrates how to use the feature
 - Include example data/configuration
@@ -389,13 +405,16 @@ The chat interface has several picker/menu components:
 - Test the feature works in the showcase before committing
 
 **Purpose:**
+
 - Primary development and testing environment
 - Must showcase all available features
 - Used for rapid iteration during development
 - Visual testing and debugging
 
 ### 3. This CLAUDE.md File
+
 **What to update:**
+
 - Add to "Common Tasks" section if it's a frequent development pattern
 - Update architecture notes if component structure changes
 - Add to file structure if new directories/files are created
@@ -420,6 +439,7 @@ The chat interface has several picker/menu components:
 ## Theming
 
 The component supports four theme variants:
+
 - `light` - Standard light theme
 - `dark` - Standard dark theme
 - `light-hc` - Light theme with high contrast
@@ -430,6 +450,7 @@ Themes are applied via the `theme` prop and use Apollo design system CSS variabl
 ## Chat Modes
 
 Three chat modes are supported:
+
 - `SideBySide` - Resizable panel on the right side of the screen
 - `FullScreen` - Full-screen overlay
 - `Embedded` - Embedded in a container (takes full width/height of parent)
@@ -439,6 +460,7 @@ Set via `chatService.setChatMode(mode)`.
 ## Feature Toggles
 
 Features can be disabled via `chatService.setDisabledFeatures()`:
+
 - `history` - Chat history panel
 - `settings` - Settings panel
 - `attachments` - File attachments
@@ -480,21 +502,25 @@ Features can be disabled via `chatService.setDisabledFeatures()`:
 ## Troubleshooting
 
 ### Issue: Chat not rendering
+
 - Check that `chatService.initialize()` was called
 - Check that `chatService.open()` was called
 - Check console for errors
 
 ### Issue: Events not firing
+
 - Check that you subscribed before triggering the action
 - Check that you're using the correct event name
 - Check that you didn't forget to call `unsubscribe()` in cleanup
 
 ### Issue: Styles not applying
+
 - Check that Apollo CSS variables are imported in your app
 - Check that theme prop is set correctly
 - Check browser console for CSS errors
 
 ### Issue: Translations not working
+
 - Check that locale prop matches available locales
 - Check that locale files are included in build
 - Check that `LocaleProvider` is in the component tree

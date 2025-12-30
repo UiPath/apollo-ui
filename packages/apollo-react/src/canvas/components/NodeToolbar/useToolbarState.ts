@@ -1,6 +1,6 @@
-import { useState, useMemo, useCallback, useEffect, useRef } from "react";
-import type { NodeToolbarConfig, ToolbarSeparator, ToolbarActionItem } from "./NodeToolbar.types";
-import type { ProcessedToolbarItem } from "./NodeToolbar.utils";
+import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
+import type { NodeToolbarConfig, ToolbarSeparator, ToolbarActionItem } from './NodeToolbar.types';
+import type { ProcessedToolbarItem } from './NodeToolbar.utils';
 
 export interface UseToolbarStateProps {
   config: NodeToolbarConfig;
@@ -9,7 +9,7 @@ export interface UseToolbarStateProps {
   hidden?: boolean;
 }
 
-export type ToolbarDisplayState = "hidden" | "pinned" | "expanded";
+export type ToolbarDisplayState = 'hidden' | 'pinned' | 'expanded';
 
 export interface UseToolbarStateReturn {
   isDropdownOpen: boolean;
@@ -20,11 +20,16 @@ export interface UseToolbarStateReturn {
   shouldShowOverflow: boolean;
   actionsToDisplay: ProcessedToolbarItem[];
   overflowActionsToDisplay: ProcessedToolbarItem[];
-  separatorOrientation: "horizontal" | "vertical";
+  separatorOrientation: 'horizontal' | 'vertical';
   toggleDropdown: (e: React.MouseEvent) => void;
 }
 
-export const useToolbarState = ({ config, expanded, nodeId, hidden }: UseToolbarStateProps): UseToolbarStateReturn => {
+export const useToolbarState = ({
+  config,
+  expanded,
+  nodeId,
+  hidden,
+}: UseToolbarStateProps): UseToolbarStateReturn => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -32,7 +37,7 @@ export const useToolbarState = ({ config, expanded, nodeId, hidden }: UseToolbar
   // Extend actions with pre-bound onClick handlers
   const actionsWithState = useMemo<ProcessedToolbarItem[]>(() => {
     return config.actions.map((action): ProcessedToolbarItem => {
-      if (action.id === "separator") {
+      if (action.id === 'separator') {
         return action as ToolbarSeparator;
       }
       const item = action as ToolbarActionItem;
@@ -53,7 +58,8 @@ export const useToolbarState = ({ config, expanded, nodeId, hidden }: UseToolbar
   const pinnedActions = useMemo<ProcessedToolbarItem[]>(
     () =>
       actionsWithState.filter(
-        (action): action is ProcessedToolbarItem => action.id !== "separator" && !!(action as ToolbarActionItem).isPinned
+        (action): action is ProcessedToolbarItem =>
+          action.id !== 'separator' && !!(action as ToolbarActionItem).isPinned
       ),
     [actionsWithState]
   );
@@ -61,7 +67,7 @@ export const useToolbarState = ({ config, expanded, nodeId, hidden }: UseToolbar
   const overflowActionsWithState = useMemo<ProcessedToolbarItem[]>(() => {
     if (!config.overflowActions) return [];
     return config.overflowActions.map((action): ProcessedToolbarItem => {
-      if (action.id === "separator") {
+      if (action.id === 'separator') {
         return action as ToolbarSeparator;
       }
       const item = action as ToolbarActionItem;
@@ -80,20 +86,20 @@ export const useToolbarState = ({ config, expanded, nodeId, hidden }: UseToolbar
 
   // Compute display state
   const displayState = useMemo<ToolbarDisplayState>(() => {
-    if (hidden) return "hidden";
-    if (expanded) return "expanded";
-    return pinnedActions.length > 0 ? "pinned" : "hidden";
+    if (hidden) return 'hidden';
+    if (expanded) return 'expanded';
+    return pinnedActions.length > 0 ? 'pinned' : 'hidden';
   }, [hidden, expanded, pinnedActions.length]);
 
   // Determine what actions to display based on display state
   const actionsToDisplay = useMemo(() => {
-    if (displayState === "hidden") return [];
-    if (displayState === "expanded") return actionsWithState;
+    if (displayState === 'hidden') return [];
+    if (displayState === 'expanded') return actionsWithState;
     return pinnedActions;
   }, [displayState, actionsWithState, pinnedActions]);
 
   // Determine rendering mode
-  const shouldShowOverflow = displayState === "expanded" && overflowActionsWithState.length > 0;
+  const shouldShowOverflow = displayState === 'expanded' && overflowActionsWithState.length > 0;
 
   // Handle click outside to close dropdown
   useEffect(() => {
@@ -109,8 +115,8 @@ export const useToolbarState = ({ config, expanded, nodeId, hidden }: UseToolbar
     };
 
     if (isDropdownOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-      return () => document.removeEventListener("mousedown", handleClickOutside);
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
     }
   }, [isDropdownOpen]);
 
@@ -137,7 +143,8 @@ export const useToolbarState = ({ config, expanded, nodeId, hidden }: UseToolbar
     displayState,
     actionsToDisplay,
     overflowActionsToDisplay: overflowActionsWithState,
-    separatorOrientation: config.position === "top" || config.position === "bottom" ? "vertical" : "horizontal",
+    separatorOrientation:
+      config.position === 'top' || config.position === 'bottom' ? 'vertical' : 'horizontal',
     toggleDropdown,
   };
 };

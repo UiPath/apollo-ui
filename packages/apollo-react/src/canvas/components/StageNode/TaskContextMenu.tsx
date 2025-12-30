@@ -1,6 +1,6 @@
-import { useState, useCallback, useMemo, memo, useEffect } from "react";
-import type { NodeMenuAction, NodeMenuItem } from "../NodeContextMenu";
-import { ApMenu } from "@uipath/portal-shell-react";
+import { useState, useCallback, useMemo, memo, useEffect } from 'react';
+import type { NodeMenuAction, NodeMenuItem } from '../NodeContextMenu';
+import { ApMenu } from '@uipath/portal-shell-react';
 
 interface TaskContextMenuProps {
   menuItems: NodeMenuItem[];
@@ -33,11 +33,11 @@ export const TaskContextMenu = memo(({ isVisible, menuItems, refTask }: TaskCont
   const transformedMenuItems = useMemo(
     () =>
       menuItems?.map((item, index) => {
-        if ("type" in item && item.type === "divider") {
+        if ('type' in item && item.type === 'divider') {
           return {
             divider: true,
             key: `divider-${index}`,
-            variant: "separator" as const,
+            variant: 'separator' as const,
           };
         }
         const actionItem = item as NodeMenuAction;
@@ -47,7 +47,7 @@ export const TaskContextMenu = memo(({ isVisible, menuItems, refTask }: TaskCont
           startIcon: actionItem.icon,
           disabled: actionItem.disabled,
           onClick: () => handleMenuItemClick(actionItem),
-          variant: "item" as const,
+          variant: 'item' as const,
         };
       }) || [],
     [menuItems, handleMenuItemClick]

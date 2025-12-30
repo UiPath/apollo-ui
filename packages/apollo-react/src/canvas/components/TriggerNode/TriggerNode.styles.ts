@@ -1,6 +1,6 @@
-import styled from "@emotion/styled";
-import { css } from "@emotion/react";
-import type { TriggerStatus } from "./TriggerNode.types";
+import styled from '@emotion/styled';
+import { css } from '@emotion/react';
+import type { TriggerStatus } from './TriggerNode.types';
 
 export const TriggerContainer = styled.div<{ selected?: boolean; status?: TriggerStatus }>`
   position: relative;
@@ -25,31 +25,31 @@ export const TriggerContainer = styled.div<{ selected?: boolean; status?: Trigge
     `}
 
   ${({ status }) =>
-    status === "Completed" &&
+    status === 'Completed' &&
     css`
       border-color: var(--uix-canvas-success-icon);
     `}
 
   ${({ status }) =>
-    status === "InProgress" &&
+    status === 'InProgress' &&
     css`
       border-color: var(--uix-canvas-info-icon);
     `}
 
   ${({ status }) =>
-    status === "Paused" &&
+    status === 'Paused' &&
     css`
       border-color: var(--uix-canvas-warning-icon);
     `}
 
   ${({ status }) =>
-    status === "Failed" &&
+    status === 'Failed' &&
     css`
       border-color: var(--uix-canvas-error-icon);
     `}
 
   ${({ status }) =>
-    status === "NotExecuted" &&
+    status === 'NotExecuted' &&
     css`
       opacity: 0.8;
     `}
@@ -66,25 +66,25 @@ export const TriggerIconWrapper = styled.div<{ status?: TriggerStatus }>`
   color: var(--uix-canvas-foreground-emp);
 
   ${({ status }) =>
-    status === "Completed" &&
+    status === 'Completed' &&
     css`
       color: var(--uix-canvas-success-icon);
     `}
 
   ${({ status }) =>
-    status === "InProgress" &&
+    status === 'InProgress' &&
     css`
       color: var(--uix-canvas-info-icon);
     `}
 
   ${({ status }) =>
-    status === "Paused" &&
+    status === 'Paused' &&
     css`
       color: var(--uix-canvas-warning-icon);
     `}
 
   ${({ status }) =>
-    status === "Failed" &&
+    status === 'Failed' &&
     css`
       color: var(--uix-canvas-error-icon);
     `}

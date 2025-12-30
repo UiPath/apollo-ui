@@ -1,12 +1,12 @@
-import type { Meta, StoryObj } from "@storybook/react";
-import { HierarchicalCanvas } from "./HierarchicalCanvas";
-import { HierarchicalCanvasWithControls } from "./HierarchicalCanvasWithControls";
+import type { Meta, StoryObj } from '@storybook/react';
+import { HierarchicalCanvas } from './HierarchicalCanvas';
+import { HierarchicalCanvasWithControls } from './HierarchicalCanvasWithControls';
 
 const meta: Meta<typeof HierarchicalCanvas> = {
-  title: "Canvas/HierarchicalCanvas",
+  title: 'Canvas/HierarchicalCanvas',
   component: HierarchicalCanvas,
   parameters: {
-    layout: "fullscreen",
+    layout: 'fullscreen',
     docs: {
       description: {
         component: `
@@ -30,7 +30,7 @@ Use the Interactive story to test adding nodes and drilling into sub-processes.
   },
   decorators: [
     (Story) => (
-      <div style={{ width: "100vw", height: "100vh" }}>
+      <div style={{ width: '100vw', height: '100vh' }}>
         <Story />
       </div>
     ),
@@ -46,7 +46,7 @@ export const Default: Story = {
     docs: {
       description: {
         story:
-          "Interactive canvas with controls for testing. NodeRegistryProvider and ReactFlowProvider are included in the wrapper component.",
+          'Interactive canvas with controls for testing. NodeRegistryProvider and ReactFlowProvider are included in the wrapper component.',
       },
     },
   },

@@ -1,7 +1,7 @@
-import React from "react";
-import type { EdgeProps } from "@uipath/uix/xyflow/react";
-import { EdgeLabelRenderer, useInternalNode, getSmoothStepPath } from "@uipath/uix/xyflow/react";
-import styled from "@emotion/styled";
+import React from 'react';
+import type { EdgeProps } from '@uipath/uix/xyflow/react';
+import { EdgeLabelRenderer, useInternalNode, getSmoothStepPath } from '@uipath/uix/xyflow/react';
+import styled from '@emotion/styled';
 
 export const StageEdgeLabel = styled.div`
   position: absolute;
@@ -28,8 +28,8 @@ type Props = EdgeProps & {
 };
 
 function getArrowFromBezier(path: string, arrowSize: number) {
-  const pathEl = document.createElementNS("http://www.w3.org/2000/svg", "path");
-  pathEl.setAttribute("d", path);
+  const pathEl = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  pathEl.setAttribute('d', path);
 
   const totalLength = pathEl.getTotalLength();
   const endPoint = pathEl.getPointAtLength(totalLength);
@@ -52,7 +52,7 @@ export function StageEdge({
   targetPosition,
   selected,
   style,
-  stroke = "var(--uix-canvas-foreground-emp)",
+  stroke = 'var(--uix-canvas-foreground-emp)',
   strokeWidth = 2,
   arrowSize = 8,
   ...rest
@@ -60,7 +60,9 @@ export function StageEdge({
   const sourceNode = useInternalNode(rest.source);
   const targetNode = useInternalNode(rest.target);
 
-  const sourceNodeX = sourceNode ? sourceNode.position.x + (sourceNode.measured?.width ?? 0) : sourceX;
+  const sourceNodeX = sourceNode
+    ? sourceNode.position.x + (sourceNode.measured?.width ?? 0)
+    : sourceX;
   const sourceNodeY = sourceNode?.position.y ? sourceNode.position.y + 32 : sourceY;
   const targetNodeX = targetNode?.position.x ?? targetX;
   const targetNodeY = targetNode?.position.y ? targetNode.position.y + 32 : targetY;
@@ -78,12 +80,12 @@ export function StageEdge({
 
   const arrowLineLength = arrowSize;
 
-  const strokeColor = selected ? "var(--uix-canvas-selection-indicator)" : stroke;
+  const strokeColor = selected ? 'var(--uix-canvas-selection-indicator)' : stroke;
   const strokeWidthValue = selected ? strokeWidth + 1 : strokeWidth;
 
   return (
     <>
-      <g className={`react-flow__edge stage-edge ${selected ? "selected" : ""}`}>
+      <g className={`react-flow__edge stage-edge ${selected ? 'selected' : ''}`}>
         <path
           d={pathData}
           stroke={strokeColor}
@@ -113,7 +115,13 @@ export function StageEdge({
           strokeWidth={strokeWidthValue}
         />
 
-        <path d={pathData} stroke="transparent" strokeWidth={20} fill="none" pointerEvents="stroke" />
+        <path
+          d={pathData}
+          stroke="transparent"
+          strokeWidth={20}
+          fill="none"
+          pointerEvents="stroke"
+        />
       </g>
       {rest.label && (
         <EdgeLabelRenderer>

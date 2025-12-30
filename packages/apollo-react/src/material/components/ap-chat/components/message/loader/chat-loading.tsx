@@ -1,7 +1,4 @@
-import {
-  keyframes,
-  styled,
-} from '@mui/material';
+import { keyframes, styled } from '@mui/material';
 
 import { useLoading } from '../../../providers/loading-provider';
 import { CHAT_LOADER_GRADIENT_WIDTH } from '../../../service';
@@ -16,20 +13,20 @@ const shimmerAnimation = keyframes`
   }
 `;
 
-const LoadingMessageContainer = styled('div')((() => ({
-    position: 'relative',
-    display: 'inline-block',
-    overflow: 'hidden',
-    width: 'fit-content',
+const LoadingMessageContainer = styled('div')(() => ({
+  position: 'relative',
+  display: 'inline-block',
+  overflow: 'hidden',
+  width: 'fit-content',
 
-    '&::after': {
-        content: '""',
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        width: `${CHAT_LOADER_GRADIENT_WIDTH}px`,
-        height: '100%',
-        background: `linear-gradient(
+  '&::after': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: `${CHAT_LOADER_GRADIENT_WIDTH}px`,
+    height: '100%',
+    background: `linear-gradient(
             90deg,
             var(--color-background)20 0%,
             var(--color-background)40 25%,
@@ -37,20 +34,20 @@ const LoadingMessageContainer = styled('div')((() => ({
             var(--color-background)40 75%,
             var(--color-background)20 100%
         )`,
-        animation: `${shimmerAnimation} 2s ease-in-out infinite`,
-    },
-})));
+    animation: `${shimmerAnimation} 2s ease-in-out infinite`,
+  },
+}));
 
 export function AutopilotChatLoading() {
-    const { showLoading } = useLoading();
+  const { showLoading } = useLoading();
 
-    if (!showLoading) {
-        return null;
-    }
+  if (!showLoading) {
+    return null;
+  }
 
-    return (
-        <LoadingMessageContainer>
-            <LoadingMessage/>
-        </LoadingMessageContainer>
-    );
+  return (
+    <LoadingMessageContainer>
+      <LoadingMessage />
+    </LoadingMessageContainer>
+  );
 }

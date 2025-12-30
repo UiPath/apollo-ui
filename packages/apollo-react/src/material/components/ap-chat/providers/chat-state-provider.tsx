@@ -24,263 +24,279 @@ import { useChatService } from './chat-service.provider';
 
 // Converts all properties of the type to required since we have defaults for all properties
 type DeepRequired<T> = {
-    [P in keyof T]-?: DeepRequired<T[P]>;
+  [P in keyof T]-?: DeepRequired<T[P]>;
 };
 
 interface AutopilotChatStateContextType {
-    historyAnchorElement: HTMLElement | null;
-    setHistoryAnchorElement: (element: HTMLElement | null) => void;
-    fullScreenContainer: HTMLElement | null;
-    setFullScreenContainer: (element: HTMLElement | null) => void;
-    historyOpen: boolean;
-    settingsOpen: boolean;
-    chatMode: AutopilotChatMode;
-    disabledFeatures: AutopilotChatDisabledFeatures;
-    overrideLabels: AutopilotChatOverrideLabels;
-    firstRunExperience: AutopilotChatConfiguration['firstRunExperience'];
-    allowedAttachments: AutopilotChatAllowedAttachments;
-    hasMessages: boolean;
-    setHasMessages: (hasMessages: boolean) => void;
-    spacing: DeepRequired<NonNullable<AutopilotChatConfiguration['spacing']>>;
-    theming?: AutopilotChatConfiguration['theming'];
-    portalContainer?: HTMLElement;
+  historyAnchorElement: HTMLElement | null;
+  setHistoryAnchorElement: (element: HTMLElement | null) => void;
+  fullScreenContainer: HTMLElement | null;
+  setFullScreenContainer: (element: HTMLElement | null) => void;
+  historyOpen: boolean;
+  settingsOpen: boolean;
+  chatMode: AutopilotChatMode;
+  disabledFeatures: AutopilotChatDisabledFeatures;
+  overrideLabels: AutopilotChatOverrideLabels;
+  firstRunExperience: AutopilotChatConfiguration['firstRunExperience'];
+  allowedAttachments: AutopilotChatAllowedAttachments;
+  hasMessages: boolean;
+  setHasMessages: (hasMessages: boolean) => void;
+  spacing: DeepRequired<NonNullable<AutopilotChatConfiguration['spacing']>>;
+  theming?: AutopilotChatConfiguration['theming'];
+  portalContainer?: HTMLElement;
 }
 
 const AutopilotChatStateContext = React.createContext<AutopilotChatStateContextType | null>(null);
 
 interface AutopilotChatStateProviderProps {
-    children: React.ReactNode;
-    portalContainer?: HTMLElement;
+  children: React.ReactNode;
+  portalContainer?: HTMLElement;
 }
 
 const calculateSpacing = (chatSpacing: AutopilotChatConfiguration['spacing']) => {
-    const compactMode = chatSpacing?.compactMode ?? false;
+  const compactMode = chatSpacing?.compactMode ?? false;
 
-    const markdownTokens = {
-        li: compactMode ? FontVariantToken.fontSizeS : FontVariantToken.fontSizeM,
-        p: compactMode ? FontVariantToken.fontSizeS : FontVariantToken.fontSizeM,
-        h1: compactMode ? FontVariantToken.fontSizeH4Bold : FontVariantToken.fontSizeH3Bold,
-        h2: compactMode ? FontVariantToken.fontSizeH4Bold : FontVariantToken.fontSizeH3Bold,
-        h3: compactMode ? FontVariantToken.fontSizeH4Bold : FontVariantToken.fontSizeH3Bold,
-        h4: compactMode ? FontVariantToken.fontSizeMBold : FontVariantToken.fontSizeLBold,
-        h5: compactMode ? FontVariantToken.fontSizeMBold : FontVariantToken.fontSizeLBold,
-        h6: compactMode ? FontVariantToken.fontSizeMBold : FontVariantToken.fontSizeLBold,
-        th: compactMode ? FontVariantToken.fontSizeS : FontVariantToken.fontSizeM,
-        td: compactMode ? FontVariantToken.fontSizeS : FontVariantToken.fontSizeM,
-        em: compactMode ? FontVariantToken.fontSizeS : FontVariantToken.fontSizeM,
-        del: compactMode ? FontVariantToken.fontSizeS : FontVariantToken.fontSizeM,
-        strong: compactMode ? FontVariantToken.fontSizeS : FontVariantToken.fontSizeM,
-        link: compactMode ? FontVariantToken.fontSizeS : FontVariantToken.fontSizeM,
-        citation: compactMode ? FontVariantToken.fontSizeXs : FontVariantToken.fontSizeM,
-    };
+  const markdownTokens = {
+    li: compactMode ? FontVariantToken.fontSizeS : FontVariantToken.fontSizeM,
+    p: compactMode ? FontVariantToken.fontSizeS : FontVariantToken.fontSizeM,
+    h1: compactMode ? FontVariantToken.fontSizeH4Bold : FontVariantToken.fontSizeH3Bold,
+    h2: compactMode ? FontVariantToken.fontSizeH4Bold : FontVariantToken.fontSizeH3Bold,
+    h3: compactMode ? FontVariantToken.fontSizeH4Bold : FontVariantToken.fontSizeH3Bold,
+    h4: compactMode ? FontVariantToken.fontSizeMBold : FontVariantToken.fontSizeLBold,
+    h5: compactMode ? FontVariantToken.fontSizeMBold : FontVariantToken.fontSizeLBold,
+    h6: compactMode ? FontVariantToken.fontSizeMBold : FontVariantToken.fontSizeLBold,
+    th: compactMode ? FontVariantToken.fontSizeS : FontVariantToken.fontSizeM,
+    td: compactMode ? FontVariantToken.fontSizeS : FontVariantToken.fontSizeM,
+    em: compactMode ? FontVariantToken.fontSizeS : FontVariantToken.fontSizeM,
+    del: compactMode ? FontVariantToken.fontSizeS : FontVariantToken.fontSizeM,
+    strong: compactMode ? FontVariantToken.fontSizeS : FontVariantToken.fontSizeM,
+    link: compactMode ? FontVariantToken.fontSizeS : FontVariantToken.fontSizeM,
+    citation: compactMode ? FontVariantToken.fontSizeXs : FontVariantToken.fontSizeM,
+  };
 
-    const promptBox = {
-        minRows: compactMode ? CHAT_COMPACT_MODE_INPUT_MIN_ROWS : CHAT_INPUT_MIN_ROWS,
-        maxRows: compactMode ? CHAT_COMPACT_MODE_INPUT_MAX_ROWS : CHAT_INPUT_MAX_ROWS,
-    };
+  const promptBox = {
+    minRows: compactMode ? CHAT_COMPACT_MODE_INPUT_MIN_ROWS : CHAT_INPUT_MIN_ROWS,
+    maxRows: compactMode ? CHAT_COMPACT_MODE_INPUT_MAX_ROWS : CHAT_INPUT_MAX_ROWS,
+  };
 
-    const messageSpacing = compactMode ? CHAT_COMPACT_MODE_MESSAGE_SPACING : CHAT_MESSAGE_SPACING;
-    const messageGroupGap = compactMode ? CHAT_COMPACT_MODE_MESSAGE_GROUP_GAP : CHAT_MESSAGE_GROUP_GAP;
-    const primaryFontToken = compactMode ? FontVariantToken.fontSizeS : FontVariantToken.fontSizeM;
-    const primaryBoldFontToken = compactMode ? FontVariantToken.fontSizeSBold : FontVariantToken.fontSizeMBold;
-    const titleFontToken = FontVariantToken.fontSizeH4;
-    const suggestionSpacing = CHAT_SUGGESTION_SPACING;
-    const suggestionFontToken = compactMode ? FontVariantToken.fontSizeS : FontVariantToken.fontSizeM;
-    const suggestionPadding = compactMode ? `${token.Spacing.SpacingMicro} ${token.Spacing.SpacingXs}` : `${token.Spacing.SpacingXs} ${token.Spacing.SpacingBase}`;
-    return {
-        compactMode,
-        promptBox: {
-            minRows: chatSpacing?.promptBox?.minRows ?? promptBox.minRows,
-            maxRows: chatSpacing?.promptBox?.maxRows ?? promptBox.maxRows,
-        },
-        primaryFontToken: chatSpacing?.primaryFontToken ?? primaryFontToken,
-        primaryBoldFontToken: chatSpacing?.primaryBoldFontToken ?? primaryBoldFontToken,
-        titleFontToken: chatSpacing?.titleFontToken ?? titleFontToken,
-        suggestionSpacing: chatSpacing?.suggestionSpacing ?? suggestionSpacing,
-        suggestionFontToken: chatSpacing?.suggestionFontToken ?? suggestionFontToken,
-        suggestionPadding: chatSpacing?.suggestionPadding ?? suggestionPadding,
-        messageSpacing: chatSpacing?.messageSpacing ?? messageSpacing,
-        messageGroupGap: chatSpacing?.messageGroupGap ?? messageGroupGap,
-        markdownTokens: {
-            li: chatSpacing?.markdownTokens?.li ?? markdownTokens.li,
-            p: chatSpacing?.markdownTokens?.p ?? markdownTokens.p,
-            h1: chatSpacing?.markdownTokens?.h1 ?? markdownTokens.h1,
-            h2: chatSpacing?.markdownTokens?.h2 ?? markdownTokens.h2,
-            h3: chatSpacing?.markdownTokens?.h3 ?? markdownTokens.h3,
-            h4: chatSpacing?.markdownTokens?.h4 ?? markdownTokens.h4,
-            h5: chatSpacing?.markdownTokens?.h5 ?? markdownTokens.h5,
-            h6: chatSpacing?.markdownTokens?.h6 ?? markdownTokens.h6,
-            th: chatSpacing?.markdownTokens?.th ?? markdownTokens.th,
-            td: chatSpacing?.markdownTokens?.td ?? markdownTokens.td,
-            em: chatSpacing?.markdownTokens?.em ?? markdownTokens.em,
-            del: chatSpacing?.markdownTokens?.del ?? markdownTokens.del,
-            strong: chatSpacing?.markdownTokens?.strong ?? markdownTokens.strong,
-            link: chatSpacing?.markdownTokens?.link ?? markdownTokens.link,
-            citation: chatSpacing?.markdownTokens?.citation ?? markdownTokens.citation,
-        },
-    };
+  const messageSpacing = compactMode ? CHAT_COMPACT_MODE_MESSAGE_SPACING : CHAT_MESSAGE_SPACING;
+  const messageGroupGap = compactMode
+    ? CHAT_COMPACT_MODE_MESSAGE_GROUP_GAP
+    : CHAT_MESSAGE_GROUP_GAP;
+  const primaryFontToken = compactMode ? FontVariantToken.fontSizeS : FontVariantToken.fontSizeM;
+  const primaryBoldFontToken = compactMode
+    ? FontVariantToken.fontSizeSBold
+    : FontVariantToken.fontSizeMBold;
+  const titleFontToken = FontVariantToken.fontSizeH4;
+  const suggestionSpacing = CHAT_SUGGESTION_SPACING;
+  const suggestionFontToken = compactMode ? FontVariantToken.fontSizeS : FontVariantToken.fontSizeM;
+  const suggestionPadding = compactMode
+    ? `${token.Spacing.SpacingMicro} ${token.Spacing.SpacingXs}`
+    : `${token.Spacing.SpacingXs} ${token.Spacing.SpacingBase}`;
+  return {
+    compactMode,
+    promptBox: {
+      minRows: chatSpacing?.promptBox?.minRows ?? promptBox.minRows,
+      maxRows: chatSpacing?.promptBox?.maxRows ?? promptBox.maxRows,
+    },
+    primaryFontToken: chatSpacing?.primaryFontToken ?? primaryFontToken,
+    primaryBoldFontToken: chatSpacing?.primaryBoldFontToken ?? primaryBoldFontToken,
+    titleFontToken: chatSpacing?.titleFontToken ?? titleFontToken,
+    suggestionSpacing: chatSpacing?.suggestionSpacing ?? suggestionSpacing,
+    suggestionFontToken: chatSpacing?.suggestionFontToken ?? suggestionFontToken,
+    suggestionPadding: chatSpacing?.suggestionPadding ?? suggestionPadding,
+    messageSpacing: chatSpacing?.messageSpacing ?? messageSpacing,
+    messageGroupGap: chatSpacing?.messageGroupGap ?? messageGroupGap,
+    markdownTokens: {
+      li: chatSpacing?.markdownTokens?.li ?? markdownTokens.li,
+      p: chatSpacing?.markdownTokens?.p ?? markdownTokens.p,
+      h1: chatSpacing?.markdownTokens?.h1 ?? markdownTokens.h1,
+      h2: chatSpacing?.markdownTokens?.h2 ?? markdownTokens.h2,
+      h3: chatSpacing?.markdownTokens?.h3 ?? markdownTokens.h3,
+      h4: chatSpacing?.markdownTokens?.h4 ?? markdownTokens.h4,
+      h5: chatSpacing?.markdownTokens?.h5 ?? markdownTokens.h5,
+      h6: chatSpacing?.markdownTokens?.h6 ?? markdownTokens.h6,
+      th: chatSpacing?.markdownTokens?.th ?? markdownTokens.th,
+      td: chatSpacing?.markdownTokens?.td ?? markdownTokens.td,
+      em: chatSpacing?.markdownTokens?.em ?? markdownTokens.em,
+      del: chatSpacing?.markdownTokens?.del ?? markdownTokens.del,
+      strong: chatSpacing?.markdownTokens?.strong ?? markdownTokens.strong,
+      link: chatSpacing?.markdownTokens?.link ?? markdownTokens.link,
+      citation: chatSpacing?.markdownTokens?.citation ?? markdownTokens.citation,
+    },
+  };
 };
 
-export const AutopilotChatStateProvider: React.FC<AutopilotChatStateProviderProps> = ({ children, portalContainer }) => {
-    const chatService = useChatService();
-    const chatInternalService = chatService.__internalService__;
+export const AutopilotChatStateProvider: React.FC<AutopilotChatStateProviderProps> = ({
+  children,
+  portalContainer,
+}) => {
+  const chatService = useChatService();
+  const chatInternalService = chatService.__internalService__;
 
-    const [ allowedAttachments, setAllowedAttachments ] = React.useState<AutopilotChatAllowedAttachments>(
-        chatService?.getConfig()?.allowedAttachments ?? {
-            multiple: false,
-            types: {},
-            maxSize: 0,
-            maxCount: 0,
-        },
+  const [allowedAttachments, setAllowedAttachments] =
+    React.useState<AutopilotChatAllowedAttachments>(
+      chatService?.getConfig()?.allowedAttachments ?? {
+        multiple: false,
+        types: {},
+        maxSize: 0,
+        maxCount: 0,
+      }
     );
-    const [ historyAnchorElement, setHistoryAnchorElement ] = React.useState<HTMLElement | null>(null);
-    const [ fullScreenContainer, setFullScreenContainer ] = React.useState<HTMLElement | null>(null);
-    const [ historyOpen, setHistoryOpen ] = React.useState(chatService?.historyOpen ?? false);
-    const [ settingsOpen, setSettingsOpen ] = React.useState(chatService?.settingsOpen ?? false);
-    const [ chatMode, setChatMode ] = React.useState(chatService?.getConfig()?.mode ?? AutopilotChatMode.SideBySide);
-    const [ disabledFeatures, setDisabledFeatures ] = React.useState(chatService?.getConfig()?.disabledFeatures ?? {});
-    const [ overrideLabels, setOverrideLabels ] = React.useState(chatService?.getConfig()?.overrideLabels ?? {});
-    const [ firstRunExperience, setFirstRunExperience ] = React.useState(chatService?.getConfig()?.firstRunExperience ?? {
-        title: '',
-        description: '',
-        suggestions: [],
+  const [historyAnchorElement, setHistoryAnchorElement] = React.useState<HTMLElement | null>(null);
+  const [fullScreenContainer, setFullScreenContainer] = React.useState<HTMLElement | null>(null);
+  const [historyOpen, setHistoryOpen] = React.useState(chatService?.historyOpen ?? false);
+  const [settingsOpen, setSettingsOpen] = React.useState(chatService?.settingsOpen ?? false);
+  const [chatMode, setChatMode] = React.useState(
+    chatService?.getConfig()?.mode ?? AutopilotChatMode.SideBySide
+  );
+  const [disabledFeatures, setDisabledFeatures] = React.useState(
+    chatService?.getConfig()?.disabledFeatures ?? {}
+  );
+  const [overrideLabels, setOverrideLabels] = React.useState(
+    chatService?.getConfig()?.overrideLabels ?? {}
+  );
+  const [firstRunExperience, setFirstRunExperience] = React.useState(
+    chatService?.getConfig()?.firstRunExperience ?? {
+      title: '',
+      description: '',
+      suggestions: [],
+    }
+  );
+  const [hasMessages, setHasMessages] = React.useState(false);
+  const [spacing, setSpacing] = React.useState(calculateSpacing(chatService?.getConfig()?.spacing));
+  const [theming, setTheming] = React.useState(chatService?.getConfig()?.theming);
+
+  React.useEffect(() => {
+    if (!chatService) {
+      return;
+    }
+
+    const unsubscribeHistoryToggle = chatInternalService.on(
+      AutopilotChatInternalEvent.ToggleHistory,
+      (isOpen) => {
+        setHistoryOpen(isOpen);
+      }
+    );
+
+    const unsubscribeSettingsToggle = chatInternalService.on(
+      AutopilotChatInternalEvent.ToggleSettings,
+      (isOpen) => {
+        setSettingsOpen(isOpen);
+      }
+    );
+
+    const unsubscribeModeChange = chatService.on(AutopilotChatEvent.ModeChange, (mode) => {
+      setChatMode(mode);
     });
-    const [ hasMessages, setHasMessages ] = React.useState(false);
-    const [ spacing, setSpacing ] = React.useState(calculateSpacing(chatService?.getConfig()?.spacing));
-    const [ theming, setTheming ] = React.useState(
-        chatService?.getConfig()?.theming,
+
+    const unsubscribeDisabledFeatures = chatService.on(
+      AutopilotChatEvent.SetDisabledFeatures,
+      (features) => {
+        setDisabledFeatures(features);
+      }
     );
 
-    React.useEffect(() => {
-        if (!chatService) {
-            return;
-        }
-
-        const unsubscribeHistoryToggle = chatInternalService.on(
-            AutopilotChatInternalEvent.ToggleHistory,
-            (isOpen) => {
-                setHistoryOpen(isOpen);
-            },
-        );
-
-        const unsubscribeSettingsToggle = chatInternalService.on(
-            AutopilotChatInternalEvent.ToggleSettings,
-            (isOpen) => {
-                setSettingsOpen(isOpen);
-            },
-        );
-
-        const unsubscribeModeChange = chatService.on(
-            AutopilotChatEvent.ModeChange,
-            (mode) => {
-                setChatMode(mode);
-            },
-        );
-
-        const unsubscribeDisabledFeatures = chatService.on(
-            AutopilotChatEvent.SetDisabledFeatures,
-            (features) => {
-                setDisabledFeatures(features);
-            },
-        );
-
-        const unsubscribeOverrideLabels = chatService.on(
-            AutopilotChatEvent.SetOverrideLabels,
-            (labels) => {
-                setOverrideLabels(labels);
-            },
-        );
-
-        const unsubscribeFirstRunExperience = chatService.on(
-            AutopilotChatEvent.SetFirstRunExperience,
-            (experience) => {
-                setFirstRunExperience(experience);
-            },
-        );
-
-        const unsubscribeAllowedAttachments = chatInternalService.on(
-            AutopilotChatInternalEvent.SetAllowedAttachments,
-            (allowed: AutopilotChatAllowedAttachments) => {
-                setAllowedAttachments(allowed);
-            },
-        );
-
-        const unsubscribeSpacing = chatInternalService.on(
-            AutopilotChatInternalEvent.SetSpacing,
-            (spacingConfig: AutopilotChatConfiguration['spacing']) => {
-                setSpacing(calculateSpacing(spacingConfig));
-            },
-        );
-
-        const unsubscribeTheming = chatInternalService.on(
-            AutopilotChatInternalEvent.SetTheming,
-            (themingConfig: AutopilotChatConfiguration['theming']) => {
-                setTheming(themingConfig);
-            },
-        );
-
-        return () => {
-            unsubscribeHistoryToggle();
-            unsubscribeSettingsToggle();
-            unsubscribeModeChange();
-            unsubscribeDisabledFeatures();
-            unsubscribeOverrideLabels();
-            unsubscribeFirstRunExperience();
-            unsubscribeAllowedAttachments();
-            unsubscribeSpacing();
-            unsubscribeTheming();
-        };
-    }, [ chatService, chatInternalService ]);
-
-    const value = React.useMemo(() => ({
-        historyOpen,
-        settingsOpen,
-        chatMode,
-        disabledFeatures,
-        overrideLabels,
-        firstRunExperience,
-        allowedAttachments,
-        historyAnchorElement,
-        setHistoryAnchorElement,
-        fullScreenContainer,
-        setFullScreenContainer,
-        hasMessages,
-        setHasMessages,
-        spacing,
-        theming,
-        portalContainer,
-    }), [
-        historyOpen,
-        settingsOpen,
-        chatMode,
-        disabledFeatures,
-        overrideLabels,
-        firstRunExperience,
-        allowedAttachments,
-        historyAnchorElement,
-        setHistoryAnchorElement,
-        fullScreenContainer,
-        setFullScreenContainer,
-        hasMessages,
-        setHasMessages,
-        spacing,
-        theming,
-        portalContainer,
-    ]);
-
-    return (
-        <AutopilotChatStateContext.Provider value={value}>
-            {children}
-        </AutopilotChatStateContext.Provider>
+    const unsubscribeOverrideLabels = chatService.on(
+      AutopilotChatEvent.SetOverrideLabels,
+      (labels) => {
+        setOverrideLabels(labels);
+      }
     );
+
+    const unsubscribeFirstRunExperience = chatService.on(
+      AutopilotChatEvent.SetFirstRunExperience,
+      (experience) => {
+        setFirstRunExperience(experience);
+      }
+    );
+
+    const unsubscribeAllowedAttachments = chatInternalService.on(
+      AutopilotChatInternalEvent.SetAllowedAttachments,
+      (allowed: AutopilotChatAllowedAttachments) => {
+        setAllowedAttachments(allowed);
+      }
+    );
+
+    const unsubscribeSpacing = chatInternalService.on(
+      AutopilotChatInternalEvent.SetSpacing,
+      (spacingConfig: AutopilotChatConfiguration['spacing']) => {
+        setSpacing(calculateSpacing(spacingConfig));
+      }
+    );
+
+    const unsubscribeTheming = chatInternalService.on(
+      AutopilotChatInternalEvent.SetTheming,
+      (themingConfig: AutopilotChatConfiguration['theming']) => {
+        setTheming(themingConfig);
+      }
+    );
+
+    return () => {
+      unsubscribeHistoryToggle();
+      unsubscribeSettingsToggle();
+      unsubscribeModeChange();
+      unsubscribeDisabledFeatures();
+      unsubscribeOverrideLabels();
+      unsubscribeFirstRunExperience();
+      unsubscribeAllowedAttachments();
+      unsubscribeSpacing();
+      unsubscribeTheming();
+    };
+  }, [chatService, chatInternalService]);
+
+  const value = React.useMemo(
+    () => ({
+      historyOpen,
+      settingsOpen,
+      chatMode,
+      disabledFeatures,
+      overrideLabels,
+      firstRunExperience,
+      allowedAttachments,
+      historyAnchorElement,
+      setHistoryAnchorElement,
+      fullScreenContainer,
+      setFullScreenContainer,
+      hasMessages,
+      setHasMessages,
+      spacing,
+      theming,
+      portalContainer,
+    }),
+    [
+      historyOpen,
+      settingsOpen,
+      chatMode,
+      disabledFeatures,
+      overrideLabels,
+      firstRunExperience,
+      allowedAttachments,
+      historyAnchorElement,
+      setHistoryAnchorElement,
+      fullScreenContainer,
+      setFullScreenContainer,
+      hasMessages,
+      setHasMessages,
+      spacing,
+      theming,
+      portalContainer,
+    ]
+  );
+
+  return (
+    <AutopilotChatStateContext.Provider value={value}>
+      {children}
+    </AutopilotChatStateContext.Provider>
+  );
 };
 
 export const useChatState = () => {
-    const context = React.useContext(AutopilotChatStateContext);
+  const context = React.useContext(AutopilotChatStateContext);
 
-    if (!context) {
-        throw new Error('useChatState must be used within a AutopilotChatStateProvider');
-    }
+  if (!context) {
+    throw new Error('useChatState must be used within a AutopilotChatStateProvider');
+  }
 
-    return context;
+  return context;
 };

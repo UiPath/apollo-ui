@@ -1,4 +1,4 @@
-import type { ListItem } from "../Toolbox";
+import type { ListItem } from '../Toolbox';
 
 export interface NodeItemData {
   type: string;
@@ -10,7 +10,11 @@ export interface AddNodePanelProps {
   onNodeSelect: (item: ListItem) => void;
   onClose: () => void;
   onNodeHover?: (item: ListItem) => void;
-  onSearch?: (query: string, isTopLevelSearch: boolean, currentItems: ListItem[]) => Promise<ListItem[]>;
+  onSearch?: (
+    query: string,
+    isTopLevelSearch: boolean,
+    currentItems: ListItem[]
+  ) => Promise<ListItem[]>;
   title?: string;
   /**
    * The options to show in the panel.

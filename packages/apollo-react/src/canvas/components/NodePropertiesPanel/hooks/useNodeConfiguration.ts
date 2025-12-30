@@ -1,7 +1,7 @@
-import { useCallback, useState, useMemo } from "react";
-import { useReactFlow } from "@uipath/uix/xyflow/react";
-import { nodeSchemas } from "../schemas";
-import type { NodeConfigSchema, ConfigurableNode } from "../NodePropertiesPanel.types";
+import { useCallback, useState, useMemo } from 'react';
+import { useReactFlow } from '@uipath/uix/xyflow/react';
+import { nodeSchemas } from '../schemas';
+import type { NodeConfigSchema, ConfigurableNode } from '../NodePropertiesPanel.types';
 
 export function useNodeConfiguration(
   selectedNode: ConfigurableNode | undefined,
@@ -20,7 +20,7 @@ export function useNodeConfiguration(
     }
 
     const allSchemas = { ...nodeSchemas, ...customSchemas };
-    const nodeType = selectedNode.type || "default";
+    const nodeType = selectedNode.type || 'default';
     return allSchemas[nodeType] || allSchemas.default;
   }, [selectedNode, customSchemas]);
 
@@ -35,7 +35,7 @@ export function useNodeConfiguration(
       }
 
       if (enableValidation) {
-        setErrors((prev) => ({ ...prev, [fieldKey]: "" }));
+        setErrors((prev) => ({ ...prev, [fieldKey]: '' }));
       }
     },
     [selectedNode?.id, updateNodeData, onChange, enableValidation]

@@ -7,7 +7,14 @@ export interface BaseIconProps {
   children: React.ReactNode;
 }
 
-export const BaseIcon = ({ width = 24, height = 24, viewBox, className, testId, children }: BaseIconProps) => {
+export const BaseIcon = ({
+  width = 24,
+  height = 24,
+  viewBox,
+  className,
+  testId,
+  children,
+}: BaseIconProps) => {
   return (
     <svg
       className={className}

@@ -1,15 +1,15 @@
-import React, { createRef } from "react";
-import { render, screen } from "@testing-library/react";
-import { Panel, ReactFlowProvider } from "@uipath/uix/xyflow/react";
-import { describe, expect, it, vi } from "vitest";
-import type { BaseCanvasProps, BaseCanvasRef } from "./BaseCanvas.types";
-import { BaseCanvas } from "./BaseCanvas";
+import React, { createRef } from 'react';
+import { render, screen } from '@testing-library/react';
+import { Panel, ReactFlowProvider } from '@uipath/uix/xyflow/react';
+import { describe, expect, it, vi } from 'vitest';
+import type { BaseCanvasProps, BaseCanvasRef } from './BaseCanvas.types';
+import { BaseCanvas } from './BaseCanvas';
 
 // Mock the hooks with configurable state
 let mockIsReady = true;
 const mockIsLayouting = false;
 
-vi.mock("./BaseCanvas.hooks", () => ({
+vi.mock('./BaseCanvas.hooks', () => ({
   useAutoLayout: () => ({
     isLayouting: mockIsLayouting,
     isReady: mockIsReady,
@@ -34,8 +34,8 @@ const mockReactFlowInstance = {
   zoomTo: vi.fn(),
 };
 
-vi.mock("@uipath/uix/xyflow/react", async () => {
-  const actual = await vi.importActual("@uipath/uix/xyflow/react");
+vi.mock('@uipath/uix/xyflow/react', async () => {
+  const actual = await vi.importActual('@uipath/uix/xyflow/react');
   return {
     ...actual,
     ReactFlow: ({ children, style, onInit }: any) => {
@@ -56,8 +56,10 @@ vi.mock("@uipath/uix/xyflow/react", async () => {
 });
 
 // Mock CanvasPositionControls
-vi.mock("../CanvasPositionControls", () => ({
-  CanvasPositionControls: ({ orientation }: any) => <div data-testid="canvas-controls" data-orientation={orientation} />,
+vi.mock('../CanvasPositionControls', () => ({
+  CanvasPositionControls: ({ orientation }: any) => (
+    <div data-testid="canvas-controls" data-orientation={orientation} />
+  ),
 }));
 
 const defaultProps: BaseCanvasProps = {
@@ -74,20 +76,20 @@ const renderBaseCanvas = (props: Partial<BaseCanvasProps> = {}, ref?: React.Ref<
   );
 };
 
-describe("BaseCanvas", () => {
-  it("renders without crashing", () => {
+describe('BaseCanvas', () => {
+  it('renders without crashing', () => {
     renderBaseCanvas();
-    expect(screen.getByTestId("react-flow")).toBeInTheDocument();
+    expect(screen.getByTestId('react-flow')).toBeInTheDocument();
   });
 
-  it("renders background with default variant", () => {
+  it('renders background with default variant', () => {
     renderBaseCanvas();
-    const background = screen.getByTestId("background");
+    const background = screen.getByTestId('background');
     expect(background).toBeInTheDocument();
-    expect(background).toHaveAttribute("data-variant", "dots");
+    expect(background).toHaveAttribute('data-variant', 'dots');
   });
 
-  it("renders controls in default position", () => {
+  it('renders controls in default position', () => {
     // BaseCanvas doesn't render controls by default, they must be passed as children
     renderBaseCanvas({
       children: (
@@ -96,11 +98,11 @@ describe("BaseCanvas", () => {
         </Panel>
       ),
     });
-    expect(screen.getByTestId("panel-bottom-right")).toBeInTheDocument();
-    expect(screen.getByTestId("canvas-controls")).toBeInTheDocument();
+    expect(screen.getByTestId('panel-bottom-right')).toBeInTheDocument();
+    expect(screen.getByTestId('canvas-controls')).toBeInTheDocument();
   });
 
-  it("respects custom controls position", () => {
+  it('respects custom controls position', () => {
     renderBaseCanvas({
       children: (
         <Panel position="top-left">
@@ -108,29 +110,29 @@ describe("BaseCanvas", () => {
         </Panel>
       ),
     });
-    expect(screen.getByTestId("panel-top-left")).toBeInTheDocument();
+    expect(screen.getByTestId('panel-top-left')).toBeInTheDocument();
   });
 
-  it("renders custom controls when provided", () => {
+  it('renders custom controls when provided', () => {
     const customControls = <div data-testid="custom-controls">Custom</div>;
     renderBaseCanvas({ children: customControls });
-    expect(screen.getByTestId("custom-controls")).toBeInTheDocument();
+    expect(screen.getByTestId('custom-controls')).toBeInTheDocument();
   });
 
-  it("renders with opacity transition when not ready", () => {
+  it('renders with opacity transition when not ready', () => {
     // Set mock to not ready state
     mockIsReady = false;
     renderBaseCanvas();
-    const reactFlow = screen.getByTestId("react-flow");
+    const reactFlow = screen.getByTestId('react-flow');
     expect(reactFlow).toHaveStyle({
-      opacity: "0",
-      transition: "opacity 0.2s ease-in-out",
+      opacity: '0',
+      transition: 'opacity 0.2s ease-in-out',
     });
     // Reset mock state
     mockIsReady = true;
   });
 
-  it("renders additional panels", () => {
+  it('renders additional panels', () => {
     renderBaseCanvas({
       children: (
         <Panel position="top-center">
@@ -138,24 +140,24 @@ describe("BaseCanvas", () => {
         </Panel>
       ),
     });
-    expect(screen.getByTestId("panel-top-center")).toBeInTheDocument();
-    expect(screen.getByTestId("custom-panel")).toBeInTheDocument();
+    expect(screen.getByTestId('panel-top-center')).toBeInTheDocument();
+    expect(screen.getByTestId('custom-panel')).toBeInTheDocument();
   });
 
-  it("applies opacity transition for canvas ready state", () => {
+  it('applies opacity transition for canvas ready state', () => {
     // Set mock to not ready state
     mockIsReady = false;
     renderBaseCanvas();
-    const reactFlow = screen.getByTestId("react-flow");
+    const reactFlow = screen.getByTestId('react-flow');
     expect(reactFlow).toHaveStyle({
-      opacity: "0",
-      transition: "opacity 0.2s ease-in-out",
+      opacity: '0',
+      transition: 'opacity 0.2s ease-in-out',
     });
     // Reset mock state
     mockIsReady = true;
   });
 
-  it("renders children inside the canvas", () => {
+  it('renders children inside the canvas', () => {
     renderBaseCanvas({
       children: (
         <div data-testid="custom-child">
@@ -164,12 +166,12 @@ describe("BaseCanvas", () => {
       ),
     });
 
-    const customChild = screen.getByTestId("custom-child");
+    const customChild = screen.getByTestId('custom-child');
     expect(customChild).toBeInTheDocument();
-    expect(screen.getByText("Custom content inside canvas")).toBeInTheDocument();
+    expect(screen.getByText('Custom content inside canvas')).toBeInTheDocument();
   });
 
-  it("renders multiple children", () => {
+  it('renders multiple children', () => {
     renderBaseCanvas({
       children: (
         <>
@@ -179,13 +181,13 @@ describe("BaseCanvas", () => {
       ),
     });
 
-    expect(screen.getByTestId("child-1")).toBeInTheDocument();
-    expect(screen.getByTestId("child-2")).toBeInTheDocument();
-    expect(screen.getByText("Child 1")).toBeInTheDocument();
-    expect(screen.getByText("Child 2")).toBeInTheDocument();
+    expect(screen.getByTestId('child-1')).toBeInTheDocument();
+    expect(screen.getByTestId('child-2')).toBeInTheDocument();
+    expect(screen.getByText('Child 1')).toBeInTheDocument();
+    expect(screen.getByText('Child 2')).toBeInTheDocument();
   });
 
-  it("exposes ReactFlow instance via ref", async () => {
+  it('exposes ReactFlow instance via ref', async () => {
     const ref = createRef<BaseCanvasRef>();
     renderBaseCanvas({}, ref);
 
@@ -205,7 +207,7 @@ describe("BaseCanvas", () => {
     expect(ref.current?.reactFlow?.zoomTo).toBeDefined();
   });
 
-  it("ref provides access to custom methods and ReactFlow instance", async () => {
+  it('ref provides access to custom methods and ReactFlow instance', async () => {
     const ref = createRef<BaseCanvasRef>();
     renderBaseCanvas({}, ref);
 
@@ -224,12 +226,12 @@ describe("BaseCanvas", () => {
     expect(mockReactFlowInstance.zoomTo).toHaveBeenCalledWith(1.5);
   });
 
-  it("accepts maintainNodesInView props", () => {
+  it('accepts maintainNodesInView props', () => {
     const { getByTestId } = renderBaseCanvas({
-      maintainNodesInView: ["node1", "node2"],
+      maintainNodesInView: ['node1', 'node2'],
     });
 
     // The component should render successfully with these props
-    expect(getByTestId("react-flow")).toBeInTheDocument();
+    expect(getByTestId('react-flow')).toBeInTheDocument();
   });
 });

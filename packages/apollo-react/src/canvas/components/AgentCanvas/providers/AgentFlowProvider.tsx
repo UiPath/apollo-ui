@@ -1,14 +1,21 @@
-import { createContext, type PropsWithChildren, useCallback, useContext, useEffect, useMemo } from "react";
-import createCache from "@emotion/cache";
-import { CacheProvider } from "@emotion/react";
-import { ReactFlowProvider, useReactFlow } from "@uipath/uix/xyflow/react";
-import { BASE_CANVAS_DEFAULTS } from "../../BaseCanvas/BaseCanvas.constants";
-import type { BaseCanvasFitViewOptions } from "../../BaseCanvas/BaseCanvas.types";
+import {
+  createContext,
+  type PropsWithChildren,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+} from 'react';
+import createCache from '@emotion/cache';
+import { CacheProvider } from '@emotion/react';
+import { ReactFlowProvider, useReactFlow } from '@uipath/uix/xyflow/react';
+import { BASE_CANVAS_DEFAULTS } from '../../BaseCanvas/BaseCanvas.constants';
+import type { BaseCanvasFitViewOptions } from '../../BaseCanvas/BaseCanvas.types';
 
 // Extract React Flow CSS from document stylesheets
 const getReactFlowCSS = (): string => {
   const stylesheets = Array.from(document.styleSheets);
-  let reactFlowCSS = "";
+  let reactFlowCSS = '';
 
   for (const stylesheet of stylesheets) {
     try {
@@ -16,13 +23,13 @@ const getReactFlowCSS = (): string => {
         const rules = Array.from(stylesheet.cssRules);
         const reactFlowRules = rules.filter((rule) => {
           if (rule instanceof CSSStyleRule) {
-            return rule.selectorText && rule.selectorText.includes("react-flow");
+            return rule.selectorText && rule.selectorText.includes('react-flow');
           }
           return false;
         });
 
         if (reactFlowRules.length > 0) {
-          reactFlowCSS += reactFlowRules.map((rule) => rule.cssText).join("\n");
+          reactFlowCSS += reactFlowRules.map((rule) => rule.cssText).join('\n');
         }
       }
     } catch {
@@ -43,8 +50,8 @@ const injectReactFlowStyles = (container: HTMLElement | ShadowRoot) => {
   }
 
   // Create style element with React Flow CSS
-  const style = document.createElement("style");
-  style.dataset.reactflowStyle = "true";
+  const style = document.createElement('style');
+  style.dataset.reactflowStyle = 'true';
   style.textContent = getReactFlowCSS();
 
   // Insert at the beginning of the container
@@ -68,7 +75,7 @@ const injectCSSVariables = (container: HTMLElement | ShadowRoot) => {
   const cssVariables: string[] = [];
 
   // Extract CSS variables that are likely needed
-  const varPrefixes = ["--color", "--spacing", "--font", "--shadow", "--border"];
+  const varPrefixes = ['--color', '--spacing', '--font', '--shadow', '--border'];
 
   for (const property of Array.from(rootStyles)) {
     if (varPrefixes.some((prefix) => property.startsWith(prefix))) {
@@ -80,9 +87,9 @@ const injectCSSVariables = (container: HTMLElement | ShadowRoot) => {
   }
 
   // Create style element with CSS variables
-  const style = document.createElement("style");
-  style.dataset.cssVariables = "true";
-  style.textContent = `:host { ${cssVariables.join(" ")} }`;
+  const style = document.createElement('style');
+  style.dataset.cssVariables = 'true';
+  style.textContent = `:host { ${cssVariables.join(' ')} }`;
 
   // Insert at the beginning of the container
   if (container.firstChild) {
@@ -103,14 +110,18 @@ interface AgentVisualizationFlowProviderInnerProps extends PropsWithChildren {
   fitViewOptions?: BaseCanvasFitViewOptions;
 }
 
-const AgentVisualizationFlowProviderInner = ({ children, styleContainer, fitViewOptions }: AgentVisualizationFlowProviderInnerProps) => {
+const AgentVisualizationFlowProviderInner = ({
+  children,
+  styleContainer,
+  fitViewOptions,
+}: AgentVisualizationFlowProviderInnerProps) => {
   const reactFlow = useReactFlow();
 
   // Create Emotion cache for shadow DOM if styleContainer is provided
   const emotionCache = useMemo(() => {
     if (styleContainer) {
       return createCache({
-        key: "agent-flow-shadow",
+        key: 'agent-flow-shadow',
         container: styleContainer,
         prepend: true, // Ensures styles are inserted before other content
       });
@@ -132,7 +143,9 @@ const AgentVisualizationFlowProviderInner = ({ children, styleContainer, fitView
 
   const value = useMemo(() => ({ resetViewport }), [resetViewport]);
 
-  const content = <AgentFlowProviderContext.Provider value={value}>{children}</AgentFlowProviderContext.Provider>;
+  const content = (
+    <AgentFlowProviderContext.Provider value={value}>{children}</AgentFlowProviderContext.Provider>
+  );
 
   // Conditionally wrap with CacheProvider for shadow DOM
   return emotionCache ? <CacheProvider value={emotionCache}>{content}</CacheProvider> : content;
@@ -149,9 +162,17 @@ interface AgentVisualizationFlowProviderProps extends PropsWithChildren {
   fitViewOptions?: BaseCanvasFitViewOptions;
 }
 
-export const AgentVisualizationFlowProvider = ({ styleContainer, fitViewOptions, ...props }: AgentVisualizationFlowProviderProps) => (
+export const AgentVisualizationFlowProvider = ({
+  styleContainer,
+  fitViewOptions,
+  ...props
+}: AgentVisualizationFlowProviderProps) => (
   <ReactFlowProvider>
-    <AgentVisualizationFlowProviderInner styleContainer={styleContainer} fitViewOptions={fitViewOptions} {...props} />
+    <AgentVisualizationFlowProviderInner
+      styleContainer={styleContainer}
+      fitViewOptions={fitViewOptions}
+      {...props}
+    />
   </ReactFlowProvider>
 );
 
@@ -159,7 +180,7 @@ export const AgentVisualizationFlowProvider = ({ styleContainer, fitViewOptions,
 export const useAgentFlow = () => {
   const context = useContext(AgentFlowProviderContext);
   if (!context) {
-    throw new Error("useAgentFlow must be used within an AgentFlowProvider");
+    throw new Error('useAgentFlow must be used within an AgentFlowProvider');
   }
   return context;
 };

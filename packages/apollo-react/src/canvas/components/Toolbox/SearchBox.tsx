@@ -1,8 +1,8 @@
-import { ApIcon } from "@uipath/portal-shell-react";
-import { cx } from "@uipath/uix/core";
-import type React from "react";
-import { useEffect, useRef } from "react";
-import { StyledSearchForm } from "./SearchBox.styles";
+import { ApIcon } from '@uipath/portal-shell-react';
+import { cx } from '@uipath/uix/core';
+import type React from 'react';
+import { useEffect, useRef } from 'react';
+import { StyledSearchForm } from './SearchBox.styles';
 
 interface SearchBoxProps {
   value: string;
@@ -11,7 +11,12 @@ interface SearchBoxProps {
   placeholder?: string;
 }
 
-export const SearchBox: React.FC<SearchBoxProps> = ({ value, onChange, clear, placeholder = "Search..." }) => {
+export const SearchBox: React.FC<SearchBoxProps> = ({
+  value,
+  onChange,
+  clear,
+  placeholder = 'Search...',
+}) => {
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -19,8 +24,12 @@ export const SearchBox: React.FC<SearchBoxProps> = ({ value, onChange, clear, pl
   }, []);
 
   return (
-    <StyledSearchForm autoComplete="off" className="searchbox-form" onSubmit={(e) => e.preventDefault()}>
-      <div className={cx(`searchbox-container`, { "has-value": !!value })}>
+    <StyledSearchForm
+      autoComplete="off"
+      className="searchbox-form"
+      onSubmit={(e) => e.preventDefault()}
+    >
+      <div className={cx(`searchbox-container`, { 'has-value': !!value })}>
         <span className="searchbox-icon">
           <ApIcon name="search" size="16px" />
         </span>

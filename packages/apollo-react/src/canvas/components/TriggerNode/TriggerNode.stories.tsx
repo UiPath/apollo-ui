@@ -1,10 +1,15 @@
-import { useState, useCallback } from "react";
-import type { Meta, StoryObj } from "@storybook/react-vite";
-import { applyEdgeChanges, applyNodeChanges, addEdge, ReactFlowProvider } from "@uipath/uix/xyflow/react";
-import type { Edge, EdgeChange, Node, NodeChange, Connection } from "@uipath/uix/xyflow/react";
-import { ApIcon } from "@uipath/portal-shell-react";
-import { BaseCanvas } from "../BaseCanvas";
-import { TriggerNode } from "./TriggerNode";
+import { useState, useCallback } from 'react';
+import type { Meta, StoryObj } from '@storybook/react-vite';
+import {
+  applyEdgeChanges,
+  applyNodeChanges,
+  addEdge,
+  ReactFlowProvider,
+} from '@uipath/uix/xyflow/react';
+import type { Edge, EdgeChange, Node, NodeChange, Connection } from '@uipath/uix/xyflow/react';
+import { ApIcon } from '@uipath/portal-shell-react';
+import { BaseCanvas } from '../BaseCanvas';
+import { TriggerNode } from './TriggerNode';
 
 // Wrapper component that adapts React Flow node props to TriggerNode props
 const TriggerNodeWrapper = (props: any) => {
@@ -25,130 +30,151 @@ const nodeTypes = {
 const TriggerNodeStory = () => {
   const initialNodes: Node[] = [
     {
-      id: "1",
-      type: "trigger",
+      id: '1',
+      type: 'trigger',
       position: { x: 50, y: 100 },
       width: 66,
       height: 66,
       data: {
         details: {
-          tooltip: "Start Trigger",
+          tooltip: 'Start Trigger',
         },
       },
     },
     {
-      id: "2",
-      type: "trigger",
+      id: '2',
+      type: 'trigger',
       position: { x: 200, y: 100 },
       width: 66,
       height: 66,
       data: {
         details: {
-          tooltip: "Schedule Trigger - Runs every day at 9:00 AM",
+          tooltip: 'Schedule Trigger - Runs every day at 9:00 AM',
         },
       },
     },
     {
-      id: "3",
-      type: "trigger",
+      id: '3',
+      type: 'trigger',
       position: { x: 350, y: 100 },
       width: 66,
       height: 66,
       data: {
         details: {
-          tooltip: "In Progress",
-          status: "InProgress",
+          tooltip: 'In Progress',
+          status: 'InProgress',
         },
       },
     },
     {
-      id: "4",
-      type: "trigger",
+      id: '4',
+      type: 'trigger',
       position: { x: 500, y: 100 },
       width: 66,
       height: 66,
       data: {
         details: {
-          tooltip: "Completed",
-          status: "Completed",
+          tooltip: 'Completed',
+          status: 'Completed',
         },
       },
     },
     {
-      id: "5",
-      type: "trigger",
+      id: '5',
+      type: 'trigger',
       position: { x: 650, y: 100 },
       width: 66,
       height: 66,
       data: {
         details: {
-          tooltip: "Failed",
-          status: "Failed",
+          tooltip: 'Failed',
+          status: 'Failed',
         },
       },
     },
     {
-      id: "6",
-      type: "trigger",
+      id: '6',
+      type: 'trigger',
       position: { x: 50, y: 250 },
       width: 66,
       height: 66,
       data: {
         details: {
-          tooltip: "Paused",
-          status: "Paused",
+          tooltip: 'Paused',
+          status: 'Paused',
         },
       },
     },
     {
-      id: "7",
-      type: "trigger",
+      id: '7',
+      type: 'trigger',
       position: { x: 200, y: 250 },
       width: 66,
       height: 66,
       data: {
         details: {
-          tooltip: "Not Executed",
-          status: "NotExecuted",
+          tooltip: 'Not Executed',
+          status: 'NotExecuted',
         },
       },
     },
     {
-      id: "8",
-      type: "trigger",
+      id: '8',
+      type: 'trigger',
       position: { x: 350, y: 250 },
       width: 66,
       height: 66,
       data: {
         details: {
-          tooltip: "Time Trigger",
-          icon: <ApIcon name="schedule" variant="outlined" color="var(--uix-canvas-foreground-emp)" size="24px" />,
+          tooltip: 'Time Trigger',
+          icon: (
+            <ApIcon
+              name="schedule"
+              variant="outlined"
+              color="var(--uix-canvas-foreground-emp)"
+              size="24px"
+            />
+          ),
         },
       },
     },
     {
-      id: "9",
-      type: "trigger",
+      id: '9',
+      type: 'trigger',
       position: { x: 500, y: 250 },
       width: 66,
       height: 66,
       data: {
         details: {
-          tooltip: "Email Trigger",
-          icon: <ApIcon name="email" variant="outlined" color="var(--uix-canvas-foreground-emp)" size="24px" />,
+          tooltip: 'Email Trigger',
+          icon: (
+            <ApIcon
+              name="email"
+              variant="outlined"
+              color="var(--uix-canvas-foreground-emp)"
+              size="24px"
+            />
+          ),
         },
       },
     },
     {
-      id: "10",
-      type: "trigger",
+      id: '10',
+      type: 'trigger',
       position: { x: 650, y: 250 },
       width: 66,
       height: 66,
       data: {
         details: {
-          tooltip: "Webhook Trigger",
-          icon: <ApIcon name="webhook" variant="outlined" color="var(--uix-canvas-foreground-emp)" size="24px" />,
+          tooltip: 'Webhook Trigger',
+          icon: (
+            <ApIcon
+              name="webhook"
+              variant="outlined"
+              color="var(--uix-canvas-foreground-emp)"
+              size="24px"
+            />
+          ),
         },
       },
     },
@@ -159,11 +185,20 @@ const TriggerNodeStory = () => {
   const [nodes, setNodes] = useState<Node[]>(initialNodes);
   const [edges, setEdges] = useState<Edge[]>(initialEdges);
 
-  const onNodesChange = useCallback((changes: NodeChange[]) => setNodes((nds) => applyNodeChanges(changes, nds)), []);
+  const onNodesChange = useCallback(
+    (changes: NodeChange[]) => setNodes((nds) => applyNodeChanges(changes, nds)),
+    []
+  );
 
-  const onEdgesChange = useCallback((changes: EdgeChange[]) => setEdges((eds) => applyEdgeChanges(changes, eds)), []);
+  const onEdgesChange = useCallback(
+    (changes: EdgeChange[]) => setEdges((eds) => applyEdgeChanges(changes, eds)),
+    []
+  );
 
-  const onConnect = useCallback((params: Connection) => setEdges((eds) => addEdge(params, eds)), []);
+  const onConnect = useCallback(
+    (params: Connection) => setEdges((eds) => addEdge(params, eds)),
+    []
+  );
 
   return (
     <BaseCanvas
@@ -179,13 +214,13 @@ const TriggerNodeStory = () => {
 };
 
 const meta = {
-  title: "Canvas/TriggerNode",
+  title: 'Canvas/TriggerNode',
   component: BaseCanvas,
   decorators: [
     (Story: any) => {
       return (
         <ReactFlowProvider>
-          <div style={{ height: "100vh", width: "100%" }}>
+          <div style={{ height: '100vh', width: '100%' }}>
             <Story />
           </div>
         </ReactFlowProvider>
@@ -193,7 +228,7 @@ const meta = {
     },
   ],
   parameters: {
-    layout: "fullscreen",
+    layout: 'fullscreen',
   },
 } satisfies Meta<typeof BaseCanvas>;
 

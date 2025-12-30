@@ -1,16 +1,16 @@
-import type { Position } from "@uipath/uix/xyflow/react";
-import type { NodeStatusContext } from "./ExecutionStatusContext";
-import type { NodeMenuItem } from "../NodeContextMenu/NodeContextMenu.types";
-import type { ButtonHandleConfig, HandleActionEvent } from "../ButtonHandle/ButtonHandle";
-import type { NodeToolbarConfig } from "../NodeToolbar";
+import type { Position } from '@uipath/uix/xyflow/react';
+import type { NodeStatusContext } from './ExecutionStatusContext';
+import type { NodeMenuItem } from '../NodeContextMenu/NodeContextMenu.types';
+import type { ButtonHandleConfig, HandleActionEvent } from '../ButtonHandle/ButtonHandle';
+import type { NodeToolbarConfig } from '../NodeToolbar';
 
-export type NodeShape = "square" | "circle" | "rectangle";
+export type NodeShape = 'square' | 'circle' | 'rectangle';
 
 export interface ConnectionPointConfig {
   id: string;
   label?: string;
   required?: boolean;
-  position?: "top" | "right" | "bottom" | "left";
+  position?: 'top' | 'right' | 'bottom' | 'left';
 }
 
 export interface BaseNodeData extends Record<string, unknown> {
@@ -106,7 +106,10 @@ export interface NodeTypeDefinition {
   getIcon?: (data: BaseNodeData, context: NodeStatusContext) => React.ReactNode;
   getDisplay?: (data: BaseNodeData, context: NodeStatusContext) => NodeDisplay;
   getAdornments?: (data: BaseNodeData, context: NodeStatusContext) => NodeAdornments;
-  getHandleConfigurations?: (data: BaseNodeData, context: NodeStatusContext) => HandleConfiguration[];
+  getHandleConfigurations?: (
+    data: BaseNodeData,
+    context: NodeStatusContext
+  ) => HandleConfiguration[];
   getMenuItems?: (data: BaseNodeData, context: NodeStatusContext) => NodeMenuItem[];
   getToolbar?: (data: BaseNodeData, context: NodeStatusContext) => NodeToolbarConfig | undefined;
 

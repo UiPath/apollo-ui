@@ -1,5 +1,12 @@
 export const WebAppProject = ({ w = 22, h = 22 }: { w?: number | string; h?: number | string }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" id="web-app-project" width={w} height={h} fill="none" viewBox="0 0 22 22">
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    id="web-app-project"
+    width={w}
+    height={h}
+    fill="none"
+    viewBox="0 0 22 22"
+  >
     <path
       fill="currentColor"
       fillRule="evenodd"

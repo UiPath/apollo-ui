@@ -1,11 +1,11 @@
-import { describe, it, expect, vi } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/react";
-import { ReactFlowProvider } from "@uipath/uix/xyflow/react";
-import { NodePropertiesPanel } from "./NodePropertiesPanel";
-import React from "react";
+import { describe, it, expect, vi } from 'vitest';
+import { render, screen, fireEvent } from '@testing-library/react';
+import { ReactFlowProvider } from '@uipath/uix/xyflow/react';
+import { NodePropertiesPanel } from './NodePropertiesPanel';
+import React from 'react';
 
 // Mock the hooks used by NodePropertiesPanel
-vi.mock("./hooks", () => ({
+vi.mock('./hooks', () => ({
   useNodeSelection: (nodeId: string) => ({
     selectedNodeId: nodeId,
     setSelectedNodeId: vi.fn(),
@@ -15,14 +15,14 @@ vi.mock("./hooks", () => ({
     schema: {
       fields: [
         {
-          key: "name",
-          type: "text",
-          label: "Name",
+          key: 'name',
+          type: 'text',
+          label: 'Name',
         },
         {
-          key: "description",
-          type: "textarea",
-          label: "Description",
+          key: 'description',
+          type: 'textarea',
+          label: 'Description',
         },
       ],
     },
@@ -32,8 +32,10 @@ vi.mock("./hooks", () => ({
 }));
 
 // Mock the React Flow hooks
-vi.mock("@uipath/uix/xyflow/react", () => ({
-  ReactFlowProvider: ({ children }: { children: React.ReactNode }) => <div data-testid="react-flow-provider">{children}</div>,
+vi.mock('@uipath/uix/xyflow/react', () => ({
+  ReactFlowProvider: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="react-flow-provider">{children}</div>
+  ),
   useReactFlow: () => ({
     getInternalNode: (id: string) => ({
       id,
@@ -48,7 +50,7 @@ vi.mock("@uipath/uix/xyflow/react", () => ({
 }));
 
 // Mock the FloatingCanvasPanel component
-vi.mock("../FloatingCanvasPanel", () => ({
+vi.mock('../FloatingCanvasPanel', () => ({
   FloatingCanvasPanel: ({
     children,
     headerActions,
@@ -69,20 +71,22 @@ vi.mock("../FloatingCanvasPanel", () => ({
 }));
 
 const mockNode = {
-  id: "test-node",
-  type: "default",
+  id: 'test-node',
+  type: 'default',
   position: { x: 0, y: 0 },
   selected: true,
   data: {
-    name: "Test Node",
-    description: "Test Description",
+    name: 'Test Node',
+    description: 'Test Description',
   },
 };
 
-const TestWrapper = ({ children }: { children: React.ReactNode }) => <ReactFlowProvider>{children}</ReactFlowProvider>;
+const TestWrapper = ({ children }: { children: React.ReactNode }) => (
+  <ReactFlowProvider>{children}</ReactFlowProvider>
+);
 
-describe("NodePropertiesPanel", () => {
-  it("should render the pin/unpin button", () => {
+describe('NodePropertiesPanel', () => {
+  it('should render the pin/unpin button', () => {
     render(
       <TestWrapper>
         <NodePropertiesPanel nodeId="test-node" />
@@ -90,21 +94,25 @@ describe("NodePropertiesPanel", () => {
     );
 
     // The panel should have a pin button
-    const pinButton = screen.queryByTitle("Pin panel");
+    const pinButton = screen.queryByTitle('Pin panel');
     expect(pinButton).toBeTruthy();
   });
 
-  it("should toggle between pinned and unpinned states", () => {
+  it('should toggle between pinned and unpinned states', () => {
     const onPinnedChange = vi.fn();
 
     render(
       <TestWrapper>
-        <NodePropertiesPanel nodeId="test-node" defaultPinned={false} onPinnedChange={onPinnedChange} />
+        <NodePropertiesPanel
+          nodeId="test-node"
+          defaultPinned={false}
+          onPinnedChange={onPinnedChange}
+        />
       </TestWrapper>
     );
 
     // Initially should show "Pin panel"
-    const pinButton = screen.getByTitle("Pin panel");
+    const pinButton = screen.getByTitle('Pin panel');
 
     // Click to pin
     fireEvent.click(pinButton);
@@ -113,11 +121,11 @@ describe("NodePropertiesPanel", () => {
     expect(onPinnedChange).toHaveBeenCalledWith(true);
 
     // Button should now show "Unpin panel"
-    const unpinButton = screen.getByTitle("Unpin panel");
+    const unpinButton = screen.getByTitle('Unpin panel');
     expect(unpinButton).toBeTruthy();
   });
 
-  it("should start pinned when defaultPinned is true", () => {
+  it('should start pinned when defaultPinned is true', () => {
     render(
       <TestWrapper>
         <NodePropertiesPanel nodeId="test-node" defaultPinned={true} />
@@ -125,11 +133,11 @@ describe("NodePropertiesPanel", () => {
     );
 
     // Should show "Unpin panel" since it starts pinned
-    const unpinButton = screen.getByTitle("Unpin panel");
+    const unpinButton = screen.getByTitle('Unpin panel');
     expect(unpinButton).toBeTruthy();
   });
 
-  it("should reset pinned state when panel closes", () => {
+  it('should reset pinned state when panel closes', () => {
     const onClose = vi.fn();
     render(
       <TestWrapper>
@@ -138,11 +146,11 @@ describe("NodePropertiesPanel", () => {
     );
 
     // Pin the panel
-    const pinButton = screen.getByTitle("Pin panel");
+    const pinButton = screen.getByTitle('Pin panel');
     fireEvent.click(pinButton);
 
     // Close the panel
-    const closeButton = screen.getByTestId("close-button");
+    const closeButton = screen.getByTestId('close-button');
     fireEvent.click(closeButton);
 
     // onClose should have been called

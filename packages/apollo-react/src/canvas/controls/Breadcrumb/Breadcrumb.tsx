@@ -1,13 +1,15 @@
-import { FontVariantToken, Spacing } from "@uipath/apollo-core";
-import { ApTooltip, ApTypography } from "@uipath/portal-shell-react";
-import React from "react";
-import styled from "@emotion/styled";
-import { Row } from "../../layouts";
+import { FontVariantToken, Spacing } from '@uipath/apollo-core';
+import { ApTooltip, ApTypography } from '@uipath/portal-shell-react';
+import React from 'react';
+import styled from '@emotion/styled';
+import { Row } from '../../layouts';
 
 type BreadcrumbProps = {
   items: {
     label: string;
-    onClick?: (e: React.MouseEvent<HTMLButtonElement> | React.KeyboardEvent<HTMLButtonElement>) => void;
+    onClick?: (
+      e: React.MouseEvent<HTMLButtonElement> | React.KeyboardEvent<HTMLButtonElement>
+    ) => void;
     startAdornment?: React.ReactNode;
     endAdornment?: React.ReactNode;
   }[];
@@ -27,9 +29,9 @@ const LiStyled = styled.li`
   padding: 0;
 `;
 
-export const Breadcrumb: React.FC<BreadcrumbProps> = ({ items, delimiter = ">" }) => {
+export const Breadcrumb: React.FC<BreadcrumbProps> = ({ items, delimiter = '>' }) => {
   const delimiterNode =
-    typeof delimiter === "string" ? (
+    typeof delimiter === 'string' ? (
       <ApTypography aria-hidden="true" color="var(--color-foreground-de-emp)">
         {delimiter}
       </ApTypography>
@@ -40,7 +42,7 @@ export const Breadcrumb: React.FC<BreadcrumbProps> = ({ items, delimiter = ">" }
   return (
     <Row
       align="center"
-      style={{ overflow: "hidden", whiteSpace: "nowrap", color: "var(--color-foreground-de-emp)" }}
+      style={{ overflow: 'hidden', whiteSpace: 'nowrap', color: 'var(--color-foreground-de-emp)' }}
       gap={Spacing.SpacingMicro}
     >
       <OlStyled>
@@ -50,27 +52,31 @@ export const Breadcrumb: React.FC<BreadcrumbProps> = ({ items, delimiter = ">" }
               <button
                 type="button"
                 style={{
-                  cursor: "pointer",
-                  background: "none",
-                  border: "none",
+                  cursor: 'pointer',
+                  background: 'none',
+                  border: 'none',
                   padding: 0,
                   margin: 0,
-                  color: "inherit",
+                  color: 'inherit',
                 }}
                 onClick={(e) => item.onClick?.(e)}
-                onKeyDown={(e) => e.key === "Enter" && item.onClick?.(e)}
+                onKeyDown={(e) => e.key === 'Enter' && item.onClick?.(e)}
               >
                 <Row
                   overflow="hidden"
                   align="center"
                   gap={Spacing.SpacingMicro}
-                  aria-current={index === items.length - 1 ? "page" : undefined}
+                  aria-current={index === items.length - 1 ? 'page' : undefined}
                 >
                   {item.startAdornment ?? <></>}
                   <ApTooltip smartTooltip content={item.label}>
                     <ApTypography
-                      variant={index === items.length - 1 ? FontVariantToken.fontSizeMBold : FontVariantToken.fontSizeM}
-                      style={{ textOverflow: "ellipsis", overflow: "hidden", whiteSpace: "nowrap" }}
+                      variant={
+                        index === items.length - 1
+                          ? FontVariantToken.fontSizeMBold
+                          : FontVariantToken.fontSizeM
+                      }
+                      style={{ textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}
                       data-testid={`breadcrumb-item-${item.label}`}
                     >
                       {item.label}
@@ -84,13 +90,17 @@ export const Breadcrumb: React.FC<BreadcrumbProps> = ({ items, delimiter = ">" }
                 overflow="hidden"
                 align="center"
                 gap={Spacing.SpacingMicro}
-                aria-current={index === items.length - 1 ? "page" : undefined}
+                aria-current={index === items.length - 1 ? 'page' : undefined}
               >
                 {item.startAdornment}
                 <ApTooltip smartTooltip content={item.label}>
                   <ApTypography
-                    variant={index === items.length - 1 ? FontVariantToken.fontSizeMBold : FontVariantToken.fontSizeM}
-                    style={{ textOverflow: "ellipsis", overflow: "hidden", whiteSpace: "nowrap" }}
+                    variant={
+                      index === items.length - 1
+                        ? FontVariantToken.fontSizeMBold
+                        : FontVariantToken.fontSizeM
+                    }
+                    style={{ textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}
                     data-testid={`breadcrumb-item-${item.label}`}
                   >
                     {item.label}

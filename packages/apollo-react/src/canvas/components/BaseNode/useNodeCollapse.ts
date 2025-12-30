@@ -1,5 +1,5 @@
-import { useCallback } from "react";
-import { useReactFlow, useStore } from "@uipath/uix/xyflow/react";
+import { useCallback } from 'react';
+import { useReactFlow, useStore } from '@uipath/uix/xyflow/react';
 
 /**
  * Configuration for collapsible node behavior.
@@ -40,7 +40,10 @@ interface UseNodeCollapseReturn {
  * Hook to manage collapse/expand behavior for a node.
  * When collapsed, hides nodes connected via specified handles.
  */
-export function useNodeCollapse({ nodeId, collapseConfig }: UseNodeCollapseProps): UseNodeCollapseReturn {
+export function useNodeCollapse({
+  nodeId,
+  collapseConfig,
+}: UseNodeCollapseProps): UseNodeCollapseReturn {
   const { setNodes, setEdges } = useReactFlow();
 
   const isCollapseEnabled = collapseConfig?.enabled ?? false;
@@ -54,10 +57,10 @@ export function useNodeCollapse({ nodeId, collapseConfig }: UseNodeCollapseProps
 
       const connectedIds = new Set<string>();
       state.edges.forEach((edge) => {
-        if (edge.source === nodeId && handleIds.includes(edge.sourceHandle ?? "")) {
+        if (edge.source === nodeId && handleIds.includes(edge.sourceHandle ?? '')) {
           connectedIds.add(edge.target);
         }
-        if (edge.target === nodeId && handleIds.includes(edge.targetHandle ?? "")) {
+        if (edge.target === nodeId && handleIds.includes(edge.targetHandle ?? '')) {
           connectedIds.add(edge.source);
         }
       });
@@ -75,11 +78,17 @@ export function useNodeCollapse({ nodeId, collapseConfig }: UseNodeCollapseProps
     if (!isCollapseEnabled || connectedNodeIds.size === 0) return;
 
     // Hide connected nodes
-    setNodes((nodes) => nodes.map((node) => (connectedNodeIds.has(node.id) ? { ...node, hidden: true } : node)));
+    setNodes((nodes) =>
+      nodes.map((node) => (connectedNodeIds.has(node.id) ? { ...node, hidden: true } : node))
+    );
 
     // Hide edges connected to the hidden nodes
     setEdges((edges) =>
-      edges.map((edge) => (connectedNodeIds.has(edge.source) || connectedNodeIds.has(edge.target) ? { ...edge, hidden: true } : edge))
+      edges.map((edge) =>
+        connectedNodeIds.has(edge.source) || connectedNodeIds.has(edge.target)
+          ? { ...edge, hidden: true }
+          : edge
+      )
     );
 
     // Call the callback if provided
@@ -93,11 +102,17 @@ export function useNodeCollapse({ nodeId, collapseConfig }: UseNodeCollapseProps
     if (!isCollapseEnabled || connectedNodeIds.size === 0) return;
 
     // Show connected nodes
-    setNodes((nodes) => nodes.map((node) => (connectedNodeIds.has(node.id) ? { ...node, hidden: false } : node)));
+    setNodes((nodes) =>
+      nodes.map((node) => (connectedNodeIds.has(node.id) ? { ...node, hidden: false } : node))
+    );
 
     // Show edges connected to the shown nodes
     setEdges((edges) =>
-      edges.map((edge) => (connectedNodeIds.has(edge.source) || connectedNodeIds.has(edge.target) ? { ...edge, hidden: false } : edge))
+      edges.map((edge) =>
+        connectedNodeIds.has(edge.source) || connectedNodeIds.has(edge.target)
+          ? { ...edge, hidden: false }
+          : edge
+      )
     );
 
     // Call the callback if provided

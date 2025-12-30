@@ -1,21 +1,28 @@
-import type { Meta, StoryObj } from "@storybook/react";
-import type { Connection, Edge } from "@uipath/uix/xyflow/react";
-import { addEdge, ConnectionMode, Panel, ReactFlowProvider, useEdgesState, useNodesState } from "@uipath/uix/xyflow/react";
-import { useCallback, useMemo } from "react";
-import { DefaultCanvasTranslations } from "../../types";
-import { BaseCanvas } from "../BaseCanvas";
-import { CanvasPositionControls } from "../CanvasPositionControls";
-import type { ListItem } from "../Toolbox";
-import { StageConnectionEdge } from "./StageConnectionEdge";
-import { StageEdge } from "./StageEdge";
-import { StageNode } from "./StageNode";
-import type { StageNodeProps, StageTaskItem } from "./StageNode.types";
+import type { Meta, StoryObj } from '@storybook/react';
+import type { Connection, Edge } from '@uipath/uix/xyflow/react';
+import {
+  addEdge,
+  ConnectionMode,
+  Panel,
+  ReactFlowProvider,
+  useEdgesState,
+  useNodesState,
+} from '@uipath/uix/xyflow/react';
+import { useCallback, useMemo } from 'react';
+import { DefaultCanvasTranslations } from '../../types';
+import { BaseCanvas } from '../BaseCanvas';
+import { CanvasPositionControls } from '../CanvasPositionControls';
+import type { ListItem } from '../Toolbox';
+import { StageConnectionEdge } from './StageConnectionEdge';
+import { StageEdge } from './StageEdge';
+import { StageNode } from './StageNode';
+import type { StageNodeProps, StageTaskItem } from './StageNode.types';
 
 const meta = {
-  title: "Canvas/StageNode",
+  title: 'Canvas/StageNode',
   component: StageNode as any,
   parameters: {
-    layout: "fullscreen",
+    layout: 'fullscreen',
   },
   decorators: [
     (Story, context) => {
@@ -32,8 +39,8 @@ const meta = {
 
       const initialNodes = context.parameters?.nodes || [
         {
-          id: "1",
-          type: "stage",
+          id: '1',
+          type: 'stage',
           position: { x: 250, y: 100 },
           data: {
             stageDetails: context.args.stageDetails,
@@ -60,10 +67,10 @@ const meta = {
 
       const nodeTypes = useMemo(() => ({ stage: StageNodeWrapper }), []);
       const edgeTypes = useMemo(() => ({ stage: StageEdge }), []);
-      const defaultEdgeOptions = useMemo(() => ({ type: "stage" }), []);
+      const defaultEdgeOptions = useMemo(() => ({ type: 'stage' }), []);
 
       return (
-        <div style={{ width: "100vw", height: "100vh" }}>
+        <div style={{ width: '100vw', height: '100vh' }}>
           <ReactFlowProvider>
             <BaseCanvas
               nodes={nodes}
@@ -80,7 +87,10 @@ const meta = {
               elevateEdgesOnSelect
             >
               <Panel position="bottom-right">
-                <CanvasPositionControls translations={DefaultCanvasTranslations} showOrganize={false} />
+                <CanvasPositionControls
+                  translations={DefaultCanvasTranslations}
+                  showOrganize={false}
+                />
               </Panel>
             </BaseCanvas>
           </ReactFlowProvider>
@@ -90,15 +100,15 @@ const meta = {
   ],
   args: {
     stageDetails: {
-      label: "Default Stage",
+      label: 'Default Stage',
       tasks: [],
     },
   },
   argTypes: {
     addTaskLabel: {
-      control: "text",
-      description: "Label for the add process button",
-      defaultValue: "Add process",
+      control: 'text',
+      description: 'Label for the add process button',
+      defaultValue: 'Add process',
     },
   },
 } satisfies Meta<StageNodeProps>;
@@ -134,65 +144,71 @@ const DocumentIcon = () => (
 
 // Example with both sequential and parallel tasks
 const sampleTasks: StageTaskItem[][] = [
-  [{ id: "liability_check", label: "Liability Check", icon: <VerificationIcon /> }],
-  [{ id: "credit_review", label: "Credit Review", icon: <DocumentIcon /> }],
+  [{ id: 'liability_check', label: 'Liability Check', icon: <VerificationIcon /> }],
+  [{ id: 'credit_review', label: 'Credit Review', icon: <DocumentIcon /> }],
   // Parallel tasks - these run at the same time
   [
-    { id: "address_verification", label: "Address Verification and a really long label that might wrap", icon: <VerificationIcon /> },
-    { id: "property_verification", label: "Property Verification", icon: <VerificationIcon /> },
+    {
+      id: 'address_verification',
+      label: 'Address Verification and a really long label that might wrap',
+      icon: <VerificationIcon />,
+    },
+    { id: 'property_verification', label: 'Property Verification', icon: <VerificationIcon /> },
   ],
-  [{ id: "processing_review", label: "Processing Review", icon: <ProcessIcon /> }],
+  [{ id: 'processing_review', label: 'Processing Review', icon: <ProcessIcon /> }],
 ];
 
 export const Default: Story = {
-  name: "Default",
+  name: 'Default',
   parameters: {
     nodes: [
       {
-        id: "0",
-        type: "stage",
+        id: '0',
+        type: 'stage',
         position: { x: 50, y: 100 },
         width: 300,
         data: {
           stageDetails: {
-            label: "Application",
+            label: 'Application',
             tasks: [],
           },
           onTaskAdd: () => {
-            window.alert("Add task functionality - this would open a dialog to add a new task");
+            window.alert('Add task functionality - this would open a dialog to add a new task');
           },
           menuItems: [
             {
-              id: "edit",
-              label: "Edit Stage",
-              onClick: () => console.log("Edit Application stage"),
+              id: 'edit',
+              label: 'Edit Stage',
+              onClick: () => console.log('Edit Application stage'),
             },
             {
-              id: "duplicate",
-              label: "Duplicate",
-              onClick: () => console.log("Duplicate Application stage"),
+              id: 'duplicate',
+              label: 'Duplicate',
+              onClick: () => console.log('Duplicate Application stage'),
             },
-            { type: "divider" },
+            { type: 'divider' },
             {
-              id: "delete",
-              label: "Delete",
-              onClick: () => console.log("Delete Application stage"),
+              id: 'delete',
+              label: 'Delete',
+              onClick: () => console.log('Delete Application stage'),
             },
           ],
         },
       },
       {
-        id: "1",
-        type: "stage",
+        id: '1',
+        type: 'stage',
         position: { x: 400, y: 100 },
         width: 300,
         data: {
           stageDetails: {
-            label: "Processing with a really really really long label that might wrap",
+            label: 'Processing with a really really really long label that might wrap',
             tasks: sampleTasks,
           },
           onAddTaskFromToolbox: (taskItem: ListItem) => {
-            window.alert(`Add task (${taskItem.data.type}) - this would open a panel to configure the new task`);
+            window.alert(
+              `Add task (${taskItem.data.type}) - this would open a panel to configure the new task`
+            );
           },
           taskOptions: sampleTasks.flat().map((task) => ({
             id: task.id,
@@ -202,30 +218,30 @@ export const Default: Story = {
           })),
           menuItems: [
             {
-              id: "edit",
-              label: "Edit Stage",
-              onClick: () => console.log("Edit Processing stage"),
+              id: 'edit',
+              label: 'Edit Stage',
+              onClick: () => console.log('Edit Processing stage'),
             },
             {
-              id: "add-task",
-              label: "Add Task",
-              onClick: () => console.log("Add task to Processing stage"),
+              id: 'add-task',
+              label: 'Add Task',
+              onClick: () => console.log('Add task to Processing stage'),
             },
             {
-              id: "configure",
-              label: "Configure",
-              onClick: () => console.log("Configure Processing stage"),
+              id: 'configure',
+              label: 'Configure',
+              onClick: () => console.log('Configure Processing stage'),
             },
-            { type: "divider" },
+            { type: 'divider' },
             {
-              id: "duplicate",
-              label: "Duplicate",
-              onClick: () => console.log("Duplicate Processing stage"),
+              id: 'duplicate',
+              label: 'Duplicate',
+              onClick: () => console.log('Duplicate Processing stage'),
             },
             {
-              id: "delete",
-              label: "Delete",
-              onClick: () => console.log("Delete Processing stage"),
+              id: 'delete',
+              label: 'Delete',
+              onClick: () => console.log('Delete Processing stage'),
               disabled: true,
             },
           ],
@@ -237,166 +253,172 @@ export const Default: Story = {
 };
 
 export const ExecutionStatus: Story = {
-  name: "Execution Status",
+  name: 'Execution Status',
   parameters: {
     nodes: [
       {
-        id: "0",
-        type: "stage",
+        id: '0',
+        type: 'stage',
         position: { x: 50, y: 100 },
         width: 300,
         data: {
           stageDetails: {
-            sla: "1h",
+            sla: '1h',
             slaBreached: false,
-            escalation: "1h",
+            escalation: '1h',
             escalationsTriggered: false,
-            label: "Application",
+            label: 'Application',
             tasks: [
-              [{ id: "1", label: "KYC and AML Checks", icon: <VerificationIcon /> }],
-              [{ id: "2", label: "Document Verification is going to be very very really long", icon: <DocumentIcon /> }],
+              [{ id: '1', label: 'KYC and AML Checks', icon: <VerificationIcon /> }],
+              [
+                {
+                  id: '2',
+                  label: 'Document Verification is going to be very very really long',
+                  icon: <DocumentIcon />,
+                },
+              ],
             ],
           },
           execution: {
             stageStatus: {
-              status: "Completed",
-              duration: "4h",
+              status: 'Completed',
+              duration: '4h',
             },
             taskStatus: {
-              "1": { status: "Completed", label: "KYC and AML Checks", duration: "2h 15m" },
-              "2": { status: "Completed", label: "Document Verification", duration: "1h 45m" },
+              '1': { status: 'Completed', label: 'KYC and AML Checks', duration: '2h 15m' },
+              '2': { status: 'Completed', label: 'Document Verification', duration: '1h 45m' },
             },
           },
         },
       },
       {
-        id: "1",
-        type: "stage",
+        id: '1',
+        type: 'stage',
         position: { x: 400, y: 100 },
         width: 300,
         data: {
           stageDetails: {
-            sla: "1h",
+            sla: '1h',
             slaBreached: true,
-            escalation: "1h",
+            escalation: '1h',
             escalationsTriggered: true,
-            label: "Processing",
+            label: 'Processing',
             tasks: [
-              [{ id: "1", label: "Liability Check", icon: <VerificationIcon /> }],
-              [{ id: "2", label: "Credit Review", icon: <DocumentIcon /> }],
+              [{ id: '1', label: 'Liability Check', icon: <VerificationIcon /> }],
+              [{ id: '2', label: 'Credit Review', icon: <DocumentIcon /> }],
               [
-                { id: "3", label: "Address Verification", icon: <VerificationIcon /> },
-                { id: "4", label: "Property Verification", icon: <VerificationIcon /> },
+                { id: '3', label: 'Address Verification', icon: <VerificationIcon /> },
+                { id: '4', label: 'Property Verification', icon: <VerificationIcon /> },
               ],
-              [{ id: "5", label: "Processing Review", icon: <ProcessIcon /> }],
+              [{ id: '5', label: 'Processing Review', icon: <ProcessIcon /> }],
             ],
-            selectedTasks: ["2"],
+            selectedTasks: ['2'],
           },
           execution: {
             stageStatus: {
-              status: "Completed",
-              duration: "6h 15m",
+              status: 'Completed',
+              duration: '6h 15m',
             },
             taskStatus: {
-              "1": {
-                status: "Completed",
-                label: "Liability Check",
-                duration: "1h 30m",
-                retryDuration: "25m",
-                badge: "Reworked",
-                badgeStatus: "error",
+              '1': {
+                status: 'Completed',
+                label: 'Liability Check',
+                duration: '1h 30m',
+                retryDuration: '25m',
+                badge: 'Reworked',
+                badgeStatus: 'error',
                 retryCount: 2,
               },
-              "2": {
-                status: "Completed",
-                label: "Credit Review",
-                duration: "1h 30m",
-                retryDuration: "32m",
-                badge: "Reworked",
+              '2': {
+                status: 'Completed',
+                label: 'Credit Review',
+                duration: '1h 30m',
+                retryDuration: '32m',
+                badge: 'Reworked',
                 retryCount: 1,
               },
-              "3": { status: "Completed", label: "Address Verification", duration: "30m" },
-              "4": {
-                status: "Completed",
-                label: "Property Verification",
-                duration: "1h 30m",
-                retryDuration: "1h 5m",
-                badge: "Reworked",
+              '3': { status: 'Completed', label: 'Address Verification', duration: '30m' },
+              '4': {
+                status: 'Completed',
+                label: 'Property Verification',
+                duration: '1h 30m',
+                retryDuration: '1h 5m',
+                badge: 'Reworked',
                 retryCount: 3,
               },
-              "5": { status: "Completed", label: "Processing Review", duration: "1h 15m" },
+              '5': { status: 'Completed', label: 'Processing Review', duration: '1h 15m' },
             },
           },
         },
       },
       {
-        id: "2",
-        type: "stage",
+        id: '2',
+        type: 'stage',
         position: { x: 750, y: 100 },
         width: 300,
         data: {
           stageDetails: {
-            label: "Underwriting",
+            label: 'Underwriting',
             tasks: [
-              [{ id: "1", label: "Report Ordering", icon: <DocumentIcon /> }],
-              [{ id: "2", label: "Underwriting Verification", icon: <VerificationIcon /> }],
+              [{ id: '1', label: 'Report Ordering', icon: <DocumentIcon /> }],
+              [{ id: '2', label: 'Underwriting Verification', icon: <VerificationIcon /> }],
             ],
           },
           onTaskClick: (id: string) => window.alert(`Task clicked: ${id}`),
           execution: {
             stageStatus: {
-              status: "InProgress",
-              label: "In progress",
-              duration: "2h 15m",
+              status: 'InProgress',
+              label: 'In progress',
+              duration: '2h 15m',
             },
             taskStatus: {
-              "1": { status: "Completed", label: "Report Ordering", duration: "2h 15m" },
-              "2": { status: "InProgress", label: "Underwriting Verification" },
+              '1': { status: 'Completed', label: 'Report Ordering', duration: '2h 15m' },
+              '2': { status: 'InProgress', label: 'Underwriting Verification' },
             },
           },
         },
       },
       {
-        id: "3",
-        type: "stage",
+        id: '3',
+        type: 'stage',
         position: { x: 1100, y: 100 },
         width: 300,
         data: {
           stageDetails: {
-            label: "Closing",
+            label: 'Closing',
             tasks: [
-              [{ id: "1", label: "Loan Packet Creation", icon: <DocumentIcon /> }],
-              [{ id: "2", label: "Customer Signing", icon: <DocumentIcon /> }],
-              [{ id: "3", label: "Generate Audit Report", icon: <DocumentIcon /> }],
+              [{ id: '1', label: 'Loan Packet Creation', icon: <DocumentIcon /> }],
+              [{ id: '2', label: 'Customer Signing', icon: <DocumentIcon /> }],
+              [{ id: '3', label: 'Generate Audit Report', icon: <DocumentIcon /> }],
             ],
           },
           execution: {
             stageStatus: {
-              status: "NotExecuted",
-              label: "Not started",
+              status: 'NotExecuted',
+              label: 'Not started',
             },
             taskStatus: {},
           },
         },
       },
       {
-        id: "4",
-        type: "stage",
+        id: '4',
+        type: 'stage',
         position: { x: 1100, y: 400 },
         width: 300,
         data: {
           stageDetails: {
-            label: "Rejected",
+            label: 'Rejected',
             isException: true,
             tasks: [
-              [{ id: "1", label: "Customer Notification", icon: <ProcessIcon /> }],
-              [{ id: "2", label: "Generate Audit Report", icon: <DocumentIcon /> }],
+              [{ id: '1', label: 'Customer Notification', icon: <ProcessIcon /> }],
+              [{ id: '2', label: 'Generate Audit Report', icon: <DocumentIcon /> }],
             ],
           },
           execution: {
             stageStatus: {
-              status: "NotExecuted",
-              label: "Not started",
+              status: 'NotExecuted',
+              label: 'Not started',
             },
             taskStatus: {},
           },
@@ -405,28 +427,28 @@ export const ExecutionStatus: Story = {
     ],
     edges: [
       {
-        id: "e1",
-        type: "stage",
-        source: "0",
-        sourceHandle: "0____source____right",
-        target: "1",
-        targetHandle: "1____target____left",
+        id: 'e1',
+        type: 'stage',
+        source: '0',
+        sourceHandle: '0____source____right',
+        target: '1',
+        targetHandle: '1____target____left',
       },
       {
-        id: "e2",
-        type: "stage",
-        source: "1",
-        sourceHandle: "1____source____right",
-        target: "2",
-        targetHandle: "2____target____left",
+        id: 'e2',
+        type: 'stage',
+        source: '1',
+        sourceHandle: '1____source____right',
+        target: '2',
+        targetHandle: '2____target____left',
       },
       {
-        id: "e3",
-        type: "stage",
-        source: "2",
-        sourceHandle: "2____source____right",
-        target: "3",
-        targetHandle: "3____target____left",
+        id: 'e3',
+        type: 'stage',
+        source: '2',
+        sourceHandle: '2____source____right',
+        target: '3',
+        targetHandle: '3____target____left',
       },
     ] as Edge[],
   },
@@ -434,26 +456,43 @@ export const ExecutionStatus: Story = {
 };
 
 export const InteractiveTaskManagement: Story = {
-  name: "Interactive Task Management",
+  name: 'Interactive Task Management',
   parameters: {
     nodes: [
       {
-        id: "design-stage",
-        type: "stage",
+        id: 'design-stage',
+        type: 'stage',
         position: { x: 50, y: 100 },
         width: 350,
         data: {
           stageDetails: {
-            label: "Design Mode - Editable",
+            label: 'Design Mode - Editable',
             tasks: [
-              [{ id: "1", label: "Initial Task", icon: <VerificationIcon /> }],
-              [{ id: "2", label: "Credit Review with a very long label that will be truncated and show tooltip", icon: <DocumentIcon /> }],
+              [{ id: '1', label: 'Initial Task', icon: <VerificationIcon /> }],
               [
-                { id: "3", label: "Address Verification", icon: <VerificationIcon /> },
-                { id: "4", label: "Property Verification with Long Name", icon: <VerificationIcon /> },
-                { id: "5", label: "Background Check", icon: <ProcessIcon /> },
+                {
+                  id: '2',
+                  label:
+                    'Credit Review with a very long label that will be truncated and show tooltip',
+                  icon: <DocumentIcon />,
+                },
               ],
-              [{ id: "6", label: "Final Review Task with Extended Description", icon: <ProcessIcon /> }],
+              [
+                { id: '3', label: 'Address Verification', icon: <VerificationIcon /> },
+                {
+                  id: '4',
+                  label: 'Property Verification with Long Name',
+                  icon: <VerificationIcon />,
+                },
+                { id: '5', label: 'Background Check', icon: <ProcessIcon /> },
+              ],
+              [
+                {
+                  id: '6',
+                  label: 'Final Review Task with Extended Description',
+                  icon: <ProcessIcon />,
+                },
+              ],
             ],
           },
           onTaskClick: (taskId: string) => {
@@ -465,77 +504,91 @@ export const InteractiveTaskManagement: Story = {
             );
           },
           onTaskAdd: () => {
-            window.alert("Add task functionality - this would open a dialog to add a new task");
+            window.alert('Add task functionality - this would open a dialog to add a new task');
           },
           menuItems: [
             {
-              id: "edit",
-              label: "Edit Stage",
-              onClick: () => console.log("Edit stage"),
+              id: 'edit',
+              label: 'Edit Stage',
+              onClick: () => console.log('Edit stage'),
             },
             {
-              id: "add-task",
-              label: "Add Task",
-              onClick: () => console.log("Add task from menu"),
+              id: 'add-task',
+              label: 'Add Task',
+              onClick: () => console.log('Add task from menu'),
             },
-            { type: "divider" },
+            { type: 'divider' },
             {
-              id: "delete",
-              label: "Delete Stage",
-              onClick: () => console.log("Delete stage"),
+              id: 'delete',
+              label: 'Delete Stage',
+              onClick: () => console.log('Delete stage'),
             },
           ],
         },
       },
       {
-        id: "execution-stage",
-        type: "stage",
+        id: 'execution-stage',
+        type: 'stage',
         position: { x: 450, y: 100 },
         width: 350,
         data: {
           stageDetails: {
-            label: "Execution Mode - Read Only",
+            label: 'Execution Mode - Read Only',
             tasks: [
-              [{ id: "1", label: "Task with execution status and very long name that will be truncated", icon: <VerificationIcon /> }],
-              [{ id: "2", label: "Credit Review Processing", icon: <DocumentIcon /> }],
               [
-                { id: "3", label: "Parallel Address Verification Task", icon: <VerificationIcon /> },
-                { id: "4", label: "Parallel Property Verification with Extended Name", icon: <VerificationIcon /> },
+                {
+                  id: '1',
+                  label: 'Task with execution status and very long name that will be truncated',
+                  icon: <VerificationIcon />,
+                },
               ],
-              [{ id: "5", label: "Final Review and Approval Process", icon: <ProcessIcon /> }],
+              [{ id: '2', label: 'Credit Review Processing', icon: <DocumentIcon /> }],
+              [
+                {
+                  id: '3',
+                  label: 'Parallel Address Verification Task',
+                  icon: <VerificationIcon />,
+                },
+                {
+                  id: '4',
+                  label: 'Parallel Property Verification with Extended Name',
+                  icon: <VerificationIcon />,
+                },
+              ],
+              [{ id: '5', label: 'Final Review and Approval Process', icon: <ProcessIcon /> }],
             ],
           },
           execution: {
             stageStatus: {
-              status: "InProgress",
-              label: "In progress",
-              duration: "2h 15m",
+              status: 'InProgress',
+              label: 'In progress',
+              duration: '2h 15m',
             },
             taskStatus: {
-              "1": {
-                status: "Completed",
-                duration: "30m",
-                badge: "Completed",
-                badgeStatus: "info",
+              '1': {
+                status: 'Completed',
+                duration: '30m',
+                badge: 'Completed',
+                badgeStatus: 'info',
               },
-              "2": {
-                status: "InProgress",
-                duration: "1h 15m",
-                retryDuration: "15m",
-                badge: "Retry",
-                badgeStatus: "warning",
+              '2': {
+                status: 'InProgress',
+                duration: '1h 15m',
+                retryDuration: '15m',
+                badge: 'Retry',
+                badgeStatus: 'warning',
                 retryCount: 2,
               },
-              "3": { status: "Completed", duration: "45m" },
-              "4": {
-                status: "Failed",
-                duration: "20m",
-                retryDuration: "10m",
-                badge: "Error",
-                badgeStatus: "error",
+              '3': { status: 'Completed', duration: '45m' },
+              '4': {
+                status: 'Failed',
+                duration: '20m',
+                retryDuration: '10m',
+                badge: 'Error',
+                badgeStatus: 'error',
                 retryCount: 1,
               },
-              "5": { status: "NotExecuted" },
+              '5': { status: 'NotExecuted' },
             },
           },
           onTaskClick: (taskId: string) => {
@@ -549,127 +602,127 @@ export const InteractiveTaskManagement: Story = {
 };
 
 export const LoanProcessingWorkflow: Story = {
-  name: "Loan Processing Workflow",
+  name: 'Loan Processing Workflow',
   parameters: {
     nodes: [
       // Application Stage
       {
-        id: "application",
-        type: "stage",
+        id: 'application',
+        type: 'stage',
         position: { x: 50, y: 100 },
         width: 300,
         data: {
           stageDetails: {
-            label: "Application",
+            label: 'Application',
             tasks: [
-              [{ id: "1", label: "KYC and AML Checks", icon: <VerificationIcon /> }],
-              [{ id: "2", label: "Document Verification", icon: <DocumentIcon /> }],
+              [{ id: '1', label: 'KYC and AML Checks', icon: <VerificationIcon /> }],
+              [{ id: '2', label: 'Document Verification', icon: <DocumentIcon /> }],
             ],
-            selectedTasks: ["1"],
+            selectedTasks: ['1'],
           },
         },
       },
       // Processing Stage
       {
-        id: "processing",
-        type: "stage",
+        id: 'processing',
+        type: 'stage',
         position: { x: 450, y: 100 },
         width: 300,
         data: {
           stageDetails: {
-            label: "Processing",
+            label: 'Processing',
             tasks: [
-              [{ id: "1", label: "Liability Check", icon: <VerificationIcon /> }],
-              [{ id: "2", label: "Credit Review", icon: <DocumentIcon /> }],
+              [{ id: '1', label: 'Liability Check', icon: <VerificationIcon /> }],
+              [{ id: '2', label: 'Credit Review', icon: <DocumentIcon /> }],
               [
-                { id: "3", label: "Address Verification", icon: <VerificationIcon /> },
-                { id: "4", label: "Property Verification", icon: <VerificationIcon /> },
+                { id: '3', label: 'Address Verification', icon: <VerificationIcon /> },
+                { id: '4', label: 'Property Verification', icon: <VerificationIcon /> },
               ],
-              [{ id: "5", label: "Processing Review", icon: <ProcessIcon /> }],
+              [{ id: '5', label: 'Processing Review', icon: <ProcessIcon /> }],
             ],
-            selectedTasks: ["4"],
+            selectedTasks: ['4'],
           },
         },
       },
       // Underwriting Stage
       {
-        id: "underwriting",
-        type: "stage",
+        id: 'underwriting',
+        type: 'stage',
         position: { x: 850, y: 100 },
         width: 300,
         data: {
           stageDetails: {
-            label: "Underwriting",
+            label: 'Underwriting',
             tasks: [
-              [{ id: "1", label: "Report Ordering", icon: <DocumentIcon /> }],
-              [{ id: "2", label: "Underwriting Verification", icon: <VerificationIcon /> }],
+              [{ id: '1', label: 'Report Ordering', icon: <DocumentIcon /> }],
+              [{ id: '2', label: 'Underwriting Verification', icon: <VerificationIcon /> }],
             ],
           },
         },
       },
       // Closing Stage
       {
-        id: "closing",
-        type: "stage",
+        id: 'closing',
+        type: 'stage',
         position: { x: 1250, y: 100 },
         width: 300,
         data: {
           stageDetails: {
-            label: "Closing",
+            label: 'Closing',
             tasks: [
-              [{ id: "1", label: "Loan Packet Creation", icon: <DocumentIcon /> }],
-              [{ id: "2", label: "Customer Signing", icon: <DocumentIcon /> }],
-              [{ id: "3", label: "Generate Audit Report", icon: <DocumentIcon /> }],
+              [{ id: '1', label: 'Loan Packet Creation', icon: <DocumentIcon /> }],
+              [{ id: '2', label: 'Customer Signing', icon: <DocumentIcon /> }],
+              [{ id: '3', label: 'Generate Audit Report', icon: <DocumentIcon /> }],
             ],
           },
         },
       },
       // Funding Stage
       {
-        id: "funding",
-        type: "stage",
+        id: 'funding',
+        type: 'stage',
         position: { x: 1650, y: 100 },
         width: 300,
         data: {
           stageDetails: {
-            label: "Funding",
+            label: 'Funding',
             tasks: [
-              [{ id: "1", label: "Disperse Loan", icon: <ProcessIcon /> }],
-              [{ id: "2", label: "Generate Audit Report", icon: <DocumentIcon /> }],
+              [{ id: '1', label: 'Disperse Loan', icon: <ProcessIcon /> }],
+              [{ id: '2', label: 'Generate Audit Report', icon: <DocumentIcon /> }],
             ],
           },
         },
       },
       // Rejected Stage
       {
-        id: "rejected",
-        type: "stage",
+        id: 'rejected',
+        type: 'stage',
         position: { x: 1250, y: 400 },
         width: 300,
         data: {
           stageDetails: {
-            label: "Rejected",
+            label: 'Rejected',
             isException: true,
             tasks: [
-              [{ id: "1", label: "Customer Notification", icon: <ProcessIcon /> }],
-              [{ id: "2", label: "Generate Audit Report", icon: <DocumentIcon /> }],
+              [{ id: '1', label: 'Customer Notification', icon: <ProcessIcon /> }],
+              [{ id: '2', label: 'Generate Audit Report', icon: <DocumentIcon /> }],
             ],
           },
         },
       },
       // Withdrawn Stage
       {
-        id: "withdrawn",
-        type: "stage",
+        id: 'withdrawn',
+        type: 'stage',
         position: { x: 450, y: 600 },
         width: 300,
         data: {
           stageDetails: {
-            label: "Withdrawn",
+            label: 'Withdrawn',
             isException: true,
             tasks: [
-              [{ id: "1", label: "Customer Notification", icon: <ProcessIcon /> }],
-              [{ id: "2", label: "Generate Audit Report", icon: <DocumentIcon /> }],
+              [{ id: '1', label: 'Customer Notification', icon: <ProcessIcon /> }],
+              [{ id: '2', label: 'Generate Audit Report', icon: <DocumentIcon /> }],
             ],
           },
         },
@@ -678,36 +731,36 @@ export const LoanProcessingWorkflow: Story = {
     edges: [
       // Main flow
       {
-        id: "e1",
-        type: "stage",
-        source: "application",
-        sourceHandle: "application____source____right",
-        target: "processing",
-        targetHandle: "processing____target____left",
+        id: 'e1',
+        type: 'stage',
+        source: 'application',
+        sourceHandle: 'application____source____right',
+        target: 'processing',
+        targetHandle: 'processing____target____left',
       },
       {
-        id: "e2",
-        type: "stage",
-        source: "processing",
-        sourceHandle: "processing____source____right",
-        target: "underwriting",
-        targetHandle: "underwriting____target____left",
+        id: 'e2',
+        type: 'stage',
+        source: 'processing',
+        sourceHandle: 'processing____source____right',
+        target: 'underwriting',
+        targetHandle: 'underwriting____target____left',
       },
       {
-        id: "e3",
-        type: "stage",
-        source: "underwriting",
-        sourceHandle: "underwriting____source____right",
-        target: "closing",
-        targetHandle: "closing____target____left",
+        id: 'e3',
+        type: 'stage',
+        source: 'underwriting',
+        sourceHandle: 'underwriting____source____right',
+        target: 'closing',
+        targetHandle: 'closing____target____left',
       },
       {
-        id: "e4",
-        type: "stage",
-        source: "closing",
-        sourceHandle: "closing____source____right",
-        target: "funding",
-        targetHandle: "funding____target____left",
+        id: 'e4',
+        type: 'stage',
+        source: 'closing',
+        sourceHandle: 'closing____source____right',
+        target: 'funding',
+        targetHandle: 'funding____target____left',
       },
     ] as Edge[],
   },
@@ -715,16 +768,16 @@ export const LoanProcessingWorkflow: Story = {
 };
 
 const initialTasks: StageTaskItem[][] = [
-  [{ id: "task-1", label: "KYC Verification", icon: <VerificationIcon /> }],
+  [{ id: 'task-1', label: 'KYC Verification', icon: <VerificationIcon /> }],
   [
-    { id: "task-2", label: "Document Review", icon: <DocumentIcon /> },
-    { id: "task-6", label: "Credit Check", icon: <VerificationIcon /> },
+    { id: 'task-2', label: 'Document Review', icon: <DocumentIcon /> },
+    { id: 'task-6', label: 'Credit Check', icon: <VerificationIcon /> },
   ],
   [
-    { id: "task-3", label: "Address Check", icon: <VerificationIcon /> },
-    { id: "task-4", label: "Property Check", icon: <VerificationIcon /> },
+    { id: 'task-3', label: 'Address Check', icon: <VerificationIcon /> },
+    { id: 'task-4', label: 'Property Check', icon: <VerificationIcon /> },
   ],
-  [{ id: "task-5", label: "Final Approval", icon: <ProcessIcon /> }],
+  [{ id: 'task-5', label: 'Final Approval', icon: <ProcessIcon /> }],
 ];
 
 const DraggableTaskReorderingStory = () => {
@@ -741,16 +794,16 @@ const DraggableTaskReorderingStory = () => {
 
   const [nodes, setNodes, onNodesChange] = useNodesState([
     {
-      id: "reorder-stage",
-      type: "stage",
+      id: 'reorder-stage',
+      type: 'stage',
       position: { x: 25, y: 25 },
       width: 300,
       data: {
         stageDetails: {
-          label: "Drag to Reorder Tasks",
+          label: 'Drag to Reorder Tasks',
           tasks: initialTasks,
         },
-        onTaskClick: (taskId: string) => console.log("Task clicked:", taskId),
+        onTaskClick: (taskId: string) => console.log('Task clicked:', taskId),
       },
     },
   ]);
@@ -761,7 +814,7 @@ const DraggableTaskReorderingStory = () => {
     (reorderedTasks: StageTaskItem[][]) => {
       setNodes((nds) =>
         nds.map((node) =>
-          node.id === "reorder-stage"
+          node.id === 'reorder-stage'
             ? {
                 ...node,
                 data: {
@@ -791,10 +844,13 @@ const DraggableTaskReorderingStory = () => {
     [nodes, handleTaskReorder]
   );
 
-  const onConnect = useCallback((connection: Connection) => setEdges((eds) => addEdge(connection, eds)), [setEdges]);
+  const onConnect = useCallback(
+    (connection: Connection) => setEdges((eds) => addEdge(connection, eds)),
+    [setEdges]
+  );
 
   return (
-    <div style={{ width: "100vw", height: "100vh" }}>
+    <div style={{ width: '100vw', height: '100vh' }}>
       <ReactFlowProvider>
         <BaseCanvas
           nodes={nodesWithHandler}
@@ -806,7 +862,7 @@ const DraggableTaskReorderingStory = () => {
           edgeTypes={edgeTypes}
           mode="design"
           connectionMode={ConnectionMode.Strict}
-          defaultEdgeOptions={{ type: "stage" }}
+          defaultEdgeOptions={{ type: 'stage' }}
           connectionLineComponent={StageConnectionEdge}
           elevateEdgesOnSelect
           defaultViewport={{ x: 0, y: 0, zoom: 1.5 }}
@@ -821,7 +877,7 @@ const DraggableTaskReorderingStory = () => {
 };
 
 export const DraggableTaskReordering: Story = {
-  name: "Draggable Task Reordering",
+  name: 'Draggable Task Reordering',
   parameters: {
     useCustomRender: true,
   },

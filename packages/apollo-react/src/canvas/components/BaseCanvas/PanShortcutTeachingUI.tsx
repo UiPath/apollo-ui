@@ -1,7 +1,7 @@
-import React from "react";
-import styled from "@emotion/styled";
-import { Panel, type ReactFlowState, useReactFlow, useStore } from "@uipath/uix/xyflow/react";
-import { shallow } from "zustand/shallow";
+import React from 'react';
+import styled from '@emotion/styled';
+import { Panel, type ReactFlowState, useReactFlow, useStore } from '@uipath/uix/xyflow/react';
+import { shallow } from 'zustand/shallow';
 
 // The minimum distance the mouse must move to consider it a drag attempt
 const MIN_DRAG_DISTANCE = 5;
@@ -57,7 +57,9 @@ const StyledNonClickablePanel = styled(Panel)`
   pointer-events: none !important;
 `;
 
-function PanShortcutTeachingUIInternal({ message = "Hold the Space bar and drag to pan the canvas" }: PanShortcutTeachingUIProps) {
+function PanShortcutTeachingUIInternal({
+  message = 'Hold the Space bar and drag to pan the canvas',
+}: PanShortcutTeachingUIProps) {
   const { hasSelection, isPanning } = useStore(userSelectionStateSelector, shallow);
   const reactFlowInstance = useReactFlow();
 
@@ -81,7 +83,7 @@ function PanShortcutTeachingUIInternal({ message = "Hold the Space bar and drag 
     const handleMouseDown = (event: MouseEvent) => {
       // Only track clicks on the pane (not on nodes)
       const target = event.target as HTMLElement;
-      if (target.closest(".react-flow__node") || target.closest(".react-flow__edge")) {
+      if (target.closest('.react-flow__node') || target.closest('.react-flow__edge')) {
         return;
       }
 
@@ -152,14 +154,14 @@ function PanShortcutTeachingUIInternal({ message = "Hold the Space bar and drag 
     };
 
     // Add event listeners to the event container
-    eventContainer.addEventListener("mousedown", handleMouseDown as EventListener);
-    eventContainer.addEventListener("mousemove", handleMouseMove as EventListener);
-    eventContainer.addEventListener("mouseup", handleMouseUp as EventListener);
+    eventContainer.addEventListener('mousedown', handleMouseDown as EventListener);
+    eventContainer.addEventListener('mousemove', handleMouseMove as EventListener);
+    eventContainer.addEventListener('mouseup', handleMouseUp as EventListener);
 
     return () => {
-      eventContainer.removeEventListener("mousedown", handleMouseDown as EventListener);
-      eventContainer.removeEventListener("mousemove", handleMouseMove as EventListener);
-      eventContainer.removeEventListener("mouseup", handleMouseUp as EventListener);
+      eventContainer.removeEventListener('mousedown', handleMouseDown as EventListener);
+      eventContainer.removeEventListener('mousemove', handleMouseMove as EventListener);
+      eventContainer.removeEventListener('mouseup', handleMouseUp as EventListener);
     };
   }, [reactFlowInstance, hasSelection]);
 
@@ -181,13 +183,13 @@ function PanShortcutTeachingUIInternal({ message = "Hold the Space bar and drag 
 
   return (
     <StyledNonClickablePanel position="bottom-center">
-      <PanShortcutTeachingUIMessage className={showTeachingUI ? "shown" : ""}>
+      <PanShortcutTeachingUIMessage className={showTeachingUI ? 'shown' : ''}>
         <span
           style={{
-            display: "inline-flex",
-            color: "var(--uix-canvas-foreground-inverse)",
-            fontSize: "14px",
-            textAlign: "center",
+            display: 'inline-flex',
+            color: 'var(--uix-canvas-foreground-inverse)',
+            fontSize: '14px',
+            textAlign: 'center',
           }}
         >
           {message}

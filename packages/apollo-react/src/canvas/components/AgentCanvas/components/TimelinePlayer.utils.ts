@@ -1,5 +1,5 @@
-import { DateTime } from "luxon";
-import type { IRawSpan } from "@uipath/portal-shell-react";
+import { DateTime } from 'luxon';
+import type { IRawSpan } from '@uipath/portal-shell-react';
 
 const DEFAULT_SPAN_DURATION_MS = 1000;
 const MINIMUM_VISIBLE_DURATION = 0.01;
@@ -135,14 +135,14 @@ export function normalizeSpans(spans: IRawSpan[]): NormalizedSpan[] {
  * Finds the first agentRun span
  */
 export function findAgentRunSpan(spans: IRawSpan[]): IRawSpan | undefined {
-  return spans.find((span) => span.SpanType === "agentRun");
+  return spans.find((span) => span.SpanType === 'agentRun');
 }
 
 /**
  * Finds all agentRun spans
  */
 export function findAllAgentRunSpans(spans: IRawSpan[]): IRawSpan[] {
-  return spans.filter((span) => span.SpanType === "agentRun");
+  return spans.filter((span) => span.SpanType === 'agentRun');
 }
 
 /**
@@ -150,7 +150,7 @@ export function findAllAgentRunSpans(spans: IRawSpan[]): IRawSpan[] {
  */
 export function filterChildSpans(spans: IRawSpan[], agentSpans: IRawSpan[]): IRawSpan[] {
   const agentIds = agentSpans.map((s) => s.Id);
-  return spans.filter((span) => agentIds.includes(span.ParentId ?? ""));
+  return spans.filter((span) => agentIds.includes(span.ParentId ?? ''));
 }
 
 /**
@@ -168,7 +168,10 @@ export function calculateDurationMs(parentSpan: IRawSpan | undefined): number {
 /**
  * Determines if the timeline player will render and returns its height
  */
-export const calculateTimelineHeight = (enableTimelinePlayer: boolean | undefined, spans: IRawSpan[]): number => {
+export const calculateTimelineHeight = (
+  enableTimelinePlayer: boolean | undefined,
+  spans: IRawSpan[]
+): number => {
   const parentSpan = findAgentRunSpan(spans);
   const agentSpans = findAllAgentRunSpans(spans);
   const filteredSpans = filterChildSpans(spans, agentSpans);
