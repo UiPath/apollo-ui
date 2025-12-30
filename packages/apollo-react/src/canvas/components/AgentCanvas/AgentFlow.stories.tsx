@@ -1,11 +1,24 @@
-import { useCallback, useState } from 'react';
+import {
+  useCallback,
+  useState,
+} from 'react';
 
-import type { Meta, StoryObj } from '@storybook/react-vite';
-import { ApButton, ApTypography, type IRawSpan } from '@uipath/portal-shell-react';
-import { Row, Column } from '@uipath/apollo-react/canvas/layouts';
+import type {
+  Meta,
+  StoryObj,
+} from '@storybook/react-vite';
 import { FontVariantToken } from '@uipath/apollo-core';
+import {
+  Column,
+  Row,
+} from '@uipath/apollo-react/canvas/layouts';
 import { ReactFlowProvider } from '@uipath/apollo-react/canvas/xyflow/react';
+import {
+  ApButton,
+  ApTypography,
+} from '@uipath/portal-shell-react';
 
+import type { IRawSpan } from '../../../types/TraceModels';
 import { StoryInfoPanel } from '../../storybook-utils';
 import {
   type AgentFlowProps,

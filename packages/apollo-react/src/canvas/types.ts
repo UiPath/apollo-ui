@@ -1,11 +1,12 @@
 import type {
+  CoordinateExtent,
   Edge,
   Node,
   Viewport as ReactFlowViewport,
-  CoordinateExtent,
 } from '@uipath/apollo-react/canvas/xyflow/react';
 import type { NodeProps } from '@uipath/apollo-react/canvas/xyflow/system';
-import type { IRawSpan } from '@uipath/portal-shell-react';
+
+import type { IRawSpan } from '../types/TraceModels';
 import type { BaseCanvasRef } from './components/BaseCanvas/BaseCanvas.types';
 
 export enum ProjectType {

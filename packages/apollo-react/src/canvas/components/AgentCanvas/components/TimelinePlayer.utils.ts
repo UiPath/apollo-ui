@@ -1,5 +1,6 @@
 import { DateTime } from 'luxon';
-import type { IRawSpan } from '@uipath/portal-shell-react';
+
+import type { IRawSpan } from '../../../../types/TraceModels';
 
 const DEFAULT_SPAN_DURATION_MS = 1000;
 const MINIMUM_VISIBLE_DURATION = 0.01;

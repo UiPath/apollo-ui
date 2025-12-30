@@ -1,4 +1,7 @@
-import type { IRawSpan } from '@uipath/portal-shell-react';
+import { Position } from '@uipath/apollo-react/canvas/xyflow/react';
+
+import type { IRawSpan } from '../../types/TraceModels';
+import { ResourceNodeType } from '../components/AgentCanvas/AgentFlow.constants';
 import type {
   AgentFlowCustomEdge,
   AgentFlowCustomNode,
@@ -11,8 +14,6 @@ import type {
 } from '../types';
 import { isAgentFlowResourceNode } from '../types';
 import { autoArrangeNodes } from './auto-layout';
-import { ResourceNodeType } from '../components/AgentCanvas/AgentFlow.constants';
-import { Position } from '@uipath/apollo-react/canvas/xyflow/react';
 
 // Status constants
 const SPAN_STATUS = {

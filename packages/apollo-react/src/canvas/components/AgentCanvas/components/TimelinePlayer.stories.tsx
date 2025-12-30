@@ -1,16 +1,24 @@
-import { useCallback, useState } from 'react';
-import type { Meta, StoryObj } from '@storybook/react-vite';
-import { ReactFlowProvider } from '@uipath/apollo-react/canvas/xyflow/react';
-import { Row } from '@uipath/apollo-react/canvas/layouts';
-import { TimelinePlayer } from './TimelinePlayer';
-import { AgentFlow } from '../AgentFlow';
-import type { IRawSpan } from '@uipath/portal-shell-react';
 import {
-  ProjectType,
+  useCallback,
+  useState,
+} from 'react';
+
+import type {
+  Meta,
+  StoryObj,
+} from '@storybook/react-vite';
+import { Row } from '@uipath/apollo-react/canvas/layouts';
+import { ReactFlowProvider } from '@uipath/apollo-react/canvas/xyflow/react';
+
+import type { IRawSpan } from '../../../../types/TraceModels';
+import {
   type AgentFlowResource,
   type AgentFlowResourceNodeData,
   type AgentFlowResourceType,
+  ProjectType,
 } from '../../../types';
+import { AgentFlow } from '../AgentFlow';
+import { TimelinePlayer } from './TimelinePlayer';
 
 const meta: Meta<typeof TimelinePlayer> = {
   title: 'Canvas/TimelinePlayer',
