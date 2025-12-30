@@ -1,9 +1,18 @@
-import { describe, expect, it } from "vitest";
-import { cn } from "./utils";
+import {
+  describe,
+  expect,
+  it,
+} from 'vitest';
+
+import { cn } from './utils';
 
 describe("cn utility", () => {
   it("merges class names", () => {
     expect(cn("class1", "class2")).toBe("class1 class2");
+  });
+
+  it("merges Tailwind classes correctly", () => {
+    expect(cn("px-2", "px-4")).toBe("px-4");
   });
 
   it("handles conditional classes", () => {
@@ -11,10 +20,6 @@ describe("cn utility", () => {
     const isFalse = false;
     expect(cn("base", isTrue && "conditional")).toBe("base conditional");
     expect(cn("base", isFalse && "conditional")).toBe("base");
-  });
-
-  it("merges Tailwind classes correctly", () => {
-    expect(cn("px-2", "px-4")).toBe("px-4");
   });
 
   it("handles undefined and null values", () => {
