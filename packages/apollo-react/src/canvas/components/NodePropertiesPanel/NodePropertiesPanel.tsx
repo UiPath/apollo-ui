@@ -1,4 +1,4 @@
-import { useReactFlow } from '@uipath/uix/xyflow/react';
+import { useReactFlow } from '@uipath/apollo-react/canvas/xyflow/react';
 import { Column } from '@uipath/uix/core';
 import { memo, useCallback, useState, useEffect } from 'react';
 import { ApIcon, ApIconButton } from '@uipath/portal-shell-react';

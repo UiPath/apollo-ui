@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react';
-import type { Connection, Edge, EdgeTypes, Node, NodeTypes } from '@uipath/uix/xyflow/react';
-import { addEdge, useNodesState, useEdgesState } from '@uipath/uix/xyflow/react';
+import type { Connection, Edge, EdgeTypes, Node, NodeTypes } from '@uipath/apollo-react/canvas/xyflow/react';
+import { addEdge, useNodesState, useEdgesState } from '@uipath/apollo-react/canvas/xyflow/react';
 import { BaseNode } from '../../components/BaseNode/BaseNode';
 import { useNodeTypeRegistry } from '../../components/BaseNode/useNodeTypeRegistry';
 import { AddNodePreview } from '../../components';

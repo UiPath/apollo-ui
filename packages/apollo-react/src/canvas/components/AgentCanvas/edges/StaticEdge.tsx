@@ -3,7 +3,7 @@ import {
   type EdgeProps,
   getSmoothStepPath,
   type Position,
-} from '@uipath/uix/xyflow/react';
+} from '@uipath/apollo-react/canvas/xyflow/react';
 
 import type { AgentFlowDefaultEdge, SuggestionType } from '../../../types';
 import { EDGE_STYLES } from '../../../components/BaseCanvas/BaseCanvas.constants';

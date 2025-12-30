@@ -1,6 +1,6 @@
 import type React from 'react';
 import { useEffect, useCallback, useMemo, useRef, useState } from 'react';
-import { Panel, applyNodeChanges, applyEdgeChanges } from '@uipath/uix/xyflow/react';
+import { Panel, applyNodeChanges, applyEdgeChanges } from '@uipath/apollo-react/canvas/xyflow/react';
 import { prefersReducedMotion } from '../../utils/transitions';
 import type {
   Node,
@@ -17,7 +17,7 @@ import type {
   EdgeChange,
   ReactFlowInstance,
   NodeTypes,
-} from '@uipath/uix/xyflow/react';
+} from '@uipath/apollo-react/canvas/xyflow/react';
 import { BaseCanvas, type BaseCanvasRef } from '../BaseCanvas';
 import {
   useCanvasStore,

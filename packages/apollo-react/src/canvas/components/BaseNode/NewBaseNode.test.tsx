@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { NewBaseNode } from './NewBaseNode';
 
 // Mock dependencies
-vi.mock('@uipath/uix/xyflow/react', () => ({
+vi.mock('@uipath/apollo-react/canvas/xyflow/react', () => ({
   Position: {
     Top: 'top',
     Bottom: 'bottom',

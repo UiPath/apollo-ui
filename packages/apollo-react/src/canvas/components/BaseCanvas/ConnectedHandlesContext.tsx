@@ -7,7 +7,7 @@ import {
   useEffect,
   type ReactNode,
 } from 'react';
-import type { Edge } from '@uipath/uix/xyflow/react';
+import type { Edge } from '@uipath/apollo-react/canvas/xyflow/react';
 
 type ConnectedHandlesMap = Map<string, Set<string>>;
 type Listener = () => void;

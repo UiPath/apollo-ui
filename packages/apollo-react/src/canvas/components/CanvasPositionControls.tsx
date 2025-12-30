@@ -1,5 +1,5 @@
 import { memo, useCallback } from 'react';
-import { useReactFlow } from '@uipath/uix/xyflow/react';
+import { useReactFlow } from '@uipath/apollo-react/canvas/xyflow/react';
 import { ApIconButton, ApTooltip } from '@uipath/portal-shell-react';
 import { Column, Row, Icons } from '@uipath/uix/core';
 import { BASE_CANVAS_DEFAULTS } from './BaseCanvas/BaseCanvas.constants';

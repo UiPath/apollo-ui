@@ -6,8 +6,8 @@ import type {
   OnEdgesChange,
   OnConnect,
   Connection,
-} from '@uipath/uix/xyflow/react';
-import { Panel, Position } from '@uipath/uix/xyflow/react';
+} from '@uipath/apollo-react/canvas/xyflow/react';
+import { Panel, Position } from '@uipath/apollo-react/canvas/xyflow/react';
 import { ApTypography, ApIcon } from '@uipath/portal-shell-react';
 import { FontVariantToken } from '@uipath/apollo-core';
 import { useMemo, useCallback } from 'react';

@@ -1,5 +1,5 @@
 import { renderHook } from '@testing-library/react';
-import { type FinalConnectionState, Position } from '@uipath/uix/xyflow/react';
+import { type FinalConnectionState, Position } from '@uipath/apollo-react/canvas/xyflow/react';
 import type { InternalNodeBase } from '@xyflow/system';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -11,8 +11,8 @@ const mockReactFlowInstance = {
   setEdges: vi.fn(),
 };
 const mockUseReactFlow = vi.fn();
-vi.mock('@uipath/uix/xyflow/react', async () => ({
-  ...(await vi.importActual('@uipath/uix/xyflow/react')),
+vi.mock('@uipath/apollo-react/canvas/xyflow/react', async () => ({
+  ...(await vi.importActual('@uipath/apollo-react/canvas/xyflow/react')),
   useReactFlow: () => mockUseReactFlow(),
 }));
 

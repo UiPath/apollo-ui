@@ -1,4 +1,4 @@
-import type { EdgeProps } from '@uipath/uix/xyflow/react';
+import type { EdgeProps } from '@uipath/apollo-react/canvas/xyflow/react';
 import { StaticEdge } from './StaticEdge';
 import { useAgentFlowStore } from '../store/agent-flow-store';
 import type { SuggestionType } from '../../../types';

@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { ReactFlowProvider } from '@uipath/uix/xyflow/react';
+import { ReactFlowProvider } from '@uipath/apollo-react/canvas/xyflow/react';
 import { Row } from '@uipath/uix/core';
 import { TimelinePlayer } from './TimelinePlayer';
 import { AgentFlow } from '../AgentFlow';

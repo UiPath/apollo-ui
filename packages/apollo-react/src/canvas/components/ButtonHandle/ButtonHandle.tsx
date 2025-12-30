@@ -1,5 +1,5 @@
 import { useMemo, useCallback, memo, useState } from 'react';
-import { Position } from '@uipath/uix/xyflow/react';
+import { Position } from '@uipath/apollo-react/canvas/xyflow/react';
 import { AnimatePresence } from 'motion/react';
 import { FontVariantToken } from '@uipath/apollo-core';
 import { Row } from '@uipath/uix/core';

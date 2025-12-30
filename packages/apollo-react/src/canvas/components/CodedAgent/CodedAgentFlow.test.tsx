@@ -39,7 +39,7 @@ let mockNodes: any[] = [];
 let mockEdges: any[] = [];
 
 // Mock React Flow components
-vi.mock('@uipath/uix/xyflow/react', () => ({
+vi.mock('@uipath/apollo-react/canvas/xyflow/react', () => ({
   ReactFlowProvider: ({ children }: any) => <div data-testid="react-flow-provider">{children}</div>,
   useReactFlow: () => ({
     fitView: vi.fn(),

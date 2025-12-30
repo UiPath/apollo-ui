@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { ApIcon } from '@uipath/portal-shell-react';
-import type { Node } from '@uipath/uix/xyflow/react';
-import { Panel, ReactFlowProvider, useReactFlow } from '@uipath/uix/xyflow/react';
+import type { Node } from '@uipath/apollo-react/canvas/xyflow/react';
+import { Panel, ReactFlowProvider, useReactFlow } from '@uipath/apollo-react/canvas/xyflow/react';
 import { useCallback, useEffect, useMemo } from 'react';
 import { StoryInfoPanel, useCanvasStory } from '../../storybook-utils';
 import { DefaultCanvasTranslations } from '../../types';

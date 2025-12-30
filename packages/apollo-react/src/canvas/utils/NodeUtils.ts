@@ -1,4 +1,4 @@
-import type { Node, XYPosition } from '@uipath/uix/xyflow/react';
+import type { Node, XYPosition } from '@uipath/apollo-react/canvas/xyflow/react';
 import { PREVIEW_NODE_ID, GRID_SPACING } from '../constants';
 
 /**

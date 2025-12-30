@@ -7,7 +7,12 @@
     "declaration": true,
     "declarationMap": true,
     "jsx": "react-jsx",
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "baseUrl": ".",
+    "paths": {
+      "@uipath/apollo-react/canvas/xyflow/react": ["./src/canvas/xyflow/react.ts"],
+      "@uipath/apollo-react/canvas/xyflow/system": ["./src/canvas/xyflow/system.ts"]
+    }
   },
   "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.json"],
   "exclude": [

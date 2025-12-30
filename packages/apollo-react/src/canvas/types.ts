@@ -3,8 +3,8 @@ import type {
   Node,
   Viewport as ReactFlowViewport,
   CoordinateExtent,
-} from '@uipath/uix/xyflow/react';
-import type { NodeProps } from '@uipath/uix/xyflow/system';
+} from '@uipath/apollo-react/canvas/xyflow/react';
+import type { NodeProps } from '@uipath/apollo-react/canvas/xyflow/system';
 import type { IRawSpan } from '@uipath/portal-shell-react';
 import type { BaseCanvasRef } from './components/BaseCanvas/BaseCanvas.types';
 

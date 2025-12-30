@@ -1,4 +1,4 @@
-import { type EdgeProps, getSmoothStepPath, Position } from '@uipath/uix/xyflow/react';
+import { type EdgeProps, getSmoothStepPath, Position } from '@uipath/apollo-react/canvas/xyflow/react';
 import { memo, useState } from 'react';
 
 const ARROW_SIZE = 10;

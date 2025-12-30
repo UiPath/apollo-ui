@@ -6,7 +6,7 @@ import {
   type Connection,
   type EdgeChange,
   type NodeChange,
-} from '@uipath/uix/xyflow/react';
+} from '@uipath/apollo-react/canvas/xyflow/react';
 import { createStore, useStore } from 'zustand';
 import { BASE_CANVAS_DEFAULTS, FLOW_LAYOUT } from '../../BaseCanvas/BaseCanvas.constants';
 import {

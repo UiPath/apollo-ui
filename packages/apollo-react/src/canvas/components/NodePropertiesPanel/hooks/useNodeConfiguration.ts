@@ -1,5 +1,5 @@
 import { useCallback, useState, useMemo } from 'react';
-import { useReactFlow } from '@uipath/uix/xyflow/react';
+import { useReactFlow } from '@uipath/apollo-react/canvas/xyflow/react';
 import { nodeSchemas } from '../schemas';
 import type { NodeConfigSchema, ConfigurableNode } from '../NodePropertiesPanel.types';
 

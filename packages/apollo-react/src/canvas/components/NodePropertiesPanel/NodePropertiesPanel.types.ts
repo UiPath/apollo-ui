@@ -1,4 +1,4 @@
-import type { Node } from '@uipath/uix/xyflow/react';
+import type { Node } from '@uipath/apollo-react/canvas/xyflow/react';
 
 export type FieldType = 'text' | 'textarea' | 'number' | 'select' | 'checkbox' | 'date' | 'time';
 

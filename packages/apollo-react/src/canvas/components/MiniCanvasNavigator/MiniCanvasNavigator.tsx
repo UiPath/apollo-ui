@@ -1,6 +1,6 @@
 import React, { useMemo, memo } from 'react';
-import { ReactFlowProvider } from '@uipath/uix/xyflow/react';
-import type { Node, NodeTypes } from '@uipath/uix/xyflow/react';
+import { ReactFlowProvider } from '@uipath/apollo-react/canvas/xyflow/react';
+import type { Node, NodeTypes } from '@uipath/apollo-react/canvas/xyflow/react';
 import { BaseCanvas } from '../BaseCanvas';
 import type { CanvasLevel } from '../../types/canvas.types';
 

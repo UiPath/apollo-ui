@@ -7,8 +7,8 @@ import {
   useState,
   type CSSProperties,
 } from 'react';
-import type { Edge, Node, ReactFlowInstance } from '@uipath/uix/xyflow/react';
-import { ConnectionMode, ReactFlow } from '@uipath/uix/xyflow/react';
+import type { Edge, Node, ReactFlowInstance } from '@uipath/apollo-react/canvas/xyflow/react';
+import { ConnectionMode, ReactFlow } from '@uipath/apollo-react/canvas/xyflow/react';
 import { BASE_CANVAS_DEFAULTS } from './BaseCanvas.constants';
 import { useAutoLayout, useEnsureNodesInView, useMaintainNodesInView } from './BaseCanvas.hooks';
 import type { BaseCanvasProps, BaseCanvasRef } from './BaseCanvas.types';

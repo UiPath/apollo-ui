@@ -1,4 +1,4 @@
-import { Background, type BackgroundVariant } from '@uipath/uix/xyflow/react';
+import { Background, type BackgroundVariant } from '@uipath/apollo-react/canvas/xyflow/react';
 import { BASE_CANVAS_DEFAULTS } from './BaseCanvas.constants';
 
 interface CanvasBackgroundProps {

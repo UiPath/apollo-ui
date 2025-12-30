@@ -1,4 +1,4 @@
-import type { Position } from '@uipath/uix/xyflow/react';
+import type { Position } from '@uipath/apollo-react/canvas/xyflow/react';
 import type { ButtonHandleConfig, HandleActionEvent } from '../ButtonHandle/ButtonHandle';
 import type { NodeToolbarConfig } from '../NodeToolbar/NodeToolbar.types';
 

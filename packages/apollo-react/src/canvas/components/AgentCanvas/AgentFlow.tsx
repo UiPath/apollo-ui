@@ -1,7 +1,7 @@
 import React, { memo, useCallback, useEffect, useMemo, useRef } from 'react';
 import type { PropsWithChildren } from 'react';
-import { Panel, useReactFlow } from '@uipath/uix/xyflow/react';
-import type { NodeProps } from '@uipath/uix/xyflow/system';
+import { Panel, useReactFlow } from '@uipath/apollo-react/canvas/xyflow/react';
+import type { NodeProps } from '@uipath/apollo-react/canvas/xyflow/system';
 import { BaseCanvas } from '../../components/BaseCanvas';
 import { TimelinePlayer } from './components/TimelinePlayer';
 import { Edge } from './edges/Edge';

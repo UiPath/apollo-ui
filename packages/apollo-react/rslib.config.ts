@@ -95,6 +95,10 @@ export default defineConfig({
     rspack: {
       resolve: {
         extensions: ['.tsx', '.ts', '.jsx', '.js', '.json'],
+        alias: {
+          '@uipath/apollo-react/canvas/xyflow/react': './src/canvas/xyflow/react.ts',
+          '@uipath/apollo-react/canvas/xyflow/system': './src/canvas/xyflow/system.ts',
+        },
       },
       module: {
         rules: [

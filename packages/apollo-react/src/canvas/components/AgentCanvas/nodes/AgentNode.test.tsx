@@ -4,7 +4,7 @@ import { AgentNodeElement } from './AgentNode';
 import type { AgentNodeTranslations } from '../../../types';
 
 // Mock dependencies
-vi.mock('@uipath/uix/xyflow/react', () => ({
+vi.mock('@uipath/apollo-react/canvas/xyflow/react', () => ({
   Position: {
     Top: 'top',
     Bottom: 'bottom',

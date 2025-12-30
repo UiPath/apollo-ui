@@ -1,4 +1,4 @@
-import type { ReactFlowInstance, Viewport, Node } from '@uipath/uix/xyflow/react';
+import type { ReactFlowInstance, Viewport, Node } from '@uipath/apollo-react/canvas/xyflow/react';
 import {
   animateViewport,
   animateDrillIn,

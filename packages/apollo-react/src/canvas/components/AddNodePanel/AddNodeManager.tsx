@@ -1,5 +1,5 @@
-import type { Edge, Node, ReactFlowState } from '@uipath/uix/xyflow/react';
-import { useReactFlow, useStore } from '@uipath/uix/xyflow/react';
+import type { Edge, Node, ReactFlowState } from '@uipath/apollo-react/canvas/xyflow/react';
+import { useReactFlow, useStore } from '@uipath/apollo-react/canvas/xyflow/react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import type { BaseNodeData } from '../BaseNode/BaseNode.types';
 import type { ListItem } from '../Toolbox';

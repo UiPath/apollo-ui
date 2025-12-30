@@ -1,4 +1,4 @@
-import { type OnConnectEnd, useReactFlow } from '@uipath/uix/xyflow/react';
+import { type OnConnectEnd, useReactFlow } from '@uipath/apollo-react/canvas/xyflow/react';
 import { useCallback } from 'react';
 import { applyPreviewToReactFlow, createPreviewNode } from '../utils';
 

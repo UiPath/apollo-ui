@@ -1,6 +1,6 @@
 import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import styled from '@emotion/styled';
-import type { Edge, EdgeProps, Node, NodeProps } from '@uipath/uix/xyflow/react';
+import type { Edge, EdgeProps, Node, NodeProps } from '@uipath/apollo-react/canvas/xyflow/react';
 import {
   BaseEdge,
   getSimpleBezierPath,
@@ -10,7 +10,7 @@ import {
   useEdgesState,
   useNodesState,
   useReactFlow,
-} from '@uipath/uix/xyflow/react';
+} from '@uipath/apollo-react/canvas/xyflow/react';
 import { FontVariantToken, Spacing } from '@uipath/apollo-core';
 import { ApCircularProgress, ApIcon, ApTypography } from '@uipath/portal-shell-react';
 import { Icons, Row } from '@uipath/uix/core';

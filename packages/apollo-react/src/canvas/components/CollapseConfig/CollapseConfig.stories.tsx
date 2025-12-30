@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useMemo, useCallback } from 'react';
-import type { Node, Edge, NodeProps } from '@uipath/uix/xyflow/react';
-import { Panel, Position, useReactFlow } from '@uipath/uix/xyflow/react';
+import type { Node, Edge, NodeProps } from '@uipath/apollo-react/canvas/xyflow/react';
+import { Panel, Position, useReactFlow } from '@uipath/apollo-react/canvas/xyflow/react';
 import { ApIcon } from '@uipath/portal-shell-react';
 import { BaseCanvas } from '../BaseCanvas';
 import { CanvasPositionControls } from '../CanvasPositionControls';

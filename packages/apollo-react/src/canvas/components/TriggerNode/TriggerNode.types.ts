@@ -1,4 +1,4 @@
-import type { NodeProps } from '@uipath/uix/xyflow/react';
+import type { NodeProps } from '@uipath/apollo-react/canvas/xyflow/react';
 
 enum ElementStatusValues {
   Cancelled = 'Cancelled',

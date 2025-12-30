@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import type { Node, Edge } from '@uipath/uix/xyflow/react';
-import { Position, Panel } from '@uipath/uix/xyflow/react';
+import type { Node, Edge } from '@uipath/apollo-react/canvas/xyflow/react';
+import { Position, Panel } from '@uipath/apollo-react/canvas/xyflow/react';
 import {
   ApButton,
   ApIcon,

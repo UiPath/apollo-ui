@@ -1,4 +1,4 @@
-import type { ReactFlowInstance, Viewport } from '@uipath/uix/xyflow/react';
+import type { ReactFlowInstance, Viewport } from '@uipath/apollo-react/canvas/xyflow/react';
 
 class ViewportManager {
   private reactFlowInstance: ReactFlowInstance | null = null;

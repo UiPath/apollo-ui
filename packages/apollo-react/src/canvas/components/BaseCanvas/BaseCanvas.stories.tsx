@@ -1,7 +1,7 @@
 import { useRef, useState, useMemo } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { BackgroundVariant, Panel, Position } from '@uipath/uix/xyflow/react';
-import type { Edge, Node } from '@uipath/uix/xyflow/react';
+import { BackgroundVariant, Panel, Position } from '@uipath/apollo-react/canvas/xyflow/react';
+import type { Edge, Node } from '@uipath/apollo-react/canvas/xyflow/react';
 import { FontVariantToken } from '@uipath/apollo-core';
 import { ApButton, ApTypography, ApDropdown, ApDropdownItem } from '@uipath/portal-shell-react';
 import { Column, Row } from '@uipath/uix/core';

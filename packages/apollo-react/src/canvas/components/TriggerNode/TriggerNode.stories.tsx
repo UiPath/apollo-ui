@@ -5,8 +5,8 @@ import {
   applyNodeChanges,
   addEdge,
   ReactFlowProvider,
-} from '@uipath/uix/xyflow/react';
-import type { Edge, EdgeChange, Node, NodeChange, Connection } from '@uipath/uix/xyflow/react';
+} from '@uipath/apollo-react/canvas/xyflow/react';
+import type { Edge, EdgeChange, Node, NodeChange, Connection } from '@uipath/apollo-react/canvas/xyflow/react';
 import { ApIcon } from '@uipath/portal-shell-react';
 import { BaseCanvas } from '../BaseCanvas';
 import { TriggerNode } from './TriggerNode';

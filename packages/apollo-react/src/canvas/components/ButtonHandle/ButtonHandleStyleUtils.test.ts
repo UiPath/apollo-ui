@@ -1,4 +1,4 @@
-import { Position } from '@uipath/uix/xyflow/react';
+import { Position } from '@uipath/apollo-react/canvas/xyflow/react';
 import {
   bottomPositionForHandle,
   calculateGridAlignedHandlePositions,

@@ -1,5 +1,5 @@
 import { useMemo, useRef, useEffect } from 'react';
-import { useNodes, useReactFlow } from '@uipath/uix/xyflow/react';
+import { useNodes, useReactFlow } from '@uipath/apollo-react/canvas/xyflow/react';
 import {
   autoUpdate,
   flip,

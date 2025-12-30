@@ -8,7 +8,7 @@ import {
 } from 'react';
 import createCache from '@emotion/cache';
 import { CacheProvider } from '@emotion/react';
-import { ReactFlowProvider, useReactFlow } from '@uipath/uix/xyflow/react';
+import { ReactFlowProvider, useReactFlow } from '@uipath/apollo-react/canvas/xyflow/react';
 import { BASE_CANVAS_DEFAULTS } from '../../BaseCanvas/BaseCanvas.constants';
 import type { BaseCanvasFitViewOptions } from '../../BaseCanvas/BaseCanvas.types';
 

@@ -1,4 +1,4 @@
-import type { Viewport } from '@uipath/uix/xyflow/react';
+import type { Viewport } from '@uipath/apollo-react/canvas/xyflow/react';
 import { animate } from 'motion';
 
 export const ANIMATION_CONSTANTS = {

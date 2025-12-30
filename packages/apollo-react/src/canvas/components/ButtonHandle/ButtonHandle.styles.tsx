@@ -1,4 +1,4 @@
-import { Handle, type HandleProps, Position } from '@uipath/uix/xyflow/react';
+import { Handle, type HandleProps, Position } from '@uipath/apollo-react/canvas/xyflow/react';
 import { motion } from 'motion/react';
 import styled from '@emotion/styled';
 import { css } from '@emotion/react';

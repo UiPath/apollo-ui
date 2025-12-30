@@ -5,8 +5,8 @@ import {
   applyNodeChanges,
   Panel,
   ReactFlowProvider,
-} from '@uipath/uix/xyflow/react';
-import type { Edge, EdgeChange, Node, NodeChange } from '@uipath/uix/xyflow/react';
+} from '@uipath/apollo-react/canvas/xyflow/react';
+import type { Edge, EdgeChange, Node, NodeChange } from '@uipath/apollo-react/canvas/xyflow/react';
 import { FontVariantToken } from '@uipath/apollo-core';
 import { ApTypography } from '@uipath/portal-shell-react';
 import { Column } from '@uipath/uix/core';

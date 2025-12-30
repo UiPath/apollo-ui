@@ -1,7 +1,7 @@
 import { useMemo, useCallback, useState, useRef, useEffect, memo, type FC } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { Panel, useReactFlow, Handle, Position } from '@uipath/uix/xyflow/react';
-import type { Edge, Node, NodeProps } from '@uipath/uix/xyflow/react';
+import { Panel, useReactFlow, Handle, Position } from '@uipath/apollo-react/canvas/xyflow/react';
+import type { Edge, Node, NodeProps } from '@uipath/apollo-react/canvas/xyflow/react';
 import styled from '@emotion/styled';
 import { BaseCanvas } from './BaseCanvas';
 import type { BaseNodeData } from './BaseNode/BaseNode.types';

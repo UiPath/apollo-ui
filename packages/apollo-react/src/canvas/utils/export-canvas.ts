@@ -1,5 +1,5 @@
 import { toPng, toJpeg, toSvg } from 'html-to-image';
-import type { Node, ReactFlowInstance, Viewport } from '@uipath/uix/xyflow/react';
+import type { Node, ReactFlowInstance, Viewport } from '@uipath/apollo-react/canvas/xyflow/react';
 
 /**
  * Supported image formats for canvas export

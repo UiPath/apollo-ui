@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { ReactFlowInstance, Viewport } from '@uipath/uix/xyflow/react';
+import type { ReactFlowInstance, Viewport } from '@uipath/apollo-react/canvas/xyflow/react';
 
 // Mock html-to-image
 vi.mock('html-to-image', () => ({

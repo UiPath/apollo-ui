@@ -1,4 +1,4 @@
-import type { Edge, Node } from '@uipath/uix/xyflow/react';
+import type { Edge, Node } from '@uipath/apollo-react/canvas/xyflow/react';
 import mermaid from 'mermaid';
 import sanitizeHtml from 'sanitize-html';
 

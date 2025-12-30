@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { ReactFlowProvider } from '@uipath/uix/xyflow/react';
+import { ReactFlowProvider } from '@uipath/apollo-react/canvas/xyflow/react';
 import { NodePropertiesPanel } from './NodePropertiesPanel';
 import React from 'react';
 
@@ -32,7 +32,7 @@ vi.mock('./hooks', () => ({
 }));
 
 // Mock the React Flow hooks
-vi.mock('@uipath/uix/xyflow/react', () => ({
+vi.mock('@uipath/apollo-react/canvas/xyflow/react', () => ({
   ReactFlowProvider: ({ children }: { children: React.ReactNode }) => (
     <div data-testid="react-flow-provider">{children}</div>
   ),

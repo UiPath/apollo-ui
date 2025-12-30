@@ -4,7 +4,7 @@ import {
   ResourceNodeTypeToPosition,
 } from '../components/AgentCanvas/AgentFlow.constants';
 import type { AgentFlowCustomEdge, AgentFlowCustomNode } from '../types';
-import { Position } from '@uipath/uix/xyflow/react';
+import { Position } from '@uipath/apollo-react/canvas/xyflow/react';
 import { isAgentFlowAgentNode, isAgentFlowResourceNode } from '../types';
 
 const GROUP_DISTANCE_HORIZONTAL = 280;

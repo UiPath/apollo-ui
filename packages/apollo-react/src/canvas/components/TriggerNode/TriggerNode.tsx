@@ -1,5 +1,5 @@
 import { memo, useMemo, useState, useCallback } from 'react';
-import { Position, useStore } from '@uipath/uix/xyflow/react';
+import { Position, useStore } from '@uipath/apollo-react/canvas/xyflow/react';
 import { TriggerContainer, TriggerIconWrapper } from './TriggerNode.styles';
 import type { TriggerNodeProps } from './TriggerNode.types';
 import { ApTooltip, ApIcon } from '@uipath/portal-shell-react';

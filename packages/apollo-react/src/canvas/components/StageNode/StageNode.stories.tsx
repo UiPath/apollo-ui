@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import type { Connection, Edge } from '@uipath/uix/xyflow/react';
+import type { Connection, Edge } from '@uipath/apollo-react/canvas/xyflow/react';
 import {
   addEdge,
   ConnectionMode,
@@ -7,7 +7,7 @@ import {
   ReactFlowProvider,
   useEdgesState,
   useNodesState,
-} from '@uipath/uix/xyflow/react';
+} from '@uipath/apollo-react/canvas/xyflow/react';
 import { useCallback, useMemo } from 'react';
 import { DefaultCanvasTranslations } from '../../types';
 import { BaseCanvas } from '../BaseCanvas';

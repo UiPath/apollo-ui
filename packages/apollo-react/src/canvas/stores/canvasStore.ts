@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 import type { CanvasLevel } from '../types/canvas.types';
-import type { Node, Edge, Viewport } from '@uipath/uix/xyflow/react';
+import type { Node, Edge, Viewport } from '@uipath/apollo-react/canvas/xyflow/react';
 import { animatedViewportManager, type TransitionState } from './animatedViewportManager';
 
 interface CanvasStore {

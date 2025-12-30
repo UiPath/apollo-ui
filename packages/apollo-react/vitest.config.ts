@@ -27,6 +27,14 @@ export default defineConfig({
         find: '@uipath/apollo-core/icons/svg',
         replacement: fileURLToPath(new URL('../apollo-core/src/icons/svg', import.meta.url)),
       },
+      {
+        find: '@uipath/apollo-react/canvas/xyflow/react',
+        replacement: fileURLToPath(new URL('./src/canvas/xyflow/react.ts', import.meta.url)),
+      },
+      {
+        find: '@uipath/apollo-react/canvas/xyflow/system',
+        replacement: fileURLToPath(new URL('./src/canvas/xyflow/system.ts', import.meta.url)),
+      },
     ],
   },
 });

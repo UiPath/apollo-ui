@@ -1,4 +1,4 @@
-import { Position, type ReactFlowInstance } from '@uipath/uix/xyflow/react';
+import { Position, type ReactFlowInstance } from '@uipath/apollo-react/canvas/xyflow/react';
 import { createPreviewNode, applyPreviewToReactFlow } from '../../utils/createPreviewNode';
 
 /**

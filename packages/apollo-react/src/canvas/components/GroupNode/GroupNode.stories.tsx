@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useMemo } from 'react';
-import type { Node, Edge } from '@uipath/uix/xyflow/react';
-import { Panel } from '@uipath/uix/xyflow/react';
+import type { Node, Edge } from '@uipath/apollo-react/canvas/xyflow/react';
+import { Panel } from '@uipath/apollo-react/canvas/xyflow/react';
 import { BaseCanvas } from '../BaseCanvas';
 import { CanvasPositionControls } from '../CanvasPositionControls';
 import { GroupNode } from './GroupNode';

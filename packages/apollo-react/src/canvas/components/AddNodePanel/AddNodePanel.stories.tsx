@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import type { Node } from '@uipath/uix/xyflow/react';
-import { Panel, Position, useReactFlow } from '@uipath/uix/xyflow/react';
+import type { Node } from '@uipath/apollo-react/canvas/xyflow/react';
+import { Panel, Position, useReactFlow } from '@uipath/apollo-react/canvas/xyflow/react';
 import { useMemo } from 'react';
 import { BaseCanvas } from '../BaseCanvas';
 import type { BaseNodeData } from '../BaseNode';

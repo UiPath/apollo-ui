@@ -5,7 +5,7 @@ import type {
   Node,
   ReactFlowInstance,
   ReactFlowProps,
-} from '@uipath/uix/xyflow/react';
+} from '@uipath/apollo-react/canvas/xyflow/react';
 
 /**
  * Configuration options for viewport fit operations in BaseCanvas.

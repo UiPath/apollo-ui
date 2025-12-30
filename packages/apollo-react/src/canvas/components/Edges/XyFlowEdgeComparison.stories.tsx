@@ -5,8 +5,8 @@
  */
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
-import type { Node, Edge, Connection } from '@uipath/uix/xyflow/react';
-import { Panel, Position, MarkerType, useEdgesState } from '@uipath/uix/xyflow/react';
+import type { Node, Edge, Connection } from '@uipath/apollo-react/canvas/xyflow/react';
+import { Panel, Position, MarkerType, useEdgesState } from '@uipath/apollo-react/canvas/xyflow/react';
 import { ApCheckbox, ApDropdown, ApDropdownItem, ApTypography } from '@uipath/portal-shell-react';
 import { FontVariantToken } from '@uipath/apollo-core';
 import { Column } from '@uipath/uix/core';

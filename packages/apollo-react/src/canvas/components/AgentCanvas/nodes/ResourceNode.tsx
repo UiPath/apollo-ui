@@ -1,7 +1,7 @@
 import { Fragment, memo, useCallback, useMemo } from 'react';
 import { ApIcon } from '@uipath/portal-shell-react';
 import { Icons, Row } from '@uipath/uix/core';
-import { Position, type NodeProps } from '@uipath/uix/xyflow/react';
+import { Position, type NodeProps } from '@uipath/apollo-react/canvas/xyflow/react';
 import { NewBaseNode } from '../../BaseNode/NewBaseNode';
 import {
   type AgentFlowResourceNode,

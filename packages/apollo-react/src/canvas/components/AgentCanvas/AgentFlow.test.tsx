@@ -82,7 +82,7 @@ vi.mock('./store/agent-flow-store', () => ({
 }));
 
 // Mock ReactFlow components and hooks with more functionality
-vi.mock('@uipath/uix/xyflow/react', () => ({
+vi.mock('@uipath/apollo-react/canvas/xyflow/react', () => ({
   ReactFlow: ({
     children,
     nodes,

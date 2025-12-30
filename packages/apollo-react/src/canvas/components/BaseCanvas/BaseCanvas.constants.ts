@@ -1,4 +1,4 @@
-import { BackgroundVariant } from '@uipath/uix/xyflow/react';
+import { BackgroundVariant } from '@uipath/apollo-react/canvas/xyflow/react';
 import { GRID_SPACING } from '../../constants';
 
 export const BASE_CANVAS_GRID_SPACING = GRID_SPACING;

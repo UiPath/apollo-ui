@@ -1,6 +1,6 @@
 import { memo, useCallback, useMemo } from 'react';
-import { Position } from '@uipath/uix/xyflow/react';
-import type { NodeProps, Node } from '@uipath/uix/xyflow/react';
+import { Position } from '@uipath/apollo-react/canvas/xyflow/react';
+import type { NodeProps, Node } from '@uipath/apollo-react/canvas/xyflow/react';
 import { Icons } from '@uipath/uix/core';
 import { NewBaseNode } from '../../BaseNode/NewBaseNode';
 import type {

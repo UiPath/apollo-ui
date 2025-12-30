@@ -1,5 +1,5 @@
-import type { Node } from '@uipath/uix/xyflow/react';
-import { Position } from '@uipath/uix/xyflow/react';
+import type { Node } from '@uipath/apollo-react/canvas/xyflow/react';
+import { Position } from '@uipath/apollo-react/canvas/xyflow/react';
 import type {
   BaseNodeData,
   NodeShape,

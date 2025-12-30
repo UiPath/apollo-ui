@@ -8,7 +8,7 @@ import {
   useReactFlow,
   type Node,
   Position,
-} from '@uipath/uix/xyflow/react';
+} from '@uipath/apollo-react/canvas/xyflow/react';
 import { createAddNodePreview } from '../AddNodePanel/createAddNodePreview';
 import { FontVariantToken } from '@uipath/apollo-core';
 import { type CanvasLevel } from '../../types/canvas.types';

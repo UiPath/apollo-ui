@@ -19,7 +19,7 @@ import {
 import { Spacing } from '@uipath/apollo-core';
 import { ApIcon, ApLink, ApTooltip, ApTypography } from '@uipath/portal-shell-react';
 import { Column, FontVariantToken, Row } from '@uipath/uix/core';
-import { Position, useViewport, useStore } from '@uipath/uix/xyflow/react';
+import { Position, useViewport, useStore } from '@uipath/apollo-react/canvas/xyflow/react';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import type { HandleConfiguration } from '../BaseNode/BaseNode.types';

@@ -5,7 +5,7 @@ import {
   useEdges,
   useReactFlow,
   type XYPosition,
-} from '@uipath/uix/xyflow/react';
+} from '@uipath/apollo-react/canvas/xyflow/react';
 import { Column, Row } from '@uipath/uix/core';
 import { FloatingCanvasPanel } from './FloatingCanvasPanel';
 import { ApTypography } from '@uipath/portal-shell-react';

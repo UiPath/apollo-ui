@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { AgentVisualizationFlowProvider, useAgentFlow } from './AgentFlowProvider';
 
 // Mock @xyflow/react
-vi.mock('@uipath/uix/xyflow/react', () => ({
+vi.mock('@uipath/apollo-react/canvas/xyflow/react', () => ({
   ReactFlowProvider: ({ children }: { children: React.ReactNode }) => (
     <div data-testid="rf-provider">{children}</div>
   ),

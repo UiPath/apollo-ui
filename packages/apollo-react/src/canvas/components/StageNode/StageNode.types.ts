@@ -1,4 +1,4 @@
-import type { NodeProps } from '@uipath/uix/xyflow/react';
+import type { NodeProps } from '@uipath/apollo-react/canvas/xyflow/react';
 import type { NodeMenuItem } from '../NodeContextMenu';
 import type { ListItem, ToolboxSearchHandler } from '../Toolbox';
 

@@ -1,6 +1,6 @@
 import React, { createRef } from 'react';
 import { render, screen } from '@testing-library/react';
-import { Panel, ReactFlowProvider } from '@uipath/uix/xyflow/react';
+import { Panel, ReactFlowProvider } from '@uipath/apollo-react/canvas/xyflow/react';
 import { describe, expect, it, vi } from 'vitest';
 import type { BaseCanvasProps, BaseCanvasRef } from './BaseCanvas.types';
 import { BaseCanvas } from './BaseCanvas';
@@ -34,8 +34,8 @@ const mockReactFlowInstance = {
   zoomTo: vi.fn(),
 };
 
-vi.mock('@uipath/uix/xyflow/react', async () => {
-  const actual = await vi.importActual('@uipath/uix/xyflow/react');
+vi.mock('@uipath/apollo-react/canvas/xyflow/react', async () => {
+  const actual = await vi.importActual('@uipath/apollo-react/canvas/xyflow/react');
   return {
     ...actual,
     ReactFlow: ({ children, style, onInit }: any) => {
