@@ -1,5 +1,5 @@
 import { useReactFlow } from '@uipath/apollo-react/canvas/xyflow/react';
-import { Column } from '@uipath/uix/core';
+import { Column } from '@uipath/apollo-react/canvas/layouts';
 import { memo, useCallback, useState, useEffect } from 'react';
 import { ApIcon, ApIconButton } from '@uipath/portal-shell-react';
 import { TextField, SelectField, NumberField, CheckboxField } from './fields';

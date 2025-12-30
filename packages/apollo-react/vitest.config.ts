@@ -35,6 +35,42 @@ export default defineConfig({
         find: '@uipath/apollo-react/canvas/xyflow/system',
         replacement: fileURLToPath(new URL('./src/canvas/xyflow/system.ts', import.meta.url)),
       },
+      {
+        find: '@uipath/apollo-react/canvas/layouts',
+        replacement: fileURLToPath(new URL('./src/canvas/layouts/index.ts', import.meta.url)),
+      },
+      {
+        find: '@uipath/apollo-react/canvas/hooks',
+        replacement: fileURLToPath(new URL('./src/canvas/hooks/index.ts', import.meta.url)),
+      },
+      {
+        find: '@uipath/apollo-react/canvas/utils',
+        replacement: fileURLToPath(new URL('./src/canvas/utils/index.ts', import.meta.url)),
+      },
+      {
+        find: '@uipath/apollo-react/canvas/controls',
+        replacement: fileURLToPath(new URL('./src/canvas/controls/index.ts', import.meta.url)),
+      },
+      {
+        find: '@uipath/apollo-react/canvas/icons',
+        replacement: fileURLToPath(new URL('./src/canvas/icons/index.ts', import.meta.url)),
+      },
+      {
+        find: '@uipath/apollo-react/canvas/components',
+        replacement: fileURLToPath(new URL('./src/canvas/components/index.ts', import.meta.url)),
+      },
+      {
+        find: '@uipath/apollo-react/canvas/types',
+        replacement: fileURLToPath(new URL('./src/canvas/types.ts', import.meta.url)),
+      },
+      {
+        find: '@uipath/apollo-react/canvas/constants',
+        replacement: fileURLToPath(new URL('./src/canvas/constants.ts', import.meta.url)),
+      },
+      {
+        find: '@uipath/apollo-react/canvas',
+        replacement: fileURLToPath(new URL('./src/canvas/index.ts', import.meta.url)),
+      },
     ],
   },
 });

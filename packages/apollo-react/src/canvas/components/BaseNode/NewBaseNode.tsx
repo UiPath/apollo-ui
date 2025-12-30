@@ -10,7 +10,8 @@ import {
   BaseSubHeader,
 } from './BaseNode.styles';
 import type { NewBaseNodeData, NewBaseNodeDisplayProps, NodeAdornments } from './NewBaseNode.types';
-import { cx, FontVariantToken } from '@uipath/uix/core';
+import { cx } from '@uipath/apollo-react/canvas/utils';
+import { FontVariantToken } from '@uipath/apollo-core';
 import { ApIcon, ApTooltip, ApTypography } from '@uipath/portal-shell-react';
 import { useButtonHandles } from '../ButtonHandle/useButtonHandles';
 import { NodeToolbar } from '../NodeToolbar';

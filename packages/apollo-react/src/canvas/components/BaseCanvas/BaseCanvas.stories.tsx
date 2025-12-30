@@ -4,7 +4,7 @@ import { BackgroundVariant, Panel, Position } from '@uipath/apollo-react/canvas/
 import type { Edge, Node } from '@uipath/apollo-react/canvas/xyflow/react';
 import { FontVariantToken } from '@uipath/apollo-core';
 import { ApButton, ApTypography, ApDropdown, ApDropdownItem } from '@uipath/portal-shell-react';
-import { Column, Row } from '@uipath/uix/core';
+import { Column, Row } from '@uipath/apollo-react/canvas/layouts';
 import { CanvasPositionControls } from '../CanvasPositionControls';
 import { BaseCanvas } from './BaseCanvas';
 import type { BaseCanvasRef } from './BaseCanvas.types';

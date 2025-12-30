@@ -98,6 +98,15 @@ export default defineConfig({
         alias: {
           '@uipath/apollo-react/canvas/xyflow/react': './src/canvas/xyflow/react.ts',
           '@uipath/apollo-react/canvas/xyflow/system': './src/canvas/xyflow/system.ts',
+          '@uipath/apollo-react/canvas/layouts': './src/canvas/layouts/index.ts',
+          '@uipath/apollo-react/canvas/hooks': './src/canvas/hooks/index.ts',
+          '@uipath/apollo-react/canvas/utils': './src/canvas/utils/index.ts',
+          '@uipath/apollo-react/canvas/controls': './src/canvas/controls/index.ts',
+          '@uipath/apollo-react/canvas/components': './src/canvas/components/index.ts',
+          '@uipath/apollo-react/canvas/icons': './src/canvas/icons/index.ts',
+          '@uipath/apollo-react/canvas/types': './src/canvas/types.ts',
+          '@uipath/apollo-react/canvas/constants': './src/canvas/constants.ts',
+          '@uipath/apollo-react/canvas': './src/canvas/index.ts',
         },
       },
       module: {

@@ -1,5 +1,5 @@
 import { memo, useCallback, useState, useEffect, useRef } from 'react';
-import { Column } from '@uipath/uix/core';
+import { Column } from '@uipath/apollo-react/canvas/layouts';
 import {
   TextInput,
   TextArea,

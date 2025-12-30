@@ -2,7 +2,8 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { DateTime } from 'luxon';
 import { FontVariantToken, Spacing } from '@uipath/apollo-core';
 import { ApIconButton, ApTypography, type IRawSpan } from '@uipath/portal-shell-react';
-import { Column, Row, Icons } from '@uipath/uix/core';
+import { Column, Row } from '@uipath/apollo-react/canvas/layouts';
+import * as Icons from '@uipath/apollo-react/canvas/icons';
 
 import type { NormalizedSpan } from './TimelinePlayer.utils';
 import {

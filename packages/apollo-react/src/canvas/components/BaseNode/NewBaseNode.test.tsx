@@ -30,7 +30,7 @@ vi.mock('@uipath/portal-shell-react', () => ({
 }));
 
 // Partial mock is not needed for NewBaseNode tests
-// The component uses cx() from @uipath/uix/core which works fine unmocked
+// The component uses cx() from @uipath/apollo-react/canvas which works fine unmocked
 
 const defaultProps = {
   id: 'test-node',

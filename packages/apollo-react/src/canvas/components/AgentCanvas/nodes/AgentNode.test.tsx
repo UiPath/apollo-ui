@@ -41,8 +41,8 @@ vi.mock('../store/agent-flow-store', () => ({
   }),
 }));
 
-// Mock Icons from @uipath/uix/core
-vi.mock('@uipath/uix/core', () => ({
+// Mock Icons from @uipath/apollo-react/canvas
+vi.mock('@uipath/apollo-react/canvas', () => ({
   // Re-export everything else from actual module
   cx: (...args: unknown[]) => args.filter(Boolean).join(' '),
   Icons: {

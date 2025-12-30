@@ -29,7 +29,7 @@ import {
 } from '../../stores/canvasStore';
 import { viewportManager } from '../../stores/viewportManager';
 import { animatedViewportManager } from '../../stores/animatedViewportManager';
-import { Breadcrumb } from '@uipath/uix/core';
+import { Breadcrumb } from '@uipath/apollo-react/canvas/controls';
 import { ApIcon, ApProgressSpinner } from '@uipath/portal-shell-react';
 import { CanvasPositionControls } from '../CanvasPositionControls';
 import { useNodeRegistrations } from '../BaseNode/useNodeTypeRegistry';

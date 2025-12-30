@@ -10,7 +10,7 @@ import {
   ApDropdownItem,
   ApCheckbox,
 } from '@uipath/portal-shell-react';
-import { Column, Row } from '@uipath/uix/core';
+import { Column, Row } from '@uipath/apollo-react/canvas/layouts';
 import { FontVariantToken } from '@uipath/apollo-core';
 import { useMemo, useState, useCallback, useEffect } from 'react';
 import { BaseCanvas } from '../BaseCanvas/BaseCanvas';

@@ -1,7 +1,8 @@
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { ApBadge, ApIcon, ApTooltip, ApTypography } from '@uipath/portal-shell-react';
-import { Column, FontVariantToken, Row } from '@uipath/uix/core';
+import { Row, Column } from '@uipath/apollo-react/canvas/layouts';
+import { FontVariantToken } from '@uipath/apollo-core';
 import { memo, useCallback, useMemo } from 'react';
 import { ExecutionStatusIcon } from '../ExecutionStatusIcon';
 import type { DraggableTaskProps, TaskContentProps } from './DraggableTask.types';

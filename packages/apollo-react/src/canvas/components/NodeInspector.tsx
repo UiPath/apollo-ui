@@ -6,7 +6,7 @@ import {
   useReactFlow,
   type XYPosition,
 } from '@uipath/apollo-react/canvas/xyflow/react';
-import { Column, Row } from '@uipath/uix/core';
+import { Column, Row } from '@uipath/apollo-react/canvas/layouts';
 import { FloatingCanvasPanel } from './FloatingCanvasPanel';
 import { ApTypography } from '@uipath/portal-shell-react';
 import { FontVariantToken } from '@uipath/apollo-core';

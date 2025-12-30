@@ -2,7 +2,8 @@ import { useCallback, useState } from 'react';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { ApButton, ApTypography, type IRawSpan } from '@uipath/portal-shell-react';
-import { Column, FontVariantToken, Row } from '@uipath/uix/core';
+import { Row, Column } from '@uipath/apollo-react/canvas/layouts';
+import { FontVariantToken } from '@uipath/apollo-core';
 import { ReactFlowProvider } from '@uipath/apollo-react/canvas/xyflow/react';
 
 import { StoryInfoPanel } from '../../storybook-utils';

@@ -1,5 +1,5 @@
 import { memo, useCallback } from 'react';
-import { Column } from '@uipath/uix/core';
+import { Column } from '@uipath/apollo-react/canvas/layouts';
 import {
   CheckboxContainer,
   CheckboxLabel,

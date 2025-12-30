@@ -1,6 +1,6 @@
 import React from 'react';
 import { Position } from '@uipath/apollo-react/canvas/xyflow/react';
-import { Icons } from '@uipath/uix/core';
+import * as Icons from '@uipath/apollo-react/canvas/icons';
 import type { HandleConfiguration } from '../../components/BaseNode/BaseNode.types';
 import type { BaseNodeData } from '../../components/BaseNode/BaseNode.types';
 import type { ManifestHandleGroup } from './types';

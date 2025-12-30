@@ -62,9 +62,67 @@
       "types": "./dist/icons/*.d.ts",
       "import": "./dist/icons/*.js",
       "require": "./dist/icons/*.cjs"
+    },
+    "./canvas": {
+      "types": "./dist/canvas/index.d.ts",
+      "import": "./dist/canvas/index.js",
+      "require": "./dist/canvas/index.cjs"
+    },
+    "./canvas/xyflow/react": {
+      "types": "./dist/canvas/xyflow/react.d.ts",
+      "import": "./dist/canvas/xyflow/react.js",
+      "require": "./dist/canvas/xyflow/react.cjs"
+    },
+    "./canvas/xyflow/system": {
+      "types": "./dist/canvas/xyflow/system.d.ts",
+      "import": "./dist/canvas/xyflow/system.js",
+      "require": "./dist/canvas/xyflow/system.cjs"
+    },
+    "./canvas/layouts": {
+      "types": "./dist/canvas/layouts/index.d.ts",
+      "import": "./dist/canvas/layouts/index.js",
+      "require": "./dist/canvas/layouts/index.cjs"
+    },
+    "./canvas/hooks": {
+      "types": "./dist/canvas/hooks/index.d.ts",
+      "import": "./dist/canvas/hooks/index.js",
+      "require": "./dist/canvas/hooks/index.cjs"
+    },
+    "./canvas/utils": {
+      "types": "./dist/canvas/utils/index.d.ts",
+      "import": "./dist/canvas/utils/index.js",
+      "require": "./dist/canvas/utils/index.cjs"
+    },
+    "./canvas/controls": {
+      "types": "./dist/canvas/controls/index.d.ts",
+      "import": "./dist/canvas/controls/index.js",
+      "require": "./dist/canvas/controls/index.cjs"
+    },
+    "./canvas/components": {
+      "types": "./dist/canvas/components/index.d.ts",
+      "import": "./dist/canvas/components/index.js",
+      "require": "./dist/canvas/components/index.cjs"
+    },
+    "./canvas/icons": {
+      "types": "./dist/canvas/icons/index.d.ts",
+      "import": "./dist/canvas/icons/index.js",
+      "require": "./dist/canvas/icons/index.cjs"
+    },
+    "./canvas/types": {
+      "types": "./dist/canvas/types.d.ts",
+      "import": "./dist/canvas/types.js",
+      "require": "./dist/canvas/types.cjs"
+    },
+    "./canvas/constants": {
+      "types": "./dist/canvas/constants.d.ts",
+      "import": "./dist/canvas/constants.js",
+      "require": "./dist/canvas/constants.cjs"
     }
   },
-  "sideEffects": false,
+  "sideEffects": [
+    "**/*.css",
+    "dist/**/*.css"
+  ],
   "files": [
     "dist"
   ],

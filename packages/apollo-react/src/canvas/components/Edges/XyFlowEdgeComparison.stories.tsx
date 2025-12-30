@@ -9,7 +9,7 @@ import type { Node, Edge, Connection } from '@uipath/apollo-react/canvas/xyflow/
 import { Panel, Position, MarkerType, useEdgesState } from '@uipath/apollo-react/canvas/xyflow/react';
 import { ApCheckbox, ApDropdown, ApDropdownItem, ApTypography } from '@uipath/portal-shell-react';
 import { FontVariantToken } from '@uipath/apollo-core';
-import { Column } from '@uipath/uix/core';
+import { Column } from '@uipath/apollo-react/canvas/layouts';
 import { BaseCanvas } from '../BaseCanvas';
 import { CanvasPositionControls } from '../CanvasPositionControls';
 import { withCanvasProviders, useCanvasStory, StoryInfoPanel } from '../../storybook-utils';

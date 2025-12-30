@@ -1,5 +1,5 @@
 import { ApIcon } from '@uipath/portal-shell-react';
-import { cx } from '@uipath/uix/core';
+import { cx } from '@uipath/apollo-react/canvas/utils';
 import type React from 'react';
 import { useEffect, useRef } from 'react';
 import { StyledSearchForm } from './SearchBox.styles';

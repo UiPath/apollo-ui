@@ -4,7 +4,7 @@ import {
   type SharedResourceData,
   type ToolResourceData,
 } from 'packages/apollo-react/src/canvas/types';
-import { Icons } from '@uipath/uix/core';
+import * as Icons from '@uipath/apollo-react/canvas/icons';
 import { IxpIcon } from './IXPIcon';
 import { ProcessIcon } from './ProcessIcon';
 import { AttachmentIcon } from './AttachmentIcon';

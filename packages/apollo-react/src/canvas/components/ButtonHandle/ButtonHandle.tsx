@@ -2,7 +2,7 @@ import { useMemo, useCallback, memo, useState } from 'react';
 import { Position } from '@uipath/apollo-react/canvas/xyflow/react';
 import { AnimatePresence } from 'motion/react';
 import { FontVariantToken } from '@uipath/apollo-core';
-import { Row } from '@uipath/uix/core';
+import { Row } from '@uipath/apollo-react/canvas/layouts';
 import { ApIcon, ApTypography } from '@uipath/portal-shell-react';
 import { canvasEventBus } from '../../utils/CanvasEventBus';
 import {

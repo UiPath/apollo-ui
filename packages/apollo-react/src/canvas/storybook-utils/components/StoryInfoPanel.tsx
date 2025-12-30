@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { FontVariantToken } from '@uipath/apollo-core';
 import { ApTypography, ApIconButton, ApIcon } from '@uipath/portal-shell-react';
-import { Column, Row } from '@uipath/uix/core';
+import { Column, Row } from '@uipath/apollo-react/canvas/layouts';
 import { Panel } from '@uipath/apollo-react/canvas/xyflow/react';
 
 export interface StoryInfoPanelProps {

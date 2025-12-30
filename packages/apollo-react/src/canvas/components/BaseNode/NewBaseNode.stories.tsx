@@ -14,7 +14,7 @@ import { BaseCanvas } from '../BaseCanvas';
 import { CanvasPositionControls } from '../CanvasPositionControls';
 import type { NewBaseNodeData, NewBaseNodeDisplayProps } from './NewBaseNode.types';
 import type { HandleActionEvent } from '../ButtonHandle';
-import { Icons } from '@uipath/uix/core';
+import * as Icons from '@uipath/apollo-react/canvas/icons';
 import { ApIcon, ApTypography } from '@uipath/portal-shell-react';
 import { FontVariantToken } from '@uipath/apollo-core';
 import { DefaultCanvasTranslations } from '../../types';

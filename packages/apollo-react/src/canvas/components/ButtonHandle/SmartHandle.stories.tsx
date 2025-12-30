@@ -11,7 +11,7 @@ import { Panel, Position } from '@uipath/apollo-react/canvas/xyflow/react';
 import { ApTypography, ApIcon } from '@uipath/portal-shell-react';
 import { FontVariantToken } from '@uipath/apollo-core';
 import { useMemo, useCallback } from 'react';
-import { Column } from '@uipath/uix/core';
+import { Column } from '@uipath/apollo-react/canvas/layouts';
 import { BaseCanvas } from '../BaseCanvas/BaseCanvas';
 import { CanvasPositionControls } from '../CanvasPositionControls';
 import { SequenceEdge } from '../Edges/SequenceEdge';

@@ -1,5 +1,7 @@
 import { ApIcon, ApSkeleton, ApTypography } from '@uipath/portal-shell-react';
-import { Column, FontVariantToken, partition } from '@uipath/uix/core';
+import { Column } from '@uipath/apollo-react/canvas/layouts';
+import { partition } from '@uipath/apollo-react/canvas/utils';
+import { FontVariantToken } from '@uipath/apollo-core';
 import { useMemo } from 'react';
 import type { RowComponentProps } from 'react-window';
 import { IconContainer, ListItemButton, SectionHeader, StyledList } from './ListView.styles';

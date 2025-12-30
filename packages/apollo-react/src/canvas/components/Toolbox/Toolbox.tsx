@@ -1,4 +1,5 @@
-import { Column, useNavigationStack } from '@uipath/uix/core';
+import { Column } from '@uipath/apollo-react/canvas/layouts';
+import { useNavigationStack } from '@uipath/apollo-react/canvas/hooks';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Header } from './Header';
 import { type ListItem, ListView } from './ListView';

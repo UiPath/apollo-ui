@@ -1,6 +1,6 @@
 import { ApIcon, ApTooltip } from '@uipath/portal-shell-react';
 import { memo } from 'react';
-import { getLighterColor } from '@uipath/uix/core';
+import { getLighterColor } from '@uipath/apollo-react/canvas/utils';
 import { StyledToolbarButton } from './NodeToolbar.styles';
 import type { ToolbarActionItem } from './NodeToolbar.types';
 

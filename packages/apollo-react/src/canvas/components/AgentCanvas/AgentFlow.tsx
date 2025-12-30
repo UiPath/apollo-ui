@@ -5,7 +5,7 @@ import type { NodeProps } from '@uipath/apollo-react/canvas/xyflow/system';
 import { BaseCanvas } from '../../components/BaseCanvas';
 import { TimelinePlayer } from './components/TimelinePlayer';
 import { Edge } from './edges/Edge';
-import { Column } from '@uipath/uix/core';
+import { Column } from '@uipath/apollo-react/canvas/layouts';
 import { AgentNodeElement } from './nodes/AgentNode';
 import { ResourceNode } from './nodes/ResourceNode';
 import { CanvasPositionControls } from '../CanvasPositionControls';
