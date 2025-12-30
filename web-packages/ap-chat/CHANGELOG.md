@@ -1,3 +1,15 @@
+# [1.1.0](https://github.com/UiPath/apollo-ui/compare/@uipath/ap-chat@1.0.3...@uipath/ap-chat@1.1.0) (2025-12-30)
+
+
+### Bug Fixes
+
+* **apollo-wind:** release conditions ([ce72652](https://github.com/UiPath/apollo-ui/commit/ce72652cbd20ca32945189e7054a7ad4496399e1))
+
+
+### Features
+
+* **apollo-react:** add ApButton and also new width variant ([085f513](https://github.com/UiPath/apollo-ui/commit/085f5136bd8fbb4e447788dffe1af9548be2ea22))
+
 ## [1.0.3](https://github.com/UiPath/apollo-ui/compare/@uipath/ap-chat@1.0.2...@uipath/ap-chat@1.0.3) (2025-12-24)
 
 
