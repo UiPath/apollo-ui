@@ -1,6 +1,8 @@
-import "@testing-library/jest-dom";
-import React from "react";
-import { vi } from "vitest";
+import '@testing-library/jest-dom';
+
+import React from 'react';
+
+import { vi } from 'vitest';
 
 // Mock requestAnimationFrame for tests
 (window as any).requestAnimationFrame = vi.fn((callback: FrameRequestCallback) => {
