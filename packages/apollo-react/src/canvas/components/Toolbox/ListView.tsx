@@ -1,10 +1,22 @@
-import { ApIcon, ApSkeleton, ApTypography } from '@uipath/portal-shell-react';
+import { useMemo } from 'react';
+
+import type { RowComponentProps } from 'react-window';
+
+import { FontVariantToken } from '@uipath/apollo-core';
 import { Column } from '@uipath/apollo-react/canvas/layouts';
 import { partition } from '@uipath/apollo-react/canvas/utils';
-import { FontVariantToken } from '@uipath/apollo-core';
-import { useMemo } from 'react';
-import type { RowComponentProps } from 'react-window';
-import { IconContainer, ListItemButton, SectionHeader, StyledList } from './ListView.styles';
+import {
+  ApSkeleton,
+  ApTypography,
+} from '@uipath/apollo-react/material';
+import { ApIcon } from '@uipath/portal-shell-react';
+
+import {
+  IconContainer,
+  ListItemButton,
+  SectionHeader,
+  StyledList,
+} from './ListView.styles';
 
 export interface ListItemIcon {
   /**

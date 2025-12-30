@@ -1,23 +1,38 @@
-import type { Meta, StoryObj } from '@storybook/react';
-import { useCallback, useMemo } from 'react';
-import type { Connection, NodeTypes } from '@uipath/apollo-react/canvas/xyflow/react';
 import {
-  Panel,
-  ReactFlowProvider,
-  useNodesState,
-  useEdgesState,
-  addEdge,
-  Position,
-} from '@uipath/apollo-react/canvas/xyflow/react';
-import { NewBaseNode } from './NewBaseNode';
-import { BaseCanvas } from '../BaseCanvas';
-import { CanvasPositionControls } from '../CanvasPositionControls';
-import type { NewBaseNodeData, NewBaseNodeDisplayProps } from './NewBaseNode.types';
-import type { HandleActionEvent } from '../ButtonHandle';
-import * as Icons from '@uipath/apollo-react/canvas/icons';
-import { ApIcon, ApTypography } from '@uipath/portal-shell-react';
+  useCallback,
+  useMemo,
+} from 'react';
+
+import type {
+  Meta,
+  StoryObj,
+} from '@storybook/react';
 import { FontVariantToken } from '@uipath/apollo-core';
+import * as Icons from '@uipath/apollo-react/canvas/icons';
+import type {
+  Connection,
+  NodeTypes,
+} from '@uipath/apollo-react/canvas/xyflow/react';
+import {
+  addEdge,
+  Panel,
+  Position,
+  ReactFlowProvider,
+  useEdgesState,
+  useNodesState,
+} from '@uipath/apollo-react/canvas/xyflow/react';
+import { ApTypography } from '@uipath/apollo-react/material';
+import { ApIcon } from '@uipath/portal-shell-react';
+
 import { DefaultCanvasTranslations } from '../../types';
+import { BaseCanvas } from '../BaseCanvas';
+import type { HandleActionEvent } from '../ButtonHandle';
+import { CanvasPositionControls } from '../CanvasPositionControls';
+import { NewBaseNode } from './NewBaseNode';
+import type {
+  NewBaseNodeData,
+  NewBaseNodeDisplayProps,
+} from './NewBaseNode.types';
 
 const meta = {
   title: 'Canvas/NewBaseNode',

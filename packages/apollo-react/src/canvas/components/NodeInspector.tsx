@@ -1,15 +1,20 @@
+import { ApTypography } from 'src/material/components/ap-typography';
+
+import { FontVariantToken } from '@uipath/apollo-core';
 import {
-  type Node,
+  Column,
+  Row,
+} from '@uipath/apollo-react/canvas/layouts';
+import {
   type Edge,
-  useNodes,
+  type Node,
   useEdges,
+  useNodes,
   useReactFlow,
   type XYPosition,
 } from '@uipath/apollo-react/canvas/xyflow/react';
-import { Column, Row } from '@uipath/apollo-react/canvas/layouts';
+
 import { FloatingCanvasPanel } from './FloatingCanvasPanel';
-import { ApTypography } from '@uipath/portal-shell-react';
-import { FontVariantToken } from '@uipath/apollo-core';
 
 function safeStringify(obj: unknown, indent = 2): string {
   const seen = new WeakSet();

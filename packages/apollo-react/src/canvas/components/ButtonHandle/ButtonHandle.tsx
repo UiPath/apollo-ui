@@ -1,10 +1,20 @@
-import { useMemo, useCallback, memo, useState } from 'react';
-import { Position } from '@uipath/apollo-react/canvas/xyflow/react';
+import {
+  memo,
+  useCallback,
+  useMemo,
+  useState,
+} from 'react';
+
 import { AnimatePresence } from 'motion/react';
+
 import { FontVariantToken } from '@uipath/apollo-core';
 import { Row } from '@uipath/apollo-react/canvas/layouts';
-import { ApIcon, ApTypography } from '@uipath/portal-shell-react';
+import { Position } from '@uipath/apollo-react/canvas/xyflow/react';
+import { ApTypography } from '@uipath/apollo-react/material';
+import { ApIcon } from '@uipath/portal-shell-react';
+
 import { canvasEventBus } from '../../utils/CanvasEventBus';
+import type { HandleConfigurationSpecificPosition } from '../BaseNode/BaseNode.types';
 import {
   StyledAddButton,
   StyledHandle,
@@ -13,8 +23,11 @@ import {
   StyledNotch,
   StyledWrapper,
 } from './ButtonHandle.styles';
-import type { HandleConfigurationSpecificPosition } from '../BaseNode/BaseNode.types';
-import { calculateGridAlignedHandlePositions, pixelToPercent } from './ButtonHandleStyleUtils';
+import {
+  calculateGridAlignedHandlePositions,
+  pixelToPercent,
+} from './ButtonHandleStyleUtils';
+
 export interface HandleActionEvent {
   handleId: string;
   nodeId: string;

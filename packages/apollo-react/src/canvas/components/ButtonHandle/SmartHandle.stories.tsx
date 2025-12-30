@@ -1,28 +1,44 @@
-import type { Meta, StoryObj } from '@storybook/react-vite';
+import {
+  useCallback,
+  useMemo,
+} from 'react';
+
 import type {
-  Node,
+  Meta,
+  StoryObj,
+} from '@storybook/react-vite';
+import { FontVariantToken } from '@uipath/apollo-core';
+import { Column } from '@uipath/apollo-react/canvas/layouts';
+import type {
+  Connection,
   Edge,
   EdgeTypes,
-  OnEdgesChange,
+  Node,
   OnConnect,
-  Connection,
+  OnEdgesChange,
 } from '@uipath/apollo-react/canvas/xyflow/react';
-import { Panel, Position } from '@uipath/apollo-react/canvas/xyflow/react';
-import { ApTypography, ApIcon } from '@uipath/portal-shell-react';
-import { FontVariantToken } from '@uipath/apollo-core';
-import { useMemo, useCallback } from 'react';
-import { Column } from '@uipath/apollo-react/canvas/layouts';
+import {
+  Panel,
+  Position,
+} from '@uipath/apollo-react/canvas/xyflow/react';
+import { ApTypography } from '@uipath/apollo-react/material';
+import { ApIcon } from '@uipath/portal-shell-react';
+
+import {
+  StoryInfoPanel,
+  useCanvasStory,
+  withCanvasProviders,
+} from '../../storybook-utils';
+import { DefaultCanvasTranslations } from '../../types';
 import { BaseCanvas } from '../BaseCanvas/BaseCanvas';
 import { CanvasPositionControls } from '../CanvasPositionControls';
 import { SequenceEdge } from '../Edges/SequenceEdge';
-import { withCanvasProviders, useCanvasStory, StoryInfoPanel } from '../../storybook-utils';
 import {
   SmartHandle,
+  SmartHandleProvider,
   SmartSourceHandle,
   SmartTargetHandle,
-  SmartHandleProvider,
 } from './SmartHandle';
-import { DefaultCanvasTranslations } from '../../types';
 
 // ============================================================================
 // Meta Configuration

@@ -1,11 +1,32 @@
+import {
+  memo,
+  useCallback,
+  useMemo,
+} from 'react';
+
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { ApBadge, ApIcon, ApTooltip, ApTypography } from '@uipath/portal-shell-react';
-import { Row, Column } from '@uipath/apollo-react/canvas/layouts';
 import { FontVariantToken } from '@uipath/apollo-core';
-import { memo, useCallback, useMemo } from 'react';
+import {
+  Column,
+  Row,
+} from '@uipath/apollo-react/canvas/layouts';
+import {
+  ApBadge,
+  ApTypography,
+  BadgeSize,
+  StatusTypes,
+} from '@uipath/apollo-react/material';
+import {
+  ApIcon,
+  ApTooltip,
+} from '@uipath/portal-shell-react';
+
 import { ExecutionStatusIcon } from '../ExecutionStatusIcon';
-import type { DraggableTaskProps, TaskContentProps } from './DraggableTask.types';
+import type {
+  DraggableTaskProps,
+  TaskContentProps,
+} from './DraggableTask.types';
 import {
   INDENTATION_WIDTH,
   StageTask,
@@ -87,9 +108,9 @@ export const TaskContent = memo(({ task, taskExecution, isDragging }: TaskConten
         </Row>
         {taskExecution?.badge && (
           <ApBadge
-            size="small"
-            status={taskExecution.badgeStatus ?? 'warning'}
-            label={generateBadgeText(taskExecution)}
+            size={BadgeSize.SMALL}
+            status={taskExecution.badgeStatus as StatusTypes}
+            label={generateBadgeText(taskExecution) ?? ''}
           />
         )}
       </Row>

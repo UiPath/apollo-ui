@@ -1,9 +1,17 @@
 import type { ReactNode } from 'react';
-import { useRef, useEffect } from 'react';
-import { ApIcon, ApIconButton, ApTypography } from '@uipath/portal-shell-react';
+import {
+  useEffect,
+  useRef,
+} from 'react';
+
+import styled from '@emotion/styled';
 import { FontVariantToken } from '@uipath/apollo-core';
 import { Row } from '@uipath/apollo-react/canvas/layouts';
-import styled from '@emotion/styled';
+import { ApTypography } from '@uipath/apollo-react/material';
+import {
+  ApIcon,
+  ApIconButton,
+} from '@uipath/portal-shell-react';
 
 const PanelHeader = styled.div`
   border-bottom: 1px solid var(--uix-canvas-border-de-emp);

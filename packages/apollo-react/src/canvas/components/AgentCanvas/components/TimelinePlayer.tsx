@@ -17,10 +17,8 @@ import {
   Column,
   Row,
 } from '@uipath/apollo-react/canvas/layouts';
-import {
-  ApIconButton,
-  ApTypography,
-} from '@uipath/portal-shell-react';
+import { ApTypography } from '@uipath/apollo-react/material';
+import { ApIconButton } from '@uipath/portal-shell-react';
 
 import type { IRawSpan } from '../../../../types/TraceModels';
 import type { NormalizedSpan } from './TimelinePlayer.utils';

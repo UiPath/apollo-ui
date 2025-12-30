@@ -1,21 +1,47 @@
-import { useRef, useState, useMemo } from 'react';
-import type { Meta, StoryObj } from '@storybook/react-vite';
-import { BackgroundVariant, Panel, Position } from '@uipath/apollo-react/canvas/xyflow/react';
-import type { Edge, Node } from '@uipath/apollo-react/canvas/xyflow/react';
+import {
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
+
+import type {
+  Meta,
+  StoryObj,
+} from '@storybook/react-vite';
 import { FontVariantToken } from '@uipath/apollo-core';
-import { ApButton, ApTypography, ApDropdown, ApDropdownItem } from '@uipath/portal-shell-react';
-import { Column, Row } from '@uipath/apollo-react/canvas/layouts';
+import {
+  Column,
+  Row,
+} from '@uipath/apollo-react/canvas/layouts';
+import type {
+  Edge,
+  Node,
+} from '@uipath/apollo-react/canvas/xyflow/react';
+import {
+  BackgroundVariant,
+  Panel,
+  Position,
+} from '@uipath/apollo-react/canvas/xyflow/react';
+import {
+  ApButton,
+  ApTypography,
+} from '@uipath/apollo-react/material';
+import {
+  ApDropdown,
+  ApDropdownItem,
+} from '@uipath/portal-shell-react';
+
+import {
+  createNode,
+  StoryInfoPanel,
+  useCanvasStory,
+  withCanvasProviders,
+} from '../../storybook-utils';
+import { DefaultCanvasTranslations } from '../../types';
+import type { BaseNodeData } from '../BaseNode/BaseNode.types';
 import { CanvasPositionControls } from '../CanvasPositionControls';
 import { BaseCanvas } from './BaseCanvas';
 import type { BaseCanvasRef } from './BaseCanvas.types';
-import type { BaseNodeData } from '../BaseNode/BaseNode.types';
-import {
-  withCanvasProviders,
-  useCanvasStory,
-  createNode,
-  StoryInfoPanel,
-} from '../../storybook-utils';
-import { DefaultCanvasTranslations } from '../../types';
 
 // ============================================================================
 // Meta Configuration

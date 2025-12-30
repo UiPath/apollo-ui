@@ -3,17 +3,45 @@
  *
  * Demonstrates different React Flow edge types and styling options.
  */
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import type { Meta, StoryObj } from '@storybook/react';
-import type { Node, Edge, Connection } from '@uipath/apollo-react/canvas/xyflow/react';
-import { Panel, Position, MarkerType, useEdgesState } from '@uipath/apollo-react/canvas/xyflow/react';
-import { ApCheckbox, ApDropdown, ApDropdownItem, ApTypography } from '@uipath/portal-shell-react';
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
+
+import type {
+  Meta,
+  StoryObj,
+} from '@storybook/react';
 import { FontVariantToken } from '@uipath/apollo-core';
 import { Column } from '@uipath/apollo-react/canvas/layouts';
+import type {
+  Connection,
+  Edge,
+  Node,
+} from '@uipath/apollo-react/canvas/xyflow/react';
+import {
+  MarkerType,
+  Panel,
+  Position,
+  useEdgesState,
+} from '@uipath/apollo-react/canvas/xyflow/react';
+import { ApTypography } from '@uipath/apollo-react/material';
+import {
+  ApCheckbox,
+  ApDropdown,
+  ApDropdownItem,
+} from '@uipath/portal-shell-react';
+
+import {
+  StoryInfoPanel,
+  useCanvasStory,
+  withCanvasProviders,
+} from '../../storybook-utils';
+import { DefaultCanvasTranslations } from '../../types';
 import { BaseCanvas } from '../BaseCanvas';
 import { CanvasPositionControls } from '../CanvasPositionControls';
-import { withCanvasProviders, useCanvasStory, StoryInfoPanel } from '../../storybook-utils';
-import { DefaultCanvasTranslations } from '../../types';
 
 // ============================================================================
 // Meta Configuration

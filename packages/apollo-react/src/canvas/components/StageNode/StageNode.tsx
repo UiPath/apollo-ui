@@ -1,37 +1,68 @@
 import {
+  memo,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
+import { createPortal } from 'react-dom';
+
+import {
   closestCenter,
   DndContext,
+  type DragEndEvent,
+  type DragMoveEvent,
+  type DragOverEvent,
   DragOverlay,
+  type DragStartEvent,
   KeyboardSensor,
   PointerSensor,
   useSensor,
   useSensors,
-  type DragEndEvent,
-  type DragMoveEvent,
-  type DragOverEvent,
-  type DragStartEvent,
 } from '@dnd-kit/core';
 import {
   SortableContext,
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
-import { Spacing } from '@uipath/apollo-core';
-import { ApIcon, ApLink, ApTooltip, ApTypography } from '@uipath/portal-shell-react';
-import { Row, Column } from '@uipath/apollo-react/canvas/layouts';
-import { FontVariantToken } from '@uipath/apollo-core';
-import { Position, useViewport, useStore } from '@uipath/apollo-react/canvas/xyflow/react';
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { createPortal } from 'react-dom';
+import {
+  FontVariantToken,
+  Spacing,
+} from '@uipath/apollo-core';
+import {
+  Column,
+  Row,
+} from '@uipath/apollo-react/canvas/layouts';
+import {
+  Position,
+  useStore,
+  useViewport,
+} from '@uipath/apollo-react/canvas/xyflow/react';
+import {
+  ApLink,
+  ApTypography,
+} from '@uipath/apollo-react/material';
+import {
+  ApIcon,
+  ApTooltip,
+} from '@uipath/portal-shell-react';
+
+import { useConnectedHandles } from '../BaseCanvas/ConnectedHandlesContext';
 import type { HandleConfiguration } from '../BaseNode/BaseNode.types';
 import { useButtonHandles } from '../ButtonHandle/useButtonHandles';
-import { useConnectedHandles } from '../BaseCanvas/ConnectedHandlesContext';
 import { ExecutionStatusIcon } from '../ExecutionStatusIcon';
 import { FloatingCanvasPanel } from '../FloatingCanvasPanel';
 import { NodeContextMenu } from '../NodeContextMenu';
 import { useNodeSelection } from '../NodePropertiesPanel/hooks';
-import { Toolbox, type ListItem } from '../Toolbox';
-import { DraggableTask, TaskContent } from './DraggableTask';
+import {
+  type ListItem,
+  Toolbox,
+} from '../Toolbox';
+import {
+  DraggableTask,
+  TaskContent,
+} from './DraggableTask';
 import {
   INDENTATION_WIDTH,
   STAGE_CONTENT_INSET,
@@ -46,8 +77,15 @@ import {
   StageTitleContainer,
   StageTitleInput,
 } from './StageNode.styles';
-import { GroupModificationType, type StageNodeProps } from './StageNode.types';
-import { flattenTasks, getProjection, reorderTasks } from './StageNode.utils';
+import {
+  GroupModificationType,
+  type StageNodeProps,
+} from './StageNode.types';
+import {
+  flattenTasks,
+  getProjection,
+  reorderTasks,
+} from './StageNode.utils';
 import { getContextMenuItems } from './StageNodeTaskUtilities';
 
 interface TaskStateReference {

@@ -1,21 +1,35 @@
-import React, { useCallback, useMemo, useEffect } from 'react';
-import { ApButton, ApIcon, ApTypography } from '@uipath/portal-shell-react';
-import { HierarchicalCanvas } from './HierarchicalCanvas';
-import { useCanvasStore } from '../../stores/canvasStore';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+} from 'react';
+
+import { FontVariantToken } from '@uipath/apollo-core';
 import {
+  type Node,
   Panel,
+  Position,
   ReactFlowProvider,
   useReactFlow,
-  type Node,
-  Position,
 } from '@uipath/apollo-react/canvas/xyflow/react';
-import { createAddNodePreview } from '../AddNodePanel/createAddNodePreview';
-import { FontVariantToken } from '@uipath/apollo-core';
-import { type CanvasLevel } from '../../types/canvas.types';
-import { NodeRegistryProvider } from '../BaseNode/NodeRegistryProvider';
-import type { BaseNodeData, NodeDisplay, NodeRegistration } from '../BaseNode';
-import { canvasEventBus } from '../../utils/CanvasEventBus';
+import {
+  ApButton,
+  ApTypography,
+} from '@uipath/apollo-react/material';
+import { ApIcon } from '@uipath/portal-shell-react';
+
+import { useCanvasStore } from '../../stores/canvasStore';
 import { DefaultResourceNodeTranslations } from '../../types';
+import { type CanvasLevel } from '../../types/canvas.types';
+import { canvasEventBus } from '../../utils/CanvasEventBus';
+import { createAddNodePreview } from '../AddNodePanel/createAddNodePreview';
+import type {
+  BaseNodeData,
+  NodeDisplay,
+  NodeRegistration,
+} from '../BaseNode';
+import { NodeRegistryProvider } from '../BaseNode/NodeRegistryProvider';
+import { HierarchicalCanvas } from './HierarchicalCanvas';
 
 const workflowNodeTypes = {
   start: {

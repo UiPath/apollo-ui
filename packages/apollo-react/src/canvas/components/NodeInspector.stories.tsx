@@ -1,15 +1,29 @@
-import { useCallback, useState } from 'react';
-import type { Meta, StoryObj } from '@storybook/react-vite';
+import {
+  useCallback,
+  useState,
+} from 'react';
+
+import { ApTypography } from 'src/material/components/ap-typography';
+
+import type {
+  Meta,
+  StoryObj,
+} from '@storybook/react-vite';
+import { FontVariantToken } from '@uipath/apollo-core';
+import { Column } from '@uipath/apollo-react/canvas/layouts';
+import type {
+  Edge,
+  EdgeChange,
+  Node,
+  NodeChange,
+} from '@uipath/apollo-react/canvas/xyflow/react';
 import {
   applyEdgeChanges,
   applyNodeChanges,
   Panel,
   ReactFlowProvider,
 } from '@uipath/apollo-react/canvas/xyflow/react';
-import type { Edge, EdgeChange, Node, NodeChange } from '@uipath/apollo-react/canvas/xyflow/react';
-import { FontVariantToken } from '@uipath/apollo-core';
-import { ApTypography } from '@uipath/portal-shell-react';
-import { Column } from '@uipath/apollo-react/canvas/layouts';
+
 import { BaseCanvas } from './BaseCanvas/BaseCanvas';
 import { NodeInspector } from './NodeInspector';
 

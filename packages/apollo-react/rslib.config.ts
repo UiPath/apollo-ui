@@ -96,6 +96,10 @@ export default defineConfig({
       resolve: {
         extensions: ['.tsx', '.ts', '.jsx', '.js', '.json'],
         alias: {
+          '@uipath/apollo-react/icons': './src/icons/index.ts',
+          '@uipath/apollo-react/material': './src/material/index.ts',
+          '@uipath/apollo-react/material/theme': './src/material/theme/index.ts',
+          '@uipath/apollo-react/material/components': './src/material/components/index.ts',
           '@uipath/apollo-react/canvas/xyflow/react': './src/canvas/xyflow/react.ts',
           '@uipath/apollo-react/canvas/xyflow/system': './src/canvas/xyflow/system.ts',
           '@uipath/apollo-react/canvas/layouts': './src/canvas/layouts/index.ts',

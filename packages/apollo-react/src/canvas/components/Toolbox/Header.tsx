@@ -1,6 +1,10 @@
-import { ApIcon, ApIconButton, ApTypography } from '@uipath/portal-shell-react';
-import { Row } from '@uipath/apollo-react/canvas/layouts';
 import { FontVariantToken } from '@uipath/apollo-core';
+import { Row } from '@uipath/apollo-react/canvas/layouts';
+import { ApTypography } from '@uipath/apollo-react/material';
+import {
+  ApIcon,
+  ApIconButton,
+} from '@uipath/portal-shell-react';
 
 interface HeaderProps {
   title: string;

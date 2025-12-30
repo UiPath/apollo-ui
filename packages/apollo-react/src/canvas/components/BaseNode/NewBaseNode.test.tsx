@@ -1,5 +1,15 @@
-import { render, screen } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import {
+  describe,
+  expect,
+  it,
+  vi,
+} from 'vitest';
+
+import {
+  render,
+  screen,
+} from '@testing-library/react';
+
 import { NewBaseNode } from './NewBaseNode';
 
 // Mock dependencies
@@ -21,12 +31,6 @@ vi.mock('@uipath/apollo-react/canvas/xyflow/react', () => ({
 
 vi.mock('../ButtonHandle/useButtonHandles', () => ({
   useButtonHandles: () => null,
-}));
-
-vi.mock('@uipath/portal-shell-react', () => ({
-  ApIcon: ({ name }: { name: string }) => <div data-testid={`icon-${name}`}>{name}</div>,
-  ApTooltip: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  ApTypography: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
 }));
 
 // Partial mock is not needed for NewBaseNode tests
