@@ -1,21 +1,29 @@
 # Apollo-Wind Metadata Form System
 
-A powerful, enterprise-grade, metadata-driven form system built on **React Hook Form**, **Zod**, and **shadcn/ui** for the apollo-wind design system.
+A powerful, enterprise-grade, metadata-driven form system built on **React Hook
+Form**, **Zod**, and **shadcn/ui** for the apollo-wind design system.
 
 ## 🎯 Key Features
 
 ### Core Capabilities
-- ✅ **100% TypeScript** - Fully typed with discriminated unions and strict type safety
-- ✅ **JSON Schema Driven** - Define forms in JSON/TypeScript with full type inference
+
+- ✅ **100% TypeScript** - Fully typed with discriminated unions and strict type
+  safety
+- ✅ **JSON Schema Driven** - Define forms in JSON/TypeScript with full type
+  inference
 - ✅ **React Hook Form** - Best-in-class performance with minimal re-renders
-- ✅ **JSON-Serializable Validation** - ValidationConfig objects that can be stored in databases and transmitted via APIs
+- ✅ **JSON-Serializable Validation** - ValidationConfig objects that can be
+  stored in databases and transmitted via APIs
 - ✅ **shadcn/ui Integration** - Beautiful, accessible components out of the box
 - ✅ **Zero Re-renders** - Optimized field watching with targeted subscriptions
 - ✅ **Visual Form Designer** - Drag-and-drop interface for building forms
 
 ### Advanced Features
-- 🔄 **Data Fetching** - Static, remote, computed, and dependent data sources with caching
-- 🎨 **Conditional Logic** - Powerful rules engine with jsep for complex expressions
+
+- 🔄 **Data Fetching** - Static, remote, computed, and dependent data sources
+  with caching
+- 🎨 **Conditional Logic** - Powerful rules engine with jsep for complex
+  expressions
 - 🔌 **Plugin System** - Extend functionality through lifecycle hooks
 - 📊 **Multi-Step Forms** - Wizard-style forms with conditional step navigation
 - 💾 **Auto-save** - Draft management with localStorage persistence
@@ -237,54 +245,54 @@ classDiagram
 ### 1. Basic Form
 
 ```tsx
-import { MetadataForm } from '@uipath/wind/forms';
-import type { FormSchema } from '@uipath/wind/forms';
+import { MetadataForm } from "@uipath/apollo-wind/forms";
+import type { FormSchema } from "@uipath/apollo-wind/forms";
 
 const schema: FormSchema = {
-  id: 'contact-form',
-  title: 'Contact Us',
+  id: "contact-form",
+  title: "Contact Us",
   sections: [{
-    id: 'info',
+    id: "info",
     fields: [
       {
-        name: 'name',
-        type: 'text',
-        label: 'Full Name',
-        placeholder: 'John Doe',
+        name: "name",
+        type: "text",
+        label: "Full Name",
+        placeholder: "John Doe",
         validation: {
           required: true,
           minLength: 2,
-          messages: { minLength: 'Name must be at least 2 characters' }
-        }
+          messages: { minLength: "Name must be at least 2 characters" },
+        },
       },
       {
-        name: 'email',
-        type: 'email',
-        label: 'Email Address',
-        placeholder: 'john@example.com',
+        name: "email",
+        type: "email",
+        label: "Email Address",
+        placeholder: "john@example.com",
         validation: {
           required: true,
           email: true,
-          messages: { email: 'Invalid email address' }
-        }
+          messages: { email: "Invalid email address" },
+        },
       },
       {
-        name: 'message',
-        type: 'textarea',
-        label: 'Message',
+        name: "message",
+        type: "textarea",
+        label: "Message",
         rows: 4,
         validation: {
           required: true,
-          minLength: 10
-        }
-      }
-    ]
-  }]
+          minLength: 10,
+        },
+      },
+    ],
+  }],
 };
 
 function ContactPage() {
   const handleSubmit = async (data: unknown) => {
-    console.log('Form submitted:', data);
+    console.log("Form submitted:", data);
     // Send to API
   };
 
@@ -297,7 +305,10 @@ function ContactPage() {
 }
 ```
 
-**Why ValidationConfig?** The validation configuration is a plain JSON-serializable object, allowing schemas to be stored in databases, fetched from APIs, and transmitted over the wire. At runtime, the system converts `ValidationConfig` to Zod schemas for validation.
+**Why ValidationConfig?** The validation configuration is a plain
+JSON-serializable object, allowing schemas to be stored in databases, fetched
+from APIs, and transmitted over the wire. At runtime, the system converts
+`ValidationConfig` to Zod schemas for validation.
 
 ### 2. Multi-Step Form
 
@@ -337,19 +348,19 @@ const onboardingSchema = {
 ### 3. With Plugins
 
 ```tsx
-import { analyticsPlugin, autoSavePlugin } from '@uipath/wind/forms';
+import { analyticsPlugin, autoSavePlugin } from "@uipath/apollo-wind/forms";
 
 <MetadataForm
   schema={schema}
   plugins={[analyticsPlugin, autoSavePlugin]}
   onSubmit={handleSubmit}
-/>
+/>;
 ```
 
 ### 4. Visual Form Designer
 
 ```tsx
-import { FormDesigner } from '@uipath/wind/forms';
+import { FormDesigner } from "@uipath/apollo-wind/forms";
 
 function FormBuilderPage() {
   // FormDesigner is a self-contained visual editor
@@ -601,22 +612,22 @@ sequenceDiagram
 
 The system supports 15+ built-in field types with full TypeScript support:
 
-| Type | Description | Props |
-|------|-------------|-------|
-| `text` | Single-line text input | `placeholder` |
-| `email` | Email input with validation | `placeholder` |
-| `textarea` | Multi-line text input | `rows`, `placeholder` |
-| `number` | Number input with min/max | `min`, `max`, `step` |
-| `select` | Single-select dropdown | `options`, `dataSource` |
-| `multiselect` | Multi-select with search | `options`, `maxSelected` |
-| `radio` | Radio button group | `options` |
-| `checkbox` | Single checkbox | - |
-| `switch` | Toggle switch | - |
-| `slider` | Range slider | `min`, `max`, `step` |
-| `date` | Date picker | `placeholder` |
-| `datetime` | Date and time picker | `use12Hour` |
-| `file` | File upload | `accept`, `multiple` |
-| `custom` | Custom component | `component`, `componentProps` |
+| Type          | Description                 | Props                         |
+| ------------- | --------------------------- | ----------------------------- |
+| `text`        | Single-line text input      | `placeholder`                 |
+| `email`       | Email input with validation | `placeholder`                 |
+| `textarea`    | Multi-line text input       | `rows`, `placeholder`         |
+| `number`      | Number input with min/max   | `min`, `max`, `step`          |
+| `select`      | Single-select dropdown      | `options`, `dataSource`       |
+| `multiselect` | Multi-select with search    | `options`, `maxSelected`      |
+| `radio`       | Radio button group          | `options`                     |
+| `checkbox`    | Single checkbox             | -                             |
+| `switch`      | Toggle switch               | -                             |
+| `slider`      | Range slider                | `min`, `max`, `step`          |
+| `date`        | Date picker                 | `placeholder`                 |
+| `datetime`    | Date and time picker        | `use12Hour`                   |
+| `file`        | File upload                 | `accept`, `multiple`          |
+| `custom`      | Custom component            | `component`, `componentProps` |
 
 ## 📊 Data Sources
 
@@ -657,7 +668,7 @@ The system supports 15+ built-in field types with full TypeScript support:
 ### Dependent Data (Cascading Dropdowns)
 
 ```typescript
-import { DataSourceBuilder } from '@uipath/wind/forms';
+import { DataSourceBuilder } from '@uipath/apollo-wind/forms';
 
 // Parent field
 {
@@ -700,23 +711,27 @@ import { DataSourceBuilder } from '@uipath/wind/forms';
 ### Data Source Builders
 
 ```typescript
-import { DataSourceBuilder } from '@uipath/wind/forms';
+import { DataSourceBuilder } from "@uipath/apollo-wind/forms";
 
 // Static
 const countries = DataSourceBuilder.static([
-  { label: 'US', value: 'US' }
+  { label: "US", value: "US" },
 ]);
 
 // Remote GET
-const users = DataSourceBuilder.get('/api/users');
+const users = DataSourceBuilder.get("/api/users");
 
 // Dependent
-const cities = DataSourceBuilder.dependent('/api/cities', 'country', 'countryCode');
+const cities = DataSourceBuilder.dependent(
+  "/api/cities",
+  "country",
+  "countryCode",
+);
 
 // Computed
 const total = DataSourceBuilder.computed(
-  ['quantity', 'price'],
-  '(quantity || 0) * (price || 0)'
+  ["quantity", "price"],
+  "(quantity || 0) * (price || 0)",
 );
 ```
 
@@ -725,7 +740,7 @@ const total = DataSourceBuilder.computed(
 ### Basic Show/Hide Rules
 
 ```typescript
-import { RuleBuilder } from '@uipath/wind/forms';
+import { RuleBuilder } from '@uipath/apollo-wind/forms';
 
 {
   name: 'ssn',
@@ -746,50 +761,50 @@ import { RuleBuilder } from '@uipath/wind/forms';
 
 ```typescript
 // OR operator
-new RuleBuilder('premium-features')
-  .when('planType').in(['enterprise', 'premium'])
-  .useOperator('OR')
-  .when('customerId').matches('^ENT-')
+new RuleBuilder("premium-features")
+  .when("planType").in(["enterprise", "premium"])
+  .useOperator("OR")
+  .when("customerId").matches("^ENT-")
   .show()
-  .build()
+  .build();
 
 // AND operator (default)
-new RuleBuilder('senior-requirements')
-  .when('position').is('senior')
-  .when('experience').custom('value >= 5')
+new RuleBuilder("senior-requirements")
+  .when("position").is("senior")
+  .when("experience").custom("value >= 5")
   .require()
-  .build()
+  .build();
 ```
 
 ### Complex Expressions with jsep
 
 ```typescript
-import { ExpressionBuilder } from '@uipath/wind/forms';
+import { ExpressionBuilder } from "@uipath/apollo-wind/forms";
 
 // Using ExpressionBuilder
-new RuleBuilder('discount-eligible')
+new RuleBuilder("discount-eligible")
   .withCustomExpression(
     ExpressionBuilder.and(
-      ExpressionBuilder.greaterThan('orderTotal', 100),
-      ExpressionBuilder.equals('customerType', 'premium')
-    )
+      ExpressionBuilder.greaterThan("orderTotal", 100),
+      ExpressionBuilder.equals("customerType", "premium"),
+    ),
   )
   .show()
-  .build()
+  .build();
 
 // Or write expressions directly
 {
   rules: [{
-    id: 'complex-rule',
+    id: "complex-rule",
     conditions: [{
-      when: '',
-      custom: 'age >= 18 && (status === "active" || role === "admin")'
+      when: "",
+      custom: 'age >= 18 && (status === "active" || role === "admin")',
     }],
     effects: {
       visible: true,
-      required: true
-    }
-  }]
+      required: true,
+    },
+  }];
 }
 ```
 
@@ -811,13 +826,13 @@ rules: [{
 
 ```typescript
 // Built-in expression builders
-ExpressionBuilder.equals('status', 'active')           // status == "active"
-ExpressionBuilder.greaterThan('age', 18)              // age > 18
-ExpressionBuilder.isEmpty('field')                     // !field || field == ''
-ExpressionBuilder.between('score', 0, 100)            // score >= 0 && score <= 100
-ExpressionBuilder.and('expr1', 'expr2')               // (expr1 && expr2)
-ExpressionBuilder.or('expr1', 'expr2')                // (expr1 || expr2)
-ExpressionBuilder.sum(['field1', 'field2'])           // (field1 || 0) + (field2 || 0)
+ExpressionBuilder.equals("status", "active"); // status == "active"
+ExpressionBuilder.greaterThan("age", 18); // age > 18
+ExpressionBuilder.isEmpty("field"); // !field || field == ''
+ExpressionBuilder.between("score", 0, 100); // score >= 0 && score <= 100
+ExpressionBuilder.and("expr1", "expr2"); // (expr1 && expr2)
+ExpressionBuilder.or("expr1", "expr2"); // (expr1 || expr2)
+ExpressionBuilder.sum(["field1", "field2"]); // (field1 || 0) + (field2 || 0)
 ```
 
 ## 🔌 Plugin System
@@ -825,15 +840,19 @@ ExpressionBuilder.sum(['field1', 'field2'])           // (field1 || 0) + (field2
 ### Creating a Plugin
 
 ```typescript
-import type { FormPlugin, FormContext, ValidationConfig } from '@uipath/wind/forms';
+import type {
+  FormContext,
+  FormPlugin,
+  ValidationConfig,
+} from "@uipath/apollo-wind/forms";
 
 export const myPlugin: FormPlugin = {
-  name: 'my-plugin',
-  version: '1.0.0',
+  name: "my-plugin",
+  version: "1.0.0",
 
   // Lifecycle hooks
   onFormInit: async (context: FormContext) => {
-    console.log('Form initialized:', context.schema.id);
+    console.log("Form initialized:", context.schema.id);
   },
 
   onValueChange: (fieldName: string, value: unknown, context: FormContext) => {
@@ -842,79 +861,85 @@ export const myPlugin: FormPlugin = {
 
   onSubmit: async (data: unknown, context: FormContext) => {
     // Transform or validate data before submission
-    console.log('Submitting:', data);
+    console.log("Submitting:", data);
     return data;
   },
 
   // Custom validators (JSON-serializable ValidationConfig)
   validators: {
     ssn: {
-      pattern: '^\\d{3}-\\d{2}-\\d{4}$',
-      messages: { pattern: 'Invalid SSN format' }
-    } as ValidationConfig
+      pattern: "^\\d{3}-\\d{2}-\\d{4}$",
+      messages: { pattern: "Invalid SSN format" },
+    } as ValidationConfig,
   },
 
   // Custom components
   components: {
-    'my-field': MyCustomFieldComponent
-  }
+    "my-field": MyCustomFieldComponent,
+  },
 };
 ```
 
 ### Built-in Plugins
 
 #### Analytics Plugin
+
 Tracks form views, field interactions, and submissions.
 
 ```typescript
-import { analyticsPlugin } from '@uipath/wind/forms';
+import { analyticsPlugin } from "@uipath/apollo-wind/forms";
 
-<MetadataForm plugins={[analyticsPlugin]} />
+<MetadataForm plugins={[analyticsPlugin]} />;
 ```
 
 #### Auto-save Plugin
+
 Automatically saves form state to localStorage with debouncing.
 
 ```typescript
-import { autoSavePlugin } from '@uipath/wind/forms';
+import { autoSavePlugin } from "@uipath/apollo-wind/forms";
 
-<MetadataForm plugins={[autoSavePlugin]} />
+<MetadataForm plugins={[autoSavePlugin]} />;
 ```
 
 #### Workflow Plugin
+
 Integrates with automation platforms like UiPath Orchestrator.
 
 ```typescript
-import { workflowPlugin } from '@uipath/wind/forms';
+import { workflowPlugin } from "@uipath/apollo-wind/forms";
 
-<MetadataForm plugins={[workflowPlugin]} />
+<MetadataForm plugins={[workflowPlugin]} />;
 ```
 
 #### Audit Plugin
+
 Maintains field-level history for compliance and auditing.
 
 ```typescript
-import { auditPlugin } from '@uipath/wind/forms';
+import { auditPlugin } from "@uipath/apollo-wind/forms";
 
-<MetadataForm plugins={[auditPlugin]} />
+<MetadataForm plugins={[auditPlugin]} />;
 ```
 
 #### Validation Plugin
+
 Provides common validators (phone, credit card, URL, postal code).
 
 ```typescript
-import { validationPlugin } from '@uipath/wind/forms';
+import { validationPlugin } from "@uipath/apollo-wind/forms";
 
-<MetadataForm plugins={[validationPlugin]} />
+<MetadataForm plugins={[validationPlugin]} />;
 ```
 
 #### Formatting Plugin
+
 Adds custom conditions for business hours and weekend detection.
 
 ```typescript
-import { formattingPlugin } from '@uipath/wind/forms';
+import { formattingPlugin } from "@uipath/apollo-wind/forms";
 
-<MetadataForm plugins={[formattingPlugin]} />
+<MetadataForm plugins={[formattingPlugin]} />;
 ```
 
 ## 🎨 Custom Components
@@ -922,7 +947,7 @@ import { formattingPlugin } from '@uipath/wind/forms';
 ### Register Custom Field Component
 
 ```typescript
-import type { CustomFieldComponentProps } from '@uipath/wind/forms';
+import type { CustomFieldComponentProps } from "@uipath/apollo-wind/forms";
 
 // Define your custom component
 function RichTextEditor({
@@ -931,7 +956,7 @@ function RichTextEditor({
   onBlur,
   disabled,
   error,
-  field
+  field,
 }: CustomFieldComponentProps) {
   return (
     <div>
@@ -951,16 +976,16 @@ function RichTextEditor({
 const schema = {
   sections: [{
     fields: [{
-      name: 'content',
-      type: 'custom',
-      label: 'Content',
-      component: 'rich-text-editor',
+      name: "content",
+      type: "custom",
+      label: "Content",
+      component: "rich-text-editor",
       componentProps: {
-        placeholder: 'Start writing...',
-        showToolbar: true
-      }
-    }]
-  }]
+        placeholder: "Start writing...",
+        showToolbar: true,
+      },
+    }],
+  }],
 };
 
 // Register the component
@@ -969,7 +994,7 @@ function MyForm() {
     <MetadataForm
       schema={schema}
       customComponents={{
-        'rich-text-editor': RichTextEditor
+        "rich-text-editor": RichTextEditor,
       }}
     />
   );
@@ -1065,7 +1090,11 @@ const field: FieldMetadata = {
 ### Type Guards
 
 ```typescript
-import { hasOptions, isCustomField, hasMinMaxStep } from '@uipath/wind/forms';
+import {
+  hasMinMaxStep,
+  hasOptions,
+  isCustomField,
+} from "@uipath/apollo-wind/forms";
 
 if (hasOptions(field)) {
   // TypeScript knows field is SelectField | MultiSelectField | RadioField
@@ -1092,13 +1121,17 @@ interface FormContext<T extends FieldValues = FieldValues> {
 
   evaluateConditions: (conditions: FieldCondition[]) => boolean;
   fetchData: (source: DataSource) => Promise<FieldOption[]>;
-  registerCustomComponent: (name: string, component: React.ComponentType<CustomFieldComponentProps>) => void;
+  registerCustomComponent: (
+    name: string,
+    component: React.ComponentType<CustomFieldComponentProps>,
+  ) => void;
 }
 ```
 
 ## 💾 Schema Serialization
 
-The form system uses JSON-serializable `ValidationConfig` objects instead of Zod schemas, enabling true data-driven forms that can be stored and transmitted.
+The form system uses JSON-serializable `ValidationConfig` objects instead of Zod
+schemas, enabling true data-driven forms that can be stored and transmitted.
 
 ### ValidationConfig Structure
 
@@ -1110,7 +1143,7 @@ interface ValidationConfig {
   // String constraints
   minLength?: number;
   maxLength?: number;
-  pattern?: string;        // Regex pattern as string
+  pattern?: string; // Regex pattern as string
   email?: boolean;
   url?: boolean;
 
@@ -1142,7 +1175,7 @@ interface ValidationConfig {
 ### Serializing Schemas
 
 ```typescript
-import { serializeSchema, schemaToJson } from '@uipath/wind/forms';
+import { schemaToJson, serializeSchema } from "@uipath/apollo-wind/forms";
 
 // Convert schema to JSON-safe object
 const jsonObject = serializeSchema(myFormSchema);
@@ -1158,11 +1191,11 @@ await db.formSchemas.insert({ schema: jsonObject });
 
 ```typescript
 // Fetch schema from API
-const response = await fetch('/api/forms/contact-form');
+const response = await fetch("/api/forms/contact-form");
 const schema: FormSchema = await response.json();
 
 // Use directly with MetadataForm
-<MetadataForm schema={schema} onSubmit={handleSubmit} />
+<MetadataForm schema={schema} onSubmit={handleSubmit} />;
 ```
 
 ### Runtime Validation Conversion
@@ -1170,12 +1203,12 @@ const schema: FormSchema = await response.json();
 The `validationConfigToZod` function converts JSON configs to Zod at runtime:
 
 ```typescript
-import { validationConfigToZod } from '@uipath/wind/forms';
+import { validationConfigToZod } from "@uipath/apollo-wind/forms";
 
 // Internal: MetadataForm does this automatically
 const zodSchema = validationConfigToZod(
   { required: true, minLength: 2, email: true },
-  'email'
+  "email",
 );
 // Returns: z.string().min(2).email()
 ```
@@ -1183,11 +1216,13 @@ const zodSchema = validationConfigToZod(
 ## 🔒 Security Considerations
 
 ### Expression Evaluation
-The rules engine uses `jsep` for safe expression parsing with a minimal evaluator:
+
+The rules engine uses `jsep` for safe expression parsing with a minimal
+evaluator:
 
 ```typescript
 // ✅ Safe: Uses jsep AST parsing
-custom: 'age > 18 && status === "active"'
+custom: 'age > 18 && status === "active"';
 
 // ⚠️ Production best practices:
 // 1. Validate expressions on the backend
@@ -1197,14 +1232,15 @@ custom: 'age > 18 && status === "active"'
 ```
 
 ### Data Fetching
+
 API calls should implement proper security:
 
 ```typescript
 // ✅ Best practices
 const dataSource = {
-  type: 'fetch',
-  url: '/api/protected-resource',
-  method: 'GET',
+  type: "fetch",
+  url: "/api/protected-resource",
+  method: "GET",
   // Add authentication in a fetch interceptor or middleware
 };
 
@@ -1216,11 +1252,12 @@ const dataSource = {
 ```
 
 ### Data Transformation
+
 Transform expressions execute in a sandboxed function:
 
 ```typescript
 // ⚠️ Be cautious with user-provided transforms
-transform: 'data.map(item => ({ label: item.name, value: item.id }))'
+transform: "data.map(item => ({ label: item.name, value: item.id }))";
 
 // Production: Validate transforms on backend before storing
 ```
@@ -1228,6 +1265,7 @@ transform: 'data.map(item => ({ label: item.name, value: item.id }))'
 ## 📈 Performance Optimizations
 
 ### Smart Field Watching
+
 The system only watches fields that are actually used in rules:
 
 ```typescript
@@ -1245,23 +1283,26 @@ The system only watches fields that are actually used in rules:
 ```
 
 ### Data Source Caching
+
 Remote data is cached with a 5-minute TTL:
 
 ```typescript
-import { DataFetcher } from '@uipath/wind/forms';
+import { DataFetcher } from "@uipath/apollo-wind/forms";
 
 // Configure cache TTL
 DataFetcher.setCacheTTL(10 * 60 * 1000); // 10 minutes
 
 // Clear cache when needed
 DataFetcher.clearCache();
-DataFetcher.clearCache('/api/users'); // Clear specific pattern
+DataFetcher.clearCache("/api/users"); // Clear specific pattern
 ```
 
 ### Lazy Section Rendering
+
 Collapsible sections unmount when collapsed, reducing DOM size.
 
 ### Optimized Validation
+
 Configurable validation modes:
 
 ```typescript
@@ -1279,7 +1320,7 @@ Configurable validation modes:
 
 ```typescript
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { MetadataForm } from '@uipath/wind/forms';
+import { MetadataForm } from '@uipath/apollo-wind/forms';
 
 describe('MetadataForm', () => {
   it('renders form from schema', () => {
@@ -1356,21 +1397,21 @@ describe('MetadataForm', () => {
 ### UiPath Automation Job Configuration
 
 ```typescript
-import { automationJobSchema } from '@uipath/wind/forms';
+import { automationJobSchema } from "@uipath/apollo-wind/forms";
 
 function AutomationJobPage() {
   const handleSubmit = async (data: unknown) => {
     const jobData = data as Record<string, unknown>;
 
     // Start automation job
-    const response = await fetch('/api/orchestrator/jobs/start', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(jobData)
+    const response = await fetch("/api/orchestrator/jobs/start", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(jobData),
     });
 
     const result = await response.json();
-    console.log('Job started:', result.jobId);
+    console.log("Job started:", result.jobId);
   };
 
   return <MetadataForm schema={automationJobSchema} onSubmit={handleSubmit} />;
@@ -1380,35 +1421,35 @@ function AutomationJobPage() {
 ### Dynamic Survey with Conditional Logic
 
 ```typescript
-import { dynamicSurveySchema } from '@uipath/wind/forms';
+import { dynamicSurveySchema } from "@uipath/apollo-wind/forms";
 
 <MetadataForm
   schema={dynamicSurveySchema}
   plugins={[analyticsPlugin]}
   onSubmit={async (data) => {
-    await fetch('/api/surveys/submit', {
-      method: 'POST',
-      body: JSON.stringify(data)
+    await fetch("/api/surveys/submit", {
+      method: "POST",
+      body: JSON.stringify(data),
     });
   }}
-/>
+/>;
 ```
 
 ### Multi-Step Onboarding
 
 ```typescript
-import { onboardingSchema } from '@uipath/wind/forms';
+import { onboardingSchema } from "@uipath/apollo-wind/forms";
 
 <MetadataForm
   schema={onboardingSchema}
   plugins={[autoSavePlugin]}
   onSubmit={async (data) => {
-    await fetch('/api/users/onboarding', {
-      method: 'POST',
-      body: JSON.stringify(data)
+    await fetch("/api/users/onboarding", {
+      method: "POST",
+      body: JSON.stringify(data),
     });
   }}
-/>
+/>;
 ```
 
 ## 📚 API Reference
@@ -1417,44 +1458,47 @@ import { onboardingSchema } from '@uipath/wind/forms';
 
 ```typescript
 interface MetadataFormProps {
-  schema: FormSchema;                    // Form schema definition
-  plugins?: FormPlugin[];                // Optional plugins
+  schema: FormSchema; // Form schema definition
+  plugins?: FormPlugin[]; // Optional plugins
   onSubmit?: (data: unknown) => void | Promise<void>;
-  className?: string;                    // CSS class for form wrapper
-  showDevTools?: boolean;                // Show React Hook Form DevTools (dev only)
+  className?: string; // CSS class for form wrapper
 }
 ```
 
 ### FormDesigner
 
-The `FormDesigner` is a self-contained visual form builder component with its own internal state. It provides:
+The `FormDesigner` is a self-contained visual form builder component with its
+own internal state. It provides:
 
 - **Left panel**: Sections and fields tree with drag reordering
 - **Middle panel**: Configuration forms for selected section/field
 - **Right panel**: Live preview and schema export
 
 ```tsx
-import { FormDesigner } from '@uipath/wind/forms';
+import { FormDesigner } from "@uipath/apollo-wind/forms";
 
 function FormBuilderPage() {
   return <FormDesigner />;
 }
 ```
 
-The designer exports the generated schema via the "Schema" tab in the right panel, which can be copied and used with `MetadataForm`.
+The designer exports the generated schema via the "Schema" tab in the right
+panel, which can be copied and used with `MetadataForm`.
 
 ### FormStateViewer Props
 
 ```typescript
 interface FormStateViewerProps {
-  form: UseFormReturn<FieldValues>;     // React Hook Form instance
-  title?: string;                        // Title for the viewer
-  className?: string;                    // CSS class for wrapper
-  compact?: boolean;                     // Compact display mode
+  form: UseFormReturn<FieldValues>; // React Hook Form instance
+  title?: string; // Title for the viewer
+  className?: string; // CSS class for wrapper
+  compact?: boolean; // Compact display mode
 }
 ```
 
-The `FormStateViewer` component displays React Hook Form state in a user-friendly way, showing values, errors, dirty fields, and form metadata. Useful for debugging forms.
+The `FormStateViewer` component displays React Hook Form state in a
+user-friendly way, showing values, errors, dirty fields, and form metadata.
+Useful for debugging forms.
 
 ### FormSchema Type
 
@@ -1469,8 +1513,8 @@ interface SinglePageFormSchema {
   layout?: LayoutConfig;
   actions?: FormAction[];
   initialData?: Record<string, unknown>;
-  mode?: 'onChange' | 'onBlur' | 'onSubmit' | 'all';
-  reValidateMode?: 'onChange' | 'onBlur' | 'onSubmit';
+  mode?: "onChange" | "onBlur" | "onSubmit" | "all";
+  reValidateMode?: "onChange" | "onBlur" | "onSubmit";
 }
 
 interface MultiStepFormSchema {
@@ -1481,7 +1525,7 @@ interface MultiStepFormSchema {
   layout?: LayoutConfig;
   actions?: FormAction[];
   initialData?: Record<string, unknown>;
-  mode?: 'onChange' | 'onBlur' | 'onSubmit' | 'all';
+  mode?: "onChange" | "onBlur" | "onSubmit" | "all";
 }
 ```
 

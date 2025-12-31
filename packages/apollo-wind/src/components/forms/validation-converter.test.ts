@@ -4,7 +4,7 @@ import {
   buildZodSchemaFromFields,
   mergeValidationConfigs,
 } from "./validation-converter";
-import type { ValidationConfig, FieldType } from "./form-schema";
+import type { ValidationConfig } from "./form-schema";
 
 describe("validationConfigToZod", () => {
   describe("base schema by field type", () => {
