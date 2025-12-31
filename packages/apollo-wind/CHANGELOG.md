@@ -1,3 +1,15 @@
+## [0.6.2](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@0.6.1...@uipath/apollo-wind@0.6.2) (2025-12-31)
+
+
+### Bug Fixes
+
+* **apollo-wind:** remove devtools, and clean up some renames + lint ([fd0ec9b](https://github.com/uipath/apollo-ui/commit/fd0ec9b1defe5f0bf3374490dd4a46e37108fee0))
+
+
+### Features
+
+* **apollo-react:** add ApButton and also new width variant ([085f513](https://github.com/uipath/apollo-ui/commit/085f5136bd8fbb4e447788dffe1af9548be2ea22))
+
 ## [0.6.1](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@0.6.0...@uipath/apollo-wind@0.6.1) (2025-12-30)
 
 # [0.6.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@0.5.0...@uipath/apollo-wind@0.6.0) (2025-12-24)
