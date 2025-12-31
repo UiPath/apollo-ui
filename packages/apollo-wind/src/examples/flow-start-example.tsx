@@ -1,4 +1,4 @@
-import { ColumnDef } from "@tanstack/react-table";
+import { ColumnDef } from '@tanstack/react-table';
 import {
   Blocks,
   Bot,
@@ -7,22 +7,22 @@ import {
   LayoutGrid,
   List,
   MoreHorizontal,
-} from "lucide-react";
-import * as React from "react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { ButtonGroup } from "@/components/ui/button-group";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { DataTable, DataTableColumnHeader } from "@/components/ui/data-table";
+} from 'lucide-react';
+import * as React from 'react';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { ButtonGroup } from '@/components/ui/button-group';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { DataTable, DataTableColumnHeader } from '@/components/ui/data-table';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Row, Column, Grid } from "@/components/ui/layout";
-import { cn } from "@/lib";
+} from '@/components/ui/dropdown-menu';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Row, Column, Grid } from '@/components/ui/layout';
+import { cn } from '@/lib';
 
 export interface ProcessOption {
   id: string;
@@ -30,19 +30,19 @@ export interface ProcessOption {
   description: string;
   icon: React.ReactNode;
   badge?: string;
-  badgeVariant?: "default" | "secondary" | "destructive" | "outline";
+  badgeVariant?: 'default' | 'secondary' | 'destructive' | 'outline';
   onClick?: () => void;
 }
 
 export interface RecentProject {
   id: string;
   name: string;
-  type: "flow" | "bpmn" | "case" | "autopilot";
+  type: 'flow' | 'bpmn' | 'case' | 'autopilot';
   lastModified: string;
-  status?: "draft" | "published" | "archived";
+  status?: 'draft' | 'published' | 'archived';
 }
 
-export type ViewMode = "cards" | "table";
+export type ViewMode = 'cards' | 'table';
 
 export interface FlowStartExampleProps {
   className?: string;
@@ -68,8 +68,8 @@ function ProcessOptionCard({
   return (
     <Card
       className={cn(
-        "group relative cursor-pointer transition-all duration-200 hover:border-primary/50 hover:shadow-md",
-        isSelected && "border-primary ring-2 ring-primary/20",
+        'group relative cursor-pointer transition-all duration-200 hover:border-primary/50 hover:shadow-md',
+        isSelected && 'border-primary ring-2 ring-primary/20',
       )}
       onClick={onSelect}
     >
@@ -96,42 +96,42 @@ function ProcessOptionCard({
   );
 }
 
-function getTypeIcon(type: RecentProject["type"]) {
+function getTypeIcon(type: RecentProject['type']) {
   switch (type) {
-    case "flow":
+    case 'flow':
       return <GitBranch className="h-4 w-4" />;
-    case "bpmn":
+    case 'bpmn':
       return <Blocks className="h-4 w-4" />;
-    case "case":
+    case 'case':
       return <FolderKanban className="h-4 w-4" />;
-    case "autopilot":
+    case 'autopilot':
       return <Bot className="h-4 w-4" />;
   }
 }
 
-function getTypeLabel(type: RecentProject["type"]) {
+function getTypeLabel(type: RecentProject['type']) {
   switch (type) {
-    case "flow":
-      return "Flow";
-    case "bpmn":
-      return "BPMN";
-    case "case":
-      return "Case Management";
-    case "autopilot":
-      return "Autopilot";
+    case 'flow':
+      return 'Flow';
+    case 'bpmn':
+      return 'BPMN';
+    case 'case':
+      return 'Case Management';
+    case 'autopilot':
+      return 'Autopilot';
   }
 }
 
-function getStatusVariant(status: RecentProject["status"]) {
+function getStatusVariant(status: RecentProject['status']) {
   switch (status) {
-    case "published":
-      return "default";
-    case "draft":
-      return "secondary";
-    case "archived":
-      return "outline";
+    case 'published':
+      return 'default';
+    case 'draft':
+      return 'secondary';
+    case 'archived':
+      return 'outline';
     default:
-      return "secondary";
+      return 'secondary';
   }
 }
 
@@ -199,7 +199,7 @@ function createProjectColumns(
 ): ColumnDef<RecentProject, unknown>[] {
   return [
     {
-      accessorKey: "name",
+      accessorKey: 'name',
       header: ({ column }) => <DataTableColumnHeader column={column} title="Name" />,
       cell: ({ row }) => (
         <Row gap={2} align="center">
@@ -211,14 +211,14 @@ function createProjectColumns(
       ),
     },
     {
-      accessorKey: "type",
+      accessorKey: 'type',
       header: ({ column }) => <DataTableColumnHeader column={column} title="Type" />,
       cell: ({ row }) => (
         <span className="text-muted-foreground">{getTypeLabel(row.original.type)}</span>
       ),
     },
     {
-      accessorKey: "status",
+      accessorKey: 'status',
       header: ({ column }) => <DataTableColumnHeader column={column} title="Status" />,
       cell: ({ row }) => {
         const status = row.original.status;
@@ -230,12 +230,12 @@ function createProjectColumns(
       },
     },
     {
-      accessorKey: "lastModified",
+      accessorKey: 'lastModified',
       header: ({ column }) => <DataTableColumnHeader column={column} title="Last Modified" />,
       cell: ({ row }) => <span className="text-muted-foreground">{row.original.lastModified}</span>,
     },
     {
-      id: "actions",
+      id: 'actions',
       cell: ({ row }) => (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -258,12 +258,12 @@ function createProjectColumns(
 
 export function FlowStartExample({
   className,
-  title = "BUILD YOUR FIRST AGENTIC PROCESS",
-  subtitle = "What would you like to start with?",
+  title = 'BUILD YOUR FIRST AGENTIC PROCESS',
+  subtitle = 'What would you like to start with?',
   processOptions = [],
   recentProjects = [],
   showSkeleton = false,
-  defaultViewMode = "cards",
+  defaultViewMode = 'cards',
   onOptionSelect,
   onProjectSelect,
 }: FlowStartExampleProps) {
@@ -330,17 +330,17 @@ export function FlowStartExample({
               {/* View Mode Toggle */}
               <ButtonGroup>
                 <Button
-                  variant={viewMode === "cards" ? "secondary" : "outline"}
+                  variant={viewMode === 'cards' ? 'secondary' : 'outline'}
                   size="icon"
-                  onClick={() => setViewMode("cards")}
+                  onClick={() => setViewMode('cards')}
                   aria-label="Card view"
                 >
                   <LayoutGrid className="h-4 w-4" />
                 </Button>
                 <Button
-                  variant={viewMode === "table" ? "secondary" : "outline"}
+                  variant={viewMode === 'table' ? 'secondary' : 'outline'}
                   size="icon"
-                  onClick={() => setViewMode("table")}
+                  onClick={() => setViewMode('table')}
                   aria-label="Table view"
                 >
                   <List className="h-4 w-4" />
@@ -349,7 +349,7 @@ export function FlowStartExample({
             </Row>
 
             {/* Cards View */}
-            {viewMode === "cards" && (
+            {viewMode === 'cards' && (
               <Grid cols={1} gap={4} className="sm:grid-cols-2 lg:grid-cols-4">
                 {recentProjects.map((project) => (
                   <RecentProjectCard
@@ -362,7 +362,7 @@ export function FlowStartExample({
             )}
 
             {/* Table View */}
-            {viewMode === "table" && (
+            {viewMode === 'table' && (
               <DataTable
                 columns={columns}
                 data={recentProjects}

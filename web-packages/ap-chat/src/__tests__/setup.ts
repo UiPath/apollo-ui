@@ -14,7 +14,8 @@ vi.mock('react-dom/client', () => ({
 vi.mock('../react-renderer', () => ({
   createReactRenderer: vi.fn(() => {
     // Return a mock React component
-    return (props: any) => createElement('div', { 'data-testid': 'mock-chat' }, 'Mock Chat Component');
+    return (props: any) =>
+      createElement('div', { 'data-testid': 'mock-chat' }, 'Mock Chat Component');
   }),
   cleanupReactRenderer: vi.fn(),
 }));

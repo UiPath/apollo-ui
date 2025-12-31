@@ -23,21 +23,26 @@
     "lint:css:fix": {
       "outputs": []
     },
+    "format": {
+      "cache": false
+    },
+    "format:check": {
+      "cache": false
+    },
     "typecheck": {
       "dependsOn": ["^build"],
       "outputs": []
     },
     "test": {
-      "dependsOn": ["^build"],
-      "outputs": ["coverage/**"]
+      "cache": false
     },
     "test:coverage": {
-      "dependsOn": ["^build"],
-      "outputs": ["coverage/**"]
+      "outputs": ["coverage/**"],
+      "cache": false
     },
     "test:visual": {
-      "dependsOn": ["build"],
-      "outputs": ["test-results/**", "playwright-report/**"]
+      "outputs": ["test-results/**", "playwright-report/**"],
+      "cache": false
     },
     "storybook": {
       "dependsOn": ["^build"],

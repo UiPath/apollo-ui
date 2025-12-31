@@ -50,24 +50,21 @@ Example:
 
 ```tsx
 // src/components/ui/new-component.tsx
-import * as React from "react"
-import { cva, type VariantProps } from "class-variance-authority"
-import { cn } from "@/lib/utils"
+import * as React from 'react';
+import { cva, type VariantProps } from 'class-variance-authority';
+import { cn } from '@/lib/utils';
 
-const componentVariants = cva(
-  "base-classes",
-  {
-    variants: {
-      variant: {
-        default: "default-styles",
-        // Add more variants
-      },
+const componentVariants = cva('base-classes', {
+  variants: {
+    variant: {
+      default: 'default-styles',
+      // Add more variants
     },
-    defaultVariants: {
-      variant: "default",
-    },
-  }
-)
+  },
+  defaultVariants: {
+    variant: 'default',
+  },
+});
 
 export interface ComponentProps
   extends React.HTMLAttributes<HTMLDivElement>,
@@ -75,18 +72,12 @@ export interface ComponentProps
 
 const Component = React.forwardRef<HTMLDivElement, ComponentProps>(
   ({ className, variant, ...props }, ref) => {
-    return (
-      <div
-        className={cn(componentVariants({ variant, className }))}
-        ref={ref}
-        {...props}
-      />
-    )
-  }
-)
-Component.displayName = "Component"
+    return <div className={cn(componentVariants({ variant, className }))} ref={ref} {...props} />;
+  },
+);
+Component.displayName = 'Component';
 
-export { Component, componentVariants }
+export { Component, componentVariants };
 ```
 
 ## Writing Tests
@@ -95,27 +86,27 @@ Every component should have corresponding tests:
 
 ```tsx
 // src/components/ui/new-component.test.tsx
-import { describe, it, expect } from 'vitest'
-import { render, screen } from '@testing-library/react'
-import { Component } from './new-component'
+import { describe, it, expect } from 'vitest';
+import { render, screen } from '@testing-library/react';
+import { Component } from './new-component';
 
 describe('Component', () => {
   it('renders correctly', () => {
-    render(<Component>Test</Component>)
-    expect(screen.getByText('Test')).toBeInTheDocument()
-  })
+    render(<Component>Test</Component>);
+    expect(screen.getByText('Test')).toBeInTheDocument();
+  });
 
   it('applies variant classes', () => {
-    render(<Component variant="custom">Test</Component>)
+    render(<Component variant="custom">Test</Component>);
     // Add assertions
-  })
+  });
 
   it('forwards ref correctly', () => {
-    const ref = { current: null }
-    render(<Component ref={ref}>Test</Component>)
-    expect(ref.current).toBeInstanceOf(HTMLDivElement)
-  })
-})
+    const ref = { current: null };
+    render(<Component ref={ref}>Test</Component>);
+    expect(ref.current).toBeInstanceOf(HTMLDivElement);
+  });
+});
 ```
 
 ## Writing Stories
@@ -124,8 +115,8 @@ Create Storybook stories for visual testing:
 
 ```tsx
 // src/components/ui/new-component.stories.tsx
-import type { Meta, StoryObj } from '@storybook/react-vite'
-import { Component } from './new-component'
+import type { Meta, StoryObj } from '@storybook/react-vite';
+import { Component } from './new-component';
 
 const meta = {
   title: 'Components/Component',
@@ -134,16 +125,16 @@ const meta = {
     layout: 'centered',
   },
   tags: ['autodocs'],
-} satisfies Meta<typeof Component>
+} satisfies Meta<typeof Component>;
 
-export default meta
-type Story = StoryObj<typeof meta>
+export default meta;
+type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   args: {
     children: 'Component',
   },
-}
+};
 ```
 
 ## Code Standards

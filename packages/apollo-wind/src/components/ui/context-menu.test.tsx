@@ -1,7 +1,7 @@
-import { render, screen, waitFor } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
-import { axe } from "jest-axe";
-import { describe, expect, it, vi } from "vitest";
+import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { axe } from 'jest-axe';
+import { describe, expect, it, vi } from 'vitest';
 import {
   ContextMenu,
   ContextMenuCheckboxItem,
@@ -13,11 +13,11 @@ import {
   ContextMenuSeparator,
   ContextMenuShortcut,
   ContextMenuTrigger,
-} from "./context-menu";
+} from './context-menu';
 
-describe("ContextMenu", () => {
-  describe("rendering", () => {
-    it("renders trigger element", () => {
+describe('ContextMenu', () => {
+  describe('rendering', () => {
+    it('renders trigger element', () => {
       render(
         <ContextMenu>
           <ContextMenuTrigger>Right click me</ContextMenuTrigger>
@@ -26,10 +26,10 @@ describe("ContextMenu", () => {
           </ContextMenuContent>
         </ContextMenu>,
       );
-      expect(screen.getByText("Right click me")).toBeInTheDocument();
+      expect(screen.getByText('Right click me')).toBeInTheDocument();
     });
 
-    it("shows menu on right click", async () => {
+    it('shows menu on right click', async () => {
       const user = userEvent.setup();
       render(
         <ContextMenu>
@@ -41,17 +41,17 @@ describe("ContextMenu", () => {
       );
 
       await user.pointer({
-        keys: "[MouseRight]",
-        target: screen.getByText("Right click me"),
+        keys: '[MouseRight]',
+        target: screen.getByText('Right click me'),
       });
 
       await waitFor(() => {
-        expect(screen.getByRole("menu")).toBeInTheDocument();
+        expect(screen.getByRole('menu')).toBeInTheDocument();
       });
-      expect(screen.getByText("Action")).toBeInTheDocument();
+      expect(screen.getByText('Action')).toBeInTheDocument();
     });
 
-    it("renders menu label", async () => {
+    it('renders menu label', async () => {
       const user = userEvent.setup();
       render(
         <ContextMenu>
@@ -64,16 +64,16 @@ describe("ContextMenu", () => {
       );
 
       await user.pointer({
-        keys: "[MouseRight]",
-        target: screen.getByText("Trigger"),
+        keys: '[MouseRight]',
+        target: screen.getByText('Trigger'),
       });
 
       await waitFor(() => {
-        expect(screen.getByText("My Label")).toBeInTheDocument();
+        expect(screen.getByText('My Label')).toBeInTheDocument();
       });
     });
 
-    it("renders separator", async () => {
+    it('renders separator', async () => {
       const user = userEvent.setup();
       render(
         <ContextMenu>
@@ -87,16 +87,16 @@ describe("ContextMenu", () => {
       );
 
       await user.pointer({
-        keys: "[MouseRight]",
-        target: screen.getByText("Trigger"),
+        keys: '[MouseRight]',
+        target: screen.getByText('Trigger'),
       });
 
       await waitFor(() => {
-        expect(screen.getByTestId("separator")).toBeInTheDocument();
+        expect(screen.getByTestId('separator')).toBeInTheDocument();
       });
     });
 
-    it("renders shortcut", async () => {
+    it('renders shortcut', async () => {
       const user = userEvent.setup();
       render(
         <ContextMenu>
@@ -110,18 +110,18 @@ describe("ContextMenu", () => {
       );
 
       await user.pointer({
-        keys: "[MouseRight]",
-        target: screen.getByText("Trigger"),
+        keys: '[MouseRight]',
+        target: screen.getByText('Trigger'),
       });
 
       await waitFor(() => {
-        expect(screen.getByText("⌘C")).toBeInTheDocument();
+        expect(screen.getByText('⌘C')).toBeInTheDocument();
       });
     });
   });
 
-  describe("accessibility", () => {
-    it("has no accessibility violations when closed", async () => {
+  describe('accessibility', () => {
+    it('has no accessibility violations when closed', async () => {
       const { container } = render(
         <ContextMenu>
           <ContextMenuTrigger>Right click me</ContextMenuTrigger>
@@ -135,8 +135,8 @@ describe("ContextMenu", () => {
     });
   });
 
-  describe("interactions", () => {
-    it("calls onSelect when item is clicked", async () => {
+  describe('interactions', () => {
+    it('calls onSelect when item is clicked', async () => {
       const user = userEvent.setup();
       const handleSelect = vi.fn();
       render(
@@ -149,19 +149,19 @@ describe("ContextMenu", () => {
       );
 
       await user.pointer({
-        keys: "[MouseRight]",
-        target: screen.getByText("Trigger"),
+        keys: '[MouseRight]',
+        target: screen.getByText('Trigger'),
       });
 
       await waitFor(() => {
-        expect(screen.getByText("Action")).toBeInTheDocument();
+        expect(screen.getByText('Action')).toBeInTheDocument();
       });
 
-      await user.click(screen.getByText("Action"));
+      await user.click(screen.getByText('Action'));
       expect(handleSelect).toHaveBeenCalled();
     });
 
-    it("renders checkbox item", async () => {
+    it('renders checkbox item', async () => {
       const user = userEvent.setup();
       render(
         <ContextMenu>
@@ -173,16 +173,16 @@ describe("ContextMenu", () => {
       );
 
       await user.pointer({
-        keys: "[MouseRight]",
-        target: screen.getByText("Trigger"),
+        keys: '[MouseRight]',
+        target: screen.getByText('Trigger'),
       });
 
       await waitFor(() => {
-        expect(screen.getByText("Show Toolbar")).toBeInTheDocument();
+        expect(screen.getByText('Show Toolbar')).toBeInTheDocument();
       });
     });
 
-    it("renders radio group", async () => {
+    it('renders radio group', async () => {
       const user = userEvent.setup();
       render(
         <ContextMenu>
@@ -197,19 +197,19 @@ describe("ContextMenu", () => {
       );
 
       await user.pointer({
-        keys: "[MouseRight]",
-        target: screen.getByText("Trigger"),
+        keys: '[MouseRight]',
+        target: screen.getByText('Trigger'),
       });
 
       await waitFor(() => {
-        expect(screen.getByText("Small")).toBeInTheDocument();
-        expect(screen.getByText("Large")).toBeInTheDocument();
+        expect(screen.getByText('Small')).toBeInTheDocument();
+        expect(screen.getByText('Large')).toBeInTheDocument();
       });
     });
   });
 
-  describe("custom className", () => {
-    it("ContextMenuItem accepts custom className", async () => {
+  describe('custom className', () => {
+    it('ContextMenuItem accepts custom className', async () => {
       const user = userEvent.setup();
       render(
         <ContextMenu>
@@ -221,16 +221,16 @@ describe("ContextMenu", () => {
       );
 
       await user.pointer({
-        keys: "[MouseRight]",
-        target: screen.getByText("Trigger"),
+        keys: '[MouseRight]',
+        target: screen.getByText('Trigger'),
       });
 
       await waitFor(() => {
-        expect(screen.getByText("Action")).toHaveClass("custom-item");
+        expect(screen.getByText('Action')).toHaveClass('custom-item');
       });
     });
 
-    it("ContextMenuShortcut accepts custom className", async () => {
+    it('ContextMenuShortcut accepts custom className', async () => {
       const user = userEvent.setup();
       render(
         <ContextMenu>
@@ -244,18 +244,18 @@ describe("ContextMenu", () => {
       );
 
       await user.pointer({
-        keys: "[MouseRight]",
-        target: screen.getByText("Trigger"),
+        keys: '[MouseRight]',
+        target: screen.getByText('Trigger'),
       });
 
       await waitFor(() => {
-        expect(screen.getByText("⌘C")).toHaveClass("custom-shortcut");
+        expect(screen.getByText('⌘C')).toHaveClass('custom-shortcut');
       });
     });
   });
 
-  describe("inset prop", () => {
-    it("applies inset styles to ContextMenuItem", async () => {
+  describe('inset prop', () => {
+    it('applies inset styles to ContextMenuItem', async () => {
       const user = userEvent.setup();
       render(
         <ContextMenu>
@@ -267,16 +267,16 @@ describe("ContextMenu", () => {
       );
 
       await user.pointer({
-        keys: "[MouseRight]",
-        target: screen.getByText("Trigger"),
+        keys: '[MouseRight]',
+        target: screen.getByText('Trigger'),
       });
 
       await waitFor(() => {
-        expect(screen.getByText("Inset Item")).toHaveClass("pl-8");
+        expect(screen.getByText('Inset Item')).toHaveClass('pl-8');
       });
     });
 
-    it("applies inset styles to ContextMenuLabel", async () => {
+    it('applies inset styles to ContextMenuLabel', async () => {
       const user = userEvent.setup();
       render(
         <ContextMenu>
@@ -288,12 +288,12 @@ describe("ContextMenu", () => {
       );
 
       await user.pointer({
-        keys: "[MouseRight]",
-        target: screen.getByText("Trigger"),
+        keys: '[MouseRight]',
+        target: screen.getByText('Trigger'),
       });
 
       await waitFor(() => {
-        expect(screen.getByText("Inset Label")).toHaveClass("pl-8");
+        expect(screen.getByText('Inset Label')).toHaveClass('pl-8');
       });
     });
   });

@@ -1,22 +1,22 @@
-import { Copy, MoreVertical, Play, Plus } from "lucide-react";
-import * as React from "react";
-import { Button } from "@/components/ui/button";
-import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
-import { Separator } from "@/components/ui/separator";
-import { Switch } from "@/components/ui/switch";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Row, Column } from "@/components/ui/layout";
-import { cn } from "@/lib";
-import { useCallback, useRef, useEffect } from "react";
-import { ImperativePanelHandle } from "react-resizable-panels";
-import { Label } from "@radix-ui/react-label";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { Copy, MoreVertical, Play, Plus } from 'lucide-react';
+import * as React from 'react';
+import { Button } from '@/components/ui/button';
+import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
+import { Separator } from '@/components/ui/separator';
+import { Switch } from '@/components/ui/switch';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Row, Column } from '@/components/ui/layout';
+import { cn } from '@/lib';
+import { useCallback, useRef, useEffect } from 'react';
+import { ImperativePanelHandle } from 'react-resizable-panels';
+import { Label } from '@radix-ui/react-label';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from '@/components/ui/dropdown-menu';
 
 interface LatchedButtonProps {
   isActive: boolean;
@@ -33,17 +33,17 @@ function LatchedButton({ isActive, icon, label, onClick }: LatchedButtonProps) {
           variant="ghost"
           size="icon"
           className={cn(
-            "w-[40px] h-[40px] rounded-r-2xl rounded-l-none bg-background border",
+            'w-[40px] h-[40px] rounded-r-2xl rounded-l-none bg-background border',
             isActive
-              ? "-ml-px w-[41px] border-y-border border-r-border border-l-background"
-              : "border-l-0 border-border hover:bg-muted",
+              ? '-ml-px w-[41px] border-y-border border-r-border border-l-background'
+              : 'border-l-0 border-border hover:bg-muted',
           )}
           onClick={onClick}
         >
           <div
             className={cn(
-              "flex items-center justify-center w-6 h-6 rounded-lg transition-colors",
-              isActive ? "bg-primary text-background" : "bg-transparent text-foreground",
+              'flex items-center justify-center w-6 h-6 rounded-lg transition-colors',
+              isActive ? 'bg-primary text-background' : 'bg-transparent text-foreground',
             )}
           >
             {icon}
@@ -101,7 +101,7 @@ export function FlowEditorLayout({
     if (!containerRef.current || !switcherRef.current) return;
 
     if (!bottomOpen) {
-      switcherRef.current.style.bottom = "24px";
+      switcherRef.current.style.bottom = '24px';
       return;
     }
 
@@ -121,9 +121,9 @@ export function FlowEditorLayout({
       rafRef.current = requestAnimationFrame(updateSwitcherPosition);
     };
 
-    window.addEventListener("resize", handleResize);
+    window.addEventListener('resize', handleResize);
     return () => {
-      window.removeEventListener("resize", handleResize);
+      window.removeEventListener('resize', handleResize);
       cancelAnimationFrame(rafRef.current);
     };
   }, [updateSwitcherPosition]);
@@ -149,12 +149,12 @@ export function FlowEditorLayout({
 
   return (
     <TooltipProvider>
-      <Row className={cn("h-screen bg-background", className)}>
+      <Row className={cn('h-screen bg-background', className)}>
         {/* Left Sidebar */}
         <div
           className={cn(
-            "bg-background overflow-hidden transition-all duration-300 ease-in-out",
-            sidebarOpen ? "w-72" : "w-0",
+            'bg-background overflow-hidden transition-all duration-300 ease-in-out',
+            sidebarOpen ? 'w-72' : 'w-0',
           )}
         >
           {sidebarOpen && <Column className="w-72 h-full">{sidebarContent}</Column>}

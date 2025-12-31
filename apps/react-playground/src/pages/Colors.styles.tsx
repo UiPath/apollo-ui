@@ -1,4 +1,4 @@
-import styled from "styled-components";
+import styled from 'styled-components';
 
 export const SearchInput = styled.input`
   width: 100%;
@@ -77,7 +77,7 @@ export const GroupCount = styled.div`
 
 export const ColorGrid = styled.div<{ $columns?: string }>`
   display: grid;
-  grid-template-columns: ${(props) => props.$columns || "repeat(auto-fit, minmax(100px, 1fr))"};
+  grid-template-columns: ${(props) => props.$columns || 'repeat(auto-fit, minmax(100px, 1fr))'};
   gap: 8px;
 `;
 
@@ -99,8 +99,8 @@ export const ColorCard = styled.div<{ $bgColor: string }>`
 `;
 
 export const ColorName = styled.div<{
-	$textColor: string;
-	$textShadow: string;
+  $textColor: string;
+  $textShadow: string;
 }>`
   font-size: 10px;
   font-weight: bold;
@@ -111,15 +111,15 @@ export const ColorName = styled.div<{
 `;
 
 export const ColorValue = styled.div<{
-	$textColor: string;
-	$textShadow: string;
-	$isLight: boolean;
+  $textColor: string;
+  $textShadow: string;
+  $isLight: boolean;
 }>`
   font-size: 9px;
   font-family: monospace;
   color: ${(props) => props.$textColor};
   text-shadow: ${(props) => props.$textShadow};
-  background: ${(props) => (props.$isLight ? "rgba(0, 0, 0, 0.08)" : "rgba(0, 0, 0, 0.3)")};
+  background: ${(props) => (props.$isLight ? 'rgba(0, 0, 0, 0.08)' : 'rgba(0, 0, 0, 0.3)')};
   padding: 3px 5px;
   border-radius: 3px;
 `;

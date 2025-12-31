@@ -37,5 +37,10 @@ export * from './ScreenSizes';
 export * as ScreenSizes from './ScreenSizes';
 
 // Palette
-export { darkPalette, darkHighContrastPalette, lightHighContrastPalette, lightPalette } from './jss/palette';
+export {
+  darkPalette,
+  darkHighContrastPalette,
+  lightHighContrastPalette,
+  lightPalette,
+} from './jss/palette';
 export type { Palette } from './jss/palette';

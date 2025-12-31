@@ -6,12 +6,12 @@ import { FileUpload } from './file-upload';
 import { Label } from './label';
 
 const meta = {
-  title: "Design System/Core/File Upload",
+  title: 'Design System/Core/File Upload',
   component: FileUpload,
   parameters: {
-    layout: "centered",
+    layout: 'centered',
   },
-  tags: ["autodocs"],
+  tags: ['autodocs'],
 } satisfies Meta<typeof FileUpload>;
 
 export default meta;

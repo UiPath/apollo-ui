@@ -1,141 +1,128 @@
-import { Border, Stroke } from "@uipath/apollo-react/core";
+import { Border, Stroke } from '@uipath/apollo-react/core';
 import {
-	PageContainer,
-	PageDescription,
-	PageTitle,
-	SectionDescription,
-	SectionHeader,
-} from "../components/SharedStyles";
+  PageContainer,
+  PageDescription,
+  PageTitle,
+  SectionDescription,
+  SectionHeader,
+} from '../components/SharedStyles';
 import {
-	BorderCard,
-	GenericDisplay,
-	Grid,
-	RadiusDemo,
-	Section,
-	SemanticBorderDemo,
-	StrokeDemo,
-	StrokeLabel,
-	StrokeSection,
-	TokenInfo,
-	TokenName,
-	TokenValue,
-	WidthDemo,
-} from "./Borders.styles";
+  BorderCard,
+  GenericDisplay,
+  Grid,
+  RadiusDemo,
+  Section,
+  SemanticBorderDemo,
+  StrokeDemo,
+  StrokeLabel,
+  StrokeSection,
+  TokenInfo,
+  TokenName,
+  TokenValue,
+  WidthDemo,
+} from './Borders.styles';
 
 export function Borders() {
-	// Use the Border namespace which contains only border tokens
-	const borders = Object.entries(Border).map(([name, value]) => ({
-		name,
-		value: value as string,
-	}));
+  // Use the Border namespace which contains only border tokens
+  const borders = Object.entries(Border).map(([name, value]) => ({
+    name,
+    value: value as string,
+  }));
 
-	// Use the Stroke namespace which contains only stroke tokens
-	const strokes = Object.entries(Stroke).map(([name, value]) => ({
-		name,
-		value: value as string,
-	}));
+  // Use the Stroke namespace which contains only stroke tokens
+  const strokes = Object.entries(Stroke).map(([name, value]) => ({
+    name,
+    value: value as string,
+  }));
 
-	return (
-		<PageContainer>
-			<PageTitle>Borders & Strokes</PageTitle>
-			<PageDescription>
-				Border radii, widths, and stroke styles (
-				{borders.length + strokes.length} tokens)
-			</PageDescription>
+  return (
+    <PageContainer>
+      <PageTitle>Borders & Strokes</PageTitle>
+      <PageDescription>
+        Border radii, widths, and stroke styles ({borders.length + strokes.length} tokens)
+      </PageDescription>
 
-			<Section $marginBottom="60px">
-				<SectionHeader>Border Tokens</SectionHeader>
-				<SectionDescription>Border radii and widths</SectionDescription>
-				<Grid>
-					{borders.map((border) => {
-						const isRadius = border.name.toLowerCase().includes("radius");
-						const isWidth = border.name.toLowerCase().includes("width");
-						const isThick = border.name.toLowerCase().includes("thick");
-						const isSemanticBorder =
-							!isRadius &&
-							!isWidth &&
-							!isThick &&
-							border.value.includes("solid");
-						const isDark = border.name.toLowerCase().includes("dark");
+      <Section $marginBottom="60px">
+        <SectionHeader>Border Tokens</SectionHeader>
+        <SectionDescription>Border radii and widths</SectionDescription>
+        <Grid>
+          {borders.map((border) => {
+            const isRadius = border.name.toLowerCase().includes('radius');
+            const isWidth = border.name.toLowerCase().includes('width');
+            const isThick = border.name.toLowerCase().includes('thick');
+            const isSemanticBorder =
+              !isRadius && !isWidth && !isThick && border.value.includes('solid');
+            const isDark = border.name.toLowerCase().includes('dark');
 
-						return (
-							<BorderCard
-								key={border.name}
-								$isDark={isDark && isSemanticBorder}
-							>
-								<TokenInfo>
-									<TokenName>{border.name}</TokenName>
-									<TokenValue $isDark={isDark && isSemanticBorder}>
-										{border.value}
-									</TokenValue>
-								</TokenInfo>
+            return (
+              <BorderCard key={border.name} $isDark={isDark && isSemanticBorder}>
+                <TokenInfo>
+                  <TokenName>{border.name}</TokenName>
+                  <TokenValue $isDark={isDark && isSemanticBorder}>{border.value}</TokenValue>
+                </TokenInfo>
 
-								{isRadius && (
-									<RadiusDemo $radius={border.value}>Border Radius</RadiusDemo>
-								)}
+                {isRadius && <RadiusDemo $radius={border.value}>Border Radius</RadiusDemo>}
 
-								{(isWidth || isThick) && (
-									<WidthDemo $width={border.value}>Border Width</WidthDemo>
-								)}
+                {(isWidth || isThick) && <WidthDemo $width={border.value}>Border Width</WidthDemo>}
 
-								{isSemanticBorder && (
-									<SemanticBorderDemo $border={border.value} $isDark={isDark}>
-										Card with {border.name}
-									</SemanticBorderDemo>
-								)}
+                {isSemanticBorder && (
+                  <SemanticBorderDemo $border={border.value} $isDark={isDark}>
+                    Card with {border.name}
+                  </SemanticBorderDemo>
+                )}
 
-								{!isRadius && !isWidth && !isThick && !isSemanticBorder && (
-									<GenericDisplay>{border.value}</GenericDisplay>
-								)}
-							</BorderCard>
-						);
-					})}
-				</Grid>
-			</Section>
+                {!isRadius && !isWidth && !isThick && !isSemanticBorder && (
+                  <GenericDisplay>{border.value}</GenericDisplay>
+                )}
+              </BorderCard>
+            );
+          })}
+        </Grid>
+      </Section>
 
-			<Section>
-				<SectionHeader>Stroke Tokens</SectionHeader>
-				<SectionDescription>SVG stroke widths</SectionDescription>
-				<Grid>
-					{strokes.map((stroke) => (
-						<BorderCard key={stroke.name}>
-							<TokenInfo>
-								<TokenName>{stroke.name}</TokenName>
-								<TokenValue>{stroke.value}</TokenValue>
-							</TokenInfo>
+      <Section>
+        <SectionHeader>Stroke Tokens</SectionHeader>
+        <SectionDescription>SVG stroke widths</SectionDescription>
+        <Grid>
+          {strokes.map((stroke) => (
+            <BorderCard key={stroke.name}>
+              <TokenInfo>
+                <TokenName>{stroke.name}</TokenName>
+                <TokenValue>{stroke.value}</TokenValue>
+              </TokenInfo>
 
-							<StrokeDemo>
-								<StrokeSection>
-									<StrokeLabel>SVG Line</StrokeLabel>
-									<svg width="100%" height="40" style={{ display: "block" }}>
-										<line
-											x1="0"
-											y1="20"
-											x2="100%"
-											y2="20"
-											stroke={"var(--color-primary)"}
-											strokeWidth={stroke.value}
-										/>
-									</svg>
-								</StrokeSection>
-								<StrokeSection>
-									<StrokeLabel>SVG Circle</StrokeLabel>
-									<svg width="100%" height="60" style={{ display: "block" }}>
-										<circle
-											cx="50%"
-											cy="30"
-											r="25"
-											fill="none"
-											stroke={"var(--color-primary)"}
-											strokeWidth={stroke.value}
-										/>
-									</svg>
-								</StrokeSection>
-							</StrokeDemo>
-						</BorderCard>
-					))}
-				</Grid>
-			</Section>
-		</PageContainer>
-	);
+              <StrokeDemo>
+                <StrokeSection>
+                  <StrokeLabel>SVG Line</StrokeLabel>
+                  <svg width="100%" height="40" style={{ display: 'block' }}>
+                    <line
+                      x1="0"
+                      y1="20"
+                      x2="100%"
+                      y2="20"
+                      stroke={'var(--color-primary)'}
+                      strokeWidth={stroke.value}
+                    />
+                  </svg>
+                </StrokeSection>
+                <StrokeSection>
+                  <StrokeLabel>SVG Circle</StrokeLabel>
+                  <svg width="100%" height="60" style={{ display: 'block' }}>
+                    <circle
+                      cx="50%"
+                      cy="30"
+                      r="25"
+                      fill="none"
+                      stroke={'var(--color-primary)'}
+                      strokeWidth={stroke.value}
+                    />
+                  </svg>
+                </StrokeSection>
+              </StrokeDemo>
+            </BorderCard>
+          ))}
+        </Grid>
+      </Section>
+    </PageContainer>
+  );
 }

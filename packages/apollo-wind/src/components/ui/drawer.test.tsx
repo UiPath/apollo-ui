@@ -1,7 +1,7 @@
-import { render, screen, waitFor } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
-import { axe } from "jest-axe";
-import { describe, expect, it, vi } from "vitest";
+import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { axe } from 'jest-axe';
+import { describe, expect, it, vi } from 'vitest';
 import {
   Drawer,
   DrawerClose,
@@ -11,9 +11,9 @@ import {
   DrawerHeader,
   DrawerTitle,
   DrawerTrigger,
-} from "./drawer";
+} from './drawer';
 
-describe("Drawer", () => {
+describe('Drawer', () => {
   const DrawerExample = () => (
     <Drawer>
       <DrawerTrigger>Open Drawer</DrawerTrigger>
@@ -30,95 +30,95 @@ describe("Drawer", () => {
     </Drawer>
   );
 
-  describe("rendering", () => {
-    it("renders trigger without crashing", () => {
+  describe('rendering', () => {
+    it('renders trigger without crashing', () => {
       render(<DrawerExample />);
-      expect(screen.getByRole("button", { name: "Open Drawer" })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Open Drawer' })).toBeInTheDocument();
     });
 
-    it("opens drawer when trigger is clicked", async () => {
+    it('opens drawer when trigger is clicked', async () => {
       const user = userEvent.setup();
       render(<DrawerExample />);
 
-      const trigger = screen.getByRole("button", { name: "Open Drawer" });
+      const trigger = screen.getByRole('button', { name: 'Open Drawer' });
       await user.click(trigger);
 
       await waitFor(() => {
-        expect(screen.getByRole("dialog")).toBeInTheDocument();
+        expect(screen.getByRole('dialog')).toBeInTheDocument();
       });
     });
 
-    it("displays drawer title", async () => {
+    it('displays drawer title', async () => {
       const user = userEvent.setup();
       render(<DrawerExample />);
 
-      await user.click(screen.getByRole("button", { name: "Open Drawer" }));
+      await user.click(screen.getByRole('button', { name: 'Open Drawer' }));
 
       await waitFor(() => {
-        expect(screen.getByText("Drawer Title")).toBeInTheDocument();
+        expect(screen.getByText('Drawer Title')).toBeInTheDocument();
       });
     });
 
-    it("displays drawer description", async () => {
+    it('displays drawer description', async () => {
       const user = userEvent.setup();
       render(<DrawerExample />);
 
-      await user.click(screen.getByRole("button", { name: "Open Drawer" }));
+      await user.click(screen.getByRole('button', { name: 'Open Drawer' }));
 
       await waitFor(() => {
-        expect(screen.getByText("This is a drawer description.")).toBeInTheDocument();
+        expect(screen.getByText('This is a drawer description.')).toBeInTheDocument();
       });
     });
 
-    it("displays drawer content", async () => {
+    it('displays drawer content', async () => {
       const user = userEvent.setup();
       render(<DrawerExample />);
 
-      await user.click(screen.getByRole("button", { name: "Open Drawer" }));
+      await user.click(screen.getByRole('button', { name: 'Open Drawer' }));
 
       await waitFor(() => {
-        expect(screen.getByText("Drawer content goes here")).toBeInTheDocument();
+        expect(screen.getByText('Drawer content goes here')).toBeInTheDocument();
       });
     });
   });
 
-  describe("accessibility", () => {
-    it("has no accessibility violations when closed", async () => {
+  describe('accessibility', () => {
+    it('has no accessibility violations when closed', async () => {
       const { container } = render(<DrawerExample />);
       const results = await axe(container);
       expect(results).toHaveNoViolations();
     });
 
-    it("has no accessibility violations when open", async () => {
+    it('has no accessibility violations when open', async () => {
       const user = userEvent.setup();
       const { container } = render(<DrawerExample />);
 
-      await user.click(screen.getByRole("button", { name: "Open Drawer" }));
+      await user.click(screen.getByRole('button', { name: 'Open Drawer' }));
 
       await waitFor(() => {
-        expect(screen.getByRole("dialog")).toBeInTheDocument();
+        expect(screen.getByRole('dialog')).toBeInTheDocument();
       });
 
       const results = await axe(container);
       expect(results).toHaveNoViolations();
     });
 
-    it("has proper ARIA attributes", async () => {
+    it('has proper ARIA attributes', async () => {
       const user = userEvent.setup();
       render(<DrawerExample />);
 
-      await user.click(screen.getByRole("button", { name: "Open Drawer" }));
+      await user.click(screen.getByRole('button', { name: 'Open Drawer' }));
 
       await waitFor(() => {
-        const dialog = screen.getByRole("dialog");
-        expect(dialog).toHaveAttribute("aria-describedby");
-        expect(dialog).toHaveAttribute("aria-labelledby");
+        const dialog = screen.getByRole('dialog');
+        expect(dialog).toHaveAttribute('aria-describedby');
+        expect(dialog).toHaveAttribute('aria-labelledby');
       });
     });
   });
 
-  describe("interactions", () => {
-    it("supports controlled mode", async () => {
+  describe('interactions', () => {
+    it('supports controlled mode', async () => {
       const user = userEvent.setup();
       const handleOpenChange = vi.fn();
       const { rerender } = render(
@@ -131,9 +131,9 @@ describe("Drawer", () => {
         </Drawer>,
       );
 
-      expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
 
-      await user.click(screen.getByRole("button", { name: "Open" }));
+      await user.click(screen.getByRole('button', { name: 'Open' }));
       expect(handleOpenChange).toHaveBeenCalledWith(true);
 
       rerender(
@@ -147,13 +147,13 @@ describe("Drawer", () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByRole("dialog")).toBeInTheDocument();
+        expect(screen.getByRole('dialog')).toBeInTheDocument();
       });
     });
   });
 
-  describe("custom className", () => {
-    it("applies custom className to content", async () => {
+  describe('custom className', () => {
+    it('applies custom className to content', async () => {
       const user = userEvent.setup();
       render(
         <Drawer>
@@ -165,11 +165,11 @@ describe("Drawer", () => {
         </Drawer>,
       );
 
-      await user.click(screen.getByRole("button", { name: "Open" }));
+      await user.click(screen.getByRole('button', { name: 'Open' }));
 
       await waitFor(() => {
-        const dialog = screen.getByRole("dialog");
-        expect(dialog).toHaveClass("custom-drawer");
+        const dialog = screen.getByRole('dialog');
+        expect(dialog).toHaveClass('custom-drawer');
       });
     });
   });

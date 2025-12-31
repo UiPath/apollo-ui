@@ -1,18 +1,7 @@
-import {
-  afterEach,
-  beforeAll,
-  beforeEach,
-  describe,
-  expect,
-  it,
-  vi,
-} from 'vitest';
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { ApChat } from '../ap-chat-element';
-import {
-  AutopilotChatEvent,
-  AutopilotChatMode,
-} from '../service';
+import { AutopilotChatEvent, AutopilotChatMode } from '../service';
 
 describe('ApChat Web Component', () => {
   let element: ApChat;
@@ -124,7 +113,10 @@ describe('ApChat Web Component', () => {
   describe('Properties', () => {
     it('should subscribe to service events when chatServiceInstance is set', () => {
       element.chatServiceInstance = mockService;
-      expect(mockService.on).toHaveBeenCalledWith(AutopilotChatEvent.ModeChange, expect.any(Function));
+      expect(mockService.on).toHaveBeenCalledWith(
+        AutopilotChatEvent.ModeChange,
+        expect.any(Function)
+      );
     });
 
     it('should cleanup previous subscription when chatServiceInstance changes', () => {
@@ -142,9 +134,9 @@ describe('ApChat Web Component', () => {
     it('should pass locale prop to React renderer', () => {
       element.chatServiceInstance = mockService;
       element.connectedCallback();
-      
+
       element.locale = 'fr';
-      
+
       expect(element.locale).toBe('fr');
     });
   });
@@ -390,9 +382,10 @@ describe('ApChat Web Component', () => {
 
       const shadowRoot = element.shadowRoot;
       const styles = Array.from(shadowRoot?.querySelectorAll('style') || []);
-      const hasPointerEventsRule = styles.some(style => 
-        style.textContent?.includes('.portal-container') && 
-        style.textContent?.includes('pointer-events: none')
+      const hasPointerEventsRule = styles.some(
+        (style) =>
+          style.textContent?.includes('.portal-container') &&
+          style.textContent?.includes('pointer-events: none')
       );
 
       expect(hasPointerEventsRule).toBe(true);
@@ -404,9 +397,10 @@ describe('ApChat Web Component', () => {
 
       const shadowRoot = element.shadowRoot;
       const styles = Array.from(shadowRoot?.querySelectorAll('style') || []);
-      const hasChildPointerEventsRule = styles.some(style => 
-        style.textContent?.includes('.portal-container > *') && 
-        style.textContent?.includes('pointer-events: auto')
+      const hasChildPointerEventsRule = styles.some(
+        (style) =>
+          style.textContent?.includes('.portal-container > *') &&
+          style.textContent?.includes('pointer-events: auto')
       );
 
       expect(hasChildPointerEventsRule).toBe(true);
@@ -418,11 +412,11 @@ describe('ApChat Web Component', () => {
 
       const shadowRoot = element.shadowRoot;
       const portalContainer = shadowRoot?.querySelector('.portal-container') as HTMLDivElement;
-      
+
       // The portal container should exist and be ready for React portals
       expect(portalContainer).not.toBeNull();
       expect(portalContainer).toBeInstanceOf(HTMLDivElement);
-      
+
       // Verify it's accessible from the element's internal state
       const internalPortalContainer = (element as any).portalContainer;
       expect(internalPortalContainer).toBe(portalContainer);
@@ -434,7 +428,7 @@ describe('ApChat Web Component', () => {
 
       const shadowRoot = element.shadowRoot;
       const portalContainer = shadowRoot?.querySelector('.portal-container') as HTMLDivElement;
-      
+
       expect(portalContainer).not.toBeNull();
 
       // Change theme
@@ -451,7 +445,7 @@ describe('ApChat Web Component', () => {
 
       const shadowRoot = element.shadowRoot;
       const portalContainer = shadowRoot?.querySelector('.portal-container') as HTMLDivElement;
-      
+
       expect(portalContainer).not.toBeNull();
 
       // Change locale
@@ -468,7 +462,7 @@ describe('ApChat Web Component', () => {
 
       const shadowRoot = element.shadowRoot;
       const portalContainer = shadowRoot?.querySelector('.portal-container') as HTMLDivElement;
-      
+
       expect(portalContainer).not.toBeNull();
 
       // Remove and re-add element (simulating moving in DOM)
@@ -488,7 +482,7 @@ describe('ApChat Web Component', () => {
 
       const shadowRoot = element.shadowRoot;
       const portalContainer = shadowRoot?.querySelector('.portal-container') as HTMLDivElement;
-      
+
       expect(portalContainer).not.toBeNull();
 
       // Create embedded container
@@ -530,7 +524,7 @@ describe('ApChat Web Component', () => {
 
       const shadowRoot = element.shadowRoot;
       const portalContainer = shadowRoot?.querySelector('.portal-container') as HTMLDivElement;
-      
+
       expect(portalContainer).not.toBeNull();
       const initialZIndex = portalContainer.style.zIndex;
 
@@ -547,7 +541,9 @@ describe('ApChat Web Component', () => {
     it('should handle missing shadowRoot gracefully', () => {
       // Simulate missing shadow root by overriding the getter
       Object.defineProperty(element, 'shadowRoot', {
-        get() { return null; },
+        get() {
+          return null;
+        },
         configurable: true,
       });
 

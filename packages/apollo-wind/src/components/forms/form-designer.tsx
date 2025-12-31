@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect } from 'react';
 import type {
   FormSchema,
   FieldMetadata,
@@ -8,24 +8,24 @@ import type {
   FieldType,
   FormPlugin,
   ValidationConfig,
-} from "./form-schema";
-import { schemaToJson } from "./schema-serializer";
-import { MetadataForm } from "./metadata-form";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+} from './form-schema';
+import { schemaToJson } from './schema-serializer';
+import { MetadataForm } from './metadata-form';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Switch } from "@/components/ui/switch";
+} from '@/components/ui/select';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Switch } from '@/components/ui/switch';
 import {
   Trash2,
   Plus,
@@ -44,15 +44,15 @@ import {
   Asterisk,
   Ban,
   View,
-} from "lucide-react";
-import { Separator } from "@/components/ui/separator";
+} from 'lucide-react';
+import { Separator } from '@/components/ui/separator';
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@/components/ui/accordion";
-import { Grid } from "@/components/ui/layout/grid";
+} from '@/components/ui/accordion';
+import { Grid } from '@/components/ui/layout/grid';
 
 /**
  * Enhanced Form Designer Component
@@ -65,7 +65,7 @@ import { Grid } from "@/components/ui/layout/grid";
 interface FieldTypeMetadata {
   value: FieldType;
   label: string;
-  category: "Input" | "Selection" | "Boolean" | "Advanced";
+  category: 'Input' | 'Selection' | 'Boolean' | 'Advanced';
   description?: string;
 }
 
@@ -73,53 +73,53 @@ interface FieldTypeMetadata {
  * Complete mapping of all supported field types
  */
 const FIELD_TYPE_METADATA: readonly FieldTypeMetadata[] = [
-  { value: "text", label: "Text", category: "Input", description: "Single-line text input" },
-  { value: "email", label: "Email", category: "Input", description: "Email with validation" },
-  { value: "textarea", label: "Textarea", category: "Input", description: "Multi-line text input" },
+  { value: 'text', label: 'Text', category: 'Input', description: 'Single-line text input' },
+  { value: 'email', label: 'Email', category: 'Input', description: 'Email with validation' },
+  { value: 'textarea', label: 'Textarea', category: 'Input', description: 'Multi-line text input' },
   {
-    value: "number",
-    label: "Number",
-    category: "Input",
-    description: "Numeric input with min/max",
+    value: 'number',
+    label: 'Number',
+    category: 'Input',
+    description: 'Numeric input with min/max',
   },
-  { value: "date", label: "Date", category: "Input", description: "Date picker" },
+  { value: 'date', label: 'Date', category: 'Input', description: 'Date picker' },
   {
-    value: "datetime",
-    label: "Date & Time",
-    category: "Input",
-    description: "Date and time picker",
+    value: 'datetime',
+    label: 'Date & Time',
+    category: 'Input',
+    description: 'Date and time picker',
   },
-  { value: "file", label: "File Upload", category: "Input", description: "File upload control" },
+  { value: 'file', label: 'File Upload', category: 'Input', description: 'File upload control' },
   {
-    value: "select",
-    label: "Select Dropdown",
-    category: "Selection",
-    description: "Single-select dropdown",
-  },
-  {
-    value: "multiselect",
-    label: "Multi-Select",
-    category: "Selection",
-    description: "Multi-select with search",
+    value: 'select',
+    label: 'Select Dropdown',
+    category: 'Selection',
+    description: 'Single-select dropdown',
   },
   {
-    value: "radio",
-    label: "Radio Group",
-    category: "Selection",
-    description: "Radio button group",
+    value: 'multiselect',
+    label: 'Multi-Select',
+    category: 'Selection',
+    description: 'Multi-select with search',
   },
-  { value: "checkbox", label: "Checkbox", category: "Boolean", description: "Single checkbox" },
-  { value: "switch", label: "Switch Toggle", category: "Boolean", description: "Toggle switch" },
-  { value: "slider", label: "Slider", category: "Input", description: "Range slider" },
   {
-    value: "custom",
-    label: "Custom Component",
-    category: "Advanced",
-    description: "Custom field component",
+    value: 'radio',
+    label: 'Radio Group',
+    category: 'Selection',
+    description: 'Radio button group',
+  },
+  { value: 'checkbox', label: 'Checkbox', category: 'Boolean', description: 'Single checkbox' },
+  { value: 'switch', label: 'Switch Toggle', category: 'Boolean', description: 'Toggle switch' },
+  { value: 'slider', label: 'Slider', category: 'Input', description: 'Range slider' },
+  {
+    value: 'custom',
+    label: 'Custom Component',
+    category: 'Advanced',
+    description: 'Custom field component',
   },
 ] as const;
 
-interface ExtendedFieldConfig extends Omit<FieldMetadata, "validation"> {
+interface ExtendedFieldConfig extends Omit<FieldMetadata, 'validation'> {
   id: string;
   options?: Array<{ label: string; value: string; disabled?: boolean }>;
   min?: number;
@@ -170,7 +170,7 @@ function buildValidationConfig(field: ExtendedFieldConfig): ValidationConfig | u
   const { type, validation, rules } = field;
 
   const config: ValidationConfig = {};
-  const messages: ValidationConfig["messages"] = {};
+  const messages: ValidationConfig['messages'] = {};
 
   // Check if field is always required (has required rule with no conditions)
   const isAlwaysRequired = rules?.some(
@@ -188,7 +188,7 @@ function buildValidationConfig(field: ExtendedFieldConfig): ValidationConfig | u
 
   if (validation) {
     // Text field validations
-    if (type === "text" || type === "textarea" || type === "email") {
+    if (type === 'text' || type === 'textarea' || type === 'email') {
       // Validate that minLength <= maxLength before applying
       const minLen = validation.minLength;
       const maxLen = validation.maxLength;
@@ -226,7 +226,7 @@ function buildValidationConfig(field: ExtendedFieldConfig): ValidationConfig | u
     }
 
     // Number field validations
-    if (type === "number" || type === "slider") {
+    if (type === 'number' || type === 'slider') {
       if (validation.integer) {
         config.integer = true;
         if (validation.customMessage) {
@@ -256,7 +256,7 @@ function buildValidationConfig(field: ExtendedFieldConfig): ValidationConfig | u
     }
 
     // File field validations
-    if (type === "file") {
+    if (type === 'file') {
       if (validation.maxFileSize != null) {
         config.maxFileSize = validation.maxFileSize;
       }
@@ -291,46 +291,46 @@ function buildValidationConfig(field: ExtendedFieldConfig): ValidationConfig | u
  * Schema for section configuration
  */
 const createSectionConfigSchema = (section: ExtendedSectionConfig): FormSchema => ({
-  id: "section-config",
-  title: "",
+  id: 'section-config',
+  title: '',
   sections: [
     {
-      id: "main",
-      title: "Section settings",
+      id: 'main',
+      title: 'Section settings',
       fields: [
         {
-          name: "id",
-          type: "text",
-          label: "Section ID",
-          description: "Unique identifier for this section",
+          name: 'id',
+          type: 'text',
+          label: 'Section ID',
+          description: 'Unique identifier for this section',
         },
         {
-          name: "title",
-          type: "text",
-          label: "Section title",
-          placeholder: "Enter section title",
+          name: 'title',
+          type: 'text',
+          label: 'Section title',
+          placeholder: 'Enter section title',
         },
         {
-          name: "description",
-          type: "textarea",
-          label: "Description",
-          placeholder: "Optional section description",
+          name: 'description',
+          type: 'textarea',
+          label: 'Description',
+          placeholder: 'Optional section description',
           rows: 2,
         },
         {
-          name: "collapsible",
-          type: "switch",
-          label: "Collapsible section",
+          name: 'collapsible',
+          type: 'switch',
+          label: 'Collapsible section',
         },
         {
-          name: "defaultExpanded",
-          type: "switch",
-          label: "Expanded by default",
+          name: 'defaultExpanded',
+          type: 'switch',
+          label: 'Expanded by default',
           rules: [
             {
-              id: "show-when-collapsible",
-              conditions: [{ when: "collapsible", is: true }],
-              operator: "AND",
+              id: 'show-when-collapsible',
+              conditions: [{ when: 'collapsible', is: true }],
+              operator: 'AND',
               effects: { visible: true },
             },
           ],
@@ -341,7 +341,7 @@ const createSectionConfigSchema = (section: ExtendedSectionConfig): FormSchema =
   initialData: {
     id: section.id,
     title: section.title,
-    description: section.description || "",
+    description: section.description || '',
     collapsible: section.collapsible || false,
     defaultExpanded: section.defaultExpanded !== false,
   },
@@ -352,181 +352,181 @@ const createSectionConfigSchema = (section: ExtendedSectionConfig): FormSchema =
  * Schema for field configuration
  */
 const createFieldConfigSchema = (field: ExtendedFieldConfig): FormSchema => ({
-  id: "field-config",
-  title: "",
+  id: 'field-config',
+  title: '',
   sections: [
     {
-      id: "basic",
-      title: "Basic settings",
+      id: 'basic',
+      title: 'Basic settings',
       fields: [
         {
-          name: "name",
-          type: "text",
-          label: "Field name",
-          placeholder: "fieldName",
-          description: "Internal identifier (camelCase recommended)",
+          name: 'name',
+          type: 'text',
+          label: 'Field name',
+          placeholder: 'fieldName',
+          description: 'Internal identifier (camelCase recommended)',
         },
         {
-          name: "label",
-          type: "text",
-          label: "Label",
-          placeholder: "Field Label",
+          name: 'label',
+          type: 'text',
+          label: 'Label',
+          placeholder: 'Field Label',
         },
         {
-          name: "type",
-          type: "select",
-          label: "Field type",
+          name: 'type',
+          type: 'select',
+          label: 'Field type',
           options: FIELD_TYPE_METADATA.map((t) => ({
             label: `${t.label} (${t.category})`,
             value: t.value,
           })),
         },
         {
-          name: "placeholder",
-          type: "text",
-          label: "Placeholder",
-          placeholder: "Enter placeholder text...",
+          name: 'placeholder',
+          type: 'text',
+          label: 'Placeholder',
+          placeholder: 'Enter placeholder text...',
         },
         {
-          name: "description",
-          type: "textarea",
-          label: "Description",
-          placeholder: "Help text for this field",
+          name: 'description',
+          type: 'textarea',
+          label: 'Description',
+          placeholder: 'Help text for this field',
           rows: 2,
         },
       ],
     },
     {
-      id: "number-settings",
-      title: "Number settings",
+      id: 'number-settings',
+      title: 'Number settings',
       fields: [
-        { name: "min", type: "number", label: "Min" },
-        { name: "max", type: "number", label: "Max" },
-        { name: "step", type: "number", label: "Step" },
+        { name: 'min', type: 'number', label: 'Min' },
+        { name: 'max', type: 'number', label: 'Max' },
+        { name: 'step', type: 'number', label: 'Step' },
       ],
-      conditions: [{ when: "type", in: ["number", "slider"] }],
+      conditions: [{ when: 'type', in: ['number', 'slider'] }],
     },
     {
-      id: "file-settings",
-      title: "File settings",
+      id: 'file-settings',
+      title: 'File settings',
       fields: [
         {
-          name: "accept",
-          type: "text",
-          label: "Accepted file types",
-          placeholder: ".pdf,.doc,.docx",
-          description: "Comma-separated file extensions",
+          name: 'accept',
+          type: 'text',
+          label: 'Accepted file types',
+          placeholder: '.pdf,.doc,.docx',
+          description: 'Comma-separated file extensions',
         },
         {
-          name: "multiple",
-          type: "checkbox",
-          label: "Allow multiple files",
+          name: 'multiple',
+          type: 'checkbox',
+          label: 'Allow multiple files',
         },
       ],
-      conditions: [{ when: "type", is: "file" }],
+      conditions: [{ when: 'type', is: 'file' }],
     },
     {
-      id: "text-validation",
-      title: "Text validation",
+      id: 'text-validation',
+      title: 'Text validation',
       fields: [
         {
-          name: "validation.minLength",
-          type: "number",
-          label: "Minimum length",
+          name: 'validation.minLength',
+          type: 'number',
+          label: 'Minimum length',
           min: 0,
-          placeholder: "0",
+          placeholder: '0',
         },
         {
-          name: "validation.maxLength",
-          type: "number",
-          label: "Maximum length",
+          name: 'validation.maxLength',
+          type: 'number',
+          label: 'Maximum length',
           min: 0,
-          placeholder: "No limit",
+          placeholder: 'No limit',
         },
         {
-          name: "validation.pattern",
-          type: "text",
-          label: "Pattern (regex)",
-          placeholder: "^[A-Za-z]+$",
-          description: "Regular expression pattern",
+          name: 'validation.pattern',
+          type: 'text',
+          label: 'Pattern (regex)',
+          placeholder: '^[A-Za-z]+$',
+          description: 'Regular expression pattern',
         },
         {
-          name: "validation.patternMessage",
-          type: "text",
-          label: "Pattern error message",
-          placeholder: "Invalid format",
+          name: 'validation.patternMessage',
+          type: 'text',
+          label: 'Pattern error message',
+          placeholder: 'Invalid format',
           rules: [
             {
-              id: "show-when-pattern",
-              conditions: [{ when: "validation.pattern", isNot: "" }],
-              operator: "AND",
+              id: 'show-when-pattern',
+              conditions: [{ when: 'validation.pattern', isNot: '' }],
+              operator: 'AND',
               effects: { visible: true },
             },
           ],
         },
       ],
-      conditions: [{ when: "type", in: ["text", "textarea", "email"] }],
+      conditions: [{ when: 'type', in: ['text', 'textarea', 'email'] }],
     },
     {
-      id: "number-validation",
-      title: "Number validation",
+      id: 'number-validation',
+      title: 'Number validation',
       fields: [
         {
-          name: "validation.integer",
-          type: "switch",
-          label: "Integer only",
-          description: "Only allow whole numbers",
+          name: 'validation.integer',
+          type: 'switch',
+          label: 'Integer only',
+          description: 'Only allow whole numbers',
         },
       ],
-      conditions: [{ when: "type", in: ["number", "slider"] }],
+      conditions: [{ when: 'type', in: ['number', 'slider'] }],
     },
     {
-      id: "file-validation",
-      title: "File validation",
+      id: 'file-validation',
+      title: 'File validation',
       fields: [
         {
-          name: "validation.maxFileSize",
-          type: "number",
-          label: "Max file size (MB)",
+          name: 'validation.maxFileSize',
+          type: 'number',
+          label: 'Max file size (MB)',
           min: 0,
           step: 0.1,
-          placeholder: "No limit",
+          placeholder: 'No limit',
         },
         {
-          name: "validation.maxFiles",
-          type: "number",
-          label: "Max number of files",
+          name: 'validation.maxFiles',
+          type: 'number',
+          label: 'Max number of files',
           min: 1,
-          placeholder: "No limit",
+          placeholder: 'No limit',
           rules: [
             {
-              id: "show-when-multiple",
-              conditions: [{ when: "multiple", is: true }],
-              operator: "AND",
+              id: 'show-when-multiple',
+              conditions: [{ when: 'multiple', is: true }],
+              operator: 'AND',
               effects: { visible: true },
             },
           ],
         },
       ],
-      conditions: [{ when: "type", is: "file" }],
+      conditions: [{ when: 'type', is: 'file' }],
     },
   ],
   initialData: {
     name: field.name,
     label: field.label,
     type: field.type,
-    placeholder: field.placeholder || "",
-    description: field.description || "",
+    placeholder: field.placeholder || '',
+    description: field.description || '',
     min: field.min,
     max: field.max,
     step: field.step,
-    accept: field.accept || "",
+    accept: field.accept || '',
     multiple: field.multiple || false,
     validation: {
       minLength: field.validation?.minLength,
       maxLength: field.validation?.maxLength,
-      pattern: field.validation?.pattern || "",
-      patternMessage: field.validation?.patternMessage || "",
+      pattern: field.validation?.pattern || '',
+      patternMessage: field.validation?.patternMessage || '',
       integer: field.validation?.integer || false,
       maxFileSize: field.validation?.maxFileSize
         ? field.validation.maxFileSize / (1024 * 1024)
@@ -567,7 +567,7 @@ function SectionConfigForm({ section, onUpdate, existingSectionIds }: SectionCon
   const plugins = useMemo<FormPlugin[]>(
     () => [
       {
-        name: "section-sync",
+        name: 'section-sync',
         onValueChange: (_field, _value, context) => {
           const values = context.values;
           const newId = values.id as string;
@@ -635,7 +635,7 @@ function FieldConfigForm({ field, onUpdate, allFields, existingFieldNames }: Fie
   const plugins = useMemo<FormPlugin[]>(
     () => [
       {
-        name: "field-sync",
+        name: 'field-sync',
         onValueChange: (_fieldName, _value, context) => {
           const values = context.values;
           const newType = values.type as FieldType;
@@ -658,7 +658,7 @@ function FieldConfigForm({ field, onUpdate, allFields, existingFieldNames }: Fie
           // Always preserve requiredMessage from form values
           const requiredMessage = (validationValues?.requiredMessage as string) || undefined;
 
-          if (newType === "number" || newType === "slider") {
+          if (newType === 'number' || newType === 'slider') {
             updates.min = values.min as number | undefined;
             updates.max = values.max as number | undefined;
             updates.step = values.step as number | undefined;
@@ -667,7 +667,7 @@ function FieldConfigForm({ field, onUpdate, allFields, existingFieldNames }: Fie
               integer: validationValues?.integer as boolean | undefined,
               requiredMessage,
             };
-          } else if (newType === "file") {
+          } else if (newType === 'file') {
             updates.accept = (values.accept as string) || undefined;
             updates.multiple = values.multiple as boolean;
             // File validation - convert MB back to bytes
@@ -677,7 +677,7 @@ function FieldConfigForm({ field, onUpdate, allFields, existingFieldNames }: Fie
               maxFiles: validationValues?.maxFiles as number | undefined,
               requiredMessage,
             };
-          } else if (newType === "text" || newType === "textarea" || newType === "email") {
+          } else if (newType === 'text' || newType === 'textarea' || newType === 'email') {
             // Text validation
             updates.validation = {
               minLength: validationValues?.minLength as number | undefined,
@@ -707,7 +707,7 @@ function FieldConfigForm({ field, onUpdate, allFields, existingFieldNames }: Fie
             updates.validation = undefined;
 
             // Re-add for new type, preserving requiredMessage
-            if (newType === "number" || newType === "slider") {
+            if (newType === 'number' || newType === 'slider') {
               updates.min = values.min as number | undefined;
               updates.max = values.max as number | undefined;
               updates.step = values.step as number | undefined;
@@ -715,7 +715,7 @@ function FieldConfigForm({ field, onUpdate, allFields, existingFieldNames }: Fie
                 integer: validationValues?.integer as boolean | undefined,
                 requiredMessage: preservedRequiredMessage,
               };
-            } else if (newType === "file") {
+            } else if (newType === 'file') {
               updates.accept = (values.accept as string) || undefined;
               updates.multiple = values.multiple as boolean;
               const maxFileSizeMB = validationValues?.maxFileSize as number | undefined;
@@ -724,7 +724,7 @@ function FieldConfigForm({ field, onUpdate, allFields, existingFieldNames }: Fie
                 maxFiles: validationValues?.maxFiles as number | undefined,
                 requiredMessage: preservedRequiredMessage,
               };
-            } else if (newType === "text" || newType === "textarea" || newType === "email") {
+            } else if (newType === 'text' || newType === 'textarea' || newType === 'email') {
               updates.validation = {
                 minLength: validationValues?.minLength as number | undefined,
                 maxLength: validationValues?.maxLength as number | undefined,
@@ -752,7 +752,7 @@ function FieldConfigForm({ field, onUpdate, allFields, existingFieldNames }: Fie
   );
 
   // Check if field type needs options editor
-  const needsOptions = ["select", "multiselect", "radio"].includes(field.type);
+  const needsOptions = ['select', 'multiselect', 'radio'].includes(field.type);
 
   return (
     <div className="space-y-2">
@@ -768,7 +768,7 @@ function FieldConfigForm({ field, onUpdate, allFields, existingFieldNames }: Fie
 
       {/* Options Editor - rendered separately since it's complex */}
       {needsOptions && (
-        <Accordion type="multiple" defaultValue={["options"]}>
+        <Accordion type="multiple" defaultValue={['options']}>
           <AccordionItem value="options" className="border rounded-lg px-3">
             <AccordionTrigger className="text-sm font-medium">
               <div className="flex items-center gap-2">
@@ -787,7 +787,7 @@ function FieldConfigForm({ field, onUpdate, allFields, existingFieldNames }: Fie
       )}
 
       {/* Data Source Editor */}
-      <Accordion type="multiple" defaultValue={["data-source"]}>
+      <Accordion type="multiple" defaultValue={['data-source']}>
         <AccordionItem value="data-source" className="border rounded-lg px-3">
           <AccordionTrigger className="text-sm font-medium">
             <div className="flex items-center gap-2">
@@ -805,7 +805,7 @@ function FieldConfigForm({ field, onUpdate, allFields, existingFieldNames }: Fie
       </Accordion>
 
       {/* Rules Editor */}
-      <Accordion type="multiple" defaultValue={["rules"]}>
+      <Accordion type="multiple" defaultValue={['rules']}>
         <AccordionItem value="rules" className="border rounded-lg px-3">
           <AccordionTrigger className="text-sm font-medium">
             <div className="flex items-center gap-2">
@@ -833,28 +833,28 @@ function FieldConfigForm({ field, onUpdate, allFields, existingFieldNames }: Fie
 }
 
 export function FormDesigner() {
-  const [formTitle, setFormTitle] = useState("My Custom Form");
-  const [formDescription, setFormDescription] = useState("");
+  const [formTitle, setFormTitle] = useState('My Custom Form');
+  const [formDescription, setFormDescription] = useState('');
   const [sections, setSections] = useState<ExtendedSectionConfig[]>([
     {
-      id: "section-1",
-      title: "General Information",
+      id: 'section-1',
+      title: 'General Information',
       collapsible: false,
       defaultExpanded: true,
       fields: [
         {
-          id: "1",
-          name: "fullName",
-          type: "text",
-          label: "Full Name",
-          placeholder: "Enter your name",
+          id: '1',
+          name: 'fullName',
+          type: 'text',
+          label: 'Full Name',
+          placeholder: 'Enter your name',
         },
       ],
     },
   ]);
-  const [selectedSectionId, setSelectedSectionId] = useState<string | null>("section-1");
-  const [selectedFieldId, setSelectedFieldId] = useState<string | null>("1");
-  const [expandedSections, setExpandedSections] = useState<string[]>(["section-1"]);
+  const [selectedSectionId, setSelectedSectionId] = useState<string | null>('section-1');
+  const [selectedFieldId, setSelectedFieldId] = useState<string | null>('1');
+  const [expandedSections, setExpandedSections] = useState<string[]>(['section-1']);
   const [previewDisabled, setPreviewDisabled] = useState(false);
 
   // Get all fields across all sections for rules editor
@@ -865,11 +865,11 @@ export function FormDesigner() {
 
   // Generate the form schema from current configuration
   const generatedSchema: FormSchema = {
-    id: "custom-form",
+    id: 'custom-form',
     title: formTitle,
     description: formDescription || undefined,
-    mode: "onChange", // Validate on every change for immediate feedback in preview
-    reValidateMode: "onChange", // Re-validate on change after first validation
+    mode: 'onChange', // Validate on every change for immediate feedback in preview
+    reValidateMode: 'onChange', // Re-validate on change after first validation
     sections: sections.map((section) => ({
       id: section.id,
       title: section.title,
@@ -877,7 +877,6 @@ export function FormDesigner() {
       collapsible: section.collapsible,
       defaultExpanded: section.defaultExpanded,
       fields: section.fields.map((field) => {
-         
         const { id: _id, validation: _validationConfig, ...fieldMeta } = field;
         // Build ValidationConfig from field config
         const validationConfig = buildValidationConfig(field);
@@ -935,14 +934,14 @@ export function FormDesigner() {
     }
   };
 
-  const moveSection = (id: string, direction: "up" | "down") => {
+  const moveSection = (id: string, direction: 'up' | 'down') => {
     const index = sections.findIndex((s) => s.id === id);
     if (index === -1) return;
 
     const newSections = [...sections];
-    if (direction === "up" && index > 0) {
+    if (direction === 'up' && index > 0) {
       [newSections[index - 1], newSections[index]] = [newSections[index], newSections[index - 1]];
-    } else if (direction === "down" && index < sections.length - 1) {
+    } else if (direction === 'down' && index < sections.length - 1) {
       [newSections[index], newSections[index + 1]] = [newSections[index + 1], newSections[index]];
     }
     setSections(newSections);
@@ -956,7 +955,7 @@ export function FormDesigner() {
     const newField: ExtendedFieldConfig = {
       id: Date.now().toString(),
       name: `field_${allFields.length + 1}`,
-      type: "text",
+      type: 'text',
       label: `Field ${allFields.length + 1}`,
     };
 
@@ -1006,7 +1005,7 @@ export function FormDesigner() {
     });
   };
 
-  const moveField = (sectionId: string, fieldId: string, direction: "up" | "down") => {
+  const moveField = (sectionId: string, fieldId: string, direction: 'up' | 'down') => {
     const section = sections.find((s) => s.id === sectionId);
     if (!section) return;
 
@@ -1014,9 +1013,9 @@ export function FormDesigner() {
     if (index === -1) return;
 
     const newFields = [...section.fields];
-    if (direction === "up" && index > 0) {
+    if (direction === 'up' && index > 0) {
       [newFields[index - 1], newFields[index]] = [newFields[index], newFields[index - 1]];
-    } else if (direction === "down" && index < newFields.length - 1) {
+    } else if (direction === 'down' && index < newFields.length - 1) {
       [newFields[index], newFields[index + 1]] = [newFields[index + 1], newFields[index]];
     }
 
@@ -1053,7 +1052,7 @@ export function FormDesigner() {
               <AccordionItem
                 key={section.id}
                 value={section.id}
-                className={`group/section border rounded-lg ${selectedSectionId === section.id && !selectedFieldId ? "ring-2 ring-primary" : ""}`}
+                className={`group/section border rounded-lg ${selectedSectionId === section.id && !selectedFieldId ? 'ring-2 ring-primary' : ''}`}
               >
                 <div className="flex items-center gap-1 px-2 py-1.5">
                   <AccordionTrigger className="h-5 w-5 p-0 hover:no-underline hover:bg-accent rounded [&>svg]:hidden flex items-center justify-center shrink-0">
@@ -1080,7 +1079,7 @@ export function FormDesigner() {
                       className="h-5 w-5 p-0"
                       onClick={(e) => {
                         e.stopPropagation();
-                        moveSection(section.id, "up");
+                        moveSection(section.id, 'up');
                       }}
                       disabled={sectionIndex === 0}
                     >
@@ -1092,7 +1091,7 @@ export function FormDesigner() {
                       className="h-5 w-5 p-0"
                       onClick={(e) => {
                         e.stopPropagation();
-                        moveSection(section.id, "down");
+                        moveSection(section.id, 'down');
                       }}
                       disabled={sectionIndex === sections.length - 1}
                     >
@@ -1118,7 +1117,7 @@ export function FormDesigner() {
                       <div
                         key={field.id}
                         className={`group/field flex items-center gap-1 px-2 py-1 rounded cursor-pointer hover:bg-accent transition-colors ${
-                          selectedFieldId === field.id ? "bg-accent" : ""
+                          selectedFieldId === field.id ? 'bg-accent' : ''
                         }`}
                         onClick={() => {
                           setSelectedSectionId(section.id);
@@ -1142,7 +1141,7 @@ export function FormDesigner() {
                             className="h-5 w-5 p-0"
                             onClick={(e) => {
                               e.stopPropagation();
-                              moveField(section.id, field.id, "up");
+                              moveField(section.id, field.id, 'up');
                             }}
                             disabled={fieldIndex === 0}
                           >
@@ -1154,7 +1153,7 @@ export function FormDesigner() {
                             className="h-5 w-5 p-0"
                             onClick={(e) => {
                               e.stopPropagation();
-                              moveField(section.id, field.id, "down");
+                              moveField(section.id, field.id, 'down');
                             }}
                             disabled={fieldIndex === section.fields.length - 1}
                           >
@@ -1192,17 +1191,17 @@ export function FormDesigner() {
           <CardTitle className="flex items-center gap-2">
             <Settings className="h-4 w-4" />
             {selectedFieldId
-              ? "Field configuration"
+              ? 'Field configuration'
               : selectedSectionId
-                ? "Section configuration"
-                : "Configuration"}
+                ? 'Section configuration'
+                : 'Configuration'}
           </CardTitle>
           <CardDescription>
             {selectedField
               ? `Configure "${selectedField.label}"`
               : selectedSection
                 ? `Configure "${selectedSection.title}" section`
-                : "Select a section or field to configure"}
+                : 'Select a section or field to configure'}
           </CardDescription>
         </CardHeader>
         <CardContent className="flex-1 overflow-auto">
@@ -1285,13 +1284,13 @@ export function FormDesigner() {
                 key={sections
                   .map(
                     (s) =>
-                      `${s.id}:${s.collapsible}:${s.defaultExpanded}:${s.fields.map((f) => `${f.id}:${f.type}:${f.name}:${JSON.stringify(f.rules || [])}:${JSON.stringify(f.validation || {})}`).join("-")}`,
+                      `${s.id}:${s.collapsible}:${s.defaultExpanded}:${s.fields.map((f) => `${f.id}:${f.type}:${f.name}:${JSON.stringify(f.rules || [])}:${JSON.stringify(f.validation || {})}`).join('-')}`,
                   )
-                  .join(",")}
+                  .join(',')}
                 schema={generatedSchema}
                 onSubmit={(data) => {
-                  console.log("Form submitted:", data);
-                  alert("Form submitted! Check console for data.");
+                  console.log('Form submitted:', data);
+                  alert('Form submitted! Check console for data.');
                 }}
                 disabled={previewDisabled}
                 autoComplete="off"
@@ -1379,7 +1378,7 @@ interface DataSourceEditorProps {
 }
 
 function DataSourceEditor({ dataSource, onChange }: DataSourceEditorProps) {
-  const [sourceType, setSourceType] = useState<string>(dataSource?.type || "none");
+  const [sourceType, setSourceType] = useState<string>(dataSource?.type || 'none');
 
   return (
     <div className="space-y-4">
@@ -1389,16 +1388,16 @@ function DataSourceEditor({ dataSource, onChange }: DataSourceEditorProps) {
           value={sourceType}
           onValueChange={(value) => {
             setSourceType(value);
-            if (value === "none") {
+            if (value === 'none') {
               onChange(undefined);
-            } else if (value === "static") {
-              onChange({ type: "static", options: [] });
-            } else if (value === "fetch") {
-              onChange({ type: "fetch", url: "", method: "GET" });
-            } else if (value === "remote") {
-              onChange({ type: "remote", endpoint: "", params: {} });
-            } else if (value === "computed") {
-              onChange({ type: "computed", dependency: [], compute: "" });
+            } else if (value === 'static') {
+              onChange({ type: 'static', options: [] });
+            } else if (value === 'fetch') {
+              onChange({ type: 'fetch', url: '', method: 'GET' });
+            } else if (value === 'remote') {
+              onChange({ type: 'remote', endpoint: '', params: {} });
+            } else if (value === 'computed') {
+              onChange({ type: 'computed', dependency: [], compute: '' });
             }
           }}
         >
@@ -1414,7 +1413,7 @@ function DataSourceEditor({ dataSource, onChange }: DataSourceEditorProps) {
         </Select>
       </div>
 
-      {sourceType === "fetch" && dataSource?.type === "fetch" && (
+      {sourceType === 'fetch' && dataSource?.type === 'fetch' && (
         <div className="space-y-3">
           <div className="space-y-2">
             <Label>API URL</Label>
@@ -1428,7 +1427,7 @@ function DataSourceEditor({ dataSource, onChange }: DataSourceEditorProps) {
             <Label>Transform</Label>
             <Textarea
               placeholder="data.map(item => ({ label: item.name, value: item.id }))"
-              value={dataSource.transform || ""}
+              value={dataSource.transform || ''}
               onChange={(e) => onChange({ ...dataSource, transform: e.target.value })}
               rows={2}
             />
@@ -1436,7 +1435,7 @@ function DataSourceEditor({ dataSource, onChange }: DataSourceEditorProps) {
         </div>
       )}
 
-      {sourceType === "remote" && dataSource?.type === "remote" && (
+      {sourceType === 'remote' && dataSource?.type === 'remote' && (
         <div className="space-y-3">
           <div className="space-y-2">
             <Label>Endpoint</Label>
@@ -1465,17 +1464,17 @@ function DataSourceEditor({ dataSource, onChange }: DataSourceEditorProps) {
         </div>
       )}
 
-      {sourceType === "computed" && dataSource?.type === "computed" && (
+      {sourceType === 'computed' && dataSource?.type === 'computed' && (
         <div className="space-y-3">
           <div className="space-y-2">
             <Label>Dependencies (comma-separated)</Label>
             <Input
               placeholder="field1, field2"
-              value={dataSource.dependency.join(", ")}
+              value={dataSource.dependency.join(', ')}
               onChange={(e) =>
                 onChange({
                   ...dataSource,
-                  dependency: e.target.value.split(",").map((s) => s.trim()),
+                  dependency: e.target.value.split(',').map((s) => s.trim()),
                 })
               }
             />
@@ -1499,17 +1498,17 @@ function DataSourceEditor({ dataSource, onChange }: DataSourceEditorProps) {
 // Condition Operator Types
 // ============================================================================
 
-type ConditionOperator = "is" | "isNot" | "in" | "notIn" | "matches";
+type ConditionOperator = 'is' | 'isNot' | 'in' | 'notIn' | 'matches';
 
 const CONDITION_OPERATORS: { value: ConditionOperator; label: string; description: string }[] = [
-  { value: "is", label: "equals", description: "Field value equals" },
-  { value: "isNot", label: "not equals", description: "Field value does not equal" },
-  { value: "in", label: "is one of", description: "Field value is one of" },
-  { value: "notIn", label: "is not one of", description: "Field value is not one of" },
-  { value: "matches", label: "matches pattern", description: "Field value matches regex" },
+  { value: 'is', label: 'equals', description: 'Field value equals' },
+  { value: 'isNot', label: 'not equals', description: 'Field value does not equal' },
+  { value: 'in', label: 'is one of', description: 'Field value is one of' },
+  { value: 'notIn', label: 'is not one of', description: 'Field value is not one of' },
+  { value: 'matches', label: 'matches pattern', description: 'Field value matches regex' },
 ];
 
-type RuleEffect = "show" | "hide" | "require" | "disable";
+type RuleEffect = 'show' | 'hide' | 'require' | 'disable';
 
 const RULE_EFFECTS: {
   value: RuleEffect;
@@ -1519,32 +1518,32 @@ const RULE_EFFECTS: {
   color: string;
 }[] = [
   {
-    value: "show",
-    label: "Show field",
-    description: "Show this field when conditions are met",
+    value: 'show',
+    label: 'Show field',
+    description: 'Show this field when conditions are met',
     Icon: Eye,
-    color: "text-green-600 bg-green-50 border-green-200",
+    color: 'text-green-600 bg-green-50 border-green-200',
   },
   {
-    value: "hide",
-    label: "Hide field",
-    description: "Hide this field when conditions are met",
+    value: 'hide',
+    label: 'Hide field',
+    description: 'Hide this field when conditions are met',
     Icon: EyeOff,
-    color: "text-orange-600 bg-orange-50 border-orange-200",
+    color: 'text-orange-600 bg-orange-50 border-orange-200',
   },
   {
-    value: "require",
-    label: "Make required",
-    description: "Require this field when conditions are met",
+    value: 'require',
+    label: 'Make required',
+    description: 'Require this field when conditions are met',
     Icon: Asterisk,
-    color: "text-red-600 bg-red-50 border-red-200",
+    color: 'text-red-600 bg-red-50 border-red-200',
   },
   {
-    value: "disable",
-    label: "Disable field",
-    description: "Disable this field when conditions are met",
+    value: 'disable',
+    label: 'Disable field',
+    description: 'Disable this field when conditions are met',
     Icon: Ban,
-    color: "text-gray-600 bg-gray-50 border-gray-200",
+    color: 'text-gray-600 bg-gray-50 border-gray-200',
   },
 ];
 
@@ -1572,11 +1571,11 @@ function RulesEditor({
   const [editingRuleIndex, setEditingRuleIndex] = useState<number | null>(null);
 
   // New rule state
-  const [selectedEffect, setSelectedEffect] = useState<RuleEffect>("show");
+  const [selectedEffect, setSelectedEffect] = useState<RuleEffect>('show');
   const [conditions, setConditions] = useState<
     { field: string; operator: ConditionOperator; value: string }[]
-  >([{ field: "", operator: "is", value: "" }]);
-  const [conditionOperator, setConditionOperator] = useState<"AND" | "OR">("AND");
+  >([{ field: '', operator: 'is', value: '' }]);
+  const [conditionOperator, setConditionOperator] = useState<'AND' | 'OR'>('AND');
 
   // Check if field is always required (has required rule with no conditions)
   const isAlwaysRequired = rules.some(
@@ -1584,15 +1583,15 @@ function RulesEditor({
   );
 
   const resetBuilder = () => {
-    setSelectedEffect("show");
-    setConditions([{ field: "", operator: "is", value: "" }]);
-    setConditionOperator("AND");
+    setSelectedEffect('show');
+    setConditions([{ field: '', operator: 'is', value: '' }]);
+    setConditionOperator('AND');
     setIsAddingRule(false);
     setEditingRuleIndex(null);
   };
 
   const addCondition = () => {
-    setConditions([...conditions, { field: "", operator: "is", value: "" }]);
+    setConditions([...conditions, { field: '', operator: 'is', value: '' }]);
   };
 
   const updateCondition = (
@@ -1619,15 +1618,15 @@ function RulesEditor({
 
     // Get the target field to determine its type
     const targetField = allFields.find((f) => f.name === cond.field);
-    const isNumericField = targetField?.type === "number" || targetField?.type === "slider";
-    const isBooleanField = targetField?.type === "checkbox" || targetField?.type === "switch";
+    const isNumericField = targetField?.type === 'number' || targetField?.type === 'slider';
+    const isBooleanField = targetField?.type === 'checkbox' || targetField?.type === 'switch';
 
     // Parse value based on the target field's type
     const parseValue = (val: string): unknown => {
       // For boolean fields, parse true/false
       if (isBooleanField) {
-        if (val.toLowerCase() === "true") return true;
-        if (val.toLowerCase() === "false") return false;
+        if (val.toLowerCase() === 'true') return true;
+        if (val.toLowerCase() === 'false') return false;
       }
 
       // For numeric fields, try to parse as number
@@ -1638,26 +1637,26 @@ function RulesEditor({
 
       // For text-based fields, keep as string
       // But still handle explicit booleans for special cases
-      if (val.toLowerCase() === "true") return true;
-      if (val.toLowerCase() === "false") return false;
+      if (val.toLowerCase() === 'true') return true;
+      if (val.toLowerCase() === 'false') return false;
 
       return val;
     };
 
     switch (cond.operator) {
-      case "is":
+      case 'is':
         condition.is = parseValue(cond.value);
         break;
-      case "isNot":
+      case 'isNot':
         condition.isNot = parseValue(cond.value);
         break;
-      case "in":
-        condition.in = cond.value.split(",").map((v) => parseValue(v.trim()));
+      case 'in':
+        condition.in = cond.value.split(',').map((v) => parseValue(v.trim()));
         break;
-      case "notIn":
-        condition.notIn = cond.value.split(",").map((v) => parseValue(v.trim()));
+      case 'notIn':
+        condition.notIn = cond.value.split(',').map((v) => parseValue(v.trim()));
         break;
-      case "matches":
+      case 'matches':
         condition.matches = cond.value;
         break;
     }
@@ -1679,16 +1678,16 @@ function RulesEditor({
 
     // Set effects based on selected effect type
     switch (selectedEffect) {
-      case "show":
+      case 'show':
         newRule.effects.visible = true;
         break;
-      case "hide":
+      case 'hide':
         newRule.effects.visible = false;
         break;
-      case "require":
+      case 'require':
         newRule.effects.required = true;
         break;
-      case "disable":
+      case 'disable':
         newRule.effects.disabled = true;
         break;
     }
@@ -1711,34 +1710,34 @@ function RulesEditor({
     if (!rule) return;
 
     // Determine effect type from rule
-    let effect: RuleEffect = "show";
-    if (rule.effects.visible === true) effect = "show";
-    else if (rule.effects.visible === false) effect = "hide";
-    else if (rule.effects.required === true) effect = "require";
-    else if (rule.effects.disabled === true) effect = "disable";
+    let effect: RuleEffect = 'show';
+    if (rule.effects.visible === true) effect = 'show';
+    else if (rule.effects.visible === false) effect = 'hide';
+    else if (rule.effects.required === true) effect = 'require';
+    else if (rule.effects.disabled === true) effect = 'disable';
 
     setSelectedEffect(effect);
-    setConditionOperator(rule.operator || "AND");
+    setConditionOperator(rule.operator || 'AND');
 
     // Convert conditions back to editable form
     const editableConditions = rule.conditions.map((cond) => {
-      let operator: ConditionOperator = "is";
-      let value = "";
+      let operator: ConditionOperator = 'is';
+      let value = '';
 
       if (cond.is !== undefined) {
-        operator = "is";
+        operator = 'is';
         value = String(cond.is);
       } else if (cond.isNot !== undefined) {
-        operator = "isNot";
+        operator = 'isNot';
         value = String(cond.isNot);
       } else if (cond.in !== undefined) {
-        operator = "in";
-        value = cond.in.map(String).join(", ");
+        operator = 'in';
+        value = cond.in.map(String).join(', ');
       } else if (cond.notIn !== undefined) {
-        operator = "notIn";
-        value = cond.notIn.map(String).join(", ");
+        operator = 'notIn';
+        value = cond.notIn.map(String).join(', ');
       } else if (cond.matches !== undefined) {
-        operator = "matches";
+        operator = 'matches';
         value = cond.matches;
       }
 
@@ -1748,7 +1747,7 @@ function RulesEditor({
     setConditions(
       editableConditions.length > 0
         ? editableConditions
-        : [{ field: "", operator: "is", value: "" }],
+        : [{ field: '', operator: 'is', value: '' }],
     );
     setEditingRuleIndex(index);
     setIsAddingRule(true);
@@ -1765,8 +1764,8 @@ function RulesEditor({
 
   const describeRule = (rule: FieldRule): string => {
     if (rule.conditions.length === 0) {
-      if (rule.effects.required) return "Always required";
-      return "Always applies";
+      if (rule.effects.required) return 'Always required';
+      return 'Always applies';
     }
 
     const conditionDescriptions = rule.conditions.map((cond) => {
@@ -1774,27 +1773,27 @@ function RulesEditor({
       if (cond.is !== undefined) return `"${fieldLabel}" = ${JSON.stringify(cond.is)}`;
       if (cond.isNot !== undefined) return `"${fieldLabel}" ≠ ${JSON.stringify(cond.isNot)}`;
       if (cond.in !== undefined)
-        return `"${fieldLabel}" in [${cond.in.map((v) => JSON.stringify(v)).join(", ")}]`;
+        return `"${fieldLabel}" in [${cond.in.map((v) => JSON.stringify(v)).join(', ')}]`;
       if (cond.notIn !== undefined)
-        return `"${fieldLabel}" not in [${cond.notIn.map((v) => JSON.stringify(v)).join(", ")}]`;
+        return `"${fieldLabel}" not in [${cond.notIn.map((v) => JSON.stringify(v)).join(', ')}]`;
       if (cond.matches !== undefined) return `"${fieldLabel}" matches /${cond.matches}/`;
       return `"${fieldLabel}"`;
     });
 
-    const operator = rule.operator === "OR" ? " OR " : " AND ";
+    const operator = rule.operator === 'OR' ? ' OR ' : ' AND ';
     return conditionDescriptions.join(operator);
   };
 
   const getEffectDescription = (rule: FieldRule): { label: string; color: string } => {
     if (rule.effects.visible === true)
-      return { label: "Show", color: "text-green-600 bg-green-50" };
+      return { label: 'Show', color: 'text-green-600 bg-green-50' };
     if (rule.effects.visible === false)
-      return { label: "Hide", color: "text-orange-600 bg-orange-50" };
+      return { label: 'Hide', color: 'text-orange-600 bg-orange-50' };
     if (rule.effects.required === true)
-      return { label: "Required", color: "text-red-600 bg-red-50" };
+      return { label: 'Required', color: 'text-red-600 bg-red-50' };
     if (rule.effects.disabled === true)
-      return { label: "Disabled", color: "text-gray-600 bg-gray-50" };
-    return { label: "Unknown", color: "text-muted-foreground bg-muted" };
+      return { label: 'Disabled', color: 'text-gray-600 bg-gray-50' };
+    return { label: 'Unknown', color: 'text-muted-foreground bg-muted' };
   };
 
   // Get options for a specific field (for in/notIn suggestions)
@@ -1820,9 +1819,9 @@ function RulesEditor({
             onCheckedChange={(checked) => {
               if (checked) {
                 const requiredRule: FieldRule = {
-                  id: "always-required",
+                  id: 'always-required',
                   conditions: [],
-                  operator: "AND",
+                  operator: 'AND',
                   effects: { required: true },
                 };
                 onChange([
@@ -1846,7 +1845,7 @@ function RulesEditor({
             <Input
               id="required-message"
               placeholder="This field is required"
-              value={requiredMessage || ""}
+              value={requiredMessage || ''}
               onChange={(e) => onRequiredMessageChange(e.target.value || undefined)}
               className="h-8 text-sm"
             />
@@ -1912,7 +1911,7 @@ function RulesEditor({
         <div className="border rounded-lg p-4 space-y-4 bg-muted/20">
           <div className="flex items-center justify-between">
             <Label className="font-medium">
-              {editingRuleIndex !== null ? "Edit rule" : "New rule"}
+              {editingRuleIndex !== null ? 'Edit rule' : 'New rule'}
             </Label>
             <Button variant="ghost" size="sm" onClick={resetBuilder}>
               Cancel
@@ -1929,8 +1928,8 @@ function RulesEditor({
                   type="button"
                   className={`flex items-center gap-2 p-2 rounded-lg border text-left text-sm transition-all ${
                     selectedEffect === effect.value
-                      ? effect.color + " border-current"
-                      : "hover:bg-muted"
+                      ? effect.color + ' border-current'
+                      : 'hover:bg-muted'
                   }`}
                   onClick={() => setSelectedEffect(effect.value)}
                 >
@@ -1948,7 +1947,7 @@ function RulesEditor({
               {conditions.length > 1 && (
                 <Select
                   value={conditionOperator}
-                  onValueChange={(v) => setConditionOperator(v as "AND" | "OR")}
+                  onValueChange={(v) => setConditionOperator(v as 'AND' | 'OR')}
                 >
                   <SelectTrigger className="w-24 h-7 text-xs">
                     <SelectValue />
@@ -2008,7 +2007,7 @@ function RulesEditor({
                       <div className="flex-1">
                         {cond.field &&
                         getFieldOptions(cond.field).length > 0 &&
-                        (cond.operator === "is" || cond.operator === "isNot") ? (
+                        (cond.operator === 'is' || cond.operator === 'isNot') ? (
                           <Select
                             value={cond.value}
                             onValueChange={(v) => updateCondition(index, { value: v })}
@@ -2028,11 +2027,11 @@ function RulesEditor({
                           <Input
                             className="h-8 text-sm"
                             placeholder={
-                              cond.operator === "in" || cond.operator === "notIn"
-                                ? "value1, value2, ..."
-                                : cond.operator === "matches"
-                                  ? "regex pattern"
-                                  : "value"
+                              cond.operator === 'in' || cond.operator === 'notIn'
+                                ? 'value1, value2, ...'
+                                : cond.operator === 'matches'
+                                  ? 'regex pattern'
+                                  : 'value'
                             }
                             value={cond.value}
                             onChange={(e) => updateCondition(index, { value: e.target.value })}
@@ -2063,7 +2062,7 @@ function RulesEditor({
 
           {/* Save Button */}
           <Button className="w-full" onClick={saveRule} disabled={!conditions.some((c) => c.field)}>
-            {editingRuleIndex !== null ? "Update rule" : "Add rule"}
+            {editingRuleIndex !== null ? 'Update rule' : 'Add rule'}
           </Button>
         </div>
       ) : (

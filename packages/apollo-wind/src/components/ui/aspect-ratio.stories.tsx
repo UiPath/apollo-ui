@@ -1,11 +1,11 @@
-import type { Meta } from "@storybook/react-vite";
-import { AspectRatio } from "./aspect-ratio";
-import { Row } from "./layout";
+import type { Meta } from '@storybook/react-vite';
+import { AspectRatio } from './aspect-ratio';
+import { Row } from './layout';
 
 const meta: Meta<typeof AspectRatio> = {
-  title: "Design System/Layout/Aspect Ratio",
+  title: 'Design System/Layout/Aspect Ratio',
   component: AspectRatio,
-  tags: ["autodocs"],
+  tags: ['autodocs'],
 };
 
 export default meta;

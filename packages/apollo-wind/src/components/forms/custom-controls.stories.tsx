@@ -1,7 +1,4 @@
-import {
-  useRef,
-  useState,
-} from 'react';
+import { useRef, useState } from 'react';
 
 import {
   AlignCenter,
@@ -18,11 +15,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
   Select,
   SelectContent,
@@ -35,29 +28,19 @@ import { Slider } from '@/components/ui/slider';
 import { Toaster } from '@/components/ui/sonner';
 import { Textarea } from '@/components/ui/textarea';
 import { Toggle } from '@/components/ui/toggle';
-import {
-  ToggleGroup,
-  ToggleGroupItem,
-} from '@/components/ui/toggle-group';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { cn } from '@/lib';
-import type {
-  Meta,
-  StoryObj,
-} from '@storybook/react-vite';
+import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import type {
-  CustomFieldComponentProps,
-  FormPlugin,
-  FormSchema,
-} from './form-schema';
+import type { CustomFieldComponentProps, FormPlugin, FormSchema } from './form-schema';
 import { MetadataForm } from './metadata-form';
 import { SchemaViewer } from './schema-viewer';
 
 const meta: Meta<typeof MetadataForm> = {
-  title: "Forms/Custom Controls",
+  title: 'Forms/Custom Controls',
   component: MetadataForm,
   parameters: {
-    layout: "padded",
+    layout: 'padded',
     docs: {
       description: {
         component: `
@@ -138,7 +121,7 @@ const field: CustomFieldMetadata = {
       );
     },
   ],
-  tags: ["autodocs"],
+  tags: ['autodocs'],
 };
 
 export default meta;
@@ -189,7 +172,7 @@ interface TemperatureSliderProps extends CustomFieldComponentProps {
   unit?: string;
 }
 
-type Priority = "low" | "medium" | "high" | "critical";
+type Priority = 'low' | 'medium' | 'high' | 'critical';
 
 interface PriorityOption {
   value: Priority;
@@ -250,8 +233,8 @@ function RatingInput({
               }}
               disabled={disabled}
               className={cn(
-                "p-0.5 transition-colors focus:outline-none focus:ring-2 focus:ring-ring rounded",
-                disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer hover:scale-110",
+                'p-0.5 transition-colors focus:outline-none focus:ring-2 focus:ring-ring rounded',
+                disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer hover:scale-110',
               )}
               aria-label={`Rate ${star} stars`}
             >
@@ -260,8 +243,8 @@ function RatingInput({
               ) : (
                 <Star
                   className={cn(
-                    "w-6 h-6",
-                    filled ? "fill-yellow-400 text-yellow-400" : "text-muted-foreground",
+                    'w-6 h-6',
+                    filled ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground',
                   )}
                 />
               )}
@@ -269,7 +252,7 @@ function RatingInput({
           );
         })}
         <span className="ml-2 text-sm text-muted-foreground">
-          {rating > 0 ? `${rating}/${maxStars}` : "Not rated"}
+          {rating > 0 ? `${rating}/${maxStars}` : 'Not rated'}
         </span>
       </div>
       <RequiredHint show={required === true && rating === 0} message="Rating is required" />
@@ -288,10 +271,10 @@ function ColorPicker({
   onBlur,
   disabled,
   error,
-  presetColors = ["#ef4444", "#f97316", "#eab308", "#22c55e", "#3b82f6", "#8b5cf6", "#ec4899"],
+  presetColors = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#3b82f6', '#8b5cf6', '#ec4899'],
   showHexInput = true,
 }: ColorPickerProps) {
-  const color = (value as string) || "#3b82f6";
+  const color = (value as string) || '#3b82f6';
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -318,8 +301,8 @@ function ColorPicker({
                   key={presetColor}
                   type="button"
                   className={cn(
-                    "w-8 h-8 rounded border-2 transition-all",
-                    color === presetColor ? "border-ring scale-110" : "border-transparent",
+                    'w-8 h-8 rounded border-2 transition-all',
+                    color === presetColor ? 'border-ring scale-110' : 'border-transparent',
                   )}
                   style={{ backgroundColor: presetColor }}
                   onClick={() => {
@@ -364,7 +347,7 @@ interface RichTextValue {
   bold: boolean;
   italic: boolean;
   underline: boolean;
-  align: "left" | "center" | "right";
+  align: 'left' | 'center' | 'right';
 }
 
 function RichTextInput({
@@ -373,15 +356,15 @@ function RichTextInput({
   onBlur,
   disabled,
   error,
-  placeholder = "Enter formatted text...",
+  placeholder = 'Enter formatted text...',
   rows = 3,
 }: RichTextInputProps) {
   const richValue: RichTextValue = (value as RichTextValue) || {
-    text: "",
+    text: '',
     bold: false,
     italic: false,
     underline: false,
-    align: "left",
+    align: 'left',
   };
 
   const updateValue = (updates: Partial<RichTextValue>) => {
@@ -427,7 +410,7 @@ function RichTextInput({
             type="single"
             value={richValue.align}
             onValueChange={(val) =>
-              val && updateValue({ align: val as "left" | "center" | "right" })
+              val && updateValue({ align: val as 'left' | 'center' | 'right' })
             }
             disabled={disabled}
           >
@@ -452,12 +435,12 @@ function RichTextInput({
           placeholder={placeholder}
           rows={rows}
           className={cn(
-            "border-0 rounded-t-none resize-none focus-visible:ring-0 focus-visible:ring-offset-0",
-            richValue.bold && "font-bold",
-            richValue.italic && "italic",
-            richValue.underline && "underline",
-            richValue.align === "center" && "text-center",
-            richValue.align === "right" && "text-right",
+            'border-0 rounded-t-none resize-none focus-visible:ring-0 focus-visible:ring-offset-0',
+            richValue.bold && 'font-bold',
+            richValue.italic && 'italic',
+            richValue.underline && 'underline',
+            richValue.align === 'center' && 'text-center',
+            richValue.align === 'right' && 'text-right',
           )}
         />
       </div>
@@ -478,29 +461,29 @@ function TemperatureSlider({
   error,
   min = 0,
   max = 100,
-  unit = "°C",
+  unit = '°C',
 }: TemperatureSliderProps) {
   const temp = (value as number) ?? 20;
 
   const getEmoji = () => {
-    if (temp < 10) return "🥶";
-    if (temp < 20) return "😊";
-    if (temp < 30) return "😓";
-    return "🔥";
+    if (temp < 10) return '🥶';
+    if (temp < 20) return '😊';
+    if (temp < 30) return '😓';
+    return '🔥';
   };
 
   const getColor = () => {
-    if (temp < 10) return "text-blue-500";
-    if (temp < 20) return "text-green-500";
-    if (temp < 30) return "text-orange-500";
-    return "text-red-500";
+    if (temp < 10) return 'text-blue-500';
+    if (temp < 20) return 'text-green-500';
+    if (temp < 30) return 'text-orange-500';
+    return 'text-red-500';
   };
 
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <span className="text-2xl">{getEmoji()}</span>
-        <span className={cn("text-2xl font-bold tabular-nums", getColor())}>
+        <span className={cn('text-2xl font-bold tabular-nums', getColor())}>
           {temp}
           {unit}
         </span>
@@ -511,7 +494,7 @@ function TemperatureSlider({
         <div
           className="absolute inset-0 h-2 rounded-full top-1/2 -translate-y-1/2"
           style={{
-            background: "linear-gradient(to right, #3b82f6, #22c55e, #eab308, #f97316, #ef4444)",
+            background: 'linear-gradient(to right, #3b82f6, #22c55e, #eab308, #f97316, #ef4444)',
           }}
         />
         <Slider
@@ -556,12 +539,12 @@ interface PhoneInputProps extends CustomFieldComponentProps {
 }
 
 const COUNTRY_CODES = [
-  { code: "+1", country: "US" },
-  { code: "+44", country: "UK" },
-  { code: "+61", country: "AU" },
-  { code: "+49", country: "DE" },
-  { code: "+33", country: "FR" },
-  { code: "+81", country: "JP" },
+  { code: '+1', country: 'US' },
+  { code: '+44', country: 'UK' },
+  { code: '+61', country: 'AU' },
+  { code: '+49', country: 'DE' },
+  { code: '+33', country: 'FR' },
+  { code: '+81', country: 'JP' },
 ] as const;
 
 function PhoneInput({
@@ -571,9 +554,9 @@ function PhoneInput({
   disabled,
   required,
   error,
-  placeholder = "(555) 123-4567",
+  placeholder = '(555) 123-4567',
 }: PhoneInputProps) {
-  const phoneValue: PhoneValue = (value as PhoneValue) || { countryCode: "+1", number: "" };
+  const phoneValue: PhoneValue = (value as PhoneValue) || { countryCode: '+1', number: '' };
 
   const updateValue = (updates: Partial<PhoneValue>) => {
     onChange({ ...phoneValue, ...updates });
@@ -626,14 +609,14 @@ interface PrioritySelectorProps extends CustomFieldComponentProps {
 }
 
 const PRIORITIES: PriorityOption[] = [
-  { value: "low", label: "Low", color: "bg-green-100 text-green-800 border-green-300" },
-  { value: "medium", label: "Medium", color: "bg-yellow-100 text-yellow-800 border-yellow-300" },
-  { value: "high", label: "High", color: "bg-orange-100 text-orange-800 border-orange-300" },
-  { value: "critical", label: "Critical", color: "bg-red-100 text-red-800 border-red-300" },
+  { value: 'low', label: 'Low', color: 'bg-green-100 text-green-800 border-green-300' },
+  { value: 'medium', label: 'Medium', color: 'bg-yellow-100 text-yellow-800 border-yellow-300' },
+  { value: 'high', label: 'High', color: 'bg-orange-100 text-orange-800 border-orange-300' },
+  { value: 'critical', label: 'Critical', color: 'bg-red-100 text-red-800 border-red-300' },
 ];
 
 function PrioritySelector({ value, onChange, onBlur, disabled, error }: PrioritySelectorProps) {
-  const priority = (value as Priority) || "";
+  const priority = (value as Priority) || '';
   const containerRef = useRef<HTMLDivElement>(null);
 
   const handleBlur = (e: React.FocusEvent) => {
@@ -653,11 +636,11 @@ function PrioritySelector({ value, onChange, onBlur, disabled, error }: Priority
             onClick={() => onChange(p.value)}
             disabled={disabled}
             className={cn(
-              "px-3 py-1.5 rounded-full border text-sm font-medium transition-all",
+              'px-3 py-1.5 rounded-full border text-sm font-medium transition-all',
               priority === p.value
-                ? cn(p.color, "ring-2 ring-offset-1 ring-ring")
-                : "bg-muted text-muted-foreground border-transparent hover:bg-muted/80",
-              disabled && "opacity-50 cursor-not-allowed",
+                ? cn(p.color, 'ring-2 ring-offset-1 ring-ring')
+                : 'bg-muted text-muted-foreground border-transparent hover:bg-muted/80',
+              disabled && 'opacity-50 cursor-not-allowed',
             )}
           >
             {p.label}
@@ -678,16 +661,16 @@ function PrioritySelector({ value, onChange, onBlur, disabled, error }: Priority
  * Components are registered via onFormInit using context.registerCustomComponent()
  */
 const customComponentsPlugin: FormPlugin = {
-  name: "custom-components",
-  version: "1.0.0",
+  name: 'custom-components',
+  version: '1.0.0',
   onFormInit: (context) => {
     // Register all custom components with the form context
-    context.registerCustomComponent("star-rating", RatingInput);
-    context.registerCustomComponent("color-picker", ColorPicker);
-    context.registerCustomComponent("rich-text", RichTextInput);
-    context.registerCustomComponent("temperature", TemperatureSlider);
-    context.registerCustomComponent("phone-input", PhoneInput);
-    context.registerCustomComponent("priority-selector", PrioritySelector);
+    context.registerCustomComponent('star-rating', RatingInput);
+    context.registerCustomComponent('color-picker', ColorPicker);
+    context.registerCustomComponent('rich-text', RichTextInput);
+    context.registerCustomComponent('temperature', TemperatureSlider);
+    context.registerCustomComponent('phone-input', PhoneInput);
+    context.registerCustomComponent('priority-selector', PrioritySelector);
   },
 };
 
@@ -696,36 +679,36 @@ const customComponentsPlugin: FormPlugin = {
 // ============================================================================
 
 const basicCustomControlsSchema: FormSchema = {
-  id: "basic-custom-controls",
-  title: "Custom Controls Demo",
-  description: "Demonstrates the CustomFieldComponentProps contract",
+  id: 'basic-custom-controls',
+  title: 'Custom Controls Demo',
+  description: 'Demonstrates the CustomFieldComponentProps contract',
   sections: [
     {
-      id: "ratings",
-      title: "Rating Components",
-      description: "Star rating with customizable options",
+      id: 'ratings',
+      title: 'Rating Components',
+      description: 'Star rating with customizable options',
       fields: [
         {
-          type: "custom",
-          name: "productRating",
-          label: "Product Rating",
-          description: "Click to rate, right-click for half stars",
-          component: "star-rating",
+          type: 'custom',
+          name: 'productRating',
+          label: 'Product Rating',
+          description: 'Click to rate, right-click for half stars',
+          component: 'star-rating',
           componentProps: {
             maxStars: 5,
             allowHalf: true,
           },
           validation: {
             required: true,
-            messages: { required: "Please provide a rating" },
+            messages: { required: 'Please provide a rating' },
           },
         },
         {
-          type: "custom",
-          name: "serviceRating",
-          label: "Service Rating (10 stars)",
-          description: "Larger scale rating",
-          component: "star-rating",
+          type: 'custom',
+          name: 'serviceRating',
+          label: 'Service Rating (10 stars)',
+          description: 'Larger scale rating',
+          component: 'star-rating',
           componentProps: {
             maxStars: 10,
             allowHalf: false,
@@ -734,29 +717,29 @@ const basicCustomControlsSchema: FormSchema = {
       ],
     },
     {
-      id: "selection",
-      title: "Selection Components",
+      id: 'selection',
+      title: 'Selection Components',
       fields: [
         {
-          type: "custom",
-          name: "priority",
-          label: "Task Priority",
-          component: "priority-selector",
+          type: 'custom',
+          name: 'priority',
+          label: 'Task Priority',
+          component: 'priority-selector',
           validation: {
             required: true,
-            messages: { required: "Please select a priority" },
+            messages: { required: 'Please select a priority' },
           },
         },
         {
-          type: "custom",
-          name: "brandColor",
-          label: "Brand Color",
-          component: "color-picker",
+          type: 'custom',
+          name: 'brandColor',
+          label: 'Brand Color',
+          component: 'color-picker',
           componentProps: {
-            presetColors: ["#0f172a", "#1e40af", "#7c3aed", "#db2777", "#ea580c", "#16a34a"],
+            presetColors: ['#0f172a', '#1e40af', '#7c3aed', '#db2777', '#ea580c', '#16a34a'],
             showHexInput: true,
           },
-          defaultValue: "#1e40af",
+          defaultValue: '#1e40af',
         },
       ],
     },
@@ -776,7 +759,7 @@ export const BasicCustomControls: Story = {
     schema: basicCustomControlsSchema,
     plugins: [customComponentsPlugin],
     onSubmit: async (data) => {
-      console.log("Form data:", data);
+      console.log('Form data:', data);
       alert(`Submitted!\n\nData: ${JSON.stringify(data, null, 2)}`);
     },
   },
@@ -787,58 +770,58 @@ export const BasicCustomControls: Story = {
 // ============================================================================
 
 const complexCustomControlsSchema: FormSchema = {
-  id: "complex-custom-controls",
-  title: "Complex Custom Controls",
-  description: "Advanced custom controls with structured values",
+  id: 'complex-custom-controls',
+  title: 'Complex Custom Controls',
+  description: 'Advanced custom controls with structured values',
   sections: [
     {
-      id: "rich-content",
-      title: "Rich Content",
+      id: 'rich-content',
+      title: 'Rich Content',
       fields: [
         {
-          type: "custom",
-          name: "announcement",
-          label: "Announcement",
-          description: "Use the toolbar to format your text",
-          component: "rich-text",
+          type: 'custom',
+          name: 'announcement',
+          label: 'Announcement',
+          description: 'Use the toolbar to format your text',
+          component: 'rich-text',
           componentProps: {
-            placeholder: "Write your announcement here...",
+            placeholder: 'Write your announcement here...',
             rows: 4,
           },
           defaultValue: {
-            text: "",
+            text: '',
             bold: false,
             italic: false,
             underline: false,
-            align: "left",
+            align: 'left',
           },
         },
       ],
     },
     {
-      id: "composite",
-      title: "Composite Inputs",
+      id: 'composite',
+      title: 'Composite Inputs',
       fields: [
         {
-          type: "custom",
-          name: "contactPhone",
-          label: "Contact Phone",
-          component: "phone-input",
+          type: 'custom',
+          name: 'contactPhone',
+          label: 'Contact Phone',
+          component: 'phone-input',
           validation: {
             required: true,
-            messages: { required: "Phone number is required" },
+            messages: { required: 'Phone number is required' },
           },
         },
         {
-          type: "custom",
-          name: "thermostat",
-          label: "Thermostat Setting",
-          description: "Set your preferred temperature",
-          component: "temperature",
+          type: 'custom',
+          name: 'thermostat',
+          label: 'Thermostat Setting',
+          description: 'Set your preferred temperature',
+          component: 'temperature',
           componentProps: {
             min: 10,
             max: 35,
-            unit: "°C",
+            unit: '°C',
           },
           defaultValue: 22,
         },
@@ -860,7 +843,7 @@ export const ComplexCustomControls: Story = {
     schema: complexCustomControlsSchema,
     plugins: [customComponentsPlugin],
     onSubmit: async (data) => {
-      console.log("Form data:", data);
+      console.log('Form data:', data);
       alert(`Submitted!\n\nData: ${JSON.stringify(data, null, 2)}`);
     },
   },
@@ -871,45 +854,45 @@ export const ComplexCustomControls: Story = {
 // ============================================================================
 
 const validationDemoSchema: FormSchema = {
-  id: "validation-demo",
-  title: "Validation Demo",
-  description: "Custom controls with validation and error states",
-  mode: "onChange",
+  id: 'validation-demo',
+  title: 'Validation Demo',
+  description: 'Custom controls with validation and error states',
+  mode: 'onChange',
   sections: [
     {
-      id: "required-fields",
-      title: "Required Custom Fields",
-      description: "All fields below are required - submit to see validation errors",
+      id: 'required-fields',
+      title: 'Required Custom Fields',
+      description: 'All fields below are required - submit to see validation errors',
       fields: [
         {
-          type: "custom",
-          name: "rating",
-          label: "Required Rating",
-          component: "star-rating",
+          type: 'custom',
+          name: 'rating',
+          label: 'Required Rating',
+          component: 'star-rating',
           componentProps: { maxStars: 5 },
           validation: {
             required: true,
-            messages: { required: "Please provide a rating" },
+            messages: { required: 'Please provide a rating' },
           },
         },
         {
-          type: "custom",
-          name: "priority",
-          label: "Required Priority",
-          component: "priority-selector",
+          type: 'custom',
+          name: 'priority',
+          label: 'Required Priority',
+          component: 'priority-selector',
           validation: {
             required: true,
-            messages: { required: "Please select a priority level" },
+            messages: { required: 'Please select a priority level' },
           },
         },
         {
-          type: "custom",
-          name: "phone",
-          label: "Required Phone",
-          component: "phone-input",
+          type: 'custom',
+          name: 'phone',
+          label: 'Required Phone',
+          component: 'phone-input',
           validation: {
             required: true,
-            messages: { required: "Phone number is required" },
+            messages: { required: 'Phone number is required' },
           },
         },
       ],
@@ -930,8 +913,8 @@ export const ValidationDemo: Story = {
     schema: validationDemoSchema,
     plugins: [customComponentsPlugin],
     onSubmit: async (data) => {
-      console.log("Valid form data:", data);
-      alert("All validations passed!");
+      console.log('Valid form data:', data);
+      alert('All validations passed!');
     },
   },
 };
@@ -941,60 +924,60 @@ export const ValidationDemo: Story = {
 // ============================================================================
 
 const disabledDemoSchema: FormSchema = {
-  id: "disabled-demo",
-  title: "Disabled Controls Demo",
-  description: "All custom controls in disabled state",
+  id: 'disabled-demo',
+  title: 'Disabled Controls Demo',
+  description: 'All custom controls in disabled state',
   sections: [
     {
-      id: "disabled-controls",
+      id: 'disabled-controls',
       fields: [
         {
-          type: "custom",
-          name: "rating",
-          label: "Disabled Rating",
-          component: "star-rating",
+          type: 'custom',
+          name: 'rating',
+          label: 'Disabled Rating',
+          component: 'star-rating',
           componentProps: { maxStars: 5 },
           defaultValue: 3,
         },
         {
-          type: "custom",
-          name: "color",
-          label: "Disabled Color Picker",
-          component: "color-picker",
-          defaultValue: "#8b5cf6",
+          type: 'custom',
+          name: 'color',
+          label: 'Disabled Color Picker',
+          component: 'color-picker',
+          defaultValue: '#8b5cf6',
         },
         {
-          type: "custom",
-          name: "richText",
-          label: "Disabled Rich Text",
-          component: "rich-text",
+          type: 'custom',
+          name: 'richText',
+          label: 'Disabled Rich Text',
+          component: 'rich-text',
           defaultValue: {
-            text: "This text cannot be edited",
+            text: 'This text cannot be edited',
             bold: true,
             italic: false,
             underline: false,
-            align: "center",
+            align: 'center',
           },
         },
         {
-          type: "custom",
-          name: "phone",
-          label: "Disabled Phone",
-          component: "phone-input",
-          defaultValue: { countryCode: "+1", number: "555-123-4567" },
+          type: 'custom',
+          name: 'phone',
+          label: 'Disabled Phone',
+          component: 'phone-input',
+          defaultValue: { countryCode: '+1', number: '555-123-4567' },
         },
         {
-          type: "custom",
-          name: "priority",
-          label: "Disabled Priority",
-          component: "priority-selector",
-          defaultValue: "high",
+          type: 'custom',
+          name: 'priority',
+          label: 'Disabled Priority',
+          component: 'priority-selector',
+          defaultValue: 'high',
         },
         {
-          type: "custom",
-          name: "temperature",
-          label: "Disabled Temperature",
-          component: "temperature",
+          type: 'custom',
+          name: 'temperature',
+          label: 'Disabled Temperature',
+          component: 'temperature',
           defaultValue: 28,
         },
       ],
@@ -1023,79 +1006,79 @@ export const DisabledStates: Story = {
 // ============================================================================
 
 const mixedFormSchema: FormSchema = {
-  id: "mixed-form",
-  title: "Project Configuration",
-  description: "Mix of standard and custom controls in a real-world form",
+  id: 'mixed-form',
+  title: 'Project Configuration',
+  description: 'Mix of standard and custom controls in a real-world form',
   layout: { columns: 2 },
   sections: [
     {
-      id: "project-info",
-      title: "Project Information",
+      id: 'project-info',
+      title: 'Project Information',
       fields: [
         {
-          type: "text",
-          name: "projectName",
-          label: "Project Name",
-          placeholder: "My Awesome Project",
+          type: 'text',
+          name: 'projectName',
+          label: 'Project Name',
+          placeholder: 'My Awesome Project',
           validation: { required: true },
           grid: { span: 2 },
         },
         {
-          type: "textarea",
-          name: "description",
-          label: "Description",
-          placeholder: "Describe your project...",
+          type: 'textarea',
+          name: 'description',
+          label: 'Description',
+          placeholder: 'Describe your project...',
           grid: { span: 2 },
         },
         {
-          type: "custom",
-          name: "brandColor",
-          label: "Brand Color",
-          component: "color-picker",
-          defaultValue: "#3b82f6",
+          type: 'custom',
+          name: 'brandColor',
+          label: 'Brand Color',
+          component: 'color-picker',
+          defaultValue: '#3b82f6',
         },
         {
-          type: "custom",
-          name: "priority",
-          label: "Priority",
-          component: "priority-selector",
+          type: 'custom',
+          name: 'priority',
+          label: 'Priority',
+          component: 'priority-selector',
           validation: { required: true },
         },
       ],
     },
     {
-      id: "settings",
-      title: "Settings",
+      id: 'settings',
+      title: 'Settings',
       fields: [
         {
-          type: "select",
-          name: "visibility",
-          label: "Visibility",
+          type: 'select',
+          name: 'visibility',
+          label: 'Visibility',
           options: [
-            { label: "Public", value: "public" },
-            { label: "Private", value: "private" },
-            { label: "Team Only", value: "team" },
+            { label: 'Public', value: 'public' },
+            { label: 'Private', value: 'private' },
+            { label: 'Team Only', value: 'team' },
           ],
         },
         {
-          type: "custom",
-          name: "importance",
-          label: "Importance Rating",
-          component: "star-rating",
+          type: 'custom',
+          name: 'importance',
+          label: 'Importance Rating',
+          component: 'star-rating',
           componentProps: { maxStars: 5, allowHalf: true },
         },
         {
-          type: "switch",
-          name: "notifications",
-          label: "Enable Notifications",
-          description: "Receive updates about this project",
+          type: 'switch',
+          name: 'notifications',
+          label: 'Enable Notifications',
+          description: 'Receive updates about this project',
           defaultValue: true,
         },
         {
-          type: "custom",
-          name: "contact",
-          label: "Contact Phone",
-          component: "phone-input",
+          type: 'custom',
+          name: 'contact',
+          label: 'Contact Phone',
+          component: 'phone-input',
         },
       ],
     },
@@ -1115,7 +1098,7 @@ export const MixedWithStandardFields: Story = {
     schema: mixedFormSchema,
     plugins: [customComponentsPlugin],
     onSubmit: async (data) => {
-      console.log("Project config:", data);
+      console.log('Project config:', data);
       alert(`Project created!\n\n${JSON.stringify(data, null, 2)}`);
     },
   },
@@ -1159,20 +1142,20 @@ function ContractTestComponent(props: CustomFieldComponentProps) {
 
         <div className="flex gap-2">
           <span className="text-muted-foreground">disabled:</span>
-          <span className={disabled ? "text-red-600" : "text-green-600"}>{String(disabled)}</span>
+          <span className={disabled ? 'text-red-600' : 'text-green-600'}>{String(disabled)}</span>
         </div>
 
         <div className="flex gap-2">
           <span className="text-muted-foreground">required:</span>
-          <span className={required ? "text-orange-600" : "text-green-600"}>
+          <span className={required ? 'text-orange-600' : 'text-green-600'}>
             {String(required)}
           </span>
         </div>
 
         <div className="flex gap-2">
           <span className="text-muted-foreground">error:</span>
-          <span className={error ? "text-red-600" : "text-muted-foreground"}>
-            {error || "undefined"}
+          <span className={error ? 'text-red-600' : 'text-muted-foreground'}>
+            {error || 'undefined'}
           </span>
         </div>
 
@@ -1194,7 +1177,7 @@ function ContractTestComponent(props: CustomFieldComponentProps) {
           Test Input (updates value):
         </Label>
         <Input
-          value={String(value || "")}
+          value={String(value || '')}
           onChange={(e) => onChange(e.target.value)}
           onBlur={onBlur}
           disabled={disabled}
@@ -1206,28 +1189,28 @@ function ContractTestComponent(props: CustomFieldComponentProps) {
 }
 
 const contractTestPlugin: FormPlugin = {
-  name: "contract-test",
+  name: 'contract-test',
   onFormInit: (context) => {
-    context.registerCustomComponent("contract-test", ContractTestComponent);
+    context.registerCustomComponent('contract-test', ContractTestComponent);
   },
 };
 
 const contractTestSchema: FormSchema = {
-  id: "contract-test",
-  title: "Contract Compliance Test",
-  description: "Verifies all CustomFieldComponentProps are passed correctly",
+  id: 'contract-test',
+  title: 'Contract Compliance Test',
+  description: 'Verifies all CustomFieldComponentProps are passed correctly',
   sections: [
     {
-      id: "test",
+      id: 'test',
       fields: [
         {
-          type: "custom",
-          name: "testField",
-          label: "Contract Test Field",
-          description: "This component displays all props it receives",
-          component: "contract-test",
+          type: 'custom',
+          name: 'testField',
+          label: 'Contract Test Field',
+          description: 'This component displays all props it receives',
+          component: 'contract-test',
           componentProps: {
-            customProp1: "hello",
+            customProp1: 'hello',
             customProp2: 42,
             customProp3: true,
           },
@@ -1235,8 +1218,8 @@ const contractTestSchema: FormSchema = {
             required: true,
             minLength: 3,
             messages: {
-              required: "This field is required",
-              minLength: "Minimum 3 characters",
+              required: 'This field is required',
+              minLength: 'Minimum 3 characters',
             },
           },
         },
@@ -1260,7 +1243,7 @@ export const ContractComplianceTest: Story = {
     schema: contractTestSchema,
     plugins: [contractTestPlugin],
     onSubmit: async (data) => {
-      console.log("Contract test data:", data);
+      console.log('Contract test data:', data);
     },
   },
 };

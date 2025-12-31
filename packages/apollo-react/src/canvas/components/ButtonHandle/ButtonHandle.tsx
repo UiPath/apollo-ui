@@ -1,9 +1,4 @@
-import {
-  memo,
-  useCallback,
-  useMemo,
-  useState,
-} from 'react';
+import { memo, useCallback, useMemo, useState } from 'react';
 
 import { AnimatePresence } from 'motion/react';
 
@@ -23,10 +18,7 @@ import {
   StyledNotch,
   StyledWrapper,
 } from './ButtonHandle.styles';
-import {
-  calculateGridAlignedHandlePositions,
-  pixelToPercent,
-} from './ButtonHandleStyleUtils';
+import { calculateGridAlignedHandlePositions, pixelToPercent } from './ButtonHandleStyleUtils';
 
 export interface HandleActionEvent {
   handleId: string;

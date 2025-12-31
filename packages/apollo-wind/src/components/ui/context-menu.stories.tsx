@@ -1,16 +1,16 @@
-import type { Meta } from "@storybook/react-vite";
+import type { Meta } from '@storybook/react-vite';
 import {
   ContextMenu,
   ContextMenuContent,
   ContextMenuItem,
   ContextMenuTrigger,
-} from "./context-menu";
-import { Row } from "./layout";
+} from './context-menu';
+import { Row } from './layout';
 
 const meta: Meta<typeof ContextMenu> = {
-  title: "Design System/Overlays/Context Menu",
+  title: 'Design System/Overlays/Context Menu',
   component: ContextMenu,
-  tags: ["autodocs"],
+  tags: ['autodocs'],
 };
 
 export default meta;

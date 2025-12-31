@@ -1,11 +1,11 @@
-import type { Meta } from "@storybook/react-vite";
-import { Separator } from "./separator";
-import { Row, Column } from "./layout";
+import type { Meta } from '@storybook/react-vite';
+import { Separator } from './separator';
+import { Row, Column } from './layout';
 
 const meta: Meta<typeof Separator> = {
-  title: "Design System/Layout/Separator",
+  title: 'Design System/Layout/Separator',
   component: Separator,
-  tags: ["autodocs"],
+  tags: ['autodocs'],
 };
 
 export default meta;

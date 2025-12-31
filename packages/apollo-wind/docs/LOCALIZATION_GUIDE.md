@@ -42,16 +42,16 @@ Components expose **props for all user-facing strings**, allowing you to provide
 
 #### Components with Localizable Props
 
-| Component | Props | Default Values |
-|-----------|-------|----------------|
-| `Combobox` | `placeholder`, `searchPlaceholder`, `emptyText` | "Select an option...", "Search...", "No results found." |
-| `MultiSelect` | `placeholder`, `emptyMessage`, `searchPlaceholder`, `clearAllText` | "Select items...", "No items found.", "Search...", "Clear All ({count})" |
-| `DataTable` | `searchPlaceholder`, `columnToggleText` | "Search...", "Columns" |
-| `Search` | `placeholder` | "Search..." |
-| `EmptyState` | `title`, `description`, `action.label`, `secondaryAction.label` | N/A (required/optional props) |
-| `Pagination` | Children text ("Previous", "Next") | Rendered via children |
-| `DatePicker` | `placeholder`, `calendarProps.locale` | "Pick a date", English |
-| `DateRangePicker` | `placeholder`, `calendarProps.locale` | "Pick a date range", English |
+| Component         | Props                                                              | Default Values                                                           |
+| ----------------- | ------------------------------------------------------------------ | ------------------------------------------------------------------------ |
+| `Combobox`        | `placeholder`, `searchPlaceholder`, `emptyText`                    | "Select an option...", "Search...", "No results found."                  |
+| `MultiSelect`     | `placeholder`, `emptyMessage`, `searchPlaceholder`, `clearAllText` | "Select items...", "No items found.", "Search...", "Clear All ({count})" |
+| `DataTable`       | `searchPlaceholder`, `columnToggleText`                            | "Search...", "Columns"                                                   |
+| `Search`          | `placeholder`                                                      | "Search..."                                                              |
+| `EmptyState`      | `title`, `description`, `action.label`, `secondaryAction.label`    | N/A (required/optional props)                                            |
+| `Pagination`      | Children text ("Previous", "Next")                                 | Rendered via children                                                    |
+| `DatePicker`      | `placeholder`, `calendarProps.locale`                              | "Pick a date", English                                                   |
+| `DateRangePicker` | `placeholder`, `calendarProps.locale`                              | "Pick a date range", English                                             |
 
 ---
 
@@ -86,11 +86,7 @@ function MyComponent() {
         searchPlaceholder={t('common.search')}
       />
 
-      <DataTable
-        columns={columns}
-        data={data}
-        searchPlaceholder={t('common.searchPlaceholder')}
-      />
+      <DataTable columns={columns} data={data} searchPlaceholder={t('common.searchPlaceholder')} />
     </>
   );
 }
@@ -103,11 +99,13 @@ function MyComponent() {
 ### Option 1: react-i18next (Most Popular)
 
 **Installation:**
+
 ```bash
 npm install react-i18next i18next
 ```
 
 **Setup:**
+
 ```tsx
 // i18n.ts
 import i18n from 'i18next';
@@ -124,7 +122,7 @@ const resources = {
       previous: 'Previous',
       next: 'Next',
       clearAll: 'Clear all',
-    }
+    },
   },
   es: {
     common: {
@@ -136,7 +134,7 @@ const resources = {
       previous: 'Anterior',
       next: 'Siguiente',
       clearAll: 'Limpiar todo',
-    }
+    },
   },
   fr: {
     common: {
@@ -148,24 +146,23 @@ const resources = {
       previous: 'Précédent',
       next: 'Suivant',
       clearAll: 'Tout effacer',
-    }
-  }
+    },
+  },
 };
 
-i18n
-  .use(initReactI18next)
-  .init({
-    resources,
-    lng: 'en',
-    interpolation: {
-      escapeValue: false,
-    },
-  });
+i18n.use(initReactI18next).init({
+  resources,
+  lng: 'en',
+  interpolation: {
+    escapeValue: false,
+  },
+});
 
 export default i18n;
 ```
 
 **Usage:**
+
 ```tsx
 import { useTranslation } from 'react-i18next';
 import { Combobox } from '@/components/ui';
@@ -191,11 +188,13 @@ function LocalizedCombobox({ items, value, onChange }) {
 ### Option 2: next-intl (Next.js)
 
 **Installation:**
+
 ```bash
 npm install next-intl
 ```
 
 **Setup (App Router):**
+
 ```tsx
 // app/[locale]/layout.tsx
 import { NextIntlClientProvider } from 'next-intl';
@@ -203,22 +202,19 @@ import { getMessages } from 'next-intl/server';
 
 export default async function LocaleLayout({
   children,
-  params: { locale }
+  params: { locale },
 }: {
   children: React.ReactNode;
   params: { locale: string };
 }) {
   const messages = await getMessages();
 
-  return (
-    <NextIntlClientProvider messages={messages}>
-      {children}
-    </NextIntlClientProvider>
-  );
+  return <NextIntlClientProvider messages={messages}>{children}</NextIntlClientProvider>;
 }
 ```
 
 **Messages (messages/en.json):**
+
 ```json
 {
   "components": {
@@ -245,6 +241,7 @@ export default async function LocaleLayout({
 ```
 
 **Usage:**
+
 ```tsx
 'use client';
 
@@ -272,11 +269,13 @@ function LocalizedCombobox({ items, value, onChange }) {
 ### Option 3: FormatJS (React-Intl)
 
 **Installation:**
+
 ```bash
 npm install react-intl
 ```
 
 **Setup:**
+
 ```tsx
 import { IntlProvider } from 'react-intl';
 
@@ -290,7 +289,7 @@ const messages = {
     'combobox.placeholder': 'Seleccionar una opción...',
     'combobox.search': 'Buscar...',
     'combobox.noResults': 'No se encontraron resultados.',
-  }
+  },
 };
 
 function App() {
@@ -305,6 +304,7 @@ function App() {
 ```
 
 **Usage:**
+
 ```tsx
 import { useIntl } from 'react-intl';
 import { Combobox } from '@/components/ui';
@@ -343,7 +343,7 @@ export const translations = {
     selectOption: 'Seleccionar una opción...',
     search: 'Buscar...',
     noResults: 'No se encontraron resultados.',
-  }
+  },
 };
 
 // i18n-context.tsx
@@ -354,11 +354,7 @@ const I18nContext = createContext({ locale: 'en', t: (key: string) => key });
 export function I18nProvider({ locale, children }) {
   const t = (key: string) => translations[locale]?.[key] || key;
 
-  return (
-    <I18nContext.Provider value={{ locale, t }}>
-      {children}
-    </I18nContext.Provider>
-  );
+  return <I18nContext.Provider value={{ locale, t }}>{children}</I18nContext.Provider>;
 }
 
 export const useI18n = () => useContext(I18nContext);
@@ -387,11 +383,13 @@ function LocalizedCombobox({ items, value, onChange }) {
 ### Combobox
 
 **Localizable Props:**
+
 - `placeholder` - Button text when no selection
 - `searchPlaceholder` - Search input placeholder
 - `emptyText` - Text shown when no results
 
 **Example:**
+
 ```tsx
 <Combobox
   items={items}
@@ -404,6 +402,7 @@ function LocalizedCombobox({ items, value, onChange }) {
 ```
 
 **Recommended Translation Keys:**
+
 ```json
 {
   "combobox": {
@@ -421,14 +420,17 @@ function LocalizedCombobox({ items, value, onChange }) {
 ### MultiSelect
 
 **Localizable Props:**
+
 - `placeholder` - Button text when nothing selected
 - `searchPlaceholder` - Search input placeholder
 - `emptyMessage` - Text shown when no options available
 
 **Additional Localizable Text:**
+
 - "Clear all ({count})" button (rendered internally)
 
 **Example:**
+
 ```tsx
 <MultiSelect
   options={options}
@@ -443,6 +445,7 @@ function LocalizedCombobox({ items, value, onChange }) {
 **Note**: The "Clear all" button text is hardcoded. To localize it, you'd need to fork the component or submit a PR to make it configurable.
 
 **Recommended Translation Keys:**
+
 ```json
 {
   "multiSelect": {
@@ -457,14 +460,17 @@ function LocalizedCombobox({ items, value, onChange }) {
 ### DataTable
 
 **Localizable Props:**
+
 - `searchPlaceholder` - Search input placeholder
 
 **Additional Localizable Elements:**
+
 - Column headers (via `columns` prop)
 - "Columns" dropdown text (hardcoded)
 - "Previous" / "Next" pagination (rendered via children)
 
 **Example:**
+
 ```tsx
 const columns = [
   {
@@ -477,14 +483,11 @@ const columns = [
   },
 ];
 
-<DataTable
-  columns={columns}
-  data={data}
-  searchPlaceholder={t('common.search')}
-/>
+<DataTable columns={columns} data={data} searchPlaceholder={t('common.search')} />;
 ```
 
 **Recommended Translation Keys:**
+
 ```json
 {
   "table": {
@@ -504,6 +507,7 @@ const columns = [
 Uses `react-day-picker` internally, which supports localization via the `locale` prop.
 
 **Example:**
+
 ```tsx
 import { fr } from 'date-fns/locale';
 import { DatePicker } from '@/components/ui';
@@ -513,22 +517,18 @@ import { DatePicker } from '@/components/ui';
   onValueChange={setDate}
   // Pass locale to underlying Calendar component
   calendarProps={{ locale: fr }}
-/>
+/>;
 ```
 
 **Note**: Currently DatePicker doesn't expose all Calendar props. You may need to modify the component to pass through `locale`.
 
 **Workaround**: Use Calendar directly:
+
 ```tsx
 import { Calendar } from '@/components/ui';
 import { fr } from 'date-fns/locale';
 
-<Calendar
-  mode="single"
-  selected={date}
-  onSelect={setDate}
-  locale={fr}
-/>
+<Calendar mode="single" selected={date} onSelect={setDate} locale={fr} />;
 ```
 
 ---
@@ -536,12 +536,14 @@ import { fr } from 'date-fns/locale';
 ### EmptyState
 
 **Localizable Props:**
+
 - `title` - Main heading (required)
 - `description` - Subtext (optional)
 - `action.label` - Primary button text
 - `secondaryAction.label` - Secondary button text
 
 **Example:**
+
 ```tsx
 <EmptyState
   icon={<Inbox className="h-12 w-12" />}
@@ -559,6 +561,7 @@ import { fr } from 'date-fns/locale';
 ```
 
 **Recommended Translation Keys:**
+
 ```json
 {
   "emptyState": {
@@ -581,6 +584,7 @@ import { fr } from 'date-fns/locale';
 Pagination components render text via children, so you control all text:
 
 **Example:**
+
 ```tsx
 import { useTranslation } from 'react-i18next';
 import {
@@ -606,12 +610,9 @@ function LocalizedPagination({ currentPage, totalPages, onPageChange }) {
         </PaginationItem>
 
         {/* Page numbers */}
-        {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
           <PaginationItem key={page}>
-            <PaginationLink
-              onClick={() => onPageChange(page)}
-              isActive={page === currentPage}
-            >
+            <PaginationLink onClick={() => onPageChange(page)} isActive={page === currentPage}>
               {page}
             </PaginationLink>
           </PaginationItem>
@@ -629,6 +630,7 @@ function LocalizedPagination({ currentPage, totalPages, onPageChange }) {
 ```
 
 **Recommended Translation Keys:**
+
 ```json
 {
   "pagination": {
@@ -643,15 +645,13 @@ function LocalizedPagination({ currentPage, totalPages, onPageChange }) {
 ### Search
 
 **Localizable Props:**
+
 - `placeholder` - Input placeholder text
 
 **Example:**
+
 ```tsx
-<Search
-  placeholder={t('common.search')}
-  value={searchValue}
-  onChange={setSearchValue}
-/>
+<Search placeholder={t('common.search')} value={searchValue} onChange={setSearchValue} />
 ```
 
 ---
@@ -661,6 +661,7 @@ function LocalizedPagination({ currentPage, totalPages, onPageChange }) {
 These components render your content, so you control all text:
 
 **Example:**
+
 ```tsx
 <Dialog open={open} onOpenChange={setOpen}>
   <DialogContent>
@@ -705,7 +706,9 @@ Wrap components with localization logic once, reuse everywhere:
 import { useTranslation } from 'react-i18next';
 import { Combobox, ComboboxProps } from '@/components/ui';
 
-export function LocalizedCombobox(props: Omit<ComboboxProps, 'placeholder' | 'searchPlaceholder' | 'emptyText'>) {
+export function LocalizedCombobox(
+  props: Omit<ComboboxProps, 'placeholder' | 'searchPlaceholder' | 'emptyText'>,
+) {
   const { t } = useTranslation('common');
 
   return (
@@ -719,7 +722,7 @@ export function LocalizedCombobox(props: Omit<ComboboxProps, 'placeholder' | 'se
 }
 
 // Usage - no translation needed!
-<LocalizedCombobox items={items} value={value} onValueChange={setValue} />
+<LocalizedCombobox items={items} value={value} onValueChange={setValue} />;
 ```
 
 ### 2. Organize Translation Keys by Component
@@ -777,9 +780,7 @@ Many components use "Search..." - define it once:
 For Arabic, Hebrew, etc., use CSS direction:
 
 ```tsx
-<html dir={locale === 'ar' || locale === 'he' ? 'rtl' : 'ltr'}>
-  {/* Your app */}
-</html>
+<html dir={locale === 'ar' || locale === 'he' ? 'rtl' : 'ltr'}>{/* Your app */}</html>
 ```
 
 Tailwind supports RTL automatically with utility classes like `rtl:text-right`.
@@ -828,6 +829,7 @@ dateFormatter.format(new Date()); // "January 15, 2024" (en) or "15 janvier 2024
 ### 7. Test with Multiple Locales
 
 Always test your app in at least 2-3 languages:
+
 - English (baseline)
 - A language with longer text (German, Finnish)
 - An RTL language (Arabic, Hebrew)
@@ -899,7 +901,7 @@ export default function UsersPage() {
   const handleDelete = async () => {
     try {
       await deleteUser(selectedUser.id);
-      setUsers(users.filter(u => u.id !== selectedUser.id));
+      setUsers(users.filter((u) => u.id !== selectedUser.id));
       toast.success(t('users:toast.deleteSuccess'));
       setShowDeleteDialog(false);
     } catch (error) {
@@ -915,7 +917,9 @@ export default function UsersPage() {
         description={t('users:empty.description')}
         action={{
           label: t('users:empty.action'),
-          onClick: () => {/* navigate to create */},
+          onClick: () => {
+            /* navigate to create */
+          },
         }}
       />
     );
@@ -923,11 +927,7 @@ export default function UsersPage() {
 
   return (
     <>
-      <DataTable
-        columns={columns}
-        data={users}
-        searchPlaceholder={t('common:search')}
-      />
+      <DataTable columns={columns} data={users} searchPlaceholder={t('common:search')} />
 
       <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <DialogContent>
@@ -938,10 +938,7 @@ export default function UsersPage() {
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setShowDeleteDialog(false)}
-            >
+            <Button variant="outline" onClick={() => setShowDeleteDialog(false)}>
               {t('common:cancel')}
             </Button>
             <Button variant="destructive" onClick={handleDelete}>
@@ -1005,11 +1002,11 @@ export default function UsersPage() {
 
 ### Components Requiring Localization
 
-| Priority | Components |
-|----------|-----------|
-| **High** | Combobox, MultiSelect, DataTable, Search, EmptyState |
-| **Medium** | DatePicker, Pagination, Dialogs, Alerts |
-| **Low** | All other components (text via children) |
+| Priority   | Components                                           |
+| ---------- | ---------------------------------------------------- |
+| **High**   | Combobox, MultiSelect, DataTable, Search, EmptyState |
+| **Medium** | DatePicker, Pagination, Dialogs, Alerts              |
+| **Low**    | All other components (text via children)             |
 
 ### Recommended Next Steps
 
@@ -1026,6 +1023,7 @@ export default function UsersPage() {
 If you find components that should expose additional props for localization, please open an issue or PR!
 
 Examples of potential improvements:
+
 - MultiSelect "Clear all" button text
 - DataTable "Columns" dropdown text
 - DatePicker format strings

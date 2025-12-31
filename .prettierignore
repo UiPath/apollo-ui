@@ -24,3 +24,6 @@ playwright-report
 # Cache
 .cache
 .turbo
+
+# Generated files
+packages/apollo-react/src/icons

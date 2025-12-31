@@ -1,24 +1,9 @@
 import * as React from 'react';
 
-import {
-  Blocks,
-  Bug,
-  FileCode,
-  FileJson,
-  Files,
-  GitBranch,
-  Search,
-  Settings,
-} from 'lucide-react';
+import { Blocks, Bug, FileCode, FileJson, Files, GitBranch, Search, Settings } from 'lucide-react';
 
-import {
-  Column,
-  Row,
-} from '@/components/ui/layout';
-import type {
-  Meta,
-  StoryObj,
-} from '@storybook/react-vite';
+import { Column, Row } from '@/components/ui/layout';
+import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import {
   Shell,
@@ -37,7 +22,7 @@ import {
 } from './vscode-example';
 
 const meta = {
-  title: "Examples/VSCode",
+  title: 'Examples/VSCode',
   component: Shell,
 } satisfies Meta<typeof Shell>;
 
@@ -46,79 +31,79 @@ type Story = StoryObj<typeof meta>;
 
 const sampleFiles = [
   {
-    name: "src",
-    type: "folder" as const,
+    name: 'src',
+    type: 'folder' as const,
     children: [
       {
-        name: "components",
-        type: "folder" as const,
+        name: 'components',
+        type: 'folder' as const,
         children: [
           {
-            name: "Button.tsx",
-            type: "file" as const,
+            name: 'Button.tsx',
+            type: 'file' as const,
             icon: <FileCode className="h-4 w-4 text-blue-500" />,
           },
           {
-            name: "Input.tsx",
-            type: "file" as const,
+            name: 'Input.tsx',
+            type: 'file' as const,
             icon: <FileCode className="h-4 w-4 text-blue-500" />,
           },
           {
-            name: "Shell.tsx",
-            type: "file" as const,
+            name: 'Shell.tsx',
+            type: 'file' as const,
             icon: <FileCode className="h-4 w-4 text-blue-500" />,
           },
         ],
       },
       {
-        name: "hooks",
-        type: "folder" as const,
+        name: 'hooks',
+        type: 'folder' as const,
         children: [
           {
-            name: "useAuth.ts",
-            type: "file" as const,
+            name: 'useAuth.ts',
+            type: 'file' as const,
             icon: <FileCode className="h-4 w-4 text-blue-500" />,
           },
           {
-            name: "useTheme.ts",
-            type: "file" as const,
+            name: 'useTheme.ts',
+            type: 'file' as const,
             icon: <FileCode className="h-4 w-4 text-blue-500" />,
           },
         ],
       },
       {
-        name: "App.tsx",
-        type: "file" as const,
+        name: 'App.tsx',
+        type: 'file' as const,
         icon: <FileCode className="h-4 w-4 text-blue-500" />,
       },
       {
-        name: "index.tsx",
-        type: "file" as const,
+        name: 'index.tsx',
+        type: 'file' as const,
         icon: <FileCode className="h-4 w-4 text-blue-500" />,
       },
     ],
   },
   {
-    name: "package.json",
-    type: "file" as const,
+    name: 'package.json',
+    type: 'file' as const,
     icon: <FileJson className="h-4 w-4 text-yellow-500" />,
   },
   {
-    name: "tsconfig.json",
-    type: "file" as const,
+    name: 'tsconfig.json',
+    type: 'file' as const,
     icon: <FileJson className="h-4 w-4 text-yellow-500" />,
   },
-  { name: "README.md", type: "file" as const },
+  { name: 'README.md', type: 'file' as const },
 ];
 
 function VSCodeShellDemo() {
-  const [activeView, setActiveView] = React.useState("files");
-  const [selectedFile, setSelectedFile] = React.useState("Shell.tsx");
+  const [activeView, setActiveView] = React.useState('files');
+  const [selectedFile, setSelectedFile] = React.useState('Shell.tsx');
   const [tabs, setTabs] = React.useState([
-    { id: "shell", title: "Shell.tsx", icon: <FileCode className="h-4 w-4 text-blue-500" /> },
-    { id: "button", title: "Button.tsx", icon: <FileCode className="h-4 w-4 text-blue-500" /> },
+    { id: 'shell', title: 'Shell.tsx', icon: <FileCode className="h-4 w-4 text-blue-500" /> },
+    { id: 'button', title: 'Button.tsx', icon: <FileCode className="h-4 w-4 text-blue-500" /> },
   ]);
-  const [activeTab, setActiveTab] = React.useState("shell");
+  const [activeTab, setActiveTab] = React.useState('shell');
   const [sidebarCollapsed, setSidebarCollapsed] = React.useState(false);
 
   const handleCloseTab = (id: string) => {
@@ -135,45 +120,45 @@ function VSCodeShellDemo() {
         <ShellActivityBar>
           <ShellActivityBarItem
             icon={<Files className="h-5 w-5" />}
-            active={activeView === "files"}
+            active={activeView === 'files'}
             onClick={() => {
-              setActiveView("files");
+              setActiveView('files');
               setSidebarCollapsed(false);
             }}
             tooltip="Explorer"
           />
           <ShellActivityBarItem
             icon={<Search className="h-5 w-5" />}
-            active={activeView === "search"}
+            active={activeView === 'search'}
             onClick={() => {
-              setActiveView("search");
+              setActiveView('search');
               setSidebarCollapsed(false);
             }}
             tooltip="Search"
           />
           <ShellActivityBarItem
             icon={<GitBranch className="h-5 w-5" />}
-            active={activeView === "git"}
+            active={activeView === 'git'}
             onClick={() => {
-              setActiveView("git");
+              setActiveView('git');
               setSidebarCollapsed(false);
             }}
             tooltip="Source Control"
           />
           <ShellActivityBarItem
             icon={<Bug className="h-5 w-5" />}
-            active={activeView === "debug"}
+            active={activeView === 'debug'}
             onClick={() => {
-              setActiveView("debug");
+              setActiveView('debug');
               setSidebarCollapsed(false);
             }}
             tooltip="Run and Debug"
           />
           <ShellActivityBarItem
             icon={<Blocks className="h-5 w-5" />}
-            active={activeView === "extensions"}
+            active={activeView === 'extensions'}
             onClick={() => {
-              setActiveView("extensions");
+              setActiveView('extensions');
               setSidebarCollapsed(false);
             }}
             tooltip="Extensions"

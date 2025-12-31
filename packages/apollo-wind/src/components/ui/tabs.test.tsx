@@ -1,10 +1,10 @@
-import { render, screen, waitFor } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
-import { axe } from "jest-axe";
-import { describe, expect, it, vi } from "vitest";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "./tabs";
+import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { axe } from 'jest-axe';
+import { describe, expect, it, vi } from 'vitest';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from './tabs';
 
-describe("Tabs", () => {
+describe('Tabs', () => {
   const TabsExample = ({
     onValueChange = vi.fn(),
   }: {
@@ -22,114 +22,114 @@ describe("Tabs", () => {
     </Tabs>
   );
 
-  it("renders without crashing", () => {
+  it('renders without crashing', () => {
     render(<TabsExample />);
-    expect(screen.getByRole("tablist")).toBeInTheDocument();
+    expect(screen.getByRole('tablist')).toBeInTheDocument();
   });
 
-  it("has no accessibility violations", async () => {
+  it('has no accessibility violations', async () => {
     const { container } = render(<TabsExample />);
     const results = await axe(container);
     expect(results).toHaveNoViolations();
   });
 
-  it("renders all tab triggers", () => {
+  it('renders all tab triggers', () => {
     render(<TabsExample />);
-    expect(screen.getByRole("tab", { name: "Tab 1" })).toBeInTheDocument();
-    expect(screen.getByRole("tab", { name: "Tab 2" })).toBeInTheDocument();
-    expect(screen.getByRole("tab", { name: "Tab 3" })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'Tab 1' })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'Tab 2' })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'Tab 3' })).toBeInTheDocument();
   });
 
-  it("displays default active tab content", () => {
+  it('displays default active tab content', () => {
     render(<TabsExample />);
-    expect(screen.getByText("Content for Tab 1")).toBeInTheDocument();
+    expect(screen.getByText('Content for Tab 1')).toBeInTheDocument();
   });
 
-  it("does not display inactive tab content", () => {
+  it('does not display inactive tab content', () => {
     render(<TabsExample />);
-    expect(screen.queryByText("Content for Tab 2")).not.toBeInTheDocument();
-    expect(screen.queryByText("Content for Tab 3")).not.toBeInTheDocument();
+    expect(screen.queryByText('Content for Tab 2')).not.toBeInTheDocument();
+    expect(screen.queryByText('Content for Tab 3')).not.toBeInTheDocument();
   });
 
-  it("switches tabs when clicked", async () => {
+  it('switches tabs when clicked', async () => {
     const user = userEvent.setup();
     const handleValueChange = vi.fn();
     render(<TabsExample onValueChange={handleValueChange} />);
 
-    const tab2 = screen.getByRole("tab", { name: "Tab 2" });
+    const tab2 = screen.getByRole('tab', { name: 'Tab 2' });
     await user.click(tab2);
 
-    expect(handleValueChange).toHaveBeenCalledWith("tab2");
-    expect(screen.getByText("Content for Tab 2")).toBeInTheDocument();
-    expect(screen.queryByText("Content for Tab 1")).not.toBeInTheDocument();
+    expect(handleValueChange).toHaveBeenCalledWith('tab2');
+    expect(screen.getByText('Content for Tab 2')).toBeInTheDocument();
+    expect(screen.queryByText('Content for Tab 1')).not.toBeInTheDocument();
   });
 
-  it("supports keyboard navigation with Arrow Right", async () => {
+  it('supports keyboard navigation with Arrow Right', async () => {
     const user = userEvent.setup();
     render(<TabsExample />);
 
-    const tab1 = screen.getByRole("tab", { name: "Tab 1" });
+    const tab1 = screen.getByRole('tab', { name: 'Tab 1' });
     await user.click(tab1);
-    await user.keyboard("{ArrowRight}");
+    await user.keyboard('{ArrowRight}');
 
     await waitFor(() => {
-      const tab2 = screen.getByRole("tab", { name: "Tab 2" });
+      const tab2 = screen.getByRole('tab', { name: 'Tab 2' });
       expect(tab2).toHaveFocus();
     });
   });
 
-  it("supports keyboard navigation with Arrow Left", async () => {
+  it('supports keyboard navigation with Arrow Left', async () => {
     const user = userEvent.setup();
     render(<TabsExample />);
 
-    const tab2 = screen.getByRole("tab", { name: "Tab 2" });
+    const tab2 = screen.getByRole('tab', { name: 'Tab 2' });
     await user.click(tab2);
-    await user.keyboard("{ArrowLeft}");
+    await user.keyboard('{ArrowLeft}');
 
     await waitFor(() => {
-      const tab1 = screen.getByRole("tab", { name: "Tab 1" });
+      const tab1 = screen.getByRole('tab', { name: 'Tab 1' });
       expect(tab1).toHaveFocus();
     });
   });
 
-  it("supports keyboard navigation with Home key", async () => {
+  it('supports keyboard navigation with Home key', async () => {
     const user = userEvent.setup();
     render(<TabsExample />);
 
-    const tab3 = screen.getByRole("tab", { name: "Tab 3" });
+    const tab3 = screen.getByRole('tab', { name: 'Tab 3' });
     await user.click(tab3);
-    await user.keyboard("{Home}");
+    await user.keyboard('{Home}');
 
     await waitFor(() => {
-      const tab1 = screen.getByRole("tab", { name: "Tab 1" });
+      const tab1 = screen.getByRole('tab', { name: 'Tab 1' });
       expect(tab1).toHaveFocus();
     });
   });
 
-  it("supports keyboard navigation with End key", async () => {
+  it('supports keyboard navigation with End key', async () => {
     const user = userEvent.setup();
     render(<TabsExample />);
 
-    const tab1 = screen.getByRole("tab", { name: "Tab 1" });
+    const tab1 = screen.getByRole('tab', { name: 'Tab 1' });
     await user.click(tab1);
-    await user.keyboard("{End}");
+    await user.keyboard('{End}');
 
     await waitFor(() => {
-      const tab3 = screen.getByRole("tab", { name: "Tab 3" });
+      const tab3 = screen.getByRole('tab', { name: 'Tab 3' });
       expect(tab3).toHaveFocus();
     });
   });
 
-  it("indicates active tab with aria-selected", () => {
+  it('indicates active tab with aria-selected', () => {
     render(<TabsExample />);
-    const tab1 = screen.getByRole("tab", { name: "Tab 1" });
-    const tab2 = screen.getByRole("tab", { name: "Tab 2" });
+    const tab1 = screen.getByRole('tab', { name: 'Tab 1' });
+    const tab2 = screen.getByRole('tab', { name: 'Tab 2' });
 
-    expect(tab1).toHaveAttribute("aria-selected", "true");
-    expect(tab2).toHaveAttribute("aria-selected", "false");
+    expect(tab1).toHaveAttribute('aria-selected', 'true');
+    expect(tab2).toHaveAttribute('aria-selected', 'false');
   });
 
-  it("supports disabled tabs", async () => {
+  it('supports disabled tabs', async () => {
     const user = userEvent.setup();
     render(
       <Tabs defaultValue="tab1">
@@ -144,14 +144,14 @@ describe("Tabs", () => {
       </Tabs>,
     );
 
-    const tab2 = screen.getByRole("tab", { name: "Tab 2" });
+    const tab2 = screen.getByRole('tab', { name: 'Tab 2' });
     expect(tab2).toBeDisabled();
 
     await user.click(tab2);
-    expect(screen.queryByText("Content 2")).not.toBeInTheDocument();
+    expect(screen.queryByText('Content 2')).not.toBeInTheDocument();
   });
 
-  it("supports controlled mode", () => {
+  it('supports controlled mode', () => {
     const handleValueChange = vi.fn();
     const { rerender } = render(
       <Tabs value="tab1" onValueChange={handleValueChange}>
@@ -164,7 +164,7 @@ describe("Tabs", () => {
       </Tabs>,
     );
 
-    expect(screen.getByText("Content 1")).toBeInTheDocument();
+    expect(screen.getByText('Content 1')).toBeInTheDocument();
 
     rerender(
       <Tabs value="tab2" onValueChange={handleValueChange}>
@@ -177,10 +177,10 @@ describe("Tabs", () => {
       </Tabs>,
     );
 
-    expect(screen.getByText("Content 2")).toBeInTheDocument();
+    expect(screen.getByText('Content 2')).toBeInTheDocument();
   });
 
-  it("applies custom className to TabsList", () => {
+  it('applies custom className to TabsList', () => {
     render(
       <Tabs defaultValue="tab1">
         <TabsList className="custom-list" aria-label="Tabs">
@@ -190,11 +190,11 @@ describe("Tabs", () => {
       </Tabs>,
     );
 
-    const tablist = screen.getByRole("tablist");
-    expect(tablist).toHaveClass("custom-list");
+    const tablist = screen.getByRole('tablist');
+    expect(tablist).toHaveClass('custom-list');
   });
 
-  it("applies custom className to TabsTrigger", () => {
+  it('applies custom className to TabsTrigger', () => {
     render(
       <Tabs defaultValue="tab1">
         <TabsList aria-label="Tabs">
@@ -206,11 +206,11 @@ describe("Tabs", () => {
       </Tabs>,
     );
 
-    const tab = screen.getByRole("tab", { name: "Tab 1" });
-    expect(tab).toHaveClass("custom-trigger");
+    const tab = screen.getByRole('tab', { name: 'Tab 1' });
+    expect(tab).toHaveClass('custom-trigger');
   });
 
-  it("applies custom className to TabsContent", () => {
+  it('applies custom className to TabsContent', () => {
     const { container } = render(
       <Tabs defaultValue="tab1">
         <TabsList aria-label="Tabs">
@@ -222,19 +222,19 @@ describe("Tabs", () => {
       </Tabs>,
     );
 
-    const content = container.querySelector(".custom-content");
+    const content = container.querySelector('.custom-content');
     expect(content).toBeInTheDocument();
   });
 
-  it("has proper ARIA attributes on tablist", () => {
+  it('has proper ARIA attributes on tablist', () => {
     render(<TabsExample />);
-    const tablist = screen.getByRole("tablist");
-    expect(tablist).toHaveAttribute("aria-label", "Example tabs");
+    const tablist = screen.getByRole('tablist');
+    expect(tablist).toHaveAttribute('aria-label', 'Example tabs');
   });
 
-  it("has proper ARIA controls attributes", () => {
+  it('has proper ARIA controls attributes', () => {
     render(<TabsExample />);
-    const tab1 = screen.getByRole("tab", { name: "Tab 1" });
-    expect(tab1).toHaveAttribute("aria-controls");
+    const tab1 = screen.getByRole('tab', { name: 'Tab 1' });
+    expect(tab1).toHaveAttribute('aria-controls');
   });
 });

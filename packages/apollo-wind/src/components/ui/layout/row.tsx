@@ -1,7 +1,7 @@
-import * as React from "react";
-import { cn } from "@/lib";
-import type { LayoutProps } from "./types";
-import { buildLayoutStyles } from "./utils";
+import * as React from 'react';
+import { cn } from '@/lib';
+import type { LayoutProps } from './types';
+import { buildLayoutStyles } from './utils';
 
 export interface RowProps extends LayoutProps {
   /**
@@ -27,7 +27,7 @@ const Row = React.forwardRef<HTMLDivElement, RowProps>(
       children,
       className,
       style,
-      direction = "row",
+      direction = 'row',
       align,
       justify,
       wrap,
@@ -102,6 +102,6 @@ const Row = React.forwardRef<HTMLDivElement, RowProps>(
   },
 );
 
-Row.displayName = "Row";
+Row.displayName = 'Row';
 
 export { Row };

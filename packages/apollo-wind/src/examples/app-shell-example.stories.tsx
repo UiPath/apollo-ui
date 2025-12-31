@@ -1,11 +1,11 @@
-import type { Meta, StoryObj } from "@storybook/react-vite";
-import { AppShellExample } from "./app-shell-example";
+import type { Meta, StoryObj } from '@storybook/react-vite';
+import { AppShellExample } from './app-shell-example';
 
 const meta = {
-  title: "Examples/App Shell",
+  title: 'Examples/App Shell',
   component: AppShellExample,
   parameters: {
-    layout: "fullscreen",
+    layout: 'fullscreen',
   },
 } satisfies Meta<typeof AppShellExample>;
 

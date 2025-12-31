@@ -1,27 +1,27 @@
-import type { Meta } from "@storybook/react-vite";
-import * as React from "react";
-import { MultiSelect } from "./multi-select";
+import type { Meta } from '@storybook/react-vite';
+import * as React from 'react';
+import { MultiSelect } from './multi-select';
 
 const meta = {
-  title: "Design System/Core/Multi Select",
+  title: 'Design System/Core/Multi Select',
   component: MultiSelect,
   parameters: {
-    layout: "centered",
+    layout: 'centered',
   },
-  tags: ["autodocs"],
+  tags: ['autodocs'],
 } satisfies Meta<typeof MultiSelect>;
 
 export default meta;
 
 const frameworkOptions = [
-  { label: "React", value: "react" },
-  { label: "Vue", value: "vue" },
-  { label: "Angular", value: "angular" },
-  { label: "Svelte", value: "svelte" },
-  { label: "Next.js", value: "nextjs" },
-  { label: "Nuxt", value: "nuxt" },
-  { label: "Remix", value: "remix" },
-  { label: "Astro", value: "astro" },
+  { label: 'React', value: 'react' },
+  { label: 'Vue', value: 'vue' },
+  { label: 'Angular', value: 'angular' },
+  { label: 'Svelte', value: 'svelte' },
+  { label: 'Next.js', value: 'nextjs' },
+  { label: 'Nuxt', value: 'nuxt' },
+  { label: 'Remix', value: 'remix' },
+  { label: 'Astro', value: 'astro' },
 ];
 
 export const Default = {
@@ -44,7 +44,7 @@ export const Default = {
 export const WithPreselected = {
   args: {},
   render: () => {
-    const [selected, setSelected] = React.useState<string[]>(["react", "vue", "svelte"]);
+    const [selected, setSelected] = React.useState<string[]>(['react', 'vue', 'svelte']);
     return (
       <div className="w-[400px]">
         <MultiSelect
@@ -61,7 +61,7 @@ export const WithPreselected = {
 export const WithMaxSelected = {
   args: {},
   render: () => {
-    const [selected, setSelected] = React.useState<string[]>(["react"]);
+    const [selected, setSelected] = React.useState<string[]>(['react']);
     return (
       <div className="w-[400px] space-y-2">
         <MultiSelect
@@ -80,7 +80,7 @@ export const WithMaxSelected = {
 export const Disabled = {
   args: {},
   render: () => {
-    const [selected, setSelected] = React.useState<string[]>(["react", "vue"]);
+    const [selected, setSelected] = React.useState<string[]>(['react', 'vue']);
     return (
       <div className="w-[400px]">
         <MultiSelect
@@ -119,14 +119,14 @@ export const SelectUsers = {
   render: () => {
     const [selected, setSelected] = React.useState<string[]>([]);
     const users = [
-      { label: "John Doe", value: "john" },
-      { label: "Jane Smith", value: "jane" },
-      { label: "Bob Johnson", value: "bob" },
-      { label: "Alice Williams", value: "alice" },
-      { label: "Charlie Brown", value: "charlie" },
-      { label: "Diana Prince", value: "diana" },
-      { label: "Eve Anderson", value: "eve" },
-      { label: "Frank Miller", value: "frank" },
+      { label: 'John Doe', value: 'john' },
+      { label: 'Jane Smith', value: 'jane' },
+      { label: 'Bob Johnson', value: 'bob' },
+      { label: 'Alice Williams', value: 'alice' },
+      { label: 'Charlie Brown', value: 'charlie' },
+      { label: 'Diana Prince', value: 'diana' },
+      { label: 'Eve Anderson', value: 'eve' },
+      { label: 'Frank Miller', value: 'frank' },
     ];
 
     return (
@@ -142,7 +142,7 @@ export const SelectUsers = {
           <div className="rounded-lg border p-4">
             <p className="mb-2 text-sm font-medium">
               Selected {selected.length} team member
-              {selected.length === 1 ? "" : "s"}
+              {selected.length === 1 ? '' : 's'}
             </p>
             <ul className="space-y-1 text-sm text-muted-foreground">
               {selected.map((value) => {
@@ -162,16 +162,16 @@ export const SelectCategories = {
   render: () => {
     const [selected, setSelected] = React.useState<string[]>([]);
     const categories = [
-      { label: "Technology", value: "tech" },
-      { label: "Business", value: "business" },
-      { label: "Science", value: "science" },
-      { label: "Sports", value: "sports" },
-      { label: "Entertainment", value: "entertainment" },
-      { label: "Politics", value: "politics" },
-      { label: "Health", value: "health" },
-      { label: "Education", value: "education" },
-      { label: "Travel", value: "travel" },
-      { label: "Food", value: "food" },
+      { label: 'Technology', value: 'tech' },
+      { label: 'Business', value: 'business' },
+      { label: 'Science', value: 'science' },
+      { label: 'Sports', value: 'sports' },
+      { label: 'Entertainment', value: 'entertainment' },
+      { label: 'Politics', value: 'politics' },
+      { label: 'Health', value: 'health' },
+      { label: 'Education', value: 'education' },
+      { label: 'Travel', value: 'travel' },
+      { label: 'Food', value: 'food' },
     ];
 
     return (
@@ -194,18 +194,18 @@ export const Interactive = {
     const [searchResults, setSearchResults] = React.useState<string[]>([]);
 
     const skills = [
-      { label: "JavaScript", value: "javascript" },
-      { label: "TypeScript", value: "typescript" },
-      { label: "React", value: "react" },
-      { label: "Vue", value: "vue" },
-      { label: "Angular", value: "angular" },
-      { label: "Node.js", value: "nodejs" },
-      { label: "Python", value: "python" },
-      { label: "Java", value: "java" },
-      { label: "C++", value: "cpp" },
-      { label: "Go", value: "go" },
-      { label: "Rust", value: "rust" },
-      { label: "SQL", value: "sql" },
+      { label: 'JavaScript', value: 'javascript' },
+      { label: 'TypeScript', value: 'typescript' },
+      { label: 'React', value: 'react' },
+      { label: 'Vue', value: 'vue' },
+      { label: 'Angular', value: 'angular' },
+      { label: 'Node.js', value: 'nodejs' },
+      { label: 'Python', value: 'python' },
+      { label: 'Java', value: 'java' },
+      { label: 'C++', value: 'cpp' },
+      { label: 'Go', value: 'go' },
+      { label: 'Rust', value: 'rust' },
+      { label: 'SQL', value: 'sql' },
     ];
 
     React.useEffect(() => {
@@ -230,9 +230,9 @@ export const Interactive = {
         {selected.length > 0 && (
           <div className="rounded-lg border p-4 space-y-2">
             <p className="text-sm font-medium">Your Profile</p>
-            <p className="text-sm text-muted-foreground">Skills: {searchResults.join(", ")}</p>
+            <p className="text-sm text-muted-foreground">Skills: {searchResults.join(', ')}</p>
             <p className="text-xs text-muted-foreground">
-              {selected.length} skill{selected.length === 1 ? "" : "s"} selected
+              {selected.length} skill{selected.length === 1 ? '' : 's'} selected
             </p>
           </div>
         )}

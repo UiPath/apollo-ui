@@ -6,7 +6,7 @@ import { Box } from '@mui/material';
 import token, { FontVariantToken } from '@uipath/apollo-core';
 
 import { ApTypography } from '../../../../ap-typography';
-import { ApIcon } from '../../common/icon';
+import { ApIcon } from '@uipath/apollo-react/material/components';
 import { AutopilotChatTooltip } from '../../common/tooltip';
 import { useChatService } from '../../../providers/chat-service.provider';
 import { useChatState } from '../../../providers/chat-state-provider';

@@ -1,4 +1,4 @@
-import styled from "styled-components";
+import styled from 'styled-components';
 
 export const ShowcaseContainer = styled.div`
   display: flex;
@@ -146,7 +146,7 @@ export const Checkbox = styled.label`
   font-size: 14px;
   color: var(--color-foreground-emp);
 
-  input[type="checkbox"] {
+  input[type='checkbox'] {
     cursor: pointer;
   }
 `;

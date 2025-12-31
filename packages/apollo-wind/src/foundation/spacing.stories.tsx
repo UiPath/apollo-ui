@@ -1,10 +1,10 @@
-import type { Meta, StoryObj } from "@storybook/react-vite";
-import { Badge } from "@/components/ui/badge";
+import type { Meta, StoryObj } from '@storybook/react-vite';
+import { Badge } from '@/components/ui/badge';
 
 const meta = {
-  title: "Design Foundation/Spacing",
+  title: 'Design Foundation/Spacing',
   parameters: {
-    layout: "fullscreen",
+    layout: 'fullscreen',
   },
 } satisfies Meta;
 
@@ -12,41 +12,41 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 const SPACING_SCALE = [
-  { name: "0", value: "0px", class: "0" },
-  { name: "px", value: "1px", class: "px" },
-  { name: "0.5", value: "2px", class: "0.5" },
-  { name: "1", value: "4px", class: "1" },
-  { name: "1.5", value: "6px", class: "1.5" },
-  { name: "2", value: "8px", class: "2" },
-  { name: "2.5", value: "10px", class: "2.5" },
-  { name: "3", value: "12px", class: "3" },
-  { name: "3.5", value: "14px", class: "3.5" },
-  { name: "4", value: "16px", class: "4" },
-  { name: "5", value: "20px", class: "5" },
-  { name: "6", value: "24px", class: "6" },
-  { name: "7", value: "28px", class: "7" },
-  { name: "8", value: "32px", class: "8" },
-  { name: "9", value: "36px", class: "9" },
-  { name: "10", value: "40px", class: "10" },
-  { name: "11", value: "44px", class: "11" },
-  { name: "12", value: "48px", class: "12" },
-  { name: "14", value: "56px", class: "14" },
-  { name: "16", value: "64px", class: "16" },
-  { name: "20", value: "80px", class: "20" },
-  { name: "24", value: "96px", class: "24" },
-  { name: "28", value: "112px", class: "28" },
-  { name: "32", value: "128px", class: "32" },
-  { name: "36", value: "144px", class: "36" },
-  { name: "40", value: "160px", class: "40" },
-  { name: "44", value: "176px", class: "44" },
-  { name: "48", value: "192px", class: "48" },
-  { name: "52", value: "208px", class: "52" },
-  { name: "56", value: "224px", class: "56" },
-  { name: "60", value: "240px", class: "60" },
-  { name: "64", value: "256px", class: "64" },
-  { name: "72", value: "288px", class: "72" },
-  { name: "80", value: "320px", class: "80" },
-  { name: "96", value: "384px", class: "96" },
+  { name: '0', value: '0px', class: '0' },
+  { name: 'px', value: '1px', class: 'px' },
+  { name: '0.5', value: '2px', class: '0.5' },
+  { name: '1', value: '4px', class: '1' },
+  { name: '1.5', value: '6px', class: '1.5' },
+  { name: '2', value: '8px', class: '2' },
+  { name: '2.5', value: '10px', class: '2.5' },
+  { name: '3', value: '12px', class: '3' },
+  { name: '3.5', value: '14px', class: '3.5' },
+  { name: '4', value: '16px', class: '4' },
+  { name: '5', value: '20px', class: '5' },
+  { name: '6', value: '24px', class: '6' },
+  { name: '7', value: '28px', class: '7' },
+  { name: '8', value: '32px', class: '8' },
+  { name: '9', value: '36px', class: '9' },
+  { name: '10', value: '40px', class: '10' },
+  { name: '11', value: '44px', class: '11' },
+  { name: '12', value: '48px', class: '12' },
+  { name: '14', value: '56px', class: '14' },
+  { name: '16', value: '64px', class: '16' },
+  { name: '20', value: '80px', class: '20' },
+  { name: '24', value: '96px', class: '24' },
+  { name: '28', value: '112px', class: '28' },
+  { name: '32', value: '128px', class: '32' },
+  { name: '36', value: '144px', class: '36' },
+  { name: '40', value: '160px', class: '40' },
+  { name: '44', value: '176px', class: '44' },
+  { name: '48', value: '192px', class: '48' },
+  { name: '52', value: '208px', class: '52' },
+  { name: '56', value: '224px', class: '56' },
+  { name: '60', value: '240px', class: '60' },
+  { name: '64', value: '256px', class: '64' },
+  { name: '72', value: '288px', class: '72' },
+  { name: '80', value: '320px', class: '80' },
+  { name: '96', value: '384px', class: '96' },
 ];
 
 function SpacingGallery() {
@@ -81,7 +81,7 @@ function SpacingGallery() {
                 <div className="w-20 text-sm text-muted-foreground">{space.value}</div>
                 <div
                   className="h-4 bg-primary rounded"
-                  style={{ width: space.value === "0px" ? "2px" : space.value }}
+                  style={{ width: space.value === '0px' ? '2px' : space.value }}
                 />
               </div>
             ))}
@@ -118,10 +118,10 @@ function SpacingGallery() {
               <div
                 className="rounded-lg bg-accent"
                 style={{
-                  paddingTop: "32px",
-                  paddingRight: "16px",
-                  paddingBottom: "8px",
-                  paddingLeft: "24px",
+                  paddingTop: '32px',
+                  paddingRight: '16px',
+                  paddingBottom: '8px',
+                  paddingLeft: '24px',
                 }}
               >
                 <div className="bg-card border rounded px-3 py-2 text-sm font-medium">Content</div>
@@ -244,7 +244,7 @@ function SpacingGallery() {
             </div>
 
             <div className="space-y-2">
-              <div className="grid grid-cols-3 w-fit" style={{ columnGap: "32px", rowGap: "8px" }}>
+              <div className="grid grid-cols-3 w-fit" style={{ columnGap: '32px', rowGap: '8px' }}>
                 <div className="w-12 h-12 bg-primary rounded flex items-center justify-center text-primary-foreground text-xs">
                   1
                 </div>
@@ -279,7 +279,7 @@ function SpacingGallery() {
           </p>
           <div className="space-y-8">
             <div className="space-y-2">
-              <div className="flex" style={{ gap: "16px" }}>
+              <div className="flex" style={{ gap: '16px' }}>
                 <div className="w-12 h-12 bg-primary rounded flex items-center justify-center text-primary-foreground text-xs font-medium">
                   1
                 </div>
@@ -396,7 +396,7 @@ function SpacingGallery() {
               <div className="space-y-2">
                 <div
                   className="w-full h-20 bg-primary flex items-center justify-center text-primary-foreground text-sm font-medium"
-                  style={{ borderRadius: "0px" }}
+                  style={{ borderRadius: '0px' }}
                 >
                   none
                 </div>
@@ -408,7 +408,7 @@ function SpacingGallery() {
               <div className="space-y-2">
                 <div
                   className="w-full h-20 bg-primary flex items-center justify-center text-primary-foreground text-sm font-medium"
-                  style={{ borderRadius: "var(--radius-sm)" }}
+                  style={{ borderRadius: 'var(--radius-sm)' }}
                 >
                   sm
                 </div>
@@ -420,7 +420,7 @@ function SpacingGallery() {
               <div className="space-y-2">
                 <div
                   className="w-full h-20 bg-primary flex items-center justify-center text-primary-foreground text-sm font-medium"
-                  style={{ borderRadius: "var(--radius-md)" }}
+                  style={{ borderRadius: 'var(--radius-md)' }}
                 >
                   md
                 </div>
@@ -432,7 +432,7 @@ function SpacingGallery() {
               <div className="space-y-2">
                 <div
                   className="w-full h-20 bg-primary flex items-center justify-center text-primary-foreground text-sm font-medium"
-                  style={{ borderRadius: "var(--radius-lg)" }}
+                  style={{ borderRadius: 'var(--radius-lg)' }}
                 >
                   lg
                 </div>
@@ -444,7 +444,7 @@ function SpacingGallery() {
               <div className="space-y-2">
                 <div
                   className="w-full h-20 bg-primary flex items-center justify-center text-primary-foreground text-sm font-medium"
-                  style={{ borderRadius: "var(--radius-xl)" }}
+                  style={{ borderRadius: 'var(--radius-xl)' }}
                 >
                   xl
                 </div>
@@ -456,7 +456,7 @@ function SpacingGallery() {
               <div className="space-y-2">
                 <div
                   className="w-full h-20 bg-primary flex items-center justify-center text-primary-foreground text-sm font-medium"
-                  style={{ borderRadius: "var(--radius-2xl)" }}
+                  style={{ borderRadius: 'var(--radius-2xl)' }}
                 >
                   2xl
                 </div>
@@ -468,7 +468,7 @@ function SpacingGallery() {
               <div className="space-y-2">
                 <div
                   className="w-full h-20 bg-primary flex items-center justify-center text-primary-foreground text-sm font-medium"
-                  style={{ borderRadius: "var(--radius-full)" }}
+                  style={{ borderRadius: 'var(--radius-full)' }}
                 >
                   full
                 </div>
@@ -480,7 +480,7 @@ function SpacingGallery() {
               <div className="space-y-2">
                 <div
                   className="w-full h-20 bg-primary flex items-center justify-center text-primary-foreground text-sm font-medium"
-                  style={{ borderRadius: "var(--radius)" }}
+                  style={{ borderRadius: 'var(--radius)' }}
                 >
                   default
                 </div>
@@ -502,7 +502,7 @@ function SpacingGallery() {
               <div className="space-y-2">
                 <div
                   className="w-full h-20 bg-primary flex items-center justify-center text-primary-foreground text-sm font-medium"
-                  style={{ borderTopLeftRadius: "1rem", borderTopRightRadius: "1rem" }}
+                  style={{ borderTopLeftRadius: '1rem', borderTopRightRadius: '1rem' }}
                 >
                   t-2xl
                 </div>
@@ -514,7 +514,7 @@ function SpacingGallery() {
               <div className="space-y-2">
                 <div
                   className="w-full h-20 bg-primary flex items-center justify-center text-primary-foreground text-sm font-medium"
-                  style={{ borderBottomLeftRadius: "1rem", borderBottomRightRadius: "1rem" }}
+                  style={{ borderBottomLeftRadius: '1rem', borderBottomRightRadius: '1rem' }}
                 >
                   b-2xl
                 </div>
@@ -526,7 +526,7 @@ function SpacingGallery() {
               <div className="space-y-2">
                 <div
                   className="w-full h-20 bg-primary flex items-center justify-center text-primary-foreground text-sm font-medium"
-                  style={{ borderTopLeftRadius: "1rem", borderBottomLeftRadius: "1rem" }}
+                  style={{ borderTopLeftRadius: '1rem', borderBottomLeftRadius: '1rem' }}
                 >
                   l-2xl
                 </div>
@@ -538,7 +538,7 @@ function SpacingGallery() {
               <div className="space-y-2">
                 <div
                   className="w-full h-20 bg-primary flex items-center justify-center text-primary-foreground text-sm font-medium"
-                  style={{ borderTopRightRadius: "1rem", borderBottomRightRadius: "1rem" }}
+                  style={{ borderTopRightRadius: '1rem', borderBottomRightRadius: '1rem' }}
                 >
                   r-2xl
                 </div>
@@ -613,5 +613,5 @@ function SpacingGallery() {
 }
 
 export const Default = {
-    render: () => <SpacingGallery />,
-} satisfies Story;;
+  render: () => <SpacingGallery />,
+} satisfies Story;

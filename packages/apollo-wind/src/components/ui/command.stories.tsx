@@ -1,4 +1,4 @@
-import type { Meta } from "@storybook/react-vite";
+import type { Meta } from '@storybook/react-vite';
 import {
   Calendar,
   CreditCard,
@@ -7,8 +7,8 @@ import {
   PlusCircle,
   Settings,
   User,
-} from "lucide-react";
-import * as React from "react";
+} from 'lucide-react';
+import * as React from 'react';
 import {
   Command,
   CommandDialog,
@@ -19,15 +19,15 @@ import {
   CommandList,
   CommandSeparator,
   CommandShortcut,
-} from "./command";
+} from './command';
 
 const meta = {
-  title: "Design System/Navigation/Command",
+  title: 'Design System/Navigation/Command',
   component: Command,
   parameters: {
-    layout: "centered",
+    layout: 'centered',
   },
-  tags: ["autodocs"],
+  tags: ['autodocs'],
 } satisfies Meta<typeof Command>;
 
 export default meta;
@@ -110,19 +110,19 @@ export const Dialog = {
 
     React.useEffect(() => {
       const down = (e: KeyboardEvent) => {
-        if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
+        if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
           e.preventDefault();
           setOpen((open) => !open);
         }
       };
-      document.addEventListener("keydown", down);
-      return () => document.removeEventListener("keydown", down);
+      document.addEventListener('keydown', down);
+      return () => document.removeEventListener('keydown', down);
     }, []);
 
     return (
       <div>
         <p className="text-sm text-muted-foreground mb-4">
-          Press{" "}
+          Press{' '}
           <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100">
             <span className="text-xs">⌘</span>K
           </kbd>

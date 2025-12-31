@@ -1,15 +1,15 @@
-import type { Meta } from "@storybook/react-vite";
-import { Card, CardContent, CardHeader } from "./card";
-import { Skeleton } from "./skeleton";
-import { Row, Column } from "./layout";
+import type { Meta } from '@storybook/react-vite';
+import { Card, CardContent, CardHeader } from './card';
+import { Skeleton } from './skeleton';
+import { Row, Column } from './layout';
 
 const meta = {
-  title: "Design System/Feedback/Skeleton",
+  title: 'Design System/Feedback/Skeleton',
   component: Skeleton,
   parameters: {
-    layout: "centered",
+    layout: 'centered',
   },
-  tags: ["autodocs"],
+  tags: ['autodocs'],
 } satisfies Meta<typeof Skeleton>;
 
 export default meta;

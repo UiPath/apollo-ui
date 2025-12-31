@@ -1,4 +1,4 @@
-import type React from "react";
+import type React from 'react';
 import type {
   AlignValue,
   DirectionValue,
@@ -10,24 +10,24 @@ import type {
   SizeValue,
   SpacingValue,
   WrapValue,
-} from "./types";
+} from './types';
 
 /**
  * Convert spacing value to Tailwind class suffix
  */
 export function getSpacingClass(value: SpacingValue): string {
-  if (value === "auto") return "auto";
-  if (value === "full") return "full";
+  if (value === 'auto') return 'auto';
+  if (value === 'full') return 'full';
   // Handle decimal values like 0.5, 1.5, etc.
-  return value.toString().replace(".", "_");
+  return value.toString().replace('.', '_');
 }
 
 /**
  * Convert spacing value to CSS rem value
  */
 export function spacingToRem(value: SpacingValue): string {
-  if (value === "auto") return "auto";
-  if (value === "full") return "100%";
+  if (value === 'auto') return 'auto';
+  if (value === 'full') return '100%';
   // Tailwind's spacing scale: 1 unit = 0.25rem (4px)
   return `${value * 0.25}rem`;
 }
@@ -36,24 +36,24 @@ export function spacingToRem(value: SpacingValue): string {
  * Convert size value to Tailwind class suffix
  */
 export function getSizeClass(value: SizeValue): string {
-  if (typeof value === "string") {
+  if (typeof value === 'string') {
     if (
-      value === "auto" ||
-      value === "full" ||
-      value === "screen" ||
-      value === "min" ||
-      value === "max" ||
-      value === "fit"
+      value === 'auto' ||
+      value === 'full' ||
+      value === 'screen' ||
+      value === 'min' ||
+      value === 'max' ||
+      value === 'fit'
     ) {
       return value;
     }
     // Handle percentages like "50%"
-    if (value.includes("%")) {
+    if (value.includes('%')) {
       return `[${value}]`; // Use arbitrary value
     }
     // Handle fractions like "1/2"
-    if (value.includes("/")) {
-      return value.replace("/", "\\/");
+    if (value.includes('/')) {
+      return value.replace('/', '\\/');
     }
   }
   return getSpacingClass(value as SpacingValue);
@@ -63,64 +63,64 @@ export function getSizeClass(value: SizeValue): string {
  * Map alignment values to Tailwind classes
  */
 export const alignMap: Record<AlignValue, string> = {
-  start: "items-start",
-  center: "items-center",
-  end: "items-end",
-  baseline: "items-baseline",
-  stretch: "items-stretch",
+  start: 'items-start',
+  center: 'items-center',
+  end: 'items-end',
+  baseline: 'items-baseline',
+  stretch: 'items-stretch',
 };
 
 /**
  * Map justify values to Tailwind classes
  */
 export const justifyMap: Record<JustifyValue, string> = {
-  start: "justify-start",
-  center: "justify-center",
-  end: "justify-end",
-  between: "justify-between",
-  around: "justify-around",
-  evenly: "justify-evenly",
+  start: 'justify-start',
+  center: 'justify-center',
+  end: 'justify-end',
+  between: 'justify-between',
+  around: 'justify-around',
+  evenly: 'justify-evenly',
 };
 
 /**
  * Map wrap values to Tailwind classes
  */
 export const wrapMap: Record<WrapValue, string> = {
-  nowrap: "flex-nowrap",
-  wrap: "flex-wrap",
-  "wrap-reverse": "flex-wrap-reverse",
+  nowrap: 'flex-nowrap',
+  wrap: 'flex-wrap',
+  'wrap-reverse': 'flex-wrap-reverse',
 };
 
 /**
  * Map direction values to Tailwind classes
  */
 export const directionMap: Record<DirectionValue, string> = {
-  row: "flex-row",
-  "row-reverse": "flex-row-reverse",
-  column: "flex-col",
-  "column-reverse": "flex-col-reverse",
+  row: 'flex-row',
+  'row-reverse': 'flex-row-reverse',
+  column: 'flex-col',
+  'column-reverse': 'flex-col-reverse',
 };
 
 /**
  * Map overflow values to Tailwind classes
  */
 export const overflowMap: Record<OverflowValue, string> = {
-  auto: "auto",
-  hidden: "hidden",
-  clip: "clip",
-  visible: "visible",
-  scroll: "scroll",
+  auto: 'auto',
+  hidden: 'hidden',
+  clip: 'clip',
+  visible: 'visible',
+  scroll: 'scroll',
 };
 
 /**
  * Map position values to Tailwind classes
  */
 export const positionMap: Record<PositionValue, string> = {
-  static: "static",
-  relative: "relative",
-  absolute: "absolute",
-  fixed: "fixed",
-  sticky: "sticky",
+  static: 'static',
+  relative: 'relative',
+  absolute: 'absolute',
+  fixed: 'fixed',
+  sticky: 'sticky',
 };
 
 /**
@@ -138,29 +138,29 @@ export function getSpacingClasses(props: Partial<LayoutProps>): string[] {
   const classes: string[] = [];
 
   // Padding
-  if (props.p !== undefined) classes.push(mapSpacingClass("p", props.p));
-  if (props.pt !== undefined) classes.push(mapSpacingClass("pt", props.pt));
-  if (props.pb !== undefined) classes.push(mapSpacingClass("pb", props.pb));
-  if (props.pl !== undefined) classes.push(mapSpacingClass("pl", props.pl));
-  if (props.pr !== undefined) classes.push(mapSpacingClass("pr", props.pr));
+  if (props.p !== undefined) classes.push(mapSpacingClass('p', props.p));
+  if (props.pt !== undefined) classes.push(mapSpacingClass('pt', props.pt));
+  if (props.pb !== undefined) classes.push(mapSpacingClass('pb', props.pb));
+  if (props.pl !== undefined) classes.push(mapSpacingClass('pl', props.pl));
+  if (props.pr !== undefined) classes.push(mapSpacingClass('pr', props.pr));
   if (props.px !== undefined && props.pl === undefined && props.pr === undefined) {
-    classes.push(mapSpacingClass("px", props.px));
+    classes.push(mapSpacingClass('px', props.px));
   }
   if (props.py !== undefined && props.pt === undefined && props.pb === undefined) {
-    classes.push(mapSpacingClass("py", props.py));
+    classes.push(mapSpacingClass('py', props.py));
   }
 
   // Margin
-  if (props.m !== undefined) classes.push(mapSpacingClass("m", props.m));
-  if (props.mt !== undefined) classes.push(mapSpacingClass("mt", props.mt));
-  if (props.mb !== undefined) classes.push(mapSpacingClass("mb", props.mb));
-  if (props.ml !== undefined) classes.push(mapSpacingClass("ml", props.ml));
-  if (props.mr !== undefined) classes.push(mapSpacingClass("mr", props.mr));
+  if (props.m !== undefined) classes.push(mapSpacingClass('m', props.m));
+  if (props.mt !== undefined) classes.push(mapSpacingClass('mt', props.mt));
+  if (props.mb !== undefined) classes.push(mapSpacingClass('mb', props.mb));
+  if (props.ml !== undefined) classes.push(mapSpacingClass('ml', props.ml));
+  if (props.mr !== undefined) classes.push(mapSpacingClass('mr', props.mr));
   if (props.mx !== undefined && props.ml === undefined && props.mr === undefined) {
-    classes.push(mapSpacingClass("mx", props.mx));
+    classes.push(mapSpacingClass('mx', props.mx));
   }
   if (props.my !== undefined && props.mt === undefined && props.mb === undefined) {
-    classes.push(mapSpacingClass("my", props.my));
+    classes.push(mapSpacingClass('my', props.my));
   }
 
   return classes;
@@ -186,7 +186,7 @@ export function getSizeClasses(props: Partial<LayoutProps>): string[] {
  * Build Tailwind classes for flex props
  */
 export function getFlexClasses(props: Partial<LayoutProps>): string[] {
-  const classes: string[] = ["flex"];
+  const classes: string[] = ['flex'];
 
   if (props.direction !== undefined) {
     classes.push(directionMap[props.direction]);
@@ -204,13 +204,13 @@ export function getFlexClasses(props: Partial<LayoutProps>): string[] {
     classes.push(`gap-${getSpacingClass(props.gap)}`);
   }
   if (props.flex !== undefined) {
-    if (typeof props.flex === "number") {
+    if (typeof props.flex === 'number') {
       // Use standard Tailwind flex utilities for common values
       classes.push(`flex-${props.flex}`);
     } else {
       // For string values like "auto", "initial", "none", use them directly
       // For custom values, use arbitrary value syntax
-      if (props.flex === "auto" || props.flex === "initial" || props.flex === "none") {
+      if (props.flex === 'auto' || props.flex === 'initial' || props.flex === 'none') {
         classes.push(`flex-${props.flex}`);
       } else {
         classes.push(`flex-[${props.flex}]`);
@@ -257,10 +257,10 @@ export function getPositionClasses(props: Partial<LayoutProps>): string[] {
  * Build Tailwind classes for grid props
  */
 export function getGridClasses(props: Partial<GridLayoutProps>): string[] {
-  const classes: string[] = ["grid"];
+  const classes: string[] = ['grid'];
 
   if (props.cols !== undefined) {
-    if (typeof props.cols === "number") {
+    if (typeof props.cols === 'number') {
       classes.push(`grid-cols-${props.cols}`);
     } else {
       classes.push(`grid-cols-[${props.cols}]`);
@@ -268,7 +268,7 @@ export function getGridClasses(props: Partial<GridLayoutProps>): string[] {
   }
 
   if (props.rows !== undefined) {
-    if (typeof props.rows === "number") {
+    if (typeof props.rows === 'number') {
       classes.push(`grid-rows-${props.rows}`);
     } else {
       classes.push(`grid-rows-[${props.rows}]`);
@@ -311,61 +311,61 @@ export function buildLayoutClasses(props: Partial<LayoutProps>): string[] {
 /**
  * Map align values to CSS alignItems values
  */
-const alignToCSS: Record<AlignValue, React.CSSProperties["alignItems"]> = {
-  start: "flex-start",
-  center: "center",
-  end: "flex-end",
-  baseline: "baseline",
-  stretch: "stretch",
+const alignToCSS: Record<AlignValue, React.CSSProperties['alignItems']> = {
+  start: 'flex-start',
+  center: 'center',
+  end: 'flex-end',
+  baseline: 'baseline',
+  stretch: 'stretch',
 };
 
 /**
  * Map justify values to CSS justifyContent values
  */
-const justifyToCSS: Record<JustifyValue, React.CSSProperties["justifyContent"]> = {
-  start: "flex-start",
-  center: "center",
-  end: "flex-end",
-  between: "space-between",
-  around: "space-around",
-  evenly: "space-evenly",
+const justifyToCSS: Record<JustifyValue, React.CSSProperties['justifyContent']> = {
+  start: 'flex-start',
+  center: 'center',
+  end: 'flex-end',
+  between: 'space-between',
+  around: 'space-around',
+  evenly: 'space-evenly',
 };
 
 /**
  * Map wrap values to CSS flexWrap values
  */
-const wrapToCSS: Record<WrapValue, React.CSSProperties["flexWrap"]> = {
-  nowrap: "nowrap",
-  wrap: "wrap",
-  "wrap-reverse": "wrap-reverse",
+const wrapToCSS: Record<WrapValue, React.CSSProperties['flexWrap']> = {
+  nowrap: 'nowrap',
+  wrap: 'wrap',
+  'wrap-reverse': 'wrap-reverse',
 };
 
 /**
  * Map direction values to CSS flexDirection values
  */
-const directionToCSS: Record<DirectionValue, React.CSSProperties["flexDirection"]> = {
-  row: "row",
-  "row-reverse": "row-reverse",
-  column: "column",
-  "column-reverse": "column-reverse",
+const directionToCSS: Record<DirectionValue, React.CSSProperties['flexDirection']> = {
+  row: 'row',
+  'row-reverse': 'row-reverse',
+  column: 'column',
+  'column-reverse': 'column-reverse',
 };
 
 /**
  * Convert a size value to a CSS value
  */
 function sizeToCSS(value: SizeValue): string {
-  if (value === "auto") return "auto";
-  if (value === "full") return "100%";
-  if (value === "screen") return "100vw";
-  if (value === "min") return "min-content";
-  if (value === "max") return "max-content";
-  if (value === "fit") return "fit-content";
-  if (typeof value === "string") {
+  if (value === 'auto') return 'auto';
+  if (value === 'full') return '100%';
+  if (value === 'screen') return '100vw';
+  if (value === 'min') return 'min-content';
+  if (value === 'max') return 'max-content';
+  if (value === 'fit') return 'fit-content';
+  if (typeof value === 'string') {
     // Handle percentages like "50%"
-    if (value.includes("%")) return value;
+    if (value.includes('%')) return value;
     // Handle fractions like "1/2"
-    if (value.includes("/")) {
-      const [num, denom] = value.split("/").map(Number);
+    if (value.includes('/')) {
+      const [num, denom] = value.split('/').map(Number);
       return `${(num / denom) * 100}%`;
     }
   }
@@ -380,7 +380,7 @@ function sizeToCSS(value: SizeValue): string {
  */
 export function buildLayoutStyles(props: Partial<LayoutProps>): React.CSSProperties {
   const styles: React.CSSProperties = {
-    display: "flex",
+    display: 'flex',
   };
 
   // Flex properties

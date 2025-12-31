@@ -1,13 +1,13 @@
-import type { Meta } from "@storybook/react-vite";
-import { ToggleGroup, ToggleGroupItem } from "./toggle-group";
+import type { Meta } from '@storybook/react-vite';
+import { ToggleGroup, ToggleGroupItem } from './toggle-group';
 
 const meta = {
-  title: "Design System/Core/Toggle Group",
+  title: 'Design System/Core/Toggle Group',
   component: ToggleGroup,
   parameters: {
-    layout: "centered",
+    layout: 'centered',
   },
-  tags: ["autodocs"],
+  tags: ['autodocs'],
 } satisfies Meta<typeof ToggleGroup>;
 
 export default meta;
@@ -49,7 +49,7 @@ export const Multiple = {
 export const MultipleWithDefault = {
   args: {},
   render: () => (
-    <ToggleGroup type="multiple" defaultValue={["bold", "italic"]}>
+    <ToggleGroup type="multiple" defaultValue={['bold', 'italic']}>
       <ToggleGroupItem value="bold">B</ToggleGroupItem>
       <ToggleGroupItem value="italic">I</ToggleGroupItem>
       <ToggleGroupItem value="underline">U</ToggleGroupItem>

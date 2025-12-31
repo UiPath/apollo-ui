@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "storybook dev -p 6006",
     "storybook": "storybook dev -p 6006",
-    "clean": "rm -rf storybook-static"
+    "clean": "rm -rf storybook-static",
+    "format": "prettier --write \"./**/*.{ts,tsx,js,jsx,json,css,scss,md}\"",
+    "format:check": "prettier --check \"./**/*.{ts,tsx,js,jsx,json,css,scss,md}\""
   },
   "dependencies": {
     "@uipath/ap-chat": "workspace:*",

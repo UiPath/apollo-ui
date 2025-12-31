@@ -1,4 +1,4 @@
-import type { Meta } from "@storybook/react-vite";
+import type { Meta } from '@storybook/react-vite';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -9,13 +9,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "./alert-dialog";
-import { Button } from "./button";
+} from './alert-dialog';
+import { Button } from './button';
 
 const meta: Meta<typeof AlertDialog> = {
-  title: "Design System/Overlays/Alert Dialog",
+  title: 'Design System/Overlays/Alert Dialog',
   component: AlertDialog,
-  tags: ["autodocs"],
+  tags: ['autodocs'],
 };
 
 export default meta;

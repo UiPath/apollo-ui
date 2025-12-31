@@ -1,9 +1,9 @@
-import { render } from "@testing-library/react";
-import { axe } from "jest-axe";
-import { describe, expect, it } from "vitest";
-import { ScrollArea } from "./scroll-area";
+import { render } from '@testing-library/react';
+import { axe } from 'jest-axe';
+import { describe, expect, it } from 'vitest';
+import { ScrollArea } from './scroll-area';
 
-describe("ScrollArea", () => {
+describe('ScrollArea', () => {
   const ScrollAreaExample = () => (
     <ScrollArea className="h-[200px] w-[350px]">
       <div className="p-4">
@@ -14,38 +14,38 @@ describe("ScrollArea", () => {
     </ScrollArea>
   );
 
-  it("renders without crashing", () => {
+  it('renders without crashing', () => {
     const { container } = render(<ScrollAreaExample />);
     expect(container.firstChild).toBeInTheDocument();
   });
 
-  it("has no accessibility violations", async () => {
+  it('has no accessibility violations', async () => {
     const { container } = render(<ScrollAreaExample />);
     const results = await axe(container);
     expect(results).toHaveNoViolations();
   });
 
-  it("renders children content", () => {
+  it('renders children content', () => {
     const { container } = render(<ScrollAreaExample />);
-    expect(container.textContent).toContain("Item 1");
-    expect(container.textContent).toContain("Item 50");
+    expect(container.textContent).toContain('Item 1');
+    expect(container.textContent).toContain('Item 50');
   });
 
-  it("applies custom className", () => {
+  it('applies custom className', () => {
     const { container } = render(
       <ScrollArea className="custom-scroll">
         <div>Content</div>
       </ScrollArea>,
     );
-    expect(container.firstChild).toHaveClass("custom-scroll");
+    expect(container.firstChild).toHaveClass('custom-scroll');
   });
 
-  it("applies overflow hidden class", () => {
+  it('applies overflow hidden class', () => {
     const { container } = render(<ScrollAreaExample />);
-    expect(container.firstChild).toHaveClass("overflow-hidden");
+    expect(container.firstChild).toHaveClass('overflow-hidden');
   });
 
-  it("forwards ref correctly to ScrollArea", () => {
+  it('forwards ref correctly to ScrollArea', () => {
     const ref = { current: null };
     render(
       <ScrollArea ref={ref}>

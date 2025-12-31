@@ -1,7 +1,7 @@
-import { render, screen, waitFor } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
-import { axe } from "jest-axe";
-import { describe, expect, it, vi } from "vitest";
+import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { axe } from 'jest-axe';
+import { describe, expect, it, vi } from 'vitest';
 
 import {
   Menubar,
@@ -18,7 +18,7 @@ import {
   MenubarSub,
   MenubarSubContent,
   MenubarSubTrigger,
-} from "./menubar";
+} from './menubar';
 
 const BasicMenubar = () => (
   <Menubar>
@@ -34,15 +34,15 @@ const BasicMenubar = () => (
   </Menubar>
 );
 
-describe("Menubar", () => {
-  describe("Rendering", () => {
-    it("renders menubar with trigger", () => {
+describe('Menubar', () => {
+  describe('Rendering', () => {
+    it('renders menubar with trigger', () => {
       render(<BasicMenubar />);
-      expect(screen.getByRole("menubar")).toBeInTheDocument();
-      expect(screen.getByText("File")).toBeInTheDocument();
+      expect(screen.getByRole('menubar')).toBeInTheDocument();
+      expect(screen.getByText('File')).toBeInTheDocument();
     });
 
-    it("renders multiple menu triggers", () => {
+    it('renders multiple menu triggers', () => {
       render(
         <Menubar>
           <MenubarMenu>
@@ -60,31 +60,31 @@ describe("Menubar", () => {
         </Menubar>,
       );
 
-      expect(screen.getByText("File")).toBeInTheDocument();
-      expect(screen.getByText("Edit")).toBeInTheDocument();
+      expect(screen.getByText('File')).toBeInTheDocument();
+      expect(screen.getByText('Edit')).toBeInTheDocument();
     });
 
-    it("does not render menu content initially", () => {
+    it('does not render menu content initially', () => {
       render(<BasicMenubar />);
-      expect(screen.queryByText("New")).not.toBeInTheDocument();
+      expect(screen.queryByText('New')).not.toBeInTheDocument();
     });
   });
 
-  describe("Accessibility", () => {
-    it("has no accessibility violations when closed", async () => {
+  describe('Accessibility', () => {
+    it('has no accessibility violations when closed', async () => {
       const { container } = render(<BasicMenubar />);
       const results = await axe(container);
       expect(results).toHaveNoViolations();
     });
 
-    it("has correct role for menubar", () => {
+    it('has correct role for menubar', () => {
       render(<BasicMenubar />);
-      expect(screen.getByRole("menubar")).toBeInTheDocument();
+      expect(screen.getByRole('menubar')).toBeInTheDocument();
     });
   });
 
-  describe("Props", () => {
-    it("applies custom className to Menubar", () => {
+  describe('Props', () => {
+    it('applies custom className to Menubar', () => {
       render(
         <Menubar className="custom-menubar">
           <MenubarMenu>
@@ -96,10 +96,10 @@ describe("Menubar", () => {
         </Menubar>,
       );
 
-      expect(screen.getByRole("menubar")).toHaveClass("custom-menubar");
+      expect(screen.getByRole('menubar')).toHaveClass('custom-menubar');
     });
 
-    it("applies custom className to MenubarTrigger", () => {
+    it('applies custom className to MenubarTrigger', () => {
       render(
         <Menubar>
           <MenubarMenu>
@@ -111,10 +111,10 @@ describe("Menubar", () => {
         </Menubar>,
       );
 
-      expect(screen.getByText("File")).toHaveClass("custom-trigger");
+      expect(screen.getByText('File')).toHaveClass('custom-trigger');
     });
 
-    it("renders MenubarItem with inset", async () => {
+    it('renders MenubarItem with inset', async () => {
       const user = userEvent.setup();
       render(
         <Menubar>
@@ -127,13 +127,13 @@ describe("Menubar", () => {
         </Menubar>,
       );
 
-      await user.click(screen.getByText("File"));
+      await user.click(screen.getByText('File'));
       await waitFor(() => {
-        expect(screen.getByText("Inset Item")).toHaveClass("pl-8");
+        expect(screen.getByText('Inset Item')).toHaveClass('pl-8');
       });
     });
 
-    it("renders MenubarLabel with inset", async () => {
+    it('renders MenubarLabel with inset', async () => {
       const user = userEvent.setup();
       render(
         <Menubar>
@@ -147,27 +147,27 @@ describe("Menubar", () => {
         </Menubar>,
       );
 
-      await user.click(screen.getByText("File"));
+      await user.click(screen.getByText('File'));
       await waitFor(() => {
-        expect(screen.getByText("Label")).toHaveClass("pl-8");
+        expect(screen.getByText('Label')).toHaveClass('pl-8');
       });
     });
   });
 
-  describe("Interactions", () => {
-    it("opens menu on click", async () => {
+  describe('Interactions', () => {
+    it('opens menu on click', async () => {
       const user = userEvent.setup();
       render(<BasicMenubar />);
 
-      await user.click(screen.getByText("File"));
+      await user.click(screen.getByText('File'));
       await waitFor(() => {
-        expect(screen.getByText("New")).toBeInTheDocument();
-        expect(screen.getByText("Open")).toBeInTheDocument();
-        expect(screen.getByText("Save")).toBeInTheDocument();
+        expect(screen.getByText('New')).toBeInTheDocument();
+        expect(screen.getByText('Open')).toBeInTheDocument();
+        expect(screen.getByText('Save')).toBeInTheDocument();
       });
     });
 
-    it("calls onSelect when item is clicked", async () => {
+    it('calls onSelect when item is clicked', async () => {
       const onSelect = vi.fn();
       const user = userEvent.setup();
       render(
@@ -181,18 +181,18 @@ describe("Menubar", () => {
         </Menubar>,
       );
 
-      await user.click(screen.getByText("File"));
+      await user.click(screen.getByText('File'));
       await waitFor(() => {
-        expect(screen.getByText("New")).toBeInTheDocument();
+        expect(screen.getByText('New')).toBeInTheDocument();
       });
 
-      await user.click(screen.getByText("New"));
+      await user.click(screen.getByText('New'));
       await waitFor(() => {
         expect(onSelect).toHaveBeenCalled();
       });
     });
 
-    it("renders disabled item", async () => {
+    it('renders disabled item', async () => {
       const user = userEvent.setup();
       render(
         <Menubar>
@@ -205,15 +205,15 @@ describe("Menubar", () => {
         </Menubar>,
       );
 
-      await user.click(screen.getByText("File"));
+      await user.click(screen.getByText('File'));
       await waitFor(() => {
-        expect(screen.getByText("Disabled")).toHaveAttribute("data-disabled");
+        expect(screen.getByText('Disabled')).toHaveAttribute('data-disabled');
       });
     });
   });
 
-  describe("Checkbox Items", () => {
-    it("renders checkbox item", async () => {
+  describe('Checkbox Items', () => {
+    it('renders checkbox item', async () => {
       const user = userEvent.setup();
       render(
         <Menubar>
@@ -226,15 +226,15 @@ describe("Menubar", () => {
         </Menubar>,
       );
 
-      await user.click(screen.getByText("View"));
+      await user.click(screen.getByText('View'));
       await waitFor(() => {
-        expect(screen.getByText("Show Toolbar")).toBeInTheDocument();
+        expect(screen.getByText('Show Toolbar')).toBeInTheDocument();
       });
     });
   });
 
-  describe("Radio Items", () => {
-    it("renders radio group with items", async () => {
+  describe('Radio Items', () => {
+    it('renders radio group with items', async () => {
       const user = userEvent.setup();
       render(
         <Menubar>
@@ -250,16 +250,16 @@ describe("Menubar", () => {
         </Menubar>,
       );
 
-      await user.click(screen.getByText("View"));
+      await user.click(screen.getByText('View'));
       await waitFor(() => {
-        expect(screen.getByText("Small")).toBeInTheDocument();
-        expect(screen.getByText("Medium")).toBeInTheDocument();
+        expect(screen.getByText('Small')).toBeInTheDocument();
+        expect(screen.getByText('Medium')).toBeInTheDocument();
       });
     });
   });
 
-  describe("Submenu", () => {
-    it("renders submenu", async () => {
+  describe('Submenu', () => {
+    it('renders submenu', async () => {
       const user = userEvent.setup();
       render(
         <Menubar>
@@ -277,13 +277,13 @@ describe("Menubar", () => {
         </Menubar>,
       );
 
-      await user.click(screen.getByText("File"));
+      await user.click(screen.getByText('File'));
       await waitFor(() => {
-        expect(screen.getByText("Share")).toBeInTheDocument();
+        expect(screen.getByText('Share')).toBeInTheDocument();
       });
     });
 
-    it("renders submenu trigger with inset", async () => {
+    it('renders submenu trigger with inset', async () => {
       const user = userEvent.setup();
       render(
         <Menubar>
@@ -301,15 +301,15 @@ describe("Menubar", () => {
         </Menubar>,
       );
 
-      await user.click(screen.getByText("File"));
+      await user.click(screen.getByText('File'));
       await waitFor(() => {
-        expect(screen.getByText("Share")).toHaveClass("pl-8");
+        expect(screen.getByText('Share')).toHaveClass('pl-8');
       });
     });
   });
 
-  describe("Shortcut", () => {
-    it("renders shortcut text", async () => {
+  describe('Shortcut', () => {
+    it('renders shortcut text', async () => {
       const user = userEvent.setup();
       render(
         <Menubar>
@@ -324,13 +324,13 @@ describe("Menubar", () => {
         </Menubar>,
       );
 
-      await user.click(screen.getByText("File"));
+      await user.click(screen.getByText('File'));
       await waitFor(() => {
-        expect(screen.getByText("Cmd+N")).toBeInTheDocument();
+        expect(screen.getByText('Cmd+N')).toBeInTheDocument();
       });
     });
 
-    it("applies custom className to shortcut", async () => {
+    it('applies custom className to shortcut', async () => {
       const user = userEvent.setup();
       render(
         <Menubar>
@@ -345,9 +345,9 @@ describe("Menubar", () => {
         </Menubar>,
       );
 
-      await user.click(screen.getByText("File"));
+      await user.click(screen.getByText('File'));
       await waitFor(() => {
-        expect(screen.getByText("Cmd+N")).toHaveClass("custom-shortcut");
+        expect(screen.getByText('Cmd+N')).toHaveClass('custom-shortcut');
       });
     });
   });

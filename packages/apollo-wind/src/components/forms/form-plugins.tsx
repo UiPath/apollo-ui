@@ -1,4 +1,4 @@
-import type { FormPlugin, FormContext, FieldMetadata } from "./form-schema";
+import type { FormPlugin, FormContext, FieldMetadata } from './form-schema';
 
 /**
  * Example Plugins for the Metadata Form System
@@ -10,11 +10,11 @@ import type { FormPlugin, FormContext, FieldMetadata } from "./form-schema";
 // ============================================================================
 
 export const analyticsPlugin: FormPlugin = {
-  name: "analytics",
-  version: "1.0.0",
+  name: 'analytics',
+  version: '1.0.0',
 
   onFormInit: async (context: FormContext) => {
-    console.log("[Analytics] Form initialized:", context.schema.id);
+    console.log('[Analytics] Form initialized:', context.schema.id);
 
     // Track form view
     // await analytics.track('form_viewed', {
@@ -24,7 +24,7 @@ export const analyticsPlugin: FormPlugin = {
   },
 
   onValueChange: (fieldName: string, value: unknown, _context: FormContext) => {
-    console.log("[Analytics] Field changed:", fieldName, value);
+    console.log('[Analytics] Field changed:', fieldName, value);
 
     // Track field interactions
     // analytics.track('field_changed', {
@@ -37,7 +37,7 @@ export const analyticsPlugin: FormPlugin = {
   },
 
   onSubmit: async (data: unknown, _context: FormContext) => {
-    console.log("[Analytics] Form submitted:", data);
+    console.log('[Analytics] Form submitted:', data);
 
     // Track submission
     // await analytics.track('form_submitted', {
@@ -54,8 +54,8 @@ export const analyticsPlugin: FormPlugin = {
 // ============================================================================
 
 export const autoSavePlugin: FormPlugin = {
-  name: "autoSave",
-  version: "1.0.0",
+  name: 'autoSave',
+  version: '1.0.0',
 
   onFormInit: async (context: FormContext) => {
     // Load saved draft
@@ -65,7 +65,7 @@ export const autoSavePlugin: FormPlugin = {
       Object.keys(draftData).forEach((key) => {
         context.form.setValue(key, draftData[key]);
       });
-      console.log("[AutoSave] Draft restored");
+      console.log('[AutoSave] Draft restored');
     }
   },
 
@@ -83,14 +83,14 @@ export const autoSavePlugin: FormPlugin = {
     win.__autoSaveTimeout = setTimeout(() => {
       const values = context.form.getValues();
       localStorage.setItem(draftKey, JSON.stringify(values));
-      console.log("[AutoSave] Draft saved");
+      console.log('[AutoSave] Draft saved');
     }, 1000);
   },
 
   onSubmit: async (data: unknown, context: FormContext) => {
     // Clear draft on successful submit
     localStorage.removeItem(`form_draft_${context.schema.id}`);
-    console.log("[AutoSave] Draft cleared");
+    console.log('[AutoSave] Draft cleared');
     return data;
   },
 };
@@ -100,50 +100,50 @@ export const autoSavePlugin: FormPlugin = {
 // ============================================================================
 
 export const validationPlugin: FormPlugin = {
-  name: "validation",
-  version: "1.0.0",
+  name: 'validation',
+  version: '1.0.0',
 
   validators: {
     // Custom validator: Phone number
     phone: {
-      pattern: "^\\+?[\\d\\s\\-()]+$",
-      messages: { pattern: "Invalid phone number format" },
+      pattern: '^\\+?[\\d\\s\\-()]+$',
+      messages: { pattern: 'Invalid phone number format' },
     },
 
     // Custom validator: Strong password
     // Note: Multiple regex patterns require custom validation logic in the runtime
     strongPassword: {
       minLength: 8,
-      pattern: "^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[^A-Za-z0-9]).+$",
+      pattern: '^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[^A-Za-z0-9]).+$',
       messages: {
-        minLength: "Password must be at least 8 characters",
-        pattern: "Password must contain uppercase, lowercase, number, and special character",
+        minLength: 'Password must be at least 8 characters',
+        pattern: 'Password must contain uppercase, lowercase, number, and special character',
       },
     },
 
     // Custom validator: Credit card
     creditCard: {
-      pattern: "^\\d{4}\\s?\\d{4}\\s?\\d{4}\\s?\\d{4}$",
-      messages: { pattern: "Invalid credit card number" },
+      pattern: '^\\d{4}\\s?\\d{4}\\s?\\d{4}\\s?\\d{4}$',
+      messages: { pattern: 'Invalid credit card number' },
     },
 
     // Custom validator: URL
     url: {
       url: true,
-      messages: { url: "Invalid URL format" },
+      messages: { url: 'Invalid URL format' },
     },
 
     // Custom validator: Postal code (US)
     postalCode: {
-      pattern: "^\\d{5}(-\\d{4})?$",
-      messages: { pattern: "Invalid US postal code" },
+      pattern: '^\\d{5}(-\\d{4})?$',
+      messages: { pattern: 'Invalid US postal code' },
     },
   },
 
   onFieldRegister: (field: FieldMetadata, _context: FormContext) => {
     // Apply custom validators based on field metadata
-    if (field.type === "email") {
-      console.log("[Validation] Email validation applied to:", field.name);
+    if (field.type === 'email') {
+      console.log('[Validation] Email validation applied to:', field.name);
     }
   },
 };
@@ -153,8 +153,8 @@ export const validationPlugin: FormPlugin = {
 // ============================================================================
 
 export const workflowPlugin: FormPlugin = {
-  name: "workflow",
-  version: "1.0.0",
+  name: 'workflow',
+  version: '1.0.0',
 
   onFormInit: async (context: FormContext) => {
     // Load workflow context if form is part of automation
@@ -162,7 +162,7 @@ export const workflowPlugin: FormPlugin = {
     const workflowContext = win.__workflowContext;
 
     if (workflowContext) {
-      console.log("[Workflow] Loading workflow context:", workflowContext);
+      console.log('[Workflow] Loading workflow context:', workflowContext);
 
       // Pre-fill form with workflow variables
       if (workflowContext.variables) {
@@ -175,7 +175,7 @@ export const workflowPlugin: FormPlugin = {
 
   onSubmit: async (data: unknown, _context: FormContext) => {
     // Submit to workflow engine
-    console.log("[Workflow] Submitting to workflow engine");
+    console.log('[Workflow] Submitting to workflow engine');
 
     const win = window as Window & {
       __workflowContext?: {
@@ -189,8 +189,8 @@ export const workflowPlugin: FormPlugin = {
     if (workflowContext?.submitEndpoint) {
       try {
         const response = await fetch(workflowContext.submitEndpoint, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             workflowId: workflowContext.workflowId,
             activityId: workflowContext.activityId,
@@ -199,12 +199,12 @@ export const workflowPlugin: FormPlugin = {
         });
 
         if (!response.ok) {
-          throw new Error("Workflow submission failed");
+          throw new Error('Workflow submission failed');
         }
 
         return await response.json();
       } catch (error) {
-        console.error("[Workflow] Submission error:", error);
+        console.error('[Workflow] Submission error:', error);
         throw error;
       }
     }
@@ -218,15 +218,15 @@ export const workflowPlugin: FormPlugin = {
 // ============================================================================
 
 export const auditPlugin: FormPlugin = {
-  name: "audit",
-  version: "1.0.0",
+  name: 'audit',
+  version: '1.0.0',
 
   onFormInit: async (_context: FormContext) => {
     // Initialize audit trail
     type FieldHistoryEntry = { value: unknown; timestamp: string; user: string };
     const win = window as Window & { __fieldHistory?: Map<string, FieldHistoryEntry[]> };
     win.__fieldHistory = new Map();
-    console.log("[Audit] Audit trail initialized");
+    console.log('[Audit] Audit trail initialized');
   },
 
   onValueChange: (fieldName: string, value: unknown, _context: FormContext) => {
@@ -246,10 +246,10 @@ export const auditPlugin: FormPlugin = {
     history.get(fieldName)!.push({
       value,
       timestamp: new Date().toISOString(),
-      user: win.__currentUser?.id || "anonymous",
+      user: win.__currentUser?.id || 'anonymous',
     });
 
-    console.log("[Audit] Field history updated:", fieldName);
+    console.log('[Audit] Field history updated:', fieldName);
   },
 
   onSubmit: async (data: unknown, _context: FormContext) => {
@@ -266,7 +266,7 @@ export const auditPlugin: FormPlugin = {
       _audit: {
         fieldHistory: history ? Object.fromEntries(history) : {},
         submittedAt: new Date().toISOString(),
-        submittedBy: win.__currentUser?.id || "anonymous",
+        submittedBy: win.__currentUser?.id || 'anonymous',
       },
     };
   },
@@ -277,8 +277,8 @@ export const auditPlugin: FormPlugin = {
 // ============================================================================
 
 export const formattingPlugin: FormPlugin = {
-  name: "formatting",
-  version: "1.0.0",
+  name: 'formatting',
+  version: '1.0.0',
 
   customConditions: {
     // Custom condition: Check if value is within business hours
@@ -306,7 +306,7 @@ export const formattingPlugin: FormPlugin = {
     const error = context.errors[fieldName];
     if (error) {
       // Apply error styling
-      console.log("[Formatting] Error styling applied to:", fieldName);
+      console.log('[Formatting] Error styling applied to:', fieldName);
     }
   },
 };

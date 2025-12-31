@@ -1,7 +1,7 @@
-import * as React from "react";
-import { cn } from "@/lib";
-import type { LayoutProps } from "./types";
-import { buildLayoutStyles } from "./utils";
+import * as React from 'react';
+import { cn } from '@/lib';
+import type { LayoutProps } from './types';
+import { buildLayoutStyles } from './utils';
 
 export interface ColumnProps extends LayoutProps {
   /**
@@ -27,7 +27,7 @@ const Column = React.forwardRef<HTMLDivElement, ColumnProps>(
       children,
       className,
       style,
-      direction = "column",
+      direction = 'column',
       align,
       justify,
       wrap,
@@ -102,6 +102,6 @@ const Column = React.forwardRef<HTMLDivElement, ColumnProps>(
   },
 );
 
-Column.displayName = "Column";
+Column.displayName = 'Column';
 
 export { Column };

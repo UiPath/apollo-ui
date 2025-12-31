@@ -1,10 +1,10 @@
-import { render, screen } from "@testing-library/react";
-import { axe } from "jest-axe";
-import { describe, expect, it } from "vitest";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "./card";
+import { render, screen } from '@testing-library/react';
+import { axe } from 'jest-axe';
+import { describe, expect, it } from 'vitest';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from './card';
 
-describe("Card", () => {
-  it("renders card with all components", () => {
+describe('Card', () => {
+  it('renders card with all components', () => {
     render(
       <Card>
         <CardHeader>
@@ -16,13 +16,13 @@ describe("Card", () => {
       </Card>,
     );
 
-    expect(screen.getByText("Card Title")).toBeInTheDocument();
-    expect(screen.getByText("Card Description")).toBeInTheDocument();
-    expect(screen.getByText("Card Content")).toBeInTheDocument();
-    expect(screen.getByText("Card Footer")).toBeInTheDocument();
+    expect(screen.getByText('Card Title')).toBeInTheDocument();
+    expect(screen.getByText('Card Description')).toBeInTheDocument();
+    expect(screen.getByText('Card Content')).toBeInTheDocument();
+    expect(screen.getByText('Card Footer')).toBeInTheDocument();
   });
 
-  it("has no accessibility violations", async () => {
+  it('has no accessibility violations', async () => {
     const { container } = render(
       <Card>
         <CardHeader>
@@ -36,19 +36,19 @@ describe("Card", () => {
     expect(results).toHaveNoViolations();
   });
 
-  it("applies custom className to Card", () => {
+  it('applies custom className to Card', () => {
     const { container } = render(<Card className="custom-card">Content</Card>);
     const card = container.firstChild as HTMLElement;
-    expect(card).toHaveClass("custom-card");
+    expect(card).toHaveClass('custom-card');
   });
 
-  it("applies default border and shadow classes", () => {
+  it('applies default border and shadow classes', () => {
     const { container } = render(<Card>Content</Card>);
     const card = container.firstChild as HTMLElement;
-    expect(card).toHaveClass("border", "shadow-sm");
+    expect(card).toHaveClass('border', 'shadow-sm');
   });
 
-  it("forwards refs correctly", () => {
+  it('forwards refs correctly', () => {
     const cardRef = { current: null };
     const headerRef = { current: null };
 

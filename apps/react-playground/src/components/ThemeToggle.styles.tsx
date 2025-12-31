@@ -1,4 +1,4 @@
-import styled from "styled-components";
+import styled from 'styled-components';
 
 export const ThemeControls = styled.div`
   display: flex;
@@ -7,8 +7,8 @@ export const ThemeControls = styled.div`
 `;
 
 export const IconButton = styled.button<{ $isActive: boolean }>`
-  background: ${(props) => (props.$isActive ? "var(--color-primary)" : "var(--color-background)")};
-  border: 2px solid ${(props) => (props.$isActive ? "var(--color-primary)" : "var(--color-border)")};
+  background: ${(props) => (props.$isActive ? 'var(--color-primary)' : 'var(--color-background)')};
+  border: 2px solid ${(props) => (props.$isActive ? 'var(--color-primary)' : 'var(--color-border)')};
   border-radius: 50%;
   width: 36px;
   height: 36px;
@@ -19,22 +19,21 @@ export const IconButton = styled.button<{ $isActive: boolean }>`
   font-size: 16px;
   transition: all 0.2s ease;
   flex-shrink: 0;
-  color: ${(props) => (props.$isActive ? "var(--color-white)" : "var(--color-foreground-emp)")};
-  box-shadow: ${(props) => (props.$isActive ? "0 2px 8px rgba(250, 70, 22, 0.3)" : "none")};
+  color: ${(props) => (props.$isActive ? 'var(--color-white)' : 'var(--color-foreground-emp)')};
+  box-shadow: ${(props) => (props.$isActive ? '0 2px 8px rgba(250, 70, 22, 0.3)' : 'none')};
 
   svg {
-    color: ${(props) => (props.$isActive ? "var(--color-white)" : "var(--color-foreground-emp)")};
+    color: ${(props) => (props.$isActive ? 'var(--color-white)' : 'var(--color-foreground-emp)')};
     transition: color 0.2s ease;
   }
 
   &:hover {
-    background: ${(props) => (props.$isActive ? "var(--color-primary)" : "var(--color-background-hover)")};
+    background: ${(props) =>
+      props.$isActive ? 'var(--color-primary)' : 'var(--color-background-hover)'};
     border-color: var(--color-primary);
     transform: translateY(-2px);
     box-shadow: ${(props) =>
-			props.$isActive
-				? "0 4px 12px rgba(250, 70, 22, 0.4)"
-				: "0 2px 8px rgba(0, 0, 0, 0.1)"};
+      props.$isActive ? '0 4px 12px rgba(250, 70, 22, 0.4)' : '0 2px 8px rgba(0, 0, 0, 0.1)'};
   }
 
   &:active {
@@ -70,8 +69,8 @@ export const CheckboxBox = styled.div<{ $checked: boolean }>`
   display: flex;
   align-items: center;
   justify-content: center;
-  background: ${(props) => (props.$checked ? "var(--color-primary)" : "transparent")};
-  border-color: ${(props) => (props.$checked ? "var(--color-primary)" : "var(--color-border)")};
+  background: ${(props) => (props.$checked ? 'var(--color-primary)' : 'transparent')};
+  border-color: ${(props) => (props.$checked ? 'var(--color-primary)' : 'var(--color-border)')};
   color: var(--color-white);
   font-size: 14px;
   font-weight: bold;
@@ -80,9 +79,7 @@ export const CheckboxBox = styled.div<{ $checked: boolean }>`
   ${CheckboxLabel}:hover & {
     border-color: var(--color-primary);
     background: ${(props) =>
-			props.$checked
-				? "var(--color-primary)"
-				: "var(--color-background-hover)"};
+      props.$checked ? 'var(--color-primary)' : 'var(--color-background-hover)'};
   }
 `;
 

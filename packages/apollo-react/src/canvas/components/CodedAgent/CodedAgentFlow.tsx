@@ -1,25 +1,10 @@
-import React, {
-  memo,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import styled from '@emotion/styled';
-import {
-  FontVariantToken,
-  Spacing,
-} from '@uipath/apollo-core';
+import { FontVariantToken, Spacing } from '@uipath/apollo-core';
 import * as Icons from '@uipath/apollo-react/canvas/icons';
 import { Row } from '@uipath/apollo-react/canvas/layouts';
-import type {
-  Edge,
-  EdgeProps,
-  Node,
-  NodeProps,
-} from '@uipath/apollo-react/canvas/xyflow/react';
+import type { Edge, EdgeProps, Node, NodeProps } from '@uipath/apollo-react/canvas/xyflow/react';
 import {
   BaseEdge,
   getSimpleBezierPath,
@@ -31,23 +16,11 @@ import {
   useReactFlow,
 } from '@uipath/apollo-react/canvas/xyflow/react';
 import { ApTypography } from '@uipath/apollo-react/material';
-import {
-  ApCircularProgress,
-  ApIcon,
-} from '@uipath/portal-shell-react';
+import { ApCircularProgress, ApIcon } from '@uipath/portal-shell-react';
 
-import type {
-  CanvasTranslations,
-  CodedAgentNodeTranslations,
-} from '../../types';
-import {
-  DefaultCanvasTranslations,
-  DefaultCodedAgentNodeTranslations,
-} from '../../types';
-import {
-  d3HierarchyLayout,
-  type LayoutDirection,
-} from '../../utils/coded-agents/d3-layout';
+import type { CanvasTranslations, CodedAgentNodeTranslations } from '../../types';
+import { DefaultCanvasTranslations, DefaultCodedAgentNodeTranslations } from '../../types';
+import { d3HierarchyLayout, type LayoutDirection } from '../../utils/coded-agents/d3-layout';
 import { mermaidToReactFlow } from '../../utils/coded-agents/mermaid-parser';
 import type { BaseCanvasRef } from '../BaseCanvas';
 import { BaseCanvas } from '../BaseCanvas';

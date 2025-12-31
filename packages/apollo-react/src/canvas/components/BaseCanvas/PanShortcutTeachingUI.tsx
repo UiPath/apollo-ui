@@ -1,6 +1,11 @@
 import React from 'react';
 import styled from '@emotion/styled';
-import { Panel, type ReactFlowState, useReactFlow, useStore } from '@uipath/apollo-react/canvas/xyflow/react';
+import {
+  Panel,
+  type ReactFlowState,
+  useReactFlow,
+  useStore,
+} from '@uipath/apollo-react/canvas/xyflow/react';
 import { shallow } from 'zustand/shallow';
 
 // The minimum distance the mouse must move to consider it a drag attempt

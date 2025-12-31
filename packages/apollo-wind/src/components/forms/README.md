@@ -245,63 +245,60 @@ classDiagram
 ### 1. Basic Form
 
 ```tsx
-import { MetadataForm } from "@uipath/apollo-wind/forms";
-import type { FormSchema } from "@uipath/apollo-wind/forms";
+import { MetadataForm } from '@uipath/apollo-wind/forms';
+import type { FormSchema } from '@uipath/apollo-wind/forms';
 
 const schema: FormSchema = {
-  id: "contact-form",
-  title: "Contact Us",
-  sections: [{
-    id: "info",
-    fields: [
-      {
-        name: "name",
-        type: "text",
-        label: "Full Name",
-        placeholder: "John Doe",
-        validation: {
-          required: true,
-          minLength: 2,
-          messages: { minLength: "Name must be at least 2 characters" },
+  id: 'contact-form',
+  title: 'Contact Us',
+  sections: [
+    {
+      id: 'info',
+      fields: [
+        {
+          name: 'name',
+          type: 'text',
+          label: 'Full Name',
+          placeholder: 'John Doe',
+          validation: {
+            required: true,
+            minLength: 2,
+            messages: { minLength: 'Name must be at least 2 characters' },
+          },
         },
-      },
-      {
-        name: "email",
-        type: "email",
-        label: "Email Address",
-        placeholder: "john@example.com",
-        validation: {
-          required: true,
-          email: true,
-          messages: { email: "Invalid email address" },
+        {
+          name: 'email',
+          type: 'email',
+          label: 'Email Address',
+          placeholder: 'john@example.com',
+          validation: {
+            required: true,
+            email: true,
+            messages: { email: 'Invalid email address' },
+          },
         },
-      },
-      {
-        name: "message",
-        type: "textarea",
-        label: "Message",
-        rows: 4,
-        validation: {
-          required: true,
-          minLength: 10,
+        {
+          name: 'message',
+          type: 'textarea',
+          label: 'Message',
+          rows: 4,
+          validation: {
+            required: true,
+            minLength: 10,
+          },
         },
-      },
-    ],
-  }],
+      ],
+    },
+  ],
 };
 
 function ContactPage() {
   const handleSubmit = async (data: unknown) => {
-    console.log("Form submitted:", data);
+    console.log('Form submitted:', data);
     // Send to API
   };
 
-  return (
-    <MetadataForm
-      schema={schema}
-      onSubmit={handleSubmit}
-    />
-  );
+  return <MetadataForm schema={schema} onSubmit={handleSubmit} />;
 }
 ```
 
@@ -348,7 +345,7 @@ const onboardingSchema = {
 ### 3. With Plugins
 
 ```tsx
-import { analyticsPlugin, autoSavePlugin } from "@uipath/apollo-wind/forms";
+import { analyticsPlugin, autoSavePlugin } from '@uipath/apollo-wind/forms';
 
 <MetadataForm
   schema={schema}
@@ -360,7 +357,7 @@ import { analyticsPlugin, autoSavePlugin } from "@uipath/apollo-wind/forms";
 ### 4. Visual Form Designer
 
 ```tsx
-import { FormDesigner } from "@uipath/apollo-wind/forms";
+import { FormDesigner } from '@uipath/apollo-wind/forms';
 
 function FormBuilderPage() {
   // FormDesigner is a self-contained visual editor
@@ -711,28 +708,19 @@ import { DataSourceBuilder } from '@uipath/apollo-wind/forms';
 ### Data Source Builders
 
 ```typescript
-import { DataSourceBuilder } from "@uipath/apollo-wind/forms";
+import { DataSourceBuilder } from '@uipath/apollo-wind/forms';
 
 // Static
-const countries = DataSourceBuilder.static([
-  { label: "US", value: "US" },
-]);
+const countries = DataSourceBuilder.static([{ label: 'US', value: 'US' }]);
 
 // Remote GET
-const users = DataSourceBuilder.get("/api/users");
+const users = DataSourceBuilder.get('/api/users');
 
 // Dependent
-const cities = DataSourceBuilder.dependent(
-  "/api/cities",
-  "country",
-  "countryCode",
-);
+const cities = DataSourceBuilder.dependent('/api/cities', 'country', 'countryCode');
 
 // Computed
-const total = DataSourceBuilder.computed(
-  ["quantity", "price"],
-  "(quantity || 0) * (price || 0)",
-);
+const total = DataSourceBuilder.computed(['quantity', 'price'], '(quantity || 0) * (price || 0)');
 ```
 
 ## 🎯 Rules Engine
@@ -761,17 +749,21 @@ import { RuleBuilder } from '@uipath/apollo-wind/forms';
 
 ```typescript
 // OR operator
-new RuleBuilder("premium-features")
-  .when("planType").in(["enterprise", "premium"])
-  .useOperator("OR")
-  .when("customerId").matches("^ENT-")
+new RuleBuilder('premium-features')
+  .when('planType')
+  .in(['enterprise', 'premium'])
+  .useOperator('OR')
+  .when('customerId')
+  .matches('^ENT-')
   .show()
   .build();
 
 // AND operator (default)
-new RuleBuilder("senior-requirements")
-  .when("position").is("senior")
-  .when("experience").custom("value >= 5")
+new RuleBuilder('senior-requirements')
+  .when('position')
+  .is('senior')
+  .when('experience')
+  .custom('value >= 5')
   .require()
   .build();
 ```
@@ -779,14 +771,14 @@ new RuleBuilder("senior-requirements")
 ### Complex Expressions with jsep
 
 ```typescript
-import { ExpressionBuilder } from "@uipath/apollo-wind/forms";
+import { ExpressionBuilder } from '@uipath/apollo-wind/forms';
 
 // Using ExpressionBuilder
-new RuleBuilder("discount-eligible")
+new RuleBuilder('discount-eligible')
   .withCustomExpression(
     ExpressionBuilder.and(
-      ExpressionBuilder.greaterThan("orderTotal", 100),
-      ExpressionBuilder.equals("customerType", "premium"),
+      ExpressionBuilder.greaterThan('orderTotal', 100),
+      ExpressionBuilder.equals('customerType', 'premium'),
     ),
   )
   .show()
@@ -794,17 +786,21 @@ new RuleBuilder("discount-eligible")
 
 // Or write expressions directly
 {
-  rules: [{
-    id: "complex-rule",
-    conditions: [{
-      when: "",
-      custom: 'age >= 18 && (status === "active" || role === "admin")',
-    }],
-    effects: {
-      visible: true,
-      required: true,
+  rules: [
+    {
+      id: 'complex-rule',
+      conditions: [
+        {
+          when: '',
+          custom: 'age >= 18 && (status === "active" || role === "admin")',
+        },
+      ],
+      effects: {
+        visible: true,
+        required: true,
+      },
     },
-  }];
+  ];
 }
 ```
 
@@ -826,13 +822,13 @@ rules: [{
 
 ```typescript
 // Built-in expression builders
-ExpressionBuilder.equals("status", "active"); // status == "active"
-ExpressionBuilder.greaterThan("age", 18); // age > 18
-ExpressionBuilder.isEmpty("field"); // !field || field == ''
-ExpressionBuilder.between("score", 0, 100); // score >= 0 && score <= 100
-ExpressionBuilder.and("expr1", "expr2"); // (expr1 && expr2)
-ExpressionBuilder.or("expr1", "expr2"); // (expr1 || expr2)
-ExpressionBuilder.sum(["field1", "field2"]); // (field1 || 0) + (field2 || 0)
+ExpressionBuilder.equals('status', 'active'); // status == "active"
+ExpressionBuilder.greaterThan('age', 18); // age > 18
+ExpressionBuilder.isEmpty('field'); // !field || field == ''
+ExpressionBuilder.between('score', 0, 100); // score >= 0 && score <= 100
+ExpressionBuilder.and('expr1', 'expr2'); // (expr1 && expr2)
+ExpressionBuilder.or('expr1', 'expr2'); // (expr1 || expr2)
+ExpressionBuilder.sum(['field1', 'field2']); // (field1 || 0) + (field2 || 0)
 ```
 
 ## 🔌 Plugin System
@@ -840,19 +836,15 @@ ExpressionBuilder.sum(["field1", "field2"]); // (field1 || 0) + (field2 || 0)
 ### Creating a Plugin
 
 ```typescript
-import type {
-  FormContext,
-  FormPlugin,
-  ValidationConfig,
-} from "@uipath/apollo-wind/forms";
+import type { FormContext, FormPlugin, ValidationConfig } from '@uipath/apollo-wind/forms';
 
 export const myPlugin: FormPlugin = {
-  name: "my-plugin",
-  version: "1.0.0",
+  name: 'my-plugin',
+  version: '1.0.0',
 
   // Lifecycle hooks
   onFormInit: async (context: FormContext) => {
-    console.log("Form initialized:", context.schema.id);
+    console.log('Form initialized:', context.schema.id);
   },
 
   onValueChange: (fieldName: string, value: unknown, context: FormContext) => {
@@ -861,21 +853,21 @@ export const myPlugin: FormPlugin = {
 
   onSubmit: async (data: unknown, context: FormContext) => {
     // Transform or validate data before submission
-    console.log("Submitting:", data);
+    console.log('Submitting:', data);
     return data;
   },
 
   // Custom validators (JSON-serializable ValidationConfig)
   validators: {
     ssn: {
-      pattern: "^\\d{3}-\\d{2}-\\d{4}$",
-      messages: { pattern: "Invalid SSN format" },
+      pattern: '^\\d{3}-\\d{2}-\\d{4}$',
+      messages: { pattern: 'Invalid SSN format' },
     } as ValidationConfig,
   },
 
   // Custom components
   components: {
-    "my-field": MyCustomFieldComponent,
+    'my-field': MyCustomFieldComponent,
   },
 };
 ```
@@ -1090,11 +1082,7 @@ const field: FieldMetadata = {
 ### Type Guards
 
 ```typescript
-import {
-  hasMinMaxStep,
-  hasOptions,
-  isCustomField,
-} from "@uipath/apollo-wind/forms";
+import { hasMinMaxStep, hasOptions, isCustomField } from '@uipath/apollo-wind/forms';
 
 if (hasOptions(field)) {
   // TypeScript knows field is SelectField | MultiSelectField | RadioField
@@ -1175,7 +1163,7 @@ interface ValidationConfig {
 ### Serializing Schemas
 
 ```typescript
-import { schemaToJson, serializeSchema } from "@uipath/apollo-wind/forms";
+import { schemaToJson, serializeSchema } from '@uipath/apollo-wind/forms';
 
 // Convert schema to JSON-safe object
 const jsonObject = serializeSchema(myFormSchema);
@@ -1203,13 +1191,10 @@ const schema: FormSchema = await response.json();
 The `validationConfigToZod` function converts JSON configs to Zod at runtime:
 
 ```typescript
-import { validationConfigToZod } from "@uipath/apollo-wind/forms";
+import { validationConfigToZod } from '@uipath/apollo-wind/forms';
 
 // Internal: MetadataForm does this automatically
-const zodSchema = validationConfigToZod(
-  { required: true, minLength: 2, email: true },
-  "email",
-);
+const zodSchema = validationConfigToZod({ required: true, minLength: 2, email: true }, 'email');
 // Returns: z.string().min(2).email()
 ```
 
@@ -1238,9 +1223,9 @@ API calls should implement proper security:
 ```typescript
 // ✅ Best practices
 const dataSource = {
-  type: "fetch",
-  url: "/api/protected-resource",
-  method: "GET",
+  type: 'fetch',
+  url: '/api/protected-resource',
+  method: 'GET',
   // Add authentication in a fetch interceptor or middleware
 };
 
@@ -1257,7 +1242,7 @@ Transform expressions execute in a sandboxed function:
 
 ```typescript
 // ⚠️ Be cautious with user-provided transforms
-transform: "data.map(item => ({ label: item.name, value: item.id }))";
+transform: 'data.map(item => ({ label: item.name, value: item.id }))';
 
 // Production: Validate transforms on backend before storing
 ```
@@ -1287,14 +1272,14 @@ The system only watches fields that are actually used in rules:
 Remote data is cached with a 5-minute TTL:
 
 ```typescript
-import { DataFetcher } from "@uipath/apollo-wind/forms";
+import { DataFetcher } from '@uipath/apollo-wind/forms';
 
 // Configure cache TTL
 DataFetcher.setCacheTTL(10 * 60 * 1000); // 10 minutes
 
 // Clear cache when needed
 DataFetcher.clearCache();
-DataFetcher.clearCache("/api/users"); // Clear specific pattern
+DataFetcher.clearCache('/api/users'); // Clear specific pattern
 ```
 
 ### Lazy Section Rendering
@@ -1475,7 +1460,7 @@ own internal state. It provides:
 - **Right panel**: Live preview and schema export
 
 ```tsx
-import { FormDesigner } from "@uipath/apollo-wind/forms";
+import { FormDesigner } from '@uipath/apollo-wind/forms';
 
 function FormBuilderPage() {
   return <FormDesigner />;
@@ -1513,8 +1498,8 @@ interface SinglePageFormSchema {
   layout?: LayoutConfig;
   actions?: FormAction[];
   initialData?: Record<string, unknown>;
-  mode?: "onChange" | "onBlur" | "onSubmit" | "all";
-  reValidateMode?: "onChange" | "onBlur" | "onSubmit";
+  mode?: 'onChange' | 'onBlur' | 'onSubmit' | 'all';
+  reValidateMode?: 'onChange' | 'onBlur' | 'onSubmit';
 }
 
 interface MultiStepFormSchema {
@@ -1525,7 +1510,7 @@ interface MultiStepFormSchema {
   layout?: LayoutConfig;
   actions?: FormAction[];
   initialData?: Record<string, unknown>;
-  mode?: "onChange" | "onBlur" | "onSubmit" | "all";
+  mode?: 'onChange' | 'onBlur' | 'onSubmit' | 'all';
 }
 ```
 

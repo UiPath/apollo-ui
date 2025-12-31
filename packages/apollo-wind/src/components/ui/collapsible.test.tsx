@@ -1,10 +1,10 @@
-import { render, screen, waitFor } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
-import { axe } from "jest-axe";
-import { describe, expect, it, vi } from "vitest";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "./collapsible";
+import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { axe } from 'jest-axe';
+import { describe, expect, it, vi } from 'vitest';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from './collapsible';
 
-describe("Collapsible", () => {
+describe('Collapsible', () => {
   const CollapsibleExample = ({
     onOpenChange = vi.fn(),
   }: {
@@ -16,90 +16,90 @@ describe("Collapsible", () => {
     </Collapsible>
   );
 
-  it("renders without crashing", () => {
+  it('renders without crashing', () => {
     render(<CollapsibleExample />);
-    expect(screen.getByRole("button", { name: "Toggle" })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Toggle' })).toBeInTheDocument();
   });
 
-  it("has no accessibility violations", async () => {
+  it('has no accessibility violations', async () => {
     const { container } = render(<CollapsibleExample />);
     const results = await axe(container);
     expect(results).toHaveNoViolations();
   });
 
-  it("is collapsed by default", () => {
+  it('is collapsed by default', () => {
     render(<CollapsibleExample />);
-    expect(screen.queryByText("This is the collapsible content")).not.toBeInTheDocument();
+    expect(screen.queryByText('This is the collapsible content')).not.toBeInTheDocument();
   });
 
-  it("expands when trigger is clicked", async () => {
+  it('expands when trigger is clicked', async () => {
     const user = userEvent.setup();
     render(<CollapsibleExample />);
 
-    const trigger = screen.getByRole("button", { name: "Toggle" });
+    const trigger = screen.getByRole('button', { name: 'Toggle' });
     await user.click(trigger);
 
     await waitFor(() => {
-      expect(screen.getByText("This is the collapsible content")).toBeInTheDocument();
+      expect(screen.getByText('This is the collapsible content')).toBeInTheDocument();
     });
   });
 
-  it("collapses when trigger is clicked again", async () => {
+  it('collapses when trigger is clicked again', async () => {
     const user = userEvent.setup();
     render(<CollapsibleExample />);
 
-    const trigger = screen.getByRole("button", { name: "Toggle" });
+    const trigger = screen.getByRole('button', { name: 'Toggle' });
     await user.click(trigger);
 
     await waitFor(() => {
-      expect(screen.getByText("This is the collapsible content")).toBeInTheDocument();
+      expect(screen.getByText('This is the collapsible content')).toBeInTheDocument();
     });
 
     await user.click(trigger);
 
     await waitFor(() => {
-      expect(screen.queryByText("This is the collapsible content")).not.toBeInTheDocument();
+      expect(screen.queryByText('This is the collapsible content')).not.toBeInTheDocument();
     });
   });
 
-  it("calls onOpenChange when toggled", async () => {
+  it('calls onOpenChange when toggled', async () => {
     const user = userEvent.setup();
     const handleOpenChange = vi.fn();
     render(<CollapsibleExample onOpenChange={handleOpenChange} />);
 
-    const trigger = screen.getByRole("button", { name: "Toggle" });
+    const trigger = screen.getByRole('button', { name: 'Toggle' });
     await user.click(trigger);
 
     expect(handleOpenChange).toHaveBeenCalledWith(true);
   });
 
-  it("supports keyboard interaction with Space", async () => {
+  it('supports keyboard interaction with Space', async () => {
     const user = userEvent.setup();
     render(<CollapsibleExample />);
 
-    const trigger = screen.getByRole("button", { name: "Toggle" });
+    const trigger = screen.getByRole('button', { name: 'Toggle' });
     trigger.focus();
-    await user.keyboard(" ");
+    await user.keyboard(' ');
 
     await waitFor(() => {
-      expect(screen.getByText("This is the collapsible content")).toBeInTheDocument();
+      expect(screen.getByText('This is the collapsible content')).toBeInTheDocument();
     });
   });
 
-  it("supports keyboard interaction with Enter", async () => {
+  it('supports keyboard interaction with Enter', async () => {
     const user = userEvent.setup();
     render(<CollapsibleExample />);
 
-    const trigger = screen.getByRole("button", { name: "Toggle" });
+    const trigger = screen.getByRole('button', { name: 'Toggle' });
     trigger.focus();
-    await user.keyboard("{Enter}");
+    await user.keyboard('{Enter}');
 
     await waitFor(() => {
-      expect(screen.getByText("This is the collapsible content")).toBeInTheDocument();
+      expect(screen.getByText('This is the collapsible content')).toBeInTheDocument();
     });
   });
 
-  it("can be disabled", () => {
+  it('can be disabled', () => {
     render(
       <Collapsible disabled>
         <CollapsibleTrigger>Toggle</CollapsibleTrigger>
@@ -107,11 +107,11 @@ describe("Collapsible", () => {
       </Collapsible>,
     );
 
-    const trigger = screen.getByRole("button", { name: "Toggle" });
+    const trigger = screen.getByRole('button', { name: 'Toggle' });
     expect(trigger).toBeDisabled();
   });
 
-  it("does not toggle when disabled", async () => {
+  it('does not toggle when disabled', async () => {
     const user = userEvent.setup();
     const handleOpenChange = vi.fn();
     render(
@@ -121,13 +121,13 @@ describe("Collapsible", () => {
       </Collapsible>,
     );
 
-    const trigger = screen.getByRole("button", { name: "Toggle" });
+    const trigger = screen.getByRole('button', { name: 'Toggle' });
     await user.click(trigger);
 
     expect(handleOpenChange).not.toHaveBeenCalled();
   });
 
-  it("supports default open state", () => {
+  it('supports default open state', () => {
     render(
       <Collapsible defaultOpen>
         <CollapsibleTrigger>Toggle</CollapsibleTrigger>
@@ -135,10 +135,10 @@ describe("Collapsible", () => {
       </Collapsible>,
     );
 
-    expect(screen.getByText("Content shown by default")).toBeInTheDocument();
+    expect(screen.getByText('Content shown by default')).toBeInTheDocument();
   });
 
-  it("supports controlled mode", async () => {
+  it('supports controlled mode', async () => {
     const user = userEvent.setup();
     const handleOpenChange = vi.fn();
     const { rerender } = render(
@@ -148,9 +148,9 @@ describe("Collapsible", () => {
       </Collapsible>,
     );
 
-    expect(screen.queryByText("Controlled content")).not.toBeInTheDocument();
+    expect(screen.queryByText('Controlled content')).not.toBeInTheDocument();
 
-    const trigger = screen.getByRole("button", { name: "Toggle" });
+    const trigger = screen.getByRole('button', { name: 'Toggle' });
     await user.click(trigger);
 
     expect(handleOpenChange).toHaveBeenCalledWith(true);
@@ -163,29 +163,29 @@ describe("Collapsible", () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText("Controlled content")).toBeInTheDocument();
+      expect(screen.getByText('Controlled content')).toBeInTheDocument();
     });
   });
 
-  it("has proper ARIA attributes", () => {
+  it('has proper ARIA attributes', () => {
     render(<CollapsibleExample />);
-    const trigger = screen.getByRole("button", { name: "Toggle" });
-    expect(trigger).toHaveAttribute("aria-expanded", "false");
+    const trigger = screen.getByRole('button', { name: 'Toggle' });
+    expect(trigger).toHaveAttribute('aria-expanded', 'false');
   });
 
-  it("updates ARIA attributes when expanded", async () => {
+  it('updates ARIA attributes when expanded', async () => {
     const user = userEvent.setup();
     render(<CollapsibleExample />);
 
-    const trigger = screen.getByRole("button", { name: "Toggle" });
+    const trigger = screen.getByRole('button', { name: 'Toggle' });
     await user.click(trigger);
 
     await waitFor(() => {
-      expect(trigger).toHaveAttribute("aria-expanded", "true");
+      expect(trigger).toHaveAttribute('aria-expanded', 'true');
     });
   });
 
-  it("supports asChild on trigger", async () => {
+  it('supports asChild on trigger', async () => {
     const user = userEvent.setup();
     render(
       <Collapsible>
@@ -196,15 +196,15 @@ describe("Collapsible", () => {
       </Collapsible>,
     );
 
-    const trigger = screen.getByRole("button", { name: "Custom trigger" });
+    const trigger = screen.getByRole('button', { name: 'Custom trigger' });
     await user.click(trigger);
 
     await waitFor(() => {
-      expect(screen.getByText("Content")).toBeInTheDocument();
+      expect(screen.getByText('Content')).toBeInTheDocument();
     });
   });
 
-  it("supports asChild on content", async () => {
+  it('supports asChild on content', async () => {
     const user = userEvent.setup();
     render(
       <Collapsible>
@@ -215,11 +215,11 @@ describe("Collapsible", () => {
       </Collapsible>,
     );
 
-    const trigger = screen.getByRole("button", { name: "Toggle" });
+    const trigger = screen.getByRole('button', { name: 'Toggle' });
     await user.click(trigger);
 
     await waitFor(() => {
-      expect(screen.getByText("Custom content wrapper")).toBeInTheDocument();
+      expect(screen.getByText('Custom content wrapper')).toBeInTheDocument();
     });
   });
 });

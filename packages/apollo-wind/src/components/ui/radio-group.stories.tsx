@@ -1,12 +1,12 @@
-import type { Meta } from "@storybook/react-vite";
-import { Label } from "./label";
-import { RadioGroup, RadioGroupItem } from "./radio-group";
-import { Row } from "./layout";
+import type { Meta } from '@storybook/react-vite';
+import { Label } from './label';
+import { RadioGroup, RadioGroupItem } from './radio-group';
+import { Row } from './layout';
 
 const meta: Meta<typeof RadioGroup> = {
-  title: "Design System/Core/Radio Group",
+  title: 'Design System/Core/Radio Group',
   component: RadioGroup,
-  tags: ["autodocs"],
+  tags: ['autodocs'],
 };
 
 export default meta;

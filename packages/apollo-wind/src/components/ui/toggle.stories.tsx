@@ -1,10 +1,10 @@
-import type { Meta } from "@storybook/react-vite";
-import { Toggle } from "./toggle";
+import type { Meta } from '@storybook/react-vite';
+import { Toggle } from './toggle';
 
 const meta: Meta<typeof Toggle> = {
-  title: "Design System/Core/Toggle",
+  title: 'Design System/Core/Toggle',
   component: Toggle,
-  tags: ["autodocs"],
+  tags: ['autodocs'],
 };
 
 export default meta;

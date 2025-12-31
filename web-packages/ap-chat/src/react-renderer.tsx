@@ -62,16 +62,16 @@ export function createReactRenderer(shadowRoot: ShadowRoot, portalContainer: HTM
     // The portalContainer is positioned at Shadow DOM root with fixed positioning
     // This prevents clipping in embedded mode while being a real HTMLElement for MUI
     return (
-        <CacheProvider value={emotionCache}>
-          <ReactApChat
-            chatServiceInstance={chatServiceInstance}
-            locale={locale}
-            theme={theme}
-            portalContainer={portalContainer}
-            enableInternalThemeProvider={true}
-            disableEmbeddedPortal={true}
-          />
-        </CacheProvider>
+      <CacheProvider value={emotionCache}>
+        <ReactApChat
+          chatServiceInstance={chatServiceInstance}
+          locale={locale}
+          theme={theme}
+          portalContainer={portalContainer}
+          enableInternalThemeProvider={true}
+          disableEmbeddedPortal={true}
+        />
+      </CacheProvider>
     );
   };
 }
@@ -88,4 +88,3 @@ export function cleanupReactRenderer(shadowRoot: ShadowRoot) {
     globalObserver = null;
   }
 }
-

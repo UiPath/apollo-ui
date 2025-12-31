@@ -1,11 +1,11 @@
-import type { Meta } from "@storybook/react-vite";
-import { useState } from "react";
-import { Calendar } from "./calendar";
+import type { Meta } from '@storybook/react-vite';
+import { useState } from 'react';
+import { Calendar } from './calendar';
 
 const meta: Meta<typeof Calendar> = {
-  title: "Design System/Data Display/Calendar",
+  title: 'Design System/Data Display/Calendar',
   component: Calendar,
-  tags: ["autodocs"],
+  tags: ['autodocs'],
 };
 
 export default meta;

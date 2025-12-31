@@ -4,10 +4,9 @@ import { msg } from '@lingui/core/macro';
 import { useLingui } from '@lingui/react';
 import { Box, Collapse, styled } from '@mui/material';
 import token from '@uipath/apollo-core';
+import { ApIcon } from '@uipath/apollo-react/material/components';
 
 import { ApTypography } from '../../../../ap-typography';
-import { ApIcon } from '../../common/icon';
-import { AutopilotChatTooltip } from '../../common/tooltip';
 import { useIsStreamingMessage } from '../../../hooks/use-is-streaming-message';
 import { useChatService } from '../../../providers/chat-service.provider';
 import { useChatState } from '../../../providers/chat-state-provider';
@@ -18,6 +17,7 @@ import {
   PdfCitation,
   UrlCitation,
 } from '../../../service';
+import { AutopilotChatTooltip } from '../../common/tooltip';
 
 interface AutopilotChatSourcesProps {
   groupId: string;

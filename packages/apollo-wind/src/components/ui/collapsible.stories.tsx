@@ -1,13 +1,13 @@
-import type { Meta } from "@storybook/react-vite";
-import { useState } from "react";
-import { Button } from "./button";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "./collapsible";
-import { Row } from "./layout";
+import type { Meta } from '@storybook/react-vite';
+import { useState } from 'react';
+import { Button } from './button';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from './collapsible';
+import { Row } from './layout';
 
 const meta: Meta<typeof Collapsible> = {
-  title: "Design System/Data Display/Collapsible",
+  title: 'Design System/Data Display/Collapsible',
   component: Collapsible,
-  tags: ["autodocs"],
+  tags: ['autodocs'],
 };
 
 export default meta;
@@ -23,7 +23,7 @@ export const Default = {
           <h4 className="text-sm font-semibold">@peduarte starred 3 repositories</h4>
           <CollapsibleTrigger asChild>
             <Button variant="ghost" size="sm">
-              {isOpen ? "Hide" : "Show"}
+              {isOpen ? 'Hide' : 'Show'}
             </Button>
           </CollapsibleTrigger>
         </Row>

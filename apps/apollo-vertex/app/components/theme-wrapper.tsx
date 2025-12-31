@@ -9,7 +9,9 @@ import { themes, type ThemeName, getCustomTheme } from "../themes";
 const THEME_STORAGE_KEY = "apollo-vertex-theme";
 
 export function ThemeWrapper({ children }: { children: React.ReactNode }) {
-    const [themeConfig, setThemeConfig] = useState<ThemeConfig>(themes.default.config);
+    const [themeConfig, setThemeConfig] = useState<ThemeConfig>(
+        themes.default.config,
+    );
 
     useEffect(() => {
         const savedTheme = localStorage.getItem(THEME_STORAGE_KEY);
@@ -23,7 +25,9 @@ export function ThemeWrapper({ children }: { children: React.ReactNode }) {
                     setThemeConfig(themes.default.config);
                 }
             } else if (savedTheme in themes) {
-                setThemeConfig(themes[savedTheme as keyof typeof themes].config);
+                setThemeConfig(
+                    themes[savedTheme as keyof typeof themes].config,
+                );
             }
         }
 
@@ -54,4 +58,3 @@ export function ThemeWrapper({ children }: { children: React.ReactNode }) {
         </ThemeProvider>
     );
 }
-

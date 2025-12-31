@@ -1,4 +1,4 @@
-import type { Meta } from "@storybook/react-vite";
+import type { Meta } from '@storybook/react-vite';
 import {
   Bold,
   Italic,
@@ -14,31 +14,31 @@ import {
   Plus,
   Copy,
   MoreVertical,
-} from "lucide-react";
-import { Button } from "./button";
-import { ButtonGroup, ButtonGroupSeparator, ButtonGroupText } from "./button-group";
-import { ToggleGroup, ToggleGroupItem } from "./toggle-group";
-import { Switch } from "./switch";
-import { Label } from "./label";
-import { Separator } from "./separator";
+} from 'lucide-react';
+import { Button } from './button';
+import { ButtonGroup, ButtonGroupSeparator, ButtonGroupText } from './button-group';
+import { ToggleGroup, ToggleGroupItem } from './toggle-group';
+import { Switch } from './switch';
+import { Label } from './label';
+import { Separator } from './separator';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "./dropdown-menu";
+} from './dropdown-menu';
 
 const meta = {
-  title: "Design System/Core/ButtonGroup",
+  title: 'Design System/Core/ButtonGroup',
   component: ButtonGroup,
   parameters: {
-    layout: "centered",
+    layout: 'centered',
   },
-  tags: ["autodocs"],
+  tags: ['autodocs'],
   argTypes: {
     orientation: {
-      control: "select",
-      options: ["horizontal", "vertical"],
+      control: 'select',
+      options: ['horizontal', 'vertical'],
     },
   },
 } satisfies Meta<typeof ButtonGroup>;

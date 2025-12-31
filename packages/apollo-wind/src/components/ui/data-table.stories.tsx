@@ -1,26 +1,26 @@
-import type { Meta } from "@storybook/react-vite";
-import { ColumnDef } from "@tanstack/react-table";
-import { MoreHorizontal } from "lucide-react";
-import * as React from "react";
-import { Badge } from "./badge";
-import { Button } from "./button";
-import { DataTable, DataTableColumnHeader, DataTableSelectColumn } from "./data-table";
+import type { Meta } from '@storybook/react-vite';
+import { ColumnDef } from '@tanstack/react-table';
+import { MoreHorizontal } from 'lucide-react';
+import * as React from 'react';
+import { Badge } from './badge';
+import { Button } from './button';
+import { DataTable, DataTableColumnHeader, DataTableSelectColumn } from './data-table';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuTrigger,
-} from "./dropdown-menu";
-import type { EditableCellMeta } from "./editable-cell";
+} from './dropdown-menu';
+import type { EditableCellMeta } from './editable-cell';
 
 const meta = {
-  title: "Design System/Data Display/Data Table",
+  title: 'Design System/Data Display/Data Table',
   component: DataTable,
   parameters: {
-    layout: "padded",
+    layout: 'padded',
   },
-  tags: ["autodocs"],
+  tags: ['autodocs'],
 } satisfies Meta<typeof DataTable>;
 
 export default meta;
@@ -31,118 +31,118 @@ type User = {
   name: string;
   email: string;
   role: string;
-  status: "active" | "inactive" | "pending";
+  status: 'active' | 'inactive' | 'pending';
 };
 
 const sampleUsers: User[] = [
   {
-    id: "1",
-    name: "John Doe",
-    email: "john@example.com",
-    role: "Admin",
-    status: "active",
+    id: '1',
+    name: 'John Doe',
+    email: 'john@example.com',
+    role: 'Admin',
+    status: 'active',
   },
   {
-    id: "2",
-    name: "Jane Smith",
-    email: "jane@example.com",
-    role: "User",
-    status: "active",
+    id: '2',
+    name: 'Jane Smith',
+    email: 'jane@example.com',
+    role: 'User',
+    status: 'active',
   },
   {
-    id: "3",
-    name: "Bob Johnson",
-    email: "bob@example.com",
-    role: "User",
-    status: "inactive",
+    id: '3',
+    name: 'Bob Johnson',
+    email: 'bob@example.com',
+    role: 'User',
+    status: 'inactive',
   },
   {
-    id: "4",
-    name: "Alice Williams",
-    email: "alice@example.com",
-    role: "Manager",
-    status: "active",
+    id: '4',
+    name: 'Alice Williams',
+    email: 'alice@example.com',
+    role: 'Manager',
+    status: 'active',
   },
   {
-    id: "5",
-    name: "Charlie Brown",
-    email: "charlie@example.com",
-    role: "User",
-    status: "pending",
+    id: '5',
+    name: 'Charlie Brown',
+    email: 'charlie@example.com',
+    role: 'User',
+    status: 'pending',
   },
   {
-    id: "6",
-    name: "Diana Prince",
-    email: "diana@example.com",
-    role: "Admin",
-    status: "active",
+    id: '6',
+    name: 'Diana Prince',
+    email: 'diana@example.com',
+    role: 'Admin',
+    status: 'active',
   },
   {
-    id: "7",
-    name: "Eve Anderson",
-    email: "eve@example.com",
-    role: "User",
-    status: "inactive",
+    id: '7',
+    name: 'Eve Anderson',
+    email: 'eve@example.com',
+    role: 'User',
+    status: 'inactive',
   },
   {
-    id: "8",
-    name: "Frank Miller",
-    email: "frank@example.com",
-    role: "Manager",
-    status: "active",
+    id: '8',
+    name: 'Frank Miller',
+    email: 'frank@example.com',
+    role: 'Manager',
+    status: 'active',
   },
   {
-    id: "9",
-    name: "Grace Lee",
-    email: "grace@example.com",
-    role: "User",
-    status: "active",
+    id: '9',
+    name: 'Grace Lee',
+    email: 'grace@example.com',
+    role: 'User',
+    status: 'active',
   },
   {
-    id: "10",
-    name: "Henry Davis",
-    email: "henry@example.com",
-    role: "User",
-    status: "pending",
+    id: '10',
+    name: 'Henry Davis',
+    email: 'henry@example.com',
+    role: 'User',
+    status: 'pending',
   },
   {
-    id: "11",
-    name: "Ivy Wilson",
-    email: "ivy@example.com",
-    role: "Admin",
-    status: "active",
+    id: '11',
+    name: 'Ivy Wilson',
+    email: 'ivy@example.com',
+    role: 'Admin',
+    status: 'active',
   },
   {
-    id: "12",
-    name: "Jack Taylor",
-    email: "jack@example.com",
-    role: "User",
-    status: "inactive",
+    id: '12',
+    name: 'Jack Taylor',
+    email: 'jack@example.com',
+    role: 'User',
+    status: 'inactive',
   },
 ];
 
 const basicColumns: ColumnDef<User>[] = [
   {
-    accessorKey: "name",
-    header: "Name",
+    accessorKey: 'name',
+    header: 'Name',
   },
   {
-    accessorKey: "email",
-    header: "Email",
+    accessorKey: 'email',
+    header: 'Email',
   },
   {
-    accessorKey: "role",
-    header: "Role",
+    accessorKey: 'role',
+    header: 'Role',
   },
   {
-    accessorKey: "status",
-    header: "Status",
+    accessorKey: 'status',
+    header: 'Status',
     cell: ({ row }) => {
-      const status = row.getValue("status") as string;
+      const status = row.getValue('status') as string;
       return (
         <Badge
           variant={
-            status === "active" ? "default" : status === "inactive" ? "secondary" : "outline"
+            status === 'active' ? 'default' : status === 'inactive' ? 'secondary' : 'outline'
           }
         >
           {status}
@@ -154,26 +154,26 @@ const basicColumns: ColumnDef<User>[] = [
 
 const sortableColumns: ColumnDef<User>[] = [
   {
-    accessorKey: "name",
+    accessorKey: 'name',
     header: ({ column }) => <DataTableColumnHeader column={column} title="Name" />,
   },
   {
-    accessorKey: "email",
+    accessorKey: 'email',
     header: ({ column }) => <DataTableColumnHeader column={column} title="Email" />,
   },
   {
-    accessorKey: "role",
+    accessorKey: 'role',
     header: ({ column }) => <DataTableColumnHeader column={column} title="Role" />,
   },
   {
-    accessorKey: "status",
+    accessorKey: 'status',
     header: ({ column }) => <DataTableColumnHeader column={column} title="Status" />,
     cell: ({ row }) => {
-      const status = row.getValue("status") as string;
+      const status = row.getValue('status') as string;
       return (
         <Badge
           variant={
-            status === "active" ? "default" : status === "inactive" ? "secondary" : "outline"
+            status === 'active' ? 'default' : status === 'inactive' ? 'secondary' : 'outline'
           }
         >
           {status}
@@ -187,7 +187,7 @@ const selectableColumns: ColumnDef<User>[] = [
   DataTableSelectColumn<User>(),
   ...sortableColumns,
   {
-    id: "actions",
+    id: 'actions',
     cell: ({ row }) => {
       return (
         <DropdownMenu>
@@ -290,95 +290,95 @@ type Task = {
 
 const initialTasks: Task[] = [
   {
-    id: "1",
-    name: "Design homepage mockup",
-    status: "in-progress",
-    priority: "high",
-    dueDate: new Date("2024-12-15"),
+    id: '1',
+    name: 'Design homepage mockup',
+    status: 'in-progress',
+    priority: 'high',
+    dueDate: new Date('2024-12-15'),
     completed: false,
   },
   {
-    id: "2",
-    name: "Review pull request",
-    status: "todo",
-    priority: "medium",
-    dueDate: new Date("2024-12-10"),
+    id: '2',
+    name: 'Review pull request',
+    status: 'todo',
+    priority: 'medium',
+    dueDate: new Date('2024-12-10'),
     completed: false,
   },
   {
-    id: "3",
-    name: "Update documentation",
-    status: "done",
-    priority: "low",
-    dueDate: new Date("2024-12-05"),
+    id: '3',
+    name: 'Update documentation',
+    status: 'done',
+    priority: 'low',
+    dueDate: new Date('2024-12-05'),
     completed: true,
   },
   {
-    id: "4",
-    name: "Fix navigation bug",
-    status: "in-progress",
-    priority: "high",
+    id: '4',
+    name: 'Fix navigation bug',
+    status: 'in-progress',
+    priority: 'high',
     dueDate: null,
     completed: false,
   },
   {
-    id: "5",
-    name: "Write unit tests",
-    status: "todo",
-    priority: "medium",
-    dueDate: new Date("2024-12-20"),
+    id: '5',
+    name: 'Write unit tests',
+    status: 'todo',
+    priority: 'medium',
+    dueDate: new Date('2024-12-20'),
     completed: false,
   },
 ];
 
 const editableColumns: ColumnDef<Task, unknown>[] = [
   {
-    accessorKey: "completed",
-    header: "",
-    meta: { type: "checkbox" } as EditableCellMeta,
+    accessorKey: 'completed',
+    header: '',
+    meta: { type: 'checkbox' } as EditableCellMeta,
     size: 50,
     minSize: 50,
     maxSize: 50,
   },
   {
-    accessorKey: "name",
-    header: "Task",
-    meta: { type: "text", placeholder: "Enter task name..." } as EditableCellMeta,
+    accessorKey: 'name',
+    header: 'Task',
+    meta: { type: 'text', placeholder: 'Enter task name...' } as EditableCellMeta,
     size: 250,
     minSize: 200,
   },
   {
-    accessorKey: "status",
-    header: "Status",
+    accessorKey: 'status',
+    header: 'Status',
     meta: {
-      type: "select",
+      type: 'select',
       options: [
-        { value: "todo", label: "To Do" },
-        { value: "in-progress", label: "In Progress" },
-        { value: "done", label: "Done" },
+        { value: 'todo', label: 'To Do' },
+        { value: 'in-progress', label: 'In Progress' },
+        { value: 'done', label: 'Done' },
       ],
     } as EditableCellMeta,
     size: 140,
     minSize: 120,
   },
   {
-    accessorKey: "priority",
-    header: "Priority",
+    accessorKey: 'priority',
+    header: 'Priority',
     meta: {
-      type: "select",
+      type: 'select',
       options: [
-        { value: "low", label: "Low" },
-        { value: "medium", label: "Medium" },
-        { value: "high", label: "High" },
+        { value: 'low', label: 'Low' },
+        { value: 'medium', label: 'Medium' },
+        { value: 'high', label: 'High' },
       ],
     } as EditableCellMeta,
     size: 120,
     minSize: 100,
   },
   {
-    accessorKey: "dueDate",
-    header: "Due Date",
-    meta: { type: "date", placeholder: "Set due date" } as EditableCellMeta,
+    accessorKey: 'dueDate',
+    header: 'Due Date',
+    meta: { type: 'date', placeholder: 'Set due date' } as EditableCellMeta,
     size: 180,
     minSize: 150,
   },
@@ -436,44 +436,44 @@ export const Compact = {
 const editableSortableColumns: ColumnDef<Task, unknown>[] = [
   DataTableSelectColumn<Task>(),
   {
-    accessorKey: "name",
+    accessorKey: 'name',
     header: ({ column }) => <DataTableColumnHeader column={column} title="Task" />,
-    meta: { type: "text", placeholder: "Enter task name..." } as EditableCellMeta,
+    meta: { type: 'text', placeholder: 'Enter task name...' } as EditableCellMeta,
     size: 250,
     minSize: 150,
   },
   {
-    accessorKey: "status",
+    accessorKey: 'status',
     header: ({ column }) => <DataTableColumnHeader column={column} title="Status" />,
     meta: {
-      type: "select",
+      type: 'select',
       options: [
-        { value: "todo", label: "To Do" },
-        { value: "in-progress", label: "In Progress" },
-        { value: "done", label: "Done" },
+        { value: 'todo', label: 'To Do' },
+        { value: 'in-progress', label: 'In Progress' },
+        { value: 'done', label: 'Done' },
       ],
     } as EditableCellMeta,
     size: 140,
     minSize: 100,
   },
   {
-    accessorKey: "priority",
+    accessorKey: 'priority',
     header: ({ column }) => <DataTableColumnHeader column={column} title="Priority" />,
     meta: {
-      type: "select",
+      type: 'select',
       options: [
-        { value: "low", label: "Low" },
-        { value: "medium", label: "Medium" },
-        { value: "high", label: "High" },
+        { value: 'low', label: 'Low' },
+        { value: 'medium', label: 'Medium' },
+        { value: 'high', label: 'High' },
       ],
     } as EditableCellMeta,
     size: 120,
     minSize: 100,
   },
   {
-    accessorKey: "dueDate",
+    accessorKey: 'dueDate',
     header: ({ column }) => <DataTableColumnHeader column={column} title="Due Date" />,
-    meta: { type: "date", placeholder: "Set due date" } as EditableCellMeta,
+    meta: { type: 'date', placeholder: 'Set due date' } as EditableCellMeta,
     size: 180,
     minSize: 140,
   },

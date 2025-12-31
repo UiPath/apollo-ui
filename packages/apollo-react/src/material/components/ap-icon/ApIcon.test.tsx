@@ -1,9 +1,4 @@
-import {
-  describe,
-  expect,
-  it,
-  vi,
-} from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { render } from '@testing-library/react';
 import React from 'react';
@@ -14,28 +9,32 @@ import { ApIcon } from './ApIcon';
 vi.mock('./assets/index', () => {
   // Create a factory function for mock SVG components
   const createMockSvg = () => {
-    const Component = (props: any) => React.createElement('svg', {
-      'data-testid': 'mock-svg',
-      ...props
-    });
+    const Component = (props: any) =>
+      React.createElement('svg', {
+        'data-testid': 'mock-svg',
+        ...props,
+      });
     Component.muiName = 'SvgIcon';
     return Component;
   };
 
   // Use a Proxy to return undefined for unknown icons (allowing error handling to work)
-  return new Proxy({
-    AutopilotColor: createMockSvg(),
-    Agent: createMockSvg(),
-    Robot: createMockSvg(),
-    NewChat: createMockSvg(),
-  }, {
-    get(target: any, prop) {
-      return target[prop]; // Returns undefined for unmocked icons
+  return new Proxy(
+    {
+      AutopilotColor: createMockSvg(),
+      Agent: createMockSvg(),
+      Robot: createMockSvg(),
+      NewChat: createMockSvg(),
     },
-    has() {
-      return true; // Tell vitest that any property exists
+    {
+      get(target: any, prop) {
+        return target[prop]; // Returns undefined for unmocked icons
+      },
+      has() {
+        return true; // Tell vitest that any property exists
+      },
     }
-  });
+  );
 });
 
 describe('ApIcon', () => {

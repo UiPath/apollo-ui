@@ -1,5 +1,5 @@
-import type { Meta } from "@storybook/react-vite";
-import { Button } from "./button";
+import type { Meta } from '@storybook/react-vite';
+import { Button } from './button';
 import {
   Dialog,
   DialogContent,
@@ -7,12 +7,12 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "./dialog";
+} from './dialog';
 
 const meta: Meta<typeof Dialog> = {
-  title: "Design System/Overlays/Dialog",
+  title: 'Design System/Overlays/Dialog',
   component: Dialog,
-  tags: ["autodocs"],
+  tags: ['autodocs'],
 };
 
 export default meta;

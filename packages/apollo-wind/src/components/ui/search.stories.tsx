@@ -1,14 +1,14 @@
-import type { Meta } from "@storybook/react-vite";
-import * as React from "react";
-import { Search, SearchWithSuggestions } from "./search";
+import type { Meta } from '@storybook/react-vite';
+import * as React from 'react';
+import { Search, SearchWithSuggestions } from './search';
 
 const meta = {
-  title: "Design System/Core/Search",
+  title: 'Design System/Core/Search',
   component: Search,
   parameters: {
-    layout: "centered",
+    layout: 'centered',
   },
-  tags: ["autodocs"],
+  tags: ['autodocs'],
 } satisfies Meta<typeof Search>;
 
 export default meta;
@@ -16,7 +16,7 @@ export default meta;
 export const Default = {
   args: {},
   render: () => {
-    const [value, setValue] = React.useState("");
+    const [value, setValue] = React.useState('');
     return (
       <div className="w-[400px]">
         <Search placeholder="Search..." value={value} onChange={setValue} />
@@ -28,7 +28,7 @@ export const Default = {
 export const WithValue = {
   args: {},
   render: () => {
-    const [value, setValue] = React.useState("React components");
+    const [value, setValue] = React.useState('React components');
     return (
       <div className="w-[400px]">
         <Search placeholder="Search..." value={value} onChange={setValue} />
@@ -40,7 +40,7 @@ export const WithValue = {
 export const NoClearButton = {
   args: {},
   render: () => {
-    const [value, setValue] = React.useState("");
+    const [value, setValue] = React.useState('');
     return (
       <div className="w-[400px]">
         <Search placeholder="Search..." value={value} onChange={setValue} showClearButton={false} />
@@ -52,20 +52,20 @@ export const NoClearButton = {
 export const WithSuggestions = {
   args: {},
   render: () => {
-    const [value, setValue] = React.useState("");
+    const [value, setValue] = React.useState('');
     const suggestions = [
-      "React",
-      "React Native",
-      "React Router",
-      "Redux",
-      "TypeScript",
-      "JavaScript",
-      "Next.js",
-      "Node.js",
-      "Tailwind CSS",
-      "Vue.js",
-      "Angular",
-      "Svelte",
+      'React',
+      'React Native',
+      'React Router',
+      'Redux',
+      'TypeScript',
+      'JavaScript',
+      'Next.js',
+      'Node.js',
+      'Tailwind CSS',
+      'Vue.js',
+      'Angular',
+      'Svelte',
     ];
 
     return (
@@ -75,7 +75,7 @@ export const WithSuggestions = {
           value={value}
           onChange={setValue}
           suggestions={suggestions}
-          onSelect={(selected) => console.log("Selected:", selected)}
+          onSelect={(selected) => console.log('Selected:', selected)}
         />
       </div>
     );
@@ -85,8 +85,8 @@ export const WithSuggestions = {
 export const WithCustomEmptyMessage = {
   args: {},
   render: () => {
-    const [value, setValue] = React.useState("");
-    const suggestions = ["Apple", "Banana", "Cherry"];
+    const [value, setValue] = React.useState('');
+    const suggestions = ['Apple', 'Banana', 'Cherry'];
 
     return (
       <div className="w-[400px]">
@@ -105,16 +105,16 @@ export const WithCustomEmptyMessage = {
 export const SearchUsers = {
   args: {},
   render: () => {
-    const [value, setValue] = React.useState("");
+    const [value, setValue] = React.useState('');
     const users = [
-      "John Doe",
-      "Jane Smith",
-      "Bob Johnson",
-      "Alice Williams",
-      "Charlie Brown",
-      "Diana Prince",
-      "Eve Anderson",
-      "Frank Miller",
+      'John Doe',
+      'Jane Smith',
+      'Bob Johnson',
+      'Alice Williams',
+      'Charlie Brown',
+      'Diana Prince',
+      'Eve Anderson',
+      'Frank Miller',
     ];
 
     return (
@@ -135,22 +135,22 @@ export const SearchUsers = {
 export const Interactive = {
   args: {},
   render: () => {
-    const [value, setValue] = React.useState("");
+    const [value, setValue] = React.useState('');
     const [results, setResults] = React.useState<string[]>([]);
 
     const allItems = [
-      "Dashboard",
-      "Analytics",
-      "Reports",
-      "Settings",
-      "Profile",
-      "Team Members",
-      "Projects",
-      "Tasks",
-      "Calendar",
-      "Messages",
-      "Notifications",
-      "Documents",
+      'Dashboard',
+      'Analytics',
+      'Reports',
+      'Settings',
+      'Profile',
+      'Team Members',
+      'Projects',
+      'Tasks',
+      'Calendar',
+      'Messages',
+      'Notifications',
+      'Documents',
     ];
 
     React.useEffect(() => {
@@ -178,7 +178,7 @@ export const Interactive = {
         {value && results.length > 0 && (
           <div className="rounded-lg border p-4">
             <p className="mb-2 text-sm font-medium">
-              Found {results.length} result{results.length === 1 ? "" : "s"}
+              Found {results.length} result{results.length === 1 ? '' : 's'}
             </p>
             <ul className="space-y-1 text-sm text-muted-foreground">
               {results.slice(0, 3).map((result) => (

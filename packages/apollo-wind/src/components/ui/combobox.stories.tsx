@@ -1,26 +1,26 @@
-import type { Meta, StoryObj } from "@storybook/react-vite";
-import { useState } from "react";
-import { Combobox, ComboboxItem } from "./combobox";
-import { Label } from "./label";
+import type { Meta, StoryObj } from '@storybook/react-vite';
+import { useState } from 'react';
+import { Combobox, ComboboxItem } from './combobox';
+import { Label } from './label';
 
 const meta = {
-  title: "Design System/Core/Combobox",
+  title: 'Design System/Core/Combobox',
   component: Combobox,
   parameters: {
-    layout: "centered",
+    layout: 'centered',
   },
-  tags: ["autodocs"],
+  tags: ['autodocs'],
 } satisfies Meta<typeof Combobox>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
 const frameworks: ComboboxItem[] = [
-  { value: "next.js", label: "Next.js" },
-  { value: "sveltekit", label: "SvelteKit" },
-  { value: "nuxt.js", label: "Nuxt.js" },
-  { value: "remix", label: "Remix" },
-  { value: "astro", label: "Astro" },
+  { value: 'next.js', label: 'Next.js' },
+  { value: 'sveltekit', label: 'SvelteKit' },
+  { value: 'nuxt.js', label: 'Nuxt.js' },
+  { value: 'remix', label: 'Remix' },
+  { value: 'astro', label: 'Astro' },
 ];
 
 const largeList: ComboboxItem[] = Array.from({ length: 50 }, (_, i) => ({
@@ -32,7 +32,7 @@ export const Default: Story = {
   // @ts-expect-error - args not needed when using render, but Storybook requires it
   args: {},
   render: () => {
-    const [value, setValue] = useState<string>("");
+    const [value, setValue] = useState<string>('');
 
     return (
       <Combobox
@@ -49,7 +49,7 @@ export const WithLabel: Story = {
   // @ts-expect-error - args not needed when using render, but Storybook requires it
   args: {},
   render: () => {
-    const [value, setValue] = useState<string>("");
+    const [value, setValue] = useState<string>('');
 
     return (
       <div className="grid w-full max-w-sm items-center gap-1.5">
@@ -70,7 +70,7 @@ export const WithValue: Story = {
   // @ts-expect-error - args not needed when using render, but Storybook requires it
   args: {},
   render: () => {
-    const [value, setValue] = useState<string>("next.js");
+    const [value, setValue] = useState<string>('next.js');
 
     return (
       <Combobox
@@ -88,7 +88,7 @@ export const Disabled: Story = {
   // @ts-expect-error - args not needed when using render, but Storybook requires it
   args: {},
   render: () => {
-    const [value, setValue] = useState<string>("next.js");
+    const [value, setValue] = useState<string>('next.js');
 
     return (
       <Combobox
@@ -107,7 +107,7 @@ export const LargeList: Story = {
   // @ts-expect-error - args not needed when using render, but Storybook requires it
   args: {},
   render: () => {
-    const [value, setValue] = useState<string>("");
+    const [value, setValue] = useState<string>('');
 
     return (
       <Combobox

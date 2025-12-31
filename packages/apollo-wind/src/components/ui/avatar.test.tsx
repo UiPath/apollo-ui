@@ -1,7 +1,7 @@
-import { render, screen, waitFor } from "@testing-library/react";
-import { axe } from "jest-axe";
-import { describe, expect, it, vi, beforeEach } from "vitest";
-import { Avatar, AvatarFallback, AvatarImage } from "./avatar";
+import { render, screen, waitFor } from '@testing-library/react';
+import { axe } from 'jest-axe';
+import { describe, expect, it, vi, beforeEach } from 'vitest';
+import { Avatar, AvatarFallback, AvatarImage } from './avatar';
 
 // Mock the Image constructor to control loading behavior
 beforeEach(() => {
@@ -9,8 +9,8 @@ beforeEach(() => {
   vi.restoreAllMocks();
 });
 
-describe("Avatar", () => {
-  it("renders without crashing", () => {
+describe('Avatar', () => {
+  it('renders without crashing', () => {
     const { container } = render(
       <Avatar>
         <AvatarFallback>JD</AvatarFallback>
@@ -19,7 +19,7 @@ describe("Avatar", () => {
     expect(container.firstChild).toBeInTheDocument();
   });
 
-  it("has no accessibility violations", async () => {
+  it('has no accessibility violations', async () => {
     const { container } = render(
       <Avatar>
         <AvatarFallback>CN</AvatarFallback>
@@ -29,16 +29,16 @@ describe("Avatar", () => {
     expect(results).toHaveNoViolations();
   });
 
-  it("displays fallback text", () => {
+  it('displays fallback text', () => {
     render(
       <Avatar>
         <AvatarFallback>AB</AvatarFallback>
       </Avatar>,
     );
-    expect(screen.getByText("AB")).toBeInTheDocument();
+    expect(screen.getByText('AB')).toBeInTheDocument();
   });
 
-  it("shows fallback when image fails to load", async () => {
+  it('shows fallback when image fails to load', async () => {
     render(
       <Avatar>
         <AvatarImage src="invalid-url.jpg" alt="Avatar" />
@@ -47,30 +47,30 @@ describe("Avatar", () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText("FB")).toBeInTheDocument();
+      expect(screen.getByText('FB')).toBeInTheDocument();
     });
   });
 
-  it("applies custom className to Avatar", () => {
+  it('applies custom className to Avatar', () => {
     const { container } = render(
       <Avatar className="custom-avatar">
         <AvatarFallback>AB</AvatarFallback>
       </Avatar>,
     );
-    expect(container.firstChild).toHaveClass("custom-avatar");
+    expect(container.firstChild).toHaveClass('custom-avatar');
   });
 
-  it("applies custom className to AvatarFallback", () => {
+  it('applies custom className to AvatarFallback', () => {
     render(
       <Avatar>
         <AvatarFallback className="custom-fallback">AB</AvatarFallback>
       </Avatar>,
     );
-    const fallback = screen.getByText("AB");
-    expect(fallback).toHaveClass("custom-fallback");
+    const fallback = screen.getByText('AB');
+    expect(fallback).toHaveClass('custom-fallback');
   });
 
-  it("forwards ref correctly to Avatar", () => {
+  it('forwards ref correctly to Avatar', () => {
     const ref = { current: null };
     render(
       <Avatar ref={ref}>
@@ -80,7 +80,7 @@ describe("Avatar", () => {
     expect(ref.current).toBeInstanceOf(HTMLSpanElement);
   });
 
-  it("forwards ref correctly to AvatarFallback", () => {
+  it('forwards ref correctly to AvatarFallback', () => {
     const ref = { current: null };
     render(
       <Avatar>
@@ -90,16 +90,16 @@ describe("Avatar", () => {
     expect(ref.current).toBeInstanceOf(HTMLSpanElement);
   });
 
-  it("renders with initials as fallback", () => {
+  it('renders with initials as fallback', () => {
     render(
       <Avatar>
         <AvatarFallback>JD</AvatarFallback>
       </Avatar>,
     );
-    expect(screen.getByText("JD")).toBeInTheDocument();
+    expect(screen.getByText('JD')).toBeInTheDocument();
   });
 
-  it("renders with icon as fallback", () => {
+  it('renders with icon as fallback', () => {
     render(
       <Avatar>
         <AvatarFallback>
@@ -107,10 +107,10 @@ describe("Avatar", () => {
         </AvatarFallback>
       </Avatar>,
     );
-    expect(screen.getByTestId("fallback-icon")).toBeInTheDocument();
+    expect(screen.getByTestId('fallback-icon')).toBeInTheDocument();
   });
 
-  it("supports delay on fallback", async () => {
+  it('supports delay on fallback', async () => {
     render(
       <Avatar>
         <AvatarImage src="invalid.jpg" alt="Avatar" />
@@ -120,18 +120,18 @@ describe("Avatar", () => {
 
     await waitFor(
       () => {
-        expect(screen.getByText("FB")).toBeInTheDocument();
+        expect(screen.getByText('FB')).toBeInTheDocument();
       },
       { timeout: 1000 },
     );
   });
 
-  it("renders rounded-full by default", () => {
+  it('renders rounded-full by default', () => {
     const { container } = render(
       <Avatar>
         <AvatarFallback>AB</AvatarFallback>
       </Avatar>,
     );
-    expect(container.firstChild).toHaveClass("rounded-full");
+    expect(container.firstChild).toHaveClass('rounded-full');
   });
 });

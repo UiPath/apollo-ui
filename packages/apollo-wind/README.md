@@ -20,10 +20,10 @@ npm install @uipath/apollo-wind
 **Option 1: Zero Config** (Recommended for quick starts)
 
 ```tsx
-import '@uipath/apollo-wind/tailwind.css'
-import { Button } from '@uipath/apollo-wind'
+import '@uipath/apollo-wind/tailwind.css';
+import { Button } from '@uipath/apollo-wind';
 
-<Button>Click me</Button>
+<Button>Click me</Button>;
 ```
 
 **Option 2: Full Tailwind JIT** (For advanced customization)
@@ -34,12 +34,12 @@ npm install @uipath/apollo-wind postcss
 
 ```js
 // postcss.config.js
-export { default } from "@uipath/apollo-wind/postcss";
+export { default } from '@uipath/apollo-wind/postcss';
 ```
 
 ```css
 /* src/app.css */
-@import "@uipath/apollo-wind/tailwind.css";
+@import '@uipath/apollo-wind/tailwind.css';
 
 /* Scan your source files for Tailwind classes */
 @source "./src/**/*.{js,jsx,ts,tsx}";
@@ -49,13 +49,11 @@ export { default } from "@uipath/apollo-wind/postcss";
 ```
 
 ```tsx
-import './app.css'
-import { Button } from '@uipath/apollo-wind'
+import './app.css';
+import { Button } from '@uipath/apollo-wind';
 
 // ✅ All Tailwind utilities work!
-<Button className="bg-purple-500 hover:scale-105 w-[200px]">
-  Custom Tailwind
-</Button>
+<Button className="bg-purple-500 hover:scale-105 w-[200px]">Custom Tailwind</Button>;
 ```
 
 ## Comparison
@@ -100,7 +98,7 @@ import {
   CardTitle,
   Input,
   Label,
-} from "@uipath/apollo-wind";
+} from '@uipath/apollo-wind';
 
 function LoginForm() {
   return (
@@ -125,11 +123,9 @@ function LoginForm() {
 ### cn() - Class Merger
 
 ```tsx
-import { cn } from '@uipath/apollo-wind'
+import { cn } from '@uipath/apollo-wind';
 
-<Button className={cn('base-class', isActive && 'active-class')}>
-  Button
-</Button>
+<Button className={cn('base-class', isActive && 'active-class')}>Button</Button>;
 ```
 
 ## Development

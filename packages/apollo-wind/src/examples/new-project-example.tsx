@@ -1,7 +1,7 @@
-import { ArrowUp, Plus, Search, X } from "lucide-react";
-import * as React from "react";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
+import { ArrowUp, Plus, Search, X } from 'lucide-react';
+import * as React from 'react';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Drawer,
   DrawerClose,
@@ -9,12 +9,12 @@ import {
   DrawerDescription,
   DrawerHeader,
   DrawerTitle,
-} from "@/components/ui/drawer";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { cn } from "@/lib";
-import { Row, Column, Grid } from "@/components/ui/layout";
+} from '@/components/ui/drawer';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { cn } from '@/lib';
+import { Row, Column, Grid } from '@/components/ui/layout';
 
 export interface ProjectExample {
   id: string;
@@ -44,52 +44,52 @@ export interface NewProjectExampleProps {
 export function NewProjectExample({
   className,
   title = "Let's create an agentic process",
-  subtitle = "Design and orchestrate end-to-end processes with AI agents, robots, and people using BPMN-based diagrams.",
+  subtitle = 'Design and orchestrate end-to-end processes with AI agents, robots, and people using BPMN-based diagrams.',
   templates = [
     {
-      id: "1",
-      name: "Invoice processing",
+      id: '1',
+      name: 'Invoice processing',
       description:
-        "Automate the end-to-end process of capturing, validating, and approving invoices.",
+        'Automate the end-to-end process of capturing, validating, and approving invoices.',
       usageCount: 3400,
-      category: "financial",
-      tools: ["office365", "maestro"],
+      category: 'financial',
+      tools: ['office365', 'maestro'],
     },
     {
-      id: "2",
-      name: "Loan processing",
-      description: "Optimize the evaluation, approval, and disbursement of loans.",
+      id: '2',
+      name: 'Loan processing',
+      description: 'Optimize the evaluation, approval, and disbursement of loans.',
       usageCount: 1700,
-      category: "financial",
-      tools: ["google", "maestro"],
+      category: 'financial',
+      tools: ['google', 'maestro'],
     },
     {
-      id: "3",
-      name: "Supplier onboarding",
-      description: "Coordinate the registration, verification, and integration of new suppliers.",
+      id: '3',
+      name: 'Supplier onboarding',
+      description: 'Coordinate the registration, verification, and integration of new suppliers.',
       usageCount: 1200,
-      category: "other",
-      tools: ["office365", "maestro"],
+      category: 'other',
+      tools: ['office365', 'maestro'],
     },
   ],
   categories = [
-    { id: "financial", label: "Financial" },
-    { id: "healthcare", label: "Healthcare" },
-    { id: "other", label: "Other" },
+    { id: 'financial', label: 'Financial' },
+    { id: 'healthcare', label: 'Healthcare' },
+    { id: 'other', label: 'Other' },
   ],
   tools = [
-    { id: "office365", label: "Office365" },
-    { id: "jira", label: "Jira" },
-    { id: "sap-concur", label: "SAP Concur" },
-    { id: "slack", label: "Slack" },
-    { id: "docusign", label: "DocuSign" },
+    { id: 'office365', label: 'Office365' },
+    { id: 'jira', label: 'Jira' },
+    { id: 'sap-concur', label: 'SAP Concur' },
+    { id: 'slack', label: 'Slack' },
+    { id: 'docusign', label: 'DocuSign' },
   ],
   autopilot,
   onCreateBlank,
 }: NewProjectExampleProps) {
-  const [autopilotPrompt, setAutopilotPrompt] = React.useState("");
+  const [autopilotPrompt, setAutopilotPrompt] = React.useState('');
   const [drawerOpen, setDrawerOpen] = React.useState(false);
-  const [searchQuery, setSearchQuery] = React.useState("");
+  const [searchQuery, setSearchQuery] = React.useState('');
   const [selectedCategories, setSelectedCategories] = React.useState<string[]>([]);
   const [selectedTools, setSelectedTools] = React.useState<string[]>([]);
 
@@ -121,7 +121,7 @@ export function NewProjectExample({
   const filteredExamples = React.useMemo(() => {
     return templates.filter((template) => {
       const matchesSearch =
-        searchQuery === "" ||
+        searchQuery === '' ||
         template.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         template.description.toLowerCase().includes(searchQuery.toLowerCase());
 
@@ -171,7 +171,7 @@ export function NewProjectExample({
       <Column
         minH="screen"
         gap={8}
-        className={cn("bg-background px-8 py-16 md:px-16 md:py-20", className)}
+        className={cn('bg-background px-8 py-16 md:px-16 md:py-20', className)}
       >
         {/* Header Section */}
         <div>
@@ -220,7 +220,7 @@ export function NewProjectExample({
                   onChange={(e) => setAutopilotPrompt(e.target.value)}
                   className="min-h-[120px] resize-none border-0 p-0 pb-12 text-sm placeholder:text-muted-foreground/50 focus-visible:ring-0"
                   onKeyDown={(e) => {
-                    if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+                    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
                       e.preventDefault();
                       handleAutopilotSubmit();
                     }
@@ -231,7 +231,7 @@ export function NewProjectExample({
                     variant="ghost"
                     size="icon"
                     className="h-8 w-8"
-                    onClick={() => setAutopilotPrompt("")}
+                    onClick={() => setAutopilotPrompt('')}
                     disabled={!autopilotPrompt}
                     aria-label="Clear prompt"
                   >

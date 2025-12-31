@@ -1,11 +1,11 @@
-import type { Meta, StoryObj } from "@storybook/react-vite";
-import { DashboardExample } from "./dashboard-example";
+import type { Meta, StoryObj } from '@storybook/react-vite';
+import { DashboardExample } from './dashboard-example';
 
 const meta = {
-  title: "Examples/Dashboard",
+  title: 'Examples/Dashboard',
   component: DashboardExample,
   parameters: {
-    layout: "fullscreen",
+    layout: 'fullscreen',
   },
 } satisfies Meta<typeof DashboardExample>;
 

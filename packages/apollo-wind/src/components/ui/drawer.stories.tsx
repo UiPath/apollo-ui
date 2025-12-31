@@ -1,5 +1,5 @@
-import type { Meta } from "@storybook/react-vite";
-import { Button } from "./button";
+import type { Meta } from '@storybook/react-vite';
+import { Button } from './button';
 import {
   Drawer,
   DrawerClose,
@@ -9,12 +9,12 @@ import {
   DrawerHeader,
   DrawerTitle,
   DrawerTrigger,
-} from "./drawer";
+} from './drawer';
 
 const meta: Meta<typeof Drawer> = {
-  title: "Design System/Overlays/Drawer",
+  title: 'Design System/Overlays/Drawer',
   component: Drawer,
-  tags: ["autodocs"],
+  tags: ['autodocs'],
 };
 
 export default meta;

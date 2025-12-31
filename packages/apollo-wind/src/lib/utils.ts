@@ -1,5 +1,5 @@
-import { type ClassValue, clsx } from "clsx";
-import { twMerge } from "tailwind-merge";
+import { type ClassValue, clsx } from 'clsx';
+import { twMerge } from 'tailwind-merge';
 
 /**
  * Utility function to merge Tailwind CSS classes with proper precedence
@@ -13,7 +13,7 @@ export function cn(...inputs: ClassValue[]) {
  * Safely get a nested value from an object using dot notation
  */
 export function get(obj: unknown, path: string, defaultValue?: unknown): unknown {
-  const keys = path.split(".");
+  const keys = path.split('.');
   let result: unknown = obj;
 
   for (const key of keys) {
@@ -32,7 +32,7 @@ export function get(obj: unknown, path: string, defaultValue?: unknown): unknown
 export function deepEqual(a: unknown, b: unknown): boolean {
   if (a === b) return true;
   if (a == null || b == null) return false;
-  if (typeof a !== "object" || typeof b !== "object") return false;
+  if (typeof a !== 'object' || typeof b !== 'object') return false;
 
   const objA = a as Record<string, unknown>;
   const objB = b as Record<string, unknown>;

@@ -5,7 +5,12 @@ import { Card } from "../../../components/ui/card";
 import { Label } from "../../../components/ui/label";
 import { Input } from "../../../components/ui/input";
 import { Button } from "../../../components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../../components/ui/tabs";
+import {
+    Tabs,
+    TabsContent,
+    TabsList,
+    TabsTrigger,
+} from "../../../components/ui/tabs";
 import type { ThemeConfig } from "../../../registry/theme-provider/theme-provider";
 import { themes } from "../../themes";
 
@@ -27,10 +32,10 @@ const colorFields = [
 
 function linearToSrgb(val: number): number {
     if (val <= 0.0031308) {
-      return 12.92 * val;
+        return 12.92 * val;
     }
     return 1.055 * val ** (1 / 2.4) - 0.055;
-  }
+}
 /**
  * Convert OKLCH string to Hex
  * @param {string} oklchString - OKLCH color string (e.g., "oklch(70% 0.15 30)" or "oklch(0.7 0.15 30deg)" or "oklch(1 0 0 / 10%)")
@@ -38,72 +43,77 @@ function linearToSrgb(val: number): number {
  */
 function oklchToHex(oklchString: string): string {
     // Parse OKLCH string with optional alpha channel
-    const match = oklchString.match(/oklch\s*\(\s*([0-9.]+)%?\s+([0-9.]+)\s+([0-9.]+)(?:deg)?(?:\s*\/\s*([0-9.]+)%?)?\s*\)/i);
-    
+    const match = oklchString.match(
+        /oklch\s*\(\s*([0-9.]+)%?\s+([0-9.]+)\s+([0-9.]+)(?:deg)?(?:\s*\/\s*([0-9.]+)%?)?\s*\)/i,
+    );
+
     if (!match) {
-      throw new Error('Invalid OKLCH string format');
+        throw new Error("Invalid OKLCH string format");
     }
-    
+
     let l = parseFloat(match[1]);
     const c = parseFloat(match[2]);
     const h = parseFloat(match[3]);
     // Alpha is optional, defaults to 1 (fully opaque)
     let alpha = match[4] ? parseFloat(match[4]) : 1;
-    
+
     // Convert percentage lightness to 0-1 range
-    if (oklchString.includes('%') && match[1].includes('%')) {
-      l = l / 100;
+    if (oklchString.includes("%") && match[1].includes("%")) {
+        l = l / 100;
     }
-    
+
     // Convert percentage alpha to 0-1 range (e.g., "/ 10%" means 10% opacity)
-    if (match[4] && oklchString.includes('/ ' + match[4] + '%')) {
-      alpha = alpha / 100;
+    if (match[4] && oklchString.includes("/ " + match[4] + "%")) {
+        alpha = alpha / 100;
     }
-    
+
     // Convert OKLCH to OKLAB
     const hRad = (h * Math.PI) / 180;
     const a = c * Math.cos(hRad);
     const b = c * Math.sin(hRad);
-    
+
     // Convert OKLAB to linear RGB
     const l_ = l + 0.3963377774 * a + 0.2158037573 * b;
     const m_ = l - 0.1055613458 * a - 0.0638541728 * b;
-    const s_ = l - 0.0894841775 * a - 1.2914855480 * b;
-    
+    const s_ = l - 0.0894841775 * a - 1.291485548 * b;
+
     const l3 = l_ * l_ * l_;
     const m3 = m_ * m_ * m_;
     const s3 = s_ * s_ * s_;
-    
+
     let r = +4.0767416621 * l3 - 3.3077115913 * m3 + 0.2309699292 * s3;
     let g = -1.2684380046 * l3 + 2.6097574011 * m3 - 0.3413193965 * s3;
-    let b_rgb = -0.0041960863 * l3 - 0.7034186147 * m3 + 1.7076147010 * s3;
-    
+    let b_rgb = -0.0041960863 * l3 - 0.7034186147 * m3 + 1.707614701 * s3;
+
     // Convert linear RGB to sRGB
     r = linearToSrgb(r);
     g = linearToSrgb(g);
     b_rgb = linearToSrgb(b_rgb);
-    
+
     // Clamp and convert to 8-bit
     r = Math.max(0, Math.min(255, Math.round(r * 255)));
     g = Math.max(0, Math.min(255, Math.round(g * 255)));
     b_rgb = Math.max(0, Math.min(255, Math.round(b_rgb * 255)));
-    
+
     // For semi-transparent colors, we approximate against a dark background
     // This is a simplification since color pickers don't handle transparency well
     if (alpha < 1) {
-      // Assume dark background ~20% lightness
-      const bgValue = 51; // roughly 20% in sRGB
-      r = Math.round(r * alpha + bgValue * (1 - alpha));
-      g = Math.round(g * alpha + bgValue * (1 - alpha));
-      b_rgb = Math.round(b_rgb * alpha + bgValue * (1 - alpha));
+        // Assume dark background ~20% lightness
+        const bgValue = 51; // roughly 20% in sRGB
+        r = Math.round(r * alpha + bgValue * (1 - alpha));
+        g = Math.round(g * alpha + bgValue * (1 - alpha));
+        b_rgb = Math.round(b_rgb * alpha + bgValue * (1 - alpha));
     }
-    
+
     // Convert to hex
-    return '#' + [r, g, b_rgb].map(x => x.toString(16).padStart(2, '0')).join('');
-  }
-  
+    return (
+        "#" + [r, g, b_rgb].map((x) => x.toString(16).padStart(2, "0")).join("")
+    );
+}
+
 export function ThemeCustomizer() {
-    const [customTheme, setCustomTheme] = useState<ThemeConfig>(defaultCustomTheme);
+    const [customTheme, setCustomTheme] =
+        useState<ThemeConfig>(defaultCustomTheme);
     const [activeTab, setActiveTab] = useState<"light" | "dark">("light");
 
     useEffect(() => {
@@ -118,7 +128,11 @@ export function ThemeCustomizer() {
         }
     }, []);
 
-    const handleColorChange = (mode: "light" | "dark", field: string, value: string) => {
+    const handleColorChange = (
+        mode: "light" | "dark",
+        field: string,
+        value: string,
+    ) => {
         startTransition(() => {
             const updatedTheme = {
                 ...customTheme,
@@ -130,23 +144,29 @@ export function ThemeCustomizer() {
 
             setCustomTheme(updatedTheme);
 
-            localStorage.setItem(CUSTOM_THEME_STORAGE_KEY, JSON.stringify(updatedTheme));
+            localStorage.setItem(
+                CUSTOM_THEME_STORAGE_KEY,
+                JSON.stringify(updatedTheme),
+            );
             localStorage.setItem(THEME_STORAGE_KEY, "custom");
 
             window.dispatchEvent(
-                new CustomEvent("theme-change", { detail: "custom" })
+                new CustomEvent("theme-change", { detail: "custom" }),
             );
-        })
+        });
     };
 
     const handleReset = () => {
         setCustomTheme(defaultCustomTheme);
 
-        localStorage.setItem(CUSTOM_THEME_STORAGE_KEY, JSON.stringify(defaultCustomTheme));
+        localStorage.setItem(
+            CUSTOM_THEME_STORAGE_KEY,
+            JSON.stringify(defaultCustomTheme),
+        );
         localStorage.setItem(THEME_STORAGE_KEY, "custom");
 
         window.dispatchEvent(
-            new CustomEvent("theme-change", { detail: "custom" })
+            new CustomEvent("theme-change", { detail: "custom" }),
         );
     };
 
@@ -172,11 +192,14 @@ export function ThemeCustomizer() {
                 const imported = JSON.parse(content);
                 setCustomTheme(imported);
 
-                localStorage.setItem(CUSTOM_THEME_STORAGE_KEY, JSON.stringify(imported));
+                localStorage.setItem(
+                    CUSTOM_THEME_STORAGE_KEY,
+                    JSON.stringify(imported),
+                );
                 localStorage.setItem(THEME_STORAGE_KEY, "custom");
 
                 window.dispatchEvent(
-                    new CustomEvent("theme-change", { detail: "custom" })
+                    new CustomEvent("theme-change", { detail: "custom" }),
                 );
 
                 alert("Theme imported and applied successfully!");
@@ -192,12 +215,15 @@ export function ThemeCustomizer() {
         setCustomTheme(presetTheme);
 
         // Save and apply instantly
-        localStorage.setItem(CUSTOM_THEME_STORAGE_KEY, JSON.stringify(presetTheme));
+        localStorage.setItem(
+            CUSTOM_THEME_STORAGE_KEY,
+            JSON.stringify(presetTheme),
+        );
         localStorage.setItem(THEME_STORAGE_KEY, "custom");
 
         // Dispatch event to notify theme change
         window.dispatchEvent(
-            new CustomEvent("theme-change", { detail: "custom" })
+            new CustomEvent("theme-change", { detail: "custom" }),
         );
     };
 
@@ -209,14 +235,26 @@ export function ThemeCustomizer() {
                 <div className="space-y-4">
                     <div className="flex items-center justify-between">
                         <div>
-                            <h3 className="text-lg font-semibold">Theme Editor</h3>
-                            <p className="text-sm text-muted-foreground">Changes apply instantly</p>
+                            <h3 className="text-lg font-semibold">
+                                Theme Editor
+                            </h3>
+                            <p className="text-sm text-muted-foreground">
+                                Changes apply instantly
+                            </p>
                         </div>
                         <div className="flex gap-2">
-                            <Button variant="outline" size="sm" onClick={handleReset}>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={handleReset}
+                            >
                                 Reset to Default
                             </Button>
-                            <Button variant="outline" size="sm" onClick={handleExport}>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={handleExport}
+                            >
                                 Export
                             </Button>
                             <label>
@@ -241,7 +279,11 @@ export function ThemeCustomizer() {
                                     key={key}
                                     variant="outline"
                                     size="sm"
-                                    onClick={() => handleLoadPreset(key as keyof typeof themes)}
+                                    onClick={() =>
+                                        handleLoadPreset(
+                                            key as keyof typeof themes,
+                                        )
+                                    }
                                 >
                                     {theme.name}
                                 </Button>
@@ -249,7 +291,12 @@ export function ThemeCustomizer() {
                         </div>
                     </div>
 
-                    <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "light" | "dark")}>
+                    <Tabs
+                        value={activeTab}
+                        onValueChange={(v) =>
+                            setActiveTab(v as "light" | "dark")
+                        }
+                    >
                         <TabsList className="grid w-full grid-cols-2">
                             <TabsTrigger value="light">Light Mode</TabsTrigger>
                             <TabsTrigger value="dark">Dark Mode</TabsTrigger>
@@ -258,19 +305,33 @@ export function ThemeCustomizer() {
                         <TabsContent value="light" className="space-y-4 mt-4">
                             <div className="grid grid-cols-2 gap-4">
                                 {colorFields.map(({ key, label }) => {
-                                    const themeValue = currentModeTheme?.[key as keyof typeof currentModeTheme] || "";
-                                    const isOklch = themeValue.includes("oklch");
-                                    const hexValue = isOklch ? oklchToHex(themeValue) : themeValue; 
+                                    const themeValue =
+                                        currentModeTheme?.[
+                                            key as keyof typeof currentModeTheme
+                                        ] || "";
+                                    const isOklch =
+                                        themeValue.includes("oklch");
+                                    const hexValue = isOklch
+                                        ? oklchToHex(themeValue)
+                                        : themeValue;
 
                                     return (
                                         <div key={key} className="space-y-2">
-                                            <Label htmlFor={`light-${key}`}>{label}</Label>
+                                            <Label htmlFor={`light-${key}`}>
+                                                {label}
+                                            </Label>
                                             <div className="flex gap-2 items-start">
                                                 <div className="flex-1 space-y-2">
                                                     <Input
                                                         id={`light-${key}`}
                                                         value={themeValue}
-                                                        onChange={(e) => handleColorChange("light", key, e.target.value)}
+                                                        onChange={(e) =>
+                                                            handleColorChange(
+                                                                "light",
+                                                                key,
+                                                                e.target.value,
+                                                            )
+                                                        }
                                                         className="font-mono text-sm"
                                                         placeholder="oklch(...)"
                                                     />
@@ -280,7 +341,11 @@ export function ThemeCustomizer() {
                                                     value={hexValue}
                                                     className="w-10 h-10 rounded border cursor-pointer"
                                                     onChange={(e) => {
-                                                        handleColorChange("light", key, e.target.value);
+                                                        handleColorChange(
+                                                            "light",
+                                                            key,
+                                                            e.target.value,
+                                                        );
                                                     }}
                                                     title="Pick a color"
                                                 />
@@ -294,19 +359,33 @@ export function ThemeCustomizer() {
                         <TabsContent value="dark" className="space-y-4 mt-4">
                             <div className="grid grid-cols-2 gap-4">
                                 {colorFields.map(({ key, label }) => {
-                                    const themeValue = currentModeTheme?.[key as keyof typeof currentModeTheme] || "";
-                                    const isOklch = themeValue.includes("oklch");
-                                    const hexValue = isOklch ? oklchToHex(themeValue) : themeValue; 
+                                    const themeValue =
+                                        currentModeTheme?.[
+                                            key as keyof typeof currentModeTheme
+                                        ] || "";
+                                    const isOklch =
+                                        themeValue.includes("oklch");
+                                    const hexValue = isOklch
+                                        ? oklchToHex(themeValue)
+                                        : themeValue;
 
                                     return (
                                         <div key={key} className="space-y-2">
-                                            <Label htmlFor={`dark-${key}`}>{label}</Label>
+                                            <Label htmlFor={`dark-${key}`}>
+                                                {label}
+                                            </Label>
                                             <div className="flex gap-2 items-start">
                                                 <div className="flex-1 space-y-2">
                                                     <Input
                                                         id={`dark-${key}`}
                                                         value={themeValue}
-                                                        onChange={(e) => handleColorChange("dark", key, e.target.value)}
+                                                        onChange={(e) =>
+                                                            handleColorChange(
+                                                                "dark",
+                                                                key,
+                                                                e.target.value,
+                                                            )
+                                                        }
                                                         className="font-mono text-sm"
                                                         placeholder="oklch(...)"
                                                     />
@@ -316,7 +395,11 @@ export function ThemeCustomizer() {
                                                     value={hexValue}
                                                     className="w-10 h-10 rounded border cursor-pointer"
                                                     onChange={(e) => {
-                                                        handleColorChange("dark", key, e.target.value);
+                                                        handleColorChange(
+                                                            "dark",
+                                                            key,
+                                                            e.target.value,
+                                                        );
                                                     }}
                                                     title="Pick a color"
                                                 />
@@ -341,7 +424,10 @@ export function ThemeCustomizer() {
                     </div>
                     <div className="p-4 border rounded-lg bg-card text-card-foreground">
                         <h4 className="font-semibold mb-2">Card Component</h4>
-                        <p className="text-muted-foreground">This is a preview of the card component with your custom theme.</p>
+                        <p className="text-muted-foreground">
+                            This is a preview of the card component with your
+                            custom theme.
+                        </p>
                     </div>
                     <div className="flex gap-2">
                         <Input placeholder="Input field" />

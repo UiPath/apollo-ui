@@ -1,4 +1,5 @@
 import prettierConfig from 'eslint-config-prettier';
+import prettierPlugin from 'eslint-plugin-prettier';
 import reactPlugin from 'eslint-plugin-react';
 import reactHooksPlugin from 'eslint-plugin-react-hooks';
 import vitestPlugin from 'eslint-plugin-vitest';
@@ -17,6 +18,7 @@ const config = [
       '@typescript-eslint': tsPlugin,
       react: reactPlugin,
       'react-hooks': reactHooksPlugin,
+      prettier: prettierPlugin,
     },
     languageOptions: {
       parser: tsParser,
@@ -52,6 +54,7 @@ const config = [
       'react/prop-types': 'off',
       'react/display-name': 'off',
       '@typescript-eslint/no-empty-object-type': 'off',
+      'prettier/prettier': 'error',
     },
   },
   {

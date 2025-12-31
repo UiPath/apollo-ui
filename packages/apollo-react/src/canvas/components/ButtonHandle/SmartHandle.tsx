@@ -36,10 +36,7 @@ import {
   StyledNotch,
   StyledWrapper,
 } from './ButtonHandle.styles';
-import {
-  calculateGridAlignedHandlePositions,
-  pixelToPercent,
-} from './ButtonHandleStyleUtils';
+import { calculateGridAlignedHandlePositions, pixelToPercent } from './ButtonHandleStyleUtils';
 import { useButtonHandleSizeAndPosition } from './useButtonHandleSizeAndPosition';
 
 // ============================================================================

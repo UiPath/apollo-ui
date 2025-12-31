@@ -1,24 +1,24 @@
-import * as React from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import * as React from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Slider } from "@/components/ui/slider";
-import { Switch } from "@/components/ui/switch";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Textarea } from "@/components/ui/textarea";
-import { Row, Column, Grid } from "@/components/ui/layout";
+} from '@/components/ui/select';
+import { Slider } from '@/components/ui/slider';
+import { Switch } from '@/components/ui/switch';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Textarea } from '@/components/ui/textarea';
+import { Row, Column, Grid } from '@/components/ui/layout';
 
 interface FormData {
   // Personal Info
@@ -45,19 +45,19 @@ interface FormData {
 
 export function FormBuilderExample() {
   const [formData, setFormData] = React.useState<FormData>({
-    firstName: "",
-    lastName: "",
-    email: "",
-    phone: "",
-    bio: "",
-    theme: "system",
-    language: "en",
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    bio: '',
+    theme: 'system',
+    language: 'en',
     notifications: true,
     newsletter: false,
-    visibility: "public",
+    visibility: 'public',
     experience: 5,
     interests: [],
-    customJson: "{}",
+    customJson: '{}',
   });
 
   const updateField = <K extends keyof FormData>(field: K, value: FormData[K]) => {
@@ -66,25 +66,25 @@ export function FormBuilderExample() {
 
   const handleReset = () => {
     setFormData({
-      firstName: "",
-      lastName: "",
-      email: "",
-      phone: "",
-      bio: "",
-      theme: "system",
-      language: "en",
+      firstName: '',
+      lastName: '',
+      email: '',
+      phone: '',
+      bio: '',
+      theme: 'system',
+      language: 'en',
       notifications: true,
       newsletter: false,
-      visibility: "public",
+      visibility: 'public',
       experience: 5,
       interests: [],
-      customJson: "{}",
+      customJson: '{}',
     });
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    alert("Form submitted! Check the JSON preview.");
+    alert('Form submitted! Check the JSON preview.');
   };
 
   return (
@@ -123,7 +123,7 @@ export function FormBuilderExample() {
                               id="firstName"
                               placeholder="John"
                               value={formData.firstName}
-                              onChange={(e) => updateField("firstName", e.target.value)}
+                              onChange={(e) => updateField('firstName', e.target.value)}
                             />
                           </Column>
                           <Column gap={2}>
@@ -132,7 +132,7 @@ export function FormBuilderExample() {
                               id="lastName"
                               placeholder="Doe"
                               value={formData.lastName}
-                              onChange={(e) => updateField("lastName", e.target.value)}
+                              onChange={(e) => updateField('lastName', e.target.value)}
                             />
                           </Column>
                         </Grid>
@@ -143,7 +143,7 @@ export function FormBuilderExample() {
                             type="email"
                             placeholder="john.doe@example.com"
                             value={formData.email}
-                            onChange={(e) => updateField("email", e.target.value)}
+                            onChange={(e) => updateField('email', e.target.value)}
                           />
                         </Column>
                         <Column gap={2}>
@@ -153,7 +153,7 @@ export function FormBuilderExample() {
                             type="tel"
                             placeholder="+1 (555) 000-0000"
                             value={formData.phone}
-                            onChange={(e) => updateField("phone", e.target.value)}
+                            onChange={(e) => updateField('phone', e.target.value)}
                           />
                         </Column>
                         <Column gap={2}>
@@ -163,7 +163,7 @@ export function FormBuilderExample() {
                             placeholder="Tell us about yourself..."
                             rows={4}
                             value={formData.bio}
-                            onChange={(e) => updateField("bio", e.target.value)}
+                            onChange={(e) => updateField('bio', e.target.value)}
                           />
                         </Column>
                       </CardContent>
@@ -181,7 +181,7 @@ export function FormBuilderExample() {
                           <Label htmlFor="theme">Theme</Label>
                           <Select
                             value={formData.theme}
-                            onValueChange={(value) => updateField("theme", value)}
+                            onValueChange={(value) => updateField('theme', value)}
                           >
                             <SelectTrigger id="theme">
                               <SelectValue placeholder="Select a theme" />
@@ -198,7 +198,7 @@ export function FormBuilderExample() {
                           <Label htmlFor="language">Language</Label>
                           <Select
                             value={formData.language}
-                            onValueChange={(value) => updateField("language", value)}
+                            onValueChange={(value) => updateField('language', value)}
                           >
                             <SelectTrigger id="language">
                               <SelectValue placeholder="Select a language" />
@@ -223,7 +223,7 @@ export function FormBuilderExample() {
                           <Switch
                             id="notifications"
                             checked={formData.notifications}
-                            onCheckedChange={(checked) => updateField("notifications", checked)}
+                            onCheckedChange={(checked) => updateField('notifications', checked)}
                           />
                         </Row>
 
@@ -231,7 +231,7 @@ export function FormBuilderExample() {
                           <Checkbox
                             id="newsletter"
                             checked={formData.newsletter}
-                            onCheckedChange={(checked) => updateField("newsletter", !!checked)}
+                            onCheckedChange={(checked) => updateField('newsletter', !!checked)}
                           />
                           <Label
                             htmlFor="newsletter"
@@ -255,7 +255,7 @@ export function FormBuilderExample() {
                           <Label>Profile Visibility</Label>
                           <RadioGroup
                             value={formData.visibility}
-                            onValueChange={(value) => updateField("visibility", value)}
+                            onValueChange={(value) => updateField('visibility', value)}
                           >
                             <Row gap={2} align="center">
                               <RadioGroupItem value="public" id="public" />
@@ -290,7 +290,7 @@ export function FormBuilderExample() {
                             max={10}
                             step={1}
                             value={[formData.experience]}
-                            onValueChange={(value) => updateField("experience", value[0])}
+                            onValueChange={(value) => updateField('experience', value[0])}
                           />
                           <Row justify="between" className="text-xs text-muted-foreground">
                             <span>Beginner</span>
@@ -301,7 +301,7 @@ export function FormBuilderExample() {
                         <Column gap={3}>
                           <Label>Interests</Label>
                           <Column gap={2}>
-                            {["Technology", "Design", "Business", "Science", "Arts"].map(
+                            {['Technology', 'Design', 'Business', 'Science', 'Arts'].map(
                               (interest) => (
                                 <Row key={interest} gap={2} align="center">
                                   <Checkbox
@@ -309,10 +309,10 @@ export function FormBuilderExample() {
                                     checked={formData.interests.includes(interest)}
                                     onCheckedChange={(checked) => {
                                       if (checked) {
-                                        updateField("interests", [...formData.interests, interest]);
+                                        updateField('interests', [...formData.interests, interest]);
                                       } else {
                                         updateField(
-                                          "interests",
+                                          'interests',
                                           formData.interests.filter((i) => i !== interest),
                                         );
                                       }
@@ -350,7 +350,7 @@ export function FormBuilderExample() {
                             rows={10}
                             className="font-mono text-sm"
                             value={formData.customJson}
-                            onChange={(e) => updateField("customJson", e.target.value)}
+                            onChange={(e) => updateField('customJson', e.target.value)}
                           />
                           <p className="text-xs text-muted-foreground">
                             Enter valid JSON for custom configuration

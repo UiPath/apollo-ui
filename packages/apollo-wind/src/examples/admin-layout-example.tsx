@@ -1,16 +1,16 @@
-import * as React from "react";
-import { cn } from "@/lib";
-import { Search, Plus, ChevronsLeft, ChevronsRight, HelpCircle, Bell } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import * as React from 'react';
+import { cn } from '@/lib';
+import { Search, Plus, ChevronsLeft, ChevronsRight, HelpCircle, Bell } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+} from '@/components/ui/select';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Breadcrumb,
   BreadcrumbList,
@@ -18,12 +18,12 @@ import {
   BreadcrumbLink,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
+} from '@/components/ui/breadcrumb';
 import {
   DataTable,
   DataTableColumnHeader,
   DataTableSelectColumn,
-} from "@/components/ui/data-table";
+} from '@/components/ui/data-table';
 import {
   Pagination,
   PaginationContent,
@@ -32,8 +32,8 @@ import {
   PaginationPrevious,
   PaginationNext,
   PaginationEllipsis,
-} from "@/components/ui/pagination";
-import { Row, Column } from "@/components/ui/layout";
+} from '@/components/ui/pagination';
+import { Row, Column } from '@/components/ui/layout';
 
 // Admin Layout Container
 interface AdminLayoutProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -44,7 +44,7 @@ export function AdminLayout({ className, children, ...props }: AdminLayoutProps)
   return (
     <div
       className={cn(
-        "flex h-[700px] w-full flex-col overflow-hidden rounded-lg border bg-background",
+        'flex h-[700px] w-full flex-col overflow-hidden rounded-lg border bg-background',
         className,
       )}
       {...props}
@@ -65,7 +65,7 @@ export function AdminHeader({ className, logo, title, children, ...props }: Admi
   return (
     <header
       className={cn(
-        "flex h-14 items-center justify-between border-b bg-background px-4",
+        'flex h-14 items-center justify-between border-b bg-background px-4',
         className,
       )}
       {...props}
@@ -131,7 +131,7 @@ interface AdminSidebarProps extends React.HTMLAttributes<HTMLDivElement> {
 
 export function AdminSidebar({ className, children, width = 280, ...props }: AdminSidebarProps) {
   return (
-    <Column className={cn("border-r bg-muted/30", className)} style={{ width }} {...props}>
+    <Column className={cn('border-r bg-muted/30', className)} style={{ width }} {...props}>
       {children}
     </Column>
   );
@@ -188,10 +188,10 @@ export function AdminSidebarNav({ items, selectedId, onSelect }: AdminSidebarNav
             gap={2}
             align="center"
             className={cn(
-              "cursor-pointer rounded-md px-3 py-2 text-sm transition-colors",
+              'cursor-pointer rounded-md px-3 py-2 text-sm transition-colors',
               selectedId === item.id
-                ? "bg-primary/10 text-primary"
-                : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                ? 'bg-primary/10 text-primary'
+                : 'text-muted-foreground hover:bg-muted hover:text-foreground',
             )}
             onClick={() => onSelect?.(item.id)}
           >
@@ -239,7 +239,7 @@ export function AdminBreadcrumb({ items }: AdminBreadcrumbProps) {
               {index === items.length - 1 ? (
                 <BreadcrumbPage>{item.label}</BreadcrumbPage>
               ) : (
-                <BreadcrumbLink href={item.href || "#"}>{item.label}</BreadcrumbLink>
+                <BreadcrumbLink href={item.href || '#'}>{item.label}</BreadcrumbLink>
               )}
             </BreadcrumbItem>
           </React.Fragment>
@@ -414,7 +414,7 @@ export function AdminPagination({
             <PaginationItem>
               <PaginationPrevious
                 onClick={() => page > 1 && onPageChange?.(page - 1)}
-                className={cn(page === 1 && "pointer-events-none opacity-50")}
+                className={cn(page === 1 && 'pointer-events-none opacity-50')}
               />
             </PaginationItem>
 
@@ -444,7 +444,7 @@ export function AdminPagination({
             <PaginationItem>
               <PaginationNext
                 onClick={() => page < totalPages && onPageChange?.(page + 1)}
-                className={cn(page === totalPages && "pointer-events-none opacity-50")}
+                className={cn(page === totalPages && 'pointer-events-none opacity-50')}
               />
             </PaginationItem>
             <PaginationItem>

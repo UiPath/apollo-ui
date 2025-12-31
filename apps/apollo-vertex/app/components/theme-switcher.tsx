@@ -45,10 +45,10 @@ export function ThemeSwitcher() {
         const themeName = value as ThemeName;
         setSelectedTheme(themeName);
         localStorage.setItem(THEME_STORAGE_KEY, themeName);
-        
+
         // Dispatch a custom event to notify the ThemeProvider
         window.dispatchEvent(
-            new CustomEvent("theme-change", { detail: themeName })
+            new CustomEvent("theme-change", { detail: themeName }),
         );
     };
 
@@ -63,13 +63,8 @@ export function ThemeSwitcher() {
                         {theme.name}
                     </SelectItem>
                 ))}
-                {showCustom && (
-                    <SelectItem value="custom">
-                        Custom
-                    </SelectItem>
-                )}
+                {showCustom && <SelectItem value="custom">Custom</SelectItem>}
             </SelectContent>
         </Select>
     );
 }
-

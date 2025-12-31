@@ -1,16 +1,16 @@
-import type { Meta } from "@storybook/react-vite";
-import { useState } from "react";
-import type { DateRange } from "react-day-picker";
-import { DatePicker, DateRangePicker } from "./date-picker";
-import { Label } from "./label";
+import type { Meta } from '@storybook/react-vite';
+import { useState } from 'react';
+import type { DateRange } from 'react-day-picker';
+import { DatePicker, DateRangePicker } from './date-picker';
+import { Label } from './label';
 
 const meta = {
-  title: "Design System/Core/Date Picker",
+  title: 'Design System/Core/Date Picker',
   component: DatePicker,
   parameters: {
-    layout: "centered",
+    layout: 'centered',
   },
-  tags: ["autodocs"],
+  tags: ['autodocs'],
 } satisfies Meta<typeof DatePicker>;
 
 export default meta;
@@ -61,7 +61,12 @@ export const DateRangeStory = {
   render: () => {
     const [dateRange, setDateRange] = useState<DateRange | undefined>();
 
-    return <DateRangePicker value={dateRange} onValueChange={(range) => setDateRange(range ?? undefined)} />;
+    return (
+      <DateRangePicker
+        value={dateRange}
+        onValueChange={(range) => setDateRange(range ?? undefined)}
+      />
+    );
   },
 };
 
@@ -73,6 +78,11 @@ export const DateRangeWithValue = {
       to: new Date(new Date().setDate(new Date().getDate() + 7)),
     });
 
-    return <DateRangePicker value={dateRange} onValueChange={(range) => setDateRange(range ?? undefined)} />;
+    return (
+      <DateRangePicker
+        value={dateRange}
+        onValueChange={(range) => setDateRange(range ?? undefined)}
+      />
+    );
   },
 };

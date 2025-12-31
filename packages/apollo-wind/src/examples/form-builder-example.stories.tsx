@@ -1,11 +1,11 @@
-import type { Meta, StoryObj } from "@storybook/react-vite";
-import { FormBuilderExample } from "./form-builder-example";
+import type { Meta, StoryObj } from '@storybook/react-vite';
+import { FormBuilderExample } from './form-builder-example';
 
 const meta = {
-  title: "Examples/Form Builder",
+  title: 'Examples/Form Builder',
   component: FormBuilderExample,
   parameters: {
-    layout: "fullscreen",
+    layout: 'fullscreen',
   },
 } satisfies Meta<typeof FormBuilderExample>;
 

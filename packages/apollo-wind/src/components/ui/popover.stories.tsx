@@ -1,11 +1,11 @@
-import type { Meta } from "@storybook/react-vite";
-import { Button } from "./button";
-import { Popover, PopoverContent, PopoverTrigger } from "./popover";
+import type { Meta } from '@storybook/react-vite';
+import { Button } from './button';
+import { Popover, PopoverContent, PopoverTrigger } from './popover';
 
 const meta: Meta<typeof Popover> = {
-  title: "Design System/Overlays/Popover",
+  title: 'Design System/Overlays/Popover',
   component: Popover,
-  tags: ["autodocs"],
+  tags: ['autodocs'],
 };
 
 export default meta;

@@ -19,7 +19,7 @@ npm install @uipath/apollo-wind
 
 ```tsx
 // app/layout.tsx or main entry
-import "@uipath/apollo-wind/styles.css";
+import '@uipath/apollo-wind/styles.css';
 ```
 
 ---
@@ -28,13 +28,13 @@ import "@uipath/apollo-wind/styles.css";
 
 ```tsx
 // Components - single import from package root
-import { Button, Card, Column, DataTable, Grid, Row } from "@uipath/apollo-wind";
+import { Button, Card, Column, DataTable, Grid, Row } from '@uipath/apollo-wind';
 
 // Utility - cn() for conditional classNames (rare use)
-import { cn } from "@uipath/apollo-wind";
+import { cn } from '@uipath/apollo-wind';
 
 // Icons - use lucide-react (peer dependency)
-import { ChevronRight, Settings, User } from "lucide-react";
+import { ChevronRight, Settings, User } from 'lucide-react';
 ```
 
 ---
@@ -49,7 +49,7 @@ Use layout components instead of flex/grid Tailwind classes.
 <Row gap={4} align="center" justify="between">
   <span>Left</span>
   <span>Right</span>
-</Row>;
+</Row>
 ```
 
 | Prop                                     | Type                                          | Description            |
@@ -69,7 +69,7 @@ Use layout components instead of flex/grid Tailwind classes.
 <Column gap={2} align="stretch">
   <div>Item 1</div>
   <div>Item 2</div>
-</Column>;
+</Column>
 ```
 
 Same props as Row.
@@ -81,7 +81,7 @@ Same props as Row.
   <Card>1</Card>
   <Card>2</Card>
   <Card>3</Card>
-</Grid>;
+</Grid>
 ```
 
 | Prop                  | Type             | Description              |
@@ -388,7 +388,7 @@ toast.error("Failed", { description: "Try again" });
       {/* content */}
     </Column>
   </main>
-</Column>;
+</Column>
 ```
 
 ### Form Layout
@@ -411,7 +411,7 @@ toast.error("Failed", { description: "Try again" });
     </Select>
   </Column>
   <Button type="submit">Save</Button>
-</form>;
+</form>
 ```
 
 ### Card Grid
@@ -426,7 +426,7 @@ toast.error("Failed", { description: "Try again" });
       <CardContent>{item.description}</CardContent>
     </Card>
   ))}
-</Grid>;
+</Grid>
 ```
 
 ### DataTable with Actions
@@ -434,17 +434,15 @@ toast.error("Failed", { description: "Try again" });
 ```tsx
 const columns: ColumnDef<Item>[] = [
   {
-    accessorKey: "name",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Name" />
-    ),
+    accessorKey: 'name',
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Name" />,
   },
   {
-    accessorKey: "status",
-    cell: ({ row }) => <Badge>{row.getValue("status")}</Badge>,
+    accessorKey: 'status',
+    cell: ({ row }) => <Badge>{row.getValue('status')}</Badge>,
   },
   {
-    id: "actions",
+    id: 'actions',
     cell: ({ row }) => (
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
@@ -453,12 +451,8 @@ const columns: ColumnDef<Item>[] = [
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <DropdownMenuItem onClick={() => onEdit(row.original)}>
-            Edit
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => onDelete(row.original)}>
-            Delete
-          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => onEdit(row.original)}>Edit</DropdownMenuItem>
+          <DropdownMenuItem onClick={() => onDelete(row.original)}>Delete</DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
     ),
@@ -526,41 +520,43 @@ and multi-step support.
 ### Import
 
 ```tsx
-import { MetadataForm } from "@uipath/apollo-wind";
-import type { FormSchema } from "@uipath/apollo-wind";
+import { MetadataForm } from '@uipath/apollo-wind';
+import type { FormSchema } from '@uipath/apollo-wind';
 ```
 
 ### Basic Form
 
 ```tsx
 const schema: FormSchema = {
-  id: "contact-form",
-  title: "Contact Us",
-  sections: [{
-    id: "info",
-    fields: [
-      {
-        name: "name",
-        type: "text",
-        label: "Full Name",
-        placeholder: "John Doe",
-        validation: { required: true, minLength: 2 },
-      },
-      {
-        name: "email",
-        type: "email",
-        label: "Email",
-        validation: { required: true, email: true },
-      },
-      {
-        name: "message",
-        type: "textarea",
-        label: "Message",
-        rows: 4,
-        validation: { required: true, minLength: 10 },
-      },
-    ],
-  }],
+  id: 'contact-form',
+  title: 'Contact Us',
+  sections: [
+    {
+      id: 'info',
+      fields: [
+        {
+          name: 'name',
+          type: 'text',
+          label: 'Full Name',
+          placeholder: 'John Doe',
+          validation: { required: true, minLength: 2 },
+        },
+        {
+          name: 'email',
+          type: 'email',
+          label: 'Email',
+          validation: { required: true, email: true },
+        },
+        {
+          name: 'message',
+          type: 'textarea',
+          label: 'Message',
+          rows: 4,
+          validation: { required: true, minLength: 10 },
+        },
+      ],
+    },
+  ],
 };
 
 <MetadataForm schema={schema} onSubmit={handleSubmit} />;
@@ -755,7 +751,7 @@ new RuleBuilder("premium-features")
 Extend form behavior with plugins:
 
 ```tsx
-import { analyticsPlugin, autoSavePlugin } from "@uipath/apollo-wind";
+import { analyticsPlugin, autoSavePlugin } from '@uipath/apollo-wind';
 
 <MetadataForm
   schema={schema}
@@ -776,26 +772,28 @@ import { analyticsPlugin, autoSavePlugin } from "@uipath/apollo-wind";
 
 ```tsx
 const schema: FormSchema = {
-  id: "my-form",
-  title: "Form",
+  id: 'my-form',
+  title: 'Form',
   layout: {
     columns: 2, // Grid columns
     gap: 6, // Gap between fields
-    variant: "default", // default | compact | spacious
+    variant: 'default', // default | compact | spacious
   },
-  sections: [{
-    id: "main",
-    title: "Details",
-    collapsible: true,
-    defaultExpanded: true,
-    fields: [
-      {
-        name: "description",
-        type: "textarea",
-        grid: { span: 2 }, // Spans both columns
-      },
-    ],
-  }],
+  sections: [
+    {
+      id: 'main',
+      title: 'Details',
+      collapsible: true,
+      defaultExpanded: true,
+      fields: [
+        {
+          name: 'description',
+          type: 'textarea',
+          grid: { span: 2 }, // Spans both columns
+        },
+      ],
+    },
+  ],
 };
 ```
 

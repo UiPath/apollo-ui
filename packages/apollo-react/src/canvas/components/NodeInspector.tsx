@@ -1,8 +1,5 @@
 import { FontVariantToken } from '@uipath/apollo-core';
-import {
-  Column,
-  Row,
-} from '@uipath/apollo-react/canvas/layouts';
+import { Column, Row } from '@uipath/apollo-react/canvas/layouts';
 import {
   type Edge,
   type Node,

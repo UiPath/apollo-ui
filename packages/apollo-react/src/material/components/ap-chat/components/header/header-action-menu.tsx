@@ -10,7 +10,7 @@ import { ApTypography } from '../../../ap-typography';
 import { useScheduledCallback } from '../../hooks/use-scheduled-callback';
 import { useChatState } from '../../providers/chat-state-provider';
 import { AutopilotChatCustomHeaderAction } from '../../service';
-import { ApIcon } from '../common/icon';
+import { ApIcon } from '@uipath/apollo-react/material/components';
 import { AutopilotChatTooltip } from '../common/tooltip';
 
 const StyledMenuItem = styled(MenuItem)(() => ({
@@ -243,11 +243,7 @@ const NestedMenuItem = React.memo(
               <NestedMenuContainer>
                 <MenuItemContent>
                   {action.icon && (
-                    <ApIcon
-                      variant="outlined"
-                      name={action.icon}
-                      size={token.Icon.IconXs}
-                    />
+                    <ApIcon variant="outlined" name={action.icon} size={token.Icon.IconXs} />
                   )}
                   <ApTypography variant={FontVariantToken.fontSizeS}>{action.name}</ApTypography>
                 </MenuItemContent>
@@ -330,11 +326,7 @@ const NestedMenuItem = React.memo(
                     >
                       <MenuItemContent>
                         {child.icon && (
-                          <ApIcon
-                            variant="outlined"
-                            name={child.icon}
-                            size={token.Icon.IconXs}
-                          />
+                          <ApIcon variant="outlined" name={child.icon} size={token.Icon.IconXs} />
                         )}
                         <ApTypography variant={FontVariantToken.fontSizeS}>
                           {child.name}

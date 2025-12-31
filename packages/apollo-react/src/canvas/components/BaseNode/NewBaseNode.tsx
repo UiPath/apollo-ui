@@ -1,6 +1,10 @@
 import { memo, useMemo, useState, useCallback, useRef, useEffect } from 'react';
 import type { Node, NodeProps } from '@uipath/apollo-react/canvas/xyflow/react';
-import { Position, useUpdateNodeInternals, useStore } from '@uipath/apollo-react/canvas/xyflow/react';
+import {
+  Position,
+  useUpdateNodeInternals,
+  useStore,
+} from '@uipath/apollo-react/canvas/xyflow/react';
 import {
   BaseContainer,
   BaseIconWrapper,

@@ -1,7 +1,7 @@
-import * as React from "react";
-import { cn } from "@/lib";
-import type { GridLayoutProps } from "./types";
-import { buildGridLayoutClasses, spacingToRem } from "./utils";
+import * as React from 'react';
+import { cn } from '@/lib';
+import type { GridLayoutProps } from './types';
+import { buildGridLayoutClasses, spacingToRem } from './utils';
 
 export interface GridProps extends GridLayoutProps {
   /**
@@ -106,8 +106,8 @@ const Grid = React.forwardRef<HTMLDivElement, GridProps>(
       ...(gapX !== undefined && { columnGap: spacingToRem(gapX) }),
       ...(gapY !== undefined && { rowGap: spacingToRem(gapY) }),
       // Use inline styles for custom grid templates (better browser support)
-      ...(typeof cols === "string" && { gridTemplateColumns: cols }),
-      ...(typeof rows === "string" && { gridTemplateRows: rows }),
+      ...(typeof cols === 'string' && { gridTemplateColumns: cols }),
+      ...(typeof rows === 'string' && { gridTemplateRows: rows }),
     };
 
     return (
@@ -118,6 +118,6 @@ const Grid = React.forwardRef<HTMLDivElement, GridProps>(
   },
 );
 
-Grid.displayName = "Grid";
+Grid.displayName = 'Grid';
 
 export { Grid };

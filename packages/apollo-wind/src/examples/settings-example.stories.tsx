@@ -1,11 +1,11 @@
-import type { Meta, StoryObj } from "@storybook/react-vite";
-import { SettingsExample } from "./settings-example";
+import type { Meta, StoryObj } from '@storybook/react-vite';
+import { SettingsExample } from './settings-example';
 
 const meta = {
-  title: "Examples/Settings",
+  title: 'Examples/Settings',
   component: SettingsExample,
   parameters: {
-    layout: "fullscreen",
+    layout: 'fullscreen',
   },
 } satisfies Meta<typeof SettingsExample>;
 

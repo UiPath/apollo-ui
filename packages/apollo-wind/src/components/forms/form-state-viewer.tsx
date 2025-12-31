@@ -1,10 +1,10 @@
-import { useState } from "react";
-import type { UseFormReturn, FieldValues } from "react-hook-form";
-import { Badge } from "@/components/ui/badge";
-import { Card } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { CheckCircle2, XCircle, AlertCircle, FileEdit, Eye, Database } from "lucide-react";
+import { useState } from 'react';
+import type { UseFormReturn, FieldValues } from 'react-hook-form';
+import { Badge } from '@/components/ui/badge';
+import { Card } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { CheckCircle2, XCircle, AlertCircle, FileEdit, Eye, Database } from 'lucide-react';
 
 /**
  * FormStateViewer Component
@@ -22,11 +22,11 @@ interface FormStateViewerProps {
 
 export function FormStateViewer({
   form,
-  title = "Form State",
-  className = "",
+  title = 'Form State',
+  className = '',
   compact = false,
 }: FormStateViewerProps) {
-  const [activeTab, setActiveTab] = useState("values");
+  const [activeTab, setActiveTab] = useState('values');
   const { formState, watch } = form;
   const values = watch();
 
@@ -90,7 +90,7 @@ export function FormStateViewer({
             ) : (
               <Badge variant="destructive">
                 <XCircle className="w-3 h-3 mr-1" />
-                {stats.errorCount} Error{stats.errorCount !== 1 ? "s" : ""}
+                {stats.errorCount} Error{stats.errorCount !== 1 ? 's' : ''}
               </Badge>
             )}
             {stats.isDirty && (
@@ -182,7 +182,7 @@ export function FormStateViewer({
                         <div className="flex-1">
                           <div className="font-mono text-sm font-semibold">{field}</div>
                           <div className="text-sm text-muted-foreground mt-1">
-                            {(error as { message?: string })?.message || "Invalid value"}
+                            {(error as { message?: string })?.message || 'Invalid value'}
                           </div>
                         </div>
                       </div>
@@ -264,16 +264,16 @@ export function FormStateViewer({
 function StateItem({
   label,
   value,
-  type = "boolean",
+  type = 'boolean',
 }: {
   label: string;
   value: boolean | number;
-  type?: "boolean" | "number";
+  type?: 'boolean' | 'number';
 }) {
   return (
     <div className="flex items-center justify-between p-2 bg-muted rounded">
       <span className="text-sm font-medium">{label}</span>
-      {type === "boolean" ? (
+      {type === 'boolean' ? (
         value ? (
           <Badge variant="default" className="bg-green-600">
             <CheckCircle2 className="w-3 h-3 mr-1" />

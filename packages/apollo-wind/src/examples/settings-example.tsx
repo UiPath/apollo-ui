@@ -1,7 +1,7 @@
-import * as React from "react";
-import { Bell, Key, Palette, Shield, User, CreditCard } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
+import * as React from 'react';
+import { Bell, Key, Palette, Shield, User, CreditCard } from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -9,21 +9,21 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+} from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
-import { Switch } from "@/components/ui/switch";
-import { Textarea } from "@/components/ui/textarea";
-import { cn } from "@/lib";
-import { Row, Column, Grid } from "@/components/ui/layout";
+} from '@/components/ui/select';
+import { Separator } from '@/components/ui/separator';
+import { Switch } from '@/components/ui/switch';
+import { Textarea } from '@/components/ui/textarea';
+import { cn } from '@/lib';
+import { Row, Column, Grid } from '@/components/ui/layout';
 
 interface NavItem {
   id: string;
@@ -32,24 +32,24 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { id: "profile", label: "Profile", icon: <User className="h-4 w-4" /> },
-  { id: "account", label: "Account", icon: <Key className="h-4 w-4" /> },
-  { id: "appearance", label: "Appearance", icon: <Palette className="h-4 w-4" /> },
-  { id: "notifications", label: "Notifications", icon: <Bell className="h-4 w-4" /> },
-  { id: "security", label: "Security", icon: <Shield className="h-4 w-4" /> },
-  { id: "billing", label: "Billing", icon: <CreditCard className="h-4 w-4" /> },
+  { id: 'profile', label: 'Profile', icon: <User className="h-4 w-4" /> },
+  { id: 'account', label: 'Account', icon: <Key className="h-4 w-4" /> },
+  { id: 'appearance', label: 'Appearance', icon: <Palette className="h-4 w-4" /> },
+  { id: 'notifications', label: 'Notifications', icon: <Bell className="h-4 w-4" /> },
+  { id: 'security', label: 'Security', icon: <Shield className="h-4 w-4" /> },
+  { id: 'billing', label: 'Billing', icon: <CreditCard className="h-4 w-4" /> },
 ];
 
 export function SettingsExample() {
-  const [activeSection, setActiveSection] = React.useState("profile");
+  const [activeSection, setActiveSection] = React.useState('profile');
   const [formData, setFormData] = React.useState({
-    firstName: "John",
-    lastName: "Doe",
-    email: "john.doe@example.com",
-    username: "johndoe",
-    bio: "Software developer passionate about building great products.",
-    theme: "system",
-    language: "en",
+    firstName: 'John',
+    lastName: 'Doe',
+    email: 'john.doe@example.com',
+    username: 'johndoe',
+    bio: 'Software developer passionate about building great products.',
+    theme: 'system',
+    language: 'en',
     emailNotifications: true,
     pushNotifications: false,
     marketingEmails: false,
@@ -78,10 +78,10 @@ export function SettingsExample() {
                 key={item.id}
                 onClick={() => setActiveSection(item.id)}
                 className={cn(
-                  "flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors",
+                  'flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors',
                   activeSection === item.id
-                    ? "bg-muted font-medium"
-                    : "text-muted-foreground hover:bg-muted/50 hover:text-foreground",
+                    ? 'bg-muted font-medium'
+                    : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground',
                 )}
               >
                 {item.icon}
@@ -93,7 +93,7 @@ export function SettingsExample() {
 
         {/* Main Content */}
         <main className="flex-1 space-y-6">
-          {activeSection === "profile" && (
+          {activeSection === 'profile' && (
             <>
               <div>
                 <h2 className="text-2xl font-bold">Profile</h2>
@@ -137,7 +137,7 @@ export function SettingsExample() {
                       <Input
                         id="firstName"
                         value={formData.firstName}
-                        onChange={(e) => updateField("firstName", e.target.value)}
+                        onChange={(e) => updateField('firstName', e.target.value)}
                       />
                     </Column>
                     <Column gap={2}>
@@ -145,7 +145,7 @@ export function SettingsExample() {
                       <Input
                         id="lastName"
                         value={formData.lastName}
-                        onChange={(e) => updateField("lastName", e.target.value)}
+                        onChange={(e) => updateField('lastName', e.target.value)}
                       />
                     </Column>
                   </Grid>
@@ -154,7 +154,7 @@ export function SettingsExample() {
                     <Input
                       id="username"
                       value={formData.username}
-                      onChange={(e) => updateField("username", e.target.value)}
+                      onChange={(e) => updateField('username', e.target.value)}
                     />
                   </Column>
                   <Column gap={2}>
@@ -162,7 +162,7 @@ export function SettingsExample() {
                     <Textarea
                       id="bio"
                       value={formData.bio}
-                      onChange={(e) => updateField("bio", e.target.value)}
+                      onChange={(e) => updateField('bio', e.target.value)}
                       rows={3}
                     />
                     <p className="text-xs text-muted-foreground">
@@ -177,7 +177,7 @@ export function SettingsExample() {
             </>
           )}
 
-          {activeSection === "account" && (
+          {activeSection === 'account' && (
             <>
               <div>
                 <h2 className="text-2xl font-bold">Account</h2>
@@ -200,7 +200,7 @@ export function SettingsExample() {
                       id="email"
                       type="email"
                       value={formData.email}
-                      onChange={(e) => updateField("email", e.target.value)}
+                      onChange={(e) => updateField('email', e.target.value)}
                     />
                   </div>
                 </CardContent>
@@ -229,7 +229,7 @@ export function SettingsExample() {
             </>
           )}
 
-          {activeSection === "appearance" && (
+          {activeSection === 'appearance' && (
             <>
               <div>
                 <h2 className="text-2xl font-bold">Appearance</h2>
@@ -248,7 +248,7 @@ export function SettingsExample() {
                     <Label htmlFor="theme">Theme</Label>
                     <Select
                       value={formData.theme}
-                      onValueChange={(value) => updateField("theme", value)}
+                      onValueChange={(value) => updateField('theme', value)}
                     >
                       <SelectTrigger id="theme" className="w-[200px]">
                         <SelectValue />
@@ -264,7 +264,7 @@ export function SettingsExample() {
                     <Label htmlFor="language">Language</Label>
                     <Select
                       value={formData.language}
-                      onValueChange={(value) => updateField("language", value)}
+                      onValueChange={(value) => updateField('language', value)}
                     >
                       <SelectTrigger id="language" className="w-[200px]">
                         <SelectValue />
@@ -282,7 +282,7 @@ export function SettingsExample() {
             </>
           )}
 
-          {activeSection === "notifications" && (
+          {activeSection === 'notifications' && (
             <>
               <div>
                 <h2 className="text-2xl font-bold">Notifications</h2>
@@ -304,7 +304,7 @@ export function SettingsExample() {
                     </Column>
                     <Switch
                       checked={formData.emailNotifications}
-                      onCheckedChange={(checked) => updateField("emailNotifications", checked)}
+                      onCheckedChange={(checked) => updateField('emailNotifications', checked)}
                     />
                   </Row>
                   <Separator />
@@ -317,7 +317,7 @@ export function SettingsExample() {
                     </Column>
                     <Switch
                       checked={formData.pushNotifications}
-                      onCheckedChange={(checked) => updateField("pushNotifications", checked)}
+                      onCheckedChange={(checked) => updateField('pushNotifications', checked)}
                     />
                   </Row>
                   <Separator />
@@ -330,7 +330,7 @@ export function SettingsExample() {
                     </Column>
                     <Switch
                       checked={formData.marketingEmails}
-                      onCheckedChange={(checked) => updateField("marketingEmails", checked)}
+                      onCheckedChange={(checked) => updateField('marketingEmails', checked)}
                     />
                   </Row>
                 </CardContent>
@@ -338,7 +338,7 @@ export function SettingsExample() {
             </>
           )}
 
-          {activeSection === "security" && (
+          {activeSection === 'security' && (
             <>
               <div>
                 <h2 className="text-2xl font-bold">Security</h2>
@@ -384,7 +384,7 @@ export function SettingsExample() {
                     </Column>
                     <Switch
                       checked={formData.twoFactor}
-                      onCheckedChange={(checked) => updateField("twoFactor", checked)}
+                      onCheckedChange={(checked) => updateField('twoFactor', checked)}
                     />
                   </Row>
                 </CardContent>
@@ -392,7 +392,7 @@ export function SettingsExample() {
             </>
           )}
 
-          {activeSection === "billing" && (
+          {activeSection === 'billing' && (
             <>
               <div>
                 <h2 className="text-2xl font-bold">Billing</h2>

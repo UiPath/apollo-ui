@@ -1,6 +1,6 @@
-import jsep from "jsep";
-import type { FieldRule, FieldCondition, FormContext, FieldOption } from "./form-schema";
-import { get } from "@/lib";
+import jsep from 'jsep';
+import type { FieldRule, FieldCondition, FormContext, FieldOption } from './form-schema';
+import { get } from '@/lib';
 
 /**
  * Rules Engine - Evaluates conditions and applies effects using jsep
@@ -15,13 +15,13 @@ export class RulesEngine {
   static evaluateConditions(
     conditions: FieldCondition[],
     values: Record<string, unknown>,
-    operator: "AND" | "OR" = "AND",
+    operator: 'AND' | 'OR' = 'AND',
   ): boolean {
     if (conditions.length === 0) return true;
 
     const results = conditions.map((condition) => this.evaluateCondition(condition, values));
 
-    return operator === "AND" ? results.every(Boolean) : results.some(Boolean);
+    return operator === 'AND' ? results.every(Boolean) : results.some(Boolean);
   }
 
   /**
@@ -33,7 +33,7 @@ export class RulesEngine {
     // Custom expression evaluation using expr-eval
     if (condition.custom) {
       const result = this.evaluateExpression(condition.custom, values);
-      return typeof result === "boolean" ? result : Boolean(result);
+      return typeof result === 'boolean' ? result : Boolean(result);
     }
 
     // Direct equality check
@@ -126,7 +126,7 @@ export class RulesEngine {
       const ast = jsep(expression);
       return this.evaluateNode(ast, values);
     } catch (error) {
-      console.error("Expression evaluation error:", error);
+      console.error('Expression evaluation error:', error);
       return false;
     }
   }
@@ -136,70 +136,70 @@ export class RulesEngine {
    */
   private static evaluateNode(node: jsep.Expression, values: Record<string, unknown>): unknown {
     switch (node.type) {
-      case "Literal":
+      case 'Literal':
         return (node as jsep.Literal).value;
 
-      case "Identifier":
+      case 'Identifier':
         return get(values, (node as jsep.Identifier).name);
 
-      case "BinaryExpression": {
+      case 'BinaryExpression': {
         const binary = node as jsep.BinaryExpression;
         const left = this.evaluateNode(binary.left, values);
         const right = this.evaluateNode(binary.right, values);
 
         switch (binary.operator) {
-          case "==":
+          case '==':
             return left == right;
-          case "===":
+          case '===':
             return left === right;
-          case "!=":
+          case '!=':
             return left != right;
-          case "!==":
+          case '!==':
             return left !== right;
-          case "<":
+          case '<':
             return (left as number) < (right as number);
-          case ">":
+          case '>':
             return (left as number) > (right as number);
-          case "<=":
+          case '<=':
             return (left as number) <= (right as number);
-          case ">=":
+          case '>=':
             return (left as number) >= (right as number);
-          case "&&":
+          case '&&':
             return left && right;
-          case "||":
+          case '||':
             return left || right;
-          case "+":
+          case '+':
             return (left as number) + (right as number);
-          case "-":
+          case '-':
             return (left as number) - (right as number);
-          case "*":
+          case '*':
             return (left as number) * (right as number);
-          case "/":
+          case '/':
             return (left as number) / (right as number);
-          case "%":
+          case '%':
             return (left as number) % (right as number);
           default:
             throw new Error(`Unsupported operator: ${binary.operator}`);
         }
       }
 
-      case "UnaryExpression": {
+      case 'UnaryExpression': {
         const unary = node as jsep.UnaryExpression;
         const arg = this.evaluateNode(unary.argument, values);
 
         switch (unary.operator) {
-          case "!":
+          case '!':
             return !arg;
-          case "-":
+          case '-':
             return -(arg as number);
-          case "+":
+          case '+':
             return +(arg as number);
           default:
             throw new Error(`Unsupported unary operator: ${unary.operator}`);
         }
       }
 
-      case "MemberExpression": {
+      case 'MemberExpression': {
         const member = node as jsep.MemberExpression;
         const obj = this.evaluateNode(member.object, values);
         const prop = member.computed
@@ -208,7 +208,7 @@ export class RulesEngine {
         return (obj as Record<string, unknown>)?.[prop as string];
       }
 
-      case "ConditionalExpression": {
+      case 'ConditionalExpression': {
         const cond = node as jsep.ConditionalExpression;
         return this.evaluateNode(cond.test, values)
           ? this.evaluateNode(cond.consequent, values)
@@ -302,11 +302,11 @@ export class ExpressionBuilder {
   }
 
   static and(...expressions: string[]): string {
-    return `(${expressions.join(" && ")})`;
+    return `(${expressions.join(' && ')})`;
   }
 
   static or(...expressions: string[]): string {
-    return `(${expressions.join(" || ")})`;
+    return `(${expressions.join(' || ')})`;
   }
 
   static not(expression: string): string {
@@ -318,11 +318,11 @@ export class ExpressionBuilder {
   }
 
   static sum(fields: string[]): string {
-    return fields.map((f) => `(${f} || 0)`).join(" + ");
+    return fields.map((f) => `(${f} || 0)`).join(' + ');
   }
 
   static product(fields: string[]): string {
-    return fields.map((f) => `(${f} || 0)`).join(" * ");
+    return fields.map((f) => `(${f} || 0)`).join(' * ');
   }
 
   static average(fields: string[]): string {
@@ -346,7 +346,7 @@ export class RuleBuilder {
     this.rule = {
       id,
       conditions: [],
-      operator: "AND",
+      operator: 'AND',
       effects: {},
     };
   }
@@ -357,13 +357,13 @@ export class RuleBuilder {
 
   withCustomExpression(expression: string): this {
     this.rule.conditions.push({
-      when: "",
+      when: '',
       custom: expression,
     });
     return this;
   }
 
-  useOperator(operator: "AND" | "OR"): this {
+  useOperator(operator: 'AND' | 'OR'): this {
     this.rule.operator = operator;
     return this;
   }
@@ -415,7 +415,7 @@ class ConditionBuilder {
   ) {}
 
   is(value: unknown): RuleBuilder {
-    this.ruleBuilder["rule"].conditions.push({
+    this.ruleBuilder['rule'].conditions.push({
       when: this.field,
       is: value,
     });
@@ -423,7 +423,7 @@ class ConditionBuilder {
   }
 
   isNot(value: unknown): RuleBuilder {
-    this.ruleBuilder["rule"].conditions.push({
+    this.ruleBuilder['rule'].conditions.push({
       when: this.field,
       isNot: value,
     });
@@ -431,7 +431,7 @@ class ConditionBuilder {
   }
 
   in(values: unknown[]): RuleBuilder {
-    this.ruleBuilder["rule"].conditions.push({
+    this.ruleBuilder['rule'].conditions.push({
       when: this.field,
       in: values,
     });
@@ -439,7 +439,7 @@ class ConditionBuilder {
   }
 
   notIn(values: unknown[]): RuleBuilder {
-    this.ruleBuilder["rule"].conditions.push({
+    this.ruleBuilder['rule'].conditions.push({
       when: this.field,
       notIn: values,
     });
@@ -447,7 +447,7 @@ class ConditionBuilder {
   }
 
   matches(pattern: string): RuleBuilder {
-    this.ruleBuilder["rule"].conditions.push({
+    this.ruleBuilder['rule'].conditions.push({
       when: this.field,
       matches: pattern,
     });

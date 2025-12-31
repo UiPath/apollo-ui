@@ -1,13 +1,13 @@
-import * as React from "react";
-import { ColumnDef } from "@tanstack/react-table";
-import { Download, Filter, MoreHorizontal, Plus, RefreshCw, Upload } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import * as React from 'react';
+import { ColumnDef } from '@tanstack/react-table';
+import { Download, Filter, MoreHorizontal, Plus, RefreshCw, Upload } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   DataTable,
   DataTableColumnHeader,
   DataTableSelectColumn,
-} from "@/components/ui/data-table";
+} from '@/components/ui/data-table';
 import {
   Dialog,
   DialogContent,
@@ -16,25 +16,25 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
+} from '@/components/ui/dialog';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+} from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Row, Column, Grid } from "@/components/ui/layout";
+} from '@/components/ui/select';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Row, Column, Grid } from '@/components/ui/layout';
 
 // Types
 interface Product {
@@ -44,118 +44,118 @@ interface Product {
   category: string;
   price: number;
   stock: number;
-  status: "active" | "draft" | "archived";
+  status: 'active' | 'draft' | 'archived';
   createdAt: string;
 }
 
 // Sample data
 const products: Product[] = [
   {
-    id: "1",
-    name: "Wireless Headphones",
-    sku: "WH-001",
-    category: "Electronics",
+    id: '1',
+    name: 'Wireless Headphones',
+    sku: 'WH-001',
+    category: 'Electronics',
     price: 99.99,
     stock: 150,
-    status: "active",
-    createdAt: "2024-01-10",
+    status: 'active',
+    createdAt: '2024-01-10',
   },
   {
-    id: "2",
-    name: "USB-C Cable",
-    sku: "UC-002",
-    category: "Accessories",
+    id: '2',
+    name: 'USB-C Cable',
+    sku: 'UC-002',
+    category: 'Accessories',
     price: 12.99,
     stock: 500,
-    status: "active",
-    createdAt: "2024-01-09",
+    status: 'active',
+    createdAt: '2024-01-09',
   },
   {
-    id: "3",
-    name: "Laptop Stand",
-    sku: "LS-003",
-    category: "Accessories",
+    id: '3',
+    name: 'Laptop Stand',
+    sku: 'LS-003',
+    category: 'Accessories',
     price: 49.99,
     stock: 75,
-    status: "active",
-    createdAt: "2024-01-08",
+    status: 'active',
+    createdAt: '2024-01-08',
   },
   {
-    id: "4",
-    name: "Mechanical Keyboard",
-    sku: "MK-004",
-    category: "Electronics",
+    id: '4',
+    name: 'Mechanical Keyboard',
+    sku: 'MK-004',
+    category: 'Electronics',
     price: 149.99,
     stock: 0,
-    status: "draft",
-    createdAt: "2024-01-07",
+    status: 'draft',
+    createdAt: '2024-01-07',
   },
   {
-    id: "5",
-    name: "Monitor Light Bar",
-    sku: "ML-005",
-    category: "Electronics",
+    id: '5',
+    name: 'Monitor Light Bar',
+    sku: 'ML-005',
+    category: 'Electronics',
     price: 59.99,
     stock: 200,
-    status: "active",
-    createdAt: "2024-01-06",
+    status: 'active',
+    createdAt: '2024-01-06',
   },
   {
-    id: "6",
-    name: "Webcam HD",
-    sku: "WC-006",
-    category: "Electronics",
+    id: '6',
+    name: 'Webcam HD',
+    sku: 'WC-006',
+    category: 'Electronics',
     price: 79.99,
     stock: 45,
-    status: "active",
-    createdAt: "2024-01-05",
+    status: 'active',
+    createdAt: '2024-01-05',
   },
   {
-    id: "7",
-    name: "Mouse Pad XL",
-    sku: "MP-007",
-    category: "Accessories",
+    id: '7',
+    name: 'Mouse Pad XL',
+    sku: 'MP-007',
+    category: 'Accessories',
     price: 24.99,
     stock: 300,
-    status: "active",
-    createdAt: "2024-01-04",
+    status: 'active',
+    createdAt: '2024-01-04',
   },
   {
-    id: "8",
-    name: "Phone Holder",
-    sku: "PH-008",
-    category: "Accessories",
+    id: '8',
+    name: 'Phone Holder',
+    sku: 'PH-008',
+    category: 'Accessories',
     price: 19.99,
     stock: 0,
-    status: "archived",
-    createdAt: "2024-01-03",
+    status: 'archived',
+    createdAt: '2024-01-03',
   },
   {
-    id: "9",
-    name: "Bluetooth Speaker",
-    sku: "BS-009",
-    category: "Electronics",
+    id: '9',
+    name: 'Bluetooth Speaker',
+    sku: 'BS-009',
+    category: 'Electronics',
     price: 39.99,
     stock: 120,
-    status: "active",
-    createdAt: "2024-01-02",
+    status: 'active',
+    createdAt: '2024-01-02',
   },
   {
-    id: "10",
-    name: "Screen Protector",
-    sku: "SP-010",
-    category: "Accessories",
+    id: '10',
+    name: 'Screen Protector',
+    sku: 'SP-010',
+    category: 'Accessories',
     price: 9.99,
     stock: 1000,
-    status: "active",
-    createdAt: "2024-01-01",
+    status: 'active',
+    createdAt: '2024-01-01',
   },
 ];
 
 const columns: ColumnDef<Product, unknown>[] = [
   DataTableSelectColumn<Product>(),
   {
-    accessorKey: "name",
+    accessorKey: 'name',
     header: ({ column }) => <DataTableColumnHeader column={column} title="Product" />,
     cell: ({ row }) => (
       <div>
@@ -165,37 +165,37 @@ const columns: ColumnDef<Product, unknown>[] = [
     ),
   },
   {
-    accessorKey: "category",
+    accessorKey: 'category',
     header: ({ column }) => <DataTableColumnHeader column={column} title="Category" />,
   },
   {
-    accessorKey: "price",
+    accessorKey: 'price',
     header: ({ column }) => <DataTableColumnHeader column={column} title="Price" />,
     cell: ({ row }) => {
-      const price = parseFloat(row.getValue("price"));
-      return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(price);
+      const price = parseFloat(row.getValue('price'));
+      return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(price);
     },
   },
   {
-    accessorKey: "stock",
+    accessorKey: 'stock',
     header: ({ column }) => <DataTableColumnHeader column={column} title="Stock" />,
     cell: ({ row }) => {
-      const stock = row.getValue("stock") as number;
+      const stock = row.getValue('stock') as number;
       return (
-        <span className={stock === 0 ? "text-destructive font-medium" : ""}>
-          {stock === 0 ? "Out of stock" : stock}
+        <span className={stock === 0 ? 'text-destructive font-medium' : ''}>
+          {stock === 0 ? 'Out of stock' : stock}
         </span>
       );
     },
   },
   {
-    accessorKey: "status",
+    accessorKey: 'status',
     header: ({ column }) => <DataTableColumnHeader column={column} title="Status" />,
     cell: ({ row }) => {
-      const status = row.getValue("status") as string;
+      const status = row.getValue('status') as string;
       return (
         <Badge
-          variant={status === "active" ? "default" : status === "draft" ? "secondary" : "outline"}
+          variant={status === 'active' ? 'default' : status === 'draft' ? 'secondary' : 'outline'}
         >
           {status}
         </Badge>
@@ -203,11 +203,11 @@ const columns: ColumnDef<Product, unknown>[] = [
     },
   },
   {
-    accessorKey: "createdAt",
+    accessorKey: 'createdAt',
     header: ({ column }) => <DataTableColumnHeader column={column} title="Created" />,
   },
   {
-    id: "actions",
+    id: 'actions',
     cell: () => (
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
@@ -227,18 +227,18 @@ const columns: ColumnDef<Product, unknown>[] = [
 ];
 
 export function DataManagementExample() {
-  const [activeTab, setActiveTab] = React.useState("all");
-  const [categoryFilter, setCategoryFilter] = React.useState("all");
+  const [activeTab, setActiveTab] = React.useState('all');
+  const [categoryFilter, setCategoryFilter] = React.useState('all');
   const [isCreateDialogOpen, setIsCreateDialogOpen] = React.useState(false);
 
   const filteredProducts = React.useMemo(() => {
     let filtered = products;
 
-    if (activeTab !== "all") {
+    if (activeTab !== 'all') {
       filtered = filtered.filter((p) => p.status === activeTab);
     }
 
-    if (categoryFilter !== "all") {
+    if (categoryFilter !== 'all') {
       filtered = filtered.filter((p) => p.category === categoryFilter);
     }
 
@@ -334,27 +334,27 @@ export function DataManagementExample() {
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsList>
               <TabsTrigger value="all">
-                All{" "}
+                All{' '}
                 <Badge variant="secondary" className="ml-2">
                   {products.length}
                 </Badge>
               </TabsTrigger>
               <TabsTrigger value="active">
-                Active{" "}
+                Active{' '}
                 <Badge variant="secondary" className="ml-2">
-                  {products.filter((p) => p.status === "active").length}
+                  {products.filter((p) => p.status === 'active').length}
                 </Badge>
               </TabsTrigger>
               <TabsTrigger value="draft">
-                Draft{" "}
+                Draft{' '}
                 <Badge variant="secondary" className="ml-2">
-                  {products.filter((p) => p.status === "draft").length}
+                  {products.filter((p) => p.status === 'draft').length}
                 </Badge>
               </TabsTrigger>
               <TabsTrigger value="archived">
-                Archived{" "}
+                Archived{' '}
                 <Badge variant="secondary" className="ml-2">
-                  {products.filter((p) => p.status === "archived").length}
+                  {products.filter((p) => p.status === 'archived').length}
                 </Badge>
               </TabsTrigger>
             </TabsList>

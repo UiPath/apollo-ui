@@ -1,25 +1,25 @@
-import type { Meta } from "@storybook/react-vite";
-import * as React from "react";
-import { Button } from "./button";
-import { Card, CardContent } from "./card";
-import { Step, Stepper } from "./stepper";
+import type { Meta } from '@storybook/react-vite';
+import * as React from 'react';
+import { Button } from './button';
+import { Card, CardContent } from './card';
+import { Step, Stepper } from './stepper';
 
 const meta = {
-  title: "Design System/Navigation/Stepper",
+  title: 'Design System/Navigation/Stepper',
   component: Stepper,
   parameters: {
-    layout: "centered",
+    layout: 'centered',
   },
-  tags: ["autodocs"],
+  tags: ['autodocs'],
 } satisfies Meta<typeof Stepper>;
 
 export default meta;
 
 const steps: Step[] = [
-  { title: "Account", description: "Create your account" },
-  { title: "Profile", description: "Set up your profile" },
-  { title: "Preferences", description: "Configure settings" },
-  { title: "Complete", description: "Finish setup" },
+  { title: 'Account', description: 'Create your account' },
+  { title: 'Profile', description: 'Set up your profile' },
+  { title: 'Preferences', description: 'Configure settings' },
+  { title: 'Complete', description: 'Finish setup' },
 ];
 
 export const Default = {
@@ -98,10 +98,10 @@ export const WithoutDescriptions = {
   args: {},
   render: () => {
     const simpleSteps: Step[] = [
-      { title: "Step 1" },
-      { title: "Step 2" },
-      { title: "Step 3" },
-      { title: "Step 4" },
+      { title: 'Step 1' },
+      { title: 'Step 2' },
+      { title: 'Step 3' },
+      { title: 'Step 4' },
     ];
 
     return (
@@ -116,13 +116,13 @@ export const ManySteps = {
   args: {},
   render: () => {
     const manySteps: Step[] = [
-      { title: "Start" },
-      { title: "Step 2" },
-      { title: "Step 3" },
-      { title: "Step 4" },
-      { title: "Step 5" },
-      { title: "Step 6" },
-      { title: "Finish" },
+      { title: 'Start' },
+      { title: 'Step 2' },
+      { title: 'Step 3' },
+      { title: 'Step 4' },
+      { title: 'Step 5' },
+      { title: 'Step 6' },
+      { title: 'Finish' },
     ];
 
     return (

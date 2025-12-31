@@ -1,34 +1,34 @@
-import type { Meta, StoryObj } from "@storybook/react-vite";
+import type { Meta, StoryObj } from '@storybook/react-vite';
 import {
   FlowEditorLayout,
   SidebarPanelConfig,
   CanvasToolbar,
   PublishToolbar,
-} from "./flow-editor-layout-example";
-import { Folders, Package, Sparkles } from "lucide-react";
-import * as React from "react";
-import { Column, Row } from "@/components/ui/layout";
-import { Button } from "@/components/ui/button";
+} from './flow-editor-layout-example';
+import { Folders, Package, Sparkles } from 'lucide-react';
+import * as React from 'react';
+import { Column, Row } from '@/components/ui/layout';
+import { Button } from '@/components/ui/button';
 
 const defaultSidebarOptions: SidebarPanelConfig[] = [
-  { id: "folders", icon: <Folders className="h-4 w-4" />, label: "Folders" },
-  { id: "resources", icon: <Package className="h-4 w-4" />, label: "Resources" },
-  { id: "autopilot", icon: <Sparkles className="h-4 w-4" />, label: "Autopilot" },
+  { id: 'folders', icon: <Folders className="h-4 w-4" />, label: 'Folders' },
+  { id: 'resources', icon: <Package className="h-4 w-4" />, label: 'Resources' },
+  { id: 'autopilot', icon: <Sparkles className="h-4 w-4" />, label: 'Autopilot' },
 ];
 
 const meta = {
-  title: "Examples/Flow/Editor Layout",
+  title: 'Examples/Flow/Editor Layout',
   component: FlowEditorLayout,
   parameters: {
-    layout: "fullscreen",
+    layout: 'fullscreen',
   },
   argTypes: {
     activeSidebarId: {
-      control: "radio",
-      options: ["folders", "resources", "autopilot"],
+      control: 'radio',
+      options: ['folders', 'resources', 'autopilot'],
     },
-    onSidebarChange: { action: "sidebar changed" },
-    onSidebarOpenChange: { action: "sidebar open changed" },
+    onSidebarChange: { action: 'sidebar changed' },
+    onSidebarOpenChange: { action: 'sidebar open changed' },
   },
 } satisfies Meta<typeof FlowEditorLayout>;
 
@@ -36,8 +36,8 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default = {
-    render: () => {
-    const [activeSidebarId, setActiveSidebarId] = React.useState("autopilot");
+  render: () => {
+    const [activeSidebarId, setActiveSidebarId] = React.useState('autopilot');
     const [sidebarOpen, setSidebarOpen] = React.useState(true);
 
     return (
@@ -60,11 +60,11 @@ export const Default = {
       />
     );
   },
-} satisfies Story;;
+} satisfies Story;
 
 export const WithToolbars = {
-    render: () => {
-    const [activeSidebarId, setActiveSidebarId] = React.useState("autopilot");
+  render: () => {
+    const [activeSidebarId, setActiveSidebarId] = React.useState('autopilot');
     const [sidebarOpen, setSidebarOpen] = React.useState(true);
 
     return (
@@ -94,11 +94,11 @@ export const WithToolbars = {
       />
     );
   },
-} satisfies Story;;
+} satisfies Story;
 
 export const WithBottomPanel = {
-    render: () => {
-    const [activeSidebarId, setActiveSidebarId] = React.useState("folders");
+  render: () => {
+    const [activeSidebarId, setActiveSidebarId] = React.useState('folders');
     const [sidebarOpen, setSidebarOpen] = React.useState(true);
     return (
       <FlowEditorLayout
@@ -138,11 +138,11 @@ export const WithBottomPanel = {
       />
     );
   },
-} satisfies Story;;
+} satisfies Story;
 
 export const WithCustomSidebar = {
-    render: () => {
-    const [activeSidebarId, setActiveSidebarId] = React.useState("autopilot");
+  render: () => {
+    const [activeSidebarId, setActiveSidebarId] = React.useState('autopilot');
     const [sidebarOpen, setSidebarOpen] = React.useState(true);
 
     return (
@@ -181,17 +181,17 @@ export const WithCustomSidebar = {
       />
     );
   },
-} satisfies Story;;
+} satisfies Story;
 
 const customSidebarOptions: SidebarPanelConfig[] = [
-  { id: "files", icon: <Folders className="h-4 w-4" />, label: "Files" },
-  { id: "packages", icon: <Package className="h-4 w-4" />, label: "Packages" },
-  { id: "ai", icon: <Sparkles className="h-4 w-4" />, label: "AI Assistant" },
+  { id: 'files', icon: <Folders className="h-4 w-4" />, label: 'Files' },
+  { id: 'packages', icon: <Package className="h-4 w-4" />, label: 'Packages' },
+  { id: 'ai', icon: <Sparkles className="h-4 w-4" />, label: 'AI Assistant' },
 ];
 
 export const CustomPanels = {
-    render: () => {
-    const [activeSidebarId, setActiveSidebarId] = React.useState("ai");
+  render: () => {
+    const [activeSidebarId, setActiveSidebarId] = React.useState('ai');
     const [sidebarOpen, setSidebarOpen] = React.useState(true);
 
     return (
@@ -217,11 +217,11 @@ export const CustomPanels = {
       />
     );
   },
-} satisfies Story;;
+} satisfies Story;
 
 export const PanelClosed = {
-    render: () => {
-    const [activeSidebarId, setActiveSidebarId] = React.useState("autopilot");
+  render: () => {
+    const [activeSidebarId, setActiveSidebarId] = React.useState('autopilot');
     const [sidebarOpen, setSidebarOpen] = React.useState(false);
 
     return (
@@ -244,4 +244,4 @@ export const PanelClosed = {
       />
     );
   },
-} satisfies Story;;
+} satisfies Story;

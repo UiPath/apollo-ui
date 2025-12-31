@@ -1,14 +1,14 @@
-import type { Meta } from "@storybook/react-vite";
-import { useState } from "react";
-import { DateTimePicker } from "./datetime-picker";
+import type { Meta } from '@storybook/react-vite';
+import { useState } from 'react';
+import { DateTimePicker } from './datetime-picker';
 
 const meta = {
-  title: "Design System/Core/DateTime Picker",
+  title: 'Design System/Core/DateTime Picker',
   component: DateTimePicker,
   parameters: {
-    layout: "centered",
+    layout: 'centered',
   },
-  tags: ["autodocs"],
+  tags: ['autodocs'],
 } satisfies Meta<typeof DateTimePicker>;
 
 export default meta;

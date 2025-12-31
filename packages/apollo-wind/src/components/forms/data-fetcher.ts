@@ -1,5 +1,5 @@
-import type { DataSource, FieldOption } from "./form-schema";
-import { get } from "@/lib";
+import type { DataSource, FieldOption } from './form-schema';
+import { get } from '@/lib';
 
 // ============================================================================
 // Data Adapter Interface
@@ -10,7 +10,7 @@ import { get } from "@/lib";
  */
 export interface AdapterRequest {
   url: string;
-  method: "GET" | "POST";
+  method: 'GET' | 'POST';
   params?: Record<string, unknown>;
   headers?: Record<string, string>;
   body?: unknown;
@@ -54,19 +54,19 @@ export class FetchAdapter implements DataAdapter {
     const requestOptions: RequestInit = {
       method,
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
         ...request.headers,
       },
     };
 
     // Add body for POST requests
-    if (method === "POST" && body) {
+    if (method === 'POST' && body) {
       requestOptions.body = JSON.stringify(body);
     }
 
     // Add query params for GET requests
     let fullUrl = url;
-    if (method === "GET" && params) {
+    if (method === 'GET' && params) {
       const queryParams = new URLSearchParams(params as Record<string, string>);
       fullUrl = `${url}?${queryParams}`;
     }
@@ -123,16 +123,16 @@ export class DataFetcher {
    */
   static async fetch(source: DataSource, formValues: Record<string, unknown>): Promise<unknown> {
     switch (source.type) {
-      case "static":
+      case 'static':
         return this.fetchStatic(source);
 
-      case "fetch":
+      case 'fetch':
         return this.fetchRemote(source, formValues);
 
-      case "computed":
+      case 'computed':
         return this.fetchComputed(source, formValues);
 
-      case "remote":
+      case 'remote':
         return this.fetchRemote(source, formValues);
 
       default:
@@ -143,7 +143,7 @@ export class DataFetcher {
   /**
    * Static data source - returns options directly
    */
-  private static fetchStatic(source: Extract<DataSource, { type: "static" }>): unknown[] {
+  private static fetchStatic(source: Extract<DataSource, { type: 'static' }>): unknown[] {
     return source.options;
   }
 
@@ -151,12 +151,12 @@ export class DataFetcher {
    * Remote data fetching with caching
    */
   private static async fetchRemote(
-    source: Extract<DataSource, { type: "fetch" | "remote" }>,
+    source: Extract<DataSource, { type: 'fetch' | 'remote' }>,
     formValues: Record<string, unknown>,
   ): Promise<unknown> {
-    const url = "url" in source ? source.url : source.endpoint;
-    const method = "method" in source ? source.method || "GET" : "GET";
-    const params = "params" in source ? this.resolveParams(source.params || {}, formValues) : {};
+    const url = 'url' in source ? source.url : source.endpoint;
+    const method = 'method' in source ? source.method || 'GET' : 'GET';
+    const params = 'params' in source ? this.resolveParams(source.params || {}, formValues) : {};
 
     // Build cache key
     const cacheKey = this.buildCacheKey(url, method, source, formValues);
@@ -173,7 +173,7 @@ export class DataFetcher {
         url,
         method,
         params,
-        body: method === "POST" ? params : undefined,
+        body: method === 'POST' ? params : undefined,
       });
 
       if (!response.ok) {
@@ -183,7 +183,7 @@ export class DataFetcher {
       let data = response.data;
 
       // Apply transform if provided
-      if ("transform" in source && source.transform) {
+      if ('transform' in source && source.transform) {
         data = this.applyTransform(source.transform, data, formValues);
       }
 
@@ -192,7 +192,7 @@ export class DataFetcher {
 
       return data;
     } catch (error) {
-      console.error("Data fetch error:", error);
+      console.error('Data fetch error:', error);
       throw error;
     }
   }
@@ -201,7 +201,7 @@ export class DataFetcher {
    * Computed data source - derives data from other fields
    */
   private static fetchComputed(
-    source: Extract<DataSource, { type: "computed" }>,
+    source: Extract<DataSource, { type: 'computed' }>,
     formValues: Record<string, unknown>,
   ): unknown {
     // Get values from dependencies
@@ -212,7 +212,7 @@ export class DataFetcher {
       const computeFn = new Function(...source.dependency, `return ${source.compute}`);
       return computeFn(...dependencyValues);
     } catch (error) {
-      console.error("Computed value error:", error);
+      console.error('Computed value error:', error);
       return undefined;
     }
   }
@@ -227,7 +227,7 @@ export class DataFetcher {
     const resolved: Record<string, unknown> = {};
 
     for (const [key, value] of Object.entries(params)) {
-      if (typeof value === "string" && value.startsWith("$")) {
+      if (typeof value === 'string' && value.startsWith('$')) {
         // Reference to form field
         const fieldPath = value.slice(1);
         resolved[key] = get(formValues, fieldPath);
@@ -248,10 +248,10 @@ export class DataFetcher {
     formValues: Record<string, unknown>,
   ): unknown {
     try {
-      const transformFn = new Function("data", "formValues", `return ${transform}`);
+      const transformFn = new Function('data', 'formValues', `return ${transform}`);
       return transformFn(data, formValues);
     } catch (error) {
-      console.error("Transform error:", error);
+      console.error('Transform error:', error);
       return data;
     }
   }
@@ -265,7 +265,7 @@ export class DataFetcher {
     source: DataSource,
     formValues: Record<string, unknown>,
   ): string {
-    const params = "params" in source ? source.params || {} : {};
+    const params = 'params' in source ? source.params || {} : {};
     const resolvedParams = this.resolveParams(params as Record<string, unknown>, formValues);
     return `${method}:${url}:${JSON.stringify(resolvedParams)}`;
   }
@@ -332,7 +332,7 @@ export class DataSourceBuilder {
    */
   static static(options: FieldOption[]): DataSource {
     return {
-      type: "static",
+      type: 'static',
       options,
     };
   }
@@ -342,7 +342,7 @@ export class DataSourceBuilder {
    */
   static get(url: string, params?: Record<string, unknown>): DataSource {
     return {
-      type: "remote",
+      type: 'remote',
       endpoint: url,
       params,
     };
@@ -353,10 +353,10 @@ export class DataSourceBuilder {
    */
   static post(url: string, _params?: Record<string, unknown>): DataSource {
     return {
-      type: "fetch",
+      type: 'fetch',
       url,
-      method: "POST",
-      transform: "data",
+      method: 'POST',
+      transform: 'data',
     };
   }
 
@@ -365,7 +365,7 @@ export class DataSourceBuilder {
    */
   static computed(dependencies: string[], computeExpression: string): DataSource {
     return {
-      type: "computed",
+      type: 'computed',
       dependency: dependencies,
       compute: computeExpression,
     };
@@ -374,9 +374,9 @@ export class DataSourceBuilder {
   /**
    * Create a data source that depends on another field
    */
-  static dependent(url: string, dependencyField: string, paramName: string = "id"): DataSource {
+  static dependent(url: string, dependencyField: string, paramName: string = 'id'): DataSource {
     return {
-      type: "remote",
+      type: 'remote',
       endpoint: url,
       params: {
         [paramName]: `$${dependencyField}`,
@@ -387,12 +387,12 @@ export class DataSourceBuilder {
   /**
    * Create a searchable data source
    */
-  static searchable(url: string, searchParam: string = "q"): DataSource {
+  static searchable(url: string, searchParam: string = 'q'): DataSource {
     return {
-      type: "remote",
+      type: 'remote',
       endpoint: url,
       params: {
-        [searchParam]: "$search",
+        [searchParam]: '$search',
       },
     };
   }
@@ -406,7 +406,7 @@ export class DataTransformers {
   /**
    * Transform array to label/value options
    */
-  static toOptions(labelKey: string = "name", valueKey: string = "id"): string {
+  static toOptions(labelKey: string = 'name', valueKey: string = 'id'): string {
     return `data.map(item => ({ label: item.${labelKey}, value: item.${valueKey} }))`;
   }
 
@@ -420,9 +420,9 @@ export class DataTransformers {
   /**
    * Sort data
    */
-  static sort(key: string, order: "asc" | "desc" = "asc"): string {
+  static sort(key: string, order: 'asc' | 'desc' = 'asc'): string {
     const comparator =
-      order === "asc"
+      order === 'asc'
         ? `(a, b) => a.${key} > b.${key} ? 1 : -1`
         : `(a, b) => a.${key} < b.${key} ? 1 : -1`;
     return `data.sort(${comparator})`;
@@ -448,7 +448,7 @@ export class DataTransformers {
   static pipe(...transforms: string[]): string {
     return transforms.reduce((acc, transform, index) => {
       if (index === 0) return transform;
-      return transform.replace("data", `(${acc})`);
+      return transform.replace('data', `(${acc})`);
     });
   }
 }

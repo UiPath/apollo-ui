@@ -1,5 +1,5 @@
-import type { Meta, StoryObj } from "@storybook/react-vite";
-import { useState, useMemo } from "react";
+import type { Meta, StoryObj } from '@storybook/react-vite';
+import { useState, useMemo } from 'react';
 import {
   Activity,
   AlertCircle,
@@ -94,185 +94,185 @@ import {
   X,
   XCircle,
   Zap,
-} from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Row, Column, Grid } from "@/components/ui/layout";
+} from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Row, Column, Grid } from '@/components/ui/layout';
 
 // All icons organized by category
 const ICON_CATEGORIES = [
   {
-    title: "Navigation & Actions",
+    title: 'Navigation & Actions',
     icons: [
-      { Icon: Home, name: "Home" },
-      { Icon: User, name: "User" },
-      { Icon: Settings, name: "Settings" },
-      { Icon: Search, name: "Search" },
-      { Icon: Menu, name: "Menu" },
-      { Icon: MoreVertical, name: "MoreVertical" },
-      { Icon: MoreHorizontal, name: "MoreHorizontal" },
-      { Icon: Filter, name: "Filter" },
-      { Icon: SlidersHorizontal, name: "Sliders" },
-      { Icon: RefreshCw, name: "Refresh" },
-      { Icon: LogOut, name: "LogOut" },
-      { Icon: LogIn, name: "LogIn" },
+      { Icon: Home, name: 'Home' },
+      { Icon: User, name: 'User' },
+      { Icon: Settings, name: 'Settings' },
+      { Icon: Search, name: 'Search' },
+      { Icon: Menu, name: 'Menu' },
+      { Icon: MoreVertical, name: 'MoreVertical' },
+      { Icon: MoreHorizontal, name: 'MoreHorizontal' },
+      { Icon: Filter, name: 'Filter' },
+      { Icon: SlidersHorizontal, name: 'Sliders' },
+      { Icon: RefreshCw, name: 'Refresh' },
+      { Icon: LogOut, name: 'LogOut' },
+      { Icon: LogIn, name: 'LogIn' },
     ],
   },
   {
-    title: "Arrows & Chevrons",
+    title: 'Arrows & Chevrons',
     icons: [
-      { Icon: ChevronRight, name: "ChevronRight" },
-      { Icon: ChevronLeft, name: "ChevronLeft" },
-      { Icon: ChevronUp, name: "ChevronUp" },
-      { Icon: ChevronDown, name: "ChevronDown" },
-      { Icon: ArrowRight, name: "ArrowRight" },
-      { Icon: ArrowLeft, name: "ArrowLeft" },
-      { Icon: ArrowUp, name: "ArrowUp" },
-      { Icon: ArrowDown, name: "ArrowDown" },
+      { Icon: ChevronRight, name: 'ChevronRight' },
+      { Icon: ChevronLeft, name: 'ChevronLeft' },
+      { Icon: ChevronUp, name: 'ChevronUp' },
+      { Icon: ChevronDown, name: 'ChevronDown' },
+      { Icon: ArrowRight, name: 'ArrowRight' },
+      { Icon: ArrowLeft, name: 'ArrowLeft' },
+      { Icon: ArrowUp, name: 'ArrowUp' },
+      { Icon: ArrowDown, name: 'ArrowDown' },
     ],
   },
   {
-    title: "Actions & Controls",
+    title: 'Actions & Controls',
     icons: [
-      { Icon: Plus, name: "Plus" },
-      { Icon: Minus, name: "Minus" },
-      { Icon: X, name: "X" },
-      { Icon: Check, name: "Check" },
-      { Icon: Edit, name: "Edit" },
-      { Icon: Trash, name: "Trash" },
-      { Icon: Copy, name: "Copy" },
-      { Icon: Share, name: "Share" },
-      { Icon: Download, name: "Download" },
-      { Icon: Upload, name: "Upload" },
-      { Icon: ExternalLink, name: "ExternalLink" },
-      { Icon: Link, name: "Link" },
+      { Icon: Plus, name: 'Plus' },
+      { Icon: Minus, name: 'Minus' },
+      { Icon: X, name: 'X' },
+      { Icon: Check, name: 'Check' },
+      { Icon: Edit, name: 'Edit' },
+      { Icon: Trash, name: 'Trash' },
+      { Icon: Copy, name: 'Copy' },
+      { Icon: Share, name: 'Share' },
+      { Icon: Download, name: 'Download' },
+      { Icon: Upload, name: 'Upload' },
+      { Icon: ExternalLink, name: 'ExternalLink' },
+      { Icon: Link, name: 'Link' },
     ],
   },
   {
-    title: "Communication",
+    title: 'Communication',
     icons: [
-      { Icon: Mail, name: "Mail" },
-      { Icon: Bell, name: "Bell" },
-      { Icon: MessageSquare, name: "MessageSquare" },
-      { Icon: MessageCircle, name: "MessageCircle" },
-      { Icon: Phone, name: "Phone" },
-      { Icon: PhoneCall, name: "PhoneCall" },
-      { Icon: PhoneOff, name: "PhoneOff" },
+      { Icon: Mail, name: 'Mail' },
+      { Icon: Bell, name: 'Bell' },
+      { Icon: MessageSquare, name: 'MessageSquare' },
+      { Icon: MessageCircle, name: 'MessageCircle' },
+      { Icon: Phone, name: 'Phone' },
+      { Icon: PhoneCall, name: 'PhoneCall' },
+      { Icon: PhoneOff, name: 'PhoneOff' },
     ],
   },
   {
-    title: "Files & Media",
+    title: 'Files & Media',
     icons: [
-      { Icon: File, name: "File" },
-      { Icon: Folder, name: "Folder" },
-      { Icon: Image, name: "Image" },
-      { Icon: Video, name: "Video" },
-      { Icon: Music, name: "Music" },
+      { Icon: File, name: 'File' },
+      { Icon: Folder, name: 'Folder' },
+      { Icon: Image, name: 'Image' },
+      { Icon: Video, name: 'Video' },
+      { Icon: Music, name: 'Music' },
     ],
   },
   {
-    title: "Status & Alerts",
+    title: 'Status & Alerts',
     icons: [
-      { Icon: AlertCircle, name: "AlertCircle" },
-      { Icon: AlertTriangle, name: "AlertTriangle" },
-      { Icon: Info, name: "Info" },
-      { Icon: CheckCircle, name: "CheckCircle" },
-      { Icon: XCircle, name: "XCircle" },
-      { Icon: HelpCircle, name: "HelpCircle" },
+      { Icon: AlertCircle, name: 'AlertCircle' },
+      { Icon: AlertTriangle, name: 'AlertTriangle' },
+      { Icon: Info, name: 'Info' },
+      { Icon: CheckCircle, name: 'CheckCircle' },
+      { Icon: XCircle, name: 'XCircle' },
+      { Icon: HelpCircle, name: 'HelpCircle' },
     ],
   },
   {
-    title: "Time & Calendar",
+    title: 'Time & Calendar',
     icons: [
-      { Icon: Calendar, name: "Calendar" },
-      { Icon: Clock, name: "Clock" },
+      { Icon: Calendar, name: 'Calendar' },
+      { Icon: Clock, name: 'Clock' },
     ],
   },
   {
-    title: "Social & Favorites",
+    title: 'Social & Favorites',
     icons: [
-      { Icon: Heart, name: "Heart" },
-      { Icon: Star, name: "Star" },
-      { Icon: Bookmark, name: "Bookmark" },
-      { Icon: Tag, name: "Tag" },
-      { Icon: Users, name: "Users" },
-      { Icon: UserPlus, name: "UserPlus" },
+      { Icon: Heart, name: 'Heart' },
+      { Icon: Star, name: 'Star' },
+      { Icon: Bookmark, name: 'Bookmark' },
+      { Icon: Tag, name: 'Tag' },
+      { Icon: Users, name: 'Users' },
+      { Icon: UserPlus, name: 'UserPlus' },
     ],
   },
   {
-    title: "Security & Privacy",
+    title: 'Security & Privacy',
     icons: [
-      { Icon: Lock, name: "Lock" },
-      { Icon: Unlock, name: "Unlock" },
-      { Icon: Eye, name: "Eye" },
-      { Icon: EyeOff, name: "EyeOff" },
+      { Icon: Lock, name: 'Lock' },
+      { Icon: Unlock, name: 'Unlock' },
+      { Icon: Eye, name: 'Eye' },
+      { Icon: EyeOff, name: 'EyeOff' },
     ],
   },
   {
-    title: "Theme & Settings",
+    title: 'Theme & Settings',
     icons: [
-      { Icon: Sun, name: "Sun" },
-      { Icon: Moon, name: "Moon" },
-      { Icon: Zap, name: "Zap" },
+      { Icon: Sun, name: 'Sun' },
+      { Icon: Moon, name: 'Moon' },
+      { Icon: Zap, name: 'Zap' },
     ],
   },
   {
-    title: "Connectivity",
+    title: 'Connectivity',
     icons: [
-      { Icon: Wifi, name: "Wifi" },
-      { Icon: WifiOff, name: "WifiOff" },
-      { Icon: Battery, name: "Battery" },
-      { Icon: Globe, name: "Globe" },
+      { Icon: Wifi, name: 'Wifi' },
+      { Icon: WifiOff, name: 'WifiOff' },
+      { Icon: Battery, name: 'Battery' },
+      { Icon: Globe, name: 'Globe' },
     ],
   },
   {
-    title: "Media Controls",
+    title: 'Media Controls',
     icons: [
-      { Icon: Play, name: "Play" },
-      { Icon: Pause, name: "Pause" },
-      { Icon: SkipForward, name: "SkipForward" },
-      { Icon: SkipBack, name: "SkipBack" },
-      { Icon: Volume2, name: "Volume2" },
-      { Icon: VolumeX, name: "VolumeX" },
+      { Icon: Play, name: 'Play' },
+      { Icon: Pause, name: 'Pause' },
+      { Icon: SkipForward, name: 'SkipForward' },
+      { Icon: SkipBack, name: 'SkipBack' },
+      { Icon: Volume2, name: 'Volume2' },
+      { Icon: VolumeX, name: 'VolumeX' },
     ],
   },
   {
-    title: "Commerce",
+    title: 'Commerce',
     icons: [
-      { Icon: ShoppingCart, name: "ShoppingCart" },
-      { Icon: CreditCard, name: "CreditCard" },
-      { Icon: DollarSign, name: "DollarSign" },
+      { Icon: ShoppingCart, name: 'ShoppingCart' },
+      { Icon: CreditCard, name: 'CreditCard' },
+      { Icon: DollarSign, name: 'DollarSign' },
     ],
   },
   {
-    title: "Analytics & Charts",
+    title: 'Analytics & Charts',
     icons: [
-      { Icon: TrendingUp, name: "TrendingUp" },
-      { Icon: TrendingDown, name: "TrendingDown" },
-      { Icon: BarChart, name: "BarChart" },
-      { Icon: PieChart, name: "PieChart" },
-      { Icon: Activity, name: "Activity" },
+      { Icon: TrendingUp, name: 'TrendingUp' },
+      { Icon: TrendingDown, name: 'TrendingDown' },
+      { Icon: BarChart, name: 'BarChart' },
+      { Icon: PieChart, name: 'PieChart' },
+      { Icon: Activity, name: 'Activity' },
     ],
   },
   {
-    title: "Logistics",
+    title: 'Logistics',
     icons: [
-      { Icon: Package, name: "Package" },
-      { Icon: Truck, name: "Truck" },
-      { Icon: MapPin, name: "MapPin" },
-      { Icon: MapIcon, name: "Map" },
+      { Icon: Package, name: 'Package' },
+      { Icon: Truck, name: 'Truck' },
+      { Icon: MapPin, name: 'MapPin' },
+      { Icon: MapIcon, name: 'Map' },
     ],
   },
   {
-    title: "Development",
+    title: 'Development',
     icons: [
-      { Icon: Command, name: "Command" },
-      { Icon: Terminal, name: "Terminal" },
-      { Icon: Code, name: "Code" },
-      { Icon: GitBranch, name: "GitBranch" },
-      { Icon: Github, name: "Github" },
-      { Icon: Layers, name: "Layers" },
+      { Icon: Command, name: 'Command' },
+      { Icon: Terminal, name: 'Terminal' },
+      { Icon: Code, name: 'Code' },
+      { Icon: GitBranch, name: 'GitBranch' },
+      { Icon: Github, name: 'Github' },
+      { Icon: Layers, name: 'Layers' },
     ],
   },
 ] as const;
@@ -281,9 +281,9 @@ const ICON_CATEGORIES = [
 const TOTAL_ICONS = ICON_CATEGORIES.reduce((sum, cat) => sum + cat.icons.length, 0);
 
 const meta = {
-  title: "Design Foundation/Icons",
+  title: 'Design Foundation/Icons',
   parameters: {
-    layout: "fullscreen",
+    layout: 'fullscreen',
   },
 } satisfies Meta;
 
@@ -320,7 +320,7 @@ const IconGrid = ({
 );
 
 function IconsGallery() {
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState('');
 
   const filteredCategories = useMemo(() => {
     if (!searchQuery) return ICON_CATEGORIES;
@@ -507,5 +507,5 @@ function IconsGallery() {
 }
 
 export const Default = {
-    render: () => <IconsGallery />,
-} satisfies Story;;
+  render: () => <IconsGallery />,
+} satisfies Story;

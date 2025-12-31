@@ -1,7 +1,7 @@
-import { Check, ChevronsUpDown, X } from "lucide-react";
-import * as React from "react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Check, ChevronsUpDown, X } from 'lucide-react';
+import * as React from 'react';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   Command,
   CommandEmpty,
@@ -9,9 +9,9 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "@/components/ui/command";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { cn } from "@/lib/index";
+} from '@/components/ui/command';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { cn } from '@/lib/index';
 
 export interface MultiSelectProps {
   options: { label: string; value: string }[];
@@ -32,12 +32,12 @@ const MultiSelect = React.forwardRef<HTMLDivElement, MultiSelectProps>(
       options,
       selected,
       onChange,
-      placeholder = "Select items...",
-      emptyMessage = "No items found.",
+      placeholder = 'Select items...',
+      emptyMessage = 'No items found.',
       className,
       maxSelected,
       disabled = false,
-      searchPlaceholder = "Search...",
+      searchPlaceholder = 'Search...',
       clearAllText,
     },
     ref,
@@ -64,7 +64,7 @@ const MultiSelect = React.forwardRef<HTMLDivElement, MultiSelectProps>(
     };
 
     return (
-      <div ref={ref} className={cn("relative", className)}>
+      <div ref={ref} className={cn('relative', className)}>
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
             <Button
@@ -73,8 +73,8 @@ const MultiSelect = React.forwardRef<HTMLDivElement, MultiSelectProps>(
               aria-expanded={open}
               aria-label={selected.length > 0 ? `${selected.length} items selected` : placeholder}
               className={cn(
-                "w-full justify-between",
-                selected.length > 0 ? "h-auto min-h-10" : "h-10",
+                'w-full justify-between',
+                selected.length > 0 ? 'h-auto min-h-10' : 'h-10',
               )}
               disabled={disabled}
             >
@@ -101,7 +101,7 @@ const MultiSelect = React.forwardRef<HTMLDivElement, MultiSelectProps>(
                           aria-label={`Remove ${option?.label}`}
                           className="ml-1 rounded-full outline-none ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2 cursor-pointer"
                           onKeyDown={(e) => {
-                            if (e.key === "Enter" || e.key === " ") {
+                            if (e.key === 'Enter' || e.key === ' ') {
                               e.preventDefault();
                               handleUnselect(value);
                             }
@@ -146,14 +146,14 @@ const MultiSelect = React.forwardRef<HTMLDivElement, MultiSelectProps>(
                           }
                         }}
                         disabled={isDisabled}
-                        className={cn(isDisabled && "opacity-50 cursor-not-allowed")}
+                        className={cn(isDisabled && 'opacity-50 cursor-not-allowed')}
                       >
                         <div
                           className={cn(
-                            "mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary",
+                            'mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary',
                             isSelected
-                              ? "bg-primary text-primary-foreground"
-                              : "opacity-50 [&_svg]:invisible",
+                              ? 'bg-primary text-primary-foreground'
+                              : 'opacity-50 [&_svg]:invisible',
                           )}
                         >
                           <Check className="h-4 w-4" />
@@ -168,7 +168,7 @@ const MultiSelect = React.forwardRef<HTMLDivElement, MultiSelectProps>(
             {selected.length > 0 && (
               <div className="border-t p-2">
                 <Button variant="ghost" size="sm" className="w-full" onClick={handleClearAll}>
-                  {typeof clearAllText === "function"
+                  {typeof clearAllText === 'function'
                     ? clearAllText(selected.length)
                     : clearAllText || `Clear all (${selected.length})`}
                 </Button>
@@ -180,6 +180,6 @@ const MultiSelect = React.forwardRef<HTMLDivElement, MultiSelectProps>(
     );
   },
 );
-MultiSelect.displayName = "MultiSelect";
+MultiSelect.displayName = 'MultiSelect';
 
 export { MultiSelect };

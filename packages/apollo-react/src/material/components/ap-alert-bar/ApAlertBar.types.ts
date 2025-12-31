@@ -1,9 +1,6 @@
 import React from 'react';
 
-import {
-  SxProps,
-  Theme,
-} from '@mui/material';
+import { SxProps, Theme } from '@mui/material';
 
 import { StatusTypes } from '../../../types/statusTypes';
 

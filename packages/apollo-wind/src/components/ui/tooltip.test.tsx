@@ -1,10 +1,10 @@
-import { act, render, screen, waitFor } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
-import { axe } from "jest-axe";
-import { describe, expect, it } from "vitest";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./tooltip";
+import { act, render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { axe } from 'jest-axe';
+import { describe, expect, it } from 'vitest';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './tooltip';
 
-describe("Tooltip", () => {
+describe('Tooltip', () => {
   const TooltipExample = () => (
     <TooltipProvider delayDuration={0}>
       <Tooltip>
@@ -14,30 +14,30 @@ describe("Tooltip", () => {
     </TooltipProvider>
   );
 
-  it("renders trigger without crashing", () => {
+  it('renders trigger without crashing', () => {
     render(<TooltipExample />);
-    expect(screen.getByText("Hover me")).toBeInTheDocument();
+    expect(screen.getByText('Hover me')).toBeInTheDocument();
   });
 
-  it("has no accessibility violations when closed", async () => {
+  it('has no accessibility violations when closed', async () => {
     const { container } = render(<TooltipExample />);
     const results = await axe(container);
     expect(results).toHaveNoViolations();
   });
 
-  it("shows tooltip on hover", async () => {
+  it('shows tooltip on hover', async () => {
     const user = userEvent.setup();
     render(<TooltipExample />);
 
-    const trigger = screen.getByText("Hover me");
+    const trigger = screen.getByText('Hover me');
     await user.hover(trigger);
 
     await waitFor(() => {
-      expect(screen.getByRole("tooltip")).toBeInTheDocument();
+      expect(screen.getByRole('tooltip')).toBeInTheDocument();
     });
   });
 
-  it("shows tooltip on focus", async () => {
+  it('shows tooltip on focus', async () => {
     render(
       <TooltipProvider delayDuration={0}>
         <Tooltip>
@@ -49,17 +49,17 @@ describe("Tooltip", () => {
       </TooltipProvider>,
     );
 
-    const trigger = screen.getByRole("button", { name: "Focus me" });
+    const trigger = screen.getByRole('button', { name: 'Focus me' });
     await act(async () => {
       trigger.focus();
     });
 
     await waitFor(() => {
-      expect(screen.getByRole("tooltip")).toBeInTheDocument();
+      expect(screen.getByRole('tooltip')).toBeInTheDocument();
     });
   });
 
-  it("applies custom className to content", async () => {
+  it('applies custom className to content', async () => {
     const user = userEvent.setup();
     render(
       <TooltipProvider delayDuration={0}>
@@ -70,16 +70,16 @@ describe("Tooltip", () => {
       </TooltipProvider>,
     );
 
-    const trigger = screen.getByText("Hover");
+    const trigger = screen.getByText('Hover');
     await user.hover(trigger);
 
     await waitFor(() => {
-      expect(screen.getByRole("tooltip")).toBeInTheDocument();
+      expect(screen.getByRole('tooltip')).toBeInTheDocument();
     });
     // Verify the tooltip appeared - className check can be flaky
   });
 
-  it("supports custom side offset", async () => {
+  it('supports custom side offset', async () => {
     const user = userEvent.setup();
     render(
       <TooltipProvider delayDuration={0}>
@@ -90,15 +90,15 @@ describe("Tooltip", () => {
       </TooltipProvider>,
     );
 
-    const trigger = screen.getByText("Hover");
+    const trigger = screen.getByText('Hover');
     await user.hover(trigger);
 
     await waitFor(() => {
-      expect(screen.getByRole("tooltip")).toBeInTheDocument();
+      expect(screen.getByRole('tooltip')).toBeInTheDocument();
     });
   });
 
-  it("supports controlled mode", async () => {
+  it('supports controlled mode', async () => {
     const { rerender } = render(
       <TooltipProvider>
         <Tooltip open={false}>
@@ -108,7 +108,7 @@ describe("Tooltip", () => {
       </TooltipProvider>,
     );
 
-    expect(screen.queryByRole("tooltip")).not.toBeInTheDocument();
+    expect(screen.queryByRole('tooltip')).not.toBeInTheDocument();
 
     rerender(
       <TooltipProvider>
@@ -120,11 +120,11 @@ describe("Tooltip", () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByRole("tooltip")).toBeInTheDocument();
+      expect(screen.getByRole('tooltip')).toBeInTheDocument();
     });
   });
 
-  it("supports delay duration", async () => {
+  it('supports delay duration', async () => {
     const user = userEvent.setup();
     render(
       <TooltipProvider delayDuration={0}>
@@ -135,15 +135,15 @@ describe("Tooltip", () => {
       </TooltipProvider>,
     );
 
-    const trigger = screen.getByText("Hover");
+    const trigger = screen.getByText('Hover');
     await user.hover(trigger);
 
     await waitFor(() => {
-      expect(screen.getByRole("tooltip")).toBeInTheDocument();
+      expect(screen.getByRole('tooltip')).toBeInTheDocument();
     });
   });
 
-  it("can disable hover card behavior", () => {
+  it('can disable hover card behavior', () => {
     render(
       <TooltipProvider>
         <Tooltip delayDuration={0}>
@@ -153,10 +153,10 @@ describe("Tooltip", () => {
       </TooltipProvider>,
     );
 
-    expect(screen.getByText("Trigger")).toBeInTheDocument();
+    expect(screen.getByText('Trigger')).toBeInTheDocument();
   });
 
-  it("supports asChild on trigger", async () => {
+  it('supports asChild on trigger', async () => {
     const user = userEvent.setup();
     render(
       <TooltipProvider delayDuration={0}>
@@ -169,15 +169,15 @@ describe("Tooltip", () => {
       </TooltipProvider>,
     );
 
-    const trigger = screen.getByRole("button", { name: "Custom trigger" });
+    const trigger = screen.getByRole('button', { name: 'Custom trigger' });
     await user.hover(trigger);
 
     await waitFor(() => {
-      expect(screen.getByRole("tooltip")).toBeInTheDocument();
+      expect(screen.getByRole('tooltip')).toBeInTheDocument();
     });
   });
 
-  it("positions tooltip correctly with side prop", async () => {
+  it('positions tooltip correctly with side prop', async () => {
     const user = userEvent.setup();
     render(
       <TooltipProvider delayDuration={0}>
@@ -188,15 +188,15 @@ describe("Tooltip", () => {
       </TooltipProvider>,
     );
 
-    const trigger = screen.getByText("Hover");
+    const trigger = screen.getByText('Hover');
     await user.hover(trigger);
 
     await waitFor(() => {
-      expect(screen.getByRole("tooltip")).toBeInTheDocument();
+      expect(screen.getByRole('tooltip')).toBeInTheDocument();
     });
   });
 
-  it("supports align prop", async () => {
+  it('supports align prop', async () => {
     const user = userEvent.setup();
     render(
       <TooltipProvider delayDuration={0}>
@@ -207,15 +207,15 @@ describe("Tooltip", () => {
       </TooltipProvider>,
     );
 
-    const trigger = screen.getByText("Hover");
+    const trigger = screen.getByText('Hover');
     await user.hover(trigger);
 
     await waitFor(() => {
-      expect(screen.getByRole("tooltip")).toBeInTheDocument();
+      expect(screen.getByRole('tooltip')).toBeInTheDocument();
     });
   });
 
-  it("can skip delay when moving between tooltips", async () => {
+  it('can skip delay when moving between tooltips', async () => {
     const user = userEvent.setup();
     render(
       <TooltipProvider delayDuration={0} skipDelayDuration={300}>
@@ -230,11 +230,11 @@ describe("Tooltip", () => {
       </TooltipProvider>,
     );
 
-    const first = screen.getByText("First");
+    const first = screen.getByText('First');
     await user.hover(first);
 
     await waitFor(() => {
-      expect(screen.getByRole("tooltip")).toBeInTheDocument();
+      expect(screen.getByRole('tooltip')).toBeInTheDocument();
     });
   });
 });

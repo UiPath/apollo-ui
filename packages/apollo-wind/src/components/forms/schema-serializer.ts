@@ -9,7 +9,7 @@ import type {
   FieldOption,
   FormAction,
   ValidationConfig,
-} from "./form-schema";
+} from './form-schema';
 
 /**
  * Schema Serializer - Converts FormSchema to JSON-safe format
@@ -140,7 +140,7 @@ function serializeRule(rule: FieldRule): JsonObject {
     conditions: rule.conditions.map(serializeCondition),
   };
 
-  if (rule.operator && rule.operator !== "AND") {
+  if (rule.operator && rule.operator !== 'AND') {
     result.operator = rule.operator;
   }
 
@@ -164,30 +164,30 @@ function serializeRule(rule: FieldRule): JsonObject {
  */
 function serializeDataSource(dataSource: DataSource): JsonObject {
   switch (dataSource.type) {
-    case "static":
+    case 'static':
       return {
-        type: "static",
+        type: 'static',
         options: serializeOptions(dataSource.options),
       };
-    case "fetch":
+    case 'fetch':
       return {
-        type: "fetch",
+        type: 'fetch',
         url: dataSource.url,
         ...(dataSource.method && { method: dataSource.method }),
         ...(dataSource.transform && { transform: dataSource.transform }),
         ...(dataSource.params && { params: dataSource.params as JsonObject }),
       };
-    case "remote":
+    case 'remote':
       return {
-        type: "remote",
+        type: 'remote',
         endpoint: dataSource.endpoint,
         ...(dataSource.method && { method: dataSource.method }),
         ...(dataSource.params && { params: dataSource.params as JsonObject }),
         ...(dataSource.transform && { transform: dataSource.transform }),
       };
-    case "computed":
+    case 'computed':
       return {
-        type: "computed",
+        type: 'computed',
         dependency: dataSource.dependency,
         compute: dataSource.compute,
       };
@@ -223,21 +223,21 @@ function serializeField(field: FieldMetadata): JsonObject {
   if (field.ariaDescribedBy) result.ariaDescribedBy = field.ariaDescribedBy;
 
   // Type-specific properties
-  if ("options" in field && field.options) {
+  if ('options' in field && field.options) {
     result.options = serializeOptions(field.options);
   }
-  if ("rows" in field && field.rows) result.rows = field.rows;
-  if ("min" in field && field.min !== undefined) result.min = field.min;
-  if ("max" in field && field.max !== undefined) result.max = field.max;
-  if ("step" in field && field.step !== undefined) result.step = field.step;
-  if ("maxSelected" in field && field.maxSelected) result.maxSelected = field.maxSelected;
-  if ("accept" in field && field.accept) result.accept = field.accept;
-  if ("multiple" in field && field.multiple) result.multiple = field.multiple;
-  if ("maxSize" in field && field.maxSize) result.maxSize = field.maxSize;
-  if ("showPreview" in field && field.showPreview) result.showPreview = field.showPreview;
-  if ("use12Hour" in field && field.use12Hour) result.use12Hour = field.use12Hour;
-  if ("component" in field && field.component) result.component = field.component;
-  if ("componentProps" in field && field.componentProps) {
+  if ('rows' in field && field.rows) result.rows = field.rows;
+  if ('min' in field && field.min !== undefined) result.min = field.min;
+  if ('max' in field && field.max !== undefined) result.max = field.max;
+  if ('step' in field && field.step !== undefined) result.step = field.step;
+  if ('maxSelected' in field && field.maxSelected) result.maxSelected = field.maxSelected;
+  if ('accept' in field && field.accept) result.accept = field.accept;
+  if ('multiple' in field && field.multiple) result.multiple = field.multiple;
+  if ('maxSize' in field && field.maxSize) result.maxSize = field.maxSize;
+  if ('showPreview' in field && field.showPreview) result.showPreview = field.showPreview;
+  if ('use12Hour' in field && field.use12Hour) result.use12Hour = field.use12Hour;
+  if ('component' in field && field.component) result.component = field.component;
+  if ('componentProps' in field && field.componentProps) {
     result.componentProps = field.componentProps as JsonObject;
   }
 
@@ -306,10 +306,10 @@ export function serializeSchema(schema: FormSchema): JsonObject {
   if (schema.metadata) result.metadata = schema.metadata as JsonObject;
 
   // Sections or Steps
-  if ("sections" in schema && schema.sections) {
+  if ('sections' in schema && schema.sections) {
     result.sections = schema.sections.map(serializeSection);
   }
-  if ("steps" in schema && schema.steps) {
+  if ('steps' in schema && schema.steps) {
     result.steps = schema.steps.map(serializeStep);
   }
 

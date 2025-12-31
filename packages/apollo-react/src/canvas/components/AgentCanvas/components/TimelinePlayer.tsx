@@ -1,22 +1,10 @@
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { DateTime } from 'luxon';
 
-import {
-  FontVariantToken,
-  Spacing,
-} from '@uipath/apollo-core';
+import { FontVariantToken, Spacing } from '@uipath/apollo-core';
 import * as Icons from '@uipath/apollo-react/canvas/icons';
-import {
-  Column,
-  Row,
-} from '@uipath/apollo-react/canvas/layouts';
+import { Column, Row } from '@uipath/apollo-react/canvas/layouts';
 import { ApTypography } from '@uipath/apollo-react/material';
 import { ApIconButton } from '@uipath/portal-shell-react';
 

@@ -1,11 +1,11 @@
-import type { Meta, StoryObj } from "@storybook/react-vite";
-import { DataManagementExample } from "./data-management-example";
+import type { Meta, StoryObj } from '@storybook/react-vite';
+import { DataManagementExample } from './data-management-example';
 
 const meta = {
-  title: "Examples/Data Management",
+  title: 'Examples/Data Management',
   component: DataManagementExample,
   parameters: {
-    layout: "fullscreen",
+    layout: 'fullscreen',
   },
 } satisfies Meta<typeof DataManagementExample>;
 

@@ -1,9 +1,9 @@
-import { useState } from "react";
-import { Copy, Check, Code2 } from "lucide-react";
-import { toast } from "sonner";
-import type { FormSchema } from "./form-schema";
-import { schemaToJson } from "./schema-serializer";
-import { Button } from "@/components/ui/button";
+import { useState } from 'react';
+import { Copy, Check, Code2 } from 'lucide-react';
+import { toast } from 'sonner';
+import type { FormSchema } from './form-schema';
+import { schemaToJson } from './schema-serializer';
+import { Button } from '@/components/ui/button';
 import {
   Sheet,
   SheetContent,
@@ -11,8 +11,8 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "@/components/ui/sheet";
-import { ScrollArea } from "@/components/ui/scroll-area";
+} from '@/components/ui/sheet';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface SchemaViewerProps {
   schema: FormSchema;
@@ -25,7 +25,7 @@ interface SchemaViewerProps {
  * Shows the backing JSON schema in a slide-out sheet panel.
  * Includes syntax highlighting and one-click copy to clipboard.
  */
-export function SchemaViewer({ schema, triggerLabel = "View Schema" }: SchemaViewerProps) {
+export function SchemaViewer({ schema, triggerLabel = 'View Schema' }: SchemaViewerProps) {
   const [copied, setCopied] = useState(false);
   const jsonString = schemaToJson(schema);
 
@@ -33,10 +33,10 @@ export function SchemaViewer({ schema, triggerLabel = "View Schema" }: SchemaVie
     try {
       await navigator.clipboard.writeText(jsonString);
       setCopied(true);
-      toast.success("Schema copied to clipboard");
+      toast.success('Schema copied to clipboard');
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      toast.error("Failed to copy schema");
+      toast.error('Failed to copy schema');
     }
   };
 
@@ -54,7 +54,7 @@ export function SchemaViewer({ schema, triggerLabel = "View Schema" }: SchemaVie
             <span>Schema JSON</span>
             <Button variant="outline" size="sm" onClick={handleCopy} className="gap-2">
               {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-              {copied ? "Copied!" : "Copy"}
+              {copied ? 'Copied!' : 'Copy'}
             </Button>
           </SheetTitle>
           <SheetDescription>JSON representation of the form schema.</SheetDescription>

@@ -11,7 +11,7 @@ import { useScheduledCallback } from '../../hooks/use-scheduled-callback';
 import { useChatState } from '../../providers/chat-state-provider';
 import { AutopilotChatInternalEvent } from '../../service';
 import { AutopilotChatActionButton } from './action-button';
-import { ApIcon } from '../../ap-icon';
+import { ApIcon } from '@uipath/apollo-react/material/components';
 import { AutopilotChatTooltip } from './tooltip';
 
 export interface DropdownOption<T = string> {
@@ -204,11 +204,7 @@ export function DropdownPicker<T = string>({
           )}
         >
           {selectedOption.icon && (
-            <ApIcon
-              variant="outlined"
-              name={selectedOption.icon}
-              size={token.Icon.IconXs}
-            />
+            <ApIcon variant="outlined" name={selectedOption.icon} size={token.Icon.IconXs} />
           )}
           <ApTypography variant={spacing.primaryFontToken}>{selectedOption.name}</ApTypography>
           <KeyboardArrowDownIcon
@@ -274,11 +270,7 @@ export function DropdownPicker<T = string>({
                 }}
               >
                 {option.icon && (
-                  <ApIcon
-                    variant="outlined"
-                    name={option.icon}
-                    size={token.Icon.IconXs}
-                  />
+                  <ApIcon variant="outlined" name={option.icon} size={token.Icon.IconXs} />
                 )}
                 <ApTypography variant={spacing.primaryFontToken}>{option.name}</ApTypography>
               </div>

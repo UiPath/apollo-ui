@@ -1,5 +1,5 @@
-import type { Meta } from "@storybook/react-vite";
-import { Button } from "./button";
+import type { Meta } from '@storybook/react-vite';
+import { Button } from './button';
 import {
   Sheet,
   SheetContent,
@@ -7,12 +7,12 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "./sheet";
+} from './sheet';
 
 const meta: Meta<typeof Sheet> = {
-  title: "Design System/Overlays/Sheet",
+  title: 'Design System/Overlays/Sheet',
   component: Sheet,
-  tags: ["autodocs"],
+  tags: ['autodocs'],
 };
 
 export default meta;

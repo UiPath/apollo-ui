@@ -1,13 +1,13 @@
-import type { Meta, StoryObj } from "@storybook/react-vite";
-import { MetadataForm } from "./metadata-form";
-import { FormStateViewer } from "./form-state-viewer";
-import type { FormSchema } from "./form-schema";
-import { z } from "zod";
-import { useForm, FormProvider, type FieldValues, type UseFormReturn } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { RuleBuilder } from "./rules-engine";
-import { autoSavePlugin, analyticsPlugin } from "./form-plugins";
-import { setupDemoMocks } from "./demo-mocks";
+import type { Meta, StoryObj } from '@storybook/react-vite';
+import { MetadataForm } from './metadata-form';
+import { FormStateViewer } from './form-state-viewer';
+import type { FormSchema } from './form-schema';
+import { z } from 'zod';
+import { useForm, FormProvider, type FieldValues, type UseFormReturn } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { RuleBuilder } from './rules-engine';
+import { autoSavePlugin, analyticsPlugin } from './form-plugins';
+import { setupDemoMocks } from './demo-mocks';
 import {
   cascadingDropdownsSchema,
   computedFieldsSchema,
@@ -17,30 +17,30 @@ import {
   multiStepSchema,
   fileUploadSchema,
   FileUploadExample,
-} from "./form-examples";
-import { SchemaViewer } from "./schema-viewer";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
+} from './form-examples';
+import { SchemaViewer } from './schema-viewer';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { useFormContext, Controller } from "react-hook-form";
-import { Toaster } from "@/components/ui/sonner";
+} from '@/components/ui/select';
+import { useFormContext, Controller } from 'react-hook-form';
+import { Toaster } from '@/components/ui/sonner';
 
 // Setup mocks for cascading dropdown examples
 setupDemoMocks();
 
 const meta: Meta<typeof MetadataForm> = {
-  title: "Forms/Examples",
+  title: 'Forms/Examples',
   component: MetadataForm,
   parameters: {
-    layout: "padded",
+    layout: 'padded',
     docs: {
       description: {
         component: `
@@ -82,7 +82,7 @@ A powerful metadata-driven form system built on React Hook Form and Zod.
       );
     },
   ],
-  tags: ["autodocs"],
+  tags: ['autodocs'],
 };
 
 export default meta;
@@ -93,72 +93,72 @@ type Story = StoryObj<typeof MetadataForm>;
 // ============================================================================
 
 const contactFormSchema: FormSchema = {
-  id: "contact-form",
-  title: "Contact Us",
-  description: "Get in touch with our team",
+  id: 'contact-form',
+  title: 'Contact Us',
+  description: 'Get in touch with our team',
   layout: {
     columns: 2,
     gap: 6,
   },
   sections: [
     {
-      id: "contact-info",
+      id: 'contact-info',
       fields: [
         {
-          name: "name",
-          type: "text",
-          label: "Full Name",
-          placeholder: "John Doe",
+          name: 'name',
+          type: 'text',
+          label: 'Full Name',
+          placeholder: 'John Doe',
           validation: {
             required: true,
             minLength: 2,
-            messages: { minLength: "Name must be at least 2 characters" },
+            messages: { minLength: 'Name must be at least 2 characters' },
           },
           grid: { span: 2 },
         },
         {
-          name: "email",
-          type: "email",
-          label: "Email Address",
-          placeholder: "john@example.com",
+          name: 'email',
+          type: 'email',
+          label: 'Email Address',
+          placeholder: 'john@example.com',
           validation: {
             required: true,
             email: true,
-            messages: { email: "Please enter a valid email" },
+            messages: { email: 'Please enter a valid email' },
           },
         },
         {
-          name: "phone",
-          type: "text",
-          label: "Phone Number",
-          placeholder: "+1 (555) 123-4567",
+          name: 'phone',
+          type: 'text',
+          label: 'Phone Number',
+          placeholder: '+1 (555) 123-4567',
         },
         {
-          name: "subject",
-          type: "select",
-          label: "Subject",
+          name: 'subject',
+          type: 'select',
+          label: 'Subject',
           options: [
-            { label: "General Inquiry", value: "general" },
-            { label: "Technical Support", value: "support" },
-            { label: "Sales", value: "sales" },
+            { label: 'General Inquiry', value: 'general' },
+            { label: 'Technical Support', value: 'support' },
+            { label: 'Sales', value: 'sales' },
           ],
         },
         {
-          name: "urgent",
-          type: "switch",
-          label: "Urgent Request",
-          description: "Check if this requires immediate attention",
+          name: 'urgent',
+          type: 'switch',
+          label: 'Urgent Request',
+          description: 'Check if this requires immediate attention',
           defaultValue: false,
         },
         {
-          name: "message",
-          type: "textarea",
-          label: "Message",
-          placeholder: "How can we help you?",
+          name: 'message',
+          type: 'textarea',
+          label: 'Message',
+          placeholder: 'How can we help you?',
           validation: {
             required: true,
             minLength: 10,
-            messages: { minLength: "Please provide more details" },
+            messages: { minLength: 'Please provide more details' },
           },
           grid: { span: 2 },
         },
@@ -180,48 +180,48 @@ export const BasicContactForm: Story = {
   args: {
     schema: contactFormSchema,
     onSubmit: async (data) => {
-      console.log("Form submitted:", data);
-      alert("Form submitted! Check console for data.");
+      console.log('Form submitted:', data);
+      alert('Form submitted! Check console for data.');
     },
   },
 };
 
 const compactFormSchema: FormSchema = {
-  id: "compact-form",
-  title: "Quick Survey",
+  id: 'compact-form',
+  title: 'Quick Survey',
   description: "This won't take long",
   layout: {
     columns: 1,
     gap: 4,
-    variant: "compact",
+    variant: 'compact',
   },
   sections: [
     {
-      id: "s1",
+      id: 's1',
       fields: [
         {
-          name: "rating",
-          type: "slider",
-          label: "How satisfied are you?",
+          name: 'rating',
+          type: 'slider',
+          label: 'How satisfied are you?',
           min: 1,
           max: 5,
           step: 1,
           defaultValue: 3,
         },
         {
-          name: "recommend",
-          type: "radio",
-          label: "Would you recommend us?",
+          name: 'recommend',
+          type: 'radio',
+          label: 'Would you recommend us?',
           options: [
-            { label: "Yes", value: "yes" },
-            { label: "No", value: "no" },
+            { label: 'Yes', value: 'yes' },
+            { label: 'No', value: 'no' },
           ],
         },
         {
-          name: "feedback",
-          type: "textarea",
-          label: "Additional Feedback",
-          placeholder: "Optional...",
+          name: 'feedback',
+          type: 'textarea',
+          label: 'Additional Feedback',
+          placeholder: 'Optional...',
         },
       ],
     },
@@ -237,8 +237,8 @@ export const CompactLayout: Story = {
   args: {
     schema: compactFormSchema,
     onSubmit: async (data) => {
-      console.log("Survey submitted:", data);
-      alert("Thanks for your feedback!");
+      console.log('Survey submitted:', data);
+      alert('Thanks for your feedback!');
     },
   },
 };
@@ -248,118 +248,118 @@ export const CompactLayout: Story = {
 // ============================================================================
 
 const allFieldTypesSchema: FormSchema = {
-  id: "field-showcase",
-  title: "Field Types Showcase",
-  description: "All available field types in one form",
+  id: 'field-showcase',
+  title: 'Field Types Showcase',
+  description: 'All available field types in one form',
   layout: {
     columns: 2,
     gap: 6,
   },
   sections: [
     {
-      id: "text-fields",
-      title: "Text Inputs",
+      id: 'text-fields',
+      title: 'Text Inputs',
       fields: [
         {
-          name: "textField",
-          type: "text",
-          label: "Text Field",
-          placeholder: "Enter text...",
+          name: 'textField',
+          type: 'text',
+          label: 'Text Field',
+          placeholder: 'Enter text...',
         },
         {
-          name: "emailField",
-          type: "email",
-          label: "Email Field",
-          placeholder: "email@example.com",
+          name: 'emailField',
+          type: 'email',
+          label: 'Email Field',
+          placeholder: 'email@example.com',
         },
         {
-          name: "numberField",
-          type: "number",
-          label: "Number Field",
+          name: 'numberField',
+          type: 'number',
+          label: 'Number Field',
           min: 0,
           max: 100,
         },
         {
-          name: "textareaField",
-          type: "textarea",
-          label: "Textarea Field",
-          placeholder: "Enter multiple lines...",
+          name: 'textareaField',
+          type: 'textarea',
+          label: 'Textarea Field',
+          placeholder: 'Enter multiple lines...',
           grid: { span: 2 },
         },
       ],
     },
     {
-      id: "selection-fields",
-      title: "Selection Controls",
+      id: 'selection-fields',
+      title: 'Selection Controls',
       fields: [
         {
-          name: "selectField",
-          type: "select",
-          label: "Select Field",
+          name: 'selectField',
+          type: 'select',
+          label: 'Select Field',
           options: [
-            { label: "Option 1", value: "1" },
-            { label: "Option 2", value: "2" },
-            { label: "Option 3", value: "3" },
+            { label: 'Option 1', value: '1' },
+            { label: 'Option 2', value: '2' },
+            { label: 'Option 3', value: '3' },
           ],
         },
         {
-          name: "multiselectField",
-          type: "multiselect",
-          label: "Multi-Select Field",
+          name: 'multiselectField',
+          type: 'multiselect',
+          label: 'Multi-Select Field',
           options: [
-            { label: "Red", value: "red" },
-            { label: "Green", value: "green" },
-            { label: "Blue", value: "blue" },
+            { label: 'Red', value: 'red' },
+            { label: 'Green', value: 'green' },
+            { label: 'Blue', value: 'blue' },
           ],
         },
         {
-          name: "radioField",
-          type: "radio",
-          label: "Radio Group",
+          name: 'radioField',
+          type: 'radio',
+          label: 'Radio Group',
           options: [
-            { label: "Yes", value: "yes" },
-            { label: "No", value: "no" },
-            { label: "Maybe", value: "maybe" },
+            { label: 'Yes', value: 'yes' },
+            { label: 'No', value: 'no' },
+            { label: 'Maybe', value: 'maybe' },
           ],
         },
         {
-          name: "checkboxField",
-          type: "checkbox",
-          label: "Checkbox",
-          description: "I agree to the terms and conditions",
+          name: 'checkboxField',
+          type: 'checkbox',
+          label: 'Checkbox',
+          description: 'I agree to the terms and conditions',
         },
       ],
     },
     {
-      id: "special-fields",
-      title: "Special Controls",
+      id: 'special-fields',
+      title: 'Special Controls',
       fields: [
         {
-          name: "switchField",
-          type: "switch",
-          label: "Switch Toggle",
-          description: "Enable this feature",
+          name: 'switchField',
+          type: 'switch',
+          label: 'Switch Toggle',
+          description: 'Enable this feature',
           defaultValue: false,
         },
         {
-          name: "sliderField",
-          type: "slider",
-          label: "Slider",
+          name: 'sliderField',
+          type: 'slider',
+          label: 'Slider',
           min: 0,
           max: 100,
           step: 10,
           defaultValue: 50,
         },
         {
-          name: "dateField",
-          type: "date",
-          label: "Date Picker",
+          name: 'dateField',
+          type: 'date',
+          label: 'Date Picker',
         },
         {
-          name: "fileField",
-          type: "file",
-          label: "File Upload",
-          accept: ".pdf,.doc",
+          name: 'fileField',
+          type: 'file',
+          label: 'File Upload',
+          accept: '.pdf,.doc',
         },
       ],
     },
@@ -378,8 +378,8 @@ export const AllFieldTypesShowcase: Story = {
   args: {
     schema: allFieldTypesSchema,
     onSubmit: async (data) => {
-      console.log("Showcase form submitted:", data);
-      alert("Form submitted! Check console for all field values.");
+      console.log('Showcase form submitted:', data);
+      alert('Form submitted! Check console for all field values.');
     },
   },
 };
@@ -389,77 +389,77 @@ export const AllFieldTypesShowcase: Story = {
 // ============================================================================
 
 const collapsibleFormSchema: FormSchema = {
-  id: "settings-form",
-  title: "Application Settings",
-  description: "Configure your application preferences",
+  id: 'settings-form',
+  title: 'Application Settings',
+  description: 'Configure your application preferences',
   sections: [
     {
-      id: "general",
-      title: "General Settings",
+      id: 'general',
+      title: 'General Settings',
       collapsible: true,
       defaultExpanded: true,
       fields: [
         {
-          name: "appName",
-          type: "text",
-          label: "Application Name",
+          name: 'appName',
+          type: 'text',
+          label: 'Application Name',
         },
         {
-          name: "language",
-          type: "select",
-          label: "Language",
+          name: 'language',
+          type: 'select',
+          label: 'Language',
           options: [
-            { label: "English", value: "en" },
-            { label: "Spanish", value: "es" },
-            { label: "French", value: "fr" },
+            { label: 'English', value: 'en' },
+            { label: 'Spanish', value: 'es' },
+            { label: 'French', value: 'fr' },
           ],
         },
       ],
     },
     {
-      id: "notifications",
-      title: "Notification Settings",
+      id: 'notifications',
+      title: 'Notification Settings',
       collapsible: true,
       defaultExpanded: false,
       fields: [
         {
-          name: "emailNotif",
-          type: "switch",
-          label: "Email Notifications",
+          name: 'emailNotif',
+          type: 'switch',
+          label: 'Email Notifications',
           defaultValue: true,
         },
         {
-          name: "push",
-          type: "switch",
-          label: "Push Notifications",
+          name: 'push',
+          type: 'switch',
+          label: 'Push Notifications',
           defaultValue: false,
         },
         {
-          name: "sms",
-          type: "switch",
-          label: "SMS Notifications",
+          name: 'sms',
+          type: 'switch',
+          label: 'SMS Notifications',
           defaultValue: false,
         },
       ],
     },
     {
-      id: "advanced",
-      title: "Advanced Settings",
-      description: "For power users",
+      id: 'advanced',
+      title: 'Advanced Settings',
+      description: 'For power users',
       collapsible: true,
       defaultExpanded: false,
       fields: [
         {
-          name: "debugMode",
-          type: "switch",
-          label: "Debug Mode",
-          description: "Enable verbose logging",
+          name: 'debugMode',
+          type: 'switch',
+          label: 'Debug Mode',
+          description: 'Enable verbose logging',
           defaultValue: false,
         },
         {
-          name: "apiTimeout",
-          type: "number",
-          label: "API Timeout (ms)",
+          name: 'apiTimeout',
+          type: 'number',
+          label: 'API Timeout (ms)',
           min: 1000,
           max: 60000,
           defaultValue: 5000,
@@ -481,8 +481,8 @@ export const CollapsibleSections: Story = {
   args: {
     schema: collapsibleFormSchema,
     onSubmit: async (data) => {
-      console.log("Settings saved:", data);
-      alert("Settings saved!");
+      console.log('Settings saved:', data);
+      alert('Settings saved!');
     },
   },
 };
@@ -492,46 +492,46 @@ export const CollapsibleSections: Story = {
 // ============================================================================
 
 const conditionalFormSchema: FormSchema = {
-  id: "application-form",
-  title: "Job Application",
-  description: "Apply for a position at our company",
+  id: 'application-form',
+  title: 'Job Application',
+  description: 'Apply for a position at our company',
   sections: [
     {
-      id: "basic",
-      title: "Basic Information",
+      id: 'basic',
+      title: 'Basic Information',
       fields: [
         {
-          name: "position",
-          type: "select",
-          label: "Position Applying For",
+          name: 'position',
+          type: 'select',
+          label: 'Position Applying For',
           options: [
-            { label: "Software Engineer", value: "engineer" },
-            { label: "Product Manager", value: "pm" },
-            { label: "Designer", value: "designer" },
+            { label: 'Software Engineer', value: 'engineer' },
+            { label: 'Product Manager', value: 'pm' },
+            { label: 'Designer', value: 'designer' },
           ],
         },
         {
-          name: "yearsExperience",
-          type: "slider",
-          label: "Years of Experience",
+          name: 'yearsExperience',
+          type: 'slider',
+          label: 'Years of Experience',
           min: 0,
           max: 30,
           step: 1,
           defaultValue: 0,
         },
         {
-          name: "hasManagementExp",
-          type: "checkbox",
-          label: "I have management experience",
+          name: 'hasManagementExp',
+          type: 'checkbox',
+          label: 'I have management experience',
         },
         {
-          name: "managementYears",
-          type: "number",
-          label: "Years in Management",
+          name: 'managementYears',
+          type: 'number',
+          label: 'Years in Management',
           min: 0,
           rules: [
-            new RuleBuilder("show-management-years")
-              .when("hasManagementExp")
+            new RuleBuilder('show-management-years')
+              .when('hasManagementExp')
               .is(true)
               .show()
               .require()
@@ -539,37 +539,37 @@ const conditionalFormSchema: FormSchema = {
           ],
         },
         {
-          name: "salary",
-          type: "number",
-          label: "Expected Salary",
-          placeholder: "60000",
+          name: 'salary',
+          type: 'number',
+          label: 'Expected Salary',
+          placeholder: '60000',
         },
       ],
     },
     {
-      id: "details",
-      title: "Additional Details",
+      id: 'details',
+      title: 'Additional Details',
       fields: [
         {
-          name: "availability",
-          type: "radio",
-          label: "Availability",
+          name: 'availability',
+          type: 'radio',
+          label: 'Availability',
           options: [
-            { label: "Immediate", value: "immediate" },
-            { label: "2 weeks notice", value: "2weeks" },
-            { label: "1 month notice", value: "1month" },
+            { label: 'Immediate', value: 'immediate' },
+            { label: '2 weeks notice', value: '2weeks' },
+            { label: '1 month notice', value: '1month' },
           ],
         },
         {
-          name: "resume",
-          type: "file",
-          label: "Upload Resume",
-          accept: ".pdf,.doc,.docx",
+          name: 'resume',
+          type: 'file',
+          label: 'Upload Resume',
+          accept: '.pdf,.doc,.docx',
         },
         {
-          name: "coverLetter",
-          type: "textarea",
-          label: "Cover Letter",
+          name: 'coverLetter',
+          type: 'textarea',
+          label: 'Cover Letter',
           placeholder: "Tell us why you're a great fit...",
         },
       ],
@@ -588,8 +588,8 @@ export const ConditionalFields: Story = {
   args: {
     schema: conditionalFormSchema,
     onSubmit: async (data) => {
-      console.log("Application submitted:", data);
-      alert("Application submitted! Check console for data.");
+      console.log('Application submitted:', data);
+      alert('Application submitted! Check console for data.');
     },
   },
 };
@@ -606,8 +606,8 @@ export const ConditionalSections: Story = {
   args: {
     schema: conditionalSectionsSchema,
     onSubmit: async (data) => {
-      console.log("Application submitted:", data);
-      alert("Application submitted successfully!");
+      console.log('Application submitted:', data);
+      alert('Application submitted successfully!');
     },
   },
 };
@@ -624,8 +624,8 @@ export const ConditionalQuestions: Story = {
   args: {
     schema: conditionalQuestionsSchema,
     onSubmit: async (data) => {
-      console.log("Survey responses:", data);
-      alert("Thank you for your feedback!");
+      console.log('Survey responses:', data);
+      alert('Thank you for your feedback!');
     },
   },
 };
@@ -646,8 +646,8 @@ export const CascadingDropdowns: Story = {
   args: {
     schema: cascadingDropdownsSchema,
     onSubmit: async (data) => {
-      console.log("Registration data:", data);
-      alert("Registration submitted! Check console for data.");
+      console.log('Registration data:', data);
+      alert('Registration submitted! Check console for data.');
     },
   },
 };
@@ -663,8 +663,8 @@ export const ProductConfigurator: Story = {
   args: {
     schema: computedFieldsSchema,
     onSubmit: async (data) => {
-      console.log("Product configuration:", data);
-      alert("Order submitted! Check console for details.");
+      console.log('Product configuration:', data);
+      alert('Order submitted! Check console for details.');
     },
   },
 };
@@ -681,8 +681,8 @@ export const AutomationJobConfig: Story = {
   args: {
     schema: automationJobSchema,
     onSubmit: async (data) => {
-      console.log("Automation job config:", data);
-      alert("Job scheduled! Check console for configuration.");
+      console.log('Automation job config:', data);
+      alert('Job scheduled! Check console for configuration.');
     },
   },
 };
@@ -704,8 +704,8 @@ export const MultiStepWizard: Story = {
   args: {
     schema: multiStepSchema,
     onSubmit: async (data) => {
-      console.log("Onboarding complete:", data);
-      alert("Welcome! Your account is set up.");
+      console.log('Onboarding complete:', data);
+      alert('Welcome! Your account is set up.');
     },
   },
 };
@@ -732,7 +732,7 @@ export const FileUpload = {
       <FileUploadExample />
     </>
   ),
-} satisfies Story;;
+} satisfies Story;
 
 // ============================================================================
 // PLUGINS
@@ -751,8 +751,8 @@ export const WithPlugins: Story = {
     schema: contactFormSchema,
     plugins: [autoSavePlugin, analyticsPlugin],
     onSubmit: async (data) => {
-      console.log("Form with plugins submitted:", data);
-      alert("Form submitted with auto-save and analytics!");
+      console.log('Form with plugins submitted:', data);
+      alert('Form submitted with auto-save and analytics!');
     },
   },
 };
@@ -779,7 +779,7 @@ const ManualFormFields = () => {
       <div className="space-y-4">
         <div className="space-y-2">
           <Label htmlFor="name">Full Name</Label>
-          <Input id="name" placeholder="John Doe" {...register("name")} />
+          <Input id="name" placeholder="John Doe" {...register('name')} />
           {errors.name && (
             <p className="text-sm text-destructive">{errors.name.message as string}</p>
           )}
@@ -787,7 +787,7 @@ const ManualFormFields = () => {
 
         <div className="space-y-2">
           <Label htmlFor="email">Email Address</Label>
-          <Input id="email" type="email" placeholder="john@example.com" {...register("email")} />
+          <Input id="email" type="email" placeholder="john@example.com" {...register('email')} />
           {errors.email && (
             <p className="text-sm text-destructive">{errors.email.message as string}</p>
           )}
@@ -795,7 +795,7 @@ const ManualFormFields = () => {
 
         <div className="space-y-2">
           <Label htmlFor="age">Age</Label>
-          <Input id="age" type="number" {...register("age", { valueAsNumber: true })} />
+          <Input id="age" type="number" {...register('age', { valueAsNumber: true })} />
           {errors.age && <p className="text-sm text-destructive">{errors.age.message as string}</p>}
         </div>
 
@@ -840,16 +840,16 @@ const ManualFormFields = () => {
 
 const StateViewerExample = () => {
   const zodSchema = z.object({
-    name: z.string().min(2, "Name must be at least 2 characters"),
-    email: z.string().email("Invalid email address"),
-    age: z.number().min(18, "Must be 18 or older").max(120),
+    name: z.string().min(2, 'Name must be at least 2 characters'),
+    email: z.string().email('Invalid email address'),
+    age: z.number().min(18, 'Must be 18 or older').max(120),
     subscribe: z.boolean(),
     role: z.string().optional(),
   });
 
   const form = useForm({
     resolver: zodResolver(zodSchema),
-    mode: "onChange",
+    mode: 'onChange',
     defaultValues: {
       subscribe: false,
       age: 25,
@@ -857,8 +857,8 @@ const StateViewerExample = () => {
   });
 
   const onSubmit = (data: FieldValues) => {
-    console.log("Submitted:", data);
-    alert("Check the state viewer and console to see the final values!");
+    console.log('Submitted:', data);
+    alert('Check the state viewer and console to see the final values!');
   };
 
   return (
@@ -866,7 +866,10 @@ const StateViewerExample = () => {
       <form onSubmit={form.handleSubmit(onSubmit)}>
         <div className="grid grid-cols-2 gap-6">
           <ManualFormFields />
-          <FormStateViewer form={form as unknown as UseFormReturn<FieldValues>} title="Live Form State" />
+          <FormStateViewer
+            form={form as unknown as UseFormReturn<FieldValues>}
+            title="Live Form State"
+          />
         </div>
       </form>
     </FormProvider>
@@ -883,18 +886,18 @@ const StateViewerExample = () => {
  */
 export const WithStateViewer = {
   render: () => <StateViewerExample />,
-} satisfies Story;;
+} satisfies Story;
 
 const CompactStateExample = () => {
   const zodSchema = z.object({
-    name: z.string().min(2, "Name must be at least 2 characters"),
-    email: z.string().email("Invalid email address"),
+    name: z.string().min(2, 'Name must be at least 2 characters'),
+    email: z.string().email('Invalid email address'),
     country: z.string().optional(),
   });
 
   const form = useForm({
     resolver: zodResolver(zodSchema),
-    mode: "onChange",
+    mode: 'onChange',
   });
 
   const {
@@ -904,8 +907,8 @@ const CompactStateExample = () => {
   } = form;
 
   const onSubmit = (data: FieldValues) => {
-    console.log("Submitted:", data);
-    alert("Form submitted!");
+    console.log('Submitted:', data);
+    alert('Form submitted!');
   };
 
   return (
@@ -916,7 +919,7 @@ const CompactStateExample = () => {
 
           <div className="space-y-2">
             <Label htmlFor="name2">Name</Label>
-            <Input id="name2" {...register("name")} />
+            <Input id="name2" {...register('name')} />
             {errors.name && (
               <p className="text-sm text-destructive">{errors.name.message as string}</p>
             )}
@@ -924,7 +927,7 @@ const CompactStateExample = () => {
 
           <div className="space-y-2">
             <Label htmlFor="email2">Email</Label>
-            <Input id="email2" type="email" {...register("email")} />
+            <Input id="email2" type="email" {...register('email')} />
             {errors.email && (
               <p className="text-sm text-destructive">{errors.email.message as string}</p>
             )}
@@ -968,4 +971,4 @@ const CompactStateExample = () => {
  */
 export const WithCompactStateViewer = {
   render: () => <CompactStateExample />,
-} satisfies Story;;
+} satisfies Story;

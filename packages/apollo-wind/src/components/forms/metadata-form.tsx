@@ -1,14 +1,6 @@
-import React, {
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 
-import {
-  FormProvider,
-  useForm,
-} from 'react-hook-form';
+import { FormProvider, useForm } from 'react-hook-form';
 import { z } from 'zod/v4';
 
 import {
@@ -47,7 +39,7 @@ interface MetadataFormProps {
   className?: string;
   disabled?: boolean;
   /** Disable browser autocomplete suggestions. Defaults to undefined (browser default). */
-  autoComplete?: "off" | "on";
+  autoComplete?: 'off' | 'on';
 }
 
 // Stable default to prevent re-renders
@@ -73,8 +65,8 @@ export function MetadataForm({
   // Initialize React Hook Form
   const form = useForm({
     resolver: standardSchemaResolver(zodSchema),
-    mode: schema.mode || "onSubmit",
-    reValidateMode: schema.reValidateMode || "onChange",
+    mode: schema.mode || 'onSubmit',
+    reValidateMode: schema.reValidateMode || 'onChange',
   });
 
   const { watch, handleSubmit, reset } = form;
@@ -106,7 +98,7 @@ export function MetadataForm({
       currentStep: schema.steps ? currentStep : undefined,
 
       evaluateConditions: (conditions: FieldCondition[]) =>
-        RulesEngine.evaluateConditions(conditions, valuesRef.current, "AND"),
+        RulesEngine.evaluateConditions(conditions, valuesRef.current, 'AND'),
 
       fetchData: async (source: DataSource) => {
         const result = await DataFetcher.fetch(source, valuesRef.current);
@@ -149,7 +141,7 @@ export function MetadataForm({
     };
 
     initializeForm();
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- Intentionally only depends on isInitialized; use key prop to reinitialize
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- Intentionally only depends on isInitialized; use key prop to reinitialize
   }, [isInitialized]);
 
   // Watch for field changes and execute plugin hooks
@@ -170,7 +162,6 @@ export function MetadataForm({
     });
 
     return () => subscription.unsubscribe();
-
   }, [watch, isInitialized, plugins]);
 
   // Handle form submission
@@ -220,9 +211,7 @@ export function MetadataForm({
         {renderContent()}
 
         {/* Only render FormActions for single-page forms - multi-step forms have their own navigation */}
-        {!schema.steps && (
-          <FormActions schema={schema} context={context} onReset={() => reset()} />
-        )}
+        {!schema.steps && <FormActions schema={schema} context={context} onReset={() => reset()} />}
       </form>
     </FormProvider>
   );
@@ -425,7 +414,7 @@ interface FormActionsProps {
 
 function FormActions({ schema, context, onReset }: FormActionsProps) {
   const actions = schema.actions || [
-    { id: "submit", type: "submit" as const, label: "Submit", variant: "default" as const },
+    { id: 'submit', type: 'submit' as const, label: 'Submit', variant: 'default' as const },
   ];
 
   // Don't render anything if no actions
@@ -441,13 +430,13 @@ function FormActions({ schema, context, onReset }: FormActionsProps) {
           return null;
         }
 
-        if (action.type === "reset") {
+        if (action.type === 'reset') {
           return (
             <Button
               key={action.id}
               type="button"
               onClick={onReset}
-              variant={action.variant || "secondary"}
+              variant={action.variant || 'secondary'}
               disabled={action.disabled}
             >
               {action.label}
@@ -458,11 +447,11 @@ function FormActions({ schema, context, onReset }: FormActionsProps) {
         return (
           <Button
             key={action.id}
-            type={action.type === "submit" ? "submit" : "button"}
-            variant={action.variant || "default"}
-            disabled={action.disabled || (action.type === "submit" && context.isSubmitting)}
+            type={action.type === 'submit' ? 'submit' : 'button'}
+            variant={action.variant || 'default'}
+            disabled={action.disabled || (action.type === 'submit' && context.isSubmitting)}
           >
-            {action.loading && context.isSubmitting ? "Loading..." : action.label}
+            {action.loading && context.isSubmitting ? 'Loading...' : action.label}
           </Button>
         );
       })}
@@ -493,7 +482,7 @@ function buildZodSchema(schema: FormSchema): z.ZodObject<Record<string, z.ZodTyp
   // 2. Fields with static required + conditional visibility (shouldn't validate when hidden)
   const dynamicValidationFields: Array<{
     name: string;
-    rules: NonNullable<(typeof fields)[0]["rules"]>;
+    rules: NonNullable<(typeof fields)[0]['rules']>;
     staticRequired: boolean;
     customRequiredMessage?: string;
   }> = [];
@@ -581,13 +570,13 @@ function buildZodSchema(schema: FormSchema): z.ZodObject<Record<string, z.ZodTyp
         const isEmpty =
           value === undefined ||
           value === null ||
-          value === "" ||
+          value === '' ||
           (Array.isArray(value) && value.length === 0);
 
         if (isEmpty) {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
-            message: customRequiredMessage || "This field is required",
+            message: customRequiredMessage || 'This field is required',
             path: [name],
           });
         }
@@ -597,7 +586,7 @@ function buildZodSchema(schema: FormSchema): z.ZodObject<Record<string, z.ZodTyp
 }
 
 async function loadInitialData(
-  initialData: FormSchema["initialData"],
+  initialData: FormSchema['initialData'],
   _context: FormContext,
 ): Promise<Record<string, unknown>> {
   if (!initialData) return {};

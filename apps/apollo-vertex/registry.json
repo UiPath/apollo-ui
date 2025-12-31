@@ -500,10 +500,22 @@
             "registryDependencies": ["button", "tooltip", "avatar"],
             "files": [
                 { "path": "registry/shell/shell.tsx", "type": "registry:ui" },
-                { "path": "registry/shell/internal/shell-layout.tsx", "type": "registry:ui" },
-                { "path": "registry/shell/internal/sidebar.tsx", "type": "registry:ui" },
-                { "path": "registry/shell/internal/company.tsx", "type": "registry:ui" },
-                { "path": "registry/shell/internal/user-profile.tsx", "type": "registry:ui" }
+                {
+                    "path": "registry/shell/internal/shell-layout.tsx",
+                    "type": "registry:ui"
+                },
+                {
+                    "path": "registry/shell/internal/sidebar.tsx",
+                    "type": "registry:ui"
+                },
+                {
+                    "path": "registry/shell/internal/company.tsx",
+                    "type": "registry:ui"
+                },
+                {
+                    "path": "registry/shell/internal/user-profile.tsx",
+                    "type": "registry:ui"
+                }
             ]
         },
         {

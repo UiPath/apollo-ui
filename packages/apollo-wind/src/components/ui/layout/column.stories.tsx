@@ -1,18 +1,18 @@
-import type { Meta } from "@storybook/react-vite";
-import { Column } from "./column";
+import type { Meta } from '@storybook/react-vite';
+import { Column } from './column';
 
 const meta = {
-  title: "Design System/Layout/Column",
+  title: 'Design System/Layout/Column',
   component: Column,
   parameters: {
-    layout: "padded",
+    layout: 'padded',
   },
-  tags: ["autodocs"],
+  tags: ['autodocs'],
 } satisfies Meta<typeof Column>;
 
 export default meta;
 
-const Box = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => (
+const Box = ({ children, className = '' }: { children: React.ReactNode; className?: string }) => (
   <div className={`rounded-md border bg-primary/10 p-4 text-center ${className}`}>{children}</div>
 );
 

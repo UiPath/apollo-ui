@@ -1,14 +1,14 @@
-import type { Meta } from "@storybook/react-vite";
-import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "./resizable";
-import { Row } from "./layout";
+import type { Meta } from '@storybook/react-vite';
+import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from './resizable';
+import { Row } from './layout';
 
 const meta = {
-  title: "Design System/Layout/Resizable",
+  title: 'Design System/Layout/Resizable',
   component: ResizablePanelGroup,
   parameters: {
-    layout: "fullscreen",
+    layout: 'fullscreen',
   },
-  tags: ["autodocs"],
+  tags: ['autodocs'],
 } satisfies Meta<typeof ResizablePanelGroup>;
 
 export default meta;

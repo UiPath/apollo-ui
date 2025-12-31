@@ -1,7 +1,7 @@
-import { render, screen } from "@testing-library/react";
-import { axe } from "jest-axe";
-import { describe, expect, it } from "vitest";
-import { createRef } from "react";
+import { render, screen } from '@testing-library/react';
+import { axe } from 'jest-axe';
+import { describe, expect, it } from 'vitest';
+import { createRef } from 'react';
 import {
   Pagination,
   PaginationContent,
@@ -10,22 +10,22 @@ import {
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
-} from "./pagination";
+} from './pagination';
 
-describe("Pagination", () => {
+describe('Pagination', () => {
   // Rendering tests
-  describe("rendering", () => {
-    it("renders pagination nav", () => {
+  describe('rendering', () => {
+    it('renders pagination nav', () => {
       render(<Pagination />);
-      expect(screen.getByRole("navigation")).toBeInTheDocument();
+      expect(screen.getByRole('navigation')).toBeInTheDocument();
     });
 
-    it("renders with aria-label", () => {
+    it('renders with aria-label', () => {
       render(<Pagination />);
-      expect(screen.getByRole("navigation")).toHaveAttribute("aria-label", "pagination");
+      expect(screen.getByRole('navigation')).toHaveAttribute('aria-label', 'pagination');
     });
 
-    it("renders complete pagination structure", () => {
+    it('renders complete pagination structure', () => {
       render(
         <Pagination>
           <PaginationContent>
@@ -50,16 +50,16 @@ describe("Pagination", () => {
         </Pagination>,
       );
 
-      expect(screen.getByText("Previous")).toBeInTheDocument();
-      expect(screen.getByText("Next")).toBeInTheDocument();
-      expect(screen.getByText("1")).toBeInTheDocument();
-      expect(screen.getByText("2")).toBeInTheDocument();
+      expect(screen.getByText('Previous')).toBeInTheDocument();
+      expect(screen.getByText('Next')).toBeInTheDocument();
+      expect(screen.getByText('1')).toBeInTheDocument();
+      expect(screen.getByText('2')).toBeInTheDocument();
     });
   });
 
   // Accessibility tests
-  describe("accessibility", () => {
-    it("has no accessibility violations", async () => {
+  describe('accessibility', () => {
+    it('has no accessibility violations', async () => {
       const { container } = render(
         <Pagination>
           <PaginationContent>
@@ -84,7 +84,7 @@ describe("Pagination", () => {
       expect(results).toHaveNoViolations();
     });
 
-    it("marks active page with aria-current", () => {
+    it('marks active page with aria-current', () => {
       render(
         <Pagination>
           <PaginationContent>
@@ -96,10 +96,10 @@ describe("Pagination", () => {
           </PaginationContent>
         </Pagination>,
       );
-      expect(screen.getByText("2")).toHaveAttribute("aria-current", "page");
+      expect(screen.getByText('2')).toHaveAttribute('aria-current', 'page');
     });
 
-    it("has accessible labels on navigation links", () => {
+    it('has accessible labels on navigation links', () => {
       render(
         <Pagination>
           <PaginationContent>
@@ -112,50 +112,50 @@ describe("Pagination", () => {
           </PaginationContent>
         </Pagination>,
       );
-      expect(screen.getByLabelText("Go to previous page")).toBeInTheDocument();
-      expect(screen.getByLabelText("Go to next page")).toBeInTheDocument();
+      expect(screen.getByLabelText('Go to previous page')).toBeInTheDocument();
+      expect(screen.getByLabelText('Go to next page')).toBeInTheDocument();
     });
 
-    it("ellipsis has screen reader text", () => {
+    it('ellipsis has screen reader text', () => {
       render(<PaginationEllipsis />);
-      expect(screen.getByText("More pages")).toBeInTheDocument();
+      expect(screen.getByText('More pages')).toBeInTheDocument();
     });
 
-    it("ellipsis is hidden from accessibility tree", () => {
+    it('ellipsis is hidden from accessibility tree', () => {
       const { container } = render(<PaginationEllipsis />);
       const ellipsis = container.firstChild;
-      expect(ellipsis).toHaveAttribute("aria-hidden", "true");
+      expect(ellipsis).toHaveAttribute('aria-hidden', 'true');
     });
   });
 
   // Props tests
-  describe("PaginationLink", () => {
-    it("applies active styles when isActive", () => {
+  describe('PaginationLink', () => {
+    it('applies active styles when isActive', () => {
       render(
         <PaginationLink href="#" isActive>
           1
         </PaginationLink>,
       );
-      const link = screen.getByText("1");
-      expect(link).toHaveAttribute("aria-current", "page");
+      const link = screen.getByText('1');
+      expect(link).toHaveAttribute('aria-current', 'page');
     });
 
-    it("does not have aria-current when not active", () => {
+    it('does not have aria-current when not active', () => {
       render(<PaginationLink href="#">1</PaginationLink>);
-      const link = screen.getByText("1");
-      expect(link).not.toHaveAttribute("aria-current");
+      const link = screen.getByText('1');
+      expect(link).not.toHaveAttribute('aria-current');
     });
   });
 
   // Ref forwarding tests
-  describe("ref forwarding", () => {
-    it("PaginationContent forwards ref", () => {
+  describe('ref forwarding', () => {
+    it('PaginationContent forwards ref', () => {
       const ref = createRef<HTMLUListElement>();
       render(<PaginationContent ref={ref} />);
       expect(ref.current).toBeInstanceOf(HTMLUListElement);
     });
 
-    it("PaginationItem forwards ref", () => {
+    it('PaginationItem forwards ref', () => {
       const ref = createRef<HTMLLIElement>();
       render(<PaginationItem ref={ref} />);
       expect(ref.current).toBeInstanceOf(HTMLLIElement);
@@ -163,34 +163,34 @@ describe("Pagination", () => {
   });
 
   // Custom className tests
-  describe("custom className", () => {
-    it("Pagination accepts custom className", () => {
+  describe('custom className', () => {
+    it('Pagination accepts custom className', () => {
       render(<Pagination className="custom-pagination" />);
-      expect(screen.getByRole("navigation")).toHaveClass("custom-pagination");
+      expect(screen.getByRole('navigation')).toHaveClass('custom-pagination');
     });
 
-    it("PaginationContent accepts custom className", () => {
+    it('PaginationContent accepts custom className', () => {
       const { container } = render(<PaginationContent className="custom-content" />);
-      expect(container.firstChild).toHaveClass("custom-content");
+      expect(container.firstChild).toHaveClass('custom-content');
     });
 
-    it("PaginationItem accepts custom className", () => {
+    it('PaginationItem accepts custom className', () => {
       const { container } = render(<PaginationItem className="custom-item" />);
-      expect(container.firstChild).toHaveClass("custom-item");
+      expect(container.firstChild).toHaveClass('custom-item');
     });
 
-    it("PaginationLink accepts custom className", () => {
+    it('PaginationLink accepts custom className', () => {
       render(
         <PaginationLink href="#" className="custom-link">
           1
         </PaginationLink>,
       );
-      expect(screen.getByText("1")).toHaveClass("custom-link");
+      expect(screen.getByText('1')).toHaveClass('custom-link');
     });
 
-    it("PaginationEllipsis accepts custom className", () => {
+    it('PaginationEllipsis accepts custom className', () => {
       const { container } = render(<PaginationEllipsis className="custom-ellipsis" />);
-      expect(container.firstChild).toHaveClass("custom-ellipsis");
+      expect(container.firstChild).toHaveClass('custom-ellipsis');
     });
   });
 });

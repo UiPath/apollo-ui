@@ -1,6 +1,6 @@
-import { Check } from "lucide-react";
-import * as React from "react";
-import { cn } from "@/lib/index";
+import { Check } from 'lucide-react';
+import * as React from 'react';
+import { cn } from '@/lib/index';
 
 export interface Step {
   title: string;
@@ -10,7 +10,7 @@ export interface Step {
 export interface StepperProps extends React.HTMLAttributes<HTMLDivElement> {
   steps: Step[];
   currentStep: number;
-  orientation?: "horizontal" | "vertical";
+  orientation?: 'horizontal' | 'vertical';
   onStepClick?: (step: number) => void;
   clickableSteps?: boolean;
 }
@@ -20,7 +20,7 @@ const Stepper = React.forwardRef<HTMLDivElement, StepperProps>(
     {
       steps,
       currentStep,
-      orientation = "horizontal",
+      orientation = 'horizontal',
       onStepClick,
       clickableSteps = false,
       className,
@@ -32,8 +32,8 @@ const Stepper = React.forwardRef<HTMLDivElement, StepperProps>(
       <div
         ref={ref}
         className={cn(
-          "flex",
-          orientation === "horizontal" ? "flex-row items-start" : "flex-col",
+          'flex',
+          orientation === 'horizontal' ? 'flex-row items-start' : 'flex-col',
           className,
         )}
         {...props}
@@ -48,17 +48,17 @@ const Stepper = React.forwardRef<HTMLDivElement, StepperProps>(
               {/* Step item */}
               <div
                 className={cn(
-                  "flex shrink-0",
-                  orientation === "horizontal" ? "flex-col items-center" : "flex-row items-start",
-                  orientation === "vertical" && "w-full",
+                  'flex shrink-0',
+                  orientation === 'horizontal' ? 'flex-col items-center' : 'flex-row items-start',
+                  orientation === 'vertical' && 'w-full',
                 )}
               >
                 <div
                   className={cn(
-                    "flex",
-                    orientation === "horizontal"
-                      ? "flex-col items-center"
-                      : "flex-row items-start gap-4",
+                    'flex',
+                    orientation === 'horizontal'
+                      ? 'flex-col items-center'
+                      : 'flex-row items-start gap-4',
                   )}
                 >
                   <button
@@ -75,31 +75,31 @@ const Stepper = React.forwardRef<HTMLDivElement, StepperProps>(
                     }}
                     disabled={!isClickable}
                     className={cn(
-                      "flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 text-sm font-semibold transition-colors",
-                      isCompleted && "border-primary bg-primary text-primary-foreground",
-                      isCurrent && "border-primary bg-background text-primary",
+                      'flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 text-sm font-semibold transition-colors',
+                      isCompleted && 'border-primary bg-primary text-primary-foreground',
+                      isCurrent && 'border-primary bg-background text-primary',
                       !isCompleted &&
                         !isCurrent &&
-                        "border-muted-foreground/25 bg-background text-muted-foreground",
-                      isClickable && "cursor-pointer hover:border-primary",
-                      !isClickable && "cursor-not-allowed",
+                        'border-muted-foreground/25 bg-background text-muted-foreground',
+                      isClickable && 'cursor-pointer hover:border-primary',
+                      !isClickable && 'cursor-not-allowed',
                     )}
                   >
                     {isCompleted ? <Check className="h-5 w-5" /> : <span>{index + 1}</span>}
                   </button>
                   <div
                     className={cn(
-                      "flex flex-col",
-                      orientation === "horizontal"
-                        ? "mt-2 items-center text-center"
-                        : "flex-1 justify-center",
+                      'flex flex-col',
+                      orientation === 'horizontal'
+                        ? 'mt-2 items-center text-center'
+                        : 'flex-1 justify-center',
                     )}
                   >
                     <span
                       className={cn(
-                        "text-sm font-medium",
-                        isCurrent && "text-foreground",
-                        !isCurrent && "text-muted-foreground",
+                        'text-sm font-medium',
+                        isCurrent && 'text-foreground',
+                        !isCurrent && 'text-muted-foreground',
                       )}
                     >
                       {step.title}
@@ -114,21 +114,21 @@ const Stepper = React.forwardRef<HTMLDivElement, StepperProps>(
               {index < steps.length - 1 && (
                 <div
                   className={cn(
-                    orientation === "horizontal"
-                      ? "mt-5 flex h-[2px] flex-1 items-center"
-                      : "ml-5 h-8 w-[2px]",
-                    "bg-muted",
+                    orientation === 'horizontal'
+                      ? 'mt-5 flex h-[2px] flex-1 items-center'
+                      : 'ml-5 h-8 w-[2px]',
+                    'bg-muted',
                   )}
                 >
                   <div
                     className={cn(
-                      "transition-all",
-                      orientation === "horizontal" ? "h-full" : "w-full",
-                      isCompleted ? "bg-primary" : "bg-transparent",
+                      'transition-all',
+                      orientation === 'horizontal' ? 'h-full' : 'w-full',
+                      isCompleted ? 'bg-primary' : 'bg-transparent',
                     )}
                     style={{
-                      width: orientation === "horizontal" ? (isCompleted ? "100%" : "0%") : "100%",
-                      height: orientation === "vertical" ? (isCompleted ? "100%" : "0%") : "100%",
+                      width: orientation === 'horizontal' ? (isCompleted ? '100%' : '0%') : '100%',
+                      height: orientation === 'vertical' ? (isCompleted ? '100%' : '0%') : '100%',
                     }}
                   />
                 </div>
@@ -140,6 +140,6 @@ const Stepper = React.forwardRef<HTMLDivElement, StepperProps>(
     );
   },
 );
-Stepper.displayName = "Stepper";
+Stepper.displayName = 'Stepper';
 
 export { Stepper };

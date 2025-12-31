@@ -1,27 +1,27 @@
-import * as React from "react";
-import { ColumnDef } from "@tanstack/react-table";
-import { Activity, CreditCard, DollarSign, Users, MoreHorizontal } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import * as React from 'react';
+import { ColumnDef } from '@tanstack/react-table';
+import { Activity, CreditCard, DollarSign, Users, MoreHorizontal } from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   DataTable,
   DataTableColumnHeader,
   DataTableSelectColumn,
-} from "@/components/ui/data-table";
+} from '@/components/ui/data-table';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Row, Column, Grid } from "@/components/ui/layout";
-import { Progress } from "@/components/ui/progress";
-import { Separator } from "@/components/ui/separator";
-import { StatsCard } from "@/components/ui/stats-card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { cn } from "@/lib";
+} from '@/components/ui/dropdown-menu';
+import { Row, Column, Grid } from '@/components/ui/layout';
+import { Progress } from '@/components/ui/progress';
+import { Separator } from '@/components/ui/separator';
+import { StatsCard } from '@/components/ui/stats-card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { cn } from '@/lib';
 
 // Types
 interface Transaction {
@@ -29,7 +29,7 @@ interface Transaction {
   customer: string;
   email: string;
   amount: number;
-  status: "completed" | "pending" | "failed";
+  status: 'completed' | 'pending' | 'failed';
   date: string;
 }
 
@@ -55,72 +55,72 @@ export interface DashboardExampleProps {
 // Sample data
 const transactions: Transaction[] = [
   {
-    id: "1",
-    customer: "Olivia Martin",
-    email: "olivia@example.com",
+    id: '1',
+    customer: 'Olivia Martin',
+    email: 'olivia@example.com',
     amount: 1999.0,
-    status: "completed",
-    date: "2024-01-15",
+    status: 'completed',
+    date: '2024-01-15',
   },
   {
-    id: "2",
-    customer: "Jackson Lee",
-    email: "jackson@example.com",
+    id: '2',
+    customer: 'Jackson Lee',
+    email: 'jackson@example.com',
     amount: 39.0,
-    status: "completed",
-    date: "2024-01-14",
+    status: 'completed',
+    date: '2024-01-14',
   },
   {
-    id: "3",
-    customer: "Isabella Nguyen",
-    email: "isabella@example.com",
+    id: '3',
+    customer: 'Isabella Nguyen',
+    email: 'isabella@example.com',
     amount: 299.0,
-    status: "pending",
-    date: "2024-01-14",
+    status: 'pending',
+    date: '2024-01-14',
   },
   {
-    id: "4",
-    customer: "William Kim",
-    email: "will@example.com",
+    id: '4',
+    customer: 'William Kim',
+    email: 'will@example.com',
     amount: 99.0,
-    status: "completed",
-    date: "2024-01-13",
+    status: 'completed',
+    date: '2024-01-13',
   },
   {
-    id: "5",
-    customer: "Sofia Davis",
-    email: "sofia@example.com",
+    id: '5',
+    customer: 'Sofia Davis',
+    email: 'sofia@example.com',
     amount: 450.0,
-    status: "failed",
-    date: "2024-01-12",
+    status: 'failed',
+    date: '2024-01-12',
   },
 ];
 
 const recentActivity: ActivityItem[] = [
-  { id: "1", user: "Olivia Martin", action: "Completed purchase of $1,999.00", time: "2 min ago" },
-  { id: "2", user: "Jackson Lee", action: "Created new account", time: "1 hour ago" },
+  { id: '1', user: 'Olivia Martin', action: 'Completed purchase of $1,999.00', time: '2 min ago' },
+  { id: '2', user: 'Jackson Lee', action: 'Created new account', time: '1 hour ago' },
   {
-    id: "3",
-    user: "Isabella Nguyen",
-    action: "Submitted support ticket #1234",
-    time: "3 hours ago",
+    id: '3',
+    user: 'Isabella Nguyen',
+    action: 'Submitted support ticket #1234',
+    time: '3 hours ago',
   },
-  { id: "4", user: "William Kim", action: "Updated billing information", time: "5 hours ago" },
+  { id: '4', user: 'William Kim', action: 'Updated billing information', time: '5 hours ago' },
 ];
 
 const columns: ColumnDef<Transaction, unknown>[] = [
   DataTableSelectColumn<Transaction>(),
   {
-    accessorKey: "customer",
+    accessorKey: 'customer',
     header: ({ column }) => <DataTableColumnHeader column={column} title="Customer" />,
     cell: ({ row }) => (
       <Row gap={2} align="center">
         <Avatar className="h-8 w-8">
           <AvatarFallback>
             {row.original.customer
-              .split(" ")
+              .split(' ')
               .map((n) => n[0])
-              .join("")}
+              .join('')}
           </AvatarFallback>
         </Avatar>
         <Column gap={0}>
@@ -131,26 +131,26 @@ const columns: ColumnDef<Transaction, unknown>[] = [
     ),
   },
   {
-    accessorKey: "amount",
+    accessorKey: 'amount',
     header: ({ column }) => <DataTableColumnHeader column={column} title="Amount" />,
     cell: ({ row }) => {
-      const amount = parseFloat(row.getValue("amount"));
-      const formatted = new Intl.NumberFormat("en-US", {
-        style: "currency",
-        currency: "USD",
+      const amount = parseFloat(row.getValue('amount'));
+      const formatted = new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
       }).format(amount);
       return <div className="font-medium">{formatted}</div>;
     },
   },
   {
-    accessorKey: "status",
+    accessorKey: 'status',
     header: ({ column }) => <DataTableColumnHeader column={column} title="Status" />,
     cell: ({ row }) => {
-      const status = row.getValue("status") as string;
+      const status = row.getValue('status') as string;
       return (
         <Badge
           variant={
-            status === "completed" ? "default" : status === "pending" ? "secondary" : "destructive"
+            status === 'completed' ? 'default' : status === 'pending' ? 'secondary' : 'destructive'
           }
         >
           {status}
@@ -159,11 +159,11 @@ const columns: ColumnDef<Transaction, unknown>[] = [
     },
   },
   {
-    accessorKey: "date",
+    accessorKey: 'date',
     header: ({ column }) => <DataTableColumnHeader column={column} title="Date" />,
   },
   {
-    id: "actions",
+    id: 'actions',
     cell: () => (
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
@@ -182,14 +182,14 @@ const columns: ColumnDef<Transaction, unknown>[] = [
 
 export function DashboardExample({
   className,
-  title = "Dashboard",
+  title = 'Dashboard',
   description = "Welcome back! Here's an overview of your business.",
-  user = { name: "John Doe", email: "john@example.com" },
+  user = { name: 'John Doe', email: 'john@example.com' },
 }: DashboardExampleProps) {
-  const [activeTab, setActiveTab] = React.useState("overview");
+  const [activeTab, setActiveTab] = React.useState('overview');
 
   return (
-    <div className={cn("min-h-screen bg-background", className)}>
+    <div className={cn('min-h-screen bg-background', className)}>
       {/* Header */}
       <header className="border-b">
         <div className="container mx-auto flex h-16 items-center justify-between px-4">
@@ -207,9 +207,9 @@ export function DashboardExample({
                 <AvatarImage src={user.avatar} alt={user.name} />
                 <AvatarFallback>
                   {user.name
-                    .split(" ")
+                    .split(' ')
                     .map((n) => n[0])
-                    .join("")
+                    .join('')
                     .toUpperCase()}
                 </AvatarFallback>
               </Avatar>
@@ -293,14 +293,14 @@ export function DashboardExample({
                         <AvatarImage src={activity.avatar} />
                         <AvatarFallback>
                           {activity.user
-                            .split(" ")
+                            .split(' ')
                             .map((n) => n[0])
-                            .join("")}
+                            .join('')}
                         </AvatarFallback>
                       </Avatar>
                       <Column gap={1} flex={1}>
                         <p className="text-sm">
-                          <span className="font-medium">{activity.user}</span>{" "}
+                          <span className="font-medium">{activity.user}</span>{' '}
                           <span className="text-muted-foreground">{activity.action}</span>
                         </p>
                         <p className="text-xs text-muted-foreground">{activity.time}</p>

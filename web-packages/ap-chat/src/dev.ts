@@ -694,7 +694,7 @@ function updateFeatures() {
         attachments.added.map((attachment: any) => ({
           ...attachment,
           loading: true,
-        })),
+        }))
       );
 
       setTimeout(() => {
@@ -702,7 +702,7 @@ function updateFeatures() {
           attachments.added.map((attachment: any) => ({
             ...attachment,
             loading: false,
-          })),
+          }))
         );
       }, 2000);
     });
@@ -995,11 +995,13 @@ function setFirstRunExperience() {
     suggestions: [
       {
         label: 'New process',
-        prompt: 'Can you provide a detailed step-by-step guide on how to create a new automation process?',
+        prompt:
+          'Can you provide a detailed step-by-step guide on how to create a new automation process?',
       },
       {
         label: 'Debug workflow',
-        prompt: "I'm having trouble with my workflow execution. Can you explain debugging techniques?",
+        prompt:
+          "I'm having trouble with my workflow execution. Can you explain debugging techniques?",
       },
       {
         label: 'Studio updates',
@@ -1036,7 +1038,7 @@ function setSuggestions() {
       { label: 'Show me an example', prompt: 'Show me an example' },
       { label: 'Help me with code', prompt: 'Help me with code' },
     ],
-    true,
+    true
   );
 }
 
@@ -1384,7 +1386,7 @@ function createUI() {
               .replace(/^./, (str) => str.toUpperCase())
               .trim()}
           </label>
-        `,
+        `
           )
           .join('')}
       </div>
@@ -1434,7 +1436,11 @@ function createUI() {
   });
 
   document.getElementById('theme-select')?.addEventListener('change', (e) => {
-    const newTheme = (e.target as HTMLSelectElement).value as 'light' | 'dark' | 'light-hc' | 'dark-hc';
+    const newTheme = (e.target as HTMLSelectElement).value as
+      | 'light'
+      | 'dark'
+      | 'light-hc'
+      | 'dark-hc';
     applyTheme(newTheme);
   });
 
@@ -1446,12 +1452,16 @@ function createUI() {
   document.getElementById('toggle-auto-scroll')?.addEventListener('click', toggleAutoScroll);
   document.getElementById('clear-chat')?.addEventListener('click', clearChat);
 
-  document.getElementById('set-allowed-attachments')?.addEventListener('click', setAllowedAttachments);
+  document
+    .getElementById('set-allowed-attachments')
+    ?.addEventListener('click', setAllowedAttachments);
   document.getElementById('set-pre-hook')?.addEventListener('click', setPreHook);
   document.getElementById('set-first-run')?.addEventListener('click', setFirstRunExperience);
 
   document.getElementById('set-custom-header')?.addEventListener('click', setCustomHeaderActions);
-  document.getElementById('clear-custom-header')?.addEventListener('click', clearCustomHeaderActions);
+  document
+    .getElementById('clear-custom-header')
+    ?.addEventListener('click', clearCustomHeaderActions);
 
   document.getElementById('model-select')?.addEventListener('change', (e) => {
     selectedModel = (e.target as HTMLSelectElement).value;
@@ -1472,11 +1482,15 @@ function createUI() {
   document.getElementById('send-response')?.addEventListener('click', sendSimpleResponse);
   document.getElementById('stop-response')?.addEventListener('click', stopResponse);
   document.getElementById('send-with-actions')?.addEventListener('click', sendResponseWithActions);
-  document.getElementById('send-with-citations')?.addEventListener('click', sendResponseWithCitations);
+  document
+    .getElementById('send-with-citations')
+    ?.addEventListener('click', sendResponseWithCitations);
   document.getElementById('send-code-block')?.addEventListener('click', sendCodeBlock);
   document.getElementById('send-html')?.addEventListener('click', sendHTMLPreview);
   document.getElementById('send-tool-call')?.addEventListener('click', sendToolCall);
-  document.getElementById('send-disabled-actions')?.addEventListener('click', sendResponseDisabledActions);
+  document
+    .getElementById('send-disabled-actions')
+    ?.addEventListener('click', sendResponseDisabledActions);
   document.getElementById('set-conversation')?.addEventListener('click', setConversation);
   document.getElementById('set-suggestions')?.addEventListener('click', setSuggestions);
 

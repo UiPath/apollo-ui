@@ -1,11 +1,11 @@
-import type { Meta } from "@storybook/react-vite";
-import { Button } from "./button";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./tooltip";
+import type { Meta } from '@storybook/react-vite';
+import { Button } from './button';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './tooltip';
 
 const meta: Meta<typeof Tooltip> = {
-  title: "Design System/Overlays/Tooltip",
+  title: 'Design System/Overlays/Tooltip',
   component: Tooltip,
-  tags: ["autodocs"],
+  tags: ['autodocs'],
 };
 
 export default meta;

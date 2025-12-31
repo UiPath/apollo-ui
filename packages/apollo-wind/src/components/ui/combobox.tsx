@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { Check, ChevronsUpDown } from "lucide-react";
-import * as React from "react";
-import { Button } from "@/components/ui/button";
+import { Check, ChevronsUpDown } from 'lucide-react';
+import * as React from 'react';
+import { Button } from '@/components/ui/button';
 import {
   Command,
   CommandEmpty,
@@ -10,9 +10,9 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "@/components/ui/command";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { cn } from "@/lib";
+} from '@/components/ui/command';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { cn } from '@/lib';
 
 export interface ComboboxItem {
   value: string;
@@ -34,9 +34,9 @@ export function Combobox({
   items,
   value,
   onValueChange,
-  placeholder = "Select an option...",
-  searchPlaceholder = "Search...",
-  emptyText = "No results found.",
+  placeholder = 'Select an option...',
+  searchPlaceholder = 'Search...',
+  emptyText = 'No results found.',
   disabled,
   className,
 }: ComboboxProps) {
@@ -52,7 +52,7 @@ export function Combobox({
           role="combobox"
           aria-expanded={open}
           aria-label={selectedItem ? selectedItem.label : placeholder}
-          className={cn("w-[280px] justify-between", className)}
+          className={cn('w-[280px] justify-between', className)}
           disabled={disabled}
         >
           {selectedItem ? selectedItem.label : placeholder}
@@ -70,13 +70,13 @@ export function Combobox({
                   key={item.value}
                   value={item.value}
                   onSelect={(currentValue) => {
-                    onValueChange?.(currentValue === value ? "" : currentValue);
+                    onValueChange?.(currentValue === value ? '' : currentValue);
                     setOpen(false);
                   }}
                 >
                   {item.label}
                   <Check
-                    className={cn("ml-auto", value === item.value ? "opacity-100" : "opacity-0")}
+                    className={cn('ml-auto', value === item.value ? 'opacity-100' : 'opacity-0')}
                   />
                 </CommandItem>
               ))}

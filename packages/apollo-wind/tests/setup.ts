@@ -4,11 +4,11 @@ global.IS_REACT_ACT_ENVIRONMENT = true;
 // @ts-expect-error - React internal
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
-import "@testing-library/jest-dom";
-import { cleanup } from "@testing-library/react";
-import { afterEach } from "vitest";
-import { toHaveNoViolations } from "jest-axe";
-import { expect } from "vitest";
+import '@testing-library/jest-dom';
+import { cleanup } from '@testing-library/react';
+import { afterEach } from 'vitest';
+import { toHaveNoViolations } from 'jest-axe';
+import { expect } from 'vitest';
 
 // Extend Vitest's expect with jest-axe matchers
 expect.extend(toHaveNoViolations);
@@ -16,7 +16,7 @@ expect.extend(toHaveNoViolations);
 // Mock IntersectionObserver for components that use it (like Carousel from embla)
 global.IntersectionObserver = class IntersectionObserver {
   root = null;
-  rootMargin = "";
+  rootMargin = '';
   thresholds = [];
   constructor() {
     // Mock
@@ -68,7 +68,7 @@ Element.prototype.releasePointerCapture = function () {
 };
 
 // Mock matchMedia for components that use media queries (like Drawer/vaul)
-Object.defineProperty(window, "matchMedia", {
+Object.defineProperty(window, 'matchMedia', {
   writable: true,
   value: (query: string) => ({
     matches: false,
@@ -84,7 +84,7 @@ Object.defineProperty(window, "matchMedia", {
 
 // Mock Image for Avatar component tests
 // This allows the onload callback to fire in jsdom
-Object.defineProperty(global.Image.prototype, "src", {
+Object.defineProperty(global.Image.prototype, 'src', {
   set(src) {
     if (src) {
       setTimeout(() => {

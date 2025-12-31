@@ -29,6 +29,6 @@ export default {
   Typography,
   FontVariantToken,
   HeaderVariants,
-}
+};
 
 export * from './tokens';

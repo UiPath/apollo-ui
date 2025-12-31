@@ -1,14 +1,14 @@
-import type { Meta } from "@storybook/react-vite";
-import { Button } from "./button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "./card";
-import { Input } from "./input";
-import { Label } from "./label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "./tabs";
+import type { Meta } from '@storybook/react-vite';
+import { Button } from './button';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from './card';
+import { Input } from './input';
+import { Label } from './label';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from './tabs';
 
 const meta: Meta<typeof Tabs> = {
-  title: "Design System/Navigation/Tabs",
+  title: 'Design System/Navigation/Tabs',
   component: Tabs,
-  tags: ["autodocs"],
+  tags: ['autodocs'],
 };
 
 export default meta;

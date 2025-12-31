@@ -1,8 +1,4 @@
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-} from 'react';
+import React, { useCallback, useEffect, useMemo } from 'react';
 
 import { FontVariantToken } from '@uipath/apollo-core';
 import {
@@ -12,10 +8,7 @@ import {
   ReactFlowProvider,
   useReactFlow,
 } from '@uipath/apollo-react/canvas/xyflow/react';
-import {
-  ApButton,
-  ApTypography,
-} from '@uipath/apollo-react/material';
+import { ApButton, ApTypography } from '@uipath/apollo-react/material';
 import { ApIcon } from '@uipath/apollo-react/material/components';
 
 import { useCanvasStore } from '../../stores/canvasStore';
@@ -23,11 +16,7 @@ import { DefaultResourceNodeTranslations } from '../../types';
 import { type CanvasLevel } from '../../types/canvas.types';
 import { canvasEventBus } from '../../utils/CanvasEventBus';
 import { createAddNodePreview } from '../AddNodePanel/createAddNodePreview';
-import type {
-  BaseNodeData,
-  NodeDisplay,
-  NodeRegistration,
-} from '../BaseNode';
+import type { BaseNodeData, NodeDisplay, NodeRegistration } from '../BaseNode';
 import { NodeRegistryProvider } from '../BaseNode/NodeRegistryProvider';
 import { HierarchicalCanvas } from './HierarchicalCanvas';
 

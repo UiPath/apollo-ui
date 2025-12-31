@@ -1,6 +1,6 @@
-import { render, screen } from "@testing-library/react";
-import { axe } from "jest-axe";
-import { describe, expect, it } from "vitest";
+import { render, screen } from '@testing-library/react';
+import { axe } from 'jest-axe';
+import { describe, expect, it } from 'vitest';
 import {
   Breadcrumb,
   BreadcrumbEllipsis,
@@ -9,9 +9,9 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "./breadcrumb";
+} from './breadcrumb';
 
-describe("Breadcrumb", () => {
+describe('Breadcrumb', () => {
   const BreadcrumbExample = () => (
     <Breadcrumb>
       <BreadcrumbList>
@@ -30,42 +30,42 @@ describe("Breadcrumb", () => {
     </Breadcrumb>
   );
 
-  it("renders without crashing", () => {
+  it('renders without crashing', () => {
     render(<BreadcrumbExample />);
-    expect(screen.getByRole("navigation")).toBeInTheDocument();
+    expect(screen.getByRole('navigation')).toBeInTheDocument();
   });
 
-  it("has no accessibility violations", async () => {
+  it('has no accessibility violations', async () => {
     const { container } = render(<BreadcrumbExample />);
     const results = await axe(container);
     expect(results).toHaveNoViolations();
   });
 
-  it("has proper ARIA label", () => {
+  it('has proper ARIA label', () => {
     render(<BreadcrumbExample />);
-    const nav = screen.getByRole("navigation");
-    expect(nav).toHaveAttribute("aria-label", "breadcrumb");
+    const nav = screen.getByRole('navigation');
+    expect(nav).toHaveAttribute('aria-label', 'breadcrumb');
   });
 
-  it("renders all breadcrumb links", () => {
+  it('renders all breadcrumb links', () => {
     render(<BreadcrumbExample />);
-    expect(screen.getByRole("link", { name: "Home" })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Products" })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Home' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Products' })).toBeInTheDocument();
   });
 
-  it("renders current page", () => {
+  it('renders current page', () => {
     render(<BreadcrumbExample />);
-    const currentPage = screen.getByText("Current Page");
-    expect(currentPage).toHaveAttribute("aria-current", "page");
+    const currentPage = screen.getByText('Current Page');
+    expect(currentPage).toHaveAttribute('aria-current', 'page');
   });
 
-  it("renders separators", () => {
+  it('renders separators', () => {
     const { container } = render(<BreadcrumbExample />);
     const separators = container.querySelectorAll('[role="presentation"]');
     expect(separators.length).toBeGreaterThan(0);
   });
 
-  it("renders ellipsis", () => {
+  it('renders ellipsis', () => {
     render(
       <Breadcrumb>
         <BreadcrumbList>
@@ -83,24 +83,24 @@ describe("Breadcrumb", () => {
         </BreadcrumbList>
       </Breadcrumb>,
     );
-    expect(screen.getByText("More")).toBeInTheDocument();
+    expect(screen.getByText('More')).toBeInTheDocument();
   });
 
-  it("links have correct href attributes", () => {
+  it('links have correct href attributes', () => {
     render(<BreadcrumbExample />);
-    const homeLink = screen.getByRole("link", { name: "Home" });
-    const productsLink = screen.getByRole("link", { name: "Products" });
-    expect(homeLink).toHaveAttribute("href", "/");
-    expect(productsLink).toHaveAttribute("href", "/products");
+    const homeLink = screen.getByRole('link', { name: 'Home' });
+    const productsLink = screen.getByRole('link', { name: 'Products' });
+    expect(homeLink).toHaveAttribute('href', '/');
+    expect(productsLink).toHaveAttribute('href', '/products');
   });
 
-  it("current page is disabled", () => {
+  it('current page is disabled', () => {
     render(<BreadcrumbExample />);
-    const currentPage = screen.getByText("Current Page");
-    expect(currentPage).toHaveAttribute("aria-disabled", "true");
+    const currentPage = screen.getByText('Current Page');
+    expect(currentPage).toHaveAttribute('aria-disabled', 'true');
   });
 
-  it("applies custom className to Breadcrumb", () => {
+  it('applies custom className to Breadcrumb', () => {
     render(
       <Breadcrumb className="custom-breadcrumb">
         <BreadcrumbList>
@@ -110,11 +110,11 @@ describe("Breadcrumb", () => {
         </BreadcrumbList>
       </Breadcrumb>,
     );
-    const nav = screen.getByRole("navigation");
-    expect(nav).toHaveClass("custom-breadcrumb");
+    const nav = screen.getByRole('navigation');
+    expect(nav).toHaveClass('custom-breadcrumb');
   });
 
-  it("applies custom className to BreadcrumbList", () => {
+  it('applies custom className to BreadcrumbList', () => {
     render(
       <Breadcrumb>
         <BreadcrumbList className="custom-list">
@@ -124,11 +124,11 @@ describe("Breadcrumb", () => {
         </BreadcrumbList>
       </Breadcrumb>,
     );
-    const list = screen.getByRole("list");
-    expect(list).toHaveClass("custom-list");
+    const list = screen.getByRole('list');
+    expect(list).toHaveClass('custom-list');
   });
 
-  it("applies custom className to BreadcrumbItem", () => {
+  it('applies custom className to BreadcrumbItem', () => {
     const { container } = render(
       <Breadcrumb>
         <BreadcrumbList>
@@ -138,11 +138,11 @@ describe("Breadcrumb", () => {
         </BreadcrumbList>
       </Breadcrumb>,
     );
-    const item = container.querySelector(".custom-item");
+    const item = container.querySelector('.custom-item');
     expect(item).toBeInTheDocument();
   });
 
-  it("applies custom className to BreadcrumbLink", () => {
+  it('applies custom className to BreadcrumbLink', () => {
     render(
       <Breadcrumb>
         <BreadcrumbList>
@@ -154,11 +154,11 @@ describe("Breadcrumb", () => {
         </BreadcrumbList>
       </Breadcrumb>,
     );
-    const link = screen.getByRole("link");
-    expect(link).toHaveClass("custom-link");
+    const link = screen.getByRole('link');
+    expect(link).toHaveClass('custom-link');
   });
 
-  it("supports asChild on BreadcrumbLink", () => {
+  it('supports asChild on BreadcrumbLink', () => {
     render(
       <Breadcrumb>
         <BreadcrumbList>
@@ -170,10 +170,10 @@ describe("Breadcrumb", () => {
         </BreadcrumbList>
       </Breadcrumb>,
     );
-    expect(screen.getByRole("button", { name: "Custom Link" })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Custom Link' })).toBeInTheDocument();
   });
 
-  it("renders custom separator", () => {
+  it('renders custom separator', () => {
     render(
       <Breadcrumb>
         <BreadcrumbList>
@@ -187,10 +187,10 @@ describe("Breadcrumb", () => {
         </BreadcrumbList>
       </Breadcrumb>,
     );
-    expect(screen.getByText("/")).toBeInTheDocument();
+    expect(screen.getByText('/')).toBeInTheDocument();
   });
 
-  it("forwards ref correctly to Breadcrumb", () => {
+  it('forwards ref correctly to Breadcrumb', () => {
     const ref = { current: null };
     render(
       <Breadcrumb ref={ref}>
@@ -204,7 +204,7 @@ describe("Breadcrumb", () => {
     expect(ref.current).toBeInstanceOf(HTMLElement);
   });
 
-  it("forwards ref correctly to BreadcrumbList", () => {
+  it('forwards ref correctly to BreadcrumbList', () => {
     const ref = { current: null };
     render(
       <Breadcrumb>
@@ -218,7 +218,7 @@ describe("Breadcrumb", () => {
     expect(ref.current).toBeInstanceOf(HTMLOListElement);
   });
 
-  it("forwards ref correctly to BreadcrumbItem", () => {
+  it('forwards ref correctly to BreadcrumbItem', () => {
     const ref = { current: null };
     render(
       <Breadcrumb>
@@ -232,7 +232,7 @@ describe("Breadcrumb", () => {
     expect(ref.current).toBeInstanceOf(HTMLLIElement);
   });
 
-  it("forwards ref correctly to BreadcrumbLink", () => {
+  it('forwards ref correctly to BreadcrumbLink', () => {
     const ref = { current: null };
     render(
       <Breadcrumb>
@@ -248,7 +248,7 @@ describe("Breadcrumb", () => {
     expect(ref.current).toBeInstanceOf(HTMLAnchorElement);
   });
 
-  it("forwards ref correctly to BreadcrumbPage", () => {
+  it('forwards ref correctly to BreadcrumbPage', () => {
     const ref = { current: null };
     render(
       <Breadcrumb>

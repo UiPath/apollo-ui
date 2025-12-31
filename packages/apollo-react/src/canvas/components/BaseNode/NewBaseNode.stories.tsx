@@ -1,18 +1,9 @@
-import {
-  useCallback,
-  useMemo,
-} from 'react';
+import { useCallback, useMemo } from 'react';
 
-import type {
-  Meta,
-  StoryObj,
-} from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react';
 import { FontVariantToken } from '@uipath/apollo-core';
 import * as Icons from '@uipath/apollo-react/canvas/icons';
-import type {
-  Connection,
-  NodeTypes,
-} from '@uipath/apollo-react/canvas/xyflow/react';
+import type { Connection, NodeTypes } from '@uipath/apollo-react/canvas/xyflow/react';
 import {
   addEdge,
   Panel,
@@ -29,10 +20,7 @@ import { BaseCanvas } from '../BaseCanvas';
 import type { HandleActionEvent } from '../ButtonHandle';
 import { CanvasPositionControls } from '../CanvasPositionControls';
 import { NewBaseNode } from './NewBaseNode';
-import type {
-  NewBaseNodeData,
-  NewBaseNodeDisplayProps,
-} from './NewBaseNode.types';
+import type { NewBaseNodeData, NewBaseNodeDisplayProps } from './NewBaseNode.types';
 
 const meta = {
   title: 'Canvas/NewBaseNode',

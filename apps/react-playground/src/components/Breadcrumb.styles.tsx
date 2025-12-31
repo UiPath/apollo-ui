@@ -1,5 +1,5 @@
-import { Link } from "react-router-dom";
-import styled from "styled-components";
+import { Link } from 'react-router-dom';
+import styled from 'styled-components';
 
 export const BreadcrumbContainer = styled.div`
   position: sticky;
@@ -56,12 +56,12 @@ export const BreadcrumbNav = styled.div`
 `;
 
 export const BreadcrumbLink = styled(Link)<{ $isActive?: boolean }>`
-  color: ${(props) => (props.$isActive ? "var(--color-foreground-emp)" : "var(--color-primary)")};
+  color: ${(props) => (props.$isActive ? 'var(--color-foreground-emp)' : 'var(--color-primary)')};
   text-decoration: none;
   font-weight: 500;
 
   &:hover {
-    text-decoration: ${(props) => (props.$isActive ? "none" : "underline")};
+    text-decoration: ${(props) => (props.$isActive ? 'none' : 'underline')};
   }
 `;
 

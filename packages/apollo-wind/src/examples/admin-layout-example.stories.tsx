@@ -1,15 +1,15 @@
-import type { Meta, StoryObj } from "@storybook/react-vite";
-import * as React from "react";
-import { Globe, Code, Users, RefreshCw, HelpCircle, MoreHorizontal } from "lucide-react";
-import { ColumnDef } from "@tanstack/react-table";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import type { Meta, StoryObj } from '@storybook/react-vite';
+import * as React from 'react';
+import { Globe, Code, Users, RefreshCw, HelpCircle, MoreHorizontal } from 'lucide-react';
+import { ColumnDef } from '@tanstack/react-table';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from '@/components/ui/dropdown-menu';
 import {
   AdminLayout,
   AdminHeader,
@@ -26,11 +26,11 @@ import {
   AdminPagination,
   DataTableColumnHeader,
   DataTableSelectColumn,
-} from "./admin-layout-example";
-import { Row, Column } from "@/components/ui/layout";
+} from './admin-layout-example';
+import { Row, Column } from '@/components/ui/layout';
 
 const meta = {
-  title: "Examples/Admin Layout",
+  title: 'Examples/Admin Layout',
   component: AdminLayout,
 } satisfies Meta<typeof AdminLayout>;
 
@@ -39,12 +39,12 @@ type Story = StoryObj<typeof meta>;
 
 // Sample data
 const tenants = [
-  { id: "1", name: "Maestro", type: "tenant" },
-  { id: "2", name: "Staging", type: "tenant" },
-  { id: "3", name: "ao", type: "tenant" },
-  { id: "4", name: "Development", type: "service", badge: "Canary Environment" },
-  { id: "5", name: "DefaultTenant", type: "tenant" },
-  { id: "6", name: "optimize", type: "service" },
+  { id: '1', name: 'Maestro', type: 'tenant' },
+  { id: '2', name: 'Staging', type: 'tenant' },
+  { id: '3', name: 'ao', type: 'tenant' },
+  { id: '4', name: 'Development', type: 'service', badge: 'Canary Environment' },
+  { id: '5', name: 'DefaultTenant', type: 'tenant' },
+  { id: '6', name: 'optimize', type: 'service' },
 ];
 
 type User = {
@@ -52,32 +52,32 @@ type User = {
   name: string;
   email: string;
   role: string;
-  type: "user" | "group";
+  type: 'user' | 'group';
 };
 
 const users: User[] = [
-  { id: "1", name: "Finance-test", email: "", role: "Test-role-viewer", type: "group" },
+  { id: '1', name: 'Finance-test', email: '', role: 'Test-role-viewer', type: 'group' },
   {
-    id: "2",
-    name: "John Doe",
-    email: "john.doe@example.com",
-    role: "Tenant Administrator",
-    type: "user",
+    id: '2',
+    name: 'John Doe',
+    email: 'john.doe@example.com',
+    role: 'Tenant Administrator',
+    type: 'user',
   },
 ];
 
 function AdminPageDemo() {
-  const [selectedTenant, setSelectedTenant] = React.useState("1");
-  const [activeTab, setActiveTab] = React.useState("assignments");
-  const [nameFilter, setNameFilter] = React.useState("all");
-  const [roleFilter, setRoleFilter] = React.useState("all");
+  const [selectedTenant, setSelectedTenant] = React.useState('1');
+  const [activeTab, setActiveTab] = React.useState('assignments');
+  const [nameFilter, setNameFilter] = React.useState('all');
+  const [roleFilter, setRoleFilter] = React.useState('all');
   const [page, setPage] = React.useState(1);
   const [pageSize, setPageSize] = React.useState(10);
 
   const navItems = tenants.map((t) => ({
     id: t.id,
     label: t.name,
-    icon: t.type === "tenant" ? <Globe className="h-4 w-4" /> : <Code className="h-4 w-4" />,
+    icon: t.type === 'tenant' ? <Globe className="h-4 w-4" /> : <Code className="h-4 w-4" />,
     badge: t.badge ? (
       <Badge variant="default" className="ml-auto text-[10px]">
         {t.badge}
@@ -88,7 +88,7 @@ function AdminPageDemo() {
   const columns: ColumnDef<User>[] = [
     DataTableSelectColumn<User>(),
     {
-      accessorKey: "name",
+      accessorKey: 'name',
       header: ({ column }) => <DataTableColumnHeader column={column} title="Name" />,
       cell: ({ row }) => (
         <Row gap={2} align="center">
@@ -98,12 +98,12 @@ function AdminPageDemo() {
       ),
     },
     {
-      accessorKey: "email",
+      accessorKey: 'email',
       header: ({ column }) => <DataTableColumnHeader column={column} title="Email" />,
-      cell: ({ row }) => row.original.email || "—",
+      cell: ({ row }) => row.original.email || '—',
     },
     {
-      accessorKey: "role",
+      accessorKey: 'role',
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="Roles">
           <HelpCircle className="ml-1 h-3.5 w-3.5 text-muted-foreground" />
@@ -112,7 +112,7 @@ function AdminPageDemo() {
       cell: ({ row }) => row.original.role,
     },
     {
-      id: "actions",
+      id: 'actions',
       cell: ({ row }) => (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -121,10 +121,10 @@ function AdminPageDemo() {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => console.log("edit", row.original)}>
+            <DropdownMenuItem onClick={() => console.log('edit', row.original)}>
               Edit
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => console.log("remove", row.original)}>
+            <DropdownMenuItem onClick={() => console.log('remove', row.original)}>
               Remove
             </DropdownMenuItem>
           </DropdownMenuContent>
@@ -183,13 +183,13 @@ function AdminPageDemo() {
           <AdminPageHeader
             title="Manage access"
             breadcrumb={[
-              { label: "POPoC" },
-              { label: "DefaultTenant" },
-              { label: "Manage access" },
+              { label: 'POPoC' },
+              { label: 'DefaultTenant' },
+              { label: 'Manage access' },
             ]}
             tabs={[
-              { value: "assignments", label: "Role assignments" },
-              { value: "roles", label: "Roles" },
+              { value: 'assignments', label: 'Role assignments' },
+              { value: 'roles', label: 'Roles' },
             ]}
             activeTab={activeTab}
             onTabChange={setActiveTab}
@@ -212,9 +212,9 @@ function AdminPageDemo() {
               label="Name"
               value={nameFilter}
               options={[
-                { value: "all", label: "All" },
-                { value: "users", label: "Users" },
-                { value: "groups", label: "Groups" },
+                { value: 'all', label: 'All' },
+                { value: 'users', label: 'Users' },
+                { value: 'groups', label: 'Groups' },
               ]}
               onValueChange={setNameFilter}
             />
@@ -222,9 +222,9 @@ function AdminPageDemo() {
               label="Roles"
               value={roleFilter}
               options={[
-                { value: "all", label: "All" },
-                { value: "admin", label: "Administrator" },
-                { value: "viewer", label: "Viewer" },
+                { value: 'all', label: 'All' },
+                { value: 'admin', label: 'Administrator' },
+                { value: 'viewer', label: 'Viewer' },
               ]}
               onValueChange={setRoleFilter}
             />
@@ -255,12 +255,12 @@ export const Default = {
 
 // Simple settings page
 function SettingsPageDemo() {
-  const [selectedSection, setSelectedSection] = React.useState("general");
+  const [selectedSection, setSelectedSection] = React.useState('general');
 
   const sections = [
-    { id: "general", label: "General", icon: <Globe className="h-4 w-4" /> },
-    { id: "users", label: "Users", icon: <Users className="h-4 w-4" /> },
-    { id: "security", label: "Security", icon: <Code className="h-4 w-4" /> },
+    { id: 'general', label: 'General', icon: <Globe className="h-4 w-4" /> },
+    { id: 'users', label: 'Users', icon: <Users className="h-4 w-4" /> },
+    { id: 'security', label: 'Security', icon: <Code className="h-4 w-4" /> },
   ];
 
   return (

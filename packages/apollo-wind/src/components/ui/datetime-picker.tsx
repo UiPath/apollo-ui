@@ -1,12 +1,12 @@
-import * as React from "react";
-import { format } from "date-fns";
-import { CalendarIcon, Clock } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { cn } from "@/lib";
+import * as React from 'react';
+import { format } from 'date-fns';
+import { CalendarIcon, Clock } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { cn } from '@/lib';
 
 export interface DateTimePickerProps {
   value?: Date;
@@ -21,14 +21,14 @@ export function DateTimePicker({
   value,
   onValueChange,
   disabled,
-  placeholder = "Pick a date and time",
+  placeholder = 'Pick a date and time',
   className,
   use12Hour = false,
 }: DateTimePickerProps) {
   const [open, setOpen] = React.useState(false);
   const [selectedDate, setSelectedDate] = React.useState<Date | undefined>(value);
   const [timeValue, setTimeValue] = React.useState<string>(
-    value ? format(value, use12Hour ? "hh:mm a" : "HH:mm") : "",
+    value ? format(value, use12Hour ? 'hh:mm a' : 'HH:mm') : '',
   );
 
   const handleDateSelect = (date: Date | undefined) => {
@@ -51,7 +51,7 @@ export function DateTimePicker({
 
     if (!selectedDate) return;
 
-    const [hours, minutes] = time.split(":").map(Number);
+    const [hours, minutes] = time.split(':').map(Number);
     const newDate = new Date(selectedDate);
     newDate.setHours(hours);
     newDate.setMinutes(minutes);
@@ -62,8 +62,8 @@ export function DateTimePicker({
 
   const formatDisplayValue = () => {
     if (!selectedDate) return placeholder;
-    const datePart = format(selectedDate, "PPP");
-    const timePart = format(selectedDate, use12Hour ? "hh:mm a" : "HH:mm");
+    const datePart = format(selectedDate, 'PPP');
+    const timePart = format(selectedDate, use12Hour ? 'hh:mm a' : 'HH:mm');
     return `${datePart} at ${timePart}`;
   };
 
@@ -73,8 +73,8 @@ export function DateTimePicker({
         <Button
           variant="outline"
           className={cn(
-            "w-full justify-start text-left font-normal",
-            !selectedDate && "text-muted-foreground",
+            'w-full justify-start text-left font-normal',
+            !selectedDate && 'text-muted-foreground',
             className,
           )}
           disabled={disabled}
@@ -104,7 +104,7 @@ export function DateTimePicker({
               className="w-full"
               onClick={() => {
                 setSelectedDate(undefined);
-                setTimeValue("");
+                setTimeValue('');
                 onValueChange?.(undefined);
                 setOpen(false);
               }}

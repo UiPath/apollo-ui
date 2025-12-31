@@ -1,16 +1,16 @@
-import type { Meta, StoryObj } from "@storybook/react-vite";
-import { Button } from "./button";
-import { Spinner } from "./spinner";
-import { Row, Column } from "./layout";
+import type { Meta, StoryObj } from '@storybook/react-vite';
+import { Button } from './button';
+import { Spinner } from './spinner';
+import { Row, Column } from './layout';
 
 const meta: Meta<typeof Spinner> = {
-  title: "Design System/Feedback/Spinner",
+  title: 'Design System/Feedback/Spinner',
   component: Spinner,
-  tags: ["autodocs"],
+  tags: ['autodocs'],
   argTypes: {
     size: {
-      control: "select",
-      options: ["sm", "default", "lg", "xl"],
+      control: 'select',
+      options: ['sm', 'default', 'lg', 'xl'],
     },
   },
 };
@@ -24,24 +24,24 @@ export const Default: Story = {
 
 export const Small: Story = {
   args: {
-    size: "sm",
+    size: 'sm',
   },
 };
 
 export const Large: Story = {
   args: {
-    size: "lg",
+    size: 'lg',
   },
 };
 
 export const ExtraLarge: Story = {
   args: {
-    size: "xl",
+    size: 'xl',
   },
 };
 
 export const AllSizes = {
-    render: () => (
+  render: () => (
     <Row align="center" gap={4}>
       <Spinner size="sm" />
       <Spinner size="default" />
@@ -49,34 +49,34 @@ export const AllSizes = {
       <Spinner size="xl" />
     </Row>
   ),
-} satisfies Story;;
+} satisfies Story;
 
 export const WithLabel: Story = {
   args: {
-    label: "Processing your request",
+    label: 'Processing your request',
     showLabel: true,
   },
 };
 
 export const InButton = {
-    render: () => (
+  render: () => (
     <Button disabled>
       <Spinner size="sm" className="mr-2" />
       Loading...
     </Button>
   ),
-} satisfies Story;;
+} satisfies Story;
 
 export const Centered = {
-    render: () => (
+  render: () => (
     <Row h={40} align="center" justify="center" className="rounded-md border">
       <Spinner size="lg" />
     </Row>
   ),
-} satisfies Story;;
+} satisfies Story;
 
 export const FullPage = {
-    render: () => (
+  render: () => (
     <Column
       w="full"
       align="center"
@@ -88,4 +88,4 @@ export const FullPage = {
       <p className="text-sm text-muted-foreground">Loading content...</p>
     </Column>
   ),
-} satisfies Story;;
+} satisfies Story;

@@ -37,22 +37,26 @@ We are committed to making UiPath Wind accessible to all users, including those 
 ### Key Requirements
 
 #### Perceivable
+
 - Text alternatives for non-text content
 - Color contrast ratio of at least 4.5:1 for normal text
 - Content can be presented in different ways without losing information
 
 #### Operable
+
 - All functionality available via keyboard
 - Users can control time limits
 - Content doesn't cause seizures
 - Users can navigate and find content easily
 
 #### Understandable
+
 - Text is readable and understandable
 - Web pages appear and operate in predictable ways
 - Users are helped to avoid and correct mistakes
 
 #### Robust
+
 - Content compatible with current and future assistive technologies
 
 ---
@@ -68,13 +72,13 @@ jest-axe is already configured in this project. It's imported in test setup and 
 Every component test should include an accessibility test:
 
 ```tsx
-import { render } from "@testing-library/react";
-import { axe } from "jest-axe";
-import { describe, expect, it } from "vitest";
-import { Button } from "./button";
+import { render } from '@testing-library/react';
+import { axe } from 'jest-axe';
+import { describe, expect, it } from 'vitest';
+import { Button } from './button';
 
-describe("Button", () => {
-  it("has no accessibility violations", async () => {
+describe('Button', () => {
+  it('has no accessibility violations', async () => {
     const { container } = render(<Button>Click me</Button>);
     const results = await axe(container);
     expect(results).toHaveNoViolations();
@@ -87,12 +91,12 @@ describe("Button", () => {
 Form components should be tested with proper labels:
 
 ```tsx
-it("has no accessibility violations", async () => {
+it('has no accessibility violations', async () => {
   const { container } = render(
     <div>
       <Label htmlFor="email">Email Address</Label>
       <Input id="email" type="email" />
-    </div>
+    </div>,
   );
   const results = await axe(container);
   expect(results).toHaveNoViolations();
@@ -104,7 +108,7 @@ it("has no accessibility violations", async () => {
 Test interactive states (open/closed, expanded/collapsed):
 
 ```tsx
-it("has no accessibility violations when open", async () => {
+it('has no accessibility violations when open', async () => {
   const { container } = render(
     <Dialog open={true}>
       <DialogContent>
@@ -112,7 +116,7 @@ it("has no accessibility violations when open", async () => {
         <DialogDescription>This is a description</DialogDescription>
         <p>Dialog content</p>
       </DialogContent>
-    </Dialog>
+    </Dialog>,
   );
   const results = await axe(container);
   expect(results).toHaveNoViolations();
@@ -127,7 +131,7 @@ You can customize axe rules if needed:
 const results = await axe(container, {
   rules: {
     // Disable specific rules if absolutely necessary
-    "color-contrast": { enabled: false },
+    'color-contrast': { enabled: false },
   },
 });
 ```
@@ -153,6 +157,7 @@ Test every component with keyboard only:
 - [ ] **Home/End**: Navigate to first/last item in lists
 
 #### Focus Management
+
 - [ ] Focus is visible (outline/ring visible)
 - [ ] Focus order is logical (follows visual order)
 - [ ] Focus is trapped in modals/dialogs
@@ -161,6 +166,7 @@ Test every component with keyboard only:
 ### Screen Reader Testing
 
 #### macOS: VoiceOver
+
 ```bash
 # Enable VoiceOver
 Cmd + F5
@@ -173,6 +179,7 @@ Ctrl + Option + Space
 ```
 
 #### Windows: NVDA (Free)
+
 ```bash
 # Download: https://www.nvaccess.org/
 # Navigate
@@ -183,6 +190,7 @@ Enter/Space
 ```
 
 #### Test Checklist
+
 - [ ] All interactive elements announced correctly
 - [ ] Buttons announce as "button"
 - [ ] Links announce as "link"
@@ -201,6 +209,7 @@ Use browser DevTools or online tools:
 - [ ] Disabled states: No minimum (but should be distinguishable)
 
 **Tools**:
+
 - Chrome DevTools Lighthouse
 - [WebAIM Contrast Checker](https://webaim.org/resources/contrastchecker/)
 - [Colorblindly](https://chrome.google.com/webstore/detail/colorblindly) extension
@@ -227,6 +236,7 @@ Use browser DevTools or online tools:
 ### Buttons
 
 **Requirements**:
+
 - Must have accessible text (visible text, `aria-label`, or `aria-labelledby`)
 - Icon-only buttons require `aria-label`
 - Disabled state should have `disabled` attribute
@@ -245,6 +255,7 @@ Use browser DevTools or online tools:
 ### Form Inputs
 
 **Requirements**:
+
 - Must have associated `<Label>` with matching `htmlFor` and `id`
 - Required fields should have `required` attribute
 - Invalid fields should have `aria-invalid` and `aria-describedby` for error
@@ -264,6 +275,7 @@ Use browser DevTools or online tools:
 ### Dialogs & Modals
 
 **Requirements**:
+
 - Must have `DialogTitle` (or `aria-labelledby`)
 - Should have `DialogDescription` (or `aria-describedby`)
 - Focus trapped within dialog
@@ -276,9 +288,7 @@ Use browser DevTools or online tools:
   <DialogContent>
     <DialogHeader>
       <DialogTitle>Delete Account</DialogTitle>
-      <DialogDescription>
-        This action cannot be undone.
-      </DialogDescription>
+      <DialogDescription>This action cannot be undone.</DialogDescription>
     </DialogHeader>
     {/* content */}
   </DialogContent>
@@ -288,6 +298,7 @@ Use browser DevTools or online tools:
 ### Dropdowns & Menus
 
 **Requirements**:
+
 - Trigger has `aria-expanded` attribute
 - Trigger has `aria-haspopup` attribute
 - Menu items use proper roles
@@ -308,6 +319,7 @@ Use browser DevTools or online tools:
 ### Data Tables
 
 **Requirements**:
+
 - Use semantic `<table>` elements
 - Column headers use `<th>` with `scope="col"`
 - Row headers use `<th>` with `scope="row"` (if applicable)
@@ -335,6 +347,7 @@ Use browser DevTools or online tools:
 ### Tabs
 
 **Requirements**:
+
 - Use Radix Tabs primitive (handles ARIA automatically)
 - Tab list has `role="tablist"`
 - Tabs have `role="tab"`
@@ -356,6 +369,7 @@ Use browser DevTools or online tools:
 ### Tooltips
 
 **Requirements**:
+
 - Triggered by focus and hover
 - Content descriptive but concise
 - Not used for critical information
@@ -380,6 +394,7 @@ Use browser DevTools or online tools:
 ### Alerts & Notifications
 
 **Requirements**:
+
 - Use appropriate `role` (`alert`, `alertdialog`, `status`)
 - Error alerts use `role="alert"` (announces immediately)
 - Status updates use `role="status"` (polite announcement)
@@ -403,6 +418,7 @@ Use browser DevTools or online tools:
 **Problem**: Button/input has no text that screen readers can announce.
 
 **Fix**:
+
 ```tsx
 // Before
 <Button><X /></Button>
@@ -418,6 +434,7 @@ Use browser DevTools or online tools:
 **Problem**: Input field not associated with a label.
 
 **Fix**:
+
 ```tsx
 // Before
 <Input placeholder="Email" />
@@ -434,13 +451,14 @@ Use browser DevTools or online tools:
 **Problem**: Text doesn't meet 4.5:1 contrast ratio.
 
 **Fix**: Use design system tokens that meet contrast requirements:
+
 ```tsx
 // Use semantic colors from theme
-className="text-foreground" // ✅ High contrast
-className="text-muted-foreground" // ✅ Still meets minimum
+className = 'text-foreground'; // ✅ High contrast
+className = 'text-muted-foreground'; // ✅ Still meets minimum
 
 // Avoid custom low-contrast colors
-className="text-gray-400" // ❌ May not meet contrast on light backgrounds
+className = 'text-gray-400'; // ❌ May not meet contrast on light backgrounds
 ```
 
 ### Issue 4: Keyboard Trap
@@ -448,6 +466,7 @@ className="text-gray-400" // ❌ May not meet contrast on light backgrounds
 **Problem**: User can't navigate out of a component with keyboard.
 
 **Fix**: Ensure dialogs trap focus but allow Escape to close:
+
 ```tsx
 <Dialog open={open} onOpenChange={setOpen}>
   {/* Dialog handles focus trap and Escape key */}
@@ -459,8 +478,10 @@ className="text-gray-400" // ❌ May not meet contrast on light backgrounds
 **Problem**: No visible focus outline.
 
 **Fix**: Use design system focus styles:
+
 ```tsx
-className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+className =
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2';
 ```
 
 ### Issue 6: Incorrect ARIA Attributes
@@ -468,6 +489,7 @@ className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ri
 **Problem**: Using ARIA incorrectly (worse than no ARIA).
 
 **Fix**:
+
 - First rule of ARIA: Don't use ARIA (use semantic HTML)
 - If you must use ARIA, follow WAI-ARIA authoring practices
 - Use Radix UI primitives (they handle ARIA correctly)
@@ -492,11 +514,13 @@ className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ri
 ### Browser Extensions
 
 #### Chrome/Edge
+
 - [axe DevTools](https://chrome.google.com/webstore/detail/axe-devtools-web-accessib/lhdoppojpmngadmnindnejefpokejbdd)
 - [Lighthouse](https://developers.google.com/web/tools/lighthouse) (built-in to DevTools)
 - [WAVE](https://chrome.google.com/webstore/detail/wave-evaluation-tool/jbbplnpkjmmeebjpijfedlgcdilocofh)
 
 #### Firefox
+
 - [axe DevTools](https://addons.mozilla.org/en-US/firefox/addon/axe-devtools/)
 - [WAVE](https://addons.mozilla.org/en-US/firefox/addon/wave-accessibility-tool/)
 
@@ -515,6 +539,7 @@ lhci autorun
 ### Manual Testing
 
 #### Screen Readers
+
 - **macOS**: VoiceOver (built-in) - `Cmd + F5`
 - **Windows**: NVDA (free) - https://www.nvaccess.org/
 - **Windows**: JAWS (paid) - https://www.freedomscientific.com/products/software/jaws/
@@ -522,6 +547,7 @@ lhci autorun
 - **Android**: TalkBack (built-in) - Settings > Accessibility
 
 #### Keyboard Testing
+
 No special tools needed - just use Tab, Enter, Space, and Arrow keys.
 
 ---
@@ -531,6 +557,7 @@ No special tools needed - just use Tab, Enter, Space, and Arrow keys.
 ### Before Submitting a PR
 
 1. **Run automated tests**:
+
    ```bash
    npm test
    ```
@@ -572,17 +599,20 @@ No special tools needed - just use Tab, Enter, Space, and Arrow keys.
 ## Resources
 
 ### Official Guidelines
+
 - [WCAG 2.1](https://www.w3.org/WAI/WCAG21/quickref/)
 - [WAI-ARIA Authoring Practices](https://www.w3.org/WAI/ARIA/apg/)
 - [Radix UI Accessibility](https://www.radix-ui.com/primitives/docs/overview/accessibility)
 
 ### Learning Resources
+
 - [WebAIM](https://webaim.org/)
 - [A11y Project](https://www.a11yproject.com/)
 - [Deque University](https://dequeuniversity.com/)
 - [Inclusive Components](https://inclusive-components.design/)
 
 ### Testing Tools
+
 - [axe DevTools](https://www.deque.com/axe/devtools/)
 - [WAVE Browser Extension](https://wave.webaim.org/extension/)
 - [Lighthouse](https://developers.google.com/web/tools/lighthouse)

@@ -1,12 +1,12 @@
-import type { Meta } from "@storybook/react-vite";
-import { Label } from "./label";
-import { Switch } from "./switch";
-import { Row } from "./layout";
+import type { Meta } from '@storybook/react-vite';
+import { Label } from './label';
+import { Switch } from './switch';
+import { Row } from './layout';
 
 const meta: Meta<typeof Switch> = {
-  title: "Design System/Core/Switch",
+  title: 'Design System/Core/Switch',
   component: Switch,
-  tags: ["autodocs"],
+  tags: ['autodocs'],
 };
 
 export default meta;

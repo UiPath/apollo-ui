@@ -1,18 +1,18 @@
-import type { Meta } from "@storybook/react-vite";
-import { Grid } from "./grid";
+import type { Meta } from '@storybook/react-vite';
+import { Grid } from './grid';
 
 const meta = {
-  title: "Design System/Layout/Grid",
+  title: 'Design System/Layout/Grid',
   component: Grid,
   parameters: {
-    layout: "padded",
+    layout: 'padded',
   },
-  tags: ["autodocs"],
+  tags: ['autodocs'],
 } satisfies Meta<typeof Grid>;
 
 export default meta;
 
-const Box = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => (
+const Box = ({ children, className = '' }: { children: React.ReactNode; className?: string }) => (
   <div className={`rounded-md border bg-primary/10 p-4 text-center ${className}`}>{children}</div>
 );
 

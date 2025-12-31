@@ -1,12 +1,12 @@
-import type { Meta } from "@storybook/react-vite";
-import { Button } from "./button";
-import { HoverCard, HoverCardContent, HoverCardTrigger } from "./hover-card";
-import { Row, Column } from "./layout";
+import type { Meta } from '@storybook/react-vite';
+import { Button } from './button';
+import { HoverCard, HoverCardContent, HoverCardTrigger } from './hover-card';
+import { Row, Column } from './layout';
 
 const meta: Meta<typeof HoverCard> = {
-  title: "Design System/Overlays/Hover Card",
+  title: 'Design System/Overlays/Hover Card',
   component: HoverCard,
-  tags: ["autodocs"],
+  tags: ['autodocs'],
 };
 
 export default meta;

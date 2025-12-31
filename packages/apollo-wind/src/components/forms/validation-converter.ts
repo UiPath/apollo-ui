@@ -1,5 +1,5 @@
-import { z } from "zod";
-import type { ValidationConfig, FieldType } from "./form-schema";
+import { z } from 'zod';
+import type { ValidationConfig, FieldType } from './form-schema';
 
 /**
  * Validation Converter
@@ -45,7 +45,7 @@ export function validationConfigToZod(
     if (isStringType(fieldType) && !config.minLength) {
       schema = (schema as z.ZodString).min(
         1,
-        config.messages?.required || "This field is required",
+        config.messages?.required || 'This field is required',
       );
     }
     return schema;
@@ -59,39 +59,39 @@ export function validationConfigToZod(
  */
 function getBaseSchemaForType(fieldType: FieldType): z.ZodTypeAny {
   switch (fieldType) {
-    case "text":
-    case "textarea":
+    case 'text':
+    case 'textarea':
       return z.string();
 
-    case "email":
+    case 'email':
       return z.string().email();
 
-    case "number":
-    case "slider":
+    case 'number':
+    case 'slider':
       return z.coerce.number();
 
-    case "checkbox":
-    case "switch":
+    case 'checkbox':
+    case 'switch':
       return z.boolean();
 
-    case "select":
-    case "radio":
+    case 'select':
+    case 'radio':
       return z.string();
 
-    case "multiselect":
+    case 'multiselect':
       return z.array(z.string());
 
-    case "date":
+    case 'date':
       return z.coerce.date();
 
-    case "datetime":
+    case 'datetime':
       return z.coerce.date();
 
-    case "file":
+    case 'file':
       // File validation is typically handled separately by the file input
       return z.any();
 
-    case "custom":
+    case 'custom':
       return z.any();
 
     default:
@@ -103,21 +103,21 @@ function getBaseSchemaForType(fieldType: FieldType): z.ZodTypeAny {
  * Check if field type uses string schema
  */
 function isStringType(fieldType: FieldType): boolean {
-  return ["text", "textarea", "email", "select", "radio"].includes(fieldType);
+  return ['text', 'textarea', 'email', 'select', 'radio'].includes(fieldType);
 }
 
 /**
  * Check if field type uses number schema
  */
 function isNumberType(fieldType: FieldType): boolean {
-  return ["number", "slider"].includes(fieldType);
+  return ['number', 'slider'].includes(fieldType);
 }
 
 /**
  * Check if field type uses array schema
  */
 function isArrayType(fieldType: FieldType): boolean {
-  return ["multiselect"].includes(fieldType);
+  return ['multiselect'].includes(fieldType);
 }
 
 /**
@@ -154,7 +154,7 @@ function applyStringConstraints(
   if (config.pattern) {
     try {
       const regex = new RegExp(config.pattern);
-      stringSchema = stringSchema.regex(regex, config.messages?.pattern || "Invalid format");
+      stringSchema = stringSchema.regex(regex, config.messages?.pattern || 'Invalid format');
     } catch {
       // Invalid regex pattern, skip
       console.warn(`Invalid regex pattern: ${config.pattern}`);
@@ -162,13 +162,13 @@ function applyStringConstraints(
   }
 
   // Email validation (if not already email type)
-  if (config.email && fieldType !== "email") {
-    stringSchema = stringSchema.email(config.messages?.email || "Invalid email address");
+  if (config.email && fieldType !== 'email') {
+    stringSchema = stringSchema.email(config.messages?.email || 'Invalid email address');
   }
 
   // URL validation
   if (config.url) {
-    stringSchema = stringSchema.url(config.messages?.url || "Invalid URL");
+    stringSchema = stringSchema.url(config.messages?.url || 'Invalid URL');
   }
 
   return stringSchema;
@@ -190,7 +190,7 @@ function applyNumberConstraints(
 
   // Integer constraint
   if (config.integer) {
-    numberSchema = numberSchema.int(config.messages?.integer || "Must be a whole number");
+    numberSchema = numberSchema.int(config.messages?.integer || 'Must be a whole number');
   }
 
   // Min value
@@ -211,12 +211,12 @@ function applyNumberConstraints(
 
   // Positive
   if (config.positive) {
-    numberSchema = numberSchema.positive(config.messages?.positive || "Must be a positive number");
+    numberSchema = numberSchema.positive(config.messages?.positive || 'Must be a positive number');
   }
 
   // Negative
   if (config.negative) {
-    numberSchema = numberSchema.negative(config.messages?.negative || "Must be a negative number");
+    numberSchema = numberSchema.negative(config.messages?.negative || 'Must be a negative number');
   }
 
   return numberSchema;

@@ -1,4 +1,4 @@
-import type React from "react";
+import type React from 'react';
 
 /**
  * Spacing values that can be used for gap, padding, and margin
@@ -39,8 +39,8 @@ export type SpacingValue =
   | 72
   | 80
   | 96
-  | "auto"
-  | "full";
+  | 'auto'
+  | 'full';
 
 /**
  * Size values for width and height
@@ -48,42 +48,42 @@ export type SpacingValue =
  */
 export type SizeValue =
   | SpacingValue
-  | "screen"
-  | "min"
-  | "max"
-  | "fit"
+  | 'screen'
+  | 'min'
+  | 'max'
+  | 'fit'
   | `${number}%`
   | `${number}/${number}`; // fractions like 1/2, 1/3, etc.
 
 /**
  * Flex alignment values
  */
-export type AlignValue = "start" | "center" | "end" | "baseline" | "stretch";
+export type AlignValue = 'start' | 'center' | 'end' | 'baseline' | 'stretch';
 
 /**
  * Flex justification values
  */
-export type JustifyValue = "start" | "center" | "end" | "between" | "around" | "evenly";
+export type JustifyValue = 'start' | 'center' | 'end' | 'between' | 'around' | 'evenly';
 
 /**
  * Flex wrap values
  */
-export type WrapValue = "nowrap" | "wrap" | "wrap-reverse";
+export type WrapValue = 'nowrap' | 'wrap' | 'wrap-reverse';
 
 /**
  * Overflow values
  */
-export type OverflowValue = "auto" | "hidden" | "clip" | "visible" | "scroll";
+export type OverflowValue = 'auto' | 'hidden' | 'clip' | 'visible' | 'scroll';
 
 /**
  * Position values
  */
-export type PositionValue = "static" | "relative" | "absolute" | "fixed" | "sticky";
+export type PositionValue = 'static' | 'relative' | 'absolute' | 'fixed' | 'sticky';
 
 /**
  * Flex direction values
  */
-export type DirectionValue = "row" | "row-reverse" | "column" | "column-reverse";
+export type DirectionValue = 'row' | 'row-reverse' | 'column' | 'column-reverse';
 
 /**
  * Spacing props for padding and margin
@@ -191,11 +191,11 @@ export interface GridProps {
   /** Gap between rows */
   gapY?: SpacingValue;
   /** Auto flow direction */
-  autoFlow?: "row" | "column" | "dense" | "row-dense" | "column-dense";
+  autoFlow?: 'row' | 'column' | 'dense' | 'row-dense' | 'column-dense';
   /** Auto columns sizing */
-  autoCols?: "auto" | "min" | "max" | "fr";
+  autoCols?: 'auto' | 'min' | 'max' | 'fr';
   /** Auto rows sizing */
-  autoRows?: "auto" | "min" | "max" | "fr";
+  autoRows?: 'auto' | 'min' | 'max' | 'fr';
 }
 
 /**

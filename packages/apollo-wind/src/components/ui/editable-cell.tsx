@@ -1,16 +1,16 @@
-import * as React from "react";
-import type { CellContext } from "@tanstack/react-table";
-import { format } from "date-fns";
-import { CalendarIcon } from "lucide-react";
-import { cn } from "@/lib";
-import { Input } from "./input";
-import { Checkbox } from "./checkbox";
-import { Button } from "./button";
-import { Calendar } from "./calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "./popover";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./select";
+import * as React from 'react';
+import type { CellContext } from '@tanstack/react-table';
+import { format } from 'date-fns';
+import { CalendarIcon } from 'lucide-react';
+import { cn } from '@/lib';
+import { Input } from './input';
+import { Checkbox } from './checkbox';
+import { Button } from './button';
+import { Calendar } from './calendar';
+import { Popover, PopoverContent, PopoverTrigger } from './popover';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './select';
 
-export type EditableCellType = "text" | "number" | "select" | "date" | "checkbox";
+export type EditableCellType = 'text' | 'number' | 'select' | 'date' | 'checkbox';
 
 export interface SelectOption {
   value: string;
@@ -33,7 +33,7 @@ interface EditableCellProps<TData, TValue> {
 export function EditableCell<TData, TValue>({ cell, onUpdate }: EditableCellProps<TData, TValue>) {
   const initialValue = cell.getValue();
   const meta = cell.column.columnDef.meta as EditableCellMeta | undefined;
-  const type = meta?.type ?? "text";
+  const type = meta?.type ?? 'text';
 
   const [isEditing, setIsEditing] = React.useState(false);
   const [value, setValue] = React.useState(initialValue);
@@ -66,10 +66,10 @@ export function EditableCell<TData, TValue>({ cell, onUpdate }: EditableCellProp
 
   const handleKeyDown = React.useCallback(
     (e: React.KeyboardEvent) => {
-      if (e.key === "Enter") {
+      if (e.key === 'Enter') {
         e.preventDefault();
         handleSave();
-      } else if (e.key === "Escape") {
+      } else if (e.key === 'Escape') {
         e.preventDefault();
         handleCancel();
       }
@@ -78,7 +78,7 @@ export function EditableCell<TData, TValue>({ cell, onUpdate }: EditableCellProp
   );
 
   // Checkbox doesn't need edit mode - just toggle
-  if (type === "checkbox") {
+  if (type === 'checkbox') {
     return (
       <div className="flex items-center justify-center">
         <Checkbox
@@ -99,13 +99,13 @@ export function EditableCell<TData, TValue>({ cell, onUpdate }: EditableCellProp
   ) : (
     <div
       className={cn(
-        "min-h-[32px] px-2 py-1.5 -mx-2 rounded cursor-pointer",
-        "hover:bg-muted/50 transition-colors",
-        "flex items-center w-full",
+        'min-h-[32px] px-2 py-1.5 -mx-2 rounded cursor-pointer',
+        'hover:bg-muted/50 transition-colors',
+        'flex items-center w-full',
       )}
       onClick={() => setIsEditing(true)}
       onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") {
+        if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
           setIsEditing(true);
         }
@@ -114,7 +114,7 @@ export function EditableCell<TData, TValue>({ cell, onUpdate }: EditableCellProp
       role="button"
       aria-label={`Edit ${cell.column.id}`}
     >
-      <span className={cn("truncate", !value && "text-muted-foreground")}>
+      <span className={cn('truncate', !value && 'text-muted-foreground')}>
         {formatDisplayValue(value, type, meta?.options)}
       </span>
     </div>
@@ -124,10 +124,10 @@ export function EditableCell<TData, TValue>({ cell, onUpdate }: EditableCellProp
 
   function renderEditMode() {
     switch (type) {
-      case "select":
+      case 'select':
         return (
           <Select
-            value={String(value ?? "")}
+            value={String(value ?? '')}
             onValueChange={(newValue) => {
               setValue(newValue as TValue);
               onUpdate(newValue as TValue);
@@ -139,7 +139,7 @@ export function EditableCell<TData, TValue>({ cell, onUpdate }: EditableCellProp
             }}
           >
             <SelectTrigger className="h-8 -mx-2 w-full">
-              <SelectValue placeholder={meta?.placeholder ?? "Select..."} />
+              <SelectValue placeholder={meta?.placeholder ?? 'Select...'} />
             </SelectTrigger>
             <SelectContent>
               {meta?.options?.map((option) => (
@@ -151,7 +151,7 @@ export function EditableCell<TData, TValue>({ cell, onUpdate }: EditableCellProp
           </Select>
         );
 
-      case "date":
+      case 'date':
         return (
           <DatePickerCell
             value={value instanceof Date ? value : value ? new Date(value as string) : undefined}
@@ -160,11 +160,11 @@ export function EditableCell<TData, TValue>({ cell, onUpdate }: EditableCellProp
               onUpdate(date as TValue);
             }}
             onClose={() => setIsEditing(false)}
-            placeholder={meta?.placeholder ?? "Pick date"}
+            placeholder={meta?.placeholder ?? 'Pick date'}
           />
         );
 
-      case "number":
+      case 'number':
         return (
           <Input
             ref={inputRef}
@@ -179,13 +179,13 @@ export function EditableCell<TData, TValue>({ cell, onUpdate }: EditableCellProp
           />
         );
 
-      case "text":
+      case 'text':
       default:
         return (
           <Input
             ref={inputRef}
             type="text"
-            value={String(value ?? "")}
+            value={String(value ?? '')}
             onChange={(e) => setValue(e.target.value as TValue)}
             onBlur={handleSave}
             onKeyDown={handleKeyDown}
@@ -202,24 +202,24 @@ function formatDisplayValue(
   type: EditableCellType,
   options?: SelectOption[],
 ): string {
-  if (value === null || value === undefined || value === "") {
-    return "—";
+  if (value === null || value === undefined || value === '') {
+    return '—';
   }
 
   switch (type) {
-    case "select": {
+    case 'select': {
       const option = options?.find((o) => o.value === value);
       return option?.label ?? String(value);
     }
 
-    case "date":
+    case 'date':
       if (value instanceof Date) {
-        return format(value, "PP");
+        return format(value, 'PP');
       }
-      return format(new Date(value as string), "PP");
+      return format(new Date(value as string), 'PP');
 
-    case "checkbox":
-      return value ? "Yes" : "No";
+    case 'checkbox':
+      return value ? 'Yes' : 'No';
 
     default:
       return String(value);
@@ -265,12 +265,12 @@ function DatePickerCell({
         <Button
           variant="outline"
           className={cn(
-            "h-8 -mx-2 w-full justify-start text-left font-normal text-sm",
-            !value && "text-muted-foreground",
+            'h-8 -mx-2 w-full justify-start text-left font-normal text-sm',
+            !value && 'text-muted-foreground',
           )}
         >
           <CalendarIcon className="mr-2 h-4 w-4 shrink-0" />
-          <span className="truncate">{value ? format(value, "PP") : placeholder}</span>
+          <span className="truncate">{value ? format(value, 'PP') : placeholder}</span>
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0" align="start">

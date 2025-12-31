@@ -5,7 +5,7 @@ import token from '@uipath/apollo-core';
 
 import { useChatState } from '../../providers/chat-state-provider';
 import { AutopilotChatMode } from '../../service';
-import { ApIcon } from '../../ap-icon';
+import { ApIcon } from '@uipath/apollo-react/material/components';
 import { AutopilotChatIconButton } from './icon-button';
 import { AutopilotChatTooltip } from './tooltip';
 

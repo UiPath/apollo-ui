@@ -4,24 +4,15 @@ import '@uipath/apollo-react/core/fonts/font.css';
 
 import { createElement } from 'react';
 
-import {
-  createRoot,
-  type Root,
-} from 'react-dom/client';
+import { createRoot, type Root } from 'react-dom/client';
 
 // Import Apollo CSS variables as raw strings for Shadow DOM injection
 // Using ?raw query parameter to import CSS as text instead of injecting globally
 import apolloThemeVariablesCSS from '@uipath/apollo-react/core/tokens/css/theme-variables.css?raw';
 import apolloVariablesCSS from '@uipath/apollo-react/core/tokens/css/variables.css?raw';
 
-import {
-  cleanupReactRenderer,
-  createReactRenderer,
-} from './react-renderer';
-import {
-  AutopilotChatEvent,
-  type AutopilotChatService,
-} from './service';
+import { cleanupReactRenderer, createReactRenderer } from './react-renderer';
+import { AutopilotChatEvent, type AutopilotChatService } from './service';
 import type { ApChatProperties } from './types';
 
 /**
@@ -187,9 +178,12 @@ export class ApChat extends HTMLElement {
     if (this._initialized) {
       // Re-subscribe to service events if needed
       if (this._chatServiceInstance && !this.serviceUnsubscribe) {
-        this.serviceUnsubscribe = this._chatServiceInstance.on(AutopilotChatEvent.ModeChange, () => {
-          this.handleEmbeddedMode();
-        });
+        this.serviceUnsubscribe = this._chatServiceInstance.on(
+          AutopilotChatEvent.ModeChange,
+          () => {
+            this.handleEmbeddedMode();
+          }
+        );
       }
 
       // Recreate React root if it was cleaned up (happens when element is moved)
@@ -208,11 +202,11 @@ export class ApChat extends HTMLElement {
     // Copy @font-face rules from parent document to Shadow DOM using adoptedStyleSheets
     const fontFaceRules: string[] = [];
     const stylesheets = Array.from(document.styleSheets);
-    
-    stylesheets.forEach(sheet => {
+
+    stylesheets.forEach((sheet) => {
       try {
         const rules = Array.from(sheet.cssRules || []);
-        rules.forEach(rule => {
+        rules.forEach((rule) => {
           if (rule instanceof CSSFontFaceRule) {
             fontFaceRules.push(rule.cssText);
           }
@@ -254,8 +248,7 @@ export class ApChat extends HTMLElement {
     // Create a constructable stylesheet for Shadow DOM
     // Include Apollo design tokens, font faces, and icon styles
     // Transform CSS selectors to work in Shadow DOM context
-    const transformedVariablesCSS = apolloVariablesCSS
-      .replace(/:root\s*\{/g, ':host {');  // Transform :root to :host for Shadow DOM
+    const transformedVariablesCSS = apolloVariablesCSS.replace(/:root\s*\{/g, ':host {'); // Transform :root to :host for Shadow DOM
 
     // For theme variables, apply to both :host and all children to ensure proper cascading
     // This ensures theme variables are available everywhere in the shadow tree

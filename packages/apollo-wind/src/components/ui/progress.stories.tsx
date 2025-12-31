@@ -1,11 +1,11 @@
-import type { Meta } from "@storybook/react-vite";
-import { useEffect, useState } from "react";
-import { Progress } from "./progress";
+import type { Meta } from '@storybook/react-vite';
+import { useEffect, useState } from 'react';
+import { Progress } from './progress';
 
 const meta: Meta<typeof Progress> = {
-  title: "Design System/Feedback/Progress",
+  title: 'Design System/Feedback/Progress',
   component: Progress,
-  tags: ["autodocs"],
+  tags: ['autodocs'],
 };
 
 export default meta;

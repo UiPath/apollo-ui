@@ -1,33 +1,33 @@
-import React, { useEffect, useState, useMemo, useRef } from "react";
-import { useFormContext, Controller } from "react-hook-form";
+import React, { useEffect, useState, useMemo, useRef } from 'react';
+import { useFormContext, Controller } from 'react-hook-form';
 import type {
   FieldMetadata,
   FormContext,
   FieldOption,
   CustomFieldComponentProps,
-} from "./form-schema";
-import { hasOptions, isCustomField } from "./form-schema";
-import { RulesEngine } from "./rules-engine";
-import { DataFetcher } from "./data-fetcher";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+} from './form-schema';
+import { hasOptions, isCustomField } from './form-schema';
+import { RulesEngine } from './rules-engine';
+import { DataFetcher } from './data-fetcher';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { MultiSelect } from "@/components/ui/multi-select";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Switch } from "@/components/ui/switch";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Slider } from "@/components/ui/slider";
-import { Label } from "@/components/ui/label";
-import { DatePicker } from "@/components/ui/date-picker";
-import { DateTimePicker } from "@/components/ui/datetime-picker";
-import { FileUpload } from "@/components/ui/file-upload";
-import { cn, deepEqual } from "@/lib";
+} from '@/components/ui/select';
+import { MultiSelect } from '@/components/ui/multi-select';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Switch } from '@/components/ui/switch';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Slider } from '@/components/ui/slider';
+import { Label } from '@/components/ui/label';
+import { DatePicker } from '@/components/ui/date-picker';
+import { DateTimePicker } from '@/components/ui/datetime-picker';
+import { FileUpload } from '@/components/ui/file-upload';
+import { cn, deepEqual } from '@/lib';
 
 /**
  * Field Renderer - Connects metadata to actual UI components
@@ -110,7 +110,7 @@ export function FormFieldRenderer({
     const fields = new Set<string>();
     field.rules.forEach((rule) => {
       rule.conditions?.forEach((condition) => {
-        if ("when" in condition && condition.when) {
+        if ('when' in condition && condition.when) {
           fields.add(condition.when);
         }
       });
@@ -124,16 +124,16 @@ export function FormFieldRenderer({
     const fields = new Set<string>();
 
     // Check for params with $fieldName references
-    if ("params" in field.dataSource && field.dataSource.params) {
+    if ('params' in field.dataSource && field.dataSource.params) {
       Object.values(field.dataSource.params).forEach((value) => {
-        if (typeof value === "string" && value.startsWith("$")) {
+        if (typeof value === 'string' && value.startsWith('$')) {
           fields.add(value.slice(1)); // Remove the $ prefix
         }
       });
     }
 
     // Check for computed dependencies
-    if (field.dataSource.type === "computed" && "dependency" in field.dataSource) {
+    if (field.dataSource.type === 'computed' && 'dependency' in field.dataSource) {
       field.dataSource.dependency.forEach((dep) => fields.add(dep));
     }
 
@@ -319,8 +319,8 @@ interface FieldByTypeProps {
 
 function FieldByType({ field, formField, error, disabled, required, options }: FieldByTypeProps) {
   switch (field.type) {
-    case "text":
-    case "email":
+    case 'text':
+    case 'email':
       return (
         <FormField>
           <FormLabel required={required}>{field.label}</FormLabel>
@@ -340,7 +340,7 @@ function FieldByType({ field, formField, error, disabled, required, options }: F
         </FormField>
       );
 
-    case "number":
+    case 'number':
       return (
         <FormField>
           <FormLabel required={required}>{field.label}</FormLabel>
@@ -362,7 +362,7 @@ function FieldByType({ field, formField, error, disabled, required, options }: F
         </FormField>
       );
 
-    case "textarea":
+    case 'textarea':
       return (
         <FormField>
           <FormLabel required={required}>{field.label}</FormLabel>
@@ -381,7 +381,7 @@ function FieldByType({ field, formField, error, disabled, required, options }: F
         </FormField>
       );
 
-    case "select":
+    case 'select':
       return (
         <FormField>
           <FormLabel required={required}>{field.label}</FormLabel>
@@ -391,14 +391,14 @@ function FieldByType({ field, formField, error, disabled, required, options }: F
             disabled={disabled}
           >
             <SelectTrigger>
-              <SelectValue placeholder={field.placeholder || "Select..."} />
+              <SelectValue placeholder={field.placeholder || 'Select...'} />
             </SelectTrigger>
             <SelectContent>
               {options.map((option) => (
                 <SelectItem
                   key={String(option.value)}
                   value={String(option.value)}
-                  disabled={"disabled" in option ? Boolean(option.disabled) : false}
+                  disabled={'disabled' in option ? Boolean(option.disabled) : false}
                 >
                   {option.label}
                 </SelectItem>
@@ -410,7 +410,7 @@ function FieldByType({ field, formField, error, disabled, required, options }: F
         </FormField>
       );
 
-    case "multiselect":
+    case 'multiselect':
       return (
         <FormField>
           <FormLabel required={required}>{field.label}</FormLabel>
@@ -419,7 +419,7 @@ function FieldByType({ field, formField, error, disabled, required, options }: F
             onChange={formField.onChange}
             options={options.map((opt) => ({ label: opt.label, value: String(opt.value) }))}
             disabled={disabled}
-            placeholder={field.placeholder || "Select items..."}
+            placeholder={field.placeholder || 'Select items...'}
             emptyMessage="No items found."
             searchPlaceholder="Search..."
             maxSelected={field.maxSelected}
@@ -429,7 +429,7 @@ function FieldByType({ field, formField, error, disabled, required, options }: F
         </FormField>
       );
 
-    case "checkbox":
+    case 'checkbox':
       return (
         <FormField>
           <div className="flex items-start space-x-2">
@@ -450,7 +450,7 @@ function FieldByType({ field, formField, error, disabled, required, options }: F
         </FormField>
       );
 
-    case "switch":
+    case 'switch':
       return (
         <FormField>
           <div className="flex items-center justify-between">
@@ -468,7 +468,7 @@ function FieldByType({ field, formField, error, disabled, required, options }: F
         </FormField>
       );
 
-    case "radio":
+    case 'radio':
       return (
         <FormField>
           <FormLabel required={required}>{field.label}</FormLabel>
@@ -482,7 +482,7 @@ function FieldByType({ field, formField, error, disabled, required, options }: F
                 <RadioGroupItem
                   value={String(option.value)}
                   id={`${field.name}-${option.value}`}
-                  disabled={"disabled" in option ? Boolean(option.disabled) : false}
+                  disabled={'disabled' in option ? Boolean(option.disabled) : false}
                 />
                 <Label htmlFor={`${field.name}-${option.value}`}>{option.label}</Label>
               </div>
@@ -493,7 +493,7 @@ function FieldByType({ field, formField, error, disabled, required, options }: F
         </FormField>
       );
 
-    case "slider":
+    case 'slider':
       return (
         <FormField>
           <div className="flex justify-between">
@@ -515,7 +515,7 @@ function FieldByType({ field, formField, error, disabled, required, options }: F
         </FormField>
       );
 
-    case "date":
+    case 'date':
       return (
         <FormField>
           <FormLabel required={required}>{field.label}</FormLabel>
@@ -530,7 +530,7 @@ function FieldByType({ field, formField, error, disabled, required, options }: F
         </FormField>
       );
 
-    case "datetime":
+    case 'datetime':
       return (
         <FormField>
           <FormLabel required={required}>{field.label}</FormLabel>
@@ -546,7 +546,7 @@ function FieldByType({ field, formField, error, disabled, required, options }: F
         </FormField>
       );
 
-    case "file":
+    case 'file':
       return (
         <FormField>
           <FormLabel required={required}>{field.label}</FormLabel>
@@ -576,19 +576,19 @@ function FieldByType({ field, formField, error, disabled, required, options }: F
 
 function FormField({
   children,
-  className = "",
+  className = '',
 }: {
   children: React.ReactNode;
   className?: string;
 }) {
-  return <div className={cn("space-y-2", className)}>{children}</div>;
+  return <div className={cn('space-y-2', className)}>{children}</div>;
 }
 
 function FormLabel({
   children,
   required,
   htmlFor,
-  className = "",
+  className = '',
 }: {
   children?: React.ReactNode;
   required?: boolean;

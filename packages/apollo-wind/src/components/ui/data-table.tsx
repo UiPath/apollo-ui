@@ -1,11 +1,6 @@
 import * as React from 'react';
 
-import {
-  ArrowDown,
-  ArrowUp,
-  ArrowUpDown,
-  ChevronDown,
-} from 'lucide-react';
+import { ArrowDown, ArrowUp, ArrowUpDown, ChevronDown } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -15,10 +10,7 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import {
-  EditableCell,
-  EditableCellMeta,
-} from '@/components/ui/editable-cell';
+import { EditableCell, EditableCellMeta } from '@/components/ui/editable-cell';
 import { Input } from '@/components/ui/input';
 import {
   Table,
@@ -63,7 +55,7 @@ export function DataTable<TData, TValue>({
   columns,
   data,
   searchKey,
-  searchPlaceholder = "Search...",
+  searchPlaceholder = 'Search...',
   showColumnToggle = true,
   showPagination = true,
   pageSize = 10,
@@ -71,7 +63,7 @@ export function DataTable<TData, TValue>({
   onCellUpdate,
   resizable = false,
   compact = false,
-  columnToggleText = "Columns",
+  columnToggleText = 'Columns',
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
@@ -113,7 +105,7 @@ export function DataTable<TData, TValue>({
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
     enableColumnResizing: resizable,
-    columnResizeMode: "onChange" as ColumnResizeMode,
+    columnResizeMode: 'onChange' as ColumnResizeMode,
     state: {
       sorting,
       columnFilters,
@@ -133,7 +125,7 @@ export function DataTable<TData, TValue>({
         {searchKey && (
           <Input
             placeholder={searchPlaceholder}
-            value={(table.getColumn(searchKey)?.getFilterValue() as string) ?? ""}
+            value={(table.getColumn(searchKey)?.getFilterValue() as string) ?? ''}
             onChange={(event) => table.getColumn(searchKey)?.setFilterValue(event.target.value)}
             className="max-w-sm"
           />
@@ -167,7 +159,7 @@ export function DataTable<TData, TValue>({
       </div>
       <div className="rounded-md border overflow-auto">
         <Table
-          style={resizable ? { width: table.getTotalSize(), tableLayout: "fixed" } : undefined}
+          style={resizable ? { width: table.getTotalSize(), tableLayout: 'fixed' } : undefined}
         >
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -177,7 +169,7 @@ export function DataTable<TData, TValue>({
                   return (
                     <TableHead
                       key={header.id}
-                      className={compact ? "relative h-8 px-2 py-1" : "relative"}
+                      className={compact ? 'relative h-8 px-2 py-1' : 'relative'}
                       style={{
                         width: resizable
                           ? header.getSize()
@@ -200,8 +192,8 @@ export function DataTable<TData, TValue>({
                           <div
                             className={`h-full w-px mx-auto ${
                               header.column.getIsResizing()
-                                ? "bg-primary"
-                                : "group-hover:bg-primary/50"
+                                ? 'bg-primary'
+                                : 'group-hover:bg-primary/50'
                             }`}
                           />
                         </div>
@@ -215,13 +207,13 @@ export function DataTable<TData, TValue>({
           <TableBody>
             {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
-                <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
+                <TableRow key={row.id} data-state={row.getIsSelected() && 'selected'}>
                   {row.getVisibleCells().map((cell) => {
                     const { column } = cell;
                     return (
                       <TableCell
                         key={cell.id}
-                        className={compact ? "truncate px-2 py-1" : "truncate"}
+                        className={compact ? 'truncate px-2 py-1' : 'truncate'}
                         style={{
                           width: resizable
                             ? cell.column.getSize()
@@ -251,7 +243,7 @@ export function DataTable<TData, TValue>({
       {showPagination && (
         <div className="flex items-center justify-between space-x-2 py-4">
           <div className="flex-1 text-sm text-muted-foreground">
-            {table.getFilteredSelectedRowModel().rows.length} of{" "}
+            {table.getFilteredSelectedRowModel().rows.length} of{' '}
             {table.getFilteredRowModel().rows.length} row(s) selected.
           </div>
           <div className="flex items-center space-x-2">
@@ -294,9 +286,9 @@ export function DataTableColumnHeader<TData, TValue>({
   const sorted = column.getIsSorted();
 
   const handleClick = () => {
-    if (sorted === "asc") {
+    if (sorted === 'asc') {
       column.toggleSorting(true); // asc -> desc
-    } else if (sorted === "desc") {
+    } else if (sorted === 'desc') {
       column.clearSorting(); // desc -> clear
     } else {
       column.toggleSorting(false); // none -> asc
@@ -312,9 +304,9 @@ export function DataTableColumnHeader<TData, TValue>({
     >
       <span>{title}</span>
       {children}
-      {sorted === "asc" ? (
+      {sorted === 'asc' ? (
         <ArrowUp className="ml-2 h-4 w-4" />
-      ) : sorted === "desc" ? (
+      ) : sorted === 'desc' ? (
         <ArrowDown className="ml-2 h-4 w-4" />
       ) : (
         <ArrowUpDown className="ml-2 h-4 w-4" />
@@ -325,11 +317,11 @@ export function DataTableColumnHeader<TData, TValue>({
 
 export function DataTableSelectColumn<TData>(): ColumnDef<TData> {
   return {
-    id: "select",
+    id: 'select',
     header: ({ table }) => (
       <Checkbox
         checked={
-          table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && "indeterminate")
+          table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && 'indeterminate')
         }
         onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
         aria-label="Select all"

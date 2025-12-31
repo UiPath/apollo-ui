@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { Upload, X } from "lucide-react";
-import * as React from "react";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib";
+import { Upload, X } from 'lucide-react';
+import * as React from 'react';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib';
 
 export interface FileUploadProps {
   onFilesChange?: (files: File[]) => void;
@@ -26,12 +26,12 @@ export function FileUpload({
 }: FileUploadProps) {
   const [files, setFiles] = React.useState<File[]>([]);
   const [isDragging, setIsDragging] = React.useState(false);
-  const [error, setError] = React.useState<string>("");
+  const [error, setError] = React.useState<string>('');
   const [previews, setPreviews] = React.useState<string[]>([]);
   const inputRef = React.useRef<HTMLInputElement>(null);
 
   const validateFiles = (fileList: File[]): File[] => {
-    setError("");
+    setError('');
     const validFiles: File[] = [];
 
     for (const file of fileList) {
@@ -61,12 +61,12 @@ export function FileUpload({
     if (showPreview) {
       const newPreviews: string[] = [];
       validFiles.forEach((file) => {
-        if (file.type.startsWith("image/")) {
+        if (file.type.startsWith('image/')) {
           const reader = new FileReader();
           reader.onloadend = () => {
             newPreviews.push(reader.result as string);
             if (
-              newPreviews.length === validFiles.filter((f) => f.type.startsWith("image/")).length
+              newPreviews.length === validFiles.filter((f) => f.type.startsWith('image/')).length
             ) {
               setPreviews(multiple ? [...previews, ...newPreviews] : newPreviews);
             }
@@ -86,7 +86,7 @@ export function FileUpload({
       const newPreviews = previews.filter((_, i) => i !== index);
       setPreviews(newPreviews);
     }
-    setError("");
+    setError('');
   };
 
   const handleDragEnter = (e: React.DragEvent) => {
@@ -129,23 +129,23 @@ export function FileUpload({
   };
 
   const formatFileSize = (bytes: number): string => {
-    if (bytes === 0) return "0 Bytes";
+    if (bytes === 0) return '0 Bytes';
     const k = 1024;
-    const sizes = ["Bytes", "KB", "MB", "GB"];
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + " " + sizes[i];
+    return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
   };
 
   return (
-    <div className={cn("w-full", className)}>
+    <div className={cn('w-full', className)}>
       <div
         className={cn(
-          "relative flex flex-col items-center justify-center w-full h-32 px-4 py-6 border-2 border-dashed rounded-lg cursor-pointer transition-colors",
+          'relative flex flex-col items-center justify-center w-full h-32 px-4 py-6 border-2 border-dashed rounded-lg cursor-pointer transition-colors',
           isDragging
-            ? "border-primary bg-primary/5"
-            : "border-input bg-background hover:bg-accent/50",
-          disabled && "opacity-50 cursor-not-allowed hover:bg-background",
-          error && "border-destructive",
+            ? 'border-primary bg-primary/5'
+            : 'border-input bg-background hover:bg-accent/50',
+          disabled && 'opacity-50 cursor-not-allowed hover:bg-background',
+          error && 'border-destructive',
         )}
         onDragEnter={handleDragEnter}
         onDragOver={handleDragOver}
@@ -168,7 +168,7 @@ export function FileUpload({
           <span className="font-semibold">Click to upload</span> or drag and drop
         </p>
         {accept && (
-          <p className="text-xs text-muted-foreground mt-1">{accept.split(",").join(", ")}</p>
+          <p className="text-xs text-muted-foreground mt-1">{accept.split(',').join(', ')}</p>
         )}
         {maxSize && (
           <p className="text-xs text-muted-foreground">Max size: {formatFileSize(maxSize)}</p>

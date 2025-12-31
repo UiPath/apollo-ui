@@ -1,4 +1,4 @@
-import type { Meta } from "@storybook/react-vite";
+import type { Meta } from '@storybook/react-vite';
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -6,12 +6,12 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "./breadcrumb";
+} from './breadcrumb';
 
 const meta: Meta<typeof Breadcrumb> = {
-  title: "Design System/Navigation/Breadcrumb",
+  title: 'Design System/Navigation/Breadcrumb',
   component: Breadcrumb,
-  tags: ["autodocs"],
+  tags: ['autodocs'],
 };
 
 export default meta;

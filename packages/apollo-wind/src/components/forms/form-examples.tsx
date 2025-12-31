@@ -8,13 +8,13 @@
  * All validation uses ValidationConfig (JSON-serializable) instead of Zod schemas.
  */
 
-import { useState } from "react";
-import { toast } from "sonner";
-import { MetadataForm } from "./metadata-form";
-import type { FormSchema } from "./form-schema";
-import { RuleBuilder } from "./rules-engine";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { useState } from 'react';
+import { toast } from 'sonner';
+import { MetadataForm } from './metadata-form';
+import type { FormSchema } from './form-schema';
+import { RuleBuilder } from './rules-engine';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 
 // ============================================================================
 // Example 1: User Registration - Cascading Dropdowns
@@ -25,92 +25,92 @@ import { Badge } from "@/components/ui/badge";
  * Country -> State -> City selection with remote data fetching.
  */
 export const cascadingDropdownsSchema: FormSchema = {
-  id: "user-registration",
-  title: "User Registration",
-  description: "Create your account with location details",
+  id: 'user-registration',
+  title: 'User Registration',
+  description: 'Create your account with location details',
   sections: [
     {
-      id: "personal",
-      title: "Personal Information",
+      id: 'personal',
+      title: 'Personal Information',
       fields: [
         {
-          name: "fullName",
-          type: "text",
-          label: "Full Name",
-          placeholder: "John Doe",
+          name: 'fullName',
+          type: 'text',
+          label: 'Full Name',
+          placeholder: 'John Doe',
           validation: {
             required: true,
             minLength: 2,
-            messages: { minLength: "Name must be at least 2 characters" },
+            messages: { minLength: 'Name must be at least 2 characters' },
           },
         },
         {
-          name: "email",
-          type: "email",
-          label: "Email Address",
-          placeholder: "john@example.com",
+          name: 'email',
+          type: 'email',
+          label: 'Email Address',
+          placeholder: 'john@example.com',
           validation: {
             required: true,
             email: true,
-            messages: { email: "Invalid email address" },
+            messages: { email: 'Invalid email address' },
           },
         },
       ],
     },
     {
-      id: "location",
-      title: "Location Details",
-      description: "Select your country, state, and city",
+      id: 'location',
+      title: 'Location Details',
+      description: 'Select your country, state, and city',
       fields: [
         {
-          name: "country",
-          type: "select",
-          label: "Country",
-          placeholder: "Select your country",
+          name: 'country',
+          type: 'select',
+          label: 'Country',
+          placeholder: 'Select your country',
           dataSource: {
-            type: "fetch",
-            url: "/api/countries",
-            method: "GET",
-            transform: "data.map(c => ({ label: c.name, value: c.code }))",
+            type: 'fetch',
+            url: '/api/countries',
+            method: 'GET',
+            transform: 'data.map(c => ({ label: c.name, value: c.code }))',
           },
           validation: {
             required: true,
-            messages: { required: "Country is required" },
+            messages: { required: 'Country is required' },
           },
         },
         {
-          name: "state",
-          type: "select",
-          label: "State/Province",
-          placeholder: "Select your state",
+          name: 'state',
+          type: 'select',
+          label: 'State/Province',
+          placeholder: 'Select your state',
           dataSource: {
-            type: "remote",
-            endpoint: "/api/states",
-            params: { countryCode: "$country" },
+            type: 'remote',
+            endpoint: '/api/states',
+            params: { countryCode: '$country' },
           },
           rules: [
-            new RuleBuilder("show-state-when-country-selected")
-              .when("country")
-              .isNot("")
+            new RuleBuilder('show-state-when-country-selected')
+              .when('country')
+              .isNot('')
               .show()
               .require()
               .build(),
           ],
         },
         {
-          name: "city",
-          type: "select",
-          label: "City",
-          placeholder: "Select your city",
+          name: 'city',
+          type: 'select',
+          label: 'City',
+          placeholder: 'Select your city',
           dataSource: {
-            type: "remote",
-            endpoint: "/api/cities",
-            params: { countryCode: "$country", stateCode: "$state" },
+            type: 'remote',
+            endpoint: '/api/cities',
+            params: { countryCode: '$country', stateCode: '$state' },
           },
           rules: [
-            new RuleBuilder("show-city-when-state-selected")
-              .when("state")
-              .isNot("")
+            new RuleBuilder('show-city-when-state-selected')
+              .when('state')
+              .isNot('')
               .show()
               .require()
               .build(),
@@ -130,56 +130,56 @@ export const cascadingDropdownsSchema: FormSchema = {
  * Category -> Product -> Variant with pricing shown in variant label.
  */
 export const computedFieldsSchema: FormSchema = {
-  id: "product-configurator",
-  title: "Product Configuration",
-  description: "Customize your product",
+  id: 'product-configurator',
+  title: 'Product Configuration',
+  description: 'Customize your product',
   sections: [
     {
-      id: "product-selection",
-      title: "Select Your Product",
+      id: 'product-selection',
+      title: 'Select Your Product',
       fields: [
         {
-          name: "category",
-          type: "select",
-          label: "Product Category",
+          name: 'category',
+          type: 'select',
+          label: 'Product Category',
           dataSource: {
-            type: "fetch",
-            url: "/api/product-categories",
-            method: "GET",
-            transform: "data.categories.map(c => ({ label: c.name, value: c.id }))",
+            type: 'fetch',
+            url: '/api/product-categories',
+            method: 'GET',
+            transform: 'data.categories.map(c => ({ label: c.name, value: c.id }))',
           },
         },
         {
-          name: "product",
-          type: "select",
-          label: "Select Product",
+          name: 'product',
+          type: 'select',
+          label: 'Select Product',
           dataSource: {
-            type: "remote",
-            endpoint: "/api/products",
-            params: { categoryId: "$category" },
+            type: 'remote',
+            endpoint: '/api/products',
+            params: { categoryId: '$category' },
           },
           rules: [
-            new RuleBuilder("show-product-when-category-selected")
-              .when("category")
-              .isNot("")
+            new RuleBuilder('show-product-when-category-selected')
+              .when('category')
+              .isNot('')
               .show()
               .require()
               .build(),
           ],
         },
         {
-          name: "variant",
-          type: "select",
-          label: "Product Variant (includes price)",
+          name: 'variant',
+          type: 'select',
+          label: 'Product Variant (includes price)',
           dataSource: {
-            type: "remote",
-            endpoint: "/api/product-variants",
-            params: { productId: "$product" },
+            type: 'remote',
+            endpoint: '/api/product-variants',
+            params: { productId: '$product' },
           },
           rules: [
-            new RuleBuilder("show-variant-when-product-selected")
-              .when("product")
-              .isNot("")
+            new RuleBuilder('show-variant-when-product-selected')
+              .when('product')
+              .isNot('')
               .show()
               .require()
               .build(),
@@ -188,14 +188,14 @@ export const computedFieldsSchema: FormSchema = {
       ],
     },
     {
-      id: "order",
-      title: "Order Details",
+      id: 'order',
+      title: 'Order Details',
       fields: [
         {
-          name: "quantity",
-          type: "number",
-          label: "Quantity",
-          placeholder: "1",
+          name: 'quantity',
+          type: 'number',
+          label: 'Quantity',
+          placeholder: '1',
           min: 1,
           max: 100,
           defaultValue: 1,
@@ -206,10 +206,10 @@ export const computedFieldsSchema: FormSchema = {
           },
         },
         {
-          name: "notes",
-          type: "textarea",
-          label: "Order Notes",
-          placeholder: "Any special instructions...",
+          name: 'notes',
+          type: 'textarea',
+          label: 'Order Notes',
+          placeholder: 'Any special instructions...',
         },
       ],
     },
@@ -225,129 +225,129 @@ export const computedFieldsSchema: FormSchema = {
  * Shows different fields based on experience level.
  */
 export const conditionalSectionsSchema: FormSchema = {
-  id: "job-application",
-  title: "Job Application",
-  description: "Apply for a position at our company",
+  id: 'job-application',
+  title: 'Job Application',
+  description: 'Apply for a position at our company',
   sections: [
     {
-      id: "basic-info",
-      title: "Basic Information",
+      id: 'basic-info',
+      title: 'Basic Information',
       fields: [
         {
-          name: "firstName",
-          type: "text",
-          label: "First Name",
+          name: 'firstName',
+          type: 'text',
+          label: 'First Name',
           validation: { required: true },
         },
         {
-          name: "lastName",
-          type: "text",
-          label: "Last Name",
+          name: 'lastName',
+          type: 'text',
+          label: 'Last Name',
           validation: { required: true },
         },
         {
-          name: "email",
-          type: "email",
-          label: "Email",
+          name: 'email',
+          type: 'email',
+          label: 'Email',
           validation: { required: true, email: true },
         },
       ],
     },
     {
-      id: "position",
-      title: "Position Details",
+      id: 'position',
+      title: 'Position Details',
       fields: [
         {
-          name: "department",
-          type: "select",
-          label: "Department",
+          name: 'department',
+          type: 'select',
+          label: 'Department',
           dataSource: {
-            type: "fetch",
-            url: "/api/departments",
-            method: "GET",
-            transform: "data.map(d => ({ label: d.name, value: d.id }))",
+            type: 'fetch',
+            url: '/api/departments',
+            method: 'GET',
+            transform: 'data.map(d => ({ label: d.name, value: d.id }))',
           },
         },
         {
-          name: "position",
-          type: "select",
-          label: "Position",
+          name: 'position',
+          type: 'select',
+          label: 'Position',
           dataSource: {
-            type: "remote",
-            endpoint: "/api/positions",
-            params: { departmentId: "$department" },
+            type: 'remote',
+            endpoint: '/api/positions',
+            params: { departmentId: '$department' },
           },
           rules: [
-            new RuleBuilder("show-position").when("department").isNot("").show().require().build(),
+            new RuleBuilder('show-position').when('department').isNot('').show().require().build(),
           ],
         },
         {
-          name: "experienceLevel",
-          type: "select",
-          label: "Experience Level",
+          name: 'experienceLevel',
+          type: 'select',
+          label: 'Experience Level',
           options: [
-            { label: "Entry Level (0-2 years)", value: "entry" },
-            { label: "Mid Level (3-5 years)", value: "mid" },
-            { label: "Senior Level (6+ years)", value: "senior" },
+            { label: 'Entry Level (0-2 years)', value: 'entry' },
+            { label: 'Mid Level (3-5 years)', value: 'mid' },
+            { label: 'Senior Level (6+ years)', value: 'senior' },
           ],
         },
       ],
     },
     {
-      id: "skills",
-      title: "Technical Skills",
-      description: "Select your relevant skills",
+      id: 'skills',
+      title: 'Technical Skills',
+      description: 'Select your relevant skills',
       fields: [
         {
-          name: "primarySkills",
-          type: "multiselect",
-          label: "Primary Skills",
-          placeholder: "Select your primary skills...",
+          name: 'primarySkills',
+          type: 'multiselect',
+          label: 'Primary Skills',
+          placeholder: 'Select your primary skills...',
           validation: {
             required: true,
             minItems: 1,
-            messages: { minItems: "Select at least one skill" },
+            messages: { minItems: 'Select at least one skill' },
           },
           options: [
-            { label: "JavaScript", value: "javascript" },
-            { label: "TypeScript", value: "typescript" },
-            { label: "Python", value: "python" },
-            { label: "Java", value: "java" },
-            { label: "C#", value: "csharp" },
-            { label: "Go", value: "go" },
-            { label: "React", value: "react" },
-            { label: "Node.js", value: "nodejs" },
+            { label: 'JavaScript', value: 'javascript' },
+            { label: 'TypeScript', value: 'typescript' },
+            { label: 'Python', value: 'python' },
+            { label: 'Java', value: 'java' },
+            { label: 'C#', value: 'csharp' },
+            { label: 'Go', value: 'go' },
+            { label: 'React', value: 'react' },
+            { label: 'Node.js', value: 'nodejs' },
           ],
         },
       ],
     },
     {
-      id: "experience",
-      title: "Work Experience",
+      id: 'experience',
+      title: 'Work Experience',
       // Only show for mid/senior candidates
-      conditions: [{ when: "experienceLevel", in: ["mid", "senior"] }],
+      conditions: [{ when: 'experienceLevel', in: ['mid', 'senior'] }],
       fields: [
         {
-          name: "currentCompany",
-          type: "text",
-          label: "Current Company",
+          name: 'currentCompany',
+          type: 'text',
+          label: 'Current Company',
         },
         {
-          name: "yearsExperience",
-          type: "number",
-          label: "Years of Experience",
+          name: 'yearsExperience',
+          type: 'number',
+          label: 'Years of Experience',
           min: 0,
           max: 50,
         },
         {
-          name: "references",
-          type: "textarea",
-          label: "Professional References",
-          placeholder: "List 2-3 professional references",
+          name: 'references',
+          type: 'textarea',
+          label: 'Professional References',
+          placeholder: 'List 2-3 professional references',
           rules: [
-            new RuleBuilder("require-references-senior")
-              .when("experienceLevel")
-              .is("senior")
+            new RuleBuilder('require-references-senior')
+              .when('experienceLevel')
+              .is('senior')
               .require()
               .build(),
           ],
@@ -366,32 +366,32 @@ export const conditionalSectionsSchema: FormSchema = {
  * Shows follow-up questions based on ratings.
  */
 export const conditionalQuestionsSchema: FormSchema = {
-  id: "dynamic-survey",
-  title: "Customer Satisfaction Survey",
-  description: "Help us improve our service",
+  id: 'dynamic-survey',
+  title: 'Customer Satisfaction Survey',
+  description: 'Help us improve our service',
   sections: [
     {
-      id: "satisfaction",
-      title: "Overall Satisfaction",
+      id: 'satisfaction',
+      title: 'Overall Satisfaction',
       fields: [
         {
-          name: "overallRating",
-          type: "slider",
-          label: "How satisfied are you with our service?",
+          name: 'overallRating',
+          type: 'slider',
+          label: 'How satisfied are you with our service?',
           min: 1,
           max: 10,
           step: 1,
           defaultValue: 5,
         },
         {
-          name: "feedbackReason",
-          type: "textarea",
-          label: "What is the main reason for your rating?",
-          placeholder: "Please tell us more...",
+          name: 'feedbackReason',
+          type: 'textarea',
+          label: 'What is the main reason for your rating?',
+          placeholder: 'Please tell us more...',
           // Only show if rating is low (1-6)
           rules: [
-            new RuleBuilder("show-feedback-low")
-              .withCustomExpression("overallRating <= 6")
+            new RuleBuilder('show-feedback-low')
+              .withCustomExpression('overallRating <= 6')
               .show()
               .require()
               .build(),
@@ -400,30 +400,30 @@ export const conditionalQuestionsSchema: FormSchema = {
       ],
     },
     {
-      id: "recommendations",
-      title: "Recommendations",
+      id: 'recommendations',
+      title: 'Recommendations',
       fields: [
         {
-          name: "wouldRecommend",
-          type: "radio",
-          label: "Would you recommend us to others?",
+          name: 'wouldRecommend',
+          type: 'radio',
+          label: 'Would you recommend us to others?',
           options: [
-            { label: "Definitely Yes", value: "yes" },
-            { label: "Probably Yes", value: "maybe-yes" },
-            { label: "Not Sure", value: "unsure" },
-            { label: "Probably Not", value: "maybe-no" },
-            { label: "Definitely Not", value: "no" },
+            { label: 'Definitely Yes', value: 'yes' },
+            { label: 'Probably Yes', value: 'maybe-yes' },
+            { label: 'Not Sure', value: 'unsure' },
+            { label: 'Probably Not', value: 'maybe-no' },
+            { label: 'Definitely Not', value: 'no' },
           ],
         },
         {
-          name: "improvementSuggestions",
-          type: "textarea",
-          label: "How can we improve?",
-          placeholder: "Your suggestions are valuable to us...",
+          name: 'improvementSuggestions',
+          type: 'textarea',
+          label: 'How can we improve?',
+          placeholder: 'Your suggestions are valuable to us...',
           rules: [
-            new RuleBuilder("show-improvements")
-              .when("wouldRecommend")
-              .in(["unsure", "maybe-no", "no"])
+            new RuleBuilder('show-improvements')
+              .when('wouldRecommend')
+              .in(['unsure', 'maybe-no', 'no'])
               .show()
               .require()
               .build(),
@@ -443,83 +443,83 @@ export const conditionalQuestionsSchema: FormSchema = {
  * Folder -> Process -> Version -> Robot selection.
  */
 export const automationJobSchema: FormSchema = {
-  id: "automation-job-config",
-  title: "Configure Automation Job",
-  description: "Set up an automation process execution",
+  id: 'automation-job-config',
+  title: 'Configure Automation Job',
+  description: 'Set up an automation process execution',
   sections: [
     {
-      id: "process",
-      title: "Process Selection",
+      id: 'process',
+      title: 'Process Selection',
       fields: [
         {
-          name: "folder",
-          type: "select",
-          label: "Orchestrator Folder",
+          name: 'folder',
+          type: 'select',
+          label: 'Orchestrator Folder',
           dataSource: {
-            type: "fetch",
-            url: "/api/orchestrator/folders",
-            method: "GET",
-            transform: "data.value.map(f => ({ label: f.DisplayName, value: f.Id }))",
+            type: 'fetch',
+            url: '/api/orchestrator/folders',
+            method: 'GET',
+            transform: 'data.value.map(f => ({ label: f.DisplayName, value: f.Id }))',
           },
         },
         {
-          name: "process",
-          type: "select",
-          label: "Process Package",
+          name: 'process',
+          type: 'select',
+          label: 'Process Package',
           dataSource: {
-            type: "remote",
-            endpoint: "/api/orchestrator/processes",
-            params: { folderId: "$folder" },
+            type: 'remote',
+            endpoint: '/api/orchestrator/processes',
+            params: { folderId: '$folder' },
           },
           rules: [
-            new RuleBuilder("show-process").when("folder").isNot("").show().require().build(),
+            new RuleBuilder('show-process').when('folder').isNot('').show().require().build(),
           ],
         },
         {
-          name: "version",
-          type: "select",
-          label: "Package Version",
+          name: 'version',
+          type: 'select',
+          label: 'Package Version',
           dataSource: {
-            type: "remote",
-            endpoint: "/api/orchestrator/package-versions",
-            params: { processKey: "$process" },
+            type: 'remote',
+            endpoint: '/api/orchestrator/package-versions',
+            params: { processKey: '$process' },
           },
           rules: [
-            new RuleBuilder("show-version").when("process").isNot("").show().require().build(),
+            new RuleBuilder('show-version').when('process').isNot('').show().require().build(),
           ],
         },
       ],
     },
     {
-      id: "execution",
-      title: "Execution Settings",
+      id: 'execution',
+      title: 'Execution Settings',
       fields: [
         {
-          name: "robot",
-          type: "select",
-          label: "Robot",
+          name: 'robot',
+          type: 'select',
+          label: 'Robot',
           dataSource: {
-            type: "remote",
-            endpoint: "/api/orchestrator/robots",
-            params: { folderId: "$folder" },
+            type: 'remote',
+            endpoint: '/api/orchestrator/robots',
+            params: { folderId: '$folder' },
           },
-          rules: [new RuleBuilder("show-robot").when("folder").isNot("").show().require().build()],
+          rules: [new RuleBuilder('show-robot').when('folder').isNot('').show().require().build()],
         },
         {
-          name: "priority",
-          type: "select",
-          label: "Priority",
+          name: 'priority',
+          type: 'select',
+          label: 'Priority',
           options: [
-            { label: "Low", value: "Low" },
-            { label: "Normal", value: "Normal" },
-            { label: "High", value: "High" },
+            { label: 'Low', value: 'Low' },
+            { label: 'Normal', value: 'Normal' },
+            { label: 'High', value: 'High' },
           ],
-          defaultValue: "Normal",
+          defaultValue: 'Normal',
         },
         {
-          name: "inputArguments",
-          type: "textarea",
-          label: "Input Arguments (JSON)",
+          name: 'inputArguments',
+          type: 'textarea',
+          label: 'Input Arguments (JSON)',
           placeholder: '{"argument1": "value1"}',
           // Note: JSON validation would need custom validation at runtime
           // For now, this is handled by the form submission handler
@@ -538,47 +538,47 @@ export const automationJobSchema: FormSchema = {
  * Step-by-step user onboarding with data pre-loading.
  */
 export const multiStepSchema: FormSchema = {
-  id: "user-onboarding",
+  id: 'user-onboarding',
   title: "Welcome! Let's set up your account",
-  description: "Complete these steps to get started",
+  description: 'Complete these steps to get started',
   initialData: {
-    firstName: "",
-    lastName: "",
-    timezone: "",
+    firstName: '',
+    lastName: '',
+    timezone: '',
     emailNotifications: true,
-    notificationFrequency: "daily",
+    notificationFrequency: 'daily',
     acceptTerms: false,
   },
   steps: [
     {
-      id: "personal",
-      title: "Personal Information",
-      description: "Tell us about yourself",
+      id: 'personal',
+      title: 'Personal Information',
+      description: 'Tell us about yourself',
       sections: [
         {
-          id: "basic",
+          id: 'basic',
           fields: [
             {
-              name: "firstName",
-              type: "text",
-              label: "First Name",
+              name: 'firstName',
+              type: 'text',
+              label: 'First Name',
               validation: { required: true },
             },
             {
-              name: "lastName",
-              type: "text",
-              label: "Last Name",
+              name: 'lastName',
+              type: 'text',
+              label: 'Last Name',
               validation: { required: true },
             },
             {
-              name: "timezone",
-              type: "select",
-              label: "Timezone",
+              name: 'timezone',
+              type: 'select',
+              label: 'Timezone',
               dataSource: {
-                type: "fetch",
-                url: "/api/timezones",
-                method: "GET",
-                transform: "data.map(tz => ({ label: tz.label, value: tz.value }))",
+                type: 'fetch',
+                url: '/api/timezones',
+                method: 'GET',
+                transform: 'data.map(tz => ({ label: tz.label, value: tz.value }))',
               },
             },
           ],
@@ -586,32 +586,32 @@ export const multiStepSchema: FormSchema = {
       ],
     },
     {
-      id: "preferences",
-      title: "Preferences",
-      description: "Customize your experience",
+      id: 'preferences',
+      title: 'Preferences',
+      description: 'Customize your experience',
       sections: [
         {
-          id: "notifications",
+          id: 'notifications',
           fields: [
             {
-              name: "emailNotifications",
-              type: "switch",
-              label: "Email Notifications",
-              description: "Receive updates via email",
+              name: 'emailNotifications',
+              type: 'switch',
+              label: 'Email Notifications',
+              description: 'Receive updates via email',
               defaultValue: true,
             },
             {
-              name: "notificationFrequency",
-              type: "select",
-              label: "Notification Frequency",
+              name: 'notificationFrequency',
+              type: 'select',
+              label: 'Notification Frequency',
               options: [
-                { label: "Real-time", value: "realtime" },
-                { label: "Daily Digest", value: "daily" },
-                { label: "Weekly Digest", value: "weekly" },
+                { label: 'Real-time', value: 'realtime' },
+                { label: 'Daily Digest', value: 'daily' },
+                { label: 'Weekly Digest', value: 'weekly' },
               ],
               rules: [
-                new RuleBuilder("show-frequency")
-                  .when("emailNotifications")
+                new RuleBuilder('show-frequency')
+                  .when('emailNotifications')
                   .is(true)
                   .show()
                   .require()
@@ -623,20 +623,20 @@ export const multiStepSchema: FormSchema = {
       ],
     },
     {
-      id: "complete",
-      title: "All Set!",
-      description: "Review and confirm your settings",
+      id: 'complete',
+      title: 'All Set!',
+      description: 'Review and confirm your settings',
       sections: [
         {
-          id: "summary",
+          id: 'summary',
           fields: [
             {
-              name: "acceptTerms",
-              type: "checkbox",
-              label: "I accept the Terms of Service and Privacy Policy",
+              name: 'acceptTerms',
+              type: 'checkbox',
+              label: 'I accept the Terms of Service and Privacy Policy',
               validation: {
                 required: true,
-                messages: { required: "You must accept the terms" },
+                messages: { required: 'You must accept the terms' },
               },
             },
           ],
@@ -651,80 +651,80 @@ export const multiStepSchema: FormSchema = {
 // ============================================================================
 
 export const fileUploadSchema: FormSchema = {
-  id: "document-upload",
-  title: "Document Upload",
-  description: "Upload your documents for processing",
+  id: 'document-upload',
+  title: 'Document Upload',
+  description: 'Upload your documents for processing',
   sections: [
     {
-      id: "uploader-info",
-      title: "Your Information",
+      id: 'uploader-info',
+      title: 'Your Information',
       fields: [
         {
-          name: "name",
-          type: "text",
-          label: "Full Name",
+          name: 'name',
+          type: 'text',
+          label: 'Full Name',
           validation: {
             required: true,
             minLength: 2,
           },
         },
         {
-          name: "email",
-          type: "email",
-          label: "Email",
+          name: 'email',
+          type: 'email',
+          label: 'Email',
           validation: {
             required: true,
             email: true,
           },
         },
         {
-          name: "department",
-          type: "select",
-          label: "Department",
+          name: 'department',
+          type: 'select',
+          label: 'Department',
           options: [
-            { label: "Engineering", value: "engineering" },
-            { label: "Design", value: "design" },
-            { label: "Marketing", value: "marketing" },
-            { label: "Sales", value: "sales" },
-            { label: "HR", value: "hr" },
+            { label: 'Engineering', value: 'engineering' },
+            { label: 'Design', value: 'design' },
+            { label: 'Marketing', value: 'marketing' },
+            { label: 'Sales', value: 'sales' },
+            { label: 'HR', value: 'hr' },
           ],
           validation: { required: true },
         },
       ],
     },
     {
-      id: "documents",
-      title: "Documents",
+      id: 'documents',
+      title: 'Documents',
       fields: [
         {
-          name: "documentType",
-          type: "select",
-          label: "Document Type",
+          name: 'documentType',
+          type: 'select',
+          label: 'Document Type',
           options: [
-            { label: "Invoice", value: "invoice" },
-            { label: "Receipt", value: "receipt" },
-            { label: "Contract", value: "contract" },
-            { label: "Report", value: "report" },
-            { label: "Other", value: "other" },
+            { label: 'Invoice', value: 'invoice' },
+            { label: 'Receipt', value: 'receipt' },
+            { label: 'Contract', value: 'contract' },
+            { label: 'Report', value: 'report' },
+            { label: 'Other', value: 'other' },
           ],
           validation: {
             required: true,
-            messages: { required: "Please select a document type" },
+            messages: { required: 'Please select a document type' },
           },
         },
         {
-          name: "files",
-          type: "file",
-          label: "Upload Files",
-          accept: ".pdf,.doc,.docx,.xls,.xlsx",
+          name: 'files',
+          type: 'file',
+          label: 'Upload Files',
+          accept: '.pdf,.doc,.docx,.xls,.xlsx',
           multiple: true,
           maxSize: 10 * 1024 * 1024, // 10MB
         },
         {
-          name: "notes",
-          type: "textarea",
-          label: "Additional Notes",
-          placeholder: "Any special instructions or comments...",
+          name: 'notes',
+          type: 'textarea',
+          label: 'Additional Notes',
+          placeholder: 'Any special instructions or comments...',
         },
       ],
     },
@@ -763,8 +763,8 @@ export function FileUploadExample() {
         // Validate file sizes
         const oversizedFiles = fileList.filter((f) => f.size > 10 * 1024 * 1024);
         if (oversizedFiles.length > 0) {
-          toast.error("Some files are too large", {
-            description: `Maximum size is 10MB. Remove: ${oversizedFiles.map((f) => f.name).join(", ")}`,
+          toast.error('Some files are too large', {
+            description: `Maximum size is 10MB. Remove: ${oversizedFiles.map((f) => f.name).join(', ')}`,
           });
           return;
         }
@@ -775,11 +775,11 @@ export function FileUploadExample() {
           await simulateFileUpload(file);
         }
 
-        toast.success("All files uploaded successfully!", {
+        toast.success('All files uploaded successfully!', {
           description: `${fileList.length} document(s) processed`,
         });
 
-        console.log("Upload complete:", {
+        console.log('Upload complete:', {
           ...formData,
           fileNames: fileList.map((f) => f.name),
         });
@@ -791,8 +791,8 @@ export function FileUploadExample() {
         }, 3000);
       }
     } catch (error) {
-      toast.error("Upload failed", {
-        description: error instanceof Error ? error.message : "Please try again",
+      toast.error('Upload failed', {
+        description: error instanceof Error ? error.message : 'Please try again',
       });
     }
   };

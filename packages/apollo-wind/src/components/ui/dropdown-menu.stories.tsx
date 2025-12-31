@@ -1,5 +1,5 @@
-import type { Meta } from "@storybook/react-vite";
-import { Button } from "./button";
+import type { Meta } from '@storybook/react-vite';
+import { Button } from './button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -7,12 +7,12 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "./dropdown-menu";
+} from './dropdown-menu';
 
 const meta: Meta<typeof DropdownMenu> = {
-  title: "Design System/Overlays/Dropdown Menu",
+  title: 'Design System/Overlays/Dropdown Menu',
   component: DropdownMenu,
-  tags: ["autodocs"],
+  tags: ['autodocs'],
 };
 
 export default meta;

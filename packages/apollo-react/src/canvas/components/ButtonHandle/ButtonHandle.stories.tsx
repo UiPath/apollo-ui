@@ -1,31 +1,11 @@
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
-import type {
-  Meta,
-  StoryObj,
-} from '@storybook/react-vite';
+import type { Meta, StoryObj } from '@storybook/react-vite';
 import { FontVariantToken } from '@uipath/apollo-core';
-import {
-  Column,
-  Row,
-} from '@uipath/apollo-react/canvas/layouts';
-import type {
-  Edge,
-  Node,
-} from '@uipath/apollo-react/canvas/xyflow/react';
-import {
-  Panel,
-  Position,
-} from '@uipath/apollo-react/canvas/xyflow/react';
-import {
-  ApButton,
-  ApTypography,
-} from '@uipath/apollo-react/material';
+import { Column, Row } from '@uipath/apollo-react/canvas/layouts';
+import type { Edge, Node } from '@uipath/apollo-react/canvas/xyflow/react';
+import { Panel, Position } from '@uipath/apollo-react/canvas/xyflow/react';
+import { ApButton, ApTypography } from '@uipath/apollo-react/material';
 import {
   ApCheckbox,
   ApDropdown,
@@ -44,11 +24,7 @@ import { DefaultCanvasTranslations } from '../../types';
 import { BaseCanvas } from '../BaseCanvas/BaseCanvas';
 import type { BaseNodeData } from '../BaseNode/BaseNode.types';
 import { CanvasPositionControls } from '../CanvasPositionControls';
-import {
-  type ButtonHandleConfig,
-  ButtonHandles,
-  type HandleActionEvent,
-} from './ButtonHandle';
+import { type ButtonHandleConfig, ButtonHandles, type HandleActionEvent } from './ButtonHandle';
 
 // ============================================================================
 // Meta Configuration

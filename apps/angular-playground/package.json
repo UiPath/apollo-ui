@@ -5,7 +5,9 @@
   "description": "Angular playground for testing Apollo components",
   "scripts": {
     "build": "echo 'Angular playground requires angular.json setup'",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "format": "prettier --write \"./**/*.{ts,tsx,js,jsx,json,css,scss,md}\"",
+    "format:check": "prettier --check \"./**/*.{ts,tsx,js,jsx,json,css,scss,md}\""
   },
   "dependencies": {
     "@angular/animations": "^19.1.2",

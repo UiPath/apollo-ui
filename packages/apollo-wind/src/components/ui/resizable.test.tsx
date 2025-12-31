@@ -1,8 +1,8 @@
-import { render, screen } from "@testing-library/react";
-import { axe } from "jest-axe";
-import { describe, expect, it } from "vitest";
+import { render, screen } from '@testing-library/react';
+import { axe } from 'jest-axe';
+import { describe, expect, it } from 'vitest';
 
-import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "./resizable";
+import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from './resizable';
 
 const BasicResizable = ({ withHandle = false }: { withHandle?: boolean }) => (
   <ResizablePanelGroup direction="horizontal">
@@ -16,26 +16,26 @@ const BasicResizable = ({ withHandle = false }: { withHandle?: boolean }) => (
   </ResizablePanelGroup>
 );
 
-describe("Resizable", () => {
-  describe("Rendering", () => {
-    it("renders panel group with panels", () => {
+describe('Resizable', () => {
+  describe('Rendering', () => {
+    it('renders panel group with panels', () => {
       render(<BasicResizable />);
-      expect(screen.getByText("Panel 1")).toBeInTheDocument();
-      expect(screen.getByText("Panel 2")).toBeInTheDocument();
+      expect(screen.getByText('Panel 1')).toBeInTheDocument();
+      expect(screen.getByText('Panel 2')).toBeInTheDocument();
     });
 
-    it("renders handle without grip icon by default", () => {
+    it('renders handle without grip icon by default', () => {
       const { container } = render(<BasicResizable />);
-      expect(container.querySelector("[data-panel-resize-handle-id]")).toBeInTheDocument();
-      expect(container.querySelector("svg")).not.toBeInTheDocument();
+      expect(container.querySelector('[data-panel-resize-handle-id]')).toBeInTheDocument();
+      expect(container.querySelector('svg')).not.toBeInTheDocument();
     });
 
-    it("renders handle with grip icon when withHandle is true", () => {
+    it('renders handle with grip icon when withHandle is true', () => {
       const { container } = render(<BasicResizable withHandle />);
-      expect(container.querySelector("svg")).toBeInTheDocument();
+      expect(container.querySelector('svg')).toBeInTheDocument();
     });
 
-    it("renders vertical panel group", () => {
+    it('renders vertical panel group', () => {
       const { container } = render(
         <ResizablePanelGroup direction="vertical">
           <ResizablePanel defaultSize={50}>
@@ -54,26 +54,26 @@ describe("Resizable", () => {
     });
   });
 
-  describe("Accessibility", () => {
+  describe('Accessibility', () => {
     // Note: react-resizable-panels has a known a11y issue - missing aria-valuenow on slider role
     // This should be fixed upstream in the library
-    it("has accessibility violation for missing aria-valuenow (known library issue)", async () => {
+    it('has accessibility violation for missing aria-valuenow (known library issue)', async () => {
       const { container } = render(<BasicResizable />);
       const results = await axe(container);
       // The library doesn't provide aria-valuenow which is required for slider role
       expect(results.violations.length).toBeGreaterThan(0);
-      expect(results.violations[0].id).toBe("aria-required-attr");
+      expect(results.violations[0].id).toBe('aria-required-attr');
     });
 
-    it("handle is keyboard focusable", () => {
+    it('handle is keyboard focusable', () => {
       const { container } = render(<BasicResizable />);
-      const handle = container.querySelector("[data-panel-resize-handle-id]");
-      expect(handle).toHaveAttribute("tabindex", "0");
+      const handle = container.querySelector('[data-panel-resize-handle-id]');
+      expect(handle).toHaveAttribute('tabindex', '0');
     });
   });
 
-  describe("Props", () => {
-    it("applies custom className to panel group", () => {
+  describe('Props', () => {
+    it('applies custom className to panel group', () => {
       const { container } = render(
         <ResizablePanelGroup direction="horizontal" className="custom-group">
           <ResizablePanel defaultSize={100}>
@@ -82,10 +82,10 @@ describe("Resizable", () => {
         </ResizablePanelGroup>,
       );
 
-      expect(container.firstChild).toHaveClass("custom-group");
+      expect(container.firstChild).toHaveClass('custom-group');
     });
 
-    it("applies custom className to handle", () => {
+    it('applies custom className to handle', () => {
       const { container } = render(
         <ResizablePanelGroup direction="horizontal">
           <ResizablePanel defaultSize={50}>
@@ -98,10 +98,10 @@ describe("Resizable", () => {
         </ResizablePanelGroup>,
       );
 
-      expect(container.querySelector("[data-panel-resize-handle-id]")).toHaveClass("custom-handle");
+      expect(container.querySelector('[data-panel-resize-handle-id]')).toHaveClass('custom-handle');
     });
 
-    it("renders panel with minSize", () => {
+    it('renders panel with minSize', () => {
       render(
         <ResizablePanelGroup direction="horizontal">
           <ResizablePanel defaultSize={50} minSize={25}>
@@ -114,10 +114,10 @@ describe("Resizable", () => {
         </ResizablePanelGroup>,
       );
 
-      expect(screen.getByText("Panel 1")).toBeInTheDocument();
+      expect(screen.getByText('Panel 1')).toBeInTheDocument();
     });
 
-    it("renders panel with maxSize", () => {
+    it('renders panel with maxSize', () => {
       render(
         <ResizablePanelGroup direction="horizontal">
           <ResizablePanel defaultSize={50} maxSize={75}>
@@ -130,10 +130,10 @@ describe("Resizable", () => {
         </ResizablePanelGroup>,
       );
 
-      expect(screen.getByText("Panel 1")).toBeInTheDocument();
+      expect(screen.getByText('Panel 1')).toBeInTheDocument();
     });
 
-    it("renders collapsible panel", () => {
+    it('renders collapsible panel', () => {
       render(
         <ResizablePanelGroup direction="horizontal">
           <ResizablePanel defaultSize={50} collapsible collapsedSize={0}>
@@ -146,12 +146,12 @@ describe("Resizable", () => {
         </ResizablePanelGroup>,
       );
 
-      expect(screen.getByText("Collapsible")).toBeInTheDocument();
+      expect(screen.getByText('Collapsible')).toBeInTheDocument();
     });
   });
 
-  describe("Multiple Panels", () => {
-    it("renders three panels with two handles", () => {
+  describe('Multiple Panels', () => {
+    it('renders three panels with two handles', () => {
       const { container } = render(
         <ResizablePanelGroup direction="horizontal">
           <ResizablePanel defaultSize={33}>
@@ -168,10 +168,10 @@ describe("Resizable", () => {
         </ResizablePanelGroup>,
       );
 
-      expect(screen.getByText("Panel 1")).toBeInTheDocument();
-      expect(screen.getByText("Panel 2")).toBeInTheDocument();
-      expect(screen.getByText("Panel 3")).toBeInTheDocument();
-      expect(container.querySelectorAll("[data-panel-resize-handle-id]")).toHaveLength(2);
+      expect(screen.getByText('Panel 1')).toBeInTheDocument();
+      expect(screen.getByText('Panel 2')).toBeInTheDocument();
+      expect(screen.getByText('Panel 3')).toBeInTheDocument();
+      expect(container.querySelectorAll('[data-panel-resize-handle-id]')).toHaveLength(2);
     });
   });
 });

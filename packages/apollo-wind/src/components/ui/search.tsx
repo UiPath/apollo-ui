@@ -1,18 +1,18 @@
-import { Search as SearchIcon, X } from "lucide-react";
-import * as React from "react";
-import { Button } from "@/components/ui/button";
+import { Search as SearchIcon, X } from 'lucide-react';
+import * as React from 'react';
+import { Button } from '@/components/ui/button';
 import {
   Command,
   CommandEmpty,
   CommandGroup,
   CommandItem,
   CommandList,
-} from "@/components/ui/command";
-import { Input } from "@/components/ui/input";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { cn } from "@/lib/index";
+} from '@/components/ui/command';
+import { Input } from '@/components/ui/input';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { cn } from '@/lib/index';
 
-export interface SearchProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "onChange"> {
+export interface SearchProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange'> {
   value?: string;
   onChange?: (value: string) => void;
   onClear?: () => void;
@@ -22,7 +22,7 @@ export interface SearchProps extends Omit<React.InputHTMLAttributes<HTMLInputEle
 const Search = React.forwardRef<HTMLInputElement, SearchProps>(
   ({ className, value, onChange, onClear, showClearButton = true, ...props }, ref) => {
     const handleClear = () => {
-      onChange?.("");
+      onChange?.('');
       onClear?.();
     };
 
@@ -32,7 +32,7 @@ const Search = React.forwardRef<HTMLInputElement, SearchProps>(
         <Input
           ref={ref}
           type="search"
-          className={cn("pl-8 pr-8", className)}
+          className={cn('pl-8 pr-8', className)}
           value={value}
           onChange={(e) => onChange?.(e.target.value)}
           {...props}
@@ -53,7 +53,7 @@ const Search = React.forwardRef<HTMLInputElement, SearchProps>(
     );
   },
 );
-Search.displayName = "Search";
+Search.displayName = 'Search';
 
 export interface SearchWithSuggestionsProps {
   value?: string;
@@ -70,16 +70,16 @@ const SearchWithSuggestions = React.forwardRef<HTMLDivElement, SearchWithSuggest
     {
       value,
       onChange,
-      placeholder = "Search...",
+      placeholder = 'Search...',
       suggestions = [],
       onSelect,
-      emptyMessage = "No results found.",
+      emptyMessage = 'No results found.',
       className,
     },
     ref,
   ) => {
     const [open, setOpen] = React.useState(false);
-    const [searchValue, setSearchValue] = React.useState(value || "");
+    const [searchValue, setSearchValue] = React.useState(value || '');
 
     React.useEffect(() => {
       if (value !== undefined) {
@@ -105,7 +105,7 @@ const SearchWithSuggestions = React.forwardRef<HTMLDivElement, SearchWithSuggest
     };
 
     return (
-      <div ref={ref} className={cn("relative", className)}>
+      <div ref={ref} className={cn('relative', className)}>
         <Popover open={open && filteredSuggestions.length > 0} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
             <div>
@@ -113,8 +113,8 @@ const SearchWithSuggestions = React.forwardRef<HTMLDivElement, SearchWithSuggest
                 value={searchValue}
                 onChange={handleInputChange}
                 onClear={() => {
-                  setSearchValue("");
-                  onChange?.("");
+                  setSearchValue('');
+                  onChange?.('');
                   setOpen(false);
                 }}
                 placeholder={placeholder}
@@ -144,6 +144,6 @@ const SearchWithSuggestions = React.forwardRef<HTMLDivElement, SearchWithSuggest
     );
   },
 );
-SearchWithSuggestions.displayName = "SearchWithSuggestions";
+SearchWithSuggestions.displayName = 'SearchWithSuggestions';
 
 export { Search, SearchWithSuggestions };

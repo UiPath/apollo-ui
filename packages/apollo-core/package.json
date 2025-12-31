@@ -48,6 +48,8 @@
     "dev": "rslib build --watch",
     "lint": "eslint src --ext .ts,.tsx --ignore-pattern 'src/tokens/**/*.js' --ignore-pattern 'src/tokens/_generated/**'",
     "lint:fix": "eslint src --ext .ts,.tsx --ignore-pattern 'src/tokens/**/*.js' --ignore-pattern 'src/tokens/_generated/**' --fix",
+    "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,css,scss,md}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx,js,jsx,json,css,scss,md}\"",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",

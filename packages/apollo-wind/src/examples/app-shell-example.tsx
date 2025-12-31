@@ -1,8 +1,8 @@
-import { Bell, ChevronLeft, ChevronRight, HelpCircle, Menu } from "lucide-react";
-import * as React from "react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Bell, ChevronLeft, ChevronRight, HelpCircle, Menu } from 'lucide-react';
+import * as React from 'react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -10,10 +10,10 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
-import { cn } from "@/lib";
-import { Row, Column, Grid } from "@/components/ui/layout";
+} from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
+import { cn } from '@/lib';
+import { Row, Column, Grid } from '@/components/ui/layout';
 
 export interface AppShellExampleProps {
   className?: string;
@@ -51,7 +51,7 @@ export interface AppShellExampleProps {
       description?: string;
       badge?: {
         label: string;
-        variant?: "default" | "secondary" | "destructive" | "outline";
+        variant?: 'default' | 'secondary' | 'destructive' | 'outline';
       };
       footer?: string;
       action?: {
@@ -69,82 +69,82 @@ export interface AppShellExampleProps {
 export function AppShellExample({
   className,
   logo = <div className="text-xl font-bold">Logo</div>,
-  tenant = "DefaultTenant",
+  tenant = 'DefaultTenant',
   user = {
-    name: "John Doe",
-    email: "john.doe@example.com",
+    name: 'John Doe',
+    email: 'john.doe@example.com',
   },
   navigation = [
-    { label: "Home", active: true },
-    { label: "Process instances" },
-    { label: "Process incidents" },
-    { label: "Case app", badge: "Preview" },
-    { label: "Case instances", badge: "Preview" },
+    { label: 'Home', active: true },
+    { label: 'Process instances' },
+    { label: 'Process incidents' },
+    { label: 'Case app', badge: 'Preview' },
+    { label: 'Case instances', badge: 'Preview' },
   ],
   heroSection = {
     title: (
       <>
-        Orchestrate <span className="text-primary">AI agents, robots,</span> and people with{" "}
+        Orchestrate <span className="text-primary">AI agents, robots,</span> and people with{' '}
         <span className="text-primary">Platform</span> to exceed business outcomes
       </>
     ),
     cta: {
-      label: "Get Started",
+      label: 'Get Started',
     },
   },
   sections = [
     {
-      title: "Recent projects",
-      viewAllLink: { label: "View all projects" },
+      title: 'Recent projects',
+      viewAllLink: { label: 'View all projects' },
       items: [
         {
-          id: "1",
-          title: "Solution 161",
-          badge: { label: "DRAFT", variant: "outline" },
-          footer: "Last modified 13 minutes ago",
+          id: '1',
+          title: 'Solution 161',
+          badge: { label: 'DRAFT', variant: 'outline' },
+          footer: 'Last modified 13 minutes ago',
         },
         {
-          id: "2",
-          title: "Property insurance claims",
-          badge: { label: "DRAFT", variant: "outline" },
-          footer: "Last modified 7 days ago",
+          id: '2',
+          title: 'Property insurance claims',
+          badge: { label: 'DRAFT', variant: 'outline' },
+          footer: 'Last modified 7 days ago',
         },
         {
-          id: "3",
-          title: "Property insurance claims",
-          badge: { label: "DEPLOYED", variant: "default" },
-          footer: "Last modified 7 hours ago",
+          id: '3',
+          title: 'Property insurance claims',
+          badge: { label: 'DEPLOYED', variant: 'default' },
+          footer: 'Last modified 7 hours ago',
         },
       ],
     },
     {
-      title: "Examples",
+      title: 'Examples',
       items: [
         {
-          id: "1",
-          title: "Supplier Onboarding",
+          id: '1',
+          title: 'Supplier Onboarding',
           description:
-            "An agentic process built with Platform (Agentic Orchestration), modeled using...",
-          action: { label: "View" },
+            'An agentic process built with Platform (Agentic Orchestration), modeled using...',
+          action: { label: 'View' },
         },
         {
-          id: "2",
-          title: "Invoice Processing",
+          id: '2',
+          title: 'Invoice Processing',
           description:
-            "An agentic process built with Platform (Agentic Orchestration), modeled using...",
-          action: { label: "View" },
+            'An agentic process built with Platform (Agentic Orchestration), modeled using...',
+          action: { label: 'View' },
         },
         {
-          id: "3",
-          title: "MyPoNewTeMplate",
-          description: "aav",
-          action: { label: "View" },
+          id: '3',
+          title: 'MyPoNewTeMplate',
+          description: 'aav',
+          action: { label: 'View' },
         },
       ],
     },
   ],
   sidebar = {
-    title: "How it works",
+    title: 'How it works',
     content: (
       <div className="space-y-4">
         <div className="rounded-lg bg-primary/10 p-4">
@@ -158,7 +158,7 @@ export function AppShellExample({
   const [rightSidebarCollapsed, setRightSidebarCollapsed] = React.useState(false);
 
   return (
-    <Column h="screen" className={cn("bg-background", className)}>
+    <Column h="screen" className={cn('bg-background', className)}>
       {/* Header */}
       <Row h={14} justify="between" align="center" className="border-b px-4">
         <Row gap={4} align="center">
@@ -192,9 +192,9 @@ export function AppShellExample({
             <AvatarImage src={user.avatar} alt={user.name} />
             <AvatarFallback>
               {user.name
-                .split(" ")
+                .split(' ')
                 .map((n) => n[0])
-                .join("")
+                .join('')
                 .toUpperCase()}
             </AvatarFallback>
           </Avatar>
@@ -205,8 +205,8 @@ export function AppShellExample({
         {/* Left Sidebar */}
         <aside
           className={cn(
-            "relative hidden border-r bg-muted/10 transition-all duration-300 md:block",
-            leftSidebarCollapsed ? "w-12" : "w-60",
+            'relative hidden border-r bg-muted/10 transition-all duration-300 md:block',
+            leftSidebarCollapsed ? 'w-12' : 'w-60',
           )}
         >
           <Column h="full" overflow="hidden">
@@ -229,7 +229,7 @@ export function AppShellExample({
                 {navigation.map((item, index) => (
                   <Button
                     key={index}
-                    variant={item.active ? "secondary" : "ghost"}
+                    variant={item.active ? 'secondary' : 'ghost'}
                     className="w-full justify-between"
                   >
                     <span>{item.label}</span>
@@ -328,8 +328,8 @@ export function AppShellExample({
         {sidebar && (
           <aside
             className={cn(
-              "relative hidden border-l bg-muted/10 transition-all duration-300 lg:block",
-              rightSidebarCollapsed ? "w-12" : "w-80",
+              'relative hidden border-l bg-muted/10 transition-all duration-300 lg:block',
+              rightSidebarCollapsed ? 'w-12' : 'w-80',
             )}
           >
             <Column h="full" overflow="hidden">

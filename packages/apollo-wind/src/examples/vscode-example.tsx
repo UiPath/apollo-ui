@@ -1,5 +1,5 @@
-import * as React from "react";
-import { cn } from "@/lib";
+import * as React from 'react';
+import { cn } from '@/lib';
 import {
   ChevronDown,
   ChevronRight,
@@ -8,10 +8,10 @@ import {
   FolderOpen,
   X,
   PanelLeftClose,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Row, Column } from "@/components/ui/layout";
+} from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Row, Column } from '@/components/ui/layout';
 
 // Shell container
 interface ShellProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -22,7 +22,7 @@ export function Shell({ className, children, ...props }: ShellProps) {
   return (
     <Column
       overflow="hidden"
-      className={cn("h-[600px] w-full rounded-lg border bg-background", className)}
+      className={cn('h-[600px] w-full rounded-lg border bg-background', className)}
       {...props}
     >
       {children}
@@ -41,7 +41,7 @@ export function ShellTitleBar({ className, title, children, ...props }: ShellTit
       h={9}
       justify="between"
       align="center"
-      className={cn("border-b bg-muted/50 px-3", className)}
+      className={cn('border-b bg-muted/50 px-3', className)}
       {...props}
     >
       <Row gap={2} align="center">
@@ -88,8 +88,8 @@ export function ShellSidebar({
   return (
     <Column
       className={cn(
-        "border-r bg-muted/30 transition-all duration-200",
-        collapsed ? "w-0 overflow-hidden" : "",
+        'border-r bg-muted/30 transition-all duration-200',
+        collapsed ? 'w-0 overflow-hidden' : '',
         className,
       )}
       style={{ width: collapsed ? 0 : width }}
@@ -119,7 +119,7 @@ export function ShellSidebarHeader({
       h={8}
       justify="between"
       align="center"
-      className={cn("px-3 text-xs font-medium uppercase text-muted-foreground", className)}
+      className={cn('px-3 text-xs font-medium uppercase text-muted-foreground', className)}
       {...props}
     >
       <span>{title}</span>
@@ -140,7 +140,7 @@ export function ShellSidebarHeader({
 // File tree
 interface FileTreeItem {
   name: string;
-  type: "file" | "folder";
+  type: 'file' | 'folder';
   children?: FileTreeItem[];
   icon?: React.ReactNode;
 }
@@ -181,7 +181,7 @@ function FileTreeNode({
   onSelectFile?: (name: string) => void;
 }) {
   const [expanded, setExpanded] = React.useState(true);
-  const isFolder = item.type === "folder";
+  const isFolder = item.type === 'folder';
   const isSelected = selectedFile === item.name;
 
   return (
@@ -190,8 +190,8 @@ function FileTreeNode({
         gap={1}
         align="center"
         className={cn(
-          "cursor-pointer rounded px-2 py-0.5 text-sm hover:bg-muted",
-          isSelected && "bg-primary/10 text-primary",
+          'cursor-pointer rounded px-2 py-0.5 text-sm hover:bg-muted',
+          isSelected && 'bg-primary/10 text-primary',
         )}
         style={{ paddingLeft: depth * 12 + 8 }}
         onClick={() => {
@@ -276,10 +276,10 @@ export function ShellTabBar({ tabs, activeTab, onTabChange, onTabClose }: ShellT
           gap={2}
           align="center"
           className={cn(
-            "group h-full cursor-pointer border-r px-3 text-sm",
+            'group h-full cursor-pointer border-r px-3 text-sm',
             activeTab === tab.id
-              ? "bg-background text-foreground"
-              : "text-muted-foreground hover:bg-muted/50",
+              ? 'bg-background text-foreground'
+              : 'text-muted-foreground hover:bg-muted/50',
           )}
           onClick={() => onTabChange?.(tab.id)}
         >
@@ -312,7 +312,7 @@ interface ShellPaneProps {
 
 export function ShellPane({ className, children }: ShellPaneProps) {
   return (
-    <ScrollArea className={cn("flex-1", className)}>
+    <ScrollArea className={cn('flex-1', className)}>
       <div className="p-4">{children}</div>
     </ScrollArea>
   );
@@ -329,7 +329,7 @@ export function ShellStatusBar({ className, children, ...props }: ShellStatusBar
       h={6}
       justify="between"
       align="center"
-      className={cn("border-t bg-primary px-2 text-xs text-primary-foreground", className)}
+      className={cn('border-t bg-primary px-2 text-xs text-primary-foreground', className)}
       {...props}
     >
       {children}
@@ -348,7 +348,7 @@ export function ShellActivityBar({ className, children, ...props }: ShellActivit
       w={12}
       gap={2}
       align="center"
-      className={cn("border-r bg-muted/50 py-2", className)}
+      className={cn('border-r bg-muted/50 py-2', className)}
       {...props}
     >
       {children}
@@ -374,8 +374,8 @@ export function ShellActivityBarItem({
       variant="ghost"
       size="icon"
       className={cn(
-        "h-10 w-10 rounded-none border-l-2 border-transparent",
-        active && "border-primary bg-muted",
+        'h-10 w-10 rounded-none border-l-2 border-transparent',
+        active && 'border-primary bg-muted',
       )}
       onClick={onClick}
       title={tooltip}
@@ -400,7 +400,7 @@ export function ShellPanel({
   ...props
 }: ShellPanelProps) {
   return (
-    <div className={cn("border-t", className)} style={{ height }} {...props}>
+    <div className={cn('border-t', className)} style={{ height }} {...props}>
       {title && (
         <Row
           h={8}

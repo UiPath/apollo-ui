@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
-import { format } from "date-fns";
-import { CalendarIcon } from "lucide-react";
-import type { DateRange } from "react-day-picker";
-import type * as React from "react";
-import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { cn } from "@/lib";
+import { format } from 'date-fns';
+import { CalendarIcon } from 'lucide-react';
+import type { DateRange } from 'react-day-picker';
+import type * as React from 'react';
+import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { cn } from '@/lib';
 
 export interface DatePickerProps {
   value?: Date;
@@ -17,7 +17,7 @@ export interface DatePickerProps {
   className?: string;
   calendarProps?: Omit<
     React.ComponentProps<typeof Calendar>,
-    "mode" | "selected" | "onSelect" | "initialFocus"
+    'mode' | 'selected' | 'onSelect' | 'initialFocus'
   >;
 }
 
@@ -25,7 +25,7 @@ export function DatePicker({
   value,
   onValueChange,
   disabled,
-  placeholder = "Pick a date",
+  placeholder = 'Pick a date',
   className,
   calendarProps,
 }: DatePickerProps) {
@@ -34,16 +34,16 @@ export function DatePicker({
       <PopoverTrigger asChild>
         <Button
           variant="outline"
-          aria-label={value ? `Selected date: ${format(value, "PPP")}` : placeholder}
+          aria-label={value ? `Selected date: ${format(value, 'PPP')}` : placeholder}
           className={cn(
-            "w-full justify-start text-left font-normal",
-            !value && "text-muted-foreground",
+            'w-full justify-start text-left font-normal',
+            !value && 'text-muted-foreground',
             className,
           )}
           disabled={disabled}
         >
           <CalendarIcon />
-          {value ? format(value, "PPP") : <span>{placeholder}</span>}
+          {value ? format(value, 'PPP') : <span>{placeholder}</span>}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0">
@@ -67,13 +67,13 @@ export interface DateRangePickerProps {
   className?: string;
   calendarProps?: Omit<
     React.ComponentProps<typeof Calendar>,
-    | "mode"
-    | "selected"
-    | "onSelect"
-    | "initialFocus"
-    | "defaultMonth"
-    | "numberOfMonths"
-    | "required"
+    | 'mode'
+    | 'selected'
+    | 'onSelect'
+    | 'initialFocus'
+    | 'defaultMonth'
+    | 'numberOfMonths'
+    | 'required'
   >;
 }
 
@@ -81,7 +81,7 @@ export function DateRangePicker({
   value,
   onValueChange,
   disabled,
-  placeholder = "Pick a date range",
+  placeholder = 'Pick a date range',
   className,
   calendarProps,
 }: DateRangePickerProps) {
@@ -93,13 +93,13 @@ export function DateRangePicker({
           aria-label={
             value?.from
               ? value.to
-                ? `Selected range: ${format(value.from, "LLL dd, y")} to ${format(value.to, "LLL dd, y")}`
-                : `Selected date: ${format(value.from, "LLL dd, y")}`
+                ? `Selected range: ${format(value.from, 'LLL dd, y')} to ${format(value.to, 'LLL dd, y')}`
+                : `Selected date: ${format(value.from, 'LLL dd, y')}`
               : placeholder
           }
           className={cn(
-            "w-[300px] justify-start text-left font-normal",
-            !value && "text-muted-foreground",
+            'w-[300px] justify-start text-left font-normal',
+            !value && 'text-muted-foreground',
             className,
           )}
           disabled={disabled}
@@ -108,10 +108,10 @@ export function DateRangePicker({
           {value?.from ? (
             value.to ? (
               <>
-                {format(value.from, "LLL dd, y")} - {format(value.to, "LLL dd, y")}
+                {format(value.from, 'LLL dd, y')} - {format(value.to, 'LLL dd, y')}
               </>
             ) : (
-              format(value.from, "LLL dd, y")
+              format(value.from, 'LLL dd, y')
             )
           ) : (
             <span>{placeholder}</span>

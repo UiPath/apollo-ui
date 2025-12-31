@@ -1,10 +1,10 @@
-import type { Meta, StoryObj } from "@storybook/react-vite";
-import { Badge } from "@/components/ui/badge";
+import type { Meta, StoryObj } from '@storybook/react-vite';
+import { Badge } from '@/components/ui/badge';
 
 const meta = {
-  title: "Design Foundation/Typography",
+  title: 'Design Foundation/Typography',
   parameters: {
-    layout: "fullscreen",
+    layout: 'fullscreen',
   },
 } satisfies Meta;
 
@@ -246,7 +246,7 @@ function TypographyGallery() {
             </div>
 
             <div className="space-y-2">
-              <p className="text-lg" style={{ letterSpacing: "-0.05em" }}>
+              <p className="text-lg" style={{ letterSpacing: '-0.05em' }}>
                 Tight tracking - Lorem ipsum dolor sit amet consectetur
               </p>
               <Badge variant="outline" className="text-xs font-mono">
@@ -255,7 +255,7 @@ function TypographyGallery() {
             </div>
 
             <div className="space-y-2">
-              <p className="text-lg" style={{ letterSpacing: "0em" }}>
+              <p className="text-lg" style={{ letterSpacing: '0em' }}>
                 Normal tracking - Lorem ipsum dolor sit amet consectetur
               </p>
               <Badge variant="outline" className="text-xs font-mono">
@@ -264,7 +264,7 @@ function TypographyGallery() {
             </div>
 
             <div className="space-y-2">
-              <p className="text-lg" style={{ letterSpacing: "0.1em" }}>
+              <p className="text-lg" style={{ letterSpacing: '0.1em' }}>
                 Wide tracking - Lorem ipsum dolor sit amet consectetur
               </p>
               <Badge variant="outline" className="text-xs font-mono">
@@ -279,28 +279,28 @@ function TypographyGallery() {
           <h2 className="text-2xl font-semibold tracking-tight">Inline Text Styles</h2>
           <div className="space-y-4 text-base">
             <p>
-              This is <strong className="font-semibold">bold text</strong> and{" "}
+              This is <strong className="font-semibold">bold text</strong> and{' '}
               <em className="italic">italic text</em>.
             </p>
             <p>
-              This is{" "}
+              This is{' '}
               <Badge variant="secondary" className="text-sm font-mono">
                 inline code
-              </Badge>{" "}
+              </Badge>{' '}
               within a paragraph.
             </p>
             <p>
-              This is{" "}
+              This is{' '}
               <a
                 href="#"
                 className="text-primary underline underline-offset-4 hover:text-primary/80"
               >
                 a link
-              </a>{" "}
+              </a>{' '}
               with hover effect.
             </p>
             <p>
-              This is <span className="line-through">strikethrough text</span> and{" "}
+              This is <span className="line-through">strikethrough text</span> and{' '}
               <span className="underline">underlined text</span>.
             </p>
           </div>
@@ -337,5 +337,5 @@ function TypographyGallery() {
 }
 
 export const Default = {
-    render: () => <TypographyGallery />,
-} satisfies Story;;
+  render: () => <TypographyGallery />,
+} satisfies Story;

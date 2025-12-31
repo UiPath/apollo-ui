@@ -1,21 +1,9 @@
 import { useState } from 'react';
 
-import {
-  FontVariantToken,
-  Spacing,
-} from '@uipath/apollo-core';
-import {
-  Column,
-  Row,
-} from '@uipath/apollo-react/canvas/layouts';
-import {
-  ApButton,
-  ApTypography,
-} from '@uipath/apollo-react/material';
-import {
-  ApIcon,
-  ApIconButton,
-} from '@uipath/portal-shell-react';
+import { FontVariantToken, Spacing } from '@uipath/apollo-core';
+import { Column, Row } from '@uipath/apollo-react/canvas/layouts';
+import { ApButton, ApTypography } from '@uipath/apollo-react/material';
+import { ApIcon, ApIconButton } from '@uipath/portal-shell-react';
 
 import type { AgentFlowSuggestionGroup } from '../../../types';
 

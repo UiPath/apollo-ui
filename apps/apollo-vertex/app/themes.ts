@@ -206,4 +206,3 @@ export function hasCustomTheme(): boolean {
     if (typeof window === "undefined") return false;
     return localStorage.getItem(CUSTOM_THEME_STORAGE_KEY) !== null;
 }
-

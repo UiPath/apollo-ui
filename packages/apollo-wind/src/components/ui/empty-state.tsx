@@ -1,6 +1,6 @@
-import * as React from "react";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/index";
+import * as React from 'react';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/index';
 
 export interface EmptyStateProps extends React.HTMLAttributes<HTMLDivElement> {
   icon?: React.ReactNode;
@@ -21,7 +21,7 @@ const EmptyState = React.forwardRef<HTMLDivElement, EmptyStateProps>(
     return (
       <div
         ref={ref}
-        className={cn("flex flex-col items-center justify-center p-8 text-center", className)}
+        className={cn('flex flex-col items-center justify-center p-8 text-center', className)}
         {...props}
       >
         {icon && (
@@ -49,6 +49,6 @@ const EmptyState = React.forwardRef<HTMLDivElement, EmptyStateProps>(
     );
   },
 );
-EmptyState.displayName = "EmptyState";
+EmptyState.displayName = 'EmptyState';
 
 export { EmptyState };

@@ -1,4 +1,4 @@
-import type { UseFormReturn, FieldValues } from "react-hook-form";
+import type { UseFormReturn, FieldValues } from 'react-hook-form';
 
 /**
  * Core Schema Types for Apollo-Wind Metadata Forms
@@ -26,29 +26,29 @@ export interface FieldOption {
 export interface GridConfig {
   span?: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
   order?: number;
-  breakpoint?: "sm" | "md" | "lg" | "xl";
+  breakpoint?: 'sm' | 'md' | 'lg' | 'xl';
 }
 
 /**
  * Data source for dynamic options
  */
 export type DataSource =
-  | { type: "static"; options: FieldOption[] }
+  | { type: 'static'; options: FieldOption[] }
   | {
-      type: "fetch";
+      type: 'fetch';
       url: string;
-      method?: "GET" | "POST";
+      method?: 'GET' | 'POST';
       transform?: string;
       params?: Record<string, unknown>;
     }
   | {
-      type: "remote";
+      type: 'remote';
       endpoint: string;
-      method?: "GET" | "POST";
+      method?: 'GET' | 'POST';
       params?: Record<string, unknown>;
       transform?: string;
     }
-  | { type: "computed"; dependency: string[]; compute: string };
+  | { type: 'computed'; dependency: string[]; compute: string };
 
 /**
  * Condition for rules engine
@@ -69,7 +69,7 @@ export interface FieldCondition {
 export interface FieldRule {
   id: string;
   conditions: FieldCondition[];
-  operator?: "AND" | "OR";
+  operator?: 'AND' | 'OR';
   effects: {
     visible?: boolean;
     disabled?: boolean;
@@ -178,67 +178,67 @@ interface BaseFieldMetadata {
 // ============================================================================
 
 export interface TextFieldMetadata extends BaseFieldMetadata {
-  type: "text";
+  type: 'text';
 }
 
 export interface EmailFieldMetadata extends BaseFieldMetadata {
-  type: "email";
+  type: 'email';
 }
 
 export interface TextareaFieldMetadata extends BaseFieldMetadata {
-  type: "textarea";
+  type: 'textarea';
   rows?: number;
 }
 
 export interface NumberFieldMetadata extends BaseFieldMetadata {
-  type: "number";
+  type: 'number';
   min?: number;
   max?: number;
   step?: number;
 }
 
 export interface SelectFieldMetadata extends BaseFieldMetadata {
-  type: "select";
+  type: 'select';
   options?: FieldOption[];
 }
 
 export interface MultiSelectFieldMetadata extends BaseFieldMetadata {
-  type: "multiselect";
+  type: 'multiselect';
   options?: FieldOption[];
   maxSelected?: number;
 }
 
 export interface RadioFieldMetadata extends BaseFieldMetadata {
-  type: "radio";
+  type: 'radio';
   options?: FieldOption[];
 }
 
 export interface CheckboxFieldMetadata extends BaseFieldMetadata {
-  type: "checkbox";
+  type: 'checkbox';
 }
 
 export interface SwitchFieldMetadata extends BaseFieldMetadata {
-  type: "switch";
+  type: 'switch';
 }
 
 export interface SliderFieldMetadata extends BaseFieldMetadata {
-  type: "slider";
+  type: 'slider';
   min?: number;
   max?: number;
   step?: number;
 }
 
 export interface DateFieldMetadata extends BaseFieldMetadata {
-  type: "date";
+  type: 'date';
 }
 
 export interface DateTimeFieldMetadata extends BaseFieldMetadata {
-  type: "datetime";
+  type: 'datetime';
   use12Hour?: boolean;
 }
 
 export interface FileFieldMetadata extends BaseFieldMetadata {
-  type: "file";
+  type: 'file';
   accept?: string;
   multiple?: boolean;
   maxSize?: number;
@@ -246,7 +246,7 @@ export interface FileFieldMetadata extends BaseFieldMetadata {
 }
 
 export interface CustomFieldMetadata extends BaseFieldMetadata {
-  type: "custom";
+  type: 'custom';
   component: string;
   componentProps?: Record<string, unknown>;
 }
@@ -274,7 +274,7 @@ export type FieldMetadata =
 /**
  * Extract the field type from FieldMetadata
  */
-export type FieldType = FieldMetadata["type"];
+export type FieldType = FieldMetadata['type'];
 
 // ============================================================================
 // Type Guards
@@ -283,21 +283,21 @@ export type FieldType = FieldMetadata["type"];
 export function hasOptions(
   field: FieldMetadata,
 ): field is SelectFieldMetadata | MultiSelectFieldMetadata | RadioFieldMetadata {
-  return field.type === "select" || field.type === "multiselect" || field.type === "radio";
+  return field.type === 'select' || field.type === 'multiselect' || field.type === 'radio';
 }
 
 export function hasMinMaxStep(
   field: FieldMetadata,
 ): field is NumberFieldMetadata | SliderFieldMetadata {
-  return field.type === "number" || field.type === "slider";
+  return field.type === 'number' || field.type === 'slider';
 }
 
 export function isFileField(field: FieldMetadata): field is FileFieldMetadata {
-  return field.type === "file";
+  return field.type === 'file';
 }
 
 export function isCustomField(field: FieldMetadata): field is CustomFieldMetadata {
-  return field.type === "custom";
+  return field.type === 'custom';
 }
 
 // ============================================================================
@@ -319,16 +319,16 @@ export interface FormStep {
   title: string;
   description?: string;
   sections: FormSection[];
-  validation?: "onChange" | "onBlur" | "onSubmit";
+  validation?: 'onChange' | 'onBlur' | 'onSubmit';
   canSkip?: boolean;
   conditions?: FieldCondition[]; // Show/hide entire step
 }
 
 export interface FormAction {
   id: string;
-  type: "submit" | "save-draft" | "reset" | "custom";
+  type: 'submit' | 'save-draft' | 'reset' | 'custom';
   label: string;
-  variant?: "default" | "secondary" | "destructive" | "outline" | "ghost";
+  variant?: 'default' | 'secondary' | 'destructive' | 'outline' | 'ghost';
   loading?: boolean;
   disabled?: boolean;
   conditions?: FieldCondition[];
@@ -347,8 +347,8 @@ interface BaseFormSchema {
   initialData?: Record<string, unknown>;
 
   // Behavior
-  mode?: "onChange" | "onBlur" | "onSubmit" | "all";
-  reValidateMode?: "onChange" | "onBlur" | "onSubmit";
+  mode?: 'onChange' | 'onBlur' | 'onSubmit' | 'all';
+  reValidateMode?: 'onChange' | 'onBlur' | 'onSubmit';
 
   // Actions
   actions?: FormAction[];
@@ -357,7 +357,7 @@ interface BaseFormSchema {
   layout?: {
     columns?: number;
     gap?: number;
-    variant?: "default" | "compact" | "spacious";
+    variant?: 'default' | 'compact' | 'spacious';
   };
 
   // Metadata

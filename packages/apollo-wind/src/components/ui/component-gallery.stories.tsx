@@ -1,39 +1,39 @@
-import type { Meta } from "@storybook/react-vite";
-import { useState, useMemo } from "react";
-import { Card, CardDescription, CardHeader, CardTitle } from "./card";
-import { Badge } from "./badge";
-import { Button } from "./button";
-import { Input } from "./input";
-import { Checkbox } from "./checkbox";
-import { Switch } from "./switch";
-import { Slider } from "./slider";
-import { Progress } from "./progress";
-import { Spinner } from "./spinner";
-import { Separator } from "./separator";
-import { Skeleton } from "./skeleton";
-import { Alert, AlertDescription, AlertTitle } from "./alert";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "./accordion";
-import { Tabs, TabsList, TabsTrigger } from "./tabs";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "./table";
-import { Calendar } from "./calendar";
-import { Search } from "lucide-react";
+import type { Meta } from '@storybook/react-vite';
+import { useState, useMemo } from 'react';
+import { Card, CardDescription, CardHeader, CardTitle } from './card';
+import { Badge } from './badge';
+import { Button } from './button';
+import { Input } from './input';
+import { Checkbox } from './checkbox';
+import { Switch } from './switch';
+import { Slider } from './slider';
+import { Progress } from './progress';
+import { Spinner } from './spinner';
+import { Separator } from './separator';
+import { Skeleton } from './skeleton';
+import { Alert, AlertDescription, AlertTitle } from './alert';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from './accordion';
+import { Tabs, TabsList, TabsTrigger } from './tabs';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './table';
+import { Calendar } from './calendar';
+import { Search } from 'lucide-react';
 
 const meta = {
-  title: "Design System/All Components",
+  title: 'Design System/All Components',
   parameters: {
-    layout: "fullscreen",
+    layout: 'fullscreen',
   },
 } satisfies Meta;
 
 export default meta;
 
 enum Category {
-  Core = "Core",
-  DataDisplay = "Data Display",
-  Layout = "Layout",
-  Navigation = "Navigation",
-  Overlays = "Overlays",
-  Feedback = "Feedback",
+  Core = 'Core',
+  DataDisplay = 'Data Display',
+  Layout = 'Layout',
+  Navigation = 'Navigation',
+  Overlays = 'Overlays',
+  Feedback = 'Feedback',
 }
 
 const CATEGORY_ORDER: Category[] = [
@@ -55,9 +55,9 @@ interface ComponentInfo {
 
 const components: ComponentInfo[] = [
   {
-    name: "Accordion",
-    description: "Interactive expandable sections",
-    storyPath: "design-system-data-display-accordion--docs",
+    name: 'Accordion',
+    description: 'Interactive expandable sections',
+    storyPath: 'design-system-data-display-accordion--docs',
     category: Category.DataDisplay,
     preview: (
       <Accordion type="single" collapsible className="w-full">
@@ -69,9 +69,9 @@ const components: ComponentInfo[] = [
     ),
   },
   {
-    name: "Alert",
-    description: "Displays a callout message",
-    storyPath: "design-system-feedback-alert--docs",
+    name: 'Alert',
+    description: 'Displays a callout message',
+    storyPath: 'design-system-feedback-alert--docs',
     category: Category.Feedback,
     preview: (
       <Alert>
@@ -81,16 +81,16 @@ const components: ComponentInfo[] = [
     ),
   },
   {
-    name: "Alert Dialog",
-    description: "Modal dialog for important actions",
-    storyPath: "design-system-overlays-alert-dialog--docs",
+    name: 'Alert Dialog',
+    description: 'Modal dialog for important actions',
+    storyPath: 'design-system-overlays-alert-dialog--docs',
     category: Category.Overlays,
     preview: <Button variant="outline">Show Dialog</Button>,
   },
   {
-    name: "Aspect Ratio",
-    description: "Content with desired ratio",
-    storyPath: "design-system-layout-aspect-ratio--docs",
+    name: 'Aspect Ratio',
+    description: 'Content with desired ratio',
+    storyPath: 'design-system-layout-aspect-ratio--docs',
     category: Category.Layout,
     preview: (
       <div className="w-full aspect-video bg-muted rounded flex items-center justify-center text-xs">
@@ -99,9 +99,9 @@ const components: ComponentInfo[] = [
     ),
   },
   {
-    name: "Badge",
-    description: "Small status indicators",
-    storyPath: "design-system-data-display-badge--docs",
+    name: 'Badge',
+    description: 'Small status indicators',
+    storyPath: 'design-system-data-display-badge--docs',
     category: Category.DataDisplay,
     preview: (
       <div className="flex gap-2 flex-wrap">
@@ -111,9 +111,9 @@ const components: ComponentInfo[] = [
     ),
   },
   {
-    name: "Breadcrumb",
-    description: "Navigation hierarchy path",
-    storyPath: "design-system-navigation-breadcrumb--docs",
+    name: 'Breadcrumb',
+    description: 'Navigation hierarchy path',
+    storyPath: 'design-system-navigation-breadcrumb--docs',
     category: Category.Navigation,
     preview: (
       <div className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -126,9 +126,9 @@ const components: ComponentInfo[] = [
     ),
   },
   {
-    name: "Button",
-    description: "Clickable button element",
-    storyPath: "design-system-core-button--docs",
+    name: 'Button',
+    description: 'Clickable button element',
+    storyPath: 'design-system-core-button--docs',
     category: Category.Core,
     preview: (
       <div className="flex gap-2">
@@ -140,16 +140,16 @@ const components: ComponentInfo[] = [
     ),
   },
   {
-    name: "Calendar",
-    description: "Date selection calendar",
-    storyPath: "design-system-data-display-calendar--docs",
+    name: 'Calendar',
+    description: 'Date selection calendar',
+    storyPath: 'design-system-data-display-calendar--docs',
     category: Category.DataDisplay,
     preview: <Calendar mode="single" className="scale-75 origin-top-left" />,
   },
   {
-    name: "Card",
-    description: "Container with content sections",
-    storyPath: "design-system-data-display-card--docs",
+    name: 'Card',
+    description: 'Container with content sections',
+    storyPath: 'design-system-data-display-card--docs',
     category: Category.DataDisplay,
     preview: (
       <Card className="w-full">
@@ -161,9 +161,9 @@ const components: ComponentInfo[] = [
     ),
   },
   {
-    name: "Checkbox",
-    description: "Toggle checkbox input",
-    storyPath: "design-system-core-checkbox--docs",
+    name: 'Checkbox',
+    description: 'Toggle checkbox input',
+    storyPath: 'design-system-core-checkbox--docs',
     category: Category.Core,
     preview: (
       <div className="flex items-center gap-2">
@@ -175,9 +175,9 @@ const components: ComponentInfo[] = [
     ),
   },
   {
-    name: "Collapsible",
-    description: "Expandable content panel",
-    storyPath: "design-system-data-display-collapsible--docs",
+    name: 'Collapsible',
+    description: 'Expandable content panel',
+    storyPath: 'design-system-data-display-collapsible--docs',
     category: Category.DataDisplay,
     preview: (
       <Button variant="outline" size="sm">
@@ -186,9 +186,9 @@ const components: ComponentInfo[] = [
     ),
   },
   {
-    name: "Combobox",
-    description: "Searchable select input",
-    storyPath: "design-system-core-combobox--docs",
+    name: 'Combobox',
+    description: 'Searchable select input',
+    storyPath: 'design-system-core-combobox--docs',
     category: Category.Core,
     preview: (
       <Button variant="outline" size="sm">
@@ -197,9 +197,9 @@ const components: ComponentInfo[] = [
     ),
   },
   {
-    name: "Command",
-    description: "Command palette menu",
-    storyPath: "design-system-navigation-command--docs",
+    name: 'Command',
+    description: 'Command palette menu',
+    storyPath: 'design-system-navigation-command--docs',
     category: Category.Navigation,
     preview: (
       <Button variant="outline" size="sm">
@@ -208,16 +208,16 @@ const components: ComponentInfo[] = [
     ),
   },
   {
-    name: "Context Menu",
-    description: "Right-click menu",
-    storyPath: "design-system-overlays-context-menu--docs",
+    name: 'Context Menu',
+    description: 'Right-click menu',
+    storyPath: 'design-system-overlays-context-menu--docs',
     category: Category.Overlays,
     preview: <div className="border rounded p-2 text-xs text-center">Right click me</div>,
   },
   {
-    name: "Data Table",
-    description: "Powerful data table",
-    storyPath: "design-system-data-display-data-table--docs",
+    name: 'Data Table',
+    description: 'Powerful data table',
+    storyPath: 'design-system-data-display-data-table--docs',
     category: Category.DataDisplay,
     preview: (
       <Table>
@@ -237,9 +237,9 @@ const components: ComponentInfo[] = [
     ),
   },
   {
-    name: "Date Picker",
-    description: "Date selection input",
-    storyPath: "design-system-core-date-picker--docs",
+    name: 'Date Picker',
+    description: 'Date selection input',
+    storyPath: 'design-system-core-date-picker--docs',
     category: Category.Core,
     preview: (
       <Button variant="outline" size="sm">
@@ -248,9 +248,9 @@ const components: ComponentInfo[] = [
     ),
   },
   {
-    name: "DateTime Picker",
-    description: "Date and time input",
-    storyPath: "design-system-core-datetime-picker--docs",
+    name: 'DateTime Picker',
+    description: 'Date and time input',
+    storyPath: 'design-system-core-datetime-picker--docs',
     category: Category.Core,
     preview: (
       <Button variant="outline" size="sm">
@@ -259,9 +259,9 @@ const components: ComponentInfo[] = [
     ),
   },
   {
-    name: "Dialog",
-    description: "Modal dialog window",
-    storyPath: "design-system-overlays-dialog--docs",
+    name: 'Dialog',
+    description: 'Modal dialog window',
+    storyPath: 'design-system-overlays-dialog--docs',
     category: Category.Overlays,
     preview: (
       <Button variant="outline" size="sm">
@@ -270,9 +270,9 @@ const components: ComponentInfo[] = [
     ),
   },
   {
-    name: "Drawer",
-    description: "Sliding side panel",
-    storyPath: "design-system-overlays-drawer--docs",
+    name: 'Drawer',
+    description: 'Sliding side panel',
+    storyPath: 'design-system-overlays-drawer--docs',
     category: Category.Overlays,
     preview: (
       <Button variant="outline" size="sm">
@@ -281,9 +281,9 @@ const components: ComponentInfo[] = [
     ),
   },
   {
-    name: "Dropdown Menu",
-    description: "Dropdown menu list",
-    storyPath: "design-system-overlays-dropdown-menu--docs",
+    name: 'Dropdown Menu',
+    description: 'Dropdown menu list',
+    storyPath: 'design-system-overlays-dropdown-menu--docs',
     category: Category.Overlays,
     preview: (
       <Button variant="outline" size="sm">
@@ -292,25 +292,25 @@ const components: ComponentInfo[] = [
     ),
   },
   {
-    name: "Empty State",
-    description: "No content placeholder",
-    storyPath: "design-system-feedback-empty-state--docs",
+    name: 'Empty State',
+    description: 'No content placeholder',
+    storyPath: 'design-system-feedback-empty-state--docs',
     category: Category.Feedback,
     preview: <div className="text-center p-4 text-muted-foreground text-xs">No items found</div>,
   },
   {
-    name: "File Upload",
-    description: "File upload with drag & drop",
-    storyPath: "design-system-core-file-upload--docs",
+    name: 'File Upload',
+    description: 'File upload with drag & drop',
+    storyPath: 'design-system-core-file-upload--docs',
     category: Category.Core,
     preview: (
       <div className="border-2 border-dashed rounded p-4 text-xs text-center">Drop files here</div>
     ),
   },
   {
-    name: "Grid",
-    description: "Responsive grid layout",
-    storyPath: "design-system-layout-grid--docs",
+    name: 'Grid',
+    description: 'Responsive grid layout',
+    storyPath: 'design-system-layout-grid--docs',
     category: Category.Layout,
     preview: (
       <div className="grid grid-cols-2 gap-2">
@@ -322,9 +322,9 @@ const components: ComponentInfo[] = [
     ),
   },
   {
-    name: "Row",
-    description: "Horizontal flex layout",
-    storyPath: "design-system-layout-row--docs",
+    name: 'Row',
+    description: 'Horizontal flex layout',
+    storyPath: 'design-system-layout-row--docs',
     category: Category.Layout,
     preview: (
       <div className="flex gap-2">
@@ -334,9 +334,9 @@ const components: ComponentInfo[] = [
     ),
   },
   {
-    name: "Column",
-    description: "Vertical flex layout",
-    storyPath: "design-system-layout-column--docs",
+    name: 'Column',
+    description: 'Vertical flex layout',
+    storyPath: 'design-system-layout-column--docs',
     category: Category.Layout,
     preview: (
       <div className="flex flex-col gap-2">
@@ -346,30 +346,30 @@ const components: ComponentInfo[] = [
     ),
   },
   {
-    name: "Hover Card",
-    description: "Hover preview card",
-    storyPath: "design-system-overlays-hover-card--docs",
+    name: 'Hover Card',
+    description: 'Hover preview card',
+    storyPath: 'design-system-overlays-hover-card--docs',
     category: Category.Overlays,
     preview: <span className="underline text-xs">Hover me</span>,
   },
   {
-    name: "Input",
-    description: "Text input field",
-    storyPath: "design-system-core-input--docs",
+    name: 'Input',
+    description: 'Text input field',
+    storyPath: 'design-system-core-input--docs',
     category: Category.Core,
     preview: <Input placeholder="Type here..." className="h-8 text-xs" />,
   },
   {
-    name: "Label",
-    description: "Form field label",
-    storyPath: "design-system-core-label--docs",
+    name: 'Label',
+    description: 'Form field label',
+    storyPath: 'design-system-core-label--docs',
     category: Category.Core,
     preview: <label className="text-xs font-medium">Label</label>,
   },
   {
-    name: "Menubar",
-    description: "Desktop-style menu bar",
-    storyPath: "design-system-navigation-menubar--docs",
+    name: 'Menubar',
+    description: 'Desktop-style menu bar',
+    storyPath: 'design-system-navigation-menubar--docs',
     category: Category.Navigation,
     preview: (
       <div className="flex gap-2">
@@ -383,9 +383,9 @@ const components: ComponentInfo[] = [
     ),
   },
   {
-    name: "Multi Select",
-    description: "Multiple selection input",
-    storyPath: "design-system-core-multi-select--docs",
+    name: 'Multi Select',
+    description: 'Multiple selection input',
+    storyPath: 'design-system-core-multi-select--docs',
     category: Category.Core,
     preview: (
       <Button variant="outline" size="sm">
@@ -394,9 +394,9 @@ const components: ComponentInfo[] = [
     ),
   },
   {
-    name: "Navigation Menu",
-    description: "Navigation menu with dropdowns",
-    storyPath: "design-system-navigation-navigation-menu--docs",
+    name: 'Navigation Menu',
+    description: 'Navigation menu with dropdowns',
+    storyPath: 'design-system-navigation-navigation-menu--docs',
     category: Category.Navigation,
     preview: (
       <div className="flex gap-2">
@@ -410,9 +410,9 @@ const components: ComponentInfo[] = [
     ),
   },
   {
-    name: "Pagination",
-    description: "Page navigation",
-    storyPath: "design-system-navigation-pagination--docs",
+    name: 'Pagination',
+    description: 'Page navigation',
+    storyPath: 'design-system-navigation-pagination--docs',
     category: Category.Navigation,
     preview: (
       <div className="flex gap-1">
@@ -429,9 +429,9 @@ const components: ComponentInfo[] = [
     ),
   },
   {
-    name: "Popover",
-    description: "Floating content panel",
-    storyPath: "design-system-overlays-popover--docs",
+    name: 'Popover',
+    description: 'Floating content panel',
+    storyPath: 'design-system-overlays-popover--docs',
     category: Category.Overlays,
     preview: (
       <Button variant="outline" size="sm">
@@ -440,16 +440,16 @@ const components: ComponentInfo[] = [
     ),
   },
   {
-    name: "Progress",
-    description: "Progress indicator",
-    storyPath: "design-system-feedback-progress--docs",
+    name: 'Progress',
+    description: 'Progress indicator',
+    storyPath: 'design-system-feedback-progress--docs',
     category: Category.Feedback,
     preview: <Progress value={60} className="w-20" />,
   },
   {
-    name: "Radio Group",
-    description: "Single selection group",
-    storyPath: "design-system-core-radio-group--docs",
+    name: 'Radio Group',
+    description: 'Single selection group',
+    storyPath: 'design-system-core-radio-group--docs',
     category: Category.Core,
     preview: (
       <div className="flex gap-2 text-xs">
@@ -461,9 +461,9 @@ const components: ComponentInfo[] = [
     ),
   },
   {
-    name: "Resizable",
-    description: "Resizable panel groups",
-    storyPath: "design-system-layout-resizable--docs",
+    name: 'Resizable',
+    description: 'Resizable panel groups',
+    storyPath: 'design-system-layout-resizable--docs',
     category: Category.Layout,
     preview: (
       <div className="flex gap-1 h-12">
@@ -474,25 +474,25 @@ const components: ComponentInfo[] = [
     ),
   },
   {
-    name: "Scroll Area",
-    description: "Custom scrollable area",
-    storyPath: "design-system-layout-scroll-area--docs",
+    name: 'Scroll Area',
+    description: 'Custom scrollable area',
+    storyPath: 'design-system-layout-scroll-area--docs',
     category: Category.Layout,
     preview: (
       <div className="h-16 border rounded p-2 overflow-hidden text-xs">Scrollable content area</div>
     ),
   },
   {
-    name: "Search",
-    description: "Search input field",
-    storyPath: "design-system-core-search--docs",
+    name: 'Search',
+    description: 'Search input field',
+    storyPath: 'design-system-core-search--docs',
     category: Category.Core,
     preview: <Input placeholder="Search..." className="h-8 text-xs" />,
   },
   {
-    name: "Select",
-    description: "Dropdown selection",
-    storyPath: "design-system-core-select--docs",
+    name: 'Select',
+    description: 'Dropdown selection',
+    storyPath: 'design-system-core-select--docs',
     category: Category.Core,
     preview: (
       <Button variant="outline" size="sm">
@@ -501,16 +501,16 @@ const components: ComponentInfo[] = [
     ),
   },
   {
-    name: "Separator",
-    description: "Content divider",
-    storyPath: "design-system-layout-separator--docs",
+    name: 'Separator',
+    description: 'Content divider',
+    storyPath: 'design-system-layout-separator--docs',
     category: Category.Layout,
     preview: <Separator className="w-12" />,
   },
   {
-    name: "Sheet",
-    description: "Side panel overlay",
-    storyPath: "design-system-overlays-sheet--docs",
+    name: 'Sheet',
+    description: 'Side panel overlay',
+    storyPath: 'design-system-overlays-sheet--docs',
     category: Category.Overlays,
     preview: (
       <Button variant="outline" size="sm">
@@ -519,9 +519,9 @@ const components: ComponentInfo[] = [
     ),
   },
   {
-    name: "Skeleton",
-    description: "Loading placeholder",
-    storyPath: "design-system-feedback-skeleton--docs",
+    name: 'Skeleton',
+    description: 'Loading placeholder',
+    storyPath: 'design-system-feedback-skeleton--docs',
     category: Category.Feedback,
     preview: (
       <div className="space-y-2">
@@ -531,30 +531,30 @@ const components: ComponentInfo[] = [
     ),
   },
   {
-    name: "Slider",
-    description: "Range slider input",
-    storyPath: "design-system-core-slider--docs",
+    name: 'Slider',
+    description: 'Range slider input',
+    storyPath: 'design-system-core-slider--docs',
     category: Category.Core,
     preview: <Slider defaultValue={[50]} max={100} step={1} className="w-full" />,
   },
   {
-    name: "Sonner",
-    description: "Toast notifications",
-    storyPath: "design-system-feedback-sonner--docs",
+    name: 'Sonner',
+    description: 'Toast notifications',
+    storyPath: 'design-system-feedback-sonner--docs',
     category: Category.Feedback,
     preview: <div className="border rounded p-2 text-xs">Toast notification</div>,
   },
   {
-    name: "Spinner",
-    description: "Loading spinner",
-    storyPath: "design-system-feedback-spinner--docs",
+    name: 'Spinner',
+    description: 'Loading spinner',
+    storyPath: 'design-system-feedback-spinner--docs',
     category: Category.Feedback,
     preview: <Spinner className="w-6 h-6" />,
   },
   {
-    name: "Stats Card",
-    description: "Statistics display card",
-    storyPath: "design-system-data-display-stats-card--docs",
+    name: 'Stats Card',
+    description: 'Statistics display card',
+    storyPath: 'design-system-data-display-stats-card--docs',
     category: Category.DataDisplay,
     preview: (
       <Card className="w-full">
@@ -566,9 +566,9 @@ const components: ComponentInfo[] = [
     ),
   },
   {
-    name: "Stepper",
-    description: "Step progress indicator",
-    storyPath: "design-system-navigation-stepper--docs",
+    name: 'Stepper',
+    description: 'Step progress indicator',
+    storyPath: 'design-system-navigation-stepper--docs',
     category: Category.Navigation,
     preview: (
       <div className="flex gap-1">
@@ -582,9 +582,9 @@ const components: ComponentInfo[] = [
     ),
   },
   {
-    name: "Switch",
-    description: "Toggle switch",
-    storyPath: "design-system-core-switch--docs",
+    name: 'Switch',
+    description: 'Toggle switch',
+    storyPath: 'design-system-core-switch--docs',
     category: Category.Core,
     preview: (
       <div className="flex items-center gap-2">
@@ -594,9 +594,9 @@ const components: ComponentInfo[] = [
     ),
   },
   {
-    name: "Table",
-    description: "Data table",
-    storyPath: "design-system-data-display-table--docs",
+    name: 'Table',
+    description: 'Data table',
+    storyPath: 'design-system-data-display-table--docs',
     category: Category.DataDisplay,
     preview: (
       <Table>
@@ -614,9 +614,9 @@ const components: ComponentInfo[] = [
     ),
   },
   {
-    name: "Tabs",
-    description: "Tabbed content panels",
-    storyPath: "design-system-navigation-tabs--docs",
+    name: 'Tabs',
+    description: 'Tabbed content panels',
+    storyPath: 'design-system-navigation-tabs--docs',
     category: Category.Navigation,
     preview: (
       <Tabs defaultValue="tab1" className="w-full">
@@ -632,9 +632,9 @@ const components: ComponentInfo[] = [
     ),
   },
   {
-    name: "Textarea",
-    description: "Multi-line text input",
-    storyPath: "design-system-core-textarea--docs",
+    name: 'Textarea',
+    description: 'Multi-line text input',
+    storyPath: 'design-system-core-textarea--docs',
     category: Category.Core,
     preview: (
       <textarea
@@ -644,9 +644,9 @@ const components: ComponentInfo[] = [
     ),
   },
   {
-    name: "Toggle",
-    description: "Toggle button",
-    storyPath: "design-system-core-toggle--docs",
+    name: 'Toggle',
+    description: 'Toggle button',
+    storyPath: 'design-system-core-toggle--docs',
     category: Category.Core,
     preview: (
       <Button variant="outline" size="sm">
@@ -655,9 +655,9 @@ const components: ComponentInfo[] = [
     ),
   },
   {
-    name: "Toggle Group",
-    description: "Toggle button group",
-    storyPath: "design-system-core-toggle-group--docs",
+    name: 'Toggle Group',
+    description: 'Toggle button group',
+    storyPath: 'design-system-core-toggle-group--docs',
     category: Category.Core,
     preview: (
       <div className="flex gap-1">
@@ -671,9 +671,9 @@ const components: ComponentInfo[] = [
     ),
   },
   {
-    name: "Tooltip",
-    description: "Hover tooltip",
-    storyPath: "design-system-overlays-tooltip--docs",
+    name: 'Tooltip',
+    description: 'Hover tooltip',
+    storyPath: 'design-system-overlays-tooltip--docs',
     category: Category.Overlays,
     preview: (
       <Button variant="outline" size="sm">
@@ -684,16 +684,16 @@ const components: ComponentInfo[] = [
 ];
 
 function ComponentGallery() {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<Category | "all">("all");
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<Category | 'all'>('all');
 
   const filteredComponents = useMemo(() => {
     return components.filter((component) => {
       const matchesSearch =
-        searchQuery === "" ||
+        searchQuery === '' ||
         component.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         component.description.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesCategory = selectedCategory === "all" || component.category === selectedCategory;
+      const matchesCategory = selectedCategory === 'all' || component.category === selectedCategory;
       return matchesSearch && matchesCategory;
     });
   }, [searchQuery, selectedCategory]);
@@ -743,9 +743,9 @@ function ComponentGallery() {
               </div>
               <div className="flex gap-2 flex-wrap">
                 <Button
-                  variant={selectedCategory === "all" ? "default" : "outline"}
+                  variant={selectedCategory === 'all' ? 'default' : 'outline'}
                   size="sm"
-                  onClick={() => setSelectedCategory("all")}
+                  onClick={() => setSelectedCategory('all')}
                   className="transition-all duration-200"
                 >
                   All ({components.length})
@@ -755,7 +755,7 @@ function ComponentGallery() {
                   return (
                     <Button
                       key={category}
-                      variant={selectedCategory === category ? "default" : "outline"}
+                      variant={selectedCategory === category ? 'default' : 'outline'}
                       size="sm"
                       onClick={() => setSelectedCategory(category)}
                       className="transition-all duration-200"

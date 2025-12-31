@@ -1,4 +1,4 @@
-import type { Meta } from "@storybook/react-vite";
+import type { Meta } from '@storybook/react-vite';
 import {
   Menubar,
   MenubarContent,
@@ -7,12 +7,12 @@ import {
   MenubarSeparator,
   MenubarShortcut,
   MenubarTrigger,
-} from "./menubar";
+} from './menubar';
 
 const meta: Meta<typeof Menubar> = {
-  title: "Design System/Navigation/Menubar",
+  title: 'Design System/Navigation/Menubar',
   component: Menubar,
-  tags: ["autodocs"],
+  tags: ['autodocs'],
 };
 
 export default meta;

@@ -1,15 +1,15 @@
-import type { Meta, StoryObj } from "@storybook/react-vite";
-import { Checkbox } from "./checkbox";
-import { Label } from "./label";
-import { Row, Column } from "./layout";
+import type { Meta, StoryObj } from '@storybook/react-vite';
+import { Checkbox } from './checkbox';
+import { Label } from './label';
+import { Row, Column } from './layout';
 
 const meta = {
-  title: "Design System/Core/Checkbox",
+  title: 'Design System/Core/Checkbox',
   component: Checkbox,
   parameters: {
-    layout: "centered",
+    layout: 'centered',
   },
-  tags: ["autodocs"],
+  tags: ['autodocs'],
 } satisfies Meta<typeof Checkbox>;
 
 export default meta;
@@ -20,13 +20,13 @@ export const Default: Story = {
 };
 
 export const WithLabel = {
-    render: () => (
+  render: () => (
     <Row gap={2} align="center">
       <Checkbox id="terms" />
       <Label htmlFor="terms">Accept terms and conditions</Label>
     </Row>
   ),
-} satisfies Story;;
+} satisfies Story;
 
 export const Checked: Story = {
   args: {
@@ -35,25 +35,25 @@ export const Checked: Story = {
 };
 
 export const Disabled = {
-    render: () => (
+  render: () => (
     <Row gap={2} align="center">
       <Checkbox id="disabled" disabled />
       <Label htmlFor="disabled">Disabled checkbox</Label>
     </Row>
   ),
-} satisfies Story;;
+} satisfies Story;
 
 export const DisabledChecked = {
-    render: () => (
+  render: () => (
     <Row gap={2} align="center">
       <Checkbox id="disabled-checked" disabled defaultChecked />
       <Label htmlFor="disabled-checked">Disabled and checked</Label>
     </Row>
   ),
-} satisfies Story;;
+} satisfies Story;
 
 export const WithDescription = {
-    render: () => (
+  render: () => (
     <Column gap={2}>
       <Row gap={2} align="center">
         <Checkbox id="marketing" />
@@ -64,10 +64,10 @@ export const WithDescription = {
       </p>
     </Column>
   ),
-} satisfies Story;;
+} satisfies Story;
 
 export const Group = {
-    render: () => (
+  render: () => (
     <Column gap={3}>
       <div className="font-medium text-sm">Notification preferences</div>
       <Column gap={2}>
@@ -90,4 +90,4 @@ export const Group = {
       </Column>
     </Column>
   ),
-} satisfies Story;;
+} satisfies Story;
