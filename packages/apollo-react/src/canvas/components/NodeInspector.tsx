@@ -1,5 +1,3 @@
-import { ApTypography } from 'src/material/components/ap-typography';
-
 import { FontVariantToken } from '@uipath/apollo-core';
 import {
   Column,
@@ -13,6 +11,7 @@ import {
   useReactFlow,
   type XYPosition,
 } from '@uipath/apollo-react/canvas/xyflow/react';
+import { ApTypography } from '@uipath/apollo-react/material';
 
 import { FloatingCanvasPanel } from './FloatingCanvasPanel';
 

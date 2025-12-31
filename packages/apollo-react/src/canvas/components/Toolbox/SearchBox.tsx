@@ -1,4 +1,4 @@
-import { ApIcon } from '@uipath/portal-shell-react';
+import { ApIcon } from '@uipath/apollo-react/material/components';
 import { cx } from '@uipath/apollo-react/canvas/utils';
 import type React from 'react';
 import { useEffect, useRef } from 'react';

@@ -11,7 +11,7 @@ import { useScheduledCallback } from '../../hooks/use-scheduled-callback';
 import { useChatState } from '../../providers/chat-state-provider';
 import { AutopilotChatInternalEvent } from '../../service';
 import { AutopilotChatActionButton } from './action-button';
-import { AutopilotChatIcon } from './icon';
+import { ApIcon } from '../../ap-icon';
 import { AutopilotChatTooltip } from './tooltip';
 
 export interface DropdownOption<T = string> {
@@ -204,7 +204,7 @@ export function DropdownPicker<T = string>({
           )}
         >
           {selectedOption.icon && (
-            <AutopilotChatIcon
+            <ApIcon
               variant="outlined"
               name={selectedOption.icon}
               size={token.Icon.IconXs}
@@ -274,7 +274,7 @@ export function DropdownPicker<T = string>({
                 }}
               >
                 {option.icon && (
-                  <AutopilotChatIcon
+                  <ApIcon
                     variant="outlined"
                     name={option.icon}
                     size={token.Icon.IconXs}

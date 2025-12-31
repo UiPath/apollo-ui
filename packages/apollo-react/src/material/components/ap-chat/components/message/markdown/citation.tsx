@@ -6,7 +6,7 @@ import { Box } from '@mui/material';
 import token, { FontVariantToken } from '@uipath/apollo-core';
 
 import { ApTypography } from '../../../../ap-typography';
-import { AutopilotChatIcon } from '../../common/icon';
+import { ApIcon } from '../../common/icon';
 import { AutopilotChatTooltip } from '../../common/tooltip';
 import { useChatService } from '../../../providers/chat-service.provider';
 import { useChatState } from '../../../providers/chat-state-provider';
@@ -219,7 +219,7 @@ export const Citation = React.memo(
             }}
             onClick={handleClick}
           >
-            <AutopilotChatIcon
+            <ApIcon
               variant={url ? 'custom' : 'outlined'}
               name={url ? 'website' : 'file_open'}
               size={token.Icon.IconXs}

@@ -1,4 +1,5 @@
-import { ApCircularProgress, ApIcon } from '@uipath/portal-shell-react';
+import { ApIcon } from '@uipath/apollo-react/material/components';
+import { ApCircularProgress } from '@uipath/portal-shell-react';
 import { useMemo } from 'react';
 
 export function ExecutionStatusIcon({

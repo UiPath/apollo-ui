@@ -22,7 +22,7 @@ import {
   Position,
 } from '@uipath/apollo-react/canvas/xyflow/react';
 import { ApTypography } from '@uipath/apollo-react/material';
-import { ApIcon } from '@uipath/portal-shell-react';
+import { ApIcon } from '@uipath/apollo-react/material/components';
 
 import {
   StoryInfoPanel,

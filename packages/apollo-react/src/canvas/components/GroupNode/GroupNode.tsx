@@ -1,7 +1,7 @@
 import { memo, useCallback } from 'react';
 import type { NodeProps } from '@uipath/apollo-react/canvas/xyflow/react';
 import { NodeResizeControl, useReactFlow } from '@uipath/apollo-react/canvas/xyflow/react';
-import { ApIcon } from '@uipath/portal-shell-react';
+import { ApIcon } from '@uipath/apollo-react/material/components';
 import type { GroupNodeData } from './GroupNode.types';
 import {
   GroupContainer,

@@ -3,8 +3,6 @@ import {
   useState,
 } from 'react';
 
-import { ApTypography } from 'src/material/components/ap-typography';
-
 import type {
   Meta,
   StoryObj,
@@ -23,6 +21,7 @@ import {
   Panel,
   ReactFlowProvider,
 } from '@uipath/apollo-react/canvas/xyflow/react';
+import { ApTypography } from '@uipath/apollo-react/material';
 
 import { BaseCanvas } from './BaseCanvas/BaseCanvas';
 import { NodeInspector } from './NodeInspector';

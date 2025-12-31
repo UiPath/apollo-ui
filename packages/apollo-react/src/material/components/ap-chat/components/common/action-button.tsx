@@ -5,7 +5,7 @@ import token from '@uipath/apollo-core';
 
 import { useChatState } from '../../providers/chat-state-provider';
 import { AutopilotChatMode } from '../../service';
-import { AutopilotChatIcon } from './icon';
+import { ApIcon } from '../../ap-icon';
 import { AutopilotChatIconButton } from './icon-button';
 import { AutopilotChatTooltip } from './tooltip';
 
@@ -135,7 +135,7 @@ const AutopilotChatActionButtonComponent = React.forwardRef<
             }
           }}
           startIcon={
-            <AutopilotChatIcon
+            <ApIcon
               name={iconName}
               variant={variant}
               size={iconSize || token.Icon.IconS}
@@ -211,7 +211,7 @@ const AutopilotChatActionButtonComponent = React.forwardRef<
         data-testid={dataTestId}
         sx={variant === 'custom' ? { padding: '8px 6px 6px 8px' } : undefined}
       >
-        <AutopilotChatIcon
+        <ApIcon
           name={iconName}
           variant={variant}
           size={iconSize || (variant === 'custom' ? '20px' : token.Icon.IconS)}

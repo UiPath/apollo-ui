@@ -3,11 +3,6 @@ import {
   useState,
 } from 'react';
 
-import {
-  ApButton,
-  ApTypography,
-} from 'src/material/components';
-
 import type {
   Meta,
   StoryObj,
@@ -18,6 +13,10 @@ import {
   Row,
 } from '@uipath/apollo-react/canvas/layouts';
 import { ReactFlowProvider } from '@uipath/apollo-react/canvas/xyflow/react';
+import {
+  ApButton,
+  ApTypography,
+} from '@uipath/apollo-react/material';
 
 import type { IRawSpan } from '../../../types/TraceModels';
 import { StoryInfoPanel } from '../../storybook-utils';

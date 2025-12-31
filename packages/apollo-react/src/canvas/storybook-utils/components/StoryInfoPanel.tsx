@@ -6,11 +6,8 @@ import {
   Row,
 } from '@uipath/apollo-react/canvas/layouts';
 import { Panel } from '@uipath/apollo-react/canvas/xyflow/react';
-import { ApTypography } from '@uipath/apollo-react/material';
-import {
-  ApIcon,
-  ApIconButton,
-} from '@uipath/portal-shell-react';
+import { ApIcon, ApTypography } from '@uipath/apollo-react/material';
+import { ApIconButton } from '@uipath/portal-shell-react';
 
 export interface StoryInfoPanelProps {
   /** Panel title */

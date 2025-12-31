@@ -1,7 +1,7 @@
 import { memo, useCallback, useState, useRef, useEffect, useMemo } from 'react';
 import type { NodeProps } from '@uipath/apollo-react/canvas/xyflow/react';
 import { NodeResizeControl, useReactFlow } from '@uipath/apollo-react/canvas/xyflow/react';
-import { ApIcon } from '@uipath/portal-shell-react';
+import { ApIcon } from '@uipath/apollo-react/material/components';
 import { AnimatePresence } from 'motion/react';
 import { Global } from '@emotion/react';
 import ReactMarkdown from 'react-markdown';

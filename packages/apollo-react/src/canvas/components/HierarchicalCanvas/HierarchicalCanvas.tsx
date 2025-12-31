@@ -30,7 +30,8 @@ import {
 import { viewportManager } from '../../stores/viewportManager';
 import { animatedViewportManager } from '../../stores/animatedViewportManager';
 import { Breadcrumb } from '@uipath/apollo-react/canvas/controls';
-import { ApIcon, ApProgressSpinner } from '@uipath/portal-shell-react';
+import { ApIcon } from '@uipath/apollo-react/material/components';
+import { ApProgressSpinner } from '@uipath/portal-shell-react';
 import { CanvasPositionControls } from '../CanvasPositionControls';
 import { useNodeRegistrations } from '../BaseNode/useNodeTypeRegistry';
 import { BaseNode } from '../BaseNode';

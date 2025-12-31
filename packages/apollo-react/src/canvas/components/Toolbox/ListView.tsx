@@ -9,7 +9,7 @@ import {
   ApSkeleton,
   ApTypography,
 } from '@uipath/apollo-react/material';
-import { ApIcon } from '@uipath/portal-shell-react';
+import { ApIcon } from '@uipath/apollo-react/material/components';
 
 import {
   IconContainer,

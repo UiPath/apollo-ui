@@ -2,7 +2,7 @@ import React from 'react';
 import type { NodeProps } from '@uipath/apollo-react/canvas/xyflow/react';
 import { Handle, Position } from '@uipath/apollo-react/canvas/xyflow/react';
 import styled from '@emotion/styled';
-import { ApIcon } from '@uipath/portal-shell-react';
+import { ApIcon } from '@uipath/apollo-react/material/components';
 import { DEFAULT_NODE_SIZE } from '../../constants';
 
 const PreviewContainer = styled.div<{ selected?: boolean; width?: number; height?: number }>`

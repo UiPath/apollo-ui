@@ -18,7 +18,7 @@ import {
 } from '../../../types';
 import { ResourceNodeType } from '../AgentFlow.constants';
 import { ExecutionStatusIcon } from '../../ExecutionStatusIcon/ExecutionStatusIcon';
-import { ApIcon } from '@uipath/portal-shell-react';
+import { ApIcon } from '@uipath/apollo-react/material/components';
 import type { NodeToolbarConfig, ToolbarAction } from '../../NodeToolbar/NodeToolbar.types';
 import { useAgentFlowStore } from '../store/agent-flow-store';
 

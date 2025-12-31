@@ -7,7 +7,7 @@ import {
   ReactFlowProvider,
 } from '@uipath/apollo-react/canvas/xyflow/react';
 import type { Edge, EdgeChange, Node, NodeChange, Connection } from '@uipath/apollo-react/canvas/xyflow/react';
-import { ApIcon } from '@uipath/portal-shell-react';
+import { ApIcon } from '@uipath/apollo-react/material/components';
 import { BaseCanvas } from '../BaseCanvas';
 import { TriggerNode } from './TriggerNode';
 

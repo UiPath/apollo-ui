@@ -15,7 +15,8 @@ import {
 import type { BaseNodeData } from './BaseNode.types';
 import { useNodeTypeRegistry } from './useNodeTypeRegistry';
 import { cx } from '@uipath/apollo-react/canvas/utils';
-import { ApIcon, ApTooltip } from '@uipath/portal-shell-react';
+import { ApIcon } from '@uipath/apollo-react/material/components';
+import { ApTooltip } from '@uipath/portal-shell-react';
 import { useBaseCanvasMode } from '../BaseCanvas/BaseCanvasModeProvider';
 import { useSelectionState } from '../BaseCanvas/SelectionStateContext';
 import { SmartHandleProvider, SmartHandle } from '../ButtonHandle/SmartHandle';

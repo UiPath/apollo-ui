@@ -6,7 +6,7 @@ import { Box, Collapse, styled } from '@mui/material';
 import token from '@uipath/apollo-core';
 
 import { ApTypography } from '../../../../ap-typography';
-import { AutopilotChatIcon } from '../../common/icon';
+import { ApIcon } from '../../common/icon';
 import { AutopilotChatTooltip } from '../../common/tooltip';
 import { useIsStreamingMessage } from '../../../hooks/use-is-streaming-message';
 import { useChatService } from '../../../providers/chat-service.provider';
@@ -245,7 +245,7 @@ function AutopilotChatSourcesComponent({ groupId, message }: AutopilotChatSource
         title={_(msg({ id: 'autopilot-chat.message.sources', message: `Sources` }))}
         onClick={handleToggleExpand}
       >
-        <AutopilotChatIcon
+        <ApIcon
           variant="outlined"
           name="link"
           size={spacing.compactMode ? token.Icon.IconS : token.Icon.IconM}
@@ -277,7 +277,7 @@ function AutopilotChatSourcesComponent({ groupId, message }: AutopilotChatSource
                       onClick={() => handleSourceClick(source)}
                       tabIndex={!showFullList && index > COLLAPSED_ITEMS_COUNT - 1 ? -1 : 0}
                     >
-                      <AutopilotChatIcon
+                      <ApIcon
                         variant={isUrl ? 'custom' : 'outlined'}
                         name={isUrl ? 'website' : 'file_open'}
                         size={token.Icon.IconXs}
@@ -315,7 +315,7 @@ function AutopilotChatSourcesComponent({ groupId, message }: AutopilotChatSource
                     ? _(msg({ id: 'autopilot-chat.message.show-less', message: `Show less` }))
                     : _(msg({ id: 'autopilot-chat.message.show-more', message: `Show more` }))}
                 </ApTypography>
-                <AutopilotChatIcon
+                <ApIcon
                   name={showFullList ? 'expand_less' : 'expand_more'}
                   variant="outlined"
                   size={token.Icon.IconXs}

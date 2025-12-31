@@ -1,5 +1,5 @@
 import { Fragment, memo, useCallback, useMemo } from 'react';
-import { ApIcon } from '@uipath/portal-shell-react';
+import { ApIcon } from '@uipath/apollo-react/material/components';
 import { Row } from '@uipath/apollo-react/canvas/layouts';
 import * as Icons from '@uipath/apollo-react/canvas/icons';
 import { Position, type NodeProps } from '@uipath/apollo-react/canvas/xyflow/react';

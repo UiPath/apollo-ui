@@ -3,7 +3,8 @@ import React from 'react';
 import { Icon, SvgIcon } from '@mui/material';
 import token from '@uipath/apollo-core';
 
-import * as LegacyIcons from '../../assets/legacy-ap-icon/index';
+import * as LegacyIcons from './assets/index';
+import type { ApIconProps } from './ApIcon.types';
 
 // Convert snake_case to PascalCase for legacy icon lookup
 const snakeToPascal = (str: string): string =>
@@ -12,14 +13,7 @@ const snakeToPascal = (str: string): string =>
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join('');
 
-export interface AutopilotChatIconProps {
-  name: string;
-  size?: string;
-  color?: string;
-  variant?: 'normal' | 'outlined' | 'custom';
-}
-
-export const AutopilotChatIcon: React.FC<AutopilotChatIconProps> = ({
+export const ApIcon: React.FC<ApIconProps> = ({
   name,
   size,
   color,

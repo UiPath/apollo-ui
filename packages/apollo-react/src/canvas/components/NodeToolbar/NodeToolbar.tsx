@@ -1,6 +1,7 @@
 import { memo, useMemo } from 'react';
 import { AnimatePresence } from 'motion/react';
-import { ApIcon, ApTooltip } from '@uipath/portal-shell-react';
+import { ApIcon } from '@uipath/apollo-react/material/components';
+import { ApTooltip } from '@uipath/portal-shell-react';
 import {
   StyledToolbarContainer,
   StyledToolbarButton,

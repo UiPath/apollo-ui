@@ -16,7 +16,7 @@ import {
   ApButton,
   ApTypography,
 } from '@uipath/apollo-react/material';
-import { ApIcon } from '@uipath/portal-shell-react';
+import { ApIcon } from '@uipath/apollo-react/material/components';
 
 import { useCanvasStore } from '../../stores/canvasStore';
 import { DefaultResourceNodeTranslations } from '../../types';

@@ -14,7 +14,7 @@ import { AnimatePresence } from 'motion/react';
 import { FontVariantToken } from '@uipath/apollo-core';
 import { Row } from '@uipath/apollo-react/canvas/layouts';
 import { ApTypography } from '@uipath/apollo-react/material';
-import { ApIcon } from '@uipath/portal-shell-react';
+import { ApIcon } from '@uipath/apollo-react/material/components';
 import {
   type Edge,
   Handle,
