@@ -200,7 +200,7 @@ export function FormFieldRenderer({
       }
       return nextState;
     });
-  }, [field.rules, getValues, watchedRuleDependentValues]);
+  }, [field.rules, field.validation?.required, getValues, watchedRuleDependentValues]);
 
   // Sync inline options when field.options changes (for fields without dataSource)
   useEffect(() => {

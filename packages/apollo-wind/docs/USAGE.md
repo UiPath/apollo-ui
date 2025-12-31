@@ -14,10 +14,11 @@ Complete guide to consuming Apollo Wind in your React application.
 ## Installation
 
 ```bash
-npm install @uipath/wind
+npm install @uipath/apollo-wind
 ```
 
 **Peer Dependencies:**
+
 ```bash
 npm install react@>=18.0.0 react-dom@>=18.0.0
 ```
@@ -41,26 +42,23 @@ flowchart TD
 
 ```tsx
 // src/main.tsx or src/App.tsx
-import '@uipath/wind/styles.css'
-import { Button, Card } from '@uipath/wind'
+import "@uipath/apollo-wind/styles.css";
+import { Button, Card } from "@uipath/apollo-wind";
 
 function App() {
   return (
     <Card>
       <Button>Click me</Button>
     </Card>
-  )
+  );
 }
 ```
 
 ### What You Get
 
-✅ All Apollo Wind components fully styled
-✅ Zero configuration
-✅ ~34KB pre-compiled CSS
-❌ No custom Tailwind classes
-❌ No arbitrary values (`w-[200px]`)
-❌ No Tailwind plugins
+✅ All Apollo Wind components fully styled ✅ Zero configuration ✅ ~34KB
+pre-compiled CSS ❌ No custom Tailwind classes ❌ No arbitrary values
+(`w-[200px]`) ❌ No Tailwind plugins
 
 ### Bundle Size
 
@@ -72,14 +70,15 @@ styles.css: 34KB (minified) / ~6KB (gzipped)
 
 ## Approach 2: Tailwind JIT
 
-**Best for:** Production apps, heavy customization, teams experienced with Tailwind
+**Best for:** Production apps, heavy customization, teams experienced with
+Tailwind
 
 ### Setup (5 minutes)
 
 **Step 1: Install Dependencies**
 
 ```bash
-npm install @uipath/wind postcss
+npm install @uipath/apollo-wind postcss
 ```
 
 > Tailwind CSS is already bundled - no separate installation needed!
@@ -88,7 +87,7 @@ npm install @uipath/wind postcss
 
 ```js
 // postcss.config.js (root of your project)
-export { default } from '@uipath/wind/postcss'
+export { default } from "@uipath/apollo-wind/postcss";
 ```
 
 **Step 3: Create CSS File**
@@ -97,10 +96,10 @@ export { default } from '@uipath/wind/postcss'
 /* src/app.css */
 
 /* Import Apollo Wind Tailwind CSS with theme */
-@import "@uipath/wind/tailwind.css";
+@import "@uipath/apollo-wind/tailwind.css";
 
-/* CRITICAL: Tell Tailwind to scan @uipath/wind for CVA class names */
-@source "../node_modules/@uipath/wind";
+/* CRITICAL: Tell Tailwind to scan @uipath/apollo-wind for CVA class names */
+@source "../node_modules/@uipath/apollo-wind";
 
 /* Optional: Add custom styles */
 @layer components {
@@ -114,8 +113,8 @@ export { default } from '@uipath/wind/postcss'
 
 ```tsx
 // src/main.tsx
-import './app.css'
-import { Button } from '@uipath/wind'
+import "./app.css";
+import { Button } from "@uipath/apollo-wind";
 
 function App() {
   return (
@@ -138,19 +137,16 @@ function App() {
         Gradient Background
       </div>
     </>
-  )
+  );
 }
 ```
 
 ### What You Get
 
-✅ All Apollo Wind components fully styled
-✅ Full Tailwind JIT compilation
-✅ All Tailwind utilities (gradients, transforms, filters, etc.)
-✅ Arbitrary values (`w-[200px]`, `bg-[#ff0000]`)
-✅ Custom `@apply` directives
-✅ Tree-shaken CSS (only used utilities)
-⚠️ Requires PostCSS setup
+✅ All Apollo Wind components fully styled ✅ Full Tailwind JIT compilation ✅
+All Tailwind utilities (gradients, transforms, filters, etc.) ✅ Arbitrary
+values (`w-[200px]`, `bg-[#ff0000]`) ✅ Custom `@apply` directives ✅
+Tree-shaken CSS (only used utilities) ⚠️ Requires PostCSS setup
 
 ### How It Works
 
@@ -159,7 +155,7 @@ sequenceDiagram
     participant App as Your App
     participant PC as PostCSS
     participant TW as Tailwind JIT
-    participant APW as @uipath/wind
+    participant APW as @uipath/apollo-wind
 
     App->>PC: Import app.css
     PC->>TW: Process @import
@@ -173,20 +169,23 @@ sequenceDiagram
 Apollo Wind components use **CVA** (Class Variance Authority) to define styles:
 
 ```tsx
-// Inside @uipath/wind/dist/index.js
+// Inside @uipath/apollo-wind/dist/index.js
 const buttonVariants = cva("inline-flex items-center ...", {
   variants: {
     variant: {
       default: "bg-gray-900 text-gray-50 hover:bg-gray-800",
-      destructive: "bg-red-600 text-gray-50 hover:bg-red-500"
-    }
-  }
-})
+      destructive: "bg-red-600 text-gray-50 hover:bg-red-500",
+    },
+  },
+});
 ```
 
-These class strings are in the **compiled JavaScript**. The `@source` directive tells Tailwind v4 to scan `node_modules/@uipath/wind` to find these classes.
+These class strings are in the **compiled JavaScript**. The `@source` directive
+tells Tailwind v4 to scan `node_modules/@uipath/apollo-wind` to find these
+classes.
 
-**Without @source:** Components render but have no styling (buttons look like plain text).
+**Without @source:** Components render but have no styling (buttons look like
+plain text).
 
 ### Bundle Size
 
@@ -203,7 +202,7 @@ Gzipped: ~7KB
 ### Button
 
 ```tsx
-import { Button } from '@uipath/wind'
+import { Button } from '@uipath/apollo-wind'
 
 // Variants
 <Button variant="default">Default</Button>
@@ -227,7 +226,7 @@ import { Button } from '@uipath/wind'
 ### Card
 
 ```tsx
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@uipath/wind'
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@uipath/apollo-wind'
 
 <Card>
   <CardHeader>
@@ -246,7 +245,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 ### Form Components
 
 ```tsx
-import { Input, Label, Textarea, Checkbox, Select } from '@uipath/wind'
+import { Input, Label, Textarea, Checkbox, Select } from '@uipath/apollo-wind'
 
 <div className="space-y-4">
   <div>
@@ -274,7 +273,7 @@ import { Input, Label, Textarea, Checkbox, Select } from '@uipath/wind'
 ### Avatar
 
 ```tsx
-import { Avatar, AvatarImage, AvatarFallback } from '@uipath/wind'
+import { Avatar, AvatarImage, AvatarFallback } from '@uipath/apollo-wind'
 
 <Avatar>
   <AvatarImage src="/avatar.jpg" alt="User" />
@@ -285,7 +284,7 @@ import { Avatar, AvatarImage, AvatarFallback } from '@uipath/wind'
 ### Badge
 
 ```tsx
-import { Badge } from '@uipath/wind'
+import { Badge } from '@uipath/apollo-wind'
 
 <Badge>Default</Badge>
 <Badge variant="secondary">Secondary</Badge>
@@ -311,7 +310,7 @@ All components accept a `className` prop for customization:
 Merge classes safely with the `cn()` utility:
 
 ```tsx
-import { cn } from '@uipath/wind'
+import { cn } from '@uipath/apollo-wind'
 
 <Button
   className={cn(
@@ -331,8 +330,10 @@ Create custom variants using `@apply`:
 ```css
 @layer components {
   .btn-primary {
-    @apply bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-3 rounded-lg;
-    @apply hover:scale-105 active:scale-95 transition-all shadow-lg hover:shadow-xl;
+    @apply bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-3
+      rounded-lg;
+    @apply hover:scale-105 active:scale-95 transition-all shadow-lg
+      hover:shadow-xl;
   }
 }
 ```
@@ -340,7 +341,7 @@ Create custom variants using `@apply`:
 ```tsx
 <button className="btn-primary">
   Custom Gradient Button
-</button>
+</button>;
 ```
 
 ---
@@ -353,10 +354,10 @@ Create custom variants using `@apply`:
 
 ```tsx
 // ❌ Wrong
-import '@uipath/wind/dist/styles.css'
+import "@uipath/apollo-wind/dist/styles.css";
 
 // ✅ Correct
-import '@uipath/wind/styles.css'
+import "@uipath/apollo-wind/styles.css";
 ```
 
 ### Tailwind JIT Approach
@@ -366,9 +367,10 @@ import '@uipath/wind/styles.css'
 **Cause:** Missing `postcss.config.js`
 
 **Solution:**
+
 ```js
 // postcss.config.js - REQUIRED
-export { default } from '@uipath/wind/postcss'
+export { default } from "@uipath/apollo-wind/postcss";
 ```
 
 **Problem 2:** Components render but have no styling
@@ -376,10 +378,11 @@ export { default } from '@uipath/wind/postcss'
 **Cause:** Missing `@source` directive
 
 **Solution:**
+
 ```css
 /* app.css */
-@import "@uipath/wind/tailwind.css";
-@source "../node_modules/@uipath/wind";  /* REQUIRED */
+@import "@uipath/apollo-wind/tailwind.css";
+@source "../node_modules/@uipath/apollo-wind"; /* REQUIRED */
 ```
 
 **Problem 3:** Build errors
@@ -387,6 +390,7 @@ export { default } from '@uipath/wind/postcss'
 **Cause:** PostCSS not installed
 
 **Solution:**
+
 ```bash
 npm install postcss
 ```
@@ -396,6 +400,7 @@ npm install postcss
 **Problem:** Tests failing with "Cannot find module '@testing-library/dom'"
 
 **Solution:**
+
 ```bash
 npm install --save-dev @testing-library/dom
 ```
@@ -408,14 +413,14 @@ npm install --save-dev @testing-library/dom
 
 ```tsx
 // app/layout.tsx
-import '@uipath/wind/styles.css' // or use Tailwind JIT approach
+import "@uipath/apollo-wind/styles.css"; // or use Tailwind JIT approach
 
 export default function RootLayout({ children }) {
   return (
     <html>
       <body>{children}</body>
     </html>
-  )
+  );
 }
 ```
 
@@ -423,21 +428,21 @@ export default function RootLayout({ children }) {
 
 ```tsx
 // src/main.tsx
-import '@uipath/wind/styles.css' // or use Tailwind JIT approach
-import App from './App'
+import "@uipath/apollo-wind/styles.css"; // or use Tailwind JIT approach
+import App from "./App";
 
-createRoot(document.getElementById('root')!).render(<App />)
+createRoot(document.getElementById("root")!).render(<App />);
 ```
 
 ### Create React App
 
 ```tsx
 // src/index.tsx
-import '@uipath/wind/styles.css' // or use Tailwind JIT approach
-import App from './App'
+import "@uipath/apollo-wind/styles.css"; // or use Tailwind JIT approach
+import App from "./App";
 
-const root = ReactDOM.createRoot(document.getElementById('root')!)
-root.render(<App />)
+const root = ReactDOM.createRoot(document.getElementById("root")!);
+root.render(<App />);
 ```
 
 ---
@@ -447,16 +452,18 @@ root.render(<App />)
 1. **Tree shake imports:** Import only what you need
    ```tsx
    // ✅ Good
-   import { Button } from '@uipath/wind'
+   import { Button } from "@uipath/apollo-wind";
 
    // ❌ Avoid
-   import * as Wind from '@uipath/wind'
+   import * as Wind from "@uipath/apollo-wind";
    ```
 
 2. **Use JIT for production:** Smaller bundle sizes
 3. **Lazy load heavy components:**
    ```tsx
-   const Card = lazy(() => import('@uipath/wind').then(m => ({ default: m.Card })))
+   const Card = lazy(() =>
+     import("@uipath/apollo-wind").then((m) => ({ default: m.Card }))
+   );
    ```
 
 ---
@@ -469,13 +476,13 @@ root.render(<App />)
 2. Create `postcss.config.js`
 3. Replace import:
    ```diff
-   - import '@uipath/wind/styles.css'
+   - import '@uipath/apollo-wind/styles.css'
    + import './app.css'
    ```
 4. Create `app.css`:
    ```css
-   @import "@uipath/wind/tailwind.css";
-   @source "../node_modules/@uipath/wind";
+   @import "@uipath/apollo-wind/tailwind.css";
+   @source "../node_modules/@uipath/apollo-wind";
    ```
 
 ---
@@ -485,4 +492,5 @@ root.render(<App />)
 - 📖 [Tailwind JIT Guide](./TAILWIND-USAGE.md) - Full Tailwind setup details
 - 🚀 [Quick Start](./QUICK-START.md) - 5-minute getting started
 - 🏗️ [Architecture](./ARCHITECTURE.md) - How it works under the hood
-- 💬 [GitHub Issues](https://github.com/uipath/wind/issues) - Report bugs or request features
+- 💬 [GitHub Issues](https://github.com/uipath/wind/issues) - Report bugs or
+  request features

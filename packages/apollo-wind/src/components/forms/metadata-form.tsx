@@ -1,5 +1,4 @@
 import React, {
-  memo,
   useEffect,
   useMemo,
   useRef,
@@ -7,8 +6,6 @@ import React, {
 } from 'react';
 
 import {
-  type Control,
-  type FieldValues,
   FormProvider,
   useForm,
 } from 'react-hook-form';
@@ -21,7 +18,6 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
-import { DevTool } from '@hookform/devtools';
 import { standardSchemaResolver } from '@hookform/resolvers/standard-schema';
 
 import { DataFetcher } from './data-fetcher';
@@ -49,23 +45,10 @@ interface MetadataFormProps {
   plugins?: FormPlugin[];
   onSubmit?: (data: unknown) => void | Promise<void>;
   className?: string;
-  showDevTools?: boolean;
   disabled?: boolean;
   /** Disable browser autocomplete suggestions. Defaults to undefined (browser default). */
   autoComplete?: "off" | "on";
 }
-
-// Memoized DevTool wrapper to prevent flickering
-const MemoizedDevTool = memo(
-  ({ control }: { control: Control<FieldValues> }) => {
-    return <DevTool control={control} placement="top-right" />;
-  },
-  (prev, next) => {
-    // Only re-render if control reference changes (which should never happen)
-    return prev.control === next.control;
-  },
-);
-MemoizedDevTool.displayName = "MemoizedDevTool";
 
 // Stable default to prevent re-renders
 const DEFAULT_PLUGINS: FormPlugin[] = [];
@@ -75,7 +58,6 @@ export function MetadataForm({
   plugins = DEFAULT_PLUGINS,
   onSubmit,
   className,
-  showDevTools = false,
   disabled = false,
   autoComplete,
 }: MetadataFormProps) {
@@ -95,7 +77,7 @@ export function MetadataForm({
     reValidateMode: schema.reValidateMode || "onChange",
   });
 
-  const { watch, handleSubmit, reset, control } = form;
+  const { watch, handleSubmit, reset } = form;
 
   // Use ref to store values - prevents context recreation on every render
   const valuesRef = useRef<Record<string, unknown>>({});
@@ -167,7 +149,8 @@ export function MetadataForm({
     };
 
     initializeForm();
-  }, [isInitialized]); // Only depend on isInitialized - use key prop to reinitialize
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- Intentionally only depends on isInitialized; use key prop to reinitialize
+  }, [isInitialized]);
 
   // Watch for field changes and execute plugin hooks
   useEffect(() => {
@@ -187,7 +170,7 @@ export function MetadataForm({
     });
 
     return () => subscription.unsubscribe();
-     
+
   }, [watch, isInitialized, plugins]);
 
   // Handle form submission
@@ -232,19 +215,16 @@ export function MetadataForm({
   };
 
   return (
-    <>
-      <FormProvider {...form}>
-        <form onSubmit={handleFormSubmit} className={className} autoComplete={autoComplete}>
-          {renderContent()}
+    <FormProvider {...form}>
+      <form onSubmit={handleFormSubmit} className={className} autoComplete={autoComplete}>
+        {renderContent()}
 
-          {/* Only render FormActions for single-page forms - multi-step forms have their own navigation */}
-          {!schema.steps && (
-            <FormActions schema={schema} context={context} onReset={() => reset()} />
-          )}
-        </form>
-      </FormProvider>
-      {showDevTools && <MemoizedDevTool control={control} />}
-    </>
+        {/* Only render FormActions for single-page forms - multi-step forms have their own navigation */}
+        {!schema.steps && (
+          <FormActions schema={schema} context={context} onReset={() => reset()} />
+        )}
+      </form>
+    </FormProvider>
   );
 }
 

@@ -1,7 +1,7 @@
 import { render } from "@testing-library/react";
 import { axe } from "jest-axe";
 import { describe, expect, it } from "vitest";
-import { ScrollArea, ScrollBar } from "./scroll-area";
+import { ScrollArea } from "./scroll-area";
 
 describe("ScrollArea", () => {
   const ScrollAreaExample = () => (

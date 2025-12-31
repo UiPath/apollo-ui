@@ -724,7 +724,7 @@ export const MultiStepWizard: Story = {
  * - Visual progress bars
  */
 export const FileUpload = {
-    render: () => (
+  render: () => (
     <>
       <div className="flex justify-end mb-4">
         <SchemaViewer schema={fileUploadSchema} />
@@ -882,7 +882,7 @@ const StateViewerExample = () => {
  * - Track dirty and touched fields
  */
 export const WithStateViewer = {
-    render: () => <StateViewerExample />,
+  render: () => <StateViewerExample />,
 } satisfies Story;;
 
 const CompactStateExample = () => {
@@ -967,23 +967,5 @@ const CompactStateExample = () => {
  * - Perfect for monitoring without taking space
  */
 export const WithCompactStateViewer = {
-    render: () => <CompactStateExample />,
+  render: () => <CompactStateExample />,
 } satisfies Story;;
-
-/**
- * With DevTools
- *
- * React Hook Form DevTools integration:
- * - Detailed state inspection panel
- * - Best for development debugging
- */
-export const WithDevTools: Story = {
-  args: {
-    schema: contactFormSchema,
-    showDevTools: true,
-    onSubmit: async (data) => {
-      console.log("Form submitted:", data);
-      alert("Form submitted! Check DevTools panel for detailed state.");
-    },
-  },
-};

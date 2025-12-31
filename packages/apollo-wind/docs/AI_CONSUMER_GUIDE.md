@@ -1,6 +1,6 @@
-# @uipath/wind Agent Consumer Guide
+# @uipath/apollo-wind Agent Consumer Guide
 
-Guide for AI agents consuming the @uipath/wind design system package.
+Guide for AI agents consuming the @uipath/apollo-wind design system package.
 
 ## Core Principle
 
@@ -14,12 +14,12 @@ This ensures visual consistency across all pages and templates.
 ## Installation
 
 ```bash
-npm install @uipath/wind
+npm install @uipath/apollo-wind
 ```
 
 ```tsx
 // app/layout.tsx or main entry
-import "@uipath/wind/styles.css";
+import "@uipath/apollo-wind/styles.css";
 ```
 
 ---
@@ -28,10 +28,10 @@ import "@uipath/wind/styles.css";
 
 ```tsx
 // Components - single import from package root
-import { Button, Card, Column, DataTable, Grid, Row } from "@uipath/wind";
+import { Button, Card, Column, DataTable, Grid, Row } from "@uipath/apollo-wind";
 
 // Utility - cn() for conditional classNames (rare use)
-import { cn } from "@uipath/wind";
+import { cn } from "@uipath/apollo-wind";
 
 // Icons - use lucide-react (peer dependency)
 import { ChevronRight, Settings, User } from "lucide-react";
@@ -526,8 +526,8 @@ and multi-step support.
 ### Import
 
 ```tsx
-import { MetadataForm } from "@uipath/wind";
-import type { FormSchema } from "@uipath/wind";
+import { MetadataForm } from "@uipath/apollo-wind";
+import type { FormSchema } from "@uipath/apollo-wind";
 ```
 
 ### Basic Form
@@ -705,7 +705,7 @@ const schema: FormSchema = {
 Show/hide fields based on other field values:
 
 ```tsx
-import { RuleBuilder } from "@uipath/wind";
+import { RuleBuilder } from "@uipath/apollo-wind";
 
 {
   name: "ssn",
@@ -755,7 +755,7 @@ new RuleBuilder("premium-features")
 Extend form behavior with plugins:
 
 ```tsx
-import { analyticsPlugin, autoSavePlugin } from "@uipath/wind";
+import { analyticsPlugin, autoSavePlugin } from "@uipath/apollo-wind";
 
 <MetadataForm
   schema={schema}
@@ -801,11 +801,10 @@ const schema: FormSchema = {
 
 ### MetadataForm Props
 
-| Prop           | Type             | Description        |
-| -------------- | ---------------- | ------------------ |
-| `schema`       | `FormSchema`     | Form definition    |
-| `plugins`      | `FormPlugin[]`   | Optional plugins   |
-| `onSubmit`     | `(data) => void` | Submit handler     |
-| `className`    | `string`         | CSS class          |
-| `showDevTools` | `boolean`        | Show RHF DevTools  |
-| `disabled`     | `boolean`        | Disable all fields |
+| Prop        | Type             | Description        |
+| ----------- | ---------------- | ------------------ |
+| `schema`    | `FormSchema`     | Form definition    |
+| `plugins`   | `FormPlugin[]`   | Optional plugins   |
+| `onSubmit`  | `(data) => void` | Submit handler     |
+| `className` | `string`         | CSS class          |
+| `disabled`  | `boolean`        | Disable all fields |
