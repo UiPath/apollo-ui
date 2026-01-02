@@ -1,18 +1,19 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import {
+  Checkbox,
+  FormControl,
+  FormControlLabel,
+  InputLabel,
+  MenuItem,
+  Select,
+} from '@mui/material';
 import { FontVariantToken } from '@uipath/apollo-core';
 import { Column, Row } from '@uipath/apollo-react/canvas/layouts';
 import type { Edge, Node } from '@uipath/apollo-react/canvas/xyflow/react';
 import { Panel, Position } from '@uipath/apollo-react/canvas/xyflow/react';
-import { ApButton, ApTypography } from '@uipath/apollo-react/material';
-import {
-  ApCheckbox,
-  ApDropdown,
-  ApDropdownItem,
-  ApIcon,
-  ApIconButton,
-} from '@uipath/portal-shell-react';
+import { ApButton, ApIcon, ApIconButton, ApTypography } from '@uipath/apollo-react/material';
 
 import {
   createNode,
@@ -424,17 +425,21 @@ function HandleConfigurationStory() {
                     <ApIcon name={icon} size="14px" />
                     <ApTypography variant={FontVariantToken.fontSizeXs}>{label}</ApTypography>
                   </Row>
-                  <ApDropdown
-                    size="small"
-                    selectedValue={handleTypes[key]}
-                    onSelectedValueChanged={(e) =>
-                      setHandleTypes((prev) => ({ ...prev, [key]: e.detail as HandleTypeOption }))
-                    }
-                  >
-                    <ApDropdownItem value="input" label="Input" />
-                    <ApDropdownItem value="output" label="Output" />
-                    <ApDropdownItem value="artifact" label="Artifact" />
-                  </ApDropdown>
+                  <FormControl size="small">
+                    <Select
+                      value={handleTypes[key]}
+                      onChange={(e) =>
+                        setHandleTypes((prev) => ({
+                          ...prev,
+                          [key]: e.target.value as HandleTypeOption,
+                        }))
+                      }
+                    >
+                      <MenuItem value="input">Input</MenuItem>
+                      <MenuItem value="output">Output</MenuItem>
+                      <MenuItem value="artifact">Artifact</MenuItem>
+                    </Select>
+                  </FormControl>
                   <Row gap={2} align="center">
                     <ApIconButton
                       onClick={() => updateHandleCount(key, -1)}
@@ -458,10 +463,11 @@ function HandleConfigurationStory() {
           </Column>
 
           {/* Show buttons toggle */}
-          <ApCheckbox
+          <FormControlLabel
+            control={
+              <Checkbox checked={showButtons} onChange={(e) => setShowButtons(e.target.checked)} />
+            }
             label="Show + buttons on outputs"
-            checked={showButtons}
-            onValueChanged={(e) => setShowButtons(e.detail as boolean)}
           />
 
           {/* Reset */}

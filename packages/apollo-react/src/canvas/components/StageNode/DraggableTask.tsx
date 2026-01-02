@@ -4,8 +4,14 @@ import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { FontVariantToken } from '@uipath/apollo-core';
 import { Column, Row } from '@uipath/apollo-react/canvas/layouts';
-import { ApBadge, ApTypography, BadgeSize, StatusTypes } from '@uipath/apollo-react/material';
-import { ApIcon, ApTooltip } from '@uipath/portal-shell-react';
+import {
+  ApBadge,
+  ApIcon,
+  ApTooltip,
+  ApTypography,
+  BadgeSize,
+  StatusTypes,
+} from '@uipath/apollo-react/material';
 
 import { ExecutionStatusIcon } from '../ExecutionStatusIcon';
 import type { DraggableTaskProps, TaskContentProps } from './DraggableTask.types';

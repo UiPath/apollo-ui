@@ -16,8 +16,7 @@ import {
 import type { NewBaseNodeData, NewBaseNodeDisplayProps, NodeAdornments } from './NewBaseNode.types';
 import { cx } from '@uipath/apollo-react/canvas/utils';
 import { FontVariantToken } from '@uipath/apollo-core';
-import { ApIcon } from '@uipath/apollo-react/material/components';
-import { ApTooltip, ApTypography } from '@uipath/portal-shell-react';
+import { ApIcon, ApTooltip, ApTypography } from '@uipath/apollo-react/material/components';
 import { useButtonHandles } from '../ButtonHandle/useButtonHandles';
 import { NodeToolbar } from '../NodeToolbar';
 

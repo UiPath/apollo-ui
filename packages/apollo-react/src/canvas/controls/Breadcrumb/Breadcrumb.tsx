@@ -2,8 +2,7 @@ import React from 'react';
 
 import styled from '@emotion/styled';
 import { FontVariantToken, Spacing } from '@uipath/apollo-core';
-import { ApTypography } from '@uipath/apollo-react/material';
-import { ApTooltip } from '@uipath/portal-shell-react';
+import { ApTooltip, ApTypography } from '@uipath/apollo-react/material';
 
 import { Row } from '../../layouts';
 

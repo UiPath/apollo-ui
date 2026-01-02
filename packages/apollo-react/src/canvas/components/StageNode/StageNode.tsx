@@ -22,8 +22,7 @@ import {
 import { FontVariantToken, Spacing } from '@uipath/apollo-core';
 import { Column, Row } from '@uipath/apollo-react/canvas/layouts';
 import { Position, useStore, useViewport } from '@uipath/apollo-react/canvas/xyflow/react';
-import { ApLink, ApTypography } from '@uipath/apollo-react/material';
-import { ApIcon, ApTooltip } from '@uipath/portal-shell-react';
+import { ApIcon, ApLink, ApTooltip, ApTypography } from '@uipath/apollo-react/material';
 
 import { useConnectedHandles } from '../BaseCanvas/ConnectedHandlesContext';
 import type { HandleConfiguration } from '../BaseNode/BaseNode.types';

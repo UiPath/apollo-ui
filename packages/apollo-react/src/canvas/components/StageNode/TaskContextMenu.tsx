@@ -1,7 +1,6 @@
-import { useState, useCallback, useMemo, memo, useEffect } from 'react';
+import React, { useState, useCallback, useMemo, memo, useEffect } from 'react';
 import type { NodeMenuAction, NodeMenuItem } from '../NodeContextMenu';
-import { ApMenu } from '@uipath/portal-shell-react';
-
+import { ApMenu } from '@uipath/apollo-react/material';
 interface TaskContextMenuProps {
   menuItems: NodeMenuItem[];
   isVisible: boolean;
@@ -64,7 +63,6 @@ export const TaskContextMenu = memo(({ isVisible, menuItems, refTask }: TaskCont
       menuItems={transformedMenuItems}
       anchorEl={refTask.current ?? undefined}
       width={300}
-      autoFocus
     />
   );
 });

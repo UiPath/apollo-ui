@@ -6,6 +6,14 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import type { Meta, StoryObj } from '@storybook/react';
+import {
+  Checkbox,
+  FormControl,
+  FormControlLabel,
+  InputLabel,
+  MenuItem,
+  Select,
+} from '@mui/material';
 import { FontVariantToken } from '@uipath/apollo-core';
 import { Column } from '@uipath/apollo-react/canvas/layouts';
 import type { Connection, Edge, Node } from '@uipath/apollo-react/canvas/xyflow/react';
@@ -16,7 +24,6 @@ import {
   useEdgesState,
 } from '@uipath/apollo-react/canvas/xyflow/react';
 import { ApTypography } from '@uipath/apollo-react/material';
-import { ApCheckbox, ApDropdown, ApDropdownItem } from '@uipath/portal-shell-react';
 
 import { StoryInfoPanel, useCanvasStory, withCanvasProviders } from '../../storybook-utils';
 import { DefaultCanvasTranslations } from '../../types';
@@ -463,23 +470,26 @@ function InteractiveEdgeSelectionStory() {
     >
       <StoryInfoPanel title="Edge Configuration">
         <Column gap={12} style={{ marginTop: 12 }}>
-          <ApDropdown
-            size="small"
-            label="Edge type"
-            selectedValue={selectedEdgeType}
-            onSelectedValueChanged={(e) => setSelectedEdgeType(e.detail as string)}
-          >
-            <ApDropdownItem value="default" label="Default (Bezier)" />
-            <ApDropdownItem value="straight" label="Straight" />
-            <ApDropdownItem value="step" label="Step" />
-            <ApDropdownItem value="smoothstep" label="Smooth Step" />
-            <ApDropdownItem value="bezier" label="Bezier" />
-          </ApDropdown>
+          <FormControl size="small" fullWidth>
+            <InputLabel>Edge type</InputLabel>
+            <Select
+              value={selectedEdgeType}
+              onChange={(e) => setSelectedEdgeType(e.target.value)}
+              label="Edge type"
+            >
+              <MenuItem value="default">Default (Bezier)</MenuItem>
+              <MenuItem value="straight">Straight</MenuItem>
+              <MenuItem value="step">Step</MenuItem>
+              <MenuItem value="smoothstep">Smooth Step</MenuItem>
+              <MenuItem value="bezier">Bezier</MenuItem>
+            </Select>
+          </FormControl>
 
-          <ApCheckbox
+          <FormControlLabel
+            control={
+              <Checkbox checked={isAnimated} onChange={(e) => setIsAnimated(e.target.checked)} />
+            }
             label="Animated"
-            checked={isAnimated}
-            onValueChanged={(e) => setIsAnimated(e.detail as boolean)}
           />
 
           <Column gap={4}>

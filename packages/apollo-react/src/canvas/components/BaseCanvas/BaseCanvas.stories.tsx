@@ -1,12 +1,12 @@
 import { useMemo, useRef, useState } from 'react';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { FormControl, InputLabel, MenuItem, Select } from '@mui/material';
 import { FontVariantToken } from '@uipath/apollo-core';
 import { Column, Row } from '@uipath/apollo-react/canvas/layouts';
 import type { Edge, Node } from '@uipath/apollo-react/canvas/xyflow/react';
 import { BackgroundVariant, Panel, Position } from '@uipath/apollo-react/canvas/xyflow/react';
 import { ApButton, ApTypography } from '@uipath/apollo-react/material';
-import { ApDropdown, ApDropdownItem } from '@uipath/portal-shell-react';
 
 import {
   createNode,
@@ -181,18 +181,20 @@ function DefaultStory() {
             </ApTypography>
           </Column>
 
-          <ApDropdown
-            size="small"
-            label="Edge type"
-            selectedValue={defaultEdgeType}
-            onSelectedValueChanged={(e) => setDefaultEdgeType(e.detail as string)}
-          >
-            <ApDropdownItem value="default" label="Default (Bezier)" />
-            <ApDropdownItem value="straight" label="Straight" />
-            <ApDropdownItem value="step" label="Step" />
-            <ApDropdownItem value="smoothstep" label="Smooth Step" />
-            <ApDropdownItem value="bezier" label="Bezier" />
-          </ApDropdown>
+          <FormControl size="small" fullWidth>
+            <InputLabel>Edge type</InputLabel>
+            <Select
+              value={defaultEdgeType}
+              onChange={(e) => setDefaultEdgeType(e.target.value)}
+              label="Edge type"
+            >
+              <MenuItem value="default">Default (Bezier)</MenuItem>
+              <MenuItem value="straight">Straight</MenuItem>
+              <MenuItem value="step">Step</MenuItem>
+              <MenuItem value="smoothstep">Smooth Step</MenuItem>
+              <MenuItem value="bezier">Bezier</MenuItem>
+            </Select>
+          </FormControl>
 
           <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px' }}>
             <input

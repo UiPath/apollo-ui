@@ -5,8 +5,7 @@ import { DateTime } from 'luxon';
 import { FontVariantToken, Spacing } from '@uipath/apollo-core';
 import * as Icons from '@uipath/apollo-react/canvas/icons';
 import { Column, Row } from '@uipath/apollo-react/canvas/layouts';
-import { ApTypography } from '@uipath/apollo-react/material';
-import { ApIconButton } from '@uipath/portal-shell-react';
+import { ApIconButton, ApTypography } from '@uipath/apollo-react/material';
 
 import type { IRawSpan } from '../../../../types/TraceModels';
 import type { NormalizedSpan } from './TimelinePlayer.utils';

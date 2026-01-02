@@ -15,8 +15,7 @@ import {
   useNodesState,
   useReactFlow,
 } from '@uipath/apollo-react/canvas/xyflow/react';
-import { ApTypography } from '@uipath/apollo-react/material';
-import { ApCircularProgress, ApIcon } from '@uipath/portal-shell-react';
+import { ApCircularProgress, ApIcon, ApTypography } from '@uipath/apollo-react/material';
 
 import type { CanvasTranslations, CodedAgentNodeTranslations } from '../../types';
 import { DefaultCanvasTranslations, DefaultCodedAgentNodeTranslations } from '../../types';
