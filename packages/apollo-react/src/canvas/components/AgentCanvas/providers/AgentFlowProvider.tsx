@@ -176,7 +176,6 @@ export const AgentVisualizationFlowProvider = ({
   </ReactFlowProvider>
 );
 
-// eslint-disable-next-line react-refresh/only-export-components
 export const useAgentFlow = () => {
   const context = useContext(AgentFlowProviderContext);
   if (!context) {

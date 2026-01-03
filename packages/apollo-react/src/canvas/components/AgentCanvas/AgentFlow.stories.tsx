@@ -1125,8 +1125,8 @@ const SuggestionModeWrapper = ({
                 <li>Only one placeholder at a time (new ones replace old)</li>
                 <li>Placeholder auto-selected, cannot show toolbar</li>
                 <li>Clicking placeholder reopens modal</li>
-                <li>Marked as "standalone" suggestions</li>
-                <li>Won't appear in suggestion group panel</li>
+                <li>Marked as &quot;standalone&quot; suggestions</li>
+                <li>Won&apos;t appear in suggestion group panel</li>
                 <li>Excluded from bulk operations</li>
                 <li>Escalation & Memory Space bypass placeholder</li>
               </ul>

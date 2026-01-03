@@ -27,7 +27,7 @@ describe('ListView', () => {
     it('should show loading spinner when loading with no items', () => {
       render(<ListView {...defaultProps} items={[]} isLoading={true} />);
 
-      expect(screen.getAllByTestId('ap-skeleton')).length.greaterThan(0);
+      expect(screen.getAllByTestId('ap-skeleton').length).toBeGreaterThan(0);
       expect(screen.queryByText('No items found')).not.toBeInTheDocument();
     });
 

@@ -638,7 +638,7 @@ describe('ButtonHandleStyleUtils', () => {
       expect(right).toBe('unset');
     });
 
-    it('should return the correct right for a left handle with multiple handles with no custom size/position', () => {
+    it('should return the correct right for a right handle with multiple handles with no custom size/position', () => {
       const right = rightPositionForHandle({ position: Position.Right, positionPercent: 25 });
       expect(right).toBe('0');
     });

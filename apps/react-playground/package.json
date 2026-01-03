@@ -1,43 +1,43 @@
 {
-  "name": "react-playground",
-  "version": "0.0.0",
-  "private": true,
-  "description": "React playground for testing Apollo components",
-  "type": "module",
-  "scripts": {
-    "dev": "rsbuild dev",
-    "build": "pnpm typecheck && rsbuild build",
-    "preview": "rsbuild preview",
-    "clean": "rm -rf dist",
-    "typecheck": "tsc --noEmit",
-    "lint": "biome check .",
-    "lint:fix": "biome check --write .",
-    "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,css,scss,md}\"",
-    "format:check": "prettier --check \"src/**/*.{ts,tsx,js,jsx,json,css,scss,md}\""
-  },
-  "dependencies": {
-    "@emotion/react": "^11.14.0",
-    "@emotion/styled": "^11.14.1",
-    "@mui/icons-material": "^5.18.0",
-    "@mui/material": "5.18.0",
-    "@mui/x-date-pickers": "^6.20.2",
-    "@uipath/ap-chat": "workspace:*",
-    "@uipath/ap-data-grid": "workspace:*",
-    "@uipath/apollo-react": "workspace:*",
-    "@uipath/apollo-wind": "workspace:*",
-    "dayjs": "^1.11.19",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "react-router-dom": "^7.9.6",
-    "styled-components": "^6.1.19"
-  },
-  "devDependencies": {
-    "@biomejs/biome": "^2.3.6",
-    "@rsbuild/core": "^1.6.1",
-    "@rsbuild/plugin-react": "^1.4.1",
-    "@types/react": "^19.0.6",
-    "@types/react-dom": "^19.0.3",
-    "@types/styled-components": "^5.1.36",
-    "typescript": "^5.9.3"
-  }
+	"name": "react-playground",
+	"version": "0.0.0",
+	"private": true,
+	"description": "React playground for testing Apollo components",
+	"type": "module",
+	"scripts": {
+		"dev": "rsbuild dev",
+		"build": "pnpm typecheck && rsbuild build",
+		"preview": "rsbuild preview",
+		"clean": "rm -rf dist",
+		"typecheck": "tsc --noEmit",
+		"lint": "biome check .",
+		"lint:fix": "biome check --write .",
+		"format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,css,scss,md}\"",
+		"format:check": "prettier --check \"src/**/*.{ts,tsx,js,jsx,json,css,scss,md}\""
+	},
+	"dependencies": {
+		"@emotion/react": "^11.14.0",
+		"@emotion/styled": "^11.14.1",
+		"@mui/icons-material": "^5.18.0",
+		"@mui/material": "5.18.0",
+		"@mui/x-date-pickers": "^6.20.2",
+		"@uipath/ap-chat": "workspace:*",
+		"@uipath/ap-data-grid": "workspace:*",
+		"@uipath/apollo-react": "workspace:*",
+		"@uipath/apollo-wind": "workspace:*",
+		"dayjs": "^1.11.19",
+		"react": "^19.0.0",
+		"react-dom": "^19.0.0",
+		"react-router-dom": "^7.9.6",
+		"styled-components": "^6.1.19"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "^2.3.6",
+		"@rsbuild/core": "^1.6.1",
+		"@rsbuild/plugin-react": "^1.4.1",
+		"@types/react": "^19.0.6",
+		"@types/react-dom": "^19.0.3",
+		"@types/styled-components": "^5.1.36",
+		"typescript": "^5.9.3"
+	}
 }

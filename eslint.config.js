@@ -1,5 +1,4 @@
 import prettierConfig from 'eslint-config-prettier';
-import prettierPlugin from 'eslint-plugin-prettier';
 import reactPlugin from 'eslint-plugin-react';
 import reactHooksPlugin from 'eslint-plugin-react-hooks';
 import vitestPlugin from 'eslint-plugin-vitest';
@@ -18,7 +17,6 @@ const config = [
       '@typescript-eslint': tsPlugin,
       react: reactPlugin,
       'react-hooks': reactHooksPlugin,
-      prettier: prettierPlugin,
     },
     languageOptions: {
       parser: tsParser,
@@ -28,11 +26,16 @@ const config = [
         ecmaFeatures: {
           jsx: true,
         },
+        jsxPragma: null, // Don't require React to be in scope for JSX
       },
       globals: {
         ...globals.browser,
         ...globals.node,
         ...globals.es2021,
+        React: 'readonly', // Make React globally available to ESLint
+        NodeJS: 'readonly', // Node.js types
+        EventListener: 'readonly', // Browser API
+        FrameRequestCallback: 'readonly', // Browser API
       },
     },
     settings: {
@@ -50,11 +53,13 @@ const config = [
         'warn',
         { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
       ],
+      'no-redeclare': 'off', // Disabled in favor of TS rule
+      '@typescript-eslint/no-redeclare': 'error', // Handles TS overloads correctly
       'react/react-in-jsx-scope': 'off',
       'react/prop-types': 'off',
       'react/display-name': 'off',
       '@typescript-eslint/no-empty-object-type': 'off',
-      'prettier/prettier': 'error',
+      'react-refresh/only-export-components': 'off',
     },
   },
   {

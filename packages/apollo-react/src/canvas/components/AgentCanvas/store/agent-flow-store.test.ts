@@ -502,7 +502,7 @@ describe('agent-flow-store', () => {
 
 describe('agent-flow-store hooks', () => {
   const wrapper = ({ children }: { children: React.ReactNode }) =>
-    React.createElement(AgentFlowProvider, { ...baseProps, children });
+    React.createElement(AgentFlowProvider, baseProps, children);
 
   it('useNodes returns nodes', () => {
     const { result } = renderHook(() => useNodes(), { wrapper });
