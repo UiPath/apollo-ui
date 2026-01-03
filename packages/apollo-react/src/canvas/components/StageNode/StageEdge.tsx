@@ -1,4 +1,3 @@
-import React from 'react';
 import type { EdgeProps } from '@uipath/apollo-react/canvas/xyflow/react';
 import {
   EdgeLabelRenderer,

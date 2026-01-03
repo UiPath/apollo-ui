@@ -42,7 +42,7 @@ import { BlankCanvasNode } from '../BlankCanvasNode';
 import { AddNodePreview } from '../AddNodePanel/AddNodePreview';
 import { AddNodeManager } from '../AddNodePanel/AddNodeManager';
 import { MiniCanvasNavigator } from '../MiniCanvasNavigator';
-import { shallow } from 'zustand/shallow';
+import { useShallow } from 'zustand/shallow';
 import { PREVIEW_EDGE_ID, PREVIEW_NODE_ID } from '../../constants';
 import { useAddNodeOnConnectEnd } from '../../hooks/useAddNodeOnConnectEnd';
 import { DefaultCanvasTranslations } from '../../types';
@@ -84,8 +84,8 @@ export const HierarchicalCanvas: React.FC<HierarchicalCanvasProps> = ({ mode = '
   // Optimized selectors to prevent unnecessary re-renders
   const currentCanvas = useCanvasStore(selectCurrentCanvas);
   const previousCanvas = useCanvasStore(selectPreviousCanvas);
-  const breadcrumbs = useCanvasStore(selectBreadcrumbs, shallow);
-  const actions = useCanvasStore(selectCanvasActions, shallow);
+  const breadcrumbs = useCanvasStore(useShallow(selectBreadcrumbs));
+  const actions = useCanvasStore(useShallow(selectCanvasActions));
   const transitionState = useCanvasStore(selectTransitionState);
   const store = useCanvasStore();
 

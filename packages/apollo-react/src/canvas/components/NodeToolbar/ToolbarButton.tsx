@@ -46,10 +46,12 @@ export const ToolbarButton = memo(({ action, layoutId }: ToolbarButtonProps) => 
       $hoverColor={hoverColor}
     >
       <ApTooltip content={action.label} placement="top">
-        {action.icon && typeof action.icon === 'string' && (
-          <ApIcon variant="outlined" name={action.icon} size="16px" color={action.color} />
-        )}
-        {action.icon && typeof action.icon !== 'string' && action.icon}
+        <>
+          {action.icon && typeof action.icon === 'string' && (
+            <ApIcon variant="outlined" name={action.icon} size="16px" color={action.color} />
+          )}
+          {action.icon && typeof action.icon !== 'string' && action.icon}
+        </>
       </ApTooltip>
     </StyledToolbarButton>
   );

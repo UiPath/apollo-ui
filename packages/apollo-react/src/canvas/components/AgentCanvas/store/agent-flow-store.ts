@@ -433,7 +433,7 @@ export const hasResourceNode = (node: AgentFlowCustomNode, resource: AgentFlowRe
  */
 const findNodeForSuggestion = (
   suggestion: NonNullable<AgentFlowProps['suggestionGroup']>['suggestions'][number],
-  suggestionGroup: AgentFlowProps['suggestionGroup'],
+  _suggestionGroup: AgentFlowProps['suggestionGroup'],
   nodes: AgentFlowCustomNode[]
 ): AgentFlowCustomNode | null => {
   if (!suggestion) return null;

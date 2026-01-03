@@ -4,7 +4,7 @@ import { ApMenu } from '@uipath/apollo-react/material';
 interface TaskContextMenuProps {
   menuItems: NodeMenuItem[];
   isVisible: boolean;
-  refTask: React.RefObject<HTMLElement>;
+  refTask: React.RefObject<HTMLElement | null>;
 }
 
 export const TaskContextMenu = memo(({ isVisible, menuItems, refTask }: TaskContextMenuProps) => {
@@ -61,7 +61,7 @@ export const TaskContextMenu = memo(({ isVisible, menuItems, refTask }: TaskCont
       data-testid="context-menu"
       isOpen={isMenuOpen}
       menuItems={transformedMenuItems}
-      anchorEl={refTask.current ?? undefined}
+      anchorEl={refTask.current}
       width={300}
     />
   );

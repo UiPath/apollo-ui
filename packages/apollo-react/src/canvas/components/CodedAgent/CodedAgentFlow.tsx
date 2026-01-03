@@ -1,4 +1,4 @@
-import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { memo, useCallback, useEffect, useMemo, useRef, useState, type ReactElement } from 'react';
 
 import styled from '@emotion/styled';
 import { FontVariantToken, Spacing } from '@uipath/apollo-core';
@@ -301,7 +301,7 @@ const edgeTypes = {
   default: CodedAgentEdge,
 };
 
-const CodedAgentFlowInner = (props: CodedAgentFlowProps): JSX.Element => {
+const CodedAgentFlowInner = (props: CodedAgentFlowProps): ReactElement => {
   const reactFlowInstance = useReactFlow();
   const [nodes, setNodes, onNodesChange] = useNodesState([] as Node[]);
   const [edges, setEdges] = useEdgesState([] as Edge[]);
@@ -461,7 +461,7 @@ const CodedAgentFlowInner = (props: CodedAgentFlowProps): JSX.Element => {
   );
 };
 
-export const CodedAgentFlow = (props: CodedAgentFlowProps): JSX.Element => {
+export const CodedAgentFlow = (props: CodedAgentFlowProps): ReactElement => {
   return (
     <ReactFlowProvider>
       <CodedAgentFlowInner {...props} />

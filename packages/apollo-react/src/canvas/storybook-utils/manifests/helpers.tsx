@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { type ReactElement } from 'react';
 import { Position } from '@uipath/apollo-react/canvas/xyflow/react';
 import * as Icons from '@uipath/apollo-react/canvas/icons';
 import type { HandleConfiguration } from '../../components/BaseNode/BaseNode.types';
@@ -6,7 +6,7 @@ import type { BaseNodeData } from '../../components/BaseNode/BaseNode.types';
 import type { ManifestHandleGroup } from './types';
 import { icons } from 'lucide-react';
 
-export type IconComponent = (props: { w?: number; h?: number }) => JSX.Element;
+export type IconComponent = (props: { w?: number; h?: number }) => ReactElement;
 
 /**
  * Registry of available icons (UIPath icons only)

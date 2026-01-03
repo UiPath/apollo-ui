@@ -54,15 +54,16 @@ export function ApTooltip({
     if (!closeOnInteraction) {
       return {};
     }
+    const childProps = children.props as any;
     return {
       onMouseLeave: handleMouseLeave,
       onInputCapture: (e: React.FormEvent<HTMLElement>) => {
         handleInteractionStart();
-        children.props.onInputCapture?.(e);
+        childProps.onInputCapture?.(e);
       },
       onMouseDown: (e: React.MouseEvent<HTMLElement>) => {
         handleInteractionStart();
-        children.props.onMouseDown?.(e);
+        childProps.onMouseDown?.(e);
       },
     };
   };
@@ -78,7 +79,8 @@ export function ApTooltip({
       if (closeOnInteraction) {
         setIsTemporarilyClosed(false);
       }
-      children.props.onMouseLeave?.(e);
+      const childProps = children.props as any;
+      childProps.onMouseLeave?.(e);
     },
     [closeOnInteraction, children.props]
   );
@@ -88,10 +90,11 @@ export function ApTooltip({
         ref: setChildRef,
         onMouseEnter: (e: React.MouseEvent<HTMLElement>) => {
           truncationDetection?.check();
-          children.props.onMouseEnter?.(e);
+          const childProps = children.props as any;
+          childProps.onMouseEnter?.(e);
         },
         ...getCloseOnInteractionHandlers(),
-      })
+      } as any)
     : React.cloneElement(children, getCloseOnInteractionHandlers());
 
   const debugPopperInstanceRef = React.useRef<any>(null);

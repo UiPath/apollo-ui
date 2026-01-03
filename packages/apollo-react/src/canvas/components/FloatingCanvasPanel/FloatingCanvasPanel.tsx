@@ -1,4 +1,4 @@
-import React, { type ReactNode } from 'react';
+import { type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { ViewportPortal } from '@uipath/apollo-react/canvas/xyflow/react';
 import { type Placement } from '@floating-ui/react';

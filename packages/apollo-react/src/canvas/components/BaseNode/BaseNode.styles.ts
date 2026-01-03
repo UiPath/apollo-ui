@@ -175,6 +175,8 @@ export const BaseContainer = styled.div<{
         outline: 4px solid var(--uix-canvas-secondary-pressed);
       `;
     }
+
+    return '';
   }}
 `;
 

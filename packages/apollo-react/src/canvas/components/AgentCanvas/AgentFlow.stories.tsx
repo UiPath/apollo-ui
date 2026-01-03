@@ -913,7 +913,7 @@ const SuggestionModeWrapper = ({
   }, [pendingStandalonePlaceholderId, handleActOnSuggestion]);
 
   const handleActOnSuggestionGroup = useCallback(
-    (suggestionGroupId: string, action: 'accept' | 'reject') => {
+    (_suggestionGroupId: string, action: 'accept' | 'reject') => {
       if (!suggestionGroup) return;
 
       // Filter out standalone suggestions - they should not be affected by bulk operations

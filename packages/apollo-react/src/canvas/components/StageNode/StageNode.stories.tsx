@@ -18,7 +18,7 @@ import { StageEdge } from './StageEdge';
 import { StageNode } from './StageNode';
 import type { StageNodeProps, StageTaskItem } from './StageNode.types';
 
-const meta = {
+const meta: Meta<typeof StageNode> = {
   title: 'Canvas/StageNode',
   component: StageNode as any,
   parameters: {

@@ -1,4 +1,3 @@
-import React from 'react';
 import type { ConnectionLineComponentProps } from '@uipath/apollo-react/canvas/xyflow/react';
 import { getBezierPath } from '@uipath/apollo-react/canvas/xyflow/react';
 

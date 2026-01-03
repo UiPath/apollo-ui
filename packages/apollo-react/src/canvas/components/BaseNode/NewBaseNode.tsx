@@ -243,8 +243,7 @@ const NewBaseNodeComponent = (
               <ApTooltip
                 delay
                 placement="top"
-                {...(adornment.tooltip &&
-                  typeof adornment.tooltip === 'string' && { content: adornment.tooltip })}
+                content={typeof adornment.tooltip === 'string' ? adornment.tooltip : ''}
                 {...(adornment.tooltip &&
                   typeof adornment.tooltip !== 'string' && {
                     formattedContent: (
@@ -257,7 +256,7 @@ const NewBaseNodeComponent = (
                     ),
                   })}
               >
-                {adornment.icon}
+                <span>{adornment.icon}</span>
               </ApTooltip>
             </BaseBadgeSlot>
           );
@@ -266,10 +265,12 @@ const NewBaseNodeComponent = (
         {displayLabel && (
           <BaseTextContainer hasBottomHandles={hasVisibleBottomHandles} shape={displayShape}>
             <ApTooltip delay placement="top" content={displayLabelTooltip}>
-              <BaseHeader shape={displayShape} backgroundColor={displayLabelBackgroundColor}>
-                {displayLabel}
-              </BaseHeader>
-              {displaySubLabel && <BaseSubHeader>{displaySubLabel}</BaseSubHeader>}
+              <>
+                <BaseHeader shape={displayShape} backgroundColor={displayLabelBackgroundColor}>
+                  {displayLabel}
+                </BaseHeader>
+                {displaySubLabel && <BaseSubHeader>{displaySubLabel}</BaseSubHeader>}
+              </>
             </ApTooltip>
             {displayCenterAdornment}
           </BaseTextContainer>

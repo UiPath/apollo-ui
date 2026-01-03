@@ -155,7 +155,7 @@ export function ConnectedHandlesProvider({
   edges: Edge[];
   children: ReactNode;
 }) {
-  const storeRef = useRef<ConnectedHandlesStore>();
+  const storeRef = useRef<ConnectedHandlesStore | undefined>(undefined);
 
   if (!storeRef.current) {
     storeRef.current = new ConnectedHandlesStore();

@@ -22,7 +22,7 @@ import { CanvasPositionControls } from '../CanvasPositionControls';
 import { NewBaseNode } from './NewBaseNode';
 import type { NewBaseNodeData, NewBaseNodeDisplayProps } from './NewBaseNode.types';
 
-const meta = {
+const meta: Meta<typeof NewBaseNode> = {
   title: 'Canvas/NewBaseNode',
   parameters: {
     layout: 'fullscreen',

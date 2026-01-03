@@ -1,6 +1,6 @@
 import '@testing-library/jest-dom';
 
-import React from 'react';
+import React, { type ReactElement } from 'react';
 
 import { vi } from 'vitest';
 
@@ -87,11 +87,11 @@ vi.mock('@uipath/apollo-react/canvas/xyflow/react', () => ({
   Controls: () => React.createElement('div', { 'data-testid': 'controls' }),
   MiniMap: () => React.createElement('div', { 'data-testid': 'minimap' }),
   Background: ({
-    color,
-    bgColor,
-    variant,
-    gap,
-    size,
+    color: _color,
+    bgColor: _bgColor,
+    variant: _variant,
+    gap: _gap,
+    size: _size,
   }: {
     color?: string;
     bgColor?: string;
@@ -115,7 +115,7 @@ vi.mock('@uipath/apollo-react/canvas/xyflow/react', () => ({
     type,
     position,
     id,
-    isConnectable,
+    isConnectable: _isConnectable,
   }: {
     type: string;
     position: string;
@@ -295,7 +295,7 @@ vi.mock('react-window', () => ({
   }: {
     rowCount: number;
     rowProps: object;
-    rowComponent: (props: { index: number }) => JSX.Element;
+    rowComponent: (props: { index: number }) => ReactElement;
   }) =>
     React.createElement(
       'div',

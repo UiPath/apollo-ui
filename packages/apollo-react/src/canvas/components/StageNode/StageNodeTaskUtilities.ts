@@ -8,7 +8,7 @@ export const getContextMenuItems = (
   groupIndex: number,
   tasksLength: number,
   taskIndex: number,
-  taskGroupLength: number,
+  _taskGroupLength: number,
   isAboveParallel: boolean,
   isBelowParallel: boolean,
   reGroupTaskFunction: (

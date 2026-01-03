@@ -1,4 +1,4 @@
-import { useMemo, useRef, useEffect } from 'react';
+import { useMemo, useRef, useEffect, type CSSProperties, type RefCallback } from 'react';
 import { useNodes, useReactFlow } from '@uipath/apollo-react/canvas/xyflow/react';
 import {
   autoUpdate,
@@ -19,13 +19,23 @@ export interface UseFloatingPositionOptions {
   offset?: number;
 }
 
+export interface UseFloatingPositionReturn {
+  computedAnchor: AnchorRect | null;
+  floatingStyles: CSSProperties;
+  refs: {
+    setReference: RefCallback<Element>;
+    setFloating: RefCallback<HTMLElement>;
+  };
+  mergedReferenceRef: ((instance: Element | null) => void) | null;
+}
+
 export function useFloatingPosition({
   open = true,
   nodeId,
   anchorRect,
   placement = 'right-start',
   offset: offsetValue = 20,
-}: UseFloatingPositionOptions) {
+}: UseFloatingPositionOptions): UseFloatingPositionReturn {
   const { getInternalNode } = useReactFlow();
   const nodes = useNodes();
   const referenceRef = useRef<HTMLDivElement>(null);

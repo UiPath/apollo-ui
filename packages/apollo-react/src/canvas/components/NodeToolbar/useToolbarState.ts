@@ -14,8 +14,8 @@ export type ToolbarDisplayState = 'hidden' | 'pinned' | 'expanded';
 export interface UseToolbarStateReturn {
   isDropdownOpen: boolean;
   setIsDropdownOpen: (open: boolean) => void;
-  dropdownRef: React.RefObject<HTMLDivElement>;
-  buttonRef: React.RefObject<HTMLButtonElement>;
+  dropdownRef: React.RefObject<HTMLDivElement | null>;
+  buttonRef: React.RefObject<HTMLButtonElement | null>;
   displayState: ToolbarDisplayState;
   shouldShowOverflow: boolean;
   actionsToDisplay: ProcessedToolbarItem[];
@@ -118,6 +118,7 @@ export const useToolbarState = ({
       document.addEventListener('mousedown', handleClickOutside);
       return () => document.removeEventListener('mousedown', handleClickOutside);
     }
+    return undefined;
   }, [isDropdownOpen]);
 
   // Reset dropdown when toolbar is hidden

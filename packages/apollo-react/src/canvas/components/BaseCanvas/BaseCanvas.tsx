@@ -6,6 +6,7 @@ import {
   useMemo,
   useState,
   type CSSProperties,
+  type ReactElement,
 } from 'react';
 import type { Edge, Node, ReactFlowInstance } from '@uipath/apollo-react/canvas/xyflow/react';
 import { ConnectionMode, ReactFlow } from '@uipath/apollo-react/canvas/xyflow/react';
@@ -208,4 +209,4 @@ export const BaseCanvas = forwardRef(function BaseCanvas<
   props: BaseCanvasProps<NodeType, EdgeType> & {
     ref?: React.Ref<BaseCanvasRef<NodeType, EdgeType>>;
   }
-) => JSX.Element;
+) => ReactElement;

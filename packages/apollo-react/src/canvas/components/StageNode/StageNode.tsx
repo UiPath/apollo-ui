@@ -52,7 +52,7 @@ import { flattenTasks, getProjection, reorderTasks } from './StageNode.utils';
 import { getContextMenuItems } from './StageNodeTaskUtilities';
 
 interface TaskStateReference {
-  anchor: React.RefObject<HTMLDivElement>;
+  anchor: React.RefObject<HTMLDivElement | null>;
   isParallel: boolean;
   groupIndex: number;
   taskIndex: number;

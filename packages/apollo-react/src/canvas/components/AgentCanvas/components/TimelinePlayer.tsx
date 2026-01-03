@@ -227,7 +227,7 @@ export const TimelinePlayer: React.FC<{
   const [progress, setProgress] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const [speedLevel, setSpeedLevel] = useState(SPEED_LEVEL_1);
-  const requestRef = useRef<number>();
+  const requestRef = useRef<number | undefined>(undefined);
   const timelineRef = useRef<HTMLDivElement>(null);
   const mountedRef = useRef(true);
 
@@ -382,9 +382,10 @@ export const TimelinePlayer: React.FC<{
         document.removeEventListener('mouseup', handleMouseUp);
       };
     }
+    return undefined;
   }, [isDragging, handleMouseMove, handleMouseUp]);
 
-  const lastFrameTimeRef = useRef<number>();
+  const lastFrameTimeRef = useRef<number | undefined>(undefined);
 
   useEffect(() => {
     if (!playing || isDragging) return;

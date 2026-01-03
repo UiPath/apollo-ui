@@ -3,7 +3,7 @@ import {
   ProjectType,
   type SharedResourceData,
   type ToolResourceData,
-} from 'packages/apollo-react/src/canvas/types';
+} from '../../../../types';
 import * as Icons from '@uipath/apollo-react/canvas/icons';
 import { IxpIcon } from './IXPIcon';
 import { ProcessIcon } from './ProcessIcon';

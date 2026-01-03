@@ -101,7 +101,7 @@ export function Toolbox<T>({
     parentItem: ListItem<T> | null;
   }>();
 
-  const transitionTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
+  const transitionTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const searchIdRef = useRef(0);
   const initialItemsRef = useRef(initialItems);
 

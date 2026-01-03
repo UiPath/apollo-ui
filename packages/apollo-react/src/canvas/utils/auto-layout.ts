@@ -309,7 +309,6 @@ const arrangeAgent = (
       if (!handleGroup) continue;
       const { nodes } = handleGroup;
       for (const [i, node] of nodes.entries()) {
-        const _nodeWidth = node.measured?.width ?? node.width ?? 0;
         const nodeHeight = node.measured?.height ?? node.height ?? 0;
         const singleNodeOffset = nodes.length === 1 ? -(GROUP_SPACING / 2) : 0;
 

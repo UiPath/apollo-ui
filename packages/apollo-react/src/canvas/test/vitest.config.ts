@@ -2,7 +2,7 @@ import { ViteUserConfig } from 'vitest/config';
 import tsconfigPaths from 'vite-tsconfig-paths';
 
 export const vitestConfig: ViteUserConfig = {
-  plugins: [tsconfigPaths({ root: '../..', configNames: ['tsconfig.base.json'] })],
+  plugins: [tsconfigPaths({ root: '../..', configNames: ['tsconfig.base.json'] })] as any,
   test: {
     environment: 'happy-dom',
     setupFiles: ['../test/src/test-setup.ts'],
