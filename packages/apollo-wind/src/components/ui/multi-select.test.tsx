@@ -20,7 +20,7 @@ describe('MultiSelect', () => {
         selected={[]}
         onChange={onChange}
         placeholder="Select frameworks..."
-      />,
+      />
     );
     expect(screen.getByRole('combobox')).toBeInTheDocument();
     expect(screen.getByText('Select frameworks...')).toBeInTheDocument();
@@ -29,7 +29,7 @@ describe('MultiSelect', () => {
   it('has no accessibility violations', async () => {
     const onChange = vi.fn();
     const { container } = render(
-      <MultiSelect options={mockOptions} selected={['react']} onChange={onChange} />,
+      <MultiSelect options={mockOptions} selected={['react']} onChange={onChange} />
     );
     const results = await axe(container);
     expect(results).toHaveNoViolations();
@@ -79,7 +79,7 @@ describe('MultiSelect', () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
     const { container } = render(
-      <MultiSelect options={mockOptions} selected={['react', 'vue']} onChange={onChange} />,
+      <MultiSelect options={mockOptions} selected={['react', 'vue']} onChange={onChange} />
     );
 
     // Find the X button (span with role="button") in the React badge
@@ -101,7 +101,7 @@ describe('MultiSelect', () => {
         selected={['react', 'vue']}
         onChange={onChange}
         maxSelected={2}
-      />,
+      />
     );
 
     const combobox = screen.getByRole('combobox');
@@ -141,7 +141,7 @@ describe('MultiSelect', () => {
         selected={[]}
         onChange={onChange}
         emptyMessage="No frameworks available"
-      />,
+      />
     );
 
     const combobox = screen.getByRole('combobox');
@@ -166,7 +166,7 @@ describe('MultiSelect', () => {
         selected={[]}
         onChange={onChange}
         className="custom-multi-select"
-      />,
+      />
     );
     const wrapper = container.firstChild as HTMLElement;
     expect(wrapper).toHaveClass('custom-multi-select');
@@ -181,7 +181,7 @@ describe('MultiSelect', () => {
         selected={[]}
         onChange={onChange}
         searchPlaceholder="Find framework..."
-      />,
+      />
     );
 
     const combobox = screen.getByRole('combobox');

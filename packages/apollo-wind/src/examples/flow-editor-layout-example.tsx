@@ -36,14 +36,14 @@ function LatchedButton({ isActive, icon, label, onClick }: LatchedButtonProps) {
             'w-[40px] h-[40px] rounded-r-2xl rounded-l-none bg-background border',
             isActive
               ? '-ml-px w-[41px] border-y-border border-r-border border-l-background'
-              : 'border-l-0 border-border hover:bg-muted',
+              : 'border-l-0 border-border hover:bg-muted'
           )}
           onClick={onClick}
         >
           <div
             className={cn(
               'flex items-center justify-center w-6 h-6 rounded-lg transition-colors',
-              isActive ? 'bg-primary text-background' : 'bg-transparent text-foreground',
+              isActive ? 'bg-primary text-background' : 'bg-transparent text-foreground'
             )}
           >
             {icon}
@@ -144,7 +144,7 @@ export function FlowEditorLayout({
         }
       }
     },
-    [activeSidebarId, sidebarOpen, onSidebarChange, onSidebarOpenChange],
+    [activeSidebarId, sidebarOpen, onSidebarChange, onSidebarOpenChange]
   );
 
   return (
@@ -154,7 +154,7 @@ export function FlowEditorLayout({
         <div
           className={cn(
             'bg-background overflow-hidden transition-all duration-300 ease-in-out',
-            sidebarOpen ? 'w-72' : 'w-0',
+            sidebarOpen ? 'w-72' : 'w-0'
           )}
         >
           {sidebarOpen && <Column className="w-72 h-full">{sidebarContent}</Column>}

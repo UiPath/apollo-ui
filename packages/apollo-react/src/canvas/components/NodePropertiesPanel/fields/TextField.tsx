@@ -1,13 +1,13 @@
-import { memo, useCallback, useState, useEffect, useRef } from 'react';
 import { Column } from '@uipath/apollo-react/canvas/layouts';
+import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import {
-  TextInput,
-  TextArea,
-  FieldLabel,
-  FieldHelpText,
   FieldError,
-  InputWrapper,
+  FieldHelpText,
+  FieldLabel,
   InputSuffix,
+  InputWrapper,
+  TextArea,
+  TextInput,
 } from '../NodePropertiesPanel.styles';
 import type { ConfigField } from '../NodePropertiesPanel.types';
 

@@ -74,7 +74,7 @@ export function EditableCell<TData, TValue>({ cell, onUpdate }: EditableCellProp
         handleCancel();
       }
     },
-    [handleSave, handleCancel],
+    [handleSave, handleCancel]
   );
 
   // Checkbox doesn't need edit mode - just toggle
@@ -101,7 +101,7 @@ export function EditableCell<TData, TValue>({ cell, onUpdate }: EditableCellProp
       className={cn(
         'min-h-[32px] px-2 py-1.5 -mx-2 rounded cursor-pointer',
         'hover:bg-muted/50 transition-colors',
-        'flex items-center w-full',
+        'flex items-center w-full'
       )}
       onClick={() => setIsEditing(true)}
       onKeyDown={(e) => {
@@ -200,7 +200,7 @@ export function EditableCell<TData, TValue>({ cell, onUpdate }: EditableCellProp
 function formatDisplayValue(
   value: unknown,
   type: EditableCellType,
-  options?: SelectOption[],
+  options?: SelectOption[]
 ): string {
   if (value === null || value === undefined || value === '') {
     return '—';
@@ -230,7 +230,7 @@ function formatDisplayValue(
 export function createEditableColumn<TData>(
   accessorKey: keyof TData & string,
   header: string,
-  meta?: EditableCellMeta,
+  meta?: EditableCellMeta
 ) {
   return {
     accessorKey,
@@ -266,7 +266,7 @@ function DatePickerCell({
           variant="outline"
           className={cn(
             'h-8 -mx-2 w-full justify-start text-left font-normal text-sm',
-            !value && 'text-muted-foreground',
+            !value && 'text-muted-foreground'
           )}
         >
           <CalendarIcon className="mr-2 h-4 w-4 shrink-0" />

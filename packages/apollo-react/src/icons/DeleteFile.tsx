@@ -11,9 +11,23 @@ export interface DeleteFileProps extends Omit<React.SVGProps<SVGSVGElement>, 'wi
 
 export const DeleteFile = React.forwardRef<SVGSVGElement, DeleteFileProps>(
   ({ size, ...props }, ref) => (
-    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
-      <path d="M14 2H6C4.9 2 4.01 2.9 4.01 4L4 20C4 21.1 4.89 22 5.99 22H13V20H6V4H13V9H18V14H20V8L14 2Z" fill="currentColor"/>
-<path d="M16.4142 16L15 17.4142L17.4749 19.8891L15.0001 22.364L16.4143 23.7782L18.8891 21.3033L21.364 23.7782L22.7782 22.364L20.3033 19.8891L22.7782 17.4142L21.364 16L18.8891 18.4749L16.4142 16Z" fill="#CC3D45"/>
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      ref={ref}
+      {...props}
+      width={size ?? 24}
+      height={size ?? 24}
+    >
+      <path
+        d="M14 2H6C4.9 2 4.01 2.9 4.01 4L4 20C4 21.1 4.89 22 5.99 22H13V20H6V4H13V9H18V14H20V8L14 2Z"
+        fill="currentColor"
+      />
+      <path
+        d="M16.4142 16L15 17.4142L17.4749 19.8891L15.0001 22.364L16.4143 23.7782L18.8891 21.3033L21.364 23.7782L22.7782 22.364L20.3033 19.8891L22.7782 17.4142L21.364 16L18.8891 18.4749L16.4142 16Z"
+        fill="#CC3D45"
+      />
     </svg>
   )
 );

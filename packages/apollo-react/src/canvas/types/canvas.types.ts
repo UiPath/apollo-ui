@@ -1,4 +1,4 @@
-import type { Node, Edge, Viewport } from '@uipath/apollo-react/canvas/xyflow/react';
+import type { Edge, Node, Viewport } from '@uipath/apollo-react/canvas/xyflow/react';
 
 export interface CanvasLevel<
   N extends Record<string, unknown> = Record<string, unknown>,

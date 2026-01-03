@@ -1,30 +1,30 @@
-import { memo, useMemo, useState, useCallback, useRef, useEffect } from 'react';
+import { cx } from '@uipath/apollo-react/canvas/utils';
 import type { Node, NodeProps, ReactFlowState } from '@uipath/apollo-react/canvas/xyflow/react';
 import {
   Position,
-  useUpdateNodeInternals,
   useStore,
+  useUpdateNodeInternals,
 } from '@uipath/apollo-react/canvas/xyflow/react';
-import type { NodeStatusContext } from './ExecutionStatusContext';
-import { useExecutionState } from './ExecutionStatusContext';
+import { ApIcon, ApTooltip } from '@uipath/apollo-react/material/components';
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useBaseCanvasMode } from '../BaseCanvas/BaseCanvasModeProvider';
+import { useConnectedHandles } from '../BaseCanvas/ConnectedHandlesContext';
+import { useSelectionState } from '../BaseCanvas/SelectionStateContext';
+import { SmartHandle, SmartHandleProvider } from '../ButtonHandle/SmartHandle';
+import { useButtonHandles } from '../ButtonHandle/useButtonHandles';
 import { NodeToolbar } from '../NodeToolbar';
 import {
-  BaseContainer,
-  BaseIconWrapper,
   BaseBadgeSlot,
-  BaseTextContainer,
+  BaseContainer,
   BaseHeader,
+  BaseIconWrapper,
   BaseSubHeader,
+  BaseTextContainer,
 } from './BaseNode.styles';
 import type { BaseNodeData } from './BaseNode.types';
+import type { NodeStatusContext } from './ExecutionStatusContext';
+import { useExecutionState } from './ExecutionStatusContext';
 import { useNodeTypeRegistry } from './useNodeTypeRegistry';
-import { cx } from '@uipath/apollo-react/canvas/utils';
-import { ApIcon, ApTooltip } from '@uipath/apollo-react/material/components';
-import { useBaseCanvasMode } from '../BaseCanvas/BaseCanvasModeProvider';
-import { useSelectionState } from '../BaseCanvas/SelectionStateContext';
-import { SmartHandleProvider, SmartHandle } from '../ButtonHandle/SmartHandle';
-import { useButtonHandles } from '../ButtonHandle/useButtonHandles';
-import { useConnectedHandles } from '../BaseCanvas/ConnectedHandlesContext';
 
 const selectIsConnecting = (state: ReactFlowState) => !!state.connectionClickStartHandle;
 

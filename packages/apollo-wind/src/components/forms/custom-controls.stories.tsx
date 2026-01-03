@@ -234,7 +234,7 @@ function RatingInput({
               disabled={disabled}
               className={cn(
                 'p-0.5 transition-colors focus:outline-none focus:ring-2 focus:ring-ring rounded',
-                disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer hover:scale-110',
+                disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer hover:scale-110'
               )}
               aria-label={`Rate ${star} stars`}
             >
@@ -244,7 +244,7 @@ function RatingInput({
                 <Star
                   className={cn(
                     'w-6 h-6',
-                    filled ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground',
+                    filled ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground'
                   )}
                 />
               )}
@@ -302,7 +302,7 @@ function ColorPicker({
                   type="button"
                   className={cn(
                     'w-8 h-8 rounded border-2 transition-all',
-                    color === presetColor ? 'border-ring scale-110' : 'border-transparent',
+                    color === presetColor ? 'border-ring scale-110' : 'border-transparent'
                   )}
                   style={{ backgroundColor: presetColor }}
                   onClick={() => {
@@ -440,7 +440,7 @@ function RichTextInput({
             richValue.italic && 'italic',
             richValue.underline && 'underline',
             richValue.align === 'center' && 'text-center',
-            richValue.align === 'right' && 'text-right',
+            richValue.align === 'right' && 'text-right'
           )}
         />
       </div>
@@ -556,7 +556,10 @@ function PhoneInput({
   error,
   placeholder = '(555) 123-4567',
 }: PhoneInputProps) {
-  const phoneValue: PhoneValue = (value as PhoneValue) || { countryCode: '+1', number: '' };
+  const phoneValue: PhoneValue = (value as PhoneValue) || {
+    countryCode: '+1',
+    number: '',
+  };
 
   const updateValue = (updates: Partial<PhoneValue>) => {
     onChange({ ...phoneValue, ...updates });
@@ -609,10 +612,26 @@ interface PrioritySelectorProps extends CustomFieldComponentProps {
 }
 
 const PRIORITIES: PriorityOption[] = [
-  { value: 'low', label: 'Low', color: 'bg-green-100 text-green-800 border-green-300' },
-  { value: 'medium', label: 'Medium', color: 'bg-yellow-100 text-yellow-800 border-yellow-300' },
-  { value: 'high', label: 'High', color: 'bg-orange-100 text-orange-800 border-orange-300' },
-  { value: 'critical', label: 'Critical', color: 'bg-red-100 text-red-800 border-red-300' },
+  {
+    value: 'low',
+    label: 'Low',
+    color: 'bg-green-100 text-green-800 border-green-300',
+  },
+  {
+    value: 'medium',
+    label: 'Medium',
+    color: 'bg-yellow-100 text-yellow-800 border-yellow-300',
+  },
+  {
+    value: 'high',
+    label: 'High',
+    color: 'bg-orange-100 text-orange-800 border-orange-300',
+  },
+  {
+    value: 'critical',
+    label: 'Critical',
+    color: 'bg-red-100 text-red-800 border-red-300',
+  },
 ];
 
 function PrioritySelector({ value, onChange, onBlur, disabled, error }: PrioritySelectorProps) {
@@ -640,7 +659,7 @@ function PrioritySelector({ value, onChange, onBlur, disabled, error }: Priority
               priority === p.value
                 ? cn(p.color, 'ring-2 ring-offset-1 ring-ring')
                 : 'bg-muted text-muted-foreground border-transparent hover:bg-muted/80',
-              disabled && 'opacity-50 cursor-not-allowed',
+              disabled && 'opacity-50 cursor-not-allowed'
             )}
           >
             {p.label}

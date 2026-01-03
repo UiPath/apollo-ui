@@ -104,7 +104,7 @@ describe('Collapsible', () => {
       <Collapsible disabled>
         <CollapsibleTrigger>Toggle</CollapsibleTrigger>
         <CollapsibleContent>Content</CollapsibleContent>
-      </Collapsible>,
+      </Collapsible>
     );
 
     const trigger = screen.getByRole('button', { name: 'Toggle' });
@@ -118,7 +118,7 @@ describe('Collapsible', () => {
       <Collapsible disabled onOpenChange={handleOpenChange}>
         <CollapsibleTrigger>Toggle</CollapsibleTrigger>
         <CollapsibleContent>Content</CollapsibleContent>
-      </Collapsible>,
+      </Collapsible>
     );
 
     const trigger = screen.getByRole('button', { name: 'Toggle' });
@@ -132,7 +132,7 @@ describe('Collapsible', () => {
       <Collapsible defaultOpen>
         <CollapsibleTrigger>Toggle</CollapsibleTrigger>
         <CollapsibleContent>Content shown by default</CollapsibleContent>
-      </Collapsible>,
+      </Collapsible>
     );
 
     expect(screen.getByText('Content shown by default')).toBeInTheDocument();
@@ -145,7 +145,7 @@ describe('Collapsible', () => {
       <Collapsible open={false} onOpenChange={handleOpenChange}>
         <CollapsibleTrigger>Toggle</CollapsibleTrigger>
         <CollapsibleContent>Controlled content</CollapsibleContent>
-      </Collapsible>,
+      </Collapsible>
     );
 
     expect(screen.queryByText('Controlled content')).not.toBeInTheDocument();
@@ -159,7 +159,7 @@ describe('Collapsible', () => {
       <Collapsible open={true} onOpenChange={handleOpenChange}>
         <CollapsibleTrigger>Toggle</CollapsibleTrigger>
         <CollapsibleContent>Controlled content</CollapsibleContent>
-      </Collapsible>,
+      </Collapsible>
     );
 
     await waitFor(() => {
@@ -193,7 +193,7 @@ describe('Collapsible', () => {
           <button>Custom trigger</button>
         </CollapsibleTrigger>
         <CollapsibleContent>Content</CollapsibleContent>
-      </Collapsible>,
+      </Collapsible>
     );
 
     const trigger = screen.getByRole('button', { name: 'Custom trigger' });
@@ -212,7 +212,7 @@ describe('Collapsible', () => {
         <CollapsibleContent asChild>
           <div>Custom content wrapper</div>
         </CollapsibleContent>
-      </Collapsible>,
+      </Collapsible>
     );
 
     const trigger = screen.getByRole('button', { name: 'Toggle' });

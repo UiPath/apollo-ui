@@ -28,11 +28,12 @@
   "scripts": {
     "build": "rslib build",
     "dev": "rslib build --watch",
-    "lint": "eslint src --ext .ts,.tsx",
+    "lint": "biome lint src",
+    "lint:fix": "biome lint --write src",
     "test": "vitest --run --passWithNoTests",
     "clean": "rm -rf dist",
-    "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,css,scss,md}\"",
-    "format:check": "prettier --check \"src/**/*.{ts,tsx,js,jsx,json,css,scss,md}\""
+    "format": "biome format --write src",
+    "format:check": "biome format src"
   },
   "keywords": [
     "design-system",

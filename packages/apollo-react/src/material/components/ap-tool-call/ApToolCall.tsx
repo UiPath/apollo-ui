@@ -1,14 +1,13 @@
-import React, { useEffect, useMemo, useState, useCallback } from 'react';
-import { styled, CircularProgress } from '@mui/material';
+import { msg } from '@lingui/core/macro';
+import { useLingui } from '@lingui/react';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import ErrorIcon from '@mui/icons-material/Error';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-import { msg } from '@lingui/core/macro';
-import { useLingui } from '@lingui/react';
+import { CircularProgress, styled } from '@mui/material';
 import token from '@uipath/apollo-core';
-
-import { ToolCallSection } from './ToolCallSection';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import type { ApToolCallProps, ITreeNode, TSpan } from './ApToolCall.types';
+import { ToolCallSection } from './ToolCallSection';
 
 const Container = styled('div')({
   fontSize: token.FontFamily.FontMSize,

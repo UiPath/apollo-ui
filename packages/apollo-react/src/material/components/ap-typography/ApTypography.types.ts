@@ -1,5 +1,5 @@
-import { FontVariantToken } from '@uipath/apollo-core';
-import { TypographyProps as MuiTypographyProps } from '@mui/material/Typography';
+import type { TypographyProps as MuiTypographyProps } from '@mui/material/Typography';
+import type { FontVariantToken } from '@uipath/apollo-core';
 
 export type ApTypographyVariant = FontVariantToken | `${FontVariantToken}`;
 

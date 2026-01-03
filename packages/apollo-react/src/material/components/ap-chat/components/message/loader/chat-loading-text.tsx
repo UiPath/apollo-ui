@@ -1,8 +1,7 @@
-import { useEffect, useState } from 'react';
-
 import { msg } from '@lingui/core/macro';
 import { useLingui } from '@lingui/react';
 import { Fade } from '@mui/material';
+import { useEffect, useState } from 'react';
 
 import { ApTypography } from '../../../../ap-typography';
 import { useChatService } from '../../../providers/chat-service.provider';
@@ -33,8 +32,8 @@ export const LoadingMessage = () => {
       return;
     }
 
-    let setDefaultLoadingMessagesTimeout: ReturnType<typeof setTimeout> | undefined = undefined;
-    let setLoadingMessageTimeout: ReturnType<typeof setTimeout> | undefined = undefined;
+    let setDefaultLoadingMessagesTimeout: ReturnType<typeof setTimeout> | undefined;
+    let setLoadingMessageTimeout: ReturnType<typeof setTimeout> | undefined;
 
     const unsubscribeSetDefaultLoadingMessages = chatService.on(
       AutopilotChatEvent.SetDefaultLoadingMessages,
@@ -74,7 +73,7 @@ export const LoadingMessage = () => {
       return;
     }
 
-    let childTimeout: ReturnType<typeof setTimeout> | undefined = undefined;
+    let childTimeout: ReturnType<typeof setTimeout> | undefined;
 
     const parentTimeout = setTimeout(() => {
       setIsVisible(false);

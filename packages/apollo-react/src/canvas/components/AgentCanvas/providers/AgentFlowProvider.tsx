@@ -1,3 +1,6 @@
+import createCache from '@emotion/cache';
+import { CacheProvider } from '@emotion/react';
+import { ReactFlowProvider, useReactFlow } from '@uipath/apollo-react/canvas/xyflow/react';
 import {
   createContext,
   type PropsWithChildren,
@@ -6,9 +9,6 @@ import {
   useEffect,
   useMemo,
 } from 'react';
-import createCache from '@emotion/cache';
-import { CacheProvider } from '@emotion/react';
-import { ReactFlowProvider, useReactFlow } from '@uipath/apollo-react/canvas/xyflow/react';
 import { BASE_CANVAS_DEFAULTS } from '../../BaseCanvas/BaseCanvas.constants';
 import type { BaseCanvasFitViewOptions } from '../../BaseCanvas/BaseCanvas.types';
 
@@ -32,10 +32,7 @@ const getReactFlowCSS = (): string => {
           reactFlowCSS += reactFlowRules.map((rule) => rule.cssText).join('\n');
         }
       }
-    } catch {
-      // CORS or other restrictions - skip this stylesheet
-      continue;
-    }
+    } catch {}
   }
 
   return reactFlowCSS;

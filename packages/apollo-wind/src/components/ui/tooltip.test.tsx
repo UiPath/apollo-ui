@@ -46,7 +46,7 @@ describe('Tooltip', () => {
           </TooltipTrigger>
           <TooltipContent>Tooltip on focus</TooltipContent>
         </Tooltip>
-      </TooltipProvider>,
+      </TooltipProvider>
     );
 
     const trigger = screen.getByRole('button', { name: 'Focus me' });
@@ -67,7 +67,7 @@ describe('Tooltip', () => {
           <TooltipTrigger>Hover</TooltipTrigger>
           <TooltipContent className="custom-tooltip">Custom</TooltipContent>
         </Tooltip>
-      </TooltipProvider>,
+      </TooltipProvider>
     );
 
     const trigger = screen.getByText('Hover');
@@ -87,7 +87,7 @@ describe('Tooltip', () => {
           <TooltipTrigger>Hover</TooltipTrigger>
           <TooltipContent sideOffset={10}>Content</TooltipContent>
         </Tooltip>
-      </TooltipProvider>,
+      </TooltipProvider>
     );
 
     const trigger = screen.getByText('Hover');
@@ -105,7 +105,7 @@ describe('Tooltip', () => {
           <TooltipTrigger>Trigger</TooltipTrigger>
           <TooltipContent>Content</TooltipContent>
         </Tooltip>
-      </TooltipProvider>,
+      </TooltipProvider>
     );
 
     expect(screen.queryByRole('tooltip')).not.toBeInTheDocument();
@@ -116,7 +116,7 @@ describe('Tooltip', () => {
           <TooltipTrigger>Trigger</TooltipTrigger>
           <TooltipContent>Content</TooltipContent>
         </Tooltip>
-      </TooltipProvider>,
+      </TooltipProvider>
     );
 
     await waitFor(() => {
@@ -132,7 +132,7 @@ describe('Tooltip', () => {
           <TooltipTrigger>Hover</TooltipTrigger>
           <TooltipContent>Delayed tooltip</TooltipContent>
         </Tooltip>
-      </TooltipProvider>,
+      </TooltipProvider>
     );
 
     const trigger = screen.getByText('Hover');
@@ -150,7 +150,7 @@ describe('Tooltip', () => {
           <TooltipTrigger>Trigger</TooltipTrigger>
           <TooltipContent>Content</TooltipContent>
         </Tooltip>
-      </TooltipProvider>,
+      </TooltipProvider>
     );
 
     expect(screen.getByText('Trigger')).toBeInTheDocument();
@@ -166,7 +166,7 @@ describe('Tooltip', () => {
           </TooltipTrigger>
           <TooltipContent>Content</TooltipContent>
         </Tooltip>
-      </TooltipProvider>,
+      </TooltipProvider>
     );
 
     const trigger = screen.getByRole('button', { name: 'Custom trigger' });
@@ -185,7 +185,7 @@ describe('Tooltip', () => {
           <TooltipTrigger>Hover</TooltipTrigger>
           <TooltipContent side="top">Top content</TooltipContent>
         </Tooltip>
-      </TooltipProvider>,
+      </TooltipProvider>
     );
 
     const trigger = screen.getByText('Hover');
@@ -204,7 +204,7 @@ describe('Tooltip', () => {
           <TooltipTrigger>Hover</TooltipTrigger>
           <TooltipContent align="start">Aligned content</TooltipContent>
         </Tooltip>
-      </TooltipProvider>,
+      </TooltipProvider>
     );
 
     const trigger = screen.getByText('Hover');
@@ -227,7 +227,7 @@ describe('Tooltip', () => {
           <TooltipTrigger>Second</TooltipTrigger>
           <TooltipContent>Second content</TooltipContent>
         </Tooltip>
-      </TooltipProvider>,
+      </TooltipProvider>
     );
 
     const first = screen.getByText('First');

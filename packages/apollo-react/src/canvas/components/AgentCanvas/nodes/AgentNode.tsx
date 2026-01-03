@@ -1,25 +1,25 @@
-import { memo, useCallback, useMemo } from 'react';
-import { Position } from '@uipath/apollo-react/canvas/xyflow/react';
-import type { NodeProps, Node } from '@uipath/apollo-react/canvas/xyflow/react';
 import * as Icons from '@uipath/apollo-react/canvas/icons';
-import { NewBaseNode } from '../../BaseNode/NewBaseNode';
-import type {
-  NewBaseNodeData,
-  NewBaseNodeDisplayProps,
-  HandleConfiguration,
-  NodeAdornment,
-} from '../../BaseNode/NewBaseNode.types';
-import type { ButtonHandleConfig, HandleActionEvent } from '../../ButtonHandle/ButtonHandle';
+import type { Node, NodeProps } from '@uipath/apollo-react/canvas/xyflow/react';
+import { Position } from '@uipath/apollo-react/canvas/xyflow/react';
+import { ApIcon } from '@uipath/apollo-react/material/components';
+import { memo, useCallback, useMemo } from 'react';
 import {
-  DefaultSuggestionTranslations,
   type AgentNodeTranslations,
+  DefaultSuggestionTranslations,
   type SuggestionTranslations,
   type SuggestionType,
 } from '../../../types';
-import { ResourceNodeType } from '../AgentFlow.constants';
+import { NewBaseNode } from '../../BaseNode/NewBaseNode';
+import type {
+  HandleConfiguration,
+  NewBaseNodeData,
+  NewBaseNodeDisplayProps,
+  NodeAdornment,
+} from '../../BaseNode/NewBaseNode.types';
+import type { ButtonHandleConfig, HandleActionEvent } from '../../ButtonHandle/ButtonHandle';
 import { ExecutionStatusIcon } from '../../ExecutionStatusIcon/ExecutionStatusIcon';
-import { ApIcon } from '@uipath/apollo-react/material/components';
 import type { NodeToolbarConfig, ToolbarAction } from '../../NodeToolbar/NodeToolbar.types';
+import { ResourceNodeType } from '../AgentFlow.constants';
 import { useAgentFlowStore } from '../store/agent-flow-store';
 
 const { ConversationalAgentIcon, AutonomousAgentIcon } = Icons;

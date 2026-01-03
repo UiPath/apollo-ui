@@ -1,15 +1,15 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { useMemo } from 'react';
-import type { Node, Edge } from '@uipath/apollo-react/canvas/xyflow/react';
+import type { Edge, Node } from '@uipath/apollo-react/canvas/xyflow/react';
 import { Panel } from '@uipath/apollo-react/canvas/xyflow/react';
+import { useMemo } from 'react';
+import { StoryInfoPanel, useCanvasStory, withCanvasProviders } from '../../storybook-utils';
+import { DefaultCanvasTranslations } from '../../types';
 import { BaseCanvas } from '../BaseCanvas';
+import { BaseNode } from '../BaseNode';
+import type { BaseNodeData } from '../BaseNode/BaseNode.types';
 import { CanvasPositionControls } from '../CanvasPositionControls';
 import { GroupNode } from './GroupNode';
-import { BaseNode } from '../BaseNode';
 import type { GroupNodeData } from './GroupNode.types';
-import type { BaseNodeData } from '../BaseNode/BaseNode.types';
-import { withCanvasProviders, useCanvasStory, StoryInfoPanel } from '../../storybook-utils';
-import { DefaultCanvasTranslations } from '../../types';
 
 // ============================================================================
 // Meta Configuration

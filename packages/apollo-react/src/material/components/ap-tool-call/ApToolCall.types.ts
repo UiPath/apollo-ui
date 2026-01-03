@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 
 // Type definitions for tool call spans
 export interface TSpan {

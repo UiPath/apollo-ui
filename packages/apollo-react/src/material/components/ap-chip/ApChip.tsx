@@ -1,8 +1,8 @@
-import React from 'react';
+import CloseIcon from '@mui/icons-material/Close';
 import { Chip, CircularProgress, Tooltip } from '@mui/material';
 import { styled } from '@mui/material/styles';
-import CloseIcon from '@mui/icons-material/Close';
 import token from '@uipath/apollo-core';
+import React from 'react';
 
 import type { ApChipProps } from './ApChip.types';
 

@@ -1,51 +1,51 @@
-import type React from 'react';
-import { useEffect, useCallback, useMemo, useRef, useState } from 'react';
-import {
-  Panel,
-  applyNodeChanges,
-  applyEdgeChanges,
-} from '@uipath/apollo-react/canvas/xyflow/react';
-import { prefersReducedMotion } from '../../utils/transitions';
-import type {
-  Node,
-  Edge,
-  OnNodesChange,
-  OnEdgesChange,
-  Viewport,
-  OnSelectionChangeParams,
-  Connection,
-  OnConnect,
-  OnMove,
-  OnSelectionChangeFunc,
-  NodeChange,
-  EdgeChange,
-  ReactFlowInstance,
-  NodeTypes,
-} from '@uipath/apollo-react/canvas/xyflow/react';
-import { BaseCanvas, type BaseCanvasRef } from '../BaseCanvas';
-import {
-  useCanvasStore,
-  selectCurrentCanvas,
-  selectBreadcrumbs,
-  selectCanvasActions,
-  selectPreviousCanvas,
-  selectTransitionState,
-} from '../../stores/canvasStore';
-import { viewportManager } from '../../stores/viewportManager';
-import { animatedViewportManager } from '../../stores/animatedViewportManager';
 import { Breadcrumb } from '@uipath/apollo-react/canvas/controls';
+import type {
+  Connection,
+  Edge,
+  EdgeChange,
+  Node,
+  NodeChange,
+  NodeTypes,
+  OnConnect,
+  OnEdgesChange,
+  OnMove,
+  OnNodesChange,
+  OnSelectionChangeFunc,
+  OnSelectionChangeParams,
+  ReactFlowInstance,
+  Viewport,
+} from '@uipath/apollo-react/canvas/xyflow/react';
+import {
+  applyEdgeChanges,
+  applyNodeChanges,
+  Panel,
+} from '@uipath/apollo-react/canvas/xyflow/react';
 import { ApIcon, ApProgressSpinner } from '@uipath/apollo-react/material/components';
-import { CanvasPositionControls } from '../CanvasPositionControls';
-import { useNodeRegistrations } from '../BaseNode/useNodeTypeRegistry';
-import { BaseNode } from '../BaseNode';
-import { BlankCanvasNode } from '../BlankCanvasNode';
-import { AddNodePreview } from '../AddNodePanel/AddNodePreview';
-import { AddNodeManager } from '../AddNodePanel/AddNodeManager';
-import { MiniCanvasNavigator } from '../MiniCanvasNavigator';
+import type React from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { PREVIEW_EDGE_ID, PREVIEW_NODE_ID } from '../../constants';
 import { useAddNodeOnConnectEnd } from '../../hooks/useAddNodeOnConnectEnd';
+import { animatedViewportManager } from '../../stores/animatedViewportManager';
+import {
+  selectBreadcrumbs,
+  selectCanvasActions,
+  selectCurrentCanvas,
+  selectPreviousCanvas,
+  selectTransitionState,
+  useCanvasStore,
+} from '../../stores/canvasStore';
+import { viewportManager } from '../../stores/viewportManager';
 import { DefaultCanvasTranslations } from '../../types';
+import { prefersReducedMotion } from '../../utils/transitions';
+import { AddNodeManager } from '../AddNodePanel/AddNodeManager';
+import { AddNodePreview } from '../AddNodePanel/AddNodePreview';
+import { BaseCanvas, type BaseCanvasRef } from '../BaseCanvas';
+import { BaseNode } from '../BaseNode';
+import { useNodeRegistrations } from '../BaseNode/useNodeTypeRegistry';
+import { BlankCanvasNode } from '../BlankCanvasNode';
+import { CanvasPositionControls } from '../CanvasPositionControls';
+import { MiniCanvasNavigator } from '../MiniCanvasNavigator';
 
 interface HierarchicalCanvasProps {
   mode?: 'view' | 'design' | 'readonly';

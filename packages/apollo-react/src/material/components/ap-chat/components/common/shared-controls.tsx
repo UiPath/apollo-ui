@@ -1,6 +1,5 @@
-import React from 'react';
-
 import { styled } from '@mui/material';
+import type React from 'react';
 
 export const VisuallyHidden: React.ComponentType<React.HTMLAttributes<HTMLSpanElement>> = styled(
   'span'

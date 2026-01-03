@@ -15,7 +15,7 @@ describe('Label', () => {
       <div>
         <Label htmlFor="username">Username</Label>
         <Input id="username" />
-      </div>,
+      </div>
     );
     const results = await axe(container);
     expect(results).toHaveNoViolations();

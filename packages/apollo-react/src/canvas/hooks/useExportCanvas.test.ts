@@ -1,4 +1,4 @@
-import { renderHook, act, waitFor } from '@testing-library/react';
+import { act, renderHook, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ExportCanvasResult } from '../utils/export-canvas';
 
@@ -22,8 +22,8 @@ vi.mock('../utils/export-canvas', () => ({
   copyCanvasToClipboard: vi.fn(),
 }));
 
-import { useExportCanvas } from './useExportCanvas';
 import * as exportUtils from '../utils/export-canvas';
+import { useExportCanvas } from './useExportCanvas';
 
 const mockExportCanvasToImage = vi.mocked(exportUtils.exportCanvasToImage);
 const mockDownloadCanvasAsImage = vi.mocked(exportUtils.downloadCanvasAsImage);

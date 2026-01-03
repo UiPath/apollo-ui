@@ -92,7 +92,7 @@ describe('Popover', () => {
       <Popover>
         <PopoverTrigger>Open</PopoverTrigger>
         <PopoverContent className="custom-popover">Custom Content</PopoverContent>
-      </Popover>,
+      </Popover>
     );
 
     const trigger = screen.getByRole('button', { name: 'Open' });
@@ -109,7 +109,7 @@ describe('Popover', () => {
       <Popover open={false}>
         <PopoverTrigger>Open</PopoverTrigger>
         <PopoverContent>Content</PopoverContent>
-      </Popover>,
+      </Popover>
     );
 
     expect(screen.queryByText('Content')).not.toBeInTheDocument();
@@ -118,7 +118,7 @@ describe('Popover', () => {
       <Popover open={true}>
         <PopoverTrigger>Open</PopoverTrigger>
         <PopoverContent>Content</PopoverContent>
-      </Popover>,
+      </Popover>
     );
 
     await waitFor(() => {
@@ -132,7 +132,7 @@ describe('Popover', () => {
       <Popover>
         <PopoverTrigger>Open</PopoverTrigger>
         <PopoverContent align="start">Aligned content</PopoverContent>
-      </Popover>,
+      </Popover>
     );
 
     const trigger = screen.getByRole('button', { name: 'Open' });
@@ -149,7 +149,7 @@ describe('Popover', () => {
       <Popover>
         <PopoverTrigger>Open</PopoverTrigger>
         <PopoverContent sideOffset={10}>Content</PopoverContent>
-      </Popover>,
+      </Popover>
     );
 
     const trigger = screen.getByRole('button', { name: 'Open' });
@@ -166,7 +166,7 @@ describe('Popover', () => {
       <Popover open>
         <PopoverTrigger>Open</PopoverTrigger>
         <PopoverContent ref={ref}>Content</PopoverContent>
-      </Popover>,
+      </Popover>
     );
     waitFor(() => {
       expect(ref.current).toBeInstanceOf(HTMLDivElement);
@@ -179,7 +179,7 @@ describe('Popover', () => {
       <Popover>
         <PopoverTrigger>Open</PopoverTrigger>
         <PopoverContent side="top">Top content</PopoverContent>
-      </Popover>,
+      </Popover>
     );
 
     const trigger = screen.getByRole('button', { name: 'Open' });
@@ -198,7 +198,7 @@ describe('Popover', () => {
       <div>
         <div data-testid="outside">Outside</div>
         <PopoverExample />
-      </div>,
+      </div>
     );
 
     const trigger = screen.getByRole('button', { name: 'Open Popover' });
@@ -224,7 +224,7 @@ describe('Popover', () => {
           <button>Custom trigger</button>
         </PopoverTrigger>
         <PopoverContent>Content</PopoverContent>
-      </Popover>,
+      </Popover>
     );
 
     const trigger = screen.getByRole('button', { name: 'Custom trigger' });

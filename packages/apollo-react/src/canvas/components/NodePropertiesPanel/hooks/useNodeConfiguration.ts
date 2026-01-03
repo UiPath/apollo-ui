@@ -1,7 +1,7 @@
-import { useCallback, useState, useMemo } from 'react';
 import { useReactFlow } from '@uipath/apollo-react/canvas/xyflow/react';
+import { useCallback, useMemo, useState } from 'react';
+import type { ConfigurableNode, NodeConfigSchema } from '../NodePropertiesPanel.types';
 import { nodeSchemas } from '../schemas';
-import type { NodeConfigSchema, ConfigurableNode } from '../NodePropertiesPanel.types';
 
 export function useNodeConfiguration(
   selectedNode: ConfigurableNode | undefined,

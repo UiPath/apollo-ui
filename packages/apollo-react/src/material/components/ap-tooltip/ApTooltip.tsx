@@ -1,5 +1,5 @@
-import React, { useCallback, useMemo, useRef } from 'react';
 import { Tooltip } from '@mui/material';
+import React, { useCallback, useMemo, useRef } from 'react';
 import type { ApTooltipProps } from './ApTooltip.types';
 import { useTruncationDetection } from './useTruncationDetection';
 

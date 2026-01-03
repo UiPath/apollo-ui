@@ -11,11 +11,29 @@ export interface DeleteVmProps extends Omit<React.SVGProps<SVGSVGElement>, 'widt
 
 export const DeleteVm = React.forwardRef<SVGSVGElement, DeleteVmProps>(
   ({ size, ...props }, ref) => (
-    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
-      <path d="M5 3H4C2.9 3 2 3.9 2 5V16C2 17.1 2.9 18 4 18H11V20H8V22H13V16H4V5H5V3Z" fill="currentColor"/>
-<path d="M19 5H20V13H22V5C22 3.9 21.1 3 20 3H19V5Z" fill="currentColor"/>
-<path d="M16.1963 5.57715V10.4219L12 12.8447L7.80371 10.4219V5.57715L12 3.1543L16.1963 5.57715Z" stroke="currentColor" strokeWidth="2"/>
-<path d="M16.41 23L19 20.41L21.59 23L23 21.59L20.41 19L23 16.41L21.59 15L19 17.59L16.41 15L15 16.41L17.59 19L15 21.59L16.41 23Z" fill="#CC3D45"/>
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      ref={ref}
+      {...props}
+      width={size ?? 24}
+      height={size ?? 24}
+    >
+      <path
+        d="M5 3H4C2.9 3 2 3.9 2 5V16C2 17.1 2.9 18 4 18H11V20H8V22H13V16H4V5H5V3Z"
+        fill="currentColor"
+      />
+      <path d="M19 5H20V13H22V5C22 3.9 21.1 3 20 3H19V5Z" fill="currentColor" />
+      <path
+        d="M16.1963 5.57715V10.4219L12 12.8447L7.80371 10.4219V5.57715L12 3.1543L16.1963 5.57715Z"
+        stroke="currentColor"
+        strokeWidth="2"
+      />
+      <path
+        d="M16.41 23L19 20.41L21.59 23L23 21.59L20.41 19L23 16.41L21.59 15L19 17.59L16.41 15L15 16.41L17.59 19L15 21.59L16.41 23Z"
+        fill="#CC3D45"
+      />
     </svg>
   )
 );

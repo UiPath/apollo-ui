@@ -1,11 +1,17 @@
 {
   "shadow": {
-    "highlight-light": { "value": "inset 4px 0px 0px {color.selectionIndicator.light.value}" },
+    "highlight-light": {
+      "value": "inset 4px 0px 0px {color.selectionIndicator.light.value}"
+    },
     "highlight-light-hc": {
       "value": "inset 4px 0px 0px {color.selectionIndicator.light-hc.value}"
     },
-    "highlight-dark-hc": { "value": "inset 4px 0px 0px {color.selectionIndicator.dark-hc.value}" },
-    "highlight-dark": { "value": "inset 4px 0px 0px {color.selectionIndicator.dark.value}" }
+    "highlight-dark-hc": {
+      "value": "inset 4px 0px 0px {color.selectionIndicator.dark-hc.value}"
+    },
+    "highlight-dark": {
+      "value": "inset 4px 0px 0px {color.selectionIndicator.dark.value}"
+    }
   },
   "color": {
     "brand": {

@@ -9,13 +9,24 @@ export interface SearchProps extends Omit<React.SVGProps<SVGSVGElement>, 'width'
   size?: string | number;
 }
 
-export const Search = React.forwardRef<SVGSVGElement, SearchProps>(
-  ({ size, ...props }, ref) => (
-    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
-      <path fillRule="evenodd" clipRule="evenodd" d="M14.9649 14.255H15.7549L20.7449 19.255L19.2549 20.745L14.2549 15.755V14.965L13.9849 14.685C12.8449 15.665 11.3649 16.255 9.75488 16.255C6.16488 16.255 3.25488 13.345 3.25488 9.755C3.25488 6.165 6.16488 3.255 9.75488 3.255C13.3449 3.255 16.2549 6.165 16.2549 9.755C16.2549 11.365 15.6649 12.845 14.6849 13.985L14.9649 14.255ZM5.25488 9.755C5.25488 12.245 7.26488 14.255 9.75488 14.255C12.2449 14.255 14.2549 12.245 14.2549 9.755C14.2549 7.265 12.2449 5.255 9.75488 5.255C7.26488 5.255 5.25488 7.265 5.25488 9.755Z" fill="currentColor"/>
-    </svg>
-  )
-);
+export const Search = React.forwardRef<SVGSVGElement, SearchProps>(({ size, ...props }, ref) => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    ref={ref}
+    {...props}
+    width={size ?? 24}
+    height={size ?? 24}
+  >
+    <path
+      fillRule="evenodd"
+      clipRule="evenodd"
+      d="M14.9649 14.255H15.7549L20.7449 19.255L19.2549 20.745L14.2549 15.755V14.965L13.9849 14.685C12.8449 15.665 11.3649 16.255 9.75488 16.255C6.16488 16.255 3.25488 13.345 3.25488 9.755C3.25488 6.165 6.16488 3.255 9.75488 3.255C13.3449 3.255 16.2549 6.165 16.2549 9.755C16.2549 11.365 15.6649 12.845 14.6849 13.985L14.9649 14.255ZM5.25488 9.755C5.25488 12.245 7.26488 14.255 9.75488 14.255C12.2449 14.255 14.2549 12.245 14.2549 9.755C14.2549 7.265 12.2449 5.255 9.75488 5.255C7.26488 5.255 5.25488 7.265 5.25488 9.755Z"
+      fill="currentColor"
+    />
+  </svg>
+));
 
 Search.displayName = 'Search';
 

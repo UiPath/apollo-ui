@@ -51,7 +51,7 @@ const Search = React.forwardRef<HTMLInputElement, SearchProps>(
         )}
       </div>
     );
-  },
+  }
 );
 Search.displayName = 'Search';
 
@@ -76,7 +76,7 @@ const SearchWithSuggestions = React.forwardRef<HTMLDivElement, SearchWithSuggest
       emptyMessage = 'No results found.',
       className,
     },
-    ref,
+    ref
   ) => {
     const [open, setOpen] = React.useState(false);
     const [searchValue, setSearchValue] = React.useState(value || '');
@@ -88,7 +88,7 @@ const SearchWithSuggestions = React.forwardRef<HTMLDivElement, SearchWithSuggest
     }, [value]);
 
     const filteredSuggestions = suggestions.filter((suggestion) =>
-      suggestion.toLowerCase().includes(searchValue.toLowerCase()),
+      suggestion.toLowerCase().includes(searchValue.toLowerCase())
     );
 
     const handleSelect = (selectedValue: string) => {
@@ -142,7 +142,7 @@ const SearchWithSuggestions = React.forwardRef<HTMLDivElement, SearchWithSuggest
         </Popover>
       </div>
     );
-  },
+  }
 );
 SearchWithSuggestions.displayName = 'SearchWithSuggestions';
 

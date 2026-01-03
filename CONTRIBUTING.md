@@ -192,9 +192,10 @@ If your commit message doesn't follow the format, the commit will be blocked.
 
 ### Code Style
 
-- We use ESLint and Prettier for code formatting
-- Run `pnpm format` before committing
-- Pre-commit hooks will automatically format code
+- We use Biome for linting and code formatting
+- Run `pnpm lint:fix` to fix linting issues
+- Run `pnpm format` to format code
+- Pre-commit hooks will automatically lint and format code
 
 ## Release Process
 

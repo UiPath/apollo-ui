@@ -1,7 +1,8 @@
 // Auto-generated from studio-activities-icon-sets/ui-data-extraction/ui-data-extraction-extract-src.svg
 import React from 'react';
 
-export interface UIDataExtractionExtractSrcProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+export interface UIDataExtractionExtractSrcProps
+  extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
   /**
    * Size to apply to both width and height.
    * @default 24
@@ -9,23 +10,44 @@ export interface UIDataExtractionExtractSrcProps extends Omit<React.SVGProps<SVG
   size?: string | number;
 }
 
-export const UIDataExtractionExtractSrc = React.forwardRef<SVGSVGElement, UIDataExtractionExtractSrcProps>(
-  ({ size, ...props }, ref) => (
-    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
-      <g clipPath="url(#clip0_4117_2810)">
-<path d="M19.5557 15.1177L19.5557 19.1277L22.5557 19.1277L18.5557 23.1177L14.5557 19.1277L17.5557 19.1277L17.5557 15.1177L19.5557 15.1177Z" fill="#1976D2"/>
-<path d="M10.0867 21.1177L14.3727 3.11768H12.3157L8.03166 21.1177H10.0867Z" fill="currentColor"/>
-<path d="M6.91963 8.58189L5.50541 7.16768L0.555664 12.1174L5.50541 17.0672L6.91963 15.653L3.38409 12.1174L6.91963 8.58189Z" fill="currentColor"/>
-<path d="M22.5552 12.1174L17.6054 7.16768L16.1912 8.58189L19.7267 12.1174L18.7265 13.1177H21.5549L22.5552 12.1174Z" fill="currentColor"/>
-</g>
-<defs>
-<clipPath id="clip0_4117_2810">
-<rect width="24" height="24" fill="var(--color-foreground)"/>
-</clipPath>
-</defs>
-    </svg>
-  )
-);
+export const UIDataExtractionExtractSrc = React.forwardRef<
+  SVGSVGElement,
+  UIDataExtractionExtractSrcProps
+>(({ size, ...props }, ref) => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    ref={ref}
+    {...props}
+    width={size ?? 24}
+    height={size ?? 24}
+  >
+    <g clipPath="url(#clip0_4117_2810)">
+      <path
+        d="M19.5557 15.1177L19.5557 19.1277L22.5557 19.1277L18.5557 23.1177L14.5557 19.1277L17.5557 19.1277L17.5557 15.1177L19.5557 15.1177Z"
+        fill="#1976D2"
+      />
+      <path
+        d="M10.0867 21.1177L14.3727 3.11768H12.3157L8.03166 21.1177H10.0867Z"
+        fill="currentColor"
+      />
+      <path
+        d="M6.91963 8.58189L5.50541 7.16768L0.555664 12.1174L5.50541 17.0672L6.91963 15.653L3.38409 12.1174L6.91963 8.58189Z"
+        fill="currentColor"
+      />
+      <path
+        d="M22.5552 12.1174L17.6054 7.16768L16.1912 8.58189L19.7267 12.1174L18.7265 13.1177H21.5549L22.5552 12.1174Z"
+        fill="currentColor"
+      />
+    </g>
+    <defs>
+      <clipPath id="clip0_4117_2810">
+        <rect width="24" height="24" fill="var(--color-foreground)" />
+      </clipPath>
+    </defs>
+  </svg>
+));
 
 UIDataExtractionExtractSrc.displayName = 'UIDataExtractionExtractSrc';
 

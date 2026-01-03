@@ -47,7 +47,7 @@ describe('Pagination', () => {
               <PaginationNext href="#" />
             </PaginationItem>
           </PaginationContent>
-        </Pagination>,
+        </Pagination>
       );
 
       expect(screen.getByText('Previous')).toBeInTheDocument();
@@ -78,7 +78,7 @@ describe('Pagination', () => {
               <PaginationNext href="#" />
             </PaginationItem>
           </PaginationContent>
-        </Pagination>,
+        </Pagination>
       );
       const results = await axe(container);
       expect(results).toHaveNoViolations();
@@ -94,7 +94,7 @@ describe('Pagination', () => {
               </PaginationLink>
             </PaginationItem>
           </PaginationContent>
-        </Pagination>,
+        </Pagination>
       );
       expect(screen.getByText('2')).toHaveAttribute('aria-current', 'page');
     });
@@ -110,7 +110,7 @@ describe('Pagination', () => {
               <PaginationNext href="#" />
             </PaginationItem>
           </PaginationContent>
-        </Pagination>,
+        </Pagination>
       );
       expect(screen.getByLabelText('Go to previous page')).toBeInTheDocument();
       expect(screen.getByLabelText('Go to next page')).toBeInTheDocument();
@@ -134,7 +134,7 @@ describe('Pagination', () => {
       render(
         <PaginationLink href="#" isActive>
           1
-        </PaginationLink>,
+        </PaginationLink>
       );
       const link = screen.getByText('1');
       expect(link).toHaveAttribute('aria-current', 'page');
@@ -183,7 +183,7 @@ describe('Pagination', () => {
       render(
         <PaginationLink href="#" className="custom-link">
           1
-        </PaginationLink>,
+        </PaginationLink>
       );
       expect(screen.getByText('1')).toHaveClass('custom-link');
     });

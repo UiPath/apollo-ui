@@ -50,7 +50,7 @@ describe('Progress', () => {
 
   it('applies custom className', () => {
     const { container } = render(
-      <Progress value={50} className="custom-class" aria-label="Progress" />,
+      <Progress value={50} className="custom-class" aria-label="Progress" />
     );
     const progressbar = container.querySelector('[role="progressbar"]');
     expect(progressbar).toHaveClass('custom-class');
@@ -64,7 +64,9 @@ describe('Progress', () => {
 
   it('has proper ARIA label', () => {
     render(<Progress value={60} aria-label="Upload progress" />);
-    const progressbar = screen.getByRole('progressbar', { name: 'Upload progress' });
+    const progressbar = screen.getByRole('progressbar', {
+      name: 'Upload progress',
+    });
     expect(progressbar).toBeInTheDocument();
   });
 

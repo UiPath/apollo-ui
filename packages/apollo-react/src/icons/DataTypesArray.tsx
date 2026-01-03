@@ -1,7 +1,8 @@
 // Auto-generated from studio-activities-icon-sets/studio-web-icons-data-types/data-types-array.svg
 import React from 'react';
 
-export interface DataTypesArrayProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+export interface DataTypesArrayProps
+  extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
   /**
    * Size to apply to both width and height.
    * @default 24
@@ -11,18 +12,40 @@ export interface DataTypesArrayProps extends Omit<React.SVGProps<SVGSVGElement>,
 
 export const DataTypesArray = React.forwardRef<SVGSVGElement, DataTypesArrayProps>(
   ({ size, ...props }, ref) => (
-    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      ref={ref}
+      {...props}
+      width={size ?? 24}
+      height={size ?? 24}
+    >
       <g clipPath="url(#clip0_4117_1294)">
-<path fillRule="evenodd" clipRule="evenodd" d="M7 3V5H4V19H7V21H2V3H7ZM20 19V5H17V3H22V21H17V19H20Z" fill="currentColor"/>
-<path d="M12 16C12.5523 16 13 15.5523 13 15C13 14.4477 12.5523 14 12 14C11.4477 14 11 14.4477 11 15C11 15.5523 11.4477 16 12 16Z" fill="currentColor"/>
-<path d="M16 16C16.5523 16 17 15.5523 17 15C17 14.4477 16.5523 14 16 14C15.4477 14 15 14.4477 15 15C15 15.5523 15.4477 16 16 16Z" fill="currentColor"/>
-<path d="M8 16C8.55228 16 9 15.5523 9 15C9 14.4477 8.55228 14 8 14C7.44772 14 7 14.4477 7 15C7 15.5523 7.44772 16 8 16Z" fill="currentColor"/>
-</g>
-<defs>
-<clipPath id="clip0_4117_1294">
-<rect width="24" height="24" fill="var(--color-foreground)"/>
-</clipPath>
-</defs>
+        <path
+          fillRule="evenodd"
+          clipRule="evenodd"
+          d="M7 3V5H4V19H7V21H2V3H7ZM20 19V5H17V3H22V21H17V19H20Z"
+          fill="currentColor"
+        />
+        <path
+          d="M12 16C12.5523 16 13 15.5523 13 15C13 14.4477 12.5523 14 12 14C11.4477 14 11 14.4477 11 15C11 15.5523 11.4477 16 12 16Z"
+          fill="currentColor"
+        />
+        <path
+          d="M16 16C16.5523 16 17 15.5523 17 15C17 14.4477 16.5523 14 16 14C15.4477 14 15 14.4477 15 15C15 15.5523 15.4477 16 16 16Z"
+          fill="currentColor"
+        />
+        <path
+          d="M8 16C8.55228 16 9 15.5523 9 15C9 14.4477 8.55228 14 8 14C7.44772 14 7 14.4477 7 15C7 15.5523 7.44772 16 8 16Z"
+          fill="currentColor"
+        />
+      </g>
+      <defs>
+        <clipPath id="clip0_4117_1294">
+          <rect width="24" height="24" fill="var(--color-foreground)" />
+        </clipPath>
+      </defs>
     </svg>
   )
 );

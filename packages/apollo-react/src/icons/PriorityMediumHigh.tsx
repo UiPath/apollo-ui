@@ -1,7 +1,8 @@
 // Auto-generated from indicator-and-alert/priority/priority-medium-high.svg
 import React from 'react';
 
-export interface PriorityMediumHighProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+export interface PriorityMediumHighProps
+  extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
   /**
    * Size to apply to both width and height.
    * @default 24
@@ -11,9 +12,23 @@ export interface PriorityMediumHighProps extends Omit<React.SVGProps<SVGSVGEleme
 
 export const PriorityMediumHigh = React.forwardRef<SVGSVGElement, PriorityMediumHighProps>(
   ({ size, ...props }, ref) => (
-    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
-      <path d="M13.2774 4.28528C12.8271 3.90491 12.1729 3.90491 11.7226 4.28528L4.43693 10.4393C3.92174 10.8745 3.85215 11.6505 4.2815 12.1727C4.71084 12.6949 5.47653 12.7654 5.99172 12.3303L12.5 6.83288L19.0083 12.3303C19.5235 12.7654 20.2892 12.6949 20.7185 12.1727C21.1478 11.6505 21.0783 10.8745 20.5631 10.4393L13.2774 4.28528Z" fill="#F3AB0D"/>
-<path d="M6.42939 17.5385C5.75875 17.5385 5.21509 18.0895 5.21509 18.7692C5.21509 19.449 5.75875 20 6.42939 20H18.5719C19.2425 20 19.7862 19.449 19.7862 18.7692C19.7862 18.0895 19.2425 17.5385 18.5719 17.5385H6.42939Z" fill="#F3AB0D"/>
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      ref={ref}
+      {...props}
+      width={size ?? 24}
+      height={size ?? 24}
+    >
+      <path
+        d="M13.2774 4.28528C12.8271 3.90491 12.1729 3.90491 11.7226 4.28528L4.43693 10.4393C3.92174 10.8745 3.85215 11.6505 4.2815 12.1727C4.71084 12.6949 5.47653 12.7654 5.99172 12.3303L12.5 6.83288L19.0083 12.3303C19.5235 12.7654 20.2892 12.6949 20.7185 12.1727C21.1478 11.6505 21.0783 10.8745 20.5631 10.4393L13.2774 4.28528Z"
+        fill="#F3AB0D"
+      />
+      <path
+        d="M6.42939 17.5385C5.75875 17.5385 5.21509 18.0895 5.21509 18.7692C5.21509 19.449 5.75875 20 6.42939 20H18.5719C19.2425 20 19.7862 19.449 19.7862 18.7692C19.7862 18.0895 19.2425 17.5385 18.5719 17.5385H6.42939Z"
+        fill="#F3AB0D"
+      />
     </svg>
   )
 );

@@ -1,11 +1,10 @@
+import { keyframes, styled } from '@mui/material/styles';
 import React, { useCallback, useState } from 'react';
 
-import { keyframes, styled } from '@mui/material/styles';
-
 import { useChatService } from '../../providers/chat-service.provider';
-import { AutopilotChatEvent, AutopilotChatOutputStreamEvent } from '../../service';
+import { AutopilotChatEvent, type AutopilotChatOutputStreamEvent } from '../../service';
 import { AutopilotChatActionButton } from '../common/action-button';
-import { AudioInputStartHandler, useAudioInput } from './chat-audio-input';
+import { type AudioInputStartHandler, useAudioInput } from './chat-audio-input';
 import { useAudioOutput } from './chat-audio-output';
 
 type AutopilotChatAudioProps = React.PropsWithoutRef<{

@@ -1,6 +1,6 @@
-import React from 'react';
+import type React from 'react';
 
-import { StatusTypes } from '../../../types/statusTypes';
+import type { StatusTypes } from '../../../types/statusTypes';
 
 export enum BadgeSize {
   SMALL = 'small',

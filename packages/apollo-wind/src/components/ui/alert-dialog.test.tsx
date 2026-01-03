@@ -92,7 +92,7 @@ describe('AlertDialog', () => {
 
     await waitFor(() => {
       expect(
-        screen.getByText('This action cannot be undone. This will permanently delete your data.'),
+        screen.getByText('This action cannot be undone. This will permanently delete your data.')
       ).toBeInTheDocument();
     });
   });
@@ -148,7 +148,7 @@ describe('AlertDialog', () => {
             <AlertDialogCancel>Cancel</AlertDialogCancel>
           </AlertDialogFooter>
         </AlertDialogContent>
-      </AlertDialog>,
+      </AlertDialog>
     );
 
     expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
@@ -168,7 +168,7 @@ describe('AlertDialog', () => {
             <AlertDialogCancel>Cancel</AlertDialogCancel>
           </AlertDialogFooter>
         </AlertDialogContent>
-      </AlertDialog>,
+      </AlertDialog>
     );
 
     await waitFor(() => {
@@ -185,7 +185,7 @@ describe('AlertDialog', () => {
           <AlertDialogTitle>Title</AlertDialogTitle>
           <AlertDialogDescription>Description</AlertDialogDescription>
         </AlertDialogContent>
-      </AlertDialog>,
+      </AlertDialog>
     );
 
     const trigger = screen.getByRole('button', { name: 'Open' });

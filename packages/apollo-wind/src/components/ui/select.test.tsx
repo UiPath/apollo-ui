@@ -157,7 +157,7 @@ describe('Select', () => {
         <SelectContent>
           <SelectItem value="item">Item</SelectItem>
         </SelectContent>
-      </Select>,
+      </Select>
     );
 
     const trigger = screen.getByRole('combobox');
@@ -176,7 +176,7 @@ describe('Select', () => {
           <SelectItem value="apple">Apple</SelectItem>
           <SelectItem value="banana">Banana</SelectItem>
         </SelectContent>
-      </Select>,
+      </Select>
     );
 
     expect(screen.getByText('Apple')).toBeInTheDocument();
@@ -200,7 +200,7 @@ describe('Select', () => {
           <SelectItem value="apple">Apple</SelectItem>
           <SelectItem value="banana">Banana</SelectItem>
         </SelectContent>
-      </Select>,
+      </Select>
     );
 
     expect(screen.getByText('Banana')).toBeInTheDocument();
@@ -232,7 +232,7 @@ describe('Select', () => {
             Disabled
           </SelectItem>
         </SelectContent>
-      </Select>,
+      </Select>
     );
 
     const trigger = screen.getByRole('combobox');
@@ -253,7 +253,7 @@ describe('Select', () => {
         <SelectContent>
           <SelectItem value="item">Item</SelectItem>
         </SelectContent>
-      </Select>,
+      </Select>
     );
 
     const trigger = screen.getByRole('combobox');

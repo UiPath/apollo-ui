@@ -25,32 +25,50 @@ describe('RulesEngine', () => {
     });
 
     it("evaluates 'in' condition correctly when value is in array", () => {
-      const condition: FieldCondition = { when: 'role', in: ['admin', 'moderator'] };
+      const condition: FieldCondition = {
+        when: 'role',
+        in: ['admin', 'moderator'],
+      };
       expect(RulesEngine.evaluateCondition(condition, { role: 'admin' })).toBe(true);
     });
 
     it("evaluates 'in' condition correctly when value is not in array", () => {
-      const condition: FieldCondition = { when: 'role', in: ['admin', 'moderator'] };
+      const condition: FieldCondition = {
+        when: 'role',
+        in: ['admin', 'moderator'],
+      };
       expect(RulesEngine.evaluateCondition(condition, { role: 'user' })).toBe(false);
     });
 
     it("evaluates 'notIn' condition correctly when value is not in array", () => {
-      const condition: FieldCondition = { when: 'role', notIn: ['banned', 'suspended'] };
+      const condition: FieldCondition = {
+        when: 'role',
+        notIn: ['banned', 'suspended'],
+      };
       expect(RulesEngine.evaluateCondition(condition, { role: 'active' })).toBe(true);
     });
 
     it("evaluates 'notIn' condition correctly when value is in array", () => {
-      const condition: FieldCondition = { when: 'role', notIn: ['banned', 'suspended'] };
+      const condition: FieldCondition = {
+        when: 'role',
+        notIn: ['banned', 'suspended'],
+      };
       expect(RulesEngine.evaluateCondition(condition, { role: 'banned' })).toBe(false);
     });
 
     it("evaluates 'matches' regex condition correctly when pattern matches", () => {
-      const condition: FieldCondition = { when: 'email', matches: '^[a-z]+@example\\.com$' };
+      const condition: FieldCondition = {
+        when: 'email',
+        matches: '^[a-z]+@example\\.com$',
+      };
       expect(RulesEngine.evaluateCondition(condition, { email: 'test@example.com' })).toBe(true);
     });
 
     it("evaluates 'matches' regex condition correctly when pattern does not match", () => {
-      const condition: FieldCondition = { when: 'email', matches: '^[a-z]+@example\\.com$' };
+      const condition: FieldCondition = {
+        when: 'email',
+        matches: '^[a-z]+@example\\.com$',
+      };
       expect(RulesEngine.evaluateCondition(condition, { email: 'test@other.com' })).toBe(false);
     });
 
@@ -137,16 +155,26 @@ describe('RulesEngine', () => {
     });
 
     it('evaluates equality operators', () => {
-      expect(RulesEngine.evaluateExpression("status == 'active'", { status: 'active' })).toBe(true);
-      expect(RulesEngine.evaluateExpression("status === 'active'", { status: 'active' })).toBe(
-        true,
-      );
-      expect(RulesEngine.evaluateExpression("status != 'deleted'", { status: 'active' })).toBe(
-        true,
-      );
-      expect(RulesEngine.evaluateExpression("status !== 'deleted'", { status: 'active' })).toBe(
-        true,
-      );
+      expect(
+        RulesEngine.evaluateExpression("status == 'active'", {
+          status: 'active',
+        })
+      ).toBe(true);
+      expect(
+        RulesEngine.evaluateExpression("status === 'active'", {
+          status: 'active',
+        })
+      ).toBe(true);
+      expect(
+        RulesEngine.evaluateExpression("status != 'deleted'", {
+          status: 'active',
+        })
+      ).toBe(true);
+      expect(
+        RulesEngine.evaluateExpression("status !== 'deleted'", {
+          status: 'active',
+        })
+      ).toBe(true);
     });
 
     it('evaluates logical operators', () => {
@@ -177,12 +205,16 @@ describe('RulesEngine', () => {
     });
 
     it('evaluates conditional (ternary) expressions', () => {
-      expect(RulesEngine.evaluateExpression("age >= 18 ? 'adult' : 'minor'", { age: 21 })).toBe(
-        'adult',
-      );
-      expect(RulesEngine.evaluateExpression("age >= 18 ? 'adult' : 'minor'", { age: 15 })).toBe(
-        'minor',
-      );
+      expect(
+        RulesEngine.evaluateExpression("age >= 18 ? 'adult' : 'minor'", {
+          age: 21,
+        })
+      ).toBe('adult');
+      expect(
+        RulesEngine.evaluateExpression("age >= 18 ? 'adult' : 'minor'", {
+          age: 15,
+        })
+      ).toBe('minor');
     });
 
     it('handles invalid expressions gracefully', () => {
@@ -414,7 +446,10 @@ describe('RuleBuilder', () => {
       .require()
       .build();
 
-    expect(rule.conditions[0]).toEqual({ when: 'role', in: ['admin', 'moderator'] });
+    expect(rule.conditions[0]).toEqual({
+      when: 'role',
+      in: ['admin', 'moderator'],
+    });
     expect(rule.effects.required).toBe(true);
   });
 
@@ -428,7 +463,10 @@ describe('RuleBuilder', () => {
   it("creates a rule with 'matches' condition", () => {
     const rule = new RuleBuilder('test-rule').when('email').matches('@company.com$').hide().build();
 
-    expect(rule.conditions[0]).toEqual({ when: 'email', matches: '@company.com$' });
+    expect(rule.conditions[0]).toEqual({
+      when: 'email',
+      matches: '@company.com$',
+    });
     expect(rule.effects.visible).toBe(false);
   });
 

@@ -1,4 +1,3 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
 import {
   addEdge,
   applyEdgeChanges,
@@ -7,8 +6,8 @@ import {
   type EdgeChange,
   type NodeChange,
 } from '@uipath/apollo-react/canvas/xyflow/react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 import { createStore, useStore } from 'zustand';
-import { BASE_CANVAS_DEFAULTS, FLOW_LAYOUT } from '../../BaseCanvas/BaseCanvas.constants';
 import {
   type AgentFlowCustomEdge,
   type AgentFlowCustomNode,
@@ -26,10 +25,11 @@ import { autoArrangeNodes, RESOURCE_NODE_SIZE } from '../../../utils/auto-layout
 import {
   computeNodesAndEdges,
   computeSuggestionNodesAndEdges,
-  NODE_ID_DELIMITER,
   createResourceEdge,
+  NODE_ID_DELIMITER,
 } from '../../../utils/props-helpers';
 import { addAnimationClasses, removeAnimationClasses } from '../../../utils/resource-operations';
+import { BASE_CANVAS_DEFAULTS, FLOW_LAYOUT } from '../../BaseCanvas/BaseCanvas.constants';
 import { ResourceNodeType } from '../AgentFlow.constants';
 
 /**

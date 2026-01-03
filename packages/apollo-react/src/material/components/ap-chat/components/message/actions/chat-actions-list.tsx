@@ -1,18 +1,17 @@
-import React from 'react';
-
 import { msg } from '@lingui/core/macro';
 import { useLingui } from '@lingui/react';
 import { Menu, MenuItem, styled } from '@mui/material';
 import token from '@uipath/apollo-core';
+import React from 'react';
 
 import { useScheduledCallback } from '../../../hooks/use-scheduled-callback';
 import { useChatService } from '../../../providers/chat-service.provider';
 import { useChatState } from '../../../providers/chat-state-provider';
 import {
-  AutopilotChatActionPayload,
-  AutopilotChatMessage,
-  AutopilotChatMessageAction,
-  AutopilotChatPreHookAction,
+  type AutopilotChatActionPayload,
+  type AutopilotChatMessage,
+  type AutopilotChatMessageAction,
+  type AutopilotChatPreHookAction,
   AutopilotChatRole,
 } from '../../../service';
 import { AutopilotChatActionButton } from '../../common/action-button';

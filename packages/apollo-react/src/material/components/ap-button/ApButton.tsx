@@ -1,9 +1,9 @@
 import { CircularProgress } from '@mui/material';
-import Button, { ButtonProps } from '@mui/material/Button';
+import Button, { type ButtonProps } from '@mui/material/Button';
 import { styled } from '@mui/material/styles';
 import React from 'react';
 
-import { ApButtonProps, ButtonVariants } from './ApButton.types';
+import type { ApButtonProps, ButtonVariants } from './ApButton.types';
 
 const variantToProps: Record<ButtonVariants, Partial<ButtonProps>> = {
   primary: { variant: 'contained' },

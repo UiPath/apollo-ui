@@ -133,7 +133,7 @@ export function FileUpload({
     const k = 1024;
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
+    return Math.round((bytes / k ** i) * 100) / 100 + ' ' + sizes[i];
   };
 
   return (
@@ -145,7 +145,7 @@ export function FileUpload({
             ? 'border-primary bg-primary/5'
             : 'border-input bg-background hover:bg-accent/50',
           disabled && 'opacity-50 cursor-not-allowed hover:bg-background',
-          error && 'border-destructive',
+          error && 'border-destructive'
         )}
         onDragEnter={handleDragEnter}
         onDragOver={handleDragOver}

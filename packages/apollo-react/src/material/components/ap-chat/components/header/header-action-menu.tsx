@@ -1,16 +1,14 @@
-import React from 'react';
-
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import { styled } from '@mui/material/styles';
 import token, { FontVariantToken } from '@uipath/apollo-core';
-
+import { ApIcon } from '@uipath/apollo-react/material/components';
+import React from 'react';
 import { ApTypography } from '../../../ap-typography';
 import { useScheduledCallback } from '../../hooks/use-scheduled-callback';
 import { useChatState } from '../../providers/chat-state-provider';
-import { AutopilotChatCustomHeaderAction } from '../../service';
-import { ApIcon } from '@uipath/apollo-react/material/components';
+import type { AutopilotChatCustomHeaderAction } from '../../service';
 import { AutopilotChatTooltip } from '../common/tooltip';
 
 const StyledMenuItem = styled(MenuItem)(() => ({

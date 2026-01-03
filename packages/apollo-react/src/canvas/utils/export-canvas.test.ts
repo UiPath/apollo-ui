@@ -1,5 +1,5 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ReactFlowInstance, Viewport } from '@uipath/apollo-react/canvas/xyflow/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Mock html-to-image
 vi.mock('html-to-image', () => ({
@@ -8,11 +8,11 @@ vi.mock('html-to-image', () => ({
   toSvg: vi.fn(),
 }));
 
-import { toPng, toJpeg, toSvg } from 'html-to-image';
+import { toJpeg, toPng, toSvg } from 'html-to-image';
 import {
-  exportCanvasToImage,
-  downloadCanvasAsImage,
   copyCanvasToClipboard,
+  downloadCanvasAsImage,
+  exportCanvasToImage,
   getFileExtension,
   getMimeType,
 } from './export-canvas';

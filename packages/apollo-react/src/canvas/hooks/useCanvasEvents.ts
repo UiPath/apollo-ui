@@ -1,5 +1,5 @@
-import { useEffect, useCallback } from 'react';
-import { canvasEventBus, type CanvasEvents } from '../utils/CanvasEventBus';
+import { useCallback, useEffect } from 'react';
+import { type CanvasEvents, canvasEventBus } from '../utils/CanvasEventBus';
 
 type EventName = keyof CanvasEvents;
 type EventPayload<T extends EventName> = CanvasEvents[T];

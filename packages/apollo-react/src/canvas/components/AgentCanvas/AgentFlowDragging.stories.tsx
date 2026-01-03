@@ -1,15 +1,15 @@
-import { useCallback, useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { ReactFlowProvider } from '@uipath/apollo-react/canvas/xyflow/react';
 import { Column, Row } from '@uipath/apollo-react/canvas/layouts';
-import { AgentFlow } from './AgentFlow';
+import { ReactFlowProvider } from '@uipath/apollo-react/canvas/xyflow/react';
+import { useCallback, useState } from 'react';
 import {
-  ProjectType,
   type AgentFlowProps,
   type AgentFlowResource,
   type AgentFlowResourceNodeData,
   type AgentFlowResourceType,
+  ProjectType,
 } from '../../types';
+import { AgentFlow } from './AgentFlow';
 
 const meta: Meta<typeof AgentFlow> = {
   title: 'Canvas/AgentFlow with Dragging',

@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest';
 import { FontVariantToken } from '@uipath/apollo-core';
+import { describe, expect, it } from 'vitest';
 import { getVariantMapping } from './ApTypography.utils';
 
 describe('ApTypography Utils', () => {

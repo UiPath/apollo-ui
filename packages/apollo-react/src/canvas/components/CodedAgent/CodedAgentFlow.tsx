@@ -1,13 +1,3 @@
-import React, {
-  memo,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  type ReactElement,
-} from 'react';
-
 import styled from '@emotion/styled';
 import { FontVariantToken, Spacing } from '@uipath/apollo-core';
 import * as Icons from '@uipath/apollo-react/canvas/icons';
@@ -24,6 +14,15 @@ import {
   useReactFlow,
 } from '@uipath/apollo-react/canvas/xyflow/react';
 import { ApCircularProgress, ApIcon, ApTypography } from '@uipath/apollo-react/material';
+import React, {
+  memo,
+  type ReactElement,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 
 import type { CanvasTranslations, CodedAgentNodeTranslations } from '../../types';
 import { DefaultCanvasTranslations, DefaultCodedAgentNodeTranslations } from '../../types';

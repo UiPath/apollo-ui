@@ -165,7 +165,7 @@ describe('SearchWithSuggestions', () => {
 
   it('applies custom className', () => {
     const { container } = render(
-      <SearchWithSuggestions className="custom-search" suggestions={suggestions} />,
+      <SearchWithSuggestions className="custom-search" suggestions={suggestions} />
     );
     expect(container.querySelector('.custom-search')).toBeInTheDocument();
   });

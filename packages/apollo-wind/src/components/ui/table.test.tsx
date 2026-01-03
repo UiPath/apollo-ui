@@ -88,7 +88,7 @@ describe('Table', () => {
             <TableCell>Cell</TableCell>
           </TableRow>
         </TableBody>
-      </Table>,
+      </Table>
     );
     const table = container.querySelector('table');
     expect(table).toHaveClass('custom-table');
@@ -102,7 +102,7 @@ describe('Table', () => {
             <TableHead>Header</TableHead>
           </TableRow>
         </TableHeader>
-      </Table>,
+      </Table>
     );
     const thead = container.querySelector('thead');
     expect(thead).toHaveClass('custom-header');
@@ -116,7 +116,7 @@ describe('Table', () => {
             <TableCell>Cell</TableCell>
           </TableRow>
         </TableBody>
-      </Table>,
+      </Table>
     );
     const tbody = container.querySelector('tbody');
     expect(tbody).toHaveClass('custom-body');
@@ -130,7 +130,7 @@ describe('Table', () => {
             <TableCell>Footer</TableCell>
           </TableRow>
         </TableFooter>
-      </Table>,
+      </Table>
     );
     const tfoot = container.querySelector('tfoot');
     expect(tfoot).toHaveClass('custom-footer');
@@ -144,7 +144,7 @@ describe('Table', () => {
             <TableCell>Cell</TableCell>
           </TableRow>
         </TableBody>
-      </Table>,
+      </Table>
     );
     const row = container.querySelector('tr');
     expect(row).toHaveClass('custom-row');
@@ -158,7 +158,7 @@ describe('Table', () => {
             <TableHead className="custom-head">Header</TableHead>
           </TableRow>
         </TableHeader>
-      </Table>,
+      </Table>
     );
     const head = screen.getByRole('columnheader');
     expect(head).toHaveClass('custom-head');
@@ -172,7 +172,7 @@ describe('Table', () => {
             <TableCell className="custom-cell">Cell</TableCell>
           </TableRow>
         </TableBody>
-      </Table>,
+      </Table>
     );
     const cell = screen.getByText('Cell');
     expect(cell).toHaveClass('custom-cell');
@@ -182,7 +182,7 @@ describe('Table', () => {
     render(
       <Table>
         <TableCaption className="custom-caption">Caption</TableCaption>
-      </Table>,
+      </Table>
     );
     const caption = screen.getByText('Caption');
     expect(caption).toHaveClass('custom-caption');
@@ -197,7 +197,7 @@ describe('Table', () => {
             <TableCell>Cell</TableCell>
           </TableRow>
         </TableBody>
-      </Table>,
+      </Table>
     );
     expect(ref.current).toBeInstanceOf(HTMLTableElement);
   });
@@ -211,7 +211,7 @@ describe('Table', () => {
             <TableHead>Header</TableHead>
           </TableRow>
         </TableHeader>
-      </Table>,
+      </Table>
     );
     expect(ref.current).toBeInstanceOf(HTMLTableSectionElement);
   });
@@ -225,7 +225,7 @@ describe('Table', () => {
             <TableCell>Cell</TableCell>
           </TableRow>
         </TableBody>
-      </Table>,
+      </Table>
     );
     expect(ref.current).toBeInstanceOf(HTMLTableSectionElement);
   });
@@ -239,7 +239,7 @@ describe('Table', () => {
             <TableCell>Footer</TableCell>
           </TableRow>
         </TableFooter>
-      </Table>,
+      </Table>
     );
     expect(ref.current).toBeInstanceOf(HTMLTableSectionElement);
   });
@@ -253,7 +253,7 @@ describe('Table', () => {
             <TableCell>Cell</TableCell>
           </TableRow>
         </TableBody>
-      </Table>,
+      </Table>
     );
     expect(ref.current).toBeInstanceOf(HTMLTableRowElement);
   });
@@ -267,7 +267,7 @@ describe('Table', () => {
             <TableHead ref={ref}>Header</TableHead>
           </TableRow>
         </TableHeader>
-      </Table>,
+      </Table>
     );
     expect(ref.current).toBeInstanceOf(HTMLTableCellElement);
   });
@@ -281,7 +281,7 @@ describe('Table', () => {
             <TableCell ref={ref}>Cell</TableCell>
           </TableRow>
         </TableBody>
-      </Table>,
+      </Table>
     );
     expect(ref.current).toBeInstanceOf(HTMLTableCellElement);
   });
@@ -291,7 +291,7 @@ describe('Table', () => {
     render(
       <Table>
         <TableCaption ref={ref}>Caption</TableCaption>
-      </Table>,
+      </Table>
     );
     expect(ref.current).toBeInstanceOf(HTMLTableCaptionElement);
   });
@@ -304,7 +304,7 @@ describe('Table', () => {
             <TableCell colSpan={3}>Spanning cell</TableCell>
           </TableRow>
         </TableBody>
-      </Table>,
+      </Table>
     );
     const cell = container.querySelector('td');
     expect(cell).toHaveAttribute('colSpan', '3');
@@ -318,7 +318,7 @@ describe('Table', () => {
             <TableCell rowSpan={2}>Spanning cell</TableCell>
           </TableRow>
         </TableBody>
-      </Table>,
+      </Table>
     );
     const cell = container.querySelector('td');
     expect(cell).toHaveAttribute('rowSpan', '2');
@@ -338,7 +338,7 @@ describe('Table', () => {
             <TableCell>Selected</TableCell>
           </TableRow>
         </TableBody>
-      </Table>,
+      </Table>
     );
     const row = container.querySelector('tr');
     expect(row).toHaveAttribute('data-state', 'selected');

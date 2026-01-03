@@ -62,7 +62,7 @@ describe('Skeleton', () => {
       <div>
         <Skeleton className="h-4 w-full mb-2" />
         <Skeleton className="h-4 w-3/4" />
-      </div>,
+      </div>
     );
     const skeletons = container.querySelectorAll('.animate-pulse');
     expect(skeletons.length).toBe(2);

@@ -1,10 +1,10 @@
+import styled from '@emotion/styled';
 import type { EdgeProps } from '@uipath/apollo-react/canvas/xyflow/react';
 import {
   EdgeLabelRenderer,
-  useInternalNode,
   getSmoothStepPath,
+  useInternalNode,
 } from '@uipath/apollo-react/canvas/xyflow/react';
-import styled from '@emotion/styled';
 
 export const StageEdgeLabel = styled.div`
   position: absolute;

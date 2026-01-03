@@ -1,5 +1,5 @@
 import { Position, type ReactFlowInstance } from '@uipath/apollo-react/canvas/xyflow/react';
-import { createPreviewNode, applyPreviewToReactFlow } from '../../utils/createPreviewNode';
+import { applyPreviewToReactFlow, createPreviewNode } from '../../utils/createPreviewNode';
 
 /**
  * Creates a preview node and edge when a button handle is clicked.

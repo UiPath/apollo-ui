@@ -4,11 +4,10 @@ import {
   getSmoothStepPath,
   type Position,
 } from '@uipath/apollo-react/canvas/xyflow/react';
-
-import type { AgentFlowDefaultEdge, SuggestionType } from '../../../types';
-import { EDGE_STYLES } from '../../../components/BaseCanvas/BaseCanvas.constants';
-import { useAgentFlowStore } from '../store/agent-flow-store';
 import { useMemo } from 'react';
+import { EDGE_STYLES } from '../../../components/BaseCanvas/BaseCanvas.constants';
+import type { AgentFlowDefaultEdge, SuggestionType } from '../../../types';
+import { useAgentFlowStore } from '../store/agent-flow-store';
 
 type StaticEdgeProps = EdgeProps &
   AgentFlowDefaultEdge & {

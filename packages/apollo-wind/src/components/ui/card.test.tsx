@@ -13,7 +13,7 @@ describe('Card', () => {
         </CardHeader>
         <CardContent>Card Content</CardContent>
         <CardFooter>Card Footer</CardFooter>
-      </Card>,
+      </Card>
     );
 
     expect(screen.getByText('Card Title')).toBeInTheDocument();
@@ -30,7 +30,7 @@ describe('Card', () => {
           <CardDescription>This card meets accessibility standards</CardDescription>
         </CardHeader>
         <CardContent>Content goes here</CardContent>
-      </Card>,
+      </Card>
     );
     const results = await axe(container);
     expect(results).toHaveNoViolations();
@@ -55,7 +55,7 @@ describe('Card', () => {
     render(
       <Card ref={cardRef}>
         <CardHeader ref={headerRef}>Header</CardHeader>
-      </Card>,
+      </Card>
     );
 
     expect(cardRef.current).toBeInstanceOf(HTMLDivElement);

@@ -1,8 +1,8 @@
-import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { ReactFlowProvider } from '@uipath/apollo-react/canvas/xyflow/react';
+import type React from 'react';
+import { describe, expect, it, vi } from 'vitest';
 import { NodePropertiesPanel } from './NodePropertiesPanel';
-import React from 'react';
 
 // Mock the hooks used by NodePropertiesPanel
 vi.mock('./hooks', () => ({

@@ -40,7 +40,7 @@ const MultiSelect = React.forwardRef<HTMLDivElement, MultiSelectProps>(
       searchPlaceholder = 'Search...',
       clearAllText,
     },
-    ref,
+    ref
   ) => {
     const [open, setOpen] = React.useState(false);
 
@@ -74,7 +74,7 @@ const MultiSelect = React.forwardRef<HTMLDivElement, MultiSelectProps>(
               aria-label={selected.length > 0 ? `${selected.length} items selected` : placeholder}
               className={cn(
                 'w-full justify-between',
-                selected.length > 0 ? 'h-auto min-h-10' : 'h-10',
+                selected.length > 0 ? 'h-auto min-h-10' : 'h-10'
               )}
               disabled={disabled}
             >
@@ -153,7 +153,7 @@ const MultiSelect = React.forwardRef<HTMLDivElement, MultiSelectProps>(
                             'mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary',
                             isSelected
                               ? 'bg-primary text-primary-foreground'
-                              : 'opacity-50 [&_svg]:invisible',
+                              : 'opacity-50 [&_svg]:invisible'
                           )}
                         >
                           <Check className="h-4 w-4" />
@@ -178,7 +178,7 @@ const MultiSelect = React.forwardRef<HTMLDivElement, MultiSelectProps>(
         </Popover>
       </div>
     );
-  },
+  }
 );
 MultiSelect.displayName = 'MultiSelect';
 

@@ -432,7 +432,11 @@ function createDemoMockAdapter(): MockAdapter {
   adapter.register('/api/product-variants', (params) => {
     const productId = params.productId as string;
     const variants = mockProductVariants[productId] || [];
-    return variants.map((v) => ({ label: `${v.name} - $${v.price}`, value: v.id, price: v.price }));
+    return variants.map((v) => ({
+      label: `${v.name} - $${v.price}`,
+      value: v.id,
+      price: v.price,
+    }));
   });
 
   // Departments

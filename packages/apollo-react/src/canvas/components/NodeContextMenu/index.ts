@@ -1,7 +1,7 @@
 export { NodeContextMenu } from './NodeContextMenu';
 export type {
   NodeContextMenuProps,
-  NodeMenuItem,
   NodeMenuAction,
   NodeMenuDivider,
+  NodeMenuItem,
 } from './NodeContextMenu.types';

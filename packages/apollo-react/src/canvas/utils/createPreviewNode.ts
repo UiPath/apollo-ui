@@ -1,10 +1,10 @@
 import {
-  Position,
   type Edge,
   type Node,
+  Position,
   type ReactFlowInstance,
 } from '@uipath/apollo-react/canvas/xyflow/react';
-import { DEFAULT_NODE_SIZE, PREVIEW_EDGE_ID, PREVIEW_NODE_ID, GRID_SPACING } from '../constants';
+import { DEFAULT_NODE_SIZE, GRID_SPACING, PREVIEW_EDGE_ID, PREVIEW_NODE_ID } from '../constants';
 import { getAbsolutePosition, getNonOverlappingPositionForDirection } from './NodeUtils';
 
 /**

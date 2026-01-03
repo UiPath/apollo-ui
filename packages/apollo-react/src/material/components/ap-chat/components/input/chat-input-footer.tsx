@@ -1,9 +1,8 @@
-import React from 'react';
-
 import { msg } from '@lingui/core/macro';
 import { useLingui } from '@lingui/react';
 import { Box } from '@mui/material';
 import { FontVariantToken } from '@uipath/apollo-core';
+import React from 'react';
 
 import { ApTypography } from '../../../ap-typography';
 import { useChatState } from '../../providers/chat-state-provider';

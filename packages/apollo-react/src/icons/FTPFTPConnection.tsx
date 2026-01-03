@@ -1,7 +1,8 @@
 // Auto-generated from studio-activities-icon-sets/activities-ftp/ftp-ftp-connection.svg
 import React from 'react';
 
-export interface FTPFTPConnectionProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+export interface FTPFTPConnectionProps
+  extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
   /**
    * Size to apply to both width and height.
    * @default 24
@@ -11,15 +12,28 @@ export interface FTPFTPConnectionProps extends Omit<React.SVGProps<SVGSVGElement
 
 export const FTPFTPConnection = React.forwardRef<SVGSVGElement, FTPFTPConnectionProps>(
   ({ size, ...props }, ref) => (
-    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      ref={ref}
+      {...props}
+      width={size ?? 24}
+      height={size ?? 24}
+    >
       <g clipPath="url(#clip0_4117_1916)">
-<path fillRule="evenodd" clipRule="evenodd" d="M20 4H12L10 2H4C2.89 2 2.01 2.89 2.01 4L2 16C2 17.11 2.89 18 4 18H11V19.2676C10.6964 19.4432 10.4432 19.6964 10.2676 20H2V22H10.2676C10.6134 22.5978 11.2597 23 12 23C12.7403 23 13.3866 22.5978 13.7324 22H22V20H13.7324C13.5568 19.6964 13.3036 19.4432 13 19.2676V18H20C21.1046 18 22 17.1046 22 16V6C22 4.89 21.11 4 20 4ZM20 6V16H4V4H9.17L11.17 6H20Z" fill="currentColor"/>
-</g>
-<defs>
-<clipPath id="clip0_4117_1916">
-<rect width="24" height="24" fill="var(--color-foreground)"/>
-</clipPath>
-</defs>
+        <path
+          fillRule="evenodd"
+          clipRule="evenodd"
+          d="M20 4H12L10 2H4C2.89 2 2.01 2.89 2.01 4L2 16C2 17.11 2.89 18 4 18H11V19.2676C10.6964 19.4432 10.4432 19.6964 10.2676 20H2V22H10.2676C10.6134 22.5978 11.2597 23 12 23C12.7403 23 13.3866 22.5978 13.7324 22H22V20H13.7324C13.5568 19.6964 13.3036 19.4432 13 19.2676V18H20C21.1046 18 22 17.1046 22 16V6C22 4.89 21.11 4 20 4ZM20 6V16H4V4H9.17L11.17 6H20Z"
+          fill="currentColor"
+        />
+      </g>
+      <defs>
+        <clipPath id="clip0_4117_1916">
+          <rect width="24" height="24" fill="var(--color-foreground)" />
+        </clipPath>
+      </defs>
     </svg>
   )
 );

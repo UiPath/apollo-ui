@@ -1,14 +1,13 @@
-import React from 'react';
-
 import { msg } from '@lingui/core/macro';
 import { useLingui } from '@lingui/react';
 import { styled } from '@mui/material';
 import token from '@uipath/apollo-core';
+import React from 'react';
 
 import { ApTypography } from '../../../../ap-typography';
 import { useChatService } from '../../../providers/chat-service.provider';
 import { useChatState } from '../../../providers/chat-state-provider';
-import { AutopilotChatInternalEvent, AutopilotChatSuggestion } from '../../../service';
+import { AutopilotChatInternalEvent, type AutopilotChatSuggestion } from '../../../service';
 
 const SuggestionList = styled('div')(
   ({ disableAnimation, gap }: { disableAnimation?: boolean; gap: number }) => ({

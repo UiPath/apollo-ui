@@ -1,5 +1,5 @@
-import { ApIcon } from '@uipath/apollo-react/material/components';
 import { cx } from '@uipath/apollo-react/canvas/utils';
+import { ApIcon } from '@uipath/apollo-react/material/components';
 import type React from 'react';
 import { useEffect, useRef } from 'react';
 import { StyledSearchForm } from './SearchBox.styles';

@@ -1,5 +1,5 @@
 import type { Node, XYPosition } from '@uipath/apollo-react/canvas/xyflow/react';
-import { PREVIEW_NODE_ID, GRID_SPACING } from '../constants';
+import { GRID_SPACING, PREVIEW_NODE_ID } from '../constants';
 
 /**
  * Calculates the absolute position of a node, taking into account its parent nodes.

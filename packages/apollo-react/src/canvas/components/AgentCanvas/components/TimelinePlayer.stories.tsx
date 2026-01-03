@@ -1,8 +1,7 @@
-import { useCallback, useState } from 'react';
-
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Row } from '@uipath/apollo-react/canvas/layouts';
 import { ReactFlowProvider } from '@uipath/apollo-react/canvas/xyflow/react';
+import { useCallback, useState } from 'react';
 
 import type { IRawSpan } from '../../../../types/TraceModels';
 import {

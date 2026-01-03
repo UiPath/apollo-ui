@@ -1,8 +1,9 @@
-import React, { useMemo, memo } from 'react';
-import { ReactFlowProvider } from '@uipath/apollo-react/canvas/xyflow/react';
 import type { Node, NodeTypes } from '@uipath/apollo-react/canvas/xyflow/react';
-import { BaseCanvas } from '../BaseCanvas';
+import { ReactFlowProvider } from '@uipath/apollo-react/canvas/xyflow/react';
+import type React from 'react';
+import { memo, useMemo } from 'react';
 import type { CanvasLevel } from '../../types/canvas.types';
+import { BaseCanvas } from '../BaseCanvas';
 
 interface MiniCanvasNavigatorProps {
   previousCanvas: CanvasLevel;

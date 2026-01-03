@@ -1,29 +1,29 @@
-import { memo, useCallback, useState, useRef, useEffect, useMemo } from 'react';
+import { Global } from '@emotion/react';
 import type { NodeProps } from '@uipath/apollo-react/canvas/xyflow/react';
 import { NodeResizeControl, useReactFlow } from '@uipath/apollo-react/canvas/xyflow/react';
 import { ApIcon } from '@uipath/apollo-react/material/components';
 import { AnimatePresence } from 'motion/react';
-import { Global } from '@emotion/react';
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { NodeToolbar } from '../NodeToolbar';
-import type { ToolbarAction } from '../NodeToolbar';
-import type { StickyNoteData, StickyNoteColor } from './StickyNoteNode.types';
-import { STICKY_NOTE_COLORS, withAlpha } from './StickyNoteNode.types';
-import {
-  StickyNoteContainer,
-  StickyNoteTextArea,
-  StickyNoteMarkdown,
-  ResizeHandle,
-  TopCornerIndicators,
-  BottomCornerIndicators,
-  ColorPickerPanel,
-  ColorOption,
-  stickyNoteGlobalStyles,
-  StickyNoteWrapper,
-  RESIZE_CONTROL_Z_INDEX,
-} from './StickyNoteNode.styles';
 import { GRID_SPACING } from '../../constants';
+import type { ToolbarAction } from '../NodeToolbar';
+import { NodeToolbar } from '../NodeToolbar';
+import {
+  BottomCornerIndicators,
+  ColorOption,
+  ColorPickerPanel,
+  RESIZE_CONTROL_Z_INDEX,
+  ResizeHandle,
+  StickyNoteContainer,
+  StickyNoteMarkdown,
+  StickyNoteTextArea,
+  StickyNoteWrapper,
+  stickyNoteGlobalStyles,
+  TopCornerIndicators,
+} from './StickyNoteNode.styles';
+import type { StickyNoteColor, StickyNoteData } from './StickyNoteNode.types';
+import { STICKY_NOTE_COLORS, withAlpha } from './StickyNoteNode.types';
 
 export interface StickyNoteNodeProps extends NodeProps {
   data: StickyNoteData;

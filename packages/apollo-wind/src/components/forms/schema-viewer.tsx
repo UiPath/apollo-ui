@@ -75,7 +75,7 @@ export function SchemaViewer({ schema, triggerLabel = 'View Schema' }: SchemaVie
  * Adds a "View Schema" button above the form.
  */
 export function withSchemaViewer<P extends { schema: FormSchema }>(
-  WrappedComponent: React.ComponentType<P>,
+  WrappedComponent: React.ComponentType<P>
 ) {
   return function WithSchemaViewer(props: P) {
     return (

@@ -1,7 +1,8 @@
 // Auto-generated from studio-icons/update-row-item.svg
 import React from 'react';
 
-export interface UpdateRowItemProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+export interface UpdateRowItemProps
+  extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
   /**
    * Size to apply to both width and height.
    * @default 24
@@ -11,10 +12,29 @@ export interface UpdateRowItemProps extends Omit<React.SVGProps<SVGSVGElement>, 
 
 export const UpdateRowItem = React.forwardRef<SVGSVGElement, UpdateRowItemProps>(
   ({ size, ...props }, ref) => (
-    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
-      <path fillRule="evenodd" clipRule="evenodd" d="M4 3C3.44772 3 3 3.44772 3 4V19C3 19.5523 3.44772 20 4 20H20C20.5523 20 21 19.5523 21 19V18H11V5H21V4C21 3.44772 20.5523 3 20 3H4ZM5 5V8H9V5H5ZM5 10H9V13H5V10ZM5 15H9V18H5V15Z" fill="currentColor"/>
-<path d="M15.7142 9.75041C16.1692 9.28617 16.8003 9 17.5 9C18.8807 9 20 10.1193 20 11.5H22C22 9.01472 19.9853 7 17.5 7C16.2411 7 15.1014 7.5183 14.2858 8.35061L15.7142 9.75041Z" fill="currentColor"/>
-<path d="M17.5 14C16.1193 14 15 12.8807 15 11.5H13C13 13.9853 15.0147 16 17.5 16C18.7589 16 19.8986 15.4817 20.7142 14.6494L19.2858 13.2496C18.8308 13.7138 18.1997 14 17.5 14Z" fill="currentColor"/>
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      ref={ref}
+      {...props}
+      width={size ?? 24}
+      height={size ?? 24}
+    >
+      <path
+        fillRule="evenodd"
+        clipRule="evenodd"
+        d="M4 3C3.44772 3 3 3.44772 3 4V19C3 19.5523 3.44772 20 4 20H20C20.5523 20 21 19.5523 21 19V18H11V5H21V4C21 3.44772 20.5523 3 20 3H4ZM5 5V8H9V5H5ZM5 10H9V13H5V10ZM5 15H9V18H5V15Z"
+        fill="currentColor"
+      />
+      <path
+        d="M15.7142 9.75041C16.1692 9.28617 16.8003 9 17.5 9C18.8807 9 20 10.1193 20 11.5H22C22 9.01472 19.9853 7 17.5 7C16.2411 7 15.1014 7.5183 14.2858 8.35061L15.7142 9.75041Z"
+        fill="currentColor"
+      />
+      <path
+        d="M17.5 14C16.1193 14 15 12.8807 15 11.5H13C13 13.9853 15.0147 16 17.5 16C18.7589 16 19.8986 15.4817 20.7142 14.6494L19.2858 13.2496C18.8308 13.7138 18.1997 14 17.5 14Z"
+        fill="currentColor"
+      />
     </svg>
   )
 );

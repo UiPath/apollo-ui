@@ -4,7 +4,7 @@ import {
   AutopilotChatEvent,
   AutopilotChatInterceptableEvent,
   AutopilotChatInternalEvent,
-  AutopilotChatMessage,
+  type AutopilotChatMessage,
   AutopilotChatRole,
 } from '../service';
 import { useChatService } from './chat-service.provider';

@@ -1,12 +1,12 @@
-import { useMemo, useRef, useState } from 'react';
+import { FormControl, InputLabel, MenuItem, Select } from '@mui/material';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { FormControl, InputLabel, MenuItem, Select } from '@mui/material';
 import { FontVariantToken } from '@uipath/apollo-core';
 import { Column, Row } from '@uipath/apollo-react/canvas/layouts';
 import type { Edge, Node } from '@uipath/apollo-react/canvas/xyflow/react';
 import { BackgroundVariant, Panel, Position } from '@uipath/apollo-react/canvas/xyflow/react';
 import { ApButton, ApTypography } from '@uipath/apollo-react/material';
+import { useMemo, useRef, useState } from 'react';
 
 import {
   createNode,

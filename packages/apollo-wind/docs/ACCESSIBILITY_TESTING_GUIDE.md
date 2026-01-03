@@ -72,13 +72,13 @@ jest-axe is already configured in this project. It's imported in test setup and 
 Every component test should include an accessibility test:
 
 ```tsx
-import { render } from '@testing-library/react';
-import { axe } from 'jest-axe';
-import { describe, expect, it } from 'vitest';
-import { Button } from './button';
+import { render } from "@testing-library/react";
+import { axe } from "jest-axe";
+import { describe, expect, it } from "vitest";
+import { Button } from "./button";
 
-describe('Button', () => {
-  it('has no accessibility violations', async () => {
+describe("Button", () => {
+  it("has no accessibility violations", async () => {
     const { container } = render(<Button>Click me</Button>);
     const results = await axe(container);
     expect(results).toHaveNoViolations();
@@ -91,7 +91,7 @@ describe('Button', () => {
 Form components should be tested with proper labels:
 
 ```tsx
-it('has no accessibility violations', async () => {
+it("has no accessibility violations", async () => {
   const { container } = render(
     <div>
       <Label htmlFor="email">Email Address</Label>
@@ -108,7 +108,7 @@ it('has no accessibility violations', async () => {
 Test interactive states (open/closed, expanded/collapsed):
 
 ```tsx
-it('has no accessibility violations when open', async () => {
+it("has no accessibility violations when open", async () => {
   const { container } = render(
     <Dialog open={true}>
       <DialogContent>
@@ -131,7 +131,7 @@ You can customize axe rules if needed:
 const results = await axe(container, {
   rules: {
     // Disable specific rules if absolutely necessary
-    'color-contrast': { enabled: false },
+    "color-contrast": { enabled: false },
   },
 });
 ```
@@ -454,11 +454,11 @@ Use browser DevTools or online tools:
 
 ```tsx
 // Use semantic colors from theme
-className = 'text-foreground'; // ✅ High contrast
-className = 'text-muted-foreground'; // ✅ Still meets minimum
+className = "text-foreground"; // ✅ High contrast
+className = "text-muted-foreground"; // ✅ Still meets minimum
 
 // Avoid custom low-contrast colors
-className = 'text-gray-400'; // ❌ May not meet contrast on light backgrounds
+className = "text-gray-400"; // ❌ May not meet contrast on light backgrounds
 ```
 
 ### Issue 4: Keyboard Trap
@@ -481,7 +481,7 @@ className = 'text-gray-400'; // ❌ May not meet contrast on light backgrounds
 
 ```tsx
 className =
-  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2';
+  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2";
 ```
 
 ### Issue 6: Incorrect ARIA Attributes

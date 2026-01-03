@@ -248,6 +248,7 @@ type IRawSpan = {
   Source: number;
   SpanType: string;
 };
+
 import { AgentFlow } from './AgentFlow';
 
 const mockProps: AgentFlowProps = {

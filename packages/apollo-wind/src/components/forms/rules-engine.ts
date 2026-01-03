@@ -15,11 +15,11 @@ export class RulesEngine {
   static evaluateConditions(
     conditions: FieldCondition[],
     values: Record<string, unknown>,
-    operator: 'AND' | 'OR' = 'AND',
+    operator: 'AND' | 'OR' = 'AND'
   ): boolean {
     if (conditions.length === 0) return true;
 
-    const results = conditions.map((condition) => this.evaluateCondition(condition, values));
+    const results = conditions.map((condition) => RulesEngine.evaluateCondition(condition, values));
 
     return operator === 'AND' ? results.every(Boolean) : results.some(Boolean);
   }
@@ -32,7 +32,7 @@ export class RulesEngine {
 
     // Custom expression evaluation using expr-eval
     if (condition.custom) {
-      const result = this.evaluateExpression(condition.custom, values);
+      const result = RulesEngine.evaluateExpression(condition.custom, values);
       return typeof result === 'boolean' ? result : Boolean(result);
     }
 
@@ -71,7 +71,7 @@ export class RulesEngine {
   static applyRules(
     rules: FieldRule[],
     values: Record<string, unknown>,
-    _context: FormContext,
+    _context: FormContext
   ): {
     visible?: boolean;
     disabled?: boolean;
@@ -88,7 +88,7 @@ export class RulesEngine {
     } = {};
 
     for (const rule of rules) {
-      const conditionsMet = this.evaluateConditions(rule.conditions, values, rule.operator);
+      const conditionsMet = RulesEngine.evaluateConditions(rule.conditions, values, rule.operator);
 
       if (conditionsMet) {
         // Apply effects
@@ -124,7 +124,7 @@ export class RulesEngine {
   static evaluateExpression(expression: string, values: Record<string, unknown>): unknown {
     try {
       const ast = jsep(expression);
-      return this.evaluateNode(ast, values);
+      return RulesEngine.evaluateNode(ast, values);
     } catch (error) {
       console.error('Expression evaluation error:', error);
       return false;
@@ -144,8 +144,8 @@ export class RulesEngine {
 
       case 'BinaryExpression': {
         const binary = node as jsep.BinaryExpression;
-        const left = this.evaluateNode(binary.left, values);
-        const right = this.evaluateNode(binary.right, values);
+        const left = RulesEngine.evaluateNode(binary.left, values);
+        const right = RulesEngine.evaluateNode(binary.right, values);
 
         switch (binary.operator) {
           case '==':
@@ -185,7 +185,7 @@ export class RulesEngine {
 
       case 'UnaryExpression': {
         const unary = node as jsep.UnaryExpression;
-        const arg = this.evaluateNode(unary.argument, values);
+        const arg = RulesEngine.evaluateNode(unary.argument, values);
 
         switch (unary.operator) {
           case '!':
@@ -201,18 +201,18 @@ export class RulesEngine {
 
       case 'MemberExpression': {
         const member = node as jsep.MemberExpression;
-        const obj = this.evaluateNode(member.object, values);
+        const obj = RulesEngine.evaluateNode(member.object, values);
         const prop = member.computed
-          ? this.evaluateNode(member.property, values)
+          ? RulesEngine.evaluateNode(member.property, values)
           : (member.property as jsep.Identifier).name;
         return (obj as Record<string, unknown>)?.[prop as string];
       }
 
       case 'ConditionalExpression': {
         const cond = node as jsep.ConditionalExpression;
-        return this.evaluateNode(cond.test, values)
-          ? this.evaluateNode(cond.consequent, values)
-          : this.evaluateNode(cond.alternate, values);
+        return RulesEngine.evaluateNode(cond.test, values)
+          ? RulesEngine.evaluateNode(cond.consequent, values)
+          : RulesEngine.evaluateNode(cond.alternate, values);
       }
 
       default:
@@ -227,7 +227,7 @@ export class RulesEngine {
   static isFieldVisible(rules: FieldRule[] | undefined, values: Record<string, unknown>): boolean {
     if (!rules || rules.length === 0) return true;
 
-    const ruleResult = this.applyRules(rules, values, {} as FormContext);
+    const ruleResult = RulesEngine.applyRules(rules, values, {} as FormContext);
 
     // Check if field has show/hide rules
     const hasShowRule = rules.some((rule) => rule.effects?.visible === true);
@@ -326,13 +326,13 @@ export class ExpressionBuilder {
   }
 
   static average(fields: string[]): string {
-    const sum = this.sum(fields);
+    const sum = ExpressionBuilder.sum(fields);
     return `(${sum}) / ${fields.length}`;
   }
 
   static inArray(field: string, values: unknown[]): string {
     const checks = values.map((v) => `${field} == ${JSON.stringify(v)}`);
-    return this.or(...checks);
+    return ExpressionBuilder.or(...checks);
   }
 }
 
@@ -411,7 +411,7 @@ export class RuleBuilder {
 class ConditionBuilder {
   constructor(
     private ruleBuilder: RuleBuilder,
-    private field: string,
+    private field: string
   ) {}
 
   is(value: unknown): RuleBuilder {

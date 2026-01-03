@@ -1,2 +1,2 @@
-export { Row, Column } from './Stack';
 export { Grid } from './Grid';
+export { Column, Row } from './Stack';

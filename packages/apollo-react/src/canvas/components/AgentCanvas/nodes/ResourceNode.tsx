@@ -1,22 +1,22 @@
-import { Fragment, memo, useCallback, useMemo } from 'react';
-import { ApIcon } from '@uipath/apollo-react/material/components';
-import { Row } from '@uipath/apollo-react/canvas/layouts';
 import * as Icons from '@uipath/apollo-react/canvas/icons';
-import { Position, type NodeProps } from '@uipath/apollo-react/canvas/xyflow/react';
-import { NewBaseNode } from '../../BaseNode/NewBaseNode';
+import { Row } from '@uipath/apollo-react/canvas/layouts';
+import { type NodeProps, Position } from '@uipath/apollo-react/canvas/xyflow/react';
+import { ApIcon } from '@uipath/apollo-react/material/components';
+import { Fragment, memo, useCallback, useMemo } from 'react';
 import {
   type AgentFlowResourceNode,
   type AgentFlowResourceNodeData,
+  DefaultSuggestionTranslations,
   type ResourceNodeTranslations,
   type SuggestionTranslations,
-  DefaultSuggestionTranslations,
 } from '../../../types';
-import { useAgentFlowStore, useEdges } from '../store/agent-flow-store';
+import { NewBaseNode } from '../../BaseNode/NewBaseNode';
+import type { HandleConfiguration, NodeAdornment } from '../../BaseNode/NewBaseNode.types';
+import type { ButtonHandleConfig } from '../../ButtonHandle';
 import { ExecutionStatusIcon } from '../../ExecutionStatusIcon/ExecutionStatusIcon';
 import type { NodeToolbarConfig, ToolbarAction } from '../../NodeToolbar/NodeToolbar.types';
 import { ToolResourceIcon } from '../components/ToolResourceIcon';
-import type { HandleConfiguration, NodeAdornment } from '../../BaseNode/NewBaseNode.types';
-import type { ButtonHandleConfig } from '../../ButtonHandle';
+import { useAgentFlowStore, useEdges } from '../store/agent-flow-store';
 
 interface ResourceNodeProps extends NodeProps<AgentFlowResourceNode> {
   mode?: 'design' | 'view';

@@ -1,22 +1,22 @@
+import type { Edge, Node, ReactFlowInstance } from '@uipath/apollo-react/canvas/xyflow/react';
+import { ConnectionMode, ReactFlow } from '@uipath/apollo-react/canvas/xyflow/react';
 import {
+  type CSSProperties,
   forwardRef,
   memo,
+  type ReactElement,
   useCallback,
   useImperativeHandle,
   useMemo,
   useState,
-  type CSSProperties,
-  type ReactElement,
 } from 'react';
-import type { Edge, Node, ReactFlowInstance } from '@uipath/apollo-react/canvas/xyflow/react';
-import { ConnectionMode, ReactFlow } from '@uipath/apollo-react/canvas/xyflow/react';
 import { BASE_CANVAS_DEFAULTS } from './BaseCanvas.constants';
 import { useAutoLayout, useEnsureNodesInView, useMaintainNodesInView } from './BaseCanvas.hooks';
 import type { BaseCanvasProps, BaseCanvasRef } from './BaseCanvas.types';
-import { usePreventBackNavigation } from './usePreventBackNavigation';
 import { CanvasBackground } from './CanvasBackground';
-import { PanShortcutTeachingUI } from './PanShortcutTeachingUI';
 import { CanvasProviders } from './CanvasProviders';
+import { PanShortcutTeachingUI } from './PanShortcutTeachingUI';
+import { usePreventBackNavigation } from './usePreventBackNavigation';
 
 const BaseCanvasInnerComponent = <NodeType extends Node = Node, EdgeType extends Edge = Edge>(
   props: BaseCanvasProps<NodeType, EdgeType> & {

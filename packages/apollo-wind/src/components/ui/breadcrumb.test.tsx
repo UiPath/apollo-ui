@@ -81,7 +81,7 @@ describe('Breadcrumb', () => {
             <BreadcrumbPage>Page</BreadcrumbPage>
           </BreadcrumbItem>
         </BreadcrumbList>
-      </Breadcrumb>,
+      </Breadcrumb>
     );
     expect(screen.getByText('More')).toBeInTheDocument();
   });
@@ -108,7 +108,7 @@ describe('Breadcrumb', () => {
             <BreadcrumbPage>Page</BreadcrumbPage>
           </BreadcrumbItem>
         </BreadcrumbList>
-      </Breadcrumb>,
+      </Breadcrumb>
     );
     const nav = screen.getByRole('navigation');
     expect(nav).toHaveClass('custom-breadcrumb');
@@ -122,7 +122,7 @@ describe('Breadcrumb', () => {
             <BreadcrumbPage>Page</BreadcrumbPage>
           </BreadcrumbItem>
         </BreadcrumbList>
-      </Breadcrumb>,
+      </Breadcrumb>
     );
     const list = screen.getByRole('list');
     expect(list).toHaveClass('custom-list');
@@ -136,7 +136,7 @@ describe('Breadcrumb', () => {
             <BreadcrumbPage>Page</BreadcrumbPage>
           </BreadcrumbItem>
         </BreadcrumbList>
-      </Breadcrumb>,
+      </Breadcrumb>
     );
     const item = container.querySelector('.custom-item');
     expect(item).toBeInTheDocument();
@@ -152,7 +152,7 @@ describe('Breadcrumb', () => {
             </BreadcrumbLink>
           </BreadcrumbItem>
         </BreadcrumbList>
-      </Breadcrumb>,
+      </Breadcrumb>
     );
     const link = screen.getByRole('link');
     expect(link).toHaveClass('custom-link');
@@ -168,7 +168,7 @@ describe('Breadcrumb', () => {
             </BreadcrumbLink>
           </BreadcrumbItem>
         </BreadcrumbList>
-      </Breadcrumb>,
+      </Breadcrumb>
     );
     expect(screen.getByRole('button', { name: 'Custom Link' })).toBeInTheDocument();
   });
@@ -185,7 +185,7 @@ describe('Breadcrumb', () => {
             <BreadcrumbPage>Page</BreadcrumbPage>
           </BreadcrumbItem>
         </BreadcrumbList>
-      </Breadcrumb>,
+      </Breadcrumb>
     );
     expect(screen.getByText('/')).toBeInTheDocument();
   });
@@ -199,7 +199,7 @@ describe('Breadcrumb', () => {
             <BreadcrumbPage>Page</BreadcrumbPage>
           </BreadcrumbItem>
         </BreadcrumbList>
-      </Breadcrumb>,
+      </Breadcrumb>
     );
     expect(ref.current).toBeInstanceOf(HTMLElement);
   });
@@ -213,7 +213,7 @@ describe('Breadcrumb', () => {
             <BreadcrumbPage>Page</BreadcrumbPage>
           </BreadcrumbItem>
         </BreadcrumbList>
-      </Breadcrumb>,
+      </Breadcrumb>
     );
     expect(ref.current).toBeInstanceOf(HTMLOListElement);
   });
@@ -227,7 +227,7 @@ describe('Breadcrumb', () => {
             <BreadcrumbPage>Page</BreadcrumbPage>
           </BreadcrumbItem>
         </BreadcrumbList>
-      </Breadcrumb>,
+      </Breadcrumb>
     );
     expect(ref.current).toBeInstanceOf(HTMLLIElement);
   });
@@ -243,7 +243,7 @@ describe('Breadcrumb', () => {
             </BreadcrumbLink>
           </BreadcrumbItem>
         </BreadcrumbList>
-      </Breadcrumb>,
+      </Breadcrumb>
     );
     expect(ref.current).toBeInstanceOf(HTMLAnchorElement);
   });
@@ -257,7 +257,7 @@ describe('Breadcrumb', () => {
             <BreadcrumbPage ref={ref}>Page</BreadcrumbPage>
           </BreadcrumbItem>
         </BreadcrumbList>
-      </Breadcrumb>,
+      </Breadcrumb>
     );
     expect(ref.current).toBeInstanceOf(HTMLSpanElement);
   });

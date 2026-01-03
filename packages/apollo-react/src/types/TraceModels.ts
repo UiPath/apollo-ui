@@ -161,7 +161,7 @@ export interface IEscalationChannelAttributes {
   taskId: string;
 }
 
-export interface ILicensingAttributes {}
+export type ILicensingAttributes = {};
 
 export interface IElementRunSpanAttributes {
   status: string;

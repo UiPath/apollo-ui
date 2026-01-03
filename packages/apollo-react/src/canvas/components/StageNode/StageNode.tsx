@@ -1,6 +1,3 @@
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { createPortal } from 'react-dom';
-
 import {
   closestCenter,
   DndContext,
@@ -23,6 +20,8 @@ import { FontVariantToken, Spacing } from '@uipath/apollo-core';
 import { Column, Row } from '@uipath/apollo-react/canvas/layouts';
 import { Position, useStore, useViewport } from '@uipath/apollo-react/canvas/xyflow/react';
 import { ApIcon, ApLink, ApTooltip, ApTypography } from '@uipath/apollo-react/material';
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 
 import { useConnectedHandles } from '../BaseCanvas/ConnectedHandlesContext';
 import type { HandleConfiguration } from '../BaseNode/BaseNode.types';

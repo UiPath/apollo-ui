@@ -11,8 +11,16 @@ export interface ArrowDropUpProps extends Omit<React.SVGProps<SVGSVGElement>, 'w
 
 export const ArrowDropUp = React.forwardRef<SVGSVGElement, ArrowDropUpProps>(
   ({ size, ...props }, ref) => (
-    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
-      <path d="M7 14.5L12 9.5L17 14.5H7Z" fill="currentColor"/>
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      ref={ref}
+      {...props}
+      width={size ?? 24}
+      height={size ?? 24}
+    >
+      <path d="M7 14.5L12 9.5L17 14.5H7Z" fill="currentColor" />
     </svg>
   )
 );

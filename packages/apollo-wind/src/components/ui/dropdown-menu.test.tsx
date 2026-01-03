@@ -24,7 +24,7 @@ describe('DropdownMenu', () => {
           <DropdownMenuContent>
             <DropdownMenuItem>Action</DropdownMenuItem>
           </DropdownMenuContent>
-        </DropdownMenu>,
+        </DropdownMenu>
       );
       expect(screen.getByText('Open Menu')).toBeInTheDocument();
     });
@@ -37,7 +37,7 @@ describe('DropdownMenu', () => {
           <DropdownMenuContent>
             <DropdownMenuItem>Action</DropdownMenuItem>
           </DropdownMenuContent>
-        </DropdownMenu>,
+        </DropdownMenu>
       );
 
       await user.click(screen.getByText('Open Menu'));
@@ -57,7 +57,7 @@ describe('DropdownMenu', () => {
             <DropdownMenuLabel>My Account</DropdownMenuLabel>
             <DropdownMenuItem>Profile</DropdownMenuItem>
           </DropdownMenuContent>
-        </DropdownMenu>,
+        </DropdownMenu>
       );
 
       await user.click(screen.getByText('Open'));
@@ -77,7 +77,7 @@ describe('DropdownMenu', () => {
             <DropdownMenuSeparator data-testid="separator" />
             <DropdownMenuItem>Action 2</DropdownMenuItem>
           </DropdownMenuContent>
-        </DropdownMenu>,
+        </DropdownMenu>
       );
 
       await user.click(screen.getByText('Open'));
@@ -97,7 +97,7 @@ describe('DropdownMenu', () => {
               Save <DropdownMenuShortcut>⌘S</DropdownMenuShortcut>
             </DropdownMenuItem>
           </DropdownMenuContent>
-        </DropdownMenu>,
+        </DropdownMenu>
       );
 
       await user.click(screen.getByText('Open'));
@@ -116,7 +116,7 @@ describe('DropdownMenu', () => {
           <DropdownMenuContent>
             <DropdownMenuItem>Action</DropdownMenuItem>
           </DropdownMenuContent>
-        </DropdownMenu>,
+        </DropdownMenu>
       );
       const results = await axe(container);
       expect(results).toHaveNoViolations();
@@ -129,7 +129,7 @@ describe('DropdownMenu', () => {
           <DropdownMenuContent>
             <DropdownMenuItem>Action</DropdownMenuItem>
           </DropdownMenuContent>
-        </DropdownMenu>,
+        </DropdownMenu>
       );
       expect(screen.getByText('Open Menu')).toHaveAttribute('aria-haspopup', 'menu');
     });
@@ -142,7 +142,7 @@ describe('DropdownMenu', () => {
           <DropdownMenuContent>
             <DropdownMenuItem>Action</DropdownMenuItem>
           </DropdownMenuContent>
-        </DropdownMenu>,
+        </DropdownMenu>
       );
 
       const trigger = screen.getByText('Open Menu');
@@ -165,7 +165,7 @@ describe('DropdownMenu', () => {
           <DropdownMenuContent>
             <DropdownMenuItem onSelect={handleSelect}>Action</DropdownMenuItem>
           </DropdownMenuContent>
-        </DropdownMenu>,
+        </DropdownMenu>
       );
 
       await user.click(screen.getByText('Open'));
@@ -186,7 +186,7 @@ describe('DropdownMenu', () => {
           <DropdownMenuContent>
             <DropdownMenuItem>Action</DropdownMenuItem>
           </DropdownMenuContent>
-        </DropdownMenu>,
+        </DropdownMenu>
       );
 
       await user.click(screen.getByText('Open'));
@@ -208,7 +208,7 @@ describe('DropdownMenu', () => {
           <DropdownMenuContent>
             <DropdownMenuCheckboxItem checked>Show Status Bar</DropdownMenuCheckboxItem>
           </DropdownMenuContent>
-        </DropdownMenu>,
+        </DropdownMenu>
       );
 
       await user.click(screen.getByText('Open'));
@@ -229,7 +229,7 @@ describe('DropdownMenu', () => {
               <DropdownMenuRadioItem value="dark">Dark</DropdownMenuRadioItem>
             </DropdownMenuRadioGroup>
           </DropdownMenuContent>
-        </DropdownMenu>,
+        </DropdownMenu>
       );
 
       await user.click(screen.getByText('Open'));
@@ -249,7 +249,7 @@ describe('DropdownMenu', () => {
             <DropdownMenuItem>First</DropdownMenuItem>
             <DropdownMenuItem>Second</DropdownMenuItem>
           </DropdownMenuContent>
-        </DropdownMenu>,
+        </DropdownMenu>
       );
 
       await user.click(screen.getByText('Open'));
@@ -273,7 +273,7 @@ describe('DropdownMenu', () => {
           <DropdownMenuContent>
             <DropdownMenuItem className="custom-item">Action</DropdownMenuItem>
           </DropdownMenuContent>
-        </DropdownMenu>,
+        </DropdownMenu>
       );
 
       await user.click(screen.getByText('Open'));
@@ -293,7 +293,7 @@ describe('DropdownMenu', () => {
               Save <DropdownMenuShortcut className="custom-shortcut">⌘S</DropdownMenuShortcut>
             </DropdownMenuItem>
           </DropdownMenuContent>
-        </DropdownMenu>,
+        </DropdownMenu>
       );
 
       await user.click(screen.getByText('Open'));
@@ -311,7 +311,7 @@ describe('DropdownMenu', () => {
           <DropdownMenuContent className="custom-content">
             <DropdownMenuItem>Action</DropdownMenuItem>
           </DropdownMenuContent>
-        </DropdownMenu>,
+        </DropdownMenu>
       );
 
       await user.click(screen.getByText('Open'));
@@ -331,7 +331,7 @@ describe('DropdownMenu', () => {
           <DropdownMenuContent>
             <DropdownMenuItem inset>Inset Item</DropdownMenuItem>
           </DropdownMenuContent>
-        </DropdownMenu>,
+        </DropdownMenu>
       );
 
       await user.click(screen.getByText('Open'));
@@ -349,7 +349,7 @@ describe('DropdownMenu', () => {
           <DropdownMenuContent>
             <DropdownMenuLabel inset>Inset Label</DropdownMenuLabel>
           </DropdownMenuContent>
-        </DropdownMenu>,
+        </DropdownMenu>
       );
 
       await user.click(screen.getByText('Open'));
@@ -369,7 +369,7 @@ describe('DropdownMenu', () => {
           <DropdownMenuContent>
             <DropdownMenuItem disabled>Disabled Action</DropdownMenuItem>
           </DropdownMenuContent>
-        </DropdownMenu>,
+        </DropdownMenu>
       );
 
       await user.click(screen.getByText('Open'));

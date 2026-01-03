@@ -1,10 +1,9 @@
+import { ThemeProvider as MuiThemeProvider, styled } from '@mui/material/styles';
+import token from '@uipath/apollo-core';
 import React from 'react';
 import { createPortal } from 'react-dom';
 
-import { styled, ThemeProvider as MuiThemeProvider } from '@mui/material/styles';
-import token from '@uipath/apollo-core';
-
-import { ApI18nProvider, SupportedLocale } from '../../../i18n';
+import { ApI18nProvider, type SupportedLocale } from '../../../i18n';
 import {
   apolloMaterialUiThemeDark,
   apolloMaterialUiThemeDarkHC,
@@ -26,10 +25,10 @@ import { AutopilotPickerProvider } from './providers/picker-provider';
 import { AutopilotStreamingProvider } from './providers/streaming-provider';
 import { ThemeProvider } from './providers/theme-provider';
 import {
-  ApChatTheme,
+  type ApChatTheme,
   AutopilotChatEvent,
   AutopilotChatMode,
-  AutopilotChatService,
+  type AutopilotChatService,
   CHAT_CONTAINER_ANIMATION_DURATION,
   CHAT_WIDTH_FULL_SCREEN,
 } from './service';

@@ -3,10 +3,10 @@ import { INDENTATION_WIDTH } from './StageNode.styles';
 import type { StageTaskItem } from './StageNode.types';
 import {
   buildTaskGroups,
+  type FlattenedTask,
   flattenTasks,
   getProjection,
   reorderTasks,
-  type FlattenedTask,
 } from './StageNode.utils';
 
 const createTask = (id: string, label?: string): StageTaskItem => ({

@@ -1,7 +1,8 @@
 // Auto-generated from ui-agents-icons/agent-trace/agent-trace-llm-call.svg
 import React from 'react';
 
-export interface AgentTraceLlmCallProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+export interface AgentTraceLlmCallProps
+  extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
   /**
    * Size to apply to both width and height.
    * @default 24
@@ -11,11 +12,31 @@ export interface AgentTraceLlmCallProps extends Omit<React.SVGProps<SVGSVGElemen
 
 export const AgentTraceLlmCall = React.forwardRef<SVGSVGElement, AgentTraceLlmCallProps>(
   ({ size, ...props }, ref) => (
-    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
-      <path d="M5.15244 20.9438V14.1762H3.25V22.4844L7.88947 22.4845V20.9438H5.15244Z" fill="currentColor"/>
-<path d="M10.1366 20.9438V14.1762H8.23418V22.4844L12.8736 22.4845V20.9438H10.1366Z" fill="currentColor"/>
-<path d="M13.2184 14.1762V22.4844H15.1208V20.5443L14.959 17.1767L16.3556 22.4844H17.6128L19.0033 17.1863L18.842 20.5443V22.4844H20.75V14.1762H18.2581L16.9842 19.9566L15.7103 14.1762H13.2184Z" fill="currentColor"/>
-<path d="M12.0346 12.2077L18.2025 5.88063V9.20393H20.6946V1.53477H13.2184V4.09116H16.4581L12.0658 8.59679L5.02562 1.375L3.25 3.19642L12.0346 12.2077Z" fill="currentColor"/>
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      ref={ref}
+      {...props}
+      width={size ?? 24}
+      height={size ?? 24}
+    >
+      <path
+        d="M5.15244 20.9438V14.1762H3.25V22.4844L7.88947 22.4845V20.9438H5.15244Z"
+        fill="currentColor"
+      />
+      <path
+        d="M10.1366 20.9438V14.1762H8.23418V22.4844L12.8736 22.4845V20.9438H10.1366Z"
+        fill="currentColor"
+      />
+      <path
+        d="M13.2184 14.1762V22.4844H15.1208V20.5443L14.959 17.1767L16.3556 22.4844H17.6128L19.0033 17.1863L18.842 20.5443V22.4844H20.75V14.1762H18.2581L16.9842 19.9566L15.7103 14.1762H13.2184Z"
+        fill="currentColor"
+      />
+      <path
+        d="M12.0346 12.2077L18.2025 5.88063V9.20393H20.6946V1.53477H13.2184V4.09116H16.4581L12.0658 8.59679L5.02562 1.375L3.25 3.19642L12.0346 12.2077Z"
+        fill="currentColor"
+      />
     </svg>
   )
 );

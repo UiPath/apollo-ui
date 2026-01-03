@@ -1,4 +1,4 @@
-import { ChipProps } from '@mui/material/Chip';
+import type { ChipProps } from '@mui/material/Chip';
 
 export interface ApChipProps extends Omit<ChipProps, 'deleteIcon'> {
   /** Whether the chip is in a loading state */

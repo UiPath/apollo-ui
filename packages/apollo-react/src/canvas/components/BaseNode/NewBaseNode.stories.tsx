@@ -1,5 +1,3 @@
-import { useCallback, useMemo } from 'react';
-
 import type { Meta, StoryObj } from '@storybook/react';
 import { FontVariantToken } from '@uipath/apollo-core';
 import * as Icons from '@uipath/apollo-react/canvas/icons';
@@ -14,6 +12,7 @@ import {
 } from '@uipath/apollo-react/canvas/xyflow/react';
 import { ApTypography } from '@uipath/apollo-react/material';
 import { ApIcon } from '@uipath/apollo-react/material/components';
+import { useCallback, useMemo } from 'react';
 
 import { DefaultCanvasTranslations } from '../../types';
 import { BaseCanvas } from '../BaseCanvas';

@@ -74,7 +74,7 @@ describe('ToggleGroup', () => {
         <ToggleGroupItem value="italic" aria-label="Italic">
           Italic
         </ToggleGroupItem>
-      </ToggleGroup>,
+      </ToggleGroup>
     );
 
     const boldToggle = screen.getByLabelText('Bold');
@@ -121,7 +121,7 @@ describe('ToggleGroup', () => {
         <ToggleGroupItem value="bold" aria-label="Bold">
           Bold
         </ToggleGroupItem>
-      </ToggleGroup>,
+      </ToggleGroup>
     );
 
     const toggle = screen.getByLabelText('Bold');
@@ -139,7 +139,7 @@ describe('ToggleGroup', () => {
         <ToggleGroupItem value="italic" aria-label="Italic">
           Italic
         </ToggleGroupItem>
-      </ToggleGroup>,
+      </ToggleGroup>
     );
 
     const boldToggle = screen.getByLabelText('Bold');
@@ -158,7 +158,7 @@ describe('ToggleGroup', () => {
         <ToggleGroupItem value="italic" aria-label="Italic">
           Italic
         </ToggleGroupItem>
-      </ToggleGroup>,
+      </ToggleGroup>
     );
 
     const italicToggle = screen.getByLabelText('Italic');
@@ -174,7 +174,7 @@ describe('ToggleGroup', () => {
         <ToggleGroupItem value="italic" aria-label="Italic">
           Italic
         </ToggleGroupItem>
-      </ToggleGroup>,
+      </ToggleGroup>
     );
 
     const boldToggle = screen.getByLabelText('Bold');
@@ -189,7 +189,7 @@ describe('ToggleGroup', () => {
         <ToggleGroupItem value="bold" aria-label="Bold">
           Bold
         </ToggleGroupItem>
-      </ToggleGroup>,
+      </ToggleGroup>
     );
 
     const toggle = screen.getByLabelText('Bold');
@@ -202,7 +202,7 @@ describe('ToggleGroup', () => {
         <ToggleGroupItem value="bold" aria-label="Bold">
           Bold
         </ToggleGroupItem>
-      </ToggleGroup>,
+      </ToggleGroup>
     );
 
     const toggle = screen.getByLabelText('Bold');
@@ -225,7 +225,7 @@ describe('ToggleGroup', () => {
         <ToggleGroupItem value="italic" aria-label="Italic">
           Italic
         </ToggleGroupItem>
-      </ToggleGroup>,
+      </ToggleGroup>
     );
 
     const boldToggle = screen.getByLabelText('Bold');
@@ -248,7 +248,7 @@ describe('ToggleGroup', () => {
         <ToggleGroupItem value="italic" aria-label="Italic">
           Italic
         </ToggleGroupItem>
-      </ToggleGroup>,
+      </ToggleGroup>
     );
 
     expect(italicToggle).toHaveAttribute('data-state', 'on');
@@ -260,7 +260,7 @@ describe('ToggleGroup', () => {
         <ToggleGroupItem value="bold" aria-label="Bold">
           Bold
         </ToggleGroupItem>
-      </ToggleGroup>,
+      </ToggleGroup>
     );
 
     expect(container.firstChild).toHaveClass('custom-group');
@@ -272,7 +272,7 @@ describe('ToggleGroup', () => {
         <ToggleGroupItem value="bold" aria-label="Bold" className="custom-item">
           Bold
         </ToggleGroupItem>
-      </ToggleGroup>,
+      </ToggleGroup>
     );
 
     const toggle = screen.getByLabelText('Bold');
@@ -286,7 +286,7 @@ describe('ToggleGroup', () => {
         <ToggleGroupItem value="bold" aria-label="Bold">
           Bold
         </ToggleGroupItem>
-      </ToggleGroup>,
+      </ToggleGroup>
     );
     expect(ref.current).toBeInstanceOf(HTMLDivElement);
   });
@@ -298,7 +298,7 @@ describe('ToggleGroup', () => {
         <ToggleGroupItem ref={ref} value="bold" aria-label="Bold">
           Bold
         </ToggleGroupItem>
-      </ToggleGroup>,
+      </ToggleGroup>
     );
     expect(ref.current).toBeInstanceOf(HTMLButtonElement);
   });

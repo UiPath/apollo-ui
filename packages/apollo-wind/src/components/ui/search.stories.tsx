@@ -156,7 +156,7 @@ export const Interactive = {
     React.useEffect(() => {
       if (value) {
         const filtered = allItems.filter((item) =>
-          item.toLowerCase().includes(value.toLowerCase()),
+          item.toLowerCase().includes(value.toLowerCase())
         );
         setResults(filtered);
       } else {

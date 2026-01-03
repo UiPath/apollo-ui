@@ -1,8 +1,8 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { useReactFlow, useStoreApi } from '@uipath/apollo-react/canvas/xyflow/react';
 import type { Node } from '@uipath/apollo-react/canvas/xyflow/react';
-import type { BaseCanvasFitViewOptions, EnsureNodesInViewOptions } from './BaseCanvas.types';
+import { useReactFlow, useStoreApi } from '@uipath/apollo-react/canvas/xyflow/react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { BASE_CANVAS_DEFAULTS, FIT_VIEW_DELAY_MS } from './BaseCanvas.constants';
+import type { BaseCanvasFitViewOptions, EnsureNodesInViewOptions } from './BaseCanvas.types';
 
 const waitForNodeMeasurements = (getNodes: () => Node[]): Promise<void> => {
   return new Promise((resolve) => {

@@ -1,7 +1,6 @@
-import React, { useCallback } from 'react';
-
 import { Link } from '@mui/material';
 import { FontVariantToken } from '@uipath/apollo-core';
+import React, { useCallback } from 'react';
 
 import { ApTypography } from '../ap-typography';
 import type { ApLinkProps } from './ApLink.types';

@@ -23,7 +23,7 @@ describe('NavigationMenu', () => {
               <NavigationMenuLink href="#">Home</NavigationMenuLink>
             </NavigationMenuItem>
           </NavigationMenuList>
-        </NavigationMenu>,
+        </NavigationMenu>
       );
       expect(screen.getByRole('navigation')).toBeInTheDocument();
     });
@@ -39,7 +39,7 @@ describe('NavigationMenu', () => {
               <NavigationMenuLink href="#">About</NavigationMenuLink>
             </NavigationMenuItem>
           </NavigationMenuList>
-        </NavigationMenu>,
+        </NavigationMenu>
       );
       expect(screen.getByText('Home')).toBeInTheDocument();
       expect(screen.getByText('About')).toBeInTheDocument();
@@ -57,7 +57,7 @@ describe('NavigationMenu', () => {
               </NavigationMenuContent>
             </NavigationMenuItem>
           </NavigationMenuList>
-        </NavigationMenu>,
+        </NavigationMenu>
       );
 
       expect(screen.getByText('Products')).toBeInTheDocument();
@@ -75,7 +75,7 @@ describe('NavigationMenu', () => {
               <NavigationMenuLink href="#">Home</NavigationMenuLink>
             </NavigationMenuItem>
           </NavigationMenuList>
-        </NavigationMenu>,
+        </NavigationMenu>
       );
       const results = await axe(container);
       expect(results).toHaveNoViolations();
@@ -92,7 +92,7 @@ describe('NavigationMenu', () => {
               </NavigationMenuContent>
             </NavigationMenuItem>
           </NavigationMenuList>
-        </NavigationMenu>,
+        </NavigationMenu>
       );
       const results = await axe(container);
       expect(results).toHaveNoViolations();
@@ -105,7 +105,7 @@ describe('NavigationMenu', () => {
       render(
         <NavigationMenu ref={ref}>
           <NavigationMenuList />
-        </NavigationMenu>,
+        </NavigationMenu>
       );
       expect(ref.current).toBeInstanceOf(HTMLElement);
     });
@@ -115,7 +115,7 @@ describe('NavigationMenu', () => {
       render(
         <NavigationMenu>
           <NavigationMenuList ref={ref} />
-        </NavigationMenu>,
+        </NavigationMenu>
       );
       expect(ref.current).toBeInstanceOf(HTMLUListElement);
     });
@@ -126,7 +126,7 @@ describe('NavigationMenu', () => {
       render(
         <NavigationMenu className="custom-nav">
           <NavigationMenuList />
-        </NavigationMenu>,
+        </NavigationMenu>
       );
       expect(screen.getByRole('navigation')).toHaveClass('custom-nav');
     });
@@ -135,7 +135,7 @@ describe('NavigationMenu', () => {
       render(
         <NavigationMenu>
           <NavigationMenuList className="custom-list" />
-        </NavigationMenu>,
+        </NavigationMenu>
       );
       expect(screen.getByRole('list')).toHaveClass('custom-list');
     });

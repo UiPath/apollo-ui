@@ -91,7 +91,7 @@ describe('Slider', () => {
         max={100}
         onValueChange={handleChange}
         aria-label="Volume"
-      />,
+      />
     );
 
     const slider = screen.getByRole('slider');
@@ -111,7 +111,7 @@ describe('Slider', () => {
         max={100}
         onValueChange={handleChange}
         aria-label="Volume"
-      />,
+      />
     );
 
     const slider = screen.getByRole('slider');
@@ -131,7 +131,7 @@ describe('Slider', () => {
     const user = userEvent.setup();
     const handleChange = vi.fn();
     render(
-      <Slider disabled defaultValue={[50]} onValueChange={handleChange} aria-label="Volume" />,
+      <Slider disabled defaultValue={[50]} onValueChange={handleChange} aria-label="Volume" />
     );
 
     const slider = screen.getByRole('slider');
@@ -144,7 +144,7 @@ describe('Slider', () => {
   it('supports controlled mode', () => {
     const handleChange = vi.fn();
     const { rerender } = render(
-      <Slider value={[25]} onValueChange={handleChange} aria-label="Volume" />,
+      <Slider value={[25]} onValueChange={handleChange} aria-label="Volume" />
     );
 
     const slider = screen.getByRole('slider');
@@ -168,7 +168,7 @@ describe('Slider', () => {
 
   it('applies custom className', () => {
     const { container } = render(
-      <Slider className="custom-class" defaultValue={[50]} aria-label="Volume" />,
+      <Slider className="custom-class" defaultValue={[50]} aria-label="Volume" />
     );
     const root = container.querySelector('.custom-class');
     expect(root).toBeInTheDocument();

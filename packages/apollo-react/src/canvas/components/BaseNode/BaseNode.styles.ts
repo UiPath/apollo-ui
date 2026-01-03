@@ -1,5 +1,5 @@
-import styled from '@emotion/styled';
 import { css, keyframes } from '@emotion/react';
+import styled from '@emotion/styled';
 import type { NodeShape } from './BaseNode.types';
 
 const pulseAnimation = (cssVar: string) => keyframes`
@@ -254,11 +254,13 @@ export const BaseTextContainer = styled.div<{ hasBottomHandles?: boolean; shape?
           transition: transform 0.2s ease-in-out;
 
           /* When there's a bottom handle, offset text to the right to avoid overlapping */
-          ${hasBottomHandles &&
-          css`
+          ${
+            hasBottomHandles &&
+            css`
             transform: translateX(20%) translateY(50%);
             text-align: left;
-          `}
+          `
+          }
         `}
 `;
 

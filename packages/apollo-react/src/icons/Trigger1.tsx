@@ -11,8 +11,19 @@ export interface Trigger1Props extends Omit<React.SVGProps<SVGSVGElement>, 'widt
 
 export const Trigger1 = React.forwardRef<SVGSVGElement, Trigger1Props>(
   ({ size, ...props }, ref) => (
-    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
-      <path d="M9.97495 21L11 13.95H7.34995C7.16662 13.95 7.03328 13.8667 6.94995 13.7C6.86662 13.5333 6.86662 13.375 6.94995 13.225L13.075 3H14.1L13.075 10.025H16.675C16.8583 10.025 16.9958 10.1083 17.0875 10.275C17.1791 10.4417 17.1833 10.6 17.1 10.75L11 21H9.97495Z" fill="currentColor"/>
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      ref={ref}
+      {...props}
+      width={size ?? 24}
+      height={size ?? 24}
+    >
+      <path
+        d="M9.97495 21L11 13.95H7.34995C7.16662 13.95 7.03328 13.8667 6.94995 13.7C6.86662 13.5333 6.86662 13.375 6.94995 13.225L13.075 3H14.1L13.075 10.025H16.675C16.8583 10.025 16.9958 10.1083 17.0875 10.275C17.1791 10.4417 17.1833 10.6 17.1 10.75L11 21H9.97495Z"
+        fill="currentColor"
+      />
     </svg>
   )
 );

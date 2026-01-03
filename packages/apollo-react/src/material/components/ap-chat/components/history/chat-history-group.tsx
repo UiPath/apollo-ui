@@ -1,11 +1,10 @@
-import React from 'react';
-
 import { styled } from '@mui/material';
 import token, { FontVariantToken } from '@uipath/apollo-core';
+import React from 'react';
 
 import { ApTypography } from '../../../ap-typography';
 import { useChatState } from '../../providers/chat-state-provider';
-import { ChatHistoryGroup } from './chat-history';
+import type { ChatHistoryGroup } from './chat-history';
 import { AutopilotChatHistoryItem } from './chat-history-item';
 
 const GroupContainer = styled('div')<{ compactMode: boolean }>(({ compactMode }) => ({

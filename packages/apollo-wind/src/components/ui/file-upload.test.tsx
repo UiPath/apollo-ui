@@ -154,7 +154,9 @@ describe('FileUpload', () => {
         expect(screen.getByText('test.txt')).toBeInTheDocument();
       });
 
-      const removeButton = screen.getByRole('button', { name: /remove test\.txt/i });
+      const removeButton = screen.getByRole('button', {
+        name: /remove test\.txt/i,
+      });
       await user.click(removeButton);
 
       await waitFor(() => {

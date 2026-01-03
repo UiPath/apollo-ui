@@ -1,5 +1,5 @@
-import styled from '@emotion/styled';
 import { css } from '@emotion/react';
+import styled from '@emotion/styled';
 import type { TriggerStatus } from './TriggerNode.types';
 
 export const TriggerContainer = styled.div<{ selected?: boolean; status?: TriggerStatus }>`

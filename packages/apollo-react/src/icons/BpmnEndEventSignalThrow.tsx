@@ -1,7 +1,8 @@
 // Auto-generated from ui-bpmn-canvas/bpmn-end-event/bpmn-end-event-signal-throw.svg
 import React from 'react';
 
-export interface BpmnEndEventSignalThrowProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+export interface BpmnEndEventSignalThrowProps
+  extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
   /**
    * Size to apply to both width and height.
    * @default 24
@@ -9,14 +10,31 @@ export interface BpmnEndEventSignalThrowProps extends Omit<React.SVGProps<SVGSVG
   size?: string | number;
 }
 
-export const BpmnEndEventSignalThrow = React.forwardRef<SVGSVGElement, BpmnEndEventSignalThrowProps>(
-  ({ size, ...props }, ref) => (
-    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
-      <path d="M19.5 12C19.5 7.85786 16.1421 4.5 12 4.5C7.85786 4.5 4.5 7.85786 4.5 12C4.5 16.1421 7.85786 19.5 12 19.5V22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22V19.5C16.1421 19.5 19.5 16.1421 19.5 12Z" fill="currentColor"/>
-<path fillRule="evenodd" clipRule="evenodd" d="M12.2346 8.04843C12.1578 7.91544 11.966 7.91501 11.8886 8.04766L8.17635 14.4118C8.09838 14.5455 8.19525 14.7133 8.35 14.7126L15.7176 14.6798C15.8711 14.6791 15.9666 14.5128 15.8899 14.3798L12.2346 8.04843Z" fill="currentColor"/>
-    </svg>
-  )
-);
+export const BpmnEndEventSignalThrow = React.forwardRef<
+  SVGSVGElement,
+  BpmnEndEventSignalThrowProps
+>(({ size, ...props }, ref) => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    ref={ref}
+    {...props}
+    width={size ?? 24}
+    height={size ?? 24}
+  >
+    <path
+      d="M19.5 12C19.5 7.85786 16.1421 4.5 12 4.5C7.85786 4.5 4.5 7.85786 4.5 12C4.5 16.1421 7.85786 19.5 12 19.5V22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22V19.5C16.1421 19.5 19.5 16.1421 19.5 12Z"
+      fill="currentColor"
+    />
+    <path
+      fillRule="evenodd"
+      clipRule="evenodd"
+      d="M12.2346 8.04843C12.1578 7.91544 11.966 7.91501 11.8886 8.04766L8.17635 14.4118C8.09838 14.5455 8.19525 14.7133 8.35 14.7126L15.7176 14.6798C15.8711 14.6791 15.9666 14.5128 15.8899 14.3798L12.2346 8.04843Z"
+      fill="currentColor"
+    />
+  </svg>
+));
 
 BpmnEndEventSignalThrow.displayName = 'BpmnEndEventSignalThrow';
 

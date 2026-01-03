@@ -35,7 +35,7 @@ describe('ScrollArea', () => {
     const { container } = render(
       <ScrollArea className="custom-scroll">
         <div>Content</div>
-      </ScrollArea>,
+      </ScrollArea>
     );
     expect(container.firstChild).toHaveClass('custom-scroll');
   });
@@ -50,7 +50,7 @@ describe('ScrollArea', () => {
     render(
       <ScrollArea ref={ref}>
         <div>Content</div>
-      </ScrollArea>,
+      </ScrollArea>
     );
     expect(ref.current).toBeInstanceOf(HTMLDivElement);
   });

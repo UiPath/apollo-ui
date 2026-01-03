@@ -12,8 +12,16 @@ import { Button } from '@/components/ui/button';
 
 const defaultSidebarOptions: SidebarPanelConfig[] = [
   { id: 'folders', icon: <Folders className="h-4 w-4" />, label: 'Folders' },
-  { id: 'resources', icon: <Package className="h-4 w-4" />, label: 'Resources' },
-  { id: 'autopilot', icon: <Sparkles className="h-4 w-4" />, label: 'Autopilot' },
+  {
+    id: 'resources',
+    icon: <Package className="h-4 w-4" />,
+    label: 'Resources',
+  },
+  {
+    id: 'autopilot',
+    icon: <Sparkles className="h-4 w-4" />,
+    label: 'Autopilot',
+  },
 ];
 
 const meta = {

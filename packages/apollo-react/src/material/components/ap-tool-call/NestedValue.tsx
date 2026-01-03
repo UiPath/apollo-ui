@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
-import { styled } from '@mui/material';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
+import { styled } from '@mui/material';
 import token from '@uipath/apollo-core';
+import type React from 'react';
+import { useState } from 'react';
 
 import type { NestedValueProps } from './ApToolCall.types';
 

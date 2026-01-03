@@ -62,7 +62,7 @@ const Grid = React.forwardRef<HTMLDivElement, GridProps>(
       my,
       ...htmlProps
     },
-    ref,
+    ref
   ) => {
     const gridClasses = buildGridLayoutClasses({
       cols,
@@ -115,7 +115,7 @@ const Grid = React.forwardRef<HTMLDivElement, GridProps>(
         {children}
       </div>
     );
-  },
+  }
 );
 
 Grid.displayName = 'Grid';

@@ -1,19 +1,18 @@
-import React, { useMemo } from 'react';
-
 import { styled } from '@mui/material';
 import token from '@uipath/apollo-core';
+import React, { useMemo } from 'react';
 
 import { useChatService } from '../../providers/chat-service.provider';
 import { useChatState } from '../../providers/chat-state-provider';
 import { useLoading } from '../../providers/loading-provider';
 import {
-  AutopilotChatActionPayload,
+  type AutopilotChatActionPayload,
   AutopilotChatEvent,
   AutopilotChatInterceptableEvent,
   AutopilotChatInternalEvent,
-  AutopilotChatMessage,
+  type AutopilotChatMessage,
   AutopilotChatRole,
-  AutopilotChatSuggestion,
+  type AutopilotChatSuggestion,
 } from '../../service';
 import { SkeletonLoader } from '../common/skeleton-loader';
 import { AutopilotChatMessageContent } from './chat-message-content';
@@ -50,23 +49,25 @@ const removeFakeStream = (messages: AutopilotChatMessage[]) => {
   return messages.map(({ fakeStream: _fakeStream, ...rest }) => rest);
 };
 
-const MessageGroupContainer = styled('div')(({
-  isAssistant,
-  disableActions,
-  isLastGroup,
-}: {
-  isAssistant: boolean;
-  disableActions: boolean;
-  isLastGroup: boolean;
-}) => {
-  if (disableActions) {
-    return isLastGroup ? { marginBottom: '14px' } : { marginBottom: '-16px' };
+const MessageGroupContainer = styled('div')(
+  ({
+    isAssistant,
+    disableActions,
+    isLastGroup,
+  }: {
+    isAssistant: boolean;
+    disableActions: boolean;
+    isLastGroup: boolean;
+  }) => {
+    if (disableActions) {
+      return isLastGroup ? { marginBottom: '14px' } : { marginBottom: '-16px' };
+    }
+    if (isAssistant) {
+      return { marginBottom: '30px' };
+    }
+    return { marginBottom: '14px' };
   }
-  if (isAssistant) {
-    return { marginBottom: '30px' };
-  }
-  return { marginBottom: '14px' };
-});
+);
 
 const MessageGroup = React.memo(
   ({ messages, isLastGroup }: { messages: AutopilotChatMessage[]; isLastGroup: boolean }) => {

@@ -1,5 +1,5 @@
+import { type NodeProps, useStoreApi } from '@uipath/apollo-react/canvas/xyflow/react';
 import { ApIcon } from '@uipath/apollo-react/material/components';
-import { useStoreApi, type NodeProps } from '@uipath/apollo-react/canvas/xyflow/react';
 import { useCallback, useRef } from 'react';
 import { useCanvasStore } from '../../stores/canvasStore';
 import { AddNodePanel, type NodeItemData } from '../AddNodePanel';

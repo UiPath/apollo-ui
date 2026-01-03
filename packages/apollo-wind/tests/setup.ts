@@ -49,21 +49,19 @@ global.ResizeObserver = class ResizeObserver {
 };
 
 // Mock scrollIntoView for jsdom
-Element.prototype.scrollIntoView = function () {
+Element.prototype.scrollIntoView = () => {
   // Mock implementation
 };
 
 // Mock hasPointerCapture for jsdom (needed for Radix UI Select)
-Element.prototype.hasPointerCapture = function () {
-  return false;
-};
+Element.prototype.hasPointerCapture = () => false;
 
 // Mock setPointerCapture and releasePointerCapture for jsdom
-Element.prototype.setPointerCapture = function () {
+Element.prototype.setPointerCapture = () => {
   // Mock implementation
 };
 
-Element.prototype.releasePointerCapture = function () {
+Element.prototype.releasePointerCapture = () => {
   // Mock implementation
 };
 

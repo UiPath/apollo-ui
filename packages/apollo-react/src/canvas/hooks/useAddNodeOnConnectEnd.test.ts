@@ -21,9 +21,9 @@ vi.mock('../utils', () => ({
   createPreviewNode: vi.fn(),
 }));
 
+import * as utils from '../utils';
 // Import after mocks are set up
 import { useAddNodeOnConnectEnd } from './useAddNodeOnConnectEnd';
-import * as utils from '../utils';
 
 const mockApplyPreviewToReactFlow = vi.mocked(utils.applyPreviewToReactFlow);
 const mockCreatePreviewNode = vi.mocked(utils.createPreviewNode);

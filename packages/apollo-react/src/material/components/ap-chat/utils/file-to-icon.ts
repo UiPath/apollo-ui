@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 
 import FileIcon from '../assets/default-file.svg';
 import PowerPointFileIcon from '../assets/ppt-file.svg';

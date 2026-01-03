@@ -1,8 +1,8 @@
-import { describe, expect, it } from 'vitest';
-import { ProjectType, type AgentFlowCustomEdge, type AgentFlowCustomNode } from '../types';
-import { autoArrangeNodes, getAgentGroupBottomPosition } from './auto-layout';
-import { ResourceNodeType } from '../components/AgentCanvas/AgentFlow.constants';
 import { Position } from '@uipath/apollo-react/canvas/xyflow/react';
+import { describe, expect, it } from 'vitest';
+import { ResourceNodeType } from '../components/AgentCanvas/AgentFlow.constants';
+import { type AgentFlowCustomEdge, type AgentFlowCustomNode, ProjectType } from '../types';
+import { autoArrangeNodes, getAgentGroupBottomPosition } from './auto-layout';
 
 describe('auto-layout', () => {
   describe('getAgentGroupBottomPosition', () => {

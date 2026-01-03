@@ -159,7 +159,10 @@ describe('DataFetcher', () => {
         },
       };
 
-      await DataFetcher.fetch(source, { category: 'electronics', searchTerm: 'phone' });
+      await DataFetcher.fetch(source, {
+        category: 'electronics',
+        searchTerm: 'phone',
+      });
       expect(mockAdapter.lastRequest?.params).toEqual({
         categoryId: 'electronics',
         search: 'phone',
@@ -235,7 +238,11 @@ describe('DataFetcher', () => {
       // Clear only users cache
       DataFetcher.clearCache('users');
 
-      mockAdapter.mockResponse = { data: [{ new: true }], status: 200, ok: true };
+      mockAdapter.mockResponse = {
+        data: [{ new: true }],
+        status: 200,
+        ok: true,
+      };
       mockAdapter.lastRequest = null;
 
       // Users should refetch
@@ -258,7 +265,10 @@ describe('DataFetcher', () => {
         compute: 'price * quantity',
       };
 
-      const result = await DataFetcher.fetch(source, { price: 10, quantity: 5 });
+      const result = await DataFetcher.fetch(source, {
+        price: 10,
+        quantity: 5,
+      });
       expect(result).toBe(50);
     });
 
@@ -306,7 +316,9 @@ describe('DataSourceBuilder', () => {
   });
 
   it('creates GET remote data source', () => {
-    const source = DataSourceBuilder.get('https://api.example.com/items', { limit: 10 });
+    const source = DataSourceBuilder.get('https://api.example.com/items', {
+      limit: 10,
+    });
 
     expect(source).toEqual({
       type: 'remote',
@@ -340,7 +352,7 @@ describe('DataSourceBuilder', () => {
     const source = DataSourceBuilder.dependent(
       'https://api.example.com/cities',
       'countryId',
-      'country',
+      'country'
     );
 
     expect(source).toEqual({
@@ -396,7 +408,7 @@ describe('DataTransformers', () => {
   it('pipes multiple transforms', () => {
     const transform = DataTransformers.pipe(
       DataTransformers.extract('items'),
-      DataTransformers.filter('item.active'),
+      DataTransformers.filter('item.active')
     );
     expect(transform).toContain('data.items');
     expect(transform).toContain('filter');

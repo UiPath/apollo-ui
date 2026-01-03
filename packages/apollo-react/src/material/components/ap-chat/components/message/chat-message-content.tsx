@@ -1,7 +1,6 @@
-import React from 'react';
-
 import { styled } from '@mui/material';
 import token from '@uipath/apollo-core';
+import React from 'react';
 
 import type { SupportedLocale } from '../../../../../i18n';
 import { ApToolCall } from '../../../ap-tool-call';
@@ -13,7 +12,7 @@ import {
   APOLLO_CHAT_TREE_RENDERER,
   AutopilotChatEvent,
   AutopilotChatInternalEvent,
-  AutopilotChatMessage,
+  type AutopilotChatMessage,
   AutopilotChatMode,
   AutopilotChatRole,
   CHAT_MESSAGE_MAX_PADDING,

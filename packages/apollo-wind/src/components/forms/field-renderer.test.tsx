@@ -45,7 +45,7 @@ describe('FormFieldRenderer', () => {
       render(
         <FormWrapper>
           <FormFieldRenderer field={field} context={createMockContext()} customComponents={{}} />
-        </FormWrapper>,
+        </FormWrapper>
       );
 
       expect(screen.getByPlaceholderText('Enter username')).toBeInTheDocument();
@@ -61,7 +61,7 @@ describe('FormFieldRenderer', () => {
       render(
         <FormWrapper>
           <FormFieldRenderer field={field} context={createMockContext()} customComponents={{}} />
-        </FormWrapper>,
+        </FormWrapper>
       );
 
       expect(screen.getByText('Full Name')).toBeInTheDocument();
@@ -78,7 +78,7 @@ describe('FormFieldRenderer', () => {
       render(
         <FormWrapper>
           <FormFieldRenderer field={field} context={createMockContext()} customComponents={{}} />
-        </FormWrapper>,
+        </FormWrapper>
       );
 
       expect(screen.getByText('*')).toBeInTheDocument();
@@ -100,7 +100,7 @@ describe('FormFieldRenderer', () => {
             customComponents={{}}
             disabled
           />
-        </FormWrapper>,
+        </FormWrapper>
       );
 
       expect(screen.getByPlaceholderText('Disabled field')).toBeDisabled();
@@ -119,7 +119,7 @@ describe('FormFieldRenderer', () => {
       render(
         <FormWrapper>
           <FormFieldRenderer field={field} context={createMockContext()} customComponents={{}} />
-        </FormWrapper>,
+        </FormWrapper>
       );
 
       const input = screen.getByPlaceholderText('Enter email');
@@ -140,7 +140,7 @@ describe('FormFieldRenderer', () => {
       render(
         <FormWrapper>
           <FormFieldRenderer field={field} context={createMockContext()} customComponents={{}} />
-        </FormWrapper>,
+        </FormWrapper>
       );
 
       const input = screen.getByRole('spinbutton');
@@ -161,7 +161,7 @@ describe('FormFieldRenderer', () => {
       render(
         <FormWrapper>
           <FormFieldRenderer field={field} context={createMockContext()} customComponents={{}} />
-        </FormWrapper>,
+        </FormWrapper>
       );
 
       const textarea = screen.getByPlaceholderText('Tell us about yourself');
@@ -184,7 +184,7 @@ describe('FormFieldRenderer', () => {
       render(
         <FormWrapper>
           <FormFieldRenderer field={field} context={createMockContext()} customComponents={{}} />
-        </FormWrapper>,
+        </FormWrapper>
       );
 
       expect(screen.getByRole('combobox')).toBeInTheDocument();
@@ -202,7 +202,7 @@ describe('FormFieldRenderer', () => {
       render(
         <FormWrapper>
           <FormFieldRenderer field={field} context={createMockContext()} customComponents={{}} />
-        </FormWrapper>,
+        </FormWrapper>
       );
 
       expect(screen.getByRole('checkbox')).toBeInTheDocument();
@@ -221,7 +221,7 @@ describe('FormFieldRenderer', () => {
       render(
         <FormWrapper>
           <FormFieldRenderer field={field} context={createMockContext()} customComponents={{}} />
-        </FormWrapper>,
+        </FormWrapper>
       );
 
       expect(screen.getByRole('switch')).toBeInTheDocument();
@@ -247,7 +247,7 @@ describe('FormFieldRenderer', () => {
       render(
         <FormWrapper>
           <FormFieldRenderer field={field} context={createMockContext()} customComponents={{}} />
-        </FormWrapper>,
+        </FormWrapper>
       );
 
       // Field should not be in the document
@@ -272,7 +272,7 @@ describe('FormFieldRenderer', () => {
       render(
         <FormWrapper>
           <FormFieldRenderer field={field} context={createMockContext()} customComponents={{}} />
-        </FormWrapper>,
+        </FormWrapper>
       );
 
       expect(screen.getByPlaceholderText('Visible')).toBeInTheDocument();
@@ -298,7 +298,7 @@ describe('FormFieldRenderer', () => {
       render(
         <FormWrapper>
           <FormFieldRenderer field={field} context={createMockContext()} customComponents={{}} />
-        </FormWrapper>,
+        </FormWrapper>
       );
 
       expect(screen.getByPlaceholderText('Disabled by rule')).toBeDisabled();
@@ -317,7 +317,7 @@ describe('FormFieldRenderer', () => {
       const { container } = render(
         <FormWrapper>
           <FormFieldRenderer field={field} context={createMockContext()} customComponents={{}} />
-        </FormWrapper>,
+        </FormWrapper>
       );
 
       const wrapper = container.firstChild as HTMLElement;
@@ -337,7 +337,7 @@ describe('FormFieldRenderer', () => {
       const { container } = render(
         <FormWrapper>
           <FormFieldRenderer field={field} context={createMockContext()} customComponents={{}} />
-        </FormWrapper>,
+        </FormWrapper>
       );
 
       const results = await axe(container);
@@ -371,7 +371,7 @@ describe('FormFieldRenderer', () => {
       render(
         <FormWrapper>
           <FormFieldRenderer field={field} context={createMockContext()} customComponents={{}} />
-        </FormWrapper>,
+        </FormWrapper>
       );
 
       // Wait for async data source loading to complete
@@ -397,7 +397,10 @@ describe('FormFieldRenderer', () => {
       // Set error on mount if provided
       useEffect(() => {
         if (errorMessage) {
-          methods.setError(fieldName, { type: 'manual', message: errorMessage });
+          methods.setError(fieldName, {
+            type: 'manual',
+            message: errorMessage,
+          });
         }
       }, [methods, fieldName, errorMessage]);
 
@@ -415,7 +418,7 @@ describe('FormFieldRenderer', () => {
       render(
         <FormWrapperWithError fieldName="required_field" errorMessage="This field is required">
           <FormFieldRenderer field={field} context={createMockContext()} customComponents={{}} />
-        </FormWrapperWithError>,
+        </FormWrapperWithError>
       );
 
       // Error message should be displayed
@@ -433,7 +436,7 @@ describe('FormFieldRenderer', () => {
       render(
         <FormWrapperWithError fieldName="valid_field">
           <FormFieldRenderer field={field} context={createMockContext()} customComponents={{}} />
-        </FormWrapperWithError>,
+        </FormWrapperWithError>
       );
 
       // No error message should be displayed

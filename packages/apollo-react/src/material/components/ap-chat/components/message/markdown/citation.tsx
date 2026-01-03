@@ -1,21 +1,19 @@
-import React from 'react';
-
 import { msg } from '@lingui/core/macro';
 import { useLingui } from '@lingui/react';
 import { Box } from '@mui/material';
 import token, { FontVariantToken } from '@uipath/apollo-core';
-
-import { ApTypography } from '../../../../ap-typography';
 import { ApIcon } from '@uipath/apollo-react/material/components';
-import { AutopilotChatTooltip } from '../../common/tooltip';
+import React from 'react';
+import { ApTypography } from '../../../../ap-typography';
 import { useChatService } from '../../../providers/chat-service.provider';
 import { useChatState } from '../../../providers/chat-state-provider';
 import {
   AutopilotChatPreHookAction,
   CHAT_CITATION_START,
-  PdfCitation,
-  UrlCitation,
+  type PdfCitation,
+  type UrlCitation,
 } from '../../../service';
+import { AutopilotChatTooltip } from '../../common/tooltip';
 
 // Helpers for additive range highlighting
 const getNearestStartMarker = (

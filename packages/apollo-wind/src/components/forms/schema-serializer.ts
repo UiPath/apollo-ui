@@ -111,7 +111,9 @@ function serializeActions(actions: FormAction[]): JsonArray {
     ...(action.variant && { variant: action.variant }),
     ...(action.loading !== undefined && { loading: action.loading }),
     ...(action.disabled !== undefined && { disabled: action.disabled }),
-    ...(action.conditions && { conditions: action.conditions.map(serializeCondition) }),
+    ...(action.conditions && {
+      conditions: action.conditions.map(serializeCondition),
+    }),
   }));
 }
 

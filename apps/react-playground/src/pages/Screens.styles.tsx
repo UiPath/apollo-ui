@@ -1,4 +1,4 @@
-import styled from 'styled-components';
+import styled from "styled-components";
 
 export const OverviewCard = styled.div`
   background: var(--color-background);
@@ -106,7 +106,11 @@ export const VisualBase = styled.div`
 export const VisualViewport = styled.div<{ $width: string }>`
   width: min(100%, ${(props) => props.$width});
   height: 120px;
-  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--color-primary) 0%,
+    var(--color-secondary) 100%
+  );
   border-radius: 8px;
   display: flex;
   align-items: center;

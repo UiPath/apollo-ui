@@ -107,12 +107,12 @@ export function MetadataForm({
 
       registerCustomComponent: (
         name: string,
-        component: React.ComponentType<CustomFieldComponentProps>,
+        component: React.ComponentType<CustomFieldComponentProps>
       ) => {
         setCustomComponents((prev) => ({ ...prev, [name]: component }));
       },
     }),
-    [schema, form, currentStep],
+    [schema, form, currentStep]
   );
 
   // Ref for context to use in useEffects without causing dependency loops
@@ -141,7 +141,6 @@ export function MetadataForm({
     };
 
     initializeForm();
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- Intentionally only depends on isInitialized; use key prop to reinitialize
   }, [isInitialized]);
 
   // Watch for field changes and execute plugin hooks
@@ -233,7 +232,7 @@ function SinglePageForm({ schema, context, customComponents, disabled }: SingleP
 
   // Filter visible sections
   const visibleSections = sections.filter(
-    (section) => !section.conditions || context.evaluateConditions(section.conditions),
+    (section) => !section.conditions || context.evaluateConditions(section.conditions)
   );
 
   return (
@@ -414,7 +413,12 @@ interface FormActionsProps {
 
 function FormActions({ schema, context, onReset }: FormActionsProps) {
   const actions = schema.actions || [
-    { id: 'submit', type: 'submit' as const, label: 'Submit', variant: 'default' as const },
+    {
+      id: 'submit',
+      type: 'submit' as const,
+      label: 'Submit',
+      variant: 'default' as const,
+    },
   ];
 
   // Don't render anything if no actions
@@ -490,12 +494,12 @@ function buildZodSchema(schema: FormSchema): z.ZodObject<Record<string, z.ZodTyp
   fields.forEach((field) => {
     // Check if field has unconditional required rule
     const hasUnconditionalRequired = field.rules?.some(
-      (rule) => rule.effects.required === true && rule.conditions.length === 0,
+      (rule) => rule.effects.required === true && rule.conditions.length === 0
     );
 
     // Check if field has conditional required rule (with conditions)
     const hasConditionalRequired = field.rules?.some(
-      (rule) => rule.effects.required === true && rule.conditions.length > 0,
+      (rule) => rule.effects.required === true && rule.conditions.length > 0
     );
 
     // Check if field has visibility rules (show/hide)
@@ -587,7 +591,7 @@ function buildZodSchema(schema: FormSchema): z.ZodObject<Record<string, z.ZodTyp
 
 async function loadInitialData(
   initialData: FormSchema['initialData'],
-  _context: FormContext,
+  _context: FormContext
 ): Promise<Record<string, unknown>> {
   if (!initialData) return {};
   // If initialData is a simple object, return it directly

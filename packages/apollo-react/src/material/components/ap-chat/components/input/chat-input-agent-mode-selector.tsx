@@ -1,10 +1,9 @@
-import React from 'react';
-
 import { msg } from '@lingui/core/macro';
 import { useLingui } from '@lingui/react';
+import React from 'react';
 import { useChatService } from '../../providers/chat-service.provider';
 import { usePicker } from '../../providers/picker-provider';
-import { DropdownOption, DropdownPicker } from '../common/dropdown-picker';
+import { type DropdownOption, DropdownPicker } from '../common/dropdown-picker';
 
 interface AutopilotChatAgentModeSelectorProps {
   useIcon: boolean;

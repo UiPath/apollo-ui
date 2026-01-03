@@ -1,6 +1,6 @@
-import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { ReactFlowProvider } from '@uipath/apollo-react/canvas/xyflow/react';
+import { describe, expect, it } from 'vitest';
 import { GroupNode, type GroupNodeProps } from './GroupNode';
 
 const defaultProps: GroupNodeProps = {

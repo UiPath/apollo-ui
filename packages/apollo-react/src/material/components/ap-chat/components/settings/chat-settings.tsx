@@ -1,9 +1,7 @@
-import React, { useEffect, useRef } from 'react';
-
-import FocusLock from 'react-focus-lock';
-
 import { styled } from '@mui/material';
 import token from '@uipath/apollo-core';
+import React, { useEffect, useRef } from 'react';
+import FocusLock from 'react-focus-lock';
 
 import { useChatService } from '../../providers/chat-service.provider';
 import { useChatState } from '../../providers/chat-state-provider';

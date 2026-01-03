@@ -16,7 +16,7 @@ describe('EmptyState', () => {
         title="No data available"
         description="Try adjusting your filters or adding new items"
         action={{ label: 'Add Item', onClick: vi.fn() }}
-      />,
+      />
     );
     const results = await axe(container);
     expect(results).toHaveNoViolations();
@@ -24,7 +24,7 @@ describe('EmptyState', () => {
 
   it('renders with description', () => {
     render(
-      <EmptyState title="No items" description="There are no items to display at this time." />,
+      <EmptyState title="No items" description="There are no items to display at this time." />
     );
     expect(screen.getByText('No items')).toBeInTheDocument();
     expect(screen.getByText('There are no items to display at this time.')).toBeInTheDocument();
@@ -32,7 +32,7 @@ describe('EmptyState', () => {
 
   it('renders with icon', () => {
     const { container } = render(
-      <EmptyState title="Empty" icon={<span data-testid="custom-icon">📦</span>} />,
+      <EmptyState title="Empty" icon={<span data-testid="custom-icon">📦</span>} />
     );
     expect(screen.getByTestId('custom-icon')).toBeInTheDocument();
     const iconContainer = container.querySelector('.rounded-full.bg-muted');
@@ -55,10 +55,7 @@ describe('EmptyState', () => {
     const user = userEvent.setup();
     const handleClick = vi.fn();
     render(
-      <EmptyState
-        title="No data"
-        secondaryAction={{ label: 'Learn More', onClick: handleClick }}
-      />,
+      <EmptyState title="No data" secondaryAction={{ label: 'Learn More', onClick: handleClick }} />
     );
 
     const button = screen.getByRole('button', { name: /learn more/i });
@@ -75,7 +72,7 @@ describe('EmptyState', () => {
         title="No data"
         action={{ label: 'Primary', onClick: vi.fn() }}
         secondaryAction={{ label: 'Secondary', onClick: vi.fn() }}
-      />,
+      />
     );
 
     expect(screen.getByRole('button', { name: /primary/i })).toBeInTheDocument();
@@ -97,7 +94,7 @@ describe('EmptyState', () => {
       'items-center',
       'justify-center',
       'p-8',
-      'text-center',
+      'text-center'
     );
   });
 

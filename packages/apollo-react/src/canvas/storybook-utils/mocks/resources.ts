@@ -1,11 +1,11 @@
 import {
-  ProjectType,
-  type AgentFlowResource,
   type AgentFlowContextResource,
-  type AgentFlowToolResource,
   type AgentFlowEscalationResource,
   type AgentFlowMcpResource,
   type AgentFlowMemorySpaceResource,
+  type AgentFlowResource,
+  type AgentFlowToolResource,
+  ProjectType,
 } from '../../types';
 
 /**

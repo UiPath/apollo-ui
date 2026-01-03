@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest';
 import type { Edge, Node } from '@uipath/apollo-react/canvas/xyflow/react';
+import { describe, expect, it } from 'vitest';
 import { d3HierarchyLayout, type LayoutDirection } from './d3-layout';
 
 describe('d3-layout', () => {

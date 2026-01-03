@@ -109,7 +109,7 @@ describe('DateRangePicker', () => {
             from: new Date(2024, 5, 10),
             to: new Date(2024, 5, 15),
           }}
-        />,
+        />
       );
       expect(screen.getByText(/Jun 10, 2024/)).toBeInTheDocument();
       expect(screen.getByText(/Jun 15, 2024/)).toBeInTheDocument();
@@ -121,7 +121,7 @@ describe('DateRangePicker', () => {
           value={{
             from: new Date(2024, 5, 10),
           }}
-        />,
+        />
       );
       expect(screen.getByText(/Jun 10, 2024/)).toBeInTheDocument();
     });

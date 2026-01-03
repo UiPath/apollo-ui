@@ -1,13 +1,13 @@
-import { useMemo, useRef, useEffect, type CSSProperties, type RefCallback } from 'react';
-import { useNodes, useReactFlow } from '@uipath/apollo-react/canvas/xyflow/react';
 import {
   autoUpdate,
   flip,
   offset,
+  type Placement,
   useFloating,
   useMergeRefs,
-  type Placement,
 } from '@floating-ui/react';
+import { useNodes, useReactFlow } from '@uipath/apollo-react/canvas/xyflow/react';
+import { type CSSProperties, type RefCallback, useEffect, useMemo, useRef } from 'react';
 
 export type AnchorRect = { x: number; y: number; width: number; height: number };
 

@@ -1,6 +1,6 @@
-import React from 'react';
-import { Handle, Position, useConnection } from '@uipath/apollo-react/canvas/xyflow/react';
 import styled from '@emotion/styled';
+import { Handle, Position, useConnection } from '@uipath/apollo-react/canvas/xyflow/react';
+import type React from 'react';
 
 const StyledHandle = styled(Handle, {
   // Do not forward transient props to the DOM

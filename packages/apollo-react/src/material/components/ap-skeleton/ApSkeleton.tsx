@@ -1,6 +1,6 @@
-import React, { useEffect } from 'react';
 import { styled } from '@mui/material';
 import token from '@uipath/apollo-core';
+import React, { useEffect } from 'react';
 
 import type { ApSkeletonProps } from './ApSkeleton.types';
 import './ApSkeleton.css';

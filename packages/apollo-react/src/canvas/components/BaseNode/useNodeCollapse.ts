@@ -1,5 +1,5 @@
-import { useCallback } from 'react';
 import { useReactFlow, useStore } from '@uipath/apollo-react/canvas/xyflow/react';
+import { useCallback } from 'react';
 
 /**
  * Configuration for collapsible node behavior.

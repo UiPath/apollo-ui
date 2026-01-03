@@ -1,11 +1,11 @@
-import { type ReactNode } from 'react';
-import { createPortal } from 'react-dom';
+import styled from '@emotion/styled';
+import type { Placement } from '@floating-ui/react';
 import { ViewportPortal } from '@uipath/apollo-react/canvas/xyflow/react';
-import { type Placement } from '@floating-ui/react';
+import type { ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 import { CanvasPortal } from './CanvasPortal';
 import { PanelChrome } from './PanelChrome';
-import { useFloatingPosition, type AnchorRect } from './useFloatingPosition';
-import styled from '@emotion/styled';
+import { type AnchorRect, useFloatingPosition } from './useFloatingPosition';
 
 const PanelContainer = styled.div<{ isPinned?: boolean }>`
   color: var(--uix-canvas-foreground);

@@ -1,9 +1,9 @@
-import React, { createRef } from 'react';
 import { render, screen } from '@testing-library/react';
 import { Panel, ReactFlowProvider } from '@uipath/apollo-react/canvas/xyflow/react';
+import React, { createRef } from 'react';
 import { describe, expect, it, vi } from 'vitest';
-import type { BaseCanvasProps, BaseCanvasRef } from './BaseCanvas.types';
 import { BaseCanvas } from './BaseCanvas';
+import type { BaseCanvasProps, BaseCanvasRef } from './BaseCanvas.types';
 
 // Mock the hooks with configurable state
 let mockIsReady = true;

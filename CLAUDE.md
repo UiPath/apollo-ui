@@ -65,7 +65,7 @@ This is the **UiPath/apollo-ui** public repository - the open-source design syst
 
 - **Turborepo**: Monorepo management with caching and parallel task execution
 - **TypeScript**: Type-safe development across all packages
-- **ESLint**: Code quality and consistency
+- **Biome**: Fast, unified linter and formatter for code quality and consistency
 - **Changesets** or **Semantic-release**: Version management and release automation
 
 ### Framework Support
@@ -113,7 +113,7 @@ apollo-ui/
 ├── turbo.json                  # Turborepo configuration
 ├── package.json                # Root package.json with workspaces
 ├── tsconfig.json               # Base TypeScript configuration
-├── .eslintrc.js                # ESLint configuration
+├── biome.json                  # Biome configuration (linter & formatter)
 └── CLAUDE.md                   # This file - architecture documentation
 ```
 
@@ -351,7 +351,7 @@ Each package must include:
 
 #### Pre-merge Checks
 
-1. Lint (ESLint + TypeScript type checking)
+1. Lint (Biome + TypeScript type checking)
 2. Unit tests
 3. Build verification
 4. Visual regression tests (Playwright)
@@ -419,7 +419,7 @@ Each package must include:
 ### Root `package.json`
 
 - Defines workspaces for all packages
-- Shared devDependencies (TypeScript, ESLint, Turborepo)
+- Shared devDependencies (TypeScript, Biome, Turborepo)
 - Root scripts for common tasks
 
 ### `turbo.json`
@@ -434,11 +434,11 @@ Each package must include:
 - Extended by all packages
 - Strict mode enabled
 
-### `.eslintrc.js`
+### `biome.json`
 
-- Shared ESLint rules
-- React/Angular specific overrides
-- Accessibility rules enabled
+- Unified linting and formatting configuration
+- Enforces code quality and style consistency
+- Fast, zero-config tooling for the entire monorepo
 
 ---
 

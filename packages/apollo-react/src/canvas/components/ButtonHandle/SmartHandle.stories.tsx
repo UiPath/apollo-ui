@@ -1,5 +1,3 @@
-import { useCallback, useMemo } from 'react';
-
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { FontVariantToken } from '@uipath/apollo-core';
 import { Column } from '@uipath/apollo-react/canvas/layouts';
@@ -14,6 +12,7 @@ import type {
 import { Panel, Position } from '@uipath/apollo-react/canvas/xyflow/react';
 import { ApTypography } from '@uipath/apollo-react/material';
 import { ApIcon } from '@uipath/apollo-react/material/components';
+import { useCallback, useMemo } from 'react';
 
 import { StoryInfoPanel, useCanvasStory, withCanvasProviders } from '../../storybook-utils';
 import { DefaultCanvasTranslations } from '../../types';

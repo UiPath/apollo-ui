@@ -1,6 +1,6 @@
 import { arrayMove } from '@dnd-kit/sortable';
-import type { StageTaskItem } from './StageNode.types';
 import { INDENTATION_WIDTH } from './StageNode.styles';
+import type { StageTaskItem } from './StageNode.types';
 
 export interface FlattenedTask {
   id: string;

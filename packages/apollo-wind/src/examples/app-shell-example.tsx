@@ -206,7 +206,7 @@ export function AppShellExample({
         <aside
           className={cn(
             'relative hidden border-r bg-muted/10 transition-all duration-300 md:block',
-            leftSidebarCollapsed ? 'w-12' : 'w-60',
+            leftSidebarCollapsed ? 'w-12' : 'w-60'
           )}
         >
           <Column h="full" overflow="hidden">
@@ -329,7 +329,7 @@ export function AppShellExample({
           <aside
             className={cn(
               'relative hidden border-l bg-muted/10 transition-all duration-300 lg:block',
-              rightSidebarCollapsed ? 'w-12' : 'w-80',
+              rightSidebarCollapsed ? 'w-12' : 'w-80'
             )}
           >
             <Column h="full" overflow="hidden">

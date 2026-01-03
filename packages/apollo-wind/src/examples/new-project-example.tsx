@@ -108,13 +108,13 @@ export function NewProjectExample({
 
   const toggleCategory = (categoryId: string) => {
     setSelectedCategories((prev) =>
-      prev.includes(categoryId) ? prev.filter((c) => c !== categoryId) : [...prev, categoryId],
+      prev.includes(categoryId) ? prev.filter((c) => c !== categoryId) : [...prev, categoryId]
     );
   };
 
   const toggleTool = (toolId: string) => {
     setSelectedTools((prev) =>
-      prev.includes(toolId) ? prev.filter((t) => t !== toolId) : [...prev, toolId],
+      prev.includes(toolId) ? prev.filter((t) => t !== toolId) : [...prev, toolId]
     );
   };
 

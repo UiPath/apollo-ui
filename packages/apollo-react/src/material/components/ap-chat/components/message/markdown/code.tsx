@@ -1,14 +1,12 @@
-import React from 'react';
-
-import katex from 'katex';
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { oneDark, oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
-
 import { msg } from '@lingui/core/macro';
 import { useLingui } from '@lingui/react';
 import CloseIcon from '@mui/icons-material/Close';
 import { Box, IconButton, Modal, styled } from '@mui/material';
 import token from '@uipath/apollo-core';
+import katex from 'katex';
+import React from 'react';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { oneDark, oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
 import { ApChip } from '../../../../ap-chip';
 import { useChatState } from '../../../providers/chat-state-provider';

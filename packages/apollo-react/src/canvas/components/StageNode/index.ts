@@ -1,9 +1,9 @@
-export { StageNode } from './StageNode';
-export { StageEdge } from './StageEdge';
 export { StageConnectionEdge } from './StageConnectionEdge';
+export { StageEdge } from './StageEdge';
+export { StageNode } from './StageNode';
 export type {
-  StageTaskItem,
   StageNodeProps,
   StageStatus,
+  StageTaskItem,
   StageTaskStatus,
 } from './StageNode.types';

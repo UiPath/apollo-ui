@@ -1,8 +1,7 @@
 import '@testing-library/jest-dom';
 
-import { afterEach, expect, vi } from 'vitest';
-
 import { cleanup } from '@testing-library/react';
+import { afterEach, expect, vi } from 'vitest';
 
 // Cleanup after each test
 afterEach(() => {

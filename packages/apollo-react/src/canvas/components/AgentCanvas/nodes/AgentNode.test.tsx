@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { AgentNodeElement } from './AgentNode';
 import type { AgentNodeTranslations } from '../../../types';
+import { AgentNodeElement } from './AgentNode';
 
 // Mock dependencies
 vi.mock('@uipath/apollo-react/canvas/xyflow/react', () => ({

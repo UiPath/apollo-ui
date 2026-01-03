@@ -13,8 +13,8 @@ import type {
 import { darkPalette, lightPalette } from '@uipath/apollo-core';
 import {
   darkHighContrastPalette,
-  lightHighContrastPalette,
   type Palette as IPalette,
+  lightHighContrastPalette,
 } from '@uipath/apollo-core/tokens/jss/palette';
 import defaultsDeep from 'lodash/defaultsDeep';
 

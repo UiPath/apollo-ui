@@ -1,5 +1,5 @@
-import styled from '@emotion/styled';
 import { css } from '@emotion/react';
+import styled from '@emotion/styled';
 import { Colors } from '@uipath/apollo-core';
 import type { StageStatus } from './StageNode.types';
 

@@ -56,7 +56,7 @@ const StatsCard = React.forwardRef<HTMLDivElement, StatsCardProps>(
         </CardContent>
       </Card>
     );
-  },
+  }
 );
 StatsCard.displayName = 'StatsCard';
 

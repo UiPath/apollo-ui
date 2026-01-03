@@ -1,8 +1,7 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-
 import { i18n } from '@lingui/core';
 import { Trans } from '@lingui/react';
 import { render, screen } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { ApI18nProvider, SUPPORTED_LOCALES, useApI18n } from './ApI18nProvider';
 import { getAllPreImportedLocales } from './locale-registry';

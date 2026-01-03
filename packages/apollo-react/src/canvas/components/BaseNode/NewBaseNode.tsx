@@ -1,24 +1,24 @@
-import { memo, useMemo, useState, useCallback, useRef, useEffect } from 'react';
+import { FontVariantToken } from '@uipath/apollo-core';
+import { cx } from '@uipath/apollo-react/canvas/utils';
 import type { Node, NodeProps } from '@uipath/apollo-react/canvas/xyflow/react';
 import {
   Position,
-  useUpdateNodeInternals,
   useStore,
+  useUpdateNodeInternals,
 } from '@uipath/apollo-react/canvas/xyflow/react';
-import {
-  BaseContainer,
-  BaseIconWrapper,
-  BaseBadgeSlot,
-  BaseTextContainer,
-  BaseHeader,
-  BaseSubHeader,
-} from './BaseNode.styles';
-import type { NewBaseNodeData, NewBaseNodeDisplayProps, NodeAdornments } from './NewBaseNode.types';
-import { cx } from '@uipath/apollo-react/canvas/utils';
-import { FontVariantToken } from '@uipath/apollo-core';
 import { ApIcon, ApTooltip, ApTypography } from '@uipath/apollo-react/material/components';
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useButtonHandles } from '../ButtonHandle/useButtonHandles';
 import { NodeToolbar } from '../NodeToolbar';
+import {
+  BaseBadgeSlot,
+  BaseContainer,
+  BaseHeader,
+  BaseIconWrapper,
+  BaseSubHeader,
+  BaseTextContainer,
+} from './BaseNode.styles';
+import type { NewBaseNodeData, NewBaseNodeDisplayProps, NodeAdornments } from './NewBaseNode.types';
 
 // Internal component that expects display props as direct props
 const NewBaseNodeComponent = (

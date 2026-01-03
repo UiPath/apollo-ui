@@ -1,7 +1,8 @@
-import React, { useRef, useState, useCallback, useMemo, memo, useEffect } from 'react';
-import type { NodeContextMenuProps, NodeMenuAction } from './NodeContextMenu.types';
-import { MenuButton } from './NodeContextMenu.styles';
 import { ApIcon, ApIconButton, ApMenu } from '@uipath/apollo-react/material/components';
+import type React from 'react';
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { MenuButton } from './NodeContextMenu.styles';
+import type { NodeContextMenuProps, NodeMenuAction } from './NodeContextMenu.types';
 
 export const NodeContextMenu = memo(({ menuItems, isVisible = false }: NodeContextMenuProps) => {
   const [isOpen, setIsOpen] = useState(false);

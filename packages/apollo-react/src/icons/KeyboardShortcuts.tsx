@@ -1,7 +1,8 @@
 // Auto-generated from action/keyboard-shortcuts.svg
 import React from 'react';
 
-export interface KeyboardShortcutsProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+export interface KeyboardShortcutsProps
+  extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
   /**
    * Size to apply to both width and height.
    * @default 24
@@ -11,8 +12,21 @@ export interface KeyboardShortcutsProps extends Omit<React.SVGProps<SVGSVGElemen
 
 export const KeyboardShortcuts = React.forwardRef<SVGSVGElement, KeyboardShortcutsProps>(
   ({ size, ...props }, ref) => (
-    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
-      <path fillRule="evenodd" clipRule="evenodd" d="M20 5H4C2.9 5 2.01 5.9 2.01 7L2 17C2 18.1 2.9 19 4 19H20C21.1 19 22 18.1 22 17V7C22 5.9 21.1 5 20 5ZM20 7V17H4V7H20ZM13 8H11V10H13V8ZM11 11H13V13H11V11ZM10 8H8V10H10V8ZM8 11H10V13H8V11ZM7 11H5V13H7V11ZM5 8H7V10H5V8ZM16 14H8V16H16V14ZM14 11H16V13H14V11ZM16 8H14V10H16V8ZM17 11H19V13H17V11ZM19 8H17V10H19V8Z" fill="currentColor"/>
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      ref={ref}
+      {...props}
+      width={size ?? 24}
+      height={size ?? 24}
+    >
+      <path
+        fillRule="evenodd"
+        clipRule="evenodd"
+        d="M20 5H4C2.9 5 2.01 5.9 2.01 7L2 17C2 18.1 2.9 19 4 19H20C21.1 19 22 18.1 22 17V7C22 5.9 21.1 5 20 5ZM20 7V17H4V7H20ZM13 8H11V10H13V8ZM11 11H13V13H11V11ZM10 8H8V10H10V8ZM8 11H10V13H8V11ZM7 11H5V13H7V11ZM5 8H7V10H5V8ZM16 14H8V16H16V14ZM14 11H16V13H14V11ZM16 8H14V10H16V8ZM17 11H19V13H17V11ZM19 8H17V10H19V8Z"
+        fill="currentColor"
+      />
     </svg>
   )
 );

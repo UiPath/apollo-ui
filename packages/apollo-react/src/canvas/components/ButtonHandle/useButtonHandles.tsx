@@ -1,8 +1,8 @@
 import { useMemo } from 'react';
-import { ButtonHandles } from '../ButtonHandle';
-import type { HandleActionEvent } from '../ButtonHandle';
-import type { HandleConfiguration } from '../BaseNode/BaseNode.types';
 import { useConnectedHandles } from '../BaseCanvas/ConnectedHandlesContext';
+import type { HandleConfiguration } from '../BaseNode/BaseNode.types';
+import type { HandleActionEvent } from '../ButtonHandle';
+import { ButtonHandles } from '../ButtonHandle';
 
 export const useButtonHandles = ({
   handleConfigurations,

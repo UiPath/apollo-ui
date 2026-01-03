@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { AutopilotChatEvent, AutopilotChatMessage } from '../service';
+import { AutopilotChatEvent, type AutopilotChatMessage } from '../service';
 import { useChatService } from './chat-service.provider';
 
 interface AutopilotStreamingContextType {

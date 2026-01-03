@@ -72,7 +72,7 @@ describe('Switch', () => {
     const user = userEvent.setup();
     const handleChange = vi.fn();
     const { rerender } = render(
-      <Switch checked={false} onCheckedChange={handleChange} aria-label="Toggle" />,
+      <Switch checked={false} onCheckedChange={handleChange} aria-label="Toggle" />
     );
 
     const switchElement = screen.getByRole('switch');
@@ -99,7 +99,9 @@ describe('Switch', () => {
 
   it('has proper ARIA attributes', () => {
     render(<Switch aria-label="Enable dark mode" />);
-    const switchElement = screen.getByRole('switch', { name: 'Enable dark mode' });
+    const switchElement = screen.getByRole('switch', {
+      name: 'Enable dark mode',
+    });
     expect(switchElement).toBeInTheDocument();
   });
 

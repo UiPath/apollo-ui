@@ -1,7 +1,6 @@
-import React from 'react';
-
 import styled from '@emotion/styled';
 import token from '@uipath/apollo-core';
+import React from 'react';
 
 import { ApSkeleton } from '../../../ap-skeleton';
 import { useChatScroll } from '../../providers/chat-scroll-provider';

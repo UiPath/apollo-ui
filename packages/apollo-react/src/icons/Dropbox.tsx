@@ -9,13 +9,22 @@ export interface DropboxProps extends Omit<React.SVGProps<SVGSVGElement>, 'width
   size?: string | number;
 }
 
-export const Dropbox = React.forwardRef<SVGSVGElement, DropboxProps>(
-  ({ size, ...props }, ref) => (
-    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
-      <path d="M12.0129 6.69451L7.00647 9.88903L12.0129 13.0835L7.00647 16.2781L2 13.0663L7.00647 9.87176L2 6.69451L7.00647 3.5L12.0129 6.69451ZM6.98058 17.3055L11.9871 14.111L16.9935 17.3055L11.9871 20.5L6.98058 17.3055ZM12.0129 13.0663L17.0194 9.87176L12.0129 6.69451L16.9935 3.5L22 6.69451L16.9935 9.88903L22 13.0835L16.9935 16.2781L12.0129 13.0663Z" fill="#0061FF"/>
-    </svg>
-  )
-);
+export const Dropbox = React.forwardRef<SVGSVGElement, DropboxProps>(({ size, ...props }, ref) => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    ref={ref}
+    {...props}
+    width={size ?? 24}
+    height={size ?? 24}
+  >
+    <path
+      d="M12.0129 6.69451L7.00647 9.88903L12.0129 13.0835L7.00647 16.2781L2 13.0663L7.00647 9.87176L2 6.69451L7.00647 3.5L12.0129 6.69451ZM6.98058 17.3055L11.9871 14.111L16.9935 17.3055L11.9871 20.5L6.98058 17.3055ZM12.0129 13.0663L17.0194 9.87176L12.0129 6.69451L16.9935 3.5L22 6.69451L16.9935 9.88903L22 13.0835L16.9935 16.2781L12.0129 13.0663Z"
+      fill="#0061FF"
+    />
+  </svg>
+));
 
 Dropbox.displayName = 'Dropbox';
 

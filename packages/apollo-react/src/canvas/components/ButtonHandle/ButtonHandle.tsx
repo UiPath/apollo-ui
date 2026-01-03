@@ -1,12 +1,10 @@
-import { memo, useCallback, useMemo, useState } from 'react';
-
-import { AnimatePresence } from 'motion/react';
-
 import { FontVariantToken } from '@uipath/apollo-core';
 import { Row } from '@uipath/apollo-react/canvas/layouts';
 import { Position } from '@uipath/apollo-react/canvas/xyflow/react';
 import { ApTypography } from '@uipath/apollo-react/material';
 import { ApIcon } from '@uipath/apollo-react/material/components';
+import { AnimatePresence } from 'motion/react';
+import { memo, useCallback, useMemo, useState } from 'react';
 
 import { canvasEventBus } from '../../utils/CanvasEventBus';
 import type { HandleConfigurationSpecificPosition } from '../BaseNode/BaseNode.types';

@@ -9,16 +9,32 @@ export interface ArchiveProps extends Omit<React.SVGProps<SVGSVGElement>, 'width
   size?: string | number;
 }
 
-export const Archive = React.forwardRef<SVGSVGElement, ArchiveProps>(
-  ({ size, ...props }, ref) => (
-    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
-      <path fillRule="evenodd" clipRule="evenodd" d="M20 10H4V20H20V10ZM2 8V22H22V8H2Z" fill="currentColor"/>
-<path fillRule="evenodd" clipRule="evenodd" d="M10 14V12H8V16H16V12H14V14H10Z" fill="currentColor"/>
-<path fillRule="evenodd" clipRule="evenodd" d="M20 7H4V5H20V7Z" fill="currentColor"/>
-<path fillRule="evenodd" clipRule="evenodd" d="M17 4H7V2H17V4Z" fill="currentColor"/>
-    </svg>
-  )
-);
+export const Archive = React.forwardRef<SVGSVGElement, ArchiveProps>(({ size, ...props }, ref) => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    ref={ref}
+    {...props}
+    width={size ?? 24}
+    height={size ?? 24}
+  >
+    <path
+      fillRule="evenodd"
+      clipRule="evenodd"
+      d="M20 10H4V20H20V10ZM2 8V22H22V8H2Z"
+      fill="currentColor"
+    />
+    <path
+      fillRule="evenodd"
+      clipRule="evenodd"
+      d="M10 14V12H8V16H16V12H14V14H10Z"
+      fill="currentColor"
+    />
+    <path fillRule="evenodd" clipRule="evenodd" d="M20 7H4V5H20V7Z" fill="currentColor" />
+    <path fillRule="evenodd" clipRule="evenodd" d="M17 4H7V2H17V4Z" fill="currentColor" />
+  </svg>
+));
 
 Archive.displayName = 'Archive';
 

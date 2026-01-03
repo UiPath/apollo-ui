@@ -509,7 +509,11 @@ function ColorsGallery() {
                 cssVar: '--color-input',
                 description: 'Input borders',
               },
-              { name: 'Ring', cssVar: '--color-ring', description: 'Focus rings' },
+              {
+                name: 'Ring',
+                cssVar: '--color-ring',
+                description: 'Focus rings',
+              },
             ]}
           />
         </section>
@@ -526,11 +530,31 @@ function ColorsGallery() {
           <ColorGroup
             title="Chart Palette"
             colors={[
-              { name: 'Chart 1', cssVar: '--color-chart-1', description: 'Primary chart color' },
-              { name: 'Chart 2', cssVar: '--color-chart-2', description: 'Secondary chart color' },
-              { name: 'Chart 3', cssVar: '--color-chart-3', description: 'Tertiary chart color' },
-              { name: 'Chart 4', cssVar: '--color-chart-4', description: 'Quaternary chart color' },
-              { name: 'Chart 5', cssVar: '--color-chart-5', description: 'Quinary chart color' },
+              {
+                name: 'Chart 1',
+                cssVar: '--color-chart-1',
+                description: 'Primary chart color',
+              },
+              {
+                name: 'Chart 2',
+                cssVar: '--color-chart-2',
+                description: 'Secondary chart color',
+              },
+              {
+                name: 'Chart 3',
+                cssVar: '--color-chart-3',
+                description: 'Tertiary chart color',
+              },
+              {
+                name: 'Chart 4',
+                cssVar: '--color-chart-4',
+                description: 'Quaternary chart color',
+              },
+              {
+                name: 'Chart 5',
+                cssVar: '--color-chart-5',
+                description: 'Quinary chart color',
+              },
             ]}
             compact
           />
@@ -548,7 +572,11 @@ function ColorsGallery() {
           <ColorGroup
             title="Sidebar Palette"
             colors={[
-              { name: 'Sidebar', cssVar: '--color-sidebar', description: 'Sidebar background' },
+              {
+                name: 'Sidebar',
+                cssVar: '--color-sidebar',
+                description: 'Sidebar background',
+              },
               {
                 name: 'Sidebar Foreground',
                 cssVar: '--color-sidebar-foreground',
@@ -579,7 +607,11 @@ function ColorsGallery() {
                 cssVar: '--color-sidebar-border',
                 description: 'Sidebar borders',
               },
-              { name: 'Sidebar Ring', cssVar: '--color-sidebar-ring', description: 'Focus ring' },
+              {
+                name: 'Sidebar Ring',
+                cssVar: '--color-sidebar-ring',
+                description: 'Focus ring',
+              },
             ]}
             compact
           />

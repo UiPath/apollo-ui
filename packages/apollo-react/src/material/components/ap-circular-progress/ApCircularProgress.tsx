@@ -1,5 +1,5 @@
-import { keyframes } from '@mui/system';
 import { Box } from '@mui/material';
+import { keyframes } from '@mui/system';
 import type { ApCircularProgressProps } from './ApCircularProgress.types';
 
 const rotateAnimation = keyframes`

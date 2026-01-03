@@ -1,5 +1,3 @@
-import React, { useCallback, useEffect, useMemo } from 'react';
-
 import { FontVariantToken } from '@uipath/apollo-core';
 import {
   type Node,
@@ -10,10 +8,12 @@ import {
 } from '@uipath/apollo-react/canvas/xyflow/react';
 import { ApButton, ApTypography } from '@uipath/apollo-react/material';
 import { ApIcon } from '@uipath/apollo-react/material/components';
+import type React from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 
 import { useCanvasStore } from '../../stores/canvasStore';
 import { DefaultResourceNodeTranslations } from '../../types';
-import { type CanvasLevel } from '../../types/canvas.types';
+import type { CanvasLevel } from '../../types/canvas.types';
 import { canvasEventBus } from '../../utils/CanvasEventBus';
 import { createAddNodePreview } from '../AddNodePanel/createAddNodePreview';
 import type { BaseNodeData, NodeDisplay, NodeRegistration } from '../BaseNode';

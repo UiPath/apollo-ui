@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { render, screen, userEvent, type UserEvent } from '../../utils/testing';
+import { render, screen, type UserEvent, userEvent } from '../../utils/testing';
 import type { ListItem } from './ListView';
 import { Toolbox } from './Toolbox';
 

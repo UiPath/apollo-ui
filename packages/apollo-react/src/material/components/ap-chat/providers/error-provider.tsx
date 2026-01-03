@@ -1,6 +1,10 @@
 import React from 'react';
 
-import { AutopilotChatError, AutopilotChatErrorLevel, AutopilotChatEvent } from '../service';
+import {
+  type AutopilotChatError,
+  type AutopilotChatErrorLevel,
+  AutopilotChatEvent,
+} from '../service';
 import { useChatService } from './chat-service.provider';
 
 interface AutopilotErrorContextType {

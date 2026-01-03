@@ -1,7 +1,8 @@
 // Auto-generated from action/date-select-set.svg
 import React from 'react';
 
-export interface DateSelectSetProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+export interface DateSelectSetProps
+  extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
   /**
    * Size to apply to both width and height.
    * @default 24
@@ -11,8 +12,21 @@ export interface DateSelectSetProps extends Omit<React.SVGProps<SVGSVGElement>, 
 
 export const DateSelectSet = React.forwardRef<SVGSVGElement, DateSelectSetProps>(
   ({ size, ...props }, ref) => (
-    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
-      <path fillRule="evenodd" clipRule="evenodd" d="M20 3H19V1H17V3H7V1H5V3H4C2.9 3 2 3.9 2 5V21C2 22.1 2.9 23 4 23H20C21.1 23 22 22.1 22 21V5C22 3.9 21.1 3 20 3ZM20 21H4V10H20V21ZM4 8H20V5H4V8Z" fill="currentColor"/>
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      ref={ref}
+      {...props}
+      width={size ?? 24}
+      height={size ?? 24}
+    >
+      <path
+        fillRule="evenodd"
+        clipRule="evenodd"
+        d="M20 3H19V1H17V3H7V1H5V3H4C2.9 3 2 3.9 2 5V21C2 22.1 2.9 23 4 23H20C21.1 23 22 22.1 22 21V5C22 3.9 21.1 3 20 3ZM20 21H4V10H20V21ZM4 8H20V5H4V8Z"
+        fill="currentColor"
+      />
     </svg>
   )
 );

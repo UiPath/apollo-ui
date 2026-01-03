@@ -1,10 +1,9 @@
-import type { ReactNode } from 'react';
-import { useEffect, useRef } from 'react';
-
 import styled from '@emotion/styled';
 import { FontVariantToken } from '@uipath/apollo-core';
 import { Row } from '@uipath/apollo-react/canvas/layouts';
 import { ApIcon, ApIconButton, ApTypography } from '@uipath/apollo-react/material';
+import type { ReactNode } from 'react';
+import { useEffect, useRef } from 'react';
 
 const PanelHeader = styled.div`
   border-bottom: 1px solid var(--uix-canvas-border-de-emp);

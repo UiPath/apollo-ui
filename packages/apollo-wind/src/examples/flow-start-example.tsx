@@ -69,7 +69,7 @@ function ProcessOptionCard({
     <Card
       className={cn(
         'group relative cursor-pointer transition-all duration-200 hover:border-primary/50 hover:shadow-md',
-        isSelected && 'border-primary ring-2 ring-primary/20',
+        isSelected && 'border-primary ring-2 ring-primary/20'
       )}
       onClick={onSelect}
     >
@@ -195,7 +195,7 @@ function SkeletonSection() {
 }
 
 function createProjectColumns(
-  onProjectSelect?: (projectId: string) => void,
+  onProjectSelect?: (projectId: string) => void
 ): ColumnDef<RecentProject, unknown>[] {
   return [
     {

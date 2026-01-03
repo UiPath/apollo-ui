@@ -70,7 +70,10 @@ export const AutopilotChatScrollProvider: React.FC<AutopilotChatScrollProviderPr
     ({
       force = false,
       behavior = 'smooth',
-    }: { force?: boolean; behavior?: 'auto' | 'smooth' | 'instant' } = {}) => {
+    }: {
+      force?: boolean;
+      behavior?: 'auto' | 'smooth' | 'instant';
+    } = {}) => {
       if (!force && !autoScroll) {
         return;
       }

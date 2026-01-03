@@ -10,7 +10,7 @@ describe('Alert', () => {
       <Alert>
         <AlertTitle>Alert Title</AlertTitle>
         <AlertDescription>Alert description</AlertDescription>
-      </Alert>,
+      </Alert>
     );
     expect(screen.getByRole('alert')).toBeInTheDocument();
   });
@@ -20,7 +20,7 @@ describe('Alert', () => {
       <Alert>
         <AlertTitle>Important</AlertTitle>
         <AlertDescription>This is an important message</AlertDescription>
-      </Alert>,
+      </Alert>
     );
     const results = await axe(container);
     expect(results).toHaveNoViolations();
@@ -31,7 +31,7 @@ describe('Alert', () => {
       <Alert>
         <AlertTitle>Success</AlertTitle>
         <AlertDescription>Operation completed</AlertDescription>
-      </Alert>,
+      </Alert>
     );
     expect(screen.getByText('Success')).toBeInTheDocument();
   });
@@ -41,7 +41,7 @@ describe('Alert', () => {
       <Alert>
         <AlertTitle>Success</AlertTitle>
         <AlertDescription>Your changes have been saved</AlertDescription>
-      </Alert>,
+      </Alert>
     );
     expect(screen.getByText('Your changes have been saved')).toBeInTheDocument();
   });
@@ -51,7 +51,7 @@ describe('Alert', () => {
       <Alert>
         <AlertTitle>Title</AlertTitle>
         <AlertDescription>Description</AlertDescription>
-      </Alert>,
+      </Alert>
     );
     const alert = screen.getByRole('alert');
     expect(alert).toHaveClass('bg-background');
@@ -62,7 +62,7 @@ describe('Alert', () => {
       <Alert variant="destructive">
         <AlertTitle>Error</AlertTitle>
         <AlertDescription>Something went wrong</AlertDescription>
-      </Alert>,
+      </Alert>
     );
     const alert = screen.getByRole('alert');
     expect(alert).toHaveClass('border-destructive/50');
@@ -74,7 +74,7 @@ describe('Alert', () => {
         <AlertCircle className="h-4 w-4" />
         <AlertTitle>Alert</AlertTitle>
         <AlertDescription>Message</AlertDescription>
-      </Alert>,
+      </Alert>
     );
     const icon = container.querySelector('svg');
     expect(icon).toBeInTheDocument();
@@ -85,7 +85,7 @@ describe('Alert', () => {
       <Alert className="custom-alert">
         <AlertTitle>Title</AlertTitle>
         <AlertDescription>Description</AlertDescription>
-      </Alert>,
+      </Alert>
     );
     const alert = screen.getByRole('alert');
     expect(alert).toHaveClass('custom-alert');
@@ -96,7 +96,7 @@ describe('Alert', () => {
       <Alert>
         <AlertTitle className="custom-title">Title</AlertTitle>
         <AlertDescription>Description</AlertDescription>
-      </Alert>,
+      </Alert>
     );
     const title = screen.getByText('Title');
     expect(title).toHaveClass('custom-title');
@@ -107,7 +107,7 @@ describe('Alert', () => {
       <Alert>
         <AlertTitle>Title</AlertTitle>
         <AlertDescription className="custom-desc">Description</AlertDescription>
-      </Alert>,
+      </Alert>
     );
     const description = screen.getByText('Description');
     expect(description).toHaveClass('custom-desc');
@@ -119,7 +119,7 @@ describe('Alert', () => {
       <Alert ref={ref}>
         <AlertTitle>Title</AlertTitle>
         <AlertDescription>Description</AlertDescription>
-      </Alert>,
+      </Alert>
     );
     expect(ref.current).toBeInstanceOf(HTMLDivElement);
   });
@@ -129,7 +129,7 @@ describe('Alert', () => {
       <Alert>
         <AlertTitle>Title</AlertTitle>
         <AlertDescription>Description</AlertDescription>
-      </Alert>,
+      </Alert>
     );
     const alert = screen.getByRole('alert');
     expect(alert).toHaveAttribute('role', 'alert');
@@ -139,7 +139,7 @@ describe('Alert', () => {
     render(
       <Alert>
         <AlertDescription>Just a description</AlertDescription>
-      </Alert>,
+      </Alert>
     );
     expect(screen.getByText('Just a description')).toBeInTheDocument();
   });
@@ -148,7 +148,7 @@ describe('Alert', () => {
     render(
       <Alert>
         <AlertTitle>Just a title</AlertTitle>
-      </Alert>,
+      </Alert>
     );
     expect(screen.getByText('Just a title')).toBeInTheDocument();
   });
@@ -158,7 +158,7 @@ describe('Alert', () => {
       <Alert data-testid="custom-alert">
         <AlertTitle>Title</AlertTitle>
         <AlertDescription>Description</AlertDescription>
-      </Alert>,
+      </Alert>
     );
     expect(screen.getByTestId('custom-alert')).toBeInTheDocument();
   });

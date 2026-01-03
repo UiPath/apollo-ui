@@ -1,15 +1,14 @@
-import React from 'react';
-
 import { msg } from '@lingui/core/macro';
 import { useLingui } from '@lingui/react';
 import { styled } from '@mui/material';
 import token from '@uipath/apollo-core';
+import React from 'react';
 
 import { ApTypography } from '../../../ap-typography';
 import { useChatService } from '../../providers/chat-service.provider';
 import { useChatState } from '../../providers/chat-state-provider';
 import { useLoading } from '../../providers/loading-provider';
-import { AutopilotChatEvent, AutopilotChatHistory } from '../../service';
+import { AutopilotChatEvent, type AutopilotChatHistory } from '../../service';
 import { AutopilotChatActionButton } from '../common/action-button';
 
 const GroupItem = styled('div')<{ isActive: boolean; showRemoveIcon: boolean }>(

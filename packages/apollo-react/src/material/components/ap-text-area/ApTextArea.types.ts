@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 
 export interface ApTextAreaProps
   extends Omit<React.TextareaHTMLAttributes<HTMLTextAreaElement>, 'width' | 'resize'> {

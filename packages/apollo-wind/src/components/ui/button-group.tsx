@@ -18,12 +18,12 @@ const ButtonGroup = React.forwardRef<HTMLDivElement, ButtonGroupProps>(
           orientation === 'horizontal'
             ? '[&>button]:rounded-none [&>button]:border-r-0 [&>button:first-child]:rounded-l-md [&>button:last-child]:rounded-r-md [&>button:last-child]:border-r'
             : 'flex-col [&>button]:rounded-none [&>button]:border-b-0 [&>button:first-child]:rounded-t-md [&>button:last-child]:rounded-b-md [&>button:last-child]:border-b',
-          className,
+          className
         )}
         {...props}
       />
     );
-  },
+  }
 );
 ButtonGroup.displayName = 'ButtonGroup';
 
@@ -40,12 +40,12 @@ const ButtonGroupSeparator = React.forwardRef<HTMLDivElement, ButtonGroupSeparat
         className={cn(
           'bg-border',
           orientation === 'vertical' ? 'w-px self-stretch' : 'h-px self-stretch',
-          className,
+          className
         )}
         {...props}
       />
     );
-  },
+  }
 );
 ButtonGroupSeparator.displayName = 'ButtonGroupSeparator';
 
@@ -61,12 +61,12 @@ const ButtonGroupText = React.forwardRef<HTMLSpanElement, ButtonGroupTextProps>(
         ref={ref}
         className={cn(
           'inline-flex items-center justify-center px-3 text-sm font-medium text-muted-foreground',
-          className,
+          className
         )}
         {...props}
       />
     );
-  },
+  }
 );
 ButtonGroupText.displayName = 'ButtonGroupText';
 

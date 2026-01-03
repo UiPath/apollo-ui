@@ -72,7 +72,7 @@ describe('Checkbox', () => {
     const user = userEvent.setup();
     const handleChange = vi.fn();
     const { rerender } = render(
-      <Checkbox checked={false} onCheckedChange={handleChange} aria-label="Checkbox" />,
+      <Checkbox checked={false} onCheckedChange={handleChange} aria-label="Checkbox" />
     );
 
     const checkbox = screen.getByRole('checkbox');
@@ -105,7 +105,9 @@ describe('Checkbox', () => {
 
   it('has proper ARIA attributes', () => {
     render(<Checkbox aria-label="Accept terms and conditions" />);
-    const checkbox = screen.getByRole('checkbox', { name: 'Accept terms and conditions' });
+    const checkbox = screen.getByRole('checkbox', {
+      name: 'Accept terms and conditions',
+    });
     expect(checkbox).toBeInTheDocument();
   });
 

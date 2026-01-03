@@ -1,2 +1,2 @@
 export { ApTextField } from './ApTextField';
-export type { ApTextFieldProps, TextFieldSize, InputType } from './ApTextField.types';
+export type { ApTextFieldProps, InputType, TextFieldSize } from './ApTextField.types';

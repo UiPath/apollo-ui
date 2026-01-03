@@ -1,4 +1,4 @@
-import { Tooltip, TooltipProps as MuiTooltipProps } from '@mui/material';
+import { type TooltipProps as MuiTooltipProps, Tooltip } from '@mui/material';
 import token from '@uipath/apollo-core';
 import React from 'react';
 

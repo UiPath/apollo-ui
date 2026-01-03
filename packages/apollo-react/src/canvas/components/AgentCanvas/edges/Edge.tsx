@@ -1,7 +1,7 @@
 import type { EdgeProps } from '@uipath/apollo-react/canvas/xyflow/react';
-import { StaticEdge } from './StaticEdge';
-import { useAgentFlowStore } from '../store/agent-flow-store';
 import type { SuggestionType } from '../../../types';
+import { useAgentFlowStore } from '../store/agent-flow-store';
+import { StaticEdge } from './StaticEdge';
 
 export const Edge = (props: EdgeProps) => {
   const { nodes } = useAgentFlowStore();
@@ -17,7 +17,7 @@ export const Edge = (props: EdgeProps) => {
     let hasRunning = false;
     let isCurrentBreakpoint = false;
     let isSuggestion = false;
-    let suggestionType: SuggestionType | undefined = undefined;
+    let suggestionType: SuggestionType | undefined;
 
     // Check source node status
     if (sourceNode?.type === 'resource') {

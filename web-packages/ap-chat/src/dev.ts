@@ -636,7 +636,11 @@ function updateFeatures() {
   if (features.model) {
     chatService.setModels([
       { id: 'gpt-4', name: 'GPT-4', description: 'Most capable model' },
-      { id: 'gpt-3.5', name: 'GPT-3.5 Turbo', description: 'Fast and efficient' },
+      {
+        id: 'gpt-3.5',
+        name: 'GPT-3.5 Turbo',
+        description: 'Fast and efficient',
+      },
       { id: 'claude-3', name: 'Claude 3', description: 'Anthropic model' },
     ]);
     chatService.setSelectedModel(selectedModel);

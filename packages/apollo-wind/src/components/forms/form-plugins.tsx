@@ -74,7 +74,9 @@ export const autoSavePlugin: FormPlugin = {
     const draftKey = `form_draft_${context.schema.id}`;
 
     // Clear existing timeout
-    const win = window as Window & { __autoSaveTimeout?: ReturnType<typeof setTimeout> };
+    const win = window as Window & {
+      __autoSaveTimeout?: ReturnType<typeof setTimeout>;
+    };
     if (win.__autoSaveTimeout) {
       clearTimeout(win.__autoSaveTimeout);
     }
@@ -158,7 +160,9 @@ export const workflowPlugin: FormPlugin = {
 
   onFormInit: async (context: FormContext) => {
     // Load workflow context if form is part of automation
-    const win = window as Window & { __workflowContext?: { variables?: Record<string, unknown> } };
+    const win = window as Window & {
+      __workflowContext?: { variables?: Record<string, unknown> };
+    };
     const workflowContext = win.__workflowContext;
 
     if (workflowContext) {
@@ -223,14 +227,24 @@ export const auditPlugin: FormPlugin = {
 
   onFormInit: async (_context: FormContext) => {
     // Initialize audit trail
-    type FieldHistoryEntry = { value: unknown; timestamp: string; user: string };
-    const win = window as Window & { __fieldHistory?: Map<string, FieldHistoryEntry[]> };
+    type FieldHistoryEntry = {
+      value: unknown;
+      timestamp: string;
+      user: string;
+    };
+    const win = window as Window & {
+      __fieldHistory?: Map<string, FieldHistoryEntry[]>;
+    };
     win.__fieldHistory = new Map();
     console.log('[Audit] Audit trail initialized');
   },
 
   onValueChange: (fieldName: string, value: unknown, _context: FormContext) => {
-    type FieldHistoryEntry = { value: unknown; timestamp: string; user: string };
+    type FieldHistoryEntry = {
+      value: unknown;
+      timestamp: string;
+      user: string;
+    };
     const win = window as Window & {
       __fieldHistory?: Map<string, FieldHistoryEntry[]>;
       __currentUser?: { id?: string };
@@ -254,7 +268,11 @@ export const auditPlugin: FormPlugin = {
 
   onSubmit: async (data: unknown, _context: FormContext) => {
     // Include audit trail in submission
-    type FieldHistoryEntry = { value: unknown; timestamp: string; user: string };
+    type FieldHistoryEntry = {
+      value: unknown;
+      timestamp: string;
+      user: string;
+    };
     const win = window as Window & {
       __fieldHistory?: Map<string, FieldHistoryEntry[]>;
       __currentUser?: { id?: string };

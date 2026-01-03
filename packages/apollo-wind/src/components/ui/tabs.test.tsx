@@ -141,7 +141,7 @@ describe('Tabs', () => {
         </TabsList>
         <TabsContent value="tab1">Content 1</TabsContent>
         <TabsContent value="tab2">Content 2</TabsContent>
-      </Tabs>,
+      </Tabs>
     );
 
     const tab2 = screen.getByRole('tab', { name: 'Tab 2' });
@@ -161,7 +161,7 @@ describe('Tabs', () => {
         </TabsList>
         <TabsContent value="tab1">Content 1</TabsContent>
         <TabsContent value="tab2">Content 2</TabsContent>
-      </Tabs>,
+      </Tabs>
     );
 
     expect(screen.getByText('Content 1')).toBeInTheDocument();
@@ -174,7 +174,7 @@ describe('Tabs', () => {
         </TabsList>
         <TabsContent value="tab1">Content 1</TabsContent>
         <TabsContent value="tab2">Content 2</TabsContent>
-      </Tabs>,
+      </Tabs>
     );
 
     expect(screen.getByText('Content 2')).toBeInTheDocument();
@@ -187,7 +187,7 @@ describe('Tabs', () => {
           <TabsTrigger value="tab1">Tab 1</TabsTrigger>
         </TabsList>
         <TabsContent value="tab1">Content 1</TabsContent>
-      </Tabs>,
+      </Tabs>
     );
 
     const tablist = screen.getByRole('tablist');
@@ -203,7 +203,7 @@ describe('Tabs', () => {
           </TabsTrigger>
         </TabsList>
         <TabsContent value="tab1">Content 1</TabsContent>
-      </Tabs>,
+      </Tabs>
     );
 
     const tab = screen.getByRole('tab', { name: 'Tab 1' });
@@ -219,7 +219,7 @@ describe('Tabs', () => {
         <TabsContent value="tab1" className="custom-content">
           Content 1
         </TabsContent>
-      </Tabs>,
+      </Tabs>
     );
 
     const content = container.querySelector('.custom-content');

@@ -29,8 +29,8 @@ const typography = (dictionary) => {
     .filter((prop) => {
       return !EXCLUDED_TYPES.includes(prop.attributes.type);
     })
-    .forEach(function (prop) {
-      let type = prop.attributes.type.replace('header', 'h');
+    .forEach((prop) => {
+      const type = prop.attributes.type.replace('header', 'h');
       const upperSentenceType = type.charAt(0).toUpperCase() + type.slice(1);
       const name = getCommonPrefix(prop.attributes.type) + upperSentenceType;
       const nextType = `    ${name} = '${prop.attributes.type}',\n`;

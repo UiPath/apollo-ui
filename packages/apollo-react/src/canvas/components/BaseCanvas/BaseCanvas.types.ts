@@ -1,4 +1,3 @@
-import type { ReactNode } from 'react';
 import type {
   BackgroundVariant,
   Edge,
@@ -6,6 +5,7 @@ import type {
   ReactFlowInstance,
   ReactFlowProps,
 } from '@uipath/apollo-react/canvas/xyflow/react';
+import type { ReactNode } from 'react';
 
 /**
  * Configuration options for viewport fit operations in BaseCanvas.

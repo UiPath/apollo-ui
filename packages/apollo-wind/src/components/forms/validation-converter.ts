@@ -24,7 +24,7 @@ import type { ValidationConfig, FieldType } from './form-schema';
  */
 export function validationConfigToZod(
   config: ValidationConfig | undefined,
-  fieldType: FieldType,
+  fieldType: FieldType
 ): z.ZodTypeAny {
   // Get base schema for field type
   let schema = getBaseSchemaForType(fieldType);
@@ -45,7 +45,7 @@ export function validationConfigToZod(
     if (isStringType(fieldType) && !config.minLength) {
       schema = (schema as z.ZodString).min(
         1,
-        config.messages?.required || 'This field is required',
+        config.messages?.required || 'This field is required'
       );
     }
     return schema;
@@ -126,7 +126,7 @@ function isArrayType(fieldType: FieldType): boolean {
 function applyStringConstraints(
   schema: z.ZodTypeAny,
   config: ValidationConfig,
-  fieldType: FieldType,
+  fieldType: FieldType
 ): z.ZodTypeAny {
   if (!isStringType(fieldType)) {
     return schema;
@@ -138,7 +138,7 @@ function applyStringConstraints(
   if (config.minLength != null) {
     stringSchema = stringSchema.min(
       config.minLength,
-      config.messages?.minLength || `Must be at least ${config.minLength} characters`,
+      config.messages?.minLength || `Must be at least ${config.minLength} characters`
     );
   }
 
@@ -146,7 +146,7 @@ function applyStringConstraints(
   if (config.maxLength != null) {
     stringSchema = stringSchema.max(
       config.maxLength,
-      config.messages?.maxLength || `Must be at most ${config.maxLength} characters`,
+      config.messages?.maxLength || `Must be at most ${config.maxLength} characters`
     );
   }
 
@@ -180,7 +180,7 @@ function applyStringConstraints(
 function applyNumberConstraints(
   schema: z.ZodTypeAny,
   config: ValidationConfig,
-  fieldType: FieldType,
+  fieldType: FieldType
 ): z.ZodTypeAny {
   if (!isNumberType(fieldType)) {
     return schema;
@@ -197,7 +197,7 @@ function applyNumberConstraints(
   if (config.min != null) {
     numberSchema = numberSchema.min(
       config.min,
-      config.messages?.min || `Must be at least ${config.min}`,
+      config.messages?.min || `Must be at least ${config.min}`
     );
   }
 
@@ -205,7 +205,7 @@ function applyNumberConstraints(
   if (config.max != null) {
     numberSchema = numberSchema.max(
       config.max,
-      config.messages?.max || `Must be at most ${config.max}`,
+      config.messages?.max || `Must be at most ${config.max}`
     );
   }
 
@@ -228,7 +228,7 @@ function applyNumberConstraints(
 function applyArrayConstraints(
   schema: z.ZodTypeAny,
   config: ValidationConfig,
-  fieldType: FieldType,
+  fieldType: FieldType
 ): z.ZodTypeAny {
   if (!isArrayType(fieldType)) {
     return schema;
@@ -240,7 +240,7 @@ function applyArrayConstraints(
   if (config.minItems != null) {
     arraySchema = arraySchema.min(
       config.minItems,
-      config.messages?.minItems || `Select at least ${config.minItems} item(s)`,
+      config.messages?.minItems || `Select at least ${config.minItems} item(s)`
     );
   }
 
@@ -248,7 +248,7 @@ function applyArrayConstraints(
   if (config.maxItems != null) {
     arraySchema = arraySchema.max(
       config.maxItems,
-      config.messages?.maxItems || `Select at most ${config.maxItems} item(s)`,
+      config.messages?.maxItems || `Select at most ${config.maxItems} item(s)`
     );
   }
 
@@ -262,7 +262,11 @@ function applyArrayConstraints(
  * @returns A Zod object schema for the entire form
  */
 export function buildZodSchemaFromFields(
-  fields: Array<{ name: string; type: FieldType; validation?: ValidationConfig }>,
+  fields: Array<{
+    name: string;
+    type: FieldType;
+    validation?: ValidationConfig;
+  }>
 ): z.ZodObject<Record<string, z.ZodTypeAny>> {
   const shape: Record<string, z.ZodTypeAny> = {};
 
@@ -282,7 +286,7 @@ export function buildZodSchemaFromFields(
  */
 export function mergeValidationConfigs(
   base: ValidationConfig | undefined,
-  override: ValidationConfig | undefined,
+  override: ValidationConfig | undefined
 ): ValidationConfig | undefined {
   if (!base && !override) return undefined;
   if (!base) return override;

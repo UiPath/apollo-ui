@@ -1,10 +1,10 @@
-import React, { type ReactElement } from 'react';
-import { Position } from '@uipath/apollo-react/canvas/xyflow/react';
 import * as Icons from '@uipath/apollo-react/canvas/icons';
-import type { HandleConfiguration } from '../../components/BaseNode/BaseNode.types';
-import type { BaseNodeData } from '../../components/BaseNode/BaseNode.types';
-import type { ManifestHandleGroup } from './types';
+import { Position } from '@uipath/apollo-react/canvas/xyflow/react';
 import { icons } from 'lucide-react';
+import type React from 'react';
+import type { ReactElement } from 'react';
+import type { BaseNodeData, HandleConfiguration } from '../../components/BaseNode/BaseNode.types';
+import type { ManifestHandleGroup } from './types';
 
 export type IconComponent = (props: { w?: number; h?: number }) => ReactElement;
 

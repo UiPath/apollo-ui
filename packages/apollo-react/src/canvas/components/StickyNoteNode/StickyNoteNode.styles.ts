@@ -1,5 +1,5 @@
-import styled from '@emotion/styled';
 import { css } from '@emotion/react';
+import styled from '@emotion/styled';
 import { motion } from 'motion/react';
 
 // Sticky notes must be below edges (z-index: 0). We use -10 instead of -1 to allow for future layers between sticky notes and edges if needed.

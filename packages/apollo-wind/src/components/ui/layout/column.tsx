@@ -59,7 +59,7 @@ const Column = React.forwardRef<HTMLDivElement, ColumnProps>(
       my,
       ...htmlProps
     },
-    ref,
+    ref
   ) => {
     const layoutStyles = buildLayoutStyles({
       direction,
@@ -99,7 +99,7 @@ const Column = React.forwardRef<HTMLDivElement, ColumnProps>(
         {children}
       </div>
     );
-  },
+  }
 );
 
 Column.displayName = 'Column';

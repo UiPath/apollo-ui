@@ -155,7 +155,7 @@ describe('Sheet', () => {
           <SheetTitle>Title</SheetTitle>
           <SheetDescription>Description</SheetDescription>
         </SheetContent>
-      </Sheet>,
+      </Sheet>
     );
 
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
@@ -172,7 +172,7 @@ describe('Sheet', () => {
           <SheetTitle>Title</SheetTitle>
           <SheetDescription>Description</SheetDescription>
         </SheetContent>
-      </Sheet>,
+      </Sheet>
     );
 
     await waitFor(() => {
@@ -189,7 +189,7 @@ describe('Sheet', () => {
           <SheetTitle>Title</SheetTitle>
           <SheetDescription>Description</SheetDescription>
         </SheetContent>
-      </Sheet>,
+      </Sheet>
     );
 
     const trigger = screen.getByRole('button', { name: 'Open' });

@@ -45,11 +45,11 @@ describe('Resizable', () => {
           <ResizablePanel defaultSize={50}>
             <div>Bottom</div>
           </ResizablePanel>
-        </ResizablePanelGroup>,
+        </ResizablePanelGroup>
       );
 
       expect(
-        container.querySelector("[data-panel-group-direction='vertical']"),
+        container.querySelector("[data-panel-group-direction='vertical']")
       ).toBeInTheDocument();
     });
   });
@@ -79,7 +79,7 @@ describe('Resizable', () => {
           <ResizablePanel defaultSize={100}>
             <div>Content</div>
           </ResizablePanel>
-        </ResizablePanelGroup>,
+        </ResizablePanelGroup>
       );
 
       expect(container.firstChild).toHaveClass('custom-group');
@@ -95,7 +95,7 @@ describe('Resizable', () => {
           <ResizablePanel defaultSize={50}>
             <div>Panel 2</div>
           </ResizablePanel>
-        </ResizablePanelGroup>,
+        </ResizablePanelGroup>
       );
 
       expect(container.querySelector('[data-panel-resize-handle-id]')).toHaveClass('custom-handle');
@@ -111,7 +111,7 @@ describe('Resizable', () => {
           <ResizablePanel defaultSize={50}>
             <div>Panel 2</div>
           </ResizablePanel>
-        </ResizablePanelGroup>,
+        </ResizablePanelGroup>
       );
 
       expect(screen.getByText('Panel 1')).toBeInTheDocument();
@@ -127,7 +127,7 @@ describe('Resizable', () => {
           <ResizablePanel defaultSize={50}>
             <div>Panel 2</div>
           </ResizablePanel>
-        </ResizablePanelGroup>,
+        </ResizablePanelGroup>
       );
 
       expect(screen.getByText('Panel 1')).toBeInTheDocument();
@@ -143,7 +143,7 @@ describe('Resizable', () => {
           <ResizablePanel defaultSize={50}>
             <div>Panel 2</div>
           </ResizablePanel>
-        </ResizablePanelGroup>,
+        </ResizablePanelGroup>
       );
 
       expect(screen.getByText('Collapsible')).toBeInTheDocument();
@@ -165,7 +165,7 @@ describe('Resizable', () => {
           <ResizablePanel defaultSize={33}>
             <div>Panel 3</div>
           </ResizablePanel>
-        </ResizablePanelGroup>,
+        </ResizablePanelGroup>
       );
 
       expect(screen.getByText('Panel 1')).toBeInTheDocument();

@@ -97,15 +97,30 @@ const transactions: Transaction[] = [
 ];
 
 const recentActivity: ActivityItem[] = [
-  { id: '1', user: 'Olivia Martin', action: 'Completed purchase of $1,999.00', time: '2 min ago' },
-  { id: '2', user: 'Jackson Lee', action: 'Created new account', time: '1 hour ago' },
+  {
+    id: '1',
+    user: 'Olivia Martin',
+    action: 'Completed purchase of $1,999.00',
+    time: '2 min ago',
+  },
+  {
+    id: '2',
+    user: 'Jackson Lee',
+    action: 'Created new account',
+    time: '1 hour ago',
+  },
   {
     id: '3',
     user: 'Isabella Nguyen',
     action: 'Submitted support ticket #1234',
     time: '3 hours ago',
   },
-  { id: '4', user: 'William Kim', action: 'Updated billing information', time: '5 hours ago' },
+  {
+    id: '4',
+    user: 'William Kim',
+    action: 'Updated billing information',
+    time: '5 hours ago',
+  },
 ];
 
 const columns: ColumnDef<Transaction, unknown>[] = [

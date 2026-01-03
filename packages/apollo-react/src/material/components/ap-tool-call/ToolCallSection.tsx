@@ -1,12 +1,11 @@
-import React from 'react';
-import { styled } from '@mui/material';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import ErrorIcon from '@mui/icons-material/Error';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
+import { styled } from '@mui/material';
 import token from '@uipath/apollo-core';
-
-import { NestedValue } from './NestedValue';
+import type React from 'react';
 import type { ToolCallSectionProps } from './ApToolCall.types';
+import { NestedValue } from './NestedValue';
 
 const SectionArrowIcon = styled(KeyboardArrowRightIcon, {
   shouldForwardProp: (prop) => prop !== 'expanded',

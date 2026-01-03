@@ -1,4 +1,5 @@
-import React, { useMemo } from 'react';
+import type React from 'react';
+import { useMemo } from 'react';
 import type { FlexProps, OverflowProps, PositionProps, SizeProps, SpacingProps } from './core';
 import { alignMap, calcSpacingPx, justifyMap } from './core';
 

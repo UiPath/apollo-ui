@@ -1,11 +1,9 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-
-import { DateTime } from 'luxon';
-
 import { FontVariantToken, Spacing } from '@uipath/apollo-core';
 import * as Icons from '@uipath/apollo-react/canvas/icons';
 import { Column, Row } from '@uipath/apollo-react/canvas/layouts';
 import { ApIconButton, ApTypography } from '@uipath/apollo-react/material';
+import { DateTime } from 'luxon';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import type { IRawSpan } from '../../../../types/TraceModels';
 import type { NormalizedSpan } from './TimelinePlayer.utils';

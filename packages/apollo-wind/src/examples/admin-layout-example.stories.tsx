@@ -42,7 +42,12 @@ const tenants = [
   { id: '1', name: 'Maestro', type: 'tenant' },
   { id: '2', name: 'Staging', type: 'tenant' },
   { id: '3', name: 'ao', type: 'tenant' },
-  { id: '4', name: 'Development', type: 'service', badge: 'Canary Environment' },
+  {
+    id: '4',
+    name: 'Development',
+    type: 'service',
+    badge: 'Canary Environment',
+  },
   { id: '5', name: 'DefaultTenant', type: 'tenant' },
   { id: '6', name: 'optimize', type: 'service' },
 ];
@@ -56,7 +61,13 @@ type User = {
 };
 
 const users: User[] = [
-  { id: '1', name: 'Finance-test', email: '', role: 'Test-role-viewer', type: 'group' },
+  {
+    id: '1',
+    name: 'Finance-test',
+    email: '',
+    role: 'Test-role-viewer',
+    type: 'group',
+  },
   {
     id: '2',
     name: 'John Doe',

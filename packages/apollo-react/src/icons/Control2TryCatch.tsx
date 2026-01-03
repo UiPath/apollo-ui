@@ -1,7 +1,8 @@
 // Auto-generated from studio-activities-icon-sets/activities-control-2/control-2-try-catch.svg
 import React from 'react';
 
-export interface Control2TryCatchProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+export interface Control2TryCatchProps
+  extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
   /**
    * Size to apply to both width and height.
    * @default 24
@@ -11,21 +12,35 @@ export interface Control2TryCatchProps extends Omit<React.SVGProps<SVGSVGElement
 
 export const Control2TryCatch = React.forwardRef<SVGSVGElement, Control2TryCatchProps>(
   ({ size, ...props }, ref) => (
-    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      ref={ref}
+      {...props}
+      width={size ?? 24}
+      height={size ?? 24}
+    >
       <g clipPath="url(#clip0_4117_1607)">
-<g clipPath="url(#clip1_4117_1607)">
-<path d="M6 11V13H4V11H6ZM5 4C6.69522 4 8 5.24416 8 7C8 8.04722 7.37794 8.89399 6.29031 9.50423C6.13662 9.59046 6.03311 9.74205 6.00667 9.91308L6 10H4C4 9.133 4.43692 8.32906 5.15384 7.85618L5.31169 7.76001C5.82273 7.47328 6 7.23197 6 7C6 6.37058 5.61137 6 5 6C4.48716 6 4.06449 6.38604 4.00673 6.88338L4 7H2C2 5.34315 3.34315 4 5 4Z" fill="currentColor"/>
-<path d="M21 20L5.99 20V23L2 19L5.99 15L5.99 18L21 18L21 6L10 6L10 4L17 4H21C22.1 4 22.99 4.9 22.99 6L22.99 18H23C23 19.1 22.1 20 21 20Z" fill="currentColor"/>
-</g>
-</g>
-<defs>
-<clipPath id="clip0_4117_1607">
-<rect width="24" height="24" fill="var(--color-foreground)"/>
-</clipPath>
-<clipPath id="clip1_4117_1607">
-<rect width="24" height="24" fill="var(--color-foreground)"/>
-</clipPath>
-</defs>
+        <g clipPath="url(#clip1_4117_1607)">
+          <path
+            d="M6 11V13H4V11H6ZM5 4C6.69522 4 8 5.24416 8 7C8 8.04722 7.37794 8.89399 6.29031 9.50423C6.13662 9.59046 6.03311 9.74205 6.00667 9.91308L6 10H4C4 9.133 4.43692 8.32906 5.15384 7.85618L5.31169 7.76001C5.82273 7.47328 6 7.23197 6 7C6 6.37058 5.61137 6 5 6C4.48716 6 4.06449 6.38604 4.00673 6.88338L4 7H2C2 5.34315 3.34315 4 5 4Z"
+            fill="currentColor"
+          />
+          <path
+            d="M21 20L5.99 20V23L2 19L5.99 15L5.99 18L21 18L21 6L10 6L10 4L17 4H21C22.1 4 22.99 4.9 22.99 6L22.99 18H23C23 19.1 22.1 20 21 20Z"
+            fill="currentColor"
+          />
+        </g>
+      </g>
+      <defs>
+        <clipPath id="clip0_4117_1607">
+          <rect width="24" height="24" fill="var(--color-foreground)" />
+        </clipPath>
+        <clipPath id="clip1_4117_1607">
+          <rect width="24" height="24" fill="var(--color-foreground)" />
+        </clipPath>
+      </defs>
     </svg>
   )
 );

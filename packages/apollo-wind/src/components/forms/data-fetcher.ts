@@ -101,21 +101,21 @@ export class DataFetcher {
    * Use this to customize how HTTP requests are made (e.g., add auth, use mocks)
    */
   static setAdapter(adapter: DataAdapter): void {
-    this.adapter = adapter;
+    DataFetcher.adapter = adapter;
   }
 
   /**
    * Get the current adapter
    */
   static getAdapter(): DataAdapter {
-    return this.adapter;
+    return DataFetcher.adapter;
   }
 
   /**
    * Reset to the default FetchAdapter
    */
   static resetAdapter(): void {
-    this.adapter = new FetchAdapter();
+    DataFetcher.adapter = new FetchAdapter();
   }
 
   /**
@@ -124,16 +124,16 @@ export class DataFetcher {
   static async fetch(source: DataSource, formValues: Record<string, unknown>): Promise<unknown> {
     switch (source.type) {
       case 'static':
-        return this.fetchStatic(source);
+        return DataFetcher.fetchStatic(source);
 
       case 'fetch':
-        return this.fetchRemote(source, formValues);
+        return DataFetcher.fetchRemote(source, formValues);
 
       case 'computed':
-        return this.fetchComputed(source, formValues);
+        return DataFetcher.fetchComputed(source, formValues);
 
       case 'remote':
-        return this.fetchRemote(source, formValues);
+        return DataFetcher.fetchRemote(source, formValues);
 
       default:
         throw new Error(`Unknown data source type: ${(source as { type: string }).type}`);
@@ -152,24 +152,25 @@ export class DataFetcher {
    */
   private static async fetchRemote(
     source: Extract<DataSource, { type: 'fetch' | 'remote' }>,
-    formValues: Record<string, unknown>,
+    formValues: Record<string, unknown>
   ): Promise<unknown> {
     const url = 'url' in source ? source.url : source.endpoint;
     const method = 'method' in source ? source.method || 'GET' : 'GET';
-    const params = 'params' in source ? this.resolveParams(source.params || {}, formValues) : {};
+    const params =
+      'params' in source ? DataFetcher.resolveParams(source.params || {}, formValues) : {};
 
     // Build cache key
-    const cacheKey = this.buildCacheKey(url, method, source, formValues);
+    const cacheKey = DataFetcher.buildCacheKey(url, method, source, formValues);
 
     // Check cache
-    const cached = this.getFromCache(cacheKey);
+    const cached = DataFetcher.getFromCache(cacheKey);
     if (cached) {
       return cached;
     }
 
     try {
       // Use adapter to fetch data
-      const response = await this.adapter.fetch({
+      const response = await DataFetcher.adapter.fetch({
         url,
         method,
         params,
@@ -184,11 +185,11 @@ export class DataFetcher {
 
       // Apply transform if provided
       if ('transform' in source && source.transform) {
-        data = this.applyTransform(source.transform, data, formValues);
+        data = DataFetcher.applyTransform(source.transform, data, formValues);
       }
 
       // Cache the result
-      this.setCache(cacheKey, data);
+      DataFetcher.setCache(cacheKey, data);
 
       return data;
     } catch (error) {
@@ -202,7 +203,7 @@ export class DataFetcher {
    */
   private static fetchComputed(
     source: Extract<DataSource, { type: 'computed' }>,
-    formValues: Record<string, unknown>,
+    formValues: Record<string, unknown>
   ): unknown {
     // Get values from dependencies
     const dependencyValues = source.dependency.map((dep) => get(formValues, dep));
@@ -222,7 +223,7 @@ export class DataFetcher {
    */
   private static resolveParams(
     params: Record<string, unknown>,
-    formValues: Record<string, unknown>,
+    formValues: Record<string, unknown>
   ): Record<string, unknown> {
     const resolved: Record<string, unknown> = {};
 
@@ -245,7 +246,7 @@ export class DataFetcher {
   private static applyTransform(
     transform: string,
     data: unknown,
-    formValues: Record<string, unknown>,
+    formValues: Record<string, unknown>
   ): unknown {
     try {
       const transformFn = new Function('data', 'formValues', `return ${transform}`);
@@ -263,10 +264,10 @@ export class DataFetcher {
     url: string,
     method: string,
     source: DataSource,
-    formValues: Record<string, unknown>,
+    formValues: Record<string, unknown>
   ): string {
     const params = 'params' in source ? source.params || {} : {};
-    const resolvedParams = this.resolveParams(params as Record<string, unknown>, formValues);
+    const resolvedParams = DataFetcher.resolveParams(params as Record<string, unknown>, formValues);
     return `${method}:${url}:${JSON.stringify(resolvedParams)}`;
   }
 
@@ -274,13 +275,13 @@ export class DataFetcher {
    * Get from cache
    */
   private static getFromCache(key: string): unknown | null {
-    const cached = this.cache.get(key);
+    const cached = DataFetcher.cache.get(key);
 
     if (!cached) return null;
 
     // Check if cache is still valid
-    if (Date.now() - cached.timestamp > this.cacheTTL) {
-      this.cache.delete(key);
+    if (Date.now() - cached.timestamp > DataFetcher.cacheTTL) {
+      DataFetcher.cache.delete(key);
       return null;
     }
 
@@ -291,7 +292,7 @@ export class DataFetcher {
    * Set cache
    */
   private static setCache(key: string, data: unknown): void {
-    this.cache.set(key, {
+    DataFetcher.cache.set(key, {
       data,
       timestamp: Date.now(),
     });
@@ -302,14 +303,14 @@ export class DataFetcher {
    */
   static clearCache(pattern?: string): void {
     if (!pattern) {
-      this.cache.clear();
+      DataFetcher.cache.clear();
       return;
     }
 
     // Clear cache entries matching pattern
-    for (const key of this.cache.keys()) {
+    for (const key of DataFetcher.cache.keys()) {
       if (key.includes(pattern)) {
-        this.cache.delete(key);
+        DataFetcher.cache.delete(key);
       }
     }
   }
@@ -318,7 +319,7 @@ export class DataFetcher {
    * Set cache TTL
    */
   static setCacheTTL(ttl: number): void {
-    this.cacheTTL = ttl;
+    DataFetcher.cacheTTL = ttl;
   }
 }
 

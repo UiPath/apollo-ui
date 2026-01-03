@@ -1,8 +1,8 @@
-export * from './BaseCanvas.types';
+export { BaseCanvas } from './BaseCanvas';
 export * from './BaseCanvas.constants';
 export * from './BaseCanvas.hooks';
-export { BaseCanvas as BaseCanvas } from './BaseCanvas';
+export * from './BaseCanvas.types';
 export * from './CanvasBackground';
+export * from './CanvasProviders';
 export * from './ConnectedHandlesContext';
 export * from './SelectionStateContext';
-export * from './CanvasProviders';

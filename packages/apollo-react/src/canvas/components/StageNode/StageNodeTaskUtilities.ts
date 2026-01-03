@@ -1,5 +1,5 @@
-import { GroupModificationType } from './StageNode.types';
 import type { NodeMenuItem } from '../NodeContextMenu';
+import { GroupModificationType } from './StageNode.types';
 
 // TODO: Add translation for the menu items
 

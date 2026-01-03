@@ -1,19 +1,19 @@
-import { useReactFlow } from '@uipath/apollo-react/canvas/xyflow/react';
 import { Column } from '@uipath/apollo-react/canvas/layouts';
-import { memo, useCallback, useState, useEffect } from 'react';
+import { useReactFlow } from '@uipath/apollo-react/canvas/xyflow/react';
 import { ApIcon, ApIconButton } from '@uipath/apollo-react/material/components';
-import { TextField, SelectField, NumberField, CheckboxField } from './fields';
-import {
-  ConfigSection as StyledConfigSection,
-  SectionTitle,
-  FieldContainer,
-} from './NodePropertiesPanel.styles';
+import { memo, useCallback, useEffect, useState } from 'react';
 import { FloatingCanvasPanel } from '../FloatingCanvasPanel';
-import { useNodeSelection, useNodeConfiguration } from './hooks';
+import { CheckboxField, NumberField, SelectField, TextField } from './fields';
+import { useNodeConfiguration, useNodeSelection } from './hooks';
+import {
+  FieldContainer,
+  SectionTitle,
+  ConfigSection as StyledConfigSection,
+} from './NodePropertiesPanel.styles';
 import type {
-  NodePropertiesPanelProps,
   ConfigField,
   ConfigSection,
+  NodePropertiesPanelProps,
 } from './NodePropertiesPanel.types';
 
 /** Width of the pinned panel in pixels. Must match minWidth in PanelContainer styles. */

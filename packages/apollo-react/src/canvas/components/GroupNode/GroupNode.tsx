@@ -1,22 +1,22 @@
-import { memo, useCallback } from 'react';
 import type { NodeProps } from '@uipath/apollo-react/canvas/xyflow/react';
 import { NodeResizeControl, useReactFlow } from '@uipath/apollo-react/canvas/xyflow/react';
 import { ApIcon } from '@uipath/apollo-react/material/components';
-import type { GroupNodeData } from './GroupNode.types';
+import { memo, useCallback } from 'react';
+import { GRID_SPACING } from '../../constants';
 import {
-  GroupContainer,
-  GroupHeader,
-  GroupIconWrapper,
-  GroupTitle,
-  GroupControls,
-  GroupContent,
-  ResizeHandle,
-  TopCornerIndicators,
   BottomCornerIndicators,
+  GroupContainer,
+  GroupContent,
+  GroupControls,
+  GroupHeader,
   GroupHeaderButton,
   GroupHeaderSeparator,
+  GroupIconWrapper,
+  GroupTitle,
+  ResizeHandle,
+  TopCornerIndicators,
 } from './GroupNode.styles';
-import { GRID_SPACING } from '../../constants';
+import type { GroupNodeData } from './GroupNode.types';
 
 export interface GroupNodeProps extends NodeProps {
   data: GroupNodeData;

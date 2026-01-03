@@ -1,7 +1,6 @@
-import React from 'react';
-
 import { Box } from '@mui/material';
 import token from '@uipath/apollo-core';
+import React from 'react';
 
 import { useChatState } from '../../../providers/chat-state-provider';
 import { Text } from './text';

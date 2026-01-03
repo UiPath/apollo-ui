@@ -38,7 +38,7 @@ export function DatePicker({
           className={cn(
             'w-full justify-start text-left font-normal',
             !value && 'text-muted-foreground',
-            className,
+            className
           )}
           disabled={disabled}
         >
@@ -100,7 +100,7 @@ export function DateRangePicker({
           className={cn(
             'w-[300px] justify-start text-left font-normal',
             !value && 'text-muted-foreground',
-            className,
+            className
           )}
           disabled={disabled}
         >

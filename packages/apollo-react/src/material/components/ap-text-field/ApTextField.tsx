@@ -1,6 +1,7 @@
-import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
-import { InputAdornment, TextField, TextFieldProps, Tooltip } from '@mui/material';
+import { InputAdornment, TextField, type TextFieldProps, Tooltip } from '@mui/material';
 import token, { FontVariantToken } from '@uipath/apollo-core';
+import type React from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { ApTypography } from '../ap-typography';
 import type { ApTextFieldProps, InputType } from './ApTextField.types';

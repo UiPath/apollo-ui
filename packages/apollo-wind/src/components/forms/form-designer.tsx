@@ -73,23 +73,48 @@ interface FieldTypeMetadata {
  * Complete mapping of all supported field types
  */
 const FIELD_TYPE_METADATA: readonly FieldTypeMetadata[] = [
-  { value: 'text', label: 'Text', category: 'Input', description: 'Single-line text input' },
-  { value: 'email', label: 'Email', category: 'Input', description: 'Email with validation' },
-  { value: 'textarea', label: 'Textarea', category: 'Input', description: 'Multi-line text input' },
+  {
+    value: 'text',
+    label: 'Text',
+    category: 'Input',
+    description: 'Single-line text input',
+  },
+  {
+    value: 'email',
+    label: 'Email',
+    category: 'Input',
+    description: 'Email with validation',
+  },
+  {
+    value: 'textarea',
+    label: 'Textarea',
+    category: 'Input',
+    description: 'Multi-line text input',
+  },
   {
     value: 'number',
     label: 'Number',
     category: 'Input',
     description: 'Numeric input with min/max',
   },
-  { value: 'date', label: 'Date', category: 'Input', description: 'Date picker' },
+  {
+    value: 'date',
+    label: 'Date',
+    category: 'Input',
+    description: 'Date picker',
+  },
   {
     value: 'datetime',
     label: 'Date & Time',
     category: 'Input',
     description: 'Date and time picker',
   },
-  { value: 'file', label: 'File Upload', category: 'Input', description: 'File upload control' },
+  {
+    value: 'file',
+    label: 'File Upload',
+    category: 'Input',
+    description: 'File upload control',
+  },
   {
     value: 'select',
     label: 'Select Dropdown',
@@ -108,9 +133,24 @@ const FIELD_TYPE_METADATA: readonly FieldTypeMetadata[] = [
     category: 'Selection',
     description: 'Radio button group',
   },
-  { value: 'checkbox', label: 'Checkbox', category: 'Boolean', description: 'Single checkbox' },
-  { value: 'switch', label: 'Switch Toggle', category: 'Boolean', description: 'Toggle switch' },
-  { value: 'slider', label: 'Slider', category: 'Input', description: 'Range slider' },
+  {
+    value: 'checkbox',
+    label: 'Checkbox',
+    category: 'Boolean',
+    description: 'Single checkbox',
+  },
+  {
+    value: 'switch',
+    label: 'Switch Toggle',
+    category: 'Boolean',
+    description: 'Toggle switch',
+  },
+  {
+    value: 'slider',
+    label: 'Slider',
+    category: 'Input',
+    description: 'Range slider',
+  },
   {
     value: 'custom',
     label: 'Custom Component',
@@ -174,7 +214,7 @@ function buildValidationConfig(field: ExtendedFieldConfig): ValidationConfig | u
 
   // Check if field is always required (has required rule with no conditions)
   const isAlwaysRequired = rules?.some(
-    (r) => r.effects.required === true && r.conditions.length === 0,
+    (r) => r.effects.required === true && r.conditions.length === 0
   );
   if (isAlwaysRequired) {
     config.required = true;
@@ -585,7 +625,7 @@ function SectionConfigForm({ section, onUpdate, existingSectionIds }: SectionCon
         },
       },
     ],
-    [onUpdate],
+    [onUpdate]
   );
 
   return (
@@ -748,7 +788,7 @@ function FieldConfigForm({ field, onUpdate, allFields, existingFieldNames }: Fie
         },
       },
     ],
-    [onUpdate, currentTypeRef, field.validation?.requiredMessage],
+    [onUpdate, currentTypeRef, field.validation?.requiredMessage]
   );
 
   // Check if field type needs options editor
@@ -960,7 +1000,7 @@ export function FormDesigner() {
     };
 
     setSections(
-      sections.map((s) => (s.id === sectionId ? { ...s, fields: [...s.fields, newField] } : s)),
+      sections.map((s) => (s.id === sectionId ? { ...s, fields: [...s.fields, newField] } : s))
     );
     setSelectedSectionId(sectionId);
     setSelectedFieldId(newField.id);
@@ -969,8 +1009,8 @@ export function FormDesigner() {
   const removeField = (sectionId: string, fieldId: string) => {
     setSections(
       sections.map((s) =>
-        s.id === sectionId ? { ...s, fields: s.fields.filter((f) => f.id !== fieldId) } : s,
-      ),
+        s.id === sectionId ? { ...s, fields: s.fields.filter((f) => f.id !== fieldId) } : s
+      )
     );
     if (selectedFieldId === fieldId) {
       const section = sections.find((s) => s.id === sectionId);
@@ -1284,7 +1324,7 @@ export function FormDesigner() {
                 key={sections
                   .map(
                     (s) =>
-                      `${s.id}:${s.collapsible}:${s.defaultExpanded}:${s.fields.map((f) => `${f.id}:${f.type}:${f.name}:${JSON.stringify(f.rules || [])}:${JSON.stringify(f.validation || {})}`).join('-')}`,
+                      `${s.id}:${s.collapsible}:${s.defaultExpanded}:${s.fields.map((f) => `${f.id}:${f.type}:${f.name}:${JSON.stringify(f.rules || [])}:${JSON.stringify(f.validation || {})}`).join('-')}`
                   )
                   .join(',')}
                 schema={generatedSchema}
@@ -1500,12 +1540,28 @@ function DataSourceEditor({ dataSource, onChange }: DataSourceEditorProps) {
 
 type ConditionOperator = 'is' | 'isNot' | 'in' | 'notIn' | 'matches';
 
-const CONDITION_OPERATORS: { value: ConditionOperator; label: string; description: string }[] = [
+const CONDITION_OPERATORS: {
+  value: ConditionOperator;
+  label: string;
+  description: string;
+}[] = [
   { value: 'is', label: 'equals', description: 'Field value equals' },
-  { value: 'isNot', label: 'not equals', description: 'Field value does not equal' },
+  {
+    value: 'isNot',
+    label: 'not equals',
+    description: 'Field value does not equal',
+  },
   { value: 'in', label: 'is one of', description: 'Field value is one of' },
-  { value: 'notIn', label: 'is not one of', description: 'Field value is not one of' },
-  { value: 'matches', label: 'matches pattern', description: 'Field value matches regex' },
+  {
+    value: 'notIn',
+    label: 'is not one of',
+    description: 'Field value is not one of',
+  },
+  {
+    value: 'matches',
+    label: 'matches pattern',
+    description: 'Field value matches regex',
+  },
 ];
 
 type RuleEffect = 'show' | 'hide' | 'require' | 'disable';
@@ -1579,7 +1635,7 @@ function RulesEditor({
 
   // Check if field is always required (has required rule with no conditions)
   const isAlwaysRequired = rules.some(
-    (r) => r.effects.required === true && r.conditions.length === 0,
+    (r) => r.effects.required === true && r.conditions.length === 0
   );
 
   const resetBuilder = () => {
@@ -1596,7 +1652,11 @@ function RulesEditor({
 
   const updateCondition = (
     index: number,
-    updates: Partial<{ field: string; operator: ConditionOperator; value: string }>,
+    updates: Partial<{
+      field: string;
+      operator: ConditionOperator;
+      value: string;
+    }>
   ) => {
     const newConditions = [...conditions];
     newConditions[index] = { ...newConditions[index], ...updates };
@@ -1747,7 +1807,7 @@ function RulesEditor({
     setConditions(
       editableConditions.length > 0
         ? editableConditions
-        : [{ field: '', operator: 'is', value: '' }],
+        : [{ field: '', operator: 'is', value: '' }]
     );
     setEditingRuleIndex(index);
     setIsAddingRule(true);
@@ -1990,7 +2050,9 @@ function RulesEditor({
                       <Select
                         value={cond.operator}
                         onValueChange={(v) =>
-                          updateCondition(index, { operator: v as ConditionOperator })
+                          updateCondition(index, {
+                            operator: v as ConditionOperator,
+                          })
                         }
                       >
                         <SelectTrigger className="w-32 h-8 text-sm">

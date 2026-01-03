@@ -1,5 +1,5 @@
-import { createContext, useContext, useMemo, type ReactNode } from 'react';
 import type { Node } from '@uipath/apollo-react/canvas/xyflow/react';
+import { createContext, type ReactNode, useContext, useMemo } from 'react';
 
 interface SelectionStateContextValue {
   /** True when more than one node is selected */

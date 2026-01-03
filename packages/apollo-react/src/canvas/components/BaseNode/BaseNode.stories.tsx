@@ -4,21 +4,21 @@
  * Demonstrates the BaseNode component with various shapes, sizes, and execution states.
  */
 import type { Meta, StoryObj } from '@storybook/react';
-import { useMemo } from 'react';
 import type { Node } from '@uipath/apollo-react/canvas/xyflow/react';
 import { Panel } from '@uipath/apollo-react/canvas/xyflow/react';
+import { useMemo } from 'react';
+import {
+  createNode,
+  StoryInfoPanel,
+  useCanvasStory,
+  withCanvasProviders,
+} from '../../storybook-utils';
+import { DefaultCanvasTranslations } from '../../types';
 import { BaseCanvas } from '../BaseCanvas';
 import { CanvasPositionControls } from '../CanvasPositionControls';
 import { NodeInspector } from '../NodeInspector';
 import type { BaseNodeData } from './BaseNode.types';
 import { useNodeTypeRegistry } from './useNodeTypeRegistry';
-import {
-  withCanvasProviders,
-  useCanvasStory,
-  createNode,
-  StoryInfoPanel,
-} from '../../storybook-utils';
-import { DefaultCanvasTranslations } from '../../types';
 
 // ============================================================================
 // Meta Configuration

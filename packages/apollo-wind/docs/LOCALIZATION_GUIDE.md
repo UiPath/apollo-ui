@@ -62,8 +62,8 @@ Components expose **props for all user-facing strings**, allowing you to provide
 **Pass translated strings as props to components:**
 
 ```tsx
-import { useTranslation } from 'react-i18next'; // or your i18n library
-import { Combobox, MultiSelect, DataTable } from '@/components/ui';
+import { useTranslation } from "react-i18next"; // or your i18n library
+import { Combobox, MultiSelect, DataTable } from "@/components/ui";
 
 function MyComponent() {
   const { t } = useTranslation();
@@ -72,21 +72,25 @@ function MyComponent() {
     <>
       <Combobox
         items={items}
-        placeholder={t('common.selectOption')}
-        searchPlaceholder={t('common.search')}
-        emptyText={t('common.noResults')}
+        placeholder={t("common.selectOption")}
+        searchPlaceholder={t("common.search")}
+        emptyText={t("common.noResults")}
       />
 
       <MultiSelect
         options={options}
         selected={selected}
         onChange={setSelected}
-        placeholder={t('common.selectItems')}
-        emptyMessage={t('common.noItemsFound')}
-        searchPlaceholder={t('common.search')}
+        placeholder={t("common.selectItems")}
+        emptyMessage={t("common.noItemsFound")}
+        searchPlaceholder={t("common.search")}
       />
 
-      <DataTable columns={columns} data={data} searchPlaceholder={t('common.searchPlaceholder')} />
+      <DataTable
+        columns={columns}
+        data={data}
+        searchPlaceholder={t("common.searchPlaceholder")}
+      />
     </>
   );
 }
@@ -108,51 +112,51 @@ npm install react-i18next i18next
 
 ```tsx
 // i18n.ts
-import i18n from 'i18next';
-import { initReactI18next } from 'react-i18next';
+import i18n from "i18next";
+import { initReactI18next } from "react-i18next";
 
 const resources = {
   en: {
     common: {
-      selectOption: 'Select an option...',
-      selectItems: 'Select items...',
-      search: 'Search...',
-      noResults: 'No results found.',
-      noItemsFound: 'No items found.',
-      previous: 'Previous',
-      next: 'Next',
-      clearAll: 'Clear all',
+      selectOption: "Select an option...",
+      selectItems: "Select items...",
+      search: "Search...",
+      noResults: "No results found.",
+      noItemsFound: "No items found.",
+      previous: "Previous",
+      next: "Next",
+      clearAll: "Clear all",
     },
   },
   es: {
     common: {
-      selectOption: 'Seleccionar una opción...',
-      selectItems: 'Seleccionar elementos...',
-      search: 'Buscar...',
-      noResults: 'No se encontraron resultados.',
-      noItemsFound: 'No se encontraron elementos.',
-      previous: 'Anterior',
-      next: 'Siguiente',
-      clearAll: 'Limpiar todo',
+      selectOption: "Seleccionar una opción...",
+      selectItems: "Seleccionar elementos...",
+      search: "Buscar...",
+      noResults: "No se encontraron resultados.",
+      noItemsFound: "No se encontraron elementos.",
+      previous: "Anterior",
+      next: "Siguiente",
+      clearAll: "Limpiar todo",
     },
   },
   fr: {
     common: {
-      selectOption: 'Sélectionner une option...',
-      selectItems: 'Sélectionner des éléments...',
-      search: 'Rechercher...',
-      noResults: 'Aucun résultat trouvé.',
-      noItemsFound: 'Aucun élément trouvé.',
-      previous: 'Précédent',
-      next: 'Suivant',
-      clearAll: 'Tout effacer',
+      selectOption: "Sélectionner une option...",
+      selectItems: "Sélectionner des éléments...",
+      search: "Rechercher...",
+      noResults: "Aucun résultat trouvé.",
+      noItemsFound: "Aucun élément trouvé.",
+      previous: "Précédent",
+      next: "Suivant",
+      clearAll: "Tout effacer",
     },
   },
 };
 
 i18n.use(initReactI18next).init({
   resources,
-  lng: 'en',
+  lng: "en",
   interpolation: {
     escapeValue: false,
   },
@@ -164,20 +168,20 @@ export default i18n;
 **Usage:**
 
 ```tsx
-import { useTranslation } from 'react-i18next';
-import { Combobox } from '@/components/ui';
+import { useTranslation } from "react-i18next";
+import { Combobox } from "@/components/ui";
 
 function LocalizedCombobox({ items, value, onChange }) {
-  const { t } = useTranslation('common');
+  const { t } = useTranslation("common");
 
   return (
     <Combobox
       items={items}
       value={value}
       onValueChange={onChange}
-      placeholder={t('selectOption')}
-      searchPlaceholder={t('search')}
-      emptyText={t('noResults')}
+      placeholder={t("selectOption")}
+      searchPlaceholder={t("search")}
+      emptyText={t("noResults")}
     />
   );
 }
@@ -197,8 +201,8 @@ npm install next-intl
 
 ```tsx
 // app/[locale]/layout.tsx
-import { NextIntlClientProvider } from 'next-intl';
-import { getMessages } from 'next-intl/server';
+import { NextIntlClientProvider } from "next-intl";
+import { getMessages } from "next-intl/server";
 
 export default async function LocaleLayout({
   children,
@@ -209,7 +213,11 @@ export default async function LocaleLayout({
 }) {
   const messages = await getMessages();
 
-  return <NextIntlClientProvider messages={messages}>{children}</NextIntlClientProvider>;
+  return (
+    <NextIntlClientProvider messages={messages}>
+      {children}
+    </NextIntlClientProvider>
+  );
 }
 ```
 
@@ -243,22 +251,22 @@ export default async function LocaleLayout({
 **Usage:**
 
 ```tsx
-'use client';
+"use client";
 
-import { useTranslations } from 'next-intl';
-import { Combobox } from '@/components/ui';
+import { useTranslations } from "next-intl";
+import { Combobox } from "@/components/ui";
 
 function LocalizedCombobox({ items, value, onChange }) {
-  const t = useTranslations('components.combobox');
+  const t = useTranslations("components.combobox");
 
   return (
     <Combobox
       items={items}
       value={value}
       onValueChange={onChange}
-      placeholder={t('placeholder')}
-      searchPlaceholder={t('search')}
-      emptyText={t('noResults')}
+      placeholder={t("placeholder")}
+      searchPlaceholder={t("search")}
+      emptyText={t("noResults")}
     />
   );
 }
@@ -277,23 +285,23 @@ npm install react-intl
 **Setup:**
 
 ```tsx
-import { IntlProvider } from 'react-intl';
+import { IntlProvider } from "react-intl";
 
 const messages = {
   en: {
-    'combobox.placeholder': 'Select an option...',
-    'combobox.search': 'Search...',
-    'combobox.noResults': 'No results found.',
+    "combobox.placeholder": "Select an option...",
+    "combobox.search": "Search...",
+    "combobox.noResults": "No results found.",
   },
   es: {
-    'combobox.placeholder': 'Seleccionar una opción...',
-    'combobox.search': 'Buscar...',
-    'combobox.noResults': 'No se encontraron resultados.',
+    "combobox.placeholder": "Seleccionar una opción...",
+    "combobox.search": "Buscar...",
+    "combobox.noResults": "No se encontraron resultados.",
   },
 };
 
 function App() {
-  const [locale, setLocale] = useState('en');
+  const [locale, setLocale] = useState("en");
 
   return (
     <IntlProvider messages={messages[locale]} locale={locale}>
@@ -306,8 +314,8 @@ function App() {
 **Usage:**
 
 ```tsx
-import { useIntl } from 'react-intl';
-import { Combobox } from '@/components/ui';
+import { useIntl } from "react-intl";
+import { Combobox } from "@/components/ui";
 
 function LocalizedCombobox({ items, value, onChange }) {
   const intl = useIntl();
@@ -317,9 +325,9 @@ function LocalizedCombobox({ items, value, onChange }) {
       items={items}
       value={value}
       onValueChange={onChange}
-      placeholder={intl.formatMessage({ id: 'combobox.placeholder' })}
-      searchPlaceholder={intl.formatMessage({ id: 'combobox.search' })}
-      emptyText={intl.formatMessage({ id: 'combobox.noResults' })}
+      placeholder={intl.formatMessage({ id: "combobox.placeholder" })}
+      searchPlaceholder={intl.formatMessage({ id: "combobox.search" })}
+      emptyText={intl.formatMessage({ id: "combobox.noResults" })}
     />
   );
 }
@@ -335,26 +343,30 @@ For simple needs, you can create your own translation system:
 // translations.ts
 export const translations = {
   en: {
-    selectOption: 'Select an option...',
-    search: 'Search...',
-    noResults: 'No results found.',
+    selectOption: "Select an option...",
+    search: "Search...",
+    noResults: "No results found.",
   },
   es: {
-    selectOption: 'Seleccionar una opción...',
-    search: 'Buscar...',
-    noResults: 'No se encontraron resultados.',
+    selectOption: "Seleccionar una opción...",
+    search: "Buscar...",
+    noResults: "No se encontraron resultados.",
   },
 };
 
 // i18n-context.tsx
-import { createContext, useContext } from 'react';
+import { createContext, useContext } from "react";
 
-const I18nContext = createContext({ locale: 'en', t: (key: string) => key });
+const I18nContext = createContext({ locale: "en", t: (key: string) => key });
 
 export function I18nProvider({ locale, children }) {
   const t = (key: string) => translations[locale]?.[key] || key;
 
-  return <I18nContext.Provider value={{ locale, t }}>{children}</I18nContext.Provider>;
+  return (
+    <I18nContext.Provider value={{ locale, t }}>
+      {children}
+    </I18nContext.Provider>
+  );
 }
 
 export const useI18n = () => useContext(I18nContext);
@@ -368,9 +380,9 @@ function LocalizedCombobox({ items, value, onChange }) {
       items={items}
       value={value}
       onValueChange={onChange}
-      placeholder={t('selectOption')}
-      searchPlaceholder={t('search')}
-      emptyText={t('noResults')}
+      placeholder={t("selectOption")}
+      searchPlaceholder={t("search")}
+      emptyText={t("noResults")}
     />
   );
 }
@@ -395,9 +407,9 @@ function LocalizedCombobox({ items, value, onChange }) {
   items={items}
   value={value}
   onValueChange={setValue}
-  placeholder={t('combobox.placeholder')}
-  searchPlaceholder={t('common.search')}
-  emptyText={t('combobox.noResults')}
+  placeholder={t("combobox.placeholder")}
+  searchPlaceholder={t("common.search")}
+  emptyText={t("combobox.noResults")}
 />
 ```
 
@@ -436,9 +448,9 @@ function LocalizedCombobox({ items, value, onChange }) {
   options={options}
   selected={selected}
   onChange={setSelected}
-  placeholder={t('multiSelect.placeholder')}
-  searchPlaceholder={t('common.search')}
-  emptyMessage={t('multiSelect.noItems')}
+  placeholder={t("multiSelect.placeholder")}
+  searchPlaceholder={t("common.search")}
+  emptyMessage={t("multiSelect.noItems")}
 />
 ```
 
@@ -474,16 +486,20 @@ function LocalizedCombobox({ items, value, onChange }) {
 ```tsx
 const columns = [
   {
-    accessorKey: 'name',
-    header: t('table.columns.name'), // ✅ Localize headers
+    accessorKey: "name",
+    header: t("table.columns.name"), // ✅ Localize headers
   },
   {
-    accessorKey: 'email',
-    header: t('table.columns.email'),
+    accessorKey: "email",
+    header: t("table.columns.email"),
   },
 ];
 
-<DataTable columns={columns} data={data} searchPlaceholder={t('common.search')} />;
+<DataTable
+  columns={columns}
+  data={data}
+  searchPlaceholder={t("common.search")}
+/>;
 ```
 
 **Recommended Translation Keys:**
@@ -509,8 +525,8 @@ Uses `react-day-picker` internally, which supports localization via the `locale`
 **Example:**
 
 ```tsx
-import { fr } from 'date-fns/locale';
-import { DatePicker } from '@/components/ui';
+import { fr } from "date-fns/locale";
+import { DatePicker } from "@/components/ui";
 
 <DatePicker
   value={date}
@@ -525,8 +541,8 @@ import { DatePicker } from '@/components/ui';
 **Workaround**: Use Calendar directly:
 
 ```tsx
-import { Calendar } from '@/components/ui';
-import { fr } from 'date-fns/locale';
+import { Calendar } from "@/components/ui";
+import { fr } from "date-fns/locale";
 
 <Calendar mode="single" selected={date} onSelect={setDate} locale={fr} />;
 ```
@@ -547,14 +563,14 @@ import { fr } from 'date-fns/locale';
 ```tsx
 <EmptyState
   icon={<Inbox className="h-12 w-12" />}
-  title={t('emptyState.noData.title')}
-  description={t('emptyState.noData.description')}
+  title={t("emptyState.noData.title")}
+  description={t("emptyState.noData.description")}
   action={{
-    label: t('emptyState.noData.action'),
+    label: t("emptyState.noData.action"),
     onClick: handleCreate,
   }}
   secondaryAction={{
-    label: t('common.learnMore'),
+    label: t("common.learnMore"),
     onClick: handleLearnMore,
   }}
 />
@@ -586,7 +602,7 @@ Pagination components render text via children, so you control all text:
 **Example:**
 
 ```tsx
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from "react-i18next";
 import {
   Pagination,
   PaginationContent,
@@ -595,24 +611,27 @@ import {
   PaginationNext,
   PaginationLink,
   PaginationEllipsis,
-} from '@/components/ui';
+} from "@/components/ui";
 
 function LocalizedPagination({ currentPage, totalPages, onPageChange }) {
-  const { t } = useTranslation('common');
+  const { t } = useTranslation("common");
 
   return (
     <Pagination>
       <PaginationContent>
         <PaginationItem>
           <PaginationPrevious onClick={() => onPageChange(currentPage - 1)}>
-            {t('pagination.previous')}
+            {t("pagination.previous")}
           </PaginationPrevious>
         </PaginationItem>
 
         {/* Page numbers */}
         {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
           <PaginationItem key={page}>
-            <PaginationLink onClick={() => onPageChange(page)} isActive={page === currentPage}>
+            <PaginationLink
+              onClick={() => onPageChange(page)}
+              isActive={page === currentPage}
+            >
               {page}
             </PaginationLink>
           </PaginationItem>
@@ -620,7 +639,7 @@ function LocalizedPagination({ currentPage, totalPages, onPageChange }) {
 
         <PaginationItem>
           <PaginationNext onClick={() => onPageChange(currentPage + 1)}>
-            {t('pagination.next')}
+            {t("pagination.next")}
           </PaginationNext>
         </PaginationItem>
       </PaginationContent>
@@ -651,7 +670,11 @@ function LocalizedPagination({ currentPage, totalPages, onPageChange }) {
 **Example:**
 
 ```tsx
-<Search placeholder={t('common.search')} value={searchValue} onChange={setSearchValue} />
+<Search
+  placeholder={t("common.search")}
+  value={searchValue}
+  onChange={setSearchValue}
+/>
 ```
 
 ---
@@ -703,20 +726,20 @@ Wrap components with localization logic once, reuse everywhere:
 
 ```tsx
 // components/localized/LocalizedCombobox.tsx
-import { useTranslation } from 'react-i18next';
-import { Combobox, ComboboxProps } from '@/components/ui';
+import { useTranslation } from "react-i18next";
+import { Combobox, ComboboxProps } from "@/components/ui";
 
 export function LocalizedCombobox(
-  props: Omit<ComboboxProps, 'placeholder' | 'searchPlaceholder' | 'emptyText'>,
+  props: Omit<ComboboxProps, "placeholder" | "searchPlaceholder" | "emptyText">,
 ) {
-  const { t } = useTranslation('common');
+  const { t } = useTranslation("common");
 
   return (
     <Combobox
       {...props}
-      placeholder={t('selectOption')}
-      searchPlaceholder={t('search')}
-      emptyText={t('noResults')}
+      placeholder={t("selectOption")}
+      searchPlaceholder={t("search")}
+      emptyText={t("noResults")}
     />
   );
 }
@@ -780,7 +803,9 @@ Many components use "Search..." - define it once:
 For Arabic, Hebrew, etc., use CSS direction:
 
 ```tsx
-<html dir={locale === 'ar' || locale === 'he' ? 'rtl' : 'ltr'}>{/* Your app */}</html>
+<html dir={locale === "ar" || locale === "he" ? "rtl" : "ltr"}>
+  {/* Your app */}
+</html>
 ```
 
 Tailwind supports RTL automatically with utility classes like `rtl:text-right`.
@@ -812,16 +837,16 @@ Use Intl APIs for locale-aware formatting:
 ```tsx
 // Numbers
 const formatter = new Intl.NumberFormat(locale, {
-  style: 'currency',
-  currency: 'USD',
+  style: "currency",
+  currency: "USD",
 });
 formatter.format(1234.56); // "$1,234.56" (en-US) or "1 234,56 $US" (fr-FR)
 
 // Dates
 const dateFormatter = new Intl.DateTimeFormat(locale, {
-  year: 'numeric',
-  month: 'long',
-  day: 'numeric',
+  year: "numeric",
+  month: "long",
+  day: "numeric",
 });
 dateFormatter.format(new Date()); // "January 15, 2024" (en) or "15 janvier 2024" (fr)
 ```
@@ -843,11 +868,11 @@ This helps catch layout issues and missing translations.
 ### Full Example: User Management Page
 
 ```tsx
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { Trash2, UserPlus } from 'lucide-react';
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
+import { Trash2, UserPlus } from "lucide-react";
 import {
   Button,
   DataTable,
@@ -859,30 +884,30 @@ import {
   DialogFooter,
   EmptyState,
   toast,
-} from '@/components/ui';
+} from "@/components/ui";
 
 export default function UsersPage() {
-  const { t } = useTranslation(['users', 'common']);
+  const { t } = useTranslation(["users", "common"]);
   const [users, setUsers] = useState([]);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
 
   const columns = [
     {
-      accessorKey: 'name',
-      header: t('users:table.name'),
+      accessorKey: "name",
+      header: t("users:table.name"),
     },
     {
-      accessorKey: 'email',
-      header: t('users:table.email'),
+      accessorKey: "email",
+      header: t("users:table.email"),
     },
     {
-      accessorKey: 'role',
-      header: t('users:table.role'),
+      accessorKey: "role",
+      header: t("users:table.role"),
     },
     {
-      id: 'actions',
-      header: t('common:actions'),
+      id: "actions",
+      header: t("common:actions"),
       cell: ({ row }) => (
         <Button
           variant="ghost"
@@ -902,10 +927,10 @@ export default function UsersPage() {
     try {
       await deleteUser(selectedUser.id);
       setUsers(users.filter((u) => u.id !== selectedUser.id));
-      toast.success(t('users:toast.deleteSuccess'));
+      toast.success(t("users:toast.deleteSuccess"));
       setShowDeleteDialog(false);
     } catch (error) {
-      toast.error(t('users:toast.deleteFailed'));
+      toast.error(t("users:toast.deleteFailed"));
     }
   };
 
@@ -913,10 +938,10 @@ export default function UsersPage() {
     return (
       <EmptyState
         icon={<UserPlus className="h-12 w-12" />}
-        title={t('users:empty.title')}
-        description={t('users:empty.description')}
+        title={t("users:empty.title")}
+        description={t("users:empty.description")}
         action={{
-          label: t('users:empty.action'),
+          label: t("users:empty.action"),
           onClick: () => {
             /* navigate to create */
           },
@@ -927,22 +952,29 @@ export default function UsersPage() {
 
   return (
     <>
-      <DataTable columns={columns} data={users} searchPlaceholder={t('common:search')} />
+      <DataTable
+        columns={columns}
+        data={users}
+        searchPlaceholder={t("common:search")}
+      />
 
       <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{t('users:delete.title')}</DialogTitle>
+            <DialogTitle>{t("users:delete.title")}</DialogTitle>
             <DialogDescription>
-              {t('users:delete.description', { name: selectedUser?.name })}
+              {t("users:delete.description", { name: selectedUser?.name })}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowDeleteDialog(false)}>
-              {t('common:cancel')}
+            <Button
+              variant="outline"
+              onClick={() => setShowDeleteDialog(false)}
+            >
+              {t("common:cancel")}
             </Button>
             <Button variant="destructive" onClick={handleDelete}>
-              {t('common:delete')}
+              {t("common:delete")}
             </Button>
           </DialogFooter>
         </DialogContent>

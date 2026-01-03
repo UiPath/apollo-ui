@@ -59,7 +59,7 @@ const Row = React.forwardRef<HTMLDivElement, RowProps>(
       my,
       ...htmlProps
     },
-    ref,
+    ref
   ) => {
     const layoutStyles = buildLayoutStyles({
       direction,
@@ -99,7 +99,7 @@ const Row = React.forwardRef<HTMLDivElement, RowProps>(
         {children}
       </div>
     );
-  },
+  }
 );
 
 Row.displayName = 'Row';

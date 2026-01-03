@@ -51,7 +51,7 @@ describe('Stepper', () => {
 
     it('has no accessibility violations with clickable steps', async () => {
       const { container } = render(
-        <Stepper steps={mockSteps} currentStep={1} clickableSteps onStepClick={vi.fn()} />,
+        <Stepper steps={mockSteps} currentStep={1} clickableSteps onStepClick={vi.fn()} />
       );
       const results = await axe(container);
       expect(results).toHaveNoViolations();
@@ -59,7 +59,7 @@ describe('Stepper', () => {
 
     it('has no accessibility violations in vertical orientation', async () => {
       const { container } = render(
-        <Stepper steps={mockSteps} currentStep={1} orientation="vertical" />,
+        <Stepper steps={mockSteps} currentStep={1} orientation="vertical" />
       );
       const results = await axe(container);
       expect(results).toHaveNoViolations();
@@ -75,7 +75,7 @@ describe('Stepper', () => {
 
     it('renders vertical when specified', () => {
       const { container } = render(
-        <Stepper steps={mockSteps} currentStep={0} orientation="vertical" />,
+        <Stepper steps={mockSteps} currentStep={0} orientation="vertical" />
       );
       expect(container.firstChild).toHaveClass('flex-col');
     });
@@ -104,7 +104,7 @@ describe('Stepper', () => {
       const user = userEvent.setup();
       const handleClick = vi.fn();
       render(
-        <Stepper steps={mockSteps} currentStep={1} clickableSteps onStepClick={handleClick} />,
+        <Stepper steps={mockSteps} currentStep={1} clickableSteps onStepClick={handleClick} />
       );
 
       // Click on completed step (step 1)
@@ -117,7 +117,7 @@ describe('Stepper', () => {
       const user = userEvent.setup();
       const handleClick = vi.fn();
       render(
-        <Stepper steps={mockSteps} currentStep={0} clickableSteps onStepClick={handleClick} />,
+        <Stepper steps={mockSteps} currentStep={0} clickableSteps onStepClick={handleClick} />
       );
 
       // Try to click on future step (step 3)
@@ -148,7 +148,7 @@ describe('Stepper', () => {
   describe('custom className', () => {
     it('applies custom className', () => {
       const { container } = render(
-        <Stepper steps={mockSteps} currentStep={0} className="custom-stepper" />,
+        <Stepper steps={mockSteps} currentStep={0} className="custom-stepper" />
       );
       expect(container.firstChild).toHaveClass('custom-stepper');
     });

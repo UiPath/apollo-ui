@@ -1,10 +1,10 @@
-import { memo, useCallback } from 'react';
 import { Column } from '@uipath/apollo-react/canvas/layouts';
+import { memo, useCallback } from 'react';
 import {
   CheckboxContainer,
-  CheckboxLabel,
-  CheckboxInput,
   CheckboxHelpText,
+  CheckboxInput,
+  CheckboxLabel,
   FieldError,
 } from '../NodePropertiesPanel.styles';
 import type { ConfigField } from '../NodePropertiesPanel.types';

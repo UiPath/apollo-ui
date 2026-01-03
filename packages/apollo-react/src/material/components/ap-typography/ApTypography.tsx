@@ -1,9 +1,8 @@
-import { forwardRef } from 'react';
-
 import Typography from '@mui/material/Typography';
 import { FontVariantToken, Typography as TypographyTokens } from '@uipath/apollo-core';
+import { forwardRef } from 'react';
 
-import { ApTypographyProps } from './ApTypography.types';
+import type { ApTypographyProps } from './ApTypography.types';
 import { getVariantMapping } from './ApTypography.utils';
 
 // Type definition for typography tokens

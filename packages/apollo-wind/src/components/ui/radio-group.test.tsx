@@ -118,7 +118,7 @@ describe('RadioGroup', () => {
       <RadioGroup disabled aria-label="Options">
         <RadioGroupItem value="option-1" id="option-1" />
         <Label htmlFor="option-1">Option 1</Label>
-      </RadioGroup>,
+      </RadioGroup>
     );
 
     const radio = screen.getByRole('radio');
@@ -138,7 +138,7 @@ describe('RadioGroup', () => {
           <RadioGroupItem value="option-2" id="option-2" />
           <Label htmlFor="option-2">Enabled</Label>
         </div>
-      </RadioGroup>,
+      </RadioGroup>
     );
 
     const radio1 = screen.getByLabelText('Disabled');
@@ -159,7 +159,7 @@ describe('RadioGroup', () => {
           <RadioGroupItem value="option-2" id="option-2" />
           <Label htmlFor="option-2">Option 2</Label>
         </div>
-      </RadioGroup>,
+      </RadioGroup>
     );
 
     const radio2 = screen.getByLabelText('Option 2');
@@ -179,7 +179,7 @@ describe('RadioGroup', () => {
           <RadioGroupItem value="option-2" id="option-2" />
           <Label htmlFor="option-2">Option 2</Label>
         </div>
-      </RadioGroup>,
+      </RadioGroup>
     );
 
     const radio1 = screen.getByLabelText('Option 1');
@@ -199,7 +199,7 @@ describe('RadioGroup', () => {
           <RadioGroupItem value="option-2" id="option-2" />
           <Label htmlFor="option-2">Option 2</Label>
         </div>
-      </RadioGroup>,
+      </RadioGroup>
     );
 
     expect(radio2).toBeChecked();
@@ -209,7 +209,7 @@ describe('RadioGroup', () => {
     render(
       <RadioGroup className="custom-group" aria-label="Options">
         <RadioGroupItem value="option-1" id="option-1" />
-      </RadioGroup>,
+      </RadioGroup>
     );
 
     const radiogroup = screen.getByRole('radiogroup');
@@ -220,7 +220,7 @@ describe('RadioGroup', () => {
     render(
       <RadioGroup aria-label="Options">
         <RadioGroupItem value="option-1" id="option-1" className="custom-item" />
-      </RadioGroup>,
+      </RadioGroup>
     );
 
     const radio = screen.getByRole('radio');
@@ -232,7 +232,7 @@ describe('RadioGroup', () => {
     render(
       <RadioGroup ref={ref} aria-label="Options">
         <RadioGroupItem value="option-1" id="option-1" />
-      </RadioGroup>,
+      </RadioGroup>
     );
     expect(ref.current).toBeInstanceOf(HTMLDivElement);
   });
@@ -242,7 +242,7 @@ describe('RadioGroup', () => {
     render(
       <RadioGroup aria-label="Options">
         <RadioGroupItem ref={ref} value="option-1" id="option-1" />
-      </RadioGroup>,
+      </RadioGroup>
     );
     expect(ref.current).toBeInstanceOf(HTMLButtonElement);
   });

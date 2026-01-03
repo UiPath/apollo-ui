@@ -1,7 +1,7 @@
-import { describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
 import { ApButton } from './ApButton';
-import { ButtonVariants } from './ApButton.types';
+import type { ButtonVariants } from './ApButton.types';
 
 describe('ApButton', () => {
   describe('Basic Rendering', () => {

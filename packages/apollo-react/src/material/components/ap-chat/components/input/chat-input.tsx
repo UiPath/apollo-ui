@@ -1,9 +1,8 @@
-import React from 'react';
-
 import { msg } from '@lingui/core/macro';
 import { useLingui } from '@lingui/react';
 import { Box, styled } from '@mui/material';
-import token, { FontVariantToken } from '@uipath/apollo-core';
+import token, { type FontVariantToken } from '@uipath/apollo-core';
+import React from 'react';
 
 import { ApTextArea } from '../../../ap-text-area';
 import { useAttachments } from '../../providers/attachements-provider';
@@ -11,7 +10,11 @@ import { useChatService } from '../../providers/chat-service.provider';
 import { useChatState } from '../../providers/chat-state-provider';
 import { useLoading } from '../../providers/loading-provider';
 import { useStreaming } from '../../providers/streaming-provider';
-import { AutopilotChatEvent, AutopilotChatInternalEvent, AutopilotChatPrompt } from '../../service';
+import {
+  AutopilotChatEvent,
+  AutopilotChatInternalEvent,
+  type AutopilotChatPrompt,
+} from '../../service';
 import { parseFiles } from '../../utils/file-reader';
 import { fontByVariant } from '../../utils/font-by-variant';
 import { AutopilotChatInputActions } from './chat-input-actions';

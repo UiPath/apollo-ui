@@ -1,21 +1,21 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { useMemo, useCallback } from 'react';
-import type { Node, Edge, NodeProps } from '@uipath/apollo-react/canvas/xyflow/react';
+import type { Edge, Node, NodeProps } from '@uipath/apollo-react/canvas/xyflow/react';
 import { Panel, Position, useReactFlow } from '@uipath/apollo-react/canvas/xyflow/react';
 import { ApIcon } from '@uipath/apollo-react/material/components';
-import { BaseCanvas } from '../BaseCanvas';
-import { CanvasPositionControls } from '../CanvasPositionControls';
-import { NewBaseNode } from '../BaseNode/NewBaseNode';
-import type { NewBaseNodeData } from '../BaseNode/NewBaseNode.types';
-import type { NodeToolbarConfig } from '../NodeToolbar/NodeToolbar.types';
+import { useCallback, useMemo } from 'react';
 import {
-  withCanvasProviders,
-  useCanvasStory,
-  StoryInfoPanel,
-  getIcon,
   allNodeManifests,
+  getIcon,
+  StoryInfoPanel,
+  useCanvasStory,
+  withCanvasProviders,
 } from '../../storybook-utils';
 import { DefaultCanvasTranslations } from '../../types';
+import { BaseCanvas } from '../BaseCanvas';
+import { NewBaseNode } from '../BaseNode/NewBaseNode';
+import type { NewBaseNodeData } from '../BaseNode/NewBaseNode.types';
+import { CanvasPositionControls } from '../CanvasPositionControls';
+import type { NodeToolbarConfig } from '../NodeToolbar/NodeToolbar.types';
 
 // ============================================================================
 // Meta Configuration

@@ -1,5 +1,6 @@
-import { vi } from 'vitest';
 import { Position } from '@uipath/apollo-react/canvas/xyflow/react';
+import { vi } from 'vitest';
+import { ResourceNodeType } from '../components/AgentCanvas';
 import type { AgentFlowProps } from '../types';
 import {
   computeNodesAndEdges,
@@ -7,7 +8,6 @@ import {
   EDGE_ID_DELIMITER,
   NODE_ID_DELIMITER,
 } from './props-helpers';
-import { ResourceNodeType } from '../components/AgentCanvas';
 
 describe('props-helpers', () => {
   const mockAgentFlowProps: AgentFlowProps = {

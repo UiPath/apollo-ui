@@ -1,4 +1,4 @@
-import styled from 'styled-components';
+import styled from "styled-components";
 
 export const Grid = styled.div`
   display: grid;
@@ -30,7 +30,11 @@ export const ShadowCard = styled.div<{ $shadowValue: string }>`
 export const ShadowBox = styled.div<{ $shadowValue: string }>`
   width: 80px;
   height: 80px;
-  background: linear-gradient(135deg, var(--color-brand-primary) 0%, var(--color-secondary) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--color-brand-primary) 0%,
+    var(--color-secondary) 100%
+  );
   border-radius: 12px;
   margin-bottom: 20px;
   box-shadow: ${(props) => props.$shadowValue};

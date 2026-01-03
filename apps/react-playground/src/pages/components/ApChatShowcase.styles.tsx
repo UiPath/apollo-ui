@@ -1,4 +1,4 @@
-import styled from 'styled-components';
+import styled from "styled-components";
 
 export const ShowcaseContainer = styled.div`
   display: flex;
@@ -91,7 +91,11 @@ export const Button = styled.button`
 `;
 
 export const PrimaryButton = styled(Button)`
-  background: linear-gradient(135deg, var(--color-brand-primary) 0%, var(--color-secondary) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--color-brand-primary) 0%,
+    var(--color-secondary) 100%
+  );
   color: var(--color-white);
   border: none;
 
@@ -146,7 +150,7 @@ export const Checkbox = styled.label`
   font-size: 14px;
   color: var(--color-foreground-emp);
 
-  input[type='checkbox'] {
+  input[type="checkbox"] {
     cursor: pointer;
   }
 `;

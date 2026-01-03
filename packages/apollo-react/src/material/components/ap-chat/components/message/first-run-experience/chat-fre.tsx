@@ -1,7 +1,6 @@
-import React from 'react';
-
 import { styled } from '@mui/material';
 import token from '@uipath/apollo-core';
+import React from 'react';
 
 import { ApTypography } from '../../../../ap-typography';
 import { useChatState } from '../../../providers/chat-state-provider';

@@ -1,12 +1,11 @@
-import React from 'react';
-
 import { styled } from '@mui/material';
 import token from '@uipath/apollo-core';
+import React from 'react';
 
 import { useChatScroll } from '../../providers/chat-scroll-provider';
 import { useChatState } from '../../providers/chat-state-provider';
 import {
-  AutopilotChatConfiguration,
+  type AutopilotChatConfiguration,
   AutopilotChatMode,
   CHAT_WIDTH_FULL_SCREEN_MAX_WIDTH,
 } from '../../service';
@@ -19,60 +18,58 @@ type OverflowContainerProps = {
   scrollBarTheming?: NonNullable<AutopilotChatConfiguration['theming']>['scrollBar'];
 };
 
-const OverflowContainer = styled('div')<OverflowContainerProps>(({
-  isOverflow,
-  isContainerWide,
-  scrollBarTheming,
-}) => {
-  const baseStyles = {
-    flex: '1 1 100%',
-    minHeight: 0,
-    overflowY: 'auto' as const,
-    overflowX: 'hidden' as const,
-    position: 'relative' as const,
-    outline: 'none',
-    // move the scrollbar to the right
-    margin: `0 -${token.Spacing.SpacingL}`,
-    padding: `0 ${token.Spacing.SpacingL}`,
+const OverflowContainer = styled('div')<OverflowContainerProps>(
+  ({ isOverflow, isContainerWide, scrollBarTheming }) => {
+    const baseStyles = {
+      flex: '1 1 100%',
+      minHeight: 0,
+      overflowY: 'auto' as const,
+      overflowX: 'hidden' as const,
+      position: 'relative' as const,
+      outline: 'none',
+      // move the scrollbar to the right
+      margin: `0 -${token.Spacing.SpacingL}`,
+      padding: `0 ${token.Spacing.SpacingL}`,
 
-    ...(isOverflow &&
-      !isContainerWide && {
-        // account for the scrollbar
-        paddingRight: token.Spacing.SpacingXs,
-      }),
-  };
+      ...(isOverflow &&
+        !isContainerWide && {
+          // account for the scrollbar
+          paddingRight: token.Spacing.SpacingXs,
+        }),
+    };
 
-  const scrollBarStyles: Record<string, any> = {};
+    const scrollBarStyles: Record<string, any> = {};
 
-  if (scrollBarTheming?.scrollSize) {
-    scrollBarStyles['&::-webkit-scrollbar'] = {
-      width: scrollBarTheming.scrollSize,
-      height: scrollBarTheming.scrollSize,
+    if (scrollBarTheming?.scrollSize) {
+      scrollBarStyles['&::-webkit-scrollbar'] = {
+        width: scrollBarTheming.scrollSize,
+        height: scrollBarTheming.scrollSize,
+      };
+    }
+
+    if (scrollBarTheming?.scrollThumbColor) {
+      scrollBarStyles['&::-webkit-scrollbar-thumb'] = {
+        backgroundColor: scrollBarTheming.scrollThumbColor,
+      };
+    }
+
+    if (scrollBarTheming?.scrollHoverColor) {
+      scrollBarStyles['&::-webkit-scrollbar-thumb']['&:hover'] = {
+        backgroundColor: scrollBarTheming.scrollHoverColor,
+      };
+    }
+
+    if (scrollBarTheming?.scrollBorderRadius) {
+      scrollBarStyles['&::-webkit-scrollbar-thumb']['borderRadius'] =
+        scrollBarTheming.scrollBorderRadius;
+    }
+
+    return {
+      ...baseStyles,
+      ...scrollBarStyles,
     };
   }
-
-  if (scrollBarTheming?.scrollThumbColor) {
-    scrollBarStyles['&::-webkit-scrollbar-thumb'] = {
-      backgroundColor: scrollBarTheming.scrollThumbColor,
-    };
-  }
-
-  if (scrollBarTheming?.scrollHoverColor) {
-    scrollBarStyles['&::-webkit-scrollbar-thumb']['&:hover'] = {
-      backgroundColor: scrollBarTheming.scrollHoverColor,
-    };
-  }
-
-  if (scrollBarTheming?.scrollBorderRadius) {
-    scrollBarStyles['&::-webkit-scrollbar-thumb']['borderRadius'] =
-      scrollBarTheming.scrollBorderRadius;
-  }
-
-  return {
-    ...baseStyles,
-    ...scrollBarStyles,
-  };
-});
+);
 
 const MessagesContainer = styled('div')(
   ({ mode, paddingTop }: { mode: AutopilotChatMode; paddingTop?: string }) => ({

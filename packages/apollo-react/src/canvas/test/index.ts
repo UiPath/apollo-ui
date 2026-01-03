@@ -1,5 +1,5 @@
-import { ReactElement } from 'react';
-import { RenderOptions, RenderResult, render as rtlRender } from '@testing-library/react';
+import { type RenderOptions, type RenderResult, render as rtlRender } from '@testing-library/react';
+import type { ReactElement } from 'react';
 
 // Re-export testing-library functions
 export { act, fireEvent, screen, waitFor, within } from '@testing-library/react';

@@ -2,24 +2,24 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import type { Node } from '@uipath/apollo-react/canvas/xyflow/react';
 import { Panel, Position, useReactFlow } from '@uipath/apollo-react/canvas/xyflow/react';
 import { useMemo } from 'react';
-import { BaseCanvas } from '../BaseCanvas';
-import type { BaseNodeData } from '../BaseNode';
-import { CanvasPositionControls } from '../CanvasPositionControls';
-import { AddNodePanel } from '.';
-import { AddNodeManager } from './AddNodeManager';
-import { createAddNodePreview } from './createAddNodePreview';
-import type { ListItem } from '../Toolbox';
-import type { NodeItemData } from './AddNodePanel.types';
+import { useCanvasEvent } from '../../hooks';
 import {
-  withCanvasProviders,
-  useCanvasStory,
   createNode,
   NodePositions,
   StoryInfoPanel,
+  useCanvasStory,
+  withCanvasProviders,
 } from '../../storybook-utils';
-import { useCanvasEvent } from '../../hooks';
-import type { CanvasHandleActionEvent } from '../../utils';
 import { DefaultCanvasTranslations } from '../../types';
+import type { CanvasHandleActionEvent } from '../../utils';
+import { BaseCanvas } from '../BaseCanvas';
+import type { BaseNodeData } from '../BaseNode';
+import { CanvasPositionControls } from '../CanvasPositionControls';
+import type { ListItem } from '../Toolbox';
+import { AddNodePanel } from '.';
+import { AddNodeManager } from './AddNodeManager';
+import type { NodeItemData } from './AddNodePanel.types';
+import { createAddNodePreview } from './createAddNodePreview';
 
 // ============================================================================
 // Meta Configuration

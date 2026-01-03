@@ -1,5 +1,5 @@
-import { Link } from 'react-router-dom';
-import styled from 'styled-components';
+import { Link } from "react-router-dom";
+import styled from "styled-components";
 
 export const SidebarContainer = styled.aside`
   position: fixed;
@@ -25,17 +25,23 @@ export const NavLink = styled(Link)<{ $isActive: boolean }>`
   gap: 12px;
   padding: 10px 20px;
   text-decoration: none;
-  color: ${(props) => (props.$isActive ? 'var(--color-primary)' : 'var(--color-foreground-emp)')};
-  background: ${(props) => (props.$isActive ? 'var(--color-background-selected)' : 'transparent')};
+  color: ${(props) =>
+		props.$isActive ? "var(--color-primary)" : "var(--color-foreground-emp)"};
+  background: ${(props) =>
+		props.$isActive ? "var(--color-background-selected)" : "transparent"};
   border-left: ${(props) =>
-    props.$isActive ? '4px solid var(--color-primary)' : '4px solid transparent'};
-  font-weight: ${(props) => (props.$isActive ? '600' : '500')};
+		props.$isActive
+			? "4px solid var(--color-primary)"
+			: "4px solid transparent"};
+  font-weight: ${(props) => (props.$isActive ? "600" : "500")};
   font-size: 14px;
   transition: all 0.2s ease;
 
   &:hover {
     background: ${(props) =>
-      props.$isActive ? 'var(--color-background-selected)' : 'var(--color-background-hover)'};
+			props.$isActive
+				? "var(--color-background-selected)"
+				: "var(--color-background-hover)"};
   }
 `;
 
@@ -56,30 +62,37 @@ export const ParentNavButton = styled.button<{ $isActive: boolean }>`
   text-align: left;
   border: none;
   cursor: pointer;
-  color: ${(props) => (props.$isActive ? 'var(--color-primary)' : 'var(--color-foreground-emp)')};
-  background: ${(props) => (props.$isActive ? 'var(--color-background-selected)' : 'transparent')};
+  color: ${(props) =>
+		props.$isActive ? "var(--color-primary)" : "var(--color-foreground-emp)"};
+  background: ${(props) =>
+		props.$isActive ? "var(--color-background-selected)" : "transparent"};
   border-left: ${(props) =>
-    props.$isActive ? '4px solid var(--color-primary)' : '4px solid transparent'};
-  font-weight: ${(props) => (props.$isActive ? '600' : '500')};
+		props.$isActive
+			? "4px solid var(--color-primary)"
+			: "4px solid transparent"};
+  font-weight: ${(props) => (props.$isActive ? "600" : "500")};
   font-size: 14px;
   transition: all 0.2s ease;
 
   &:hover {
     background: ${(props) =>
-      props.$isActive ? 'var(--color-background-selected)' : 'var(--color-background-hover)'};
+			props.$isActive
+				? "var(--color-background-selected)"
+				: "var(--color-background-hover)"};
   }
 `;
 
 export const ChevronIcon = styled.span<{ $isExpanded: boolean }>`
   font-size: 10px;
   transition: transform 0.2s ease;
-  transform: ${(props) => (props.$isExpanded ? 'rotate(0deg)' : 'rotate(-90deg)')};
+  transform: ${(props) =>
+		props.$isExpanded ? "rotate(0deg)" : "rotate(-90deg)"};
   color: var(--color-foreground-de-emp);
 `;
 
 export const SubNav = styled.div<{ $isExpanded: boolean }>`
   padding-left: 20px;
-  max-height: ${(props) => (props.$isExpanded ? '2000px' : '0')};
+  max-height: ${(props) => (props.$isExpanded ? "2000px" : "0")};
   overflow: hidden;
   transition: max-height 0.3s ease;
 `;
@@ -89,17 +102,25 @@ export const SubNavLink = styled(Link)<{ $isActive: boolean }>`
   padding: 8px 20px;
   text-decoration: none;
   color: ${(props) =>
-    props.$isActive ? 'var(--color-primary)' : 'var(--color-foreground-de-emp)'};
-  background: ${(props) => (props.$isActive ? 'var(--color-background-selected)' : 'transparent')};
+		props.$isActive
+			? "var(--color-primary)"
+			: "var(--color-foreground-de-emp)"};
+  background: ${(props) =>
+		props.$isActive ? "var(--color-background-selected)" : "transparent"};
   border-left: ${(props) =>
-    props.$isActive ? '3px solid var(--color-primary)' : '3px solid transparent'};
-  font-weight: ${(props) => (props.$isActive ? '600' : '400')};
+		props.$isActive
+			? "3px solid var(--color-primary)"
+			: "3px solid transparent"};
+  font-weight: ${(props) => (props.$isActive ? "600" : "400")};
   font-size: 13px;
   transition: all 0.2s ease;
 
   &:hover {
     background: ${(props) =>
-      props.$isActive ? 'var(--color-background-selected)' : 'var(--color-background-hover)'};
-    color: ${(props) => (props.$isActive ? 'var(--color-primary)' : 'var(--color-foreground-emp)')};
+			props.$isActive
+				? "var(--color-background-selected)"
+				: "var(--color-background-hover)"};
+    color: ${(props) =>
+			props.$isActive ? "var(--color-primary)" : "var(--color-foreground-emp)"};
   }
 `;

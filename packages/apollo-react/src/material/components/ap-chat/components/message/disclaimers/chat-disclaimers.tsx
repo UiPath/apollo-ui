@@ -1,7 +1,6 @@
-import React from 'react';
-
 import { styled } from '@mui/material';
 import token, { FontVariantToken } from '@uipath/apollo-core';
+import React from 'react';
 
 import { AppIcon } from '../../../../../../icons';
 import { ApTypography } from '../../../../ap-typography';

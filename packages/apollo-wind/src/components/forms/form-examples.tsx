@@ -745,7 +745,10 @@ export function FileUploadExample() {
 
     for (let i = 0; i <= chunks; i++) {
       await new Promise((resolve) => setTimeout(resolve, 100));
-      setUploadProgress((prev) => ({ ...prev, [fileName]: (i / chunks) * 100 }));
+      setUploadProgress((prev) => ({
+        ...prev,
+        [fileName]: (i / chunks) * 100,
+      }));
     }
 
     setUploadedFiles((prev) => [...prev, fileName]);

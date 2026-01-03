@@ -11,9 +11,25 @@ export interface ExtractDataProps extends Omit<React.SVGProps<SVGSVGElement>, 'w
 
 export const ExtractData = React.forwardRef<SVGSVGElement, ExtractDataProps>(
   ({ size, ...props }, ref) => (
-    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
-      <path d="M18 19.17L16.41 17.58L15 19L19 23L23 19L21.59 17.59L20 19.17V16H18V19.17Z" fill="#1976D2"/>
-<path fillRule="evenodd" clipRule="evenodd" d="M13.083 20H13V18H13.083C13.2034 17.2821 13.4513 16.6074 13.8027 16H13V14H15.6822C16.6325 13.3682 17.7733 13 19 13C20.0929 13 21.1175 13.2922 22 13.8027V4C22 2.89543 21.1046 2 20 2H4C2.89543 2 2 2.89543 2 4V20C2 21.1046 2.89543 22 4 22H13.8027C13.4513 21.3926 13.2034 20.7179 13.083 20ZM20 4H4V8H20V4ZM4 12V10H11V12H4ZM4 16V14H11V16H4ZM4 20V18H11V20H4ZM20 10V12H13V10H20Z" fill="currentColor"/>
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      ref={ref}
+      {...props}
+      width={size ?? 24}
+      height={size ?? 24}
+    >
+      <path
+        d="M18 19.17L16.41 17.58L15 19L19 23L23 19L21.59 17.59L20 19.17V16H18V19.17Z"
+        fill="#1976D2"
+      />
+      <path
+        fillRule="evenodd"
+        clipRule="evenodd"
+        d="M13.083 20H13V18H13.083C13.2034 17.2821 13.4513 16.6074 13.8027 16H13V14H15.6822C16.6325 13.3682 17.7733 13 19 13C20.0929 13 21.1175 13.2922 22 13.8027V4C22 2.89543 21.1046 2 20 2H4C2.89543 2 2 2.89543 2 4V20C2 21.1046 2.89543 22 4 22H13.8027C13.4513 21.3926 13.2034 20.7179 13.083 20ZM20 4H4V8H20V4ZM4 12V10H11V12H4ZM4 16V14H11V16H4ZM4 20V18H11V20H4ZM20 10V12H13V10H20Z"
+        fill="currentColor"
+      />
     </svg>
   )
 );

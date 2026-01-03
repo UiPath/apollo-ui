@@ -60,12 +60,22 @@ describe('serializeSchema', () => {
           {
             id: 'step-1',
             title: 'Step 1',
-            sections: [{ id: 's1', fields: [{ name: 'field1', type: 'text', label: 'Field 1' }] }],
+            sections: [
+              {
+                id: 's1',
+                fields: [{ name: 'field1', type: 'text', label: 'Field 1' }],
+              },
+            ],
           },
           {
             id: 'step-2',
             title: 'Step 2',
-            sections: [{ id: 's2', fields: [{ name: 'field2', type: 'text', label: 'Field 2' }] }],
+            sections: [
+              {
+                id: 's2',
+                fields: [{ name: 'field2', type: 'text', label: 'Field 2' }],
+              },
+            ],
           },
         ],
       };
@@ -246,7 +256,12 @@ describe('serializeSchema', () => {
           {
             id: 's1',
             fields: [
-              { name: 'bio', type: 'textarea', label: 'Bio', rows: 5 } as FieldMetadata,
+              {
+                name: 'bio',
+                type: 'textarea',
+                label: 'Bio',
+                rows: 5,
+              } as FieldMetadata,
               {
                 name: 'age',
                 type: 'number',
@@ -351,7 +366,14 @@ describe('schemaToJson', () => {
       sections: [
         {
           id: 's1',
-          fields: [{ name: 'name', type: 'text', label: 'Name', validation: { required: true } }],
+          fields: [
+            {
+              name: 'name',
+              type: 'text',
+              label: 'Name',
+              validation: { required: true },
+            },
+          ],
         },
       ],
     };

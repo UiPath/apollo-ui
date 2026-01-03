@@ -1,8 +1,7 @@
-import React from 'react';
+import type { SxProps, Theme } from '@mui/material';
+import type React from 'react';
 
-import { SxProps, Theme } from '@mui/material';
-
-import { StatusTypes } from '../../../types/statusTypes';
+import type { StatusTypes } from '../../../types/statusTypes';
 
 export type AlertBarStatus = Exclude<StatusTypes, StatusTypes.DEFAULT | StatusTypes.NONE>;
 

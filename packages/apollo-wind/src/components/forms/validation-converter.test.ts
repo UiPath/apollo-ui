@@ -97,7 +97,7 @@ describe('validationConfigToZod', () => {
     it('uses custom required message', () => {
       const schema = validationConfigToZod(
         { required: true, messages: { required: 'Please fill this' } },
-        'text',
+        'text'
       );
       const result = schema.safeParse('');
       expect(result.success).toBe(false);
@@ -150,7 +150,7 @@ describe('validationConfigToZod', () => {
           minLength: 5,
           messages: { minLength: 'Too short!' },
         },
-        'text',
+        'text'
       );
       const result = schema.safeParse('ab');
       expect(result.success).toBe(false);
@@ -221,7 +221,7 @@ describe('validationConfigToZod', () => {
           minItems: 2,
           messages: { minItems: 'Pick at least 2' },
         },
-        'multiselect',
+        'multiselect'
       );
       const result = schema.safeParse(['a']);
       expect(result.success).toBe(false);
@@ -236,7 +236,7 @@ describe('validationConfigToZod', () => {
     it('applies multiple string constraints together', () => {
       const schema = validationConfigToZod(
         { required: true, minLength: 3, maxLength: 10, pattern: '^[a-z]+$' },
-        'text',
+        'text'
       );
       expect(schema.safeParse('hello').success).toBe(true);
       expect(schema.safeParse('ab').success).toBe(false); // too short
@@ -247,7 +247,7 @@ describe('validationConfigToZod', () => {
     it('applies multiple number constraints together', () => {
       const schema = validationConfigToZod(
         { required: true, min: 1, max: 100, integer: true },
-        'number',
+        'number'
       );
       expect(schema.safeParse(50).success).toBe(true);
       expect(schema.safeParse(0).success).toBe(false); // below min
@@ -270,7 +270,7 @@ describe('buildZodSchemaFromFields', () => {
         name: 'John',
         email: 'john@example.com',
         age: 30,
-      }).success,
+      }).success
     ).toBe(true);
   });
 
@@ -303,7 +303,9 @@ describe('mergeValidationConfigs', () => {
 
   it('returns override when base is undefined', () => {
     const override: ValidationConfig = { required: true };
-    expect(mergeValidationConfigs(undefined, override)).toEqual({ required: true });
+    expect(mergeValidationConfigs(undefined, override)).toEqual({
+      required: true,
+    });
   });
 
   it('returns base when override is undefined', () => {

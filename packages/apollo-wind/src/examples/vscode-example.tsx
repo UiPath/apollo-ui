@@ -90,7 +90,7 @@ export function ShellSidebar({
       className={cn(
         'border-r bg-muted/30 transition-all duration-200',
         collapsed ? 'w-0 overflow-hidden' : '',
-        className,
+        className
       )}
       style={{ width: collapsed ? 0 : width }}
       {...props}
@@ -191,7 +191,7 @@ function FileTreeNode({
         align="center"
         className={cn(
           'cursor-pointer rounded px-2 py-0.5 text-sm hover:bg-muted',
-          isSelected && 'bg-primary/10 text-primary',
+          isSelected && 'bg-primary/10 text-primary'
         )}
         style={{ paddingLeft: depth * 12 + 8 }}
         onClick={() => {
@@ -279,7 +279,7 @@ export function ShellTabBar({ tabs, activeTab, onTabChange, onTabClose }: ShellT
             'group h-full cursor-pointer border-r px-3 text-sm',
             activeTab === tab.id
               ? 'bg-background text-foreground'
-              : 'text-muted-foreground hover:bg-muted/50',
+              : 'text-muted-foreground hover:bg-muted/50'
           )}
           onClick={() => onTabChange?.(tab.id)}
         >
@@ -375,7 +375,7 @@ export function ShellActivityBarItem({
       size="icon"
       className={cn(
         'h-10 w-10 rounded-none border-l-2 border-transparent',
-        active && 'border-primary bg-muted',
+        active && 'border-primary bg-muted'
       )}
       onClick={onClick}
       title={tooltip}

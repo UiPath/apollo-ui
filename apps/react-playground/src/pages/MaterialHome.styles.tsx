@@ -1,10 +1,14 @@
-import styled from 'styled-components';
+import styled from "styled-components";
 
 export const Title = styled.h1`
   font-size: 48px;
   font-weight: 700;
   margin: 0 0 16px 0;
-  background: linear-gradient(135deg, var(--color-brand-primary) 0%, var(--color-secondary) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--color-brand-primary) 0%,
+    var(--color-secondary) 100%
+  );
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;

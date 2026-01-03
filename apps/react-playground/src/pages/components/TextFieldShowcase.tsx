@@ -1,7 +1,11 @@
-import { ApTextField } from '@uipath/apollo-react/material/components';
-import { useState } from 'react';
-import styled from 'styled-components';
-import { PageContainer, PageDescription, PageTitle } from '../../components/SharedStyles';
+import { ApTextField } from "@uipath/apollo-react/material/components";
+import { useState } from "react";
+import styled from "styled-components";
+import {
+	PageContainer,
+	PageDescription,
+	PageTitle,
+} from "../../components/SharedStyles";
 
 const ShowcaseSection = styled.div`
   margin-top: 48px;
@@ -36,110 +40,118 @@ const Label = styled.div`
 `;
 
 export function TextFieldShowcase() {
-  const [value1, setValue1] = useState('');
-  const [value2, setValue2] = useState('');
-  const [value3, setValue3] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+	const [value1, setValue1] = useState("");
+	const [value2, setValue2] = useState("");
+	const [value3, setValue3] = useState("");
+	const [email, setEmail] = useState("");
+	const [password, setPassword] = useState("");
 
-  return (
-    <PageContainer>
-      <PageTitle>Text Field</PageTitle>
-      <PageDescription>
-        Single-line text input component with various configurations
-      </PageDescription>
+	return (
+		<PageContainer>
+			<PageTitle>Text Field</PageTitle>
+			<PageDescription>
+				Single-line text input component with various configurations
+			</PageDescription>
 
-      <ShowcaseSection>
-        <SectionTitle>Basic Text Fields</SectionTitle>
-        <ComponentRow>
-          <Label>Standard text field</Label>
-          <ApTextField value={value1} onChange={setValue1} placeholder="Enter text..." />
-        </ComponentRow>
+			<ShowcaseSection>
+				<SectionTitle>Basic Text Fields</SectionTitle>
+				<ComponentRow>
+					<Label>Standard text field</Label>
+					<ApTextField
+						value={value1}
+						onChange={setValue1}
+						placeholder="Enter text..."
+					/>
+				</ComponentRow>
 
-        <ComponentRow>
-          <Label>With label</Label>
-          <ApTextField
-            label="Username"
-            value={value2}
-            onChange={setValue2}
-            placeholder="Enter your username"
-          />
-        </ComponentRow>
+				<ComponentRow>
+					<Label>With label</Label>
+					<ApTextField
+						label="Username"
+						value={value2}
+						onChange={setValue2}
+						placeholder="Enter your username"
+					/>
+				</ComponentRow>
 
-        <ComponentRow>
-          <Label>With helper text</Label>
-          <ApTextField
-            label="Full Name"
-            value={value3}
-            onChange={setValue3}
-            placeholder="John Doe"
-            helperText="Enter your first and last name"
-          />
-        </ComponentRow>
-      </ShowcaseSection>
+				<ComponentRow>
+					<Label>With helper text</Label>
+					<ApTextField
+						label="Full Name"
+						value={value3}
+						onChange={setValue3}
+						placeholder="John Doe"
+						helperText="Enter your first and last name"
+					/>
+				</ComponentRow>
+			</ShowcaseSection>
 
-      <ShowcaseSection>
-        <SectionTitle>Input Types</SectionTitle>
-        <ComponentRow>
-          <Label>Email input</Label>
-          <ApTextField
-            type="email"
-            label="Email"
-            value={email}
-            onChange={setEmail}
-            placeholder="you@example.com"
-          />
-        </ComponentRow>
+			<ShowcaseSection>
+				<SectionTitle>Input Types</SectionTitle>
+				<ComponentRow>
+					<Label>Email input</Label>
+					<ApTextField
+						type="email"
+						label="Email"
+						value={email}
+						onChange={setEmail}
+						placeholder="you@example.com"
+					/>
+				</ComponentRow>
 
-        <ComponentRow>
-          <Label>Password input</Label>
-          <ApTextField
-            type="password"
-            label="Password"
-            value={password}
-            onChange={setPassword}
-            placeholder="Enter your password"
-          />
-        </ComponentRow>
-      </ShowcaseSection>
+				<ComponentRow>
+					<Label>Password input</Label>
+					<ApTextField
+						type="password"
+						label="Password"
+						value={password}
+						onChange={setPassword}
+						placeholder="Enter your password"
+					/>
+				</ComponentRow>
+			</ShowcaseSection>
 
-      <ShowcaseSection>
-        <SectionTitle>States</SectionTitle>
-        <ComponentRow>
-          <Label>Disabled state</Label>
-          <ApTextField label="Disabled Field" value="This field is disabled" disabled />
-        </ComponentRow>
+			<ShowcaseSection>
+				<SectionTitle>States</SectionTitle>
+				<ComponentRow>
+					<Label>Disabled state</Label>
+					<ApTextField
+						label="Disabled Field"
+						value="This field is disabled"
+						disabled
+					/>
+				</ComponentRow>
 
-        <ComponentRow>
-          <Label>Read-only state</Label>
-          <ApTextField
-            label="Read Only Field"
-            value="This field is read-only"
-            readOnly
-            readOnlyTooltip="This field cannot be edited"
-          />
-        </ComponentRow>
+				<ComponentRow>
+					<Label>Read-only state</Label>
+					<ApTextField
+						label="Read Only Field"
+						value="This field is read-only"
+						readOnly
+						readOnlyTooltip="This field cannot be edited"
+					/>
+				</ComponentRow>
 
-        <ComponentRow>
-          <Label>Error state</Label>
-          <ApTextField
-            label="Required Field"
-            value=""
-            placeholder="This field is required"
-            errorMessage="This field cannot be empty"
-          />
-        </ComponentRow>
+				<ComponentRow>
+					<Label>Error state</Label>
+					<ApTextField
+						label="Required Field"
+						value=""
+						placeholder="This field is required"
+						errorMessage="This field cannot be empty"
+					/>
+				</ComponentRow>
 
-        <ComponentRow>
-          <Label>Required field</Label>
-          <ApTextField
-            label="Required Input"
-            required
-            value=""
-            placeholder="This field is required"
-          />
-        </ComponentRow>
-      </ShowcaseSection>
-    </PageContainer>
-  );
+				<ComponentRow>
+					<Label>Required field</Label>
+					<ApTextField
+						label="Required Input"
+						required
+						value=""
+						placeholder="This field is required"
+					/>
+				</ComponentRow>
+			</ShowcaseSection>
+		</PageContainer>
+	);
 }

@@ -1,9 +1,8 @@
-import React from 'react';
-
 import { msg } from '@lingui/core/macro';
 import { useLingui } from '@lingui/react';
 import { styled } from '@mui/material';
 import token, { FontVariantToken } from '@uipath/apollo-core';
+import React from 'react';
 
 import { StatusTypes } from '../../../../../types/statusTypes';
 import { ApBadge } from '../../../ap-badge';

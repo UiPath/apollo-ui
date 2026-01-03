@@ -1,8 +1,8 @@
 import type { NodeRegistration } from '../../components/BaseNode/BaseNode.types';
 import type { NodeExecutionStatusWithCount } from '../../components/BaseNode/ExecutionStatusContext';
 import { ExecutionStatusIcon } from '../../components/ExecutionStatusIcon';
-import type { NodeManifest } from './types';
 import { getIcon, resolveHandleGroups } from './helpers';
+import type { NodeManifest } from './types';
 
 /**
  * Creates a NodeRegistration from a declarative manifest.

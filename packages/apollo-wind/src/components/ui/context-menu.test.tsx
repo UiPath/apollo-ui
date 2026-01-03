@@ -24,7 +24,7 @@ describe('ContextMenu', () => {
           <ContextMenuContent>
             <ContextMenuItem>Action</ContextMenuItem>
           </ContextMenuContent>
-        </ContextMenu>,
+        </ContextMenu>
       );
       expect(screen.getByText('Right click me')).toBeInTheDocument();
     });
@@ -37,7 +37,7 @@ describe('ContextMenu', () => {
           <ContextMenuContent>
             <ContextMenuItem>Action</ContextMenuItem>
           </ContextMenuContent>
-        </ContextMenu>,
+        </ContextMenu>
       );
 
       await user.pointer({
@@ -60,7 +60,7 @@ describe('ContextMenu', () => {
             <ContextMenuLabel>My Label</ContextMenuLabel>
             <ContextMenuItem>Action</ContextMenuItem>
           </ContextMenuContent>
-        </ContextMenu>,
+        </ContextMenu>
       );
 
       await user.pointer({
@@ -83,7 +83,7 @@ describe('ContextMenu', () => {
             <ContextMenuSeparator data-testid="separator" />
             <ContextMenuItem>Action 2</ContextMenuItem>
           </ContextMenuContent>
-        </ContextMenu>,
+        </ContextMenu>
       );
 
       await user.pointer({
@@ -106,7 +106,7 @@ describe('ContextMenu', () => {
               Copy <ContextMenuShortcut>⌘C</ContextMenuShortcut>
             </ContextMenuItem>
           </ContextMenuContent>
-        </ContextMenu>,
+        </ContextMenu>
       );
 
       await user.pointer({
@@ -128,7 +128,7 @@ describe('ContextMenu', () => {
           <ContextMenuContent>
             <ContextMenuItem>Action</ContextMenuItem>
           </ContextMenuContent>
-        </ContextMenu>,
+        </ContextMenu>
       );
       const results = await axe(container);
       expect(results).toHaveNoViolations();
@@ -145,7 +145,7 @@ describe('ContextMenu', () => {
           <ContextMenuContent>
             <ContextMenuItem onSelect={handleSelect}>Action</ContextMenuItem>
           </ContextMenuContent>
-        </ContextMenu>,
+        </ContextMenu>
       );
 
       await user.pointer({
@@ -169,7 +169,7 @@ describe('ContextMenu', () => {
           <ContextMenuContent>
             <ContextMenuCheckboxItem checked>Show Toolbar</ContextMenuCheckboxItem>
           </ContextMenuContent>
-        </ContextMenu>,
+        </ContextMenu>
       );
 
       await user.pointer({
@@ -193,7 +193,7 @@ describe('ContextMenu', () => {
               <ContextMenuRadioItem value="large">Large</ContextMenuRadioItem>
             </ContextMenuRadioGroup>
           </ContextMenuContent>
-        </ContextMenu>,
+        </ContextMenu>
       );
 
       await user.pointer({
@@ -217,7 +217,7 @@ describe('ContextMenu', () => {
           <ContextMenuContent>
             <ContextMenuItem className="custom-item">Action</ContextMenuItem>
           </ContextMenuContent>
-        </ContextMenu>,
+        </ContextMenu>
       );
 
       await user.pointer({
@@ -240,7 +240,7 @@ describe('ContextMenu', () => {
               Copy <ContextMenuShortcut className="custom-shortcut">⌘C</ContextMenuShortcut>
             </ContextMenuItem>
           </ContextMenuContent>
-        </ContextMenu>,
+        </ContextMenu>
       );
 
       await user.pointer({
@@ -263,7 +263,7 @@ describe('ContextMenu', () => {
           <ContextMenuContent>
             <ContextMenuItem inset>Inset Item</ContextMenuItem>
           </ContextMenuContent>
-        </ContextMenu>,
+        </ContextMenu>
       );
 
       await user.pointer({
@@ -284,7 +284,7 @@ describe('ContextMenu', () => {
           <ContextMenuContent>
             <ContextMenuLabel inset>Inset Label</ContextMenuLabel>
           </ContextMenuContent>
-        </ContextMenu>,
+        </ContextMenu>
       );
 
       await user.pointer({

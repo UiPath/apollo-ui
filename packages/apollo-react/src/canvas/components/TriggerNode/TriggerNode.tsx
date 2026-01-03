@@ -1,11 +1,11 @@
-import { memo, useMemo, useState, useCallback } from 'react';
 import { Position, useStore } from '@uipath/apollo-react/canvas/xyflow/react';
-import { TriggerContainer, TriggerIconWrapper } from './TriggerNode.styles';
-import type { TriggerNodeProps } from './TriggerNode.types';
 import { ApIcon, ApTooltip } from '@uipath/apollo-react/material/components';
+import { memo, useCallback, useMemo, useState } from 'react';
+import { useConnectedHandles } from '../BaseCanvas/ConnectedHandlesContext';
 import type { HandleConfiguration } from '../BaseNode';
 import { useButtonHandles } from '../ButtonHandle/useButtonHandles';
-import { useConnectedHandles } from '../BaseCanvas/ConnectedHandlesContext';
+import { TriggerContainer, TriggerIconWrapper } from './TriggerNode.styles';
+import type { TriggerNodeProps } from './TriggerNode.types';
 
 const TriggerNodeComponent = (props: TriggerNodeProps) => {
   const { selected, id, details = {} } = props;

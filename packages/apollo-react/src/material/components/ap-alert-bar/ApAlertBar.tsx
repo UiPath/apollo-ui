@@ -1,5 +1,3 @@
-import React, { useCallback, useState } from 'react';
-
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CloseIcon from '@mui/icons-material/Close';
 import ErrorIcon from '@mui/icons-material/Error';
@@ -7,6 +5,7 @@ import InfoIcon from '@mui/icons-material/Info';
 import WarningIcon from '@mui/icons-material/Warning';
 import { IconButton, styled } from '@mui/material';
 import token, { FontVariantToken } from '@uipath/apollo-core';
+import React, { useCallback, useState } from 'react';
 
 import { StatusTypes } from '../../../types/statusTypes';
 import { ApTypography } from '../ap-typography';

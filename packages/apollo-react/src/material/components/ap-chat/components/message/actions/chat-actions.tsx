@@ -1,13 +1,12 @@
-import React, { useEffect } from 'react';
-
 import { msg } from '@lingui/core/macro';
 import { useLingui } from '@lingui/react';
+import React, { useEffect } from 'react';
 import { useIsStreamingMessage } from '../../../hooks/use-is-streaming-message';
 import { useChatService } from '../../../providers/chat-service.provider';
 import { useChatState } from '../../../providers/chat-state-provider';
 import {
   AutopilotChatEvent,
-  AutopilotChatMessage,
+  type AutopilotChatMessage,
   AutopilotChatPreHookAction,
   AutopilotChatRole,
 } from '../../../service';

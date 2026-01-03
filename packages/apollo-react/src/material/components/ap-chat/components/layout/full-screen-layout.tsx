@@ -1,13 +1,12 @@
-import React from 'react';
-
 import { styled } from '@mui/material/styles';
 import token from '@uipath/apollo-core';
+import React from 'react';
 
 import { useChatService } from '../../providers/chat-service.provider';
 import { useChatState } from '../../providers/chat-state-provider';
 import {
   AutopilotChatInternalEvent,
-  AutopilotChatMode,
+  type AutopilotChatMode,
   CHAT_CONTAINER_ANIMATION_DURATION,
   CHAT_DRAWER_WIDTH_FULL_SCREEN,
   CHAT_WIDTH_FULL_SCREEN_MAX_WIDTH,

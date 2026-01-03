@@ -1,6 +1,5 @@
-import React from 'react';
-
 import { IconButton } from '@mui/material';
+import React from 'react';
 
 import type { ApIconButtonProps } from './ApIconButton.types';
 

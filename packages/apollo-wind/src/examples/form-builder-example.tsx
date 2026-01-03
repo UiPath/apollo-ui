@@ -313,7 +313,7 @@ export function FormBuilderExample() {
                                       } else {
                                         updateField(
                                           'interests',
-                                          formData.interests.filter((i) => i !== interest),
+                                          formData.interests.filter((i) => i !== interest)
                                         );
                                       }
                                     }}
@@ -325,7 +325,7 @@ export function FormBuilderExample() {
                                     {interest}
                                   </Label>
                                 </Row>
-                              ),
+                              )
                             )}
                           </Column>
                         </Column>

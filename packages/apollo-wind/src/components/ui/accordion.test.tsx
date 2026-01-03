@@ -89,7 +89,7 @@ describe('Accordion', () => {
           <AccordionTrigger>Section 2</AccordionTrigger>
           <AccordionContent>Content for section 2</AccordionContent>
         </AccordionItem>
-      </Accordion>,
+      </Accordion>
     );
 
     const trigger1 = screen.getByText('Section 1');
@@ -159,7 +159,7 @@ describe('Accordion', () => {
           <AccordionTrigger>Section 2</AccordionTrigger>
           <AccordionContent>Content 2</AccordionContent>
         </AccordionItem>
-      </Accordion>,
+      </Accordion>
     );
 
     expect(screen.getByText('Content 2')).toBeInTheDocument();
@@ -178,7 +178,7 @@ describe('Accordion', () => {
           <AccordionTrigger>Section 2</AccordionTrigger>
           <AccordionContent>Content 2</AccordionContent>
         </AccordionItem>
-      </Accordion>,
+      </Accordion>
     );
 
     expect(screen.getByText('Content 1')).toBeInTheDocument();
@@ -197,7 +197,7 @@ describe('Accordion', () => {
           <AccordionTrigger>Section 2</AccordionTrigger>
           <AccordionContent>Content 2</AccordionContent>
         </AccordionItem>
-      </Accordion>,
+      </Accordion>
     );
 
     expect(screen.getByText('Content 2')).toBeInTheDocument();
@@ -211,7 +211,7 @@ describe('Accordion', () => {
           <AccordionTrigger>Disabled Section</AccordionTrigger>
           <AccordionContent>Content</AccordionContent>
         </AccordionItem>
-      </Accordion>,
+      </Accordion>
     );
 
     const trigger = screen.getByText('Disabled Section');
@@ -227,7 +227,7 @@ describe('Accordion', () => {
           <AccordionTrigger>Section</AccordionTrigger>
           <AccordionContent>Content</AccordionContent>
         </AccordionItem>
-      </Accordion>,
+      </Accordion>
     );
 
     const item = screen.getByText('Section').closest('[class*="custom-item"]');

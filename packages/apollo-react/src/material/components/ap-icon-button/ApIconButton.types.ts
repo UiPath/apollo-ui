@@ -1,4 +1,4 @@
-import { IconButtonProps as MuiIconButtonProps } from '@mui/material';
+import type { IconButtonProps as MuiIconButtonProps } from '@mui/material';
 
 export interface ApIconButtonProps extends MuiIconButtonProps {
   /**

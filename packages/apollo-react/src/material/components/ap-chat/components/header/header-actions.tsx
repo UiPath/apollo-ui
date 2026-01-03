@@ -1,10 +1,8 @@
-import React from 'react';
-
-import { styled } from '@mui/material/styles';
-import token from '@uipath/apollo-core';
-
 import { msg } from '@lingui/core/macro';
 import { useLingui } from '@lingui/react';
+import { styled } from '@mui/material/styles';
+import token from '@uipath/apollo-core';
+import React from 'react';
 import { useAttachments } from '../../providers/attachements-provider';
 import { useChatService } from '../../providers/chat-service.provider';
 import { useChatState } from '../../providers/chat-state-provider';

@@ -1,7 +1,7 @@
-import React, { useCallback, useRef, useState } from 'react';
 import { Box, TextareaAutosize } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import token, { FontVariantToken } from '@uipath/apollo-core';
+import React, { useCallback, useRef, useState } from 'react';
 
 import { ApTypography } from '../ap-typography';
 import type { ApTextAreaProps } from './ApTextArea.types';

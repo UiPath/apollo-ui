@@ -1,14 +1,12 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-
-import { differenceInDays, differenceInMonths, isToday, isYesterday } from 'date-fns';
-import debounce from 'debounce';
-import FocusLock from 'react-focus-lock';
-
 import { msg } from '@lingui/core/macro';
 import { useLingui } from '@lingui/react';
 import SearchIcon from '@mui/icons-material/Search';
 import { CircularProgress, Popover, styled } from '@mui/material';
 import token from '@uipath/apollo-core';
+import { differenceInDays, differenceInMonths, isToday, isYesterday } from 'date-fns';
+import debounce from 'debounce';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import FocusLock from 'react-focus-lock';
 
 import { ApSkeleton } from '../../../ap-skeleton';
 import { ApTextField } from '../../../ap-text-field';
@@ -19,8 +17,8 @@ import { useChatState } from '../../providers/chat-state-provider';
 import { useChatWidth } from '../../providers/chat-width-provider';
 import {
   AutopilotChatEvent,
-  AutopilotChatHistory as AutopilotChatHistoryType,
-  AutopilotChatHistorySearchPayload,
+  type AutopilotChatHistorySearchPayload,
+  type AutopilotChatHistory as AutopilotChatHistoryType,
   AutopilotChatInternalEvent,
   CHAT_HISTORY_FULL_SCREEN_WIDTH,
   CHAT_HISTORY_SIDE_BY_SIDE_MAX_HEIGHT,

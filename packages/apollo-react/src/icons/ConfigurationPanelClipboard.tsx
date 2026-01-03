@@ -1,7 +1,8 @@
 // Auto-generated from studio-activities-icon-sets/classic-icons-configuration-panel/configuration-panel-clipboard.svg
 import React from 'react';
 
-export interface ConfigurationPanelClipboardProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+export interface ConfigurationPanelClipboardProps
+  extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
   /**
    * Size to apply to both width and height.
    * @default 24
@@ -9,20 +10,32 @@ export interface ConfigurationPanelClipboardProps extends Omit<React.SVGProps<SV
   size?: string | number;
 }
 
-export const ConfigurationPanelClipboard = React.forwardRef<SVGSVGElement, ConfigurationPanelClipboardProps>(
-  ({ size, ...props }, ref) => (
-    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
-      <g clipPath="url(#clip0_4117_1339)">
-<path d="M12 1C13.3 1 14.4003 1.84 14.8203 3H19C20.1 3 21 3.9 21 5V21C21 22.1 20.1 23 19 23H5C3.9 23 3 22.1 3 21V5C3 3.9 3.9 3 5 3H9.17969C9.59969 1.84 10.7 1 12 1ZM5 5V21H19V5H17V8H7V5H5ZM12 3C11.45 3 11 3.45 11 4C11 4.55 11.45 5 12 5C12.55 5 13 4.55 13 4C13 3.45 12.55 3 12 3Z" fill="currentColor"/>
-</g>
-<defs>
-<clipPath id="clip0_4117_1339">
-<rect width="24" height="24" fill="var(--color-foreground)"/>
-</clipPath>
-</defs>
-    </svg>
-  )
-);
+export const ConfigurationPanelClipboard = React.forwardRef<
+  SVGSVGElement,
+  ConfigurationPanelClipboardProps
+>(({ size, ...props }, ref) => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    ref={ref}
+    {...props}
+    width={size ?? 24}
+    height={size ?? 24}
+  >
+    <g clipPath="url(#clip0_4117_1339)">
+      <path
+        d="M12 1C13.3 1 14.4003 1.84 14.8203 3H19C20.1 3 21 3.9 21 5V21C21 22.1 20.1 23 19 23H5C3.9 23 3 22.1 3 21V5C3 3.9 3.9 3 5 3H9.17969C9.59969 1.84 10.7 1 12 1ZM5 5V21H19V5H17V8H7V5H5ZM12 3C11.45 3 11 3.45 11 4C11 4.55 11.45 5 12 5C12.55 5 13 4.55 13 4C13 3.45 12.55 3 12 3Z"
+        fill="currentColor"
+      />
+    </g>
+    <defs>
+      <clipPath id="clip0_4117_1339">
+        <rect width="24" height="24" fill="var(--color-foreground)" />
+      </clipPath>
+    </defs>
+  </svg>
+));
 
 ConfigurationPanelClipboard.displayName = 'ConfigurationPanelClipboard';
 

@@ -1,8 +1,8 @@
-import React, { useCallback, useState } from 'react';
 import ArrowRightIcon from '@mui/icons-material/ArrowRight';
 import { Divider, ListItemText, Menu, MenuItem } from '@mui/material';
 import * as token from '@uipath/apollo-core';
 import { FontVariantToken } from '@uipath/apollo-core';
+import React, { useCallback, useState } from 'react';
 import { ApTypography } from '../ap-typography';
 import type { ApMenuOrigin, ApMenuProps, IMenuItem } from './ApMenu.types';
 import { debugItems } from './constants';

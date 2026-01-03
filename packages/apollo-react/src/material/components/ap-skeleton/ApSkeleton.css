@@ -2,7 +2,7 @@
 
 /* A shared custom css property to control the horizontal position of the skeleton shimmer background */
 @property --ap-skeleton_background-position-x {
-  syntax: '<percentage>';
+  syntax: "<percentage>";
   inherits: true;
   initial-value: 200%;
 }

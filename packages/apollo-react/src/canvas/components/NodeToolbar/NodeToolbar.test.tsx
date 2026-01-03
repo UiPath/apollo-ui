@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { render, screen, userEvent, type UserEvent, waitFor } from '../../utils/testing';
+import { render, screen, type UserEvent, userEvent, waitFor } from '../../utils/testing';
 import { NodeToolbar } from './NodeToolbar';
 import type { NodeToolbarConfig, ToolbarActionItem } from './NodeToolbar.types';
 

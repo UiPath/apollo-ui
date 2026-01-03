@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { AutopilotChatService } from '../service';
+import type { AutopilotChatService } from '../service';
 
 interface AutopilotChatServiceContextType {
   chatService: AutopilotChatService | undefined;

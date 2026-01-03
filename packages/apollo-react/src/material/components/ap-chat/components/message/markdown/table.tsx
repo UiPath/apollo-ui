@@ -1,8 +1,7 @@
-import type { ReactNode } from 'react';
-import React from 'react';
-
 import { Table as MuiTable, TableCell, TableHead, TableRow } from '@mui/material';
 import token from '@uipath/apollo-core';
+import type { ReactNode } from 'react';
+import React from 'react';
 
 import { ApTypography } from '../../../../ap-typography';
 import { useChatState } from '../../../providers/chat-state-provider';

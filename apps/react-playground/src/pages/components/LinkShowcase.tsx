@@ -1,7 +1,11 @@
-import { ApLink } from '@uipath/apollo-react/material/components';
-import styled from 'styled-components';
+import { ApLink } from "@uipath/apollo-react/material/components";
+import styled from "styled-components";
 
-import { PageContainer, PageDescription, PageTitle } from '../../components/SharedStyles';
+import {
+	PageContainer,
+	PageDescription,
+	PageTitle,
+} from "../../components/SharedStyles";
 
 const ShowcaseSection = styled.div`
   margin-top: 48px;
@@ -29,19 +33,21 @@ const ComponentRow = styled.div`
 `;
 
 export function LinkShowcase() {
-  return (
-    <PageContainer>
-      <PageTitle>Link</PageTitle>
-      <PageDescription>Styled hyperlink component with Apollo design tokens</PageDescription>
+	return (
+		<PageContainer>
+			<PageTitle>Link</PageTitle>
+			<PageDescription>
+				Styled hyperlink component with Apollo design tokens
+			</PageDescription>
 
-      <ShowcaseSection>
-        <SectionTitle>Example</SectionTitle>
-        <ComponentRow>
-          <ApLink href="https://www.uipath.com" target="_blank">
-            Visit UiPath
-          </ApLink>
-        </ComponentRow>
-      </ShowcaseSection>
-    </PageContainer>
-  );
+			<ShowcaseSection>
+				<SectionTitle>Example</SectionTitle>
+				<ComponentRow>
+					<ApLink href="https://www.uipath.com" target="_blank">
+						Visit UiPath
+					</ApLink>
+				</ComponentRow>
+			</ShowcaseSection>
+		</PageContainer>
+	);
 }

@@ -1,11 +1,11 @@
 import { render, screen } from '@testing-library/react';
 import { Position } from '@uipath/apollo-react/canvas/xyflow/react';
-import { describe, expect, it, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   SmartHandle,
+  SmartHandleProvider,
   SmartSourceHandle,
   SmartTargetHandle,
-  SmartHandleProvider,
 } from './SmartHandle';
 
 // Mock @xyflow/react

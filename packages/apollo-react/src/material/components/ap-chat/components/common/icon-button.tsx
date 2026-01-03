@@ -1,7 +1,6 @@
-import React from 'react';
-
-import { IconButton, IconButtonProps, styled } from '@mui/material';
+import { IconButton, type IconButtonProps, styled } from '@mui/material';
 import token from '@uipath/apollo-core';
+import React from 'react';
 
 const StyledIconButton = styled(IconButton)(() => ({
   '&.MuiIconButton-root': {

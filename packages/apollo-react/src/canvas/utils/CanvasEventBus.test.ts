@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { canvasEventBus, type CanvasHandleActionEvent } from './CanvasEventBus';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { type CanvasHandleActionEvent, canvasEventBus } from './CanvasEventBus';
 
 describe('CanvasEventBus', () => {
   beforeEach(() => {

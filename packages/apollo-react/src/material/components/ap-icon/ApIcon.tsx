@@ -1,10 +1,8 @@
-import React from 'react';
-
 import { Icon, SvgIcon } from '@mui/material';
 import token from '@uipath/apollo-core';
-
-import * as LegacyIcons from './assets/index';
+import type React from 'react';
 import type { ApIconProps } from './ApIcon.types';
+import * as LegacyIcons from './assets/index';
 
 // Convert snake_case to PascalCase for legacy icon lookup
 const snakeToPascal = (str: string): string =>

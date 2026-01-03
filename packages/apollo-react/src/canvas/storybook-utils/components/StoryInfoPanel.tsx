@@ -1,9 +1,8 @@
-import { useState } from 'react';
-
 import { FontVariantToken } from '@uipath/apollo-core';
 import { Column, Row } from '@uipath/apollo-react/canvas/layouts';
 import { Panel } from '@uipath/apollo-react/canvas/xyflow/react';
 import { ApIcon, ApIconButton, ApTypography } from '@uipath/apollo-react/material';
+import { useState } from 'react';
 
 export interface StoryInfoPanelProps {
   /** Panel title */

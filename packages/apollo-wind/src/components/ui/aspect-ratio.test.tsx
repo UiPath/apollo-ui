@@ -8,7 +8,7 @@ describe('AspectRatio', () => {
     const { container } = render(
       <AspectRatio ratio={16 / 9}>
         <img src="test.jpg" alt="Test" />
-      </AspectRatio>,
+      </AspectRatio>
     );
     expect(container.firstChild).toBeInTheDocument();
   });
@@ -17,7 +17,7 @@ describe('AspectRatio', () => {
     const { container } = render(
       <AspectRatio ratio={16 / 9}>
         <img src="test.jpg" alt="Test image" />
-      </AspectRatio>,
+      </AspectRatio>
     );
     const results = await axe(container);
     expect(results).toHaveNoViolations();
@@ -27,7 +27,7 @@ describe('AspectRatio', () => {
     const { container } = render(
       <AspectRatio ratio={16 / 9}>
         <div data-testid="child">Child content</div>
-      </AspectRatio>,
+      </AspectRatio>
     );
     expect(container.querySelector('[data-testid="child"]')).toBeInTheDocument();
   });
@@ -36,7 +36,7 @@ describe('AspectRatio', () => {
     const { container } = render(
       <AspectRatio ratio={16 / 9}>
         <img src="test.jpg" alt="Test" />
-      </AspectRatio>,
+      </AspectRatio>
     );
     expect(container.firstChild).toBeInTheDocument();
   });
@@ -45,7 +45,7 @@ describe('AspectRatio', () => {
     const { container } = render(
       <AspectRatio ratio={4 / 3}>
         <img src="test.jpg" alt="Test" />
-      </AspectRatio>,
+      </AspectRatio>
     );
     expect(container.firstChild).toBeInTheDocument();
   });
@@ -54,7 +54,7 @@ describe('AspectRatio', () => {
     const { container } = render(
       <AspectRatio ratio={1}>
         <img src="test.jpg" alt="Test" />
-      </AspectRatio>,
+      </AspectRatio>
     );
     expect(container.firstChild).toBeInTheDocument();
   });
@@ -63,7 +63,7 @@ describe('AspectRatio', () => {
     const { container } = render(
       <AspectRatio ratio={16 / 9}>
         <img src="https://example.com/image.jpg" alt="Example" className="object-cover" />
-      </AspectRatio>,
+      </AspectRatio>
     );
     const img = container.querySelector('img');
     expect(img).toHaveAttribute('src', 'https://example.com/image.jpg');
@@ -74,7 +74,7 @@ describe('AspectRatio', () => {
     const { container } = render(
       <AspectRatio ratio={16 / 9}>
         <video src="video.mp4" />
-      </AspectRatio>,
+      </AspectRatio>
     );
     const video = container.querySelector('video');
     expect(video).toBeInTheDocument();
@@ -84,7 +84,7 @@ describe('AspectRatio', () => {
     const { container } = render(
       <AspectRatio ratio={1}>
         <div className="custom-content">Custom</div>
-      </AspectRatio>,
+      </AspectRatio>
     );
     expect(container.textContent).toContain('Custom');
   });

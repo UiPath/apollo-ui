@@ -13,7 +13,9 @@ describe('Calendar', () => {
 
     it('renders with current month', () => {
       render(<Calendar />);
-      const currentMonth = new Date().toLocaleString('default', { month: 'long' });
+      const currentMonth = new Date().toLocaleString('default', {
+        month: 'long',
+      });
       expect(screen.getByText(new RegExp(currentMonth))).toBeInTheDocument();
     });
 
@@ -78,7 +80,7 @@ describe('Calendar', () => {
       const user = userEvent.setup();
       const handleSelect = vi.fn();
       render(
-        <Calendar mode="single" defaultMonth={new Date(2024, 5, 1)} onSelect={handleSelect} />,
+        <Calendar mode="single" defaultMonth={new Date(2024, 5, 1)} onSelect={handleSelect} />
       );
 
       await user.click(screen.getByText('15'));
@@ -94,7 +96,7 @@ describe('Calendar', () => {
           mode="single"
           selected={new Date(2024, 5, 15)}
           defaultMonth={new Date(2024, 5, 1)}
-        />,
+        />
       );
       // The selected day should be marked with data-selected
       const selectedCell = screen.getByText('15').closest('[data-selected]');
@@ -110,7 +112,7 @@ describe('Calendar', () => {
             to: new Date(2024, 5, 15),
           }}
           defaultMonth={new Date(2024, 5, 1)}
-        />,
+        />
       );
       expect(screen.getByRole('grid')).toBeInTheDocument();
     });
@@ -119,7 +121,7 @@ describe('Calendar', () => {
   describe('props', () => {
     it('respects showOutsideDays prop', () => {
       const { rerender } = render(
-        <Calendar showOutsideDays={true} defaultMonth={new Date(2024, 5, 1)} />,
+        <Calendar showOutsideDays={true} defaultMonth={new Date(2024, 5, 1)} />
       );
       // With showOutsideDays, days from adjacent months are visible
       expect(screen.getByRole('grid')).toBeInTheDocument();
@@ -139,7 +141,7 @@ describe('Calendar', () => {
           mode="single"
           defaultMonth={new Date(2024, 5, 1)}
           disabled={[new Date(2024, 5, 15)]}
-        />,
+        />
       );
       const disabledDay = screen.getByText('15').closest('button');
       expect(disabledDay).toBeDisabled();

@@ -20,7 +20,7 @@ describe('StatsCard', () => {
 
     it('renders icon when provided', () => {
       render(
-        <StatsCard title="Revenue" value="$10,000" icon={<span data-testid="icon">$</span>} />,
+        <StatsCard title="Revenue" value="$10,000" icon={<span data-testid="icon">$</span>} />
       );
       expect(screen.getByTestId('icon')).toBeInTheDocument();
     });
@@ -47,7 +47,7 @@ describe('StatsCard', () => {
           description="Monthly"
           trend={{ value: 12, label: 'vs last month' }}
           icon={<span>$</span>}
-        />,
+        />
       );
       const results = await axe(container);
       expect(results).toHaveNoViolations();
@@ -101,14 +101,14 @@ describe('StatsCard', () => {
 
     it('renders trend label', () => {
       render(
-        <StatsCard title="Revenue" value="$10,000" trend={{ value: 12, label: 'vs last month' }} />,
+        <StatsCard title="Revenue" value="$10,000" trend={{ value: 12, label: 'vs last month' }} />
       );
       expect(screen.getByText('vs last month')).toBeInTheDocument();
     });
 
     it('respects explicit direction override', () => {
       render(
-        <StatsCard title="Revenue" value="$10,000" trend={{ value: 12, direction: 'down' }} />,
+        <StatsCard title="Revenue" value="$10,000" trend={{ value: 12, direction: 'down' }} />
       );
       expect(screen.getByText('12%')).toBeInTheDocument();
     });

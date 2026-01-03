@@ -28,7 +28,7 @@ export function DateTimePicker({
   const [open, setOpen] = React.useState(false);
   const [selectedDate, setSelectedDate] = React.useState<Date | undefined>(value);
   const [timeValue, setTimeValue] = React.useState<string>(
-    value ? format(value, use12Hour ? 'hh:mm a' : 'HH:mm') : '',
+    value ? format(value, use12Hour ? 'hh:mm a' : 'HH:mm') : ''
   );
 
   const handleDateSelect = (date: Date | undefined) => {
@@ -75,7 +75,7 @@ export function DateTimePicker({
           className={cn(
             'w-full justify-start text-left font-normal',
             !selectedDate && 'text-muted-foreground',
-            className,
+            className
           )}
           disabled={disabled}
         >

@@ -1,10 +1,9 @@
-import React from 'react';
-
 import { Chip, styled } from '@mui/material';
 import token from '@uipath/apollo-core';
+import React from 'react';
 
-import { StatusTypes } from '../../../types/statusTypes';
-import { ApBadgeProps, BadgeSize } from './ApBadge.types';
+import type { StatusTypes } from '../../../types/statusTypes';
+import { type ApBadgeProps, BadgeSize } from './ApBadge.types';
 
 interface StyledBadgeProps {
   badgeSize?: BadgeSize;

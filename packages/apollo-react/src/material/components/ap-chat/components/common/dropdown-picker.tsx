@@ -1,17 +1,15 @@
-import React from 'react';
-
 import { msg } from '@lingui/core/macro';
 import { useLingui } from '@lingui/react';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import { Menu, MenuItem, styled } from '@mui/material';
 import token, { FontVariantToken } from '@uipath/apollo-core';
-
+import { ApIcon } from '@uipath/apollo-react/material/components';
+import React from 'react';
 import { ApTypography } from '../../../ap-typography';
 import { useScheduledCallback } from '../../hooks/use-scheduled-callback';
 import { useChatState } from '../../providers/chat-state-provider';
 import { AutopilotChatInternalEvent } from '../../service';
 import { AutopilotChatActionButton } from './action-button';
-import { ApIcon } from '@uipath/apollo-react/material/components';
 import { AutopilotChatTooltip } from './tooltip';
 
 export interface DropdownOption<T = string> {

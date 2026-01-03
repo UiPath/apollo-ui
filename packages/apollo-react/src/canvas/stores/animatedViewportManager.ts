@@ -1,13 +1,13 @@
-import type { ReactFlowInstance, Viewport, Node } from '@uipath/apollo-react/canvas/xyflow/react';
+import type { Node, ReactFlowInstance, Viewport } from '@uipath/apollo-react/canvas/xyflow/react';
 import {
-  animateViewport,
+  ANIMATION_CONSTANTS,
   animateDrillIn,
   animateDrillOut,
+  animateViewport,
   calculateNodeFocusViewport,
   getCanvasSize,
   type NodeBounds,
   TRANSITION_CONFIG,
-  ANIMATION_CONSTANTS,
 } from '../utils/transitions';
 
 /**

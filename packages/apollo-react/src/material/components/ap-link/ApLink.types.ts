@@ -1,5 +1,5 @@
-import React from 'react';
-import { FontVariantToken } from '@uipath/apollo-core';
+import type { FontVariantToken } from '@uipath/apollo-core';
+import type React from 'react';
 
 export type LinkTarget = '_self' | '_blank' | '_parent' | '_top';
 

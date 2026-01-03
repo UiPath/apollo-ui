@@ -1,35 +1,36 @@
-import React, { memo, useCallback, useEffect, useMemo, useRef } from 'react';
-import type { PropsWithChildren } from 'react';
+import { Column } from '@uipath/apollo-react/canvas/layouts';
 import { Panel, useReactFlow } from '@uipath/apollo-react/canvas/xyflow/react';
 import type { NodeProps } from '@uipath/apollo-react/canvas/xyflow/system';
+import type { PropsWithChildren } from 'react';
+import type React from 'react';
+import { memo, useCallback, useEffect, useMemo, useRef } from 'react';
 import { BaseCanvas } from '../../components/BaseCanvas';
-import { TimelinePlayer } from './components/TimelinePlayer';
-import { Edge } from './edges/Edge';
-import { Column } from '@uipath/apollo-react/canvas/layouts';
-import { AgentNodeElement } from './nodes/AgentNode';
-import { ResourceNode } from './nodes/ResourceNode';
-import { CanvasPositionControls } from '../CanvasPositionControls';
-import { AgentFlowProvider, useAgentFlowStore } from './store/agent-flow-store';
 import {
   type AgentFlowCustomEdge,
   type AgentFlowCustomNode,
   type AgentFlowNode,
   type AgentFlowProps,
   type AgentFlowResourceNode,
+  type AgentFlowResourceNodeData,
   type AgentNodeTranslations,
   DefaultAgentNodeTranslations,
   DefaultCanvasTranslations,
+  DefaultResourceNodeTranslations,
+  DefaultSuggestionTranslations,
   isAgentFlowAgentNode,
   isAgentFlowResourceNode,
-  type AgentFlowResourceNodeData,
-  DefaultResourceNodeTranslations,
   type ResourceNodeTranslations,
   type SuggestionTranslations,
-  DefaultSuggestionTranslations,
 } from '../../types';
 import { hasAgentRunning } from '../../utils/props-helpers';
+import { CanvasPositionControls } from '../CanvasPositionControls';
 import { SuggestionGroupPanel } from './components/SuggestionGroupPanel';
+import { TimelinePlayer } from './components/TimelinePlayer';
 import { calculateTimelineHeight } from './components/TimelinePlayer.utils';
+import { Edge } from './edges/Edge';
+import { AgentNodeElement } from './nodes/AgentNode';
+import { ResourceNode } from './nodes/ResourceNode';
+import { AgentFlowProvider, useAgentFlowStore } from './store/agent-flow-store';
 
 const edgeTypes = {
   default: Edge,

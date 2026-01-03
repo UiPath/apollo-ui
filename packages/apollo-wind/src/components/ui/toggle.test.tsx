@@ -27,7 +27,7 @@ describe('Toggle', () => {
     render(
       <Toggle pressed aria-label="Toggle">
         Toggle
-      </Toggle>,
+      </Toggle>
     );
     const toggle = screen.getByRole('button');
     expect(toggle).toHaveAttribute('data-state', 'on');
@@ -53,7 +53,7 @@ describe('Toggle', () => {
     render(
       <Toggle onPressedChange={handlePressedChange} aria-label="Toggle">
         Toggle
-      </Toggle>,
+      </Toggle>
     );
 
     const toggle = screen.getByRole('button');
@@ -68,7 +68,7 @@ describe('Toggle', () => {
     render(
       <Toggle onPressedChange={handlePressedChange} aria-label="Toggle">
         Toggle
-      </Toggle>,
+      </Toggle>
     );
 
     const toggle = screen.getByRole('button');
@@ -84,7 +84,7 @@ describe('Toggle', () => {
     render(
       <Toggle onPressedChange={handlePressedChange} aria-label="Toggle">
         Toggle
-      </Toggle>,
+      </Toggle>
     );
 
     const toggle = screen.getByRole('button');
@@ -98,7 +98,7 @@ describe('Toggle', () => {
     render(
       <Toggle disabled aria-label="Toggle">
         Toggle
-      </Toggle>,
+      </Toggle>
     );
     const toggle = screen.getByRole('button');
     expect(toggle).toBeDisabled();
@@ -110,7 +110,7 @@ describe('Toggle', () => {
     render(
       <Toggle disabled onPressedChange={handlePressedChange} aria-label="Toggle">
         Toggle
-      </Toggle>,
+      </Toggle>
     );
 
     const toggle = screen.getByRole('button');
@@ -129,7 +129,7 @@ describe('Toggle', () => {
     render(
       <Toggle variant="outline" aria-label="Toggle">
         Toggle
-      </Toggle>,
+      </Toggle>
     );
     const toggle = screen.getByRole('button');
     expect(toggle).toHaveClass('border');
@@ -139,7 +139,7 @@ describe('Toggle', () => {
     render(
       <Toggle size="sm" aria-label="Toggle">
         Toggle
-      </Toggle>,
+      </Toggle>
     );
     const toggle = screen.getByRole('button');
     expect(toggle).toHaveClass('h-9');
@@ -149,7 +149,7 @@ describe('Toggle', () => {
     render(
       <Toggle size="lg" aria-label="Toggle">
         Toggle
-      </Toggle>,
+      </Toggle>
     );
     const toggle = screen.getByRole('button');
     expect(toggle).toHaveClass('h-11');
@@ -161,7 +161,7 @@ describe('Toggle', () => {
     const { rerender } = render(
       <Toggle pressed={false} onPressedChange={handlePressedChange} aria-label="Toggle">
         Toggle
-      </Toggle>,
+      </Toggle>
     );
 
     const toggle = screen.getByRole('button');
@@ -173,7 +173,7 @@ describe('Toggle', () => {
     rerender(
       <Toggle pressed={true} onPressedChange={handlePressedChange} aria-label="Toggle">
         Toggle
-      </Toggle>,
+      </Toggle>
     );
 
     expect(toggle).toHaveAttribute('data-state', 'on');
@@ -183,7 +183,7 @@ describe('Toggle', () => {
     render(
       <Toggle className="custom-toggle" aria-label="Toggle">
         Toggle
-      </Toggle>,
+      </Toggle>
     );
     const toggle = screen.getByRole('button');
     expect(toggle).toHaveClass('custom-toggle');
@@ -194,7 +194,7 @@ describe('Toggle', () => {
     render(
       <Toggle ref={ref} aria-label="Toggle">
         Toggle
-      </Toggle>,
+      </Toggle>
     );
     expect(ref.current).toBeInstanceOf(HTMLButtonElement);
   });
@@ -210,7 +210,7 @@ describe('Toggle', () => {
     const { container } = render(
       <Toggle aria-label="Toggle bold">
         <Bold className="h-4 w-4" />
-      </Toggle>,
+      </Toggle>
     );
     const icon = container.querySelector('svg');
     expect(icon).toBeInTheDocument();
@@ -220,7 +220,7 @@ describe('Toggle', () => {
     render(
       <Toggle defaultPressed aria-label="Toggle">
         Toggle
-      </Toggle>,
+      </Toggle>
     );
     const toggle = screen.getByRole('button');
     expect(toggle).toHaveAttribute('data-state', 'on');

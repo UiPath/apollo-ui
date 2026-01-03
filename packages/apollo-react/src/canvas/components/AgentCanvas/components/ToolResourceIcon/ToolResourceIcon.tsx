@@ -1,15 +1,15 @@
+import * as Icons from '@uipath/apollo-react/canvas/icons';
 import {
   BuiltInToolType,
   ProjectType,
   type SharedResourceData,
   type ToolResourceData,
 } from '../../../../types';
-import * as Icons from '@uipath/apollo-react/canvas/icons';
-import { IxpIcon } from './IXPIcon';
-import { ProcessIcon } from './ProcessIcon';
-import { AttachmentIcon } from './AttachmentIcon';
 import { AddDataColumnIcon } from './AddDataColumnIcon';
 import { AnalyzeIcon } from './AnalyzeIcon';
+import { AttachmentIcon } from './AttachmentIcon';
+import { IxpIcon } from './IXPIcon';
+import { ProcessIcon } from './ProcessIcon';
 
 interface ToolResourceIconProps {
   size?: number;

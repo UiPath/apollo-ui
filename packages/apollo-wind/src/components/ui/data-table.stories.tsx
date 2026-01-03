@@ -343,7 +343,10 @@ const editableColumns: ColumnDef<Task, unknown>[] = [
   {
     accessorKey: 'name',
     header: 'Task',
-    meta: { type: 'text', placeholder: 'Enter task name...' } as EditableCellMeta,
+    meta: {
+      type: 'text',
+      placeholder: 'Enter task name...',
+    } as EditableCellMeta,
     size: 250,
     minSize: 200,
   },
@@ -438,7 +441,10 @@ const editableSortableColumns: ColumnDef<Task, unknown>[] = [
   {
     accessorKey: 'name',
     header: ({ column }) => <DataTableColumnHeader column={column} title="Task" />,
-    meta: { type: 'text', placeholder: 'Enter task name...' } as EditableCellMeta,
+    meta: {
+      type: 'text',
+      placeholder: 'Enter task name...',
+    } as EditableCellMeta,
     size: 250,
     minSize: 150,
   },

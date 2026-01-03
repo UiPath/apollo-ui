@@ -1,4 +1,4 @@
-import styled from 'styled-components';
+import styled from "styled-components";
 
 // Search Input
 export const SearchInput = styled.input`
@@ -122,7 +122,11 @@ export const IconVisual = styled.div`
 export const IconCircle = styled.div<{ $size: string }>`
   width: ${(props) => props.$size};
   height: ${(props) => props.$size};
-  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--color-primary) 0%,
+    var(--color-secondary) 100%
+  );
   border-radius: 50%;
   border: 2px solid var(--color-border);
   box-shadow: var(--shadow-sm);

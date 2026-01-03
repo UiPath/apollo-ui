@@ -1,12 +1,10 @@
-import { useMemo } from 'react';
-
-import type { RowComponentProps } from 'react-window';
-
 import { FontVariantToken } from '@uipath/apollo-core';
 import { Column } from '@uipath/apollo-react/canvas/layouts';
 import { partition } from '@uipath/apollo-react/canvas/utils';
 import { ApSkeleton, ApTypography } from '@uipath/apollo-react/material';
 import { ApIcon } from '@uipath/apollo-react/material/components';
+import { useMemo } from 'react';
+import type { RowComponentProps } from 'react-window';
 
 import { IconContainer, ListItemButton, SectionHeader, StyledList } from './ListView.styles';
 

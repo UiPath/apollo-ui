@@ -1,26 +1,26 @@
-import { useMemo, useCallback, useState, useRef, useEffect, memo, type FC } from 'react';
-import type { Meta, StoryObj } from '@storybook/react-vite';
-import { Panel, useReactFlow, Handle, Position } from '@uipath/apollo-react/canvas/xyflow/react';
-import type { Edge, Node, NodeProps } from '@uipath/apollo-react/canvas/xyflow/react';
 import styled from '@emotion/styled';
-import { BaseCanvas } from './BaseCanvas';
-import type { BaseNodeData } from './BaseNode/BaseNode.types';
+import type { Meta, StoryObj } from '@storybook/react-vite';
+import type { Edge, Node, NodeProps } from '@uipath/apollo-react/canvas/xyflow/react';
+import { Handle, Panel, Position, useReactFlow } from '@uipath/apollo-react/canvas/xyflow/react';
+import { Download, Plus, StickyNote } from 'lucide-react';
+import { type FC, memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCanvasEvent, useExportCanvas } from '../hooks';
 import {
-  withCanvasProviders,
-  useCanvasStory,
   createNode,
   NodePositions,
   StoryInfoPanel,
+  useCanvasStory,
+  withCanvasProviders,
 } from '../storybook-utils';
-import { AddNodeManager, AddNodePanel } from './AddNodePanel';
-import { FloatingCanvasPanel } from './FloatingCanvasPanel';
-import type { ListItem } from './Toolbox';
-import { useCanvasEvent, useExportCanvas } from '../hooks';
 import type { CanvasHandleActionEvent } from '../utils';
-import { createPreviewNode, applyPreviewToReactFlow } from '../utils/createPreviewNode';
+import { applyPreviewToReactFlow, createPreviewNode } from '../utils/createPreviewNode';
+import { AddNodeManager, AddNodePanel } from './AddNodePanel';
+import { BaseCanvas } from './BaseCanvas';
+import type { BaseNodeData } from './BaseNode/BaseNode.types';
+import { FloatingCanvasPanel } from './FloatingCanvasPanel';
 import { StickyNoteNode } from './StickyNoteNode';
 import type { StickyNoteData } from './StickyNoteNode/StickyNoteNode.types';
-import { Download, Plus, StickyNote } from 'lucide-react';
+import type { ListItem } from './Toolbox';
 
 // ============================================================================
 // Meta Configuration

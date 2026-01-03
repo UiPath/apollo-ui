@@ -5,7 +5,7 @@ import * as React from 'react';
 import { cn } from '@/lib/index';
 
 const labelVariants = cva(
-  'text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70',
+  'text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70'
 );
 
 export type LabelProps = React.ComponentPropsWithoutRef<typeof LabelPrimitive.Root> &
@@ -14,7 +14,7 @@ export type LabelProps = React.ComponentPropsWithoutRef<typeof LabelPrimitive.Ro
 const Label = React.forwardRef<React.ElementRef<typeof LabelPrimitive.Root>, LabelProps>(
   ({ className, ...props }, ref) => (
     <LabelPrimitive.Root ref={ref} className={cn(labelVariants(), className)} {...props} />
-  ),
+  )
 );
 Label.displayName = LabelPrimitive.Root.displayName;
 

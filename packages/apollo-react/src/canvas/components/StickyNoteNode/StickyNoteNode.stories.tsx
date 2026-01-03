@@ -1,13 +1,13 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { useMemo } from 'react';
-import type { Node, Edge } from '@uipath/apollo-react/canvas/xyflow/react';
+import type { Edge, Node } from '@uipath/apollo-react/canvas/xyflow/react';
 import { Panel, Position } from '@uipath/apollo-react/canvas/xyflow/react';
+import { useMemo } from 'react';
+import { useCanvasStory, withCanvasProviders } from '../../storybook-utils';
+import { DefaultCanvasTranslations } from '../../types';
 import { BaseCanvas } from '../BaseCanvas';
 import { CanvasPositionControls } from '../CanvasPositionControls';
 import { StickyNoteNode } from './StickyNoteNode';
 import type { StickyNoteColor, StickyNoteData } from './StickyNoteNode.types';
-import { withCanvasProviders, useCanvasStory } from '../../storybook-utils';
-import { DefaultCanvasTranslations } from '../../types';
 
 // ============================================================================
 // Meta Configuration

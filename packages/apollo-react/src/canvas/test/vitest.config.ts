@@ -1,5 +1,5 @@
-import { ViteUserConfig } from 'vitest/config';
 import tsconfigPaths from 'vite-tsconfig-paths';
+import type { ViteUserConfig } from 'vitest/config';
 
 export const vitestConfig: ViteUserConfig = {
   plugins: [tsconfigPaths({ root: '../..', configNames: ['tsconfig.base.json'] })] as any,

@@ -128,7 +128,7 @@ describe('Drawer', () => {
             <DrawerTitle>Title</DrawerTitle>
             <DrawerDescription>Description</DrawerDescription>
           </DrawerContent>
-        </Drawer>,
+        </Drawer>
       );
 
       expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
@@ -143,7 +143,7 @@ describe('Drawer', () => {
             <DrawerTitle>Title</DrawerTitle>
             <DrawerDescription>Description</DrawerDescription>
           </DrawerContent>
-        </Drawer>,
+        </Drawer>
       );
 
       await waitFor(() => {
@@ -162,7 +162,7 @@ describe('Drawer', () => {
             <DrawerTitle>Title</DrawerTitle>
             <DrawerDescription>Description</DrawerDescription>
           </DrawerContent>
-        </Drawer>,
+        </Drawer>
       );
 
       await user.click(screen.getByRole('button', { name: 'Open' }));

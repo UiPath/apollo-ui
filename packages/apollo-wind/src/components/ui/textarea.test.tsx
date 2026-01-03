@@ -35,7 +35,7 @@ describe('Textarea', () => {
     const user = userEvent.setup();
     const handleChange = vi.fn();
     const { rerender } = render(
-      <Textarea value="Initial text" onChange={handleChange} aria-label="Message" />,
+      <Textarea value="Initial text" onChange={handleChange} aria-label="Message" />
     );
 
     const textarea = screen.getByRole('textbox');
@@ -45,7 +45,7 @@ describe('Textarea', () => {
     expect(handleChange).toHaveBeenCalled();
 
     rerender(
-      <Textarea value="Initial text More text" onChange={handleChange} aria-label="Message" />,
+      <Textarea value="Initial text More text" onChange={handleChange} aria-label="Message" />
     );
     expect(textarea).toHaveValue('Initial text More text');
   });

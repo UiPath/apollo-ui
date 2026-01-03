@@ -281,13 +281,13 @@ export type FieldType = FieldMetadata['type'];
 // ============================================================================
 
 export function hasOptions(
-  field: FieldMetadata,
+  field: FieldMetadata
 ): field is SelectFieldMetadata | MultiSelectFieldMetadata | RadioFieldMetadata {
   return field.type === 'select' || field.type === 'multiselect' || field.type === 'radio';
 }
 
 export function hasMinMaxStep(
-  field: FieldMetadata,
+  field: FieldMetadata
 ): field is NumberFieldMetadata | SliderFieldMetadata {
   return field.type === 'number' || field.type === 'slider';
 }
@@ -416,7 +416,7 @@ export interface FormContext<T extends FieldValues = FieldValues> {
   fetchData: (source: DataSource) => Promise<FieldOption[]>;
   registerCustomComponent: (
     name: string,
-    component: React.ComponentType<CustomFieldComponentProps>,
+    component: React.ComponentType<CustomFieldComponentProps>
   ) => void;
 }
 

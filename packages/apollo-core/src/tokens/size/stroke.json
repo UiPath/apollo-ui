@@ -15,9 +15,13 @@
   },
   "border": {
     "light": { "value": "{stroke.s.value} solid {color.border.light.value}" },
-    "light-hc": { "value": "{stroke.s.value} solid {color.border.light-hc.value}" },
+    "light-hc": {
+      "value": "{stroke.s.value} solid {color.border.light-hc.value}"
+    },
     "dark": { "value": "{stroke.s.value} solid {color.border.dark.value}" },
-    "dark-hc": { "value": "{stroke.s.value} solid {color.border.dark-hc.value}" },
+    "dark-hc": {
+      "value": "{stroke.s.value} solid {color.border.dark-hc.value}"
+    },
     "thick": {
       "s": { "value": "1px" },
       "m": { "value": "2px" },

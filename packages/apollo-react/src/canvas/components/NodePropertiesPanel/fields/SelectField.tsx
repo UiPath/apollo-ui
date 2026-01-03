@@ -1,6 +1,6 @@
-import { memo, useCallback } from 'react';
 import { Column } from '@uipath/apollo-react/canvas/layouts';
-import { SelectInput, FieldLabel, FieldHelpText, FieldError } from '../NodePropertiesPanel.styles';
+import { memo, useCallback } from 'react';
+import { FieldError, FieldHelpText, FieldLabel, SelectInput } from '../NodePropertiesPanel.styles';
 import type { ConfigField } from '../NodePropertiesPanel.types';
 
 interface SelectFieldProps {

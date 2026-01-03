@@ -69,7 +69,7 @@ describe('DataTable', () => {
 
     it('has no violations with search', async () => {
       const { container } = render(
-        <DataTable columns={columns} data={mockData} searchKey="name" />,
+        <DataTable columns={columns} data={mockData} searchKey="name" />
       );
       const results = await axe(container);
       expect(results).toHaveNoViolations();
@@ -89,7 +89,7 @@ describe('DataTable', () => {
           data={mockData}
           searchKey="name"
           searchPlaceholder="Search names..."
-        />,
+        />
       );
       expect(screen.getByPlaceholderText('Search names...')).toBeInTheDocument();
     });

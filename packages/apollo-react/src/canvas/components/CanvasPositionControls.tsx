@@ -1,11 +1,11 @@
-import { memo, useCallback } from 'react';
-import { useReactFlow } from '@uipath/apollo-react/canvas/xyflow/react';
-import { Column, Row } from '@uipath/apollo-react/canvas/layouts';
 import * as Icons from '@uipath/apollo-react/canvas/icons';
+import { Column, Row } from '@uipath/apollo-react/canvas/layouts';
+import { useReactFlow } from '@uipath/apollo-react/canvas/xyflow/react';
+import { ApIconButton, ApTooltip } from '@uipath/apollo-react/material';
+import { memo, useCallback } from 'react';
+import type { CanvasTranslations } from '../types';
 import { BASE_CANVAS_DEFAULTS } from './BaseCanvas/BaseCanvas.constants';
 import type { BaseCanvasFitViewOptions } from './BaseCanvas/BaseCanvas.types';
-import type { CanvasTranslations } from '../types';
-import { ApIconButton, ApTooltip } from '@uipath/apollo-react/material';
 
 export interface CanvasPositionControlsProps {
   orientation?: 'horizontal' | 'vertical';

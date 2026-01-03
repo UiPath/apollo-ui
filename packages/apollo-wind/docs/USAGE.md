@@ -42,8 +42,8 @@ flowchart TD
 
 ```tsx
 // src/main.tsx or src/App.tsx
-import '@uipath/apollo-wind/styles.css';
-import { Button, Card } from '@uipath/apollo-wind';
+import "@uipath/apollo-wind/styles.css";
+import { Button, Card } from "@uipath/apollo-wind";
 
 function App() {
   return (
@@ -87,7 +87,7 @@ npm install @uipath/apollo-wind postcss
 
 ```js
 // postcss.config.js (root of your project)
-export { default } from '@uipath/apollo-wind/postcss';
+export { default } from "@uipath/apollo-wind/postcss";
 ```
 
 **Step 3: Create CSS File**
@@ -96,7 +96,7 @@ export { default } from '@uipath/apollo-wind/postcss';
 /* src/app.css */
 
 /* Import Apollo Wind Tailwind CSS with theme */
-@import '@uipath/apollo-wind/tailwind.css';
+@import "@uipath/apollo-wind/tailwind.css";
 
 /* CRITICAL: Tell Tailwind to scan @uipath/apollo-wind for CVA class names */
 @source "../node_modules/@uipath/apollo-wind";
@@ -113,8 +113,8 @@ export { default } from '@uipath/apollo-wind/postcss';
 
 ```tsx
 // src/main.tsx
-import './app.css';
-import { Button } from '@uipath/apollo-wind';
+import "./app.css";
+import { Button } from "@uipath/apollo-wind";
 
 function App() {
   return (
@@ -123,13 +123,17 @@ function App() {
       <Button>Standard Button</Button>
 
       {/* ✅ All Tailwind utilities work */}
-      <Button className="bg-purple-500 hover:scale-105">Custom Purple Button</Button>
+      <Button className="bg-purple-500 hover:scale-105">
+        Custom Purple Button
+      </Button>
 
       {/* ✅ Arbitrary values work */}
       <Button className="w-[250px] h-[60px]">Custom Size Button</Button>
 
       {/* ✅ Gradients work */}
-      <div className="bg-gradient-to-r from-purple-600 to-pink-600">Gradient Background</div>
+      <div className="bg-gradient-to-r from-purple-600 to-pink-600">
+        Gradient Background
+      </div>
     </>
   );
 }
@@ -164,11 +168,11 @@ Apollo Wind components use **CVA** (Class Variance Authority) to define styles:
 
 ```tsx
 // Inside @uipath/apollo-wind/dist/index.js
-const buttonVariants = cva('inline-flex items-center ...', {
+const buttonVariants = cva("inline-flex items-center ...", {
   variants: {
     variant: {
-      default: 'bg-gray-900 text-gray-50 hover:bg-gray-800',
-      destructive: 'bg-red-600 text-gray-50 hover:bg-red-500',
+      default: "bg-gray-900 text-gray-50 hover:bg-gray-800",
+      destructive: "bg-red-600 text-gray-50 hover:bg-red-500",
     },
   },
 });
@@ -227,7 +231,7 @@ import {
   CardDescription,
   CardContent,
   CardFooter,
-} from '@uipath/apollo-wind';
+} from "@uipath/apollo-wind";
 
 <Card>
   <CardHeader>
@@ -244,7 +248,7 @@ import {
 ### Form Components
 
 ```tsx
-import { Input, Label, Textarea, Checkbox, Select } from '@uipath/apollo-wind';
+import { Input, Label, Textarea, Checkbox, Select } from "@uipath/apollo-wind";
 
 <div className="space-y-4">
   <div>
@@ -272,7 +276,7 @@ import { Input, Label, Textarea, Checkbox, Select } from '@uipath/apollo-wind';
 ### Avatar
 
 ```tsx
-import { Avatar, AvatarImage, AvatarFallback } from '@uipath/apollo-wind';
+import { Avatar, AvatarImage, AvatarFallback } from "@uipath/apollo-wind";
 
 <Avatar>
   <AvatarImage src="/avatar.jpg" alt="User" />
@@ -309,9 +313,15 @@ All components accept a `className` prop for customization:
 Merge classes safely with the `cn()` utility:
 
 ```tsx
-import { cn } from '@uipath/apollo-wind';
+import { cn } from "@uipath/apollo-wind";
 
-<Button className={cn('base-class', isActive && 'active-class', isDisabled && 'opacity-50')}>
+<Button
+  className={cn(
+    "base-class",
+    isActive && "active-class",
+    isDisabled && "opacity-50",
+  )}
+>
   Button
 </Button>;
 ```
@@ -345,10 +355,10 @@ Create custom variants using `@apply`:
 
 ```tsx
 // ❌ Wrong
-import '@uipath/apollo-wind/dist/styles.css';
+import "@uipath/apollo-wind/dist/styles.css";
 
 // ✅ Correct
-import '@uipath/apollo-wind/styles.css';
+import "@uipath/apollo-wind/styles.css";
 ```
 
 ### Tailwind JIT Approach
@@ -361,7 +371,7 @@ import '@uipath/apollo-wind/styles.css';
 
 ```js
 // postcss.config.js - REQUIRED
-export { default } from '@uipath/apollo-wind/postcss';
+export { default } from "@uipath/apollo-wind/postcss";
 ```
 
 **Problem 2:** Components render but have no styling
@@ -372,7 +382,7 @@ export { default } from '@uipath/apollo-wind/postcss';
 
 ```css
 /* app.css */
-@import '@uipath/apollo-wind/tailwind.css';
+@import "@uipath/apollo-wind/tailwind.css";
 @source "../node_modules/@uipath/apollo-wind"; /* REQUIRED */
 ```
 
@@ -404,7 +414,7 @@ npm install --save-dev @testing-library/dom
 
 ```tsx
 // app/layout.tsx
-import '@uipath/apollo-wind/styles.css'; // or use Tailwind JIT approach
+import "@uipath/apollo-wind/styles.css"; // or use Tailwind JIT approach
 
 export default function RootLayout({ children }) {
   return (
@@ -419,20 +429,20 @@ export default function RootLayout({ children }) {
 
 ```tsx
 // src/main.tsx
-import '@uipath/apollo-wind/styles.css'; // or use Tailwind JIT approach
-import App from './App';
+import "@uipath/apollo-wind/styles.css"; // or use Tailwind JIT approach
+import App from "./App";
 
-createRoot(document.getElementById('root')!).render(<App />);
+createRoot(document.getElementById("root")!).render(<App />);
 ```
 
 ### Create React App
 
 ```tsx
 // src/index.tsx
-import '@uipath/apollo-wind/styles.css'; // or use Tailwind JIT approach
-import App from './App';
+import "@uipath/apollo-wind/styles.css"; // or use Tailwind JIT approach
+import App from "./App";
 
-const root = ReactDOM.createRoot(document.getElementById('root')!);
+const root = ReactDOM.createRoot(document.getElementById("root")!);
 root.render(<App />);
 ```
 
@@ -444,16 +454,18 @@ root.render(<App />);
 
    ```tsx
    // ✅ Good
-   import { Button } from '@uipath/apollo-wind';
+   import { Button } from "@uipath/apollo-wind";
 
    // ❌ Avoid
-   import * as Wind from '@uipath/apollo-wind';
+   import * as Wind from "@uipath/apollo-wind";
    ```
 
 2. **Use JIT for production:** Smaller bundle sizes
 3. **Lazy load heavy components:**
    ```tsx
-   const Card = lazy(() => import('@uipath/apollo-wind').then((m) => ({ default: m.Card })));
+   const Card = lazy(() =>
+     import("@uipath/apollo-wind").then((m) => ({ default: m.Card })),
+   );
    ```
 
 ---
@@ -471,7 +483,7 @@ root.render(<App />);
    ```
 4. Create `app.css`:
    ```css
-   @import '@uipath/apollo-wind/tailwind.css';
+   @import "@uipath/apollo-wind/tailwind.css";
    @source "../node_modules/@uipath/apollo-wind";
    ```
 

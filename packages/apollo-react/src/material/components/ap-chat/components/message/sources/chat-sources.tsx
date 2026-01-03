@@ -1,10 +1,9 @@
-import React, { useCallback, useEffect, useState } from 'react';
-
 import { msg } from '@lingui/core/macro';
 import { useLingui } from '@lingui/react';
 import { Box, Collapse, styled } from '@mui/material';
 import token from '@uipath/apollo-core';
 import { ApIcon } from '@uipath/apollo-react/material/components';
+import React, { useCallback, useEffect, useState } from 'react';
 
 import { ApTypography } from '../../../../ap-typography';
 import { useIsStreamingMessage } from '../../../hooks/use-is-streaming-message';
@@ -12,10 +11,10 @@ import { useChatService } from '../../../providers/chat-service.provider';
 import { useChatState } from '../../../providers/chat-state-provider';
 import {
   AutopilotChatEvent,
-  AutopilotChatMessage,
+  type AutopilotChatMessage,
   AutopilotChatPreHookAction,
-  PdfCitation,
-  UrlCitation,
+  type PdfCitation,
+  type UrlCitation,
 } from '../../../service';
 import { AutopilotChatTooltip } from '../../common/tooltip';
 
@@ -26,8 +25,7 @@ interface AutopilotChatSourcesProps {
 
 const getSources = (group: AutopilotChatMessage[]) => {
   const allCitations = group
-    .map((message) => message.contentParts?.map((part) => part.citations).flat() ?? [])
-    .flat()
+    .flatMap((message) => message.contentParts?.flatMap((part) => part.citations) ?? [])
     .filter((citation): citation is UrlCitation | PdfCitation => citation !== undefined);
 
   // Deduplicate citations by ID, keeping the first occurrence

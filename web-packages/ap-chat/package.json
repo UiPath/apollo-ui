@@ -29,14 +29,15 @@
     "build": "NODE_ENV=production rsbuild build",
     "build:analyze": "NODE_ENV=production BUNDLE_ANALYZE=true rsbuild build",
     "dev": "NODE_ENV=development rsbuild dev",
-    "lint": "eslint src --ext .ts,.tsx",
+    "lint": "biome lint src",
+    "lint:fix": "biome lint --write src",
     "test": "vitest --run",
     "test:watch": "vitest",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest --run --coverage",
     "clean": "rm -rf dist",
-    "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,css,scss,md}\"",
-    "format:check": "prettier --check \"src/**/*.{ts,tsx,js,jsx,json,css,scss,md}\""
+    "format": "biome format --write src",
+    "format:check": "biome format src"
   },
   "keywords": [
     "design-system",

@@ -57,7 +57,7 @@ describe('Menubar', () => {
               <MenubarItem>Undo</MenubarItem>
             </MenubarContent>
           </MenubarMenu>
-        </Menubar>,
+        </Menubar>
       );
 
       expect(screen.getByText('File')).toBeInTheDocument();
@@ -93,7 +93,7 @@ describe('Menubar', () => {
               <MenubarItem>New</MenubarItem>
             </MenubarContent>
           </MenubarMenu>
-        </Menubar>,
+        </Menubar>
       );
 
       expect(screen.getByRole('menubar')).toHaveClass('custom-menubar');
@@ -108,7 +108,7 @@ describe('Menubar', () => {
               <MenubarItem>New</MenubarItem>
             </MenubarContent>
           </MenubarMenu>
-        </Menubar>,
+        </Menubar>
       );
 
       expect(screen.getByText('File')).toHaveClass('custom-trigger');
@@ -124,7 +124,7 @@ describe('Menubar', () => {
               <MenubarItem inset>Inset Item</MenubarItem>
             </MenubarContent>
           </MenubarMenu>
-        </Menubar>,
+        </Menubar>
       );
 
       await user.click(screen.getByText('File'));
@@ -144,7 +144,7 @@ describe('Menubar', () => {
               <MenubarItem>Item</MenubarItem>
             </MenubarContent>
           </MenubarMenu>
-        </Menubar>,
+        </Menubar>
       );
 
       await user.click(screen.getByText('File'));
@@ -178,7 +178,7 @@ describe('Menubar', () => {
               <MenubarItem onSelect={onSelect}>New</MenubarItem>
             </MenubarContent>
           </MenubarMenu>
-        </Menubar>,
+        </Menubar>
       );
 
       await user.click(screen.getByText('File'));
@@ -202,7 +202,7 @@ describe('Menubar', () => {
               <MenubarItem disabled>Disabled</MenubarItem>
             </MenubarContent>
           </MenubarMenu>
-        </Menubar>,
+        </Menubar>
       );
 
       await user.click(screen.getByText('File'));
@@ -223,7 +223,7 @@ describe('Menubar', () => {
               <MenubarCheckboxItem checked>Show Toolbar</MenubarCheckboxItem>
             </MenubarContent>
           </MenubarMenu>
-        </Menubar>,
+        </Menubar>
       );
 
       await user.click(screen.getByText('View'));
@@ -247,7 +247,7 @@ describe('Menubar', () => {
               </MenubarRadioGroup>
             </MenubarContent>
           </MenubarMenu>
-        </Menubar>,
+        </Menubar>
       );
 
       await user.click(screen.getByText('View'));
@@ -274,7 +274,7 @@ describe('Menubar', () => {
               </MenubarSub>
             </MenubarContent>
           </MenubarMenu>
-        </Menubar>,
+        </Menubar>
       );
 
       await user.click(screen.getByText('File'));
@@ -298,7 +298,7 @@ describe('Menubar', () => {
               </MenubarSub>
             </MenubarContent>
           </MenubarMenu>
-        </Menubar>,
+        </Menubar>
       );
 
       await user.click(screen.getByText('File'));
@@ -321,7 +321,7 @@ describe('Menubar', () => {
               </MenubarItem>
             </MenubarContent>
           </MenubarMenu>
-        </Menubar>,
+        </Menubar>
       );
 
       await user.click(screen.getByText('File'));
@@ -342,7 +342,7 @@ describe('Menubar', () => {
               </MenubarItem>
             </MenubarContent>
           </MenubarMenu>
-        </Menubar>,
+        </Menubar>
       );
 
       await user.click(screen.getByText('File'));

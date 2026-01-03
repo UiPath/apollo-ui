@@ -47,4 +47,9 @@ export type {
 } from './form-schema';
 
 // Type guards
-export { hasOptions, hasMinMaxStep, isFileField, isCustomField } from './form-schema';
+export {
+  hasOptions,
+  hasMinMaxStep,
+  isFileField,
+  isCustomField,
+} from './form-schema';

@@ -1,5 +1,3 @@
-import { useCallback, useState } from 'react';
-
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { FontVariantToken } from '@uipath/apollo-core';
 import { Column } from '@uipath/apollo-react/canvas/layouts';
@@ -11,6 +9,7 @@ import {
   ReactFlowProvider,
 } from '@uipath/apollo-react/canvas/xyflow/react';
 import { ApTypography } from '@uipath/apollo-react/material';
+import { useCallback, useState } from 'react';
 
 import { BaseCanvas } from './BaseCanvas/BaseCanvas';
 import { NodeInspector } from './NodeInspector';

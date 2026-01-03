@@ -1,11 +1,11 @@
-import { useCallback, useState } from 'react';
 import { useReactFlow } from '@uipath/apollo-react/canvas/xyflow/react';
+import { useCallback, useState } from 'react';
 import {
-  exportCanvasToImage,
-  downloadCanvasAsImage,
   copyCanvasToClipboard,
+  downloadCanvasAsImage,
   type ExportCanvasOptions,
   type ExportCanvasResult,
+  exportCanvasToImage,
 } from '../utils/export-canvas';
 
 /**

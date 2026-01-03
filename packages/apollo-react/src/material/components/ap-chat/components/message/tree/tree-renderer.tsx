@@ -1,9 +1,8 @@
-import React from 'react';
-
 import { msg } from '@lingui/core/macro';
 import { useLingui } from '@lingui/react';
-import { ApTreeViewItem, ApTreeView } from '../../../../ap-tree-view';
-import { ApolloChatTreeRendererProps, ToolData, TreeSpanNode } from './tree-renderer.types';
+import React from 'react';
+import { ApTreeView, type ApTreeViewItem } from '../../../../ap-tree-view';
+import type { ApolloChatTreeRendererProps, ToolData, TreeSpanNode } from './tree-renderer.types';
 
 export const ApolloChatTreeRenderer: React.FC<ApolloChatTreeRendererProps> = ({
   span,

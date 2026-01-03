@@ -13,7 +13,13 @@ const basicSchema: FormSchema = {
     {
       id: 'section-1',
       fields: [
-        { name: 'name', type: 'text', label: 'Name', placeholder: 'Enter name', defaultValue: '' },
+        {
+          name: 'name',
+          type: 'text',
+          label: 'Name',
+          placeholder: 'Enter name',
+          defaultValue: '',
+        },
         {
           name: 'email',
           type: 'email',
@@ -173,7 +179,7 @@ describe('MetadataForm', () => {
           expect.objectContaining({
             name: 'John Doe',
             email: 'john@example.com',
-          }),
+          })
         );
       });
     });
@@ -222,7 +228,7 @@ describe('MetadataForm', () => {
         expect(handleSubmit).toHaveBeenCalledWith(
           expect.objectContaining({
             toggle: 'aaa',
-          }),
+          })
         );
       });
     });

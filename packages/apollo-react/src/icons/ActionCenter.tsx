@@ -11,8 +11,21 @@ export interface ActionCenterProps extends Omit<React.SVGProps<SVGSVGElement>, '
 
 export const ActionCenter = React.forwardRef<SVGSVGElement, ActionCenterProps>(
   ({ size, ...props }, ref) => (
-    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
-      <path fillRule="evenodd" clipRule="evenodd" d="M11.8068 0V7.52741L18.495 8.94536L7.6882 22.9486V15.4212L1 14.0032L11.8068 0ZM5.53824 12.3458L10.2796 13.351V15.3676L13.9568 10.6027L9.21548 9.59755V7.58097L5.53824 12.3458ZM24 16.5968H17.5216V14.0356H24V16.5968ZM24 23H13.6346V20.4387H24V23Z" fill="currentColor"/>
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      ref={ref}
+      {...props}
+      width={size ?? 24}
+      height={size ?? 24}
+    >
+      <path
+        fillRule="evenodd"
+        clipRule="evenodd"
+        d="M11.8068 0V7.52741L18.495 8.94536L7.6882 22.9486V15.4212L1 14.0032L11.8068 0ZM5.53824 12.3458L10.2796 13.351V15.3676L13.9568 10.6027L9.21548 9.59755V7.58097L5.53824 12.3458ZM24 16.5968H17.5216V14.0356H24V16.5968ZM24 23H13.6346V20.4387H24V23Z"
+        fill="currentColor"
+      />
     </svg>
   )
 );

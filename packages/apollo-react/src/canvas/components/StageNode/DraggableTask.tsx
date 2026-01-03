@@ -1,5 +1,3 @@
-import { memo, useCallback, useMemo } from 'react';
-
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { FontVariantToken } from '@uipath/apollo-core';
@@ -10,8 +8,9 @@ import {
   ApTooltip,
   ApTypography,
   BadgeSize,
-  StatusTypes,
+  type StatusTypes,
 } from '@uipath/apollo-react/material';
+import { memo, useCallback, useMemo } from 'react';
 
 import { ExecutionStatusIcon } from '../ExecutionStatusIcon';
 import type { DraggableTaskProps, TaskContentProps } from './DraggableTask.types';

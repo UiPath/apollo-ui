@@ -1,15 +1,13 @@
-import React from 'react';
-
-import { isEqual } from 'lodash/fp';
-
 import { msg } from '@lingui/core/macro';
 import { useLingui } from '@lingui/react';
+import { isEqual } from 'lodash/fp';
+import React from 'react';
 
 import {
   AutopilotChatEvent,
-  AutopilotChatFileInfo,
+  type AutopilotChatFileInfo,
   AutopilotChatInternalEvent,
-  AutopilotChatPrompt,
+  type AutopilotChatPrompt,
 } from '../service';
 import { useChatService } from './chat-service.provider';
 import { useChatState } from './chat-state-provider';

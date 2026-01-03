@@ -1,5 +1,5 @@
-import { FocusEventHandler, KeyboardEventHandler, MouseEventHandler, ReactNode } from 'react';
-import { ButtonProps } from '@mui/material';
+import type { ButtonProps } from '@mui/material';
+import type { FocusEventHandler, KeyboardEventHandler, MouseEventHandler, ReactNode } from 'react';
 
 export type ButtonVariants =
   | 'primary'

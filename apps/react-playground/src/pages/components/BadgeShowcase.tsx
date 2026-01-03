@@ -1,7 +1,11 @@
-import { ApBadge, StatusTypes } from '@uipath/apollo-react/material/components';
-import styled from 'styled-components';
+import { ApBadge, StatusTypes } from "@uipath/apollo-react/material/components";
+import styled from "styled-components";
 
-import { PageContainer, PageDescription, PageTitle } from '../../components/SharedStyles';
+import {
+	PageContainer,
+	PageDescription,
+	PageTitle,
+} from "../../components/SharedStyles";
 
 const ShowcaseSection = styled.div`
   margin-top: 48px;
@@ -37,36 +41,37 @@ const Label = styled.div`
 `;
 
 export function BadgeShowcase() {
-  return (
-    <PageContainer>
-      <PageTitle>Badge</PageTitle>
-      <PageDescription>
-        Small status indicators and labels for displaying metadata and status information
-      </PageDescription>
+	return (
+		<PageContainer>
+			<PageTitle>Badge</PageTitle>
+			<PageDescription>
+				Small status indicators and labels for displaying metadata and status
+				information
+			</PageDescription>
 
-      <ShowcaseSection>
-        <SectionTitle>Status Types</SectionTitle>
-        <ComponentRow>
-          <Label>Different status variants</Label>
-          <ApBadge label="Success" status={StatusTypes.SUCCESS} />
-          <ApBadge label="Error" status={StatusTypes.ERROR} />
-          <ApBadge label="Warning" status={StatusTypes.WARNING} />
-          <ApBadge label="Info" status={StatusTypes.INFO} />
-          <ApBadge label="Neutral" status={StatusTypes.NONE} />
-        </ComponentRow>
-      </ShowcaseSection>
+			<ShowcaseSection>
+				<SectionTitle>Status Types</SectionTitle>
+				<ComponentRow>
+					<Label>Different status variants</Label>
+					<ApBadge label="Success" status={StatusTypes.SUCCESS} />
+					<ApBadge label="Error" status={StatusTypes.ERROR} />
+					<ApBadge label="Warning" status={StatusTypes.WARNING} />
+					<ApBadge label="Info" status={StatusTypes.INFO} />
+					<ApBadge label="Neutral" status={StatusTypes.NONE} />
+				</ComponentRow>
+			</ShowcaseSection>
 
-      <ShowcaseSection>
-        <SectionTitle>Labels</SectionTitle>
-        <ComponentRow>
-          <Label>Various label examples</Label>
-          <ApBadge label="New" status={StatusTypes.INFO} />
-          <ApBadge label="Beta" status={StatusTypes.WARNING} />
-          <ApBadge label="Premium" status={StatusTypes.SUCCESS} />
-          <ApBadge label="Deprecated" status={StatusTypes.ERROR} />
-          <ApBadge label="Draft" status={StatusTypes.NONE} />
-        </ComponentRow>
-      </ShowcaseSection>
-    </PageContainer>
-  );
+			<ShowcaseSection>
+				<SectionTitle>Labels</SectionTitle>
+				<ComponentRow>
+					<Label>Various label examples</Label>
+					<ApBadge label="New" status={StatusTypes.INFO} />
+					<ApBadge label="Beta" status={StatusTypes.WARNING} />
+					<ApBadge label="Premium" status={StatusTypes.SUCCESS} />
+					<ApBadge label="Deprecated" status={StatusTypes.ERROR} />
+					<ApBadge label="Draft" status={StatusTypes.NONE} />
+				</ComponentRow>
+			</ShowcaseSection>
+		</PageContainer>
+	);
 }

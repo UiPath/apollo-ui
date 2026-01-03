@@ -1,10 +1,11 @@
-import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import type React from 'react';
+import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 
 import {
-  AutopilotChatAgentModeInfo,
-  AutopilotChatCustomHeaderAction,
+  type AutopilotChatAgentModeInfo,
+  type AutopilotChatCustomHeaderAction,
   AutopilotChatEvent,
-  AutopilotChatModelInfo,
+  type AutopilotChatModelInfo,
 } from '../service';
 import { useChatService } from './chat-service.provider';
 

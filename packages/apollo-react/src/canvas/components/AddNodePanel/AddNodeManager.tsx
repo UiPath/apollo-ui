@@ -1,12 +1,12 @@
 import type { Edge, Node, ReactFlowState } from '@uipath/apollo-react/canvas/xyflow/react';
 import { useReactFlow, useStore } from '@uipath/apollo-react/canvas/xyflow/react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { PREVIEW_EDGE_ID, PREVIEW_NODE_ID } from '../../constants';
 import type { BaseNodeData } from '../BaseNode/BaseNode.types';
+import { FloatingCanvasPanel } from '../FloatingCanvasPanel';
 import type { ListItem } from '../Toolbox';
 import { AddNodePanel } from './AddNodePanel';
-import { FloatingCanvasPanel } from '../FloatingCanvasPanel';
 import type { NodeItemData } from './AddNodePanel.types';
-import { PREVIEW_EDGE_ID, PREVIEW_NODE_ID } from '../../constants';
 
 // Optimized selector - only find the preview node instead of filtering all nodes
 const previewNodeSelector = (state: ReactFlowState) => {

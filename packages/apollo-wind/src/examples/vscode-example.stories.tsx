@@ -100,8 +100,16 @@ function VSCodeShellDemo() {
   const [activeView, setActiveView] = React.useState('files');
   const [selectedFile, setSelectedFile] = React.useState('Shell.tsx');
   const [tabs, setTabs] = React.useState([
-    { id: 'shell', title: 'Shell.tsx', icon: <FileCode className="h-4 w-4 text-blue-500" /> },
-    { id: 'button', title: 'Button.tsx', icon: <FileCode className="h-4 w-4 text-blue-500" /> },
+    {
+      id: 'shell',
+      title: 'Shell.tsx',
+      icon: <FileCode className="h-4 w-4 text-blue-500" />,
+    },
+    {
+      id: 'button',
+      title: 'Button.tsx',
+      icon: <FileCode className="h-4 w-4 text-blue-500" />,
+    },
   ]);
   const [activeTab, setActiveTab] = React.useState('shell');
   const [sidebarCollapsed, setSidebarCollapsed] = React.useState(false);

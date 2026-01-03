@@ -1,3 +1,3 @@
-export { ApTreeView, ApTreeItem } from './ApTreeView';
-export type { ApTreeViewProps, ApTreeViewItem, ApTreeItemProps } from './ApTreeView.types';
+export { ApTreeItem, ApTreeView } from './ApTreeView';
+export type { ApTreeItemProps, ApTreeViewItem, ApTreeViewProps } from './ApTreeView.types';
 export { deepFind, recursivelyExpand } from './utils';

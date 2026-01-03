@@ -1,16 +1,3 @@
-import {
-  createContext,
-  memo,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
-
-import { AnimatePresence } from 'motion/react';
-
 import { FontVariantToken } from '@uipath/apollo-core';
 import { Row } from '@uipath/apollo-react/canvas/layouts';
 import { ApTypography } from '@uipath/apollo-react/material';
@@ -26,6 +13,17 @@ import {
   useStore,
   useUpdateNodeInternals,
 } from '@xyflow/react';
+import { AnimatePresence } from 'motion/react';
+import {
+  createContext,
+  memo,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 
 import { canvasEventBus } from '../../utils/CanvasEventBus';
 import type { HandleActionEvent } from './ButtonHandle';

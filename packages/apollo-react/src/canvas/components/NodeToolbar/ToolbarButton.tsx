@@ -1,6 +1,6 @@
+import { getLighterColor } from '@uipath/apollo-react/canvas/utils';
 import { ApIcon, ApTooltip } from '@uipath/apollo-react/material/components';
 import { memo } from 'react';
-import { getLighterColor } from '@uipath/apollo-react/canvas/utils';
 import { StyledToolbarButton } from './NodeToolbar.styles';
 import type { ToolbarActionItem } from './NodeToolbar.types';
 

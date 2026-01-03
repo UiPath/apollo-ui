@@ -11,8 +11,19 @@ export interface SubscriptProps extends Omit<React.SVGProps<SVGSVGElement>, 'wid
 
 export const Subscript = React.forwardRef<SVGSVGElement, SubscriptProps>(
   ({ size, ...props }, ref) => (
-    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
-      <path d="M19.5599 18H17.5599V19H20.5599V20H16.5599V18C16.5599 17.45 17.0099 17 17.5599 17H19.5599V16H16.5599V15H19.5599C20.1099 15 20.5599 15.45 20.5599 16V17C20.5599 17.55 20.1099 18 19.5599 18ZM3.43994 18H6.09994L9.49994 12.58H9.61994L13.0199 18H15.6799L11.0299 10.73L15.3699 4H12.6899L9.61994 8.99H9.49994L6.40994 4H3.74994L8.06994 10.73L3.43994 18Z" fill="currentColor"/>
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      ref={ref}
+      {...props}
+      width={size ?? 24}
+      height={size ?? 24}
+    >
+      <path
+        d="M19.5599 18H17.5599V19H20.5599V20H16.5599V18C16.5599 17.45 17.0099 17 17.5599 17H19.5599V16H16.5599V15H19.5599C20.1099 15 20.5599 15.45 20.5599 16V17C20.5599 17.55 20.1099 18 19.5599 18ZM3.43994 18H6.09994L9.49994 12.58H9.61994L13.0199 18H15.6799L11.0299 10.73L15.3699 4H12.6899L9.61994 8.99H9.49994L6.40994 4H3.74994L8.06994 10.73L3.43994 18Z"
+        fill="currentColor"
+      />
     </svg>
   )
 );

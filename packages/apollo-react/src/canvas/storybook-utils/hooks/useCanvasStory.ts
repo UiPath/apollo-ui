@@ -1,4 +1,3 @@
-import { useCallback, useMemo } from 'react';
 import type {
   Connection,
   Edge,
@@ -6,10 +5,11 @@ import type {
   Node,
   NodeTypes,
 } from '@uipath/apollo-react/canvas/xyflow/react';
-import { addEdge, useNodesState, useEdgesState } from '@uipath/apollo-react/canvas/xyflow/react';
+import { addEdge, useEdgesState, useNodesState } from '@uipath/apollo-react/canvas/xyflow/react';
+import { useCallback, useMemo } from 'react';
+import { AddNodePreview } from '../../components';
 import { BaseNode } from '../../components/BaseNode/BaseNode';
 import { useNodeTypeRegistry } from '../../components/BaseNode/useNodeTypeRegistry';
-import { AddNodePreview } from '../../components';
 import { SequenceEdge } from '../../components/Edges';
 
 /**

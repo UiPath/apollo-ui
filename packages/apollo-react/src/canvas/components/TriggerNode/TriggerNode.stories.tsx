@@ -1,19 +1,19 @@
-import { useState, useCallback } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import {
-  applyEdgeChanges,
-  applyNodeChanges,
-  addEdge,
-  ReactFlowProvider,
-} from '@uipath/apollo-react/canvas/xyflow/react';
 import type {
+  Connection,
   Edge,
   EdgeChange,
   Node,
   NodeChange,
-  Connection,
+} from '@uipath/apollo-react/canvas/xyflow/react';
+import {
+  addEdge,
+  applyEdgeChanges,
+  applyNodeChanges,
+  ReactFlowProvider,
 } from '@uipath/apollo-react/canvas/xyflow/react';
 import { ApIcon } from '@uipath/apollo-react/material/components';
+import { useCallback, useState } from 'react';
 import { BaseCanvas } from '../BaseCanvas';
 import { TriggerNode } from './TriggerNode';
 

@@ -34,8 +34,16 @@ interface NavItem {
 const navItems: NavItem[] = [
   { id: 'profile', label: 'Profile', icon: <User className="h-4 w-4" /> },
   { id: 'account', label: 'Account', icon: <Key className="h-4 w-4" /> },
-  { id: 'appearance', label: 'Appearance', icon: <Palette className="h-4 w-4" /> },
-  { id: 'notifications', label: 'Notifications', icon: <Bell className="h-4 w-4" /> },
+  {
+    id: 'appearance',
+    label: 'Appearance',
+    icon: <Palette className="h-4 w-4" />,
+  },
+  {
+    id: 'notifications',
+    label: 'Notifications',
+    icon: <Bell className="h-4 w-4" />,
+  },
   { id: 'security', label: 'Security', icon: <Shield className="h-4 w-4" /> },
   { id: 'billing', label: 'Billing', icon: <CreditCard className="h-4 w-4" /> },
 ];
@@ -81,7 +89,7 @@ export function SettingsExample() {
                   'flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors',
                   activeSection === item.id
                     ? 'bg-muted font-medium'
-                    : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground',
+                    : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'
                 )}
               >
                 {item.icon}

@@ -4,17 +4,18 @@
  * Demonstrates the SequenceEdge component which renders smooth step edges
  * with directional arrows for workflow connections.
  */
-import { useMemo } from 'react';
+
 import type { Meta, StoryObj } from '@storybook/react';
-import type { Node, Edge, EdgeTypes } from '@uipath/apollo-react/canvas/xyflow/react';
+import type { Edge, EdgeTypes, Node } from '@uipath/apollo-react/canvas/xyflow/react';
 import { Panel, Position } from '@uipath/apollo-react/canvas/xyflow/react';
+import { useMemo } from 'react';
+import { useCanvasStory, withCanvasProviders } from '../../storybook-utils';
+import { DefaultCanvasTranslations } from '../../types';
 import { BaseCanvas } from '../BaseCanvas';
 import { CanvasPositionControls } from '../CanvasPositionControls';
 import { StickyNoteNode } from '../StickyNoteNode';
 import type { StickyNoteColor, StickyNoteData } from '../StickyNoteNode/StickyNoteNode.types';
-import { withCanvasProviders, useCanvasStory } from '../../storybook-utils';
 import { SequenceEdge } from './SequenceEdge';
-import { DefaultCanvasTranslations } from '../../types';
 
 // ============================================================================
 // Meta Configuration

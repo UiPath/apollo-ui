@@ -1,8 +1,8 @@
+import type { Variant } from '@mui/material/styles/createTypography';
 import { FontVariantToken } from '@uipath/apollo-core';
-import { ElementType } from 'react';
-import { Variant } from '@mui/material/styles/createTypography';
+import type { ElementType } from 'react';
 
-import { ApTypographyVariant } from './ApTypography.types';
+import type { ApTypographyVariant } from './ApTypography.types';
 
 /**
  * Maps Apollo FontVariantToken to MUI variant and component

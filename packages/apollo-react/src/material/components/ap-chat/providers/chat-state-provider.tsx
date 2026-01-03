@@ -1,15 +1,14 @@
+import token, { FontVariantToken } from '@uipath/apollo-core';
 import React from 'react';
 
-import token, { FontVariantToken } from '@uipath/apollo-core';
-
 import {
-  AutopilotChatAllowedAttachments,
-  AutopilotChatConfiguration,
-  AutopilotChatDisabledFeatures,
+  type AutopilotChatAllowedAttachments,
+  type AutopilotChatConfiguration,
+  type AutopilotChatDisabledFeatures,
   AutopilotChatEvent,
   AutopilotChatInternalEvent,
   AutopilotChatMode,
-  AutopilotChatOverrideLabels,
+  type AutopilotChatOverrideLabels,
   CHAT_COMPACT_MODE_INPUT_MAX_ROWS,
   CHAT_COMPACT_MODE_INPUT_MIN_ROWS,
   CHAT_COMPACT_MODE_MESSAGE_GROUP_GAP,

@@ -18,10 +18,10 @@
   "scripts": {
     "build": "ng-packagr -p ng-package.json",
     "dev": "ng-packagr -p ng-package.json --watch",
-    "lint": "eslint src --ext .ts",
-    "lint:fix": "eslint src --ext .ts --fix",
-    "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,css,scss,md}\"",
-    "format:check": "prettier --check \"src/**/*.{ts,tsx,js,jsx,json,css,scss,md}\"",
+    "lint": "biome lint src",
+    "lint:fix": "biome lint --write src",
+    "format": "biome format --write src",
+    "format:check": "biome format src",
     "test": "echo 'No tests configured yet'",
     "clean": "rm -rf dist"
   },

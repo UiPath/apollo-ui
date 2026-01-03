@@ -1,11 +1,10 @@
-import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
-
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import { Box, Tooltip } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { RichTreeView, TreeItem } from '@mui/x-tree-view';
 import { useTreeItemModel, useTreeItemUtils } from '@mui/x-tree-view/hooks';
 import token, { FontVariantToken } from '@uipath/apollo-core';
+import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
 
 import { ApTypography } from '../ap-typography';
 import type { ApTreeItemProps, ApTreeViewItem, ApTreeViewProps } from './ApTreeView.types';

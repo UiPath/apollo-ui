@@ -1,6 +1,6 @@
-import { Breadcrumb } from './Breadcrumb';
 import type { Meta, StoryObj } from '@storybook/react';
 import { ApIcon } from '@uipath/apollo-react/material/components';
+import { Breadcrumb } from './Breadcrumb';
 
 const meta: Meta<typeof Breadcrumb> = {
   title: 'Core/Controls/Breadcrumb',

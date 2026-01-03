@@ -1,7 +1,6 @@
-import { describe, expect, it } from 'vitest';
-
 import { render, screen } from '@testing-library/react';
 import { FontVariantToken } from '@uipath/apollo-core';
+import { describe, expect, it } from 'vitest';
 
 import { ApTypography } from './ApTypography';
 

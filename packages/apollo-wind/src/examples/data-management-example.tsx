@@ -173,7 +173,10 @@ const columns: ColumnDef<Product, unknown>[] = [
     header: ({ column }) => <DataTableColumnHeader column={column} title="Price" />,
     cell: ({ row }) => {
       const price = parseFloat(row.getValue('price'));
-      return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(price);
+      return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+      }).format(price);
     },
   },
   {

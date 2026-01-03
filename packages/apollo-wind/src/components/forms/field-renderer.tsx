@@ -179,7 +179,7 @@ export function FormFieldRenderer({
     } else if (hasRequiredRule) {
       // Check if there's an unconditional required rule (conditions.length === 0)
       const hasUnconditionalRequired = field.rules.some(
-        (rule) => rule.effects?.required === true && rule.conditions.length === 0,
+        (rule) => rule.effects?.required === true && rule.conditions.length === 0
       );
       // Fall back to static validation.required if no unconditional rule
       newState.required = hasUnconditionalRequired || (field.validation?.required ?? false);
@@ -417,7 +417,10 @@ function FieldByType({ field, formField, error, disabled, required, options }: F
           <MultiSelect
             selected={(formField.value as string[]) || []}
             onChange={formField.onChange}
-            options={options.map((opt) => ({ label: opt.label, value: String(opt.value) }))}
+            options={options.map((opt) => ({
+              label: opt.label,
+              value: String(opt.value),
+            }))}
             disabled={disabled}
             placeholder={field.placeholder || 'Select items...'}
             emptyMessage="No items found."

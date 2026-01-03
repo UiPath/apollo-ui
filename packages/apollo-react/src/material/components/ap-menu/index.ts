@@ -1,2 +1,2 @@
 export { ApMenu } from './ApMenu';
-export type { ApMenuProps, ApMenuOrigin, IMenuItem } from './ApMenu.types';
+export type { ApMenuOrigin, ApMenuProps, IMenuItem } from './ApMenu.types';

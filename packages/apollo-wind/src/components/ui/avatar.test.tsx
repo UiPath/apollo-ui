@@ -14,7 +14,7 @@ describe('Avatar', () => {
     const { container } = render(
       <Avatar>
         <AvatarFallback>JD</AvatarFallback>
-      </Avatar>,
+      </Avatar>
     );
     expect(container.firstChild).toBeInTheDocument();
   });
@@ -23,7 +23,7 @@ describe('Avatar', () => {
     const { container } = render(
       <Avatar>
         <AvatarFallback>CN</AvatarFallback>
-      </Avatar>,
+      </Avatar>
     );
     const results = await axe(container);
     expect(results).toHaveNoViolations();
@@ -33,7 +33,7 @@ describe('Avatar', () => {
     render(
       <Avatar>
         <AvatarFallback>AB</AvatarFallback>
-      </Avatar>,
+      </Avatar>
     );
     expect(screen.getByText('AB')).toBeInTheDocument();
   });
@@ -43,7 +43,7 @@ describe('Avatar', () => {
       <Avatar>
         <AvatarImage src="invalid-url.jpg" alt="Avatar" />
         <AvatarFallback>FB</AvatarFallback>
-      </Avatar>,
+      </Avatar>
     );
 
     await waitFor(() => {
@@ -55,7 +55,7 @@ describe('Avatar', () => {
     const { container } = render(
       <Avatar className="custom-avatar">
         <AvatarFallback>AB</AvatarFallback>
-      </Avatar>,
+      </Avatar>
     );
     expect(container.firstChild).toHaveClass('custom-avatar');
   });
@@ -64,7 +64,7 @@ describe('Avatar', () => {
     render(
       <Avatar>
         <AvatarFallback className="custom-fallback">AB</AvatarFallback>
-      </Avatar>,
+      </Avatar>
     );
     const fallback = screen.getByText('AB');
     expect(fallback).toHaveClass('custom-fallback');
@@ -75,7 +75,7 @@ describe('Avatar', () => {
     render(
       <Avatar ref={ref}>
         <AvatarFallback>AB</AvatarFallback>
-      </Avatar>,
+      </Avatar>
     );
     expect(ref.current).toBeInstanceOf(HTMLSpanElement);
   });
@@ -85,7 +85,7 @@ describe('Avatar', () => {
     render(
       <Avatar>
         <AvatarFallback ref={ref}>AB</AvatarFallback>
-      </Avatar>,
+      </Avatar>
     );
     expect(ref.current).toBeInstanceOf(HTMLSpanElement);
   });
@@ -94,7 +94,7 @@ describe('Avatar', () => {
     render(
       <Avatar>
         <AvatarFallback>JD</AvatarFallback>
-      </Avatar>,
+      </Avatar>
     );
     expect(screen.getByText('JD')).toBeInTheDocument();
   });
@@ -105,7 +105,7 @@ describe('Avatar', () => {
         <AvatarFallback>
           <svg data-testid="fallback-icon" />
         </AvatarFallback>
-      </Avatar>,
+      </Avatar>
     );
     expect(screen.getByTestId('fallback-icon')).toBeInTheDocument();
   });
@@ -115,14 +115,14 @@ describe('Avatar', () => {
       <Avatar>
         <AvatarImage src="invalid.jpg" alt="Avatar" />
         <AvatarFallback delayMs={100}>FB</AvatarFallback>
-      </Avatar>,
+      </Avatar>
     );
 
     await waitFor(
       () => {
         expect(screen.getByText('FB')).toBeInTheDocument();
       },
-      { timeout: 1000 },
+      { timeout: 1000 }
     );
   });
 
@@ -130,7 +130,7 @@ describe('Avatar', () => {
     const { container } = render(
       <Avatar>
         <AvatarFallback>AB</AvatarFallback>
-      </Avatar>,
+      </Avatar>
     );
     expect(container.firstChild).toHaveClass('rounded-full');
   });

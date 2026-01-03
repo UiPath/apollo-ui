@@ -502,7 +502,10 @@ function SpacingGallery() {
               <div className="space-y-2">
                 <div
                   className="w-full h-20 bg-primary flex items-center justify-center text-primary-foreground text-sm font-medium"
-                  style={{ borderTopLeftRadius: '1rem', borderTopRightRadius: '1rem' }}
+                  style={{
+                    borderTopLeftRadius: '1rem',
+                    borderTopRightRadius: '1rem',
+                  }}
                 >
                   t-2xl
                 </div>
@@ -514,7 +517,10 @@ function SpacingGallery() {
               <div className="space-y-2">
                 <div
                   className="w-full h-20 bg-primary flex items-center justify-center text-primary-foreground text-sm font-medium"
-                  style={{ borderBottomLeftRadius: '1rem', borderBottomRightRadius: '1rem' }}
+                  style={{
+                    borderBottomLeftRadius: '1rem',
+                    borderBottomRightRadius: '1rem',
+                  }}
                 >
                   b-2xl
                 </div>
@@ -526,7 +532,10 @@ function SpacingGallery() {
               <div className="space-y-2">
                 <div
                   className="w-full h-20 bg-primary flex items-center justify-center text-primary-foreground text-sm font-medium"
-                  style={{ borderTopLeftRadius: '1rem', borderBottomLeftRadius: '1rem' }}
+                  style={{
+                    borderTopLeftRadius: '1rem',
+                    borderBottomLeftRadius: '1rem',
+                  }}
                 >
                   l-2xl
                 </div>
@@ -538,7 +547,10 @@ function SpacingGallery() {
               <div className="space-y-2">
                 <div
                   className="w-full h-20 bg-primary flex items-center justify-center text-primary-foreground text-sm font-medium"
-                  style={{ borderTopRightRadius: '1rem', borderBottomRightRadius: '1rem' }}
+                  style={{
+                    borderTopRightRadius: '1rem',
+                    borderBottomRightRadius: '1rem',
+                  }}
                 >
                   r-2xl
                 </div>

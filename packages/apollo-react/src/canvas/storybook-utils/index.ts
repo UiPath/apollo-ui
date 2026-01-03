@@ -5,8 +5,8 @@
  * to reduce boilerplate in Storybook story files.
  */
 
+export * from './components';
 export * from './decorators';
 export * from './hooks';
-export * from './components';
-export * from './mocks';
 export * from './manifests';
+export * from './mocks';

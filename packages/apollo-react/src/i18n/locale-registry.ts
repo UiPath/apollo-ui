@@ -9,9 +9,9 @@ import apChatDe from '../material/components/ap-chat/locales/de.js';
 // @ts-expect-error - CommonJS modules without type definitions
 import apChatEn from '../material/components/ap-chat/locales/en.js';
 // @ts-expect-error - CommonJS modules without type definitions
-import apChatEsMX from '../material/components/ap-chat/locales/es-MX.js';
-// @ts-expect-error - CommonJS modules without type definitions
 import apChatEs from '../material/components/ap-chat/locales/es.js';
+// @ts-expect-error - CommonJS modules without type definitions
+import apChatEsMX from '../material/components/ap-chat/locales/es-MX.js';
 // @ts-expect-error - CommonJS modules without type definitions
 import apChatFr from '../material/components/ap-chat/locales/fr.js';
 // @ts-expect-error - CommonJS modules without type definitions
@@ -19,9 +19,9 @@ import apChatJa from '../material/components/ap-chat/locales/ja.js';
 // @ts-expect-error - CommonJS modules without type definitions
 import apChatKo from '../material/components/ap-chat/locales/ko.js';
 // @ts-expect-error - CommonJS modules without type definitions
-import apChatPtBR from '../material/components/ap-chat/locales/pt-BR.js';
-// @ts-expect-error - CommonJS modules without type definitions
 import apChatPt from '../material/components/ap-chat/locales/pt.js';
+// @ts-expect-error - CommonJS modules without type definitions
+import apChatPtBR from '../material/components/ap-chat/locales/pt-BR.js';
 // @ts-expect-error - CommonJS modules without type definitions
 import apChatRu from '../material/components/ap-chat/locales/ru.js';
 // @ts-expect-error - CommonJS modules without type definitions
@@ -36,9 +36,9 @@ import apToolCallDe from '../material/components/ap-tool-call/locales/de.js';
 // @ts-expect-error - CommonJS modules without type definitions
 import apToolCallEn from '../material/components/ap-tool-call/locales/en.js';
 // @ts-expect-error - CommonJS modules without type definitions
-import apToolCallEsMX from '../material/components/ap-tool-call/locales/es-MX.js';
-// @ts-expect-error - CommonJS modules without type definitions
 import apToolCallEs from '../material/components/ap-tool-call/locales/es.js';
+// @ts-expect-error - CommonJS modules without type definitions
+import apToolCallEsMX from '../material/components/ap-tool-call/locales/es-MX.js';
 // @ts-expect-error - CommonJS modules without type definitions
 import apToolCallFr from '../material/components/ap-tool-call/locales/fr.js';
 // @ts-expect-error - CommonJS modules without type definitions
@@ -46,9 +46,9 @@ import apToolCallJa from '../material/components/ap-tool-call/locales/ja.js';
 // @ts-expect-error - CommonJS modules without type definitions
 import apToolCallKo from '../material/components/ap-tool-call/locales/ko.js';
 // @ts-expect-error - CommonJS modules without type definitions
-import apToolCallPtBR from '../material/components/ap-tool-call/locales/pt-BR.js';
-// @ts-expect-error - CommonJS modules without type definitions
 import apToolCallPt from '../material/components/ap-tool-call/locales/pt.js';
+// @ts-expect-error - CommonJS modules without type definitions
+import apToolCallPtBR from '../material/components/ap-tool-call/locales/pt-BR.js';
 // @ts-expect-error - CommonJS modules without type definitions
 import apToolCallRu from '../material/components/ap-tool-call/locales/ru.js';
 // @ts-expect-error - CommonJS modules without type definitions

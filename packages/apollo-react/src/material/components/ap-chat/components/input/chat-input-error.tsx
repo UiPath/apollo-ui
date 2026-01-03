@@ -1,9 +1,7 @@
+import token from '@uipath/apollo-core';
 import React from 'react';
-
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-
-import token from '@uipath/apollo-core';
 
 import { StatusTypes } from '../../../../../types/statusTypes';
 import { ApAlertBar } from '../../../ap-alert-bar';

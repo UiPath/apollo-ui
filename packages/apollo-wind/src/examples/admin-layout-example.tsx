@@ -45,7 +45,7 @@ export function AdminLayout({ className, children, ...props }: AdminLayoutProps)
     <div
       className={cn(
         'flex h-[700px] w-full flex-col overflow-hidden rounded-lg border bg-background',
-        className,
+        className
       )}
       {...props}
     >
@@ -66,7 +66,7 @@ export function AdminHeader({ className, logo, title, children, ...props }: Admi
     <header
       className={cn(
         'flex h-14 items-center justify-between border-b bg-background px-4',
-        className,
+        className
       )}
       {...props}
     >
@@ -191,7 +191,7 @@ export function AdminSidebarNav({ items, selectedId, onSelect }: AdminSidebarNav
               'cursor-pointer rounded-md px-3 py-2 text-sm transition-colors',
               selectedId === item.id
                 ? 'bg-primary/10 text-primary'
-                : 'text-muted-foreground hover:bg-muted hover:text-foreground',
+                : 'text-muted-foreground hover:bg-muted hover:text-foreground'
             )}
             onClick={() => onSelect?.(item.id)}
           >

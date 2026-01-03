@@ -1,7 +1,8 @@
 // Auto-generated from ui-bpmn-canvas/bpmn-end-event/bpmn-end-event-escalation-catch.svg
 import React from 'react';
 
-export interface BpmnEndEventEscalationCatchProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+export interface BpmnEndEventEscalationCatchProps
+  extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
   /**
    * Size to apply to both width and height.
    * @default 24
@@ -9,14 +10,31 @@ export interface BpmnEndEventEscalationCatchProps extends Omit<React.SVGProps<SV
   size?: string | number;
 }
 
-export const BpmnEndEventEscalationCatch = React.forwardRef<SVGSVGElement, BpmnEndEventEscalationCatchProps>(
-  ({ size, ...props }, ref) => (
-    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
-      <path d="M19.5 12C19.5 7.85786 16.1421 4.5 12 4.5C7.85786 4.5 4.5 7.85786 4.5 12C4.5 16.1421 7.85786 19.5 12 19.5V22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22V19.5C16.1421 19.5 19.5 16.1421 19.5 12Z" fill="currentColor"/>
-<path fillRule="evenodd" clipRule="evenodd" d="M12.3764 7.73211C12.2217 7.42263 11.78 7.42263 11.6253 7.73211L8.29582 14.391C8.12315 14.7364 8.46884 15.1121 8.82732 14.9687L11.8449 13.7616C11.945 13.7216 12.0567 13.7216 12.1568 13.7616L15.1743 14.9687C15.5328 15.1121 15.8785 14.7364 15.7058 14.391L12.3764 7.73211ZM13.5 13L12.4687 12.5634C12.1683 12.4433 11.8333 12.4433 11.533 12.5634L10.5 13L12 9.5L13.5 13Z" fill="currentColor"/>
-    </svg>
-  )
-);
+export const BpmnEndEventEscalationCatch = React.forwardRef<
+  SVGSVGElement,
+  BpmnEndEventEscalationCatchProps
+>(({ size, ...props }, ref) => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    ref={ref}
+    {...props}
+    width={size ?? 24}
+    height={size ?? 24}
+  >
+    <path
+      d="M19.5 12C19.5 7.85786 16.1421 4.5 12 4.5C7.85786 4.5 4.5 7.85786 4.5 12C4.5 16.1421 7.85786 19.5 12 19.5V22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22V19.5C16.1421 19.5 19.5 16.1421 19.5 12Z"
+      fill="currentColor"
+    />
+    <path
+      fillRule="evenodd"
+      clipRule="evenodd"
+      d="M12.3764 7.73211C12.2217 7.42263 11.78 7.42263 11.6253 7.73211L8.29582 14.391C8.12315 14.7364 8.46884 15.1121 8.82732 14.9687L11.8449 13.7616C11.945 13.7216 12.0567 13.7216 12.1568 13.7616L15.1743 14.9687C15.5328 15.1121 15.8785 14.7364 15.7058 14.391L12.3764 7.73211ZM13.5 13L12.4687 12.5634C12.1683 12.4433 11.8333 12.4433 11.533 12.5634L10.5 13L12 9.5L13.5 13Z"
+      fill="currentColor"
+    />
+  </svg>
+));
 
 BpmnEndEventEscalationCatch.displayName = 'BpmnEndEventEscalationCatch';
 

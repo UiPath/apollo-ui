@@ -3,9 +3,7 @@
  *
  * Demonstrates different React Flow edge types and styling options.
  */
-import { useCallback, useEffect, useMemo, useState } from 'react';
 
-import type { Meta, StoryObj } from '@storybook/react';
 import {
   Checkbox,
   FormControl,
@@ -14,6 +12,8 @@ import {
   MenuItem,
   Select,
 } from '@mui/material';
+
+import type { Meta, StoryObj } from '@storybook/react';
 import { FontVariantToken } from '@uipath/apollo-core';
 import { Column } from '@uipath/apollo-react/canvas/layouts';
 import type { Connection, Edge, Node } from '@uipath/apollo-react/canvas/xyflow/react';
@@ -24,6 +24,7 @@ import {
   useEdgesState,
 } from '@uipath/apollo-react/canvas/xyflow/react';
 import { ApTypography } from '@uipath/apollo-react/material';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { StoryInfoPanel, useCanvasStory, withCanvasProviders } from '../../storybook-utils';
 import { DefaultCanvasTranslations } from '../../types';

@@ -1,5 +1,5 @@
 import React from 'react';
-import { ApI18nProvider, SupportedLocale } from '../../../i18n';
+import { ApI18nProvider, type SupportedLocale } from '../../../i18n';
 import { ApToolCall as ApToolCallInternal } from './ApToolCall';
 import type { ApToolCallProps } from './ApToolCall.types';
 
@@ -26,13 +26,13 @@ export const ApToolCall = React.forwardRef<HTMLDivElement, ApToolCallWithI18nPro
 
 ApToolCall.displayName = 'ApToolCall';
 
-export { ToolCallSection } from './ToolCallSection';
-export { NestedValue } from './NestedValue';
 export type {
   ApToolCallProps,
-  ToolCallSectionProps,
+  ITreeNode,
   NestedValueProps,
+  ToolCallSectionProps,
   ToolCallSectionType,
   TSpan,
-  ITreeNode,
 } from './ApToolCall.types';
+export { NestedValue } from './NestedValue';
+export { ToolCallSection } from './ToolCallSection';

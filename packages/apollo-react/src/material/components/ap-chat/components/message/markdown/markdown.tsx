@@ -1,23 +1,21 @@
 // Import Katex CSS
 import 'katex/dist/katex.min.css';
 
+import { msg } from '@lingui/core/macro';
+import { useLingui } from '@lingui/react';
+import { styled } from '@mui/material';
+import token from '@uipath/apollo-core';
 import React from 'react';
-
 import ReactMarkdown from 'react-markdown';
 import rehypeKatex from 'rehype-katex';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 
-import { msg } from '@lingui/core/macro';
-import { useLingui } from '@lingui/react';
-import { styled } from '@mui/material';
-import token from '@uipath/apollo-core';
-
 import { useIsStreamingMessage } from '../../../hooks/use-is-streaming-message';
 import { useChatService } from '../../../providers/chat-service.provider';
 import { useChatState } from '../../../providers/chat-state-provider';
 import { useStreaming } from '../../../providers/streaming-provider';
-import { AutopilotChatEvent, AutopilotChatMessage } from '../../../service';
+import { AutopilotChatEvent, type AutopilotChatMessage } from '../../../service';
 import { Citation } from './citation';
 import { Code } from './code';
 import { Li, Ol, Ul } from './lists';

@@ -51,7 +51,7 @@ describe('HoverCard', () => {
         <HoverCard>
           <HoverCardTrigger>Trigger</HoverCardTrigger>
           <HoverCardContent align="start">Content</HoverCardContent>
-        </HoverCard>,
+        </HoverCard>
       );
 
       await user.hover(screen.getByText('Trigger'));
@@ -66,7 +66,7 @@ describe('HoverCard', () => {
         <HoverCard>
           <HoverCardTrigger>Trigger</HoverCardTrigger>
           <HoverCardContent sideOffset={10}>Content</HoverCardContent>
-        </HoverCard>,
+        </HoverCard>
       );
 
       await user.hover(screen.getByText('Trigger'));
@@ -109,7 +109,7 @@ describe('HoverCard', () => {
         <HoverCard open>
           <HoverCardTrigger>Trigger</HoverCardTrigger>
           <HoverCardContent>Content</HoverCardContent>
-        </HoverCard>,
+        </HoverCard>
       );
 
       expect(screen.getByText('Content')).toBeInTheDocument();
@@ -121,7 +121,7 @@ describe('HoverCard', () => {
         <HoverCard open={false}>
           <HoverCardTrigger>Trigger</HoverCardTrigger>
           <HoverCardContent>Content</HoverCardContent>
-        </HoverCard>,
+        </HoverCard>
       );
 
       await user.hover(screen.getByText('Trigger'));
