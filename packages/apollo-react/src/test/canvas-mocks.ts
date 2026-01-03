@@ -264,22 +264,29 @@ vi.mock('@floating-ui/react', () => ({
     React.createElement('div', { 'data-testid': 'floating-focus-manager' }, children),
 }));
 
-// Mock Apollo core constants
-vi.mock('@uipath/apollo-core', () => ({
-  FontVariantToken: {
-    fontSizeH3Bold: 'fontSizeH3Bold',
-    fontSizeSBold: 'fontSizeSBold',
-  },
-  Spacing: {
-    SpacingMicro: '4px',
-    SpacingXs: '8px',
-    SpacingS: '12px',
-    SpacingBase: '16px',
-  },
-  Colors: {
-    ColorInk300: '#8D9299',
-  },
-}));
+// Mock Apollo core constants (partial mock to preserve other exports)
+vi.mock('@uipath/apollo-core', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@uipath/apollo-core')>();
+  return {
+    ...actual,
+    FontVariantToken: {
+      ...actual.FontVariantToken,
+      fontSizeH3Bold: 'fontSizeH3Bold',
+      fontSizeSBold: 'fontSizeSBold',
+    },
+    Spacing: {
+      ...actual.Spacing,
+      SpacingMicro: '4px',
+      SpacingXs: '8px',
+      SpacingS: '12px',
+      SpacingBase: '16px',
+    },
+    Colors: {
+      ...actual.Colors,
+      ColorInk300: '#8D9299',
+    },
+  };
+});
 
 // Mock sanitize-html
 vi.mock('sanitize-html', () => ({
@@ -313,3 +320,37 @@ vi.mock('react-window', () => ({
       )
     ),
 }));
+
+// Mock @mui/x-tree-view to avoid ESM directory import issues
+vi.mock('@mui/x-tree-view', () => ({
+  RichTreeView: React.forwardRef(({ children, ...props }: any, ref: any) =>
+    React.createElement('div', { ref, 'data-testid': 'rich-tree-view', ...props }, children)
+  ),
+  TreeItem: React.forwardRef(({ children, label, itemId, ...props }: any, ref: any) =>
+    React.createElement(
+      'div',
+      { ref, 'data-testid': `tree-item-${itemId}`, role: 'treeitem', ...props },
+      label,
+      children
+    )
+  ),
+  SimpleTreeView: React.forwardRef(({ children, ...props }: any, ref: any) =>
+    React.createElement('div', { ref, 'data-testid': 'simple-tree-view', ...props }, children)
+  ),
+}));
+
+// Mock ClipboardItem for clipboard tests
+if (!globalThis.ClipboardItem) {
+  (globalThis as any).ClipboardItem = class ClipboardItem {
+    private data: Record<string, Blob>;
+    constructor(data: Record<string, Blob>) {
+      this.data = data;
+    }
+    get types() {
+      return Object.keys(this.data);
+    }
+    async getType(type: string) {
+      return this.data[type];
+    }
+  };
+}

@@ -73,7 +73,10 @@ const StyledSkeleton = styled('div')<{
  * It supports rectangle, circle, and border variants and respects user's reduced motion preferences.
  */
 export const ApSkeleton = React.forwardRef<HTMLDivElement, ApSkeletonProps>(
-  ({ variant = 'rectangle', circleSize = 24, children, className, style }, ref) => {
+  (
+    { variant = 'rectangle', circleSize = 24, children, className, style, 'data-testid': testId, ...rest },
+    ref
+  ) => {
     useEffect(() => {
       // Add body class to enable skeleton animations
       document.body.classList.add('has-skeletons');
@@ -91,6 +94,8 @@ export const ApSkeleton = React.forwardRef<HTMLDivElement, ApSkeletonProps>(
         circleSize={circleSize}
         className={className}
         style={style}
+        data-testid={testId || 'ap-skeleton'}
+        {...rest}
       >
         {children}
       </StyledSkeleton>

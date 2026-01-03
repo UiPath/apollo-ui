@@ -21,4 +21,9 @@ export interface ApIconProps {
    * @default 'normal'
    */
   variant?: 'normal' | 'outlined' | 'custom';
+  /**
+   * Test ID for testing purposes
+   * @default 'ap-icon'
+   */
+  'data-testid'?: string;
 }

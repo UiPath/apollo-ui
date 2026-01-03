@@ -11,12 +11,20 @@ const snakeToPascal = (str: string): string =>
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join('');
 
-export const ApIcon: React.FC<ApIconProps> = ({ name, size, color, variant = 'normal' }) => {
+export const ApIcon: React.FC<ApIconProps> = ({
+  name,
+  size,
+  color,
+  variant = 'normal',
+  'data-testid': testId,
+}) => {
   // Handle Material Icons (when variant is 'outlined' or 'normal')
   if (variant === 'outlined' || variant === 'normal') {
     return (
       <Icon
         className={variant === 'outlined' ? 'material-icons-outlined' : 'material-icons'}
+        data-testid={testId || 'ap-icon'}
+        data-name={name}
         sx={{
           fontSize: size || token.Icon.IconM,
           color: color || 'currentColor',
@@ -35,6 +43,8 @@ export const ApIcon: React.FC<ApIconProps> = ({ name, size, color, variant = 'no
     return (
       <SvgIcon
         component={LegacyIconComponent}
+        data-testid={testId || 'ap-icon'}
+        data-name={name}
         sx={{
           fontSize: size || token.Icon.IconM,
           color: color || 'currentColor',

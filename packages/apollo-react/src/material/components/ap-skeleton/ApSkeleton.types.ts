@@ -7,4 +7,9 @@ export interface ApSkeletonProps extends React.HTMLAttributes<HTMLDivElement> {
   variant?: SkeletonVariant;
   /** The size for the circle variant (default: 24) */
   circleSize?: number;
+  /**
+   * Test ID for testing purposes
+   * @default 'ap-skeleton'
+   */
+  'data-testid'?: string;
 }

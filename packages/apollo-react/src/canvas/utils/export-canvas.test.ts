@@ -306,10 +306,6 @@ describe('export-canvas utilities', () => {
       global.fetch = vi.fn().mockResolvedValue({
         blob: () => Promise.resolve(mockBlob),
       });
-
-      global.ClipboardItem = vi
-        .fn()
-        .mockImplementation((items) => items) as unknown as typeof ClipboardItem;
     });
 
     it('throws error when Clipboard API is not available', async () => {
