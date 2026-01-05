@@ -1,3 +1,10 @@
+## [0.6.3](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@0.6.2...@uipath/apollo-wind@0.6.3) (2026-01-05)
+
+
+### Bug Fixes
+
+* **apollo-wind:** radix wrapper components now properly forward refs ([c32b7ea](https://github.com/uipath/apollo-ui/commit/c32b7ea246ac7871c5dcd19e67e644c209cd6b91))
+
 ## [0.6.2](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@0.6.1...@uipath/apollo-wind@0.6.2) (2025-12-31)
 
 
