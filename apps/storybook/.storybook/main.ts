@@ -1,21 +1,23 @@
-import type { StorybookConfig } from "@storybook/react-vite";
+import { dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import type { StorybookConfig } from '@storybook/react-vite';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const config: StorybookConfig = {
   stories: [
-    "../../../packages/**/*.stories.@(js|jsx|ts|tsx|mdx)",
-    "../../../web-packages/**/*.stories.@(js|jsx|ts|tsx|mdx)",
+    // For now only include canvas stories
+    {
+      directory: '../../../packages/apollo-react/src/canvas',
+      files: '**/*.stories.@(tsx|ts|jsx|js|mdx)',
+      titlePrefix: 'Canvas',
+    },
   ],
-  addons: [
-    "@storybook/addon-a11y",
-    "@storybook/addon-links",
-    "@storybook/addon-docs",
-  ],
+  addons: [],
   framework: {
-    name: "@storybook/react-vite",
+    name: '@storybook/react-vite',
     options: {},
-  },
-  docs: {
-    autodocs: "tag",
   },
 };
 

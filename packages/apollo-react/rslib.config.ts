@@ -89,6 +89,9 @@ export default defineConfig({
       { from: '../apollo-core/dist/tokens/jss', to: './core/tokens/jss' },
       // Copy fonts from apollo-core to make them available at @uipath/apollo-react/core/fonts/*
       { from: '../apollo-core/dist/fonts', to: './core/fonts' },
+      // Copy xyflow CSS files to make them available at @uipath/apollo-react/canvas/xyflow/*
+      { from: './node_modules/@xyflow/react/dist/style.css', to: './canvas/xyflow' },
+      { from: './node_modules/@xyflow/react/dist/base.css', to: './canvas/xyflow' },
     ],
   },
   tools: {

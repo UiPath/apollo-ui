@@ -6,11 +6,13 @@
   "scripts": {
     "dev": "storybook dev -p 6006",
     "storybook": "storybook dev -p 6006",
+    "storybook:build": "storybook build",
     "clean": "rm -rf storybook-static",
     "format": "prettier --write \"./**/*.{ts,tsx,js,jsx,json,css,scss,md}\"",
     "format:check": "prettier --check \"./**/*.{ts,tsx,js,jsx,json,css,scss,md}\""
   },
   "dependencies": {
+    "@mui/material": "^6.4.1",
     "@uipath/ap-chat": "workspace:*",
     "@uipath/ap-data-grid": "workspace:*",
     "@uipath/apollo-angular": "workspace:*",

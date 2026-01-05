@@ -1,0 +1,6 @@
+{
+  "buildCommand": "cd ../.. && pnpm turbo run storybook:build --filter=storybook",
+  "outputDirectory": "storybook-static",
+  "installCommand": "pnpm install",
+  "framework": null
+}

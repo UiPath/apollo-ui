@@ -117,7 +117,9 @@
       "types": "./dist/canvas/constants.d.ts",
       "import": "./dist/canvas/constants.js",
       "require": "./dist/canvas/constants.cjs"
-    }
+    },
+    "./canvas/xyflow/*.css": "./dist/canvas/xyflow/*.css",
+    "./canvas/styles/*.css": "./dist/canvas/styles/*.css"
   },
   "sideEffects": [
     "**/*.css",
