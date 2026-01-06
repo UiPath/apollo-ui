@@ -2,8 +2,8 @@
 
 import type React from "react";
 import { useState, useEffect } from "react";
-import { ThemeProvider } from "../../registry/theme-provider/theme-provider";
-import type { ThemeConfig } from "../../registry/theme-provider/theme-provider";
+import { ThemeProvider } from "@/registry/theme-provider/theme-provider";
+import type { ThemeConfig } from "@/registry/theme-provider/theme-provider";
 import { themes, type ThemeName, getCustomTheme } from "../themes";
 
 const THEME_STORAGE_KEY = "apollo-vertex-theme";
