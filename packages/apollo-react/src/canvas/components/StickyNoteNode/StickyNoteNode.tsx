@@ -7,8 +7,8 @@ import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { GRID_SPACING } from '../../constants';
-import type { ToolbarAction } from '../NodeToolbar';
-import { NodeToolbar } from '../NodeToolbar';
+import type { ToolbarAction } from '../Toolbar';
+import { NodeToolbar } from '../Toolbar';
 import {
   BottomCornerIndicators,
   ColorOption,

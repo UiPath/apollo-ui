@@ -1,17 +1,16 @@
 import { ApIcon, ApTooltip } from '@uipath/apollo-react/material/components';
 import { AnimatePresence } from 'motion/react';
 import { memo, useMemo } from 'react';
+import { StyledToolbarButton, ToolbarButton } from '../shared';
 import {
   StyledDropdownItem,
   StyledDropdownMenu,
   StyledOverflowContainer,
-  StyledToolbarButton,
   StyledToolbarContainer,
   StyledToolbarSeparator,
 } from './NodeToolbar.styles';
 import type { NodeToolbarProps } from './NodeToolbar.types';
 import { isSeparator } from './NodeToolbar.utils';
-import { ToolbarButton } from './ToolbarButton';
 import { useToolbarState } from './useToolbarState';
 
 const NodeToolbarComponent = ({ nodeId, config, expanded, hidden }: NodeToolbarProps) => {

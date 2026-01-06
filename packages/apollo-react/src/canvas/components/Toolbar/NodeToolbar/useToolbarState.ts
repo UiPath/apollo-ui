@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { NodeToolbarConfig, ToolbarActionItem, ToolbarSeparator } from './NodeToolbar.types';
+import type { ToolbarActionItem, ToolbarSeparator } from '../shared';
+import type { NodeToolbarConfig } from './NodeToolbar.types';
 import type { ProcessedToolbarItem } from './NodeToolbar.utils';
 
 export interface UseToolbarStateProps {
@@ -116,9 +117,8 @@ export const useToolbarState = ({
 
     if (isDropdownOpen) {
       document.addEventListener('mousedown', handleClickOutside);
-      return () => document.removeEventListener('mousedown', handleClickOutside);
     }
-    return undefined;
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isDropdownOpen]);
 
   // Reset dropdown when toolbar is hidden

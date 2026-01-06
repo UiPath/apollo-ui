@@ -1,5 +1,5 @@
 import type { Node, XYPosition } from '@uipath/apollo-react/canvas/xyflow/react';
-import { GRID_SPACING, PREVIEW_NODE_ID } from '../constants';
+import { DEFAULT_NODE_SIZE, GRID_SPACING, PREVIEW_NODE_ID } from '../constants';
 
 /**
  * Calculates the absolute position of a node, taking into account its parent nodes.
@@ -72,3 +72,110 @@ export function getNonOverlappingPositionForDirection(
 
   return newNodePosition;
 }
+
+export const snapToGrid = (value: number): number => {
+  return Math.round(value / GRID_SPACING) * GRID_SPACING;
+};
+
+export type CollisionAlgorithmOptions = {
+  maxIterations?: number;
+  overlapThreshold?: number;
+  margin?: number;
+};
+
+export type CollisionAlgorithm = (nodes: Node[], options?: CollisionAlgorithmOptions) => Node[];
+
+type Box = {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  moved: boolean;
+  node: Node;
+};
+
+function getBoxesFromNodes(nodes: Node[], margin: number = 0): Box[] {
+  const boxes: Box[] = new Array(nodes.length);
+
+  for (let i = 0; i < nodes.length; i++) {
+    const node = nodes[i]!;
+    boxes[i] = {
+      x: node.position.x - margin,
+      y: node.position.y - margin,
+      width: (node.width ?? node.measured?.width ?? DEFAULT_NODE_SIZE) + margin * 2,
+      height: (node.height ?? node.measured?.height ?? DEFAULT_NODE_SIZE) + margin * 2,
+      node,
+      moved: false,
+    };
+  }
+
+  return boxes;
+}
+
+export const resolveCollisions: CollisionAlgorithm = (
+  nodes,
+  { maxIterations = 50, overlapThreshold = 0, margin = GRID_SPACING * 2 } = {}
+) => {
+  const boxes = getBoxesFromNodes(nodes, margin);
+  for (let iter = 0; iter < maxIterations; iter++) {
+    let moved = false;
+
+    for (let i = 0; i < boxes.length; i++) {
+      for (let j = i + 1; j < boxes.length; j++) {
+        const A = boxes[i]!;
+        const B = boxes[j]!;
+
+        // Calculate center positions
+        const centerAX = A.x + A.width * 0.5;
+        const centerAY = A.y + A.height * 0.5;
+        const centerBX = B.x + B.width * 0.5;
+        const centerBY = B.y + B.height * 0.5;
+
+        // Calculate distance between centers
+        const dx = centerAX - centerBX;
+        const dy = centerAY - centerBY;
+
+        // Calculate overlap along each axis
+        const px = (A.width + B.width) * 0.5 - Math.abs(dx);
+        const py = (A.height + B.height) * 0.5 - Math.abs(dy);
+
+        // Check if there's significant overlap
+        if (px > overlapThreshold && py > overlapThreshold) {
+          A.moved = B.moved = moved = true;
+          // Resolve along the smallest overlap axis
+          if (px < py) {
+            // Move along x-axis
+            const sx = dx > 0 ? 1 : -1;
+            const moveAmount = snapToGrid((px / 2) * sx);
+            A.x += moveAmount;
+            B.x -= moveAmount;
+          } else {
+            // Move along y-axis
+            const sy = dy > 0 ? 1 : -1;
+            const moveAmount = snapToGrid((py / 2) * sy);
+            A.y += moveAmount;
+            B.y -= moveAmount;
+          }
+        }
+      }
+    }
+    if (!moved) {
+      break;
+    }
+  }
+
+  const newNodes = boxes.map((box) => {
+    if (box.moved) {
+      return {
+        ...box.node,
+        position: {
+          x: snapToGrid(box.x + margin),
+          y: snapToGrid(box.y + margin),
+        },
+      };
+    }
+    return box.node;
+  });
+
+  return newNodes;
+};

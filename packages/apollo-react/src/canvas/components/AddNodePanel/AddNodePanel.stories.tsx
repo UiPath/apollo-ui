@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import type { Node } from '@uipath/apollo-react/canvas/xyflow/react';
 import { Panel, Position, useReactFlow } from '@uipath/apollo-react/canvas/xyflow/react';
 import { useMemo } from 'react';
-import { useCanvasEvent } from '../../hooks';
+import { useAddNodeOnConnectEnd, useCanvasEvent } from '../../hooks';
 import {
   createNode,
   NodePositions,
@@ -193,9 +193,12 @@ function PreviewSelectionStory() {
     }
   });
 
+  const handleAddNodeOnConnectEnd = useAddNodeOnConnectEnd();
+
   return (
     <BaseCanvas
       {...canvasProps}
+      onConnectEnd={handleAddNodeOnConnectEnd}
       deleteKeyCode={['Backspace', 'Delete']}
       mode="design"
       defaultViewport={{ x: 0, y: 0, zoom: 1 }}

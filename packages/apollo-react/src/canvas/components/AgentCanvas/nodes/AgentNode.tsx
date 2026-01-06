@@ -18,7 +18,7 @@ import type {
 } from '../../BaseNode/NewBaseNode.types';
 import type { ButtonHandleConfig, HandleActionEvent } from '../../ButtonHandle/ButtonHandle';
 import { ExecutionStatusIcon } from '../../ExecutionStatusIcon/ExecutionStatusIcon';
-import type { NodeToolbarConfig, ToolbarAction } from '../../NodeToolbar/NodeToolbar.types';
+import { NodeToolbarConfig, ToolbarAction } from '../../Toolbar';
 import { ResourceNodeType } from '../AgentFlow.constants';
 import { useAgentFlowStore } from '../store/agent-flow-store';
 

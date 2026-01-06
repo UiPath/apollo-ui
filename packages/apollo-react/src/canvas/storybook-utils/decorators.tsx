@@ -8,12 +8,15 @@ import type { Decorator } from '@storybook/react';
 import { ReactFlowProvider } from '@uipath/apollo-react/canvas/xyflow/react';
 import type React from 'react';
 import { useMemo } from 'react';
-import type {
-  ExecutionStateContextValue,
-  NodeExecutionState,
-} from '../components/BaseNode/ExecutionStatusContext';
-import { ExecutionStatusContext } from '../components/BaseNode/ExecutionStatusContext';
 import { NodeRegistryProvider } from '../components/BaseNode/NodeRegistryProvider';
+import {
+  type ExecutionStateContextValue,
+  ExecutionStatusContext,
+  type ValidationStateContextValue,
+  ValidationStatusContext,
+} from '../hooks';
+import type { ElementStatus } from '../types/execution';
+import type { ValidationErrorSeverity } from '../types/validation';
 import { allNodeManifests, createNodesFromManifests } from './manifests';
 
 /**
@@ -32,6 +35,11 @@ export interface CanvasProvidersOptions {
   executionState?: ExecutionStateConfig;
 
   /**
+   * Validation state configuration.
+   */
+  validationState?: ValidationStateContextValue;
+
+  /**
    * Whether to wrap content in a fullscreen container.
    * @default true
    */
@@ -45,10 +53,24 @@ export interface CanvasProvidersOptions {
 
 /**
  * Default execution state that extracts status from node ID.
- * Node IDs like "node-InProgress" will return "InProgress" as the status.
+ * Node/Edge IDs like "node-InProgress" will return "InProgress" as the status.
  */
 const defaultExecutionState: ExecutionStateConfig = {
-  getExecutionState: (nodeId: string): NodeExecutionState | undefined => nodeId.split('-')[1],
+  getNodeExecutionState: (nodeId: string): ElementStatus | undefined =>
+    nodeId.split('-')[1] as ElementStatus,
+  getEdgeExecutionState: (edgeId: string, _targetNodeId: string): ElementStatus | undefined =>
+    edgeId.split('-')[1] as ElementStatus,
+};
+
+/**
+ * Default validation state that extracts status from node ID.
+ * Node/Edge IDs like "node-InProgress-ERROR" will return "ERROR" as the status.
+ */
+const defaultValidationStateContext: ValidationStateContextValue = {
+  getElementValidationState: (nodeId: string) => ({
+    validationStatus: nodeId.split('-')[2] as ValidationErrorSeverity,
+    validationError: undefined,
+  }),
 };
 
 /**
@@ -97,18 +119,26 @@ const FullscreenContainer = ({
  * ```
  */
 export function withCanvasProviders(options: CanvasProvidersOptions = {}): Decorator {
-  const { executionState = defaultExecutionState, fullscreen = true, containerStyle } = options;
+  const {
+    executionState = defaultExecutionState,
+    validationState = defaultValidationStateContext,
+    fullscreen = true,
+    containerStyle,
+  } = options;
 
   return function CanvasProvidersDecorator(Story) {
     const registrations = useMemo(() => createNodesFromManifests(allNodeManifests), []);
     const executions = useMemo(() => executionState, []);
+    const validations = useMemo(() => validationState, []);
 
     const content = (
       <NodeRegistryProvider registrations={registrations}>
         <ExecutionStatusContext.Provider value={executions}>
-          <ReactFlowProvider>
-            <Story />
-          </ReactFlowProvider>
+          <ValidationStatusContext.Provider value={validations}>
+            <ReactFlowProvider>
+              <Story />
+            </ReactFlowProvider>
+          </ValidationStatusContext.Provider>
         </ExecutionStatusContext.Provider>
       </NodeRegistryProvider>
     );
