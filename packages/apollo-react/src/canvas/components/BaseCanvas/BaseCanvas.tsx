@@ -4,7 +4,7 @@ import {
   type CSSProperties,
   forwardRef,
   memo,
-  type ReactElement,
+  ReactElement,
   useCallback,
   useImperativeHandle,
   useMemo,
@@ -178,6 +178,7 @@ const BaseCanvasInnerComponent = <NodeType extends Node = Node, EdgeType extends
         onPaneClick={isInteractive ? onPaneClick : undefined}
         onSelectionChange={onSelectionChange}
         style={reactFlowStyle}
+        elevateEdgesOnSelect={isDesignMode}
       >
         {showBackground && (
           <CanvasBackground

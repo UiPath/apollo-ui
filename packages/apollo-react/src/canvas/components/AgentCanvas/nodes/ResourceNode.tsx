@@ -14,7 +14,7 @@ import { NewBaseNode } from '../../BaseNode/NewBaseNode';
 import type { HandleConfiguration, NodeAdornment } from '../../BaseNode/NewBaseNode.types';
 import type { ButtonHandleConfig } from '../../ButtonHandle';
 import { ExecutionStatusIcon } from '../../ExecutionStatusIcon/ExecutionStatusIcon';
-import type { NodeToolbarConfig, ToolbarAction } from '../../NodeToolbar/NodeToolbar.types';
+import type { NodeToolbarConfig, ToolbarAction } from '../../Toolbar';
 import { ToolResourceIcon } from '../components/ToolResourceIcon';
 import { useAgentFlowStore, useEdges } from '../store/agent-flow-store';
 

@@ -1,16 +1,20 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import type { Node } from '@uipath/apollo-react/canvas/xyflow/react';
-import { Panel, ReactFlowProvider, useReactFlow } from '@uipath/apollo-react/canvas/xyflow/react';
+import {
+  type Node,
+  Panel,
+  ReactFlowProvider,
+  useReactFlow,
+} from '@uipath/apollo-react/canvas/xyflow/react';
 import { ApIcon } from '@uipath/apollo-react/material/components';
 import { useCallback, useEffect, useMemo } from 'react';
-import { StoryInfoPanel, useCanvasStory } from '../../storybook-utils';
-import { DefaultCanvasTranslations } from '../../types';
-import { BaseCanvas } from '../BaseCanvas';
-import type { BaseNodeData, NodeRegistration, NodeShape } from '../BaseNode/BaseNode.types';
-import { ExecutionStatusContext } from '../BaseNode/ExecutionStatusContext';
-import { NodeRegistryProvider } from '../BaseNode/NodeRegistryProvider';
-import { CanvasPositionControls } from '../CanvasPositionControls';
-import { ExecutionStatusIcon } from '../ExecutionStatusIcon';
+import { ExecutionStatusContext } from '../../../hooks';
+import { StoryInfoPanel, useCanvasStory } from '../../../storybook-utils';
+import { DefaultCanvasTranslations } from '../../../types';
+import { BaseCanvas } from '../../BaseCanvas';
+import type { BaseNodeData, NodeRegistration, NodeShape } from '../../BaseNode/BaseNode.types';
+import { NodeRegistryProvider } from '../../BaseNode/NodeRegistryProvider';
+import { CanvasPositionControls } from '../../CanvasPositionControls';
+import { ExecutionStatusIcon } from '../../ExecutionStatusIcon';
 
 // ============================================================================
 // Node Registration
@@ -257,7 +261,10 @@ const meta: Meta = {
   parameters: { layout: 'fullscreen' },
   decorators: [
     (Story) => {
-      const executions = useMemo(() => ({ getExecutionState: () => undefined }), []);
+      const executions = useMemo(
+        () => ({ getNodeExecutionState: () => undefined, getEdgeExecutionState: () => undefined }),
+        []
+      );
 
       // Create a toggle handler that works with ReactFlow
       const StoryWrapper = () => {

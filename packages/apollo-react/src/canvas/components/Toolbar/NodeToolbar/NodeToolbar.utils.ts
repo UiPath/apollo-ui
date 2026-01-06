@@ -1,5 +1,4 @@
-import type { ToolbarSeparator } from './NodeToolbar.types';
-import type { ExtendedToolbarAction } from './ToolbarButton';
+import type { ExtendedToolbarAction, ToolbarSeparator } from '../shared';
 
 export type ProcessedToolbarItem = ExtendedToolbarAction | ToolbarSeparator;
 

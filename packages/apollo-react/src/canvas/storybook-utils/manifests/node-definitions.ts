@@ -240,14 +240,14 @@ export const allNodeManifests: NodeManifest[] = [
         position: 'right',
         handles: [
           {
-            id: 'body',
-            label: "Body (Item {currentIndex + 1} of {collection.length || '?'})",
+            id: 'success',
+            label: 'Completed',
             type: 'source',
             handleType: 'output',
           },
           {
-            id: 'completed',
-            label: 'Completed',
+            id: 'body',
+            label: 'Body',
             type: 'source',
             handleType: 'output',
           },
@@ -270,20 +270,23 @@ export const allNodeManifests: NodeManifest[] = [
     handles: [
       {
         position: 'left',
-        handles: [{ id: 'input', type: 'target', handleType: 'input' }],
+        handles: [
+          { id: 'input', type: 'target', handleType: 'input' },
+          { id: 'loopBack', type: 'target', handleType: 'input' },
+        ],
       },
       {
         position: 'right',
         handles: [
           {
-            id: 'body',
-            label: "Body (while {condition || 'true'})",
+            id: 'success',
+            label: 'Completed',
             type: 'source',
             handleType: 'output',
           },
           {
-            id: 'exit',
-            label: 'Exit',
+            id: 'body',
+            label: 'Body',
             type: 'source',
             handleType: 'output',
           },

@@ -1,8 +1,8 @@
 import type { Position } from '@uipath/apollo-react/canvas/xyflow/react';
+import { ExecutionState } from '../../types/execution';
 import type { ButtonHandleConfig, HandleActionEvent } from '../ButtonHandle/ButtonHandle';
 import type { NodeMenuItem } from '../NodeContextMenu/NodeContextMenu.types';
-import type { NodeToolbarConfig } from '../NodeToolbar';
-import type { NodeStatusContext } from './ExecutionStatusContext';
+import type { NodeToolbarConfig } from '../Toolbar';
 
 export type NodeShape = 'square' | 'circle' | 'rectangle';
 
@@ -54,6 +54,15 @@ export interface NodeAdornments {
   topRight?: React.ReactNode;
   bottomLeft?: React.ReactNode;
   bottomRight?: React.ReactNode;
+}
+
+export interface NodeStatusContext {
+  nodeId: string;
+  executionState?: ExecutionState;
+  isHovered?: boolean;
+  isConnecting?: boolean;
+  isSelected?: boolean;
+  isDragging?: boolean;
 }
 
 export interface HandleConfigurationSpecificPosition {

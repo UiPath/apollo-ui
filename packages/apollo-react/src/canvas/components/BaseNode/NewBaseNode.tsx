@@ -9,7 +9,7 @@ import {
 import { ApIcon, ApTooltip, ApTypography } from '@uipath/apollo-react/material/components';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useButtonHandles } from '../ButtonHandle/useButtonHandles';
-import { NodeToolbar } from '../NodeToolbar';
+import { NodeToolbar } from '../Toolbar';
 import {
   BaseBadgeSlot,
   BaseContainer,

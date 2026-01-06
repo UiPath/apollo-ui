@@ -8,12 +8,13 @@ import {
 } from '@uipath/apollo-react/canvas/xyflow/react';
 import { ApIcon } from '@uipath/apollo-react/material/components';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useNodeExecutionState } from '../../hooks';
 import { useBaseCanvasMode } from '../BaseCanvas/BaseCanvasModeProvider';
 import { useConnectedHandles } from '../BaseCanvas/ConnectedHandlesContext';
 import { useSelectionState } from '../BaseCanvas/SelectionStateContext';
 import { SmartHandle, SmartHandleProvider } from '../ButtonHandle/SmartHandle';
 import { useButtonHandles } from '../ButtonHandle/useButtonHandles';
-import { NodeToolbar } from '../NodeToolbar';
+import { NodeToolbar } from '../Toolbar';
 import {
   BaseBadgeSlot,
   BaseContainer,
@@ -22,9 +23,7 @@ import {
   BaseSubHeader,
   BaseTextContainer,
 } from './BaseNode.styles';
-import type { BaseNodeData } from './BaseNode.types';
-import type { NodeStatusContext } from './ExecutionStatusContext';
-import { useExecutionState } from './ExecutionStatusContext';
+import type { BaseNodeData, NodeStatusContext } from './BaseNode.types';
 import { NodeLabel } from './NodeLabel';
 import { useNodeTypeRegistry } from './useNodeTypeRegistry';
 
@@ -40,7 +39,7 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
   const [isFocused, setIsFocused] = useState(false);
 
   // Get execution status from external source
-  const executionState = useExecutionState(id);
+  const executionState = useNodeExecutionState(id);
   const nodeTypeRegistry = useNodeTypeRegistry();
   const { mode } = useBaseCanvasMode();
 

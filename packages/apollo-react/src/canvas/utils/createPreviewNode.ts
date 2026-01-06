@@ -181,17 +181,11 @@ export function createPreviewNode(
   // When dragging from a target handle, we should treat the preview as the source for the edge connection.
   const treatPreviewAsSource = sourceHandleType === 'target';
 
-  // Determine which side to place the preview based on handle position and handle type
-  // If dragging from a target handle, the preview should be on the opposite side
-  const effectiveHandlePosition = treatPreviewAsSource
-    ? getOppositePosition(handlePosition)
-    : handlePosition;
-
   const nodePosition = position
-    ? calculatePositionFromDrop(position, effectiveHandlePosition, previewNodeSize)
+    ? calculatePositionFromDrop(position, handlePosition, previewNodeSize)
     : calculateAutoPosition(
         sourceNode,
-        effectiveHandlePosition,
+        handlePosition,
         previewNodeSize,
         reactFlowInstance.getNodes().filter((n) => n.id !== PREVIEW_NODE_ID),
         undefined,
@@ -200,22 +194,15 @@ export function createPreviewNode(
 
   // Calculate handle positions for the preview node
   // The handle facing the source should be on the opposite side of where the preview is placed
-  const handleFacingSource = getOppositePosition(effectiveHandlePosition);
+  const handleFacingSource = getOppositePosition(handlePosition);
 
   // Create preview node
-  const finalData = { ...(data ?? {}) };
-  if (treatPreviewAsSource) {
-    // When preview is the source, it needs an output handle facing the original node
-    finalData.showOutputHandle = true;
-    finalData.outputHandlePosition = handleFacingSource;
-    // Input handle goes on the opposite side (away from source)
-    finalData.inputHandlePosition = effectiveHandlePosition;
-  } else {
-    // When preview is the target, it needs an input handle facing the source node
-    finalData.inputHandlePosition = handleFacingSource;
-    // Output handle goes on the opposite side (away from source) - for future chaining
-    finalData.outputHandlePosition = effectiveHandlePosition;
-  }
+  const finalData: Record<string, unknown> = { ...(data ?? {}) };
+  // Set handle positions based on whether preview is source or target.
+  // When preview is source, output handle faces original node.
+  // When preview is target, input handle faces original node.
+  finalData.inputHandlePosition = treatPreviewAsSource ? handlePosition : handleFacingSource;
+  finalData.outputHandlePosition = treatPreviewAsSource ? handleFacingSource : handlePosition;
 
   const previewNode: Node = {
     id: PREVIEW_NODE_ID,

@@ -23,7 +23,6 @@ const PreviewContainer = styled.div<{ selected?: boolean; width?: number; height
 
 export interface AddNodePreviewData {
   iconName?: string;
-  showOutputHandle?: boolean;
   inputHandlePosition?: Position;
   outputHandlePosition?: Position;
 }
@@ -62,18 +61,16 @@ export const AddNodePreview: React.FC<NodeProps> = ({ selected, data, width, hei
         isConnectable={false}
       />
 
-      {nodeData?.showOutputHandle && (
-        <Handle
-          type="source"
-          position={outputPosition}
-          id="output"
-          style={{
-            background: 'transparent',
-            border: 'none',
-          }}
-          isConnectable={false}
-        />
-      )}
+      <Handle
+        type="source"
+        position={outputPosition}
+        id="output"
+        style={{
+          background: 'transparent',
+          border: 'none',
+        }}
+        isConnectable={false}
+      />
     </>
   );
 };

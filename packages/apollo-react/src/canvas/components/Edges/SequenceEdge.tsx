@@ -1,9 +1,11 @@
-import {
-  type EdgeProps,
-  getSmoothStepPath,
-  Position,
-} from '@uipath/apollo-react/canvas/xyflow/react';
-import { memo, useState } from 'react';
+import { type EdgeProps, Position } from '@uipath/apollo-react/canvas/xyflow/react';
+import { memo, useRef, useState } from 'react';
+import { PREVIEW_EDGE_ID } from '../../constants';
+import { useEdgeExecutionState, useEdgePath, useElementValidationStatus } from '../../hooks';
+import type { ExecutionStatusWithCount } from '../../types/execution';
+import { useBaseCanvasMode } from '../BaseCanvas/BaseCanvasModeProvider';
+import { EdgeToolbar, useEdgeToolbarState } from '../Toolbar';
+import { edgeTargetStatusToEdgeColor, getStatusAnimation } from './EdgeUtils';
 
 const ARROW_SIZE = 10;
 
@@ -25,19 +27,14 @@ const ARROW_OFFSETS: Record<Position, { x: number; y: number }> = {
   [Position.Bottom]: { x: 0, y: -8 },
 };
 
-const SOURCE_OFFSETS: Record<Position, { x: number; y: number }> = {
-  [Position.Left]: { x: 8, y: 0 },
-  [Position.Right]: { x: -8, y: 0 },
-  [Position.Top]: { x: 0, y: 8 },
-  [Position.Bottom]: { x: 0, y: -8 },
-};
-
 // Custom comparison to prevent re-renders during pan/zoom
 // Coordinates can have tiny floating point differences that don't affect visual output
 function areEdgePropsEqual(prevProps: EdgeProps, nextProps: EdgeProps): boolean {
   // Always re-render if these change
   if (prevProps.id !== nextProps.id) return false;
   if (prevProps.selected !== nextProps.selected) return false;
+  if (prevProps.source !== nextProps.source) return false;
+  if (prevProps.target !== nextProps.target) return false;
   if (prevProps.sourcePosition !== nextProps.sourcePosition) return false;
   if (prevProps.targetPosition !== nextProps.targetPosition) return false;
   if (prevProps.data !== nextProps.data) return false;
@@ -56,20 +53,34 @@ function areEdgePropsEqual(prevProps: EdgeProps, nextProps: EdgeProps): boolean 
 export const SequenceEdge = memo(function SequenceEdge({
   id,
   selected,
+  source,
   sourceX,
   sourceY,
   sourcePosition,
+  sourceHandleId,
+  target,
   targetX,
   targetY,
   targetPosition,
+  targetHandleId,
   style,
   data,
 }: EdgeProps) {
   const [isHovered, setIsHovered] = useState(false);
+  const pathElementRef = useRef<SVGPathElement | null>(null);
 
-  // TODO: Replace with actual read-only state from the canvas
-  const isReadOnly = false;
-  const isPreviewEdge = id === 'preview-edge-id';
+  const { mode } = useBaseCanvasMode();
+  const isReadOnly = mode === 'readonly';
+  const isPreviewEdge = id === PREVIEW_EDGE_ID;
+
+  const executionStatus = useEdgeExecutionState(id, target);
+  const { validationStatus } = useElementValidationStatus(id) ?? { validationStatus: undefined };
+
+  // Use provided status or fall back to hook values
+  const status =
+    mode !== 'design'
+      ? ((executionStatus as ExecutionStatusWithCount)?.status ?? executionStatus)
+      : validationStatus;
 
   // Check if this edge has diff styling applied
   const isDiffAdded = data?.isDiffAdded === true;
@@ -77,16 +88,36 @@ export const SequenceEdge = memo(function SequenceEdge({
 
   const angle = ANGLE_MAP[targetPosition];
   const { x: offsetX, y: offsetY } = ARROW_OFFSETS[targetPosition];
-  const { x: sourceOffsetX, y: sourceOffsetY } = SOURCE_OFFSETS[sourcePosition];
 
-  const [edgePath] = getSmoothStepPath({
-    sourceX: sourceX + sourceOffsetX,
-    sourceY: sourceY + sourceOffsetY,
+  const { edgePath } = useEdgePath({
+    sourceNodeId: source,
+    targetNodeId: target,
+    sourceHandleId,
+    targetHandleId,
+    sourceX,
+    sourceY,
     sourcePosition,
     targetX,
     targetY,
     targetPosition,
-    borderRadius: 16,
+  });
+
+  // Edge toolbar state
+  const {
+    showToolbar,
+    toolbarPositioning,
+    config: toolbarConfig,
+    handleMouseMoveOnPath,
+  } = useEdgeToolbarState({
+    edgeId: id,
+    pathElementRef,
+    isHovered,
+    sourceHandleId,
+    targetHandleId,
+    sourcePosition,
+    targetPosition,
+    source,
+    target,
   });
 
   const getEdgeColor = () => {
@@ -97,72 +128,94 @@ export const SequenceEdge = memo(function SequenceEdge({
     if (isPreviewEdge) return 'var(--uix-canvas-primary)';
     if (selected) return 'var(--uix-canvas-primary)';
     if (isHovered) return 'var(--uix-canvas-primary-hover)';
+    if (status) return edgeTargetStatusToEdgeColor[status] ?? 'var(--color-border)';
     return 'var(--uix-canvas-border)';
   };
 
   const edgeColor = getEdgeColor();
 
   return (
-    <g onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}>
-      {/* Invisible interaction layer for easier selection */}
-      <path
-        className="react-flow__edge-interaction"
-        d={edgePath}
-        fill="none"
-        stroke="transparent"
-        strokeWidth={20}
-        style={{ pointerEvents: 'stroke', cursor: isReadOnly ? 'default' : 'pointer' }}
-      />
-
-      {/* Outline for selected state */}
-      {selected && (
+    <>
+      <g
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        onMouseMove={handleMouseMoveOnPath}
+      >
+        {/* Invisible interaction layer for easier selection */}
         <path
-          className="react-flow__edge-outline"
+          className="react-flow__edge-interaction"
           d={edgePath}
           fill="none"
-          stroke="var(--uix-canvas-primary)"
-          strokeWidth={10}
-          opacity={0.3}
-          style={{
-            pointerEvents: 'none',
-            transition: 'opacity 0.2s ease',
-          }}
+          stroke="transparent"
+          strokeWidth={20}
+          style={{ pointerEvents: 'stroke', cursor: isReadOnly ? 'default' : 'pointer' }}
         />
-      )}
 
-      {/* Visual edge path */}
-      <path
-        id={id}
-        className="react-flow__edge-path"
-        d={edgePath}
-        strokeWidth={style?.strokeWidth || 2}
-        style={{
-          stroke: edgeColor,
-          strokeDasharray: isDiffRemoved
-            ? style?.strokeDasharray || '5,5'
-            : isPreviewEdge
-              ? '5,5'
-              : '0',
-          opacity: style?.opacity !== undefined ? style.opacity : 1,
-          transition: 'stroke 0.2s ease, opacity 0.2s ease',
-        }}
-      />
+        {/* Outline for selected state */}
+        {selected && (
+          <path
+            className="react-flow__edge-outline"
+            d={edgePath}
+            fill="none"
+            stroke="var(--uix-canvas-primary)"
+            strokeWidth={10}
+            opacity={0.3}
+            style={{
+              pointerEvents: 'none',
+              transition: 'opacity 0.2s ease',
+            }}
+          />
+        )}
 
-      {/* Arrow head - filled triangle */}
-      <polygon
-        points={`
+        {/* Visual edge path */}
+        <path
+          id={id}
+          className="react-flow__edge-path"
+          d={edgePath}
+          strokeWidth={style?.strokeWidth || 2}
+          style={{
+            stroke: edgeColor,
+            strokeDasharray: isDiffRemoved
+              ? style?.strokeDasharray || '5,5'
+              : isPreviewEdge
+                ? '5,5'
+                : '0',
+            opacity: style?.opacity !== undefined ? style.opacity : 1,
+            transition: 'stroke 0.2s ease, opacity 0.2s ease',
+          }}
+          ref={pathElementRef}
+        />
+
+        {/* Arrow head - filled triangle */}
+        <polygon
+          points={`
             ${targetX},${targetY}
             ${targetX - ARROW_SIZE * Math.cos(angle - Math.PI / 6)},${targetY - ARROW_SIZE * Math.sin(angle - Math.PI / 6)}
             ${targetX - ARROW_SIZE * Math.cos(angle + Math.PI / 6)},${targetY - ARROW_SIZE * Math.sin(angle + Math.PI / 6)}
           `}
-        fill={edgeColor}
-        style={{
-          pointerEvents: 'none',
-          opacity: style?.opacity !== undefined ? style.opacity : 1,
-          transition: 'fill 0.2s ease, opacity 0.2s ease',
-          transform: `translate(${offsetX}px, ${offsetY}px)`,
-        }}
-      />
-    </g>
+          fill={edgeColor}
+          style={{
+            pointerEvents: 'none',
+            opacity: style?.opacity !== undefined ? style.opacity : 1,
+            transition: 'fill 0.2s ease, opacity 0.2s ease',
+            transform: `translate(${offsetX}px, ${offsetY}px)`,
+          }}
+        />
+
+        {getStatusAnimation(status, edgePath)}
+      </g>
+
+      {/* Edge toolbar for adding nodes */}
+      {showToolbar && toolbarPositioning && (
+        <EdgeToolbar
+          edgeId={id}
+          visible={showToolbar}
+          positioning={toolbarPositioning}
+          config={toolbarConfig}
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
+        />
+      )}
+    </>
   );
 }, areEdgePropsEqual);

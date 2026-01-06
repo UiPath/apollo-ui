@@ -1,6 +1,6 @@
 import type { NodeRegistration } from '../../components/BaseNode/BaseNode.types';
-import type { NodeExecutionStatusWithCount } from '../../components/BaseNode/ExecutionStatusContext';
 import { ExecutionStatusIcon } from '../../components/ExecutionStatusIcon';
+import type { ExecutionStatusWithCount } from '../../types/execution';
 import { getIcon, resolveHandleGroups } from './helpers';
 import type { NodeManifest } from './types';
 
@@ -54,8 +54,7 @@ export function createNodeFromManifest(manifest: NodeManifest): NodeRegistration
 
       getAdornments: (_data, context) => {
         const status =
-          (context.executionState as NodeExecutionStatusWithCount)?.status ??
-          context.executionState;
+          (context.executionState as ExecutionStatusWithCount)?.status ?? context.executionState;
 
         return {
           topRight: <ExecutionStatusIcon status={status as string | undefined} />,

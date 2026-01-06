@@ -1,7 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { render, screen, type UserEvent, userEvent, waitFor } from '../../utils/testing';
+import { render, screen, type UserEvent, userEvent, waitFor } from '../../../utils/testing';
+import type { ToolbarActionItem } from '../shared';
 import { NodeToolbar } from './NodeToolbar';
-import type { NodeToolbarConfig, ToolbarActionItem } from './NodeToolbar.types';
+import type { NodeToolbarConfig } from './NodeToolbar.types';
 
 describe('NodeToolbar', () => {
   const mockAction1: ToolbarActionItem = {

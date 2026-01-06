@@ -15,7 +15,7 @@ import { BaseCanvas } from '../BaseCanvas';
 import { NewBaseNode } from '../BaseNode/NewBaseNode';
 import type { NewBaseNodeData } from '../BaseNode/NewBaseNode.types';
 import { CanvasPositionControls } from '../CanvasPositionControls';
-import type { NodeToolbarConfig } from '../NodeToolbar/NodeToolbar.types';
+import type { NodeToolbarConfig } from '../Toolbar';
 
 // ============================================================================
 // Meta Configuration

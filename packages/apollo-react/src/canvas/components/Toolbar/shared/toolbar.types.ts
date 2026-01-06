@@ -19,19 +19,3 @@ export interface ToolbarSeparator {
 }
 
 export type ToolbarAction = ToolbarActionItem | ToolbarSeparator;
-
-export interface NodeToolbarConfig {
-  actions: ToolbarAction[];
-  overflowActions?: ToolbarAction[]; // Actions shown in overflow menu (e.g., more options)
-  overflowLabel?: string;
-  position?: 'top' | 'bottom' | 'left' | 'right';
-  align?: 'start' | 'center' | 'end'; // start = left/top, center = middle, end = right/bottom
-}
-
-export interface NodeToolbarProps {
-  nodeId: string;
-  config: NodeToolbarConfig;
-  expanded: boolean;
-  /** When true, forcefully hides all toolbar actions including pinned items */
-  hidden?: boolean;
-}

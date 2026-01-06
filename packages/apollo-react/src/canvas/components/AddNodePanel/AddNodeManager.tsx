@@ -1,7 +1,8 @@
 import type { Edge, Node, ReactFlowState } from '@uipath/apollo-react/canvas/xyflow/react';
 import { useReactFlow, useStore } from '@uipath/apollo-react/canvas/xyflow/react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { PREVIEW_EDGE_ID, PREVIEW_NODE_ID } from '../../constants';
+import { PREVIEW_NODE_ID } from '../../constants';
+import { resolveCollisions } from '../../utils';
 import type { BaseNodeData } from '../BaseNode/BaseNode.types';
 import { FloatingCanvasPanel } from '../FloatingCanvasPanel';
 import type { ListItem } from '../Toolbox';
@@ -61,31 +62,60 @@ export const AddNodeManager: React.FC<AddNodeManagerProps> = ({
   // Watch for preview node selection
   const previewNode = useStore(previewNodeSelector);
   const [isOpen, setIsOpen] = useState(false);
-  const [sourceInfo, setSourceInfo] = useState<{ nodeId: string; handleId: string } | null>(null);
+  const [connectionInfo, setConnectionInfo] = useState<
+    Array<{
+      existingNodeId: string;
+      existingHandleId: string;
+      addNewNodeAsSource: boolean;
+      previewEdgeId: string;
+    }>
+  >([]);
   const [_selectedCategory, setSelectedCategory] = useState<string | undefined>(undefined);
   const lastPreviewNodeRef = useRef<Node | null>(null);
+  const restoreEdgesRef = useRef<Edge[] | null>(null);
 
-  // Extract source info from preview edge when preview node is selected
+  // Extract source info from preview edges when preview node is selected
   useEffect(() => {
     if (previewNode && !lastPreviewNodeRef.current) {
-      // Preview node just got selected
-      const previewEdge = reactFlowInstance.getEdges().find((edge) => edge.id === PREVIEW_EDGE_ID);
+      // Preview node just got selected - find all edges connected to the preview node
+      const previewEdges = reactFlowInstance
+        .getEdges()
+        .filter((edge) => edge.source === PREVIEW_NODE_ID || edge.target === PREVIEW_NODE_ID);
 
-      if (previewEdge) {
-        setSourceInfo({
-          nodeId: previewEdge.source,
-          handleId: previewEdge.sourceHandle || 'output',
+      if (previewEdges.length > 0) {
+        const connections = previewEdges.map((previewEdge) => {
+          const sourceIsPreviewNode = previewEdge.source === PREVIEW_NODE_ID;
+          return {
+            addNewNodeAsSource: sourceIsPreviewNode,
+            existingNodeId: sourceIsPreviewNode ? previewEdge.target : previewEdge.source,
+            existingHandleId: sourceIsPreviewNode
+              ? previewEdge.targetHandle || 'input'
+              : previewEdge.sourceHandle || 'output',
+            previewEdgeId: previewEdge.id,
+          };
         });
+        setConnectionInfo(connections);
         setIsOpen(true);
+        restoreEdgesRef.current = previewNode.data.originalEdge
+          ? [previewNode.data.originalEdge as Edge]
+          : null;
       }
     } else if (!previewNode && lastPreviewNodeRef.current) {
       // Preview node just got deselected
       setIsOpen(false);
-      setSourceInfo(null);
+      setConnectionInfo([]);
 
-      // Clean up preview node and edge if they still exist
+      // Clean up preview node and all preview edges if they still exist
       reactFlowInstance.setNodes((nodes) => nodes.filter((n) => n.id !== PREVIEW_NODE_ID));
-      reactFlowInstance.setEdges((edges) => edges.filter((e) => e.id !== PREVIEW_EDGE_ID));
+      reactFlowInstance.setEdges((edges) => {
+        const filteredEdges = edges.filter(
+          (e) => e.source !== PREVIEW_NODE_ID && e.target !== PREVIEW_NODE_ID
+        );
+        // Restore original edge if it exists
+        return restoreEdgesRef.current
+          ? [...filteredEdges, ...restoreEdgesRef.current]
+          : filteredEdges;
+      });
     }
 
     lastPreviewNodeRef.current = previewNode || null;
@@ -98,19 +128,16 @@ export const AddNodeManager: React.FC<AddNodeManagerProps> = ({
     );
 
     setIsOpen(false);
-    setSourceInfo(null);
+    setConnectionInfo([]);
     setSelectedCategory(undefined);
   }, [reactFlowInstance]);
 
   // Handle node selection from the selector panel
   const handleNodeSelect = useCallback(
     (nodeItem: ListItem) => {
-      if (!sourceInfo || !previewNode) return;
-
+      if (connectionInfo.length === 0 || !previewNode) return;
       // Generate new node ID
       const newNodeId = `${nodeItem.data.type}-${Date.now()}`;
-      const newEdgeId = `edge_${sourceInfo.nodeId}-${sourceInfo.handleId}-${newNodeId}`;
-
       // Create node data
       const baseNodeData = createNodeData
         ? createNodeData(nodeItem)
@@ -133,38 +160,74 @@ export const AddNodeManager: React.FC<AddNodeManagerProps> = ({
         data: nodeData,
       };
 
-      // Create new edge at preview position
-      const newEdge: Edge = {
-        id: newEdgeId,
-        source: sourceInfo.nodeId,
-        sourceHandle: sourceInfo.handleId,
-        target: newNodeId,
-        targetHandle: 'input',
-        type: 'default',
-      };
+      // Create edges for all connections
+      const newEdges: Edge[] = [];
+      const previewEdgeIds: string[] = [];
 
-      const { newNode: finalNode, newEdge: finalEdge } = onBeforeNodeAdded?.(newNode, newEdge) ?? {
-        newNode,
-        newEdge,
-      };
+      for (const connectionInfoItem of connectionInfo) {
+        // Arrange edge based on whether new node is source or target
+        const edgeSourceTargetData = connectionInfoItem.addNewNodeAsSource
+          ? {
+              source: newNode.id,
+              // Explicitly omitting sourceHandle to use default of the new node
+              target: connectionInfoItem.existingNodeId,
+              targetHandle: connectionInfoItem.existingHandleId,
+            }
+          : {
+              source: connectionInfoItem.existingNodeId,
+              sourceHandle: connectionInfoItem.existingHandleId,
+              target: newNode.id,
+              // Explicitly omitting targetHandle to use default of the new node
+            };
+        const newEdgeId = `edge_${edgeSourceTargetData.source}-${edgeSourceTargetData.sourceHandle}-${edgeSourceTargetData.target}-${edgeSourceTargetData.targetHandle}`;
 
-      // Replace preview node and edge with actual ones
-      reactFlowInstance.setNodes((nodes) => [
-        ...nodes.filter((n) => n.id !== PREVIEW_NODE_ID).map((n) => ({ ...n, selected: false })),
-        finalNode,
-      ]);
+        // Create new edge
+        const newEdge: Edge = {
+          id: newEdgeId,
+          ...edgeSourceTargetData,
+          type: 'default',
+        };
 
+        const { newNode: _, newEdge: finalEdge } = onBeforeNodeAdded?.(newNode, newEdge) ?? {
+          newNode,
+          newEdge,
+        };
+        newEdges.push(finalEdge);
+        previewEdgeIds.push(connectionInfoItem.previewEdgeId);
+      }
+
+      // Replace preview node with actual node and resolve collisions
+      reactFlowInstance.setNodes((nodes) => {
+        const newNodes = [
+          ...nodes.filter((n) => n.id !== PREVIEW_NODE_ID).map((n) => ({ ...n, selected: false })),
+          newNode,
+        ];
+        return resolveCollisions(newNodes);
+      });
+
+      // Replace all preview edges with actual edges
       reactFlowInstance.setEdges((edges) => [
-        ...edges.filter((e) => e.id !== PREVIEW_EDGE_ID),
-        finalEdge,
+        ...edges.filter((e) => !previewEdgeIds.includes(e.id)),
+        ...newEdges,
       ]);
 
-      onNodeAdded?.(sourceInfo.nodeId, sourceInfo.handleId, newNode);
-
+      // Call onNodeAdded for the first connection (for backwards compatibility)
+      const [firstConnection] = connectionInfo;
+      if (firstConnection) {
+        const firstEdgeData = firstConnection.addNewNodeAsSource
+          ? { source: newNode.id, sourceHandle: 'output' }
+          : {
+              source: firstConnection.existingNodeId,
+              sourceHandle: firstConnection.existingHandleId,
+            };
+        onNodeAdded?.(firstEdgeData.source, firstEdgeData.sourceHandle, newNode);
+      }
+      // No need to restore edges once we have added the new node.
+      restoreEdgesRef.current = null;
       handleClose();
     },
     [
-      sourceInfo,
+      connectionInfo,
       previewNode,
       reactFlowInstance,
       createNodeData,
@@ -197,7 +260,7 @@ export const AddNodeManager: React.FC<AddNodeManagerProps> = ({
     [reactFlowInstance, previewNode]
   );
 
-  if (!isOpen || !sourceInfo || !previewNode) {
+  if (!isOpen || connectionInfo.length === 0 || !previewNode) {
     return null;
   }
 
