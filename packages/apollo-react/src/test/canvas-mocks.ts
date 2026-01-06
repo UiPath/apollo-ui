@@ -281,6 +281,12 @@ vi.mock('@uipath/apollo-core', async (importOriginal) => {
       SpacingS: '12px',
       SpacingBase: '16px',
     },
+    Padding: {
+      PadS: '8px',
+      PadM: '12px',
+      PadL: '16px',
+      PadXxl: '32px',
+    },
     Colors: {
       ...actual.Colors,
       ColorInk300: '#8D9299',

@@ -165,12 +165,17 @@ export const Default: Story = {
       {
         id: '0',
         type: 'stage',
-        position: { x: 50, y: 100 },
+        position: { x: 48, y: 96 },
         width: 300,
         data: {
           stageDetails: {
             label: 'Application',
             tasks: [],
+          },
+          execution: {
+            stageStatus: {
+              duration: 'SLA: None',
+            },
           },
           onTaskAdd: () => {
             window.alert('Add task functionality - this would open a dialog to add a new task');
@@ -198,12 +203,17 @@ export const Default: Story = {
       {
         id: '1',
         type: 'stage',
-        position: { x: 400, y: 100 },
+        position: { x: 400, y: 96 },
         width: 300,
         data: {
           stageDetails: {
             label: 'Processing with a really really really long label that might wrap',
             tasks: sampleTasks,
+          },
+          execution: {
+            stageStatus: {
+              duration: 'SLA: None',
+            },
           },
           onAddTaskFromToolbox: (taskItem: ListItem) => {
             window.alert(
@@ -259,7 +269,7 @@ export const ExecutionStatus: Story = {
       {
         id: '0',
         type: 'stage',
-        position: { x: 50, y: 100 },
+        position: { x: 48, y: 96 },
         width: 300,
         data: {
           stageDetails: {
@@ -282,7 +292,7 @@ export const ExecutionStatus: Story = {
           execution: {
             stageStatus: {
               status: 'Completed',
-              duration: '4h',
+              duration: 'SLA: 4h',
             },
             taskStatus: {
               '1': { status: 'Completed', label: 'KYC and AML Checks', duration: '2h 15m' },
@@ -294,7 +304,7 @@ export const ExecutionStatus: Story = {
       {
         id: '1',
         type: 'stage',
-        position: { x: 400, y: 100 },
+        position: { x: 400, y: 96 },
         width: 300,
         data: {
           stageDetails: {
@@ -317,7 +327,7 @@ export const ExecutionStatus: Story = {
           execution: {
             stageStatus: {
               status: 'Completed',
-              duration: '6h 15m',
+              duration: 'SLA: 6h 15m',
             },
             taskStatus: {
               '1': {
@@ -354,7 +364,7 @@ export const ExecutionStatus: Story = {
       {
         id: '2',
         type: 'stage',
-        position: { x: 750, y: 100 },
+        position: { x: 752, y: 96 },
         width: 300,
         data: {
           stageDetails: {
@@ -369,7 +379,7 @@ export const ExecutionStatus: Story = {
             stageStatus: {
               status: 'InProgress',
               label: 'In progress',
-              duration: '2h 15m',
+              duration: 'SLA: 2h 15m',
             },
             taskStatus: {
               '1': { status: 'Completed', label: 'Report Ordering', duration: '2h 15m' },
@@ -381,7 +391,7 @@ export const ExecutionStatus: Story = {
       {
         id: '3',
         type: 'stage',
-        position: { x: 1100, y: 100 },
+        position: { x: 1104, y: 96 },
         width: 300,
         data: {
           stageDetails: {
@@ -404,7 +414,7 @@ export const ExecutionStatus: Story = {
       {
         id: '4',
         type: 'stage',
-        position: { x: 1100, y: 400 },
+        position: { x: 1104, y: 400 },
         width: 300,
         data: {
           stageDetails: {
@@ -462,8 +472,8 @@ export const InteractiveTaskManagement: Story = {
       {
         id: 'design-stage',
         type: 'stage',
-        position: { x: 50, y: 100 },
-        width: 350,
+        position: { x: 48, y: 96 },
+        width: 352,
         data: {
           stageDetails: {
             label: 'Design Mode - Editable',
@@ -529,8 +539,8 @@ export const InteractiveTaskManagement: Story = {
       {
         id: 'execution-stage',
         type: 'stage',
-        position: { x: 450, y: 100 },
-        width: 350,
+        position: { x: 448, y: 96 },
+        width: 352,
         data: {
           stageDetails: {
             label: 'Execution Mode - Read Only',
@@ -609,7 +619,7 @@ export const LoanProcessingWorkflow: Story = {
       {
         id: 'application',
         type: 'stage',
-        position: { x: 50, y: 100 },
+        position: { x: 48, y: 96 },
         width: 300,
         data: {
           stageDetails: {
@@ -626,7 +636,7 @@ export const LoanProcessingWorkflow: Story = {
       {
         id: 'processing',
         type: 'stage',
-        position: { x: 450, y: 100 },
+        position: { x: 448, y: 96 },
         width: 300,
         data: {
           stageDetails: {
@@ -648,7 +658,7 @@ export const LoanProcessingWorkflow: Story = {
       {
         id: 'underwriting',
         type: 'stage',
-        position: { x: 850, y: 100 },
+        position: { x: 848, y: 96 },
         width: 300,
         data: {
           stageDetails: {
@@ -664,7 +674,7 @@ export const LoanProcessingWorkflow: Story = {
       {
         id: 'closing',
         type: 'stage',
-        position: { x: 1250, y: 100 },
+        position: { x: 1248, y: 96 },
         width: 300,
         data: {
           stageDetails: {
@@ -681,7 +691,7 @@ export const LoanProcessingWorkflow: Story = {
       {
         id: 'funding',
         type: 'stage',
-        position: { x: 1650, y: 100 },
+        position: { x: 1648, y: 96 },
         width: 300,
         data: {
           stageDetails: {
@@ -697,7 +707,7 @@ export const LoanProcessingWorkflow: Story = {
       {
         id: 'rejected',
         type: 'stage',
-        position: { x: 1250, y: 400 },
+        position: { x: 1248, y: 400 },
         width: 300,
         data: {
           stageDetails: {
@@ -714,7 +724,7 @@ export const LoanProcessingWorkflow: Story = {
       {
         id: 'withdrawn',
         type: 'stage',
-        position: { x: 450, y: 600 },
+        position: { x: 448, y: 608 },
         width: 300,
         data: {
           stageDetails: {
@@ -796,7 +806,7 @@ const DraggableTaskReorderingStory = () => {
     {
       id: 'reorder-stage',
       type: 'stage',
-      position: { x: 25, y: 25 },
+      position: { x: 320, y: 96 },
       width: 300,
       data: {
         stageDetails: {

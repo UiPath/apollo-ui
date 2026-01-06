@@ -19,7 +19,7 @@ import {
 import { FontVariantToken, Spacing } from '@uipath/apollo-core';
 import { Column, Row } from '@uipath/apollo-react/canvas/layouts';
 import { Position, useStore, useViewport } from '@uipath/apollo-react/canvas/xyflow/react';
-import { ApIcon, ApLink, ApTooltip, ApTypography } from '@uipath/apollo-react/material';
+import { ApIcon, ApIconButton, ApTooltip, ApTypography } from '@uipath/apollo-react/material';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
@@ -91,6 +91,7 @@ const StageNodeComponent = (props: StageNodeProps) => {
   const escalation = stageDetails?.escalation;
   const escalationsTriggered = stageDetails?.escalationsTriggered;
   const selectedTasks = stageDetails?.selectedTasks;
+  const defaultContent = stageDetails?.defaultContent || 'Add first task';
 
   const status = execution?.stageStatus?.status;
   const statusLabel = execution?.stageStatus?.label;
@@ -210,12 +211,12 @@ const StageNodeComponent = (props: StageNodeProps) => {
         taskIndex,
       });
     },
-    [setIsTaskContextMenuVisible, setTaskStateReference]
+    []
   );
 
   const handleTaskContextMenuClose = useCallback(() => {
     setIsTaskContextMenuVisible(false);
-  }, [setIsTaskContextMenuVisible]);
+  }, []);
 
   useEffect(() => {
     if (isTaskContextMenuVisible) {
@@ -457,6 +458,8 @@ const StageNodeComponent = (props: StageNodeProps) => {
   );
 
   return (
+    // biome-ignore lint/a11y/useKeyWithClickEvents: moved over
+    // biome-ignore lint/a11y/noStaticElementInteractions: moved over
     <div
       data-testid={`stage-${id}`}
       style={{ position: 'relative' }}
@@ -467,7 +470,6 @@ const StageNodeComponent = (props: StageNodeProps) => {
       <StageContainer
         selected={selected}
         status={status}
-        isException={isException}
         style={
           taskWidth
             ? ({
@@ -480,7 +482,7 @@ const StageNodeComponent = (props: StageNodeProps) => {
         <StageHeader isException={isException}>
           <Row gap={Spacing.SpacingMicro} align="center">
             {icon}
-            <Column>
+            <Column py={2}>
               <ApTypography
                 variant={
                   isStageTitleEditing ? FontVariantToken.fontSizeM : FontVariantToken.fontSizeMBold
@@ -516,7 +518,7 @@ const StageNodeComponent = (props: StageNodeProps) => {
               )}
             </Column>
           </Row>
-          <Row gap={Spacing.SpacingXs} align="center">
+          <Row gap={Spacing.SpacingXs}>
             {status && (
               <Row gap={statusLabel ? Spacing.SpacingMicro : undefined} align="center">
                 <ExecutionStatusIcon status={status} />
@@ -554,17 +556,25 @@ const StageNodeComponent = (props: StageNodeProps) => {
                 />
               </ApTooltip>
             )}
+            {(onTaskAdd || onAddTaskFromToolbox) && (
+              <ApIconButton onClick={handleTaskAddClick}>
+                <ApIcon name="add" size="small" />
+              </ApIconButton>
+            )}
           </Row>
         </StageHeader>
 
         <StageContent>
-          {(onTaskAdd || onAddTaskFromToolbox) && (
-            <Row pl={'2px'}>
-              <ApLink onClick={handleTaskAddClick}>{addTaskLabel}</ApLink>
-            </Row>
-          )}
-
-          {tasks && tasks.length > 0 && (
+          {!tasks || tasks.length === 0 ? (
+            <Column py={2}>
+              <ApTypography
+                variant={FontVariantToken.fontSizeS}
+                color="var(--uix-canvas-foreground-de-emp)"
+              >
+                {defaultContent}
+              </ApTypography>
+            </Column>
+          ) : (
             <DndContext
               collisionDetection={closestCenter}
               sensors={sensors}
@@ -580,49 +590,56 @@ const StageNodeComponent = (props: StageNodeProps) => {
                   {tasks.map((taskGroup, groupIndex) => {
                     const isParallel = taskGroup.length > 1;
                     return (
-                      <StageTaskGroup key={`group-${groupIndex}`} isParallel={isParallel}>
-                        {isParallel && (
-                          <>
-                            <StageParallelLabel>Parallel</StageParallelLabel>
-                            <StageParallelBracket />
-                          </>
-                        )}
-                        {taskGroup.map((task, taskIndex) => {
-                          const taskExecution = execution?.taskStatus?.[task.id];
-                          return (
-                            <DraggableTask
-                              key={task.id}
-                              task={task}
-                              taskExecution={taskExecution}
-                              isSelected={!!selectedTasks?.includes(task.id)}
-                              isParallel={isParallel}
-                              isContextMenuVisible={
-                                isTaskContextMenuVisible &&
-                                taskStateReference.groupIndex === groupIndex &&
-                                taskStateReference.taskIndex === taskIndex
-                              }
-                              contextMenuItems={contextMenuItems(
-                                tasks.length,
-                                taskGroup.length,
-                                (tasks[groupIndex - 1]?.length ?? 0) > 1,
-                                (tasks[groupIndex + 1]?.length ?? 0) > 1
-                              )}
-                              contextMenuAnchor={taskStateReference.anchor}
-                              onTaskClick={handleTaskClick}
-                              projectedDepth={
-                                task.id === activeDragId && projected ? projected.depth : undefined
-                              }
-                              isDragDisabled={!onTaskReorder}
-                              zoom={zoom}
-                              {...(onTaskGroupModification && {
-                                onContextMenu: (e) =>
-                                  handleTaskContextMenuOpen(isParallel, groupIndex, taskIndex, e),
-                                onRemove: (event) => handleTaskRemove(event, groupIndex, taskIndex),
-                              })}
-                            />
-                          );
-                        })}
-                      </StageTaskGroup>
+                      <Row key={`group-${groupIndex}`} gap={Spacing.SpacingS}>
+                        {isParallel && <StageParallelBracket />}
+                        <StageTaskGroup isParallel={isParallel}>
+                          {isParallel && (
+                            <StageParallelLabel>
+                              <ApTypography variant={FontVariantToken.fontSizeS}>
+                                Parallel
+                              </ApTypography>
+                            </StageParallelLabel>
+                          )}
+                          {taskGroup.map((task, taskIndex) => {
+                            const taskExecution = execution?.taskStatus?.[task.id];
+                            return (
+                              <DraggableTask
+                                key={task.id}
+                                task={task}
+                                taskExecution={taskExecution}
+                                isSelected={!!selectedTasks?.includes(task.id)}
+                                isParallel={isParallel}
+                                isContextMenuVisible={
+                                  isTaskContextMenuVisible &&
+                                  taskStateReference.groupIndex === groupIndex &&
+                                  taskStateReference.taskIndex === taskIndex
+                                }
+                                contextMenuItems={contextMenuItems(
+                                  tasks.length,
+                                  taskGroup.length,
+                                  (tasks[groupIndex - 1]?.length ?? 0) > 1,
+                                  (tasks[groupIndex + 1]?.length ?? 0) > 1
+                                )}
+                                contextMenuAnchor={taskStateReference.anchor}
+                                onTaskClick={handleTaskClick}
+                                projectedDepth={
+                                  task.id === activeDragId && projected
+                                    ? projected.depth
+                                    : undefined
+                                }
+                                isDragDisabled={!onTaskReorder}
+                                zoom={zoom}
+                                {...(onTaskGroupModification && {
+                                  onContextMenu: (e) =>
+                                    handleTaskContextMenuOpen(isParallel, groupIndex, taskIndex, e),
+                                  onRemove: (event) =>
+                                    handleTaskRemove(event, groupIndex, taskIndex),
+                                })}
+                              />
+                            );
+                          })}
+                        </StageTaskGroup>
+                      </Row>
                     );
                   })}
                 </StageTaskList>
@@ -645,7 +662,7 @@ const StageNodeComponent = (props: StageNodeProps) => {
       </StageContainer>
 
       {onAddTaskFromToolbox && (
-        <FloatingCanvasPanel open={isAddingTask} nodeId={id} offset={10}>
+        <FloatingCanvasPanel open={isAddingTask} nodeId={id} offset={15}>
           <Toolbox
             title={addTaskLabel}
             initialItems={taskOptions}

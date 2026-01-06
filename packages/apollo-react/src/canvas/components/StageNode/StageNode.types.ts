@@ -28,6 +28,7 @@ export interface StageNodeProps extends NodeProps {
   id: string;
   stageDetails: {
     label: string;
+    defaultContent?: string;
     icon?: React.ReactElement;
     sla?: string;
     slaBreached?: boolean;
