@@ -4,7 +4,7 @@ import {
   type CSSProperties,
   forwardRef,
   memo,
-  ReactElement,
+  type ReactElement,
   useCallback,
   useImperativeHandle,
   useMemo,
