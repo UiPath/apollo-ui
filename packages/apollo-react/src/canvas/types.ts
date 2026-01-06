@@ -5,9 +5,22 @@ import type {
   Viewport as ReactFlowViewport,
 } from '@uipath/apollo-react/canvas/xyflow/react';
 import type { NodeProps } from '@uipath/apollo-react/canvas/xyflow/system';
-
 import type { IRawSpan } from '../types/TraceModels';
 import type { BaseCanvasRef } from './components/BaseCanvas/BaseCanvas.types';
+import type {
+  StickyNoteColor,
+  StickyNoteData,
+} from './components/StickyNoteNode/StickyNoteNode.types';
+
+export interface AgentFlowStickyNote {
+  id: string;
+  content: string;
+  position: { x: number; y: number };
+  size: { width: number; height: number };
+  color: StickyNoteColor;
+}
+
+export type AgentFlowStickyNoteNode = Node<StickyNoteData, 'stickyNote'>;
 
 export enum ProjectType {
   Agent = 'Agent',
@@ -279,7 +292,7 @@ export type AgentFlowProps = {
    * If not provided, defaults to undefined
    */
   agentNodePosition?: { x: number; y: number } | undefined;
-  onAgentNodePositionChange?: (position: { x: number; y: number } | undefined) => void;
+  onAgentNodePositionChange?: (position: { x: number; y: number }) => void;
   /**
    * Positions for the resource nodes.
    * If not provided, defaults to undefined
@@ -297,10 +310,18 @@ export type AgentFlowProps = {
    */
   zoomLevel?: number;
   onZoomLevelChange?: (zoomLevel: number) => void;
+
+  // sticky notes
+  stickyNotes?: AgentFlowStickyNote[];
+  onAddStickyNote?: (data: AgentFlowStickyNote) => void;
+  onUpdateStickyNote?: (id: string, updates: Partial<Omit<AgentFlowStickyNote, 'id'>>) => void;
+  onRemoveStickyNote?: (id: string) => void;
+
   // feature flags
   enableMcpTools?: boolean;
   /** TODO: Remove once memory feature is fully implemented */
   enableMemory?: boolean;
+  enableStickyNotes?: boolean;
 
   // health score
   healthScore?: number;
@@ -451,7 +472,7 @@ export type AgentFlowResourceNode = Node<AgentFlowResourceNodeData, 'resource'> 
 };
 export type AgentFlowResourceNodeProps = NodeProps<AgentFlowResourceNode>;
 
-export type AgentFlowCustomNode = AgentFlowNode | AgentFlowResourceNode;
+export type AgentFlowCustomNode = AgentFlowNode | AgentFlowResourceNode | AgentFlowStickyNoteNode;
 export type AgentFlowNodeDataUpdate<T extends AgentFlowCustomNode> = Partial<T['data']>;
 
 export type AgentFlowDefaultEdgeData = {
@@ -465,6 +486,8 @@ export const isAgentFlowAgentNode = (node: AgentFlowCustomNode): node is AgentFl
   node.type === 'agent';
 export const isAgentFlowResourceNode = (node: AgentFlowCustomNode): node is AgentFlowResourceNode =>
   node.type === 'resource';
+export const isStickyNoteNode = (node: AgentFlowCustomNode): node is AgentFlowStickyNoteNode =>
+  node.type === 'stickyNote';
 
 export interface AgentNodeTranslations {
   arguments: string;
@@ -542,6 +565,7 @@ export interface CanvasTranslations {
   zoomIn: string;
   zoomOut: string;
   zoomToFit: string;
+  addNote: string;
 }
 
 export const DefaultCanvasTranslations: CanvasTranslations = {
@@ -550,6 +574,7 @@ export const DefaultCanvasTranslations: CanvasTranslations = {
   zoomIn: 'Zoom in',
   zoomOut: 'Zoom out',
   zoomToFit: 'Zoom to fit',
+  addNote: 'Add note',
 };
 
 export interface SuggestionTranslations {

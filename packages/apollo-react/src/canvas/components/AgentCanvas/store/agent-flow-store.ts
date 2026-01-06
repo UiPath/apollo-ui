@@ -18,8 +18,11 @@ import {
   type AgentFlowResourceNode,
   type AgentFlowResourceNodeData,
   type AgentFlowResourceType,
+  type AgentFlowStickyNote,
+  type AgentFlowStickyNoteNode,
   isAgentFlowAgentNode,
   isAgentFlowResourceNode,
+  isStickyNoteNode,
 } from '../../../types';
 import { autoArrangeNodes, RESOURCE_NODE_SIZE } from '../../../utils/auto-layout';
 import {
@@ -423,6 +426,9 @@ interface AgentFlowStore {
 
   // placeholder creation
   createResourcePlaceholder: (type: AgentFlowResourceType) => void;
+
+  // sticky notes
+  addStickyNote: (data?: Partial<Omit<AgentFlowStickyNote, 'id'>>) => void;
 }
 
 export const hasResourceNode = (node: AgentFlowCustomNode, resource: AgentFlowResource) =>
@@ -479,6 +485,83 @@ const findNodeForSuggestion = (
 };
 
 /**
+ * Syncs sticky note data changes from nodes to props by comparing current node data
+ * with the corresponding sticky note in props and calling onUpdateStickyNote for differences.
+ * This handles content, color, and size changes that occur through React Flow's updateNodeData.
+ */
+const syncStickyNoteChangesToProps = (
+  nodes: AgentFlowCustomNode[],
+  props: AgentFlowProps
+): void => {
+  if (!props.onUpdateStickyNote || !props.stickyNotes) return;
+
+  for (const node of nodes) {
+    if (!isStickyNoteNode(node)) continue;
+
+    const propStickyNote = props.stickyNotes.find((sn) => sn.id === node.id);
+    if (!propStickyNote) continue;
+
+    const updates: Partial<Omit<AgentFlowStickyNote, 'id'>> = {};
+
+    // Check for content changes
+    if (node.data.content !== propStickyNote.content) {
+      updates.content = node.data.content ?? '';
+    }
+
+    // Check for color changes
+    if (node.data.color && node.data.color !== propStickyNote.color) {
+      updates.color = node.data.color;
+    }
+
+    // Check for size changes (explicit width/height from NodeResizeControl)
+    const currentWidth = node.width ?? node.measured?.width;
+    const currentHeight = node.height ?? node.measured?.height;
+    if (
+      currentWidth &&
+      currentHeight &&
+      (currentWidth !== propStickyNote.size.width || currentHeight !== propStickyNote.size.height)
+    ) {
+      updates.size = { width: currentWidth, height: currentHeight };
+    }
+
+    // If there are any changes, notify the parent
+    if (Object.keys(updates).length > 0) {
+      props.onUpdateStickyNote(node.id, updates);
+    }
+  }
+};
+
+/**
+ * Creates sticky note nodes from props
+ */
+const createStickyNoteNodes = (
+  stickyNotes: AgentFlowProps['stickyNotes'],
+  existingNodes?: AgentFlowCustomNode[]
+): AgentFlowStickyNoteNode[] => {
+  if (!stickyNotes || stickyNotes.length === 0) return [];
+
+  return stickyNotes.map((stickyNote) => {
+    // Check if this sticky note already exists to preserve its state
+    const existingNode = existingNodes?.find((n) => n.id === stickyNote.id);
+
+    return {
+      id: stickyNote.id,
+      type: 'stickyNote' as const,
+      position: existingNode?.position ?? stickyNote.position,
+      width: stickyNote.size.width,
+      height: stickyNote.size.height,
+      data: {
+        color: stickyNote.color,
+        content: stickyNote.content,
+      },
+      selected: existingNode?.selected ?? false,
+      draggable: true,
+      selectable: true,
+    } as AgentFlowStickyNoteNode;
+  });
+};
+
+/**
  * Computes nodes and edges with suggestions integrated
  */
 const computeNodesAndEdgesWithSuggestions = (
@@ -500,6 +583,10 @@ const computeNodesAndEdgesWithSuggestions = (
 
   const virtualNodes = createVirtualNodes(agentNode);
   baseNodes.push(...virtualNodes);
+
+  // Add sticky note nodes
+  const stickyNoteNodes = createStickyNoteNodes(props.stickyNotes, existingNodes);
+  baseNodes.push(...stickyNoteNodes);
 
   // If no suggestions, return base nodes and edges
   if (!props.suggestionGroup || props.suggestionGroup.suggestions.length === 0) {
@@ -643,6 +730,10 @@ export const createAgentFlowStore = (initialProps: AgentFlowProps) =>
               const oldResourceId = oldNode.id.split(':').pop();
               return newResourceId === oldResourceId;
             }
+            // Match sticky note nodes by ID
+            if (isStickyNoteNode(newNode) && isStickyNoteNode(oldNode)) {
+              return newNode.id === oldNode.id;
+            }
             return false;
           });
 
@@ -654,6 +745,9 @@ export const createAgentFlowStore = (initialProps: AgentFlowProps) =>
               selected: oldNode.selected,
               style: oldNode.style,
               measured: oldNode.measured,
+              // Preserve explicit width/height for resizable nodes (like sticky notes)
+              width: oldNode.width ?? newNode.width,
+              height: oldNode.height ?? newNode.height,
             };
           }
 
@@ -767,7 +861,7 @@ export const createAgentFlowStore = (initialProps: AgentFlowProps) =>
             (newP) => !oldStandalonePlaceholders.some((oldP) => oldP.id === newP.id)
           );
 
-          if (newPlaceholder && newPlaceholder.resource) {
+          if (newPlaceholder?.resource) {
             // Find the node for this placeholder
             const currentState = get();
             const placeholderNode = currentState.nodes.find(
@@ -1012,6 +1106,11 @@ export const createAgentFlowStore = (initialProps: AgentFlowProps) =>
                   props.onRemoveResource(resourceToRemove);
                 }
               }
+
+              // Handle sticky note removal
+              if (isStickyNoteNode(nodeToDelete) && props.onRemoveStickyNote) {
+                props.onRemoveStickyNote(nodeToDelete.id);
+              }
             }
           }
 
@@ -1064,6 +1163,9 @@ export const createAgentFlowStore = (initialProps: AgentFlowProps) =>
               selectedNodeId: newSelectedId,
               nodes: updatedNodes,
             });
+
+            // Sync sticky note changes (content, color, size) to parent props
+            syncStickyNoteChangesToProps(updatedNodes, props);
             return;
           }
         }
@@ -1092,12 +1194,23 @@ export const createAgentFlowStore = (initialProps: AgentFlowProps) =>
             }
 
             // Check if measured dimensions changed
-            const oldWidth = original.measured?.width;
-            const oldHeight = original.measured?.height;
-            const newWidth = updated.measured?.width;
-            const newHeight = updated.measured?.height;
+            const oldMeasuredWidth = original.measured?.width;
+            const oldMeasuredHeight = original.measured?.height;
+            const newMeasuredWidth = updated.measured?.width;
+            const newMeasuredHeight = updated.measured?.height;
 
-            if (oldWidth !== newWidth || oldHeight !== newHeight) {
+            // Also check explicit width/height (used by NodeResizeControl)
+            const oldExplicitWidth = original.width;
+            const oldExplicitHeight = original.height;
+            const newExplicitWidth = updated.width;
+            const newExplicitHeight = updated.height;
+
+            const measuredChanged =
+              oldMeasuredWidth !== newMeasuredWidth || oldMeasuredHeight !== newMeasuredHeight;
+            const explicitChanged =
+              oldExplicitWidth !== newExplicitWidth || oldExplicitHeight !== newExplicitHeight;
+
+            if (measuredChanged || explicitChanged) {
               dimensionsChanged = true;
               break;
             }
@@ -1106,6 +1219,8 @@ export const createAgentFlowStore = (initialProps: AgentFlowProps) =>
           // Only update if dimensions actually changed
           if (dimensionsChanged) {
             set({ nodes: updatedNodes });
+            // Sync sticky note changes (content, color, size) to parent props
+            syncStickyNoteChangesToProps(updatedNodes, props);
           }
           return;
         }
@@ -1130,6 +1245,9 @@ export const createAgentFlowStore = (initialProps: AgentFlowProps) =>
         });
 
         set({ nodes: finalNodes });
+
+        // Sync sticky note changes (content, color, size) to parent props
+        syncStickyNoteChangesToProps(finalNodes, props);
 
         // Recalculate edges if positions changed
         if (hasPositionChanges) {
@@ -1822,6 +1940,32 @@ export const createAgentFlowStore = (initialProps: AgentFlowProps) =>
         // No placeholder callback provided, fall back to direct creation via onAddResource
         props.onAddResource?.(type);
       },
+
+      addStickyNote: (data = {}) => {
+        const state = get();
+        const { props } = state;
+
+        if (!props.onAddStickyNote) return;
+
+        // Find the agent node to position the sticky note relative to it
+        const agentNode = state.nodes.find(isAgentFlowAgentNode);
+        if (!agentNode) return;
+
+        // Calculate position to the right of the agent node
+        const agentWidth = agentNode.measured?.width ?? agentNode.width ?? 320;
+        const defaultPosition = {
+          x: agentNode.position.x + agentWidth + 100,
+          y: agentNode.position.y,
+        };
+
+        props.onAddStickyNote({
+          id: `sticky-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
+          content: data.content ?? '',
+          position: data.position ?? defaultPosition,
+          size: { width: 304, height: 288 },
+          color: data.color ?? 'yellow',
+        });
+      },
     };
   });
 
@@ -1840,11 +1984,13 @@ export const AgentFlowProvider = ({
       ...store.getState(),
       selectedNodeId: getSelectedNodeId(props, store.getState()),
     });
-  }, []);
+    // biome-ignore lint/correctness/useExhaustiveDependencies: migrated code
+  }, [store.getState, store.setState, props]);
 
   useEffect(() => {
     store.getState().handlePropsUpdate(props);
-  }, [props]);
+    // biome-ignore lint/correctness/useExhaustiveDependencies: migrated code
+  }, [props, store.getState]);
 
   return React.createElement(AgentFlowContext.Provider, { value: store }, children);
 };

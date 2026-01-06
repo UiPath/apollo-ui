@@ -1,10 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { FontVariantToken } from '@uipath/apollo-core';
 import { Column, Row } from '@uipath/apollo-react/canvas/layouts';
 import { ReactFlowProvider } from '@uipath/apollo-react/canvas/xyflow/react';
+import { FontVariantToken } from '@uipath/apollo-react/core';
 import { ApButton, ApTypography } from '@uipath/apollo-react/material';
 import { useCallback, useState } from 'react';
-
 import type { IRawSpan } from '../../../types/TraceModels';
 import { StoryInfoPanel } from '../../storybook-utils';
 import {
@@ -12,6 +11,7 @@ import {
   type AgentFlowResource,
   type AgentFlowResourceNodeData,
   type AgentFlowResourceType,
+  type AgentFlowStickyNote,
   type AgentFlowSuggestionGroup,
   createPlaceholderSuggestion,
   ProjectType,
@@ -283,29 +283,59 @@ const sampleSpans: IRawSpan[] = [
   },
 ];
 
+// Sample sticky notes for testing
+const sampleStickyNotes: AgentFlowStickyNote[] = [
+  {
+    id: 'sticky-1',
+    content:
+      '## Welcome!\nThis is a **markdown** sticky note.\n\n- Supports lists\n- And formatting',
+    position: { x: -150, y: -450 },
+    size: { width: 320, height: 300 },
+    color: 'yellow',
+  },
+  {
+    id: 'sticky-2',
+    content: 'Remember to test:\n\n1. Dragging\n2. Resizing\n3. Color changes\n4. Content editing',
+    position: { x: 380, y: 0 },
+    size: { width: 500, height: 450 },
+    color: 'blue',
+  },
+  {
+    id: 'sticky-3',
+    content: 'Quick note: Press Delete to remove selected notes',
+    position: { x: -220, y: 220 },
+    size: { width: 300, height: 230 },
+    color: 'pink',
+  },
+];
+
 interface AgentFlowWrapperProps {
   mode: AgentFlowProps['mode'];
   initialResources?: AgentFlowResource[];
+  initialStickyNotes?: AgentFlowStickyNote[];
   activeResourceIds?: string[];
   spans?: any[];
   definition?: any;
   enableTimelinePlayer?: boolean;
   enableMemory?: boolean;
+  enableStickyNotes?: boolean;
   healthScore?: number;
   onHealthScoreClick?: () => void;
   allowDragging?: boolean;
   agentNodePosition?: { x: number; y: number } | undefined;
-  onAgentNodePositionChange?: (position: { x: number; y: number } | undefined) => void;
+  onAgentNodePositionChange?: (position: { x: number; y: number }) => void;
 }
 
 const AgentFlowWrapper = ({
   mode,
   initialResources = sampleResources,
+  initialStickyNotes = [],
   activeResourceIds,
   spans = sampleSpans,
   definition = sampleAgentDefinition,
   enableTimelinePlayer = true,
   enableMemory = true,
+  enableStickyNotes = true,
   healthScore,
   onHealthScoreClick,
   allowDragging = false,
@@ -317,6 +347,25 @@ const AgentFlowWrapper = ({
   const [_sidebarMode, setSidebarMode] = useState<
     'add-context' | 'add-escalation' | 'add-model' | 'add-tool' | 'add-memory' | 'properties'
   >('properties');
+  const [stickyNotes, setStickyNotes] = useState<AgentFlowStickyNote[]>(initialStickyNotes);
+
+  // Sticky note handlers
+  const handleAddStickyNote = useCallback((data: AgentFlowStickyNote) => {
+    setStickyNotes((prev) => [...prev, data]);
+  }, []);
+
+  const handleUpdateStickyNote = useCallback(
+    (id: string, updates: Partial<AgentFlowStickyNote>) => {
+      setStickyNotes((prev) =>
+        prev.map((note) => (note.id === id ? { ...note, ...updates } : note))
+      );
+    },
+    []
+  );
+
+  const handleRemoveStickyNote = useCallback((id: string) => {
+    setStickyNotes((prev) => prev.filter((note) => note.id !== id));
+  }, []);
 
   const handleSelectResource = useCallback((resourceId: string | null) => {
     setSelectedResourceId(resourceId);
@@ -460,6 +509,11 @@ const AgentFlowWrapper = ({
         <div>
           <strong>Resources:</strong> {resources.length}
         </div>
+        {enableStickyNotes && (
+          <div>
+            <strong>Sticky Notes:</strong> {stickyNotes.length}
+          </div>
+        )}
         {allowDragging && agentNodePosition && (
           <div
             style={{
@@ -488,6 +542,14 @@ const AgentFlowWrapper = ({
             <li>Escalations (bottom-center)</li>
             <li>Tools & MCPs (bottom-right)</li>
           </ul>
+          {enableStickyNotes && (
+            <>
+              <p style={{ marginTop: '12px' }}>
+                Use the sticky note button at the bottom to add notes.
+              </p>
+              <p>Press Delete/Backspace to remove selected notes.</p>
+            </>
+          )}
         </div>
       </Column>
     );
@@ -520,6 +582,11 @@ const AgentFlowWrapper = ({
             onSelectResource={handleSelectResource}
             enableTimelinePlayer={mode === 'view' && enableTimelinePlayer}
             enableMemory={enableMemory}
+            enableStickyNotes={enableStickyNotes}
+            stickyNotes={stickyNotes}
+            onAddStickyNote={handleAddStickyNote}
+            onUpdateStickyNote={handleUpdateStickyNote}
+            onRemoveStickyNote={handleRemoveStickyNote}
             healthScore={healthScore}
             onHealthScoreClick={onHealthScoreClick}
           />
@@ -530,146 +597,205 @@ const AgentFlowWrapper = ({
   );
 };
 
+const DesignModeWrapper = () => {
+  const [hasResources, setHasResources] = useState(true);
+
+  const renderControlPanel = () => {
+    return (
+      <StoryInfoPanel title="Design Mode Controls">
+        <Column mt={12} gap={8}>
+          <ApTypography variant={FontVariantToken.fontSizeM}>Canvas state:</ApTypography>
+          <Row gap={8}>
+            <ApButton
+              size="small"
+              variant={hasResources ? 'primary' : 'secondary'}
+              label="With Resources"
+              onClick={() => setHasResources(true)}
+            />
+            <ApButton
+              size="small"
+              variant={!hasResources ? 'primary' : 'secondary'}
+              label="Empty"
+              onClick={() => setHasResources(false)}
+            />
+          </Row>
+        </Column>
+      </StoryInfoPanel>
+    );
+  };
+
+  return (
+    <ReactFlowProvider key={hasResources ? 'with-resources' : 'empty'}>
+      <AgentFlowWrapper mode="design" initialResources={hasResources ? sampleResources : []} />
+      {renderControlPanel()}
+    </ReactFlowProvider>
+  );
+};
+
 export const DesignMode: Story = {
   args: {
     mode: 'design',
-    resources: sampleResources,
   },
-  render: (args) => <AgentFlowWrapper {...args} />,
+  render: () => <DesignModeWrapper />,
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Interactive design mode demo. Use the control panel to toggle between a canvas with sample resources and an empty canvas.',
+      },
+    },
+  },
+};
+
+const ViewModeWrapper = () => {
+  const [hasTimelinePlayer, setHasTimelinePlayer] = useState(false);
+
+  const renderControlPanel = () => {
+    return (
+      <StoryInfoPanel title="View Mode Controls">
+        <Column mt={12} gap={8}>
+          <ApTypography variant={FontVariantToken.fontSizeM}>Timeline player:</ApTypography>
+          <Row gap={8}>
+            <ApButton
+              size="small"
+              variant={!hasTimelinePlayer ? 'primary' : 'secondary'}
+              label="Off"
+              onClick={() => setHasTimelinePlayer(false)}
+            />
+            <ApButton
+              size="small"
+              variant={hasTimelinePlayer ? 'primary' : 'secondary'}
+              label="With Spans"
+              onClick={() => setHasTimelinePlayer(true)}
+            />
+          </Row>
+        </Column>
+      </StoryInfoPanel>
+    );
+  };
+
+  return (
+    <ReactFlowProvider key={hasTimelinePlayer ? 'with-timeline' : 'no-timeline'}>
+      <AgentFlowWrapper
+        mode="view"
+        initialResources={sampleResources}
+        activeResourceIds={[]}
+        spans={hasTimelinePlayer ? sampleSpans : []}
+        definition={sampleAgentDefinition}
+        enableTimelinePlayer={hasTimelinePlayer}
+      />
+      {renderControlPanel()}
+    </ReactFlowProvider>
+  );
 };
 
 export const ViewMode: Story = {
   args: {
     mode: 'view',
-    resources: sampleResources,
-    activeResourceIds: [],
-    spans: [],
   },
-  render: (args) => <AgentFlowWrapper {...args} />,
-};
-
-export const DesignModeEmpty: Story = {
-  args: {
-    mode: 'design',
-  },
-  render: (args) => <AgentFlowWrapper {...args} initialResources={[]} />,
-};
-
-// New stories based on real frontend usage patterns
-export const ViewModeWithTraceData: Story = {
-  args: {
-    mode: 'view',
-    resources: sampleResources,
-    definition: sampleAgentDefinition,
-    spans: sampleSpans,
-    activeResourceIds: [],
-    enableTimelinePlayer: false,
-  },
-  render: (args) => <AgentFlowWrapper {...args} />,
-};
-
-export const DesignModeWithRealData: Story = {
-  args: {
-    mode: 'design',
-    resources: sampleResources,
-    definition: sampleAgentDefinition,
-    spans: sampleSpans,
-  },
-  render: (args) => <AgentFlowWrapper {...args} />,
-};
-
-export const ViewModeEmptyTrace: Story = {
-  args: {
-    mode: 'view',
-    resources: sampleResources,
-    definition: sampleAgentDefinition,
-    spans: [],
-    activeResourceIds: [],
-  },
-  render: (args) => <AgentFlowWrapper {...args} />,
-};
-
-export const ViewModeWithoutTimelinePlayer: Story = {
-  args: {
-    mode: 'view',
-    resources: sampleResources,
-    definition: sampleAgentDefinition,
-    spans: sampleSpans,
-    activeResourceIds: [],
-    enableTimelinePlayer: false,
-  },
-  render: (args) => <AgentFlowWrapper {...args} />,
-};
-
-export const ViewModeWithTimelinePlayer: Story = {
-  args: {
-    mode: 'view',
-    resources: sampleResources,
-    activeResourceIds: [],
-  },
-  render: (args) => (
-    <AgentFlowWrapper {...args} spans={sampleSpans} definition={sampleAgentDefinition} />
-  ),
-};
-
-/**
- * Health Score Stories
- * Demonstrates the health score badge feature on agent nodes
- */
-
-export const HealthScore: Story = {
-  args: {
-    mode: 'design',
-    resources: sampleResources,
-  },
-  render: (args) => {
-    const HealthScoreWithClick = () => {
-      const handleHealthScoreClick = useCallback(() => {
-        alert('Health score clicked! This would open a panel with health score details.');
-      }, []);
-
-      return (
-        <AgentFlowWrapper {...args} healthScore={95} onHealthScoreClick={handleHealthScoreClick} />
-      );
-    };
-
-    return <HealthScoreWithClick />;
-  },
+  render: () => <ViewModeWrapper />,
   parameters: {
     docs: {
       description: {
         story:
-          'Agent with health score (95). The health score badge appears below the agent name and is clickable.',
+          'Interactive view mode demo. Use the control panel to toggle between view mode with and without the timeline player.',
       },
     },
   },
 };
 
-export const HealthScoreZero: Story = {
-  args: {
-    mode: 'design',
-    resources: sampleResources,
-  },
-  render: (args) => <AgentFlowWrapper {...args} healthScore={0} />,
-  parameters: {
-    docs: {
-      description: {
-        story: 'Agent with zero health score (0).',
-      },
-    },
-  },
+/**
+ * Health Score Story
+ * Demonstrates the health score badge feature on agent nodes with interactive controls
+ */
+
+const HealthScoreWrapper = ({
+  mode,
+  initialResources = sampleResources,
+}: Pick<AgentFlowWrapperProps, 'mode' | 'initialResources'>) => {
+  const [healthScore, setHealthScore] = useState<number | undefined>(95);
+
+  const handleHealthScoreClick = useCallback(() => {
+    alert('Health score clicked! This would open a panel with health score details.');
+  }, []);
+
+  const renderControlPanel = () => {
+    return (
+      <StoryInfoPanel title="Health Score Controls">
+        <Column mt={12} gap={8}>
+          <ApTypography variant={FontVariantToken.fontSizeM}>Set health score:</ApTypography>
+          <Row gap={8} style={{ flexWrap: 'wrap' }}>
+            <ApButton
+              size="small"
+              variant={healthScore === undefined ? 'primary' : 'secondary'}
+              label="None"
+              onClick={() => setHealthScore(undefined)}
+            />
+            <ApButton
+              size="small"
+              variant={healthScore === 0 ? 'primary' : 'secondary'}
+              label="0"
+              onClick={() => setHealthScore(0)}
+            />
+            <ApButton
+              size="small"
+              variant={healthScore === 50 ? 'primary' : 'secondary'}
+              label="50"
+              onClick={() => setHealthScore(50)}
+            />
+            <ApButton
+              size="small"
+              variant={healthScore === 95 ? 'primary' : 'secondary'}
+              label="95"
+              onClick={() => setHealthScore(95)}
+            />
+            <ApButton
+              size="small"
+              variant={healthScore === 100 ? 'primary' : 'secondary'}
+              label="100"
+              onClick={() => setHealthScore(100)}
+            />
+          </Row>
+          <ApTypography
+            variant={FontVariantToken.fontSizeS}
+            style={{ color: 'var(--uix-canvas-foreground-de-emp)' }}
+          >
+            Current: {healthScore === undefined ? 'Not set' : healthScore}
+          </ApTypography>
+        </Column>
+      </StoryInfoPanel>
+    );
+  };
+
+  return (
+    <ReactFlowProvider>
+      <AgentFlow
+        allowDragging
+        definition={sampleAgentDefinition}
+        spans={[]}
+        name="Test Agent"
+        description="Test Description"
+        mode={mode}
+        resources={initialResources}
+        enableMemory
+        healthScore={healthScore}
+        onHealthScoreClick={handleHealthScoreClick}
+      />
+      {renderControlPanel()}
+    </ReactFlowProvider>
+  );
 };
 
-export const NoHealthScore: Story = {
+export const HealthScore: Story = {
   args: {
     mode: 'design',
-    resources: sampleResources,
   },
-  render: (args) => <AgentFlowWrapper {...args} healthScore={undefined} />,
+  render: (args) => <HealthScoreWrapper mode={args.mode} initialResources={sampleResources} />,
   parameters: {
     docs: {
       description: {
-        story: 'Agent without health score. The health score badge is not rendered when undefined.',
+        story:
+          'Interactive health score demo. Use the control panel to toggle between different health score values (None, 0, 50, 95, 100). The health score badge appears below the agent name and is clickable.',
       },
     },
   },
@@ -1124,8 +1250,8 @@ const SuggestionModeWrapper = ({
                 <li>Only one placeholder at a time (new ones replace old)</li>
                 <li>Placeholder auto-selected, cannot show toolbar</li>
                 <li>Clicking placeholder reopens modal</li>
-                <li>Marked as &quot;standalone&quot; suggestions</li>
-                <li>Won&apos;t appear in suggestion group panel</li>
+                <li>Marked as "standalone" suggestions</li>
+                <li>Won't appear in suggestion group panel</li>
                 <li>Excluded from bulk operations</li>
                 <li>Escalation & Memory Space bypass placeholder</li>
               </ul>
@@ -1488,6 +1614,8 @@ const SuggestionModeWrapper = ({
             </div>
           )}
           {openModalType && (
+            // biome-ignore lint/a11y/useKeyWithClickEvents: migrated code
+            // biome-ignore lint/a11y/noStaticElementInteractions: migrated code
             <div
               style={{
                 position: 'absolute',
@@ -1515,4 +1643,105 @@ export const DesignModeWithPlaceholderAndAutopilotSuggestions: Story = {
     enableTimelinePlayer: false,
   },
   render: (args) => <SuggestionModeWrapper {...args} initialResources={sampleResources} />,
+};
+
+const StickyNotesWrapper = ({ mode }: Pick<AgentFlowWrapperProps, 'mode'>) => {
+  const [stickyNotes, setStickyNotes] = useState<AgentFlowStickyNote[]>([]);
+
+  const handleAddStickyNote = useCallback((data: AgentFlowStickyNote) => {
+    setStickyNotes((prev) => [...prev, data]);
+  }, []);
+
+  const handleUpdateStickyNote = useCallback(
+    (id: string, updates: Partial<Omit<AgentFlowStickyNote, 'id'>>) => {
+      setStickyNotes((prev) =>
+        prev.map((note) => (note.id === id ? { ...note, ...updates } : note))
+      );
+    },
+    []
+  );
+
+  const handleRemoveStickyNote = useCallback((id: string) => {
+    setStickyNotes((prev) => prev.filter((note) => note.id !== id));
+  }, []);
+
+  const handleLoadSampleNotes = useCallback(() => {
+    setStickyNotes(sampleStickyNotes);
+  }, []);
+
+  const handleClearAllNotes = useCallback(() => {
+    setStickyNotes([]);
+  }, []);
+
+  const renderControlPanel = () => {
+    return (
+      <StoryInfoPanel title="Sticky Notes Controls">
+        <Column mt={12} gap={8}>
+          <ApTypography variant={FontVariantToken.fontSizeM}>Manage sticky notes:</ApTypography>
+          <Row gap={8} style={{ flexWrap: 'wrap' }}>
+            <ApButton
+              size="small"
+              variant="primary"
+              label="Load Sample Notes"
+              onClick={handleLoadSampleNotes}
+            />
+            <ApButton
+              size="small"
+              variant="secondary"
+              label="Clear All"
+              onClick={handleClearAllNotes}
+            />
+          </Row>
+          <ApTypography
+            variant={FontVariantToken.fontSizeS}
+            style={{ color: 'var(--uix-canvas-foreground-de-emp)' }}
+          >
+            Current notes: {stickyNotes.length}
+          </ApTypography>
+          <ApTypography
+            variant={FontVariantToken.fontSizeS}
+            style={{ color: 'var(--uix-canvas-foreground-de-emp)' }}
+          >
+            Tip: Use the sticky note button in the toolbar to add new notes
+          </ApTypography>
+        </Column>
+      </StoryInfoPanel>
+    );
+  };
+
+  return (
+    <ReactFlowProvider>
+      <AgentFlow
+        allowDragging
+        definition={sampleAgentDefinition}
+        spans={[]}
+        name="Test Agent"
+        description="Test Description"
+        mode={mode}
+        resources={sampleResources}
+        enableMemory
+        enableStickyNotes
+        stickyNotes={stickyNotes}
+        onAddStickyNote={handleAddStickyNote}
+        onUpdateStickyNote={handleUpdateStickyNote}
+        onRemoveStickyNote={handleRemoveStickyNote}
+      />
+      {renderControlPanel()}
+    </ReactFlowProvider>
+  );
+};
+
+export const DesignModeWithStickyNotes: Story = {
+  args: {
+    mode: 'design',
+  },
+  render: (args) => <StickyNotesWrapper mode={args.mode} />,
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Interactive sticky notes demo. Use the control panel to load sample notes or clear all notes. You can also use the sticky note button in the bottom toolbar to add new notes. Notes support markdown formatting, dragging, resizing, and color changes.',
+      },
+    },
+  },
 };

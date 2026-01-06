@@ -5,7 +5,7 @@ import {
   ResourceNodeTypeToPosition,
 } from '../components/AgentCanvas/AgentFlow.constants';
 import type { AgentFlowCustomEdge, AgentFlowCustomNode } from '../types';
-import { isAgentFlowAgentNode, isAgentFlowResourceNode } from '../types';
+import { isAgentFlowAgentNode, isAgentFlowResourceNode, isStickyNoteNode } from '../types';
 
 const GROUP_DISTANCE_HORIZONTAL = 280;
 const GROUP_DISTANCE_VERTICAL = 200;
@@ -383,7 +383,11 @@ export const autoArrangeNodes = (
   agentNodePosition?: { x: number; y: number } | undefined,
   resourceNodePositions?: Record<string, { x: number; y: number }>
 ): AgentFlowCustomNode[] => {
-  const clonedNodes = structuredClone(nodes);
+  // Separate sticky notes from other nodes - they should not be affected by auto-layout
+  const stickyNotes = nodes.filter(isStickyNoteNode);
+  const layoutNodes = nodes.filter((node) => !isStickyNoteNode(node));
+
+  const clonedNodes = structuredClone(layoutNodes);
 
   const agentNodes = clonedNodes
     .filter(isAgentFlowAgentNode)
@@ -411,5 +415,6 @@ export const autoArrangeNodes = (
     }
   }
 
-  return clonedNodes;
+  // Add sticky notes back without modification - they maintain their own positions
+  return [...clonedNodes, ...stickyNotes];
 };

@@ -1,8 +1,10 @@
+import styled from '@emotion/styled';
 import { Column } from '@uipath/apollo-react/canvas/layouts';
 import { Panel, useReactFlow } from '@uipath/apollo-react/canvas/xyflow/react';
 import type { NodeProps } from '@uipath/apollo-react/canvas/xyflow/system';
-import type { PropsWithChildren } from 'react';
+import { StickyNote as StickyNoteIcon } from 'lucide-react';
 import type React from 'react';
+import type { PropsWithChildren } from 'react';
 import { memo, useCallback, useEffect, useMemo, useRef } from 'react';
 import { BaseCanvas } from '../../components/BaseCanvas';
 import {
@@ -19,11 +21,13 @@ import {
   DefaultSuggestionTranslations,
   isAgentFlowAgentNode,
   isAgentFlowResourceNode,
+  isStickyNoteNode,
   type ResourceNodeTranslations,
   type SuggestionTranslations,
 } from '../../types';
 import { hasAgentRunning } from '../../utils/props-helpers';
 import { CanvasPositionControls } from '../CanvasPositionControls';
+import { StickyNoteNode } from '../StickyNoteNode';
 import { SuggestionGroupPanel } from './components/SuggestionGroupPanel';
 import { TimelinePlayer } from './components/TimelinePlayer';
 import { calculateTimelineHeight } from './components/TimelinePlayer.utils';
@@ -32,8 +36,41 @@ import { AgentNodeElement } from './nodes/AgentNode';
 import { ResourceNode } from './nodes/ResourceNode';
 import { AgentFlowProvider, useAgentFlowStore } from './store/agent-flow-store';
 
+const ToolbarContainer = styled.div`
+  display: flex;
+  align-items: center;
+  background: var(--uix-canvas-background);
+  border: 1px solid var(--uix-canvas-border-de-emp);
+  border-radius: 16px;
+  padding: 4px;
+  gap: 4px;
+  height: 50px;
+`;
+
+const ToolbarButton = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  border-radius: 16px;
+  transition: background-color 0.15s ease;
+  color: var(--uix-canvas-foreground);
+
+  &:hover {
+    background: var(--uix-canvas-background-hover);
+  }
+`;
+
 const edgeTypes = {
   default: Edge,
+};
+
+const nodeTypesBase = {
+  stickyNote: StickyNoteNode,
 };
 
 // AgentFlow-specific fit view options with reduced padding
@@ -215,12 +252,14 @@ const AgentFlowInner = memo(
     canvasRef,
     enableMcpTools,
     enableMemory,
+    enableStickyNotes,
     healthScore,
     onHealthScoreClick,
     suggestionTranslations,
     suggestionGroup,
     onAgentNodePositionChange,
     onResourceNodePositionChange,
+    onUpdateStickyNote,
     zoomLevel,
     onZoomLevelChange,
   }: PropsWithChildren<AgentFlowProps>) => {
@@ -231,7 +270,6 @@ const AgentFlowInner = memo(
       onEdgesChange,
       onConnect,
       autoArrange,
-      updateNode,
       setSelectedNodeId,
       selectedNodeId,
       setDragging,
@@ -242,11 +280,13 @@ const AgentFlowInner = memo(
       currentSuggestionIndex,
       navigateToNextSuggestion,
       navigateToPreviousSuggestion,
+      addStickyNote,
     } = useAgentFlowStore();
 
     const { fitView: reactFlowFitView } = useReactFlow();
     const timelinePlayerRef = useRef<HTMLDivElement>(null);
     const suggestionGroupPanelRef = useRef<HTMLDivElement>(null);
+    const toolbarContainerRef = useRef<HTMLDivElement>(null);
 
     // Calculate if timeline will be visible
     const timelineHeight = useMemo(
@@ -255,16 +295,23 @@ const AgentFlowInner = memo(
     );
     // Calculate suggestion group panel height
     const suggestionGroupPanelHeight = suggestionGroupPanelRef.current?.offsetHeight || 0;
+    // Calculate toolbar container height
+    const toolbarContainerHeight = toolbarContainerRef.current?.offsetHeight || 0;
 
     // Calculate adjusted fitView options that account for timeline player height and suggestion group panel height
     const adjustedFitViewOptions = useMemo(() => {
-      if (timelineHeight > 0 || suggestionGroupPanelHeight > 0) {
+      if (
+        [timelineHeight, suggestionGroupPanelHeight, toolbarContainerHeight].some(
+          (height) => height > 0
+        )
+      ) {
         const viewportHeight = window.innerHeight;
         const timelineRatio = timelineHeight / viewportHeight;
         const suggestionGroupPanelRatio = suggestionGroupPanelHeight / viewportHeight;
+        const toolbarContainerRatio = toolbarContainerHeight / viewportHeight;
         const bottomPadding =
           AGENT_FLOW_FIT_VIEW_OPTIONS.padding.bottom +
-          3 * (timelineRatio + suggestionGroupPanelRatio);
+          3 * (timelineRatio + suggestionGroupPanelRatio + toolbarContainerRatio);
 
         return {
           ...AGENT_FLOW_FIT_VIEW_OPTIONS,
@@ -276,7 +323,7 @@ const AgentFlowInner = memo(
       }
 
       return AGENT_FLOW_FIT_VIEW_OPTIONS;
-    }, [timelineHeight, suggestionGroupPanelHeight]);
+    }, [timelineHeight, suggestionGroupPanelHeight, toolbarContainerHeight]);
 
     const nodeTypes = useMemo(() => {
       const handleAddResource = (
@@ -289,6 +336,7 @@ const AgentFlowInner = memo(
       const suggestionGroupVersion = suggestionGroup?.metadata?.version;
 
       return {
+        ...nodeTypesBase,
         agent: createAgentNodeWrapper({
           onAddResource: handleAddResource,
           translations: agentNodeTranslations,
@@ -390,6 +438,14 @@ const AgentFlowInner = memo(
 
     const handleNodeDragStop = useCallback(
       (_event: React.MouseEvent, node: AgentFlowCustomNode) => {
+        // Handle sticky note drag
+        if (isStickyNoteNode(node)) {
+          onUpdateStickyNote?.(node.id, {
+            position: { x: node.position.x, y: node.position.y },
+          });
+          return;
+        }
+
         if (!isAgentFlowResourceNode(node)) {
           onAgentNodePositionChange?.({ x: node.position.x, y: node.position.y });
           return;
@@ -403,7 +459,7 @@ const AgentFlowInner = memo(
 
         onResourceNodePositionChange?.(node.id, { x: node.position.x, y: node.position.y });
       },
-      [onAgentNodePositionChange, onResourceNodePositionChange, nodes]
+      [onAgentNodePositionChange, onResourceNodePositionChange, onUpdateStickyNote, nodes]
     );
 
     // Listen for expand agent events from CanvasPanel
@@ -464,7 +520,6 @@ const AgentFlowInner = memo(
       onSelectResource,
       getNodeFromSelectedSpan,
       selectedNodeId,
-      updateNode,
       spans,
     ]);
 
@@ -545,8 +600,19 @@ const AgentFlowInner = memo(
                   enableTimelinePlayer={enableTimelinePlayer ?? true}
                 />
               </div>
-            </Panel>
-            <Panel position="bottom-center">
+              <div ref={toolbarContainerRef}>
+                {enableStickyNotes && mode === 'design' && (
+                  <ToolbarContainer className="nodrag nopan nowheel">
+                    <ToolbarButton
+                      type="button"
+                      onClick={() => addStickyNote()}
+                      title={(canvasTranslations ?? DefaultCanvasTranslations).addNote}
+                    >
+                      <StickyNoteIcon size={16} />
+                    </ToolbarButton>
+                  </ToolbarContainer>
+                )}
+              </div>
               <div ref={suggestionGroupPanelRef}>
                 <SuggestionGroupPanel
                   suggestionGroup={suggestionGroup}
