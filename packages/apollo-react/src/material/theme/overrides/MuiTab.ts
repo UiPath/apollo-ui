@@ -4,12 +4,20 @@ import type { Palette } from '@uipath/apollo-core/tokens/jss/palette';
 
 export const MuiTab = (palette: Palette): ComponentsOverrides['MuiTab'] => ({
   root: {
+    minWidth: '50px',
+    '&:not(.tiny):not(.secondary).Mui-selected': { paddingBottom: '12px' },
+    '&:hover:not(.Mui-selected):not(.default)': { borderRadius: '3px' },
     '&:focus': { backgroundColor: 'transparent' },
-    '&:focus-visible': { backgroundColor: palette.semantic.colorSecondaryFocused },
+    '&:focus-visible': {
+      outline: 'none',
+      color: `${palette.semantic.colorPrimary} !important`,
+      backgroundColor: palette.semantic.colorSecondaryFocused,
+    },
+    '&.default:focus-visible': { boxShadow: `inset 0 -4px 0 0 ${palette.semantic.colorPrimary}` },
+    '&.tiny:focus-visible': { boxShadow: `inset 0 -2px 0 0 ${palette.semantic.colorPrimary}` },
     '&:hover': { backgroundColor: palette.semantic.colorHover },
     '&.default': { minHeight: '40px' },
     '&.Mui-disabled': { color: palette.semantic.colorForegroundDisable },
-    '&:not(.tiny):not(.secondary).Mui-selected': { paddingBottom: '13px' },
     '&.tiny': {
       minHeight: '22px',
       minWidth: '50px',

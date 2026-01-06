@@ -14,6 +14,12 @@ export const MuiAutocomplete = (palette: Palette): ComponentsOverrides['MuiAutoc
   paper: {
     boxShadow: token.Shadow.ShadowDp8,
     background: palette.semantic.colorBackgroundRaised,
+    fontSize: '14px',
+  },
+  noOptions: {
+    overflow: 'hidden',
+    textWrap: 'nowrap',
+    textOverflow: 'ellipsis',
   },
   option: {
     background: palette.semantic.colorBackgroundRaised,

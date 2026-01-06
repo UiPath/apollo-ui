@@ -6,6 +6,9 @@ import {
   type Palette,
 } from '@uipath/apollo-core/tokens/jss/palette';
 
+import { MuiAccordion } from './MuiAccordion';
+import { MuiAccordionDetails } from './MuiAccordionDetails';
+import { MuiAccordionSummary } from './MuiAccordionSummary';
 import { MuiAlert } from './MuiAlert';
 import { MuiAutocomplete } from './MuiAutocomplete';
 import { MuiButton } from './MuiButton';
@@ -32,6 +35,7 @@ import { MuiListItem } from './MuiListItem';
 import { MuiListItemButton } from './MuiListItemButton';
 import { MuiListItemIcon } from './MuiListItemIcon';
 import { MuiListItemText } from './MuiListItemText';
+import { MuiMenu } from './MuiMenu';
 import { MuiMenuItem } from './MuiMenuItem';
 import { MuiOutlinedInput } from './MuiOutlinedInput';
 import { MuiRadio } from './MuiRadio';
@@ -47,6 +51,9 @@ import { MuiTooltip } from './MuiTooltip';
 import { MuiTypography } from './MuiTypography';
 
 const muiComponents = {
+  MuiAccordion,
+  MuiAccordionDetails,
+  MuiAccordionSummary,
   MuiAlert,
   MuiButton,
   MuiButtonBase,
@@ -72,6 +79,7 @@ const muiComponents = {
   MuiListItemButton,
   MuiListItemIcon,
   MuiListItemText,
+  MuiMenu,
   MuiMenuItem,
   MuiOutlinedInput,
   MuiRadio,
@@ -91,10 +99,23 @@ const muiComponents = {
 
 const getOverrides = (palette: Palette) =>
   Object.entries(muiComponents).reduce(
-    (overrides, [name, muiComponent]) => ({
-      ...overrides,
-      [name]: { styleOverrides: muiComponent(palette) },
-    }),
+    (overrides, [name, muiComponent]) => {
+      const componentConfig = muiComponent(palette);
+
+      // Check if the component returns an object with styleOverrides and defaultProps
+      if (componentConfig && typeof componentConfig === 'object' && 'styleOverrides' in componentConfig) {
+        return {
+          ...overrides,
+          [name]: componentConfig,
+        };
+      }
+
+      // Otherwise, treat it as just styleOverrides (backward compatibility)
+      return {
+        ...overrides,
+        [name]: { styleOverrides: componentConfig },
+      };
+    },
     {}
   );
 

@@ -3,9 +3,11 @@ import type { Palette } from '@uipath/apollo-core/tokens/jss/palette';
 
 export const MuiRadio = (palette: Palette): ComponentsOverrides['MuiRadio'] => ({
   root: {
+    width: '40px',
+    height: '40px',
     '&.Mui-focusVisible': {
-      outline: 'auto',
-      outlineColor: palette.semantic.colorFocusIndicator,
+      outline: `2px solid ${palette.semantic.colorFocusIndicator}`,
+      boxShadow: `inset 0 0 0 1px ${palette.semantic.colorBackground}`,
       backgroundColor: palette.semantic.colorToggleOffFocus,
     },
     '&:hover': { backgroundColor: palette.semantic.colorToggleOffHover },

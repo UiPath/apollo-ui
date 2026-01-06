@@ -6,11 +6,18 @@ export const MuiLink = (palette: Palette): ComponentsOverrides['MuiLink'] => ({
   root: {
     color: palette.semantic.colorForegroundLink,
     fontWeight: token.FontFamily.FontWeightSemibold,
+    textDecoration: 'none',
+    '&:hover': { textDecoration: 'underline' },
     '&:visited': { color: palette.semantic.colorForegroundLink },
     '&:focus': { color: palette.semantic.colorForegroundLink },
-    '&.Mui-focusVisible:focus-visible': {
-      boxShadow: `0px 0px 0px 2px ${palette.semantic.colorFocusIndicator}`,
+    '&:active': {
+      color: palette.semantic.colorForegroundLinkPressed,
+      textDecoration: 'underline',
     },
-    '&:active': { color: palette.semantic.colorForegroundLinkPressed },
+    '&:focus-visible': {
+      outline: 'unset',
+      boxShadow: '0 0 0 2px',
+      borderRadius: '2px',
+    },
   },
 });
