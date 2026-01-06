@@ -69,13 +69,14 @@ export const PaneContextMenu = memo(
 
       // Use a small delay to avoid closing immediately from the same click that opened the menu
       const timeoutId = setTimeout(() => {
-        document.addEventListener('mousedown', handleClickOutside);
+        // Use 'click' instead of 'mousedown' to ensure onClick handlers fire first
+        document.addEventListener('click', handleClickOutside);
         document.addEventListener('keydown', handleEscape);
       }, 0);
 
       return () => {
         clearTimeout(timeoutId);
-        document.removeEventListener('mousedown', handleClickOutside);
+        document.removeEventListener('click', handleClickOutside);
         document.removeEventListener('keydown', handleEscape);
       };
     }, [isOpen, onClose]);
