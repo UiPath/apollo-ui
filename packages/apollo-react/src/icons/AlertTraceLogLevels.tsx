@@ -1,8 +1,7 @@
 // Auto-generated from indicator-and-alert/alert-trace-log-levels.svg
 import React from 'react';
 
-export interface AlertTraceLogLevelsProps
-  extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+export interface AlertTraceLogLevelsProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
   /**
    * Size to apply to both width and height.
    * @default 24
@@ -12,25 +11,9 @@ export interface AlertTraceLogLevelsProps
 
 export const AlertTraceLogLevels = React.forwardRef<SVGSVGElement, AlertTraceLogLevelsProps>(
   ({ size, ...props }, ref) => (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      ref={ref}
-      {...props}
-      width={size ?? 24}
-      height={size ?? 24}
-    >
-      <path
-        d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2Z"
-        fill="currentColor"
-      />
-      <path
-        fillRule="evenodd"
-        clipRule="evenodd"
-        d="M8.70718 5.29297L7.29297 6.70718L9.29237 8.70658C9.10495 9.09822 9 9.53685 9 10H7V12H9V14H7V16H9.17071C9.58254 17.1652 10.6938 18 12 18C13.3062 18 14.4175 17.1652 14.8293 16H17V14H15V12H17V10H15C15 9.53689 14.8951 9.0983 14.7077 8.70669L16.7072 6.70718L15.293 5.29297L13.2935 7.29242C12.9019 7.10497 12.4632 7 12 7C11.5369 7 11.0982 7.10495 10.7066 7.29237L8.70718 5.29297ZM12 9C11.4477 9 11 9.44771 11 10V15C11 15.5523 11.4477 16 12 16C12.5523 16 13 15.5523 13 15V10C13 9.44772 12.5523 9 12 9Z"
-        fill="var(--color-background)"
-      />
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
+      <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2Z" fill="currentColor"/>
+<path fillRule="evenodd" clipRule="evenodd" d="M8.70718 5.29297L7.29297 6.70718L9.29237 8.70658C9.10495 9.09822 9 9.53685 9 10H7V12H9V14H7V16H9.17071C9.58254 17.1652 10.6938 18 12 18C13.3062 18 14.4175 17.1652 14.8293 16H17V14H15V12H17V10H15C15 9.53689 14.8951 9.0983 14.7077 8.70669L16.7072 6.70718L15.293 5.29297L13.2935 7.29242C12.9019 7.10497 12.4632 7 12 7C11.5369 7 11.0982 7.10495 10.7066 7.29237L8.70718 5.29297ZM12 9C11.4477 9 11 9.44771 11 10V15C11 15.5523 11.4477 16 12 16C12.5523 16 13 15.5523 13 15V10C13 9.44772 12.5523 9 12 9Z" fill="var(--color-background)"/>
     </svg>
   )
 );

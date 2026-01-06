@@ -1,8 +1,7 @@
 // Auto-generated from studio-activities-icon-sets/activities-performance-triggers/performance-triggers-idle.svg
 import React from 'react';
 
-export interface PerformanceTriggersIdleProps
-  extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+export interface PerformanceTriggersIdleProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
   /**
    * Size to apply to both width and height.
    * @default 25
@@ -10,37 +9,16 @@ export interface PerformanceTriggersIdleProps
   size?: string | number;
 }
 
-export const PerformanceTriggersIdle = React.forwardRef<
-  SVGSVGElement,
-  PerformanceTriggersIdleProps
->(({ size, ...props }, ref) => (
-  <svg
-    viewBox="0 0 25 25"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-    ref={ref}
-    {...props}
-    width={size ?? 25}
-    height={size ?? 25}
-  >
-    <path
-      d="M18 8.11768L14 12.1177L16.5312 14.6489L15.125 15.7427L12 12.6177L8 16.6177V20.1177H9V22.1177H6V16.1177L10 12.1177L6 8.11768V2.11768H18V8.11768ZM8 7.61768L12 11.6177L16 7.61768V4.11768H8V7.61768ZM14 6.86768L12 8.86768L10 6.86768V6.11768H14V6.86768Z"
-      fill="currentColor"
-    />
-    <path
-      d="M19.5 17.1177H20.9325L19.1159 19.2976C18.9917 19.4466 18.9649 19.6541 19.0472 19.8298C19.1295 20.0054 19.306 20.1177 19.5 20.1177H22V19.1177H20.5675L22.3841 16.9378C22.5083 16.7887 22.5351 16.5813 22.4528 16.4056C22.3705 16.2299 22.194 16.1177 22 16.1177H19.5V17.1177Z"
-      fill="currentColor"
-    />
-    <path
-      d="M16.9325 18.1177H15.5V17.1177H18C18.194 17.1177 18.3705 17.2299 18.4528 17.4056C18.5351 17.5813 18.5083 17.7887 18.3841 17.9378L16.5675 20.1177H18V21.1177H15.5C15.306 21.1177 15.1295 21.0054 15.0472 20.8298C14.9649 20.6541 14.9917 20.4466 15.1159 20.2976L16.9325 18.1177Z"
-      fill="currentColor"
-    />
-    <path
-      d="M12.9325 19.1177H11.5V18.1177H14C14.194 18.1177 14.3705 18.2299 14.4528 18.4056C14.5351 18.5813 14.5083 18.7887 14.3841 18.9378L12.5675 21.1177H14V22.1177H11.5C11.306 22.1177 11.1295 22.0054 11.0472 21.8298C10.9649 21.6541 10.9917 21.4466 11.1159 21.2976L12.9325 19.1177Z"
-      fill="currentColor"
-    />
-  </svg>
-));
+export const PerformanceTriggersIdle = React.forwardRef<SVGSVGElement, PerformanceTriggersIdleProps>(
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 25} height={size ?? 25}>
+      <path d="M18 8.11768L14 12.1177L16.5312 14.6489L15.125 15.7427L12 12.6177L8 16.6177V20.1177H9V22.1177H6V16.1177L10 12.1177L6 8.11768V2.11768H18V8.11768ZM8 7.61768L12 11.6177L16 7.61768V4.11768H8V7.61768ZM14 6.86768L12 8.86768L10 6.86768V6.11768H14V6.86768Z" fill="currentColor"/>
+<path d="M19.5 17.1177H20.9325L19.1159 19.2976C18.9917 19.4466 18.9649 19.6541 19.0472 19.8298C19.1295 20.0054 19.306 20.1177 19.5 20.1177H22V19.1177H20.5675L22.3841 16.9378C22.5083 16.7887 22.5351 16.5813 22.4528 16.4056C22.3705 16.2299 22.194 16.1177 22 16.1177H19.5V17.1177Z" fill="currentColor"/>
+<path d="M16.9325 18.1177H15.5V17.1177H18C18.194 17.1177 18.3705 17.2299 18.4528 17.4056C18.5351 17.5813 18.5083 17.7887 18.3841 17.9378L16.5675 20.1177H18V21.1177H15.5C15.306 21.1177 15.1295 21.0054 15.0472 20.8298C14.9649 20.6541 14.9917 20.4466 15.1159 20.2976L16.9325 18.1177Z" fill="currentColor"/>
+<path d="M12.9325 19.1177H11.5V18.1177H14C14.194 18.1177 14.3705 18.2299 14.4528 18.4056C14.5351 18.5813 14.5083 18.7887 14.3841 18.9378L12.5675 21.1177H14V22.1177H11.5C11.306 22.1177 11.1295 22.0054 11.0472 21.8298C10.9649 21.6541 10.9917 21.4466 11.1159 21.2976L12.9325 19.1177Z" fill="currentColor"/>
+    </svg>
+  )
+);
 
 PerformanceTriggersIdle.displayName = 'PerformanceTriggersIdle';
 

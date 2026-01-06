@@ -9,24 +9,13 @@ export interface Looks3Props extends Omit<React.SVGProps<SVGSVGElement>, 'width'
   size?: string | number;
 }
 
-export const Looks3 = React.forwardRef<SVGSVGElement, Looks3Props>(({ size, ...props }, ref) => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-    ref={ref}
-    {...props}
-    width={size ?? 24}
-    height={size ?? 24}
-  >
-    <path
-      fillRule="evenodd"
-      clipRule="evenodd"
-      d="M19 3H5C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19V5C21 3.9 20.1 3 19 3ZM19 19H5V5H19V19ZM15 13.5V15C15 16.11 14.1 17 13 17H9V15H13V13H11V11H13V9H9V7H13C14.1 7 15 7.89 15 9V10.5C15 11.33 14.33 12 13.5 12C14.33 12 15 12.67 15 13.5Z"
-      fill="currentColor"
-    />
-  </svg>
-));
+export const Looks3 = React.forwardRef<SVGSVGElement, Looks3Props>(
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
+      <path fillRule="evenodd" clipRule="evenodd" d="M19 3H5C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19V5C21 3.9 20.1 3 19 3ZM19 19H5V5H19V19ZM15 13.5V15C15 16.11 14.1 17 13 17H9V15H13V13H11V11H13V9H9V7H13C14.1 7 15 7.89 15 9V10.5C15 11.33 14.33 12 13.5 12C14.33 12 15 12.67 15 13.5Z" fill="currentColor"/>
+    </svg>
+  )
+);
 
 Looks3.displayName = 'Looks3';
 

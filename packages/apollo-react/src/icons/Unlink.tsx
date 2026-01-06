@@ -9,24 +9,13 @@ export interface UnlinkProps extends Omit<React.SVGProps<SVGSVGElement>, 'width'
   size?: string | number;
 }
 
-export const Unlink = React.forwardRef<SVGSVGElement, UnlinkProps>(({ size, ...props }, ref) => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-    ref={ref}
-    {...props}
-    width={size ?? 24}
-    height={size ?? 24}
-  >
-    <path
-      fillRule="evenodd"
-      clipRule="evenodd"
-      d="M5.11 7.44499L2 4.33499L3.41 2.92499L20.15 19.665L18.74 21.075L14.73 17.065H13V15.335L10.73 13.065H8V11.065H8.73L6.66 8.99499C5.11 9.16499 3.9 10.475 3.9 12.065C3.9 13.775 5.29 15.165 7 15.165H11V17.065H7C4.24 17.065 2 14.825 2 12.065C2 9.97499 3.29 8.18499 5.11 7.44499ZM17 7.06499H13V8.96499H17C18.71 8.96499 20.1 10.355 20.1 12.065C20.1 13.335 19.33 14.435 18.23 14.905L19.63 16.305C21.05 15.425 22 13.855 22 12.065C22 9.30499 19.76 7.06499 17 7.06499ZM14.39 11.065L16 12.675V11.065H14.39Z"
-      fill="currentColor"
-    />
-  </svg>
-));
+export const Unlink = React.forwardRef<SVGSVGElement, UnlinkProps>(
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
+      <path fillRule="evenodd" clipRule="evenodd" d="M5.11 7.44499L2 4.33499L3.41 2.92499L20.15 19.665L18.74 21.075L14.73 17.065H13V15.335L10.73 13.065H8V11.065H8.73L6.66 8.99499C5.11 9.16499 3.9 10.475 3.9 12.065C3.9 13.775 5.29 15.165 7 15.165H11V17.065H7C4.24 17.065 2 14.825 2 12.065C2 9.97499 3.29 8.18499 5.11 7.44499ZM17 7.06499H13V8.96499H17C18.71 8.96499 20.1 10.355 20.1 12.065C20.1 13.335 19.33 14.435 18.23 14.905L19.63 16.305C21.05 15.425 22 13.855 22 12.065C22 9.30499 19.76 7.06499 17 7.06499ZM14.39 11.065L16 12.675V11.065H14.39Z" fill="currentColor"/>
+    </svg>
+  )
+);
 
 Unlink.displayName = 'Unlink';
 

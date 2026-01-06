@@ -11,21 +11,8 @@ export interface TestManagerProps extends Omit<React.SVGProps<SVGSVGElement>, 'w
 
 export const TestManager = React.forwardRef<SVGSVGElement, TestManagerProps>(
   ({ size, ...props }, ref) => (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      ref={ref}
-      {...props}
-      width={size ?? 24}
-      height={size ?? 24}
-    >
-      <path
-        fillRule="evenodd"
-        clipRule="evenodd"
-        d="M12.1659 1H6.8419V2.47884H1V22.1478H7.17437V19.7816H3.36623V4.84503H6.8419V6.32392H12.1659V4.84503H15.641V6.65665H18.0073V2.47884H12.1659V1ZM8.9858 7.80286H22V22.1479H8.9858V7.80286ZM11.352 10.1691V19.7817H19.6338V10.1691H11.352ZM12.8313 11.6479H18.1553V14.3099H12.8313V11.6479ZM15.4933 15.6408H12.8313V18.3028H15.4933V15.6408Z"
-        fill="currentColor"
-      />
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
+      <path fillRule="evenodd" clipRule="evenodd" d="M12.1659 1H6.8419V2.47884H1V22.1478H7.17437V19.7816H3.36623V4.84503H6.8419V6.32392H12.1659V4.84503H15.641V6.65665H18.0073V2.47884H12.1659V1ZM8.9858 7.80286H22V22.1479H8.9858V7.80286ZM11.352 10.1691V19.7817H19.6338V10.1691H11.352ZM12.8313 11.6479H18.1553V14.3099H12.8313V11.6479ZM15.4933 15.6408H12.8313V18.3028H15.4933V15.6408Z" fill="currentColor"/>
     </svg>
   )
 );

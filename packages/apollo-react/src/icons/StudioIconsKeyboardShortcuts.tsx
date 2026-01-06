@@ -1,8 +1,7 @@
 // Auto-generated from studio-icons/studio-icons-keyboard-shortcuts.svg
 import React from 'react';
 
-export interface StudioIconsKeyboardShortcutsProps
-  extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+export interface StudioIconsKeyboardShortcutsProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
   /**
    * Size to apply to both width and height.
    * @default 24
@@ -10,99 +9,36 @@ export interface StudioIconsKeyboardShortcutsProps
   size?: string | number;
 }
 
-export const StudioIconsKeyboardShortcuts = React.forwardRef<
-  SVGSVGElement,
-  StudioIconsKeyboardShortcutsProps
->(({ size, ...props }, ref) => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-    ref={ref}
-    {...props}
-    width={size ?? 24}
-    height={size ?? 24}
-  >
-    <mask id="path-1-inside-1_4041_1226" fill="var(--color-foreground)">
-      <rect x="2" y="16" width="20" height="6" rx="1" />
-    </mask>
-    <rect
-      x="2"
-      y="16"
-      width="20"
-      height="6"
-      rx="1"
-      stroke="currentColor"
-      strokeWidth="4"
-      mask="url(#path-1-inside-1_4041_1226)"
-    />
-    <mask id="path-2-inside-2_4041_1226" fill="var(--color-foreground)">
-      <rect x="2" y="9" width="10" height="6" rx="1" />
-    </mask>
-    <rect
-      x="2"
-      y="9"
-      width="10"
-      height="6"
-      rx="1"
-      stroke="currentColor"
-      strokeWidth="4"
-      mask="url(#path-2-inside-2_4041_1226)"
-    />
-    <mask id="path-3-inside-3_4041_1226" fill="var(--color-foreground)">
-      <rect x="13" y="9" width="9" height="6" rx="1" />
-    </mask>
-    <rect
-      x="13"
-      y="9"
-      width="9"
-      height="6"
-      rx="1"
-      stroke="currentColor"
-      strokeWidth="4"
-      mask="url(#path-3-inside-3_4041_1226)"
-    />
-    <mask id="path-4-inside-4_4041_1226" fill="var(--color-foreground)">
-      <rect x="2" y="2" width="6" height="6" rx="1" />
-    </mask>
-    <rect
-      x="2"
-      y="2"
-      width="6"
-      height="6"
-      rx="1"
-      stroke="currentColor"
-      strokeWidth="4"
-      mask="url(#path-4-inside-4_4041_1226)"
-    />
-    <mask id="path-5-inside-5_4041_1226" fill="var(--color-foreground)">
-      <rect x="16" y="2" width="6" height="6" rx="1" />
-    </mask>
-    <rect
-      x="16"
-      y="2"
-      width="6"
-      height="6"
-      rx="1"
-      stroke="currentColor"
-      strokeWidth="4"
-      mask="url(#path-5-inside-5_4041_1226)"
-    />
-    <mask id="path-6-inside-6_4041_1226" fill="var(--color-foreground)">
-      <rect x="9" y="2" width="6" height="6" rx="1" />
-    </mask>
-    <rect
-      x="9"
-      y="2"
-      width="6"
-      height="6"
-      rx="1"
-      stroke="currentColor"
-      strokeWidth="4"
-      mask="url(#path-6-inside-6_4041_1226)"
-    />
-  </svg>
-));
+export const StudioIconsKeyboardShortcuts = React.forwardRef<SVGSVGElement, StudioIconsKeyboardShortcutsProps>(
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
+      <mask id="path-1-inside-1_4041_1226" fill="var(--color-foreground)">
+<rect x="2" y="16" width="20" height="6" rx="1"/>
+</mask>
+<rect x="2" y="16" width="20" height="6" rx="1" stroke="currentColor" strokeWidth="4" mask="url(#path-1-inside-1_4041_1226)"/>
+<mask id="path-2-inside-2_4041_1226" fill="var(--color-foreground)">
+<rect x="2" y="9" width="10" height="6" rx="1"/>
+</mask>
+<rect x="2" y="9" width="10" height="6" rx="1" stroke="currentColor" strokeWidth="4" mask="url(#path-2-inside-2_4041_1226)"/>
+<mask id="path-3-inside-3_4041_1226" fill="var(--color-foreground)">
+<rect x="13" y="9" width="9" height="6" rx="1"/>
+</mask>
+<rect x="13" y="9" width="9" height="6" rx="1" stroke="currentColor" strokeWidth="4" mask="url(#path-3-inside-3_4041_1226)"/>
+<mask id="path-4-inside-4_4041_1226" fill="var(--color-foreground)">
+<rect x="2" y="2" width="6" height="6" rx="1"/>
+</mask>
+<rect x="2" y="2" width="6" height="6" rx="1" stroke="currentColor" strokeWidth="4" mask="url(#path-4-inside-4_4041_1226)"/>
+<mask id="path-5-inside-5_4041_1226" fill="var(--color-foreground)">
+<rect x="16" y="2" width="6" height="6" rx="1"/>
+</mask>
+<rect x="16" y="2" width="6" height="6" rx="1" stroke="currentColor" strokeWidth="4" mask="url(#path-5-inside-5_4041_1226)"/>
+<mask id="path-6-inside-6_4041_1226" fill="var(--color-foreground)">
+<rect x="9" y="2" width="6" height="6" rx="1"/>
+</mask>
+<rect x="9" y="2" width="6" height="6" rx="1" stroke="currentColor" strokeWidth="4" mask="url(#path-6-inside-6_4041_1226)"/>
+    </svg>
+  )
+);
 
 StudioIconsKeyboardShortcuts.displayName = 'StudioIconsKeyboardShortcuts';
 

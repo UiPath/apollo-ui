@@ -11,61 +11,35 @@ export interface GsuiteGdriveProps extends Omit<React.SVGProps<SVGSVGElement>, '
 
 export const GsuiteGdrive = React.forwardRef<SVGSVGElement, GsuiteGdriveProps>(
   ({ size, ...props }, ref) => (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      ref={ref}
-      {...props}
-      width={size ?? 24}
-      height={size ?? 24}
-    >
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <g clipPath="url(#clip0_4117_1700)">
-        <g clipPath="url(#clip1_4117_1700)">
-          <g clipPath="url(#clip2_4117_1700)">
-            <g clipPath="url(#clip3_4117_1700)">
-              <path
-                d="M2.66323 19.141L3.63345 20.8461C3.83505 21.2051 4.12486 21.4872 4.46507 21.6923L7.93013 15.5897H1C1 15.9872 1.1008 16.3846 1.30241 16.7436L2.66323 19.141Z"
-                fill="#0066DA"
-              />
-              <path
-                d="M12 8.41018L8.53494 2.30762C8.19474 2.51275 7.90493 2.7948 7.70333 3.15377L1.30241 14.4358C1.10451 14.7871 1.00026 15.1848 1 15.5897H7.93013L12 8.41018Z"
-                fill="#00AC47"
-              />
-              <path
-                d="M19.5349 21.6923C19.8751 21.4872 20.1649 21.2051 20.3665 20.8461L20.7697 20.141L22.6976 16.7436C22.8992 16.3846 23 15.9872 23 15.5897H16.0693L17.5441 18.5384L19.5349 21.6923Z"
-                fill="#EA4335"
-              />
-              <path
-                d="M12.0002 8.41025L15.4653 2.30769C15.1251 2.10256 14.7345 2 14.3313 2H9.66918C9.26597 2 8.87536 2.11538 8.53516 2.30769L12.0002 8.41025Z"
-                fill="#00832D"
-              />
-              <path
-                d="M16.0697 15.5898H7.92991L4.46484 21.6924C4.80505 21.8975 5.19566 22.0001 5.59887 22.0001H18.4007C18.8039 22.0001 19.1945 21.8847 19.5347 21.6924L16.0697 15.5898Z"
-                fill="#2684FC"
-              />
-              <path
-                d="M19.4971 8.79492L16.2967 3.15389C16.0951 2.79492 15.8053 2.51287 15.4651 2.30774L12 8.4103L16.0699 15.5898H22.9874C22.9874 15.1923 22.8866 14.7949 22.685 14.4359L19.4971 8.79492Z"
-                fill="#FFBA00"
-              />
-            </g>
-          </g>
-        </g>
-      </g>
-      <defs>
-        <clipPath id="clip0_4117_1700">
-          <rect width="24" height="24" fill="var(--color-foreground)" />
-        </clipPath>
-        <clipPath id="clip1_4117_1700">
-          <rect width="24" height="24" fill="var(--color-foreground)" />
-        </clipPath>
-        <clipPath id="clip2_4117_1700">
-          <rect width="24" height="24" fill="var(--color-foreground)" />
-        </clipPath>
-        <clipPath id="clip3_4117_1700">
-          <rect width="24" height="24" fill="var(--color-foreground)" />
-        </clipPath>
-      </defs>
+<g clipPath="url(#clip1_4117_1700)">
+<g clipPath="url(#clip2_4117_1700)">
+<g clipPath="url(#clip3_4117_1700)">
+<path d="M2.66323 19.141L3.63345 20.8461C3.83505 21.2051 4.12486 21.4872 4.46507 21.6923L7.93013 15.5897H1C1 15.9872 1.1008 16.3846 1.30241 16.7436L2.66323 19.141Z" fill="#0066DA"/>
+<path d="M12 8.41018L8.53494 2.30762C8.19474 2.51275 7.90493 2.7948 7.70333 3.15377L1.30241 14.4358C1.10451 14.7871 1.00026 15.1848 1 15.5897H7.93013L12 8.41018Z" fill="#00AC47"/>
+<path d="M19.5349 21.6923C19.8751 21.4872 20.1649 21.2051 20.3665 20.8461L20.7697 20.141L22.6976 16.7436C22.8992 16.3846 23 15.9872 23 15.5897H16.0693L17.5441 18.5384L19.5349 21.6923Z" fill="#EA4335"/>
+<path d="M12.0002 8.41025L15.4653 2.30769C15.1251 2.10256 14.7345 2 14.3313 2H9.66918C9.26597 2 8.87536 2.11538 8.53516 2.30769L12.0002 8.41025Z" fill="#00832D"/>
+<path d="M16.0697 15.5898H7.92991L4.46484 21.6924C4.80505 21.8975 5.19566 22.0001 5.59887 22.0001H18.4007C18.8039 22.0001 19.1945 21.8847 19.5347 21.6924L16.0697 15.5898Z" fill="#2684FC"/>
+<path d="M19.4971 8.79492L16.2967 3.15389C16.0951 2.79492 15.8053 2.51287 15.4651 2.30774L12 8.4103L16.0699 15.5898H22.9874C22.9874 15.1923 22.8866 14.7949 22.685 14.4359L19.4971 8.79492Z" fill="#FFBA00"/>
+</g>
+</g>
+</g>
+</g>
+<defs>
+<clipPath id="clip0_4117_1700">
+<rect width="24" height="24" fill="var(--color-foreground)"/>
+</clipPath>
+<clipPath id="clip1_4117_1700">
+<rect width="24" height="24" fill="var(--color-foreground)"/>
+</clipPath>
+<clipPath id="clip2_4117_1700">
+<rect width="24" height="24" fill="var(--color-foreground)"/>
+</clipPath>
+<clipPath id="clip3_4117_1700">
+<rect width="24" height="24" fill="var(--color-foreground)"/>
+</clipPath>
+</defs>
     </svg>
   )
 );

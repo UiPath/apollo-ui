@@ -11,19 +11,8 @@ export interface ArrowRightProps extends Omit<React.SVGProps<SVGSVGElement>, 'wi
 
 export const ArrowRight = React.forwardRef<SVGSVGElement, ArrowRightProps>(
   ({ size, ...props }, ref) => (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      ref={ref}
-      {...props}
-      width={size ?? 24}
-      height={size ?? 24}
-    >
-      <path
-        d="M12 4L10.59 5.41L16.17 11H4V13H16.17L10.59 18.59L12 20L20 12L12 4Z"
-        fill="currentColor"
-      />
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
+      <path d="M12 4L10.59 5.41L16.17 11H4V13H16.17L10.59 18.59L12 20L20 12L12 4Z" fill="currentColor"/>
     </svg>
   )
 );

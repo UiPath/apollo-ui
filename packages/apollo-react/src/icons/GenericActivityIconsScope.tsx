@@ -1,8 +1,7 @@
 // Auto-generated from studio-activities-icon-sets/activities-generic-activity-icons/generic-activity-icons-scope.svg
 import React from 'react';
 
-export interface GenericActivityIconsScopeProps
-  extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+export interface GenericActivityIconsScopeProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
   /**
    * Size to apply to both width and height.
    * @default 24
@@ -10,44 +9,26 @@ export interface GenericActivityIconsScopeProps
   size?: string | number;
 }
 
-export const GenericActivityIconsScope = React.forwardRef<
-  SVGSVGElement,
-  GenericActivityIconsScopeProps
->(({ size, ...props }, ref) => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-    ref={ref}
-    {...props}
-    width={size ?? 24}
-    height={size ?? 24}
-  >
-    <g clipPath="url(#clip0_4117_2160)">
-      <path d="M20 4H16V2H20C21.1046 2 22 2.89543 22 4V8H20V4Z" fill="currentColor" />
-      <path d="M20 16V20H16V22H20C21.1046 22 22 21.1046 22 20V16H20Z" fill="currentColor" />
-      <path d="M8 20H4V16H2V20C2 21.1046 2.89543 22 4 22H8V20Z" fill="currentColor" />
-      <path d="M4 4V8H2V4C2 2.89543 2.89543 2 4 2H8V4H4Z" fill="currentColor" />
-      <path
-        d="M13 7C13 6.44775 13.4477 6 14 6H17C17.5523 6 18 6.44775 18 7V10C18 10.5522 17.5523 11 17 11H14C13.4477 11 13 10.5522 13 10V7Z"
-        fill="currentColor"
-      />
-      <path
-        d="M13 14C13 13.4478 13.4477 13 14 13H17C17.5523 13 18 13.4478 18 14V17C18 17.5522 17.5523 18 17 18H14C13.4477 18 13 17.5522 13 17V14Z"
-        fill="currentColor"
-      />
-      <path
-        d="M7 13C6.44772 13 6 13.4478 6 14V17C6 17.5522 6.44772 18 7 18H10C10.5523 18 11 17.5522 11 17V14C11 13.4478 10.5523 13 10 13H7Z"
-        fill="currentColor"
-      />
-    </g>
-    <defs>
-      <clipPath id="clip0_4117_2160">
-        <rect width="24" height="24" fill="var(--color-foreground)" />
-      </clipPath>
-    </defs>
-  </svg>
-));
+export const GenericActivityIconsScope = React.forwardRef<SVGSVGElement, GenericActivityIconsScopeProps>(
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
+      <g clipPath="url(#clip0_4117_2160)">
+<path d="M20 4H16V2H20C21.1046 2 22 2.89543 22 4V8H20V4Z" fill="currentColor"/>
+<path d="M20 16V20H16V22H20C21.1046 22 22 21.1046 22 20V16H20Z" fill="currentColor"/>
+<path d="M8 20H4V16H2V20C2 21.1046 2.89543 22 4 22H8V20Z" fill="currentColor"/>
+<path d="M4 4V8H2V4C2 2.89543 2.89543 2 4 2H8V4H4Z" fill="currentColor"/>
+<path d="M13 7C13 6.44775 13.4477 6 14 6H17C17.5523 6 18 6.44775 18 7V10C18 10.5522 17.5523 11 17 11H14C13.4477 11 13 10.5522 13 10V7Z" fill="currentColor"/>
+<path d="M13 14C13 13.4478 13.4477 13 14 13H17C17.5523 13 18 13.4478 18 14V17C18 17.5522 17.5523 18 17 18H14C13.4477 18 13 17.5522 13 17V14Z" fill="currentColor"/>
+<path d="M7 13C6.44772 13 6 13.4478 6 14V17C6 17.5522 6.44772 18 7 18H10C10.5523 18 11 17.5522 11 17V14C11 13.4478 10.5523 13 10 13H7Z" fill="currentColor"/>
+</g>
+<defs>
+<clipPath id="clip0_4117_2160">
+<rect width="24" height="24" fill="var(--color-foreground)"/>
+</clipPath>
+</defs>
+    </svg>
+  )
+);
 
 GenericActivityIconsScope.displayName = 'GenericActivityIconsScope';
 

@@ -1,8 +1,7 @@
 // Auto-generated from studio-activities-icon-sets/panels/panels-project-panel-errors.svg
 import React from 'react';
 
-export interface PanelsProjectPanelErrorsProps
-  extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+export interface PanelsProjectPanelErrorsProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
   /**
    * Size to apply to both width and height.
    * @default 24
@@ -10,33 +9,21 @@ export interface PanelsProjectPanelErrorsProps
   size?: string | number;
 }
 
-export const PanelsProjectPanelErrors = React.forwardRef<
-  SVGSVGElement,
-  PanelsProjectPanelErrorsProps
->(({ size, ...props }, ref) => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-    ref={ref}
-    {...props}
-    width={size ?? 24}
-    height={size ?? 24}
-  >
-    <g clipPath="url(#clip0_4117_2333)">
-      <path
-        d="M15 9H21C22.11 9 23 9.89 23 11V17C22.4844 16.3136 21.7964 15.764 21 15.416V11H14.1699L12.1699 9H7V20H14C14 20.7112 14.1493 21.3874 14.417 22H7C5.89 22 5 21.11 5 20L5.00977 9C5.00977 7.89 5.89 7 7 7H13L15 9ZM10 5H3V16H1V5C1 3.9 1.9 3 3 3H10V5Z"
-        fill="currentColor"
-      />
-      <circle cx="19" cy="20" r="3.5" fill="#CC3D45" />
-    </g>
-    <defs>
-      <clipPath id="clip0_4117_2333">
-        <rect width="24" height="24" fill="var(--color-foreground)" />
-      </clipPath>
-    </defs>
-  </svg>
-));
+export const PanelsProjectPanelErrors = React.forwardRef<SVGSVGElement, PanelsProjectPanelErrorsProps>(
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
+      <g clipPath="url(#clip0_4117_2333)">
+<path d="M15 9H21C22.11 9 23 9.89 23 11V17C22.4844 16.3136 21.7964 15.764 21 15.416V11H14.1699L12.1699 9H7V20H14C14 20.7112 14.1493 21.3874 14.417 22H7C5.89 22 5 21.11 5 20L5.00977 9C5.00977 7.89 5.89 7 7 7H13L15 9ZM10 5H3V16H1V5C1 3.9 1.9 3 3 3H10V5Z" fill="currentColor"/>
+<circle cx="19" cy="20" r="3.5" fill="#CC3D45"/>
+</g>
+<defs>
+<clipPath id="clip0_4117_2333">
+<rect width="24" height="24" fill="var(--color-foreground)"/>
+</clipPath>
+</defs>
+    </svg>
+  )
+);
 
 PanelsProjectPanelErrors.displayName = 'PanelsProjectPanelErrors';
 

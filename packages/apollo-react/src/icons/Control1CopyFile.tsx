@@ -1,8 +1,7 @@
 // Auto-generated from studio-activities-icon-sets/activities-control-1/control-1-copy-file.svg
 import React from 'react';
 
-export interface Control1CopyFileProps
-  extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+export interface Control1CopyFileProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
   /**
    * Size to apply to both width and height.
    * @default 25
@@ -12,19 +11,8 @@ export interface Control1CopyFileProps
 
 export const Control1CopyFile = React.forwardRef<SVGSVGElement, Control1CopyFileProps>(
   ({ size, ...props }, ref) => (
-    <svg
-      viewBox="0 0 25 25"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      ref={ref}
-      {...props}
-      width={size ?? 25}
-      height={size ?? 25}
-    >
-      <path
-        d="M18.7314 5.87207C19.7314 5.87207 20.5498 6.69043 20.5498 7.69043V20.417C20.5498 21.417 19.7314 22.2354 18.7314 22.2354H8.73145C7.73162 22.2351 6.91406 21.4169 6.91406 20.417V7.69043C6.91406 6.69056 7.73162 5.87228 8.73145 5.87207H18.7314ZM8.73145 7.68945V20.417H18.7314V7.68945H8.73145ZM16.0049 4.05371H5.0957V16.7812H3.27734V4.05371C3.27734 3.05371 4.0957 2.23535 5.0957 2.23535H16.0049V4.05371Z"
-        fill="currentColor"
-      />
+    <svg viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 25} height={size ?? 25}>
+      <path d="M18.7314 5.87207C19.7314 5.87207 20.5498 6.69043 20.5498 7.69043V20.417C20.5498 21.417 19.7314 22.2354 18.7314 22.2354H8.73145C7.73162 22.2351 6.91406 21.4169 6.91406 20.417V7.69043C6.91406 6.69056 7.73162 5.87228 8.73145 5.87207H18.7314ZM8.73145 7.68945V20.417H18.7314V7.68945H8.73145ZM16.0049 4.05371H5.0957V16.7812H3.27734V4.05371C3.27734 3.05371 4.0957 2.23535 5.0957 2.23535H16.0049V4.05371Z" fill="currentColor"/>
     </svg>
   )
 );

@@ -1,8 +1,7 @@
 // Auto-generated from studio-activities-icon-sets/activities-ftp/ftp-delete-file-or-folder.svg
 import React from 'react';
 
-export interface FTPDeleteFileOrFolderProps
-  extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+export interface FTPDeleteFileOrFolderProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
   /**
    * Size to apply to both width and height.
    * @default 25
@@ -12,27 +11,10 @@ export interface FTPDeleteFileOrFolderProps
 
 export const FTPDeleteFileOrFolder = React.forwardRef<SVGSVGElement, FTPDeleteFileOrFolderProps>(
   ({ size, ...props }, ref) => (
-    <svg
-      viewBox="0 0 25 25"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      ref={ref}
-      {...props}
-      width={size ?? 25}
-      height={size ?? 25}
-    >
-      <path
-        d="M8 8.4707H11L17 14.4707V15.4707H15H10V10.4707H8V20.4707H13V22.4707H7.99C6.89 22.4707 6 21.5707 6 20.4707L6.01 10.4707C6.01 9.3707 6.9 8.4707 8 8.4707Z"
-        fill="currentColor"
-      />
-      <path
-        d="M20 4.4707H12L10 2.4707H4C2.89 2.4707 2.01 3.3607 2.01 4.4707L2 16.4707C2 17.5807 2.89 18.4707 4 18.4707H8V16.4707H4V4.4707H9.17L11.17 6.4707H20V14.4707H22V6.4707C22 5.3607 21.11 4.4707 20 4.4707Z"
-        fill="currentColor"
-      />
-      <path
-        d="M16.4142 16.4707L15 17.8849L17.4749 20.3598L15.0001 22.8347L16.4143 24.2489L18.8891 21.774L21.364 24.2489L22.7782 22.8347L20.3033 20.3598L22.7782 17.8849L21.364 16.4707L18.8891 18.9456L16.4142 16.4707Z"
-        fill="#CC3D45"
-      />
+    <svg viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 25} height={size ?? 25}>
+      <path d="M8 8.4707H11L17 14.4707V15.4707H15H10V10.4707H8V20.4707H13V22.4707H7.99C6.89 22.4707 6 21.5707 6 20.4707L6.01 10.4707C6.01 9.3707 6.9 8.4707 8 8.4707Z" fill="currentColor"/>
+<path d="M20 4.4707H12L10 2.4707H4C2.89 2.4707 2.01 3.3607 2.01 4.4707L2 16.4707C2 17.5807 2.89 18.4707 4 18.4707H8V16.4707H4V4.4707H9.17L11.17 6.4707H20V14.4707H22V6.4707C22 5.3607 21.11 4.4707 20 4.4707Z" fill="currentColor"/>
+<path d="M16.4142 16.4707L15 17.8849L17.4749 20.3598L15.0001 22.8347L16.4143 24.2489L18.8891 21.774L21.364 24.2489L22.7782 22.8347L20.3033 20.3598L22.7782 17.8849L21.364 16.4707L18.8891 18.9456L16.4142 16.4707Z" fill="#CC3D45"/>
     </svg>
   )
 );

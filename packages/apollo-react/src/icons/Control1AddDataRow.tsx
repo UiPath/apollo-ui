@@ -1,8 +1,7 @@
 // Auto-generated from studio-activities-icon-sets/activities-control-1/control-1-add-data-row.svg
 import React from 'react';
 
-export interface Control1AddDataRowProps
-  extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+export interface Control1AddDataRowProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
   /**
    * Size to apply to both width and height.
    * @default 24
@@ -12,32 +11,16 @@ export interface Control1AddDataRowProps
 
 export const Control1AddDataRow = React.forwardRef<SVGSVGElement, Control1AddDataRowProps>(
   ({ size, ...props }, ref) => (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      ref={ref}
-      {...props}
-      width={size ?? 24}
-      height={size ?? 24}
-    >
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
       <g clipPath="url(#clip0_4117_1514)">
-        <path
-          fillRule="evenodd"
-          clipRule="evenodd"
-          d="M4 2.82373C3.44772 2.82373 3 3.27145 3 3.82373V18.8237C3 19.376 3.44772 19.8237 4 19.8237H20C20.5523 19.8237 21 19.376 21 18.8237V17.8237H11V14.8237H16V12.8237H11V9.82373H21V3.82373C21 3.27145 20.5523 2.82373 20 2.82373H4ZM5 4.82373V7.82373H9V4.82373H5ZM5 9.82373H9V12.8237H5V9.82373ZM5 14.8237H9V17.8237H5V14.8237ZM11 4.82373V7.82373H19V4.82373H11Z"
-          fill="currentColor"
-        />
-        <path
-          d="M21 10.8237H19V12.8237H17V14.8237H19V16.8237H21V14.8237H23V12.8237H21V10.8237Z"
-          fill="#038108"
-        />
-      </g>
-      <defs>
-        <clipPath id="clip0_4117_1514">
-          <rect width="24" height="24" fill="var(--color-foreground)" />
-        </clipPath>
-      </defs>
+<path fillRule="evenodd" clipRule="evenodd" d="M4 2.82373C3.44772 2.82373 3 3.27145 3 3.82373V18.8237C3 19.376 3.44772 19.8237 4 19.8237H20C20.5523 19.8237 21 19.376 21 18.8237V17.8237H11V14.8237H16V12.8237H11V9.82373H21V3.82373C21 3.27145 20.5523 2.82373 20 2.82373H4ZM5 4.82373V7.82373H9V4.82373H5ZM5 9.82373H9V12.8237H5V9.82373ZM5 14.8237H9V17.8237H5V14.8237ZM11 4.82373V7.82373H19V4.82373H11Z" fill="currentColor"/>
+<path d="M21 10.8237H19V12.8237H17V14.8237H19V16.8237H21V14.8237H23V12.8237H21V10.8237Z" fill="#038108"/>
+</g>
+<defs>
+<clipPath id="clip0_4117_1514">
+<rect width="24" height="24" fill="var(--color-foreground)"/>
+</clipPath>
+</defs>
     </svg>
   )
 );

@@ -1,8 +1,7 @@
 // Auto-generated from editor/format-text-direction-r-to-l.svg
 import React from 'react';
 
-export interface FormatTextDirectionRToLProps
-  extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+export interface FormatTextDirectionRToLProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
   /**
    * Size to apply to both width and height.
    * @default 24
@@ -10,25 +9,13 @@ export interface FormatTextDirectionRToLProps
   size?: string | number;
 }
 
-export const FormatTextDirectionRToL = React.forwardRef<
-  SVGSVGElement,
-  FormatTextDirectionRToLProps
->(({ size, ...props }, ref) => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-    ref={ref}
-    {...props}
-    width={size ?? 24}
-    height={size ?? 24}
-  >
-    <path
-      d="M10 4V8C8.9 8 8 7.1 8 6C8 4.9 8.9 4 10 4ZM18 2H10C7.79 2 6 3.79 6 6C6 8.21 7.79 10 10 10V15H12V4H14V15H16V4H18V2ZM8 14L4 18L8 22V19H20V17H8V14Z"
-      fill="currentColor"
-    />
-  </svg>
-));
+export const FormatTextDirectionRToL = React.forwardRef<SVGSVGElement, FormatTextDirectionRToLProps>(
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
+      <path d="M10 4V8C8.9 8 8 7.1 8 6C8 4.9 8.9 4 10 4ZM18 2H10C7.79 2 6 3.79 6 6C6 8.21 7.79 10 10 10V15H12V4H14V15H16V4H18V2ZM8 14L4 18L8 22V19H20V17H8V14Z" fill="currentColor"/>
+    </svg>
+  )
+);
 
 FormatTextDirectionRToL.displayName = 'FormatTextDirectionRToL';
 
