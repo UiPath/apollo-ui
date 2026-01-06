@@ -1,3 +1,5 @@
+## [1.2.1](https://github.com/UiPath/apollo-ui/compare/@uipath/ap-chat@1.2.0...@uipath/ap-chat@1.2.1) (2026-01-06)
+
 # [1.2.0](https://github.com/UiPath/apollo-ui/compare/@uipath/ap-chat@1.1.0...@uipath/ap-chat@1.2.0) (2026-01-06)
 
 

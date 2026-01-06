@@ -1,3 +1,5 @@
+## [2.9.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@2.9.0...@uipath/apollo-react@2.9.1) (2026-01-06)
+
 # [2.9.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@2.8.0...@uipath/apollo-react@2.9.0) (2026-01-06)
 
 
