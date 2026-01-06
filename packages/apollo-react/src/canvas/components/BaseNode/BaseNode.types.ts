@@ -1,5 +1,5 @@
 import type { Position } from '@uipath/apollo-react/canvas/xyflow/react';
-import { ExecutionState } from '../../types/execution';
+import type { ExecutionState } from '../../types/execution';
 import type { ButtonHandleConfig, HandleActionEvent } from '../ButtonHandle/ButtonHandle';
 import type { NodeMenuItem } from '../NodeContextMenu/NodeContextMenu.types';
 import type { NodeToolbarConfig } from '../Toolbar';
