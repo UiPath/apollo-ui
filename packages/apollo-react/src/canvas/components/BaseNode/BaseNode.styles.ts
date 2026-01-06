@@ -307,7 +307,11 @@ export const BaseSubHeader = styled.div<{ shape?: NodeShape }>`
       : ''}
 `;
 
-export const EditableLabel = styled.textarea<{ shape?: NodeShape; backgroundColor?: string; variant: 'normal' | 'subtext' }>`
+export const EditableLabel = styled.textarea<{
+  shape?: NodeShape;
+  backgroundColor?: string;
+  variant: 'normal' | 'subtext';
+}>`
   resize: none;
   field-sizing: ${({ shape }) => (shape === 'rectangle' ? 'fixed' : 'content')};
   font-weight: ${({ variant }) => (variant === 'subtext' ? '400' : '600')};

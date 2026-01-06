@@ -6,10 +6,18 @@ export const MuiTooltip = (palette: Palette): ComponentsOverrides['MuiTooltip'] 
   popper: {
     '.MuiTooltip-tooltip': {
       maxWidth: '288px',
-      '&.MuiTooltip-tooltipPlacementBottom': { marginTop: `${token.Spacing.SpacingMicro} !important` },
-      '&.MuiTooltip-tooltipPlacementTop': { marginBottom: `${token.Spacing.SpacingMicro} !important` },
-      '&.MuiTooltip-tooltipPlacementLeft': { marginRight: `${token.Spacing.SpacingMicro} !important` },
-      '&.MuiTooltip-tooltipPlacementRight': { marginLeft: `${token.Spacing.SpacingMicro} !important` },
+      '&.MuiTooltip-tooltipPlacementBottom': {
+        marginTop: `${token.Spacing.SpacingMicro} !important`,
+      },
+      '&.MuiTooltip-tooltipPlacementTop': {
+        marginBottom: `${token.Spacing.SpacingMicro} !important`,
+      },
+      '&.MuiTooltip-tooltipPlacementLeft': {
+        marginRight: `${token.Spacing.SpacingMicro} !important`,
+      },
+      '&.MuiTooltip-tooltipPlacementRight': {
+        marginLeft: `${token.Spacing.SpacingMicro} !important`,
+      },
     },
   },
   tooltip: {

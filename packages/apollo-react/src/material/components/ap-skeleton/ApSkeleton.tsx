@@ -74,7 +74,15 @@ const StyledSkeleton = styled('div')<{
  */
 export const ApSkeleton = React.forwardRef<HTMLDivElement, ApSkeletonProps>(
   (
-    { variant = 'rectangle', circleSize = 24, children, className, style, 'data-testid': testId, ...rest },
+    {
+      variant = 'rectangle',
+      circleSize = 24,
+      children,
+      className,
+      style,
+      'data-testid': testId,
+      ...rest
+    },
     ref
   ) => {
     useEffect(() => {

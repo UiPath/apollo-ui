@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect } from "react";
 
 /**
  * Global CSS reset and base styles for Storybook
@@ -6,7 +6,7 @@ import { useEffect } from 'react';
 export const GlobalStyles = () => {
   useEffect(() => {
     // Apply styles to document
-    const styleElement = document.createElement('style');
+    const styleElement = document.createElement("style");
     styleElement.textContent = `
       /* Modern CSS Reset */
 

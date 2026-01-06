@@ -40,7 +40,8 @@ export const MuiSwitch = (palette: Palette): ComponentsOverrides['MuiSwitch'] =>
       position: 'relative',
       top: '3px',
       left: '3px',
-      boxShadow: 'rgba(0, 0, 0, 0.12) 0px 2px 1px -1px, rgba(0, 0, 0, 0.14) 0px 1px 1px 0px, rgba(0, 0, 0, 0.2) 0px 1px 3px 0px',
+      boxShadow:
+        'rgba(0, 0, 0, 0.12) 0px 2px 1px -1px, rgba(0, 0, 0, 0.14) 0px 1px 1px 0px, rgba(0, 0, 0, 0.2) 0px 1px 3px 0px',
     },
     '& .MuiSwitch-switchBase.Mui-disabled + .MuiSwitch-track': {
       backgroundColor: palette.semantic.colorToggleTrackOffDisabled,
@@ -48,7 +49,8 @@ export const MuiSwitch = (palette: Palette): ComponentsOverrides['MuiSwitch'] =>
     },
     '& .MuiSwitch-switchBase.Mui-disabled .MuiSwitch-thumb': {
       backgroundColor: palette.semantic.colorForegroundDisable,
-      boxShadow: 'rgba(0, 0, 0, 0.06) 0px 2px 1px 0px, rgba(0, 0, 0, 0.07) 0px 1px 1px 0px, rgba(0, 0, 0, 0.1) 0px 1px 3px 0px !important',
+      boxShadow:
+        'rgba(0, 0, 0, 0.06) 0px 2px 1px 0px, rgba(0, 0, 0, 0.07) 0px 1px 1px 0px, rgba(0, 0, 0, 0.1) 0px 1px 3px 0px !important',
     },
     '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
       backgroundColor: palette.semantic.colorToggleThumbOn,
@@ -67,7 +69,8 @@ export const MuiSwitch = (palette: Palette): ComponentsOverrides['MuiSwitch'] =>
     },
   },
   thumb: {
-    boxShadow: 'rgba(0, 0, 0, 0.12) 0px 2px 1px -1px, rgba(0, 0, 0, 0.14) 0px 1px 1px 0px, rgba(0, 0, 0, 0.2) 0px 1px 3px 0px',
+    boxShadow:
+      'rgba(0, 0, 0, 0.12) 0px 2px 1px -1px, rgba(0, 0, 0, 0.14) 0px 1px 1px 0px, rgba(0, 0, 0, 0.2) 0px 1px 3px 0px',
   },
   switchBase: {
     padding: token.Padding.PadXl,

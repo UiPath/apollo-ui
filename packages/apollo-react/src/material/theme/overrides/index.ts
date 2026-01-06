@@ -98,26 +98,27 @@ const muiComponents = {
 };
 
 const getOverrides = (palette: Palette) =>
-  Object.entries(muiComponents).reduce(
-    (overrides, [name, muiComponent]) => {
-      const componentConfig = muiComponent(palette);
+  Object.entries(muiComponents).reduce((overrides, [name, muiComponent]) => {
+    const componentConfig = muiComponent(palette);
 
-      // Check if the component returns an object with styleOverrides and defaultProps
-      if (componentConfig && typeof componentConfig === 'object' && 'styleOverrides' in componentConfig) {
-        return {
-          ...overrides,
-          [name]: componentConfig,
-        };
-      }
-
-      // Otherwise, treat it as just styleOverrides (backward compatibility)
+    // Check if the component returns an object with styleOverrides and defaultProps
+    if (
+      componentConfig &&
+      typeof componentConfig === 'object' &&
+      'styleOverrides' in componentConfig
+    ) {
       return {
         ...overrides,
-        [name]: { styleOverrides: componentConfig },
+        [name]: componentConfig,
       };
-    },
-    {}
-  );
+    }
+
+    // Otherwise, treat it as just styleOverrides (backward compatibility)
+    return {
+      ...overrides,
+      [name]: { styleOverrides: componentConfig },
+    };
+  }, {});
 
 export const lightOverrides: Components = getOverrides(lightPalette);
 export const lightHighContrastOverrides: Components = getOverrides(lightHighContrastPalette);
