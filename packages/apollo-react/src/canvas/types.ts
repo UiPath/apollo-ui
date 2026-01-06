@@ -305,6 +305,12 @@ export type AgentFlowProps = {
    */
   onResourceNodePositionChange?: (resourceId: string, position: { x: number; y: number }) => void;
   /**
+   * Called when the "Organize" button is clicked.
+   * This allows consumers to clear their stored positions (agentNodePosition and resourceNodePositions)
+   * so that the auto-arranged positions become the new source of truth.
+   */
+  onOrganize?: () => void;
+  /**
    * Zoom level for the canvas.
    * If not provided, defaults to undefined
    */

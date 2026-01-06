@@ -1,5 +1,4 @@
 import { FormControl, InputLabel, MenuItem, Select } from '@mui/material';
-
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { FontVariantToken } from '@uipath/apollo-core';
 import { Column, Row } from '@uipath/apollo-react/canvas/layouts';
@@ -7,7 +6,6 @@ import type { Edge, Node } from '@uipath/apollo-react/canvas/xyflow/react';
 import { BackgroundVariant, Panel, Position } from '@uipath/apollo-react/canvas/xyflow/react';
 import { ApButton, ApTypography } from '@uipath/apollo-react/material';
 import { useMemo, useRef, useState } from 'react';
-
 import {
   createNode,
   StoryInfoPanel,
@@ -221,7 +219,7 @@ function DefaultStory() {
         </Column>
       </StoryInfoPanel>
       <Panel position="bottom-right">
-        <CanvasPositionControls translations={DefaultCanvasTranslations} showOrganize={false} />
+        <CanvasPositionControls translations={DefaultCanvasTranslations} />
       </Panel>
     </BaseCanvas>
   );
@@ -263,7 +261,7 @@ function DifferentBackgroundsStory() {
         </Row>
       </StoryInfoPanel>
       <Panel position="bottom-right">
-        <CanvasPositionControls translations={DefaultCanvasTranslations} showOrganize={false} />
+        <CanvasPositionControls translations={DefaultCanvasTranslations} />
       </Panel>
     </BaseCanvas>
   );
@@ -280,7 +278,7 @@ function ReadOnlyModeStory() {
         description="Interactions are disabled. Canvas cannot be panned, zoomed, or edited."
       />
       <Panel position="bottom-right">
-        <CanvasPositionControls translations={DefaultCanvasTranslations} showOrganize={false} />
+        <CanvasPositionControls translations={DefaultCanvasTranslations} />
       </Panel>
     </BaseCanvas>
   );
@@ -324,7 +322,7 @@ function EmptyCanvasStory() {
         </Column>
       </StoryInfoPanel>
       <Panel position="bottom-right">
-        <CanvasPositionControls translations={DefaultCanvasTranslations} showOrganize={false} />
+        <CanvasPositionControls translations={DefaultCanvasTranslations} />
       </Panel>
     </BaseCanvas>
   );
@@ -433,11 +431,7 @@ function WithNodeFocusControlsStory() {
         </Column>
       </StoryInfoPanel>
       <Panel position="bottom-right">
-        <CanvasPositionControls
-          orientation="vertical"
-          translations={DefaultCanvasTranslations}
-          showOrganize={false}
-        />
+        <CanvasPositionControls orientation="vertical" translations={DefaultCanvasTranslations} />
       </Panel>
     </BaseCanvas>
   );
@@ -579,7 +573,6 @@ function WithMaintainNodesInViewStory() {
             <CanvasPositionControls
               orientation="vertical"
               translations={DefaultCanvasTranslations}
-              showOrganize={false}
             />
           </Panel>
         </BaseCanvas>

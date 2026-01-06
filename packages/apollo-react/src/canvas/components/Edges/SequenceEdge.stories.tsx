@@ -285,7 +285,7 @@ function DefaultStory() {
   return (
     <BaseCanvas {...canvasProps} edgeTypes={edgeTypes} mode="design">
       <Panel position="bottom-right">
-        <CanvasPositionControls translations={DefaultCanvasTranslations} showOrganize={false} />
+        <CanvasPositionControls translations={DefaultCanvasTranslations} />
       </Panel>
     </BaseCanvas>
   );

@@ -10,10 +10,8 @@ import {
   useEdgesState,
   useNodesState,
 } from '@uipath/apollo-react/canvas/xyflow/react';
-import { ApTypography } from '@uipath/apollo-react/material';
-import { ApIcon } from '@uipath/apollo-react/material/components';
+import { ApIcon, ApTypography } from '@uipath/apollo-react/material';
 import { useCallback, useMemo } from 'react';
-
 import { DefaultCanvasTranslations } from '../../types';
 import { BaseCanvas } from '../BaseCanvas';
 import type { HandleActionEvent } from '../ButtonHandle';
@@ -270,7 +268,7 @@ export const Default: Story = {
           mode="design"
         >
           <Panel position="bottom-right">
-            <CanvasPositionControls translations={DefaultCanvasTranslations} showOrganize={false} />
+            <CanvasPositionControls translations={DefaultCanvasTranslations} />
           </Panel>
         </BaseCanvas>
       );
@@ -722,7 +720,7 @@ export const CustomizedSizes: Story = {
           mode="design"
         >
           <Panel position="bottom-right">
-            <CanvasPositionControls translations={DefaultCanvasTranslations} showOrganize={false} />
+            <CanvasPositionControls translations={DefaultCanvasTranslations} />
           </Panel>
         </BaseCanvas>
       );

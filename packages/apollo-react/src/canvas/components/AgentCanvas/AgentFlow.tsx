@@ -3,8 +3,8 @@ import { Column } from '@uipath/apollo-react/canvas/layouts';
 import { Panel, useReactFlow } from '@uipath/apollo-react/canvas/xyflow/react';
 import type { NodeProps } from '@uipath/apollo-react/canvas/xyflow/system';
 import { StickyNote as StickyNoteIcon } from 'lucide-react';
-import type React from 'react';
 import type { PropsWithChildren } from 'react';
+import type React from 'react';
 import { memo, useCallback, useEffect, useMemo, useRef } from 'react';
 import { BaseCanvas } from '../../components/BaseCanvas';
 import {
@@ -28,6 +28,7 @@ import {
 import { hasAgentRunning } from '../../utils/props-helpers';
 import { CanvasPositionControls } from '../CanvasPositionControls';
 import { StickyNoteNode } from '../StickyNoteNode';
+import { PaneContextMenu } from './components/PaneContextMenu';
 import { SuggestionGroupPanel } from './components/SuggestionGroupPanel';
 import { TimelinePlayer } from './components/TimelinePlayer';
 import { calculateTimelineHeight } from './components/TimelinePlayer.utils';
@@ -259,6 +260,7 @@ const AgentFlowInner = memo(
     suggestionGroup,
     onAgentNodePositionChange,
     onResourceNodePositionChange,
+    onOrganize,
     onUpdateStickyNote,
     zoomLevel,
     onZoomLevelChange,
@@ -281,9 +283,13 @@ const AgentFlowInner = memo(
       navigateToNextSuggestion,
       navigateToPreviousSuggestion,
       addStickyNote,
+      paneContextMenu,
+      openPaneContextMenu,
+      closePaneContextMenu,
     } = useAgentFlowStore();
 
-    const { fitView: reactFlowFitView } = useReactFlow();
+    const { fitView: reactFlowFitView, screenToFlowPosition: reactFlowScreenToFlowPosition } =
+      useReactFlow();
     const timelinePlayerRef = useRef<HTMLDivElement>(null);
     const suggestionGroupPanelRef = useRef<HTMLDivElement>(null);
     const toolbarContainerRef = useRef<HTMLDivElement>(null);
@@ -384,6 +390,7 @@ const AgentFlowInner = memo(
     const handlePaneClick = useCallback(() => {
       setSelectedNodeId(null);
       onSelectResource?.('pane');
+      closePaneContextMenu();
 
       // If there are placeholder suggestions, reject them when clicking outside
       // if (storeProps.suggestionGroup?.suggestions) {
@@ -396,7 +403,7 @@ const AgentFlowInner = memo(
       //     rejectSuggestion(suggestion.id);
       //   });
       // }
-    }, [onSelectResource, setSelectedNodeId]);
+    }, [onSelectResource, setSelectedNodeId, closePaneContextMenu]);
 
     const handleNodeClick = useCallback(
       (_event: React.MouseEvent, node: AgentFlowCustomNode) => {
@@ -423,6 +430,22 @@ const AgentFlowInner = memo(
         onSelectResource?.(node.id);
       },
       [onSelectResource, setSelectedNodeId, setSpanForSelectedNode, nodes]
+    );
+
+    const handlePaneContextMenu = useCallback(
+      (event: React.MouseEvent | MouseEvent) => {
+        event.stopPropagation();
+        event.preventDefault();
+
+        // Get screen position for the menu
+        const screenPosition = { x: event.clientX, y: event.clientY };
+
+        // Convert screen position to flow position for placing sticky notes
+        const flowPosition = reactFlowScreenToFlowPosition(screenPosition);
+
+        openPaneContextMenu(screenPosition, flowPosition);
+      },
+      [openPaneContextMenu, reactFlowScreenToFlowPosition]
     );
 
     const handleNodeDragStart = useCallback(
@@ -577,6 +600,7 @@ const AgentFlowInner = memo(
             onConnect={onConnect}
             onNodeClick={handleNodeClick}
             onNodeContextMenu={handleNodeContextMenu}
+            onPaneContextMenu={handlePaneContextMenu}
             onPaneClick={handlePaneClick}
             onNodeDragStart={handleNodeDragStart}
             onNodeDragStop={handleNodeDragStop}
@@ -590,7 +614,7 @@ const AgentFlowInner = memo(
               <CanvasPositionControls
                 fitViewOptions={adjustedFitViewOptions}
                 translations={canvasTranslations ?? DefaultCanvasTranslations}
-                showOrganize={false} // TODO: Change to `mode === "design"` once tidy-up function is implemented
+                onOrganize={mode === 'design' ? onOrganize : undefined}
               />
             </Panel>
             <Panel position="bottom-center">
@@ -601,7 +625,7 @@ const AgentFlowInner = memo(
                 />
               </div>
               <div ref={toolbarContainerRef}>
-                {enableStickyNotes && mode === 'design' && (
+                {enableStickyNotes && mode === 'design' && !suggestionGroup?.suggestions.length && (
                   <ToolbarContainer className="nodrag nopan nowheel">
                     <ToolbarButton
                       type="button"
@@ -630,6 +654,34 @@ const AgentFlowInner = memo(
             </Panel>
             {children}
           </BaseCanvas>
+          {mode === 'design' && (
+            <PaneContextMenu
+              isOpen={paneContextMenu !== null}
+              position={paneContextMenu?.position ?? { x: 0, y: 0 }}
+              items={[
+                ...(enableStickyNotes
+                  ? [
+                      {
+                        label: (canvasTranslations ?? DefaultCanvasTranslations).addNote,
+                        onClick: () =>
+                          addStickyNote({
+                            position: paneContextMenu?.flowPosition ?? { x: 0, y: 0 },
+                          }),
+                      },
+                    ]
+                  : []),
+                ...(onOrganize
+                  ? [
+                      {
+                        label: (canvasTranslations ?? DefaultCanvasTranslations).organize,
+                        onClick: onOrganize,
+                      },
+                    ]
+                  : []),
+              ]}
+              onClose={closePaneContextMenu}
+            />
+          )}
         </Column>
       </Column>
     );

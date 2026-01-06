@@ -129,7 +129,7 @@ function DefaultStory() {
         description="Drag groups to move all child nodes together"
       />
       <Panel position="bottom-right">
-        <CanvasPositionControls translations={DefaultCanvasTranslations} showOrganize={false} />
+        <CanvasPositionControls translations={DefaultCanvasTranslations} />
       </Panel>
     </BaseCanvas>
   );
@@ -159,7 +159,7 @@ function EmptyGroupStory() {
     <BaseCanvas {...canvasProps} nodeTypes={nodeTypes} mode="design">
       <StoryInfoPanel title="Empty Group" description="A group node with no children" />
       <Panel position="bottom-right">
-        <CanvasPositionControls translations={DefaultCanvasTranslations} showOrganize={false} />
+        <CanvasPositionControls translations={DefaultCanvasTranslations} />
       </Panel>
     </BaseCanvas>
   );

@@ -370,6 +370,17 @@ interface AgentFlowStore {
   openMenuNodeId: string | null;
   setOpenMenuNodeId: (nodeId: string | null) => void;
 
+  // pane context menu
+  paneContextMenu: {
+    position: { x: number; y: number };
+    flowPosition: { x: number; y: number };
+  } | null;
+  openPaneContextMenu: (
+    position: { x: number; y: number },
+    flowPosition: { x: number; y: number }
+  ) => void;
+  closePaneContextMenu: () => void;
+
   // nodes
   updateNode: <T extends AgentFlowCustomNode>(
     nodeId: string,
@@ -397,6 +408,9 @@ interface AgentFlowStore {
   autoArrange: () => void;
   clearDragAndAutoArrange: () => void;
   setDragPreview: (draggedNodeId: string | null, insertAfterNodeId: string | null) => void;
+
+  // organize animation
+  organizeAnimationFrameId: number | null;
 
   // canvas operations
   fitView: () => void;
@@ -562,6 +576,11 @@ const createStickyNoteNodes = (
 };
 
 /**
+ * Easing function for animations
+ */
+const easeOutCubic = (t: number): number => --t * t * t + 1;
+
+/**
  * Computes nodes and edges with suggestions integrated
  */
 const computeNodesAndEdgesWithSuggestions = (
@@ -696,11 +715,98 @@ export const createAgentFlowStore = (initialProps: AgentFlowProps) =>
     const { nodes: initialNodes, edges: initialEdges } =
       computeNodesAndEdgesWithSuggestions(initialProps);
 
+    const cancelOrganizeAnimation = () => {
+      const frameId = get().organizeAnimationFrameId;
+      if (frameId !== null) {
+        cancelAnimationFrame(frameId);
+        set({ organizeAnimationFrameId: null });
+      }
+    };
+
+    /**
+     * Animate nodes from current positions to target positions
+     */
+    const animateNodesToPositions = (
+      currentNodes: AgentFlowCustomNode[],
+      targetNodes: AgentFlowCustomNode[],
+      duration: number,
+      onUpdate: (nodes: AgentFlowCustomNode[]) => void,
+      onComplete?: () => void
+    ): void => {
+      // Cancel any existing animation
+      cancelOrganizeAnimation();
+
+      // Create position maps
+      const startPositions = new Map(currentNodes.map((node) => [node.id, { ...node.position }]));
+      const endPositions = new Map(targetNodes.map((node) => [node.id, { ...node.position }]));
+
+      // Calculate deltas
+      const deltas = new Map<string, { x: number; y: number }>();
+      for (const [id, start] of startPositions) {
+        const end = endPositions.get(id);
+        if (end) {
+          deltas.set(id, {
+            x: end.x - start.x,
+            y: end.y - start.y,
+          });
+        }
+      }
+
+      const startTime = performance.now();
+
+      const step = (currentTime: number) => {
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const easedProgress = easeOutCubic(progress);
+
+        // Calculate interpolated positions
+        const interpolatedNodes = targetNodes.map((targetNode) => {
+          const start = startPositions.get(targetNode.id);
+          const delta = deltas.get(targetNode.id);
+
+          if (!start || !delta) {
+            return targetNode;
+          }
+
+          return {
+            ...targetNode,
+            position: {
+              x: start.x + delta.x * easedProgress,
+              y: start.y + delta.y * easedProgress,
+            },
+          };
+        });
+
+        // Update nodes
+        onUpdate(interpolatedNodes);
+
+        // Continue or complete
+        if (progress < 1) {
+          set({ organizeAnimationFrameId: requestAnimationFrame(step) });
+        } else {
+          set({ organizeAnimationFrameId: null });
+          onComplete?.();
+        }
+      };
+
+      set({ organizeAnimationFrameId: requestAnimationFrame(step) });
+    };
+
     return {
       // props state
       props: initialProps,
       handlePropsUpdate: (newProps) => {
         const state = get();
+
+        // Detect if this is an "organize" operation (positions being explicitly cleared)
+        // This happens when the consumer clears agentNodePosition and resourceNodePositions
+        const hadExplicitPositions =
+          state.props.agentNodePosition !== undefined ||
+          Object.keys(state.props.resourceNodePositions ?? {}).length > 0;
+        const nowHasNoExplicitPositions =
+          newProps.agentNodePosition === undefined &&
+          Object.keys(newProps.resourceNodePositions ?? {}).length === 0;
+        const isOrganizeOperation = hadExplicitPositions && nowHasNoExplicitPositions;
 
         // Check if resources were added or removed
         const currentResourceIds = new Set(state.props.resources.map((r) => r.id));
@@ -739,6 +845,8 @@ export const createAgentFlowStore = (initialProps: AgentFlowProps) =>
 
           // If we found a matching old node, preserve its visual state
           if (oldNode) {
+            // Always preserve old position here - for organize operations, we'll recalculate
+            // positions synchronously after this mapping using autoArrangeNodes with measured dimensions
             return {
               ...newNode,
               position: oldNode.position,
@@ -769,12 +877,26 @@ export const createAgentFlowStore = (initialProps: AgentFlowProps) =>
           return newNode;
         });
 
+        // For organize operations, recalculate positions and animate to new positions
+        let finalNodes = updatedNodes;
+        if (isOrganizeOperation) {
+          finalNodes = autoArrangeNodes(
+            updatedNodes,
+            newEdges,
+            newProps.agentNodePosition,
+            newProps.resourceNodePositions
+          ).map((node) => ({
+            ...node,
+            selected: node.id === state.selectedNodeId,
+          }));
+        }
+
         // Determine selected node ID for newly added resources
         let firstNewNodeId: string | null = null;
         if (resourcesAddedOrRemoved) {
           // Find first added resource node
           const firstAddedResource =
-            addedIds.size > 0 ? updatedNodes.find((node) => node.selected) : null;
+            addedIds.size > 0 ? finalNodes.find((node) => node.selected) : null;
           if (firstAddedResource) {
             firstNewNodeId = firstAddedResource.id;
           }
@@ -799,25 +921,66 @@ export const createAgentFlowStore = (initialProps: AgentFlowProps) =>
           }
         }
 
-        // Update state
-        set({
-          props: newProps,
-          nodes: updatedNodes,
-          edges: newEdges,
-          selectedNodeId: firstNewNodeId || state.selectedNodeId,
-          currentSuggestionIndex: newSuggestionIndex,
-        });
+        // For organize operations, animate nodes to their new positions
+        if (isOrganizeOperation) {
+          // Recalculate edges based on the starting positions (updatedNodes has old positions preserved)
+          // This ensures edge handles are correct during animation (e.g., nodes above agent connect at bottom)
+          const agentNodeForEdges = updatedNodes.find(isAgentFlowAgentNode);
+          const startingEdges = agentNodeForEdges
+            ? newEdges.map((edge) => {
+                const targetNode = updatedNodes.find((node) => node.id === edge.target);
+                if (!targetNode || !isAgentFlowResourceNode(targetNode)) return edge;
+                return createResourceEdge(agentNodeForEdges, targetNode, newProps);
+              })
+            : newEdges;
 
-        // Recalculate edges with dynamic handles after props update
-        // This ensures edges adapt to current node positions
-        get().recalculateEdges();
+          // First update props/edges/selection immediately (no flicker since positions stay same initially)
+          set({
+            props: newProps,
+            nodes: updatedNodes, // Start with current positions
+            edges: startingEdges, // Edges with handles matching starting positions
+            selectedNodeId: firstNewNodeId || state.selectedNodeId,
+            currentSuggestionIndex: newSuggestionIndex,
+          });
+
+          // Animate to the final positions
+          animateNodesToPositions(
+            updatedNodes,
+            finalNodes,
+            BASE_CANVAS_DEFAULTS.organizeAnimationDuration,
+            (animatedNodes) => {
+              set({ nodes: animatedNodes });
+            },
+            () => {
+              // On complete, ensure final positions are exact and recalculate edges
+              set({ nodes: finalNodes });
+              get().recalculateEdges();
+            }
+          );
+
+          // Early return since animation handles the rest
+          // Still need to handle placeholder and suggestion logic below
+        } else {
+          // Update state normally (no animation)
+          set({
+            props: newProps,
+            nodes: finalNodes,
+            edges: newEdges,
+            selectedNodeId: firstNewNodeId || state.selectedNodeId,
+            currentSuggestionIndex: newSuggestionIndex,
+          });
+
+          // Recalculate edges with dynamic handles after props update
+          // This ensures edges adapt to current node positions
+          get().recalculateEdges();
+        }
 
         // Notify parent component of selection change
         if (firstNewNodeId && newProps.onSelectResource) {
           newProps.onSelectResource(firstNewNodeId);
         }
 
-        // Auto-arrange if resources were added/removed
+        // Auto-arrange if resources were added/removed (not for organize - already handled synchronously above)
         if (resourcesAddedOrRemoved) {
           setTimeout(() => {
             get().autoArrange();
@@ -950,6 +1113,16 @@ export const createAgentFlowStore = (initialProps: AgentFlowProps) =>
       setOpenMenuNodeId: (nodeId) => {
         set({ openMenuNodeId: nodeId });
       },
+
+      // pane context menu
+      paneContextMenu: null,
+      openPaneContextMenu: (position, flowPosition) => {
+        set({ paneContextMenu: { position, flowPosition } });
+      },
+      closePaneContextMenu: () => {
+        set({ paneContextMenu: null });
+      },
+
       // nodes
       updateNode: (nodeId, updates) => {
         set((state) => ({
@@ -1332,6 +1505,9 @@ export const createAgentFlowStore = (initialProps: AgentFlowProps) =>
         insertAfterNodeId: null,
         previewPositions: {},
       },
+
+      // organize animation
+      organizeAnimationFrameId: null,
 
       setDragging: (isDragging, draggedNodeId) => {
         set({ isDragging, draggedNodeId });
@@ -1984,12 +2160,10 @@ export const AgentFlowProvider = ({
       ...store.getState(),
       selectedNodeId: getSelectedNodeId(props, store.getState()),
     });
-    // biome-ignore lint/correctness/useExhaustiveDependencies: migrated code
   }, [store.getState, store.setState, props]);
 
   useEffect(() => {
     store.getState().handlePropsUpdate(props);
-    // biome-ignore lint/correctness/useExhaustiveDependencies: migrated code
   }, [props, store.getState]);
 
   return React.createElement(AgentFlowContext.Provider, { value: store }, children);

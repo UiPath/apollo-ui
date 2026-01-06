@@ -597,37 +597,872 @@ const AgentFlowWrapper = ({
   );
 };
 
-const DesignModeWrapper = () => {
-  const [hasResources, setHasResources] = useState(true);
+/**
+ * Design Mode Playground
+ * Comprehensive demo combining all design mode features with toggles for each
+ */
+type SuggestionMode = 'off' | 'placeholders' | 'autopilot';
 
-  const renderControlPanel = () => {
-    return (
-      <StoryInfoPanel title="Design Mode Controls">
-        <Column mt={12} gap={8}>
-          <ApTypography variant={FontVariantToken.fontSizeM}>Canvas state:</ApTypography>
-          <Row gap={8}>
+const DesignModePlayground = () => {
+  // Feature toggles
+  const [hasResources, setHasResources] = useState(true);
+  const [suggestionMode, setSuggestionMode] = useState<SuggestionMode>('off');
+  const [enableStickyNotes, setEnableStickyNotes] = useState(true);
+  const [enableDragging, setEnableDragging] = useState(true);
+
+  // Resources state
+  const [resources, setResources] = useState<AgentFlowResource[]>(sampleResources);
+
+  // Suggestions state
+  const [suggestionGroup, setSuggestionGroup] = useState<AgentFlowSuggestionGroup | null>(null);
+  const [pendingStandalonePlaceholderId, setPendingStandalonePlaceholderId] = useState<
+    string | null
+  >(null);
+  const [openModalType, setOpenModalType] = useState<AgentFlowResourceType | null>(null);
+  const [placeholderBeingConfigured, setPlaceholderBeingConfigured] =
+    useState<AgentFlowResourceNodeData | null>(null);
+
+  // Sticky notes state
+  const [stickyNotes, setStickyNotes] = useState<AgentFlowStickyNote[]>([]);
+
+  // Dragging state
+  const [agentNodePosition, setAgentNodePosition] = useState<{ x: number; y: number } | undefined>(
+    undefined
+  );
+  const [resourceNodePositions, setResourceNodePositions] = useState<
+    Record<string, { x: number; y: number }>
+  >({});
+  const [zoomLevel, setZoomLevel] = useState<number>(1);
+
+  // Selection state
+  const [selectedResourceId, setSelectedResourceId] = useState<string | null>(null);
+
+  // Generate a unique key for React to remount when major state changes
+  const stateKey = `${hasResources}-${suggestionMode}-${enableStickyNotes}-${enableDragging}`;
+
+  // Resource handlers
+  const handleSelectResource = useCallback(
+    (resourceId: string | null) => {
+      setSelectedResourceId(resourceId);
+      // Handle pane click for placeholder mode
+      if (resourceId === 'pane' && pendingStandalonePlaceholderId && suggestionGroup) {
+        const pendingSuggestion = suggestionGroup.suggestions.find(
+          (s) => s.id === pendingStandalonePlaceholderId
+        );
+        if (pendingSuggestion?.isStandalone) {
+          // Reject the placeholder
+          const remaining = suggestionGroup.suggestions.filter(
+            (s) => s.id !== pendingStandalonePlaceholderId
+          );
+          setSuggestionGroup(
+            remaining.length > 0 ? { ...suggestionGroup, suggestions: remaining } : null
+          );
+        }
+        setPendingStandalonePlaceholderId(null);
+        setOpenModalType(null);
+        setPlaceholderBeingConfigured(null);
+      }
+    },
+    [pendingStandalonePlaceholderId, suggestionGroup]
+  );
+
+  const handleAddResourceDirect = useCallback((type: AgentFlowResourceType) => {
+    let newResource: AgentFlowResource;
+    switch (type) {
+      case 'context':
+        newResource = createSampleContext();
+        break;
+      case 'tool':
+        newResource = createSampleTool();
+        break;
+      case 'escalation':
+        newResource = createSampleEscalation();
+        break;
+      case 'mcp':
+        newResource = createSampleMcp();
+        break;
+      case 'memorySpace':
+        newResource = createSampleMemorySpace();
+        break;
+      default:
+        return;
+    }
+    setResources((prev) => [...prev, newResource]);
+    setSelectedResourceId(newResource.id);
+  }, []);
+
+  const handleRemoveResource = useCallback(
+    (resource: AgentFlowResource) => {
+      setResources((prev) => prev.filter((r) => r.id !== resource.id));
+      if (selectedResourceId === resource.id) {
+        setSelectedResourceId(null);
+      }
+    },
+    [selectedResourceId]
+  );
+
+  const handleEnable = useCallback((resourceId: string, resource: AgentFlowResourceNodeData) => {
+    setResources((prev) =>
+      prev.map((r) => ({
+        ...r,
+        ...(`${resource.parentNodeId}=>${r.name}:${r.id}` === resourceId && { isDisabled: false }),
+      }))
+    );
+  }, []);
+
+  const handleDisable = useCallback((resourceId: string, resource: AgentFlowResourceNodeData) => {
+    setResources((prev) =>
+      prev.map((r) => ({
+        ...r,
+        ...(`${resource.parentNodeId}=>${r.name}:${r.id}` === resourceId && { isDisabled: true }),
+      }))
+    );
+  }, []);
+
+  const handleAddBreakpoint = useCallback(
+    (resourceId: string, resource: AgentFlowResourceNodeData) => {
+      setResources((prev) =>
+        prev.map((r) => ({
+          ...r,
+          ...(`${resource.parentNodeId}=>${r.name}:${r.id}` === resourceId && {
+            hasBreakpoint: true,
+          }),
+        }))
+      );
+    },
+    []
+  );
+
+  const handleRemoveBreakpoint = useCallback(
+    (resourceId: string, resource: AgentFlowResourceNodeData) => {
+      setResources((prev) =>
+        prev.map((r) => ({
+          ...r,
+          ...(`${resource.parentNodeId}=>${r.name}:${r.id}` === resourceId && {
+            hasBreakpoint: false,
+          }),
+        }))
+      );
+    },
+    []
+  );
+
+  const handleAddGuardrail = useCallback(
+    (resourceId: string, resource: AgentFlowResourceNodeData) => {
+      setResources((prev) =>
+        prev.map((r) => ({
+          ...r,
+          ...(`${resource.parentNodeId}=>${r.name}:${r.id}` === resourceId && {
+            hasGuardrails: true,
+          }),
+        }))
+      );
+    },
+    []
+  );
+
+  // Placeholder handlers (for suggestionMode === "placeholders")
+  const handleRequestPlaceholder = useCallback(
+    (type: AgentFlowResourceType, cleanedSuggestionGroup: AgentFlowSuggestionGroup | null) => {
+      if (suggestionMode !== 'placeholders') return null;
+      if (type === 'escalation') return null; // Escalations create directly
+
+      const placeholder: Partial<AgentFlowResource> = {
+        id: `placeholder-${type}-${Date.now()}`,
+        type,
+        name: `New ${type.charAt(0).toUpperCase() + type.slice(1)}`,
+        description: `Configure this ${type}...`,
+      };
+
+      if (type === 'tool') {
+        (placeholder as any).iconUrl = '';
+        (placeholder as any).projectType = ProjectType.Internal;
+      } else if (type === 'mcp') {
+        (placeholder as any).slug = '';
+        (placeholder as any).folderPath = '';
+        (placeholder as any).availableTools = [];
+      }
+
+      const updated = createPlaceholderSuggestion(placeholder, cleanedSuggestionGroup, {
+        isStandalone: true,
+      });
+      setSuggestionGroup(updated);
+
+      const newSuggestion = updated.suggestions[updated.suggestions.length - 1];
+      if (newSuggestion) {
+        setPendingStandalonePlaceholderId(newSuggestion.id);
+      }
+      setOpenModalType(type);
+      return placeholder;
+    },
+    [suggestionMode]
+  );
+
+  const handlePlaceholderNodeClick = useCallback(
+    (resourceType: AgentFlowResourceType, placeholderData: AgentFlowResourceNodeData) => {
+      setOpenModalType(resourceType);
+      setPlaceholderBeingConfigured(placeholderData);
+    },
+    []
+  );
+
+  // Suggestion handlers
+  const handleActOnSuggestion = useCallback(
+    (suggestionId: string, action: 'accept' | 'reject') => {
+      if (!suggestionGroup) return;
+
+      const suggestion = suggestionGroup.suggestions.find((s) => s.id === suggestionId);
+      const remaining = suggestionGroup.suggestions.filter((s) => s.id !== suggestionId);
+
+      if (suggestion?.isStandalone && suggestionId === pendingStandalonePlaceholderId) {
+        setPendingStandalonePlaceholderId(null);
+        setOpenModalType(null);
+        setPlaceholderBeingConfigured(null);
+      }
+
+      if (action === 'reject') {
+        setSuggestionGroup(
+          remaining.length > 0 ? { ...suggestionGroup, suggestions: remaining } : null
+        );
+        return;
+      }
+
+      if (suggestion) {
+        if (suggestion.type === 'add' && suggestion.resource) {
+          setResources((prev) => [...prev, suggestion.resource as AgentFlowResource]);
+        } else if (
+          suggestion.type === 'update' &&
+          suggestion.resourceId &&
+          suggestion.updatedFields
+        ) {
+          setResources((prev) =>
+            prev.map((r) =>
+              r.id === suggestion.resourceId
+                ? ({ ...r, ...suggestion.updatedFields } as AgentFlowResource)
+                : r
+            )
+          );
+        } else if (suggestion.type === 'delete' && suggestion.resourceIdToDelete) {
+          setResources((prev) => prev.filter((r) => r.id !== suggestion.resourceIdToDelete));
+        }
+      }
+
+      setSuggestionGroup(
+        remaining.length > 0 ? { ...suggestionGroup, suggestions: remaining } : null
+      );
+    },
+    [suggestionGroup, pendingStandalonePlaceholderId]
+  );
+
+  const handleActOnSuggestionGroup = useCallback(
+    (_groupId: string, action: 'accept' | 'reject') => {
+      if (!suggestionGroup) return;
+
+      const nonStandalone = suggestionGroup.suggestions.filter((s) => !s.isStandalone);
+      const standalone = suggestionGroup.suggestions.filter((s) => s.isStandalone);
+
+      if (action === 'reject') {
+        setSuggestionGroup(
+          standalone.length > 0 ? { ...suggestionGroup, suggestions: standalone } : null
+        );
+        return;
+      }
+
+      setResources((prev) => {
+        let updated = [...prev];
+        nonStandalone.forEach((s) => {
+          if (s.type === 'add' && s.resource) {
+            updated.push(s.resource as AgentFlowResource);
+          } else if (s.type === 'update' && s.resourceId && s.updatedFields) {
+            updated = updated.map((r) =>
+              r.id === s.resourceId ? ({ ...r, ...s.updatedFields } as AgentFlowResource) : r
+            );
+          } else if (s.type === 'delete' && s.resourceIdToDelete) {
+            updated = updated.filter((r) => r.id !== s.resourceIdToDelete);
+          }
+        });
+        return updated;
+      });
+
+      setSuggestionGroup(
+        standalone.length > 0 ? { ...suggestionGroup, suggestions: standalone } : null
+      );
+    },
+    [suggestionGroup]
+  );
+
+  const handleConfirmModal = useCallback(() => {
+    if (pendingStandalonePlaceholderId) {
+      handleActOnSuggestion(pendingStandalonePlaceholderId, 'accept');
+    }
+    setOpenModalType(null);
+    setPlaceholderBeingConfigured(null);
+  }, [pendingStandalonePlaceholderId, handleActOnSuggestion]);
+
+  const handleCancelModal = useCallback(() => {
+    if (pendingStandalonePlaceholderId) {
+      handleActOnSuggestion(pendingStandalonePlaceholderId, 'reject');
+    }
+    setOpenModalType(null);
+    setPlaceholderBeingConfigured(null);
+  }, [pendingStandalonePlaceholderId, handleActOnSuggestion]);
+
+  // Autopilot suggestion creators
+  const createInsertSuggestions = useCallback(() => {
+    const timestamp = Date.now();
+    setSuggestionGroup({
+      id: `group-${timestamp}`,
+      suggestions: [
+        {
+          id: `add-1-${timestamp}`,
+          type: 'add',
+          resource: {
+            id: `tool-${timestamp}`,
+            type: 'tool',
+            name: 'Email Service',
+            description: 'Send emails',
+            iconUrl: '',
+            hasBreakpoint: false,
+            hasGuardrails: false,
+            projectType: ProjectType.Internal,
+          },
+        },
+        {
+          id: `add-2-${timestamp}`,
+          type: 'add',
+          resource: {
+            id: `ctx-${timestamp}`,
+            type: 'context',
+            name: 'User Preferences',
+            description: 'User prefs',
+            hasBreakpoint: false,
+          },
+        },
+      ],
+      metadata: { title: 'Add Suggestions' },
+    });
+  }, []);
+
+  const createDeleteSuggestions = useCallback(() => {
+    const timestamp = Date.now();
+    const toDelete = resources.slice(0, 2);
+    setSuggestionGroup({
+      id: `group-${timestamp}`,
+      suggestions: toDelete.map((r, i) => ({
+        id: `del-${i}-${timestamp}`,
+        type: 'delete' as const,
+        resourceIdToDelete: r.id,
+      })),
+      metadata: { title: 'Delete Suggestions' },
+    });
+  }, [resources]);
+
+  const createUpdateSuggestions = useCallback(() => {
+    const timestamp = Date.now();
+    const toUpdate = resources.slice(0, 2);
+    setSuggestionGroup({
+      id: `group-${timestamp}`,
+      suggestions: toUpdate.map((r, i) => ({
+        id: `upd-${i}-${timestamp}`,
+        type: 'update' as const,
+        resourceId: r.id,
+        updatedFields: { name: `${r.name} (Updated)` },
+      })),
+      metadata: { title: 'Update Suggestions' },
+    });
+  }, [resources]);
+
+  const createMixedSuggestions = useCallback(() => {
+    const timestamp = Date.now();
+    const existing = resources.slice(0, 2);
+    setSuggestionGroup({
+      id: `group-${timestamp}`,
+      suggestions: [
+        {
+          id: `add-${timestamp}`,
+          type: 'add',
+          resource: {
+            id: `tool-${timestamp}`,
+            type: 'tool',
+            name: 'New Tool',
+            description: 'Added tool',
+            iconUrl: '',
+            hasBreakpoint: false,
+            hasGuardrails: false,
+            projectType: ProjectType.Internal,
+          },
+        },
+        ...(existing[0]
+          ? [
+              {
+                id: `upd-${timestamp}`,
+                type: 'update' as const,
+                resourceId: existing[0].id,
+                updatedFields: { name: `${existing[0].name} (Updated)` },
+              },
+            ]
+          : []),
+        ...(existing[1]
+          ? [
+              {
+                id: `del-${timestamp}`,
+                type: 'delete' as const,
+                resourceIdToDelete: existing[1].id,
+              },
+            ]
+          : []),
+      ],
+      metadata: { title: 'Mixed Suggestions' },
+    });
+  }, [resources]);
+
+  // Sticky notes handlers
+  const handleAddStickyNote = useCallback((data: AgentFlowStickyNote) => {
+    setStickyNotes((prev) => [...prev, data]);
+  }, []);
+
+  const handleUpdateStickyNote = useCallback(
+    (id: string, updates: Partial<Omit<AgentFlowStickyNote, 'id'>>) => {
+      setStickyNotes((prev) => prev.map((n) => (n.id === id ? { ...n, ...updates } : n)));
+    },
+    []
+  );
+
+  const handleRemoveStickyNote = useCallback((id: string) => {
+    setStickyNotes((prev) => prev.filter((n) => n.id !== id));
+  }, []);
+
+  // Dragging handlers
+  const handleOrganize = useCallback(() => {
+    setAgentNodePosition(undefined);
+    setResourceNodePositions({});
+  }, []);
+
+  // Toggle handlers with state reset
+  const handleToggleResources = useCallback((value: boolean) => {
+    setHasResources(value);
+    setResources(value ? sampleResources : []);
+    setSuggestionGroup(null);
+    setAgentNodePosition(undefined);
+    setResourceNodePositions({});
+  }, []);
+
+  const handleToggleSuggestionMode = useCallback((mode: SuggestionMode) => {
+    setSuggestionMode(mode);
+    setSuggestionGroup(null);
+    setPendingStandalonePlaceholderId(null);
+    setOpenModalType(null);
+  }, []);
+
+  const renderSidebar = () => (
+    <Column
+      w={280}
+      p={16}
+      gap={12}
+      style={{
+        backgroundColor: 'var(--uix-canvas-background-secondary)',
+        borderLeft: '1px solid var(--uix-canvas-border-de-emp)',
+        overflowY: 'auto',
+        color: 'var(--uix-canvas-foreground)',
+      }}
+    >
+      <h3 style={{ margin: 0 }}>Current State</h3>
+
+      {/* Selection info */}
+      <div>
+        <strong>Selected:</strong> {selectedResourceId || 'None'}
+      </div>
+
+      {/* Resource counts */}
+      <div>
+        <strong>Resources:</strong> {resources.length}
+      </div>
+
+      {/* Sticky notes info */}
+      {enableStickyNotes && (
+        <div>
+          <strong>Sticky Notes:</strong> {stickyNotes.length}
+        </div>
+      )}
+
+      {/* Suggestion info */}
+      {suggestionGroup && (
+        <div
+          style={{
+            padding: '12px',
+            backgroundColor: 'var(--uix-canvas-background)',
+            borderRadius: '4px',
+            border: '1px solid var(--uix-canvas-border-de-emp)',
+          }}
+        >
+          <div style={{ fontWeight: 'bold', marginBottom: '8px' }}>Active Suggestions</div>
+          <div style={{ fontSize: '0.875rem' }}>
+            <div>
+              <strong>Count:</strong> {suggestionGroup.suggestions.length}
+            </div>
+            <div>
+              <strong>Type:</strong> {suggestionMode}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Dragging info */}
+      {enableDragging && (
+        <div
+          style={{
+            padding: '12px',
+            backgroundColor: 'var(--uix-canvas-background)',
+            borderRadius: '4px',
+            border: '1px solid var(--uix-canvas-border-de-emp)',
+          }}
+        >
+          <div style={{ fontWeight: 'bold', marginBottom: '8px' }}>Position Tracking</div>
+          <div style={{ fontSize: '0.875rem', fontFamily: 'monospace' }}>
+            <div>
+              <strong>Zoom:</strong> {(zoomLevel * 100).toFixed(0)}%
+            </div>
+            {agentNodePosition && (
+              <>
+                <div style={{ marginTop: '8px', fontWeight: 'bold' }}>Agent Node:</div>
+                <div>X: {agentNodePosition.x.toFixed(2)}</div>
+                <div>Y: {agentNodePosition.y.toFixed(2)}</div>
+              </>
+            )}
+            {Object.keys(resourceNodePositions).length > 0 && (
+              <>
+                <div style={{ marginTop: '8px', fontWeight: 'bold' }}>Resource Positions:</div>
+                {Object.entries(resourceNodePositions).map(([id, pos]) => (
+                  <div key={id} style={{ marginLeft: '8px', fontSize: '0.75rem' }}>
+                    {id.split('=>').pop()?.split(':')[0]}: ({pos.x.toFixed(0)}, {pos.y.toFixed(0)})
+                  </div>
+                ))}
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Instructions */}
+      <div
+        style={{
+          fontSize: '0.875rem',
+          color: 'var(--uix-canvas-foreground-de-emp)',
+          marginTop: '8px',
+        }}
+      >
+        <p style={{ margin: '0 0 8px 0' }}>Click the + buttons on the agent node to add:</p>
+        <ul style={{ margin: 0, paddingLeft: '20px' }}>
+          <li>Memory (top)</li>
+          <li>Context (bottom-left)</li>
+          <li>Escalations (bottom-center)</li>
+          <li>Tools & MCPs (bottom-right)</li>
+        </ul>
+        {enableStickyNotes && (
+          <p style={{ marginTop: '12px', marginBottom: 0 }}>
+            Use the sticky note button at the bottom to add notes. Press Delete to remove.
+          </p>
+        )}
+        {enableDragging && (
+          <p style={{ marginTop: '12px', marginBottom: 0 }}>
+            Drag nodes to reposition. Use Organize button to reset positions.
+          </p>
+        )}
+        {suggestionMode === 'placeholders' && (
+          <p style={{ marginTop: '12px', marginBottom: 0 }}>
+            Placeholders appear when clicking +. Click them to configure, or click away to cancel.
+          </p>
+        )}
+        {suggestionMode === 'autopilot' && (
+          <p style={{ marginTop: '12px', marginBottom: 0 }}>
+            Use suggestion buttons in controls to create batches. Accept/Reject individually or all
+            at once.
+          </p>
+        )}
+      </div>
+    </Column>
+  );
+
+  const renderControlPanel = () => (
+    <StoryInfoPanel title="Design Mode Playground" collapsible defaultCollapsed={false}>
+      <Column mt={12} gap={12}>
+        {/* Resources toggle */}
+        <Column gap={4}>
+          <ApTypography variant={FontVariantToken.fontSizeS} style={{ fontWeight: 600 }}>
+            Resources:
+          </ApTypography>
+          <Row gap={4}>
             <ApButton
               size="small"
               variant={hasResources ? 'primary' : 'secondary'}
-              label="With Resources"
-              onClick={() => setHasResources(true)}
+              label="With"
+              onClick={() => handleToggleResources(true)}
             />
             <ApButton
               size="small"
               variant={!hasResources ? 'primary' : 'secondary'}
               label="Empty"
-              onClick={() => setHasResources(false)}
+              onClick={() => handleToggleResources(false)}
             />
           </Row>
         </Column>
-      </StoryInfoPanel>
-    );
-  };
+
+        {/* Suggestions toggle */}
+        <Column gap={4}>
+          <ApTypography variant={FontVariantToken.fontSizeS} style={{ fontWeight: 600 }}>
+            Suggestions:
+          </ApTypography>
+          <Row gap={4} style={{ flexWrap: 'wrap' }}>
+            <ApButton
+              size="small"
+              variant={suggestionMode === 'off' ? 'primary' : 'secondary'}
+              label="Off"
+              onClick={() => handleToggleSuggestionMode('off')}
+            />
+            <ApButton
+              size="small"
+              variant={suggestionMode === 'placeholders' ? 'primary' : 'secondary'}
+              label="Placeholders"
+              onClick={() => handleToggleSuggestionMode('placeholders')}
+            />
+            <ApButton
+              size="small"
+              variant={suggestionMode === 'autopilot' ? 'primary' : 'secondary'}
+              label="Autopilot"
+              onClick={() => handleToggleSuggestionMode('autopilot')}
+            />
+          </Row>
+        </Column>
+
+        {/* Autopilot actions */}
+        {suggestionMode === 'autopilot' && (
+          <Column gap={4}>
+            <ApTypography
+              variant={FontVariantToken.fontSizeS}
+              style={{ color: 'var(--uix-canvas-foreground-de-emp)' }}
+            >
+              Create suggestions:
+            </ApTypography>
+            <Row gap={4} style={{ flexWrap: 'wrap' }}>
+              <ApButton
+                size="small"
+                variant="secondary"
+                label="Inserts"
+                onClick={createInsertSuggestions}
+              />
+              <ApButton
+                size="small"
+                variant="secondary"
+                label="Deletes"
+                onClick={createDeleteSuggestions}
+              />
+              <ApButton
+                size="small"
+                variant="secondary"
+                label="Updates"
+                onClick={createUpdateSuggestions}
+              />
+              <ApButton
+                size="small"
+                variant="secondary"
+                label="Mixed"
+                onClick={createMixedSuggestions}
+              />
+            </Row>
+          </Column>
+        )}
+
+        {/* Sticky Notes toggle */}
+        <Column gap={4}>
+          <ApTypography variant={FontVariantToken.fontSizeS} style={{ fontWeight: 600 }}>
+            Sticky Notes:
+          </ApTypography>
+          <Row gap={4}>
+            <ApButton
+              size="small"
+              variant={enableStickyNotes ? 'primary' : 'secondary'}
+              label="On"
+              onClick={() => setEnableStickyNotes(true)}
+            />
+            <ApButton
+              size="small"
+              variant={!enableStickyNotes ? 'primary' : 'secondary'}
+              label="Off"
+              onClick={() => setEnableStickyNotes(false)}
+            />
+          </Row>
+          {enableStickyNotes && (
+            <Row gap={4}>
+              <ApButton
+                size="small"
+                variant="secondary"
+                label="Load Samples"
+                onClick={() => setStickyNotes(sampleStickyNotes)}
+              />
+              <ApButton
+                size="small"
+                variant="secondary"
+                label="Clear"
+                onClick={() => setStickyNotes([])}
+              />
+            </Row>
+          )}
+        </Column>
+
+        {/* Dragging toggle */}
+        <Column gap={4}>
+          <ApTypography variant={FontVariantToken.fontSizeS} style={{ fontWeight: 600 }}>
+            Dragging:
+          </ApTypography>
+          <Row gap={4}>
+            <ApButton
+              size="small"
+              variant={enableDragging ? 'primary' : 'secondary'}
+              label="On"
+              onClick={() => setEnableDragging(true)}
+            />
+            <ApButton
+              size="small"
+              variant={!enableDragging ? 'primary' : 'secondary'}
+              label="Off"
+              onClick={() => setEnableDragging(false)}
+            />
+          </Row>
+        </Column>
+
+        {/* Status info */}
+        <Column
+          gap={2}
+          style={{ borderTop: '1px solid var(--uix-canvas-border-de-emp)', paddingTop: 8 }}
+        >
+          <ApTypography
+            variant={FontVariantToken.fontSizeS}
+            style={{ color: 'var(--uix-canvas-foreground-de-emp)' }}
+          >
+            Resources: {resources.length} | Notes: {stickyNotes.length} | Zoom:{' '}
+            {(zoomLevel * 100).toFixed(0)}%
+          </ApTypography>
+        </Column>
+      </Column>
+    </StoryInfoPanel>
+  );
 
   return (
-    <ReactFlowProvider key={hasResources ? 'with-resources' : 'empty'}>
-      <AgentFlowWrapper mode="design" initialResources={hasResources ? sampleResources : []} />
-      {renderControlPanel()}
+    <ReactFlowProvider key={stateKey}>
+      <Row w="100%" h="100%" style={{ position: 'relative' }}>
+        <div style={{ flex: 1, position: 'relative' }}>
+          <AgentFlow
+            allowDragging={enableDragging}
+            agentNodePosition={enableDragging ? agentNodePosition : undefined}
+            onAgentNodePositionChange={setAgentNodePosition}
+            resourceNodePositions={enableDragging ? resourceNodePositions : undefined}
+            onResourceNodePositionChange={(id, pos) =>
+              setResourceNodePositions((prev) => ({ ...prev, [id]: pos }))
+            }
+            zoomLevel={zoomLevel}
+            onZoomLevelChange={setZoomLevel}
+            definition={sampleAgentDefinition}
+            spans={[]}
+            name="Test Agent"
+            description="Test Description"
+            mode="design"
+            resources={resources}
+            onEnable={handleEnable}
+            onDisable={handleDisable}
+            onAddBreakpoint={handleAddBreakpoint}
+            onRemoveBreakpoint={handleRemoveBreakpoint}
+            onAddGuardrail={handleAddGuardrail}
+            onAddResource={handleAddResourceDirect}
+            onRemoveResource={handleRemoveResource}
+            onSelectResource={handleSelectResource}
+            enableTimelinePlayer={false}
+            enableMemory
+            enableStickyNotes={enableStickyNotes}
+            stickyNotes={stickyNotes}
+            onAddStickyNote={handleAddStickyNote}
+            onUpdateStickyNote={handleUpdateStickyNote}
+            onRemoveStickyNote={handleRemoveStickyNote}
+            onOrganize={handleOrganize}
+            onRequestResourcePlaceholder={
+              suggestionMode === 'placeholders' ? handleRequestPlaceholder : undefined
+            }
+            onPlaceholderNodeClick={
+              suggestionMode === 'placeholders' ? handlePlaceholderNodeClick : undefined
+            }
+            suggestionGroup={suggestionGroup}
+            onActOnSuggestion={handleActOnSuggestion}
+            onActOnSuggestionGroup={handleActOnSuggestionGroup}
+          />
+          {/* Placeholder configuration modal */}
+          {openModalType && (
+            <>
+              <div
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                  zIndex: 999,
+                }}
+                onClick={handleCancelModal}
+              />
+              <div
+                style={{
+                  position: 'absolute',
+                  top: '50%',
+                  left: '50%',
+                  transform: 'translate(-50%, -50%)',
+                  backgroundColor: 'var(--uix-canvas-background-raised)',
+                  border: '1px solid var(--uix-canvas-border)',
+                  borderRadius: 8,
+                  padding: 24,
+                  minWidth: 400,
+                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+                  zIndex: 1000,
+                }}
+              >
+                <h3 style={{ margin: '0 0 16px 0', color: 'var(--uix-canvas-foreground)' }}>
+                  Configure {openModalType.charAt(0).toUpperCase() + openModalType.slice(1)}
+                </h3>
+                <p
+                  style={{
+                    margin: '0 0 24px 0',
+                    color: 'var(--uix-canvas-foreground-de-emp)',
+                    fontSize: '0.875rem',
+                  }}
+                >
+                  This is a simulated configuration modal.
+                  {placeholderBeingConfigured && (
+                    <>
+                      <br />
+                      <br />
+                      Placeholder: <strong>{placeholderBeingConfigured.name}</strong>
+                    </>
+                  )}
+                </p>
+                <Row gap={8} style={{ justifyContent: 'flex-end' }}>
+                  <ApButton
+                    size="small"
+                    variant="secondary"
+                    label="Cancel"
+                    onClick={handleCancelModal}
+                  />
+                  <ApButton
+                    size="small"
+                    variant="primary"
+                    label="Confirm"
+                    onClick={handleConfirmModal}
+                  />
+                </Row>
+              </div>
+            </>
+          )}
+        </div>
+        {renderControlPanel()}
+        {renderSidebar()}
+      </Row>
     </ReactFlowProvider>
   );
 };
@@ -636,12 +1471,17 @@ export const DesignMode: Story = {
   args: {
     mode: 'design',
   },
-  render: () => <DesignModeWrapper />,
+  render: () => <DesignModePlayground />,
   parameters: {
     docs: {
       description: {
         story:
-          'Interactive design mode demo. Use the control panel to toggle between a canvas with sample resources and an empty canvas.',
+          'Comprehensive design mode playground. Toggle any combination of features:\n\n' +
+          '• **Resources**: With sample resources or empty canvas\n' +
+          '• **Suggestions**: Off, Placeholders (click + buttons), or Autopilot (batch suggestions)\n' +
+          '• **Sticky Notes**: Enable/disable with sample loading\n' +
+          '• **Dragging**: Enable/disable position control\n\n' +
+          'Test features in isolation or combine them to verify interactions.',
       },
     },
   },
@@ -796,951 +1636,6 @@ export const HealthScore: Story = {
       description: {
         story:
           'Interactive health score demo. Use the control panel to toggle between different health score values (None, 0, 50, 95, 100). The health score badge appears below the agent name and is clickable.',
-      },
-    },
-  },
-};
-
-/**
- * Suggestion Mode Story
- * Demonstrates the placeholder creation feature when clicking "+" buttons
- */
-
-const SuggestionModeWrapper = ({
-  mode,
-  initialResources = sampleResources,
-  spans = sampleSpans,
-  enableTimelinePlayer = true,
-  enableMemory = true,
-}: AgentFlowWrapperProps) => {
-  const [resources, setResources] = useState<AgentFlowResource[]>(initialResources);
-  const [suggestionGroup, setSuggestionGroup] = useState<AgentFlowSuggestionGroup | null>(null);
-  const [selectedResourceId, setSelectedResourceId] = useState<string | null>(null);
-  const [pendingStandalonePlaceholderId, setPendingStandalonePlaceholderId] = useState<
-    string | null
-  >(null);
-  const [openModalType, setOpenModalType] = useState<AgentFlowResourceType | null>(null);
-  const [placeholderBeingConfigured, setPlaceholderBeingConfigured] =
-    useState<AgentFlowResourceNodeData | null>(null);
-
-  const handleEnable = useCallback((resourceId: string, resource: AgentFlowResourceNodeData) => {
-    setResources((prev) =>
-      prev.map((r) => ({
-        ...r,
-        ...(`${resource.parentNodeId}=>${r.name}:${r.id}` === resourceId && { isDisabled: false }),
-      }))
-    );
-  }, []);
-
-  const handleDisable = useCallback((resourceId: string, resource: AgentFlowResourceNodeData) => {
-    setResources((prev) =>
-      prev.map((r) => ({
-        ...r,
-        ...(`${resource.parentNodeId}=>${r.name}:${r.id}` === resourceId && { isDisabled: true }),
-      }))
-    );
-  }, []);
-
-  const handleAddBreakpoint = useCallback(
-    (resourceId: string, resource: AgentFlowResourceNodeData) => {
-      setResources((prev) =>
-        prev.map((r) => ({
-          ...r,
-          ...(`${resource.parentNodeId}=>${r.name}:${r.id}` === resourceId && {
-            hasBreakpoint: true,
-          }),
-        }))
-      );
-    },
-    []
-  );
-
-  const handleRemoveBreakpoint = useCallback(
-    (resourceId: string, resource: AgentFlowResourceNodeData) => {
-      setResources((prev) =>
-        prev.map((r) => ({
-          ...r,
-          ...(`${resource.parentNodeId}=>${r.name}:${r.id}` === resourceId && {
-            hasBreakpoint: false,
-          }),
-        }))
-      );
-    },
-    []
-  );
-
-  const handleAddGuardrail = useCallback(
-    (resourceId: string, resource: AgentFlowResourceNodeData) => {
-      setResources((prev) =>
-        prev.map((r) => ({
-          ...r,
-          ...(`${resource.parentNodeId}=>${r.name}:${r.id}` === resourceId && {
-            hasGuardrails: true,
-          }),
-        }))
-      );
-    },
-    []
-  );
-
-  const handleRequestPlaceholder = useCallback(
-    (type: AgentFlowResourceType, cleanedSuggestionGroup: AgentFlowSuggestionGroup | null) => {
-      // Skip placeholder for escalation - they create directly
-      if (type === 'escalation') {
-        return null;
-      }
-
-      // Component automatically removes existing standalone placeholders
-      // Use cleanedSuggestionGroup (not suggestionGroup) to build on the cleaned state
-
-      // Create a placeholder resource
-      const placeholder: Partial<AgentFlowResource> = {
-        id: `placeholder-${type}-${Date.now()}`,
-        type,
-        name: `New ${type.charAt(0).toUpperCase() + type.slice(1)}`,
-        description: `Configure this ${type}...`,
-      };
-
-      // Add type-specific fields
-      if (type === 'tool') {
-        (placeholder as any).iconUrl = '';
-        (placeholder as any).projectType = ProjectType.Internal;
-      } else if (type === 'mcp') {
-        (placeholder as any).slug = '';
-        (placeholder as any).folderPath = '';
-        (placeholder as any).availableTools = [];
-      }
-
-      // Use the cleaned suggestion group provided by the component (with standalone placeholders removed)
-      // This ensures only one standalone placeholder exists at a time
-      const updatedSuggestionGroup = createPlaceholderSuggestion(
-        placeholder,
-        cleanedSuggestionGroup,
-        { isStandalone: true }
-      );
-      setSuggestionGroup(updatedSuggestionGroup);
-
-      // Find the suggestion ID for this placeholder and track it
-      const newSuggestion =
-        updatedSuggestionGroup.suggestions[updatedSuggestionGroup.suggestions.length - 1];
-      if (newSuggestion) {
-        setPendingStandalonePlaceholderId(newSuggestion.id);
-      }
-
-      // Open the modal for this resource type
-      setOpenModalType(type);
-
-      return placeholder;
-    },
-    []
-  );
-
-  const handlePlaceholderNodeClick = useCallback(
-    (resourceType: AgentFlowResourceType, placeholderData: AgentFlowResourceNodeData) => {
-      // When a placeholder node is clicked, open the modal for that type
-      setOpenModalType(resourceType);
-      setPlaceholderBeingConfigured(placeholderData);
-    },
-    []
-  );
-
-  const handleActOnSuggestion = useCallback(
-    (suggestionId: string, action: 'accept' | 'reject') => {
-      if (!suggestionGroup) return;
-
-      const suggestion = suggestionGroup.suggestions.find((s) => s.id === suggestionId);
-      const remainingSuggestions = suggestionGroup.suggestions.filter((s) => s.id !== suggestionId);
-
-      // If we're acting on the pending standalone placeholder, clear the tracking and close modal
-      if (suggestion?.isStandalone && suggestionId === pendingStandalonePlaceholderId) {
-        setPendingStandalonePlaceholderId(null);
-        setOpenModalType(null);
-        setPlaceholderBeingConfigured(null);
-      }
-
-      if (action === 'reject') {
-        // Clear the suggestion group if no more suggestions
-        if (remainingSuggestions.length === 0) {
-          setSuggestionGroup(null);
-        } else {
-          setSuggestionGroup({
-            ...suggestionGroup,
-            suggestions: remainingSuggestions,
-          });
-        }
-        return;
-      }
-
-      if (!suggestion) return;
-
-      // Handle different suggestion types
-      switch (suggestion.type) {
-        case 'add': {
-          if (suggestion.resource) {
-            setResources((prev) => [...prev, suggestion.resource as AgentFlowResource]);
-            setSelectedResourceId(suggestion.resource.id);
-          }
-          break;
-        }
-        case 'update': {
-          if (suggestion.resourceId && suggestion.updatedFields) {
-            setResources((prev) =>
-              prev.map((r) =>
-                r.id === suggestion.resourceId
-                  ? ({ ...r, ...suggestion.updatedFields } as AgentFlowResource)
-                  : r
-              )
-            );
-          }
-          break;
-        }
-        case 'delete': {
-          if (suggestion.resourceIdToDelete) {
-            setResources((prev) => prev.filter((r) => r.id !== suggestion.resourceIdToDelete));
-          }
-          break;
-        }
-        default:
-          break;
-      }
-
-      // Clear the suggestion group if no more suggestions
-      if (remainingSuggestions.length === 0) {
-        setSuggestionGroup(null);
-      } else {
-        setSuggestionGroup({
-          ...suggestionGroup,
-          suggestions: remainingSuggestions,
-        });
-      }
-    },
-    [suggestionGroup, pendingStandalonePlaceholderId]
-  );
-
-  const handleConfirmModal = useCallback(() => {
-    // When modal is confirmed, auto-accept the pending placeholder
-    if (pendingStandalonePlaceholderId) {
-      handleActOnSuggestion(pendingStandalonePlaceholderId, 'accept');
-      setPendingStandalonePlaceholderId(null);
-    }
-    setOpenModalType(null);
-    setPlaceholderBeingConfigured(null);
-  }, [pendingStandalonePlaceholderId, handleActOnSuggestion]);
-
-  const handleCancelModal = useCallback(() => {
-    // When modal is cancelled, reject the pending placeholder
-    if (pendingStandalonePlaceholderId) {
-      handleActOnSuggestion(pendingStandalonePlaceholderId, 'reject');
-      setPendingStandalonePlaceholderId(null);
-    }
-    setOpenModalType(null);
-    setPlaceholderBeingConfigured(null);
-  }, [pendingStandalonePlaceholderId, handleActOnSuggestion]);
-
-  const handleActOnSuggestionGroup = useCallback(
-    (_suggestionGroupId: string, action: 'accept' | 'reject') => {
-      if (!suggestionGroup) return;
-
-      // Filter out standalone suggestions - they should not be affected by bulk operations
-      const nonStandaloneSuggestions = suggestionGroup.suggestions.filter((s) => !s.isStandalone);
-
-      if (action === 'reject') {
-        // Keep standalone suggestions, remove non-standalone ones
-        const remainingSuggestions = suggestionGroup.suggestions.filter((s) => s.isStandalone);
-        if (remainingSuggestions.length > 0) {
-          setSuggestionGroup({
-            ...suggestionGroup,
-            suggestions: remainingSuggestions,
-          });
-        } else {
-          setSuggestionGroup(null);
-        }
-        return;
-      }
-
-      // Process all non-standalone suggestions in order
-      setResources((prevResources) => {
-        let updatedResources = [...prevResources];
-
-        nonStandaloneSuggestions.forEach((suggestion) => {
-          switch (suggestion.type) {
-            case 'add': {
-              if (suggestion.resource) {
-                updatedResources.push(suggestion.resource as AgentFlowResource);
-              }
-              break;
-            }
-            case 'update': {
-              if (suggestion.resourceId && suggestion.updatedFields) {
-                updatedResources = updatedResources.map((r) =>
-                  r.id === suggestion.resourceId
-                    ? ({ ...r, ...suggestion.updatedFields } as AgentFlowResource)
-                    : r
-                );
-              }
-              break;
-            }
-            case 'delete': {
-              if (suggestion.resourceIdToDelete) {
-                updatedResources = updatedResources.filter(
-                  (r) => r.id !== suggestion.resourceIdToDelete
-                );
-              }
-              break;
-            }
-            default:
-              break;
-          }
-        });
-
-        return updatedResources;
-      });
-
-      // Keep standalone suggestions, clear non-standalone ones
-      const remainingSuggestions = suggestionGroup.suggestions.filter((s) => s.isStandalone);
-      if (remainingSuggestions.length > 0) {
-        setSuggestionGroup({
-          ...suggestionGroup,
-          suggestions: remainingSuggestions,
-        });
-      } else {
-        setSuggestionGroup(null);
-      }
-    },
-    [suggestionGroup]
-  );
-
-  const handleSelectResource = useCallback(
-    (resourceId: string | null) => {
-      setSelectedResourceId(resourceId);
-
-      // If clicking on pane (empty space), reject the pending standalone placeholder and close modal
-      if (resourceId === 'pane' && pendingStandalonePlaceholderId) {
-        // Verify the suggestion still exists and is standalone before rejecting
-        const pendingSuggestion = suggestionGroup?.suggestions.find(
-          (s) => s.id === pendingStandalonePlaceholderId
-        );
-        if (pendingSuggestion?.isStandalone) {
-          handleActOnSuggestion(pendingStandalonePlaceholderId, 'reject');
-        }
-        setPendingStandalonePlaceholderId(null);
-        setOpenModalType(null);
-        setPlaceholderBeingConfigured(null);
-      }
-    },
-    [pendingStandalonePlaceholderId, suggestionGroup, handleActOnSuggestion]
-  );
-
-  const handleAddResourceDirect = useCallback((type: AgentFlowResourceType) => {
-    let newResource: AgentFlowResource;
-
-    switch (type) {
-      case 'escalation':
-        newResource = createSampleEscalation();
-        break;
-      case 'context':
-        newResource = createSampleContext();
-        break;
-      case 'tool':
-        newResource = createSampleTool();
-        break;
-      case 'mcp':
-        newResource = createSampleMcp();
-        break;
-      case 'memorySpace':
-        newResource = createSampleMemorySpace();
-        break;
-      default:
-        return;
-    }
-
-    setResources((prev) => [...prev, newResource]);
-    setSelectedResourceId(newResource.id);
-  }, []);
-
-  const handleRemoveResource = useCallback(
-    (resource: AgentFlowResource) => {
-      setResources((prev) => prev.filter((r) => r.id !== resource.id));
-      if (selectedResourceId === resource.id) {
-        setSelectedResourceId(null);
-      }
-    },
-    [selectedResourceId]
-  );
-
-  const renderSidebar = () => {
-    return (
-      <Column
-        w={300}
-        p={16}
-        gap={16}
-        style={{
-          backgroundColor: 'var(--uix-canvas-background-raised)',
-          color: 'var(--uix-canvas-foreground)',
-          borderLeft: '1px solid var(--uix-canvas-border-de-emp)',
-          overflowY: 'auto',
-        }}
-      >
-        <h3>Placeholder Mode Demo</h3>
-
-        <div
-          style={{
-            padding: 12,
-            borderRadius: 4,
-            fontSize: '0.875rem',
-          }}
-        >
-          <div style={{ lineHeight: '1.5' }}>
-            <p style={{ margin: '0 0 12px 0' }}>
-              This story demonstrates two distinct suggestion workflows that can coexist on the
-              canvas.
-            </p>
-
-            <div
-              style={{
-                borderTop: '1px solid var(--uix-canvas-border)',
-                margin: '12px 0',
-                paddingTop: '12px',
-              }}
-            >
-              <h4 style={{ margin: '0 0 8px 0', fontSize: '0.875rem', fontWeight: 600 }}>
-                1️⃣ Placeholder on Direct Resource Creation
-              </h4>
-              <p style={{ margin: '0 0 8px 0', fontSize: '0.8125rem', fontStyle: 'italic' }}>
-                User-initiated resource creation with confirmation workflow
-              </p>
-
-              <p style={{ margin: '8px 0 4px 0', fontSize: '0.8125rem', fontWeight: 600 }}>
-                How it works:
-              </p>
-              <ol style={{ margin: '4px 0 8px 0', paddingLeft: '20px', fontSize: '0.75rem' }}>
-                <li>
-                  Click any <strong>+</strong> button on the agent node
-                </li>
-                <li>
-                  A <strong>placeholder node</strong> appears on canvas (automatically selected)
-                </li>
-                <li>
-                  A <strong>configuration modal</strong> opens for that resource type
-                </li>
-                <li>
-                  <strong>Confirm in modal</strong> → Accepts & converts placeholder to real
-                  resource
-                </li>
-                <li>
-                  <strong>Cancel modal or click empty space</strong> → Rejects & removes placeholder
-                </li>
-                <li>
-                  <strong>Click placeholder again</strong> → Re-opens the configuration modal
-                </li>
-              </ol>
-
-              <p style={{ margin: '8px 0 4px 0', fontSize: '0.8125rem', fontWeight: 600 }}>
-                Key features:
-              </p>
-              <ul
-                style={{
-                  margin: '4px 0 0 0',
-                  paddingLeft: '20px',
-                  fontSize: '0.75rem',
-                  lineHeight: '1.6',
-                }}
-              >
-                <li>Modal-based configuration workflow</li>
-                <li>Only one placeholder at a time (new ones replace old)</li>
-                <li>Placeholder auto-selected, cannot show toolbar</li>
-                <li>Clicking placeholder reopens modal</li>
-                <li>Marked as "standalone" suggestions</li>
-                <li>Won't appear in suggestion group panel</li>
-                <li>Excluded from bulk operations</li>
-                <li>Escalation & Memory Space bypass placeholder</li>
-              </ul>
-            </div>
-
-            <div
-              style={{
-                borderTop: '1px solid var(--uix-canvas-border)',
-                margin: '12px 0',
-                paddingTop: '12px',
-              }}
-            >
-              <h4 style={{ margin: '0 0 8px 0', fontSize: '0.875rem', fontWeight: 600 }}>
-                2️⃣ Autopilot Suggestions View
-              </h4>
-              <p style={{ margin: '0 0 8px 0', fontSize: '0.8125rem', fontStyle: 'italic' }}>
-                Batch suggestions from AI/middleware
-              </p>
-
-              <p style={{ margin: '8px 0 4px 0', fontSize: '0.8125rem', fontWeight: 600 }}>
-                How it works:
-              </p>
-              <ol style={{ margin: '4px 0 8px 0', paddingLeft: '20px', fontSize: '0.75rem' }}>
-                <li>
-                  Click <strong>Inserts/Deletes/Updates/Mixed</strong> buttons (top-left)
-                </li>
-                <li>Multiple suggestions appear with visual indicators</li>
-                <li>
-                  Use{' '}
-                  <strong style={{ color: 'var(--uix-canvas-primary)' }}>
-                    suggestion group panel
-                  </strong>{' '}
-                  (bottom-center)
-                </li>
-                <li>Accept/reject individually or use bulk operations</li>
-              </ol>
-
-              <p style={{ margin: '8px 0 4px 0', fontSize: '0.8125rem', fontWeight: 600 }}>
-                Key features:
-              </p>
-              <ul
-                style={{
-                  margin: '4px 0 8px 0',
-                  paddingLeft: '20px',
-                  fontSize: '0.75rem',
-                  lineHeight: '1.6',
-                }}
-              >
-                <li>Navigation controls with up/down arrows</li>
-                <li>
-                  <strong>Bulk operations:</strong> Accept all / Reject all
-                </li>
-                <li style={{ marginTop: '4px' }}>Visual indicators:</li>
-                <ul style={{ margin: '2px 0 0 0', paddingLeft: '16px', fontSize: '0.7rem' }}>
-                  <li>
-                    <span>●</span> <strong>Add:</strong> New resources
-                  </li>
-                  <li>
-                    <span>●</span> <strong>Update:</strong> Modified resources
-                  </li>
-                  <li>
-                    <span>●</span> <strong>Delete:</strong> Resources to remove
-                  </li>
-                </ul>
-              </ul>
-
-              <div
-                style={{
-                  margin: '8px 0 0 0',
-                  padding: '8px',
-                  backgroundColor: 'var(--uix-canvas-background-secondary)',
-                  borderRadius: '4px',
-                  fontSize: '0.7rem',
-                  lineHeight: '1.5',
-                }}
-              >
-                <strong>💡 Coexistence:</strong> Both workflows can be active simultaneously without
-                conflicts. Interactive placeholders and batch suggestions operate independently.
-              </div>
-            </div>
-          </div>
-        </div>
-      </Column>
-    );
-  };
-
-  const handleCreateInsertSuggestions = useCallback(() => {
-    const newSuggestions: AgentFlowSuggestionGroup = {
-      id: `suggestion-group-${Date.now()}`,
-      suggestions: [
-        {
-          id: `suggestion-add-1-${Date.now()}`,
-          type: 'add',
-          resource: {
-            id: `suggestion-tool-${Date.now()}`,
-            type: 'tool',
-            name: 'Email Service',
-            description: 'Send emails to users',
-            iconUrl: '',
-            hasBreakpoint: false,
-            hasGuardrails: false,
-            projectType: ProjectType.Internal,
-          },
-        },
-        {
-          id: `suggestion-add-2-${Date.now()}`,
-          type: 'add',
-          resource: {
-            id: `suggestion-context-${Date.now()}`,
-            type: 'context',
-            name: 'User Preferences',
-            description: 'User preference data',
-            hasBreakpoint: false,
-          },
-        },
-      ],
-      metadata: {
-        title: 'Add Suggestions',
-        description: 'Suggested resources to add',
-      },
-    };
-    setSuggestionGroup(newSuggestions);
-  }, []);
-
-  const handleCreateDeleteSuggestions = useCallback(() => {
-    // Get some existing resource IDs to suggest for deletion
-    const resourcesToDelete = resources.slice(0, 2);
-
-    const newSuggestions: AgentFlowSuggestionGroup = {
-      id: `suggestion-group-${Date.now()}`,
-      suggestions: resourcesToDelete.map((resource, index) => ({
-        id: `suggestion-delete-${index}-${Date.now()}`,
-        type: 'delete' as const,
-        resourceIdToDelete: resource.id,
-      })),
-      metadata: {
-        title: 'Delete Suggestions',
-        description: 'Suggested resources to delete',
-      },
-    };
-    setSuggestionGroup(newSuggestions);
-  }, [resources]);
-
-  const handleCreateUpdateSuggestions = useCallback(() => {
-    // Get some existing resource IDs to suggest for update
-    const resourcesToUpdate = resources.slice(0, 2);
-    const timestamp = Date.now();
-
-    const newSuggestions: AgentFlowSuggestionGroup = {
-      id: `suggestion-group-${timestamp}`,
-      suggestions: [
-        // Agent update suggestion
-        {
-          id: `suggestion-update-agent-${timestamp}`,
-          type: 'update' as const,
-          resourceId: 'agent',
-          updatedFields: {
-            name: 'Test Agent (Updated)',
-            description: 'Test Description - Updated via suggestions',
-          },
-        },
-        // Resource update suggestions
-        ...resourcesToUpdate.map((resource, index) => ({
-          id: `suggestion-update-${index}-${timestamp}`,
-          type: 'update' as const,
-          resourceId: resource.id,
-          updatedFields: {
-            name: `${resource.name} (Updated)`,
-            description: `${resource.description} - Updated description`,
-          },
-        })),
-      ],
-      metadata: {
-        title: 'Update Suggestions',
-        description: 'Suggested resource updates',
-      },
-    };
-    setSuggestionGroup(newSuggestions);
-  }, [resources]);
-
-  const handleCreateMixedSuggestions = useCallback(() => {
-    const existingResources = resources.slice(0, 2);
-    const timestamp = Date.now();
-
-    const newSuggestions: AgentFlowSuggestionGroup = {
-      id: `suggestion-group-${timestamp}`,
-      suggestions: [
-        // Add suggestions
-        {
-          id: `suggestion-add-1-${timestamp}`,
-          type: 'add',
-          resource: {
-            id: `suggestion-tool-${timestamp}`,
-            type: 'tool',
-            name: 'Database Query',
-            description: 'Query database',
-            iconUrl: '',
-            hasBreakpoint: false,
-            hasGuardrails: false,
-            projectType: ProjectType.Internal,
-          },
-        },
-        // Agent update suggestion
-        {
-          id: `suggestion-update-agent-${timestamp}`,
-          type: 'update' as const,
-          resourceId: 'agent',
-          updatedFields: {
-            name: 'Test Agent (Updated)',
-            description: 'Updated via mixed suggestions',
-          },
-        },
-        // Update suggestion for resource
-        ...(existingResources.length > 0
-          ? [
-              {
-                id: `suggestion-update-1-${timestamp}`,
-                type: 'update' as const,
-                resourceId: existingResources[0]!.id,
-                updatedFields: {
-                  name: `${existingResources[0]!.name} (Updated)`,
-                  description: 'Updated via mixed suggestions',
-                },
-              },
-            ]
-          : []),
-        // Delete suggestion
-        ...(existingResources.length > 1
-          ? [
-              {
-                id: `suggestion-delete-1-${timestamp}`,
-                type: 'delete' as const,
-                resourceIdToDelete: existingResources[1]!.id,
-              },
-            ]
-          : []),
-      ],
-      metadata: {
-        title: 'Mixed Suggestions',
-        description: 'Combination of add, update, and delete suggestions',
-      },
-    };
-    setSuggestionGroup(newSuggestions);
-  }, [resources]);
-
-  const renderControlPanel = () => {
-    return (
-      <StoryInfoPanel title="Suggestion controls">
-        <Column mt={12} gap={8}>
-          <ApTypography variant={FontVariantToken.fontSizeM}>Suggestion type:</ApTypography>
-          <Row gap={8}>
-            <ApButton
-              size="small"
-              variant="primary"
-              label="Inserts"
-              onClick={handleCreateInsertSuggestions}
-            />
-            <ApButton
-              size="small"
-              variant="primary"
-              label="Deletes"
-              onClick={handleCreateDeleteSuggestions}
-            />
-            <ApButton
-              size="small"
-              variant="primary"
-              label="Updates"
-              onClick={handleCreateUpdateSuggestions}
-            />
-            <ApButton
-              size="small"
-              variant="primary"
-              label="Mixed"
-              onClick={handleCreateMixedSuggestions}
-            />
-          </Row>
-        </Column>
-      </StoryInfoPanel>
-    );
-  };
-
-  return (
-    <ReactFlowProvider>
-      <Row w="100%" h="100%" style={{ position: 'relative' }}>
-        <div style={{ flex: 1, position: 'relative' }}>
-          <AgentFlow
-            allowDragging={false}
-            definition={sampleAgentDefinition}
-            spans={mode === 'view' ? spans : []}
-            name="Test Agent"
-            description="Test Description"
-            mode={mode}
-            resources={resources}
-            onEnable={handleEnable}
-            onDisable={handleDisable}
-            onAddBreakpoint={handleAddBreakpoint}
-            onRemoveBreakpoint={handleRemoveBreakpoint}
-            onAddGuardrail={handleAddGuardrail}
-            onAddResource={handleAddResourceDirect}
-            onRemoveResource={handleRemoveResource}
-            onSelectResource={handleSelectResource}
-            enableTimelinePlayer={enableTimelinePlayer}
-            enableMemory={enableMemory}
-            onRequestResourcePlaceholder={handleRequestPlaceholder}
-            onPlaceholderNodeClick={handlePlaceholderNodeClick}
-            suggestionGroup={suggestionGroup}
-            onActOnSuggestion={handleActOnSuggestion}
-            onActOnSuggestionGroup={handleActOnSuggestionGroup}
-          />
-          {openModalType && (
-            <div
-              style={{
-                position: 'absolute',
-                top: '50%',
-                left: '50%',
-                transform: 'translate(-50%, -50%)',
-                backgroundColor: 'var(--uix-canvas-background-raised)',
-                border: '1px solid var(--uix-canvas-border)',
-                borderRadius: 8,
-                padding: 24,
-                minWidth: 400,
-                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-                zIndex: 1000,
-              }}
-            >
-              <h3 style={{ margin: '0 0 16px 0', color: 'var(--uix-canvas-foreground)' }}>
-                Configure {openModalType.charAt(0).toUpperCase() + openModalType.slice(1)}
-              </h3>
-              <p
-                style={{
-                  margin: '0 0 24px 0',
-                  color: 'var(--uix-canvas-foreground-de-emp)',
-                  fontSize: '0.875rem',
-                }}
-              >
-                This is a simulated modal/panel that would normally allow you to configure the
-                resource.
-                {placeholderBeingConfigured && (
-                  <>
-                    <br />
-                    <br />
-                    Placeholder name: <strong>{placeholderBeingConfigured.name}</strong>
-                  </>
-                )}
-              </p>
-              <Row gap={8} style={{ justifyContent: 'flex-end' }}>
-                <ApButton
-                  size="small"
-                  variant="secondary"
-                  label="Cancel"
-                  onClick={handleCancelModal}
-                />
-                <ApButton
-                  size="small"
-                  variant="primary"
-                  label="Confirm"
-                  onClick={handleConfirmModal}
-                />
-              </Row>
-            </div>
-          )}
-          {openModalType && (
-            // biome-ignore lint/a11y/useKeyWithClickEvents: migrated code
-            // biome-ignore lint/a11y/noStaticElementInteractions: migrated code
-            <div
-              style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                backgroundColor: 'rgba(0, 0, 0, 0.5)',
-                zIndex: 999,
-              }}
-              onClick={handleCancelModal}
-            />
-          )}
-        </div>
-        {renderControlPanel()}
-        {renderSidebar()}
-      </Row>
-    </ReactFlowProvider>
-  );
-};
-
-export const DesignModeWithPlaceholderAndAutopilotSuggestions: Story = {
-  args: {
-    mode: 'design',
-    enableTimelinePlayer: false,
-  },
-  render: (args) => <SuggestionModeWrapper {...args} initialResources={sampleResources} />,
-};
-
-const StickyNotesWrapper = ({ mode }: Pick<AgentFlowWrapperProps, 'mode'>) => {
-  const [stickyNotes, setStickyNotes] = useState<AgentFlowStickyNote[]>([]);
-
-  const handleAddStickyNote = useCallback((data: AgentFlowStickyNote) => {
-    setStickyNotes((prev) => [...prev, data]);
-  }, []);
-
-  const handleUpdateStickyNote = useCallback(
-    (id: string, updates: Partial<Omit<AgentFlowStickyNote, 'id'>>) => {
-      setStickyNotes((prev) =>
-        prev.map((note) => (note.id === id ? { ...note, ...updates } : note))
-      );
-    },
-    []
-  );
-
-  const handleRemoveStickyNote = useCallback((id: string) => {
-    setStickyNotes((prev) => prev.filter((note) => note.id !== id));
-  }, []);
-
-  const handleLoadSampleNotes = useCallback(() => {
-    setStickyNotes(sampleStickyNotes);
-  }, []);
-
-  const handleClearAllNotes = useCallback(() => {
-    setStickyNotes([]);
-  }, []);
-
-  const renderControlPanel = () => {
-    return (
-      <StoryInfoPanel title="Sticky Notes Controls">
-        <Column mt={12} gap={8}>
-          <ApTypography variant={FontVariantToken.fontSizeM}>Manage sticky notes:</ApTypography>
-          <Row gap={8} style={{ flexWrap: 'wrap' }}>
-            <ApButton
-              size="small"
-              variant="primary"
-              label="Load Sample Notes"
-              onClick={handleLoadSampleNotes}
-            />
-            <ApButton
-              size="small"
-              variant="secondary"
-              label="Clear All"
-              onClick={handleClearAllNotes}
-            />
-          </Row>
-          <ApTypography
-            variant={FontVariantToken.fontSizeS}
-            style={{ color: 'var(--uix-canvas-foreground-de-emp)' }}
-          >
-            Current notes: {stickyNotes.length}
-          </ApTypography>
-          <ApTypography
-            variant={FontVariantToken.fontSizeS}
-            style={{ color: 'var(--uix-canvas-foreground-de-emp)' }}
-          >
-            Tip: Use the sticky note button in the toolbar to add new notes
-          </ApTypography>
-        </Column>
-      </StoryInfoPanel>
-    );
-  };
-
-  return (
-    <ReactFlowProvider>
-      <AgentFlow
-        allowDragging
-        definition={sampleAgentDefinition}
-        spans={[]}
-        name="Test Agent"
-        description="Test Description"
-        mode={mode}
-        resources={sampleResources}
-        enableMemory
-        enableStickyNotes
-        stickyNotes={stickyNotes}
-        onAddStickyNote={handleAddStickyNote}
-        onUpdateStickyNote={handleUpdateStickyNote}
-        onRemoveStickyNote={handleRemoveStickyNote}
-      />
-      {renderControlPanel()}
-    </ReactFlowProvider>
-  );
-};
-
-export const DesignModeWithStickyNotes: Story = {
-  args: {
-    mode: 'design',
-  },
-  render: (args) => <StickyNotesWrapper mode={args.mode} />,
-  parameters: {
-    docs: {
-      description: {
-        story:
-          'Interactive sticky notes demo. Use the control panel to load sample notes or clear all notes. You can also use the sticky note button in the bottom toolbar to add new notes. Notes support markdown formatting, dragging, resizing, and color changes.',
       },
     },
   },

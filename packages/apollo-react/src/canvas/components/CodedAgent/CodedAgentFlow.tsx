@@ -460,7 +460,6 @@ const CodedAgentFlowInner = (props: CodedAgentFlowProps): ReactElement => {
         <Panel position="bottom-right">
           <CanvasPositionControls
             translations={props.canvasTranslations ?? DefaultCanvasTranslations}
-            showOrganize={false}
           />
         </Panel>
       </BaseCanvas>

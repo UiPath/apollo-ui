@@ -177,7 +177,7 @@ function DefaultStory() {
   return (
     <BaseCanvas {...canvasProps} mode="design">
       <Panel position="bottom-right">
-        <CanvasPositionControls translations={DefaultCanvasTranslations} showOrganize={false} />
+        <CanvasPositionControls translations={DefaultCanvasTranslations} />
       </Panel>
       <StoryInfoPanel
         title="BaseNode Shapes & States"
@@ -196,7 +196,7 @@ function CustomizedSizesStory() {
     <BaseCanvas {...canvasProps} mode="design">
       <NodeInspector />
       <Panel position="bottom-right">
-        <CanvasPositionControls translations={DefaultCanvasTranslations} showOrganize={false} />
+        <CanvasPositionControls translations={DefaultCanvasTranslations} />
       </Panel>
       <StoryInfoPanel
         title="Customized Sizes"

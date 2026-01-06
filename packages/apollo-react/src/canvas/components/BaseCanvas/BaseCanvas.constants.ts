@@ -44,6 +44,7 @@ export const BASE_CANVAS_DEFAULTS = {
     padding: 50,
     debounceMs: 50,
   },
+  organizeAnimationDuration: 500,
 } as const;
 
 // Timing constants

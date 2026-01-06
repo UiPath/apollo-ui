@@ -11,7 +11,7 @@ export interface CanvasPositionControlsProps {
   orientation?: 'horizontal' | 'vertical';
   fitViewOptions?: BaseCanvasFitViewOptions;
   translations: CanvasTranslations;
-  showOrganize?: boolean;
+  onOrganize?: () => void;
 }
 
 export const CanvasPositionControls = memo(
@@ -19,7 +19,7 @@ export const CanvasPositionControls = memo(
     orientation = 'horizontal',
     fitViewOptions,
     translations,
-    showOrganize = true,
+    onOrganize,
   }: CanvasPositionControlsProps) => {
     const { zoomIn, zoomOut, fitView } = useReactFlow();
 
@@ -29,7 +29,9 @@ export const CanvasPositionControls = memo(
       () => fitView(fitViewOptions ?? BASE_CANVAS_DEFAULTS.fitViewOptions),
       [fitView, fitViewOptions]
     );
-    const handleOrganize = useCallback(() => {}, []);
+    const handleOrganize = useCallback(() => onOrganize?.(), [onOrganize]);
+
+    const showOrganize = !!onOrganize;
 
     let RootComponent: React.ElementType = Column;
     let placement: 'left' | 'top' = 'left';

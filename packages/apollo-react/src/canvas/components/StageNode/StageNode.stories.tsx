@@ -65,7 +65,7 @@ const meta: Meta<typeof StageNode> = {
         [setEdges]
       );
 
-      const nodeTypes = useMemo(() => ({ stage: StageNodeWrapper }), []);
+      const nodeTypes = useMemo(() => ({ stage: StageNodeWrapper }), [StageNodeWrapper]);
       const edgeTypes = useMemo(() => ({ stage: StageEdge }), []);
       const defaultEdgeOptions = useMemo(() => ({ type: 'stage' }), []);
 
@@ -87,10 +87,7 @@ const meta: Meta<typeof StageNode> = {
               elevateEdgesOnSelect
             >
               <Panel position="bottom-right">
-                <CanvasPositionControls
-                  translations={DefaultCanvasTranslations}
-                  showOrganize={false}
-                />
+                <CanvasPositionControls translations={DefaultCanvasTranslations} />
               </Panel>
             </BaseCanvas>
           </ReactFlowProvider>
@@ -878,7 +875,7 @@ const DraggableTaskReorderingStory = () => {
           defaultViewport={{ x: 0, y: 0, zoom: 1.5 }}
         >
           <Panel position="bottom-right">
-            <CanvasPositionControls translations={DefaultCanvasTranslations} showOrganize={false} />
+            <CanvasPositionControls translations={DefaultCanvasTranslations} />
           </Panel>
         </BaseCanvas>
       </ReactFlowProvider>

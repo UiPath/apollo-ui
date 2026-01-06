@@ -253,7 +253,7 @@ function DefaultStory() {
         </Column>
       </StoryInfoPanel>
       <Panel position="bottom-right">
-        <CanvasPositionControls translations={DefaultCanvasTranslations} showOrganize={false} />
+        <CanvasPositionControls translations={DefaultCanvasTranslations} />
       </Panel>
     </BaseCanvas>
   );
@@ -487,7 +487,7 @@ function MultiHandleStory() {
         </Column>
       </StoryInfoPanel>
       <Panel position="bottom-right">
-        <CanvasPositionControls translations={DefaultCanvasTranslations} showOrganize={false} />
+        <CanvasPositionControls translations={DefaultCanvasTranslations} />
       </Panel>
     </BaseCanvas>
   );

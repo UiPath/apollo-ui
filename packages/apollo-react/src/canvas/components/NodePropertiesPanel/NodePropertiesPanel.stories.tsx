@@ -81,7 +81,7 @@ function PropertiesPanelStory() {
         description={`Click on nodes to open properties panel. Panel is ${isPinned ? 'pinned to the right' : 'floating near node'}.`}
       />
       <Panel position="bottom-right">
-        <CanvasPositionControls translations={DefaultCanvasTranslations} showOrganize={false} />
+        <CanvasPositionControls translations={DefaultCanvasTranslations} />
       </Panel>
     </BaseCanvas>
   );

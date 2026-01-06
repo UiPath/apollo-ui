@@ -420,7 +420,7 @@ function DefaultStory() {
         description="Click on the agent node to see the collapse/expand button."
       />
       <Panel position="bottom-right">
-        <CanvasPositionControls translations={DefaultCanvasTranslations} showOrganize={false} />
+        <CanvasPositionControls translations={DefaultCanvasTranslations} />
       </Panel>
     </BaseCanvas>
   );

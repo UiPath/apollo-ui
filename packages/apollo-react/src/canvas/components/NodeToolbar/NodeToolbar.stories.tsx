@@ -376,7 +376,7 @@ function DefaultStory({ position }: { position?: 'top' | 'bottom' | 'left' | 'ri
     <BaseCanvas {...canvasProps} mode="design">
       <StoryInfoPanel title="Node Toolbar" description="Hover over nodes to see toolbar actions" />
       <Panel position="bottom-right">
-        <CanvasPositionControls translations={DefaultCanvasTranslations} showOrganize={false} />
+        <CanvasPositionControls translations={DefaultCanvasTranslations} />
       </Panel>
     </BaseCanvas>
   );

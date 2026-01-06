@@ -98,7 +98,7 @@ function DefaultStory() {
   return (
     <BaseCanvas {...canvasProps} mode="design">
       <Panel position="bottom-right">
-        <CanvasPositionControls translations={DefaultCanvasTranslations} showOrganize={false} />
+        <CanvasPositionControls translations={DefaultCanvasTranslations} />
       </Panel>
     </BaseCanvas>
   );
@@ -371,7 +371,7 @@ function WithBaseNodesStory() {
   return (
     <BaseCanvas {...canvasProps} mode="design" elevateNodesOnSelect>
       <Panel position="bottom-right">
-        <CanvasPositionControls translations={DefaultCanvasTranslations} showOrganize={false} />
+        <CanvasPositionControls translations={DefaultCanvasTranslations} />
       </Panel>
     </BaseCanvas>
   );

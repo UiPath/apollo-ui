@@ -680,7 +680,7 @@ function LogicFlowStory() {
         description="IF and SWITCH nodes with ButtonHandles"
       />
       <Panel position="bottom-right">
-        <CanvasPositionControls translations={DefaultCanvasTranslations} showOrganize={false} />
+        <CanvasPositionControls translations={DefaultCanvasTranslations} />
       </Panel>
     </BaseCanvas>
   );

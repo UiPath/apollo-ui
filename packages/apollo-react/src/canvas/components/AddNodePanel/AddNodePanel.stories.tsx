@@ -202,7 +202,7 @@ function PreviewSelectionStory() {
     >
       <AddNodeManager />
       <Panel position="bottom-right">
-        <CanvasPositionControls translations={DefaultCanvasTranslations} showOrganize={false} />
+        <CanvasPositionControls translations={DefaultCanvasTranslations} />
       </Panel>
       <StoryInfoPanel
         title="Add node with preview selection"
@@ -268,7 +268,7 @@ function AllSidesStory() {
     <BaseCanvas {...canvasProps} mode="design" defaultViewport={{ x: 0, y: 0, zoom: 1 }}>
       <AddNodeManager />
       <Panel position="bottom-right">
-        <CanvasPositionControls translations={DefaultCanvasTranslations} showOrganize={false} />
+        <CanvasPositionControls translations={DefaultCanvasTranslations} />
       </Panel>
       <StoryInfoPanel
         title="Source handles on all sides"

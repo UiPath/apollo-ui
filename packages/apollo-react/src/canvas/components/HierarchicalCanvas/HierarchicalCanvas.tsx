@@ -365,7 +365,7 @@ export const HierarchicalCanvas: React.FC<HierarchicalCanvasProps> = ({ mode = '
         fitViewOptions={{ padding: 0.2, minZoom: 1, maxZoom: 1 }}
       >
         <Panel position="bottom-right">
-          <CanvasPositionControls translations={DefaultCanvasTranslations} showOrganize={false} />
+          <CanvasPositionControls translations={DefaultCanvasTranslations} />
         </Panel>
 
         <AddNodeManager />

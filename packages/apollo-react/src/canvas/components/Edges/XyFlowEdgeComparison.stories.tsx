@@ -373,7 +373,7 @@ function AllEdgeTypesStory() {
         </Column>
       </StoryInfoPanel>
       <Panel position="bottom-right">
-        <CanvasPositionControls translations={DefaultCanvasTranslations} showOrganize={false} />
+        <CanvasPositionControls translations={DefaultCanvasTranslations} />
       </Panel>
     </BaseCanvas>
   );
@@ -532,7 +532,7 @@ function InteractiveEdgeSelectionStory() {
         </Column>
       </StoryInfoPanel>
       <Panel position="bottom-right">
-        <CanvasPositionControls translations={DefaultCanvasTranslations} showOrganize={false} />
+        <CanvasPositionControls translations={DefaultCanvasTranslations} />
       </Panel>
     </BaseCanvas>
   );
