@@ -2,10 +2,11 @@ import { cx } from '@uipath/apollo-react/canvas/utils';
 import type { Node, NodeProps, ReactFlowState } from '@uipath/apollo-react/canvas/xyflow/react';
 import {
   Position,
+  useReactFlow,
   useStore,
   useUpdateNodeInternals,
 } from '@uipath/apollo-react/canvas/xyflow/react';
-import { ApIcon, ApTooltip } from '@uipath/apollo-react/material/components';
+import { ApIcon } from '@uipath/apollo-react/material/components';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useBaseCanvasMode } from '../BaseCanvas/BaseCanvasModeProvider';
 import { useConnectedHandles } from '../BaseCanvas/ConnectedHandlesContext';
@@ -24,6 +25,7 @@ import {
 import type { BaseNodeData } from './BaseNode.types';
 import type { NodeStatusContext } from './ExecutionStatusContext';
 import { useExecutionState } from './ExecutionStatusContext';
+import { NodeLabel } from './NodeLabel';
 import { useNodeTypeRegistry } from './useNodeTypeRegistry';
 
 const selectIsConnecting = (state: ReactFlowState) => !!state.connectionClickStartHandle;
@@ -32,6 +34,7 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
   const { type, data, selected, id, dragging, width, height } = props;
 
   const updateNodeInternals = useUpdateNodeInternals();
+  const { updateNodeData } = useReactFlow();
   const containerRef = useRef<HTMLDivElement>(null);
   const [isHovered, setIsHovered] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
@@ -157,6 +160,24 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
   const handleMouseLeave = useCallback(() => setIsHovered(false), []);
   const handleFocus = useCallback(() => setIsFocused(true), []);
   const handleBlur = useCallback(() => setIsFocused(false), []);
+
+  const handleLabelChange = useCallback(
+    (values: { label: string; subLabel: string }) => {
+      const newDisplay = { ...data.display };
+      // Ensure all label fields are updated or removed appropriately.
+      for (const labelKey of Object.keys(values) as (keyof typeof values)[]) {
+        if (values[labelKey]) {
+          newDisplay[labelKey] = values[labelKey];
+        } else {
+          delete newDisplay[labelKey];
+        }
+      }
+      updateNodeData(id, {
+        display: newDisplay,
+      });
+    },
+    [id, data.display, updateNodeData]
+  );
 
   // Calculate if notches should be shown (when node is hovered or selected)
   const showNotches = isConnecting || isHovered || selected;
@@ -365,28 +386,19 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
           </BaseBadgeSlot>
         )}
 
-        {displayLabel && (
-          <BaseTextContainer hasBottomHandles={hasVisibleBottomHandles} shape={displayShape}>
-            {displayLabelTooltip ? (
-              <ApTooltip delay placement="top" content={displayLabelTooltip} smartTooltip>
-                <>
-                  <BaseHeader shape={displayShape} backgroundColor={displayLabelBackgroundColor}>
-                    {displayLabel}
-                  </BaseHeader>
-                  {displaySubLabel && <BaseSubHeader>{displaySubLabel}</BaseSubHeader>}
-                </>
-              </ApTooltip>
-            ) : (
-              <>
-                <BaseHeader shape={displayShape} backgroundColor={displayLabelBackgroundColor}>
-                  {displayLabel}
-                </BaseHeader>
-                {displaySubLabel && <BaseSubHeader>{displaySubLabel}</BaseSubHeader>}
-              </>
-            )}
-            {displayCenterAdornment}
-          </BaseTextContainer>
-        )}
+        <NodeLabel
+          label={displayLabel}
+          subLabel={displaySubLabel}
+          labelTooltip={displayLabelTooltip}
+          labelBackgroundColor={displayLabelBackgroundColor}
+          shape={displayShape}
+          hasBottomHandles={hasVisibleBottomHandles}
+          selected={selected}
+          dragging={dragging}
+          centerAdornment={displayCenterAdornment}
+          readonly={mode !== 'design'}
+          onChange={handleLabelChange}
+        />
       </BaseContainer>
       {handleElements}
       {toolbarConfig && (

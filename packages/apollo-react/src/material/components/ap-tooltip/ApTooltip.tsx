@@ -27,6 +27,9 @@ export function ApTooltip({
   closeOnInteraction = false,
   ...muiProps
 }: Readonly<ApTooltipProps>) {
+  // Wrap children in span if not a valid ReactElement (e.g., multiple children, strings, etc.)
+  const childElement = React.isValidElement(children) ? children : <span>{children}</span>;
+
   const childRef = useRef<HTMLElement | null>(null);
   const truncationDetection = useTruncationDetection(childRef);
   // If smartTooltip is false, always show tooltip (default behavior)
@@ -39,14 +42,14 @@ export function ApTooltip({
     (node: HTMLElement | null) => {
       childRef.current = node;
 
-      const childRefProp = (children as any).ref;
+      const childRefProp = (childElement as any).ref;
       if (typeof childRefProp === 'function') {
         childRefProp(node);
       } else if (childRefProp) {
         childRefProp.current = node;
       }
     },
-    [children]
+    [childElement]
   );
 
   // Helper to get closeOnInteraction event handlers
@@ -54,7 +57,7 @@ export function ApTooltip({
     if (!closeOnInteraction) {
       return {};
     }
-    const childProps = children.props as any;
+    const childProps = childElement.props as any;
     return {
       onMouseLeave: handleMouseLeave,
       onInputCapture: (e: React.FormEvent<HTMLElement>) => {
@@ -79,23 +82,23 @@ export function ApTooltip({
       if (closeOnInteraction) {
         setIsTemporarilyClosed(false);
       }
-      const childProps = children.props as any;
+      const childProps = childElement.props as any;
       childProps.onMouseLeave?.(e);
     },
-    [closeOnInteraction, children.props]
+    [closeOnInteraction, childElement.props]
   );
 
   const childrenWithRef = smartTooltip
-    ? React.cloneElement(children, {
+    ? React.cloneElement(childElement, {
         ref: setChildRef,
         onMouseEnter: (e: React.MouseEvent<HTMLElement>) => {
           truncationDetection?.check();
-          const childProps = children.props as any;
+          const childProps = childElement.props as any;
           childProps.onMouseEnter?.(e);
         },
         ...getCloseOnInteractionHandlers(),
       } as any)
-    : React.cloneElement(children, getCloseOnInteractionHandlers());
+    : React.cloneElement(childElement, getCloseOnInteractionHandlers());
 
   const debugPopperInstanceRef = React.useRef<any>(null);
   React.useLayoutEffect(() => {

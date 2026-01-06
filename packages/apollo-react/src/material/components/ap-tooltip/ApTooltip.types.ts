@@ -37,7 +37,7 @@ export interface ApTooltipProps extends MuiPropsWithoutCustom {
   /**
    * Child element that triggers the tooltip
    */
-  children: React.ReactElement;
+  children: React.ReactNode;
   /**
    * Custom formatted content (overrides content prop)
    */

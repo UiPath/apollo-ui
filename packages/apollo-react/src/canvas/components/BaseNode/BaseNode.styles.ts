@@ -290,11 +290,73 @@ export const BaseHeader = styled.div<{ shape?: NodeShape; backgroundColor?: stri
         `}
 `;
 
-export const BaseSubHeader = styled.div`
+export const BaseSubHeader = styled.div<{ shape?: NodeShape }>`
   font-size: 11px;
   color: var(--uix-canvas-foreground-de-emp);
   line-height: 1.3;
   word-break: break-word;
+  ${({ shape }) =>
+    shape === 'rectangle'
+      ? css`
+          width: 100%;
+          display: -webkit-box;
+          -webkit-box-orient: vertical;
+          -webkit-line-clamp: 2;
+          overflow: hidden;
+        `
+      : ''}
+`;
+
+export const EditableLabel = styled.textarea<{ shape?: NodeShape; backgroundColor?: string; variant: 'normal' | 'subtext' }>`
+  resize: none;
+  field-sizing: ${({ shape }) => (shape === 'rectangle' ? 'fixed' : 'content')};
+  font-weight: ${({ variant }) => (variant === 'subtext' ? '400' : '600')};
+  font-size: ${({ variant }) => (variant === 'subtext' ? '11px' : '13px')};
+  line-height: ${({ variant }) => (variant === 'subtext' ? '1.3' : '1.4')};
+  font-family: inherit;
+  color: var(--uix-canvas-foreground);
+  border: none;
+  border-radius: 4px;
+  outline: 1px dashed var(--uix-canvas-border-de-emp);
+  margin-bottom: ${({ variant }) => (variant === 'subtext' ? 0 : '2px')};
+  max-width: 100%;
+
+  ${({ backgroundColor }) =>
+    backgroundColor
+      ? css`
+          background-color: ${backgroundColor};
+          padding: 2px 6px;
+        `
+      : 'background-color: color-mix(in srgb, var(--uix-canvas-background) 10%, transparent);'}
+
+  ${({ shape }) =>
+    shape === 'rectangle'
+      ? css`
+          width: 100%;
+        `
+      : css`
+          text-align: center;
+        `}
+`;
+
+export const EmptyLabelPlaceholder = styled.div`
+  font-weight: 600;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--uix-canvas-foreground-de-emp);
+  background: transparent;
+  border: 1px dashed var(--uix-canvas-border-de-emp);
+  border-radius: 4px;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  min-width: 20px;
+  min-height: 20px;
+
+  &:hover {
+    opacity: 1;
+    background-color: color-mix(in srgb, var(--uix-canvas-background) 10%, transparent);
+  }
 `;
 
 export const BaseBadgeSlot = styled.div<{
