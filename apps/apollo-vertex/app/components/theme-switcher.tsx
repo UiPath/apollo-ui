@@ -7,7 +7,7 @@ import {
     SelectItem,
     SelectTrigger,
     SelectValue,
-} from "../../components/ui/select";
+} from "@/registry/select/select";
 import { themes, type ThemeName, hasCustomTheme } from "../themes";
 
 const THEME_STORAGE_KEY = "apollo-vertex-theme";

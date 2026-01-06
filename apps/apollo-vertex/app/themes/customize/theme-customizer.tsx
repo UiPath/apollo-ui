@@ -1,17 +1,17 @@
 "use client";
 
 import { useState, useEffect, type ChangeEvent, startTransition } from "react";
-import { Card } from "../../../components/ui/card";
-import { Label } from "../../../components/ui/label";
-import { Input } from "../../../components/ui/input";
-import { Button } from "../../../components/ui/button";
+import { Card } from "@/registry/card/card";
+import { Label } from "@/registry/label/label";
+import { Input } from "@/registry/input/input";
+import { Button } from "@/registry/button/button";
 import {
     Tabs,
     TabsContent,
     TabsList,
     TabsTrigger,
-} from "../../../components/ui/tabs";
-import type { ThemeConfig } from "../../../registry/theme-provider/theme-provider";
+} from "@/registry/tabs/tabs";
+import type { ThemeConfig } from "@/registry/theme-provider/theme-provider";
 import { themes } from "../../themes";
 
 const CUSTOM_THEME_STORAGE_KEY = "apollo-vertex-custom-theme";
@@ -63,7 +63,7 @@ function oklchToHex(oklchString: string): string {
     }
 
     // Convert percentage alpha to 0-1 range (e.g., "/ 10%" means 10% opacity)
-    if (match[4] && oklchString.includes("/ " + match[4] + "%")) {
+    if (match[4] && oklchString.includes(`/ ${match[4]}%`)) {
         alpha = alpha / 100;
     }
 
@@ -107,7 +107,7 @@ function oklchToHex(oklchString: string): string {
 
     // Convert to hex
     return (
-        "#" + [r, g, b_rgb].map((x) => x.toString(16).padStart(2, "0")).join("")
+        `#${[r, g, b_rgb].map((x) => x.toString(16).padStart(2, "0")).join("")}`
     );
 }
 
@@ -203,7 +203,7 @@ export function ThemeCustomizer() {
                 );
 
                 alert("Theme imported and applied successfully!");
-            } catch (error) {
+            } catch (_error) {
                 alert("Failed to import theme. Please check the file format.");
             }
         };
