@@ -1,3 +1,10 @@
+## [1.2.3](https://github.com/UiPath/apollo-ui/compare/@uipath/ap-chat@1.2.2...@uipath/ap-chat@1.2.3) (2026-01-07)
+
+
+### Bug Fixes
+
+* **apollo-react:** trigger node uix updates ([91ea3c3](https://github.com/UiPath/apollo-ui/commit/91ea3c34c9437bf2a6d2654939e5810b3e4a226f))
+
 ## [1.2.2](https://github.com/UiPath/apollo-ui/compare/@uipath/ap-chat@1.2.1...@uipath/ap-chat@1.2.2) (2026-01-07)
 
 
