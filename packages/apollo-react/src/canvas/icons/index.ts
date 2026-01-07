@@ -18,6 +18,7 @@ export { DataTransformMapIcon } from './DataTransformMapIcon';
 export { DecisionIcon } from './DecisionIcon';
 export { GoogleIcon } from './GoogleIcon';
 export { HealthScoreIcon } from './HealthScoreIcon';
+export { HumanIcon } from './HumanIcon';
 export { LoopIcon } from './LoopIcon';
 export { McpIcon } from './McpIcon';
 export { MemoryIcon } from './MemoryIcon';
