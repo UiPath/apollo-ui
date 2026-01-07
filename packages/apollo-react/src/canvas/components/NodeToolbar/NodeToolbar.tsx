@@ -131,7 +131,12 @@ const NodeToolbarComponent = ({ nodeId, config, expanded, hidden }: NodeToolbarP
                             $disabled={item.disabled}
                           >
                             {item.icon && typeof item.icon === 'string' && (
-                              <ApIcon variant="outlined" name={item.icon} size="16px" />
+                              <ApIcon
+                                style={{ flex: 'unset' }}
+                                variant="outlined"
+                                name={item.icon}
+                                size="16px"
+                              />
                             )}
                             {item.icon && typeof item.icon !== 'string' && item.icon}
                             <span>{item.label}</span>

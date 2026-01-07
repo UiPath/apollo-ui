@@ -4,8 +4,8 @@
   "private": true,
   "description": "Storybook documentation for Apollo Design System",
   "scripts": {
-    "dev": "storybook dev -p 6006",
-    "storybook": "storybook dev -p 6006",
+    "dev": "storybook dev -p 6007",
+    "storybook": "storybook dev -p 6007",
     "storybook:build": "storybook build",
     "clean": "rm -rf storybook-static",
     "format": "prettier --write \"./**/*.{ts,tsx,js,jsx,json,css,scss,md}\"",
