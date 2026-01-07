@@ -16,6 +16,7 @@ export interface UseEdgeToolbarPositioningProps {
 
 const MIN_MOUSE_FOLLOW_DISTANCE = 100;
 const DEFAULT_OFFSET_DISTANCE = 24;
+const LINE_TANGENT_SAMPLE_DISTANCE = 10;
 
 /**
  * Uses ternary search to find the nearest point on the path (as length along the path) to the given mouse position.
@@ -97,9 +98,8 @@ function getPerpendicularOffsetPointAtPathLength(
   const totalLength = pathElement.getTotalLength();
 
   // Sample points before and after to calculate tangent
-  const sampleDistance = 10;
-  const beforeLength = Math.max(0, length - sampleDistance);
-  const afterLength = Math.min(totalLength, length + sampleDistance);
+  const beforeLength = Math.max(0, length - LINE_TANGENT_SAMPLE_DISTANCE);
+  const afterLength = Math.min(totalLength, length + LINE_TANGENT_SAMPLE_DISTANCE);
 
   const pathPoint = pathElement.getPointAtLength(length);
   const beforePoint = pathElement.getPointAtLength(beforeLength);
