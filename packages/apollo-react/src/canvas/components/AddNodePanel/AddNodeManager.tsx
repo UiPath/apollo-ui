@@ -44,6 +44,36 @@ export interface AddNodeManagerProps {
   onNodeAdded?: (sourceNodeId: string, sourceHandleId: string, newNode: Node) => void;
 }
 
+interface PreviewNodeConnectionInfo {
+  /** The id of the existing node connected to the preview node. */
+  existingNodeId: string;
+  /** The handle id on the existing node connected to the preview node. */
+  existingHandleId: string;
+  /** Whether the new node is to be added as a source of the existing node. */
+  addNewNodeAsSource: boolean;
+  /** The id of the edge connecting the preview node to the existing node. Can be the constant PREVIEW_EDGE_ID or an existing edge id if we are adding a new node between two existing nodes. */
+  previewEdgeId: string;
+}
+
+/**
+ * Extract connection information from edges connected to the preview node.
+ * Used to determine how to connect edges to the new node when it is added.
+ */
+function extractPreviewNodeConnectionInfo(previewEdges: Edge[]): PreviewNodeConnectionInfo[] {
+  const connections = previewEdges.map((previewEdge) => {
+    const sourceIsPreviewNode = previewEdge.source === PREVIEW_NODE_ID;
+    return {
+      addNewNodeAsSource: sourceIsPreviewNode,
+      existingNodeId: sourceIsPreviewNode ? previewEdge.target : previewEdge.source,
+      existingHandleId: sourceIsPreviewNode
+        ? previewEdge.targetHandle || 'input'
+        : previewEdge.sourceHandle || 'output',
+      previewEdgeId: previewEdge.id,
+    };
+  });
+  return connections;
+}
+
 /**
  * Component that manages preview node selection and replacement.
  * Must be rendered as a child of ReactFlow/BaseCanvas.
@@ -62,14 +92,7 @@ export const AddNodeManager: React.FC<AddNodeManagerProps> = ({
   // Watch for preview node selection
   const previewNode = useStore(previewNodeSelector);
   const [isOpen, setIsOpen] = useState(false);
-  const [connectionInfo, setConnectionInfo] = useState<
-    Array<{
-      existingNodeId: string;
-      existingHandleId: string;
-      addNewNodeAsSource: boolean;
-      previewEdgeId: string;
-    }>
-  >([]);
+  const [connectionInfo, setConnectionInfo] = useState<Array<PreviewNodeConnectionInfo>>([]);
   const [_selectedCategory, setSelectedCategory] = useState<string | undefined>(undefined);
   const lastPreviewNodeRef = useRef<Node | null>(null);
   const restoreEdgesRef = useRef<Edge[] | null>(null);
@@ -82,24 +105,13 @@ export const AddNodeManager: React.FC<AddNodeManagerProps> = ({
         .getEdges()
         .filter((edge) => edge.source === PREVIEW_NODE_ID || edge.target === PREVIEW_NODE_ID);
 
-      if (previewEdges.length > 0) {
-        const connections = previewEdges.map((previewEdge) => {
-          const sourceIsPreviewNode = previewEdge.source === PREVIEW_NODE_ID;
-          return {
-            addNewNodeAsSource: sourceIsPreviewNode,
-            existingNodeId: sourceIsPreviewNode ? previewEdge.target : previewEdge.source,
-            existingHandleId: sourceIsPreviewNode
-              ? previewEdge.targetHandle || 'input'
-              : previewEdge.sourceHandle || 'output',
-            previewEdgeId: previewEdge.id,
-          };
-        });
-        setConnectionInfo(connections);
-        setIsOpen(true);
-        restoreEdgesRef.current = previewNode.data.originalEdge
-          ? [previewNode.data.originalEdge as Edge]
-          : null;
-      }
+      const connections = extractPreviewNodeConnectionInfo(previewEdges);
+      setConnectionInfo(connections);
+      setIsOpen(true);
+      // When node is being added along an existing edge, that original edge is stored so it can be restored if the add is cancelled.
+      restoreEdgesRef.current = previewNode.data.originalEdge
+        ? [previewNode.data.originalEdge as Edge]
+        : null;
     } else if (!previewNode && lastPreviewNodeRef.current) {
       // Preview node just got deselected
       setIsOpen(false);
