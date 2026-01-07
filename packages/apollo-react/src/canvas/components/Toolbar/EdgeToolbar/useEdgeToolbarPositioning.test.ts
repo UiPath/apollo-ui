@@ -9,8 +9,8 @@ const mockReactFlowInstance = {
   screenToFlowPosition: vi.fn((pos: { x: number; y: number }) => pos),
 };
 
-vi.mock('@uipath/uix/xyflow/react', async () => ({
-  ...(await vi.importActual('@uipath/uix/xyflow/react')),
+vi.mock('@uipath/apollo-react/canvas/xyflow/react', async () => ({
+  ...(await vi.importActual('@uipath/apollo-react/canvas/xyflow/react')),
   useReactFlow: () => mockReactFlowInstance,
 }));
 

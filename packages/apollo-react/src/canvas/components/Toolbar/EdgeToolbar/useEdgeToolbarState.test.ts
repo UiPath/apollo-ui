@@ -25,8 +25,8 @@ const mockPositionData: EdgeToolbarPositionData = {
 
 const mockHandleMouseMoveOnPath = vi.fn();
 
-vi.mock('@uipath/uix/xyflow/react', async () => ({
-  ...(await vi.importActual('@uipath/uix/xyflow/react')),
+vi.mock('@uipath/apollo-react/canvas/xyflow/react', async () => ({
+  ...(await vi.importActual('@uipath/apollo-react/canvas/xyflow/react')),
   useReactFlow: () => mockReactFlowInstance,
 }));
 
