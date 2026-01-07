@@ -36,7 +36,7 @@ export interface AddNodeManagerProps {
    *
    * This takes precedence over the default configuration, except for the node's and edge's `id`.
    */
-  onBeforeNodeAdded?: (newNode: Node, newEdge: Edge) => { newNode: Node; newEdge: Edge };
+  onBeforeNodeAdded?: (newNode: Node, newEdges: Edge[]) => { newNode: Node; newEdges: Edge[] };
 
   /**
    * Callback when a new node is added
@@ -181,26 +181,27 @@ export const AddNodeManager: React.FC<AddNodeManagerProps> = ({
             };
         const newEdgeId = `edge_${edgeSourceTargetData.source}-${edgeSourceTargetData.sourceHandle}-${edgeSourceTargetData.target}-${edgeSourceTargetData.targetHandle}`;
 
-        // Create new edge
-        const newEdge: Edge = {
+        newEdges.push({
           id: newEdgeId,
           ...edgeSourceTargetData,
           type: 'default',
-        };
-
-        const { newNode: _, newEdge: finalEdge } = onBeforeNodeAdded?.(newNode, newEdge) ?? {
-          newNode,
-          newEdge,
-        };
-        newEdges.push(finalEdge);
+        });
         previewEdgeIds.push(connectionInfoItem.previewEdgeId);
       }
+
+      const { newNode: finalNode, newEdges: finalEdges } = onBeforeNodeAdded?.(
+        newNode,
+        newEdges
+      ) ?? {
+        newNode,
+        newEdges,
+      };
 
       // Replace preview node with actual node and resolve collisions
       reactFlowInstance.setNodes((nodes) => {
         const newNodes = [
           ...nodes.filter((n) => n.id !== PREVIEW_NODE_ID).map((n) => ({ ...n, selected: false })),
-          newNode,
+          finalNode,
         ];
         return resolveCollisions(newNodes);
       });
@@ -208,7 +209,7 @@ export const AddNodeManager: React.FC<AddNodeManagerProps> = ({
       // Replace all preview edges with actual edges
       reactFlowInstance.setEdges((edges) => [
         ...edges.filter((e) => !previewEdgeIds.includes(e.id)),
-        ...newEdges,
+        ...finalEdges,
       ]);
 
       // Call onNodeAdded for the first connection (for backwards compatibility)
