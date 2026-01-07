@@ -1,3 +1,19 @@
+# [1.3.0](https://github.com/UiPath/apollo-ui/compare/@uipath/ap-chat@1.2.3...@uipath/ap-chat@1.3.0) (2026-01-07)
+
+
+### Bug Fixes
+
+* **apollo-react:** address pr comments [MST-5311] ([e573b37](https://github.com/UiPath/apollo-ui/commit/e573b377ec205ad7f7343a9dae956f82c38b09ea))
+* **apollo-react:** import linting [MST-5311] ([422a80e](https://github.com/UiPath/apollo-ui/commit/422a80e5a9723e24bf24f144f2d096db8a112aee))
+* **apollo-react:** prevent duplicate aria labels in tooltip with multiple children ([c9fe882](https://github.com/UiPath/apollo-ui/commit/c9fe882ef5476e374e307fc2d075e6507888f9b8))
+* **apollo-react:** resolve mock test module paths [MST-5311] ([64ca7d7](https://github.com/UiPath/apollo-ui/commit/64ca7d72604c99154185075e9962d130eb21448f))
+* **apollo-react:** update custom callback to handle multiple new edges [MST-5311] ([792933a](https://github.com/UiPath/apollo-ui/commit/792933a5117bccc43a25299fe18446d89aa7e6ea))
+
+
+### Features
+
+* **apollo-react:** copy edge toolbar changes from uix [MST-5311] ([121a59b](https://github.com/UiPath/apollo-ui/commit/121a59b7af8e6c1acc53f1f5a85e27c5a41a8f69))
+
 ## [1.2.3](https://github.com/UiPath/apollo-ui/compare/@uipath/ap-chat@1.2.2...@uipath/ap-chat@1.2.3) (2026-01-07)
 
 
