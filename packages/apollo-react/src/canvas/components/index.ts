@@ -16,6 +16,7 @@ export * from './NodeInspector';
 export * from './NodePropertiesPanel';
 export * from './StageNode';
 export * from './StickyNoteNode';
+export * from './TaskIcon';
 export * from './Toolbar';
 export * from './Toolbox';
 export * from './TriggerNode';

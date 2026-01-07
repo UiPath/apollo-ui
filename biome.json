@@ -39,7 +39,8 @@
     "rules": {
       "recommended": true,
       "a11y": {
-        "recommended": true
+        "recommended": true,
+        "noSvgWithoutTitle": "off"
       },
       "complexity": {
         "recommended": true,

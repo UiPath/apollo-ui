@@ -12,6 +12,7 @@ import { useCallback, useMemo } from 'react';
 import { DefaultCanvasTranslations } from '../../types';
 import { BaseCanvas } from '../BaseCanvas';
 import { CanvasPositionControls } from '../CanvasPositionControls';
+import { TaskIcon, TaskItemTypeValues } from '../TaskIcon';
 import type { ListItem } from '../Toolbox';
 import { StageConnectionEdge } from './StageConnectionEdge';
 import { StageEdge } from './StageEdge';
@@ -252,6 +253,63 @@ export const Default: Story = {
               disabled: true,
             },
           ],
+        },
+      },
+    ],
+  },
+  args: {},
+};
+
+export const WithTaskIcons: Story = {
+  name: 'With Task Icons',
+  parameters: {
+    nodes: [
+      {
+        id: '1',
+        type: 'stage',
+        position: { x: 48, y: 96 },
+        width: 300,
+        data: {
+          stageDetails: {
+            label: 'Task Icons Demo',
+            tasks: [
+              [
+                {
+                  id: 'agent-task',
+                  label: 'Agent Task',
+                  icon: <TaskIcon type={TaskItemTypeValues.Agent} size="sm" />,
+                },
+              ],
+              [
+                {
+                  id: 'rpa-task',
+                  label: 'RPA Automation',
+                  icon: <TaskIcon type={TaskItemTypeValues.Automation} size="sm" />,
+                },
+              ],
+              [
+                {
+                  id: 'api-task',
+                  label: 'API Automation',
+                  icon: <TaskIcon type={TaskItemTypeValues.ApiAutomation} size="sm" />,
+                },
+              ],
+              [
+                {
+                  id: 'human-task',
+                  label: 'Human in the Loop',
+                  icon: <TaskIcon type={TaskItemTypeValues.User} size="sm" />,
+                },
+              ],
+              [
+                {
+                  id: 'process-task',
+                  label: 'Agentic Process',
+                  icon: <TaskIcon type={TaskItemTypeValues.AgenticProcess} size="sm" />,
+                },
+              ],
+            ],
+          },
         },
       },
     ],
