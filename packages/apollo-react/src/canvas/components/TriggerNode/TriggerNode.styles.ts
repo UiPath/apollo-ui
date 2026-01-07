@@ -8,21 +8,24 @@ export const TriggerContainer = styled.div<{ selected?: boolean; status?: Trigge
   height: 100%;
   background: var(--uix-canvas-background);
   border: 1.5px solid var(--uix-canvas-border-de-emp);
-  border-radius: 16px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 
   ${({ selected }) =>
-    selected &&
-    css`
-      outline: 4px solid var(--uix-canvas-secondary-pressed);
-      border-color: var(--uix-canvas-selection-indicator);
-      box-shadow: 0 0 0 2px rgba(0, 102, 204, 0.2);
-    `}
+    selected 
+      ? css`
+          border-color: var(--uix-canvas-primary);
+          outline: 4px solid var(--uix-canvas-secondary-pressed);
+        `
+      : css`
+          &:hover {
+            outline: 4px solid var(--uix-canvas-secondary-focused);
+          }
+        `}
 
   ${({ status }) =>
     status === 'Completed' &&
@@ -53,17 +56,24 @@ export const TriggerContainer = styled.div<{ selected?: boolean; status?: Trigge
     css`
       opacity: 0.8;
     `}
-
-  &:hover {
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
-  }
 `;
 
-export const TriggerIconWrapper = styled.div<{ status?: TriggerStatus }>`
+export const TriggerIconWrapper = styled.div<{ status?: TriggerStatus, nodeHeight?: number }>`
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--uix-canvas-foreground-emp);
+  color: var(--uix-canvas-foreground);
+  background: var(--uix-canvas-background-secondary);
+  border-radius: 50%;
+
+  width: ${({ nodeHeight }) => {
+    const scaleFactor = nodeHeight ? nodeHeight / 96 : 1;
+    return `${72 * scaleFactor}px`;
+  }};
+  height: ${({ nodeHeight }) => {
+    const scaleFactor = nodeHeight ? nodeHeight / 96 : 1;
+    return `${72 * scaleFactor}px`;
+  }};
 
   ${({ status }) =>
     status === 'Completed' &&
@@ -90,7 +100,13 @@ export const TriggerIconWrapper = styled.div<{ status?: TriggerStatus }>`
     `}
 
   svg {
-    width: 24px;
-    height: 24px;
+    width: ${({ nodeHeight }) => {
+      const scaleFactor = nodeHeight ? nodeHeight / 96 : 1;
+      return `${40 * scaleFactor}px`;
+    }};
+    height: ${({ nodeHeight }) => {
+      const scaleFactor = nodeHeight ? nodeHeight / 96 : 1;
+      return `${40 * scaleFactor}px`;
+    }};
   }
 `;
