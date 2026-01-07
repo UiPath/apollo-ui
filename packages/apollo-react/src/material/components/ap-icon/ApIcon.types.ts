@@ -26,4 +26,8 @@ export interface ApIconProps {
    * @default 'ap-icon'
    */
   'data-testid'?: string;
+  /**
+   * Style of the icon.
+   */
+  style?: React.CSSProperties;
 }

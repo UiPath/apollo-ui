@@ -16,6 +16,7 @@ export const ApIcon: React.FC<ApIconProps> = ({
   size,
   color,
   variant = 'normal',
+  style,
   'data-testid': testId,
 }) => {
   // Handle Material Icons (when variant is 'outlined' or 'normal')
@@ -29,6 +30,7 @@ export const ApIcon: React.FC<ApIconProps> = ({
           fontSize: size || token.Icon.IconM,
           color: color || 'currentColor',
         }}
+        style={style}
       >
         {name}
       </Icon>
