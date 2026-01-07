@@ -195,6 +195,7 @@
         "./registry/tooltip/tooltip"
       ]
     },
+    "allowJs": true
   },
   "include": [
     "next-env.d.ts",
