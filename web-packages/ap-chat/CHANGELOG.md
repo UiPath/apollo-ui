@@ -1,3 +1,11 @@
+## [1.2.2](https://github.com/UiPath/apollo-ui/compare/@uipath/ap-chat@1.2.1...@uipath/ap-chat@1.2.2) (2026-01-07)
+
+
+### Bug Fixes
+
+* **apollo-react:** small canvas fixes ([1079cf8](https://github.com/UiPath/apollo-ui/commit/1079cf87dcbc90953e44b7514970e2ac8f9267b9))
+* **apollo-vertex:** add theme provider to registry json ([8fb3432](https://github.com/UiPath/apollo-ui/commit/8fb3432538d6bd697fa54652786c4c09c2a07e24))
+
 ## [1.2.1](https://github.com/UiPath/apollo-ui/compare/@uipath/ap-chat@1.2.0...@uipath/ap-chat@1.2.1) (2026-01-06)
 
 # [1.2.0](https://github.com/UiPath/apollo-ui/compare/@uipath/ap-chat@1.1.0...@uipath/ap-chat@1.2.0) (2026-01-06)
