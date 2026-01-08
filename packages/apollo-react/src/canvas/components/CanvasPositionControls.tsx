@@ -1,7 +1,7 @@
 import * as Icons from '@uipath/apollo-react/canvas/icons';
 import { Column, Row } from '@uipath/apollo-react/canvas/layouts';
 import { useReactFlow } from '@uipath/apollo-react/canvas/xyflow/react';
-import { ApIconButton, ApTooltip } from '@uipath/apollo-react/material';
+import { ApIcon, ApIconButton, ApTooltip } from '@uipath/apollo-react/material';
 import { memo, useCallback } from 'react';
 import type { CanvasTranslations } from '../types';
 import { BASE_CANVAS_DEFAULTS } from './BaseCanvas/BaseCanvas.constants';
@@ -55,7 +55,7 @@ export const CanvasPositionControls = memo(
         )}
         <ApTooltip content={translations.zoomIn} placement={placement} data-testid="zoom-in-button">
           <ApIconButton color="secondary" onClick={handleZoomIn}>
-            <Icons.ZoomInIcon />
+            <ApIcon name="add" />
           </ApIconButton>
         </ApTooltip>
         <ApTooltip
@@ -64,7 +64,7 @@ export const CanvasPositionControls = memo(
           data-testid="zoom-out-button"
         >
           <ApIconButton color="secondary" onClick={handleZoomOut}>
-            <Icons.ZoomOutIcon />
+            <ApIcon name="remove" />
           </ApIconButton>
         </ApTooltip>
         <ApTooltip
