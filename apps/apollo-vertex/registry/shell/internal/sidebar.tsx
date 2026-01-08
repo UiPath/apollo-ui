@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { useLocalStorage } from "@/registry/use-local-storage/use-local-storage";
 import { ThemeToggle } from "@/registry/theme-provider/theme-toggle";
 import { Company } from "./company";
 import { UserProfile } from "./user-profile";
@@ -12,7 +12,7 @@ interface SidebarProps {
 }
 
 export const Sidebar = ({ companyName, productName }: SidebarProps) => {
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useLocalStorage("sidebar-collapsed", false);
 
   const toggleCollapse = () => {
     setIsCollapsed(!isCollapsed);
