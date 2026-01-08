@@ -1,3 +1,10 @@
+## [1.3.1](https://github.com/UiPath/apollo-ui/compare/@uipath/ap-chat@1.3.0...@uipath/ap-chat@1.3.1) (2026-01-08)
+
+
+### Bug Fixes
+
+* **apollo-react:** update zoom in/out icons per figma design ([32e360f](https://github.com/UiPath/apollo-ui/commit/32e360f7162e8e1e2ec8b87bde9fb3f176298147))
+
 # [1.3.0](https://github.com/UiPath/apollo-ui/compare/@uipath/ap-chat@1.2.3...@uipath/ap-chat@1.3.0) (2026-01-07)
 
 
