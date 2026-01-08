@@ -341,9 +341,10 @@ function FormSection({ section, context, customComponents, disabled }: FormSecti
 
   const fieldsGrid = (
     <div
-      className={`grid gap-${gap}`}
+      className="grid"
       style={{
         gridTemplateColumns: `repeat(${gridColumns}, minmax(0, 1fr))`,
+        gap: `${gap * 0.25}rem`,
       }}
     >
       {section.fields.map((field) => (

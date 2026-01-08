@@ -306,7 +306,7 @@ describe('FormFieldRenderer', () => {
   });
 
   describe('grid layout', () => {
-    it('applies grid span class', () => {
+    it('applies grid span style', () => {
       const field: FieldMetadata = {
         name: 'wide_field',
         type: 'text',
@@ -321,7 +321,24 @@ describe('FormFieldRenderer', () => {
       );
 
       const wrapper = container.firstChild as HTMLElement;
-      expect(wrapper).toHaveClass('col-span-2');
+      expect(wrapper).toHaveStyle({ gridColumn: 'span 2' });
+    });
+
+    it('defaults to span 1 when grid config is not provided', () => {
+      const field: FieldMetadata = {
+        name: 'default_field',
+        type: 'text',
+        label: 'Default Field',
+      };
+
+      const { container } = render(
+        <FormWrapper>
+          <FormFieldRenderer field={field} context={createMockContext()} customComponents={{}} />
+        </FormWrapper>
+      );
+
+      const wrapper = container.firstChild as HTMLElement;
+      expect(wrapper).toHaveStyle({ gridColumn: 'span 1' });
     });
   });
 

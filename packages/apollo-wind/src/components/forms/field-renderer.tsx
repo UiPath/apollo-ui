@@ -251,34 +251,36 @@ export function FormFieldRenderer({
     return null;
   }
 
+  // Grid styling - use inline styles to avoid Tailwind dynamic class issues
+  const gridSpan = field.grid?.span || 1;
+  const gridStyle: React.CSSProperties = { gridColumn: `span ${gridSpan}` };
+
   // Custom component renderer
   if (isCustomField(field) && customComponents[field.component]) {
     const CustomComponent = customComponents[field.component];
     return (
-      <Controller
-        name={field.name}
-        control={control}
-        defaultValue={field.defaultValue}
-        render={({ field: formField, fieldState: { error } }) => (
-          <CustomComponent
-            {...formField}
-            {...field.componentProps}
-            field={field}
-            disabled={formDisabled || fieldState.disabled}
-            required={fieldState.required}
-            error={error?.message}
-          />
-        )}
-      />
+      <div style={gridStyle}>
+        <Controller
+          name={field.name}
+          control={control}
+          defaultValue={field.defaultValue}
+          render={({ field: formField, fieldState: { error } }) => (
+            <CustomComponent
+              {...formField}
+              {...field.componentProps}
+              field={field}
+              disabled={formDisabled || fieldState.disabled}
+              required={fieldState.required}
+              error={error?.message}
+            />
+          )}
+        />
+      </div>
     );
   }
 
-  // Grid styling
-  const gridSpan = field.grid?.span || 1;
-  const gridClass = `col-span-${gridSpan}`;
-
   return (
-    <div className={gridClass}>
+    <div style={gridStyle}>
       <Controller
         name={field.name}
         control={control}
