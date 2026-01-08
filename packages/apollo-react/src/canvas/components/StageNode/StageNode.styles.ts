@@ -8,7 +8,11 @@ export const STAGE_CONTENT_PADDING_X = 14;
 export const STAGE_BORDER_WIDTH = 2;
 export const STAGE_CONTENT_INSET = STAGE_CONTENT_PADDING_X * 2 + STAGE_BORDER_WIDTH * 2;
 
-export const StageContainer = styled.div<{ selected?: boolean; status?: StageStatus; width?: number }>`
+export const StageContainer = styled.div<{
+  selected?: boolean;
+  status?: StageStatus;
+  width?: number;
+}>`
   position: relative;
   min-width: 288px;
   width: ${({ width }) => (width ? `${width}px` : 'auto')};
@@ -159,6 +163,7 @@ export const StageParallelBracket = styled.div`
 export const StageTaskWrapper = styled.div<{ isParallel?: boolean }>`
   width: ${({ isParallel }) =>
     isParallel ? 'var(--stage-task-width-parallel, 216px)' : 'var(--stage-task-width, 246px)'};
+  border-radius: ${Spacing.SpacingXs};
   height: 36px;
 `;
 
@@ -220,10 +225,17 @@ export const StageTask = styled.div<{
     `}
 
   ${({ selected }) =>
-    selected &&
-    css`
-      outline: 2px solid var(--uix-canvas-selection-indicator);
-    `}
+    selected
+      ? css`
+          border-color: var(--uix-canvas-primary);
+          outline: 4px solid var(--uix-canvas-secondary-pressed);
+        `
+      : css`
+          &:hover {
+            border-color: var(--uix-canvas-primary);
+            outline: 4px solid var(--uix-canvas-secondary-pressed);
+          }
+        `}
 `;
 
 export const StageTaskIcon = styled.div`
