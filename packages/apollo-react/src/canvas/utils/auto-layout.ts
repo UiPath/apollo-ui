@@ -164,10 +164,15 @@ const arrangeAgent = (
 
         // Get handle X position based on handle type and agent node handle layout
         let handleCenterX = agentCenterX;
-        if (handleId === ResourceNodeType.Context) {
-          handleCenterX = agentCenterX - GROUP_SPACING / 2;
-        } else if (handleId === ResourceNodeType.Tool) {
-          handleCenterX = agentCenterX + GROUP_SPACING;
+
+        // Left-side resources (Context: bottom-left, MemorySpace: top-left) use default agentCenterX
+        if (handleId === ResourceNodeType.Context || handleId === ResourceNodeType.MemorySpace) {
+          handleCenterX = agentCenterX - GROUP_SPACING * 0.5;
+        }
+
+        // Right-side resources (Tool/MCP: bottom-right, Escalation: top-right)
+        if (handleId === ResourceNodeType.Tool || handleId === ResourceNodeType.MCP || handleId === ResourceNodeType.Escalation) {
+          handleCenterX = agentCenterX + GROUP_SPACING * 1.5;
         }
 
         for (const [i, node] of nodes.entries()) {
