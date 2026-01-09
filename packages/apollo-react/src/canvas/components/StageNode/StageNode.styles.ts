@@ -8,13 +8,13 @@ export const STAGE_CONTENT_PADDING_X = 14;
 export const STAGE_BORDER_WIDTH = 2;
 export const STAGE_CONTENT_INSET = STAGE_CONTENT_PADDING_X * 2 + STAGE_BORDER_WIDTH * 2;
 
-export const StageContainer = styled.div<{ selected?: boolean; status?: StageStatus }>`
+export const StageContainer = styled.div<{ selected?: boolean; status?: StageStatus; width?: number }>`
   position: relative;
-  min-width: 304px;
+  min-width: 288px;
+  width: ${({ width }) => (width ? `${width}px` : 'auto')};
   background: var(--uix-canvas-background);
   border: ${STAGE_BORDER_WIDTH}px solid var(--uix-canvas-border-de-emp);
   border-radius: ${Spacing.SpacingBase};
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
   display: flex;
   flex-direction: column;
   cursor: pointer;
@@ -27,7 +27,7 @@ export const StageContainer = styled.div<{ selected?: boolean; status?: StageSta
         `
       : css`
           &:hover {
-            outline: 4px solid var(--uix-canvas-secondary-focused);
+            outline: 4px solid var(--uix-canvas-secondary-pressed);
           }
         `}
 
@@ -159,7 +159,7 @@ export const StageParallelBracket = styled.div`
 export const StageTaskWrapper = styled.div<{ isParallel?: boolean }>`
   width: ${({ isParallel }) =>
     isParallel ? 'var(--stage-task-width-parallel, 216px)' : 'var(--stage-task-width, 246px)'};
-  height: 40px;
+  height: 36px;
 `;
 
 export const StageTask = styled.div<{
@@ -280,7 +280,7 @@ export const StageTaskRemoveButton = styled.div`
 
 export const StageTaskDragPlaceholderWrapper = styled.div`
   width: var(--stage-task-width, 246px);
-  height: 40px;
+  height: 36px;
 `;
 
 export const StageTaskDragPlaceholder = styled.div<{ isTargetParallel?: boolean }>`

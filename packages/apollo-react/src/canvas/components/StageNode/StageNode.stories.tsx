@@ -164,7 +164,7 @@ export const Default: Story = {
         id: '0',
         type: 'stage',
         position: { x: 48, y: 96 },
-        width: 300,
+        width: 304,
         data: {
           stageDetails: {
             label: 'Application',
@@ -178,35 +178,21 @@ export const Default: Story = {
           onTaskAdd: () => {
             window.alert('Add task functionality - this would open a dialog to add a new task');
           },
-          menuItems: [
-            {
-              id: 'edit',
-              label: 'Edit Stage',
-              onClick: () => console.log('Edit Application stage'),
-            },
-            {
-              id: 'duplicate',
-              label: 'Duplicate',
-              onClick: () => console.log('Duplicate Application stage'),
-            },
-            { type: 'divider' },
-            {
-              id: 'delete',
-              label: 'Delete',
-              onClick: () => console.log('Delete Application stage'),
-            },
-          ],
         },
       },
       {
         id: '1',
         type: 'stage',
         position: { x: 400, y: 96 },
-        width: 300,
+        width: 304,
         data: {
           stageDetails: {
             label: 'Processing with a really really really long label that might wrap',
             tasks: sampleTasks,
+            sla: '1h',
+            slaBreached: false,
+            escalation: '1h',
+            escalationsTriggered: false,
           },
           execution: {
             stageStatus: {
@@ -224,35 +210,6 @@ export const Default: Story = {
             icon: { Component: () => task.icon },
             data: { type: task.id },
           })),
-          menuItems: [
-            {
-              id: 'edit',
-              label: 'Edit Stage',
-              onClick: () => console.log('Edit Processing stage'),
-            },
-            {
-              id: 'add-task',
-              label: 'Add Task',
-              onClick: () => console.log('Add task to Processing stage'),
-            },
-            {
-              id: 'configure',
-              label: 'Configure',
-              onClick: () => console.log('Configure Processing stage'),
-            },
-            { type: 'divider' },
-            {
-              id: 'duplicate',
-              label: 'Duplicate',
-              onClick: () => console.log('Duplicate Processing stage'),
-            },
-            {
-              id: 'delete',
-              label: 'Delete',
-              onClick: () => console.log('Delete Processing stage'),
-              disabled: true,
-            },
-          ],
         },
       },
     ],
@@ -268,7 +225,7 @@ export const WithTaskIcons: Story = {
         id: '1',
         type: 'stage',
         position: { x: 48, y: 96 },
-        width: 300,
+        width: 304,
         data: {
           stageDetails: {
             label: 'Task Icons Demo',
@@ -325,7 +282,7 @@ export const ExecutionStatus: Story = {
         id: '0',
         type: 'stage',
         position: { x: 48, y: 96 },
-        width: 300,
+        width: 304,
         data: {
           stageDetails: {
             sla: '1h',
@@ -360,7 +317,7 @@ export const ExecutionStatus: Story = {
         id: '1',
         type: 'stage',
         position: { x: 400, y: 96 },
-        width: 300,
+        width: 304,
         data: {
           stageDetails: {
             sla: '1h',
@@ -420,7 +377,7 @@ export const ExecutionStatus: Story = {
         id: '2',
         type: 'stage',
         position: { x: 752, y: 96 },
-        width: 300,
+        width: 304,
         data: {
           stageDetails: {
             label: 'Underwriting',
@@ -447,7 +404,7 @@ export const ExecutionStatus: Story = {
         id: '3',
         type: 'stage',
         position: { x: 1104, y: 96 },
-        width: 300,
+        width: 304,
         data: {
           stageDetails: {
             label: 'Closing',
@@ -470,7 +427,7 @@ export const ExecutionStatus: Story = {
         id: '4',
         type: 'stage',
         position: { x: 1104, y: 400 },
-        width: 300,
+        width: 304,
         data: {
           stageDetails: {
             label: 'Rejected',
@@ -571,24 +528,6 @@ export const InteractiveTaskManagement: Story = {
           onTaskAdd: () => {
             window.alert('Add task functionality - this would open a dialog to add a new task');
           },
-          menuItems: [
-            {
-              id: 'edit',
-              label: 'Edit Stage',
-              onClick: () => console.log('Edit stage'),
-            },
-            {
-              id: 'add-task',
-              label: 'Add Task',
-              onClick: () => console.log('Add task from menu'),
-            },
-            { type: 'divider' },
-            {
-              id: 'delete',
-              label: 'Delete Stage',
-              onClick: () => console.log('Delete stage'),
-            },
-          ],
         },
       },
       {
@@ -675,7 +614,7 @@ export const LoanProcessingWorkflow: Story = {
         id: 'application',
         type: 'stage',
         position: { x: 48, y: 96 },
-        width: 300,
+        width: 304,
         data: {
           stageDetails: {
             label: 'Application',
@@ -692,7 +631,7 @@ export const LoanProcessingWorkflow: Story = {
         id: 'processing',
         type: 'stage',
         position: { x: 448, y: 96 },
-        width: 300,
+        width: 304,
         data: {
           stageDetails: {
             label: 'Processing',
@@ -714,7 +653,7 @@ export const LoanProcessingWorkflow: Story = {
         id: 'underwriting',
         type: 'stage',
         position: { x: 848, y: 96 },
-        width: 300,
+        width: 304,
         data: {
           stageDetails: {
             label: 'Underwriting',
@@ -730,7 +669,7 @@ export const LoanProcessingWorkflow: Story = {
         id: 'closing',
         type: 'stage',
         position: { x: 1248, y: 96 },
-        width: 300,
+        width: 304,
         data: {
           stageDetails: {
             label: 'Closing',
@@ -747,7 +686,7 @@ export const LoanProcessingWorkflow: Story = {
         id: 'funding',
         type: 'stage',
         position: { x: 1648, y: 96 },
-        width: 300,
+        width: 304,
         data: {
           stageDetails: {
             label: 'Funding',
@@ -763,7 +702,7 @@ export const LoanProcessingWorkflow: Story = {
         id: 'rejected',
         type: 'stage',
         position: { x: 1248, y: 400 },
-        width: 300,
+        width: 304,
         data: {
           stageDetails: {
             label: 'Rejected',
@@ -780,7 +719,7 @@ export const LoanProcessingWorkflow: Story = {
         id: 'withdrawn',
         type: 'stage',
         position: { x: 448, y: 608 },
-        width: 300,
+        width: 304,
         data: {
           stageDetails: {
             label: 'Withdrawn',
@@ -862,7 +801,6 @@ const DraggableTaskReorderingStory = () => {
       id: 'reorder-stage',
       type: 'stage',
       position: { x: 320, y: 96 },
-      width: 300,
       data: {
         stageDetails: {
           label: 'Drag to Reorder Tasks',

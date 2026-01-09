@@ -13,7 +13,6 @@ export const TriggerContainer = styled.div<{ selected?: boolean; status?: Trigge
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 
   ${({ selected }) =>
     selected 
@@ -23,7 +22,7 @@ export const TriggerContainer = styled.div<{ selected?: boolean; status?: Trigge
         `
       : css`
           &:hover {
-            outline: 4px solid var(--uix-canvas-secondary-focused);
+            outline: 4px solid var(--uix-canvas-secondary-pressed);
           }
         `}
 

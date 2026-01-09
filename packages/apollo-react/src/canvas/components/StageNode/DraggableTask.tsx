@@ -1,6 +1,6 @@
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { FontVariantToken } from '@uipath/apollo-core';
+import { FontVariantToken, Padding, Spacing } from '@uipath/apollo-core';
 import { Column, Row } from '@uipath/apollo-react/canvas/layouts';
 import {
   ApBadge,
@@ -48,24 +48,30 @@ const generateBadgeText = (taskExecution: StageTaskExecution) => {
 
 export const TaskContent = memo(({ task, taskExecution, isDragging }: TaskContentProps) => (
   <>
-    <StageTaskIcon>{task.icon ?? <ProcessNodeIcon />}</StageTaskIcon>
-    <Column flex={1} style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+    <Column
+      flex={1}
+      style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+      gap={Padding.PadXs}
+    >
       <Row align="center" justify="space-between">
         {/* disable tooltip when dragging to avoid tooltip flickering */}
-        <ApTooltip
-          content={task.label}
-          placement="top"
-          smartTooltip
-          {...(isDragging && { isOpen: false })}
-        >
-          <ApTypography
-            variant={FontVariantToken.fontSizeM}
-            color="var(--uix-canvas-foreground)"
-            style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+        <Row gap={Spacing.SpacingXs} align="center" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          <StageTaskIcon>{task.icon ?? <ProcessNodeIcon />}</StageTaskIcon>
+          <ApTooltip
+            content={task.label}
+            placement="top"
+            smartTooltip
+            {...(isDragging && { isOpen: false })}
           >
-            {task.label}
-          </ApTypography>
-        </ApTooltip>
+            <ApTypography
+              variant={FontVariantToken.fontSizeM}
+              color="var(--uix-canvas-foreground)"
+              style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+            >
+              {task.label}
+            </ApTypography>
+          </ApTooltip>
+        </Row>
         {taskExecution?.status &&
           (taskExecution.message ? (
             <ApTooltip content={taskExecution.message} placement="top">
@@ -75,32 +81,34 @@ export const TaskContent = memo(({ task, taskExecution, isDragging }: TaskConten
             <ExecutionStatusIcon status={taskExecution.status} />
           ))}
       </Row>
-      <Row align="center" justify="space-between">
-        <Row gap={'2px'}>
-          {taskExecution?.duration && (
-            <ApTypography
-              variant={FontVariantToken.fontSizeS}
-              color="var(--uix-canvas-foreground-de-emp)"
-            >
-              {taskExecution.duration}
-            </ApTypography>
-          )}
-          {taskExecution?.retryDuration && (
-            <StageTaskRetryDuration status={taskExecution.badgeStatus ?? 'warning'}>
-              <ApTypography variant={FontVariantToken.fontSizeS} color="inherit">
-                {`(+${taskExecution.retryDuration})`}
+      {taskExecution && (
+        <Row align="center" justify="space-between">
+          <Row gap={'2px'}>
+            {taskExecution?.duration && (
+              <ApTypography
+                variant={FontVariantToken.fontSizeS}
+                color="var(--uix-canvas-foreground-de-emp)"
+              >
+                {taskExecution.duration}
               </ApTypography>
-            </StageTaskRetryDuration>
+            )}
+            {taskExecution?.retryDuration && (
+              <StageTaskRetryDuration status={taskExecution.badgeStatus ?? 'warning'}>
+                <ApTypography variant={FontVariantToken.fontSizeS} color="inherit">
+                  {`(+${taskExecution.retryDuration})`}
+                </ApTypography>
+              </StageTaskRetryDuration>
+            )}
+          </Row>
+          {taskExecution?.badge && (
+            <ApBadge
+              size={BadgeSize.SMALL}
+              status={taskExecution.badgeStatus as StatusTypes}
+              label={generateBadgeText(taskExecution) ?? ''}
+            />
           )}
         </Row>
-        {taskExecution?.badge && (
-          <ApBadge
-            size={BadgeSize.SMALL}
-            status={taskExecution.badgeStatus as StatusTypes}
-            label={generateBadgeText(taskExecution) ?? ''}
-          />
-        )}
-      </Row>
+      )}
     </Column>
   </>
 ));
