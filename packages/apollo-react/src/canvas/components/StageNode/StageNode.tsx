@@ -470,6 +470,7 @@ const StageNodeComponent = (props: StageNodeProps) => {
       <StageContainer
         selected={selected}
         status={status}
+        width={width}
         style={
           taskWidth
             ? ({
@@ -518,7 +519,7 @@ const StageNodeComponent = (props: StageNodeProps) => {
               )}
             </Column>
           </Row>
-          <Row gap={Spacing.SpacingXs}>
+          <Row gap={Spacing.SpacingXs} align="center">
             {status && (
               <Row gap={statusLabel ? Spacing.SpacingMicro : undefined} align="center">
                 <ExecutionStatusIcon status={status} />
@@ -530,11 +531,12 @@ const StageNodeComponent = (props: StageNodeProps) => {
                 </ApTypography>
               </Row>
             )}
-            {sla && (
+            {sla && !status && (
               <ApTooltip content={sla} placement="top">
                 <ApIcon
                   variant="outlined"
                   name="timer"
+                  size="20px"
                   color={
                     slaBreached
                       ? 'var(--uix-canvas-error-icon)'
@@ -543,11 +545,12 @@ const StageNodeComponent = (props: StageNodeProps) => {
                 />
               </ApTooltip>
             )}
-            {escalation && (
+            {escalation && !status && (
               <ApTooltip content={escalation} placement="top">
                 <ApIcon
                   variant="outlined"
                   name="notifications"
+                  size="20px"
                   color={
                     escalationsTriggered
                       ? 'var(--uix-canvas-success-icon)'
@@ -557,9 +560,11 @@ const StageNodeComponent = (props: StageNodeProps) => {
               </ApTooltip>
             )}
             {(onTaskAdd || onAddTaskFromToolbox) && (
-              <ApIconButton onClick={handleTaskAddClick}>
-                <ApIcon name="add" size="small" />
-              </ApIconButton>
+              <ApTooltip content={addTaskLabel} placement="top">
+                <ApIconButton onClick={handleTaskAddClick} size="small">
+                  <ApIcon name="add" size="20px" />
+                </ApIconButton>
+              </ApTooltip>
             )}
           </Row>
         </StageHeader>
