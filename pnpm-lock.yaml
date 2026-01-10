@@ -541,6 +541,9 @@ importers:
       '@uipath/apollo-utils':
         specifier: workspace:*
         version: link:../apollo-utils
+      '@uipath/apollo-wind':
+        specifier: workspace:*
+        version: link:../apollo-wind
       '@xyflow/react':
         specifier: 12.8.2
         version: 12.8.2(@types/react@19.2.6)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
