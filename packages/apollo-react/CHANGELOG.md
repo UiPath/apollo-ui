@@ -1,3 +1,10 @@
+## [2.11.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@2.11.0...@uipath/apollo-react@2.11.1) (2026-01-12)
+
+
+### Bug Fixes
+
+* **apollo-react:** stage node ui bugs ([9f40341](https://github.com/UiPath/apollo-ui/commit/9f4034137d013b6887f9e6f01f2b15d3ff720d40))
+
 # [2.11.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@2.10.1...@uipath/apollo-react@2.11.0) (2026-01-12)
 
 

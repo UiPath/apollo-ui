@@ -1,3 +1,10 @@
+## [1.4.1](https://github.com/UiPath/apollo-ui/compare/@uipath/ap-chat@1.4.0...@uipath/ap-chat@1.4.1) (2026-01-12)
+
+
+### Bug Fixes
+
+* **apollo-react:** stage node ui bugs ([9f40341](https://github.com/UiPath/apollo-ui/commit/9f4034137d013b6887f9e6f01f2b15d3ff720d40))
+
 # [1.4.0](https://github.com/UiPath/apollo-ui/compare/@uipath/ap-chat@1.3.1...@uipath/ap-chat@1.4.0) (2026-01-12)
 
 
