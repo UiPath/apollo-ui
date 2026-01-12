@@ -1,3 +1,15 @@
+# [1.4.0](https://github.com/UiPath/apollo-ui/compare/@uipath/ap-chat@1.3.1...@uipath/ap-chat@1.4.0) (2026-01-12)
+
+
+### Bug Fixes
+
+* **apollo-wind:** honor grid.span on fields and custom components ([5630f35](https://github.com/UiPath/apollo-ui/commit/5630f350b375b5780be5ece39a9a7a9a7403cc79))
+
+
+### Features
+
+* **apollo-react:** extract task icon types as component [MST-5923] ([74173bb](https://github.com/UiPath/apollo-ui/commit/74173bb204216465abbb22e88793dee5b2308f3f))
+
 ## [1.3.1](https://github.com/UiPath/apollo-ui/compare/@uipath/ap-chat@1.3.0...@uipath/ap-chat@1.3.1) (2026-01-08)
 
 
