@@ -1,3 +1,10 @@
+## [1.4.4](https://github.com/UiPath/apollo-ui/compare/@uipath/ap-chat@1.4.3...@uipath/ap-chat@1.4.4) (2026-01-13)
+
+
+### Bug Fixes
+
+* **apollo-react:** style changes for task drag overlay ([36f179a](https://github.com/UiPath/apollo-ui/commit/36f179ae168609574ed232ffd0ca8e05d1417bec))
+
 ## [1.4.3](https://github.com/UiPath/apollo-ui/compare/@uipath/ap-chat@1.4.2...@uipath/ap-chat@1.4.3) (2026-01-13)
 
 

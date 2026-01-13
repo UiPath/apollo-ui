@@ -1,3 +1,10 @@
+## [2.11.4](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@2.11.3...@uipath/apollo-react@2.11.4) (2026-01-13)
+
+
+### Bug Fixes
+
+* **apollo-react:** style changes for task drag overlay ([36f179a](https://github.com/UiPath/apollo-ui/commit/36f179ae168609574ed232ffd0ca8e05d1417bec))
+
 ## [2.11.3](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@2.11.2...@uipath/apollo-react@2.11.3) (2026-01-13)
 
 
