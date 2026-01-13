@@ -19,6 +19,7 @@ jobs:
         check:
           - Lint
           - Lint CSS
+          - Lint Deps
           - Typecheck
           - Test Coverage
           - Build
@@ -61,6 +62,10 @@ jobs:
       - name: Run Lint CSS
         if: matrix.check == 'Lint CSS'
         run: pnpm lint:css --affected
+
+      - name: Run Lint Deps
+        if: matrix.check == 'Lint Deps'
+        run: pnpm lint:deps --affected
 
       - name: Run Typecheck
         if: matrix.check == 'Typecheck'
