@@ -536,6 +536,18 @@
             ]
         },
         {
+            "name": "use-mobile",
+            "type": "registry:hook",
+            "title": "useMobile",
+            "description": "A React hook for checking if the screen is mobile.",
+            "files": [
+                {
+                    "path": "registry/use-mobile/use-mobile.ts",
+                    "type": "registry:hook"
+                }
+            ]
+        },
+        {
             "name": "sidebar",
             "type": "registry:ui",
             "title": "Sidebar",
