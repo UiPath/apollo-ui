@@ -130,6 +130,14 @@ const StageNodeComponent = (props: StageNodeProps) => {
     () => flatTasks.find((t) => t.id === activeDragId),
     [flatTasks, activeDragId]
   );
+  const isActiveTaskParallel = useMemo(() => {
+    if (!activeDragId) {
+      return false;
+    }
+    const group = tasks.find((g) => g.some((t) => t.id === activeDragId));
+    return group ? group.length > 1 : false;
+  }, [tasks, activeDragId]);
+
   const { zoom } = useViewport();
 
   const projected = useMemo(() => {
@@ -452,6 +460,17 @@ const StageNodeComponent = (props: StageNodeProps) => {
     resetState();
   }, [resetState]);
 
+  const taskWidthStyle = useMemo(
+    () =>
+      taskWidth
+        ? ({
+            '--stage-task-width': `${taskWidth}px`,
+            '--stage-task-width-parallel': `${taskWidth - INDENTATION_WIDTH}px`,
+          } as React.CSSProperties)
+        : undefined,
+    [taskWidth]
+  );
+
   const dragOverlayStyle = useMemo<React.CSSProperties>(
     () => ({
       transform: `scale(${zoom})`,
@@ -470,19 +489,7 @@ const StageNodeComponent = (props: StageNodeProps) => {
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      <StageContainer
-        selected={selected}
-        status={status}
-        width={width}
-        style={
-          taskWidth
-            ? ({
-                '--stage-task-width': `${taskWidth}px`,
-                '--stage-task-width-parallel': `${taskWidth - INDENTATION_WIDTH}px`,
-              } as React.CSSProperties)
-            : undefined
-        }
-      >
+      <StageContainer selected={selected} status={status} width={width} style={taskWidthStyle}>
         <StageHeader isException={isException}>
           <Row gap={Spacing.SpacingMicro} align="center">
             {icon}
@@ -656,7 +663,11 @@ const StageNodeComponent = (props: StageNodeProps) => {
                 <DragOverlay>
                   {activeTask ? (
                     <div style={dragOverlayStyle}>
-                      <StageTask selected style={{ cursor: 'grabbing' }}>
+                      <StageTask
+                        selected
+                        isParallel={isActiveTaskParallel}
+                        style={{ cursor: 'grabbing', ...taskWidthStyle }}
+                      >
                         <TaskContent task={activeTask} isDragging />
                       </StageTask>
                     </div>
