@@ -43,7 +43,10 @@ interface TypographyToken {
  * ```
  */
 export const ApTypography = forwardRef<HTMLElement, ApTypographyProps>(
-  ({ variant = FontVariantToken.fontSizeM, color, display, align, children, sx, ...rest }, ref) => {
+  (
+    { variant = FontVariantToken.fontSizeM, color, display, align, children, sx, style, ...rest },
+    ref
+  ) => {
     const { muiVariant, component } = getVariantMapping(variant);
     const variantKey = Object.keys(FontVariantToken).find(
       (key) => FontVariantToken[key as keyof typeof FontVariantToken] === variant
@@ -69,6 +72,7 @@ export const ApTypography = forwardRef<HTMLElement, ApTypographyProps>(
             }),
           }),
           ...(display && { display }),
+          ...style,
         }}
         sx={{
           margin: 0,
