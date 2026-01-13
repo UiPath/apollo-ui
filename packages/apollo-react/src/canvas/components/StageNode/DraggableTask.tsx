@@ -55,7 +55,11 @@ export const TaskContent = memo(({ task, taskExecution, isDragging }: TaskConten
     >
       <Row align="center" justify="space-between">
         {/* disable tooltip when dragging to avoid tooltip flickering */}
-        <Row gap={Spacing.SpacingXs} align="center" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+        <Row
+          gap={Spacing.SpacingXs}
+          align="center"
+          style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+        >
           <StageTaskIcon>{task.icon ?? <ProcessNodeIcon />}</StageTaskIcon>
           <ApTooltip
             content={task.label}
