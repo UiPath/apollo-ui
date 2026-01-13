@@ -46,7 +46,7 @@ import {
   StageTitleContainer,
   StageTitleInput,
 } from './StageNode.styles';
-import { GroupModificationType, type StageNodeProps } from './StageNode.types';
+import type { StageNodeProps } from './StageNode.types';
 import { flattenTasks, getProjection, reorderTasks } from './StageNode.utils';
 import { getContextMenuItems } from './StageNodeTaskUtilities';
 
@@ -251,34 +251,24 @@ const StageNodeComponent = (props: StageNodeProps) => {
 
   const contextMenuItems = useCallback(
     (
+      isParallel: boolean,
+      groupIndex: number,
+      taskIndex: number,
       tasksLength: number,
       taskGroupLength: number,
       isAboveParallel: boolean,
       isBelowParallel: boolean
     ) =>
       getContextMenuItems(
-        taskStateReference.isParallel,
-        taskStateReference.groupIndex,
+        isParallel,
+        groupIndex,
         tasksLength,
-        taskStateReference.taskIndex,
+        taskIndex,
         taskGroupLength,
         isAboveParallel,
         isBelowParallel,
         reGroupTaskFunction
       ),
-    [
-      taskStateReference.isParallel,
-      taskStateReference.groupIndex,
-      taskStateReference.taskIndex,
-      reGroupTaskFunction,
-    ]
-  );
-
-  const handleTaskRemove = useCallback(
-    (event: React.MouseEvent, groupIndex: number, taskIndex: number) => {
-      event.stopPropagation();
-      reGroupTaskFunction(GroupModificationType.REMOVE_TASK, groupIndex, taskIndex);
-    },
     [reGroupTaskFunction]
   );
 
@@ -630,6 +620,9 @@ const StageNodeComponent = (props: StageNodeProps) => {
                                   taskStateReference.taskIndex === taskIndex
                                 }
                                 contextMenuItems={contextMenuItems(
+                                  isParallel,
+                                  groupIndex,
+                                  taskIndex,
                                   tasks.length,
                                   taskGroup.length,
                                   (tasks[groupIndex - 1]?.length ?? 0) > 1,
@@ -647,8 +640,6 @@ const StageNodeComponent = (props: StageNodeProps) => {
                                 {...(onTaskGroupModification && {
                                   onContextMenu: (e) =>
                                     handleTaskContextMenuOpen(isParallel, groupIndex, taskIndex, e),
-                                  onRemove: (event) =>
-                                    handleTaskRemove(event, groupIndex, taskIndex),
                                 })}
                               />
                             );

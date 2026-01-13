@@ -17,7 +17,6 @@ export interface DraggableTaskProps {
   contextMenuAnchor: React.RefObject<HTMLDivElement | null>;
   onTaskClick: (e: React.MouseEvent, taskId: string) => void;
   onContextMenu?: (e: React.MouseEvent<HTMLDivElement>) => void;
-  onRemove?: (e: React.MouseEvent) => void;
   isDragDisabled?: boolean;
   projectedDepth?: number;
   zoom?: number;
