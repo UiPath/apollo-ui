@@ -1,3 +1,15 @@
+## [1.4.2](https://github.com/UiPath/apollo-ui/compare/@uipath/ap-chat@1.4.1...@uipath/ap-chat@1.4.2) (2026-01-13)
+
+
+### Bug Fixes
+
+* **apollo-react:** allow styles for ap-typography ([c6491ef](https://github.com/UiPath/apollo-ui/commit/c6491effeef7985bf853a510fd804a5cebe93ad7))
+
+
+### Features
+
+* **apollo-vertex:** persist shell sidebar state in local storage ([0589961](https://github.com/UiPath/apollo-ui/commit/05899616cccb5359e0c1e1ad3aeaa9c5b2944d15))
+
 ## [1.4.1](https://github.com/UiPath/apollo-ui/compare/@uipath/ap-chat@1.4.0...@uipath/ap-chat@1.4.1) (2026-01-12)
 
 
