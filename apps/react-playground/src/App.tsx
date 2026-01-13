@@ -21,6 +21,12 @@ import { TextFieldShowcase } from "./pages/components/TextFieldShowcase";
 import { ToolCallShowcase } from "./pages/components/ToolCallShowcase";
 import { TreeViewShowcase } from "./pages/components/TreeViewShowcase";
 import { TypographyShowcase } from "./pages/components/TypographyShowcase";
+import { CircularProgressShowcase } from "./pages/components/CircularProgressShowcase";
+import { IconShowcase } from "./pages/components/IconShowcase";
+import { IconButtonShowcase } from "./pages/components/IconButtonShowcase";
+import { MenuShowcase } from "./pages/components/MenuShowcase";
+import { ProgressSpinnerShowcase } from "./pages/components/ProgressSpinnerShowcase";
+import { TooltipShowcase } from "./pages/components/TooltipShowcase";
 import { Fonts } from "./pages/Fonts";
 import { Icons } from "./pages/Icons";
 import { MainHome } from "./pages/MainHome";
@@ -166,6 +172,30 @@ function App() {
 							<Route
 								path="/components/typography"
 								element={<TypographyShowcase />}
+							/>
+							<Route
+								path="/components/circular-progress"
+								element={<CircularProgressShowcase />}
+							/>
+							<Route
+								path="/components/icon"
+								element={<IconShowcase />}
+							/>
+							<Route
+								path="/components/icon-button"
+								element={<IconButtonShowcase />}
+							/>
+							<Route
+								path="/components/menu"
+								element={<MenuShowcase />}
+							/>
+							<Route
+								path="/components/progress-spinner"
+								element={<ProgressSpinnerShowcase />}
+							/>
+							<Route
+								path="/components/tooltip"
+								element={<TooltipShowcase />}
 							/>
 						</Routes>
 					</MainContent>
