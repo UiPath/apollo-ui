@@ -1,3 +1,10 @@
+## [2.11.3](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@2.11.2...@uipath/apollo-react@2.11.3) (2026-01-13)
+
+
+### Bug Fixes
+
+* **apollo-react:** hideHandles on execution time ([0d4e856](https://github.com/UiPath/apollo-ui/commit/0d4e856dd2c668b6cb1f4f234b4dccc98e8b14fa))
+
 ## [2.11.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@2.11.1...@uipath/apollo-react@2.11.2) (2026-01-13)
 
 
