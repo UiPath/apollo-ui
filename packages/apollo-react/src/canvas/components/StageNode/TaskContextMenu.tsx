@@ -2,6 +2,7 @@ import { ApMenu } from '@uipath/apollo-react/material';
 import type React from 'react';
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import type { NodeMenuAction, NodeMenuItem } from '../NodeContextMenu';
+import { transformMenuItems } from './StageNodeTaskUtilities';
 
 interface TaskContextMenuProps {
   menuItems: NodeMenuItem[];
@@ -22,9 +23,6 @@ export const TaskContextMenu = memo(({ isVisible, menuItems, refTask }: TaskCont
 
   const handleMenuItemClick = useCallback(
     (item: NodeMenuAction) => {
-      if (item.disabled) {
-        return;
-      }
       item.onClick();
       handleContextMenuClose();
     },
@@ -32,25 +30,7 @@ export const TaskContextMenu = memo(({ isVisible, menuItems, refTask }: TaskCont
   );
 
   const transformedMenuItems = useMemo(
-    () =>
-      menuItems?.map((item, index) => {
-        if ('type' in item && item.type === 'divider') {
-          return {
-            divider: true,
-            key: `divider-${index}`,
-            variant: 'separator' as const,
-          };
-        }
-        const actionItem = item as NodeMenuAction;
-        return {
-          key: actionItem.id,
-          title: actionItem.label,
-          startIcon: actionItem.icon,
-          disabled: actionItem.disabled,
-          onClick: () => handleMenuItemClick(actionItem),
-          variant: 'item' as const,
-        };
-      }) || [],
+    () => transformMenuItems(menuItems, handleMenuItemClick),
     [menuItems, handleMenuItemClick]
   );
 

@@ -4,14 +4,12 @@ import { FontVariantToken, Padding, Spacing } from '@uipath/apollo-core';
 import { Column, Row } from '@uipath/apollo-react/canvas/layouts';
 import {
   ApBadge,
-  ApIcon,
   ApTooltip,
   ApTypography,
   BadgeSize,
   type StatusTypes,
 } from '@uipath/apollo-react/material';
-import { memo, useCallback, useMemo } from 'react';
-
+import { memo, useCallback, useMemo, useState } from 'react';
 import { ExecutionStatusIcon } from '../ExecutionStatusIcon';
 import type { DraggableTaskProps, TaskContentProps } from './DraggableTask.types';
 import {
@@ -20,12 +18,12 @@ import {
   StageTaskDragPlaceholder,
   StageTaskDragPlaceholderWrapper,
   StageTaskIcon,
-  StageTaskRemoveButton,
   StageTaskRetryDuration,
   StageTaskWrapper,
 } from './StageNode.styles';
 import type { StageTaskExecution } from './StageNode.types';
 import { TaskContextMenu } from './TaskContextMenu';
+import { TaskMenu } from './TaskMenu';
 
 const ProcessNodeIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
@@ -127,17 +125,26 @@ const DraggableTaskComponent = ({
   contextMenuAnchor,
   onTaskClick,
   onContextMenu,
-  onRemove,
   isDragDisabled,
   projectedDepth,
   zoom = 1,
 }: DraggableTaskProps) => {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
   const handleClick = useCallback(
     (e: React.MouseEvent) => {
+      // If any menu is open, prevent task selection
+      if (isMenuOpen || isContextMenuVisible) {
+        return;
+      }
       onTaskClick(e, task.id);
     },
-    [onTaskClick, task.id]
+    [isMenuOpen, isContextMenuVisible, onTaskClick, task.id]
   );
+
+  const handleMenuOpenChange = useCallback((isOpen: boolean) => {
+    setIsMenuOpen(isOpen);
+  }, []);
 
   const { attributes, listeners, setNodeRef, transition, transform, isDragging } = useSortable({
     id: task.id,
@@ -182,23 +189,24 @@ const DraggableTaskComponent = ({
       status={taskExecution?.status}
       isParallel={isParallel}
       isDragEnabled={!isDragDisabled}
+      isMenuOpen={isMenuOpen}
       onClick={handleClick}
       {...(onContextMenu && { onContextMenu })}
     >
       <TaskContent task={task} taskExecution={taskExecution} />
-      <TaskContextMenu
-        isVisible={isContextMenuVisible}
-        menuItems={contextMenuItems}
-        refTask={contextMenuAnchor}
-      />
-      {onRemove && (
-        <StageTaskRemoveButton
-          className="task-remove-button"
-          data-testid={`stage-task-remove-${task.id}`}
-          onClick={onRemove}
-        >
-          <ApIcon name="close" size="16px" />
-        </StageTaskRemoveButton>
+      {onContextMenu && (
+        <>
+          <TaskContextMenu
+            isVisible={isContextMenuVisible}
+            menuItems={contextMenuItems}
+            refTask={contextMenuAnchor}
+          />
+          <TaskMenu
+            taskId={task.id}
+            contextMenuItems={contextMenuItems}
+            onMenuOpenChange={handleMenuOpenChange}
+          />
+        </>
       )}
     </StageTask>
   );

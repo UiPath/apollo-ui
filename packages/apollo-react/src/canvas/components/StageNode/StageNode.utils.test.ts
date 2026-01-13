@@ -1,4 +1,5 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+import type { NodeMenuAction, NodeMenuItem } from '../NodeContextMenu';
 import { INDENTATION_WIDTH } from './StageNode.styles';
 import type { StageTaskItem } from './StageNode.types';
 import {
@@ -8,6 +9,7 @@ import {
   getProjection,
   reorderTasks,
 } from './StageNode.utils';
+import { transformMenuItems } from './StageNodeTaskUtilities';
 
 const createTask = (id: string, label?: string): StageTaskItem => ({
   id,
@@ -425,6 +427,144 @@ describe('StageNode.utils', () => {
       expect(rebuilt[1]).toHaveLength(2);
       expect(rebuilt[2]).toHaveLength(1);
       expect(rebuilt[3]).toHaveLength(2);
+    });
+  });
+
+  describe('transformMenuItems', () => {
+    it('returns empty array for undefined menuItems', () => {
+      const onItemClick = vi.fn();
+      const result = transformMenuItems(undefined, onItemClick);
+
+      expect(result).toEqual([]);
+    });
+
+    it('transforms a single action item', () => {
+      const menuItems: NodeMenuItem[] = [
+        {
+          id: 'test-1',
+          label: 'Test Action',
+          onClick: vi.fn(),
+        },
+      ];
+      const onItemClick = vi.fn();
+      const result = transformMenuItems(menuItems, onItemClick);
+
+      expect(result).toHaveLength(1);
+      expect(result[0]).toMatchObject({
+        key: 'test-1',
+        title: 'Test Action',
+        variant: 'item',
+        disabled: undefined,
+      });
+      expect(result[0]?.onClick).toBeDefined();
+    });
+
+    it('transforms multiple action items', () => {
+      const menuItems: NodeMenuItem[] = [
+        { id: 'action-1', label: 'Action 1', onClick: vi.fn() },
+        { id: 'action-2', label: 'Action 2', onClick: vi.fn() },
+        { id: 'action-3', label: 'Action 3', onClick: vi.fn() },
+      ];
+      const onItemClick = vi.fn();
+      const result = transformMenuItems(menuItems, onItemClick);
+
+      expect(result).toHaveLength(3);
+      expect(result[0]?.key).toBe('action-1');
+      expect(result[1]?.key).toBe('action-2');
+      expect(result[2]?.key).toBe('action-3');
+    });
+
+    it('transforms divider items correctly', () => {
+      const menuItems: NodeMenuItem[] = [
+        { id: 'action-1', label: 'Action 1', onClick: vi.fn() },
+        { type: 'divider' },
+        { id: 'action-2', label: 'Action 2', onClick: vi.fn() },
+      ];
+      const onItemClick = vi.fn();
+      const result = transformMenuItems(menuItems, onItemClick);
+
+      expect(result).toHaveLength(3);
+      expect(result[0]?.variant).toBe('item');
+      expect(result[1]?.variant).toBe('separator');
+      expect(result[1]?.divider).toBe(true);
+      expect(result[1]?.key).toBe('divider-1');
+      expect(result[2]?.variant).toBe('item');
+    });
+
+    it('preserves disabled state', () => {
+      const menuItems: NodeMenuItem[] = [
+        { id: 'action-1', label: 'Enabled Action', onClick: vi.fn(), disabled: false },
+        { id: 'action-2', label: 'Disabled Action', onClick: vi.fn(), disabled: true },
+      ];
+      const onItemClick = vi.fn();
+      const result = transformMenuItems(menuItems, onItemClick);
+
+      expect(result[0]?.disabled).toBe(false);
+      expect(result[1]?.disabled).toBe(true);
+    });
+
+    it('preserves icon when provided', () => {
+      const iconElement = '<svg>icon</svg>';
+      const menuItems: NodeMenuItem[] = [
+        { id: 'action-1', label: 'With Icon', onClick: vi.fn(), icon: iconElement },
+      ];
+      const onItemClick = vi.fn();
+      const result = transformMenuItems(menuItems, onItemClick);
+
+      expect(result[0]?.startIcon).toBe(iconElement);
+    });
+
+    it('calls onItemClick when transformed onClick is invoked', () => {
+      const originalOnClick = vi.fn();
+      const menuItems: NodeMenuItem[] = [
+        { id: 'action-1', label: 'Test', onClick: originalOnClick },
+      ];
+      const onItemClick = vi.fn();
+      const result = transformMenuItems(menuItems, onItemClick);
+
+      result[0]?.onClick?.();
+
+      expect(onItemClick).toHaveBeenCalledTimes(1);
+      expect(onItemClick).toHaveBeenCalledWith({
+        id: 'action-1',
+        label: 'Test',
+        onClick: originalOnClick,
+      });
+    });
+
+    it('handles mixed items and dividers', () => {
+      const menuItems: NodeMenuItem[] = [
+        { id: 'action-1', label: 'Action 1', onClick: vi.fn() },
+        { id: 'action-2', label: 'Action 2', onClick: vi.fn() },
+        { type: 'divider' },
+        { id: 'action-3', label: 'Action 3', onClick: vi.fn() },
+        { type: 'divider' },
+        { id: 'action-4', label: 'Action 4', onClick: vi.fn() },
+      ];
+      const onItemClick = vi.fn();
+      const result = transformMenuItems(menuItems, onItemClick);
+
+      expect(result).toHaveLength(6);
+      expect(result[0]?.variant).toBe('item');
+      expect(result[1]?.variant).toBe('item');
+      expect(result[2]?.variant).toBe('separator');
+      expect(result[3]?.variant).toBe('item');
+      expect(result[4]?.variant).toBe('separator');
+      expect(result[5]?.variant).toBe('item');
+    });
+
+    it('generates unique keys for multiple dividers', () => {
+      const menuItems: NodeMenuItem[] = [
+        { type: 'divider' },
+        { type: 'divider' },
+        { type: 'divider' },
+      ];
+      const onItemClick = vi.fn();
+      const result = transformMenuItems(menuItems, onItemClick);
+
+      expect(result[0]?.key).toBe('divider-0');
+      expect(result[1]?.key).toBe('divider-1');
+      expect(result[2]?.key).toBe('divider-2');
     });
   });
 });

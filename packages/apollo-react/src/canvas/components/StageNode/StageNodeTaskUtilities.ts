@@ -1,4 +1,5 @@
-import type { NodeMenuItem } from '../NodeContextMenu';
+import type { ReactNode } from 'react';
+import type { NodeMenuAction, NodeMenuItem } from '../NodeContextMenu';
 import { GroupModificationType } from './StageNode.types';
 
 // TODO: Add translation for the menu items
@@ -71,7 +72,8 @@ export const getContextMenuItems = (
       CONTEXT_MENU_ITEMS.UNGROUP_ALL,
       CONTEXT_MENU_ITEMS.SPLIT_TASK,
       CONTEXT_MENU_ITEMS.DIVIDER,
-      CONTEXT_MENU_ITEMS.REMOVE_GROUP
+      CONTEXT_MENU_ITEMS.REMOVE_GROUP,
+      CONTEXT_MENU_ITEMS.REMOVE_TASK
     );
   } else {
     if (groupIndex > 0) {
@@ -111,4 +113,47 @@ const getDivider = (): NodeMenuItem => {
   return {
     type: 'divider' as const,
   };
+};
+
+export interface TransformedMenuItem {
+  key: string;
+  title?: string;
+  startIcon?: ReactNode;
+  disabled?: boolean;
+  onClick?: () => void;
+  variant: 'item' | 'separator';
+  divider?: boolean;
+}
+
+/**
+ * Transforms NodeMenuItem array into the format expected by ApMenu
+ * This ensures consistent menu item structure across all menu instances
+ */
+export const transformMenuItems = (
+  menuItems: NodeMenuItem[] | undefined,
+  onItemClick: (item: NodeMenuAction) => void
+): TransformedMenuItem[] => {
+  if (!menuItems) {
+    return [];
+  }
+
+  return menuItems.map((item, index) => {
+    if ('type' in item && item.type === 'divider') {
+      return {
+        divider: true,
+        key: `divider-${index}`,
+        variant: 'separator' as const,
+      };
+    }
+
+    const actionItem = item as NodeMenuAction;
+    return {
+      key: actionItem.id,
+      title: actionItem.label,
+      startIcon: actionItem.icon,
+      disabled: actionItem.disabled,
+      onClick: () => onItemClick(actionItem),
+      variant: 'item' as const,
+    };
+  });
 };

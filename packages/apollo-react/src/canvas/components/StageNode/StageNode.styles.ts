@@ -172,6 +172,7 @@ export const StageTask = styled.div<{
   selected?: boolean;
   isParallel?: boolean;
   isDragEnabled?: boolean;
+  isMenuOpen?: boolean;
 }>`
   position: relative;
   display: flex;
@@ -192,11 +193,11 @@ export const StageTask = styled.div<{
         : 'var(--stage-task-width, 246px)'};
   height: ${({ isDragEnabled }) => (isDragEnabled ? '100%' : 'auto')};
 
-  .task-remove-button {
-    display: none;
+  .task-menu-icon-button {
+    display: ${({ isMenuOpen }) => (isMenuOpen ? 'flex' : 'none')};
   }
 
-  &:hover .task-remove-button {
+  &:hover .task-menu-icon-button {
     display: flex;
   }
 
@@ -271,23 +272,6 @@ export const StageTaskRetryDuration = styled.div<{ status?: 'warning' | 'info' |
     css`
       color: var(--uix-canvas-error-text);
     `}
-`;
-
-export const StageTaskRemoveButton = styled.div`
-  width: 16px;
-  height: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  background: transparent;
-  color: var(--uix-canvas-foreground-de-emp);
-  transition: color 0.2s ease;
-  flex-shrink: 0;
-
-  &:hover {
-    color: var(--uix-canvas-foreground);
-  }
 `;
 
 export const StageTaskDragPlaceholderWrapper = styled.div`
