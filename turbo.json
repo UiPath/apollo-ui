@@ -25,6 +25,9 @@
     "lint:css:fix": {
       "outputs": []
     },
+    "lint:deps": {
+      "outputs": []
+    },
     "format": {
       "cache": false
     },
