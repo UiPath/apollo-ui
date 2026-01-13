@@ -955,10 +955,10 @@ importers:
         specifier: ^16.1.1
         version: 16.1.1(postcss@8.5.6)
       react:
-        specifier: ^19.2.0
+        specifier: ^19.0.0
         version: 19.2.1
       react-dom:
-        specifier: ^19.2.0
+        specifier: ^19.0.0
         version: 19.2.1(react@19.2.1)
       semantic-release:
         specifier: ^25.0.2

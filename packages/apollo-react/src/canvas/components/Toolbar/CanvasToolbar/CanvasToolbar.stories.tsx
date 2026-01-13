@@ -1,21 +1,26 @@
-import type { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react-vite';
+import { Panel } from '@uipath/apollo-react/canvas/xyflow/react';
 import { Play, Plus, RotateCcw, SkipForward, Square, StepForward, StickyNote } from 'lucide-react';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
+import { StoryInfoPanel, useCanvasStory, withCanvasProviders } from '../../../storybook-utils';
+import { DefaultCanvasTranslations } from '../../../types';
+import { BaseCanvas } from '../../BaseCanvas';
+import { CanvasPositionControls } from '../../CanvasPositionControls';
 import {
   CanvasToolbar,
   CanvasToolbarButton,
   CanvasToolbarSeparator,
   CanvasToolbarToggleGroup,
   CanvasToolbarToggleItem,
-} from './index';
+} from './';
 
-const meta = {
-  title: 'Canvas/Toolbar/CanvasToolbar',
+const meta: Meta<typeof CanvasToolbar> = {
+  title: 'Canvas/CanvasToolbar',
   component: CanvasToolbar,
-  tags: ['autodocs'],
   parameters: {
-    layout: 'centered',
+    layout: 'fullscreen',
   },
+  decorators: [withCanvasProviders()],
   argTypes: {
     position: {
       control: 'select',
@@ -47,24 +52,30 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+// ============================================================================
+// Story Components
+// ============================================================================
+
 /**
  * Default toolbar with toggle groups, buttons, and separators.
- * Demonstrates a complete toolbar similar to the flow-workbench CanvasModeToolbar.
+ * Demonstrates a complete toolbar setup.
  * Toggle debug mode to see the disabled state in action.
  */
-export const Default: Story = {
-  args: {
-    position: 'bottom-center',
-    hidden: false,
-    disabled: false,
-    children: null,
-  },
-  render: (args) => {
-    const [mode, setMode] = useState<'design' | 'evaluate'>('design');
-    const [isDebugRunning, setIsDebugRunning] = useState(false);
+function DefaultStory(args: typeof Default.args) {
+  const [mode, setMode] = useState<'design' | 'evaluate'>('design');
+  const [isDebugRunning, setIsDebugRunning] = useState(false);
 
-    return (
-      <CanvasToolbar {...args} disabled={args.disabled || isDebugRunning}>
+  const initialNodes = useMemo(() => [], []);
+  const { canvasProps } = useCanvasStory({ initialNodes });
+
+  return (
+    <BaseCanvas {...canvasProps} mode="design">
+      <StoryInfoPanel
+        title="Canvas Toolbar"
+        description="A composable toolbar for canvas controls. Try toggling debug mode to see disabled state."
+      />
+
+      <CanvasToolbar {...args} disabled={args?.disabled || isDebugRunning}>
         <CanvasToolbarToggleGroup
           value={mode}
           onValueChange={(value) => setMode(value as 'design' | 'evaluate')}
@@ -119,6 +130,24 @@ export const Default: Story = {
           onClick={() => console.log('Add note')}
         />
       </CanvasToolbar>
-    );
+
+      <Panel position="bottom-right">
+        <CanvasPositionControls translations={DefaultCanvasTranslations} />
+      </Panel>
+    </BaseCanvas>
+  );
+}
+
+// ============================================================================
+// Exported Stories
+// ============================================================================
+
+export const Default: Story = {
+  args: {
+    position: 'bottom-center',
+    hidden: false,
+    disabled: false,
+    children: null,
   },
+  render: (args) => <DefaultStory {...args} />,
 };
