@@ -144,8 +144,11 @@ const StageNodeComponent = (props: StageNodeProps) => {
   const hasConnections = connectedHandleIds.size > 0;
 
   const shouldShowHandles = useMemo(() => {
+    if(status) {
+      return false;
+    }
     return selected || isHovered || isConnecting || hasConnections;
-  }, [hasConnections, isConnecting, selected, isHovered]);
+  }, [hasConnections, isConnecting, selected, isHovered, status]);
 
   const handleMouseEnter = useCallback(() => setIsHovered(true), []);
   const handleMouseLeave = useCallback(() => setIsHovered(false), []);
