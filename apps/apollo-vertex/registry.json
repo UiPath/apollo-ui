@@ -496,7 +496,11 @@
             "type": "registry:ui",
             "title": "Shell",
             "description": "Provides UiPath authentication and renders children only when authenticated.",
-            "dependencies": ["@uipath/auth-react", "lucide-react"],
+            "dependencies": [
+                "@uipath/auth-react",
+                "lucide-react",
+                "framer-motion"
+            ],
             "registryDependencies": [
                 "button",
                 "tooltip",

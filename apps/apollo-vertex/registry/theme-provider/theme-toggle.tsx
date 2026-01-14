@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 
-export function ThemeToggle() {
+export function ThemeToggle({ isCollapsed }: { isCollapsed: boolean }) {
     const { setTheme } = useTheme();
 
     return (
@@ -18,7 +18,7 @@ export function ThemeToggle() {
                     <span className="sr-only">Toggle theme</span>
                 </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
+            <DropdownMenuContent align="end" side={isCollapsed ? "right" : "top"}>
                 <DropdownMenuItem onClick={() => setTheme("light")}>
                     Light
                 </DropdownMenuItem>
