@@ -85,7 +85,14 @@ jobs:
 
       - name: Run Build
         if: matrix.check == 'Build'
-        run: pnpm build --affected
+        run: |
+          if git diff --name-only origin/main...HEAD | grep -qE '^(pnpm-lock\.yaml|package\.json)$'; then
+            echo "📦 Root dependency files changed - building all packages"
+            pnpm build
+          else
+            echo "🎯 Building affected packages only"
+            pnpm build --affected
+          fi
 
       - name: Upload Failure Artifacts
         if: failure()

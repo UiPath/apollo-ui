@@ -64,12 +64,6 @@
     "pnpm": ">=10"
   },
   "packageManager": "pnpm@10.18.1",
-  "pnpm": {
-    "overrides": {
-      "@types/react": "19.2.6",
-      "@types/react-dom": "19.2.3"
-    }
-  },
   "lint-staged": {
     "*.{js,jsx,ts,tsx,json}": [
       "biome check --write --no-errors-on-unmatched"

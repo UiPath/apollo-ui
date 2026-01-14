@@ -58,15 +58,15 @@
     "@mui/material": "^5.18.0",
     "@swc/helpers": "^0.5.17",
     "@uipath/apollo-react": "workspace:*",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react": "19.2.3",
+    "react-dom": "19.2.3"
   },
   "devDependencies": {
     "@rsbuild/core": "^1.6.7",
     "@rsbuild/plugin-react": "^1.1.2",
     "@rslib/core": "^0.17.0",
-    "@types/react": "^19.0.6",
-    "@types/react-dom": "^19.0.3",
+    "@types/react": "^19.2.6",
+    "@types/react-dom": "^19.2.2",
     "@vitest/coverage-v8": "^4.0.12",
     "@vitest/ui": "^4.0.12",
     "happy-dom": "^15.11.7",
