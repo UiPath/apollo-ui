@@ -1,3 +1,11 @@
+## [2.11.5](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@2.11.4...@uipath/apollo-react@2.11.5) (2026-01-14)
+
+
+### Bug Fixes
+
+* **apollo-react:** Show the menu items on more_vert click ([90f153f](https://github.com/UiPath/apollo-ui/commit/90f153f539c869a082ad3afafa51e478050ece75))
+* **apollo-react:** Updated StageNode Task styling [MST-5922] ([1cb52e3](https://github.com/UiPath/apollo-ui/commit/1cb52e3cb399d6d013d3f525776453263b900afc))
+
 ## [2.11.4](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@2.11.3...@uipath/apollo-react@2.11.4) (2026-01-13)
 
 

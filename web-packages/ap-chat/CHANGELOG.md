@@ -1,3 +1,11 @@
+## [1.4.5](https://github.com/UiPath/apollo-ui/compare/@uipath/ap-chat@1.4.4...@uipath/ap-chat@1.4.5) (2026-01-14)
+
+
+### Bug Fixes
+
+* **apollo-react:** Show the menu items on more_vert click ([90f153f](https://github.com/UiPath/apollo-ui/commit/90f153f539c869a082ad3afafa51e478050ece75))
+* **apollo-react:** Updated StageNode Task styling [MST-5922] ([1cb52e3](https://github.com/UiPath/apollo-ui/commit/1cb52e3cb399d6d013d3f525776453263b900afc))
+
 ## [1.4.4](https://github.com/UiPath/apollo-ui/compare/@uipath/ap-chat@1.4.3...@uipath/ap-chat@1.4.4) (2026-01-13)
 
 
