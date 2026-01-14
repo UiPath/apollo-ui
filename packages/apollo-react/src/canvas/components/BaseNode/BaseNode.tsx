@@ -9,6 +9,10 @@ import {
 import { ApIcon } from '@uipath/apollo-react/material/components';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNodeExecutionState } from '../../hooks';
+import { resolveAdornments } from '../../utils/adornment-resolver';
+import { getIcon } from '../../utils/icon-registry';
+import { resolveDisplay, resolveHandles } from '../../utils/manifest-resolver';
+import { resolveToolbar } from '../../utils/toolbar-resolver';
 import { useBaseCanvasMode } from '../BaseCanvas/BaseCanvasModeProvider';
 import { useConnectedHandles } from '../BaseCanvas/ConnectedHandlesContext';
 import { useSelectionState } from '../BaseCanvas/SelectionStateContext';
@@ -49,7 +53,8 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
   const isConnecting = useStore(selectIsConnecting);
   const { multipleNodesSelected } = useSelectionState();
 
-  const nodeDefinition = useMemo(() => nodeTypeRegistry.get(type), [type, nodeTypeRegistry]);
+  // Get manifest and resolve with instance data
+  const manifest = useMemo(() => nodeTypeRegistry.getManifest(type), [type, nodeTypeRegistry]);
 
   const statusContext: NodeStatusContext = useMemo(
     () => ({
@@ -66,26 +71,43 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
   const executionStatus =
     typeof executionState === 'string' ? executionState : executionState?.status;
 
-  const icon = useMemo(
-    () => nodeDefinition?.getIcon?.(data, statusContext) ?? <></>,
-    [nodeDefinition, data, statusContext]
-  );
   const display = useMemo(
-    () => nodeDefinition?.getDisplay?.(data, statusContext) ?? {},
-    [nodeDefinition, data, statusContext]
+    () => resolveDisplay(manifest?.display, data.display),
+    [manifest, data.display]
   );
-  const adornments = useMemo(
-    () => nodeDefinition?.getAdornments?.(data, statusContext) ?? {},
-    [nodeDefinition, data, statusContext]
-  );
-  const handleConfigurations = useMemo(
-    () => nodeDefinition?.getHandleConfigurations?.(data, statusContext) ?? [],
-    [nodeDefinition, data, statusContext]
-  );
+
+  const Icon = useMemo(() => getIcon(display.icon), [display.icon]);
+
+  // Resolve handles from manifest + instance data
+  const handleConfigurations = useMemo(() => {
+    if (!manifest) return [];
+    const resolved = resolveHandles(manifest.handleConfiguration, data);
+
+    // Convert resolved handles to HandleConfiguration format for ButtonHandle
+    return resolved.map((group) => ({
+      position: group.position as Position,
+      handles: group.handles.map((h) => ({
+        id: h.id,
+        type: h.type,
+        handleType: h.handleType,
+        label: h.label,
+        visible: h.visible,
+        showButton: h.showButton,
+        constraints: h.constraints,
+      })),
+      visible: group.visible,
+    }));
+  }, [manifest, data]);
+
   const toolbarConfig = useMemo(
-    () => nodeDefinition?.getToolbar?.(data, statusContext),
-    [nodeDefinition, data, statusContext]
+    () =>
+      manifest
+        ? resolveToolbar(manifest.nodeType, manifest.toolbarExtensions, statusContext)
+        : undefined,
+    [manifest, statusContext]
   );
+
+  const adornments = useMemo(() => resolveAdornments(statusContext), [statusContext]);
 
   // Force React Flow to recalculate handle positions when dimensions change
   // Use refs to track previous dimensions and avoid unnecessary calls
@@ -114,14 +136,13 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
 
   const displayLabel = display.label;
   const displaySubLabel = display.subLabel;
-  const displayLabelTooltip = display.labelTooltip;
-  const displayLabelBackgroundColor = display.labelBackgroundColor;
-  const displayShape = display.shape ?? 'square';
+  const displayLabelTooltip = display.labelTooltip as string | undefined;
+  const displayLabelBackgroundColor = display.labelBackgroundColor as string | undefined;
+  const displayShape = (display.shape ?? 'square') as 'circle' | 'square' | 'rectangle';
   const displayBackground = display.background;
   const displayColor = display.color;
-  const displayIconBackground =
-    executionStatus === 'Failed' ? 'var(--uix-canvas-background)' : display.iconBackground;
-  const displayCenterAdornment = display.centerAdornmentComponent;
+  const displayIconBackground = display.iconBackground;
+  const displayCenterAdornment = display.centerAdornmentComponent as React.ReactNode;
 
   const interactionState = useMemo(() => {
     if (dragging) return 'drag';
@@ -129,7 +150,7 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
     if (isFocused) return 'focus';
     if (isHovered) return 'hover';
     return 'default';
-  }, [dragging, selected, isFocused, isHovered]);
+  }, [dragging, selected, isHovered, isFocused]);
 
   const shouldShowHandles = useMemo(
     () => isConnecting || selected || isHovered,
@@ -181,9 +202,9 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
   // Calculate if notches should be shown (when node is hovered or selected)
   const showNotches = isConnecting || isHovered || selected;
 
-  // Handle action callback that uses node type's default handler
+  // Handle action callback
   const handleAction = useCallback(
-    (event: {
+    (_event: {
       handleId: string;
       nodeId: string;
       handleType: 'artifact' | 'input' | 'output';
@@ -194,21 +215,10 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
       setIsHovered(false);
       setIsFocused(false);
 
-      // First, check if the node type has a default handler
-      if (nodeDefinition?.onHandleAction) {
-        nodeDefinition.onHandleAction(event);
-      }
-
-      // Then, check if there's an instance-specific handler in the handle configuration
-      const handleConfig = handleConfigurations
-        ?.flatMap((config) => config.handles)
-        ?.find((h) => h.id === event.handleId);
-
-      if (handleConfig?.onAction) {
-        handleConfig.onAction(event);
-      }
+      // Instance-specific handlers can be added via manifest constraints in future
+      // For now, just handle the base action
     },
-    [nodeDefinition, handleConfigurations]
+    []
   );
 
   // Check if smart handles are enabled via node data
@@ -267,11 +277,8 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
             nodeWidth={width}
             nodeHeight={height}
             label={handle.label}
-            labelIcon={handle.labelIcon}
-            labelBackgroundColor={handle.labelBackgroundColor}
             showButton={shouldShowButton}
             selected={selected}
-            color={handle.color}
             showNotches={showNotches}
             onAction={handleAction}
             visible={isVisible}
@@ -285,7 +292,6 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
   }, [
     useSmartHandles,
     handleConfigurations,
-    connectedHandleIds,
     shouldShowHandles,
     width,
     height,
@@ -294,13 +300,14 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
     showNotches,
     handleAction,
     multipleNodesSelected,
+    connectedHandleIds.has,
   ]);
 
   // Use SmartHandle elements if enabled, otherwise use ButtonHandle elements
   const handleElements = useSmartHandles ? smartHandleElements : buttonHandleElements;
 
   // TODO: refactor to standalone component
-  if (!nodeDefinition) {
+  if (!manifest) {
     return (
       <div
         ref={containerRef}
@@ -326,8 +333,8 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
 
           {/* TODO: localize */}
           <BaseTextContainer shape="square">
-            <BaseHeader shape="square">Configuration issue</BaseHeader>
-            <BaseSubHeader>Select the node to correct or remove it</BaseSubHeader>
+            <BaseHeader shape="square">Manifest not found</BaseHeader>
+            <BaseSubHeader>Node type "{type}" is not registered</BaseSubHeader>
           </BaseTextContainer>
         </BaseContainer>
       </div>
@@ -353,14 +360,14 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
         height={height}
         backgroundColor={displayBackground}
       >
-        {icon && (
+        {Icon && (
           <BaseIconWrapper
             shape={displayShape}
             color={displayColor}
             backgroundColor={displayIconBackground}
             nodeHeight={height}
           >
-            {icon}
+            <Icon />
           </BaseIconWrapper>
         )}
 
@@ -384,7 +391,6 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
             {adornments.bottomLeft}
           </BaseBadgeSlot>
         )}
-
         <NodeLabel
           label={displayLabel}
           subLabel={displaySubLabel}
