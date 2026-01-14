@@ -1,211 +1,117 @@
 {
-  "compilerOptions": {
-    "target": "esnext",
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
-    "skipLibCheck": true,
-    "strict": true,
-    "noEmit": true,
-    "incremental": true,
-    "module": "esnext",
-    "esModuleInterop": true,
-    "moduleResolution": "bundler",
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "jsx": "react-jsx",
-    "plugins": [
-      {
-        "name": "next"
-      }
-    ],
-    "baseUrl": ".",
-    "paths": {
-      "@/*": [
-        "./*"
-      ],
-      "@/components/ui/accordion": [
-        "./registry/accordion/accordion"
-      ],
-      "@/components/ui/alert": [
-        "./registry/alert/alert"
-      ],
-      "@/components/ui/alert-dialog": [
-        "./registry/alert-dialog/alert-dialog"
-      ],
-      "@/components/ui/aspect-ratio": [
-        "./registry/aspect-ratio/aspect-ratio"
-      ],
-      "@/components/ui/avatar": [
-        "./registry/avatar/avatar"
-      ],
-      "@/components/ui/badge": [
-        "./registry/badge/badge"
-      ],
-      "@/components/ui/breadcrumb": [
-        "./registry/breadcrumb/breadcrumb"
-      ],
-      "@/components/ui/button": [
-        "./registry/button/button"
-      ],
-      "@/components/ui/button-group": [
-        "./registry/button-group/button-group"
-      ],
-      "@/components/ui/calendar": [
-        "./registry/calendar/calendar"
-      ],
-      "@/components/ui/card": [
-        "./registry/card/card"
-      ],
-      "@/components/ui/carousel": [
-        "./registry/carousel/carousel"
-      ],
-      "@/components/ui/chart": [
-        "./registry/chart/chart"
-      ],
-      "@/components/ui/checkbox": [
-        "./registry/checkbox/checkbox"
-      ],
-      "@/components/ui/collapsible": [
-        "./registry/collapsible/collapsible"
-      ],
-      "@/components/ui/command": [
-        "./registry/command/command"
-      ],
-      "@/components/ui/context-menu": [
-        "./registry/context-menu/context-menu"
-      ],
-      "@/components/ui/dialog": [
-        "./registry/dialog/dialog"
-      ],
-      "@/components/ui/drawer": [
-        "./registry/drawer/drawer"
-      ],
-      "@/components/ui/dropdown-menu": [
-        "./registry/dropdown-menu/dropdown-menu"
-      ],
-      "@/components/ui/empty": [
-        "./registry/empty/empty"
-      ],
-      "@/components/ui/field": [
-        "./registry/field/field"
-      ],
-      "@/components/ui/form": [
-        "./registry/form/form"
-      ],
-      "@/components/ui/hover-card": [
-        "./registry/hover-card/hover-card"
-      ],
-      "@/components/ui/input": [
-        "./registry/input/input"
-      ],
-      "@/components/ui/input-group": [
-        "./registry/input-group/input-group"
-      ],
-      "@/components/ui/input-otp": [
-        "./registry/input-otp/input-otp"
-      ],
-      "@/components/ui/item": [
-        "./registry/item/item"
-      ],
-      "@/components/ui/kbd": [
-        "./registry/kbd/kbd"
-      ],
-      "@/components/ui/label": [
-        "./registry/label/label"
-      ],
-      "@/components/ui/menubar": [
-        "./registry/menubar/menubar"
-      ],
-      "@/components/ui/native-select": [
-        "./registry/native-select/native-select"
-      ],
-      "@/components/ui/navigation-menu": [
-        "./registry/navigation-menu/navigation-menu"
-      ],
-      "@/components/ui/pagination": [
-        "./registry/pagination/pagination"
-      ],
-      "@/components/ui/popover": [
-        "./registry/popover/popover"
-      ],
-      "@/components/ui/progress": [
-        "./registry/progress/progress"
-      ],
-      "@/components/ui/radio-group": [
-        "./registry/radio-group/radio-group"
-      ],
-      "@/components/ui/resizable": [
-        "./registry/resizable/resizable"
-      ],
-      "@/components/ui/scroll-area": [
-        "./registry/scroll-area/scroll-area"
-      ],
-      "@/components/ui/select": [
-        "./registry/select/select"
-      ],
-      "@/components/ui/separator": [
-        "./registry/separator/separator"
-      ],
-      "@/components/ui/sheet": [
-        "./registry/sheet/sheet"
-      ],
-      "@/components/ui/shell": [
-        "./registry/shell/shell"
-      ],
-      "@/components/ui/sidebar": [
-        "./registry/sidebar/sidebar"
-      ],
-      "@/components/ui/skeleton": [
-        "./registry/skeleton/skeleton"
-      ],
-      "@/components/ui/slider": [
-        "./registry/slider/slider"
-      ],
-      "@/components/ui/sonner": [
-        "./registry/sonner/sonner"
-      ],
-      "@/components/ui/spinner": [
-        "./registry/spinner/spinner"
-      ],
-      "@/components/ui/switch": [
-        "./registry/switch/switch"
-      ],
-      "@/components/ui/table": [
-        "./registry/table/table"
-      ],
-      "@/components/ui/tabs": [
-        "./registry/tabs/tabs"
-      ],
-      "@/components/ui/textarea": [
-        "./registry/textarea/textarea"
-      ],
-      "@/components/ui/theme-provider": [
-        "./registry/theme-provider/theme-provider"
-      ],
-      "@/components/ui/toggle": [
-        "./registry/toggle/toggle"
-      ],
-      "@/components/ui/toggle-group": [
-        "./registry/toggle-group/toggle-group"
-      ],
-      "@/components/ui/tooltip": [
-        "./registry/tooltip/tooltip"
-      ]
+    "compilerOptions": {
+        "target": "esnext",
+        "lib": ["dom", "dom.iterable", "esnext"],
+        "skipLibCheck": true,
+        "strict": true,
+        "noEmit": true,
+        "incremental": true,
+        "module": "esnext",
+        "esModuleInterop": true,
+        "moduleResolution": "bundler",
+        "resolveJsonModule": true,
+        "isolatedModules": true,
+        "jsx": "react-jsx",
+        "plugins": [
+            {
+                "name": "next"
+            }
+        ],
+        "baseUrl": ".",
+        "paths": {
+            "@/*": ["./*"],
+            "@/components/ui/accordion": ["./registry/accordion/accordion"],
+            "@/components/ui/alert": ["./registry/alert/alert"],
+            "@/components/ui/alert-dialog": [
+                "./registry/alert-dialog/alert-dialog"
+            ],
+            "@/components/ui/aspect-ratio": [
+                "./registry/aspect-ratio/aspect-ratio"
+            ],
+            "@/components/ui/avatar": ["./registry/avatar/avatar"],
+            "@/components/ui/badge": ["./registry/badge/badge"],
+            "@/components/ui/breadcrumb": ["./registry/breadcrumb/breadcrumb"],
+            "@/components/ui/button": ["./registry/button/button"],
+            "@/components/ui/button-group": [
+                "./registry/button-group/button-group"
+            ],
+            "@/components/ui/calendar": ["./registry/calendar/calendar"],
+            "@/components/ui/card": ["./registry/card/card"],
+            "@/components/ui/carousel": ["./registry/carousel/carousel"],
+            "@/components/ui/chart": ["./registry/chart/chart"],
+            "@/components/ui/checkbox": ["./registry/checkbox/checkbox"],
+            "@/components/ui/collapsible": [
+                "./registry/collapsible/collapsible"
+            ],
+            "@/components/ui/command": ["./registry/command/command"],
+            "@/components/ui/context-menu": [
+                "./registry/context-menu/context-menu"
+            ],
+            "@/components/ui/dialog": ["./registry/dialog/dialog"],
+            "@/components/ui/drawer": ["./registry/drawer/drawer"],
+            "@/components/ui/dropdown-menu": [
+                "./registry/dropdown-menu/dropdown-menu"
+            ],
+            "@/components/ui/empty": ["./registry/empty/empty"],
+            "@/components/ui/field": ["./registry/field/field"],
+            "@/components/ui/form": ["./registry/form/form"],
+            "@/components/ui/hover-card": ["./registry/hover-card/hover-card"],
+            "@/components/ui/input": ["./registry/input/input"],
+            "@/components/ui/input-group": [
+                "./registry/input-group/input-group"
+            ],
+            "@/components/ui/input-otp": ["./registry/input-otp/input-otp"],
+            "@/components/ui/item": ["./registry/item/item"],
+            "@/components/ui/kbd": ["./registry/kbd/kbd"],
+            "@/components/ui/label": ["./registry/label/label"],
+            "@/components/ui/menubar": ["./registry/menubar/menubar"],
+            "@/components/ui/native-select": [
+                "./registry/native-select/native-select"
+            ],
+            "@/components/ui/navigation-menu": [
+                "./registry/navigation-menu/navigation-menu"
+            ],
+            "@/components/ui/pagination": ["./registry/pagination/pagination"],
+            "@/components/ui/popover": ["./registry/popover/popover"],
+            "@/components/ui/progress": ["./registry/progress/progress"],
+            "@/components/ui/radio-group": [
+                "./registry/radio-group/radio-group"
+            ],
+            "@/components/ui/resizable": ["./registry/resizable/resizable"],
+            "@/components/ui/scroll-area": [
+                "./registry/scroll-area/scroll-area"
+            ],
+            "@/components/ui/select": ["./registry/select/select"],
+            "@/components/ui/separator": ["./registry/separator/separator"],
+            "@/components/ui/sheet": ["./registry/sheet/sheet"],
+            "@/components/ui/shell": ["./registry/shell/shell"],
+            "@/components/ui/sidebar": ["./registry/sidebar/sidebar"],
+            "@/components/ui/skeleton": ["./registry/skeleton/skeleton"],
+            "@/components/ui/slider": ["./registry/slider/slider"],
+            "@/components/ui/sonner": ["./registry/sonner/sonner"],
+            "@/components/ui/spinner": ["./registry/spinner/spinner"],
+            "@/components/ui/switch": ["./registry/switch/switch"],
+            "@/components/ui/table": ["./registry/table/table"],
+            "@/components/ui/tabs": ["./registry/tabs/tabs"],
+            "@/components/ui/textarea": ["./registry/textarea/textarea"],
+            "@/components/ui/theme-provider": [
+                "./registry/theme-provider/theme-provider"
+            ],
+            "@/components/ui/toggle": ["./registry/toggle/toggle"],
+            "@/components/ui/toggle-group": [
+                "./registry/toggle-group/toggle-group"
+            ],
+            "@/components/ui/tooltip": ["./registry/tooltip/tooltip"]
+        },
+        "allowJs": true
     },
-    "allowJs": true
-  },
-  "include": [
-    "next-env.d.ts",
-    ".next/types/**/*.ts",
-    ".next/dev/types/**/*.ts",
-    "**/*.mts",
-    "**/*.ts",
-    "**/*.tsx"
-  ],
-  "exclude": [
-    "node_modules"
-  ]
+    "include": [
+        "next-env.d.ts",
+        ".next/types/**/*.ts",
+        ".next/dev/types/**/*.ts",
+        "**/*.mts",
+        "**/*.ts",
+        "**/*.tsx"
+    ],
+    "exclude": ["node_modules"]
 }
