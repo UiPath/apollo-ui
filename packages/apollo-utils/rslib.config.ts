@@ -1,5 +1,7 @@
 import { defineConfig } from '@rslib/core';
 
+import { pluginYalcPush } from '../../scripts/plugin-yalc-push';
+
 export default defineConfig({
   lib: [
     {
@@ -29,4 +31,7 @@ export default defineConfig({
   output: {
     target: 'web',
   },
+  plugins: [
+    ...(process.env.YALC_PUSH === 'true' ? [pluginYalcPush('@uipath/apollo-utils')] : []),
+  ],
 });

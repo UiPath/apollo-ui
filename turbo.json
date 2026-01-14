@@ -7,9 +7,12 @@
       "outputs": ["dist/**", ".next/**", "build/**", "storybook-static/**"]
     },
     "dev": {
-      "dependsOn": ["^build"],
-      "cache": false,
-      "persistent": true
+      "persistent": true,
+      "cache": true
+    },
+    "dev:link": {
+      "persistent": true,
+      "cache": true
     },
     "lint": {
       "outputs": [],

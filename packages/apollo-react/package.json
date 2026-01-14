@@ -133,6 +133,7 @@
     "build:analyze": "ANALYZE=true pnpm run build",
     "build:icons": "tsx scripts/icons-build.ts",
     "dev": "rslib build --watch",
+    "dev:link": "YALC_PUSH=true rslib build --watch",
     "lint": "biome lint src",
     "lint:fix": "biome lint --write src",
     "format": "biome format --write src",

@@ -142,23 +142,24 @@ pnpm storybook:build
 ### React
 
 ```tsx
-import '@uipath/apollo-react/core/theme.css';
-import { ApButton } from '@uipath/apollo-react/components';
+import { ApButton } from '@uipath/apollo-react/material/components';
+import { apolloMaterialUiThemeDark } from '@uipath/apollo-react/material/theme';
+import { ThemeProvider } from '@mui/material/styles';
 
 function App() {
-  return <ApButton variant="contained">Click me</ApButton>;
+  return (
+    <ThemeProvider theme={apolloMaterialUiThemeDark}>
+      <ApButton variant="contained">Click me</ApButton>
+    </ThemeProvider>
+  );
 }
 ```
 
-### Angular
+### Core Tokens
 
-```typescript
-import { ApolloButtonModule } from '@uipath/apollo-angular';
-
-@NgModule({
-  imports: [ApolloButtonModule],
-})
-export class AppModule {}
+```tsx
+import { ColorPrimary500, SpacingMd } from '@uipath/apollo-core/tokens';
+import { IconCheck } from '@uipath/apollo-core/icons';
 ```
 
 ### Tailwind
@@ -171,14 +172,58 @@ function App() {
 }
 ```
 
-### Web Components
+### Web Components (ap-chat)
 
 ```html
-<script type="module">
-  import '@uipath/ap-chat';
-</script>
+<!DOCTYPE html>
+<html>
+<body>
+  <ap-chat id="chat"></ap-chat>
 
-<ap-chat></ap-chat>
+  <script type="module">
+    import { AutopilotChatService } from '@uipath/ap-chat/service';
+    import '@uipath/ap-chat';
+
+    // Create and initialize the service
+    const service = AutopilotChatService.Instantiate({
+      instanceName: 'my-chat',
+      config: {
+        mode: 'side-by-side',
+        firstRunExperience: {
+          title: "Welcome to Autopilot Chat!",
+          description: "Ask me anything.",
+          suggestions: [
+            { label: "Get started", prompt: "How do I get started?" }
+          ]
+        }
+      }
+    });
+
+    // Set the service on the web component
+    const chatElement = document.getElementById('chat');
+    chatElement.chatServiceInstance = service;
+    chatElement.locale = 'en';
+    chatElement.theme = 'light';
+
+    // Listen for user requests
+    service.on('Request', (data) => {
+      // Send a response
+      service.sendResponse({
+        content: `Echo: ${data.content}`,
+        role: 'assistant'
+      });
+    });
+
+    // Open the chat
+    service.open();
+  </script>
+</body>
+</html>
+```
+
+**For React apps**, use the React component directly:
+```tsx
+import { ApChat, AutopilotChatService } from '@uipath/apollo-react/ap-chat';
 ```
 
 ## Contributing
@@ -194,6 +239,62 @@ Please read [CLAUDE.md](./CLAUDE.md) for detailed architecture documentation and
 - [ ] Has unit tests
 - [ ] Has visual regression tests
 - [ ] Documented in package README
+
+## 🔗 Local Development Linking
+
+Use these commands to link Apollo packages for local development in external projects.
+
+### Quick Start
+
+**Install yalc globally (one-time setup):**
+```bash
+npm install -g yalc
+```
+
+### Development with Linking
+
+Each package has a `dev:*` command that links and watches with auto-push:
+
+```bash
+# Link and watch apollo-core (tokens, icons, fonts)
+pnpm dev:core
+
+# Link and watch apollo-utils (utilities)
+pnpm dev:utils
+
+# Link and watch apollo-react (React components + dependencies)
+pnpm dev:react
+```
+
+### Using Linked Packages in Your Project
+
+**In your project:**
+```bash
+# Add the linked packages manually
+yalc add @uipath/apollo-react @uipath/apollo-core @uipath/apollo-utils
+npm install
+```
+
+### Development Workflow
+
+```bash
+# Terminal 1 - Apollo UI (link and watch)
+pnpm dev:react
+
+# Terminal 2 - Your project
+cd /path/to/your/project
+npm run dev
+```
+
+Changes in apollo-react automatically rebuild and push to yalc. Your project hot-reloads instantly!
+
+### Unlinking
+
+**In your project:**
+```bash
+yalc remove --all
+npm install  # Restores published versions
+```
 
 ## License
 

@@ -4,6 +4,7 @@ import type { RslibConfig } from '@rslib/core';
 import { defineConfig } from '@rslib/core';
 
 import { pluginCopyLocales } from './scripts/plugin-copy-locales';
+import { pluginYalcPush } from '../../scripts/plugin-yalc-push';
 
 // Shared externals list to avoid duplication
 const externals = [
@@ -78,6 +79,7 @@ export default defineConfig({
       },
     }),
     pluginCopyLocales(),
+    ...(process.env.YALC_PUSH === 'true' ? [pluginYalcPush('@uipath/apollo-react')] : []),
   ],
   output: {
     target: 'web',

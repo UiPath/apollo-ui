@@ -6,6 +6,8 @@
     "composite": true,
     "declaration": true,
     "declarationMap": true,
+    "incremental": true,
+    "assumeChangesOnlyAffectDirectDependencies": true,
     "jsx": "react-jsx",
     "resolveJsonModule": true,
     "baseUrl": ".",

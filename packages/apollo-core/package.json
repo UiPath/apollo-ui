@@ -46,6 +46,7 @@
     "process:icons": "tsx scripts/process-icons.ts && tsx scripts/update-colors.ts",
     "process:icons:dry-run": "tsx scripts/process-icons.ts --dry-run && tsx scripts/update-colors.ts --dry-run",
     "dev": "rslib build --watch",
+    "dev:link": "YALC_PUSH=true rslib build --watch",
     "lint": "biome lint src",
     "lint:fix": "biome lint --write src",
     "format": "biome format --write src",
