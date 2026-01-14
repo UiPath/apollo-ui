@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
+import type { NodeManifest } from '../../schema/node-definition/node-manifest';
 import { render, screen } from '../../utils/testing';
-import type { NodeRegistration } from '../BaseNode/BaseNode.types';
 import { NodeRegistryProvider } from '../BaseNode/NodeRegistryProvider';
 import type { ListItem, ToolboxProps } from '../Toolbox';
 import { AddNodePanel } from './AddNodePanel';
@@ -27,24 +27,33 @@ vi.mock('../Toolbox', () => ({
 }));
 
 describe('AddNodePanel', () => {
-  const mockRegistrations: NodeRegistration[] = [
+  const mockRegistrations: NodeManifest[] = [
     {
       nodeType: 'agent-node',
-      displayName: 'Agent Node',
-      category: 'agents',
-      icon: 'smart_toy',
-      description: 'An agent node',
       version: '1.0.0',
-      definition: {},
+      category: 'agents',
+      tags: ['agent', 'ai'],
+      sortOrder: 0,
+      display: {
+        label: 'Agent Node',
+        icon: 'smart_toy',
+        description: 'An agent node',
+      },
+      handleConfiguration: [],
     },
     {
       nodeType: 'tool-node',
-      displayName: 'Tool Node',
-      category: 'tools',
-      icon: 'handyman',
-      description: 'A tool node',
       version: '1.0.0',
-      definition: {},
+      category: 'tools',
+      tags: ['tool'],
+      sortOrder: 0,
+      display: {
+        label: 'Tool Node',
+        icon: 'handyman',
+        description: 'A tool node',
+      },
+      description: 'A tool node',
+      handleConfiguration: [],
     },
   ];
 
@@ -157,15 +166,19 @@ describe('AddNodePanel', () => {
   });
 
   it('should filter out empty categories from the list', () => {
-    const registrations: NodeRegistration[] = [
+    const registrations: NodeManifest[] = [
       {
         nodeType: 'agent-node',
-        displayName: 'Agent Node',
-        category: 'agents',
-        icon: 'smart_toy',
-        description: 'An agent node',
         version: '1.0.0',
-        definition: {},
+        category: 'agents',
+        tags: ['agent', 'ai'],
+        sortOrder: 0,
+        display: {
+          label: 'Agent Node',
+          icon: 'smart_toy',
+          description: 'An agent node',
+        },
+        handleConfiguration: [],
       },
     ];
 

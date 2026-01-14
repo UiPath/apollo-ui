@@ -1,4 +1,5 @@
 import type { Edge, Node, Viewport } from '@uipath/apollo-react/canvas/xyflow/react';
+import { createSelector } from 'reselect';
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 import type { CanvasLevel } from '../types/canvas.types';
@@ -50,15 +51,19 @@ export const selectPreviousCanvas = (state: CanvasStore): CanvasLevel | undefine
   return previousCanvasId ? state.canvasStack[previousCanvasId] : undefined;
 };
 
-export const selectBreadcrumbs = (state: CanvasStore) => {
-  return state.currentPath.map((canvasId) => {
-    const canvas = state.canvasStack[canvasId];
-    return {
-      id: canvasId,
-      name: canvas?.name || canvasId,
-    };
-  });
-};
+// Memoized breadcrumbs selector using reselect
+export const selectBreadcrumbs = createSelector(
+  [(state: CanvasStore) => state.currentPath, (state: CanvasStore) => state.canvasStack],
+  (currentPath, canvasStack) => {
+    return currentPath.map((canvasId) => {
+      const canvas = canvasStack[canvasId];
+      return {
+        id: canvasId,
+        name: canvas?.name || canvasId,
+      };
+    });
+  }
+);
 
 export const selectCanvasActions = (state: CanvasStore) => ({
   navigateToCanvas: state.navigateToCanvas,

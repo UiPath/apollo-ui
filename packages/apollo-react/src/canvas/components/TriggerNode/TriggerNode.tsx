@@ -1,8 +1,8 @@
 import { Position, useStore } from '@uipath/apollo-react/canvas/xyflow/react';
 import { ApIcon, ApTooltip } from '@uipath/apollo-react/material/components';
 import { memo, useCallback, useMemo, useState } from 'react';
+import { HandleGroupManifest } from '../../schema/node-definition';
 import { useConnectedHandles } from '../BaseCanvas/ConnectedHandlesContext';
-import type { HandleConfiguration } from '../BaseNode';
 import { useButtonHandles } from '../ButtonHandle/useButtonHandles';
 import { TriggerContainer, TriggerIconWrapper } from './TriggerNode.styles';
 import type { TriggerNodeProps } from './TriggerNode.types';
@@ -24,7 +24,7 @@ const TriggerNodeComponent = (props: TriggerNodeProps) => {
   const handleMouseEnter = useCallback(() => setIsHovered(true), []);
   const handleMouseLeave = useCallback(() => setIsHovered(false), []);
 
-  const handleConfigurations: HandleConfiguration[] = [
+  const handleConfigurations: HandleGroupManifest[] = [
     {
       position: Position.Right,
       handles: [
