@@ -10,6 +10,7 @@ import {
   useMemo,
   useState,
 } from 'react';
+import { useToolbarActionStore } from '../../hooks/ToolbarActionContext';
 import { BASE_CANVAS_DEFAULTS } from './BaseCanvas.constants';
 import { useAutoLayout, useEnsureNodesInView, useMaintainNodesInView } from './BaseCanvas.hooks';
 import type { BaseCanvasProps, BaseCanvasRef } from './BaseCanvas.types';
@@ -84,6 +85,10 @@ const BaseCanvasInnerComponent = <NodeType extends Node = Node, EdgeType extends
     initialAutoLayout,
     maintainNodesInView,
 
+    // Toolbar
+    onToolbarAction,
+    breakpoints,
+
     // Pan Shortcut Teaching UI
     panShortcutTeachingUIMessage = 'Hold Space and drag to pan around the canvas!',
 
@@ -108,6 +113,10 @@ const BaseCanvasInnerComponent = <NodeType extends Node = Node, EdgeType extends
   // This ensures important nodes remain visible in responsive layouts
   // The hook only pans the viewport without changing the zoom level
   useMaintainNodesInView(maintainNodesInView, fitViewOptions);
+
+  // Sync toolbar action store with current mode, handler, and breakpoints
+  // This is a module-level store accessed by toolbar-resolver
+  useToolbarActionStore(mode, onToolbarAction, breakpoints);
 
   const handleInit = useCallback(
     (instance: ReactFlowInstance<NodeType, EdgeType>) => {
