@@ -501,7 +501,7 @@
                 "button",
                 "tooltip",
                 "avatar",
-                "use-local-storage"
+                "@uipath/use-local-storage"
             ],
             "files": [
                 { "path": "registry/shell/shell.tsx", "type": "registry:ui" },
