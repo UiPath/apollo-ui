@@ -5,12 +5,7 @@ import { Card } from "@/registry/card/card";
 import { Label } from "@/registry/label/label";
 import { Input } from "@/registry/input/input";
 import { Button } from "@/registry/button/button";
-import {
-    Tabs,
-    TabsContent,
-    TabsList,
-    TabsTrigger,
-} from "@/registry/tabs/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/registry/tabs/tabs";
 import type { ThemeConfig } from "@/registry/theme-provider/theme-provider";
 import { themes } from "../../themes";
 
@@ -106,9 +101,7 @@ function oklchToHex(oklchString: string): string {
     }
 
     // Convert to hex
-    return (
-        `#${[r, g, b_rgb].map((x) => x.toString(16).padStart(2, "0")).join("")}`
-    );
+    return `#${[r, g, b_rgb].map((x) => x.toString(16).padStart(2, "0")).join("")}`;
 }
 
 export function ThemeCustomizer() {
