@@ -19,8 +19,8 @@
     "@uipath/apollo-core": "workspace:*",
     "@uipath/apollo-react": "workspace:*",
     "@uipath/apollo-wind": "workspace:*",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react": "19.2.3",
+    "react-dom": "19.2.3"
   },
   "devDependencies": {
     "@storybook/addon-a11y": "^10.0.8",
