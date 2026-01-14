@@ -18,7 +18,81 @@ import { BaseCanvas } from '../BaseCanvas';
 import { CanvasPositionControls } from '../CanvasPositionControls';
 import { NodeInspector } from '../NodeInspector';
 import type { BaseNodeData } from './BaseNode.types';
-import { useNodeTypeRegistry } from './useNodeTypeRegistry';
+import type { NodeManifest } from '../../schema/node-definition/node-manifest';
+import { NodeTypeRegistry } from './NodeTypeRegistry';
+import { NodeRegistryContext } from './useNodeTypeRegistry';
+
+// ============================================================================
+// Sample Manifests
+// ============================================================================
+
+const sampleManifests: NodeManifest[] = [
+  {
+    nodeType: 'generic',
+    version: '1.0.0',
+    category: 'general',
+    tags: ['general'],
+    sortOrder: 1,
+    display: {
+      label: 'Generic Node',
+      icon: 'box',
+      shape: 'square',
+    },
+    handleConfiguration: [
+      {
+        position: 'left',
+        handles: [
+          { id: 'in', type: 'target', handleType: 'input', label: 'Input' },
+        ],
+      },
+      {
+        position: 'right',
+        handles: [
+          { id: 'out', type: 'source', handleType: 'output', label: 'Output' },
+        ],
+      },
+    ],
+  },
+  {
+    nodeType: 'uipath.blank-node',
+    version: '1.0.0',
+    category: 'general',
+    tags: ['basic'],
+    sortOrder: 2,
+    display: {
+      label: 'Blank Node',
+      icon: 'square',
+      shape: 'square',
+    },
+    handleConfiguration: [],
+  },
+  {
+    nodeType: 'uipath.agent',
+    version: '1.0.0',
+    category: 'ai',
+    tags: ['ai', 'agent'],
+    sortOrder: 3,
+    display: {
+      label: 'Agent',
+      icon: 'bot',
+      shape: 'rectangle',
+    },
+    handleConfiguration: [
+      {
+        position: 'left',
+        handles: [
+          { id: 'in', type: 'target', handleType: 'input', label: 'Input' },
+        ],
+      },
+      {
+        position: 'right',
+        handles: [
+          { id: 'out', type: 'source', handleType: 'output', label: 'Output' },
+        ],
+      },
+    ],
+  },
+];
 
 // ============================================================================
 // Meta Configuration
@@ -29,7 +103,24 @@ const meta: Meta<BaseNodeData> = {
   parameters: {
     layout: 'fullscreen',
   },
-  decorators: [withCanvasProviders()],
+  decorators: [
+    (Story) => {
+      const registry = useMemo(() => {
+        const reg = new NodeTypeRegistry();
+        sampleManifests.forEach((manifest) => reg.registerManifest(manifest));
+        return reg;
+      }, []);
+
+      const contextValue = useMemo(() => ({ registry }), [registry]);
+
+      return (
+        <NodeRegistryContext.Provider value={contextValue}>
+          {Story()}
+        </NodeRegistryContext.Provider>
+      );
+    },
+    withCanvasProviders(),
+  ],
 };
 
 export default meta;
@@ -52,25 +143,32 @@ const GRID_CONFIG = {
 /**
  * Creates a grid of nodes showing all shape/status combinations.
  */
-function createShapeStatusGrid(
-  registry: ReturnType<typeof useNodeTypeRegistry>
-): Node<BaseNodeData>[] {
+function createShapeStatusGrid(): Node<BaseNodeData>[] {
   const nodes: Node<BaseNodeData>[] = [];
 
   STATUSES.forEach((status, rowIndex) => {
     SHAPES.forEach((shape, colIndex) => {
       const label = shape === 'rectangle' ? 'Invoice approval agent' : 'Header';
+      const nodeType = shape === 'rectangle' ? 'uipath.agent' : 'uipath.blank-node';
+      
       nodes.push(
         createNode({
           id: `${shape}-${status}`,
-          type: 'uipath.blank-node',
+          type: nodeType,
           position: {
             x: GRID_CONFIG.startX + colIndex * GRID_CONFIG.gapX,
             y: GRID_CONFIG.startY + rowIndex * GRID_CONFIG.gapY,
           },
           data: {
-            ...registry.createDefaultData('generic'),
-            display: { label, subLabel: status.replace(/([A-Z])/g, ' $1').trim(), shape },
+            nodeType,
+            version: '1.0.0',
+            parameters: {},
+            executionStatus: status,
+            display: { 
+              label, 
+              subLabel: status.replace(/([A-Z])/g, ' $1').trim(), 
+              shape,
+            },
           },
         })
       );
@@ -96,7 +194,7 @@ const RECTANGLE_CONFIGS = [
 /**
  * Creates nodes demonstrating various sizes.
  */
-function createSizeGrid(registry: ReturnType<typeof useNodeTypeRegistry>): Node<BaseNodeData>[] {
+function createSizeGrid(): Node<BaseNodeData>[] {
   const nodes: Node<BaseNodeData>[] = [];
   let xOffset = 96;
 
@@ -108,7 +206,9 @@ function createSizeGrid(registry: ReturnType<typeof useNodeTypeRegistry>): Node<
         type: 'uipath.blank-node',
         position: { x: xOffset, y: 96 },
         data: {
-          ...registry.createDefaultData('uipath.blank-node'),
+          nodeType: 'uipath.blank-node',
+          version: '1.0.0',
+          parameters: {},
           display: { label: String(size), shape: 'square' },
         },
       }),
@@ -127,7 +227,9 @@ function createSizeGrid(registry: ReturnType<typeof useNodeTypeRegistry>): Node<
         type: 'uipath.blank-node',
         position: { x: xOffset, y: 272 },
         data: {
-          ...registry.createDefaultData('uipath.blank-node'),
+          nodeType: 'uipath.blank-node',
+          version: '1.0.0',
+          parameters: {},
           display: { label: String(size), shape: 'circle' },
         },
       }),
@@ -147,7 +249,9 @@ function createSizeGrid(registry: ReturnType<typeof useNodeTypeRegistry>): Node<
         type: 'uipath.agent',
         position: { x: rectX, y: rectY },
         data: {
-          ...registry.createDefaultData('uipath.agent'),
+          nodeType: 'uipath.agent',
+          version: '1.0.0',
+          parameters: {},
           display: { label: `${width}×${height}`, shape: 'rectangle' },
         },
       }),
@@ -170,8 +274,7 @@ function createSizeGrid(registry: ReturnType<typeof useNodeTypeRegistry>): Node<
 // ============================================================================
 
 function DefaultStory() {
-  const nodeTypeRegistry = useNodeTypeRegistry();
-  const initialNodes = useMemo(() => createShapeStatusGrid(nodeTypeRegistry), [nodeTypeRegistry]);
+  const initialNodes = useMemo(() => createShapeStatusGrid(), []);
   const { canvasProps } = useCanvasStory({ initialNodes });
 
   return (
@@ -188,8 +291,7 @@ function DefaultStory() {
 }
 
 function CustomizedSizesStory() {
-  const nodeTypeRegistry = useNodeTypeRegistry();
-  const initialNodes = useMemo(() => createSizeGrid(nodeTypeRegistry), [nodeTypeRegistry]);
+  const initialNodes = useMemo(() => createSizeGrid(), []);
   const { canvasProps } = useCanvasStory({ initialNodes });
 
   return (

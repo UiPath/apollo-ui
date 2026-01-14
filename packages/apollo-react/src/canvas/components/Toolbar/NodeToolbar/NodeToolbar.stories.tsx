@@ -1,256 +1,98 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import {
-  type Node,
-  Panel,
-  ReactFlowProvider,
-  useReactFlow,
-} from '@uipath/apollo-react/canvas/xyflow/react';
-import { ApIcon } from '@uipath/apollo-react/material/components';
-import { useCallback, useEffect, useMemo } from 'react';
+import { type Node, Panel, ReactFlowProvider } from '@uipath/apollo-react/canvas/xyflow/react';
+import { useMemo } from 'react';
 import { ExecutionStatusContext } from '../../../hooks';
+import type { NodeManifest } from '../../../schema/node-definition/node-manifest';
 import { StoryInfoPanel, useCanvasStory } from '../../../storybook-utils';
 import { DefaultCanvasTranslations } from '../../../types';
 import { BaseCanvas } from '../../BaseCanvas';
-import type { BaseNodeData, NodeRegistration, NodeShape } from '../../BaseNode/BaseNode.types';
+import type { BaseNodeData, NodeShape } from '../../BaseNode/BaseNode.types';
 import { NodeRegistryProvider } from '../../BaseNode/NodeRegistryProvider';
 import { CanvasPositionControls } from '../../CanvasPositionControls';
-import { ExecutionStatusIcon } from '../../ExecutionStatusIcon';
 
 // ============================================================================
-// Node Registration
+// Node Manifests
 // ============================================================================
+// These manifests use default toolbar actions from the toolbar resolver
+// (delete, duplicate, breakpoint in design mode)
 
-const toolbarNodeRegistration: NodeRegistration = {
+const toolbarDemoManifest: NodeManifest = {
   nodeType: 'toolbarDemo',
+  version: '1.0.0',
   category: 'demo',
-  displayName: 'Toolbar Demo Node',
   description: 'Node demonstrating toolbar functionality',
-  icon: 'settings',
-  definition: {
-    getIcon: () => <ApIcon name="home" variant="outlined" size="40px" />,
-    getDisplay: (data) => ({
-      label: data.display?.label || 'Toolbar Demo',
-      subLabel: data.display?.subLabel || 'Hover to see toolbar',
-      shape: data.display?.shape || 'rectangle',
-    }),
-    getAdornments: (_data, context) => {
-      const state = context.executionState;
-      const status = typeof state === 'string' ? state : state?.status;
-      return { topRight: <ExecutionStatusIcon status={status} /> };
+  tags: ['demo', 'toolbar'],
+  sortOrder: 0,
+  display: {
+    label: 'Toolbar Demo',
+    icon: 'home',
+  },
+  handleConfiguration: [],
+};
+
+const rectangleDemoManifest: NodeManifest = {
+  nodeType: 'rectangleDemo',
+  version: '1.0.0',
+  category: 'demo',
+  description: 'Rectangle node for toolbar demo',
+  tags: ['demo', 'shape'],
+  sortOrder: 1,
+  display: {
+    label: 'Rectangle',
+    icon: 'square',
+    shape: 'rectangle',
+  },
+  handleConfiguration: [],
+};
+
+const squareDemoManifest: NodeManifest = {
+  nodeType: 'squareDemo',
+  version: '1.0.0',
+  category: 'demo',
+  description: 'Square node for toolbar demo',
+  tags: ['demo', 'shape'],
+  sortOrder: 2,
+  display: {
+    label: 'Square',
+    icon: 'square',
+    shape: 'square',
+  },
+  handleConfiguration: [],
+};
+
+const circleDemoManifest: NodeManifest = {
+  nodeType: 'circleDemo',
+  version: '1.0.0',
+  category: 'demo',
+  description: 'Circle node for toolbar demo',
+  tags: ['demo', 'shape'],
+  sortOrder: 3,
+  display: {
+    label: 'Circle',
+    icon: 'circle',
+    shape: 'circle',
+  },
+  handleConfiguration: [],
+};
+
+const customToolbarManifest: NodeManifest = {
+  nodeType: 'customToolbarDemo',
+  version: '1.0.0',
+  category: 'demo',
+  description: 'Node with custom toolbar extensions',
+  tags: ['demo', 'toolbar', 'custom'],
+  sortOrder: 4,
+  display: {
+    label: 'Custom Toolbar',
+    icon: 'settings',
+  },
+  handleConfiguration: [],
+  toolbarExtensions: {
+    design: {
+      actions: [{ id: 'open-workflow', icon: 'external-link', label: 'Open workflow' }],
     },
-    getToolbar: (data) => ({
-      actions: [
-        {
-          id: 'add',
-          icon: 'add',
-          label: 'Add',
-          onAction: (nodeId) => console.log(`Add: ${nodeId}`),
-        },
-        {
-          id: 'edit',
-          icon: 'mode_edit',
-          label: 'Edit',
-          onAction: (nodeId) => console.log(`Edit: ${nodeId}`),
-        },
-        {
-          id: 'delete',
-          icon: 'delete',
-          label: 'Delete',
-          onAction: (nodeId) => console.log(`Delete: ${nodeId}`),
-        },
-      ],
-      overflowActions: [
-        {
-          id: 'duplicate',
-          icon: 'content_copy',
-          label: 'Duplicate',
-          onAction: (nodeId) => console.log(`Duplicate: ${nodeId}`),
-        },
-        {
-          id: 'settings',
-          icon: 'settings',
-          label: 'Settings',
-          onAction: (nodeId) => console.log(`Settings: ${nodeId}`),
-        },
-      ],
-      overflowLabel: 'More options',
-      position: (data?.parameters?.toolbarPosition as 'top' | 'bottom' | 'left' | 'right') || 'top',
-      align: (data?.parameters?.toolbarAlign as 'start' | 'center' | 'end') || 'end',
-    }),
   },
 };
-
-const createToggleButtonNodeRegistration = (
-  onToggle: (nodeId: string, actionId: string, newState: boolean) => void
-): NodeRegistration => ({
-  nodeType: 'toggleDemo',
-  category: 'demo',
-  displayName: 'Toggle Button Demo',
-  description: 'Node demonstrating toggle button functionality',
-  icon: 'toggle_on',
-  definition: {
-    getIcon: () => <ApIcon name="home" variant="outlined" size="40px" />,
-    getDisplay: (data) => ({
-      label: data.display?.label || 'Toggle Demo',
-      subLabel: data.display?.subLabel || 'Toggle buttons with state',
-      shape: 'rectangle',
-    }),
-    getToolbar: (data) => ({
-      actions: [
-        {
-          id: 'visibility',
-          icon: data.parameters?.visibilityOn ? 'visibility_off' : 'visibility',
-          label: data.parameters?.visibilityOn ? 'Turn Visibility Off' : 'Turn Visibility On',
-          isToggled: data.parameters?.visibilityOn as boolean,
-          onAction: (nodeId) => {
-            const currentState = data.parameters?.visibilityOn as boolean;
-            onToggle(nodeId, 'visibility', !currentState);
-          },
-        },
-        {
-          id: 'lock',
-          icon: data.parameters?.lockOn ? 'lock_open' : 'lock',
-          label: data.parameters?.lockOn ? 'Unlock' : 'Lock',
-          isToggled: data.parameters?.lockOn as boolean,
-          onAction: (nodeId) => {
-            const currentState = data.parameters?.lockOn as boolean;
-            onToggle(nodeId, 'lock', !currentState);
-          },
-        },
-        { id: 'separator' },
-        {
-          id: 'edit',
-          icon: 'mode_edit',
-          label: 'Edit',
-          onAction: (nodeId) => console.log(`Edit: ${nodeId}`),
-        },
-      ],
-      position: 'top',
-      align: 'end',
-    }),
-  },
-});
-
-const pinnedActionsNodeRegistration: NodeRegistration = {
-  nodeType: 'pinnedDemo',
-  category: 'demo',
-  displayName: 'Pinned Actions Demo',
-  description: 'Node demonstrating pinned actions that remain visible',
-  icon: 'push_pin',
-  definition: {
-    getIcon: () => <ApIcon name="home" variant="outlined" size="40px" />,
-    getDisplay: (data) => ({
-      label: data.display?.label || 'Pinned Demo',
-      subLabel: data.display?.subLabel || 'Pinned actions always visible',
-      shape: data.display?.shape || 'rectangle',
-    }),
-    getToolbar: (data) => ({
-      actions: [
-        {
-          id: 'edit',
-          icon: 'mode_edit',
-          label: 'Edit',
-          isPinned: true,
-          onAction: (nodeId) => console.log(`Edit: ${nodeId}`),
-        },
-        {
-          id: 'swap',
-          icon: 'swap_horiz',
-          label: 'Swap',
-          onAction: (nodeId) => console.log(`Swap: ${nodeId}`),
-        },
-        { id: 'separator' },
-        {
-          id: 'delete',
-          icon: 'delete',
-          label: 'Delete',
-          onAction: (nodeId) => console.log(`Delete: ${nodeId}`),
-        },
-      ],
-      // overflowActions: [
-      //   {
-      //     id: "settings",
-      //     icon: "settings",
-      //     label: "Settings",
-      //     onAction: (nodeId) => console.log(`Settings: ${nodeId}`),
-      //   },
-      // ],
-      position: (data?.parameters?.toolbarPosition as 'top' | 'bottom' | 'left' | 'right') || 'top',
-      align: (data?.parameters?.toolbarAlign as 'start' | 'center' | 'end') || 'end',
-    }),
-  },
-};
-
-const createCustomColorNodeRegistration = (
-  onToggle: (nodeId: string, actionId: string, newState: boolean) => void
-): NodeRegistration => ({
-  nodeType: 'customColorDemo',
-  category: 'demo',
-  displayName: 'Custom Color Demo',
-  description: 'Node demonstrating custom colored buttons',
-  icon: 'palette',
-  definition: {
-    getIcon: () => <ApIcon name="home" variant="outlined" size="40px" />,
-    getDisplay: (data) => ({
-      label: data.display?.label || 'Custom Colors',
-      subLabel: data.display?.subLabel || 'Colored buttons with hover effects',
-      shape: 'rectangle',
-    }),
-    getToolbar: (data) => ({
-      actions: [
-        {
-          id: 'favorite',
-          icon: 'favorite',
-          label: 'Favorite (Red hex)',
-          color: '#E53935',
-          isToggled: data.parameters?.favoriteOn as boolean,
-          onAction: (nodeId) => {
-            const currentState = data.parameters?.favoriteOn as boolean;
-            onToggle(nodeId, 'favorite', !currentState);
-          },
-        },
-        {
-          id: 'bookmark',
-          icon: 'bookmark',
-          label: 'Bookmark (Blue rgb)',
-          color: 'rgb(30, 136, 229)',
-          isToggled: data.parameters?.bookmarkOn as boolean,
-          onAction: (nodeId) => {
-            const currentState = data.parameters?.bookmarkOn as boolean;
-            onToggle(nodeId, 'bookmark', !currentState);
-          },
-        },
-        {
-          id: 'star',
-          icon: 'star',
-          label: 'Star (Orange hsl)',
-          color: 'hsl(43, 100%, 50%)',
-          isToggled: data.parameters?.starOn as boolean,
-          onAction: (nodeId) => {
-            const currentState = data.parameters?.starOn as boolean;
-            onToggle(nodeId, 'star', !currentState);
-          },
-        },
-        { id: 'separator' },
-        {
-          id: 'check',
-          icon: 'check_circle',
-          label: 'Check (Green var)',
-          color: 'var(--uix-canvas-success-icon)',
-          onAction: (nodeId) => console.log(`Check: ${nodeId}`),
-        },
-        {
-          id: 'default',
-          icon: 'settings',
-          label: 'Default (No color)',
-          onAction: (nodeId) => console.log(`Settings: ${nodeId}`),
-        },
-      ],
-      position: 'top',
-      align: 'end',
-    }),
-  },
-});
 
 // ============================================================================
 // Meta Configuration
@@ -266,62 +108,25 @@ const meta: Meta = {
         []
       );
 
-      // Create a toggle handler that works with ReactFlow
-      const StoryWrapper = () => {
-        const { setNodes } = useReactFlow();
-
-        const handleToggle = useCallback(
-          (nodeId: string, actionId: string, newState: boolean) => {
-            setNodes((nodes) =>
-              nodes.map((node) => {
-                if (node.id !== nodeId) return node;
-                const nodeData = node.data as BaseNodeData;
-                // Determine the parameter key based on action ID
-                const paramKey =
-                  actionId === 'visibility'
-                    ? 'visibilityOn'
-                    : actionId === 'lock'
-                      ? 'lockOn'
-                      : `${actionId}On`;
-                return {
-                  ...node,
-                  data: {
-                    ...nodeData,
-                    parameters: {
-                      ...(nodeData.parameters || {}),
-                      [paramKey]: newState,
-                    },
-                  },
-                };
-              })
-            );
-          },
-          [setNodes]
-        );
-
-        const registrations = useMemo(
-          () => [
-            toolbarNodeRegistration,
-            pinnedActionsNodeRegistration,
-            createToggleButtonNodeRegistration(handleToggle),
-            createCustomColorNodeRegistration(handleToggle),
-          ],
-          [handleToggle]
-        );
-
-        return (
-          <NodeRegistryProvider registrations={registrations}>
-            <Story />
-          </NodeRegistryProvider>
-        );
-      };
+      const manifests = useMemo(
+        () => [
+          toolbarDemoManifest,
+          rectangleDemoManifest,
+          squareDemoManifest,
+          circleDemoManifest,
+          customToolbarManifest,
+        ],
+        []
+      );
 
       return (
         <ExecutionStatusContext.Provider value={executions}>
           <ReactFlowProvider>
-            <div style={{ height: '100vh', width: '100vw' }}>
-              <StoryWrapper />
-            </div>
+            <NodeRegistryProvider registrations={manifests}>
+              <div style={{ height: '100vh', width: '100vw' }}>
+                <Story />
+              </div>
+            </NodeRegistryProvider>
           </ReactFlowProvider>
         </ExecutionStatusContext.Provider>
       );
@@ -337,28 +142,25 @@ type Story = StoryObj<typeof meta>;
 // ============================================================================
 
 const SHAPES: NodeShape[] = ['rectangle', 'square', 'circle'];
-const ALIGNS = ['start', 'center', 'end'] as const;
 
-function createToolbarNodes(
-  position: 'top' | 'bottom' | 'left' | 'right' = 'top'
-): Node<BaseNodeData>[] {
+function createToolbarNodes(): Node<BaseNodeData>[] {
   const nodes: Node<BaseNodeData>[] = [];
 
-  SHAPES.forEach((shape, rowIndex) => {
-    ALIGNS.forEach((align, colIndex) => {
-      nodes.push({
-        id: `${shape}-${align}`,
-        type: 'toolbarDemo',
-        position: { x: 96 + colIndex * 300, y: 192 + rowIndex * 200 },
-        data: {
-          parameters: { toolbarAlign: align, toolbarPosition: position },
-          display: {
-            label: shape.charAt(0).toUpperCase() + shape.slice(1),
-            subLabel: `align: ${align}`,
-            shape,
-          },
+  SHAPES.forEach((shape, index) => {
+    const nodeType = `${shape}Demo`;
+    nodes.push({
+      id: `${shape}-demo`,
+      type: nodeType,
+      position: { x: 200 + index * 300, y: 250 },
+      data: {
+        nodeType,
+        version: '1.0.0',
+        parameters: {},
+        display: {
+          label: shape.charAt(0).toUpperCase() + shape.slice(1),
+          subLabel: 'Hover to see toolbar',
         },
-      });
+      },
     });
   });
 
@@ -369,19 +171,16 @@ function createToolbarNodes(
 // Story Components
 // ============================================================================
 
-function DefaultStory({ position }: { position?: 'top' | 'bottom' | 'left' | 'right' }) {
-  const initialNodes = useMemo(() => createToolbarNodes(position), [position]);
-  const { canvasProps, setNodes } = useCanvasStory({ initialNodes });
-
-  // Update nodes when position changes
-  useEffect(() => {
-    const updatedNodes = createToolbarNodes(position);
-    setNodes(updatedNodes);
-  }, [position, setNodes]);
+function DefaultStory() {
+  const initialNodes = useMemo(() => createToolbarNodes(), []);
+  const { canvasProps } = useCanvasStory({ initialNodes });
 
   return (
     <BaseCanvas {...canvasProps} mode="design">
-      <StoryInfoPanel title="Node Toolbar" description="Hover over nodes to see toolbar actions" />
+      <StoryInfoPanel
+        title="Node Toolbar"
+        description="Hover over nodes to see default toolbar actions (delete, duplicate, breakpoint)"
+      />
       <Panel position="bottom-right">
         <CanvasPositionControls translations={DefaultCanvasTranslations} />
       </Panel>
@@ -389,18 +188,20 @@ function DefaultStory({ position }: { position?: 'top' | 'bottom' | 'left' | 'ri
   );
 }
 
-function ToggleButtonStory() {
+function CustomToolbarStory() {
   const initialNodes = useMemo(
     () => [
       {
-        id: 'toggle-1',
-        type: 'toggleDemo',
-        position: { x: 250, y: 250 },
+        id: 'custom-toolbar-1',
+        type: 'customToolbarDemo',
+        position: { x: 400, y: 300 },
         data: {
-          parameters: { visibilityOn: true, lockOn: false },
+          nodeType: 'customToolbarDemo',
+          version: '1.0.0',
+          parameters: {},
           display: {
-            label: 'Toggle Demo 1',
-            subLabel: 'Click buttons to toggle state',
+            label: 'Workflow Node',
+            subLabel: 'With custom toolbar action',
           },
         },
       },
@@ -413,80 +214,8 @@ function ToggleButtonStory() {
   return (
     <BaseCanvas {...canvasProps} mode="design">
       <StoryInfoPanel
-        title="Toggle Buttons"
-        description="Click toggle buttons to change their state. Visibility and Lock icons respond to clicks."
-      />
-      <Panel position="bottom-right">
-        <CanvasPositionControls translations={DefaultCanvasTranslations} />
-      </Panel>
-    </BaseCanvas>
-  );
-}
-
-function PinnedActionsStory() {
-  const initialNodes = useMemo(() => {
-    const positions: Array<'top' | 'bottom' | 'left' | 'right'> = [
-      'top',
-      'bottom',
-      'left',
-      'right',
-    ];
-    return positions.map((position, i) => ({
-      id: `pinned-${position}`,
-      type: 'pinnedDemo',
-      position: { x: 250 + (i % 2) * 400, y: 250 + Math.floor(i / 2) * 300 },
-      data: {
-        parameters: { toolbarPosition: position, toolbarAlign: 'end', starOn: true },
-        display: {
-          label: `Pinned ${position}`,
-          subLabel: 'Deselect to see badge',
-          shape: 'rectangle',
-        },
-      },
-    }));
-  }, []);
-
-  const { canvasProps } = useCanvasStory({ initialNodes });
-
-  return (
-    <BaseCanvas {...canvasProps} mode="design">
-      <StoryInfoPanel
-        title="Pinned Actions"
-        description="Deselect nodes to see pinned badge. Select to see full toolbar expand. Click star to toggle."
-      />
-      <Panel position="bottom-right">
-        <CanvasPositionControls translations={DefaultCanvasTranslations} />
-      </Panel>
-    </BaseCanvas>
-  );
-}
-
-function CustomColorsStory() {
-  const initialNodes = useMemo(
-    () => [
-      {
-        id: 'custom-colors-1',
-        type: 'customColorDemo',
-        position: { x: 350, y: 350 },
-        data: {
-          parameters: { favoriteOn: true, bookmarkOn: false, starOn: true },
-          display: {
-            label: 'Custom Colored Buttons',
-            subLabel: 'Hover to see lighter background',
-          },
-        },
-      },
-    ],
-    []
-  );
-
-  const { canvasProps } = useCanvasStory({ initialNodes });
-
-  return (
-    <BaseCanvas {...canvasProps} mode="design">
-      <StoryInfoPanel
-        title="Custom Colors"
-        description="Buttons with custom colors. Click to toggle. Icon color matches the provided color, hover shows lighter background, toggled state shows colored underline."
+        title="Custom Toolbar Extensions"
+        description="This node has a custom 'Open workflow' action in addition to the default toolbar actions (delete, duplicate, breakpoint)"
       />
       <Panel position="bottom-right">
         <CanvasPositionControls translations={DefaultCanvasTranslations} />
@@ -500,28 +229,11 @@ function CustomColorsStory() {
 // ============================================================================
 
 export const Default: Story = {
-  name: 'Default',
-  args: { position: 'top' },
-  argTypes: {
-    position: {
-      control: { type: 'select' },
-      options: ['top', 'bottom', 'left', 'right'],
-    },
-  },
-  render: (args) => <DefaultStory {...args} />,
+  name: 'Default Toolbar',
+  render: () => <DefaultStory />,
 };
 
-export const PinnedActions: Story = {
-  name: 'Pinned Actions',
-  render: () => <PinnedActionsStory />,
-};
-
-export const ToggleButtons: Story = {
-  name: 'Toggle Buttons',
-  render: () => <ToggleButtonStory />,
-};
-
-export const CustomColors: Story = {
-  name: 'Custom Colors',
-  render: () => <CustomColorsStory />,
+export const CustomToolbarExtensions: Story = {
+  name: 'Custom Toolbar Extensions',
+  render: () => <CustomToolbarStory />,
 };
