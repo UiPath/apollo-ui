@@ -276,7 +276,11 @@ export function IconShowcase() {
 						<Label>Brand Orange</Label>
 					</IconItem>
 					<IconItem>
-						<ApIcon name="favorite" color="var(--color-secondary)" size="32px" />
+						<ApIcon
+							name="favorite"
+							color="var(--color-secondary)"
+							size="32px"
+						/>
 						<Label>Purple</Label>
 					</IconItem>
 					<IconItem>
@@ -324,12 +328,7 @@ export function IconShowcase() {
 						<Label>Purple</Label>
 					</IconItem>
 					<IconItem>
-						<ApIcon
-							name="agent"
-							variant="custom"
-							color="#00ff00"
-							size="32px"
-						/>
+						<ApIcon name="agent" variant="custom" color="#00ff00" size="32px" />
 						<Label>Agent (Green)</Label>
 					</IconItem>
 					<IconItem>

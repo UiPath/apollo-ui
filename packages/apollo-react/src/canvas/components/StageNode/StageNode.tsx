@@ -152,7 +152,7 @@ const StageNodeComponent = (props: StageNodeProps) => {
   const hasConnections = connectedHandleIds.size > 0;
 
   const shouldShowHandles = useMemo(() => {
-    if(status) {
+    if (status) {
       return false;
     }
     return selected || isHovered || isConnecting || hasConnections;

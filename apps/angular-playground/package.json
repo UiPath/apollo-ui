@@ -6,8 +6,8 @@
   "scripts": {
     "build": "echo 'Angular playground requires angular.json setup'",
     "clean": "rm -rf dist",
-    "format": "prettier --write \"./**/*.{ts,tsx,js,jsx,json,css,scss,md}\"",
-    "format:check": "prettier --check \"./**/*.{ts,tsx,js,jsx,json,css,scss,md}\""
+    "format": "biome check --write .",
+    "format:check": "biome check ."
   },
   "dependencies": {
     "@angular/animations": "^19.1.2",

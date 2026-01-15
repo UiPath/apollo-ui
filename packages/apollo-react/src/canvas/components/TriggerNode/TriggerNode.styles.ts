@@ -15,7 +15,7 @@ export const TriggerContainer = styled.div<{ selected?: boolean; status?: Trigge
   cursor: pointer;
 
   ${({ selected }) =>
-    selected 
+    selected
       ? css`
           border-color: var(--uix-canvas-primary);
           outline: 4px solid var(--uix-canvas-secondary-pressed);
@@ -57,7 +57,7 @@ export const TriggerContainer = styled.div<{ selected?: boolean; status?: Trigge
     `}
 `;
 
-export const TriggerIconWrapper = styled.div<{ status?: TriggerStatus, nodeHeight?: number }>`
+export const TriggerIconWrapper = styled.div<{ status?: TriggerStatus; nodeHeight?: number }>`
   display: flex;
   align-items: center;
   justify-content: center;
