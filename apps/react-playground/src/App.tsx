@@ -177,26 +177,17 @@ function App() {
 								path="/components/circular-progress"
 								element={<CircularProgressShowcase />}
 							/>
-							<Route
-								path="/components/icon"
-								element={<IconShowcase />}
-							/>
+							<Route path="/components/icon" element={<IconShowcase />} />
 							<Route
 								path="/components/icon-button"
 								element={<IconButtonShowcase />}
 							/>
-							<Route
-								path="/components/menu"
-								element={<MenuShowcase />}
-							/>
+							<Route path="/components/menu" element={<MenuShowcase />} />
 							<Route
 								path="/components/progress-spinner"
 								element={<ProgressSpinnerShowcase />}
 							/>
-							<Route
-								path="/components/tooltip"
-								element={<TooltipShowcase />}
-							/>
+							<Route path="/components/tooltip" element={<TooltipShowcase />} />
 						</Routes>
 					</MainContent>
 				</AppContainer>

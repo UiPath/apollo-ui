@@ -276,9 +276,7 @@ export function MenuShowcase() {
 			<ShowcaseSection>
 				<SectionTitle>Menu with States</SectionTitle>
 				<ComponentRow>
-					<Label>
-						Menu with selected, disabled, and section header items
-					</Label>
+					<Label>Menu with selected, disabled, and section header items</Label>
 					<ApButton
 						label="Open Menu with States"
 						onClick={(e) => setAnchorEl3(e.currentTarget as HTMLElement)}
