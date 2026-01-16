@@ -83,7 +83,7 @@ export default async function RootLayout({
                 <Analytics />
                 <ThemeWrapper>
                     <Layout
-                        sidebar={{ autoCollapse: false }}
+                        sidebar={{ autoCollapse: false, defaultMenuCollapseLevel: 1 }}
                         navbar={navbar}
                         pageMap={await getPageMap()}
                         docsRepositoryBase="https://github.com/UiPath/apollo-ui/tree/main/apps/apollo-vertex"
