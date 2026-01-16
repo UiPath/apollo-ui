@@ -1,3 +1,17 @@
+## [@uipath/apollo-react-v3.0.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@2.11.5...@uipath/apollo-react@3.0.0) (2026-01-16)
+
+### ⚠ BREAKING CHANGES
+
+* **apollo-react:** the base node is now based off the JSON based node manifest
+
+### Features
+
+* **apollo-react:** json schema based canvas [PLT-6044] ([f91764a](https://github.com/UiPath/apollo-ui/commit/f91764a18eeca8f10ba1fc2a4c5452194b870ba0))
+
+### Bug Fixes
+
+* **angular-playground:** change lint to biome ([a712e8a](https://github.com/UiPath/apollo-ui/commit/a712e8a7e6ae7a31fc7567ee36f6565c6ed6df49))
+
 ## [2.11.5](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@2.11.4...@uipath/apollo-react@2.11.5) (2026-01-14)
 
 
