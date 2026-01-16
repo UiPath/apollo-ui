@@ -1,3 +1,4 @@
+import { Breadcrumb } from '@uipath/apollo-react/canvas/controls';
 import type {
   Connection,
   Edge,
@@ -24,9 +25,7 @@ import type React from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { PREVIEW_EDGE_ID, PREVIEW_NODE_ID } from '../../constants';
-import { Breadcrumb } from '../../controls';
 import { useAddNodeOnConnectEnd } from '../../hooks/useAddNodeOnConnectEnd';
-import { ToolbarActionEvent } from '../../schema/toolbar';
 import { animatedViewportManager } from '../../stores/animatedViewportManager';
 import {
   selectBreadcrumbs,
@@ -43,7 +42,7 @@ import { AddNodeManager } from '../AddNodePanel/AddNodeManager';
 import { AddNodePreview } from '../AddNodePanel/AddNodePreview';
 import { BaseCanvas, type BaseCanvasRef } from '../BaseCanvas';
 import { BaseNode } from '../BaseNode';
-import { useNodeManifests } from '../BaseNode/useNodeTypeRegistry';
+import { useNodeRegistrations } from '../BaseNode/useNodeTypeRegistry';
 import { BlankCanvasNode } from '../BlankCanvasNode';
 import { CanvasPositionControls } from '../CanvasPositionControls';
 import { MiniCanvasNavigator } from '../MiniCanvasNavigator';
@@ -67,25 +66,25 @@ export const HierarchicalCanvas: React.FC<HierarchicalCanvasProps> = ({ mode = '
   const lastCanvasIdRef = useRef<string | null>(null);
   const shouldAnimate = mode === 'design' && !prefersReducedMotion();
 
-  // Build node types mapping from manifests and defaults
-  const nodeManifests = useNodeManifests();
+  // Build node types mapping from registrations and defaults
+  const nodeRegistrations = useNodeRegistrations();
   const nodeTypes = useMemo(() => {
-    const types = nodeManifests.reduce(
-      (acc, manifest) => {
-        if (!acc[manifest.nodeType]) {
-          acc[manifest.nodeType] = BaseNode;
+    const types = nodeRegistrations.reduce(
+      (acc, registration) => {
+        if (!acc[registration.nodeType]) {
+          acc[registration.nodeType] = BaseNode;
         }
         return acc;
       },
       { ...DEFAULT_NODE_TYPES } as NodeTypes
     );
     return types as NodeTypes;
-  }, [nodeManifests]);
+  }, [nodeRegistrations]);
 
   // Optimized selectors to prevent unnecessary re-renders
   const currentCanvas = useCanvasStore(selectCurrentCanvas);
   const previousCanvas = useCanvasStore(selectPreviousCanvas);
-  const breadcrumbs = useCanvasStore(selectBreadcrumbs);
+  const breadcrumbs = useCanvasStore(useShallow(selectBreadcrumbs));
   const actions = useCanvasStore(useShallow(selectCanvasActions));
   const transitionState = useCanvasStore(selectTransitionState);
   const store = useCanvasStore();
@@ -251,15 +250,6 @@ export const HierarchicalCanvas: React.FC<HierarchicalCanvasProps> = ({ mode = '
     [actions, reactFlowInstance, store.currentPath, transitionState.isTransitioning, shouldAnimate]
   );
 
-  const handleToolbarAction = useCallback(
-    async (event: ToolbarActionEvent) => {
-      if (event.actionId === 'drill-in') {
-        await store.drillIntoNode(event.nodeId, true);
-      }
-    },
-    [store]
-  );
-
   const maintainNodesInView = useMemo(
     () =>
       currentCanvas?.nodes?.length === 1 && currentCanvas?.nodes[0]?.id === 'blank-canvas-node'
@@ -369,7 +359,6 @@ export const HierarchicalCanvas: React.FC<HierarchicalCanvasProps> = ({ mode = '
         onConnect={handleConnect}
         onConnectEnd={addNodeOnConnectEnd}
         onInit={handleInit}
-        onToolbarAction={handleToolbarAction}
         mode={mode}
         defaultViewport={currentCanvas.viewport}
         fitView={shouldFitView}

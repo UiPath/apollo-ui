@@ -5,8 +5,9 @@ import { ApTypography } from '@uipath/apollo-react/material';
 import { ApIcon } from '@uipath/apollo-react/material/components';
 import { AnimatePresence } from 'motion/react';
 import { memo, useCallback, useMemo, useState } from 'react';
-import { HandleConfigurationSpecificPosition } from '../../schema/node-definition/handle';
+
 import { canvasEventBus } from '../../utils/CanvasEventBus';
+import type { HandleConfigurationSpecificPosition } from '../BaseNode/BaseNode.types';
 import {
   StyledAddButton,
   StyledHandle,

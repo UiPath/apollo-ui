@@ -22,8 +22,9 @@ import { Position, useStore, useViewport } from '@uipath/apollo-react/canvas/xyf
 import { ApIcon, ApIconButton, ApTooltip, ApTypography } from '@uipath/apollo-react/material';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { HandleGroupManifest } from '../../schema/node-definition';
+
 import { useConnectedHandles } from '../BaseCanvas/ConnectedHandlesContext';
+import type { HandleConfiguration } from '../BaseNode/BaseNode.types';
 import { useButtonHandles } from '../ButtonHandle/useButtonHandles';
 import { ExecutionStatusIcon } from '../ExecutionStatusIcon';
 import { FloatingCanvasPanel } from '../FloatingCanvasPanel';
@@ -307,7 +308,7 @@ const StageNodeComponent = (props: StageNodeProps) => {
     [onAddTaskFromToolbox, setSelectedNodeId, id]
   );
 
-  const handleConfigurations: HandleGroupManifest[] = useMemo(
+  const handleConfigurations: HandleConfiguration[] = useMemo(
     () =>
       isException
         ? []

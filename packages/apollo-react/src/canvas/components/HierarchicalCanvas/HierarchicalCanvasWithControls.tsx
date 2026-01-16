@@ -2,193 +2,271 @@ import { FontVariantToken } from '@uipath/apollo-core';
 import {
   type Node,
   Panel,
+  Position,
   ReactFlowProvider,
   useReactFlow,
 } from '@uipath/apollo-react/canvas/xyflow/react';
 import { ApButton, ApTypography } from '@uipath/apollo-react/material';
 import { ApIcon } from '@uipath/apollo-react/material/components';
-import React, { useCallback, useEffect } from 'react';
-import type { NodeManifest } from '../../schema/node-definition/node-manifest';
+import type React from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
+
 import { useCanvasStore } from '../../stores/canvasStore';
+import { DefaultResourceNodeTranslations } from '../../types';
 import type { CanvasLevel } from '../../types/canvas.types';
-import { canvasEventBus } from '../../utils';
-import { createAddNodePreview } from '../AddNodePanel';
-import { NodeRegistryProvider } from '../BaseNode';
+import { canvasEventBus } from '../../utils/CanvasEventBus';
+import { createAddNodePreview } from '../AddNodePanel/createAddNodePreview';
+import type { BaseNodeData, NodeDisplay, NodeRegistration } from '../BaseNode';
+import { NodeRegistryProvider } from '../BaseNode/NodeRegistryProvider';
 import { HierarchicalCanvas } from './HierarchicalCanvas';
 
-// ============================================================================
-// Workflow Node Manifests
-// ============================================================================
-
-const workflowManifests: NodeManifest[] = [
-  {
+const workflowNodeTypes = {
+  start: {
     nodeType: 'start',
-    version: '1.0.0',
+    displayName: 'Start',
     category: 'Basic',
-    tags: ['workflow', 'basic'],
+    icon: 'play_circle',
+    description: 'Entry point of the workflow',
+    definition: {
+      getDisplay: (data: BaseNodeData): NodeDisplay => ({
+        label: (data.parameters?.label as string) || 'Start',
+      }),
+      getIcon: () => <ApIcon variant="outlined" name="play_circle" size="40px" />,
+      getHandleConfigurations: () => [
+        {
+          position: Position.Right,
+          handles: [
+            {
+              id: 'output',
+              type: 'source' as const,
+              handleType: 'output' as const,
+              showButton: true,
+            },
+          ],
+        },
+      ],
+      getDefaultParameters: () => ({
+        label: 'Start',
+      }),
+    },
     sortOrder: 1,
-    display: {
-      label: 'Start',
-      icon: 'play_circle',
-      shape: 'circle',
-    },
-    handleConfiguration: [
-      {
-        position: 'right',
-        handles: [
-          {
-            id: 'output',
-            type: 'source',
-            handleType: 'output',
-            showButton: true,
-          },
-        ],
-      },
-    ],
   },
-  {
+
+  end: {
     nodeType: 'end',
-    version: '1.0.0',
+    displayName: 'End',
     category: 'Basic',
-    tags: ['workflow', 'basic'],
+    icon: 'stop_circle',
+    description: 'Exit point of the workflow',
+    definition: {
+      getDisplay: (data: BaseNodeData): NodeDisplay => ({
+        label: (data.parameters?.label as string) || 'End',
+      }),
+      getIcon: () => <ApIcon variant="outlined" name="stop_circle" size="40px" />,
+      getHandleConfigurations: () => [
+        {
+          position: Position.Left,
+          handles: [
+            {
+              id: 'input',
+              type: 'target' as const,
+              handleType: 'input' as const,
+            },
+          ],
+        },
+      ],
+      getDefaultParameters: () => ({
+        label: 'End',
+      }),
+    },
     sortOrder: 2,
-    display: {
-      label: 'End',
-      icon: 'stop_circle',
-      shape: 'circle',
-    },
-    handleConfiguration: [
-      {
-        position: 'left',
-        handles: [
-          {
-            id: 'input',
-            type: 'target',
-            handleType: 'input',
-          },
-        ],
-      },
-    ],
   },
-  {
+
+  process: {
     nodeType: 'process',
-    version: '1.0.0',
+    displayName: 'Process',
     category: 'Actions',
-    tags: ['workflow', 'action'],
+    icon: 'settings',
+    description: 'A process or action step',
+    definition: {
+      getDisplay: (data: BaseNodeData): NodeDisplay => ({
+        label: (data.parameters?.label as string) || 'Process',
+        subLabel: data.isDrillable ? '↓ Drillable' : undefined,
+      }),
+      getIcon: () => <ApIcon variant="outlined" name="settings" size="40px" />,
+      getHandleConfigurations: () => [
+        {
+          position: Position.Left,
+          handles: [
+            {
+              id: 'input',
+              type: 'target' as const,
+              handleType: 'input' as const,
+            },
+          ],
+        },
+        {
+          position: Position.Right,
+          handles: [
+            {
+              id: 'output',
+              type: 'source' as const,
+              handleType: 'output' as const,
+              showButton: true,
+            },
+          ],
+        },
+      ],
+      getDefaultParameters: () => ({
+        label: 'Process',
+        isDrillable: true,
+        childCanvasId: null,
+      }),
+    },
     sortOrder: 10,
-    display: {
-      label: 'Process',
-      icon: 'settings',
-      shape: 'rectangle',
-    },
-    handleConfiguration: [
-      {
-        position: 'left',
-        handles: [
-          {
-            id: 'input',
-            type: 'target',
-            handleType: 'input',
-          },
-        ],
-      },
-      {
-        position: 'right',
-        handles: [
-          {
-            id: 'output',
-            type: 'source',
-            handleType: 'output',
-            showButton: true,
-          },
-        ],
-      },
-    ],
   },
-  {
+
+  decision: {
     nodeType: 'decision',
-    version: '1.0.0',
+    displayName: 'Decision',
     category: 'Logic',
-    tags: ['workflow', 'logic'],
+    icon: 'help',
+    description: 'A decision point with multiple paths',
+    definition: {
+      getDisplay: (data: BaseNodeData): NodeDisplay => ({
+        label: (data.parameters?.label as string) || 'Decision',
+      }),
+      getIcon: () => <ApIcon variant="outlined" name="help" size="40px" />,
+      getHandleConfigurations: () => [
+        {
+          position: Position.Left,
+          handles: [
+            {
+              id: 'input',
+              type: 'target' as const,
+              handleType: 'input' as const,
+            },
+          ],
+        },
+        {
+          position: Position.Right,
+          handles: [
+            {
+              id: 'output-true',
+              type: 'source' as const,
+              handleType: 'output' as const,
+              label: 'True',
+              showButton: true,
+            },
+            {
+              id: 'output-false',
+              type: 'source' as const,
+              handleType: 'output' as const,
+              label: 'False',
+              showButton: true,
+            },
+          ],
+        },
+      ],
+      getDefaultParameters: () => ({
+        label: 'Decision',
+        condition: '',
+      }),
+    },
     sortOrder: 20,
-    display: {
-      label: 'Decision',
-      icon: 'help',
-      shape: 'square',
-    },
-    handleConfiguration: [
-      {
-        position: 'left',
-        handles: [
-          {
-            id: 'input',
-            type: 'target',
-            handleType: 'input',
-          },
-        ],
-      },
-      {
-        position: 'right',
-        handles: [
-          {
-            id: 'output-true',
-            type: 'source',
-            handleType: 'output',
-            label: 'True',
-            showButton: true,
-          },
-          {
-            id: 'output-false',
-            type: 'source',
-            handleType: 'output',
-            label: 'False',
-            showButton: true,
-          },
-        ],
-      },
-    ],
   },
-  {
+
+  subprocess: {
     nodeType: 'subprocess',
-    version: '1.0.0',
+    displayName: 'Sub-Process',
     category: 'Structure',
-    tags: ['workflow', 'structure'],
+    icon: 'folder',
+    description: 'A sub-process that contains its own workflow',
+    definition: {
+      getDisplay: (data: BaseNodeData): NodeDisplay => ({
+        label: (data.parameters?.label as string) || 'Sub-Process',
+        subLabel: '⤵ Click to open',
+        shape: 'square' as const,
+      }),
+      getIcon: () => <ApIcon variant="outlined" name="folder" size="40px" />,
+      getHandleConfigurations: () => [
+        {
+          position: Position.Left,
+          handles: [
+            {
+              id: 'input',
+              type: 'target' as const,
+              handleType: 'input' as const,
+            },
+          ],
+        },
+        {
+          position: Position.Right,
+          handles: [
+            {
+              id: 'output',
+              type: 'source' as const,
+              handleType: 'output' as const,
+              showButton: true,
+            },
+          ],
+        },
+      ],
+      getDefaultParameters: () => ({
+        label: 'Sub-Process',
+        isDrillable: true,
+        childCanvasId: null,
+      }),
+      getToolbar: (data: BaseNodeData) => {
+        const actions = [];
+        if (data.isDrillable && data.childCanvasId) {
+          actions.push({
+            id: 'drill-in',
+            icon: 'open_in_new',
+            label: 'Open Sub-Process',
+            onAction: async (nodeId: string) => {
+              const store = useCanvasStore.getState();
+              // Use the new drillIntoNode method for smooth animations
+              await store.drillIntoNode(nodeId, true);
+            },
+          });
+        }
+        return {
+          actions,
+          overflowActions: [
+            {
+              id: 'delete',
+              icon: 'delete',
+              label: 'Delete',
+              onAction: (_nodeId: string) => {
+                /* Delete subprocess */
+              },
+            },
+          ],
+          // TODO: Localize
+          overflowLabel: DefaultResourceNodeTranslations.moreOptions,
+          position: 'top' as const,
+          align: 'end' as const,
+        };
+      },
+    },
     sortOrder: 40,
-    display: {
-      label: 'Sub-Process',
-      icon: 'folder',
-      shape: 'square',
-    },
-    handleConfiguration: [
-      {
-        position: 'left',
-        handles: [
-          {
-            id: 'input',
-            type: 'target',
-            handleType: 'input',
-          },
-        ],
-      },
-      {
-        position: 'right',
-        handles: [
-          {
-            id: 'output',
-            type: 'source',
-            handleType: 'output',
-            showButton: true,
-          },
-        ],
-      },
-    ],
-    toolbarExtensions: {
-      design: {
-        actions: [{ id: 'drill-in', icon: 'open_in_new', label: 'Open Sub-Process' }],
-      },
-    },
   },
-];
+};
+
+// Convert to NodeRegistration array
+const getNodeRegistrations = (): NodeRegistration[] => {
+  return Object.values(workflowNodeTypes).map((type) => ({
+    nodeType: type.nodeType,
+    definition: type.definition,
+    category: type.category,
+    displayName: type.displayName,
+    description: type.description,
+    icon: type.icon,
+    sortOrder: type.sortOrder,
+    isVisible: true,
+  }));
+};
 
 /**
  * Inner component that uses the ReactFlow hooks
@@ -389,8 +467,10 @@ const CanvasWithControlsContent: React.FC = () => {
  * HierarchicalCanvas with test controls for Storybook
  */
 export const HierarchicalCanvasWithControls: React.FC = () => {
+  const nodeRegistrations = useMemo(() => getNodeRegistrations(), []);
+
   return (
-    <NodeRegistryProvider registrations={workflowManifests}>
+    <NodeRegistryProvider registrations={nodeRegistrations}>
       <ReactFlowProvider>
         <CanvasWithControlsContent />
       </ReactFlowProvider>

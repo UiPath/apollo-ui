@@ -17,7 +17,7 @@ import {
 } from '../hooks';
 import type { ElementStatus } from '../types/execution';
 import type { ValidationErrorSeverity } from '../types/validation';
-import { allNodeManifests } from './manifests';
+import { allNodeManifests, createNodesFromManifests } from './manifests';
 
 /**
  * Props for execution state configuration.
@@ -127,12 +127,12 @@ export function withCanvasProviders(options: CanvasProvidersOptions = {}): Decor
   } = options;
 
   return function CanvasProvidersDecorator(Story) {
-    const manifests = useMemo(() => allNodeManifests, []);
+    const registrations = useMemo(() => createNodesFromManifests(allNodeManifests), []);
     const executions = useMemo(() => executionState, []);
     const validations = useMemo(() => validationState, []);
 
     const content = (
-      <NodeRegistryProvider registrations={manifests}>
+      <NodeRegistryProvider registrations={registrations}>
         <ExecutionStatusContext.Provider value={executions}>
           <ValidationStatusContext.Provider value={validations}>
             <ReactFlowProvider>

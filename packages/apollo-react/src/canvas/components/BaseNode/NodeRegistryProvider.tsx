@@ -1,12 +1,12 @@
 import type { ReactNode } from 'react';
 import { useMemo } from 'react';
-import type { NodeManifest } from '../../schema/node-definition/node-manifest';
+import type { NodeRegistration } from './BaseNode.types';
 import { NodeTypeRegistry } from './NodeTypeRegistry';
 import { NodeRegistryContext } from './useNodeTypeRegistry';
 
 interface NodeRegistryProviderProps {
   children: ReactNode;
-  registrations?: NodeManifest[];
+  registrations?: NodeRegistration[];
   onRegistration?: (nodeType: string, success: boolean) => void;
 }
 
@@ -16,7 +16,7 @@ export const NodeRegistryProvider: React.FC<NodeRegistryProviderProps> = ({
 }) => {
   const registry = useMemo(() => {
     const reg = new NodeTypeRegistry();
-    registrations.forEach((manifest) => reg.registerManifest(manifest));
+    registrations.forEach((registration) => reg.register(registration));
     return reg;
   }, [registrations]);
 

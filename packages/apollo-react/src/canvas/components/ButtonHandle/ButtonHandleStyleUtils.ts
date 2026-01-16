@@ -1,6 +1,6 @@
 import { Position } from '@uipath/apollo-react/canvas/xyflow/react';
 import { GRID_SPACING } from '../../constants';
-import { HandleConfigurationSpecificPosition } from '../../schema/node-definition/handle';
+import type { HandleConfigurationSpecificPosition } from '../BaseNode/BaseNode.types';
 
 /**
  * Returns true if the position is on a horizontal edge (Top or Bottom)

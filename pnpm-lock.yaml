@@ -553,9 +553,6 @@ importers:
       '@uipath/apollo-utils':
         specifier: workspace:*
         version: link:../apollo-utils
-      '@uipath/apollo-wind':
-        specifier: workspace:*
-        version: link:../apollo-wind
       '@xyflow/react':
         specifier: 12.8.2
         version: 12.8.2(@types/react@19.2.8)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
@@ -616,9 +613,6 @@ importers:
       remark-math:
         specifier: ^6.0.0
         version: 6.0.0
-      reselect:
-        specifier: ^5.1.1
-        version: 5.1.1
       sanitize-html:
         specifier: ^2.17.0
         version: 2.17.0
@@ -628,9 +622,6 @@ importers:
       use-sync-external-store:
         specifier: ^1.2.0
         version: 1.6.0(react@19.2.3)
-      zod:
-        specifier: ^4.3.5
-        version: 4.3.5
       zustand:
         specifier: ^5.0.9
         version: 5.0.9(@types/react@19.2.8)(react@19.2.3)(use-sync-external-store@1.6.0(react@19.2.3))
@@ -13250,9 +13241,6 @@ packages:
 
   zod@4.2.1:
     resolution: {integrity: sha512-0wZ1IRqGGhMP76gLqz8EyfBXKk0J2qo2+H3fi4mcUP/KtTocoX08nmIAHl1Z2kJIZbZee8KOpBCSNPRgauucjw==}
-
-  zod@4.3.5:
-    resolution: {integrity: sha512-k7Nwx6vuWx1IJ9Bjuf4Zt1PEllcwe7cls3VNzm4CQ1/hgtFUK2bRNG3rvnpPUhFjmqJKAKtjV576KnUkHocg/g==}
 
   zone.js@0.15.1:
     resolution: {integrity: sha512-XE96n56IQpJM7NAoXswY3XRLcWFW83xe0BiAOeMD7K5k5xecOeul3Qcpx6GqEeeHNkW5DWL5zOyTbEfB4eti8w==}
@@ -27974,8 +27962,6 @@ snapshots:
   zod@3.25.76: {}
 
   zod@4.2.1: {}
-
-  zod@4.3.5: {}
 
   zone.js@0.15.1: {}
 

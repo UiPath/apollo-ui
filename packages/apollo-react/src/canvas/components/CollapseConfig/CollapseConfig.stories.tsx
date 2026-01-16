@@ -5,12 +5,12 @@ import { ApIcon } from '@uipath/apollo-react/material/components';
 import { useCallback, useMemo } from 'react';
 import {
   allNodeManifests,
+  getIcon,
   StoryInfoPanel,
   useCanvasStory,
   withCanvasProviders,
 } from '../../storybook-utils';
 import { DefaultCanvasTranslations } from '../../types';
-import { getIcon } from '../../utils/icon-registry';
 import { BaseCanvas } from '../BaseCanvas';
 import { NewBaseNode } from '../BaseNode/NewBaseNode';
 import type { NewBaseNodeData } from '../BaseNode/NewBaseNode.types';
