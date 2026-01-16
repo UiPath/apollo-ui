@@ -1,18 +1,20 @@
 {
+  "extends": "semantic-release-monorepo",
   "branches": ["main"],
   "tagFormat": "@uipath/ap-chat@${version}",
   "plugins": [
     [
       "@semantic-release/commit-analyzer",
       {
-        "releaseRules": [
-          { "type": "chore", "scope": "ap-chat", "release": "patch" },
-          { "type": "chore", "scope": "apollo-react", "release": "patch" },
-          { "scope": "!(ap-chat|apollo-react)", "release": false }
-        ]
+        "preset": "conventionalcommits"
       }
     ],
-    "@semantic-release/release-notes-generator",
+    [
+      "@semantic-release/release-notes-generator",
+      {
+        "preset": "conventionalcommits"
+      }
+    ],
     [
       "@semantic-release/changelog",
       {
