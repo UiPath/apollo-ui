@@ -1,7 +1,10 @@
 import type { Node } from '@uipath/apollo-react/canvas/xyflow/react';
 import { Position } from '@uipath/apollo-react/canvas/xyflow/react';
-import type { BaseNodeData, NodeShape } from '../../components/BaseNode/BaseNode.types';
-import { HandleGroupManifest } from '../../schema/node-definition';
+import type {
+  BaseNodeData,
+  HandleConfiguration,
+  NodeShape,
+} from '../../components/BaseNode/BaseNode.types';
 
 /**
  * Common node positions for grid layouts.
@@ -33,13 +36,13 @@ export const NodePositions = {
 export interface CreateNodeOptions<T = Record<string, unknown>> {
   /** Unique node ID */
   id: string;
-  /** Node type (should match a manifest registration) */
+  /** Node type (should match a registration) */
   type?: string;
   /** Node position */
   position?: { x: number; y: number };
-  /** Node data (merged with defaults) */
+  /** Node data */
   data?: Partial<BaseNodeData & T>;
-  /** Display configuration (overrides manifest defaults) */
+  /** Display configuration */
   display?: {
     label?: string;
     subLabel?: string;
@@ -51,41 +54,23 @@ export interface CreateNodeOptions<T = Record<string, unknown>> {
     iconColor?: string;
     iconBackground?: string;
   };
-  /** Handle configurations (overrides manifest handles) */
-  handleConfigurations?: HandleGroupManifest[];
+  /** Handle configurations */
+  handleConfigurations?: HandleConfiguration[];
   /** Whether node is selected */
   selected?: boolean;
   /** Enable SmartHandle for dynamic handle positioning */
   useSmartHandles?: boolean;
-  /** Execution status for the node */
-  executionStatus?:
-    | 'NotExecuted'
-    | 'InProgress'
-    | 'Completed'
-    | 'Failed'
-    | 'Paused'
-    | 'Cancelled'
-    | 'UserCancelled'
-    | 'Terminated';
 }
 
 /**
  * Creates a generic node with common defaults.
- * Now compatible with manifest-based node system.
  *
  * @example
  * ```tsx
  * const node = createNode({
  *   id: 'my-node',
- *   type: 'uipath.decision',
  *   position: NodePositions.row1col1,
- *   data: {
- *     nodeType: 'uipath.decision',
- *     version: '1.0.0',
- *     parameters: { condition: 'value > 10' },
- *   },
- *   display: { label: 'Check Value', shape: 'square' },
- *   executionStatus: 'Completed',
+ *   display: { label: 'My Node', shape: 'square' },
  * });
  * ```
  */
@@ -101,19 +86,7 @@ export function createNode<T = Record<string, unknown>>(
     handleConfigurations,
     selected = false,
     useSmartHandles,
-    executionStatus,
   } = options;
-
-  // Build base data with required fields for manifest system
-  const baseData: Partial<BaseNodeData> = {
-    nodeType: type,
-    version: (data as any).version || '1.0.0',
-    parameters: (data as any).parameters || {},
-    display: display || (data as any).display,
-    handleConfigurations: handleConfigurations || (data as any).handleConfigurations,
-    useSmartHandles: useSmartHandles ?? (data as any).useSmartHandles,
-    executionStatus: executionStatus || (data as any).executionStatus,
-  };
 
   return {
     id,
@@ -121,7 +94,10 @@ export function createNode<T = Record<string, unknown>>(
     position,
     selected,
     data: {
-      ...baseData,
+      parameters: {},
+      display,
+      handleConfigurations,
+      useSmartHandles,
       ...data,
     } as unknown as BaseNodeData & T,
   };
@@ -134,7 +110,7 @@ export function createNode<T = Record<string, unknown>>(
  * ```tsx
  * const nodes = createNodeGrid({
  *   baseId: 'test',
- *   type: 'uipath.decision',
+ *   type: 'generic',
  *   rows: [
  *     [{ label: 'A' }, { label: 'B' }],
  *     [{ label: 'C' }, { label: 'D' }],
@@ -145,12 +121,10 @@ export function createNode<T = Record<string, unknown>>(
 export function createNodeGrid(options: {
   /** Base ID prefix for nodes */
   baseId: string;
-  /** Node type for all nodes (should match a manifest) */
+  /** Node type for all nodes */
   type?: string;
   /** 2D array of node configurations */
-  rows: Array<
-    Array<{ label: string; subLabel?: string; shape?: NodeShape; executionStatus?: string }>
-  >;
+  rows: Array<Array<{ label: string; subLabel?: string; shape?: NodeShape }>>;
   /** Starting X position */
   startX?: number;
   /** Starting Y position */
@@ -182,17 +156,11 @@ export function createNodeGrid(options: {
             x: startX + colIndex * gapX,
             y: startY + rowIndex * gapY,
           },
-          data: {
-            nodeType: type,
-            version: '1.0.0',
-            parameters: {},
-          },
           display: {
             label: cell.label,
             subLabel: cell.subLabel,
             shape: cell.shape ?? 'square',
           },
-          executionStatus: cell.executionStatus as any,
         })
       );
     });
@@ -257,31 +225,11 @@ export const HandleConfigs = {
 
 /**
  * Creates execution status variations of a node for testing status display.
- *
- * @example
- * ```tsx
- * const variations = createStatusVariations({
- *   type: 'uipath.decision',
- *   position: { x: 96, y: 96 },
- *   data: {
- *     nodeType: 'uipath.decision',
- *     version: '1.0.0',
- *     parameters: {},
- *   },
- *   display: { label: 'Decision', shape: 'square' },
- * });
- * ```
  */
 export function createStatusVariations(
-  baseConfig: Omit<CreateNodeOptions, 'id' | 'executionStatus'>
+  baseConfig: Omit<CreateNodeOptions, 'id'>
 ): Node<BaseNodeData>[] {
-  const statuses: Array<'NotExecuted' | 'InProgress' | 'Completed' | 'Failed' | 'Paused'> = [
-    'NotExecuted',
-    'InProgress',
-    'Completed',
-    'Failed',
-    'Paused',
-  ];
+  const statuses = ['NotExecuted', 'InProgress', 'Completed', 'Failed', 'Paused'];
 
   return statuses.map((status, index) =>
     createNode({
@@ -291,17 +239,10 @@ export function createStatusVariations(
         x: (baseConfig.position?.x ?? 96) + index * 192,
         y: baseConfig.position?.y ?? 96,
       },
-      data: {
-        nodeType: baseConfig.type || 'generic',
-        version: '1.0.0',
-        parameters: {},
-        ...baseConfig.data,
-      },
       display: {
         ...baseConfig.display,
         subLabel: status,
       },
-      executionStatus: status,
     })
   );
 }

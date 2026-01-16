@@ -6,7 +6,6 @@ import type {
   ReactFlowProps,
 } from '@uipath/apollo-react/canvas/xyflow/react';
 import type { ReactNode } from 'react';
-import { ToolbarActionHandler } from '../../schema/toolbar';
 
 /**
  * Configuration options for viewport fit operations in BaseCanvas.
@@ -165,17 +164,6 @@ export interface BaseCanvasProps<NodeType extends Node = Node, EdgeType extends 
    * ```
    */
   fitViewOptions?: BaseCanvasFitViewOptions;
-
-  /**
-   * Callback when a toolbar action is triggered on a node
-   */
-  onToolbarAction?: ToolbarActionHandler;
-
-  /**
-   * Set of node IDs that have breakpoints enabled
-   * Used for visual indication in debug mode
-   */
-  breakpoints?: Set<string>;
 }
 
 /**

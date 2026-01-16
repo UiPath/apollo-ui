@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { NodeManifest } from '../../schema/node-definition/node-manifest';
 import { render, screen } from '../../utils/testing';
+import type { NodeRegistration } from '../BaseNode/BaseNode.types';
 import { NodeRegistryProvider } from '../BaseNode/NodeRegistryProvider';
 import type { ListItem, ToolboxProps } from '../Toolbox';
 import { AddNodePanel } from './AddNodePanel';
@@ -27,33 +27,24 @@ vi.mock('../Toolbox', () => ({
 }));
 
 describe('AddNodePanel', () => {
-  const mockRegistrations: NodeManifest[] = [
+  const mockRegistrations: NodeRegistration[] = [
     {
       nodeType: 'agent-node',
-      version: '1.0.0',
+      displayName: 'Agent Node',
       category: 'agents',
-      tags: ['agent', 'ai'],
-      sortOrder: 0,
-      display: {
-        label: 'Agent Node',
-        icon: 'smart_toy',
-        description: 'An agent node',
-      },
-      handleConfiguration: [],
+      icon: 'smart_toy',
+      description: 'An agent node',
+      version: '1.0.0',
+      definition: {},
     },
     {
       nodeType: 'tool-node',
-      version: '1.0.0',
+      displayName: 'Tool Node',
       category: 'tools',
-      tags: ['tool'],
-      sortOrder: 0,
-      display: {
-        label: 'Tool Node',
-        icon: 'handyman',
-        description: 'A tool node',
-      },
+      icon: 'handyman',
       description: 'A tool node',
-      handleConfiguration: [],
+      version: '1.0.0',
+      definition: {},
     },
   ];
 
@@ -166,19 +157,15 @@ describe('AddNodePanel', () => {
   });
 
   it('should filter out empty categories from the list', () => {
-    const registrations: NodeManifest[] = [
+    const registrations: NodeRegistration[] = [
       {
         nodeType: 'agent-node',
-        version: '1.0.0',
+        displayName: 'Agent Node',
         category: 'agents',
-        tags: ['agent', 'ai'],
-        sortOrder: 0,
-        display: {
-          label: 'Agent Node',
-          icon: 'smart_toy',
-          description: 'An agent node',
-        },
-        handleConfiguration: [],
+        icon: 'smart_toy',
+        description: 'An agent node',
+        version: '1.0.0',
+        definition: {},
       },
     ];
 

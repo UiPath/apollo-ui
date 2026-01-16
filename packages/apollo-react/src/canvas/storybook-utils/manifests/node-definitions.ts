@@ -1,4 +1,4 @@
-import { NodeManifest } from "../../schema/node-definition";
+import type { NodeManifest } from './types';
 
 export const allNodeManifests: NodeManifest[] = [
   // First Run Node
@@ -13,7 +13,7 @@ export const allNodeManifests: NodeManifest[] = [
       icon: 'plus',
       shape: 'circle',
     },
-    handleConfiguration: [],
+    handles: [],
   },
 
   // Blank Node
@@ -27,7 +27,7 @@ export const allNodeManifests: NodeManifest[] = [
       label: 'Blank',
       icon: 'construction',
     },
-    handleConfiguration: [
+    handles: [
       {
         position: 'left',
         handles: [{ id: 'input', type: 'target', handleType: 'input' }],
@@ -52,7 +52,7 @@ export const allNodeManifests: NodeManifest[] = [
       label: 'Delay',
       icon: 'timer',
     },
-    handleConfiguration: [
+    handles: [
       {
         position: 'left',
         handles: [{ id: 'input', type: 'target', handleType: 'input' }],
@@ -76,7 +76,7 @@ export const allNodeManifests: NodeManifest[] = [
       icon: 'timer',
       shape: 'circle',
     },
-    handleConfiguration: [
+    handles: [
       {
         position: 'left',
         handles: [{ id: 'input', type: 'target', handleType: 'input' }],
@@ -99,7 +99,7 @@ export const allNodeManifests: NodeManifest[] = [
       label: 'Decision',
       icon: 'uipath.decision',
     },
-    handleConfiguration: [
+    handles: [
       {
         position: 'left',
         handles: [
@@ -166,7 +166,7 @@ export const allNodeManifests: NodeManifest[] = [
       label: 'Switch',
       icon: 'uipath.switch',
     },
-    handleConfiguration: [
+    handles: [
       {
         position: 'left',
         handles: [{ id: 'input', type: 'target', handleType: 'input' }],
@@ -192,7 +192,7 @@ export const allNodeManifests: NodeManifest[] = [
       icon: 'play',
       shape: 'circle',
     },
-    handleConfiguration: [
+    handles: [
       {
         position: 'right',
         handles: [
@@ -231,7 +231,7 @@ export const allNodeManifests: NodeManifest[] = [
       label: 'For Each',
       icon: 'repeat',
     },
-    handleConfiguration: [
+    handles: [
       {
         position: 'left',
         handles: [{ id: 'input', type: 'target', handleType: 'input' }],
@@ -267,7 +267,7 @@ export const allNodeManifests: NodeManifest[] = [
       label: 'While',
       icon: 'repeat',
     },
-    handleConfiguration: [
+    handles: [
       {
         position: 'left',
         handles: [
@@ -306,7 +306,7 @@ export const allNodeManifests: NodeManifest[] = [
       label: 'Try-Catch',
       icon: 'shield-alert',
     },
-    handleConfiguration: [
+    handles: [
       {
         position: 'left',
         handles: [
@@ -369,7 +369,7 @@ export const allNodeManifests: NodeManifest[] = [
       label: 'Parallel',
       icon: 'git-fork',
     },
-    handleConfiguration: [
+    handles: [
       {
         position: 'left',
         handles: [{ id: 'input', type: 'target', handleType: 'input' }],
@@ -412,7 +412,7 @@ export const allNodeManifests: NodeManifest[] = [
       icon: 'octagon',
       shape: 'circle',
     },
-    handleConfiguration: [
+    handles: [
       {
         position: 'left',
         handles: [
@@ -443,7 +443,7 @@ export const allNodeManifests: NodeManifest[] = [
       label: 'Transform',
       icon: 'rotate-cw',
     },
-    handleConfiguration: [
+    handles: [
       {
         position: 'left',
         handles: [{ id: 'input', type: 'target', handleType: 'input' }],
@@ -467,7 +467,7 @@ export const allNodeManifests: NodeManifest[] = [
       icon: 'database',
       shape: 'circle',
     },
-    handleConfiguration: [
+    handles: [
       {
         position: 'top',
         handles: [
@@ -497,7 +497,7 @@ export const allNodeManifests: NodeManifest[] = [
       icon: 'person-standing',
       shape: 'circle',
     },
-    handleConfiguration: [
+    handles: [
       {
         position: 'top',
         handles: [
@@ -528,7 +528,7 @@ export const allNodeManifests: NodeManifest[] = [
       icon: 'message-square',
       shape: 'circle',
     },
-    handleConfiguration: [
+    handles: [
       {
         position: 'top',
         handles: [
@@ -558,7 +558,7 @@ export const allNodeManifests: NodeManifest[] = [
       icon: 'wrench',
       shape: 'circle',
     },
-    handleConfiguration: [
+    handles: [
       {
         position: 'top',
         handles: [
@@ -589,7 +589,7 @@ export const allNodeManifests: NodeManifest[] = [
       shape: 'rectangle',
       iconBackground: 'linear-gradient(135deg, #FFE0FF 4.81%, #CFD9FF 97.27%)',
     },
-    handleConfiguration: [
+    handles: [
       {
         position: 'top',
         handles: [
@@ -692,7 +692,7 @@ export const allNodeManifests: NodeManifest[] = [
       label: 'Script',
       icon: 'code',
     },
-    handleConfiguration: [
+    handles: [
       {
         position: 'left',
         handles: [{ id: 'input', type: 'target', handleType: 'input' }],
@@ -727,7 +727,7 @@ export const allNodeManifests: NodeManifest[] = [
       label: 'Approval',
       icon: 'uipath.human-task',
     },
-    handleConfiguration: [
+    handles: [
       {
         position: 'left',
         handles: [{ id: 'input', type: 'target', handleType: 'input' }],
@@ -769,7 +769,7 @@ export const allNodeManifests: NodeManifest[] = [
       label: 'Form',
       icon: 'file-text',
     },
-    handleConfiguration: [
+    handles: [
       {
         position: 'left',
         handles: [{ id: 'input', type: 'target', handleType: 'input' }],
@@ -805,7 +805,7 @@ export const allNodeManifests: NodeManifest[] = [
       label: 'Call Workflow',
       icon: 'uipath.rpa',
     },
-    handleConfiguration: [
+    handles: [
       {
         position: 'left',
         handles: [{ id: 'input', type: 'target', handleType: 'input' }],
@@ -842,7 +842,7 @@ export const allNodeManifests: NodeManifest[] = [
       icon: 'uipath.api',
       shape: 'square',
     },
-    handleConfiguration: [
+    handles: [
       {
         position: 'left',
         handles: [{ id: 'input', type: 'target', handleType: 'input' }],

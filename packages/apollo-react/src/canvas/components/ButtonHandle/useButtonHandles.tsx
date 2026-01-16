@@ -1,9 +1,6 @@
-import { useNodesData } from '@xyflow/react';
-import { Position } from '@xyflow/system';
 import { useMemo } from 'react';
-import { HandleGroupManifest } from '../../schema/node-definition';
-import { resolveHandles } from '../../utils/manifest-resolver';
 import { useConnectedHandles } from '../BaseCanvas/ConnectedHandlesContext';
+import type { HandleConfiguration } from '../BaseNode/BaseNode.types';
 import type { HandleActionEvent } from '../ButtonHandle';
 import { ButtonHandles } from '../ButtonHandle';
 
@@ -19,7 +16,7 @@ export const useButtonHandles = ({
   nodeWidth,
   nodeHeight,
 }: {
-  handleConfigurations: HandleGroupManifest[];
+  handleConfigurations: HandleConfiguration[];
   shouldShowHandles: boolean;
   nodeId: string;
   selected: boolean;
@@ -46,7 +43,6 @@ export const useButtonHandles = ({
   }) => boolean;
 }) => {
   const connectedHandleIds = useConnectedHandles(nodeId);
-  const node = useNodesData(nodeId);
 
   const handleElements = useMemo(() => {
     if (
@@ -56,16 +52,14 @@ export const useButtonHandles = ({
     )
       return <></>;
 
-    const resolvedHandles = resolveHandles(handleConfigurations, node?.data ?? {});
-
-    const elements = resolvedHandles.map((config, i) => {
+    const elements = handleConfigurations.map((config, i) => {
       const hasConnectedHandle = config.handles.some((h) => connectedHandleIds.has(h.id));
       const finalVisible = hasConnectedHandle || (shouldShowHandles && (config.visible ?? true));
 
       // Enhance handles with the unified action handler
       const enhancedHandles = config.handles.map((handle) => ({
         ...handle,
-        onAction: handleAction,
+        onAction: handle.onAction || handleAction,
       }));
 
       return (
@@ -73,7 +67,7 @@ export const useButtonHandles = ({
           key={`${i}:${config.position}:${config.handles.map((h) => h.id).join(',')}`}
           nodeId={nodeId}
           handles={enhancedHandles}
-          position={config.position as Position}
+          position={config.position}
           selected={selected}
           visible={finalVisible}
           showAddButton={showAddButton}
@@ -99,7 +93,6 @@ export const useButtonHandles = ({
     shouldShowAddButtonFn,
     nodeWidth,
     nodeHeight,
-    node?.data,
   ]);
 
   return handleElements;
