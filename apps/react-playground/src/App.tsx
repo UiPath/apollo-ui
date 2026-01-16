@@ -9,28 +9,32 @@ import { Colors } from "./pages/Colors";
 import { ComponentsHome } from "./pages/ComponentsHome";
 import { CoreHome } from "./pages/CoreHome";
 import { CssVariables } from "./pages/CssVariables";
+import { Fonts } from "./pages/Fonts";
+import { Icons } from "./pages/Icons";
+import { MainHome } from "./pages/MainHome";
+import { MaterialHome } from "./pages/MaterialHome";
+import { Screens } from "./pages/Screens";
+import { Shadows } from "./pages/Shadows";
+import { Spacing } from "./pages/Spacing";
+import { AccordionShowcase } from "./pages/components/AccordionShowcase";
 import { AlertBarShowcase } from "./pages/components/AlertBarShowcase";
 import { ApChatShowcase } from "./pages/components/ApChatShowcase";
 import { BadgeShowcase } from "./pages/components/BadgeShowcase";
 import { ButtonShowcase } from "./pages/components/ButtonShowcase";
 import { ChipShowcase } from "./pages/components/ChipShowcase";
+import { CircularProgressShowcase } from "./pages/components/CircularProgressShowcase";
+import { IconButtonShowcase } from "./pages/components/IconButtonShowcase";
+import { IconShowcase } from "./pages/components/IconShowcase";
 import { LinkShowcase } from "./pages/components/LinkShowcase";
+import { MenuShowcase } from "./pages/components/MenuShowcase";
+import { ProgressSpinnerShowcase } from "./pages/components/ProgressSpinnerShowcase";
 import { SkeletonShowcase } from "./pages/components/SkeletonShowcase";
 import { TextAreaShowcase } from "./pages/components/TextAreaShowcase";
 import { TextFieldShowcase } from "./pages/components/TextFieldShowcase";
 import { ToolCallShowcase } from "./pages/components/ToolCallShowcase";
+import { TooltipShowcase } from "./pages/components/TooltipShowcase";
 import { TreeViewShowcase } from "./pages/components/TreeViewShowcase";
 import { TypographyShowcase } from "./pages/components/TypographyShowcase";
-import { CircularProgressShowcase } from "./pages/components/CircularProgressShowcase";
-import { IconShowcase } from "./pages/components/IconShowcase";
-import { IconButtonShowcase } from "./pages/components/IconButtonShowcase";
-import { MenuShowcase } from "./pages/components/MenuShowcase";
-import { ProgressSpinnerShowcase } from "./pages/components/ProgressSpinnerShowcase";
-import { TooltipShowcase } from "./pages/components/TooltipShowcase";
-import { Fonts } from "./pages/Fonts";
-import { Icons } from "./pages/Icons";
-import { MainHome } from "./pages/MainHome";
-import { MaterialHome } from "./pages/MaterialHome";
 import { MaterialAlert } from "./pages/material/MaterialAlert";
 import { MaterialAutocomplete } from "./pages/material/MaterialAutocomplete";
 import { MaterialButtonBase } from "./pages/material/MaterialButtonBase";
@@ -58,9 +62,6 @@ import { MaterialTabs } from "./pages/material/MaterialTabs";
 import { MaterialTextField } from "./pages/material/MaterialTextField";
 import { MaterialTooltip } from "./pages/material/MaterialTooltip";
 import { MaterialTypography } from "./pages/material/MaterialTypography";
-import { Screens } from "./pages/Screens";
-import { Shadows } from "./pages/Shadows";
-import { Spacing } from "./pages/Spacing";
 
 function App() {
 	return (
@@ -140,6 +141,10 @@ function App() {
 								element={<MaterialTypography />}
 							/>
 							<Route path="/components" element={<ComponentsHome />} />
+							<Route
+								path="/components/accordion"
+								element={<AccordionShowcase />}
+							/>
 							<Route
 								path="/components/alert-bar"
 								element={<AlertBarShowcase />}

@@ -1,3 +1,4 @@
+export * from './ap-accordion';
 export * from './ap-alert-bar';
 export * from './ap-badge';
 export * from './ap-button';
