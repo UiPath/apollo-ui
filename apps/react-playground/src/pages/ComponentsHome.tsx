@@ -15,6 +15,7 @@ import {
 
 export function ComponentsHome() {
 	const components = [
+		{ label: "Accordion", path: "/components/accordion", icon: "📂" },
 		{ label: "Alert Bar", path: "/components/alert-bar", icon: "⚠️" },
 		{ label: "Badge", path: "/components/badge", icon: "🏷️" },
 		{ label: "Button", path: "/components/button", icon: "🔘" },

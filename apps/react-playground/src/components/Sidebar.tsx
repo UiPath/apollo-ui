@@ -47,6 +47,7 @@ export function Sidebar() {
 			path: "/components",
 			icon: "🧩",
 			children: [
+				{ label: "Accordion", path: "/components/accordion" },
 				{ label: "Alert Bar", path: "/components/alert-bar" },
 				{ label: "Badge", path: "/components/badge" },
 				{ label: "Button", path: "/components/button" },
