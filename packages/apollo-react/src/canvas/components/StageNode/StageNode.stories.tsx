@@ -11,9 +11,11 @@ import {
 import { useCallback, useMemo } from 'react';
 import { DefaultCanvasTranslations } from '../../types';
 import { BaseCanvas } from '../BaseCanvas';
+import { CanvasDndContext } from '../CanvasDndContext';
 import { CanvasPositionControls } from '../CanvasPositionControls';
 import { TaskIcon, TaskItemTypeValues } from '../TaskIcon';
 import type { ListItem } from '../Toolbox';
+import { CrossStageDraggingStory } from './CrossStageDraggingStory';
 import { StageConnectionEdge } from './StageConnectionEdge';
 import { StageEdge } from './StageEdge';
 import { StageNode } from './StageNode';
@@ -73,24 +75,26 @@ const meta: Meta<typeof StageNode> = {
       return (
         <div style={{ width: '100vw', height: '100vh' }}>
           <ReactFlowProvider>
-            <BaseCanvas
-              nodes={nodes}
-              edges={edges}
-              onNodesChange={onNodesChange}
-              onEdgesChange={onEdgesChange}
-              onConnect={onConnect}
-              nodeTypes={nodeTypes}
-              edgeTypes={edgeTypes}
-              mode="design"
-              connectionMode={ConnectionMode.Strict}
-              defaultEdgeOptions={defaultEdgeOptions}
-              connectionLineComponent={StageConnectionEdge}
-              elevateEdgesOnSelect
-            >
-              <Panel position="bottom-right">
-                <CanvasPositionControls translations={DefaultCanvasTranslations} />
-              </Panel>
-            </BaseCanvas>
+            <CanvasDndContext>
+              <BaseCanvas
+                nodes={nodes}
+                edges={edges}
+                onNodesChange={onNodesChange}
+                onEdgesChange={onEdgesChange}
+                onConnect={onConnect}
+                nodeTypes={nodeTypes}
+                edgeTypes={edgeTypes}
+                mode="design"
+                connectionMode={ConnectionMode.Strict}
+                defaultEdgeOptions={defaultEdgeOptions}
+                connectionLineComponent={StageConnectionEdge}
+                elevateEdgesOnSelect
+              >
+                <Panel position="bottom-right">
+                  <CanvasPositionControls translations={DefaultCanvasTranslations} />
+                </Panel>
+              </BaseCanvas>
+            </CanvasDndContext>
           </ReactFlowProvider>
         </div>
       );
@@ -855,25 +859,27 @@ const DraggableTaskReorderingStory = () => {
   return (
     <div style={{ width: '100vw', height: '100vh' }}>
       <ReactFlowProvider>
-        <BaseCanvas
-          nodes={nodesWithHandler}
-          edges={edges}
-          onNodesChange={onNodesChange}
-          onEdgesChange={onEdgesChange}
-          onConnect={onConnect}
-          nodeTypes={nodeTypes}
-          edgeTypes={edgeTypes}
-          mode="design"
-          connectionMode={ConnectionMode.Strict}
-          defaultEdgeOptions={{ type: 'stage' }}
-          connectionLineComponent={StageConnectionEdge}
-          elevateEdgesOnSelect
-          defaultViewport={{ x: 0, y: 0, zoom: 1.5 }}
-        >
-          <Panel position="bottom-right">
-            <CanvasPositionControls translations={DefaultCanvasTranslations} />
-          </Panel>
-        </BaseCanvas>
+        <CanvasDndContext>
+          <BaseCanvas
+            nodes={nodesWithHandler}
+            edges={edges}
+            onNodesChange={onNodesChange}
+            onEdgesChange={onEdgesChange}
+            onConnect={onConnect}
+            nodeTypes={nodeTypes}
+            edgeTypes={edgeTypes}
+            mode="design"
+            connectionMode={ConnectionMode.Strict}
+            defaultEdgeOptions={{ type: 'stage' }}
+            connectionLineComponent={StageConnectionEdge}
+            elevateEdgesOnSelect
+            defaultViewport={{ x: 0, y: 0, zoom: 1.5 }}
+          >
+            <Panel position="bottom-right">
+              <CanvasPositionControls translations={DefaultCanvasTranslations} />
+            </Panel>
+          </BaseCanvas>
+        </CanvasDndContext>
       </ReactFlowProvider>
     </div>
   );
@@ -885,5 +891,14 @@ export const DraggableTaskReordering: Story = {
     useCustomRender: true,
   },
   render: () => <DraggableTaskReorderingStory />,
+  args: {},
+};
+
+export const CrossStageDragging: Story = {
+  name: 'Cross-Stage Dragging',
+  parameters: {
+    useCustomRender: true,
+  },
+  render: () => <CrossStageDraggingStory />,
   args: {},
 };

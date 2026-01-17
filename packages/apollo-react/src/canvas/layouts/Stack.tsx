@@ -7,6 +7,7 @@ type StackProps = FlexProps &
   OverflowProps &
   PositionProps &
   React.HTMLAttributes<HTMLDivElement> &
+  React.RefAttributes<HTMLDivElement> &
   SizeProps &
   SpacingProps;
 

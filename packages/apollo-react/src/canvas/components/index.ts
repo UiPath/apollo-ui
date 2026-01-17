@@ -3,6 +3,7 @@ export * from './AgentCanvas';
 export * from './BaseCanvas';
 export * from './BaseNode';
 export * from './ButtonHandle';
+export * from './CanvasDndContext';
 export * from './CanvasPositionControls';
 export * from './CodedAgent';
 export * from './Edges';

@@ -160,11 +160,13 @@ export const StageParallelBracket = styled.div`
   border-right: none;
 `;
 
+// Opacity !important here is required for moving between stages to work properly
 export const StageTaskWrapper = styled.div<{ isParallel?: boolean }>`
   width: ${({ isParallel }) =>
     isParallel ? 'var(--stage-task-width-parallel, 216px)' : 'var(--stage-task-width, 246px)'};
   border-radius: ${Spacing.SpacingXs};
   height: 36px;
+  opacity: 1 !important; 
 `;
 
 export const StageTask = styled.div<{

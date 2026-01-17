@@ -149,6 +149,9 @@ const DraggableTaskComponent = ({
   const { attributes, listeners, setNodeRef, transition, transform, isDragging } = useSortable({
     id: task.id,
     disabled: isDragDisabled,
+    data: {
+      nodeType: 'stage-node',
+    },
   });
 
   const style = useMemo<React.CSSProperties>(() => {

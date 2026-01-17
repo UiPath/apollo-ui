@@ -1,21 +1,12 @@
 import {
-  closestCenter,
-  DndContext,
   type DragEndEvent,
   type DragMoveEvent,
   type DragOverEvent,
   DragOverlay,
   type DragStartEvent,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
+  useDroppable,
 } from '@dnd-kit/core';
-import {
-  SortableContext,
-  sortableKeyboardCoordinates,
-  verticalListSortingStrategy,
-} from '@dnd-kit/sortable';
+import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { FontVariantToken, Spacing } from '@uipath/apollo-core';
 import { Column, Row } from '@uipath/apollo-react/canvas/layouts';
 import { Position, useStore, useViewport } from '@uipath/apollo-react/canvas/xyflow/react';
@@ -26,6 +17,7 @@ import { createPortal } from 'react-dom';
 import { useConnectedHandles } from '../BaseCanvas/ConnectedHandlesContext';
 import type { HandleConfiguration } from '../BaseNode/BaseNode.types';
 import { useButtonHandles } from '../ButtonHandle/useButtonHandles';
+import { useCanvasDndContext, useCanvasDndHandler } from '../CanvasDndContext';
 import { ExecutionStatusIcon } from '../ExecutionStatusIcon';
 import { FloatingCanvasPanel } from '../FloatingCanvasPanel';
 import { NodeContextMenu } from '../NodeContextMenu';
@@ -122,8 +114,17 @@ const StageNodeComponent = (props: StageNodeProps) => {
   const isConnecting = useStore((state) => !!state.connectionClickStartHandle);
   const connectedHandleIds = useConnectedHandles(id);
 
+  // Get activeDragId from the shared CanvasDndContext
+  const { activeDragId } = useCanvasDndContext();
+
+  // Create a droppable zone for empty stages
+  const emptyStageDroppableId = `${id}-empty-stage`;
+  const { setNodeRef: setEmptyDropRef } = useDroppable({
+    id: emptyStageDroppableId,
+    disabled: tasks.length > 0, // Only enable when stage is empty
+  });
+
   const [isAddingTask, setIsAddingTask] = useState(false);
-  const [activeDragId, setActiveDragId] = useState<string | null>(null);
   const [offsetLeft, setOffsetLeft] = useState(0);
   const [overId, setOverId] = useState<string | null>(null);
   const activeTask = useMemo(
@@ -374,25 +375,14 @@ const StageNodeComponent = (props: StageNodeProps) => {
     nodeId: id,
     selected,
   });
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 3,
-      },
-    }),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    })
-  );
 
   const resetState = useCallback(() => {
-    setActiveDragId(null);
     setOffsetLeft(0);
     setOverId(null);
   }, []);
 
-  const handleDragStart = useCallback((event: DragStartEvent) => {
-    setActiveDragId(event.active.id as string);
+  const handleDragStart = useCallback((_event: DragStartEvent) => {
+    // activeDragId is managed by CanvasDndContext
   }, []);
 
   const handleDragMove = useCallback(
@@ -413,6 +403,16 @@ const StageNodeComponent = (props: StageNodeProps) => {
       resetState();
 
       if (!over || !onTaskReorder) {
+        return;
+      }
+
+      // Check if this is a cross-stage drag by verifying both active and over exist in our tasks
+      const flattenedTasks = flattenTasks(tasks);
+      const hasActiveTask = flattenedTasks.some((t) => t.id === active.id);
+      const hasOverTask = flattenedTasks.some((t) => t.id === over.id);
+
+      // If either task is not in this stage, it's a cross-stage drag - let the global handler handle it
+      if (!hasActiveTask || !hasOverTask) {
         return;
       }
 
@@ -449,6 +449,15 @@ const StageNodeComponent = (props: StageNodeProps) => {
   const handleDragCancel = useCallback(() => {
     resetState();
   }, [resetState]);
+
+  // Register drag handlers with the shared CanvasDndContext
+  useCanvasDndHandler('stage-node', {
+    onDragStart: handleDragStart,
+    onDragMove: handleDragMove,
+    onDragOver: handleDragOver,
+    onDragEnd: handleDragEnd,
+    onDragCancel: handleDragCancel,
+  });
 
   const taskWidthStyle = useMemo(
     () =>
@@ -570,105 +579,94 @@ const StageNodeComponent = (props: StageNodeProps) => {
         </StageHeader>
 
         <StageContent>
-          {!tasks || tasks.length === 0 ? (
-            <Column py={2}>
-              <ApTypography
-                variant={FontVariantToken.fontSizeS}
-                color="var(--uix-canvas-foreground-de-emp)"
-              >
-                {defaultContent}
-              </ApTypography>
-            </Column>
-          ) : (
-            <DndContext
-              collisionDetection={closestCenter}
-              sensors={sensors}
-              onDragStart={handleDragStart}
-              onDragMove={handleDragMove}
-              onDragOver={handleDragOver}
-              onDragEnd={handleDragEnd}
-              onDragCancel={handleDragCancel}
-            >
-              <SortableContext items={taskIds} strategy={verticalListSortingStrategy}>
-                {/* Disable dragging and panning the canvas when dragging a task */}
-                <StageTaskList className="nodrag nopan">
-                  {tasks.map((taskGroup, groupIndex) => {
-                    const isParallel = taskGroup.length > 1;
-                    return (
-                      <Row key={`group-${groupIndex}`} gap={Spacing.SpacingS}>
-                        {isParallel && <StageParallelBracket />}
-                        <StageTaskGroup isParallel={isParallel}>
-                          {isParallel && (
-                            <StageParallelLabel>
-                              <ApTypography variant={FontVariantToken.fontSizeS}>
-                                Parallel
-                              </ApTypography>
-                            </StageParallelLabel>
-                          )}
-                          {taskGroup.map((task, taskIndex) => {
-                            const taskExecution = execution?.taskStatus?.[task.id];
-                            return (
-                              <DraggableTask
-                                key={task.id}
-                                task={task}
-                                taskExecution={taskExecution}
-                                isSelected={!!selectedTasks?.includes(task.id)}
-                                isParallel={isParallel}
-                                isContextMenuVisible={
-                                  isTaskContextMenuVisible &&
-                                  taskStateReference.groupIndex === groupIndex &&
-                                  taskStateReference.taskIndex === taskIndex
-                                }
-                                contextMenuItems={contextMenuItems(
-                                  isParallel,
-                                  groupIndex,
-                                  taskIndex,
-                                  tasks.length,
-                                  taskGroup.length,
-                                  (tasks[groupIndex - 1]?.length ?? 0) > 1,
-                                  (tasks[groupIndex + 1]?.length ?? 0) > 1
-                                )}
-                                contextMenuAnchor={taskStateReference.anchor}
-                                onTaskClick={handleTaskClick}
-                                projectedDepth={
-                                  task.id === activeDragId && projected
-                                    ? projected.depth
-                                    : undefined
-                                }
-                                isDragDisabled={!onTaskReorder}
-                                zoom={zoom}
-                                {...(onTaskGroupModification && {
-                                  onContextMenu: (e) =>
-                                    handleTaskContextMenuOpen(isParallel, groupIndex, taskIndex, e),
-                                })}
-                              />
-                            );
-                          })}
-                        </StageTaskGroup>
-                      </Row>
-                    );
-                  })}
-                </StageTaskList>
-              </SortableContext>
-              {createPortal(
-                <DragOverlay>
-                  {activeTask ? (
-                    <div style={dragOverlayStyle}>
-                      <StageTask
-                        selected
-                        isParallel={isActiveTaskParallel}
-                        style={{ cursor: 'grabbing', ...taskWidthStyle }}
-                      >
-                        <TaskContent task={activeTask} isDragging />
-                      </StageTask>
-                    </div>
-                  ) : null}
-                </DragOverlay>,
-                document.body
+          <SortableContext items={taskIds} strategy={verticalListSortingStrategy}>
+            {/* Disable dragging and panning the canvas when dragging a task */}
+            <StageTaskList className="nodrag nopan">
+              {!tasks || tasks.length === 0 ? (
+                <Column ref={setEmptyDropRef} py={2}>
+                  <ApTypography
+                    variant={FontVariantToken.fontSizeS}
+                    color="var(--uix-canvas-foreground-de-emp)"
+                  >
+                    {defaultContent}
+                  </ApTypography>
+                </Column>
+              ) : (
+                tasks.map((taskGroup, groupIndex) => {
+                  const isParallel = taskGroup.length > 1;
+                  return (
+                    <Row key={`group-${groupIndex}`} gap={Spacing.SpacingS}>
+                      {isParallel && <StageParallelBracket />}
+                      <StageTaskGroup isParallel={isParallel}>
+                        {isParallel && (
+                          <StageParallelLabel>
+                            <ApTypography variant={FontVariantToken.fontSizeS}>
+                              Parallel
+                            </ApTypography>
+                          </StageParallelLabel>
+                        )}
+                        {taskGroup.map((task, taskIndex) => {
+                          const taskExecution = execution?.taskStatus?.[task.id];
+                          return (
+                            <DraggableTask
+                              key={task.id}
+                              task={task}
+                              taskExecution={taskExecution}
+                              isSelected={!!selectedTasks?.includes(task.id)}
+                              isParallel={isParallel}
+                              isContextMenuVisible={
+                                isTaskContextMenuVisible &&
+                                taskStateReference.groupIndex === groupIndex &&
+                                taskStateReference.taskIndex === taskIndex
+                              }
+                              contextMenuItems={contextMenuItems(
+                                isParallel,
+                                groupIndex,
+                                taskIndex,
+                                tasks.length,
+                                taskGroup.length,
+                                (tasks[groupIndex - 1]?.length ?? 0) > 1,
+                                (tasks[groupIndex + 1]?.length ?? 0) > 1
+                              )}
+                              contextMenuAnchor={taskStateReference.anchor}
+                              onTaskClick={handleTaskClick}
+                              projectedDepth={
+                                task.id === activeDragId && projected ? projected.depth : undefined
+                              }
+                              isDragDisabled={!onTaskReorder}
+                              zoom={zoom}
+                              {...(onTaskGroupModification && {
+                                onContextMenu: (e) =>
+                                  handleTaskContextMenuOpen(isParallel, groupIndex, taskIndex, e),
+                              })}
+                            />
+                          );
+                        })}
+                      </StageTaskGroup>
+                    </Row>
+                  );
+                })
               )}
-            </DndContext>
-          )}
+            </StageTaskList>
+          </SortableContext>
         </StageContent>
+        {/* Render DragOverlay when there are tasks and something is being dragged */}
+        {createPortal(
+          <DragOverlay>
+            {activeTask ? (
+              <div style={dragOverlayStyle}>
+                <StageTask
+                  selected
+                  isParallel={isActiveTaskParallel}
+                  style={{ cursor: 'grabbing', ...taskWidthStyle }}
+                >
+                  <TaskContent task={activeTask} isDragging />
+                </StageTask>
+              </div>
+            ) : null}
+          </DragOverlay>,
+          document.body
+        )}
       </StageContainer>
 
       {onAddTaskFromToolbox && (
