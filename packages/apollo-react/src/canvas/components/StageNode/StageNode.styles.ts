@@ -98,8 +98,7 @@ export const StageTitleInput = styled.input<{
   text-overflow: ellipsis;
   border-radius: 2px;
   min-width: 100px;
-  width: max-content;
-  max-width: 180px;
+  max-width: 220px;
   padding: ${(props) => (props.isStageTitleEditable ? 'none' : `${Padding.PadS} 0px`)};
 
   &:focus {

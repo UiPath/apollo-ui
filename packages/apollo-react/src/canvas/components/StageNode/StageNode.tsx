@@ -16,7 +16,7 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
-import { FontVariantToken, Spacing } from '@uipath/apollo-core';
+import { FontVariantToken, Padding, Spacing } from '@uipath/apollo-core';
 import { Column, Row } from '@uipath/apollo-react/canvas/layouts';
 import { Position, useStore, useViewport } from '@uipath/apollo-react/canvas/xyflow/react';
 import { ApIcon, ApIconButton, ApTooltip, ApTypography } from '@uipath/apollo-react/material';
@@ -85,10 +85,6 @@ const StageNodeComponent = (props: StageNodeProps) => {
 
   const isException = stageDetails?.isException;
   const icon = stageDetails?.icon;
-  const sla = stageDetails?.sla;
-  const slaBreached = stageDetails?.slaBreached;
-  const escalation = stageDetails?.escalation;
-  const escalationsTriggered = stageDetails?.escalationsTriggered;
   const selectedTasks = stageDetails?.selectedTasks;
   const defaultContent = stageDetails?.defaultContent || 'Add first task';
 
@@ -518,44 +514,12 @@ const StageNodeComponent = (props: StageNodeProps) => {
               )}
             </Column>
           </Row>
-          <Row gap={Spacing.SpacingXs} align="center">
+          <Row gap={Spacing.SpacingMicro} align={status ? 'start' : 'center'} py={Padding.PadS}>
             {status && (
-              <Row gap={statusLabel ? Spacing.SpacingMicro : undefined} align="center">
-                <ExecutionStatusIcon status={status} />
-                <ApTypography
-                  variant={FontVariantToken.fontSizeS}
-                  color="var(--uix-canvas-foreground-de-emp)"
-                >
-                  {statusLabel}
-                </ApTypography>
-              </Row>
-            )}
-            {sla && !status && (
-              <ApTooltip content={sla} placement="top">
-                <ApIcon
-                  variant="outlined"
-                  name="timer"
-                  size="20px"
-                  color={
-                    slaBreached
-                      ? 'var(--uix-canvas-error-icon)'
-                      : 'var(--uix-canvas-foreground-de-emp)'
-                  }
-                />
-              </ApTooltip>
-            )}
-            {escalation && !status && (
-              <ApTooltip content={escalation} placement="top">
-                <ApIcon
-                  variant="outlined"
-                  name="notifications"
-                  size="20px"
-                  color={
-                    escalationsTriggered
-                      ? 'var(--uix-canvas-success-icon)'
-                      : 'var(--uix-canvas-foreground-de-emp)'
-                  }
-                />
+              <ApTooltip content={statusLabel} placement="top">
+                <ApIconButton size="small">
+                  <ExecutionStatusIcon status={status} size={20} />
+                </ApIconButton>
               </ApTooltip>
             )}
             {(onTaskAdd || onAddTaskFromToolbox) && (
