@@ -2162,9 +2162,11 @@ export const AgentFlowProvider = ({
     });
   }, [store.getState, store.setState, props]);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: ported over
   useEffect(() => {
     store.getState().handlePropsUpdate(props);
-  }, [props, store.getState]);
+    // biome-ignore lint/correctness/useExhaustiveDependencies: ported over
+  }, [props]);
 
   return React.createElement(AgentFlowContext.Provider, { value: store }, children);
 };
