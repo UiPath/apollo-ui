@@ -8,7 +8,7 @@ import type { Decorator } from '@storybook/react';
 import { ReactFlowProvider } from '@uipath/apollo-react/canvas/xyflow/react';
 import type React from 'react';
 import { useMemo } from 'react';
-import { NodeRegistryProvider } from '../components/BaseNode/NodeRegistryProvider';
+import { NodeRegistryProvider } from '../core';
 import {
   type ExecutionStateContextValue,
   ExecutionStatusContext,
@@ -17,7 +17,7 @@ import {
 } from '../hooks';
 import type { ElementStatus } from '../types/execution';
 import type { ValidationErrorSeverity } from '../types/validation';
-import { allNodeManifests } from './manifests';
+import { defaultWorkflowManifest } from './manifests';
 
 /**
  * Props for execution state configuration.
@@ -127,12 +127,12 @@ export function withCanvasProviders(options: CanvasProvidersOptions = {}): Decor
   } = options;
 
   return function CanvasProvidersDecorator(Story) {
-    const manifests = useMemo(() => allNodeManifests, []);
+    const manifest = useMemo(() => defaultWorkflowManifest, []);
     const executions = useMemo(() => executionState, []);
     const validations = useMemo(() => validationState, []);
 
     const content = (
-      <NodeRegistryProvider registrations={manifests}>
+      <NodeRegistryProvider manifest={manifest}>
         <ExecutionStatusContext.Provider value={executions}>
           <ValidationStatusContext.Provider value={validations}>
             <ReactFlowProvider>

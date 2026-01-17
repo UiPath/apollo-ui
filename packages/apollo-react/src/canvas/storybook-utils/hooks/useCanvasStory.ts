@@ -9,8 +9,8 @@ import { addEdge, useEdgesState, useNodesState } from '@uipath/apollo-react/canv
 import { useCallback, useMemo } from 'react';
 import { AddNodePreview } from '../../components';
 import { BaseNode } from '../../components/BaseNode/BaseNode';
-import { useNodeTypeRegistry } from '../../components/BaseNode/useNodeTypeRegistry';
 import { SequenceEdge } from '../../components/Edges';
+import { useNodeTypeRegistry } from '../../core';
 
 /**
  * Options for the useCanvasStory hook.

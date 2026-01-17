@@ -4,6 +4,7 @@ export * from './CanvasEventBus';
 export * from './CssUtil';
 export * from './coded-agents/d3-layout';
 export * from './coded-agents/mermaid-parser';
+export * from './constraint-validator';
 export * from './createPreviewNode';
 export * from './export-canvas';
 export * from './icon-registry';

@@ -9,6 +9,7 @@ import {
 import { ApIcon } from '@uipath/apollo-react/material/components';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { DEFAULT_NODE_SIZE } from '../../constants';
+import { useNodeTypeRegistry } from '../../core';
 import { useNodeExecutionState } from '../../hooks';
 import type { HandleGroupManifest } from '../../schema/node-definition';
 import { resolveAdornments } from '../../utils/adornment-resolver';
@@ -31,7 +32,6 @@ import {
 } from './BaseNode.styles';
 import type { BaseNodeData, NodeStatusContext } from './BaseNode.types';
 import { NodeLabel } from './NodeLabel';
-import { useNodeTypeRegistry } from './useNodeTypeRegistry';
 
 const selectIsConnecting = (state: ReactFlowState) => !!state.connectionClickStartHandle;
 
