@@ -2155,12 +2155,13 @@ export const AgentFlowProvider = ({
 }: AgentFlowProps & { children: React.ReactNode }) => {
   const [store] = useState(createAgentFlowStore(props));
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: ported over
   useEffect(() => {
     store.setState({
       ...store.getState(),
       selectedNodeId: getSelectedNodeId(props, store.getState()),
     });
-  }, [store.getState, store.setState, props]);
+  }, []);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: ported over
   useEffect(() => {
