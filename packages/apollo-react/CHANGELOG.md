@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.0.3](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.0.2...@uipath/apollo-react@3.0.3) (2026-01-17)
+
+### Bug Fixes
+
+* **apollo-react:** stage icons ui ([41d8ce6](https://github.com/UiPath/apollo-ui/commit/41d8ce6bac82bbdfbe00c0666421aecb88c4373e))
+
 ## [@uipath/apollo-react-v3.0.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.0.1...@uipath/apollo-react@3.0.2) (2026-01-17)
 
 ### Bug Fixes
