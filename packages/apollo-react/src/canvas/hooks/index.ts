@@ -5,5 +5,6 @@ export * from './useCanvasEvents';
 export * from './useEdgePath';
 export * from './useExportCanvas';
 export * from './useNavigationState';
+export * from './usePreviewNode';
 export * from './useStorageState';
 export * from './ValidationStatusContext';

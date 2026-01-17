@@ -9,6 +9,8 @@ import { ApButton, ApTypography } from '@uipath/apollo-react/material';
 import { ApIcon } from '@uipath/apollo-react/material/components';
 import type React from 'react';
 import { useCallback, useEffect, useState } from 'react';
+import { NodeRegistryProvider } from '../../core';
+import type { CategoryManifest, WorkflowManifest } from '../../schema/node-definition';
 import type { NodeManifest } from '../../schema/node-definition/node-manifest';
 import {
   selectAddNode,
@@ -22,7 +24,6 @@ import {
 import type { CanvasLevel } from '../../types/canvas.types';
 import { canvasEventBus } from '../../utils/CanvasEventBus';
 import { createAddNodePreview } from '../AddNodePanel/createAddNodePreview';
-import { NodeRegistryProvider } from '../BaseNode/NodeRegistryProvider';
 import { HierarchicalCanvas } from './HierarchicalCanvas';
 
 // Demo canvas data for Storybook testing
@@ -58,6 +59,49 @@ const createDemoCanvases = (): Record<string, CanvasLevel> => {
     root: rootCanvas,
   };
 };
+
+// ============================================================================
+// Category Manifests
+// ============================================================================
+
+const workflowCategories: CategoryManifest[] = [
+  {
+    id: 'Basic',
+    name: 'Basic',
+    sortOrder: 0,
+    color: 'linear-gradient(135deg, #FAFAFB 0%, #ECEDEF 100%)',
+    colorDark: 'linear-gradient(135deg, #526069 0%, rgba(50, 60, 66, 0.6) 100%)',
+    icon: 'widgets',
+    tags: ['basic', 'fundamental'],
+  },
+  {
+    id: 'Actions',
+    name: 'Actions',
+    sortOrder: 1,
+    color: 'linear-gradient(135deg, #FAFAFB 0%, #ECEDEF 100%)',
+    colorDark: 'linear-gradient(135deg, #526069 0%, rgba(50, 60, 66, 0.6) 100%)',
+    icon: 'zap',
+    tags: ['action', 'activity'],
+  },
+  {
+    id: 'Logic',
+    name: 'Logic',
+    sortOrder: 2,
+    color: 'linear-gradient(135deg, #FAFAFB 0%, #ECEDEF 100%)',
+    colorDark: 'linear-gradient(135deg, #526069 0%, rgba(50, 60, 66, 0.6) 100%)',
+    icon: 'workflow',
+    tags: ['logic', 'decision'],
+  },
+  {
+    id: 'Structure',
+    name: 'Structure',
+    sortOrder: 3,
+    color: 'linear-gradient(135deg, #FAFAFB 0%, #ECEDEF 100%)',
+    colorDark: 'linear-gradient(135deg, #526069 0%, rgba(50, 60, 66, 0.6) 100%)',
+    icon: 'layers',
+    tags: ['structure', 'organization'],
+  },
+];
 
 // ============================================================================
 // Workflow Node Manifests
@@ -239,6 +283,15 @@ interface CanvasWithControlsContentProps {
   onCanvasesChange: (canvases: Record<string, CanvasLevel>) => void;
   onPathChange: (path: string[]) => void;
 }
+
+/**
+ * Complete workflow manifest with categories and nodes
+ */
+const workflowManifest: WorkflowManifest = {
+  version: '1.0.0',
+  categories: workflowCategories,
+  nodes: workflowManifests,
+};
 
 /**
  * Inner component that uses the ReactFlow hooks
@@ -477,7 +530,7 @@ export const HierarchicalCanvasWithControls: React.FC = () => {
   }, []);
 
   return (
-    <NodeRegistryProvider registrations={workflowManifests}>
+    <NodeRegistryProvider manifest={workflowManifest}>
       <ReactFlowProvider>
         <CanvasWithControlsContent
           initialCanvases={initialCanvases}

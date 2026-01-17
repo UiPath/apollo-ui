@@ -338,6 +338,7 @@ export const NodePanelRegistryItems: Story = {
       alert(`Selected: ${node.data.type} (${node.data.category})`);
     },
     onClose: () => console.log('Closed selector'),
+    onSearch: undefined,
   },
   render: (args) => (
     <StandalonePanelWrapper>

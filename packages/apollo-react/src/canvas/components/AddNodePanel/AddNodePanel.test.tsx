@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
+import { NodeRegistryProvider } from '../../core';
 import type { NodeManifest } from '../../schema/node-definition/node-manifest';
 import { render, screen } from '../../utils/testing';
-import { NodeRegistryProvider } from '../BaseNode/NodeRegistryProvider';
 import type { ListItem, ToolboxProps } from '../Toolbox';
 import { AddNodePanel } from './AddNodePanel';
 import type { NodeItemData } from './AddNodePanel.types';
@@ -26,7 +26,31 @@ vi.mock('../Toolbox', () => ({
   ),
 }));
 
+vi.mock('../../utils/icon-registry', () => ({
+  getIcon: undefined,
+}));
+
 describe('AddNodePanel', () => {
+  const mockCategories = [
+    {
+      id: 'agents',
+      name: 'Agents',
+      icon: 'agent',
+      sortOrder: 1,
+      color: '#0000FF',
+      colorDark: '#0000AA',
+      tags: [],
+    },
+    {
+      id: 'tools',
+      name: 'Tools',
+      icon: 'tool',
+      sortOrder: 1,
+      color: '#0000FF',
+      colorDark: '#0000AA',
+      tags: [],
+    },
+  ];
   const mockRegistrations: NodeManifest[] = [
     {
       nodeType: 'agent-node',
@@ -57,6 +81,12 @@ describe('AddNodePanel', () => {
     },
   ];
 
+  const mockManifest = {
+    version: '1.0.0',
+    categories: mockCategories,
+    nodes: mockRegistrations,
+  };
+
   const mockOnNodeSelect = vi.fn();
   const mockOnClose = vi.fn();
 
@@ -67,7 +97,7 @@ describe('AddNodePanel', () => {
 
   it("should render with title 'Add Node'", () => {
     render(
-      <NodeRegistryProvider registrations={[]}>
+      <NodeRegistryProvider manifest={mockManifest}>
         <AddNodePanel {...defaultProps} />
       </NodeRegistryProvider>
     );
@@ -77,7 +107,7 @@ describe('AddNodePanel', () => {
 
   it('should transform empty registry into empty list items', () => {
     render(
-      <NodeRegistryProvider registrations={[]}>
+      <NodeRegistryProvider manifest={{ version: '1.0.0', categories: [], nodes: [] }}>
         <AddNodePanel {...defaultProps} />
       </NodeRegistryProvider>
     );
@@ -88,7 +118,7 @@ describe('AddNodePanel', () => {
 
   it('should transform registry data into hierarchical ListItems', () => {
     render(
-      <NodeRegistryProvider registrations={mockRegistrations}>
+      <NodeRegistryProvider manifest={mockManifest}>
         <AddNodePanel {...defaultProps} />
       </NodeRegistryProvider>
     );
@@ -134,7 +164,7 @@ describe('AddNodePanel', () => {
 
   it('should call onNodeSelect with correct data when item is selected', () => {
     render(
-      <NodeRegistryProvider registrations={mockRegistrations}>
+      <NodeRegistryProvider manifest={mockManifest}>
         <AddNodePanel {...defaultProps} />
       </NodeRegistryProvider>
     );
@@ -155,7 +185,7 @@ describe('AddNodePanel', () => {
 
   it('should call onClose when Toolbox close is triggered', () => {
     render(
-      <NodeRegistryProvider registrations={mockRegistrations}>
+      <NodeRegistryProvider manifest={mockManifest}>
         <AddNodePanel {...defaultProps} />
       </NodeRegistryProvider>
     );
@@ -192,7 +222,7 @@ describe('AddNodePanel', () => {
 
     // Should only have 1 category (agents), empty category should be filtered out
     expect(items).toHaveLength(1);
-    expect(items[0].id).toBe('agents');
+    expect(items[0].id).toBe('agent-node');
   });
 
   it('should support custom nodeOptions instead of registry', () => {

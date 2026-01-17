@@ -10,7 +10,8 @@ import type { Node } from '@uipath/apollo-react/canvas/xyflow/react';
 import { Panel } from '@uipath/apollo-react/canvas/xyflow/react';
 import { ApButton, ApIcon, ApIconButton, ApTypography } from '@uipath/apollo-react/material';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import type { NodeManifest } from '../../schema/node-definition/node-manifest';
+import { NodeRegistryContext, NodeTypeRegistry } from '../../core';
+import { WorkflowManifest } from '../../schema/node-definition/workflow-manifest';
 import {
   createNode,
   StoryInfoPanel,
@@ -22,122 +23,143 @@ import { BaseCanvas } from '../BaseCanvas';
 import { CanvasPositionControls } from '../CanvasPositionControls';
 import { NodeInspector } from '../NodeInspector';
 import type { BaseNodeData } from './BaseNode.types';
-import { NodeTypeRegistry } from './NodeTypeRegistry';
-import { NodeRegistryContext } from './useNodeTypeRegistry';
 
 // ============================================================================
 // Sample Manifests
 // ============================================================================
 
-const sampleManifests: NodeManifest[] = [
-  {
-    nodeType: 'generic',
-    version: '1.0.0',
-    category: 'general',
-    tags: ['general'],
-    sortOrder: 1,
-    display: {
-      label: 'Generic Node',
-      icon: 'box',
-      shape: 'square',
+const sampleManifest: WorkflowManifest = {
+  version: '1.0.0',
+  categories: [
+    {
+      id: 'general',
+      name: 'General',
+      sortOrder: 1,
+      color: '#6c757d',
+      colorDark: '#495057',
+      icon: 'layers',
+      tags: [],
     },
-    handleConfiguration: [
-      {
-        position: 'left',
-        handles: [{ id: 'in', type: 'target', handleType: 'input', label: 'Input' }],
-      },
-      {
-        position: 'right',
-        handles: [{ id: 'out', type: 'source', handleType: 'output', label: 'Output' }],
-      },
-    ],
-  },
-  {
-    nodeType: 'uipath.blank-node',
-    version: '1.0.0',
-    category: 'general',
-    tags: ['basic'],
-    sortOrder: 2,
-    display: {
-      label: 'Blank Node',
-      icon: 'square',
-      shape: 'square',
+    {
+      id: 'ai',
+      name: 'AI',
+      sortOrder: 2,
+      color: '#6c757d',
+      colorDark: '#495057',
+      icon: 'layers',
+      tags: [],
     },
-    handleConfiguration: [],
-  },
-  {
-    nodeType: 'uipath.agent',
-    version: '1.0.0',
-    category: 'ai',
-    tags: ['ai', 'agent'],
-    sortOrder: 3,
-    display: {
-      label: 'Agent',
-      icon: 'bot',
-      shape: 'rectangle',
+  ],
+  nodes: [
+    {
+      nodeType: 'generic',
+      version: '1.0.0',
+      category: 'general',
+      tags: ['general'],
+      sortOrder: 1,
+      display: {
+        label: 'Generic Node',
+        icon: 'box',
+        shape: 'square',
+      },
+      handleConfiguration: [
+        {
+          position: 'left',
+          handles: [{ id: 'in', type: 'target', handleType: 'input', label: 'Input' }],
+        },
+        {
+          position: 'right',
+          handles: [{ id: 'out', type: 'source', handleType: 'output', label: 'Output' }],
+        },
+      ],
     },
-    handleConfiguration: [
-      {
-        position: 'left',
-        handles: [{ id: 'in', type: 'target', handleType: 'input', label: 'Input' }],
+    {
+      nodeType: 'uipath.blank-node',
+      version: '1.0.0',
+      category: 'general',
+      tags: ['basic'],
+      sortOrder: 2,
+      display: {
+        label: 'Blank Node',
+        icon: 'square',
+        shape: 'square',
       },
-      {
-        position: 'right',
-        handles: [{ id: 'out', type: 'source', handleType: 'output', label: 'Output' }],
-      },
-    ],
-  },
-  {
-    nodeType: 'uipath.control-switch',
-    version: '1.0.0',
-    category: 'control',
-    tags: ['dynamic', 'repeat'],
-    sortOrder: 5,
-    display: {
-      label: 'Dynamic Handle Node',
-      icon: 'git-branch',
-      shape: 'vertical-rectangle',
+      handleConfiguration: [],
     },
-    handleConfiguration: [
-      {
-        position: 'left',
-        handles: [
-          {
-            id: 'input-{index}',
-            type: 'target',
-            handleType: 'input',
-            label: '{item.label}',
-            repeat: 'dynamicInputs',
-          },
-        ],
+    {
+      nodeType: 'uipath.agent',
+      version: '1.0.0',
+      category: 'ai',
+      tags: ['ai', 'agent'],
+      sortOrder: 3,
+      display: {
+        label: 'Agent',
+        icon: 'bot',
+        shape: 'rectangle',
       },
-      {
-        position: 'right',
-        handles: [
-          {
-            id: 'output-{index}',
-            type: 'source',
-            handleType: 'output',
-            label: '{item.name}',
-            repeat: 'dynamicOutputs',
-          },
-        ],
+      handleConfiguration: [
+        {
+          position: 'left',
+          handles: [{ id: 'in', type: 'target', handleType: 'input', label: 'Input' }],
+        },
+        {
+          position: 'right',
+          handles: [{ id: 'out', type: 'source', handleType: 'output', label: 'Output' }],
+        },
+      ],
+    },
+    {
+      nodeType: 'uipath.control-switch',
+      version: '1.0.0',
+      category: 'control',
+      tags: ['dynamic', 'repeat'],
+      sortOrder: 5,
+      display: {
+        label: 'Dynamic Handle Node',
+        icon: 'git-branch',
+        shape: 'vertical-rectangle',
       },
-      {
-        position: 'bottom',
-        handles: [
-          {
-            id: 'artifact-{index}',
-            type: 'source',
-            handleType: 'artifact',
-            label: 'Artifact {index}: {item.type}',
-            repeat: 'artifacts',
-          },
-        ],
-      },
-    ],
-  },
-];
+      handleConfiguration: [
+        {
+          position: 'left',
+          handles: [
+            {
+              id: 'input-{index}',
+              type: 'target',
+              handleType: 'input',
+              label: '{item.label}',
+              repeat: 'dynamicInputs',
+            },
+          ],
+        },
+        {
+          position: 'right',
+          handles: [
+            {
+              id: 'output-{index}',
+              type: 'source',
+              handleType: 'output',
+              label: '{item.name}',
+              repeat: 'dynamicOutputs',
+            },
+          ],
+        },
+        {
+          position: 'bottom',
+          handles: [
+            {
+              id: 'artifact-{index}',
+              type: 'source',
+              handleType: 'artifact',
+              label: 'Artifact {index}: {item.type}',
+              repeat: 'artifacts',
+            },
+          ],
+        },
+      ],
+    },
+  ],
+};
 
 // ============================================================================
 // Meta Configuration
@@ -152,7 +174,7 @@ const meta: Meta<BaseNodeData> = {
     (Story) => {
       const registry = useMemo(() => {
         const reg = new NodeTypeRegistry();
-        sampleManifests.forEach((manifest) => reg.registerManifest(manifest));
+        reg.registerManifest(sampleManifest);
         return reg;
       }, []);
 

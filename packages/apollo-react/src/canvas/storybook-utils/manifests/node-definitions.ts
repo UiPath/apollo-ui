@@ -78,10 +78,6 @@ export const allNodeManifests: NodeManifest[] = [
     },
     handleConfiguration: [
       {
-        position: 'left',
-        handles: [{ id: 'input', type: 'target', handleType: 'input' }],
-      },
-      {
         position: 'right',
         handles: [{ id: 'output', type: 'source', handleType: 'output' }],
       },
@@ -97,7 +93,7 @@ export const allNodeManifests: NodeManifest[] = [
     sortOrder: 1,
     display: {
       label: 'Decision',
-      icon: 'uipath.decision',
+      icon: 'decision',
     },
     handleConfiguration: [
       {
@@ -164,7 +160,7 @@ export const allNodeManifests: NodeManifest[] = [
     sortOrder: 2,
     display: {
       label: 'Switch',
-      icon: 'uipath.switch',
+      icon: 'switch',
     },
     handleConfiguration: [
       {
@@ -436,7 +432,7 @@ export const allNodeManifests: NodeManifest[] = [
   {
     nodeType: 'uipath.data.transform',
     version: '1',
-    category: 'data-and-tools',
+    category: 'data-operations',
     tags: ['data', 'transformation'],
     sortOrder: 2,
     display: {
@@ -459,7 +455,7 @@ export const allNodeManifests: NodeManifest[] = [
   {
     nodeType: 'uipath.agent.resource.memory',
     version: '1',
-    category: 'agent',
+    category: 'agent-memory',
     tags: ['agentic', 'ai', 'memory'],
     sortOrder: 0,
     display: {
@@ -489,7 +485,7 @@ export const allNodeManifests: NodeManifest[] = [
   {
     nodeType: 'uipath.agent.resource.escalation',
     version: '1',
-    category: 'agent',
+    category: 'agent-escalation',
     tags: ['agentic', 'ai', 'escalation'],
     sortOrder: 0,
     display: {
@@ -520,7 +516,7 @@ export const allNodeManifests: NodeManifest[] = [
   {
     nodeType: 'uipath.agent.resource.context',
     version: '1',
-    category: 'agent',
+    category: 'agent-context',
     tags: ['agentic', 'ai', 'context'],
     sortOrder: 0,
     display: {
@@ -550,7 +546,7 @@ export const allNodeManifests: NodeManifest[] = [
   {
     nodeType: 'uipath.agent.resource.tool',
     version: '1',
-    category: 'agent',
+    category: 'agent-tools',
     tags: ['agentic', 'ai', 'tools', 'functions'],
     sortOrder: 0,
     display: {
@@ -567,7 +563,7 @@ export const allNodeManifests: NodeManifest[] = [
             type: 'target',
             handleType: 'artifact',
             constraints: {
-              allowedSources: [{ nodeType: 'uipath.agent', handleId: 'tool' }],
+              allowedSources: [{ nodeType: 'uipath.agent', handleId: 'tools' }],
               validationMessage: "Agent Tools can only connect to Agent node's tools input",
             },
           },
@@ -585,7 +581,7 @@ export const allNodeManifests: NodeManifest[] = [
     sortOrder: 1,
     display: {
       label: 'Agent',
-      icon: 'uipath.agent',
+      icon: 'agent',
       shape: 'rectangle',
       iconBackground: 'linear-gradient(135deg, #FFE0FF 4.81%, #CFD9FF 97.27%)',
     },
@@ -685,7 +681,7 @@ export const allNodeManifests: NodeManifest[] = [
   {
     nodeType: 'uipath.script',
     version: '1',
-    category: 'data-and-tools',
+    category: 'data-operations',
     tags: ['code', 'javascript', 'python'],
     sortOrder: 3,
     display: {
@@ -725,7 +721,7 @@ export const allNodeManifests: NodeManifest[] = [
     sortOrder: 1,
     display: {
       label: 'Approval',
-      icon: 'uipath.human-task',
+      icon: 'human-task',
     },
     handleConfiguration: [
       {
@@ -803,7 +799,7 @@ export const allNodeManifests: NodeManifest[] = [
     sortOrder: 1,
     display: {
       label: 'Call Workflow',
-      icon: 'uipath.rpa',
+      icon: 'rpa',
     },
     handleConfiguration: [
       {
@@ -839,7 +835,7 @@ export const allNodeManifests: NodeManifest[] = [
     sortOrder: 1,
     display: {
       label: 'API Workflow',
-      icon: 'uipath.api',
+      icon: 'api',
       shape: 'square',
     },
     handleConfiguration: [
