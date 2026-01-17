@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.0.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.0.1...@uipath/apollo-react@3.0.2) (2026-01-17)
+
+### Bug Fixes
+
+* **apollo-react:** additional fixes ([7165b5f](https://github.com/UiPath/apollo-ui/commit/7165b5f8305a70274be9d24e93da29b00c847c6f))
+
 ## [@uipath/apollo-react-v3.0.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.0.0...@uipath/apollo-react@3.0.1) (2026-01-17)
 
 ### Bug Fixes
