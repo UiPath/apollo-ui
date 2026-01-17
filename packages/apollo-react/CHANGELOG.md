@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.0.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.0.0...@uipath/apollo-react@3.0.1) (2026-01-17)
+
+### Bug Fixes
+
+* **apollo-react:** address difference from uix-canvas ([139ab9e](https://github.com/UiPath/apollo-ui/commit/139ab9e1ec767d1f7d262e2356ab691253e8727f))
+
 ## [@uipath/apollo-react-v3.0.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@2.11.5...@uipath/apollo-react@3.0.0) (2026-01-16)
 
 ### ⚠ BREAKING CHANGES
