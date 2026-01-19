@@ -1,19 +1,79 @@
 {
   "folders": [
     {
-      "name": "Workspace Root",
+      "name": "🏠 Root",
       "path": ".",
+      "settings": {
+        "editor.defaultFormatter": "biomejs.biome",
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+          "source.organizeImports.biome": "explicit"
+        }
+      }
     },
     {
-      "name": "apollo-vertex (Biome formatter)",
+      "name": "├─ apollo-core",
+      "path": "packages/apollo-core"
+    },
+    {
+      "name": "├─ apollo-utils",
+      "path": "packages/apollo-utils"
+    },
+    {
+      "name": "├─ apollo-react",
+      "path": "packages/apollo-react"
+    },
+    {
+      "name": "├─ apollo-angular",
+      "path": "packages/apollo-angular"
+    },
+    {
+      "name": "└─ apollo-wind",
+      "path": "packages/apollo-wind"
+    },
+    {
+      "name": "├─ ap-chat",
+      "path": "web-packages/ap-chat"
+    },
+    {
+      "name": "└─ ap-data-grid",
+      "path": "web-packages/ap-data-grid"
+    },
+    {
+      "name": "├─ storybook",
+      "path": "apps/storybook"
+    },
+    {
+      "name": "├─ react-playground",
+      "path": "apps/react-playground"
+    },
+    {
+      "name": "├─ angular-playground",
+      "path": "apps/angular-playground"
+    },
+    {
+      "name": "└─ apollo-vertex",
       "path": "apps/apollo-vertex",
       "settings": {
         "editor.defaultFormatter": "biomejs.biome",
         "editor.formatOnSave": true,
-      },
-    },
+        "editor.codeActionsOnSave": {
+          "source.organizeImports.biome": "explicit"
+        }
+      }
+    }
   ],
-  "extensions": {
-    "recommendations": ["biomejs.biome", "esbenp.prettier-vscode", "dbaeumer.vscode-eslint"],
+  "settings": {
+    "typescript.tsdk": "node_modules/typescript/lib",
+    "typescript.enablePromptUseWorkspaceTsdk": true
   },
+  "extensions": {
+    "recommendations": [
+      "biomejs.biome",
+      "dbaeumer.vscode-eslint",
+      "stylelint.vscode-stylelint",
+      "bradlc.vscode-tailwindcss",
+      "Angular.ng-template"
+    ]
+  }
 }
