@@ -185,7 +185,8 @@ const NewBaseNodeComponent = (
           <BaseIconWrapper
             backgroundColor="var(--uix-canvas-error-background)"
             shape="square"
-            nodeHeight={height}
+            height={height}
+            width={width ?? height}
           >
             <ApIcon color="var(--uix-canvas-error-icon)" name="error" size="32px" />
           </BaseIconWrapper>
@@ -223,7 +224,8 @@ const NewBaseNodeComponent = (
           <BaseIconWrapper
             shape={displayShape as 'square' | 'circle' | 'rectangle'}
             backgroundColor={displayIconBackground}
-            nodeHeight={height}
+            height={height}
+            width={width ?? height}
           >
             {icon}
           </BaseIconWrapper>

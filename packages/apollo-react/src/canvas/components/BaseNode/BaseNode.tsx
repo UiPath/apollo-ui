@@ -8,6 +8,7 @@ import {
 } from '@uipath/apollo-react/canvas/xyflow/react';
 import { ApIcon } from '@uipath/apollo-react/material/components';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { DEFAULT_NODE_SIZE } from '../../constants';
 import { useNodeExecutionState } from '../../hooks';
 import type { HandleGroupManifest } from '../../schema/node-definition';
 import { resolveAdornments } from '../../utils/adornment-resolver';
@@ -38,10 +39,13 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
   const { type, data, selected, id, dragging, width, height } = props;
 
   const updateNodeInternals = useUpdateNodeInternals();
-  const { updateNodeData } = useReactFlow();
+  const { updateNodeData, updateNode } = useReactFlow();
   const containerRef = useRef<HTMLDivElement>(null);
   const [isHovered, setIsHovered] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
+
+  const isInitialMountRef = useRef(true);
+  const originalHeightRef = useRef<number | undefined>(undefined);
 
   // Get execution status from external source
   const executionState = useNodeExecutionState(id);
@@ -117,36 +121,58 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
 
   const adornments = useMemo(() => resolveAdornments(statusContext), [statusContext]);
 
-  // Force React Flow to recalculate handle positions when dimensions change
-  // Use refs to track previous dimensions and avoid unnecessary calls
-  const prevDimensionsRef = useRef<{ width?: number; height?: number }>({});
+  // Compute height based on handleConfigurations
+  const computedHeight = useMemo(() => {
+    const handleSpacing = 32;
 
+    const leftHandles = handleConfigurations
+      .filter((config) => config.position === Position.Left && config.visible !== false)
+      .reduce((count, config) => count + config.handles.length, 0);
+
+    const rightHandles = handleConfigurations
+      .filter((config) => config.position === Position.Right && config.visible !== false)
+      .reduce((count, config) => count + config.handles.length, 0);
+
+    const leftRightHandles = Math.max(leftHandles, rightHandles);
+
+    if (leftRightHandles <= 3) return height;
+    return Math.max(
+      originalHeightRef.current ?? DEFAULT_NODE_SIZE,
+      leftRightHandles * handleSpacing
+    );
+  }, [height, handleConfigurations]);
+
+  // Sync computed height to node when it changes
   useEffect(() => {
-    if (width && height && handleConfigurations.length > 0) {
-      const prevWidth = prevDimensionsRef.current.width;
-      const prevHeight = prevDimensionsRef.current.height;
-
-      // Only update if dimensions actually changed (not on initial mount)
-      if (
-        prevWidth !== undefined &&
-        prevHeight !== undefined &&
-        (prevWidth !== width || prevHeight !== height)
-      ) {
-        // Use requestAnimationFrame to batch DOM reads and avoid forced reflow
-        requestAnimationFrame(() => {
-          updateNodeInternals(id);
-        });
-      }
-
-      prevDimensionsRef.current = { width, height };
+    if (isInitialMountRef.current) {
+      isInitialMountRef.current = false;
+      originalHeightRef.current = height ?? DEFAULT_NODE_SIZE;
+      return;
     }
-  }, [id, width, height, handleConfigurations, updateNodeInternals]);
+
+    if (computedHeight !== undefined && computedHeight !== height) {
+      const frameId = requestAnimationFrame(() => {
+        updateNode(id, { height: computedHeight });
+        updateNodeInternals(id);
+      });
+
+      return () => {
+        cancelAnimationFrame(frameId);
+      };
+    }
+
+    return undefined;
+  }, [computedHeight, height, id, updateNode, updateNodeInternals]);
 
   const displayLabel = display.label;
   const displaySubLabel = display.subLabel;
   const displayLabelTooltip = display.labelTooltip as string | undefined;
   const displayLabelBackgroundColor = display.labelBackgroundColor as string | undefined;
-  const displayShape = (display.shape ?? 'square') as 'circle' | 'square' | 'rectangle';
+  const displayShape = (display.shape ?? 'square') as
+    | 'circle'
+    | 'square'
+    | 'rectangle'
+    | 'vertical-rectangle';
   const displayBackground = display.background;
   const displayColor = display.color;
   const displayIconBackground = display.iconBackground;
@@ -244,6 +270,7 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
     showNotches,
     nodeWidth: width,
     nodeHeight: height,
+    isExpandable: displayShape === 'vertical-rectangle',
   });
 
   // Generate SmartHandle elements from handle configurations (opt-in)
@@ -334,7 +361,8 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
           <BaseIconWrapper
             backgroundColor="var(--uix-canvas-error-background)"
             shape="square"
-            nodeHeight={height}
+            height={height}
+            width={width ?? height}
           >
             <ApIcon color="var(--uix-canvas-error-icon)" name="error" size="32px" />
           </BaseIconWrapper>
@@ -373,7 +401,8 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
             shape={displayShape}
             color={displayColor}
             backgroundColor={displayIconBackground}
-            nodeHeight={height}
+            height={height}
+            width={width ?? height}
           >
             <Icon />
           </BaseIconWrapper>

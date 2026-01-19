@@ -1,6 +1,6 @@
 import type { ExecutionState } from '../../types/execution';
 
-export type NodeShape = 'square' | 'circle' | 'rectangle';
+export type NodeShape = 'square' | 'circle' | 'rectangle' | 'vertical-rectangle';
 
 export interface BaseNodeData extends Record<string, unknown> {
   parameters: Record<string, unknown>; // Property bag for node-specific config

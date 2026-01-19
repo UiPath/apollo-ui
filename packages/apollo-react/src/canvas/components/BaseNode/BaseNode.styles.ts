@@ -184,16 +184,19 @@ export const BaseIconWrapper = styled.div<{
   color?: string;
   backgroundColor?: string;
   shape?: NodeShape;
-  nodeHeight?: number;
+  height?: number;
+  width?: number;
 }>`
-  width: ${({ nodeHeight }) => {
-    const scaleFactor = nodeHeight ? nodeHeight / 96 : 1;
+  width: ${({ width }) => {
+    const scaleFactor = width ? width / 96 : 1;
     return `${72 * scaleFactor}px`;
   }};
-  height: ${({ nodeHeight }) => {
-    const scaleFactor = nodeHeight ? nodeHeight / 96 : 1;
-    return `${72 * scaleFactor}px`;
-  }};
+ height: ${({ height, width, shape }) => {
+   const scaleFactor = height ? height / 96 : 1;
+   return height !== width && shape === 'vertical-rectangle'
+     ? `${84 * scaleFactor}px` // Using 7/8 scaling for a vertical rectangle
+     : `${72 * scaleFactor}px`; // Using default 3/4 scaling for other shapes
+ }}; 
   display: flex;
   align-items: center;
   justify-content: center;
@@ -206,23 +209,23 @@ export const BaseIconWrapper = styled.div<{
   }};
 
   svg {
-    width: ${({ nodeHeight }) => {
-      const scaleFactor = nodeHeight ? nodeHeight / 96 : 1;
+    width: ${({ width }) => {
+      const scaleFactor = width ? width / 96 : 1;
       return `${40 * scaleFactor}px`;
     }};
-    height: ${({ nodeHeight }) => {
-      const scaleFactor = nodeHeight ? nodeHeight / 96 : 1;
+    height: ${({ height }) => {
+      const scaleFactor = height ? height / 96 : 1;
       return `${40 * scaleFactor}px`;
     }};
   }
 
   img {
-    width: ${({ nodeHeight }) => {
-      const scaleFactor = nodeHeight ? nodeHeight / 96 : 1;
+    width: ${({ width }) => {
+      const scaleFactor = width ? width / 96 : 1;
       return `${40 * scaleFactor}px`;
     }};
-    height: ${({ nodeHeight }) => {
-      const scaleFactor = nodeHeight ? nodeHeight / 96 : 1;
+    height: ${({ height }) => {
+      const scaleFactor = height ? height / 96 : 1;
       return `${40 * scaleFactor}px`;
     }};
     object-fit: contain;
