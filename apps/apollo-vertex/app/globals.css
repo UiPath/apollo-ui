@@ -6,8 +6,6 @@
 
 @custom-variant dark (&:is(.dark *)); /* or nextra-theme-blog/style.css */
 
-@variant dark (&:where(.dark *));
-
 @theme inline {
 
   --radius-sm: calc(var(--radius) - 4px);
