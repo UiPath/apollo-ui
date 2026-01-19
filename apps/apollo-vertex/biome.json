@@ -1,53 +1,47 @@
 {
-    "root": false,
-    "$schema": "https://biomejs.dev/schemas/2.3.8/schema.json",
-    "vcs": {
-        "enabled": false,
-        "clientKind": "git",
-        "useIgnoreFile": false
-    },
-    "files": {
-        "ignoreUnknown": false
-    },
-    "formatter": {
-        "enabled": true,
-        "indentStyle": "space",
-        "indentWidth": 4
-    },
-    "linter": {
-        "enabled": true,
-        "rules": {
-            "recommended": true
-        }
-    },
-    "assist": {
-        "enabled": true,
+  "root": false,
+  "$schema": "https://biomejs.dev/schemas/2.3.11/schema.json",
+  "vcs": {
+    "enabled": false,
+    "clientKind": "git",
+    "useIgnoreFile": false
+  },
+  "files": {
+    "ignoreUnknown": false
+  },
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "space"
+  },
+  "linter": {
+    "enabled": false
+  },
+  "assist": {
+    "enabled": true,
+    "actions": {
+      "source": {
+        "organizeImports": "on"
+      }
+    }
+  },
+  "css": {
+    "parser": {
+      "tailwindDirectives": true
+    }
+  },
+  "overrides": [
+    {
+      "includes": ["dist/**/*", ".next/**/*", "app/globals.css", "public/**/*"],
+      "formatter": {
+        "enabled": false
+      },
+      "assist": {
         "actions": {
-            "source": {
-                "organizeImports": "on"
-            }
+          "source": {
+            "organizeImports": "off"
+          }
         }
-    },
-    "css": {
-        "parser": {
-            "tailwindDirectives": true
-        }
-    },
-    "overrides": [
-        {
-            "includes": [
-                "dist/**/*",
-                ".next/**/*",
-                "app/globals.css",
-                "registry/**/*",
-                "public/**/*"
-            ],
-            "formatter": {
-                "enabled": false
-            },
-            "linter": {
-                "enabled": false
-            }
-        }
-    ]
+      }
+    }
+  ]
 }

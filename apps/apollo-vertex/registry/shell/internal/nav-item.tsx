@@ -4,14 +4,19 @@ import { AnimatePresence, motion } from "framer-motion";
 import type { LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { cn } from "@/lib/utils";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { sidebarSpring, fastFadeTransition, textFadeVariants, iconHoverScale } from "./animations";
+import { cn } from "@/lib/utils";
 import { useLocalStorage } from "@/registry/use-local-storage/use-local-storage";
+import {
+  fastFadeTransition,
+  iconHoverScale,
+  sidebarSpring,
+  textFadeVariants,
+} from "./animations";
 
 interface NavItemProps {
   to: string;

@@ -8,19 +8,24 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { sidebarSpring, fastFadeTransition, textFadeVariants, scaleVariants, iconHoverScale } from "./animations";
 import { useLocalStorage } from "@/registry/use-local-storage/use-local-storage";
+import {
+  fastFadeTransition,
+  iconHoverScale,
+  scaleVariants,
+  textFadeVariants,
+} from "./animations";
 
 interface CompanyProps {
   companyName: string;
   productName: string;
 }
 
-export const Company = ({
-  companyName,
-  productName,
-}: CompanyProps) => {
-  const [isCollapsed, setIsCollapsed] = useLocalStorage("sidebar-collapsed", false);
+export const Company = ({ companyName, productName }: CompanyProps) => {
+  const [isCollapsed, setIsCollapsed] = useLocalStorage(
+    "sidebar-collapsed",
+    false,
+  );
   const iconElement = (
     <motion.div
       className="w-8 h-8 rounded-md bg-linear-to-r from-primary/5 via-secondary/5 to-primary/5 flex items-center justify-center shrink-0"
