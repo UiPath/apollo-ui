@@ -18,6 +18,7 @@ export const useButtonHandles = ({
   shouldShowAddButtonFn,
   nodeWidth,
   nodeHeight,
+  isExpandable,
 }: {
   handleConfigurations: HandleGroupManifest[];
   shouldShowHandles: boolean;
@@ -28,6 +29,7 @@ export const useButtonHandles = ({
   showNotches?: boolean;
   nodeWidth?: number;
   nodeHeight?: number;
+  isExpandable?: boolean;
 
   /**
    * Allows for consumers to control the predicate for showing the add button from the props that's passed in
@@ -82,6 +84,7 @@ export const useButtonHandles = ({
           shouldShowAddButtonFn={shouldShowAddButtonFn}
           nodeWidth={nodeWidth}
           nodeHeight={nodeHeight}
+          isExpandable={isExpandable}
         />
       );
     });
@@ -99,6 +102,7 @@ export const useButtonHandles = ({
     shouldShowAddButtonFn,
     nodeWidth,
     nodeHeight,
+    isExpandable,
     node?.data,
   ]);
 

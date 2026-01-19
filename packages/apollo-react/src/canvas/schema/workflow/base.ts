@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { nodeShapeSchema } from '../node-definition/node-manifest';
 
 /**
  * Unique identifier for nodes, types, and workflows
@@ -29,7 +30,7 @@ export const displayConfigSchema = z
   .object({
     label: z.string().optional(),
     subLabel: z.string().optional(),
-    shape: z.string().optional(),
+    shape: nodeShapeSchema.optional(),
     background: z.string().optional(),
     iconBackground: z.string().optional(),
     icon: z.string().optional(),
