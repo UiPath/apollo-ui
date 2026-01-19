@@ -2,14 +2,7 @@
   "folders": [
     {
       "name": "🏠 Root",
-      "path": ".",
-      "settings": {
-        "editor.defaultFormatter": "biomejs.biome",
-        "editor.formatOnSave": true,
-        "editor.codeActionsOnSave": {
-          "source.organizeImports.biome": "explicit"
-        }
-      }
+      "path": "."
     },
     {
       "name": "├─ apollo-core",
@@ -53,19 +46,17 @@
     },
     {
       "name": "└─ apollo-vertex",
-      "path": "apps/apollo-vertex",
-      "settings": {
-        "editor.defaultFormatter": "biomejs.biome",
-        "editor.formatOnSave": true,
-        "editor.codeActionsOnSave": {
-          "source.organizeImports.biome": "explicit"
-        }
-      }
+      "path": "apps/apollo-vertex"
     }
   ],
   "settings": {
     "typescript.tsdk": "node_modules/typescript/lib",
     "typescript.enablePromptUseWorkspaceTsdk": true,
+    "editor.defaultFormatter": "biomejs.biome",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.organizeImports.biome": "explicit"
+    },
     "search.exclude": {
       "**/.next": true,
       "**/node_modules": true,
