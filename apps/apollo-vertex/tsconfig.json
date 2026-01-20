@@ -83,7 +83,8 @@
       ],
       "@/components/ui/toggle": ["./registry/toggle/toggle"],
       "@/components/ui/toggle-group": ["./registry/toggle-group/toggle-group"],
-      "@/components/ui/tooltip": ["./registry/tooltip/tooltip"]
+      "@/components/ui/tooltip": ["./registry/tooltip/tooltip"],
+      "@/hooks/use-mobile": ["./registry/use-mobile/use-mobile"]
     },
     "allowJs": true
   },

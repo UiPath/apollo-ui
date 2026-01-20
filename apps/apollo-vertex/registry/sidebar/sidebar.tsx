@@ -21,8 +21,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
-import { useIsMobile } from "@/registry/use-mobile/use-mobile";
 
 const SIDEBAR_COOKIE_NAME = "sidebar_state";
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7;
@@ -397,7 +397,7 @@ function SidebarGroupLabel({
   asChild = false,
   ...props
 }: React.ComponentProps<"div"> & { asChild?: boolean }) {
-  const Comp: React.ElementType = asChild ? Slot : "div";
+  const Comp = asChild ? Slot : "div";
 
   return (
     <Comp
@@ -418,7 +418,7 @@ function SidebarGroupAction({
   asChild = false,
   ...props
 }: React.ComponentProps<"button"> & { asChild?: boolean }) {
-  const Comp: React.ElementType = asChild ? Slot : "button";
+  const Comp = asChild ? Slot : "button";
 
   return (
     <Comp
@@ -507,7 +507,7 @@ function SidebarMenuButton({
   isActive?: boolean;
   tooltip?: string | React.ComponentProps<typeof TooltipContent>;
 } & VariantProps<typeof sidebarMenuButtonVariants>) {
-  const Comp: React.ElementType = asChild ? Slot : "button";
+  const Comp = asChild ? Slot : "button";
   const { isMobile, state } = useSidebar();
 
   const button = (
@@ -553,7 +553,7 @@ function SidebarMenuAction({
   asChild?: boolean;
   showOnHover?: boolean;
 }) {
-  const Comp: React.ElementType = asChild ? Slot : "button";
+  const Comp = asChild ? Slot : "button";
 
   return (
     <Comp
@@ -676,7 +676,7 @@ function SidebarMenuSubButton({
   size?: "sm" | "md";
   isActive?: boolean;
 }) {
-  const Comp: React.ElementType = asChild ? Slot : "a";
+  const Comp = asChild ? Slot : "a";
 
   return (
     <Comp
