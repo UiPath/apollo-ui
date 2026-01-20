@@ -10,7 +10,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { sidebarSpring, textFadeVariants, iconHoverScale } from "./animations";
+import { sidebarSpring, fastFadeTransition, textFadeVariants, iconHoverScale } from "./animations";
 
 interface NavItemProps {
   to: string;
@@ -41,15 +41,20 @@ export const NavItem = ({ to, icon: Icon, text, isCollapsed }: NavItemProps) => 
       >
         <Icon className="w-4 h-4" />
       </motion.span>
-      <AnimatePresence mode="wait">
+      <AnimatePresence>
         {!isCollapsed && (
           <motion.span
             key="nav-text"
-            className="truncate"
-            initial={textFadeVariants.initial}
-            animate={textFadeVariants.animate}
-            exit={textFadeVariants.exit}
-            transition={sidebarSpring}
+            className="truncate whitespace-nowrap"
+            variants={{
+              initial: textFadeVariants.initial,
+              animate: textFadeVariants.animate,
+              exit: textFadeVariants.exit,
+            }}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            transition={fastFadeTransition}
           >
             {text}
           </motion.span>

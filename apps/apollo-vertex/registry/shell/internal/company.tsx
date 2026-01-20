@@ -8,7 +8,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { sidebarSpring, textFadeVariants, scaleVariants, iconHoverScale } from "./animations";
+import { sidebarSpring, fastFadeTransition, textFadeVariants, scaleVariants, iconHoverScale } from "./animations";
 
 interface CompanyProps {
   isCollapsed: boolean;
@@ -57,15 +57,20 @@ export const Company = ({
           iconElement
         )}
 
-        <AnimatePresence mode="wait">
+        <AnimatePresence>
           {!isCollapsed && (
             <motion.div
               key="company-text"
-              className="flex flex-col min-w-0"
-              initial={textFadeVariants.initial}
-              animate={textFadeVariants.animate}
-              exit={textFadeVariants.exit}
-              transition={sidebarSpring}
+              className="flex flex-col min-w-0 whitespace-nowrap"
+              variants={{
+                initial: textFadeVariants.initial,
+                animate: textFadeVariants.animate,
+                exit: textFadeVariants.exit,
+              }}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              transition={fastFadeTransition}
             >
               <span className="text-sm text-sidebar-foreground truncate">
                 {companyName}
@@ -81,10 +86,15 @@ export const Company = ({
       <AnimatePresence>
         {!isCollapsed && (
           <motion.div
-            initial={scaleVariants.initial}
-            animate={scaleVariants.animate}
-            exit={scaleVariants.exit}
-            transition={sidebarSpring}
+            variants={{
+              initial: scaleVariants.initial,
+              animate: scaleVariants.animate,
+              exit: scaleVariants.exit,
+            }}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            transition={fastFadeTransition}
           >
             <Button
               variant="ghost"
