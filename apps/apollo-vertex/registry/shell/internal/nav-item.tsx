@@ -27,16 +27,16 @@ export const NavItem = ({ to, icon: Icon, text, isCollapsed }: NavItemProps) => 
     <Link
       href={to}
       className={cn(
-        "flex items-center gap-3 rounded-md transition-colors duration-200",
+        "flex items-center rounded-md transition-colors duration-200",
         "h-8 text-sm font-medium",
-        isCollapsed ? "w-8 justify-center" : "px-3",
+        isCollapsed ? "w-8 justify-center" : "pr-3",
         isActive
           ? "bg-sidebar-accent text-sidebar-accent-foreground"
           : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground",
       )}
     >
       <motion.span
-        className="shrink-0"
+        className="w-8 h-8 flex items-center justify-center shrink-0"
         whileHover={isCollapsed ? iconHoverScale : undefined}
       >
         <Icon className="w-4 h-4" />
