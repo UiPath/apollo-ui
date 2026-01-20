@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Home, Users, Settings, FolderOpen, BarChart3, HelpCircle } from "lucide-react";
+import { BarChart3, FolderOpen, HelpCircle, Home, Settings, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "@/registry/theme-provider/theme-toggle";
 import { useLocalStorage } from "@/registry/use-local-storage/use-local-storage";
@@ -23,7 +23,7 @@ export const Sidebar = ({ companyName, productName }: SidebarProps) => {
         <motion.aside
             className={cn(
                 sidebarWidth,
-                "rounded-[10px] flex flex-col bg-sidebar will-change-[width] px-2 overflow-hidden",
+                "flex flex-col bg-sidebar will-change-[width] p-2 overflow-hidden",
             )}
             animate={{
                 width: isCollapsed ? 48 : 264
