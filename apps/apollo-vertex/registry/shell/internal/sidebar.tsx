@@ -1,10 +1,12 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { Home, Users, Settings, FolderOpen, BarChart3, HelpCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "@/registry/theme-provider/theme-toggle";
 import { useLocalStorage } from "@/registry/use-local-storage/use-local-storage";
 import { Company } from "./company";
+import { NavItem } from "./nav-item";
 import { UserProfile } from "./user-profile";
 
 interface SidebarProps {
@@ -44,7 +46,11 @@ export const Sidebar = ({ companyName, productName }: SidebarProps) => {
                 productName={productName}
             />
             <nav className="flex-1 mt-6 space-y-1 pb-3">
-                { /* Add navigation content here */}
+                <NavItem to="/templates/shell-template" icon={Home} text="Dashboard" isCollapsed={isCollapsed} />
+                <NavItem to="/" icon={FolderOpen} text="Projects" isCollapsed={isCollapsed} />
+                <NavItem to="/" icon={BarChart3} text="Analytics" isCollapsed={isCollapsed} />
+                <NavItem to="/" icon={Users} text="Team" isCollapsed={isCollapsed} />
+                <NavItem to="/" icon={Settings} text="Settings" isCollapsed={isCollapsed} />
             </nav>
             <div className="mt-auto pt-3">
                 {!isCollapsed ? (
