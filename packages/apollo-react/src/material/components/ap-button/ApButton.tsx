@@ -2,6 +2,7 @@ import { CircularProgress } from '@mui/material';
 import Button, { type ButtonProps } from '@mui/material/Button';
 import { styled } from '@mui/material/styles';
 import React from 'react';
+import token from '@uipath/apollo-core';
 
 import type { ApButtonProps, ButtonVariants } from './ApButton.types';
 
@@ -76,6 +77,7 @@ export const ApButton = React.forwardRef<HTMLButtonElement, ApButtonProps>((prop
     onFocus,
     onBlur,
     onKeyDown,
+    ...rest
   } = props;
 
   const hasStartIcon = !!startIcon;
@@ -115,6 +117,7 @@ export const ApButton = React.forwardRef<HTMLButtonElement, ApButtonProps>((prop
         href={href}
         customSize={size}
         customWidth={widthMode}
+        {...rest}
       >
         <span
           style={{
@@ -141,9 +144,9 @@ const StyledButton = styled(Button, {
     customWidth: string;
   }
 >(({ customSize, customWidth }) => ({
-  '--border-radius': `3px`,
+  '--border-radius': token.Border.BorderRadiusM,
   '--focus-border-offset': `1px`,
-  '--focus-border-width': `2px`,
+  '--focus-border-width': token.Border.BorderThickM,
   // Automatically calculate the outer focus border radius and position
   '--focus-border-radius': `calc( var(--border-radius) + var(--focus-border-offset) + var(--focus-border-width) )`,
   '--focus-border-inset': `calc( -1 * (var(--focus-border-offset) + var(--focus-border-width) + 1px))`,
@@ -151,7 +154,7 @@ const StyledButton = styled(Button, {
   position: 'relative',
   borderRadius: 'var(--border-radius)',
   minWidth: customWidth === 'fit-content' ? undefined : '120px',
-  height: customSize === 'tall' ? '40px' : '32px',
+  height: customSize === 'tall' ? token.Spacing.SpacingXxl : token.Spacing.SpacingXl,
 
   '&.loading': { pointerEvents: 'none' },
 

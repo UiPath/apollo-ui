@@ -56,6 +56,7 @@ export function Breadcrumb() {
 		tooltip: "Tooltip",
 		typography: "Typography",
 		// Apollo component routes
+		accordion: "Accordion",
 		"alert-bar": "Alert Bar",
 		badge: "Badge",
 		button: "Button",

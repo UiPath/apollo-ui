@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.1.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.0.3...@uipath/apollo-react@3.1.0) (2026-01-20)
+
+### Features
+
+* **apollo-react:** migrated accordion, button accept styles PLT-94897 ([36febbf](https://github.com/UiPath/apollo-ui/commit/36febbffe8028bad1de9b170b7316efedc659743))
+
 ## [@uipath/apollo-react-v3.0.3](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.0.2...@uipath/apollo-react@3.0.3) (2026-01-17)
 
 ### Bug Fixes
