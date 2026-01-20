@@ -8,6 +8,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { sidebarSpring, textFadeVariants, scaleVariants, iconHoverScale } from "./animations";
 
 interface CompanyProps {
   isCollapsed: boolean;
@@ -22,89 +23,74 @@ export const Company = ({
   companyName,
   productName,
 }: CompanyProps) => {
+  const iconElement = (
+    <motion.div
+      className="w-8 h-8 rounded-md bg-linear-to-r from-primary/5 via-secondary/5 to-primary/5 flex items-center justify-center shrink-0"
+      whileHover={isCollapsed ? iconHoverScale : undefined}
+    >
+      <Box className="w-4 h-4 text-primary" />
+    </motion.div>
+  );
+
   return (
-    <div className={"flex items-center justify-between h-7 pt-2"}>
-      <AnimatePresence mode="wait">
-        {!isCollapsed ? (
-          <motion.div
-            key="expanded"
-            className={"flex items-center gap-2"}
-            initial={{ opacity: 0, x: -10 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -10 }}
-            transition={{
-              type: "spring",
-              stiffness: 400,
-              damping: 30,
-              mass: 0.5,
-            }}
-          >
-            <div className="w-8 h-8 rounded-md bg-gradient-to-r from-primary/5 via-secondary/5 to-primary/5 flex items-center justify-center shrink-0">
-              <Box className="w-4 h-4 text-primary" />
-            </div>
-            <div className="flex flex-col min-w-0">
+    <div className="flex items-center justify-between h-7 pt-2">
+      <div className="flex items-center gap-2">
+        {isCollapsed ? (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                onClick={toggleCollapse}
+                className="flex items-center justify-center cursor-pointer"
+                type="button"
+              >
+                {iconElement}
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="right">
+              <div className="flex flex-col gap-0.5">
+                <span className="font-xs">{companyName}</span>
+                <span className="text-xs opacity-70">{productName}</span>
+              </div>
+            </TooltipContent>
+          </Tooltip>
+        ) : (
+          iconElement
+        )}
+
+        <AnimatePresence mode="wait">
+          {!isCollapsed && (
+            <motion.div
+              key="company-text"
+              className="flex flex-col min-w-0"
+              initial={textFadeVariants.initial}
+              animate={textFadeVariants.animate}
+              exit={textFadeVariants.exit}
+              transition={sidebarSpring}
+            >
               <span className="text-sm text-sidebar-foreground truncate">
                 {companyName}
               </span>
               <span className="text-xs text-sidebar-foreground/70 truncate">
                 {productName}
               </span>
-            </div>
-          </motion.div>
-        ) : (
-          <motion.div
-            key="collapsed"
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.8 }}
-            transition={{
-              type: "spring",
-              stiffness: 400,
-              damping: 30,
-              mass: 0.5,
-            }}
-          >
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button
-                  onClick={toggleCollapse}
-                  className="flex items-center justify-center cursor-pointer w-8 h-8"
-                  type="button"
-                >
-                  <div className="w-8 h-8 rounded-md bg-gradient-to-r from-primary/5 via-secondary/5 to-primary/5 flex items-center justify-center">
-                    <Box className="w-4 h-4 text-primary" />
-                  </div>
-                </button>
-              </TooltipTrigger>
-              <TooltipContent side="right">
-                <div className="flex flex-col gap-0.5">
-                  <span className="font-xs">{companyName}</span>
-                  <span className="text-xs opacity-70">{productName}</span>
-                </div>
-              </TooltipContent>
-            </Tooltip>
-          </motion.div>
-        )}
-      </AnimatePresence>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
 
       <AnimatePresence>
         {!isCollapsed && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.8 }}
-            transition={{
-              type: "spring",
-              stiffness: 400,
-              damping: 30,
-              mass: 0.5,
-            }}
+            initial={scaleVariants.initial}
+            animate={scaleVariants.animate}
+            exit={scaleVariants.exit}
+            transition={sidebarSpring}
           >
             <Button
               variant="ghost"
               size="sm"
               onClick={toggleCollapse}
-              className={"h-8 w-8 ml-auto shrink-0"}
+              className="h-8 w-8 ml-auto shrink-0"
             >
               <PanelLeft className="w-4 h-4" />
             </Button>
