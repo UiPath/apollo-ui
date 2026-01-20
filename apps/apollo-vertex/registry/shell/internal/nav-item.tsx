@@ -11,15 +11,16 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { sidebarSpring, fastFadeTransition, textFadeVariants, iconHoverScale } from "./animations";
+import { useLocalStorage } from "@/registry/use-local-storage/use-local-storage";
 
 interface NavItemProps {
   to: string;
   icon: LucideIcon;
   text: string;
-  isCollapsed: boolean;
 }
 
-export const NavItem = ({ to, icon: Icon, text, isCollapsed }: NavItemProps) => {
+export const NavItem = ({ to, icon: Icon, text }: NavItemProps) => {
+  const [isCollapsed] = useLocalStorage("sidebar-collapsed", false);
   const pathname = usePathname();
   const isActive = pathname === to || pathname.startsWith(`${to}/`);
 
@@ -45,7 +46,7 @@ export const NavItem = ({ to, icon: Icon, text, isCollapsed }: NavItemProps) => 
         {!isCollapsed && (
           <motion.span
             key="nav-text"
-            className="truncate whitespace-nowrap"
+            className="truncate whitespace-nowrap pl-2"
             variants={{
               initial: textFadeVariants.initial,
               animate: textFadeVariants.animate,

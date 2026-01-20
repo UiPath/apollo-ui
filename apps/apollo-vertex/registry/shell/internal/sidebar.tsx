@@ -15,11 +15,8 @@ interface SidebarProps {
 }
 
 export const Sidebar = ({ companyName, productName }: SidebarProps) => {
-    const [isCollapsed, setIsCollapsed] = useLocalStorage("sidebar-collapsed", false);
+    const [isCollapsed] = useLocalStorage("sidebar-collapsed", false);
 
-    const toggleCollapse = () => {
-        setIsCollapsed(!isCollapsed);
-    };
     const sidebarWidth = isCollapsed ? "w-[48px]" : "w-[264px]";
 
     return (
@@ -39,37 +36,31 @@ export const Sidebar = ({ companyName, productName }: SidebarProps) => {
             }}
         >
             <Company
-                isCollapsed={isCollapsed}
-                toggleCollapse={toggleCollapse}
                 companyName={companyName}
                 productName={productName}
             />
             <nav className="flex-1 mt-6 space-y-1 pb-3">
-                <NavItem to="/templates/shell-template" icon={Home} text="Dashboard" isCollapsed={isCollapsed} />
-                <NavItem to="/" icon={FolderOpen} text="Projects" isCollapsed={isCollapsed} />
-                <NavItem to="/" icon={BarChart3} text="Analytics" isCollapsed={isCollapsed} />
-                <NavItem to="/" icon={Users} text="Team" isCollapsed={isCollapsed} />
-                <NavItem to="/" icon={Settings} text="Settings" isCollapsed={isCollapsed} />
+                <NavItem to="/templates/shell-template" icon={Home} text="Dashboard" />
+                <NavItem to="/" icon={FolderOpen} text="Projects" />
+                <NavItem to="/" icon={BarChart3} text="Analytics" />
+                <NavItem to="/" icon={Users} text="Team" />
+                <NavItem to="/" icon={Settings} text="Settings" />
             </nav>
             <div className="mt-auto pt-3">
                 {!isCollapsed ? (
                     <div className="flex items-center gap-3 pb-2">
                         <div className="flex items-center gap-3 flex-1 min-w-0">
                             <UserProfile
-                                isCollapsed={isCollapsed}
-                                toggleCollapse={toggleCollapse}
                             />
                         </div>
                         <div className="shrink-0">
-                            <ThemeToggle isCollapsed={isCollapsed} />
+                            <ThemeToggle />
                         </div>
                     </div>
                 ) : (
                     <div className="flex flex-col items-center gap-2 pb-2">
-                        <ThemeToggle isCollapsed={isCollapsed} />
+                        <ThemeToggle />
                         <UserProfile
-                            isCollapsed={isCollapsed}
-                            toggleCollapse={toggleCollapse}
                         />
                     </div>
                 )}
