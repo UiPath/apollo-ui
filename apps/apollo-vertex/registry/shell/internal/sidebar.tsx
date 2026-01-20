@@ -26,8 +26,7 @@ export const Sidebar = ({ companyName, productName }: SidebarProps) => {
         <motion.aside
             className={cn(
                 sidebarWidth,
-                "rounded-[10px] flex flex-col bg-sidebar will-change-[width]",
-                isCollapsed ? "px-2" : "px-3",
+                "rounded-[10px] flex flex-col bg-sidebar will-change-[width] px-2",
             )}
             animate={{
                 width: isCollapsed ? 48 : 264
