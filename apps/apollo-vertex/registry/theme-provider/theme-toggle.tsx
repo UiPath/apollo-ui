@@ -4,9 +4,11 @@ import { Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { useLocalStorage } from "@/registry/use-local-storage/use-local-storage";
 
 
-export function ThemeToggle({ isCollapsed }: { isCollapsed: boolean }) {
+export function ThemeToggle() {
+    const [isCollapsed] = useLocalStorage("sidebar-collapsed", false);
     const { setTheme } = useTheme();
 
     return (
