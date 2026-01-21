@@ -290,6 +290,7 @@ export const ExecutionStatus: Story = {
             escalation: '1h',
             escalationsTriggered: false,
             label: 'Application',
+            isReadOnly: true,
             tasks: [
               [{ id: '1', label: 'KYC and AML Checks', icon: <VerificationIcon /> }],
               [
@@ -325,6 +326,7 @@ export const ExecutionStatus: Story = {
             escalation: '1h',
             escalationsTriggered: true,
             label: 'Processing',
+            isReadOnly: true,
             tasks: [
               [{ id: '1', label: 'Liability Check', icon: <VerificationIcon /> }],
               [{ id: '2', label: 'Credit Review', icon: <DocumentIcon /> }],
@@ -381,6 +383,7 @@ export const ExecutionStatus: Story = {
         data: {
           stageDetails: {
             label: 'Underwriting',
+            isReadOnly: true,
             tasks: [
               [{ id: '1', label: 'Report Ordering', icon: <DocumentIcon /> }],
               [{ id: '2', label: 'Underwriting Verification', icon: <VerificationIcon /> }],
@@ -408,6 +411,7 @@ export const ExecutionStatus: Story = {
         data: {
           stageDetails: {
             label: 'Closing',
+            isReadOnly: true,
             tasks: [
               [{ id: '1', label: 'Loan Packet Creation', icon: <DocumentIcon /> }],
               [{ id: '2', label: 'Customer Signing', icon: <DocumentIcon /> }],
@@ -432,6 +436,7 @@ export const ExecutionStatus: Story = {
           stageDetails: {
             label: 'Rejected',
             isException: true,
+            isReadOnly: true,
             tasks: [
               [{ id: '1', label: 'Customer Notification', icon: <ProcessIcon /> }],
               [{ id: '2', label: 'Generate Audit Report', icon: <DocumentIcon /> }],
@@ -538,6 +543,7 @@ export const InteractiveTaskManagement: Story = {
         data: {
           stageDetails: {
             label: 'Execution Mode - Read Only',
+            isReadOnly: true,
             tasks: [
               [
                 {
