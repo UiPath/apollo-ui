@@ -1,3 +1,11 @@
+## [@uipath/apollo-react-v3.2.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.1.0...@uipath/apollo-react@3.2.0) (2026-01-21)
+
+### Features
+
+* **apollo-react:** agent flow resource nodes should be symmetrical [AG-673] ([#166](https://github.com/UiPath/apollo-ui/issues/166)) ([9b9f6ef](https://github.com/UiPath/apollo-ui/commit/9b9f6ef3fa3101d5df28ab071a8bd582440bbe57))
+* **apollo-react:** btn (#AG-123) ([2071113](https://github.com/UiPath/apollo-ui/commit/2071113d003da2733438264cc2ffd02779b622e4)), closes [#AG-123](https://github.com/UiPath/apollo-ui/issues/AG-123)
+* **apollo-react:** conflict (#AG-123) ([ee01fd3](https://github.com/UiPath/apollo-ui/commit/ee01fd366d80cfc95e51a90be03cf3b44806f4ef)), closes [#AG-123](https://github.com/UiPath/apollo-ui/issues/AG-123)
+
 ## [@uipath/apollo-react-v3.1.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.0.3...@uipath/apollo-react@3.1.0) (2026-01-20)
 
 ### Features
