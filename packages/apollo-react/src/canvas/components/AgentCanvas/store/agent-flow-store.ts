@@ -2134,13 +2134,17 @@ export const createAgentFlowStore = (initialProps: AgentFlowProps) =>
           y: agentNode.position.y,
         };
 
+        const stickyNoteNodeId = `sticky-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+
         props.onAddStickyNote({
-          id: `sticky-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
+          id: stickyNoteNodeId,
           content: data.content ?? '',
           position: data.position ?? defaultPosition,
           size: { width: 304, height: 288 },
           color: data.color ?? 'yellow',
         });
+
+        state.setSelectedNodeId(stickyNoteNodeId);
       },
     };
   });

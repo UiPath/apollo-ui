@@ -144,6 +144,8 @@ export const StickyNoteMarkdown = styled.div`
   a {
     color: var(--uix-canvas-primary);
     text-decoration: underline;
+    cursor: pointer;
+    pointer-events: auto;
   }
 
   h1,
