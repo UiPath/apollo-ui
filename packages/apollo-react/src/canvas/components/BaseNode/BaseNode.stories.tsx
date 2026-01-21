@@ -41,15 +41,11 @@ const sampleManifests: NodeManifest[] = [
     handleConfiguration: [
       {
         position: 'left',
-        handles: [
-          { id: 'in', type: 'target', handleType: 'input', label: 'Input' },
-        ],
+        handles: [{ id: 'in', type: 'target', handleType: 'input', label: 'Input' }],
       },
       {
         position: 'right',
-        handles: [
-          { id: 'out', type: 'source', handleType: 'output', label: 'Output' },
-        ],
+        handles: [{ id: 'out', type: 'source', handleType: 'output', label: 'Output' }],
       },
     ],
   },
@@ -80,15 +76,11 @@ const sampleManifests: NodeManifest[] = [
     handleConfiguration: [
       {
         position: 'left',
-        handles: [
-          { id: 'in', type: 'target', handleType: 'input', label: 'Input' },
-        ],
+        handles: [{ id: 'in', type: 'target', handleType: 'input', label: 'Input' }],
       },
       {
         position: 'right',
-        handles: [
-          { id: 'out', type: 'source', handleType: 'output', label: 'Output' },
-        ],
+        handles: [{ id: 'out', type: 'source', handleType: 'output', label: 'Output' }],
       },
     ],
   },
@@ -114,9 +106,7 @@ const meta: Meta<BaseNodeData> = {
       const contextValue = useMemo(() => ({ registry }), [registry]);
 
       return (
-        <NodeRegistryContext.Provider value={contextValue}>
-          {Story()}
-        </NodeRegistryContext.Provider>
+        <NodeRegistryContext.Provider value={contextValue}>{Story()}</NodeRegistryContext.Provider>
       );
     },
     withCanvasProviders(),
@@ -150,7 +140,7 @@ function createShapeStatusGrid(): Node<BaseNodeData>[] {
     SHAPES.forEach((shape, colIndex) => {
       const label = shape === 'rectangle' ? 'Invoice approval agent' : 'Header';
       const nodeType = shape === 'rectangle' ? 'uipath.agent' : 'uipath.blank-node';
-      
+
       nodes.push(
         createNode({
           id: `${shape}-${status}`,
@@ -164,9 +154,9 @@ function createShapeStatusGrid(): Node<BaseNodeData>[] {
             version: '1.0.0',
             parameters: {},
             executionStatus: status,
-            display: { 
-              label, 
-              subLabel: status.replace(/([A-Z])/g, ' $1').trim(), 
+            display: {
+              label,
+              subLabel: status.replace(/([A-Z])/g, ' $1').trim(),
               shape,
             },
           },

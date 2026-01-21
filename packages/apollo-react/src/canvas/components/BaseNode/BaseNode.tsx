@@ -9,6 +9,7 @@ import {
 import { ApIcon } from '@uipath/apollo-react/material/components';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNodeExecutionState } from '../../hooks';
+import type { HandleGroupManifest } from '../../schema/node-definition';
 import { resolveAdornments } from '../../utils/adornment-resolver';
 import { getIcon } from '../../utils/icon-registry';
 import { resolveDisplay, resolveHandles } from '../../utils/manifest-resolver';
@@ -78,14 +79,21 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
 
   const Icon = useMemo(() => getIcon(display.icon), [display.icon]);
 
-  // Resolve handles from manifest + instance data
-  const handleConfigurations = useMemo(() => {
+  // Resolve handles from instance data or manifest
+  // Instance handleConfigurations take precedence over manifest
+  const handleConfigurations = useMemo((): HandleGroupManifest[] => {
+    // Check if node data has handleConfigurations override
+    const dataHandleConfigs = data.handleConfigurations as HandleGroupManifest[] | undefined;
+    if (dataHandleConfigs && Array.isArray(dataHandleConfigs)) {
+      return dataHandleConfigs;
+    }
+
     if (!manifest) return [];
     const resolved = resolveHandles(manifest.handleConfiguration, data);
 
-    // Convert resolved handles to HandleConfiguration format for ButtonHandle
+    // Convert resolved handles to HandleGroupManifest format for ButtonHandle
     return resolved.map((group) => ({
-      position: group.position as Position,
+      position: group.position,
       handles: group.handles.map((h) => ({
         id: h.id,
         type: h.type,
@@ -272,7 +280,7 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
             key={`${handle.id}-${handle.type}`}
             type={handle.type}
             id={handle.id}
-            defaultPosition={defaultPosition}
+            defaultPosition={defaultPosition as Position}
             handleType={handleVisualType}
             nodeWidth={width}
             nodeHeight={height}

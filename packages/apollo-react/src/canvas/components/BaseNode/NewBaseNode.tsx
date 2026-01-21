@@ -8,6 +8,7 @@ import {
 } from '@uipath/apollo-react/canvas/xyflow/react';
 import { ApIcon, ApTooltip, ApTypography } from '@uipath/apollo-react/material/components';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import type { HandleActionEvent } from '../ButtonHandle/ButtonHandle';
 import { useButtonHandles } from '../ButtonHandle/useButtonHandles';
 import { NodeToolbar } from '../Toolbar';
 import {
@@ -22,8 +23,8 @@ import type { NewBaseNodeData, NewBaseNodeDisplayProps, NodeAdornments } from '.
 
 // Internal component that expects display props as direct props
 const NewBaseNodeComponent = (
-  props: Omit<NodeProps<Node<NewBaseNodeData>>, 'data'> &
-    NewBaseNodeDisplayProps & { data?: NewBaseNodeData }
+  props: Partial<Omit<NodeProps<Node<NewBaseNodeData>>, 'data'>> &
+    NewBaseNodeDisplayProps & { data?: NewBaseNodeData; id: string }
 ) => {
   const {
     id,
@@ -133,7 +134,7 @@ const NewBaseNodeComponent = (
 
   // Handle action callback
   const handleAction = useCallback(
-    (event: any) => {
+    (event: HandleActionEvent) => {
       // First, check if there's a global handler passed as prop
       if (onHandleAction) {
         onHandleAction(event);
@@ -287,8 +288,8 @@ const NewBaseNodeComponent = (
 // Wrapper component that extracts display props from data for React Flow compatibility
 // Also supports direct props for standalone usage (non-React Flow components)
 const NewBaseNodeWrapper = (
-  props: Omit<NodeProps<Node<NewBaseNodeData>>, 'data'> &
-    NewBaseNodeDisplayProps & { data?: NewBaseNodeData }
+  props: Partial<Omit<NodeProps<Node<NewBaseNodeData>>, 'data'>> &
+    NewBaseNodeDisplayProps & { data?: NewBaseNodeData; id: string }
 ) => {
   const {
     data,

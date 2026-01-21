@@ -2,18 +2,21 @@ import styled from '@emotion/styled';
 import { FontVariantToken, Spacing } from '@uipath/apollo-core';
 import { ApTooltip, ApTypography } from '@uipath/apollo-react/material';
 import type React from 'react';
+import { memo } from 'react';
 
 import { Row } from '../../layouts';
 
+export type BreadcrumbItem = {
+  label: string;
+  onClick?: (
+    e: React.MouseEvent<HTMLButtonElement> | React.KeyboardEvent<HTMLButtonElement>
+  ) => void;
+  startAdornment?: React.ReactNode;
+  endAdornment?: React.ReactNode;
+};
+
 type BreadcrumbProps = {
-  items: {
-    label: string;
-    onClick?: (
-      e: React.MouseEvent<HTMLButtonElement> | React.KeyboardEvent<HTMLButtonElement>
-    ) => void;
-    startAdornment?: React.ReactNode;
-    endAdornment?: React.ReactNode;
-  }[];
+  items: BreadcrumbItem[];
   delimiter?: React.ReactNode | string;
 };
 
@@ -30,7 +33,7 @@ const LiStyled = styled.li`
   padding: 0;
 `;
 
-export const Breadcrumb: React.FC<BreadcrumbProps> = ({ items, delimiter = '>' }) => {
+export const Breadcrumb: React.FC<BreadcrumbProps> = memo(({ items, delimiter = '>' }) => {
   const delimiterNode =
     typeof delimiter === 'string' ? (
       <ApTypography aria-hidden="true" color="var(--color-foreground-de-emp)">
@@ -69,7 +72,7 @@ export const Breadcrumb: React.FC<BreadcrumbProps> = ({ items, delimiter = '>' }
                   gap={Spacing.SpacingMicro}
                   aria-current={index === items.length - 1 ? 'page' : undefined}
                 >
-                  {item.startAdornment ?? <></>}
+                  {item.startAdornment}
                   <ApTooltip smartTooltip content={item.label}>
                     <ApTypography
                       variant={
@@ -83,7 +86,7 @@ export const Breadcrumb: React.FC<BreadcrumbProps> = ({ items, delimiter = '>' }
                       {item.label}
                     </ApTypography>
                   </ApTooltip>
-                  {item.endAdornment ?? <></>}
+                  {item.endAdornment}
                 </Row>
               </button>
             ) : (
@@ -116,4 +119,6 @@ export const Breadcrumb: React.FC<BreadcrumbProps> = ({ items, delimiter = '>' }
       </OlStyled>
     </Row>
   );
-};
+});
+
+Breadcrumb.displayName = 'Breadcrumb';

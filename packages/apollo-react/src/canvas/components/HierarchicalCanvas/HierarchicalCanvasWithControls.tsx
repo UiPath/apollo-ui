@@ -7,14 +7,57 @@ import {
 } from '@uipath/apollo-react/canvas/xyflow/react';
 import { ApButton, ApTypography } from '@uipath/apollo-react/material';
 import { ApIcon } from '@uipath/apollo-react/material/components';
-import React, { useCallback, useEffect } from 'react';
+import type React from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import type { NodeManifest } from '../../schema/node-definition/node-manifest';
-import { useCanvasStore } from '../../stores/canvasStore';
+import {
+  selectAddNode,
+  selectCurrentCanvas,
+  selectCurrentPathLength,
+  selectRemoveEdge,
+  selectRemoveNode,
+  selectUpdateNodes,
+  useCanvasStore,
+} from '../../stores/canvasStore';
 import type { CanvasLevel } from '../../types/canvas.types';
-import { canvasEventBus } from '../../utils';
-import { createAddNodePreview } from '../AddNodePanel';
-import { NodeRegistryProvider } from '../BaseNode';
+import { canvasEventBus } from '../../utils/CanvasEventBus';
+import { createAddNodePreview } from '../AddNodePanel/createAddNodePreview';
+import { NodeRegistryProvider } from '../BaseNode/NodeRegistryProvider';
 import { HierarchicalCanvas } from './HierarchicalCanvas';
+
+// Demo canvas data for Storybook testing
+const createDemoCanvases = (): Record<string, CanvasLevel> => {
+  const rootCanvas: CanvasLevel = {
+    id: 'root',
+    name: 'Main Workflow',
+    nodes: [
+      {
+        type: 'blank-canvas-node',
+        position: { x: 500, y: 500 },
+        id: 'blank-canvas-node',
+        data: {
+          label: 'Start Here',
+        },
+      },
+    ],
+    edges: [],
+    nodeTypes: ['default'],
+    edgeTypes: ['default'],
+    viewport: { x: 0, y: 0, zoom: 1 },
+    selection: {
+      isSingleNodeSelected: false,
+      isSingleEdgeSelected: false,
+      nodeIds: [],
+      edgeIds: [],
+    },
+    options: {},
+    properties: {},
+  };
+
+  return {
+    root: rootCanvas,
+  };
+};
 
 // ============================================================================
 // Workflow Node Manifests
@@ -190,16 +233,31 @@ const workflowManifests: NodeManifest[] = [
   },
 ];
 
+interface CanvasWithControlsContentProps {
+  initialCanvases: Record<string, CanvasLevel>;
+  initialPath: string[];
+  onCanvasesChange: (canvases: Record<string, CanvasLevel>) => void;
+  onPathChange: (path: string[]) => void;
+}
+
 /**
  * Inner component that uses the ReactFlow hooks
  */
-const CanvasWithControlsContent: React.FC = () => {
-  const store = useCanvasStore();
+const CanvasWithControlsContent: React.FC<CanvasWithControlsContentProps> = ({
+  initialCanvases,
+  initialPath,
+  onCanvasesChange,
+  onPathChange,
+}) => {
   const reactFlowInstance = useReactFlow();
-  const currentCanvas: CanvasLevel | undefined = useCanvasStore((state) => {
-    const lastIndex = state.currentPath[state.currentPath.length - 1];
-    return lastIndex !== undefined ? state.canvasStack[lastIndex] : undefined;
-  });
+
+  // Use stable selectors to avoid "getSnapshot should be cached" errors
+  const currentCanvas = useCanvasStore(selectCurrentCanvas);
+  const currentPathLength = useCanvasStore(selectCurrentPathLength);
+  const addNode = useCanvasStore(selectAddNode);
+  const removeNode = useCanvasStore(selectRemoveNode);
+  const removeEdge = useCanvasStore(selectRemoveEdge);
+  const updateNodes = useCanvasStore(selectUpdateNodes);
 
   // Listen for handle action events and create preview
   useEffect(() => {
@@ -227,19 +285,19 @@ const CanvasWithControlsContent: React.FC = () => {
       // Remove blank canvas node if it exists
       const blankNode = currentCanvas?.nodes.find((n) => n.id === 'blank-canvas-node');
       if (blankNode) {
-        store.removeNode('blank-canvas-node');
+        removeNode('blank-canvas-node');
       }
 
-      store.addNode(nodeType, position);
+      addNode(nodeType, position);
     },
-    [store, currentCanvas]
+    [addNode, removeNode, currentCanvas]
   );
 
   const handleAddSampleWorkflow = useCallback(() => {
     // Clear existing nodes
     if (currentCanvas?.nodes) {
       currentCanvas.nodes.forEach((node: Node) => {
-        store.removeNode(node.id);
+        removeNode(node.id);
       });
     }
 
@@ -254,21 +312,21 @@ const CanvasWithControlsContent: React.FC = () => {
 
     nodes.forEach((node, index) => {
       setTimeout(() => {
-        store.addNode(node.type, node.position);
+        addNode(node.type, node.position);
       }, index * 100);
     });
-  }, [store, currentCanvas]);
+  }, [addNode, removeNode, currentCanvas]);
 
   const handleClearCanvas = useCallback(() => {
     // Clear all nodes and edges
     if (currentCanvas?.nodes) {
       currentCanvas.nodes.forEach((node) => {
-        store.removeNode(node.id);
+        removeNode(node.id);
       });
     }
     if (currentCanvas?.edges) {
       currentCanvas.edges.forEach((edge) => {
-        store.removeEdge(edge.id);
+        removeEdge(edge.id);
       });
     }
 
@@ -280,12 +338,18 @@ const CanvasWithControlsContent: React.FC = () => {
       data: {},
     };
 
-    store.updateNodes([blankNode]);
-  }, [store, currentCanvas]);
+    updateNodes([blankNode]);
+  }, [removeNode, removeEdge, updateNodes, currentCanvas]);
 
   return (
     <div style={{ width: '100%', height: '100vh', position: 'relative' }}>
-      <HierarchicalCanvas mode="design" />
+      <HierarchicalCanvas
+        mode="design"
+        initialCanvases={initialCanvases}
+        initialPath={initialPath}
+        onCanvasesChange={onCanvasesChange}
+        onPathChange={onPathChange}
+      />
 
       {/* Control Panel */}
       <Panel position="center-right">
@@ -368,7 +432,7 @@ const CanvasWithControlsContent: React.FC = () => {
           <ApTypography variant={FontVariantToken.fontSizeMBold}>Canvas Info</ApTypography>
           <div>Nodes: {currentCanvas?.nodes?.length || 0}</div>
           <div>Edges: {currentCanvas?.edges?.length || 0}</div>
-          <div>Level: {store.currentPath.length}</div>
+          <div>Level: {currentPathLength}</div>
           <ApTypography variant={FontVariantToken.fontSizeMBold}>Instructions</ApTypography>
           <div style={{ fontSize: '11px', lineHeight: '1.4' }}>
             1. Add nodes or drag to create
@@ -386,13 +450,41 @@ const CanvasWithControlsContent: React.FC = () => {
 };
 
 /**
- * HierarchicalCanvas with test controls for Storybook
+ * HierarchicalCanvas with test controls for Storybook.
+ * Demonstrates the uncontrolled-with-callbacks pattern for consuming HierarchicalCanvas.
+ *
+ * Usage pattern:
+ * - initialCanvases/initialPath: Set once on mount, ignored after
+ * - onCanvasesChange: Called on every change - use for persistence/sync
+ * - onPathChange: Called on navigation - use for URL sync, analytics, etc.
  */
 export const HierarchicalCanvasWithControls: React.FC = () => {
+  // Initial data - only used on first render
+  const [initialCanvases] = useState<Record<string, CanvasLevel>>(() => createDemoCanvases());
+  const [initialPath] = useState<string[]>(['root']);
+
+  // Callbacks for persistence - these receive updates but don't control the component
+  const handleCanvasesChange = useCallback((canvases: Record<string, CanvasLevel>) => {
+    // Example: persist to localStorage, send to API, etc.
+    console.log('Canvas data changed:', Object.keys(canvases));
+    // localStorage.setItem('workflow-canvases', JSON.stringify(canvases));
+  }, []);
+
+  const handlePathChange = useCallback((path: string[]) => {
+    // Example: update URL, track analytics, etc.
+    console.log('Navigation path changed:', path);
+    // window.history.pushState({}, '', `?path=${path.join('/')}`);
+  }, []);
+
   return (
     <NodeRegistryProvider registrations={workflowManifests}>
       <ReactFlowProvider>
-        <CanvasWithControlsContent />
+        <CanvasWithControlsContent
+          initialCanvases={initialCanvases}
+          initialPath={initialPath}
+          onCanvasesChange={handleCanvasesChange}
+          onPathChange={handlePathChange}
+        />
       </ReactFlowProvider>
     </NodeRegistryProvider>
   );

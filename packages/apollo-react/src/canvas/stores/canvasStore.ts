@@ -12,6 +12,7 @@ interface CanvasStore {
 
   // Actions
   initializeCanvas: () => void;
+  initializeWithData: (canvases: Record<string, CanvasLevel>, initialPath?: string[]) => void; // Initialize with external data
   navigateToCanvas: (
     targetCanvasId: string,
     sourceViewport?: Viewport,
@@ -85,6 +86,52 @@ export const selectCanvasActions = (state: CanvasStore) => ({
 // Selector for transition state
 export const selectTransitionState = (state: CanvasStore): TransitionState => state.transitionState;
 
+// Selector for canvas stack (all canvases)
+export const selectCanvasStack = (state: CanvasStore): Record<string, CanvasLevel> =>
+  state.canvasStack;
+
+// Selector for initializeWithData action
+export const selectInitializeWithData = (state: CanvasStore) => state.initializeWithData;
+
+// ============================================================================
+// State Selectors
+// ============================================================================
+
+export const selectCurrentPath = (state: CanvasStore) => state.currentPath;
+export const selectCurrentPathLength = (state: CanvasStore) => state.currentPath.length;
+
+// ============================================================================
+// Action Selectors - Individual actions for granular subscriptions
+// ============================================================================
+
+// Initialization
+export const selectInitializeCanvas = (state: CanvasStore) => state.initializeCanvas;
+
+// Navigation
+export const selectNavigateToCanvas = (state: CanvasStore) => state.navigateToCanvas;
+export const selectNavigateToDepth = (state: CanvasStore) => state.navigateToDepth;
+export const selectNavigateToSiblingCanvas = (state: CanvasStore) => state.navigateToSiblingCanvas;
+export const selectDrillIntoNode = (state: CanvasStore) => state.drillIntoNode;
+
+// Node operations
+export const selectAddNode = (state: CanvasStore) => state.addNode;
+export const selectAddNodeToCanvas = (state: CanvasStore) => state.addNodeToCanvas;
+export const selectUpdateNode = (state: CanvasStore) => state.updateNode;
+export const selectRemoveNode = (state: CanvasStore) => state.removeNode;
+export const selectUpdateNodes = (state: CanvasStore) => state.updateNodes;
+export const selectGetNodeById = (state: CanvasStore) => state.getNodeById;
+
+// Edge operations
+export const selectUpdateEdges = (state: CanvasStore) => state.updateEdges;
+export const selectRemoveEdge = (state: CanvasStore) => state.removeEdge;
+
+// Canvas operations
+export const selectCreateChildCanvas = (state: CanvasStore) => state.createChildCanvas;
+export const selectUpdateSelection = (state: CanvasStore) => state.updateSelection;
+export const selectUpdateViewport = (state: CanvasStore) => state.updateViewport;
+export const selectUpdateTransitionState = (state: CanvasStore) => state.updateTransitionState;
+export const selectGetBreadcrumbs = (state: CanvasStore) => state.getBreadcrumbs;
+
 const createDemoCanvases = (): Record<string, CanvasLevel> => {
   const rootCanvas: CanvasLevel = {
     id: 'root',
@@ -136,6 +183,46 @@ export const useCanvasStore = create<CanvasStore>()(
         set({
           canvasStack: createDemoCanvases(),
           currentPath: ['root'],
+        });
+
+        // Set up transition callbacks to sync with store
+        animatedViewportManager.setTransitionCallbacks({
+          onStart: (type) => {
+            set((state) => ({
+              transitionState: {
+                ...state.transitionState,
+                isTransitioning: true,
+                type,
+                startTime: performance.now(),
+                progress: 0,
+              },
+            }));
+          },
+          onUpdate: (transitionState) => {
+            set({ transitionState });
+          },
+          onComplete: (_type) => {
+            set((state) => ({
+              transitionState: {
+                ...state.transitionState,
+                isTransitioning: false,
+                type: 'none',
+                progress: 1,
+              },
+            }));
+          },
+        });
+      },
+
+      initializeWithData: (canvases: Record<string, CanvasLevel>, initialPath?: string[]) => {
+        // Determine initial path - use provided path or first canvas key
+        const canvasKeys = Object.keys(canvases);
+        const firstKey = canvasKeys[0];
+        const path: string[] = initialPath ?? (firstKey ? [firstKey] : []);
+
+        set({
+          canvasStack: canvases,
+          currentPath: path,
         });
 
         // Set up transition callbacks to sync with store
@@ -387,7 +474,7 @@ export const useCanvasStore = create<CanvasStore>()(
           // Create the child canvas
           const childCanvas: CanvasLevel = {
             id: childCanvasId,
-            name: (defaultParams as any)?.label || 'Sub-Process',
+            name: defaultParams.label || 'Sub-Process',
             nodes: [],
             edges: [],
             nodeTypes: currentCanvas.nodeTypes, // Inherit parent's node types
