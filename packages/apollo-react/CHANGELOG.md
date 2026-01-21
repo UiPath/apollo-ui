@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.2.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.2.0...@uipath/apollo-react@3.2.1) (2026-01-21)
+
+### Bug Fixes
+
+* **apollo-react:** HierarchicalCanvas with initial data handling and improved canvas navigation ([f36674f](https://github.com/UiPath/apollo-ui/commit/f36674f00ae859346693872e3f7fcda9050ba58e))
+
 ## [@uipath/apollo-react-v3.2.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.1.0...@uipath/apollo-react@3.2.0) (2026-01-21)
 
 ### Features
