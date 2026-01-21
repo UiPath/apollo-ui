@@ -10,14 +10,14 @@
     "format:check": "biome check ."
   },
   "dependencies": {
-    "@angular/animations": "^19.1.2",
-    "@angular/common": "^19.1.2",
-    "@angular/compiler": "^19.1.2",
-    "@angular/core": "^19.1.2",
-    "@angular/forms": "^19.1.2",
+    "@angular/animations": "^19.2.18",
+    "@angular/common": "^19.2.18",
+    "@angular/compiler": "^19.2.18",
+    "@angular/core": "^19.2.18",
+    "@angular/forms": "^19.2.18",
     "@angular/material": "^20.2.11",
-    "@angular/platform-browser": "^19.1.2",
-    "@angular/platform-browser-dynamic": "^19.1.2",
+    "@angular/platform-browser": "^19.2.18",
+    "@angular/platform-browser-dynamic": "^19.2.18",
     "@uipath/apollo-core": "workspace:*",
     "@uipath/apollo-angular": "workspace:*",
     "rxjs": "^7.8.1",
@@ -27,7 +27,7 @@
   "devDependencies": {
     "@angular-devkit/build-angular": "^20.3.8",
     "@angular/cli": "^20.3.8",
-    "@angular/compiler-cli": "^19.1.2",
+    "@angular/compiler-cli": "^19.2.18",
     "typescript": "~5.7.2"
   }
 }
