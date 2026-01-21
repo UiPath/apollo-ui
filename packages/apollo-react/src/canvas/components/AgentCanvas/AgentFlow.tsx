@@ -18,6 +18,7 @@ import {
   DefaultAgentNodeTranslations,
   DefaultCanvasTranslations,
   DefaultResourceNodeTranslations,
+  DefaultStickyNoteNodeTranslations,
   DefaultSuggestionTranslations,
   isAgentFlowAgentNode,
   isAgentFlowResourceNode,
@@ -27,7 +28,7 @@ import {
 } from '../../types';
 import { hasAgentRunning } from '../../utils/props-helpers';
 import { CanvasPositionControls } from '../CanvasPositionControls';
-import { StickyNoteNode } from '../StickyNoteNode';
+import { StickyNoteNode, StickyNoteNodeProps } from '../StickyNoteNode';
 import { PaneContextMenu } from './components/PaneContextMenu';
 import { SuggestionGroupPanel } from './components/SuggestionGroupPanel';
 import { TimelinePlayer } from './components/TimelinePlayer';
@@ -68,10 +69,6 @@ const ToolbarButton = styled.button`
 
 const edgeTypes = {
   default: Edge,
-};
-
-const nodeTypesBase = {
-  stickyNote: StickyNoteNode,
 };
 
 // AgentFlow-specific fit view options with reduced padding
@@ -248,6 +245,7 @@ const AgentFlowInner = memo(
     onCollapseResource,
     agentNodeTranslations,
     resourceNodeTranslations,
+    stickyNoteNodeTranslations,
     canvasTranslations,
     enableTimelinePlayer,
     canvasRef,
@@ -287,6 +285,16 @@ const AgentFlowInner = memo(
       openPaneContextMenu,
       closePaneContextMenu,
     } = useAgentFlowStore();
+
+    const nodeTypesBase = useMemo(() => ({
+      stickyNote: (props: StickyNoteNodeProps) => (
+        <StickyNoteNode
+          {...props}
+          placeholder={(stickyNoteNodeTranslations ?? DefaultStickyNoteNodeTranslations).placeholder}
+          renderPlaceholderOnSelect={true}
+        />
+      ),
+    }), [stickyNoteNodeTranslations]);
 
     const { fitView: reactFlowFitView, screenToFlowPosition: reactFlowScreenToFlowPosition } =
       useReactFlow();

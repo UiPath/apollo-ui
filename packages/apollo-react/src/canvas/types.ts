@@ -284,6 +284,7 @@ export type AgentFlowProps = {
   // translations
   agentNodeTranslations?: AgentNodeTranslations;
   resourceNodeTranslations?: ResourceNodeTranslations;
+  stickyNoteNodeTranslations?: StickyNoteNodeTranslations;
   canvasTranslations?: CanvasTranslations;
 
   // canvas ref for imperative control
@@ -576,6 +577,15 @@ export interface CanvasTranslations {
   zoomToFit: string;
   addNote: string;
 }
+
+export interface StickyNoteNodeTranslations {
+  placeholder: string;
+}
+
+export const DefaultStickyNoteNodeTranslations: StickyNoteNodeTranslations = {
+  placeholder:
+    '# Add a Note\n\nUse notes to describe canvas areas and explain the purpose of each tool to organize your agent flow.\n\n*Supports Markdown formatting.*\n\n[Learn more](https://docs.uipath.com)',
+};
 
 export const DefaultCanvasTranslations: CanvasTranslations = {
   panShortcutTeaching: 'Hold Space and drag to pan around the canvas',
