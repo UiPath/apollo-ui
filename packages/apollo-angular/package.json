@@ -46,11 +46,11 @@
     "@uipath/apollo-utils": "workspace:*"
   },
   "devDependencies": {
-    "@angular/core": "^19.1.2",
-    "@angular/common": "^19.1.2",
+    "@angular/core": "^19.2.18",
+    "@angular/common": "^19.2.18",
     "@angular/material": "^20.2.11",
-    "@angular/compiler": "^19.1.2",
-    "@angular/compiler-cli": "^19.1.2",
+    "@angular/compiler": "^19.2.18",
+    "@angular/compiler-cli": "^19.2.18",
     "ng-packagr": "^20.3.0",
     "typescript": "~5.7.2"
   }

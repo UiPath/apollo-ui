@@ -1,0 +1,28 @@
+name: Dependency Review
+
+on: [pull_request]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  dependency-review:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Generate OSI-approved allowlist (SPDX)
+        id: licenses
+        shell: bash
+        run: |
+          ALLOW="$(node scripts/free-licenses-fetch.js)"
+          echo "allow=$ALLOW" >> "$GITHUB_OUTPUT"
+
+      - name: Dependency Review
+        uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: high
+          allow-licenses: ${{ steps.licenses.outputs.allow }}
+          comment-summary-in-pr: on-failure
