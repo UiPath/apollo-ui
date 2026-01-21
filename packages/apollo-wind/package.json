@@ -98,9 +98,9 @@
   "devDependencies": {
     "@semantic-release/changelog": "^6.0.3",
     "@semantic-release/git": "^10.0.1",
-    "@storybook/addon-docs": "^10.0.8",
-    "@storybook/addon-links": "^10.0.8",
-    "@storybook/react-vite": "^10.0.8",
+    "@storybook/addon-docs": "^10.1.10",
+    "@storybook/addon-links": "^10.1.10",
+    "@storybook/react-vite": "^10.1.10",
     "@tailwindcss/cli": "^4.1.17",
     "@tailwindcss/postcss": "^4.1.17",
     "@testing-library/dom": "^10.4.1",
@@ -125,7 +125,7 @@
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "semantic-release": "^25.0.2",
-    "storybook": "^10.0.8",
+    "storybook": "^10.1.10",
     "tailwindcss": "^4.1.17",
     "typescript": "^5.9.3",
     "vitest": "^4.0.12"

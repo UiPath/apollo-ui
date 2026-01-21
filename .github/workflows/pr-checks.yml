@@ -9,6 +9,9 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 jobs:
   checks:
     name: ${{ matrix.check }}
@@ -23,6 +26,7 @@ jobs:
           - Typecheck
           - Test Coverage
           - Build
+          - Security Audit
 
     steps:
       - name: Checkout code
@@ -93,6 +97,12 @@ jobs:
             echo "🎯 Building affected packages only"
             pnpm build --affected
           fi
+
+      - name: Run Security Audit
+        if: matrix.check == 'Security Audit'
+        run: |
+          echo "Checking for vulnerabilities in production dependencies..."
+          pnpm audit --prod
 
       - name: Upload Failure Artifacts
         if: failure()
