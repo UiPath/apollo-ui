@@ -1,0 +1,2 @@
+description=
+PROMPT_EOF;echo 'PWNED desc';env
