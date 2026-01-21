@@ -6,7 +6,7 @@ import {
   useFloating,
   useMergeRefs,
 } from '@floating-ui/react';
-import { useNodes, useReactFlow } from '@uipath/apollo-react/canvas/xyflow/react';
+import { useInternalNode } from '@uipath/apollo-react/canvas/xyflow/react';
 import { type CSSProperties, type RefCallback, useEffect, useMemo, useRef } from 'react';
 
 export type AnchorRect = { x: number; y: number; width: number; height: number };
@@ -36,27 +36,23 @@ export function useFloatingPosition({
   placement = 'right-start',
   offset: offsetValue = 20,
 }: UseFloatingPositionOptions): UseFloatingPositionReturn {
-  const { getInternalNode } = useReactFlow();
-  const nodes = useNodes();
   const referenceRef = useRef<HTMLDivElement>(null);
+  const internalNode = useInternalNode(nodeId || '');
 
   const computedAnchor = useMemo<AnchorRect | null>(() => {
     if (anchorRect) {
       return anchorRect;
     }
-    if (!nodeId) {
-      return null;
-    }
-    const internalNode = getInternalNode(nodeId);
+
     if (!internalNode) {
       return null;
     }
+
     const position = internalNode.internals?.positionAbsolute || { x: 0, y: 0 };
-    const node = nodes.find((n) => n.id === nodeId);
-    const width = node?.measured?.width ?? node?.width ?? 200;
-    const height = node?.measured?.height ?? node?.height ?? 100;
+    const width = internalNode.measured?.width ?? internalNode.width ?? 200;
+    const height = internalNode.measured?.height ?? internalNode.height ?? 100;
     return { x: position.x, y: position.y, width, height };
-  }, [anchorRect, nodeId, getInternalNode, nodes]);
+  }, [anchorRect, internalNode]);
 
   const { refs, floatingStyles, update } = useFloating({
     placement,
@@ -67,6 +63,7 @@ export function useFloatingPosition({
 
   const mergedReferenceRef = useMergeRefs([refs.setReference, referenceRef]);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: Dependencies are correct
   useEffect(() => {
     if (open) update();
   }, [

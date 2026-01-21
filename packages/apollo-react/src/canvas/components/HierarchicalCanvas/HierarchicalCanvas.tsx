@@ -1,28 +1,25 @@
-import type {
-  Connection,
-  Edge,
-  EdgeChange,
-  Node,
-  NodeChange,
-  NodeTypes,
-  OnConnect,
-  OnEdgesChange,
-  OnMove,
-  OnNodesChange,
-  OnSelectionChangeFunc,
-  OnSelectionChangeParams,
-  ReactFlowInstance,
-  Viewport,
-} from '@uipath/apollo-react/canvas/xyflow/react';
 import {
   applyEdgeChanges,
   applyNodeChanges,
+  type Connection,
+  type Edge,
+  type EdgeChange,
+  type Node,
+  type NodeChange,
+  type NodeTypes,
+  type OnConnect,
+  type OnEdgesChange,
+  type OnMove,
+  type OnNodesChange,
+  type OnSelectionChangeFunc,
+  type OnSelectionChangeParams,
   Panel,
+  type ReactFlowInstance,
+  type Viewport,
 } from '@uipath/apollo-react/canvas/xyflow/react';
 import { ApIcon, ApProgressSpinner } from '@uipath/apollo-react/material/components';
 import type React from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useShallow } from 'zustand/shallow';
 import { PREVIEW_EDGE_ID, PREVIEW_NODE_ID } from '../../constants';
 import { Breadcrumb } from '../../controls';
 import { useAddNodeOnConnectEnd } from '../../hooks/useAddNodeOnConnectEnd';
@@ -30,14 +27,25 @@ import { ToolbarActionEvent } from '../../schema/toolbar';
 import { animatedViewportManager } from '../../stores/animatedViewportManager';
 import {
   selectBreadcrumbs,
-  selectCanvasActions,
+  selectCanvasStack,
   selectCurrentCanvas,
+  selectCurrentPath,
+  selectDrillIntoNode,
+  selectInitializeCanvas,
+  selectInitializeWithData,
+  selectNavigateToDepth,
+  selectNavigateToSiblingCanvas,
   selectPreviousCanvas,
   selectTransitionState,
+  selectUpdateEdges,
+  selectUpdateNodes,
+  selectUpdateSelection,
+  selectUpdateViewport,
   useCanvasStore,
 } from '../../stores/canvasStore';
 import { viewportManager } from '../../stores/viewportManager';
 import { DefaultCanvasTranslations } from '../../types';
+import type { CanvasLevel } from '../../types/canvas.types';
 import { prefersReducedMotion } from '../../utils/transitions';
 import { AddNodeManager } from '../AddNodePanel/AddNodeManager';
 import { AddNodePreview } from '../AddNodePanel/AddNodePreview';
@@ -50,6 +58,26 @@ import { MiniCanvasNavigator } from '../MiniCanvasNavigator';
 
 interface HierarchicalCanvasProps {
   mode?: 'view' | 'design' | 'readonly';
+  /**
+   * Initial canvas data used to populate the store on mount.
+   * Changes to this prop after mount are ignored - use onCanvasesChange to persist updates.
+   */
+  initialCanvases?: Record<string, CanvasLevel>;
+  /**
+   * Initial navigation path. Defaults to the first canvas key.
+   * Changes to this prop after mount are ignored.
+   */
+  initialPath?: string[];
+  /**
+   * Called whenever canvas data changes (node positions, edges, selections, etc.).
+   * Use this to persist changes or sync with external state.
+   * Note: This fires frequently during interactions like dragging.
+   */
+  onCanvasesChange?: (canvases: Record<string, CanvasLevel>) => void;
+  /**
+   * Called when the user navigates to a different canvas (drill-in/out, breadcrumb click).
+   */
+  onPathChange?: (path: string[]) => void;
 }
 
 // Default node type mapping
@@ -59,7 +87,13 @@ const DEFAULT_NODE_TYPES = {
   preview: AddNodePreview,
 } as const;
 
-export const HierarchicalCanvas: React.FC<HierarchicalCanvasProps> = ({ mode = 'design' }) => {
+export const HierarchicalCanvas: React.FC<HierarchicalCanvasProps> = ({
+  mode = 'design',
+  initialCanvases,
+  initialPath,
+  onCanvasesChange,
+  onPathChange,
+}) => {
   const canvasRef = useRef<BaseCanvasRef>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [reactFlowInstance, setReactFlowInstance] = useState<ReactFlowInstance | null>(null);
@@ -86,38 +120,91 @@ export const HierarchicalCanvas: React.FC<HierarchicalCanvasProps> = ({ mode = '
   const currentCanvas = useCanvasStore(selectCurrentCanvas);
   const previousCanvas = useCanvasStore(selectPreviousCanvas);
   const breadcrumbs = useCanvasStore(selectBreadcrumbs);
-  const actions = useCanvasStore(useShallow(selectCanvasActions));
   const transitionState = useCanvasStore(selectTransitionState);
-  const store = useCanvasStore();
+  const canvasStack = useCanvasStore(selectCanvasStack);
+
+  // Use stable selectors defined outside component for actions
+  const currentPath = useCanvasStore(selectCurrentPath);
+  const initializeCanvas = useCanvasStore(selectInitializeCanvas);
+  const initializeWithData = useCanvasStore(selectInitializeWithData);
+  const navigateToDepth = useCanvasStore(selectNavigateToDepth);
+  const navigateToSiblingCanvas = useCanvasStore(selectNavigateToSiblingCanvas);
+  const updateNodes = useCanvasStore(selectUpdateNodes);
+  const updateEdges = useCanvasStore(selectUpdateEdges);
+  const updateSelection = useCanvasStore(selectUpdateSelection);
+  const updateViewport = useCanvasStore(selectUpdateViewport);
+  const drillIntoNode = useCanvasStore(selectDrillIntoNode);
+
+  // Track currentPath in a ref for stable callback references
+  const currentPathRef = useRef<string[]>(currentPath);
+  useEffect(() => {
+    currentPathRef.current = currentPath;
+  }, [currentPath]);
 
   const addNodeOnConnectEnd = useAddNodeOnConnectEnd();
 
-  // Initialize canvas on mount
+  // Track if we've initialized to prevent re-initialization
+  const hasInitialized = useRef(false);
+
+  // Initialize canvas on mount only - props are intentionally ignored after mount
   useEffect(() => {
-    if (store.currentPath.length === 0) {
-      store.initializeCanvas();
+    if (hasInitialized.current) return;
+    hasInitialized.current = true;
+
+    if (initialCanvases && Object.keys(initialCanvases).length > 0) {
+      initializeWithData(initialCanvases, initialPath);
+    } else {
+      initializeCanvas();
     }
-  }, [store]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentionally only run on mount
+  }, []);
+
+  // Sync canvas changes back to consumer
+  const prevCanvasStackRef = useRef(canvasStack);
+  useEffect(() => {
+    if (onCanvasesChange && canvasStack !== prevCanvasStackRef.current) {
+      prevCanvasStackRef.current = canvasStack;
+      onCanvasesChange(canvasStack);
+    }
+  }, [canvasStack, onCanvasesChange]);
+
+  // Sync path changes back to consumer
+  const prevPathRef = useRef(currentPath);
+  useEffect(() => {
+    if (onPathChange && currentPath !== prevPathRef.current) {
+      prevPathRef.current = currentPath;
+      onPathChange(currentPath);
+    }
+  }, [currentPath, onPathChange]);
+
+  // Track current canvas viewport in a ref to avoid recreating handleInit
+  const currentCanvasViewportRef = useRef<Viewport | undefined>(currentCanvas?.viewport);
+  useEffect(() => {
+    currentCanvasViewportRef.current = currentCanvas?.viewport;
+  }, [currentCanvas?.viewport]);
+
+  // Track current canvas in a ref for stable callbacks
+  const currentCanvasRef = useRef(currentCanvas);
+  useEffect(() => {
+    currentCanvasRef.current = currentCanvas;
+  }, [currentCanvas]);
 
   // Handle ReactFlow initialization
-  const handleInit = useCallback(
-    (instance: ReactFlowInstance) => {
-      setReactFlowInstance(instance);
-      viewportManager.setReactFlowInstance(instance);
-      animatedViewportManager.setReactFlowInstance(instance);
+  const handleInit = useCallback((instance: ReactFlowInstance) => {
+    setReactFlowInstance(instance);
+    viewportManager.setReactFlowInstance(instance);
+    animatedViewportManager.setReactFlowInstance(instance);
 
-      // Restore viewport if it's not at default values
-      const viewport = currentCanvas?.viewport;
-      if (viewport && (viewport.x !== 0 || viewport.y !== 0 || viewport.zoom !== 1)) {
-        instance.setViewport(viewport);
-      }
-    },
-    [currentCanvas]
-  );
+    // Restore viewport if it's not at default values
+    const viewport = currentCanvasViewportRef.current;
+    if (viewport && (viewport.x !== 0 || viewport.y !== 0 || viewport.zoom !== 1)) {
+      instance.setViewport(viewport);
+    }
+  }, []);
 
   // Save viewport before navigation and restore after navigation
   useEffect(() => {
-    const currentCanvasId = store.currentPath[store.currentPath.length - 1];
+    const currentCanvasId = currentPath[currentPath.length - 1];
 
     // If canvas has changed, save the previous viewport and restore the new one
     if (currentCanvasId && lastCanvasIdRef.current && currentCanvasId !== lastCanvasIdRef.current) {
@@ -140,7 +227,7 @@ export const HierarchicalCanvas: React.FC<HierarchicalCanvasProps> = ({ mode = '
     }
 
     lastCanvasIdRef.current = currentCanvasId || null;
-  }, [store.currentPath, reactFlowInstance, currentCanvas, store]);
+  }, [currentPath, reactFlowInstance, currentCanvas]);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -151,61 +238,74 @@ export const HierarchicalCanvas: React.FC<HierarchicalCanvasProps> = ({ mode = '
 
   const handleNodesChange = useCallback<OnNodesChange>(
     (changes: NodeChange[]) => {
-      if (!currentCanvas) return;
-      const updatedNodes = applyNodeChanges(changes, currentCanvas.nodes ?? []) as Node[];
-      actions.updateNodes(updatedNodes);
+      const canvas = currentCanvasRef.current;
+      if (!canvas) return;
+
+      // Skip dimension-only changes to prevent infinite loops
+      // React Flow calls onNodesChange with dimension updates after measuring nodes
+      const hasMeaningfulChanges = changes.some(
+        (change) => change.type !== 'dimensions' && change.type !== 'position'
+      );
+
+      // For position changes, only update if the node was actually dragged (not just measured)
+      const hasPositionChanges = changes.some(
+        (change) => change.type === 'position' && change.dragging
+      );
+
+      if (!hasMeaningfulChanges && !hasPositionChanges) {
+        return;
+      }
+
+      const updatedNodes = applyNodeChanges(changes, canvas.nodes ?? []) as Node[];
+      updateNodes(updatedNodes);
     },
-    [currentCanvas, actions]
+    [updateNodes]
   );
 
   const handleEdgesChange = useCallback<OnEdgesChange>(
     (changes: EdgeChange[]) => {
-      if (!currentCanvas) return;
-      const updatedEdges = applyEdgeChanges(changes, currentCanvas.edges ?? []);
-      actions.updateEdges(updatedEdges);
+      const canvas = currentCanvasRef.current;
+      if (!canvas) return;
+      const updatedEdges = applyEdgeChanges(changes, canvas.edges ?? []);
+      updateEdges(updatedEdges);
     },
-    [currentCanvas, actions]
+    [updateEdges]
   );
 
   const handleSelectionChange = useCallback<OnSelectionChangeFunc<Node, Edge>>(
     (params: OnSelectionChangeParams) => {
-      if (!currentCanvas) return;
+      const canvas = currentCanvasRef.current;
+      if (!canvas) return;
       const nodeIds = params.nodes.map((n) => n.id);
       const edgeIds = params.edges.map((e) => e.id);
 
       // Only update if selection actually changed
       const nodeIdsChanged =
-        nodeIds.length !== currentCanvas.selection.nodeIds.length ||
-        !nodeIds.every((id) => currentCanvas.selection.nodeIds.includes(id));
+        nodeIds.length !== canvas.selection.nodeIds.length ||
+        !nodeIds.every((id) => canvas.selection.nodeIds.includes(id));
       const edgeIdsChanged =
-        edgeIds.length !== currentCanvas.selection.edgeIds.length ||
-        !edgeIds.every((id) => currentCanvas.selection.edgeIds.includes(id));
+        edgeIds.length !== canvas.selection.edgeIds.length ||
+        !edgeIds.every((id) => canvas.selection.edgeIds.includes(id));
 
       if (nodeIdsChanged || edgeIdsChanged) {
-        actions.updateSelection(nodeIds, edgeIds);
+        updateSelection(nodeIds, edgeIds);
       }
     },
-    [currentCanvas, actions]
+    [updateSelection]
   );
 
-  const handleMove = useCallback<OnMove>(
-    (_event: unknown, viewport: Viewport) => {
-      // Store current viewport in ref and manager for immediate access
-      currentViewportRef.current = viewport;
-      viewportManager.setCurrentViewport(viewport);
-
-      // Update store with current viewport (this will be saved before navigation)
-      const currentCanvasId = store.currentPath[store.currentPath.length - 1];
-      if (currentCanvasId) {
-        actions.updateViewport(viewport, currentCanvasId);
-      }
-    },
-    [actions, store.currentPath]
-  );
+  const handleMove = useCallback<OnMove>((_event: unknown, viewport: Viewport) => {
+    // Store current viewport in ref and manager for immediate access
+    // Do NOT update the store here - this causes infinite render loops
+    // The viewport will be synced to the store before navigation
+    currentViewportRef.current = viewport;
+    viewportManager.setCurrentViewport(viewport);
+  }, []);
 
   const handleConnect = useCallback<OnConnect>(
     (connection: Connection) => {
-      if (!connection.source || !connection.target || !currentCanvas) return;
+      const canvas = currentCanvasRef.current;
+      if (!connection.source || !connection.target || !canvas) return;
 
       // Don't create a connection to the preview node
       if (connection.target === PREVIEW_NODE_ID || connection.source === PREVIEW_NODE_ID) {
@@ -220,16 +320,16 @@ export const HierarchicalCanvas: React.FC<HierarchicalCanvasProps> = ({ mode = '
         targetHandle: connection.targetHandle || undefined,
       };
 
-      actions.updateEdges([...currentCanvas.edges, newEdge]);
+      updateEdges([...canvas.edges, newEdge]);
 
       // Remove any preview node/edge after successful connection
-      const hasPreview = currentCanvas.nodes.some((n) => n.id === PREVIEW_NODE_ID);
+      const hasPreview = canvas.nodes.some((n) => n.id === PREVIEW_NODE_ID);
       if (hasPreview) {
-        actions.updateNodes(currentCanvas.nodes.filter((n) => n.id !== PREVIEW_NODE_ID));
-        actions.updateEdges(currentCanvas.edges.filter((e) => e.id !== PREVIEW_EDGE_ID));
+        updateNodes(canvas.nodes.filter((n) => n.id !== PREVIEW_NODE_ID));
+        updateEdges(canvas.edges.filter((e) => e.id !== PREVIEW_EDGE_ID));
       }
     },
-    [currentCanvas, actions]
+    [updateNodes, updateEdges]
   );
 
   // Navigation functions with animation support
@@ -239,33 +339,33 @@ export const HierarchicalCanvas: React.FC<HierarchicalCanvasProps> = ({ mode = '
       if (transitionState.isTransitioning) return;
 
       // Save current viewport before navigation
-      const currentCanvasId = store.currentPath[store.currentPath.length - 1];
+      // Use ref to avoid recreating this callback on path changes
+      const path = currentPathRef.current;
+      const currentCanvasId = path[path.length - 1];
       if (currentCanvasId && reactFlowInstance) {
         const viewport = reactFlowInstance.getViewport();
-        actions.updateViewport(viewport, currentCanvasId);
+        updateViewport(viewport, currentCanvasId);
       }
 
       // Use animated navigation if design mode and user doesn't prefer reduced motion
-      await actions.navigateToDepth(depth, shouldAnimate);
+      await navigateToDepth(depth, shouldAnimate);
     },
-    [actions, reactFlowInstance, store.currentPath, transitionState.isTransitioning, shouldAnimate]
+    [
+      navigateToDepth,
+      updateViewport,
+      reactFlowInstance,
+      transitionState.isTransitioning,
+      shouldAnimate,
+    ]
   );
 
   const handleToolbarAction = useCallback(
     async (event: ToolbarActionEvent) => {
       if (event.actionId === 'drill-in') {
-        await store.drillIntoNode(event.nodeId, true);
+        await drillIntoNode(event.nodeId, true);
       }
     },
-    [store]
-  );
-
-  const maintainNodesInView = useMemo(
-    () =>
-      currentCanvas?.nodes?.length === 1 && currentCanvas?.nodes[0]?.id === 'blank-canvas-node'
-        ? ['blank-canvas-node']
-        : undefined,
-    [currentCanvas]
+    [drillIntoNode]
   );
 
   // Handle click on nodes in the previous canvas view
@@ -274,10 +374,10 @@ export const HierarchicalCanvas: React.FC<HierarchicalCanvasProps> = ({ mode = '
       // Check if the node is drillable (has childCanvasId)
       if (node.data?.childCanvasId) {
         // Navigate to the sibling canvas directly with a single state update
-        actions.navigateToSiblingCanvas(node.data.childCanvasId as string, shouldAnimate);
+        navigateToSiblingCanvas(node.data.childCanvasId as string, shouldAnimate);
       }
     },
-    [actions, shouldAnimate]
+    [navigateToSiblingCanvas, shouldAnimate]
   );
 
   // Only fit view if viewport is at default values (never been modified)
@@ -361,7 +461,6 @@ export const HierarchicalCanvas: React.FC<HierarchicalCanvasProps> = ({ mode = '
         nodes={currentCanvas.nodes}
         edges={currentCanvas.edges}
         nodeTypes={nodeTypes}
-        maintainNodesInView={maintainNodesInView}
         onNodesChange={handleNodesChange}
         onEdgesChange={handleEdgesChange}
         onSelectionChange={handleSelectionChange}

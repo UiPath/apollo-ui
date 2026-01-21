@@ -12,6 +12,9 @@ import type {
   StickyNoteData,
 } from './components/StickyNoteNode/StickyNoteNode.types';
 
+// Re-export CanvasLevel for external consumers
+export type { CanvasLevel } from './types/canvas.types';
+
 export interface AgentFlowStickyNote {
   id: string;
   content: string;

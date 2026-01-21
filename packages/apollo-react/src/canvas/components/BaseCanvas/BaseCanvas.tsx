@@ -78,6 +78,7 @@ const BaseCanvasInnerComponent = <NodeType extends Node = Node, EdgeType extends
     nodesConnectable = true,
     elementsSelectable = true,
     onlyRenderVisibleElements = true,
+    zoomOnDoubleClick = true,
     snapToGrid = BASE_CANVAS_DEFAULTS.snapToGrid,
     snapGrid = BASE_CANVAS_DEFAULTS.snapGrid,
 
@@ -172,7 +173,7 @@ const BaseCanvasInnerComponent = <NodeType extends Node = Node, EdgeType extends
         maxZoom={maxZoom}
         panOnScroll={isInteractive}
         zoomOnScroll={isInteractive}
-        zoomOnDoubleClick={isInteractive}
+        zoomOnDoubleClick={isInteractive && zoomOnDoubleClick}
         panOnDrag={isInteractive ? [1] : false}
         onInit={handleInit}
         onNodesChange={isInteractive ? onNodesChange : undefined}
