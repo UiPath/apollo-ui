@@ -42,6 +42,7 @@ export const Header: React.FC<HeaderProps> = ({ title, onBack, showBackButton })
         color="var(--uix-canvas-foreground-emp)"
         style={{
           transition: 'transform 0.3s ease-in-out, margin 0.3s ease-in-out',
+          margin: 0,
         }}
       >
         {title}
