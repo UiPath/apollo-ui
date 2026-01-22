@@ -1,3 +1,10 @@
+## [@uipath/apollo-react-v3.4.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.3.2...@uipath/apollo-react@3.4.0) (2026-01-22)
+
+### Features
+
+* **apollo-react:** add delete conversation prehook in ap-chat ([1cac7b3](https://github.com/UiPath/apollo-ui/commit/1cac7b33f7b9e737478e43d035d5a0283e401417))
+* **apollo-react:** fix indentation ([5856e07](https://github.com/UiPath/apollo-ui/commit/5856e07d65bd3c9bcb9850ba1328816deae7618b))
+
 ## [@uipath/apollo-react-v3.3.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.3.1...@uipath/apollo-react@3.3.2) (2026-01-22)
 
 ### Bug Fixes
