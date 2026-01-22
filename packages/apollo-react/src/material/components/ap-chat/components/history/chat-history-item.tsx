@@ -156,12 +156,12 @@ const AutopilotChatHistoryItemComponent: React.FC<AutopilotChatHistoryItemProps>
     }
 
     chatService.getPreHook(AutopilotChatPreHookAction.DeleteConversation)({ conversationId: itemId })
-        .then((proceed) => {
-            if (!proceed) {
-                return;
-            }
-            chatService.deleteConversation(itemId);
-        });
+      .then((proceed) => {
+        if (!proceed) {
+          return;
+        }
+        chatService.deleteConversation(itemId);
+      });
     },
     [chatService]
   );
