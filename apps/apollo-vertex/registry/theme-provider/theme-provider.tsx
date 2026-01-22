@@ -1,5 +1,13 @@
-import type React from "react";
-import { useCallback, useEffect } from "react";
+import type { ReactNode } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
+
+export type Theme = "light" | "dark" | "system";
 
 export interface ThemeConfig {
   light?: {
@@ -72,10 +80,20 @@ export interface ThemeConfig {
 }
 
 interface ThemeProviderProps {
-  theme?: ThemeConfig;
-  children: React.ReactNode;
+  children: ReactNode;
+  themeConfig?: ThemeConfig;
   storageKey?: string;
 }
+
+interface ThemeProviderState {
+  theme: Theme;
+  setTheme: (theme: Theme) => void;
+}
+
+const ThemeProviderContext = createContext<ThemeProviderState>({
+  theme: "system",
+  setTheme: () => null,
+});
 
 const cssVarMap: Record<string, string> = {
   background: "--background",
@@ -111,43 +129,77 @@ const cssVarMap: Record<string, string> = {
   sidebarRing: "--sidebar-ring",
 };
 
-type Theme = "light" | "dark" | "system";
-
-const getStoredTheme = (storageKey: string): Theme => {
-  if (typeof window === "undefined") return "system";
-  const stored = localStorage.getItem(storageKey);
-  if (stored === "light" || stored === "dark" || stored === "system") {
-    return stored;
-  }
-  return "system";
-};
-
-const getEffectiveTheme = (storedTheme: Theme): "light" | "dark" => {
-  if (storedTheme === "system") {
+const getEffectiveTheme = (theme: Theme): "light" | "dark" => {
+  if (theme === "system") {
     return window.matchMedia("(prefers-color-scheme: dark)").matches
       ? "dark"
       : "light";
   }
-  return storedTheme;
+  return theme;
 };
 
-export const ThemeProvider = ({
-  theme,
+export function ThemeProvider({
   children,
+  themeConfig,
   storageKey = "vss-ui-theme",
-}: ThemeProviderProps) => {
-  const applyTheme = useCallback(
-    (themeConfig: ThemeConfig) => {
+}: ThemeProviderProps) {
+  const [theme, setThemeState] = useState<Theme>(() => {
+    if (typeof window === "undefined") return "system";
+    const stored = localStorage.getItem(storageKey);
+    if (stored === "light" || stored === "dark" || stored === "system") {
+      return stored;
+    }
+    return "system";
+  });
+
+  const setTheme = useCallback(
+    (newTheme: Theme) => {
+      localStorage.setItem(storageKey, newTheme);
+      setThemeState(newTheme);
+    },
+    [storageKey],
+  );
+
+  // Apply light/dark class to document root
+  useEffect(() => {
+    const root = window.document.documentElement;
+
+    root.classList.remove("light", "dark");
+
+    const effectiveTheme = getEffectiveTheme(theme);
+    root.classList.add(effectiveTheme);
+  }, [theme]);
+
+  // Listen for system theme changes when in system mode
+  useEffect(() => {
+    if (theme !== "system") return;
+
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+    const handleChange = (e: MediaQueryListEvent) => {
+      const root = window.document.documentElement;
+      root.classList.remove("light", "dark");
+      root.classList.add(e.matches ? "dark" : "light");
+    };
+
+    mediaQuery.addEventListener("change", handleChange);
+
+    return () => {
+      mediaQuery.removeEventListener("change", handleChange);
+    };
+  }, [theme]);
+
+  // Apply CSS variable overrides from themeConfig
+  const applyThemeConfig = useCallback(
+    (config: ThemeConfig) => {
       const root = document.documentElement;
-      const storedTheme = getStoredTheme(storageKey);
-      const effectiveTheme = getEffectiveTheme(storedTheme);
+      const effectiveTheme = getEffectiveTheme(theme);
       const isDark = effectiveTheme === "dark";
 
       for (const cssVar of Object.values(cssVarMap)) {
         root.style.removeProperty(cssVar);
       }
 
-      const themeVars = isDark ? themeConfig.dark : themeConfig.light;
+      const themeVars = isDark ? config.dark : config.light;
 
       if (themeVars == null) return;
 
@@ -159,47 +211,43 @@ export const ThemeProvider = ({
         root.style.setProperty(cssVar, value);
       }
     },
-    [storageKey],
+    [theme],
   );
 
   useEffect(() => {
-    if (!theme) return;
+    if (!themeConfig) return;
 
-    applyTheme(theme);
-
-    const storedTheme = getStoredTheme(storageKey);
-    const systemThemeQuery = window.matchMedia("(prefers-color-scheme: dark)");
-
-    const handleThemeChange = () => {
-      applyTheme(theme);
-    };
-
-    // Listen to system theme changes if in system mode
-    if (storedTheme === "system") {
-      systemThemeQuery.addEventListener("change", handleThemeChange);
-    }
+    applyThemeConfig(themeConfig);
 
     // Listen to storage changes (for cross-tab updates)
-    window.addEventListener("storage", handleThemeChange);
-
-    // Watch for class changes on the html element (for same-tab light/dark toggle)
-    const observer = new MutationObserver(handleThemeChange);
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ["class"],
-    });
+    const handleStorageChange = () => {
+      applyThemeConfig(themeConfig);
+    };
+    window.addEventListener("storage", handleStorageChange);
 
     return () => {
-      systemThemeQuery.removeEventListener("change", handleThemeChange);
-      window.removeEventListener("storage", handleThemeChange);
-      observer.disconnect();
+      window.removeEventListener("storage", handleStorageChange);
 
       const root = document.documentElement;
       for (const cssVar of Object.values(cssVarMap)) {
         root.style.removeProperty(cssVar);
       }
     };
-  }, [theme, applyTheme, storageKey]);
+  }, [themeConfig, applyThemeConfig]);
 
-  return <>{children}</>;
+  return (
+    <ThemeProviderContext.Provider value={{ theme, setTheme }}>
+      {children}
+    </ThemeProviderContext.Provider>
+  );
+}
+
+export const useTheme = () => {
+  const context = useContext(ThemeProviderContext);
+
+  if (!context) {
+    throw new Error("useTheme must be used within a ThemeProvider");
+  }
+
+  return context;
 };
