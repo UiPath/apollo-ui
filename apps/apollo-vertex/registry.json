@@ -329,18 +329,6 @@
       ]
     },
     {
-      "name": "native-select",
-      "type": "registry:ui",
-      "title": "Native Select",
-      "description": "A native HTML select element with styling.",
-      "files": [
-        {
-          "path": "registry/native-select/native-select.tsx",
-          "type": "registry:ui"
-        }
-      ]
-    },
-    {
       "name": "navigation-menu",
       "type": "registry:ui",
       "title": "Navigation Menu",
