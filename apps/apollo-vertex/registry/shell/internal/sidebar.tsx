@@ -10,6 +10,7 @@ import {
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "@/registry/theme-provider/theme-toggle";
 import { useLocalStorage } from "@/registry/use-local-storage/use-local-storage";
+import type { CompanyLogo } from "../shell";
 import { Company } from "./company";
 import { NavItem } from "./nav-item";
 import { UserProfile } from "./user-profile";
@@ -17,9 +18,14 @@ import { UserProfile } from "./user-profile";
 interface SidebarProps {
   companyName: string;
   productName: string;
+  companyLogo?: CompanyLogo;
 }
 
-export const Sidebar = ({ companyName, productName }: SidebarProps) => {
+export const Sidebar = ({
+  companyName,
+  productName,
+  companyLogo,
+}: SidebarProps) => {
   const [isCollapsed] = useLocalStorage("sidebar-collapsed", false);
 
   const sidebarWidth = isCollapsed ? "w-[48px]" : "w-[264px]";
@@ -40,7 +46,11 @@ export const Sidebar = ({ companyName, productName }: SidebarProps) => {
         mass: 0.8,
       }}
     >
-      <Company companyName={companyName} productName={productName} />
+      <Company
+        companyName={companyName}
+        productName={productName}
+        companyLogo={companyLogo}
+      />
       <nav className="flex-1 mt-6 space-y-1 pb-3">
         <NavItem to="/templates/shell-template" icon={Home} text="Dashboard" />
         <NavItem to="/" icon={FolderOpen} text="Projects" />

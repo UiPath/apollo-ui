@@ -8,12 +8,18 @@ import {
 import type { FC, PropsWithChildren } from "react";
 import { ShellLayout } from "./internal/shell-layout";
 
+export interface CompanyLogo {
+  url: string;
+  alt: string;
+}
+
 export interface ApolloShellProps extends PropsWithChildren {
   configuration: AuthConfiguration;
   onSigninCallback: (user: void | User) => void;
   extraSigninRequestArgs?: SigninArgsWithState;
   companyName: string;
   productName: string;
+  companyLogo?: CompanyLogo;
 }
 
 export const ApolloShell: FC<ApolloShellProps> = ({
@@ -23,6 +29,7 @@ export const ApolloShell: FC<ApolloShellProps> = ({
   extraSigninRequestArgs,
   companyName,
   productName,
+  companyLogo,
 }) => {
   return (
     <UiPathAuthProvider
@@ -30,7 +37,11 @@ export const ApolloShell: FC<ApolloShellProps> = ({
       onSigninCallback={onSigninCallback}
     >
       <AuthGuard extraSigninRequestArgs={extraSigninRequestArgs}>
-        <ShellLayout companyName={companyName} productName={productName}>
+        <ShellLayout
+          companyName={companyName}
+          productName={productName}
+          companyLogo={companyLogo}
+        >
           {children}
         </ShellLayout>
       </AuthGuard>
