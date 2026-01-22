@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.3.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.2.1...@uipath/apollo-react@3.3.0) (2026-01-22)
+
+### Features
+
+* **apollo-react:** add readOnly attribute to stage node props ([468d421](https://github.com/UiPath/apollo-ui/commit/468d421b58719dc6508e0e96b7e7cd50147765fc))
+
 ## [@uipath/apollo-react-v3.2.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.2.0...@uipath/apollo-react@3.2.1) (2026-01-21)
 
 ### Bug Fixes
