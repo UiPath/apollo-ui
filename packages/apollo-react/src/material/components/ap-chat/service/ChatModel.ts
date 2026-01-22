@@ -8,6 +8,7 @@ export enum AutopilotChatMode {
   SideBySide = 'side-by-side',
   FullScreen = 'full-screen',
   Embedded = 'embedded',
+  Widget = 'widget'
 }
 
 export enum AutopilotChatFileType {

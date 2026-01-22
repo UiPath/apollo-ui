@@ -9,7 +9,7 @@ import { ApTypography } from '../../../ap-typography';
 import { useAttachments } from '../../providers/attachements-provider';
 import { useChatState } from '../../providers/chat-state-provider';
 import { useError } from '../../providers/error-provider';
-import type { AutopilotChatFileInfo } from '../../service';
+import { AutopilotChatMode, type AutopilotChatFileInfo } from '../../service';
 import { parseFiles } from '../../utils/file-reader';
 
 interface AutopilotChatDropzoneProps extends DropzoneOptions {
@@ -21,8 +21,9 @@ const DropzoneRoot = styled('div')({
   position: 'relative',
 });
 
-const DropzoneContent = styled('div')<{ isDragActive: boolean }>(({ isDragActive }) => ({
+const DropzoneContent = styled('div')<{ isDragActive: boolean, mode: AutopilotChatMode }>(({ isDragActive, mode }) => ({
   opacity: isDragActive ? 0.3 : 1,
+  ...(mode === AutopilotChatMode.Widget && { height: '100%' }),
 }));
 
 const DropzoneOverlay = styled('div')(() => ({
@@ -54,7 +55,7 @@ function AutopilotChatDropzoneComponent({
   const { _ } = useLingui();
   const { addAttachments, attachments } = useAttachments();
   const { setError } = useError();
-  const { disabledFeatures, allowedAttachments } = useChatState();
+  const { disabledFeatures, allowedAttachments, chatMode } = useChatState();
 
   const attachmentsCountRef = React.useRef(attachments.length);
   attachmentsCountRef.current = attachments.length;
@@ -191,7 +192,7 @@ function AutopilotChatDropzoneComponent({
         style={{ display: 'none' }}
       />
 
-      <DropzoneContent isDragActive={isDragActive}>{children}</DropzoneContent>
+      <DropzoneContent isDragActive={isDragActive} mode={chatMode}>{children}</DropzoneContent>
 
       {isDragActive && (
         <DropzoneOverlay>

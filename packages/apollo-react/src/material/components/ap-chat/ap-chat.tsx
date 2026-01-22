@@ -58,15 +58,15 @@ const ChatContainer = styled('div')<{
     width: number;
     fullHeight: boolean;
   }) => ({
-    width: mode === AutopilotChatMode.FullScreen ? CHAT_WIDTH_FULL_SCREEN : width,
+    width: mode === AutopilotChatMode.FullScreen ? CHAT_WIDTH_FULL_SCREEN : mode === AutopilotChatMode.Widget ? 'inherit' : width,
     display: 'flex',
     flexDirection: mode === AutopilotChatMode.FullScreen ? 'column' : 'row',
-    height: fullHeight ? '100vh' : 'calc(100vh - 48px)', // account for global header height
+    height: fullHeight ? '100vh' : mode === AutopilotChatMode.Widget ? 'inherit' : 'calc(100vh - 48px)', // account for global header height
     position: 'relative',
     boxSizing: 'border-box',
     border: `${token.Border.BorderThickS} solid var(--color-border-de-emp)`,
-    borderTop: 'none',
-    borderLeft: 'none',
+    ...(mode !== AutopilotChatMode.Widget && { borderTop: 'none' }),
+    ...(mode !== AutopilotChatMode.Widget && { borderLeft: 'none' }),
     ...(shouldAnimate && { transition: `width ${CHAT_CONTAINER_ANIMATION_DURATION}ms ease` }),
     ...(mode === AutopilotChatMode.Closed && { display: 'none' }),
     ...(mode === AutopilotChatMode.Embedded && {
