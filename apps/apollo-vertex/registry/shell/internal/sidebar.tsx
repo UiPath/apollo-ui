@@ -1,16 +1,8 @@
 import { motion } from "framer-motion";
-import {
-  BarChart3,
-  FolderOpen,
-  HelpCircle,
-  Home,
-  Settings,
-  Users,
-} from "lucide-react";
+import { BarChart3, FolderOpen, Home, Settings, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "@/registry/theme-provider/theme-toggle";
 import { useLocalStorage } from "@/registry/use-local-storage/use-local-storage";
-import type { CompanyLogo } from "../shell";
 import { Company } from "./company";
 import { NavItem } from "./nav-item";
 import { UserProfile } from "./user-profile";
@@ -18,7 +10,7 @@ import { UserProfile } from "./user-profile";
 interface SidebarProps {
   companyName: string;
   productName: string;
-  companyLogo?: CompanyLogo;
+  companyLogo: React.ReactElement;
 }
 
 export const Sidebar = ({

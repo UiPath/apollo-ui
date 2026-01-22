@@ -1,16 +1,14 @@
 "use client";
 
 import { ShellLayout } from "@/registry/shell/internal/shell-layout";
+import { Box } from "lucide-react";
 
 export function ShellTemplate() {
   return (
     <ShellLayout
       companyName="UiPath"
       productName="Apollo Vertex"
-      companyLogo={{
-        url: "https://placehold.co/32x32",
-        alt: "Company Logo",
-      }}
+      companyLogo={<Box className="w-4 h-4 text-primary" />}
     >
       <div className="p-8">
         <div className="max-w-2xl space-y-4">

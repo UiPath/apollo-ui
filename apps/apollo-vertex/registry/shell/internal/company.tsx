@@ -9,7 +9,6 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useLocalStorage } from "@/registry/use-local-storage/use-local-storage";
-import type { CompanyLogo } from "../shell";
 import {
   fastFadeTransition,
   iconHoverScale,
@@ -20,7 +19,7 @@ import {
 interface CompanyProps {
   companyName: string;
   productName: string;
-  companyLogo?: CompanyLogo;
+  companyLogo: React.ReactElement;
 }
 
 export const Company = ({
@@ -37,15 +36,7 @@ export const Company = ({
       className="w-8 h-8 rounded-md bg-linear-to-r from-primary/5 via-secondary/5 to-primary/5 flex items-center justify-center shrink-0"
       whileHover={isCollapsed ? iconHoverScale : undefined}
     >
-      {companyLogo ? (
-        <img
-          src={companyLogo.url}
-          alt={companyLogo.alt}
-          className="w-8 h-8 text-primary"
-        />
-      ) : (
-        <Box className="w-4 h-4 text-primary" />
-      )}
+      {companyLogo}
     </motion.div>
   );
 

@@ -1,11 +1,10 @@
 import type { PropsWithChildren } from "react";
-import type { CompanyLogo } from "../shell";
 import { Sidebar } from "./sidebar";
 
 interface ShellLayoutProps {
   companyName: string;
   productName: string;
-  companyLogo?: CompanyLogo;
+  companyLogo: React.ReactElement;
 }
 
 export function ShellLayout({

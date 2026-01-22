@@ -8,18 +8,13 @@ import {
 import type { FC, PropsWithChildren } from "react";
 import { ShellLayout } from "./internal/shell-layout";
 
-export interface CompanyLogo {
-  url: string;
-  alt: string;
-}
-
 export interface ApolloShellProps extends PropsWithChildren {
   configuration: AuthConfiguration;
   onSigninCallback: (user: void | User) => void;
   extraSigninRequestArgs?: SigninArgsWithState;
   companyName: string;
   productName: string;
-  companyLogo?: CompanyLogo;
+  companyLogo: React.ReactElement;
 }
 
 export const ApolloShell: FC<ApolloShellProps> = ({

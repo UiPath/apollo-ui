@@ -23,6 +23,7 @@ A starter template that includes UiPath authentication and a collapsible sidebar
 ```tsx
 import { ApolloShell } from '@/components/ui/shell';
 import { onCallback, type AuthConfiguration } from '@uipath/auth-react';
+import { CompanyLogo } from '@/components/ui/company-logo';
 import { useNavigate } from '@tanstack/react-router';
 
 function App() {
@@ -39,6 +40,7 @@ function App() {
       configuration={configuration}
       companyName="Your Company"
       productName="Your Product"
+      companyLogo={<YourCompanyLogo />}
       onSigninCallback={(user) => {
         onCallback(user, (to) => {
           navigate({ to: to });
