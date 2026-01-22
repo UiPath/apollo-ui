@@ -1,40 +1,22 @@
-import { ApolloShell } from '@/components/ui/shell';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { CheckCircle2 } from 'lucide-react';
+import { ShellTemplate } from '@/templates/ShellTemplate';
 
 # Shell
 
-Provides UiPath authentication and renders children only when authenticated.
+A component that includes UiPath authentication and a collapsible sidebar with smooth animations.
 
-<div className="p-4 border rounded-lg mt-4">
-  <div className="text-sm text-muted-foreground mb-4">
-    The Apollo Shell component wraps your application and handles UiPath authentication. Children
-    are only rendered when the user is authenticated.
-  </div>
-  <div className="space-y-4">
-    <Alert>
-      <CheckCircle2 className="h-4 w-4" />
-      <AlertTitle>Example: Protected Content</AlertTitle>
-      <AlertDescription>
-        This demonstrates the structure of content protected by Apollo Shell. In a real application,
-        this content would only be visible after successful authentication.
-      </AlertDescription>
-    </Alert>
-    <Card>
-      <CardHeader>
-        <CardTitle>Welcome to Apollo Shell</CardTitle>
-        <CardDescription>This content is protected by Apollo Shell authentication.</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <p className="text-sm text-muted-foreground">
-          The Apollo Shell component wraps your application and ensures only authenticated users can
-          access the content.
-        </p>
-      </CardContent>
-    </Card>
+<div className="not-prose my-8 rounded-lg overflow-hidden" style={{ height: '600px' }}>
+  <div className="[&_.h-screen]:!h-full h-full">
+    <ShellTemplate />
   </div>
 </div>
+
+## Features
+
+- **UiPath Authentication**: Built-in authentication flow with `@uipath/auth-react`
+- **Collapsible Sidebar**: Responsive sidebar that persists its state
+- **Smooth Animations**: Spring-based animations using framer-motion
+- **Theme Toggle**: Built-in light/dark mode support
+- **User Profile**: Dropdown menu with user information and sign-out
 
 ## Installation
 
@@ -43,10 +25,6 @@ npx shadcn@latest add https://apollo-vertex.vercel.app/r/shell.json
 ```
 
 ## Usage
-
-```tsx
-import { ApolloShell } from '@/components/ui/shell';
-```
 
 ```tsx
 import { ApolloShell } from '@/components/ui/shell';
