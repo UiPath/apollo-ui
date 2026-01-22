@@ -134,13 +134,26 @@ import { cn } from "@uipath/apollo-wind";
 
 ## Development
 
+This package is part of a pnpm workspace. All commands should be run using `pnpm`.
+
+**From the root of the monorepo:**
 ```bash
-npm install        # Install dependencies
-npm run storybook  # Run Storybook on http://localhost:6006
-npm test           # Run tests
-npm run lint       # Run lint
-npm run format     # Run biome format
-npm run build      # Build library
+pnpm install                                    # Install all dependencies
+pnpm build                                      # Build apollo packages
+pnpm storybook:wind                             # Run Storybook on http://localhost:6006
+pnpm test --filter=@uipath/apollo-wind          # Run tests
+pnpm lint --filter=@uipath/apollo-wind          # Run lint
+pnpm format --filter=@uipath/apollo-wind        # Run biome format
+```
+
+**From the `packages/apollo-wind` directory:**
+```bash
+pnpm install        # Install dependencies (from root)
+pnpm build          # Build apollo packages
+pnpm storybook      # Run Storybook on http://localhost:6006
+pnpm test           # Run tests
+pnpm lint           # Run lint
+pnpm format         # Run biome format
 ```
 
 ## Documentation

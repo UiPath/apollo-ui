@@ -35,11 +35,19 @@ export function FileUpload({
     const validFiles: File[] = [];
 
     for (const file of fileList) {
+      // Check file size
       if (maxSize && file.size > maxSize) {
         setError(`File "${file.name}" exceeds maximum size of ${formatFileSize(maxSize)}`);
         continue;
       }
-      validFiles.push(file);
+
+      // Skip duplicates (files with same name and size)
+      const isDuplicate = files.some(
+        (existingFile) => existingFile.name === file.name && existingFile.size === file.size
+      );
+      if (!isDuplicate) {
+        validFiles.push(file);
+      }
     }
 
     return validFiles;
@@ -120,6 +128,10 @@ export function FileUpload({
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     handleFiles(e.target.files);
+    // Reset input value to allow selecting the same file again (in case user selects it and then removes it)
+    if (inputRef.current) {
+      inputRef.current.value = '';
+    }
   };
 
   const handleClick = () => {
