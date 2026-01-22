@@ -84,6 +84,7 @@ const StageNodeComponent = (props: StageNodeProps) => {
   const taskIds = useMemo(() => flatTasks.map((task) => task.id), [flatTasks]);
 
   const isException = stageDetails?.isException;
+  const isReadOnly = !!stageDetails?.isReadOnly;
   const icon = stageDetails?.icon;
   const selectedTasks = stageDetails?.selectedTasks;
   const defaultContent = stageDetails?.defaultContent || 'Add first task';
@@ -96,7 +97,7 @@ const StageNodeComponent = (props: StageNodeProps) => {
     [onTaskGroupModification]
   );
 
-  const isStageTitleEditable = !!onStageTitleChange;
+  const isStageTitleEditable = !!onStageTitleChange && !isReadOnly;
 
   const [isHovered, setIsHovered] = useState(false);
   const [label, setLabel] = useState(props.stageDetails.label);
@@ -147,18 +148,15 @@ const StageNodeComponent = (props: StageNodeProps) => {
   const hasConnections = connectedHandleIds.size > 0;
 
   const shouldShowHandles = useMemo(() => {
-    if (status) {
-      return false;
-    }
-    return selected || isHovered || isConnecting || hasConnections;
-  }, [hasConnections, isConnecting, selected, isHovered, status]);
+    return !isReadOnly && (selected || isHovered || isConnecting || hasConnections);
+  }, [hasConnections, isConnecting, selected, isHovered, isReadOnly]);
 
   const handleMouseEnter = useCallback(() => setIsHovered(true), []);
   const handleMouseLeave = useCallback(() => setIsHovered(false), []);
 
   const shouldShowMenu = useMemo(() => {
-    return menuItems && menuItems.length > 0 && (selected || isHovered);
-  }, [menuItems, selected, isHovered]);
+    return menuItems && menuItems.length > 0 && (selected || isHovered) && !isReadOnly;
+  }, [menuItems, selected, isHovered, isReadOnly]);
 
   const handleStageTitleChange = useCallback((e: React.FormEvent<HTMLInputElement>) => {
     setIsStageTitleEditing(true);
@@ -514,7 +512,7 @@ const StageNodeComponent = (props: StageNodeProps) => {
               )}
             </Column>
           </Row>
-          <Row gap={Spacing.SpacingMicro} align={status ? 'start' : 'center'} py={Padding.PadS}>
+          <Row gap={Spacing.SpacingMicro} align={isReadOnly ? 'start' : 'center'} py={Padding.PadS}>
             {status && (
               <ApTooltip content={statusLabel} placement="top">
                 <ApIconButton size="small">
@@ -522,7 +520,7 @@ const StageNodeComponent = (props: StageNodeProps) => {
                 </ApIconButton>
               </ApTooltip>
             )}
-            {(onTaskAdd || onAddTaskFromToolbox) && (
+            {(onTaskAdd || onAddTaskFromToolbox) && !isReadOnly && (
               <ApTooltip content={addTaskLabel} placement="top">
                 <ApIconButton onClick={handleTaskAddClick} size="small">
                   <ApIcon name="add" size="20px" />
