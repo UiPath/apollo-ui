@@ -51,7 +51,7 @@ export function ThemeWrapper({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <ThemeProvider theme={themeConfig} storageKey="theme">
+    <ThemeProvider themeConfig={themeConfig} storageKey="theme">
       {children}
     </ThemeProvider>
   );
