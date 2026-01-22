@@ -656,7 +656,6 @@
       "type": "registry:ui",
       "title": "Theme Provider",
       "description": "A theme provider component that manages light and dark mode with system preference support.",
-      "dependencies": ["next-themes"],
       "files": [
         {
           "path": "registry/theme-provider/theme-provider.tsx",
@@ -669,8 +668,8 @@
       "type": "registry:ui",
       "title": "Theme Toggle",
       "description": "A dropdown menu component that allows users to toggle between light, dark, and system theme preferences.",
-      "dependencies": ["next-themes", "lucide-react"],
-      "registryDependencies": ["button", "dropdown-menu"],
+      "dependencies": ["lucide-react"],
+      "registryDependencies": ["button", "dropdown-menu", "use-local-storage"],
       "files": [
         {
           "path": "registry/theme-provider/theme-toggle.tsx",
