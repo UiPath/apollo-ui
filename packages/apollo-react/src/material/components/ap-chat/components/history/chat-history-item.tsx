@@ -8,7 +8,7 @@ import { ApTypography } from '../../../ap-typography';
 import { useChatService } from '../../providers/chat-service.provider';
 import { useChatState } from '../../providers/chat-state-provider';
 import { useLoading } from '../../providers/loading-provider';
-import { AutopilotChatEvent, type AutopilotChatHistory } from '../../service';
+import { AutopilotChatEvent, AutopilotChatPreHookAction, type AutopilotChatHistory } from '../../service';
 import { AutopilotChatActionButton } from '../common/action-button';
 
 const GroupItem = styled('div')<{ isActive: boolean; showRemoveIcon: boolean }>(
@@ -151,7 +151,17 @@ const AutopilotChatHistoryItemComponent: React.FC<AutopilotChatHistoryItemProps>
       ev.stopPropagation();
       setIsFocused(false);
 
-      chatService.deleteConversation(itemId);
+      if (!chatService) {
+        return;
+    }
+
+    chatService.getPreHook(AutopilotChatPreHookAction.DeleteConversation)({ conversationId: itemId })
+        .then((proceed) => {
+            if (!proceed) {
+                return;
+            }
+            chatService.deleteConversation(itemId);
+        });
     },
     [chatService]
   );
