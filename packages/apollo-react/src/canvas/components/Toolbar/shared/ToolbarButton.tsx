@@ -30,29 +30,29 @@ export const ToolbarButton = memo(({ action, layoutId }: ToolbarButtonProps) => 
   };
 
   return (
-    <StyledToolbarButton
-      layout={layoutId ? true : undefined}
-      layoutId={layoutId}
-      transition={{ type: 'tween', duration: 0.2, ease: 'easeOut' }}
-      type="button"
-      className="nodrag nopan"
-      onClick={handleClick}
-      aria-label={action.label}
-      aria-disabled={!isEnabled}
-      aria-pressed={action.isToggled}
-      $disabled={!isEnabled}
-      $isToggled={action.isToggled}
-      $color={action.color}
-      $hoverColor={hoverColor}
-    >
-      <ApTooltip content={action.label} placement="top">
+    <ApTooltip content={action.label} placement="top">
+      <StyledToolbarButton
+        layout={layoutId ? true : undefined}
+        layoutId={layoutId}
+        transition={{ type: 'tween', duration: 0.2, ease: 'easeOut' }}
+        type="button"
+        className="nodrag nopan"
+        onClick={handleClick}
+        aria-label={action.label}
+        aria-disabled={!isEnabled}
+        aria-pressed={action.isToggled}
+        $disabled={!isEnabled}
+        $isToggled={action.isToggled}
+        $color={action.color}
+        $hoverColor={hoverColor}
+      >
         {action.icon && typeof action.icon === 'string' ? (
           <ApIcon variant="outlined" name={action.icon} size="16px" color={action.color} />
         ) : (
           action.icon
         )}
-      </ApTooltip>
-    </StyledToolbarButton>
+      </StyledToolbarButton>
+    </ApTooltip>
   );
 });
 
