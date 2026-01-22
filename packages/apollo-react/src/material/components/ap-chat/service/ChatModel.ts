@@ -464,6 +464,7 @@ export enum AutopilotChatPreHookAction {
   CloseChat = 'close-chat',
   CitationClick = 'citation-click',
   Feedback = 'feedback',
+  DeleteConversation = 'delete-conversation',
 }
 
 /**
