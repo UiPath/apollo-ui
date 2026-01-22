@@ -4,7 +4,14 @@ import { ShellLayout } from "@/registry/shell/internal/shell-layout";
 
 export function ShellTemplate() {
   return (
-    <ShellLayout companyName="UiPath" productName="Apollo Vertex">
+    <ShellLayout
+      companyName="UiPath"
+      productName="Apollo Vertex"
+      companyLogo={{
+        url: "https://placehold.co/32x32",
+        alt: "Company Logo",
+      }}
+    >
       <div className="p-8">
         <div className="max-w-2xl space-y-4">
           <h2 className="text-2xl font-bold">Welcome to Apollo Vertex</h2>
