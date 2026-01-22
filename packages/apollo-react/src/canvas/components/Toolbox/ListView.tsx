@@ -91,7 +91,7 @@ const ListViewRow = <T extends ListItem>({
       </IconContainer>
       <Column flex={1} overflow="hidden">
         <ApTypography
-          variant={FontVariantToken.fontSizeS}
+          variant={FontVariantToken.fontSizeM}
           className="list-view-item-name"
           color="var(--uix-canvas-foreground-emp)"
         >
@@ -184,7 +184,6 @@ export const ListView = <T extends ListItem>({
     return (
       <Column gap={8}>
         {[...Array(3)].map((_, index) => (
-          // biome-ignore lint/suspicious/noArrayIndexKey: static array
           <ApSkeleton variant="rectangle" style={{ height: '32px', width: '100%' }} key={index} />
         ))}
       </Column>
