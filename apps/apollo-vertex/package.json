@@ -8,7 +8,7 @@
     "dev": "next --turbopack",
     "build": "pnpm registry:build && next build",
     "start": "next start",
-    "registry:build": "shadcn build",
+    "registry:build": "shadcn build && node --experimental-strip-types scripts/generate-registry-index.ts",
     "postbuild": "pagefind --site .next/server/app --output-path public/_pagefind",
     "format": "biome format --write .",
     "format:check": "biome format .",
