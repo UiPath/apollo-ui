@@ -13,6 +13,12 @@ const config: StorybookConfig = {
       files: "**/*.stories.@(tsx|ts|jsx|js|mdx)",
       titlePrefix: "Canvas",
     },
+    // Visualizations
+    {
+      directory: "../../../packages/apollo-react/src/visualizations",
+      files: "**/*.stories.@(tsx|ts|jsx|js|mdx)",
+      titlePrefix: "Visualizations",
+    },
   ],
   addons: [],
   framework: {
