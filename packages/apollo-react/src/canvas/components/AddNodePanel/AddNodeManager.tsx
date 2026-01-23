@@ -22,6 +22,10 @@ export interface AddNodeManagerProps {
    */
   customPanel?: React.ComponentType<React.ComponentProps<typeof AddNodePanel>>;
   /**
+   * Whether the manager is initializing (loading)
+   */
+  initializing?: boolean;
+  /**
    * Function to fetch available node options
    */
   fetchNodeOptions?: (category?: string, search?: string) => Promise<ListItem<NodeItemData>[]>;
@@ -82,6 +86,7 @@ function extractPreviewNodeConnectionInfo(previewEdges: Edge[]): PreviewNodeConn
  * When a node type is selected, it replaces the preview with the actual node.
  */
 export const AddNodeManager: React.FC<AddNodeManagerProps> = ({
+  initializing,
   customPanel,
   createNodeData,
   onBeforeNodeAdded,
@@ -286,6 +291,7 @@ export const AddNodeManager: React.FC<AddNodeManagerProps> = ({
         })
       ) : (
         <AddNodePanel
+          loading={initializing}
           onNodeSelect={(item) => handleNodeSelect(item)}
           onClose={handleClose}
           onNodeHover={handleNodeOptionHover}

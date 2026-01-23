@@ -1,5 +1,6 @@
 import { ApTooltip } from '@uipath/apollo-react/material/components';
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
+import type { NodeShape } from '../../schema';
 import {
   BaseHeader,
   BaseSubHeader,
@@ -7,7 +8,6 @@ import {
   EditableLabel,
   EmptyLabelPlaceholder,
 } from './BaseNode.styles';
-import type { NodeShape } from './BaseNode.types';
 
 export interface NodeLabelProps {
   label?: string;

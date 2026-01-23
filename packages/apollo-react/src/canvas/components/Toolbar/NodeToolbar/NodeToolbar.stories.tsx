@@ -2,11 +2,11 @@ import type { Meta, StoryObj } from '@storybook/react';
 import { type Node, Panel, ReactFlowProvider } from '@uipath/apollo-react/canvas/xyflow/react';
 import { useMemo } from 'react';
 import { ExecutionStatusContext } from '../../../hooks';
-import type { NodeManifest } from '../../../schema/node-definition/node-manifest';
+import type { NodeManifest, NodeShape } from '../../../schema';
 import { StoryInfoPanel, useCanvasStory } from '../../../storybook-utils';
 import { DefaultCanvasTranslations } from '../../../types';
 import { BaseCanvas } from '../../BaseCanvas';
-import type { BaseNodeData, NodeShape } from '../../BaseNode/BaseNode.types';
+import type { BaseNodeData } from '../../BaseNode/BaseNode.types';
 import { NodeRegistryProvider } from '../../BaseNode/NodeRegistryProvider';
 import { CanvasPositionControls } from '../../CanvasPositionControls';
 

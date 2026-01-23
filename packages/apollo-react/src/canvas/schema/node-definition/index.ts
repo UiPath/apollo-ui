@@ -14,6 +14,7 @@
 
 export type { CategoryManifest } from './category-manifest';
 export { categoryManifestSchema } from './category-manifest';
+export type { ConnectionConstraint, HandleTarget } from './constraints';
 // Re-export types
 export type {
   HandleCategory,
