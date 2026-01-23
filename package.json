@@ -17,6 +17,7 @@
     "commit": "git-cz",
     "dev": "turbo run dev",
     "dev:react-playground": "turbo run dev --filter=react-playground",
+    "dev:chat": "turbo run dev --filter=@uipath/ap-chat",
     "dev:apollo-vertex": "turbo run dev --filter=apollo-vertex",
     "lint": "turbo run lint",
     "lint:fix": "turbo run lint:fix",
