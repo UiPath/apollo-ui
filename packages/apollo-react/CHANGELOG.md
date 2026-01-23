@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.5.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.4.2...@uipath/apollo-react@3.5.0) (2026-01-23)
+
+### Features
+
+* **apollo-react:** enhancements to StickyNoteNode in AgentFlow [AG-696] ([7cf3afa](https://github.com/UiPath/apollo-ui/commit/7cf3afac1e5fcb00a2a7c20b974038bbdf9d813f))
+
 ## [@uipath/apollo-react-v3.4.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.4.1...@uipath/apollo-react@3.4.2) (2026-01-23)
 
 ### Bug Fixes
