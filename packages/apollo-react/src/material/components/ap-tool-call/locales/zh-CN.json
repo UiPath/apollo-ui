@@ -1,9 +1,9 @@
 {
-  "tool-call.running": "",
-  "tool-call.ran": "",
-  "tool-call.input": "",
-  "tool-call.execution": "",
-  "tool-call.escalation": "",
-  "tool-call.errors": "",
-  "tool-call.output": ""
+  "tool-call.running": "正在运行 {toolName}...",
+  "tool-call.ran": "已运行 {toolName}（{duration} 秒）",
+  "tool-call.input": "输入",
+  "tool-call.execution": "执行",
+  "tool-call.escalation": "升级",
+  "tool-call.errors": "错误",
+  "tool-call.output": "输出"
 }
