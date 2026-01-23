@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.4.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.4.1...@uipath/apollo-react@3.4.2) (2026-01-23)
+
+### Bug Fixes
+
+* **apollo-react:** add iconSize props to base node data [MST-6056] ([c25d822](https://github.com/UiPath/apollo-ui/commit/c25d82294b5e9daed8f440cc4a487e1da07d9aa9))
+
 ## [@uipath/apollo-react-v3.4.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.4.0...@uipath/apollo-react@3.4.1) (2026-01-23)
 
 ### Bug Fixes
