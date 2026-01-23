@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.4.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.4.0...@uipath/apollo-react@3.4.1) (2026-01-23)
+
+### Bug Fixes
+
+* **apollo-react:** tooltips for toolbar actions [MST-6245] ([5119ff8](https://github.com/UiPath/apollo-ui/commit/5119ff888527b555071a0c64ba9f16ad359c8b6c))
+
 ## [@uipath/apollo-react-v3.4.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.3.2...@uipath/apollo-react@3.4.0) (2026-01-22)
 
 ### Features
