@@ -1,6 +1,6 @@
 import { css, keyframes } from '@emotion/react';
 import styled from '@emotion/styled';
-import type { NodeShape } from './BaseNode.types';
+import type { NodeShape } from '../../schema';
 
 const pulseAnimation = (cssVar: string) => keyframes`
   0% {

@@ -6,6 +6,8 @@ export * from './coded-agents/d3-layout';
 export * from './coded-agents/mermaid-parser';
 export * from './createPreviewNode';
 export * from './export-canvas';
+export * from './icon-registry';
+export * from './manifest-resolver';
 export * from './NodeUtils';
 export * from './props-helpers';
 export * from './resource-operations';

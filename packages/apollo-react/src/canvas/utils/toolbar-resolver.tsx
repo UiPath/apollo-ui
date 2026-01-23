@@ -8,8 +8,8 @@ import type { NodeStatusContext, NodeToolbarConfig } from '@uipath/apollo-react/
 import { getToolbarActionStore } from '../hooks/ToolbarActionContext';
 import {
   ModeToolbarConfig,
-  ToolbarAction,
   ToolbarActionHandler,
+  ToolbarActionSchema,
   ToolbarConfiguration,
 } from '../schema/toolbar';
 import { getIcon } from './icon-registry';
@@ -47,7 +47,7 @@ const toolbarRegistry = {
  * Evaluate if an action should be visible based on its condition
  */
 function evaluateCondition(
-  action: ToolbarAction,
+  action: ToolbarActionSchema,
   nodeType: string,
   context: ExtendedNodeContext
 ): boolean {
@@ -80,7 +80,7 @@ function evaluateCondition(
  * Convert ToolbarAction to canvas toolbar action with React elements
  */
 function convertToNodeAction(
-  action: ToolbarAction,
+  action: ToolbarActionSchema,
   mode: string,
   onToolbarAction?: ToolbarActionHandler,
   nodeData?: Record<string, unknown>

@@ -54,7 +54,7 @@ export const modeToolbarConfigSchema = z.object({
 export const toolbarConfigurationSchema = z.record(z.string(), modeToolbarConfigSchema);
 
 // Export inferred types
-export type ToolbarAction = z.infer<typeof toolbarActionSchema>;
+export type ToolbarActionSchema = z.infer<typeof toolbarActionSchema>;
 export type ModeToolbarConfig = z.infer<typeof modeToolbarConfigSchema>;
 export type ToolbarConfiguration = z.infer<typeof toolbarConfigurationSchema>;
 
