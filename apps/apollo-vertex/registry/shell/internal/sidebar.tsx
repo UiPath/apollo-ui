@@ -34,7 +34,7 @@ export const Sidebar = ({
     <motion.aside
       className={cn(
         sidebarWidth,
-        "rounded-[10px] flex flex-col bg-sidebar will-change-[width] px-2 overflow-hidden",
+        "rounded-[10px] flex flex-col bg-sidebar will-change-[width] overflow-hidden p-2",
       )}
       animate={{
         width: isCollapsed ? 48 : 264,
