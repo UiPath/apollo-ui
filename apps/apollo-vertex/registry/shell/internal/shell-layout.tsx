@@ -1,6 +1,6 @@
 import type { PropsWithChildren } from "react";
-import { useTheme } from "@/components/theme-provider/theme-provider";
-import type { CompanyLogo } from "../shell";
+import type { CompanyLogo } from "@/components/ui/shell";
+import { useTheme } from "@/components/ui/theme-provider";
 import { Sidebar } from "./sidebar";
 
 const GRADIENT_BLUR = "blur(149.643px)";
@@ -14,15 +14,18 @@ interface ShellLayoutProps {
 function DarkGradientBackground() {
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-80">
-      {/* ellipse 1 */}
+      {/* ellipse 1 - top left */}
       <svg
         aria-hidden="true"
         xmlns="http://www.w3.org/2000/svg"
-        width="860"
-        height="810"
+        width="1200"
+        height="1100"
         viewBox="0 0 860 810"
         fill="none"
+        className="absolute"
         style={{
+          top: "-100px",
+          left: "-300px",
           fill: "rgba(31, 89, 117, 0.60)",
           filter: GRADIENT_BLUR,
         }}
@@ -59,26 +62,33 @@ function DarkGradientBackground() {
         </defs>
       </svg>
 
-      {/* Ellipse 2 */}
+      {/* Ellipse 2 - center */}
       <div
+        className="absolute"
         style={{
-          width: "758.989px",
-          height: "710.505px",
-          borderRadius: "758.989px",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          width: "1000px",
+          height: "950px",
+          borderRadius: "1000px",
           background: "rgba(152, 166, 184, 0.15)",
           filter: GRADIENT_BLUR,
         }}
       />
 
-      {/* ellipse 3 */}
+      {/* ellipse 3 - bottom right */}
       <svg
         aria-hidden="true"
         xmlns="http://www.w3.org/2000/svg"
-        width="895"
-        height="810"
+        width="1200"
+        height="1100"
         viewBox="0 0 895 810"
         fill="none"
+        className="absolute"
         style={{
+          bottom: "-300px",
+          right: "-200px",
           fill: "rgba(87, 194, 214, 0.11)",
           filter: GRADIENT_BLUR,
         }}
@@ -115,13 +125,16 @@ function DarkGradientBackground() {
         </defs>
       </svg>
 
-      {/* Ellipse 4 */}
+      {/* Ellipse 4 - top right */}
       <div
+        className="absolute"
         style={{
-          width: "798px",
-          height: "346px",
-          borderRadius: "798px",
-          background: "rgba(199, 240, 254, 0.25)",
+          top: "15%",
+          right: "-400px",
+          width: "1100px",
+          height: "500px",
+          borderRadius: "1100px",
+          background: "rgba(199, 240, 254, 0.12)",
           filter: GRADIENT_BLUR,
         }}
       />
@@ -151,13 +164,20 @@ function DarkGradientBackground() {
 function LightGradientBackground() {
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-80">
+      {/* ellipse 1 - top left */}
       <svg
         aria-hidden="true"
         xmlns="http://www.w3.org/2000/svg"
-        width="860"
-        height="810"
+        width="1200"
+        height="1100"
         viewBox="0 0 860 810"
         fill="none"
+        className="absolute"
+        style={{
+          top: "-100px",
+          left: "-300px",
+          filter: GRADIENT_BLUR,
+        }}
       >
         <g filter="url(#filter0_f_7_1190)">
           <path
@@ -191,24 +211,31 @@ function LightGradientBackground() {
         </defs>
       </svg>
 
-      {/* ellipse 2 */}
+      {/* ellipse 2 - center */}
       <div
+        className="absolute"
         style={{
-          width: "758.989px",
-          height: "710.505px",
-          borderRadius: "758.989px",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          width: "1000px",
+          height: "950px",
+          borderRadius: "1000px",
           background: "rgba(152, 166, 184, 0.25)",
           filter: GRADIENT_BLUR,
         }}
       />
 
-      {/* ellipse 3 */}
+      {/* ellipse 3 - top right */}
       <div
+        className="absolute"
         style={{
-          width: "798px",
-          height: "346px",
-          borderRadius: "798px",
-          background: "rgba(199, 240, 254, 0.25)",
+          top: "15%",
+          right: "-400px",
+          width: "1100px",
+          height: "500px",
+          borderRadius: "1100px",
+          background: "rgba(199, 240, 254, 0.12)",
           filter: GRADIENT_BLUR,
         }}
       />
