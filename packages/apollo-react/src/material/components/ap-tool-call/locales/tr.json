@@ -1,9 +1,9 @@
 {
-  "tool-call.running": "",
-  "tool-call.ran": "",
-  "tool-call.input": "",
-  "tool-call.execution": "",
-  "tool-call.escalation": "",
-  "tool-call.errors": "",
-  "tool-call.output": ""
+  "tool-call.running": "{toolName} çalıştırılıyor",
+  "tool-call.ran": "{toolName} ({duration}) çalıştırıldı",
+  "tool-call.input": "Giriş",
+  "tool-call.execution": "Yürütme",
+  "tool-call.escalation": "İlerletme",
+  "tool-call.errors": "Hatalar",
+  "tool-call.output": "Çıkış"
 }

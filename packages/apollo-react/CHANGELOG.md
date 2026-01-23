@@ -1,3 +1,46 @@
+## [@uipath/apollo-react-v3.4.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.4.1...@uipath/apollo-react@3.4.2) (2026-01-23)
+
+### Bug Fixes
+
+* **apollo-react:** add iconSize props to base node data [MST-6056] ([c25d822](https://github.com/UiPath/apollo-ui/commit/c25d82294b5e9daed8f440cc4a487e1da07d9aa9))
+
+## [@uipath/apollo-react-v3.4.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.4.0...@uipath/apollo-react@3.4.1) (2026-01-23)
+
+### Bug Fixes
+
+* **apollo-react:** tooltips for toolbar actions [MST-6245] ([5119ff8](https://github.com/UiPath/apollo-ui/commit/5119ff888527b555071a0c64ba9f16ad359c8b6c))
+
+## [@uipath/apollo-react-v3.4.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.3.2...@uipath/apollo-react@3.4.0) (2026-01-22)
+
+### Features
+
+* **apollo-react:** add delete conversation prehook in ap-chat ([1cac7b3](https://github.com/UiPath/apollo-ui/commit/1cac7b33f7b9e737478e43d035d5a0283e401417))
+* **apollo-react:** fix indentation ([5856e07](https://github.com/UiPath/apollo-ui/commit/5856e07d65bd3c9bcb9850ba1328816deae7618b))
+
+## [@uipath/apollo-react-v3.3.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.3.1...@uipath/apollo-react@3.3.2) (2026-01-22)
+
+### Bug Fixes
+
+* **apollo-react:** design updates ([1d4115e](https://github.com/UiPath/apollo-ui/commit/1d4115ebb97ed47170e31e6bd85e954d6ea935f4))
+
+## [@uipath/apollo-react-v3.3.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.3.0...@uipath/apollo-react@3.3.1) (2026-01-22)
+
+### Bug Fixes
+
+* **repo:** audit issues ([7b081a8](https://github.com/UiPath/apollo-ui/commit/7b081a855d5eb192d47f911406f1815aba24ef1d))
+
+## [@uipath/apollo-react-v3.3.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.2.1...@uipath/apollo-react@3.3.0) (2026-01-22)
+
+### Features
+
+* **apollo-react:** add readOnly attribute to stage node props ([468d421](https://github.com/UiPath/apollo-ui/commit/468d421b58719dc6508e0e96b7e7cd50147765fc))
+
+## [@uipath/apollo-react-v3.2.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.2.0...@uipath/apollo-react@3.2.1) (2026-01-21)
+
+### Bug Fixes
+
+* **apollo-react:** HierarchicalCanvas with initial data handling and improved canvas navigation ([f36674f](https://github.com/UiPath/apollo-ui/commit/f36674f00ae859346693872e3f7fcda9050ba58e))
+
 ## [@uipath/apollo-react-v3.2.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.1.0...@uipath/apollo-react@3.2.0) (2026-01-21)
 
 ### Features

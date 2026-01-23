@@ -479,7 +479,7 @@ function LogicFlowStory() {
         id: 'if-node',
         type: 'uipath.control-flow.decision',
         position: { x: 300, y: 200 },
-        display: { label: 'If' },
+        display: { label: 'If', subLabel: 'Decision' },
         handleConfigurations: [
           {
             position: Position.Left,
@@ -500,7 +500,7 @@ function LogicFlowStory() {
         id: 'switch-node',
         type: 'uipath.control-flow.switch',
         position: { x: 300, y: 650 },
-        display: { label: 'Switch' },
+        display: { label: 'Switch', subLabel: 'Multi-way' },
         handleConfigurations: [
           {
             position: Position.Left,
@@ -556,6 +556,12 @@ function LogicFlowStory() {
         type: 'uipath.blank-node',
         position: { x: 600, y: 100 },
         display: { label: 'Then Action', subLabel: 'Execute if true', color: 'green' },
+        handleConfigurations: [
+          {
+            position: Position.Left,
+            handles: [{ id: 'input', type: 'target', handleType: 'input' }],
+          },
+        ],
       }),
 
       createNode({
@@ -563,6 +569,12 @@ function LogicFlowStory() {
         type: 'uipath.blank-node',
         position: { x: 600, y: 300 },
         display: { label: 'Else Action', subLabel: 'Execute if false', color: 'red' },
+        handleConfigurations: [
+          {
+            position: Position.Left,
+            handles: [{ id: 'input', type: 'target', handleType: 'input' }],
+          },
+        ],
       }),
 
       // Output nodes for SWITCH

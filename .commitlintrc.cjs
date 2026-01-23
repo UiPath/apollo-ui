@@ -32,7 +32,8 @@ module.exports = {
         'docs',
         'build',
         'workspace',
-        'release'
+        'release',
+        'l10n',
       ],
     ],
 

@@ -1,4 +1,4 @@
-import { NodeManifest } from "../../schema/node-definition";
+import { NodeManifest } from '../../schema/node-definition';
 
 export const allNodeManifests: NodeManifest[] = [
   // First Run Node

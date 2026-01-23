@@ -1,4 +1,8 @@
-import { type NodeManifest, nodeManifestSchema } from '../../schema/node-definition/node-manifest';
+import {
+  type NodeManifest,
+  type NodeShape,
+  nodeManifestSchema,
+} from '../../schema/node-definition/node-manifest';
 import type { DisplayConfig } from '../../schema/workflow/base';
 import type { NodeItemData } from '../AddNodePanel/AddNodePanel.types';
 import type { ListItem } from '../Toolbox';
@@ -104,7 +108,7 @@ export class NodeTypeRegistry {
     const display: DisplayConfig = {
       label: label || manifest.display.label,
       icon: manifest.display.icon,
-      shape: manifest.display.shape as string | undefined,
+      shape: manifest.display.shape as NodeShape | undefined,
       color: manifest.display.color,
       background: manifest.display.background,
       iconBackground: manifest.display.iconBackground,

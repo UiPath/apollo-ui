@@ -1,9 +1,9 @@
 {
-  "tool-call.running": "",
-  "tool-call.ran": "",
-  "tool-call.input": "",
-  "tool-call.execution": "",
-  "tool-call.escalation": "",
-  "tool-call.errors": "",
-  "tool-call.output": ""
+  "tool-call.running": "{toolName} 실행 중...",
+  "tool-call.ran": "{toolName} 실행됨({duration}초)",
+  "tool-call.input": "입력",
+  "tool-call.execution": "실행",
+  "tool-call.escalation": "에스컬레이션",
+  "tool-call.errors": "에러",
+  "tool-call.output": "출력"
 }

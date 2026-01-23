@@ -1,3 +1,9 @@
+## [@uipath/apollo-wind-v0.6.5](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@0.6.4...@uipath/apollo-wind@0.6.5) (2026-01-23)
+
+### Bug Fixes
+
+* **apollo-wind:** Fixed folloing bugs: ([1fd1a0f](https://github.com/uipath/apollo-ui/commit/1fd1a0f1fabb18ea5709fb5a0f917af27667e140))
+
 ## [0.6.4](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@0.6.3...@uipath/apollo-wind@0.6.4) (2026-01-09)
 
 

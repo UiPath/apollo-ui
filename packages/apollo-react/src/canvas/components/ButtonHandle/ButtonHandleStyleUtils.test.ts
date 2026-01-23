@@ -914,7 +914,9 @@ describe('ButtonHandleStyleUtils', () => {
       // center = 50px
       // 33.3 < 50: floor(33.3/10)*10 = 30
       // 66.7 > 50: ceil(66.7/10)*10 = 70
-      expect(calculateGridAlignedHandlePositions(100, 2, 10)).toEqual([30, 70]);
+      // But default grid is 16, so: 33.3 < 50: floor(33.3/16)*16 = 32
+      // 66.7 > 50: ceil(66.7/16)*16 = 80
+      expect(calculateGridAlignedHandlePositions(100, 2, false, 10)).toEqual([30, 70]);
     });
 
     it('should handle 5 handles on a 96px node', () => {
@@ -923,6 +925,47 @@ describe('ButtonHandleStyleUtils', () => {
       // 48 = center: snap → 48
       // 64 > 48: ceil → 64, 80 > 48: ceil → 80
       expect(calculateGridAlignedHandlePositions(96, 5)).toEqual([16, 32, 48, 64, 80]);
+    });
+
+    describe('with isExpandable=true', () => {
+      it('should center single handle when expandable', () => {
+        // 96px node: center = 48px, snaps to 48
+        expect(calculateGridAlignedHandlePositions(96, 1, true)).toEqual([48]);
+      });
+
+      it('should center multiple handles around middle when expandable', () => {
+        // 96px node: ideal spacing = 96/3 = 32px, snapped = 32px
+        // totalSpan = 32 * (2-1) = 32px
+        // startOffset = 48 - 32/2 = 32px
+        // positions: 32, 64 (snapped to grid)
+        expect(calculateGridAlignedHandlePositions(96, 2, true)).toEqual([32, 64]);
+      });
+
+      it('should center 3 handles around middle when expandable', () => {
+        // 96px node: ideal spacing = 96/4 = 24px, snapped = 32px (rounds up)
+        // totalSpan = 32 * (3-1) = 64px
+        // startOffset = 48 - 64/2 = 16px
+        // positions: 16, 48, 80 (snapped to grid)
+        expect(calculateGridAlignedHandlePositions(96, 3, true)).toEqual([16, 48, 80]);
+      });
+
+      it('should center 4 handles around middle when expandable', () => {
+        // 96px node: ideal spacing = 96/5 = 19.2px, snapped = 16px (rounds down)
+        // totalSpan = 16 * (4-1) = 48px
+        // startOffset = 48 - 48/2 = 24px
+        // positions: 24, 40, 56, 72 (snapped to grid: Math.round(24/16)*16=32, Math.round(40/16)*16=48, Math.round(56/16)*16=64, Math.round(72/16)*16=80)
+        const result = calculateGridAlignedHandlePositions(96, 4, true);
+        expect(result).toEqual([32, 48, 64, 80]);
+      });
+
+      it('should work with larger node sizes when expandable', () => {
+        // 160px node: center = 80px
+        // ideal spacing = 160/4 = 40px, snapped = Math.round(40/16)*16 = 48px (rounds up)
+        // totalSpan = 48 * (3-1) = 96px
+        // startOffset = 80 - 96/2 = 32px
+        // positions: 32, 80, 128 (snapped to grid: 32, 80, 128)
+        expect(calculateGridAlignedHandlePositions(160, 3, true)).toEqual([32, 80, 128]);
+      });
     });
   });
 

@@ -1,0 +1,44 @@
+# MCP Server
+
+Use Model Context Protocol (MCP) to let AI assistants install Apollo Vertex components directly into your project.
+
+For complete MCP documentation, see the [shadcn MCP docs](https://ui.shadcn.com/docs/mcp).
+
+## Quick Setup
+
+### 1. Configure the Apollo Vertex Registry
+
+Add the Apollo Vertex registry to your `components.json`:
+
+```json
+{
+  "registries": {
+    "@uipath": "https://apollo-vertex.vercel.app/r/{name}.json"
+  }
+}
+```
+
+### 2. Add the MCP Server
+
+Add the shadcn MCP server to your project's `.mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "shadcn": {
+      "command": "npx",
+      "args": ["-y", "shadcn@canary", "mcp"]
+    }
+  }
+}
+```
+
+## Usage
+
+Once configured, you can ask Claude to install components using the `@uipath` registry prefix:
+
+- "Add the @uipath/button component"
+- "Install @uipath/dialog and @uipath/form"
+- "Add @uipath/sidebar to my project"
+
+The MCP server will handle installing components with the correct dependencies and configurations from the Apollo Vertex registry.

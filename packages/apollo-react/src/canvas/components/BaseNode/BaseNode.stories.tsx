@@ -4,9 +4,13 @@
  * Demonstrates the BaseNode component with various shapes, sizes, and execution states.
  */
 import type { Meta, StoryObj } from '@storybook/react';
+import { FontVariantToken } from '@uipath/apollo-core';
+import { Column, Row } from '@uipath/apollo-react/canvas/layouts';
 import type { Node } from '@uipath/apollo-react/canvas/xyflow/react';
 import { Panel } from '@uipath/apollo-react/canvas/xyflow/react';
-import { useMemo } from 'react';
+import { ApButton, ApIcon, ApIconButton, ApTypography } from '@uipath/apollo-react/material';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import type { NodeManifest } from '../../schema/node-definition/node-manifest';
 import {
   createNode,
   StoryInfoPanel,
@@ -18,7 +22,6 @@ import { BaseCanvas } from '../BaseCanvas';
 import { CanvasPositionControls } from '../CanvasPositionControls';
 import { NodeInspector } from '../NodeInspector';
 import type { BaseNodeData } from './BaseNode.types';
-import type { NodeManifest } from '../../schema/node-definition/node-manifest';
 import { NodeTypeRegistry } from './NodeTypeRegistry';
 import { NodeRegistryContext } from './useNodeTypeRegistry';
 
@@ -41,15 +44,11 @@ const sampleManifests: NodeManifest[] = [
     handleConfiguration: [
       {
         position: 'left',
-        handles: [
-          { id: 'in', type: 'target', handleType: 'input', label: 'Input' },
-        ],
+        handles: [{ id: 'in', type: 'target', handleType: 'input', label: 'Input' }],
       },
       {
         position: 'right',
-        handles: [
-          { id: 'out', type: 'source', handleType: 'output', label: 'Output' },
-        ],
+        handles: [{ id: 'out', type: 'source', handleType: 'output', label: 'Output' }],
       },
     ],
   },
@@ -80,14 +79,60 @@ const sampleManifests: NodeManifest[] = [
     handleConfiguration: [
       {
         position: 'left',
+        handles: [{ id: 'in', type: 'target', handleType: 'input', label: 'Input' }],
+      },
+      {
+        position: 'right',
+        handles: [{ id: 'out', type: 'source', handleType: 'output', label: 'Output' }],
+      },
+    ],
+  },
+  {
+    nodeType: 'uipath.control-switch',
+    version: '1.0.0',
+    category: 'control',
+    tags: ['dynamic', 'repeat'],
+    sortOrder: 5,
+    display: {
+      label: 'Dynamic Handle Node',
+      icon: 'git-branch',
+      shape: 'vertical-rectangle',
+    },
+    handleConfiguration: [
+      {
+        position: 'left',
         handles: [
-          { id: 'in', type: 'target', handleType: 'input', label: 'Input' },
+          {
+            id: 'input-{index}',
+            type: 'target',
+            handleType: 'input',
+            label: '{item.label}',
+            repeat: 'dynamicInputs',
+          },
         ],
       },
       {
         position: 'right',
         handles: [
-          { id: 'out', type: 'source', handleType: 'output', label: 'Output' },
+          {
+            id: 'output-{index}',
+            type: 'source',
+            handleType: 'output',
+            label: '{item.name}',
+            repeat: 'dynamicOutputs',
+          },
+        ],
+      },
+      {
+        position: 'bottom',
+        handles: [
+          {
+            id: 'artifact-{index}',
+            type: 'source',
+            handleType: 'artifact',
+            label: 'Artifact {index}: {item.type}',
+            repeat: 'artifacts',
+          },
         ],
       },
     ],
@@ -114,9 +159,7 @@ const meta: Meta<BaseNodeData> = {
       const contextValue = useMemo(() => ({ registry }), [registry]);
 
       return (
-        <NodeRegistryContext.Provider value={contextValue}>
-          {Story()}
-        </NodeRegistryContext.Provider>
+        <NodeRegistryContext.Provider value={contextValue}>{Story()}</NodeRegistryContext.Provider>
       );
     },
     withCanvasProviders(),
@@ -150,7 +193,7 @@ function createShapeStatusGrid(): Node<BaseNodeData>[] {
     SHAPES.forEach((shape, colIndex) => {
       const label = shape === 'rectangle' ? 'Invoice approval agent' : 'Header';
       const nodeType = shape === 'rectangle' ? 'uipath.agent' : 'uipath.blank-node';
-      
+
       nodes.push(
         createNode({
           id: `${shape}-${status}`,
@@ -164,9 +207,9 @@ function createShapeStatusGrid(): Node<BaseNodeData>[] {
             version: '1.0.0',
             parameters: {},
             executionStatus: status,
-            display: { 
-              label, 
-              subLabel: status.replace(/([A-Z])/g, ' $1').trim(), 
+            display: {
+              label,
+              subLabel: status.replace(/([A-Z])/g, ' $1').trim(),
               shape,
             },
           },
@@ -308,6 +351,158 @@ function CustomizedSizesStory() {
   );
 }
 
+function DynamicHandlesStory() {
+  const [nodeData, setNodeData] = useState({
+    dynamicInputs: [
+      { label: 'Primary Input' },
+      { label: 'Secondary Input' },
+      { label: 'Tertiary Input' },
+    ],
+    dynamicOutputs: [{ name: 'Success Path' }, { name: 'Failure Path' }],
+  });
+
+  const initialNodes = useMemo(() => {
+    return [
+      {
+        ...createNode({
+          id: 'dynamic-handles-node',
+          type: 'uipath.control-switch',
+          position: { x: 400, y: 300 },
+          data: {
+            nodeType: 'uipath.control-switch',
+            version: '1.0.0',
+            parameters: {},
+            inputs: {
+              dynamicInputs: nodeData.dynamicInputs,
+              dynamicOutputs: nodeData.dynamicOutputs,
+            },
+            display: {
+              label: 'Dynamic Handles',
+              subLabel: `${nodeData.dynamicInputs.length} inputs, ${nodeData.dynamicOutputs.length} outputs`,
+              shape: 'vertical-rectangle',
+            },
+          },
+        }),
+        height: 96,
+        width: 96,
+      },
+    ];
+  }, [nodeData]);
+
+  const { canvasProps, setNodes } = useCanvasStory({ initialNodes });
+
+  // Update nodes when nodeData changes
+  useEffect(() => {
+    setNodes((nodes) =>
+      nodes.map((node) =>
+        node.id === 'dynamic-handles-node'
+          ? {
+              ...node,
+              data: {
+                ...node.data,
+                inputs: {
+                  dynamicInputs: nodeData.dynamicInputs,
+                  dynamicOutputs: nodeData.dynamicOutputs,
+                },
+                display: {
+                  ...(node.data.display || {}),
+                  subLabel: `${nodeData.dynamicInputs.length} inputs, ${nodeData.dynamicOutputs.length} outputs`,
+                },
+              },
+            }
+          : node
+      )
+    );
+  }, [nodeData, setNodes]);
+
+  const addHandle = useCallback((type: 'dynamicInputs' | 'dynamicOutputs') => {
+    setNodeData((prev) => {
+      const newArray = [...prev[type]];
+      if (type === 'dynamicInputs') {
+        newArray.push({ label: `Input ${newArray.length + 1}` });
+      } else if (type === 'dynamicOutputs') {
+        newArray.push({ name: `Output ${newArray.length + 1}` });
+      }
+      return { ...prev, [type]: newArray };
+    });
+  }, []);
+
+  const removeHandle = useCallback((type: 'dynamicInputs' | 'dynamicOutputs') => {
+    setNodeData((prev) => {
+      const newArray = [...prev[type]];
+      if (newArray.length > 0) {
+        newArray.pop();
+      }
+      return { ...prev, [type]: newArray };
+    });
+  }, []);
+
+  const handleTypes: Array<{
+    key: 'dynamicInputs' | 'dynamicOutputs';
+    label: string;
+    icon: string;
+  }> = [
+    { key: 'dynamicInputs', label: 'Inputs', icon: 'arrow_back' },
+    { key: 'dynamicOutputs', label: 'Outputs', icon: 'arrow_forward' },
+  ];
+
+  return (
+    <BaseCanvas {...canvasProps} mode="design">
+      <NodeInspector />
+      <Panel position="bottom-right">
+        <CanvasPositionControls translations={DefaultCanvasTranslations} />
+      </Panel>
+      <StoryInfoPanel
+        title="Dynamic Handles"
+        description="Interactive demonstration of dynamic handle generation. Use buttons to add/remove handles from arrays."
+      >
+        <Column gap={16}>
+          {handleTypes.map(({ key, label, icon }) => (
+            <Column key={key} gap={6} align="flex-start">
+              <Row gap={8} align="center">
+                <ApIcon name={icon} size="20px" />
+                <ApTypography variant={FontVariantToken.fontSizeMBold}>{label}</ApTypography>
+              </Row>
+              <Row gap={8} align="center">
+                <ApIconButton
+                  onClick={() => removeHandle(key)}
+                  disabled={nodeData[key].length === 0}
+                  aria-label={`Remove ${label.toLowerCase()}`}
+                >
+                  <ApIcon name="remove" />
+                </ApIconButton>
+                <ApTypography
+                  variant={FontVariantToken.fontSizeMBold}
+                  style={{ minWidth: 24, textAlign: 'center' }}
+                >
+                  {nodeData[key].length}
+                </ApTypography>
+                <ApIconButton
+                  onClick={() => addHandle(key)}
+                  aria-label={`Add ${label.toLowerCase()}`}
+                >
+                  <ApIcon name="add" />
+                </ApIconButton>
+              </Row>
+            </Column>
+          ))}
+          <ApButton
+            size="small"
+            variant="secondary"
+            label="Reset"
+            onClick={() =>
+              setNodeData({
+                dynamicInputs: [{ label: 'Primary Input' }],
+                dynamicOutputs: [{ name: 'Success Path' }],
+              })
+            }
+          />
+        </Column>
+      </StoryInfoPanel>
+    </BaseCanvas>
+  );
+}
+
 // ============================================================================
 // Exported Stories
 // ============================================================================
@@ -320,4 +515,9 @@ export const Default: Story = {
 export const CustomizedSizes: Story = {
   name: 'Customized sizes',
   render: () => <CustomizedSizesStory />,
+};
+
+export const DynamicHandles: Story = {
+  name: 'Dynamic Handles',
+  render: () => <DynamicHandlesStory />,
 };

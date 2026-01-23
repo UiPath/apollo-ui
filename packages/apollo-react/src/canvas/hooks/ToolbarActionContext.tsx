@@ -47,7 +47,11 @@ export function getToolbarActionStore(): ToolbarActionStore {
  * React hook to sync toolbar action store with component props
  * Use this in FlowEditor to keep the store updated
  */
-export function useToolbarActionStore(mode: string, onToolbarAction?: ToolbarActionHandler, breakpoints?: Set<string>): void {
+export function useToolbarActionStore(
+  mode: string,
+  onToolbarAction?: ToolbarActionHandler,
+  breakpoints?: Set<string>
+): void {
   useEffect(() => {
     setToolbarActionStore({ mode, onToolbarAction, breakpoints });
 

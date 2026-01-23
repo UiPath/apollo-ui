@@ -164,6 +164,46 @@ describe('FileUpload', () => {
       });
       expect(handleChange).toHaveBeenLastCalledWith([]);
     });
+
+    it('allows re-selecting the same file after removal (input reset bug fix)', async () => {
+      const user = userEvent.setup();
+      const handleChange = vi.fn();
+      const { container } = render(<FileUpload onFilesChange={handleChange} />);
+
+      const input = container.querySelector('input[type="file"]') as HTMLInputElement;
+      const file = createMockFile('test.txt', 100, 'text/plain');
+
+      // Select file first time
+      fireEvent.change(input, { target: { files: [file] } });
+
+      await waitFor(() => {
+        expect(screen.getByText('test.txt')).toBeInTheDocument();
+      });
+
+      // Remove the file
+      const removeButton = screen.getByRole('button', {
+        name: /remove test\.txt/i,
+      });
+      await user.click(removeButton);
+
+      await waitFor(() => {
+        expect(screen.queryByText('test.txt')).not.toBeInTheDocument();
+      });
+
+      // Verify input value was reset
+      expect(input.value).toBe('');
+
+      // Select the same file again
+      fireEvent.change(input, { target: { files: [file] } });
+
+      await waitFor(() => {
+        expect(screen.getByText('test.txt')).toBeInTheDocument();
+      });
+
+      // Verify the callback was called twice (once for first selection, once for re-selection)
+      expect(handleChange).toHaveBeenCalledTimes(3); // First add, remove, second add
+      expect(handleChange).toHaveBeenLastCalledWith([file]);
+    });
   });
 
   describe('file validation', () => {
@@ -191,6 +231,60 @@ describe('FileUpload', () => {
         expect(screen.queryByText('large.txt')).not.toBeInTheDocument();
       });
       expect(handleChange).not.toHaveBeenCalled();
+    });
+
+    it('prevents duplicate files from being added (deduplication bug fix)', async () => {
+      const handleChange = vi.fn();
+      const { container } = render(<FileUpload multiple onFilesChange={handleChange} />);
+      const input = container.querySelector('input[type="file"]') as HTMLInputElement;
+
+      const file = createMockFile('test.txt', 100, 'text/plain');
+
+      // Select file first time
+      fireEvent.change(input, { target: { files: [file] } });
+
+      await waitFor(() => {
+        expect(screen.getByText('test.txt')).toBeInTheDocument();
+      });
+
+      // Try to select the same file again (without removing it)
+      fireEvent.change(input, { target: { files: [file] } });
+
+      // File should still appear only once in the list
+      await waitFor(() => {
+        const fileElements = screen.getAllByText('test.txt');
+        expect(fileElements).toHaveLength(1);
+      });
+
+      // onFilesChange should be called only once (for the first selection)
+      expect(handleChange).toHaveBeenCalledTimes(1);
+      expect(handleChange).toHaveBeenCalledWith([file]);
+    });
+
+    it('allows different files with same name but different size', async () => {
+      const handleChange = vi.fn();
+      const { container } = render(<FileUpload multiple onFilesChange={handleChange} />);
+      const input = container.querySelector('input[type="file"]') as HTMLInputElement;
+
+      const file1 = createMockFile('test.txt', 100, 'text/plain');
+      fireEvent.change(input, { target: { files: [file1] } });
+
+      await waitFor(() => {
+        expect(screen.getByText('test.txt')).toBeInTheDocument();
+      });
+
+      // Create a different file with same name but different size
+      const file2 = createMockFile('test.txt', 200, 'text/plain');
+      fireEvent.change(input, { target: { files: [file2] } });
+
+      // Both files should be in the list (different sizes = different files)
+      await waitFor(() => {
+        const fileElements = screen.getAllByText('test.txt');
+        expect(fileElements).toHaveLength(2);
+      });
+
+      expect(handleChange).toHaveBeenCalledTimes(2);
+      expect(handleChange).toHaveBeenLastCalledWith([file1, file2]);
     });
   });
 
