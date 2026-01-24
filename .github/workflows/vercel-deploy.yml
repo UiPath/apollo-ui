@@ -161,13 +161,19 @@ jobs:
           set -e
 
           if [ $DEPLOY_EXIT_CODE -eq 0 ]; then
-            # Extract the actual deployment URL (not the instruction message)
-            DEPLOY_URL=$(echo "$DEPLOY_OUTPUT" | grep -oP 'https://[^\s]+\.vercel\.app[^\s]*' | head -n 1)
+            # Extract or construct the deployment URL
+            if [ "${{ steps.vars.outputs.prod_flag }}" == "--prod" ]; then
+              # For production: use the clean production URL format
+              DEPLOY_URL="https://${{ matrix.project_name }}.vercel.app"
+            else
+              # For preview: extract the preview URL from output (with hash)
+              DEPLOY_URL=$(echo "$DEPLOY_OUTPUT" | grep -oP 'https://[^\s]+\.vercel\.app[^\s]*' | head -n 1)
 
-            # Fallback: if grep didn't find URL, try last line
-            if [ -z "$DEPLOY_URL" ]; then
-              DEPLOY_URL=$(echo "$DEPLOY_OUTPUT" | tail -n 1)
-              echo "⚠️ Warning: URL extraction fallback used for ${{ matrix.project_name }}"
+              # Fallback: if grep didn't find URL, try last line
+              if [ -z "$DEPLOY_URL" ]; then
+                DEPLOY_URL=$(echo "$DEPLOY_OUTPUT" | tail -n 1)
+                echo "⚠️ Warning: URL extraction fallback used for ${{ matrix.project_name }}"
+              fi
             fi
 
             echo "url=$DEPLOY_URL" >> $GITHUB_OUTPUT
