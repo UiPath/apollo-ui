@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.8.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.7.0...@uipath/apollo-react@3.8.0) (2026-01-24)
+
+### Features
+
+* **apollo-react:** support category nesting and constraint filtering ([f1f7260](https://github.com/UiPath/apollo-ui/commit/f1f7260a95f9fcd12e005b869fd97690bf217a15))
+
 ## [@uipath/apollo-react-v3.7.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.6.0...@uipath/apollo-react@3.7.0) (2026-01-24)
 
 ### Features
