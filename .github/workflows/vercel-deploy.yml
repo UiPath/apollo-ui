@@ -1,0 +1,277 @@
+name: Vercel Deployments
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+concurrency:
+  group: vercel-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  pre-deploy:
+    name: Initialize Deployment Status
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    permissions:
+      pull-requests: write
+
+    steps:
+      - name: Post initial deployment status
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const identifier = '<!-- vercel-deployments-comment -->';
+            const timestamp = new Date().toLocaleString('en-US', {
+              timeZone: 'America/Los_Angeles',
+              year: 'numeric',
+              month: 'short',
+              day: '2-digit',
+              hour: '2-digit',
+              minute: '2-digit',
+              second: '2-digit',
+              hour12: true
+            });
+
+            const projects = [
+              'apollo-canvas',
+              'apollo-ui-react',
+              'apollo-vertex',
+              'apollo-wind'
+            ];
+
+            const tableRows = projects.map(projectName => {
+              const logsLink = `[Logs](https://github.com/${ context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})`;
+              return `| ${projectName} | 🟡 Deploying... | ${logsLink} | ${timestamp} |`;
+            }).join('\n');
+
+            const comment = [
+              identifier,
+              'The latest updates on your projects. Learn more about [Vercel for GitHub](https://vercel.com/docs/deployments/git).',
+              '',
+              '| Project | Deployment | Review | Updated (PT) |',
+              '|---------|------------|--------|---------------|',
+              tableRows
+            ].join('\n');
+
+            // Check for existing comment
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const existingComment = comments.find(c => c.body?.includes(identifier));
+
+            if (existingComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existingComment.id,
+                body: comment
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: comment
+              });
+            }
+
+  deploy:
+    name: Deploy ${{ matrix.project_name }}
+    runs-on: ubuntu-latest
+    needs: pre-deploy
+    if: ${{ !cancelled() && (github.event_name == 'push' || needs.pre-deploy.result != 'cancelled') }}
+    continue-on-error: true
+    permissions:
+      contents: read
+      pull-requests: write
+    strategy:
+      matrix:
+        include:
+          - project_name: apollo-canvas
+            vercel_project_id_secret: VERCEL_PROJECT_ID_CANVAS
+          - project_name: apollo-ui-react
+            vercel_project_id_secret: VERCEL_PROJECT_ID_UI_REACT
+          - project_name: apollo-vertex
+            vercel_project_id_secret: VERCEL_PROJECT_ID_VERTEX
+          - project_name: apollo-wind
+            vercel_project_id_secret: VERCEL_PROJECT_ID_WIND
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        run: |
+          echo "pnpm_cache_dir=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-cache.outputs.pnpm_cache_dir }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Cache Vercel CLI
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-vercel-cli
+          restore-keys: |
+            ${{ runner.os }}-vercel-cli
+
+      - name: Install Vercel CLI
+        run: npm install -g vercel@latest
+
+      - name: Set deployment variables
+        id: vars
+        run: |
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            echo "prod_flag=" >> $GITHUB_OUTPUT
+          else
+            echo "prod_flag=--prod" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Deploy to Vercel
+        id: deploy
+        continue-on-error: true
+        run: |
+          # Deploy from repo root - Vercel uses Root Directory from dashboard settings
+          # Explicitly passing token via --token flag to ensure authentication
+          ERROR_MSG=""
+          DEPLOY_URL=""
+          set +e  # Don't exit on error
+          DEPLOY_OUTPUT=$(vercel deploy --token $VERCEL_TOKEN --yes ${{ steps.vars.outputs.prod_flag }} 2>&1)
+          DEPLOY_EXIT_CODE=$?
+          set -e
+
+          if [ $DEPLOY_EXIT_CODE -eq 0 ]; then
+            # Extract the actual deployment URL (not the instruction message)
+            DEPLOY_URL=$(echo "$DEPLOY_OUTPUT" | grep -oP 'https://[^\s]+\.vercel\.app[^\s]*' | head -n 1)
+
+            # Fallback: if grep didn't find URL, try last line
+            if [ -z "$DEPLOY_URL" ]; then
+              DEPLOY_URL=$(echo "$DEPLOY_OUTPUT" | tail -n 1)
+              echo "⚠️ Warning: URL extraction fallback used for ${{ matrix.project_name }}"
+            fi
+
+            echo "url=$DEPLOY_URL" >> $GITHUB_OUTPUT
+            echo "project=${{ matrix.project_name }}" >> $GITHUB_OUTPUT
+            echo "error_message=" >> $GITHUB_OUTPUT
+            echo "✅ Deployed ${{ matrix.project_name }} to $DEPLOY_URL" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "url=" >> $GITHUB_OUTPUT
+            echo "project=${{ matrix.project_name }}" >> $GITHUB_OUTPUT
+            ERROR_MSG=$(echo "$DEPLOY_OUTPUT" | tail -n 5 | tr '\n' ' ')
+
+            # Truncate error message if too long (max 500 chars for output safety)
+            if [ ${#ERROR_MSG} -gt 500 ]; then
+              ERROR_MSG="${ERROR_MSG:0:500}..."
+            fi
+
+            echo "error_message=$ERROR_MSG" >> $GITHUB_OUTPUT
+            echo "❌ Failed to deploy ${{ matrix.project_name }}: $ERROR_MSG" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets[matrix.vercel_project_id_secret] }}
+          CI: true
+          NODE_ENV: production
+
+      - name: Update PR comment
+        if: always() && github.event_name == 'pull_request'
+        env:
+          PROJECT_NAME: ${{ matrix.project_name }}
+          DEPLOY_OUTCOME: ${{ steps.deploy.outcome }}
+          DEPLOY_URL: ${{ steps.deploy.outputs.url }}
+          ERROR_MESSAGE: ${{ steps.deploy.outputs.error_message }}
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const identifier = '<!-- vercel-deployments-comment -->';
+            const projectName = process.env.PROJECT_NAME;
+            const outcome = process.env.DEPLOY_OUTCOME;
+            const deployUrl = process.env.DEPLOY_URL;
+            const errorMsg = process.env.ERROR_MESSAGE;
+            const timestamp = new Date().toLocaleString('en-US', {
+              timeZone: 'America/Los_Angeles',
+              year: 'numeric',
+              month: 'short',
+              day: '2-digit',
+              hour: '2-digit',
+              minute: '2-digit',
+              second: '2-digit',
+              hour12: true
+            });
+
+            // Truncate error message at word boundary
+            const truncateError = (msg, maxLength = 100) => {
+              if (!msg || msg.length <= maxLength) return msg;
+              const truncated = msg.substring(0, maxLength);
+              const lastSpace = truncated.lastIndexOf(' ');
+              return lastSpace > 0 ? truncated.substring(0, lastSpace) + '...' : truncated + '...';
+            };
+
+            // Determine status
+            let status = '⚠️ Unknown';
+            if (outcome === 'success') {
+              status = '🟢 Ready';
+            } else if (outcome === 'failure') {
+              status = errorMsg ? `❌ Failed: ${truncateError(errorMsg)}` : '❌ Failed';
+            } else {
+              status = '⚠️ Skipped';
+            }
+
+            // Build this project's row
+            const projectLink = deployUrl ? `[${projectName}](${deployUrl})` : projectName;
+            const previewLink = deployUrl ? `[Preview](${deployUrl})` : 'N/A';
+            const logsLink = `[Logs](https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})`;
+            const newRow = `| ${projectLink} | ${status} | ${previewLink}, ${logsLink} | ${timestamp} |`;
+
+            // Find existing comment
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const existingComment = comments.find(c => c.body?.includes(identifier));
+            if (!existingComment) {
+              console.log('No existing comment found, skipping update');
+              return;
+            }
+
+            // Parse and update the table - find the row for this project
+            const lines = existingComment.body.split('\n');
+            const updatedLines = lines.map(line => {
+              // Match either plain project name or linked project name
+              if (line.includes(`| ${projectName} |`) || line.includes(`| [${projectName}](`)) {
+                return newRow;
+              }
+              return line;
+            });
+
+            // Update comment
+            await github.rest.issues.updateComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              comment_id: existingComment.id,
+              body: updatedLines.join('\n')
+            });

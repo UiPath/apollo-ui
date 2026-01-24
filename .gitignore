@@ -58,3 +58,6 @@ lerna-debug.log*
 *.tmp
 .cache/
 .turbo/
+
+# Vercel
+.vercel/
