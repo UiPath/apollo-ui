@@ -1,3 +1,9 @@
+## [@uipath/apollo-wind-v0.6.6](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@0.6.5...@uipath/apollo-wind@0.6.6) (2026-01-24)
+
+### Bug Fixes
+
+* **repo:** vercel deployments ([0512f2c](https://github.com/uipath/apollo-ui/commit/0512f2c0f12ba59118d046d173694baa19dadad2))
+
 ## [@uipath/apollo-wind-v0.6.5](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@0.6.4...@uipath/apollo-wind@0.6.5) (2026-01-23)
 
 ### Bug Fixes
