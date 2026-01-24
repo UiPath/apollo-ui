@@ -1,3 +1,4 @@
+import { FontVariantToken } from "@uipath/apollo-react/core";
 import {
 	ApChat,
 	AutopilotChatEvent,
@@ -76,6 +77,11 @@ export function ApChatShowcase() {
 	});
 	const [selectedAgentMode, setSelectedAgentMode] = useState<string>("agent");
 	const [selectedModel, setSelectedModel] = useState<string>("gpt-4");
+	const [primaryFontToken, setPrimaryFontToken] = useState<FontVariantToken>(
+		FontVariantToken.fontSizeM,
+	);
+	const [promptBoxMinRows, setPromptBoxMinRows] = useState<number>(2);
+	const [promptBoxMaxRows, setPromptBoxMaxRows] = useState<number>(12);
 
 	// Custom settings renderer function
 	const createSettingsRenderer = useCallback(
@@ -530,6 +536,11 @@ export function ApChatShowcase() {
 				paginatedMessages: features.paginatedMessages,
 				spacing: {
 					compactMode: features.compactMode,
+					primaryFontToken,
+					promptBox: {
+						minRows: promptBoxMinRows,
+						maxRows: promptBoxMaxRows,
+					},
 				},
 				theming: {
 					scrollBar: features.customScrollTheme
@@ -578,6 +589,9 @@ export function ApChatShowcase() {
 		selectedAgentMode,
 		createSettingsRenderer,
 		chatMode,
+		primaryFontToken,
+		promptBoxMinRows,
+		promptBoxMaxRows,
 	]);
 
 	// Chat mode controls
@@ -1306,6 +1320,42 @@ console.log(processUserData(exampleUser, { source: 'web', ipAddress: '192.168.1.
 						<option value="plan">Plan</option>
 						<option value="attended">Attended</option>
 					</Select>
+				</Section>
+
+				<Section>
+					<SectionTitle>Input Styling</SectionTitle>
+					<InfoText>Primary Font Token</InfoText>
+					<Select
+						value={primaryFontToken}
+						onChange={(e) =>
+							setPrimaryFontToken(e.target.value as FontVariantToken)
+						}
+					>
+						<option value={FontVariantToken.fontSizeXs}>XS (fontSizeXs)</option>
+						<option value={FontVariantToken.fontSizeS}>S (fontSizeS)</option>
+						<option value={FontVariantToken.fontSizeM}>M (fontSizeM)</option>
+						<option value={FontVariantToken.fontSizeL}>L (fontSizeL)</option>
+					</Select>
+					<InfoText style={{ marginTop: "12px" }}>
+						Prompt Box Min Rows: {promptBoxMinRows}
+					</InfoText>
+					<Input
+						type="number"
+						min={1}
+						max={10}
+						value={promptBoxMinRows}
+						onChange={(e) => setPromptBoxMinRows(Number(e.target.value))}
+					/>
+					<InfoText style={{ marginTop: "12px" }}>
+						Prompt Box Max Rows: {promptBoxMaxRows}
+					</InfoText>
+					<Input
+						type="number"
+						min={1}
+						max={20}
+						value={promptBoxMaxRows}
+						onChange={(e) => setPromptBoxMaxRows(Number(e.target.value))}
+					/>
 				</Section>
 
 				<Section>

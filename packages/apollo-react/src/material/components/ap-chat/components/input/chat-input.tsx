@@ -3,8 +3,6 @@ import { useLingui } from '@lingui/react';
 import { Box, styled } from '@mui/material';
 import token, { type FontVariantToken } from '@uipath/apollo-core';
 import React from 'react';
-
-import { ApTextArea } from '../../../ap-text-area';
 import { useAttachments } from '../../providers/attachements-provider';
 import { useChatService } from '../../providers/chat-service.provider';
 import { useChatState } from '../../providers/chat-state-provider';
@@ -19,6 +17,7 @@ import { parseFiles } from '../../utils/file-reader';
 import { fontByVariant } from '../../utils/font-by-variant';
 import { AutopilotChatInputActions } from './chat-input-actions';
 import { AutopilotChatInputAttachments } from './chat-input-attachments';
+import { ChatInputEditor, type ChatInputEditorHandle } from './chat-input-editor';
 import { AutopilotChatInputError } from './chat-input-error';
 import { AutopilotChatInputFooter } from './chat-input-footer';
 
@@ -30,7 +29,7 @@ const InputContainer = styled('div')<{ primaryFontToken: FontVariantToken }>(
     gap: token.Spacing.SpacingBase,
     marginBottom: token.Spacing.SpacingXs,
 
-    '&:has(textarea:focus)': {
+    '&:focus-within': {
       borderColor: 'var(--color-focus-indicator)',
       boxShadow: 'none',
     },
@@ -43,30 +42,23 @@ const InputContainer = styled('div')<{ primaryFontToken: FontVariantToken }>(
 
     '& .autopilot-chat-input': { position: 'relative' },
 
-    '& .autopilot-chat-input textarea': {
-      padding: `0 ${token.Spacing.SpacingBase} 0 !important`,
-      border: 'none',
-      outline: 'none',
-      borderRadius: token.Border.BorderRadiusL,
-      backgroundColor: 'transparent',
+    '& .autopilot-chat-input .tiptap-editor-container': {
+      padding: `0 ${token.Spacing.SpacingBase}`,
       color: 'var(--color-foreground)',
 
       '&:focus': {
         boxShadow: 'none',
       },
-      '&::placeholder': { color: 'var(--color-foreground-de-emp)' },
 
       ...(primaryFontToken &&
         (() => {
           const fontToken = fontByVariant(primaryFontToken);
           return fontToken
             ? {
-                '&, &::placeholder': {
-                  fontSize: fontToken.fontSize,
-                  fontFamily: fontToken.fontFamily,
-                  lineHeight: fontToken.lineHeight,
-                  fontWeight: fontToken.fontWeight,
-                },
+                fontSize: fontToken.fontSize,
+                fontFamily: fontToken.fontFamily,
+                lineHeight: fontToken.lineHeight,
+                fontWeight: fontToken.fontWeight,
               }
             : {};
         })()),
@@ -99,10 +91,16 @@ function AutopilotChatInputComponent() {
     typeof initialPrompt === 'string' ? initialPrompt : (initialPrompt?.content ?? '')
   );
 
-  const inputRef = React.useRef<HTMLTextAreaElement>(null);
+  const editorRef = React.useRef<ChatInputEditorHandle>(null);
+  const inputContainerRef = React.useRef<HTMLDivElement>(null);
   const { waitingResponse, skeletonLoader } = useLoading();
   const { streaming } = useStreaming();
   const { attachments, clearAttachments, addAttachments, attachmentsLoading } = useAttachments();
+
+  const editorLineHeight = React.useMemo(() => {
+    const fontToken = fontByVariant(spacing.primaryFontToken);
+    return fontToken?.lineHeight;
+  }, [spacing.primaryFontToken]);
 
   React.useEffect(() => {
     if (!chatService) {
@@ -113,7 +111,7 @@ function AutopilotChatInputComponent() {
       AutopilotChatInternalEvent.SetInputFocused,
       (value: boolean) => {
         if (value) {
-          inputRef.current?.focus();
+          editorRef.current?.focus();
         }
       }
     );
@@ -132,8 +130,7 @@ function AutopilotChatInputComponent() {
   }, [chatService]);
 
   const handleChange = React.useCallback(
-    (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-      const value = event.target.value;
+    (value: string) => {
       // if value is empty, clear input and return (handle empty new lines)
       if (value.trim().length === 0) {
         chatService.setPrompt('');
@@ -151,36 +148,38 @@ function AutopilotChatInputComponent() {
       return;
     }
 
+    const serializedContent = editorRef.current?.getSerializedContent() ?? message;
+
     chatService.sendRequest({
-      content: message,
+      content: serializedContent,
       attachments,
     });
 
     // clear input
+    editorRef.current?.clear();
     setMessage('');
     clearAttachments();
   }, [message, attachments, clearAttachments, chatService, waitingResponse, streaming]);
 
   const handleKeyDown = React.useCallback(
-    (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    (event: KeyboardEvent): boolean => {
+      if (event.key !== 'Enter' || event.shiftKey) {
+        return false;
+      }
+
       if (waitingResponse || streaming) {
-        if (event.key === 'Enter' && !event.shiftKey) {
-          event.preventDefault();
-        }
-
-        return;
+        event.preventDefault();
+        return true;
       }
 
-      if (
-        event.key === 'Enter' &&
-        !event.shiftKey &&
-        message.trim().length > 0 &&
-        !skeletonLoader
-      ) {
+      const editorContent = editorRef.current?.getSerializedContent() ?? message;
+      if ((editorContent.trim().length > 0 || attachments.length > 0) && !skeletonLoader) {
         handleSubmit();
+        return true;
       }
+      return false;
     },
-    [message, handleSubmit, waitingResponse, streaming, skeletonLoader]
+    [message, handleSubmit, waitingResponse, streaming, skeletonLoader, attachments]
   );
 
   const handlePaste = React.useCallback(
@@ -224,15 +223,15 @@ function AutopilotChatInputComponent() {
   );
 
   React.useEffect(() => {
-    if (!inputRef.current) {
+    const container = inputContainerRef.current;
+    if (!container) {
       return;
     }
 
-    const textareaElement = inputRef.current;
-    textareaElement.addEventListener('paste', handlePaste);
+    container.addEventListener('paste', handlePaste);
 
     return () => {
-      textareaElement.removeEventListener('paste', handlePaste);
+      container.removeEventListener('paste', handlePaste);
     };
   }, [handlePaste]);
 
@@ -245,7 +244,8 @@ function AutopilotChatInputComponent() {
 
       <InputContainer
         primaryFontToken={spacing.primaryFontToken}
-        onClick={() => inputRef?.current?.focus()}
+        onClick={() => editorRef?.current?.focus()}
+        ref={inputContainerRef}
       >
         <AutopilotChatInputAttachments />
 
@@ -253,19 +253,21 @@ function AutopilotChatInputComponent() {
           className="autopilot-chat-input"
           sx={{ padding: `${token.Spacing.SpacingS} 0 0 !important` }}
         >
-          <ApTextArea
-            resize="none"
-            ref={inputRef}
-            value={message}
-            placeholder={
-              overrideLabels?.inputPlaceholder ??
-              _(msg({ id: 'autopilot-chat.input.placeholder', message: `Type a message...` }))
-            }
-            onChange={handleChange}
-            onKeyDown={handleKeyDown}
-            minRows={spacing.promptBox.minRows}
-            maxRows={spacing.promptBox.maxRows}
-          />
+          <div className="tiptap-editor-container">
+            <ChatInputEditor
+              ref={editorRef}
+              value={message}
+              placeholder={
+                overrideLabels?.inputPlaceholder ??
+                _(msg({ id: 'autopilot-chat.input.placeholder', message: `Type a message...` }))
+              }
+              onChange={handleChange}
+              onKeyDown={handleKeyDown}
+              minRows={spacing.promptBox.minRows}
+              maxRows={spacing.promptBox.maxRows}
+              lineHeight={editorLineHeight}
+            />
+          </div>
 
           <GradientContainer />
         </Box>
