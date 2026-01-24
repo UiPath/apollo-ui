@@ -49,6 +49,7 @@ jobs:
 
             const comment = [
               identifier,
+              '<!-- updated-packages:  -->',
               'The latest updates on your projects. Learn more about [Vercel for GitHub](https://vercel.com/docs/deployments/git).',
               '',
               '| Project | Deployment | Review | Updated (PT) |',
@@ -251,33 +252,83 @@ jobs:
             const logsLink = `[Logs](https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})`;
             const newRow = `| ${projectLink} | ${status} | ${previewLink}, ${logsLink} | ${timestamp} |`;
 
-            // Find existing comment
-            const { data: comments } = await github.rest.issues.listComments({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number,
-            });
+            // Retry logic for concurrent updates with exponential backoff + jitter
+            // Random jitter prevents multiple jobs from retrying simultaneously
+            const getRetryDelay = (attempt) => {
+              const baseDelay = Math.min(1000 * Math.pow(2, attempt), 15000); // 1s, 2s, 4s, 8s, max 15s
+              const jitter = Math.random() * 1000; // 0-1s random jitter
+              return baseDelay + jitter;
+            };
 
-            const existingComment = comments.find(c => c.body?.includes(identifier));
-            if (!existingComment) {
-              console.log('No existing comment found, skipping update');
-              return;
-            }
+            const maxRetries = 5;
 
-            // Parse and update the table - find the row for this project
-            const lines = existingComment.body.split('\n');
-            const updatedLines = lines.map(line => {
-              // Match either plain project name or linked project name
-              if (line.includes(`| ${projectName} |`) || line.includes(`| [${projectName}](`)) {
-                return newRow;
+            for (let attempt = 0; attempt < maxRetries; attempt++) {
+              try {
+                // Always fetch fresh comment state to avoid overwriting concurrent updates
+                const { data: comments } = await github.rest.issues.listComments({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: context.issue.number,
+                });
+
+                const existingComment = comments.find(c => c.body?.includes(identifier));
+                if (!existingComment) {
+                  console.log('No existing comment found, skipping update');
+                  break;
+                }
+
+                // Extract updated packages list (consistent regex pattern)
+                const updatedMatch = existingComment.body.match(/<!-- updated-packages: (.*?) -->/);
+                const updatedPackages = updatedMatch ? updatedMatch[1].split(',').map(p => p.trim()).filter(Boolean) : [];
+
+                // Check if row for this project already shows final state
+                const lines = existingComment.body.split('\n');
+                const currentRow = lines.find(line =>
+                  line.includes(`| ${projectName} |`) || line.includes(`| [${projectName}](`)
+                );
+
+                // If row already matches our target state - we're done
+                if (currentRow === newRow) {
+                  console.log(`Comment was successfully updated for ${projectName}`);
+                  break;
+                }
+
+                // Build updated comment body atomically
+                const updatedLines = lines.map(line => {
+                  // Match either plain project name or linked project name
+                  if (line.includes(`| ${projectName} |`) || line.includes(`| [${projectName}](`)) {
+                    return newRow;
+                  }
+                  return line;
+                });
+
+                // Update the packages list only after successful row update
+                const newUpdatedPackages = updatedPackages.includes(projectName)
+                  ? updatedPackages
+                  : [...updatedPackages, projectName];
+
+                const newPackagesTag = `<!-- updated-packages: ${newUpdatedPackages.join(', ')} -->`;
+                const updatedBody = updatedLines.join('\n').replace(
+                  /<!-- updated-packages: (.*?) -->/,
+                  newPackagesTag
+                );
+
+                // Update comment (will throw on API errors)
+                await github.rest.issues.updateComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  comment_id: existingComment.id,
+                  body: updatedBody
+                });
+
+              } catch (error) {
+                // Only catch actual API errors here
+                if (attempt === maxRetries - 1) {
+                  console.error(`Failed to update comment after ${maxRetries} attempts:`, error.message);
+                  throw error;
+                }
+                const delay = getRetryDelay(attempt);
+                console.log(`API error on attempt ${attempt + 1}, retrying in ${(delay / 1000).toFixed(1)}s... (${error.message})`);
+                await new Promise(resolve => setTimeout(resolve, delay));
               }
-              return line;
-            });
-
-            // Update comment
-            await github.rest.issues.updateComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              comment_id: existingComment.id,
-              body: updatedLines.join('\n')
-            });
+            }
