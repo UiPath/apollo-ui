@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.6.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.5.0...@uipath/apollo-react@3.6.0) (2026-01-24)
+
+### Features
+
+* **apollo-react:** expose manifest utils ([49f1313](https://github.com/UiPath/apollo-ui/commit/49f1313c9e72c8cc8d033ffca91a2bbe3d3beaba))
+
 ## [@uipath/apollo-react-v3.5.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.4.2...@uipath/apollo-react@3.5.0) (2026-01-23)
 
 ### Features
