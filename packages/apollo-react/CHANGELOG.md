@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.7.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.6.0...@uipath/apollo-react@3.7.0) (2026-01-24)
+
+### Features
+
+* **apollo-react:** enhance ApTooltip with callback stability and memoization tests ([e5718de](https://github.com/UiPath/apollo-ui/commit/e5718de34e3e0de4171b184c10df227e5dbd68a5))
+
 ## [@uipath/apollo-react-v3.6.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.5.0...@uipath/apollo-react@3.6.0) (2026-01-24)
 
 ### Features
