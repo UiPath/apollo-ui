@@ -1,15 +1,25 @@
+import type { PopperProps } from '@mui/material';
 import { Tooltip } from '@mui/material';
 import React, { useCallback, useMemo, useRef } from 'react';
 import type { ApTooltipProps } from './ApTooltip.types';
 import { useTruncationDetection } from './useTruncationDetection';
 
-const makeTooltipRenderInSameDOMTree: Partial<ApTooltipProps> = {
+// Type for child element props that may include event handlers
+interface ChildElementProps {
+  onMouseLeave?: React.MouseEventHandler<HTMLElement>;
+  onMouseDown?: React.MouseEventHandler<HTMLElement>;
+  onMouseEnter?: React.MouseEventHandler<HTMLElement>;
+  onInputCapture?: React.FormEventHandler<HTMLElement>;
+  ref?: React.Ref<HTMLElement>;
+}
+
+const makeTooltipRenderInSameDOMTree = {
   PopperProps: {
     // Disable rendering in a portal and render inline instead.
     disablePortal: true,
-    popperOptions: { strategy: 'fixed' },
+    popperOptions: { strategy: 'fixed' as const },
   },
-};
+} as const;
 
 export function ApTooltip({
   content,
@@ -27,8 +37,14 @@ export function ApTooltip({
   closeOnInteraction = false,
   ...muiProps
 }: Readonly<ApTooltipProps>) {
-  // Wrap children in span if not a valid ReactElement (e.g., multiple children, strings, etc.)
-  const childElement = React.isValidElement(children) ? children : <span>{children}</span>;
+  const childElement = useMemo(
+    () => (React.isValidElement(children) ? children : <span>{children}</span>),
+    [children]
+  );
+
+  // Store childElement in a ref for callbacks that need access without re-creating
+  const childElementRef = useRef(childElement);
+  childElementRef.current = childElement;
 
   const childRef = useRef<HTMLElement | null>(null);
   const truncationDetection = useTruncationDetection(childRef);
@@ -38,38 +54,17 @@ export function ApTooltip({
   // State for closeOnInteraction feature
   const [isTemporarilyClosed, setIsTemporarilyClosed] = React.useState(false);
 
-  const setChildRef = React.useCallback(
-    (node: HTMLElement | null) => {
-      childRef.current = node;
+  // Stable ref callback that uses childElementRef to avoid dependency on childElement
+  const setChildRef = useCallback((node: HTMLElement | null) => {
+    childRef.current = node;
 
-      const childRefProp = (childElement as any).ref;
-      if (typeof childRefProp === 'function') {
-        childRefProp(node);
-      } else if (childRefProp) {
-        childRefProp.current = node;
-      }
-    },
-    [childElement]
-  );
-
-  // Helper to get closeOnInteraction event handlers
-  const getCloseOnInteractionHandlers = () => {
-    if (!closeOnInteraction) {
-      return {};
+    const childRefProp = (childElementRef.current.props as ChildElementProps).ref;
+    if (typeof childRefProp === 'function') {
+      childRefProp(node);
+    } else if (childRefProp && typeof childRefProp === 'object') {
+      (childRefProp as React.RefObject<HTMLElement | null>).current = node;
     }
-    const childProps = childElement.props as any;
-    return {
-      onMouseLeave: handleMouseLeave,
-      onInputCapture: (e: React.FormEvent<HTMLElement>) => {
-        handleInteractionStart();
-        childProps.onInputCapture?.(e);
-      },
-      onMouseDown: (e: React.MouseEvent<HTMLElement>) => {
-        handleInteractionStart();
-        childProps.onMouseDown?.(e);
-      },
-    };
-  };
+  }, []);
 
   const handleInteractionStart = useCallback(() => {
     if (closeOnInteraction) {
@@ -82,25 +77,71 @@ export function ApTooltip({
       if (closeOnInteraction) {
         setIsTemporarilyClosed(false);
       }
-      const childProps = childElement.props as any;
+      const childProps = childElementRef.current.props as ChildElementProps;
       childProps.onMouseLeave?.(e);
     },
-    [closeOnInteraction, childElement.props]
+    [closeOnInteraction]
   );
 
-  const childrenWithRef = smartTooltip
-    ? React.cloneElement(childElement, {
-        ref: setChildRef,
-        onMouseEnter: (e: React.MouseEvent<HTMLElement>) => {
-          truncationDetection?.check();
-          const childProps = childElement.props as any;
-          childProps.onMouseEnter?.(e);
-        },
-        ...getCloseOnInteractionHandlers(),
-      } as any)
-    : React.cloneElement(childElement, getCloseOnInteractionHandlers());
+  const handleInputCapture = useCallback(
+    (e: React.FormEvent<HTMLElement>) => {
+      handleInteractionStart();
+      const childProps = childElementRef.current.props as ChildElementProps;
+      childProps.onInputCapture?.(e);
+    },
+    [handleInteractionStart]
+  );
 
-  const debugPopperInstanceRef = React.useRef<any>(null);
+  const handleMouseDown = useCallback(
+    (e: React.MouseEvent<HTMLElement>) => {
+      handleInteractionStart();
+      const childProps = childElementRef.current.props as ChildElementProps;
+      childProps.onMouseDown?.(e);
+    },
+    [handleInteractionStart]
+  );
+
+  const handleMouseEnter = useCallback(
+    (e: React.MouseEvent<HTMLElement>) => {
+      truncationDetection.check();
+      const childProps = childElementRef.current.props as ChildElementProps;
+      childProps.onMouseEnter?.(e);
+    },
+    [truncationDetection.check]
+  );
+
+  const closeOnInteractionHandlers = useMemo(() => {
+    if (!closeOnInteraction) {
+      return {};
+    }
+    return {
+      onMouseLeave: handleMouseLeave,
+      onInputCapture: handleInputCapture,
+      onMouseDown: handleMouseDown,
+    };
+  }, [closeOnInteraction, handleMouseLeave, handleInputCapture, handleMouseDown]);
+
+  // Separate useMemos for smartTooltip and non-smartTooltip cases
+  // This avoids handleMouseEnter being a dependency when smartTooltip is false
+  const childrenWithRefSmartTooltip = useMemo(
+    () =>
+      React.cloneElement(childElement, {
+        ref: setChildRef,
+        onMouseEnter: handleMouseEnter,
+        ...closeOnInteractionHandlers,
+      } as ChildElementProps),
+    [childElement, setChildRef, handleMouseEnter, closeOnInteractionHandlers]
+  );
+
+  const childrenWithRefRegular = useMemo(
+    () => React.cloneElement(childElement, closeOnInteractionHandlers),
+    [childElement, closeOnInteractionHandlers]
+  );
+
+  const childrenWithRef = smartTooltip ? childrenWithRefSmartTooltip : childrenWithRefRegular;
+
+  // Debug-only ref for forcing popper updates - internal debug functionality
+  const debugPopperInstanceRef = React.useRef<{ forceUpdate: () => void } | null>(null);
   React.useLayoutEffect(() => {
     let forceUpdateInterval: number;
     if (dontUseInternalOnlyDebugForceOpen) {
@@ -134,19 +175,22 @@ export function ApTooltip({
 
   const handleTooltipOpen = useCallback(
     (event: React.SyntheticEvent) => {
-      if (smartTooltip && truncationDetection) {
+      if (smartTooltip) {
         truncationDetection.check();
       }
       onTooltipOpen?.(event);
     },
-    [smartTooltip, truncationDetection, onTooltipOpen]
+    [smartTooltip, truncationDetection.check, onTooltipOpen]
   );
 
   const tooltipTitle: React.ReactNode =
     isTooltipTitleHidden || disabled ? '' : (formattedContent ?? content);
 
-  // Filter out 'content' from muiProps to avoid conflicts with MUI's Tooltip
-  const { content: _, ...filteredMuiProps } = muiProps as any;
+  // Destructure content from muiProps to ensure it's not passed to MUI Tooltip
+  // This is needed because ApTooltipProps adds 'content' which conflicts with MUI's internal TransitionProps
+  const { content: _unusedContent, ...safeToSpreadMuiProps } = muiProps as typeof muiProps & {
+    content?: unknown;
+  };
 
   return (
     <Tooltip
@@ -156,14 +200,17 @@ export function ApTooltip({
       enterNextDelay={delay ? 700 : 0}
       onOpen={handleTooltipOpen}
       onClose={onTooltipClose}
-      {...filteredMuiProps}
+      {...safeToSpreadMuiProps}
       {...tooltipProps}
       {...(dontUseInternalOnlyDebugForceOpen && {
         open: true,
         PopperProps: {
-          ...(tooltipProps.PopperProps as any),
-          popperRef: debugPopperInstanceRef,
-        },
+          ...('PopperProps' in tooltipProps
+            ? (tooltipProps.PopperProps as Partial<PopperProps>)
+            : {}),
+          // Debug-only ref - cast needed due to internal Popper types
+          popperRef: debugPopperInstanceRef as React.RefObject<unknown>,
+        } as Partial<PopperProps>,
       })}
       {...(isOpen != null && { open: dontUseInternalOnlyDebugForceOpen ? true : isOpen })}
     >
