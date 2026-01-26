@@ -2,20 +2,20 @@
  * Validates that all dependencies in registry.json are properly declared.
  *
  * Checks:
- * 1. All `registryDependencies` that are local must exist in the registry
- *    Per shadcn docs, registryDependencies supports 3 formats:
+ * 1. All declared registryDependencies must exist in the registry
+ *    Per shadcn docs, registryDependencies supports these formats:
  *    - Local: "button", "tooltip" → must exist as registry component names
  *    - Namespaced @uipath: "@uipath/use-local-storage" → local, strip prefix and validate
  *    - Namespaced other: "@acme/component" → external registry, skip
  *    - Remote URL: "https://example.com/r/item.json" → external, skip
- * 2. All `dependencies` reference packages in package.json
+ * 2. All declared dependencies must exist in package.json
  */
-
-const LOCAL_REGISTRY_SCOPE = "@uipath/";
 
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+
+const LOCAL_REGISTRY_SCOPE = "@uipath/";
 
 interface RegistryItem {
   name: string;
@@ -56,7 +56,6 @@ function readJsonFile<T>(path: string, name: string): T {
 function extractPackageName(dep: string): string {
   // Handle version specifiers like "react-day-picker@latest" or "recharts@2.15.4"
   const atIndex = dep.lastIndexOf("@");
-  // Check if @ is not the first character (scoped package like @radix-ui/react-slot)
   if (atIndex > 0) {
     return dep.substring(0, atIndex);
   }
@@ -93,11 +92,6 @@ function main(): void {
 
   for (const item of registry.items) {
     // Check registryDependencies
-    // Supports formats per shadcn docs:
-    // 1. Local items: "button", "input" → must exist in registry
-    // 2. Local scoped: "@uipath/use-local-storage" → strip prefix, must exist in registry
-    // 3. External scoped: "@acme/input-form" → external registry refs, skip
-    // 4. Remote URLs: "https://example.com/r/item.json" → external, skip
     if (item.registryDependencies) {
       for (const dep of item.registryDependencies) {
         if (isRemoteUrl(dep)) {
@@ -111,7 +105,7 @@ function main(): void {
             const componentName = stripLocalScope(dep);
             if (!registryComponentNames.has(componentName)) {
               errors.push(
-                `Component "${item.name}" has registryDependency "${dep}" but "${componentName}" does not exist in the registry`,
+                `Component "${item.name}" declares registryDependency "${dep}" but "${componentName}" does not exist in the registry`,
               );
             }
           }
@@ -122,7 +116,7 @@ function main(): void {
         // Non-scoped names should be local registry components
         if (!registryComponentNames.has(dep)) {
           errors.push(
-            `Component "${item.name}" has registryDependency "${dep}" which does not exist in the registry`,
+            `Component "${item.name}" declares registryDependency "${dep}" which does not exist in the registry`,
           );
         }
       }
@@ -134,7 +128,7 @@ function main(): void {
         const packageName = extractPackageName(dep);
         if (!installedPackages.has(packageName)) {
           errors.push(
-            `Component "${item.name}" has dependency "${packageName}" which is not in package.json`,
+            `Component "${item.name}" declares dependency "${packageName}" which is not in package.json`,
           );
         }
       }
