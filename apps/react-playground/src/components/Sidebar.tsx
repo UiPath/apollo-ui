@@ -59,6 +59,7 @@ export function Sidebar() {
 				{ label: "Link", path: "/components/link" },
 				{ label: "Menu", path: "/components/menu" },
 				{ label: "Progress Spinner", path: "/components/progress-spinner" },
+				{ label: "Sankey Diagram", path: "/components/sankey-diagram" },
 				{ label: "Skeleton", path: "/components/skeleton" },
 				{ label: "Text Area", path: "/components/text-area" },
 				{ label: "Text Field", path: "/components/text-field" },
