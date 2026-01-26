@@ -34,7 +34,14 @@ export interface StickyNoteNodeProps extends NodeProps {
 const minWidth = GRID_SPACING * 8;
 const minHeight = GRID_SPACING * 8;
 
-const StickyNoteNodeComponent = ({ id, data, selected, dragging, placeholder = 'Add text', renderPlaceholderOnSelect = false }: StickyNoteNodeProps) => {
+const StickyNoteNodeComponent = ({
+  id,
+  data,
+  selected,
+  dragging,
+  placeholder = 'Add text',
+  renderPlaceholderOnSelect = false,
+}: StickyNoteNodeProps) => {
   const { updateNodeData } = useReactFlow();
   const [isEditing, setIsEditing] = useState(data.autoFocus ?? false);
   const [isResizing, setIsResizing] = useState(false);
