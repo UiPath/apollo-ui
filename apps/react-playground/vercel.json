@@ -1,13 +1,13 @@
 {
-  "buildCommand": "cd ../.. && pnpm turbo build --filter=react-playground",
-  "installCommand": "cd ../.. && pnpm install",
-  "outputDirectory": "dist",
-  "framework": null,
-  "ignoreCommand": "git diff HEAD^ HEAD --quiet . && git diff HEAD^ HEAD --quiet ../../packages",
-  "rewrites": [
-    {
-      "source": "/(.*)",
-      "destination": "/index.html"
-    }
-  ]
+	"buildCommand": "cd ../.. && pnpm turbo build --filter=react-playground",
+	"installCommand": "cd ../.. && pnpm install",
+	"outputDirectory": "dist",
+	"framework": null,
+	"ignoreCommand": "git diff HEAD^ HEAD --quiet . && git diff HEAD^ HEAD --quiet ../../packages",
+	"rewrites": [
+		{
+			"source": "/(.*)",
+			"destination": "/index.html"
+		}
+	]
 }

@@ -286,15 +286,20 @@ const AgentFlowInner = memo(
       closePaneContextMenu,
     } = useAgentFlowStore();
 
-    const nodeTypesBase = useMemo(() => ({
-      stickyNote: (props: StickyNoteNodeProps) => (
-        <StickyNoteNode
-          {...props}
-          placeholder={(stickyNoteNodeTranslations ?? DefaultStickyNoteNodeTranslations).placeholder}
-          renderPlaceholderOnSelect={true}
-        />
-      ),
-    }), [stickyNoteNodeTranslations]);
+    const nodeTypesBase = useMemo(
+      () => ({
+        stickyNote: (props: StickyNoteNodeProps) => (
+          <StickyNoteNode
+            {...props}
+            placeholder={
+              (stickyNoteNodeTranslations ?? DefaultStickyNoteNodeTranslations).placeholder
+            }
+            renderPlaceholderOnSelect={true}
+          />
+        ),
+      }),
+      [stickyNoteNodeTranslations]
+    );
 
     const { fitView: reactFlowFitView, screenToFlowPosition: reactFlowScreenToFlowPosition } =
       useReactFlow();

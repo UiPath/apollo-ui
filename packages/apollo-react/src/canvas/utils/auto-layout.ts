@@ -171,7 +171,11 @@ const arrangeAgent = (
         }
 
         // Right-side resources (Tool/MCP: bottom-right, Escalation: top-right)
-        if (handleId === ResourceNodeType.Tool || handleId === ResourceNodeType.MCP || handleId === ResourceNodeType.Escalation) {
+        if (
+          handleId === ResourceNodeType.Tool ||
+          handleId === ResourceNodeType.MCP ||
+          handleId === ResourceNodeType.Escalation
+        ) {
           handleCenterX = agentCenterX + GROUP_SPACING * 1.5;
         }
 
