@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.8.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.8.0...@uipath/apollo-react@3.8.1) (2026-01-26)
+
+### Bug Fixes
+
+* **apollo-react:** fix icon width for rectangle nodes [AG-704] ([d21f14b](https://github.com/UiPath/apollo-ui/commit/d21f14bb03032309663cf4aa742abbcc3efc2807))
+
 ## [@uipath/apollo-react-v3.8.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.7.0...@uipath/apollo-react@3.8.0) (2026-01-24)
 
 ### Features
