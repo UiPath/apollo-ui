@@ -2,23 +2,31 @@
  * Validates that all dependencies in registry.json are properly declared.
  *
  * Checks:
- * 1. All declared registryDependencies must exist in the registry
- *    Per shadcn docs, registryDependencies supports these formats:
- *    - Local: "button", "tooltip" → must exist as registry component names
- *    - Namespaced @uipath: "@uipath/use-local-storage" → local, strip prefix and validate
- *    - Namespaced other: "@acme/component" → external registry, skip
- *    - Remote URL: "https://example.com/r/item.json" → external, skip
- * 2. All declared dependencies must exist in package.json
+ * 1. All imports from other registry components must be declared in registryDependencies
+ *    Import patterns detected:
+ *    - @/components/ui/X → component "X"
+ *    - @/registry/X/* → component "X"
+ *    - @/components/X/* (non-ui) → component "X"
+ *    - @/hooks/X → component "X" (hooks are also registry items)
+ * 2. All declared registryDependencies must exist in the registry
+ * 3. All declared dependencies must exist in package.json
+ * 4. All declared files must exist on disk
  */
 
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const LOCAL_REGISTRY_SCOPE = "@uipath/";
 
+interface RegistryFile {
+  path: string;
+  type: string;
+}
+
 interface RegistryItem {
   name: string;
+  files?: RegistryFile[];
   dependencies?: string[];
   registryDependencies?: string[];
 }
@@ -78,6 +86,116 @@ function stripLocalScope(dep: string): string {
   return dep.slice(LOCAL_REGISTRY_SCOPE.length);
 }
 
+/**
+ * Extract component name from an import path
+ * Returns null if not a registry component import
+ */
+function extractComponentFromImport(importPath: string): string | null {
+  // @/components/ui/X → "X"
+  const uiMatch = importPath.match(/^@\/components\/ui\/([^/]+)/);
+  if (uiMatch) {
+    return uiMatch[1];
+  }
+
+  // @/registry/X/* → "X"
+  const registryMatch = importPath.match(/^@\/registry\/([^/]+)/);
+  if (registryMatch) {
+    return registryMatch[1];
+  }
+
+  // @/components/X/* (non-ui) → "X"
+  const componentsMatch = importPath.match(/^@\/components\/([^/]+)/);
+  if (componentsMatch && componentsMatch[1] !== "ui") {
+    return componentsMatch[1];
+  }
+
+  // @/hooks/X → "X"
+  const hooksMatch = importPath.match(/^@\/hooks\/([^/]+)/);
+  if (hooksMatch) {
+    return hooksMatch[1];
+  }
+
+  return null;
+}
+
+/**
+ * Parse imports from a TypeScript/JavaScript file
+ * Returns set of import paths (the "from" part)
+ */
+function parseImports(filePath: string): Set<string> {
+  const imports = new Set<string>();
+
+  if (!existsSync(filePath)) {
+    return imports;
+  }
+
+  const content = readFileSync(filePath, "utf-8");
+
+  // Match import statements: import ... from "path" or import ... from 'path'
+  const importRegex = /import\s+(?:[\s\S]*?)\s+from\s+["']([^"']+)["']/g;
+  let match: RegExpExecArray | null;
+
+  while ((match = importRegex.exec(content)) !== null) {
+    imports.add(match[1]);
+  }
+
+  // Also match dynamic imports: import("path") or import('path')
+  const dynamicImportRegex = /import\s*\(\s*["']([^"']+)["']\s*\)/g;
+  while ((match = dynamicImportRegex.exec(content)) !== null) {
+    imports.add(match[1]);
+  }
+
+  return imports;
+}
+
+/**
+ * Get all registry component imports from a component's files
+ */
+function getRegistryImports(
+  item: RegistryItem,
+  registryComponentNames: Set<string>,
+): Set<string> {
+  const componentImports = new Set<string>();
+
+  if (!item.files) {
+    return componentImports;
+  }
+
+  for (const file of item.files) {
+    const filePath = join(__dirname, "..", file.path);
+    const imports = parseImports(filePath);
+
+    for (const importPath of imports) {
+      const componentName = extractComponentFromImport(importPath);
+      if (componentName && registryComponentNames.has(componentName)) {
+        // Don't count imports from the component's own folder
+        if (componentName !== item.name) {
+          componentImports.add(componentName);
+        }
+      }
+    }
+  }
+
+  return componentImports;
+}
+
+/**
+ * Normalize registry dependency to component name
+ * Handles: "button", "@uipath/button", etc.
+ */
+function normalizeRegistryDep(dep: string): string | null {
+  if (isRemoteUrl(dep)) {
+    return null; // External URL
+  }
+  if (isLocalScopedPackage(dep)) {
+    return stripLocalScope(dep);
+  }
+  if (isScopedPackage(dep)) {
+    return null; // External registry
+  }
+  return dep;
+}
+
 function main(): void {
   const registry = readJsonFile<Registry>(registryPath, "registry.json");
   const packageJson = readJsonFile<PackageJson>(packageJsonPath, "package.json");
@@ -91,38 +209,50 @@ function main(): void {
   const errors: string[] = [];
 
   for (const item of registry.items) {
-    // Check registryDependencies
-    if (item.registryDependencies) {
-      for (const dep of item.registryDependencies) {
-        if (isRemoteUrl(dep)) {
-          // Remote URLs are external - skip validation
-          continue;
-        }
-
-        if (isScopedPackage(dep)) {
-          if (isLocalScopedPackage(dep)) {
-            // @uipath/* scoped items are local - strip prefix and validate
-            const componentName = stripLocalScope(dep);
-            if (!registryComponentNames.has(componentName)) {
-              errors.push(
-                `Component "${item.name}" declares registryDependency "${dep}" but "${componentName}" does not exist in the registry`,
-              );
-            }
-          }
-          // Other scoped packages are external registries - skip validation
-          continue;
-        }
-
-        // Non-scoped names should be local registry components
-        if (!registryComponentNames.has(dep)) {
-          errors.push(
-            `Component "${item.name}" declares registryDependency "${dep}" which does not exist in the registry`,
-          );
+    // Check that declared files exist
+    if (item.files) {
+      for (const file of item.files) {
+        const filePath = join(__dirname, "..", file.path);
+        if (!existsSync(filePath)) {
+          errors.push(`Component "${item.name}" declares file "${file.path}" which does not exist`);
         }
       }
     }
 
-    // Check dependencies (npm packages)
+    // Get declared registry dependencies (normalized to component names)
+    const declaredDeps = new Set<string>();
+    if (item.registryDependencies) {
+      for (const dep of item.registryDependencies) {
+        const normalized = normalizeRegistryDep(dep);
+        if (normalized) {
+          declaredDeps.add(normalized);
+        }
+      }
+    }
+
+    // Check that declared dependencies exist in registry
+    for (const dep of declaredDeps) {
+      if (!registryComponentNames.has(dep)) {
+        const originalDep = item.registryDependencies?.find(
+          (d) => normalizeRegistryDep(d) === dep,
+        );
+        errors.push(
+          `Component "${item.name}" declares registryDependency "${originalDep}" but "${dep}" does not exist in the registry`,
+        );
+      }
+    }
+
+    // Check that actual imports are declared in registryDependencies
+    const actualImports = getRegistryImports(item, registryComponentNames);
+    for (const importedComponent of actualImports) {
+      if (!declaredDeps.has(importedComponent)) {
+        errors.push(
+          `Component "${item.name}" imports "${importedComponent}" but it's not declared in registryDependencies`,
+        );
+      }
+    }
+
+    // Check dependencies (npm packages) exist in package.json
     if (item.dependencies) {
       for (const dep of item.dependencies) {
         const packageName = extractPackageName(dep);
