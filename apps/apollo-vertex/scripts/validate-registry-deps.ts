@@ -5,10 +5,13 @@
  * 1. All `registryDependencies` that are local must exist in the registry
  *    Per shadcn docs, registryDependencies supports 3 formats:
  *    - Local: "button", "tooltip" → must exist as registry component names
- *    - Namespaced: "@uipath/use-local-storage" → skipped (external registry)
- *    - Remote URL: "https://example.com/r/item.json" → skipped (external)
+ *    - Namespaced @uipath: "@uipath/use-local-storage" → local, strip prefix and validate
+ *    - Namespaced other: "@acme/component" → external registry, skip
+ *    - Remote URL: "https://example.com/r/item.json" → external, skip
  * 2. All `dependencies` reference packages in package.json
  */
+
+const LOCAL_REGISTRY_SCOPE = "@uipath/";
 
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -68,6 +71,14 @@ function isRemoteUrl(dep: string): boolean {
   return dep.startsWith("http://") || dep.startsWith("https://");
 }
 
+function isLocalScopedPackage(dep: string): boolean {
+  return dep.startsWith(LOCAL_REGISTRY_SCOPE);
+}
+
+function stripLocalScope(dep: string): string {
+  return dep.slice(LOCAL_REGISTRY_SCOPE.length);
+}
+
 function main(): void {
   const registry = readJsonFile<Registry>(registryPath, "registry.json");
   const packageJson = readJsonFile<PackageJson>(packageJsonPath, "package.json");
@@ -82,17 +93,33 @@ function main(): void {
 
   for (const item of registry.items) {
     // Check registryDependencies
-    // Supports 3 formats per shadcn docs:
+    // Supports formats per shadcn docs:
     // 1. Local items: "button", "input" → must exist in registry
-    // 2. Namespaced items: "@acme/input-form" → external registry refs, skip
-    // 3. Remote URLs: "https://example.com/r/item.json" → external, skip
+    // 2. Local scoped: "@uipath/use-local-storage" → strip prefix, must exist in registry
+    // 3. External scoped: "@acme/input-form" → external registry refs, skip
+    // 4. Remote URLs: "https://example.com/r/item.json" → external, skip
     if (item.registryDependencies) {
       for (const dep of item.registryDependencies) {
-        if (isScopedPackage(dep) || isRemoteUrl(dep)) {
-          // External registry references handled by shadcn CLI - skip validation
+        if (isRemoteUrl(dep)) {
+          // Remote URLs are external - skip validation
           continue;
         }
-        // Non-scoped, non-URL names should be local registry components
+
+        if (isScopedPackage(dep)) {
+          if (isLocalScopedPackage(dep)) {
+            // @uipath/* scoped items are local - strip prefix and validate
+            const componentName = stripLocalScope(dep);
+            if (!registryComponentNames.has(componentName)) {
+              errors.push(
+                `Component "${item.name}" has registryDependency "${dep}" but "${componentName}" does not exist in the registry`,
+              );
+            }
+          }
+          // Other scoped packages are external registries - skip validation
+          continue;
+        }
+
+        // Non-scoped names should be local registry components
         if (!registryComponentNames.has(dep)) {
           errors.push(
             `Component "${item.name}" has registryDependency "${dep}" which does not exist in the registry`,
