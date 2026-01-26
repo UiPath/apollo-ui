@@ -31,8 +31,7 @@ export const Simple: Story = {
         { source: 'start', target: 'failed', value: 20 },
       ],
     },
-    height: 300,
-    width: 600,
+    style: { height: '300px', width: '600px' },
   },
 };
 
@@ -71,8 +70,7 @@ export const JobFlow: Story = {
         { source: 'Web Search', target: 'faulted', value: 1 },
       ],
     },
-    height: 800,
-    width: 1200,
+    style: { height: '800px', width: '1200px' },
   },
 };
 
@@ -95,8 +93,7 @@ export const CustomColors: Story = {
         { source: 'process2', target: 'output', value: 35 },
       ],
     },
-    height: 400,
-    width: 700,
+    style: { height: '400px', width: '700px' },
   },
 };
 
@@ -129,8 +126,7 @@ export const ComplexFlow: Story = {
         { source: 'stage2c', target: 'output2', value: 25 },
       ],
     },
-    height: 500,
-    width: 900,
+    style: { height: '500px', width: '900px' },
   },
 };
 
@@ -150,8 +146,7 @@ export const WithInteractions: Story = {
         { source: 'b', target: 'c', value: 5 },
       ],
     },
-    height: 300,
-    width: 600,
+    style: { height: '300px', width: '600px' },
     onNodeClick: (node, _) => {
       alert(`Clicked node: ${node.label}`);
     },
@@ -177,8 +172,7 @@ export const Compact: Story = {
         { source: '2', target: '3', value: 10 },
       ],
     },
-    height: 250,
-    width: 500,
+    style: { height: '250px', width: '500px' },
     nodeWidth: 16,
     nodePadding: 8,
   },
@@ -203,7 +197,6 @@ export const FullWidth: Story = {
         { source: 'mid2', target: 'end', value: 25 },
       ],
     },
-    height: 400,
-    width: '100%',
+    style: { height: '400px', width: '100%' },
   },
 };

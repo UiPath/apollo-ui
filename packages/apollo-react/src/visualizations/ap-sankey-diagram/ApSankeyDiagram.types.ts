@@ -51,17 +51,13 @@ export type NodeAlignment = 'left' | 'right' | 'center' | 'justify';
 export interface ApSankeyDiagramProps {
   /** Data for the Sankey diagram */
   data: SankeyData;
-  /** Width of the diagram (default: '100%') */
-  width?: number | string;
-  /** Height of the diagram (default: 400) */
-  height?: number;
   /** Alignment of nodes (default: 'justify') */
   nodeAlignment?: NodeAlignment;
   /** Padding between nodes (default: 16) */
   nodePadding?: number;
   /** Width of nodes (default: 24) */
   nodeWidth?: number;
-  /** Custom styles for the container */
+  /** Custom styles for the container (can override default width and height) */
   style?: CSSProperties;
   /** Custom class name for the container */
   className?: string;
