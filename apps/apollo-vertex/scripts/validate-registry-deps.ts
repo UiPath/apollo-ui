@@ -2,10 +2,12 @@
  * Validates that all dependencies in registry.json are properly declared.
  *
  * Checks:
- * 1. All `registryDependencies` that are local (non-scoped) must exist in the registry
+ * 1. All `registryDependencies` that are local must exist in the registry
+ *    Per shadcn docs, registryDependencies supports 3 formats:
  *    - Local: "button", "tooltip" → must exist as registry component names
- *    - External: "@uipath/use-local-storage" → skipped (external registry references)
- * 2. All `dependencies` reference packages in package.json (dependencies or devDependencies)
+ *    - Namespaced: "@uipath/use-local-storage" → skipped (external registry)
+ *    - Remote URL: "https://example.com/r/item.json" → skipped (external)
+ * 2. All `dependencies` reference packages in package.json
  */
 
 import { readFileSync } from "node:fs";
@@ -62,6 +64,10 @@ function isScopedPackage(dep: string): boolean {
   return dep.startsWith("@");
 }
 
+function isRemoteUrl(dep: string): boolean {
+  return dep.startsWith("http://") || dep.startsWith("https://");
+}
+
 function main(): void {
   const registry = readJsonFile<Registry>(registryPath, "registry.json");
   const packageJson = readJsonFile<PackageJson>(packageJsonPath, "package.json");
@@ -76,14 +82,17 @@ function main(): void {
 
   for (const item of registry.items) {
     // Check registryDependencies
+    // Supports 3 formats per shadcn docs:
+    // 1. Local items: "button", "input" → must exist in registry
+    // 2. Namespaced items: "@acme/input-form" → external registry refs, skip
+    // 3. Remote URLs: "https://example.com/r/item.json" → external, skip
     if (item.registryDependencies) {
       for (const dep of item.registryDependencies) {
-        if (isScopedPackage(dep)) {
-          // Scoped packages (e.g., @uipath/use-local-storage) are external registry
-          // references handled by shadcn CLI - skip validation
+        if (isScopedPackage(dep) || isRemoteUrl(dep)) {
+          // External registry references handled by shadcn CLI - skip validation
           continue;
         }
-        // Non-scoped names should be local registry components
+        // Non-scoped, non-URL names should be local registry components
         if (!registryComponentNames.has(dep)) {
           errors.push(
             `Component "${item.name}" has registryDependency "${dep}" which does not exist in the registry`,
