@@ -1,3 +1,11 @@
+## [@uipath/apollo-react-v3.9.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.8.1...@uipath/apollo-react@3.9.0) (2026-01-26)
+
+### Features
+
+* **apollo-react:** implement ApSankeyDiagram ([8bf9185](https://github.com/UiPath/apollo-ui/commit/8bf91850a974bdccc8ce18f64ad82d949cb3785e))
+* **apollo-react:** move ApSankey to material directory ([b3444cd](https://github.com/UiPath/apollo-ui/commit/b3444cd76c7a1da938ff41f68631a8536dd285be))
+* **apollo-react:** use CSS-in-JS for ApSankeyDiagram ([dc7ab3b](https://github.com/UiPath/apollo-ui/commit/dc7ab3b4513e051bbefb59842ba043daecc441a7))
+
 ## [@uipath/apollo-react-v3.8.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.8.0...@uipath/apollo-react@3.8.1) (2026-01-26)
 
 ### Bug Fixes
