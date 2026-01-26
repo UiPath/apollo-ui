@@ -135,12 +135,11 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
 
     const leftRightHandles = Math.max(leftHandles, rightHandles);
 
-    if (leftRightHandles <= 3) return height;
     return Math.max(
       originalHeightRef.current ?? DEFAULT_NODE_SIZE,
       leftRightHandles * handleSpacing
     );
-  }, [height, handleConfigurations]);
+  }, [handleConfigurations]);
 
   // Sync computed height to node when it changes
   useEffect(() => {
@@ -168,11 +167,7 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
   const displaySubLabel = display.subLabel;
   const displayLabelTooltip = display.labelTooltip as string | undefined;
   const displayLabelBackgroundColor = display.labelBackgroundColor as string | undefined;
-  const displayShape = (display.shape ?? 'square') as
-    | 'circle'
-    | 'square'
-    | 'rectangle'
-    | 'vertical-rectangle';
+  const displayShape = (display.shape ?? 'square') as 'circle' | 'square' | 'rectangle';
   const displayBackground = display.background;
   const displayColor = display.color;
   const displayIconBackground = display.iconBackground;
@@ -270,7 +265,6 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
     showNotches,
     nodeWidth: width,
     nodeHeight: height,
-    isExpandable: displayShape === 'vertical-rectangle',
   });
 
   // Generate SmartHandle elements from handle configurations (opt-in)

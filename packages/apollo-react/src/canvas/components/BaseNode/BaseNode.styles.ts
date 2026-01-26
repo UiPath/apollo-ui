@@ -196,9 +196,9 @@ export const BaseIconWrapper = styled.div<{
   height: ${({ height, width, shape }) => {
     // Use 7/8 scaling for a vertical rectangle, and use default 3/4 scaling for other shapes
     const scaleFactor = height ? height / 96 : 1;
-    return height !== width && shape === 'vertical-rectangle'
+    return height !== width && shape !== 'rectangle' // True for only a expandable node
       ? `${84 * scaleFactor}px`
-      : `${72 * scaleFactor}px`
+      : `${72 * scaleFactor}px`;
   }};
   display: flex;
   align-items: center;
