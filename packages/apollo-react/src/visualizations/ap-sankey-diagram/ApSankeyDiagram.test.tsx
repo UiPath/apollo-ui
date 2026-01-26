@@ -24,7 +24,7 @@ describe('ApSankeyDiagram', () => {
   });
 
   it('should apply custom width and height', () => {
-    const { container } = render(<ApSankeyDiagram data={mockData} width={600} height={300} />);
+    const { container } = render(<ApSankeyDiagram data={mockData} style={{ width: '600px', height: '300px' }} />);
     const wrapper = container.firstChild as HTMLElement;
     expect(wrapper).toHaveStyle({ width: '600px', height: '300px' });
   });
