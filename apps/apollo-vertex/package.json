@@ -13,7 +13,8 @@
     "format": "biome format --write .",
     "format:check": "biome format .",
     "lint": "biome check .",
-    "lint:deps": "depcruise registry --config .dependency-cruiser.js"
+    "lint:deps": "depcruise registry --config .dependency-cruiser.js",
+    "lint:registry-deps": "node --experimental-strip-types scripts/validate-registry-deps.ts"
   },
   "keywords": [],
   "author": "",

@@ -24,6 +24,7 @@
     "lint:css": "turbo run lint:css",
     "lint:css:fix": "turbo run lint:css:fix",
     "lint:deps": "turbo run lint:deps",
+    "lint:registry-deps": "turbo run lint:registry-deps",
     "format": "turbo run format",
     "format:check": "turbo run format:check",
     "test": "turbo run test",

@@ -23,6 +23,7 @@ jobs:
           - Lint
           - Lint CSS
           - Lint Deps
+          - Lint Registry Deps
           - Typecheck
           - Test Coverage
           - Build
@@ -71,6 +72,10 @@ jobs:
       - name: Run Lint Deps
         if: matrix.check == 'Lint Deps'
         run: pnpm lint:deps --affected
+
+      - name: Run Lint Registry Deps
+        if: matrix.check == 'Lint Registry Deps'
+        run: pnpm lint:registry-deps --affected
 
       - name: Run Typecheck
         if: matrix.check == 'Typecheck'

@@ -28,6 +28,9 @@
     "lint:deps": {
       "outputs": []
     },
+    "lint:registry-deps": {
+      "outputs": []
+    },
     "format": {
       "cache": false
     },
