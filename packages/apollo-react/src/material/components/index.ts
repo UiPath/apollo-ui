@@ -17,3 +17,4 @@ export * from './ap-tool-call';
 export * from './ap-tooltip';
 export * from './ap-tree-view';
 export * from './ap-typography';
+export * from './ap-sankey-diagram';

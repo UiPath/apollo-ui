@@ -119,12 +119,7 @@
       "require": "./dist/canvas/constants.cjs"
     },
     "./canvas/xyflow/*.css": "./dist/canvas/xyflow/*.css",
-    "./canvas/styles/*.css": "./dist/canvas/styles/*.css",
-    "./visualizations": {
-      "types": "./dist/visualizations/index.d.ts",
-      "import": "./dist/visualizations/index.js",
-      "require": "./dist/visualizations/index.cjs"
-    }
+    "./canvas/styles/*.css": "./dist/canvas/styles/*.css"
   },
   "sideEffects": [
     "**/*.css",

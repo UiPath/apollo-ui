@@ -62,6 +62,7 @@ import { MaterialTabs } from "./pages/material/MaterialTabs";
 import { MaterialTextField } from "./pages/material/MaterialTextField";
 import { MaterialTooltip } from "./pages/material/MaterialTooltip";
 import { MaterialTypography } from "./pages/material/MaterialTypography";
+import { ApSankeyShowcase } from "./pages/components/ApSankeyShowcase";
 
 function App() {
 	return (
@@ -193,6 +194,10 @@ function App() {
 								element={<ProgressSpinnerShowcase />}
 							/>
 							<Route path="/components/tooltip" element={<TooltipShowcase />} />
+							<Route
+								path="/components/sankey-diagram"
+								element={<ApSankeyShowcase />}
+							/>
 						</Routes>
 					</MainContent>
 				</AppContainer>

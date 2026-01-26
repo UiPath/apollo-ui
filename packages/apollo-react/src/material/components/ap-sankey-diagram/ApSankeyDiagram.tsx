@@ -40,19 +40,19 @@ const StyledSankeyNode = styled('rect')({
   },
 });
 
-const StyledSankeyLink = styled('path')<{ isSelected: boolean }>(({ isSelected }) => ({
+const StyledSankeyLink = styled('path')<{}>(({}) => ({
   transition: 'opacity 0.2s',
-  mixBlendMode: isSelected ? 'normal' : 'multiply',
+  mixBlendMode: 'normal',
   cursor: 'pointer',
 
   '&:hover': {
-    opacity: 0.7,
+    opacity: 1,
   },
 }));
 
 const StyledSankeyNodeLabel = styled('text')({
   fontSize: token.FontVariantToken.fontSizeS,
-  fill: token.Colors.ColorForegroundLight,
+  fill: 'var(--color-foreground-emp)',
   pointerEvents: 'none',
   userSelect: 'none',
 });
@@ -60,13 +60,14 @@ const StyledSankeyNodeLabel = styled('text')({
 const StyledSankeyNodeValue = styled('text')({
   fontSize: token.FontVariantToken.fontSizeS,
   fontWeight: token.FontFamily.FontWeightMedium,
+  fill: 'var(--color-foreground-emp)',
   pointerEvents: 'none',
   userSelect: 'none',
 });
 
 const LinkTooltipContent = styled(Paper)({
-  backgroundColor: token.Colors.ColorBackgroundLight,
-  border: `1px solid ${token.Colors.ColorBorderLight}`,
+  backgroundColor: 'var(--color-background)',
+  border: '1px solid var(--color-border)',
   borderRadius: token.Border.BorderRadiusM,
   padding: token.Spacing.SpacingM,
   minWidth: '200px',
@@ -80,22 +81,23 @@ const TooltipRow = styled('div')({
   fontSize: token.FontVariantToken.fontSizeS,
 
   '&:not(:last-child)': {
-    borderBottom: `1px solid ${token.Colors.ColorBorderGridLight}`,
+    borderBottom: '1px solid var(--color-border)',
   },
 });
 
 const TooltipHeader = styled('span')({
   fontSize: token.FontVariantToken.fontSizeM,
   fontWeight: token.FontFamily.FontWeightSemibold,
+  color: 'var(--color-foreground-emp)',
 });
 
 const TooltipLabel = styled('span')({
-  color: token.Colors.ColorForegroundDeEmpLight,
+  color: 'var(--color-foreground-de-emp)',
   marginRight: token.Spacing.SpacingM,
 });
 
 const TooltipValue = styled('span')({
-  color: token.Colors.ColorForegroundLight,
+  color: 'var(--color-foreground-emp)',
   fontWeight: token.FontFamily.FontWeightSemibold,
 });
 
@@ -118,11 +120,21 @@ const TooltipValue = styled('span')({
  * />
  * ```
  */
-// Extended node type for D3 Sankey (combines D3 layout properties with our custom node type)
-interface ExtendedSankeyNode extends D3SankeyNode<SankeyNode, SankeyLink>, SankeyNode {}
+// Extended node type for D3 Sankey
+interface ExtendedSankeyNode extends D3SankeyNode<SankeyNode, SankeyLink>, SankeyNode {
+  id: string;
+  label: string;
+  color?: string;
+}
 
-// Extended link type for D3 Sankey (combines D3 layout properties with our custom link type)
-interface ExtendedSankeyLink extends D3SankeyLink<SankeyNode, SankeyLink>, SankeyLink {}
+// Extended link type for D3 Sankey
+interface ExtendedSankeyLink extends D3SankeyLink<SankeyNode, SankeyLink>, SankeyLink {
+  source: string;
+  target: string;
+  value: number;
+  color?: string;
+  metadata?: Record<string, unknown>;
+}
 
 // Layout margins to prevent clipping at SVG boundaries
 const DIAGRAM_MARGIN_HORIZONTAL = 1;
@@ -384,18 +396,17 @@ export const ApSankeyDiagram = React.forwardRef<HTMLDivElement, ApSankeyDiagramP
               const isConnectedToHoveredNode = connectedLinkIndices.has(index);
 
               // Determine opacity based on hover state
-              let opacity = 0.5;
+              let opacity = 0.6;
               if (selectedLinkIndex === index) {
                 opacity = 1;
               } else if (hoveredNodeId) {
-                opacity = isConnectedToHoveredNode ? 1 : 0.25;
+                opacity = isConnectedToHoveredNode ? 1 : 0.3;
               }
 
               return (
                 <StyledSankeyLink
                   key={`link-${index}`}
                   d={linkData.path}
-                  isSelected={selectedLinkIndex === index || isConnectedToHoveredNode}
                   stroke={linkData.color ? linkData.color : `url(#${linkData.gradientId})`}
                   strokeWidth={linkData.strokeWidth}
                   fill="none"
@@ -429,7 +440,7 @@ export const ApSankeyDiagram = React.forwardRef<HTMLDivElement, ApSankeyDiagramP
                     opacity={nodeOpacity}
                     onMouseEnter={() => handleNodeMouseEnter(nodeItem.node.id)}
                     onMouseLeave={handleNodeMouseLeave}
-                    onClick={(e) => onNodeClick?.(nodeItem.node as SankeyNode, e)}
+                    onClick={(e) => onNodeClick?.(nodeItem.node as SankeyNode, e as React.MouseEvent<SVGRectElement>)}
                   />
 
                 {/* Node label */}
