@@ -74,7 +74,6 @@ type ButtonHandleProps = {
   customPositionAndOffsets?: HandleConfigurationSpecificPosition;
   nodeWidth?: number;
   nodeHeight?: number;
-  isExpandable?: boolean;
 };
 
 const ButtonHandleBase = ({
@@ -97,7 +96,6 @@ const ButtonHandleBase = ({
   customPositionAndOffsets,
   nodeWidth,
   nodeHeight,
-  isExpandable,
 }: ButtonHandleProps) => {
   const [isHovered, setIsHovered] = useState(false);
   const isVertical = position === Position.Top || position === Position.Bottom;
@@ -110,14 +108,14 @@ const ButtonHandleBase = ({
 
     // If node size is available, use grid-aligned positioning
     if (relevantSize && relevantSize > 0) {
-      const gridPositions = calculateGridAlignedHandlePositions(relevantSize, total, isExpandable);
+      const gridPositions = calculateGridAlignedHandlePositions(relevantSize, total);
       const pixelPosition = gridPositions[index] ?? relevantSize / 2;
       return pixelToPercent(pixelPosition, relevantSize);
     }
 
     // Fallback to percentage-based positioning
     return ((index + 1) / (total + 1)) * 100;
-  }, [index, total, isVertical, nodeWidth, nodeHeight, isExpandable]);
+  }, [index, total, isVertical, nodeWidth, nodeHeight]);
 
   const handleButtonClick = useCallback(
     (event: React.MouseEvent) => {
@@ -230,7 +228,6 @@ const ButtonHandlesBase = ({
   shouldShowAddButtonFn = ({ showAddButton, selected }) => showAddButton && selected,
   nodeWidth,
   nodeHeight,
-  isExpandable,
 }: {
   nodeId: string;
   handles: ButtonHandleConfig[];
@@ -242,7 +239,6 @@ const ButtonHandlesBase = ({
   customPositionAndOffsets?: HandleConfigurationSpecificPosition;
   nodeWidth?: number;
   nodeHeight?: number;
-  isExpandable?: boolean;
 
   /**
    * Allows for consumers to control the predicate for showing the add button from the props that's passed in
@@ -288,7 +284,6 @@ const ButtonHandlesBase = ({
           customPositionAndOffsets={customPositionAndOffsets}
           nodeWidth={nodeWidth}
           nodeHeight={nodeHeight}
-          isExpandable={isExpandable}
         />
       ))}
     </>

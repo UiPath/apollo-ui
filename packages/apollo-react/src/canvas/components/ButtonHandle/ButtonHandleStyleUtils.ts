@@ -25,70 +25,36 @@ export const snapToGrid = (value: number, gridSize: number = GRID_SPACING): numb
 };
 
 /**
- * Calculates grid-aligned positions for handles along a dimension.
- * Ensures even spacing between handles while aligning to grid.
+ * Calculates grid-aligned positions for handles that look equidistant and symmetric.
  * @param nodeSize - The size of the node in the relevant dimension (width for Top/Bottom handles, height for Left/Right handles)
  * @param numHandles - Number of handles to position
- * @param isExpandable - Whether the node is expandable (like switch)
  * @param gridSize - The grid size
  * @returns Array of grid-snapped pixel positions for each handle
  */
 export const calculateGridAlignedHandlePositions = (
   nodeSize: number,
   numHandles: number,
-  isExpandable: boolean = false,
   gridSize: number = GRID_SPACING
 ): number[] => {
   if (numHandles === 0) return [];
   if (nodeSize <= 0) return [];
 
-  const center = nodeSize / 2;
-
-  // Calculate ideal spacing between handles
-  // For numHandles handles, divide space into (numHandles + 1) equal parts
+  // Calculate ideal spacing for equidistant distribution
   const idealSpacing = nodeSize / (numHandles + 1);
 
-  // Snap the spacing to grid while maintaining even distribution
-  const snappedSpacing = Math.round(idealSpacing / gridSize) * gridSize;
+  // Find the best grid-aligned spacing (round to nearest multiple of gridSize)
+  // This ensures equal spacing between handles while staying on grid
+  const gridAlignedSpacing = Math.round(idealSpacing / gridSize) * gridSize;
+
+  const totalSpan = (numHandles - 1) * gridAlignedSpacing;
+
+  const startPosition = (nodeSize - totalSpan) / 2;
 
   const positions: number[] = [];
-
-  if (isExpandable) {
-    if (numHandles === 1) {
-      positions.push(snapToGrid(center));
-    } else {
-      // Calculate the total span needed for all handles
-      const totalSpan = snappedSpacing * (numHandles - 1);
-      const startOffset = center - totalSpan / 2;
-
-      // Generate positions centered around the middle
-      for (let i = 0; i < numHandles; i++) {
-        const idealPosition = startOffset + snappedSpacing * i;
-        // Snap to grid to ensure alignment
-        const snappedPosition = snapToGrid(idealPosition);
-        positions.push(snappedPosition);
-      }
-    }
-  } else {
-    for (let i = 0; i < numHandles; i++) {
-      // Calculate ideal position using equal division
-      const idealPosition = ((i + 1) / (numHandles + 1)) * nodeSize;
-
-      // Snap to grid, rounding away from center to spread handles out
-      let snappedPosition: number;
-      if (idealPosition < center) {
-        // Below center: round down
-        snappedPosition = Math.floor(idealPosition / gridSize) * gridSize;
-      } else if (idealPosition > center) {
-        // Above center: round up
-        snappedPosition = Math.ceil(idealPosition / gridSize) * gridSize;
-      } else {
-        // At center: snap to nearest
-        snappedPosition = snapToGrid(idealPosition, gridSize);
-      }
-
-      positions.push(snappedPosition);
-    }
+  for (let i = 0; i < numHandles; i++) {
+    const position = startPosition + i * gridAlignedSpacing;
+    const snappedPosition = snapToGrid(position, gridSize);
+    positions.push(snappedPosition);
   }
 
   return positions;
