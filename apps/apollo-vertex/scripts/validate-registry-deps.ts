@@ -1,16 +1,18 @@
 /**
- * Validates that all dependencies in registry.json are properly declared.
+ * Validates that registry.json is properly configured.
  *
- * Checks:
- * 1. All imports from other registry components must be declared in registryDependencies
- *    Import patterns detected:
- *    - @/components/ui/X → component "X"
- *    - @/registry/X/* → component "X"
- *    - @/components/X/* (non-ui) → component "X"
- *    - @/hooks/X → component "X" (hooks are also registry items)
+ * Structure validation:
+ * 1. Every component must have a name
+ * 2. Every component must have files array with at least one file
+ * 3. Each file must have path and type properties
+ * 4. No duplicate component names
+ * 5. File paths must start with "registry/"
+ *
+ * Dependency validation:
+ * 1. All declared files must exist on disk
  * 2. All declared registryDependencies must exist in the registry
- * 3. All declared dependencies must exist in package.json
- * 4. All declared files must exist on disk
+ * 3. All imports from other registry components must be declared in registryDependencies
+ * 4. All declared npm dependencies must exist in package.json
  */
 
 import { existsSync, readFileSync } from "node:fs";
@@ -19,20 +21,33 @@ import { fileURLToPath } from "node:url";
 
 const LOCAL_REGISTRY_SCOPE = "@uipath/";
 
+const VALID_FILE_TYPES = [
+  "registry:ui",
+  "registry:hook",
+  "registry:lib",
+  "registry:component",
+  "registry:page",
+  "registry:file",
+  "registry:block",
+  "registry:style",
+];
+
 interface RegistryFile {
-  path: string;
-  type: string;
+  path?: string;
+  type?: string;
+  target?: string;
 }
 
 interface RegistryItem {
-  name: string;
+  name?: string;
+  type?: string;
   files?: RegistryFile[];
   dependencies?: string[];
   registryDependencies?: string[];
 }
 
 interface Registry {
-  items: RegistryItem[];
+  items?: RegistryItem[];
 }
 
 interface PackageJson {
@@ -49,7 +64,10 @@ function readJsonFile<T>(path: string, name: string): T {
   try {
     content = readFileSync(path, "utf-8");
   } catch (error) {
-    console.error(`Failed to read ${name} at ${path}:`, (error as Error).message);
+    console.error(
+      `Failed to read ${name} at ${path}:`,
+      (error as Error).message,
+    );
     process.exit(1);
   }
 
@@ -62,7 +80,6 @@ function readJsonFile<T>(path: string, name: string): T {
 }
 
 function extractPackageName(dep: string): string {
-  // Handle version specifiers like "react-day-picker@latest" or "recharts@2.15.4"
   const atIndex = dep.lastIndexOf("@");
   if (atIndex > 0) {
     return dep.substring(0, atIndex);
@@ -86,10 +103,6 @@ function stripLocalScope(dep: string): string {
   return dep.slice(LOCAL_REGISTRY_SCOPE.length);
 }
 
-/**
- * Extract component name from an import path
- * Returns null if not a registry component import
- */
 function extractComponentFromImport(importPath: string): string | null {
   // @/components/ui/X → "X"
   const uiMatch = importPath.match(/^@\/components\/ui\/([^/]+)/);
@@ -118,10 +131,6 @@ function extractComponentFromImport(importPath: string): string | null {
   return null;
 }
 
-/**
- * Parse imports from a TypeScript/JavaScript file
- * Returns set of import paths (the "from" part)
- */
 function parseImports(filePath: string): Set<string> {
   const imports = new Set<string>();
 
@@ -131,7 +140,6 @@ function parseImports(filePath: string): Set<string> {
 
   const content = readFileSync(filePath, "utf-8");
 
-  // Match import statements: import ... from "path" or import ... from 'path'
   const importRegex = /import\s+(?:[\s\S]*?)\s+from\s+["']([^"']+)["']/g;
   let match: RegExpExecArray | null;
 
@@ -139,7 +147,6 @@ function parseImports(filePath: string): Set<string> {
     imports.add(match[1]);
   }
 
-  // Also match dynamic imports: import("path") or import('path')
   const dynamicImportRegex = /import\s*\(\s*["']([^"']+)["']\s*\)/g;
   while ((match = dynamicImportRegex.exec(content)) !== null) {
     imports.add(match[1]);
@@ -148,27 +155,24 @@ function parseImports(filePath: string): Set<string> {
   return imports;
 }
 
-/**
- * Get all registry component imports from a component's files
- */
 function getRegistryImports(
   item: RegistryItem,
   registryComponentNames: Set<string>,
 ): Set<string> {
   const componentImports = new Set<string>();
 
-  if (!item.files) {
+  if (!item.files || !item.name) {
     return componentImports;
   }
 
   for (const file of item.files) {
+    if (!file.path) continue;
     const filePath = join(__dirname, "..", file.path);
     const imports = parseImports(filePath);
 
     for (const importPath of imports) {
       const componentName = extractComponentFromImport(importPath);
       if (componentName && registryComponentNames.has(componentName)) {
-        // Don't count imports from the component's own folder
         if (componentName !== item.name) {
           componentImports.add(componentName);
         }
@@ -179,70 +183,156 @@ function getRegistryImports(
   return componentImports;
 }
 
-/**
- * Normalize registry dependency to component name
- * Handles: "button", "@uipath/button", etc.
- */
 function normalizeRegistryDep(dep: string): string | null {
   if (isRemoteUrl(dep)) {
-    return null; // External URL
+    return null;
   }
   if (isLocalScopedPackage(dep)) {
     return stripLocalScope(dep);
   }
   if (isScopedPackage(dep)) {
-    return null; // External registry
+    return null;
   }
   return dep;
 }
 
 function main(): void {
   const registry = readJsonFile<Registry>(registryPath, "registry.json");
-  const packageJson = readJsonFile<PackageJson>(packageJsonPath, "package.json");
+  const packageJson = readJsonFile<PackageJson>(
+    packageJsonPath,
+    "package.json",
+  );
 
-  const registryComponentNames = new Set(registry.items.map((item) => item.name));
+  const errors: string[] = [];
+
+  // Validate registry structure
+  if (!registry.items || !Array.isArray(registry.items)) {
+    errors.push("registry.json must have an 'items' array");
+    console.error("Registry validation failed:\n");
+    console.error(`  ✗ ${errors[0]}`);
+    process.exit(1);
+  }
+
+  // Check for duplicate names
+  const seenNames = new Map<string, number>();
+  for (let i = 0; i < registry.items.length; i++) {
+    const item = registry.items[i];
+    if (item.name) {
+      if (seenNames.has(item.name)) {
+        errors.push(
+          `Duplicate component name "${item.name}" at indices ${seenNames.get(item.name)} and ${i}`,
+        );
+      } else {
+        seenNames.set(item.name, i);
+      }
+    }
+  }
+
+  const registryComponentNames = new Set(
+    registry.items
+      .filter((item) => item.name)
+      .map((item) => item.name as string),
+  );
   const installedPackages = new Set([
     ...Object.keys(packageJson.dependencies ?? {}),
     ...Object.keys(packageJson.devDependencies ?? {}),
   ]);
 
-  const errors: string[] = [];
+  for (let i = 0; i < registry.items.length; i++) {
+    const item = registry.items[i];
+    const itemId = item.name ? `"${item.name}"` : `at index ${i}`;
 
-  for (const item of registry.items) {
-    // Check that declared files exist
-    if (item.files) {
-      for (const file of item.files) {
-        const filePath = join(__dirname, "..", file.path);
-        if (!existsSync(filePath)) {
-          errors.push(`Component "${item.name}" declares file "${file.path}" which does not exist`);
-        }
+    // Check required name
+    if (
+      !item.name ||
+      typeof item.name !== "string" ||
+      item.name.trim() === ""
+    ) {
+      errors.push(`Component ${itemId} is missing required 'name' property`);
+      continue; // Can't do further validation without name
+    }
+
+    // Check required files array
+    if (!item.files || !Array.isArray(item.files)) {
+      errors.push(`Component "${item.name}" is missing required 'files' array`);
+      continue;
+    }
+
+    if (item.files.length === 0) {
+      errors.push(
+        `Component "${item.name}" has empty 'files' array - must have at least one file`,
+      );
+      continue;
+    }
+
+    // Validate each file
+    for (let j = 0; j < item.files.length; j++) {
+      const file = item.files[j];
+
+      // Check required path
+      if (!file.path || typeof file.path !== "string") {
+        errors.push(
+          `Component "${item.name}" file at index ${j} is missing required 'path' property`,
+        );
+        continue;
+      }
+
+      // Check path starts with registry/
+      if (!file.path.startsWith("registry/")) {
+        errors.push(
+          `Component "${item.name}" file "${file.path}" must be in the registry/ folder`,
+        );
+      }
+
+      // Check required type
+      if (!file.type || typeof file.type !== "string") {
+        errors.push(
+          `Component "${item.name}" file "${file.path}" is missing required 'type' property`,
+        );
+      } else if (!VALID_FILE_TYPES.includes(file.type)) {
+        errors.push(
+          `Component "${item.name}" file "${file.path}" has invalid type "${file.type}". Valid types: ${VALID_FILE_TYPES.join(", ")}`,
+        );
+      }
+
+      // Check file exists on disk
+      const filePath = join(__dirname, "..", file.path);
+      if (!existsSync(filePath)) {
+        errors.push(
+          `Component "${item.name}" declares file "${file.path}" which does not exist`,
+        );
       }
     }
 
-    // Get declared registry dependencies (normalized to component names)
+    // Validate registryDependencies
     const declaredDeps = new Set<string>();
     if (item.registryDependencies) {
-      for (const dep of item.registryDependencies) {
-        const normalized = normalizeRegistryDep(dep);
-        if (normalized) {
-          declaredDeps.add(normalized);
+      if (!Array.isArray(item.registryDependencies)) {
+        errors.push(
+          `Component "${item.name}" has invalid 'registryDependencies' - must be an array`,
+        );
+      } else {
+        for (const dep of item.registryDependencies) {
+          if (typeof dep !== "string") {
+            errors.push(
+              `Component "${item.name}" has non-string registryDependency`,
+            );
+            continue;
+          }
+          const normalized = normalizeRegistryDep(dep);
+          if (normalized) {
+            declaredDeps.add(normalized);
+            if (!registryComponentNames.has(normalized)) {
+              errors.push(
+                `Component "${item.name}" declares registryDependency "${dep}" but "${normalized}" does not exist in the registry`,
+              );
+            }
+          }
         }
       }
     }
 
-    // Check that declared dependencies exist in registry
-    for (const dep of declaredDeps) {
-      if (!registryComponentNames.has(dep)) {
-        const originalDep = item.registryDependencies?.find(
-          (d) => normalizeRegistryDep(d) === dep,
-        );
-        errors.push(
-          `Component "${item.name}" declares registryDependency "${originalDep}" but "${dep}" does not exist in the registry`,
-        );
-      }
-    }
-
-    // Check that actual imports are declared in registryDependencies
+    // Check actual imports match declared registryDependencies
     const actualImports = getRegistryImports(item, registryComponentNames);
     for (const importedComponent of actualImports) {
       if (!declaredDeps.has(importedComponent)) {
@@ -252,21 +342,31 @@ function main(): void {
       }
     }
 
-    // Check dependencies (npm packages) exist in package.json
+    // Validate npm dependencies
     if (item.dependencies) {
-      for (const dep of item.dependencies) {
-        const packageName = extractPackageName(dep);
-        if (!installedPackages.has(packageName)) {
-          errors.push(
-            `Component "${item.name}" declares dependency "${packageName}" which is not in package.json`,
-          );
+      if (!Array.isArray(item.dependencies)) {
+        errors.push(
+          `Component "${item.name}" has invalid 'dependencies' - must be an array`,
+        );
+      } else {
+        for (const dep of item.dependencies) {
+          if (typeof dep !== "string") {
+            errors.push(`Component "${item.name}" has non-string dependency`);
+            continue;
+          }
+          const packageName = extractPackageName(dep);
+          if (!installedPackages.has(packageName)) {
+            errors.push(
+              `Component "${item.name}" declares dependency "${packageName}" which is not in package.json`,
+            );
+          }
         }
       }
     }
   }
 
   if (errors.length > 0) {
-    console.error("Registry dependency validation failed:\n");
+    console.error("Registry validation failed:\n");
     for (const error of errors) {
       console.error(`  ✗ ${error}`);
     }
@@ -275,7 +375,7 @@ function main(): void {
   }
 
   console.log(
-    `✓ Registry dependency validation passed (${registry.items.length} components checked)`,
+    `✓ Registry validation passed (${registry.items.length} components checked)`,
   );
 }
 
