@@ -187,16 +187,19 @@ export const BaseIconWrapper = styled.div<{
   height?: number;
   width?: number;
 }>`
-  width: ${({ width }) => {
-    const scaleFactor = width ? width / 96 : 1;
+  width: ${({ height, width, shape }) => {
+    // Use default 3/4 scaling, derived from the height for rectangle, and use width for other shapes
+    const dimension = height !== width && shape === 'rectangle' ? height : width;
+    const scaleFactor = dimension ? dimension / 96 : 1;
     return `${72 * scaleFactor}px`;
   }};
- height: ${({ height, width, shape }) => {
-   const scaleFactor = height ? height / 96 : 1;
-   return height !== width && shape === 'vertical-rectangle'
-     ? `${84 * scaleFactor}px` // Using 7/8 scaling for a vertical rectangle
-     : `${72 * scaleFactor}px`; // Using default 3/4 scaling for other shapes
- }}; 
+  height: ${({ height, width, shape }) => {
+    // Use 7/8 scaling for a vertical rectangle, and use default 3/4 scaling for other shapes
+    const scaleFactor = height ? height / 96 : 1;
+    return height !== width && shape === 'vertical-rectangle'
+      ? `${84 * scaleFactor}px`
+      : `${72 * scaleFactor}px`
+  }};
   display: flex;
   align-items: center;
   justify-content: center;
