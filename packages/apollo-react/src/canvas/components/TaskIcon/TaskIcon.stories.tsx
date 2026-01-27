@@ -11,14 +11,6 @@ export default {
   },
 } satisfies Meta;
 
-const TASK_TYPE_INFO = [
-  { type: TaskItemTypeValues.Agent, label: 'Agent' },
-  { type: TaskItemTypeValues.Automation, label: 'RPA automation' },
-  { type: TaskItemTypeValues.ApiAutomation, label: 'API automation' },
-  { type: TaskItemTypeValues.User, label: 'Human in the loop' },
-  { type: TaskItemTypeValues.AgenticProcess, label: 'Agentic process' },
-];
-
 const SIZES: TaskIconSize[] = ['sm', 'md', 'lg'];
 
 export const Default: StoryFn = () => {
@@ -38,10 +30,10 @@ export const Default: StoryFn = () => {
             </Column>
           ))}
         </Row>
-        {TASK_TYPE_INFO.map(({ type, label }) => (
+        {Object.values(TaskItemTypeValues).map((type) => (
           <Row key={type} gap={36} align="center">
             <Column w={140}>
-              <span style={{ fontSize: '14px', fontWeight: 500 }}>{label}</span>
+              <span style={{ fontSize: '14px', fontWeight: 500 }}>{type}</span>
             </Column>
             {SIZES.map((size) => (
               <Column key={size} w={72} align="center">

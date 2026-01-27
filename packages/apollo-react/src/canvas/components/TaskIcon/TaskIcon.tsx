@@ -1,4 +1,4 @@
-import { AgentProject, BusinessProcessProject } from '../../icons';
+import { AgentProject, BusinessProcessProject, ConnectorBuilderProject } from '../../icons';
 import { ApiProject } from '../../icons/ApiProject';
 import { HumanIcon } from '../../icons/HumanIcon';
 import { RpaProject } from '../../icons/RpaProject';
@@ -24,6 +24,8 @@ const getIconForType = (type: TaskItemTypeValues, iconSize: number): React.React
       return <HumanIcon w={iconSize} h={iconSize} />;
     case TaskItemTypeValues.AgenticProcess:
       return <BusinessProcessProject w={iconSize} h={iconSize} />;
+    case TaskItemTypeValues.Connector:
+      return <ConnectorBuilderProject w={iconSize} h={iconSize} />;
   }
 };
 

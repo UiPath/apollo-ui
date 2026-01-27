@@ -4,6 +4,7 @@ export enum TaskItemTypeValues {
   AgenticProcess = 'process',
   ApiAutomation = 'api_automation',
   Automation = 'automation',
+  Connector = 'connector',
 }
 
 export type TaskIconSize = 'sm' | 'md' | 'lg';
