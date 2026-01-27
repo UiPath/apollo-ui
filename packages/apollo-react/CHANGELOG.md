@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.9.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.9.1...@uipath/apollo-react@3.9.2) (2026-01-27)
+
+### Bug Fixes
+
+* **apollo-react:** Add connector task type & icon ([e44bb77](https://github.com/UiPath/apollo-ui/commit/e44bb77a953983fac94056dfee735856facc9e43))
+
 ## [@uipath/apollo-react-v3.9.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.9.0...@uipath/apollo-react@3.9.1) (2026-01-27)
 
 ### Bug Fixes
