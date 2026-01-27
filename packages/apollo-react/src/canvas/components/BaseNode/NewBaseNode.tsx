@@ -91,6 +91,7 @@ const NewBaseNodeComponent = (
       ? 'var(--uix-canvas-background)'
       : finalDisplay.iconBackground;
   const displayCenterAdornment = finalDisplay.centerAdornmentComponent;
+  const displayFooter = finalDisplay.footerComponent;
 
   const isConnecting = useStore((state) => !!state.connectionClickStartHandle);
 
@@ -219,13 +220,14 @@ const NewBaseNodeComponent = (
         width={width}
         height={height}
         backgroundColor={displayBackground}
+        hasFooter={!!displayFooter}
       >
         {icon && (
           <BaseIconWrapper
             shape={displayShape as 'square' | 'circle' | 'rectangle'}
             backgroundColor={displayIconBackground}
-            height={height}
-            width={width ?? height}
+            height={displayFooter ? undefined : height}
+            width={displayFooter ? undefined : (width ?? height)}
           >
             {icon}
           </BaseIconWrapper>
@@ -277,6 +279,11 @@ const NewBaseNodeComponent = (
             </ApTooltip>
             {displayCenterAdornment}
           </BaseTextContainer>
+        )}
+        {displayFooter && (
+          <div style={{ flexBasis: '100%', paddingTop: '2px' }}>
+            {displayFooter}
+          </div>
         )}
       </BaseContainer>
       {toolbarConfig && (

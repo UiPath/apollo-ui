@@ -406,6 +406,7 @@ export type AgentFlowNodeData = {
   suggestionId?: string;
   suggestionType?: SuggestionType;
   isProcessing?: boolean;
+  hasInstructions?: boolean;
 };
 export type AgentFlowNode = Node<AgentFlowNodeData, 'agent'> & {
   extent?: 'parent' | CoordinateExtent | undefined;
@@ -513,6 +514,7 @@ export interface AgentNodeTranslations {
   context: string;
   tools: string;
   memory: string;
+  addInstructions: string;
 }
 
 export const DefaultAgentNodeTranslations: AgentNodeTranslations = {
@@ -529,6 +531,7 @@ export const DefaultAgentNodeTranslations: AgentNodeTranslations = {
   context: 'Context',
   tools: 'Tools',
   memory: 'Memory',
+  addInstructions: 'Add Instructions',
 };
 
 export interface ResourceNodeTranslations {
