@@ -30,7 +30,7 @@ export interface NewBaseNodeDisplayProps {
 
 export interface NodeDisplay {
   label?: string;
-  subLabel?: string;
+  subLabel?: React.ReactNode;
   labelTooltip?: string;
   labelBackgroundColor?: string;
   shape?: NodeShape;
@@ -38,6 +38,7 @@ export interface NodeDisplay {
   iconBackground?: string;
   iconColor?: string;
   centerAdornmentComponent?: React.ReactNode;
+  footerComponent?: React.ReactNode;
 }
 
 export interface NodeAdornment {

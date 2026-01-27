@@ -1,3 +1,4 @@
+import styled from '@emotion/styled';
 import * as Icons from '@uipath/apollo-react/canvas/icons';
 import type { Node, NodeProps } from '@uipath/apollo-react/canvas/xyflow/react';
 import { Position } from '@uipath/apollo-react/canvas/xyflow/react';
@@ -23,6 +24,31 @@ import { ResourceNodeType } from '../AgentFlow.constants';
 import { useAgentFlowStore } from '../store/agent-flow-store';
 
 const { ConversationalAgentIcon, AutonomousAgentIcon } = Icons;
+
+const AddInstructionsButton = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 100%;
+  padding: 6px 12px;
+  background: transparent;
+  border: 1px dashed var(--uix-canvas-border-de-emp);
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--uix-canvas-foreground-de-emp);
+  line-height: 16px;
+  transition:
+    border-color 0.15s ease,
+    color 0.15s ease;
+
+  &:hover {
+    border-color: var(--uix-canvas-selection-indicator);
+    color: var(--uix-canvas-selection-indicator);
+  }
+`;
 
 interface AgentNodeData extends NewBaseNodeData {
   name: string;
@@ -50,6 +76,7 @@ interface AgentNodeProps extends NewBaseNodeDisplayProps {
   hasSuccess?: boolean;
   hasRunning?: boolean;
   onAddResource?: (type: 'context' | 'escalation' | 'mcp' | 'tool' | 'memorySpace') => void;
+  onAddInstructions?: () => void;
   translations: AgentNodeTranslations;
   enableMemory?: boolean;
   healthScore?: number;
@@ -74,6 +101,7 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
     hasSuccess = false,
     hasRunning = false,
     onAddResource,
+    onAddInstructions,
     translations,
     enableMemory,
     healthScore,
@@ -222,12 +250,12 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
     };
   }, [executionStatus]);
 
-  const healthScoreElement = useMemo(() => {
+  const healthScoreBadge = useMemo(() => {
     if (healthScore === undefined) {
       return null;
     }
     return (
-      <div
+      <span
         onClick={(e) => {
           if (onHealthScoreClick) {
             e.stopPropagation();
@@ -238,23 +266,38 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
           display: 'inline-flex',
           alignItems: 'center',
           gap: '4px',
-          padding: '4px 8px',
+          padding: '2px 6px',
           backgroundColor: 'var(--uix-canvas-background-secondary)',
           borderRadius: '16px',
           fontSize: '10px',
           fontWeight: '700',
-          marginTop: '6px',
-          textAlign: 'center',
           lineHeight: '16px',
           color: 'var(--uix-canvas-foreground-de-emp)',
           cursor: 'pointer',
+          flexShrink: 0,
         }}
       >
-        <Icons.HealthScoreIcon w={16} h={16} />
+        <Icons.HealthScoreIcon w={14} h={14} />
         {healthScore.toString()}
-      </div>
+      </span>
     );
   }, [healthScore, onHealthScoreClick]);
+
+  const addInstructionsElement = useMemo(() => {
+    if (data.hasInstructions || mode !== 'design' || !onAddInstructions) return null;
+    return (
+      <AddInstructionsButton
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation();
+          onAddInstructions();
+        }}
+      >
+        <ApIcon name="add" size="14px" />
+        {translations.addInstructions}
+      </AddInstructionsButton>
+    );
+  }, [data.hasInstructions, mode, onAddInstructions, translations.addInstructions]);
 
   const shouldShowAddButtonFn = (opts: { showAddButton: boolean; selected: boolean }) => {
     return opts.showAddButton || opts.selected;
@@ -337,13 +380,18 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
       icon={agentIcon}
       display={{
         label: name,
-        subLabel: isConversational
-          ? translations.conversationalAgent
-          : translations.autonomousAgent,
+        subLabel: (
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+            {isConversational
+              ? translations.conversationalAgent
+              : translations.autonomousAgent}
+            {healthScoreBadge}
+          </span>
+        ),
         shape: 'rectangle',
         background: 'var(--uix-canvas-background)',
         iconBackground: 'var(--uix-canvas-background-secondary)',
-        centerAdornmentComponent: healthScoreElement,
+        footerComponent: addInstructionsElement,
       }}
       toolbarConfig={toolbarConfig}
       adornments={{
@@ -376,6 +424,7 @@ const AgentNodeWrapper = (props: NodeProps<Node<AgentNodeData>> & AgentNodeProps
     hasSuccess,
     hasRunning,
     onAddResource,
+    onAddInstructions,
     translations,
     enableMemory,
     healthScore,
@@ -400,6 +449,7 @@ const AgentNodeWrapper = (props: NodeProps<Node<AgentNodeData>> & AgentNodeProps
       hasSuccess={hasSuccess}
       hasRunning={hasRunning}
       onAddResource={onAddResource}
+      onAddInstructions={onAddInstructions}
       translations={translations}
       enableMemory={enableMemory}
       healthScore={healthScore}

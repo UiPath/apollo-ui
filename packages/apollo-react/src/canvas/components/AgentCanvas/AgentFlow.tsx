@@ -94,7 +94,7 @@ const createAgentNodeWrapper = (handlers: {
   suggestionGroupVersion?: string;
 }) => {
   return (props: NodeProps<AgentFlowNode>) => {
-    const { props: storeProps, nodes } = useAgentFlowStore();
+    const { props: storeProps, nodes, setSelectedNodeId } = useAgentFlowStore();
 
     const hasContext = nodes.some(
       (node) =>
@@ -160,6 +160,11 @@ const createAgentNodeWrapper = (handlers: {
           node.data.hasSuccess
       );
 
+    const handleAddInstructions = useCallback(() => {
+      setSelectedNodeId(props.id);
+      storeProps.onSelectResource?.(props.id);
+    }, [setSelectedNodeId, storeProps.onSelectResource, props.id]);
+
     return (
       <AgentNodeElement
         {...props}
@@ -174,6 +179,7 @@ const createAgentNodeWrapper = (handlers: {
         hasSuccess={hasSuccess}
         hasRunning={hasRunning}
         onAddResource={handlers.onAddResource}
+        onAddInstructions={handleAddInstructions}
         translations={handlers.translations ?? DefaultAgentNodeTranslations}
         suggestionTranslations={handlers.suggestionTranslations ?? DefaultSuggestionTranslations}
         enableMemory={handlers.enableMemory === true}

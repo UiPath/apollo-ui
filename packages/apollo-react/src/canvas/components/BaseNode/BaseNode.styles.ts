@@ -125,6 +125,7 @@ export const BaseContainer = styled.div<{
   suggestionType?: string;
   width?: number;
   height?: number;
+  hasFooter?: boolean;
 }>`
   position: relative;
   width: ${({ shape, width }) => {
@@ -134,7 +135,11 @@ export const BaseContainer = styled.div<{
     }
     return `${defaultWidth}px`;
   }};
-  height: ${({ height }) => (height ? `${height}px` : '96px')};
+  height: ${({ height, hasFooter }) => {
+    if (hasFooter) return 'auto';
+    return height ? `${height}px` : '96px';
+  }};
+  min-height: ${({ hasFooter }) => (hasFooter ? '96px' : 'unset')};
   background: ${({ backgroundColor }) => backgroundColor || 'var(--uix-canvas-background)'};
   border: 1.5px solid var(--uix-canvas-border-de-emp);
   border-radius: ${({ shape }) => {
@@ -144,11 +149,17 @@ export const BaseContainer = styled.div<{
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: ${({ shape }) => (shape === 'rectangle' ? 'row' : 'column')};
+  flex-wrap: ${({ hasFooter }) => (hasFooter ? 'wrap' : 'nowrap')};
   align-items: center;
+  align-content: ${({ hasFooter }) => (hasFooter ? 'flex-start' : 'normal')};
   justify-content: ${({ shape }) => (shape === 'rectangle' ? 'flex-start' : 'center')};
-  gap: ${({ shape }) => (shape === 'rectangle' ? '12px' : '0')};
-  padding: ${({ shape, height }) => {
+  gap: ${({ shape, hasFooter }) => {
+    if (shape === 'rectangle') return hasFooter ? '8px' : '12px';
+    return '0';
+  }};
+  padding: ${({ shape, height, hasFooter }) => {
     if (shape === 'rectangle') {
+      if (hasFooter) return '10px';
       const scaleFactor = height ? height / 100 : 1;
       return `${14 * scaleFactor}px`;
     }
