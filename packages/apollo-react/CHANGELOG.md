@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.9.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.9.0...@uipath/apollo-react@3.9.1) (2026-01-27)
+
+### Bug Fixes
+
+* **apollo-react:** linting error ([ea090ec](https://github.com/UiPath/apollo-ui/commit/ea090ec78f31fa9c7d75692f9e3286cbf464a236))
+
 ## [@uipath/apollo-react-v3.9.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.8.1...@uipath/apollo-react@3.9.0) (2026-01-26)
 
 ### Features
