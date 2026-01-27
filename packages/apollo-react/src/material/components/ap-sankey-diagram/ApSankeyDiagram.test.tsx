@@ -24,15 +24,15 @@ describe('ApSankeyDiagram', () => {
   });
 
   it('should apply custom width and height', () => {
-    const { container } = render(<ApSankeyDiagram data={mockData} style={{ width: '600px', height: '300px' }} />);
+    const { container } = render(
+      <ApSankeyDiagram data={mockData} style={{ width: '600px', height: '300px' }} />
+    );
     const wrapper = container.firstChild as HTMLElement;
     expect(wrapper).toHaveStyle({ width: '600px', height: '300px' });
   });
 
   it('should apply custom className', () => {
-    const { container } = render(
-      <ApSankeyDiagram data={mockData} className="custom-class" />
-    );
+    const { container } = render(<ApSankeyDiagram data={mockData} className="custom-class" />);
     expect(container.firstChild).toHaveClass('custom-class');
   });
 
