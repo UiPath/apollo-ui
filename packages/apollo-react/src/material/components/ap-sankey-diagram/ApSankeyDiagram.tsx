@@ -1,21 +1,28 @@
+import { Paper, Popper } from '@mui/material';
 import { styled } from '@mui/material/styles';
-import { Popper, Paper } from '@mui/material';
-import React, { useEffect, useMemo, useRef, useState, useCallback, useImperativeHandle } from 'react';
 import token from '@uipath/apollo-core';
 import {
+  type SankeyLink as D3SankeyLink,
+  type SankeyNode as D3SankeyNode,
   sankey as d3Sankey,
-  sankeyLinkHorizontal,
+  type SankeyGraph,
+  sankeyCenter,
   sankeyJustify,
   sankeyLeft,
+  sankeyLinkHorizontal,
   sankeyRight,
-  sankeyCenter,
-  type SankeyGraph,
-  type SankeyNode as D3SankeyNode,
-  type SankeyLink as D3SankeyLink,
 } from 'd3-sankey';
 import { schemeTableau10 } from 'd3-scale-chromatic';
+import React, {
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 
-import type { ApSankeyDiagramProps, SankeyNode, SankeyLink } from './ApSankeyDiagram.types';
+import type { ApSankeyDiagramProps, SankeyLink, SankeyNode } from './ApSankeyDiagram.types';
 
 const SankeyContainer = styled('div')({
   position: 'relative',
@@ -40,7 +47,7 @@ const StyledSankeyNode = styled('rect')({
   },
 });
 
-const StyledSankeyLink = styled('path')<{}>(({}) => ({
+const StyledSankeyLink = styled('path')({
   transition: 'opacity 0.2s',
   mixBlendMode: 'normal',
   cursor: 'pointer',
@@ -48,7 +55,7 @@ const StyledSankeyLink = styled('path')<{}>(({}) => ({
   '&:hover': {
     opacity: 1,
   },
-}));
+});
 
 const StyledSankeyNodeLabel = styled('text')({
   fontSize: token.FontVariantToken.fontSizeS,
@@ -243,8 +250,10 @@ export const ApSankeyDiagram = React.forwardRef<HTMLDivElement, ApSankeyDiagramP
         const targetNode = link.target as ExtendedSankeyNode;
 
         // Get colors from the color map with fallbacks
-        const sourceColor = nodeColorMap.get(sourceNode.id) || colorScheme[0] || token.Colors.ColorGray500;
-        const targetColor = nodeColorMap.get(targetNode.id) || colorScheme[1] || token.Colors.ColorGray500;
+        const sourceColor =
+          nodeColorMap.get(sourceNode.id) || colorScheme[0] || token.Colors.ColorGray500;
+        const targetColor =
+          nodeColorMap.get(targetNode.id) || colorScheme[1] || token.Colors.ColorGray500;
 
         // Calculate center position for tooltip
         const sourceX = sourceNode.x1 || 0;
@@ -299,7 +308,9 @@ export const ApSankeyDiagram = React.forwardRef<HTMLDivElement, ApSankeyDiagramP
           width: x1 - x0,
           height: y1 - y0,
           color: nodeColorMap.get(extNode.id) || colorScheme[index % colorScheme.length],
-          labelX: isLeftSide ? x1 + parseInt(token.Spacing.SpacingXs) : x0 - parseInt(token.Spacing.SpacingXs),
+          labelX: isLeftSide
+            ? x1 + parseInt(token.Spacing.SpacingXs)
+            : x0 - parseInt(token.Spacing.SpacingXs),
           labelY: (y0 + y1) / 2,
           labelAnchor: (isLeftSide ? 'start' : 'end') as 'start' | 'end',
           value: extNode.value || 0,
@@ -351,16 +362,16 @@ export const ApSankeyDiagram = React.forwardRef<HTMLDivElement, ApSankeyDiagramP
       setHoveredNodeId(null);
     }, []);
 
-    const connectedLinkIndices = useMemo(() => {                                                                                                                            
-      if (!hoveredNodeId) return new Set<number>();                                                                                                                         
-      const indices = new Set<number>();                                                                                                                                    
-      linkPaths.forEach((linkData, index) => {                                                                                                                              
-        if (linkData.sourceId === hoveredNodeId || linkData.targetId === hoveredNodeId) {                                                                                   
-          indices.add(index);                                                                                                                                               
-        }                                                                                                                                                                   
-      });                                                                                                                                                                   
-      return indices;                                                                                                                                                       
-    }, [hoveredNodeId, linkPaths]);   
+    const connectedLinkIndices = useMemo(() => {
+      if (!hoveredNodeId) return new Set<number>();
+      const indices = new Set<number>();
+      linkPaths.forEach((linkData, index) => {
+        if (linkData.sourceId === hoveredNodeId || linkData.targetId === hoveredNodeId) {
+          indices.add(index);
+        }
+      });
+      return indices;
+    }, [hoveredNodeId, linkPaths]);
 
     return (
       <SankeyContainer
@@ -411,7 +422,9 @@ export const ApSankeyDiagram = React.forwardRef<HTMLDivElement, ApSankeyDiagramP
                   strokeWidth={linkData.strokeWidth}
                   fill="none"
                   opacity={opacity}
-                  onMouseEnter={() => handleLinkMouseEnter(index, linkData.centerX, linkData.centerY)}
+                  onMouseEnter={() =>
+                    handleLinkMouseEnter(index, linkData.centerX, linkData.centerY)
+                  }
                   onMouseLeave={handleLinkMouseLeave}
                   onClick={(e) => onLinkClick?.(linkData.originalLink, e)}
                   aria-label={`Link from ${linkData.sourceLabel} to ${linkData.targetLabel}`}
@@ -425,7 +438,9 @@ export const ApSankeyDiagram = React.forwardRef<HTMLDivElement, ApSankeyDiagramP
             {nodeData.map((nodeItem) => {
               // Determine node opacity based on hover state
               const nodeOpacity = hoveredNodeId
-                ? hoveredNodeId === nodeItem.node.id ? 1 : 0.4
+                ? hoveredNodeId === nodeItem.node.id
+                  ? 1
+                  : 0.4
                 : 1;
 
               return (
@@ -440,32 +455,37 @@ export const ApSankeyDiagram = React.forwardRef<HTMLDivElement, ApSankeyDiagramP
                     opacity={nodeOpacity}
                     onMouseEnter={() => handleNodeMouseEnter(nodeItem.node.id)}
                     onMouseLeave={handleNodeMouseLeave}
-                    onClick={(e) => onNodeClick?.(nodeItem.node as SankeyNode, e as React.MouseEvent<SVGRectElement>)}
+                    onClick={(e) =>
+                      onNodeClick?.(
+                        nodeItem.node as SankeyNode,
+                        e as React.MouseEvent<SVGRectElement>
+                      )
+                    }
                   />
 
-                {/* Node label */}
-                <StyledSankeyNodeLabel
-                  x={nodeItem.labelX}
-                  y={nodeItem.labelY}
-                  dy="0.35em"
-                  textAnchor={nodeItem.labelAnchor}
-                >
-                  {nodeItem.node.label}
-                </StyledSankeyNodeLabel>
-
-                {/* Node value */}
-                {nodeItem.value > 0 && (
-                  <StyledSankeyNodeValue
+                  {/* Node label */}
+                  <StyledSankeyNodeLabel
                     x={nodeItem.labelX}
-                    y={nodeItem.labelY + parseInt(token.Spacing.SpacingM)}
+                    y={nodeItem.labelY}
                     dy="0.35em"
                     textAnchor={nodeItem.labelAnchor}
                   >
-                    {nodeItem.value}
-                  </StyledSankeyNodeValue>
-                )}
-              </g>
-            );
+                    {nodeItem.node.label}
+                  </StyledSankeyNodeLabel>
+
+                  {/* Node value */}
+                  {nodeItem.value > 0 && (
+                    <StyledSankeyNodeValue
+                      x={nodeItem.labelX}
+                      y={nodeItem.labelY + parseInt(token.Spacing.SpacingM)}
+                      dy="0.35em"
+                      textAnchor={nodeItem.labelAnchor}
+                    >
+                      {nodeItem.value}
+                    </StyledSankeyNodeValue>
+                  )}
+                </g>
+              );
             })}
           </g>
         </svg>
