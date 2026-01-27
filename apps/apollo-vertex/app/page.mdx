@@ -81,55 +81,6 @@ Start with the [Vertical Solution Template](https://github.com/UiPath/vertical-s
 
 Both options give you a ready-to-use project with `@uipath/vs-core` already installed and configured.
 
-## How It Works
+## Next Steps
 
-After using the template or CLI, your project is pre-configured with everything you need. Here's how to use it:
-
-### Access Data with useSolution Hook
-
-Use the `useSolution` hook to access your data collections and query them with TanStack Query:
-
-```tsx
-import { useSolution } from '@uipath/vs-core';
-import { useLiveQuery, eq } from '@tanstack/react-db';
-
-function InvoicesList() {
-  const { api } = useSolution();
-
-  // Query all invoices
-  const { data: invoices, isLoading } = useLiveQuery(q =>
-    q.from({ invoices: api.collections.Invoices })
-  );
-
-  // Query invoices with process data joined
-  const { data: result } = useLiveQuery(q => {
-    return q.from({ entities: api.collections.Invoices })
-      .join(
-        { processes: api.collections.processes.all },
-        ({ entities, processes }) =>
-          eq(entities.InternalInstanceId, processes?.instanceId),
-        "inner"
-      )
-      .select(({ entities, processes }) => ({
-        ...entities,
-        ...processes,
-      }));
-  });
-
-  // Query a single invoice by ID
-  const { data: [invoice] } = useLiveQuery(q =>
-    q.from({ invoices: api.collections.Invoices })
-     .where(({ invoices }) => eq(invoices.Id, invoiceId))
-  );
-
-  return <div>{/* Render your data */}</div>;
-}
-```
-
-That's it! The `useSolution` hook gives you access to all your UiPath data through reactive TanStack Query collections.
-
-### Example (real app)
-
-For a concrete example of a “solutions hook” pattern in a Vertical Solution app, see `useTask.tsx` from the Invoice Processing solution:
-
-https://github.com/UiPath/vertical-solution-invoice-processing/blob/b071b09161c701e3b6ad0754f53682ca142170ff/client/src/hooks/useTask.tsx
+After using the template or CLI, your project is pre-configured with everything you need. See the [Data Querying](/data-querying/loading-data) section to learn how to load and mutate data using the `useSolution` hook.
