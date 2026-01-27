@@ -28,6 +28,7 @@ export function ComponentsHome() {
 		},
 		{ label: "Icon", path: "/components/icon", icon: "⭐" },
 		{ label: "Icon Button", path: "/components/icon-button", icon: "🎯" },
+		{ label: "Popover", path: "/components/popover", icon: "📋" },
 		{ label: "Link", path: "/components/link", icon: "🔗" },
 		{ label: "Menu", path: "/components/menu", icon: "☰" },
 		{
