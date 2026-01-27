@@ -4,7 +4,7 @@
  * Generic utilities for resolving toolbar configurations from mode defaults and manifest extensions
  */
 
-import type { NodeStatusContext, NodeToolbarConfig } from '@uipath/apollo-react/canvas';
+import type { HandleGroupManifest, HandleManifest, NodeManifest, NodeStatusContext, NodeToolbarConfig } from '@uipath/apollo-react/canvas';
 import { getToolbarActionStore } from '../hooks/ToolbarActionContext';
 import {
   ModeToolbarConfig,
@@ -19,6 +19,13 @@ interface ExtendedNodeContext extends NodeStatusContext {
   permissions?: string[];
 }
 
+const DEFAULT_ACTIONS_FOR_ALL_MODES: ModeToolbarConfig['actions'] = [ {
+  id: 'collapse',
+  icon: 'chevrons-down-up',
+  label: 'Toggle collapse',
+  condition: { handles: [{ handleType: 'artifact', type: 'source' }] },
+} ];
+
 // Default toolbar actions for each mode (applies to all nodes)
 const DEFAULT_MODE_TOOLBARS: Record<string, ModeToolbarConfig> = {
   design: {
@@ -26,13 +33,14 @@ const DEFAULT_MODE_TOOLBARS: Record<string, ModeToolbarConfig> = {
       { id: 'delete', icon: 'trash', label: 'Delete' },
       { id: 'duplicate', icon: 'copy', label: 'Duplicate' },
       { id: 'breakpoint', icon: 'circle', label: 'Toggle breakpoint' },
+      ...DEFAULT_ACTIONS_FOR_ALL_MODES,
     ],
   },
   debug: {
-    actions: [{ id: 'breakpoint', icon: 'circle', label: 'Toggle breakpoint' }],
+    actions: [{ id: 'breakpoint', icon: 'circle', label: 'Toggle breakpoint' }, ...DEFAULT_ACTIONS_FOR_ALL_MODES],
   },
   evaluation: {
-    actions: [],
+    actions: [...DEFAULT_ACTIONS_FOR_ALL_MODES],
   },
 };
 
@@ -47,6 +55,7 @@ const toolbarRegistry = {
  * Evaluate if an action should be visible based on its condition
  */
 function evaluateCondition(
+  manifest: NodeManifest,
   action: ToolbarActionSchema,
   nodeType: string,
   context: ExtendedNodeContext
@@ -71,6 +80,19 @@ function evaluateCondition(
   // Check node type
   if (condition.nodeTypes && !condition.nodeTypes.includes(nodeType)) {
     return false;
+  }
+
+  // Check if node has matching handles
+  if (condition.handles?.length) {
+    const manifestHandles = manifest.handleConfiguration.flatMap((group: HandleGroupManifest) => group.handles);
+    const hasMatchingHandle = condition.handles.some((requiredHandle) =>
+      manifestHandles.some(
+        (manifestHandle: HandleManifest) =>
+          manifestHandle.handleType === requiredHandle.handleType &&
+          (requiredHandle.type === undefined || manifestHandle.type === requiredHandle.type)
+      )
+    );
+    if (!hasMatchingHandle) return false;
   }
 
   return true;
@@ -124,6 +146,7 @@ function mergeToolbarConfigs(
  * Combines: Mode defaults → Node type extensions → Conditional filtering
  */
 export function resolveToolbar(
+  manifest: NodeManifest,
   nodeType: string,
   manifestToolbarExtensions: ToolbarConfiguration | undefined,
   context: ExtendedNodeContext,
@@ -144,11 +167,11 @@ export function resolveToolbar(
 
   // Step 4: Filter actions based on conditions and convert to node actions
   const filteredActions = merged.actions
-    .filter((action) => evaluateCondition(action, nodeType, context))
+    .filter((action) => evaluateCondition(manifest, action, nodeType, context))
     .map((action) => convertToNodeAction(action, mode, onToolbarAction, nodeData));
 
   const filteredOverflow = (merged.overflowActions ?? [])
-    .filter((action) => evaluateCondition(action, nodeType, context))
+    .filter((action) => evaluateCondition(manifest, action, nodeType, context))
     .map((action) => convertToNodeAction(action, mode, onToolbarAction, nodeData));
 
   // Return undefined if no actions

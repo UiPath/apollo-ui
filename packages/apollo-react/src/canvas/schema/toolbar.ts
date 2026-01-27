@@ -33,6 +33,16 @@ export const toolbarActionSchema = z.object({
 
       /** Show only for specific node types */
       nodeTypes: z.array(z.string()).optional(),
+
+      /** Show only if node has handles defined in its manifest */
+      handles: z
+        .array(
+          z.object({
+            handleType: z.enum(['output', 'input', 'artifact']),
+            type: z.enum(['source', 'target']).optional(),
+          })
+        )
+        .optional(),
     })
     .optional(),
 });
