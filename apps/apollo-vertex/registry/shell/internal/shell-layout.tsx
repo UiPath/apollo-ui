@@ -9,6 +9,7 @@ interface ShellLayoutProps {
   companyName: string;
   productName: string;
   companyLogo?: CompanyLogo;
+  backgroundMode?: string;
 }
 
 function DarkGradientBackground() {
@@ -275,17 +276,119 @@ export function ShellLayout({
   companyName,
   productName,
   companyLogo,
+  backgroundMode = "flat",
 }: PropsWithChildren<ShellLayoutProps>) {
   return (
-    <div className="h-screen overflow-hidden flex bg-sidebar">
+    <div className="h-screen pl-3 overflow-hidden flex gap-2 bg-sidebar">
       <Sidebar
         companyName={companyName}
         productName={productName}
         companyLogo={companyLogo}
       />
-      <main className="flex-1 flex flex-col overflow-hidden relative">
-        <GradientBackground />
-        <div className="flex-1 overflow-y-auto custom-scrollbar">
+      <main
+        className="flex-1 flex flex-col overflow-hidden relative"
+        style={{
+          backgroundColor: backgroundMode === "expressive" ? "#190D33" : undefined,
+        }}
+      >
+        {/* Gradient Background for flat mode */}
+        {backgroundMode === "flat" && <GradientBackground />}
+
+        {/* Expressive Background Elements */}
+        {backgroundMode === "expressive" && (
+          <>
+            {/* Bg container */}
+            <div
+              className="absolute overflow-hidden pointer-events-none transition-opacity duration-300"
+              style={{
+                width: '2184.47px',
+                height: '1494.44px',
+                left: '-208px',
+                top: '-252px',
+                opacity: backgroundMode === "expressive" ? 1 : 0,
+              }}
+            >
+              {/* Vector 210 */}
+              <div
+                className="absolute transition-opacity duration-300"
+                style={{
+                  width: '807px',
+                  height: '789px',
+                  left: '650px',
+                  top: '257px',
+                  background: 'rgba(78, 9, 77, 0.6)',
+                  filter: 'blur(90px)',
+                  opacity: backgroundMode === "expressive" ? 1 : 0,
+                  transitionDelay: '0ms',
+                }}
+              />
+
+              {/* Vector 212 */}
+              <div
+                className="absolute transition-opacity duration-300"
+                style={{
+                  width: '1309px',
+                  height: '737px',
+                  left: '-70px',
+                  top: '-46px',
+                  background: '#223045',
+                  filter: 'blur(60px)',
+                  opacity: backgroundMode === "expressive" ? 1 : 0,
+                  transitionDelay: '50ms',
+                }}
+              />
+
+              {/* Vector 211 */}
+              <div
+                className="absolute transition-opacity duration-300"
+                style={{
+                  width: '1260px',
+                  height: '800px',
+                  left: '-208px',
+                  top: '0px',
+                  background: 'rgba(244, 66, 35, 0.27)',
+                  filter: 'blur(90px)',
+                  transform: 'rotate(23.94deg)',
+                  opacity: backgroundMode === "expressive" ? 1 : 0,
+                  transitionDelay: '100ms',
+                }}
+              />
+
+              {/* Vector 213 */}
+              <div
+                className="absolute transition-opacity duration-300"
+                style={{
+                  width: '1408px',
+                  height: '523.77px',
+                  left: '484px',
+                  top: '-252px',
+                  background: 'linear-gradient(257.56deg, rgba(152, 166, 184, 0.5) 36.7%, rgba(68, 74, 82, 0.5) 88.5%)',
+                  filter: 'blur(100px)',
+                  transform: 'rotate(-13.86deg)',
+                  opacity: backgroundMode === "expressive" ? 1 : 0,
+                  transitionDelay: '150ms',
+                }}
+              />
+            </div>
+
+            {/* CoverLayer */}
+            <div
+              className="absolute pointer-events-none transition-opacity duration-300"
+              style={{
+                width: '1440px',
+                height: '813px',
+                left: '0px',
+                top: '0px',
+                background: 'rgba(25, 13, 51, 0.79)',
+                mixBlendMode: 'overlay',
+                opacity: backgroundMode === "expressive" ? 1 : 0,
+                transitionDelay: '200ms',
+              }}
+            />
+          </>
+        )}
+
+        <div className="flex-1 overflow-y-auto custom-scrollbar relative z-10">
           {children}
         </div>
       </main>

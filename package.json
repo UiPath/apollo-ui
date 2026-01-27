@@ -99,5 +99,9 @@
       "lodash": "^4.17.23",
       "lodash-es": "^4.17.23"
     }
+  },
+  "dependencies": {
+    "chart.js": "^4.5.1",
+    "react-chartjs-2": "^5.3.1"
   }
 }

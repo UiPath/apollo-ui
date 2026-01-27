@@ -4,4 +4,5 @@ export default {
   "shadcn-components": "Shadcn Components",
   "vertex-components": "Vertex Components",
   themes: "Themes",
+  "page-layouts": "Page Layouts",
 };
