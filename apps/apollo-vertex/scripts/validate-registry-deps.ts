@@ -12,7 +12,12 @@
  * 1. All declared files must exist on disk
  * 2. All declared registryDependencies must exist in the registry
  * 3. All imports from other registry components must be declared in registryDependencies
- * 4. All declared npm dependencies must exist in package.json
+ * 4. All declared registryDependencies must be imported (bidirectional check)
+ * 5. All imports from npm packages must be declared in dependencies
+ * 6. All declared npm dependencies must exist in package.json
+ *
+ * Note: We don't check "declared npm → imported" because dependencies can include
+ * legitimate peer dependencies (e.g., date-fns for react-day-picker).
  */
 
 import { existsSync, readFileSync } from "node:fs";
@@ -20,6 +25,17 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const LOCAL_REGISTRY_SCOPE = "@uipath/";
+
+// Packages that are expected to exist (not declared per-component)
+const IMPLICIT_PACKAGES = new Set([
+  "react",
+  "react-dom",
+  "next",
+  "next/link",
+  "next/image",
+  "next/navigation",
+  "next/font",
+]);
 
 const VALID_FILE_TYPES = [
   "registry:ui",
@@ -103,6 +119,28 @@ function stripLocalScope(dep: string): string {
   return dep.slice(LOCAL_REGISTRY_SCOPE.length);
 }
 
+function getPackageFromImport(importPath: string): string | null {
+  // Skip relative imports
+  if (importPath.startsWith(".") || importPath.startsWith("/")) {
+    return null;
+  }
+  // Skip @/ alias imports (internal registry imports)
+  if (importPath.startsWith("@/")) {
+    return null;
+  }
+  // Handle scoped packages: @scope/package
+  if (importPath.startsWith("@")) {
+    const parts = importPath.split("/");
+    if (parts.length >= 2) {
+      return `${parts[0]}/${parts[1]}`;
+    }
+    return null;
+  }
+  // Handle regular packages
+  const parts = importPath.split("/");
+  return parts[0];
+}
+
 function extractComponentFromImport(importPath: string): string | null {
   // @/components/ui/X → "X"
   const uiMatch = importPath.match(/^@\/components\/ui\/([^/]+)/);
@@ -181,6 +219,37 @@ function getRegistryImports(
   }
 
   return componentImports;
+}
+
+function getNpmImports(
+  item: RegistryItem,
+  installedPackages: Set<string>,
+): Set<string> {
+  const npmImports = new Set<string>();
+
+  if (!item.files) {
+    return npmImports;
+  }
+
+  for (const file of item.files) {
+    if (!file.path) continue;
+    const filePath = join(__dirname, "..", file.path);
+    const imports = parseImports(filePath);
+
+    for (const importPath of imports) {
+      const npmPackage = getPackageFromImport(importPath);
+      if (
+        npmPackage &&
+        !IMPLICIT_PACKAGES.has(npmPackage) &&
+        !IMPLICIT_PACKAGES.has(importPath) &&
+        installedPackages.has(npmPackage)
+      ) {
+        npmImports.add(npmPackage);
+      }
+    }
+  }
+
+  return npmImports;
 }
 
 function normalizeRegistryDep(dep: string): string | null {
@@ -338,6 +407,28 @@ function main(): void {
       if (!declaredDeps.has(importedComponent)) {
         errors.push(
           `Component "${item.name}" imports "${importedComponent}" but it's not declared in registryDependencies`,
+        );
+      }
+    }
+
+    // Check declared registryDependencies are actually imported (bidirectional)
+    for (const declaredDep of declaredDeps) {
+      if (!actualImports.has(declaredDep)) {
+        errors.push(
+          `Component "${item.name}" declares "${declaredDep}" in registryDependencies but doesn't import it`,
+        );
+      }
+    }
+
+    // Check npm imports are declared in dependencies
+    const npmImports = getNpmImports(item, installedPackages);
+    const declaredNpmDeps = new Set(
+      (item.dependencies ?? []).map(extractPackageName),
+    );
+    for (const imported of npmImports) {
+      if (!declaredNpmDeps.has(imported)) {
+        errors.push(
+          `Component "${item.name}" imports "${imported}" but it's not declared in dependencies`,
         );
       }
     }
