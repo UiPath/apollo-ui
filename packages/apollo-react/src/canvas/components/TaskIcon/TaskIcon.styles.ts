@@ -1,17 +1,20 @@
 import styled from '@emotion/styled';
 import { TaskItemTypeValues } from './TaskIcon.types';
 
+export enum CategoryColor {
+  Purple = 'linear-gradient(135deg, var(--color-gradient-agent-start) 4.81%, var(--color-gradient-agent-end) 97.27%)',
+  Green = 'linear-gradient(135deg, var(--color-gradient-invoked-start) 0%, var(--color-gradient-invoked-end) 100%)',
+  Blue = 'linear-gradient(135deg, var(--color-gradient-human-start) 2.77%, var(--color-gradient-human-end) 97.93%)',
+  Grey = 'linear-gradient(135deg, var(--color-gradient-general-start) 0%, var(--color-gradient-general-end) 100%)',
+}
+
 export const TASK_ICON_GRADIENTS: Record<TaskItemTypeValues, string> = {
-  [TaskItemTypeValues.Agent]:
-    'linear-gradient(135deg, var(--color-gradient-agent-start) 4.81%, var(--color-gradient-agent-end) 97.27%)',
-  [TaskItemTypeValues.Automation]:
-    'linear-gradient(135deg, var(--color-gradient-invoked-start) 0%, var(--color-gradient-invoked-end) 100%)',
-  [TaskItemTypeValues.ApiAutomation]:
-    'linear-gradient(135deg, var(--color-gradient-invoked-start) 0%, var(--color-gradient-invoked-end) 100%)',
-  [TaskItemTypeValues.User]:
-    'linear-gradient(135deg, var(--color-gradient-human-start) 2.77%, var(--color-gradient-human-end) 97.93%)',
-  [TaskItemTypeValues.AgenticProcess]:
-    'linear-gradient(135deg, var(--color-gradient-general-start) 0%, var(--color-gradient-general-end) 100%)',
+  [TaskItemTypeValues.Agent]: CategoryColor.Purple,
+  [TaskItemTypeValues.Automation]: CategoryColor.Green,
+  [TaskItemTypeValues.ApiAutomation]: CategoryColor.Green,
+  [TaskItemTypeValues.User]: CategoryColor.Blue,
+  [TaskItemTypeValues.AgenticProcess]: CategoryColor.Grey,
+  [TaskItemTypeValues.Connector]: CategoryColor.Grey,
 };
 
 interface TaskIconContainerProps {
