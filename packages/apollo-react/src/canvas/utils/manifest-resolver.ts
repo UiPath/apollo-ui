@@ -10,6 +10,7 @@
  * - Resolved: Final merged result used for rendering
  */
 
+import { getToolbarActionStore } from '../hooks';
 import type { HandleGroupManifest, HandleManifest } from '../schema/node-definition/handle';
 import type { NodeDisplayManifest } from '../schema/node-definition/node-manifest';
 import type { DisplayConfig } from '../schema/workflow/base';
@@ -95,9 +96,20 @@ export function resolveDisplay(
     } as ResolvedDisplay;
   }
 
+  const { collapsed } = getToolbarActionStore();
+  const isCollapsed = collapsed?.has((instanceDisplay as Record<string, unknown>)?.nodeId as string);
+  const shape = instanceDisplay?.shape ?? manifestDisplay.shape;
+
+  // Map shapes to their collapsed equivalents:
+  // - rectangle → square (compact form)
+  // - square → square (no change)
+  // - circle → circle (no change)
+  const collapsedShape = shape === 'rectangle' ? 'square' : shape;
+
   return {
     ...manifestDisplay,
     ...instanceDisplay,
+    shape: isCollapsed ? collapsedShape : shape,
   };
 }
 
