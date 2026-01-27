@@ -16,6 +16,7 @@ import { MaterialHome } from "./pages/MaterialHome";
 import { Screens } from "./pages/Screens";
 import { Shadows } from "./pages/Shadows";
 import { Spacing } from "./pages/Spacing";
+import { PopoverShowcase } from "./pages/components/PopoverShowcase";
 import { AccordionShowcase } from "./pages/components/AccordionShowcase";
 import { AlertBarShowcase } from "./pages/components/AlertBarShowcase";
 import { ApChatShowcase } from "./pages/components/ApChatShowcase";
@@ -155,6 +156,7 @@ function App() {
 							<Route path="/components/chat" element={<ApChatShowcase />} />
 							<Route path="/components/chip" element={<ChipShowcase />} />
 							<Route path="/components/link" element={<LinkShowcase />} />
+							<Route path="/components/popover" element={<PopoverShowcase />} />
 							<Route
 								path="/components/skeleton"
 								element={<SkeletonShowcase />}
