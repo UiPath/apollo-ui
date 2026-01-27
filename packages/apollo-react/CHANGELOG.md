@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.10.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.9.2...@uipath/apollo-react@3.10.0) (2026-01-27)
+
+### Features
+
+* **ap-chat:** integrate tiptap editor into ap-chat input component [PLT-94661] ([f3e85cd](https://github.com/UiPath/apollo-ui/commit/f3e85cd29f0806edc313141ba578a2ddc051e761))
+
 ## [@uipath/apollo-react-v3.9.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.9.1...@uipath/apollo-react@3.9.2) (2026-01-27)
 
 ### Bug Fixes
