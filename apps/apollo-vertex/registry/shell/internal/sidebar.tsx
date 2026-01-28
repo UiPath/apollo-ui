@@ -5,6 +5,7 @@ import { ThemeToggle } from "@/registry/theme-provider/theme-toggle";
 import { useLocalStorage } from "@/registry/use-local-storage/use-local-storage";
 import type { CompanyLogo } from "../shell";
 import { Company } from "./company";
+import { LanguageToggle } from "./language-toggle";
 import { NavItem } from "./nav-item";
 import { UserProfile } from "./user-profile";
 
@@ -53,16 +54,22 @@ export const Sidebar = ({
       </nav>
       <div className="mt-auto pt-3">
         {!isCollapsed ? (
-          <div className="flex items-center gap-3 pb-2">
-            <div className="flex items-center gap-3 flex-1 min-w-0">
-              <UserProfile />
-            </div>
-            <div className="shrink-0">
-              <ThemeToggle />
+          <div className="flex flex-col gap-2 pb-2">
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 flex-1 min-w-0">
+                <UserProfile />
+              </div>
+              <div className="shrink-0">
+                <div className="flex items-center gap-1">
+                  <LanguageToggle />
+                  <ThemeToggle />
+                </div>
+              </div>
             </div>
           </div>
         ) : (
           <div className="flex flex-col items-center gap-2 pb-2">
+            <LanguageToggle />
             <ThemeToggle />
             <UserProfile />
           </div>

@@ -6,6 +6,7 @@ import {
   type User,
 } from "@uipath/auth-react";
 import type { FC, PropsWithChildren } from "react";
+import { LocaleProvider } from "./internal/locale-provider";
 import { ShellLayout } from "./internal/shell-layout";
 
 export interface CompanyLogo {
@@ -37,13 +38,15 @@ export const ApolloShell: FC<ApolloShellProps> = ({
       onSigninCallback={onSigninCallback}
     >
       <AuthGuard extraSigninRequestArgs={extraSigninRequestArgs}>
-        <ShellLayout
-          companyName={companyName}
-          productName={productName}
-          companyLogo={companyLogo}
-        >
-          {children}
-        </ShellLayout>
+        <LocaleProvider>
+          <ShellLayout
+            companyName={companyName}
+            productName={productName}
+            companyLogo={companyLogo}
+          >
+            {children}
+          </ShellLayout>
+        </LocaleProvider>
       </AuthGuard>
     </UiPathAuthProvider>
   );
