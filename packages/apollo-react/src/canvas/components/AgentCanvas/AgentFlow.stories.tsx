@@ -105,7 +105,7 @@ const createSampleTool = (): AgentFlowResource => {
     type: 'tool',
     name: sample.name,
     description: sample.description,
-    iconUrl: '',
+    iconUrl: sample.iconUrl ?? '',
     hasBreakpoint: false,
     hasGuardrails: false,
     projectType: sample.projectType as ProjectType,

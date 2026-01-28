@@ -1,4 +1,5 @@
 import * as Icons from '@uipath/apollo-react/canvas/icons';
+import { useState } from 'react';
 import {
   BuiltInToolType,
   ProjectType,
@@ -18,12 +19,15 @@ interface ToolResourceIconProps {
 
 /** Mapped icons from agents frontend-sw */
 export const ToolResourceIcon = ({ size = 24, tool }: ToolResourceIconProps) => {
-  if (tool.iconUrl) {
+  const [imgError, setImgError] = useState(false);
+
+  if (tool.iconUrl && !imgError) {
     return (
       <img
         src={tool.iconUrl}
         alt={tool.name}
         style={{ width: size, height: size, objectFit: 'contain' }}
+        onError={() => setImgError(true)}
       />
     );
   }
