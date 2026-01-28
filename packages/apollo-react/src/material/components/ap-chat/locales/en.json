@@ -65,5 +65,15 @@
   "autopilot-chat.history.group.today": "Today",
   "autopilot-chat.input.placeholder": "What would you like me to do?",
   "autopilot-chat.tree.unknown": "Unknown",
-  "autopilot-chat.history.group.yesterday": "Yesterday"
+  "autopilot-chat.history.group.yesterday": "Yesterday",
+  "autopilot-chat.resource-trigger.tooltip": "Add resource",
+  "autopilot-chat.resource-trigger.label": "Add resource reference",
+  "autopilot-chat.resource-picker.error": "Failed to load resources",
+  "autopilot-chat.resource-picker.retry": "Retry",
+  "autopilot-chat.resource-picker.no-results": "No matching resources",
+  "autopilot-chat.resource-picker.empty": "No resources available",
+  "autopilot-chat.resource-picker.label": "Resource picker",
+  "autopilot-chat.resource-picker.load-more-error": "Failed to load more",
+  "autopilot-chat.resource-picker.search-error": "Search failed",
+  "autopilot-chat.resource-picker.back": "Go back"
 }

@@ -8,22 +8,40 @@ import { Placeholder, UndoRedo } from '@tiptap/extensions';
 import { Fragment, Node, Slice } from '@tiptap/pm/model';
 import { EditorContent, useEditor } from '@tiptap/react';
 import React, { forwardRef, useCallback } from 'react';
+import { type AutopilotChatResourceItem } from './../../../service';
 import { textToDocument } from './tiptap.utils';
 import { EditorContainer } from './tiptap-editor.styles';
 import { type CursorCoordinates, createResourceSuggestion } from './tiptap-resource-suggestion';
 
-export interface TipTapResourceItem {
-  id: string;
-  type: string;
-  displayName: string;
-  icon: string;
-}
+/**
+ * Extended Mention extension with custom resource attributes.
+ * Adds `type` and `icon` to the default `id` and `label` attributes.
+ */
+const ResourceMention = Mention.extend({
+  addAttributes() {
+    return {
+      ...this.parent?.(),
+      type: {
+        default: null,
+        parseHTML: (element) => element.getAttribute('data-resource-type'),
+        renderHTML: (attributes) =>
+          attributes.type ? { 'data-resource-type': attributes.type } : {},
+      },
+      icon: {
+        default: 'description',
+        parseHTML: (element) => element.getAttribute('data-icon'),
+        renderHTML: (attributes) => (attributes.icon ? { 'data-icon': attributes.icon } : {}),
+      },
+    };
+  },
+});
 
 export interface TipTapEditorHandle {
   focus: () => void;
-  insertResource: (resource: TipTapResourceItem, range?: Range) => void;
+  insertResource: (resource: AutopilotChatResourceItem, range?: Range) => void;
   getSerializedContent: () => string;
   clear: () => void;
+  clearMentionQuery: () => void;
 }
 
 interface TipTapEditorCallbacks {
@@ -32,8 +50,6 @@ interface TipTapEditorCallbacks {
   onMentionStart?: (range: Range, coords: CursorCoordinates) => void;
   onMentionEnd?: () => void;
   onMentionQueryChange?: (query: string, range: Range) => void;
-  onFocus?: () => void;
-  onBlur?: () => void;
 }
 
 interface TipTapEditorProps extends TipTapEditorCallbacks {
@@ -42,7 +58,6 @@ interface TipTapEditorProps extends TipTapEditorCallbacks {
   minRows?: number;
   maxRows?: number;
   lineHeight?: string;
-  disabled?: boolean;
 }
 
 function TipTapEditorInner(
@@ -60,38 +75,43 @@ function TipTapEditorInner(
     onMentionStart,
     onMentionEnd,
     onMentionQueryChange,
-    onFocus,
-    onBlur,
   } = props;
 
   const callbacksRef = React.useRef<TipTapEditorCallbacks>({
     onChange,
     onKeyDown,
-    onFocus,
-    onBlur,
     onMentionStart,
     onMentionEnd,
     onMentionQueryChange,
   });
 
+  const mentionRangeRef = React.useRef<Range | null>(null);
+
   React.useLayoutEffect(() => {
     callbacksRef.current = {
       onChange,
       onKeyDown,
-      onFocus,
-      onBlur,
       onMentionStart,
       onMentionEnd,
       onMentionQueryChange,
     };
-  }, [onChange, onKeyDown, onFocus, onBlur, onMentionStart, onMentionEnd, onMentionQueryChange]);
+  }, [onChange, onKeyDown, onMentionStart, onMentionEnd, onMentionQueryChange]);
 
   const resourceSuggestion = React.useMemo(
     () =>
       createResourceSuggestion({
-        onStart: (range, coords) => callbacksRef.current.onMentionStart?.(range, coords),
-        onExit: () => callbacksRef.current.onMentionEnd?.(),
-        onQueryChange: (query, range) => callbacksRef.current.onMentionQueryChange?.(query, range),
+        onStart: (range, coords) => {
+          mentionRangeRef.current = range;
+          callbacksRef.current.onMentionStart?.(range, coords);
+        },
+        onExit: () => {
+          mentionRangeRef.current = null;
+          callbacksRef.current.onMentionEnd?.();
+        },
+        onQueryChange: (query, range) => {
+          mentionRangeRef.current = range;
+          callbacksRef.current.onMentionQueryChange?.(query, range);
+        },
       }),
     []
   );
@@ -107,8 +127,9 @@ function TipTapEditorInner(
         placeholder,
         emptyEditorClass: 'is-editor-empty',
       }),
-      Mention.configure({
+      ResourceMention.configure({
         HTMLAttributes: { class: 'resource-mention' },
+        deleteTriggerWithBackspace: true,
         suggestion: resourceSuggestion,
         renderText: ({ node }) => node.attrs.label ?? node.attrs.id,
         renderHTML({ node }) {
@@ -125,7 +146,7 @@ function TipTapEditorInner(
               'data-icon': icon,
             },
             ['span', { class: 'resource-chip-icon' }, icon],
-            ['span', {}, label],
+            ['span', { class: 'resource-display-name' }, label],
           ];
         },
       }),
@@ -150,8 +171,6 @@ function TipTapEditorInner(
       callbacksRef.current.onChange?.(ed.getText());
       ed.commands.scrollIntoView();
     },
-    onFocus: () => callbacksRef.current.onFocus?.(),
-    onBlur: () => callbacksRef.current.onBlur?.(),
     editorProps: {
       handleKeyDown: (_view, event) => {
         return callbacksRef.current.onKeyDown?.(event) ?? false;
@@ -186,7 +205,7 @@ function TipTapEditorInner(
   }, [value, editor]);
 
   const insertResource = useCallback(
-    (resource: TipTapResourceItem, range?: Range) => {
+    (resource: AutopilotChatResourceItem, range?: Range) => {
       if (!editor) {
         return;
       }
@@ -209,7 +228,7 @@ function TipTapEditorInner(
         })
         .insertContent({
           type: 'text',
-          text: '\u00A0',
+          text: ' ',
         })
         .run();
     },
@@ -245,12 +264,23 @@ function TipTapEditorInner(
     editor?.commands.clearContent();
   }, [editor]);
 
-  React.useImperativeHandle(ref, () => ({ focus, insertResource, getSerializedContent, clear }), [
-    focus,
-    insertResource,
-    getSerializedContent,
-    clear,
-  ]);
+  const clearMentionQuery = useCallback(() => {
+    if (!editor || !mentionRangeRef.current) {
+      return;
+    }
+    const range = mentionRangeRef.current;
+    const queryStart = range.from + 1;
+    if (queryStart < range.to) {
+      editor.chain().focus().deleteRange({ from: queryStart, to: range.to }).run();
+      mentionRangeRef.current = { from: range.from, to: queryStart };
+    }
+  }, [editor]);
+
+  React.useImperativeHandle(
+    ref,
+    () => ({ focus, insertResource, getSerializedContent, clear, clearMentionQuery }),
+    [focus, insertResource, getSerializedContent, clear, clearMentionQuery]
+  );
 
   return (
     <EditorContainer minRows={minRows} maxRows={maxRows} lineHeight={lineHeight} onClick={focus}>

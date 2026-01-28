@@ -209,6 +209,8 @@ export interface AutopilotChatError {
  * @property {string} CustomHeaderActionClicked - Emitted when a custom header action is clicked
  * @property {string} HistoryLoadMore - Emitted when the history load more is triggered (scrolling to bottom)
  * @property {string} HistorySearch - Emitted when the history search is triggered (search for a conversation in the history list)
+ * @property {string} SetResourceManager - Emitted when a resource manager is set for the variable picker
+ * @property {string} ResourceItemSelected - Emitted when a resource item is selected from the variable picker
  */
 export enum AutopilotChatEvent {
   Error = 'error',
@@ -245,6 +247,8 @@ export enum AutopilotChatEvent {
   SetSelectedAgentMode = 'setSelectedAgentMode',
   SetCustomHeaderActions = 'setCustomHeaderActions',
   CustomHeaderActionClicked = 'customHeaderActionClicked',
+  SetResourceManager = 'setResourceManager',
+  ResourceItemSelected = 'resourceItemSelected',
 }
 
 /**
@@ -516,6 +520,8 @@ export interface AutopilotChatConfiguration {
   paginatedMessages?: boolean;
   paginatedHistory?: boolean;
   settingsRenderer?: (container: HTMLElement) => void;
+  paginatedResources?: boolean;
+  resourceManager?: AutopilotChatResourceManager;
   theming?: {
     scrollBar?: {
       scrollThumbColor?: string;
@@ -758,4 +764,89 @@ export interface AutopilotChatMediaChunk {
  */
 export interface AutopilotChatHistorySearchPayload {
   searchText: string;
+}
+
+/**
+ * Represents a selectable resource item in the variable picker.
+ *
+ * @property id - Unique identifier for the resource
+ * @property type - The type/category of the resource (e.g., 'variable', 'file', 'session')
+ * @property displayName - Human-readable name shown in the picker and chips
+ * @property icon - Material icon name for the resource
+ * @property tooltip - Optional tooltip text for additional context
+ */
+export interface AutopilotChatResourceItem {
+  id: string;
+  type: string;
+  displayName: string;
+  icon: string;
+  tooltip?: string;
+}
+
+/**
+ * Represents a top-level resource that may contain nested resources.
+ * Displayed when the variable picker is first opened.
+ *
+ * @property hasNestedResources - Whether this item has child resources to navigate into
+ */
+export interface AutopilotChatResourceItemSelector extends AutopilotChatResourceItem {
+  hasNestedResources: boolean;
+}
+
+/**
+ * Result of a resource fetch or search operation.
+ *
+ * @property items - The fetched/searched resource items
+ * @property done - Whether all items have been loaded (no more pagination available)
+ */
+export interface AutopilotChatResourceResult {
+  items: AutopilotChatResourceItem[];
+  done?: boolean;
+}
+
+/**
+ * Search payload for resource fetching.
+ *
+ * @property searchText - Text to filter the resource items
+ * @property skip - Number of items to skip for pagination
+ */
+export interface AutopilotChatResourceSearchPayload {
+  searchText?: string;
+  skip?: number;
+}
+
+/**
+ * Resource manager interface for the variable picker.
+ * Consumers implement this to provide resource data.
+ */
+export interface AutopilotChatResourceManager {
+  /**
+   * Returns top-level resources (categories). Called when picker opens.
+   */
+  getTopLevelResources(): AutopilotChatResourceItemSelector[];
+
+  /**
+   * Fetches items for a resource category.
+   *
+   * @param resourceId - The category ID to fetch items from
+   * @param options - Optional search parameters
+   */
+  getNestedResources(
+    resourceId: string,
+    options?: AutopilotChatResourceSearchPayload
+  ): Promise<AutopilotChatResourceResult>;
+
+  /**
+   * Searches across all resources. Called for top-level search queries.
+   *
+   * @param options - Search parameters
+   */
+  globalSearch(options: AutopilotChatResourceSearchPayload): Promise<AutopilotChatResourceResult>;
+
+  /**
+   * Optional callback when a resource is selected.
+   *
+   * @param item - The selected resource
+   */
+  onResourceSelected?(item: AutopilotChatResourceItem): void;
 }

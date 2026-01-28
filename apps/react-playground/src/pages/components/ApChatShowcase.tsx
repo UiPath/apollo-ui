@@ -3,6 +3,7 @@ import {
 	ApChat,
 	AutopilotChatEvent,
 	AutopilotChatMode,
+	type AutopilotChatResourceManager,
 	AutopilotChatRole,
 	AutopilotChatService,
 	type SupportedLocale,
@@ -289,6 +290,146 @@ export function ApChatShowcase() {
 			"Analyzing...",
 			"Working on it...",
 		]);
+
+		// Set up resource manager by default
+		const topLevelItems = [
+			{
+				id: "variables",
+				type: "category",
+				displayName: "Variables",
+				icon: "data_object",
+				hasNestedResources: true,
+			},
+			{
+				id: "files",
+				type: "category",
+				displayName: "This is an intentionally very very long category name",
+				icon: "folder",
+				hasNestedResources: true,
+			},
+			{
+				id: "current-user",
+				type: "context",
+				displayName: "This is an intentionally very very long resource name",
+				icon: "person",
+				tooltip: "The currently logged in user context",
+				hasNestedResources: false,
+			},
+			{
+				id: "current-date",
+				type: "context",
+				displayName: "Current Date",
+				icon: "calendar_today",
+				tooltip: "Today's date in ISO format",
+				hasNestedResources: false,
+			},
+		];
+
+		const variableItems = [
+			{
+				id: "var-username",
+				type: "variable",
+				displayName: "username",
+				icon: "text_fields",
+				tooltip: "The current user's username (string)",
+			},
+			{
+				id: "var-email",
+				type: "variable",
+				displayName: "email",
+				icon: "mail",
+				tooltip: "The current user's email address",
+			},
+			{
+				id: "var-count",
+				type: "variable",
+				displayName: "itemCount",
+				icon: "numbers",
+				tooltip: "Number of items in the cart (integer)",
+			},
+			{
+				id: "var-is-active",
+				type: "variable",
+				displayName: "isActive",
+				icon: "toggle_on",
+				tooltip: "Whether the user account is active (boolean)",
+			},
+			{
+				id: "var-settings",
+				type: "variable",
+				displayName: "userSettings",
+				icon: "settings",
+				tooltip: "User preferences and settings object",
+			},
+		];
+
+		const fileItems = [
+			{
+				id: "file-config",
+				type: "file",
+				displayName: "config.json",
+				icon: "description",
+				tooltip: "Application configuration file",
+			},
+			{
+				id: "file-data",
+				type: "file",
+				displayName: "data.csv",
+				icon: "table_chart",
+				tooltip: "Exported data in CSV format",
+			},
+			{
+				id: "file-report",
+				type: "file",
+				displayName: "report.pdf",
+				icon: "picture_as_pdf",
+				tooltip: "Monthly report in PDF format",
+			},
+		];
+
+		const defaultResourceManager: AutopilotChatResourceManager = {
+			getTopLevelResources: () => topLevelItems,
+			getNestedResources: async (resourceId, options) => {
+				await new Promise((resolve) => setTimeout(resolve, 300));
+
+				let items: typeof variableItems = [];
+				if (resourceId === "variables") {
+					items = variableItems;
+				} else if (resourceId === "files") {
+					items = fileItems;
+				}
+
+				if (options?.searchText) {
+					const searchLower = options.searchText.toLowerCase();
+					items = items.filter((item) =>
+						item.displayName.toLowerCase().includes(searchLower),
+					);
+				}
+
+				return { items, done: true };
+			},
+			globalSearch: async (options) => {
+				await new Promise((resolve) => setTimeout(resolve, 300));
+
+				const allItems = [...variableItems, ...fileItems];
+
+				if (!options.searchText) {
+					return { items: allItems, done: true };
+				}
+
+				const searchLower = options.searchText.toLowerCase();
+				const filtered = allItems.filter((item) =>
+					item.displayName.toLowerCase().includes(searchLower),
+				);
+
+				return { items: filtered, done: true };
+			},
+			onResourceSelected: (item) => {
+				console.log("Resource selected:", item.displayName);
+			},
+		};
+
+		service.setResourceManager(defaultResourceManager);
 
 		// Listen to events
 		unsubscribes.push(

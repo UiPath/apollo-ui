@@ -15,6 +15,7 @@ import { AutopilotChatActionButton } from '../common/action-button';
 import { VisuallyHidden } from '../common/shared-controls';
 import { AutopilotChatAgentModeSelector } from './chat-input-agent-mode-selector';
 import { AutopilotChatInputModelPicker } from './chat-input-model-picker';
+import { ResourceTriggerButton } from './chat-input-resource-trigger';
 
 const InputActionsContainer = styled('div')(() => ({
   display: 'flex',
@@ -46,12 +47,14 @@ interface AutopilotChatInputActionsProps {
   handleSubmit: (event: React.MouseEvent) => void;
   disableSubmit: boolean;
   waitingResponse: boolean;
+  onResourceTriggerClick?: (event: React.MouseEvent<HTMLButtonElement>) => void;
 }
 
 function AutopilotChatInputActionsComponent({
   handleSubmit,
   disableSubmit,
   waitingResponse,
+  onResourceTriggerClick,
 }: AutopilotChatInputActionsProps) {
   const { _ } = useLingui();
   const { addAttachments } = useAttachments();
@@ -250,8 +253,9 @@ function AutopilotChatInputActionsComponent({
             />
           </>
         )}
-        {models.length > 0 ? <AutopilotChatInputModelPicker useIcon={hasMultipleFeatures} /> : null}
-        {agentModes.length > 0 ? <AutopilotChatAgentModeSelector useIcon={false} /> : null}
+        {onResourceTriggerClick && <ResourceTriggerButton onClick={onResourceTriggerClick} />}
+        {models.length > 0 && <AutopilotChatInputModelPicker useIcon={hasMultipleFeatures} />}
+        {agentModes.length > 0 && <AutopilotChatAgentModeSelector useIcon={false} />}
       </InputActionsGroup>
 
       <InputActionsGroup>
