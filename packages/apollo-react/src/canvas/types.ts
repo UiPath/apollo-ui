@@ -525,6 +525,15 @@ export interface AgentNodeTranslations {
   memory: string;
   instructions: string;
   addInstructions: string;
+  // Settings preview
+  agentSettings: string;
+  readOnlyPreview: string;
+  systemPrompt: string;
+  userPrompt: string;
+  temperature: string;
+  maxTokens: string;
+  maxIteration: string;
+  notConfigured: string;
 }
 
 export const DefaultAgentNodeTranslations: AgentNodeTranslations = {
@@ -543,6 +552,15 @@ export const DefaultAgentNodeTranslations: AgentNodeTranslations = {
   memory: 'Memory',
   instructions: 'Instructions',
   addInstructions: 'Add Instructions',
+  // Settings preview
+  agentSettings: 'Agent Settings',
+  readOnlyPreview: 'Read-only preview',
+  systemPrompt: 'System prompt',
+  userPrompt: 'User prompt',
+  temperature: 'Temperature',
+  maxTokens: 'Max tokens',
+  maxIteration: 'Max iteration',
+  notConfigured: 'Not configured',
 };
 
 export interface ResourceNodeTranslations {

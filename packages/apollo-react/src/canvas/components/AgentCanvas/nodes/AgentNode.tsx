@@ -3,7 +3,8 @@ import * as Icons from '@uipath/apollo-react/canvas/icons';
 import type { Node, NodeProps } from '@uipath/apollo-react/canvas/xyflow/react';
 import { Position } from '@uipath/apollo-react/canvas/xyflow/react';
 import { ApIcon } from '@uipath/apollo-react/material/components';
-import { memo, useCallback, useMemo } from 'react';
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { FloatingCanvasPanel } from '../../FloatingCanvasPanel';
 import {
   type AgentNodeTranslations,
   DefaultSuggestionTranslations,
@@ -78,6 +79,95 @@ const InstructionsLine = styled.div`
   }
 `;
 
+// Agent Settings Preview styles
+const SettingsPreviewContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px 20px;
+  min-width: 280px;
+  max-width: 320px;
+`;
+
+const SettingsPreviewHeader = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--uix-canvas-border-de-emp);
+`;
+
+const SettingsPreviewTitle = styled.div`
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--uix-canvas-foreground-emp);
+`;
+
+const SettingsPreviewSubtitle = styled.div`
+  font-size: 12px;
+  color: var(--uix-canvas-foreground-de-emp);
+`;
+
+const SettingsSection = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+`;
+
+const SettingsSectionLabel = styled.div`
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--uix-canvas-foreground-de-emp);
+`;
+
+const SettingsSectionValue = styled.div`
+  font-size: 14px;
+  color: var(--uix-canvas-foreground-emp);
+`;
+
+const SettingsPromptBox = styled.div<{ isEmpty?: boolean }>`
+  font-size: 13px;
+  color: ${({ isEmpty }) =>
+    isEmpty ? 'var(--uix-canvas-foreground-de-emp)' : 'var(--uix-canvas-foreground)'};
+  font-style: ${({ isEmpty }) => (isEmpty ? 'italic' : 'normal')};
+  background: var(--uix-canvas-background-secondary);
+  border-radius: 6px;
+  padding: 8px 10px;
+  max-height: 80px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: var(--uix-canvas-border-de-emp);
+    border-radius: 2px;
+  }
+`;
+
+const SettingsRow = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+`;
+
+const SettingsRowLabel = styled.span`
+  color: var(--uix-canvas-foreground-de-emp);
+`;
+
+const SettingsRowValue = styled.span`
+  color: var(--uix-canvas-foreground-emp);
+  font-weight: 500;
+`;
+
 interface AgentNodeData extends NewBaseNodeData {
   name: string;
   description: string;
@@ -119,8 +209,11 @@ interface AgentNodeProps extends NewBaseNodeDisplayProps {
   suggestionGroupVersion?: string;
 }
 
+const HOVER_DELAY_MS = 500;
+
 const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNodeProps) => {
   const {
+    id,
     data,
     selected = false,
     mode = 'design',
@@ -145,12 +238,45 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
   } = props;
   const { actOnSuggestion } = useAgentFlowStore();
 
+  // Hover preview state
+  const [showSettingsPreview, setShowSettingsPreview] = useState(false);
+  const hoverTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   const { name, definition, suggestionId } = data;
   const isSuggestion = data.isSuggestion ?? false;
   const suggestionType = isSuggestion ? data.suggestionType : undefined;
   const isConversational =
     (definition?.metadata as Record<string, unknown>)?.isConversational === true;
   const suggestTranslations = suggestionTranslations ?? DefaultSuggestionTranslations;
+
+  // Extract settings from definition
+  const settings = definition?.settings as
+    | { model?: string; temperature?: number; maxTokens?: number; maxIteration?: number }
+    | undefined;
+
+  // Hover handlers
+  const handleMouseEnter = useCallback(() => {
+    hoverTimeoutRef.current = setTimeout(() => {
+      setShowSettingsPreview(true);
+    }, HOVER_DELAY_MS);
+  }, []);
+
+  const handleMouseLeave = useCallback(() => {
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+      hoverTimeoutRef.current = null;
+    }
+    setShowSettingsPreview(false);
+  }, []);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (hoverTimeoutRef.current) {
+        clearTimeout(hoverTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const executionStatus = useMemo(() => {
     if (hasError) return 'Failed';
@@ -434,39 +560,107 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
     };
   }, [isSuggestion, suggestionType]);
 
+  // Settings preview content
+  const settingsPreviewContent = useMemo(() => {
+    const systemPrompt = data.instructions?.system ?? '';
+    const userPrompt = data.instructions?.user ?? '';
+
+    return (
+      <SettingsPreviewContainer>
+        <SettingsPreviewHeader>
+          <SettingsPreviewTitle>{translations.agentSettings}</SettingsPreviewTitle>
+          <SettingsPreviewSubtitle>{translations.readOnlyPreview}</SettingsPreviewSubtitle>
+        </SettingsPreviewHeader>
+
+        {settings?.model && (
+          <SettingsSection>
+            <SettingsSectionLabel>{translations.model}</SettingsSectionLabel>
+            <SettingsSectionValue>{settings.model}</SettingsSectionValue>
+          </SettingsSection>
+        )}
+
+        <SettingsSection>
+          <SettingsSectionLabel>{translations.systemPrompt}</SettingsSectionLabel>
+          <SettingsPromptBox isEmpty={!systemPrompt}>
+            {systemPrompt || translations.notConfigured}
+          </SettingsPromptBox>
+        </SettingsSection>
+
+        <SettingsSection>
+          <SettingsSectionLabel>{translations.userPrompt}</SettingsSectionLabel>
+          <SettingsPromptBox isEmpty={!userPrompt}>
+            {userPrompt || translations.notConfigured}
+          </SettingsPromptBox>
+        </SettingsSection>
+
+        {settings?.temperature !== undefined && (
+          <SettingsRow>
+            <SettingsRowLabel>{translations.temperature}</SettingsRowLabel>
+            <SettingsRowValue>{settings.temperature}</SettingsRowValue>
+          </SettingsRow>
+        )}
+
+        {settings?.maxTokens !== undefined && (
+          <SettingsRow>
+            <SettingsRowLabel>{translations.maxTokens}</SettingsRowLabel>
+            <SettingsRowValue>{settings.maxTokens}</SettingsRowValue>
+          </SettingsRow>
+        )}
+
+        {settings?.maxIteration !== undefined && (
+          <SettingsRow>
+            <SettingsRowLabel>{translations.maxIteration}</SettingsRowLabel>
+            <SettingsRowValue>{settings.maxIteration}</SettingsRowValue>
+          </SettingsRow>
+        )}
+      </SettingsPreviewContainer>
+    );
+  }, [data.instructions, settings, translations]);
+
   return (
-    <NewBaseNode
-      {...nodeProps}
-      executionStatus={executionStatus}
-      suggestionType={suggestionType}
-      icon={agentIcon}
-      display={{
-        label: name,
-        subLabel: (
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-            {isConversational
-              ? translations.conversationalAgent
-              : translations.autonomousAgent}
-            {healthScoreBadge}
-          </span>
-        ),
-        shape: 'rectangle',
-        background: 'var(--uix-canvas-background)',
-        iconBackground: 'var(--uix-canvas-background-secondary)',
-        footerComponent: instructionsFooter,
-      }}
-      toolbarConfig={toolbarConfig}
-      adornments={{
-        topRight: statusAdornment,
-        bottomLeft: suggestionAdornment,
-      }}
-      handleConfigurations={handleConfigurations}
-      // Show add buttons in design mode even when not selected
-      showHandles={mode === 'design'}
-      showAddButton={mode === 'design'}
-      selected={selected}
-      shouldShowAddButtonFn={shouldShowAddButtonFn}
-    />
+    <div onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
+      <NewBaseNode
+        {...nodeProps}
+        id={id}
+        executionStatus={executionStatus}
+        suggestionType={suggestionType}
+        icon={agentIcon}
+        display={{
+          label: name,
+          subLabel: (
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+              {isConversational
+                ? translations.conversationalAgent
+                : translations.autonomousAgent}
+              {healthScoreBadge}
+            </span>
+          ),
+          shape: 'rectangle',
+          background: 'var(--uix-canvas-background)',
+          iconBackground: 'var(--uix-canvas-background-secondary)',
+          footerComponent: instructionsFooter,
+        }}
+        toolbarConfig={toolbarConfig}
+        adornments={{
+          topRight: statusAdornment,
+          bottomLeft: suggestionAdornment,
+        }}
+        handleConfigurations={handleConfigurations}
+        // Show add buttons in design mode even when not selected
+        showHandles={mode === 'design'}
+        showAddButton={mode === 'design'}
+        selected={selected}
+        shouldShowAddButtonFn={shouldShowAddButtonFn}
+      />
+      <FloatingCanvasPanel
+        open={showSettingsPreview}
+        nodeId={id}
+        placement="right-start"
+        offset={16}
+      >
+        {settingsPreviewContent}
+      </FloatingCanvasPanel>
+    </div>
   );
 });
 

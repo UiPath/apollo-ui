@@ -235,8 +235,11 @@ const sampleAgentDefinition = {
   name: 'Test Agent',
   version: '1.0',
   settings: {
-    model: 'gpt-4',
+    model: 'gpt-4o-2024-11-20',
     engine: 'test-engine',
+    temperature: 0,
+    maxTokens: 16384,
+    maxIteration: 10,
   },
   tools: [],
   resources: [],
@@ -1582,7 +1585,8 @@ export const DesignMode: Story = {
           '• **Suggestions**: Off, Placeholders (click + buttons), or Autopilot (batch suggestions)\n' +
           '• **Sticky Notes**: Enable/disable with sample loading\n' +
           '• **Dragging**: Enable/disable position control\n' +
-          '• **Instructions**: Toggle instruction prompts (system/user) on the agent node\n\n' +
+          '• **Instructions**: Toggle instruction prompts (system/user) on the agent node\n' +
+          '• **Hover Preview**: Hover over the agent node for 0.5s to see settings preview\n\n' +
           'Test features in isolation or combine them to verify interactions.',
       },
     },
@@ -1675,7 +1679,8 @@ export const ViewMode: Story = {
         story:
           'Interactive view mode demo. Use the control panel to toggle:\n\n' +
           '• **Timeline player**: Show/hide the timeline with spans\n' +
-          '• **Instructions**: Show/hide instruction prompts preview on the agent node',
+          '• **Instructions**: Show/hide instruction prompts preview on the agent node\n' +
+          '• **Hover Preview**: Hover over the agent node for 0.5s to see full settings preview',
       },
     },
   },
