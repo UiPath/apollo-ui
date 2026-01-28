@@ -626,6 +626,9 @@ const DesignModePlayground = () => {
   const [suggestionMode, setSuggestionMode] = useState<SuggestionMode>('off');
   const [enableStickyNotes, setEnableStickyNotes] = useState(true);
   const [enableDragging, setEnableDragging] = useState(true);
+  const [hasInstructions, setHasInstructions] = useState(false);
+  const [showSystemPrompt, setShowSystemPrompt] = useState(true);
+  const [showUserPrompt, setShowUserPrompt] = useState(true);
 
   // Resources state
   const [resources, setResources] = useState<AgentFlowResource[]>(sampleResources);
@@ -654,8 +657,20 @@ const DesignModePlayground = () => {
   // Selection state
   const [selectedResourceId, setSelectedResourceId] = useState<string | null>(null);
 
+  // Instructions object
+  const instructions = hasInstructions
+    ? {
+        system: showSystemPrompt
+          ? 'You are a helpful claims processing agent. Follow company policies strictly and escalate when needed.'
+          : undefined,
+        user: showUserPrompt
+          ? 'Please process the submitted insurance claim and verify all required documentation.'
+          : undefined,
+      }
+    : undefined;
+
   // Generate a unique key for React to remount when major state changes
-  const stateKey = `${hasResources}-${suggestionMode}-${enableStickyNotes}-${enableDragging}`;
+  const stateKey = `${hasResources}-${suggestionMode}-${enableStickyNotes}-${enableDragging}-${hasInstructions}`;
 
   // Resource handlers
   const handleSelectResource = useCallback(
@@ -1201,7 +1216,7 @@ const DesignModePlayground = () => {
   );
 
   const renderControlPanel = () => (
-    <StoryInfoPanel title="Design Mode Playground" collapsible defaultCollapsed={false}>
+    <StoryInfoPanel title="Design Mode Playground" collapsible defaultCollapsed={false} position="top-right">
       <Column mt={12} gap={12}>
         {/* Resources toggle */}
         <Column gap={4}>
@@ -1347,6 +1362,43 @@ const DesignModePlayground = () => {
           </Row>
         </Column>
 
+        {/* Instructions toggle */}
+        <Column gap={4}>
+          <ApTypography variant={FontVariantToken.fontSizeS} style={{ fontWeight: 600 }}>
+            Instructions:
+          </ApTypography>
+          <Row gap={4}>
+            <ApButton
+              size="small"
+              variant={hasInstructions ? 'primary' : 'secondary'}
+              label="With"
+              onClick={() => setHasInstructions(true)}
+            />
+            <ApButton
+              size="small"
+              variant={!hasInstructions ? 'primary' : 'secondary'}
+              label="Without"
+              onClick={() => setHasInstructions(false)}
+            />
+          </Row>
+          {hasInstructions && (
+            <Row gap={4} style={{ flexWrap: 'wrap' }}>
+              <ApButton
+                size="small"
+                variant={showSystemPrompt ? 'primary' : 'secondary'}
+                label="System"
+                onClick={() => setShowSystemPrompt(!showSystemPrompt)}
+              />
+              <ApButton
+                size="small"
+                variant={showUserPrompt ? 'primary' : 'secondary'}
+                label="User"
+                onClick={() => setShowUserPrompt(!showUserPrompt)}
+              />
+            </Row>
+          )}
+        </Column>
+
         {/* Status info */}
         <Column
           gap={2}
@@ -1409,7 +1461,10 @@ const DesignModePlayground = () => {
             suggestionGroup={suggestionGroup}
             onActOnSuggestion={handleActOnSuggestion}
             onActOnSuggestionGroup={handleActOnSuggestionGroup}
+            hasInstructions={hasInstructions}
+            instructions={instructions}
           />
+          {renderControlPanel()}
           {/* Placeholder configuration modal */}
           {openModalType && (
             <>
@@ -1477,7 +1532,6 @@ const DesignModePlayground = () => {
             </>
           )}
         </div>
-        {renderControlPanel()}
         {renderSidebar()}
       </Row>
     </ReactFlowProvider>
@@ -1497,7 +1551,8 @@ export const DesignMode: Story = {
           '• **Resources**: With sample resources or empty canvas\n' +
           '• **Suggestions**: Off, Placeholders (click + buttons), or Autopilot (batch suggestions)\n' +
           '• **Sticky Notes**: Enable/disable with sample loading\n' +
-          '• **Dragging**: Enable/disable position control\n\n' +
+          '• **Dragging**: Enable/disable position control\n' +
+          '• **Instructions**: Toggle instruction prompts (system/user) on the agent node\n\n' +
           'Test features in isolation or combine them to verify interactions.',
       },
     },
@@ -1653,128 +1708,6 @@ export const HealthScore: Story = {
       description: {
         story:
           'Interactive health score demo. Use the control panel to toggle between different health score values (None, 0, 50, 95, 100). The health score badge appears below the agent name and is clickable.',
-      },
-    },
-  },
-};
-
-/**
- * Instructions Preview Story
- * Demonstrates the instruction prompt preview on the agent node footer
- */
-
-const InstructionsPreviewWrapper = () => {
-  const [hasInstructions, setHasInstructions] = useState(true);
-  const [showSystem, setShowSystem] = useState(true);
-  const [showUser, setShowUser] = useState(true);
-
-  const instructions = hasInstructions
-    ? {
-        system: showSystem
-          ? 'You are a helpful claims processing agent. Follow company policies strictly and escalate when needed.'
-          : undefined,
-        user: showUser
-          ? 'Please process the submitted insurance claim and verify all required documentation.'
-          : undefined,
-      }
-    : undefined;
-
-  const renderControlPanel = () => (
-    <StoryInfoPanel title="Instructions Preview Controls" collapsible defaultCollapsed={false}>
-      <Column mt={12} gap={12}>
-        <Column gap={4}>
-          <ApTypography variant={FontVariantToken.fontSizeS} style={{ fontWeight: 600 }}>
-            Instructions:
-          </ApTypography>
-          <Row gap={4}>
-            <ApButton
-              size="small"
-              variant={hasInstructions ? 'primary' : 'secondary'}
-              label="With"
-              onClick={() => setHasInstructions(true)}
-            />
-            <ApButton
-              size="small"
-              variant={!hasInstructions ? 'primary' : 'secondary'}
-              label="Without"
-              onClick={() => setHasInstructions(false)}
-            />
-          </Row>
-        </Column>
-
-        {hasInstructions && (
-          <>
-            <Column gap={4}>
-              <ApTypography variant={FontVariantToken.fontSizeS} style={{ fontWeight: 600 }}>
-                System prompt:
-              </ApTypography>
-              <Row gap={4}>
-                <ApButton
-                  size="small"
-                  variant={showSystem ? 'primary' : 'secondary'}
-                  label="Show"
-                  onClick={() => setShowSystem(true)}
-                />
-                <ApButton
-                  size="small"
-                  variant={!showSystem ? 'primary' : 'secondary'}
-                  label="Hide"
-                  onClick={() => setShowSystem(false)}
-                />
-              </Row>
-            </Column>
-
-            <Column gap={4}>
-              <ApTypography variant={FontVariantToken.fontSizeS} style={{ fontWeight: 600 }}>
-                User prompt:
-              </ApTypography>
-              <Row gap={4}>
-                <ApButton
-                  size="small"
-                  variant={showUser ? 'primary' : 'secondary'}
-                  label="Show"
-                  onClick={() => setShowUser(true)}
-                />
-                <ApButton
-                  size="small"
-                  variant={!showUser ? 'primary' : 'secondary'}
-                  label="Hide"
-                  onClick={() => setShowUser(false)}
-                />
-              </Row>
-            </Column>
-          </>
-        )}
-      </Column>
-    </StoryInfoPanel>
-  );
-
-  return (
-    <ReactFlowProvider key={`${hasInstructions}-${showSystem}-${showUser}`}>
-      <AgentFlowWrapper
-        mode="design"
-        initialResources={sampleResources}
-        hasInstructions={hasInstructions}
-        instructions={instructions}
-      />
-      {renderControlPanel()}
-    </ReactFlowProvider>
-  );
-};
-
-export const InstructionsPreview: Story = {
-  args: {
-    mode: 'design',
-  },
-  render: () => <InstructionsPreviewWrapper />,
-  parameters: {
-    docs: {
-      description: {
-        story:
-          'Demonstrates instruction prompt previews on the agent node. Toggle between:\n\n' +
-          '- **With/Without instructions**: Shows the "Add Instructions" button when empty, or prompt previews when set\n' +
-          '- **System/User prompts**: Show one or both prompt previews\n\n' +
-          'The footer area maintains a consistent 144px node height regardless of content.',
       },
     },
   },

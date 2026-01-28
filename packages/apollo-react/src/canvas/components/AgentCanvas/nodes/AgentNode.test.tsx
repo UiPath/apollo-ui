@@ -74,6 +74,8 @@ const defaultTranslations: AgentNodeTranslations = {
   context: 'Context',
   tools: 'Tools',
   memory: 'Memory',
+  instructions: 'Instructions',
+  addInstructions: 'Add Instructions',
 };
 
 const defaultNodeProps = {
