@@ -333,7 +333,6 @@ export type AgentFlowProps = {
   enableMemory?: boolean;
   enableStickyNotes?: boolean;
 
-  // instructions
   instructions?: {
     system?: string;
     user?: string;

@@ -79,7 +79,6 @@ const InstructionsLine = styled.div`
   }
 `;
 
-// Agent Settings Preview styles
 const SettingsPreviewContainer = styled.div`
   display: flex;
   flex-direction: column;
@@ -174,7 +173,6 @@ interface AgentNodeData extends NewBaseNodeData {
   definition: Record<string, unknown>;
   parentNodeId?: string;
   isConversational?: boolean;
-  // instructions
   instructions?: {
     system?: string;
     user?: string;
@@ -238,7 +236,6 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
   } = props;
   const { actOnSuggestion } = useAgentFlowStore();
 
-  // Hover preview state
   const [showSettingsPreview, setShowSettingsPreview] = useState(false);
   const hoverTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -254,7 +251,6 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
     | { model?: string; temperature?: number; maxTokens?: number; maxIteration?: number }
     | undefined;
 
-  // Hover handlers
   const handleMouseEnter = useCallback(() => {
     hoverTimeoutRef.current = setTimeout(() => {
       setShowSettingsPreview(true);
@@ -269,7 +265,6 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
     setShowSettingsPreview(false);
   }, []);
 
-  // Cleanup timeout on unmount
   useEffect(() => {
     return () => {
       if (hoverTimeoutRef.current) {
@@ -443,7 +438,6 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
   }, [healthScore, onHealthScoreClick]);
 
   const instructionsFooter = useMemo(() => {
-    // Show preview when instructions have actual content
     const system = data.instructions?.system;
     const user = data.instructions?.user;
     const hasContent = Boolean(system || user);
@@ -560,7 +554,6 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
     };
   }, [isSuggestion, suggestionType]);
 
-  // Settings preview content
   const settingsPreviewContent = useMemo(() => {
     const systemPrompt = data.instructions?.system ?? '';
     const userPrompt = data.instructions?.user ?? '';
