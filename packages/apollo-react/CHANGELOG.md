@@ -1,3 +1,10 @@
+## [@uipath/apollo-react-v3.10.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.10.1...@uipath/apollo-react@3.10.2) (2026-01-28)
+
+### Bug Fixes
+
+* **apollo-react:** fallback for broken tool image (#AG-699) ([85c6dc0](https://github.com/UiPath/apollo-ui/commit/85c6dc0dcc862e6d74844a21b6c35b5e5e06fcb0)), closes [#AG-699](https://github.com/UiPath/apollo-ui/issues/AG-699)
+* **apollo-react:** fallback for broken tool image (#AG-699) ([7f2315b](https://github.com/UiPath/apollo-ui/commit/7f2315bc51ddccd5cd4334059d6c28578ce6810a)), closes [#AG-699](https://github.com/UiPath/apollo-ui/issues/AG-699)
+
 ## [@uipath/apollo-react-v3.10.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.10.0...@uipath/apollo-react@3.10.1) (2026-01-28)
 
 ### Bug Fixes
