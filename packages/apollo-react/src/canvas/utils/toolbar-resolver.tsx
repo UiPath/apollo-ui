@@ -156,7 +156,7 @@ function mergeToolbarConfigs(
 export function resolveToolbar(
   manifest: NodeManifest,
   context: ExtendedNodeContext,
-  nodeData?: Record<string, unknown>
+  nodeData?: (Record<string, unknown> & { nodeId?: string }) | undefined
 ): NodeToolbarConfig | undefined {
   const { nodeType, toolbarExtensions: manifestToolbarExtensions } = manifest;
 
@@ -169,13 +169,12 @@ export function resolveToolbar(
   modeDefaults = {
     ...modeDefaults,
     actions: modeDefaults?.actions?.map((action) => {
+      const isCollapsed = Boolean(nodeData?.nodeId && collapsed?.has(nodeData.nodeId));
       switch (action.id) {
         case 'collapse':
           return {
             ...action,
-            icon: collapsed?.has(nodeData?.nodeId as string)
-              ? 'chevrons-up-down'
-              : 'chevrons-down-up',
+            icon: isCollapsed ? 'chevrons-up-down' : 'chevrons-down-up',
           };
         default:
           return action;

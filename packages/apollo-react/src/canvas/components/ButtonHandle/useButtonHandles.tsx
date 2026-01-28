@@ -47,7 +47,7 @@ export const useButtonHandles = ({
   }) => boolean;
 }) => {
   const { collapsed } = getToolbarActionStore();
-  const isCollapsed = collapsed?.has(nodeId);
+  const isCollapsed = Boolean(collapsed?.has(nodeId));
 
   const connectedHandleIds = useConnectedHandles(nodeId);
   const node = useNodesData(nodeId);
