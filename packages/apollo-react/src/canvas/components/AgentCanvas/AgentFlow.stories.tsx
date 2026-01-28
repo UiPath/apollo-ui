@@ -52,8 +52,19 @@ const sampleContexts = [
   { name: 'Environment Variables', description: 'System environment settings' },
 ];
 
-const sampleTools = [
+const sampleTools: {
+  name: string;
+  description: string;
+  projectType: ProjectType;
+  iconUrl?: string;
+}[] = [
   { name: 'Send Email', description: 'Email Service', projectType: ProjectType.Internal },
+  {
+    name: 'Broken Icon Tool',
+    description: 'Automation',
+    projectType: ProjectType.Internal,
+    iconUrl: 'https://testtest.broken/blah/blah',
+  },
   { name: 'Query Database', description: 'Database', projectType: ProjectType.Internal },
   { name: 'Call API', description: 'REST API', projectType: ProjectType.Api },
   { name: 'Process Document', description: 'Document AI', projectType: ProjectType.Internal },
