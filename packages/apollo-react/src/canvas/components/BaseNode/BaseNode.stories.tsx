@@ -117,7 +117,7 @@ const sampleManifest: WorkflowManifest = {
       display: {
         label: 'Dynamic Handle Node',
         icon: 'git-branch',
-        shape: 'vertical-rectangle',
+        shape: 'square',
       },
       handleConfiguration: [
         {
@@ -401,7 +401,7 @@ function DynamicHandlesStory() {
             display: {
               label: 'Dynamic Handles',
               subLabel: `${nodeData.dynamicInputs.length} inputs, ${nodeData.dynamicOutputs.length} outputs`,
-              shape: 'vertical-rectangle',
+              shape: 'square',
             },
           },
         }),
