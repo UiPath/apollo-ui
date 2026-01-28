@@ -28,6 +28,7 @@ export interface AutopilotChatResourcePickerContextType {
   drillDown: DrillDownState | null;
   loading: boolean;
   loadingMore: boolean;
+  searchInProgress: boolean;
   hasMore: boolean;
   error: string | null;
   open: (range: TipTapRange, coords: CursorCoordinates) => void;
@@ -70,6 +71,7 @@ export function AutopilotChatResourcePickerProvider({
     drillDown,
     loading,
     loadingMore,
+    searchInProgress,
     error,
     searchResults,
     searchDone,
@@ -228,7 +230,6 @@ export function AutopilotChatResourcePickerProvider({
   ]);
 
   const performPaginatedSearch = useCallback(async () => {
-    dispatch({ type: 'LOAD_START' });
     try {
       const result = drillDown
         ? await getNestedResources(drillDown.category.id, { searchText: searchQuery })
@@ -279,6 +280,8 @@ export function AutopilotChatResourcePickerProvider({
       return;
     }
 
+    dispatch({ type: 'SEARCH_START' });
+
     const debounceTimer = setTimeout(
       paginatedResources ? performPaginatedSearch : performLocalSearch,
       SEARCH_DEBOUNCE_MS
@@ -308,6 +311,7 @@ export function AutopilotChatResourcePickerProvider({
       drillDown,
       loading,
       loadingMore,
+      searchInProgress,
       hasMore,
       error,
       open,
@@ -326,6 +330,7 @@ export function AutopilotChatResourcePickerProvider({
       drillDown,
       loading,
       loadingMore,
+      searchInProgress,
       hasMore,
       error,
       open,

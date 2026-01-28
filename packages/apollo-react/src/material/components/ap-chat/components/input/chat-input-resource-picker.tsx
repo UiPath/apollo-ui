@@ -1,6 +1,6 @@
 import { msg } from '@lingui/core/macro';
 import { useLingui } from '@lingui/react';
-import { CircularProgress, Menu, MenuItem, styled } from '@mui/material';
+import { CircularProgress, Menu, MenuItem, Skeleton, styled } from '@mui/material';
 import token, { FontVariantToken } from '@uipath/apollo-core';
 import { ApButton, ApIcon, ApTypography } from '@uipath/apollo-react/material';
 import React, {
@@ -30,13 +30,6 @@ const ResourceItemContent = styled('div')({
   gap: token.Spacing.SpacingXs,
   flex: 1,
   minWidth: 0,
-});
-
-const LoadingContainer = styled('div')({
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  padding: token.Spacing.SpacingM,
 });
 
 const ErrorContainer = styled('div')(({ theme }) => ({
@@ -73,7 +66,12 @@ const DrillDownHeader = styled('div')(({ theme }) => ({
   cursor: 'pointer',
 }));
 
+const SkeletonItem = styled(StyledMenuItem)({
+  pointerEvents: 'none',
+});
+
 const SCROLL_THRESHOLD = 50;
+const SKELETON_COUNT = 7;
 
 export interface ResourcePickerDropdownHandle {
   handleKeyDown: (event: KeyboardEvent) => boolean;
@@ -91,6 +89,7 @@ function ResourcePickerDropdownInner(
     query,
     loading,
     loadingMore,
+    searchInProgress,
     hasMore,
     error,
     handleItemClick,
@@ -240,16 +239,29 @@ function ResourcePickerDropdownInner(
     );
   }
 
+  function renderSkeletons(): React.ReactNode[] {
+    return Array.from({ length: SKELETON_COUNT }).map((_, index) => (
+      <SkeletonItem key={`skeleton-${index}`} disabled>
+        <ResourceItemContent>
+          <Skeleton variant="circular" width={24} height={24} />
+          <Skeleton
+            variant="rounded"
+            width={`${50 + (index % 4) * 15}%`}
+            height={20}
+            sx={{ borderRadius: '4px' }}
+          />
+        </ResourceItemContent>
+      </SkeletonItem>
+    ));
+  }
+
+  const isLoadingState = loading || searchInProgress;
+
   function renderMenuContent(): React.ReactNode[] {
     const header = renderDrillDownHeader();
 
-    if (loading) {
-      return [
-        header,
-        <LoadingContainer key="loading">
-          <CircularProgress size={24} />
-        </LoadingContainer>,
-      ];
+    if (isLoadingState) {
+      return [header, ...renderSkeletons()];
     }
 
     if (error) {
@@ -310,9 +322,16 @@ function ResourcePickerDropdownInner(
         dense: true,
         ref: listRef,
         onScroll: handleScroll,
+        sx: isLoadingState ? { minHeight: 296, boxSizing: 'border-box' } : undefined,
       }}
       slotProps={{
-        paper: { sx: { width: 360, maxHeight: 296 } },
+        paper: {
+          sx: {
+            width: 360,
+            maxHeight: 296,
+            ...(isLoadingState && { minHeight: 296 }),
+          },
+        },
       }}
     >
       {renderMenuContent()}

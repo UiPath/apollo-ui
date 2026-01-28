@@ -14,6 +14,7 @@ export interface PickerState {
   drillDown: DrillDownState | null;
   loading: boolean;
   loadingMore: boolean;
+  searchInProgress: boolean;
   error: string | null;
   searchResults: AutopilotChatResourceItem[];
   searchDone: boolean;
@@ -24,6 +25,7 @@ export type PickerAction =
   | { type: 'CLOSE' }
   | { type: 'SET_QUERY'; query: string }
   | { type: 'LOAD_START' }
+  | { type: 'SEARCH_START' }
   | { type: 'LOAD_MORE_START' }
   | {
       type: 'DRILL_DOWN_SUCCESS';
@@ -48,6 +50,7 @@ export const initialPickerState: PickerState = {
   drillDown: null,
   loading: false,
   loadingMore: false,
+  searchInProgress: false,
   error: null,
   searchResults: [],
   searchDone: true,
@@ -83,6 +86,13 @@ export function pickerReducer(state: PickerState, action: PickerAction): PickerS
         loadingMore: true,
       };
 
+    case 'SEARCH_START':
+      return {
+        ...state,
+        searchInProgress: true,
+        error: null,
+      };
+
     case 'DRILL_DOWN_SUCCESS':
       return {
         ...state,
@@ -98,6 +108,7 @@ export function pickerReducer(state: PickerState, action: PickerAction): PickerS
       return {
         ...state,
         loading: false,
+        searchInProgress: false,
         searchResults: action.results,
         searchDone: action.done,
       };
@@ -128,6 +139,7 @@ export function pickerReducer(state: PickerState, action: PickerAction): PickerS
         ...state,
         loading: false,
         loadingMore: false,
+        searchInProgress: false,
         error: action.error,
       };
 
