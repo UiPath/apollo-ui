@@ -335,6 +335,8 @@ interface AgentFlowWrapperProps {
   allowDragging?: boolean;
   agentNodePosition?: { x: number; y: number } | undefined;
   onAgentNodePositionChange?: (position: { x: number; y: number }) => void;
+  hasInstructions?: boolean;
+  instructions?: { system?: string; user?: string };
 }
 
 const AgentFlowWrapper = ({
@@ -352,6 +354,8 @@ const AgentFlowWrapper = ({
   allowDragging = false,
   agentNodePosition = undefined,
   onAgentNodePositionChange = () => {},
+  hasInstructions,
+  instructions,
 }: AgentFlowWrapperProps) => {
   const [resources, setResources] = useState<AgentFlowResource[]>(initialResources);
   const [selectedResourceId, setSelectedResourceId] = useState<string | null>(null);
@@ -600,6 +604,8 @@ const AgentFlowWrapper = ({
             onRemoveStickyNote={handleRemoveStickyNote}
             healthScore={healthScore}
             onHealthScoreClick={onHealthScoreClick}
+            hasInstructions={hasInstructions}
+            instructions={instructions}
           />
         </div>
         {renderSidebar()}
@@ -1647,6 +1653,128 @@ export const HealthScore: Story = {
       description: {
         story:
           'Interactive health score demo. Use the control panel to toggle between different health score values (None, 0, 50, 95, 100). The health score badge appears below the agent name and is clickable.',
+      },
+    },
+  },
+};
+
+/**
+ * Instructions Preview Story
+ * Demonstrates the instruction prompt preview on the agent node footer
+ */
+
+const InstructionsPreviewWrapper = () => {
+  const [hasInstructions, setHasInstructions] = useState(true);
+  const [showSystem, setShowSystem] = useState(true);
+  const [showUser, setShowUser] = useState(true);
+
+  const instructions = hasInstructions
+    ? {
+        system: showSystem
+          ? 'You are a helpful claims processing agent. Follow company policies strictly and escalate when needed.'
+          : undefined,
+        user: showUser
+          ? 'Please process the submitted insurance claim and verify all required documentation.'
+          : undefined,
+      }
+    : undefined;
+
+  const renderControlPanel = () => (
+    <StoryInfoPanel title="Instructions Preview Controls" collapsible defaultCollapsed={false}>
+      <Column mt={12} gap={12}>
+        <Column gap={4}>
+          <ApTypography variant={FontVariantToken.fontSizeS} style={{ fontWeight: 600 }}>
+            Instructions:
+          </ApTypography>
+          <Row gap={4}>
+            <ApButton
+              size="small"
+              variant={hasInstructions ? 'primary' : 'secondary'}
+              label="With"
+              onClick={() => setHasInstructions(true)}
+            />
+            <ApButton
+              size="small"
+              variant={!hasInstructions ? 'primary' : 'secondary'}
+              label="Without"
+              onClick={() => setHasInstructions(false)}
+            />
+          </Row>
+        </Column>
+
+        {hasInstructions && (
+          <>
+            <Column gap={4}>
+              <ApTypography variant={FontVariantToken.fontSizeS} style={{ fontWeight: 600 }}>
+                System prompt:
+              </ApTypography>
+              <Row gap={4}>
+                <ApButton
+                  size="small"
+                  variant={showSystem ? 'primary' : 'secondary'}
+                  label="Show"
+                  onClick={() => setShowSystem(true)}
+                />
+                <ApButton
+                  size="small"
+                  variant={!showSystem ? 'primary' : 'secondary'}
+                  label="Hide"
+                  onClick={() => setShowSystem(false)}
+                />
+              </Row>
+            </Column>
+
+            <Column gap={4}>
+              <ApTypography variant={FontVariantToken.fontSizeS} style={{ fontWeight: 600 }}>
+                User prompt:
+              </ApTypography>
+              <Row gap={4}>
+                <ApButton
+                  size="small"
+                  variant={showUser ? 'primary' : 'secondary'}
+                  label="Show"
+                  onClick={() => setShowUser(true)}
+                />
+                <ApButton
+                  size="small"
+                  variant={!showUser ? 'primary' : 'secondary'}
+                  label="Hide"
+                  onClick={() => setShowUser(false)}
+                />
+              </Row>
+            </Column>
+          </>
+        )}
+      </Column>
+    </StoryInfoPanel>
+  );
+
+  return (
+    <ReactFlowProvider key={`${hasInstructions}-${showSystem}-${showUser}`}>
+      <AgentFlowWrapper
+        mode="design"
+        initialResources={sampleResources}
+        hasInstructions={hasInstructions}
+        instructions={instructions}
+      />
+      {renderControlPanel()}
+    </ReactFlowProvider>
+  );
+};
+
+export const InstructionsPreview: Story = {
+  args: {
+    mode: 'design',
+  },
+  render: () => <InstructionsPreviewWrapper />,
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Demonstrates instruction prompt previews on the agent node. Toggle between:\n\n' +
+          '- **With/Without instructions**: Shows the "Add Instructions" button when empty, or prompt previews when set\n' +
+          '- **System/User prompts**: Show one or both prompt previews\n\n' +
+          'The footer area maintains a consistent 144px node height regardless of content.',
       },
     },
   },

@@ -139,7 +139,6 @@ export const BaseContainer = styled.div<{
     if (hasFooter) return 'auto';
     return height ? `${height}px` : '96px';
   }};
-  min-height: ${({ hasFooter }) => (hasFooter ? '96px' : 'unset')};
   background: ${({ backgroundColor }) => backgroundColor || 'var(--uix-canvas-background)'};
   border: 1.5px solid var(--uix-canvas-border-de-emp);
   border-radius: ${({ shape }) => {
@@ -151,15 +150,11 @@ export const BaseContainer = styled.div<{
   flex-direction: ${({ shape }) => (shape === 'rectangle' ? 'row' : 'column')};
   flex-wrap: ${({ hasFooter }) => (hasFooter ? 'wrap' : 'nowrap')};
   align-items: center;
-  align-content: ${({ hasFooter }) => (hasFooter ? 'flex-start' : 'normal')};
   justify-content: ${({ shape }) => (shape === 'rectangle' ? 'flex-start' : 'center')};
-  gap: ${({ shape, hasFooter }) => {
-    if (shape === 'rectangle') return hasFooter ? '8px' : '12px';
-    return '0';
-  }};
+  gap: ${({ shape }) => (shape === 'rectangle' ? '12px' : '0')};
   padding: ${({ shape, height, hasFooter }) => {
     if (shape === 'rectangle') {
-      if (hasFooter) return '10px';
+      if (hasFooter) return '16px';
       const scaleFactor = height ? height / 100 : 1;
       return `${14 * scaleFactor}px`;
     }

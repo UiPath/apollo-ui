@@ -281,7 +281,7 @@ const NewBaseNodeComponent = (
           </BaseTextContainer>
         )}
         {displayFooter && (
-          <div style={{ flexBasis: '100%', paddingTop: '2px' }}>
+          <div style={{ flexBasis: '100%', paddingTop: '2px', minWidth: 0, overflow: 'hidden' }}>
             {displayFooter}
           </div>
         )}
