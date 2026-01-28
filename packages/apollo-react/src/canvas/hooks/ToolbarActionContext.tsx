@@ -61,7 +61,12 @@ export function useToolbarActionStore(
     // Cleanup: reset handler when component unmounts or switches
     // This prevents stale handlers from being invoked on the wrong canvas
     return () => {
-      setToolbarActionStore({ mode: 'design', onToolbarAction: undefined, breakpoints: undefined, collapsed: undefined });
+      setToolbarActionStore({
+        mode: 'design',
+        onToolbarAction: undefined,
+        breakpoints: undefined,
+        collapsed: undefined,
+      });
     };
   }, [mode, onToolbarAction, breakpoints, collapsed]);
 }

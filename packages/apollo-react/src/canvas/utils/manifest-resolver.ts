@@ -97,7 +97,9 @@ export function resolveDisplay(
   }
 
   const { collapsed } = getToolbarActionStore();
-  const isCollapsed = collapsed?.has((instanceDisplay as Record<string, unknown>)?.nodeId as string);
+  const isCollapsed = collapsed?.has(
+    (instanceDisplay as Record<string, unknown>)?.nodeId as string
+  );
   const shape = instanceDisplay?.shape ?? manifestDisplay.shape;
 
   // Map shapes to their collapsed equivalents:

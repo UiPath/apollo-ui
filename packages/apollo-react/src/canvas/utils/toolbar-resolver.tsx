@@ -4,14 +4,15 @@
  * Generic utilities for resolving toolbar configurations from mode defaults and manifest extensions
  */
 
-import type { HandleGroupManifest, HandleManifest, NodeManifest, NodeStatusContext, NodeToolbarConfig } from '@uipath/apollo-react/canvas';
+import type {
+  HandleGroupManifest,
+  HandleManifest,
+  NodeManifest,
+  NodeStatusContext,
+  NodeToolbarConfig,
+} from '@uipath/apollo-react/canvas';
 import { getToolbarActionStore } from '../hooks/ToolbarActionContext';
-import {
-  ModeToolbarConfig,
-  ToolbarActionHandler,
-  ToolbarActionSchema,
-  ToolbarConfiguration,
-} from '../schema/toolbar';
+import { ModeToolbarConfig, ToolbarActionHandler, ToolbarActionSchema } from '../schema/toolbar';
 import { getIcon } from './icon-registry';
 
 interface ExtendedNodeContext extends NodeStatusContext {
@@ -19,12 +20,14 @@ interface ExtendedNodeContext extends NodeStatusContext {
   permissions?: string[];
 }
 
-const DEFAULT_ACTIONS_FOR_ALL_MODES: ModeToolbarConfig['actions'] = [ {
-  id: 'collapse',
-  icon: 'chevrons-down-up',
-  label: 'Toggle collapse',
-  condition: { handles: [{ handleType: 'artifact', type: 'source' }] },
-} ];
+const DEFAULT_ACTIONS_FOR_ALL_MODES: ModeToolbarConfig['actions'] = [
+  {
+    id: 'collapse',
+    icon: 'chevrons-down-up',
+    label: 'Toggle collapse',
+    condition: { handles: [{ handleType: 'artifact', type: 'source' }] },
+  },
+];
 
 // Default toolbar actions for each mode (applies to all nodes)
 const DEFAULT_MODE_TOOLBARS: Record<string, ModeToolbarConfig> = {
@@ -37,7 +40,10 @@ const DEFAULT_MODE_TOOLBARS: Record<string, ModeToolbarConfig> = {
     ],
   },
   debug: {
-    actions: [{ id: 'breakpoint', icon: 'circle', label: 'Toggle breakpoint' }, ...DEFAULT_ACTIONS_FOR_ALL_MODES],
+    actions: [
+      { id: 'breakpoint', icon: 'circle', label: 'Toggle breakpoint' },
+      ...DEFAULT_ACTIONS_FOR_ALL_MODES,
+    ],
   },
   evaluation: {
     actions: [...DEFAULT_ACTIONS_FOR_ALL_MODES],
@@ -84,7 +90,9 @@ function evaluateCondition(
 
   // Check if node has matching handles
   if (condition.handles?.length) {
-    const manifestHandles = manifest.handleConfiguration.flatMap((group: HandleGroupManifest) => group.handles);
+    const manifestHandles = manifest.handleConfiguration.flatMap(
+      (group: HandleGroupManifest) => group.handles
+    );
     const hasMatchingHandle = condition.handles.some((requiredHandle) =>
       manifestHandles.some(
         (manifestHandle: HandleManifest) =>
@@ -147,17 +155,33 @@ function mergeToolbarConfigs(
  */
 export function resolveToolbar(
   manifest: NodeManifest,
-  nodeType: string,
-  manifestToolbarExtensions: ToolbarConfiguration | undefined,
   context: ExtendedNodeContext,
   nodeData?: Record<string, unknown>
 ): NodeToolbarConfig | undefined {
+  const { nodeType, toolbarExtensions: manifestToolbarExtensions } = manifest;
+
   // Get mode and handler from module-level store
   // (UIX doesn't pass custom properties through its context)
-  const { mode, onToolbarAction } = getToolbarActionStore();
+  const { mode, onToolbarAction, collapsed } = getToolbarActionStore();
 
   // Step 1: Get mode defaults (applies to all nodes)
-  const modeDefaults = toolbarRegistry.getModeDefaults(mode);
+  let modeDefaults = toolbarRegistry.getModeDefaults(mode);
+  modeDefaults = {
+    ...modeDefaults,
+    actions: modeDefaults?.actions?.map((action) => {
+      switch (action.id) {
+        case 'collapse':
+          return {
+            ...action,
+            icon: collapsed?.has(nodeData?.nodeId as string)
+              ? 'chevrons-up-down'
+              : 'chevrons-down-up',
+          };
+        default:
+          return action;
+      }
+    }),
+  };
 
   // Step 2: Get node-type-specific extensions
   const nodeExtensions = manifestToolbarExtensions?.[mode];
