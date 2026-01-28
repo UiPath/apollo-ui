@@ -131,10 +131,10 @@ export function ValidationItem({
                   {/* Toggle Group */}
                   <ToggleGroup
                     type="single"
-                    value={item.humanEvaluation || undefined}
+                    value={item.humanEvaluation || ""}
                     onValueChange={(newValue) => {
                       // onValueChange fires with empty string when clicking selected item again
-                      onHumanEvaluation((newValue as HumanEvaluationStatus) || null);
+                      onHumanEvaluation(newValue === "" ? null : (newValue as HumanEvaluationStatus));
                     }}
                     variant="outline"
                     spacing={0}
