@@ -41,6 +41,12 @@ vi.mock('../store/agent-flow-store', () => ({
   }),
 }));
 
+vi.mock('../../FloatingCanvasPanel', () => ({
+  FloatingCanvasPanel: ({ children }: { children?: React.ReactNode }) => (
+    <div data-testid="floating-canvas-panel">{children}</div>
+  ),
+}));
+
 // Mock Icons from @uipath/apollo-react/canvas
 vi.mock('@uipath/apollo-react/canvas', () => ({
   // Re-export everything else from actual module
