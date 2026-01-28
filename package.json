@@ -15,7 +15,7 @@
     "build:apps": "turbo run build --filter='./apps/*'",
     "build:analyze": "turbo run build:analyze",
     "commit": "git-cz",
-    "dev": "turbo run dev",
+    "dev": "turbo run dev --concurrency=20",
     "dev:react-playground": "turbo run dev --filter=react-playground",
     "dev:chat": "turbo run dev --filter=@uipath/ap-chat",
     "dev:apollo-vertex": "turbo run dev --filter=apollo-vertex",
@@ -99,5 +99,8 @@
       "lodash": "^4.17.23",
       "lodash-es": "^4.17.23"
     }
+  },
+  "dependencies": {
+    "agentation": "^1.3.2"
   }
 }

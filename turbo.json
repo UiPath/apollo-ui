@@ -1,6 +1,7 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "globalDependencies": ["**/.env.*local", "tsconfig.json", "pnpm-lock.json"],
+  "ui": "tui",
   "tasks": {
     "build": {
       "dependsOn": ["^build"],

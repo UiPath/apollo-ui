@@ -1,0 +1,43 @@
+{
+  "name": "loan-qc",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Loan Document Quality Control Interface",
+  "scripts": {
+    "dev": "next --turbopack",
+    "build": "next build",
+    "start": "next start",
+    "format": "biome format --write .",
+    "format:check": "biome format .",
+    "lint": "biome check ."
+  },
+  "packageManager": "pnpm@10.18.1",
+  "dependencies": {
+    "@radix-ui/react-avatar": "^1.1.6",
+    "@radix-ui/react-popover": "^1.1.15",
+    "@radix-ui/react-separator": "^1.1.8",
+    "@radix-ui/react-slot": "^1.2.4",
+    "@radix-ui/react-toggle": "^1.1.10",
+    "@radix-ui/react-toggle-group": "^1.1.11",
+    "@radix-ui/react-tooltip": "^1.2.8",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "framer-motion": "^11.18.2",
+    "lucide-react": "^0.468.0",
+    "next": "16.1.1",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "react-resizable-panels": "^3.0.6",
+    "tailwind-merge": "^2.6.0"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.3.6",
+    "@tailwindcss/postcss": "^4.1.17",
+    "@types/node": "^24.10.1",
+    "@types/react": "^19.2.6",
+    "@types/react-dom": "^19.2.2",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^4.1.17",
+    "typescript": "^5.9.3"
+  }
+}
