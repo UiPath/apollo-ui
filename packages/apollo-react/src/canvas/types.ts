@@ -334,7 +334,6 @@ export type AgentFlowProps = {
   enableStickyNotes?: boolean;
 
   // instructions
-  hasInstructions?: boolean;
   instructions?: {
     system?: string;
     user?: string;
@@ -413,7 +412,6 @@ export type AgentFlowNodeData = {
   suggestionId?: string;
   suggestionType?: SuggestionType;
   isProcessing?: boolean;
-  hasInstructions?: boolean;
   instructions?: {
     system?: string;
     user?: string;

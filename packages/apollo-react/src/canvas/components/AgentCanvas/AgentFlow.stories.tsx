@@ -335,7 +335,6 @@ interface AgentFlowWrapperProps {
   allowDragging?: boolean;
   agentNodePosition?: { x: number; y: number } | undefined;
   onAgentNodePositionChange?: (position: { x: number; y: number }) => void;
-  hasInstructions?: boolean;
   instructions?: { system?: string; user?: string };
 }
 
@@ -354,7 +353,6 @@ const AgentFlowWrapper = ({
   allowDragging = false,
   agentNodePosition = undefined,
   onAgentNodePositionChange = () => {},
-  hasInstructions,
   instructions,
 }: AgentFlowWrapperProps) => {
   const [resources, setResources] = useState<AgentFlowResource[]>(initialResources);
@@ -604,7 +602,6 @@ const AgentFlowWrapper = ({
             onRemoveStickyNote={handleRemoveStickyNote}
             healthScore={healthScore}
             onHealthScoreClick={onHealthScoreClick}
-            hasInstructions={hasInstructions}
             instructions={instructions}
           />
         </div>
@@ -1495,7 +1492,6 @@ const DesignModePlayground = () => {
             suggestionGroup={suggestionGroup}
             onActOnSuggestion={handleActOnSuggestion}
             onActOnSuggestionGroup={handleActOnSuggestionGroup}
-            hasInstructions={hasInstructions}
             instructions={instructions}
           />
           {renderControlPanel()}
@@ -1661,7 +1657,6 @@ const ViewModeWrapper = () => {
         spans={hasTimelinePlayer ? sampleSpans : []}
         definition={sampleAgentDefinition}
         enableTimelinePlayer={hasTimelinePlayer}
-        hasInstructions={hasInstructions}
         instructions={instructions}
       />
       {renderControlPanel()}
