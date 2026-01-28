@@ -112,10 +112,7 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
   }, [manifest, data]);
 
   const toolbarConfig = useMemo(
-    () =>
-      manifest
-        ? resolveToolbar(manifest.nodeType, manifest.toolbarExtensions, statusContext)
-        : undefined,
+    () => (manifest ? resolveToolbar(manifest, statusContext) : undefined),
     [manifest, statusContext]
   );
 
