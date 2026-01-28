@@ -41,6 +41,12 @@ export type FloatingCanvasPanelProps = {
    * This is useful when anchoring to elements outside the canvas (like toolbar buttons).
    */
   useFixedPosition?: boolean;
+  /**
+   * When true, renders the panel to document.body instead of the canvas portal.
+   * This ensures the panel appears above all other UI elements (toolbars, overlays, etc.)
+   * even when using flow-space positioning with nodeId.
+   */
+  portalToBody?: boolean;
 
   // Header/content
   title?: ReactNode;
@@ -59,6 +65,7 @@ export function FloatingCanvasPanel({
   offset = 20,
   isPinned = false,
   useFixedPosition = false,
+  portalToBody = false,
   title,
   header,
   headerActions,
@@ -152,6 +159,32 @@ export function FloatingCanvasPanel({
   }
 
   // Default flow-space positioning
+  const panelContent = (
+    <PanelContainer
+      ref={refs.setFloating}
+      className="nodrag nopan nowheel"
+      isPinned={isPinned}
+      style={{
+        ...(isPinned ? {} : floatingStyles),
+        position: isPinned ? 'fixed' : 'absolute',
+        right: isPinned ? 0 : undefined,
+        top: isPinned ? 0 : undefined,
+        zIndex: 10000,
+        pointerEvents: 'auto',
+      }}
+    >
+      <PanelChrome
+        title={title}
+        header={header}
+        headerActions={headerActions}
+        onClose={onClose}
+        scrollKey={scrollKey}
+      >
+        {children}
+      </PanelChrome>
+    </PanelContainer>
+  );
+
   return (
     <>
       <ViewportPortal>
@@ -168,31 +201,7 @@ export function FloatingCanvasPanel({
         />
       </ViewportPortal>
 
-      <CanvasPortal>
-        <PanelContainer
-          ref={refs.setFloating}
-          className="nodrag nopan nowheel"
-          isPinned={isPinned}
-          style={{
-            ...(isPinned ? {} : floatingStyles),
-            position: isPinned ? 'fixed' : 'absolute',
-            right: isPinned ? 0 : undefined,
-            top: isPinned ? 0 : undefined,
-            zIndex: 10000,
-            pointerEvents: 'auto',
-          }}
-        >
-          <PanelChrome
-            title={title}
-            header={header}
-            headerActions={headerActions}
-            onClose={onClose}
-            scrollKey={scrollKey}
-          >
-            {children}
-          </PanelChrome>
-        </PanelContainer>
-      </CanvasPortal>
+      {portalToBody ? createPortal(panelContent, document.body) : <CanvasPortal>{panelContent}</CanvasPortal>}
     </>
   );
 }

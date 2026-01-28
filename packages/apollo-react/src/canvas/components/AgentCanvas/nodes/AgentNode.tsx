@@ -657,6 +657,7 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
         nodeId={id}
         placement="right-start"
         offset={16}
+        portalToBody
       >
         {settingsPreviewContent}
       </FloatingCanvasPanel>
