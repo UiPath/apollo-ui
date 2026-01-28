@@ -328,12 +328,12 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
           <InstructionsLabel>{translations.instructions}</InstructionsLabel>
           {system && (
             <InstructionsLine>
-              <strong>{translations.system}:</strong> &quot;{system}&quot;
+              <strong>{translations.system}:</strong> "{system}"
             </InstructionsLine>
           )}
           {user && (
             <InstructionsLine>
-              <strong>{translations.user}:</strong> &quot;{user}&quot;
+              <strong>{translations.user}:</strong> "{user}"
             </InstructionsLine>
           )}
         </InstructionsPreview>
