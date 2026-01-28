@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.10.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.10.0...@uipath/apollo-react@3.10.1) (2026-01-28)
+
+### Bug Fixes
+
+* **apollo-react:** delete vertical-rectangle type and support switch with square [MST-6216] ([fd35d36](https://github.com/UiPath/apollo-ui/commit/fd35d36cc922ef813b05b314180107696f56e2c3))
+
 ## [@uipath/apollo-react-v3.10.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.9.2...@uipath/apollo-react@3.10.0) (2026-01-27)
 
 ### Features
