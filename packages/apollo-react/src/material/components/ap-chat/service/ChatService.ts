@@ -26,6 +26,7 @@ import type {
   AutopilotChatOverrideLabels,
   AutopilotChatPreHookAction,
   AutopilotChatPrompt,
+  AutopilotChatResourceManager,
   AutopilotChatSuggestion,
   ContentPart,
   ContentPartChunk,
@@ -96,6 +97,7 @@ export class AutopilotChatService {
   private _getChatModeKey: (instanceName?: string) => string = () => '';
   private _locale: string = 'en';
   private _theme: string = 'light';
+  private _resourceManager: AutopilotChatResourceManager | undefined;
 
   private constructor(instanceName: string) {
     this._instanceName = instanceName;
@@ -162,6 +164,8 @@ export class AutopilotChatService {
     this.getLocale = this.getLocale.bind(this);
     this.setTheme = this.setTheme.bind(this);
     this.getTheme = this.getTheme.bind(this);
+    this.setResourceManager = this.setResourceManager.bind(this);
+    this.getResourceManager = this.getResourceManager.bind(this);
   }
 
   static Instantiate({
@@ -288,6 +292,10 @@ export class AutopilotChatService {
 
     if (config.theme) {
       this.setTheme(config.theme);
+    }
+
+    if (config.resourceManager) {
+      this.setResourceManager(config.resourceManager);
     }
 
     messageRenderers.forEach((renderer) => this.injectMessageRenderer(renderer));
@@ -1112,6 +1120,26 @@ export class AutopilotChatService {
    */
   getTheme() {
     return this._theme;
+  }
+
+  /**
+   * Sets the resource manager for the variable picker in the chat service.
+   * The resource manager provides the data source for the @ mention picker.
+   *
+   * @param resourceManager - The resource manager implementation
+   */
+  setResourceManager(resourceManager: AutopilotChatResourceManager) {
+    this._resourceManager = resourceManager;
+    this._eventBus.publish(AutopilotChatEvent.SetResourceManager, resourceManager);
+  }
+
+  /**
+   * Gets the resource manager from the chat service
+   *
+   * @returns The resource manager, or undefined if not set
+   */
+  getResourceManager() {
+    return this._resourceManager;
   }
 
   /**

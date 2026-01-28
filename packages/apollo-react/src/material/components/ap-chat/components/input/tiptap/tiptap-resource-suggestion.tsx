@@ -27,6 +27,17 @@ export function createResourceSuggestion(
   let isActive = false;
 
   return {
+    allowSpaces: true,
+    allow: ({ state, range }) => {
+      const textFrom = range.from + 1;
+      const textTo = range.to;
+      const query = textFrom < textTo ? state.doc.textBetween(textFrom, textTo) : '';
+
+      if (query.startsWith(' ') || query.includes('  ')) {
+        return false;
+      }
+      return true;
+    },
     items: () => [],
     render: () => ({
       onStart: (props) => {

@@ -7,6 +7,7 @@ import { useAttachments } from '../../providers/attachements-provider';
 import { useChatService } from '../../providers/chat-service.provider';
 import { useChatState } from '../../providers/chat-state-provider';
 import { useLoading } from '../../providers/loading-provider';
+import { useResourceData } from '../../providers/resource-data-provider';
 import { useStreaming } from '../../providers/streaming-provider';
 import {
   AutopilotChatEvent,
@@ -87,6 +88,7 @@ function AutopilotChatInputComponent() {
   const initialPrompt = chatService?.getPrompt?.();
   const { disabledFeatures, overrideLabels, spacing } = useChatState();
 
+  const { hasResources } = useResourceData();
   const [message, setMessage] = React.useState(
     typeof initialPrompt === 'string' ? initialPrompt : (initialPrompt?.content ?? '')
   );
@@ -238,6 +240,10 @@ function AutopilotChatInputComponent() {
   const hasLoadingAttachments =
     attachmentsLoading.filter((attachment) => attachment.loading).length > 0;
 
+  const handleResourceTriggerClick = () => {
+    editorRef.current?.openResourcePicker();
+  };
+
   return (
     <>
       <AutopilotChatInputError />
@@ -266,6 +272,7 @@ function AutopilotChatInputComponent() {
               minRows={spacing.promptBox.minRows}
               maxRows={spacing.promptBox.maxRows}
               lineHeight={editorLineHeight}
+              anchorEl={inputContainerRef.current}
             />
           </div>
 
@@ -283,6 +290,7 @@ function AutopilotChatInputComponent() {
           }
           waitingResponse={waitingResponse || streaming}
           handleSubmit={handleSubmit}
+          onResourceTriggerClick={hasResources ? handleResourceTriggerClick : undefined}
         />
       </InputContainer>
 

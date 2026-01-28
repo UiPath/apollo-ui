@@ -91,6 +91,8 @@ See [Usage Examples](#usage-examples) for complete setup details.
 | `getAgentMode()`                                                                                               | Returns the currently selected agent mode                                                                                                                                                                                       |
 | `setCustomHeaderActions(actions: AutopilotChatCustomHeaderAction[])`                                           | Configures custom header actions with support for nested menus (see [Custom Header Actions](#custom-header-actions))                                                                                                            |
 | `getCustomHeaderActions()`                                                                                     | Returns the current list of custom header actions                                                                                                                                                                               |
+| `setResourceManager(resourceManager: AutopilotChatResourceManager)`                                            | Sets the resource manager for the @ mention picker in the chat input (see [Resource Picker](#resource-picker))                                                                                                                  |
+| `getResourceManager()`                                                                                         | Returns the current resource manager, or undefined if not set                                                                                                                                                                   |
 
 ### Chat Window Control
 
@@ -231,6 +233,7 @@ Subscribes to chat events and returns an unsubscribe function. The handler will 
 - `OutputStream`: Emitted when sendOutputStreamEvent is called (see [AutopilotChatOutputStreamEvent](#autopilotchatoutputtreamevent)).
 - `SetSelectedAgentMode`: Emitted when the agent mode is selected
 - `CustomHeaderActionClicked`: Emitted when a custom header action is selected by the user (see [AutopilotChatCustomHeaderAction](#autopilotchatcustomheaderaction))
+- `SetResourceManager`: Emitted when a resource manager is set for the @ mention picker (see [Resource Picker](#resource-picker))
 
 #### Intercepting Events
 
@@ -755,6 +758,190 @@ chatService.initialize({
     name: 'Agent',
     description: 'Autonomous agent mode',
     icon: 'smart_toy',
+  },
+});
+```
+
+### Resource Picker
+
+The Chat component supports a resource picker feature that allows users to reference resources (such as variables, files, or context data) within their messages using an `@` mention system. When users type `@` in the chat input, a dropdown appears showing available resources that can be inserted into the message.
+
+#### Setting Up the Resource Manager
+
+To enable the resource picker, you need to provide a resource manager that implements the `AutopilotChatResourceManager` interface:
+
+```typescript
+// Define your resource manager
+const resourceManager: AutopilotChatResourceManager = {
+  // Return top-level resources (categories) when picker opens
+  getTopLevelResources: () => [
+    {
+      id: 'variables',
+      type: 'category',
+      displayName: 'Variables',
+      icon: 'data_object',
+      hasNestedResources: true, // This category has nested items
+    },
+    {
+      id: 'files',
+      type: 'category',
+      displayName: 'Files',
+      icon: 'folder',
+      hasNestedResources: true,
+    },
+    {
+      id: 'current-user',
+      type: 'context',
+      displayName: 'Current User',
+      icon: 'person',
+      tooltip: 'The currently logged in user',
+      hasNestedResources: false, // This is a selectable item, not a category
+    },
+  ],
+
+  // Fetch nested resources for a category
+  getNestedResources: async (resourceId, options) => {
+    // Simulate API call
+    await new Promise((resolve) => setTimeout(resolve, 300));
+
+    if (resourceId === 'variables') {
+      let items = [
+        { id: 'var-1', type: 'variable', displayName: 'username', icon: 'text_fields' },
+        { id: 'var-2', type: 'variable', displayName: 'email', icon: 'mail' },
+        { id: 'var-3', type: 'variable', displayName: 'itemCount', icon: 'numbers' },
+      ];
+
+      // Apply search filter if provided
+      if (options?.searchText) {
+        const search = options.searchText.toLowerCase();
+        items = items.filter((item) =>
+          item.displayName.toLowerCase().includes(search)
+        );
+      }
+
+      return { items, done: true };
+    }
+
+    return { items: [], done: true };
+  },
+
+  // Global search across all resources
+  globalSearch: async (options) => {
+    // Search across all resource types
+    const allItems = [
+      { id: 'var-1', type: 'variable', displayName: 'username', icon: 'text_fields' },
+      { id: 'file-1', type: 'file', displayName: 'config.json', icon: 'description' },
+    ];
+
+    if (!options.searchText) {
+      return { items: allItems, done: true };
+    }
+
+    const search = options.searchText.toLowerCase();
+    const filtered = allItems.filter((item) =>
+      item.displayName.toLowerCase().includes(search)
+    );
+
+    return { items: filtered, done: true };
+  },
+
+  // Optional: Handle when a resource is selected
+  onResourceSelected: (item) => {
+    console.log('Resource selected:', item.displayName);
+  },
+};
+
+// Set the resource manager
+chatService.setResourceManager(resourceManager);
+```
+
+#### Enabling Paginated Resources
+
+For large resource sets, you can enable pagination by setting `paginatedResources` in the configuration:
+
+```typescript
+chatService.initialize({
+  mode: AutopilotChatMode.SideBySide,
+  paginatedResources: true, // Enable pagination for resource fetching
+});
+
+// When pagination is enabled, implement skip-based pagination in your resource manager
+const paginatedResourceManager: AutopilotChatResourceManager = {
+  getTopLevelResources: () => [/* ... */],
+
+  getNestedResources: async (resourceId, options) => {
+    const skip = options?.skip ?? 0;
+    const limit = 20;
+
+    // Fetch paginated data from your API
+    const response = await fetchResources(resourceId, { skip, limit });
+
+    return {
+      items: response.items,
+      done: response.items.length < limit, // No more items if less than limit returned
+    };
+  },
+
+  globalSearch: async (options) => {
+    const skip = options?.skip ?? 0;
+    const limit = 20;
+
+    const response = await searchResources(options.searchText, { skip, limit });
+
+    return {
+      items: response.items,
+      done: response.items.length < limit,
+    };
+  },
+};
+```
+
+#### Getting the Resource Manager
+
+```typescript
+// Retrieve the current resource manager
+const currentManager = chatService.getResourceManager();
+if (currentManager) {
+  const topLevel = currentManager.getTopLevelResources();
+  console.log('Available resource categories:', topLevel);
+}
+```
+
+#### Listening for Resource Manager Changes
+
+```typescript
+// Listen for when a resource manager is set
+chatService.on(AutopilotChatEvent.SetResourceManager, (manager) => {
+  console.log('Resource manager updated');
+  const resources = manager.getTopLevelResources();
+  console.log('Available resources:', resources.length);
+});
+```
+
+#### Resource Picker Features
+
+- **@ Mention Trigger**: Users type `@` to open the resource picker
+- **Hierarchical Navigation**: Categories can contain nested resources
+- **Search Support**: Users can type after `@` to filter resources
+- **Keyboard Navigation**: Arrow keys, Enter, Tab, and Escape for navigation
+- **Resource Chips**: Selected resources appear as styled chips in the input
+- **Pagination Support**: Large resource sets can be loaded incrementally
+- **Loading States**: Shows loading indicators during async operations
+- **Error Handling**: Displays error messages with retry option
+
+#### Resource Manager via Configuration
+
+You can also provide the resource manager during initialization:
+
+```typescript
+chatService.initialize({
+  mode: AutopilotChatMode.SideBySide,
+  paginatedResources: true,
+  resourceManager: {
+    getTopLevelResources: () => [/* ... */],
+    getNestedResources: async (resourceId, options) => {/* ... */},
+    globalSearch: async (options) => {/* ... */},
+    onResourceSelected: (item) => {/* ... */},
   },
 });
 ```
@@ -2704,6 +2891,8 @@ import { FontVariantToken } from '@uipath/apollo-core';
  *                      Hooks expose current data for the action **before** the state change is attempted.
  * @property paginatedMessages - Flag to determine if the chat conversation is paginated
  * @property paginatedHistory - Flag to determine if the history list is paginated
+ * @property paginatedResources - Flag to determine if resource fetching uses pagination
+ * @property resourceManager - The resource manager for the @ mention picker
  * @property settingsRenderer - The renderer for the settings page. This will be used to render the settings page in the chat.
  * @property spacing - The spacing of the chat (prompt box, markdown tokens, etc)
  * @property theming - The theming of the chat (scrollbar appearance, etc)
@@ -2730,6 +2919,8 @@ export interface AutopilotChatConfiguration {
   preHooks?: Partial<Record<AutopilotChatPreHookAction, (data?: any) => Promise<boolean>>>;
   paginatedMessages?: boolean;
   paginatedHistory?: boolean;
+  paginatedResources?: boolean;
+  resourceManager?: AutopilotChatResourceManager;
   settingsRenderer?: (container: HTMLElement) => void;
   theming?: {
     scrollBar?: {
@@ -3364,6 +3555,142 @@ export interface PdfCitation extends Citation {
   page_number: number;
 }
 ```
+
+### AutopilotChatResourceItem
+
+```typescript
+/**
+ * Represents a selectable resource item in the @ mention picker.
+ *
+ * @property id - Unique identifier for the resource
+ * @property type - The type/category of the resource (e.g., 'variable', 'file', 'context')
+ * @property displayName - Human-readable name shown in the picker and chips
+ * @property icon - Material icon name for the resource
+ * @property tooltip - Optional tooltip text for additional context
+ */
+export interface AutopilotChatResourceItem {
+  id: string;
+  type: string;
+  displayName: string;
+  icon: string;
+  tooltip?: string;
+}
+```
+
+### AutopilotChatResourceItemSelector
+
+```typescript
+/**
+ * Represents a top-level resource category that may contain nested resources.
+ * Extends AutopilotChatResourceItem with navigation capability.
+ *
+ * @property hasNestedResources - Whether this item has child resources to navigate into.
+ *                               When true, clicking this item drills down into its children.
+ *                               When false, the item is directly selectable.
+ */
+export interface AutopilotChatResourceItemSelector extends AutopilotChatResourceItem {
+  hasNestedResources: boolean;
+}
+```
+
+### AutopilotChatResourceResult
+
+```typescript
+/**
+ * Result of a resource fetch or search operation.
+ *
+ * @property items - The fetched/searched resource items
+ * @property done - Whether all items have been loaded (no more pagination available).
+ *                 When false, more items can be loaded by calling the fetch method with skip parameter.
+ */
+export interface AutopilotChatResourceResult {
+  items: AutopilotChatResourceItem[];
+  done?: boolean;
+}
+```
+
+### AutopilotChatResourceSearchPayload
+
+```typescript
+/**
+ * Search payload for resource fetching operations.
+ *
+ * @property searchText - Optional text to filter the resource items
+ * @property skip - Number of items to skip for pagination (used when paginatedResources is enabled)
+ */
+export interface AutopilotChatResourceSearchPayload {
+  searchText?: string;
+  skip?: number;
+}
+```
+
+### AutopilotChatResourceManager
+
+```typescript
+/**
+ * Resource manager interface for the @ mention picker.
+ * Consumers implement this interface to provide resource data to the chat component.
+ *
+ * @example
+ * ```typescript
+ * const resourceManager: AutopilotChatResourceManager = {
+ *   getTopLevelResources: () => [
+ *     { id: 'vars', type: 'category', displayName: 'Variables', icon: 'data_object', hasNestedResources: true },
+ *     { id: 'user', type: 'context', displayName: 'Current User', icon: 'person', hasNestedResources: false },
+ *   ],
+ *   getNestedResources: async (resourceId, options) => {
+ *     const items = await fetchResourcesFromAPI(resourceId, options);
+ *     return { items, done: true };
+ *   },
+ *   globalSearch: async (options) => {
+ *     const items = await searchResourcesFromAPI(options.searchText);
+ *     return { items, done: true };
+ *   },
+ *   onResourceSelected: (item) => {
+ *     console.log('Selected:', item.displayName);
+ *   },
+ * };
+ * ```
+ */
+export interface AutopilotChatResourceManager {
+  /**
+   * Returns top-level resources (categories and directly selectable items).
+   * Called when the @ mention picker opens.
+   */
+  getTopLevelResources(): AutopilotChatResourceItemSelector[];
+
+  /**
+   * Fetches nested resources for a category.
+   * Called when a user clicks on a category with hasNestedResources: true.
+   *
+   * @param resourceId - The ID of the category to fetch children for
+   * @param options - Optional search and pagination parameters
+   * @returns Promise resolving to the resource result
+   */
+  getNestedResources(
+    resourceId: string,
+    options?: AutopilotChatResourceSearchPayload
+  ): Promise<AutopilotChatResourceResult>;
+
+  /**
+   * Searches across all resources.
+   * Called when the user types a search query at the top level (not inside a category).
+   *
+   * @param options - Search parameters including searchText and pagination
+   * @returns Promise resolving to the search results
+   */
+  globalSearch(options: AutopilotChatResourceSearchPayload): Promise<AutopilotChatResourceResult>;
+
+  /**
+   * Optional callback invoked when a resource is selected and inserted into the input.
+   *
+   * @param item - The selected resource item
+   */
+  onResourceSelected?(item: AutopilotChatResourceItem): void;
+}
+```
+
+See [Resource Picker](#resource-picker) section for detailed usage examples.
 
 ## Component Architecture
 

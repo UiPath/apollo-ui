@@ -22,6 +22,7 @@ import { AutopilotErrorProvider } from './providers/error-provider';
 import { AutopilotLoadingProvider } from './providers/loading-provider';
 import { LocaleProvider, useLocale } from './providers/locale-provider';
 import { AutopilotPickerProvider } from './providers/picker-provider';
+import { AutopilotResourceDataProvider } from './providers/resource-data-provider';
 import { AutopilotStreamingProvider } from './providers/streaming-provider';
 import { ThemeProvider } from './providers/theme-provider';
 import {
@@ -226,11 +227,13 @@ export function ApChat({
                     <AutopilotLoadingProvider>
                       <AutopilotAttachmentsProvider>
                         <AutopilotPickerProvider>
-                          <AutopilotChatWidthProvider>
-                            <AutopilotChatDropzone>
-                              <AutopilotChatContent />
-                            </AutopilotChatDropzone>
-                          </AutopilotChatWidthProvider>
+                          <AutopilotResourceDataProvider>
+                            <AutopilotChatWidthProvider>
+                              <AutopilotChatDropzone>
+                                <AutopilotChatContent />
+                              </AutopilotChatDropzone>
+                            </AutopilotChatWidthProvider>
+                          </AutopilotResourceDataProvider>
                         </AutopilotPickerProvider>
                       </AutopilotAttachmentsProvider>
                     </AutopilotLoadingProvider>
