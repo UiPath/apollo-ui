@@ -86,7 +86,7 @@ interface TemplateVars {
  */
 export function resolveDisplay(
   manifestDisplay?: NodeDisplayManifest,
-  instanceDisplay?: DisplayConfig
+  instanceDisplay?: (DisplayConfig & { nodeId?: string }) | undefined
 ): ResolvedDisplay {
   if (!manifestDisplay) {
     return {
@@ -97,9 +97,7 @@ export function resolveDisplay(
   }
 
   const { collapsed } = getToolbarActionStore();
-  const isCollapsed = collapsed?.has(
-    (instanceDisplay as Record<string, unknown>)?.nodeId as string
-  );
+  const isCollapsed = Boolean(instanceDisplay?.nodeId && collapsed?.has(instanceDisplay.nodeId));
   const shape = instanceDisplay?.shape ?? manifestDisplay.shape;
 
   // Map shapes to their collapsed equivalents:
