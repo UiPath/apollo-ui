@@ -66,7 +66,7 @@ export const useButtonHandles = ({
       const hasConnectedHandle = config.handles.some((h) => connectedHandleIds.has(h.id));
       const finalVisible = hasConnectedHandle || (shouldShowHandles && (config.visible ?? true));
 
-      // Enhance handles with the unified action handler
+      // Enhance handles with the unified action handler and filter out artifact handles if the node is collapsed
       const enhancedHandles = config.handles
         .filter((handle) => (isCollapsed ? handle.handleType !== 'artifact' : true))
         .map((handle) => ({
