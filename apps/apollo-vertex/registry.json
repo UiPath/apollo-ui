@@ -452,7 +452,13 @@
       "type": "registry:ui",
       "title": "Shell",
       "description": "Provides UiPath authentication and renders children only when authenticated.",
-      "dependencies": ["@uipath/auth-react", "lucide-react", "framer-motion"],
+      "dependencies": [
+        "@uipath/auth-react",
+        "lucide-react",
+        "framer-motion",
+        "react-i18next",
+        "i18next"
+      ],
       "registryDependencies": [
         "button",
         "tooltip",
@@ -476,7 +482,21 @@
         {
           "path": "registry/shell/internal/user-profile.tsx",
           "type": "registry:ui"
-        }
+        },
+        {
+          "path": "registry/shell/internal/locale-provider.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/shell/internal/language-toggle.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/shell/internal/TranslationKey.ts",
+          "type": "registry:lib"
+        },
+        { "path": "lib/i18n.ts", "type": "registry:lib" },
+        { "path": "lib/react-i18next.d.ts", "type": "registry:lib" }
       ]
     },
     {
