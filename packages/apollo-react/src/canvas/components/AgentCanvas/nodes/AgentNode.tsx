@@ -85,7 +85,6 @@ interface AgentNodeData extends NewBaseNodeData {
   parentNodeId?: string;
   isConversational?: boolean;
   // instructions
-  hasInstructions?: boolean;
   instructions?: {
     system?: string;
     user?: string;
