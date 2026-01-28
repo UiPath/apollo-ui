@@ -318,10 +318,12 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
   }, [healthScore, onHealthScoreClick]);
 
   const instructionsFooter = useMemo(() => {
-    // Show preview when instructions exist
-    if (data.hasInstructions && data.instructions) {
-      const { system, user } = data.instructions;
-      if (!system && !user) return null;
+    // Show preview when instructions have actual content
+    const system = data.instructions?.system;
+    const user = data.instructions?.user;
+    const hasContent = Boolean(system || user);
+
+    if (hasContent) {
       return (
         <InstructionsPreview
           onClick={(e) => {
@@ -344,7 +346,7 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
       );
     }
 
-    // Show add button in design mode when no instructions
+    // Show add button in design mode when no content
     if (mode !== 'design' || !onAddInstructions) return null;
     return (
       <AddInstructionsButton
@@ -358,7 +360,7 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
         {translations.addInstructions}
       </AddInstructionsButton>
     );
-  }, [data.hasInstructions, data.instructions, mode, onAddInstructions, translations]);
+  }, [data.instructions, mode, onAddInstructions, translations]);
 
   const shouldShowAddButtonFn = (opts: { showAddButton: boolean; selected: boolean }) => {
     return opts.showAddButton || opts.selected;
