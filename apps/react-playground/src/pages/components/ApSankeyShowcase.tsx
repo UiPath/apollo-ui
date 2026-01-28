@@ -358,8 +358,8 @@ export function ApSankeyShowcase() {
 			<section style={{ marginBottom: "48px" }}>
 				<SectionHeader>Multi-Stage Complex Flow</SectionHeader>
 				<SectionDescription>
-					Visualize complex branching flows with multiple stages and
-					convergence points.
+					Visualize complex branching flows with multiple stages and convergence
+					points.
 				</SectionDescription>
 				<ApSankeyDiagram
 					data={{
