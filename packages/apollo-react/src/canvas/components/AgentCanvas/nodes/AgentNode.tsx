@@ -50,12 +50,46 @@ const AddInstructionsButton = styled.button`
   }
 `;
 
+const InstructionsLabel = styled.div`
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--uix-canvas-foreground);
+  line-height: 16px;
+`;
+
+const InstructionsPreview = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+  font-size: 9px;
+  line-height: 13px;
+  color: var(--uix-canvas-foreground-de-emp);
+  cursor: pointer;
+`;
+
+const InstructionsLine = styled.div`
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  > strong {
+    font-weight: 600;
+  }
+`;
+
 interface AgentNodeData extends NewBaseNodeData {
   name: string;
   description: string;
   definition: Record<string, unknown>;
   parentNodeId?: string;
   isConversational?: boolean;
+  // instructions
+  hasInstructions?: boolean;
+  instructions?: {
+    system?: string;
+    user?: string;
+  };
   // suggestions
   isSuggestion?: boolean;
   suggestionId?: string;
@@ -283,8 +317,35 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
     );
   }, [healthScore, onHealthScoreClick]);
 
-  const addInstructionsElement = useMemo(() => {
-    if (data.hasInstructions || mode !== 'design' || !onAddInstructions) return null;
+  const instructionsFooter = useMemo(() => {
+    // Show preview when instructions exist
+    if (data.hasInstructions && data.instructions) {
+      const { system, user } = data.instructions;
+      if (!system && !user) return null;
+      return (
+        <InstructionsPreview
+          onClick={(e) => {
+            e.stopPropagation();
+            onAddInstructions?.();
+          }}
+        >
+          <InstructionsLabel>{translations.instructions}</InstructionsLabel>
+          {system && (
+            <InstructionsLine>
+              <strong>{translations.system}:</strong> &quot;{system}&quot;
+            </InstructionsLine>
+          )}
+          {user && (
+            <InstructionsLine>
+              <strong>{translations.user}:</strong> &quot;{user}&quot;
+            </InstructionsLine>
+          )}
+        </InstructionsPreview>
+      );
+    }
+
+    // Show add button in design mode when no instructions
+    if (mode !== 'design' || !onAddInstructions) return null;
     return (
       <AddInstructionsButton
         type="button"
@@ -297,7 +358,7 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
         {translations.addInstructions}
       </AddInstructionsButton>
     );
-  }, [data.hasInstructions, mode, onAddInstructions, translations.addInstructions]);
+  }, [data.hasInstructions, data.instructions, mode, onAddInstructions, translations]);
 
   const shouldShowAddButtonFn = (opts: { showAddButton: boolean; selected: boolean }) => {
     return opts.showAddButton || opts.selected;
@@ -391,7 +452,7 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
         shape: 'rectangle',
         background: 'var(--uix-canvas-background)',
         iconBackground: 'var(--uix-canvas-background-secondary)',
-        footerComponent: addInstructionsElement,
+        footerComponent: instructionsFooter,
       }}
       toolbarConfig={toolbarConfig}
       adornments={{

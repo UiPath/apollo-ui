@@ -333,6 +333,13 @@ export type AgentFlowProps = {
   enableMemory?: boolean;
   enableStickyNotes?: boolean;
 
+  // instructions
+  hasInstructions?: boolean;
+  instructions?: {
+    system?: string;
+    user?: string;
+  };
+
   // health score
   healthScore?: number;
   onHealthScoreClick?: () => void;
@@ -407,6 +414,10 @@ export type AgentFlowNodeData = {
   suggestionType?: SuggestionType;
   isProcessing?: boolean;
   hasInstructions?: boolean;
+  instructions?: {
+    system?: string;
+    user?: string;
+  };
 };
 export type AgentFlowNode = Node<AgentFlowNodeData, 'agent'> & {
   extent?: 'parent' | CoordinateExtent | undefined;
@@ -514,6 +525,7 @@ export interface AgentNodeTranslations {
   context: string;
   tools: string;
   memory: string;
+  instructions: string;
   addInstructions: string;
 }
 
@@ -531,6 +543,7 @@ export const DefaultAgentNodeTranslations: AgentNodeTranslations = {
   context: 'Context',
   tools: 'Tools',
   memory: 'Memory',
+  instructions: 'Instructions',
   addInstructions: 'Add Instructions',
 };
 
