@@ -76,6 +76,14 @@ const defaultTranslations: AgentNodeTranslations = {
   memory: 'Memory',
   instructions: 'Instructions',
   addInstructions: 'Add Instructions',
+  agentSettings: 'Agent Settings',
+  readOnlyPreview: 'Read-only preview',
+  systemPrompt: 'System prompt',
+  userPrompt: 'User prompt',
+  temperature: 'Temperature',
+  maxTokens: 'Max tokens',
+  maxIteration: 'Max iteration',
+  notConfigured: 'Not configured',
 };
 
 const defaultNodeProps = {
