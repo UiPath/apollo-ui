@@ -627,8 +627,8 @@ const DesignModePlayground = () => {
   const [enableStickyNotes, setEnableStickyNotes] = useState(true);
   const [enableDragging, setEnableDragging] = useState(true);
   const [hasInstructions, setHasInstructions] = useState(false);
-  const [showSystemPrompt, setShowSystemPrompt] = useState(true);
-  const [showUserPrompt, setShowUserPrompt] = useState(true);
+  const [systemPrompt, setSystemPrompt] = useState('');
+  const [userPrompt, setUserPrompt] = useState('');
 
   // Resources state
   const [resources, setResources] = useState<AgentFlowResource[]>(sampleResources);
@@ -660,12 +660,8 @@ const DesignModePlayground = () => {
   // Instructions object
   const instructions = hasInstructions
     ? {
-        system: showSystemPrompt
-          ? 'You are a helpful claims processing agent. Follow company policies strictly and escalate when needed.'
-          : undefined,
-        user: showUserPrompt
-          ? 'Please process the submitted insurance claim and verify all required documentation.'
-          : undefined,
+        system: systemPrompt || undefined,
+        user: userPrompt || undefined,
       }
     : undefined;
 
@@ -1382,20 +1378,58 @@ const DesignModePlayground = () => {
             />
           </Row>
           {hasInstructions && (
-            <Row gap={4} style={{ flexWrap: 'wrap' }}>
-              <ApButton
-                size="small"
-                variant={showSystemPrompt ? 'primary' : 'secondary'}
-                label="System"
-                onClick={() => setShowSystemPrompt(!showSystemPrompt)}
-              />
-              <ApButton
-                size="small"
-                variant={showUserPrompt ? 'primary' : 'secondary'}
-                label="User"
-                onClick={() => setShowUserPrompt(!showUserPrompt)}
-              />
-            </Row>
+            <Column gap={8} style={{ marginTop: 8 }}>
+              <Column gap={2}>
+                <ApTypography
+                  variant={FontVariantToken.fontSizeXs}
+                  style={{ color: 'var(--uix-canvas-foreground-de-emp)' }}
+                >
+                  System prompt:
+                </ApTypography>
+                <textarea
+                  value={systemPrompt}
+                  onChange={(e) => setSystemPrompt(e.target.value)}
+                  placeholder="Enter system prompt..."
+                  style={{
+                    width: '100%',
+                    minHeight: 60,
+                    padding: 8,
+                    fontSize: 12,
+                    borderRadius: 4,
+                    border: '1px solid var(--uix-canvas-border-de-emp)',
+                    backgroundColor: 'var(--uix-canvas-background)',
+                    color: 'var(--uix-canvas-foreground)',
+                    resize: 'vertical',
+                    fontFamily: 'inherit',
+                  }}
+                />
+              </Column>
+              <Column gap={2}>
+                <ApTypography
+                  variant={FontVariantToken.fontSizeXs}
+                  style={{ color: 'var(--uix-canvas-foreground-de-emp)' }}
+                >
+                  User prompt:
+                </ApTypography>
+                <textarea
+                  value={userPrompt}
+                  onChange={(e) => setUserPrompt(e.target.value)}
+                  placeholder="Enter user prompt..."
+                  style={{
+                    width: '100%',
+                    minHeight: 60,
+                    padding: 8,
+                    fontSize: 12,
+                    borderRadius: 4,
+                    border: '1px solid var(--uix-canvas-border-de-emp)',
+                    backgroundColor: 'var(--uix-canvas-background)',
+                    color: 'var(--uix-canvas-foreground)',
+                    resize: 'vertical',
+                    fontFamily: 'inherit',
+                  }}
+                />
+              </Column>
+            </Column>
           )}
         </Column>
 
@@ -1561,33 +1595,65 @@ export const DesignMode: Story = {
 
 const ViewModeWrapper = () => {
   const [hasTimelinePlayer, setHasTimelinePlayer] = useState(false);
+  const [hasInstructions, setHasInstructions] = useState(true);
+
+  // Sample instructions for view mode
+  const instructions = hasInstructions
+    ? {
+        system: 'You are a helpful assistant that helps users with their tasks.',
+        user: 'Please help me complete my work efficiently.',
+      }
+    : undefined;
 
   const renderControlPanel = () => {
     return (
       <StoryInfoPanel title="View Mode Controls">
-        <Column mt={12} gap={8}>
-          <ApTypography variant={FontVariantToken.fontSizeM}>Timeline player:</ApTypography>
-          <Row gap={8}>
-            <ApButton
-              size="small"
-              variant={!hasTimelinePlayer ? 'primary' : 'secondary'}
-              label="Off"
-              onClick={() => setHasTimelinePlayer(false)}
-            />
-            <ApButton
-              size="small"
-              variant={hasTimelinePlayer ? 'primary' : 'secondary'}
-              label="With Spans"
-              onClick={() => setHasTimelinePlayer(true)}
-            />
-          </Row>
+        <Column mt={12} gap={12}>
+          <Column gap={4}>
+            <ApTypography variant={FontVariantToken.fontSizeS} style={{ fontWeight: 600 }}>
+              Timeline player:
+            </ApTypography>
+            <Row gap={8}>
+              <ApButton
+                size="small"
+                variant={!hasTimelinePlayer ? 'primary' : 'secondary'}
+                label="Off"
+                onClick={() => setHasTimelinePlayer(false)}
+              />
+              <ApButton
+                size="small"
+                variant={hasTimelinePlayer ? 'primary' : 'secondary'}
+                label="With Spans"
+                onClick={() => setHasTimelinePlayer(true)}
+              />
+            </Row>
+          </Column>
+          <Column gap={4}>
+            <ApTypography variant={FontVariantToken.fontSizeS} style={{ fontWeight: 600 }}>
+              Instructions:
+            </ApTypography>
+            <Row gap={8}>
+              <ApButton
+                size="small"
+                variant={hasInstructions ? 'primary' : 'secondary'}
+                label="With"
+                onClick={() => setHasInstructions(true)}
+              />
+              <ApButton
+                size="small"
+                variant={!hasInstructions ? 'primary' : 'secondary'}
+                label="Without"
+                onClick={() => setHasInstructions(false)}
+              />
+            </Row>
+          </Column>
         </Column>
       </StoryInfoPanel>
     );
   };
 
   return (
-    <ReactFlowProvider key={hasTimelinePlayer ? 'with-timeline' : 'no-timeline'}>
+    <ReactFlowProvider key={`${hasTimelinePlayer}-${hasInstructions}`}>
       <AgentFlowWrapper
         mode="view"
         initialResources={sampleResources}
@@ -1595,6 +1661,8 @@ const ViewModeWrapper = () => {
         spans={hasTimelinePlayer ? sampleSpans : []}
         definition={sampleAgentDefinition}
         enableTimelinePlayer={hasTimelinePlayer}
+        hasInstructions={hasInstructions}
+        instructions={instructions}
       />
       {renderControlPanel()}
     </ReactFlowProvider>
@@ -1610,7 +1678,9 @@ export const ViewMode: Story = {
     docs: {
       description: {
         story:
-          'Interactive view mode demo. Use the control panel to toggle between view mode with and without the timeline player.',
+          'Interactive view mode demo. Use the control panel to toggle:\n\n' +
+          '• **Timeline player**: Show/hide the timeline with spans\n' +
+          '• **Instructions**: Show/hide instruction prompts preview on the agent node',
       },
     },
   },
