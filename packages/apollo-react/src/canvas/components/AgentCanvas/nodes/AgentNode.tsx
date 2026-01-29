@@ -24,6 +24,7 @@ import { ResourceNodeType } from '../AgentFlow.constants';
 import { useAgentFlowStore } from '../store/agent-flow-store';
 import {
   AddInstructionsButton,
+  HealthScoreBadge,
   InstructionsLabel,
   InstructionsLine,
   InstructionsPreview,
@@ -38,6 +39,7 @@ import {
   SettingsSection,
   SettingsSectionLabel,
   SettingsSectionValue,
+  SubLabelContainer,
 } from './AgentNode.styles';
 
 const { ConversationalAgentIcon, AutonomousAgentIcon } = Icons;
@@ -284,30 +286,17 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
       return null;
     }
     return (
-      <span
+      <HealthScoreBadge
         onClick={(e) => {
           if (onHealthScoreClick) {
             e.stopPropagation();
             onHealthScoreClick();
           }
         }}
-        style={{
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: '4px',
-          padding: '2px 6px',
-          backgroundColor: 'var(--uix-canvas-background-secondary)',
-          borderRadius: '16px',
-          fontSize: '10px',
-          fontWeight: '700',
-          lineHeight: '16px',
-          color: 'var(--uix-canvas-foreground-de-emp)',
-          cursor: 'pointer'
-        }}
       >
         <Icons.HealthScoreIcon w={14} h={14} />
         {healthScore.toString()}
-      </span>
+      </HealthScoreBadge>
     );
   }, [healthScore, onHealthScoreClick]);
 
@@ -508,12 +497,12 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
         display={{
           label: name,
           subLabel: (
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+            <SubLabelContainer>
               {isConversational
                 ? translations.conversationalAgent
                 : translations.autonomousAgent}
               {healthScoreBadge}
-            </span>
+            </SubLabelContainer>
           ),
           shape: 'rectangle',
           background: 'var(--uix-canvas-background)',

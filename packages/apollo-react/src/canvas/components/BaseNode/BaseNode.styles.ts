@@ -2,6 +2,13 @@ import { css, keyframes } from '@emotion/react';
 import styled from '@emotion/styled';
 import type { NodeShape } from '../../schema';
 
+// Grid-aligned node heights (multiples of 16px)
+const GRID_UNIT = 16;
+const NODE_HEIGHT_DEFAULT = GRID_UNIT * 6; // 96px
+const NODE_HEIGHT_FOOTER_BUTTON = GRID_UNIT * 9; // 144px
+const NODE_HEIGHT_FOOTER_SINGLE = GRID_UNIT * 10; // 160px
+const NODE_HEIGHT_FOOTER_DOUBLE = GRID_UNIT * 11; // 176px
+
 const pulseAnimation = (cssVar: string) => keyframes`
   0% {
     box-shadow: 0 0 0 0 color-mix(in srgb, var(${cssVar}) 20%, transparent);
@@ -140,16 +147,16 @@ export const BaseContainer = styled.div<{
     if (hasFooter) {
       switch (footerVariant) {
         case 'button':
-          return '144px'; // 9×16
+          return `${NODE_HEIGHT_FOOTER_BUTTON}px`;
         case 'single':
-          return '160px'; // 10×16
+          return `${NODE_HEIGHT_FOOTER_SINGLE}px`;
         case 'double':
-          return '176px'; // 11×16
+          return `${NODE_HEIGHT_FOOTER_DOUBLE}px`;
         default:
           return 'auto';
       }
     }
-    return height ? `${height}px` : '96px';
+    return height ? `${height}px` : `${NODE_HEIGHT_DEFAULT}px`;
   }};
   background: ${({ backgroundColor }) => backgroundColor || 'var(--uix-canvas-background)'};
   border: 1.5px solid var(--uix-canvas-border-de-emp);
