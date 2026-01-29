@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.12.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.11.0...@uipath/apollo-react@3.12.0) (2026-01-29)
+
+### Features
+
+* **apollo-react:** implement  ApPopover PLT-95438 ([1b80f55](https://github.com/UiPath/apollo-ui/commit/1b80f5513a4b5151e8eabcde0b9e489d69788aaf))
+
 ## [@uipath/apollo-react-v3.11.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.10.2...@uipath/apollo-react@3.11.0) (2026-01-29)
 
 ### Features
