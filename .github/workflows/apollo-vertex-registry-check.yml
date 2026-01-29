@@ -1,0 +1,155 @@
+name: Apollo Vertex Registry Check
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "apps/apollo-vertex/**"
+      - ".github/scripts/test-registry/**"
+      - ".github/workflows/apollo-vertex-registry-check.yml"
+
+concurrency:
+  group: test-registry-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  prepare:
+    name: Prepare
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.matrix.outputs.result }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          registry-url: "https://npm.pkg.github.com"
+          scope: "@uipath"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GH_NPM_REGISTRY_TOKEN }}
+        run: pnpm install
+
+      - name: Build registry
+        run: pnpm --filter apollo-vertex registry:build
+
+      - name: Generate matrix batches
+        id: matrix
+        run: |
+          MATRIX=$(node -e '
+            const registry = JSON.parse(require("fs").readFileSync("apps/apollo-vertex/registry.json", "utf-8"));
+            const names = registry.items.map(i => i.name);
+            const batchSize = 10;
+            const batches = [];
+            for (let i = 0; i < names.length; i += batchSize) {
+              batches.push({
+                batch_index: Math.floor(i / batchSize),
+                components: names.slice(i, i + batchSize).join(",")
+              });
+            }
+            console.log(JSON.stringify(batches));
+          ')
+          echo "result=${MATRIX}" >> "${GITHUB_OUTPUT}"
+
+      - name: Create base shadcn app
+        run: cd ${{ runner.temp }} && pnpx shadcn@latest create minimal-app --preset "https://ui.shadcn.com/init?base=radix&style=vega&baseColor=neutral&theme=neutral&iconLibrary=lucide&font=inter&menuAccent=subtle&menuColor=default&radius=default&template=next&rtl=false" --template next
+
+      - name: Configure @uipath registry
+        working-directory: ${{ runner.temp }}/minimal-app
+        env:
+          REGISTRY_URL: http://localhost:3000
+        run: pnpx tsx ${{ github.workspace }}/.github/scripts/test-registry/configure-registry.ts
+
+      - name: Copy locales into base app
+        run: cp -r apps/apollo-vertex/locales ${{ runner.temp }}/minimal-app/locales
+
+      - name: Remove node_modules from base app
+        run: rm -rf ${{ runner.temp }}/minimal-app/node_modules
+
+      - name: Upload base app
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: base-app
+          path: ${{ runner.temp }}/minimal-app
+          retention-days: 1
+
+      - name: Upload registry files
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: registry-files
+          path: apps/apollo-vertex/public/r/
+          retention-days: 1
+
+  test-components:
+    name: Test batch ${{ matrix.batch_index }}
+    needs: prepare
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJson(needs.prepare.outputs.matrix) }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          sparse-checkout: |
+            .github/scripts/test-registry
+            package.json
+            pnpm-lock.yaml
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: "22"
+          registry-url: "https://npm.pkg.github.com"
+          scope: "@uipath"
+
+      - name: Download base app
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: base-app
+          path: ${{ runner.temp }}/base-app
+
+      - name: Download registry files
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: registry-files
+          path: ${{ runner.temp }}/serve-dir/r
+
+      - name: Start registry server
+        run: npx -y serve ${{ runner.temp }}/serve-dir -p 3000 &
+
+      - name: Test registry components
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GH_NPM_REGISTRY_TOKEN }}
+          COMPONENTS: ${{ matrix.components }}
+          BASE_APP_PATH: ${{ runner.temp }}/base-app
+        run: pnpx tsx ${{ github.workspace }}/.github/scripts/test-registry/test-registry.ts
+
+  registry-check:
+    name: Apollo Vertex Registry Check
+    needs: test-components
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check results
+        run: |
+          if [ "${{ needs.test-components.result }}" != "success" ]; then
+            echo "Some registry component tests failed"
+            exit 1
+          fi
+          echo "All registry component tests passed"
