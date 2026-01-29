@@ -1,3 +1,14 @@
+## [@uipath/apollo-react-v3.11.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.10.2...@uipath/apollo-react@3.11.0) (2026-01-29)
+
+### Features
+
+* **apollo-react:** allow collapsing artifact node parents [AG-683] ([55cbb68](https://github.com/UiPath/apollo-ui/commit/55cbb681d8563e6c2881e9d08a35daaabf10022a))
+* **apollo-react:** resolve button handles and toolbar icon ([906877b](https://github.com/UiPath/apollo-ui/commit/906877b13810f67dddfdd5013976ab2aa6f44fb1))
+
+### Bug Fixes
+
+* **apollo-react:** fix some typing ([9349d47](https://github.com/UiPath/apollo-ui/commit/9349d47bc724e1813af74c20b9f8b00f09b3da0f))
+
 ## [@uipath/apollo-react-v3.10.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.10.1...@uipath/apollo-react@3.10.2) (2026-01-28)
 
 ### Bug Fixes
