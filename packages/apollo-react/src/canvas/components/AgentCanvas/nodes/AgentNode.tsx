@@ -140,15 +140,6 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
     setShowSettingsPreview(false);
   }, []);
 
-  const handleMouseDown = useCallback(() => {
-    // Close preview when starting to drag
-    if (hoverTimeoutRef.current) {
-      clearTimeout(hoverTimeoutRef.current);
-      hoverTimeoutRef.current = null;
-    }
-    setShowSettingsPreview(false);
-  }, []);
-
   useEffect(() => {
     return () => {
       if (hoverTimeoutRef.current) {
@@ -494,7 +485,7 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
   }, [data.instructions, settings, translations]);
 
   return (
-    <div onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave} onMouseDown={handleMouseDown}>
+    <div onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
       <NewBaseNode
         {...nodeProps}
         id={id}

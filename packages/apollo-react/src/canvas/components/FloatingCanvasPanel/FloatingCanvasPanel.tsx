@@ -83,11 +83,7 @@ export function FloatingCanvasPanel({
 
   if (!open || !computedAnchor) return null;
 
-  // For fixed positioning, render everything to document.body
-  // We calculate position manually since floating-ui doesn't handle fixed positioning well
   if (useFixedPosition && anchorRect) {
-    // Calculate position based on placement
-    // For "top" placement: position above the anchor, centered horizontally
     const getScreenSpacePosition = () => {
       const anchorCenterX = computedAnchor.x + computedAnchor.width / 2;
 
@@ -156,11 +152,9 @@ export function FloatingCanvasPanel({
       </PanelContainer>
     );
 
-    // Use CanvasPortal by default to preserve CSS variables, only portal to body if explicitly requested
     return portalToBody ? createPortal(fixedContent, document.body) : <CanvasPortal>{fixedContent}</CanvasPortal>;
   }
 
-  // Default flow-space positioning
   const panelContent = (
     <PanelContainer
       ref={refs.setFloating}
