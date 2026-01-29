@@ -332,6 +332,7 @@ export type AgentFlowProps = {
   /** TODO: Remove once memory feature is fully implemented */
   enableMemory?: boolean;
   enableStickyNotes?: boolean;
+  enableInstructions?: boolean;
 
   instructions?: {
     system?: string;

@@ -89,6 +89,7 @@ const createAgentNodeWrapper = (handlers: {
   suggestionTranslations?: SuggestionTranslations;
   enableMcpTools?: boolean;
   enableMemory?: boolean;
+  enableInstructions?: boolean;
   healthScore?: number;
   onHealthScoreClick?: () => void;
   suggestionGroupVersion?: string;
@@ -183,6 +184,7 @@ const createAgentNodeWrapper = (handlers: {
         translations={handlers.translations ?? DefaultAgentNodeTranslations}
         suggestionTranslations={handlers.suggestionTranslations ?? DefaultSuggestionTranslations}
         enableMemory={handlers.enableMemory === true}
+        enableInstructions={handlers.enableInstructions === true}
         healthScore={handlers.healthScore}
         onHealthScoreClick={handlers.onHealthScoreClick}
         suggestionGroupVersion={handlers.suggestionGroupVersion}
@@ -258,6 +260,7 @@ const AgentFlowInner = memo(
     enableMcpTools,
     enableMemory,
     enableStickyNotes,
+    enableInstructions,
     healthScore,
     onHealthScoreClick,
     suggestionTranslations,
@@ -368,6 +371,7 @@ const AgentFlowInner = memo(
           suggestionTranslations,
           enableMcpTools,
           enableMemory,
+          enableInstructions,
           healthScore,
           onHealthScoreClick,
           suggestionGroupVersion,

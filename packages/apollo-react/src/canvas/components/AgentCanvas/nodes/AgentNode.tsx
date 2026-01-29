@@ -77,6 +77,7 @@ interface AgentNodeProps extends NewBaseNodeDisplayProps {
   onAddInstructions?: () => void;
   translations: AgentNodeTranslations;
   enableMemory?: boolean;
+  enableInstructions?: boolean;
   healthScore?: number;
   onHealthScoreClick?: () => void;
   suggestionTranslations?: SuggestionTranslations;
@@ -105,6 +106,7 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
     onAddInstructions,
     translations,
     enableMemory,
+    enableInstructions = false,
     healthScore,
     onHealthScoreClick,
     suggestionTranslations,
@@ -129,18 +131,20 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
     | undefined;
 
   const handleMouseEnter = useCallback(() => {
+    if (!enableInstructions) return;
     hoverTimeoutRef.current = setTimeout(() => {
       setShowSettingsPreview(true);
     }, HOVER_DELAY_MS);
-  }, []);
+  }, [enableInstructions]);
 
   const handleMouseLeave = useCallback(() => {
+    if (!enableInstructions) return;
     if (hoverTimeoutRef.current) {
       clearTimeout(hoverTimeoutRef.current);
       hoverTimeoutRef.current = null;
     }
     setShowSettingsPreview(false);
-  }, []);
+  }, [enableInstructions]);
 
   useEffect(() => {
     return () => {
@@ -304,6 +308,10 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
     instructionsFooter: React.ReactNode;
     footerVariant: 'none' | 'button' | 'single' | 'double';
   } => {
+    if (!enableInstructions) {
+      return { instructionsFooter: null, footerVariant: 'none' };
+    }
+
     const system = data.instructions?.system;
     const user = data.instructions?.user;
     const hasSystem = Boolean(system);
@@ -355,7 +363,7 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
       ),
       footerVariant: 'button',
     };
-  }, [data.instructions, mode, onAddInstructions, translations]);
+  }, [enableInstructions, data.instructions, mode, onAddInstructions, translations]);
 
   const shouldShowAddButtonFn = (opts: { showAddButton: boolean; selected: boolean }) => {
     return opts.showAddButton || opts.selected;
@@ -553,6 +561,7 @@ const AgentNodeWrapper = (props: NodeProps<Node<AgentNodeData>> & AgentNodeProps
     onAddInstructions,
     translations,
     enableMemory,
+    enableInstructions,
     healthScore,
     onHealthScoreClick,
     suggestionTranslations,
@@ -578,6 +587,7 @@ const AgentNodeWrapper = (props: NodeProps<Node<AgentNodeData>> & AgentNodeProps
       onAddInstructions={onAddInstructions}
       translations={translations}
       enableMemory={enableMemory}
+      enableInstructions={enableInstructions}
       healthScore={healthScore}
       onHealthScoreClick={onHealthScoreClick}
       suggestionTranslations={suggestionTranslations}
