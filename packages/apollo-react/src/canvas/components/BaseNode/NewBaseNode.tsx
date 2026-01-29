@@ -92,6 +92,7 @@ const NewBaseNodeComponent = (
       : finalDisplay.iconBackground;
   const displayCenterAdornment = finalDisplay.centerAdornmentComponent;
   const displayFooter = finalDisplay.footerComponent;
+  const displayFooterVariant = finalDisplay.footerVariant;
 
   const isConnecting = useStore((state) => !!state.connectionClickStartHandle);
 
@@ -221,6 +222,7 @@ const NewBaseNodeComponent = (
         height={height}
         backgroundColor={displayBackground}
         hasFooter={!!displayFooter}
+        footerVariant={displayFooterVariant}
       >
         {icon && (
           <BaseIconWrapper

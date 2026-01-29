@@ -311,48 +311,61 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
     );
   }, [healthScore, onHealthScoreClick]);
 
-  const instructionsFooter = useMemo(() => {
+  const { instructionsFooter, footerVariant } = useMemo((): {
+    instructionsFooter: React.ReactNode;
+    footerVariant: 'none' | 'button' | 'single' | 'double';
+  } => {
     const system = data.instructions?.system;
     const user = data.instructions?.user;
-    const hasContent = Boolean(system || user);
+    const hasSystem = Boolean(system);
+    const hasUser = Boolean(user);
+    const hasContent = hasSystem || hasUser;
 
     if (hasContent) {
-      return (
-        <InstructionsPreview
-          onClick={(e) => {
-            e.stopPropagation();
-            onAddInstructions?.();
-          }}
-        >
-          <InstructionsLabel>{translations.instructions}</InstructionsLabel>
-          {system && (
-            <InstructionsLine>
-              <strong>{translations.system}:</strong> "{system}"
-            </InstructionsLine>
-          )}
-          {user && (
-            <InstructionsLine>
-              <strong>{translations.user}:</strong> "{user}"
-            </InstructionsLine>
-          )}
-        </InstructionsPreview>
-      );
+      return {
+        instructionsFooter: (
+          <InstructionsPreview
+            onClick={(e) => {
+              e.stopPropagation();
+              onAddInstructions?.();
+            }}
+          >
+            <InstructionsLabel>{translations.instructions}</InstructionsLabel>
+            {system && (
+              <InstructionsLine>
+                <strong>{translations.system}:</strong> "{system}"
+              </InstructionsLine>
+            )}
+            {user && (
+              <InstructionsLine>
+                <strong>{translations.user}:</strong> "{user}"
+              </InstructionsLine>
+            )}
+          </InstructionsPreview>
+        ),
+        footerVariant: hasSystem && hasUser ? 'double' : 'single',
+      };
     }
 
     // Show add button in design mode when no content
-    if (mode !== 'design' || !onAddInstructions) return null;
-    return (
-      <AddInstructionsButton
-        type="button"
-        onClick={(e) => {
-          e.stopPropagation();
-          onAddInstructions();
-        }}
-      >
-        <ApIcon name="add" size="14px" />
-        {translations.addInstructions}
-      </AddInstructionsButton>
-    );
+    if (mode !== 'design' || !onAddInstructions) {
+      return { instructionsFooter: null, footerVariant: 'none' };
+    }
+    return {
+      instructionsFooter: (
+        <AddInstructionsButton
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            onAddInstructions();
+          }}
+        >
+          <ApIcon name="add" size="14px" />
+          {translations.addInstructions}
+        </AddInstructionsButton>
+      ),
+      footerVariant: 'button',
+    };
   }, [data.instructions, mode, onAddInstructions, translations]);
 
   const shouldShowAddButtonFn = (opts: { showAddButton: boolean; selected: boolean }) => {
@@ -506,6 +519,7 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
           background: 'var(--uix-canvas-background)',
           iconBackground: 'var(--uix-canvas-background-secondary)',
           footerComponent: instructionsFooter,
+          footerVariant,
         }}
         toolbarConfig={toolbarConfig}
         adornments={{

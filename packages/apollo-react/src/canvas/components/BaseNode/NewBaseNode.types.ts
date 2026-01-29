@@ -28,6 +28,8 @@ export interface NewBaseNodeDisplayProps {
   }) => boolean;
 }
 
+export type FooterVariant = 'none' | 'button' | 'single' | 'double';
+
 export interface NodeDisplay {
   label?: string;
   subLabel?: React.ReactNode;
@@ -39,6 +41,7 @@ export interface NodeDisplay {
   iconColor?: string;
   centerAdornmentComponent?: React.ReactNode;
   footerComponent?: React.ReactNode;
+  footerVariant?: FooterVariant;
 }
 
 export interface NodeAdornment {
