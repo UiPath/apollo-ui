@@ -265,3 +265,84 @@ describe('AgentNode - Health Score', () => {
     });
   });
 });
+
+describe('AgentNode - Instructions Footer', () => {
+  it('shows add instructions button in design mode when no instructions', () => {
+    const onAddInstructions = vi.fn();
+    render(
+      <AgentNodeElement
+        {...defaultNodeProps}
+        mode="design"
+        onAddInstructions={onAddInstructions}
+      />
+    );
+
+    expect(screen.getByText('Add Instructions')).toBeInTheDocument();
+  });
+
+  it('does not show add instructions button in view mode', () => {
+    render(
+      <AgentNodeElement
+        {...defaultNodeProps}
+        mode="view"
+        onAddInstructions={vi.fn()}
+      />
+    );
+
+    expect(screen.queryByText('Add Instructions')).not.toBeInTheDocument();
+  });
+
+  it('shows instructions preview when only system instruction exists', () => {
+    render(
+      <AgentNodeElement
+        {...defaultNodeProps}
+        mode="design"
+        data={{
+          ...defaultNodeProps.data,
+          instructions: { system: 'You are a helpful assistant' },
+        }}
+      />
+    );
+
+    expect(screen.getByText('Instructions')).toBeInTheDocument();
+    expect(screen.getByText(/System:/)).toBeInTheDocument();
+    expect(screen.queryByText(/User:/)).not.toBeInTheDocument();
+  });
+
+  it('shows instructions preview when only user instruction exists', () => {
+    render(
+      <AgentNodeElement
+        {...defaultNodeProps}
+        mode="design"
+        data={{
+          ...defaultNodeProps.data,
+          instructions: { user: 'Help me with my task' },
+        }}
+      />
+    );
+
+    expect(screen.getByText('Instructions')).toBeInTheDocument();
+    expect(screen.getByText(/User:/)).toBeInTheDocument();
+    expect(screen.queryByText(/System:/)).not.toBeInTheDocument();
+  });
+
+  it('shows both system and user in preview when both exist', () => {
+    render(
+      <AgentNodeElement
+        {...defaultNodeProps}
+        mode="design"
+        data={{
+          ...defaultNodeProps.data,
+          instructions: {
+            system: 'You are a helpful assistant',
+            user: 'Help me with my task',
+          },
+        }}
+      />
+    );
+
+    expect(screen.getByText('Instructions')).toBeInTheDocument();
+    expect(screen.getByText(/System:/)).toBeInTheDocument();
+    expect(screen.getByText(/User:/)).toBeInTheDocument();
+  });
+});
