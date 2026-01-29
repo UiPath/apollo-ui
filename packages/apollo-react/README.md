@@ -90,10 +90,12 @@ yalc is installed as a devDependency. Install it with:
 pnpm install
 ```
 
-#### Publishing to yalc
+#### Development Workflow
+
+When making changes that you want to test in a consumer project:
 
 ```bash
-# One-time publish
+# Build and publish to yalc
 pnpm build
 pnpm run yalc:publish
 
@@ -101,26 +103,13 @@ pnpm run yalc:publish
 pnpm run yalc:push
 ```
 
-#### Watch Mode (Recommended)
-
-For active development with automatic push to linked projects:
-
-```bash
-pnpm run dev:yalc
-```
-
-This command will:
-- Build icons and i18n once at startup
-- Start rslib in watch mode (rebuilds on file changes)
-- Automatically push changes to all linked projects via yalc
-- Only push changed files for better performance
+The consumer project's dev server will automatically detect the changes and hot-reload.
 
 #### Available Scripts
 
 - `pnpm run yalc:publish` - Publish to local yalc store
 - `pnpm run yalc:push` - Push updates to linked projects
-- `pnpm run dev:yalc` - Watch mode with auto-push (recommended for active development)
-- `pnpm run build` - One-time build
+- `pnpm run build` - Build the package
 
 #### Consuming Projects
 
