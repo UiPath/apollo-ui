@@ -333,6 +333,7 @@ interface AgentFlowWrapperProps {
   enableTimelinePlayer?: boolean;
   enableMemory?: boolean;
   enableStickyNotes?: boolean;
+  enableInstructions?: boolean;
   healthScore?: number;
   onHealthScoreClick?: () => void;
   allowDragging?: boolean;
@@ -351,6 +352,7 @@ const AgentFlowWrapper = ({
   enableTimelinePlayer = true,
   enableMemory = true,
   enableStickyNotes = true,
+  enableInstructions = false,
   healthScore,
   onHealthScoreClick,
   allowDragging = false,
@@ -599,6 +601,7 @@ const AgentFlowWrapper = ({
             enableTimelinePlayer={mode === 'view' && enableTimelinePlayer}
             enableMemory={enableMemory}
             enableStickyNotes={enableStickyNotes}
+            enableInstructions={enableInstructions}
             stickyNotes={stickyNotes}
             onAddStickyNote={handleAddStickyNote}
             onUpdateStickyNote={handleUpdateStickyNote}
@@ -1480,6 +1483,7 @@ const DesignModePlayground = () => {
             onSelectResource={handleSelectResource}
             enableTimelinePlayer={false}
             enableMemory
+            enableInstructions={hasInstructions}
             enableStickyNotes={enableStickyNotes}
             stickyNotes={stickyNotes}
             onAddStickyNote={handleAddStickyNote}
@@ -1661,6 +1665,7 @@ const ViewModeWrapper = () => {
         spans={hasTimelinePlayer ? sampleSpans : []}
         definition={sampleAgentDefinition}
         enableTimelinePlayer={hasTimelinePlayer}
+        enableInstructions={hasInstructions}
         instructions={instructions}
       />
       {renderControlPanel()}
