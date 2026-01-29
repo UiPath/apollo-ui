@@ -136,21 +136,20 @@ export const BaseContainer = styled.div<{
     }
     return `${defaultWidth}px`;
   }};
-  height: ${({ height, hasFooter }) => {
-    if (hasFooter) return 'auto';
-    return height ? `${height}px` : '96px';
-  }};
-  min-height: ${({ footerVariant }) => {
-    switch (footerVariant) {
-      case 'button':
-        return '144px'; // 9×16
-      case 'single':
-        return '160px'; // 10×16
-      case 'double':
-        return '176px'; // 11×16
-      default:
-        return undefined;
+  height: ${({ height, hasFooter, footerVariant }) => {
+    if (hasFooter) {
+      switch (footerVariant) {
+        case 'button':
+          return '144px'; // 9×16
+        case 'single':
+          return '160px'; // 10×16
+        case 'double':
+          return '176px'; // 11×16
+        default:
+          return 'auto';
+      }
     }
+    return height ? `${height}px` : '96px';
   }};
   background: ${({ backgroundColor }) => backgroundColor || 'var(--uix-canvas-background)'};
   border: 1.5px solid var(--uix-canvas-border-de-emp);
