@@ -133,7 +133,7 @@ export function FloatingCanvasPanel({
 
     const screenPosition = getScreenSpacePosition();
 
-    return createPortal(
+    const fixedContent = (
       <PanelContainer
         className="nodrag nopan nowheel"
         isPinned={isPinned}
@@ -153,9 +153,11 @@ export function FloatingCanvasPanel({
         >
           {children}
         </PanelChrome>
-      </PanelContainer>,
-      document.body
+      </PanelContainer>
     );
+
+    // Use CanvasPortal by default to preserve CSS variables, only portal to body if explicitly requested
+    return portalToBody ? createPortal(fixedContent, document.body) : <CanvasPortal>{fixedContent}</CanvasPortal>;
   }
 
   // Default flow-space positioning

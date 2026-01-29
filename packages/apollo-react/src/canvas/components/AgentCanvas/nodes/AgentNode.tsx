@@ -89,10 +89,6 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
     id,
     data,
     selected = false,
-    positionAbsoluteX,
-    positionAbsoluteY,
-    width,
-    height,
     mode = 'design',
     hasMemory = false,
     hasContext = false,
@@ -137,6 +133,15 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
   }, []);
 
   const handleMouseLeave = useCallback(() => {
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+      hoverTimeoutRef.current = null;
+    }
+    setShowSettingsPreview(false);
+  }, []);
+
+  const handleMouseDown = useCallback(() => {
+    // Close preview when starting to drag
     if (hoverTimeoutRef.current) {
       clearTimeout(hoverTimeoutRef.current);
       hoverTimeoutRef.current = null;
@@ -489,7 +494,7 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
   }, [data.instructions, settings, translations]);
 
   return (
-    <div onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
+    <div onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave} onMouseDown={handleMouseDown}>
       <NewBaseNode
         {...nodeProps}
         id={id}
@@ -525,19 +530,9 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
       />
       <FloatingCanvasPanel
         open={showSettingsPreview}
-        anchorRect={
-          positionAbsoluteX !== undefined && positionAbsoluteY !== undefined
-            ? {
-                x: positionAbsoluteX,
-                y: positionAbsoluteY,
-                width: width ?? 320,
-                height: height ?? 140,
-              }
-            : undefined
-        }
+        nodeId={id}
         placement="right-start"
         offset={16}
-        portalToBody
       >
         {settingsPreviewContent}
       </FloatingCanvasPanel>
