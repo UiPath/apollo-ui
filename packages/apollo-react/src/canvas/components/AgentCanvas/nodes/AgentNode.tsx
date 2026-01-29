@@ -89,6 +89,10 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
     id,
     data,
     selected = false,
+    positionAbsoluteX,
+    positionAbsoluteY,
+    width,
+    height,
     mode = 'design',
     hasMemory = false,
     hasContext = false,
@@ -302,8 +306,7 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
           fontWeight: '700',
           lineHeight: '16px',
           color: 'var(--uix-canvas-foreground-de-emp)',
-          cursor: 'pointer',
-          flexShrink: 0,
+          cursor: 'pointer'
         }}
       >
         <Icons.HealthScoreIcon w={14} h={14} />
@@ -522,7 +525,16 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
       />
       <FloatingCanvasPanel
         open={showSettingsPreview}
-        nodeId={id}
+        anchorRect={
+          positionAbsoluteX !== undefined && positionAbsoluteY !== undefined
+            ? {
+                x: positionAbsoluteX,
+                y: positionAbsoluteY,
+                width: width ?? 320,
+                height: height ?? 140,
+              }
+            : undefined
+        }
         placement="right-start"
         offset={16}
         portalToBody
