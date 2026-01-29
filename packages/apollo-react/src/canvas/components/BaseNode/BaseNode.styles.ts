@@ -126,6 +126,7 @@ export const BaseContainer = styled.div<{
   width?: number;
   height?: number;
   hasFooter?: boolean;
+  footerVariant?: 'none' | 'button' | 'single' | 'double';
 }>`
   position: relative;
   width: ${({ shape, width }) => {
@@ -138,6 +139,18 @@ export const BaseContainer = styled.div<{
   height: ${({ height, hasFooter }) => {
     if (hasFooter) return 'auto';
     return height ? `${height}px` : '96px';
+  }};
+  min-height: ${({ footerVariant }) => {
+    switch (footerVariant) {
+      case 'button':
+        return '144px'; // 9×16
+      case 'single':
+        return '160px'; // 10×16
+      case 'double':
+        return '176px'; // 11×16
+      default:
+        return undefined;
+    }
   }};
   background: ${({ backgroundColor }) => backgroundColor || 'var(--uix-canvas-background)'};
   border: 1.5px solid var(--uix-canvas-border-de-emp);
