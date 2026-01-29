@@ -76,6 +76,68 @@ All React components use the `Ap` prefix:
 - `theme`: Material UI theme overrides (apolloMaterialUiThemeDark, apolloMaterialUiThemeLight)
 - `utils`: Re-exported apollo-utils functions
 
+## Development
+
+### Local Development with yalc
+
+This package uses [yalc](https://github.com/wclr/yalc) for local development against consumer projects without publishing to npm.
+
+#### Setup
+
+yalc is installed as a devDependency. Install it with:
+
+```bash
+pnpm install
+```
+
+#### Publishing to yalc
+
+```bash
+# One-time publish
+pnpm build
+pnpm run yalc:publish
+
+# Or push updates to already linked projects
+pnpm run yalc:push
+```
+
+#### Watch Mode (Recommended)
+
+For active development with automatic push to linked projects:
+
+```bash
+pnpm run dev:yalc
+```
+
+This command will:
+- Build icons and i18n once at startup
+- Start rslib in watch mode (rebuilds on file changes)
+- Automatically push changes to all linked projects via yalc
+- Only push changed files for better performance
+
+#### Available Scripts
+
+- `pnpm run yalc:publish` - Publish to local yalc store
+- `pnpm run yalc:push` - Push updates to linked projects
+- `pnpm run dev:yalc` - Watch mode with auto-push (recommended for active development)
+- `pnpm run build` - One-time build
+
+#### Consuming Projects
+
+Projects using this package via yalc should run:
+
+```bash
+# Link this package
+yalc add @uipath/apollo-react
+pnpm install
+
+# Unlink and restore npm version
+yalc remove @uipath/apollo-react
+pnpm install
+```
+
+See consumer projects (e.g., flow-workbench) for detailed setup instructions.
+
 ## License
 
 MIT
