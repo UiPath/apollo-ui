@@ -140,3 +140,23 @@ export const SettingsRowValue = styled.span`
   color: var(--uix-canvas-foreground-emp);
   font-weight: 500;
 `;
+
+export const SubLabelContainer = styled.span`
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+`;
+
+export const HealthScoreBadge = styled.span`
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 6px;
+  background-color: var(--uix-canvas-background-secondary);
+  border-radius: 16px;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 16px;
+  color: var(--uix-canvas-foreground-de-emp);
+  cursor: pointer;
+`;
