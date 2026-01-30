@@ -84,6 +84,10 @@ export function ApChatShowcase() {
 	const [promptBoxMinRows, setPromptBoxMinRows] = useState<number>(2);
 	const [promptBoxMaxRows, setPromptBoxMaxRows] = useState<number>(12);
 
+	const [resourcePaginationEnabled, setResourcePaginationEnabled] =
+		useState(true);
+	const [resourcePageSize, setResourcePageSize] = useState(10);
+
 	// Resource manager creation function
 	const createResourceManager =
 		useCallback((): AutopilotChatResourceManager => {
@@ -120,67 +124,65 @@ export function ApChatShowcase() {
 				},
 			];
 
-			const variableItems = [
-				{
-					id: "var-username",
-					type: "variable",
-					displayName: "username",
-					icon: "text_fields",
-					tooltip: "The current user's username (string)",
-				},
-				{
-					id: "var-email",
-					type: "variable",
-					displayName: "email",
-					icon: "mail",
-					tooltip: "The current user's email address",
-				},
-				{
-					id: "var-count",
-					type: "variable",
-					displayName: "itemCount",
-					icon: "numbers",
-					tooltip: "Number of items in the cart (integer)",
-				},
-				{
-					id: "var-is-active",
-					type: "variable",
-					displayName: "isActive",
-					icon: "toggle_on",
-					tooltip: "Whether the user account is active (boolean)",
-				},
-				{
-					id: "var-settings",
-					type: "variable",
-					displayName: "userSettings",
-					icon: "settings",
-					tooltip: "User preferences and settings object",
-				},
-			];
+			const variableIcons = [
+				"text_fields",
+				"mail",
+				"numbers",
+				"toggle_on",
+				"settings",
+				"person",
+				"calendar_today",
+				"list",
+				"data_object",
+				"code",
+			] as const;
+			const variableItems = Array.from({ length: 50 }, (_, i) => ({
+				id: `var-${i}`,
+				type: "variable",
+				displayName: `variable_${i.toString().padStart(2, "0")}`,
+				icon: variableIcons[i % variableIcons.length] as string,
+				tooltip: `Variable ${i} - This is a sample variable for testing pagination`,
+			}));
 
-			const fileItems = [
-				{
-					id: "file-config",
-					type: "file",
-					displayName: "config.json",
-					icon: "description",
-					tooltip: "Application configuration file",
-				},
-				{
-					id: "file-data",
-					type: "file",
-					displayName: "data.csv",
-					icon: "table_chart",
-					tooltip: "Exported data in CSV format",
-				},
-				{
-					id: "file-report",
-					type: "file",
-					displayName: "report.pdf",
-					icon: "picture_as_pdf",
-					tooltip: "Monthly report in PDF format",
-				},
-			];
+			const fileIcons = [
+				"description",
+				"table_chart",
+				"picture_as_pdf",
+				"image",
+				"code",
+				"folder",
+			] as const;
+			const fileExtensions = [
+				".json",
+				".csv",
+				".pdf",
+				".png",
+				".ts",
+				".txt",
+				".xml",
+				".yaml",
+			] as const;
+			const fileItems = Array.from({ length: 30 }, (_, i) => ({
+				id: `file-${i}`,
+				type: "file",
+				displayName: `document_${i.toString().padStart(2, "0")}${fileExtensions[i % fileExtensions.length]}`,
+				icon: fileIcons[i % fileIcons.length] as string,
+				tooltip: `File ${i} - Sample file for testing pagination`,
+			}));
+
+			const paginate = <T,>(
+				items: T[],
+				skip: number,
+				pageSize: number,
+				paginationEnabled: boolean,
+			): { paginatedItems: T[]; done: boolean } => {
+				if (!paginationEnabled) {
+					return { paginatedItems: items, done: true };
+				}
+				const paginatedItems = items.slice(skip, skip + pageSize);
+				const done = skip + pageSize >= items.length;
+				return { paginatedItems, done };
+			};
 
 			return {
 				getTopLevelResources: () => topLevelItems,
@@ -201,29 +203,51 @@ export function ApChatShowcase() {
 						);
 					}
 
-					return { items, done: true };
+					const skip = options?.skip ?? 0;
+					const { paginatedItems, done } = paginate(
+						items,
+						skip,
+						resourcePageSize,
+						resourcePaginationEnabled,
+					);
+
+					console.log(
+						`[ResourceManager] getNestedResources: resourceId=${resourceId}, skip=${skip}, returned=${paginatedItems.length}, done=${done}`,
+					);
+
+					return { items: paginatedItems, done };
 				},
 				globalSearch: async (options) => {
 					await new Promise((resolve) => setTimeout(resolve, 300));
 
-					const allItems = [...variableItems, ...fileItems];
+					let allItems = [...variableItems, ...fileItems];
 
-					if (!options.searchText) {
-						return { items: allItems, done: true };
+					if (options.searchText) {
+						const searchLower = options.searchText.toLowerCase();
+						allItems = allItems.filter((item) =>
+							item.displayName.toLowerCase().includes(searchLower),
+						);
 					}
 
-					const searchLower = options.searchText.toLowerCase();
-					const filtered = allItems.filter((item) =>
-						item.displayName.toLowerCase().includes(searchLower),
+					const skip = options.skip ?? 0;
+					const { paginatedItems, done } = paginate(
+						allItems,
+						skip,
+						resourcePageSize,
+						resourcePaginationEnabled,
 					);
 
-					return { items: filtered, done: true };
+					console.log(
+						`[ResourceManager] globalSearch: searchText="${options.searchText ?? ""}", skip=${skip}, returned=${paginatedItems.length}, done=${done}`,
+					);
+
+					return { items: paginatedItems, done };
 				},
 				onResourceSelected: (item) => {
 					console.log("Resource selected:", item.displayName);
 				},
 			};
-		}, []);
+		}, [resourcePaginationEnabled, resourcePageSize]);
 
 	// Custom settings renderer function
 	const createSettingsRenderer = useCallback(
@@ -680,6 +704,7 @@ export function ApChatShowcase() {
 			// Update other config settings
 			chatService.patchConfig({
 				paginatedMessages: features.paginatedMessages,
+				paginatedResources: resourcePaginationEnabled,
 				spacing: {
 					compactMode: features.compactMode,
 					// Only pass custom values when NOT in compact mode
@@ -744,6 +769,7 @@ export function ApChatShowcase() {
 		primaryFontToken,
 		promptBoxMinRows,
 		promptBoxMaxRows,
+		resourcePaginationEnabled,
 	]);
 
 	// Chat mode controls
@@ -1230,6 +1256,21 @@ console.log(processUserData(exampleUser, { source: 'web', ipAddress: '192.168.1.
 		console.log("Resource manager cleared");
 	};
 
+	// Auto-update resource manager when pagination settings change
+	useEffect(() => {
+		if (chatService) {
+			chatService.setResourceManager(createResourceManager());
+			console.log(
+				`Resource manager updated: pagination=${resourcePaginationEnabled}, pageSize=${resourcePageSize}`,
+			);
+		}
+	}, [
+		chatService,
+		createResourceManager,
+		resourcePaginationEnabled,
+		resourcePageSize,
+	]);
+
 	// Stream with Citations
 	const streamWithCitations = () => {
 		// Generate a unique message ID for this streaming response
@@ -1470,6 +1511,30 @@ console.log(processUserData(exampleUser, { source: 'web', ipAddress: '192.168.1.
 							Clear Resource Manager
 						</Button>
 					</ButtonGroup>
+					<Checkbox>
+						<input
+							type="checkbox"
+							checked={resourcePaginationEnabled}
+							onChange={() =>
+								setResourcePaginationEnabled(!resourcePaginationEnabled)
+							}
+						/>
+						Enable Pagination (50 vars, 30 files)
+					</Checkbox>
+					<InfoText style={{ marginTop: "8px" }}>
+						Page Size: {resourcePageSize}
+					</InfoText>
+					<Input
+						type="number"
+						min={1}
+						max={20}
+						value={resourcePageSize}
+						onChange={(e) => setResourcePageSize(Number(e.target.value))}
+						style={{ width: "80px" }}
+					/>
+					<InfoText style={{ marginTop: "4px", fontSize: "11px" }}>
+						Check console for pagination logs
+					</InfoText>
 				</Section>
 
 				<Section>
