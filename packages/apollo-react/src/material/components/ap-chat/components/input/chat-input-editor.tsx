@@ -34,37 +34,36 @@ interface EditorWithPickerProps extends ChatInputEditorProps {
 
 const EditorWithPicker = forwardRef<ChatInputEditorHandle, EditorWithPickerProps>(
   function EditorWithPicker(props, ref) {
-    const {
-      value,
-      placeholder,
-      minRows,
-      maxRows,
-      lineHeight,
-      onChange,
-      onKeyDown,
-      editorRef,
-    } = props;
+    const { value, placeholder, minRows, maxRows, lineHeight, onChange, onKeyDown, editorRef } =
+      props;
     const dropdownRef = useRef<ResourcePickerDropdownHandle>(null);
-    const picker = useAutopilotChatResourcePicker();
+    const { isOpen, drillDown, open, close, setQuery } = useAutopilotChatResourcePicker();
+
+    const isOpenRef = useRef(isOpen);
+    const drillDownRef = useRef(drillDown);
+    const valueRef = useRef(value);
+    isOpenRef.current = isOpen;
+    drillDownRef.current = drillDown;
+    valueRef.current = value;
 
     const handleChange = useCallback(
       (newValue: string) => {
-        if (picker.isOpen && picker.drillDown && !newValue.includes('@')) {
-          picker.close();
+        if (isOpenRef.current && drillDownRef.current && !newValue.includes('@')) {
+          close();
         }
         onChange(newValue);
       },
-      [picker, onChange]
+      [close, onChange]
     );
 
     const handleKeyDown = useCallback(
       (event: KeyboardEvent): boolean => {
-        if (picker.isOpen && dropdownRef.current?.handleKeyDown(event)) {
+        if (isOpenRef.current && dropdownRef.current?.handleKeyDown(event)) {
           return true;
         }
         return onKeyDown?.(event) ?? false;
       },
-      [picker.isOpen, onKeyDown]
+      [onKeyDown]
     );
 
     const openResourcePicker = useCallback(() => {
@@ -75,11 +74,11 @@ const EditorWithPicker = forwardRef<ChatInputEditorHandle, EditorWithPickerProps
       ref,
       () => ({
         focus: () => editorRef.current?.focus(),
-        getSerializedContent: () => editorRef.current?.getSerializedContent() ?? value,
+        getSerializedContent: () => editorRef.current?.getSerializedContent() ?? valueRef.current,
         clear: () => editorRef.current?.clear(),
         openResourcePicker,
       }),
-      [editorRef, value, openResourcePicker]
+      [editorRef, openResourcePicker]
     );
 
     return (
@@ -93,9 +92,9 @@ const EditorWithPicker = forwardRef<ChatInputEditorHandle, EditorWithPickerProps
           lineHeight={lineHeight}
           onChange={handleChange}
           onKeyDown={handleKeyDown}
-          onMentionStart={picker.open}
-          onMentionEnd={picker.close}
-          onMentionQueryChange={picker.setQuery}
+          onMentionStart={open}
+          onMentionEnd={close}
+          onMentionQueryChange={setQuery}
         />
         <ResourcePickerDropdown ref={dropdownRef} />
       </>

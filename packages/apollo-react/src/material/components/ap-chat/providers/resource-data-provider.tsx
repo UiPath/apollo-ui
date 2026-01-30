@@ -1,4 +1,4 @@
-import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import type {
   AutopilotChatResourceItem,
   AutopilotChatResourceItemSelector,
@@ -89,19 +89,27 @@ export function AutopilotResourceDataProvider({ children }: { children: React.Re
     [resourceManager]
   );
 
+  const contextValue = useMemo(
+    () => ({
+      topLevelResources,
+      hasResources,
+      paginatedResources,
+      getNestedResources,
+      globalSearch,
+      onResourceSelected,
+    }),
+    [
+      topLevelResources,
+      hasResources,
+      paginatedResources,
+      getNestedResources,
+      globalSearch,
+      onResourceSelected,
+    ]
+  );
+
   return (
-    <ResourceDataContext.Provider
-      value={{
-        topLevelResources,
-        hasResources,
-        paginatedResources,
-        getNestedResources,
-        globalSearch,
-        onResourceSelected,
-      }}
-    >
-      {children}
-    </ResourceDataContext.Provider>
+    <ResourceDataContext.Provider value={contextValue}>{children}</ResourceDataContext.Provider>
   );
 }
 

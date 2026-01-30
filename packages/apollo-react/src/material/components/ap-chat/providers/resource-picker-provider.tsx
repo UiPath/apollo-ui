@@ -31,6 +31,7 @@ export interface AutopilotChatResourcePickerContextType {
   searchInProgress: boolean;
   hasMore: boolean;
   error: string | null;
+  previousDisplayCount: number;
   open: (range: TipTapRange, coords: CursorCoordinates) => void;
   close: () => void;
   setQuery: (query: string, range: TipTapRange) => void;
@@ -75,6 +76,7 @@ export function AutopilotChatResourcePickerProvider({
     error,
     searchResults,
     searchDone,
+    previousDisplayCount,
   } = state;
 
   const mentionRangeRef = useRef<TipTapRange | null>(null);
@@ -274,6 +276,12 @@ export function AutopilotChatResourcePickerProvider({
     dispatch({ type: 'SEARCH_SUCCESS', results, done: true });
   }, [drillDown, searchQuery, topLevelResources, getNestedResources, dispatch]);
 
+  const displayedItems = useMemo(() => {
+    if (searchQuery) return searchResults;
+    if (drillDown) return drillDown.resources;
+    return topLevelResources;
+  }, [searchQuery, searchResults, drillDown, topLevelResources]);
+
   useEffect(() => {
     if (!searchQuery) {
       dispatch({ type: 'CLEAR_SEARCH' });
@@ -288,12 +296,6 @@ export function AutopilotChatResourcePickerProvider({
     );
     return () => clearTimeout(debounceTimer);
   }, [searchQuery, paginatedResources, performPaginatedSearch, performLocalSearch, dispatch]);
-
-  const displayedItems = useMemo(() => {
-    if (searchQuery) return searchResults;
-    if (drillDown) return drillDown.resources;
-    return topLevelResources;
-  }, [searchQuery, searchResults, drillDown, topLevelResources]);
 
   const hasMore = useMemo(() => {
     if (!paginatedResources) return false;
@@ -314,6 +316,7 @@ export function AutopilotChatResourcePickerProvider({
       searchInProgress,
       hasMore,
       error,
+      previousDisplayCount,
       open,
       close,
       setQuery,
@@ -333,6 +336,7 @@ export function AutopilotChatResourcePickerProvider({
       searchInProgress,
       hasMore,
       error,
+      previousDisplayCount,
       open,
       close,
       setQuery,
