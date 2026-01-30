@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.13.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.12.0...@uipath/apollo-react@3.13.0) (2026-01-30)
+
+### Features
+
+* **apollo-react:** add startPointIndicator ([3f509c4](https://github.com/UiPath/apollo-ui/commit/3f509c40458d38d772e16bab1a91449ff32223db))
+
 ## [@uipath/apollo-react-v3.12.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.11.0...@uipath/apollo-react@3.12.0) (2026-01-29)
 
 ### Features
