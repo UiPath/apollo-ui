@@ -677,11 +677,17 @@ export function ApChatShowcase() {
 				paginatedMessages: features.paginatedMessages,
 				spacing: {
 					compactMode: features.compactMode,
-					primaryFontToken,
-					promptBox: {
-						minRows: promptBoxMinRows,
-						maxRows: promptBoxMaxRows,
-					},
+					// Only pass custom values when NOT in compact mode
+					// In compact mode, let calculateSpacing compute the values
+					...(features.compactMode
+						? {}
+						: {
+								primaryFontToken,
+								promptBox: {
+									minRows: promptBoxMinRows,
+									maxRows: promptBoxMaxRows,
+								},
+							}),
 				},
 				theming: {
 					scrollBar: features.customScrollTheme

@@ -75,5 +75,7 @@
   "autopilot-chat.resource-picker.label": "Resource picker",
   "autopilot-chat.resource-picker.load-more-error": "Failed to load more",
   "autopilot-chat.resource-picker.search-error": "Search failed",
-  "autopilot-chat.resource-picker.back": "Go back"
+  "autopilot-chat.resource-picker.back": "Go back",
+  "autopilot-chat.input.resource-chip.remove": "Remove",
+  "autopilot-chat.input.resource-chip.remove-name": "Remove {label}"
 }

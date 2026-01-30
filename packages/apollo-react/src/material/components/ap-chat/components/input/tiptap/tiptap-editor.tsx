@@ -6,9 +6,10 @@ import Paragraph from '@tiptap/extension-paragraph';
 import Text from '@tiptap/extension-text';
 import { Placeholder, UndoRedo } from '@tiptap/extensions';
 import { Fragment, Node, Slice } from '@tiptap/pm/model';
-import { EditorContent, useEditor } from '@tiptap/react';
+import { EditorContent, ReactNodeViewRenderer, useEditor } from '@tiptap/react';
 import React, { forwardRef, useCallback } from 'react';
 import { type AutopilotChatResourceItem } from './../../../service';
+import { ResourceChipNodeView } from './resource-chip-node-view';
 import { textToDocument } from './tiptap.utils';
 import { EditorContainer } from './tiptap-editor.styles';
 import { type CursorCoordinates, createResourceSuggestion } from './tiptap-resource-suggestion';
@@ -16,6 +17,7 @@ import { type CursorCoordinates, createResourceSuggestion } from './tiptap-resou
 /**
  * Extended Mention extension with custom resource attributes.
  * Adds `type` and `icon` to the default `id` and `label` attributes.
+ * Uses ReactNodeViewRenderer for interactive chip with tooltip and delete.
  */
 const ResourceMention = Mention.extend({
   addAttributes() {
@@ -34,6 +36,9 @@ const ResourceMention = Mention.extend({
       },
     };
   },
+  addNodeView() {
+    return ReactNodeViewRenderer(ResourceChipNodeView);
+  },
 });
 
 export interface TipTapEditorHandle {
@@ -42,6 +47,7 @@ export interface TipTapEditorHandle {
   getSerializedContent: () => string;
   clear: () => void;
   clearMentionQuery: () => void;
+  triggerMention: () => void;
 }
 
 interface TipTapEditorCallbacks {
@@ -128,27 +134,9 @@ function TipTapEditorInner(
         emptyEditorClass: 'is-editor-empty',
       }),
       ResourceMention.configure({
-        HTMLAttributes: { class: 'resource-mention' },
         deleteTriggerWithBackspace: true,
         suggestion: resourceSuggestion,
         renderText: ({ node }) => node.attrs.label ?? node.attrs.id,
-        renderHTML({ node }) {
-          const { id, label, type, icon = 'description' } = node.attrs;
-
-          return [
-            'span',
-            {
-              class: 'resource-mention',
-              'data-type': 'mention',
-              'data-id': id,
-              'data-resource-type': type,
-              'data-label': label,
-              'data-icon': icon,
-            },
-            ['span', { class: 'resource-chip-icon' }, icon],
-            ['span', { class: 'resource-display-name' }, label],
-          ];
-        },
       }),
     ],
     [placeholder, resourceSuggestion]
@@ -276,10 +264,24 @@ function TipTapEditorInner(
     }
   }, [editor]);
 
+  const triggerMention = useCallback(() => {
+    if (!editor) {
+      return;
+    }
+    editor.chain().focus().insertContent('@').run();
+  }, [editor]);
+
   React.useImperativeHandle(
     ref,
-    () => ({ focus, insertResource, getSerializedContent, clear, clearMentionQuery }),
-    [focus, insertResource, getSerializedContent, clear, clearMentionQuery]
+    () => ({
+      focus,
+      insertResource,
+      getSerializedContent,
+      clear,
+      clearMentionQuery,
+      triggerMention,
+    }),
+    [focus, insertResource, getSerializedContent, clear, clearMentionQuery, triggerMention]
   );
 
   return (
