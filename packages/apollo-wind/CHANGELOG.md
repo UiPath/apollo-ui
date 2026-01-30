@@ -1,3 +1,9 @@
+## [@uipath/apollo-wind-v0.7.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@0.6.6...@uipath/apollo-wind@0.7.0) (2026-01-30)
+
+### Features
+
+* **apollo-wind:** re-export toast function from sonner ([0321973](https://github.com/uipath/apollo-ui/commit/0321973f04103b76c3bdc4eb76b961812cf0ee0f))
+
 ## [@uipath/apollo-wind-v0.6.6](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@0.6.5...@uipath/apollo-wind@0.6.6) (2026-01-24)
 
 ### Bug Fixes
