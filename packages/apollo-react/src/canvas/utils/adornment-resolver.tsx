@@ -7,6 +7,7 @@ interface NodeExecutionStateWithDebug {
   status?: string;
   count: number;
   debug: boolean;
+  isExecutionStartPoint?: boolean;
 }
 
 interface BreakpointIndicatorProps {
@@ -22,6 +23,23 @@ export function BreakpointIndicator({ isActive = true }: BreakpointIndicatorProp
     <div
       className="w-4 h-4 rounded-full bg-red-500 border border-red-600 shadow-sm"
       title="Breakpoint"
+    />
+  );
+}
+
+interface ExecutionStartPointIndicatorProps {
+  isActive?: boolean;
+}
+
+export function ExecutionStartPointIndicator({ isActive = true }: ExecutionStartPointIndicatorProps) {
+  if (!isActive) {
+    return null;
+  }
+
+  return (
+    <div
+      className="w-4 h-4 rounded-full bg-blue-500 border border-blue-600 shadow-sm"
+      title="Execution Start Point"
     />
   );
 }
@@ -54,10 +72,12 @@ const getDefaultAdornments = (context: NodeStatusContext): NodeAdornments => {
   const status = typeof executionState === 'object' ? executionState?.status : executionState;
   const count = typeof executionState === 'object' ? executionState.count : undefined;
   const hasBreakpoint = typeof executionState === 'object' && executionState?.debug;
+  const isExecutionStartPoint = typeof executionState === 'object' && executionState?.isExecutionStartPoint;
 
   return {
     topLeft: hasBreakpoint ? <BreakpointIndicator /> : undefined,
     topRight: <ExecutionStatusIndicator status={status} count={count} />,
+    bottomLeft: isExecutionStartPoint ? <ExecutionStartPointIndicator /> : undefined,
   };
 };
 
