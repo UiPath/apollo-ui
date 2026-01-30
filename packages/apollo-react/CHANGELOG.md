@@ -1,3 +1,28 @@
+## [@uipath/apollo-react-v3.14.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.13.0...@uipath/apollo-react@3.14.0) (2026-01-30)
+
+### Features
+
+* **apollo-react:** 16 (#AG-123) ([50232f6](https://github.com/UiPath/apollo-ui/commit/50232f68c5915925b016e602a0439a6ff236509f)), closes [#AG-123](https://github.com/UiPath/apollo-ui/issues/AG-123)
+* **apollo-react:** 16 (#AG-123) ([db3e310](https://github.com/UiPath/apollo-ui/commit/db3e3109f81dddc6a896596e1364203a7445d351)), closes [#AG-123](https://github.com/UiPath/apollo-ui/issues/AG-123)
+* **apollo-react:** ff (#AG-123) ([56c7ecb](https://github.com/UiPath/apollo-ui/commit/56c7ecb43626fbd92be258de007bd1c48c1fbaee)), closes [#AG-123](https://github.com/UiPath/apollo-ui/issues/AG-123)
+* **apollo-react:** hove (#AG-123) ([d13bdfe](https://github.com/UiPath/apollo-ui/commit/d13bdfe692baad731f38ce1032923604c5672cbe)), closes [#AG-123](https://github.com/UiPath/apollo-ui/issues/AG-123)
+* **apollo-react:** hover (#AG-123) ([3311d22](https://github.com/UiPath/apollo-ui/commit/3311d2291670597bad0ad66bdacdecc60af16832)), closes [#AG-123](https://github.com/UiPath/apollo-ui/issues/AG-123)
+* **apollo-react:** hover (#AG-123) ([ab78570](https://github.com/UiPath/apollo-ui/commit/ab7857070c1bd44ec0eabd2d1d6d17978392c8f0)), closes [#AG-123](https://github.com/UiPath/apollo-ui/issues/AG-123)
+* **apollo-react:** hover (#AG-123) ([26e7715](https://github.com/UiPath/apollo-ui/commit/26e771581dd6bfef005d73bf84211544ca2745eb)), closes [#AG-123](https://github.com/UiPath/apollo-ui/issues/AG-123)
+* **apollo-react:** hover (#AG-123) ([d4329e9](https://github.com/UiPath/apollo-ui/commit/d4329e9a82c2b5dc7413aaf3cb45beb188d2abb8)), closes [#AG-123](https://github.com/UiPath/apollo-ui/issues/AG-123)
+* **apollo-react:** hover (#AG-123) ([4f06b6a](https://github.com/UiPath/apollo-ui/commit/4f06b6a437525362804f07c26ec6526f3b8b3f40)), closes [#AG-123](https://github.com/UiPath/apollo-ui/issues/AG-123)
+* **apollo-react:** hover (#AG-123) ([1fdcfb5](https://github.com/UiPath/apollo-ui/commit/1fdcfb56b6c2bb723d643274766a4b4e1002e642)), closes [#AG-123](https://github.com/UiPath/apollo-ui/issues/AG-123)
+* **apollo-react:** instruction (#AG-123) ([a08d2ce](https://github.com/UiPath/apollo-ui/commit/a08d2ce0784fef1e79c3b65df03b063b1135dbe9)), closes [#AG-123](https://github.com/UiPath/apollo-ui/issues/AG-123)
+* **apollo-react:** instruction (#AG-123) ([2b4fa6d](https://github.com/UiPath/apollo-ui/commit/2b4fa6d654521d971080af819fd1f43d2fea75eb)), closes [#AG-123](https://github.com/UiPath/apollo-ui/issues/AG-123)
+* **apollo-react:** instruction (#AG-123) ([6a35751](https://github.com/UiPath/apollo-ui/commit/6a3575120862d04644c453b7a45ce77d606b36fd)), closes [#AG-123](https://github.com/UiPath/apollo-ui/issues/AG-123)
+* **apollo-react:** instruction (#AG-123) ([14488f5](https://github.com/UiPath/apollo-ui/commit/14488f5666829233f1a4faf6772f09cd9ccc5ad0)), closes [#AG-123](https://github.com/UiPath/apollo-ui/issues/AG-123)
+* **apollo-react:** instruction (#AG-123) ([fcf1e35](https://github.com/UiPath/apollo-ui/commit/fcf1e35ea10563361ab3ae3685ede6339a299c89)), closes [#AG-123](https://github.com/UiPath/apollo-ui/issues/AG-123)
+* **apollo-react:** style (#AG-123) ([0c027e3](https://github.com/UiPath/apollo-ui/commit/0c027e3ba5256a97435de216ba92959f2ac051dd)), closes [#AG-123](https://github.com/UiPath/apollo-ui/issues/AG-123)
+* **apollo-react:** style (#AG-123) ([4b66074](https://github.com/UiPath/apollo-ui/commit/4b66074309f167b5d39dbe155656c788b793edb9)), closes [#AG-123](https://github.com/UiPath/apollo-ui/issues/AG-123)
+* **apollo-react:** styles (#AG-123) ([bcbac46](https://github.com/UiPath/apollo-ui/commit/bcbac460ba9d7167bc86ce042a6bd856734835be)), closes [#AG-123](https://github.com/UiPath/apollo-ui/issues/AG-123)
+* **apollo-react:** test (#AG-123) ([42ce7f1](https://github.com/UiPath/apollo-ui/commit/42ce7f11c2ad2c9f3fedb0de0cfe96000624bfba)), closes [#AG-123](https://github.com/UiPath/apollo-ui/issues/AG-123)
+* **apollo-react:** test (#AG-123) ([36b564e](https://github.com/UiPath/apollo-ui/commit/36b564eadf84116cb69eaf27a33aa476fcb19bc0)), closes [#AG-123](https://github.com/UiPath/apollo-ui/issues/AG-123)
+
 ## [@uipath/apollo-react-v3.13.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.12.0...@uipath/apollo-react@3.13.0) (2026-01-30)
 
 ### Features
