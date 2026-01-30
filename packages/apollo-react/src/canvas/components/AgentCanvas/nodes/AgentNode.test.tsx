@@ -273,6 +273,7 @@ describe('AgentNode - Instructions Footer', () => {
       <AgentNodeElement
         {...defaultNodeProps}
         mode="design"
+        enableInstructions
         onAddInstructions={onAddInstructions}
       />
     );
@@ -285,6 +286,7 @@ describe('AgentNode - Instructions Footer', () => {
       <AgentNodeElement
         {...defaultNodeProps}
         mode="view"
+        enableInstructions
         onAddInstructions={vi.fn()}
       />
     );
@@ -292,11 +294,30 @@ describe('AgentNode - Instructions Footer', () => {
     expect(screen.queryByText('Add Instructions')).not.toBeInTheDocument();
   });
 
+  it('does not show instructions when feature flag is disabled', () => {
+    render(
+      <AgentNodeElement
+        {...defaultNodeProps}
+        mode="design"
+        enableInstructions={false}
+        onAddInstructions={vi.fn()}
+        data={{
+          ...defaultNodeProps.data,
+          instructions: { system: 'You are a helpful assistant' },
+        }}
+      />
+    );
+
+    expect(screen.queryByText('Add Instructions')).not.toBeInTheDocument();
+    expect(screen.queryByText('Instructions')).not.toBeInTheDocument();
+  });
+
   it('shows instructions preview when only system instruction exists', () => {
     render(
       <AgentNodeElement
         {...defaultNodeProps}
         mode="design"
+        enableInstructions
         data={{
           ...defaultNodeProps.data,
           instructions: { system: 'You are a helpful assistant' },
@@ -314,6 +335,7 @@ describe('AgentNode - Instructions Footer', () => {
       <AgentNodeElement
         {...defaultNodeProps}
         mode="design"
+        enableInstructions
         data={{
           ...defaultNodeProps.data,
           instructions: { user: 'Help me with my task' },
@@ -331,6 +353,7 @@ describe('AgentNode - Instructions Footer', () => {
       <AgentNodeElement
         {...defaultNodeProps}
         mode="design"
+        enableInstructions
         data={{
           ...defaultNodeProps.data,
           instructions: {
