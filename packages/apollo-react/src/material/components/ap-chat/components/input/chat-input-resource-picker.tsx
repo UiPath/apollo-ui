@@ -1,6 +1,6 @@
 import { msg } from '@lingui/core/macro';
 import { useLingui } from '@lingui/react';
-import { CircularProgress, Menu, MenuItem, Skeleton, styled } from '@mui/material';
+import { CircularProgress, Menu, MenuItem, styled } from '@mui/material';
 import token, { FontVariantToken } from '@uipath/apollo-core';
 import { ApButton, ApIcon, ApTypography } from '@uipath/apollo-react/material';
 import React, {
@@ -8,16 +8,30 @@ import React, {
   useCallback,
   useEffect,
   useImperativeHandle,
+  useMemo,
   useRef,
   useState,
 } from 'react';
+import { ApSkeleton } from '../../../ap-skeleton';
 import { useChatState } from '../../providers/chat-state-provider';
 import {
   isResourceSelector,
   useAutopilotChatResourcePicker,
 } from '../../providers/resource-picker-provider';
+import { MAX_SKELETON_COUNT, MIN_SKELETON_COUNT } from '../../providers/use-resource-picker-state';
 import { type AutopilotChatResourceItem } from '../../service';
 import { AutopilotChatTooltip } from '../common/tooltip';
+
+const SCROLL_THRESHOLD = 50;
+const MENU_ITEM_HEIGHT = 40;
+
+const ellipsisStyle = {
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  whiteSpace: 'nowrap',
+} as const;
+
+const skeletonStyle = { flex: 1, height: 20 } as const;
 
 const StyledMenuItem = styled(MenuItem)({
   display: 'flex',
@@ -48,6 +62,7 @@ const EmptyContainer = styled('div')(({ theme }) => ({
   alignItems: 'center',
   justifyContent: 'center',
   padding: token.Spacing.SpacingM,
+  minHeight: MIN_SKELETON_COUNT * MENU_ITEM_HEIGHT,
   color: theme.palette.semantic.colorForegroundDeEmp,
 }));
 
@@ -72,8 +87,61 @@ const SkeletonItem = styled(StyledMenuItem)({
   pointerEvents: 'none',
 });
 
-const SCROLL_THRESHOLD = 50;
-const SKELETON_COUNT = 7;
+interface ResourceMenuItemProps {
+  item: AutopilotChatResourceItem;
+  isSelected: boolean;
+  onItemClick: (item: AutopilotChatResourceItem) => void;
+  tooltipPlacement: 'left' | 'right' | 'top' | 'bottom';
+  fontToken: FontVariantToken;
+}
+
+const ResourceMenuItem = React.memo(function ResourceMenuItem({
+  item,
+  isSelected,
+  onItemClick,
+  tooltipPlacement,
+  fontToken,
+}: ResourceMenuItemProps) {
+  const isCategory = isResourceSelector(item);
+  const tooltipContent = item.tooltip;
+
+  const handleClick = useCallback(() => onItemClick(item), [onItemClick, item]);
+
+  const menuItem = (
+    <StyledMenuItem id={`resource-item-${item.id}`} selected={isSelected} onClick={handleClick}>
+      <ResourceItemContent>
+        <ApIcon variant="outlined" name={item.icon} size={token.Icon.IconXs} />
+        <ApTypography variant={fontToken} style={ellipsisStyle}>
+          {item.displayName}
+        </ApTypography>
+      </ResourceItemContent>
+      {isCategory && <ApIcon variant="outlined" name="chevron_right" size={token.Icon.IconXs} />}
+    </StyledMenuItem>
+  );
+
+  if (!tooltipContent) {
+    return menuItem;
+  }
+
+  return (
+    <AutopilotChatTooltip
+      title={
+        <ApTypography
+          color={'var(--color-foreground-inverse)'}
+          variant={FontVariantToken.fontSizeS}
+        >
+          {tooltipContent}
+        </ApTypography>
+      }
+      placement={tooltipPlacement}
+      open={isSelected ? true : undefined}
+      enterDelay={isSelected ? 0 : 300}
+      enterNextDelay={isSelected ? 0 : 300}
+    >
+      {menuItem}
+    </AutopilotChatTooltip>
+  );
+});
 
 export interface ResourcePickerDropdownHandle {
   handleKeyDown: (event: KeyboardEvent) => boolean;
@@ -94,6 +162,7 @@ function ResourcePickerDropdownInner(
     searchInProgress,
     hasMore,
     error,
+    previousDisplayCount,
     handleItemClick,
     close,
     goBackOrClose,
@@ -102,6 +171,8 @@ function ResourcePickerDropdownInner(
   } = useAutopilotChatResourcePicker();
   const { theming, spacing } = useChatState();
   const listRef = useRef<HTMLUListElement>(null);
+  const isOpenRef = useRef(isOpen);
+  isOpenRef.current = isOpen;
   const { _ } = useLingui();
 
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -125,7 +196,7 @@ function ResourcePickerDropdownInner(
     if (displayedItems.length > 0) {
       setSelectedIndex(0);
     }
-  }, [displayedItems]);
+  }, [displayedItems.length]);
 
   useEffect(() => {
     if (listRef.current && displayedItems.length > 0) {
@@ -153,7 +224,7 @@ function ResourcePickerDropdownInner(
     ref,
     () => ({
       handleKeyDown: (event: KeyboardEvent): boolean => {
-        if (!isOpen) return false;
+        if (!isOpenRef.current) return false;
 
         switch (event.key) {
           case 'ArrowDown':
@@ -178,63 +249,9 @@ function ResourcePickerDropdownInner(
         }
       },
     }),
-    [isOpen, navigateDown, navigateUp, selectItem, goBackOrClose]
+    [navigateDown, navigateUp, selectItem, goBackOrClose]
   );
   const tooltipPlacement = theming?.chatMenu?.groupItemTooltipPlacement ?? 'left';
-
-  const renderItem = useCallback(
-    (item: AutopilotChatResourceItem, index: number) => {
-      const isCategory = isResourceSelector(item);
-      const isSelected = index === selectedIndex;
-      const tooltipContent = item.tooltip;
-
-      const menuItem = (
-        <StyledMenuItem key={item.id} selected={isSelected} onClick={() => handleItemClick(item)}>
-          <ResourceItemContent>
-            <ApIcon variant="outlined" name={item.icon} size={token.Icon.IconXs} />
-            <ApTypography
-              variant={spacing.primaryFontToken}
-              style={{
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
-              }}
-            >
-              {item.displayName}
-            </ApTypography>
-          </ResourceItemContent>
-          {isCategory && (
-            <ApIcon variant="outlined" name="chevron_right" size={token.Icon.IconXs} />
-          )}
-        </StyledMenuItem>
-      );
-
-      if (!tooltipContent) {
-        return menuItem;
-      }
-
-      return (
-        <AutopilotChatTooltip
-          key={item.id}
-          title={
-            <ApTypography
-              color={'var(--color-foreground-inverse)'}
-              variant={FontVariantToken.fontSizeS}
-            >
-              {tooltipContent}
-            </ApTypography>
-          }
-          placement={tooltipPlacement}
-          open={isSelected ? true : undefined}
-          enterDelay={isSelected ? 0 : 300}
-          enterNextDelay={isSelected ? 0 : 300}
-        >
-          {menuItem}
-        </AutopilotChatTooltip>
-      );
-    },
-    [selectedIndex, handleItemClick, tooltipPlacement, spacing.primaryFontToken]
-  );
 
   function renderDrillDownHeader(): React.ReactNode {
     if (!drillDown) return null;
@@ -254,35 +271,36 @@ function ResourcePickerDropdownInner(
         }}
       >
         <ApIcon variant="outlined" name="arrow_back" size={token.Icon.IconXs} />
-        <ApTypography
-          variant={spacing.primaryBoldFontToken}
-          style={{
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
-          }}
-        >
+        <ApTypography variant={spacing.primaryBoldFontToken} style={ellipsisStyle}>
           {drillDown.category.displayName}
         </ApTypography>
       </DrillDownHeader>
     );
   }
 
-  function renderSkeletons(): React.ReactNode[] {
-    return Array.from({ length: SKELETON_COUNT }).map((_, index) => (
+  const skeletonElements = useMemo(() => {
+    const skeletonCount = Math.min(
+      Math.max(previousDisplayCount, MIN_SKELETON_COUNT),
+      MAX_SKELETON_COUNT
+    );
+    return Array.from({ length: skeletonCount }).map((_, index) => (
       <SkeletonItem key={`skeleton-${index}`} disabled>
-        <ResourceItemContent>
-          <Skeleton variant="circular" width={24} height={24} />
-          <Skeleton
-            variant="rounded"
-            width={`${50 + (index % 4) * 15}%`}
-            height={20}
-            sx={{ borderRadius: '4px' }}
-          />
-        </ResourceItemContent>
+        <ApSkeleton style={skeletonStyle} />
       </SkeletonItem>
     ));
-  }
+  }, [previousDisplayCount]);
+
+  const menuSlotProps = useMemo(
+    () => ({
+      paper: {
+        sx: {
+          width: 360,
+          maxHeight: 296,
+        },
+      },
+    }),
+    []
+  );
 
   const isLoadingState = loading || searchInProgress;
 
@@ -290,7 +308,7 @@ function ResourcePickerDropdownInner(
     const header = renderDrillDownHeader();
 
     if (isLoadingState) {
-      return [header, ...renderSkeletons()];
+      return [header, ...skeletonElements];
     }
 
     if (error) {
@@ -325,7 +343,16 @@ function ResourcePickerDropdownInner(
 
     return [
       header,
-      ...displayedItems.map((item, index) => renderItem(item, index)),
+      ...displayedItems.map((item, index) => (
+        <ResourceMenuItem
+          key={item.id}
+          item={item}
+          isSelected={index === selectedIndex}
+          onItemClick={handleItemClick}
+          tooltipPlacement={tooltipPlacement}
+          fontToken={spacing.primaryFontToken}
+        />
+      )),
       loadingMore && (
         <LoadMoreContainer key="loading-more">
           <CircularProgress size={20} />
@@ -351,17 +378,8 @@ function ResourcePickerDropdownInner(
         dense: true,
         ref: listRef,
         onScroll: handleScroll,
-        sx: isLoadingState ? { minHeight: 296, boxSizing: 'border-box' } : undefined,
       }}
-      slotProps={{
-        paper: {
-          sx: {
-            width: 360,
-            maxHeight: 296,
-            ...(isLoadingState && { minHeight: 296 }),
-          },
-        },
-      }}
+      slotProps={menuSlotProps}
     >
       {renderMenuContent()}
     </Menu>

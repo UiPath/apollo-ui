@@ -240,9 +240,9 @@ function AutopilotChatInputComponent() {
   const hasLoadingAttachments =
     attachmentsLoading.filter((attachment) => attachment.loading).length > 0;
 
-  const handleResourceTriggerClick = () => {
+  const handleResourceTriggerClick = React.useCallback(() => {
     editorRef.current?.openResourcePicker();
-  };
+  }, []);
 
   return (
     <>

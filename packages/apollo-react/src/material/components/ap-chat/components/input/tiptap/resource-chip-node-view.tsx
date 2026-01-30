@@ -59,7 +59,7 @@ const ChipDeleteContainer = styled('span')<{ visible: boolean; compactMode: bool
   })
 );
 
-export const ResourceChipNodeView: React.FC<NodeViewProps> = ({ node, deleteNode }) => {
+const ResourceChipNodeViewInner: React.FC<NodeViewProps> = ({ node, deleteNode }) => {
   const { _ } = useLingui();
   const { spacing } = useChatState();
   const { id, label, icon = 'description' } = node.attrs;
@@ -75,6 +75,11 @@ export const ResourceChipNodeView: React.FC<NodeViewProps> = ({ node, deleteNode
     [deleteNode]
   );
 
+  const handleMouseEnter = React.useCallback(() => setIsHovered(true), []);
+  const handleMouseLeave = React.useCallback(() => setIsHovered(false), []);
+  const handleFocus = React.useCallback(() => setIsFocused(true), []);
+  const handleBlur = React.useCallback(() => setIsFocused(false), []);
+
   return (
     <NodeViewWrapper as="span">
       <ChipContent
@@ -82,8 +87,8 @@ export const ResourceChipNodeView: React.FC<NodeViewProps> = ({ node, deleteNode
         data-id={id}
         data-label={label}
         data-icon={icon}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
       >
         <ChipIcon>{icon}</ChipIcon>
         <AutopilotChatTooltip title={label} placement="top" disableInteractive>
@@ -106,8 +111,8 @@ export const ResourceChipNodeView: React.FC<NodeViewProps> = ({ node, deleteNode
               })
             )}
             onClick={handleDelete}
-            onFocus={() => setIsFocused(true)}
-            onBlur={() => setIsFocused(false)}
+            onFocus={handleFocus}
+            onBlur={handleBlur}
             data-testid="resource-chip-delete"
           />
         </ChipDeleteContainer>
@@ -115,3 +120,5 @@ export const ResourceChipNodeView: React.FC<NodeViewProps> = ({ node, deleteNode
     </NodeViewWrapper>
   );
 };
+
+export const ResourceChipNodeView = React.memo(ResourceChipNodeViewInner);
