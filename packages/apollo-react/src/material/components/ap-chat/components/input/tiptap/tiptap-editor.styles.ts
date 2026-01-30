@@ -31,32 +31,5 @@ export const EditorContainer = styled('div')<{
       pointerEvents: 'none',
       height: 0,
     },
-
-    '& .resource-mention': {
-      display: 'inline-flex',
-      alignItems: 'center',
-      gap: token.Spacing.SpacingMicro,
-      padding: `0 ${token.Spacing.SpacingXs} 0 ${token.Spacing.SpacingMicro}`,
-      backgroundColor: theme.palette.semantic.colorPrimaryLighter,
-      color: theme.palette.semantic.colorForeground,
-      borderRadius: `calc(${token.Border.BorderRadiusL} * 2)`,
-      verticalAlign: 'middle',
-      cursor: 'default',
-      userSelect: 'none',
-      maxWidth: '200px',
-    },
-
-    '& .resource-chip-icon': {
-      fontFamily: '"Material Icons Outlined"',
-      fontSize: token.Icon.IconXs,
-      flexShrink: 0,
-    },
-
-    '& .resource-display-name': {
-      fontWeight: token.FontFamily.FontWeightSemibold,
-      overflow: 'hidden',
-      textOverflow: 'ellipsis',
-      whiteSpace: 'nowrap',
-    },
   },
 }));

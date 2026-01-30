@@ -18,6 +18,10 @@ export interface AutopilotChatTooltipProps {
   onClose?: () => void;
   /** Custom slot props (merged with defaults) */
   slotProps?: MuiTooltipProps['slotProps'];
+  /** Delay in ms before showing tooltip on hover */
+  enterDelay?: number;
+  /** Delay in ms before showing tooltip when moving to another element */
+  enterNextDelay?: number;
 }
 
 export const AutopilotChatTooltip: React.FC<AutopilotChatTooltipProps> = React.memo(
@@ -30,6 +34,8 @@ export const AutopilotChatTooltip: React.FC<AutopilotChatTooltipProps> = React.m
     onOpen: controlledOnOpen,
     onClose: controlledOnClose,
     slotProps: customSlotProps,
+    enterDelay,
+    enterNextDelay,
   }) => {
     const [internalOpen, setInternalOpen] = React.useState(false);
     const { overflowContainer } = useChatScroll();
@@ -134,6 +140,8 @@ export const AutopilotChatTooltip: React.FC<AutopilotChatTooltipProps> = React.m
         onOpen={handleTooltipOpen}
         disableInteractive={disableInteractive}
         placement={placement}
+        enterDelay={enterDelay}
+        enterNextDelay={enterNextDelay}
         TransitionProps={{ timeout: 0 }}
         slotProps={mergedSlotProps}
       >

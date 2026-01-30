@@ -11,11 +11,13 @@ import React, {
   useRef,
   useState,
 } from 'react';
+import { useChatState } from '../../providers/chat-state-provider';
 import {
   isResourceSelector,
   useAutopilotChatResourcePicker,
 } from '../../providers/resource-picker-provider';
 import { type AutopilotChatResourceItem } from '../../service';
+import { AutopilotChatTooltip } from '../common/tooltip';
 
 const StyledMenuItem = styled(MenuItem)({
   display: 'flex',
@@ -98,6 +100,7 @@ function ResourcePickerDropdownInner(
     retryLoad,
     loadMore,
   } = useAutopilotChatResourcePicker();
+  const { theming, spacing } = useChatState();
   const listRef = useRef<HTMLUListElement>(null);
   const { _ } = useLingui();
 
@@ -177,18 +180,20 @@ function ResourcePickerDropdownInner(
     }),
     [isOpen, navigateDown, navigateUp, selectItem, goBackOrClose]
   );
+  const tooltipPlacement = theming?.chatMenu?.groupItemTooltipPlacement ?? 'left';
 
   const renderItem = useCallback(
     (item: AutopilotChatResourceItem, index: number) => {
       const isCategory = isResourceSelector(item);
       const isSelected = index === selectedIndex;
+      const tooltipContent = item.tooltip;
 
-      return (
+      const menuItem = (
         <StyledMenuItem key={item.id} selected={isSelected} onClick={() => handleItemClick(item)}>
           <ResourceItemContent>
             <ApIcon variant="outlined" name={item.icon} size={token.Icon.IconXs} />
             <ApTypography
-              variant={FontVariantToken.fontSizeM}
+              variant={spacing.primaryFontToken}
               style={{
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
@@ -203,8 +208,32 @@ function ResourcePickerDropdownInner(
           )}
         </StyledMenuItem>
       );
+
+      if (!tooltipContent) {
+        return menuItem;
+      }
+
+      return (
+        <AutopilotChatTooltip
+          key={item.id}
+          title={
+            <ApTypography
+              color={'var(--color-foreground-inverse)'}
+              variant={FontVariantToken.fontSizeS}
+            >
+              {tooltipContent}
+            </ApTypography>
+          }
+          placement={tooltipPlacement}
+          open={isSelected ? true : undefined}
+          enterDelay={isSelected ? 0 : 300}
+          enterNextDelay={isSelected ? 0 : 300}
+        >
+          {menuItem}
+        </AutopilotChatTooltip>
+      );
     },
-    [selectedIndex, handleItemClick]
+    [selectedIndex, handleItemClick, tooltipPlacement, spacing.primaryFontToken]
   );
 
   function renderDrillDownHeader(): React.ReactNode {
@@ -226,7 +255,7 @@ function ResourcePickerDropdownInner(
       >
         <ApIcon variant="outlined" name="arrow_back" size={token.Icon.IconXs} />
         <ApTypography
-          variant={FontVariantToken.fontSizeSBold}
+          variant={spacing.primaryBoldFontToken}
           style={{
             overflow: 'hidden',
             textOverflow: 'ellipsis',

@@ -40,7 +40,6 @@ const EditorWithPicker = forwardRef<ChatInputEditorHandle, EditorWithPickerProps
       minRows,
       maxRows,
       lineHeight,
-      anchorEl,
       onChange,
       onKeyDown,
       editorRef,
@@ -69,11 +68,8 @@ const EditorWithPicker = forwardRef<ChatInputEditorHandle, EditorWithPickerProps
     );
 
     const openResourcePicker = useCallback(() => {
-      const rect = anchorEl?.getBoundingClientRect();
-      if (rect) {
-        picker.open({ from: 0, to: 0 }, { top: rect.top, left: rect.left });
-      }
-    }, [anchorEl, picker]);
+      editorRef.current?.triggerMention();
+    }, [editorRef]);
 
     useImperativeHandle(
       ref,
