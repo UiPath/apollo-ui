@@ -946,6 +946,14 @@ chatService.initialize({
 });
 ```
 
+#### Best Practices for Paginated Resources
+
+1. **Use appropriate page sizes**: 10-20 items per batch typically provides good performance while maintaining a responsive UI
+2. **Handle errors gracefully**: Return `{ items: [], done: true }` on error to stop loading and prevent infinite retry loops
+3. **Apply search filters before pagination**: When `searchText` is provided, filter your data first, then apply skip/limit to the filtered results
+4. **Calculate `done` correctly**: Set `done: true` when `skip + returnedItems.length >= totalItems` to signal no more items are available
+5. **Consider caching**: Cache loaded resources to avoid redundant API calls when users navigate back and forth
+
 ### Loading and Waiting States
 
 The Chat component provides methods to control loading indicators and input availability, allowing you to create custom user experiences around async operations and state management.

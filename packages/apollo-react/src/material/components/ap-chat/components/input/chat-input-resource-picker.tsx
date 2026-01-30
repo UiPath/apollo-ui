@@ -1,6 +1,9 @@
 import { msg } from '@lingui/core/macro';
 import { useLingui } from '@lingui/react';
-import { CircularProgress, Menu, MenuItem, styled } from '@mui/material';
+import CircularProgress from '@mui/material/CircularProgress';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import { styled } from '@mui/material/styles';
 import token, { FontVariantToken } from '@uipath/apollo-core';
 import { ApButton, ApIcon, ApTypography } from '@uipath/apollo-react/material';
 import React, {
@@ -8,6 +11,7 @@ import React, {
   useCallback,
   useEffect,
   useImperativeHandle,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -177,33 +181,82 @@ function ResourcePickerDropdownInner(
 
   const [selectedIndex, setSelectedIndex] = useState(0);
 
-  const handleScroll = useCallback(
-    (event: React.UIEvent<HTMLUListElement>) => {
-      if (!hasMore || loadingMore) return;
+  // Refs for stable scroll handler (avoids recreating callback on state changes)
+  const scrollStateRef = useRef({
+    hasMore,
+    loadingMore,
+    loadMore,
+    scrollTop: 0,
+    container: null as HTMLElement | null,
+  });
+  scrollStateRef.current.hasMore = hasMore;
+  scrollStateRef.current.loadingMore = loadingMore;
+  scrollStateRef.current.loadMore = loadMore;
 
-      const target = event.currentTarget;
-      const nearBottom =
-        target.scrollHeight - target.scrollTop - target.clientHeight < SCROLL_THRESHOLD;
+  // Refs for tracking state changes
+  const prevStateRef = useRef({
+    query,
+    drillDownId: drillDown?.category?.id,
+    selectedIndex,
+    loadingMore,
+  });
 
-      if (nearBottom) {
-        loadMore();
-      }
-    },
-    [hasMore, loadingMore, loadMore]
-  );
+  const handleScroll = useCallback((event: React.UIEvent<HTMLElement>) => {
+    const target = event.currentTarget;
+    const state = scrollStateRef.current;
 
+    state.scrollTop = target.scrollTop;
+    state.container = target;
+
+    if (!state.hasMore || state.loadingMore) return;
+
+    const nearBottom =
+      target.scrollHeight - target.scrollTop - target.clientHeight < SCROLL_THRESHOLD;
+    if (nearBottom) {
+      state.loadMore();
+    }
+  }, []);
+
+  // Reset selection when query or category changes (not on pagination)
   useEffect(() => {
-    if (displayedItems.length > 0) {
+    const prev = prevStateRef.current;
+    const currentDrillDownId = drillDown?.category?.id;
+
+    if (prev.query !== query || prev.drillDownId !== currentDrillDownId) {
       setSelectedIndex(0);
     }
-  }, [displayedItems.length]);
+    prev.query = query;
+    prev.drillDownId = currentDrillDownId;
+  }, [query, drillDown]);
 
+  // Scroll selected item into view only when selectedIndex changes (keyboard navigation)
   useEffect(() => {
-    if (listRef.current && displayedItems.length > 0) {
-      const selectedElement = listRef.current.children[selectedIndex] as HTMLElement;
+    const prev = prevStateRef.current;
+    if (prev.selectedIndex === selectedIndex) return;
+    prev.selectedIndex = selectedIndex;
+
+    const selectedItem = displayedItems[selectedIndex];
+    if (listRef.current && selectedItem) {
+      const selectedElement = listRef.current.querySelector(
+        `#resource-item-${selectedItem.id}`
+      ) as HTMLElement;
       selectedElement?.scrollIntoView({ block: 'nearest' });
     }
-  }, [selectedIndex, displayedItems.length]);
+  }, [selectedIndex, displayedItems]);
+
+  // Restore scroll position after pagination completes
+  useLayoutEffect(() => {
+    const prev = prevStateRef.current;
+    const wasLoadingMore = prev.loadingMore;
+    prev.loadingMore = loadingMore;
+
+    if (wasLoadingMore && !loadingMore) {
+      const { scrollTop, container } = scrollStateRef.current;
+      if (container && scrollTop > 0) {
+        container.scrollTop = scrollTop;
+      }
+    }
+  }, [loadingMore]);
 
   const navigateUp = useCallback(() => {
     setSelectedIndex((prev) => Math.max(prev - 1, 0));
@@ -253,7 +306,35 @@ function ResourcePickerDropdownInner(
   );
   const tooltipPlacement = theming?.chatMenu?.groupItemTooltipPlacement ?? 'left';
 
-  function renderDrillDownHeader(): React.ReactNode {
+  const skeletonElements = useMemo(() => {
+    const skeletonCount = Math.min(
+      Math.max(previousDisplayCount, MIN_SKELETON_COUNT),
+      MAX_SKELETON_COUNT
+    );
+    return Array.from({ length: skeletonCount }).map((_, index) => (
+      <SkeletonItem key={`skeleton-${index}`} disabled>
+        <ApSkeleton style={skeletonStyle} />
+      </SkeletonItem>
+    ));
+  }, [previousDisplayCount]);
+
+  const menuSlotProps = useMemo(
+    () => ({
+      paper: {
+        sx: {
+          width: 360,
+          maxHeight: 296,
+          overflowY: 'auto',
+        },
+        onScroll: handleScroll,
+      },
+    }),
+    [handleScroll]
+  );
+
+  const isLoadingState = loading || searchInProgress;
+
+  const drillDownHeader = useMemo(() => {
     if (!drillDown) return null;
 
     return (
@@ -276,44 +357,16 @@ function ResourcePickerDropdownInner(
         </ApTypography>
       </DrillDownHeader>
     );
-  }
+  }, [drillDown, goBackOrClose, spacing.primaryBoldFontToken, _]);
 
-  const skeletonElements = useMemo(() => {
-    const skeletonCount = Math.min(
-      Math.max(previousDisplayCount, MIN_SKELETON_COUNT),
-      MAX_SKELETON_COUNT
-    );
-    return Array.from({ length: skeletonCount }).map((_, index) => (
-      <SkeletonItem key={`skeleton-${index}`} disabled>
-        <ApSkeleton style={skeletonStyle} />
-      </SkeletonItem>
-    ));
-  }, [previousDisplayCount]);
-
-  const menuSlotProps = useMemo(
-    () => ({
-      paper: {
-        sx: {
-          width: 360,
-          maxHeight: 296,
-        },
-      },
-    }),
-    []
-  );
-
-  const isLoadingState = loading || searchInProgress;
-
-  function renderMenuContent(): React.ReactNode[] {
-    const header = renderDrillDownHeader();
-
+  const menuContent = useMemo((): React.ReactNode[] => {
     if (isLoadingState) {
-      return [header, ...skeletonElements];
+      return [drillDownHeader, ...skeletonElements];
     }
 
     if (error) {
       return [
-        header,
+        drillDownHeader,
         <ErrorContainer key="error">
           <ApTypography variant={FontVariantToken.fontSizeS}>{error}</ApTypography>
           <ApButton variant="text" size="small" onClick={retryLoad} label="retry">
@@ -334,7 +387,7 @@ function ResourcePickerDropdownInner(
         : _(msg({ id: 'autopilot-chat.resource-picker.empty', message: 'No resources available' }));
 
       return [
-        header,
+        drillDownHeader,
         <EmptyContainer key="empty">
           <ApTypography variant={FontVariantToken.fontSizeS}>{emptyMessage}</ApTypography>
         </EmptyContainer>,
@@ -342,7 +395,7 @@ function ResourcePickerDropdownInner(
     }
 
     return [
-      header,
+      drillDownHeader,
       ...displayedItems.map((item, index) => (
         <ResourceMenuItem
           key={item.id}
@@ -359,7 +412,21 @@ function ResourcePickerDropdownInner(
         </LoadMoreContainer>
       ),
     ];
-  }
+  }, [
+    isLoadingState,
+    drillDownHeader,
+    skeletonElements,
+    error,
+    retryLoad,
+    _,
+    displayedItems,
+    query,
+    selectedIndex,
+    handleItemClick,
+    tooltipPlacement,
+    spacing.primaryFontToken,
+    loadingMore,
+  ]);
 
   return (
     <Menu
@@ -377,11 +444,10 @@ function ResourcePickerDropdownInner(
         ),
         dense: true,
         ref: listRef,
-        onScroll: handleScroll,
       }}
       slotProps={menuSlotProps}
     >
-      {renderMenuContent()}
+      {menuContent}
     </Menu>
   );
 }
