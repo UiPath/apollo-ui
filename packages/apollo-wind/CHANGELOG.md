@@ -1,3 +1,9 @@
+## [@uipath/apollo-wind-v0.7.1](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@0.7.0...@uipath/apollo-wind@0.7.1) (2026-01-30)
+
+### Bug Fixes
+
+* **apollo-wind:** switch dialog from transform to flex positioning ([d1e3417](https://github.com/uipath/apollo-ui/commit/d1e34176ef0c868fec8b3034c3390dc6cfba0d07))
+
 ## [@uipath/apollo-wind-v0.7.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@0.6.6...@uipath/apollo-wind@0.7.0) (2026-01-30)
 
 ### Features
