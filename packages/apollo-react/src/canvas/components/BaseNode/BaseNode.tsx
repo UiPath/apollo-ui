@@ -45,7 +45,6 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
   const [isHovered, setIsHovered] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
 
-  const isInitialMountRef = useRef(true);
   const originalHeightRef = useRef<number | undefined>(undefined);
 
   // Get execution status from external source
@@ -173,9 +172,9 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
 
   // Sync computed height to node when it changes
   useEffect(() => {
-    if (isInitialMountRef.current) {
-      isInitialMountRef.current = false;
-      originalHeightRef.current = height ?? DEFAULT_NODE_SIZE;
+    // Initialising originalHeightRef only when React Flow has finished measuring it and updated the height prop
+    if (!originalHeightRef.current && height) {
+      originalHeightRef.current = height;
       return;
     }
 
