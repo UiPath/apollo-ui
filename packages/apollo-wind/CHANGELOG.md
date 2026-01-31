@@ -1,3 +1,9 @@
+## [@uipath/apollo-wind-v0.7.2](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@0.7.1...@uipath/apollo-wind@0.7.2) (2026-01-31)
+
+### Bug Fixes
+
+* **apollo-wind:** add react-scan to storybook ([bd8ad6c](https://github.com/uipath/apollo-ui/commit/bd8ad6cfeec70b6340d9dffabc93a2407f0c686a))
+
 ## [@uipath/apollo-wind-v0.7.1](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@0.7.0...@uipath/apollo-wind@0.7.1) (2026-01-30)
 
 ### Bug Fixes
