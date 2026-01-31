@@ -1,5 +1,5 @@
 import { createContext, useContext, useMemo } from 'react';
-import { NodeManifest } from '../schema/node-definition';
+import type { NodeManifest } from '../schema/node-definition';
 import type { NodeTypeRegistry } from './NodeTypeRegistry';
 
 interface NodeRegistryContextValue {

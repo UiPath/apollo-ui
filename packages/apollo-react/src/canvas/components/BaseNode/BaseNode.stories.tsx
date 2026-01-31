@@ -11,7 +11,7 @@ import { Panel } from '@uipath/apollo-react/canvas/xyflow/react';
 import { ApButton, ApIcon, ApIconButton, ApTypography } from '@uipath/apollo-react/material';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { NodeRegistryContext, NodeTypeRegistry } from '../../core';
-import { WorkflowManifest } from '../../schema/node-definition/workflow-manifest';
+import type { WorkflowManifest } from '../../schema/node-definition/workflow-manifest';
 import {
   createNode,
   StoryInfoPanel,

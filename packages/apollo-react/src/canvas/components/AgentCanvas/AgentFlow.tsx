@@ -28,7 +28,7 @@ import {
 } from '../../types';
 import { hasAgentRunning } from '../../utils/props-helpers';
 import { CanvasPositionControls } from '../CanvasPositionControls';
-import { StickyNoteNode, StickyNoteNodeProps } from '../StickyNoteNode';
+import { StickyNoteNode, type StickyNoteNodeProps } from '../StickyNoteNode';
 import { PaneContextMenu } from './components/PaneContextMenu';
 import { SuggestionGroupPanel } from './components/SuggestionGroupPanel';
 import { TimelinePlayer } from './components/TimelinePlayer';

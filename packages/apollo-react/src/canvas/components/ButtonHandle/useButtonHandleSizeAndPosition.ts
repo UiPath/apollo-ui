@@ -1,6 +1,6 @@
 import type { Position } from '@uipath/apollo-react/canvas/xyflow/react';
 import { useMemo } from 'react';
-import { HandleConfigurationSpecificPosition } from '../../schema/node-definition/handle';
+import type { HandleConfigurationSpecificPosition } from '../../schema/node-definition/handle';
 import {
   bottomPositionForHandle,
   heightForHandleWithPosition,

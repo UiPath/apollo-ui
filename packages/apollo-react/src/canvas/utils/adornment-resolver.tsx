@@ -1,4 +1,4 @@
-import { NodeAdornments, NodeStatusContext } from '../components';
+import type { NodeAdornments, NodeStatusContext } from '../components';
 
 /**
  * Extended execution state that includes debug info (breakpoints)
@@ -31,7 +31,9 @@ interface ExecutionStartPointIndicatorProps {
   isActive?: boolean;
 }
 
-export function ExecutionStartPointIndicator({ isActive = true }: ExecutionStartPointIndicatorProps) {
+export function ExecutionStartPointIndicator({
+  isActive = true,
+}: ExecutionStartPointIndicatorProps) {
   if (!isActive) {
     return null;
   }
@@ -72,7 +74,8 @@ const getDefaultAdornments = (context: NodeStatusContext): NodeAdornments => {
   const status = typeof executionState === 'object' ? executionState?.status : executionState;
   const count = typeof executionState === 'object' ? executionState.count : undefined;
   const hasBreakpoint = typeof executionState === 'object' && executionState?.debug;
-  const isExecutionStartPoint = typeof executionState === 'object' && executionState?.isExecutionStartPoint;
+  const isExecutionStartPoint =
+    typeof executionState === 'object' && executionState?.isExecutionStartPoint;
 
   return {
     topLeft: hasBreakpoint ? <BreakpointIndicator /> : undefined,

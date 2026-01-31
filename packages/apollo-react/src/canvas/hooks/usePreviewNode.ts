@@ -7,7 +7,7 @@ import {
 import { useMemo } from 'react';
 import { PREVIEW_NODE_ID } from '../constants';
 import { useOptionalNodeTypeRegistry } from '../core';
-import { HandleManifest, NodeManifest } from '../schema/node-definition';
+import type { HandleManifest, NodeManifest } from '../schema/node-definition';
 
 /**
  * Information about an existing node connected to the preview node.

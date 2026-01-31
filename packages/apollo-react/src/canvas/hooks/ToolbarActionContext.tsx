@@ -12,7 +12,7 @@
  */
 
 import { useEffect } from 'react';
-import { ToolbarActionHandler } from '../schema/toolbar';
+import type { ToolbarActionHandler } from '../schema/toolbar';
 
 interface ToolbarActionStore {
   mode: string;

@@ -152,7 +152,11 @@ export function FloatingCanvasPanel({
       </PanelContainer>
     );
 
-    return portalToBody ? createPortal(fixedContent, document.body) : <CanvasPortal>{fixedContent}</CanvasPortal>;
+    return portalToBody ? (
+      createPortal(fixedContent, document.body)
+    ) : (
+      <CanvasPortal>{fixedContent}</CanvasPortal>
+    );
   }
 
   const panelContent = (
@@ -197,7 +201,11 @@ export function FloatingCanvasPanel({
         />
       </ViewportPortal>
 
-      {portalToBody ? createPortal(panelContent, document.body) : <CanvasPortal>{panelContent}</CanvasPortal>}
+      {portalToBody ? (
+        createPortal(panelContent, document.body)
+      ) : (
+        <CanvasPortal>{panelContent}</CanvasPortal>
+      )}
     </>
   );
 }

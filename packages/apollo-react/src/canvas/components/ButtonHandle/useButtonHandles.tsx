@@ -1,7 +1,7 @@
 import { useNodesData } from '@xyflow/react';
-import { Position } from '@xyflow/system';
+import type { Position } from '@xyflow/system';
 import { useMemo } from 'react';
-import { HandleGroupManifest } from '../../schema/node-definition';
+import type { HandleGroupManifest } from '../../schema/node-definition';
 import { resolveHandles } from '../../utils/manifest-resolver';
 import { useConnectedHandles } from '../BaseCanvas/ConnectedHandlesContext';
 import type { HandleActionEvent } from '../ButtonHandle';

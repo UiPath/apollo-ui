@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { ListItem } from '../components';
+import type { ListItem } from '../components';
 import type { PreviewNodeConnectionInfo } from '../hooks';
 import type { WorkflowManifest } from '../schema/node-definition';
 import { NodeTypeRegistry } from './NodeTypeRegistry';

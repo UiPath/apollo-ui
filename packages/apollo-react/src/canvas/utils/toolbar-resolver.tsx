@@ -12,7 +12,11 @@ import type {
   NodeToolbarConfig,
 } from '@uipath/apollo-react/canvas';
 import { getToolbarActionStore } from '../hooks/ToolbarActionContext';
-import { ModeToolbarConfig, ToolbarActionHandler, ToolbarActionSchema } from '../schema/toolbar';
+import type {
+  ModeToolbarConfig,
+  ToolbarActionHandler,
+  ToolbarActionSchema,
+} from '../schema/toolbar';
 import { getIcon } from './icon-registry';
 
 interface ExtendedNodeContext extends NodeStatusContext {

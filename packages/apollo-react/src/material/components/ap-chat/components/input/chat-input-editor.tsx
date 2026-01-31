@@ -1,5 +1,5 @@
 import React, { forwardRef, useRef } from 'react';
-import { TipTapEditor, TipTapEditorHandle } from './tiptap';
+import { TipTapEditor, type TipTapEditorHandle } from './tiptap';
 
 export interface ChatInputEditorHandle {
   focus: () => void;

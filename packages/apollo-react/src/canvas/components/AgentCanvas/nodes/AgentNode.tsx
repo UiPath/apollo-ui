@@ -506,9 +506,7 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
           label: name,
           subLabel: (
             <SubLabelContainer>
-              {isConversational
-                ? translations.conversationalAgent
-                : translations.autonomousAgent}
+              {isConversational ? translations.conversationalAgent : translations.autonomousAgent}
               {healthScoreBadge}
             </SubLabelContainer>
           ),

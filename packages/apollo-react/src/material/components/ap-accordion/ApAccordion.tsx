@@ -6,7 +6,7 @@ import { FontVariantToken, PadL } from '@uipath/apollo-core';
 import token from '@uipath/apollo-core';
 import { ChevronDown } from '@uipath/apollo-react/icons';
 import { ApTypography } from '../ap-typography';
-import { ApAccordionProps } from './ApAccordion.types';
+import type { ApAccordionProps } from './ApAccordion.types';
 
 interface StyledAccordionSummaryProps {
   disableDivider?: boolean;

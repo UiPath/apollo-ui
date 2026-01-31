@@ -22,7 +22,7 @@ import { Position, useStore, useViewport } from '@uipath/apollo-react/canvas/xyf
 import { ApIcon, ApIconButton, ApTooltip, ApTypography } from '@uipath/apollo-react/material';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { HandleGroupManifest } from '../../schema/node-definition';
+import type { HandleGroupManifest } from '../../schema/node-definition';
 import { useConnectedHandles } from '../BaseCanvas/ConnectedHandlesContext';
 import { useButtonHandles } from '../ButtonHandle/useButtonHandles';
 import { ExecutionStatusIcon } from '../ExecutionStatusIcon';

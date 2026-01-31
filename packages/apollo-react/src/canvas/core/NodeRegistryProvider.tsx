@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { useMemo } from 'react';
-import { NodeManifest, WorkflowManifest } from '../schema/node-definition';
+import type { NodeManifest, WorkflowManifest } from '../schema/node-definition';
 import { NodeTypeRegistry } from './NodeTypeRegistry';
 import { NodeRegistryContext } from './useNodeTypeRegistry';
 
