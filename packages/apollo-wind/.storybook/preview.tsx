@@ -2,10 +2,22 @@ import type { Preview } from '@storybook/react-vite';
 import { useEffect } from 'react';
 import '../src/styles/tailwind.css';
 
+const isDev = import.meta.env.MODE !== 'production';
+
+// The react-scan devtools hook is installed via previewBody in main.ts
+// (must happen before React initializes). Here we configure the overlay/canvas
+// and start paused — toggling happens via the toolbar global in the decorator.
+if (isDev) {
+  const { scan, setOptions } = await import('react-scan');
+  scan({ enabled: true, showToolbar: true, allowInIframe: true });
+  setOptions({ enabled: false });
+}
+
 const preview: Preview = {
   initialGlobals: {
     theme: 'light',
     themeVariant: 'default',
+    reactScan: 'off',
   },
   parameters: {
     options: {
@@ -50,10 +62,33 @@ const preview: Preview = {
         dynamicTitle: true,
       },
     },
+    ...(isDev && {
+      reactScan: {
+        description: 'Toggle React Scan rendering highlights',
+        toolbar: {
+          title: 'React Scan',
+          icon: 'beaker',
+          items: [
+            { value: 'off', title: 'React Scan: Off' },
+            { value: 'on', title: 'React Scan: On' },
+          ],
+          dynamicTitle: true,
+        },
+      },
+    }),
   },
   decorators: [
     (Story, context) => {
       const theme = context.globals.theme || 'light';
+      const reactScanEnabled = context.globals.reactScan === 'on';
+
+      useEffect(() => {
+        if (isDev) {
+          import('react-scan').then(({ setOptions }) => {
+            setOptions({ enabled: reactScanEnabled, showToolbar: reactScanEnabled });
+          });
+        }
+      }, [reactScanEnabled]);
 
       useEffect(() => {
         const htmlElement = document.documentElement;
