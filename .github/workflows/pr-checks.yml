@@ -23,6 +23,7 @@ jobs:
           - Lint
           - Lint CSS
           - Lint Deps
+          - Check Dependency Consistency
           - Typecheck
           - Test Coverage
           - Build
@@ -71,6 +72,10 @@ jobs:
       - name: Run Lint Deps
         if: matrix.check == 'Lint Deps'
         run: pnpm lint:deps --affected
+
+      - name: Run Check Dependency Consistency
+        if: matrix.check == 'Check Dependency Consistency'
+        run: pnpm check:dependencies
 
       - name: Run Typecheck
         if: matrix.check == 'Typecheck'

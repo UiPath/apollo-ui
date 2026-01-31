@@ -37,21 +37,21 @@
     "registry": "https://npm.pkg.github.com"
   },
   "peerDependencies": {
-    "@angular/core": ">=19.0.0",
-    "@angular/common": ">=19.0.0",
-    "@angular/material": ">=19.0.0"
+    "@angular/core": ">=20.0.0",
+    "@angular/common": ">=20.0.0",
+    "@angular/material": ">=20.0.0"
   },
   "dependencies": {
     "@uipath/apollo-core": "workspace:*",
     "@uipath/apollo-utils": "workspace:*"
   },
   "devDependencies": {
-    "@angular/core": "^19.2.18",
-    "@angular/common": "^19.2.18",
+    "@angular/core": "^20.2.0",
+    "@angular/common": "^20.2.0",
     "@angular/material": "^20.2.11",
-    "@angular/compiler": "^19.2.18",
-    "@angular/compiler-cli": "^19.2.18",
+    "@angular/compiler": "^20.2.0",
+    "@angular/compiler-cli": "^20.2.0",
     "ng-packagr": "^20.3.0",
-    "typescript": "~5.7.2"
+    "typescript": "^5.9.3"
   }
 }

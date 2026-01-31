@@ -52,7 +52,7 @@
     "registry": "https://npm.pkg.github.com"
   },
   "dependencies": {
-    "@emotion/cache": "^11.13.5",
+    "@emotion/cache": "^11.14.0",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
     "@mui/material": "^5.18.0",
@@ -63,16 +63,16 @@
   },
   "devDependencies": {
     "@rsbuild/core": "^1.6.7",
-    "@rsbuild/plugin-react": "^1.1.2",
+    "@rsbuild/plugin-react": "^1.4.1",
     "@rslib/core": "^0.17.0",
     "@types/react": "^19.2.6",
     "@types/react-dom": "^19.2.2",
-    "@vitest/coverage-v8": "^4.0.12",
-    "@vitest/ui": "^4.0.12",
+    "@vitest/coverage-v8": "^4.0.14",
+    "@vitest/ui": "^4.0.14",
     "happy-dom": "^20.0.0",
     "source-map-explorer": "^2.5.3",
     "typescript": "^5.9.3",
-    "vitest": "^4.0.5",
+    "vitest": "^4.0.14",
     "webpack-bundle-analyzer": "^5.0.1"
   }
 }
