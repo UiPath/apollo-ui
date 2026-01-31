@@ -1,7 +1,7 @@
 import { Position, useStore } from '@uipath/apollo-react/canvas/xyflow/react';
 import { ApIcon, ApTooltip } from '@uipath/apollo-react/material/components';
 import { memo, useCallback, useMemo, useState } from 'react';
-import { HandleGroupManifest } from '../../schema/node-definition';
+import type { HandleGroupManifest } from '../../schema/node-definition';
 import { useConnectedHandles } from '../BaseCanvas/ConnectedHandlesContext';
 import { useButtonHandles } from '../ButtonHandle/useButtonHandles';
 import { TriggerContainer, TriggerIconWrapper } from './TriggerNode.styles';

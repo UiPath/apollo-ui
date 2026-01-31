@@ -4,7 +4,7 @@ import { coldarkDark } from "react-syntax-highlighter/dist/esm/styles/prism";
 
 export interface CodeBlockProps {
 	children: string;
-	language?: 'tsx' | 'javascript' | 'json' | 'css' | 'html';
+	language?: "tsx" | "javascript" | "json" | "css" | "html";
 	showLineNumbers?: boolean;
 }
 

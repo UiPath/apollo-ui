@@ -1,4 +1,4 @@
-import Popover, { PopoverProps } from '@mui/material/Popover';
+import Popover, { type PopoverProps } from '@mui/material/Popover';
 import token from '@uipath/apollo-core';
 
 export const ApPopover: React.FC<PopoverProps> = (props) => {
@@ -36,7 +36,9 @@ export const ApPopover: React.FC<PopoverProps> = (props) => {
       }}
       anchorOrigin={anchorOrigin}
       transformOrigin={transformOrigin}
-      anchorReference={anchorReference ?? (anchorPosition && !anchorEl ? 'anchorPosition' : 'anchorEl')}
+      anchorReference={
+        anchorReference ?? (anchorPosition && !anchorEl ? 'anchorPosition' : 'anchorEl')
+      }
       anchorPosition={anchorPosition}
       {...rest}
     >

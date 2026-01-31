@@ -1,8 +1,8 @@
-import React from 'react';
-import { AccordionProps } from '@mui/material/Accordion';
-import { SxProps, Theme } from '@mui/material/styles';
-import { AccordionSummaryProps } from '@mui/material/AccordionSummary';
-import { AccordionDetailsProps } from '@mui/material/AccordionDetails';
+import type React from 'react';
+import type { AccordionProps } from '@mui/material/Accordion';
+import type { SxProps, Theme } from '@mui/material/styles';
+import type { AccordionSummaryProps } from '@mui/material/AccordionSummary';
+import type { AccordionDetailsProps } from '@mui/material/AccordionDetails';
 
 export interface ApAccordionProps extends AccordionProps {
   /** Sets the start icon of the accordion */

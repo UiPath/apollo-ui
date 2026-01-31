@@ -1,13 +1,17 @@
 import type { BaseNodeData, ListItem } from '../components';
-import { PreviewNodeConnectionInfo } from '../hooks';
-import {
-  type CategoryManifest,
-  type HandleManifest,
-  type NodeManifest,
-  type WorkflowManifest,
+import type { PreviewNodeConnectionInfo } from '../hooks';
+import type {
+  CategoryManifest,
+  HandleManifest,
+  NodeManifest,
+  WorkflowManifest,
 } from '../schema/node-definition';
 import type { DisplayConfig } from '../schema/workflow/base';
-import { ConnectionValidationContext, checkCategoryConstraint, validateConnection } from '../utils';
+import {
+  type ConnectionValidationContext,
+  checkCategoryConstraint,
+  validateConnection,
+} from '../utils';
 import { CategoryTree, type ConnectionValidator } from './CategoryTree';
 import { CategoryTreeAdapter, type IconResolver } from './CategoryTreeAdapter';
 

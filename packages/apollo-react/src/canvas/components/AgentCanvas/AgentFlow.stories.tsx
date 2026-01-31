@@ -1215,7 +1215,12 @@ const DesignModePlayground = () => {
   );
 
   const renderControlPanel = () => (
-    <StoryInfoPanel title="Design Mode Playground" collapsible defaultCollapsed={false} position="top-right">
+    <StoryInfoPanel
+      title="Design Mode Playground"
+      collapsible
+      defaultCollapsed={false}
+      position="top-right"
+    >
       <Column mt={12} gap={12}>
         {/* Resources toggle */}
         <Column gap={4}>

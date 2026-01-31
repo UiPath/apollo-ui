@@ -5,7 +5,7 @@
  * Focuses on workflow semantics rather than generic data types.
  */
 
-import { ConnectionConstraint, HandleTarget } from '../schema/node-definition/constraints';
+import type { ConnectionConstraint, HandleTarget } from '../schema/node-definition/constraints';
 
 /**
  * Context for connection validation

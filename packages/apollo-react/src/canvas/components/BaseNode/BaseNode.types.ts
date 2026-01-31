@@ -1,4 +1,4 @@
-import { NodeShape } from '../../schema';
+import type { NodeShape } from '../../schema';
 import type { ExecutionState } from '../../types/execution';
 
 export interface BaseNodeData extends Record<string, unknown> {

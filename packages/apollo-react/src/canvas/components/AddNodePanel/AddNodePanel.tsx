@@ -3,7 +3,7 @@ import { useOptionalNodeTypeRegistry } from '../../core';
 import { usePreviewNode } from '../../hooks';
 import { getIcon } from '../../utils/icon-registry';
 import { type ListItem, Toolbox } from '../Toolbox';
-import { AddNodePanelProps } from './AddNodePanel.types';
+import type { AddNodePanelProps } from './AddNodePanel.types';
 
 /**
  * Panel component that displays available nodes for adding to the canvas.

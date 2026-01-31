@@ -6,7 +6,7 @@ import type {
   ReactFlowProps,
 } from '@uipath/apollo-react/canvas/xyflow/react';
 import type { ReactNode } from 'react';
-import { ToolbarActionHandler } from '../../schema/toolbar';
+import type { ToolbarActionHandler } from '../../schema/toolbar';
 
 /**
  * Configuration options for viewport fit operations in BaseCanvas.

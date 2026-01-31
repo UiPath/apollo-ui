@@ -24,7 +24,7 @@ import { PREVIEW_EDGE_ID, PREVIEW_NODE_ID } from '../../constants';
 import { Breadcrumb } from '../../controls';
 import { useNodeManifests } from '../../core';
 import { useAddNodeOnConnectEnd } from '../../hooks/useAddNodeOnConnectEnd';
-import { ToolbarActionEvent } from '../../schema/toolbar';
+import type { ToolbarActionEvent } from '../../schema/toolbar';
 import { animatedViewportManager } from '../../stores/animatedViewportManager';
 import {
   selectBreadcrumbs,
