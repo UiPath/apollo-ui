@@ -29,12 +29,19 @@ export const typeVersionKeySchema = z
 export const displayConfigSchema = z
   .object({
     label: z.string().optional(),
-    subLabel: z.string().optional(),
+    subLabel: z.any().optional(), // Can be string or React.ReactNode
     shape: nodeShapeSchema.optional(),
     background: z.string().optional(),
     iconBackground: z.string().optional(),
+    iconColor: z.string().optional(),
     icon: z.string().optional(),
+    iconElement: z.any().optional(), // React.ReactNode for custom icons
     color: z.string().optional(),
+    labelTooltip: z.string().optional(),
+    labelBackgroundColor: z.string().optional(),
+    centerAdornmentComponent: z.any().optional(), // React.ReactNode
+    footerComponent: z.any().optional(), // React.ReactNode
+    footerVariant: z.string().optional(), // FooterVariant enum
   })
   .catchall(z.unknown()); // Allow additional properties
 

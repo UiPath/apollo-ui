@@ -2,7 +2,7 @@ import * as Icons from '@uipath/apollo-react/canvas/icons';
 import { Row } from '@uipath/apollo-react/canvas/layouts';
 import { type NodeProps, Position } from '@uipath/apollo-react/canvas/xyflow/react';
 import { ApIcon } from '@uipath/apollo-react/material/components';
-import { Fragment, memo, useCallback, useMemo } from 'react';
+import { memo, useCallback, useMemo } from 'react';
 import {
   type AgentFlowResourceNode,
   type AgentFlowResourceNodeData,
@@ -10,9 +10,9 @@ import {
   type ResourceNodeTranslations,
   type SuggestionTranslations,
 } from '../../../types';
-import { NewBaseNode } from '../../BaseNode/NewBaseNode';
-import type { HandleConfiguration, NodeAdornment } from '../../BaseNode/NewBaseNode.types';
+import { BaseNode } from '../../BaseNode/BaseNode';
 import type { ButtonHandleConfig } from '../../ButtonHandle';
+import type { HandleGroupManifest } from '../../../schema/node-definition';
 import { ExecutionStatusIcon } from '../../ExecutionStatusIcon/ExecutionStatusIcon';
 import type { NodeToolbarConfig, ToolbarAction } from '../../Toolbar';
 import { ToolResourceIcon } from '../components/ToolResourceIcon';
@@ -56,6 +56,7 @@ export const ResourceNode = memo(
     translations,
     suggestionTranslations,
     suggestionGroupVersion,
+    ...nodeProps
   }: ResourceNodeProps) => {
     const { nodes: _nodes, deleteNode, actOnSuggestion } = useAgentFlowStore();
     const edges = useEdges();
@@ -333,38 +334,29 @@ export const ResourceNode = memo(
       []
     );
 
-    const breakpointAdornment = useMemo((): NodeAdornment => {
-      if (!hasBreakpoint) return { icon: undefined };
-      return { icon: <ApIcon variant="normal" name="circle" size="14px" color="#cc3d45" /> };
+    const breakpointAdornment = useMemo((): React.ReactNode => {
+      if (!hasBreakpoint) return undefined;
+      return <ApIcon variant="normal" name="circle" size="14px" color="#cc3d45" />;
     }, [hasBreakpoint]);
 
-    const statusAdornment = useMemo((): NodeAdornment => {
-      return {
-        icon: <ExecutionStatusIcon status={executionStatus} size={16} />,
-        tooltip:
-          displayTooltips && executionStatus === 'Failed'
-            ? data.errors?.map((error) => <Fragment key={error.value}>- {error.label}</Fragment>)
-            : undefined,
-      };
-    }, [displayTooltips, executionStatus, data.errors]);
+    const statusAdornment = useMemo((): React.ReactNode => {
+      return <ExecutionStatusIcon status={executionStatus} size={16} />;
+    }, [executionStatus]);
 
-    const guardrailsAdornment = useMemo((): NodeAdornment => {
-      if (!hasGuardrails) return { icon: undefined };
-      return {
-        icon: (
-          <ApIcon
-            variant="outlined"
-            name="gpp_good"
-            size="18px"
-            color="var(--uix-canvas-icon-default)"
-          />
-        ),
-        tooltip: displayTooltips ? (translations?.guardrailsApplied ?? '') : undefined,
-      };
-    }, [displayTooltips, hasGuardrails, translations]);
+    const guardrailsAdornment = useMemo((): React.ReactNode => {
+      if (!hasGuardrails) return undefined;
+      return (
+        <ApIcon
+          variant="outlined"
+          name="gpp_good"
+          size="18px"
+          color="var(--uix-canvas-icon-default)"
+        />
+      );
+    }, [hasGuardrails]);
 
-    const suggestionAdornment = useMemo((): NodeAdornment => {
-      if (!isSuggestion) return { icon: undefined };
+    const suggestionAdornment = useMemo((): React.ReactNode => {
+      if (!isSuggestion) return undefined;
       let iconName = 'swap_horizontal_circle';
       let color = 'var(--uix-canvas-warning-icon)';
 
@@ -376,14 +368,11 @@ export const ResourceNode = memo(
         color = 'var(--uix-canvas-error-icon)';
       }
 
-      return {
-        icon: <ApIcon variant="normal" name={iconName} size="18px" color={color} />,
-        tooltip: undefined,
-      };
+      return <ApIcon variant="normal" name={iconName} size="18px" color={color} />;
     }, [isSuggestion, suggestionType]);
 
     const handleConfigurations = useMemo(
-      (): HandleConfiguration[] => [
+      (): HandleGroupManifest[] => [
         {
           position: Position.Top,
           handles: toolTopHandles,
@@ -430,40 +419,58 @@ export const ResourceNode = memo(
       ]
     );
 
+    // Map resource type to manifest type
+    const getResourceNodeType = () => {
+      switch (data.type) {
+        case 'context':
+          return 'uipath.resource.context';
+        case 'tool':
+          return 'uipath.resource.tool';
+        case 'mcp':
+          return 'uipath.resource.mcp';
+        case 'escalation':
+          return 'uipath.resource.escalation';
+        case 'memorySpace':
+          return 'uipath.resource.memory';
+        default:
+          return 'uipath.resource.tool'; // fallback
+      }
+    };
+
     return (
-      <NewBaseNode
-        data={{}}
-        handleConfigurations={handleConfigurations}
-        disabled={isDisabled}
-        executionStatus={executionStatus}
-        suggestionType={suggestionType}
-        icon={resourceIcon}
-        display={{
-          iconBackground: 'var(--uix-canvas-background-secondary)',
-          label: data.name,
-          subLabel: data.originalName,
-          labelTooltip: displayTooltips ? data.description : undefined,
-          labelBackgroundColor: 'var(--uix-canvas-background-secondary)',
-          shape: 'circle',
+      <BaseNode
+        {...nodeProps}
+        type={getResourceNodeType()}
+        data={{
+          ...data,
+          parameters: {},
+          display: {
+            iconElement: resourceIcon,
+            iconBackground: 'var(--uix-canvas-background-secondary)',
+            label: data.name,
+            subLabel: data.originalName,
+            labelTooltip: displayTooltips ? data.description : undefined,
+            labelBackgroundColor: 'var(--uix-canvas-background-secondary)',
+            shape: 'circle',
+          },
+          disabled: isDisabled,
+          executionStatusOverride: executionStatus,
+          suggestionType: suggestionType,
+          handleConfigurations: handleConfigurations,
+          toolbarConfig: toolbarConfig,
+          adornments: {
+            topLeft: breakpointAdornment,
+            topRight: statusAdornment,
+            bottomLeft: suggestionAdornment,
+            bottomRight: guardrailsAdornment,
+          },
+          shouldShowButtonHandleNotchesFn: () => true,
         }}
-        toolbarConfig={toolbarConfig}
-        adornments={{
-          topLeft: breakpointAdornment,
-          topRight: statusAdornment,
-          bottomLeft: suggestionAdornment,
-          bottomRight: guardrailsAdornment,
-        }}
-        type={id}
         id={id}
+        selected={selected}
         draggable={false}
-        dragging={false}
-        zIndex={0}
         selectable={true}
         deletable={!isSuggestion}
-        selected={selected}
-        isConnectable={true}
-        positionAbsoluteX={0}
-        positionAbsoluteY={0}
       />
     );
   }

@@ -19,6 +19,7 @@ import { resolveToolbar } from '../../utils/toolbar-resolver';
 import { useBaseCanvasMode } from '../BaseCanvas/BaseCanvasModeProvider';
 import { useConnectedHandles } from '../BaseCanvas/ConnectedHandlesContext';
 import { useSelectionState } from '../BaseCanvas/SelectionStateContext';
+import type { HandleActionEvent } from '../ButtonHandle/ButtonHandle';
 import { SmartHandle, SmartHandleProvider } from '../ButtonHandle/SmartHandle';
 import { useButtonHandles } from '../ButtonHandle/useButtonHandles';
 import { NodeToolbar } from '../Toolbar';
@@ -30,7 +31,7 @@ import {
   BaseSubHeader,
   BaseTextContainer,
 } from './BaseNode.styles';
-import type { BaseNodeData, NodeStatusContext } from './BaseNode.types';
+import type { BaseNodeData, FooterVariant, NodeStatusContext } from './BaseNode.types';
 import { NodeLabel } from './NodeLabel';
 
 const selectIsConnecting = (state: ReactFlowState) => !!state.connectionClickStartHandle;
@@ -73,21 +74,37 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
     [id, executionState, isConnecting, selected, dragging, mode]
   );
 
+  // Extract data fields with proper types from BaseNodeData interface
+  const suggestionType = data.suggestionType;
+  const disabled = data.disabled;
+  const executionStatusOverride = data.executionStatusOverride;
+  const onHandleActionCallback = data.onHandleAction;
+  const shouldShowAddButtonFn = data.shouldShowAddButtonFn;
+  const shouldShowButtonHandleNotchesFn = data.shouldShowButtonHandleNotchesFn;
+
+  // Use executionStatusOverride if provided, otherwise use hook value
   const executionStatus =
-    typeof executionState === 'string' ? executionState : executionState?.status;
+    executionStatusOverride ??
+    (typeof executionState === 'string' ? executionState : executionState?.status);
 
   const display = useMemo(
     () => resolveDisplay(manifest?.display, data.display),
     [manifest, data.display]
   );
 
-  const Icon = useMemo(() => getIcon(display.icon), [display.icon]);
+  // Use iconElement if provided in data, otherwise resolve icon from registry
+  const iconElement = data.display?.iconElement;
+  const Icon = useMemo(() => {
+    if (iconElement) return iconElement;
+    const IconComponent = getIcon(display.icon);
+    return IconComponent ? <IconComponent /> : null;
+  }, [iconElement, display.icon]);
 
   // Resolve handles from instance data or manifest
   // Instance handleConfigurations take precedence over manifest
   const handleConfigurations = useMemo((): HandleGroupManifest[] => {
     // Check if node data has handleConfigurations override
-    const dataHandleConfigs = data.handleConfigurations as HandleGroupManifest[] | undefined;
+    const dataHandleConfigs = data.handleConfigurations;
     if (dataHandleConfigs && Array.isArray(dataHandleConfigs)) {
       return dataHandleConfigs;
     }
@@ -111,12 +128,28 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
     }));
   }, [manifest, data]);
 
+  // Check for runtime toolbar override
+  // If toolbarConfig property exists in data (even if undefined), use it; otherwise fall back to manifest
+  const hasToolbarOverride = 'toolbarConfig' in data;
+  const runtimeToolbarConfig = data.toolbarConfig;
   const toolbarConfig = useMemo(
-    () => (manifest ? resolveToolbar(manifest, statusContext) : undefined),
-    [manifest, statusContext]
+    () =>
+      hasToolbarOverride
+        ? runtimeToolbarConfig
+        : manifest
+          ? resolveToolbar(manifest, statusContext)
+          : undefined,
+    [hasToolbarOverride, runtimeToolbarConfig, manifest, statusContext]
   );
 
-  const adornments = useMemo(() => resolveAdornments(statusContext), [statusContext]);
+  // Check for runtime adornments override
+  // If adornments property exists in data (even if undefined), use it; otherwise fall back to resolvers
+  const hasAdornmentsOverride = 'adornments' in data;
+  const runtimeAdornments = data.adornments;
+  const adornments = useMemo(
+    () => (hasAdornmentsOverride ? runtimeAdornments : resolveAdornments(statusContext)),
+    [hasAdornmentsOverride, runtimeAdornments, statusContext]
+  );
 
   // Compute height based on handleConfigurations
   const computedHeight = useMemo(() => {
@@ -162,21 +195,24 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
 
   const displayLabel = display.label;
   const displaySubLabel = display.subLabel;
-  const displayLabelTooltip = display.labelTooltip as string | undefined;
-  const displayLabelBackgroundColor = display.labelBackgroundColor as string | undefined;
-  const displayShape = (display.shape ?? 'square') as 'circle' | 'square' | 'rectangle';
+  const displayLabelTooltip = display.labelTooltip;
+  const displayLabelBackgroundColor = display.labelBackgroundColor;
+  const displayShape = display.shape ?? 'square';
   const displayBackground = display.background;
   const displayColor = display.color;
   const displayIconBackground = display.iconBackground;
-  const displayCenterAdornment = display.centerAdornmentComponent as React.ReactNode;
+  const displayCenterAdornment = display.centerAdornmentComponent;
+  const displayFooter = display.footerComponent;
+  const displayFooterVariant = display.footerVariant;
 
   const interactionState = useMemo(() => {
+    if (disabled) return 'disabled';
     if (dragging) return 'drag';
     if (selected) return 'selected';
     if (isFocused) return 'focus';
     if (isHovered) return 'hover';
     return 'default';
-  }, [dragging, selected, isHovered, isFocused]);
+  }, [disabled, dragging, selected, isHovered, isFocused]);
 
   const shouldShowHandles = useMemo(
     () => isConnecting || selected || isHovered,
@@ -226,25 +262,24 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
   );
 
   // Calculate if notches should be shown (when node is hovered or selected)
-  const showNotches = isConnecting || isHovered || selected;
+  // Use custom function if provided, otherwise use default logic
+  const showNotches = shouldShowButtonHandleNotchesFn
+    ? shouldShowButtonHandleNotchesFn({ isConnecting, isSelected: selected, isHovered })
+    : isConnecting || isHovered || selected;
 
   // Handle action callback
   const handleAction = useCallback(
-    (_event: {
-      handleId: string;
-      nodeId: string;
-      handleType: 'artifact' | 'input' | 'output';
-      position: Position;
-      originalEvent: React.MouseEvent;
-    }) => {
+    (event: HandleActionEvent) => {
       // Reset hover state when handle is clicked
       setIsHovered(false);
       setIsFocused(false);
 
-      // Instance-specific handlers can be added via manifest constraints in future
-      // For now, just handle the base action
+      // Call user-provided callback if present
+      if (onHandleActionCallback) {
+        onHandleActionCallback(event);
+      }
     },
-    []
+    [onHandleActionCallback]
   );
 
   // Check if smart handles are enabled via node data
@@ -262,6 +297,7 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
     showNotches,
     nodeWidth: width,
     nodeHeight: height,
+    shouldShowAddButtonFn,
   });
 
   // Generate SmartHandle elements from handle configurations (opt-in)
@@ -383,38 +419,41 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
         className={cx(executionStatus, interactionState)}
         interactionState={interactionState}
         executionStatus={executionStatus}
+        suggestionType={suggestionType}
         width={width}
         height={height}
         backgroundColor={displayBackground}
+        hasFooter={!!displayFooter}
+        footerVariant={displayFooterVariant as FooterVariant}
       >
         {Icon && (
           <BaseIconWrapper
             shape={displayShape}
             color={displayColor}
             backgroundColor={displayIconBackground}
-            height={height}
-            width={width ?? height}
+            height={displayFooter ? undefined : height}
+            width={displayFooter ? undefined : (width ?? height)}
           >
-            <Icon />
+            {Icon}
           </BaseIconWrapper>
         )}
 
-        {adornments.topLeft && (
+        {adornments?.topLeft && (
           <BaseBadgeSlot position="top-left" shape={displayShape}>
             {adornments.topLeft}
           </BaseBadgeSlot>
         )}
-        {adornments.topRight && (
+        {adornments?.topRight && (
           <BaseBadgeSlot position="top-right" shape={displayShape}>
             {adornments.topRight}
           </BaseBadgeSlot>
         )}
-        {adornments.bottomRight && (
+        {adornments?.bottomRight && (
           <BaseBadgeSlot position="bottom-right" shape={displayShape}>
             {adornments.bottomRight}
           </BaseBadgeSlot>
         )}
-        {adornments.bottomLeft && (
+        {adornments?.bottomLeft && (
           <BaseBadgeSlot position="bottom-left" shape={displayShape}>
             {adornments.bottomLeft}
           </BaseBadgeSlot>
@@ -432,6 +471,11 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
           readonly={mode !== 'design'}
           onChange={handleLabelChange}
         />
+        {displayFooter && (
+          <div style={{ flexBasis: '100%', paddingTop: '2px', minWidth: 0, overflow: 'hidden' }}>
+            {displayFooter}
+          </div>
+        )}
       </BaseContainer>
       {handleElements}
       {toolbarConfig && (

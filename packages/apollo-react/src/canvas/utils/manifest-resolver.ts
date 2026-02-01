@@ -14,6 +14,7 @@ import { getToolbarActionStore } from '../hooks';
 import type { HandleGroupManifest, HandleManifest } from '../schema/node-definition/handle';
 import type { NodeDisplayManifest } from '../schema/node-definition/node-manifest';
 import type { DisplayConfig } from '../schema/workflow/base';
+import type { HandleActionEvent } from '../components/ButtonHandle/ButtonHandle';
 
 /**
  * Context object passed to resolution functions
@@ -49,6 +50,8 @@ export interface ResolvedHandle extends Omit<HandleManifest, 'repeat' | 'itemVar
   label?: string;
   /** Whether the handle is currently visible */
   visible: boolean;
+  /** Optional callback for button handle actions (runtime only) */
+  onAction?: (event: HandleActionEvent) => void;
 }
 
 /**

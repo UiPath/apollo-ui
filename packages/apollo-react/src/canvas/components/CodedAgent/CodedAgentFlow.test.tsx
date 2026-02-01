@@ -1,6 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import type { ReactElement } from 'react';
 import { render, screen, waitFor } from '../../utils/testing';
+import { BaseCanvasModeProvider } from '../BaseCanvas/BaseCanvasModeProvider';
+import { NodeRegistryProvider } from '../../core/NodeRegistryProvider';
 import { CodedAgentFlow } from './CodedAgentFlow';
+import { codedAgentManifest } from './coded-agent.manifest';
 
 // Mock BaseCanvas to avoid ReactFlow dependencies in tests
 vi.mock('../BaseCanvas', () => ({
@@ -82,6 +86,14 @@ vi.mock('@uipath/apollo-react/canvas/xyflow/react', () => ({
     Bottom: 'bottom',
     Left: 'left',
   },
+  BackgroundVariant: {
+    Dots: 'dots',
+    Lines: 'lines',
+    Cross: 'cross',
+  },
+  useStore: () => ({ edges: [], isConnecting: false }),
+  useConnection: () => ({ inProgress: false }),
+  useUpdateNodeInternals: () => vi.fn(),
 }));
 
 // Mock sanitizeHtml - iteratively remove HTML tags until none remain
@@ -113,6 +125,15 @@ vi.mock('mermaid', () => {
     mockGetDiagramFromText,
   };
 });
+
+// Test wrapper that provides required context
+const renderWithProviders = (ui: ReactElement) => {
+  return render(
+    <BaseCanvasModeProvider mode="design">
+      <NodeRegistryProvider manifest={codedAgentManifest}>{ui}</NodeRegistryProvider>
+    </BaseCanvasModeProvider>
+  );
+};
 
 describe('CodedAgentFlow', () => {
   const validMermaidText = `
@@ -181,13 +202,13 @@ graph LR
 
   describe('Component Structure', () => {
     it('renders without crashing', () => {
-      render(<CodedAgentFlow mermaidText={validMermaidText} />);
+      renderWithProviders(<CodedAgentFlow mermaidText={validMermaidText} />);
 
       expect(screen.getByTestId('react-flow-provider')).toBeDefined();
     });
 
     it('renders all required sub-components when data is loaded', async () => {
-      render(<CodedAgentFlow mermaidText={validMermaidText} />);
+      renderWithProviders(<CodedAgentFlow mermaidText={validMermaidText} />);
 
       // Wait for async processing to complete
       await waitFor(() => {
@@ -198,29 +219,33 @@ graph LR
 
   describe('Props Validation', () => {
     it('accepts valid props', () => {
-      expect(() => render(<CodedAgentFlow mermaidText={validMermaidText} />)).not.toThrow();
+      expect(() =>
+        renderWithProviders(<CodedAgentFlow mermaidText={validMermaidText} />)
+      ).not.toThrow();
     });
 
     it('handles empty mermaid text', () => {
-      render(<CodedAgentFlow mermaidText="" />);
+      renderWithProviders(<CodedAgentFlow mermaidText="" />);
 
       expect(screen.getByText('No data to display')).toBeDefined();
     });
 
     it('handles complex mermaid diagrams', () => {
-      expect(() => render(<CodedAgentFlow mermaidText={complexMermaidText} />)).not.toThrow();
+      expect(() =>
+        renderWithProviders(<CodedAgentFlow mermaidText={complexMermaidText} />)
+      ).not.toThrow();
     });
   });
 
   describe('Empty State', () => {
     it('displays empty state message when no mermaid text is provided', () => {
-      render(<CodedAgentFlow mermaidText="" />);
+      renderWithProviders(<CodedAgentFlow mermaidText="" />);
 
       expect(screen.getByText('No data to display')).toBeDefined();
     });
 
     it('does not display other content in empty state', () => {
-      render(<CodedAgentFlow mermaidText="" />);
+      renderWithProviders(<CodedAgentFlow mermaidText="" />);
 
       expect(screen.queryByTestId('react-flow')).toBeNull();
       expect(screen.queryByText('Coded Agent')).toBeNull();
@@ -229,7 +254,7 @@ graph LR
 
   describe('Mermaid Text Processing', () => {
     it('processes valid mermaid syntax', async () => {
-      render(<CodedAgentFlow mermaidText={validMermaidText} />);
+      renderWithProviders(<CodedAgentFlow mermaidText={validMermaidText} />);
 
       const mermaid = await vi.importMock('mermaid');
       await waitFor(() => {
@@ -245,7 +270,9 @@ graph LR
       (mermaid as any).mockMermaidParse.mockResolvedValue(false as any);
 
       // The component should handle this gracefully without crashing
-      expect(() => render(<CodedAgentFlow mermaidText={malformedMermaid} />)).not.toThrow();
+      expect(() =>
+        renderWithProviders(<CodedAgentFlow mermaidText={malformedMermaid} />)
+      ).not.toThrow();
 
       // The component should render (either loading, error, or empty state)
       expect(screen.getByTestId('react-flow-provider')).toBeDefined();
@@ -254,14 +281,14 @@ graph LR
 
   describe('Component Integration', () => {
     it('wraps content in ReactFlowProvider', () => {
-      render(<CodedAgentFlow mermaidText={validMermaidText} />);
+      renderWithProviders(<CodedAgentFlow mermaidText={validMermaidText} />);
 
       const provider = screen.getByTestId('react-flow-provider');
       expect(provider).toBeDefined();
     });
 
     it('renders ReactFlow when data is available', async () => {
-      render(<CodedAgentFlow mermaidText={validMermaidText} />);
+      renderWithProviders(<CodedAgentFlow mermaidText={validMermaidText} />);
 
       // ReactFlow should be rendered when we have data
       await waitFor(() => {
@@ -272,14 +299,14 @@ graph LR
 
   describe('Accessibility', () => {
     it('has proper test IDs for testing', () => {
-      render(<CodedAgentFlow mermaidText={validMermaidText} />);
+      renderWithProviders(<CodedAgentFlow mermaidText={validMermaidText} />);
 
       expect(screen.getByTestId('react-flow-provider')).toBeDefined();
     });
 
     it('provides meaningful text for different states', () => {
       // Empty state
-      render(<CodedAgentFlow mermaidText="" />);
+      renderWithProviders(<CodedAgentFlow mermaidText="" />);
       expect(screen.getByText('No data to display')).toBeDefined();
     });
   });

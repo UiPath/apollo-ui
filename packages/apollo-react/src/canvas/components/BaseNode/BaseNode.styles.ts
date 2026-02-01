@@ -1,6 +1,7 @@
 import { css, keyframes } from '@emotion/react';
 import styled from '@emotion/styled';
 import type { NodeShape } from '../../schema';
+import { FooterVariant } from './BaseNode.types';
 
 // Grid-aligned node heights (multiples of 16px)
 const GRID_UNIT = 16;
@@ -133,7 +134,7 @@ export const BaseContainer = styled.div<{
   width?: number;
   height?: number;
   hasFooter?: boolean;
-  footerVariant?: 'none' | 'button' | 'single' | 'double';
+  footerVariant?: FooterVariant;
 }>`
   position: relative;
   width: ${({ shape, width }) => {

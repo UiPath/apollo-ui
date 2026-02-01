@@ -10,14 +10,10 @@ import {
   type SuggestionTranslations,
   type SuggestionType,
 } from '../../../types';
-import { NewBaseNode } from '../../BaseNode/NewBaseNode';
-import type {
-  HandleConfiguration,
-  NewBaseNodeData,
-  NewBaseNodeDisplayProps,
-  NodeAdornment,
-} from '../../BaseNode/NewBaseNode.types';
+import { BaseNode } from '../../BaseNode/BaseNode';
+import type { BaseNodeData } from '../../BaseNode/BaseNode.types';
 import type { ButtonHandleConfig, HandleActionEvent } from '../../ButtonHandle/ButtonHandle';
+import type { HandleGroupManifest } from '../../../schema/node-definition';
 import { ExecutionStatusIcon } from '../../ExecutionStatusIcon/ExecutionStatusIcon';
 import type { NodeToolbarConfig, ToolbarAction } from '../../Toolbar';
 import { ResourceNodeType } from '../AgentFlow.constants';
@@ -44,7 +40,7 @@ import {
 
 const { ConversationalAgentIcon, AutonomousAgentIcon } = Icons;
 
-interface AgentNodeData extends NewBaseNodeData {
+interface AgentNodeData extends BaseNodeData {
   name: string;
   description: string;
   definition: Record<string, unknown>;
@@ -60,7 +56,7 @@ interface AgentNodeData extends NewBaseNodeData {
   suggestionType?: SuggestionType;
 }
 
-interface AgentNodeProps extends NewBaseNodeDisplayProps {
+interface AgentNodeProps {
   data: AgentNodeData;
   selected?: boolean;
   mode?: 'design' | 'view';
@@ -170,8 +166,8 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
   const displayMcp = (mode === 'design' && isMcpEnabled) || (mode === 'view' && !!hasMcp);
 
   // Create handle configurations
-  const handleConfigurations = useMemo((): HandleConfiguration[] => {
-    const configs: HandleConfiguration[] = [];
+  const handleConfigurations = useMemo((): HandleGroupManifest[] => {
+    const configs: HandleGroupManifest[] = [];
 
     // Top handles (Memory, Escalation)
     const topHandles: ButtonHandleConfig[] = [];
@@ -279,10 +275,8 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
     return <AutonomousAgentIcon color="var(--uix-canvas-foreground-de-emp)" w={32} h={32} />;
   }, [isConversational]);
 
-  const statusAdornment = useMemo((): NodeAdornment => {
-    return {
-      icon: <ExecutionStatusIcon status={executionStatus} size={16} />,
-    };
+  const statusAdornment = useMemo((): React.ReactNode => {
+    return <ExecutionStatusIcon status={executionStatus} size={16} />;
   }, [executionStatus]);
 
   const healthScoreBadge = useMemo(() => {
@@ -419,8 +413,8 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
     handleActOnSuggestion,
   ]);
 
-  const suggestionAdornment = useMemo((): NodeAdornment => {
-    if (!isSuggestion) return { icon: undefined };
+  const suggestionAdornment = useMemo((): React.ReactNode => {
+    if (!isSuggestion) return undefined;
     let iconName = 'swap_horizontal_circle';
     let color = 'var(--uix-canvas-warning-icon)';
 
@@ -432,10 +426,7 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
       color = 'var(--uix-canvas-error-icon)';
     }
 
-    return {
-      icon: <ApIcon variant="normal" name={iconName} size="18px" color={color} />,
-      tooltip: undefined,
-    };
+    return <ApIcon variant="normal" name={iconName} size="18px" color={color} />;
   }, [isSuggestion, suggestionType]);
 
   const settingsPreviewContent = useMemo(() => {
@@ -496,37 +487,39 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
 
   return (
     <div onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
-      <NewBaseNode
+      <BaseNode
         {...nodeProps}
         id={id}
-        executionStatus={executionStatus}
-        suggestionType={suggestionType}
-        icon={agentIcon}
-        display={{
-          label: name,
-          subLabel: (
-            <SubLabelContainer>
-              {isConversational ? translations.conversationalAgent : translations.autonomousAgent}
-              {healthScoreBadge}
-            </SubLabelContainer>
-          ),
-          shape: 'rectangle',
-          background: 'var(--uix-canvas-background)',
-          iconBackground: 'var(--uix-canvas-background-secondary)',
-          footerComponent: instructionsFooter,
-          footerVariant,
+        type={isConversational ? 'uipath.agent.conversational' : 'uipath.agent.autonomous'}
+        data={{
+          ...data,
+          display: {
+            iconElement: agentIcon,
+            label: name,
+            subLabel: (
+              <SubLabelContainer>
+                {isConversational ? translations.conversationalAgent : translations.autonomousAgent}
+                {healthScoreBadge}
+              </SubLabelContainer>
+            ),
+            shape: 'rectangle',
+            background: 'var(--uix-canvas-background)',
+            iconBackground: 'var(--uix-canvas-background-secondary)',
+            footerComponent: instructionsFooter,
+            footerVariant,
+          },
+          executionStatusOverride: executionStatus,
+          suggestionType: suggestionType,
+          handleConfigurations: handleConfigurations,
+          toolbarConfig: toolbarConfig,
+          adornments: {
+            topRight: statusAdornment,
+            bottomLeft: suggestionAdornment,
+          },
+          shouldShowAddButtonFn: shouldShowAddButtonFn,
+          shouldShowButtonHandleNotchesFn: () => true,
         }}
-        toolbarConfig={toolbarConfig}
-        adornments={{
-          topRight: statusAdornment,
-          bottomLeft: suggestionAdornment,
-        }}
-        handleConfigurations={handleConfigurations}
-        // Show add buttons in design mode even when not selected
-        showHandles={mode === 'design'}
-        showAddButton={mode === 'design'}
         selected={selected}
-        shouldShowAddButtonFn={shouldShowAddButtonFn}
       />
       <FloatingCanvasPanel
         open={showSettingsPreview}
