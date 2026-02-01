@@ -1,22 +1,26 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { NodeRegistryProvider } from '../../core/NodeRegistryProvider';
 import { CodedAgentFlow } from './CodedAgentFlow';
+import { codedAgentManifest } from './coded-agent.manifest';
 
 const meta: Meta<typeof CodedAgentFlow> = {
   title: 'Canvas/CodedAgentFlow',
   component: CodedAgentFlow,
   decorators: [
     (Story) => (
-      <div
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '100%',
-        }}
-      >
-        <Story />
-      </div>
+      <NodeRegistryProvider manifest={codedAgentManifest}>
+        <div
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+          }}
+        >
+          <Story />
+        </div>
+      </NodeRegistryProvider>
     ),
   ],
 };

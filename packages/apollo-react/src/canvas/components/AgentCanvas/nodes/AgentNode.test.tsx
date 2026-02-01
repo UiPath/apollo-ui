@@ -1,6 +1,10 @@
 import { render, screen } from '@testing-library/react';
+import type { ReactElement } from 'react';
 import { describe, expect, it, vi } from 'vitest';
+import { BaseCanvasModeProvider } from '../../BaseCanvas/BaseCanvasModeProvider';
+import { NodeRegistryProvider } from '../../../core/NodeRegistryProvider';
 import type { AgentNodeTranslations } from '../../../types';
+import { agentFlowManifest } from '../agent-flow.manifest';
 import { AgentNodeElement } from './AgentNode';
 
 // Mock dependencies
@@ -99,6 +103,7 @@ const defaultNodeProps = {
     name: 'Test Agent',
     description: 'Test Description',
     definition: {},
+    parameters: {},
   },
   position: { x: 0, y: 0 },
   selected: false,
@@ -113,10 +118,19 @@ const defaultNodeProps = {
   translations: defaultTranslations,
 };
 
+// Test wrapper that provides required context
+const renderWithProviders = (ui: ReactElement) => {
+  return render(
+    <BaseCanvasModeProvider mode="design">
+      <NodeRegistryProvider manifest={agentFlowManifest}>{ui}</NodeRegistryProvider>
+    </BaseCanvasModeProvider>
+  );
+};
+
 describe('AgentNode - Health Score', () => {
   describe('Health Score Rendering', () => {
     it('should render health score when provided', () => {
-      render(<AgentNodeElement {...defaultNodeProps} healthScore={85} />);
+      renderWithProviders(<AgentNodeElement {...defaultNodeProps} healthScore={85} />);
 
       // Check for health score icon
       expect(screen.getByTestId('health-score-icon')).toBeInTheDocument();
@@ -126,7 +140,7 @@ describe('AgentNode - Health Score', () => {
     });
 
     it('should not render health score when undefined', () => {
-      render(<AgentNodeElement {...defaultNodeProps} healthScore={undefined} />);
+      renderWithProviders(<AgentNodeElement {...defaultNodeProps} healthScore={undefined} />);
 
       // Health score icon should not be present
       expect(screen.queryByTestId('health-score-icon')).not.toBeInTheDocument();
@@ -136,21 +150,21 @@ describe('AgentNode - Health Score', () => {
     });
 
     it('should render health score of 0', () => {
-      render(<AgentNodeElement {...defaultNodeProps} healthScore={0} />);
+      renderWithProviders(<AgentNodeElement {...defaultNodeProps} healthScore={0} />);
 
       expect(screen.getByTestId('health-score-icon')).toBeInTheDocument();
       expect(screen.getByText('0')).toBeInTheDocument();
     });
 
     it('should render health score of 100', () => {
-      render(<AgentNodeElement {...defaultNodeProps} healthScore={100} />);
+      renderWithProviders(<AgentNodeElement {...defaultNodeProps} healthScore={100} />);
 
       expect(screen.getByTestId('health-score-icon')).toBeInTheDocument();
       expect(screen.getByText('100')).toBeInTheDocument();
     });
 
     it('should render health score with decimal values as strings', () => {
-      render(<AgentNodeElement {...defaultNodeProps} healthScore={85.7} />);
+      renderWithProviders(<AgentNodeElement {...defaultNodeProps} healthScore={85.7} />);
 
       expect(screen.getByTestId('health-score-icon')).toBeInTheDocument();
       expect(screen.getByText('85.7')).toBeInTheDocument();
@@ -161,21 +175,21 @@ describe('AgentNode - Health Score', () => {
     it('should handle negative health scores', () => {
       // Current implementation will render negative values
       // This test documents the current behavior
-      render(<AgentNodeElement {...defaultNodeProps} healthScore={-10} />);
+      renderWithProviders(<AgentNodeElement {...defaultNodeProps} healthScore={-10} />);
 
       expect(screen.getByTestId('health-score-icon')).toBeInTheDocument();
       expect(screen.getByText('-10')).toBeInTheDocument();
     });
 
     it('should handle very large health scores', () => {
-      render(<AgentNodeElement {...defaultNodeProps} healthScore={999} />);
+      renderWithProviders(<AgentNodeElement {...defaultNodeProps} healthScore={999} />);
 
       expect(screen.getByTestId('health-score-icon')).toBeInTheDocument();
       expect(screen.getByText('999')).toBeInTheDocument();
     });
 
     it('should not render for NaN', () => {
-      render(<AgentNodeElement {...defaultNodeProps} healthScore={NaN} />);
+      renderWithProviders(<AgentNodeElement {...defaultNodeProps} healthScore={NaN} />);
 
       // NaN.toString() returns "NaN", which would be rendered
       // This test documents current behavior - may need fixing
@@ -186,7 +200,7 @@ describe('AgentNode - Health Score', () => {
     });
 
     it('should not render for Infinity', () => {
-      render(<AgentNodeElement {...defaultNodeProps} healthScore={Infinity} />);
+      renderWithProviders(<AgentNodeElement {...defaultNodeProps} healthScore={Infinity} />);
 
       // Infinity.toString() returns "Infinity"
       const healthScoreIcon = screen.queryByTestId('health-score-icon');
@@ -198,7 +212,7 @@ describe('AgentNode - Health Score', () => {
 
   describe('Health Score Integration', () => {
     it('should render health score alongside agent name', () => {
-      render(<AgentNodeElement {...defaultNodeProps} healthScore={75} />);
+      renderWithProviders(<AgentNodeElement {...defaultNodeProps} healthScore={75} />);
 
       // Both agent name and health score should be visible
       expect(screen.getByText('Test Agent')).toBeInTheDocument();
@@ -206,7 +220,9 @@ describe('AgentNode - Health Score', () => {
     });
 
     it('should render health score with execution status', () => {
-      render(<AgentNodeElement {...defaultNodeProps} healthScore={90} hasError={true} />);
+      renderWithProviders(
+        <AgentNodeElement {...defaultNodeProps} healthScore={90} hasError={true} />
+      );
 
       // Both health score and execution status should be visible
       expect(screen.getByText('90')).toBeInTheDocument();
@@ -215,14 +231,16 @@ describe('AgentNode - Health Score', () => {
     });
 
     it('should render health score in design mode', () => {
-      render(<AgentNodeElement {...defaultNodeProps} mode="design" healthScore={80} />);
+      renderWithProviders(
+        <AgentNodeElement {...defaultNodeProps} mode="design" healthScore={80} />
+      );
 
       expect(screen.getByTestId('health-score-icon')).toBeInTheDocument();
       expect(screen.getByText('80')).toBeInTheDocument();
     });
 
     it('should render health score in view mode', () => {
-      render(<AgentNodeElement {...defaultNodeProps} mode="view" healthScore={65} />);
+      renderWithProviders(<AgentNodeElement {...defaultNodeProps} mode="view" healthScore={65} />);
 
       expect(screen.getByTestId('health-score-icon')).toBeInTheDocument();
       expect(screen.getByText('65')).toBeInTheDocument();
@@ -231,7 +249,7 @@ describe('AgentNode - Health Score', () => {
 
   describe('Agent Types', () => {
     it('should render conversational agent with health score', () => {
-      render(
+      renderWithProviders(
         <AgentNodeElement
           {...defaultNodeProps}
           data={{
@@ -248,7 +266,7 @@ describe('AgentNode - Health Score', () => {
     });
 
     it('should render autonomous agent with health score', () => {
-      render(
+      renderWithProviders(
         <AgentNodeElement
           {...defaultNodeProps}
           data={{
@@ -269,7 +287,7 @@ describe('AgentNode - Health Score', () => {
 describe('AgentNode - Instructions Footer', () => {
   it('shows add instructions button in design mode when no instructions', () => {
     const onAddInstructions = vi.fn();
-    render(
+    renderWithProviders(
       <AgentNodeElement
         {...defaultNodeProps}
         mode="design"
@@ -282,7 +300,7 @@ describe('AgentNode - Instructions Footer', () => {
   });
 
   it('does not show add instructions button in view mode', () => {
-    render(
+    renderWithProviders(
       <AgentNodeElement
         {...defaultNodeProps}
         mode="view"
@@ -295,7 +313,7 @@ describe('AgentNode - Instructions Footer', () => {
   });
 
   it('does not show instructions when feature flag is disabled', () => {
-    render(
+    renderWithProviders(
       <AgentNodeElement
         {...defaultNodeProps}
         mode="design"
@@ -313,7 +331,7 @@ describe('AgentNode - Instructions Footer', () => {
   });
 
   it('shows instructions preview when only system instruction exists', () => {
-    render(
+    renderWithProviders(
       <AgentNodeElement
         {...defaultNodeProps}
         mode="design"
@@ -331,7 +349,7 @@ describe('AgentNode - Instructions Footer', () => {
   });
 
   it('shows instructions preview when only user instruction exists', () => {
-    render(
+    renderWithProviders(
       <AgentNodeElement
         {...defaultNodeProps}
         mode="design"
@@ -349,7 +367,7 @@ describe('AgentNode - Instructions Footer', () => {
   });
 
   it('shows both system and user in preview when both exist', () => {
-    render(
+    renderWithProviders(
       <AgentNodeElement
         {...defaultNodeProps}
         mode="design"

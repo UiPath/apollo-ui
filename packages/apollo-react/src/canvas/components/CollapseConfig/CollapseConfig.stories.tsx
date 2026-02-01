@@ -1,30 +1,85 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import type { Edge, Node, NodeProps } from '@uipath/apollo-react/canvas/xyflow/react';
-import { Panel, Position, useReactFlow } from '@uipath/apollo-react/canvas/xyflow/react';
+import {
+  Panel,
+  Position,
+  ReactFlowProvider,
+  useReactFlow,
+} from '@uipath/apollo-react/canvas/xyflow/react';
 import { ApIcon } from '@uipath/apollo-react/material/components';
 import { useCallback, useMemo } from 'react';
-import {
-  allNodeManifests,
-  StoryInfoPanel,
-  useCanvasStory,
-  withCanvasProviders,
-} from '../../storybook-utils';
+import { allNodeManifests, StoryInfoPanel, useCanvasStory } from '../../storybook-utils';
 import { DefaultCanvasTranslations } from '../../types';
 import { getIcon } from '../../utils/icon-registry';
 import { BaseCanvas } from '../BaseCanvas';
-import { NewBaseNode } from '../BaseNode/NewBaseNode';
-import type { NewBaseNodeData } from '../BaseNode/NewBaseNode.types';
+import { BaseNode } from '../BaseNode/BaseNode';
+import type { BaseNodeData } from '../BaseNode/BaseNode.types';
 import { CanvasPositionControls } from '../CanvasPositionControls';
 import type { NodeToolbarConfig } from '../Toolbar';
+import type { HandleGroupManifest } from '../../schema/node-definition';
+import { NodeRegistryProvider } from '../../core/NodeRegistryProvider';
+import type { NodeManifest, WorkflowManifest } from '../../schema/node-definition';
+import {
+  contextResourceManifest,
+  toolResourceManifest,
+  escalationResourceManifest,
+  memoryResourceManifest,
+} from '../AgentCanvas/agent-flow.manifest';
 
 // ============================================================================
 // Meta Configuration
 // ============================================================================
 
+// Manifest for the collapsible agent node type
+const collapsibleAgentManifest: NodeManifest = {
+  nodeType: 'uipath.agent.collapsible',
+  version: '1.0.0',
+  tags: [],
+  sortOrder: 0,
+  display: {
+    label: 'Collapsible Agent',
+    icon: 'uipath.agent',
+    shape: 'rectangle',
+    iconBackground: 'var(--uix-canvas-background-secondary)',
+  },
+  handleConfiguration: [],
+};
+
+// Workflow manifest for the story
+const collapseConfigManifest: WorkflowManifest = {
+  version: '1.0.0',
+  categories: [],
+  nodes: [
+    collapsibleAgentManifest,
+    contextResourceManifest,
+    toolResourceManifest,
+    escalationResourceManifest,
+    memoryResourceManifest,
+  ],
+};
+
 const meta: Meta = {
   title: 'Canvas/CollapseConfig',
   parameters: { layout: 'fullscreen' },
-  decorators: [withCanvasProviders()],
+  decorators: [
+    (Story) => (
+      <ReactFlowProvider>
+        <NodeRegistryProvider manifest={collapseConfigManifest}>
+          <div
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: '100%',
+            }}
+          >
+            <Story />
+          </div>
+        </NodeRegistryProvider>
+      </ReactFlowProvider>
+    ),
+  ],
 };
 
 export default meta;
@@ -40,7 +95,7 @@ const agentManifest = allNodeManifests.find((m) => m.nodeType === 'uipath.agent'
 // Collapsible Agent Node Component
 // ============================================================================
 
-interface CollapsibleAgentNodeData extends NewBaseNodeData {
+interface CollapsibleAgentNodeData extends BaseNodeData {
   label?: string;
   collapsed?: boolean;
 }
@@ -111,11 +166,12 @@ function CollapsibleAgentNode(props: NodeProps<Node<CollapsibleAgentNodeData>>) 
     [collapsed, handleToggleCollapse]
   );
 
-  const handleConfigurations = useMemo(
+  const handleConfigurations: HandleGroupManifest[] = useMemo(
     () => [
       {
         position: Position.Left,
         handles: [{ id: 'input', type: 'target' as const, handleType: 'input' as const }],
+        visible: true,
       },
       {
         position: Position.Right,
@@ -128,6 +184,7 @@ function CollapsibleAgentNode(props: NodeProps<Node<CollapsibleAgentNodeData>>) 
           },
           { id: 'error', type: 'source' as const, handleType: 'output' as const, label: 'Error' },
         ],
+        visible: true,
       },
       ...(!collapsed
         ? [
@@ -151,6 +208,7 @@ function CollapsibleAgentNode(props: NodeProps<Node<CollapsibleAgentNodeData>>) 
                   onAction: () => {},
                 },
               ],
+              visible: true,
             },
             {
               position: Position.Bottom,
@@ -172,6 +230,7 @@ function CollapsibleAgentNode(props: NodeProps<Node<CollapsibleAgentNodeData>>) 
                   onAction: () => {},
                 },
               ],
+              visible: true,
             },
           ]
         : []),
@@ -182,20 +241,23 @@ function CollapsibleAgentNode(props: NodeProps<Node<CollapsibleAgentNodeData>>) 
   const AgentIcon = getIcon(agentManifest?.display.icon ?? 'uipath.agent');
 
   return (
-    <NewBaseNode
+    <BaseNode
       {...nodeProps}
+      type="uipath.agent.collapsible"
       id={id}
       selected={selected}
-      data={data}
-      icon={<AgentIcon />}
-      showAddButton={selected}
-      display={{
-        label,
-        shape: collapsed ? 'square' : (agentManifest?.display.shape ?? 'rectangle'),
-        iconBackground: agentManifest?.display.iconBackground,
+      data={{
+        ...data,
+        parameters: data?.parameters ?? {},
+        display: {
+          iconElement: <AgentIcon />,
+          label,
+          shape: collapsed ? 'square' : (agentManifest?.display.shape ?? 'rectangle'),
+          iconBackground: agentManifest?.display.iconBackground,
+        },
+        handleConfigurations,
+        toolbarConfig,
       }}
-      handleConfigurations={handleConfigurations}
-      toolbarConfig={toolbarConfig}
     />
   );
 }
@@ -220,7 +282,7 @@ function DefaultStory() {
       // Memory (1)
       {
         id: 'memory-1',
-        type: 'uipath.agent.resource.memory',
+        type: 'uipath.resource.memory',
         position: { x: 150, y: 140 },
         data: {
           display: { label: 'Memory' },
@@ -231,7 +293,7 @@ function DefaultStory() {
       // Escalations (3)
       {
         id: 'escalation-1',
-        type: 'uipath.agent.resource.escalation',
+        type: 'uipath.resource.escalation',
         position: { x: 350, y: 80 },
         data: {
           display: { label: 'Escalation 1' },
@@ -241,7 +303,7 @@ function DefaultStory() {
       },
       {
         id: 'escalation-2',
-        type: 'uipath.agent.resource.escalation',
+        type: 'uipath.resource.escalation',
         position: { x: 530, y: 80 },
         data: {
           display: { label: 'Escalation 2' },
@@ -251,7 +313,7 @@ function DefaultStory() {
       },
       {
         id: 'escalation-3',
-        type: 'uipath.agent.resource.escalation',
+        type: 'uipath.resource.escalation',
         position: { x: 710, y: 140 },
         data: {
           display: { label: 'Escalation 3' },
@@ -262,7 +324,7 @@ function DefaultStory() {
       // Context (2)
       {
         id: 'context-1',
-        type: 'uipath.agent.resource.context',
+        type: 'uipath.resource.context',
         position: { x: 150, y: 480 },
         data: {
           display: { label: 'Context 1' },
@@ -272,7 +334,7 @@ function DefaultStory() {
       },
       {
         id: 'context-2',
-        type: 'uipath.agent.resource.context',
+        type: 'uipath.resource.context',
         position: { x: 330, y: 540 },
         data: {
           display: { label: 'Context 2' },
@@ -283,7 +345,7 @@ function DefaultStory() {
       // Tools (4)
       {
         id: 'tools-1',
-        type: 'uipath.agent.resource.tool',
+        type: 'uipath.resource.tool',
         position: { x: 500, y: 540 },
         data: {
           display: { label: 'Tool 1' },
@@ -293,7 +355,7 @@ function DefaultStory() {
       },
       {
         id: 'tools-2',
-        type: 'uipath.agent.resource.tool',
+        type: 'uipath.resource.tool',
         position: { x: 660, y: 540 },
         data: {
           display: { label: 'Tool 2' },
@@ -303,7 +365,7 @@ function DefaultStory() {
       },
       {
         id: 'tools-3',
-        type: 'uipath.agent.resource.tool',
+        type: 'uipath.resource.tool',
         position: { x: 820, y: 480 },
         data: {
           display: { label: 'Tool 3' },
@@ -313,7 +375,7 @@ function DefaultStory() {
       },
       {
         id: 'tools-4',
-        type: 'uipath.agent.resource.tool',
+        type: 'uipath.resource.tool',
         position: { x: 820, y: 320 },
         data: {
           display: { label: 'Tool 4' },

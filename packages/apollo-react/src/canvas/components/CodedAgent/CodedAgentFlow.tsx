@@ -30,9 +30,10 @@ import { d3HierarchyLayout, type LayoutDirection } from '../../utils/coded-agent
 import { mermaidToReactFlow } from '../../utils/coded-agents/mermaid-parser';
 import type { BaseCanvasRef } from '../BaseCanvas';
 import { BaseCanvas } from '../BaseCanvas';
-import { NewBaseNode } from '../BaseNode/NewBaseNode';
-import type { NewBaseNodeData } from '../BaseNode/NewBaseNode.types';
+import { BaseNode } from '../BaseNode/BaseNode';
+import type { BaseNodeData } from '../BaseNode/BaseNode.types';
 import { CanvasPositionControls } from '../CanvasPositionControls';
+import type { HandleGroupManifest } from '../../schema/node-definition';
 
 const LAYOUT_SPACING = [110, 80] as [number, number]; // Horizontal and vertical spacing for layout
 
@@ -94,7 +95,7 @@ const TextContainer = memo(styled.div`
   white-space: nowrap;
 `);
 
-interface CodedNodeData extends NewBaseNodeData {
+interface CodedNodeData extends BaseNodeData {
   label: string;
   hasError?: boolean;
   hasSuccess?: boolean;
@@ -141,7 +142,7 @@ const leftInputHandle = [
 const createCodedAgentNodeWrapper = (
   translations: CodedAgentNodeTranslations = DefaultCodedAgentNodeTranslations
 ) => {
-  return memo(({ data, selected, id }: NodeProps) => {
+  return memo(({ data, selected, id, ...nodeProps }: NodeProps) => {
     const nodeData = data as unknown as CodedNodeData;
 
     const executionStatus = useMemo(() => {
@@ -151,7 +152,7 @@ const createCodedAgentNodeWrapper = (
       return undefined;
     }, [nodeData.hasError, nodeData.hasSuccess, nodeData.hasRunning]);
 
-    const statusAdornment = useMemo(() => {
+    const statusAdornment = useMemo((): React.ReactNode => {
       if (nodeData.hasError)
         return <ApIcon name="error" size="16px" color="var(--uix-canvas-error-icon)" />;
       if (nodeData.hasSuccess && !nodeData.hasError)
@@ -161,31 +162,38 @@ const createCodedAgentNodeWrapper = (
       return undefined;
     }, [nodeData.hasError, nodeData.hasSuccess, nodeData.hasRunning]);
 
+    const handleConfigurations: HandleGroupManifest[] = [
+      { position: Position.Left, handles: leftTargetHandle, visible: true },
+      { position: Position.Right, handles: rightSourceHandle, visible: true },
+    ];
+
     return (
-      <NewBaseNode
+      <BaseNode
+        {...nodeProps}
+        type="uipath.coded.agent"
         id={id}
         selected={selected}
-        data={nodeData}
-        executionStatus={executionStatus}
-        icon={<Icons.CodedAgentIcon w={40} h={40} />}
-        display={{
-          label: nodeData.label,
-          subLabel: translations.codedAgentStep,
-          shape: 'rectangle',
+        data={{
+          ...nodeData,
+          parameters: {},
+          display: {
+            iconElement: <Icons.CodedAgentIcon w={40} h={40} />,
+            label: nodeData.label,
+            subLabel: translations.codedAgentStep,
+            shape: 'rectangle',
+          },
+          executionStatusOverride: executionStatus,
+          handleConfigurations,
+          adornments: {
+            topRight: statusAdornment,
+          },
         }}
-        adornments={{
-          topRight: statusAdornment ? { icon: statusAdornment } : undefined,
-        }}
-        handleConfigurations={[
-          { position: Position.Left, handles: leftTargetHandle, visible: true },
-          { position: Position.Right, handles: rightSourceHandle, visible: true },
-        ]}
       />
     );
   });
 };
 
-const CodedResourceNodeElement = memo(({ data, selected, id }: NodeProps) => {
+const CodedResourceNodeElement = memo(({ data, selected, id, ...nodeProps }: NodeProps) => {
   const nodeData = data as unknown as CodedNodeData & { type?: string };
   const label = nodeData.label.toLowerCase();
 
@@ -212,7 +220,7 @@ const CodedResourceNodeElement = memo(({ data, selected, id }: NodeProps) => {
     return <ApIcon name="chat" size="40px" />;
   }, [label, nodeData.type]);
 
-  const statusAdornment = useMemo(() => {
+  const statusAdornment = useMemo((): React.ReactNode => {
     if (nodeData.hasError)
       return <ApIcon name="error" size="16px" color="var(--uix-canvas-error-icon)" />;
     if (nodeData.hasSuccess && !nodeData.hasError)
@@ -222,24 +230,32 @@ const CodedResourceNodeElement = memo(({ data, selected, id }: NodeProps) => {
     return undefined;
   }, [nodeData.hasError, nodeData.hasSuccess, nodeData.hasRunning]);
 
+  const handleConfigurations: HandleGroupManifest[] = [
+    { position: Position.Left, handles: leftTargetHandle, visible: true },
+    { position: Position.Right, handles: rightSourceHandle, visible: true },
+  ];
+
   return (
     <div style={{ position: 'relative' }}>
-      <NewBaseNode
+      <BaseNode
+        {...nodeProps}
+        type="uipath.coded.resource"
         id={id}
         selected={selected}
-        data={nodeData}
-        executionStatus={executionStatus}
-        icon={resourceIcon}
-        display={{
-          shape: 'circle',
+        data={{
+          ...nodeData,
+          parameters: {},
+          display: {
+            iconElement: resourceIcon,
+            label: undefined, // Label is rendered via TextContainer below
+            shape: 'circle',
+          },
+          executionStatusOverride: executionStatus,
+          handleConfigurations,
+          adornments: {
+            topRight: statusAdornment,
+          },
         }}
-        adornments={{
-          topRight: statusAdornment ? { icon: statusAdornment } : undefined,
-        }}
-        handleConfigurations={[
-          { position: Position.Left, handles: leftTargetHandle, visible: true },
-          { position: Position.Right, handles: rightSourceHandle, visible: true },
-        ]}
       />
       <TextContainer>
         <ApTypography color="var(--uix-canvas-foreground-de-emp)">{nodeData.label}</ApTypography>
@@ -248,27 +264,37 @@ const CodedResourceNodeElement = memo(({ data, selected, id }: NodeProps) => {
   );
 });
 
-const CodedFlowNodeElement = memo(({ data, selected, id }: NodeProps) => {
+const CodedFlowNodeElement = memo(({ data, selected, id, ...nodeProps }: NodeProps) => {
   const nodeData = data as unknown as CodedNodeData;
   const isStart = nodeData.label.toLowerCase().includes('start');
   const isEnd = nodeData.label.toLowerCase().includes('end');
 
   if (isStart || isEnd) {
-    const handleConfigs = isStart
+    const handleConfigs: HandleGroupManifest[] = isStart
       ? [{ position: Position.Right, handles: rightOutputHandle, visible: true }]
       : [{ position: Position.Left, handles: leftInputHandle, visible: true }];
 
+    const nodeType = isStart ? 'uipath.coded.flow.start' : 'uipath.coded.flow.end';
+
     return (
       <div style={{ position: 'relative' }}>
-        <NewBaseNode
+        <BaseNode
+          {...nodeProps}
+          type={nodeType}
           id={id}
           selected={selected}
-          data={nodeData}
-          icon={<ApIcon variant="outlined" name={isStart ? 'circle' : 'trip_origin'} size="40px" />}
-          display={{
-            shape: 'square',
+          data={{
+            ...nodeData,
+            parameters: {},
+            display: {
+              iconElement: (
+                <ApIcon variant="outlined" name={isStart ? 'circle' : 'trip_origin'} size="40px" />
+              ),
+              label: undefined, // Label is rendered via TextContainer below
+              shape: 'square',
+            },
+            handleConfigurations: handleConfigs,
           }}
-          handleConfigurations={handleConfigs}
         />
         <TextContainer>
           <ApTypography
@@ -282,19 +308,26 @@ const CodedFlowNodeElement = memo(({ data, selected, id }: NodeProps) => {
     );
   }
 
+  const handleConfigs: HandleGroupManifest[] = [
+    { position: Position.Left, handles: leftTargetHandle, visible: true },
+    { position: Position.Right, handles: rightSourceHandle, visible: true },
+  ];
+
   return (
-    <NewBaseNode
+    <BaseNode
+      {...nodeProps}
+      type="uipath.coded.flow.node"
       id={id}
       selected={selected}
-      data={nodeData}
-      display={{
-        label: nodeData.label,
-        shape: 'rectangle',
+      data={{
+        ...nodeData,
+        parameters: {},
+        display: {
+          label: nodeData.label,
+          shape: 'rectangle',
+        },
+        handleConfigurations: handleConfigs,
       }}
-      handleConfigurations={[
-        { position: Position.Left, handles: leftTargetHandle, visible: true },
-        { position: Position.Right, handles: rightSourceHandle, visible: true },
-      ]}
     />
   );
 });
@@ -360,8 +393,42 @@ const CodedAgentFlowInner = (props: CodedAgentFlowProps): ReactElement => {
           // Store the edges and direction, but don't apply layout yet
           edgesRef.current = parsedResult.edges;
 
-          // Set nodes with initial positions for React Flow to measure them
-          setNodes(parsedResult.nodes);
+          // Add explicit dimensions to nodes based on type
+          const nodesWithDimensions = parsedResult.nodes.map((node) => {
+            let width: number;
+            let height: number;
+
+            if (node.type === 'agent') {
+              width = 192;
+              height = 80;
+            } else if (node.type === 'resource') {
+              width = 80;
+              height = 80;
+            } else if (node.type === 'flow') {
+              const label = (node.data as CodedNodeData)?.label?.toLowerCase() || '';
+              const isStartOrEnd = label.includes('start') || label.includes('end');
+              if (isStartOrEnd) {
+                width = 64;
+                height = 64;
+              } else {
+                width = 192;
+                height = 64;
+              }
+            } else {
+              // Default fallback
+              width = 192;
+              height = 80;
+            }
+
+            return {
+              ...node,
+              width,
+              height,
+            };
+          });
+
+          // Set nodes with initial positions and dimensions for React Flow
+          setNodes(nodesWithDimensions);
           setEdges(parsedResult.edges);
         } catch (error) {
           setParseError((error as Error).message);

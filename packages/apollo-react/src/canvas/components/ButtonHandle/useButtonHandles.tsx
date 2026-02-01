@@ -71,7 +71,8 @@ export const useButtonHandles = ({
         .filter((handle) => (isCollapsed ? handle.handleType !== 'artifact' : true))
         .map((handle) => ({
           ...handle,
-          onAction: handleAction,
+          // Preserve individual handle's onAction if it exists, otherwise use global handleAction
+          onAction: handle.onAction || handleAction,
         }));
 
       return (
