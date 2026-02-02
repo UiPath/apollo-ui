@@ -1,0 +1,34 @@
+name: Security Scan - Workflows
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  security-events: write
+  actions: read
+
+jobs:
+  zizmor:
+    name: Zizmor Security Scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Zizmor Security Scan
+        uses: zizmorcore/zizmor-action@v0.4.1
+        with:
+          advanced-security: true
+          min-severity: medium
+          persona: regular
