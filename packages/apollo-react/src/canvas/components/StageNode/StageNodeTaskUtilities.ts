@@ -16,9 +16,13 @@ export const getContextMenuItems = (
     groupModificationType: GroupModificationType,
     groupIndex: number,
     taskIndex: number
-  ) => void
+  ) => void,
+  onReplaceTask: (groupIndex: number, taskIndex: number) => void
 ): NodeMenuItem[] => {
   const CONTEXT_MENU_ITEMS = {
+    REPLACE_TASK: getMenuItem('replace-task', 'Replace task', () =>
+      onReplaceTask(groupIndex, taskIndex)
+    ),
     MOVE_UP: getMenuItem('move-up', 'Move up', () =>
       reGroupTaskFunction(GroupModificationType.TASK_GROUP_UP, groupIndex, taskIndex)
     ),
@@ -61,6 +65,8 @@ export const getContextMenuItems = (
   };
 
   const items: NodeMenuItem[] = [];
+
+  items.push(CONTEXT_MENU_ITEMS.REPLACE_TASK, CONTEXT_MENU_ITEMS.DIVIDER);
 
   if (groupIndex > 0) items.push(CONTEXT_MENU_ITEMS.MOVE_UP);
   if (groupIndex < tasksLength - 1) items.push(CONTEXT_MENU_ITEMS.MOVE_DOWN);
