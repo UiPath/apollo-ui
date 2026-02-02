@@ -14,11 +14,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Generate OSI-approved allowlist (SPDX)
+      - name: Generate UiPath-approved license allowlist
         id: licenses
         shell: bash
+        # Source: https://uipath.atlassian.net/wiki/spaces/LEG/pages/2861433455/FOSS+license+standard (GO section)
         run: |
-          ALLOW="$(node scripts/free-licenses-fetch.js)"
+          ALLOW="$(node scripts/allowed-licenses.js)"
           echo "allow=$ALLOW" >> "$GITHUB_OUTPUT"
 
       - name: Dependency Review
