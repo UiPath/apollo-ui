@@ -88,7 +88,7 @@ const defaultTranslations: AgentNodeTranslations = {
   userPrompt: 'User prompt',
   temperature: 'Temperature',
   maxTokens: 'Max tokens',
-  maxIteration: 'Max iteration',
+  maxIterations: 'Max iterations',
   notConfigured: 'Not configured',
 };
 
