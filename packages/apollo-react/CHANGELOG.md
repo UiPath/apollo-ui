@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.16.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.15.0...@uipath/apollo-react@3.16.0) (2026-02-02)
+
+### Features
+
+* **apollo-react:** migrate NewBaseNode to BaseNode [AG-708] ([8384581](https://github.com/UiPath/apollo-ui/commit/8384581479df80430969a39be61d820841b1d0bf))
+
 ## [@uipath/apollo-react-v3.15.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.14.0...@uipath/apollo-react@3.15.0) (2026-02-02)
 
 ### Features
