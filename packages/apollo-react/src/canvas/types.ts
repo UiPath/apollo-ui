@@ -532,7 +532,7 @@ export interface AgentNodeTranslations {
   userPrompt: string;
   temperature: string;
   maxTokens: string;
-  maxIteration: string;
+  maxIterations: string;
   notConfigured: string;
 }
 
@@ -559,7 +559,7 @@ export const DefaultAgentNodeTranslations: AgentNodeTranslations = {
   userPrompt: 'User prompt',
   temperature: 'Temperature',
   maxTokens: 'Max tokens',
-  maxIteration: 'Max iteration',
+  maxIterations: 'Max iterations',
   notConfigured: 'Not configured',
 };
 

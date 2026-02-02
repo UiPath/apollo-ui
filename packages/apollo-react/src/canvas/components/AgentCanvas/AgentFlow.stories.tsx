@@ -239,7 +239,7 @@ const sampleAgentDefinition = {
     engine: 'test-engine',
     temperature: 0,
     maxTokens: 16384,
-    maxIteration: 10,
+    maxIterations: 10,
   },
   tools: [],
   resources: [],
@@ -1770,8 +1770,13 @@ const HealthScoreWrapper = ({
         mode={mode}
         resources={initialResources}
         enableMemory
+        enableInstructions
         healthScore={healthScore}
         onHealthScoreClick={handleHealthScoreClick}
+        instructions={{
+          system: 'You are a helpful assistant.',
+          user: 'Help me with my task.',
+        }}
       />
       {renderControlPanel()}
     </ReactFlowProvider>

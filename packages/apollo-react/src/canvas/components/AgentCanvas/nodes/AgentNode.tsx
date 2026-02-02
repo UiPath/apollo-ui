@@ -127,7 +127,7 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
 
   // Extract settings from definition
   const settings = definition?.settings as
-    | { model?: string; temperature?: number; maxTokens?: number; maxIteration?: number }
+    | { model?: string; temperature?: number; maxTokens?: number; maxIterations?: number }
     | undefined;
 
   const handleMouseEnter = useCallback(() => {
@@ -484,10 +484,10 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
           </SettingsRow>
         )}
 
-        {settings?.maxIteration !== undefined && (
+        {settings?.maxIterations !== undefined && (
           <SettingsRow>
-            <SettingsRowLabel>{translations.maxIteration}</SettingsRowLabel>
-            <SettingsRowValue>{settings.maxIteration}</SettingsRowValue>
+            <SettingsRowLabel>{translations.maxIterations}</SettingsRowLabel>
+            <SettingsRowValue>{settings.maxIterations}</SettingsRowValue>
           </SettingsRow>
         )}
       </SettingsPreviewContainer>
