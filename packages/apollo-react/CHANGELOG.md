@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.15.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.14.0...@uipath/apollo-react@3.15.0) (2026-02-02)
+
+### Features
+
+* **apollo-react:** fix bug (#AG-123) ([c89016d](https://github.com/UiPath/apollo-ui/commit/c89016dac3cb5bf7d3aa27304102c67e74bc4d85)), closes [#AG-123](https://github.com/UiPath/apollo-ui/issues/AG-123)
+
 ## [@uipath/apollo-react-v3.14.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.13.0...@uipath/apollo-react@3.14.0) (2026-01-30)
 
 ### Features
