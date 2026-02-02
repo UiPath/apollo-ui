@@ -81,6 +81,12 @@ export function CodeBlock({
 					fontSize: 14,
 					margin: 0,
 				}}
+				codeTagProps={{
+					style: {
+						whiteSpace: "pre-wrap",
+						wordBreak: "break-all",
+					},
+				}}
 			>
 				{code}
 			</SyntaxHighlighter>
