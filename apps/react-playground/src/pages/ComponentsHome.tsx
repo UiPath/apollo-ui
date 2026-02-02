@@ -31,6 +31,7 @@ export function ComponentsHome() {
 		{ label: "Popover", path: "/components/popover", icon: "📋" },
 		{ label: "Link", path: "/components/link", icon: "🔗" },
 		{ label: "Menu", path: "/components/menu", icon: "☰" },
+		{ label: "Modal", path: "/components/modal", icon: "🪟" },
 		{
 			label: "Progress Spinner",
 			path: "/components/progress-spinner",

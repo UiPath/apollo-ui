@@ -61,6 +61,7 @@ export function Breadcrumb() {
 		badge: "Badge",
 		button: "Button",
 		chat: "Chat",
+		modal: "Modal",
 		popover: "Popover",
 		"text-area": "Text Area",
 		"tool-call": "Tool Call",

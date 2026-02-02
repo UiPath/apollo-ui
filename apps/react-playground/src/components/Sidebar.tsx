@@ -58,6 +58,7 @@ export function Sidebar() {
 				{ label: "Icon Button", path: "/components/icon-button" },
 				{ label: "Link", path: "/components/link" },
 				{ label: "Menu", path: "/components/menu" },
+				{ label: "Modal", path: "/components/modal" },
 				{ label: "Popover", path: "/components/popover" },
 				{ label: "Progress Spinner", path: "/components/progress-spinner" },
 				{ label: "Sankey Diagram", path: "/components/sankey-diagram" },

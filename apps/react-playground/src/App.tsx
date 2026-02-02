@@ -28,6 +28,7 @@ import { IconButtonShowcase } from "./pages/components/IconButtonShowcase";
 import { IconShowcase } from "./pages/components/IconShowcase";
 import { LinkShowcase } from "./pages/components/LinkShowcase";
 import { MenuShowcase } from "./pages/components/MenuShowcase";
+import { ModalShowcase } from "./pages/components/ModalShowcase";
 import { ProgressSpinnerShowcase } from "./pages/components/ProgressSpinnerShowcase";
 import { SkeletonShowcase } from "./pages/components/SkeletonShowcase";
 import { TextAreaShowcase } from "./pages/components/TextAreaShowcase";
@@ -156,6 +157,7 @@ function App() {
 							<Route path="/components/chat" element={<ApChatShowcase />} />
 							<Route path="/components/chip" element={<ChipShowcase />} />
 							<Route path="/components/link" element={<LinkShowcase />} />
+							<Route path="/components/modal" element={<ModalShowcase />} />
 							<Route path="/components/popover" element={<PopoverShowcase />} />
 							<Route
 								path="/components/skeleton"
