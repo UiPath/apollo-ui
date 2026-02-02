@@ -1,6 +1,13 @@
 import { css, keyframes } from '@emotion/react';
 import styled from '@emotion/styled';
-import type { NodeShape } from './BaseNode.types';
+import type { NodeShape } from '../../schema';
+
+// Grid-aligned node heights (multiples of 16px)
+const GRID_UNIT = 16;
+const NODE_HEIGHT_DEFAULT = GRID_UNIT * 6; // 96px
+const NODE_HEIGHT_FOOTER_BUTTON = GRID_UNIT * 9; // 144px
+const NODE_HEIGHT_FOOTER_SINGLE = GRID_UNIT * 10; // 160px
+const NODE_HEIGHT_FOOTER_DOUBLE = GRID_UNIT * 11; // 176px
 
 const pulseAnimation = (cssVar: string) => keyframes`
   0% {
@@ -125,6 +132,8 @@ export const BaseContainer = styled.div<{
   suggestionType?: string;
   width?: number;
   height?: number;
+  hasFooter?: boolean;
+  footerVariant?: 'none' | 'button' | 'single' | 'double';
 }>`
   position: relative;
   width: ${({ shape, width }) => {
@@ -134,7 +143,21 @@ export const BaseContainer = styled.div<{
     }
     return `${defaultWidth}px`;
   }};
-  height: ${({ height }) => (height ? `${height}px` : '96px')};
+  height: ${({ height, hasFooter, footerVariant }) => {
+    if (hasFooter) {
+      switch (footerVariant) {
+        case 'button':
+          return `${NODE_HEIGHT_FOOTER_BUTTON}px`;
+        case 'single':
+          return `${NODE_HEIGHT_FOOTER_SINGLE}px`;
+        case 'double':
+          return `${NODE_HEIGHT_FOOTER_DOUBLE}px`;
+        default:
+          return 'auto';
+      }
+    }
+    return height ? `${height}px` : `${NODE_HEIGHT_DEFAULT}px`;
+  }};
   background: ${({ backgroundColor }) => backgroundColor || 'var(--uix-canvas-background)'};
   border: 1.5px solid var(--uix-canvas-border-de-emp);
   border-radius: ${({ shape }) => {
@@ -144,11 +167,13 @@ export const BaseContainer = styled.div<{
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: ${({ shape }) => (shape === 'rectangle' ? 'row' : 'column')};
+  flex-wrap: ${({ hasFooter }) => (hasFooter ? 'wrap' : 'nowrap')};
   align-items: center;
   justify-content: ${({ shape }) => (shape === 'rectangle' ? 'flex-start' : 'center')};
   gap: ${({ shape }) => (shape === 'rectangle' ? '12px' : '0')};
-  padding: ${({ shape, height }) => {
+  padding: ${({ shape, height, hasFooter }) => {
     if (shape === 'rectangle') {
+      if (hasFooter) return '16px';
       const scaleFactor = height ? height / 100 : 1;
       return `${14 * scaleFactor}px`;
     }
@@ -184,15 +209,21 @@ export const BaseIconWrapper = styled.div<{
   color?: string;
   backgroundColor?: string;
   shape?: NodeShape;
-  nodeHeight?: number;
+  height?: number;
+  width?: number;
 }>`
-  width: ${({ nodeHeight }) => {
-    const scaleFactor = nodeHeight ? nodeHeight / 96 : 1;
+  width: ${({ height, width, shape }) => {
+    // Use default 3/4 scaling, derived from the height for rectangle, and use width for other shapes
+    const dimension = height !== width && shape === 'rectangle' ? height : width;
+    const scaleFactor = dimension ? dimension / 96 : 1;
     return `${72 * scaleFactor}px`;
   }};
-  height: ${({ nodeHeight }) => {
-    const scaleFactor = nodeHeight ? nodeHeight / 96 : 1;
-    return `${72 * scaleFactor}px`;
+  height: ${({ height, width, shape }) => {
+    // Use 7/8 scaling for a vertical rectangle, and use default 3/4 scaling for other shapes
+    const scaleFactor = height ? height / 96 : 1;
+    return height !== width && shape !== 'rectangle' // True for only a expandable node
+      ? `${84 * scaleFactor}px`
+      : `${72 * scaleFactor}px`;
   }};
   display: flex;
   align-items: center;
@@ -206,23 +237,23 @@ export const BaseIconWrapper = styled.div<{
   }};
 
   svg {
-    width: ${({ nodeHeight }) => {
-      const scaleFactor = nodeHeight ? nodeHeight / 96 : 1;
+    width: ${({ width }) => {
+      const scaleFactor = width ? width / 96 : 1;
       return `${40 * scaleFactor}px`;
     }};
-    height: ${({ nodeHeight }) => {
-      const scaleFactor = nodeHeight ? nodeHeight / 96 : 1;
+    height: ${({ height }) => {
+      const scaleFactor = height ? height / 96 : 1;
       return `${40 * scaleFactor}px`;
     }};
   }
 
   img {
-    width: ${({ nodeHeight }) => {
-      const scaleFactor = nodeHeight ? nodeHeight / 96 : 1;
+    width: ${({ width }) => {
+      const scaleFactor = width ? width / 96 : 1;
       return `${40 * scaleFactor}px`;
     }};
-    height: ${({ nodeHeight }) => {
-      const scaleFactor = nodeHeight ? nodeHeight / 96 : 1;
+    height: ${({ height }) => {
+      const scaleFactor = height ? height / 96 : 1;
       return `${40 * scaleFactor}px`;
     }};
     object-fit: contain;

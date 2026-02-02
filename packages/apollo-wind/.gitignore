@@ -45,3 +45,5 @@ storybook-static
 .cache
 .temp
 *.tgz
+.vercel
+.env*.local

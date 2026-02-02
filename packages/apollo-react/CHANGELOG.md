@@ -1,3 +1,171 @@
+## [@uipath/apollo-react-v3.14.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.13.0...@uipath/apollo-react@3.14.0) (2026-01-30)
+
+### Features
+
+* **apollo-react:** 16 (#AG-123) ([50232f6](https://github.com/UiPath/apollo-ui/commit/50232f68c5915925b016e602a0439a6ff236509f)), closes [#AG-123](https://github.com/UiPath/apollo-ui/issues/AG-123)
+* **apollo-react:** 16 (#AG-123) ([db3e310](https://github.com/UiPath/apollo-ui/commit/db3e3109f81dddc6a896596e1364203a7445d351)), closes [#AG-123](https://github.com/UiPath/apollo-ui/issues/AG-123)
+* **apollo-react:** ff (#AG-123) ([56c7ecb](https://github.com/UiPath/apollo-ui/commit/56c7ecb43626fbd92be258de007bd1c48c1fbaee)), closes [#AG-123](https://github.com/UiPath/apollo-ui/issues/AG-123)
+* **apollo-react:** hove (#AG-123) ([d13bdfe](https://github.com/UiPath/apollo-ui/commit/d13bdfe692baad731f38ce1032923604c5672cbe)), closes [#AG-123](https://github.com/UiPath/apollo-ui/issues/AG-123)
+* **apollo-react:** hover (#AG-123) ([3311d22](https://github.com/UiPath/apollo-ui/commit/3311d2291670597bad0ad66bdacdecc60af16832)), closes [#AG-123](https://github.com/UiPath/apollo-ui/issues/AG-123)
+* **apollo-react:** hover (#AG-123) ([ab78570](https://github.com/UiPath/apollo-ui/commit/ab7857070c1bd44ec0eabd2d1d6d17978392c8f0)), closes [#AG-123](https://github.com/UiPath/apollo-ui/issues/AG-123)
+* **apollo-react:** hover (#AG-123) ([26e7715](https://github.com/UiPath/apollo-ui/commit/26e771581dd6bfef005d73bf84211544ca2745eb)), closes [#AG-123](https://github.com/UiPath/apollo-ui/issues/AG-123)
+* **apollo-react:** hover (#AG-123) ([d4329e9](https://github.com/UiPath/apollo-ui/commit/d4329e9a82c2b5dc7413aaf3cb45beb188d2abb8)), closes [#AG-123](https://github.com/UiPath/apollo-ui/issues/AG-123)
+* **apollo-react:** hover (#AG-123) ([4f06b6a](https://github.com/UiPath/apollo-ui/commit/4f06b6a437525362804f07c26ec6526f3b8b3f40)), closes [#AG-123](https://github.com/UiPath/apollo-ui/issues/AG-123)
+* **apollo-react:** hover (#AG-123) ([1fdcfb5](https://github.com/UiPath/apollo-ui/commit/1fdcfb56b6c2bb723d643274766a4b4e1002e642)), closes [#AG-123](https://github.com/UiPath/apollo-ui/issues/AG-123)
+* **apollo-react:** instruction (#AG-123) ([a08d2ce](https://github.com/UiPath/apollo-ui/commit/a08d2ce0784fef1e79c3b65df03b063b1135dbe9)), closes [#AG-123](https://github.com/UiPath/apollo-ui/issues/AG-123)
+* **apollo-react:** instruction (#AG-123) ([2b4fa6d](https://github.com/UiPath/apollo-ui/commit/2b4fa6d654521d971080af819fd1f43d2fea75eb)), closes [#AG-123](https://github.com/UiPath/apollo-ui/issues/AG-123)
+* **apollo-react:** instruction (#AG-123) ([6a35751](https://github.com/UiPath/apollo-ui/commit/6a3575120862d04644c453b7a45ce77d606b36fd)), closes [#AG-123](https://github.com/UiPath/apollo-ui/issues/AG-123)
+* **apollo-react:** instruction (#AG-123) ([14488f5](https://github.com/UiPath/apollo-ui/commit/14488f5666829233f1a4faf6772f09cd9ccc5ad0)), closes [#AG-123](https://github.com/UiPath/apollo-ui/issues/AG-123)
+* **apollo-react:** instruction (#AG-123) ([fcf1e35](https://github.com/UiPath/apollo-ui/commit/fcf1e35ea10563361ab3ae3685ede6339a299c89)), closes [#AG-123](https://github.com/UiPath/apollo-ui/issues/AG-123)
+* **apollo-react:** style (#AG-123) ([0c027e3](https://github.com/UiPath/apollo-ui/commit/0c027e3ba5256a97435de216ba92959f2ac051dd)), closes [#AG-123](https://github.com/UiPath/apollo-ui/issues/AG-123)
+* **apollo-react:** style (#AG-123) ([4b66074](https://github.com/UiPath/apollo-ui/commit/4b66074309f167b5d39dbe155656c788b793edb9)), closes [#AG-123](https://github.com/UiPath/apollo-ui/issues/AG-123)
+* **apollo-react:** styles (#AG-123) ([bcbac46](https://github.com/UiPath/apollo-ui/commit/bcbac460ba9d7167bc86ce042a6bd856734835be)), closes [#AG-123](https://github.com/UiPath/apollo-ui/issues/AG-123)
+* **apollo-react:** test (#AG-123) ([42ce7f1](https://github.com/UiPath/apollo-ui/commit/42ce7f11c2ad2c9f3fedb0de0cfe96000624bfba)), closes [#AG-123](https://github.com/UiPath/apollo-ui/issues/AG-123)
+* **apollo-react:** test (#AG-123) ([36b564e](https://github.com/UiPath/apollo-ui/commit/36b564eadf84116cb69eaf27a33aa476fcb19bc0)), closes [#AG-123](https://github.com/UiPath/apollo-ui/issues/AG-123)
+
+## [@uipath/apollo-react-v3.13.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.12.0...@uipath/apollo-react@3.13.0) (2026-01-30)
+
+### Features
+
+* **apollo-react:** add startPointIndicator ([3f509c4](https://github.com/UiPath/apollo-ui/commit/3f509c40458d38d772e16bab1a91449ff32223db))
+
+## [@uipath/apollo-react-v3.12.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.11.0...@uipath/apollo-react@3.12.0) (2026-01-29)
+
+### Features
+
+* **apollo-react:** implement  ApPopover PLT-95438 ([1b80f55](https://github.com/UiPath/apollo-ui/commit/1b80f5513a4b5151e8eabcde0b9e489d69788aaf))
+
+## [@uipath/apollo-react-v3.11.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.10.2...@uipath/apollo-react@3.11.0) (2026-01-29)
+
+### Features
+
+* **apollo-react:** allow collapsing artifact node parents [AG-683] ([55cbb68](https://github.com/UiPath/apollo-ui/commit/55cbb681d8563e6c2881e9d08a35daaabf10022a))
+* **apollo-react:** resolve button handles and toolbar icon ([906877b](https://github.com/UiPath/apollo-ui/commit/906877b13810f67dddfdd5013976ab2aa6f44fb1))
+
+### Bug Fixes
+
+* **apollo-react:** fix some typing ([9349d47](https://github.com/UiPath/apollo-ui/commit/9349d47bc724e1813af74c20b9f8b00f09b3da0f))
+
+## [@uipath/apollo-react-v3.10.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.10.1...@uipath/apollo-react@3.10.2) (2026-01-28)
+
+### Bug Fixes
+
+* **apollo-react:** fallback for broken tool image (#AG-699) ([85c6dc0](https://github.com/UiPath/apollo-ui/commit/85c6dc0dcc862e6d74844a21b6c35b5e5e06fcb0)), closes [#AG-699](https://github.com/UiPath/apollo-ui/issues/AG-699)
+* **apollo-react:** fallback for broken tool image (#AG-699) ([7f2315b](https://github.com/UiPath/apollo-ui/commit/7f2315bc51ddccd5cd4334059d6c28578ce6810a)), closes [#AG-699](https://github.com/UiPath/apollo-ui/issues/AG-699)
+
+## [@uipath/apollo-react-v3.10.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.10.0...@uipath/apollo-react@3.10.1) (2026-01-28)
+
+### Bug Fixes
+
+* **apollo-react:** delete vertical-rectangle type and support switch with square [MST-6216] ([fd35d36](https://github.com/UiPath/apollo-ui/commit/fd35d36cc922ef813b05b314180107696f56e2c3))
+
+## [@uipath/apollo-react-v3.10.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.9.2...@uipath/apollo-react@3.10.0) (2026-01-27)
+
+### Features
+
+* **ap-chat:** integrate tiptap editor into ap-chat input component [PLT-94661] ([f3e85cd](https://github.com/UiPath/apollo-ui/commit/f3e85cd29f0806edc313141ba578a2ddc051e761))
+
+## [@uipath/apollo-react-v3.9.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.9.1...@uipath/apollo-react@3.9.2) (2026-01-27)
+
+### Bug Fixes
+
+* **apollo-react:** Add connector task type & icon ([e44bb77](https://github.com/UiPath/apollo-ui/commit/e44bb77a953983fac94056dfee735856facc9e43))
+
+## [@uipath/apollo-react-v3.9.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.9.0...@uipath/apollo-react@3.9.1) (2026-01-27)
+
+### Bug Fixes
+
+* **apollo-react:** linting error ([ea090ec](https://github.com/UiPath/apollo-ui/commit/ea090ec78f31fa9c7d75692f9e3286cbf464a236))
+
+## [@uipath/apollo-react-v3.9.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.8.1...@uipath/apollo-react@3.9.0) (2026-01-26)
+
+### Features
+
+* **apollo-react:** implement ApSankeyDiagram ([8bf9185](https://github.com/UiPath/apollo-ui/commit/8bf91850a974bdccc8ce18f64ad82d949cb3785e))
+* **apollo-react:** move ApSankey to material directory ([b3444cd](https://github.com/UiPath/apollo-ui/commit/b3444cd76c7a1da938ff41f68631a8536dd285be))
+* **apollo-react:** use CSS-in-JS for ApSankeyDiagram ([dc7ab3b](https://github.com/UiPath/apollo-ui/commit/dc7ab3b4513e051bbefb59842ba043daecc441a7))
+
+## [@uipath/apollo-react-v3.8.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.8.0...@uipath/apollo-react@3.8.1) (2026-01-26)
+
+### Bug Fixes
+
+* **apollo-react:** fix icon width for rectangle nodes [AG-704] ([d21f14b](https://github.com/UiPath/apollo-ui/commit/d21f14bb03032309663cf4aa742abbcc3efc2807))
+
+## [@uipath/apollo-react-v3.8.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.7.0...@uipath/apollo-react@3.8.0) (2026-01-24)
+
+### Features
+
+* **apollo-react:** support category nesting and constraint filtering ([f1f7260](https://github.com/UiPath/apollo-ui/commit/f1f7260a95f9fcd12e005b869fd97690bf217a15))
+
+## [@uipath/apollo-react-v3.7.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.6.0...@uipath/apollo-react@3.7.0) (2026-01-24)
+
+### Features
+
+* **apollo-react:** enhance ApTooltip with callback stability and memoization tests ([e5718de](https://github.com/UiPath/apollo-ui/commit/e5718de34e3e0de4171b184c10df227e5dbd68a5))
+
+## [@uipath/apollo-react-v3.6.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.5.0...@uipath/apollo-react@3.6.0) (2026-01-24)
+
+### Features
+
+* **apollo-react:** expose manifest utils ([49f1313](https://github.com/UiPath/apollo-ui/commit/49f1313c9e72c8cc8d033ffca91a2bbe3d3beaba))
+
+## [@uipath/apollo-react-v3.5.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.4.2...@uipath/apollo-react@3.5.0) (2026-01-23)
+
+### Features
+
+* **apollo-react:** enhancements to StickyNoteNode in AgentFlow [AG-696] ([7cf3afa](https://github.com/UiPath/apollo-ui/commit/7cf3afac1e5fcb00a2a7c20b974038bbdf9d813f))
+
+## [@uipath/apollo-react-v3.4.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.4.1...@uipath/apollo-react@3.4.2) (2026-01-23)
+
+### Bug Fixes
+
+* **apollo-react:** add iconSize props to base node data [MST-6056] ([c25d822](https://github.com/UiPath/apollo-ui/commit/c25d82294b5e9daed8f440cc4a487e1da07d9aa9))
+
+## [@uipath/apollo-react-v3.4.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.4.0...@uipath/apollo-react@3.4.1) (2026-01-23)
+
+### Bug Fixes
+
+* **apollo-react:** tooltips for toolbar actions [MST-6245] ([5119ff8](https://github.com/UiPath/apollo-ui/commit/5119ff888527b555071a0c64ba9f16ad359c8b6c))
+
+## [@uipath/apollo-react-v3.4.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.3.2...@uipath/apollo-react@3.4.0) (2026-01-22)
+
+### Features
+
+* **apollo-react:** add delete conversation prehook in ap-chat ([1cac7b3](https://github.com/UiPath/apollo-ui/commit/1cac7b33f7b9e737478e43d035d5a0283e401417))
+* **apollo-react:** fix indentation ([5856e07](https://github.com/UiPath/apollo-ui/commit/5856e07d65bd3c9bcb9850ba1328816deae7618b))
+
+## [@uipath/apollo-react-v3.3.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.3.1...@uipath/apollo-react@3.3.2) (2026-01-22)
+
+### Bug Fixes
+
+* **apollo-react:** design updates ([1d4115e](https://github.com/UiPath/apollo-ui/commit/1d4115ebb97ed47170e31e6bd85e954d6ea935f4))
+
+## [@uipath/apollo-react-v3.3.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.3.0...@uipath/apollo-react@3.3.1) (2026-01-22)
+
+### Bug Fixes
+
+* **repo:** audit issues ([7b081a8](https://github.com/UiPath/apollo-ui/commit/7b081a855d5eb192d47f911406f1815aba24ef1d))
+
+## [@uipath/apollo-react-v3.3.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.2.1...@uipath/apollo-react@3.3.0) (2026-01-22)
+
+### Features
+
+* **apollo-react:** add readOnly attribute to stage node props ([468d421](https://github.com/UiPath/apollo-ui/commit/468d421b58719dc6508e0e96b7e7cd50147765fc))
+
+## [@uipath/apollo-react-v3.2.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.2.0...@uipath/apollo-react@3.2.1) (2026-01-21)
+
+### Bug Fixes
+
+* **apollo-react:** HierarchicalCanvas with initial data handling and improved canvas navigation ([f36674f](https://github.com/UiPath/apollo-ui/commit/f36674f00ae859346693872e3f7fcda9050ba58e))
+
+## [@uipath/apollo-react-v3.2.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.1.0...@uipath/apollo-react@3.2.0) (2026-01-21)
+
+### Features
+
+* **apollo-react:** agent flow resource nodes should be symmetrical [AG-673] ([#166](https://github.com/UiPath/apollo-ui/issues/166)) ([9b9f6ef](https://github.com/UiPath/apollo-ui/commit/9b9f6ef3fa3101d5df28ab071a8bd582440bbe57))
+* **apollo-react:** btn (#AG-123) ([2071113](https://github.com/UiPath/apollo-ui/commit/2071113d003da2733438264cc2ffd02779b622e4)), closes [#AG-123](https://github.com/UiPath/apollo-ui/issues/AG-123)
+* **apollo-react:** conflict (#AG-123) ([ee01fd3](https://github.com/UiPath/apollo-ui/commit/ee01fd366d80cfc95e51a90be03cf3b44806f4ef)), closes [#AG-123](https://github.com/UiPath/apollo-ui/issues/AG-123)
+
 ## [@uipath/apollo-react-v3.1.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.0.3...@uipath/apollo-react@3.1.0) (2026-01-20)
 
 ### Features

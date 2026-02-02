@@ -42,7 +42,6 @@ const SelectedOptionContainer = styled('div')(() => ({
   alignItems: 'center',
   color: 'var(--color-foreground-light)',
   gap: token.Spacing.SpacingMicro,
-  paddingLeft: token.Spacing.SpacingMicro,
   cursor: 'pointer',
   borderRadius: token.Border.BorderRadiusM,
   padding: token.Spacing.SpacingMicro,
@@ -122,6 +121,9 @@ export function DropdownPicker<T = string>({
         | React.MouseEvent<HTMLButtonElement | HTMLDivElement>
         | React.KeyboardEvent<HTMLDivElement>
     ) => {
+      // Stop propagation to prevent InputContainer from focusing the editor
+      // which would capture arrow key events meant for the dropdown menu
+      event.stopPropagation();
       const target =
         event.currentTarget instanceof HTMLButtonElement
           ? (event.currentTarget.parentElement as HTMLDivElement)

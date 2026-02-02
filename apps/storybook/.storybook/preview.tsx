@@ -11,6 +11,17 @@ import {
 import React, { useEffect } from "react";
 import { GlobalStyles } from "./GlobalStyles";
 
+const isDev = import.meta.env.MODE !== "production";
+
+// The react-scan devtools hook is installed via previewBody in main.ts
+// (must happen before React initializes). Here we configure the overlay/canvas
+// and start paused — toggling happens via the toolbar global in the decorator.
+if (isDev) {
+  const { scan, setOptions } = await import("react-scan");
+  scan({ enabled: true, showToolbar: true, allowInIframe: true });
+  setOptions({ enabled: false });
+}
+
 // Import Apollo CSS variables
 import "@uipath/apollo-react/core/tokens/css/variables.css";
 import "@uipath/apollo-react/core/tokens/css/theme-variables.css";
@@ -89,10 +100,36 @@ const preview: Preview = {
         dynamicTitle: true,
       },
     },
+    ...(isDev && {
+      reactScan: {
+        description: "Toggle React Scan rendering highlights",
+        toolbar: {
+          title: "React Scan",
+          icon: "beaker",
+          items: [
+            { value: "off", title: "React Scan: Off" },
+            { value: "on", title: "React Scan: On" },
+          ],
+          dynamicTitle: true,
+        },
+      },
+    }),
   },
   decorators: [
     (Story, context) => {
       const themeMode = context.globals.theme as ThemeMode;
+      const reactScanEnabled = context.globals.reactScan === "on";
+
+      useEffect(() => {
+        if (isDev) {
+          import("react-scan").then(({ setOptions }) => {
+            setOptions({
+              enabled: reactScanEnabled,
+              showToolbar: reactScanEnabled,
+            });
+          });
+        }
+      }, [reactScanEnabled]);
 
       // Apply theme on mount and when it changes
       useEffect(() => {

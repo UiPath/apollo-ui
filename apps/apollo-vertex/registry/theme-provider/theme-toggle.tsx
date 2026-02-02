@@ -1,7 +1,6 @@
 "use client";
 
 import { Moon, Sun } from "lucide-react";
-import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -10,6 +9,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useLocalStorage } from "@/registry/use-local-storage/use-local-storage";
+import { useTheme } from "./theme-provider";
 
 export function ThemeToggle() {
   const [isCollapsed] = useLocalStorage("sidebar-collapsed", false);

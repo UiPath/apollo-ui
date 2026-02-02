@@ -1,5 +1,5 @@
 {
-  "name": "storybook",
+  "name": "storybook-app",
   "version": "0.0.0",
   "private": true,
   "description": "Storybook documentation for Apollo Design System",
@@ -12,7 +12,7 @@
     "format:check": "prettier --check \"./**/*.{ts,tsx,js,jsx,json,css,scss,md}\""
   },
   "dependencies": {
-    "@mui/material": "^6.4.1",
+    "@mui/material": "^5.18.0",
     "@uipath/ap-chat": "workspace:*",
     "@uipath/ap-data-grid": "workspace:*",
     "@uipath/apollo-angular": "workspace:*",
@@ -28,6 +28,7 @@
     "@storybook/addon-links": "^10.1.10",
     "@storybook/react": "^10.1.10",
     "@storybook/react-vite": "^10.1.10",
+    "react-scan": "^0.4.3",
     "storybook": "^10.1.10",
     "typescript": "^5.9.3",
     "vite": "^6.0.3"

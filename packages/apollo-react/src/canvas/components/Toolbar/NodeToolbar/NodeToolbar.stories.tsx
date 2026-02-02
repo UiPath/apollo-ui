@@ -1,13 +1,14 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { type Node, Panel, ReactFlowProvider } from '@uipath/apollo-react/canvas/xyflow/react';
 import { useMemo } from 'react';
+import { NodeRegistryProvider } from '../../../core';
 import { ExecutionStatusContext } from '../../../hooks';
-import type { NodeManifest } from '../../../schema/node-definition/node-manifest';
+import type { NodeManifest, NodeShape } from '../../../schema';
+import type { WorkflowManifest } from '../../../schema/node-definition';
 import { StoryInfoPanel, useCanvasStory } from '../../../storybook-utils';
 import { DefaultCanvasTranslations } from '../../../types';
 import { BaseCanvas } from '../../BaseCanvas';
-import type { BaseNodeData, NodeShape } from '../../BaseNode/BaseNode.types';
-import { NodeRegistryProvider } from '../../BaseNode/NodeRegistryProvider';
+import type { BaseNodeData } from '../../BaseNode/BaseNode.types';
 import { CanvasPositionControls } from '../../CanvasPositionControls';
 
 // ============================================================================
@@ -108,21 +109,25 @@ const meta: Meta = {
         []
       );
 
-      const manifests = useMemo(
-        () => [
-          toolbarDemoManifest,
-          rectangleDemoManifest,
-          squareDemoManifest,
-          circleDemoManifest,
-          customToolbarManifest,
-        ],
+      const manifest: WorkflowManifest = useMemo(
+        () => ({
+          version: '1.0.0',
+          categories: [],
+          nodes: [
+            toolbarDemoManifest,
+            rectangleDemoManifest,
+            squareDemoManifest,
+            circleDemoManifest,
+            customToolbarManifest,
+          ],
+        }),
         []
       );
 
       return (
         <ExecutionStatusContext.Provider value={executions}>
           <ReactFlowProvider>
-            <NodeRegistryProvider registrations={manifests}>
+            <NodeRegistryProvider manifest={manifest}>
               <div style={{ height: '100vh', width: '100vw' }}>
                 <Story />
               </div>

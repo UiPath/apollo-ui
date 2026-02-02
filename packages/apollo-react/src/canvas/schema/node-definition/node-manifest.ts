@@ -58,8 +58,8 @@ export const nodeManifestSchema = z.object({
   description: z.string().optional(),
 
   // Categorization
-  /** Category ID this node belongs to */
-  category: z.string().min(1),
+  /** Category ID this node belongs to (optional - nodes can exist at root level) */
+  category: z.string().min(1).optional(),
 
   /** Tags for search and filtering */
   tags: z.array(z.string()),

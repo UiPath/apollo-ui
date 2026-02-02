@@ -52,8 +52,19 @@ const sampleContexts = [
   { name: 'Environment Variables', description: 'System environment settings' },
 ];
 
-const sampleTools = [
+const sampleTools: {
+  name: string;
+  description: string;
+  projectType: ProjectType;
+  iconUrl?: string;
+}[] = [
   { name: 'Send Email', description: 'Email Service', projectType: ProjectType.Internal },
+  {
+    name: 'Broken Icon Tool',
+    description: 'Automation',
+    projectType: ProjectType.Internal,
+    iconUrl: 'https://testtest.broken/blah/blah',
+  },
   { name: 'Query Database', description: 'Database', projectType: ProjectType.Internal },
   { name: 'Call API', description: 'REST API', projectType: ProjectType.Api },
   { name: 'Process Document', description: 'Document AI', projectType: ProjectType.Internal },
@@ -105,7 +116,7 @@ const createSampleTool = (): AgentFlowResource => {
     type: 'tool',
     name: sample.name,
     description: sample.description,
-    iconUrl: '',
+    iconUrl: sample.iconUrl ?? '',
     hasBreakpoint: false,
     hasGuardrails: false,
     projectType: sample.projectType as ProjectType,
@@ -224,8 +235,11 @@ const sampleAgentDefinition = {
   name: 'Test Agent',
   version: '1.0',
   settings: {
-    model: 'gpt-4',
+    model: 'gpt-4o-2024-11-20',
     engine: 'test-engine',
+    temperature: 0,
+    maxTokens: 16384,
+    maxIteration: 10,
   },
   tools: [],
   resources: [],
@@ -319,11 +333,13 @@ interface AgentFlowWrapperProps {
   enableTimelinePlayer?: boolean;
   enableMemory?: boolean;
   enableStickyNotes?: boolean;
+  enableInstructions?: boolean;
   healthScore?: number;
   onHealthScoreClick?: () => void;
   allowDragging?: boolean;
   agentNodePosition?: { x: number; y: number } | undefined;
   onAgentNodePositionChange?: (position: { x: number; y: number }) => void;
+  instructions?: { system?: string; user?: string };
 }
 
 const AgentFlowWrapper = ({
@@ -336,11 +352,13 @@ const AgentFlowWrapper = ({
   enableTimelinePlayer = true,
   enableMemory = true,
   enableStickyNotes = true,
+  enableInstructions = false,
   healthScore,
   onHealthScoreClick,
   allowDragging = false,
   agentNodePosition = undefined,
   onAgentNodePositionChange = () => {},
+  instructions,
 }: AgentFlowWrapperProps) => {
   const [resources, setResources] = useState<AgentFlowResource[]>(initialResources);
   const [selectedResourceId, setSelectedResourceId] = useState<string | null>(null);
@@ -583,12 +601,14 @@ const AgentFlowWrapper = ({
             enableTimelinePlayer={mode === 'view' && enableTimelinePlayer}
             enableMemory={enableMemory}
             enableStickyNotes={enableStickyNotes}
+            enableInstructions={enableInstructions}
             stickyNotes={stickyNotes}
             onAddStickyNote={handleAddStickyNote}
             onUpdateStickyNote={handleUpdateStickyNote}
             onRemoveStickyNote={handleRemoveStickyNote}
             healthScore={healthScore}
             onHealthScoreClick={onHealthScoreClick}
+            instructions={instructions}
           />
         </div>
         {renderSidebar()}
@@ -609,6 +629,9 @@ const DesignModePlayground = () => {
   const [suggestionMode, setSuggestionMode] = useState<SuggestionMode>('off');
   const [enableStickyNotes, setEnableStickyNotes] = useState(true);
   const [enableDragging, setEnableDragging] = useState(true);
+  const [hasInstructions, setHasInstructions] = useState(false);
+  const [systemPrompt, setSystemPrompt] = useState('');
+  const [userPrompt, setUserPrompt] = useState('');
 
   // Resources state
   const [resources, setResources] = useState<AgentFlowResource[]>(sampleResources);
@@ -637,8 +660,16 @@ const DesignModePlayground = () => {
   // Selection state
   const [selectedResourceId, setSelectedResourceId] = useState<string | null>(null);
 
+  // Instructions object
+  const instructions = hasInstructions
+    ? {
+        system: systemPrompt || undefined,
+        user: userPrompt || undefined,
+      }
+    : undefined;
+
   // Generate a unique key for React to remount when major state changes
-  const stateKey = `${hasResources}-${suggestionMode}-${enableStickyNotes}-${enableDragging}`;
+  const stateKey = `${hasResources}-${suggestionMode}-${enableStickyNotes}-${enableDragging}-${hasInstructions}`;
 
   // Resource handlers
   const handleSelectResource = useCallback(
@@ -1184,7 +1215,12 @@ const DesignModePlayground = () => {
   );
 
   const renderControlPanel = () => (
-    <StoryInfoPanel title="Design Mode Playground" collapsible defaultCollapsed={false}>
+    <StoryInfoPanel
+      title="Design Mode Playground"
+      collapsible
+      defaultCollapsed={false}
+      position="top-right"
+    >
       <Column mt={12} gap={12}>
         {/* Resources toggle */}
         <Column gap={4}>
@@ -1330,6 +1366,81 @@ const DesignModePlayground = () => {
           </Row>
         </Column>
 
+        {/* Instructions toggle */}
+        <Column gap={4}>
+          <ApTypography variant={FontVariantToken.fontSizeS} style={{ fontWeight: 600 }}>
+            Instructions:
+          </ApTypography>
+          <Row gap={4}>
+            <ApButton
+              size="small"
+              variant={hasInstructions ? 'primary' : 'secondary'}
+              label="With"
+              onClick={() => setHasInstructions(true)}
+            />
+            <ApButton
+              size="small"
+              variant={!hasInstructions ? 'primary' : 'secondary'}
+              label="Without"
+              onClick={() => setHasInstructions(false)}
+            />
+          </Row>
+          {hasInstructions && (
+            <Column gap={8} style={{ marginTop: 8 }}>
+              <Column gap={2}>
+                <ApTypography
+                  variant={FontVariantToken.fontSizeXs}
+                  style={{ color: 'var(--uix-canvas-foreground-de-emp)' }}
+                >
+                  System prompt:
+                </ApTypography>
+                <textarea
+                  value={systemPrompt}
+                  onChange={(e) => setSystemPrompt(e.target.value)}
+                  placeholder="Enter system prompt..."
+                  style={{
+                    width: '100%',
+                    minHeight: 60,
+                    padding: 8,
+                    fontSize: 12,
+                    borderRadius: 4,
+                    border: '1px solid var(--uix-canvas-border-de-emp)',
+                    backgroundColor: 'var(--uix-canvas-background)',
+                    color: 'var(--uix-canvas-foreground)',
+                    resize: 'vertical',
+                    fontFamily: 'inherit',
+                  }}
+                />
+              </Column>
+              <Column gap={2}>
+                <ApTypography
+                  variant={FontVariantToken.fontSizeXs}
+                  style={{ color: 'var(--uix-canvas-foreground-de-emp)' }}
+                >
+                  User prompt:
+                </ApTypography>
+                <textarea
+                  value={userPrompt}
+                  onChange={(e) => setUserPrompt(e.target.value)}
+                  placeholder="Enter user prompt..."
+                  style={{
+                    width: '100%',
+                    minHeight: 60,
+                    padding: 8,
+                    fontSize: 12,
+                    borderRadius: 4,
+                    border: '1px solid var(--uix-canvas-border-de-emp)',
+                    backgroundColor: 'var(--uix-canvas-background)',
+                    color: 'var(--uix-canvas-foreground)',
+                    resize: 'vertical',
+                    fontFamily: 'inherit',
+                  }}
+                />
+              </Column>
+            </Column>
+          )}
+        </Column>
+
         {/* Status info */}
         <Column
           gap={2}
@@ -1377,6 +1488,7 @@ const DesignModePlayground = () => {
             onSelectResource={handleSelectResource}
             enableTimelinePlayer={false}
             enableMemory
+            enableInstructions={hasInstructions}
             enableStickyNotes={enableStickyNotes}
             stickyNotes={stickyNotes}
             onAddStickyNote={handleAddStickyNote}
@@ -1392,7 +1504,9 @@ const DesignModePlayground = () => {
             suggestionGroup={suggestionGroup}
             onActOnSuggestion={handleActOnSuggestion}
             onActOnSuggestionGroup={handleActOnSuggestionGroup}
+            instructions={instructions}
           />
+          {renderControlPanel()}
           {/* Placeholder configuration modal */}
           {openModalType && (
             <>
@@ -1460,7 +1574,6 @@ const DesignModePlayground = () => {
             </>
           )}
         </div>
-        {renderControlPanel()}
         {renderSidebar()}
       </Row>
     </ReactFlowProvider>
@@ -1480,7 +1593,9 @@ export const DesignMode: Story = {
           '• **Resources**: With sample resources or empty canvas\n' +
           '• **Suggestions**: Off, Placeholders (click + buttons), or Autopilot (batch suggestions)\n' +
           '• **Sticky Notes**: Enable/disable with sample loading\n' +
-          '• **Dragging**: Enable/disable position control\n\n' +
+          '• **Dragging**: Enable/disable position control\n' +
+          '• **Instructions**: Toggle instruction prompts (system/user) on the agent node\n' +
+          '• **Hover Preview**: Hover over the agent node for 0.5s to see settings preview\n\n' +
           'Test features in isolation or combine them to verify interactions.',
       },
     },
@@ -1489,33 +1604,65 @@ export const DesignMode: Story = {
 
 const ViewModeWrapper = () => {
   const [hasTimelinePlayer, setHasTimelinePlayer] = useState(false);
+  const [hasInstructions, setHasInstructions] = useState(true);
+
+  // Sample instructions for view mode
+  const instructions = hasInstructions
+    ? {
+        system: 'You are a helpful assistant that helps users with their tasks.',
+        user: 'Please help me complete my work efficiently.',
+      }
+    : undefined;
 
   const renderControlPanel = () => {
     return (
       <StoryInfoPanel title="View Mode Controls">
-        <Column mt={12} gap={8}>
-          <ApTypography variant={FontVariantToken.fontSizeM}>Timeline player:</ApTypography>
-          <Row gap={8}>
-            <ApButton
-              size="small"
-              variant={!hasTimelinePlayer ? 'primary' : 'secondary'}
-              label="Off"
-              onClick={() => setHasTimelinePlayer(false)}
-            />
-            <ApButton
-              size="small"
-              variant={hasTimelinePlayer ? 'primary' : 'secondary'}
-              label="With Spans"
-              onClick={() => setHasTimelinePlayer(true)}
-            />
-          </Row>
+        <Column mt={12} gap={12}>
+          <Column gap={4}>
+            <ApTypography variant={FontVariantToken.fontSizeS} style={{ fontWeight: 600 }}>
+              Timeline player:
+            </ApTypography>
+            <Row gap={8}>
+              <ApButton
+                size="small"
+                variant={!hasTimelinePlayer ? 'primary' : 'secondary'}
+                label="Off"
+                onClick={() => setHasTimelinePlayer(false)}
+              />
+              <ApButton
+                size="small"
+                variant={hasTimelinePlayer ? 'primary' : 'secondary'}
+                label="With Spans"
+                onClick={() => setHasTimelinePlayer(true)}
+              />
+            </Row>
+          </Column>
+          <Column gap={4}>
+            <ApTypography variant={FontVariantToken.fontSizeS} style={{ fontWeight: 600 }}>
+              Instructions:
+            </ApTypography>
+            <Row gap={8}>
+              <ApButton
+                size="small"
+                variant={hasInstructions ? 'primary' : 'secondary'}
+                label="With"
+                onClick={() => setHasInstructions(true)}
+              />
+              <ApButton
+                size="small"
+                variant={!hasInstructions ? 'primary' : 'secondary'}
+                label="Without"
+                onClick={() => setHasInstructions(false)}
+              />
+            </Row>
+          </Column>
         </Column>
       </StoryInfoPanel>
     );
   };
 
   return (
-    <ReactFlowProvider key={hasTimelinePlayer ? 'with-timeline' : 'no-timeline'}>
+    <ReactFlowProvider key={`${hasTimelinePlayer}-${hasInstructions}`}>
       <AgentFlowWrapper
         mode="view"
         initialResources={sampleResources}
@@ -1523,6 +1670,8 @@ const ViewModeWrapper = () => {
         spans={hasTimelinePlayer ? sampleSpans : []}
         definition={sampleAgentDefinition}
         enableTimelinePlayer={hasTimelinePlayer}
+        enableInstructions={hasInstructions}
+        instructions={instructions}
       />
       {renderControlPanel()}
     </ReactFlowProvider>
@@ -1538,7 +1687,10 @@ export const ViewMode: Story = {
     docs: {
       description: {
         story:
-          'Interactive view mode demo. Use the control panel to toggle between view mode with and without the timeline player.',
+          'Interactive view mode demo. Use the control panel to toggle:\n\n' +
+          '• **Timeline player**: Show/hide the timeline with spans\n' +
+          '• **Instructions**: Show/hide instruction prompts preview on the agent node\n' +
+          '• **Hover Preview**: Hover over the agent node for 0.5s to see full settings preview',
       },
     },
   },

@@ -27,12 +27,21 @@ import { STICKY_NOTE_COLORS, withAlpha } from './StickyNoteNode.types';
 
 export interface StickyNoteNodeProps extends NodeProps {
   data: StickyNoteData;
+  placeholder?: string;
+  renderPlaceholderOnSelect?: boolean;
 }
 
 const minWidth = GRID_SPACING * 8;
 const minHeight = GRID_SPACING * 8;
 
-const StickyNoteNodeComponent = ({ id, data, selected, dragging }: StickyNoteNodeProps) => {
+const StickyNoteNodeComponent = ({
+  id,
+  data,
+  selected,
+  dragging,
+  placeholder = 'Add text',
+  renderPlaceholderOnSelect = false,
+}: StickyNoteNodeProps) => {
   const { updateNodeData } = useReactFlow();
   const [isEditing, setIsEditing] = useState(data.autoFocus ?? false);
   const [isResizing, setIsResizing] = useState(false);
@@ -134,6 +143,29 @@ const StickyNoteNodeComponent = ({ id, data, selected, dragging }: StickyNoteNod
       }
     }, 0);
   }, []);
+
+  // Custom markdown components to handle link clicks properly in React Flow nodes
+  const markdownComponents = useMemo(
+    () => ({
+      a: ({ href, children, ...props }: React.AnchorHTMLAttributes<HTMLAnchorElement>) => (
+        <a
+          {...props}
+          href={href}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={(e) => {
+            e.stopPropagation();
+          }}
+          onDoubleClick={(e) => {
+            e.stopPropagation();
+          }}
+        >
+          {children}
+        </a>
+      ),
+    }),
+    []
+  );
 
   // Build toolbar config with only Edit and Color buttons
   const toolbarConfig = useMemo(() => {
@@ -241,14 +273,24 @@ const StickyNoteNodeComponent = ({ id, data, selected, dragging }: StickyNoteNod
               onBlur={handleBlur}
               onKeyDown={handleKeyDown}
               readOnly={!isEditing}
-              placeholder="Add text"
+              placeholder={placeholder}
               isEditing={isEditing}
               className="nodrag nowheel"
             />
           ) : (
             <StickyNoteMarkdown>
-              {localContent && (
-                <ReactMarkdown remarkPlugins={[remarkGfm]}>{localContent}</ReactMarkdown>
+              {localContent ? (
+                <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+                  {localContent}
+                </ReactMarkdown>
+              ) : (
+                // Render placeholder if renderPlaceholderOnSelect is enabled, node is selected, and the content is empty
+                renderPlaceholderOnSelect &&
+                selected && (
+                  <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+                    {placeholder}
+                  </ReactMarkdown>
+                )
               )}
             </StickyNoteMarkdown>
           )}

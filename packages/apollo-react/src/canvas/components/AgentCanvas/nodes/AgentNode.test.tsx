@@ -41,6 +41,12 @@ vi.mock('../store/agent-flow-store', () => ({
   }),
 }));
 
+vi.mock('../../FloatingCanvasPanel', () => ({
+  FloatingCanvasPanel: ({ children }: { children?: React.ReactNode }) => (
+    <div data-testid="floating-canvas-panel">{children}</div>
+  ),
+}));
+
 // Mock Icons from @uipath/apollo-react/canvas
 vi.mock('@uipath/apollo-react/canvas', () => ({
   // Re-export everything else from actual module
@@ -74,6 +80,16 @@ const defaultTranslations: AgentNodeTranslations = {
   context: 'Context',
   tools: 'Tools',
   memory: 'Memory',
+  instructions: 'Instructions',
+  addInstructions: 'Add Instructions',
+  agentSettings: 'Agent Settings',
+  readOnlyPreview: 'Read-only preview',
+  systemPrompt: 'System prompt',
+  userPrompt: 'User prompt',
+  temperature: 'Temperature',
+  maxTokens: 'Max tokens',
+  maxIteration: 'Max iteration',
+  notConfigured: 'Not configured',
 };
 
 const defaultNodeProps = {
@@ -247,5 +263,109 @@ describe('AgentNode - Health Score', () => {
       expect(screen.getByText('Autonomous Agent')).toBeInTheDocument();
       expect(screen.getByText('88')).toBeInTheDocument();
     });
+  });
+});
+
+describe('AgentNode - Instructions Footer', () => {
+  it('shows add instructions button in design mode when no instructions', () => {
+    const onAddInstructions = vi.fn();
+    render(
+      <AgentNodeElement
+        {...defaultNodeProps}
+        mode="design"
+        enableInstructions
+        onAddInstructions={onAddInstructions}
+      />
+    );
+
+    expect(screen.getByText('Add Instructions')).toBeInTheDocument();
+  });
+
+  it('does not show add instructions button in view mode', () => {
+    render(
+      <AgentNodeElement
+        {...defaultNodeProps}
+        mode="view"
+        enableInstructions
+        onAddInstructions={vi.fn()}
+      />
+    );
+
+    expect(screen.queryByText('Add Instructions')).not.toBeInTheDocument();
+  });
+
+  it('does not show instructions when feature flag is disabled', () => {
+    render(
+      <AgentNodeElement
+        {...defaultNodeProps}
+        mode="design"
+        enableInstructions={false}
+        onAddInstructions={vi.fn()}
+        data={{
+          ...defaultNodeProps.data,
+          instructions: { system: 'You are a helpful assistant' },
+        }}
+      />
+    );
+
+    expect(screen.queryByText('Add Instructions')).not.toBeInTheDocument();
+    expect(screen.queryByText('Instructions')).not.toBeInTheDocument();
+  });
+
+  it('shows instructions preview when only system instruction exists', () => {
+    render(
+      <AgentNodeElement
+        {...defaultNodeProps}
+        mode="design"
+        enableInstructions
+        data={{
+          ...defaultNodeProps.data,
+          instructions: { system: 'You are a helpful assistant' },
+        }}
+      />
+    );
+
+    expect(screen.getByText('Instructions')).toBeInTheDocument();
+    expect(screen.getByText(/System:/)).toBeInTheDocument();
+    expect(screen.queryByText(/User:/)).not.toBeInTheDocument();
+  });
+
+  it('shows instructions preview when only user instruction exists', () => {
+    render(
+      <AgentNodeElement
+        {...defaultNodeProps}
+        mode="design"
+        enableInstructions
+        data={{
+          ...defaultNodeProps.data,
+          instructions: { user: 'Help me with my task' },
+        }}
+      />
+    );
+
+    expect(screen.getByText('Instructions')).toBeInTheDocument();
+    expect(screen.getByText(/User:/)).toBeInTheDocument();
+    expect(screen.queryByText(/System:/)).not.toBeInTheDocument();
+  });
+
+  it('shows both system and user in preview when both exist', () => {
+    render(
+      <AgentNodeElement
+        {...defaultNodeProps}
+        mode="design"
+        enableInstructions
+        data={{
+          ...defaultNodeProps.data,
+          instructions: {
+            system: 'You are a helpful assistant',
+            user: 'Help me with my task',
+          },
+        }}
+      />
+    );
+
+    expect(screen.getByText('Instructions')).toBeInTheDocument();
+    expect(screen.getByText(/System:/)).toBeInTheDocument();
+    expect(screen.getByText(/User:/)).toBeInTheDocument();
   });
 });

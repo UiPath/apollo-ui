@@ -105,6 +105,9 @@ export const handleManifestSchema = z.object({
 
   /** Connection constraints for this handle */
   constraints: connectionConstraintSchema.optional(),
+
+  /** Whether this handle is the default for its type. Helps determine how to connect when node is newly added. */
+  isDefaultForType: z.boolean().optional(),
 });
 
 /**

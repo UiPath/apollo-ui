@@ -1,6 +1,6 @@
 {
   "name": "@uipath/apollo-core",
-  "version": "5.5.0",
+  "version": "5.6.0",
   "description": "Apollo Design System - Core design tokens, icons, and fonts",
   "repository": {
     "type": "git",
@@ -68,13 +68,13 @@
   "devDependencies": {
     "@rslib/core": "^0.17.0",
     "@vitest/coverage-v8": "^4.0.14",
-    "lodash": "^4.17.21",
+    "lodash": "^4.17.23",
     "style-dictionary": "2.8.3",
     "svg-to-ts": "^12.0.0",
     "typescript": "^5.9.3",
     "vitest": "^4.0.14",
     "cssnano": "^6.0.1",
-    "postcss": "^8.4.31",
+    "postcss": "^8.5.6",
     "postcss-cli": "^10.1.0"
   }
 }

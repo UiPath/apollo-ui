@@ -6,9 +6,9 @@
  * Supports both Lucide icons (via DynamicIcon) and UIPath custom icons.
  */
 
-import { Icons } from '@uipath/apollo-react/canvas';
+import * as Icons from '../icons';
 import { icons } from 'lucide-react';
-import type { JSX } from 'react';
+import { type JSX, memo, useMemo } from 'react';
 
 export type IconComponent = (props: { w?: number; h?: number }) => JSX.Element;
 
@@ -91,3 +91,19 @@ export function getIcon(iconId: string): IconComponent {
   const BoxIcon = icons.Box;
   return ({ w, h }) => <BoxIcon width={w ?? 24} height={h ?? 24} />;
 }
+
+export interface NodeIconProps {
+  icon?: string;
+  size?: number;
+}
+
+/**
+ * Memoized component for rendering icons from the registry
+ * Use this instead of getIcon() to avoid creating components during render
+ */
+export const NodeIcon = memo(function NodeIcon({ icon, size = 16 }: NodeIconProps) {
+  const Icon = useMemo(() => (icon ? getIcon(icon) : null), [icon]);
+  if (!Icon) return null;
+  // eslint-disable-next-line react-hooks/static-components -- Icon registry architecture requires dynamic component lookup
+  return <Icon w={size} h={size} />;
+});

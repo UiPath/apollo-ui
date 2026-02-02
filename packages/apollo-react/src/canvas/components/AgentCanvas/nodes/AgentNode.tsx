@@ -2,7 +2,8 @@ import * as Icons from '@uipath/apollo-react/canvas/icons';
 import type { Node, NodeProps } from '@uipath/apollo-react/canvas/xyflow/react';
 import { Position } from '@uipath/apollo-react/canvas/xyflow/react';
 import { ApIcon } from '@uipath/apollo-react/material/components';
-import { memo, useCallback, useMemo } from 'react';
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { FloatingCanvasPanel } from '../../FloatingCanvasPanel';
 import {
   type AgentNodeTranslations,
   DefaultSuggestionTranslations,
@@ -21,6 +22,25 @@ import { ExecutionStatusIcon } from '../../ExecutionStatusIcon/ExecutionStatusIc
 import type { NodeToolbarConfig, ToolbarAction } from '../../Toolbar';
 import { ResourceNodeType } from '../AgentFlow.constants';
 import { useAgentFlowStore } from '../store/agent-flow-store';
+import {
+  AddInstructionsButton,
+  HealthScoreBadge,
+  InstructionsLabel,
+  InstructionsLine,
+  InstructionsPreview,
+  SettingsPreviewContainer,
+  SettingsPreviewHeader,
+  SettingsPreviewSubtitle,
+  SettingsPreviewTitle,
+  SettingsPromptBox,
+  SettingsRow,
+  SettingsRowLabel,
+  SettingsRowValue,
+  SettingsSection,
+  SettingsSectionLabel,
+  SettingsSectionValue,
+  SubLabelContainer,
+} from './AgentNode.styles';
 
 const { ConversationalAgentIcon, AutonomousAgentIcon } = Icons;
 
@@ -30,6 +50,10 @@ interface AgentNodeData extends NewBaseNodeData {
   definition: Record<string, unknown>;
   parentNodeId?: string;
   isConversational?: boolean;
+  instructions?: {
+    system?: string;
+    user?: string;
+  };
   // suggestions
   isSuggestion?: boolean;
   suggestionId?: string;
@@ -50,8 +74,10 @@ interface AgentNodeProps extends NewBaseNodeDisplayProps {
   hasSuccess?: boolean;
   hasRunning?: boolean;
   onAddResource?: (type: 'context' | 'escalation' | 'mcp' | 'tool' | 'memorySpace') => void;
+  onAddInstructions?: () => void;
   translations: AgentNodeTranslations;
   enableMemory?: boolean;
+  enableInstructions?: boolean;
   healthScore?: number;
   onHealthScoreClick?: () => void;
   suggestionTranslations?: SuggestionTranslations;
@@ -59,8 +85,11 @@ interface AgentNodeProps extends NewBaseNodeDisplayProps {
   suggestionGroupVersion?: string;
 }
 
+const HOVER_DELAY_MS = 500;
+
 const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNodeProps) => {
   const {
+    id,
     data,
     selected = false,
     mode = 'design',
@@ -74,8 +103,10 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
     hasSuccess = false,
     hasRunning = false,
     onAddResource,
+    onAddInstructions,
     translations,
     enableMemory,
+    enableInstructions = false,
     healthScore,
     onHealthScoreClick,
     suggestionTranslations,
@@ -84,12 +115,44 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
   } = props;
   const { actOnSuggestion } = useAgentFlowStore();
 
+  const [showSettingsPreview, setShowSettingsPreview] = useState(false);
+  const hoverTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   const { name, definition, suggestionId } = data;
   const isSuggestion = data.isSuggestion ?? false;
   const suggestionType = isSuggestion ? data.suggestionType : undefined;
   const isConversational =
     (definition?.metadata as Record<string, unknown>)?.isConversational === true;
   const suggestTranslations = suggestionTranslations ?? DefaultSuggestionTranslations;
+
+  // Extract settings from definition
+  const settings = definition?.settings as
+    | { model?: string; temperature?: number; maxTokens?: number; maxIteration?: number }
+    | undefined;
+
+  const handleMouseEnter = useCallback(() => {
+    if (!enableInstructions) return;
+    hoverTimeoutRef.current = setTimeout(() => {
+      setShowSettingsPreview(true);
+    }, HOVER_DELAY_MS);
+  }, [enableInstructions]);
+
+  const handleMouseLeave = useCallback(() => {
+    if (!enableInstructions) return;
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+      hoverTimeoutRef.current = null;
+    }
+    setShowSettingsPreview(false);
+  }, [enableInstructions]);
+
+  useEffect(() => {
+    return () => {
+      if (hoverTimeoutRef.current) {
+        clearTimeout(hoverTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const executionStatus = useMemo(() => {
     if (hasError) return 'Failed';
@@ -222,39 +285,85 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
     };
   }, [executionStatus]);
 
-  const healthScoreElement = useMemo(() => {
+  const healthScoreBadge = useMemo(() => {
     if (healthScore === undefined) {
       return null;
     }
     return (
-      <div
+      <HealthScoreBadge
         onClick={(e) => {
           if (onHealthScoreClick) {
             e.stopPropagation();
             onHealthScoreClick();
           }
         }}
-        style={{
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: '4px',
-          padding: '4px 8px',
-          backgroundColor: 'var(--uix-canvas-background-secondary)',
-          borderRadius: '16px',
-          fontSize: '10px',
-          fontWeight: '700',
-          marginTop: '6px',
-          textAlign: 'center',
-          lineHeight: '16px',
-          color: 'var(--uix-canvas-foreground-de-emp)',
-          cursor: 'pointer',
-        }}
       >
-        <Icons.HealthScoreIcon w={16} h={16} />
+        <Icons.HealthScoreIcon w={14} h={14} />
         {healthScore.toString()}
-      </div>
+      </HealthScoreBadge>
     );
   }, [healthScore, onHealthScoreClick]);
+
+  const { instructionsFooter, footerVariant } = useMemo((): {
+    instructionsFooter: React.ReactNode;
+    footerVariant: 'none' | 'button' | 'single' | 'double';
+  } => {
+    if (!enableInstructions) {
+      return { instructionsFooter: null, footerVariant: 'none' };
+    }
+
+    const system = data.instructions?.system;
+    const user = data.instructions?.user;
+    const hasSystem = Boolean(system);
+    const hasUser = Boolean(user);
+    const hasContent = hasSystem || hasUser;
+
+    if (hasContent) {
+      return {
+        instructionsFooter: (
+          <InstructionsPreview
+            onClick={(e) => {
+              e.stopPropagation();
+              onAddInstructions?.();
+            }}
+          >
+            <InstructionsLabel>{translations.instructions}</InstructionsLabel>
+            {system && (
+              <InstructionsLine>
+                <strong>{translations.system}:</strong> "{system}"
+              </InstructionsLine>
+            )}
+            {user && (
+              <InstructionsLine>
+                <strong>{translations.user}:</strong> "{user}"
+              </InstructionsLine>
+            )}
+          </InstructionsPreview>
+        ),
+        footerVariant: hasSystem && hasUser ? 'double' : 'single',
+      };
+    }
+
+    // Show add button in design mode when no content
+    if (mode !== 'design' || !onAddInstructions) {
+      return { instructionsFooter: null, footerVariant: 'none' };
+    }
+    return {
+      instructionsFooter: (
+        <AddInstructionsButton
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            onAddInstructions();
+          }}
+        >
+          <ApIcon name="add" size="14px" />
+          {translations.addInstructions}
+        </AddInstructionsButton>
+      ),
+      footerVariant: 'button',
+    };
+  }, [enableInstructions, data.instructions, mode, onAddInstructions, translations]);
 
   const shouldShowAddButtonFn = (opts: { showAddButton: boolean; selected: boolean }) => {
     return opts.showAddButton || opts.selected;
@@ -329,34 +438,105 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
     };
   }, [isSuggestion, suggestionType]);
 
+  const settingsPreviewContent = useMemo(() => {
+    const systemPrompt = data.instructions?.system ?? '';
+    const userPrompt = data.instructions?.user ?? '';
+
+    return (
+      <SettingsPreviewContainer>
+        <SettingsPreviewHeader>
+          <SettingsPreviewTitle>{translations.agentSettings}</SettingsPreviewTitle>
+          <SettingsPreviewSubtitle>{translations.readOnlyPreview}</SettingsPreviewSubtitle>
+        </SettingsPreviewHeader>
+
+        {settings?.model && (
+          <SettingsSection>
+            <SettingsSectionLabel>{translations.model}</SettingsSectionLabel>
+            <SettingsSectionValue>{settings.model}</SettingsSectionValue>
+          </SettingsSection>
+        )}
+
+        <SettingsSection>
+          <SettingsSectionLabel>{translations.systemPrompt}</SettingsSectionLabel>
+          <SettingsPromptBox isEmpty={!systemPrompt}>
+            {systemPrompt || translations.notConfigured}
+          </SettingsPromptBox>
+        </SettingsSection>
+
+        <SettingsSection>
+          <SettingsSectionLabel>{translations.userPrompt}</SettingsSectionLabel>
+          <SettingsPromptBox isEmpty={!userPrompt}>
+            {userPrompt || translations.notConfigured}
+          </SettingsPromptBox>
+        </SettingsSection>
+
+        {settings?.temperature !== undefined && (
+          <SettingsRow>
+            <SettingsRowLabel>{translations.temperature}</SettingsRowLabel>
+            <SettingsRowValue>{settings.temperature}</SettingsRowValue>
+          </SettingsRow>
+        )}
+
+        {settings?.maxTokens !== undefined && (
+          <SettingsRow>
+            <SettingsRowLabel>{translations.maxTokens}</SettingsRowLabel>
+            <SettingsRowValue>{settings.maxTokens}</SettingsRowValue>
+          </SettingsRow>
+        )}
+
+        {settings?.maxIteration !== undefined && (
+          <SettingsRow>
+            <SettingsRowLabel>{translations.maxIteration}</SettingsRowLabel>
+            <SettingsRowValue>{settings.maxIteration}</SettingsRowValue>
+          </SettingsRow>
+        )}
+      </SettingsPreviewContainer>
+    );
+  }, [data.instructions, settings, translations]);
+
   return (
-    <NewBaseNode
-      {...nodeProps}
-      executionStatus={executionStatus}
-      suggestionType={suggestionType}
-      icon={agentIcon}
-      display={{
-        label: name,
-        subLabel: isConversational
-          ? translations.conversationalAgent
-          : translations.autonomousAgent,
-        shape: 'rectangle',
-        background: 'var(--uix-canvas-background)',
-        iconBackground: 'var(--uix-canvas-background-secondary)',
-        centerAdornmentComponent: healthScoreElement,
-      }}
-      toolbarConfig={toolbarConfig}
-      adornments={{
-        topRight: statusAdornment,
-        bottomLeft: suggestionAdornment,
-      }}
-      handleConfigurations={handleConfigurations}
-      // Show add buttons in design mode even when not selected
-      showHandles={mode === 'design'}
-      showAddButton={mode === 'design'}
-      selected={selected}
-      shouldShowAddButtonFn={shouldShowAddButtonFn}
-    />
+    <div onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
+      <NewBaseNode
+        {...nodeProps}
+        id={id}
+        executionStatus={executionStatus}
+        suggestionType={suggestionType}
+        icon={agentIcon}
+        display={{
+          label: name,
+          subLabel: (
+            <SubLabelContainer>
+              {isConversational ? translations.conversationalAgent : translations.autonomousAgent}
+              {healthScoreBadge}
+            </SubLabelContainer>
+          ),
+          shape: 'rectangle',
+          background: 'var(--uix-canvas-background)',
+          iconBackground: 'var(--uix-canvas-background-secondary)',
+          footerComponent: instructionsFooter,
+          footerVariant,
+        }}
+        toolbarConfig={toolbarConfig}
+        adornments={{
+          topRight: statusAdornment,
+          bottomLeft: suggestionAdornment,
+        }}
+        handleConfigurations={handleConfigurations}
+        // Show add buttons in design mode even when not selected
+        showHandles={mode === 'design'}
+        showAddButton={mode === 'design'}
+        selected={selected}
+        shouldShowAddButtonFn={shouldShowAddButtonFn}
+      />
+      <FloatingCanvasPanel
+        open={showSettingsPreview}
+        nodeId={id}
+        placement="right-start"
+        offset={16}
+      >
+        {settingsPreviewContent}
+      </FloatingCanvasPanel>
+    </div>
   );
 });
 
@@ -376,8 +556,10 @@ const AgentNodeWrapper = (props: NodeProps<Node<AgentNodeData>> & AgentNodeProps
     hasSuccess,
     hasRunning,
     onAddResource,
+    onAddInstructions,
     translations,
     enableMemory,
+    enableInstructions,
     healthScore,
     onHealthScoreClick,
     suggestionTranslations,
@@ -400,8 +582,10 @@ const AgentNodeWrapper = (props: NodeProps<Node<AgentNodeData>> & AgentNodeProps
       hasSuccess={hasSuccess}
       hasRunning={hasRunning}
       onAddResource={onAddResource}
+      onAddInstructions={onAddInstructions}
       translations={translations}
       enableMemory={enableMemory}
+      enableInstructions={enableInstructions}
       healthScore={healthScore}
       onHealthScoreClick={onHealthScoreClick}
       suggestionTranslations={suggestionTranslations}

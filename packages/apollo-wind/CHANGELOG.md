@@ -1,3 +1,33 @@
+## [@uipath/apollo-wind-v0.7.2](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@0.7.1...@uipath/apollo-wind@0.7.2) (2026-01-31)
+
+### Bug Fixes
+
+* **apollo-wind:** add react-scan to storybook ([bd8ad6c](https://github.com/uipath/apollo-ui/commit/bd8ad6cfeec70b6340d9dffabc93a2407f0c686a))
+
+## [@uipath/apollo-wind-v0.7.1](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@0.7.0...@uipath/apollo-wind@0.7.1) (2026-01-30)
+
+### Bug Fixes
+
+* **apollo-wind:** switch dialog from transform to flex positioning ([d1e3417](https://github.com/uipath/apollo-ui/commit/d1e34176ef0c868fec8b3034c3390dc6cfba0d07))
+
+## [@uipath/apollo-wind-v0.7.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@0.6.6...@uipath/apollo-wind@0.7.0) (2026-01-30)
+
+### Features
+
+* **apollo-wind:** re-export toast function from sonner ([0321973](https://github.com/uipath/apollo-ui/commit/0321973f04103b76c3bdc4eb76b961812cf0ee0f))
+
+## [@uipath/apollo-wind-v0.6.6](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@0.6.5...@uipath/apollo-wind@0.6.6) (2026-01-24)
+
+### Bug Fixes
+
+* **repo:** vercel deployments ([0512f2c](https://github.com/uipath/apollo-ui/commit/0512f2c0f12ba59118d046d173694baa19dadad2))
+
+## [@uipath/apollo-wind-v0.6.5](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@0.6.4...@uipath/apollo-wind@0.6.5) (2026-01-23)
+
+### Bug Fixes
+
+* **apollo-wind:** Fixed folloing bugs: ([1fd1a0f](https://github.com/uipath/apollo-ui/commit/1fd1a0f1fabb18ea5709fb5a0f917af27667e140))
+
 ## [0.6.4](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@0.6.3...@uipath/apollo-wind@0.6.4) (2026-01-09)
 
 

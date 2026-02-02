@@ -1,0 +1,6 @@
+{
+  "buildCommand": "cd ../.. && pnpm turbo build --filter=apollo-vertex",
+  "installCommand": "cd ../.. && pnpm install",
+  "framework": "nextjs",
+  "ignoreCommand": "git diff HEAD^ HEAD --quiet . && git diff HEAD^ HEAD --quiet ../../packages"
+}

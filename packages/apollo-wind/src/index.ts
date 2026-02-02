@@ -224,7 +224,7 @@ export {
 
 export { Alert, AlertDescription, AlertTitle } from './components/ui/alert';
 
-export { Toaster } from './components/ui/sonner';
+export { toast, Toaster } from './components/ui/sonner';
 
 // -----------------------------------------------------------------------------
 // Navigation Components

@@ -163,7 +163,8 @@ const createCodedAgentNodeWrapper = (
 
     return (
       <NewBaseNode
-        {...({ id, selected } as any)}
+        id={id}
+        selected={selected}
         data={nodeData}
         executionStatus={executionStatus}
         icon={<Icons.CodedAgentIcon w={40} h={40} />}
@@ -173,7 +174,7 @@ const createCodedAgentNodeWrapper = (
           shape: 'rectangle',
         }}
         adornments={{
-          topRight: statusAdornment,
+          topRight: statusAdornment ? { icon: statusAdornment } : undefined,
         }}
         handleConfigurations={[
           { position: Position.Left, handles: leftTargetHandle, visible: true },
@@ -224,7 +225,8 @@ const CodedResourceNodeElement = memo(({ data, selected, id }: NodeProps) => {
   return (
     <div style={{ position: 'relative' }}>
       <NewBaseNode
-        {...({ id, selected } as any)}
+        id={id}
+        selected={selected}
         data={nodeData}
         executionStatus={executionStatus}
         icon={resourceIcon}
@@ -232,7 +234,7 @@ const CodedResourceNodeElement = memo(({ data, selected, id }: NodeProps) => {
           shape: 'circle',
         }}
         adornments={{
-          topRight: statusAdornment,
+          topRight: statusAdornment ? { icon: statusAdornment } : undefined,
         }}
         handleConfigurations={[
           { position: Position.Left, handles: leftTargetHandle, visible: true },
@@ -259,7 +261,8 @@ const CodedFlowNodeElement = memo(({ data, selected, id }: NodeProps) => {
     return (
       <div style={{ position: 'relative' }}>
         <NewBaseNode
-          {...({ id, selected } as any)}
+          id={id}
+          selected={selected}
           data={nodeData}
           icon={<ApIcon variant="outlined" name={isStart ? 'circle' : 'trip_origin'} size="40px" />}
           display={{
@@ -281,7 +284,8 @@ const CodedFlowNodeElement = memo(({ data, selected, id }: NodeProps) => {
 
   return (
     <NewBaseNode
-      {...({ id, selected } as any)}
+      id={id}
+      selected={selected}
       data={nodeData}
       display={{
         label: nodeData.label,

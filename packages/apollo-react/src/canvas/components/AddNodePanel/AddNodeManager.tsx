@@ -1,19 +1,16 @@
-import type { Edge, Node, ReactFlowState } from '@uipath/apollo-react/canvas/xyflow/react';
-import { useReactFlow, useStore } from '@uipath/apollo-react/canvas/xyflow/react';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import type { Edge, Node } from '@uipath/apollo-react/canvas/xyflow/react';
+import { useReactFlow } from '@uipath/apollo-react/canvas/xyflow/react';
+import type React from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { PREVIEW_NODE_ID } from '../../constants';
+import { useOptionalNodeTypeRegistry } from '../../core';
+import { usePreviewNode } from '../../hooks/usePreviewNode';
 import { resolveCollisions } from '../../utils';
-import type { BaseNodeData } from '../BaseNode/BaseNode.types';
+import type { BaseNodeData } from '../BaseNode';
 import { FloatingCanvasPanel } from '../FloatingCanvasPanel';
 import type { ListItem } from '../Toolbox';
 import { AddNodePanel } from './AddNodePanel';
 import type { NodeItemData } from './AddNodePanel.types';
-
-// Optimized selector - only find the preview node instead of filtering all nodes
-const previewNodeSelector = (state: ReactFlowState) => {
-  const node = state.nodes.find((n) => n.id === PREVIEW_NODE_ID);
-  return node?.selected ? node : null;
-};
 
 export interface AddNodeManagerProps {
   /**
@@ -21,6 +18,10 @@ export interface AddNodeManagerProps {
    * Should accept the same props as AddNodePanel
    */
   customPanel?: React.ComponentType<React.ComponentProps<typeof AddNodePanel>>;
+  /**
+   * Whether the manager is initializing (loading)
+   */
+  initializing?: boolean;
   /**
    * Function to fetch available node options
    */
@@ -44,36 +45,6 @@ export interface AddNodeManagerProps {
   onNodeAdded?: (sourceNodeId: string, sourceHandleId: string, newNode: Node) => void;
 }
 
-interface PreviewNodeConnectionInfo {
-  /** The id of the existing node connected to the preview node. */
-  existingNodeId: string;
-  /** The handle id on the existing node connected to the preview node. */
-  existingHandleId: string;
-  /** Whether the new node is to be added as a source of the existing node. */
-  addNewNodeAsSource: boolean;
-  /** The id of the edge connecting the preview node to the existing node. Can be the constant PREVIEW_EDGE_ID or an existing edge id if we are adding a new node between two existing nodes. */
-  previewEdgeId: string;
-}
-
-/**
- * Extract connection information from edges connected to the preview node.
- * Used to determine how to connect edges to the new node when it is added.
- */
-function extractPreviewNodeConnectionInfo(previewEdges: Edge[]): PreviewNodeConnectionInfo[] {
-  const connections = previewEdges.map((previewEdge) => {
-    const sourceIsPreviewNode = previewEdge.source === PREVIEW_NODE_ID;
-    return {
-      addNewNodeAsSource: sourceIsPreviewNode,
-      existingNodeId: sourceIsPreviewNode ? previewEdge.target : previewEdge.source,
-      existingHandleId: sourceIsPreviewNode
-        ? previewEdge.targetHandle || 'input'
-        : previewEdge.sourceHandle || 'output',
-      previewEdgeId: previewEdge.id,
-    };
-  });
-  return connections;
-}
-
 /**
  * Component that manages preview node selection and replacement.
  * Must be rendered as a child of ReactFlow/BaseCanvas.
@@ -82,41 +53,24 @@ function extractPreviewNodeConnectionInfo(previewEdges: Edge[]): PreviewNodeConn
  * When a node type is selected, it replaces the preview with the actual node.
  */
 export const AddNodeManager: React.FC<AddNodeManagerProps> = ({
-  customPanel,
+  initializing,
+  customPanel: CustomPanel,
   createNodeData,
   onBeforeNodeAdded,
   onNodeAdded,
 }) => {
   const reactFlowInstance = useReactFlow();
+  const registry = useOptionalNodeTypeRegistry();
 
   // Watch for preview node selection
-  const previewNode = useStore(previewNodeSelector);
-  const [isOpen, setIsOpen] = useState(false);
-  const [connectionInfo, setConnectionInfo] = useState<Array<PreviewNodeConnectionInfo>>([]);
-  const [_selectedCategory, setSelectedCategory] = useState<string | undefined>(undefined);
+  const { previewNode, previewNodeConnectionInfo } = usePreviewNode();
   const lastPreviewNodeRef = useRef<Node | null>(null);
   const restoreEdgesRef = useRef<Edge[] | null>(null);
 
-  // Extract source info from preview edges when preview node is selected
+  // Handle cleanup when preview node is deselected
   useEffect(() => {
-    if (previewNode && !lastPreviewNodeRef.current) {
-      // Preview node just got selected - find all edges connected to the preview node
-      const previewEdges = reactFlowInstance
-        .getEdges()
-        .filter((edge) => edge.source === PREVIEW_NODE_ID || edge.target === PREVIEW_NODE_ID);
-
-      const connections = extractPreviewNodeConnectionInfo(previewEdges);
-      setConnectionInfo(connections);
-      setIsOpen(true);
-      // When node is being added along an existing edge, that original edge is stored so it can be restored if the add is cancelled.
-      restoreEdgesRef.current = previewNode.data.originalEdge
-        ? [previewNode.data.originalEdge as Edge]
-        : null;
-    } else if (!previewNode && lastPreviewNodeRef.current) {
+    if (!previewNode && lastPreviewNodeRef.current) {
       // Preview node just got deselected
-      setIsOpen(false);
-      setConnectionInfo([]);
-
       // Clean up preview node and all preview edges if they still exist
       reactFlowInstance.setNodes((nodes) => nodes.filter((n) => n.id !== PREVIEW_NODE_ID));
       reactFlowInstance.setEdges((edges) => {
@@ -128,8 +82,13 @@ export const AddNodeManager: React.FC<AddNodeManagerProps> = ({
           ? [...filteredEdges, ...restoreEdgesRef.current]
           : filteredEdges;
       });
+    } else if (previewNode && !restoreEdgesRef.current) {
+      // Preview node just got selected
+      // Store original edge(s) to restore later
+      restoreEdgesRef.current = previewNode.data.originalEdge
+        ? [previewNode.data.originalEdge as Edge]
+        : null;
     }
-
     lastPreviewNodeRef.current = previewNode || null;
   }, [previewNode, reactFlowInstance]);
 
@@ -138,16 +97,14 @@ export const AddNodeManager: React.FC<AddNodeManagerProps> = ({
     reactFlowInstance.setNodes((nodes) =>
       nodes.map((n) => (n.id === PREVIEW_NODE_ID ? { ...n, selected: false } : n))
     );
-
-    setIsOpen(false);
-    setConnectionInfo([]);
-    setSelectedCategory(undefined);
   }, [reactFlowInstance]);
 
   // Handle node selection from the selector panel
   const handleNodeSelect = useCallback(
     (nodeItem: ListItem) => {
-      if (connectionInfo.length === 0 || !previewNode) return;
+      if (!previewNode || !previewNodeConnectionInfo || previewNodeConnectionInfo.length === 0) {
+        return;
+      }
       // Generate new node ID
       const newNodeId = `${nodeItem.data.type}-${Date.now()}`;
       // Create node data
@@ -171,17 +128,25 @@ export const AddNodeManager: React.FC<AddNodeManagerProps> = ({
         selected: true,
         data: nodeData,
       };
+      // Get the manifest for the new node type to find its default handles
+      const newNodeManifest = registry?.getManifest(nodeItem.data.type);
 
       // Create edges for all connections
       const newEdges: Edge[] = [];
       const previewEdgeIds: string[] = [];
 
-      for (const connectionInfoItem of connectionInfo) {
+      for (const connectionInfoItem of previewNodeConnectionInfo) {
+        // Get the default handle for the new node based on connection direction
+        const newNodeHandleType = connectionInfoItem.addNewNodeAsSource ? 'source' : 'target';
+        const newNodeDefaultHandle = newNodeManifest
+          ? registry?.getDefaultHandle(newNodeManifest.nodeType, newNodeHandleType)
+          : undefined;
+        const newNodeHandleId = newNodeDefaultHandle?.id;
         // Arrange edge based on whether new node is source or target
         const edgeSourceTargetData = connectionInfoItem.addNewNodeAsSource
           ? {
               source: newNode.id,
-              // Explicitly omitting sourceHandle to use default of the new node
+              sourceHandle: newNodeHandleId,
               target: connectionInfoItem.existingNodeId,
               targetHandle: connectionInfoItem.existingHandleId,
             }
@@ -189,7 +154,7 @@ export const AddNodeManager: React.FC<AddNodeManagerProps> = ({
               source: connectionInfoItem.existingNodeId,
               sourceHandle: connectionInfoItem.existingHandleId,
               target: newNode.id,
-              // Explicitly omitting targetHandle to use default of the new node
+              targetHandle: newNodeHandleId,
             };
         const newEdgeId = `edge_${edgeSourceTargetData.source}-${edgeSourceTargetData.sourceHandle}-${edgeSourceTargetData.target}-${edgeSourceTargetData.targetHandle}`;
 
@@ -225,10 +190,13 @@ export const AddNodeManager: React.FC<AddNodeManagerProps> = ({
       ]);
 
       // Call onNodeAdded for the first connection (for backwards compatibility)
-      const [firstConnection] = connectionInfo;
+      const [firstConnection] = previewNodeConnectionInfo;
       if (firstConnection) {
+        const firstEdgeSourceHandle = firstConnection.addNewNodeAsSource
+          ? newNodeManifest && registry?.getDefaultHandle(newNodeManifest.nodeType, 'source')?.id
+          : firstConnection.existingHandleId;
         const firstEdgeData = firstConnection.addNewNodeAsSource
-          ? { source: newNode.id, sourceHandle: 'output' }
+          ? { source: newNode.id, sourceHandle: firstEdgeSourceHandle ?? 'output' }
           : {
               source: firstConnection.existingNodeId,
               sourceHandle: firstConnection.existingHandleId,
@@ -240,9 +208,10 @@ export const AddNodeManager: React.FC<AddNodeManagerProps> = ({
       handleClose();
     },
     [
-      connectionInfo,
+      previewNodeConnectionInfo,
       previewNode,
       reactFlowInstance,
+      registry,
       createNodeData,
       onBeforeNodeAdded,
       onNodeAdded,
@@ -273,19 +242,22 @@ export const AddNodeManager: React.FC<AddNodeManagerProps> = ({
     [reactFlowInstance, previewNode]
   );
 
-  if (!isOpen || connectionInfo.length === 0 || !previewNode) {
+  if (!previewNode || !previewNodeConnectionInfo || previewNodeConnectionInfo.length === 0) {
     return null;
   }
 
   return (
-    <FloatingCanvasPanel open={isOpen} nodeId={PREVIEW_NODE_ID} placement="right-start" offset={10}>
-      {customPanel ? (
-        React.createElement(customPanel, {
-          onNodeSelect: (item) => handleNodeSelect(item),
-          onClose: handleClose,
-        })
+    <FloatingCanvasPanel
+      open={!!previewNode}
+      nodeId={PREVIEW_NODE_ID}
+      placement="right-start"
+      offset={10}
+    >
+      {CustomPanel ? (
+        <CustomPanel onNodeSelect={(item) => handleNodeSelect(item)} onClose={handleClose} />
       ) : (
         <AddNodePanel
+          loading={initializing}
           onNodeSelect={(item) => handleNodeSelect(item)}
           onClose={handleClose}
           onNodeHover={handleNodeOptionHover}

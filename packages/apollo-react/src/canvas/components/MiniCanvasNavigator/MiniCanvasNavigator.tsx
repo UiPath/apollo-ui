@@ -53,6 +53,7 @@ export const MiniCanvasNavigator = memo(
             showBackground={false}
             onNodeClick={onNodeClick}
             panOnDrag={false}
+            zoomOnDoubleClick={false}
             zoomOnScroll={false}
             zoomOnPinch={false}
             nodesDraggable={false}

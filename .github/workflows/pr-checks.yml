@@ -23,6 +23,7 @@ jobs:
           - Lint
           - Lint CSS
           - Lint Deps
+          - Check Dependency Consistency
           - Typecheck
           - Test Coverage
           - Build
@@ -72,6 +73,10 @@ jobs:
         if: matrix.check == 'Lint Deps'
         run: pnpm lint:deps --affected
 
+      - name: Run Check Dependency Consistency
+        if: matrix.check == 'Check Dependency Consistency'
+        run: pnpm check:dependencies
+
       - name: Run Typecheck
         if: matrix.check == 'Typecheck'
         run: pnpm typecheck --affected
@@ -103,7 +108,7 @@ jobs:
         if: matrix.check == 'Full Audit'
         run: |
           echo "📋 Running full dependency audit (all dev + prod)..."
-          pnpm audit || true
+          pnpm audit
           echo "✅ Full audit complete - see results above"
 
       - name: Run Security Audit

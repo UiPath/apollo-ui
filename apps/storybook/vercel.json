@@ -1,6 +1,7 @@
 {
-  "buildCommand": "cd ../.. && pnpm turbo run storybook:build --filter=storybook",
+  "buildCommand": "cd ../.. && pnpm turbo storybook:build --filter=storybook-app",
+  "installCommand": "cd ../.. && pnpm install",
   "outputDirectory": "storybook-static",
-  "installCommand": "pnpm install",
-  "framework": null
+  "framework": null,
+  "ignoreCommand": "git diff HEAD^ HEAD --quiet . && git diff HEAD^ HEAD --quiet ../../packages"
 }

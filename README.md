@@ -6,6 +6,24 @@
 
 Apollo v.4 is UiPath's open-source design system for building consistent user experiences across all UiPath products.
 
+## Table of Contents
+- [✨ Features](#-features)
+- [📦 Package Dependency Graph](#-package-dependency-graph)
+- [📁 Repository Structure](#-repository-structure)
+- [📦 Packages](#-packages)
+  - [Core Packages](#core-packages)
+  - [Framework Packages](#framework-packages)
+  - [Web Components (Cross-Framework)](#web-components-cross-framework)
+- [Usage](#usage)
+- [🚀 Getting Started](#-getting-started)
+  - [Prerequisites](#prerequisites)
+  - [Installation](#installation)
+  - [Development](#development)
+  - [Building](#building)
+  - [Component Checklist](#component-checklist)
+- [License](#license)
+- [Documentation](#documentation)
+
 ## ✨ Features
 
 - 🎨 **Design Tokens** - 1300+ icons, comprehensive color system, typography, spacing
@@ -60,6 +78,40 @@ apollo-ui/
     └── angular-playground/# 🅰️ Angular testing environment
 ```
 
+## 📦 Packages
+
+### Core Packages
+
+| Package | Description |
+|---------|-------------|
+| [@uipath/apollo-core](./packages/apollo-core) | Design tokens, 1300+ icons, fonts - Foundation of the design system |
+| [@uipath/apollo-utils](./packages/apollo-utils) | Shared utilities, formatters, and helper functions |
+
+### Framework Packages
+
+| Package | Description |
+|---------|-------------|
+| [@uipath/apollo-react](./packages/apollo-react) | React components with Material UI theming and Apollo design tokens |
+| [@uipath/apollo-angular](./packages/apollo-angular) | Angular components with Angular Material theming *(Coming soon)* |
+| [@uipath/apollo-wind](./packages/apollo-wind) | Tailwind CSS utilities + shadcn/ui components |
+
+### Web Components (Cross-Framework)
+
+| Package | Description |
+|---------|-------------|
+| [@uipath/ap-chat](./web-packages/ap-chat) | Chat interface web component |
+| [@uipath/ap-data-grid](./web-packages/ap-data-grid) | Data grid web component with React wrapper |
+
+## Usage
+
+- apollo-angular - Coming soon
+- [apollo-core](./packages/apollo-core/README.md)
+- [apollo-react](./packages/apollo-react/README.md)
+- apollo-utils - Coming soon
+- [apollo-wind](./packages/apollo-wind/README.md)
+- [ap-chat](./web-packages/ap-chat/README.md)
+- [ap-data-grid] - Coming soon / May be Removed
+
 ## 🚀 Getting Started
 
 ### Prerequisites
@@ -113,78 +165,6 @@ pnpm build
 pnpm storybook:build
 ```
 
-## 📦 Packages
-
-### Core Packages
-
-| Package | Description |
-|---------|-------------|
-| [@uipath/apollo-core](./packages/apollo-core) | Design tokens, 1300+ icons, fonts - Foundation of the design system |
-| [@uipath/apollo-utils](./packages/apollo-utils) | Shared utilities, formatters, and helper functions |
-
-### Framework Packages
-
-| Package | Description |
-|---------|-------------|
-| [@uipath/apollo-react](./packages/apollo-react) | React components with Material UI theming and Apollo design tokens |
-| [@uipath/apollo-angular](./packages/apollo-angular) | Angular components with Angular Material theming *(Coming soon)* |
-| [@uipath/apollo-wind](./packages/apollo-wind) | Tailwind CSS utilities + shadcn/ui components |
-
-### Web Components (Cross-Framework)
-
-| Package | Description |
-|---------|-------------|
-| [@uipath/ap-chat](./web-packages/ap-chat) | Chat interface web component |
-| [@uipath/ap-data-grid](./web-packages/ap-data-grid) | Data grid web component with React wrapper |
-
-## Usage
-
-### React
-
-```tsx
-import '@uipath/apollo-react/core/theme.css';
-import { ApButton } from '@uipath/apollo-react/components';
-
-function App() {
-  return <ApButton variant="contained">Click me</ApButton>;
-}
-```
-
-### Angular
-
-```typescript
-import { ApolloButtonModule } from '@uipath/apollo-angular';
-
-@NgModule({
-  imports: [ApolloButtonModule],
-})
-export class AppModule {}
-```
-
-### Tailwind
-
-```tsx
-import { Button } from '@uipath/apollo-wind';
-
-function App() {
-  return <Button variant="default">Click me</Button>;
-}
-```
-
-### Web Components
-
-```html
-<script type="module">
-  import '@uipath/ap-chat';
-</script>
-
-<ap-chat></ap-chat>
-```
-
-## Contributing
-
-Please read [CLAUDE.md](./CLAUDE.md) for detailed architecture documentation and contribution guidelines.
-
 ### Component Checklist
 
 - [ ] Follows naming conventions (Ap\* prefix for React)
@@ -200,7 +180,5 @@ Please read [CLAUDE.md](./CLAUDE.md) for detailed architecture documentation and
 MIT
 
 ## Documentation
-
-- [Architecture](./CLAUDE.md) - Detailed architecture and contribution guidelines
 - [Storybook](https://uipath.github.io/apollo-ui) - Component documentation (coming soon)
 - [Confluence](https://uipath.atlassian.net/wiki/spaces/CLD/pages/89705644276/Apollo+v.4+Architecture) - Design system documentation

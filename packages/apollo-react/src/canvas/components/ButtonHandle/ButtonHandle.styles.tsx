@@ -2,7 +2,7 @@ import { css } from '@emotion/react';
 import styled from '@emotion/styled';
 import { Handle, type HandleProps, Position } from '@uipath/apollo-react/canvas/xyflow/react';
 import { motion } from 'motion/react';
-import { HandleConfigurationSpecificPosition } from '../../schema/node-definition/handle';
+import type { HandleConfigurationSpecificPosition } from '../../schema/node-definition/handle';
 import { useButtonHandleSizeAndPosition } from './useButtonHandleSizeAndPosition';
 
 export const StyledAddButton = styled(motion.div)`

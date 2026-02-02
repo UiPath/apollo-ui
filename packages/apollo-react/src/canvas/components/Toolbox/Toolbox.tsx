@@ -143,7 +143,10 @@ export function Toolbox<T>({
 
       setSearchLoading(true);
       const result = onSearch
-        ? await onSearch(query, !navigationStack.canGoBack, { currentItems: items })
+        ? await onSearch(query, !navigationStack.canGoBack, {
+            currentItems: items,
+            category: currentParentItem?.id,
+          })
         : searchLeafItems(items, query);
 
       // Only update if this is still the latest request
@@ -153,7 +156,7 @@ export function Toolbox<T>({
         setIsSearchingInitialItems(false);
       }
     },
-    [onSearch, items, navigationStack.canGoBack]
+    [onSearch, items, navigationStack.canGoBack, currentParentItem?.id]
   );
 
   const handleBackTransition = useCallback(() => {

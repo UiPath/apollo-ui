@@ -15,6 +15,8 @@ export interface StoryInfoPanelProps {
   collapsible?: boolean;
   /** Initial collapsed state (only applies when collapsible is true) */
   defaultCollapsed?: boolean;
+  /** Panel position */
+  position?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 }
 
 export function StoryInfoPanel({
@@ -23,13 +25,14 @@ export function StoryInfoPanel({
   children,
   collapsible = false,
   defaultCollapsed = false,
+  position = 'top-left',
 }: StoryInfoPanelProps) {
   const [isCollapsed, setIsCollapsed] = useState(defaultCollapsed);
 
   const hasContent = description || children;
 
   return (
-    <Panel position="top-left">
+    <Panel position={position}>
       <Column
         p={16}
         style={{

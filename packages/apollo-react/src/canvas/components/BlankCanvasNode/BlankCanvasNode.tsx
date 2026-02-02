@@ -1,7 +1,7 @@
 import { type NodeProps, useStoreApi } from '@uipath/apollo-react/canvas/xyflow/react';
 import { ApIcon } from '@uipath/apollo-react/material/components';
 import { useCallback, useRef } from 'react';
-import { useCanvasStore } from '../../stores/canvasStore';
+import { selectAddNode, selectRemoveNode, useCanvasStore } from '../../stores/canvasStore';
 import { AddNodePanel, type NodeItemData } from '../AddNodePanel';
 import { FloatingCanvasPanel } from '../FloatingCanvasPanel';
 import { Header, IconWrapper, NodeContainer, TextContainer } from './BlankCanvasNode.styles';
@@ -12,7 +12,8 @@ interface BlankCanvasNodeProps extends NodeProps {
 
 export const BlankCanvasNode = (props: BlankCanvasNodeProps) => {
   const nodeRef = useRef<HTMLDivElement>(null);
-  const store = useCanvasStore();
+  const removeNode = useCanvasStore(selectRemoveNode);
+  const addNode = useCanvasStore(selectAddNode);
   const storeApi = useStoreApi();
   const { id, selected, positionAbsoluteX, positionAbsoluteY, data } = props;
   const { label } = data;
@@ -24,10 +25,10 @@ export const BlankCanvasNode = (props: BlankCanvasNodeProps) => {
   const handleNodeSelect = useCallback(
     (nodeItemData: NodeItemData) => {
       const position = { x: positionAbsoluteX, y: positionAbsoluteY };
-      store.removeNode(id);
-      store.addNode(nodeItemData.type, position);
+      removeNode(id);
+      addNode(nodeItemData.type, position);
     },
-    [id, store, positionAbsoluteX, positionAbsoluteY]
+    [id, removeNode, addNode, positionAbsoluteX, positionAbsoluteY]
   );
 
   return (
@@ -45,7 +46,7 @@ export const BlankCanvasNode = (props: BlankCanvasNodeProps) => {
 
       <FloatingCanvasPanel open={selected} nodeId={id} placement="right-start" offset={20}>
         <AddNodePanel
-          onNodeSelect={(item) => handleNodeSelect(item.data)}
+          onNodeSelect={(item) => handleNodeSelect(item.data as NodeItemData)}
           onClose={handleClosePanel}
         />
       </FloatingCanvasPanel>

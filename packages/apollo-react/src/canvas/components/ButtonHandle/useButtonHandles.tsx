@@ -1,11 +1,12 @@
 import { useNodesData } from '@xyflow/react';
-import { Position } from '@xyflow/system';
+import type { Position } from '@xyflow/system';
 import { useMemo } from 'react';
-import { HandleGroupManifest } from '../../schema/node-definition';
+import type { HandleGroupManifest } from '../../schema/node-definition';
 import { resolveHandles } from '../../utils/manifest-resolver';
 import { useConnectedHandles } from '../BaseCanvas/ConnectedHandlesContext';
 import type { HandleActionEvent } from '../ButtonHandle';
 import { ButtonHandles } from '../ButtonHandle';
+import { getToolbarActionStore } from '../../hooks/ToolbarActionContext';
 
 export const useButtonHandles = ({
   handleConfigurations,
@@ -45,6 +46,9 @@ export const useButtonHandles = ({
     selected: boolean;
   }) => boolean;
 }) => {
+  const { collapsed } = getToolbarActionStore();
+  const isCollapsed = Boolean(collapsed?.has(nodeId));
+
   const connectedHandleIds = useConnectedHandles(nodeId);
   const node = useNodesData(nodeId);
 
@@ -62,11 +66,13 @@ export const useButtonHandles = ({
       const hasConnectedHandle = config.handles.some((h) => connectedHandleIds.has(h.id));
       const finalVisible = hasConnectedHandle || (shouldShowHandles && (config.visible ?? true));
 
-      // Enhance handles with the unified action handler
-      const enhancedHandles = config.handles.map((handle) => ({
-        ...handle,
-        onAction: handleAction,
-      }));
+      // Enhance handles with the unified action handler and filter out artifact handles if the node is collapsed
+      const enhancedHandles = config.handles
+        .filter((handle) => (isCollapsed ? handle.handleType !== 'artifact' : true))
+        .map((handle) => ({
+          ...handle,
+          onAction: handleAction,
+        }));
 
       return (
         <ButtonHandles

@@ -37,6 +37,16 @@ When facing an unexpected error or ambiguous situation, **never act on guesses**
 - **Report back:** explain what happened, root cause, and possible solutions.
 - **Get approval, then act:** execute the agreed fix and confirm results.
 
+### Git Workflow — Fixup and Rebase
+
+Use a **fixup/rebase workflow** to keep commits clean and meaningful.
+
+- **Don't stack fix commits**: Avoid adding new commits just to "fix the previous thing."
+- **Use fixup or amend**: When correcting a recent change, use `git commit --amend` or `git commit --fixup` followed by `git rebase --autosquash`.
+- **Squash before PR**: Combine related changes into cohesive commits that make sense as standalone units.
+- **Force push feature branches**: After rebasing, use `git push --force-with-lease` to update the remote branch.
+- **Each commit should be meaningful**: A commit should represent a complete, logical change — not a partial fix or correction.
+
 ---
 
 # Apollo v.4 Design System Architecture

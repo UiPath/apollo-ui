@@ -18,6 +18,7 @@ import {
   DefaultAgentNodeTranslations,
   DefaultCanvasTranslations,
   DefaultResourceNodeTranslations,
+  DefaultStickyNoteNodeTranslations,
   DefaultSuggestionTranslations,
   isAgentFlowAgentNode,
   isAgentFlowResourceNode,
@@ -27,7 +28,7 @@ import {
 } from '../../types';
 import { hasAgentRunning } from '../../utils/props-helpers';
 import { CanvasPositionControls } from '../CanvasPositionControls';
-import { StickyNoteNode } from '../StickyNoteNode';
+import { StickyNoteNode, type StickyNoteNodeProps } from '../StickyNoteNode';
 import { PaneContextMenu } from './components/PaneContextMenu';
 import { SuggestionGroupPanel } from './components/SuggestionGroupPanel';
 import { TimelinePlayer } from './components/TimelinePlayer';
@@ -70,10 +71,6 @@ const edgeTypes = {
   default: Edge,
 };
 
-const nodeTypesBase = {
-  stickyNote: StickyNoteNode,
-};
-
 // AgentFlow-specific fit view options with reduced padding
 const AGENT_FLOW_FIT_VIEW_OPTIONS = {
   padding: {
@@ -92,12 +89,13 @@ const createAgentNodeWrapper = (handlers: {
   suggestionTranslations?: SuggestionTranslations;
   enableMcpTools?: boolean;
   enableMemory?: boolean;
+  enableInstructions?: boolean;
   healthScore?: number;
   onHealthScoreClick?: () => void;
   suggestionGroupVersion?: string;
 }) => {
   return (props: NodeProps<AgentFlowNode>) => {
-    const { props: storeProps, nodes } = useAgentFlowStore();
+    const { props: storeProps, nodes, setSelectedNodeId } = useAgentFlowStore();
 
     const hasContext = nodes.some(
       (node) =>
@@ -163,6 +161,11 @@ const createAgentNodeWrapper = (handlers: {
           node.data.hasSuccess
       );
 
+    const handleAddInstructions = useCallback(() => {
+      setSelectedNodeId(props.id);
+      storeProps.onSelectResource?.(props.id);
+    }, [setSelectedNodeId, storeProps.onSelectResource, props.id]);
+
     return (
       <AgentNodeElement
         {...props}
@@ -177,9 +180,11 @@ const createAgentNodeWrapper = (handlers: {
         hasSuccess={hasSuccess}
         hasRunning={hasRunning}
         onAddResource={handlers.onAddResource}
+        onAddInstructions={handleAddInstructions}
         translations={handlers.translations ?? DefaultAgentNodeTranslations}
         suggestionTranslations={handlers.suggestionTranslations ?? DefaultSuggestionTranslations}
         enableMemory={handlers.enableMemory === true}
+        enableInstructions={handlers.enableInstructions === true}
         healthScore={handlers.healthScore}
         onHealthScoreClick={handlers.onHealthScoreClick}
         suggestionGroupVersion={handlers.suggestionGroupVersion}
@@ -248,12 +253,14 @@ const AgentFlowInner = memo(
     onCollapseResource,
     agentNodeTranslations,
     resourceNodeTranslations,
+    stickyNoteNodeTranslations,
     canvasTranslations,
     enableTimelinePlayer,
     canvasRef,
     enableMcpTools,
     enableMemory,
     enableStickyNotes,
+    enableInstructions,
     healthScore,
     onHealthScoreClick,
     suggestionTranslations,
@@ -287,6 +294,21 @@ const AgentFlowInner = memo(
       openPaneContextMenu,
       closePaneContextMenu,
     } = useAgentFlowStore();
+
+    const nodeTypesBase = useMemo(
+      () => ({
+        stickyNote: (props: StickyNoteNodeProps) => (
+          <StickyNoteNode
+            {...props}
+            placeholder={
+              (stickyNoteNodeTranslations ?? DefaultStickyNoteNodeTranslations).placeholder
+            }
+            renderPlaceholderOnSelect={true}
+          />
+        ),
+      }),
+      [stickyNoteNodeTranslations]
+    );
 
     const { fitView: reactFlowFitView, screenToFlowPosition: reactFlowScreenToFlowPosition } =
       useReactFlow();
@@ -349,6 +371,7 @@ const AgentFlowInner = memo(
           suggestionTranslations,
           enableMcpTools,
           enableMemory,
+          enableInstructions,
           healthScore,
           onHealthScoreClick,
           suggestionGroupVersion,

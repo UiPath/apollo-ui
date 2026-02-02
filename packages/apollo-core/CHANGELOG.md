@@ -1,3 +1,15 @@
+## [@uipath/apollo-core-v5.6.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-core@5.5.1...@uipath/apollo-core@5.6.0) (2026-01-22)
+
+### Features
+
+* **apollo-react:** use where to allow style override (#AG-123) ([a9b56f4](https://github.com/UiPath/apollo-ui/commit/a9b56f443bb6512cb138806f332dbbeccf65dc5a)), closes [#AG-123](https://github.com/UiPath/apollo-ui/issues/AG-123)
+
+## [@uipath/apollo-core-v5.5.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-core@5.5.0...@uipath/apollo-core@5.5.1) (2026-01-22)
+
+### Bug Fixes
+
+* **repo:** audit issues ([7b081a8](https://github.com/UiPath/apollo-ui/commit/7b081a855d5eb192d47f911406f1815aba24ef1d))
+
 # [5.5.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-core@5.4.1...@uipath/apollo-core@5.5.0) (2025-12-23)
 
 

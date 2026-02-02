@@ -12,6 +12,9 @@ import type {
   StickyNoteData,
 } from './components/StickyNoteNode/StickyNoteNode.types';
 
+// Re-export CanvasLevel for external consumers
+export type { CanvasLevel } from './types/canvas.types';
+
 export interface AgentFlowStickyNote {
   id: string;
   content: string;
@@ -281,6 +284,7 @@ export type AgentFlowProps = {
   // translations
   agentNodeTranslations?: AgentNodeTranslations;
   resourceNodeTranslations?: ResourceNodeTranslations;
+  stickyNoteNodeTranslations?: StickyNoteNodeTranslations;
   canvasTranslations?: CanvasTranslations;
 
   // canvas ref for imperative control
@@ -328,6 +332,12 @@ export type AgentFlowProps = {
   /** TODO: Remove once memory feature is fully implemented */
   enableMemory?: boolean;
   enableStickyNotes?: boolean;
+  enableInstructions?: boolean;
+
+  instructions?: {
+    system?: string;
+    user?: string;
+  };
 
   // health score
   healthScore?: number;
@@ -402,6 +412,10 @@ export type AgentFlowNodeData = {
   suggestionId?: string;
   suggestionType?: SuggestionType;
   isProcessing?: boolean;
+  instructions?: {
+    system?: string;
+    user?: string;
+  };
 };
 export type AgentFlowNode = Node<AgentFlowNodeData, 'agent'> & {
   extent?: 'parent' | CoordinateExtent | undefined;
@@ -509,6 +523,17 @@ export interface AgentNodeTranslations {
   context: string;
   tools: string;
   memory: string;
+  instructions: string;
+  addInstructions: string;
+  // Settings preview
+  agentSettings: string;
+  readOnlyPreview: string;
+  systemPrompt: string;
+  userPrompt: string;
+  temperature: string;
+  maxTokens: string;
+  maxIteration: string;
+  notConfigured: string;
 }
 
 export const DefaultAgentNodeTranslations: AgentNodeTranslations = {
@@ -525,6 +550,17 @@ export const DefaultAgentNodeTranslations: AgentNodeTranslations = {
   context: 'Context',
   tools: 'Tools',
   memory: 'Memory',
+  instructions: 'Instructions',
+  addInstructions: 'Add Instructions',
+  // Settings preview
+  agentSettings: 'Agent Settings',
+  readOnlyPreview: 'Read-only preview',
+  systemPrompt: 'System prompt',
+  userPrompt: 'User prompt',
+  temperature: 'Temperature',
+  maxTokens: 'Max tokens',
+  maxIteration: 'Max iteration',
+  notConfigured: 'Not configured',
 };
 
 export interface ResourceNodeTranslations {
@@ -573,6 +609,15 @@ export interface CanvasTranslations {
   zoomToFit: string;
   addNote: string;
 }
+
+export interface StickyNoteNodeTranslations {
+  placeholder: string;
+}
+
+export const DefaultStickyNoteNodeTranslations: StickyNoteNodeTranslations = {
+  placeholder:
+    '# Add a Note\n\nUse notes to describe canvas areas and explain the purpose of each tool to organize your agent flow.\n\n*Supports Markdown formatting.*\n\n[Learn more](https://docs.uipath.com)',
+};
 
 export const DefaultCanvasTranslations: CanvasTranslations = {
   panShortcutTeaching: 'Hold Space and drag to pan around the canvas',

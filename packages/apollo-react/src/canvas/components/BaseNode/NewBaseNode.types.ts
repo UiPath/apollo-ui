@@ -1,8 +1,7 @@
 import type { Position } from '@uipath/apollo-react/canvas/xyflow/react';
+import type { NodeShape } from '../../schema';
 import type { ButtonHandleConfig, HandleActionEvent } from '../ButtonHandle/ButtonHandle';
 import type { NodeToolbarConfig } from '../Toolbar';
-
-export type NodeShape = 'square' | 'circle' | 'rectangle';
 
 export interface NewBaseNodeData extends Record<string, unknown> {
   parameters?: Record<string, unknown>;
@@ -29,9 +28,11 @@ export interface NewBaseNodeDisplayProps {
   }) => boolean;
 }
 
+export type FooterVariant = 'none' | 'button' | 'single' | 'double';
+
 export interface NodeDisplay {
   label?: string;
-  subLabel?: string;
+  subLabel?: React.ReactNode;
   labelTooltip?: string;
   labelBackgroundColor?: string;
   shape?: NodeShape;
@@ -39,6 +40,8 @@ export interface NodeDisplay {
   iconBackground?: string;
   iconColor?: string;
   centerAdornmentComponent?: React.ReactNode;
+  footerComponent?: React.ReactNode;
+  footerVariant?: FooterVariant;
 }
 
 export interface NodeAdornment {

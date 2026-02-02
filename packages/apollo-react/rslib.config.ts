@@ -60,6 +60,7 @@ export default defineConfig({
         '!./src/**/*.md',
         '!./src/**/locales/*.js',
         '!./src/**/locales/*.json',
+        '!./src/**/.DS_Store',
       ],
     },
   },

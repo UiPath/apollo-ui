@@ -33,6 +33,16 @@ export const toolbarActionSchema = z.object({
 
       /** Show only for specific node types */
       nodeTypes: z.array(z.string()).optional(),
+
+      /** Show only if node has handles defined in its manifest */
+      handles: z
+        .array(
+          z.object({
+            handleType: z.enum(['output', 'input', 'artifact']),
+            type: z.enum(['source', 'target']).optional(),
+          })
+        )
+        .optional(),
     })
     .optional(),
 });
@@ -54,7 +64,7 @@ export const modeToolbarConfigSchema = z.object({
 export const toolbarConfigurationSchema = z.record(z.string(), modeToolbarConfigSchema);
 
 // Export inferred types
-export type ToolbarAction = z.infer<typeof toolbarActionSchema>;
+export type ToolbarActionSchema = z.infer<typeof toolbarActionSchema>;
 export type ModeToolbarConfig = z.infer<typeof modeToolbarConfigSchema>;
 export type ToolbarConfiguration = z.infer<typeof toolbarConfigurationSchema>;
 

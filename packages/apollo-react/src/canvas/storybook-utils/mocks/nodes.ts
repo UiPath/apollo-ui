@@ -1,7 +1,7 @@
 import type { Node } from '@uipath/apollo-react/canvas/xyflow/react';
 import { Position } from '@uipath/apollo-react/canvas/xyflow/react';
-import type { BaseNodeData, NodeShape } from '../../components/BaseNode/BaseNode.types';
-import { HandleGroupManifest } from '../../schema/node-definition';
+import type { BaseNodeData } from '../../components/BaseNode/BaseNode.types';
+import type { HandleGroupManifest, NodeShape } from '../../schema/node-definition';
 
 /**
  * Common node positions for grid layouts.

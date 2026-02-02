@@ -27,12 +27,12 @@ import '@uipath/apollo-react/core/theme.css';
 ### Import Components
 
 ```typescript
-import { ApButton, ApTextField, ApCard } from '@uipath/apollo-react/components';
+import { ApButton, ApTextField } from '@uipath/apollo-react/components';
 
 function App() {
   return (
     <div>
-      <ApButton variant="contained">Click me</ApButton>
+      <ApButton variant="primary">Click me</ApButton>
       <ApTextField label="Name" />
     </div>
   );
@@ -59,6 +59,15 @@ function App() {
   );
 }
 ```
+
+#### Available Themes
+
+| Theme | Description | Import |
+|-------|-------------|--------|
+| **Light** | Standard light theme | `apolloMaterialUiThemeLight` |
+| **Dark** | Standard dark theme | `apolloMaterialUiThemeDark` |
+| **Light High Contrast** | High contrast light theme for accessibility | `apolloMaterialUiThemeLightHC` |
+| **Dark High Contrast** | High contrast dark theme for accessibility | `apolloMaterialUiThemeDarkHC` |
 
 ## Component Naming
 

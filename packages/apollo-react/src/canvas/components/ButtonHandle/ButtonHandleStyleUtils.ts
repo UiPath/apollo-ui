@@ -1,6 +1,6 @@
 import { Position } from '@uipath/apollo-react/canvas/xyflow/react';
 import { GRID_SPACING } from '../../constants';
-import { HandleConfigurationSpecificPosition } from '../../schema/node-definition/handle';
+import type { HandleConfigurationSpecificPosition } from '../../schema/node-definition/handle';
 
 /**
  * Returns true if the position is on a horizontal edge (Top or Bottom)
@@ -25,9 +25,7 @@ export const snapToGrid = (value: number, gridSize: number = GRID_SPACING): numb
 };
 
 /**
- * Calculates grid-aligned positions for handles along a dimension.
- * First divides the space equally, then snaps each position to the nearest grid multiple.
- * Positions are rounded away from center to maximize handle spacing.
+ * Calculates grid-aligned positions for handles that look equidistant and symmetric.
  * @param nodeSize - The size of the node in the relevant dimension (width for Top/Bottom handles, height for Left/Right handles)
  * @param numHandles - Number of handles to position
  * @param gridSize - The grid size
@@ -41,26 +39,21 @@ export const calculateGridAlignedHandlePositions = (
   if (numHandles === 0) return [];
   if (nodeSize <= 0) return [];
 
-  const center = nodeSize / 2;
+  // Calculate ideal spacing for equidistant distribution
+  const idealSpacing = nodeSize / (numHandles + 1);
+
+  // Find the best grid-aligned spacing (round to nearest multiple of gridSize)
+  // This ensures equal spacing between handles while staying on grid
+  const gridAlignedSpacing = Math.round(idealSpacing / gridSize) * gridSize;
+
+  const totalSpan = (numHandles - 1) * gridAlignedSpacing;
+
+  const startPosition = (nodeSize - totalSpan) / 2;
+
   const positions: number[] = [];
-
   for (let i = 0; i < numHandles; i++) {
-    // Calculate ideal position using equal division
-    const idealPosition = ((i + 1) / (numHandles + 1)) * nodeSize;
-
-    // Snap to grid, rounding away from center to spread handles out
-    let snappedPosition: number;
-    if (idealPosition < center) {
-      // Below center: round down
-      snappedPosition = Math.floor(idealPosition / gridSize) * gridSize;
-    } else if (idealPosition > center) {
-      // Above center: round up
-      snappedPosition = Math.ceil(idealPosition / gridSize) * gridSize;
-    } else {
-      // At center: snap to nearest
-      snappedPosition = snapToGrid(idealPosition, gridSize);
-    }
-
+    const position = startPosition + i * gridAlignedSpacing;
+    const snappedPosition = snapToGrid(position, gridSize);
     positions.push(snappedPosition);
   }
 

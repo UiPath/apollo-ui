@@ -445,7 +445,7 @@
   src: url("./material/MaterialIcons-Outlined.woff2") format("woff2");
 }
 
-.material-icons {
+:where(.material-icons) {
   font-family: "Material Icons";
   font-weight: normal;
   font-style: normal;
@@ -471,7 +471,7 @@
   font-feature-settings: "liga";
 }
 
-.material-icons-outlined {
+:where(.material-icons-outlined) {
   font-family: "Material Icons Outlined";
   font-weight: normal;
   font-style: normal;
@@ -507,7 +507,7 @@
     url("./apollo/apollo.woff") format("woff"), url("./apollo/apollo.ttf") format("truetype");
 }
 
-.apollo-icons {
+:where(.apollo-icons) {
   font-family: "apollo";
   font-weight: normal;
   font-style: normal;

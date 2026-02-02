@@ -57,7 +57,7 @@
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "typescript": "^5.9.3",
-    "vitest": "^4.0.5"
+    "vitest": "^4.0.14"
   },
   "peerDependencies": {
     "react": ">=18.3.0",

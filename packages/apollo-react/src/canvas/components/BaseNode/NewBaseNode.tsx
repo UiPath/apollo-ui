@@ -8,6 +8,7 @@ import {
 } from '@uipath/apollo-react/canvas/xyflow/react';
 import { ApIcon, ApTooltip, ApTypography } from '@uipath/apollo-react/material/components';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import type { HandleActionEvent } from '../ButtonHandle/ButtonHandle';
 import { useButtonHandles } from '../ButtonHandle/useButtonHandles';
 import { NodeToolbar } from '../Toolbar';
 import {
@@ -22,8 +23,8 @@ import type { NewBaseNodeData, NewBaseNodeDisplayProps, NodeAdornments } from '.
 
 // Internal component that expects display props as direct props
 const NewBaseNodeComponent = (
-  props: Omit<NodeProps<Node<NewBaseNodeData>>, 'data'> &
-    NewBaseNodeDisplayProps & { data?: NewBaseNodeData }
+  props: Partial<Omit<NodeProps<Node<NewBaseNodeData>>, 'data'>> &
+    NewBaseNodeDisplayProps & { data?: NewBaseNodeData; id: string }
 ) => {
   const {
     id,
@@ -90,6 +91,8 @@ const NewBaseNodeComponent = (
       ? 'var(--uix-canvas-background)'
       : finalDisplay.iconBackground;
   const displayCenterAdornment = finalDisplay.centerAdornmentComponent;
+  const displayFooter = finalDisplay.footerComponent;
+  const displayFooterVariant = finalDisplay.footerVariant;
 
   const isConnecting = useStore((state) => !!state.connectionClickStartHandle);
 
@@ -133,7 +136,7 @@ const NewBaseNodeComponent = (
 
   // Handle action callback
   const handleAction = useCallback(
-    (event: any) => {
+    (event: HandleActionEvent) => {
       // First, check if there's a global handler passed as prop
       if (onHandleAction) {
         onHandleAction(event);
@@ -184,7 +187,8 @@ const NewBaseNodeComponent = (
           <BaseIconWrapper
             backgroundColor="var(--uix-canvas-error-background)"
             shape="square"
-            nodeHeight={height}
+            height={height}
+            width={width ?? height}
           >
             <ApIcon color="var(--uix-canvas-error-icon)" name="error" size="32px" />
           </BaseIconWrapper>
@@ -217,12 +221,15 @@ const NewBaseNodeComponent = (
         width={width}
         height={height}
         backgroundColor={displayBackground}
+        hasFooter={!!displayFooter}
+        footerVariant={displayFooterVariant}
       >
         {icon && (
           <BaseIconWrapper
             shape={displayShape as 'square' | 'circle' | 'rectangle'}
             backgroundColor={displayIconBackground}
-            nodeHeight={height}
+            height={displayFooter ? undefined : height}
+            width={displayFooter ? undefined : (width ?? height)}
           >
             {icon}
           </BaseIconWrapper>
@@ -275,6 +282,11 @@ const NewBaseNodeComponent = (
             {displayCenterAdornment}
           </BaseTextContainer>
         )}
+        {displayFooter && (
+          <div style={{ flexBasis: '100%', paddingTop: '2px', minWidth: 0, overflow: 'hidden' }}>
+            {displayFooter}
+          </div>
+        )}
       </BaseContainer>
       {toolbarConfig && (
         <NodeToolbar nodeId={id} config={toolbarConfig} expanded={selected && !dragging} />
@@ -287,8 +299,8 @@ const NewBaseNodeComponent = (
 // Wrapper component that extracts display props from data for React Flow compatibility
 // Also supports direct props for standalone usage (non-React Flow components)
 const NewBaseNodeWrapper = (
-  props: Omit<NodeProps<Node<NewBaseNodeData>>, 'data'> &
-    NewBaseNodeDisplayProps & { data?: NewBaseNodeData }
+  props: Partial<Omit<NodeProps<Node<NewBaseNodeData>>, 'data'>> &
+    NewBaseNodeDisplayProps & { data?: NewBaseNodeData; id: string }
 ) => {
   const {
     data,
