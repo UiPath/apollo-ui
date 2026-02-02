@@ -41,10 +41,10 @@ export const StyledToolbarContainer = styled(motion.div, {
           default:
             return `
               top: -40px;
-              left: 0;
-              right: 0;
-              margin: 0 auto;
-              width: fit-content;
+              left: 50%;
+              margin-left: auto;
+              margin-right: auto;
+              translate: -50% 0;
               flex-direction: row;
             `;
         }

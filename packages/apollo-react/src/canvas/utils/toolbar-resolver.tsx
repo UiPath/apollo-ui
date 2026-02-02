@@ -37,8 +37,9 @@ const DEFAULT_ACTIONS_FOR_ALL_MODES: ModeToolbarConfig['actions'] = [
 const DEFAULT_MODE_TOOLBARS: Record<string, ModeToolbarConfig> = {
   design: {
     actions: [
-      { id: 'delete', icon: 'trash', label: 'Delete' },
+      { id: 'debug', icon: 'circle-play', label: 'Debug' },
       { id: 'duplicate', icon: 'copy', label: 'Duplicate' },
+      { id: 'delete', icon: 'trash', label: 'Delete' },
       { id: 'breakpoint', icon: 'circle', label: 'Toggle breakpoint' },
       ...DEFAULT_ACTIONS_FOR_ALL_MODES,
     ],

@@ -54,7 +54,7 @@ const NodeToolbarComponent = ({ nodeId, config, expanded, hidden }: NodeToolbarP
         <StyledToolbarContainer
           layout
           $position={config.position || 'top'}
-          $align={config.align || 'end'}
+          $align={config.align || 'center'}
           initial={toolbarAnimationVariants.initial}
           animate={toolbarAnimationVariants.animate}
           exit={toolbarAnimationVariants.exit}
