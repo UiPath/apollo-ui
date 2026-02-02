@@ -5,7 +5,6 @@ import { FontVariantToken } from '@uipath/apollo-react/core';
 import { ApButton, ApTypography } from '@uipath/apollo-react/material';
 import { useCallback, useState } from 'react';
 import type { IRawSpan } from '../../../types/TraceModels';
-import { NodeRegistryProvider } from '../../core/NodeRegistryProvider';
 import { StoryInfoPanel } from '../../storybook-utils';
 import {
   type AgentFlowProps,
@@ -18,26 +17,23 @@ import {
   ProjectType,
 } from '../../types';
 import { AgentFlow } from './AgentFlow';
-import { agentFlowManifest } from './agent-flow.manifest';
 
 const meta: Meta<typeof AgentFlow> = {
   title: 'Canvas/AgentFlow',
   component: AgentFlow,
   decorators: [
     (Story) => (
-      <NodeRegistryProvider manifest={agentFlowManifest}>
-        <div
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            width: '100%',
-            height: '100%',
-          }}
-        >
-          <Story />
-        </div>
-      </NodeRegistryProvider>
+      <div
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+        }}
+      >
+        <Story />
+      </div>
     ),
   ],
 };

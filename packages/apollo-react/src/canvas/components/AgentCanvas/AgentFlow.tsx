@@ -37,6 +37,8 @@ import { Edge } from './edges/Edge';
 import { AgentNodeElement } from './nodes/AgentNode';
 import { ResourceNode } from './nodes/ResourceNode';
 import { AgentFlowProvider, useAgentFlowStore } from './store/agent-flow-store';
+import { NodeRegistryProvider } from '../../core/NodeRegistryProvider';
+import { agentFlowManifest } from './agent-flow.manifest';
 
 const ToolbarContainer = styled.div`
   display: flex;
@@ -714,8 +716,10 @@ AgentFlowInner.displayName = 'AgentFlowInner';
 
 export const AgentFlow = (props: PropsWithChildren<AgentFlowProps>) => {
   return (
-    <AgentFlowProvider {...props}>
-      <AgentFlowInner {...props} />
-    </AgentFlowProvider>
+    <NodeRegistryProvider manifest={agentFlowManifest}>
+      <AgentFlowProvider {...props}>
+        <AgentFlowInner {...props} />
+      </AgentFlowProvider>
+    </NodeRegistryProvider>
   );
 };
