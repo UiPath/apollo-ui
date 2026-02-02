@@ -138,7 +138,7 @@ export const StageTaskGroup = styled.div<{ isParallel?: boolean }>`
 
 export const StageParallelLabel = styled.div`
   position: absolute;
-  left: -52px;
+  left: -48px;
   top: 50%;
   padding: 0px ${Padding.PadM};
   display: flex;
