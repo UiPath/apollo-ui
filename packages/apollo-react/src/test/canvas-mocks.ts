@@ -296,6 +296,7 @@ vi.mock('@uipath/apollo-core', async (importOriginal) => {
 
 // Mock sanitize-html
 vi.mock('sanitize-html', () => ({
+  // codeql[js/incomplete-multi-character-sanitization] - This is a test mock, not production sanitization
   default: (html: string) => html.replace(/<[^>]*>/g, ''),
 }));
 
