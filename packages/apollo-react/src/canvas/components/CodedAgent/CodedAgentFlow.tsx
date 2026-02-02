@@ -34,6 +34,8 @@ import { BaseNode } from '../BaseNode/BaseNode';
 import type { BaseNodeData } from '../BaseNode/BaseNode.types';
 import { CanvasPositionControls } from '../CanvasPositionControls';
 import type { HandleGroupManifest } from '../../schema/node-definition';
+import { NodeRegistryProvider } from '../../core/NodeRegistryProvider';
+import { codedAgentManifest } from './coded-agent.manifest';
 
 const LAYOUT_SPACING = [110, 80] as [number, number]; // Horizontal and vertical spacing for layout
 
@@ -540,8 +542,10 @@ const CodedAgentFlowInner = (props: CodedAgentFlowProps): ReactElement => {
 
 export const CodedAgentFlow = (props: CodedAgentFlowProps): ReactElement => {
   return (
-    <ReactFlowProvider>
-      <CodedAgentFlowInner {...props} />
-    </ReactFlowProvider>
+    <NodeRegistryProvider manifest={codedAgentManifest}>
+      <ReactFlowProvider>
+        <CodedAgentFlowInner {...props} />
+      </ReactFlowProvider>
+    </NodeRegistryProvider>
   );
 };

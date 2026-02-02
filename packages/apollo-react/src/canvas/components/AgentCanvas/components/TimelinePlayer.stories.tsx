@@ -4,7 +4,6 @@ import { ReactFlowProvider } from '@uipath/apollo-react/canvas/xyflow/react';
 import { useCallback, useState } from 'react';
 
 import type { IRawSpan } from '../../../../types/TraceModels';
-import { NodeRegistryProvider } from '../../../core/NodeRegistryProvider';
 import {
   type AgentFlowResource,
   type AgentFlowResourceNodeData,
@@ -12,7 +11,6 @@ import {
   ProjectType,
 } from '../../../types';
 import { AgentFlow } from '../AgentFlow';
-import { agentFlowManifest } from '../agent-flow.manifest';
 import { TimelinePlayer } from './TimelinePlayer';
 
 const meta: Meta<typeof TimelinePlayer> = {
@@ -388,33 +386,31 @@ const AgentFlowWithTimeline = ({
   }, []);
 
   return (
-    <NodeRegistryProvider manifest={agentFlowManifest}>
-      <ReactFlowProvider>
-        <Row w="100%" h="100%" style={{ position: 'relative' }}>
-          <div style={{ flex: 1, position: 'relative' }}>
-            <AgentFlow
-              allowDragging={false}
-              definition={sampleDefinition}
-              spans={spans}
-              name="Quick Query Agent"
-              description="Processes quick queries with context loading and response generation"
-              mode="view"
-              resources={resources}
-              activeResourceIds={activeResourceIds}
-              setSpanForSelectedNode={setSpanForSelectedNode}
-              getNodeFromSelectedSpan={getNodeFromSelectedSpan}
-              onAddBreakpoint={handleAddBreakpoint}
-              onRemoveBreakpoint={handleRemoveBreakpoint}
-              onAddGuardrail={handleAddGuardrail}
-              onAddResource={handleAddResourceRequest}
-              onRemoveResource={handleRemoveResource}
-              onSelectResource={handleSelectResource}
-              enableTimelinePlayer={enableTimelinePlayer}
-            />
-          </div>
-        </Row>
-      </ReactFlowProvider>
-    </NodeRegistryProvider>
+    <ReactFlowProvider>
+      <Row w="100%" h="100%" style={{ position: 'relative' }}>
+        <div style={{ flex: 1, position: 'relative' }}>
+          <AgentFlow
+            allowDragging={false}
+            definition={sampleDefinition}
+            spans={spans}
+            name="Quick Query Agent"
+            description="Processes quick queries with context loading and response generation"
+            mode="view"
+            resources={resources}
+            activeResourceIds={activeResourceIds}
+            setSpanForSelectedNode={setSpanForSelectedNode}
+            getNodeFromSelectedSpan={getNodeFromSelectedSpan}
+            onAddBreakpoint={handleAddBreakpoint}
+            onRemoveBreakpoint={handleRemoveBreakpoint}
+            onAddGuardrail={handleAddGuardrail}
+            onAddResource={handleAddResourceRequest}
+            onRemoveResource={handleRemoveResource}
+            onSelectResource={handleSelectResource}
+            enableTimelinePlayer={enableTimelinePlayer}
+          />
+        </div>
+      </Row>
+    </ReactFlowProvider>
   );
 };
 

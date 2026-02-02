@@ -2,9 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ReactElement } from 'react';
 import { render, screen, waitFor } from '../../utils/testing';
 import { BaseCanvasModeProvider } from '../BaseCanvas/BaseCanvasModeProvider';
-import { NodeRegistryProvider } from '../../core/NodeRegistryProvider';
 import { CodedAgentFlow } from './CodedAgentFlow';
-import { codedAgentManifest } from './coded-agent.manifest';
 
 // Mock BaseCanvas to avoid ReactFlow dependencies in tests
 vi.mock('../BaseCanvas', () => ({
@@ -128,11 +126,7 @@ vi.mock('mermaid', () => {
 
 // Test wrapper that provides required context
 const renderWithProviders = (ui: ReactElement) => {
-  return render(
-    <BaseCanvasModeProvider mode="design">
-      <NodeRegistryProvider manifest={codedAgentManifest}>{ui}</NodeRegistryProvider>
-    </BaseCanvasModeProvider>
-  );
+  return render(<BaseCanvasModeProvider mode="design">{ui}</BaseCanvasModeProvider>);
 };
 
 describe('CodedAgentFlow', () => {
