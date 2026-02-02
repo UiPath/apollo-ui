@@ -27,8 +27,8 @@ jobs:
           - Typecheck
           - Test Coverage
           - Build
-          - Full Audit
-          - Security Audit
+          - Audit All Dependencies
+          - Audit Production Dependencies
 
     steps:
       - name: Checkout code
@@ -104,15 +104,15 @@ jobs:
             pnpm build --affected
           fi
 
-      - name: Run Full Audit
-        if: matrix.check == 'Full Audit'
+      - name: Run Audit All Dependencies
+        if: matrix.check == 'Audit All Dependencies'
         run: |
           echo "📋 Running full dependency audit (all dev + prod)..."
           pnpm audit
           echo "✅ Full audit complete - see results above"
 
-      - name: Run Security Audit
-        if: matrix.check == 'Security Audit'
+      - name: Run Audit Production Dependencies
+        if: matrix.check == 'Audit Production Dependencies'
         run: |
           echo "🔒 Checking for vulnerabilities in production dependencies..."
           pnpm audit --prod
