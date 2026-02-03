@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.17.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.17.0...@uipath/apollo-react@3.17.1) (2026-02-03)
+
+### Bug Fixes
+
+* **apollo-react:** integrate NodeRegistryProvider into AgentFlow [AG-708] ([611deed](https://github.com/UiPath/apollo-ui/commit/611deede2dac3cf213bac60e8645b4e1a8479aed))
+
 ## [@uipath/apollo-react-v3.17.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.16.0...@uipath/apollo-react@3.17.0) (2026-02-02)
 
 ### Features
