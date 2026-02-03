@@ -1280,6 +1280,78 @@ console.log(processUserData(exampleUser, { source: 'web', ipAddress: '192.168.1.
 		resourcePageSize,
 	]);
 
+	const sendResponseWithVariables = () => {
+		chatService?.sendResponse({
+			content: `I will update [[resource-token:{"id":"var-email","type":"variable","icon":"mail","displayName":"email"}]] and [[resource-token:{"id":"var-long","type":"variable","icon":"data_object","displayName":"this_is_a_very_long_variable_name_that_should_test_truncation"}]] in the system, then notify [[resource-token:{"id":"var-username","type":"variable","icon":"person","displayName":"username"}]] when complete.`,
+			created_at: "02-02-2026",
+			widget: "default",
+		});
+		console.log("Sent response with resource tokens");
+	};
+
+	// Stream with Resource Tokens - demonstrates buffering of incomplete tokens
+	const streamWithResourceTokens = () => {
+		const messageId = `streaming-resources-${Date.now()}`;
+		let chunkIndex = 0;
+
+		const chunks = [
+			"I will update the ",
+			"[[resource-token:", // Start of token (incomplete)
+			'{"id":"var-', // JSON starts (still incomplete)
+			'email","type":"variable",', // More JSON
+			'"icon":"mail","displayName":"email"}]]', // Token completes
+			" variable in the system.\n\n",
+			"Then I'll notify ",
+			"[[resource-token:{", // Another token starts
+			'"id":"var-username",',
+			'"type":"variable","icon":"person",',
+			'"displayName":"username"}]]', // Token completes
+			" when the process is complete.\n\n",
+			"I'll also update ",
+			"[[resource-token:{",
+			'"id":"var-long","type":"variable",',
+			'"icon":"data_object","displayName":',
+			'"this_is_a_very_long_variable_name_that_should_test_truncation"}]]', // Long label token
+			" for testing.\n\n",
+			"Finally, I'll log the result to ",
+			'[[resource-token:{"id":"var-log","type":"variable","icon":"description","displayName":"activity_log"}]]', // Complete token in one chunk
+			".",
+		];
+
+		const streamChunk = () => {
+			if (chunkIndex >= chunks.length) {
+				return;
+			}
+
+			const chunk = chunks[chunkIndex] ?? "";
+			const isDone = chunkIndex === chunks.length - 1;
+
+			chatService?.sendResponse({
+				id: messageId,
+				content: chunk,
+				stream: true,
+				done: isDone,
+				created_at: "02-02-2026",
+				widget: "default",
+			});
+
+			const preview = chunk.slice(0, 30);
+			const suffix = chunk.length > 30 ? "..." : "";
+			console.log(
+				`[StreamWithResourceTokens] Chunk ${chunkIndex + 1}/${chunks.length}: "${preview}${suffix}" (done: ${isDone})`,
+			);
+
+			chunkIndex++;
+
+			if (!isDone) {
+				// Simulate network delay between chunks
+				setTimeout(streamChunk, 150);
+			}
+		};
+
+		streamChunk();
+	};
+
 	// Stream with Citations
 	const streamWithCitations = () => {
 		// Generate a unique message ID for this streaming response
@@ -1541,8 +1613,9 @@ console.log(processUserData(exampleUser, { source: 'web', ipAddress: '192.168.1.
 						onChange={(e) => setResourcePageSize(Number(e.target.value))}
 						style={{ width: "80px" }}
 					/>
-					<InfoText style={{ marginTop: "4px", fontSize: "11px" }}>
-						Check console for pagination logs
+					<InfoText>
+						Type @ in the chat input to trigger the picker. Test keyboard
+						navigation (↑/↓), selection (Enter/Tab), and escape behavior.
 					</InfoText>
 				</Section>
 
@@ -1625,6 +1698,9 @@ console.log(processUserData(exampleUser, { source: 'web', ipAddress: '192.168.1.
 					<ButtonGroup>
 						<Button onClick={sendResponseWithActions}>With Actions</Button>
 						<Button onClick={sendResponseWithCitations}>With Citations</Button>
+						<Button onClick={sendResponseWithVariables}>
+							With Resource Tokens
+						</Button>
 					</ButtonGroup>
 					<ButtonGroup>
 						<Button onClick={sendCodeBlock}>Code Block</Button>
@@ -1660,8 +1736,14 @@ console.log(processUserData(exampleUser, { source: 'web', ipAddress: '192.168.1.
 					<ButtonGroup>
 						<Button onClick={sendStreamingResponse}>Stream Response</Button>
 						<Button onClick={streamWithCitations}>Stream With Citations</Button>
+						<Button onClick={streamWithResourceTokens}>
+							Stream Resource Tokens
+						</Button>
 					</ButtonGroup>
-					<InfoText>Streams the text word by word</InfoText>
+					<InfoText>
+						Streams text progressively. "Stream Resource Tokens" demonstrates
+						buffering of incomplete tokens to prevent flickering.
+					</InfoText>
 				</Section>
 
 				<Section>
