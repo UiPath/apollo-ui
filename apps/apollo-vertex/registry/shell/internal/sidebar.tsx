@@ -1,12 +1,5 @@
 import { motion } from "framer-motion";
-import {
-  BarChart3,
-  FolderOpen,
-  HelpCircle,
-  Home,
-  Settings,
-  Users,
-} from "lucide-react";
+import { BarChart3, FolderOpen, Home, Settings, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "@/registry/theme-provider/theme-toggle";
 import { useLocalStorage } from "@/registry/use-local-storage/use-local-storage";

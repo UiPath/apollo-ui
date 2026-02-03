@@ -4,6 +4,10 @@ name: "CodeQL Config"
 queries:
   - uses: security-and-quality
 
+# Enable inline suppression comments (// codeql[query-id])
+packs:
+  - codeql/javascript-queries:AlertSuppression.ql
+
 paths-ignore:
   - '**/test/**'
   - '**/*.test.ts'

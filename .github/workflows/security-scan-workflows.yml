@@ -34,3 +34,5 @@ jobs:
           advanced-security: true
           min-severity: medium
           persona: regular
+        env:
+          ZIZMOR_CONFIG: zizmor.yml

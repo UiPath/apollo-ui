@@ -14,7 +14,6 @@ import { useLocalStorage } from "@/registry/use-local-storage/use-local-storage"
 import {
   fastFadeTransition,
   iconHoverScale,
-  sidebarSpring,
   textFadeVariants,
 } from "./animations";
 
