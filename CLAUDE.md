@@ -87,7 +87,7 @@ This is the **UiPath/apollo-ui** public repository - the open-source design syst
 
 ### Testing & Documentation
 
-- **Storybook 9**: Component documentation and visual testing
+- **Storybook 10**: Component documentation and visual testing
 - **Playwright**: Visual regression testing
 - **Unit tests**: Component behavior verification
 - **GitHub Actions**: CI/CD automation

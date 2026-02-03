@@ -1222,7 +1222,9 @@ function createUI() {
   // Control panel
   const controlPanel = document.createElement('div');
   controlPanel.className = 'control-panel';
-  // codeql[js/xss-through-dom] - This is dev-only showcase code with trusted static content
+  // Dev-only showcase UI - uses trusted static markup defined in this file, not user input
+  // This file is only loaded in local development (not in production builds)
+  // lgtm[js/xss-through-dom]
   controlPanel.innerHTML = `
     <h2>ApChat Showcase</h2>
 

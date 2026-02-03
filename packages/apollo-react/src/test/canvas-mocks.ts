@@ -295,8 +295,10 @@ vi.mock('@uipath/apollo-core', async (importOriginal) => {
 });
 
 // Mock sanitize-html
+// Test mock only - simplified HTML stripping for test environment, not actual sanitization
+// Production code uses the real sanitize-html library with proper configuration
 vi.mock('sanitize-html', () => ({
-  // codeql[js/incomplete-multi-character-sanitization] - This is a test mock, not production sanitization
+  // lgtm[js/incomplete-multi-character-sanitization]
   default: (html: string) => html.replace(/<[^>]*>/g, ''),
 }));
 

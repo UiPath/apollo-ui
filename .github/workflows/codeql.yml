@@ -1,0 +1,60 @@
+# For most projects, this workflow file will not need changing; you simply need
+# to commit it to your repository.
+#
+# ******** NOTE ********
+# This workflow includes alert suppression support via lgtm/codeql comments.
+# See: https://docs.github.com/en/code-security/code-scanning
+#
+name: CodeQL Analysis
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: '17 4 * * 5' # Weekly on Friday at 4:17 AM UTC
+
+permissions:
+  contents: read
+  security-events: write
+  actions: read
+  packages: read # Required to fetch internal or private CodeQL packs
+
+concurrency:
+  group: codeql-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  analyze:
+    name: Analyze (${{ matrix.language }})
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - language: actions
+            build-mode: none
+          - language: javascript-typescript
+            build-mode: none
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          persist-credentials: false
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@2588666de8825e1e9dc4e2329a4c985457d55b32 # v3
+        with:
+          languages: ${{ matrix.language }}
+          build-mode: ${{ matrix.build-mode }}
+          queries: security-and-quality
+          # Enable alert suppression support for lgtm/codeql comments (JavaScript only)
+          packs: ${{ matrix.language == 'javascript-typescript' && '+codeql/javascript-queries:AlertSuppression.ql' || '' }}
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@2588666de8825e1e9dc4e2329a4c985457d55b32 # v3
+        with:
+          category: /language:${{ matrix.language }}
