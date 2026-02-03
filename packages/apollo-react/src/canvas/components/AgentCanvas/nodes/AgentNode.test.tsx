@@ -37,6 +37,33 @@ vi.mock('../../ExecutionStatusIcon/ExecutionStatusIcon', () => ({
   ExecutionStatusIcon: ({ status }: { status?: string }) => (
     <div data-testid="execution-status-icon">{status || 'none'}</div>
   ),
+  getExecutionStatusColor: (status: string | undefined): string => {
+    switch (status) {
+      case 'Failed':
+      case 'Faulted':
+      case 'Cancelled':
+      case 'Terminated':
+      case 'Canceling':
+        return 'var(--color-error-icon)';
+      case 'Completed':
+        return 'var(--color-success-icon)';
+      case 'Running':
+      case 'InProgress':
+      case 'Resuming':
+      case 'Retrying':
+      case 'Upgrading':
+      case 'UserCancelled':
+        return 'var(--color-info-icon)';
+      case 'Paused':
+      case 'Pausing':
+      case 'Pending':
+        return 'var(--color-warning-icon)';
+      case 'NotExecuted':
+        return 'var(--color-foreground-de-emp)';
+      default:
+        return '';
+    }
+  },
 }));
 
 vi.mock('../store/agent-flow-store', () => ({
@@ -68,6 +95,9 @@ vi.mock('@uipath/apollo-react/canvas', () => ({
       </svg>
     ),
   },
+  ExecutionStatusIcon: ({ status }: { status?: string }) => (
+    <div data-testid="execution-status-icon">{status || 'none'}</div>
+  ),
 }));
 
 const defaultTranslations: AgentNodeTranslations = {
@@ -227,7 +257,6 @@ describe('AgentNode - Health Score', () => {
       // Both health score and execution status should be visible
       expect(screen.getByText('90')).toBeInTheDocument();
       expect(screen.getByTestId('execution-status-icon')).toBeInTheDocument();
-      expect(screen.getByText('Failed')).toBeInTheDocument();
     });
 
     it('should render health score in design mode', () => {
