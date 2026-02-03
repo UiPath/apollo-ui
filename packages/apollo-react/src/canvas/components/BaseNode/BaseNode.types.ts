@@ -3,6 +3,8 @@ import type { NodeShape } from '../../schema';
 import type { ExecutionState } from '../../types/execution';
 import type { HandleActionEvent } from '../ButtonHandle/ButtonHandle';
 import type { NodeToolbarConfig } from '../Toolbar';
+import type { Node, NodeProps } from '@xyflow/react';
+import type { DisplaySlotConfigs, AdornmentSlotConfigs } from '../../schema/slot-config';
 
 export type FooterVariant = 'none' | 'button' | 'single' | 'double';
 
@@ -11,19 +13,20 @@ export interface BaseNodeData extends Record<string, unknown> {
 
   display?: {
     label?: string;
-    subLabel?: React.ReactNode;
+    subLabel?: string;
     shape?: NodeShape;
     color?: string;
     background?: string;
     icon?: string;
-    iconElement?: React.ReactNode;
     iconBackground?: string;
     iconColor?: string;
-    labelTooltip?: string;
-    labelBackgroundColor?: string;
-    centerAdornmentComponent?: React.ReactNode;
-    footerComponent?: React.ReactNode;
-    footerVariant?: FooterVariant;
+
+    /**
+     * Serializable slot configurations for custom rendering
+     * Describes what to render in each display slot using JSON-serializable configs.
+     * @since Phase 1
+     */
+    slotConfigs?: DisplaySlotConfigs;
   };
 
   /**
@@ -32,6 +35,105 @@ export interface BaseNodeData extends Record<string, unknown> {
    * @default false
    */
   useSmartHandles?: boolean;
+
+  /**
+   * NEW: Serializable adornment configurations (replaces NodeAdornments)
+   * Describes what to render in each corner slot using JSON-serializable configs.
+   * Takes precedence over legacy adornments ReactNode props.
+   * @since Phase 1 - Backward compatible addition
+   */
+  adornmentConfigs?: AdornmentSlotConfigs;
+}
+
+export interface NodeAdornments {
+  topLeft?: React.ReactNode;
+  topRight?: React.ReactNode;
+  bottomLeft?: React.ReactNode;
+  bottomRight?: React.ReactNode;
+}
+
+export interface NodeStatusContext {
+  nodeId: string;
+  executionState?: ExecutionState;
+  isHovered?: boolean;
+  isConnecting?: boolean;
+  isSelected?: boolean;
+  isDragging?: boolean;
+}
+
+/**
+ * Extended props interface for BaseNode component
+ *
+ * Separates concerns:
+ * - node.data: Serializable business data (labels, configs, state)
+ * - component props: Runtime behavior (callbacks, event handlers)
+ *
+ * This follows XYFlow's design pattern where:
+ * - node.data = persistent state (can be saved/loaded from JSON)
+ * - component props = ephemeral behavior (callbacks, functions)
+ *
+ * Example: `selected` and `dragging` are props, not data, because they're
+ * runtime UI state, not business data to be persisted.
+ *
+ * @since Phase 1 - Props for runtime callbacks (moved from data)
+ */
+export interface BaseNodeComponentProps extends NodeProps<Node<BaseNodeData>> {
+  // ========================================
+  // Callbacks (Runtime Behavior)
+  // ========================================
+
+  /**
+   * Runtime callback for handle button actions.
+   * Invoked when user clicks a handle button (e.g., add resource button).
+   */
+  onHandleAction?: (event: HandleActionEvent) => void;
+
+  /**
+   * Custom function to determine when add button should be shown.
+   * If not provided, uses default logic (showAddButton && selected).
+   */
+  shouldShowAddButtonFn?: (opts: { showAddButton: boolean; selected: boolean }) => boolean;
+
+  /**
+   * Custom function to determine when button handle notches should be shown.
+   * If not provided, uses default logic based on connection/selection/hover state.
+   */
+  shouldShowButtonHandleNotchesFn?: (opts: {
+    isConnecting: boolean;
+    isSelected: boolean;
+    isHovered: boolean;
+  }) => boolean;
+
+  // ========================================
+  // UI Configuration (Non-Serializable)
+  // ========================================
+
+  /**
+   * Runtime toolbar configuration.
+   * Contains non-serializable content (ReactNode icons, onAction callbacks).
+   * - undefined: use manifest default toolbar
+   * - null: explicitly disable toolbar (no toolbar shown)
+   * - object: use provided toolbar configuration
+   */
+  toolbarConfig?: NodeToolbarConfig | null;
+
+  /**
+   * Runtime handle configurations that override manifest-defined handles.
+   * Allows dynamic handle positioning and visibility based on runtime state.
+   */
+  handleConfigurations?: HandleGroupManifest[];
+
+  /**
+   * Legacy ReactNode adornments prop (kept for AgentFlow backward compatibility).
+   *
+   * This prop allows passing ReactNode adornments directly as a component prop.
+   * Mainly used by AgentFlow for complex adornment rendering.
+   */
+  adornments?: NodeAdornments;
+
+  // ========================================
+  // Visual State (Runtime Props)
+  // ========================================
 
   /**
    * Visual suggestion type for the node (add, update, delete).
@@ -51,64 +153,40 @@ export interface BaseNodeData extends Record<string, unknown> {
    */
   executionStatusOverride?: string;
 
-  /**
-   * Runtime callback for handle button actions.
-   * Called when user clicks a handle button.
-   * @param event Handle action event with details
-   */
-  onHandleAction?: (event: HandleActionEvent) => void;
+  // ========================================
+  // Display Customization (Runtime Props)
+  // ========================================
 
   /**
-   * Custom function to determine when add button should be shown.
-   * If not provided, uses default logic (showAddButton && selected).
-   * @param opts Object with showAddButton and selected flags
-   * @returns true if add button should be shown
+   * Tooltip text shown on label hover.
    */
-  shouldShowAddButtonFn?: (opts: { showAddButton: boolean; selected: boolean }) => boolean;
+  labelTooltip?: string;
 
   /**
-   * Custom function to determine when button handle notches should be shown.
-   * If not provided, uses default logic (showButton && selected).
-   * @param opts Object with showButton and selected flags
-   * @returns true if button handle should be shown
+   * Background color for the label area.
    */
-  shouldShowButtonHandleNotchesFn?: (opts: {
-    isConnecting: boolean;
-    isSelected: boolean;
-    isHovered: boolean;
-  }) => boolean;
+  labelBackgroundColor?: string;
 
   /**
-   * Runtime handle configurations that override manifest-defined handles.
-   * Allows dynamic handle positioning and visibility based on runtime state.
+   * Footer display variant (controls footer styling/layout).
    */
-  handleConfigurations?: HandleGroupManifest[];
+  footerVariant?: FooterVariant;
 
   /**
-   * Runtime toolbar configuration that overrides manifest-defined toolbar.
-   * Allows dynamic toolbar actions based on runtime state.
+   * Custom footer content to render (overrides slot config).
+   * Useful for complex footer components like instructions preview.
    */
-  toolbarConfig?: NodeToolbarConfig;
+  footerComponent?: React.ReactNode;
 
   /**
-   * Runtime adornments that override manifest-defined adornments.
-   * Allows dynamic badges/icons in node corners based on runtime state.
+   * Custom subLabel content to render (overrides string subLabel from data).
+   * Useful for composite sublabels with badges or icons.
    */
-  adornments?: NodeAdornments;
-}
+  subLabelComponent?: React.ReactNode;
 
-export interface NodeAdornments {
-  topLeft?: React.ReactNode;
-  topRight?: React.ReactNode;
-  bottomLeft?: React.ReactNode;
-  bottomRight?: React.ReactNode;
-}
-
-export interface NodeStatusContext {
-  nodeId: string;
-  executionState?: ExecutionState;
-  isHovered?: boolean;
-  isConnecting?: boolean;
-  isSelected?: boolean;
-  isDragging?: boolean;
+  /**
+   * Custom icon content to render (overrides icon from data and manifest).
+   * Useful for dynamic icons that depend on node data (e.g., tool-specific icons).
+   */
+  iconComponent?: React.ReactNode;
 }

@@ -179,7 +179,6 @@ const createCodedAgentNodeWrapper = (
           ...nodeData,
           parameters: {},
           display: {
-            iconElement: <Icons.CodedAgentIcon w={40} h={40} />,
             label: nodeData.label,
             subLabel: translations.codedAgentStep,
             shape: 'rectangle',
@@ -197,7 +196,6 @@ const createCodedAgentNodeWrapper = (
 
 const CodedResourceNodeElement = memo(({ data, selected, id, ...nodeProps }: NodeProps) => {
   const nodeData = data as unknown as CodedNodeData & { type?: string };
-  const label = nodeData.label.toLowerCase();
 
   const executionStatus = useMemo(() => {
     if (nodeData.hasError) return 'Failed';
@@ -205,22 +203,6 @@ const CodedResourceNodeElement = memo(({ data, selected, id, ...nodeProps }: Nod
     if (nodeData.hasRunning) return 'Running';
     return undefined;
   }, [nodeData.hasError, nodeData.hasSuccess, nodeData.hasRunning]);
-
-  // Determine icon based on label content or type
-  const resourceIcon = useMemo(() => {
-    const resourceType = nodeData.type || '';
-
-    if (resourceType === 'tool' || label.includes('tool') || label.includes('function')) {
-      return <ApIcon name="build" size="40px" />;
-    }
-    if (resourceType === 'context' || label.includes('context') || label.includes('knowledge')) {
-      return <ApIcon name="account_tree" size="40px" />;
-    }
-    if (resourceType === 'escalation' || label.includes('escalation') || label.includes('human')) {
-      return <ApIcon name="person" size="40px" />;
-    }
-    return <ApIcon name="chat" size="40px" />;
-  }, [label, nodeData.type]);
 
   const statusAdornment = useMemo((): React.ReactNode => {
     if (nodeData.hasError)
@@ -248,7 +230,6 @@ const CodedResourceNodeElement = memo(({ data, selected, id, ...nodeProps }: Nod
           ...nodeData,
           parameters: {},
           display: {
-            iconElement: resourceIcon,
             label: undefined, // Label is rendered via TextContainer below
             shape: 'circle',
           },
@@ -289,9 +270,6 @@ const CodedFlowNodeElement = memo(({ data, selected, id, ...nodeProps }: NodePro
             ...nodeData,
             parameters: {},
             display: {
-              iconElement: (
-                <ApIcon variant="outlined" name={isStart ? 'circle' : 'trip_origin'} size="40px" />
-              ),
               label: undefined, // Label is rendered via TextContainer below
               shape: 'square',
             },

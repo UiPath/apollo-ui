@@ -14,7 +14,6 @@ import { BaseNode } from '../../BaseNode/BaseNode';
 import type { BaseNodeData } from '../../BaseNode/BaseNode.types';
 import type { ButtonHandleConfig, HandleActionEvent } from '../../ButtonHandle/ButtonHandle';
 import type { HandleGroupManifest } from '../../../schema/node-definition';
-import { ExecutionStatusIcon } from '../../ExecutionStatusIcon/ExecutionStatusIcon';
 import type { NodeToolbarConfig, ToolbarAction } from '../../Toolbar';
 import { ResourceNodeType } from '../AgentFlow.constants';
 import { useAgentFlowStore } from '../store/agent-flow-store';
@@ -37,8 +36,6 @@ import {
   SettingsSectionValue,
   SubLabelContainer,
 } from './AgentNode.styles';
-
-const { ConversationalAgentIcon, AutonomousAgentIcon } = Icons;
 
 interface AgentNodeData extends BaseNodeData {
   name: string;
@@ -120,6 +117,16 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
   const isConversational =
     (definition?.metadata as Record<string, unknown>)?.isConversational === true;
   const suggestTranslations = suggestionTranslations ?? DefaultSuggestionTranslations;
+
+  // Conditional icon based on agent type
+  const agentIcon = useMemo(() => {
+    if (isConversational) {
+      return (
+        <Icons.ConversationalAgentIcon color="var(--uix-canvas-foreground-de-emp)" w={32} h={32} />
+      );
+    }
+    return <Icons.AutonomousAgentIcon color="var(--uix-canvas-foreground-de-emp)" w={32} h={32} />;
+  }, [isConversational]);
 
   // Extract settings from definition
   const settings = definition?.settings as
@@ -268,24 +275,13 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
     translations,
   ]);
 
-  const agentIcon = useMemo(() => {
-    if (isConversational) {
-      return <ConversationalAgentIcon color="var(--uix-canvas-foreground-de-emp)" w={32} h={32} />;
-    }
-    return <AutonomousAgentIcon color="var(--uix-canvas-foreground-de-emp)" w={32} h={32} />;
-  }, [isConversational]);
-
-  const statusAdornment = useMemo((): React.ReactNode => {
-    return <ExecutionStatusIcon status={executionStatus} size={16} />;
-  }, [executionStatus]);
-
   const healthScoreBadge = useMemo(() => {
     if (healthScore === undefined) {
       return null;
     }
     return (
       <HealthScoreBadge
-        onClick={(e) => {
+        onClick={(e: React.MouseEvent) => {
           if (onHealthScoreClick) {
             e.stopPropagation();
             onHealthScoreClick();
@@ -297,6 +293,24 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
       </HealthScoreBadge>
     );
   }, [healthScore, onHealthScoreClick]);
+
+  const subLabelWithHealthScore = useMemo(() => {
+    const baseSubLabel = isConversational
+      ? translations.conversationalAgent
+      : translations.autonomousAgent;
+
+    if (!healthScoreBadge) {
+      return baseSubLabel;
+    }
+
+    // Return composite element with both text and badge
+    return (
+      <SubLabelContainer>
+        <span>{baseSubLabel}</span>
+        {healthScoreBadge}
+      </SubLabelContainer>
+    );
+  }, [isConversational, translations, healthScoreBadge]);
 
   const { instructionsFooter, footerVariant } = useMemo((): {
     instructionsFooter: React.ReactNode;
@@ -370,14 +384,14 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
     [actOnSuggestion]
   );
 
-  const toolbarConfig = useMemo((): NodeToolbarConfig | undefined => {
+  const toolbarConfig = useMemo((): NodeToolbarConfig | null | undefined => {
     if (mode === 'view') {
-      return undefined;
+      return null; // Explicitly disable toolbar in view mode
     }
 
     // If this is a suggestion, show accept/reject actions only if version it's not "0.0.1"
     if (isSuggestion && suggestionId) {
-      if (suggestionGroupVersion === '0.0.1') return undefined;
+      if (suggestionGroupVersion === '0.0.1') return null;
       const rejectAction: ToolbarAction = {
         id: 'reject-suggestion',
         icon: 'close',
@@ -403,7 +417,7 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
       };
     }
 
-    return undefined;
+    return null; // Explicitly disable toolbar for regular agent nodes
   }, [
     mode,
     isSuggestion,
@@ -412,22 +426,6 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
     suggestTranslations,
     handleActOnSuggestion,
   ]);
-
-  const suggestionAdornment = useMemo((): React.ReactNode => {
-    if (!isSuggestion) return undefined;
-    let iconName = 'swap_horizontal_circle';
-    let color = 'var(--uix-canvas-warning-icon)';
-
-    if (suggestionType === 'add') {
-      iconName = 'add_circle';
-      color = 'var(--uix-canvas-success-icon)';
-    } else if (suggestionType === 'delete') {
-      iconName = 'remove_circle';
-      color = 'var(--uix-canvas-error-icon)';
-    }
-
-    return <ApIcon variant="normal" name={iconName} size="18px" color={color} />;
-  }, [isSuggestion, suggestionType]);
 
   const settingsPreviewContent = useMemo(() => {
     const systemPrompt = data.instructions?.system ?? '';
@@ -494,32 +492,27 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
         data={{
           ...data,
           display: {
-            iconElement: agentIcon,
             label: name,
-            subLabel: (
-              <SubLabelContainer>
-                {isConversational ? translations.conversationalAgent : translations.autonomousAgent}
-                {healthScoreBadge}
-              </SubLabelContainer>
-            ),
+            subLabel: isConversational
+              ? translations.conversationalAgent
+              : translations.autonomousAgent,
             shape: 'rectangle',
             background: 'var(--uix-canvas-background)',
             iconBackground: 'var(--uix-canvas-background-secondary)',
-            footerComponent: instructionsFooter,
-            footerVariant,
           },
-          executionStatusOverride: executionStatus,
-          suggestionType: suggestionType,
-          handleConfigurations: handleConfigurations,
-          toolbarConfig: toolbarConfig,
-          adornments: {
-            topRight: statusAdornment,
-            bottomLeft: suggestionAdornment,
-          },
-          shouldShowAddButtonFn: shouldShowAddButtonFn,
-          shouldShowButtonHandleNotchesFn: () => true,
         }}
         selected={selected}
+        // Runtime customization props (not in data)
+        executionStatusOverride={executionStatus}
+        suggestionType={suggestionType}
+        handleConfigurations={handleConfigurations}
+        toolbarConfig={toolbarConfig}
+        footerVariant={footerVariant}
+        iconComponent={agentIcon}
+        footerComponent={instructionsFooter}
+        subLabelComponent={subLabelWithHealthScore}
+        shouldShowAddButtonFn={shouldShowAddButtonFn}
+        shouldShowButtonHandleNotchesFn={() => true}
       />
       <FloatingCanvasPanel
         open={showSettingsPreview}

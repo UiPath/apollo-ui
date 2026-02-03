@@ -10,7 +10,6 @@ import { ApIcon } from '@uipath/apollo-react/material/components';
 import { useCallback, useMemo } from 'react';
 import { allNodeManifests, StoryInfoPanel, useCanvasStory } from '../../storybook-utils';
 import { DefaultCanvasTranslations } from '../../types';
-import { getIcon } from '../../utils/icon-registry';
 import { BaseCanvas } from '../BaseCanvas';
 import { BaseNode } from '../BaseNode/BaseNode';
 import type { BaseNodeData } from '../BaseNode/BaseNode.types';
@@ -238,8 +237,6 @@ function CollapsibleAgentNode(props: NodeProps<Node<CollapsibleAgentNodeData>>) 
     [collapsed]
   );
 
-  const AgentIcon = getIcon(agentManifest?.display.icon ?? 'uipath.agent');
-
   return (
     <BaseNode
       {...nodeProps}
@@ -250,14 +247,13 @@ function CollapsibleAgentNode(props: NodeProps<Node<CollapsibleAgentNodeData>>) 
         ...data,
         parameters: data?.parameters ?? {},
         display: {
-          iconElement: <AgentIcon />,
           label,
           shape: collapsed ? 'square' : (agentManifest?.display.shape ?? 'rectangle'),
           iconBackground: agentManifest?.display.iconBackground,
         },
-        handleConfigurations,
-        toolbarConfig,
       }}
+      handleConfigurations={handleConfigurations}
+      toolbarConfig={toolbarConfig}
     />
   );
 }

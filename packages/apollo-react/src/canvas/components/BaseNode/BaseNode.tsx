@@ -1,5 +1,5 @@
 import { cx } from '@uipath/apollo-react/canvas/utils';
-import type { Node, NodeProps, ReactFlowState } from '@uipath/apollo-react/canvas/xyflow/react';
+import type { ReactFlowState } from '@uipath/apollo-react/canvas/xyflow/react';
 import {
   Position,
   useReactFlow,
@@ -31,13 +31,42 @@ import {
   BaseSubHeader,
   BaseTextContainer,
 } from './BaseNode.styles';
-import type { BaseNodeData, FooterVariant, NodeStatusContext } from './BaseNode.types';
+import type { BaseNodeComponentProps, FooterVariant, NodeStatusContext } from './BaseNode.types';
 import { NodeLabel } from './NodeLabel';
+import { useSlotRegistry, type SlotRenderContext } from '../../core/SlotRegistry';
+import { resolveSlot } from '../../utils/slot-resolver';
 
 const selectIsConnecting = (state: ReactFlowState) => !!state.connectionClickStartHandle;
 
-const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
-  const { type, data, selected, id, dragging, width, height } = props;
+const BaseNodeComponent = (props: BaseNodeComponentProps) => {
+  const {
+    type,
+    data,
+    selected,
+    id,
+    dragging,
+    width,
+    height,
+    // Runtime callback props
+    onHandleAction: onHandleActionProp,
+    shouldShowAddButtonFn: shouldShowAddButtonFnProp,
+    shouldShowButtonHandleNotchesFn: shouldShowButtonHandleNotchesFnProp,
+    toolbarConfig: toolbarConfigProp,
+    // UI configuration props
+    handleConfigurations: handleConfigurationsProp,
+    adornments: adornmentsProp,
+    // Visual state props
+    suggestionType,
+    disabled,
+    executionStatusOverride,
+    // Display customization props
+    labelTooltip,
+    labelBackgroundColor,
+    footerVariant,
+    footerComponent,
+    subLabelComponent,
+    iconComponent,
+  } = props;
 
   const updateNodeInternals = useUpdateNodeInternals();
   const { updateNodeData, updateNode } = useReactFlow();
@@ -58,6 +87,9 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
   const isConnecting = useStore(selectIsConnecting);
   const { multipleNodesSelected } = useSelectionState();
 
+  // Get slot registry for custom renderers
+  const slotRegistry = useSlotRegistry();
+
   // Get manifest and resolve with instance data
   const manifest = useMemo(() => nodeTypeRegistry.getManifest(type), [type, nodeTypeRegistry]);
 
@@ -73,13 +105,21 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
     [id, executionState, isConnecting, selected, dragging, mode]
   );
 
-  // Extract data fields with proper types from BaseNodeData interface
-  const suggestionType = data.suggestionType;
-  const disabled = data.disabled;
-  const executionStatusOverride = data.executionStatusOverride;
-  const onHandleActionCallback = data.onHandleAction;
-  const shouldShowAddButtonFn = data.shouldShowAddButtonFn;
-  const shouldShowButtonHandleNotchesFn = data.shouldShowButtonHandleNotchesFn;
+  // Create slot render context (used for resolving slot configs)
+  const slotRenderContext: SlotRenderContext = useMemo(
+    () => ({
+      nodeId: id,
+      selected,
+      executionState,
+      mode,
+    }),
+    [id, selected, executionState, mode]
+  );
+
+  // Callbacks: Use props only (no longer in data)
+  const onHandleActionCallback = onHandleActionProp;
+  const shouldShowAddButtonFn = shouldShowAddButtonFnProp;
+  const shouldShowButtonHandleNotchesFn = shouldShowButtonHandleNotchesFnProp;
 
   // Use executionStatusOverride if provided, otherwise use hook value
   const executionStatus =
@@ -91,23 +131,39 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
     [manifest, data.display]
   );
 
-  // Use iconElement if provided in data, otherwise resolve icon from registry
-  const iconElement = data.display?.iconElement;
+  // Icon resolution with priority: slotConfigs > icon string
   const Icon = useMemo(() => {
-    if (iconElement) return iconElement;
-    const IconComponent = getIcon(display.icon);
-    return IconComponent ? <IconComponent /> : null;
-  }, [iconElement, display.icon]);
-
-  // Resolve handles from instance data or manifest
-  // Instance handleConfigurations take precedence over manifest
-  const handleConfigurations = useMemo((): HandleGroupManifest[] => {
-    // Check if node data has handleConfigurations override
-    const dataHandleConfigs = data.handleConfigurations;
-    if (dataHandleConfigs && Array.isArray(dataHandleConfigs)) {
-      return dataHandleConfigs;
+    // Priority 1: Component prop (e.g., dynamic tool icon)
+    if (iconComponent !== undefined) {
+      return iconComponent;
     }
 
+    // Priority 2: Slot config
+    const iconSlotConfig = data.display?.slotConfigs?.icon;
+    if (iconSlotConfig) {
+      return resolveSlot(iconSlotConfig, slotRenderContext, slotRegistry);
+    }
+
+    // Priority 3: Icon string (registry lookup)
+    const IconComponent = getIcon(display.icon);
+    return IconComponent ? <IconComponent /> : null;
+  }, [
+    iconComponent,
+    data.display?.slotConfigs?.icon,
+    display.icon,
+    slotRenderContext,
+    slotRegistry,
+  ]);
+
+  // Resolve handles from props or manifest
+  // Prop handleConfigurations take precedence over manifest
+  const handleConfigurations = useMemo((): HandleGroupManifest[] => {
+    // Priority 1: Prop override (runtime configuration)
+    if (handleConfigurationsProp && Array.isArray(handleConfigurationsProp)) {
+      return handleConfigurationsProp;
+    }
+
+    // Priority 2: Manifest default
     if (!manifest) return [];
     const resolved = resolveHandles(manifest.handleConfiguration, data);
 
@@ -125,30 +181,43 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
       })),
       visible: group.visible,
     }));
-  }, [manifest, data]);
+  }, [handleConfigurationsProp, manifest, data]);
 
-  // Check for runtime toolbar override
-  // If toolbarConfig property exists in data (even if undefined), use it; otherwise fall back to manifest
-  const hasToolbarOverride = 'toolbarConfig' in data;
-  const runtimeToolbarConfig = data.toolbarConfig;
-  const toolbarConfig = useMemo(
-    () =>
-      hasToolbarOverride
-        ? runtimeToolbarConfig
-        : manifest
-          ? resolveToolbar(manifest, statusContext)
-          : undefined,
-    [hasToolbarOverride, runtimeToolbarConfig, manifest, statusContext]
-  );
+  // Toolbar config resolution with priority: props > manifest
+  const toolbarConfig = useMemo(() => {
+    // Priority 1: Prop override (runtime callbacks)
+    // - undefined: use manifest default
+    // - null: explicitly no toolbar
+    // - object: use provided config
+    if (toolbarConfigProp !== undefined) {
+      return toolbarConfigProp === null ? undefined : toolbarConfigProp;
+    }
 
-  // Check for runtime adornments override
-  // If adornments property exists in data (even if undefined), use it; otherwise fall back to resolvers
-  const hasAdornmentsOverride = 'adornments' in data;
-  const runtimeAdornments = data.adornments;
-  const adornments = useMemo(
-    () => (hasAdornmentsOverride ? runtimeAdornments : resolveAdornments(statusContext)),
-    [hasAdornmentsOverride, runtimeAdornments, statusContext]
-  );
+    // Priority 2: Manifest default
+    return manifest ? resolveToolbar(manifest, statusContext) : undefined;
+  }, [toolbarConfigProp, manifest, statusContext]);
+
+  // Adornments resolution with priority: props > adornmentConfigs > resolver
+  const adornments = useMemo(() => {
+    // Priority 1: Prop override (legacy ReactNode adornments - deprecated)
+    if (adornmentsProp) {
+      return adornmentsProp;
+    }
+
+    // Priority 2: Slot configs from data (serializable)
+    const adornmentConfigs = data.adornmentConfigs;
+    if (adornmentConfigs) {
+      return {
+        topLeft: resolveSlot(adornmentConfigs.topLeft, slotRenderContext, slotRegistry),
+        topRight: resolveSlot(adornmentConfigs.topRight, slotRenderContext, slotRegistry),
+        bottomLeft: resolveSlot(adornmentConfigs.bottomLeft, slotRenderContext, slotRegistry),
+        bottomRight: resolveSlot(adornmentConfigs.bottomRight, slotRenderContext, slotRegistry),
+      };
+    }
+
+    // Priority 3: Default resolver (manifest/execution state based)
+    return resolveAdornments(statusContext);
+  }, [adornmentsProp, data.adornmentConfigs, slotRenderContext, slotRegistry, statusContext]);
 
   // Compute height based on handleConfigurations
   const computedHeight = useMemo(() => {
@@ -193,16 +262,53 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
   }, [computedHeight, height, id, updateNode, updateNodeInternals]);
 
   const displayLabel = display.label;
-  const displaySubLabel = display.subLabel;
-  const displayLabelTooltip = display.labelTooltip;
-  const displayLabelBackgroundColor = display.labelBackgroundColor;
   const displayShape = display.shape ?? 'square';
   const displayBackground = display.background;
   const displayColor = display.color;
   const displayIconBackground = display.iconBackground;
-  const displayCenterAdornment = display.centerAdornmentComponent;
-  const displayFooter = display.footerComponent;
-  const displayFooterVariant = display.footerVariant;
+
+  // Display customization from props (not data)
+  const displayLabelTooltip = labelTooltip;
+  const displayLabelBackgroundColor = labelBackgroundColor;
+  const displayFooterVariant = footerVariant;
+
+  // SubLabel: Component prop takes precedence, then slot config, then plain string
+  const displaySubLabel = useMemo(() => {
+    // 1. Component prop (e.g., composite with health score badge)
+    if (subLabelComponent !== undefined) {
+      return subLabelComponent;
+    }
+    // 2. Slot config
+    const subLabelSlotConfig = data.display?.slotConfigs?.subLabel;
+    if (subLabelSlotConfig) {
+      return resolveSlot(subLabelSlotConfig, slotRenderContext, slotRegistry);
+    }
+    // 3. Plain string from display.subLabel
+    return display.subLabel;
+  }, [
+    subLabelComponent,
+    data.display?.slotConfigs?.subLabel,
+    display.subLabel,
+    slotRenderContext,
+    slotRegistry,
+  ]);
+
+  // Center adornment: Resolve from slot config
+  const displayCenterAdornment = useMemo(() => {
+    const centerAdornmentSlotConfig = data.display?.slotConfigs?.centerAdornment;
+    return resolveSlot(centerAdornmentSlotConfig, slotRenderContext, slotRegistry);
+  }, [data.display?.slotConfigs?.centerAdornment, slotRenderContext, slotRegistry]);
+
+  // Footer: Component prop takes precedence, then slot config
+  const displayFooter = useMemo(() => {
+    // 1. Component prop (e.g., instructions footer)
+    if (footerComponent !== undefined) {
+      return footerComponent;
+    }
+    // 2. Slot config
+    const footerSlotConfig = data.display?.slotConfigs?.footer;
+    return resolveSlot(footerSlotConfig, slotRenderContext, slotRegistry);
+  }, [footerComponent, data.display?.slotConfigs?.footer, slotRenderContext, slotRegistry]);
 
   const interactionState = useMemo(() => {
     if (disabled) return 'disabled';
