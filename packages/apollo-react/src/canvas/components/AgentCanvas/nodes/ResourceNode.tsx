@@ -112,6 +112,14 @@ export const ResourceNode = memo(
       [actOnSuggestion]
     );
 
+    const executionStatus = useMemo(() => {
+      if (isCurrentBreakpoint) return 'Paused';
+      if (hasError) return 'Failed';
+      if (hasSuccess) return 'Completed';
+      if (hasRunning) return 'InProgress';
+      return undefined;
+    }, [hasError, hasSuccess, hasRunning, isCurrentBreakpoint]);
+
     const resourceIcon = useMemo(() => {
       let icon: React.ReactNode | undefined;
       switch (data.type) {
@@ -134,31 +142,21 @@ export const ResourceNode = memo(
           icon = undefined;
           break;
       }
-      return <Row style={{ color: 'var(--uix-canvas-foreground-de-emp)' }}>{icon}</Row>;
+      return icon ? (
+        <Row style={{ color: 'var(--uix-canvas-foreground-de-emp)' }}>{icon}</Row>
+      ) : null;
     }, [data]);
 
-    const executionStatus = useMemo(() => {
-      if (isCurrentBreakpoint) return 'Paused';
-      if (hasError) return 'Failed';
-      if (hasSuccess) return 'Completed';
-      if (hasRunning) return 'InProgress';
-      return undefined;
-    }, [hasError, hasSuccess, hasRunning, isCurrentBreakpoint]);
-
-    const toolbarConfig = useMemo((): NodeToolbarConfig | undefined => {
+    const toolbarConfig = useMemo((): NodeToolbarConfig | null | undefined => {
       if (mode === 'view') {
-        return undefined;
+        return null; // Explicitly disable toolbar in view mode
       }
 
-      // If this is a standalone placeholder (not yet converted to permanent), disable toolbar
-      // Standalone placeholders have suggestionId but isSuggestion is false
-      if (!isSuggestion && suggestionId && data.isPlaceholder) {
-        return undefined;
-      }
+      // Note: Removed standalone placeholder check - placeholders now show the same toolbar as permanent nodes
 
       // If this is a suggestion, show accept/reject actions only if version is not "0.0.1"
       if (isSuggestion && suggestionId) {
-        if (suggestionGroupVersion === '0.0.1') return undefined;
+        if (suggestionGroupVersion === '0.0.1') return null;
         const rejectAction: ToolbarAction = {
           id: 'reject-suggestion',
           icon: 'close',
@@ -445,32 +443,33 @@ export const ResourceNode = memo(
           ...data,
           parameters: {},
           display: {
-            iconElement: resourceIcon,
             iconBackground: 'var(--uix-canvas-background-secondary)',
             label: data.name,
             subLabel: data.originalName,
-            labelTooltip: displayTooltips ? data.description : undefined,
-            labelBackgroundColor: 'var(--uix-canvas-background-secondary)',
             shape: 'circle',
           },
-          disabled: isDisabled,
-          executionStatusOverride: executionStatus,
-          suggestionType: suggestionType,
-          handleConfigurations: handleConfigurations,
-          toolbarConfig: toolbarConfig,
-          adornments: {
-            topLeft: breakpointAdornment,
-            topRight: statusAdornment,
-            bottomLeft: suggestionAdornment,
-            bottomRight: guardrailsAdornment,
-          },
-          shouldShowButtonHandleNotchesFn: () => true,
         }}
         id={id}
         selected={selected}
         draggable={false}
         selectable={true}
         deletable={!isSuggestion}
+        // Runtime customization props (not in data)
+        labelTooltip={displayTooltips ? data.description : undefined}
+        labelBackgroundColor="var(--uix-canvas-background-secondary)"
+        disabled={isDisabled}
+        executionStatusOverride={executionStatus}
+        suggestionType={suggestionType}
+        iconComponent={resourceIcon}
+        handleConfigurations={handleConfigurations}
+        toolbarConfig={toolbarConfig}
+        adornments={{
+          topLeft: breakpointAdornment,
+          topRight: statusAdornment,
+          bottomLeft: suggestionAdornment,
+          bottomRight: guardrailsAdornment,
+        }}
+        shouldShowButtonHandleNotchesFn={() => true}
       />
     );
   }
