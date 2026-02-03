@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.17.3](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.17.2...@uipath/apollo-react@3.17.3) (2026-02-03)
+
+### Bug Fixes
+
+* **repo:** more codeql issues ([48776f7](https://github.com/UiPath/apollo-ui/commit/48776f71ec3719e937fe8bbaf2e0524ee4d29f24))
+
 ## [@uipath/apollo-react-v3.17.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.17.1...@uipath/apollo-react@3.17.2) (2026-02-03)
 
 ### Bug Fixes
