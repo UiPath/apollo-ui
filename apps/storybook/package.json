@@ -23,13 +23,13 @@
     "react-dom": "19.2.3"
   },
   "devDependencies": {
-    "@storybook/addon-a11y": "^10.1.10",
-    "@storybook/addon-docs": "^10.1.10",
-    "@storybook/addon-links": "^10.1.10",
-    "@storybook/react": "^10.1.10",
-    "@storybook/react-vite": "^10.1.10",
+    "@storybook/addon-a11y": "^10.2.0",
+    "@storybook/addon-docs": "^10.2.0",
+    "@storybook/addon-links": "^10.2.0",
+    "@storybook/react": "^10.2.0",
+    "@storybook/react-vite": "^10.2.0",
     "react-scan": "^0.4.3",
-    "storybook": "^10.1.10",
+    "storybook": "^10.2.0",
     "typescript": "^5.9.3",
     "vite": "^6.0.3"
   }
