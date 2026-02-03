@@ -3573,14 +3573,14 @@ export interface PdfCitation extends Citation {
  * @property id - Unique identifier for the resource
  * @property type - The type/category of the resource (e.g., 'variable', 'file', 'context')
  * @property displayName - Human-readable name shown in the picker and chips
- * @property icon - Material icon name for the resource
+ * @property icon - Material icon name for the resource (optional). When omitted, chips and picker items render without an icon.
  * @property tooltip - Optional tooltip text for additional context
  */
 export interface AutopilotChatResourceItem {
   id: string;
   type: string;
   displayName: string;
-  icon: string;
+  icon?: string;
   tooltip?: string;
 }
 ```

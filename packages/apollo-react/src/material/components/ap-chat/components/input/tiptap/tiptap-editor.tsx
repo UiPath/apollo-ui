@@ -24,13 +24,11 @@ const ResourceMention = Mention.extend({
     return {
       ...this.parent?.(),
       type: {
-        default: null,
         parseHTML: (element) => element.getAttribute('data-resource-type'),
         renderHTML: (attributes) =>
           attributes.type ? { 'data-resource-type': attributes.type } : {},
       },
       icon: {
-        default: 'description',
         parseHTML: (element) => element.getAttribute('data-icon'),
         renderHTML: (attributes) => (attributes.icon ? { 'data-icon': attributes.icon } : {}),
       },
@@ -234,7 +232,7 @@ function TipTapEditorInner(
         textSerializers: {
           mention: ({ node }) => {
             const { id, label, type, icon } = node.attrs;
-            return `[[resource-token:${JSON.stringify({ id, type, icon, displayName: label })}]]`;
+            return `[[resource-token:${JSON.stringify({ id, type, displayName: label, ...(icon && { icon }) })}]]`;
           },
           hardBreak: () => '\n',
         },

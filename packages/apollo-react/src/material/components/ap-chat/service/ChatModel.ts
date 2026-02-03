@@ -772,14 +772,14 @@ export interface AutopilotChatHistorySearchPayload {
  * @property id - Unique identifier for the resource
  * @property type - The type/category of the resource (e.g., 'variable', 'file', 'session')
  * @property displayName - Human-readable name shown in the picker and chips
- * @property icon - Material icon name for the resource
+ * @property icon - Material icon name for the resource (optional)
  * @property tooltip - Optional tooltip text for additional context
  */
 export interface AutopilotChatResourceItem {
   id: string;
   type: string;
   displayName: string;
-  icon: string;
+  icon?: string;
   tooltip?: string;
 }
 

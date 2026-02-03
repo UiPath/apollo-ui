@@ -3,6 +3,7 @@ import {
 	ApChat,
 	AutopilotChatEvent,
 	AutopilotChatMode,
+	type AutopilotChatResourceItem,
 	type AutopilotChatResourceManager,
 	AutopilotChatRole,
 	AutopilotChatService,
@@ -220,16 +221,24 @@ export function ApChatShowcase() {
 				globalSearch: async (options) => {
 					await new Promise((resolve) => setTimeout(resolve, 300));
 
-					let allItems = [...variableItems, ...fileItems];
+					let allItems: AutopilotChatResourceItem[] = [
+						...variableItems,
+						...fileItems,
+					];
 
+					const skip = options.skip ?? 0;
 					if (options.searchText) {
 						const searchLower = options.searchText.toLowerCase();
+						if (skip === 0) {
+							const matchingTopLevel = topLevelItems.filter((item) =>
+								item.displayName.toLowerCase().includes(searchLower),
+							);
+							allItems = [...matchingTopLevel, ...allItems];
+						}
 						allItems = allItems.filter((item) =>
 							item.displayName.toLowerCase().includes(searchLower),
 						);
 					}
-
-					const skip = options.skip ?? 0;
 					const { paginatedItems, done } = paginate(
 						allItems,
 						skip,
