@@ -1,9 +1,10 @@
 import { useReducer } from 'react';
 import type { CursorCoordinates } from '../components/input/tiptap';
-import type { AutopilotChatResourceItem, AutopilotChatResourceItemSelector } from '../service';
-
-export const MIN_SKELETON_COUNT = 2;
-export const MAX_SKELETON_COUNT = 10;
+import {
+  type AutopilotChatResourceItem,
+  type AutopilotChatResourceItemSelector,
+  CHAT_RESOURCE_PICKER_MIN_SKELETON_COUNT,
+} from '../service';
 
 export interface DrillDownState {
   category: AutopilotChatResourceItemSelector;
@@ -117,7 +118,9 @@ export function pickerReducer(state: PickerState, action: PickerAction): PickerS
         searchResults: action.results,
         searchDone: action.done,
         previousDisplayCount:
-          action.results.length > 0 ? action.results.length : MIN_SKELETON_COUNT,
+          action.results.length > 0
+            ? action.results.length
+            : CHAT_RESOURCE_PICKER_MIN_SKELETON_COUNT,
       };
 
     case 'LOAD_MORE_SUCCESS':

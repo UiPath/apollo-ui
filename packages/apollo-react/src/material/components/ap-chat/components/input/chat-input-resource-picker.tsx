@@ -22,20 +22,23 @@ import {
   isResourceSelector,
   useAutopilotChatResourcePicker,
 } from '../../providers/resource-picker-provider';
-import { MAX_SKELETON_COUNT, MIN_SKELETON_COUNT } from '../../providers/use-resource-picker-state';
-import { type AutopilotChatResourceItem } from '../../service';
+import {
+  type AutopilotChatResourceItem,
+  CHAT_RESOURCE_PICKER_MAX_SKELETON_COUNT,
+  CHAT_RESOURCE_PICKER_MENU_MAX_HEIGHT,
+  CHAT_RESOURCE_PICKER_MENU_WIDTH,
+  CHAT_RESOURCE_PICKER_MIN_SKELETON_COUNT,
+  CHAT_RESOURCE_PICKER_SCROLL_THRESHOLD,
+  CHAT_RESOURCE_PICKER_TOOLTIP_ENTER_DELAY,
+} from '../../service';
+import { AutopilotChatIconButton } from '../common/icon-button';
 import { AutopilotChatTooltip } from '../common/tooltip';
-
-const SCROLL_THRESHOLD = 50;
-const MENU_ITEM_HEIGHT = 40;
 
 const ellipsisStyle = {
   overflow: 'hidden',
   textOverflow: 'ellipsis',
   whiteSpace: 'nowrap',
 } as const;
-
-const skeletonStyle = { flex: 1, height: 20 } as const;
 
 const StyledMenuItem = styled(MenuItem)({
   display: 'flex',
@@ -57,7 +60,7 @@ const ErrorContainer = styled('div')(({ theme }) => ({
   flexDirection: 'column',
   alignItems: 'center',
   gap: token.Spacing.SpacingS,
-  padding: token.Spacing.SpacingM,
+  padding: token.Padding.PadXxxl,
   color: theme.palette.semantic.colorErrorText,
 }));
 
@@ -65,8 +68,7 @@ const EmptyContainer = styled('div')(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  padding: token.Spacing.SpacingM,
-  minHeight: MIN_SKELETON_COUNT * MENU_ITEM_HEIGHT,
+  padding: `${token.Padding.PadXxl} ${token.Padding.PadXxxl}`,
   color: theme.palette.semantic.colorForegroundDeEmp,
 }));
 
@@ -74,17 +76,15 @@ const LoadMoreContainer = styled('div')({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  padding: token.Spacing.SpacingS,
+  padding: token.Padding.PadXxl,
 });
 
 const DrillDownHeader = styled('div')(({ theme }) => ({
   display: 'flex',
-  height: '28px',
   alignItems: 'center',
-  gap: token.Spacing.SpacingXs,
-  padding: `2px ${token.Spacing.SpacingBase}`,
+  gap: token.Spacing.SpacingMicro,
+  padding: `${token.Padding.PadXs} ${token.Padding.PadXxxl} ${token.Padding.PadXs} ${token.Padding.PadXxl}`,
   backgroundColor: theme.palette.semantic.colorBackgroundSecondary,
-  cursor: 'pointer',
 }));
 
 const SkeletonItem = styled(StyledMenuItem)({
@@ -114,7 +114,7 @@ const ResourceMenuItem = React.memo(function ResourceMenuItem({
   const menuItem = (
     <StyledMenuItem id={`resource-item-${item.id}`} selected={isSelected} onClick={handleClick}>
       <ResourceItemContent>
-        <ApIcon variant="outlined" name={item.icon} size={token.Icon.IconXs} />
+        {item.icon && <ApIcon variant="outlined" name={item.icon} size={token.Icon.IconXs} />}
         <ApTypography variant={fontToken} style={ellipsisStyle}>
           {item.displayName}
         </ApTypography>
@@ -139,8 +139,8 @@ const ResourceMenuItem = React.memo(function ResourceMenuItem({
       }
       placement={tooltipPlacement}
       open={isSelected ? true : undefined}
-      enterDelay={isSelected ? 0 : 300}
-      enterNextDelay={isSelected ? 0 : 300}
+      enterDelay={isSelected ? 0 : CHAT_RESOURCE_PICKER_TOOLTIP_ENTER_DELAY}
+      enterNextDelay={isSelected ? 0 : CHAT_RESOURCE_PICKER_TOOLTIP_ENTER_DELAY}
     >
       {menuItem}
     </AutopilotChatTooltip>
@@ -211,7 +211,8 @@ function ResourcePickerDropdownInner(
     if (!state.hasMore || state.loadingMore) return;
 
     const nearBottom =
-      target.scrollHeight - target.scrollTop - target.clientHeight < SCROLL_THRESHOLD;
+      target.scrollHeight - target.scrollTop - target.clientHeight <
+      CHAT_RESOURCE_PICKER_SCROLL_THRESHOLD;
     if (nearBottom) {
       state.loadMore();
     }
@@ -308,12 +309,12 @@ function ResourcePickerDropdownInner(
 
   const skeletonElements = useMemo(() => {
     const skeletonCount = Math.min(
-      Math.max(previousDisplayCount, MIN_SKELETON_COUNT),
-      MAX_SKELETON_COUNT
+      Math.max(previousDisplayCount, CHAT_RESOURCE_PICKER_MIN_SKELETON_COUNT),
+      CHAT_RESOURCE_PICKER_MAX_SKELETON_COUNT
     );
     return Array.from({ length: skeletonCount }).map((_, index) => (
       <SkeletonItem key={`skeleton-${index}`} disabled>
-        <ApSkeleton style={skeletonStyle} />
+        <ApSkeleton />
       </SkeletonItem>
     ));
   }, [previousDisplayCount]);
@@ -322,8 +323,8 @@ function ResourcePickerDropdownInner(
     () => ({
       paper: {
         sx: {
-          width: 360,
-          maxHeight: 296,
+          width: CHAT_RESOURCE_PICKER_MENU_WIDTH,
+          maxHeight: CHAT_RESOURCE_PICKER_MENU_MAX_HEIGHT,
           overflowY: 'auto',
         },
         onScroll: handleScroll,
@@ -338,20 +339,14 @@ function ResourcePickerDropdownInner(
     if (!drillDown) return null;
 
     return (
-      <DrillDownHeader
-        key="drilldown-header"
-        onClick={goBackOrClose}
-        role="button"
-        tabIndex={0}
-        aria-label={_(msg({ id: 'autopilot-chat.resource-picker.back', message: 'Go back' }))}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            goBackOrClose();
-          }
-        }}
-      >
-        <ApIcon variant="outlined" name="arrow_back" size={token.Icon.IconXs} />
+      <DrillDownHeader key="drilldown-header">
+        <AutopilotChatIconButton
+          size="small"
+          onClick={goBackOrClose}
+          aria-label={_(msg({ id: 'autopilot-chat.resource-picker.back', message: 'Go back' }))}
+        >
+          <ApIcon variant="outlined" name="arrow_back" size={token.Icon.IconXs} />
+        </AutopilotChatIconButton>
         <ApTypography variant={spacing.primaryBoldFontToken} style={ellipsisStyle}>
           {drillDown.category.displayName}
         </ApTypography>

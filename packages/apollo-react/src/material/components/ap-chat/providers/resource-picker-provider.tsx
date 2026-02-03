@@ -2,9 +2,9 @@ import { msg } from '@lingui/core/macro';
 import { useLingui } from '@lingui/react';
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef } from 'react';
 import type { CursorCoordinates, TipTapRange } from '../components/input/tiptap';
+import { type DrillDownState, useResourcePickerState } from '../hooks/use-resource-picker-state';
 import { type AutopilotChatResourceItem, type AutopilotChatResourceItemSelector } from '../service';
 import { useResourceData } from './resource-data-provider';
-import { type DrillDownState, useResourcePickerState } from './use-resource-picker-state';
 
 export type { DrillDownState };
 
