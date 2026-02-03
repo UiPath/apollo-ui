@@ -20,6 +20,8 @@ import { Citation } from './citation';
 import { Code } from './code';
 import { Li, Ol, Ul } from './lists';
 import { citationPlugin, contentPartsToMarkdown } from './parsers/citation-parser';
+import { resourceTokenPlugin } from './parsers/resource-token-parser';
+import { ResourceChip } from './resource-chip';
 import { Cell, HeaderCell, Row, Table, TableHeader } from './table';
 import {
   Blockquote,
@@ -44,6 +46,47 @@ const FAKE_STREAM_CHARS_COUNT = 10;
 const FAKE_STREAM_INTERVAL = 50;
 const CHUNK_QUEUE_PROCESS_INTERVAL = 50;
 
+/**
+ * Patterns for tokens that should be buffered when incomplete during streaming.
+ * Each pattern should match the START of an incomplete token (opened but not yet closed).
+ * Add new patterns here as needed.
+ *
+ * Pattern format: Match the opening sequence with a negative lookahead for the closing sequence.
+ * Example: /\[\[my-token:(?![^\]]*\]\])/ matches `[[my-token:` not followed by `]]`
+ */
+const INCOMPLETE_TOKEN_PATTERNS: RegExp[] = [
+  /\[\[resource-token:(?!.*\]\])/, // [[resource-token:{...}]]
+];
+
+/**
+ * Extracts content that is safe to render, buffering any incomplete tokens.
+ * This prevents flickering during streaming when tokens arrive in chunks.
+ *
+ * @param content - The accumulated content string
+ * @returns An object with `renderable` (safe to display) and `buffered` (held back for next chunk)
+ */
+function extractRenderableContent(content: string): { renderable: string; buffered: string } {
+  let earliestIndex = -1;
+
+  for (const pattern of INCOMPLETE_TOKEN_PATTERNS) {
+    const match = content.match(pattern);
+    if (match?.index !== undefined) {
+      if (earliestIndex === -1 || match.index < earliestIndex) {
+        earliestIndex = match.index;
+      }
+    }
+  }
+
+  if (earliestIndex === -1) {
+    return { renderable: content, buffered: '' };
+  }
+
+  return {
+    renderable: content.slice(0, earliestIndex),
+    buffered: content.slice(earliestIndex),
+  };
+}
+
 function AutopilotChatMarkdownRendererComponent({ message }: { message: AutopilotChatMessage }) {
   const { _ } = useLingui();
   // Only store message ID and content separately to minimize re-renders
@@ -64,6 +107,7 @@ function AutopilotChatMarkdownRendererComponent({ message }: { message: Autopilo
   const { isStreaming } = useIsStreamingMessage(message);
   const chunkQueue = React.useRef<string[]>([]);
   const lastChunkQueueProcessedTime = React.useRef<number>(0);
+  const incompleteTokenBuffer = React.useRef<string>('');
 
   // Update the message ID ref if a new message is passed
   React.useEffect(() => {
@@ -81,6 +125,7 @@ function AutopilotChatMarkdownRendererComponent({ message }: { message: Autopilo
         setStreaming(false);
         setContent(getInitialContent());
         chunkQueue.current = [];
+        incompleteTokenBuffer.current = '';
         lastChunkQueueProcessedTime.current = 0;
       });
 
@@ -114,48 +159,60 @@ function AutopilotChatMarkdownRendererComponent({ message }: { message: Autopilo
     };
   }, [message, chatService, setStreaming, getInitialContent]);
 
+  const handleSendChunk = React.useCallback((msg: AutopilotChatMessage) => {
+    if (msg.id !== messageId.current) {
+      return;
+    }
+
+    chunkQueue.current.push(msg.content);
+
+    if (Date.now() - lastChunkQueueProcessedTime.current > CHUNK_QUEUE_PROCESS_INTERVAL) {
+      lastChunkQueueProcessedTime.current = Date.now();
+
+      if (msg.contentParts) {
+        const fullContent = contentPartsToMarkdown(messageId.current, msg.contentParts);
+        const { renderable } = extractRenderableContent(fullContent);
+        setContent(renderable);
+        return;
+      }
+
+      // Combine buffered incomplete token with new chunks
+      const accumulated = incompleteTokenBuffer.current + chunkQueue.current.join('');
+      const { renderable, buffered } = extractRenderableContent(accumulated);
+
+      incompleteTokenBuffer.current = buffered;
+      chunkQueue.current = [];
+
+      if (renderable) {
+        setContent((prevContent) => `${prevContent}${renderable}`);
+      }
+    } else if (msg.done) {
+      lastChunkQueueProcessedTime.current = 0;
+
+      if (msg.contentParts) {
+        setContent(contentPartsToMarkdown(messageId.current, msg.contentParts));
+        return;
+      }
+
+      // Stream complete - flush everything including any incomplete tokens
+      const remaining = incompleteTokenBuffer.current + chunkQueue.current.join('');
+      incompleteTokenBuffer.current = '';
+      chunkQueue.current = [];
+      setContent((prevContent) => `${prevContent}${remaining}`);
+    }
+  }, []);
+
   React.useEffect(() => {
     if (!chatService) {
       return;
     }
 
-    const unsubscribe = chatService.on(
-      AutopilotChatEvent.SendChunk,
-      (msg: AutopilotChatMessage) => {
-        if (msg.id === messageId.current) {
-          chunkQueue.current.push(msg.content);
-
-          if (Date.now() - lastChunkQueueProcessedTime.current > CHUNK_QUEUE_PROCESS_INTERVAL) {
-            lastChunkQueueProcessedTime.current = Date.now();
-
-            if (msg.contentParts) {
-              setContent(contentPartsToMarkdown(messageId.current, msg.contentParts));
-              return;
-            }
-
-            setContent((prevContent) => `${prevContent}${chunkQueue.current.join('')}`);
-            chunkQueue.current = [];
-          } else {
-            if (msg.done) {
-              lastChunkQueueProcessedTime.current = 0;
-
-              if (msg.contentParts) {
-                setContent(contentPartsToMarkdown(messageId.current, msg.contentParts));
-                return;
-              }
-
-              setContent((prevContent) => `${prevContent}${chunkQueue.current.join('')}`);
-              chunkQueue.current = [];
-            }
-          }
-        }
-      }
-    );
+    const unsubscribe = chatService.on(AutopilotChatEvent.SendChunk, handleSendChunk);
 
     return () => {
       unsubscribe();
     };
-  }, [chatService]);
+  }, [chatService, handleSendChunk]);
 
   const components = React.useMemo(
     () => ({
@@ -185,6 +242,7 @@ function AutopilotChatMarkdownRendererComponent({ message }: { message: Autopilo
       pre: Pre,
       a: Link,
       citation: Citation,
+      'resource-chip': ResourceChip,
     }),
     [spacing, isStreaming]
   );
@@ -193,7 +251,12 @@ function AutopilotChatMarkdownRendererComponent({ message }: { message: Autopilo
     () => (
       <MarkdownContainer>
         <ReactMarkdown
-          remarkPlugins={[citationPlugin, remarkGfm, [remarkMath, { singleDollarTextMath: false }]]}
+          remarkPlugins={[
+            citationPlugin,
+            resourceTokenPlugin,
+            remarkGfm,
+            [remarkMath, { singleDollarTextMath: false }],
+          ]}
           rehypePlugins={[
             [
               rehypeKatex,

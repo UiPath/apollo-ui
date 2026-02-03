@@ -240,6 +240,7 @@
     "@types/d3-scale-chromatic": "^3.0.3",
     "@types/lodash": "^4.17.21",
     "@types/luxon": "^3.7.1",
+    "@types/mdast": "^4.0.4",
     "@types/node": "^24.10.1",
     "@types/react": "^19.2.6",
     "@types/react-dom": "^19.2.2",
