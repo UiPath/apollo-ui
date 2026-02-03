@@ -12,11 +12,7 @@ import type {
   NodeToolbarConfig,
 } from '@uipath/apollo-react/canvas';
 import { getToolbarActionStore } from '../hooks/ToolbarActionContext';
-import type {
-  ModeToolbarConfig,
-  ToolbarActionHandler,
-  ToolbarActionSchema,
-} from '../schema/toolbar';
+import type { ModeToolbarConfig, ToolbarActionSchema } from '../schema/toolbar';
 import { getIcon } from './icon-registry';
 
 interface ExtendedNodeContext extends NodeStatusContext {
@@ -116,7 +112,6 @@ function evaluateCondition(
 function convertToNodeAction(
   action: ToolbarActionSchema,
   mode: string,
-  onToolbarAction?: ToolbarActionHandler,
   nodeData?: Record<string, unknown>
 ) {
   const IconComponent = getIcon(action.icon);
@@ -126,6 +121,10 @@ function convertToNodeAction(
     icon: <IconComponent w={14} h={14} />,
     label: action.label,
     onAction: (nodeId: string) => {
+      // Read handler from store at click time, not render time
+      // This ensures we always get the latest handler even if store was empty during render
+      // Note: mode is captured at render time to stay consistent with which actions were rendered
+      const { onToolbarAction } = getToolbarActionStore();
       onToolbarAction?.({
         actionId: action.id,
         nodeId,
@@ -164,9 +163,10 @@ export function resolveToolbar(
 ): NodeToolbarConfig | undefined {
   const { nodeType, toolbarExtensions: manifestToolbarExtensions } = manifest;
 
-  // Get mode and handler from module-level store
+  // Get mode from module-level store for filtering/defaults
   // (UIX doesn't pass custom properties through its context)
-  const { mode, onToolbarAction, collapsed } = getToolbarActionStore();
+  // Note: onToolbarAction is read at click time in convertToNodeAction to avoid stale closures
+  const { mode, collapsed } = getToolbarActionStore();
 
   // Step 1: Get mode defaults (applies to all nodes)
   let modeDefaults = toolbarRegistry.getModeDefaults(mode);
@@ -195,11 +195,11 @@ export function resolveToolbar(
   // Step 4: Filter actions based on conditions and convert to node actions
   const filteredActions = merged.actions
     .filter((action) => evaluateCondition(manifest, action, nodeType, context))
-    .map((action) => convertToNodeAction(action, mode, onToolbarAction, nodeData));
+    .map((action) => convertToNodeAction(action, mode, nodeData));
 
   const filteredOverflow = (merged.overflowActions ?? [])
     .filter((action) => evaluateCondition(manifest, action, nodeType, context))
-    .map((action) => convertToNodeAction(action, mode, onToolbarAction, nodeData));
+    .map((action) => convertToNodeAction(action, mode, nodeData));
 
   // Return undefined if no actions
   if (filteredActions.length === 0 && filteredOverflow.length === 0) {
