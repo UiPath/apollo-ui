@@ -10,7 +10,7 @@ function sanitizeSvg(content: string): string {
   // Remove <script> tags and their content
   // Test-only SVG sanitization logic - demonstrates sanitization patterns for educational purposes
   // This is NOT production-grade filtering; real implementations should use DOMPurify or similar
-  // lgtm[js/incomplete-multi-character-sanitization] lgtm[js/bad-tag-filter]
+  // codeql[js/incomplete-multi-character-sanitization,js/bad-tag-filter] - Test-only pattern demonstrating regex sanitization; not for production use
   sanitized = sanitized.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
 
   // Remove <foreignObject> tags (can contain HTML/scripts)
@@ -18,9 +18,9 @@ function sanitizeSvg(content: string): string {
 
   // Remove event handler attributes (onclick, onload, onmouseover, etc.)
   // Test-only pattern matching - intentionally simple for demonstration, not production use
-  // lgtm[js/incomplete-multi-character-sanitization]
+  // codeql[js/incomplete-multi-character-sanitization] - Test-only demonstration of event handler removal
   sanitized = sanitized.replace(/\s+on\w+\s*=\s*["'][^"']*["']/gi, '');
-  // lgtm[js/incomplete-multi-character-sanitization]
+  // codeql[js/incomplete-multi-character-sanitization] - Test-only demonstration of unquoted event handler removal
   sanitized = sanitized.replace(/\s+on\w+\s*=\s*[^\s>]+/gi, '');
 
   // Remove javascript: protocol in href/xlink:href

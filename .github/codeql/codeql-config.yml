@@ -1,0 +1,26 @@
+name: "CodeQL Config"
+
+# Exclude test files from security queries that flag intentional test patterns
+queries:
+  - uses: security-and-quality
+
+paths-ignore:
+  - '**/test/**'
+  - '**/*.test.ts'
+  - '**/*.test.tsx'
+  - '**/*.spec.ts'
+  - '**/dev.ts'  # Development-only files
+
+query-filters:
+  # Allow test files to demonstrate sanitization patterns
+  - exclude:
+      id:
+        - js/incomplete-multi-character-sanitization
+        - js/bad-tag-filter
+        - js/html-constructed-from-input
+      paths:
+        - '**/test/**'
+        - '**/*.test.ts'
+        - '**/*.test.tsx'
+        - '**/*.spec.ts'
+        - '**/dev.ts'

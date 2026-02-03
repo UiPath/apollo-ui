@@ -215,7 +215,7 @@ export class DataFetcher {
 
     // Execute compute function
     try {
-      // lgtm[js/unsafe-code-construction]
+      // codeql[js/unsafe-code-construction] - Developer-defined config from form schema; not user input
       const computeFn = new Function(...source.dependency, `return ${source.compute}`);
       return computeFn(...dependencyValues);
     } catch (error) {
@@ -260,7 +260,7 @@ export class DataFetcher {
     formValues: Record<string, unknown>
   ): unknown {
     try {
-      // lgtm[js/unsafe-code-construction]
+      // codeql[js/unsafe-code-construction] - Developer-defined transform from form schema; not user input
       const transformFn = new Function('data', 'formValues', `return ${transform}`);
       return transformFn(data, formValues);
     } catch (error) {

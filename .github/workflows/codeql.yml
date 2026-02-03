@@ -50,7 +50,7 @@ jobs:
         with:
           languages: ${{ matrix.language }}
           build-mode: ${{ matrix.build-mode }}
-          queries: security-and-quality
+          config-file: .github/codeql/codeql-config.yml
           # Enable alert suppression support for lgtm/codeql comments (JavaScript only)
           packs: ${{ matrix.language == 'javascript-typescript' && '+codeql/javascript-queries:AlertSuppression.ql' || '' }}
 

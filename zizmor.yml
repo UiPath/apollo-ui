@@ -1,0 +1,6 @@
+rules:
+  artipacked:
+    ignore:
+      # Credentials needed for semantic-release to push version bumps
+      # No artifacts uploaded in this workflow - safe to persist credentials
+      - .github/workflows/release.yml
