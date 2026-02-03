@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.17.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.16.0...@uipath/apollo-react@3.17.0) (2026-02-02)
+
+### Features
+
+* **apollo-react:** add Modal Component to PLT-96037 ([444aa3e](https://github.com/UiPath/apollo-ui/commit/444aa3e723a6405e2c166c67e3667d0b90c731ba))
+
 ## [@uipath/apollo-react-v3.16.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.15.0...@uipath/apollo-react@3.16.0) (2026-02-02)
 
 ### Features
