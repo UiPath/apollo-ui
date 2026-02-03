@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.17.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.17.1...@uipath/apollo-react@3.17.2) (2026-02-03)
+
+### Bug Fixes
+
+* **apollo-react:** initialize base node height only after reactFlow measure [MST-6329] ([a964639](https://github.com/UiPath/apollo-ui/commit/a96463990f39610abc68a877d9989d3589759782))
+
 ## [@uipath/apollo-react-v3.17.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.17.0...@uipath/apollo-react@3.17.1) (2026-02-03)
 
 ### Bug Fixes
