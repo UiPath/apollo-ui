@@ -23,6 +23,8 @@ jobs:
       packages: write
 
     steps:
+      # zizmor: ignore[artipacked]
+      # Credentials needed for semantic-release to push version bumps; no artifacts uploaded in this workflow
       - name: Checkout code
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:

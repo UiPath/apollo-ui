@@ -150,6 +150,29 @@ jobs:
             echo "prod_flag=--prod" >> $GITHUB_OUTPUT
           fi
 
+      - name: Set Vercel Project ID
+        id: set-project-id
+        run: |
+          # Map matrix secret name to actual secret value
+          case "${{ matrix.vercel_project_id_secret }}" in
+            VERCEL_PROJECT_ID_CANVAS)
+              echo "VERCEL_PROJECT_ID=${{ secrets.VERCEL_PROJECT_ID_CANVAS }}" >> $GITHUB_ENV
+              ;;
+            VERCEL_PROJECT_ID_UI_REACT)
+              echo "VERCEL_PROJECT_ID=${{ secrets.VERCEL_PROJECT_ID_UI_REACT }}" >> $GITHUB_ENV
+              ;;
+            VERCEL_PROJECT_ID_VERTEX)
+              echo "VERCEL_PROJECT_ID=${{ secrets.VERCEL_PROJECT_ID_VERTEX }}" >> $GITHUB_ENV
+              ;;
+            VERCEL_PROJECT_ID_WIND)
+              echo "VERCEL_PROJECT_ID=${{ secrets.VERCEL_PROJECT_ID_WIND }}" >> $GITHUB_ENV
+              ;;
+            *)
+              echo "Error: Unknown vercel_project_id_secret value '${{ matrix.vercel_project_id_secret }}'. Please update the case statement in .github/workflows/vercel-deploy.yml." >&2
+              exit 1
+              ;;
+          esac
+
       - name: Deploy to Vercel
         id: deploy
         continue-on-error: true
@@ -200,7 +223,6 @@ jobs:
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets[matrix.vercel_project_id_secret] }}
           CI: true
           NODE_ENV: production
 
