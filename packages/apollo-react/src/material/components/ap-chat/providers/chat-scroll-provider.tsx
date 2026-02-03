@@ -124,7 +124,7 @@ export const AutopilotChatScrollProvider: React.FC<AutopilotChatScrollProviderPr
     }
 
     // if the chat is in auto-scroll mode, scroll to the bottom if the content is taller than the previous height
-    if (newHeight > previousHeightRef.current && autoScroll) {
+    if (newHeight > previousHeightRef.current) {
       const distance =
         overflowContainer.scrollHeight -
         overflowContainer.scrollTop -

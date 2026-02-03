@@ -1,7 +1,7 @@
 import { css, keyframes } from '@emotion/react';
 import styled from '@emotion/styled';
 import type { NodeShape } from '../../schema';
-import { FooterVariant } from './BaseNode.types';
+import type { FooterVariant } from './BaseNode.types';
 
 // Grid-aligned node heights (multiples of 16px)
 const GRID_UNIT = 16;
