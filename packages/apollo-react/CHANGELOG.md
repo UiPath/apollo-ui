@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.19.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.19.0...@uipath/apollo-react@3.19.1) (2026-02-04)
+
+### Bug Fixes
+
+* **apollo-react:** read toolbar action handler at click time to avoid stale closures ([9eb44d0](https://github.com/UiPath/apollo-ui/commit/9eb44d0bc1c654f39f1598e3250ca0463d009d4c))
+
 ## [@uipath/apollo-react-v3.19.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.18.0...@uipath/apollo-react@3.19.0) (2026-02-04)
 
 ### Features
