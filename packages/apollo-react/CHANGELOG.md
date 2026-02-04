@@ -1,3 +1,17 @@
+## [@uipath/apollo-react-v3.18.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.17.3...@uipath/apollo-react@3.18.0) (2026-02-04)
+
+### Features
+
+* **ap-chat:** AP variable picker implementation [PLT-94662][PLT-94663] ([39817c5](https://github.com/UiPath/apollo-ui/commit/39817c5f70fc70c586bebaae8bf246deecd86d5c))
+
+### Bug Fixes
+
+* **ap-chat:** address review comments ([cecfa5f](https://github.com/UiPath/apollo-ui/commit/cecfa5ffeed7398212ebcc84c164eb15f5ad1587))
+* **ap-chat:** memoize deps to avoid re-renders & fix skeleton loader causing jumpiness ([61a2a58](https://github.com/UiPath/apollo-ui/commit/61a2a584be547ea00679732d999e69c98881eda7))
+* **ap-chat:** pagination fixes + storybook support ([bff40a1](https://github.com/UiPath/apollo-ui/commit/bff40a19131277eb018bcad323acbb806bb05a2d))
+* **ap-chat:** skeleton loader for search results ([32db063](https://github.com/UiPath/apollo-ui/commit/32db063f43f6a09b5d49cc2d4d512a1ee4492b01))
+* **ap-chat:** support for compact mode; add tooltips & enhance chip UX ([d34735a](https://github.com/UiPath/apollo-ui/commit/d34735addba82ddf8d1a08bed4d5c21ed0355423))
+
 ## [@uipath/apollo-react-v3.17.3](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.17.2...@uipath/apollo-react@3.17.3) (2026-02-03)
 
 ### Bug Fixes
