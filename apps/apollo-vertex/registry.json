@@ -463,7 +463,10 @@
         "button",
         "tooltip",
         "avatar",
-        "@uipath/use-local-storage"
+        "@uipath/use-local-storage",
+        "@uipath/theme-toggle",
+        "dropdown-menu",
+        "spinner"
       ],
       "files": [
         { "path": "registry/shell/shell.tsx", "type": "registry:ui" },
@@ -496,7 +499,15 @@
           "type": "registry:lib"
         },
         { "path": "lib/i18n.ts", "type": "registry:lib" },
-        { "path": "lib/react-i18next.d.ts", "type": "registry:lib" }
+        { "path": "lib/react-i18next.d.ts", "type": "registry:lib" },
+        {
+          "path": "registry/shell/internal/animations.ts",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/shell/internal/nav-item.tsx",
+          "type": "registry:ui"
+        }
       ]
     },
     {
@@ -677,10 +688,18 @@
       "title": "Theme Toggle",
       "description": "A dropdown menu component that allows users to toggle between light, dark, and system theme preferences.",
       "dependencies": ["lucide-react"],
-      "registryDependencies": ["button", "dropdown-menu", "use-local-storage"],
+      "registryDependencies": [
+        "button",
+        "dropdown-menu",
+        "@uipath/use-local-storage"
+      ],
       "files": [
         {
           "path": "registry/theme-provider/theme-toggle.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/theme-provider/theme-provider.tsx",
           "type": "registry:ui"
         }
       ]
