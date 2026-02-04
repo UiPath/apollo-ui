@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.19.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.18.0...@uipath/apollo-react@3.19.0) (2026-02-04)
+
+### Features
+
+* **ap-chat:** render resource tokens in messages [PLT-86355] ([d056b81](https://github.com/UiPath/apollo-ui/commit/d056b81255662297557ba4ba2cf5137189d618e4))
+
 ## [@uipath/apollo-react-v3.18.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.17.3...@uipath/apollo-react@3.18.0) (2026-02-04)
 
 ### Features
