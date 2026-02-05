@@ -1,6 +1,7 @@
 import type { NodeProps } from '@uipath/apollo-react/canvas/xyflow/react';
 import type { NodeMenuItem } from '../NodeContextMenu';
 import type { ListItem, ToolboxSearchHandler } from '../Toolbox';
+import type { GroupModificationType } from '../utils/GroupModificationUtils';
 
 enum ElementStatusValues {
   Cancelled = 'Cancelled',
@@ -40,6 +41,7 @@ export interface StageNodeProps extends NodeProps {
     selectedTasks?: string[];
   };
   addTaskLabel?: string;
+  replaceTaskLabel?: string;
   taskOptions?: ListItem[];
   execution?: {
     stageStatus: {
@@ -62,6 +64,7 @@ export interface StageNodeProps extends NodeProps {
   ) => void;
   onStageTitleChange?: (newTitle: string) => void;
   onTaskReorder?: (reorderedTasks: StageTaskItem[][]) => void;
+  onTaskReplace?: (newTask: ListItem, groupIndex: number, taskIndex: number) => void;
 }
 
 export interface StageTaskExecution {
@@ -73,15 +76,4 @@ export interface StageTaskExecution {
   badge?: string;
   badgeStatus?: 'warning' | 'info' | 'error';
   retryCount?: number;
-}
-
-export enum GroupModificationType {
-  TASK_GROUP_UP = 'task_group_up',
-  TASK_GROUP_DOWN = 'task_group_down',
-  UNGROUP_ALL_TASKS = 'ungroup_all_tasks',
-  SPLIT_GROUP = 'split_group',
-  MERGE_GROUP_UP = 'merge_group_up',
-  MERGE_GROUP_DOWN = 'merge_group_down',
-  REMOVE_TASK = 'remove_task',
-  REMOVE_GROUP = 'remove_group',
 }

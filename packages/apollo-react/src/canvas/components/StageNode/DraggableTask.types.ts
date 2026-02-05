@@ -12,11 +12,9 @@ export interface DraggableTaskProps {
   taskExecution?: StageTaskExecution;
   isSelected: boolean;
   isParallel: boolean;
-  isContextMenuVisible: boolean;
   contextMenuItems: NodeMenuItem[];
-  contextMenuAnchor: React.RefObject<HTMLDivElement | null>;
   onTaskClick: (e: React.MouseEvent, taskId: string) => void;
-  onContextMenu?: (e: React.MouseEvent<HTMLDivElement>) => void;
+  onMenuOpen?: () => void;
   isDragDisabled?: boolean;
   projectedDepth?: number;
   zoom?: number;

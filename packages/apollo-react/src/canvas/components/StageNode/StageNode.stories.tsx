@@ -8,12 +8,17 @@ import {
   useEdgesState,
   useNodesState,
 } from '@uipath/apollo-react/canvas/xyflow/react';
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { DefaultCanvasTranslations } from '../../types';
 import { BaseCanvas } from '../BaseCanvas';
 import { CanvasPositionControls } from '../CanvasPositionControls';
 import { TaskIcon, TaskItemTypeValues } from '../TaskIcon';
 import type { ListItem } from '../Toolbox';
+import {
+  createGroupModificationHandlers,
+  GroupModificationType,
+  getHandlerForModificationType,
+} from '../utils/GroupModificationUtils';
 import { StageConnectionEdge } from './StageConnectionEdge';
 import { StageEdge } from './StageEdge';
 import { StageNode } from './StageNode';
@@ -891,5 +896,197 @@ export const DraggableTaskReordering: Story = {
     useCustomRender: true,
   },
   render: () => <DraggableTaskReorderingStory />,
+  args: {},
+};
+
+const initialTasksForAddReplace: StageTaskItem[][] = [
+  [{ id: 'task-1', label: 'Initial Verification', icon: <VerificationIcon /> }],
+  [{ id: 'task-2', label: 'Document Review', icon: <DocumentIcon /> }],
+];
+
+const availableTaskOptions: ListItem[] = [
+  {
+    id: 'verification-task',
+    name: 'Verification task',
+    icon: { Component: () => <VerificationIcon /> },
+    data: { type: 'verification' },
+  },
+  {
+    id: 'document-task',
+    name: 'Document task',
+    icon: { Component: () => <DocumentIcon /> },
+    data: { type: 'document' },
+  },
+  {
+    id: 'process-task',
+    name: 'Process task',
+    icon: { Component: () => <ProcessIcon /> },
+    data: { type: 'process' },
+  },
+  {
+    id: 'credit-check',
+    name: 'Credit check',
+    icon: { Component: () => <VerificationIcon /> },
+    data: { type: 'credit' },
+  },
+  {
+    id: 'address-verification',
+    name: 'Address verification',
+    icon: { Component: () => <VerificationIcon /> },
+    data: { type: 'address' },
+  },
+];
+
+const AddAndReplaceTasksStory = () => {
+  const StageNodeWrapper = useMemo(
+    () =>
+      function StageNodeWrapperComponent(props: any) {
+        return <StageNode {...props} {...props.data} />;
+      },
+    []
+  );
+
+  const nodeTypes = useMemo(() => ({ stage: StageNodeWrapper }), [StageNodeWrapper]);
+  const edgeTypes = useMemo(() => ({ stage: StageEdge }), []);
+
+  const [tasks, setTasks] = useState<StageTaskItem[][]>(initialTasksForAddReplace);
+
+  const handleAddTask = useCallback((taskItem: ListItem) => {
+    const newTask: StageTaskItem = {
+      id: `${taskItem.id}-${Date.now()}`,
+      label: taskItem.name,
+      icon: taskItem.icon?.Component ? <taskItem.icon.Component /> : undefined,
+    };
+
+    setTasks((prevTasks: StageTaskItem[][]) => {
+      return [...prevTasks, [newTask]];
+    });
+  }, []);
+
+  const handleReplaceTask = useCallback(
+    (taskItem: StageTaskItem, groupIndex: number, taskIndex: number) => {
+      // Validate indices
+      if (groupIndex < 0 || taskIndex < 0) {
+        return;
+      }
+
+      // The component passes a ListItem cast as StageTaskItem, so convert it properly
+      const listItem = taskItem as unknown as ListItem;
+      const replacedTask: StageTaskItem = {
+        id: `${listItem.id}-replaced-${Date.now()}`,
+        label: listItem.name,
+        icon: listItem.icon?.Component ? <listItem.icon.Component /> : undefined,
+      };
+
+      setTasks((prevTasks: StageTaskItem[][]) => {
+        // Validate that indices are within bounds
+        if (groupIndex >= prevTasks.length) {
+          return prevTasks;
+        }
+
+        const currentGroup = prevTasks[groupIndex];
+        if (!currentGroup || taskIndex >= currentGroup.length) {
+          return prevTasks;
+        }
+
+        const updatedTasks = prevTasks.map((group: StageTaskItem[], gIdx: number) => {
+          if (gIdx === groupIndex) {
+            return group.map((task: StageTaskItem, tIdx: number) =>
+              tIdx === taskIndex ? replacedTask : task
+            );
+          }
+          return group;
+        });
+
+        return updatedTasks;
+      });
+    },
+    [setTasks]
+  );
+
+  const groupModificationHandlers = useMemo(
+    () => createGroupModificationHandlers<StageTaskItem>(),
+    []
+  );
+
+  const handleTaskGroupModification = useCallback(
+    (groupModificationType: GroupModificationType, groupIndex: number, taskIndex: number) => {
+      const handler = getHandlerForModificationType(
+        groupModificationHandlers,
+        groupModificationType
+      );
+      // Handler returns modified array, we update state with it
+      setTasks((prevTasks) => handler(prevTasks, groupIndex, taskIndex));
+    },
+    [groupModificationHandlers, setTasks]
+  );
+
+  const nodes = useMemo(
+    () => [
+      {
+        id: 'add-replace-stage',
+        type: 'stage',
+        position: { x: 320, y: 96 },
+        data: {
+          stageDetails: {
+            label: 'Add, Replace, and Group Tasks',
+            tasks: tasks,
+          },
+          taskOptions: availableTaskOptions,
+          onAddTaskFromToolbox: handleAddTask,
+          onTaskReplace: handleReplaceTask,
+          onTaskGroupModification: handleTaskGroupModification,
+        },
+      },
+    ],
+    [tasks, handleAddTask, handleReplaceTask, handleTaskGroupModification]
+  );
+
+  const [nodesState, setNodes, onNodesChange] = useNodesState(nodes);
+  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+
+  // Sync nodes when tasks change
+  useEffect(() => {
+    setNodes(nodes);
+  }, [nodes, setNodes]);
+
+  const onConnect = useCallback(
+    (connection: Connection) => setEdges((eds) => addEdge(connection, eds)),
+    [setEdges]
+  );
+
+  return (
+    <div style={{ width: '100vw', height: '100vh' }}>
+      <ReactFlowProvider>
+        <BaseCanvas
+          nodes={nodesState}
+          edges={edges}
+          onNodesChange={onNodesChange}
+          onEdgesChange={onEdgesChange}
+          onConnect={onConnect}
+          nodeTypes={nodeTypes}
+          edgeTypes={edgeTypes}
+          mode="design"
+          connectionMode={ConnectionMode.Strict}
+          defaultEdgeOptions={{ type: 'stage' }}
+          connectionLineComponent={StageConnectionEdge}
+          elevateEdgesOnSelect
+          defaultViewport={{ x: 0, y: 0, zoom: 1.5 }}
+        >
+          <Panel position="bottom-right">
+            <CanvasPositionControls translations={DefaultCanvasTranslations} />
+          </Panel>
+        </BaseCanvas>
+      </ReactFlowProvider>
+    </div>
+  );
+};
+
+export const AddAndReplaceTasks: Story = {
+  name: 'Add, Replace, and Group Tasks',
+  parameters: {
+    useCustomRender: true,
+  },
+  render: () => <AddAndReplaceTasksStory />,
   args: {},
 };

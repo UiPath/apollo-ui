@@ -1,37 +1,80 @@
 import { Spacing } from '@uipath/apollo-core';
 import { ApIcon, ApIconButton, ApMenu } from '@uipath/apollo-react/material';
-import { memo, useCallback, useMemo, useRef, useState } from 'react';
+import {
+  forwardRef,
+  memo,
+  useCallback,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import type { NodeMenuAction, NodeMenuItem } from '../NodeContextMenu';
 import { transformMenuItems } from './StageNodeTaskUtilities';
 import token from '@uipath/apollo-core';
+
+export interface TaskMenuHandle {
+  handleContextMenu: (e: React.MouseEvent<HTMLElement>) => void;
+}
 
 interface TaskMenuProps {
   taskId: string;
   contextMenuItems: NodeMenuItem[];
   onMenuOpenChange?: (isOpen: boolean) => void;
+  onMenuOpen?: () => void;
+  taskRef?: React.RefObject<HTMLElement | null>;
 }
 
-const TaskMenuComponent = ({ taskId, contextMenuItems, onMenuOpenChange }: TaskMenuProps) => {
+const TaskMenuComponent = (
+  { taskId, contextMenuItems, onMenuOpenChange, onMenuOpen, taskRef }: TaskMenuProps,
+  ref: React.Ref<TaskMenuHandle>
+) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [anchorElement, setAnchorElement] = useState<HTMLElement | null>(null);
   const menuAnchorRef = useRef<HTMLButtonElement>(null);
 
   const handleMenuClose = useCallback(() => {
     setIsMenuOpen(false);
+    setAnchorElement(null);
     onMenuOpenChange?.(false);
   }, [onMenuOpenChange]);
+
+  const openMenu = useCallback(
+    (anchor: HTMLElement | null) => {
+      setAnchorElement(anchor);
+      setIsMenuOpen(true);
+      onMenuOpen?.();
+      onMenuOpenChange?.(true);
+    },
+    [onMenuOpen, onMenuOpenChange]
+  );
 
   const handleMenuClick = useCallback(
     (e: React.MouseEvent) => {
       e.stopPropagation();
       e.preventDefault();
-      setIsMenuOpen((open) => {
-        const newState = !open;
-        onMenuOpenChange?.(newState);
-        return newState;
-      });
+      if (isMenuOpen) {
+        handleMenuClose();
+      } else {
+        openMenu(menuAnchorRef.current);
+      }
     },
-    [onMenuOpenChange]
+    [isMenuOpen, handleMenuClose, openMenu]
   );
+
+  const handleContextMenu = useCallback(
+    (e: React.MouseEvent<HTMLElement>) => {
+      e.stopPropagation();
+      e.preventDefault();
+      const anchor = taskRef?.current || (e.currentTarget as HTMLElement);
+      openMenu(anchor);
+    },
+    [taskRef, openMenu]
+  );
+
+  useImperativeHandle(ref, () => ({
+    handleContextMenu,
+  }));
 
   const handleMenuMouseDown = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
@@ -70,7 +113,7 @@ const TaskMenuComponent = ({ taskId, contextMenuItems, onMenuOpenChange }: TaskM
       <ApMenu
         isOpen={isMenuOpen}
         menuItems={transformedMenuItems}
-        anchorEl={menuAnchorRef.current}
+        anchorEl={anchorElement}
         onClose={handleMenuClose}
         anchorOrigin={{
           vertical: 'bottom',
@@ -97,4 +140,4 @@ const TaskMenuComponent = ({ taskId, contextMenuItems, onMenuOpenChange }: TaskM
   );
 };
 
-export const TaskMenu = memo(TaskMenuComponent);
+export const TaskMenu = memo(forwardRef(TaskMenuComponent));

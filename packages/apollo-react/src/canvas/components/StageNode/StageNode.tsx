@@ -33,7 +33,7 @@ import { useConnectedHandles } from '../BaseCanvas/ConnectedHandlesContext';
 import { useButtonHandles } from '../ButtonHandle/useButtonHandles';
 import { ExecutionStatusIcon } from '../ExecutionStatusIcon';
 import { FloatingCanvasPanel } from '../FloatingCanvasPanel';
-import { NodeContextMenu } from '../NodeContextMenu';
+import { NodeContextMenu, NodeMenuItem } from '../NodeContextMenu';
 import { useNodeSelection } from '../NodePropertiesPanel/hooks';
 import { type ListItem, Toolbox } from '../Toolbox';
 import { DraggableTask, TaskContent } from './DraggableTask';
@@ -53,10 +53,9 @@ import {
 } from './StageNode.styles';
 import type { StageNodeProps } from './StageNode.types';
 import { flattenTasks, getProjection, reorderTasks } from './StageNode.utils';
-import { getContextMenuItems } from './StageNodeTaskUtilities';
+import { getContextMenuItems, getMenuItem } from './StageNodeTaskUtilities';
 
 interface TaskStateReference {
-  anchor: React.RefObject<HTMLDivElement | null>;
   isParallel: boolean;
   groupIndex: number;
   taskIndex: number;
@@ -71,6 +70,7 @@ const StageNodeComponent = (props: StageNodeProps) => {
     execution,
     stageDetails,
     addTaskLabel = 'Add task',
+    replaceTaskLabel = 'Replace task',
     taskOptions = [],
     menuItems,
     onStageClick,
@@ -81,6 +81,7 @@ const StageNodeComponent = (props: StageNodeProps) => {
     onTaskGroupModification,
     onStageTitleChange,
     onTaskReorder,
+    onTaskReplace,
   } = props;
 
   const taskWidth = width ? width - STAGE_CONTENT_INSET : undefined;
@@ -114,17 +115,16 @@ const StageNodeComponent = (props: StageNodeProps) => {
 
   const [isStageTitleEditing, setIsStageTitleEditing] = useState(false);
   const stageTitleRef = useRef<HTMLInputElement>(null);
-  const [taskStateReference, setTaskStateReference] = useState<TaskStateReference>({
-    anchor: useRef<HTMLDivElement>(null),
+  const taskStateReference = useRef<TaskStateReference>({
     isParallel: false,
     groupIndex: -1,
     taskIndex: -1,
   });
-  const [isTaskContextMenuVisible, setIsTaskContextMenuVisible] = useState<boolean>(false);
   const isConnecting = useStore((state) => !!state.connectionClickStartHandle);
   const connectedHandleIds = useConnectedHandles(id);
 
   const [isAddingTask, setIsAddingTask] = useState(false);
+  const [isReplacingTask, setIsReplacingTask] = useState(false);
   const [activeDragId, setActiveDragId] = useState<string | null>(null);
   const [offsetLeft, setOffsetLeft] = useState(0);
   const [overId, setOverId] = useState<string | null>(null);
@@ -148,7 +148,10 @@ const StageNodeComponent = (props: StageNodeProps) => {
   }, [tasks, activeDragId, overId, offsetLeft]);
 
   useEffect(() => {
-    if (selected === false) setIsAddingTask(false);
+    if (selected === false) {
+      setIsAddingTask(false);
+      setIsReplacingTask(false);
+    }
   }, [selected]);
 
   const hasConnections = connectedHandleIds.size > 0;
@@ -204,49 +207,14 @@ const StageNodeComponent = (props: StageNodeProps) => {
     [onStageTitleChange, label]
   );
 
-  const handleTaskContextMenuOpen = useCallback(
-    (
-      isParallel: boolean,
-      groupIndex: number,
-      taskIndex: number,
-      e: React.MouseEvent<HTMLDivElement>
-    ) => {
-      e.preventDefault();
-      e.stopPropagation();
-      setIsTaskContextMenuVisible(true);
-      setTaskStateReference({
-        anchor: { current: e.currentTarget },
-        isParallel,
-        groupIndex,
-        taskIndex,
-      });
-    },
-    []
-  );
-
-  const handleTaskContextMenuClose = useCallback(() => {
-    setIsTaskContextMenuVisible(false);
-  }, []);
-
   useEffect(() => {
-    if (isTaskContextMenuVisible) {
-      document.addEventListener('click', handleTaskContextMenuClose);
-      document.addEventListener('keydown', handleTaskContextMenuClose);
-    }
     if (isStageTitleEditing) {
       document.addEventListener('click', handleStageTitleClickToSave);
     }
     return () => {
       document.removeEventListener('click', handleStageTitleClickToSave);
-      document.removeEventListener('click', handleTaskContextMenuClose);
-      document.removeEventListener('keydown', handleTaskContextMenuClose);
     };
-  }, [
-    handleTaskContextMenuClose,
-    isTaskContextMenuVisible,
-    handleStageTitleClickToSave,
-    isStageTitleEditing,
-  ]);
+  }, [handleStageTitleClickToSave, isStageTitleEditing]);
 
   const contextMenuItems = useCallback(
     (
@@ -257,18 +225,30 @@ const StageNodeComponent = (props: StageNodeProps) => {
       taskGroupLength: number,
       isAboveParallel: boolean,
       isBelowParallel: boolean
-    ) =>
-      getContextMenuItems(
-        isParallel,
-        groupIndex,
-        tasksLength,
-        taskIndex,
-        taskGroupLength,
-        isAboveParallel,
-        isBelowParallel,
-        reGroupTaskFunction
-      ),
-    [reGroupTaskFunction]
+    ) => {
+      const items: NodeMenuItem[] = [];
+
+      if (onTaskReplace) {
+        items.push(getMenuItem('replace-task', 'Replace Task', () => setIsReplacingTask(true)));
+      }
+
+      if (onTaskGroupModification) {
+        const reGroupOptions = getContextMenuItems(
+          isParallel,
+          groupIndex,
+          tasksLength,
+          taskIndex,
+          taskGroupLength,
+          isAboveParallel,
+          isBelowParallel,
+          reGroupTaskFunction
+        );
+        return [...items, ...reGroupOptions];
+      }
+
+      return items;
+    },
+    [onTaskReplace, onTaskGroupModification, reGroupTaskFunction]
   );
 
   const { setSelectedNodeId } = useNodeSelection();
@@ -298,13 +278,26 @@ const StageNodeComponent = (props: StageNodeProps) => {
     [onTaskAdd, onAddTaskFromToolbox, setSelectedNodeId, id]
   );
 
-  const handleTaskToolboxItemSelected = useCallback(
+  const handleAddTaskToolboxItemSelected = useCallback(
     (item: ListItem) => {
       onAddTaskFromToolbox?.(item);
       setIsAddingTask(false);
       setSelectedNodeId(id);
     },
     [onAddTaskFromToolbox, setSelectedNodeId, id]
+  );
+
+  const handleReplaceTaskToolboxItemSelected = useCallback(
+    (item: ListItem) => {
+      onTaskReplace?.(
+        item,
+        taskStateReference.current.groupIndex,
+        taskStateReference.current.taskIndex
+      );
+      setIsReplacingTask(false);
+      setSelectedNodeId(id);
+    },
+    [onTaskReplace, setSelectedNodeId, id]
   );
 
   const handleConfigurations: HandleGroupManifest[] = useMemo(
@@ -591,11 +584,6 @@ const StageNodeComponent = (props: StageNodeProps) => {
                                 taskExecution={taskExecution}
                                 isSelected={!!selectedTasks?.includes(task.id)}
                                 isParallel={isParallel}
-                                isContextMenuVisible={
-                                  isTaskContextMenuVisible &&
-                                  taskStateReference.groupIndex === groupIndex &&
-                                  taskStateReference.taskIndex === taskIndex
-                                }
                                 contextMenuItems={contextMenuItems(
                                   isParallel,
                                   groupIndex,
@@ -605,7 +593,6 @@ const StageNodeComponent = (props: StageNodeProps) => {
                                   (tasks[groupIndex - 1]?.length ?? 0) > 1,
                                   (tasks[groupIndex + 1]?.length ?? 0) > 1
                                 )}
-                                contextMenuAnchor={taskStateReference.anchor}
                                 onTaskClick={handleTaskClick}
                                 projectedDepth={
                                   task.id === activeDragId && projected
@@ -614,9 +601,14 @@ const StageNodeComponent = (props: StageNodeProps) => {
                                 }
                                 isDragDisabled={!onTaskReorder}
                                 zoom={zoom}
-                                {...(onTaskGroupModification && {
-                                  onContextMenu: (e) =>
-                                    handleTaskContextMenuOpen(isParallel, groupIndex, taskIndex, e),
+                                {...((onTaskGroupModification || onTaskReplace) && {
+                                  onMenuOpen: () => {
+                                    taskStateReference.current = {
+                                      isParallel,
+                                      groupIndex,
+                                      taskIndex,
+                                    };
+                                  },
                                 })}
                               />
                             );
@@ -654,7 +646,19 @@ const StageNodeComponent = (props: StageNodeProps) => {
             title={addTaskLabel}
             initialItems={taskOptions}
             onClose={() => setIsAddingTask(false)}
-            onItemSelect={handleTaskToolboxItemSelected}
+            onItemSelect={handleAddTaskToolboxItemSelected}
+            onSearch={onTaskToolboxSearch}
+          />
+        </FloatingCanvasPanel>
+      )}
+
+      {onTaskReplace && (
+        <FloatingCanvasPanel open={isReplacingTask} nodeId={id} offset={15}>
+          <Toolbox
+            title={replaceTaskLabel}
+            initialItems={taskOptions}
+            onClose={() => setIsReplacingTask(false)}
+            onItemSelect={handleReplaceTaskToolboxItemSelected}
             onSearch={onTaskToolboxSearch}
           />
         </FloatingCanvasPanel>
