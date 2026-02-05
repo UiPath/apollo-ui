@@ -1,9 +1,9 @@
 import { FontVariantToken } from '@uipath/apollo-core';
 import { Column } from '@uipath/apollo-react/canvas/layouts';
-import { partition } from '@uipath/apollo-react/canvas/utils';
+import { NodeIcon, partition } from '@uipath/apollo-react/canvas/utils';
 import { ApSkeleton, ApTypography } from '@uipath/apollo-react/material';
 import { ApIcon } from '@uipath/apollo-react/material/components';
-import { useMemo } from 'react';
+import { memo, useCallback, useMemo } from 'react';
 import type { RowComponentProps } from 'react-window';
 
 import { IconContainer, ListItemButton, SectionHeader, StyledList } from './ListView.styles';
@@ -46,78 +46,106 @@ export interface ListViewRowProps<T extends ListItem> {
   getItemColor?: (item: T) => string | undefined;
 }
 
-const ListViewRow = <T extends ListItem>({
-  index,
-  style,
-  ariaAttributes,
-  renderedItems,
-  isLoading,
-  onItemClick,
-  onItemHover,
-  getItemColor,
-}: RowComponentProps<ListViewRowProps<T>>) => {
-  const renderItem = renderedItems[index] as RenderItem<T>;
+const IconContainerMemoized = memo(IconContainer);
 
-  if (renderItem.type === 'section') {
+const ListViewRow = memo(
+  <T extends ListItem>({
+    index,
+    style,
+    ariaAttributes,
+    renderedItems,
+    isLoading,
+    onItemClick,
+    onItemHover,
+    getItemColor,
+  }: RowComponentProps<ListViewRowProps<T>>) => {
+    const renderItem = renderedItems[index]!;
+
+    const buttonStyle = useMemo(
+      () => ({ ...style, padding: 0, paddingRight: '4px', height: '32px', outlineOffset: '-1px' }),
+      [style]
+    );
+
+    const handleButtonClick = useCallback(() => {
+      const clickTarget = renderedItems[index];
+      if (clickTarget?.type === 'item') {
+        onItemClick(clickTarget.item);
+      }
+    }, [onItemClick, renderedItems, index]);
+
+    const handleButtonHover = useCallback(() => {
+      const hoverTarget = renderedItems[index];
+      if (hoverTarget?.type === 'item') {
+        onItemHover?.(hoverTarget.item);
+      }
+    }, [onItemHover, renderedItems, index]);
+
+    if (renderItem.type === 'section') {
+      return (
+        <SectionHeader {...ariaAttributes} style={style}>
+          <ApTypography
+            variant={FontVariantToken.fontSizeS}
+            color="var(--uix-canvas-foreground-emp)"
+          >
+            {renderItem.sectionName}
+          </ApTypography>
+        </SectionHeader>
+      );
+    }
+
+    const item = renderItem.item;
+    const bgColor = getItemColor ? getItemColor(item) : 'color' in item ? item.color : undefined;
+
     return (
-      <SectionHeader {...ariaAttributes} style={style}>
-        <ApTypography variant={FontVariantToken.fontSizeS} color="var(--uix-canvas-foreground-emp)">
-          {renderItem.sectionName}
-        </ApTypography>
-      </SectionHeader>
+      <ListItemButton
+        {...ariaAttributes}
+        style={buttonStyle}
+        onClick={handleButtonClick}
+        onHoverStart={handleButtonHover}
+        className={isLoading ? 'loading' : ''}
+        disabled={isLoading}
+      >
+        <IconContainerMemoized
+          bgColor={bgColor}
+          color="var(--uix-canvas-foreground-emp)"
+          data-testid="list-item-icon"
+        >
+          {item.icon?.url && (
+            <img src={item.icon?.url} alt={item.name} style={{ width: 24, height: 24 }} />
+          )}
+          {item.icon?.name && <NodeIcon icon={item.icon.name} size={24} />}
+          {item.icon?.Component && <item.icon.Component />}
+        </IconContainerMemoized>
+        <Column flex={1} overflow="hidden">
+          <ApTypography
+            variant={FontVariantToken.fontSizeM}
+            className="list-view-item-name"
+            color="var(--uix-canvas-foreground-emp)"
+          >
+            {item.name}
+          </ApTypography>
+          {item.description && (
+            <ApTypography
+              variant={FontVariantToken.fontSizeXs}
+              className="list-view-item-name"
+              color="var(--uix-canvas-foreground-de-emp)"
+            >
+              {item.description}
+            </ApTypography>
+          )}
+        </Column>
+        {!!item.children && (
+          <ApIcon
+            name="chevron_right"
+            variant="outlined"
+            size="20px"
+            color="var(--uix-canvas-foreground-de-emp)"
+          />
+        )}
+      </ListItemButton>
     );
   }
-
-  const item = renderItem.item;
-  const bgColor = getItemColor ? getItemColor(item) : 'color' in item ? item.color : undefined;
-
-  return (
-    <ListItemButton
-      {...ariaAttributes}
-      onClick={() => onItemClick(item)}
-      style={{ ...style, padding: 0, paddingRight: '4px', height: '32px' }}
-      onHoverStart={() => onItemHover?.(item)}
-      className={isLoading ? 'loading' : ''}
-      disabled={isLoading}
-    >
-      <IconContainer bgColor={bgColor} color="var(--uix-canvas-foreground-emp)">
-        {item.icon?.url && (
-          <img src={item.icon?.url} alt={item.name} style={{ width: 24, height: 24 }} />
-        )}
-        {item.icon?.name && (
-          <ApIcon name={item.icon?.name} size="24px" color="var(--uix-canvas-foreground-de-emp)" />
-        )}
-        {item.icon?.Component && <item.icon.Component />}
-      </IconContainer>
-      <Column flex={1} overflow="hidden">
-        <ApTypography
-          variant={FontVariantToken.fontSizeM}
-          className="list-view-item-name"
-          color="var(--uix-canvas-foreground-emp)"
-        >
-          {item.name}
-        </ApTypography>
-        {item.description && (
-          <ApTypography
-            variant={FontVariantToken.fontSizeXs}
-            className="list-view-item-name"
-            color="var(--uix-canvas-foreground-de-emp)"
-          >
-            {item.description}
-          </ApTypography>
-        )}
-      </Column>
-      {!!item.children && (
-        <ApIcon
-          name="chevron_right"
-          variant="outlined"
-          size="20px"
-          color="var(--uix-canvas-foreground-de-emp)"
-        />
-      )}
-    </ListItemButton>
-  );
-};
+) as <T extends ListItem>(props: RowComponentProps<ListViewRowProps<T>>) => React.ReactElement;
 
 interface ListViewProps<T extends ListItem> {
   items: T[];
@@ -130,7 +158,7 @@ interface ListViewProps<T extends ListItem> {
   enableSections?: boolean;
 }
 
-export const ListView = <T extends ListItem>({
+export const ListView = memo(function ListView<T extends ListItem>({
   items,
   onItemClick,
   getItemColor,
@@ -139,7 +167,7 @@ export const ListView = <T extends ListItem>({
   emptyStateIcon = 'search_off',
   isLoading = false,
   enableSections = true,
-}: ListViewProps<T>) => {
+}: ListViewProps<T>) {
   const renderedItems = useMemo<RenderItem<T>[]>(() => {
     const result: RenderItem<T>[] = [];
 
@@ -179,6 +207,11 @@ export const ListView = <T extends ListItem>({
     return result;
   }, [items, enableSections]);
 
+  const rowProps = useMemo(
+    () => ({ renderedItems, isLoading, onItemClick, getItemColor, onItemHover }),
+    [renderedItems, isLoading, onItemClick, getItemColor, onItemHover]
+  );
+
   // Only show skeleton loaders when loading and no items exist
   if (isLoading && items.length === 0) {
     return (
@@ -207,11 +240,11 @@ export const ListView = <T extends ListItem>({
 
   return (
     <StyledList
-      rowProps={{ renderedItems, isLoading, onItemClick, getItemColor, onItemHover }}
+      rowProps={rowProps}
       rowComponent={ListViewRow}
       rowCount={renderedItems.length}
       rowHeight={40}
       overscanCount={20}
     />
   );
-};
+});

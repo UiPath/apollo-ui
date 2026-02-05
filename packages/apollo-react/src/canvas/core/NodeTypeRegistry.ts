@@ -13,7 +13,7 @@ import {
   validateConnection,
 } from '../utils';
 import { CategoryTree, type ConnectionValidator } from './CategoryTree';
-import { CategoryTreeAdapter, type IconResolver } from './CategoryTreeAdapter';
+import { CategoryTreeAdapter } from './CategoryTreeAdapter';
 
 interface NodeHandles {
   source?: HandleManifest[];
@@ -404,7 +404,6 @@ export class NodeTypeRegistry {
    * @param options.search - Optional search term for filtering nodes
    * @param options.flattenAll - When true, flattens all categories for UI simplicity.
    * @param options.flattenSinglePath - When true, flattens when only a single path to leaf nodes exists.
-   * @param options.iconResolver - Optional icon resolver for list format
    * @returns Filtered results in the specified format
    *
    * @example
@@ -418,7 +417,6 @@ export class NodeTypeRegistry {
    * const items = registry.getNodeOptions({
    *   connections: previewNodeConnectionInfo,
    *   search: 'email',
-   *   iconResolver: getIcon
    * });
    */
   getNodeOptions(options: {
@@ -427,7 +425,6 @@ export class NodeTypeRegistry {
     search?: string;
     flattenAll?: boolean;
     flattenSinglePath?: boolean;
-    iconResolver?: IconResolver;
   }): ListItem[] {
     const {
       connections,
@@ -435,7 +432,6 @@ export class NodeTypeRegistry {
       search,
       flattenAll = false,
       flattenSinglePath = false,
-      iconResolver,
     } = options;
 
     let tree = this.getCategoryTree();
@@ -468,6 +464,6 @@ export class NodeTypeRegistry {
     }
 
     const adapter = new CategoryTreeAdapter(tree);
-    return adapter.toListItems({ iconResolver });
+    return adapter.toListItems();
   }
 }

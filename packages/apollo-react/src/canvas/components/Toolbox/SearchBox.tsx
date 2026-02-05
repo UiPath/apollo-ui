@@ -1,7 +1,6 @@
 import { cx } from '@uipath/apollo-react/canvas/utils';
 import { ApIcon } from '@uipath/apollo-react/material/components';
-import type React from 'react';
-import { useEffect, useRef } from 'react';
+import { memo, useEffect, useRef } from 'react';
 import { StyledSearchForm } from './SearchBox.styles';
 
 interface SearchBoxProps {
@@ -11,12 +10,12 @@ interface SearchBoxProps {
   placeholder?: string;
 }
 
-export const SearchBox: React.FC<SearchBoxProps> = ({
+export const SearchBox = memo(function SearchBox({
   value,
   onChange,
   clear,
   placeholder = 'Search...',
-}) => {
+}: SearchBoxProps) {
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -50,4 +49,4 @@ export const SearchBox: React.FC<SearchBoxProps> = ({
       </div>
     </StyledSearchForm>
   );
-};
+});

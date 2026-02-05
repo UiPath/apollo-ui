@@ -1,6 +1,7 @@
 import { FontVariantToken } from '@uipath/apollo-core';
 import { Row } from '@uipath/apollo-react/canvas/layouts';
 import { ApIcon, ApIconButton, ApTypography } from '@uipath/apollo-react/material';
+import { memo } from 'react';
 
 interface HeaderProps {
   title: string;
@@ -8,7 +9,7 @@ interface HeaderProps {
   onBack?: () => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({ title, onBack, showBackButton }) => {
+export const Header = memo(function Header({ title, onBack, showBackButton }: HeaderProps) {
   const isBackButtonVisible = showBackButton && onBack;
 
   return (
@@ -49,4 +50,4 @@ export const Header: React.FC<HeaderProps> = ({ title, onBack, showBackButton })
       </ApTypography>
     </Row>
   );
-};
+});

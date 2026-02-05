@@ -694,23 +694,7 @@ describe('NodeTypeRegistry', () => {
       expect(items).toHaveLength(0);
     });
 
-    it('should handle iconResolver when provided', () => {
-      const mockIconResolver = (_iconName: string) => {
-        return () => null; // Mock component
-      };
-
-      const items = registry.getNodeOptions({
-        iconResolver: mockIconResolver,
-      });
-
-      // Check that icons have Component property
-      const firstCategory = items[0];
-      expect(firstCategory).toBeDefined();
-      expect(firstCategory?.icon).toBeDefined();
-      expect(firstCategory?.icon).toHaveProperty('Component');
-    });
-
-    it('should handle nodes without iconResolver', () => {
+    it('should handle node icons', () => {
       const items = registry.getNodeOptions({});
 
       // Check that icons have name property

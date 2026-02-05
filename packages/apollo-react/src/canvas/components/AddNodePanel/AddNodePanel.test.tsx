@@ -6,6 +6,14 @@ import type { ListItem, ToolboxProps } from '../Toolbox';
 import { AddNodePanel } from './AddNodePanel';
 import type { NodeItemData } from './AddNodePanel.types';
 
+// Mock usePreviewNode hook to avoid ReactFlow dependencies in tests
+vi.mock('../../hooks', () => ({
+  usePreviewNode: () => ({
+    previewNode: null,
+    previewNodeConnectionInfo: null,
+  }),
+}));
+
 // Mock Toolbox to test only AddNodePanel's data transformation logic
 vi.mock('../Toolbox', () => ({
   Toolbox: ({ title, initialItems, onClose, onItemSelect }: ToolboxProps<NodeItemData>) => (
@@ -24,10 +32,6 @@ vi.mock('../Toolbox', () => ({
       </button>
     </div>
   ),
-}));
-
-vi.mock('../../utils/icon-registry', () => ({
-  getIcon: undefined,
 }));
 
 describe('AddNodePanel', () => {

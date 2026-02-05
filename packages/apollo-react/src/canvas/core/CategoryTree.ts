@@ -325,7 +325,9 @@ export class CategoryTree {
         const matchesLabel = node.display.label.toLowerCase().includes(searchLower);
         const matchesType = node.nodeType.toLowerCase().includes(searchLower);
         const matchesDescription = node.description?.toLowerCase().includes(searchLower);
-        const matchesTags = node.tags?.some((tag) => tag.toLowerCase().includes(searchLower));
+        const matchesTags = node.tags?.some(
+          (tag) => typeof tag === 'string' && tag.toLowerCase().includes(searchLower)
+        );
 
         return matchesLabel || matchesType || matchesDescription || matchesTags;
       },
