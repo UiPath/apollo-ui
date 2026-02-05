@@ -1,4 +1,10 @@
-import React, { forwardRef, useCallback, useImperativeHandle, useRef } from 'react';
+import React, {
+  forwardRef,
+  useCallback,
+  useImperativeHandle,
+  useLayoutEffect,
+  useRef,
+} from 'react';
 import {
   AutopilotChatResourcePickerProvider,
   useAutopilotChatResourcePicker,
@@ -23,7 +29,6 @@ export interface ChatInputEditorProps {
   minRows: number;
   maxRows: number;
   lineHeight?: string;
-  anchorEl: HTMLElement | null;
   onChange: (value: string) => void;
   onKeyDown?: (event: KeyboardEvent) => boolean;
 }
@@ -37,15 +42,18 @@ const EditorWithPicker = forwardRef<ChatInputEditorHandle, EditorWithPickerProps
     const { value, placeholder, minRows, maxRows, lineHeight, onChange, onKeyDown, editorRef } =
       props;
     const dropdownRef = useRef<ResourcePickerDropdownHandle>(null);
-    const { isOpen, drillDown, open, close, setQuery } = useAutopilotChatResourcePicker();
+    const { isOpenRef, drillDown, open, close, handleMentionEnd, setQuery } =
+      useAutopilotChatResourcePicker();
 
-    const isOpenRef = useRef(isOpen);
     const drillDownRef = useRef(drillDown);
     const valueRef = useRef(value);
-    isOpenRef.current = isOpen;
-    drillDownRef.current = drillDown;
-    valueRef.current = value;
 
+    useLayoutEffect(() => {
+      drillDownRef.current = drillDown;
+      valueRef.current = value;
+    }, [drillDown, value]);
+
+    // biome-ignore lint/correctness/useExhaustiveDependencies: isOpenRef and drillDownRef are stable refs read synchronously at call time
     const handleChange = useCallback(
       (newValue: string) => {
         if (isOpenRef.current && drillDownRef.current && !newValue.includes('@')) {
@@ -56,6 +64,7 @@ const EditorWithPicker = forwardRef<ChatInputEditorHandle, EditorWithPickerProps
       [close, onChange]
     );
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: isOpenRef and dropdownRef are stable refs read synchronously at call time
     const handleKeyDown = useCallback(
       (event: KeyboardEvent): boolean => {
         if (isOpenRef.current && dropdownRef.current?.handleKeyDown(event)) {
@@ -93,7 +102,7 @@ const EditorWithPicker = forwardRef<ChatInputEditorHandle, EditorWithPickerProps
           onChange={handleChange}
           onKeyDown={handleKeyDown}
           onMentionStart={open}
-          onMentionEnd={close}
+          onMentionEnd={handleMentionEnd}
           onMentionQueryChange={setQuery}
         />
         <ResourcePickerDropdown ref={dropdownRef} />
@@ -123,10 +132,15 @@ export const ChatInputEditor = React.memo(
       editorRef.current?.clearMentionQuery();
     }, []);
 
+    const handleClose = useCallback(() => {
+      editorRef.current?.exitMention();
+    }, []);
+
     return (
       <AutopilotChatResourcePickerProvider
         onResourceSelect={handleResourceSelect}
         onDrillDown={handleDrillDown}
+        onClose={handleClose}
       >
         <EditorWithPicker {...props} ref={ref} editorRef={editorRef} />
       </AutopilotChatResourcePickerProvider>

@@ -71,13 +71,17 @@ export function pickerReducer(state: PickerState, action: PickerAction): PickerS
       };
 
     case 'CLOSE':
-      return initialPickerState;
+      return { ...state, anchorPosition: null };
 
-    case 'SET_QUERY':
+    case 'SET_QUERY': {
+      const newTrimmed = action.query.trim();
+      if (action.query === state.query || newTrimmed === state.query.trim()) return state;
       return {
         ...state,
         query: action.query,
+        searchInProgress: !!newTrimmed,
       };
+    }
 
     case 'LOAD_START':
       return {
@@ -165,6 +169,7 @@ export function pickerReducer(state: PickerState, action: PickerAction): PickerS
         ...state,
         searchResults: [],
         searchDone: true,
+        searchInProgress: false,
       };
 
     default:

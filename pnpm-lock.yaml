@@ -518,6 +518,9 @@ importers:
       '@tiptap/react':
         specifier: ^3.17.1
         version: 3.17.1(@floating-ui/dom@1.7.4)(@tiptap/core@3.17.1(@tiptap/pm@3.17.1))(@tiptap/pm@3.17.1)(@types/react-dom@19.2.3(@types/react@19.2.8))(@types/react@19.2.8)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+      '@tiptap/suggestion':
+        specifier: 3.17.1
+        version: 3.17.1(@tiptap/core@3.17.1(@tiptap/pm@3.17.1))(@tiptap/pm@3.17.1)
       '@uipath/apollo-core':
         specifier: workspace:*
         version: link:../apollo-core

@@ -2,17 +2,17 @@ import { msg } from '@lingui/core/macro';
 import { useLingui } from '@lingui/react';
 import { styled } from '@mui/material/styles';
 import { type NodeViewProps, NodeViewWrapper } from '@tiptap/react';
-import token from '@uipath/apollo-core';
+import token, { Typography } from '@uipath/apollo-core';
 import React from 'react';
 import { useChatState } from '../../../providers/chat-state-provider';
 import { CHAT_RESOURCE_CHIP_MAX_WIDTH } from '../../../service/';
+import { fontByVariant } from '../../../utils/font-by-variant';
 import { AutopilotChatActionButton } from '../../common/action-button';
 import { AutopilotChatTooltip } from '../../common/tooltip';
 
 const ChipContent = styled('span')<{ readonly?: boolean }>(({ theme, readonly }) => ({
   display: 'inline-flex',
   alignItems: 'center',
-  gap: token.Spacing.SpacingMicro,
   padding: `0 ${token.Padding.PadS}`,
   backgroundColor: theme.palette.semantic.colorPrimaryLighter,
   color: theme.palette.semantic.colorForeground,
@@ -37,6 +37,7 @@ const ChipLabel = styled('span')(() => ({
   overflow: 'hidden',
   textOverflow: 'ellipsis',
   whiteSpace: 'nowrap',
+  padding: `0 ${token.Padding.PadS}`,
 }));
 
 const ChipDeleteContainer = styled('span')<{ visible: boolean; compactMode: boolean }>(
@@ -52,7 +53,7 @@ const ChipDeleteContainer = styled('span')<{ visible: boolean; compactMode: bool
     borderRadius: `calc(${token.Border.BorderRadiusL} * 2)`,
     transition: 'opacity 0.15s ease-in-out',
 
-    '& .MuiButtonBase-root': {
+    '& .MuiButtonBase-root.MuiButtonBase-root': {
       height: compactMode ? token.Spacing.SpacingS : token.Spacing.SpacingM,
       width: compactMode ? token.Spacing.SpacingS : token.Spacing.SpacingM,
       padding: 0,
@@ -139,9 +140,20 @@ ResourceChipBase.displayName = 'ResourceChipBase';
 
 export const ResourceChipNodeView: React.FC<NodeViewProps> = React.memo(({ node, deleteNode }) => {
   const { label, icon } = node.attrs;
+  const { spacing } = useChatState();
+  const lineHeight =
+    fontByVariant(spacing.primaryFontToken)?.lineHeight ?? Typography.fontSizeM.lineHeight;
 
   return (
-    <NodeViewWrapper as="span">
+    <NodeViewWrapper
+      as="span"
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        height: lineHeight,
+        verticalAlign: 'top',
+      }}
+    >
       <ResourceChipBase label={label} icon={icon} onDelete={deleteNode} />
     </NodeViewWrapper>
   );

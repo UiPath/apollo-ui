@@ -1,9 +1,21 @@
 import { msg } from '@lingui/core/macro';
 import { useLingui } from '@lingui/react';
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef } from 'react';
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+} from 'react';
 import type { CursorCoordinates, TipTapRange } from '../components/input/tiptap';
 import { type DrillDownState, useResourcePickerState } from '../hooks/use-resource-picker-state';
-import { type AutopilotChatResourceItem, type AutopilotChatResourceItemSelector } from '../service';
+import {
+  type AutopilotChatResourceItem,
+  type AutopilotChatResourceItemSelector,
+  CHAT_RESOURCE_PICKER_SEARCH_DEBOUNCE_MS,
+} from '../service';
 import { useResourceData } from './resource-data-provider';
 
 export type { DrillDownState };
@@ -18,10 +30,10 @@ export function isResourceSelector(
 }
 
 const PICKER_VERTICAL_OFFSET = 8;
-const SEARCH_DEBOUNCE_MS = 150;
 
 export interface AutopilotChatResourcePickerContextType {
   isOpen: boolean;
+  isOpenRef: React.RefObject<boolean>;
   anchorPosition: CursorCoordinates | null;
   query: string;
   displayedItems: AutopilotChatResourceItem[];
@@ -34,6 +46,7 @@ export interface AutopilotChatResourcePickerContextType {
   previousDisplayCount: number;
   open: (range: TipTapRange, coords: CursorCoordinates) => void;
   close: () => void;
+  handleMentionEnd: () => void;
   setQuery: (query: string, range: TipTapRange) => void;
   handleItemClick: (item: AutopilotChatResourceItem | AutopilotChatResourceItemSelector) => void;
   goBackOrClose: () => void;
@@ -48,12 +61,14 @@ interface AutopilotChatResourcePickerProviderProps {
   children: React.ReactNode;
   onResourceSelect: (resource: AutopilotChatResourceItem, range?: TipTapRange) => void;
   onDrillDown?: () => void;
+  onClose?: () => void;
 }
 
 export function AutopilotChatResourcePickerProvider({
   children,
   onResourceSelect,
   onDrillDown,
+  onClose,
 }: AutopilotChatResourcePickerProviderProps) {
   const {
     hasResources,
@@ -80,9 +95,14 @@ export function AutopilotChatResourcePickerProvider({
   } = state;
 
   const mentionRangeRef = useRef<TipTapRange | null>(null);
-  const skipNextCloseRef = useRef(false);
+  const drillDownActiveRef = useRef(false);
 
   const isOpen = anchorPosition !== null;
+  const isOpenRef = useRef(isOpen);
+
+  useLayoutEffect(() => {
+    isOpenRef.current = isOpen;
+  }, [isOpen]);
   const searchQuery = useMemo(() => query.trim().toLowerCase(), [query]);
 
   const errorMessages = useMemo(
@@ -119,13 +139,21 @@ export function AutopilotChatResourcePickerProvider({
   );
 
   const close = useCallback(() => {
-    if (skipNextCloseRef.current) {
-      skipNextCloseRef.current = false;
-      return;
-    }
+    if (!isOpenRef.current) return;
+    isOpenRef.current = false;
+    onClose?.();
+    drillDownActiveRef.current = false;
     mentionRangeRef.current = null;
     dispatch({ type: 'CLOSE' });
-  }, [dispatch]);
+  }, [dispatch, onClose]);
+
+  const handleMentionEnd = useCallback(() => {
+    if (drillDownActiveRef.current) {
+      drillDownActiveRef.current = false;
+      return;
+    }
+    close();
+  }, [close]);
 
   const setQuery = useCallback(
     (newQuery: string, range: TipTapRange) => {
@@ -157,7 +185,7 @@ export function AutopilotChatResourcePickerProvider({
   const handleItemClick = useCallback(
     (item: AutopilotChatResourceItem | AutopilotChatResourceItemSelector) => {
       if (isResourceSelector(item)) {
-        skipNextCloseRef.current = true;
+        drillDownActiveRef.current = true;
         onDrillDown?.();
         dispatch({ type: 'SET_QUERY', query: '' });
         loadNestedResources(item);
@@ -172,17 +200,12 @@ export function AutopilotChatResourcePickerProvider({
 
   const goBackOrClose = useCallback(() => {
     if (drillDown) {
+      drillDownActiveRef.current = false;
       dispatch({ type: 'GO_BACK' });
       return;
     }
     close();
   }, [drillDown, close, dispatch]);
-
-  const retryLoad = useCallback(() => {
-    if (drillDown) {
-      loadNestedResources(drillDown.category);
-    }
-  }, [drillDown, loadNestedResources]);
 
   const loadMore = useCallback(async () => {
     if (!paginatedResources || loadingMore) return;
@@ -276,6 +299,21 @@ export function AutopilotChatResourcePickerProvider({
     dispatch({ type: 'SEARCH_SUCCESS', results, done: true });
   }, [drillDown, searchQuery, topLevelResources, getNestedResources, dispatch]);
 
+  const retryLoad = useCallback(() => {
+    if (drillDown) {
+      loadNestedResources(drillDown.category);
+    } else if (searchQuery) {
+      paginatedResources ? performPaginatedSearch() : performLocalSearch();
+    }
+  }, [
+    drillDown,
+    searchQuery,
+    paginatedResources,
+    loadNestedResources,
+    performPaginatedSearch,
+    performLocalSearch,
+  ]);
+
   const displayedItems = useMemo(() => {
     if (searchQuery) return searchResults;
     if (drillDown) return drillDown.resources;
@@ -283,6 +321,7 @@ export function AutopilotChatResourcePickerProvider({
   }, [searchQuery, searchResults, drillDown, topLevelResources]);
 
   useEffect(() => {
+    if (!isOpen) return;
     if (!searchQuery) {
       dispatch({ type: 'CLEAR_SEARCH' });
       return;
@@ -292,10 +331,17 @@ export function AutopilotChatResourcePickerProvider({
 
     const debounceTimer = setTimeout(
       paginatedResources ? performPaginatedSearch : performLocalSearch,
-      SEARCH_DEBOUNCE_MS
+      CHAT_RESOURCE_PICKER_SEARCH_DEBOUNCE_MS
     );
     return () => clearTimeout(debounceTimer);
-  }, [searchQuery, paginatedResources, performPaginatedSearch, performLocalSearch, dispatch]);
+  }, [
+    isOpen,
+    searchQuery,
+    paginatedResources,
+    performPaginatedSearch,
+    performLocalSearch,
+    dispatch,
+  ]);
 
   const hasMore = useMemo(() => {
     if (!paginatedResources) return false;
@@ -307,6 +353,7 @@ export function AutopilotChatResourcePickerProvider({
   const contextValue = useMemo<AutopilotChatResourcePickerContextType>(
     () => ({
       isOpen,
+      isOpenRef,
       anchorPosition,
       query,
       displayedItems,
@@ -319,6 +366,7 @@ export function AutopilotChatResourcePickerProvider({
       previousDisplayCount,
       open,
       close,
+      handleMentionEnd,
       setQuery,
       handleItemClick,
       goBackOrClose,
@@ -339,6 +387,7 @@ export function AutopilotChatResourcePickerProvider({
       previousDisplayCount,
       open,
       close,
+      handleMentionEnd,
       setQuery,
       handleItemClick,
       goBackOrClose,

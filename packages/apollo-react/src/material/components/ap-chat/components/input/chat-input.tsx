@@ -272,7 +272,6 @@ function AutopilotChatInputComponent() {
               minRows={spacing.promptBox.minRows}
               maxRows={spacing.promptBox.maxRows}
               lineHeight={editorLineHeight}
-              anchorEl={inputContainerRef.current}
             />
           </div>
 

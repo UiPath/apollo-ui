@@ -16,6 +16,8 @@ import React, {
   useRef,
   useState,
 } from 'react';
+import type { RowComponentProps } from 'react-window';
+import { List, type ListImperativeAPI, useListRef } from 'react-window';
 import { ApSkeleton } from '../../../ap-skeleton';
 import { useChatState } from '../../providers/chat-state-provider';
 import {
@@ -24,11 +26,12 @@ import {
 } from '../../providers/resource-picker-provider';
 import {
   type AutopilotChatResourceItem,
+  CHAT_RESOURCE_PICKER_ITEM_HEIGHT,
+  CHAT_RESOURCE_PICKER_LOAD_MORE_THRESHOLD,
   CHAT_RESOURCE_PICKER_MAX_SKELETON_COUNT,
   CHAT_RESOURCE_PICKER_MENU_MAX_HEIGHT,
   CHAT_RESOURCE_PICKER_MENU_WIDTH,
   CHAT_RESOURCE_PICKER_MIN_SKELETON_COUNT,
-  CHAT_RESOURCE_PICKER_SCROLL_THRESHOLD,
   CHAT_RESOURCE_PICKER_TOOLTIP_ENTER_DELAY,
 } from '../../service';
 import { AutopilotChatIconButton } from '../common/icon-button';
@@ -72,13 +75,6 @@ const EmptyContainer = styled('div')(({ theme }) => ({
   color: theme.palette.semantic.colorForegroundDeEmp,
 }));
 
-const LoadMoreContainer = styled('div')({
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  padding: token.Padding.PadXxl,
-});
-
 const DrillDownHeader = styled('div')(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
@@ -91,28 +87,77 @@ const SkeletonItem = styled(StyledMenuItem)({
   pointerEvents: 'none',
 });
 
-interface ResourceMenuItemProps {
-  item: AutopilotChatResourceItem;
-  isSelected: boolean;
-  onItemClick: (item: AutopilotChatResourceItem) => void;
+const StyledResourceList = styled(List)({
+  '&::-webkit-scrollbar': { width: '6px' },
+  '&::-webkit-scrollbar-track': { background: 'transparent' },
+  '&::-webkit-scrollbar-thumb': {
+    background: 'var(--color-border-de-emp)',
+    borderRadius: '3px',
+  },
+}) as typeof List;
+
+const loaderRowStyle = { display: 'flex', alignItems: 'center', justifyContent: 'center' } as const;
+
+const preventDefaultMouseDown = (e: React.MouseEvent) => e.preventDefault();
+
+const MENU_SLOT_PROPS = {
+  paper: {
+    sx: {
+      width: CHAT_RESOURCE_PICKER_MENU_WIDTH,
+      maxHeight: CHAT_RESOURCE_PICKER_MENU_MAX_HEIGHT,
+      overflowY: 'hidden' as const,
+      display: 'flex',
+      flexDirection: 'column' as const,
+    },
+  },
+};
+
+type NavigationMode = 'keyboard' | 'pointer' | 'none';
+
+interface VirtualizedResourceRowProps {
+  items: AutopilotChatResourceItem[];
+  selectedIndex: number;
+  navigationMode: NavigationMode;
+  handleItemClick: (item: AutopilotChatResourceItem) => void;
+  onMouseEnterItem: (index: number) => void;
   tooltipPlacement: 'left' | 'right' | 'top' | 'bottom';
   fontToken: FontVariantToken;
 }
 
-const ResourceMenuItem = React.memo(function ResourceMenuItem({
-  item,
-  isSelected,
-  onItemClick,
+const VirtualizedResourceRow = ({
+  index,
+  style,
+  ariaAttributes,
+  items,
+  selectedIndex,
+  navigationMode,
+  handleItemClick,
+  onMouseEnterItem,
   tooltipPlacement,
   fontToken,
-}: ResourceMenuItemProps) {
+}: RowComponentProps<VirtualizedResourceRowProps>) => {
+  if (index >= items.length) {
+    return (
+      <div style={{ ...style, ...loaderRowStyle }}>
+        <CircularProgress size={20} />
+      </div>
+    );
+  }
+
+  const item = items[index]!;
+  const isSelected = index === selectedIndex;
   const isCategory = isResourceSelector(item);
   const tooltipContent = item.tooltip;
-
-  const handleClick = useCallback(() => onItemClick(item), [onItemClick, item]);
-
+  const isKeyboardSelected = isSelected && navigationMode === 'keyboard';
   const menuItem = (
-    <StyledMenuItem id={`resource-item-${item.id}`} selected={isSelected} onClick={handleClick}>
+    <StyledMenuItem
+      id={`resource-item-${item.id}`}
+      selected={isSelected}
+      onClick={() => handleItemClick(item)}
+      onMouseEnter={() => onMouseEnterItem(index)}
+      style={style}
+      {...ariaAttributes}
+    >
       <ResourceItemContent>
         {item.icon && <ApIcon variant="outlined" name={item.icon} size={token.Icon.IconXs} />}
         <ApTypography variant={fontToken} style={ellipsisStyle}>
@@ -138,12 +183,185 @@ const ResourceMenuItem = React.memo(function ResourceMenuItem({
         </ApTypography>
       }
       placement={tooltipPlacement}
-      open={isSelected ? true : undefined}
-      enterDelay={isSelected ? 0 : CHAT_RESOURCE_PICKER_TOOLTIP_ENTER_DELAY}
-      enterNextDelay={isSelected ? 0 : CHAT_RESOURCE_PICKER_TOOLTIP_ENTER_DELAY}
+      open={isKeyboardSelected ? true : undefined}
+      enterDelay={isKeyboardSelected ? 0 : CHAT_RESOURCE_PICKER_TOOLTIP_ENTER_DELAY}
+      enterNextDelay={isKeyboardSelected ? 0 : CHAT_RESOURCE_PICKER_TOOLTIP_ENTER_DELAY}
     >
       {menuItem}
     </AutopilotChatTooltip>
+  );
+};
+
+interface MenuContentProps {
+  virtualListRef: React.RefObject<ListImperativeAPI | null>;
+  selectedIndex: number;
+  navigationMode: NavigationMode;
+  onMouseEnterItem: (index: number) => void;
+  onItemClick: (item: AutopilotChatResourceItem) => void;
+}
+
+const MenuContent = React.memo(function MenuContent({
+  virtualListRef,
+  selectedIndex,
+  navigationMode,
+  onMouseEnterItem,
+  onItemClick,
+}: MenuContentProps) {
+  const {
+    displayedItems: items,
+    drillDown,
+    query,
+    loading,
+    loadingMore,
+    searchInProgress,
+    hasMore,
+    error,
+    previousDisplayCount,
+    goBackOrClose,
+    retryLoad,
+    loadMore,
+  } = useAutopilotChatResourcePicker();
+  const { theming, spacing } = useChatState();
+  const { _ } = useLingui();
+
+  const drillDownHeaderRef = useRef<HTMLDivElement>(null);
+  const [drillDownHeaderHeight, setDrillDownHeaderHeight] = useState(0);
+
+  useLayoutEffect(() => {
+    if (!drillDown) {
+      setDrillDownHeaderHeight(0);
+      return;
+    }
+    setDrillDownHeaderHeight(drillDownHeaderRef.current?.offsetHeight ?? 0);
+  }, [drillDown]);
+
+  const handleRowsRendered = useCallback(
+    (
+      visibleRows: { startIndex: number; stopIndex: number },
+      _allRows: { startIndex: number; stopIndex: number }
+    ) => {
+      if (!hasMore || loadingMore) return;
+      if (visibleRows.stopIndex >= items.length - CHAT_RESOURCE_PICKER_LOAD_MORE_THRESHOLD) {
+        loadMore();
+      }
+    },
+    [items.length, hasMore, loadingMore, loadMore]
+  );
+
+  const tooltipPlacement = theming?.chatMenu?.groupItemTooltipPlacement ?? 'left';
+  const isLoadingState = loading || searchInProgress;
+
+  const skeletonElements = useMemo(() => {
+    const skeletonCount = Math.min(
+      Math.max(previousDisplayCount, CHAT_RESOURCE_PICKER_MIN_SKELETON_COUNT),
+      CHAT_RESOURCE_PICKER_MAX_SKELETON_COUNT
+    );
+    return Array.from({ length: skeletonCount }).map((_, index) => (
+      <SkeletonItem key={`skeleton-${index}`} disabled>
+        <ApSkeleton />
+      </SkeletonItem>
+    ));
+  }, [previousDisplayCount]);
+
+  const rowCount = items.length + (loadingMore ? 1 : 0);
+  const listHeight = Math.min(
+    CHAT_RESOURCE_PICKER_MENU_MAX_HEIGHT - drillDownHeaderHeight,
+    rowCount * CHAT_RESOURCE_PICKER_ITEM_HEIGHT
+  );
+
+  const rowProps = useMemo(
+    () => ({
+      items,
+      selectedIndex,
+      navigationMode,
+      handleItemClick: onItemClick,
+      onMouseEnterItem,
+      tooltipPlacement,
+      fontToken: spacing.primaryFontToken,
+    }),
+    [
+      items,
+      selectedIndex,
+      navigationMode,
+      onItemClick,
+      onMouseEnterItem,
+      tooltipPlacement,
+      spacing.primaryFontToken,
+    ]
+  );
+
+  const drillDownHeader = drillDown ? (
+    <DrillDownHeader ref={drillDownHeaderRef}>
+      <AutopilotChatIconButton
+        size="small"
+        onClick={goBackOrClose}
+        aria-label={_(msg({ id: 'autopilot-chat.resource-picker.back', message: 'Go back' }))}
+      >
+        <ApIcon variant="outlined" name="arrow_back" size={token.Icon.IconXs} />
+      </AutopilotChatIconButton>
+      <ApTypography variant={spacing.primaryBoldFontToken} style={ellipsisStyle}>
+        {drillDown.category.displayName}
+      </ApTypography>
+    </DrillDownHeader>
+  ) : null;
+
+  if (isLoadingState) {
+    return (
+      <>
+        {drillDownHeader}
+        {skeletonElements}
+      </>
+    );
+  }
+
+  if (error) {
+    return (
+      <>
+        {drillDownHeader}
+        <ErrorContainer>
+          <ApTypography variant={FontVariantToken.fontSizeS}>{error}</ApTypography>
+          <ApButton variant="text" size="small" onClick={retryLoad} label="retry">
+            {_(msg({ id: 'autopilot-chat.resource-picker.retry', message: 'Retry' }))}
+          </ApButton>
+        </ErrorContainer>
+      </>
+    );
+  }
+
+  if (items.length === 0) {
+    const emptyMessage = query.trim()
+      ? _(
+          msg({
+            id: 'autopilot-chat.resource-picker.no-results',
+            message: 'No matching resources',
+          })
+        )
+      : _(msg({ id: 'autopilot-chat.resource-picker.empty', message: 'No resources available' }));
+
+    return (
+      <>
+        {drillDownHeader}
+        <EmptyContainer>
+          <ApTypography variant={FontVariantToken.fontSizeS}>{emptyMessage}</ApTypography>
+        </EmptyContainer>
+      </>
+    );
+  }
+
+  return (
+    <>
+      {drillDownHeader}
+      <StyledResourceList
+        listRef={virtualListRef}
+        rowProps={rowProps}
+        rowComponent={VirtualizedResourceRow}
+        rowCount={rowCount}
+        rowHeight={CHAT_RESOURCE_PICKER_ITEM_HEIGHT}
+        overscanCount={5}
+        onRowsRendered={handleRowsRendered}
+        style={{ height: listHeight }}
+      />
+    </>
   );
 });
 
@@ -157,123 +375,77 @@ function ResourcePickerDropdownInner(
 ) {
   const {
     isOpen,
+    isOpenRef,
     anchorPosition,
-    displayedItems,
+    displayedItems: items,
     drillDown,
     query,
-    loading,
-    loadingMore,
-    searchInProgress,
-    hasMore,
-    error,
-    previousDisplayCount,
     handleItemClick,
     close,
     goBackOrClose,
-    retryLoad,
-    loadMore,
   } = useAutopilotChatResourcePicker();
-  const { theming, spacing } = useChatState();
-  const listRef = useRef<HTMLUListElement>(null);
-  const isOpenRef = useRef(isOpen);
-  isOpenRef.current = isOpen;
+  const virtualListRef = useListRef(null);
   const { _ } = useLingui();
 
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const [navigationMode, setNavigationMode] = useState<NavigationMode>('none');
 
-  // Refs for stable scroll handler (avoids recreating callback on state changes)
-  const scrollStateRef = useRef({
-    hasMore,
-    loadingMore,
-    loadMore,
-    scrollTop: 0,
-    container: null as HTMLElement | null,
-  });
-  scrollStateRef.current.hasMore = hasMore;
-  scrollStateRef.current.loadingMore = loadingMore;
-  scrollStateRef.current.loadMore = loadMore;
-
-  // Refs for tracking state changes
   const prevStateRef = useRef({
     query,
     drillDownId: drillDown?.category?.id,
-    selectedIndex,
-    loadingMore,
   });
 
-  const handleScroll = useCallback((event: React.UIEvent<HTMLElement>) => {
-    const target = event.currentTarget;
-    const state = scrollStateRef.current;
-
-    state.scrollTop = target.scrollTop;
-    state.container = target;
-
-    if (!state.hasMore || state.loadingMore) return;
-
-    const nearBottom =
-      target.scrollHeight - target.scrollTop - target.clientHeight <
-      CHAT_RESOURCE_PICKER_SCROLL_THRESHOLD;
-    if (nearBottom) {
-      state.loadMore();
-    }
-  }, []);
-
-  // Reset selection when query or category changes (not on pagination)
   useEffect(() => {
     const prev = prevStateRef.current;
     const currentDrillDownId = drillDown?.category?.id;
 
     if (prev.query !== query || prev.drillDownId !== currentDrillDownId) {
       setSelectedIndex(0);
+      setNavigationMode('none');
     }
     prev.query = query;
     prev.drillDownId = currentDrillDownId;
   }, [query, drillDown]);
 
-  // Scroll selected item into view only when selectedIndex changes (keyboard navigation)
   useEffect(() => {
-    const prev = prevStateRef.current;
-    if (prev.selectedIndex === selectedIndex) return;
-    prev.selectedIndex = selectedIndex;
-
-    const selectedItem = displayedItems[selectedIndex];
-    if (listRef.current && selectedItem) {
-      const selectedElement = listRef.current.querySelector(
-        `#resource-item-${selectedItem.id}`
-      ) as HTMLElement;
-      selectedElement?.scrollIntoView({ block: 'nearest' });
+    if (isOpen) {
+      setSelectedIndex(0);
+      setNavigationMode('none');
     }
-  }, [selectedIndex, displayedItems]);
+  }, [isOpen]);
 
-  // Restore scroll position after pagination completes
-  useLayoutEffect(() => {
-    const prev = prevStateRef.current;
-    const wasLoadingMore = prev.loadingMore;
-    prev.loadingMore = loadingMore;
-
-    if (wasLoadingMore && !loadingMore) {
-      const { scrollTop, container } = scrollStateRef.current;
-      if (container && scrollTop > 0) {
-        container.scrollTop = scrollTop;
-      }
+  useEffect(() => {
+    if (navigationMode === 'keyboard') {
+      virtualListRef.current?.scrollToRow({
+        index: selectedIndex,
+        align: 'auto',
+      });
     }
-  }, [loadingMore]);
+  }, [selectedIndex, navigationMode, virtualListRef]);
 
   const navigateUp = useCallback(() => {
     setSelectedIndex((prev) => Math.max(prev - 1, 0));
+    setNavigationMode('keyboard');
   }, []);
 
   const navigateDown = useCallback(() => {
-    setSelectedIndex((prev) => Math.min(prev + 1, displayedItems.length - 1));
-  }, [displayedItems.length]);
+    setSelectedIndex((prev) => Math.min(prev + 1, items.length - 1));
+    setNavigationMode('keyboard');
+  }, [items.length]);
+
+  const handleMouseEnterItem = useCallback((index: number) => {
+    setSelectedIndex(index);
+    setNavigationMode('pointer');
+  }, []);
 
   const selectItem = useCallback(() => {
-    const selectedItem = displayedItems[selectedIndex];
+    const selectedItem = items[selectedIndex];
     if (selectedItem) {
       handleItemClick(selectedItem);
     }
-  }, [displayedItems, selectedIndex, handleItemClick]);
+  }, [items, selectedIndex, handleItemClick]);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: isOpenRef is a stable ref read synchronously at call time
   useImperativeHandle(
     ref,
     () => ({
@@ -296,139 +468,32 @@ function ResourcePickerDropdownInner(
             return true;
           case 'Escape':
             event.preventDefault();
-            goBackOrClose();
+            drillDown ? goBackOrClose() : close();
             return true;
           default:
             return false;
         }
       },
     }),
-    [navigateDown, navigateUp, selectItem, goBackOrClose]
+    [navigateDown, navigateUp, selectItem, goBackOrClose, drillDown, close]
   );
-  const tooltipPlacement = theming?.chatMenu?.groupItemTooltipPlacement ?? 'left';
-
-  const skeletonElements = useMemo(() => {
-    const skeletonCount = Math.min(
-      Math.max(previousDisplayCount, CHAT_RESOURCE_PICKER_MIN_SKELETON_COUNT),
-      CHAT_RESOURCE_PICKER_MAX_SKELETON_COUNT
-    );
-    return Array.from({ length: skeletonCount }).map((_, index) => (
-      <SkeletonItem key={`skeleton-${index}`} disabled>
-        <ApSkeleton />
-      </SkeletonItem>
-    ));
-  }, [previousDisplayCount]);
-
-  const menuSlotProps = useMemo(
-    () => ({
-      paper: {
-        sx: {
-          width: CHAT_RESOURCE_PICKER_MENU_WIDTH,
-          maxHeight: CHAT_RESOURCE_PICKER_MENU_MAX_HEIGHT,
-          overflowY: 'auto',
-        },
-        onScroll: handleScroll,
-      },
-    }),
-    [handleScroll]
+  const handleMenuClose = useCallback(
+    (_event: React.SyntheticEvent, reason: 'backdropClick' | 'escapeKeyDown') => {
+      if (reason === 'escapeKeyDown' && drillDown) {
+        goBackOrClose();
+        return;
+      }
+      close();
+    },
+    [drillDown, goBackOrClose, close]
   );
-
-  const isLoadingState = loading || searchInProgress;
-
-  const drillDownHeader = useMemo(() => {
-    if (!drillDown) return null;
-
-    return (
-      <DrillDownHeader key="drilldown-header">
-        <AutopilotChatIconButton
-          size="small"
-          onClick={goBackOrClose}
-          aria-label={_(msg({ id: 'autopilot-chat.resource-picker.back', message: 'Go back' }))}
-        >
-          <ApIcon variant="outlined" name="arrow_back" size={token.Icon.IconXs} />
-        </AutopilotChatIconButton>
-        <ApTypography variant={spacing.primaryBoldFontToken} style={ellipsisStyle}>
-          {drillDown.category.displayName}
-        </ApTypography>
-      </DrillDownHeader>
-    );
-  }, [drillDown, goBackOrClose, spacing.primaryBoldFontToken, _]);
-
-  const menuContent = useMemo((): React.ReactNode[] => {
-    if (isLoadingState) {
-      return [drillDownHeader, ...skeletonElements];
-    }
-
-    if (error) {
-      return [
-        drillDownHeader,
-        <ErrorContainer key="error">
-          <ApTypography variant={FontVariantToken.fontSizeS}>{error}</ApTypography>
-          <ApButton variant="text" size="small" onClick={retryLoad} label="retry">
-            {_(msg({ id: 'autopilot-chat.resource-picker.retry', message: 'Retry' }))}
-          </ApButton>
-        </ErrorContainer>,
-      ];
-    }
-
-    if (displayedItems.length === 0) {
-      const emptyMessage = query.trim()
-        ? _(
-            msg({
-              id: 'autopilot-chat.resource-picker.no-results',
-              message: 'No matching resources',
-            })
-          )
-        : _(msg({ id: 'autopilot-chat.resource-picker.empty', message: 'No resources available' }));
-
-      return [
-        drillDownHeader,
-        <EmptyContainer key="empty">
-          <ApTypography variant={FontVariantToken.fontSizeS}>{emptyMessage}</ApTypography>
-        </EmptyContainer>,
-      ];
-    }
-
-    return [
-      drillDownHeader,
-      ...displayedItems.map((item, index) => (
-        <ResourceMenuItem
-          key={item.id}
-          item={item}
-          isSelected={index === selectedIndex}
-          onItemClick={handleItemClick}
-          tooltipPlacement={tooltipPlacement}
-          fontToken={spacing.primaryFontToken}
-        />
-      )),
-      loadingMore && (
-        <LoadMoreContainer key="loading-more">
-          <CircularProgress size={20} />
-        </LoadMoreContainer>
-      ),
-    ];
-  }, [
-    isLoadingState,
-    drillDownHeader,
-    skeletonElements,
-    error,
-    retryLoad,
-    _,
-    displayedItems,
-    query,
-    selectedIndex,
-    handleItemClick,
-    tooltipPlacement,
-    spacing.primaryFontToken,
-    loadingMore,
-  ]);
 
   return (
     <Menu
       open={isOpen}
       anchorReference="anchorPosition"
       anchorPosition={anchorPosition ?? undefined}
-      onClose={close}
+      onClose={handleMenuClose}
       anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
       transformOrigin={{ vertical: 'bottom', horizontal: 'left' }}
       disableAutoFocus
@@ -438,11 +503,18 @@ function ResourcePickerDropdownInner(
           msg({ id: 'autopilot-chat.resource-picker.label', message: 'Resource picker' })
         ),
         dense: true,
-        ref: listRef,
+        disableListWrap: true,
+        onMouseDown: preventDefaultMouseDown,
       }}
-      slotProps={menuSlotProps}
+      slotProps={MENU_SLOT_PROPS}
     >
-      {menuContent}
+      <MenuContent
+        virtualListRef={virtualListRef}
+        selectedIndex={selectedIndex}
+        navigationMode={navigationMode}
+        onMouseEnterItem={handleMouseEnterItem}
+        onItemClick={handleItemClick}
+      />
     </Menu>
   );
 }
