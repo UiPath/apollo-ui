@@ -12,8 +12,11 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useLocalStorage } from "@/registry/use-local-storage/use-local-storage";
 
-export const UserProfile = () => {
-  const [isCollapsed] = useLocalStorage("sidebar-collapsed", false);
+interface UserProfileProps {
+  isCollapsed: boolean;
+}
+
+export const UserProfile = ({ isCollapsed }: UserProfileProps) => {
   const auth = useAuth();
 
   const user = auth?.user;

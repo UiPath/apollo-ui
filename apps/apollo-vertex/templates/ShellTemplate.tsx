@@ -3,10 +3,18 @@
 import { LocaleProvider } from "@/registry/shell/internal/locale-provider";
 import { ShellLayout } from "@/registry/shell/internal/shell-layout";
 
-export function ShellTemplate() {
+interface ShellTemplateProps {
+  variant?: "minimal";
+}
+
+export function ShellTemplate({ variant }: ShellTemplateProps) {
   return (
     <LocaleProvider>
-      <ShellLayout companyName="UiPath" productName="Apollo Vertex">
+      <ShellLayout
+        companyName="UiPath"
+        productName="Apollo Vertex"
+        variant={variant}
+      >
         <div />
       </ShellLayout>
     </LocaleProvider>
