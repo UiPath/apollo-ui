@@ -9,7 +9,7 @@ import {
   BadgeSize,
   type StatusTypes,
 } from '@uipath/apollo-react/material';
-import { memo, useCallback, useMemo, useState } from 'react';
+import { memo, useCallback, useMemo, useRef, useState } from 'react';
 import { ExecutionStatusIcon } from '../ExecutionStatusIcon';
 import type { DraggableTaskProps, TaskContentProps } from './DraggableTask.types';
 import {
@@ -22,8 +22,7 @@ import {
   StageTaskWrapper,
 } from './StageNode.styles';
 import type { StageTaskExecution } from './StageNode.types';
-import { TaskContextMenu } from './TaskContextMenu';
-import { TaskMenu } from './TaskMenu';
+import { TaskMenu, type TaskMenuHandle } from './TaskMenu';
 
 const ProcessNodeIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
@@ -120,30 +119,34 @@ const DraggableTaskComponent = ({
   taskExecution,
   isSelected,
   isParallel,
-  isContextMenuVisible,
   contextMenuItems,
-  contextMenuAnchor,
   onTaskClick,
-  onContextMenu,
+  onMenuOpen,
   isDragDisabled,
   projectedDepth,
   zoom = 1,
 }: DraggableTaskProps) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const taskRef = useRef<HTMLDivElement>(null);
+  const menuRef = useRef<TaskMenuHandle>(null);
 
   const handleClick = useCallback(
     (e: React.MouseEvent) => {
       // If any menu is open, prevent task selection
-      if (isMenuOpen || isContextMenuVisible) {
+      if (isMenuOpen) {
         return;
       }
       onTaskClick(e, task.id);
     },
-    [isMenuOpen, isContextMenuVisible, onTaskClick, task.id]
+    [isMenuOpen, onTaskClick, task.id]
   );
 
   const handleMenuOpenChange = useCallback((isOpen: boolean) => {
     setIsMenuOpen(isOpen);
+  }, []);
+
+  const handleContextMenu = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    menuRef.current?.handleContextMenu(e);
   }, []);
 
   const { attributes, listeners, setNodeRef, transition, transform, isDragging } = useSortable({
@@ -184,6 +187,7 @@ const DraggableTaskComponent = ({
 
   const taskElement = (
     <StageTask
+      ref={taskRef}
       data-testid={`stage-task-${task.id}`}
       selected={isSelected}
       status={taskExecution?.status}
@@ -191,22 +195,19 @@ const DraggableTaskComponent = ({
       isDragEnabled={!isDragDisabled}
       isMenuOpen={isMenuOpen}
       onClick={handleClick}
-      {...(onContextMenu && { onContextMenu })}
+      {...(contextMenuItems.length > 0 && { onContextMenu: handleContextMenu })}
     >
       <TaskContent task={task} taskExecution={taskExecution} />
-      {onContextMenu && (
-        <>
-          <TaskContextMenu
-            isVisible={isContextMenuVisible}
-            menuItems={contextMenuItems}
-            refTask={contextMenuAnchor}
-          />
-          <TaskMenu
-            taskId={task.id}
-            contextMenuItems={contextMenuItems}
-            onMenuOpenChange={handleMenuOpenChange}
-          />
-        </>
+
+      {contextMenuItems.length > 0 && (
+        <TaskMenu
+          ref={menuRef}
+          taskId={task.id}
+          contextMenuItems={contextMenuItems}
+          onMenuOpenChange={handleMenuOpenChange}
+          onMenuOpen={onMenuOpen}
+          taskRef={taskRef}
+        />
       )}
     </StageTask>
   );

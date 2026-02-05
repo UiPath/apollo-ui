@@ -48,9 +48,7 @@ const defaultProps: DraggableTaskProps = {
   taskExecution: undefined,
   isSelected: false,
   isParallel: false,
-  isContextMenuVisible: false,
   contextMenuItems: [],
-  contextMenuAnchor: { current: null },
   onTaskClick: vi.fn(),
   isDragDisabled: false,
   zoom: 1,
@@ -58,41 +56,43 @@ const defaultProps: DraggableTaskProps = {
 
 describe('DraggableTask', () => {
   describe('Menu Button Rendering', () => {
-    it('renders menu button with correct testid when onContextMenu is provided', () => {
-      const onContextMenu = vi.fn();
+    it('renders menu button with correct testid when onMenuOpen is provided', () => {
+      const onMenuOpen = vi.fn();
       const onRemove = vi.fn();
       const menuItems = createMenuItems(onRemove);
 
       render(
-        <DraggableTask
-          {...defaultProps}
-          onContextMenu={onContextMenu}
-          contextMenuItems={menuItems}
-        />
+        <DraggableTask {...defaultProps} onMenuOpen={onMenuOpen} contextMenuItems={menuItems} />
       );
 
       const menuButton = screen.getByTestId('stage-task-menu-task-1');
       expect(menuButton).toBeInTheDocument();
     });
 
-    it('does not render menu button when onContextMenu is not provided', () => {
-      render(<DraggableTask {...defaultProps} />);
+    it('renders menu button when contextMenuItems are provided', () => {
+      const onRemove = vi.fn();
+      const menuItems = createMenuItems(onRemove);
+
+      render(<DraggableTask {...defaultProps} contextMenuItems={menuItems} />);
+
+      const menuButton = screen.getByTestId('stage-task-menu-task-1');
+      expect(menuButton).toBeInTheDocument();
+    });
+
+    it('does not render menu button when contextMenuItems is empty and onMenuOpen is not provided', () => {
+      render(<DraggableTask {...defaultProps} contextMenuItems={[]} />);
 
       const menuButton = screen.queryByTestId('stage-task-menu-task-1');
       expect(menuButton).not.toBeInTheDocument();
     });
 
     it('renders menu button with icon', () => {
-      const onContextMenu = vi.fn();
+      const onMenuOpen = vi.fn();
       const onRemove = vi.fn();
       const menuItems = createMenuItems(onRemove);
 
       render(
-        <DraggableTask
-          {...defaultProps}
-          onContextMenu={onContextMenu}
-          contextMenuItems={menuItems}
-        />
+        <DraggableTask {...defaultProps} onMenuOpen={onMenuOpen} contextMenuItems={menuItems} />
       );
 
       const menuButton = screen.getByTestId('stage-task-menu-task-1');
@@ -105,16 +105,12 @@ describe('DraggableTask', () => {
   describe('Menu Opening and Closing', () => {
     it('opens menu when button is clicked', async () => {
       const user = userEvent.setup();
-      const onContextMenu = vi.fn();
+      const onMenuOpen = vi.fn();
       const onRemove = vi.fn();
       const menuItems = createMenuItems(onRemove);
 
       render(
-        <DraggableTask
-          {...defaultProps}
-          onContextMenu={onContextMenu}
-          contextMenuItems={menuItems}
-        />
+        <DraggableTask {...defaultProps} onMenuOpen={onMenuOpen} contextMenuItems={menuItems} />
       );
 
       const menuButton = screen.getByTestId('stage-task-menu-task-1');
@@ -129,7 +125,7 @@ describe('DraggableTask', () => {
     it('does not trigger task click when menu button is clicked', async () => {
       const user = userEvent.setup();
       const onTaskClick = vi.fn();
-      const onContextMenu = vi.fn();
+      const onMenuOpen = vi.fn();
       const onRemove = vi.fn();
       const menuItems = createMenuItems(onRemove);
 
@@ -137,7 +133,7 @@ describe('DraggableTask', () => {
         <DraggableTask
           {...defaultProps}
           onTaskClick={onTaskClick}
-          onContextMenu={onContextMenu}
+          onMenuOpen={onMenuOpen}
           contextMenuItems={menuItems}
         />
       );
@@ -152,7 +148,7 @@ describe('DraggableTask', () => {
     it('prevents task selection when menu is open', async () => {
       const user = userEvent.setup();
       const onTaskClick = vi.fn();
-      const onContextMenu = vi.fn();
+      const onMenuOpen = vi.fn();
       const onRemove = vi.fn();
       const menuItems = createMenuItems(onRemove);
 
@@ -160,7 +156,7 @@ describe('DraggableTask', () => {
         <DraggableTask
           {...defaultProps}
           onTaskClick={onTaskClick}
-          onContextMenu={onContextMenu}
+          onMenuOpen={onMenuOpen}
           contextMenuItems={menuItems}
         />
       );
@@ -181,10 +177,10 @@ describe('DraggableTask', () => {
       expect(onTaskClick).not.toHaveBeenCalled();
     });
 
-    it('prevents task selection when context menu is visible', async () => {
+    it('prevents task selection when menu is open', async () => {
       const user = userEvent.setup();
       const onTaskClick = vi.fn();
-      const onContextMenu = vi.fn();
+      const onMenuOpen = vi.fn();
       const onRemove = vi.fn();
       const menuItems = createMenuItems(onRemove);
 
@@ -192,17 +188,24 @@ describe('DraggableTask', () => {
         <DraggableTask
           {...defaultProps}
           onTaskClick={onTaskClick}
-          onContextMenu={onContextMenu}
+          onMenuOpen={onMenuOpen}
           contextMenuItems={menuItems}
-          isContextMenuVisible={true}
         />
       );
 
-      // Try to click on task
+      // Open menu first
+      const menuButton = screen.getByTestId('stage-task-menu-task-1');
+      await user.click(menuButton);
+
+      await waitFor(() => {
+        expect(screen.getByText('Move Up')).toBeInTheDocument();
+      });
+
+      // Try to click on task while menu is open
       const task = screen.getByTestId('stage-task-task-1');
       await user.click(task);
 
-      // Task click should not be called (context menu is visible)
+      // Task click should not be called (menu is open)
       expect(onTaskClick).not.toHaveBeenCalled();
     });
   });
@@ -210,16 +213,12 @@ describe('DraggableTask', () => {
   describe('Menu Item Interaction', () => {
     it('triggers menu item onClick when menu item is clicked', async () => {
       const user = userEvent.setup();
-      const onContextMenu = vi.fn();
+      const onMenuOpen = vi.fn();
       const onRemove = vi.fn();
       const menuItems = createMenuItems(onRemove);
 
       render(
-        <DraggableTask
-          {...defaultProps}
-          onContextMenu={onContextMenu}
-          contextMenuItems={menuItems}
-        />
+        <DraggableTask {...defaultProps} onMenuOpen={onMenuOpen} contextMenuItems={menuItems} />
       );
 
       // Open menu
@@ -240,16 +239,12 @@ describe('DraggableTask', () => {
 
     it('closes menu after menu item is clicked', async () => {
       const user = userEvent.setup();
-      const onContextMenu = vi.fn();
+      const onMenuOpen = vi.fn();
       const onRemove = vi.fn();
       const menuItems = createMenuItems(onRemove);
 
       render(
-        <DraggableTask
-          {...defaultProps}
-          onContextMenu={onContextMenu}
-          contextMenuItems={menuItems}
-        />
+        <DraggableTask {...defaultProps} onMenuOpen={onMenuOpen} contextMenuItems={menuItems} />
       );
 
       // Open menu
@@ -272,16 +267,12 @@ describe('DraggableTask', () => {
 
     it('includes divider in menu items', async () => {
       const user = userEvent.setup();
-      const onContextMenu = vi.fn();
+      const onMenuOpen = vi.fn();
       const onRemove = vi.fn();
       const menuItems = createMenuItems(onRemove);
 
       render(
-        <DraggableTask
-          {...defaultProps}
-          onContextMenu={onContextMenu}
-          contextMenuItems={menuItems}
-        />
+        <DraggableTask {...defaultProps} onMenuOpen={onMenuOpen} contextMenuItems={menuItems} />
       );
 
       // Open menu
@@ -315,7 +306,7 @@ describe('DraggableTask', () => {
     it('allows task click after menu is closed', async () => {
       const user = userEvent.setup();
       const onTaskClick = vi.fn();
-      const onContextMenu = vi.fn();
+      const onMenuOpen = vi.fn();
       const onRemove = vi.fn();
       const menuItems = createMenuItems(onRemove);
 
@@ -323,7 +314,7 @@ describe('DraggableTask', () => {
         <DraggableTask
           {...defaultProps}
           onTaskClick={onTaskClick}
-          onContextMenu={onContextMenu}
+          onMenuOpen={onMenuOpen}
           contextMenuItems={menuItems}
         />
       );
