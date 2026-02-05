@@ -281,7 +281,7 @@ const ICON_CATEGORIES = [
 const TOTAL_ICONS = ICON_CATEGORIES.reduce((sum, cat) => sum + cat.icons.length, 0);
 
 const meta = {
-  title: 'Design Foundation/Icons',
+  title: 'Theme/Current/Icons',
   parameters: {
     layout: 'fullscreen',
   },

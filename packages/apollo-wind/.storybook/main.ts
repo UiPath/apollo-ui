@@ -20,16 +20,24 @@ const isDev = process.env.NODE_ENV !== 'production';
 // Fix: inject a <body> script that deletes the stale property before bippy runs,
 // forcing bippy to install a fresh hook. This all executes before React loads
 // (React is loaded via type="module" scripts, which are deferred).
-const reactScanHook = isDev
-  ? readFileSync(
+let reactScanHook = '';
+if (isDev) {
+  try {
+    reactScanHook = readFileSync(
       resolve(__dirname, '../node_modules/react-scan/dist/install-hook.global.js'),
       'utf-8'
-    )
-  : '';
+    );
+  } catch {
+    // react-scan optional; Storybook works without it
+  }
+}
 
 const config: StorybookConfig = {
   stories: ['../src/**/*.mdx', '../src/**/*.stories.@(js|jsx|mjs|ts|tsx)'],
   addons: ['@storybook/addon-links', '@storybook/addon-docs'],
+
+  // Serve only public/ (e.g. ui-path.svg for sidebar logo); single dir to avoid route conflicts
+  staticDirs: ['../public'],
 
   framework: {
     name: '@storybook/react-vite',

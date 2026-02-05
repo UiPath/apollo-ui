@@ -7,10 +7,15 @@ const isDev = import.meta.env.MODE !== 'production';
 // The react-scan devtools hook is installed via previewBody in main.ts
 // (must happen before React initializes). Here we configure the overlay/canvas
 // and start paused — toggling happens via the toolbar global in the decorator.
+// Wrapped in try/catch so preview still loads if react-scan fails.
 if (isDev) {
-  const { scan, setOptions } = await import('react-scan');
-  scan({ enabled: true, showToolbar: true, allowInIframe: true });
-  setOptions({ enabled: false });
+  try {
+    const { scan, setOptions } = await import('react-scan');
+    scan({ enabled: true, showToolbar: true, allowInIframe: true });
+    setOptions({ enabled: false });
+  } catch {
+    // react-scan optional; preview works without it
+  }
 }
 
 const preview: Preview = {
@@ -23,8 +28,9 @@ const preview: Preview = {
     options: {
       storySort: {
         order: [
-          'Design Foundation',
-          'Design System',
+          'Introduction',
+          'Theme',
+          'Components',
           [
             'All Components',
             'Core',
@@ -34,9 +40,9 @@ const preview: Preview = {
             'Overlays',
             'Feedback',
           ],
+          'Templates',
           'Forms',
           '*',
-          'Examples',
         ],
       },
     },
