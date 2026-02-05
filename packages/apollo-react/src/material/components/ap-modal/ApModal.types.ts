@@ -66,6 +66,7 @@ export interface ApModalProps extends Omit<ModalProps, 'onClose' | 'children'> {
     label: string;
     onClick?: () => void;
     loading?: boolean;
+    disabled?: boolean;
     id?: string;
   };
 
