@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Badge } from '@/components/ui/badge';
 
 const meta = {
-  title: 'Design Foundation/Spacing',
+  title: 'Theme/Current/Spacing',
   parameters: {
     layout: 'fullscreen',
   },

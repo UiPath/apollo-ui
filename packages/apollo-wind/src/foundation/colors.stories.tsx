@@ -3,7 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 
 const meta = {
-  title: 'Design Foundation/Colors',
+  title: 'Theme/Current/Colors',
   parameters: {
     layout: 'fullscreen',
   },

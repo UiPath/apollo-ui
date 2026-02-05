@@ -50,7 +50,7 @@ export default defineConfig({
         '!./src/**/*.stories.ts',
         '!./src/**/*.stories.tsx',
         '!./src/**/*.md',
-        '!./src/examples/**',
+        '!./src/templates/**',
         '!./src/styles/**',
       ],
       'postcss.config.export': './postcss.config.export.js',
