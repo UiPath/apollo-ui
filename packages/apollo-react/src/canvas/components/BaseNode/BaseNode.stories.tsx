@@ -3,6 +3,8 @@
  *
  * Demonstrates the BaseNode component with various shapes, sizes, and execution states.
  */
+
+import { Checkbox, FormControlLabel } from '@mui/material';
 import type { Meta, StoryObj } from '@storybook/react';
 import { FontVariantToken } from '@uipath/apollo-core';
 import { Column, Row } from '@uipath/apollo-react/canvas/layouts';
@@ -141,6 +143,13 @@ const sampleManifest: WorkflowManifest = {
               handleType: 'output',
               label: '{item.name}',
               repeat: 'dynamicOutputs',
+            },
+            {
+              id: 'default',
+              type: 'source',
+              handleType: 'output',
+              label: 'Default Output',
+              visible: 'hasDefault',
             },
           ],
         },
@@ -377,6 +386,7 @@ function DynamicHandlesStory() {
       { label: 'Tertiary Input' },
     ],
     dynamicOutputs: [{ name: 'Success Path' }, { name: 'Failure Path' }],
+    hasDefault: false,
   });
 
   const initialNodes = useMemo(() => {
@@ -392,6 +402,7 @@ function DynamicHandlesStory() {
             inputs: {
               dynamicInputs: nodeData.dynamicInputs,
               dynamicOutputs: nodeData.dynamicOutputs,
+              hasDefault: nodeData.hasDefault,
             },
             display: {
               label: 'Dynamic Handles',
@@ -420,6 +431,7 @@ function DynamicHandlesStory() {
                 inputs: {
                   dynamicInputs: nodeData.dynamicInputs,
                   dynamicOutputs: nodeData.dynamicOutputs,
+                  hasDefault: nodeData.hasDefault,
                 },
                 display: {
                   ...(node.data.display || {}),
@@ -503,6 +515,19 @@ function DynamicHandlesStory() {
               </Row>
             </Column>
           ))}
+          <Column gap={6} align="flex-start">
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={nodeData.hasDefault}
+                  onChange={(e) =>
+                    setNodeData((prev) => ({ ...prev, hasDefault: e.target.checked }))
+                  }
+                />
+              }
+              label="Has Default Output"
+            />
+          </Column>
           <ApButton
             size="small"
             variant="secondary"
@@ -511,6 +536,7 @@ function DynamicHandlesStory() {
               setNodeData({
                 dynamicInputs: [{ label: 'Primary Input' }],
                 dynamicOutputs: [{ name: 'Success Path' }],
+                hasDefault: false,
               })
             }
           />
