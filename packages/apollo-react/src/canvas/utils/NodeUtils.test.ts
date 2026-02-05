@@ -551,6 +551,106 @@ describe('NodeUtils', () => {
       expect(result[2]!.position).not.toEqual({ x: 120, y: 120 });
     });
 
+    it('should not move ignored node types', () => {
+      const nodes: Node[] = [
+        {
+          id: 'node-1',
+          position: { x: 100, y: 100 },
+          width: 100,
+          height: 80,
+          data: {},
+        },
+        {
+          id: 'sticky-1',
+          type: 'stickyNote',
+          position: { x: 120, y: 110 }, // Overlaps with node-1
+          width: 200,
+          height: 200,
+          data: {},
+        },
+      ];
+
+      const result = resolveCollisions(nodes, { ignoredNodeTypes: ['stickyNote'] });
+
+      // Sticky note should remain at its original position
+      const sticky = result.find((n) => n.id === 'sticky-1');
+      expect(sticky!.position).toEqual({ x: 120, y: 110 });
+
+      // Regular node should also not move since the only overlapping node was ignored
+      const node1 = result.find((n) => n.id === 'node-1');
+      expect(node1!.position).toEqual({ x: 100, y: 100 });
+    });
+
+    it('should not let ignored nodes push other nodes', () => {
+      const nodes: Node[] = [
+        {
+          id: 'node-1',
+          position: { x: 100, y: 100 },
+          width: 100,
+          height: 80,
+          data: {},
+        },
+        {
+          id: 'node-2',
+          position: { x: 300, y: 300 },
+          width: 100,
+          height: 80,
+          data: {},
+        },
+        {
+          id: 'sticky-1',
+          type: 'stickyNote',
+          position: { x: 110, y: 110 }, // Overlaps with node-1
+          width: 200,
+          height: 200,
+          data: {},
+        },
+      ];
+
+      const result = resolveCollisions(nodes, { ignoredNodeTypes: ['stickyNote'] });
+
+      // Both regular nodes should stay put (no collision between them)
+      expect(result.find((n) => n.id === 'node-1')!.position).toEqual({ x: 100, y: 100 });
+      expect(result.find((n) => n.id === 'node-2')!.position).toEqual({ x: 300, y: 300 });
+
+      // Sticky note stays untouched
+      expect(result.find((n) => n.id === 'sticky-1')!.position).toEqual({ x: 110, y: 110 });
+    });
+
+    it('should preserve original node order with ignoredNodeTypes', () => {
+      const nodes: Node[] = [
+        {
+          id: 'node-1',
+          position: { x: 100, y: 100 },
+          width: 100,
+          height: 80,
+          data: {},
+        },
+        {
+          id: 'sticky-1',
+          type: 'stickyNote',
+          position: { x: 150, y: 150 },
+          width: 200,
+          height: 200,
+          data: {},
+        },
+        {
+          id: 'node-2',
+          position: { x: 110, y: 110 },
+          width: 100,
+          height: 80,
+          data: {},
+        },
+      ];
+
+      const result = resolveCollisions(nodes, { ignoredNodeTypes: ['stickyNote'] });
+
+      // Order should be preserved
+      expect(result[0]!.id).toBe('node-1');
+      expect(result[1]!.id).toBe('sticky-1');
+      expect(result[2]!.id).toBe('node-2');
+    });
+
     it('should handle exact overlaps (same position)', () => {
       const nodes: Node[] = [
         {

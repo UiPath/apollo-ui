@@ -112,7 +112,8 @@ describe('useAddNodeOnConnectEnd', () => {
       undefined,
       'source',
       undefined, // previewNodeSize (uses default)
-      Position.Right // handlePosition from connectionState.fromHandle.position
+      Position.Right, // handlePosition from connectionState.fromHandle.position
+      [] // ignoredNodeTypes
     );
     expect(mockApplyPreviewToReactFlow).toHaveBeenCalledWith(mockPreview, mockReactFlowInstance);
   });
@@ -152,7 +153,8 @@ describe('useAddNodeOnConnectEnd', () => {
       undefined,
       'source',
       undefined, // previewNodeSize (uses default)
-      Position.Right // handlePosition from connectionState.fromHandle.position
+      Position.Right, // handlePosition from connectionState.fromHandle.position
+      [] // ignoredNodeTypes
     );
   });
 

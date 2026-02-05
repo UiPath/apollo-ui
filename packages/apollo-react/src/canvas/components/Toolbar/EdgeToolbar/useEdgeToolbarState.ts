@@ -16,6 +16,7 @@ export interface UseEdgeToolbarStateProps {
   targetHandleId?: string | null;
   sourcePosition: Position;
   targetPosition: Position;
+  ignoredNodeTypes?: string[];
 }
 
 export interface EdgeToolbarState {
@@ -35,6 +36,7 @@ export function useEdgeToolbarState({
   targetHandleId,
   sourcePosition,
   targetPosition,
+  ignoredNodeTypes,
 }: UseEdgeToolbarStateProps): EdgeToolbarState {
   const reactFlow = useReactFlow();
   const { mode } = useBaseCanvasMode();
@@ -69,7 +71,8 @@ export function useEdgeToolbarState({
         { originalEdge }, // Pass original edge to restore if cancelled
         'source', // Source handle type
         undefined, // Use default node size
-        sourcePosition
+        sourcePosition,
+        ignoredNodeTypes
       );
 
       if (!preview) return;
@@ -93,7 +96,16 @@ export function useEdgeToolbarState({
         secondEdge,
       ]);
     },
-    [sourcePosition, source, sourceHandleId, reactFlow, target, targetHandleId, edgeId]
+    [
+      sourcePosition,
+      source,
+      sourceHandleId,
+      reactFlow,
+      target,
+      targetHandleId,
+      edgeId,
+      ignoredNodeTypes,
+    ]
   );
 
   // Define toolbar actions

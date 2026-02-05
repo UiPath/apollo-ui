@@ -43,6 +43,12 @@ export interface AddNodeManagerProps {
    * Callback when a new node is added
    */
   onNodeAdded?: (sourceNodeId: string, sourceHandleId: string, newNode: Node) => void;
+
+  /**
+   * Node types to exclude from collision resolution when a new node is added.
+   * Nodes matching these types will not be repositioned and will not affect the placement of other nodes.
+   */
+  ignoredNodeTypes?: string[];
 }
 
 /**
@@ -58,6 +64,7 @@ export const AddNodeManager: React.FC<AddNodeManagerProps> = ({
   createNodeData,
   onBeforeNodeAdded,
   onNodeAdded,
+  ignoredNodeTypes,
 }) => {
   const reactFlowInstance = useReactFlow();
   const registry = useOptionalNodeTypeRegistry();
@@ -180,7 +187,7 @@ export const AddNodeManager: React.FC<AddNodeManagerProps> = ({
           ...nodes.filter((n) => n.id !== PREVIEW_NODE_ID).map((n) => ({ ...n, selected: false })),
           finalNode,
         ];
-        return resolveCollisions(newNodes);
+        return resolveCollisions(newNodes, { ignoredNodeTypes });
       });
 
       // Replace all preview edges with actual edges
@@ -215,6 +222,7 @@ export const AddNodeManager: React.FC<AddNodeManagerProps> = ({
       createNodeData,
       onBeforeNodeAdded,
       onNodeAdded,
+      ignoredNodeTypes,
       handleClose,
     ]
   );
