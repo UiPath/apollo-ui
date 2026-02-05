@@ -16,7 +16,8 @@ export function createAddNodePreview(
   sourceHandleId: string,
   reactFlowInstance: ReactFlowInstance,
   handlePosition: Position = Position.Right,
-  sourceHandleType: 'source' | 'target' = 'source'
+  sourceHandleType: 'source' | 'target' = 'source',
+  ignoredNodeTypes: string[] = []
 ): void {
   // Use the unified preview creation utility
   const preview = createPreviewNode(
@@ -27,7 +28,8 @@ export function createAddNodePreview(
     undefined, // No custom data
     sourceHandleType,
     undefined, // Use default preview node size
-    handlePosition
+    handlePosition,
+    ignoredNodeTypes
   );
 
   if (preview) {

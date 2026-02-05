@@ -2,12 +2,14 @@ import { type OnConnectEnd, useReactFlow } from '@uipath/apollo-react/canvas/xyf
 import { useCallback } from 'react';
 import { applyPreviewToReactFlow, createPreviewNode } from '../utils';
 
+const EMPTY_IGNORED_NODE_TYPES: string[] = [];
+
 /**
  * Use this hook to get a callback that adds a preview node when a connection ends on an empty space.
  * Uses React Flow context, so it is important that the component using this hook is a child of ReactFlowProvider.
  * @returns A callback method that can be used to handle React Flow `onConnectEnd` event.
  */
-export function useAddNodeOnConnectEnd() {
+export function useAddNodeOnConnectEnd(ignoredNodeTypes: string[] = EMPTY_IGNORED_NODE_TYPES) {
   const reactFlowInstance = useReactFlow();
 
   return useCallback<OnConnectEnd>(
@@ -55,12 +57,13 @@ export function useAddNodeOnConnectEnd() {
         undefined,
         connectionState.fromHandle.type,
         undefined, // Use default preview node size
-        connectionState.fromHandle.position
+        connectionState.fromHandle.position,
+        ignoredNodeTypes
       );
       if (preview) {
         applyPreviewToReactFlow(preview, reactFlowInstance);
       }
     },
-    [reactFlowInstance]
+    [reactFlowInstance, ignoredNodeTypes]
   );
 }

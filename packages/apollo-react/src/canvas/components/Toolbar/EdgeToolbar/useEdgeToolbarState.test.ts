@@ -51,7 +51,8 @@ vi.mock('../../../utils/createPreviewNode', () => ({
       _metadata,
       _handleType,
       _nodeSize,
-      _sourcePosition
+      _sourcePosition,
+      _ignoredNodeTypes
     ) => ({
       node: {
         id: PREVIEW_NODE_ID,
@@ -225,7 +226,8 @@ describe('useEdgeToolbarState', () => {
         }),
         'source',
         undefined,
-        Position.Right
+        Position.Right,
+        undefined // ignoredNodeTypes
       );
     });
 

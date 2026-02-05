@@ -81,6 +81,7 @@ export type CollisionAlgorithmOptions = {
   maxIterations?: number;
   overlapThreshold?: number;
   margin?: number;
+  ignoredNodeTypes?: string[];
 };
 
 export type CollisionAlgorithm = (nodes: Node[], options?: CollisionAlgorithmOptions) => Node[];
@@ -114,9 +115,13 @@ function getBoxesFromNodes(nodes: Node[], margin: number = 0): Box[] {
 
 export const resolveCollisions: CollisionAlgorithm = (
   nodes,
-  { maxIterations = 50, overlapThreshold = 0, margin = GRID_SPACING * 2 } = {}
+  { maxIterations = 50, overlapThreshold = 0, margin = GRID_SPACING * 2, ignoredNodeTypes } = {}
 ) => {
-  const boxes = getBoxesFromNodes(nodes, margin);
+  const ignoredSet = new Set(ignoredNodeTypes);
+  const collisionNodes =
+    ignoredSet.size > 0 ? nodes.filter((n) => !ignoredSet.has(n.type ?? '')) : nodes;
+
+  const boxes = getBoxesFromNodes(collisionNodes, margin);
   for (let iter = 0; iter < maxIterations; iter++) {
     let moved = false;
 
@@ -164,18 +169,20 @@ export const resolveCollisions: CollisionAlgorithm = (
     }
   }
 
-  const newNodes = boxes.map((box) => {
+  // Build a map of resolved collision nodes by id
+  const resolvedMap = new Map<string, Node>();
+  for (const box of boxes) {
     if (box.moved) {
-      return {
+      resolvedMap.set(box.node.id, {
         ...box.node,
         position: {
           x: snapToGrid(box.x + margin),
           y: snapToGrid(box.y + margin),
         },
-      };
+      });
     }
-    return box.node;
-  });
+  }
 
-  return newNodes;
+  // Return all nodes in original order: resolved nodes get updated positions, ignored nodes stay untouched
+  return nodes.map((n) => resolvedMap.get(n.id) ?? n);
 };

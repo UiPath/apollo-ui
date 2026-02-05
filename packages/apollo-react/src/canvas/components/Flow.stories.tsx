@@ -344,7 +344,7 @@ function DefaultStory({ useSmartHandles }: FlowStoryArgs) {
       selectionOnDrag
       onPaneClick={handlePaneClick}
     >
-      <AddNodeManager />
+      <AddNodeManager ignoredNodeTypes={['stickyNote']} />
       <Panel position="bottom-center">
         <ToolbarContainer className="nodrag nopan nowheel">
           <ToolbarButton
