@@ -19,7 +19,13 @@ import {
 import { FontVariantToken, Padding, Spacing } from '@uipath/apollo-core';
 import { Column, Row } from '@uipath/apollo-react/canvas/layouts';
 import { Position, useStore, useViewport } from '@uipath/apollo-react/canvas/xyflow/react';
-import { ApIcon, ApIconButton, ApTooltip, ApTypography } from '@uipath/apollo-react/material';
+import {
+  ApIcon,
+  ApIconButton,
+  ApLink,
+  ApTooltip,
+  ApTypography,
+} from '@uipath/apollo-react/material';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import type { HandleGroupManifest } from '../../schema/node-definition';
@@ -533,12 +539,22 @@ const StageNodeComponent = (props: StageNodeProps) => {
         <StageContent>
           {!tasks || tasks.length === 0 ? (
             <Column py={2}>
-              <ApTypography
-                variant={FontVariantToken.fontSizeS}
-                color="var(--uix-canvas-foreground-de-emp)"
-              >
-                {defaultContent}
-              </ApTypography>
+              {(onTaskAdd || onAddTaskFromToolbox) && !isReadOnly ? (
+                <ApLink
+                  onClick={handleTaskAddClick}
+                  variant={FontVariantToken.fontSizeS}
+                  style={{ maxWidth: 'fit-content' }}
+                >
+                  {defaultContent}
+                </ApLink>
+              ) : (
+                <ApTypography
+                  variant={FontVariantToken.fontSizeS}
+                  color="var(--uix-canvas-foreground-de-emp)"
+                >
+                  {defaultContent}
+                </ApTypography>
+              )}
             </Column>
           ) : (
             <DndContext
