@@ -33,8 +33,6 @@ import {
 } from './BaseNode.styles';
 import type { BaseNodeComponentProps, FooterVariant, NodeStatusContext } from './BaseNode.types';
 import { NodeLabel } from './NodeLabel';
-import { useSlotRegistry, type SlotRenderContext } from '../../core/SlotRegistry';
-import { resolveSlot } from '../../utils/slot-resolver';
 
 const selectIsConnecting = (state: ReactFlowState) => !!state.connectionClickStartHandle;
 
@@ -87,9 +85,6 @@ const BaseNodeComponent = (props: BaseNodeComponentProps) => {
   const isConnecting = useStore(selectIsConnecting);
   const { multipleNodesSelected } = useSelectionState();
 
-  // Get slot registry for custom renderers
-  const slotRegistry = useSlotRegistry();
-
   // Get manifest and resolve with instance data
   const manifest = useMemo(() => nodeTypeRegistry.getManifest(type), [type, nodeTypeRegistry]);
 
@@ -103,17 +98,6 @@ const BaseNodeComponent = (props: BaseNodeComponentProps) => {
       mode,
     }),
     [id, executionState, isConnecting, selected, dragging, mode]
-  );
-
-  // Create slot render context (used for resolving slot configs)
-  const slotRenderContext: SlotRenderContext = useMemo(
-    () => ({
-      nodeId: id,
-      selected,
-      executionState,
-      mode,
-    }),
-    [id, selected, executionState, mode]
   );
 
   // Callbacks: Use props only (no longer in data)
@@ -131,29 +115,17 @@ const BaseNodeComponent = (props: BaseNodeComponentProps) => {
     [manifest, data.display]
   );
 
-  // Icon resolution with priority: slotConfigs > icon string
+  // Icon resolution: component prop takes precedence, then icon string from display
   const Icon = useMemo(() => {
     // Priority 1: Component prop (e.g., dynamic tool icon)
     if (iconComponent !== undefined) {
       return iconComponent;
     }
 
-    // Priority 2: Slot config
-    const iconSlotConfig = data.display?.slotConfigs?.icon;
-    if (iconSlotConfig) {
-      return resolveSlot(iconSlotConfig, slotRenderContext, slotRegistry);
-    }
-
-    // Priority 3: Icon string (registry lookup)
+    // Priority 2: Icon string (registry lookup)
     const IconComponent = getIcon(display.icon);
     return IconComponent ? <IconComponent /> : null;
-  }, [
-    iconComponent,
-    data.display?.slotConfigs?.icon,
-    display.icon,
-    slotRenderContext,
-    slotRegistry,
-  ]);
+  }, [iconComponent, display.icon]);
 
   // Resolve handles from props or manifest
   // Prop handleConfigurations take precedence over manifest
@@ -197,27 +169,16 @@ const BaseNodeComponent = (props: BaseNodeComponentProps) => {
     return manifest ? resolveToolbar(manifest, statusContext) : undefined;
   }, [toolbarConfigProp, manifest, statusContext]);
 
-  // Adornments resolution with priority: props > adornmentConfigs > resolver
+  // Adornments resolution: props take precedence, then default resolver
   const adornments = useMemo(() => {
-    // Priority 1: Prop override (legacy ReactNode adornments - deprecated)
+    // Priority 1: Prop override (ReactNode adornments)
     if (adornmentsProp) {
       return adornmentsProp;
     }
 
-    // Priority 2: Slot configs from data (serializable)
-    const adornmentConfigs = data.adornmentConfigs;
-    if (adornmentConfigs) {
-      return {
-        topLeft: resolveSlot(adornmentConfigs.topLeft, slotRenderContext, slotRegistry),
-        topRight: resolveSlot(adornmentConfigs.topRight, slotRenderContext, slotRegistry),
-        bottomLeft: resolveSlot(adornmentConfigs.bottomLeft, slotRenderContext, slotRegistry),
-        bottomRight: resolveSlot(adornmentConfigs.bottomRight, slotRenderContext, slotRegistry),
-      };
-    }
-
-    // Priority 3: Default resolver (manifest/execution state based)
+    // Priority 2: Default resolver (manifest/execution state based)
     return resolveAdornments(statusContext);
-  }, [adornmentsProp, data.adornmentConfigs, slotRenderContext, slotRegistry, statusContext]);
+  }, [adornmentsProp, statusContext]);
 
   // Compute height based on handleConfigurations
   const computedHeight = useMemo(() => {
@@ -272,43 +233,18 @@ const BaseNodeComponent = (props: BaseNodeComponentProps) => {
   const displayLabelBackgroundColor = labelBackgroundColor;
   const displayFooterVariant = footerVariant;
 
-  // SubLabel: Component prop takes precedence, then slot config, then plain string
+  // SubLabel: Component prop takes precedence, then plain string from display
   const displaySubLabel = useMemo(() => {
     // 1. Component prop (e.g., composite with health score badge)
     if (subLabelComponent !== undefined) {
       return subLabelComponent;
     }
-    // 2. Slot config
-    const subLabelSlotConfig = data.display?.slotConfigs?.subLabel;
-    if (subLabelSlotConfig) {
-      return resolveSlot(subLabelSlotConfig, slotRenderContext, slotRegistry);
-    }
-    // 3. Plain string from display.subLabel
+    // 2. Plain string from display.subLabel
     return display.subLabel;
-  }, [
-    subLabelComponent,
-    data.display?.slotConfigs?.subLabel,
-    display.subLabel,
-    slotRenderContext,
-    slotRegistry,
-  ]);
+  }, [subLabelComponent, display.subLabel]);
 
-  // Center adornment: Resolve from slot config
-  const displayCenterAdornment = useMemo(() => {
-    const centerAdornmentSlotConfig = data.display?.slotConfigs?.centerAdornment;
-    return resolveSlot(centerAdornmentSlotConfig, slotRenderContext, slotRegistry);
-  }, [data.display?.slotConfigs?.centerAdornment, slotRenderContext, slotRegistry]);
-
-  // Footer: Component prop takes precedence, then slot config
-  const displayFooter = useMemo(() => {
-    // 1. Component prop (e.g., instructions footer)
-    if (footerComponent !== undefined) {
-      return footerComponent;
-    }
-    // 2. Slot config
-    const footerSlotConfig = data.display?.slotConfigs?.footer;
-    return resolveSlot(footerSlotConfig, slotRenderContext, slotRegistry);
-  }, [footerComponent, data.display?.slotConfigs?.footer, slotRenderContext, slotRegistry]);
+  // Footer: Component prop (no other sources)
+  const displayFooter = footerComponent;
 
   const interactionState = useMemo(() => {
     if (disabled) return 'disabled';
@@ -572,7 +508,6 @@ const BaseNodeComponent = (props: BaseNodeComponentProps) => {
           hasBottomHandles={hasVisibleBottomHandles}
           selected={selected}
           dragging={dragging}
-          centerAdornment={displayCenterAdornment}
           readonly={mode !== 'design'}
           onChange={handleLabelChange}
         />

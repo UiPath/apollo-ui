@@ -4,7 +4,6 @@ import type { ExecutionState } from '../../types/execution';
 import type { HandleActionEvent } from '../ButtonHandle/ButtonHandle';
 import type { NodeToolbarConfig } from '../Toolbar';
 import type { Node, NodeProps } from '@xyflow/react';
-import type { DisplaySlotConfigs, AdornmentSlotConfigs } from '../../schema/slot-config';
 
 export type FooterVariant = 'none' | 'button' | 'single' | 'double';
 
@@ -20,13 +19,6 @@ export interface BaseNodeData extends Record<string, unknown> {
     icon?: string;
     iconBackground?: string;
     iconColor?: string;
-
-    /**
-     * Serializable slot configurations for custom rendering
-     * Describes what to render in each display slot using JSON-serializable configs.
-     * @since Phase 1
-     */
-    slotConfigs?: DisplaySlotConfigs;
   };
 
   /**
@@ -35,14 +27,6 @@ export interface BaseNodeData extends Record<string, unknown> {
    * @default false
    */
   useSmartHandles?: boolean;
-
-  /**
-   * NEW: Serializable adornment configurations (replaces NodeAdornments)
-   * Describes what to render in each corner slot using JSON-serializable configs.
-   * Takes precedence over legacy adornments ReactNode props.
-   * @since Phase 1 - Backward compatible addition
-   */
-  adornmentConfigs?: AdornmentSlotConfigs;
 }
 
 export interface NodeAdornments {
@@ -77,6 +61,8 @@ export interface NodeStatusContext {
  *
  * @since Phase 1 - Props for runtime callbacks (moved from data)
  */
+
+// TODO: Remove once Agent Builder moves off of AgentFlow component and uses Flow (limited to 1 agent)
 export interface BaseNodeComponentProps extends NodeProps<Node<BaseNodeData>> {
   // ========================================
   // Callbacks (Runtime Behavior)

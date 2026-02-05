@@ -33,37 +33,8 @@ vi.mock('../../ButtonHandle/useButtonHandles', () => ({
   useButtonHandles: () => null,
 }));
 
-vi.mock('../../ExecutionStatusIcon/ExecutionStatusIcon', () => ({
-  ExecutionStatusIcon: ({ status }: { status?: string }) => (
-    <div data-testid="execution-status-icon">{status || 'none'}</div>
-  ),
-  getExecutionStatusColor: (status: string | undefined): string => {
-    switch (status) {
-      case 'Failed':
-      case 'Faulted':
-      case 'Cancelled':
-      case 'Terminated':
-      case 'Canceling':
-        return 'var(--color-error-icon)';
-      case 'Completed':
-        return 'var(--color-success-icon)';
-      case 'Running':
-      case 'InProgress':
-      case 'Resuming':
-      case 'Retrying':
-      case 'Upgrading':
-      case 'UserCancelled':
-        return 'var(--color-info-icon)';
-      case 'Paused':
-      case 'Pausing':
-      case 'Pending':
-        return 'var(--color-warning-icon)';
-      case 'NotExecuted':
-        return 'var(--color-foreground-de-emp)';
-      default:
-        return '';
-    }
-  },
+vi.mock('../../ExecutionStatusIcon/ExecutionStatusIcon', async () => ({
+  ...(await vi.importActual('../../ExecutionStatusIcon/ExecutionStatusIcon')),
 }));
 
 vi.mock('../store/agent-flow-store', () => ({
