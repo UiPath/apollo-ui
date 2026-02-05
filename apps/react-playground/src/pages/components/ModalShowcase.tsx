@@ -1,3 +1,4 @@
+import { FontVariantToken } from "@uipath/apollo-react";
 import {
 	ApAccordion,
 	ApButton,
@@ -7,13 +8,11 @@ import {
 import { useState } from "react";
 import styled from "styled-components";
 import { CodeBlock } from "../../components/CodeBlock";
-
 import {
 	PageContainer,
 	PageDescription,
 	PageTitle,
 } from "../../components/SharedStyles";
-import { FontVariantToken } from "@uipath/apollo-react";
 
 const ShowcaseSection = styled.div`
 	margin-top: 48px;
@@ -209,6 +208,62 @@ export function Example() {
 }
 `;
 
+const disabledStateCode = `
+import { ApModal, ApButton } from "@uipath/apollo-react/material/components";
+import { useState } from "react";
+
+export function Example() {
+	const [primaryDisabledOpen, setPrimaryDisabledOpen] = useState(false);
+	const [secondaryDisabledOpen, setSecondaryDisabledOpen] = useState(false);
+
+	return (
+		<>
+			{/* Primary button disabled */}
+			<ApButton
+				label="Disabled Primary Button"
+				onClick={() => setPrimaryDisabledOpen(true)}
+			/>
+			<ApModal
+				open={primaryDisabledOpen}
+				onClose={() => setPrimaryDisabledOpen(false)}
+				header="Disabled Primary Action"
+				message="The primary action button is disabled. This is common when form validation fails or required conditions aren't met."
+				primaryAction={{
+					label: "Submit",
+					onClick: () => setPrimaryDisabledOpen(false),
+					disabled: true,
+				}}
+				secondaryAction={{
+					label: "Cancel",
+					onClick: () => setPrimaryDisabledOpen(false),
+				}}
+			/>
+
+			{/* Secondary button disabled */}
+			<ApButton
+				label="Disabled Secondary Button"
+				onClick={() => setSecondaryDisabledOpen(true)}
+			/>
+			<ApModal
+				open={secondaryDisabledOpen}
+				onClose={() => setSecondaryDisabledOpen(false)}
+				header="Disabled Secondary Action"
+				message="The secondary action button is disabled. This can be used to enforce a specific workflow or prevent cancellation."
+				primaryAction={{
+					label: "Confirm",
+					onClick: () => setSecondaryDisabledOpen(false),
+				}}
+				secondaryAction={{
+					label: "Cancel",
+					onClick: () => setSecondaryDisabledOpen(false),
+					disabled: true,
+				}}
+			/>
+		</>
+	);
+}
+`;
+
 const customContentCode = `
 import { ApModal, ApButton, ApTypography } from "@uipath/apollo-react/material/components";
 import { useState } from "react";
@@ -310,6 +365,8 @@ export function ModalShowcase() {
 	const [loadingStateOpen, setLoadingStateOpen] = useState(false);
 	const [primaryLoading, setPrimaryLoading] = useState(false);
 	const [secondaryLoading, setSecondaryLoading] = useState(false);
+	const [primaryDisabledOpen, setPrimaryDisabledOpen] = useState(false);
+	const [secondaryDisabledOpen, setSecondaryDisabledOpen] = useState(false);
 	const [smallOpen, setSmallOpen] = useState(false);
 	const [mediumOpen, setMediumOpen] = useState(false);
 	const [largeOpen, setLargeOpen] = useState(false);
@@ -440,6 +497,64 @@ export function ModalShowcase() {
 					<Label>Code Example:</Label>
 					<ApAccordion label="Loading States" disableDivider>
 						<CodeBlock>{loadingStateCode}</CodeBlock>
+					</ApAccordion>
+				</ComponentRow>
+			</ShowcaseSection>
+
+			<ShowcaseSection>
+				<SectionTitle>Disabled States</SectionTitle>
+				<ComponentRow>
+					<Label>
+						Action buttons can be disabled to prevent user interaction based on
+						conditions (e.g., form validation, permissions, workflow
+						enforcement)
+					</Label>
+					<ButtonGroup>
+						<ApButton
+							label="Disabled Primary Button"
+							onClick={() => setPrimaryDisabledOpen(true)}
+						/>
+						<ApButton
+							label="Disabled Secondary Button"
+							onClick={() => setSecondaryDisabledOpen(true)}
+						/>
+					</ButtonGroup>
+
+					<ApModal
+						open={primaryDisabledOpen}
+						onClose={() => setPrimaryDisabledOpen(false)}
+						header="Disabled Primary Action"
+						message="The primary action button is disabled. This is common when form validation fails or required conditions aren't met."
+						primaryAction={{
+							label: "Submit",
+							onClick: () => setPrimaryDisabledOpen(false),
+							disabled: true,
+						}}
+						secondaryAction={{
+							label: "Cancel",
+							onClick: () => setPrimaryDisabledOpen(false),
+						}}
+					/>
+
+					<ApModal
+						open={secondaryDisabledOpen}
+						onClose={() => setSecondaryDisabledOpen(false)}
+						header="Disabled Secondary Action"
+						message="The secondary action button is disabled. This can be used to enforce a specific workflow or prevent cancellation."
+						primaryAction={{
+							label: "Confirm",
+							onClick: () => setSecondaryDisabledOpen(false),
+						}}
+						secondaryAction={{
+							label: "Cancel",
+							onClick: () => setSecondaryDisabledOpen(false),
+							disabled: true,
+						}}
+					/>
+
+					<Label>Code Example:</Label>
+					<ApAccordion label="Disabled States" disableDivider>
+						<CodeBlock>{disabledStateCode}</CodeBlock>
 					</ApAccordion>
 				</ComponentRow>
 			</ShowcaseSection>

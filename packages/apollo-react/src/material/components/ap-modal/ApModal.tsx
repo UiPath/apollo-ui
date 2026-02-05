@@ -139,6 +139,7 @@ export const ApModal = React.forwardRef<HTMLDivElement, ApModalProps>((props, re
                 variant="secondary"
                 id={secondaryAction.id}
                 label={secondaryAction.label}
+                disabled={secondaryAction.disabled}
                 loading={secondaryAction.loading}
                 onClick={secondaryAction.onClick}
               />

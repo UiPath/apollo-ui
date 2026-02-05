@@ -165,16 +165,35 @@ describe('ApModal', () => {
     });
 
     it('disables primary action button when disabled is true', () => {
+      const handlePrimaryClick = vi.fn();
       render(
         <ApModal
           open={true}
           onClose={vi.fn()}
           header="Test Modal"
-          primaryAction={{ label: 'Confirm', onClick: vi.fn(), disabled: true }}
+          primaryAction={{ label: 'Confirm', onClick: handlePrimaryClick, disabled: true }}
         />
       );
       const button = screen.getByRole('button', { name: /confirm/i, hidden: true });
       expect(button).toBeDisabled();
+      button.click();
+      expect(handlePrimaryClick).not.toHaveBeenCalled();
+    });
+
+    it('disables secondary action button when disabled is true', () => {
+      const handleSecondaryClick = vi.fn();
+      render(
+        <ApModal
+          open={true}
+          onClose={vi.fn()}
+          header="Test Modal"
+          secondaryAction={{ label: 'Cancel', onClick: handleSecondaryClick, disabled: true }}
+        />
+      );
+      const button = screen.getByRole('button', { name: /cancel/i, hidden: true });
+      expect(button).toBeDisabled();
+      button.click();
+      expect(handleSecondaryClick).not.toHaveBeenCalled();
     });
 
     it('sets id on primary action button', () => {
