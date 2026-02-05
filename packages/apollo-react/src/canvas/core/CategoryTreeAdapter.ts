@@ -3,20 +3,6 @@ import type { NodeManifest } from '../schema/node-definition';
 import type { CategoryTree, CategoryTreeNode } from './CategoryTree';
 
 /**
- * Icon resolver function type.
- * Takes an icon name and returns a React component to render.
- */
-export type IconResolver = (iconName: string) => React.ComponentType | undefined;
-
-/**
- * Options for converting category tree to list items.
- */
-export interface ToListItemsOptions {
-  /** Function to resolve icon names to React components */
-  iconResolver?: IconResolver;
-}
-
-/**
  * Adapter class for converting CategoryTree to various UI formats.
  *
  * Provides transformation methods to convert the hierarchical category tree
@@ -25,7 +11,7 @@ export interface ToListItemsOptions {
  * Usage:
  * ```typescript
  * const adapter = new CategoryTreeAdapter(categoryTree);
- * const listItems = adapter.toListItems({ iconResolver: getIcon });
+ * const listItems = adapter.toListItems();
  * ```
  */
 export class CategoryTreeAdapter {
@@ -42,12 +28,9 @@ export class CategoryTreeAdapter {
    * Empty categories (no nodes or children) are filtered out by default.
    * Root-level nodes are included after categories.
    *
-   * @param options - Configuration options for the conversion
    * @returns Array of list items representing the tree structure
    */
-  toListItems(options: ToListItemsOptions = {}): ListItem[] {
-    const { iconResolver } = options;
-
+  toListItems(): ListItem[] {
     const convertNodeManifest = (node: NodeManifest): ListItem => ({
       id: node.nodeType,
       name: node.display.label,
@@ -57,9 +40,7 @@ export class CategoryTreeAdapter {
         category: node.category,
         version: node.version,
       },
-      icon: iconResolver
-        ? { Component: iconResolver(node.display.icon) }
-        : { name: node.display.icon },
+      icon: { name: node.display.icon },
     });
 
     const convertCategories = (categoryNodes: CategoryTreeNode[]): ListItem[] => {
@@ -87,7 +68,7 @@ export class CategoryTreeAdapter {
           id: category.id,
           name: category.name,
           data: null,
-          icon: iconResolver ? { Component: iconResolver(category.icon) } : { name: category.icon },
+          icon: { name: category.icon },
           color: category.color,
           children,
         };

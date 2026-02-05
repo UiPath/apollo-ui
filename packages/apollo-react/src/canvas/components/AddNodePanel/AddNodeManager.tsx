@@ -102,7 +102,14 @@ export const AddNodeManager: React.FC<AddNodeManagerProps> = ({
   // Handle node selection from the selector panel
   const handleNodeSelect = useCallback(
     (nodeItem: ListItem) => {
-      if (!previewNode || !previewNodeConnectionInfo || previewNodeConnectionInfo.length === 0) {
+      // Get preview node dynamically to avoid recreating this callback on position changes
+      const currentPreviewNode = reactFlowInstance.getNode(PREVIEW_NODE_ID);
+
+      if (
+        !currentPreviewNode ||
+        !previewNodeConnectionInfo ||
+        previewNodeConnectionInfo.length === 0
+      ) {
         return;
       }
       // Generate new node ID
@@ -116,7 +123,7 @@ export const AddNodeManager: React.FC<AddNodeManagerProps> = ({
           };
 
       // Inherit useSmartHandles from preview node if set
-      const nodeData = previewNode.data?.useSmartHandles
+      const nodeData = currentPreviewNode.data?.useSmartHandles
         ? { ...baseNodeData, useSmartHandles: true }
         : baseNodeData;
 
@@ -124,7 +131,7 @@ export const AddNodeManager: React.FC<AddNodeManagerProps> = ({
       const newNode: Node = {
         id: newNodeId,
         type: nodeItem.data.type,
-        position: previewNode.position,
+        position: currentPreviewNode.position,
         selected: true,
         data: nodeData,
       };
@@ -209,7 +216,6 @@ export const AddNodeManager: React.FC<AddNodeManagerProps> = ({
     },
     [
       previewNodeConnectionInfo,
-      previewNode,
       reactFlowInstance,
       registry,
       createNodeData,
@@ -217,29 +223,6 @@ export const AddNodeManager: React.FC<AddNodeManagerProps> = ({
       onNodeAdded,
       handleClose,
     ]
-  );
-
-  // Handle node hover to update preview node icon
-  const handleNodeOptionHover = useCallback(
-    (category: ListItem) => {
-      if (!previewNode) return;
-
-      // Update the preview node with serializable data only
-      reactFlowInstance.setNodes((nodes) =>
-        nodes.map((n) =>
-          n.id === PREVIEW_NODE_ID
-            ? {
-                ...n,
-                data: {
-                  ...n.data,
-                  iconName: typeof category.icon === 'string' ? category.icon : undefined,
-                },
-              }
-            : n
-        )
-      );
-    },
-    [reactFlowInstance, previewNode]
   );
 
   if (!previewNode || !previewNodeConnectionInfo || previewNodeConnectionInfo.length === 0) {
@@ -258,9 +241,8 @@ export const AddNodeManager: React.FC<AddNodeManagerProps> = ({
       ) : (
         <AddNodePanel
           loading={initializing}
-          onNodeSelect={(item) => handleNodeSelect(item)}
+          onNodeSelect={handleNodeSelect}
           onClose={handleClose}
-          onNodeHover={handleNodeOptionHover}
         />
       )}
     </FloatingCanvasPanel>

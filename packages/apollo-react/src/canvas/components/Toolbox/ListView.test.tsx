@@ -61,7 +61,7 @@ describe('ListView', () => {
       render(<ListView {...defaultProps} items={items} />);
 
       expect(screen.getByText('Test Item')).toBeInTheDocument();
-      expect(screen.getByTestId('ap-icon')).toHaveAttribute('data-name', 'star');
+      expect(screen.getByTestId('list-item-icon').querySelector('svg')).toHaveClass('lucide-star');
     });
 
     it('should render item with description', () => {

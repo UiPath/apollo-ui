@@ -1,7 +1,6 @@
-import { useCallback, useMemo } from 'react';
+import { memo, useCallback, useMemo } from 'react';
 import { useOptionalNodeTypeRegistry } from '../../core';
 import { usePreviewNode } from '../../hooks';
-import { getIcon } from '../../utils/icon-registry';
 import { type ListItem, Toolbox } from '../Toolbox';
 import type { AddNodePanelProps } from './AddNodePanel.types';
 
@@ -13,7 +12,7 @@ import type { AddNodePanelProps } from './AddNodePanel.types';
  * 1. Category-level filtering to quickly eliminate entire invalid categories
  * 2. Node-level filtering for comprehensive constraint validation
  */
-export function AddNodePanel({
+export const AddNodePanel = memo(function AddNodePanel({
   onNodeSelect,
   onClose,
   onSearch,
@@ -36,14 +35,14 @@ export function AddNodePanel({
    */
   const nodeListOptions = useMemo((): ListItem[] => {
     if (items) return items;
-    if (!registry) return [];
+    // Prevent premature access to registry during loading state
+    if (loading || !registry) return [];
 
     return registry.getNodeOptions({
       connections: previewNodeConnectionInfo,
       flattenSinglePath: true,
-      iconResolver: getIcon,
     });
-  }, [items, registry, previewNodeConnectionInfo]);
+  }, [items, registry, previewNodeConnectionInfo, loading]);
 
   const handleSearch = useCallback(
     (
@@ -57,7 +56,6 @@ export function AddNodePanel({
           category,
           search: query,
           flattenAll: true,
-          iconResolver: getIcon,
         });
         return Promise.resolve(listItems);
       }
@@ -89,4 +87,4 @@ export function AddNodePanel({
       onItemHover={onNodeHover}
     />
   );
-}
+});

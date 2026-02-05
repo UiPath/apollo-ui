@@ -45,6 +45,8 @@ export const IconContainer = styled.div<{ bgColor?: string }>`
   color: var(--uix-canvas-foreground-emp);
   opacity: 0.9;
   flex-shrink: 0;
+  // Icons should show below the inset outline
+  z-index: -1;
 `;
 
 export const StyledList = styled(List)`
