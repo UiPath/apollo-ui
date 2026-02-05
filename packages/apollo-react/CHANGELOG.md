@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.19.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.19.1...@uipath/apollo-react@3.19.2) (2026-02-05)
+
+### Bug Fixes
+
+* **apollo-react:** ApModal was missing secondary action disable prop ([c344ff3](https://github.com/UiPath/apollo-ui/commit/c344ff3cd66d738b077644149e9c456f5376442a))
+
 ## [@uipath/apollo-react-v3.19.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.19.0...@uipath/apollo-react@3.19.1) (2026-02-04)
 
 ### Bug Fixes
