@@ -19,6 +19,7 @@ import { AutopilotChatMessageContent } from './chat-message-content';
 import { AutopilotChatFRE } from './first-run-experience/chat-fre';
 import { AutopilotChatLoading } from './loader/chat-loading';
 import { AutopilotChatLoadingMessages } from './loader/chat-loading-messages';
+import { stripResourceTokens } from './markdown/parsers/resource-token-parser';
 import { AutopilotChatSuggestions } from './suggestions/chat-suggestions';
 
 const MessageContainer = styled('div')(
@@ -155,6 +156,8 @@ function AutopilotChatMessagesComponent({
     } else {
       finalString = group.map((msg) => msg.toCopy ?? msg.content).join('\n');
     }
+
+    finalString = stripResourceTokens(finalString);
 
     if (navigator.clipboard && finalString) {
       navigator.clipboard.writeText(finalString).catch(() => {});

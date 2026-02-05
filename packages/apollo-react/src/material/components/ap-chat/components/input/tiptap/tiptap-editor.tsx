@@ -7,12 +7,17 @@ import Text from '@tiptap/extension-text';
 import { Placeholder, UndoRedo } from '@tiptap/extensions';
 import { Fragment, Node, Slice } from '@tiptap/pm/model';
 import { EditorContent, ReactNodeViewRenderer, useEditor } from '@tiptap/react';
+import { exitSuggestion } from '@tiptap/suggestion';
 import React, { forwardRef, useCallback } from 'react';
 import { type AutopilotChatResourceItem } from './../../../service';
 import { ResourceChipNodeView } from './resource-chip-node-view';
 import { textToDocument } from './tiptap.utils';
 import { EditorContainer } from './tiptap-editor.styles';
-import { type CursorCoordinates, createResourceSuggestion } from './tiptap-resource-suggestion';
+import {
+  type CursorCoordinates,
+  createResourceSuggestion,
+  ResourceMentionPluginKey,
+} from './tiptap-resource-suggestion';
 
 /**
  * Extended Mention extension with custom resource attributes.
@@ -46,6 +51,7 @@ export interface TipTapEditorHandle {
   clear: () => void;
   clearMentionQuery: () => void;
   triggerMention: () => void;
+  exitMention: () => void;
 }
 
 interface TipTapEditorCallbacks {
@@ -90,6 +96,7 @@ function TipTapEditorInner(
   });
 
   const mentionRangeRef = React.useRef<Range | null>(null);
+  const suppressSuggestionRef = React.useRef(false);
 
   React.useLayoutEffect(() => {
     callbacksRef.current = {
@@ -103,20 +110,23 @@ function TipTapEditorInner(
 
   const resourceSuggestion = React.useMemo(
     () =>
-      createResourceSuggestion({
-        onStart: (range, coords) => {
-          mentionRangeRef.current = range;
-          callbacksRef.current.onMentionStart?.(range, coords);
+      createResourceSuggestion(
+        {
+          onStart: (range, coords) => {
+            mentionRangeRef.current = range;
+            callbacksRef.current.onMentionStart?.(range, coords);
+          },
+          onExit: () => {
+            mentionRangeRef.current = null;
+            callbacksRef.current.onMentionEnd?.();
+          },
+          onQueryChange: (query, range) => {
+            mentionRangeRef.current = range;
+            callbacksRef.current.onMentionQueryChange?.(query, range);
+          },
         },
-        onExit: () => {
-          mentionRangeRef.current = null;
-          callbacksRef.current.onMentionEnd?.();
-        },
-        onQueryChange: (query, range) => {
-          mentionRangeRef.current = range;
-          callbacksRef.current.onMentionQueryChange?.(query, range);
-        },
-      }),
+        suppressSuggestionRef
+      ),
     []
   );
 
@@ -160,6 +170,16 @@ function TipTapEditorInner(
     editorProps: {
       handleKeyDown: (_view, event) => {
         return callbacksRef.current.onKeyDown?.(event) ?? false;
+      },
+      handleDOMEvents: {
+        mousedown: () => {
+          suppressSuggestionRef.current = false;
+          return false;
+        },
+        keydown: () => {
+          suppressSuggestionRef.current = false;
+          return false;
+        },
       },
       attributes: { 'data-testid': 'tiptap-editor' },
       clipboardTextParser: (text, context) => {
@@ -266,7 +286,14 @@ function TipTapEditorInner(
     if (!editor) {
       return;
     }
+    suppressSuggestionRef.current = false;
     editor.chain().focus().insertContent('@').run();
+  }, [editor]);
+
+  const exitMention = useCallback(() => {
+    if (!editor) return;
+    suppressSuggestionRef.current = true;
+    exitSuggestion(editor.view, ResourceMentionPluginKey);
   }, [editor]);
 
   React.useImperativeHandle(
@@ -278,8 +305,17 @@ function TipTapEditorInner(
       clear,
       clearMentionQuery,
       triggerMention,
+      exitMention,
     }),
-    [focus, insertResource, getSerializedContent, clear, clearMentionQuery, triggerMention]
+    [
+      focus,
+      insertResource,
+      getSerializedContent,
+      clear,
+      clearMentionQuery,
+      triggerMention,
+      exitMention,
+    ]
   );
 
   return (

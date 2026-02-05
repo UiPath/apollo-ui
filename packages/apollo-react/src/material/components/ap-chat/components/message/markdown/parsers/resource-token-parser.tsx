@@ -59,6 +59,16 @@ const parseResourceData = (json: string): AutopilotChatResourceItem | null => {
 };
 
 /**
+ * Replaces [[resource-token:{...}]] markers with their display names.
+ */
+export function stripResourceTokens(text: string): string {
+  return text.replace(RESOURCE_TOKEN_PATTERN, (match, json) => {
+    const resource = parseResourceData(json);
+    return resource?.displayName ?? match;
+  });
+}
+
+/**
  * Remark plugin that transforms [[resource-token:{...}]] markers into resource-chip elements.
  */
 export function resourceTokenPlugin() {

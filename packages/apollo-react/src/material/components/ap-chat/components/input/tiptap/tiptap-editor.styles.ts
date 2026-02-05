@@ -22,6 +22,7 @@ export const EditorContainer = styled('div')<{
     '& p': {
       margin: 0,
       minHeight: lineHeight,
+      lineHeight: lineHeight,
     },
 
     '& p.is-editor-empty:first-of-type::before': {
