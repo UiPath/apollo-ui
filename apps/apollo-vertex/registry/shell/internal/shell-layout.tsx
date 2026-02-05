@@ -8,6 +8,7 @@ const GRADIENT_BLUR = "blur(149.643px)";
 interface ShellLayoutProps {
   companyName: string;
   productName: string;
+  variant?: "minimal";
   companyLogo?: CompanyLogo;
 }
 
@@ -274,12 +275,32 @@ export function ShellLayout({
   children,
   companyName,
   productName,
+  variant,
   companyLogo,
 }: PropsWithChildren<ShellLayoutProps>) {
+  if (variant === "minimal") {
+    return (
+      <div className="h-screen overflow-hidden flex flex-col bg-sidebar p-2 gap-2">
+        <Sidebar
+          companyName={companyName}
+          variant={variant}
+          productName={productName}
+          companyLogo={companyLogo}
+        />
+        <main className="flex-1 flex flex-col overflow-hidden relative rounded-[10px] bg-sidebar">
+          <div className="flex-1 overflow-y-auto custom-scrollbar">
+            {children}
+          </div>
+        </main>
+      </div>
+    );
+  }
+
   return (
     <div className="h-screen overflow-hidden flex bg-sidebar">
       <Sidebar
         companyName={companyName}
+        variant={variant}
         productName={productName}
         companyLogo={companyLogo}
       />

@@ -507,6 +507,18 @@
         {
           "path": "registry/shell/internal/nav-item.tsx",
           "type": "registry:ui"
+        },
+        {
+          "path": "registry/shell/internal/minimal-company.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/shell/internal/minimal-nav-item.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/shell/internal/text.tsx",
+          "type": "registry:ui"
         }
       ]
     },

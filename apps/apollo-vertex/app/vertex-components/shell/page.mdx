@@ -10,6 +10,16 @@ A component that includes UiPath authentication and a collapsible sidebar.
   </div>
 </div>
 
+## Minimal Header Variant
+
+Use the `variant="minimal"` prop to render a horizontal header layout instead of the default sidebar.
+
+<div className="not-prose my-8 rounded-lg overflow-hidden" style={{ height: '600px' }}>
+  <div className="[&_.h-screen]:!h-full h-full">
+    <ShellTemplate variant="minimal" />
+  </div>
+</div>
+
 ## Features
 
 - **UiPath Authentication**: Built-in authentication flow with `@uipath/auth-react`

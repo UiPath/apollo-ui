@@ -12,24 +12,12 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { SUPPORTED_LOCALES, SupportedLocale } from "@/lib/i18n";
 import { TranslationKey } from "./TranslationKey";
+import { Text } from "./text";
 
 export type LanguageChangedEvent = {
   selectedLanguageId: string;
 };
 
-const Text = ({ value }: { value: TranslationKey }) => {
-  const { t } = useTranslation();
-  if (typeof value === "string") {
-    return t(value);
-  }
-  return (
-    <Trans
-      i18nKey={value.i18nKey}
-      values={value.values}
-      components={value.components}
-    />
-  );
-};
 const MAP_LOCALE_TO_TRANSLATION_KEY: Record<SupportedLocale, TranslationKey> = {
   en: "english",
   de: "german",

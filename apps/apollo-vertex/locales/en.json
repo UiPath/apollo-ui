@@ -11,5 +11,8 @@
   "russian": "Russian",
   "turkish": "Turkish",
   "chinese-cn": "Chinese (China)",
-  "chinese-tw": "Chinese (Taiwan)"
+  "chinese-tw": "Chinese (Taiwan)",
+  "dashboard": "Dashboard",
+  "projects": "Projects",
+  "analytics": "Analytics"
 }
