@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.19.4](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.19.3...@uipath/apollo-react@3.19.4) (2026-02-06)
+
+### Bug Fixes
+
+* **apollo-react:** add node panel performance ([c3468e8](https://github.com/UiPath/apollo-ui/commit/c3468e8ba7dca33a85370902fcb87f717aef6a98))
+
 ## [@uipath/apollo-react-v3.19.3](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.19.2...@uipath/apollo-react@3.19.3) (2026-02-06)
 
 ### Bug Fixes
