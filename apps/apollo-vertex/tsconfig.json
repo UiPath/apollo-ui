@@ -37,6 +37,7 @@
       "@/components/ui/collapsible": ["./registry/collapsible/collapsible"],
       "@/components/ui/command": ["./registry/command/command"],
       "@/components/ui/context-menu": ["./registry/context-menu/context-menu"],
+      "@/components/ui/data-table": ["./registry/data-table/data-table"],
       "@/components/ui/dialog": ["./registry/dialog/dialog"],
       "@/components/ui/drawer": ["./registry/drawer/drawer"],
       "@/components/ui/dropdown-menu": [

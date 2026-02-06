@@ -1,0 +1,163 @@
+import { DataTableTemplate } from '@/templates/DataTableTemplate'
+
+# Data Table
+
+A powerful data table component built on [TanStack Table](https://tanstack.com/table) with sorting, filtering, pagination, and row selection.
+
+<div className="not-prose my-8 rounded-lg border overflow-hidden">
+  <DataTableTemplate />
+</div>
+
+## Features
+
+- **Sorting**: Click column headers to sort ascending, descending, or clear
+- **Pagination**: Built-in page navigation with configurable rows per page
+- **Row Selection**: Checkbox-based row selection with select all support
+- **Column Visibility**: Toggle column visibility via dropdown
+- **Column Header Actions**: Reusable header component with sort and hide options
+- **Flexible Columns**: Define columns with custom renderers, formatters, and actions
+
+## Installation
+
+```bash
+npx shadcn@latest add @uipath/data-table
+```
+
+This component requires the following dependencies:
+
+- `@tanstack/react-table` - Table state management and utilities
+- `lucide-react` - Icons
+- `table` - Base table primitives
+- `button` - Button component
+- `dropdown-menu` - Dropdown menu component
+- `select` - Select component (for rows per page)
+
+## Usage
+
+### 1. Define your columns
+
+```tsx
+"use client"
+
+import type { ColumnDef } from "@/components/ui/data-table"
+import { DataTableColumnHeader } from "@/components/ui/data-table"
+
+type Payment = {
+  id: string
+  amount: number
+  status: "pending" | "processing" | "success" | "failed"
+  email: string
+}
+
+export const columns: ColumnDef<Payment>[] = [
+  {
+    accessorKey: "status",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Status" />
+    ),
+  },
+  {
+    accessorKey: "email",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Email" />
+    ),
+  },
+  {
+    accessorKey: "amount",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Amount" />
+    ),
+    cell: ({ row }) => {
+      const formatted = new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: "USD",
+      }).format(row.getValue("amount"))
+      return <div className="text-right font-medium">{formatted}</div>
+    },
+  },
+]
+```
+
+### 2. Render the DataTable
+
+```tsx
+import { DataTable } from "@/components/ui/data-table"
+import { columns } from "./columns"
+
+export default function PaymentsPage({ data }: { data: Payment[] }) {
+  return <DataTable columns={columns} data={data} />
+}
+```
+
+## Composable Helpers
+
+The data table exports additional components for building advanced table UIs:
+
+### DataTableColumnHeader
+
+A reusable column header with a dropdown for sorting and hiding columns.
+
+```tsx
+import { DataTableColumnHeader } from "@/components/ui/data-table"
+
+{
+  accessorKey: "email",
+  header: ({ column }) => (
+    <DataTableColumnHeader column={column} title="Email" />
+  ),
+}
+```
+
+### DataTablePagination
+
+A standalone pagination component. The `DataTable` includes this by default, but you can also use it separately when building custom table layouts.
+
+```tsx
+import { DataTablePagination } from "@/components/ui/data-table"
+
+<DataTablePagination table={table} />
+```
+
+### DataTableViewOptions
+
+A column visibility toggle dropdown. Use this in a toolbar above the table.
+
+```tsx
+import { DataTableViewOptions } from "@/components/ui/data-table"
+
+<DataTableViewOptions table={table} />
+```
+
+## Row Selection
+
+Add a selection column using the `Checkbox` component:
+
+```tsx
+import { Checkbox } from "@/components/ui/checkbox"
+
+const columns: ColumnDef<Payment>[] = [
+  {
+    id: "select",
+    header: ({ table }) => (
+      <Checkbox
+        checked={
+          table.getIsAllPageRowsSelected() ||
+          (table.getIsSomePageRowsSelected() && "indeterminate")
+        }
+        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+        aria-label="Select all"
+      />
+    ),
+    cell: ({ row }) => (
+      <Checkbox
+        checked={row.getIsSelected()}
+        onCheckedChange={(value) => row.toggleSelected(!!value)}
+        aria-label="Select row"
+      />
+    ),
+    enableSorting: false,
+    enableHiding: false,
+  },
+  // ... other columns
+]
+```
