@@ -1,8 +1,8 @@
 import ArrowRightIcon from '@mui/icons-material/ArrowRight';
-import { Divider, ListItemText, Menu, MenuItem } from '@mui/material';
+import { Divider, ListItemText, Menu, MenuItem, type SxProps, type Theme } from '@mui/material';
 import * as token from '@uipath/apollo-core';
 import { FontVariantToken } from '@uipath/apollo-core';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { ApTypography } from '../ap-typography';
 import type { ApMenuOrigin, ApMenuProps, IMenuItem } from './ApMenu.types';
 import { debugItems } from './constants';
@@ -27,9 +27,61 @@ export function ApMenu(props: Readonly<ApMenuProps>) {
     dontUseInternalOnlyDebugMode,
     anchorOrigin = anchorOriginDefault,
     transformOrigin = transformOriginDefault,
+    slotProps,
   } = props;
   const [openMenus, setOpenMenus] = useState<Set<string>>(new Set());
   const [submenuAnchors, setSubmenuAnchors] = useState<Record<string, HTMLElement | null>>({});
+
+  // Merge default paper styles with user-provided slotProps
+  const mergedSlotProps = useMemo(() => {
+    const defaultPaperSx = {
+      maxHeight,
+      width,
+    };
+
+    // No slotProps provided - return defaults
+    if (!slotProps) {
+      return {
+        paper: {
+          sx: defaultPaperSx,
+        },
+      };
+    }
+
+    // Empty slotProps or no paper slot - return defaults with other slots preserved
+    if (!slotProps.paper) {
+      return {
+        ...slotProps,
+        paper: {
+          sx: defaultPaperSx,
+        },
+      };
+    }
+
+    // Handle function form of paper slot (ownerState-driven props)
+    if (typeof slotProps.paper === 'function') {
+      const paperFn = slotProps.paper;
+      return {
+        ...slotProps,
+        paper: (ownerState: Record<string, unknown>) => {
+          const userPaperProps = paperFn(ownerState);
+          return {
+            ...userPaperProps,
+            sx: [defaultPaperSx, userPaperProps?.sx].filter((sx) => sx != null) as SxProps<Theme>,
+          };
+        },
+      };
+    }
+
+    // Handle object form of paper slot
+    return {
+      ...slotProps,
+      paper: {
+        ...slotProps.paper,
+        sx: [defaultPaperSx, slotProps.paper?.sx].filter((sx) => sx != null) as SxProps<Theme>,
+      },
+    };
+  }, [slotProps, maxHeight, width]);
 
   const handleMenuToggle = useCallback(
     (title: string, anchor?: HTMLElement) => {
@@ -140,14 +192,7 @@ export function ApMenu(props: Readonly<ApMenuProps>) {
       anchorEl={anchorEl}
       open={props.isOpen}
       onClose={onClose}
-      slotProps={{
-        paper: {
-          style: {
-            maxHeight,
-            width,
-          },
-        },
-      }}
+      slotProps={mergedSlotProps}
       anchorOrigin={anchorOrigin}
       transformOrigin={transformOrigin}
     >
