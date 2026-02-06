@@ -1,14 +1,14 @@
 import { motion } from "framer-motion";
 import { BarChart3, FolderOpen, Home, Settings, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { ThemeToggle } from "@/registry/theme-provider/theme-toggle";
 import { useLocalStorage } from "@/registry/use-local-storage/use-local-storage";
-import type { CompanyLogo } from "../shell";
+import { CompanyLogo } from "../shell";
 import { Company } from "./company";
 import { LanguageToggle } from "./language-toggle";
 import { MinimalCompany } from "./minimal-company";
 import { MinimalNavItem } from "./minimal-nav-item";
 import { NavItem } from "./nav-item";
+import { ThemeToggle } from "./theme-toggle";
 import { UserProfile } from "./user-profile";
 
 interface SidebarProps {
