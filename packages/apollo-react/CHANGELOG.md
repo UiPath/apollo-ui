@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.19.3](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.19.2...@uipath/apollo-react@3.19.3) (2026-02-06)
+
+### Bug Fixes
+
+* **apollo-react:** add ignoreNodeTypes option to resolveCollisions ([5031df7](https://github.com/UiPath/apollo-ui/commit/5031df7b5893d7ba24a24f542c2175114d84362b))
+
 ## [@uipath/apollo-react-v3.19.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.19.1...@uipath/apollo-react@3.19.2) (2026-02-05)
 
 ### Bug Fixes
