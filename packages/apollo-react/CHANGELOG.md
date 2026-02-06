@@ -1,3 +1,13 @@
+## [@uipath/apollo-react-v3.20.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.19.4...@uipath/apollo-react@3.20.0) (2026-02-06)
+
+### Features
+
+* **apollo-react:** make empty stage node text clickable [MST-6401] ([cfd7055](https://github.com/UiPath/apollo-ui/commit/cfd7055deaca46e7e510253d9978511b213cfd0f))
+
+### Bug Fixes
+
+* **apollo-react:** fix taskMenu's spacing MST-6400 ([75571fc](https://github.com/UiPath/apollo-ui/commit/75571fce9aff82896a2b09bfef93e215cba0694a))
+
 ## [@uipath/apollo-react-v3.19.4](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.19.3...@uipath/apollo-react@3.19.4) (2026-02-06)
 
 ### Bug Fixes
