@@ -5,8 +5,8 @@ import { Button } from "@/registry/button/button";
 import { Card } from "@/registry/card/card";
 import { Input } from "@/registry/input/input";
 import { Label } from "@/registry/label/label";
+import type { ThemeConfig } from "@/registry/shell/internal/theme-provider";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/registry/tabs/tabs";
-import type { ThemeConfig } from "@/registry/theme-provider/theme-provider";
 import { themes } from "../../themes";
 
 const CUSTOM_THEME_STORAGE_KEY = "apollo-vertex-custom-theme";
