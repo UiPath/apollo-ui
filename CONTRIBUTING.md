@@ -8,6 +8,7 @@ Thank you for your interest in contributing to the Apollo Design System! This do
 - [Commit Message Guidelines](#commit-message-guidelines)
 - [Making Changes](#making-changes)
 - [Release Process](#release-process)
+- [Dev Packages (Preview Releases)](#dev-packages-preview-releases)
 - [Code of Conduct](#code-of-conduct)
 
 ## Development Setup
@@ -225,6 +226,51 @@ Each package is versioned independently:
 - `@uipath/apollo-angular@1.5.0`
 
 Only packages with new commits since their last release will be published.
+
+### Dev Packages (Preview Releases)
+
+For testing unreleased changes, dev packages are automatically published for every PR.
+
+**Automatic (CI):**
+- When you push to a PR branch, packages with changes are published as `<version>-pr<number>`
+- Example: `@uipath/apollo-react@3.19.3-pr123`
+- A comment is added to the PR with the published versions
+- Packages are automatically cleaned up when the PR is closed or merged
+
+> **Note:** Cleanup runs when a PR is closed or merged via GitHub's UI. If a branch is deleted directly (e.g., via `git push origin --delete branch`) without closing the PR, packages may remain published until manually cleaned up.
+
+**Manual (Local):**
+
+```bash
+# Publish a dev version
+pnpm publish:dev @uipath/apollo-react my-feature
+# → Publishes @uipath/apollo-react@3.19.3-my-feature
+
+# Unpublish a dev version (requires token with delete:packages scope)
+pnpm unpublish:dev @uipath/apollo-react my-feature
+```
+
+**Token Setup (for manual publishing):**
+
+1. Go to GitHub → Settings → Developer settings → Personal access tokens → Tokens (classic)
+2. Generate a new token with scopes:
+   - `write:packages` (for publishing)
+   - `delete:packages` (for unpublishing)
+   - `read:packages`
+3. Set the environment variable:
+   ```bash
+   export GH_NPM_REGISTRY_TOKEN=your_token_here
+   ```
+
+**Installing dev packages:**
+
+```bash
+# Install a PR preview version (from CI)
+npm install @uipath/apollo-react@3.19.3-pr123
+
+# Install a manually published dev version (local)
+npm install @uipath/apollo-react@3.19.3-my-feature
+```
 
 ### Version Ranges
 
