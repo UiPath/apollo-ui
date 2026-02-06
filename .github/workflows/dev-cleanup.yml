@@ -1,0 +1,97 @@
+name: Dev Cleanup
+
+on:
+  pull_request:
+    types: [closed]
+    branches:
+      - main
+
+env:
+  TURBO_TELEMETRY_DISABLED: 1
+  DO_NOT_TRACK: 1
+
+jobs:
+  cleanup:
+    name: Cleanup Dev Packages
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      packages: write
+
+    steps:
+      - name: Get published packages from PR comment
+        id: packages
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          COMMENT=$(gh api "repos/${{ github.repository }}/issues/${PR_NUMBER}/comments" \
+            --jq '[.[] | select(.body | startswith("## 📦 Dev Packages")) | .body][0]' 2>/dev/null) || true
+
+          if [ -z "$COMMENT" ]; then
+            echo "No dev packages comment found"
+            echo "packages=" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          # Extract package@version from within backticks (e.g., `@uipath/apollo-core@5.6.0-pr123`)
+          # Store newline-separated for safer iteration
+          PACKAGES=$(echo "$COMMENT" | grep -oE '`@uipath/[a-z0-9-]+@[0-9.]+-pr[0-9]+`' | tr -d '`' | sort -u)
+          # Use delimiter for GitHub output (newlines not supported)
+          echo "packages<<EOF" >> $GITHUB_OUTPUT
+          echo "$PACKAGES" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+          echo "Found: $PACKAGES"
+
+      - name: Cleanup dev packages
+        if: steps.packages.outputs.packages != ''
+        env:
+          GH_TOKEN: ${{ secrets.GH_NPM_REGISTRY_TOKEN }}
+          PACKAGES: ${{ steps.packages.outputs.packages }}
+        run: |
+          echo "$PACKAGES" | while IFS= read -r pkg_version; do
+            [ -z "$pkg_version" ] && continue
+            # Validate format for defense in depth
+            if ! [[ "$pkg_version" =~ ^@uipath/[a-z0-9-]+@[0-9.]+-pr[0-9]+$ ]]; then
+              echo "::warning::Skipping invalid package version: $pkg_version"
+              continue
+            fi
+
+            # Extract package name (without @uipath/) and version
+            pkg_name="${pkg_version%@*}"
+            pkg_short="${pkg_name#@uipath/}"
+            version="${pkg_version##*@}"
+
+            echo "Deleting $pkg_name@$version..."
+
+            # Get version ID from GitHub API
+            VERSION_ID=$(gh api "orgs/uipath/packages/npm/${pkg_short}/versions" \
+              --jq ".[] | select(.name == \"${version}\") | .id" 2>/dev/null) || true
+
+            if [ -n "$VERSION_ID" ]; then
+              gh api -X DELETE "orgs/uipath/packages/npm/${pkg_short}/versions/${VERSION_ID}" || echo "Failed to delete"
+              echo "Deleted $pkg_name@$version"
+            else
+              echo "Version not found: $pkg_name@$version"
+            fi
+          done
+
+      - name: Update PR comment
+        if: steps.packages.outputs.packages != ''
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          COMMENT_ID=$(gh api "repos/${{ github.repository }}/issues/${PR_NUMBER}/comments" \
+            --jq '.[] | select(.body | startswith("## 📦 Dev Packages")) | .id' 2>/dev/null | head -1) || true
+
+          if [ -n "$COMMENT_ID" ]; then
+            TIMESTAMP=$(TZ="America/Los_Angeles" date "+%Y-%m-%d %H:%M:%S PT")
+            COMMENT_BODY="## 📦 Dev Packages"$'\n\n'
+            COMMENT_BODY+="🧹 Dev packages cleaned up after PR close."$'\n\n'
+            COMMENT_BODY+="**Last updated:** ${TIMESTAMP}"
+
+            gh api "repos/${{ github.repository }}/issues/comments/${COMMENT_ID}" \
+              -X PATCH -f body="$COMMENT_BODY" 2>/dev/null || true
+          fi
