@@ -3,6 +3,7 @@ import { ApIcon, ApIconButton, ApMenu } from '@uipath/apollo-react/material';
 import { memo, useCallback, useMemo, useRef, useState } from 'react';
 import type { NodeMenuAction, NodeMenuItem } from '../NodeContextMenu';
 import { transformMenuItems } from './StageNodeTaskUtilities';
+import token from '@uipath/apollo-core';
 
 interface TaskMenuProps {
   taskId: string;
@@ -80,6 +81,17 @@ const TaskMenuComponent = ({ taskId, contextMenuItems, onMenuOpenChange }: TaskM
           horizontal: 'right',
         }}
         width={300}
+        slotProps={{
+          paper: {
+            className: 'task-menu-paper',
+            sx: {
+              '&.task-menu-paper .MuiList-padding': {
+                paddingTop: token.Padding.PadL ,
+                paddingBottom: token.Padding.PadL,
+              },
+            },
+          },
+        }}
       />
     </>
   );

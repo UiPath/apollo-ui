@@ -1,3 +1,4 @@
+import type { MenuProps } from '@mui/material';
 import type React from 'react';
 
 export interface ApMenuOrigin {
@@ -83,4 +84,17 @@ export type ApMenuProps = React.PropsWithChildren<{
    * Transform origin for menu positioning
    */
   transformOrigin?: ApMenuOrigin;
+  /**
+   * Props applied to the underlying MUI Menu component slots.
+   * Allows customization of the root and paper elements.
+   *
+   * The paper slot supports both object and function forms:
+   * - Object: `{ paper: { sx: {...} } }`
+   * - Function: `{ paper: (ownerState) => ({ sx: {...} }) }`
+   *
+   * Default maxHeight and width are applied first, allowing user styles to override.
+   *
+   * Note: Currently only applies to the main menu, not submenus.
+   */
+  slotProps?: MenuProps['slotProps'];
 }>;
