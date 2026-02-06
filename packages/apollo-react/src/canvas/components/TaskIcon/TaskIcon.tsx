@@ -33,9 +33,10 @@ const getIconForType = (type: TaskItemTypeValues, iconSize: number): React.React
       return <BusinessProcessProject w={iconSize} h={iconSize} />;
     case TaskItemTypeValues.Connector:
       return <ConnectorBuilderProject w={iconSize} h={iconSize} />;
-    case TaskItemTypeValues.Timer: {
+    case TaskItemTypeValues.Timer:
       return <DurationIcon size={iconSize} />;
-    }
+    case TaskItemTypeValues.CaseManagement:
+      return <BusinessProcessProject w={iconSize} h={iconSize} />;
   }
 };
 
