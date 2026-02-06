@@ -17,6 +17,7 @@ export const TASK_ICON_GRADIENTS: Record<TaskItemTypeValues, string> = {
   [TaskItemTypeValues.Connector]: CategoryColor.Grey,
   [TaskItemTypeValues.ExternalAgent]: CategoryColor.Purple,
   [TaskItemTypeValues.Timer]: CategoryColor.Grey,
+  [TaskItemTypeValues.CaseManagement]: CategoryColor.Grey,
 };
 
 interface TaskIconContainerProps {

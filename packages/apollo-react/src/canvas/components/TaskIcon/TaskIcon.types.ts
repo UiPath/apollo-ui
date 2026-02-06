@@ -7,6 +7,7 @@ export enum TaskItemTypeValues {
   Automation = 'automation',
   Connector = 'connector',
   Timer = 'timer',
+  CaseManagement = 'case_management',
 }
 
 export type TaskIconSize = 'sm' | 'md' | 'lg';
