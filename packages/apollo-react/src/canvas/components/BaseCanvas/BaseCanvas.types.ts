@@ -176,6 +176,17 @@ export interface BaseCanvasProps<NodeType extends Node = Node, EdgeType extends 
    * Used for visual indication in debug mode
    */
   breakpoints?: Set<string>;
+
+  /**
+   * Whether the canvas should render in dark mode.
+   * Controls dark-mode-specific styling for node icons and toolbox items.
+   *
+   * - When `true`, components used in canvas will choose dark mode assets (e.g. icons) if available.
+   * - When `false` or `undefined`, components will use light mode / default assets.
+   *
+   * @default undefined
+   */
+  isDarkMode?: boolean;
 }
 
 /**

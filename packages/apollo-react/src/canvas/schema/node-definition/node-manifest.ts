@@ -39,6 +39,9 @@ export const nodeDisplayManifestSchema = z.object({
   /** Icon background color */
   iconBackground: z.string().optional(),
 
+  /** Icon background color for dark mode (optional - if not provided, iconBackground will be used for both modes) */
+  iconBackgroundDark: z.string().optional(),
+
   /** Icon color */
   iconColor: z.string().optional(),
 });

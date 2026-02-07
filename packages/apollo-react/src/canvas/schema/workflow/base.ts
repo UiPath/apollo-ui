@@ -33,6 +33,7 @@ export const displayConfigSchema = z
     shape: nodeShapeSchema.optional(),
     background: z.string().optional(),
     iconBackground: z.string().optional(),
+    iconBackgroundDark: z.string().optional(),
     iconColor: z.string().optional(),
     icon: z.string().optional(),
     iconElement: z.any().optional(), // React.ReactNode for custom icons

@@ -17,6 +17,7 @@ import { getIcon } from '../../utils/icon-registry';
 import { resolveDisplay, resolveHandles } from '../../utils/manifest-resolver';
 import { resolveToolbar } from '../../utils/toolbar-resolver';
 import { useBaseCanvasMode } from '../BaseCanvas/BaseCanvasModeProvider';
+import { useCanvasTheme } from '../BaseCanvas/CanvasThemeContext';
 import { useConnectedHandles } from '../BaseCanvas/ConnectedHandlesContext';
 import { useSelectionState } from '../BaseCanvas/SelectionStateContext';
 import type { HandleActionEvent } from '../ButtonHandle/ButtonHandle';
@@ -89,6 +90,8 @@ const BaseNodeComponent = (props: BaseNodeComponentProps) => {
 
   const isConnecting = useStore(selectIsConnecting);
   const { multipleNodesSelected } = useSelectionState();
+
+  const { isDarkMode } = useCanvasTheme();
 
   // Get manifest and resolve with instance data
   const manifest = useMemo(() => nodeTypeRegistry.getManifest(type), [type, nodeTypeRegistry]);
@@ -231,7 +234,9 @@ const BaseNodeComponent = (props: BaseNodeComponentProps) => {
   const displayShape = display.shape ?? 'square';
   const displayBackground = display.background;
   const displayColor = display.color;
-  const displayIconBackground = display.iconBackground;
+  const displayIconBackground = isDarkMode
+    ? (display.iconBackgroundDark ?? display.iconBackground)
+    : display.iconBackground;
 
   // Display customization from props (not data)
   const displayLabelTooltip = labelTooltip;

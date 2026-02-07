@@ -5,7 +5,7 @@ import { ApSkeleton, ApTypography } from '@uipath/apollo-react/material';
 import { ApIcon } from '@uipath/apollo-react/material/components';
 import { memo, useCallback, useMemo } from 'react';
 import type { RowComponentProps } from 'react-window';
-
+import { useCanvasTheme } from '../BaseCanvas/CanvasThemeContext';
 import { IconContainer, ListItemButton, SectionHeader, StyledList } from './ListView.styles';
 
 export interface ListItemIcon {
@@ -31,6 +31,7 @@ export type ListItem<T = any> = {
   description?: string;
   icon?: ListItemIcon;
   color?: string;
+  colorDark?: string;
   children?: ListItem<T>[] | ((id: string, name: string) => Promise<ListItem<T>[]>);
 };
 
@@ -43,7 +44,6 @@ export interface ListViewRowProps<T extends ListItem> {
   isLoading?: boolean;
   onItemClick: (item: T) => void;
   onItemHover?: (item: T) => void;
-  getItemColor?: (item: T) => string | undefined;
 }
 
 const IconContainerMemoized = memo(IconContainer);
@@ -57,9 +57,9 @@ const ListViewRow = memo(
     isLoading,
     onItemClick,
     onItemHover,
-    getItemColor,
   }: RowComponentProps<ListViewRowProps<T>>) => {
     const renderItem = renderedItems[index]!;
+    const { isDarkMode } = useCanvasTheme();
 
     const buttonStyle = useMemo(
       () => ({ ...style, padding: 0, paddingRight: '4px', height: '32px', outlineOffset: '-1px' }),
@@ -94,7 +94,7 @@ const ListViewRow = memo(
     }
 
     const item = renderItem.item;
-    const bgColor = getItemColor ? getItemColor(item) : 'color' in item ? item.color : undefined;
+    const bgColor = isDarkMode ? (item.colorDark ?? item.color) : item.color;
 
     return (
       <ListItemButton
@@ -151,7 +151,6 @@ interface ListViewProps<T extends ListItem> {
   items: T[];
   onItemClick: (item: T) => void;
   onItemHover?: (item: T) => void;
-  getItemColor?: (item: T) => string | undefined;
   emptyStateMessage?: string;
   emptyStateIcon?: string;
   isLoading?: boolean;
@@ -161,7 +160,6 @@ interface ListViewProps<T extends ListItem> {
 export const ListView = memo(function ListView<T extends ListItem>({
   items,
   onItemClick,
-  getItemColor,
   onItemHover,
   emptyStateMessage = 'No items found',
   emptyStateIcon = 'search_off',
@@ -208,8 +206,8 @@ export const ListView = memo(function ListView<T extends ListItem>({
   }, [items, enableSections]);
 
   const rowProps = useMemo(
-    () => ({ renderedItems, isLoading, onItemClick, getItemColor, onItemHover }),
-    [renderedItems, isLoading, onItemClick, getItemColor, onItemHover]
+    () => ({ renderedItems, isLoading, onItemClick, onItemHover }),
+    [renderedItems, isLoading, onItemClick, onItemHover]
   );
 
   // Only show skeleton loaders when loading and no items exist

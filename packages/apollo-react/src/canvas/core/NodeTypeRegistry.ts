@@ -223,6 +223,7 @@ export class NodeTypeRegistry {
       color: manifest.display.color,
       background: manifest.display.background,
       iconBackground: manifest.display.iconBackground,
+      iconBackgroundDark: manifest.display.iconBackgroundDark,
     };
 
     return {

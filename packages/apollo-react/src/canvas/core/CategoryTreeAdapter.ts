@@ -41,6 +41,8 @@ export class CategoryTreeAdapter {
         version: node.version,
       },
       icon: { name: node.display.icon },
+      color: node.display.iconBackground,
+      colorDark: node.display.iconBackgroundDark,
     });
 
     const convertCategories = (categoryNodes: CategoryTreeNode[]): ListItem[] => {
@@ -70,6 +72,7 @@ export class CategoryTreeAdapter {
           data: null,
           icon: { name: category.icon },
           color: category.color,
+          colorDark: category.colorDark,
           children,
         };
 
