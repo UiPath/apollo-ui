@@ -1,14 +1,18 @@
 import { Copy, MoreVertical, Play, Plus } from 'lucide-react';
 import * as React from 'react';
 import { Button } from '@/components/ui/button';
-import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
+import {
+  ResizablePanelGroup,
+  ResizablePanel,
+  ResizableHandle,
+  type PanelImperativeHandle,
+} from '@/components/ui/resizable';
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Row, Column } from '@/components/ui/layout';
 import { cn } from '@/lib';
 import { useCallback, useRef, useEffect } from 'react';
-import { ImperativePanelHandle } from 'react-resizable-panels';
 import { Label } from '@radix-ui/react-label';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import {
@@ -93,7 +97,7 @@ export function FlowEditorLayout({
   bottomOpen = false,
 }: FlowEditorLayoutProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const bottomPanelRef = useRef<ImperativePanelHandle>(null);
+  const bottomPanelRef = useRef<PanelImperativeHandle>(null);
   const switcherRef = useRef<HTMLDivElement>(null);
   const rafRef = useRef<number>(0);
 
@@ -105,10 +109,10 @@ export function FlowEditorLayout({
       return;
     }
 
-    const size = bottomPanelRef.current?.getSize();
-    if (size !== undefined) {
+    const panelSize = bottomPanelRef.current?.getSize();
+    if (panelSize !== undefined) {
       const containerHeight = containerRef.current.offsetHeight;
-      const bottomHeight = (size / 100) * containerHeight;
+      const bottomHeight = (panelSize.asPercentage / 100) * containerHeight;
       switcherRef.current.style.bottom = `${bottomHeight + 24}px`;
     }
   }, [bottomOpen]);
@@ -183,9 +187,9 @@ export function FlowEditorLayout({
           )}
 
           <Column className="flex-1 relative rounded-3xl overflow-hidden">
-            <ResizablePanelGroup direction="vertical" className="h-full">
+            <ResizablePanelGroup orientation="vertical" className="h-full">
               {/* Center */}
-              <ResizablePanel defaultSize={100} minSize={30}>
+              <ResizablePanel defaultSize="100%" minSize="30%">
                 <Column className="flex-1 h-full">{mainContent}</Column>
               </ResizablePanel>
 
@@ -194,10 +198,10 @@ export function FlowEditorLayout({
                 <>
                   <ResizableHandle />
                   <ResizablePanel
-                    ref={bottomPanelRef}
-                    defaultSize={30}
-                    minSize={15}
-                    maxSize={50}
+                    panelRef={bottomPanelRef}
+                    defaultSize="30%"
+                    minSize="15%"
+                    maxSize="50%"
                     onResize={handlePanelResize}
                   >
                     <Column className="flex-1 h-full bg-background">{bottomContent}</Column>

@@ -5,12 +5,12 @@ import { describe, expect, it } from 'vitest';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from './resizable';
 
 const BasicResizable = ({ withHandle = false }: { withHandle?: boolean }) => (
-  <ResizablePanelGroup direction="horizontal">
-    <ResizablePanel defaultSize={50}>
+  <ResizablePanelGroup orientation="horizontal">
+    <ResizablePanel defaultSize="50%">
       <div>Panel 1</div>
     </ResizablePanel>
     <ResizableHandle withHandle={withHandle} />
-    <ResizablePanel defaultSize={50}>
+    <ResizablePanel defaultSize="50%">
       <div>Panel 2</div>
     </ResizablePanel>
   </ResizablePanelGroup>
@@ -26,7 +26,7 @@ describe('Resizable', () => {
 
     it('renders handle without grip icon by default', () => {
       const { container } = render(<BasicResizable />);
-      expect(container.querySelector('[data-panel-resize-handle-id]')).toBeInTheDocument();
+      expect(container.querySelector('[data-separator]')).toBeInTheDocument();
       expect(container.querySelector('svg')).not.toBeInTheDocument();
     });
 
@@ -37,37 +37,31 @@ describe('Resizable', () => {
 
     it('renders vertical panel group', () => {
       const { container } = render(
-        <ResizablePanelGroup direction="vertical">
-          <ResizablePanel defaultSize={50}>
+        <ResizablePanelGroup orientation="vertical">
+          <ResizablePanel defaultSize="50%">
             <div>Top</div>
           </ResizablePanel>
           <ResizableHandle />
-          <ResizablePanel defaultSize={50}>
+          <ResizablePanel defaultSize="50%">
             <div>Bottom</div>
           </ResizablePanel>
         </ResizablePanelGroup>
       );
 
-      expect(
-        container.querySelector("[data-panel-group-direction='vertical']")
-      ).toBeInTheDocument();
+      expect(container.querySelector('[data-group]')).toBeInTheDocument();
     });
   });
 
   describe('Accessibility', () => {
-    // Note: react-resizable-panels has a known a11y issue - missing aria-valuenow on slider role
-    // This should be fixed upstream in the library
-    it('has accessibility violation for missing aria-valuenow (known library issue)', async () => {
+    it('has no accessibility violations', async () => {
       const { container } = render(<BasicResizable />);
       const results = await axe(container);
-      // The library doesn't provide aria-valuenow which is required for slider role
-      expect(results.violations.length).toBeGreaterThan(0);
-      expect(results.violations[0].id).toBe('aria-required-attr');
+      expect(results.violations).toHaveLength(0);
     });
 
     it('handle is keyboard focusable', () => {
       const { container } = render(<BasicResizable />);
-      const handle = container.querySelector('[data-panel-resize-handle-id]');
+      const handle = container.querySelector('[data-separator]');
       expect(handle).toHaveAttribute('tabindex', '0');
     });
   });
@@ -75,8 +69,8 @@ describe('Resizable', () => {
   describe('Props', () => {
     it('applies custom className to panel group', () => {
       const { container } = render(
-        <ResizablePanelGroup direction="horizontal" className="custom-group">
-          <ResizablePanel defaultSize={100}>
+        <ResizablePanelGroup orientation="horizontal" className="custom-group">
+          <ResizablePanel defaultSize="100%">
             <div>Content</div>
           </ResizablePanel>
         </ResizablePanelGroup>
@@ -87,28 +81,28 @@ describe('Resizable', () => {
 
     it('applies custom className to handle', () => {
       const { container } = render(
-        <ResizablePanelGroup direction="horizontal">
-          <ResizablePanel defaultSize={50}>
+        <ResizablePanelGroup orientation="horizontal">
+          <ResizablePanel defaultSize="50%">
             <div>Panel 1</div>
           </ResizablePanel>
           <ResizableHandle className="custom-handle" />
-          <ResizablePanel defaultSize={50}>
+          <ResizablePanel defaultSize="50%">
             <div>Panel 2</div>
           </ResizablePanel>
         </ResizablePanelGroup>
       );
 
-      expect(container.querySelector('[data-panel-resize-handle-id]')).toHaveClass('custom-handle');
+      expect(container.querySelector('[data-separator]')).toHaveClass('custom-handle');
     });
 
     it('renders panel with minSize', () => {
       render(
-        <ResizablePanelGroup direction="horizontal">
-          <ResizablePanel defaultSize={50} minSize={25}>
+        <ResizablePanelGroup orientation="horizontal">
+          <ResizablePanel defaultSize="50%" minSize="25%">
             <div>Panel 1</div>
           </ResizablePanel>
           <ResizableHandle />
-          <ResizablePanel defaultSize={50}>
+          <ResizablePanel defaultSize="50%">
             <div>Panel 2</div>
           </ResizablePanel>
         </ResizablePanelGroup>
@@ -119,12 +113,12 @@ describe('Resizable', () => {
 
     it('renders panel with maxSize', () => {
       render(
-        <ResizablePanelGroup direction="horizontal">
-          <ResizablePanel defaultSize={50} maxSize={75}>
+        <ResizablePanelGroup orientation="horizontal">
+          <ResizablePanel defaultSize="50%" maxSize="75%">
             <div>Panel 1</div>
           </ResizablePanel>
           <ResizableHandle />
-          <ResizablePanel defaultSize={50}>
+          <ResizablePanel defaultSize="50%">
             <div>Panel 2</div>
           </ResizablePanel>
         </ResizablePanelGroup>
@@ -135,12 +129,12 @@ describe('Resizable', () => {
 
     it('renders collapsible panel', () => {
       render(
-        <ResizablePanelGroup direction="horizontal">
-          <ResizablePanel defaultSize={50} collapsible collapsedSize={0}>
+        <ResizablePanelGroup orientation="horizontal">
+          <ResizablePanel defaultSize="50%" collapsible collapsedSize="0%">
             <div>Collapsible</div>
           </ResizablePanel>
           <ResizableHandle />
-          <ResizablePanel defaultSize={50}>
+          <ResizablePanel defaultSize="50%">
             <div>Panel 2</div>
           </ResizablePanel>
         </ResizablePanelGroup>
@@ -153,16 +147,16 @@ describe('Resizable', () => {
   describe('Multiple Panels', () => {
     it('renders three panels with two handles', () => {
       const { container } = render(
-        <ResizablePanelGroup direction="horizontal">
-          <ResizablePanel defaultSize={33}>
+        <ResizablePanelGroup orientation="horizontal">
+          <ResizablePanel defaultSize="33%">
             <div>Panel 1</div>
           </ResizablePanel>
           <ResizableHandle />
-          <ResizablePanel defaultSize={34}>
+          <ResizablePanel defaultSize="34%">
             <div>Panel 2</div>
           </ResizablePanel>
           <ResizableHandle />
-          <ResizablePanel defaultSize={33}>
+          <ResizablePanel defaultSize="33%">
             <div>Panel 3</div>
           </ResizablePanel>
         </ResizablePanelGroup>
@@ -171,7 +165,7 @@ describe('Resizable', () => {
       expect(screen.getByText('Panel 1')).toBeInTheDocument();
       expect(screen.getByText('Panel 2')).toBeInTheDocument();
       expect(screen.getByText('Panel 3')).toBeInTheDocument();
-      expect(container.querySelectorAll('[data-panel-resize-handle-id]')).toHaveLength(2);
+      expect(container.querySelectorAll('[data-separator]')).toHaveLength(2);
     });
   });
 });
