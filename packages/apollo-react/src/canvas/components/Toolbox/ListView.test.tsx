@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { render, screen } from '../../utils/testing';
+import { CanvasThemeProvider } from '../BaseCanvas/CanvasThemeContext';
 import type { ListItem } from './ListView';
 import { ListView } from './ListView';
 
@@ -259,27 +260,33 @@ describe('ListView', () => {
   });
 
   describe('Styling', () => {
-    it('should apply custom color from getItemColor', () => {
-      const items: ListItem[] = [{ id: 'item-1', name: 'Item 1', data: {} }];
-
-      const getItemColor = () => '#ff0000';
-
-      render(<ListView {...defaultProps} items={items} getItemColor={getItemColor} />);
-
-      const button = screen.getByRole('button');
-      // Check that the IconContainer has the background color set
-      const iconContainer = button.querySelector('.css-q1gtze');
-      expect(iconContainer).toBeDefined();
-    });
-
     it('should apply color from item.color if provided', () => {
-      const items: ListItem[] = [{ id: 'item-1', name: 'Item 1', data: {}, color: '#00ff00' }];
+      const items: ListItem[] = [{ id: 'item-1', name: 'Item 1', data: {}, color: 'rgb(1,2,3)' }];
 
       render(<ListView {...defaultProps} items={items} />);
 
-      const button = screen.getByRole('button');
-      const iconContainer = button.querySelector('.css-q1gtze');
-      expect(iconContainer).toBeDefined();
+      const iconContainer = screen.getByTestId('list-item-icon');
+      expect(iconContainer).toHaveStyle({ background: 'rgb(1,2,3)' });
+    });
+
+    it('should use dark color in dark mode', () => {
+      const items: ListItem[] = [
+        {
+          id: 'item-1',
+          name: 'Item 1',
+          data: {},
+          color: 'rgb(1,2,3)',
+          colorDark: 'rgb(3,2,1)',
+        },
+      ];
+      render(
+        <CanvasThemeProvider isDarkMode={true}>
+          <ListView {...defaultProps} items={items} />
+        </CanvasThemeProvider>
+      );
+
+      const iconContainer = screen.getByTestId('list-item-icon');
+      expect(iconContainer).toHaveStyle({ background: 'rgb(3,2,1)' });
     });
   });
 

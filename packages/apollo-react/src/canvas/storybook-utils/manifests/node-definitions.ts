@@ -584,6 +584,7 @@ export const allNodeManifests: NodeManifest[] = [
       icon: 'agent',
       shape: 'rectangle',
       iconBackground: 'linear-gradient(135deg, #FFE0FF 4.81%, #CFD9FF 97.27%)',
+      iconBackgroundDark: 'linear-gradient(135deg, #A280BC 13.12%, rgba(87, 123, 174, 0.6) 86.88%)',
     },
     handleConfiguration: [
       {

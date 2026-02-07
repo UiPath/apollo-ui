@@ -46,6 +46,7 @@ const BaseCanvasInnerComponent = <NodeType extends Node = Node, EdgeType extends
     backgroundVariant = BASE_CANVAS_DEFAULTS.background.variant,
     backgroundGap = BASE_CANVAS_DEFAULTS.background.gap,
     backgroundSize = BASE_CANVAS_DEFAULTS.background.size,
+    isDarkMode,
 
     // Configuration
     minZoom = BASE_CANVAS_DEFAULTS.zoom.min,
@@ -147,7 +148,7 @@ const BaseCanvasInnerComponent = <NodeType extends Node = Node, EdgeType extends
   );
 
   return (
-    <CanvasProviders nodes={nodes} edges={edges} mode={mode}>
+    <CanvasProviders nodes={nodes} edges={edges} mode={mode} isDarkMode={isDarkMode}>
       <ReactFlow
         {...reactFlowProps}
         nodes={nodes}
