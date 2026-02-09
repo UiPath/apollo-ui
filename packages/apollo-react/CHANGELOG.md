@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.23.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.22.1...@uipath/apollo-react@3.23.0) (2026-02-09)
+
+### Features
+
+* **apollo-react:** add hover persistence for floating panel on agent node ([a42b090](https://github.com/UiPath/apollo-ui/commit/a42b09023d1f0eade32e45f85d99dfbc784025e5))
+
 ## [@uipath/apollo-react-v3.22.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.22.0...@uipath/apollo-react@3.22.1) (2026-02-09)
 
 ### Bug Fixes
