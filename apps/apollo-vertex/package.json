@@ -10,8 +10,8 @@
     "start": "next start",
     "registry:build": "shadcn build && node --experimental-strip-types scripts/generate-registry-index.ts",
     "postbuild": "pagefind --site .next/server/app --output-path public/_pagefind",
-    "format": "biome format --write .",
-    "format:check": "biome format .",
+    "format": "biome check --write .",
+    "format:check": "biome check .",
     "lint": "biome check .",
     "lint:deps": "depcruise registry --config .dependency-cruiser.js"
   },
