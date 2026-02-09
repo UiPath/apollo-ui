@@ -46,35 +46,20 @@ jobs:
       - name: Cleanup dev packages
         if: steps.packages.outputs.packages != ''
         env:
-          GH_TOKEN: ${{ secrets.GH_NPM_REGISTRY_TOKEN }}
+          NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
           PACKAGES: ${{ steps.packages.outputs.packages }}
         run: |
+          echo "⚠️  Warning: npm.org doesn't support automated package deletion"
+          echo "Dev packages will remain published with -pr suffix"
+          echo ""
+          echo "The following packages were published but cannot be auto-cleaned:"
           echo "$PACKAGES" | while IFS= read -r pkg_version; do
             [ -z "$pkg_version" ] && continue
-            # Validate format for defense in depth
-            if ! [[ "$pkg_version" =~ ^@uipath/[a-z0-9-]+@[0-9.]+-pr[0-9]+$ ]]; then
-              echo "::warning::Skipping invalid package version: $pkg_version"
-              continue
-            fi
-
-            # Extract package name (without @uipath/) and version
-            pkg_name="${pkg_version%@*}"
-            pkg_short="${pkg_name#@uipath/}"
-            version="${pkg_version##*@}"
-
-            echo "Deleting $pkg_name@$version..."
-
-            # Get version ID from GitHub API
-            VERSION_ID=$(gh api "orgs/uipath/packages/npm/${pkg_short}/versions" \
-              --jq ".[] | select(.name == \"${version}\") | .id" 2>/dev/null) || true
-
-            if [ -n "$VERSION_ID" ]; then
-              gh api -X DELETE "orgs/uipath/packages/npm/${pkg_short}/versions/${VERSION_ID}" || echo "Failed to delete"
-              echo "Deleted $pkg_name@$version"
-            else
-              echo "Version not found: $pkg_name@$version"
-            fi
+            echo "  - $pkg_version"
           done
+          echo ""
+          echo "Note: npm only allows unpublishing within 72 hours of publication"
+          echo "Consider using 'npm deprecate' instead or keeping dev packages on GitHub registry"
 
       - name: Update PR comment
         if: steps.packages.outputs.packages != ''

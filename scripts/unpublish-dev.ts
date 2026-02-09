@@ -1,6 +1,6 @@
 #!/usr/bin/env tsx
 /**
- * Unpublish a dev version of a package from GitHub Packages.
+ * Unpublish a dev version of a package from npm registry.
  *
  * Usage: pnpm unpublish:dev <package-name> <suffix-or-version>
  * Example: pnpm unpublish:dev @uipath/apollo-react test
@@ -10,108 +10,44 @@
  * Example: pnpm unpublish:dev @uipath/apollo-react 3.19.3-test
  *   -> Unpublishes @uipath/apollo-react@3.19.3-test
  *
- * Requires GH_NPM_REGISTRY_TOKEN or GITHUB_TOKEN environment variable.
+ * Requires NPM_AUTH_TOKEN environment variable.
+ * Note: npm only allows unpublishing within 72 hours of publication.
  */
 
+import { execSync } from 'node:child_process';
 import { findPackageInfo, getAllPackageNames } from './package-utils.js';
 
-interface GitHubPackageVersion {
-  id: number;
-  name: string;
-}
-
 async function deletePackageVersion(packageName: string, version: string): Promise<boolean> {
-  const token = process.env.GH_NPM_REGISTRY_TOKEN || process.env.GITHUB_TOKEN;
+  const token = process.env.NPM_AUTH_TOKEN;
   if (!token) {
-    console.error('Error: GH_NPM_REGISTRY_TOKEN or GITHUB_TOKEN environment variable is required.');
+    console.error('Error: NPM_AUTH_TOKEN environment variable is required.');
     return false;
   }
 
-  // Extract package name without scope (e.g., "apollo-react" from "@uipath/apollo-react")
-  const packageNameWithoutScope = packageName.replace('@uipath/', '');
-  const org = 'uipath';
-
   try {
-    // First, list all versions to find the version ID
-    console.log(`Looking up version ID for ${packageName}@${version}...`);
+    console.log(`Unpublishing ${packageName}@${version}...`);
+    console.log('⚠️  Note: npm only allows unpublishing within 72 hours of publication.');
 
-    const listResponse = await fetch(
-      `https://api.github.com/orgs/${org}/packages/npm/${packageNameWithoutScope}/versions?per_page=100`,
-      {
-        headers: {
-          Accept: 'application/vnd.github+json',
-          Authorization: `Bearer ${token}`,
-          'X-GitHub-Api-Version': '2022-11-28',
-        },
-      }
-    );
+    // Use npm unpublish command
+    const fullPackage = `${packageName}@${version}`;
 
-    if (!listResponse.ok) {
-      if (listResponse.status === 404) {
-        console.error(`Package ${packageName} not found in GitHub Packages.`);
-        return false;
-      }
-      const errorText = await listResponse.text();
-      console.error(`Failed to list versions: ${listResponse.status} ${errorText}`);
-      return false;
-    }
-
-    const versions = (await listResponse.json()) as GitHubPackageVersion[];
-    const targetVersion = versions.find((v) => v.name === version);
-
-    if (!targetVersion) {
-      console.error(`Version ${version} not found for ${packageName}.`);
-      if (versions.length === 100) {
-        console.error(
-          'Note: Only checked the 100 most recent versions. The target version may exist in older pages.'
-        );
-      }
-      console.log('Recent versions:');
-      for (const v of versions.slice(0, 10)) {
-        console.log(`  - ${v.name}`);
-      }
-      if (versions.length > 10) {
-        console.log(`  ... and ${versions.length - 10} more`);
-      }
-      return false;
-    }
-
-    // Delete the version
-    console.log(`Deleting ${packageName}@${version} (version ID: ${targetVersion.id})...`);
-
-    const deleteResponse = await fetch(
-      `https://api.github.com/orgs/${org}/packages/npm/${packageNameWithoutScope}/versions/${targetVersion.id}`,
-      {
-        method: 'DELETE',
-        headers: {
-          Accept: 'application/vnd.github+json',
-          Authorization: `Bearer ${token}`,
-          'X-GitHub-Api-Version': '2022-11-28',
-        },
-      }
-    );
-
-    if (!deleteResponse.ok) {
-      if (deleteResponse.status === 403) {
-        console.error(
-          'Failed to delete version: 403 Forbidden. The token may be missing the "delete:packages" permission.'
-        );
-        return false;
-      }
-      if (deleteResponse.status === 404) {
-        console.error(
-          `Failed to delete version: 404 Not Found. Version ${version} may already be deleted.`
-        );
-        return false;
-      }
-      const errorText = await deleteResponse.text();
-      console.error(`Failed to delete version: ${deleteResponse.status} ${errorText}`);
-      return false;
-    }
+    execSync(`npm unpublish ${fullPackage} --registry=https://registry.npmjs.org`, {
+      stdio: 'inherit',
+      env: {
+        ...process.env,
+        NPM_TOKEN: token,
+        NODE_AUTH_TOKEN: token,
+      },
+    });
 
     return true;
   } catch (error) {
-    console.error('Error:', error);
+    console.error('\nFailed to unpublish package.');
+    console.error('Possible reasons:');
+    console.error('  - Package was published more than 72 hours ago');
+    console.error('  - Package version does not exist');
+    console.error('  - NPM_AUTH_TOKEN is invalid or lacks permissions');
+    console.error(`  - Package has dependents (use 'npm deprecate ${packageName}@${version}' instead)`);
     return false;
   }
 }
@@ -132,7 +68,8 @@ async function main() {
     console.error('  pnpm unpublish:dev @uipath/apollo-react pr123');
     console.error('    -> Unpublishes @uipath/apollo-react@<current>-pr123');
     console.error('');
-    console.error('Requires: GH_NPM_REGISTRY_TOKEN or GITHUB_TOKEN env var');
+    console.error('Requires: NPM_AUTH_TOKEN env var');
+    console.error('Note: npm only allows unpublishing within 72 hours of publication');
     console.error('\nAvailable packages:');
     for (const name of getAllPackageNames()) {
       console.error(`  - ${name}`);

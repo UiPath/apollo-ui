@@ -27,8 +27,6 @@ jobs:
           cache: 'pnpm'
 
       - name: Install dependencies
-        env:
-          GH_NPM_REGISTRY_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: pnpm install --frozen-lockfile
 
       - name: Validate commit messages

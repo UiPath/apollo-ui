@@ -255,7 +255,7 @@ pnpm unpublish:dev @uipath/apollo-react my-feature
    - `read:packages`
 3. Set the environment variable:
    ```bash
-   export GH_NPM_REGISTRY_TOKEN=your_token_here
+   export NPM_AUTH_TOKEN=your_token_here
    ```
 
 **Installing dev packages:**
