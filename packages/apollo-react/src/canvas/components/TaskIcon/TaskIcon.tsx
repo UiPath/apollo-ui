@@ -1,7 +1,12 @@
-import { AgentProject, BusinessProcessProject, ConnectorBuilderProject } from '../../icons';
-import { ApiProject } from '../../icons/ApiProject';
-import { HumanIcon } from '../../icons/HumanIcon';
-import { RpaProject } from '../../icons/RpaProject';
+import {
+  AgentProject,
+  ApiProject,
+  BusinessProcessProject,
+  ConnectorBuilderProject,
+  HumanIcon,
+  RpaProject,
+} from '@uipath/apollo-react/canvas/icons';
+import { AutopilotIcon, DurationIcon } from '@uipath/apollo-react/icons';
 import { TaskIconContainer } from './TaskIcon.styles';
 import { type TaskIconProps, type TaskIconSize, TaskItemTypeValues } from './TaskIcon.types';
 
@@ -16,6 +21,8 @@ const getIconForType = (type: TaskItemTypeValues, iconSize: number): React.React
   switch (type) {
     case TaskItemTypeValues.Agent:
       return <AgentProject w={iconSize} h={iconSize} />;
+    case TaskItemTypeValues.ExternalAgent:
+      return <AutopilotIcon size={iconSize} />;
     case TaskItemTypeValues.Automation:
       return <RpaProject w={iconSize} h={iconSize} />;
     case TaskItemTypeValues.ApiAutomation:
@@ -26,6 +33,9 @@ const getIconForType = (type: TaskItemTypeValues, iconSize: number): React.React
       return <BusinessProcessProject w={iconSize} h={iconSize} />;
     case TaskItemTypeValues.Connector:
       return <ConnectorBuilderProject w={iconSize} h={iconSize} />;
+    case TaskItemTypeValues.Timer: {
+      return <DurationIcon size={iconSize} />;
+    }
   }
 };
 
