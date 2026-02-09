@@ -237,9 +237,21 @@ export const WithTaskIcons: Story = {
             tasks: [
               [
                 {
+                  id: 'human-task',
+                  label: 'Human in the Loop',
+                  icon: <TaskIcon type={TaskItemTypeValues.User} size="sm" />,
+                },
+              ],
+              [
+                {
                   id: 'agent-task',
                   label: 'Agent Task',
                   icon: <TaskIcon type={TaskItemTypeValues.Agent} size="sm" />,
+                },
+                {
+                  id: 'external-agent-task',
+                  label: 'External Agent',
+                  icon: <TaskIcon type={TaskItemTypeValues.ExternalAgent} size="sm" />,
                 },
               ],
               [
@@ -248,8 +260,6 @@ export const WithTaskIcons: Story = {
                   label: 'RPA Automation',
                   icon: <TaskIcon type={TaskItemTypeValues.Automation} size="sm" />,
                 },
-              ],
-              [
                 {
                   id: 'api-task',
                   label: 'API Automation',
@@ -258,16 +268,21 @@ export const WithTaskIcons: Story = {
               ],
               [
                 {
-                  id: 'human-task',
-                  label: 'Human in the Loop',
-                  icon: <TaskIcon type={TaskItemTypeValues.User} size="sm" />,
+                  id: 'process-task',
+                  label: 'Agentic Process',
+                  icon: <TaskIcon type={TaskItemTypeValues.AgenticProcess} size="sm" />,
+                },
+                {
+                  id: 'connector-task',
+                  label: 'Connector',
+                  icon: <TaskIcon type={TaskItemTypeValues.Connector} size="sm" />,
                 },
               ],
               [
                 {
-                  id: 'process-task',
-                  label: 'Agentic Process',
-                  icon: <TaskIcon type={TaskItemTypeValues.AgenticProcess} size="sm" />,
+                  id: 'timer-task',
+                  label: 'Timer',
+                  icon: <TaskIcon type={TaskItemTypeValues.Timer} size="sm" />,
                 },
               ],
             ],
