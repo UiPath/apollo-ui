@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.21.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.20.0...@uipath/apollo-react@3.21.0) (2026-02-09)
+
+### Features
+
+* **apollo-react:** add replace task to stage node in case mgmt [MST-6319] ([39a9b24](https://github.com/UiPath/apollo-ui/commit/39a9b24434108adb775422f03e9dc593a87c43b2))
+
 ## [@uipath/apollo-react-v3.20.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.19.4...@uipath/apollo-react@3.20.0) (2026-02-06)
 
 ### Features
