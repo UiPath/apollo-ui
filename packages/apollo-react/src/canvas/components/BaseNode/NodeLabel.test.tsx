@@ -472,7 +472,7 @@ describe('NodeLabel', () => {
       await user.dblClick(screen.getByText('Test Node'));
 
       // Double click event should not propagate to parent
-      // onClick might be called once but not multiple times
+      // `onClick` might be called once but not multiple times
       expect(screen.getByRole('textbox', { name: 'Edit node name' })).toBeInTheDocument();
     });
   });
