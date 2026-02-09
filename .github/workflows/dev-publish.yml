@@ -163,10 +163,7 @@ jobs:
   update-comment-publishing:
     name: Update Comment - Publishing
     needs: [detect-changes, cleanup]
-    if: |
-      always() &&
-      needs.detect-changes.outputs.has_changes == 'true' &&
-      (needs.cleanup.result == 'success' || needs.cleanup.result == 'skipped')
+    if: always() && needs.detect-changes.outputs.has_changes == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: read

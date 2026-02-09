@@ -48,16 +48,30 @@ const fontFamily = ApolloCore.FontFamilyBase;
 
 ### Icons
 
-Icons are available as raw SVG files:
+Icons are available as raw SVG files (flattened in distribution):
 
 ```typescript
-import iconSvg from '@uipath/apollo-core/icons/svg/action/add.svg';
+// Import SVG files
+import closeSvg from '@uipath/apollo-core/icons/svg/close.svg';
+import addCommentSvg from '@uipath/apollo-core/icons/svg/add-comment.svg';
 ```
 
-For React components, use `@uipath/apollo-react`:
+**Usage in HTML/React:**
+```jsx
+// Use as img source
+<img src={closeSvg} alt="Close" width="24" height="24" />
+
+// Or in vanilla HTML
+<img src="/path/to/node_modules/@uipath/apollo-core/icons/svg/close.svg" alt="Close" />
+```
+
+**For React icon components**, use `@uipath/apollo-react`:
 
 ```typescript
-import { ActionAdd } from '@uipath/apollo-react/icons';
+import { Close, AddComment } from '@uipath/apollo-react/icons';
+
+<Close />
+<AddComment />
 ```
 
 ## Icons
@@ -86,22 +100,31 @@ All icons are exported from the official Apollo Icons Figma file:
 
 **[Apollo Icons - Figma Design](https://www.figma.com/design/ejTd2JOd1BOEXTIp2TCtpr/Apollo--Icons-?node-id=2-1045&m=dev)**
 
-### Current Structure (TEMPORARY)
+### Icon Structure
 
-The icon library contains **1,317 icons** organized into categories:
+The icon library contains **1,317 icons** organized into categories in the source:
 
+**Source Structure** (`src/icons/svg/`):
 - `action/` - Action icons (add, delete, edit, etc.)
 - `editor/` - Editor-specific icons
 - `indicator-and-alert/` - Status and notification icons
 - `logic/` - Workflow and logic icons
 - `navigation/` - Navigation controls
 - `object/` - Object representations
+- `product-logo/` - Product logo icons
 - `social/` - Social media icons
 - `studio-icons/` - UiPath Studio-specific icons
+- `studio-activities-icon-sets/` - Activity icons for automation
 - `toggle/` - Toggle and selection controls
 - `third-party/` - Third-party service logos
+- `ui-agents-icons/` - UI agent icons
 - `ui-bpmn-canvas/` - BPMN diagram elements
-- `studio-activities-icon-sets/` - Activity icons for automation
+
+**Distribution Structure** (`dist/static/svg/`):
+- All 1,317 icons are flattened into a single directory with unique names
+- Icons more than one folder deep are prefixed with their immediate parent folder (e.g., `navigation/chevron/down.svg` → `chevron-down.svg`)
+- Icons only one folder deep keep their original name (e.g., `action/close.svg` → `close.svg`)
+- Accessible via `@uipath/apollo-core/icons/svg/{icon-name}.svg`
 
 ### Naming Convention (TEMPORARY)
 
@@ -207,8 +230,8 @@ import * as Tokens from '@uipath/apollo-core/tokens';
 // Icon types and names
 import { IconName, iconNames } from '@uipath/apollo-core/icons';
 
-// Raw SVG files
-import iconSvg from '@uipath/apollo-core/icons/svg/action/add.svg';
+// Raw SVG files (from flattened distribution)
+import iconSvg from '@uipath/apollo-core/icons/svg/add.svg';
 
 // CSS variables
 import '@uipath/apollo-core/tokens/css/theme-variables.css';
@@ -228,17 +251,20 @@ apollo-core/
 ├── src/
 │   ├── tokens/           # Design tokens (colors, spacing, etc.)
 │   ├── icons/
-│   │   ├── svg/          # Raw SVG icon files
+│   │   ├── svg/          # Raw SVG icon files (organized by category)
 │   │   ├── index.ts      # Icon exports
 │   │   └── types.ts      # Icon type definitions
 │   └── fonts/            # Font assets
 ├── scripts/
-│   ├── build-tokens.js              # Token generation
-│   ├── generate-icons.ts            # Icon export generation
-│   └── rename-icon-structure.ts    # Icon naming normalization
+│   ├── build-tokens.js        # Token generation
+│   ├── generate-icons.ts      # Icon export generation
+│   ├── process-icons.ts       # Icon processing and naming
+│   └── update-colors.ts       # Icon color updates
 └── dist/                 # Built output
-    ├── tokens/           # Generated token files
-    ├── icons/            # Icon types and SVG files
+    ├── tokens/           # Generated token files (CSS, JSS, LESS, SCSS)
+    ├── icons/            # Icon TypeScript exports and types
+    ├── static/
+    │   └── svg/          # Flattened SVG files (1,317 icons)
     └── fonts/            # Font files
 ```
 

@@ -42,7 +42,7 @@ async function unpublishPackageVersion(packageName: string, version: string): Pr
     const fullPackage = `${packageName}@${version}`;
 
     // First, check if package version exists on npm.org
-    const encodedPackageName = packageName.replace('/', '%2F');
+    const encodedPackageName = packageName.replace('@', '%40').replace('/', '%2F');
     const checkResponse = await fetch(
       `https://registry.npmjs.org/${encodedPackageName}/${version}`,
       {
@@ -91,12 +91,17 @@ async function unpublishPackageVersion(packageName: string, version: string): Pr
         }
       }
 
-      // Check if it's a 422 error (package too new, has dependents, etc.)
+      // Check if it's an error that requires deprecation instead of unpublish
       const is422Error = errorOutput.includes('422') || errorOutput.includes('Unprocessable Entity');
+      const is405Error = errorOutput.includes('405') || errorOutput.includes('Method Not Allowed');
       const isTooOldError = errorOutput.includes('72 hours') || errorOutput.includes('published more than');
+      const hasDependentsError = errorOutput.includes('has dependent packages') || errorOutput.includes('can no longer unpublish');
 
-      if (is422Error || isTooOldError) {
-        console.log('⚠️  Unpublish rejected (422), deprecating instead...');
+      if (is422Error || is405Error || isTooOldError || hasDependentsError) {
+        console.log('⚠️  Unpublish rejected, deprecating instead...');
+        if (errorOutput) {
+          console.log('Reason:', errorOutput.split('\n').find(line => line.includes('error')) || errorOutput.split('\n')[0]);
+        }
 
         try {
           execFileSync(
@@ -113,21 +118,32 @@ async function unpublishPackageVersion(packageName: string, version: string): Pr
           );
           console.log('✓ Deprecated successfully');
           return true;
-        } catch {
+        } catch (deprecateError: unknown) {
           console.error('✗ Failed to deprecate');
+          if (deprecateError && typeof deprecateError === 'object') {
+            if ('stderr' in deprecateError && deprecateError.stderr) {
+              const stderr = deprecateError.stderr;
+              if (Buffer.isBuffer(stderr) || typeof stderr === 'string') {
+                console.error('Error:', stderr.toString());
+              }
+            }
+          }
           return false;
         }
       }
 
       console.error('\nFailed to unpublish package.');
-      console.error('Possible reasons:');
-      console.error('  - Package was published more than 72 hours ago');
-      console.error('  - Package version does not exist on npm.org');
-      console.error('  - NPM_AUTH_TOKEN is invalid or lacks permissions');
+      if (errorOutput) {
+        console.error('\nError from npm:');
+        console.error(errorOutput);
+      } else {
+        console.error('No error details available');
+      }
       return false;
     }
   } catch (error: unknown) {
-    console.error('\nUnexpected error:', error);
+    console.error('\nUnexpected error during unpublish:');
+    console.error(error);
     return false;
   }
 }
@@ -159,26 +175,24 @@ async function main() {
 
   const [packageName, suffixOrVersion] = args as [string, string];
 
-  // Find package to get current version
-  const packageInfo = findPackageInfo(packageName);
-  if (!packageInfo) {
-    console.error(`Error: Package "${packageName}" not found in monorepo.`);
-    console.error('\nAvailable packages:');
-    for (const name of getAllPackageNames()) {
-      console.error(`  - ${name}`);
-    }
-    process.exit(1);
-  }
-
   // Determine if suffixOrVersion is a full version or just a suffix
   // Full version: starts with digits in semver pattern (e.g., "3.19.3-test")
   // Suffix: starts with letters or "pr" (e.g., "test", "pr123", "pr123.abc1234")
   let versionToUnpublish: string;
   if (/^\d+\.\d+/.test(suffixOrVersion)) {
-    // It's a full semver version (starts with major.minor)
+    // It's a full semver version - use directly, no need to check monorepo
     versionToUnpublish = suffixOrVersion;
   } else {
-    // It's a suffix (including pr123.sha format), prepend current version
+    // It's a suffix - need to get current version from monorepo
+    const packageInfo = findPackageInfo(packageName);
+    if (!packageInfo) {
+      console.error(`Error: Package "${packageName}" not found in monorepo.`);
+      console.error('\nAvailable packages:');
+      for (const name of getAllPackageNames()) {
+        console.error(`  - ${name}`);
+      }
+      process.exit(1);
+    }
     versionToUnpublish = `${packageInfo.version}-${suffixOrVersion}`;
   }
 
