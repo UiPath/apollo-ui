@@ -38,8 +38,8 @@
     "storybook:wind": "turbo run storybook --filter=@uipath/apollo-wind",
     "storybook:all": "turbo run storybook --filter=storybook-app",
     "clean": "turbo run clean && rm -rf .turbo && rm -rf node_modules",
-    "release": "pnpm --workspace-concurrency=1 --sort --filter './packages/*' --filter '!@uipath/apollo-angular' --filter './web-packages/*' exec -- semantic-release",
-    "release:dry-run": "pnpm --workspace-concurrency=1 --sort --filter './packages/*' --filter '!@uipath/apollo-angular' --filter './web-packages/*' exec -- semantic-release --dry-run",
+    "release": "pnpm --workspace-concurrency=1 --sort --filter './packages/*' --filter './web-packages/*' exec -- semantic-release",
+    "release:dry-run": "pnpm --workspace-concurrency=1 --sort --filter './packages/*' --filter './web-packages/*' exec -- semantic-release --dry-run",
     "publish:dev": "tsx scripts/publish-dev.ts",
     "unpublish:dev": "tsx scripts/unpublish-dev.ts",
     "prepare": "husky"

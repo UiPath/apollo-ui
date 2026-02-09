@@ -22,7 +22,6 @@
 		"@mui/material": "^5.18.0",
 		"@mui/x-date-pickers": "^6.20.2",
 		"@uipath/ap-chat": "workspace:*",
-		"@uipath/ap-data-grid": "workspace:*",
 		"@uipath/apollo-react": "workspace:*",
 		"@uipath/apollo-wind": "workspace:*",
 		"dayjs": "^1.11.19",

@@ -2,18 +2,14 @@
 # * @UiPath/Apollo @UiPath/portal-members           # commented out until remaining owners are added. 
 
 # Packages
-packages/apollo-angular
 packages/apollo-core @UiPath/Apollo
 packages/apollo-react @UiPath/Apollo
-packages/apollo-utils
 packages/apollo-wind
 
 # apps
-apps/angular-playground
 apps/apollo-vertex
 apps/react-playground @UiPath/Apollo
 apps/storybook
 
 # web-packages
 web-packages/ap-chat
-web-packages/ap-data-grid

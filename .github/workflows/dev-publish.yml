@@ -79,10 +79,7 @@ jobs:
                   echo "::warning::Skipping invalid package name: $name"
                   continue
                 fi
-                # Skip angular (excluded from release)
-                if [ "$name" != "@uipath/apollo-angular" ]; then
-                  PACKAGES="$PACKAGES $name"
-                fi
+                PACKAGES="$PACKAGES $name"
               fi
             fi
           done

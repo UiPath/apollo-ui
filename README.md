@@ -28,7 +28,6 @@ Apollo v.4 is UiPath's open-source design system for building consistent user ex
 
 - 🎨 **Design Tokens** - 1300+ icons, comprehensive color system, typography, spacing
 - ⚛️ **React Components** - Built on Material UI with Apollo theming
-- 🅰️ **Angular Components** - Built on Angular Material with Apollo theming
 - 🎐 **Tailwind CSS** - Modern utility-first styling with shadcn/ui
 - 🌐 **Web Components** - Cross-framework components for maximum flexibility
 - 📘 **TypeScript** - Full type safety across all packages
@@ -40,21 +39,13 @@ Apollo v.4 is UiPath's open-source design system for building consistent user ex
 ```mermaid
 graph RL
     React["@uipath/apollo-react<br/>React + Material UI"] -->|requires| Core["@uipath/apollo-core<br/>Design Tokens, Icons, Fonts"]
-    Angular["@uipath/apollo-angular<br/>Angular + Material"] -->|requires| Core
     Wind["@uipath/apollo-wind<br/>Tailwind + shadcn/ui"] -->|requires| Core
     Chat["@uipath/ap-chat<br/>Chat Web Component"] -->|requires| React
-    Grid["@uipath/ap-data-grid<br/>Data Grid"] -->|requires| Angular
-
-    React -->|requires| Utils["@uipath/apollo-utils<br/>Shared Utilities"]
-    Angular -->|requires| Utils
 
     style Core fill:#374151,stroke:#ef4444,stroke-width:3px,color:#fff
-    style Utils fill:#374151,stroke:#ef4444,stroke-width:3px,color:#fff
     style React fill:#1e3a8a,stroke:#3b82f6,stroke-width:3px,color:#fff
-    style Angular fill:#7f1d1d,stroke:#dc2626,stroke-width:3px,color:#fff
     style Wind fill:#164e63,stroke:#06b6d4,stroke-width:3px,color:#fff
     style Chat fill:#064e3b,stroke:#10b981,stroke-width:3px,color:#fff
-    style Grid fill:#064e3b,stroke:#10b981,stroke-width:3px,color:#fff
 ```
 
 ## 📁 Repository Structure
@@ -63,19 +54,15 @@ graph RL
 apollo-ui/
 ├── packages/              # Core + framework packages
 │   ├── apollo-core/       # 🎨 Design tokens, icons, fonts
-│   ├── apollo-utils/      # 🛠️ Shared utilities
 │   ├── apollo-react/      # ⚛️ React components + MUI theme
-│   ├── apollo-angular/    # 🅰️ Angular components + Material theme
 │   └── apollo-wind/       # 🎐 Tailwind + shadcn/ui
 │
 ├── web-packages/          # Cross-framework web components
 │   ├── ap-chat/ # 💬 Chat web component
-│   └── ap-data-grid/      # 📊 Data grid web component
 │
 └── apps/                  # Development applications
     ├── storybook/         # 📚 Component documentation
     ├── react-playground/  # ⚛️ React testing environment
-    └── angular-playground/# 🅰️ Angular testing environment
 ```
 
 ## 📦 Packages
@@ -85,14 +72,12 @@ apollo-ui/
 | Package | Description |
 |---------|-------------|
 | [@uipath/apollo-core](./packages/apollo-core) | Design tokens, 1300+ icons, fonts - Foundation of the design system |
-| [@uipath/apollo-utils](./packages/apollo-utils) | Shared utilities, formatters, and helper functions |
 
 ### Framework Packages
 
 | Package | Description |
 |---------|-------------|
 | [@uipath/apollo-react](./packages/apollo-react) | React components with Material UI theming and Apollo design tokens |
-| [@uipath/apollo-angular](./packages/apollo-angular) | Angular components with Angular Material theming *(Coming soon)* |
 | [@uipath/apollo-wind](./packages/apollo-wind) | Tailwind CSS utilities + shadcn/ui components |
 
 ### Web Components (Cross-Framework)
@@ -100,17 +85,13 @@ apollo-ui/
 | Package | Description |
 |---------|-------------|
 | [@uipath/ap-chat](./web-packages/ap-chat) | Chat interface web component |
-| [@uipath/ap-data-grid](./web-packages/ap-data-grid) | Data grid web component with React wrapper |
 
 ## Usage
 
-- apollo-angular - Coming soon
 - [apollo-core](./packages/apollo-core/README.md)
 - [apollo-react](./packages/apollo-react/README.md)
-- apollo-utils - Coming soon
 - [apollo-wind](./packages/apollo-wind/README.md)
 - [ap-chat](./web-packages/ap-chat/README.md)
-- [ap-data-grid] - Coming soon / May be Removed
 
 ## 🚀 Getting Started
 
