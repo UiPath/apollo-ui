@@ -3,6 +3,9 @@
 // For actual SVG imports, use index.ts directly
 
 export type IconName =
+  | 'AIAutoSummarize'
+  | 'AIAutofix'
+  | 'AICenter'
   | 'Academy'
   | 'AccountSwitch'
   | 'Act365'
@@ -10,11 +13,11 @@ export type IconName =
   | 'ActionCenter'
   | 'ActiveCampaign'
   | 'ActiveDirectory'
-  | 'ActivityImap'
+  | 'ActivityIMAP'
   | 'ActivityInputDirectionInput'
   | 'ActivityInputDirectionOutput'
-  | 'ActivityPop3'
-  | 'ActivitySmtp'
+  | 'ActivityPOP3'
+  | 'ActivitySMTP'
   | 'AddCanvas'
   | 'AddComment'
   | 'AddDataColumn'
@@ -24,7 +27,7 @@ export type IconName =
   | 'AddToCollection'
   | 'AddTransactionItem'
   | 'Admin'
-  | 'AdobePdf'
+  | 'AdobePDF'
   | 'AdobeSign'
   | 'AdvanceStream'
   | 'AgentAutopilotMarker'
@@ -32,10 +35,10 @@ export type IconName =
   | 'AgentDesktopLogoBg'
   | 'AgentDesktopLogoFlat'
   | 'AgentRun'
+  | 'AgentTraceAPIWorkflowRun'
+  | 'AgentTraceAPIWorkflowTool'
   | 'AgentTraceAgentRun'
   | 'AgentTraceAgentTool'
-  | 'AgentTraceApiWorkflowRun'
-  | 'AgentTraceApiWorkflowTool'
   | 'AgentTraceCompletion'
   | 'AgentTraceContextGroundingTool'
   | 'AgentTraceConversation'
@@ -77,9 +80,6 @@ export type IconName =
   | 'AgentsSet'
   | 'AgentsTool'
   | 'AgentsTrace'
-  | 'AiAutoSummarize'
-  | 'AiAutofix'
-  | 'AiCenter'
   | 'AlertDelete'
   | 'AlertError'
   | 'AlertErrorFatal'
@@ -286,7 +286,7 @@ export type IconName =
   | 'CloudUpload'
   | 'CloverMark'
   | 'Code'
-  | 'CodedFileJson'
+  | 'CodedFileJSON'
   | 'CollapseAll'
   | 'Collection'
   | 'Color'
@@ -301,9 +301,9 @@ export type IconName =
   | 'CommunicationMiningUploadComment'
   | 'CommunicationsMining'
   | 'Compare'
+  | 'ComponentAPIWorkflow'
   | 'ComponentAgent'
   | 'ComponentAgenticProcess'
-  | 'ComponentApiWorkflow'
   | 'ComponentApp'
   | 'ComponentBusinessRule'
   | 'ComponentCaseManagement'
@@ -471,7 +471,7 @@ export type IconName =
   | 'DataTypesFile'
   | 'DataTypesGenericDataType'
   | 'DataTypesInteger'
-  | 'DataTypesJson'
+  | 'DataTypesJSON'
   | 'DataTypesKey'
   | 'DataTypesList'
   | 'DataTypesMethod'
@@ -559,7 +559,16 @@ export type IconName =
   | 'ExtractData'
   | 'ExtractFiles'
   | 'ExtractSrc'
-  | 'ExtractUrl'
+  | 'ExtractURL'
+  | 'FTPConnection'
+  | 'FTPDeleteFileOrFolder'
+  | 'FTPDownloadFiles'
+  | 'FTPFTPConnection'
+  | 'FTPFileExists'
+  | 'FTPFolderExists'
+  | 'FTPGetFiles'
+  | 'FTPMoveFileOrFolder'
+  | 'FTPUploadFiles'
   | 'FastForward'
   | 'FastRewind'
   | 'FavouriteChecked'
@@ -570,22 +579,22 @@ export type IconName =
   | 'FigureRectangle169'
   | 'FigureRectangle54'
   | 'FigureSquare'
-  | 'FileApiWorkflow'
-  | 'FileApiWorkflowMain'
+  | 'FileAPIWorkflow'
+  | 'FileAPIWorkflowMain'
   | 'FileBpmn'
   | 'FileCopy'
   | 'FileCs'
   | 'FileEntryPoint'
   | 'FileExists'
+  | 'FileJSON'
   | 'FileJs'
-  | 'FileJson'
   | 'FileMain'
   | 'FileOtherDataObject'
   | 'FileRpaWorkflow'
   | 'FileRpaWorkflowMain'
   | 'FileTxtText'
   | 'FileVb'
-  | 'FileXml'
+  | 'FileXML'
   | 'Filter'
   | 'Filter1'
   | 'Filter2'
@@ -608,10 +617,10 @@ export type IconName =
   | 'FolderShared'
   | 'FolderSolution'
   | 'FolderSpecial'
-  | 'FolderXml'
+  | 'FolderXML'
   | 'ForEachList'
   | 'ForEachRowInDataTable'
-  | 'ForEachUiElement'
+  | 'ForEachUIElement'
   | 'Form'
   | 'FormatAlignCenter'
   | 'FormatAlignJustify'
@@ -632,32 +641,23 @@ export type IconName =
   | 'FormattingIsMatch'
   | 'FormattingMatches'
   | 'Freshservice'
-  | 'FtpConnection'
-  | 'FtpDeleteFileOrFolder'
-  | 'FtpDownloadFiles'
-  | 'FtpFileExists'
-  | 'FtpFolderExists'
-  | 'FtpFtpConnection'
-  | 'FtpGetFiles'
-  | 'FtpMoveFileOrFolder'
-  | 'FtpUploadFiles'
   | 'FullscreenMaximize'
   | 'Functions'
-  | 'GenAi'
+  | 'GenAI'
   | 'GenericActivityIconsDelete'
   | 'GenericActivityIconsDownload'
   | 'GenericActivityIconsFileDownload'
   | 'GenericActivityIconsFileUpload'
   | 'GenericActivityIconsGet'
-  | 'GenericActivityIconsImap'
+  | 'GenericActivityIconsIMAP'
   | 'GenericActivityIconsInsert'
   | 'GenericActivityIconsList'
   | 'GenericActivityIconsListAll'
   | 'GenericActivityIconsMethod'
-  | 'GenericActivityIconsPop3'
+  | 'GenericActivityIconsPOP3'
+  | 'GenericActivityIconsSMTP'
   | 'GenericActivityIconsScope'
   | 'GenericActivityIconsSearch'
-  | 'GenericActivityIconsSmtp'
   | 'GenericActivityIconsUpdate'
   | 'GenericActivityIconsUpload'
   | 'GetAssets'
@@ -680,7 +680,7 @@ export type IconName =
   | 'GlobalHandler'
   | 'GlobalHandlerSet'
   | 'GlobalHandlerUnset'
-  | 'GoToUrl'
+  | 'GoToURL'
   | 'Google'
   | 'GoogleAds'
   | 'GoogleAppsScript'
@@ -715,6 +715,7 @@ export type IconName =
   | 'GsuiteGmail'
   | 'GsuiteGsheets'
   | 'GsuiteGsuite'
+  | 'HTTPRequest'
   | 'HandWaving'
   | 'Handshake'
   | 'HashFileWithKey'
@@ -728,7 +729,6 @@ export type IconName =
   | 'Home'
   | 'Hootsuite'
   | 'Hover'
-  | 'HttpRequest'
   | 'HubspotMarketing'
   | 'HyperV'
   | 'Icontact'
@@ -747,8 +747,8 @@ export type IconName =
   | 'InternalPackageControl'
   | 'InternalPackageCryptography'
   | 'InternalPackageDefault'
-  | 'InternalPackageUiAutomation'
-  | 'InternalPackageWebApi'
+  | 'InternalPackageUIAutomation'
+  | 'InternalPackageWebAPI'
   | 'InternalPackageWorkflowEvents'
   | 'Intuit'
   | 'Invoke'
@@ -800,7 +800,7 @@ export type IconName =
   | 'LifionByAdp'
   | 'LineAxis'
   | 'Link'
-  | 'Linkedin'
+  | 'LinkedIn'
   | 'List'
   | 'ListBulleted'
   | 'ListDatastores'
@@ -818,6 +818,7 @@ export type IconName =
   | 'Looks5'
   | 'Looks6'
   | 'LookupDataTable'
+  | 'MLSkills'
   | 'Machine'
   | 'Maestro'
   | 'Mailchimp'
@@ -837,7 +838,7 @@ export type IconName =
   | 'Microsoft365'
   | 'MicrosoftApps'
   | 'MicrosoftCalendar'
-  | 'MicrosoftDynamicsCrm'
+  | 'MicrosoftDynamicsCRM'
   | 'MicrosoftEdge'
   | 'MicrosoftExcel'
   | 'MicrosoftGroups'
@@ -846,14 +847,13 @@ export type IconName =
   | 'MicrosoftPlanner'
   | 'MicrosoftPowerPoint'
   | 'MicrosoftSentiment'
-  | 'MicrosoftSharepoint'
+  | 'MicrosoftSharePoint'
   | 'MicrosoftTeams'
   | 'MicrosoftTranslator'
   | 'MicrosoftVision'
   | 'MicrosoftVisualStudioCode'
   | 'MicrosoftWord'
   | 'Minimize'
-  | 'MlSkills'
   | 'Mock'
   | 'MockData'
   | 'ModeratorRemove'
@@ -885,17 +885,17 @@ export type IconName =
   | 'Office365AppsMicrosoftOffice365'
   | 'Office365AppsOutlook'
   | 'Office365AppsPlanner'
-  | 'Office365AppsSharepoint'
+  | 'Office365AppsSharePoint'
   | 'Office365ExcelCell'
   | 'Office365ExcelExcel'
   | 'Office365ExcelMicrosoftGroups'
   | 'Office365ExcelNameRange'
   | 'Office365ExcelOneDrive'
   | 'Office365ExcelPivotTable'
-  | 'Office365ExcelSharepoint'
+  | 'Office365ExcelSharePoint'
   | 'Office365ExcelSheet'
   | 'Office365ExcelTable'
-  | 'OpenAi'
+  | 'OpenAI'
   | 'OpenInDesktop'
   | 'OpenInNew'
   | 'OracleEloqua'
@@ -914,7 +914,7 @@ export type IconName =
   | 'OrchestratorGetJob'
   | 'OrchestratorGetQueueItems'
   | 'OrchestratorGetTransactionItem'
-  | 'OrchestratorHttpRequest'
+  | 'OrchestratorHTTPRequest'
   | 'OrchestratorListStorageFiles'
   | 'OrchestratorPostponeTransactionItem'
   | 'OrchestratorRaiseAlert'
@@ -1028,13 +1028,13 @@ export type IconName =
   | 'RunParallelProcess'
   | 'RunProgramInVm'
   | 'RunTests'
+  | 'SAPCloudForCustomer'
+  | 'SAPConcur'
   | 'Safety'
   | 'Sage'
   | 'Salesforce'
   | 'Salesloft'
   | 'Salesmate'
-  | 'SapCloudForCustomer'
-  | 'SapConcur'
   | 'Save'
   | 'ScatterPlotChart'
   | 'Schema'
@@ -1159,8 +1159,8 @@ export type IconName =
   | 'Trello'
   | 'Trigger'
   | 'Trigger1'
+  | 'TriggerAPI'
   | 'TriggerAgent'
-  | 'TriggerApi'
   | 'TriggerApp'
   | 'TriggerAutopilot'
   | 'TriggerChat'
@@ -1188,7 +1188,7 @@ export type IconName =
   | 'TypeGeneric'
   | 'TypeInteger'
   | 'TypeInto'
-  | 'TypeJson'
+  | 'TypeJSON'
   | 'TypeKey'
   | 'TypeList'
   | 'TypeObject'
@@ -1196,40 +1196,40 @@ export type IconName =
   | 'TypeString'
   | 'TypeTable'
   | 'Typeform'
-  | 'UiAutomationApplicationCard'
-  | 'UiAutomationCheck'
-  | 'UiAutomationCheckState'
-  | 'UiAutomationClick'
-  | 'UiAutomationExtractData'
-  | 'UiAutomationForEachUiElement'
-  | 'UiAutomationGetAttribute'
-  | 'UiAutomationGetText'
-  | 'UiAutomationGetUrl'
-  | 'UiAutomationGoToUrl'
-  | 'UiAutomationHighlight'
-  | 'UiAutomationHover'
-  | 'UiAutomationKeyboardShortcuts'
-  | 'UiAutomationMouseScroll'
-  | 'UiAutomationNavigateBrowser'
-  | 'UiAutomationSelectItem'
-  | 'UiAutomationSemanticFillForm'
-  | 'UiAutomationSemanticSetValue'
-  | 'UiAutomationTakeScreenshot'
-  | 'UiAutomationTypeInto'
-  | 'UiDataExtractionExtractSrc'
-  | 'UiDataExtractionExtractText'
-  | 'UiDataExtractionExtractUrl'
-  | 'UiExperimentalDefault'
-  | 'UiGridlistViewGrid'
-  | 'UiGridlistViewList'
-  | 'UiPath'
-  | 'UiPathUiPath'
-  | 'UiStudioWebIconDefault'
-  | 'UiSubmitAsTemplateDisabled'
-  | 'UiSubmitAsTemplateEnabled'
-  | 'UiTriggersManual'
-  | 'UiTriggersQueue'
-  | 'UiTriggersScheduled'
+  | 'UIAutomationApplicationCard'
+  | 'UIAutomationCheck'
+  | 'UIAutomationCheckState'
+  | 'UIAutomationClick'
+  | 'UIAutomationExtractData'
+  | 'UIAutomationForEachUIElement'
+  | 'UIAutomationGetAttribute'
+  | 'UIAutomationGetText'
+  | 'UIAutomationGetURL'
+  | 'UIAutomationGoToURL'
+  | 'UIAutomationHighlight'
+  | 'UIAutomationHover'
+  | 'UIAutomationKeyboardShortcuts'
+  | 'UIAutomationMouseScroll'
+  | 'UIAutomationNavigateBrowser'
+  | 'UIAutomationSelectItem'
+  | 'UIAutomationSemanticFillForm'
+  | 'UIAutomationSemanticSetValue'
+  | 'UIAutomationTakeScreenshot'
+  | 'UIAutomationTypeInto'
+  | 'UIDataExtractionExtractSrc'
+  | 'UIDataExtractionExtractText'
+  | 'UIDataExtractionExtractURL'
+  | 'UIExperimentalDefault'
+  | 'UIGridListViewGrid'
+  | 'UIGridListViewList'
+  | 'UIPath'
+  | 'UIPathUIPath'
+  | 'UIStudioWebIconDefault'
+  | 'UISubmitAsTemplateDisabled'
+  | 'UISubmitAsTemplateEnabled'
+  | 'UITriggersManual'
+  | 'UITriggersQueue'
+  | 'UITriggersScheduled'
   | 'Unarchive'
   | 'Undo'
   | 'Unlink'
@@ -1253,7 +1253,7 @@ export type IconName =
   | 'UserGroupRemove'
   | 'UserOff'
   | 'UserRemove'
-  | 'UserSso'
+  | 'UserSSO'
   | 'Verified'
   | 'Video'
   | 'VideocameraOff'
@@ -1290,14 +1290,14 @@ export type IconName =
   | 'WaitQueueItem'
   | 'Wallet'
   | 'Watch'
-  | 'WebApiDeserializeJson'
-  | 'WebApiDeserializeJsonArray'
-  | 'WebApiDeserializeXml'
-  | 'WebApiExecuteXpath'
-  | 'WebApiGetXmlNodeAttributes'
-  | 'WebApiGetXmlNodes'
-  | 'WebApiHttpClient'
-  | 'WebApiPackage'
+  | 'WebAPIDeserializeJSON'
+  | 'WebAPIDeserializeJSONArray'
+  | 'WebAPIDeserializeXML'
+  | 'WebAPIExecuteXPath'
+  | 'WebAPIGetXMLNodeAttributes'
+  | 'WebAPIGetXMLNodes'
+  | 'WebAPIHTTPClient'
+  | 'WebAPIPackage'
   | 'Webhook'
   | 'While'
   | 'Widget'
@@ -1310,9 +1310,9 @@ export type IconName =
   | 'WriteTextFileDraft'
   | 'X'
   | 'Yahoo'
-  | 'Youtube'
+  | 'YouTube'
   | 'Zendesk'
-  | 'ZohoCrm'
+  | 'ZohoCRM'
   | 'Zoom'
   | 'ZoomIn'
   | 'ZoomNotFixed'
@@ -1322,6 +1322,9 @@ export type IconName =
   | 'Zuora';
 
 export const iconNames: readonly IconName[] = [
+  'AIAutoSummarize',
+  'AIAutofix',
+  'AICenter',
   'Academy',
   'AccountSwitch',
   'Act365',
@@ -1329,11 +1332,11 @@ export const iconNames: readonly IconName[] = [
   'ActionCenter',
   'ActiveCampaign',
   'ActiveDirectory',
-  'ActivityImap',
+  'ActivityIMAP',
   'ActivityInputDirectionInput',
   'ActivityInputDirectionOutput',
-  'ActivityPop3',
-  'ActivitySmtp',
+  'ActivityPOP3',
+  'ActivitySMTP',
   'AddCanvas',
   'AddComment',
   'AddDataColumn',
@@ -1343,7 +1346,7 @@ export const iconNames: readonly IconName[] = [
   'AddToCollection',
   'AddTransactionItem',
   'Admin',
-  'AdobePdf',
+  'AdobePDF',
   'AdobeSign',
   'AdvanceStream',
   'AgentAutopilotMarker',
@@ -1351,10 +1354,10 @@ export const iconNames: readonly IconName[] = [
   'AgentDesktopLogoBg',
   'AgentDesktopLogoFlat',
   'AgentRun',
+  'AgentTraceAPIWorkflowRun',
+  'AgentTraceAPIWorkflowTool',
   'AgentTraceAgentRun',
   'AgentTraceAgentTool',
-  'AgentTraceApiWorkflowRun',
-  'AgentTraceApiWorkflowTool',
   'AgentTraceCompletion',
   'AgentTraceContextGroundingTool',
   'AgentTraceConversation',
@@ -1396,9 +1399,6 @@ export const iconNames: readonly IconName[] = [
   'AgentsSet',
   'AgentsTool',
   'AgentsTrace',
-  'AiAutoSummarize',
-  'AiAutofix',
-  'AiCenter',
   'AlertDelete',
   'AlertError',
   'AlertErrorFatal',
@@ -1605,7 +1605,7 @@ export const iconNames: readonly IconName[] = [
   'CloudUpload',
   'CloverMark',
   'Code',
-  'CodedFileJson',
+  'CodedFileJSON',
   'CollapseAll',
   'Collection',
   'Color',
@@ -1620,9 +1620,9 @@ export const iconNames: readonly IconName[] = [
   'CommunicationMiningUploadComment',
   'CommunicationsMining',
   'Compare',
+  'ComponentAPIWorkflow',
   'ComponentAgent',
   'ComponentAgenticProcess',
-  'ComponentApiWorkflow',
   'ComponentApp',
   'ComponentBusinessRule',
   'ComponentCaseManagement',
@@ -1790,7 +1790,7 @@ export const iconNames: readonly IconName[] = [
   'DataTypesFile',
   'DataTypesGenericDataType',
   'DataTypesInteger',
-  'DataTypesJson',
+  'DataTypesJSON',
   'DataTypesKey',
   'DataTypesList',
   'DataTypesMethod',
@@ -1878,7 +1878,16 @@ export const iconNames: readonly IconName[] = [
   'ExtractData',
   'ExtractFiles',
   'ExtractSrc',
-  'ExtractUrl',
+  'ExtractURL',
+  'FTPConnection',
+  'FTPDeleteFileOrFolder',
+  'FTPDownloadFiles',
+  'FTPFTPConnection',
+  'FTPFileExists',
+  'FTPFolderExists',
+  'FTPGetFiles',
+  'FTPMoveFileOrFolder',
+  'FTPUploadFiles',
   'FastForward',
   'FastRewind',
   'FavouriteChecked',
@@ -1889,22 +1898,22 @@ export const iconNames: readonly IconName[] = [
   'FigureRectangle169',
   'FigureRectangle54',
   'FigureSquare',
-  'FileApiWorkflow',
-  'FileApiWorkflowMain',
+  'FileAPIWorkflow',
+  'FileAPIWorkflowMain',
   'FileBpmn',
   'FileCopy',
   'FileCs',
   'FileEntryPoint',
   'FileExists',
+  'FileJSON',
   'FileJs',
-  'FileJson',
   'FileMain',
   'FileOtherDataObject',
   'FileRpaWorkflow',
   'FileRpaWorkflowMain',
   'FileTxtText',
   'FileVb',
-  'FileXml',
+  'FileXML',
   'Filter',
   'Filter1',
   'Filter2',
@@ -1927,10 +1936,10 @@ export const iconNames: readonly IconName[] = [
   'FolderShared',
   'FolderSolution',
   'FolderSpecial',
-  'FolderXml',
+  'FolderXML',
   'ForEachList',
   'ForEachRowInDataTable',
-  'ForEachUiElement',
+  'ForEachUIElement',
   'Form',
   'FormatAlignCenter',
   'FormatAlignJustify',
@@ -1951,32 +1960,23 @@ export const iconNames: readonly IconName[] = [
   'FormattingIsMatch',
   'FormattingMatches',
   'Freshservice',
-  'FtpConnection',
-  'FtpDeleteFileOrFolder',
-  'FtpDownloadFiles',
-  'FtpFileExists',
-  'FtpFolderExists',
-  'FtpFtpConnection',
-  'FtpGetFiles',
-  'FtpMoveFileOrFolder',
-  'FtpUploadFiles',
   'FullscreenMaximize',
   'Functions',
-  'GenAi',
+  'GenAI',
   'GenericActivityIconsDelete',
   'GenericActivityIconsDownload',
   'GenericActivityIconsFileDownload',
   'GenericActivityIconsFileUpload',
   'GenericActivityIconsGet',
-  'GenericActivityIconsImap',
+  'GenericActivityIconsIMAP',
   'GenericActivityIconsInsert',
   'GenericActivityIconsList',
   'GenericActivityIconsListAll',
   'GenericActivityIconsMethod',
-  'GenericActivityIconsPop3',
+  'GenericActivityIconsPOP3',
+  'GenericActivityIconsSMTP',
   'GenericActivityIconsScope',
   'GenericActivityIconsSearch',
-  'GenericActivityIconsSmtp',
   'GenericActivityIconsUpdate',
   'GenericActivityIconsUpload',
   'GetAssets',
@@ -1999,7 +1999,7 @@ export const iconNames: readonly IconName[] = [
   'GlobalHandler',
   'GlobalHandlerSet',
   'GlobalHandlerUnset',
-  'GoToUrl',
+  'GoToURL',
   'Google',
   'GoogleAds',
   'GoogleAppsScript',
@@ -2034,6 +2034,7 @@ export const iconNames: readonly IconName[] = [
   'GsuiteGmail',
   'GsuiteGsheets',
   'GsuiteGsuite',
+  'HTTPRequest',
   'HandWaving',
   'Handshake',
   'HashFileWithKey',
@@ -2047,7 +2048,6 @@ export const iconNames: readonly IconName[] = [
   'Home',
   'Hootsuite',
   'Hover',
-  'HttpRequest',
   'HubspotMarketing',
   'HyperV',
   'Icontact',
@@ -2066,8 +2066,8 @@ export const iconNames: readonly IconName[] = [
   'InternalPackageControl',
   'InternalPackageCryptography',
   'InternalPackageDefault',
-  'InternalPackageUiAutomation',
-  'InternalPackageWebApi',
+  'InternalPackageUIAutomation',
+  'InternalPackageWebAPI',
   'InternalPackageWorkflowEvents',
   'Intuit',
   'Invoke',
@@ -2119,7 +2119,7 @@ export const iconNames: readonly IconName[] = [
   'LifionByAdp',
   'LineAxis',
   'Link',
-  'Linkedin',
+  'LinkedIn',
   'List',
   'ListBulleted',
   'ListDatastores',
@@ -2137,6 +2137,7 @@ export const iconNames: readonly IconName[] = [
   'Looks5',
   'Looks6',
   'LookupDataTable',
+  'MLSkills',
   'Machine',
   'Maestro',
   'Mailchimp',
@@ -2156,7 +2157,7 @@ export const iconNames: readonly IconName[] = [
   'Microsoft365',
   'MicrosoftApps',
   'MicrosoftCalendar',
-  'MicrosoftDynamicsCrm',
+  'MicrosoftDynamicsCRM',
   'MicrosoftEdge',
   'MicrosoftExcel',
   'MicrosoftGroups',
@@ -2165,14 +2166,13 @@ export const iconNames: readonly IconName[] = [
   'MicrosoftPlanner',
   'MicrosoftPowerPoint',
   'MicrosoftSentiment',
-  'MicrosoftSharepoint',
+  'MicrosoftSharePoint',
   'MicrosoftTeams',
   'MicrosoftTranslator',
   'MicrosoftVision',
   'MicrosoftVisualStudioCode',
   'MicrosoftWord',
   'Minimize',
-  'MlSkills',
   'Mock',
   'MockData',
   'ModeratorRemove',
@@ -2204,17 +2204,17 @@ export const iconNames: readonly IconName[] = [
   'Office365AppsMicrosoftOffice365',
   'Office365AppsOutlook',
   'Office365AppsPlanner',
-  'Office365AppsSharepoint',
+  'Office365AppsSharePoint',
   'Office365ExcelCell',
   'Office365ExcelExcel',
   'Office365ExcelMicrosoftGroups',
   'Office365ExcelNameRange',
   'Office365ExcelOneDrive',
   'Office365ExcelPivotTable',
-  'Office365ExcelSharepoint',
+  'Office365ExcelSharePoint',
   'Office365ExcelSheet',
   'Office365ExcelTable',
-  'OpenAi',
+  'OpenAI',
   'OpenInDesktop',
   'OpenInNew',
   'OracleEloqua',
@@ -2233,7 +2233,7 @@ export const iconNames: readonly IconName[] = [
   'OrchestratorGetJob',
   'OrchestratorGetQueueItems',
   'OrchestratorGetTransactionItem',
-  'OrchestratorHttpRequest',
+  'OrchestratorHTTPRequest',
   'OrchestratorListStorageFiles',
   'OrchestratorPostponeTransactionItem',
   'OrchestratorRaiseAlert',
@@ -2347,13 +2347,13 @@ export const iconNames: readonly IconName[] = [
   'RunParallelProcess',
   'RunProgramInVm',
   'RunTests',
+  'SAPCloudForCustomer',
+  'SAPConcur',
   'Safety',
   'Sage',
   'Salesforce',
   'Salesloft',
   'Salesmate',
-  'SapCloudForCustomer',
-  'SapConcur',
   'Save',
   'ScatterPlotChart',
   'Schema',
@@ -2478,8 +2478,8 @@ export const iconNames: readonly IconName[] = [
   'Trello',
   'Trigger',
   'Trigger1',
+  'TriggerAPI',
   'TriggerAgent',
-  'TriggerApi',
   'TriggerApp',
   'TriggerAutopilot',
   'TriggerChat',
@@ -2507,7 +2507,7 @@ export const iconNames: readonly IconName[] = [
   'TypeGeneric',
   'TypeInteger',
   'TypeInto',
-  'TypeJson',
+  'TypeJSON',
   'TypeKey',
   'TypeList',
   'TypeObject',
@@ -2515,40 +2515,40 @@ export const iconNames: readonly IconName[] = [
   'TypeString',
   'TypeTable',
   'Typeform',
-  'UiAutomationApplicationCard',
-  'UiAutomationCheck',
-  'UiAutomationCheckState',
-  'UiAutomationClick',
-  'UiAutomationExtractData',
-  'UiAutomationForEachUiElement',
-  'UiAutomationGetAttribute',
-  'UiAutomationGetText',
-  'UiAutomationGetUrl',
-  'UiAutomationGoToUrl',
-  'UiAutomationHighlight',
-  'UiAutomationHover',
-  'UiAutomationKeyboardShortcuts',
-  'UiAutomationMouseScroll',
-  'UiAutomationNavigateBrowser',
-  'UiAutomationSelectItem',
-  'UiAutomationSemanticFillForm',
-  'UiAutomationSemanticSetValue',
-  'UiAutomationTakeScreenshot',
-  'UiAutomationTypeInto',
-  'UiDataExtractionExtractSrc',
-  'UiDataExtractionExtractText',
-  'UiDataExtractionExtractUrl',
-  'UiExperimentalDefault',
-  'UiGridlistViewGrid',
-  'UiGridlistViewList',
-  'UiPath',
-  'UiPathUiPath',
-  'UiStudioWebIconDefault',
-  'UiSubmitAsTemplateDisabled',
-  'UiSubmitAsTemplateEnabled',
-  'UiTriggersManual',
-  'UiTriggersQueue',
-  'UiTriggersScheduled',
+  'UIAutomationApplicationCard',
+  'UIAutomationCheck',
+  'UIAutomationCheckState',
+  'UIAutomationClick',
+  'UIAutomationExtractData',
+  'UIAutomationForEachUIElement',
+  'UIAutomationGetAttribute',
+  'UIAutomationGetText',
+  'UIAutomationGetURL',
+  'UIAutomationGoToURL',
+  'UIAutomationHighlight',
+  'UIAutomationHover',
+  'UIAutomationKeyboardShortcuts',
+  'UIAutomationMouseScroll',
+  'UIAutomationNavigateBrowser',
+  'UIAutomationSelectItem',
+  'UIAutomationSemanticFillForm',
+  'UIAutomationSemanticSetValue',
+  'UIAutomationTakeScreenshot',
+  'UIAutomationTypeInto',
+  'UIDataExtractionExtractSrc',
+  'UIDataExtractionExtractText',
+  'UIDataExtractionExtractURL',
+  'UIExperimentalDefault',
+  'UIGridListViewGrid',
+  'UIGridListViewList',
+  'UIPath',
+  'UIPathUIPath',
+  'UIStudioWebIconDefault',
+  'UISubmitAsTemplateDisabled',
+  'UISubmitAsTemplateEnabled',
+  'UITriggersManual',
+  'UITriggersQueue',
+  'UITriggersScheduled',
   'Unarchive',
   'Undo',
   'Unlink',
@@ -2572,7 +2572,7 @@ export const iconNames: readonly IconName[] = [
   'UserGroupRemove',
   'UserOff',
   'UserRemove',
-  'UserSso',
+  'UserSSO',
   'Verified',
   'Video',
   'VideocameraOff',
@@ -2609,14 +2609,14 @@ export const iconNames: readonly IconName[] = [
   'WaitQueueItem',
   'Wallet',
   'Watch',
-  'WebApiDeserializeJson',
-  'WebApiDeserializeJsonArray',
-  'WebApiDeserializeXml',
-  'WebApiExecuteXpath',
-  'WebApiGetXmlNodeAttributes',
-  'WebApiGetXmlNodes',
-  'WebApiHttpClient',
-  'WebApiPackage',
+  'WebAPIDeserializeJSON',
+  'WebAPIDeserializeJSONArray',
+  'WebAPIDeserializeXML',
+  'WebAPIExecuteXPath',
+  'WebAPIGetXMLNodeAttributes',
+  'WebAPIGetXMLNodes',
+  'WebAPIHTTPClient',
+  'WebAPIPackage',
   'Webhook',
   'While',
   'Widget',
@@ -2629,9 +2629,9 @@ export const iconNames: readonly IconName[] = [
   'WriteTextFileDraft',
   'X',
   'Yahoo',
-  'Youtube',
+  'YouTube',
   'Zendesk',
-  'ZohoCrm',
+  'ZohoCRM',
   'Zoom',
   'ZoomIn',
   'ZoomNotFixed',

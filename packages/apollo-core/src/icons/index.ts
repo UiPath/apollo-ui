@@ -9,8 +9,8 @@
 
 // action
 export { default as AddComment } from './svg/action/add-comment.svg';
-export { default as AiAutoSummarize } from './svg/action/ai-auto-summarize.svg';
-export { default as AiAutofix } from './svg/action/ai-autofix.svg';
+export { default as AIAutoSummarize } from './svg/action/ai-auto-summarize.svg';
+export { default as AIAutofix } from './svg/action/ai-autofix.svg';
 export { default as Analyze } from './svg/action/analyze.svg';
 export { default as Archive } from './svg/action/archive.svg';
 export { default as Assess } from './svg/action/assess.svg';
@@ -370,7 +370,7 @@ export { default as CloudOff } from './svg/object/cloud-off.svg';
 export { default as CloudUpload } from './svg/object/cloud-upload.svg';
 export { default as Cloud } from './svg/object/cloud.svg';
 export { default as Code } from './svg/object/code.svg';
-export { default as CodedFileJson } from './svg/object/coded-file-json.svg';
+export { default as CodedFileJSON } from './svg/object/coded-file-json.svg';
 export { default as Collection } from './svg/object/collection.svg';
 export { default as Configuration } from './svg/object/configuration.svg';
 export { default as Controls } from './svg/object/controls.svg';
@@ -387,21 +387,21 @@ export { default as ExpressionDynamicValue } from './svg/object/expression-dynam
 export { default as ExpressionEditor } from './svg/object/expression-editor.svg';
 export { default as ExpressionVariableCreate } from './svg/object/expression-variable-create.svg';
 export { default as ExpressionVariableVariable } from './svg/object/expression-variable-variable.svg';
-export { default as FileApiWorkflowMain } from './svg/object/file-api-workflow-main.svg';
-export { default as FileApiWorkflow } from './svg/object/file-api-workflow.svg';
+export { default as FileAPIWorkflowMain } from './svg/object/file-api-workflow-main.svg';
+export { default as FileAPIWorkflow } from './svg/object/file-api-workflow.svg';
 export { default as FileBpmn } from './svg/object/file-bpmn.svg';
 export { default as FileCopy } from './svg/object/file-copy.svg';
 export { default as FileCs } from './svg/object/file-cs.svg';
 export { default as FileEntryPoint } from './svg/object/file-entry-point.svg';
 export { default as FileJs } from './svg/object/file-js.svg';
-export { default as FileJson } from './svg/object/file-json.svg';
+export { default as FileJSON } from './svg/object/file-json.svg';
 export { default as FileMain } from './svg/object/file-main.svg';
 export { default as FileOtherDataObject } from './svg/object/file-other-data-object.svg';
 export { default as FileRpaWorkflowMain } from './svg/object/file-rpa-workflow-main.svg';
 export { default as FileRpaWorkflow } from './svg/object/file-rpa-workflow.svg';
 export { default as FileTxtText } from './svg/object/file-txt-text.svg';
 export { default as FileVb } from './svg/object/file-vb.svg';
-export { default as FileXml } from './svg/object/file-xml.svg';
+export { default as FileXML } from './svg/object/file-xml.svg';
 export { default as Flowchart } from './svg/object/flowchart.svg';
 export { default as FolderOpen } from './svg/object/folder-open.svg';
 export { default as FolderPersonalWorkspace } from './svg/object/folder-personal-workspace.svg';
@@ -409,15 +409,15 @@ export { default as FolderRoot } from './svg/object/folder-root.svg';
 export { default as FolderShared } from './svg/object/folder-shared.svg';
 export { default as FolderSolution } from './svg/object/folder-solution.svg';
 export { default as FolderSpecial } from './svg/object/folder-special.svg';
-export { default as FolderXml } from './svg/object/folder-xml.svg';
+export { default as FolderXML } from './svg/object/folder-xml.svg';
 export { default as Folder } from './svg/object/folder.svg';
 export { default as Form } from './svg/object/form.svg';
-export { default as FtpConnection } from './svg/object/ftp-connection.svg';
+export { default as FTPConnection } from './svg/object/ftp-connection.svg';
 export { default as GlobalHandlerSet } from './svg/object/global-handler-set.svg';
 export { default as GlobalHandlerUnset } from './svg/object/global-handler-unset.svg';
 export { default as GlobalHandler } from './svg/object/global-handler.svg';
 export { default as Health } from './svg/object/health.svg';
-export { default as HttpRequest } from './svg/object/http-request.svg';
+export { default as HTTPRequest } from './svg/object/http-request.svg';
 export { default as Idea } from './svg/object/idea.svg';
 export { default as Image } from './svg/object/image.svg';
 export { default as ImagesMultiple } from './svg/object/images-multiple.svg';
@@ -427,7 +427,7 @@ export { default as LicenseAllocate } from './svg/object/license-allocate.svg';
 export { default as LicenseExternal } from './svg/object/license-external.svg';
 export { default as Machine } from './svg/object/machine.svg';
 export { default as Method } from './svg/object/method.svg';
-export { default as MlSkills } from './svg/object/ml-skills.svg';
+export { default as MLSkills } from './svg/object/ml-skills.svg';
 export { default as Mock } from './svg/object/mock.svg';
 export { default as MouseClick } from './svg/object/mouse-click.svg';
 export { default as Organization } from './svg/object/organization.svg';
@@ -466,14 +466,14 @@ export { default as Widget } from './svg/object/widget.svg';
 export { default as WorkflowCoded } from './svg/object/workflow-coded.svg';
 
 // object/activity
-export { default as ActivityImap } from './svg/object/activity/activity-imap.svg';
-export { default as ActivityPop3 } from './svg/object/activity/activity-pop3.svg';
-export { default as ActivitySmtp } from './svg/object/activity/activity-smtp.svg';
+export { default as ActivityIMAP } from './svg/object/activity/activity-imap.svg';
+export { default as ActivityPOP3 } from './svg/object/activity/activity-pop3.svg';
+export { default as ActivitySMTP } from './svg/object/activity/activity-smtp.svg';
 
 // object/component
 export { default as ComponentAgent } from './svg/object/component/component-agent.svg';
 export { default as ComponentAgenticProcess } from './svg/object/component/component-agentic-process.svg';
-export { default as ComponentApiWorkflow } from './svg/object/component/component-api-workflow.svg';
+export { default as ComponentAPIWorkflow } from './svg/object/component/component-api-workflow.svg';
 export { default as ComponentApp } from './svg/object/component/component-app.svg';
 export { default as ComponentBusinessRule } from './svg/object/component/component-business-rule.svg';
 export { default as ComponentCaseManagement } from './svg/object/component/component-case-management.svg';
@@ -498,7 +498,7 @@ export { default as TypeDouble } from './svg/object/data-type/type-double.svg';
 export { default as TypeDuration } from './svg/object/data-type/type-duration.svg';
 export { default as TypeGeneric } from './svg/object/data-type/type-generic.svg';
 export { default as TypeInteger } from './svg/object/data-type/type-integer.svg';
-export { default as TypeJson } from './svg/object/data-type/type-json.svg';
+export { default as TypeJSON } from './svg/object/data-type/type-json.svg';
 export { default as TypeKey } from './svg/object/data-type/type-key.svg';
 export { default as TypeList } from './svg/object/data-type/type-list.svg';
 export { default as TypeObject } from './svg/object/data-type/type-object.svg';
@@ -514,7 +514,7 @@ export { default as TableRow } from './svg/object/data-type-table/table-row.svg'
 export { default as Academy } from './svg/product-logo/academy.svg';
 export { default as ActionCenter } from './svg/product-logo/action-center.svg';
 export { default as Admin } from './svg/product-logo/admin.svg';
-export { default as AiCenter } from './svg/product-logo/ai-center.svg';
+export { default as AICenter } from './svg/product-logo/ai-center.svg';
 export { default as Apps } from './svg/product-logo/apps.svg';
 export { default as AutomationHub } from './svg/product-logo/automation-hub.svg';
 export { default as AutomationOps } from './svg/product-logo/automation-ops.svg';
@@ -561,7 +561,7 @@ export { default as UserGroupRemove } from './svg/social/user-group-remove.svg';
 export { default as UserGroup } from './svg/social/user-group.svg';
 export { default as UserOff } from './svg/social/user-off.svg';
 export { default as UserRemove } from './svg/social/user-remove.svg';
-export { default as UserSso } from './svg/social/user-sso.svg';
+export { default as UserSSO } from './svg/social/user-sso.svg';
 export { default as User } from './svg/social/user.svg';
 export { default as Wallet } from './svg/social/wallet.svg';
 
@@ -731,14 +731,14 @@ export { default as EntitiesQueryRecords } from './svg/studio-activities-icon-se
 export { default as EntitiesUpdateRecord } from './svg/studio-activities-icon-sets/activities-entities/entities-update-record.svg';
 
 // studio-activities-icon-sets/activities-ftp
-export { default as FtpDeleteFileOrFolder } from './svg/studio-activities-icon-sets/activities-ftp/ftp-delete-file-or-folder.svg';
-export { default as FtpDownloadFiles } from './svg/studio-activities-icon-sets/activities-ftp/ftp-download-files.svg';
-export { default as FtpFileExists } from './svg/studio-activities-icon-sets/activities-ftp/ftp-file-exists.svg';
-export { default as FtpFolderExists } from './svg/studio-activities-icon-sets/activities-ftp/ftp-folder-exists.svg';
-export { default as FtpFtpConnection } from './svg/studio-activities-icon-sets/activities-ftp/ftp-ftp-connection.svg';
-export { default as FtpGetFiles } from './svg/studio-activities-icon-sets/activities-ftp/ftp-get-files.svg';
-export { default as FtpMoveFileOrFolder } from './svg/studio-activities-icon-sets/activities-ftp/ftp-move-file-or-folder.svg';
-export { default as FtpUploadFiles } from './svg/studio-activities-icon-sets/activities-ftp/ftp-upload-files.svg';
+export { default as FTPDeleteFileOrFolder } from './svg/studio-activities-icon-sets/activities-ftp/ftp-delete-file-or-folder.svg';
+export { default as FTPDownloadFiles } from './svg/studio-activities-icon-sets/activities-ftp/ftp-download-files.svg';
+export { default as FTPFileExists } from './svg/studio-activities-icon-sets/activities-ftp/ftp-file-exists.svg';
+export { default as FTPFolderExists } from './svg/studio-activities-icon-sets/activities-ftp/ftp-folder-exists.svg';
+export { default as FTPFTPConnection } from './svg/studio-activities-icon-sets/activities-ftp/ftp-ftp-connection.svg';
+export { default as FTPGetFiles } from './svg/studio-activities-icon-sets/activities-ftp/ftp-get-files.svg';
+export { default as FTPMoveFileOrFolder } from './svg/studio-activities-icon-sets/activities-ftp/ftp-move-file-or-folder.svg';
+export { default as FTPUploadFiles } from './svg/studio-activities-icon-sets/activities-ftp/ftp-upload-files.svg';
 
 // studio-activities-icon-sets/activities-generic-activity-icons
 export { default as GenericActivityIconsDelete } from './svg/studio-activities-icon-sets/activities-generic-activity-icons/generic-activity-icons-delete.svg';
@@ -746,15 +746,15 @@ export { default as GenericActivityIconsDownload } from './svg/studio-activities
 export { default as GenericActivityIconsFileDownload } from './svg/studio-activities-icon-sets/activities-generic-activity-icons/generic-activity-icons-file-download.svg';
 export { default as GenericActivityIconsFileUpload } from './svg/studio-activities-icon-sets/activities-generic-activity-icons/generic-activity-icons-file-upload.svg';
 export { default as GenericActivityIconsGet } from './svg/studio-activities-icon-sets/activities-generic-activity-icons/generic-activity-icons-get.svg';
-export { default as GenericActivityIconsImap } from './svg/studio-activities-icon-sets/activities-generic-activity-icons/generic-activity-icons-imap.svg';
+export { default as GenericActivityIconsIMAP } from './svg/studio-activities-icon-sets/activities-generic-activity-icons/generic-activity-icons-imap.svg';
 export { default as GenericActivityIconsInsert } from './svg/studio-activities-icon-sets/activities-generic-activity-icons/generic-activity-icons-insert.svg';
 export { default as GenericActivityIconsListAll } from './svg/studio-activities-icon-sets/activities-generic-activity-icons/generic-activity-icons-list-all.svg';
 export { default as GenericActivityIconsList } from './svg/studio-activities-icon-sets/activities-generic-activity-icons/generic-activity-icons-list.svg';
 export { default as GenericActivityIconsMethod } from './svg/studio-activities-icon-sets/activities-generic-activity-icons/generic-activity-icons-method.svg';
-export { default as GenericActivityIconsPop3 } from './svg/studio-activities-icon-sets/activities-generic-activity-icons/generic-activity-icons-pop3.svg';
+export { default as GenericActivityIconsPOP3 } from './svg/studio-activities-icon-sets/activities-generic-activity-icons/generic-activity-icons-pop3.svg';
 export { default as GenericActivityIconsScope } from './svg/studio-activities-icon-sets/activities-generic-activity-icons/generic-activity-icons-scope.svg';
 export { default as GenericActivityIconsSearch } from './svg/studio-activities-icon-sets/activities-generic-activity-icons/generic-activity-icons-search.svg';
-export { default as GenericActivityIconsSmtp } from './svg/studio-activities-icon-sets/activities-generic-activity-icons/generic-activity-icons-smtp.svg';
+export { default as GenericActivityIconsSMTP } from './svg/studio-activities-icon-sets/activities-generic-activity-icons/generic-activity-icons-smtp.svg';
 export { default as GenericActivityIconsUpdate } from './svg/studio-activities-icon-sets/activities-generic-activity-icons/generic-activity-icons-update.svg';
 export { default as GenericActivityIconsUpload } from './svg/studio-activities-icon-sets/activities-generic-activity-icons/generic-activity-icons-upload.svg';
 
@@ -780,7 +780,7 @@ export { default as Office365AppsMicrosoft365 } from './svg/studio-activities-ic
 export { default as Office365AppsMicrosoftOffice365 } from './svg/studio-activities-icon-sets/activities-microsoft-office365-apps/office365-apps-microsoft-office-365.svg';
 export { default as Office365AppsOutlook } from './svg/studio-activities-icon-sets/activities-microsoft-office365-apps/office365-apps-outlook.svg';
 export { default as Office365AppsPlanner } from './svg/studio-activities-icon-sets/activities-microsoft-office365-apps/office365-apps-planner.svg';
-export { default as Office365AppsSharepoint } from './svg/studio-activities-icon-sets/activities-microsoft-office365-apps/office365-apps-sharepoint.svg';
+export { default as Office365AppsSharePoint } from './svg/studio-activities-icon-sets/activities-microsoft-office365-apps/office365-apps-sharepoint.svg';
 
 // studio-activities-icon-sets/activities-office365-excel-activities
 export { default as Office365ExcelCell } from './svg/studio-activities-icon-sets/activities-office365-excel-activities/office365-excel-cell.svg';
@@ -789,7 +789,7 @@ export { default as Office365ExcelMicrosoftGroups } from './svg/studio-activitie
 export { default as Office365ExcelNameRange } from './svg/studio-activities-icon-sets/activities-office365-excel-activities/office365-excel-name-range.svg';
 export { default as Office365ExcelOneDrive } from './svg/studio-activities-icon-sets/activities-office365-excel-activities/office365-excel-one-drive.svg';
 export { default as Office365ExcelPivotTable } from './svg/studio-activities-icon-sets/activities-office365-excel-activities/office365-excel-pivot-table.svg';
-export { default as Office365ExcelSharepoint } from './svg/studio-activities-icon-sets/activities-office365-excel-activities/office365-excel-sharepoint.svg';
+export { default as Office365ExcelSharePoint } from './svg/studio-activities-icon-sets/activities-office365-excel-activities/office365-excel-sharepoint.svg';
 export { default as Office365ExcelSheet } from './svg/studio-activities-icon-sets/activities-office365-excel-activities/office365-excel-sheet.svg';
 export { default as Office365ExcelTable } from './svg/studio-activities-icon-sets/activities-office365-excel-activities/office365-excel-table.svg';
 
@@ -809,7 +809,7 @@ export { default as OrchestratorGetCredentials } from './svg/studio-activities-i
 export { default as OrchestratorGetJob } from './svg/studio-activities-icon-sets/activities-orchestrator/orchestrator-get-job.svg';
 export { default as OrchestratorGetQueueItems } from './svg/studio-activities-icon-sets/activities-orchestrator/orchestrator-get-queue-items.svg';
 export { default as OrchestratorGetTransactionItem } from './svg/studio-activities-icon-sets/activities-orchestrator/orchestrator-get-transaction-item.svg';
-export { default as OrchestratorHttpRequest } from './svg/studio-activities-icon-sets/activities-orchestrator/orchestrator-http-request.svg';
+export { default as OrchestratorHTTPRequest } from './svg/studio-activities-icon-sets/activities-orchestrator/orchestrator-http-request.svg';
 export { default as OrchestratorListStorageFiles } from './svg/studio-activities-icon-sets/activities-orchestrator/orchestrator-list-storage-files.svg';
 export { default as OrchestratorPostponeTransactionItem } from './svg/studio-activities-icon-sets/activities-orchestrator/orchestrator-postpone-transaction-item.svg';
 export { default as OrchestratorRaiseAlert } from './svg/studio-activities-icon-sets/activities-orchestrator/orchestrator-raise-alert.svg';
@@ -858,29 +858,29 @@ export { default as SlackSendMessage } from './svg/studio-activities-icon-sets/a
 export { default as SlackUpdateStatus } from './svg/studio-activities-icon-sets/activities-slack-activities/slack-update-status.svg';
 
 // studio-activities-icon-sets/activities-ui-automation
-export { default as UiAutomationApplicationCard } from './svg/studio-activities-icon-sets/activities-ui-automation/ui-automation-application-card.svg';
-export { default as UiAutomationCheckState } from './svg/studio-activities-icon-sets/activities-ui-automation/ui-automation-check-state.svg';
-export { default as UiAutomationCheck } from './svg/studio-activities-icon-sets/activities-ui-automation/ui-automation-check.svg';
-export { default as UiAutomationClick } from './svg/studio-activities-icon-sets/activities-ui-automation/ui-automation-click.svg';
-export { default as UiAutomationExtractData } from './svg/studio-activities-icon-sets/activities-ui-automation/ui-automation-extract-data.svg';
-export { default as UiAutomationForEachUiElement } from './svg/studio-activities-icon-sets/activities-ui-automation/ui-automation-for-each-ui-element.svg';
-export { default as UiAutomationGetAttribute } from './svg/studio-activities-icon-sets/activities-ui-automation/ui-automation-get-attribute.svg';
-export { default as UiAutomationGetText } from './svg/studio-activities-icon-sets/activities-ui-automation/ui-automation-get-text.svg';
-export { default as UiAutomationGetUrl } from './svg/studio-activities-icon-sets/activities-ui-automation/ui-automation-get-url.svg';
-export { default as UiAutomationGoToUrl } from './svg/studio-activities-icon-sets/activities-ui-automation/ui-automation-go-to-url.svg';
-export { default as UiAutomationHighlight } from './svg/studio-activities-icon-sets/activities-ui-automation/ui-automation-highlight.svg';
-export { default as UiAutomationHover } from './svg/studio-activities-icon-sets/activities-ui-automation/ui-automation-hover.svg';
-export { default as UiAutomationKeyboardShortcuts } from './svg/studio-activities-icon-sets/activities-ui-automation/ui-automation-keyboard-shortcuts.svg';
-export { default as UiAutomationMouseScroll } from './svg/studio-activities-icon-sets/activities-ui-automation/ui-automation-mouse-scroll.svg';
-export { default as UiAutomationNavigateBrowser } from './svg/studio-activities-icon-sets/activities-ui-automation/ui-automation-navigate-browser.svg';
-export { default as UiAutomationSelectItem } from './svg/studio-activities-icon-sets/activities-ui-automation/ui-automation-select-item.svg';
-export { default as UiAutomationSemanticFillForm } from './svg/studio-activities-icon-sets/activities-ui-automation/ui-automation-semantic-fill-form.svg';
-export { default as UiAutomationSemanticSetValue } from './svg/studio-activities-icon-sets/activities-ui-automation/ui-automation-semantic-set-value.svg';
-export { default as UiAutomationTakeScreenshot } from './svg/studio-activities-icon-sets/activities-ui-automation/ui-automation-take-screenshot.svg';
-export { default as UiAutomationTypeInto } from './svg/studio-activities-icon-sets/activities-ui-automation/ui-automation-type-into.svg';
+export { default as UIAutomationApplicationCard } from './svg/studio-activities-icon-sets/activities-ui-automation/ui-automation-application-card.svg';
+export { default as UIAutomationCheckState } from './svg/studio-activities-icon-sets/activities-ui-automation/ui-automation-check-state.svg';
+export { default as UIAutomationCheck } from './svg/studio-activities-icon-sets/activities-ui-automation/ui-automation-check.svg';
+export { default as UIAutomationClick } from './svg/studio-activities-icon-sets/activities-ui-automation/ui-automation-click.svg';
+export { default as UIAutomationExtractData } from './svg/studio-activities-icon-sets/activities-ui-automation/ui-automation-extract-data.svg';
+export { default as UIAutomationForEachUIElement } from './svg/studio-activities-icon-sets/activities-ui-automation/ui-automation-for-each-ui-element.svg';
+export { default as UIAutomationGetAttribute } from './svg/studio-activities-icon-sets/activities-ui-automation/ui-automation-get-attribute.svg';
+export { default as UIAutomationGetText } from './svg/studio-activities-icon-sets/activities-ui-automation/ui-automation-get-text.svg';
+export { default as UIAutomationGetURL } from './svg/studio-activities-icon-sets/activities-ui-automation/ui-automation-get-url.svg';
+export { default as UIAutomationGoToURL } from './svg/studio-activities-icon-sets/activities-ui-automation/ui-automation-go-to-url.svg';
+export { default as UIAutomationHighlight } from './svg/studio-activities-icon-sets/activities-ui-automation/ui-automation-highlight.svg';
+export { default as UIAutomationHover } from './svg/studio-activities-icon-sets/activities-ui-automation/ui-automation-hover.svg';
+export { default as UIAutomationKeyboardShortcuts } from './svg/studio-activities-icon-sets/activities-ui-automation/ui-automation-keyboard-shortcuts.svg';
+export { default as UIAutomationMouseScroll } from './svg/studio-activities-icon-sets/activities-ui-automation/ui-automation-mouse-scroll.svg';
+export { default as UIAutomationNavigateBrowser } from './svg/studio-activities-icon-sets/activities-ui-automation/ui-automation-navigate-browser.svg';
+export { default as UIAutomationSelectItem } from './svg/studio-activities-icon-sets/activities-ui-automation/ui-automation-select-item.svg';
+export { default as UIAutomationSemanticFillForm } from './svg/studio-activities-icon-sets/activities-ui-automation/ui-automation-semantic-fill-form.svg';
+export { default as UIAutomationSemanticSetValue } from './svg/studio-activities-icon-sets/activities-ui-automation/ui-automation-semantic-set-value.svg';
+export { default as UIAutomationTakeScreenshot } from './svg/studio-activities-icon-sets/activities-ui-automation/ui-automation-take-screenshot.svg';
+export { default as UIAutomationTypeInto } from './svg/studio-activities-icon-sets/activities-ui-automation/ui-automation-type-into.svg';
 
 // studio-activities-icon-sets/activities-ui-path
-export { default as UiPathUiPath } from './svg/studio-activities-icon-sets/activities-ui-path/ui-path-ui-path.svg';
+export { default as UIPathUIPath } from './svg/studio-activities-icon-sets/activities-ui-path/ui-path-ui-path.svg';
 
 // studio-activities-icon-sets/activities-vmware-activities
 export { default as VmwareConfigureRobot } from './svg/studio-activities-icon-sets/activities-vmware-activities/vmware-configure-robot.svg';
@@ -902,14 +902,14 @@ export { default as VmwareUpgradeTools } from './svg/studio-activities-icon-sets
 export { default as VmwareVmwareScope } from './svg/studio-activities-icon-sets/activities-vmware-activities/vmware-vmware-scope.svg';
 
 // studio-activities-icon-sets/activities-web-api
-export { default as WebApiDeserializeJsonArray } from './svg/studio-activities-icon-sets/activities-web-api/web-api-deserialize-json-array.svg';
-export { default as WebApiDeserializeJson } from './svg/studio-activities-icon-sets/activities-web-api/web-api-deserialize-json.svg';
-export { default as WebApiDeserializeXml } from './svg/studio-activities-icon-sets/activities-web-api/web-api-deserialize-xml.svg';
-export { default as WebApiExecuteXpath } from './svg/studio-activities-icon-sets/activities-web-api/web-api-execute-xpath.svg';
-export { default as WebApiGetXmlNodeAttributes } from './svg/studio-activities-icon-sets/activities-web-api/web-api-get-xml-node-attributes.svg';
-export { default as WebApiGetXmlNodes } from './svg/studio-activities-icon-sets/activities-web-api/web-api-get-xml-nodes.svg';
-export { default as WebApiHttpClient } from './svg/studio-activities-icon-sets/activities-web-api/web-api-http-client.svg';
-export { default as WebApiPackage } from './svg/studio-activities-icon-sets/activities-web-api/web-api-package.svg';
+export { default as WebAPIDeserializeJSONArray } from './svg/studio-activities-icon-sets/activities-web-api/web-api-deserialize-json-array.svg';
+export { default as WebAPIDeserializeJSON } from './svg/studio-activities-icon-sets/activities-web-api/web-api-deserialize-json.svg';
+export { default as WebAPIDeserializeXML } from './svg/studio-activities-icon-sets/activities-web-api/web-api-deserialize-xml.svg';
+export { default as WebAPIExecuteXPath } from './svg/studio-activities-icon-sets/activities-web-api/web-api-execute-xpath.svg';
+export { default as WebAPIGetXMLNodeAttributes } from './svg/studio-activities-icon-sets/activities-web-api/web-api-get-xml-node-attributes.svg';
+export { default as WebAPIGetXMLNodes } from './svg/studio-activities-icon-sets/activities-web-api/web-api-get-xml-nodes.svg';
+export { default as WebAPIHTTPClient } from './svg/studio-activities-icon-sets/activities-web-api/web-api-http-client.svg';
+export { default as WebAPIPackage } from './svg/studio-activities-icon-sets/activities-web-api/web-api-package.svg';
 
 // studio-activities-icon-sets/activity-activity-input-direction
 export { default as ActivityInputDirectionInput } from './svg/studio-activities-icon-sets/activity-activity-input-direction/activity-input-direction-input.svg';
@@ -979,7 +979,7 @@ export { default as DataTypesDouble } from './svg/studio-activities-icon-sets/st
 export { default as DataTypesFile } from './svg/studio-activities-icon-sets/studio-web-icons-data-types/data-types-file.svg';
 export { default as DataTypesGenericDataType } from './svg/studio-activities-icon-sets/studio-web-icons-data-types/data-types-generic-data-type.svg';
 export { default as DataTypesInteger } from './svg/studio-activities-icon-sets/studio-web-icons-data-types/data-types-integer.svg';
-export { default as DataTypesJson } from './svg/studio-activities-icon-sets/studio-web-icons-data-types/data-types-json.svg';
+export { default as DataTypesJSON } from './svg/studio-activities-icon-sets/studio-web-icons-data-types/data-types-json.svg';
 export { default as DataTypesKey } from './svg/studio-activities-icon-sets/studio-web-icons-data-types/data-types-key.svg';
 export { default as DataTypesList } from './svg/studio-activities-icon-sets/studio-web-icons-data-types/data-types-list.svg';
 export { default as DataTypesMethod } from './svg/studio-activities-icon-sets/studio-web-icons-data-types/data-types-method.svg';
@@ -989,28 +989,28 @@ export { default as DataTypesTableColumn } from './svg/studio-activities-icon-se
 export { default as DataTypesTableRow } from './svg/studio-activities-icon-sets/studio-web-icons-data-types/data-types-table-row.svg';
 
 // studio-activities-icon-sets/ui-data-extraction
-export { default as UiDataExtractionExtractSrc } from './svg/studio-activities-icon-sets/ui-data-extraction/ui-data-extraction-extract-src.svg';
-export { default as UiDataExtractionExtractText } from './svg/studio-activities-icon-sets/ui-data-extraction/ui-data-extraction-extract-text.svg';
-export { default as UiDataExtractionExtractUrl } from './svg/studio-activities-icon-sets/ui-data-extraction/ui-data-extraction-extract-url.svg';
+export { default as UIDataExtractionExtractSrc } from './svg/studio-activities-icon-sets/ui-data-extraction/ui-data-extraction-extract-src.svg';
+export { default as UIDataExtractionExtractText } from './svg/studio-activities-icon-sets/ui-data-extraction/ui-data-extraction-extract-text.svg';
+export { default as UIDataExtractionExtractURL } from './svg/studio-activities-icon-sets/ui-data-extraction/ui-data-extraction-extract-url.svg';
 
 // studio-activities-icon-sets/ui-experimental
-export { default as UiExperimentalDefault } from './svg/studio-activities-icon-sets/ui-experimental/ui-experimental-default.svg';
+export { default as UIExperimentalDefault } from './svg/studio-activities-icon-sets/ui-experimental/ui-experimental-default.svg';
 
 // studio-activities-icon-sets/ui-gridlist-view
-export { default as UiGridlistViewGrid } from './svg/studio-activities-icon-sets/ui-gridlist-view/ui-gridlist-view-grid.svg';
-export { default as UiGridlistViewList } from './svg/studio-activities-icon-sets/ui-gridlist-view/ui-gridlist-view-list.svg';
+export { default as UIGridListViewGrid } from './svg/studio-activities-icon-sets/ui-gridlist-view/ui-gridlist-view-grid.svg';
+export { default as UIGridListViewList } from './svg/studio-activities-icon-sets/ui-gridlist-view/ui-gridlist-view-list.svg';
 
 // studio-activities-icon-sets/ui-studio-web-icon
-export { default as UiStudioWebIconDefault } from './svg/studio-activities-icon-sets/ui-studio-web-icon/ui-studio-web-icon-default.svg';
+export { default as UIStudioWebIconDefault } from './svg/studio-activities-icon-sets/ui-studio-web-icon/ui-studio-web-icon-default.svg';
 
 // studio-activities-icon-sets/ui-submit-as-template
-export { default as UiSubmitAsTemplateDisabled } from './svg/studio-activities-icon-sets/ui-submit-as-template/ui-submit-as-template-disabled.svg';
-export { default as UiSubmitAsTemplateEnabled } from './svg/studio-activities-icon-sets/ui-submit-as-template/ui-submit-as-template-enabled.svg';
+export { default as UISubmitAsTemplateDisabled } from './svg/studio-activities-icon-sets/ui-submit-as-template/ui-submit-as-template-disabled.svg';
+export { default as UISubmitAsTemplateEnabled } from './svg/studio-activities-icon-sets/ui-submit-as-template/ui-submit-as-template-enabled.svg';
 
 // studio-activities-icon-sets/ui-triggers
-export { default as UiTriggersManual } from './svg/studio-activities-icon-sets/ui-triggers/ui-triggers-manual.svg';
-export { default as UiTriggersQueue } from './svg/studio-activities-icon-sets/ui-triggers/ui-triggers-queue.svg';
-export { default as UiTriggersScheduled } from './svg/studio-activities-icon-sets/ui-triggers/ui-triggers-scheduled.svg';
+export { default as UITriggersManual } from './svg/studio-activities-icon-sets/ui-triggers/ui-triggers-manual.svg';
+export { default as UITriggersQueue } from './svg/studio-activities-icon-sets/ui-triggers/ui-triggers-queue.svg';
+export { default as UITriggersScheduled } from './svg/studio-activities-icon-sets/ui-triggers/ui-triggers-scheduled.svg';
 
 // studio-icons
 export { default as AddDataColumn } from './svg/studio-icons/add-data-column.svg';
@@ -1070,14 +1070,14 @@ export { default as ExistsInCollection } from './svg/studio-icons/exists-in-coll
 export { default as ExtractData } from './svg/studio-icons/extract-data.svg';
 export { default as ExtractFiles } from './svg/studio-icons/extract-files.svg';
 export { default as ExtractSrc } from './svg/studio-icons/extract-src.svg';
-export { default as ExtractUrl } from './svg/studio-icons/extract-url.svg';
+export { default as ExtractURL } from './svg/studio-icons/extract-url.svg';
 export { default as FetchBatchFromStream } from './svg/studio-icons/fetch-batch-from-stream.svg';
 export { default as FileExists } from './svg/studio-icons/file-exists.svg';
 export { default as FilterCollection } from './svg/studio-icons/filter-collection.svg';
 export { default as FilterDataTable } from './svg/studio-icons/filter-data-table.svg';
 export { default as ForEachList } from './svg/studio-icons/for-each-list.svg';
 export { default as ForEachRowInDataTable } from './svg/studio-icons/for-each-row-in-data-table.svg';
-export { default as ForEachUiElement } from './svg/studio-icons/for-each-ui-element.svg';
+export { default as ForEachUIElement } from './svg/studio-icons/for-each-ui-element.svg';
 export { default as GetAssets } from './svg/studio-icons/get-assets.svg';
 export { default as GetAttribute } from './svg/studio-icons/get-attribute.svg';
 export { default as GetComment } from './svg/studio-icons/get-comment.svg';
@@ -1092,7 +1092,7 @@ export { default as GetRowItem } from './svg/studio-icons/get-row-item.svg';
 export { default as GetText } from './svg/studio-icons/get-text.svg';
 export { default as GetTransactionItem } from './svg/studio-icons/get-transaction-item.svg';
 export { default as GetVm } from './svg/studio-icons/get-vm.svg';
-export { default as GoToUrl } from './svg/studio-icons/go-to-url.svg';
+export { default as GoToURL } from './svg/studio-icons/go-to-url.svg';
 export { default as HashFileWithKey } from './svg/studio-icons/hash-file-with-key.svg';
 export { default as HashText } from './svg/studio-icons/hash-text.svg';
 export { default as Highlight } from './svg/studio-icons/highlight.svg';
@@ -1171,7 +1171,7 @@ export { default as SuspendVm } from './svg/studio-icons/suspend-vm.svg';
 export { default as TakeScreenshot } from './svg/studio-icons/take-screenshot.svg';
 export { default as TaskCatalog } from './svg/studio-icons/task-catalog.svg';
 export { default as TriggerAgent } from './svg/studio-icons/trigger-agent.svg';
-export { default as TriggerApi } from './svg/studio-icons/trigger-api.svg';
+export { default as TriggerAPI } from './svg/studio-icons/trigger-api.svg';
 export { default as TriggerApp } from './svg/studio-icons/trigger-app.svg';
 export { default as TriggerAutopilot } from './svg/studio-icons/trigger-autopilot.svg';
 export { default as TriggerChat } from './svg/studio-icons/trigger-chat.svg';
@@ -1213,7 +1213,7 @@ export { default as Act365 } from './svg/third-party/act-365.svg';
 export { default as ActOn } from './svg/third-party/act-on.svg';
 export { default as ActiveCampaign } from './svg/third-party/active-campaign.svg';
 export { default as ActiveDirectory } from './svg/third-party/active-directory.svg';
-export { default as AdobePdf } from './svg/third-party/adobe-pdf.svg';
+export { default as AdobePDF } from './svg/third-party/adobe-pdf.svg';
 export { default as AdobeSign } from './svg/third-party/adobe-sign.svg';
 export { default as AmazonSagemaker } from './svg/third-party/amazon-sagemaker.svg';
 export { default as AmazonWebServicesWorkspaces } from './svg/third-party/amazon-web-services-workspaces.svg';
@@ -1252,7 +1252,7 @@ export { default as ExchangeServer } from './svg/third-party/exchange-server.svg
 export { default as Expensify } from './svg/third-party/expensify.svg';
 export { default as Experian } from './svg/third-party/experian.svg';
 export { default as Freshservice } from './svg/third-party/freshservice.svg';
-export { default as GenAi } from './svg/third-party/gen-ai.svg';
+export { default as GenAI } from './svg/third-party/gen-ai.svg';
 export { default as Git1 } from './svg/third-party/git-1.svg';
 export { default as GitHub } from './svg/third-party/git-hub.svg';
 export { default as Git } from './svg/third-party/git.svg';
@@ -1278,14 +1278,14 @@ export { default as Intercom } from './svg/third-party/intercom.svg';
 export { default as Intuit } from './svg/third-party/intuit.svg';
 export { default as Keap } from './svg/third-party/keap.svg';
 export { default as LifionByAdp } from './svg/third-party/lifion-by-adp.svg';
-export { default as Linkedin } from './svg/third-party/linkedin.svg';
+export { default as LinkedIn } from './svg/third-party/linkedin.svg';
 export { default as Mailchimp } from './svg/third-party/mailchimp.svg';
 export { default as Marketo } from './svg/third-party/marketo.svg';
 export { default as MicroFocus } from './svg/third-party/micro-focus.svg';
 export { default as Microsoft365 } from './svg/third-party/microsoft-365.svg';
 export { default as MicrosoftApps } from './svg/third-party/microsoft-apps.svg';
 export { default as MicrosoftCalendar } from './svg/third-party/microsoft-calendar.svg';
-export { default as MicrosoftDynamicsCrm } from './svg/third-party/microsoft-dynamics-crm.svg';
+export { default as MicrosoftDynamicsCRM } from './svg/third-party/microsoft-dynamics-crm.svg';
 export { default as MicrosoftEdge } from './svg/third-party/microsoft-edge.svg';
 export { default as MicrosoftExcel } from './svg/third-party/microsoft-excel.svg';
 export { default as MicrosoftGroups } from './svg/third-party/microsoft-groups.svg';
@@ -1294,7 +1294,7 @@ export { default as MicrosoftOutlook } from './svg/third-party/microsoft-outlook
 export { default as MicrosoftPlanner } from './svg/third-party/microsoft-planner.svg';
 export { default as MicrosoftPowerPoint } from './svg/third-party/microsoft-power-point.svg';
 export { default as MicrosoftSentiment } from './svg/third-party/microsoft-sentiment.svg';
-export { default as MicrosoftSharepoint } from './svg/third-party/microsoft-sharepoint.svg';
+export { default as MicrosoftSharePoint } from './svg/third-party/microsoft-sharepoint.svg';
 export { default as MicrosoftTeams } from './svg/third-party/microsoft-teams.svg';
 export { default as MicrosoftTranslator } from './svg/third-party/microsoft-translator.svg';
 export { default as MicrosoftVision } from './svg/third-party/microsoft-vision.svg';
@@ -1302,7 +1302,7 @@ export { default as MicrosoftVisualStudioCode } from './svg/third-party/microsof
 export { default as MicrosoftWord } from './svg/third-party/microsoft-word.svg';
 export { default as Microsoft } from './svg/third-party/microsoft.svg';
 export { default as NetiqEdirectory } from './svg/third-party/netiq-edirectory.svg';
-export { default as OpenAi } from './svg/third-party/open-ai.svg';
+export { default as OpenAI } from './svg/third-party/open-ai.svg';
 export { default as OracleEloqua } from './svg/third-party/oracle-eloqua.svg';
 export { default as OracleNetsuite } from './svg/third-party/oracle-netsuite.svg';
 export { default as Pagerduty } from './svg/third-party/pagerduty.svg';
@@ -1312,8 +1312,8 @@ export { default as Sage } from './svg/third-party/sage.svg';
 export { default as Salesforce } from './svg/third-party/salesforce.svg';
 export { default as Salesloft } from './svg/third-party/salesloft.svg';
 export { default as Salesmate } from './svg/third-party/salesmate.svg';
-export { default as SapCloudForCustomer } from './svg/third-party/sap-cloud-for-customer.svg';
-export { default as SapConcur } from './svg/third-party/sap-concur.svg';
+export { default as SAPCloudForCustomer } from './svg/third-party/sap-cloud-for-customer.svg';
+export { default as SAPConcur } from './svg/third-party/sap-concur.svg';
 export { default as Sendgrid } from './svg/third-party/sendgrid.svg';
 export { default as ServiceNow } from './svg/third-party/service-now.svg';
 export { default as Shopify } from './svg/third-party/shopify.svg';
@@ -1330,7 +1330,7 @@ export { default as Trello } from './svg/third-party/trello.svg';
 export { default as Twilio } from './svg/third-party/twilio.svg';
 export { default as Twitter } from './svg/third-party/twitter.svg';
 export { default as Typeform } from './svg/third-party/typeform.svg';
-export { default as UiPath } from './svg/third-party/ui-path.svg';
+export { default as UIPath } from './svg/third-party/ui-path.svg';
 export { default as VmwareEsxi } from './svg/third-party/vmware-esxi.svg';
 export { default as Vmware } from './svg/third-party/vmware.svg';
 export { default as WorkdayBg } from './svg/third-party/workday-bg.svg';
@@ -1338,9 +1338,9 @@ export { default as Workday } from './svg/third-party/workday.svg';
 export { default as Workplace } from './svg/third-party/workplace.svg';
 export { default as X } from './svg/third-party/x.svg';
 export { default as Yahoo } from './svg/third-party/yahoo.svg';
-export { default as Youtube } from './svg/third-party/youtube.svg';
+export { default as YouTube } from './svg/third-party/youtube.svg';
 export { default as Zendesk } from './svg/third-party/zendesk.svg';
-export { default as ZohoCrm } from './svg/third-party/zoho-crm.svg';
+export { default as ZohoCRM } from './svg/third-party/zoho-crm.svg';
 export { default as Zoom } from './svg/third-party/zoom.svg';
 export { default as Zuora } from './svg/third-party/zuora.svg';
 
@@ -1348,8 +1348,8 @@ export { default as Zuora } from './svg/third-party/zuora.svg';
 export { default as InternalPackageControl } from './svg/third-party/internal-package/internal-package-control.svg';
 export { default as InternalPackageCryptography } from './svg/third-party/internal-package/internal-package-cryptography.svg';
 export { default as InternalPackageDefault } from './svg/third-party/internal-package/internal-package-default.svg';
-export { default as InternalPackageUiAutomation } from './svg/third-party/internal-package/internal-package-ui-automation.svg';
-export { default as InternalPackageWebApi } from './svg/third-party/internal-package/internal-package-web-api.svg';
+export { default as InternalPackageUIAutomation } from './svg/third-party/internal-package/internal-package-ui-automation.svg';
+export { default as InternalPackageWebAPI } from './svg/third-party/internal-package/internal-package-web-api.svg';
 export { default as InternalPackageWorkflowEvents } from './svg/third-party/internal-package/internal-package-workflow-events.svg';
 
 // toggle
@@ -1381,8 +1381,8 @@ export { default as VisibilityOnPreview } from './svg/toggle/visibility/visibili
 // ui-agents-icons/agent-trace
 export { default as AgentTraceAgentRun } from './svg/ui-agents-icons/agent-trace/agent-trace-agent-run.svg';
 export { default as AgentTraceAgentTool } from './svg/ui-agents-icons/agent-trace/agent-trace-agent-tool.svg';
-export { default as AgentTraceApiWorkflowRun } from './svg/ui-agents-icons/agent-trace/agent-trace-api-workflow-run.svg';
-export { default as AgentTraceApiWorkflowTool } from './svg/ui-agents-icons/agent-trace/agent-trace-api-workflow-tool.svg';
+export { default as AgentTraceAPIWorkflowRun } from './svg/ui-agents-icons/agent-trace/agent-trace-api-workflow-run.svg';
+export { default as AgentTraceAPIWorkflowTool } from './svg/ui-agents-icons/agent-trace/agent-trace-api-workflow-tool.svg';
 export { default as AgentTraceCompletion } from './svg/ui-agents-icons/agent-trace/agent-trace-completion.svg';
 export { default as AgentTraceContextGroundingTool } from './svg/ui-agents-icons/agent-trace/agent-trace-context-grounding-tool.svg';
 export { default as AgentTraceConversationAgentMessage } from './svg/ui-agents-icons/agent-trace/agent-trace-conversation-agent-message.svg';
