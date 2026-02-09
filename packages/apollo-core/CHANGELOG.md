@@ -1,3 +1,10 @@
+## [@uipath/apollo-core-v5.6.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-core@5.6.0...@uipath/apollo-core@5.6.1) (2026-02-09)
+
+### Bug Fixes
+
+* **apollo-core:** run generate icons script ([c0a289a](https://github.com/UiPath/apollo-ui/commit/c0a289ab6d241966cbcc627f399d5154ecdc89fd))
+* **apollo-core:** update generate icons script to match apollo react icons script ([dd3d7b8](https://github.com/UiPath/apollo-ui/commit/dd3d7b80f4ec542b3242ca6434539f7865d1d9ba))
+
 ## [@uipath/apollo-core-v5.6.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-core@5.5.1...@uipath/apollo-core@5.6.0) (2026-01-22)
 
 ### Features

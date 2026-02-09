@@ -1,3 +1,15 @@
+## [@uipath/apollo-react-v3.22.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.21.0...@uipath/apollo-react@3.22.0) (2026-02-09)
+
+### Features
+
+* **apollo-react:** move non-serializable props out of BaseNode data props ([016e95f](https://github.com/UiPath/apollo-ui/commit/016e95f47cd16938835353dcf556ab8dd54a8d10))
+
+### Bug Fixes
+
+* **apollo-react:** add task icons for timer & external agent [MST-6451] ([a6cbf40](https://github.com/UiPath/apollo-ui/commit/a6cbf40774f5b5bde8f124a4d4db3d6dd17633e8))
+* **apollo-react:** make auto layout synchronous ([9ae3696](https://github.com/UiPath/apollo-ui/commit/9ae3696a2387b89a9722f1a41f81cfe52f56c1a3))
+* **apollo-react:** update stage node story ([0e864ba](https://github.com/UiPath/apollo-ui/commit/0e864ba913a05b1824a741d583e7ac414fca275b))
+
 ## [@uipath/apollo-react-v3.21.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.20.0...@uipath/apollo-react@3.21.0) (2026-02-09)
 
 ### Features
