@@ -877,9 +877,9 @@ export const createAgentFlowStore = (initialProps: AgentFlowProps) =>
           return newNode;
         });
 
-        // For organize operations, recalculate positions and animate to new positions
+        // For organize operations OR when resources are added/removed, recalculate positions synchronously
         let finalNodes = updatedNodes;
-        if (isOrganizeOperation) {
+        if (isOrganizeOperation || resourcesAddedOrRemoved) {
           finalNodes = autoArrangeNodes(
             updatedNodes,
             newEdges,
@@ -978,13 +978,6 @@ export const createAgentFlowStore = (initialProps: AgentFlowProps) =>
         // Notify parent component of selection change
         if (firstNewNodeId && newProps.onSelectResource) {
           newProps.onSelectResource(firstNewNodeId);
-        }
-
-        // Auto-arrange if resources were added/removed (not for organize - already handled synchronously above)
-        if (resourcesAddedOrRemoved) {
-          setTimeout(() => {
-            get().autoArrange();
-          }, 100);
         }
 
         // Handle automatic placeholder removal when a resource is added
