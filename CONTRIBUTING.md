@@ -15,8 +15,8 @@ Thank you for your interest in contributing to the Apollo Design System! This do
 
 ### Prerequisites
 
-- Node.js >= 20.19.0
-- pnpm >= 10.0.0
+- Node.js >= 22
+- pnpm >= 10
 
 ### Getting Started
 
@@ -50,11 +50,11 @@ Thank you for your interest in contributing to the Apollo Design System! This do
 # Run all tests
 pnpm test
 
-# Run visual regression tests
-pnpm test:visual
-
 # Run linting
 pnpm lint
+
+# Run type checking
+pnpm typecheck
 ```
 
 ## Commit Message Guidelines
@@ -94,7 +94,10 @@ Must be one of:
 - `apollo-core` - Design tokens, icons, fonts
 - `apollo-react` - React components
 - `apollo-wind` - Tailwind/shadcn components
+- `apollo-vertex` - Documentation site and component registry
 - `ap-chat` - Chat component
+- `storybook` - Storybook app
+- `react-playground` - React testing app
 
 Or one of these monorepo-wide scopes:
 
@@ -268,7 +271,7 @@ For testing unreleased changes, dev packages are automatically published for eve
 pnpm publish:dev @uipath/apollo-react my-feature
 # → Publishes @uipath/apollo-react@3.19.3-my-feature
 
-# Unpublish a dev version (requires token with delete:packages scope)
+# Unpublish a dev version (within 72 hours of publication)
 pnpm unpublish:dev @uipath/apollo-react my-feature
 ```
 
@@ -322,7 +325,8 @@ apollo-ui/
 ├── web-packages/          # Web components
 │   └── ap-chat/           # Chat component
 └── apps/                  # Development apps
-    ├── storybook/         # Documentation
+    ├── apollo-vertex/     # Documentation site
+    ├── storybook/         # Storybook
     └── react-playground/  # React testing
 ```
 
@@ -332,12 +336,6 @@ apollo-ui/
 - Provide constructive feedback
 - Focus on the best solution, not winning arguments
 - Help others learn and grow
-
-## Questions?
-
-- Open an issue for bugs or feature requests
-- Start a discussion for questions or ideas
-- Check existing issues before creating new ones
 
 ## License
 
