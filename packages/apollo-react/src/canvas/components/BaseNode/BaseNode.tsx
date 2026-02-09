@@ -31,7 +31,12 @@ import {
   BaseSubHeader,
   BaseTextContainer,
 } from './BaseNode.styles';
-import type { BaseNodeComponentProps, FooterVariant, NodeStatusContext } from './BaseNode.types';
+import type {
+  BaseNodeComponentProps,
+  FooterVariant,
+  NodeAdornments,
+  NodeStatusContext,
+} from './BaseNode.types';
 import { NodeLabel } from './NodeLabel';
 
 const selectIsConnecting = (state: ReactFlowState) => !!state.connectionClickStartHandle;
@@ -169,15 +174,15 @@ const BaseNodeComponent = (props: BaseNodeComponentProps) => {
     return manifest ? resolveToolbar(manifest, statusContext) : undefined;
   }, [toolbarConfigProp, manifest, statusContext]);
 
-  // Adornments resolution: props take precedence, then default resolver
-  const adornments = useMemo(() => {
-    // Priority 1: Prop override (ReactNode adornments)
-    if (adornmentsProp) {
-      return adornmentsProp;
-    }
+  // Adornments resolution: use default resolver, then override with props if provided
+  const adornments: NodeAdornments = useMemo(() => {
+    const adornmentsFromProps = adornmentsProp ?? {};
+    const adornmentsFromResolver = resolveAdornments(statusContext);
 
-    // Priority 2: Default resolver (manifest/execution state based)
-    return resolveAdornments(statusContext);
+    return {
+      ...adornmentsFromResolver,
+      ...adornmentsFromProps,
+    };
   }, [adornmentsProp, statusContext]);
 
   // Compute height based on handleConfigurations

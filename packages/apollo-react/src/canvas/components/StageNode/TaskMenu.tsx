@@ -129,7 +129,7 @@ const TaskMenuComponent = (
             className: 'task-menu-paper',
             sx: {
               '&.task-menu-paper .MuiList-padding': {
-                paddingTop: token.Padding.PadL ,
+                paddingTop: token.Padding.PadL,
                 paddingBottom: token.Padding.PadL,
               },
             },
