@@ -93,10 +93,7 @@ Must be one of:
 
 - `apollo-core` - Design tokens, icons, fonts
 - `apollo-react` - React components
-- `apollo-angular` - Angular components
-- `apollo-utils` - Utility functions
 - `apollo-wind` - Tailwind/shadcn components
-- `ap-data-grid` - Data grid component
 - `ap-chat` - Chat component
 
 Or one of these monorepo-wide scopes:
@@ -134,7 +131,7 @@ feat(apollo-react): add new ApDatePicker component
 **Bug fix (patch version bump):**
 
 ```bash
-fix(apollo-angular): resolve import path for theme utilities
+fix(apollo-react): resolve import path for theme utilities
 ```
 
 **Breaking change (major version bump):**
@@ -223,7 +220,6 @@ Each package is versioned independently:
 
 - `@uipath/apollo-core@1.2.3`
 - `@uipath/apollo-react@2.0.1`
-- `@uipath/apollo-angular@1.5.0`
 
 Only packages with new commits since their last release will be published.
 
@@ -292,12 +288,9 @@ apollo-ui/
 ├── packages/              # Framework packages
 │   ├── apollo-core/       # Design tokens
 │   ├── apollo-react/      # React components
-│   ├── apollo-angular/    # Angular components
-│   ├── apollo-utils/      # Utilities
 │   └── apollo-wind/       # Tailwind components
 ├── web-packages/          # Web components
-│   ├── ap-data-grid/      # Data grid
-│   └── ap-chat/ # Chat component
+│   └── ap-chat/           # Chat component
 └── apps/                  # Development apps
     ├── storybook/         # Documentation
     └── react-playground/  # React testing

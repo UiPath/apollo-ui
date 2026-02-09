@@ -186,7 +186,6 @@
     "@tiptap/pm": "^3.17.1",
     "@tiptap/react": "^3.17.1",
     "@uipath/apollo-core": "workspace:*",
-    "@uipath/apollo-utils": "workspace:*",
     "@uipath/apollo-wind": "workspace:*",
     "@xyflow/react": "12.8.2",
     "@xyflow/system": "0.0.66",

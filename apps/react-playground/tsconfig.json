@@ -19,7 +19,6 @@
 	"include": ["src"],
 	"references": [
 		{ "path": "../../packages/apollo-core" },
-		{ "path": "../../packages/apollo-utils" },
 		{ "path": "../../packages/apollo-react" }
 	]
 }

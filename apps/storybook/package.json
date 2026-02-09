@@ -14,8 +14,6 @@
   "dependencies": {
     "@mui/material": "^5.18.0",
     "@uipath/ap-chat": "workspace:*",
-    "@uipath/ap-data-grid": "workspace:*",
-    "@uipath/apollo-angular": "workspace:*",
     "@uipath/apollo-core": "workspace:*",
     "@uipath/apollo-react": "workspace:*",
     "@uipath/apollo-wind": "workspace:*",

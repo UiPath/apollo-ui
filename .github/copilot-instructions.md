@@ -2,11 +2,11 @@
 
 ## Project Overview
 
-Apollo v.4 is UiPath's open-source design system for building consistent user experiences across all UiPath products. It's a multi-framework component library (React, Angular, Web Components) with shared design tokens, built as a monorepo with Turborepo and pnpm.
+Apollo v.4 is UiPath's open-source design system for building consistent user experiences across all UiPath products. It's a multi-framework component library (React, Web Components) with shared design tokens, built as a monorepo with Turborepo and pnpm.
 
 **Target Audience**: Internal UiPath developers and external consumers using the design system.
 
-**Key Features**: 1300+ icons, comprehensive design tokens, Material UI/Angular Material theming, TypeScript support, Storybook documentation.
+**Key Features**: 1300+ icons, comprehensive design tokens, Material UI theming, TypeScript support, Storybook documentation.
 
 ## Tech Stack
 
@@ -21,7 +21,6 @@ Apollo v.4 is UiPath's open-source design system for building consistent user ex
 
 **Frameworks:**
 - React 18+ with Material UI 5.x
-- Angular 18+ with Angular Material (in development)
 - Tailwind CSS with shadcn/ui
 - Web Components (Custom Elements)
 
@@ -37,22 +36,17 @@ apollo-ui/
 ├── .github/              # GitHub workflows, issue templates
 ├── packages/             # Core + framework packages (REQUIRE TESTS)
 │   ├── apollo-core/      # Design tokens, 1300+ icons, fonts
-│   ├── apollo-utils/     # Shared utilities, formatters
 │   ├── apollo-react/     # React components + Material UI theme
-│   ├── apollo-angular/   # Angular components (WIP)
 │   └── apollo-wind/      # Tailwind CSS + shadcn/ui
 ├── web-packages/         # Cross-framework web components (REQUIRE TESTS)
 │   ├── ap-chat/          # Chat web component
-│   └── ap-data-grid/     # Data grid (may be removed)
 └── apps/                 # Development/demo apps (NO TESTS NEEDED)
     ├── storybook/        # Component documentation
     ├── react-playground/ # React demo app
-    └── angular-playground/ # Angular demo app
 ```
 
 **Package Dependencies:**
 - All packages depend on `apollo-core` (design tokens)
-- Framework packages depend on `apollo-utils`
 - Web components depend on framework packages
 
 ## Coding Guidelines

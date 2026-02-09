@@ -124,47 +124,6 @@ function App() {
 
 See the [@uipath/apollo-react documentation](https://github.com/UiPath/apollo-ui/tree/main/packages/apollo-react) for details.
 
-### Angular
-
-```typescript
-// In app.module.ts or component
-import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { AutopilotChatService } from '@uipath/ap-chat/service';
-import '@uipath/ap-chat';
-
-@Component({
-  selector: 'app-root',
-  template: '<ap-chat #chat></ap-chat>',
-  schemas: [CUSTOM_ELEMENTS_SCHEMA]
-})
-export class AppComponent implements OnInit, AfterViewInit {
-  @ViewChild('chat') chatElement!: ElementRef;
-  private service = AutopilotChatService.Instantiate({
-    instanceName: 'angular-chat',
-    config: {
-      mode: 'side-by-side'
-    }
-  });
-
-  ngOnInit() {
-
-    this.service.on('Request', (data) => {
-      this.service.sendResponse({
-        content: `Echo: ${data.content}`,
-        role: 'assistant'
-      });
-    });
-  }
-
-  ngAfterViewInit() {
-    this.chatElement.nativeElement.chatServiceInstance = this.service;
-    this.chatElement.nativeElement.locale = 'en';
-    this.chatElement.nativeElement.theme = 'light';
-    this.service.open();
-  }
-}
-```
-
 ## Web Component Properties
 
 The `<ap-chat>` element exposes the following JavaScript properties:
