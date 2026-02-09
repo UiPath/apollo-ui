@@ -16,6 +16,7 @@ export { DataTransformGroupIcon } from './DataTransformGroupIcon';
 export { DataTransformIcon } from './DataTransformIcon';
 export { DataTransformMapIcon } from './DataTransformMapIcon';
 export { DecisionIcon } from './DecisionIcon';
+export { FlaskRunIcon } from './FlaskRunIcon';
 export { GoogleIcon } from './GoogleIcon';
 export { HealthScoreIcon } from './HealthScoreIcon';
 export { HumanIcon } from './HumanIcon';

@@ -6,11 +6,11 @@
  * Supports both Lucide icons (via DynamicIcon) and UIPath custom icons.
  */
 
-import * as Icons from '../icons';
 import { icons } from 'lucide-react';
 import { type JSX, memo, useMemo } from 'react';
+import * as Icons from '../icons';
 
-export type IconComponent = (props: { w?: number; h?: number }) => JSX.Element;
+export type IconComponent = (props: { w?: number; h?: number; color?: string }) => JSX.Element;
 
 /**
  * Registry of available icons (UIPath icons only)
@@ -28,6 +28,9 @@ const iconRegistry: Record<string, IconComponent> = {
   api: ({ w, h }) => <Icons.ApiProject w={w ?? 29} h={h ?? 28} />,
   decision: ({ w, h }) => <Icons.DecisionIcon w={w ?? 24} h={h ?? 24} />,
   switch: ({ w, h }) => <Icons.SwitchIcon w={w ?? 24} h={h ?? 24} />,
+  'pinned-output': ({ w, h, color }) => (
+    <Icons.FlaskRunIcon w={w ?? 24} h={h ?? 24} color={color} />
+  ),
 };
 
 /**
@@ -81,29 +84,32 @@ export function getIcon(iconId: string): IconComponent {
   // Try to get lucide icon - convert kebab-case to PascalCase
   const pascalCaseId = kebabToPascal(iconId);
   const LucideIcon = (
-    icons as Record<string, React.ComponentType<{ width?: number; height?: number }>>
+    icons as Record<
+      string,
+      React.ComponentType<{ width?: number; height?: number; color?: string }>
+    >
   )[pascalCaseId];
   if (LucideIcon) {
-    return ({ w, h }) => <LucideIcon width={w ?? 24} height={h ?? 24} />;
+    return ({ w, h, color }) => <LucideIcon width={w ?? 24} height={h ?? 24} color={color} />;
   }
 
   // Fallback to box icon
   const BoxIcon = icons.Box;
-  return ({ w, h }) => <BoxIcon width={w ?? 24} height={h ?? 24} />;
+  return ({ w, h, color }) => <BoxIcon width={w ?? 24} height={h ?? 24} color={color} />;
 }
 
 export interface NodeIconProps {
   icon?: string;
   size?: number;
+  color?: string;
 }
 
 /**
  * Memoized component for rendering icons from the registry
  * Use this instead of getIcon() to avoid creating components during render
  */
-export const NodeIcon = memo(function NodeIcon({ icon, size = 16 }: NodeIconProps) {
+export const NodeIcon = memo(function NodeIcon({ icon, size = 16, color }: NodeIconProps) {
   const Icon = useMemo(() => (icon ? getIcon(icon) : null), [icon]);
   if (!Icon) return null;
-  // eslint-disable-next-line react-hooks/static-components -- Icon registry architecture requires dynamic component lookup
-  return <Icon w={size} h={size} />;
+  return <Icon w={size} h={size} color={color} />;
 });

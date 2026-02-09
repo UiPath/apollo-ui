@@ -7,10 +7,20 @@ export const ElementStatusValues = {
   NotExecuted: 'NotExecuted',
   Paused: 'Paused',
   Terminated: 'Terminated',
+  None: 'None',
 } as const;
 export type ElementStatusValues = (typeof ElementStatusValues)[keyof typeof ElementStatusValues];
 export type ElementStatus = ElementStatusValues;
 
-export type ExecutionStatusWithCount = { status: ElementStatus; count: number };
+/**
+ * Extended execution state that includes debug info (breakpoints)
+ */
+export interface NodeExecutionStateWithDebug {
+  status: ElementStatus;
+  count?: number;
+  debug?: boolean;
+  isExecutionStartPoint?: boolean;
+  isOutputPinned?: boolean;
+}
 
-export type ExecutionState = ExecutionStatusWithCount | ElementStatus;
+export type ExecutionState = NodeExecutionStateWithDebug | ElementStatus;

@@ -2,7 +2,7 @@ import { type EdgeProps, Position } from '@uipath/apollo-react/canvas/xyflow/rea
 import { memo, useRef, useState } from 'react';
 import { PREVIEW_EDGE_ID } from '../../constants';
 import { useEdgeExecutionState, useEdgePath, useElementValidationStatus } from '../../hooks';
-import type { ExecutionStatusWithCount } from '../../types/execution';
+import type { NodeExecutionStateWithDebug } from '../../types/execution';
 import { useBaseCanvasMode } from '../BaseCanvas/BaseCanvasModeProvider';
 import { EdgeToolbar, useEdgeToolbarState } from '../Toolbar';
 import { edgeTargetStatusToEdgeColor, getStatusAnimation } from './EdgeUtils';
@@ -79,7 +79,7 @@ export const SequenceEdge = memo(function SequenceEdge({
   // Use provided status or fall back to hook values
   const status =
     mode !== 'design'
-      ? ((executionStatus as ExecutionStatusWithCount)?.status ?? executionStatus)
+      ? ((executionStatus as NodeExecutionStateWithDebug)?.status ?? executionStatus)
       : validationStatus;
 
   // Check if this edge has diff styling applied
