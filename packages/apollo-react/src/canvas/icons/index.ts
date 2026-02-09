@@ -4,6 +4,7 @@ export { AnthropicIcon } from './AnthropicIcon';
 export { ApiProject } from './ApiProject';
 export { AutonomousAgentIcon } from './AutonomousAgentIcon';
 export { BusinessProcessProject } from './BusinessProcessProject';
+export { CaseManagementProject } from './CaseManagementProject';
 export { CodedAgentIcon } from './CodedAgentIcon';
 export { ConnectorBuilderProject } from './ConnectorBuilderProject';
 export { ControlFlowIcon } from './ControlFlowIcon';

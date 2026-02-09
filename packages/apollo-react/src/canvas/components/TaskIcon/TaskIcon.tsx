@@ -2,6 +2,7 @@ import {
   AgentProject,
   ApiProject,
   BusinessProcessProject,
+  CaseManagementProject,
   ConnectorBuilderProject,
   HumanIcon,
   RpaProject,
@@ -36,7 +37,7 @@ const getIconForType = (type: TaskItemTypeValues, iconSize: number): React.React
     case TaskItemTypeValues.Timer:
       return <DurationIcon size={iconSize} />;
     case TaskItemTypeValues.CaseManagement:
-      return <BusinessProcessProject w={iconSize} h={iconSize} />;
+      return <CaseManagementProject w={iconSize} h={iconSize} />;
   }
 };
 
