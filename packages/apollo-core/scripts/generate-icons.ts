@@ -8,9 +8,9 @@
  * 2. TypeScript types for icon names
  */
 
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -40,10 +40,67 @@ interface IconExport {
 // ============================================================================
 
 function toPascalCase(str: string): string {
-  return str
-    .replace(/\+/g, 'Plus') // Replace + with Plus before processing
-    .split('-')
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+  const knownWords: Record<string, string> = {
+    api: 'API',
+    ui: 'UI',
+    url: 'URL',
+    html: 'HTML',
+    xml: 'XML',
+    json: 'JSON',
+    http: 'HTTP',
+    https: 'HTTPS',
+    sql: 'SQL',
+    id: 'ID',
+    uuid: 'UUID',
+    pdf: 'PDF',
+    csv: 'CSV',
+    ai: 'AI',
+    ml: 'ML',
+    crm: 'CRM',
+    sap: 'SAP',
+    aws: 'AWS',
+    sdk: 'SDK',
+    sso: 'SSO',
+    oauth: 'OAuth',
+    jwt: 'JWT',
+    vpn: 'VPN',
+    dns: 'DNS',
+    ssh: 'SSH',
+    ftp: 'FTP',
+    smtp: 'SMTP',
+    imap: 'IMAP',
+    pop3: 'POP3',
+    xpath: 'XPath',
+    github: 'GitHub',
+    gitlab: 'GitLab',
+    linkedin: 'LinkedIn',
+    youtube: 'YouTube',
+    onedrive: 'OneDrive',
+    sharepoint: 'SharePoint',
+    powerpoint: 'PowerPoint',
+    onenote: 'OneNote',
+    uipath: 'UiPath',
+  };
+
+  const compoundWords: Record<string, string> = {
+    gridlist: 'grid-list',
+  };
+
+  let processedStr = str.replace(/\+/g, 'Plus');
+  for (const [compound, replacement] of Object.entries(compoundWords)) {
+    const regex = new RegExp(compound, 'gi');
+    processedStr = processedStr.replace(regex, replacement);
+  }
+
+  return processedStr
+    .split(/[-\s]+/)
+    .map((word) => {
+      const lowerWord = word.toLowerCase();
+      if (knownWords[lowerWord]) {
+        return knownWords[lowerWord];
+      }
+      return word.charAt(0).toUpperCase() + word.slice(1);
+    })
     .join('');
 }
 
@@ -95,7 +152,7 @@ function generateIconExports(svgFiles: SvgFile[]): void {
     }
 
     usedNames.set(exportName, file.relativePath);
-    const importPath = './svg/' + file.relativePath.replace(/\\/g, '/');
+    const importPath = `./svg/${file.relativePath.replace(/\\/g, '/')}`;
 
     if (!exportsByDir.has(file.dir)) {
       exportsByDir.set(file.dir, []);
@@ -139,9 +196,7 @@ export { iconNames } from './types';
 `;
 
   fs.writeFileSync(OUTPUT_FILE, content, 'utf8');
-  console.log(
-    `✅ Generated ${svgFiles.length} icon exports and types → ${OUTPUT_FILE}`
-  );
+  console.log(`✅ Generated ${svgFiles.length} icon exports and types → ${OUTPUT_FILE}`);
 
   // Generate types file with iconNames array only
   generateTypesFile(allIconNames);
