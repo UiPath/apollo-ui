@@ -1797,3 +1797,67 @@ export const HealthScore: Story = {
     },
   },
 };
+
+/**
+ * Conversational Agent Story
+ * Demonstrates the conversational agent mode where the user prompt section is hidden in the settings preview
+ */
+
+// Conversational agent definition with metadata.isConversational = true
+const conversationalAgentDefinition = {
+  ...sampleAgentDefinition,
+  name: 'Conversational Agent',
+  metadata: {
+    isConversational: true,
+  },
+};
+
+const ConversationalAgentWrapper = () => {
+  return (
+    <ReactFlowProvider>
+      <AgentFlow
+        allowDragging
+        definition={conversationalAgentDefinition}
+        spans={[]}
+        name="Conversational Agent"
+        description="A conversational agent that does not have a user prompt"
+        mode="design"
+        resources={sampleResources}
+        enableMemory
+        enableInstructions
+        instructions={{
+          system: 'You are a helpful conversational assistant. Engage with users naturally.',
+        }}
+      />
+      <StoryInfoPanel title="Conversational Agent" position="top-right">
+        <Column mt={12} gap={8}>
+          <ApTypography variant={FontVariantToken.fontSizeS}>
+            This agent has <strong>isConversational: true</strong> in its metadata.
+          </ApTypography>
+          <ApTypography
+            variant={FontVariantToken.fontSizeS}
+            style={{ color: 'var(--uix-canvas-foreground-de-emp)' }}
+          >
+            Hover over the agent node to see the settings preview. Notice that the{' '}
+            <strong>User Prompt</strong> section is hidden for conversational agents.
+          </ApTypography>
+        </Column>
+      </StoryInfoPanel>
+    </ReactFlowProvider>
+  );
+};
+
+export const ConversationalAgent: Story = {
+  args: {
+    mode: 'design',
+  },
+  render: () => <ConversationalAgentWrapper />,
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Conversational agent demo. When `definition.metadata.isConversational` is true, the User Prompt section is hidden in the settings preview panel. Hover over the agent node to see this behavior.',
+      },
+    },
+  },
+};

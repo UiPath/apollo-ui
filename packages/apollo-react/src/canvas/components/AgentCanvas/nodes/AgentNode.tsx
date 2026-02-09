@@ -486,12 +486,14 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
           </SettingsPromptBox>
         </SettingsSection>
 
-        <SettingsSection>
-          <SettingsSectionLabel>{translations.userPrompt}</SettingsSectionLabel>
-          <SettingsPromptBox isEmpty={!userPrompt}>
-            {userPrompt || translations.notConfigured}
-          </SettingsPromptBox>
-        </SettingsSection>
+        {!isConversational && (
+          <SettingsSection>
+            <SettingsSectionLabel>{translations.userPrompt}</SettingsSectionLabel>
+            <SettingsPromptBox isEmpty={!userPrompt}>
+              {userPrompt || translations.notConfigured}
+            </SettingsPromptBox>
+          </SettingsSection>
+        )}
 
         {settings?.temperature !== undefined && (
           <SettingsRow>
@@ -515,7 +517,7 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
         )}
       </SettingsPreviewContainer>
     );
-  }, [data.instructions, settings, translations]);
+  }, [data.instructions, settings, translations, isConversational]);
 
   return (
     <div onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
