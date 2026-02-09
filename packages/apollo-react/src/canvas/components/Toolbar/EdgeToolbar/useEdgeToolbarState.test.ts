@@ -136,6 +136,30 @@ describe('useEdgeToolbarState', () => {
       expect(result.current.showToolbar).toBe(false);
     });
 
+    it('should not show toolbar when source is preview node', () => {
+      const { result } = renderHook(() =>
+        useEdgeToolbarState({
+          ...defaultProps,
+          isHovered: true,
+          source: PREVIEW_NODE_ID,
+        })
+      );
+
+      expect(result.current.showToolbar).toBe(false);
+    });
+
+    it('should not show toolbar when target is preview node', () => {
+      const { result } = renderHook(() =>
+        useEdgeToolbarState({
+          ...defaultProps,
+          isHovered: true,
+          target: PREVIEW_NODE_ID,
+        })
+      );
+
+      expect(result.current.showToolbar).toBe(false);
+    });
+
     it('should not show toolbar when positionData is null', () => {
       vi.mocked(useEdgeToolbarPositioning).mockReturnValue({
         positionData: null,
@@ -170,6 +194,27 @@ describe('useEdgeToolbarState', () => {
       expect(useEdgeToolbarPositioning).toHaveBeenCalledWith({
         pathElementRef,
         isEnabled: true,
+        targetPosition: Position.Left,
+      });
+    });
+
+    it('should disable positioning tracking for preview edges', () => {
+      const pathElementRef = {
+        current: document.createElementNS('http://www.w3.org/2000/svg', 'path'),
+      };
+
+      renderHook(() =>
+        useEdgeToolbarState({
+          ...defaultProps,
+          pathElementRef,
+          isHovered: true,
+          source: PREVIEW_NODE_ID,
+        })
+      );
+
+      expect(useEdgeToolbarPositioning).toHaveBeenCalledWith({
+        pathElementRef,
+        isEnabled: false,
         targetPosition: Position.Left,
       });
     });
