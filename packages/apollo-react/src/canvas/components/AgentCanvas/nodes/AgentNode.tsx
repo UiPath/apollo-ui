@@ -79,6 +79,7 @@ interface AgentNodeProps {
 }
 
 const HOVER_DELAY_MS = 500;
+const HOVER_HIDE_DELAY_MS = 300;
 
 const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNodeProps) => {
   const {
@@ -108,8 +109,13 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
   } = props;
   const { actOnSuggestion } = useAgentFlowStore();
 
-  const [showSettingsPreview, setShowSettingsPreview] = useState(false);
+  const [isNodeHovered, setIsNodeHovered] = useState(false);
+  const [isPanelHovered, setIsPanelHovered] = useState(false);
   const hoverTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const hideTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Panel shows when EITHER node or panel is hovered
+  const showSettingsPreview = isNodeHovered || isPanelHovered;
 
   const { name, definition, suggestionId } = data;
   const isSuggestion = data.isSuggestion ?? false;
@@ -135,24 +141,52 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
 
   const handleMouseEnter = useCallback(() => {
     if (!enableInstructions) return;
+    // Clear any pending hide timeout
+    if (hideTimeoutRef.current) {
+      clearTimeout(hideTimeoutRef.current);
+      hideTimeoutRef.current = null;
+    }
     hoverTimeoutRef.current = setTimeout(() => {
-      setShowSettingsPreview(true);
+      setIsNodeHovered(true);
     }, HOVER_DELAY_MS);
   }, [enableInstructions]);
 
   const handleMouseLeave = useCallback(() => {
     if (!enableInstructions) return;
+    // Clear the show timeout
     if (hoverTimeoutRef.current) {
       clearTimeout(hoverTimeoutRef.current);
       hoverTimeoutRef.current = null;
     }
-    setShowSettingsPreview(false);
+    // Small delay before hiding to allow mouse to travel to panel
+    hideTimeoutRef.current = setTimeout(() => {
+      setIsNodeHovered(false);
+    }, HOVER_HIDE_DELAY_MS);
   }, [enableInstructions]);
+
+  const handlePanelMouseEnter = useCallback(() => {
+    // Clear any pending hide timeout
+    if (hideTimeoutRef.current) {
+      clearTimeout(hideTimeoutRef.current);
+      hideTimeoutRef.current = null;
+    }
+    setIsPanelHovered(true);
+  }, []);
+
+  const handlePanelMouseLeave = useCallback(() => {
+    // Small delay before hiding
+    hideTimeoutRef.current = setTimeout(() => {
+      setIsPanelHovered(false);
+    }, HOVER_HIDE_DELAY_MS);
+  }, []);
 
   useEffect(() => {
     return () => {
       if (hoverTimeoutRef.current) {
         clearTimeout(hoverTimeoutRef.current);
+      }
+      if (hideTimeoutRef.current) {
+        clearTimeout(hideTimeoutRef.current);
       }
     };
   }, []);
@@ -519,6 +553,8 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
         nodeId={id}
         placement="right-start"
         offset={16}
+        onMouseEnter={handlePanelMouseEnter}
+        onMouseLeave={handlePanelMouseLeave}
       >
         {settingsPreviewContent}
       </FloatingCanvasPanel>

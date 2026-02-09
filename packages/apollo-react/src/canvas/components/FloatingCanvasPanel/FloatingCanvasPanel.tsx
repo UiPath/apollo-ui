@@ -55,6 +55,10 @@ export type FloatingCanvasPanelProps = {
   children?: ReactNode;
   onClose?: () => void;
   scrollKey?: string;
+
+  // Mouse events for hover persistence
+  onMouseEnter?: () => void;
+  onMouseLeave?: () => void;
 };
 
 export function FloatingCanvasPanel({
@@ -72,6 +76,8 @@ export function FloatingCanvasPanel({
   children,
   onClose,
   scrollKey,
+  onMouseEnter,
+  onMouseLeave,
 }: FloatingCanvasPanelProps) {
   const { computedAnchor, floatingStyles, refs, mergedReferenceRef } = useFloatingPosition({
     open,
@@ -133,6 +139,8 @@ export function FloatingCanvasPanel({
       <PanelContainer
         className="nodrag nopan nowheel"
         isPinned={isPinned}
+        onMouseEnter={onMouseEnter}
+        onMouseLeave={onMouseLeave}
         style={{
           position: 'fixed',
           ...screenPosition,
@@ -164,6 +172,8 @@ export function FloatingCanvasPanel({
       ref={refs.setFloating}
       className="nodrag nopan nowheel"
       isPinned={isPinned}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
       style={{
         ...(isPinned ? {} : floatingStyles),
         position: isPinned ? 'fixed' : 'absolute',
