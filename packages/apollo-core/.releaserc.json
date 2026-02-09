@@ -24,7 +24,13 @@
     [
       "@semantic-release/npm",
       {
-        "npmPublish": true
+        "npmPublish": false
+      }
+    ],
+    [
+      "@semantic-release/exec",
+      {
+        "publishCmd": "pnpm publish --no-git-checks --@uipath:registry=https://registry.npmjs.org"
       }
     ],
     [

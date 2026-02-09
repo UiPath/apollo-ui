@@ -1,5 +1,9 @@
 name: Dev Publish
 
+permissions:
+  contents: read
+  pull-requests: read
+
 on:
   pull_request:
     types: [opened, synchronize, reopened]
@@ -8,6 +12,7 @@ on:
 
 env:
   GH_NPM_REGISTRY_TOKEN: ${{ secrets.GH_NPM_REGISTRY_TOKEN }}
+  NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
   TURBO_TELEMETRY_DISABLED: 1
   DO_NOT_TRACK: 1
 
@@ -16,51 +21,63 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  dev-publish:
-    name: Dev Publish
+  detect-changes:
+    name: Detect Changed Packages
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-      pull-requests: write
-
+    outputs:
+      packages: ${{ steps.changed.outputs.packages }}
+      has_changes: ${{ steps.changed.outputs.has_changes }}
+      matrix: ${{ steps.matrix.outputs.matrix }}
+      has_previous: ${{ steps.previous.outputs.has_previous }}
+      previous_packages: ${{ steps.previous.outputs.packages }}
+      previous_matrix: ${{ steps.previous-matrix.outputs.matrix }}
     steps:
       - name: Checkout code
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           fetch-depth: 0
 
-      - name: Check for existing dev packages comment
-        id: existing
+      - name: Check for previous versions
+        id: previous
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
           COMMENT=$(gh api "repos/${{ github.repository }}/issues/${PR_NUMBER}/comments" \
-            --jq '[.[] | select(.body | startswith("## 📦 Dev Packages")) | .body][0]' 2>/dev/null) || true
+            --jq '[.[] | select(.body | contains("<!-- dev-packages-comment -->")) | .body][0]' 2>/dev/null) || true
 
           if [ -z "$COMMENT" ]; then
-            echo "No existing dev packages comment found"
-            echo "has_comment=false" >> $GITHUB_OUTPUT
-            echo "has_published=false" >> $GITHUB_OUTPUT
+            echo "has_previous=false" >> $GITHUB_OUTPUT
+            echo "packages=" >> $GITHUB_OUTPUT
             exit 0
           fi
 
-          echo "has_comment=true" >> $GITHUB_OUTPUT
-
-          # Extract package@version from 🟢 Published lines
-          PUBLISHED=$(echo "$COMMENT" | grep -oE '`@uipath/[a-z0-9-]+@[0-9.]+-pr[0-9]+`' | tr -d '`' | sort -u)
+          # Extract all package@version from comment (table format)
+          # Matches: | `@uipath/package@version-pr123.sha` | status | timestamp |
+          PUBLISHED=$(echo "$COMMENT" | grep -oE '\| `@uipath/[a-z0-9-]+@[0-9.]+-pr[0-9]+(\.[a-z0-9]+)?`' | sed 's/^| `//' | sed 's/`$//' | sort -u)
 
           if [ -z "$PUBLISHED" ]; then
-            echo "No previously published packages in comment"
-            echo "has_published=false" >> $GITHUB_OUTPUT
+            echo "has_previous=false" >> $GITHUB_OUTPUT
+            echo "packages=" >> $GITHUB_OUTPUT
           else
-            echo "has_published=true" >> $GITHUB_OUTPUT
-            echo "published<<EOF" >> $GITHUB_OUTPUT
+            echo "has_previous=true" >> $GITHUB_OUTPUT
+            echo "packages<<EOF" >> $GITHUB_OUTPUT
             echo "$PUBLISHED" >> $GITHUB_OUTPUT
             echo "EOF" >> $GITHUB_OUTPUT
-            echo "Found published packages: $PUBLISHED"
+            echo "Found previous versions: $PUBLISHED"
           fi
+
+      - name: Create previous packages matrix
+        id: previous-matrix
+        if: steps.previous.outputs.has_previous == 'true'
+        env:
+          PACKAGES: ${{ steps.previous.outputs.packages }}
+        run: |
+          # Convert newline-separated package@version list to JSON array
+          # Use -Rsc: Raw input, Slurp mode, Compact output (single line)
+          MATRIX_JSON=$(echo "$PACKAGES" | jq -Rsc 'split("\n") | map(select(length > 0))')
+          echo "matrix=$MATRIX_JSON" >> $GITHUB_OUTPUT
+          echo "Previous matrix: $MATRIX_JSON"
 
       - name: Get changed packages
         id: changed
@@ -74,7 +91,6 @@ jobs:
               parent_folder=$(dirname "$pkg_dir")
               if echo "$CHANGED_FILES" | grep -q "^${parent_folder}/${pkg_folder}/"; then
                 name=$(jq -r '.name' "$pkg_dir/package.json")
-                # Validate package name format to prevent shell injection
                 if ! [[ "$name" =~ ^@uipath/[a-z0-9-]+$ ]]; then
                   echo "::warning::Skipping invalid package name: $name"
                   continue
@@ -87,166 +103,163 @@ jobs:
           PACKAGES=$(echo "$PACKAGES" | xargs)
           if [ -z "$PACKAGES" ]; then
             echo "has_changes=false" >> $GITHUB_OUTPUT
+            echo "packages=" >> $GITHUB_OUTPUT
           else
             echo "packages=$PACKAGES" >> $GITHUB_OUTPUT
             echo "has_changes=true" >> $GITHUB_OUTPUT
           fi
           echo "Changed packages: $PACKAGES"
 
+      - name: Create matrix
+        id: matrix
+        if: steps.changed.outputs.has_changes == 'true'
+        run: |
+          # Convert space-separated list to compact JSON array
+          PACKAGES="${{ steps.changed.outputs.packages }}"
+          MATRIX_JSON=$(echo "$PACKAGES" | jq -Rc 'split(" ") | map(select(length > 0))')
+          echo "matrix=$MATRIX_JSON" >> $GITHUB_OUTPUT
+          echo "Matrix: $MATRIX_JSON"
+
+  cleanup:
+    name: Cleanup ${{ matrix.package_version }}
+    needs: detect-changes
+    if: needs.detect-changes.outputs.has_previous == 'true'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        package_version: ${{ fromJSON(needs.detect-changes.outputs.previous_matrix) }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
       - name: Setup pnpm
-        if: steps.changed.outputs.has_changes == 'true' || steps.existing.outputs.has_published == 'true'
         uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4
 
       - name: Setup Node.js
-        if: steps.changed.outputs.has_changes == 'true' || steps.existing.outputs.has_published == 'true'
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 22
           cache: 'pnpm'
-          registry-url: 'https://npm.pkg.github.com'
-          scope: '@uipath'
 
       - name: Install dependencies
-        if: steps.changed.outputs.has_changes == 'true' || steps.existing.outputs.has_published == 'true'
         run: pnpm install --frozen-lockfile
 
-      - name: Cleanup previous dev packages
-        if: steps.existing.outputs.has_published == 'true'
+      - name: Cleanup previous version
         env:
-          GH_NPM_REGISTRY_TOKEN: ${{ secrets.GH_NPM_REGISTRY_TOKEN }}
-          PUBLISHED: ${{ steps.existing.outputs.published }}
+          PACKAGE_VERSION: ${{ matrix.package_version }}
         run: |
-          echo "Cleaning up previous dev packages:"
-          echo "$PUBLISHED" | while IFS= read -r pkg_version; do
-            [ -z "$pkg_version" ] && continue
-            # Validate format for defense in depth
-            if ! [[ "$pkg_version" =~ ^@uipath/[a-z0-9-]+@[0-9.]+-pr[0-9]+$ ]]; then
-              echo "::warning::Skipping invalid package version: $pkg_version"
-              continue
-            fi
-            pkg_name="${pkg_version%@*}"
-            version="${pkg_version##*@}"
-            echo "  Unpublishing $pkg_name@$version..."
-            pnpm unpublish:dev "$pkg_name" "$version" 2>/dev/null || true
-          done
-
-      - name: Delete comment (no packages to publish)
-        if: steps.changed.outputs.has_changes != 'true' && steps.existing.outputs.has_comment == 'true'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
-        run: |
-          COMMENT_ID=$(gh api "repos/${{ github.repository }}/issues/${PR_NUMBER}/comments" \
-            --jq '.[] | select(.body | startswith("## 📦 Dev Packages")) | .id' | head -1) || true
-
-          if [ -n "$COMMENT_ID" ]; then
-            echo "Deleting dev packages comment (no packages to publish)..."
-            gh api -X DELETE "repos/${{ github.repository }}/issues/comments/${COMMENT_ID}"
+          if ! [[ "$PACKAGE_VERSION" =~ ^@uipath/[a-z0-9-]+@[0-9.]+-pr[0-9]+(\.[a-z0-9]+)?$ ]]; then
+            echo "::error::Invalid package version format: $PACKAGE_VERSION"
+            exit 1
           fi
 
-      - name: Update PR comment (publishing)
-        if: steps.changed.outputs.has_changes == 'true'
+          pkg_name="${PACKAGE_VERSION%@*}"
+          version="${PACKAGE_VERSION##*@}"
+
+          echo "Cleaning up: $PACKAGE_VERSION"
+          pnpm unpublish:dev "$pkg_name" "$version"
+
+  update-comment-publishing:
+    name: Update Comment - Publishing
+    needs: [detect-changes, cleanup]
+    if: |
+      always() &&
+      needs.detect-changes.outputs.has_changes == 'true' &&
+      (needs.cleanup.result == 'success' || needs.cleanup.result == 'skipped')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Create initial PR comment
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
-          PACKAGES: ${{ steps.changed.outputs.packages }}
+          PACKAGES: ${{ needs.detect-changes.outputs.packages }}
+          SHORT_SHA: ${{ github.sha }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          TIMESTAMP=$(TZ="America/Los_Angeles" date "+%Y-%m-%d %H:%M:%S PT")
-          COMMENT_BODY="## 📦 Dev Packages"$'\n\n'
+          SHORT_SHA="${SHORT_SHA:0:7}"
+          pnpm exec tsx scripts/create-dev-comment.ts
 
-          for name in $PACKAGES; do
-            pkg_json=$(find packages web-packages -name package.json -exec grep -l "\"name\": \"$name\"" {} \; | head -1 || true)
-            if [ -n "$pkg_json" ] && [ -f "$pkg_json" ]; then
-              version=$(jq -r '.version // empty' "$pkg_json" 2>/dev/null || true)
-              if [ -n "$version" ]; then
-                COMMENT_BODY+="🟡 Publishing... \`${name}@${version}-pr${PR_NUMBER}\`"$'\n'
-              else
-                COMMENT_BODY+="🔴 Error: Could not read version for \`${name}\`"$'\n'
-              fi
-            else
-              COMMENT_BODY+="🔴 Error: Could not find package.json for \`${name}\`"$'\n'
-            fi
-          done
+  publish:
+    name: Publish ${{ matrix.package }}
+    needs: [detect-changes, cleanup, update-comment-publishing]
+    if: always() && needs.detect-changes.outputs.has_changes == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+    strategy:
+      fail-fast: false # Continue even if one package fails
+      matrix:
+        package: ${{ fromJSON(needs.detect-changes.outputs.matrix) }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
-          COMMENT_BODY+=$'\n'"**Last updated:** ${TIMESTAMP}"
+      - name: Setup pnpm
+        uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4
 
-          COMMENT_ID=$(gh api "repos/${{ github.repository }}/issues/${PR_NUMBER}/comments" \
-            --jq '.[] | select(.body | startswith("## 📦 Dev Packages")) | .id' | head -1) || true
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+          cache: 'pnpm'
 
-          if [ -n "$COMMENT_ID" ]; then
-            gh api "repos/${{ github.repository }}/issues/comments/${COMMENT_ID}" -X PATCH -f body="$COMMENT_BODY"
-          else
-            gh api "repos/${{ github.repository }}/issues/${PR_NUMBER}/comments" -f body="$COMMENT_BODY"
-          fi
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
-      - name: Build all packages
-        if: steps.changed.outputs.has_changes == 'true'
-        run: pnpm build
+      - name: Build package
+        env:
+          PACKAGE: ${{ matrix.package }}
+        run: pnpm build --filter="$PACKAGE"
 
-      - name: Publish dev packages
-        if: steps.changed.outputs.has_changes == 'true'
+      - name: Publish package
         id: publish
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.GH_NPM_REGISTRY_TOKEN }}
-          NPM_TOKEN: ${{ secrets.GH_NPM_REGISTRY_TOKEN }}
+          PACKAGE: ${{ matrix.package }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
-          PACKAGES: ${{ steps.changed.outputs.packages }}
         run: |
-          RESULTS=""
-          SUFFIX="pr${PR_NUMBER}"
+          SHORT_SHA="${GITHUB_SHA:0:7}"
+          SUFFIX="pr${PR_NUMBER}.${SHORT_SHA}"
 
-          for name in $PACKAGES; do
-            echo "::group::Publishing $name"
+          echo "Publishing $PACKAGE with suffix $SUFFIX..."
+          pkg_json=$(find packages web-packages -name package.json -exec grep -l "\"name\": \"$PACKAGE\"" {} \; | head -1)
+          version=$(jq -r '.version' "$pkg_json" 2>/dev/null || echo "unknown")
 
-            if pnpm publish:dev "$name" "$SUFFIX"; then
-              pkg_json=$(find packages web-packages -name package.json -exec grep -l "\"name\": \"$name\"" {} \; | head -1)
-              version=$(jq -r '.version' "$pkg_json" 2>/dev/null || echo "unknown")
-              RESULTS="${RESULTS}${name}@${version}-${SUFFIX}:success"$'\n'
-            else
-              RESULTS="${RESULTS}${name}:error"$'\n'
-            fi
-
-            echo "::endgroup::"
-          done
-
-          # Use heredoc for multiline output
-          echo "results<<EOF" >> $GITHUB_OUTPUT
-          echo "$RESULTS" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
-
-      - name: Update PR comment (final)
-        if: steps.changed.outputs.has_changes == 'true'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
-          RESULTS: ${{ steps.publish.outputs.results }}
-        run: |
-          TIMESTAMP=$(TZ="America/Los_Angeles" date "+%Y-%m-%d %H:%M:%S PT")
-          COMMENT_BODY="## 📦 Dev Packages"$'\n\n'
-
-          while IFS= read -r result; do
-            [ -z "$result" ] && continue
-            pkg="${result%:*}"
-            status="${result##*:}"
-            # Validate format for defense in depth
-            if ! [[ "$pkg" =~ ^@uipath/[a-z0-9-]+(@[0-9.]+-pr[0-9]+)?$ ]]; then
-              echo "::warning::Skipping invalid result: $result"
-              continue
-            fi
-            if [ "$status" = "success" ]; then
-              COMMENT_BODY+="🟢 Published \`${pkg}\`"$'\n'
-            else
-              COMMENT_BODY+="🔴 Error publishing \`${pkg}\`"$'\n'
-            fi
-          done <<< "$RESULTS"
-
-          COMMENT_BODY+=$'\n'"**Last updated:** ${TIMESTAMP}"
-
-          COMMENT_ID=$(gh api "repos/${{ github.repository }}/issues/${PR_NUMBER}/comments" \
-            --jq '.[] | select(.body | startswith("## 📦 Dev Packages")) | .id' | head -1) || true
-
-          if [ -n "$COMMENT_ID" ]; then
-            gh api "repos/${{ github.repository }}/issues/comments/${COMMENT_ID}" -X PATCH -f body="$COMMENT_BODY"
+          if pnpm publish:dev "$PACKAGE" "$SUFFIX"; then
+            echo "full_version=$PACKAGE@$version-$SUFFIX" >> $GITHUB_OUTPUT
+            echo "status=success" >> $GITHUB_OUTPUT
           else
-            gh api "repos/${{ github.repository }}/issues/${PR_NUMBER}/comments" -f body="$COMMENT_BODY"
+            echo "full_version=$PACKAGE@$version-$SUFFIX" >> $GITHUB_OUTPUT
+            echo "status=failure" >> $GITHUB_OUTPUT
+            exit 1
           fi
+
+      - name: Update PR comment row
+        if: always()
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          FULL_VERSION: ${{ steps.publish.outputs.full_version }}
+          PUBLISH_STATUS: ${{ steps.publish.outputs.status }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: pnpm exec tsx scripts/update-dev-comment-row.ts
+
