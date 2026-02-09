@@ -43,7 +43,7 @@ export function getNonOverlappingPositionForDirection(
 ): XYPosition {
   const isOverlapping = nodes.some(
     (node) =>
-      node.id !== PREVIEW_NODE_ID &&
+      node.id !== PREVIEW_NODE_ID && node.type !== 'stickyNote' &&
       !ignoredNodeTypes.includes(node.type ?? '') &&
       node.position.x < newNodePosition.x + newNodeStyle.width &&
       node.position.x + (node.measured?.width ?? 0) > newNodePosition.x &&
