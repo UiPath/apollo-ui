@@ -21,11 +21,36 @@ export const codedAgentManifest: WorkflowManifest = {
       tags: ['agent', 'coded'],
       sortOrder: 1,
       display: {
-        label: 'Coded Agent Step',
+        label: '',
         icon: 'code',
         shape: 'rectangle',
       },
-      handleConfiguration: [],
+      handleConfiguration: [
+        {
+          position: 'left',
+          handles: [
+            {
+              id: 'left',
+              type: 'target',
+              handleType: 'artifact',
+              showButton: false,
+            },
+          ],
+          visible: true,
+        },
+        {
+          position: 'right',
+          handles: [
+            {
+              id: 'right',
+              type: 'source',
+              handleType: 'artifact',
+              showButton: false,
+            },
+          ],
+          visible: true,
+        },
+      ],
     },
     {
       nodeType: 'uipath.coded.resource',
@@ -34,11 +59,36 @@ export const codedAgentManifest: WorkflowManifest = {
       tags: ['resource', 'coded'],
       sortOrder: 2,
       display: {
-        label: 'Coded Resource',
+        label: '',
         icon: 'chat',
         shape: 'circle',
       },
-      handleConfiguration: [],
+      handleConfiguration: [
+        {
+          position: 'left',
+          handles: [
+            {
+              id: 'left',
+              type: 'target',
+              handleType: 'artifact',
+              showButton: false,
+            },
+          ],
+          visible: true,
+        },
+        {
+          position: 'right',
+          handles: [
+            {
+              id: 'right',
+              type: 'source',
+              handleType: 'artifact',
+              showButton: false,
+            },
+          ],
+          visible: true,
+        },
+      ],
     },
     {
       nodeType: 'uipath.coded.flow.start',
@@ -47,11 +97,24 @@ export const codedAgentManifest: WorkflowManifest = {
       tags: ['flow', 'start'],
       sortOrder: 3,
       display: {
-        label: 'Start',
+        label: '',
         icon: 'circle',
         shape: 'square',
       },
-      handleConfiguration: [],
+      handleConfiguration: [
+        {
+          position: 'right',
+          handles: [
+            {
+              id: 'right',
+              type: 'source',
+              handleType: 'output',
+              showButton: false,
+            },
+          ],
+          visible: true,
+        },
+      ],
     },
     {
       nodeType: 'uipath.coded.flow.end',
@@ -60,11 +123,24 @@ export const codedAgentManifest: WorkflowManifest = {
       tags: ['flow', 'end'],
       sortOrder: 4,
       display: {
-        label: 'End',
-        icon: 'trip_origin',
+        label: '',
+        icon: 'circle',
         shape: 'square',
       },
-      handleConfiguration: [],
+      handleConfiguration: [
+        {
+          position: 'left',
+          handles: [
+            {
+              id: 'left',
+              type: 'target',
+              handleType: 'input',
+              showButton: false,
+            },
+          ],
+          visible: true,
+        },
+      ],
     },
     {
       nodeType: 'uipath.coded.flow.node',
@@ -73,11 +149,36 @@ export const codedAgentManifest: WorkflowManifest = {
       tags: ['flow', 'node'],
       sortOrder: 5,
       display: {
-        label: 'Flow Node',
-        icon: 'square',
+        label: '',
+        icon: '',
         shape: 'rectangle',
       },
-      handleConfiguration: [],
+      handleConfiguration: [
+        {
+          position: 'left',
+          handles: [
+            {
+              id: 'left',
+              type: 'target',
+              handleType: 'artifact',
+              showButton: false,
+            },
+          ],
+          visible: true,
+        },
+        {
+          position: 'right',
+          handles: [
+            {
+              id: 'right',
+              type: 'source',
+              handleType: 'artifact',
+              showButton: false,
+            },
+          ],
+          visible: true,
+        },
+      ],
     },
   ],
 };
