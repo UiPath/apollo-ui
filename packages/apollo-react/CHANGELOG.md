@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.23.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.23.0...@uipath/apollo-react@3.23.1) (2026-02-09)
+
+### Bug Fixes
+
+* **apollo-react:** show edges for coded agent flow [AG-725] ([e3fbfad](https://github.com/UiPath/apollo-ui/commit/e3fbfad802027b51b11d0cee14753521c449ca45))
+
 ## [@uipath/apollo-react-v3.23.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.22.1...@uipath/apollo-react@3.23.0) (2026-02-09)
 
 ### Features
