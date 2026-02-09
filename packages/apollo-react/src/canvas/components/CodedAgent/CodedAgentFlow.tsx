@@ -82,6 +82,7 @@ const CodedAgentEdge = memo(
 );
 
 const CenteredDiv = styled.div`
+  background-color: var(--uix-canvas-background-secondary);
   width: 100%;
   height: 100%;
   display: flex;
@@ -89,13 +90,13 @@ const CenteredDiv = styled.div`
   justify-content: center;
 `;
 
-const TextContainer = memo(styled.div`
+const TextContainer = styled.div`
   position: absolute;
   bottom: 0;
   transform: translateY(100%);
   text-align: center;
   white-space: nowrap;
-`);
+`;
 
 interface CodedNodeData extends BaseNodeData {
   label: string;
@@ -189,6 +190,7 @@ const createCodedAgentNodeWrapper = (
             topRight: statusAdornment,
           },
         }}
+        iconComponent={<Icons.CodedAgentIcon w={40} h={40} />}
       />
     );
   });
@@ -196,6 +198,7 @@ const createCodedAgentNodeWrapper = (
 
 const CodedResourceNodeElement = memo(({ data, selected, id, ...nodeProps }: NodeProps) => {
   const nodeData = data as unknown as CodedNodeData & { type?: string };
+  const label = nodeData.label.toLowerCase();
 
   const executionStatus = useMemo(() => {
     if (nodeData.hasError) return 'Failed';
@@ -203,6 +206,22 @@ const CodedResourceNodeElement = memo(({ data, selected, id, ...nodeProps }: Nod
     if (nodeData.hasRunning) return 'Running';
     return undefined;
   }, [nodeData.hasError, nodeData.hasSuccess, nodeData.hasRunning]);
+
+  // Determine icon based on label content or type
+  const resourceIcon = useMemo(() => {
+    const resourceType = nodeData.type || '';
+
+    if (resourceType === 'tool' || label.includes('tool') || label.includes('function')) {
+      return <ApIcon name="build" size="40px" />;
+    }
+    if (resourceType === 'context' || label.includes('context') || label.includes('knowledge')) {
+      return <ApIcon name="account_tree" size="40px" />;
+    }
+    if (resourceType === 'escalation' || label.includes('escalation') || label.includes('human')) {
+      return <ApIcon name="person" size="40px" />;
+    }
+    return <ApIcon name="chat" size="40px" />;
+  }, [label, nodeData.type]);
 
   const statusAdornment = useMemo((): React.ReactNode => {
     if (nodeData.hasError)
@@ -239,6 +258,7 @@ const CodedResourceNodeElement = memo(({ data, selected, id, ...nodeProps }: Nod
             topRight: statusAdornment,
           },
         }}
+        iconComponent={resourceIcon}
       />
       <TextContainer>
         <ApTypography color="var(--uix-canvas-foreground-de-emp)">{nodeData.label}</ApTypography>
@@ -308,6 +328,7 @@ const CodedFlowNodeElement = memo(({ data, selected, id, ...nodeProps }: NodePro
         },
         handleConfigurations: handleConfigs,
       }}
+      iconComponent={null}
     />
   );
 });
@@ -373,42 +394,8 @@ const CodedAgentFlowInner = (props: CodedAgentFlowProps): ReactElement => {
           // Store the edges and direction, but don't apply layout yet
           edgesRef.current = parsedResult.edges;
 
-          // Add explicit dimensions to nodes based on type
-          const nodesWithDimensions = parsedResult.nodes.map((node) => {
-            let width: number;
-            let height: number;
-
-            if (node.type === 'agent') {
-              width = 192;
-              height = 80;
-            } else if (node.type === 'resource') {
-              width = 80;
-              height = 80;
-            } else if (node.type === 'flow') {
-              const label = (node.data as CodedNodeData)?.label?.toLowerCase() || '';
-              const isStartOrEnd = label.includes('start') || label.includes('end');
-              if (isStartOrEnd) {
-                width = 64;
-                height = 64;
-              } else {
-                width = 192;
-                height = 64;
-              }
-            } else {
-              // Default fallback
-              width = 192;
-              height = 80;
-            }
-
-            return {
-              ...node,
-              width,
-              height,
-            };
-          });
-
           // Set nodes with initial positions and dimensions for React Flow
-          setNodes(nodesWithDimensions);
+          setNodes(parsedResult.nodes);
           setEdges(parsedResult.edges);
         } catch (error) {
           setParseError((error as Error).message);
