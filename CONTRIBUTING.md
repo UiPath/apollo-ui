@@ -283,7 +283,7 @@ pnpm unpublish:dev @uipath/apollo-react my-feature
 4. Copy the token immediately (shown only once!)
 5. Set the environment variable:
    ```bash
-   export NPM_AUTH_TOKEN=npm_xxxxxxxxxxxxxxxxxxxx
+   export NPM_AUTH_TOKEN=your_token_here
    ```
 
 > **Note:** npm only allows unpublishing within 72 hours of publication. After that, use `npm deprecate <package>@<version> "<message>"` instead.
