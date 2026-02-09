@@ -42,10 +42,12 @@ export function useEdgeToolbarState({
   const { mode } = useBaseCanvasMode();
   const isDesignMode = mode === 'design';
 
-  // Only track mouse position when hovering and in design mode
+  const isPreviewEdge = source === PREVIEW_NODE_ID || target === PREVIEW_NODE_ID;
+
+  // Only track mouse position when hovering and in design mode (not on preview edges)
   const { positionData, handleMouseMoveOnPath } = useEdgeToolbarPositioning({
     pathElementRef,
-    isEnabled: isHovered && isDesignMode,
+    isEnabled: isHovered && isDesignMode && !isPreviewEdge,
     targetPosition,
   });
 
@@ -126,8 +128,8 @@ export function useEdgeToolbarState({
     [handleAddNodeOnEdge]
   );
 
-  // Show toolbar when hovering, in design mode, and have a valid mouse position
-  const showToolbar = isHovered && isDesignMode && positionData !== null;
+  // Show toolbar when hovering, in design mode, have a valid mouse position, and not a preview edge
+  const showToolbar = isHovered && isDesignMode && positionData !== null && !isPreviewEdge;
 
   return {
     showToolbar,
