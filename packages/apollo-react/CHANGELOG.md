@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.24.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.23.1...@uipath/apollo-react@3.24.0) (2026-02-09)
+
+### Features
+
+* **apollo-react:** added case mgmt as a valid task icon/project (MST-6232) ([faf672d](https://github.com/UiPath/apollo-ui/commit/faf672d2e7d6522cc4a03d4040d28a3b4d43c3eb))
+
 ## [@uipath/apollo-react-v3.23.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.23.0...@uipath/apollo-react@3.23.1) (2026-02-09)
 
 ### Bug Fixes
