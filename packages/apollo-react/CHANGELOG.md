@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.22.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.22.0...@uipath/apollo-react@3.22.1) (2026-02-09)
+
+### Bug Fixes
+
+* **apollo-react:** NodeLabel test ([15f3500](https://github.com/UiPath/apollo-ui/commit/15f350070a225024568aeb50ab0662d7a9cbd13f))
+
 ## [@uipath/apollo-react-v3.22.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.21.0...@uipath/apollo-react@3.22.0) (2026-02-09)
 
 ### Features
