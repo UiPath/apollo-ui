@@ -5,6 +5,10 @@ on:
     branches:
       - main
 
+env:
+  GH_NPM_REGISTRY_TOKEN: ${{ secrets.GH_NPM_REGISTRY_TOKEN }}
+  NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -47,8 +51,6 @@ jobs:
           cache: 'pnpm'
 
       - name: Install dependencies
-        env:
-          GH_NPM_REGISTRY_TOKEN: ${{ secrets.GH_NPM_REGISTRY_TOKEN }}
         run: pnpm install --frozen-lockfile
 
       - name: Cache Turborepo

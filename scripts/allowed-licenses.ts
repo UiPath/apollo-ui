@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/usr/bin/env tsx
 /**
  * Outputs comma-separated SPDX license IDs that match UiPath FOSS license standard.
  * Source: https://uipath.atlassian.net/wiki/spaces/LEG/pages/2861433455/FOSS+license+standard
@@ -6,7 +6,7 @@
  */
 
 // Static list of approved licenses from UiPath FOSS license standard (GO section)
-const approvedLicenses = [
+const approvedLicenses: string[] = [
   'AFL-1.1', 'AFL-1.2', 'AFL-2.0', 'AFL-2.1', 'AMPAS', 'APAFML', 'Adobe-2006',
   'Afmparse', 'ADSL', 'AMDPLPA', 'ANTLR-PD', 'Apache-1.0', 'Apache-1.1',
   'Apache-2.0', 'AML', 'Artistic-1.0', 'Artistic-1.0-Perl', 'Artistic-1.0-cl8',

@@ -195,6 +195,32 @@ If your commit message doesn't follow the format, the commit will be blocked.
 - Run `pnpm format` to format code
 - Pre-commit hooks will automatically lint and format code
 
+## Registry Configuration
+
+This repository uses a **dual-registry setup**:
+
+### Why Two Registries?
+
+- **GitHub Packages** (`npm.pkg.github.com`) - For private dependencies
+  - Private packages: `@uipath/auth-core`, `@uipath/auth-react` (used by apollo-vertex)
+  - Requires: `GH_NPM_REGISTRY_TOKEN` secret
+
+- **npm.org** (`registry.npmjs.org`) - For publishing public packages
+  - Public packages: `@uipath/apollo-core`, `@uipath/apollo-react`, `@uipath/apollo-wind`, `@uipath/ap-chat`
+  - Requires: `NPM_AUTH_TOKEN` secret
+
+### How It Works
+
+**Installing dependencies:**
+- `.npmrc` points `@uipath` scope to GitHub Packages
+- Uses `GH_NPM_REGISTRY_TOKEN` to access private packages
+- Runs on all workflows (PR checks, builds, releases)
+
+**Publishing packages:**
+- `publishConfig` in package.json overrides to npm.org
+- Uses `NPM_AUTH_TOKEN` for authentication
+- Only runs on release workflow (main branch)
+
 ## Release Process
 
 Releases are **fully automated** using semantic-release based on commit messages:
@@ -246,17 +272,21 @@ pnpm publish:dev @uipath/apollo-react my-feature
 pnpm unpublish:dev @uipath/apollo-react my-feature
 ```
 
-**Token Setup (for manual publishing):**
+**Token Setup (for manual publishing to npm.org):**
 
-1. Go to GitHub → Settings → Developer settings → Personal access tokens → Tokens (classic)
-2. Generate a new token with scopes:
-   - `write:packages` (for publishing)
-   - `delete:packages` (for unpublishing)
-   - `read:packages`
-3. Set the environment variable:
+1. Go to [npmjs.com/settings/YOUR_USERNAME/tokens](https://www.npmjs.com/settings/YOUR_USERNAME/tokens) → Access Tokens
+2. Click **"Generate New Token"** → Select **"Automation"** token type
+3. Configure the token:
+   - ✅ **Bypass two-factor authentication** (required for CI/CD automation)
+   - ✅ **Read and write** permissions
+   - Name it something like "Apollo UI Publishing"
+4. Copy the token immediately (shown only once!)
+5. Set the environment variable:
    ```bash
-   export GH_NPM_REGISTRY_TOKEN=your_token_here
+   export NPM_AUTH_TOKEN=npm_xxxxxxxxxxxxxxxxxxxx
    ```
+
+> **Note:** npm only allows unpublishing within 72 hours of publication. After that, use `npm deprecate <package>@<version> "<message>"` instead.
 
 **Installing dev packages:**
 

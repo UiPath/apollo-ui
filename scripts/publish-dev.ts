@@ -7,13 +7,26 @@
  *   -> Publishes @uipath/apollo-react@3.19.3-test
  */
 
-import { execSync } from 'node:child_process';
+import { execFileSync } from 'node:child_process';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { type PackageJson, findPackagePath, getAllPackageNames } from './package-utils.js';
 
 function main() {
+  // Validate authentication token is available
+  const token = process.env.NPM_AUTH_TOKEN || process.env.NPM_TOKEN;
+  if (!token) {
+    console.error('Error: NPM_AUTH_TOKEN or NPM_TOKEN environment variable is required.');
+    console.error('');
+    console.error('To publish to npm.org, you need an npm automation token.');
+    console.error('Set it with:');
+    console.error('  export NPM_AUTH_TOKEN=your_npm_token_here');
+    console.error('');
+    console.error('See CONTRIBUTING.md for instructions on creating an npm token.');
+    process.exit(1);
+  }
+
   const args = process.argv.slice(2);
 
   if (args.length < 2) {
@@ -28,10 +41,10 @@ function main() {
 
   const [packageName, suffix] = args as [string, string];
 
-  // Validate suffix (alphanumeric, may contain hyphens, must not start with hyphen)
-  if (!/^[a-zA-Z0-9][a-zA-Z0-9-]*$/.test(suffix)) {
+  // Validate suffix (alphanumeric, may contain hyphens and dots, must not start with hyphen/dot)
+  if (!/^[a-zA-Z0-9][a-zA-Z0-9.-]*$/.test(suffix)) {
     console.error(
-      `Error: Invalid suffix "${suffix}". Suffix must start with alphanumeric and contain only letters, digits, or hyphens.`
+      `Error: Invalid suffix "${suffix}". Suffix must start with alphanumeric and contain only letters, digits, hyphens, or dots.`
     );
     process.exit(1);
   }
@@ -64,27 +77,38 @@ function main() {
 
     // Publish with 'dev' tag to avoid affecting 'latest'
     // Note: Assumes package is already built (run `pnpm build` first)
-    console.log('\nPublishing with tag "dev"...');
-    try {
-      execSync('pnpm publish --no-git-checks --access public --tag dev', {
+    console.log('\nPublishing with tag "dev" to npm.org...');
+
+    // Use --@uipath:registry= to override .npmrc scope registry (pnpm 10.5.0+)
+    execFileSync(
+      'pnpm',
+      [
+        'publish',
+        '--no-git-checks',
+        '--access', 'public',
+        '--tag', 'dev',
+        '--@uipath:registry=https://registry.npmjs.org'
+      ],
+      {
         cwd: packagePath,
         stdio: 'inherit',
-      });
-    } catch {
-      console.error(
-        `\nPublish failed for ${packageName}. Check NPM_TOKEN permissions and registry access.`
-      );
-      process.exit(1);
-    }
+        env: {
+          ...process.env,
+          NPM_AUTH_TOKEN: token,
+          NODE_AUTH_TOKEN: token,
+        },
+      }
+    );
 
     console.log(`\nSuccessfully published ${packageName}@${devVersion}`);
+
   } catch (error) {
-    console.error('\nUnexpected error:', error);
-    process.exit(1);
+    console.error('\nPublish failed:', error);
+    process.exitCode = 1;
   } finally {
     // Restore original version
     writeFileSync(packageJsonPath, originalContent);
-    console.log(`\nRestored original version (${originalVersion})`);
+    console.log(`Restored original version (${originalVersion})`);
   }
 }
 

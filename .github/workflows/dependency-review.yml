@@ -16,12 +16,17 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+
       - name: Generate UiPath-approved license allowlist
         id: licenses
         shell: bash
         # Source: https://uipath.atlassian.net/wiki/spaces/LEG/pages/2861433455/FOSS+license+standard (GO section)
         run: |
-          ALLOW="$(node scripts/allowed-licenses.js)"
+          ALLOW="$(npx -y tsx scripts/allowed-licenses.ts)"
           echo "allow=$ALLOW" >> "$GITHUB_OUTPUT"
 
       - name: Dependency Review

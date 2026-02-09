@@ -4,6 +4,10 @@ on:
   pull_request:
     types: [opened, edited, synchronize, reopened]
 
+env:
+  GH_NPM_REGISTRY_TOKEN: ${{ secrets.GH_NPM_REGISTRY_TOKEN }}
+  NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
+
 jobs:
   commitlint:
     name: Validate Commit Messages
@@ -27,8 +31,6 @@ jobs:
           cache: 'pnpm'
 
       - name: Install dependencies
-        env:
-          GH_NPM_REGISTRY_TOKEN: ${{ secrets.GH_NPM_REGISTRY_TOKEN }}
         run: pnpm install --frozen-lockfile
 
       - name: Validate commit messages
