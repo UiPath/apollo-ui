@@ -219,7 +219,6 @@ import '@uipath/apollo-core/tokens/css/theme-variables.css';
 Apollo Core is framework-agnostic. For framework-specific components:
 
 - **React**: `@uipath/apollo-react`
-- **Angular**: `@uipath/apollo-angular`
 - **Tailwind**: `@uipath/apollo-wind`
 
 ## Directory Structure

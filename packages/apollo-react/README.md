@@ -83,7 +83,6 @@ All React components use the `Ap` prefix:
 - `components`: All Ap\* React components
 - `core`: Re-exported apollo-core tokens
 - `theme`: Material UI theme overrides (apolloMaterialUiThemeDark, apolloMaterialUiThemeLight)
-- `utils`: Re-exported apollo-utils functions
 
 ## License
 

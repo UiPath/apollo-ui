@@ -36,5 +36,5 @@
     "**/*.spec.ts",
     "**/*.spec.tsx"
   ],
-  "references": [{ "path": "../apollo-core" }, { "path": "../apollo-utils" }]
+  "references": [{ "path": "../apollo-core" }]
 }

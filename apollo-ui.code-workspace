@@ -9,16 +9,8 @@
       "path": "packages/apollo-core"
     },
     {
-      "name": "├─ apollo-utils",
-      "path": "packages/apollo-utils"
-    },
-    {
       "name": "├─ apollo-react",
       "path": "packages/apollo-react"
-    },
-    {
-      "name": "├─ apollo-angular",
-      "path": "packages/apollo-angular"
     },
     {
       "name": "└─ apollo-wind",
@@ -29,20 +21,12 @@
       "path": "web-packages/ap-chat"
     },
     {
-      "name": "└─ ap-data-grid",
-      "path": "web-packages/ap-data-grid"
-    },
-    {
       "name": "├─ storybook",
       "path": "apps/storybook"
     },
     {
       "name": "├─ react-playground",
       "path": "apps/react-playground"
-    },
-    {
-      "name": "├─ angular-playground",
-      "path": "apps/angular-playground"
     },
     {
       "name": "└─ apollo-vertex",
@@ -68,8 +52,7 @@
       "biomejs.biome",
       "dbaeumer.vscode-eslint",
       "stylelint.vscode-stylelint",
-      "bradlc.vscode-tailwindcss",
-      "Angular.ng-template"
+      "bradlc.vscode-tailwindcss"
     ]
   }
 }

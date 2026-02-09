@@ -53,12 +53,12 @@ Use a **fixup/rebase workflow** to keep commits clean and meaningful.
 
 ## Project Overview
 
-Apollo v.4 is an open-source design system for UiPath, built to provide a unified component library for both internal and external consumers. This monorepo contains design tokens, utilities, and framework-specific implementations (React, Angular, Web Components).
+Apollo v.4 is an open-source design system for UiPath, built to provide a unified component library for both internal and external consumers. This monorepo contains design tokens, utilities, and framework-specific implementations (React, Web Components).
 
 ### Goals
 
 - **Open-source**: Public repository for internal and external adoption
-- **Framework-optimized**: First-class React and Angular support with shared design tokens
+- **Framework-optimized**: First-class React support with shared design tokens
 - **Simplified architecture**: Clear separation between core tokens and framework implementations
 - **Enhanced DX**: Easier contributions, predictable releases, comprehensive documentation
 - **AI-assisted workflows**: Integration with AI tools for contribution guidance and development
@@ -81,7 +81,6 @@ This is the **UiPath/apollo-ui** public repository - the open-source design syst
 ### Framework Support
 
 - **React**: Primary component library with Material UI theming
-- **Angular**: Component library with Angular Material theming
 - **Web Components**: Cross-framework components using standard web APIs
 - **Tailwind CSS + shadcn/ui**: Modern styling approach (apollo-wind package)
 
@@ -107,18 +106,14 @@ apollo-ui/
 ├── apps/                       # Development applications
 │   ├── storybook/              # Storybook documentation
 │   ├── react-playground/       # React testing environment
-│   └── angular-playground/     # Angular testing environment
 │
 ├── packages/                   # Core + framework packages
 │   ├── apollo-core/            # Design tokens (fonts, colors, spacing, icons)
-│   ├── apollo-utils/           # Framework-agnostic utilities
 │   ├── apollo-react/           # React components + Material UI theme
-│   ├── apollo-angular/         # Angular components + Angular Material theme
 │   └── apollo-wind/            # Tailwind/shadcn implementation
 │
 ├── web-packages/               # Cross-framework web components
 │   ├── ap-chat/      # Chat component (web component)
-│   └── ap-data-grid/           # Data grid (web component + React wrapper)
 │
 ├── turbo.json                  # Turborepo configuration
 ├── package.json                # Root package.json with workspaces
@@ -141,23 +136,14 @@ apollo-ui/
   - Icon library
   - Font assets
   - CSS custom properties
-- **No dependencies on React/Angular**
-
-#### `apollo-utils`
-
-- **Purpose**: Shared utilities and helpers
-- **Exports**:
-  - Formatting utilities (dates, numbers, currency)
-  - Accessibility helpers
-  - Common helper functions
-- **No dependencies on React/Angular**
+- **No dependencies on React**
 
 ### Framework Packages
 
 #### `apollo-react`
 
 - **Purpose**: React component library with Material UI theming
-- **Dependencies**: React, Material UI, apollo-core, apollo-utils
+- **Dependencies**: React, Material UI, apollo-core
 - **Structure**:
   ```
   apollo-react/
@@ -173,26 +159,6 @@ apollo-ui/
   - `components`: All Ap\* React components
   - `core`: Re-exported apollo-core tokens
   - `theme`: Material UI theme overrides (apolloMaterialUiThemeDark, apolloMaterialUiThemeLight)
-
-#### `apollo-angular`
-
-- **Purpose**: Angular component library with Angular Material theming
-- **Dependencies**: Angular, Angular Material, apollo-core, apollo-utils
-- **Structure**:
-  ```
-  apollo-angular/
-  ├── src/
-  │   ├── lib/
-  │   │   ├── components/       # Angular components
-  │   │   └── theming/          # Angular Material theme overrides
-  │   ├── public-api.ts         # Public exports
-  │   └── index.ts
-  ├── package.json
-  └── tsconfig.json
-  ```
-- **Exports**:
-  - Angular modules for all components
-  - Angular Material theme overrides
 
 #### `apollo-wind`
 
@@ -218,27 +184,13 @@ apollo-ui/
 - **Technology**: Web Components (Custom Elements)
 - **Exports**: `<ap-chat>` custom element
 
-#### `ap-data-grid`
-
-- **Purpose**: Data grid component
-- **Technology**: Web component + React wrapper
-- **Exports**:
-  - `<ap-data-grid>` web component
-  - React wrapper component
-
----
-
 ## Package Dependencies
 
 ```
 apollo-core (tokens, icons, fonts)
     ↓
-apollo-utils (utilities)
-    ↓
 ├─→ apollo-react (React + MUI)
 │   └─→ ap-chat (Web Component)
-├─→ apollo-angular (Angular + Material)
-│   └─→ ap-data-grid (Web Component + React wrapper)
 └─→ apollo-wind (Tailwind + shadcn)
 ```
 
@@ -249,23 +201,21 @@ apollo-utils (utilities)
 ### Naming Conventions
 
 - **React components**: `Ap` prefix (e.g., `ApButton`, `ApTextField`)
-- **Angular components**: No specific selector naming convention enforced
-- **Web components**: `ap-` prefix (e.g., `<ap-chat>`, `<ap-data-grid>`)
+- **Web components**: `ap-` prefix (e.g., `<ap-chat>`)
 
 ### Component Structure
 
 - **Primitives/Atoms**: Simple, composable building blocks (buttons, inputs, text)
-- **Complex components**: Feature-rich components (data grids, chat interfaces)
-- **Theme overrides**: Primary consumption pattern for existing Material UI/Angular Material apps
+- **Complex components**: Feature-rich components (chat interfaces)
+- **Theme overrides**: Primary consumption pattern for existing Material UI apps
 
 ### Export Pattern
 
-**React and Angular packages** (`apollo-react`, `apollo-angular`) export:
+**React packages** (`apollo-react`) export:
 
 1. **Components**: All public components
 2. **Core**: Design tokens (re-exported from apollo-core)
-3. **Theme**: Theme customization objects (Material UI/Angular Material overrides)
-4. **Utils**: Utility functions (re-exported from apollo-utils)
+3. **Theme**: Theme customization objects (Material UI overrides)
 
 **Other packages** export only what's relevant to their purpose (e.g., web components export custom elements only).
 
@@ -319,7 +269,7 @@ import { apolloMaterialUiThemeDark } from '@uipath/apollo-react/theme';
 
 ### Adding a New Component
 
-1. Identify which package (apollo-react, apollo-angular, or web-packages)
+1. Identify which package (apollo-react, or web-packages)
 2. Create component following naming conventions
 3. Use design tokens from apollo-core
 4. Write Storybook stories
@@ -413,7 +363,6 @@ Each package must include:
 ### Phase 2: Build Out & Alignment
 
 - Complete React component library
-- Add Angular support (apollo-angular)
 - Migrate web components to web-packages
 
 ### Phase 3: Rollout
@@ -500,4 +449,3 @@ Each package must include:
 - Turborepo Docs: https://turbo.build/repo/docs
 - Storybook Docs: https://storybook.js.org/
 - Material UI: https://mui.com/
-- Angular Material: https://material.angular.io/
