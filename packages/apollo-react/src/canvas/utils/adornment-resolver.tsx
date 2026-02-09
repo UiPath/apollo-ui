@@ -1,14 +1,8 @@
+import { ExecutionStatusIcon, NodeIcon } from '@uipath/apollo-react/canvas';
+import { ApTooltip } from '@uipath/apollo-react/material';
+import { memo } from 'react';
 import type { NodeAdornments, NodeStatusContext } from '../components';
-
-/**
- * Extended execution state that includes debug info (breakpoints)
- */
-interface NodeExecutionStateWithDebug {
-  status?: string;
-  count: number;
-  debug: boolean;
-  isExecutionStartPoint?: boolean;
-}
+import { getExecutionStatusColor } from '../components/ExecutionStatusIcon/ExecutionStatusIcon';
 
 interface BreakpointIndicatorProps {
   isActive?: boolean;
@@ -46,10 +40,6 @@ export function ExecutionStartPointIndicator({
   );
 }
 
-import { ExecutionStatusIcon } from '@uipath/apollo-react/canvas';
-import { memo } from 'react';
-import { getExecutionStatusColor } from '../components/ExecutionStatusIcon/ExecutionStatusIcon';
-
 function ExecutionStatusIndicatorInternal({ status, count }: { status?: string; count?: number }) {
   const isExecutedMultipleTimes = count !== undefined && count > 1;
   const color = getExecutionStatusColor(status);
@@ -66,21 +56,33 @@ function ExecutionStatusIndicatorInternal({ status, count }: { status?: string; 
   );
 }
 
+function PinnedOutputIndicator() {
+  return (
+    <ApTooltip content="Node output is mocked" placement="bottom">
+      <span style={{ display: 'inline-flex' }}>
+        <NodeIcon icon="pinned-output" size={16} color="var(--color-foreground-emp)" />
+      </span>
+    </ApTooltip>
+  );
+}
+
 export const ExecutionStatusIndicator = memo(ExecutionStatusIndicatorInternal);
 
 const getDefaultAdornments = (context: NodeStatusContext): NodeAdornments => {
-  const executionState = context.executionState as NodeExecutionStateWithDebug | string | undefined;
+  const executionState = context.executionState;
 
   const status = typeof executionState === 'object' ? executionState?.status : executionState;
   const count = typeof executionState === 'object' ? executionState.count : undefined;
   const hasBreakpoint = typeof executionState === 'object' && executionState?.debug;
   const isExecutionStartPoint =
     typeof executionState === 'object' && executionState?.isExecutionStartPoint;
+  const isOutputPinned = typeof executionState === 'object' && executionState?.isOutputPinned;
 
   return {
     topLeft: hasBreakpoint ? <BreakpointIndicator /> : undefined,
     topRight: <ExecutionStatusIndicator status={status} count={count} />,
     bottomLeft: isExecutionStartPoint ? <ExecutionStartPointIndicator /> : undefined,
+    bottomRight: isOutputPinned ? <PinnedOutputIndicator /> : undefined,
   };
 };
 

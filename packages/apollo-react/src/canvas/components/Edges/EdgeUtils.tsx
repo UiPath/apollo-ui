@@ -16,6 +16,7 @@ export const edgeTargetStatusToEdgeColor: {
   Terminated: 'var(--color-error-icon)',
   UserCancelled: 'var(--color-info-icon)',
   WARNING: 'var(--color-warning-icon)',
+  None: 'var(--color-canvas-element-border-color-default)',
 };
 
 export const getStatusAnimation = (
