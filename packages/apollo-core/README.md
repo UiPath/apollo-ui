@@ -20,6 +20,8 @@ pnpm add @uipath/apollo-core
 yarn add @uipath/apollo-core
 ```
 
+**Note:** This package is published to both npm and GitHub Package Registry. External users will automatically pull from npm. Internal UiPath users with `.npmrc` configured will automatically pull from GitHub Package Registry.
+
 ## Usage
 
 ### Design Tokens

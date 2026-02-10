@@ -62,6 +62,45 @@ apollo-ui/
     └── react-playground/  # 🔬 React testing environment
 ```
 
+## 📥 Installation
+
+All Apollo packages are published to both **npm** and **GitHub Package Registry** for maximum accessibility.
+
+### For External Users (npm - Recommended)
+
+No special configuration needed. Just install packages directly:
+
+```bash
+npm install @uipath/apollo-react
+# or
+npm install @uipath/apollo-core @uipath/apollo-wind
+```
+
+### For Internal UiPath Users (GitHub Package Registry)
+
+If you have `.npmrc` configured with:
+```
+@uipath:registry=https://npm.pkg.github.com
+```
+
+Packages will automatically install from GitHub Package Registry. No changes needed!
+
+### Testing PR Previews
+
+To test a feature from an open PR before it's merged:
+
+```bash
+# Install latest PR preview
+npm install @uipath/apollo-react@dev
+
+# Or install specific PR version (from PR comment)
+npm install @uipath/apollo-react@5.6.1-pr188.4865fad
+```
+
+Preview versions are published automatically on every PR and cleaned up after merge.
+
+---
+
 ## 📦 Packages
 
 ### Core Foundation

@@ -17,12 +17,79 @@
 import { execFileSync } from 'node:child_process';
 import { findPackageInfo, getAllPackageNames } from './package-utils.js';
 
-async function unpublishPackageVersion(packageName: string, version: string): Promise<boolean> {
-  const token = process.env.NPM_AUTH_TOKEN;
+async function unpublishFromGitHub(packageName: string, version: string): Promise<boolean> {
+  const token = process.env.GH_NPM_REGISTRY_TOKEN;
   if (!token) {
-    console.error('Error: NPM_AUTH_TOKEN environment variable is required.');
+    console.error('Error: GH_NPM_REGISTRY_TOKEN environment variable is required for GitHub Package Registry.');
     return false;
   }
+
+  console.log('\nProcessing GitHub Package Registry...');
+
+  try {
+    // GitHub uses package_type=npm and package_name without @scope
+    const packageNameWithoutScope = packageName.replace('@uipath/', '');
+    const apiUrl = `https://api.github.com/orgs/UiPath/packages/npm/${encodeURIComponent(packageNameWithoutScope)}/versions`;
+
+    // Get all versions to find the one we want to delete
+    const versionsResponse = await fetch(apiUrl, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Accept': 'application/vnd.github+json',
+        'X-GitHub-Api-Version': '2022-11-28',
+      },
+    });
+
+    if (!versionsResponse.ok) {
+      console.error(`Failed to fetch versions: ${versionsResponse.status} ${versionsResponse.statusText}`);
+      return false;
+    }
+
+    const versions = await versionsResponse.json() as Array<{ id: number; name: string }>;
+    const targetVersion = versions.find(v => v.name === version);
+
+    if (!targetVersion) {
+      console.log('✓ Already removed (not found on registry)');
+      return true;
+    }
+
+    // Delete the specific version
+    const deleteResponse = await fetch(`${apiUrl}/${targetVersion.id}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Accept': 'application/vnd.github+json',
+        'X-GitHub-Api-Version': '2022-11-28',
+      },
+    });
+
+    if (deleteResponse.ok || deleteResponse.status === 204) {
+      console.log('✓ Unpublished successfully');
+      return true;
+    }
+
+    console.error(`Failed to delete: ${deleteResponse.status} ${deleteResponse.statusText}`);
+    return false;
+  } catch (error) {
+    console.error('Unexpected error:', error);
+    return false;
+  }
+}
+
+async function unpublishFromRegistry(
+  packageName: string,
+  version: string,
+  registry: string,
+  tokenEnvVar: string,
+  registryName: string
+): Promise<boolean> {
+  const token = process.env[tokenEnvVar];
+  if (!token) {
+    console.error(`Error: ${tokenEnvVar} environment variable is required for ${registryName}.`);
+    return false;
+  }
+
+  console.log(`\nProcessing ${registryName}...`);
 
   // Validate package name and version to prevent injection
   const packageRegex = /^@[\w-]+\/[\w-]+$/;
@@ -41,10 +108,10 @@ async function unpublishPackageVersion(packageName: string, version: string): Pr
   try {
     const fullPackage = `${packageName}@${version}`;
 
-    // First, check if package version exists on npm.org
+    // First, check if package version exists on the registry
     const encodedPackageName = packageName.replace('@', '%40').replace('/', '%2F');
     const checkResponse = await fetch(
-      `https://registry.npmjs.org/${encodedPackageName}/${version}`,
+      `${registry}/${encodedPackageName}/${version}`,
       {
         headers: {
           'Accept': 'application/json',
@@ -60,7 +127,7 @@ async function unpublishPackageVersion(packageName: string, version: string): Pr
     try {
       execFileSync(
         'pnpm',
-        ['unpublish', fullPackage, '--@uipath:registry=https://registry.npmjs.org', '--force'],
+        ['unpublish', fullPackage, `--@uipath:registry=${registry}`, '--force'],
         {
           stdio: 'pipe', // Capture output to show errors
           env: {
@@ -106,7 +173,7 @@ async function unpublishPackageVersion(packageName: string, version: string): Pr
         try {
           execFileSync(
             'pnpm',
-            ['deprecate', fullPackage, 'Dev package - use latest version', '--@uipath:registry=https://registry.npmjs.org'],
+            ['deprecate', fullPackage, 'Dev package - use latest version', `--@uipath:registry=${registry}`],
             {
               stdio: 'pipe', // Don't show npm output
               env: {
@@ -119,16 +186,28 @@ async function unpublishPackageVersion(packageName: string, version: string): Pr
           console.log('✓ Deprecated successfully');
           return true;
         } catch (deprecateError: unknown) {
-          console.error('✗ Failed to deprecate');
+          // GitHub Package Registry doesn't support npm deprecate the same way
+          // Treat as success if it's a GitHub-specific error
+          let isGitHubDeprecateError = false;
           if (deprecateError && typeof deprecateError === 'object') {
             if ('stderr' in deprecateError && deprecateError.stderr) {
               const stderr = deprecateError.stderr;
-              if (Buffer.isBuffer(stderr) || typeof stderr === 'string') {
-                console.error('Error:', stderr.toString());
+              const stderrStr = Buffer.isBuffer(stderr) || typeof stderr === 'string' ? stderr.toString() : '';
+
+              // GitHub Package Registry returns 400 "version.ID cannot be empty" for deprecate
+              if (stderrStr.includes('npm.pkg.github.com') &&
+                  (stderrStr.includes('400') || stderrStr.includes('version.ID cannot be empty'))) {
+                isGitHubDeprecateError = true;
+                console.log('⚠️  Deprecation not supported on GitHub Package Registry (package remains published)');
+              } else {
+                console.error('✗ Failed to deprecate');
+                console.error('Error:', stderrStr);
               }
             }
           }
-          return false;
+
+          // Don't fail the overall operation for GitHub deprecate issues
+          return isGitHubDeprecateError ? true : false;
         }
       }
 
@@ -146,6 +225,31 @@ async function unpublishPackageVersion(packageName: string, version: string): Pr
     console.error(error);
     return false;
   }
+}
+
+async function unpublishPackageVersion(packageName: string, version: string): Promise<boolean> {
+  console.log(`\nUnpublishing ${packageName}@${version} from both registries...`);
+
+  // Unpublish from npm
+  const npmSuccess = await unpublishFromRegistry(
+    packageName,
+    version,
+    'https://registry.npmjs.org',
+    'NPM_AUTH_TOKEN',
+    'npm'
+  );
+
+  // Unpublish from GitHub Package Registry using GitHub API
+  const ghSuccess = await unpublishFromGitHub(packageName, version);
+
+  const success = npmSuccess && ghSuccess;
+  if (success) {
+    console.log(`\n✓ Successfully processed ${packageName}@${version} on both registries`);
+  } else {
+    console.log(`\n⚠️  Some operations failed (see above for details)`);
+  }
+
+  return success;
 }
 
 async function main() {

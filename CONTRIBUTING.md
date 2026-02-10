@@ -200,29 +200,46 @@ If your commit message doesn't follow the format, the commit will be blocked.
 
 ## Registry Configuration
 
-This repository uses a **dual-registry setup**:
+This repository uses a **dual-registry publishing setup**:
 
 ### Why Two Registries?
 
-- **GitHub Packages** (`npm.pkg.github.com`) - For private dependencies
-  - Private packages: `@uipath/auth-core`, `@uipath/auth-react` (used by apollo-vertex)
-  - Requires: `GH_NPM_REGISTRY_TOKEN` secret
+All Apollo packages (`@uipath/apollo-*`) are published to **both** registries simultaneously:
 
-- **npm.org** (`registry.npmjs.org`) - For publishing public packages
-  - Public packages: `@uipath/apollo-core`, `@uipath/apollo-react`, `@uipath/apollo-wind`, `@uipath/ap-chat`
-  - Requires: `NPM_AUTH_TOKEN` secret
+- **npm** (`registry.npmjs.org`) - For external open-source users
+  - No authentication required for installation
+  - Global accessibility and discoverability
+  - Requires: `NPM_AUTH_TOKEN` secret for publishing
+
+- **GitHub Package Registry** (`npm.pkg.github.com`) - For internal UiPath users
+  - Seamless installation for users with existing `.npmrc` configuration
+  - Also hosts private dependencies
+  - Requires: `GH_NPM_REGISTRY_TOKEN` secret for publishing
 
 ### How It Works
 
-**Installing dependencies:**
-- `.npmrc` points `@uipath` scope to GitHub Packages
-- Uses `GH_NPM_REGISTRY_TOKEN` to access private packages
-- Runs on all workflows (PR checks, builds, releases)
+**Installing packages as a user:**
 
-**Publishing packages:**
-- `publishConfig` in package.json overrides to npm.org
-- Uses `NPM_AUTH_TOKEN` for authentication
-- Only runs on release workflow (main branch)
+*External users (default):*
+```bash
+npm install @uipath/apollo-react  # Pulls from npm
+```
+
+*Internal UiPath users with `.npmrc`:*
+```
+@uipath:registry=https://npm.pkg.github.com
+```
+```bash
+npm install @uipath/apollo-react  # Pulls from GitHub automatically
+```
+
+**Publishing packages (automated):**
+
+When code is merged to `main` or a PR is opened:
+1. Package is built and tested
+2. Package is published to **npm** using `NPM_AUTH_TOKEN`
+3. Package is published to **GitHub Package Registry** using `GH_NPM_REGISTRY_TOKEN`
+4. Both registries receive identical versions
 
 ## Release Process
 
@@ -254,52 +271,62 @@ Only packages with new commits since their last release will be published.
 
 ### Dev Packages (Preview Releases)
 
-For testing unreleased changes, dev packages are automatically published for every PR.
+For testing unreleased changes, dev packages are automatically published for every PR to **both registries**.
 
 **Automatic (CI):**
-- When you push to a PR branch, packages with changes are published as `<version>-pr<number>`
-- Example: `@uipath/apollo-react@3.19.3-pr123`
-- A comment is added to the PR with the published versions
-- Packages are automatically cleaned up when the PR is closed or merged
+- When you push to a PR branch, packages with changes are published as `<version>-pr<number>.<short-sha>`
+- Example: `@uipath/apollo-react@3.19.3-pr123.abc1234`
+- Published to **both npm and GitHub Package Registry** with `@dev` tag
+- A comment is added to the PR with the published versions and installation instructions
+- Packages are automatically cleaned up from both registries when the PR is closed or merged
 
 > **Note:** Cleanup runs when a PR is closed or merged via GitHub's UI. If a branch is deleted directly (e.g., via `git push origin --delete branch`) without closing the PR, packages may remain published until manually cleaned up.
 
 **Manual (Local):**
 
 ```bash
-# Publish a dev version
+# Publish a dev version to both registries
 pnpm publish:dev @uipath/apollo-react my-feature
-# → Publishes @uipath/apollo-react@3.19.3-my-feature
+# → Publishes @uipath/apollo-react@3.19.3-my-feature to npm AND GitHub
 
-# Unpublish a dev version (within 72 hours of publication)
+# Unpublish a dev version from both registries (within 72 hours)
 pnpm unpublish:dev @uipath/apollo-react my-feature
 ```
 
-**Token Setup (for manual publishing to npm.org):**
+**Token Setup (for manual publishing):**
 
-1. Go to [npmjs.com/settings/YOUR_USERNAME/tokens](https://www.npmjs.com/settings/YOUR_USERNAME/tokens) → Access Tokens
-2. Click **"Generate New Token"** → Select **"Automation"** token type
-3. Configure the token:
-   - ✅ **Bypass two-factor authentication** (required for CI/CD automation)
-   - ✅ **Read and write** permissions
-   - Name it something like "Apollo UI Publishing"
-4. Copy the token immediately (shown only once!)
-5. Set the environment variable:
-   ```bash
-   export NPM_AUTH_TOKEN=your_token_here
-   ```
+You need **both** tokens to publish manually:
 
-> **Note:** npm only allows unpublishing within 72 hours of publication. After that, use `npm deprecate <package>@<version> "<message>"` instead.
+1. **npm token:**
+   - Go to [npmjs.com/settings/YOUR_USERNAME/tokens](https://www.npmjs.com/settings/YOUR_USERNAME/tokens)
+   - Generate **"Automation"** token with:
+     - ✅ Bypass 2FA (required for automation)
+     - ✅ Read and write permissions
+   - Export: `export NPM_AUTH_TOKEN=your_npm_token`
+
+2. **GitHub token:**
+   - Go to [github.com/settings/tokens](https://github.com/settings/tokens)
+   - Generate token with `write:packages` scope
+   - Export: `export GH_NPM_REGISTRY_TOKEN=your_github_token`
+
+> **Note:** npm only allows unpublishing within 72 hours of publication. After that, packages are automatically deprecated instead.
 
 **Installing dev packages:**
 
 ```bash
-# Install a PR preview version (from CI)
-npm install @uipath/apollo-react@3.19.3-pr123
+# Install latest preview version
+npm install @uipath/apollo-react@dev
 
-# Install a manually published dev version (local)
+# Install specific PR preview (from CI)
+npm install @uipath/apollo-react@3.19.3-pr123.abc1234
+
+# Install manually published dev version
 npm install @uipath/apollo-react@3.19.3-my-feature
 ```
+
+Dev packages work seamlessly for both external and internal users:
+- External users pull from npm (no auth needed)
+- Internal users with `.npmrc` automatically pull from GitHub Package Registry
 
 ### Version Ranges
 

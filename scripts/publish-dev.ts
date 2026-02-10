@@ -14,9 +14,11 @@ import { join } from 'node:path';
 import { type PackageJson, findPackagePath, getAllPackageNames } from './package-utils.js';
 
 function main() {
-  // Validate authentication token is available
-  const token = process.env.NPM_AUTH_TOKEN || process.env.NPM_TOKEN;
-  if (!token) {
+  // Validate authentication tokens are available
+  const npmToken = process.env.NPM_AUTH_TOKEN || process.env.NPM_TOKEN;
+  const ghToken = process.env.GH_NPM_REGISTRY_TOKEN;
+
+  if (!npmToken) {
     console.error('Error: NPM_AUTH_TOKEN or NPM_TOKEN environment variable is required.');
     console.error('');
     console.error('To publish to npm.org, you need an npm automation token.');
@@ -24,6 +26,15 @@ function main() {
     console.error('  export NPM_AUTH_TOKEN=your_npm_token_here');
     console.error('');
     console.error('See CONTRIBUTING.md for instructions on creating an npm token.');
+    process.exit(1);
+  }
+
+  if (!ghToken) {
+    console.error('Error: GH_NPM_REGISTRY_TOKEN environment variable is required.');
+    console.error('');
+    console.error('To publish to GitHub Package Registry, you need a GitHub token.');
+    console.error('Set it with:');
+    console.error('  export GH_NPM_REGISTRY_TOKEN=your_github_token_here');
     process.exit(1);
   }
 
@@ -75,18 +86,23 @@ function main() {
     writeFileSync(packageJsonPath, JSON.stringify(pkg, null, 2) + '\n');
     console.log(`Updated version to ${devVersion}`);
 
-    // Publish with 'dev' tag to avoid affecting 'latest'
+    // Publish with 'dev' tag to both registries
     // Note: Assumes package is already built (run `pnpm build` first)
-    console.log('\nPublishing with tag "dev" to npm.org...');
+    console.log('\nPublishing with tag "dev" to both registries...');
 
-    // Use --@uipath:registry= to override .npmrc scope registry (pnpm 10.5.0+)
+    const publishArgs = [
+      '--no-git-checks',
+      '--access', 'public',
+      '--tag', 'dev',
+    ];
+
+    // Publish to npm
+    console.log('\n📦 Publishing to npm...');
     execFileSync(
       'pnpm',
       [
         'publish',
-        '--no-git-checks',
-        '--access', 'public',
-        '--tag', 'dev',
+        ...publishArgs,
         '--@uipath:registry=https://registry.npmjs.org'
       ],
       {
@@ -94,13 +110,35 @@ function main() {
         stdio: 'inherit',
         env: {
           ...process.env,
-          NPM_AUTH_TOKEN: token,
-          NODE_AUTH_TOKEN: token,
+          NPM_AUTH_TOKEN: npmToken,
+          NODE_AUTH_TOKEN: npmToken,
         },
       }
     );
+    console.log('✓ Published to npm');
 
-    console.log(`\nSuccessfully published ${packageName}@${devVersion}`);
+    // Publish to GitHub Package Registry
+    console.log('\n📦 Publishing to GitHub Package Registry...');
+    execFileSync(
+      'pnpm',
+      [
+        'publish',
+        ...publishArgs,
+        '--@uipath:registry=https://npm.pkg.github.com'
+      ],
+      {
+        cwd: packagePath,
+        stdio: 'inherit',
+        env: {
+          ...process.env,
+          NPM_AUTH_TOKEN: ghToken,
+          NODE_AUTH_TOKEN: ghToken,
+        },
+      }
+    );
+    console.log('✓ Published to GitHub Package Registry');
+
+    console.log(`\n✓ Successfully published ${packageName}@${devVersion} to both registries`);
 
   } catch (error) {
     console.error('\nPublish failed:', error);

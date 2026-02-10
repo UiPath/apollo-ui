@@ -30,7 +30,7 @@
     [
       "@semantic-release/exec",
       {
-        "publishCmd": "pnpm publish --no-git-checks --@uipath:registry=https://registry.npmjs.org"
+        "publishCmd": "bash ../../scripts/publish-to-both.sh --no-git-checks --access public"
       }
     ],
     [

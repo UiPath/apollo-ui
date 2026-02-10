@@ -106,7 +106,8 @@ jobs:
 
           if [ -n "$COMMENT_ID" ]; then
             TIMESTAMP=$(TZ="America/Los_Angeles" date "+%Y-%m-%d %H:%M:%S PT")
-            COMMENT_BODY="## 📦 Dev Packages"$'\n\n'
+            COMMENT_BODY="<!-- dev-packages-comment -->"$'\n\n'
+            COMMENT_BODY+="## 📦 Dev Packages"$'\n\n'
             COMMENT_BODY+="🧹 Dev packages cleaned up after PR close."$'\n\n'
             COMMENT_BODY+="**Last updated:** ${TIMESTAMP}"
 
