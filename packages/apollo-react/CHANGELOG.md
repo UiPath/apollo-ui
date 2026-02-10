@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.26.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.26.0...@uipath/apollo-react@3.26.1) (2026-02-10)
+
+### Bug Fixes
+
+* **repo:** publish to npm registry ([326b3a3](https://github.com/UiPath/apollo-ui/commit/326b3a35fefafef514b2248c5fd621c9c9befefa))
+
 ## [@uipath/apollo-react-v3.26.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.25.1...@uipath/apollo-react@3.26.0) (2026-02-10)
 
 ### Features

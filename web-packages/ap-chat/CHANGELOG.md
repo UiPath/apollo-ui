@@ -1,3 +1,9 @@
+## [@uipath/ap-chat-v1.4.6](https://github.com/UiPath/apollo-ui/compare/@uipath/ap-chat@1.4.5...@uipath/ap-chat@1.4.6) (2026-02-10)
+
+### Bug Fixes
+
+* **repo:** publish to npm registry ([326b3a3](https://github.com/UiPath/apollo-ui/commit/326b3a35fefafef514b2248c5fd621c9c9befefa))
+
 ## [1.4.5](https://github.com/UiPath/apollo-ui/compare/@uipath/ap-chat@1.4.4...@uipath/ap-chat@1.4.5) (2026-01-14)
 
 

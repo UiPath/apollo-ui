@@ -1,3 +1,9 @@
+## [@uipath/apollo-core-v5.6.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-core@5.6.1...@uipath/apollo-core@5.6.2) (2026-02-10)
+
+### Bug Fixes
+
+* **repo:** publish to npm registry ([326b3a3](https://github.com/UiPath/apollo-ui/commit/326b3a35fefafef514b2248c5fd621c9c9befefa))
+
 ## [@uipath/apollo-core-v5.6.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-core@5.6.0...@uipath/apollo-core@5.6.1) (2026-02-09)
 
 ### Bug Fixes

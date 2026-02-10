@@ -1,3 +1,9 @@
+## [@uipath/apollo-wind-v0.7.3](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@0.7.2...@uipath/apollo-wind@0.7.3) (2026-02-10)
+
+### Bug Fixes
+
+* **repo:** publish to npm registry ([326b3a3](https://github.com/uipath/apollo-ui/commit/326b3a35fefafef514b2248c5fd621c9c9befefa))
+
 ## [@uipath/apollo-wind-v0.7.2](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@0.7.1...@uipath/apollo-wind@0.7.2) (2026-01-31)
 
 ### Bug Fixes
