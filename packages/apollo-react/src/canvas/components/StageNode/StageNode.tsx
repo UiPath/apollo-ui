@@ -73,6 +73,7 @@ const StageNodeComponent = (props: StageNodeProps) => {
     replaceTaskLabel = 'Replace task',
     taskOptions = [],
     menuItems,
+    pendingReplaceTask,
     onStageClick,
     onTaskAdd,
     onAddTaskFromToolbox,
@@ -81,7 +82,7 @@ const StageNodeComponent = (props: StageNodeProps) => {
     onTaskGroupModification,
     onStageTitleChange,
     onTaskReorder,
-    onTaskReplace,
+    onReplaceTaskFromToolbox,
   } = props;
 
   const taskWidth = width ? width - STAGE_CONTENT_INSET : undefined;
@@ -125,6 +126,19 @@ const StageNodeComponent = (props: StageNodeProps) => {
 
   const [isAddingTask, setIsAddingTask] = useState(false);
   const [isReplacingTask, setIsReplacingTask] = useState(false);
+
+  useEffect(() => {
+    if (pendingReplaceTask?.groupIndex != null && pendingReplaceTask?.taskIndex != null) {
+      const taskGroup = tasks[pendingReplaceTask.groupIndex];
+      taskStateReference.current = {
+        isParallel: (taskGroup?.length ?? 0) > 1,
+        groupIndex: pendingReplaceTask.groupIndex,
+        taskIndex: pendingReplaceTask.taskIndex,
+      };
+      setIsReplacingTask(true);
+    }
+  }, [pendingReplaceTask, tasks]);
+
   const [activeDragId, setActiveDragId] = useState<string | null>(null);
   const [offsetLeft, setOffsetLeft] = useState(0);
   const [overId, setOverId] = useState<string | null>(null);
@@ -228,7 +242,7 @@ const StageNodeComponent = (props: StageNodeProps) => {
     ) => {
       const items: NodeMenuItem[] = [];
 
-      if (onTaskReplace) {
+      if (onReplaceTaskFromToolbox) {
         items.push(getMenuItem('replace-task', 'Replace Task', () => setIsReplacingTask(true)));
       }
 
@@ -248,7 +262,7 @@ const StageNodeComponent = (props: StageNodeProps) => {
 
       return items;
     },
-    [onTaskReplace, onTaskGroupModification, reGroupTaskFunction]
+    [onReplaceTaskFromToolbox, onTaskGroupModification, reGroupTaskFunction]
   );
 
   const { setSelectedNodeId } = useNodeSelection();
@@ -289,7 +303,8 @@ const StageNodeComponent = (props: StageNodeProps) => {
 
   const handleReplaceTaskToolboxItemSelected = useCallback(
     (item: ListItem) => {
-      onTaskReplace?.(
+      setIsReplacingTask(true);
+      onReplaceTaskFromToolbox?.(
         item,
         taskStateReference.current.groupIndex,
         taskStateReference.current.taskIndex
@@ -297,7 +312,7 @@ const StageNodeComponent = (props: StageNodeProps) => {
       setIsReplacingTask(false);
       setSelectedNodeId(id);
     },
-    [onTaskReplace, setSelectedNodeId, id]
+    [onReplaceTaskFromToolbox, setSelectedNodeId, id]
   );
 
   const handleConfigurations: HandleGroupManifest[] = useMemo(
@@ -601,7 +616,7 @@ const StageNodeComponent = (props: StageNodeProps) => {
                                 }
                                 isDragDisabled={!onTaskReorder}
                                 zoom={zoom}
-                                {...((onTaskGroupModification || onTaskReplace) && {
+                                {...((onTaskGroupModification || onReplaceTaskFromToolbox) && {
                                   onMenuOpen: () => {
                                     taskStateReference.current = {
                                       isParallel,
@@ -652,7 +667,7 @@ const StageNodeComponent = (props: StageNodeProps) => {
         </FloatingCanvasPanel>
       )}
 
-      {onTaskReplace && (
+      {onReplaceTaskFromToolbox && (
         <FloatingCanvasPanel open={isReplacingTask} nodeId={id} offset={15}>
           <Toolbox
             title={replaceTaskLabel}

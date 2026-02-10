@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
+import { GroupModificationType } from '../../utils/GroupModificationUtils';
 import type { NodeMenuAction, NodeMenuItem } from '../NodeContextMenu';
-import { GroupModificationType } from '../utils/GroupModificationUtils';
 
 // TODO: Add translation for the menu items
 
