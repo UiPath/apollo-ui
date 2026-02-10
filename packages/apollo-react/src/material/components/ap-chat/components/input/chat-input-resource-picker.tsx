@@ -320,9 +320,12 @@ const MenuContent = React.memo(function MenuContent({
         {drillDownHeader}
         <ErrorContainer>
           <ApTypography variant={FontVariantToken.fontSizeS}>{error}</ApTypography>
-          <ApButton variant="text" size="small" onClick={retryLoad} label="retry">
-            {_(msg({ id: 'autopilot-chat.resource-picker.retry', message: 'Retry' }))}
-          </ApButton>
+          <ApButton
+            variant="text"
+            size="small"
+            onClick={retryLoad}
+            label={_(msg({ id: 'autopilot-chat.resource-picker.retry', message: 'Retry' }))}
+          />
         </ErrorContainer>
       </>
     );

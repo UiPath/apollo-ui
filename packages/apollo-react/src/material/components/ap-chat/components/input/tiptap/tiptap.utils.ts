@@ -19,6 +19,11 @@ export function getFullMentionQuery(
   }
 
   const fullText = editor.state.doc.textBetween(textFrom, parentEnd, '', '');
+
+  if (fullText.length > 0 && fullText.charAt(0) === ' ') {
+    return { query: '', fullRange: range };
+  }
+
   const query = fullText.split(CHAT_RESOURCE_MENTION_TERMINATOR)[0] ?? '';
 
   return { query, fullRange: { from: range.from, to: textFrom + query.length } };
