@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.24.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.24.0...@uipath/apollo-react@3.24.1) (2026-02-10)
+
+### Bug Fixes
+
+* **apollo-react:** hide user-prompt in conversational agent (#AG-123) ([58ba775](https://github.com/UiPath/apollo-ui/commit/58ba7757c644b4387fcf32f92fba972188854d1e)), closes [#AG-123](https://github.com/UiPath/apollo-ui/issues/AG-123)
+
 ## [@uipath/apollo-react-v3.24.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.23.1...@uipath/apollo-react@3.24.0) (2026-02-09)
 
 ### Features
