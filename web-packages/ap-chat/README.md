@@ -44,6 +44,8 @@ pnpm add @uipath/ap-chat
 yarn add @uipath/ap-chat
 ```
 
+**Note:** This package is published to both npm and GitHub Package Registry. External users will automatically pull from npm. Internal UiPath users with `.npmrc` configured will automatically pull from GitHub Package Registry.
+
 ## Usage
 
 ### Vanilla JavaScript / HTML

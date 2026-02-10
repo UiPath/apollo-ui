@@ -17,6 +17,8 @@ graph LR
 npm install @uipath/apollo-wind
 ```
 
+**Note:** This package is published to both npm and GitHub Package Registry. External users will automatically pull from npm. Internal UiPath users with `.npmrc` configured will automatically pull from GitHub Package Registry.
+
 **Option 1: Zero Config** (Recommended for quick starts)
 
 ```tsx
