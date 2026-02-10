@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.26.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.25.1...@uipath/apollo-react@3.26.0) (2026-02-10)
+
+### Features
+
+* **apollo-react:** remove parameters property from BaseNode [AG-726] ([f96a605](https://github.com/UiPath/apollo-ui/commit/f96a605abba6009de95f50cdbfe4fad9e81d888f))
+
 ## [@uipath/apollo-react-v3.25.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.25.0...@uipath/apollo-react@3.25.1) (2026-02-10)
 
 ### Bug Fixes
