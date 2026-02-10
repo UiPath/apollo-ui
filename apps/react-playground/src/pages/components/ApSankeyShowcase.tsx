@@ -51,11 +51,11 @@ export function ApSankeyShowcase() {
 						nodes: [
 							{ id: "all_traces", label: "All traces" },
 							{ id: "api_call", label: "API Call" },
-							{ id: "context", label: "Context" },
-							{ id: "memory", label: "Memory" },
+							{ id: "context", label: "Context Grounding Index Search" },
+							{ id: "memory", label: "Apply Dynamic Few Shot Memory" },
 							{ id: "guardrails", label: "Guardrails" },
 							{ id: "escalation", label: "Escalation" },
-							{ id: "web_search", label: "Web Search" },
+							{ id: "web_search", label: "Tool Call - Web Search" },
 							{
 								id: "successful",
 								label: "Successful",
@@ -359,35 +359,40 @@ export function ApSankeyShowcase() {
 				<SectionHeader>Multi-Stage Complex Flow</SectionHeader>
 				<SectionDescription>
 					Visualize complex branching flows with multiple stages and convergence
-					points.
+					points. Long labels are automatically truncated - hover to see full text.
 				</SectionDescription>
-				<ApSankeyDiagram
-					data={{
-						nodes: [
-							{ id: "input", label: "Input" },
-							{ id: "stage1a", label: "Stage 1A" },
-							{ id: "stage1b", label: "Stage 1B" },
-							{ id: "stage2a", label: "Stage 2A" },
-							{ id: "stage2b", label: "Stage 2B" },
-							{ id: "stage2c", label: "Stage 2C" },
-							{ id: "output1", label: "Output 1" },
-							{ id: "output2", label: "Output 2" },
-						],
-						links: [
-							{ source: "input", target: "stage1a", value: 100 },
-							{ source: "input", target: "stage1b", value: 80 },
-							{ source: "stage1a", target: "stage2a", value: 60 },
-							{ source: "stage1a", target: "stage2b", value: 40 },
-							{ source: "stage1b", target: "stage2b", value: 50 },
-							{ source: "stage1b", target: "stage2c", value: 30 },
-							{ source: "stage2a", target: "output1", value: 55 },
-							{ source: "stage2b", target: "output1", value: 45 },
-							{ source: "stage2b", target: "output2", value: 20 },
-							{ source: "stage2c", target: "output2", value: 25 },
-						],
-					}}
-					style={{ height: "500px", width: "100%" }}
-				/>
+				<div style={{ maxWidth: "1200px" }}>
+					<ApSankeyDiagram
+						data={{
+							nodes: [
+								{ id: "input", label: "Initial Data Input Processing System" },
+								{ id: "stage1a", label: "Primary Validation and Transformation Stage" },
+								{ id: "stage1b", label: "Secondary Data Enrichment Pipeline Module" },
+								{ id: "stage1c", label: "Tertiary Quality Assurance and Verification" },
+								{ id: "stage2a", label: "Advanced Analytics Processing Engine" },
+								{ id: "stage2b", label: "Machine Learning Model Inference Service" },
+								{ id: "stage2c", label: "Real-time Data Aggregation and Filtering" },
+								{ id: "output1", label: "Final Processed Output Data Storage" },
+								{ id: "output2", label: "Error Handling and Logging System Infrastructure" },
+							],
+							links: [
+								{ source: "input", target: "stage1a", value: 100 },
+								{ source: "input", target: "stage1b", value: 80 },
+								{ source: "input", target: "stage1c", value: 60 },
+								{ source: "stage1a", target: "stage2a", value: 50 },
+								{ source: "stage1a", target: "stage2b", value: 50 },
+								{ source: "stage1b", target: "stage2b", value: 40 },
+								{ source: "stage1b", target: "stage2c", value: 40 },
+								{ source: "stage1c", target: "stage2c", value: 60 },
+								{ source: "stage2a", target: "output1", value: 50 },
+								{ source: "stage2b", target: "output1", value: 45 },
+								{ source: "stage2b", target: "output2", value: 45 },
+								{ source: "stage2c", target: "output2", value: 40 },
+							],
+						}}
+						style={{ height: "500px", width: "100%" }}
+					/>
+				</div>
 			</section>
 		</PageContainer>
 	);
