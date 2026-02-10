@@ -300,15 +300,17 @@ export function AutopilotChatResourcePickerProvider({
   }, [drillDown, searchQuery, topLevelResources, getNestedResources, dispatch]);
 
   const retryLoad = useCallback(() => {
-    if (drillDown) {
-      loadNestedResources(drillDown.category);
-    } else if (searchQuery) {
+    if (searchQuery) {
+      dispatch({ type: 'SEARCH_START' });
       paginatedResources ? performPaginatedSearch() : performLocalSearch();
+    } else if (drillDown) {
+      loadNestedResources(drillDown.category);
     }
   }, [
-    drillDown,
     searchQuery,
+    drillDown,
     paginatedResources,
+    dispatch,
     loadNestedResources,
     performPaginatedSearch,
     performLocalSearch,

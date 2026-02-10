@@ -7,7 +7,7 @@ import { getFullMentionQuery } from './tiptap.utils';
 export const ResourceMentionPluginKey = new PluginKey('resourceMention');
 
 // Allowed first characters after @ -> letters, digits, underscore, dot, slashes
-const RESOURCE_QUERY_START_PATTERN = /^[a-zA-Z0-9_./\\]/;
+const RESOURCE_QUERY_START_PATTERN = /^[a-zA-Z0-9_./\\&]/;
 
 export interface CursorCoordinates {
   top: number;
@@ -51,6 +51,17 @@ export function createResourceSuggestion(
       if (query.includes(CHAT_RESOURCE_MENTION_TERMINATOR)) {
         return false;
       }
+
+      // Block picker when @ is followed by a special character (e.g. @$, @#)
+      if (query.length === 0 && textFrom < state.doc.resolve(textFrom).end()) {
+        const nextChar = state.doc.textBetween(textFrom, textFrom + 1, '', '');
+        const isSpecialChar =
+          nextChar.length > 0 && nextChar !== ' ' && !RESOURCE_QUERY_START_PATTERN.test(nextChar);
+        if (isSpecialChar) {
+          return false;
+        }
+      }
+
       return true;
     },
     render: () => ({
