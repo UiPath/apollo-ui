@@ -1,3 +1,13 @@
+## [@uipath/apollo-react-v3.25.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.24.2...@uipath/apollo-react@3.25.0) (2026-02-10)
+
+### Features
+
+* **apollo-react:** support pinned output adornment ([4551039](https://github.com/UiPath/apollo-ui/commit/455103920d85dc913b4885b7991ee9e2dc8fea96))
+
+### Bug Fixes
+
+* **apollo-react:** handle dark themed icon backgrounds on nodes ([635fc56](https://github.com/UiPath/apollo-ui/commit/635fc565c12c4d5b38220059c430a38c4c3391c8))
+
 ## [@uipath/apollo-react-v3.24.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.24.1...@uipath/apollo-react@3.24.2) (2026-02-10)
 
 ### Bug Fixes
