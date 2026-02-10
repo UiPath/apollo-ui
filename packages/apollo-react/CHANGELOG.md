@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.26.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.26.1...@uipath/apollo-react@3.26.2) (2026-02-10)
+
+### Bug Fixes
+
+* **apollo-react:** fix the viewbox size ([73c3466](https://github.com/UiPath/apollo-ui/commit/73c34667bf6639d133027b941a5a21b731966a49))
+
 ## [@uipath/apollo-react-v3.26.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.26.0...@uipath/apollo-react@3.26.1) (2026-02-10)
 
 ### Bug Fixes
