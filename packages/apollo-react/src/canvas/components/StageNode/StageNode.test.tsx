@@ -207,8 +207,8 @@ describe('StageNode - Replace Task Functionality', () => {
   describe('Replace Task Menu Item', () => {
     it('should show replace task menu item when onTaskReplace is provided', async () => {
       const user = userEvent.setup();
-      const onTaskReplace = vi.fn();
-      renderStageNode({ onTaskReplace });
+      const onReplaceTaskFromToolbox = vi.fn();
+      renderStageNode({ onReplaceTaskFromToolbox });
 
       const taskMenuButton = screen.getByTestId('task-menu-button-task-1');
       expect(taskMenuButton).toBeInTheDocument();
@@ -224,9 +224,9 @@ describe('StageNode - Replace Task Functionality', () => {
 
     it('should not show replace task menu item when onTaskReplace is not provided', async () => {
       const user = userEvent.setup();
-      // Need onTaskGroupModification to show menu button, but not onTaskReplace
+      // Need onTaskGroupModification to show menu button, but not onReplaceTaskFromToolbox
       const onTaskGroupModification = vi.fn();
-      renderStageNode({ onTaskReplace: undefined, onTaskGroupModification });
+      renderStageNode({ onReplaceTaskFromToolbox: undefined, onTaskGroupModification });
 
       const taskMenuButton = screen.getByTestId('task-menu-button-task-1');
       await user.click(taskMenuButton);
@@ -238,9 +238,9 @@ describe('StageNode - Replace Task Functionality', () => {
 
     it('should show replace task menu item before regroup options', async () => {
       const user = userEvent.setup();
-      const onTaskReplace = vi.fn();
+      const onReplaceTaskFromToolbox = vi.fn();
       const onTaskGroupModification = vi.fn();
-      renderStageNode({ onTaskReplace, onTaskGroupModification });
+      renderStageNode({ onReplaceTaskFromToolbox, onTaskGroupModification });
 
       const taskMenuButton = screen.getByTestId('task-menu-button-task-1');
       await user.click(taskMenuButton);
@@ -256,8 +256,8 @@ describe('StageNode - Replace Task Functionality', () => {
   describe('Replace Task Toolbox', () => {
     it('should open replace task toolbox when replace task menu item is clicked', async () => {
       const user = userEvent.setup();
-      const onTaskReplace = vi.fn();
-      renderStageNode({ onTaskReplace });
+      const onReplaceTaskFromToolbox = vi.fn();
+      renderStageNode({ onReplaceTaskFromToolbox });
 
       const taskMenuButton = screen.getByTestId('task-menu-button-task-1');
       await user.click(taskMenuButton);
@@ -277,9 +277,9 @@ describe('StageNode - Replace Task Functionality', () => {
 
     it('should use custom replaceTaskLabel when provided', async () => {
       const user = userEvent.setup();
-      const onTaskReplace = vi.fn();
+      const onReplaceTaskFromToolbox = vi.fn();
       renderStageNode({
-        onTaskReplace,
+        onReplaceTaskFromToolbox,
         replaceTaskLabel: 'Custom Replace Label',
       });
 
@@ -297,14 +297,14 @@ describe('StageNode - Replace Task Functionality', () => {
 
     it('should display task options in replace task toolbox', async () => {
       const user = userEvent.setup();
-      const onTaskReplace = vi.fn();
+      const onReplaceTaskFromToolbox = vi.fn();
       const taskOptions: ListItem[] = [
         { id: 'option-1', name: 'Option 1', data: {} },
         { id: 'option-2', name: 'Option 2', data: {} },
         { id: 'option-3', name: 'Option 3', data: {} },
       ];
 
-      renderStageNode({ onTaskReplace, taskOptions });
+      renderStageNode({ onReplaceTaskFromToolbox, taskOptions });
 
       const taskMenuButton = screen.getByTestId('task-menu-button-task-1');
       await user.click(taskMenuButton);
@@ -327,12 +327,12 @@ describe('StageNode - Replace Task Functionality', () => {
   describe('Replace Task Callback', () => {
     it('should call onTaskReplace with correct parameters when task is selected', async () => {
       const user = userEvent.setup();
-      const onTaskReplace = vi.fn();
+      const onReplaceTaskFromToolbox = vi.fn();
       const taskOptions: ListItem<StageTaskItem>[] = [
         { id: 'new-task', name: 'New Task', data: { id: 'new-task', label: 'New Task' } },
       ];
 
-      renderStageNode({ onTaskReplace, taskOptions });
+      renderStageNode({ onReplaceTaskFromToolbox, taskOptions });
 
       // Open menu and click replace
       const taskMenuButton = screen.getByTestId('task-menu-button-task-1');
@@ -349,10 +349,10 @@ describe('StageNode - Replace Task Functionality', () => {
       const taskOption = screen.getByTestId('toolbox-item-new-task');
       await user.click(taskOption);
 
-      // Verify onTaskReplace was called with correct parameters
+      // Verify onReplaceTaskFromToolbox was called with correct parameters
       await waitFor(() => {
-        expect(onTaskReplace).toHaveBeenCalledTimes(1);
-        expect(onTaskReplace).toHaveBeenCalledWith(
+        expect(onReplaceTaskFromToolbox).toHaveBeenCalledTimes(1);
+        expect(onReplaceTaskFromToolbox).toHaveBeenCalledWith(
           expect.objectContaining({ id: 'new-task' }),
           0, // groupIndex
           0 // taskIndex
@@ -362,7 +362,7 @@ describe('StageNode - Replace Task Functionality', () => {
 
     it('should pass correct groupIndex and taskIndex for parallel tasks', async () => {
       const user = userEvent.setup();
-      const onTaskReplace = vi.fn();
+      const onReplaceTaskFromToolbox = vi.fn();
       const tasks: StageTaskItem[][] = [
         [createTask('task-1', 'Task 1'), createTask('task-2', 'Task 2')], // Parallel group
         [createTask('task-3', 'Task 3')],
@@ -372,7 +372,7 @@ describe('StageNode - Replace Task Functionality', () => {
       ];
 
       renderStageNode({
-        onTaskReplace,
+        onReplaceTaskFromToolbox,
         taskOptions,
         stageDetails: {
           ...defaultProps.stageDetails,
@@ -397,7 +397,7 @@ describe('StageNode - Replace Task Functionality', () => {
 
       // Verify correct groupIndex (0) and taskIndex (1)
       await waitFor(() => {
-        expect(onTaskReplace).toHaveBeenCalledWith(
+        expect(onReplaceTaskFromToolbox).toHaveBeenCalledWith(
           expect.objectContaining({ id: 'new-task' }),
           0, // groupIndex
           1 // taskIndex
@@ -409,12 +409,12 @@ describe('StageNode - Replace Task Functionality', () => {
   describe('Replace Task State Management', () => {
     it('should close replace task toolbox after task selection', async () => {
       const user = userEvent.setup();
-      const onTaskReplace = vi.fn();
+      const onReplaceTaskFromToolbox = vi.fn();
       const taskOptions: ListItem<StageTaskItem>[] = [
         { id: 'new-task', name: 'New Task', data: { id: 'new-task', label: 'New Task' } },
       ];
 
-      renderStageNode({ onTaskReplace, taskOptions });
+      renderStageNode({ onReplaceTaskFromToolbox, taskOptions });
 
       // Open replace task toolbox
       const taskMenuButton = screen.getByTestId('task-menu-button-task-1');
@@ -439,8 +439,8 @@ describe('StageNode - Replace Task Functionality', () => {
 
     it('should close replace task toolbox when close button is clicked', async () => {
       const user = userEvent.setup();
-      const onTaskReplace = vi.fn();
-      renderStageNode({ onTaskReplace });
+      const onReplaceTaskFromToolbox = vi.fn();
+      renderStageNode({ onReplaceTaskFromToolbox });
 
       // Open replace task toolbox
       const taskMenuButton = screen.getByTestId('task-menu-button-task-1');
@@ -464,8 +464,8 @@ describe('StageNode - Replace Task Functionality', () => {
     });
 
     it('should reset replace task state when node is deselected', async () => {
-      const onTaskReplace = vi.fn();
-      const { rerender } = renderStageNode({ onTaskReplace, selected: true });
+      const onReplaceTaskFromToolbox = vi.fn();
+      const { rerender } = renderStageNode({ onReplaceTaskFromToolbox, selected: true });
 
       // Open replace task toolbox
       const taskMenuButton = screen.getByTestId('task-menu-button-task-1');
@@ -481,7 +481,7 @@ describe('StageNode - Replace Task Functionality', () => {
       // Deselect the node
       rerender(
         <ReactFlowProvider>
-          <StageNode {...defaultProps} {...{ onTaskReplace, selected: false }} />
+          <StageNode {...defaultProps} {...{ onReplaceTaskFromToolbox, selected: false }} />
         </ReactFlowProvider>
       );
 
@@ -492,10 +492,10 @@ describe('StageNode - Replace Task Functionality', () => {
     });
 
     it('should reset both add task and replace task states when node is deselected', async () => {
-      const onTaskReplace = vi.fn();
+      const onReplaceTaskFromToolbox = vi.fn();
       const onAddTaskFromToolbox = vi.fn();
       const { rerender } = renderStageNode({
-        onTaskReplace,
+        onReplaceTaskFromToolbox,
         onAddTaskFromToolbox,
         selected: true,
       });
@@ -516,7 +516,7 @@ describe('StageNode - Replace Task Functionality', () => {
         <ReactFlowProvider>
           <StageNode
             {...defaultProps}
-            {...{ onTaskReplace, onAddTaskFromToolbox, selected: false }}
+            {...{ onReplaceTaskFromToolbox, onAddTaskFromToolbox, selected: false }}
           />
         </ReactFlowProvider>
       );
@@ -532,7 +532,7 @@ describe('StageNode - Replace Task Functionality', () => {
   describe('Replace Task with Task State Reference', () => {
     it('should use ref for taskStateReference instead of state', async () => {
       const user = userEvent.setup();
-      const onTaskReplace = vi.fn();
+      const onReplaceTaskFromToolbox = vi.fn();
       const tasks: StageTaskItem[][] = [
         [createTask('task-1', 'Task 1')],
         [createTask('task-2', 'Task 2')],
@@ -542,7 +542,7 @@ describe('StageNode - Replace Task Functionality', () => {
       ];
 
       renderStageNode({
-        onTaskReplace,
+        onReplaceTaskFromToolbox,
         taskOptions,
         stageDetails: {
           ...defaultProps.stageDetails,
@@ -567,7 +567,7 @@ describe('StageNode - Replace Task Functionality', () => {
 
       // Verify correct indices are passed (groupIndex: 1, taskIndex: 0)
       await waitFor(() => {
-        expect(onTaskReplace).toHaveBeenCalledWith(
+        expect(onReplaceTaskFromToolbox).toHaveBeenCalledWith(
           expect.objectContaining({ id: 'new-task' }),
           1, // groupIndex
           0 // taskIndex
@@ -579,8 +579,8 @@ describe('StageNode - Replace Task Functionality', () => {
   describe('Replace Task Panel Rendering', () => {
     it('should render FloatingCanvasPanel for replace task when onTaskReplace is provided', async () => {
       const user = userEvent.setup();
-      const onTaskReplace = vi.fn();
-      renderStageNode({ onTaskReplace });
+      const onReplaceTaskFromToolbox = vi.fn();
+      renderStageNode({ onReplaceTaskFromToolbox });
 
       // Initially, panel should not be visible
       expect(screen.queryByTestId('floating-canvas-panel')).not.toBeInTheDocument();
@@ -599,7 +599,7 @@ describe('StageNode - Replace Task Functionality', () => {
     });
 
     it('should not render replace task FloatingCanvasPanel when onTaskReplace is not provided', () => {
-      renderStageNode({ onTaskReplace: undefined });
+      renderStageNode({ onReplaceTaskFromToolbox: undefined });
 
       // Panel should not exist
       const panels = screen.queryAllByTestId('floating-canvas-panel');
