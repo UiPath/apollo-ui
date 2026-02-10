@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.27.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.26.2...@uipath/apollo-react@3.27.0) (2026-02-10)
+
+### Features
+
+* **repo:** add dual registry publishing support ([50d8edb](https://github.com/UiPath/apollo-ui/commit/50d8edb89071d6915e7f2aec125e172b6d3ba575))
+
 ## [@uipath/apollo-react-v3.26.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.26.1...@uipath/apollo-react@3.26.2) (2026-02-10)
 
 ### Bug Fixes

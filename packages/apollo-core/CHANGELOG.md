@@ -1,3 +1,9 @@
+## [@uipath/apollo-core-v5.7.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-core@5.6.2...@uipath/apollo-core@5.7.0) (2026-02-10)
+
+### Features
+
+* **repo:** add dual registry publishing support ([50d8edb](https://github.com/UiPath/apollo-ui/commit/50d8edb89071d6915e7f2aec125e172b6d3ba575))
+
 ## [@uipath/apollo-core-v5.6.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-core@5.6.1...@uipath/apollo-core@5.6.2) (2026-02-10)
 
 ### Bug Fixes

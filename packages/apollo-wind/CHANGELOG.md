@@ -1,3 +1,9 @@
+## [@uipath/apollo-wind-v0.8.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@0.7.3...@uipath/apollo-wind@0.8.0) (2026-02-10)
+
+### Features
+
+* **repo:** add dual registry publishing support ([50d8edb](https://github.com/uipath/apollo-ui/commit/50d8edb89071d6915e7f2aec125e172b6d3ba575))
+
 ## [@uipath/apollo-wind-v0.7.3](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@0.7.2...@uipath/apollo-wind@0.7.3) (2026-02-10)
 
 ### Bug Fixes
