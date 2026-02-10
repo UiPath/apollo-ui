@@ -8,6 +8,7 @@ export * from './coded-agents/mermaid-parser';
 export * from './constraint-validator';
 export * from './createPreviewNode';
 export * from './export-canvas';
+export * from './GroupModificationUtils';
 export * from './icon-registry';
 export * from './manifest-resolver';
 export * from './NodeUtils';
