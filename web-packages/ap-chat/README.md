@@ -283,12 +283,6 @@ Supported browsers:
 - Firefox 90+
 - Safari 14+
 
-## Development Notes
-
-### Hot Module Replacement (HMR)
-
-When developing with this package in dev mode, you may see HMR errors in the console when switching locales. This is a known limitation of how webpack/rspack handles dynamically imported locale chunks. The functionality works correctly (triggers a full page reload), but logs an error message. This only affects development and does not impact production builds.
-
 ## License
 
 MIT
