@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.24.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.24.1...@uipath/apollo-react@3.24.2) (2026-02-10)
+
+### Bug Fixes
+
+* **apollo-react:** no edge toolbar for preview edges ([8f3acd7](https://github.com/UiPath/apollo-ui/commit/8f3acd77cb4d1090e295035f93036350bd02b06a))
+
 ## [@uipath/apollo-react-v3.24.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.24.0...@uipath/apollo-react@3.24.1) (2026-02-10)
 
 ### Bug Fixes
