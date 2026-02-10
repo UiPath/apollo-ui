@@ -11,7 +11,7 @@ export const CaseManagementProject = ({
     width={w}
     height={h}
     fill="none"
-    viewBox="0 0 22 22"
+    viewBox="0 0 16 16"
   >
     <path
       fill="currentColor"
