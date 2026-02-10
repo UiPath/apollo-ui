@@ -60,16 +60,18 @@ const StyledSankeyLink = styled('path')({
 const StyledSankeyNodeLabel = styled('text')({
   fontSize: token.FontVariantToken.fontSizeS,
   fill: 'var(--color-foreground-emp)',
-  pointerEvents: 'none',
+  pointerEvents: 'auto',
   userSelect: 'none',
+  cursor: 'default',
 });
 
 const StyledSankeyNodeValue = styled('text')({
   fontSize: token.FontVariantToken.fontSizeS,
   fontWeight: token.FontFamily.FontWeightMedium,
   fill: 'var(--color-foreground-emp)',
-  pointerEvents: 'none',
+  pointerEvents: 'auto',
   userSelect: 'none',
+  cursor: 'default',
 });
 
 const LinkTooltipContent = styled(Paper)({
@@ -144,8 +146,14 @@ interface ExtendedSankeyLink extends D3SankeyLink<SankeyNode, SankeyLink>, Sanke
 }
 
 // Layout margins to prevent clipping at SVG boundaries
-const DIAGRAM_MARGIN_HORIZONTAL = 1;
+const DIAGRAM_MARGIN_HORIZONTAL = 80;
 const DIAGRAM_MARGIN_VERTICAL = 5;
+
+// Helper function to truncate text if it exceeds max length
+const truncateText = (text: string, maxChars: number): string => {
+  if (text.length <= maxChars) return text;
+  return `${text.substring(0, maxChars - 1)}…`;
+};
 
 export const ApSankeyDiagram = React.forwardRef<HTMLDivElement, ApSankeyDiagramProps>(
   (props, ref) => {
@@ -293,13 +301,38 @@ export const ApSankeyDiagram = React.forwardRef<HTMLDivElement, ApSankeyDiagramP
     // Generate node data for rendering
     const nodeData = useMemo(() => {
       if (!sankeyGraph) return [];
+
+      const midpoint = actualWidth / 2;
+
       return sankeyGraph.nodes.map((node, index) => {
         const extNode = node as ExtendedSankeyNode;
         const x0 = extNode.x0 || 0;
         const x1 = extNode.x1 || 0;
         const y0 = extNode.y0 || 0;
         const y1 = extNode.y1 || 0;
-        const isLeftSide = x0 < actualWidth / 2;
+
+        // Determine if node is on left or right side of midpoint
+        const nodeCenter = (x0 + x1) / 2;
+        const labelOnRight = nodeCenter < midpoint;
+
+        // Calculate full available space from node edge to diagram edge
+        const fullSpace = labelOnRight
+          ? actualWidth - DIAGRAM_MARGIN_HORIZONTAL - x1 - parseInt(token.Spacing.SpacingXs)
+          : x0 - DIAGRAM_MARGIN_HORIZONTAL - parseInt(token.Spacing.SpacingXs);
+
+        // Calculate space from node edge to midpoint
+        const spaceToMidpoint = labelOnRight
+          ? midpoint - x1 - parseInt(token.Spacing.SpacingXs)
+          : x0 - midpoint - parseInt(token.Spacing.SpacingXs);
+
+        // Only cap at midpoint if spaceToMidpoint is positive and less than fullSpace
+        // If spaceToMidpoint is negative or zero, the node is at/past midpoint, so just use fullSpace
+        const availableSpace = spaceToMidpoint > 0
+          ? Math.min(fullSpace, spaceToMidpoint)
+          : fullSpace;
+
+        const maxChars = Math.floor(Math.max(0, availableSpace) / parseInt(token.Spacing.SpacingXs));
+        const displayLabel = truncateText(extNode.label, maxChars);
 
         return {
           node: extNode,
@@ -308,12 +341,14 @@ export const ApSankeyDiagram = React.forwardRef<HTMLDivElement, ApSankeyDiagramP
           width: x1 - x0,
           height: y1 - y0,
           color: nodeColorMap.get(extNode.id) || colorScheme[index % colorScheme.length],
-          labelX: isLeftSide
+          labelX: labelOnRight
             ? x1 + parseInt(token.Spacing.SpacingXs)
             : x0 - parseInt(token.Spacing.SpacingXs),
           labelY: (y0 + y1) / 2,
-          labelAnchor: (isLeftSide ? 'start' : 'end') as 'start' | 'end',
+          labelAnchor: (labelOnRight ? 'start' : 'end') as 'start' | 'end',
           value: extNode.value || 0,
+          displayLabel,
+          fullLabel: extNode.label,
         };
       });
     }, [sankeyGraph, nodeColorMap, colorScheme, actualWidth]);
@@ -470,7 +505,8 @@ export const ApSankeyDiagram = React.forwardRef<HTMLDivElement, ApSankeyDiagramP
                     dy="0.35em"
                     textAnchor={nodeItem.labelAnchor}
                   >
-                    {nodeItem.node.label}
+                    <title>{nodeItem.fullLabel}</title>
+                    {nodeItem.displayLabel}
                   </StyledSankeyNodeLabel>
 
                   {/* Node value */}
