@@ -178,7 +178,6 @@ const createCodedAgentNodeWrapper = (
         selected={selected}
         data={{
           ...nodeData,
-          parameters: {},
           display: {
             label: nodeData.label,
             subLabel: translations.codedAgentStep,
@@ -247,7 +246,6 @@ const CodedResourceNodeElement = memo(({ data, selected, id, ...nodeProps }: Nod
         selected={selected}
         data={{
           ...nodeData,
-          parameters: {},
           display: {
             label: undefined, // Label is rendered via TextContainer below
             shape: 'circle',
@@ -288,7 +286,6 @@ const CodedFlowNodeElement = memo(({ data, selected, id, ...nodeProps }: NodePro
           selected={selected}
           data={{
             ...nodeData,
-            parameters: {},
             display: {
               label: undefined, // Label is rendered via TextContainer below
               shape: 'square',
@@ -321,7 +318,6 @@ const CodedFlowNodeElement = memo(({ data, selected, id, ...nodeProps }: NodePro
       selected={selected}
       data={{
         ...nodeData,
-        parameters: {},
         display: {
           label: nodeData.label,
           shape: 'rectangle',

@@ -407,7 +407,6 @@ export type AgentFlowNodeData = {
   description: string;
   definition: Record<string, unknown>; // TODO: NEED schema/Agent type definition
   parentNodeId?: string;
-  parameters: Record<string, unknown>; // Required by BaseNodeData
   // suggestions
   isSuggestion?: boolean;
   suggestionId?: string;

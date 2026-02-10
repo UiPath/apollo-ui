@@ -152,7 +152,6 @@ const createAgentNode = (props: AgentFlowProps, parentNodeId?: string): AgentFlo
       definition: props.definition,
       parentNodeId,
       instructions: props.instructions,
-      parameters: {},
     },
     draggable: Boolean(props.allowDragging && props.mode === 'design'), // Agent node is draggable in design mode, not in view mode
   };

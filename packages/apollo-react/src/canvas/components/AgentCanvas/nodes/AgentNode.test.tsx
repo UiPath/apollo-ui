@@ -104,7 +104,6 @@ const defaultNodeProps = {
     name: 'Test Agent',
     description: 'Test Description',
     definition: {},
-    parameters: {},
   },
   position: { x: 0, y: 0 },
   selected: false,

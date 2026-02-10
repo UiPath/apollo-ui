@@ -185,7 +185,6 @@ export function createNodeGrid(options: {
           data: {
             nodeType: type,
             version: '1.0.0',
-            parameters: {},
           },
           display: {
             label: cell.label,
@@ -266,7 +265,6 @@ export const HandleConfigs = {
  *   data: {
  *     nodeType: 'uipath.decision',
  *     version: '1.0.0',
- *     parameters: {},
  *   },
  *   display: { label: 'Decision', shape: 'square' },
  * });
@@ -294,7 +292,6 @@ export function createStatusVariations(
       data: {
         nodeType: baseConfig.type || 'generic',
         version: '1.0.0',
-        parameters: {},
         ...baseConfig.data,
       },
       display: {

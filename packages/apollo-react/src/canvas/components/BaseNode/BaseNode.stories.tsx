@@ -227,7 +227,6 @@ function createShapeStatusGrid(): Node<BaseNodeData>[] {
           data: {
             nodeType,
             version: '1.0.0',
-            parameters: {},
             executionStatus: status,
             display: {
               label,
@@ -273,7 +272,6 @@ function createSizeGrid(): Node<BaseNodeData>[] {
         data: {
           nodeType: 'uipath.blank-node',
           version: '1.0.0',
-          parameters: {},
           display: { label: String(size), shape: 'square' },
         },
       }),
@@ -294,7 +292,6 @@ function createSizeGrid(): Node<BaseNodeData>[] {
         data: {
           nodeType: 'uipath.blank-node',
           version: '1.0.0',
-          parameters: {},
           display: { label: String(size), shape: 'circle' },
         },
       }),
@@ -316,7 +313,6 @@ function createSizeGrid(): Node<BaseNodeData>[] {
         data: {
           nodeType: 'uipath.agent',
           version: '1.0.0',
-          parameters: {},
           display: { label: `${width}×${height}`, shape: 'rectangle' },
         },
       }),
@@ -393,7 +389,6 @@ function DynamicHandlesStory() {
           data: {
             nodeType: 'uipath.control-switch',
             version: '1.0.0',
-            parameters: {},
             inputs: {
               dynamicInputs: nodeData.dynamicInputs,
               dynamicOutputs: nodeData.dynamicOutputs,

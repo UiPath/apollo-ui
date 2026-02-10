@@ -272,7 +272,6 @@ function DefaultStory() {
         data: {
           label: 'AI Agent',
           collapsed: false,
-          parameters: {},
         },
       },
       // Memory (1)
@@ -282,7 +281,6 @@ function DefaultStory() {
         position: { x: 150, y: 140 },
         data: {
           display: { label: 'Memory' },
-          parameters: {},
           useSmartHandles: true,
         },
       },
@@ -293,7 +291,6 @@ function DefaultStory() {
         position: { x: 350, y: 80 },
         data: {
           display: { label: 'Escalation 1' },
-          parameters: {},
           useSmartHandles: true,
         },
       },
@@ -303,7 +300,6 @@ function DefaultStory() {
         position: { x: 530, y: 80 },
         data: {
           display: { label: 'Escalation 2' },
-          parameters: {},
           useSmartHandles: true,
         },
       },
@@ -313,7 +309,6 @@ function DefaultStory() {
         position: { x: 710, y: 140 },
         data: {
           display: { label: 'Escalation 3' },
-          parameters: {},
           useSmartHandles: true,
         },
       },
@@ -324,7 +319,6 @@ function DefaultStory() {
         position: { x: 150, y: 480 },
         data: {
           display: { label: 'Context 1' },
-          parameters: {},
           useSmartHandles: true,
         },
       },
@@ -334,7 +328,6 @@ function DefaultStory() {
         position: { x: 330, y: 540 },
         data: {
           display: { label: 'Context 2' },
-          parameters: {},
           useSmartHandles: true,
         },
       },
@@ -345,7 +338,6 @@ function DefaultStory() {
         position: { x: 500, y: 540 },
         data: {
           display: { label: 'Tool 1' },
-          parameters: {},
           useSmartHandles: true,
         },
       },
@@ -355,7 +347,6 @@ function DefaultStory() {
         position: { x: 660, y: 540 },
         data: {
           display: { label: 'Tool 2' },
-          parameters: {},
           useSmartHandles: true,
         },
       },
@@ -365,7 +356,6 @@ function DefaultStory() {
         position: { x: 820, y: 480 },
         data: {
           display: { label: 'Tool 3' },
-          parameters: {},
           useSmartHandles: true,
         },
       },
@@ -375,7 +365,6 @@ function DefaultStory() {
         position: { x: 820, y: 320 },
         data: {
           display: { label: 'Tool 4' },
-          parameters: {},
           useSmartHandles: true,
         },
       },

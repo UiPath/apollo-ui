@@ -9,7 +9,6 @@ const defaultProps: GroupNodeProps = {
   data: {
     title: 'Test Group',
     iconName: 'folder',
-    parameters: {},
   },
   selected: false,
   isConnectable: true,

@@ -49,7 +49,7 @@ function createGroupNode(
     id,
     type: 'group',
     position,
-    data: { title, iconName, backgroundColor, parameters: {} },
+    data: { title, iconName, backgroundColor },
     style: {
       width: size.width,
       height: size.height,
@@ -70,7 +70,7 @@ function createChildNode(
     id,
     type: 'base',
     position,
-    data: { parameters: {}, display: { label, shape: 'square' } },
+    data: { display: { label, shape: 'square' } },
     parentId,
     extent: 'parent',
   };

@@ -208,7 +208,6 @@ export class NodeTypeRegistry {
       return {
         nodeType,
         version: '1.0.0',
-        parameters: {},
         display: {
           label: label || nodeType,
         },
