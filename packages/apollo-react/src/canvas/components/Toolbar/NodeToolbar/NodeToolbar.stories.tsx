@@ -160,7 +160,6 @@ function createToolbarNodes(): Node<BaseNodeData>[] {
       data: {
         nodeType,
         version: '1.0.0',
-        parameters: {},
         display: {
           label: shape.charAt(0).toUpperCase() + shape.slice(1),
           subLabel: 'Hover to see toolbar',
@@ -203,7 +202,6 @@ function CustomToolbarStory() {
         data: {
           nodeType: 'customToolbarDemo',
           version: '1.0.0',
-          parameters: {},
           display: {
             label: 'Workflow Node',
             subLabel: 'With custom toolbar action',

@@ -76,7 +76,6 @@ function createNode(config: NodeConfig): Node {
     data: {
       display: { label },
       handleConfigurations,
-      parameters: {},
     },
     zIndex: 0,
   };
@@ -98,7 +97,6 @@ function createLoopNode(config: LoopNodeConfig): Node {
     position: { x, y },
     data: {
       display: { label },
-      parameters: {},
     },
     zIndex: 0,
   };

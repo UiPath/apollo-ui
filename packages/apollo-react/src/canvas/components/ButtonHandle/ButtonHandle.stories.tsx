@@ -246,7 +246,7 @@ function DefaultStory() {
         id: '1',
         type: 'simpleNode',
         position: { x: 250, y: 150 },
-        data: { label: 'Screener agent', subLabel: 'Agent', parameters: {} },
+        data: { label: 'Screener agent', subLabel: 'Agent' },
       },
     ],
   });
@@ -382,7 +382,7 @@ function HandleConfigurationStory() {
         id: '1',
         type: 'configurableNode',
         position: { x: 350, y: 400 },
-        data: { label: 'Configurable Node', handleConfig: DEFAULT_HANDLE_CONFIG, parameters: {} },
+        data: { label: 'Configurable Node', handleConfig: DEFAULT_HANDLE_CONFIG },
       },
     ],
     []

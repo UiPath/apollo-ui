@@ -130,7 +130,6 @@ function createBaseNode(
         label,
         subLabel,
       },
-      parameters: {},
       handleConfigurations,
     },
     zIndex: 0,

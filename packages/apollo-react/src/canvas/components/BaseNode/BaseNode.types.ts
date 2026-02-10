@@ -8,8 +8,6 @@ import type { Node, NodeProps } from '@xyflow/react';
 export type FooterVariant = 'none' | 'button' | 'single' | 'double';
 
 export interface BaseNodeData extends Record<string, unknown> {
-  parameters: Record<string, unknown>; // Property bag for node-specific config
-
   display?: {
     label?: string;
     subLabel?: string;

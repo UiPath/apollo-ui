@@ -441,7 +441,6 @@ export const ResourceNode = memo(
         type={getResourceNodeType()}
         data={{
           ...data,
-          parameters: {},
           display: {
             iconBackground: 'var(--uix-canvas-background-secondary)',
             label: data.name,

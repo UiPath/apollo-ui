@@ -120,7 +120,6 @@ function createNodePair(config: NodePairConfig): Node[] {
       data: {
         display: { label, icon: 'circle' },
         handleConfigurations: sourceHandles,
-        parameters: {},
       },
     },
     {
@@ -130,7 +129,6 @@ function createNodePair(config: NodePairConfig): Node[] {
       data: {
         display: { label, icon: 'square' },
         handleConfigurations: targetHandles,
-        parameters: {},
       },
     },
   ];
@@ -403,7 +401,6 @@ function InteractiveEdgeSelectionStory() {
               handles: [{ id: 'out', type: 'source' as const, handleType: 'output' as const }],
             },
           ],
-          parameters: {},
         },
       },
       {
@@ -418,7 +415,6 @@ function InteractiveEdgeSelectionStory() {
               handles: [{ id: 'in', type: 'target' as const, handleType: 'input' as const }],
             },
           ],
-          parameters: {},
         },
       },
     ],
