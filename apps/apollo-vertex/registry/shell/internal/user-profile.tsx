@@ -10,7 +10,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useLocalStorage } from "@/registry/use-local-storage/use-local-storage";
 
 interface UserProfileProps {
   isCollapsed: boolean;

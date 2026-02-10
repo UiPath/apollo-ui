@@ -2,7 +2,7 @@
 
 import { Globe } from "lucide-react";
 import { useCallback, useState } from "react";
-import { Trans, useTranslation } from "react-i18next";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
