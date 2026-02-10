@@ -29,4 +29,4 @@ jobs:
         with:
           fail-on-severity: high
           allow-licenses: ${{ steps.licenses.outputs.allow }}
-          comment-summary-in-pr: on-failure
+          comment-summary-in-pr: always
