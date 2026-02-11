@@ -97,7 +97,7 @@ npm install @uipath/apollo-react@dev
 npm install @uipath/apollo-react@5.6.1-pr188.4865fad
 ```
 
-Preview versions are published automatically on every PR and cleaned up after merge.
+Preview versions are published when the `dev-packages` label is added to a PR. Remove the label to stop publishing on new commits. Packages are deprecated on npm and cleaned up from GitHub Package Registry after the PR is closed or merged.
 
 ---
 

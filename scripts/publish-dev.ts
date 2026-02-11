@@ -141,7 +141,8 @@ function main() {
     console.log(`\n✓ Successfully published ${packageName}@${devVersion} to both registries`);
 
   } catch (error) {
-    console.error('\nPublish failed:', error);
+    console.error('\n✗ Publish failed');
+    console.error(error);
     process.exitCode = 1;
   } finally {
     // Restore original version

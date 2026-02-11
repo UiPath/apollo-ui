@@ -109,7 +109,6 @@ jobs:
         run: |
           echo "📋 Running full dependency audit (all dev + prod)..."
           pnpm audit
-          echo "✅ Full audit complete - see results above"
 
       - name: Run Audit Production Dependencies
         if: matrix.check == 'Audit Production Dependencies'

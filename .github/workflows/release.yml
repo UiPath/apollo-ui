@@ -83,7 +83,13 @@ jobs:
 
             git add --all
             git commit -m "chore(release): version bump [skip ci]" -m "Packages: $CHANGED_PACKAGES"
-            git push
+
+            if ! git push; then
+              echo "::error::Failed to push version bump commit"
+              echo "This may indicate a conflict or permission issue"
+              exit 1
+            fi
+            echo "✓ Pushed version bump commit"
           else
             echo "No changes to commit"
           fi

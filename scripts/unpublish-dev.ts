@@ -41,7 +41,11 @@ async function unpublishFromGitHub(packageName: string, version: string): Promis
     });
 
     if (!versionsResponse.ok) {
-      console.error(`Failed to fetch versions: ${versionsResponse.status} ${versionsResponse.statusText}`);
+      console.error(`✗ Failed to fetch versions: ${versionsResponse.status} ${versionsResponse.statusText}`);
+      const errorText = await versionsResponse.text();
+      if (errorText) {
+        console.error('Response:', errorText);
+      }
       return false;
     }
 
@@ -68,10 +72,15 @@ async function unpublishFromGitHub(packageName: string, version: string): Promis
       return true;
     }
 
-    console.error(`Failed to delete: ${deleteResponse.status} ${deleteResponse.statusText}`);
+    console.error(`✗ Failed to delete: ${deleteResponse.status} ${deleteResponse.statusText}`);
+    const errorText = await deleteResponse.text();
+    if (errorText) {
+      console.error('Response:', errorText);
+    }
     return false;
   } catch (error) {
-    console.error('Unexpected error:', error);
+    console.error('✗ Unexpected error:');
+    console.error(error);
     return false;
   }
 }
@@ -125,11 +134,12 @@ async function unpublishFromRegistry(
     }
 
     try {
-      execFileSync(
+      const result = execFileSync(
         'pnpm',
         ['unpublish', fullPackage, `--@uipath:registry=${registry}`, '--force'],
         {
-          stdio: 'pipe', // Capture output to show errors
+          stdio: ['inherit', 'pipe', 'pipe'], // Capture stdout/stderr but show stdin
+          encoding: 'utf-8',
           env: {
             ...process.env,
             NPM_AUTH_TOKEN: token,
@@ -138,44 +148,49 @@ async function unpublishFromRegistry(
         }
       );
 
+      // Show output
+      if (result) {
+        console.log(result);
+      }
+
       console.log('✓ Unpublished successfully');
       return true;
     } catch (execError: unknown) {
-      // Extract error output from both stdout and stderr
+      // Capture and show error output
       let errorOutput = '';
       if (execError && typeof execError === 'object') {
-        if ('stderr' in execError && execError.stderr) {
-          const stderr = execError.stderr;
-          if (Buffer.isBuffer(stderr) || typeof stderr === 'string') {
-            errorOutput += stderr.toString();
-          }
+        if ('stderr' in execError && typeof execError.stderr === 'string') {
+          errorOutput = execError.stderr;
+          console.error(errorOutput);
         }
-        if ('stdout' in execError && execError.stdout) {
+        if ('stdout' in execError && typeof execError.stdout === 'string') {
           const stdout = execError.stdout;
-          if (Buffer.isBuffer(stdout) || typeof stdout === 'string') {
-            errorOutput += stdout.toString();
+          if (stdout) {
+            console.log(stdout);
+            errorOutput += '\n' + stdout;
           }
         }
       }
 
       // Check if it's an error that requires deprecation instead of unpublish
-      const is422Error = errorOutput.includes('422') || errorOutput.includes('Unprocessable Entity');
-      const is405Error = errorOutput.includes('405') || errorOutput.includes('Method Not Allowed');
-      const isTooOldError = errorOutput.includes('72 hours') || errorOutput.includes('published more than');
-      const hasDependentsError = errorOutput.includes('has dependent packages') || errorOutput.includes('can no longer unpublish');
+      const shouldDeprecate =
+        errorOutput.includes('422') ||
+        errorOutput.includes('405') ||
+        errorOutput.includes('72 hours') ||
+        errorOutput.includes('published more than') ||
+        errorOutput.includes('has dependent packages') ||
+        errorOutput.includes('can no longer unpublish');
 
-      if (is422Error || is405Error || isTooOldError || hasDependentsError) {
+      if (shouldDeprecate) {
         console.log('⚠️  Unpublish rejected, deprecating instead...');
-        if (errorOutput) {
-          console.log('Reason:', errorOutput.split('\n').find(line => line.includes('error')) || errorOutput.split('\n')[0]);
-        }
 
         try {
-          execFileSync(
+          const result = execFileSync(
             'pnpm',
             ['deprecate', fullPackage, 'Dev package - use latest version', `--@uipath:registry=${registry}`],
             {
-              stdio: 'pipe', // Don't show npm output
+              stdio: ['inherit', 'pipe', 'pipe'],
+              encoding: 'utf-8',
               env: {
                 ...process.env,
                 NPM_AUTH_TOKEN: token,
@@ -183,45 +198,49 @@ async function unpublishFromRegistry(
               },
             }
           );
+
+          if (result) {
+            console.log(result);
+          }
           console.log('✓ Deprecated successfully');
           return true;
         } catch (deprecateError: unknown) {
-          // GitHub Package Registry doesn't support npm deprecate the same way
-          // Treat as success if it's a GitHub-specific error
-          let isGitHubDeprecateError = false;
+          // Show deprecate error output
           if (deprecateError && typeof deprecateError === 'object') {
-            if ('stderr' in deprecateError && deprecateError.stderr) {
-              const stderr = deprecateError.stderr;
-              const stderrStr = Buffer.isBuffer(stderr) || typeof stderr === 'string' ? stderr.toString() : '';
-
-              // GitHub Package Registry returns 400 "version.ID cannot be empty" for deprecate
-              if (stderrStr.includes('npm.pkg.github.com') &&
-                  (stderrStr.includes('400') || stderrStr.includes('version.ID cannot be empty'))) {
-                isGitHubDeprecateError = true;
-                console.log('⚠️  Deprecation not supported on GitHub Package Registry (package remains published)');
-              } else {
-                console.error('✗ Failed to deprecate');
-                console.error('Error:', stderrStr);
-              }
+            if ('stderr' in deprecateError && typeof deprecateError.stderr === 'string') {
+              console.error(deprecateError.stderr);
+            }
+            if ('stdout' in deprecateError && typeof deprecateError.stdout === 'string' && deprecateError.stdout) {
+              console.log(deprecateError.stdout);
             }
           }
 
-          // Don't fail the overall operation for GitHub deprecate issues
-          return isGitHubDeprecateError ? true : false;
+          // GitHub Package Registry doesn't support npm deprecate the same way
+          let deprecateErrorOutput = '';
+          if (deprecateError && typeof deprecateError === 'object' && 'stderr' in deprecateError) {
+            deprecateErrorOutput = String(deprecateError.stderr || '');
+          }
+
+          // GitHub Package Registry returns 400 "version.ID cannot be empty" for deprecate
+          const isGitHubDeprecateError =
+            deprecateErrorOutput.includes('npm.pkg.github.com') &&
+            (deprecateErrorOutput.includes('400') || deprecateErrorOutput.includes('version.ID cannot be empty'));
+
+          if (isGitHubDeprecateError) {
+            console.log('⚠️  Deprecation not supported on GitHub Package Registry (package remains published)');
+            return true;
+          } else {
+            console.error('✗ Failed to deprecate');
+            return false;
+          }
         }
       }
 
-      console.error('\nFailed to unpublish package.');
-      if (errorOutput) {
-        console.error('\nError from npm:');
-        console.error(errorOutput);
-      } else {
-        console.error('No error details available');
-      }
+      console.error('✗ Failed to unpublish');
       return false;
     }
   } catch (error: unknown) {
-    console.error('\nUnexpected error during unpublish:');
+    console.error('✗ Unexpected error:');
     console.error(error);
     return false;
   }

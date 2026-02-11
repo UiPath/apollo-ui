@@ -96,13 +96,22 @@ jobs:
 
       - name: Update PR comment
         if: steps.packages.outputs.packages != ''
-        continue-on-error: true
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
+          set +e  # Don't exit on error, but capture it
+          set -o pipefail  # Capture exit code from gh api, not head
           COMMENT_ID=$(gh api "repos/${{ github.repository }}/issues/${PR_NUMBER}/comments" \
-            --jq '.[] | select(.body | contains("<!-- dev-packages-comment -->")) | .id' 2>/dev/null | head -1) || true
+            --jq '([.[] | select(.body | contains("<!-- dev-packages-comment -->")) | .id][0] // empty)' 2>&1)
+          EXIT_CODE=$?
+          set -e
+
+          if [ $EXIT_CODE -ne 0 ]; then
+            echo "⚠️ Could not fetch comment (PR may be inaccessible)"
+            echo "$COMMENT_ID"
+            exit 0  # Non-fatal, comment update is optional
+          fi
 
           if [ -n "$COMMENT_ID" ]; then
             TIMESTAMP=$(TZ="America/Los_Angeles" date "+%Y-%m-%d %H:%M:%S PT")
@@ -111,6 +120,12 @@ jobs:
             COMMENT_BODY+="🧹 Dev packages cleaned up after PR close."$'\n\n'
             COMMENT_BODY+="**Last updated:** ${TIMESTAMP}"
 
-            gh api "repos/${{ github.repository }}/issues/comments/${COMMENT_ID}" \
-              -X PATCH -f body="$COMMENT_BODY" 2>/dev/null || true
+            if ! gh api "repos/${{ github.repository }}/issues/comments/${COMMENT_ID}" \
+              -X PATCH -f body="$COMMENT_BODY" 2>&1; then
+              echo "⚠️ Could not update comment (non-fatal)"
+            else
+              echo "✓ Updated cleanup status in PR comment"
+            fi
+          else
+            echo "No comment found to update"
           fi
