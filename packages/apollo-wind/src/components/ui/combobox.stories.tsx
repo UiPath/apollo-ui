@@ -4,7 +4,7 @@ import { Combobox, ComboboxItem } from './combobox';
 import { Label } from './label';
 
 const meta = {
-  title: 'Design System/Core/Combobox',
+  title: 'Components/Core/Combobox',
   component: Combobox,
   parameters: {
     layout: 'centered',

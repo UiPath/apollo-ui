@@ -1,0 +1,181 @@
+/**
+ * Apollo Future — Theme Variables
+ *
+ * CSS custom properties for the Future design language.
+ * Defines dark and light theme values for backgrounds, text, borders, and rings.
+ *
+ * Apply `.future-dark` or `.future-light` to a parent element to activate a theme.
+ * Templates apply this class at their root automatically via the `theme` prop.
+ *
+ * Tailwind 4 generates utility classes from the @theme block below, e.g.:
+ *   bg-future-surface, text-future-foreground, border-future-border, etc.
+ */
+
+/* ============================================================================
+ * Dark theme (default for Future templates)
+ * ============================================================================ */
+
+.future-dark {
+  /* ── Surfaces ─────────────────────────────────────────────────────────── */
+  --color-future-surface: #09090b;              /* zinc-950  — page / canvas */
+  --color-future-surface-raised: #18181b;       /* zinc-900  — cards, overlays, panels */
+  --color-future-surface-overlay: #27272a;      /* zinc-800  — panels, inputs, tabs */
+  --color-future-surface-hover: #3f3f46;        /* zinc-700  — hover, selected nav */
+  --color-future-surface-muted: #71717a;        /* zinc-500  — badges, indicators */
+  --color-future-surface-inverse: #ffffff;       /* white     — buttons on dark bg */
+
+  /* ── Accent ───────────────────────────────────────────────────────────── */
+  --color-future-accent: #06b6d4;               /* cyan-500  — logo, submit, run */
+  --color-future-accent-subtle: #083344;        /* cyan-950  — status badge, active nav */
+
+  /* ── Foreground (text / icons) ────────────────────────────────────────── */
+  --color-future-foreground: #fafafa;            /* zinc-50   — primary headings */
+  --color-future-foreground-secondary: #f4f4f5;  /* zinc-100  — body, messages */
+  --color-future-foreground-hover: #d4d4d8;      /* zinc-300  — hover states */
+  --color-future-foreground-muted: #a1a1aa;      /* zinc-400  — nav, secondary UI */
+  --color-future-foreground-subtle: #71717a;     /* zinc-500  — labels, muted */
+  --color-future-foreground-inverse: #09090b;    /* zinc-950  — icons on light bg */
+  --color-future-foreground-on-accent: #ffffff;  /* white     — text on accent bg */
+  --color-future-accent-foreground: #06b6d4;     /* cyan-500  — accent text */
+  --color-future-accent-foreground-muted: #22d3ee; /* cyan-400 — muted accent text */
+
+  /* ── Borders ──────────────────────────────────────────────────────────── */
+  --color-future-border: #3f3f46;               /* zinc-700  — primary borders */
+  --color-future-border-subtle: #27272a;        /* zinc-800  — subtle dividers */
+  --color-future-border-muted: #18181b;         /* zinc-900  — content borders */
+  --color-future-border-deep: #09090b;          /* zinc-950  — nested containers */
+  --color-future-border-inverse: #e4e4e7;       /* zinc-200  — borders on inverse bg */
+  --color-future-border-hover: #52525b;         /* zinc-600  — border hover state */
+
+  /* ── Ring ──────────────────────────────────────────────────────────────── */
+  --color-future-ring: #52525b;                 /* zinc-600  — selection ring */
+
+  /* ── shadcn bridge — maps standard variables so shadcn components
+       (DataTable, Input, Button, etc.) inherit Future theme colors ────── */
+  --color-background: var(--color-future-surface);
+  --color-foreground: var(--color-future-foreground);
+  --color-card: var(--color-future-surface-raised);
+  --color-card-foreground: var(--color-future-foreground);
+  --color-popover: var(--color-future-surface-raised);
+  --color-popover-foreground: var(--color-future-foreground);
+  --color-primary: var(--color-future-accent);
+  --color-primary-foreground: var(--color-future-foreground-on-accent);
+  --color-secondary: var(--color-future-surface-overlay);
+  --color-secondary-foreground: var(--color-future-foreground);
+  --color-muted: var(--color-future-surface-overlay);
+  --color-muted-foreground: var(--color-future-foreground-muted);
+  --color-accent: var(--color-future-surface-hover);
+  --color-accent-foreground: var(--color-future-foreground);
+  --color-destructive: #ef4444;
+  --color-border: var(--color-future-border);
+  --color-border-de-emp: var(--color-future-border-subtle);
+  --color-input: var(--color-future-border);
+  --color-ring: var(--color-future-ring);
+}
+
+/* ============================================================================
+ * Light theme
+ * ============================================================================ */
+
+.future-light {
+  /* ── Surfaces ─────────────────────────────────────────────────────────── */
+  --color-future-surface: #ffffff;              /* white     — page / canvas */
+  --color-future-surface-raised: #fafafa;       /* zinc-50   — cards, overlays, panels */
+  --color-future-surface-overlay: #f4f4f5;      /* zinc-100  — panels, inputs, tabs */
+  --color-future-surface-hover: #e4e4e7;        /* zinc-200  — hover, selected nav */
+  --color-future-surface-muted: #a1a1aa;        /* zinc-400  — badges, indicators */
+  --color-future-surface-inverse: #09090b;       /* zinc-950  — buttons on light bg */
+
+  /* ── Accent ───────────────────────────────────────────────────────────── */
+  --color-future-accent: #06b6d4;               /* cyan-500  — unchanged */
+  --color-future-accent-subtle: #ecfeff;        /* cyan-50   — status badge, active nav */
+
+  /* ── Foreground (text / icons) ────────────────────────────────────────── */
+  --color-future-foreground: #09090b;            /* zinc-950  — primary headings */
+  --color-future-foreground-secondary: #18181b;  /* zinc-900  — body, messages */
+  --color-future-foreground-hover: #52525b;      /* zinc-600  — hover states */
+  --color-future-foreground-muted: #71717a;      /* zinc-500  — nav, secondary UI */
+  --color-future-foreground-subtle: #a1a1aa;     /* zinc-400  — labels, muted */
+  --color-future-foreground-inverse: #ffffff;    /* white     — icons on dark bg */
+  --color-future-foreground-on-accent: #ffffff;  /* white     — text on accent bg (unchanged) */
+  --color-future-accent-foreground: #0891b2;     /* cyan-600  — accent text */
+  --color-future-accent-foreground-muted: #0891b2; /* cyan-600 — muted accent text */
+
+  /* ── Borders ──────────────────────────────────────────────────────────── */
+  --color-future-border: #d4d4d8;               /* zinc-300  — primary borders */
+  --color-future-border-subtle: #e4e4e7;        /* zinc-200  — subtle dividers */
+  --color-future-border-muted: #f4f4f5;         /* zinc-100  — content borders */
+  --color-future-border-deep: #fafafa;          /* zinc-50   — nested containers */
+  --color-future-border-inverse: #3f3f46;       /* zinc-700  — borders on inverse bg */
+  --color-future-border-hover: #a1a1aa;         /* zinc-400  — border hover state */
+
+  /* ── Ring ──────────────────────────────────────────────────────────────── */
+  --color-future-ring: #a1a1aa;                 /* zinc-400  — selection ring */
+
+  /* ── shadcn bridge — maps standard variables so shadcn components
+       (DataTable, Input, Button, etc.) inherit Future theme colors ────── */
+  --color-background: var(--color-future-surface);
+  --color-foreground: var(--color-future-foreground);
+  --color-card: var(--color-future-surface-raised);
+  --color-card-foreground: var(--color-future-foreground);
+  --color-popover: var(--color-future-surface-raised);
+  --color-popover-foreground: var(--color-future-foreground);
+  --color-primary: var(--color-future-accent);
+  --color-primary-foreground: var(--color-future-foreground-on-accent);
+  --color-secondary: var(--color-future-surface-overlay);
+  --color-secondary-foreground: var(--color-future-foreground);
+  --color-muted: var(--color-future-surface-overlay);
+  --color-muted-foreground: var(--color-future-foreground-muted);
+  --color-accent: var(--color-future-surface-hover);
+  --color-accent-foreground: var(--color-future-foreground);
+  --color-destructive: #ef4444;
+  --color-border: var(--color-future-border);
+  --color-border-de-emp: var(--color-future-border-subtle);
+  --color-input: var(--color-future-border);
+  --color-ring: var(--color-future-ring);
+}
+
+/* ============================================================================
+ * Register Future tokens with Tailwind 4
+ *
+ * The @theme inline block tells Tailwind to generate utility classes for
+ * each variable. E.g. --color-future-surface generates:
+ *   bg-future-surface, text-future-surface, border-future-surface,
+ *   from-future-surface, to-future-surface, ring-future-surface, etc.
+ * ============================================================================ */
+
+@theme inline {
+  /* Surfaces */
+  --color-future-surface: var(--color-future-surface);
+  --color-future-surface-raised: var(--color-future-surface-raised);
+  --color-future-surface-overlay: var(--color-future-surface-overlay);
+  --color-future-surface-hover: var(--color-future-surface-hover);
+  --color-future-surface-muted: var(--color-future-surface-muted);
+  --color-future-surface-inverse: var(--color-future-surface-inverse);
+
+  /* Accent */
+  --color-future-accent: var(--color-future-accent);
+  --color-future-accent-subtle: var(--color-future-accent-subtle);
+
+  /* Foreground */
+  --color-future-foreground: var(--color-future-foreground);
+  --color-future-foreground-secondary: var(--color-future-foreground-secondary);
+  --color-future-foreground-hover: var(--color-future-foreground-hover);
+  --color-future-foreground-muted: var(--color-future-foreground-muted);
+  --color-future-foreground-subtle: var(--color-future-foreground-subtle);
+  --color-future-foreground-inverse: var(--color-future-foreground-inverse);
+  --color-future-foreground-on-accent: var(--color-future-foreground-on-accent);
+  --color-future-accent-foreground: var(--color-future-accent-foreground);
+  --color-future-accent-foreground-muted: var(--color-future-accent-foreground-muted);
+
+  /* Borders */
+  --color-future-border: var(--color-future-border);
+  --color-future-border-subtle: var(--color-future-border-subtle);
+  --color-future-border-muted: var(--color-future-border-muted);
+  --color-future-border-deep: var(--color-future-border-deep);
+  --color-future-border-inverse: var(--color-future-border-inverse);
+  --color-future-border-hover: var(--color-future-border-hover);
+
+  /* Ring */
+  --color-future-ring: var(--color-future-ring);
+}

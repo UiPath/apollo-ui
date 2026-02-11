@@ -10,7 +10,7 @@ import {
 } from './sheet';
 
 const meta: Meta<typeof Sheet> = {
-  title: 'Design System/Overlays/Sheet',
+  title: 'Components/Overlays/Sheet',
   component: Sheet,
   tags: ['autodocs'],
 };

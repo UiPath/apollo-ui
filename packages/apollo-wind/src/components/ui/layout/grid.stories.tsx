@@ -2,7 +2,7 @@ import type { Meta } from '@storybook/react-vite';
 import { Grid } from './grid';
 
 const meta = {
-  title: 'Design System/Layout/Grid',
+  title: 'Components/Layout/Grid',
   component: Grid,
   parameters: {
     layout: 'padded',

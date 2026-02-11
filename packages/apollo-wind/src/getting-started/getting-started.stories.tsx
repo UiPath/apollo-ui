@@ -1,9 +1,11 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { fontFamily } from '@/foundation/Future/typography';
+import { cn } from '@/lib';
 
 const meta = {
   title: 'Introduction/Getting Started',
   parameters: {
-    layout: 'padded',
+    layout: 'fullscreen',
   },
 } satisfies Meta;
 
@@ -11,76 +13,54 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  render: () => (
-    <div style={{ maxWidth: '800px', padding: '2rem', margin: '0 auto' }}>
-      <h1 style={{ fontSize: '2rem', fontWeight: 'bold', marginBottom: '1rem' }}>
-        Apollo v.4 Design System
-      </h1>
-      <p style={{ fontSize: '1rem', lineHeight: '1.75', marginBottom: '1.5rem' }}>
-        Apollo v.4 is UiPath's open-source design system for building consistent user experiences
-        across all UiPath products.
-      </p>
+  render: (_, { globals }) => (
+    <div
+      className={cn(
+        globals.futureTheme === 'light' ? 'future-light' : 'future-dark',
+        'min-h-screen w-full bg-future-surface'
+      )}
+      style={{ fontFamily: fontFamily.base }}
+    >
+      <div className="mx-auto max-w-3xl p-8">
+        <h1 className="mb-4 text-[2rem] font-bold text-future-foreground">
+          Apollo v.4 Design System
+        </h1>
+        <p className="mb-6 text-base leading-7 text-future-foreground-muted">
+          Apollo v.4 is UiPath's open-source design system for building consistent user experiences
+          across all UiPath products.
+        </p>
 
-      <hr style={{ margin: '2rem 0', border: 'none', borderTop: '1px solid #e5e7eb' }} />
+        <div className="my-8 h-px bg-future-border-subtle" />
 
-      <div style={{ marginBottom: '2rem' }}>
-        <strong>Github repository</strong>
-        <br />
-        <a
-          href="https://github.com/UiPath/apollo-ui"
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{ color: '#0066cc', textDecoration: 'underline' }}
+        <div className="mb-8">
+          <span className="font-semibold text-future-foreground">Github repository</span>
+          <br />
+          <a
+            href="https://github.com/UiPath/apollo-ui"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-future-accent-foreground underline"
+          >
+            https://github.com/UiPath/apollo-ui
+          </a>
+        </div>
+
+        <div className="my-8 h-px bg-future-border-subtle" />
+
+        <h2 className="mb-4 mt-8 text-2xl font-bold text-future-foreground">Getting Started</h2>
+
+        <h3 className="mb-3 mt-6 text-xl font-bold text-future-foreground">Prerequisites</h3>
+        <ul className="mb-6 ml-6 list-disc leading-7 text-future-foreground-muted">
+          <li>Node.js &gt;= 22</li>
+          <li>pnpm &gt;= 10</li>
+        </ul>
+
+        <h3 className="mb-3 mt-6 text-xl font-bold text-future-foreground">Installation</h3>
+        <pre
+          className="mb-6 overflow-auto rounded-lg border border-future-border-subtle bg-future-surface-raised p-4 text-sm leading-6 text-future-foreground-secondary"
+          style={{ fontFamily: fontFamily.monospace }}
         >
-          https://github.com/UiPath/apollo-ui
-        </a>
-      </div>
-
-      <hr style={{ margin: '2rem 0', border: 'none', borderTop: '1px solid #e5e7eb' }} />
-
-      <h2
-        style={{ fontSize: '1.5rem', fontWeight: 'bold', marginTop: '2rem', marginBottom: '1rem' }}
-      >
-        Getting Started
-      </h2>
-
-      <h3
-        style={{
-          fontSize: '1.25rem',
-          fontWeight: 'bold',
-          marginTop: '1.5rem',
-          marginBottom: '0.75rem',
-        }}
-      >
-        Prerequisites
-      </h3>
-      <ul style={{ marginLeft: '1.5rem', marginBottom: '1.5rem', lineHeight: '1.75' }}>
-        <li>Node.js &gt;= 22</li>
-        <li>pnpm &gt;= 10</li>
-      </ul>
-
-      <h3
-        style={{
-          fontSize: '1.25rem',
-          fontWeight: 'bold',
-          marginTop: '1.5rem',
-          marginBottom: '0.75rem',
-        }}
-      >
-        Installation
-      </h3>
-      <pre
-        style={{
-          backgroundColor: '#f5f5f5',
-          padding: '1rem',
-          borderRadius: '4px',
-          overflow: 'auto',
-          fontSize: '0.875rem',
-          lineHeight: '1.5',
-          marginBottom: '1.5rem',
-        }}
-      >
-        <code>{`# Install pnpm if you haven't already
+          <code>{`# Install pnpm if you haven't already
 npm install -g pnpm
 
 # Clone the repository
@@ -92,30 +72,14 @@ pnpm install
 
 # Build all packages
 pnpm build`}</code>
-      </pre>
+        </pre>
 
-      <h3
-        style={{
-          fontSize: '1.25rem',
-          fontWeight: 'bold',
-          marginTop: '1.5rem',
-          marginBottom: '0.75rem',
-        }}
-      >
-        Development
-      </h3>
-      <pre
-        style={{
-          backgroundColor: '#f5f5f5',
-          padding: '1rem',
-          borderRadius: '4px',
-          overflow: 'auto',
-          fontSize: '0.875rem',
-          lineHeight: '1.5',
-          marginBottom: '1.5rem',
-        }}
-      >
-        <code>{`# Run all packages in development mode
+        <h3 className="mb-3 mt-6 text-xl font-bold text-future-foreground">Development</h3>
+        <pre
+          className="mb-6 overflow-auto rounded-lg border border-future-border-subtle bg-future-surface-raised p-4 text-sm leading-6 text-future-foreground-secondary"
+          style={{ fontFamily: fontFamily.monospace }}
+        >
+          <code>{`# Run all packages in development mode
 pnpm dev
 
 # Run Storybook
@@ -129,35 +93,20 @@ pnpm test
 
 # Run visual regression tests
 pnpm test:visual`}</code>
-      </pre>
+        </pre>
 
-      <h3
-        style={{
-          fontSize: '1.25rem',
-          fontWeight: 'bold',
-          marginTop: '1.5rem',
-          marginBottom: '0.75rem',
-        }}
-      >
-        Building
-      </h3>
-      <pre
-        style={{
-          backgroundColor: '#f5f5f5',
-          padding: '1rem',
-          borderRadius: '4px',
-          overflow: 'auto',
-          fontSize: '0.875rem',
-          lineHeight: '1.5',
-          marginBottom: '1.5rem',
-        }}
-      >
-        <code>{`# Build all packages
+        <h3 className="mb-3 mt-6 text-xl font-bold text-future-foreground">Building</h3>
+        <pre
+          className="mb-6 overflow-auto rounded-lg border border-future-border-subtle bg-future-surface-raised p-4 text-sm leading-6 text-future-foreground-secondary"
+          style={{ fontFamily: fontFamily.monospace }}
+        >
+          <code>{`# Build all packages
 pnpm build
 
 # Build Storybook
 pnpm storybook:build`}</code>
-      </pre>
+        </pre>
+      </div>
     </div>
   ),
 };

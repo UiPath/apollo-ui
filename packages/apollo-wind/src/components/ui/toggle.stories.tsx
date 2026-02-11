@@ -2,7 +2,7 @@ import type { Meta } from '@storybook/react-vite';
 import { Toggle } from './toggle';
 
 const meta: Meta<typeof Toggle> = {
-  title: 'Design System/Core/Toggle',
+  title: 'Components/Core/Toggle',
   component: Toggle,
   tags: ['autodocs'],
 };

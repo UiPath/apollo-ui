@@ -1,0 +1,261 @@
+/**
+ * Apollo Legacy — Theme Variables
+ *
+ * CSS custom properties for the Legacy (apollo-core) design language.
+ * Scoped to `.legacy-dark` and `.legacy-light` classes so they can be applied
+ * at any DOM level — matching the pattern used by Future themes.
+ *
+ * Source values come from @uipath/apollo-core/tokens/css/theme-variables.css.
+ *
+ * Apply `.legacy-dark` or `.legacy-light` to a parent element to activate a theme.
+ *
+ * Tailwind 4 generates utility classes from the @theme block below, e.g.:
+ *   bg-legacy-surface, text-legacy-foreground, border-legacy-border, etc.
+ */
+
+/* ============================================================================
+ * Dark theme
+ * ============================================================================ */
+
+.legacy-dark {
+  /* ── Surfaces ─────────────────────────────────────────────────────────── */
+  --color-legacy-surface: #182027;             /* page / canvas */
+  --color-legacy-surface-raised: #273139;      /* cards, panels */
+  --color-legacy-surface-overlay: #374652;     /* inputs, tabs, hover */
+  --color-legacy-surface-hover: #526069;       /* hover states */
+  --color-legacy-surface-muted: #8a97a0;       /* badges, indicators */
+  --color-legacy-surface-inverse: #f8f9fa;     /* inverse bg */
+  --color-legacy-surface-disabled: #273139;    /* disabled elements */
+  --color-legacy-surface-selected: #374652;    /* selected items */
+
+  /* ── Accent / Primary ──────────────────────────────────────────────────── */
+  --color-legacy-accent: #66adff;              /* primary blue */
+  --color-legacy-accent-hover: #87bfff;        /* primary hover */
+  --color-legacy-accent-lighter: #00489d;      /* lighter variant */
+  --color-legacy-accent-darker: #badaff;       /* darker variant */
+
+  /* ── Foreground (text / icons) ────────────────────────────────────────── */
+  --color-legacy-foreground: #f4f5f7;          /* primary text */
+  --color-legacy-foreground-emp: #f8f9fa;      /* emphasized text */
+  --color-legacy-foreground-muted: #cfd8dd;    /* de-emphasized text */
+  --color-legacy-foreground-subtle: #a4b1b8;   /* labels, disabled */
+  --color-legacy-foreground-inverse: #182027;  /* text on light bg */
+  --color-legacy-foreground-link: #66adff;     /* link text */
+  --color-legacy-foreground-on-accent: #182027; /* text on accent bg */
+
+  /* ── Borders ──────────────────────────────────────────────────────────── */
+  --color-legacy-border: #8a97a0;              /* primary borders */
+  --color-legacy-border-subtle: #526069;       /* subtle dividers */
+  --color-legacy-border-disabled: #526069;     /* disabled borders */
+  --color-legacy-border-grid: #273139;         /* grid borders */
+
+  /* ── Status ──────────────────────────────────────────────────────────── */
+  --color-legacy-error: #ff8484;
+  --color-legacy-success: #74c94b;
+  --color-legacy-warning: #ffbb27;
+  --color-legacy-info: #42a1ff;
+
+  /* ── Ring / Focus ────────────────────────────────────────────────────── */
+  --color-legacy-ring: #66adff;
+  --color-legacy-logo: #ffffff;
+
+  /* ── future-* bridge — allows templates built with future-* utility
+       classes (bg-future-surface, etc.) to resolve under legacy themes ──── */
+  --color-future-surface: var(--color-legacy-surface);
+  --color-future-surface-raised: var(--color-legacy-surface-raised);
+  --color-future-surface-overlay: var(--color-legacy-surface-overlay);
+  --color-future-surface-hover: var(--color-legacy-surface-hover);
+  --color-future-surface-muted: var(--color-legacy-surface-muted);
+  --color-future-surface-inverse: var(--color-legacy-surface-inverse);
+  --color-future-accent: var(--color-legacy-accent);
+  --color-future-accent-subtle: var(--color-legacy-accent-lighter);
+  --color-future-foreground: var(--color-legacy-foreground);
+  --color-future-foreground-secondary: var(--color-legacy-foreground-emp);
+  --color-future-foreground-hover: var(--color-legacy-foreground-muted);
+  --color-future-foreground-muted: var(--color-legacy-foreground-muted);
+  --color-future-foreground-subtle: var(--color-legacy-foreground-subtle);
+  --color-future-foreground-inverse: var(--color-legacy-foreground-inverse);
+  --color-future-foreground-on-accent: var(--color-legacy-foreground-on-accent);
+  --color-future-accent-foreground: var(--color-legacy-accent);
+  --color-future-accent-foreground-muted: var(--color-legacy-accent-hover);
+  --color-future-border: var(--color-legacy-border);
+  --color-future-border-subtle: var(--color-legacy-border-subtle);
+  --color-future-border-muted: var(--color-legacy-border-grid);
+  --color-future-border-deep: var(--color-legacy-border-grid);
+  --color-future-border-inverse: var(--color-legacy-border);
+  --color-future-border-hover: var(--color-legacy-border);
+  --color-future-ring: var(--color-legacy-ring);
+
+  /* ── shadcn bridge — maps standard variables so shadcn components
+       (DataTable, Input, Button, etc.) inherit Legacy theme colors ────── */
+  --color-background: var(--color-legacy-surface);
+  --color-foreground: var(--color-legacy-foreground);
+  --color-card: var(--color-legacy-surface-raised);
+  --color-card-foreground: var(--color-legacy-foreground);
+  --color-popover: var(--color-legacy-surface-raised);
+  --color-popover-foreground: var(--color-legacy-foreground);
+  --color-primary: var(--color-legacy-accent);
+  --color-primary-foreground: var(--color-legacy-foreground-on-accent);
+  --color-secondary: var(--color-legacy-surface-overlay);
+  --color-secondary-foreground: var(--color-legacy-foreground-muted);
+  --color-muted: var(--color-legacy-surface-raised);
+  --color-muted-foreground: var(--color-legacy-foreground-muted);
+  --color-accent: var(--color-legacy-surface-selected);
+  --color-accent-foreground: var(--color-legacy-foreground-emp);
+  --color-destructive: var(--color-legacy-error);
+  --color-border: var(--color-legacy-border-subtle);
+  --color-border-de-emp: var(--color-legacy-border-subtle);
+  --color-input: var(--color-legacy-border-subtle);
+  --color-ring: var(--color-legacy-ring);
+
+  color-scheme: dark;
+}
+
+/* ============================================================================
+ * Light theme
+ * ============================================================================ */
+
+.legacy-light {
+  /* ── Surfaces ─────────────────────────────────────────────────────────── */
+  --color-legacy-surface: #ffffff;             /* page / canvas */
+  --color-legacy-surface-raised: #ffffff;      /* cards (white on white) */
+  --color-legacy-surface-overlay: #f4f5f7;     /* secondary bg, inputs */
+  --color-legacy-surface-hover: #e9f1fa;       /* hover states */
+  --color-legacy-surface-muted: #cfd8dd;       /* badges, indicators */
+  --color-legacy-surface-inverse: #182027;     /* inverse bg */
+  --color-legacy-surface-disabled: #ecedee;    /* disabled elements */
+  --color-legacy-surface-selected: #e9f1fa;    /* selected items */
+
+  /* ── Accent / Primary ──────────────────────────────────────────────────── */
+  --color-legacy-accent: #0067df;              /* primary blue */
+  --color-legacy-accent-hover: #0056ba;        /* primary hover */
+  --color-legacy-accent-lighter: #badaff;      /* lighter variant */
+  --color-legacy-accent-darker: #00489d;       /* darker variant */
+
+  /* ── Foreground (text / icons) ────────────────────────────────────────── */
+  --color-legacy-foreground: #273139;          /* primary text */
+  --color-legacy-foreground-emp: #182027;      /* emphasized text */
+  --color-legacy-foreground-muted: #526069;    /* de-emphasized text */
+  --color-legacy-foreground-subtle: #8a97a0;   /* labels, disabled */
+  --color-legacy-foreground-inverse: #f8f9fa;  /* text on dark bg */
+  --color-legacy-foreground-link: #0067df;     /* link text */
+  --color-legacy-foreground-on-accent: #f8f9fa; /* text on accent bg */
+
+  /* ── Borders ──────────────────────────────────────────────────────────── */
+  --color-legacy-border: #a4b1b8;              /* primary borders */
+  --color-legacy-border-subtle: #cfd8dd;       /* subtle dividers */
+  --color-legacy-border-disabled: #cfd8dd;     /* disabled borders */
+  --color-legacy-border-grid: #f4f5f7;         /* grid borders */
+
+  /* ── Status ──────────────────────────────────────────────────────────── */
+  --color-legacy-error: #a6040a;
+  --color-legacy-success: #038108;
+  --color-legacy-warning: #9e6100;
+  --color-legacy-info: #1665b3;
+
+  /* ── Ring / Focus ────────────────────────────────────────────────────── */
+  --color-legacy-ring: #0067df;
+  --color-legacy-logo: #fa4616;
+
+  /* ── future-* bridge — allows templates built with future-* utility
+       classes (bg-future-surface, etc.) to resolve under legacy themes ──── */
+  --color-future-surface: var(--color-legacy-surface);
+  --color-future-surface-raised: var(--color-legacy-surface-raised);
+  --color-future-surface-overlay: var(--color-legacy-surface-overlay);
+  --color-future-surface-hover: var(--color-legacy-surface-hover);
+  --color-future-surface-muted: var(--color-legacy-surface-muted);
+  --color-future-surface-inverse: var(--color-legacy-surface-inverse);
+  --color-future-accent: var(--color-legacy-accent);
+  --color-future-accent-subtle: var(--color-legacy-accent-lighter);
+  --color-future-foreground: var(--color-legacy-foreground);
+  --color-future-foreground-secondary: var(--color-legacy-foreground-emp);
+  --color-future-foreground-hover: var(--color-legacy-foreground-muted);
+  --color-future-foreground-muted: var(--color-legacy-foreground-muted);
+  --color-future-foreground-subtle: var(--color-legacy-foreground-subtle);
+  --color-future-foreground-inverse: var(--color-legacy-foreground-inverse);
+  --color-future-foreground-on-accent: var(--color-legacy-foreground-on-accent);
+  --color-future-accent-foreground: var(--color-legacy-accent);
+  --color-future-accent-foreground-muted: var(--color-legacy-accent-hover);
+  --color-future-border: var(--color-legacy-border);
+  --color-future-border-subtle: var(--color-legacy-border-subtle);
+  --color-future-border-muted: var(--color-legacy-border-grid);
+  --color-future-border-deep: var(--color-legacy-border-grid);
+  --color-future-border-inverse: var(--color-legacy-border);
+  --color-future-border-hover: var(--color-legacy-border);
+  --color-future-ring: var(--color-legacy-ring);
+
+  /* ── shadcn bridge — maps standard variables so shadcn components
+       (DataTable, Input, Button, etc.) inherit Legacy theme colors ────── */
+  --color-background: var(--color-legacy-surface);
+  --color-foreground: var(--color-legacy-foreground);
+  --color-card: var(--color-legacy-surface-raised);
+  --color-card-foreground: var(--color-legacy-foreground);
+  --color-popover: var(--color-legacy-surface-raised);
+  --color-popover-foreground: var(--color-legacy-foreground);
+  --color-primary: var(--color-legacy-accent);
+  --color-primary-foreground: var(--color-legacy-foreground-on-accent);
+  --color-secondary: var(--color-legacy-surface-overlay);
+  --color-secondary-foreground: var(--color-legacy-foreground-muted);
+  --color-muted: var(--color-legacy-surface-overlay);
+  --color-muted-foreground: var(--color-legacy-foreground-muted);
+  --color-accent: var(--color-legacy-surface-selected);
+  --color-accent-foreground: var(--color-legacy-foreground-emp);
+  --color-destructive: var(--color-legacy-error);
+  --color-border: var(--color-legacy-border-subtle);
+  --color-border-de-emp: var(--color-legacy-border-subtle);
+  --color-input: var(--color-legacy-border-subtle);
+  --color-ring: var(--color-legacy-ring);
+
+  color-scheme: light;
+}
+
+/* ============================================================================
+ * Register Legacy tokens with Tailwind 4
+ *
+ * The @theme inline block tells Tailwind to generate utility classes for
+ * each variable. E.g. --color-legacy-surface generates:
+ *   bg-legacy-surface, text-legacy-surface, border-legacy-surface, etc.
+ * ============================================================================ */
+
+@theme inline {
+  /* Surfaces */
+  --color-legacy-surface: var(--color-legacy-surface);
+  --color-legacy-surface-raised: var(--color-legacy-surface-raised);
+  --color-legacy-surface-overlay: var(--color-legacy-surface-overlay);
+  --color-legacy-surface-hover: var(--color-legacy-surface-hover);
+  --color-legacy-surface-muted: var(--color-legacy-surface-muted);
+  --color-legacy-surface-inverse: var(--color-legacy-surface-inverse);
+  --color-legacy-surface-disabled: var(--color-legacy-surface-disabled);
+  --color-legacy-surface-selected: var(--color-legacy-surface-selected);
+
+  /* Accent */
+  --color-legacy-accent: var(--color-legacy-accent);
+  --color-legacy-accent-hover: var(--color-legacy-accent-hover);
+  --color-legacy-accent-lighter: var(--color-legacy-accent-lighter);
+  --color-legacy-accent-darker: var(--color-legacy-accent-darker);
+
+  /* Foreground */
+  --color-legacy-foreground: var(--color-legacy-foreground);
+  --color-legacy-foreground-emp: var(--color-legacy-foreground-emp);
+  --color-legacy-foreground-muted: var(--color-legacy-foreground-muted);
+  --color-legacy-foreground-subtle: var(--color-legacy-foreground-subtle);
+  --color-legacy-foreground-inverse: var(--color-legacy-foreground-inverse);
+  --color-legacy-foreground-link: var(--color-legacy-foreground-link);
+  --color-legacy-foreground-on-accent: var(--color-legacy-foreground-on-accent);
+
+  /* Borders */
+  --color-legacy-border: var(--color-legacy-border);
+  --color-legacy-border-subtle: var(--color-legacy-border-subtle);
+  --color-legacy-border-disabled: var(--color-legacy-border-disabled);
+  --color-legacy-border-grid: var(--color-legacy-border-grid);
+
+  /* Status */
+  --color-legacy-error: var(--color-legacy-error);
+  --color-legacy-success: var(--color-legacy-success);
+  --color-legacy-warning: var(--color-legacy-warning);
+  --color-legacy-info: var(--color-legacy-info);
+
+  /* Ring / Focus */
+  --color-legacy-ring: var(--color-legacy-ring);
+  --color-legacy-logo: var(--color-legacy-logo);
+}

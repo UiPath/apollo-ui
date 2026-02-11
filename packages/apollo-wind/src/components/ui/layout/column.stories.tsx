@@ -2,7 +2,7 @@ import type { Meta } from '@storybook/react-vite';
 import { Column } from './column';
 
 const meta = {
-  title: 'Design System/Layout/Column',
+  title: 'Components/Layout/Column',
   component: Column,
   parameters: {
     layout: 'padded',

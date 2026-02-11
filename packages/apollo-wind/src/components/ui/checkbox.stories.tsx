@@ -4,7 +4,7 @@ import { Label } from './label';
 import { Row, Column } from './layout';
 
 const meta = {
-  title: 'Design System/Core/Checkbox',
+  title: 'Components/Core/Checkbox',
   component: Checkbox,
   parameters: {
     layout: 'centered',

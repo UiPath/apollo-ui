@@ -3,7 +3,7 @@ import { FileX, Inbox, Search, ShoppingCart, Users } from 'lucide-react';
 import { EmptyState } from './empty-state';
 
 const meta = {
-  title: 'Design System/Feedback/Empty State',
+  title: 'Components/Feedback/Empty State',
   component: EmptyState,
   parameters: {
     layout: 'centered',

@@ -19,7 +19,7 @@ import { Calendar } from './calendar';
 import { Search } from 'lucide-react';
 
 const meta = {
-  title: 'Design System/All Components',
+  title: 'Components/All Components',
   parameters: {
     layout: 'fullscreen',
   },

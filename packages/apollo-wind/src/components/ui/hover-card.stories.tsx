@@ -4,7 +4,7 @@ import { HoverCard, HoverCardContent, HoverCardTrigger } from './hover-card';
 import { Row, Column } from './layout';
 
 const meta: Meta<typeof HoverCard> = {
-  title: 'Design System/Overlays/Hover Card',
+  title: 'Components/Overlays/Hover Card',
   component: HoverCard,
   tags: ['autodocs'],
 };

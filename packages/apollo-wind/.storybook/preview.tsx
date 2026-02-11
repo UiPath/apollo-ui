@@ -18,13 +18,46 @@ if (isDev) {
   }
 }
 
+// Custom viewports: named by screen size with widths matching common breakpoints.
+// "Reset viewport" is provided by Storybook; these options replace the default device list.
+const customViewports = {
+  'screen-xl': {
+    name: 'Screen XL 1920',
+    styles: { width: '1920px', height: '1080px' },
+    type: 'desktop',
+  },
+  'screen-l': {
+    name: 'Screen L 1440',
+    styles: { width: '1440px', height: '900px' },
+    type: 'desktop',
+  },
+  'screen-m': {
+    name: 'Screen M 1024',
+    styles: { width: '1024px', height: '768px' },
+    type: 'tablet',
+  },
+  'screen-s': {
+    name: 'Screen S 768',
+    styles: { width: '768px', height: '1024px' },
+    type: 'tablet',
+  },
+  'screen-xs': {
+    name: 'Screen XS 540',
+    styles: { width: '540px', height: '900px' },
+    type: 'mobile',
+  },
+};
+
 const preview: Preview = {
   initialGlobals: {
-    theme: 'light',
-    themeVariant: 'default',
+    futureTheme: 'dark',
     reactScan: 'off',
   },
   parameters: {
+    backgrounds: { disable: true },
+    viewport: {
+      options: customViewports,
+    },
     options: {
       storySort: {
         order: [
@@ -54,16 +87,16 @@ const preview: Preview = {
     },
   },
   globalTypes: {
-    theme: {
-      description: 'Global theme for components',
+    futureTheme: {
+      description: 'Toggle design language theme',
       toolbar: {
         title: 'Theme',
-        icon: 'circlehollow',
+        icon: 'paintbrush',
         items: [
-          { value: 'light', icon: 'sun', title: 'Light' },
-          { value: 'dark', icon: 'moon', title: 'Dark' },
-          { value: 'light-hc', icon: 'sun', title: 'Light High Contrast' },
-          { value: 'dark-hc', icon: 'moon', title: 'Dark High Contrast' },
+          { value: 'dark', title: 'Future: Dark' },
+          { value: 'light', title: 'Future: Light' },
+          { value: 'legacy-dark', title: 'Legacy: Dark' },
+          { value: 'legacy-light', title: 'Legacy: Light' },
         ],
         dynamicTitle: true,
       },
@@ -85,7 +118,6 @@ const preview: Preview = {
   },
   decorators: [
     (Story, context) => {
-      const theme = context.globals.theme || 'light';
       const reactScanEnabled = context.globals.reactScan === 'on';
 
       useEffect(() => {
@@ -96,24 +128,10 @@ const preview: Preview = {
         }
       }, [reactScanEnabled]);
 
-      useEffect(() => {
-        const htmlElement = document.documentElement;
-        const body = document.body;
+      const isFullscreen = context.parameters?.layout === 'fullscreen';
 
-        // Remove existing theme class from both html and body
-        htmlElement.classList.remove('light', 'dark', 'light-hc', 'dark-hc');
-        body.classList.remove('light', 'dark', 'light-hc', 'dark-hc');
-
-        // Add theme class to both (html for legacy, body for apollo-core)
-        htmlElement.classList.add(theme);
-        body.classList.add(theme);
-        body.classList.add('bg-background', 'text-foreground');
-        body.style.minHeight = '100vh';
-      }, [theme]);
-
-      // Wrap all stories with themed background
       return (
-        <div className="bg-background text-foreground p-1">
+        <div className={isFullscreen ? 'h-screen' : 'p-1'}>
           <Story />
         </div>
       );
