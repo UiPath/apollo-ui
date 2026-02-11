@@ -1,3 +1,9 @@
+## [@uipath/apollo-wind-v0.8.1](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@0.8.0...@uipath/apollo-wind@0.8.1) (2026-02-11)
+
+### Bug Fixes
+
+* **apollo-wind:** remove shadows for input fields [MST-6516] ([903a39b](https://github.com/uipath/apollo-ui/commit/903a39b2b3702f9550ce5c3baa027ce0b1640083))
+
 ## [@uipath/apollo-wind-v0.8.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@0.7.3...@uipath/apollo-wind@0.8.0) (2026-02-10)
 
 ### Features
