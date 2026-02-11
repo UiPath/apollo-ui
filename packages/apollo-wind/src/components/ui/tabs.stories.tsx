@@ -6,7 +6,7 @@ import { Label } from './label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './tabs';
 
 const meta: Meta<typeof Tabs> = {
-  title: 'Design System/Navigation/Tabs',
+  title: 'Components/Navigation/Tabs',
   component: Tabs,
   tags: ['autodocs'],
 };

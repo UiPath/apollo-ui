@@ -5,7 +5,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from './collapsib
 import { Row } from './layout';
 
 const meta: Meta<typeof Collapsible> = {
-  title: 'Design System/Data Display/Collapsible',
+  title: 'Components/Data Display/Collapsible',
   component: Collapsible,
   tags: ['autodocs'],
 };

@@ -8,7 +8,7 @@ import {
 import { Row } from './layout';
 
 const meta: Meta<typeof ContextMenu> = {
-  title: 'Design System/Overlays/Context Menu',
+  title: 'Components/Overlays/Context Menu',
   component: ContextMenu,
   tags: ['autodocs'],
 };

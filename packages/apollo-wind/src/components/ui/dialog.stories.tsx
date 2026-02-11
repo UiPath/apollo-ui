@@ -10,7 +10,7 @@ import {
 } from './dialog';
 
 const meta: Meta<typeof Dialog> = {
-  title: 'Design System/Overlays/Dialog',
+  title: 'Components/Overlays/Dialog',
   component: Dialog,
   tags: ['autodocs'],
 };

@@ -22,7 +22,7 @@ import {
 } from './command';
 
 const meta = {
-  title: 'Design System/Navigation/Command',
+  title: 'Components/Navigation/Command',
   component: Command,
   parameters: {
     layout: 'centered',

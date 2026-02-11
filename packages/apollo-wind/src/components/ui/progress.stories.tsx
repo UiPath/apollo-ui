@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { Progress } from './progress';
 
 const meta: Meta<typeof Progress> = {
-  title: 'Design System/Feedback/Progress',
+  title: 'Components/Feedback/Progress',
   component: Progress,
   tags: ['autodocs'],
 };

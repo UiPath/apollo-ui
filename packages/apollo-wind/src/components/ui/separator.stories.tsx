@@ -3,7 +3,7 @@ import { Separator } from './separator';
 import { Row, Column } from './layout';
 
 const meta: Meta<typeof Separator> = {
-  title: 'Design System/Layout/Separator',
+  title: 'Components/Layout/Separator',
   component: Separator,
   tags: ['autodocs'],
 };
