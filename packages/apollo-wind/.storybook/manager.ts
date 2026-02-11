@@ -3,7 +3,8 @@ import theme from './theme';
 
 addons.setConfig({
   theme,
+  showPanel: false,
   sidebar: {
-    collapsedRoots: ['theme', 'forms'],
+    collapsedRoots: ['components', 'forms'],
   },
 });

@@ -10,7 +10,7 @@ import {
 } from './menubar';
 
 const meta: Meta<typeof Menubar> = {
-  title: 'Design System/Navigation/Menubar',
+  title: 'Components/Navigation/Menubar',
   component: Menubar,
   tags: ['autodocs'],
 };

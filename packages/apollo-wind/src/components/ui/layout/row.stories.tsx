@@ -2,7 +2,7 @@ import type { Meta } from '@storybook/react-vite';
 import { Row } from './row';
 
 const meta = {
-  title: 'Design System/Layout/Row',
+  title: 'Components/Layout/Row',
   component: Row,
   parameters: {
     layout: 'padded',

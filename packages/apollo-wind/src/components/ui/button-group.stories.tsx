@@ -29,7 +29,7 @@ import {
 } from './dropdown-menu';
 
 const meta = {
-  title: 'Design System/Core/ButtonGroup',
+  title: 'Components/Core/ButtonGroup',
   component: ButtonGroup,
   parameters: {
     layout: 'centered',

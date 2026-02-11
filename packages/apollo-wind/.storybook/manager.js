@@ -4,6 +4,6 @@ import theme from './theme';
 addons.setConfig({
   theme,
   sidebar: {
-    collapsedRoots: ['theme', 'forms'],
+    collapsedRoots: ['forms'],
   },
 });

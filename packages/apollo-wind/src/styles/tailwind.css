@@ -9,5 +9,7 @@
  */
 
 @import "./tailwind.consumer.css";
+@import "../foundation/Future/future-theme.css";
+@import "../foundation/Future/legacy-theme.css";
 
 @source "../**/*.{js,jsx,ts,tsx}";
