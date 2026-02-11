@@ -4,7 +4,7 @@ import { Skeleton } from './skeleton';
 import { Row, Column } from './layout';
 
 const meta = {
-  title: 'Design System/Feedback/Skeleton',
+  title: 'Components/Feedback/Skeleton',
   component: Skeleton,
   parameters: {
     layout: 'centered',

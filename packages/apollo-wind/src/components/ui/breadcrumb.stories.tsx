@@ -9,7 +9,7 @@ import {
 } from './breadcrumb';
 
 const meta: Meta<typeof Breadcrumb> = {
-  title: 'Design System/Navigation/Breadcrumb',
+  title: 'Components/Navigation/Breadcrumb',
   component: Breadcrumb,
   tags: ['autodocs'],
 };
