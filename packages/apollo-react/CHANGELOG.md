@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.29.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.28.0...@uipath/apollo-react@3.29.0) (2026-02-11)
+
+### Features
+
+* **apollo-react:** add delete button for sticky notes [AG-720] ([b64be2c](https://github.com/UiPath/apollo-ui/commit/b64be2cae4ba49384874690bf62e1e26939537d2))
+
 ## [@uipath/apollo-react-v3.28.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.27.0...@uipath/apollo-react@3.28.0) (2026-02-11)
 
 ### Features
