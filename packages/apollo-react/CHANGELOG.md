@@ -1,3 +1,13 @@
+## [@uipath/apollo-react-v3.28.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.27.0...@uipath/apollo-react@3.28.0) (2026-02-11)
+
+### Features
+
+* **ap-chat:** variable picker enhancements & fixes [PLT-94777] ([19d144d](https://github.com/UiPath/apollo-ui/commit/19d144d9119ceff7fc55f14b83fb635c69ff28d3))
+
+### Bug Fixes
+
+* **ap-chat:** address copilot review ([ccd541a](https://github.com/UiPath/apollo-ui/commit/ccd541a1eeebbe50c7994c22d028c72b79b4f4f9))
+
 ## [@uipath/apollo-react-v3.27.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.26.2...@uipath/apollo-react@3.27.0) (2026-02-10)
 
 ### Features
