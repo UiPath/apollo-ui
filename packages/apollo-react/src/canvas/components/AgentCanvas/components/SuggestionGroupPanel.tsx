@@ -1,5 +1,7 @@
+import { useTheme } from '@mui/material';
 import { FontVariantToken, Spacing } from '@uipath/apollo-core';
 import { Column, Row } from '@uipath/apollo-react/canvas/layouts';
+import { useStore } from '@uipath/apollo-react/canvas/xyflow/react';
 import { ApButton, ApIcon, ApIconButton, ApTypography } from '@uipath/apollo-react/material';
 import { useState } from 'react';
 
@@ -17,25 +19,28 @@ interface SuggestionGroupPanelProps {
 interface AcceptRejectAllButtonProps {
   suggestionGroup: AgentFlowSuggestionGroup;
   onClick: (suggestionGroupId: string) => void;
+  compact?: boolean;
 }
 
-const RejectAllButton = ({ suggestionGroup, onClick }: AcceptRejectAllButtonProps) => (
+const RejectAllButton = ({ suggestionGroup, onClick, compact }: AcceptRejectAllButtonProps) => (
   <ApButton
     variant="tertiary"
     size="small"
     label="Reject all"
     startIcon={<ApIcon variant="outlined" name="close" />}
     onClick={() => onClick(suggestionGroup.id)}
+    sx={compact ? { fontSize: '0.75rem', minWidth: 'auto' } : undefined}
   />
 );
 
-const AcceptAllButton = ({ suggestionGroup, onClick }: AcceptRejectAllButtonProps) => (
+const AcceptAllButton = ({ suggestionGroup, onClick, compact }: AcceptRejectAllButtonProps) => (
   <ApButton
     variant="primary"
     size="small"
     label="Accept all"
     startIcon={<ApIcon variant="outlined" name="check" />}
     onClick={() => onClick(suggestionGroup.id)}
+    sx={compact ? { fontSize: '0.75rem', minWidth: 'auto' } : undefined}
   />
 );
 
@@ -54,6 +59,7 @@ interface SuggestionGroupNavigatorProps {
   total: number;
   onNavigateNext?: () => void;
   onNavigatePrevious?: () => void;
+  compact?: boolean;
 }
 
 const SuggestionGroupNavigator = ({
@@ -61,9 +67,12 @@ const SuggestionGroupNavigator = ({
   total,
   onNavigateNext,
   onNavigatePrevious,
+  compact,
 }: SuggestionGroupNavigatorProps) => {
   const [isHoveringUp, setIsHoveringUp] = useState(false);
   const [isHoveringDown, setIsHoveringDown] = useState(false);
+
+  const iconSize = compact ? '16px' : '20px';
 
   return (
     <div
@@ -71,7 +80,7 @@ const SuggestionGroupNavigator = ({
         display: 'flex',
         alignItems: 'center',
         gap: Spacing.SpacingMicro,
-        minWidth: '100px',
+        minWidth: compact ? '80px' : '100px',
       }}
     >
       <ApIconButton
@@ -82,11 +91,11 @@ const SuggestionGroupNavigator = ({
         <ApIcon
           name="keyboard_arrow_up"
           color={isHoveringUp ? 'var(--uix-canvas-primary)' : 'var(--uix-canvas-foreground-de-emp)'}
-          size="20px"
+          size={iconSize}
         />
       </ApIconButton>
       <ApTypography
-        variant={FontVariantToken.fontSizeMBold}
+        variant={compact ? FontVariantToken.fontSizeSBold : FontVariantToken.fontSizeMBold}
         color="var(--uix-canvas-foreground-de-emp)"
       >
         {currentIndex + 1} of {total}
@@ -101,7 +110,7 @@ const SuggestionGroupNavigator = ({
           color={
             isHoveringDown ? 'var(--uix-canvas-primary)' : 'var(--uix-canvas-foreground-de-emp)'
           }
-          size="20px"
+          size={iconSize}
         />
       </ApIconButton>
     </div>
@@ -116,6 +125,11 @@ export const SuggestionGroupPanel = ({
   onNavigateNext,
   onNavigatePrevious,
 }: SuggestionGroupPanelProps) => {
+  const theme = useTheme();
+  const canvasWidth = useStore((state) => state.width);
+  const smBreakpoint = theme.breakpoints.values.sm;
+  const isCompact = canvasWidth < smBreakpoint;
+
   // Filter out standalone suggestions - they are interactive placeholders that shouldn't appear in the panel
   const nonStandaloneSuggestions =
     suggestionGroup?.suggestions.filter((s) => !s.isStandalone) ?? [];
@@ -136,12 +150,25 @@ export const SuggestionGroupPanel = ({
             boxShadow: '0px 6px 10px rgba(0, 0, 0, 0.3)',
           }}
         >
-          <Row align="center" gap={Spacing.SpacingS} justify="space-evenly">
+          <Row
+            align="center"
+            gap={isCompact ? Spacing.SpacingXs : Spacing.SpacingS}
+            justify="space-evenly"
+            style={{ whiteSpace: 'nowrap' }}
+          >
             {onRejectAll && (
-              <RejectAllButton suggestionGroup={suggestionGroup} onClick={onRejectAll} />
+              <RejectAllButton
+                suggestionGroup={suggestionGroup}
+                onClick={onRejectAll}
+                compact={isCompact}
+              />
             )}
             {onAcceptAll && (
-              <AcceptAllButton suggestionGroup={suggestionGroup} onClick={onAcceptAll} />
+              <AcceptAllButton
+                suggestionGroup={suggestionGroup}
+                onClick={onAcceptAll}
+                compact={isCompact}
+              />
             )}
             <Divider />
             <SuggestionGroupNavigator
@@ -149,6 +176,7 @@ export const SuggestionGroupPanel = ({
               total={placeholderCount}
               onNavigateNext={onNavigateNext}
               onNavigatePrevious={onNavigatePrevious}
+              compact={isCompact}
             />
           </Row>
         </Column>
