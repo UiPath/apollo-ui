@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v3.29.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.29.1...@uipath/apollo-react@3.29.2) (2026-02-11)
+
+### Bug Fixes
+
+* **apollo-react:** make SuggestionGroupPanel text compact on smaller screen widths [AG-722] ([e67c740](https://github.com/UiPath/apollo-ui/commit/e67c7402c76b9bf76dc5cdcd3ef4291882b4e80f))
+
 ## [@uipath/apollo-react-v3.29.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@3.29.0...@uipath/apollo-react@3.29.1) (2026-02-11)
 
 ### Bug Fixes
