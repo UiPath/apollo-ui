@@ -43,6 +43,7 @@ interface AutopilotChatStateContextType {
   spacing: DeepRequired<NonNullable<AutopilotChatConfiguration['spacing']>>;
   theming?: AutopilotChatConfiguration['theming'];
   portalContainer?: HTMLElement;
+  readOnly: boolean;
 }
 
 const AutopilotChatStateContext = React.createContext<AutopilotChatStateContextType | null>(null);
@@ -163,6 +164,7 @@ export const AutopilotChatStateProvider: React.FC<AutopilotChatStateProviderProp
     }
   );
   const [hasMessages, setHasMessages] = React.useState(false);
+  const [readOnly, setReadOnly] = React.useState(chatService?.getReadOnly() ?? false);
   const [spacing, setSpacing] = React.useState(calculateSpacing(chatService?.getConfig()?.spacing));
   const [theming, setTheming] = React.useState(chatService?.getConfig()?.theming);
 
@@ -217,6 +219,13 @@ export const AutopilotChatStateProvider: React.FC<AutopilotChatStateProviderProp
       }
     );
 
+    const unsubscribeReadOnly = chatService.on(
+      AutopilotChatEvent.SetReadOnly,
+      (isReadOnly: boolean) => {
+        setReadOnly(isReadOnly);
+      }
+    );
+
     const unsubscribeSpacing = chatInternalService.on(
       AutopilotChatInternalEvent.SetSpacing,
       (spacingConfig: AutopilotChatConfiguration['spacing']) => {
@@ -238,6 +247,7 @@ export const AutopilotChatStateProvider: React.FC<AutopilotChatStateProviderProp
       unsubscribeDisabledFeatures();
       unsubscribeOverrideLabels();
       unsubscribeFirstRunExperience();
+      unsubscribeReadOnly();
       unsubscribeAllowedAttachments();
       unsubscribeSpacing();
       unsubscribeTheming();
@@ -262,6 +272,7 @@ export const AutopilotChatStateProvider: React.FC<AutopilotChatStateProviderProp
       spacing,
       theming,
       portalContainer,
+      readOnly,
     }),
     [
       historyOpen,
@@ -280,6 +291,7 @@ export const AutopilotChatStateProvider: React.FC<AutopilotChatStateProviderProp
       spacing,
       theming,
       portalContainer,
+      readOnly,
     ]
   );
 

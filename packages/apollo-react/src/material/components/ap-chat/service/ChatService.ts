@@ -166,6 +166,8 @@ export class AutopilotChatService {
     this.getTheme = this.getTheme.bind(this);
     this.setResourceManager = this.setResourceManager.bind(this);
     this.getResourceManager = this.getResourceManager.bind(this);
+    this.setReadOnly = this.setReadOnly.bind(this);
+    this.getReadOnly = this.getReadOnly.bind(this);
   }
 
   static Instantiate({
@@ -296,6 +298,10 @@ export class AutopilotChatService {
 
     if (config.resourceManager) {
       this.setResourceManager(config.resourceManager);
+    }
+
+    if (config.readOnly !== undefined) {
+      this.setReadOnly(config.readOnly);
     }
 
     messageRenderers.forEach((renderer) => this.injectMessageRenderer(renderer));
@@ -1140,6 +1146,27 @@ export class AutopilotChatService {
    */
   getResourceManager() {
     return this._resourceManager;
+  }
+
+  /**
+   * Sets the read-only mode for the chat interface.
+   * When enabled, the input area and some action buttons are hidden.
+   *
+   * @param readOnly - Whether to enable read-only mode
+   */
+  setReadOnly(readOnly: boolean) {
+    this._config.readOnly = readOnly;
+
+    this._eventBus.publish(AutopilotChatEvent.SetReadOnly, readOnly);
+  }
+
+  /**
+   * Gets the current read-only mode state
+   *
+   * @returns Whether the chat is in read-only mode
+   */
+  getReadOnly() {
+    return this._config.readOnly ?? false;
   }
 
   /**

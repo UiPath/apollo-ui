@@ -50,6 +50,7 @@ interface StandardLayoutProps {
   mode: AutopilotChatMode;
   headerDisabled: boolean;
   headerSeparatorDisabled: boolean;
+  readOnly: boolean;
 }
 
 export const StandardLayout: React.FC<StandardLayoutProps> = ({
@@ -60,6 +61,7 @@ export const StandardLayout: React.FC<StandardLayoutProps> = ({
   mode,
   headerDisabled,
   headerSeparatorDisabled,
+  readOnly,
 }) => {
   return (
     <>
@@ -78,11 +80,13 @@ export const StandardLayout: React.FC<StandardLayoutProps> = ({
 
         <ChatScrollContainer mode={mode} />
 
-        <InputBackground>
-          <InputContainer>
-            <AutopilotChatInput />
-          </InputContainer>
-        </InputBackground>
+        {!readOnly && (
+          <InputBackground>
+            <InputContainer>
+              <AutopilotChatInput />
+            </InputContainer>
+          </InputBackground>
+        )}
       </MainContainer>
 
       {!historyDisabled && <AutopilotChatHistory open={historyOpen} isFullScreen={false} />}

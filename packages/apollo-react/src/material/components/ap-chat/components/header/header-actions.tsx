@@ -20,7 +20,7 @@ const StyledActions = styled('div')(() => ({
 function AutopilotChatHeaderActionsComponent() {
   const { _ } = useLingui();
   const chatService = useChatService();
-  const { disabledFeatures, chatMode, historyOpen, settingsOpen, setHistoryAnchorElement } =
+  const { disabledFeatures, chatMode, historyOpen, settingsOpen, setHistoryAnchorElement, readOnly } =
     useChatState();
   const { clearAttachments } = useAttachments();
   const { customHeaderActions, handleCustomHeaderAction } = usePicker();
@@ -129,7 +129,7 @@ function AutopilotChatHeaderActionsComponent() {
 
   return (
     <StyledActions>
-      {!disabledFeatures.newChat && (
+      {!readOnly && !disabledFeatures.newChat && (
         <AutopilotChatActionButton
           iconName="new_chat"
           variant="custom"
@@ -140,7 +140,7 @@ function AutopilotChatHeaderActionsComponent() {
         />
       )}
 
-      {!disabledFeatures.settings && (
+      {!readOnly && !disabledFeatures.settings && (
         <AutopilotChatActionButton
           iconName="settings"
           tooltip={_(msg({ id: 'autopilot-chat.header.actions.settings', message: `Settings` }))}
@@ -150,7 +150,7 @@ function AutopilotChatHeaderActionsComponent() {
         />
       )}
 
-      {!disabledFeatures.history && (
+      {!readOnly && !disabledFeatures.history && (
         <AutopilotChatActionButton
           ref={setHistoryAnchorElement}
           iconName="history"
@@ -180,7 +180,7 @@ function AutopilotChatHeaderActionsComponent() {
         />
       )}
 
-      {customHeaderActions.length > 0 && (
+      {!readOnly && customHeaderActions.length > 0 && (
         <>
           <AutopilotChatActionButton
             iconName="more_vert"

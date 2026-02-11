@@ -61,6 +61,7 @@ interface FullScreenLayoutProps {
   settingsDisabled: boolean;
   mode: AutopilotChatMode;
   headerSeparatorDisabled: boolean;
+  readOnly: boolean;
 }
 
 export const FullScreenLayout: React.FC<FullScreenLayoutProps> = ({
@@ -70,6 +71,7 @@ export const FullScreenLayout: React.FC<FullScreenLayoutProps> = ({
   settingsDisabled,
   mode,
   headerSeparatorDisabled,
+  readOnly,
 }) => {
   const { setFullScreenContainer } = useChatState();
   const chatInternalService = useChatService().__internalService__;
@@ -107,11 +109,13 @@ export const FullScreenLayout: React.FC<FullScreenLayoutProps> = ({
         <MainContainer ref={mainContainerRef} historyOpen={historyOpen}>
           <ChatScrollContainer mode={mode} />
 
-          <InputBackground>
-            <InputContainer>
-              <AutopilotChatInput />
-            </InputContainer>
-          </InputBackground>
+          {!readOnly && (
+            <InputBackground>
+              <InputContainer>
+                <AutopilotChatInput />
+              </InputContainer>
+            </InputBackground>
+          )}
         </MainContainer>
 
         {!historyDisabled && <AutopilotChatHistory open={historyOpen} isFullScreen={true} />}

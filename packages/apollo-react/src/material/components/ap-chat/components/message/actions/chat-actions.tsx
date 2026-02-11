@@ -23,7 +23,7 @@ function AutopilotChatMessageActionsComponent({
 }: AutopilotChatMessageActionsProps) {
   const { _ } = useLingui();
   const chatService = useChatService();
-  const { disabledFeatures } = useChatState();
+  const { disabledFeatures, readOnly } = useChatState();
   const [isLastAssistantMessage, setIsLastAssistantMessage] = React.useState(false);
   const [isVisible, setIsVisible] = React.useState(false);
   const isUserInteractingWithActions = React.useRef(false);
@@ -76,7 +76,7 @@ function AutopilotChatMessageActionsComponent({
     }
 
     // If not an assistant message, just return copy action
-    if (message.role !== AutopilotChatRole.Assistant || disabledFeatures.feedback) {
+    if (message.role !== AutopilotChatRole.Assistant || readOnly || disabledFeatures.feedback) {
       return baseActions;
     }
 
@@ -121,7 +121,7 @@ function AutopilotChatMessageActionsComponent({
         },
       },
     ];
-  }, [message, disabledFeatures.feedback, disabledFeatures.copy, _]);
+  }, [message, readOnly, disabledFeatures.feedback, disabledFeatures.copy, _]);
 
   const isRelatedTarget = React.useCallback((target: Node) => {
     return (
