@@ -15,7 +15,7 @@ import {
 import type { EditableCellMeta } from './editable-cell';
 
 const meta = {
-  title: 'Design System/Data Display/Data Table',
+  title: 'Components/Data Display/Data Table',
   component: DataTable,
   parameters: {
     layout: 'padded',

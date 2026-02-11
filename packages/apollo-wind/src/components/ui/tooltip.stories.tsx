@@ -3,7 +3,7 @@ import { Button } from './button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './tooltip';
 
 const meta: Meta<typeof Tooltip> = {
-  title: 'Design System/Overlays/Tooltip',
+  title: 'Components/Overlays/Tooltip',
   component: Tooltip,
   tags: ['autodocs'],
 };

@@ -2,7 +2,7 @@ import type { Meta } from '@storybook/react-vite';
 import { Slider } from './slider';
 
 const meta: Meta<typeof Slider> = {
-  title: 'Design System/Core/Slider',
+  title: 'Components/Core/Slider',
   component: Slider,
   tags: ['autodocs'],
 };

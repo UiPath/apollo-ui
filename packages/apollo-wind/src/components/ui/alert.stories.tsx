@@ -2,7 +2,7 @@ import type { Meta } from '@storybook/react-vite';
 import { Alert, AlertDescription, AlertTitle } from './alert';
 
 const meta: Meta<typeof Alert> = {
-  title: 'Design System/Feedback/Alert',
+  title: 'Components/Feedback/Alert',
   component: Alert,
   tags: ['autodocs'],
 };

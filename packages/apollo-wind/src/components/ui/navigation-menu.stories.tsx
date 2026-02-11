@@ -10,7 +10,7 @@ import {
 import { Column } from './layout';
 
 const meta: Meta<typeof NavigationMenu> = {
-  title: 'Design System/Navigation/Navigation Menu',
+  title: 'Components/Navigation/Navigation Menu',
   component: NavigationMenu,
   tags: ['autodocs'],
 };
