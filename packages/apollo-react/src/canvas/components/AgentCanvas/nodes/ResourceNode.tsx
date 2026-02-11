@@ -11,12 +11,18 @@ import {
   type SuggestionTranslations,
 } from '../../../types';
 import { BaseNode } from '../../BaseNode/BaseNode';
+import {
+  BaseNodeOverrideConfigProvider,
+  type BaseNodeOverrideConfig,
+} from '../../BaseNode/BaseNodeConfigContext';
 import type { ButtonHandleConfig } from '../../ButtonHandle';
 import type { HandleGroupManifest } from '../../../schema/node-definition';
 import { ExecutionStatusIcon } from '../../ExecutionStatusIcon/ExecutionStatusIcon';
 import type { NodeToolbarConfig, ToolbarAction } from '../../Toolbar';
 import { ToolResourceIcon } from '../components/ToolResourceIcon';
 import { useAgentFlowStore, useEdges } from '../store/agent-flow-store';
+
+const alwaysShowNotches = () => true;
 
 interface ResourceNodeProps extends NodeProps<AgentFlowResourceNode> {
   mode?: 'design' | 'view';
@@ -435,41 +441,61 @@ export const ResourceNode = memo(
       }
     };
 
-    return (
-      <BaseNode
-        {...nodeProps}
-        type={getResourceNodeType()}
-        data={{
-          ...data,
-          display: {
-            iconBackground: 'var(--uix-canvas-background-secondary)',
-            label: data.name,
-            subLabel: data.originalName,
-            shape: 'circle',
-          },
-        }}
-        id={id}
-        selected={selected}
-        draggable={false}
-        selectable={true}
-        deletable={!isSuggestion}
-        // Runtime customization props (not in data)
-        labelTooltip={displayTooltips ? data.description : undefined}
-        labelBackgroundColor="var(--uix-canvas-background-secondary)"
-        disabled={isDisabled}
-        executionStatusOverride={executionStatus}
-        suggestionType={suggestionType}
-        iconComponent={resourceIcon}
-        handleConfigurations={handleConfigurations}
-        toolbarConfig={toolbarConfig}
-        adornments={{
+    const baseNodeConfig = useMemo<BaseNodeOverrideConfig>(
+      () => ({
+        labelTooltip: displayTooltips ? data.description : undefined,
+        labelBackgroundColor: 'var(--uix-canvas-background-secondary)',
+        disabled: isDisabled,
+        executionStatusOverride: executionStatus,
+        suggestionType,
+        iconComponent: resourceIcon,
+        handleConfigurations,
+        toolbarConfig,
+        adornments: {
           topLeft: breakpointAdornment,
           topRight: statusAdornment,
           bottomLeft: suggestionAdornment,
           bottomRight: guardrailsAdornment,
-        }}
-        shouldShowButtonHandleNotchesFn={() => true}
-      />
+        },
+        shouldShowButtonHandleNotchesFn: alwaysShowNotches,
+      }),
+      [
+        displayTooltips,
+        data.description,
+        isDisabled,
+        executionStatus,
+        suggestionType,
+        resourceIcon,
+        handleConfigurations,
+        toolbarConfig,
+        breakpointAdornment,
+        statusAdornment,
+        suggestionAdornment,
+        guardrailsAdornment,
+      ]
+    );
+
+    return (
+      <BaseNodeOverrideConfigProvider value={baseNodeConfig}>
+        <BaseNode
+          {...nodeProps}
+          type={getResourceNodeType()}
+          data={{
+            ...data,
+            display: {
+              iconBackground: 'var(--uix-canvas-background-secondary)',
+              label: data.name,
+              subLabel: data.originalName,
+              shape: 'circle',
+            },
+          }}
+          id={id}
+          selected={selected}
+          draggable={false}
+          selectable={true}
+          deletable={!isSuggestion}
+        />
+      </BaseNodeOverrideConfigProvider>
     );
   }
 );

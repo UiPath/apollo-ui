@@ -32,6 +32,10 @@ import type { BaseCanvasRef } from '../BaseCanvas';
 import { BaseCanvas } from '../BaseCanvas';
 import { BaseNode } from '../BaseNode/BaseNode';
 import type { BaseNodeData } from '../BaseNode/BaseNode.types';
+import {
+  BaseNodeOverrideConfigProvider,
+  type BaseNodeOverrideConfig,
+} from '../BaseNode/BaseNodeConfigContext';
 import { CanvasPositionControls } from '../CanvasPositionControls';
 import type { HandleGroupManifest } from '../../schema/node-definition';
 import { NodeRegistryProvider } from '../../core/NodeRegistryProvider';
@@ -165,32 +169,41 @@ const createCodedAgentNodeWrapper = (
       return undefined;
     }, [nodeData.hasError, nodeData.hasSuccess, nodeData.hasRunning]);
 
-    const handleConfigurations: HandleGroupManifest[] = [
-      { position: Position.Left, handles: leftTargetHandle, visible: true },
-      { position: Position.Right, handles: rightSourceHandle, visible: true },
-    ];
+    const handleConfigurations = useMemo(
+      (): HandleGroupManifest[] => [
+        { position: Position.Left, handles: leftTargetHandle, visible: true },
+        { position: Position.Right, handles: rightSourceHandle, visible: true },
+      ],
+      []
+    );
+
+    const baseNodeConfig = useMemo<BaseNodeOverrideConfig>(
+      () => ({
+        executionStatusOverride: executionStatus,
+        handleConfigurations,
+        adornments: { topRight: statusAdornment },
+        iconComponent: <Icons.CodedAgentIcon w={40} h={40} />,
+      }),
+      [executionStatus, handleConfigurations, statusAdornment]
+    );
 
     return (
-      <BaseNode
-        {...nodeProps}
-        type="uipath.coded.agent"
-        id={id}
-        selected={selected}
-        data={{
-          ...nodeData,
-          display: {
-            label: nodeData.label,
-            subLabel: translations.codedAgentStep,
-            shape: 'rectangle',
-          },
-          executionStatusOverride: executionStatus,
-          handleConfigurations,
-          adornments: {
-            topRight: statusAdornment,
-          },
-        }}
-        iconComponent={<Icons.CodedAgentIcon w={40} h={40} />}
-      />
+      <BaseNodeOverrideConfigProvider value={baseNodeConfig}>
+        <BaseNode
+          {...nodeProps}
+          type="uipath.coded.agent"
+          id={id}
+          selected={selected}
+          data={{
+            ...nodeData,
+            display: {
+              label: nodeData.label,
+              subLabel: translations.codedAgentStep,
+              shape: 'rectangle',
+            },
+          }}
+        />
+      </BaseNodeOverrideConfigProvider>
     );
   });
 };
@@ -232,32 +245,41 @@ const CodedResourceNodeElement = memo(({ data, selected, id, ...nodeProps }: Nod
     return undefined;
   }, [nodeData.hasError, nodeData.hasSuccess, nodeData.hasRunning]);
 
-  const handleConfigurations: HandleGroupManifest[] = [
-    { position: Position.Left, handles: leftTargetHandle, visible: true },
-    { position: Position.Right, handles: rightSourceHandle, visible: true },
-  ];
+  const handleConfigurations = useMemo(
+    (): HandleGroupManifest[] => [
+      { position: Position.Left, handles: leftTargetHandle, visible: true },
+      { position: Position.Right, handles: rightSourceHandle, visible: true },
+    ],
+    []
+  );
+
+  const baseNodeConfig = useMemo<BaseNodeOverrideConfig>(
+    () => ({
+      executionStatusOverride: executionStatus,
+      handleConfigurations,
+      adornments: { topRight: statusAdornment },
+      iconComponent: resourceIcon,
+    }),
+    [executionStatus, handleConfigurations, statusAdornment, resourceIcon]
+  );
 
   return (
     <div style={{ position: 'relative' }}>
-      <BaseNode
-        {...nodeProps}
-        type="uipath.coded.resource"
-        id={id}
-        selected={selected}
-        data={{
-          ...nodeData,
-          display: {
-            label: undefined, // Label is rendered via TextContainer below
-            shape: 'circle',
-          },
-          executionStatusOverride: executionStatus,
-          handleConfigurations,
-          adornments: {
-            topRight: statusAdornment,
-          },
-        }}
-        iconComponent={resourceIcon}
-      />
+      <BaseNodeOverrideConfigProvider value={baseNodeConfig}>
+        <BaseNode
+          {...nodeProps}
+          type="uipath.coded.resource"
+          id={id}
+          selected={selected}
+          data={{
+            ...nodeData,
+            display: {
+              label: undefined, // Label is rendered via TextContainer below
+              shape: 'circle',
+            },
+          }}
+        />
+      </BaseNodeOverrideConfigProvider>
       <TextContainer>
         <ApTypography color="var(--uix-canvas-foreground-de-emp)">{nodeData.label}</ApTypography>
       </TextContainer>
@@ -277,22 +299,25 @@ const CodedFlowNodeElement = memo(({ data, selected, id, ...nodeProps }: NodePro
 
     const nodeType = isStart ? 'uipath.coded.flow.start' : 'uipath.coded.flow.end';
 
+    const config: BaseNodeOverrideConfig = { handleConfigurations: handleConfigs };
+
     return (
       <div style={{ position: 'relative' }}>
-        <BaseNode
-          {...nodeProps}
-          type={nodeType}
-          id={id}
-          selected={selected}
-          data={{
-            ...nodeData,
-            display: {
-              label: undefined, // Label is rendered via TextContainer below
-              shape: 'square',
-            },
-            handleConfigurations: handleConfigs,
-          }}
-        />
+        <BaseNodeOverrideConfigProvider value={config}>
+          <BaseNode
+            {...nodeProps}
+            type={nodeType}
+            id={id}
+            selected={selected}
+            data={{
+              ...nodeData,
+              display: {
+                label: undefined, // Label is rendered via TextContainer below
+                shape: 'square',
+              },
+            }}
+          />
+        </BaseNodeOverrideConfigProvider>
         <TextContainer>
           <ApTypography
             variant={FontVariantToken.fontSizeS}
@@ -310,22 +335,27 @@ const CodedFlowNodeElement = memo(({ data, selected, id, ...nodeProps }: NodePro
     { position: Position.Right, handles: rightSourceHandle, visible: true },
   ];
 
+  const config: BaseNodeOverrideConfig = {
+    handleConfigurations: handleConfigs,
+    iconComponent: null,
+  };
+
   return (
-    <BaseNode
-      {...nodeProps}
-      type="uipath.coded.flow.node"
-      id={id}
-      selected={selected}
-      data={{
-        ...nodeData,
-        display: {
-          label: nodeData.label,
-          shape: 'rectangle',
-        },
-        handleConfigurations: handleConfigs,
-      }}
-      iconComponent={null}
-    />
+    <BaseNodeOverrideConfigProvider value={config}>
+      <BaseNode
+        {...nodeProps}
+        type="uipath.coded.flow.node"
+        id={id}
+        selected={selected}
+        data={{
+          ...nodeData,
+          display: {
+            label: nodeData.label,
+            shape: 'rectangle',
+          },
+        }}
+      />
+    </BaseNodeOverrideConfigProvider>
   );
 });
 

@@ -1,5 +1,5 @@
 import { cx } from '@uipath/apollo-react/canvas/utils';
-import type { ReactFlowState } from '@uipath/apollo-react/canvas/xyflow/react';
+import type { Node, NodeProps, ReactFlowState } from '@uipath/apollo-react/canvas/xyflow/react';
 import {
   Position,
   useReactFlow,
@@ -32,8 +32,9 @@ import {
   BaseSubHeader,
   BaseTextContainer,
 } from './BaseNode.styles';
+import { useBaseNodeOverrideConfig } from './BaseNodeConfigContext';
 import type {
-  BaseNodeComponentProps,
+  BaseNodeData,
   FooterVariant,
   NodeAdornments,
   NodeStatusContext,
@@ -42,35 +43,27 @@ import { NodeLabel } from './NodeLabel';
 
 const selectIsConnecting = (state: ReactFlowState) => !!state.connectionClickStartHandle;
 
-const BaseNodeComponent = (props: BaseNodeComponentProps) => {
+const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
+  const { type, data, selected, id, dragging, width, height } = props;
+
+  // Read runtime configuration from context (provided by parent node components)
   const {
-    type,
-    data,
-    selected,
-    id,
-    dragging,
-    width,
-    height,
-    // Runtime callback props
     onHandleAction: onHandleActionProp,
     shouldShowAddButtonFn: shouldShowAddButtonFnProp,
     shouldShowButtonHandleNotchesFn: shouldShowButtonHandleNotchesFnProp,
     toolbarConfig: toolbarConfigProp,
-    // UI configuration props
     handleConfigurations: handleConfigurationsProp,
     adornments: adornmentsProp,
-    // Visual state props
     suggestionType,
     disabled,
     executionStatusOverride,
-    // Display customization props
     labelTooltip,
     labelBackgroundColor,
     footerVariant,
     footerComponent,
     subLabelComponent,
     iconComponent,
-  } = props;
+  } = useBaseNodeOverrideConfig();
 
   const updateNodeInternals = useUpdateNodeInternals();
   const { updateNodeData, updateNode } = useReactFlow();
