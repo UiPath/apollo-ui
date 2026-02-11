@@ -42,7 +42,7 @@ const StickyNoteNodeComponent = ({
   placeholder = 'Add text',
   renderPlaceholderOnSelect = false,
 }: StickyNoteNodeProps) => {
-  const { updateNodeData } = useReactFlow();
+  const { updateNodeData, deleteElements } = useReactFlow();
   const [isEditing, setIsEditing] = useState(data.autoFocus ?? false);
   const [isResizing, setIsResizing] = useState(false);
   const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
@@ -144,6 +144,10 @@ const StickyNoteNodeComponent = ({
     }, 0);
   }, []);
 
+  const handleDelete = useCallback(() => {
+    deleteElements({ nodes: [{ id }] });
+  }, [id, deleteElements]);
+
   // Custom markdown components to handle link clicks properly in React Flow nodes
   const markdownComponents = useMemo(
     () => ({
@@ -170,6 +174,12 @@ const StickyNoteNodeComponent = ({
   // Build toolbar config with only Edit and Color buttons
   const toolbarConfig = useMemo(() => {
     const actions: ToolbarAction[] = [
+      {
+        id: 'delete',
+        icon: <ApIcon variant="outlined" name="delete" />,
+        label: 'Delete',
+        onAction: handleDelete,
+      },
       {
         id: 'edit',
         icon: <ApIcon variant="outlined" name="edit" />,
